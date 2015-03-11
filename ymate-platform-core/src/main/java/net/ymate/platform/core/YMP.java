@@ -47,15 +47,43 @@ public class YMP {
 
     private static final String __YMP_BASE_PACKAGE = "net.ymate.platform";
 
-    private static IBeanFactory __beanFactory;
+    private boolean __inited;
 
-    private static IProxyFactory __proxyFactory;
+    private IBeanFactory __beanFactory;
 
-    private static List<IModule> __modules;
+    private IProxyFactory __proxyFactory;
 
-    private static boolean __inited;
+    private List<IModule> __modules;
 
-    private static IBeanFactory __doInitBeanFactory() {
+    private static YMP __instance;
+
+    /**
+     * @return 返回默认YMP框架核心管理器对象实例，若未实例化或已销毁则重新创建对象实例
+     */
+    public static YMP get() {
+        if (__instance == null || !__instance.isInited()) {
+            synchronized (__YMP_BASE_PACKAGE) {
+                if (__instance == null || __instance.getBeanFactory() == null) {
+                    __instance = new YMP();
+                }
+            }
+        }
+        return __instance;
+    }
+
+    /**
+     * 构造方法
+     */
+    public YMP() {
+        // 创建模块对象引用集合
+        __modules = new ArrayList<IModule>();
+        // 创建根对象工厂
+        __beanFactory = new DefaultBeanFactory();
+        // 创建代理工厂并初始化
+        __proxyFactory = new DefaultProxyFactory();
+    }
+
+    private IBeanFactory __doInitBeanFactory() {
         // 设置YMP框架基础包为根工厂扫描路径
         // 并根据配置参数注册自动扫描应用包路径
         __beanFactory.registerPackage(__YMP_BASE_PACKAGE);
@@ -90,7 +118,7 @@ public class YMP {
         return __beanFactory;
     }
 
-    private static void __doInitProxyFactory() {
+    private void __doInitProxyFactory() {
         for (Map.Entry<Class<?>, Object> _entry : __beanFactory.getBeans().entrySet()) {
             if (!_entry.getKey().isInterface()) {
                 final Class<?> _targetClass = _entry.getKey();
@@ -128,7 +156,7 @@ public class YMP {
         }
     }
 
-    private static void __doInitIoC() throws Exception {
+    private void __doInitIoC() throws Exception {
         for (Map.Entry<Class<?>, Object> _bean : __beanFactory.getBeans().entrySet()) {
             Field[] _fields = _bean.getKey().getDeclaredFields();
             if (_fields != null && _fields.length > 0) {
@@ -156,16 +184,10 @@ public class YMP {
      *
      * @throws Exception
      */
-    public static synchronized void init() throws Exception {
+    public synchronized void init() throws Exception {
         if (!__inited) {
             // 加载并初始化YMP框架配置
             Config.get();
-            // 创建模块对象引用集合
-            __modules = new ArrayList<IModule>();
-            // 创建根对象工厂
-            __beanFactory = new DefaultBeanFactory();
-            // 创建代理工厂并初始化
-            __proxyFactory = new DefaultProxyFactory();
             // 初始化根对象工厂
             __doInitBeanFactory().init();
             // 初始化所有已加载模块
@@ -186,7 +208,7 @@ public class YMP {
      *
      * @throws Exception
      */
-    public static void destroy() throws Exception {
+    public void destroy() throws Exception {
         if (__inited) {
             __inited = false;
             // 销毁所有已加载模块
@@ -205,14 +227,14 @@ public class YMP {
     /**
      * @return 返回YMP框架是否已初始化
      */
-    public static boolean isInited() {
+    public boolean isInited() {
         return __inited;
     }
 
     /**
      * @return 返回根对象工厂实例
      */
-    public static IBeanFactory getBeanFactory() {
+    public IBeanFactory getBeanFactory() {
         return __beanFactory;
     }
 
