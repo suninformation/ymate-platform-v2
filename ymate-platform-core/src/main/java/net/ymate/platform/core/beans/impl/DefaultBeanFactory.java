@@ -106,11 +106,11 @@ public class DefaultBeanFactory implements IBeanFactory {
 
     public void registerBean(Class<?> clazz, Object object) {
         // 注解、枚举和接口类型采用不同方式处理
-        if (!clazz.isAnnotation() && !clazz.isEnum() && !clazz.isInterface()) {
+        if (clazz.isInterface()) {
             Class<?> _targetClass = object.getClass();
             __beanInstancesMap.put(_targetClass, object);
             __addClassInterfaces(_targetClass);
-        } else {
+        } else if (!clazz.isAnnotation() && !clazz.isEnum()) {
             __addClass(clazz, object);
         }
     }
