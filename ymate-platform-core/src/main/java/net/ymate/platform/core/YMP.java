@@ -17,10 +17,7 @@ package net.ymate.platform.core;
 
 import net.ymate.platform.core.beans.IBeanFactory;
 import net.ymate.platform.core.beans.IBeanHandler;
-import net.ymate.platform.core.beans.annotation.Bean;
-import net.ymate.platform.core.beans.annotation.By;
-import net.ymate.platform.core.beans.annotation.Inject;
-import net.ymate.platform.core.beans.annotation.Proxy;
+import net.ymate.platform.core.beans.annotation.*;
 import net.ymate.platform.core.beans.impl.DefaultBeanFactory;
 import net.ymate.platform.core.beans.impl.proxy.DefaultProxyFactory;
 import net.ymate.platform.core.beans.proxy.IProxy;
@@ -28,8 +25,6 @@ import net.ymate.platform.core.beans.proxy.IProxyFactory;
 import net.ymate.platform.core.beans.proxy.IProxyFilter;
 import net.ymate.platform.core.lang.BlurObject;
 import net.ymate.platform.core.module.IModule;
-import net.ymate.platform.core.module.annotation.Module;
-import net.ymate.platform.core.util.ClassUtils;
 import net.ymate.platform.core.util.RuntimeUtils;
 import org.apache.commons.lang.StringUtils;
 
@@ -91,39 +86,35 @@ public class YMP {
         __proxyFactory = new DefaultProxyFactory();
     }
 
-    private IBeanFactory __doInitBeanFactory() {
-        // 设置YMP框架基础包为根工厂扫描路径
-        // 并根据配置参数注册自动扫描应用包路径
-        __beanFactory.registerPackage(__YMP_BASE_PACKAGE);
+    private void __registerScanPackages(IBeanFactory factory) {
+        factory.registerPackage(__YMP_BASE_PACKAGE);
         for (String _packageName : __config.getAutoscanPackages()) {
             if (!_packageName.startsWith(__YMP_BASE_PACKAGE)) {
-                __beanFactory.registerPackage(_packageName);
+                factory.registerPackage(_packageName);
             }
         }
+    }
+
+    private IBeanFactory __doInitBeanFactory() throws Exception {
+        // 设置YMP框架基础包为根工厂扫描路径，并根据配置参数注册自动扫描应用包路径
+        __registerScanPackages(__beanFactory);
         // 注册YMP框架核心对象处理器
         __beanFactory.registerHandler(Bean.class);
-        // 注册对象工厂需要忽略的接口类型
-        __beanFactory.registerExcludedClass(IModule.class);
-        __beanFactory.registerHandler(Module.class, new IBeanHandler() {
-            public Object handle(Class<?> targetClass) throws Exception {
-                if (ClassUtils.isInterfaceOf(targetClass, IModule.class)) {
-                    IModule _module = (IModule) targetClass.newInstance();
-                    __modules.add(_module);
-                    return _module;
-                }
-                return null;
-            }
-        });
-        __beanFactory.registerExcludedClass(IProxy.class);
-        __beanFactory.registerHandler(Proxy.class, new IBeanHandler() {
-            public Object handle(Class<?> targetClass) throws Exception {
-                if (ClassUtils.isInterfaceOf(targetClass, IProxy.class)) {
-                    __proxyFactory.registerProxy((IProxy) targetClass.newInstance());
-                }
-                return null;
-            }
-        });
+        //
+        __doInitBeanHandles();
+        //
         return __beanFactory;
+    }
+
+    private void __doInitBeanHandles() throws Exception {
+        IBeanFactory _handles = new DefaultBeanFactory();
+        __registerScanPackages(_handles);
+        _handles.registerHandler(Handler.class);
+        _handles.init();
+        for (Object _handler : _handles.getBeans().values()) {
+            ((IBeanHandler) _handler).init(this);
+        }
+        _handles.destroy();
     }
 
     private void __doInitProxyFactory() {
@@ -249,6 +240,24 @@ public class YMP {
      */
     public IBeanFactory getBeanFactory() {
         return __beanFactory;
+    }
+
+    /**
+     * @return 返回代理工厂实例
+     */
+    public IProxyFactory getProxyFactory() {
+        return __proxyFactory;
+    }
+
+    /**
+     * 注册模块实例(仅在YMP框架被初始化前调用有效)
+     *
+     * @param module
+     */
+    public void registerModule(IModule module) {
+        if (!__inited) {
+            __modules.add(module);
+        }
     }
 
     /**
