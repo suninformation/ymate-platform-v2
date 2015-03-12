@@ -41,7 +41,7 @@ import java.util.*;
  */
 public class YMP {
 
-    public static final String VERSION = "2.0.0";
+    public static final Version VERSION = new Version(2, 0, 0);
 
     private static final String __YMP_BASE_PACKAGE = "net.ymate.platform";
 
