@@ -26,16 +26,17 @@ import net.ymate.platform.core.beans.impl.proxy.DefaultProxyFactory;
 import net.ymate.platform.core.beans.proxy.IProxy;
 import net.ymate.platform.core.beans.proxy.IProxyFactory;
 import net.ymate.platform.core.beans.proxy.IProxyFilter;
+import net.ymate.platform.core.lang.BlurObject;
 import net.ymate.platform.core.module.IModule;
 import net.ymate.platform.core.module.annotation.Module;
 import net.ymate.platform.core.util.ClassUtils;
+import net.ymate.platform.core.util.RuntimeUtils;
 import org.apache.commons.lang.StringUtils;
 
+import java.io.InputStream;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * YMP框架核心管理器
@@ -45,7 +46,13 @@ import java.util.Map;
  */
 public class YMP {
 
+    public static final String VERSION = "2.0.0";
+
     private static final String __YMP_BASE_PACKAGE = "net.ymate.platform";
+
+    private static YMP __instance;
+
+    private IConfig __config;
 
     private boolean __inited;
 
@@ -55,8 +62,6 @@ public class YMP {
 
     private List<IModule> __modules;
 
-    private static YMP __instance;
-
     /**
      * @return 返回默认YMP框架核心管理器对象实例，若未实例化或已销毁则重新创建对象实例
      */
@@ -64,7 +69,7 @@ public class YMP {
         if (__instance == null || !__instance.isInited()) {
             synchronized (__YMP_BASE_PACKAGE) {
                 if (__instance == null || __instance.getBeanFactory() == null) {
-                    __instance = new YMP();
+                    __instance = new YMP(new Config());
                 }
             }
         }
@@ -73,8 +78,11 @@ public class YMP {
 
     /**
      * 构造方法
+     *
+     * @param config YMP框架初始化配置
      */
-    public YMP() {
+    public YMP(IConfig config) {
+        __config = config;
         // 创建模块对象引用集合
         __modules = new ArrayList<IModule>();
         // 创建根对象工厂
@@ -87,7 +95,7 @@ public class YMP {
         // 设置YMP框架基础包为根工厂扫描路径
         // 并根据配置参数注册自动扫描应用包路径
         __beanFactory.registerPackage(__YMP_BASE_PACKAGE);
-        for (String _packageName : Config.get().getAutoscanPackages()) {
+        for (String _packageName : __config.getAutoscanPackages()) {
             if (!_packageName.startsWith(__YMP_BASE_PACKAGE)) {
                 __beanFactory.registerPackage(_packageName);
             }
@@ -186,13 +194,11 @@ public class YMP {
      */
     public synchronized void init() throws Exception {
         if (!__inited) {
-            // 加载并初始化YMP框架配置
-            Config.get();
             // 初始化根对象工厂
             __doInitBeanFactory().init();
             // 初始化所有已加载模块
             for (IModule _module : __modules) {
-                _module.init();
+                _module.init(this);
             }
             // 代理对象封装
             __doInitProxyFactory();
@@ -225,6 +231,13 @@ public class YMP {
     }
 
     /**
+     * @return 返回当前配置对象
+     */
+    public IConfig getConfig() {
+        return __config;
+    }
+
+    /**
      * @return 返回YMP框架是否已初始化
      */
     public boolean isInited() {
@@ -238,4 +251,84 @@ public class YMP {
         return __beanFactory;
     }
 
+    /**
+     * YMP框架配置类
+     *
+     * @author 刘镇 (suninformation@163.com) on 15-3-9 下午2:50
+     * @version 1.0
+     */
+    private static class Config implements IConfig {
+
+        private Properties __props;
+
+        private Boolean __isDevelopMode;
+
+        private List<String> __packageNames;
+
+        private Map<String, Map<String, String>> __moduleCfgs;
+
+        public Config() {
+            __props = new Properties();
+            __moduleCfgs = new HashMap<String, Map<String, String>>();
+            //
+            InputStream _in = null;
+            try {
+                if (RuntimeUtils.isWindows()) {
+                    _in = Config.class.getClassLoader().getResourceAsStream("ymp-conf_WIN.properties");
+                } else if (RuntimeUtils.isUnixOrLinux()) {
+                    _in = Config.class.getClassLoader().getResourceAsStream("ymp-conf_UNIX.properties");
+                }
+                if (_in == null) {
+                    _in = Config.class.getClassLoader().getResourceAsStream("ymp-conf.properties");
+                }
+                if (_in != null) {
+                    __props.load(_in);
+                }
+            } catch (Exception e) {
+                throw new RuntimeException(RuntimeUtils.unwrapThrow(e));
+            } finally {
+                try {
+                    _in.close();
+                } catch (Exception e) {
+                }
+            }
+        }
+
+        public boolean isDevelopMode() {
+            if (__isDevelopMode == null) {
+                __isDevelopMode = new BlurObject(__props.getProperty("ymp.dev_mode")).toBooleanValue();
+            }
+            return __isDevelopMode;
+        }
+
+        public List<String> getAutoscanPackages() {
+            if (__packageNames == null) {
+                String[] _packageNameArr = StringUtils.split(__props.getProperty("ymp.autoscan_packages"), "|");
+                if (_packageNameArr != null) {
+                    __packageNames = new ArrayList<String>(Arrays.asList(_packageNameArr));
+                } else {
+                    __packageNames = Collections.emptyList();
+                }
+            }
+            return __packageNames;
+        }
+
+        public Map<String, String> getModuleConfigs(String moduleName) {
+            Map<String, String> _cfgsMap = __moduleCfgs.get(moduleName);
+            if (_cfgsMap == null) {
+                _cfgsMap = new HashMap<String, String>();
+                // 提取模块配置
+                for (Object _key : __props.keySet()) {
+                    String _prefix = "ymp.configs." + moduleName + ".";
+                    if (StringUtils.startsWith((String) _key, _prefix)) {
+                        String _cfgKey = StringUtils.substring((String) _key, _prefix.length());
+                        String _cfgValue = __props.getProperty((String) _key);
+                        _cfgsMap.put(_cfgKey, _cfgValue);
+                    }
+                }
+                __moduleCfgs.put(moduleName, _cfgsMap);
+            }
+            return _cfgsMap;
+        }
+    }
 }
