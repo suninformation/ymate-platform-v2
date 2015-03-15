@@ -41,7 +41,7 @@ import java.util.*;
  */
 public class YMP {
 
-    public static final Version VERSION = new Version(2, 0, 0);
+    public static final Version VERSION = new Version(2, 0, 0, Version.VersionType.Alphal);
 
     private static final String __YMP_BASE_PACKAGE = "net.ymate.platform";
 
@@ -81,7 +81,7 @@ public class YMP {
         // 创建模块对象引用集合
         __modules = new ArrayList<IModule>();
         // 创建根对象工厂
-        __beanFactory = new DefaultBeanFactory();
+        __beanFactory = new BeanFactory(this);
         // 创建代理工厂并初始化
         __proxyFactory = new DefaultProxyFactory();
     }
@@ -181,22 +181,34 @@ public class YMP {
     /**
      * 初始化YMP框架
      *
+     * @return 返回当前YMP核心框架管理器对象
      * @throws Exception
      */
-    public synchronized void init() throws Exception {
+    public synchronized YMP init() throws Exception {
         if (!__inited) {
             // 初始化根对象工厂
             __doInitBeanFactory().init();
-            // 初始化所有已加载模块
-            for (IModule _module : __modules) {
-                _module.init(this);
-            }
             // 代理对象封装
             __doInitProxyFactory();
             // IoC依赖注入
             __doInitIoC();
             //
             __inited = true;
+        }
+        return this;
+    }
+
+    /**
+     * 初始化所有已加载的模块(调用此方法前须保证YMP已经初始化)
+     *
+     * @throws Exception
+     */
+    public synchronized void initModules() throws Exception {
+        // 初始化所有已加载模块
+        for (IModule _module : __modules) {
+            if (!_module.isInited()) {
+                _module.init(this);
+            }
         }
     }
 
@@ -250,21 +262,58 @@ public class YMP {
     }
 
     /**
-     * 注册模块实例(仅在YMP框架被初始化前调用有效)
+     * 注册模块实例(此方法仅在YMP框架核心管理器未初始化前有效)
      *
      * @param module
      */
     public void registerModule(IModule module) {
         if (!__inited) {
-            __modules.add(module);
+            if (module instanceof IModule) {
+                __beanFactory.registerBean(module.getClass(), module);
+                __modules.add(module);
+            }
+        }
+    }
+
+    /**
+     * @param moduleClass
+     * @param <T>
+     * @return 获取模块类实例对象
+     */
+    public <T extends IModule> T getModule(Class<T> moduleClass) {
+        return __beanFactory.getBean(moduleClass);
+    }
+
+    /**
+     * YMP框架根对象工厂类
+     */
+    private static class BeanFactory extends DefaultBeanFactory {
+        private final YMP __owner;
+
+        public BeanFactory(YMP owner) {
+            this.__owner = owner;
+        }
+
+        @Override
+        public <T> T getBean(Class<T> clazz) {
+            T _bean = super.getBean(clazz);
+            // 重写此方法是为了在获取模块对象时始终保证其已被初始化
+            if (_bean != null && _bean instanceof IModule) {
+                IModule _module = (IModule) _bean;
+                if (!_module.isInited()) {
+                    try {
+                        _module.init(__owner);
+                    } catch (Exception e) {
+                        throw new RuntimeException(RuntimeUtils.unwrapThrow(e));
+                    }
+                }
+            }
+            return _bean;
         }
     }
 
     /**
      * YMP框架配置类
-     *
-     * @author 刘镇 (suninformation@163.com) on 15-3-9 下午2:50
-     * @version 1.0
      */
     private static class Config implements IConfig {
 
@@ -273,6 +322,8 @@ public class YMP {
         private Boolean __isDevelopMode;
 
         private List<String> __packageNames;
+
+        private Boolean __isModuleAutoLoad;
 
         private Map<String, Map<String, String>> __moduleCfgs;
 
@@ -320,6 +371,14 @@ public class YMP {
                 }
             }
             return __packageNames;
+        }
+
+        public boolean isModuleAutoload() {
+            if (__isModuleAutoLoad == null) {
+                String _tmpCfgV = StringUtils.defaultIfBlank(__props.getProperty("ymp.module_autoload"), "true");
+                __isModuleAutoLoad = new BlurObject(_tmpCfgV).toBooleanValue();
+            }
+            return __isModuleAutoLoad;
         }
 
         public Map<String, String> getModuleConfigs(String moduleName) {

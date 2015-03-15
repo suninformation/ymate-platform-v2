@@ -40,10 +40,10 @@ public class ModuleHandler implements IBeanHandler {
     }
 
     public Object handle(Class<?> targetClass) throws Exception {
-        if (ClassUtils.isInterfaceOf(targetClass, IModule.class)) {
+        // 只有开启了模块自动加载且当前对象实现了IModule接口时才能被正确加载
+        if (__owner.getConfig().isModuleAutoload() && ClassUtils.isInterfaceOf(targetClass, IModule.class)) {
             IModule _module = (IModule) targetClass.newInstance();
             __owner.registerModule(_module);
-            return _module;
         }
         return null;
     }

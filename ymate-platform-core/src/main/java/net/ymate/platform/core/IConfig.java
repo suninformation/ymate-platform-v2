@@ -37,6 +37,11 @@ public interface IConfig {
     public List<String> getAutoscanPackages();
 
     /**
+     * @return 返回框架是否自动加载模块
+     */
+    public boolean isModuleAutoload();
+
+    /**
      * @param moduleName 模块名称
      * @return 返回模块配置参数映射
      */

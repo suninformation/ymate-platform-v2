@@ -28,10 +28,15 @@ public interface IModule {
     /**
      * 模块初始化
      *
-     * @param ymp 加载当前模块的YMP框架核心管理器对象
+     * @param owner 加载当前模块的YMP框架核心管理器对象
      * @throws Exception
      */
-    public void init(YMP ymp) throws Exception;
+    public void init(YMP owner) throws Exception;
+
+    /**
+     * @return 返回模块是否已初始化
+     */
+    public boolean isInited();
 
     /**
      * 销毁模块
