@@ -14,6 +14,7 @@
 
     <modules>
         <module>ymate-platform-core</module>
+        <module>ymate-platform-configuration</module>
     </modules>
 
     <developers>
