@@ -17,8 +17,6 @@ package net.ymate.platform.core.handle;
 
 import net.ymate.platform.core.YMP;
 import net.ymate.platform.core.beans.IBeanHandler;
-import net.ymate.platform.core.beans.annotation.Handler;
-import net.ymate.platform.core.beans.annotation.Proxy;
 import net.ymate.platform.core.beans.proxy.IProxy;
 import net.ymate.platform.core.util.ClassUtils;
 
@@ -28,15 +26,12 @@ import net.ymate.platform.core.util.ClassUtils;
  * @author 刘镇 (suninformation@163.com) on 15/3/12 下午5:10
  * @version 1.0
  */
-@Handler
 public class ProxyHandler implements IBeanHandler {
 
     private YMP __owner;
 
-    public void init(Object owner) throws Exception {
-        __owner = (YMP) owner;
-        __owner.getBeanFactory().registerHandler(Proxy.class, this);
-        __owner.getBeanFactory().registerExcludedClass(IProxy.class);
+    public ProxyHandler(YMP owner) {
+        __owner = owner;
     }
 
     public Object handle(Class<?> targetClass) throws Exception {

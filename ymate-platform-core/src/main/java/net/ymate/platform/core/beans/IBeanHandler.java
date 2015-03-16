@@ -24,21 +24,10 @@ package net.ymate.platform.core.beans;
 public interface IBeanHandler {
 
     public static final IBeanHandler DEFAULT_HANDLER = new IBeanHandler() {
-        public void init(Object owner) throws Exception {
-        }
-
         public Object handle(Class<?> targetClass) throws Exception {
             return targetClass.newInstance();
         }
     };
-
-    /**
-     * 初始化
-     *
-     * @param owner
-     * @throws Exception
-     */
-    public void init(Object owner) throws Exception;
 
     /**
      * 执行Bean处理过程

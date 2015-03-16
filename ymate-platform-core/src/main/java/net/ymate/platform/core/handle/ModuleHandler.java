@@ -17,9 +17,7 @@ package net.ymate.platform.core.handle;
 
 import net.ymate.platform.core.YMP;
 import net.ymate.platform.core.beans.IBeanHandler;
-import net.ymate.platform.core.beans.annotation.Handler;
 import net.ymate.platform.core.module.IModule;
-import net.ymate.platform.core.module.annotation.Module;
 import net.ymate.platform.core.util.ClassUtils;
 
 /**
@@ -28,15 +26,12 @@ import net.ymate.platform.core.util.ClassUtils;
  * @author 刘镇 (suninformation@163.com) on 15/3/12 上午11:59
  * @version 1.0
  */
-@Handler
 public class ModuleHandler implements IBeanHandler {
 
     private YMP __owner;
 
-    public void init(Object owner) throws Exception {
-        __owner = (YMP) owner;
-        __owner.getBeanFactory().registerHandler(Module.class, this);
-        __owner.getBeanFactory().registerExcludedClass(IModule.class);
+    public ModuleHandler(YMP owner) {
+        __owner = owner;
     }
 
     public Object handle(Class<?> targetClass) throws Exception {

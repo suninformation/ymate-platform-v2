@@ -16,15 +16,20 @@
 package net.ymate.platform.core;
 
 import net.ymate.platform.core.beans.IBeanFactory;
-import net.ymate.platform.core.beans.IBeanHandler;
-import net.ymate.platform.core.beans.annotation.*;
+import net.ymate.platform.core.beans.annotation.Bean;
+import net.ymate.platform.core.beans.annotation.By;
+import net.ymate.platform.core.beans.annotation.Inject;
+import net.ymate.platform.core.beans.annotation.Proxy;
 import net.ymate.platform.core.beans.impl.DefaultBeanFactory;
 import net.ymate.platform.core.beans.impl.proxy.DefaultProxyFactory;
 import net.ymate.platform.core.beans.proxy.IProxy;
 import net.ymate.platform.core.beans.proxy.IProxyFactory;
 import net.ymate.platform.core.beans.proxy.IProxyFilter;
+import net.ymate.platform.core.handle.ModuleHandler;
+import net.ymate.platform.core.handle.ProxyHandler;
 import net.ymate.platform.core.lang.BlurObject;
 import net.ymate.platform.core.module.IModule;
+import net.ymate.platform.core.module.annotation.Module;
 import net.ymate.platform.core.util.RuntimeUtils;
 import org.apache.commons.lang.StringUtils;
 
@@ -51,11 +56,13 @@ public class YMP {
 
     private boolean __inited;
 
+    private IBeanFactory __moduleFactory;
+
     private IBeanFactory __beanFactory;
 
     private IProxyFactory __proxyFactory;
 
-    private List<IModule> __modules;
+    private Map<Class<? extends IModule>, IModule> __modules;
 
     /**
      * @return 返回默认YMP框架核心管理器对象实例，若未实例化或已销毁则重新创建对象实例
@@ -79,9 +86,20 @@ public class YMP {
     public YMP(IConfig config) {
         __config = config;
         // 创建模块对象引用集合
-        __modules = new ArrayList<IModule>();
+        __modules = new HashMap<Class<? extends IModule>, IModule>();
+        // 创建模块对象工厂
+        __moduleFactory = new BeanFactory(this);
+        __moduleFactory.registerHandler(Module.class, new ModuleHandler(this));
+        __moduleFactory.registerHandler(Proxy.class, new ProxyHandler(this));
+        // 注册排除接口
+        __moduleFactory.registerExcludedClass(IModule.class);
+        __moduleFactory.registerExcludedClass(IProxy.class);
         // 创建根对象工厂
-        __beanFactory = new BeanFactory(this);
+        __beanFactory = new DefaultBeanFactory();
+        __beanFactory.registerHandler(Bean.class);
+        // 设置自动扫描应用包路径
+        __registerScanPackages(__moduleFactory);
+        __registerScanPackages(__beanFactory);
         // 创建代理工厂并初始化
         __proxyFactory = new DefaultProxyFactory();
     }
@@ -93,28 +111,6 @@ public class YMP {
                 factory.registerPackage(_packageName);
             }
         }
-    }
-
-    private IBeanFactory __doInitBeanFactory() throws Exception {
-        // 设置YMP框架基础包为根工厂扫描路径，并根据配置参数注册自动扫描应用包路径
-        __registerScanPackages(__beanFactory);
-        // 注册YMP框架核心对象处理器
-        __beanFactory.registerHandler(Bean.class);
-        //
-        __doInitBeanHandles();
-        //
-        return __beanFactory;
-    }
-
-    private void __doInitBeanHandles() throws Exception {
-        IBeanFactory _handles = new DefaultBeanFactory();
-        __registerScanPackages(_handles);
-        _handles.registerHandler(Handler.class);
-        _handles.init();
-        for (Object _handler : _handles.getBeans().values()) {
-            ((IBeanHandler) _handler).init(this);
-        }
-        _handles.destroy();
     }
 
     private void __doInitProxyFactory() {
@@ -187,7 +183,15 @@ public class YMP {
     public synchronized YMP init() throws Exception {
         if (!__inited) {
             // 初始化根对象工厂
-            __doInitBeanFactory().init();
+            __moduleFactory.init();
+            if (this.getConfig().isModuleAutoload()) {
+                for (IModule _module : __modules.values()) {
+                    if (!_module.isInited()) {
+                        _module.init(this);
+                    }
+                }
+            }
+            __beanFactory.init();
             // 代理对象封装
             __doInitProxyFactory();
             // IoC依赖注入
@@ -204,10 +208,12 @@ public class YMP {
      * @throws Exception
      */
     public synchronized void initModules() throws Exception {
-        // 初始化所有已加载模块
-        for (IModule _module : __modules) {
-            if (!_module.isInited()) {
-                _module.init(this);
+        if (!__inited) {
+            // 初始化所有已加载模块
+            for (IModule _module : __modules.values()) {
+                if (!_module.isInited()) {
+                    _module.init(this);
+                }
             }
         }
     }
@@ -221,13 +227,16 @@ public class YMP {
         if (__inited) {
             __inited = false;
             // 销毁所有已加载模块
-            for (IModule _module : __modules) {
+            for (IModule _module : __modules.values()) {
                 _module.destroy();
             }
             __modules = null;
             // 销毁代理工厂
             __proxyFactory = null;
             // 销毁根对象工厂
+            __moduleFactory.destroy();
+            __moduleFactory = null;
+            //
             __beanFactory.destroy();
             __beanFactory = null;
         }
@@ -269,8 +278,8 @@ public class YMP {
     public void registerModule(IModule module) {
         if (!__inited) {
             if (module instanceof IModule) {
-                __beanFactory.registerBean(module.getClass(), module);
-                __modules.add(module);
+                __moduleFactory.registerBean(module.getClass(), module);
+                __modules.put(module.getClass(), module);
             }
         }
     }
@@ -281,7 +290,7 @@ public class YMP {
      * @return 获取模块类实例对象
      */
     public <T extends IModule> T getModule(Class<T> moduleClass) {
-        return __beanFactory.getBean(moduleClass);
+        return __moduleFactory.getBean(moduleClass);
     }
 
     /**
