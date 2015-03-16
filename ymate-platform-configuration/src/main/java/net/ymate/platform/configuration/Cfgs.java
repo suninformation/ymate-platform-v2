@@ -155,7 +155,7 @@ public class Cfgs implements IModule, IConfig {
             if (cfgFile.startsWith("jar:")) {
                 return cfgFile;
             }
-            File _targetFile = searchFile(cfgFile);
+            File _targetFile = __doSearch(cfgFile);
             if (_targetFile == null) {
                 URL _targetFileURL = ResourceUtils.getResource(cfgFile, this.getClass());
                 if (_targetFileURL != null && (_targetFile = FileUtils.toFile(_targetFileURL)) == null) {
@@ -254,7 +254,10 @@ public class Cfgs implements IModule, IConfig {
             if (config != null) {
                 try {
                     IConfigurationProvider _provider = null;
-                    if (providerClass != null && (_provider = ClassUtils.impl(providerClass, IConfigurationProvider.class)) == null) {
+                    if (providerClass != null) {
+                        _provider = ClassUtils.impl(providerClass, IConfigurationProvider.class);
+                    }
+                    if (_provider == null) {
                         _provider = __moduleCfg.getProviderClass().newInstance();
                     }
                     if (search) {
