@@ -42,11 +42,13 @@ public class DefaultModuleCfg implements IConfigModuleCfg {
     public DefaultModuleCfg(YMP owner) {
         Map<String, String> _moduleCfgs = owner.getConfig().getModuleConfigs(IConfig.MODULE_NAME);
         //
-        this.configHome = StringUtils.defaultIfEmpty(_moduleCfgs.get("config_home"), "${root}");
-        if (this.configHome.equalsIgnoreCase("${root}")) {
-            this.configHome = RuntimeUtils.getRootPath();
-        } else {
-            this.configHome = ExpressionUtils.bind(this.configHome).set(IConfig.__USER_DIR, RuntimeUtils.getRootPath()).getResult();
+        this.configHome = StringUtils.defaultIfEmpty(_moduleCfgs.get("config_home"), "${root}").trim();
+        if (StringUtils.startsWith(this.configHome, "${root}")) {
+            this.configHome = ExpressionUtils.bind(this.configHome).set("root", RuntimeUtils.getRootPath()).getResult();
+        } else if (StringUtils.startsWith(this.configHome, "${user.dir}")) {
+            this.configHome = ExpressionUtils.bind(this.configHome).set(IConfig.__USER_DIR, System.getProperty(IConfig.__USER_DIR, RuntimeUtils.getRootPath())).getResult();
+        } else if (StringUtils.startsWith(this.configHome, "${user.home}")) {
+            this.configHome = ExpressionUtils.bind(this.configHome).set(IConfig.__USER_HOME, System.getProperty(IConfig.__USER_HOME, RuntimeUtils.getRootPath())).getResult();
         }
         //
         this.projectName = _moduleCfgs.get("project_name");
