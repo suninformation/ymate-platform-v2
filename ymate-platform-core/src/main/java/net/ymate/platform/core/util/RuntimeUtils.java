@@ -149,6 +149,24 @@ public class RuntimeUtils {
     }
 
     /**
+     * @param origin 原始字符串
+     * @return 替换${root}、${user.dir}和${user.home}环境变量
+     */
+    public static String replaceEnvVariable(String origin) {
+        if ((origin = StringUtils.trimToNull(origin)) != null) {
+            String _defaultPath = getRootPath();
+            if (StringUtils.startsWith(origin, "${root}")) {
+                origin = ExpressionUtils.bind(origin).set("root", _defaultPath).getResult();
+            } else if (StringUtils.startsWith(origin, "${user.dir}")) {
+                origin = ExpressionUtils.bind(origin).set("user.dir", System.getProperty("user.dir", _defaultPath)).getResult();
+            } else if (StringUtils.startsWith(origin, "${user.home}")) {
+                origin = ExpressionUtils.bind(origin).set("user.home", System.getProperty("user.home", _defaultPath)).getResult();
+            }
+        }
+        return origin;
+    }
+
+    /**
      * 根据格式化字符串，生成运行时异常
      *
      * @param format 格式

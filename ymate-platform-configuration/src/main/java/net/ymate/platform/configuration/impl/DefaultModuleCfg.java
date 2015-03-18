@@ -20,7 +20,6 @@ import net.ymate.platform.configuration.IConfigModuleCfg;
 import net.ymate.platform.configuration.IConfigurationProvider;
 import net.ymate.platform.core.YMP;
 import net.ymate.platform.core.util.ClassUtils;
-import net.ymate.platform.core.util.ExpressionUtils;
 import net.ymate.platform.core.util.RuntimeUtils;
 import org.apache.commons.lang.StringUtils;
 
@@ -42,14 +41,7 @@ public class DefaultModuleCfg implements IConfigModuleCfg {
     public DefaultModuleCfg(YMP owner) {
         Map<String, String> _moduleCfgs = owner.getConfig().getModuleConfigs(IConfig.MODULE_NAME);
         //
-        this.configHome = StringUtils.defaultIfEmpty(_moduleCfgs.get("config_home"), "${root}").trim();
-        if (StringUtils.startsWith(this.configHome, "${root}")) {
-            this.configHome = ExpressionUtils.bind(this.configHome).set("root", RuntimeUtils.getRootPath()).getResult();
-        } else if (StringUtils.startsWith(this.configHome, "${user.dir}")) {
-            this.configHome = ExpressionUtils.bind(this.configHome).set(IConfig.__USER_DIR, System.getProperty(IConfig.__USER_DIR, RuntimeUtils.getRootPath())).getResult();
-        } else if (StringUtils.startsWith(this.configHome, "${user.home}")) {
-            this.configHome = ExpressionUtils.bind(this.configHome).set(IConfig.__USER_HOME, System.getProperty(IConfig.__USER_HOME, RuntimeUtils.getRootPath())).getResult();
-        }
+        this.configHome = RuntimeUtils.replaceEnvVariable(StringUtils.defaultIfEmpty(_moduleCfgs.get("config_home"), "${root}"));
         //
         this.projectName = _moduleCfgs.get("project_name");
         this.moduleName = _moduleCfgs.get("module_name");
