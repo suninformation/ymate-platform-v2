@@ -42,6 +42,17 @@ public interface IConfig {
     public boolean isModuleAutoload();
 
     /**
+     * @return 返回框架全局参数映射
+     */
+    public Map<String, String> getParams();
+
+    /**
+     * @param name 参数名称
+     * @return 返回由name指定的全局参数值
+     */
+    public String getParam(String name);
+
+    /**
      * @param moduleName 模块名称
      * @return 返回模块配置参数映射
      */

@@ -32,6 +32,7 @@ public class ModuleHandler implements IBeanHandler {
 
     public ModuleHandler(YMP owner) {
         __owner = owner;
+        __owner.registerExcludedClass(IModule.class);
     }
 
     public Object handle(Class<?> targetClass) throws Exception {

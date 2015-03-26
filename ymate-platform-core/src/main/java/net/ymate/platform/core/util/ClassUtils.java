@@ -425,7 +425,6 @@ public class ClassUtils {
                     try {
                         _wrapDist.setValue(_fieldName, getValue(_fieldName));
                     } catch (Exception e) {
-                        continue;
                     }
                 }
             }

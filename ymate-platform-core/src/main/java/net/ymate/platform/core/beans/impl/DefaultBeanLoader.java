@@ -18,7 +18,6 @@ package net.ymate.platform.core.beans.impl;
 import net.ymate.platform.core.beans.IBeanFilter;
 import net.ymate.platform.core.beans.IBeanLoader;
 import net.ymate.platform.core.util.ClassUtils;
-import net.ymate.platform.core.util.ResourceUtils;
 import org.apache.commons.lang.StringUtils;
 
 import java.io.File;
@@ -28,7 +27,6 @@ import java.net.JarURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Enumeration;
-import java.util.Iterator;
 import java.util.List;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
@@ -43,15 +41,25 @@ import java.util.zip.ZipInputStream;
  */
 public class DefaultBeanLoader implements IBeanLoader {
 
+    private ClassLoader __classLoader;
+
+    public ClassLoader getClassLoader() {
+        return __classLoader == null ? this.getClass().getClassLoader() : __classLoader;
+    }
+
+    public void setClassLoader(ClassLoader classLoader) {
+        this.__classLoader = classLoader;
+    }
+
     public List<Class<?>> load(String packageName) throws Exception {
         return load(packageName, null);
     }
 
     public List<Class<?>> load(String packageName, IBeanFilter filter) throws Exception {
         List<Class<?>> _returnValue = new ArrayList<Class<?>>();
-        Iterator<URL> _resources = ResourceUtils.getResources(packageName.replaceAll("\\.", "/"), this.getClass(), true);
-        while (_resources.hasNext()) {
-            URL _res = _resources.next();
+        Enumeration<URL> _resources = this.getClassLoader().getResources(packageName.replaceAll("\\.", "/"));
+        while (_resources.hasMoreElements()) {
+            URL _res = _resources.nextElement();
             if (_res.getProtocol().equalsIgnoreCase("file") || _res.getProtocol().equalsIgnoreCase("vfsfile")) {
                 File[] _files = new File(_res.toURI()).listFiles();
                 if (_files != null && _files.length > 0) for (File _file : _files) {
@@ -71,7 +79,7 @@ public class DefaultBeanLoader implements IBeanLoader {
         String _resFileName = resourceFile.getName();
         if (resourceFile.isFile()) {
             if (_resFileName.endsWith(".class") && _resFileName.indexOf('$') < 0) {
-                Class<?> _class = ClassUtils.loadClass(packageName + "." + _resFileName.replace(".class", ""), this.getClass());
+                Class<?> _class = ClassUtils.loadClass(packageName + "." + _resFileName.replace(".class", ""), getClassLoader().getClass());
                 //
                 __doAddClass(_returnValue, _class, filter);
             }
@@ -93,7 +101,7 @@ public class DefaultBeanLoader implements IBeanLoader {
             String _className = _entry.getName().replaceAll("/", ".");
             if (_className.endsWith(".class") && _className.indexOf('$') < 0) {
                 if (_className.startsWith(packageName)) {
-                    Class<?> _class = ClassUtils.loadClass(_className.substring(0, _className.lastIndexOf('.')), this.getClass());
+                    Class<?> _class = ClassUtils.loadClass(_className.substring(0, _className.lastIndexOf('.')), getClassLoader().getClass());
                     //
                     __doAddClass(_returnValue, _class, filter);
                 }

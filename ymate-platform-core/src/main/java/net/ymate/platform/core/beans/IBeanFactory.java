@@ -15,6 +15,8 @@
  */
 package net.ymate.platform.core.beans;
 
+import net.ymate.platform.core.beans.proxy.IProxyFactory;
+
 import java.lang.annotation.Annotation;
 import java.util.Map;
 
@@ -97,4 +99,18 @@ public interface IBeanFactory {
      * @param loader
      */
     public void setLoader(IBeanLoader loader);
+
+    /**
+     * 绑定代理工厂
+     *
+     * @param proxyFactory
+     */
+    public void bindProxy(IProxyFactory proxyFactory) throws Exception;
+
+    /**
+     * 初始化依赖注入
+     *
+     * @throws Exception
+     */
+    public void initBeanIoC() throws Exception;
 }

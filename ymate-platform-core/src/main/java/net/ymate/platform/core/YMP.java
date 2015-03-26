@@ -16,15 +16,13 @@
 package net.ymate.platform.core;
 
 import net.ymate.platform.core.beans.IBeanFactory;
+import net.ymate.platform.core.beans.IBeanHandler;
 import net.ymate.platform.core.beans.annotation.Bean;
-import net.ymate.platform.core.beans.annotation.By;
-import net.ymate.platform.core.beans.annotation.Inject;
 import net.ymate.platform.core.beans.annotation.Proxy;
 import net.ymate.platform.core.beans.impl.DefaultBeanFactory;
 import net.ymate.platform.core.beans.impl.proxy.DefaultProxyFactory;
 import net.ymate.platform.core.beans.proxy.IProxy;
 import net.ymate.platform.core.beans.proxy.IProxyFactory;
-import net.ymate.platform.core.beans.proxy.IProxyFilter;
 import net.ymate.platform.core.handle.ModuleHandler;
 import net.ymate.platform.core.handle.ProxyHandler;
 import net.ymate.platform.core.lang.BlurObject;
@@ -35,8 +33,8 @@ import org.apache.commons.lang.StringUtils;
 
 import java.io.InputStream;
 import java.lang.annotation.Annotation;
-import java.lang.reflect.Field;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * YMP框架核心管理器
@@ -70,7 +68,7 @@ public class YMP {
     public static YMP get() {
         if (__instance == null || !__instance.isInited()) {
             synchronized (__YMP_BASE_PACKAGE) {
-                if (__instance == null || __instance.getBeanFactory() == null) {
+                if (__instance == null) {
                     __instance = new YMP(new Config());
                 }
             }
@@ -85,18 +83,15 @@ public class YMP {
      */
     public YMP(IConfig config) {
         __config = config;
+        // 创建根对象工厂
+        __beanFactory = new DefaultBeanFactory();
+        __beanFactory.registerHandler(Bean.class);
         // 创建模块对象引用集合
         __modules = new HashMap<Class<? extends IModule>, IModule>();
         // 创建模块对象工厂
         __moduleFactory = new BeanFactory(this);
         __moduleFactory.registerHandler(Module.class, new ModuleHandler(this));
         __moduleFactory.registerHandler(Proxy.class, new ProxyHandler(this));
-        // 注册排除接口
-        __moduleFactory.registerExcludedClass(IModule.class);
-        __moduleFactory.registerExcludedClass(IProxy.class);
-        // 创建根对象工厂
-        __beanFactory = new DefaultBeanFactory();
-        __beanFactory.registerHandler(Bean.class);
         // 设置自动扫描应用包路径
         __registerScanPackages(__moduleFactory);
         __registerScanPackages(__beanFactory);
@@ -109,67 +104,6 @@ public class YMP {
         for (String _packageName : __config.getAutoscanPackages()) {
             if (!_packageName.startsWith(__YMP_BASE_PACKAGE)) {
                 factory.registerPackage(_packageName);
-            }
-        }
-    }
-
-    private void __doInitProxyFactory() {
-        for (Map.Entry<Class<?>, Object> _entry : __beanFactory.getBeans().entrySet()) {
-            if (!_entry.getKey().isInterface()) {
-                final Class<?> _targetClass = _entry.getKey();
-                List<IProxy> _targetProxies = __proxyFactory.getProxies(new IProxyFilter() {
-
-                    private boolean __doCheckAnnotation(Proxy targetProxyAnno) {
-                        // 若设置了自定义注解类型，则判断targetClass是否匹配，否则返回true
-                        if (targetProxyAnno.annotation() != null && targetProxyAnno.annotation().length > 0) {
-                            for (Class<? extends Annotation> _annoClass : targetProxyAnno.annotation()) {
-                                if (_targetClass.isAnnotationPresent(_annoClass)) {
-                                    return true;
-                                }
-                            }
-                            return false;
-                        }
-                        return true;
-                    }
-
-                    public boolean filter(IProxy targetProxy) {
-                        Proxy _targetProxyAnno = targetProxy.getClass().getAnnotation(Proxy.class);
-                        // 若已设置作用包路径
-                        if (StringUtils.isNotBlank(_targetProxyAnno.packageScope())) {
-                            // 若当前类对象所在包路径匹配
-                            if (!StringUtils.startsWith(_targetClass.getPackage().getName(), _targetProxyAnno.packageScope())) {
-                                return false;
-                            }
-                        }
-                        return __doCheckAnnotation(_targetProxyAnno);
-                    }
-                });
-                if (!_targetProxies.isEmpty()) {
-                    __beanFactory.registerBean(_targetClass, __proxyFactory.createProxy(_targetClass, _targetProxies));
-                }
-            }
-        }
-    }
-
-    private void __doInitIoC() throws Exception {
-        for (Map.Entry<Class<?>, Object> _bean : __beanFactory.getBeans().entrySet()) {
-            Field[] _fields = _bean.getKey().getDeclaredFields();
-            if (_fields != null && _fields.length > 0) {
-                for (Field _field : _fields) {
-                    if (_field.isAnnotationPresent(Inject.class)) {
-                        Object _injectObj = null;
-                        if (_field.isAnnotationPresent(By.class)) {
-                            By _injectBy = _field.getAnnotation(By.class);
-                            _injectObj = __beanFactory.getBean(_injectBy.value());
-                        } else {
-                            _injectObj = __beanFactory.getBean(_field.getType());
-                        }
-                        if (_injectObj != null) {
-                            _field.setAccessible(true);
-                            _field.set(_bean.getValue(), _injectObj);
-                        }
-                    }
-                }
             }
         }
     }
@@ -191,11 +125,12 @@ public class YMP {
                     }
                 }
             }
+            // 初始化对象工厂
             __beanFactory.init();
             // 代理对象封装
-            __doInitProxyFactory();
+            __beanFactory.bindProxy(__proxyFactory);
             // IoC依赖注入
-            __doInitIoC();
+            __beanFactory.initBeanIoC();
             //
             __inited = true;
         }
@@ -257,17 +192,60 @@ public class YMP {
     }
 
     /**
-     * @return 返回根对象工厂实例
+     * 注册自定义注解类处理器，重复注册将覆盖前者
+     *
+     * @param annoClass
+     * @param handler
      */
-    public IBeanFactory getBeanFactory() {
-        return __beanFactory;
+    public void registerHandler(Class<? extends Annotation> annoClass, IBeanHandler handler) {
+        __beanFactory.registerHandler(annoClass, handler);
+    }
+
+    public void registerHandler(Class<? extends Annotation> annoClass) {
+        __beanFactory.registerHandler(annoClass);
     }
 
     /**
-     * @return 返回代理工厂实例
+     * 注册排除的接口类
+     *
+     * @param excludedClass
      */
-    public IProxyFactory getProxyFactory() {
-        return __proxyFactory;
+    public void registerExcludedClass(Class<?> excludedClass) {
+        __beanFactory.registerExcludedClass(excludedClass);
+    }
+
+    /**
+     * 注册自定义类型
+     *
+     * @param clazz
+     * @throws Exception
+     */
+    public void registerBean(Class<?> clazz) throws Exception {
+        __beanFactory.registerBean(clazz);
+    }
+
+    public void registerBean(Class<?> clazz, Object object) {
+        __beanFactory.registerBean(clazz, object);
+    }
+
+    /**
+     * @return 提取类型为clazz的对象实例
+     */
+    public <T> T getBean(Class<T> clazz) {
+        return __beanFactory.getBean(clazz);
+    }
+
+    /**
+     * 向工厂注册代理类对象
+     *
+     * @param proxy
+     */
+    public void registerProxy(IProxy proxy) {
+        __proxyFactory.registerProxy(proxy);
+    }
+
+    public void registerProxy(Collection<? extends IProxy> proxies) {
+        __proxyFactory.registerProxy(proxies);
     }
 
     /**
@@ -277,7 +255,7 @@ public class YMP {
      */
     public void registerModule(IModule module) {
         if (!__inited) {
-            if (module instanceof IModule) {
+            if (module != null) {
                 __moduleFactory.registerBean(module.getClass(), module);
                 __modules.put(module.getClass(), module);
             }
@@ -334,11 +312,13 @@ public class YMP {
 
         private Boolean __isModuleAutoLoad;
 
+        private Map<String, String> __paramsMap;
+
         private Map<String, Map<String, String>> __moduleCfgs;
 
         public Config() {
             __props = new Properties();
-            __moduleCfgs = new HashMap<String, Map<String, String>>();
+            __moduleCfgs = new ConcurrentHashMap<String, Map<String, String>>();
             //
             InputStream _in = null;
             try {
@@ -357,7 +337,7 @@ public class YMP {
                 throw new RuntimeException(RuntimeUtils.unwrapThrow(e));
             } finally {
                 try {
-                    _in.close();
+                    if (_in != null) _in.close();
                 } catch (Exception e) {
                 }
             }
@@ -390,6 +370,26 @@ public class YMP {
             return __isModuleAutoLoad;
         }
 
+        public Map<String, String> getParams() {
+            if (__paramsMap == null) {
+                __paramsMap = new ConcurrentHashMap<String, String>();
+                // 提取模块配置
+                String _prefix = "ymp.params.";
+                for (Object _key : __props.keySet()) {
+                    if (StringUtils.startsWith((String) _key, _prefix)) {
+                        String _cfgKey = StringUtils.substring((String) _key, _prefix.length());
+                        String _cfgValue = __props.getProperty((String) _key);
+                        __paramsMap.put(_cfgKey, _cfgValue);
+                    }
+                }
+            }
+            return Collections.unmodifiableMap(__paramsMap);
+        }
+
+        public String getParam(String name) {
+            return this.getParams().get(name);
+        }
+
         public Map<String, String> getModuleConfigs(String moduleName) {
             Map<String, String> _cfgsMap = __moduleCfgs.get(moduleName);
             if (_cfgsMap == null) {
@@ -403,7 +403,7 @@ public class YMP {
                         _cfgsMap.put(_cfgKey, _cfgValue);
                     }
                 }
-                __moduleCfgs.put(moduleName, _cfgsMap);
+                __moduleCfgs.put(moduleName, Collections.unmodifiableMap(_cfgsMap));
             }
             return _cfgsMap;
         }

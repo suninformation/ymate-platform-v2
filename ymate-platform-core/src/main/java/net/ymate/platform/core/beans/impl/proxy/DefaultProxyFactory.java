@@ -71,6 +71,7 @@ public class DefaultProxyFactory implements IProxyFactory {
         return createProxy(targetClass, __proxies);
     }
 
+    @SuppressWarnings("unchecked")
     public <T> T createProxy(final Class<?> targetClass, final List<IProxy> proxies) {
         return (T) Enhancer.create(targetClass, new MethodInterceptor() {
             public Object intercept(Object targetObject, Method targetMethod, Object[] methodParams, MethodProxy methodProxy) throws Throwable {

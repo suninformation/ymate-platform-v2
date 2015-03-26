@@ -18,8 +18,17 @@ package net.ymate.platform.core.beans.impl;
 import net.ymate.platform.core.beans.IBeanFactory;
 import net.ymate.platform.core.beans.IBeanHandler;
 import net.ymate.platform.core.beans.IBeanLoader;
+import net.ymate.platform.core.beans.annotation.By;
+import net.ymate.platform.core.beans.annotation.Inject;
+import net.ymate.platform.core.beans.annotation.Proxy;
+import net.ymate.platform.core.beans.proxy.IProxy;
+import net.ymate.platform.core.beans.proxy.IProxyFactory;
+import net.ymate.platform.core.beans.proxy.IProxyFilter;
+import net.ymate.platform.core.util.ClassUtils;
+import org.apache.commons.lang.StringUtils;
 
 import java.lang.annotation.Annotation;
+import java.lang.reflect.Field;
 import java.util.*;
 
 /**
@@ -80,9 +89,10 @@ public class DefaultBeanFactory implements IBeanFactory {
         }
     }
 
+    @SuppressWarnings("unchecked")
     public <T> T getBean(Class<T> clazz) {
         T _obj = null;
-        if (!clazz.isAnnotation()) {
+        if (clazz != null && !clazz.isAnnotation()) {
             if (clazz.isInterface()) {
                 Class<?> _targetClass = this.__beanInterfacesMap.get(clazz);
                 _obj = (T) this.__beanInstancesMap.get(_targetClass);
@@ -144,13 +154,13 @@ public class DefaultBeanFactory implements IBeanFactory {
         }
     }
 
-    private void __addClass(Class<?> targetClass, Object instance) {
+    protected void __addClass(Class<?> targetClass, Object instance) {
         __beanInstancesMap.put(targetClass, instance);
         //
         __addClassInterfaces(targetClass);
     }
 
-    private void __addClassInterfaces(Class<?> targetClass) {
+    protected void __addClassInterfaces(Class<?> targetClass) {
         Class<?>[] _interfaces = targetClass.getInterfaces();
         for (Class<?> _interface : _interfaces) {
             // 排除JDK自带的接口和自己定接口列表
@@ -177,5 +187,66 @@ public class DefaultBeanFactory implements IBeanFactory {
 
     public void setLoader(IBeanLoader loader) {
         this.__beanLoader = loader;
+    }
+
+    public void bindProxy(IProxyFactory proxyFactory) throws Exception {
+        for (Map.Entry<Class<?>, Object> _entry : this.getBeans().entrySet()) {
+            if (!_entry.getKey().isInterface()) {
+                final Class<?> _targetClass = _entry.getKey();
+                List<IProxy> _targetProxies = proxyFactory.getProxies(new IProxyFilter() {
+
+                    private boolean __doCheckAnnotation(Proxy targetProxyAnno) {
+                        // 若设置了自定义注解类型，则判断targetClass是否匹配，否则返回true
+                        if (targetProxyAnno.annotation() != null && targetProxyAnno.annotation().length > 0) {
+                            for (Class<? extends Annotation> _annoClass : targetProxyAnno.annotation()) {
+                                if (_targetClass.isAnnotationPresent(_annoClass)) {
+                                    return true;
+                                }
+                            }
+                            return false;
+                        }
+                        return true;
+                    }
+
+                    public boolean filter(IProxy targetProxy) {
+                        Proxy _targetProxyAnno = targetProxy.getClass().getAnnotation(Proxy.class);
+                        // 若已设置作用包路径
+                        if (StringUtils.isNotBlank(_targetProxyAnno.packageScope())) {
+                            // 若当前类对象所在包路径匹配
+                            if (!StringUtils.startsWith(_targetClass.getPackage().getName(), _targetProxyAnno.packageScope())) {
+                                return false;
+                            }
+                        }
+                        return __doCheckAnnotation(_targetProxyAnno);
+                    }
+                });
+                if (!_targetProxies.isEmpty()) {
+                    this.registerBean(_targetClass, proxyFactory.createProxy(_targetClass, _targetProxies));
+                }
+            }
+        }
+    }
+
+    public void initBeanIoC() throws Exception {
+        for (Map.Entry<Class<?>, Object> _bean : this.getBeans().entrySet()) {
+            Field[] _fields = _bean.getKey().getDeclaredFields();
+            if (_fields != null && _fields.length > 0) {
+                for (Field _field : _fields) {
+                    if (_field.isAnnotationPresent(Inject.class)) {
+                        Object _injectObj = null;
+                        if (_field.isAnnotationPresent(By.class)) {
+                            By _injectBy = _field.getAnnotation(By.class);
+                            _injectObj = this.getBean(_injectBy.value());
+                        } else {
+                            _injectObj = this.getBean(_field.getType());
+                        }
+                        if (_injectObj != null) {
+                            _field.setAccessible(true);
+                            _field.set(_bean.getValue(), _injectObj);
+                        }
+                    }
+                }
+            }
+        }
     }
 }

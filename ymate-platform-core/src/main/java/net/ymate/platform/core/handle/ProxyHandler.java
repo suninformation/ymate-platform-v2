@@ -32,11 +32,12 @@ public class ProxyHandler implements IBeanHandler {
 
     public ProxyHandler(YMP owner) {
         __owner = owner;
+        __owner.registerExcludedClass(IProxy.class);
     }
 
     public Object handle(Class<?> targetClass) throws Exception {
         if (ClassUtils.isInterfaceOf(targetClass, IProxy.class)) {
-            __owner.getProxyFactory().registerProxy((IProxy) targetClass.newInstance());
+            __owner.registerProxy((IProxy) targetClass.newInstance());
         }
         return null;
     }
