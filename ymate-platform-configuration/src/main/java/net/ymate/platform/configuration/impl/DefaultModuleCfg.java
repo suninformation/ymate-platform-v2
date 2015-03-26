@@ -38,6 +38,7 @@ public class DefaultModuleCfg implements IConfigModuleCfg {
     private String moduleName;
     private Class<? extends IConfigurationProvider> providerClass;
 
+    @SuppressWarnings("unchecked")
     public DefaultModuleCfg(YMP owner) {
         Map<String, String> _moduleCfgs = owner.getConfig().getModuleConfigs(IConfig.MODULE_NAME);
         //

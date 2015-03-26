@@ -42,6 +42,7 @@ public class DefaultModuleCfg implements ILogModuleCfg {
     private Class<? extends ILogger> loggerClass;
     private boolean allowOutputConsole;
 
+    @SuppressWarnings("unchecked")
     public DefaultModuleCfg(YMP owner) {
         Map<String, String> _moduleCfgs = owner.getConfig().getModuleConfigs(ILog.MODULE_NAME);
         // 尝试加载配置体系模块，若存在则将决定配置文件加载的路径

@@ -34,8 +34,7 @@ public class ConfigHandler implements IBeanHandler {
 
     public ConfigHandler(YMP owner) throws Exception {
         __owner = owner;
-        __owner.getBeanFactory().registerHandler(Configuration.class, this);
-        __owner.getBeanFactory().registerExcludedClass(IConfiguration.class);
+        __owner.registerExcludedClass(IConfiguration.class);
     }
 
     public Object handle(Class<?> targetClass) throws Exception {
