@@ -203,23 +203,19 @@ public class Cfgs implements IModule, IConfig {
                 return _result;
             }
         }
-        try {
-            // 到 userDir(用户路径)路径中去寻找 cfgFile 指定的文件
-            if (StringUtils.isNotBlank(__userDir)) {
-                _result = new File(__userDir, cfgFile);
-                if (_result.canRead() && _result.isAbsolute() && _result.exists()) {
-                    return _result;
-                }
+        // 到 userDir(用户路径)路径中去寻找 cfgFile 指定的文件
+        if (StringUtils.isNotBlank(__userDir)) {
+            _result = new File(__userDir, cfgFile);
+            if (_result.canRead() && _result.isAbsolute() && _result.exists()) {
+                return _result;
             }
-            // 到 osUserHome(系统用户路径)路径中去寻找 cfgFile 指定的文件
-            if (StringUtils.isNotBlank(__userHome)) {
-                _result = new File(__userHome, cfgFile);
-                if (_result.canRead() && _result.isAbsolute() && _result.exists()) {
-                    return _result;
-                }
+        }
+        // 到 osUserHome(系统用户路径)路径中去寻找 cfgFile 指定的文件
+        if (StringUtils.isNotBlank(__userHome)) {
+            _result = new File(__userHome, cfgFile);
+            if (_result.canRead() && _result.isAbsolute() && _result.exists()) {
+                return _result;
             }
-        } catch (AccessControlException e) {
-            RuntimeUtils.unwrapThrow(e).printStackTrace(System.err);
         }
         return null;
     }
