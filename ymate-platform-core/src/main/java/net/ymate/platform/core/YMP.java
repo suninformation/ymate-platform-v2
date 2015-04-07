@@ -272,6 +272,16 @@ public class YMP {
     }
 
     /**
+     * @param targetFactory 目标对象工厂
+     * @param <T>
+     * @return 将目标对象工厂的Parent设置为当前YMP容器的对象工厂
+     */
+    public <T extends IBeanFactory> T bindBeanFactory(T targetFactory) {
+        targetFactory.setParent(__beanFactory);
+        return targetFactory;
+    }
+
+    /**
      * YMP框架根对象工厂类
      */
     private static class BeanFactory extends DefaultBeanFactory {
