@@ -66,9 +66,6 @@ public class DefaultBeanFactory implements IBeanFactory {
     public DefaultBeanFactory(IBeanFactory parent) {
         this();
         this.__parentFactory = parent;
-        if (parent != null) {
-            this.__beanLoader = parent.getLoader();
-        }
     }
 
     public void registerHandler(Class<? extends Annotation> annoClass, IBeanHandler handler) {
@@ -179,6 +176,14 @@ public class DefaultBeanFactory implements IBeanFactory {
         this.__beanInstancesMap = null;
         this.__beanInterfacesMap = null;
         this.__beanLoader = null;
+    }
+
+    public IBeanFactory getParent() {
+        return __parentFactory;
+    }
+
+    public void setParent(IBeanFactory parent) {
+        this.__parentFactory = parent;
     }
 
     public IBeanLoader getLoader() {

@@ -89,6 +89,18 @@ public interface IBeanFactory {
     public void destroy() throws Exception;
 
     /**
+     * @return 返回Parent对象工厂
+     */
+    public IBeanFactory getParent();
+
+    /**
+     * 设置Parent对象工厂
+     *
+     * @param parent
+     */
+    public void setParent(IBeanFactory parent);
+
+    /**
      * @return 返回当前工厂使用的对象加载器
      */
     public IBeanLoader getLoader();
