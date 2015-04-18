@@ -17,7 +17,6 @@ package net.ymate.platform.configuration.handle;
 
 import net.ymate.platform.configuration.Cfgs;
 import net.ymate.platform.configuration.IConfiguration;
-import net.ymate.platform.configuration.annotation.Configuration;
 import net.ymate.platform.core.YMP;
 import net.ymate.platform.core.beans.IBeanHandler;
 import net.ymate.platform.core.util.ClassUtils;

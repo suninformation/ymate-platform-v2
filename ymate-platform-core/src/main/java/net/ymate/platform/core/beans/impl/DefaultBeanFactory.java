@@ -24,7 +24,6 @@ import net.ymate.platform.core.beans.annotation.Proxy;
 import net.ymate.platform.core.beans.proxy.IProxy;
 import net.ymate.platform.core.beans.proxy.IProxyFactory;
 import net.ymate.platform.core.beans.proxy.IProxyFilter;
-import net.ymate.platform.core.util.ClassUtils;
 import org.apache.commons.lang.StringUtils;
 
 import java.lang.annotation.Annotation;
