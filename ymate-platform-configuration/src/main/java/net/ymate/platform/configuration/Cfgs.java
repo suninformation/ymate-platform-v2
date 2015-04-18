@@ -31,7 +31,6 @@ import org.apache.commons.lang.StringUtils;
 
 import java.io.File;
 import java.net.URL;
-import java.security.AccessControlException;
 
 /**
  * 配置体系模块管理器
@@ -123,7 +122,12 @@ public class Cfgs implements IModule, IConfig {
     }
 
     public void destroy() throws Exception {
-        // TODO
+        if (__inited) {
+            __inited = false;
+            //
+            __moduleCfg = null;
+            __owner = null;
+        }
     }
 
     public IConfigModuleCfg getModuleCfg() {

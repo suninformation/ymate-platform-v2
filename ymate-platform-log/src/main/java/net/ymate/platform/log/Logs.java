@@ -99,10 +99,14 @@ public class Logs implements IModule, ILog {
 
     public void destroy() throws Exception {
         if (__inited) {
+            __inited = false;
+            //
             for (ILogger _logger : __LOGGER_CACHE.values()) {
                 _logger.destroy();
             }
             __currentLogger = null;
+            __moduleCfg = null;
+            __owner = null;
         }
     }
 
