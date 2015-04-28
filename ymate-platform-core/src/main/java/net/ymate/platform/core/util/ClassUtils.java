@@ -267,21 +267,35 @@ public class ClassUtils {
      * @param <A>
      * @param clazz
      * @param annotationClazz
-     * @param onlyFirst
-     * @return 获取clazz类中成员声明的annotationClazz注解
+     * @return 获取clazz类中成员声明的所有annotationClazz注解
      */
-    public static <A extends Annotation> List<PairObject<Field, A>> getFieldAnnotations(Class<?> clazz, Class<A> annotationClazz, boolean onlyFirst) {
+    public static <A extends Annotation> List<PairObject<Field, A>> getFieldAnnotations(Class<?> clazz, Class<A> annotationClazz) {
         List<PairObject<Field, A>> _annotations = new ArrayList<PairObject<Field, A>>();
         for (Field _field : ClassUtils.getFields(clazz, true)) {
             A _annotation = _field.getAnnotation(annotationClazz);
             if (_annotation != null) {
                 _annotations.add(new PairObject<Field, A>(_field, _annotation));
-                if (onlyFirst) {
-                    break;
-                }
             }
         }
         return _annotations;
+    }
+
+    /**
+     * @param clazz
+     * @param annotationClazz
+     * @param <A>
+     * @return 获取clazz类中成员声明的第一个annotationClazz注解
+     */
+    public static <A extends Annotation> PairObject<Field, A> getFieldAnnotationFirst(Class<?> clazz, Class<A> annotationClazz) {
+        PairObject<Field, A> _returnAnno = null;
+        for (Field _field : ClassUtils.getFields(clazz, true)) {
+            A _annotation = _field.getAnnotation(annotationClazz);
+            if (_annotation != null) {
+                _returnAnno = new PairObject<Field, A>(_field, _annotation);
+                break;
+            }
+        }
+        return _returnAnno;
     }
 
     /**
