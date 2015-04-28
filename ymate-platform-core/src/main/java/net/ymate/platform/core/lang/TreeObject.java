@@ -51,6 +51,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
  *          </tr>
  *          </table>
  */
+@SuppressWarnings("unchecked")
 public class TreeObject implements Serializable, Cloneable {
 
     /**
@@ -192,11 +193,11 @@ public class TreeObject implements Serializable, Cloneable {
      * @param o 目标对象
      * @return 检测目标对象的数据类型并返回类型常量值
      */
-    private static final int __checkType(Object o) {
+    private static int __checkType(Object o) {
         if (o == null) {
             return TYPE_NULL;
         }
-        Class<? extends Object> _class = o.getClass();
+        Class<?> _class = o.getClass();
         int _returnValue = TYPE_OBJECT;
         if (o instanceof Integer || int.class.isAssignableFrom(_class)) {
             _returnValue = TYPE_INTEGER;
@@ -233,11 +234,11 @@ public class TreeObject implements Serializable, Cloneable {
 
     //////////
 
-    public static final TreeObject fromJson(String jsonStr) {
+    public static TreeObject fromJson(String jsonStr) {
         return fromJson(JSON.parseObject(jsonStr));
     }
 
-    public static final TreeObject fromJson(JSONObject json) {
+    public static TreeObject fromJson(JSONObject json) {
         if (json == null) {
             throw new NullArgumentException("json");
         }
@@ -248,9 +249,7 @@ public class TreeObject implements Serializable, Cloneable {
         TreeObject _target = new TreeObject();
         if (_class == TYPE_MAP) { // MAP
             JSONObject _value = json.getJSONObject(KEY_VALUE);
-            Iterator<String> _valueIt = _value.keySet().iterator();
-            while (_valueIt.hasNext()) {
-                String _key = _valueIt.next();
+            for (String _key : _value.keySet()) {
                 _target.put(_key, fromJson(_value.getJSONObject(_key)));
             }
         } else if (_class == TYPE_COLLECTION) { // COLLECTION
@@ -274,7 +273,7 @@ public class TreeObject implements Serializable, Cloneable {
         return toJson(this);
     }
 
-    public static final JSONObject toJson(TreeObject tObject) {
+    public static JSONObject toJson(TreeObject tObject) {
         if (tObject == null) {
             return null;
         }
@@ -366,7 +365,7 @@ public class TreeObject implements Serializable, Cloneable {
 
     //////////
 
-    public static final TreeObject fromXml(String xml) {
+    public static TreeObject fromXml(String xml) {
         // TODO
         throw new UnsupportedOperationException();
     }
@@ -375,7 +374,7 @@ public class TreeObject implements Serializable, Cloneable {
         return toXml(this);
     }
 
-    public static final String toXml(TreeObject tObject) {
+    public static String toXml(TreeObject tObject) {
         // TODO
         throw new UnsupportedOperationException();
     }
@@ -404,7 +403,7 @@ public class TreeObject implements Serializable, Cloneable {
      * @param bool
      */
     public TreeObject(Boolean bool) {
-        _object = bool != null ? bool.booleanValue() : false;
+        _object = bool != null && bool.booleanValue();
         _type = TYPE_BOOLEAN;
     }
 
@@ -473,7 +472,7 @@ public class TreeObject implements Serializable, Cloneable {
      *
      * @param c
      */
-    public TreeObject(Collection<? extends Object> c) {
+    public TreeObject(Collection<?> c) {
         _object = c;
         _type = TYPE_COLLECTION;
     }
@@ -585,7 +584,7 @@ public class TreeObject implements Serializable, Cloneable {
      *
      * @param m
      */
-    public TreeObject(Map<? extends Object, ? extends Object> m) {
+    public TreeObject(Map<?, ?> m) {
         _object = m;
         _type = TYPE_MAP;
     }
@@ -808,7 +807,7 @@ public class TreeObject implements Serializable, Cloneable {
      * @param b
      */
     public TreeObject add(Boolean b) {
-        return add(b != null ? b.booleanValue() : false, TYPE_BOOLEAN);
+        return add(b != null && b.booleanValue(), TYPE_BOOLEAN);
     }
 
     /**
