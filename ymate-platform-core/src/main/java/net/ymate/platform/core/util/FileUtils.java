@@ -19,13 +19,8 @@ import org.apache.commons.lang.NullArgumentException;
 import org.apache.commons.lang.StringUtils;
 
 import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Properties;
 
 /**
  * 文件处理工具类
@@ -34,44 +29,6 @@ import java.util.Properties;
  * @version 1.0
  */
 public class FileUtils {
-
-    private static final Map<String, String> __MIME_TYPE_MAPS = new HashMap<String, String>();
-
-    static {
-        Properties _configs = new Properties();
-        InputStream _in = FileUtils.class.getClassLoader().getResourceAsStream("mimetypes-conf.properties");
-        if (_in == null) {
-            _in = FileUtils.class.getClassLoader().getResourceAsStream("META-INF/mimetypes-default-conf.properties");
-        }
-        if (_in != null) try {
-            _configs.load(_in);
-            for (Object _key : _configs.keySet()) {
-                String[] _values = StringUtils.split(_configs.getProperty((String) _key, ""), "|");
-                for (String _value : _values) {
-                    __MIME_TYPE_MAPS.put(_value, (String) _key);
-                }
-            }
-        } catch (Exception e) {
-            // DO NOTHING...
-        } finally {
-            try {
-                _in.close();
-            } catch (IOException e) {
-                // DO NOTHING...
-            }
-        }
-    }
-
-    /**
-     * @param extName 文件扩展名
-     * @return 根据文件扩展名获取对应的MIME_TYPE类型
-     */
-    public static String getFileMimeType(String extName) {
-        if (extName.charAt(0) == '.') {
-            extName = extName.substring(1);
-        }
-        return __MIME_TYPE_MAPS.get(extName);
-    }
 
     /**
      * @param fileName 原始文件名称
