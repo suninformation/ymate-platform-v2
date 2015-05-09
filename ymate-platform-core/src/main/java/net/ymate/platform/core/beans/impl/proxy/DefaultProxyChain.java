@@ -18,6 +18,7 @@ package net.ymate.platform.core.beans.impl.proxy;
 import net.sf.cglib.proxy.MethodProxy;
 import net.ymate.platform.core.beans.proxy.IProxy;
 import net.ymate.platform.core.beans.proxy.IProxyChain;
+import net.ymate.platform.core.beans.proxy.IProxyFactory;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -29,6 +30,7 @@ import java.util.List;
  */
 public class DefaultProxyChain implements IProxyChain {
 
+    private final IProxyFactory __owner;
     private final Class<?> targetClass;
     private final Object targetObject;
     private final Method targetMethod;
@@ -38,18 +40,24 @@ public class DefaultProxyChain implements IProxyChain {
     private List<IProxy> proxies = new ArrayList<IProxy>();
     private int __index = 0;
 
-    public DefaultProxyChain(Class<?> targetClass,
+    public DefaultProxyChain(IProxyFactory owner,
+                             Class<?> targetClass,
                              Object targetObject,
                              Method targetMethod,
                              MethodProxy methodProxy,
                              Object[] methodParams,
                              List<IProxy> proxies) {
+        this.__owner = owner;
         this.targetClass = targetClass;
         this.targetObject = targetObject;
         this.targetMethod = targetMethod;
         this.methodProxy = methodProxy;
         this.methodParams = methodParams;
         this.proxies = proxies;
+    }
+
+    public IProxyFactory getProxyFactory() {
+        return __owner;
     }
 
     public Object[] getMethodParams() {

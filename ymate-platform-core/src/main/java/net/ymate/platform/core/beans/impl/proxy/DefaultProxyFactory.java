@@ -18,6 +18,7 @@ package net.ymate.platform.core.beans.impl.proxy;
 import net.sf.cglib.proxy.Enhancer;
 import net.sf.cglib.proxy.MethodInterceptor;
 import net.sf.cglib.proxy.MethodProxy;
+import net.ymate.platform.core.YMP;
 import net.ymate.platform.core.beans.proxy.IProxy;
 import net.ymate.platform.core.beans.proxy.IProxyFactory;
 import net.ymate.platform.core.beans.proxy.IProxyFilter;
@@ -36,10 +37,17 @@ import java.util.List;
  */
 public class DefaultProxyFactory implements IProxyFactory {
 
+    private YMP __owner;
+
     private List<IProxy> __proxies;
 
-    public DefaultProxyFactory() {
+    public DefaultProxyFactory(YMP owner) {
+        this.__owner = owner;
         this.__proxies = new ArrayList<IProxy>();
+    }
+
+    public YMP getOwner() {
+        return __owner;
     }
 
     public IProxyFactory registerProxy(IProxy proxy) {
@@ -73,9 +81,10 @@ public class DefaultProxyFactory implements IProxyFactory {
 
     @SuppressWarnings("unchecked")
     public <T> T createProxy(final Class<?> targetClass, final List<IProxy> proxies) {
+        final IProxyFactory _owner = this;
         return (T) Enhancer.create(targetClass, new MethodInterceptor() {
             public Object intercept(Object targetObject, Method targetMethod, Object[] methodParams, MethodProxy methodProxy) throws Throwable {
-                return new DefaultProxyChain(targetClass, targetObject, targetMethod, methodProxy, methodParams, proxies).doProxyChain();
+                return new DefaultProxyChain(_owner, targetClass, targetObject, targetMethod, methodProxy, methodParams, proxies).doProxyChain();
             }
         });
     }

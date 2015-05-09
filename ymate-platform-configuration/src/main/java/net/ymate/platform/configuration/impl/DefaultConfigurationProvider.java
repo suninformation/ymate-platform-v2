@@ -127,7 +127,8 @@ public class DefaultConfigurationProvider implements IConfigurationProvider {
     }
 
     public String[] getArray(String key) {
-        return getList(key).toArray(new String[0]);
+        List<String> _resultValue = getList(key);
+        return _resultValue.toArray(new String[_resultValue.size()]);
     }
 
     public String[] getArray(String key, boolean zeroSize) {
@@ -139,7 +140,7 @@ public class DefaultConfigurationProvider implements IConfigurationProvider {
         if (_values.isEmpty() && !zeroSize) {
             return null;
         }
-        return _values.toArray(new String[0]);
+        return _values.toArray(new String[_values.size()]);
     }
 
     public int getInt(String key) {

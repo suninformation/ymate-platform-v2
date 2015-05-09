@@ -96,7 +96,7 @@ public class YMP {
         __registerScanPackages(__moduleFactory);
         __registerScanPackages(__beanFactory);
         // 创建代理工厂并初始化
-        __proxyFactory = new DefaultProxyFactory();
+        __proxyFactory = new DefaultProxyFactory(this);
     }
 
     private void __registerScanPackages(IBeanFactory factory) {

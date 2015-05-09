@@ -15,6 +15,8 @@
  */
 package net.ymate.platform.core.beans.proxy;
 
+import net.ymate.platform.core.YMP;
+
 import java.util.Collection;
 import java.util.List;
 
@@ -25,6 +27,11 @@ import java.util.List;
  * @version 1.0
  */
 public interface IProxyFactory {
+
+    /**
+     * @return 返回代理工厂所属YMP框架管理器
+     */
+    public YMP getOwner();
 
     /**
      * 向工厂注册代理类对象

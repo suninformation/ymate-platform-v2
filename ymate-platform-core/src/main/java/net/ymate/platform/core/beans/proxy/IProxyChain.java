@@ -26,6 +26,11 @@ import java.lang.reflect.Method;
 public interface IProxyChain {
 
     /**
+     * @return 获取所属代理工厂对象
+     */
+    public IProxyFactory getProxyFactory();
+
+    /**
      * @return 获取方法参数集合
      */
     public Object[] getMethodParams();

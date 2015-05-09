@@ -15,7 +15,6 @@
  */
 package net.ymate.platform.core.util;
 
-import com.esotericsoftware.reflectasm.MethodAccess;
 import com.thoughtworks.paranamer.AdaptiveParanamer;
 import net.ymate.platform.core.lang.PairObject;
 import org.apache.commons.lang.StringUtils;
@@ -323,7 +322,7 @@ public class ClassUtils {
      * @param clazz 目标类型
      * @return 创建一个类对象实例，包裹它并赋予其简单对象属性操作能力，可能返回空
      */
-    public static <T> ClassBeanWrapper<T> wrapper(Class<T> clazz) {
+    public static <T> BeanWrapper<T> wrapper(Class<T> clazz) {
         try {
             return wrapper(clazz.newInstance());
         } catch (Exception e) {
@@ -336,13 +335,13 @@ public class ClassUtils {
      * @param target 目标类对象
      * @return 包裹它并赋予其简单对象属性操作能力，可能返回空
      */
-    public static <T> ClassBeanWrapper<T> wrapper(T target) {
-        return new ClassBeanWrapper<T>(target);
+    public static <T> BeanWrapper<T> wrapper(T target) {
+        return new BeanWrapper<T>(target);
     }
 
     /**
      * <p>
-     * ClassBeanWrapper
+     * BeanWrapper
      * </p>
      * <p>
      * 类对象包裹器，赋予对象简单的属性操作能力；
@@ -364,39 +363,32 @@ public class ClassUtils {
      *          </tr>
      *          </table>
      */
-    public static class ClassBeanWrapper<T> {
-
-        protected static Map<Class<?>, MethodAccess> __methodCache = new WeakHashMap<Class<?>, MethodAccess>();
+    public static class BeanWrapper<T> {
 
         private T target;
 
         private Map<String, Field> _fields;
-
-        private MethodAccess methodAccess;
 
         /**
          * 构造器
          *
          * @param target
          */
-        protected ClassBeanWrapper(T target) {
+        protected BeanWrapper(T target) {
             this.target = target;
             this._fields = new HashMap<String, Field>();
+            //
             for (Field _field : getFields(target.getClass(), true)/*target.getClass().getDeclaredFields()*/) {
                 if (Modifier.isStatic(_field.getModifiers())) {
+                    // 忽略静态成员
                     continue;
                 }
+                _field.setAccessible(true);
                 this._fields.put(_field.getName(), _field);
-            }
-            //
-            this.methodAccess = __methodCache.get(target.getClass());
-            if (this.methodAccess == null) {
-                this.methodAccess = MethodAccess.get(target.getClass());
-                __methodCache.put(target.getClass(), this.methodAccess);
             }
         }
 
-        public T getTarget() {
+        public T getTargetObject() {
             return target;
         }
 
@@ -405,44 +397,43 @@ public class ClassUtils {
         }
 
         public Annotation[] getFieldAnnotations(String fieldName) {
-            return getField(fieldName).getAnnotations();
+            return _fields.get(fieldName).getAnnotations();
         }
 
         public Field getField(String fieldName) {
-            return _fields.get(StringUtils.uncapitalize(fieldName));
+            return _fields.get(fieldName);
         }
 
         public Class<?> getFieldType(String fieldName) {
-            return getField(fieldName).getType();
+            return _fields.get(fieldName).getType();
         }
 
-        public ClassBeanWrapper<T> setValue(String fieldName, Object value) {
-            methodAccess.invoke(this.target, "set" + StringUtils.capitalize(fieldName), value);
+        public BeanWrapper<T> setValue(String fieldName, Object value) throws IllegalAccessException {
+            _fields.get(fieldName).set(target, value);
             return this;
         }
 
-        public Object getValue(String fieldName) {
-            return methodAccess.invoke(this.target, "get" + StringUtils.capitalize(fieldName));
+        public Object getValue(String fieldName) throws IllegalAccessException {
+            return _fields.get(fieldName).get(target);
         }
 
         /**
-         * 拷贝当前对象的成员属性值到dist对象
-         *
-         * @param dist
+         * @param dist 目标对象
          * @param <D>
-         * @return
+         * @return 拷贝当前对象的成员属性值到目标对象
          */
-        public <D> D copy(D dist) {
-            ClassBeanWrapper<D> _wrapDist = wrapper(dist);
+        public <D> D duplicate(D dist) {
+            BeanWrapper<D> _wrapDist = wrapper(dist);
             for (String _fieldName : getFieldNames()) {
                 if (_wrapDist.getFieldNames().contains(_fieldName)) {
                     try {
                         _wrapDist.setValue(_fieldName, getValue(_fieldName));
-                    } catch (Exception e) {
+                    } catch (Exception ignored) {
+                        // 当赋值发生异常时，忽略当前值，不中断整个拷贝过程
                     }
                 }
             }
-            return _wrapDist.getTarget();
+            return _wrapDist.getTargetObject();
         }
 
     }
