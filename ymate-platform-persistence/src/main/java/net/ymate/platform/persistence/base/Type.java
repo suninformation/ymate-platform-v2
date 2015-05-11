@@ -17,6 +17,8 @@ package net.ymate.platform.persistence.base;
 
 import net.ymate.platform.persistence.jdbc.dialect.IDialect;
 import net.ymate.platform.persistence.jdbc.dialect.impl.*;
+import net.ymate.platform.persistence.jdbc.impl.C3P0DataSourceAdapter;
+import net.ymate.platform.persistence.jdbc.impl.DBCPDataSourceAdapter;
 import net.ymate.platform.persistence.jdbc.impl.DefaultDataSourceAdapter;
 import net.ymate.platform.persistence.jdbc.impl.JNDIDataSourceAdapter;
 
@@ -154,6 +156,8 @@ public class Type {
         DS_ADAPTERS = new HashMap<String, String>();
         DS_ADAPTERS.put("default", DefaultDataSourceAdapter.class.getName());
         DS_ADAPTERS.put("jndi", JNDIDataSourceAdapter.class.getName());
+        DS_ADAPTERS.put("c3p0", C3P0DataSourceAdapter.class.getName());
+        DS_ADAPTERS.put("dbcp", DBCPDataSourceAdapter.class.getName());
         //
         DB_DRIVERS = new HashMap<DATABASE, String>();
         DB_DRIVERS.put(DATABASE.MYSQL, "com.mysql.jdbc.Driver");

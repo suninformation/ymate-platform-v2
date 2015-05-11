@@ -25,7 +25,7 @@ import java.sql.Connection;
 /**
  * 基于JNDI的数据源适配器
  *
- * @author 刘镇 (suninformation@163.com) on 15/4/16 上午10:06
+ * @author 刘镇 (suninformation@163.com) on 2013年12月19日 下午2:43:51
  * @version 1.0
  */
 public class JNDIDataSourceAdapter extends AbstractDataSourceAdapter {

@@ -23,7 +23,7 @@ import org.apache.commons.lang.StringUtils;
 /**
  * 抽象数据源适配器
  *
- * @author 刘镇 (suninformation@163.com) on 15/4/17 上午10:47
+ * @author 刘镇 (suninformation@163.com) on 2013年8月1日 下午8:30:34
  * @version 1.0
  */
 public abstract class AbstractDataSourceAdapter implements IDataSourceAdapter {
