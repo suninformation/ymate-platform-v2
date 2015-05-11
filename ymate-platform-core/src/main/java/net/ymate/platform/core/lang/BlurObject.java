@@ -61,6 +61,10 @@ public class BlurObject implements Serializable, Cloneable {
      */
     private Object attr;
 
+    public static BlurObject bind(Object o) {
+        return new BlurObject(o);
+    }
+
     /**
      * 构造器
      *
