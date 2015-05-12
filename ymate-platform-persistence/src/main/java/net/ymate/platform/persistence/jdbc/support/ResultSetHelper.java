@@ -158,23 +158,56 @@ public class ResultSetHelper {
         super.finalize();
     }
 
+    /**
+     * 遍历结果集合
+     *
+     * @param handler 结果集元素处理器
+     * @throws Exception
+     */
     public void forEach(ItemHandler handler) throws Exception {
-        for (int _idx = 0; _idx < __rowCount; _idx++) {
-            handler.handle(new Item(__dataSet.get(_idx), __isArray), _idx);
+        this.forEach(1, handler);
+    }
+
+    /**
+     * 遍历结果集合
+     *
+     * @param step    步长
+     * @param handler 结果集元素处理器
+     * @throws Exception
+     */
+    public void forEach(int step, ItemHandler handler) throws Exception {
+        step = (step > 0 ? step : 1);
+        for (int _idx = step - 1; _idx < __rowCount; _idx += step) {
+            if (!handler.handle(new ItemWrapper(__dataSet.get(_idx), __isArray), _idx)) {
+                break;
+            }
         }
     }
 
+    /**
+     * 结果集元素处理器
+     */
     public interface ItemHandler {
-        void handle(Item wrapper, int row) throws Exception;
+
+        /**
+         * @param wrapper 元素包装对象，提供多种数据提取方法
+         * @param row     结果集当前所在行数
+         * @return 返回值将决定此次遍历是否继续执行，true或false
+         * @throws Exception
+         */
+        boolean handle(ItemWrapper wrapper, int row) throws Exception;
     }
 
-    public class Item {
+    /**
+     * 结果集元素包装对象
+     */
+    public class ItemWrapper {
 
         private Object __item;
 
         private boolean __isArray;
 
-        public Item(Object item, boolean isArray) {
+        public ItemWrapper(Object item, boolean isArray) {
             __item = item;
             __isArray = isArray;
         }
