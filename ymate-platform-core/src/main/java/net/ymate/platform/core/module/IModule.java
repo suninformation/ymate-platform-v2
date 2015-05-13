@@ -20,7 +20,7 @@ import net.ymate.platform.core.YMP;
 /**
  * 模块接口定义
  *
- * @author 刘镇 (suninformation@163.com) on 15-3-5 下午3:47
+ * @author 刘镇 (suninformation@163.com) on 2012-11-24 下午6:13:22
  * @version 1.0
  */
 public interface IModule {

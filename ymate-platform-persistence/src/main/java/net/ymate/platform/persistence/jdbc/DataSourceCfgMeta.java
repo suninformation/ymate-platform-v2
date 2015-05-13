@@ -20,7 +20,7 @@ import net.ymate.platform.persistence.base.Type;
 /**
  * 数据源配置接口
  *
- * @author 刘镇 (suninformation@163.com) on 15/4/16 下午1:39
+ * @author 刘镇 (suninformation@163.com) on 2012-12-29 下午3:06:52
  * @version 1.0
  */
 public class DataSourceCfgMeta {

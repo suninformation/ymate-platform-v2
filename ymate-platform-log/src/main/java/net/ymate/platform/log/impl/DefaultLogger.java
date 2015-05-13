@@ -30,7 +30,7 @@ import java.io.FileInputStream;
 /**
  * 默认日志记录器（基于Log4J2实现）
  *
- * @author 刘镇 (suninformation@163.com) on 15/3/17 下午4:25
+ * @author 刘镇 (suninformation@163.com) on 2012-12-21 上午10:51:15
  * @version 1.0
  */
 public class DefaultLogger extends AbstractLogger {

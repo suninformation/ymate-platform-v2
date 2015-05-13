@@ -30,7 +30,7 @@ import java.util.Map;
 /**
  * 默认数据库JDBC持久化模块配置类
  *
- * @author 刘镇 (suninformation@163.com) on 15/3/30 上午2:05
+ * @author 刘镇 (suninformation@163.com) on 2012-12-29 下午2:19:18
  * @version 1.0
  */
 public class DefaultModuleCfg implements IDatabaseModuleCfg {

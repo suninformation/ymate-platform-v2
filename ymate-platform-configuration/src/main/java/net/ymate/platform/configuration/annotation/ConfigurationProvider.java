@@ -22,7 +22,7 @@ import java.lang.annotation.*;
 /**
  * 配置文件自定义内容提供者注解类
  *
- * @author 刘镇 (suninformation@163.com) on 14-8-17
+ * @author 刘镇 (suninformation@163.com) on 14-7-31
  * @version 1.0
  */
 @Target({ElementType.TYPE})

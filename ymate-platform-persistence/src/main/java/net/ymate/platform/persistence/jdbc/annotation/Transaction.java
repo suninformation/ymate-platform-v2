@@ -22,7 +22,7 @@ import java.lang.annotation.*;
 /**
  * 声明一个类或方法开启数据库事务
  *
- * @author 刘镇 (suninformation@163.com) on 15/3/29 下午6:29
+ * @author 刘镇 (suninformation@163.com) on 2013年9月18日 下午8:17:44
  * @version 1.0
  */
 @Retention(RetentionPolicy.RUNTIME)

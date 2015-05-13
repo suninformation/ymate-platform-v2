@@ -22,7 +22,7 @@ import net.ymate.platform.persistence.jdbc.dialect.AbstractDialect;
 /**
  * SQLServer2005及以上数据库方言接口实现
  *
- * @author 刘镇 (suninformation@163.com) on 15/4/16 上午11:25
+ * @author 刘镇 (suninformation@163.com) on 2012-4-19 下午3:38:40
  * @version 1.0
  */
 public class SQLServerDialect extends AbstractDialect {

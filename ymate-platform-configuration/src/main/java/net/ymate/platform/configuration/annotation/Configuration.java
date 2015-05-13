@@ -20,7 +20,7 @@ import java.lang.annotation.*;
 /**
  * 配置文件加载路径注解
  *
- * @author 刘镇 (suninformation@163.com) on 14-8-17
+ * @author 刘镇 (suninformation@163.com) on 2011-8-27 下午01:13:29
  * @version 1.0
  */
 @Target({ElementType.TYPE})

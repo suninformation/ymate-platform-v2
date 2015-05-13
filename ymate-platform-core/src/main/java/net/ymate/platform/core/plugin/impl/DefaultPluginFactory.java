@@ -15,6 +15,7 @@
  */
 package net.ymate.platform.core.plugin.impl;
 
+import net.ymate.platform.core.YMP;
 import net.ymate.platform.core.beans.IBeanFactory;
 import net.ymate.platform.core.beans.impl.DefaultBeanFactory;
 import net.ymate.platform.core.beans.impl.DefaultBeanLoader;
@@ -60,9 +61,17 @@ public class DefaultPluginFactory implements IPluginFactory {
      */
     private Map<Class<? extends IPlugin>, PluginMeta> __pluginMetaWithClass;
 
+    private YMP __owner;
+
     private boolean __inited;
 
     public DefaultPluginFactory() {
+        this(null);
+    }
+
+    public DefaultPluginFactory(YMP owner) {
+        __owner = owner;
+        //
         final IPluginFactory _factory = this;
         //
         __pluginMetaWithId = new ConcurrentHashMap<String, PluginMeta>();
@@ -113,6 +122,9 @@ public class DefaultPluginFactory implements IPluginFactory {
             //
             this.__pluginClassLoader = __buildPluginClassLoader();
             //
+            if (__owner != null) {
+                __owner.bindBeanFactory(__beanFactory);
+            }
             __beanFactory.setLoader(new DefaultBeanLoader() {
                 @Override
                 public ClassLoader getClassLoader() {

@@ -18,7 +18,7 @@ package net.ymate.platform.persistence.jdbc;
 /**
  * 会话执行器接口
  *
- * @author 刘镇 (suninformation@163.com) on 2014年5月19日上午12:36:25
+ * @author 刘镇 (suninformation@163.com) on 2014年5月19日 上午12:36:25
  * @version 1.0
  */
 public interface ISessionExecutor<T> {

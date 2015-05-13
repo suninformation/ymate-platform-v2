@@ -21,7 +21,7 @@ import java.util.Map;
 /**
  * 配置对象接口定义
  *
- * @author 刘镇 (suninformation@163.com) on 14-8-17
+ * @author 刘镇 (suninformation@163.com) on 2011-8-27 上午12:20:51
  * @version 1.0
  */
 public interface IConfiguration {

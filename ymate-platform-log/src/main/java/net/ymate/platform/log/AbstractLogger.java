@@ -21,7 +21,7 @@ import org.apache.commons.lang.StringUtils;
 /**
  * 抽象日志记录器接口实现
  *
- * @author 刘镇 (suninformation@163.com) on 15/3/19 上午1:27
+ * @author 刘镇 (suninformation@163.com) on 2012-12-21 下午12:27:37
  * @version 1.0
  */
 public abstract class AbstractLogger implements ILogger {

@@ -35,7 +35,7 @@ import java.net.URL;
 /**
  * 配置体系模块管理器
  *
- * @author 刘镇 (suninformation@163.com) on 15-3-9 上午12:15
+ * @author 刘镇 (suninformation@163.com) on 2011-8-27 上午02:17:46
  * @version 1.0
  */
 @Module

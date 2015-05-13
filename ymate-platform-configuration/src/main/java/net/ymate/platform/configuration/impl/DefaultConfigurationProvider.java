@@ -27,7 +27,7 @@ import java.util.*;
 /**
  * 默认配置提供者接口实现
  *
- * @author 刘镇 (suninformation@163.com) on 14-8-17
+ * @author 刘镇 (suninformation@163.com) on 2010-4-17 下午02:34:44
  * @version 1.0
  */
 public class DefaultConfigurationProvider implements IConfigurationProvider {

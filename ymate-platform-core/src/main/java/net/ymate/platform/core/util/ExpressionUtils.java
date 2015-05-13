@@ -25,7 +25,7 @@ import java.util.regex.Matcher;
  * result:I am Henry,and sex is M.
  * </p>
  *
- * @author 刘镇 (suninformation@163.com) on 14/12/26 上午3:29
+ * @author 刘镇 (suninformation@163.com) on 2010-12-20 上午11:37:00
  * @version 1.0
  */
 public class ExpressionUtils {

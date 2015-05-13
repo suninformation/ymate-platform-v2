@@ -30,7 +30,7 @@ import java.security.spec.KeySpec;
 /**
  * DES/AES加密/解密工具类
  *
- * @author 刘镇 (suninformation@163.com) on 15/4/13 下午5:37
+ * @author 刘镇 (suninformation@163.com) on 2011-6-14 下午12:24:17
  * @version 1.0
  */
 public class CodecUtils {

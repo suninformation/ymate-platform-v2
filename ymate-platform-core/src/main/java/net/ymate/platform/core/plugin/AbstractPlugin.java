@@ -18,7 +18,7 @@ package net.ymate.platform.core.plugin;
 /**
  * 插件启动器接口抽象实现，完成必要参数的赋值动作
  *
- * @author 刘镇 (suninformation@163.com) on 15/3/26 上午1:52
+ * @author 刘镇 (suninformation@163.com) on 2012-4-20 下午5:30:30
  * @version 1.0
  */
 public abstract class AbstractPlugin implements IPlugin {

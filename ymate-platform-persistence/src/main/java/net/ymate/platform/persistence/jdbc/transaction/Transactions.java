@@ -26,7 +26,7 @@ import net.ymate.platform.persistence.jdbc.transaction.impl.DefaultTransaction;
  * 那么下面所包含的所有事务，无论你指定什么样的事务级别，都是'TRANSACTION_READ_COMMITTED'，
  * 这一点由ITransaction接口实现类来保证，其setLevel当被设置了一个大于0的整数以后，将不再接受任何其他的值。
  *
- * @author 刘镇 (suninformation@163.com) on 15/4/28 下午6:32
+ * @author 刘镇 (suninformation@163.com) on 2011-9-6 下午04:36:53
  * @version 1.0
  */
 public class Transactions {

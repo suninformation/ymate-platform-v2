@@ -32,7 +32,7 @@ import java.util.Map;
 /**
  * 数据库模块管理器
  *
- * @author 刘镇 (suninformation@163.com) on 15/3/29 下午7:06
+ * @author 刘镇 (suninformation@163.com) on 2011-9-10 下午11:45:25
  * @version 1.0
  */
 @Module

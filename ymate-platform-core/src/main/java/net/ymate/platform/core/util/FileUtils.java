@@ -25,7 +25,7 @@ import java.net.URL;
 /**
  * 文件处理工具类
  *
- * @author 刘镇 (suninformation@163.com) on 14-8-17
+ * @author 刘镇 (suninformation@163.com) on 2010-4-23 上午01:14:10
  * @version 1.0
  */
 public class FileUtils {

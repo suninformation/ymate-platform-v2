@@ -29,7 +29,7 @@ import java.util.concurrent.ConcurrentHashMap;
 /**
  * 日志记录器模块管理器
  *
- * @author 刘镇 (suninformation@163.com) on 15-3-9 上午1:10
+ * @author 刘镇 (suninformation@163.com) on 2011-8-27 下午03:56:24
  * @version 1.0
  */
 @Module

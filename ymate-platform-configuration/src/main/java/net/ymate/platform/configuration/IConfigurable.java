@@ -18,7 +18,7 @@ package net.ymate.platform.configuration;
 /**
  * 配置能力接口, 实现此接口的具体类将具备赋予其配置对象的能力
  *
- * @author 刘镇 (suninformation@163.com) on 14-8-17
+ * @author 刘镇 (suninformation@163.com) on 2011-8-27 上午12:21:26
  * @version 1.0
  */
 public interface IConfigurable {

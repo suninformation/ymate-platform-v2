@@ -20,7 +20,7 @@ import java.lang.annotation.*;
 /**
  * 声明一个类由IoC容器管理的注解
  *
- * @author 刘镇 (suninformation@163.com) on 15-3-8 上午11:49
+ * @author 刘镇 (suninformation@163.com) on 2012-12-15 下午4:18:18
  * @version 1.0
  */
 @Target({ElementType.TYPE})

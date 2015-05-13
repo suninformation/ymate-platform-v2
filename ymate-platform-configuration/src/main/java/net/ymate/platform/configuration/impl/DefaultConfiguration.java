@@ -24,7 +24,7 @@ import java.util.Map;
 /**
  * 默认配置对象接口实现, 方便扩展实现
  *
- * @author 刘镇 (suninformation@163.com) on 14-8-17
+ * @author 刘镇 (suninformation@163.com) on 2011-8-27 上午01:57:05
  * @version 1.0
  */
 public class DefaultConfiguration implements IConfiguration {

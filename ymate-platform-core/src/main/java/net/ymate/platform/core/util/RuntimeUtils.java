@@ -31,7 +31,7 @@ import java.util.Map;
 /**
  * 运行时工具类，获取运行时相关信息
  *
- * @author 刘镇 (suninformation@163.com) on 14-8-17
+ * @author 刘镇 (suninformation@163.com) on 2010-8-2 上午10:10:16
  * @version 1.0
  */
 public class RuntimeUtils {

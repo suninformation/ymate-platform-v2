@@ -20,7 +20,7 @@ import java.util.EventObject;
 /**
  * 会话事件处理上下文
  *
- * @author 刘镇 (suninformation@163.com) on 15/5/8 上午8:32
+ * @author 刘镇 (suninformation@163.com) on 2014年3月12日 下午4:17:32
  * @version 1.0
  */
 public class SessionEventContext extends EventObject {

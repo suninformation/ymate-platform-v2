@@ -39,7 +39,7 @@ import java.util.concurrent.ConcurrentHashMap;
 /**
  * YMP框架核心管理器
  *
- * @author 刘镇 (suninformation@163.com) on 15-3-4 下午6:47
+ * @author 刘镇 (suninformation@163.com) on 2012-12-23 下午5:52:44
  * @version 1.0
  */
 public class YMP {

@@ -31,7 +31,7 @@ import java.util.Arrays;
 /**
  * 插件工厂相关工具
  *
- * @author 刘镇 (suninformation@163.com) on 15/3/26 上午2:14
+ * @author 刘镇 (suninformation@163.com) on 2012-11-30 下午6:28:20
  * @version 1.0
  */
 public class Plugins {

@@ -18,7 +18,7 @@ package net.ymate.platform.configuration;
 /**
  * 配置体系模块配置接口定义
  *
- * @author 刘镇 (suninformation@163.com) on 15/3/16 下午2:56
+ * @author 刘镇 (suninformation@163.com) on 2012-11-28 下午9:04:52
  * @version 1.0
  */
 public interface IConfigModuleCfg {

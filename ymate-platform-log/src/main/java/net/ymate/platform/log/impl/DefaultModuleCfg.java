@@ -31,7 +31,7 @@ import java.util.Map;
 /**
  * 默认日志记录器模块配置类
  *
- * @author 刘镇 (suninformation@163.com) on 15/3/17 下午4:50
+ * @author 刘镇 (suninformation@163.com) on 2012-12-23 下午6:26:42
  * @version 1.0
  */
 public class DefaultModuleCfg implements ILogModuleCfg {

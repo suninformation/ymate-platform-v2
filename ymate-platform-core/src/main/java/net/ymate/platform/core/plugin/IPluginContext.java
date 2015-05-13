@@ -18,7 +18,7 @@ package net.ymate.platform.core.plugin;
 /**
  * 插件环境上下文对象
  *
- * @author 刘镇 (suninformation@163.com) on 15/3/19 下午5:15
+ * @author 刘镇 (suninformation@163.com) on 2011-10-18 上午10:39:03
  * @version 1.0
  */
 public interface IPluginContext {

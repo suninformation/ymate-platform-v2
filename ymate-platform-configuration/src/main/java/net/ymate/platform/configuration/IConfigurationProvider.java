@@ -21,7 +21,7 @@ import java.util.Map;
 /**
  * 配置提供者接口，通过配置提供者来获取配置文件内容
  *
- * @author 刘镇 (suninformation@163.com) on 14-8-17
+ * @author 刘镇 (suninformation@163.com) on 2011-8-27 上午12:23:13
  * @version 1.0
  */
 public interface IConfigurationProvider {

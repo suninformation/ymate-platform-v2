@@ -23,7 +23,7 @@ import java.util.*;
 /**
  * 资源加载工具类
  *
- * @author 刘镇 (suninformation@163.com) on 14-8-18
+ * @author 刘镇 (suninformation@163.com) on 2010-5-16 下午04:12:19
  * @version 1.0
  */
 public class ResourceUtils {

@@ -18,7 +18,7 @@ package net.ymate.platform.core.plugin;
 /**
  * 插件扩展内容解析器接口定义
  *
- * @author 刘镇 (suninformation@163.com) on 15/3/19 下午6:09
+ * @author 刘镇 (suninformation@163.com) on 2011-10-17 下午09:27:18
  * @version 1.0
  */
 public interface IPluginExtendParser<T> {

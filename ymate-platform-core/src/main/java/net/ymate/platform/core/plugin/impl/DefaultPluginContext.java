@@ -22,7 +22,7 @@ import net.ymate.platform.core.plugin.PluginMeta;
 /**
  * 默认插件环境上下文对象实现
  *
- * @author 刘镇 (suninformation@163.com) on 15/3/24 上午2:34
+ * @author 刘镇 (suninformation@163.com) on 2011-10-18 上午10:39:03
  * @version 1.0
  */
 public class DefaultPluginContext implements IPluginContext {

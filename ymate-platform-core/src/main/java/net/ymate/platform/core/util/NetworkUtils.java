@@ -28,7 +28,7 @@ import java.util.regex.Pattern;
 /**
  * 网络操作相关工具类及方法
  *
- * @author 刘镇 (suninformation@163.com) on 15/4/28 下午3:20
+ * @author 刘镇 (suninformation@163.com) on 2011-7-5 下午12:29:12
  * @version 1.0
  */
 public class NetworkUtils {

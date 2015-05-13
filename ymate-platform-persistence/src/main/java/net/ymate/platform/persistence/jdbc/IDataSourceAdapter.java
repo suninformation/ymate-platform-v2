@@ -22,7 +22,7 @@ import java.sql.Connection;
 /**
  * 数据源适配器接口
  *
- * @author 刘镇 (suninformation@163.com) on 15/4/2 上午11:26
+ * @author 刘镇 (suninformation@163.com) on 2012-12-29 上午12:28:41
  * @version 1.0
  */
 public interface IDataSourceAdapter {

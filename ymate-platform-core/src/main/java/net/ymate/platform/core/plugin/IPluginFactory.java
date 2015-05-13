@@ -77,7 +77,6 @@ public interface IPluginFactory {
     /**
      * @param clazz
      * @return 通过接口类型获取插件配置信息元数据描述
-
      */
     public PluginMeta getPluginMeta(Class<? extends IPlugin> clazz);
 }
