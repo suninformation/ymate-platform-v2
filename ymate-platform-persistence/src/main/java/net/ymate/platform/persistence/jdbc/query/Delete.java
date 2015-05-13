@@ -17,6 +17,7 @@ package net.ymate.platform.persistence.jdbc.query;
 
 import net.ymate.platform.persistence.base.EntityMeta;
 import net.ymate.platform.persistence.base.IEntity;
+import org.apache.commons.lang.StringUtils;
 
 /**
  * DELETE语句对象
@@ -29,6 +30,14 @@ public class Delete {
     private String __from;
 
     private Where __where;
+
+    public static Delete create(String prefix, IEntity<?> entity) {
+        return create(prefix, entity.getClass());
+    }
+
+    public static Delete create(String prefix, Class<? extends IEntity> entityClass) {
+        return new Delete(StringUtils.defaultIfBlank(prefix, "").concat(EntityMeta.createAndGet(entityClass).getEntityName()));
+    }
 
     public static Delete create(IEntity<?> entity) {
         return create(entity.getClass());

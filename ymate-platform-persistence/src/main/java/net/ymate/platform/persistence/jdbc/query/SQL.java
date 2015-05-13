@@ -15,9 +15,6 @@
  */
 package net.ymate.platform.persistence.jdbc.query;
 
-import java.util.ArrayList;
-import java.util.List;
-
 /**
  * SQL语句及参数对象
  *
@@ -34,6 +31,10 @@ public class SQL {
         return new SQL(sql);
     }
 
+    public static SQL create(Select select) {
+        return new SQL(select.toString()).addParam(select.getParams());
+    }
+
     private SQL(String sql) {
         this.__params = Params.create();
         this.__sql = sql;
@@ -45,6 +46,11 @@ public class SQL {
 
     public SQL addParam(Object param) {
         this.__params.add(param);
+        return this;
+    }
+
+    public SQL addParam(Params params) {
+        this.__params.add(params);
         return this;
     }
 

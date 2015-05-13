@@ -33,6 +33,14 @@ public class Insert {
 
     private Params __params;
 
+    public static Insert create(String prefix, IEntity<?> entity) {
+        return create(prefix, entity.getClass());
+    }
+
+    public static Insert create(String prefix, Class<? extends IEntity> entityClass) {
+        return new Insert(StringUtils.defaultIfBlank(prefix, "").concat(EntityMeta.createAndGet(entityClass).getEntityName()));
+    }
+
     public static Insert create(IEntity<?> entity) {
         return create(entity.getClass());
     }

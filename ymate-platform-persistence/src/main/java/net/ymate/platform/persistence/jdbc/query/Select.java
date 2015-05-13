@@ -40,6 +40,14 @@ public class Select {
 
     private String __alias;
 
+    public static Select create(String prefix, IEntity<?> entity) {
+        return create(prefix, entity.getClass());
+    }
+
+    public static Select create(String prefix, Class<? extends IEntity> entityClass) {
+        return new Select(StringUtils.defaultIfBlank(prefix, "").concat(EntityMeta.createAndGet(entityClass).getEntityName()));
+    }
+
     public static Select create(IEntity<?> entity) {
         return create(entity.getClass());
     }

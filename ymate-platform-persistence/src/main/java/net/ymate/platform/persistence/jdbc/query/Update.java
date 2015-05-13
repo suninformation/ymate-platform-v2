@@ -33,6 +33,14 @@ public class Update {
 
     private Where __where;
 
+    public static Update create(String prefix, IEntity<?> entity) {
+        return create(prefix, entity.getClass());
+    }
+
+    public static Update create(String prefix, Class<? extends IEntity> entityClass) {
+        return new Update(StringUtils.defaultIfBlank(prefix, "").concat(EntityMeta.createAndGet(entityClass).getEntityName()));
+    }
+
     public static Update create(IEntity<?> entity) {
         return create(entity.getClass());
     }
