@@ -28,7 +28,7 @@ public class Join {
     private Cond __on;
 
     public static Join inner(String from) {
-        return new Join("INNER JOIN ", from);
+        return new Join("INNER JOIN", from);
     }
 
     public static Join inner(Select select) {
@@ -36,11 +36,11 @@ public class Join {
     }
 
     public static Join left(String from) {
-        return new Join("LEFT JOIN ", from);
+        return new Join("LEFT JOIN", from);
     }
 
     public static Join right(String from) {
-        return new Join("RIGHT JOIN ", from);
+        return new Join("RIGHT JOIN", from);
     }
 
     private Join(String type, String from) {

@@ -77,7 +77,7 @@ public class Where {
 
     public Params getParams() {
         Params _p = Params.create().add(this.__params);
-        if (__groupBy != null) {
+        if (__groupBy != null && __groupBy.getHaving() != null) {
             _p.add(__groupBy.getHaving().getParams());
         }
         return _p;
@@ -92,6 +92,11 @@ public class Where {
 
     public Where addParam(Object param) {
         this.__params.add(param);
+        return this;
+    }
+
+    public Where addParam(Params params) {
+        this.__params.add(params);
         return this;
     }
 
@@ -127,6 +132,10 @@ public class Where {
 
     @Override
     public String toString() {
-        return getWhereSQL().concat(" ").concat(__groupBy.getGroupBySQL()).concat(" ").concat(__orderBy.getOrderBySQL());
+        StringBuilder _whereSB = new StringBuilder(getWhereSQL());
+        if (__groupBy != null) {
+            _whereSB.append(__groupBy.getGroupBySQL());
+        }
+        return _whereSB.append(__orderBy.getOrderBySQL()).toString();
     }
 }

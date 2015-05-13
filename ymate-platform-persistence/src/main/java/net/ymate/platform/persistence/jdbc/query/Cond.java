@@ -25,6 +25,27 @@ import org.apache.commons.lang.StringUtils;
  */
 public class Cond {
 
+    public enum OPT {
+        EQ("="),
+        NOT_EQ("!="),
+        LT("<"),
+        GT(">"),
+        LT_EQ("<="),
+        GT_EQ(">="),
+        LIKE("LIKE");
+
+        private String __opt;
+
+        OPT(String opt) {
+            this.__opt = opt;
+        }
+
+        @Override
+        public String toString() {
+            return __opt;
+        }
+    }
+
     private StringBuilder __condSB;
 
     /**
@@ -55,52 +76,67 @@ public class Cond {
         return this;
     }
 
-    public Cond opt(String field, String opt) {
+    public Cond cond(String cond) {
+        __condSB.append(" ").append(cond).append(" ");
+        return this;
+    }
+
+    public Cond opt(String fieldA, OPT opt, String fieldB) {
+        __condSB.append(fieldA).append(" ").append(opt).append(" ").append(fieldB);
+        return this;
+    }
+
+    public Cond opt(String field, OPT opt) {
         __condSB.append(field).append(" ").append(opt).append(" ?");
         return this;
     }
 
     public Cond eq(String field) {
-        return opt(field, "=");
+        return opt(field, OPT.EQ);
     }
 
     public Cond notEq(String field) {
-        return opt(field, "!=");
+        return opt(field, OPT.NOT_EQ);
     }
 
     public Cond gtEq(String field) {
-        return opt(field, ">=");
+        return opt(field, OPT.GT_EQ);
     }
 
     public Cond gt(String field) {
-        return opt(field, ">");
+        return opt(field, OPT.GT);
     }
 
     public Cond ltEq(String field) {
-        return opt(field, "<=");
+        return opt(field, OPT.LT_EQ);
     }
 
     public Cond lt(String field) {
-        return opt(field, "<");
+        return opt(field, OPT.LT);
     }
 
     public Cond like(String field) {
-        return opt(field, "LIKE");
+        return opt(field, OPT.LIKE);
     }
 
     public Cond and() {
-        __doAppendCond("AND");
-        return this;
+        return cond("AND");
     }
 
     public Cond or() {
-        __doAppendCond("OR");
-        return this;
+        return cond("OR");
     }
 
     public Cond not() {
-        __doAppendCond("NOT");
-        return this;
+        return cond("NOT");
+    }
+
+    public Cond bracketLeft() {
+        return cond("(");
+    }
+
+    public Cond bracketRight() {
+        return cond(")");
     }
 
     public Cond in(String field, SQL subSql) {
@@ -113,12 +149,6 @@ public class Cond {
         __condSB.append(field).append(" IN (").append(StringUtils.repeat("?", ", ", params.getParams().size())).append(")");
         __params.add(params);
         return this;
-    }
-
-    private void __doAppendCond(String cond) {
-        if (__condSB.length() > 0) {
-            __condSB.append(" ").append(cond).append(" ");
-        }
     }
 
     @Override

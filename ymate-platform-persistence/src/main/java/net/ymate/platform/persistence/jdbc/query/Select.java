@@ -113,19 +113,21 @@ public class Select {
         if (__fields.getFields().isEmpty()) {
             _selectSB.append(" * ");
         } else {
-            _selectSB.append(StringUtils.join(__fields.getFields(), " = ?, ").concat(" = ? "));
+            _selectSB.append(StringUtils.join(__fields.getFields(), ", "));
         }
-        _selectSB.append("FROM ").append(__from).append(" ")
-                .append(__where == null ? "" : __where.toString());
+        _selectSB.append(" FROM ").append(__from);
         //
         for (Join _join : __joins) {
             _selectSB.append(" ").append(_join);
         }
         //
+        if (__where != null) {
+            _selectSB.append(" ").append(__where.toString());
+        }
+        //
         if (StringUtils.isNotBlank(__alias)) {
             return "(".concat(_selectSB.toString()).concat(") ").concat(__alias);
-        } else {
-            return _selectSB.toString();
         }
+        return _selectSB.toString();
     }
 }
