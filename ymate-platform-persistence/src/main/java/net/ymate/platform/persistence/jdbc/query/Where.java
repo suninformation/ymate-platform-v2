@@ -35,6 +35,8 @@ public class Where {
      */
     private Params __params;
 
+    private GroupBy __groupBy;
+
     private OrderBy __orderBy;
 
     public static Where create() {
@@ -65,12 +67,20 @@ public class Where {
         this.__params = cond.getParams();
     }
 
+    public GroupBy getGroupBy() {
+        return __groupBy;
+    }
+
     public OrderBy getOrderBy() {
         return __orderBy;
     }
 
     public Params getParams() {
-        return this.__params;
+        Params _p = Params.create().add(this.__params);
+        if (__groupBy != null) {
+            _p.add(__groupBy.getHaving().getParams());
+        }
+        return _p;
     }
 
     public String getWhereSQL() {
@@ -85,6 +95,26 @@ public class Where {
         return this;
     }
 
+    public Where groupBy(String field) {
+        groupBy(Fields.create().add(field));
+        return this;
+    }
+
+    public Where groupBy(Fields fields) {
+        __groupBy = GroupBy.create(fields);
+        return this;
+    }
+
+    public Where groupBy(GroupBy groupBy) {
+        __groupBy = groupBy;
+        return this;
+    }
+
+    public Where having(Cond cond) {
+        __groupBy.having(cond);
+        return this;
+    }
+
     public Where orderAsc(String field) {
         this.__orderBy.asc(field);
         return this;
@@ -93,5 +123,10 @@ public class Where {
     public Where orderDesc(String field) {
         this.__orderBy.desc(field);
         return this;
+    }
+
+    @Override
+    public String toString() {
+        return getWhereSQL().concat(" ").concat(__groupBy.getGroupBySQL()).concat(" ").concat(__orderBy.getOrderBySQL());
     }
 }

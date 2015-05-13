@@ -34,10 +34,11 @@ public class OrderBy {
     }
 
     public String getOrderBySQL() {
+        StringBuilder _returnSB = new StringBuilder();
         if (__orderBySB.length() > 0) {
-            __orderBySB.insert(0, "ORDER BY ");
+            _returnSB.append("ORDER BY ").append(__orderBySB);
         }
-        return __orderBySB.toString();
+        return _returnSB.toString();
     }
 
     public OrderBy asc(String field) {

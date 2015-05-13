@@ -15,7 +15,11 @@
  */
 package net.ymate.platform.persistence.jdbc.query;
 
+import org.apache.commons.lang.StringUtils;
+
 /**
+ * 条件对象
+ *
  * @author 刘镇 (suninformation@163.com) on 15/5/9 下午8:12
  * @version 1.0
  */
@@ -46,9 +50,42 @@ public class Cond {
         return this;
     }
 
-    public Cond eq(String field) {
-        __condSB.append(field).append(" = ?");
+    public Cond addParam(Params params) {
+        this.__params.add(params);
         return this;
+    }
+
+    public Cond opt(String field, String opt) {
+        __condSB.append(field).append(" ").append(opt).append(" ?");
+        return this;
+    }
+
+    public Cond eq(String field) {
+        return opt(field, "=");
+    }
+
+    public Cond notEq(String field) {
+        return opt(field, "!=");
+    }
+
+    public Cond gtEq(String field) {
+        return opt(field, ">=");
+    }
+
+    public Cond gt(String field) {
+        return opt(field, ">");
+    }
+
+    public Cond ltEq(String field) {
+        return opt(field, "<=");
+    }
+
+    public Cond lt(String field) {
+        return opt(field, "<");
+    }
+
+    public Cond like(String field) {
+        return opt(field, "LIKE");
     }
 
     public Cond and() {
@@ -58,6 +95,23 @@ public class Cond {
 
     public Cond or() {
         __doAppendCond("OR");
+        return this;
+    }
+
+    public Cond not() {
+        __doAppendCond("NOT");
+        return this;
+    }
+
+    public Cond in(String field, SQL subSql) {
+        __condSB.append(field).append(" IN (").append(subSql.getSQL()).append(")");
+        __params.add(subSql.getParams());
+        return this;
+    }
+
+    public Cond in(String field, Params params) {
+        __condSB.append(field).append(" IN (").append(StringUtils.repeat("?", ", ", params.getParams().size())).append(")");
+        __params.add(params);
         return this;
     }
 
