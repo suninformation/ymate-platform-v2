@@ -52,7 +52,7 @@ public class Params {
         return this;
     }
 
-    public Params addAll(Collection<Object> params) {
+    public Params add(Collection<Object> params) {
         this.__params.addAll(params);
         return this;
     }

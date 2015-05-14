@@ -48,12 +48,12 @@ public class EntitySQL<T extends IEntity> {
         return this.__entityClass;
     }
 
-    public EntitySQL<T> addField(String field) {
+    public EntitySQL<T> field(String field) {
         this.__fields.add(field);
         return this;
     }
 
-    public EntitySQL<T> addField(Fields fields) {
+    public EntitySQL<T> field(Fields fields) {
         this.__fields.add(fields);
         return this;
     }

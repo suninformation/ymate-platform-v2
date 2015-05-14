@@ -63,12 +63,12 @@ public class Insert {
         return this.__fields;
     }
 
-    public Insert addField(String field) {
+    public Insert field(String field) {
         this.__fields.add(field);
         return this;
     }
 
-    public Insert addField(Fields fields) {
+    public Insert field(Fields fields) {
         this.__fields.add(fields);
         return this;
     }
@@ -77,12 +77,12 @@ public class Insert {
         return this.__params;
     }
 
-    public Insert addParam(Object param) {
+    public Insert param(Object param) {
         this.__params.add(param);
         return this;
     }
 
-    public Insert addParam(Params params) {
+    public Insert param(Params params) {
         this.__params.add(params);
         return this;
     }

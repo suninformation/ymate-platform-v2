@@ -74,19 +74,19 @@ public class Select {
         return this.__fields;
     }
 
-    public Select addField(String field) {
+    public Select field(String field) {
         this.__fields.add(field);
         return this;
     }
 
-    public Select addField(Fields fields) {
+    public Select field(Fields fields) {
         this.__fields.add(fields);
         return this;
     }
 
     public Select join(Join join) {
         __joins.add(join);
-        __where.addParam(join.getParams());
+        __where.param(join.getParams());
         return this;
     }
 

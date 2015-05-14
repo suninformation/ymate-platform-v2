@@ -122,7 +122,7 @@ public class DefaultSession implements ISession {
                 _value = _beanWrapper.getValue(_meta.getPropertyByName(_field).getField().getName());
             }
             if (_value != null) {
-                _cond.and().eq(_field).addParam(_value);
+                _cond.and().eq(_field).param(_value);
             }
         }
         return (IResultSet<T>) this.find(EntitySQL.create(entity.getClass()), Where.create(_cond));

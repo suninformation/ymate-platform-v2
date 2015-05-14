@@ -66,12 +66,12 @@ public class Cond {
         return this.__params;
     }
 
-    public Cond addParam(Object param) {
+    public Cond param(Object param) {
         this.__params.add(param);
         return this;
     }
 
-    public Cond addParam(Params params) {
+    public Cond param(Params params) {
         this.__params.add(params);
         return this;
     }
@@ -131,11 +131,11 @@ public class Cond {
         return cond("NOT");
     }
 
-    public Cond bracketLeft() {
+    public Cond bracketBegin() {
         return cond("(");
     }
 
-    public Cond bracketRight() {
+    public Cond bracketEnd() {
         return cond(")");
     }
 

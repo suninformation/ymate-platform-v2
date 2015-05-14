@@ -29,6 +29,10 @@ public class GroupBy {
 
     private Cond __having;
 
+    public static GroupBy create(String field) {
+        return new GroupBy(Fields.create().add(field));
+    }
+
     public static GroupBy create(Fields fields) {
         return new GroupBy(fields);
     }

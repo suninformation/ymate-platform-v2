@@ -70,7 +70,7 @@ public abstract class BaseEntity<Entity extends IEntity, PK extends Serializable
     public Entity load(Fields fields) throws Exception {
         ISession _session = new DefaultSession(this.__connectionHolder);
         try {
-            return _session.find(EntitySQL.create(this.getEntityClass()).addField(fields), this.getId());
+            return _session.find(EntitySQL.create(this.getEntityClass()).field(fields), this.getId());
         } finally {
             _session.close();
         }
@@ -91,7 +91,7 @@ public abstract class BaseEntity<Entity extends IEntity, PK extends Serializable
     public Entity saveOrUpdate(Fields fields) throws Exception {
         ISession _session = new DefaultSession(this.__connectionHolder);
         try {
-            Entity _t = _session.find(EntitySQL.create(this.getEntityClass()).addField(fields), this.getId());
+            Entity _t = _session.find(EntitySQL.create(this.getEntityClass()).field(fields), this.getId());
             if (_t == null) {
                 return _session.insert((Entity) this);
             }
@@ -125,7 +125,7 @@ public abstract class BaseEntity<Entity extends IEntity, PK extends Serializable
     public IResultSet<Entity> find(Where where, Fields fields) throws Exception {
         ISession _session = new DefaultSession(this.__connectionHolder);
         try {
-            return _session.find(EntitySQL.create(this.getEntityClass()).addField(fields), where);
+            return _session.find(EntitySQL.create(this.getEntityClass()).field(fields), where);
         } finally {
             _session.close();
         }
@@ -134,7 +134,7 @@ public abstract class BaseEntity<Entity extends IEntity, PK extends Serializable
     public IResultSet<Entity> find(Where where, Fields fields, Page page) throws Exception {
         ISession _session = new DefaultSession(this.__connectionHolder);
         try {
-            return _session.find(EntitySQL.create(this.getEntityClass()).addField(fields), where, page);
+            return _session.find(EntitySQL.create(this.getEntityClass()).field(fields), where, page);
         } finally {
             _session.close();
         }
@@ -143,7 +143,7 @@ public abstract class BaseEntity<Entity extends IEntity, PK extends Serializable
     public Entity findFirst(Where where, Fields fields) throws Exception {
         ISession _session = new DefaultSession(this.__connectionHolder);
         try {
-            return _session.findFirst(EntitySQL.create(this.getEntityClass()).addField(fields), where);
+            return _session.findFirst(EntitySQL.create(this.getEntityClass()).field(fields), where);
         } finally {
             _session.close();
         }

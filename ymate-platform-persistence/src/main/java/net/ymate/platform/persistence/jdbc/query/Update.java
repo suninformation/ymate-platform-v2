@@ -62,12 +62,12 @@ public class Update {
         return this.__fields;
     }
 
-    public Update addField(String field) {
+    public Update field(String field) {
         this.__fields.add(field);
         return this;
     }
 
-    public Update addField(Fields fields) {
+    public Update field(Fields fields) {
         this.__fields.add(fields);
         return this;
     }

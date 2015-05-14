@@ -55,7 +55,7 @@ public class Fields {
         return this;
     }
 
-    public Fields addAll(Collection<String> fields) {
+    public Fields add(Collection<String> fields) {
         this.__fields.addAll(fields);
         return this;
     }

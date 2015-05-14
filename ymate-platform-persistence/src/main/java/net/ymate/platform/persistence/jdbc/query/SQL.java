@@ -32,7 +32,7 @@ public class SQL {
     }
 
     public static SQL create(Select select) {
-        return new SQL(select.toString()).addParam(select.getParams());
+        return new SQL(select.toString()).param(select.getParams());
     }
 
     private SQL(String sql) {
@@ -44,12 +44,12 @@ public class SQL {
         return this.__sql;
     }
 
-    public SQL addParam(Object param) {
+    public SQL param(Object param) {
         this.__params.add(param);
         return this;
     }
 
-    public SQL addParam(Params params) {
+    public SQL param(Params params) {
         this.__params.add(params);
         return this;
     }

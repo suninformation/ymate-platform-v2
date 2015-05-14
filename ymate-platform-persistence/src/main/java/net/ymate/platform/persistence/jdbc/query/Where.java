@@ -90,12 +90,12 @@ public class Where {
         return "";
     }
 
-    public Where addParam(Object param) {
+    public Where param(Object param) {
         this.__params.add(param);
         return this;
     }
 
-    public Where addParam(Params params) {
+    public Where param(Params params) {
         this.__params.add(params);
         return this;
     }
@@ -134,8 +134,8 @@ public class Where {
     public String toString() {
         StringBuilder _whereSB = new StringBuilder(getWhereSQL());
         if (__groupBy != null) {
-            _whereSB.append(__groupBy.getGroupBySQL());
+            _whereSB.append(" ").append(__groupBy.getGroupBySQL());
         }
-        return _whereSB.append(__orderBy.getOrderBySQL()).toString();
+        return _whereSB.append(" ").append(__orderBy.getOrderBySQL()).toString();
     }
 }
