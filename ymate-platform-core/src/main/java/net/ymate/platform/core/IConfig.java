@@ -37,9 +37,9 @@ public interface IConfig {
     public List<String> getAutoscanPackages();
 
     /**
-     * @return 返回框架是否自动加载模块
+     * @return 返回模块类排除列表，被包含的模块在加载过程中将被忽略
      */
-    public boolean isModuleAutoload();
+    public List<String> getExcludedModules();
 
     /**
      * @return 返回框架全局参数映射
@@ -57,4 +57,9 @@ public interface IConfig {
      * @return 返回模块配置参数映射
      */
     public Map<String, String> getModuleConfigs(String moduleName);
+
+    /**
+     * @return 返回框架事件配置参数映射
+     */
+    public Map<String, String> getEventConfigs();
 }

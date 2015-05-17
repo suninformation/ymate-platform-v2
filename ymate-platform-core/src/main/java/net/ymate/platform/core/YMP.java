@@ -23,6 +23,8 @@ import net.ymate.platform.core.beans.impl.DefaultBeanFactory;
 import net.ymate.platform.core.beans.impl.proxy.DefaultProxyFactory;
 import net.ymate.platform.core.beans.proxy.IProxy;
 import net.ymate.platform.core.beans.proxy.IProxyFactory;
+import net.ymate.platform.core.event.Events;
+import net.ymate.platform.core.event.impl.DefaultEventConfig;
 import net.ymate.platform.core.handle.ModuleHandler;
 import net.ymate.platform.core.handle.ProxyHandler;
 import net.ymate.platform.core.lang.BlurObject;
@@ -61,6 +63,8 @@ public class YMP {
     private IProxyFactory __proxyFactory;
 
     private Map<Class<? extends IModule>, IModule> __modules;
+
+    private Events __events;
 
     /**
      * @return 返回默认YMP框架核心管理器对象实例，若未实例化或已销毁则重新创建对象实例
@@ -116,13 +120,13 @@ public class YMP {
      */
     public synchronized YMP init() throws Exception {
         if (!__inited) {
+            // 初始化事件管理器
+            __events = Events.create(new DefaultEventConfig(__config.getEventConfigs()));
             // 初始化根对象工厂
             __moduleFactory.init();
-            if (this.getConfig().isModuleAutoload()) {
-                for (IModule _module : __modules.values()) {
-                    if (!_module.isInited()) {
-                        _module.init(this);
-                    }
+            for (IModule _module : __modules.values()) {
+                if (!_module.isInited()) {
+                    _module.init(this);
                 }
             }
             // 初始化对象工厂
@@ -161,6 +165,8 @@ public class YMP {
     public void destroy() throws Exception {
         if (__inited) {
             __inited = false;
+            // 销毁事件管理器
+            __events.destroy();
             // 销毁所有已加载模块
             for (IModule _module : __modules.values()) {
                 _module.destroy();
@@ -272,6 +278,13 @@ public class YMP {
     }
 
     /**
+     * @return 获取事件管理器
+     */
+    public Events getEvents() {
+        return __events;
+    }
+
+    /**
      * @param targetFactory 目标对象工厂
      * @param <T>
      * @return 将目标对象工厂的Parent设置为当前YMP容器的对象工厂
@@ -320,11 +333,13 @@ public class YMP {
 
         private List<String> __packageNames;
 
-        private Boolean __isModuleAutoLoad;
+        private List<String> __excludeModules;
 
         private Map<String, String> __paramsMap;
 
         private Map<String, Map<String, String>> __moduleCfgs;
+
+        private Map<String, String> __eventConfigs;
 
         public Config() {
             __props = new Properties();
@@ -348,7 +363,7 @@ public class YMP {
             } finally {
                 try {
                     if (_in != null) _in.close();
-                } catch (Exception e) {
+                } catch (Exception ignored) {
                 }
             }
         }
@@ -372,12 +387,16 @@ public class YMP {
             return __packageNames;
         }
 
-        public boolean isModuleAutoload() {
-            if (__isModuleAutoLoad == null) {
-                String _tmpCfgV = StringUtils.defaultIfBlank(__props.getProperty("ymp.module_autoload"), "true");
-                __isModuleAutoLoad = new BlurObject(_tmpCfgV).toBooleanValue();
+        public List<String> getExcludedModules() {
+            if (__excludeModules == null) {
+                String[] _excludeModules = StringUtils.split(__props.getProperty("ymp.excluded_modules"), "|");
+                if (_excludeModules != null) {
+                    __excludeModules = new ArrayList<String>(Arrays.asList(_excludeModules));
+                } else {
+                    __excludeModules = Collections.emptyList();
+                }
             }
-            return __isModuleAutoLoad;
+            return __excludeModules;
         }
 
         public Map<String, String> getParams() {
@@ -416,6 +435,22 @@ public class YMP {
                 __moduleCfgs.put(moduleName, Collections.unmodifiableMap(_cfgsMap));
             }
             return _cfgsMap;
+        }
+
+        public Map<String, String> getEventConfigs() {
+            if (__eventConfigs == null) {
+                __eventConfigs = new HashMap<String, String>();
+                // 提取模块配置
+                for (Object _key : __props.keySet()) {
+                    String _prefix = "ymp.event.";
+                    if (StringUtils.startsWith((String) _key, _prefix)) {
+                        String _cfgKey = StringUtils.substring((String) _key, _prefix.length());
+                        String _cfgValue = __props.getProperty((String) _key);
+                        __eventConfigs.put(_cfgKey, _cfgValue);
+                    }
+                }
+            }
+            return Collections.unmodifiableMap(__eventConfigs);
         }
     }
 }

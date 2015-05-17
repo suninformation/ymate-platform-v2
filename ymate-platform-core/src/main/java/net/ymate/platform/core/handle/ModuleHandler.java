@@ -36,10 +36,12 @@ public class ModuleHandler implements IBeanHandler {
     }
 
     public Object handle(Class<?> targetClass) throws Exception {
-        // 只有开启了模块自动加载且当前对象实现了IModule接口时才能被正确加载
-        if (__owner.getConfig().isModuleAutoload() && ClassUtils.isInterfaceOf(targetClass, IModule.class)) {
-            IModule _module = (IModule) targetClass.newInstance();
-            __owner.registerModule(_module);
+        // 首先判断当前预加载的模块是否存在于被排除列表中，若存在则忽略它
+        if (!__owner.getConfig().getExcludedModules().contains(targetClass.getName())) {
+            if (ClassUtils.isInterfaceOf(targetClass, IModule.class)) {
+                IModule _module = (IModule) targetClass.newInstance();
+                __owner.registerModule(_module);
+            }
         }
         return null;
     }
