@@ -19,6 +19,7 @@ import net.ymate.platform.core.Version;
 import net.ymate.platform.core.YMP;
 import net.ymate.platform.core.module.IModule;
 import net.ymate.platform.core.module.annotation.Module;
+import net.ymate.platform.persistence.IPersistence;
 import net.ymate.platform.persistence.annotation.Entity;
 import net.ymate.platform.persistence.jdbc.impl.DefaultConnectionHolder;
 import net.ymate.platform.persistence.jdbc.impl.DefaultModuleCfg;
@@ -38,7 +39,7 @@ import java.util.Map;
 @Module
 public class JDBC implements IModule, IDatabase {
 
-    public static final Version VERSION = new Version(2, 0, 0, JDBC.class.getPackage().getImplementationVersion(), Version.VersionType.Alphal);
+    public static final Version VERSION = new Version(2, 0, 0, IPersistence.class.getPackage().getImplementationVersion(), Version.VersionType.Alphal);
 
     private static IDatabase __instance;
 

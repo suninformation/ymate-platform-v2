@@ -30,6 +30,29 @@
                 <filtering>false</filtering>
             </resource>
         </resources>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-jar-plugin</artifactId>
+                    <configuration>
+                        <archive>
+                            <manifestSections>
+                                <manifestSection>
+                                    <name>net/ymate/platform/persistence/</name>
+                                </manifestSection>
+                            </manifestSections>
+                            <manifestEntries>
+                                <Specification-Version>${project.version}</Specification-Version>
+                                <Implementation-Title>${project.name}</Implementation-Title>
+                                <Implementation-Version>${maven.build.timestamp}</Implementation-Version>
+                                <Implementation-Vendor>www.ymate.net</Implementation-Vendor>
+                            </manifestEntries>
+                        </archive>
+                    </configuration>
+                </plugin>
+            </plugins>
+        </pluginManagement>
     </build>
 
     <dependencies>
