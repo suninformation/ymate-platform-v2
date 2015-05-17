@@ -31,10 +31,10 @@ public interface IEventConfig {
     /**
      * @return 返回默认事件触发模式，取值范围：NORMAL-同步执行，ASYNC-异步执行，默认为ASYNC
      */
-    public IEvent.MODE getDefaultMode();
+    public Events.MODE getDefaultMode();
 
     /**
-     * @return 返回初始化线程池大小，默认为 Runtime.getRuntime().availableProcessors() * 2 + 1
+     * @return 返回初始化线程池大小，默认为 Runtime.getRuntime().availableProcessors()
      */
     public int getThreadPoolSize();
 

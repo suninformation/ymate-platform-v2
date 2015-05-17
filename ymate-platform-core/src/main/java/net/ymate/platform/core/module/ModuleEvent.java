@@ -13,20 +13,29 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.ymate.platform.core.event;
+package net.ymate.platform.core.module;
+
+import net.ymate.platform.core.event.EventContext;
+import net.ymate.platform.core.event.IEvent;
 
 /**
- * 事件监听器接口，用于接收并处理一种事件类型
+ * 模块事件对象
  *
- * @author 刘镇 (suninformation@163.com) on 15/5/16 上午2:20
+ * @author 刘镇 (suninformation@163.com) on 15/5/17 下午8:51
  * @version 1.0
  */
-public interface IEventListener<CONTEXT extends EventContext> {
+public class ModuleEvent extends EventContext<IModule, ModuleEvent.EVENT> implements IEvent {
 
     /**
-     * 处理事件监听
-     *
-     * @param context
+     * 模块事件枚举：<br>
+     * MODULE_INITED - 模块初始化事件<br>
+     * MODULE_DESTROYED - 模块销毁事件
      */
-    public void handle(CONTEXT context);
+    public enum EVENT {
+        MODULE_INITED, MODULE_DESTROYED
+    }
+
+    public ModuleEvent(IModule owner, EVENT eventName) {
+        super(owner, ModuleEvent.class, eventName);
+    }
 }

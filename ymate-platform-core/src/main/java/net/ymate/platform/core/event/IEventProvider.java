@@ -21,7 +21,7 @@ package net.ymate.platform.core.event;
  * @author 刘镇 (suninformation@163.com) on 15/5/16 上午2:15
  * @version 1.0
  */
-public interface IEventProvider<T, E extends Enum<E>, EVENT extends IEvent<T, E>, CONTEXT extends EventContext<T, E>> {
+public interface IEventProvider<T, E extends Enum<E>, EVENT extends Class<IEvent>, CONTEXT extends EventContext<T, E>> {
 
     /**
      * 初始化事件管理提供者对象
@@ -53,7 +53,7 @@ public interface IEventProvider<T, E extends Enum<E>, EVENT extends IEvent<T, E>
      * @param eventClass    监听的事件类型
      * @param eventListener 事件监听器接口实例
      */
-    public void registerListener(Class<? extends IEvent> eventClass, IEventListener<EVENT, CONTEXT> eventListener);
+    public void registerListener(EVENT eventClass, IEventListener<CONTEXT> eventListener);
 
     /**
      * 触发事件
@@ -61,5 +61,5 @@ public interface IEventProvider<T, E extends Enum<E>, EVENT extends IEvent<T, E>
      * @param mode    事件触发模式
      * @param context 事件上下文
      */
-    public void fireEvent(IEvent.MODE mode, CONTEXT context);
+    public void fireEvent(Events.MODE mode, CONTEXT context);
 }

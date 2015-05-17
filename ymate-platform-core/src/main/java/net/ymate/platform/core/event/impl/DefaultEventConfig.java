@@ -15,7 +15,7 @@
  */
 package net.ymate.platform.core.event.impl;
 
-import net.ymate.platform.core.event.IEvent;
+import net.ymate.platform.core.event.Events;
 import net.ymate.platform.core.event.IEventConfig;
 import net.ymate.platform.core.event.IEventProvider;
 import net.ymate.platform.core.lang.BlurObject;
@@ -35,7 +35,7 @@ public class DefaultEventConfig implements IEventConfig {
 
     private IEventProvider __eventProvider;
 
-    private IEvent.MODE __defaultMode;
+    private Events.MODE __defaultMode;
 
     private int __threadPoolSize;
 
@@ -57,11 +57,11 @@ public class DefaultEventConfig implements IEventConfig {
             __eventProvider = new DefaultEventProvider();
         }
         //
-        __defaultMode = IEvent.MODE.valueOf(StringUtils.defaultIfBlank(params.get("default_mode"), "ASYNC").toUpperCase());
+        __defaultMode = Events.MODE.valueOf(StringUtils.defaultIfBlank(params.get("default_mode"), "ASYNC").toUpperCase());
         //
         __threadPoolSize = BlurObject.bind(params.get("thread_pool_size")).toIntValue();
         if (__threadPoolSize <= 0) {
-            __threadPoolSize = Runtime.getRuntime().availableProcessors() * 2 + 1;
+            __threadPoolSize = Runtime.getRuntime().availableProcessors();
         }
     }
 
@@ -69,7 +69,7 @@ public class DefaultEventConfig implements IEventConfig {
         return __eventProvider;
     }
 
-    public IEvent.MODE getDefaultMode() {
+    public Events.MODE getDefaultMode() {
         return __defaultMode;
     }
 

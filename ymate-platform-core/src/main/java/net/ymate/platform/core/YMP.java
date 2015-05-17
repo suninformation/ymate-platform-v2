@@ -29,6 +29,7 @@ import net.ymate.platform.core.handle.ModuleHandler;
 import net.ymate.platform.core.handle.ProxyHandler;
 import net.ymate.platform.core.lang.BlurObject;
 import net.ymate.platform.core.module.IModule;
+import net.ymate.platform.core.module.ModuleEvent;
 import net.ymate.platform.core.module.annotation.Module;
 import net.ymate.platform.core.util.RuntimeUtils;
 import org.apache.commons.lang.StringUtils;
@@ -87,6 +88,10 @@ public class YMP {
      */
     public YMP(IConfig config) {
         __config = config;
+        // 初始化事件管理器，并注册框架、模块事件
+        __events = Events.create(new DefaultEventConfig(__config.getEventConfigs()));
+        __events.registerEvent(ApplicationEvent.class);
+        __events.registerEvent(ModuleEvent.class);
         // 创建根对象工厂
         __beanFactory = new DefaultBeanFactory();
         __beanFactory.registerHandler(Bean.class);
@@ -120,13 +125,13 @@ public class YMP {
      */
     public synchronized YMP init() throws Exception {
         if (!__inited) {
-            // 初始化事件管理器
-            __events = Events.create(new DefaultEventConfig(__config.getEventConfigs()));
             // 初始化根对象工厂
             __moduleFactory.init();
             for (IModule _module : __modules.values()) {
                 if (!_module.isInited()) {
                     _module.init(this);
+                    // 触发模块初始化完成事件
+                    __events.fireEvent(Events.MODE.NORMAL, new ModuleEvent(_module, ModuleEvent.EVENT.MODULE_INITED));
                 }
             }
             // 初始化对象工厂
@@ -137,24 +142,10 @@ public class YMP {
             __beanFactory.initBeanIoC();
             //
             __inited = true;
+            // 触发框架初始化完成事件
+            __events.fireEvent(Events.MODE.NORMAL, new ApplicationEvent(this, ApplicationEvent.EVENT.APPLICATION_INITED));
         }
         return this;
-    }
-
-    /**
-     * 初始化所有已加载的模块(调用此方法前须保证YMP已经初始化)
-     *
-     * @throws Exception
-     */
-    public synchronized void initModules() throws Exception {
-        if (!__inited) {
-            // 初始化所有已加载模块
-            for (IModule _module : __modules.values()) {
-                if (!_module.isInited()) {
-                    _module.init(this);
-                }
-            }
-        }
     }
 
     /**
@@ -164,11 +155,15 @@ public class YMP {
      */
     public void destroy() throws Exception {
         if (__inited) {
+            // 触发框架销毁事件
+            __events.fireEvent(new ApplicationEvent(this, ApplicationEvent.EVENT.APPLICATION_DESTROYED));
+            //
             __inited = false;
-            // 销毁事件管理器
-            __events.destroy();
             // 销毁所有已加载模块
             for (IModule _module : __modules.values()) {
+                // 触发模块销毁事件
+                __events.fireEvent(Events.MODE.NORMAL, new ModuleEvent(_module, ModuleEvent.EVENT.MODULE_DESTROYED));
+                //
                 _module.destroy();
             }
             __modules = null;
@@ -180,6 +175,8 @@ public class YMP {
             //
             __beanFactory.destroy();
             __beanFactory = null;
+            // 销毁事件管理器
+            __events.destroy();
         }
     }
 
@@ -313,6 +310,8 @@ public class YMP {
                 if (!_module.isInited()) {
                     try {
                         _module.init(__owner);
+                        // 触发模块初始化完成事件
+                        __owner.getEvents().fireEvent(Events.MODE.NORMAL, new ModuleEvent(_module, ModuleEvent.EVENT.MODULE_INITED));
                     } catch (Exception e) {
                         throw new RuntimeException(RuntimeUtils.unwrapThrow(e));
                     }

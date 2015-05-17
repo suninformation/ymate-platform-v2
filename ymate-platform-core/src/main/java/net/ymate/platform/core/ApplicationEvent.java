@@ -13,20 +13,29 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.ymate.platform.core.event;
+package net.ymate.platform.core;
+
+import net.ymate.platform.core.event.EventContext;
+import net.ymate.platform.core.event.IEvent;
 
 /**
- * 事件监听器接口，用于接收并处理一种事件类型
+ * 框架事件对象
  *
- * @author 刘镇 (suninformation@163.com) on 15/5/16 上午2:20
+ * @author 刘镇 (suninformation@163.com) on 15/5/17 下午6:35
  * @version 1.0
  */
-public interface IEventListener<CONTEXT extends EventContext> {
+public class ApplicationEvent extends EventContext<YMP, ApplicationEvent.EVENT> implements IEvent {
 
     /**
-     * 处理事件监听
-     *
-     * @param context
+     * 框架事件枚举：<br>
+     * APPLICATION_INITED - 框架初始化事件<br>
+     * APPLICATION_DESTROYED - 框架销毁事件
      */
-    public void handle(CONTEXT context);
+    public enum EVENT {
+        APPLICATION_INITED, APPLICATION_DESTROYED
+    }
+
+    public ApplicationEvent(YMP owner, EVENT eventName) {
+        super(owner, ApplicationEvent.class, eventName);
+    }
 }

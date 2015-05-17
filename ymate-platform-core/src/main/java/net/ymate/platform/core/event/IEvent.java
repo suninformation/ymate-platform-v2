@@ -21,24 +21,5 @@ package net.ymate.platform.core.event;
  * @author 刘镇 (suninformation@163.com) on 15/5/16 上午2:21
  * @version 1.0
  */
-public interface IEvent<T, E extends Enum<E>> {
-
-    /**
-     * 事件触发模式枚举：<br>
-     * NORMAL - 同步执行<br>
-     * ASYNC  - 异步执行
-     */
-    public enum MODE {
-        NORMAL, ASYNC
-    }
-
-    /**
-     * @return 返回事件来源对象
-     */
-    public T getEventOwnObject();
-
-    /**
-     * @return 返回事件名称枚举
-     */
-    public Enum<E> getEventNameEnum();
+public interface IEvent {
 }

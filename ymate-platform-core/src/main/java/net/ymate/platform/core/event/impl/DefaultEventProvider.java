@@ -31,27 +31,27 @@ import java.util.concurrent.Executors;
  * @author 刘镇 (suninformation@163.com) on 15/5/16 上午2:38
  * @version 1.0
  */
-public class DefaultEventProvider<T, E extends Enum<E>, EVENT extends IEvent<T, E>, CONTEXT extends EventContext<T, E>> implements IEventProvider<T, E, EVENT, CONTEXT> {
+public class DefaultEventProvider<T, E extends Enum<E>, EVENT extends Class<IEvent>, CONTEXT extends EventContext<T, E>> implements IEventProvider<T, E, EVENT, CONTEXT> {
 
     private IEventConfig __eventConfig;
 
     private ExecutorService __eventExecPool;
 
-    private Map<Class<? extends IEvent>, EVENT> __eventsMap;
+    private List<EVENT> __events;
 
-    private Map<Class<? extends IEvent>, List<IEventListener<EVENT, CONTEXT>>> __listenersMap;
+    private Map<EVENT, List<IEventListener<CONTEXT>>> __listenersMap;
 
     public void init(IEventConfig eventConfig) {
         __eventConfig = eventConfig;
         //
         int _poolSize = eventConfig.getThreadPoolSize();
         if (_poolSize <= 0) {
-            _poolSize = Runtime.getRuntime().availableProcessors() * 2 + 1;
+            _poolSize = Runtime.getRuntime().availableProcessors();
         }
         __eventExecPool = Executors.newFixedThreadPool(_poolSize);
         //
-        __eventsMap = new ConcurrentHashMap<Class<? extends IEvent>, EVENT>();
-        __listenersMap = new ConcurrentHashMap<Class<? extends IEvent>, List<IEventListener<EVENT, CONTEXT>>>();
+        __events = new ArrayList<EVENT>();
+        __listenersMap = new ConcurrentHashMap<EVENT, List<IEventListener<CONTEXT>>>();
     }
 
     public IEventConfig getEventConfig() {
@@ -63,44 +63,45 @@ public class DefaultEventProvider<T, E extends Enum<E>, EVENT extends IEvent<T, 
             __eventExecPool.shutdown();
             __eventExecPool = null;
         }
-        __eventsMap = null;
+        __events = null;
         __listenersMap = null;
     }
 
     public void registerEvent(EVENT event) {
-        __eventsMap.put(event.getClass(), event);
+        __events.add(event);
     }
 
-    public void registerListener(Class<? extends IEvent> eventClass, IEventListener<EVENT, CONTEXT> eventListener) {
+    public void registerListener(EVENT eventClass, IEventListener<CONTEXT> eventListener) {
         if (__listenersMap.containsKey(eventClass)) {
             __listenersMap.get(eventClass).add(eventListener);
         } else {
-            List<IEventListener<EVENT, CONTEXT>> _listeners = new ArrayList<IEventListener<EVENT, CONTEXT>>();
+            List<IEventListener<CONTEXT>> _listeners = new ArrayList<IEventListener<CONTEXT>>();
             _listeners.add(eventListener);
             __listenersMap.put(eventClass, _listeners);
         }
     }
 
-    public void fireEvent(IEvent.MODE mode, final CONTEXT context) {
-        final EVENT _event = __eventsMap.get(context.getEventClass());
-        if (_event != null) {
-            Collection<IEventListener<EVENT, CONTEXT>> _listeners = __listenersMap.get(context.getEventClass());
-            switch (mode) {
-                case ASYNC:
-                    for (final IEventListener<EVENT, CONTEXT> _listener : _listeners) {
-                        if (__eventExecPool != null) {
-                            __eventExecPool.execute(new Runnable() {
-                                public void run() {
-                                    _listener.handle(_event, context);
-                                }
-                            });
+    public void fireEvent(Events.MODE mode, final CONTEXT context) {
+        if (__events.contains(context.getEventClass())) {
+            Collection<IEventListener<CONTEXT>> _listeners = __listenersMap.get(context.getEventClass());
+            if (_listeners != null && !_listeners.isEmpty()) {
+                switch (mode) {
+                    case ASYNC:
+                        for (final IEventListener<CONTEXT> _listener : _listeners) {
+                            if (__eventExecPool != null) {
+                                __eventExecPool.execute(new Runnable() {
+                                    public void run() {
+                                        _listener.handle(context);
+                                    }
+                                });
+                            }
                         }
-                    }
-                    break;
-                default:
-                    for (final IEventListener<EVENT, CONTEXT> _listener : _listeners) {
-                        _listener.handle(_event, context);
-                    }
+                        break;
+                    default:
+                        for (final IEventListener<CONTEXT> _listener : _listeners) {
+                            _listener.handle(context);
+                        }
+                }
             }
         }
     }

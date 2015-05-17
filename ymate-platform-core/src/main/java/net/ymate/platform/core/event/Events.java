@@ -25,6 +25,15 @@ import net.ymate.platform.core.event.impl.DefaultEventConfig;
  */
 public class Events {
 
+    /**
+     * 事件触发模式枚举：<br>
+     * NORMAL - 同步执行<br>
+     * ASYNC  - 异步执行
+     */
+    public enum MODE {
+        NORMAL, ASYNC
+    }
+
     private IEventProvider __provider;
 
     public static Events create() {
@@ -49,13 +58,13 @@ public class Events {
     }
 
     @SuppressWarnings("unchecked")
-    public <T, E extends Enum<E>> Events registerEvent(IEvent<T, E> event) {
+    public <EVENT extends IEvent> Events registerEvent(Class<EVENT> event) {
         __provider.registerEvent(event);
         return this;
     }
 
     @SuppressWarnings("unchecked")
-    public <EVENT extends IEvent, CONTEXT extends EventContext> Events registerListener(Class<? extends IEvent> eventClass, IEventListener<EVENT, CONTEXT> eventListener) {
+    public <CONTEXT extends EventContext> Events registerListener(Class<? extends IEvent> eventClass, IEventListener<CONTEXT> eventListener) {
         __provider.registerListener(eventClass, eventListener);
         return this;
     }
@@ -67,7 +76,7 @@ public class Events {
     }
 
     @SuppressWarnings("unchecked")
-    public <CONTEXT extends EventContext> Events fireEvent(IEvent.MODE mode, CONTEXT context) {
+    public <CONTEXT extends EventContext> Events fireEvent(Events.MODE mode, CONTEXT context) {
         __provider.fireEvent(mode, context);
         return this;
     }
