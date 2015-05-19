@@ -34,7 +34,11 @@ public class InterceptProxy implements IProxy {
         InterceptContext _context = null;
         // 尝试处理@Before注解
         if (proxyChain.getTargetMethod().isAnnotationPresent(Before.class)) {
-            _context = new InterceptContext(IInterceptor.Direction.BEFORE, proxyChain.getTargetObject(), proxyChain.getTargetMethod(), proxyChain.getMethodParams());
+            _context = new InterceptContext(IInterceptor.Direction.BEFORE,
+                    proxyChain.getProxyFactory().getOwner(),
+                    proxyChain.getTargetObject(),
+                    proxyChain.getTargetMethod(),
+                    proxyChain.getMethodParams());
             Before _before = proxyChain.getTargetMethod().getAnnotation(Before.class);
             Object _resultObj = null;
             for (Class<? extends IInterceptor> _interceptClass : _before.value()) {
@@ -51,7 +55,11 @@ public class InterceptProxy implements IProxy {
         // 尝试处理@After注解
         if (proxyChain.getTargetMethod().isAnnotationPresent(After.class)) {
             // 初始化拦截器上下文对象，并将当前方法的执行结果对象赋予后置拦截器使用
-            _context = new InterceptContext(IInterceptor.Direction.AFTER, proxyChain.getTargetObject(), proxyChain.getTargetMethod(), proxyChain.getMethodParams());
+            _context = new InterceptContext(IInterceptor.Direction.AFTER,
+                    proxyChain.getProxyFactory().getOwner(),
+                    proxyChain.getTargetObject(),
+                    proxyChain.getTargetMethod(),
+                    proxyChain.getMethodParams());
             _context.setResultObject(_returnValue);
             After _after = proxyChain.getTargetMethod().getAnnotation(After.class);
             for (Class<? extends IInterceptor> _interceptClass : _after.value()) {

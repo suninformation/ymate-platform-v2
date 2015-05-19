@@ -15,6 +15,8 @@
  */
 package net.ymate.platform.core.beans.intercept;
 
+import net.ymate.platform.core.YMP;
+
 import java.lang.reflect.Method;
 
 /**
@@ -27,6 +29,8 @@ public class InterceptContext {
 
     private IInterceptor.Direction __direction;
 
+    private YMP __owner;
+
     private final Object __targetObject;
 
     private final Method __targetMethod;
@@ -35,8 +39,9 @@ public class InterceptContext {
 
     private Object __resultObject;
 
-    public InterceptContext(IInterceptor.Direction direction, Object targetObject, Method targetMethod, Object[] methodParams) {
+    public InterceptContext(IInterceptor.Direction direction, YMP owner, Object targetObject, Method targetMethod, Object[] methodParams) {
         __direction = direction;
+        __owner = owner;
         __targetObject = targetObject;
         __targetMethod = targetMethod;
         __methodParams = methodParams;
@@ -47,6 +52,13 @@ public class InterceptContext {
      */
     public IInterceptor.Direction getDirection() {
         return __direction;
+    }
+
+    /**
+     * @return 获取所属YMP框架管理器
+     */
+    public YMP getOwner() {
+        return __owner;
     }
 
     /**
@@ -87,7 +99,7 @@ public class InterceptContext {
     /**
      * 设置返回值
      *
-     * @param resultObject
+     * @param resultObject 方法结果对象
      */
     public void setResultObject(Object resultObject) {
         __resultObject = resultObject;
