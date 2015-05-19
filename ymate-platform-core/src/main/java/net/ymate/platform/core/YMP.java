@@ -21,6 +21,7 @@ import net.ymate.platform.core.beans.annotation.Bean;
 import net.ymate.platform.core.beans.annotation.Proxy;
 import net.ymate.platform.core.beans.impl.DefaultBeanFactory;
 import net.ymate.platform.core.beans.impl.proxy.DefaultProxyFactory;
+import net.ymate.platform.core.beans.intercept.InterceptProxy;
 import net.ymate.platform.core.beans.proxy.IProxy;
 import net.ymate.platform.core.beans.proxy.IProxyFactory;
 import net.ymate.platform.core.event.Events;
@@ -105,7 +106,7 @@ public class YMP {
         __registerScanPackages(__moduleFactory);
         __registerScanPackages(__beanFactory);
         // 创建代理工厂并初始化
-        __proxyFactory = new DefaultProxyFactory(this);
+        __proxyFactory = new DefaultProxyFactory(this).registerProxy(new InterceptProxy());
     }
 
     private void __registerScanPackages(IBeanFactory factory) {

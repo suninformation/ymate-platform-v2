@@ -41,6 +41,11 @@ public interface IProxyChain {
     public Class<?> getTargetClass();
 
     /**
+     * @return 获取代理目标对象
+     */
+    public Object getTargetObject();
+
+    /**
      * @return 获取被代理目标方法对象
      */
     public Method getTargetMethod();

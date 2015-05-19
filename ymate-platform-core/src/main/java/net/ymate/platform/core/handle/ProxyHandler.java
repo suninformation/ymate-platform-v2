@@ -17,6 +17,7 @@ package net.ymate.platform.core.handle;
 
 import net.ymate.platform.core.YMP;
 import net.ymate.platform.core.beans.IBeanHandler;
+import net.ymate.platform.core.beans.intercept.InterceptProxy;
 import net.ymate.platform.core.beans.proxy.IProxy;
 import net.ymate.platform.core.util.ClassUtils;
 
@@ -37,7 +38,9 @@ public class ProxyHandler implements IBeanHandler {
 
     public Object handle(Class<?> targetClass) throws Exception {
         if (ClassUtils.isInterfaceOf(targetClass, IProxy.class)) {
-            __owner.registerProxy((IProxy) targetClass.newInstance());
+            if (!targetClass.equals(InterceptProxy.class)) { // 排除框架内部拦截器代理类，因为YMP框架已经注册了它
+                __owner.registerProxy((IProxy) targetClass.newInstance());
+            }
         }
         return null;
     }

@@ -68,6 +68,10 @@ public class DefaultProxyChain implements IProxyChain {
         return this.targetClass;
     }
 
+    public Object getTargetObject() {
+        return this.targetObject;
+    }
+
     public Method getTargetMethod() {
         return this.targetMethod;
     }
