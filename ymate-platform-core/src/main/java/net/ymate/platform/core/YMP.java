@@ -25,7 +25,9 @@ import net.ymate.platform.core.beans.intercept.InterceptProxy;
 import net.ymate.platform.core.beans.proxy.IProxy;
 import net.ymate.platform.core.beans.proxy.IProxyFactory;
 import net.ymate.platform.core.event.Events;
+import net.ymate.platform.core.event.annotation.EventRegister;
 import net.ymate.platform.core.event.impl.DefaultEventConfig;
+import net.ymate.platform.core.handle.EventRegisterHandler;
 import net.ymate.platform.core.handle.ModuleHandler;
 import net.ymate.platform.core.handle.ProxyHandler;
 import net.ymate.platform.core.lang.BlurObject;
@@ -102,6 +104,7 @@ public class YMP {
         __moduleFactory = new BeanFactory(this);
         __moduleFactory.registerHandler(Module.class, new ModuleHandler(this));
         __moduleFactory.registerHandler(Proxy.class, new ProxyHandler(this));
+        __moduleFactory.registerHandler(EventRegister.class, new EventRegisterHandler(this));
         // 设置自动扫描应用包路径
         __registerScanPackages(__moduleFactory);
         __registerScanPackages(__beanFactory);
