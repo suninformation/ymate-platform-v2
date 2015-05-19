@@ -24,6 +24,7 @@ import net.ymate.platform.core.beans.annotation.Proxy;
 import net.ymate.platform.core.beans.proxy.IProxy;
 import net.ymate.platform.core.beans.proxy.IProxyFactory;
 import net.ymate.platform.core.beans.proxy.IProxyFilter;
+import net.ymate.platform.core.util.ClassUtils;
 import org.apache.commons.lang.StringUtils;
 
 import java.lang.annotation.Annotation;
@@ -225,7 +226,9 @@ public class DefaultBeanFactory implements IBeanFactory {
                     }
                 });
                 if (!_targetProxies.isEmpty()) {
-                    this.registerBean(_targetClass, proxyFactory.createProxy(_targetClass, _targetProxies));
+                    // 由于创建代理是通过接口重新实例化对象并覆盖原对象，所以需要复制原有对象成员（暂时先这样吧，还没想到好的处理办法）
+                    Object _targetObj = ClassUtils.wrapper(_entry.getValue()).duplicate(proxyFactory.createProxy(_targetClass, _targetProxies));
+                    this.registerBean(_targetClass, _targetObj);
                 }
             }
         }
