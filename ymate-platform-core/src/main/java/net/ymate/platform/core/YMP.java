@@ -140,10 +140,10 @@ public class YMP {
             }
             // 初始化对象工厂
             __beanFactory.init();
-            // 代理对象封装
-            __beanFactory.bindProxy(__proxyFactory);
+            // 初始化对象代理
+            __beanFactory.initProxy(__proxyFactory);
             // IoC依赖注入
-            __beanFactory.initBeanIoC();
+            __beanFactory.initIoC();
             //
             __inited = true;
             // 触发框架初始化完成事件

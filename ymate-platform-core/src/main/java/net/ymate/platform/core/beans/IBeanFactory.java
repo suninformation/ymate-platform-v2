@@ -62,17 +62,18 @@ public interface IBeanFactory {
     /**
      * @return 返回当前工厂管理的所有类对象映射
      */
-    public Map<Class<?>, Object> getBeans();
+    public Map<Class<?>, BeanMeta> getBeans();
 
     /**
      * 注册一个类到工厂
      *
      * @param clazz
-     * @throws Exception
      */
-    public void registerBean(Class<?> clazz) throws Exception;
+    public void registerBean(Class<?> clazz);
 
     public void registerBean(Class<?> clazz, Object object);
+
+    public void registerBean(BeanMeta beanMeta);
 
     /**
      * 初始化对象工厂
@@ -113,16 +114,16 @@ public interface IBeanFactory {
     public void setLoader(IBeanLoader loader);
 
     /**
-     * 绑定代理工厂
+     * 初始化代理工厂
      *
      * @param proxyFactory
      */
-    public void bindProxy(IProxyFactory proxyFactory) throws Exception;
+    public void initProxy(IProxyFactory proxyFactory) throws Exception;
 
     /**
      * 初始化依赖注入
      *
      * @throws Exception
      */
-    public void initBeanIoC() throws Exception;
+    public void initIoC() throws Exception;
 }

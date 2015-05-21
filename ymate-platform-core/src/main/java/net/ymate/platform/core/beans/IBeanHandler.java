@@ -15,6 +15,8 @@
  */
 package net.ymate.platform.core.beans;
 
+import net.ymate.platform.core.beans.annotation.Bean;
+
 /**
  * 对象处理器
  *
@@ -25,7 +27,11 @@ public interface IBeanHandler {
 
     public static final IBeanHandler DEFAULT_HANDLER = new IBeanHandler() {
         public Object handle(Class<?> targetClass) throws Exception {
-            return targetClass.newInstance();
+            Bean _bean = targetClass.getAnnotation(Bean.class);
+            if (_bean.singleton()) {
+                return BeanMeta.create(targetClass.newInstance(), targetClass);
+            }
+            return BeanMeta.create(targetClass);
         }
     };
 

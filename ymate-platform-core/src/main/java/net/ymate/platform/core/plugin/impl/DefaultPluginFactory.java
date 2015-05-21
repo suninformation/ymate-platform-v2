@@ -16,6 +16,7 @@
 package net.ymate.platform.core.plugin.impl;
 
 import net.ymate.platform.core.YMP;
+import net.ymate.platform.core.beans.BeanMeta;
 import net.ymate.platform.core.beans.IBeanFactory;
 import net.ymate.platform.core.beans.impl.DefaultBeanFactory;
 import net.ymate.platform.core.beans.impl.DefaultBeanLoader;
@@ -79,14 +80,14 @@ public class DefaultPluginFactory implements IPluginFactory {
         //
         __beanFactory = new DefaultBeanFactory() {
             @Override
-            protected void __addClass(Class<?> targetClass, Object instance) {
-                PluginMeta _meta = (PluginMeta) instance;
+            protected void __addClass(BeanMeta beanMeta) {
+                PluginMeta _meta = (PluginMeta) beanMeta.getBeanObject();
                 IPluginContext _context = new DefaultPluginContext(_factory, _meta);
-                IPlugin _plugin = ClassUtils.impl(targetClass, IPlugin.class);
+                IPlugin _plugin = ClassUtils.impl(beanMeta.getBeanClass(), IPlugin.class);
                 if (_plugin != null) {
                     // 先尝试从PluginExtend注解中获取扩展对象
-                    if (targetClass.isAnnotationPresent(PluginExtend.class)) try {
-                        PluginExtend _extend = targetClass.getAnnotation(PluginExtend.class);
+                    if (beanMeta.getBeanClass().isAnnotationPresent(PluginExtend.class)) try {
+                        PluginExtend _extend = beanMeta.getBeanClass().getAnnotation(PluginExtend.class);
                         IPluginExtendParser _parser = _extend.parserClass() != null ? _extend.parserClass().newInstance() : __config.getPluginExtendParser();
                         if (_parser != null) {
                             // TODO 插件XML扩展分析
@@ -96,12 +97,12 @@ public class DefaultPluginFactory implements IPluginFactory {
                         e.printStackTrace();
                     }
                     // 若扩展对象为null，则尝试通过IPluginExtend接口方式获取扩展对象
-                    if (_meta.getExtendObject() == null && ClassUtils.isInterfaceOf(targetClass, IPluginExtend.class)) {
+                    if (_meta.getExtendObject() == null && ClassUtils.isInterfaceOf(beanMeta.getBeanClass(), IPluginExtend.class)) {
                         IPluginExtend _extend = (IPluginExtend) _plugin;
                         _meta.setExtendObject(_extend.getExtendObject(_context));
                     }
                     //
-                    super.__addClass(targetClass, _plugin);
+                    super.__addClass(BeanMeta.create(_plugin, beanMeta.getBeanClass()));
                     //
                     __pluginMetaWithId.put(_meta.getId(), _meta);
                     __pluginMetaWithClass.put(_meta.getInitClass(), _meta);

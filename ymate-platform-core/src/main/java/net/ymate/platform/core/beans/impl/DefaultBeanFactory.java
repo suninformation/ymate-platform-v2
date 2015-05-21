@@ -15,6 +15,7 @@
  */
 package net.ymate.platform.core.beans.impl;
 
+import net.ymate.platform.core.beans.BeanMeta;
 import net.ymate.platform.core.beans.IBeanFactory;
 import net.ymate.platform.core.beans.IBeanHandler;
 import net.ymate.platform.core.beans.IBeanLoader;
@@ -48,18 +49,20 @@ public class DefaultBeanFactory implements IBeanFactory {
     private Map<Class<? extends Annotation>, IBeanHandler> __beanHandlerMap;
 
     // 对象类型 -> 对象实例
-    private Map<Class<?>, Object> __beanInstancesMap;
+    private Map<Class<?>, BeanMeta> __beanInstancesMap;
 
     // 接口类型 -> 对象类型
     private Map<Class<?>, Class<?>> __beanInterfacesMap;
 
     private IBeanLoader __beanLoader;
 
+    private IProxyFactory __proxyFactory;
+
     public DefaultBeanFactory() {
         this.__packageNames = new ArrayList<String>();
         this.__excludedClassSet = new ArrayList<Class<?>>();
         this.__beanHandlerMap = new HashMap<Class<? extends Annotation>, IBeanHandler>();
-        this.__beanInstancesMap = new HashMap<Class<?>, Object>();
+        this.__beanInstancesMap = new HashMap<Class<?>, BeanMeta>();
         this.__beanInterfacesMap = new HashMap<Class<?>, Class<?>>();
     }
 
@@ -90,11 +93,27 @@ public class DefaultBeanFactory implements IBeanFactory {
     public <T> T getBean(Class<T> clazz) {
         T _obj = null;
         if (clazz != null && !clazz.isAnnotation()) {
+            BeanMeta _beanMeta = null;
             if (clazz.isInterface()) {
                 Class<?> _targetClass = this.__beanInterfacesMap.get(clazz);
-                _obj = (T) this.__beanInstancesMap.get(_targetClass);
+                _beanMeta = this.__beanInstancesMap.get(_targetClass);
             } else {
-                _obj = (T) this.__beanInstancesMap.get(clazz);
+                _beanMeta = this.__beanInstancesMap.get(clazz);
+            }
+            if (_beanMeta != null) {
+                if (!_beanMeta.isSingleton()) {
+                    try {
+                        _obj = (T) _beanMeta.getBeanClass().newInstance();
+                        if (__proxyFactory != null) {
+                            _obj = (T) __wrapProxy(__proxyFactory, _obj);
+                        }
+                        __initBeanIoC(_beanMeta.getBeanClass(), _obj);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                } else {
+                    _obj = (T) _beanMeta.getBeanObject();
+                }
             }
             if (_obj == null && this.__parentFactory != null) {
                 _obj = this.__parentFactory.getBean(clazz);
@@ -103,22 +122,39 @@ public class DefaultBeanFactory implements IBeanFactory {
         return _obj;
     }
 
-    public Map<Class<?>, Object> getBeans() {
+    public Map<Class<?>, BeanMeta> getBeans() {
         return Collections.unmodifiableMap(this.__beanInstancesMap);
     }
 
-    public void registerBean(Class<?> clazz) throws Exception {
-        registerBean(clazz, clazz.newInstance());
+    public void registerBean(BeanMeta beanMeta) {
+        // 注解、枚举和接口类型采用不同方式处理
+        if (beanMeta.getBeanClass().isInterface()) {
+            if (beanMeta.getBeanObject() != null) {
+                __beanInstancesMap.put(beanMeta.getBeanClass(), beanMeta);
+                __addClassInterfaces(beanMeta);
+            }
+        } else if (!beanMeta.getBeanClass().isAnnotation() && !beanMeta.getBeanClass().isEnum()) {
+            __addClass(beanMeta);
+        }
+    }
+
+    public void registerBean(Class<?> clazz) {
+        registerBean(BeanMeta.create(clazz));
     }
 
     public void registerBean(Class<?> clazz, Object object) {
-        // 注解、枚举和接口类型采用不同方式处理
-        if (clazz.isInterface()) {
-            Class<?> _targetClass = object.getClass();
-            __beanInstancesMap.put(_targetClass, object);
-            __addClassInterfaces(_targetClass);
-        } else if (!clazz.isAnnotation() && !clazz.isEnum()) {
-            __addClass(clazz, object);
+        registerBean(BeanMeta.create(object, clazz));
+    }
+
+    protected void __addClass(BeanMeta beanMeta) {
+        __beanInstancesMap.put(beanMeta.getBeanClass(), beanMeta);
+        //
+        __addClassInterfaces(beanMeta);
+    }
+
+    protected void __addClassInterfaces(BeanMeta beanMeta) {
+        for (Class<?> _interface : beanMeta.getBeanInterfaces(__excludedClassSet)) {
+            __beanInterfacesMap.put(_interface, beanMeta.getBeanClass());
         }
     }
 
@@ -142,29 +178,18 @@ public class DefaultBeanFactory implements IBeanFactory {
                             IBeanHandler _handler = __beanHandlerMap.get(_anno.annotationType());
                             if (_handler != null) {
                                 Object _instance = _handler.handle(_class);
-                                if (_instance != null) __addClass(_class, _instance);
+                                if (_instance != null) {
+                                    if (_instance instanceof BeanMeta) {
+                                        __addClass((BeanMeta) _instance);
+                                    } else {
+                                        __addClass(BeanMeta.create(_instance, _class));
+                                    }
+                                }
                             }
                         }
                     }
                 }
             }
-        }
-    }
-
-    protected void __addClass(Class<?> targetClass, Object instance) {
-        __beanInstancesMap.put(targetClass, instance);
-        //
-        __addClassInterfaces(targetClass);
-    }
-
-    protected void __addClassInterfaces(Class<?> targetClass) {
-        Class<?>[] _interfaces = targetClass.getInterfaces();
-        for (Class<?> _interface : _interfaces) {
-            // 排除JDK自带的接口和自己定接口列表
-            if (/* k.startsWith("java") || */__excludedClassSet.contains(_interface)) {
-                continue;
-            }
-            __beanInterfacesMap.put(_interface, targetClass);
         }
     }
 
@@ -194,63 +219,82 @@ public class DefaultBeanFactory implements IBeanFactory {
         this.__beanLoader = loader;
     }
 
-    public void bindProxy(IProxyFactory proxyFactory) throws Exception {
-        for (Map.Entry<Class<?>, Object> _entry : this.getBeans().entrySet()) {
-            if (!_entry.getKey().isInterface()) {
-                final Class<?> _targetClass = _entry.getKey();
-                List<IProxy> _targetProxies = proxyFactory.getProxies(new IProxyFilter() {
-
-                    private boolean __doCheckAnnotation(Proxy targetProxyAnno) {
-                        // 若设置了自定义注解类型，则判断targetClass是否匹配，否则返回true
-                        if (targetProxyAnno.annotation() != null && targetProxyAnno.annotation().length > 0) {
-                            for (Class<? extends Annotation> _annoClass : targetProxyAnno.annotation()) {
-                                if (_targetClass.isAnnotationPresent(_annoClass)) {
-                                    return true;
-                                }
-                            }
-                            return false;
-                        }
-                        return true;
-                    }
-
-                    public boolean filter(IProxy targetProxy) {
-                        Proxy _targetProxyAnno = targetProxy.getClass().getAnnotation(Proxy.class);
-                        // 若已设置作用包路径
-                        if (StringUtils.isNotBlank(_targetProxyAnno.packageScope())) {
-                            // 若当前类对象所在包路径匹配
-                            if (!StringUtils.startsWith(_targetClass.getPackage().getName(), _targetProxyAnno.packageScope())) {
-                                return false;
-                            }
-                        }
-                        return __doCheckAnnotation(_targetProxyAnno);
-                    }
-                });
-                if (!_targetProxies.isEmpty()) {
-                    // 由于创建代理是通过接口重新实例化对象并覆盖原对象，所以需要复制原有对象成员（暂时先这样吧，还没想到好的处理办法）
-                    Object _targetObj = ClassUtils.wrapper(_entry.getValue()).duplicate(proxyFactory.createProxy(_targetClass, _targetProxies));
-                    this.registerBean(_targetClass, _targetObj);
-                }
+    public void initProxy(IProxyFactory proxyFactory) throws Exception {
+        __proxyFactory = proxyFactory;
+        for (Map.Entry<Class<?>, BeanMeta> _entry : this.getBeans().entrySet()) {
+            if (!_entry.getKey().isInterface() && _entry.getValue().isSingleton()) {
+                _entry.getValue().setBeanObject(__wrapProxy(proxyFactory, _entry.getValue().getBeanObject()));
             }
         }
     }
 
-    public void initBeanIoC() throws Exception {
-        for (Map.Entry<Class<?>, Object> _bean : this.getBeans().entrySet()) {
-            Field[] _fields = _bean.getKey().getDeclaredFields();
-            if (_fields != null && _fields.length > 0) {
-                for (Field _field : _fields) {
-                    if (_field.isAnnotationPresent(Inject.class)) {
-                        Object _injectObj = null;
-                        if (_field.isAnnotationPresent(By.class)) {
-                            By _injectBy = _field.getAnnotation(By.class);
-                            _injectObj = this.getBean(_injectBy.value());
-                        } else {
-                            _injectObj = this.getBean(_field.getType());
+    protected Object __wrapProxy(IProxyFactory proxyFactory, Object targetObject) {
+        final Class<?> _targetClass = targetObject.getClass();
+        //
+        List<IProxy> _targetProxies = proxyFactory.getProxies(new IProxyFilter() {
+
+            private boolean __doCheckAnnotation(Proxy targetProxyAnno) {
+                // 若设置了自定义注解类型，则判断targetClass是否匹配，否则返回true
+                if (targetProxyAnno.annotation() != null && targetProxyAnno.annotation().length > 0) {
+                    for (Class<? extends Annotation> _annoClass : targetProxyAnno.annotation()) {
+                        if (_targetClass.isAnnotationPresent(_annoClass)) {
+                            return true;
                         }
-                        if (_injectObj != null) {
-                            _field.setAccessible(true);
-                            _field.set(_bean.getValue(), _injectObj);
-                        }
+                    }
+                    return false;
+                }
+                return true;
+            }
+
+            public boolean filter(IProxy targetProxy) {
+                Proxy _targetProxyAnno = targetProxy.getClass().getAnnotation(Proxy.class);
+                // 若已设置作用包路径
+                if (StringUtils.isNotBlank(_targetProxyAnno.packageScope())) {
+                    // 若当前类对象所在包路径匹配
+                    if (!StringUtils.startsWith(_targetClass.getPackage().getName(), _targetProxyAnno.packageScope())) {
+                        return false;
+                    }
+                }
+                return __doCheckAnnotation(_targetProxyAnno);
+            }
+        });
+        if (!_targetProxies.isEmpty()) {
+            // 由于创建代理是通过接口重新实例化对象并覆盖原对象，所以需要复制原有对象成员（暂时先这样吧，还没想到好的处理办法）
+            return ClassUtils.wrapper(targetObject).duplicate(proxyFactory.createProxy(_targetClass, _targetProxies));
+        }
+        return targetObject;
+    }
+
+    public void initIoC() throws Exception {
+        for (Map.Entry<Class<?>, BeanMeta> _bean : this.getBeans().entrySet()) {
+            if (!_bean.getKey().isInterface() && _bean.getValue().isSingleton()) {
+                __initBeanIoC(_bean.getKey(), _bean.getValue().getBeanObject());
+            }
+        }
+    }
+
+    /**
+     * 对目标类进行IoC注入
+     *
+     * @param targetClass  目标类型对象(不允许是代理对象)
+     * @param targetObject 目标类型对象实例
+     * @throws Exception
+     */
+    protected void __initBeanIoC(Class<?> targetClass, Object targetObject) throws Exception {
+        Field[] _fields = targetClass.getDeclaredFields();
+        if (_fields != null && _fields.length > 0) {
+            for (Field _field : _fields) {
+                if (_field.isAnnotationPresent(Inject.class)) {
+                    Object _injectObj = null;
+                    if (_field.isAnnotationPresent(By.class)) {
+                        By _injectBy = _field.getAnnotation(By.class);
+                        _injectObj = this.getBean(_injectBy.value());
+                    } else {
+                        _injectObj = this.getBean(_field.getType());
+                    }
+                    if (_injectObj != null) {
+                        _field.setAccessible(true);
+                        _field.set(targetObject, _injectObj);
                     }
                 }
             }

@@ -27,4 +27,9 @@ import java.lang.annotation.*;
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
 public @interface Bean {
+
+    /**
+     * @return 是否为单例，默认为true
+     */
+    boolean singleton() default true;
 }
