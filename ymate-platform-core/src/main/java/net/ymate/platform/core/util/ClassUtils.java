@@ -376,7 +376,7 @@ public class ClassUtils {
          */
         protected BeanWrapper(T target) {
             this.target = target;
-            this._fields = new HashMap<String, Field>();
+            this._fields = new LinkedHashMap<String, Field>();
             //
             for (Field _field : getFields(target.getClass(), true)/*target.getClass().getDeclaredFields()*/) {
                 if (Modifier.isStatic(_field.getModifiers())) {
@@ -415,6 +415,29 @@ public class ClassUtils {
 
         public Object getValue(String fieldName) throws IllegalAccessException {
             return _fields.get(fieldName).get(target);
+        }
+
+        public BeanWrapper<T> fromMap(Map<String, Object> map) {
+            for (Map.Entry<String, Object> _entry : map.entrySet()) {
+                try {
+                    setValue(_entry.getKey(), _entry.getValue());
+                } catch (Exception ignored) {
+                    // 当赋值发生异常时，忽略当前值
+                }
+            }
+            return this;
+        }
+
+        public Map<String, Object> toMap() {
+            Map<String, Object> _returnValues = new HashMap<String, Object>();
+            for (Field _field : _fields.values()) {
+                try {
+                    _returnValues.put(_field.getName(), getValue(_field.getName()));
+                } catch (Exception ignored) {
+                    // 当赋值发生异常时，忽略当前值
+                }
+            }
+            return _returnValues;
         }
 
         /**
