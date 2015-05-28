@@ -24,7 +24,6 @@ import org.apache.commons.lang.StringUtils;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
-import java.lang.reflect.Parameter;
 import java.util.*;
 
 /**
@@ -74,16 +73,20 @@ public class ValidationMeta {
             // 处理每个方法参数上有关验证的注解
             Map<String, Annotation[]> _paramAnnos = new LinkedHashMap<String, Annotation[]>();
             String[] _paramNames = ClassUtils.getMethodParamNames(_method);
-            Parameter[] _params = _method.getParameters();
+            Annotation[][] _params = _method.getParameterAnnotations();
             for (int _idx = 0; _idx < _paramNames.length; _idx++) {
                 List<Annotation> _tmpAnnoList = new ArrayList<Annotation>();
                 String _paramName = _paramNames[_idx];
-                // 尝试获取自定义的Parameter别名
-                VField _vField = _params[_idx].getAnnotation(VField.class);
-                if (_vField != null && StringUtils.isNotBlank(_vField.name())) {
-                    _paramName = _vField.name();
+                // 尝试获取自定义的参数别名
+                for (Annotation _vField : _params[_idx]) {
+                    if (_vField instanceof VField) {
+                        if (StringUtils.isNotBlank(((VField) _vField).name())) {
+                            _paramName = ((VField) _vField).name();
+                            break;
+                        }
+                    }
                 }
-                for (Annotation _annotation : _params[_idx].getAnnotations()) {
+                for (Annotation _annotation : _params[_idx]) {
                     if (__doIsValid(_annotation)) {
                         _tmpAnnoList.add(_annotation);
                     } else if (_annotation instanceof VModel) {
