@@ -15,6 +15,7 @@
  */
 package net.ymate.platform.core;
 
+import net.ymate.platform.core.beans.BeanMeta;
 import net.ymate.platform.core.beans.IBeanFactory;
 import net.ymate.platform.core.beans.IBeanHandler;
 import net.ymate.platform.core.beans.annotation.Bean;
@@ -233,6 +234,10 @@ public class YMP {
 
     public void registerBean(Class<?> clazz, Object object) {
         __beanFactory.registerBean(clazz, object);
+    }
+
+    public void registerBean(BeanMeta beanMeta) {
+        __beanFactory.registerBean(beanMeta);
     }
 
     /**
