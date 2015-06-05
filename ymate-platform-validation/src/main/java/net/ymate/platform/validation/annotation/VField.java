@@ -31,5 +31,5 @@ public @interface VField {
     /**
      * @return 自定义参数名称
      */
-    String name() default "";
+    String name();
 }
