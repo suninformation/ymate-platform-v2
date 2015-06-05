@@ -20,6 +20,8 @@ import net.ymate.platform.webmvc.base.Type;
 import org.apache.commons.lang.StringUtils;
 
 import javax.servlet.http.HttpServletRequest;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * 默认WebMVC请求上下文接口实现
@@ -51,6 +53,8 @@ public class DefaultRequestContext implements IRequestContext {
 
     private Type.HttpMethod __httpMethod;
 
+    private Map<String, Object> __attributes;
+
     public DefaultRequestContext(HttpServletRequest request, String prefix) {
         this.requestMapping = this.originalUrl = StringUtils.defaultIfBlank(request.getPathInfo(), request.getServletPath());
         if (StringUtils.isNotBlank(prefix)) {
@@ -74,6 +78,8 @@ public class DefaultRequestContext implements IRequestContext {
             this.suffix = "";
         }
         __httpMethod = Type.HttpMethod.valueOf(request.getMethod());
+        //
+        __attributes = new HashMap<String, Object>();
     }
 
     public String getRequestMapping() {
@@ -94,5 +100,21 @@ public class DefaultRequestContext implements IRequestContext {
 
     public Type.HttpMethod getHttpMethod() {
         return __httpMethod;
+    }
+
+    ////
+
+    @SuppressWarnings("unchecked")
+    public <T> T getAttribute(String name) {
+        return (T) __attributes.get(name);
+    }
+
+    public IRequestContext addAttribute(String name, Object value) {
+        __attributes.put(name, value);
+        return this;
+    }
+
+    public Map<String, Object> getAttributes() {
+        return __attributes;
     }
 }

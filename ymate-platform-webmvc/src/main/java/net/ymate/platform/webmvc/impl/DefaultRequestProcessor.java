@@ -81,7 +81,7 @@ public class DefaultRequestProcessor implements IRequestProcessor {
             } else if (_annotation instanceof PathVariable) {
                 PathVariable _anno = (PathVariable) _annotation;
                 _pName = __doGetParamName("", _anno.value(), paramName);
-                _pValue = BlurObject.bind(WebContext.getContext().getAttribute(_pName)).toObjectValue(paramType);
+                _pValue = BlurObject.bind(WebContext.getRequestContext().getAttribute(_pName)).toObjectValue(paramType);
                 break;
             } else if (_annotation instanceof RequestHeader) {
                 RequestHeader _anno = (RequestHeader) _annotation;

@@ -17,6 +17,8 @@ package net.ymate.platform.webmvc;
 
 import net.ymate.platform.webmvc.base.Type;
 
+import java.util.Map;
+
 /**
  * WebMVC请求上下文接口，分析请求路径，仅返回控制器请求映射
  *
@@ -49,4 +51,12 @@ public interface IRequestContext {
      * @return 返回当前请求方式
      */
     public Type.HttpMethod getHttpMethod();
+
+    //
+
+    public <T> T getAttribute(String name);
+
+    public IRequestContext addAttribute(String name, Object value);
+
+    public Map<String, Object> getAttributes();
 }

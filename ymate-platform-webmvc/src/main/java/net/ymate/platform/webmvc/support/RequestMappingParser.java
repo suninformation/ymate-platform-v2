@@ -19,7 +19,6 @@ import net.ymate.platform.core.lang.PairObject;
 import net.ymate.platform.webmvc.IRequestContext;
 import net.ymate.platform.webmvc.RequestMeta;
 import net.ymate.platform.webmvc.base.Type;
-import net.ymate.platform.webmvc.context.WebContext;
 import org.apache.commons.lang.StringUtils;
 
 import java.util.HashMap;
@@ -184,7 +183,7 @@ public class RequestMappingParser {
                 Map<String, String> _params = this.__doParserMappingParams(_mappingParamPart, _result.getKey()[3]);
                 // 参数变量存入WebContext容器中的PathVariable参数池
                 for (String _key : _params.keySet()) {
-                    WebContext.getContext().addAttribute(_key, _params.get(_key));
+                    context.addAttribute(_key, _params.get(_key));
                 }
                 _meta = _mappingMap.get(_result.getKey()[0]);
             }
