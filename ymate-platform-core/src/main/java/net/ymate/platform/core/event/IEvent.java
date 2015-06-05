@@ -22,4 +22,6 @@ package net.ymate.platform.core.event;
  * @version 1.0
  */
 public interface IEvent {
+
+    public final static String EVENT_SOURCE = "__EventObject__";
 }

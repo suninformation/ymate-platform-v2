@@ -54,7 +54,17 @@ public class EventContext<T, E extends Enum> extends EventObject {
         return __eventName;
     }
 
-    public EventContext<T, E> addParamExtend(String paramName, String paramObject) {
+    @SuppressWarnings("unchecked")
+    public <EVENT_SOURCE> EVENT_SOURCE getEventSource() {
+        return (EVENT_SOURCE) __params.get(IEvent.EVENT_SOURCE);
+    }
+
+    public EventContext<T, E> setEventSource(Object eventSource) {
+        __params.put(IEvent.EVENT_SOURCE, eventSource);
+        return this;
+    }
+
+    public EventContext<T, E> addParamExtend(String paramName, Object paramObject) {
         __params.put(paramName, paramObject);
         return this;
     }
