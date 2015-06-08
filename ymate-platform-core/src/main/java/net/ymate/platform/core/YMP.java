@@ -37,6 +37,8 @@ import net.ymate.platform.core.module.ModuleEvent;
 import net.ymate.platform.core.module.annotation.Module;
 import net.ymate.platform.core.util.RuntimeUtils;
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import java.io.InputStream;
 import java.lang.annotation.Annotation;
@@ -50,6 +52,8 @@ import java.util.concurrent.ConcurrentHashMap;
  * @version 1.0
  */
 public class YMP {
+
+    private static final Log _LOG = LogFactory.getLog(YMP.class);
 
     public static final Version VERSION = new Version(2, 0, 0, Version.VersionType.Alphal);
 
@@ -130,6 +134,8 @@ public class YMP {
      */
     public synchronized YMP init() throws Exception {
         if (!__inited) {
+            //
+            _LOG.info("Initializing ymate-platform-core-" + VERSION + " - debug:" + __config.isDevelopMode());
             // 初始化根对象工厂
             __moduleFactory.init();
             for (IModule _module : __modules.values()) {

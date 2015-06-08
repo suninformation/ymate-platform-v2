@@ -28,6 +28,8 @@ import net.ymate.platform.core.util.FileUtils;
 import net.ymate.platform.core.util.ResourceUtils;
 import net.ymate.platform.core.util.RuntimeUtils;
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import java.io.File;
 import java.net.URL;
@@ -40,6 +42,8 @@ import java.net.URL;
  */
 @Module
 public class Cfgs implements IModule, IConfig {
+
+    private static final Log _LOG = LogFactory.getLog(Cfgs.class);
 
     public static final Version VERSION = new Version(2, 0, 0, Cfgs.class.getPackage().getImplementationVersion(), Version.VersionType.Alphal);
 
@@ -82,6 +86,9 @@ public class Cfgs implements IModule, IConfig {
 
     public void init(YMP owner) throws Exception {
         if (!__inited) {
+            //
+            _LOG.info("Initializing ymate-platform-configuration-" + VERSION);
+            //
             __owner = owner;
             __moduleCfg = new DefaultModuleCfg(__owner);
             //

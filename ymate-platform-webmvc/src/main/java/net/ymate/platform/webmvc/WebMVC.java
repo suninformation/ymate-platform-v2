@@ -31,6 +31,8 @@ import net.ymate.platform.webmvc.support.RequestExecutor;
 import net.ymate.platform.webmvc.support.RequestMappingParser;
 import net.ymate.platform.webmvc.view.IView;
 import net.ymate.platform.webmvc.view.impl.HttpStatusView;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
@@ -45,6 +47,8 @@ import java.lang.reflect.Method;
  */
 @Module
 public class WebMVC implements IModule, IWebMvc {
+
+    private static final Log _LOG = LogFactory.getLog(WebMVC.class);
 
     public static final Version VERSION = new Version(2, 0, 0, WebMVC.class.getPackage().getImplementationVersion(), Version.VersionType.Alphal);
 
@@ -82,9 +86,13 @@ public class WebMVC implements IModule, IWebMvc {
 
     public void init(YMP owner) throws Exception {
         if (!__inited) {
+            //
+            _LOG.info("Initializing ymate-platform-webmvc-" + VERSION);
+            //
             __owner = owner;
             __moduleCfg = new DefaultModuleCfg(owner);
             __mappingParser = new RequestMappingParser();
+            __owner.getEvents().registerEvent(WebEvent.class);
             __owner.registerHandler(Controller.class, new ControllerHandler(__owner, this));
             //
             __inited = true;

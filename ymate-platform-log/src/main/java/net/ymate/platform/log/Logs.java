@@ -22,6 +22,8 @@ import net.ymate.platform.core.module.annotation.Module;
 import net.ymate.platform.core.util.ClassUtils;
 import net.ymate.platform.log.impl.DefaultLogger;
 import net.ymate.platform.log.impl.DefaultModuleCfg;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -34,6 +36,8 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 @Module
 public class Logs implements IModule, ILog {
+
+    private static final Log _LOG = LogFactory.getLog(Logs.class);
 
     public static final Version VERSION = new Version(2, 0, 0, Logs.class.getPackage().getImplementationVersion(), Version.VersionType.Alphal);
 
@@ -73,6 +77,9 @@ public class Logs implements IModule, ILog {
 
     public void init(YMP owner) throws Exception {
         if (!__inited) {
+            //
+            _LOG.info("Initializing ymate-platform-log-" + VERSION);
+            //
             __owner = owner;
             __moduleCfg = new DefaultModuleCfg(__owner);
             // 设置全局变量，便于配置文件内引用

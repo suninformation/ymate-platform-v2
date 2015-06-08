@@ -22,6 +22,8 @@ import net.ymate.platform.core.module.annotation.Module;
 import net.ymate.platform.validation.annotation.Validation;
 import net.ymate.platform.validation.annotation.Validator;
 import net.ymate.platform.validation.handle.ValidateHandler;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
@@ -37,6 +39,8 @@ import java.util.Map;
  */
 @Module
 public class Validations implements IModule, IValidation {
+
+    private static final Log _LOG = LogFactory.getLog(Validations.class);
 
     public static final Version VERSION = new Version(2, 0, 0, Validations.class.getPackage().getImplementationVersion(), Version.VersionType.Alphal);
 
@@ -74,6 +78,9 @@ public class Validations implements IModule, IValidation {
 
     public void init(YMP owner) throws Exception {
         if (!__inited) {
+            //
+            _LOG.info("Initializing ymate-platform-validation-" + VERSION);
+            //
             __owner = owner;
             __validators = new HashMap<Class<? extends Annotation>, IValidator>();
             __VALIDATION_META_CACHES = new HashMap<Class<?>, ValidationMeta>();

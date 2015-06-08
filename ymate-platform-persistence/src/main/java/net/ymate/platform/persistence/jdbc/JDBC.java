@@ -26,6 +26,8 @@ import net.ymate.platform.persistence.jdbc.impl.DefaultModuleCfg;
 import net.ymate.platform.persistence.jdbc.impl.DefaultSession;
 import net.ymate.platform.persistence.jdbc.support.EntityHandler;
 import net.ymate.platform.persistence.jdbc.transaction.Transactions;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -38,6 +40,8 @@ import java.util.Map;
  */
 @Module
 public class JDBC implements IModule, IDatabase {
+
+    private static final Log _LOG = LogFactory.getLog(JDBC.class);
 
     public static final Version VERSION = new Version(2, 0, 0, IPersistence.class.getPackage().getImplementationVersion(), Version.VersionType.Alphal);
 
@@ -75,6 +79,9 @@ public class JDBC implements IModule, IDatabase {
 
     public void init(YMP owner) throws Exception {
         if (!__inited) {
+            //
+            _LOG.info("Initializing ymate-platform-persistence-jdbc-" + VERSION);
+            //
             __owner = owner;
             __moduleCfg = new DefaultModuleCfg(owner);
             __owner.registerHandler(Entity.class, new EntityHandler(__owner));
