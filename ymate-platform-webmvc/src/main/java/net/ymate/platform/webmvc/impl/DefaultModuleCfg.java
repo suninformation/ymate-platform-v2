@@ -16,6 +16,7 @@
 package net.ymate.platform.webmvc.impl;
 
 import net.ymate.platform.core.YMP;
+import net.ymate.platform.core.lang.BlurObject;
 import net.ymate.platform.core.util.ClassUtils;
 import net.ymate.platform.core.util.RuntimeUtils;
 import net.ymate.platform.webmvc.IRequestProcessor;
@@ -26,8 +27,8 @@ import net.ymate.platform.webmvc.base.Type;
 import org.apache.commons.lang.LocaleUtils;
 import org.apache.commons.lang.StringUtils;
 
-import java.util.Locale;
-import java.util.Map;
+import java.io.File;
+import java.util.*;
 
 /**
  * 默认WebMVC模块配置接口实现
@@ -55,7 +56,11 @@ public class DefaultModuleCfg implements IWebMvcModuleCfg {
 
     private String __baseViewPath;
 
+    private String __abstractBaseViewPath;
+
     private String __pluginHome;
+
+    private String __abstractPluginHome;
 
     private String __cookiePrefix;
 
@@ -72,6 +77,10 @@ public class DefaultModuleCfg implements IWebMvcModuleCfg {
     private int __uploadTotalSizeMax;
 
     private int __uploadSizeThreshold;
+
+    private boolean __conventionMode;
+
+    private List<String> __conventionViewPaths;
 
     public DefaultModuleCfg(YMP owner) throws Exception {
         Map<String, String> _moduleCfgs = owner.getConfig().getModuleConfigs(IWebMvc.MODULE_NAME);
@@ -99,7 +108,15 @@ public class DefaultModuleCfg implements IWebMvcModuleCfg {
         __requestPrefix = StringUtils.trimToEmpty(_moduleCfgs.get("request_prefix"));
         //
         __baseViewPath = RuntimeUtils.replaceEnvVariable(StringUtils.defaultIfBlank(_moduleCfgs.get("base_view_path"), "/WEB-INF/templates/"));
+        __abstractBaseViewPath = __baseViewPath;
+        if (__abstractBaseViewPath.startsWith("/WEB-INF")) {
+            __abstractBaseViewPath = new File(RuntimeUtils.getRootPath(false), __abstractBaseViewPath).getPath();
+        }
         __pluginHome = RuntimeUtils.replaceEnvVariable(StringUtils.defaultIfBlank(_moduleCfgs.get("plugin_home"), "/WEB-INF/plugins"));
+        __abstractPluginHome = __pluginHome;
+        if (__abstractPluginHome.startsWith("/WEB-INF")) {
+            __abstractPluginHome = new File(RuntimeUtils.getRootPath(false), __abstractPluginHome).getPath();
+        }
         //
         __cookiePrefix = StringUtils.trimToEmpty(_moduleCfgs.get("cookie_prefix"));
         __cookieDomain = StringUtils.trimToEmpty(_moduleCfgs.get("cookie_domain"));
@@ -110,6 +127,9 @@ public class DefaultModuleCfg implements IWebMvcModuleCfg {
         __uploadFileSizeMax = Integer.parseInt(StringUtils.defaultIfBlank(_moduleCfgs.get("upload_file_size_max"), "10485760"));
         __uploadTotalSizeMax = Integer.parseInt(StringUtils.defaultIfBlank(_moduleCfgs.get("upload_total_size_max"), "10485760"));
         __uploadSizeThreshold = Integer.parseInt(StringUtils.defaultIfBlank(_moduleCfgs.get("upload_size_threshold"), "10240"));
+        //
+        __conventionMode = BlurObject.bind(_moduleCfgs.get("convention_mode")).toBooleanValue();
+        __conventionViewPaths = Arrays.asList(StringUtils.split(StringUtils.defaultIfBlank(_moduleCfgs.get("convention_view_paths"), ""), "|"));
     }
 
     public IRequestProcessor getRequestProcessor() {
@@ -144,8 +164,16 @@ public class DefaultModuleCfg implements IWebMvcModuleCfg {
         return __baseViewPath;
     }
 
+    public String getAbstractBaseViewPath() {
+        return __abstractBaseViewPath;
+    }
+
     public String getPluginHome() {
         return __pluginHome;
+    }
+
+    public String getAbstractPluginHome() {
+        return __abstractPluginHome;
     }
 
     public String getCookiePrefix() {
@@ -178,5 +206,13 @@ public class DefaultModuleCfg implements IWebMvcModuleCfg {
 
     public int getUploadSizeThreshold() {
         return __uploadSizeThreshold;
+    }
+
+    public boolean isConventionMode() {
+        return __conventionMode;
+    }
+
+    public List<String> getConventionViewPaths() {
+        return Collections.unmodifiableList(__conventionViewPaths);
     }
 }

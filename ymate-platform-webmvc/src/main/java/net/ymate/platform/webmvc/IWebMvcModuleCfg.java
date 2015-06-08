@@ -15,6 +15,7 @@
  */
 package net.ymate.platform.webmvc;
 
+import java.util.List;
 import java.util.Locale;
 
 /**
@@ -66,9 +67,19 @@ public interface IWebMvcModuleCfg {
     public String getBaseViewPath();
 
     /**
+     * @return 尽量返回控制器视图绝对路径
+     */
+    public String getAbstractBaseViewPath();
+
+    /**
      * @return 插件主目录路径，可选参数，默认值为/WEB-INF/plugins
      */
     public String getPluginHome();
+
+    /**
+     * @return 尽量返回插件主目录绝对路径
+     */
+    public String getAbstractPluginHome();
 
     /**
      * @return Cookie键前缀，可选参数，默认值为空
@@ -109,4 +120,14 @@ public interface IWebMvcModuleCfg {
      * @return 内存缓冲区的大小，默认值： 10240字节（=10K），即如果文件大于10K，将使用临时文件缓存上传文件
      */
     public int getUploadSizeThreshold();
+
+    /**
+     * @return 零配置模式(无需编写控制器代码, 直接匹配并执行视图)，可选参数，默认值为false
+     */
+    public boolean isConventionMode();
+
+    /**
+     * @return 零配置模式视图文件路径(基于base_view_path的相对路径)，可选参数，默认值为空(即不限制访问路径)，多个路径间用'|'分隔
+     */
+    public List<String> getConventionViewPaths();
 }
