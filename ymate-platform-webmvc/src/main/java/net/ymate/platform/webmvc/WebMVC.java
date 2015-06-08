@@ -189,6 +189,60 @@ public class WebMVC implements IModule, IWebMvc {
                     if (_view == null) {
                         // 采用系统默认方式处理约定优于配置的URL请求映射
                         String[] _fileTypes = {".html", ".jsp", ".ftl"};
+                        File _targetFile = null;
+                        for (String _fileType : _fileTypes) {
+                            _targetFile = new File(__moduleCfg.getAbstractBaseViewPath(), context.getRequestMapping() + _fileType);
+                            if (_targetFile.exists()) {
+                                if (".html".equals(_fileType)) {
+                                    _view = HtmlView.bind(this, context.getRequestMapping().substring(1));
+                                    break;
+                                } else if (".jsp".equals(_fileType)) {
+                                    _view = JspView.bind(this, context.getRequestMapping().substring(1));
+                                    break;
+                                } else if (".ftl".equals(_fileType)) {
+                                    _view = FreemarkerView.bind(this, context.getRequestMapping().substring(1));
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                    if (_view != null) {
+                        _view.render();
+                        return;
+                    } else {
+                        HttpStatusView.NOT_FOUND.render();
+                    }
+                } finally {
+                    WebContext.destroy();
+                }
+            } else {
+                response.sendError(HttpServletResponse.SC_NOT_FOUND);
+            }
+        } else if (__moduleCfg.isConventionMode()) {
+            boolean _isAllowConvention = false;
+            if (!__moduleCfg.getConventionViewPaths().isEmpty()) {
+                for (String _vPath : __moduleCfg.getConventionViewPaths()) {
+                    if (_vPath.charAt(0) != '/') {
+                        _vPath = "/" + _vPath;
+                    }
+                    if (context.getRequestMapping().startsWith(_vPath)) {
+                        _isAllowConvention = true;
+                        break;
+                    }
+                }
+            } else {
+                _isAllowConvention = true;
+            }
+            if (_isAllowConvention) {
+                WebContext.create(this, context, servletContext, request, response);
+                try {
+                    IView _view = null;
+                    if (__moduleCfg.getErrorProcessor() != null) {
+                        _view = __moduleCfg.getErrorProcessor().onConvention(this, context);
+                    }
+                    if (_view == null) {
+                        // 采用系统默认方式处理约定优于配置的URL请求映射
+                        String[] _fileTypes = {".html", ".jsp", ".ftl"};
                         for (String _fileType : _fileTypes) {
                             File _targetFile = new File(__moduleCfg.getAbstractBaseViewPath(), context.getRequestMapping() + _fileType);
                             if (_targetFile.exists()) {
