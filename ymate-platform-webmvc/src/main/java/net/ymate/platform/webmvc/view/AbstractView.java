@@ -158,9 +158,7 @@ public abstract class AbstractView implements IView {
                 // 模板基准路径并以'/WEB-INF'开始，以'/'结束
                 if (__baseViewPath == null) {
                     String _vPath = StringUtils.trimToNull(owner.getModuleCfg().getBaseViewPath());
-                    if (_vPath == null) {
-                        _vPath = "/WEB-INF/templates/";
-                    } else if (!_vPath.endsWith("/")) {
+                    if (!_vPath.endsWith("/")) {
                         _vPath += "/";
                     }
                     __baseViewPath = _vPath;
@@ -168,9 +166,8 @@ public abstract class AbstractView implements IView {
                 // 插件模板基准路径，以'/WEB-INF'开始，以'/'结束
                 if (__pluginViewPath == null) {
                     String _pHome = StringUtils.trimToNull(owner.getModuleCfg().getPluginHome());
-                    if (_pHome == null) {
-                        _pHome = "/WEB-INF/plugins/"; // 为了适应Web环境JSP文件的特殊性(即不能引用工程路径外的JSP文件), 建议采用默认"/WEB-INF/plugins/
-                    } else if (!_pHome.endsWith("/")) {
+                    // 为了适应Web环境JSP文件的特殊性(即不能引用工程路径外的JSP文件), 建议采用默认"/WEB-INF/plugins/
+                    if (!_pHome.endsWith("/")) {
                         _pHome += "/";
                     }
                     __pluginViewPath = _pHome;

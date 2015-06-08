@@ -38,8 +38,8 @@ public class View {
         return FreemarkerView.bind(owner, path);
     }
 
-    public static HtmlView htmlView(String htmlFile) throws Exception {
-        return HtmlView.bind(htmlFile);
+    public static HtmlView htmlView(IWebMvc owner, String htmlFile) throws Exception {
+        return HtmlView.bind(owner, htmlFile);
     }
 
     public static HtmlView htmlView(File htmlFile) throws Exception {

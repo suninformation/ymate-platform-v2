@@ -19,6 +19,7 @@ import net.ymate.platform.core.Version;
 import net.ymate.platform.core.YMP;
 import net.ymate.platform.core.module.IModule;
 import net.ymate.platform.core.module.annotation.Module;
+import net.ymate.platform.core.util.RuntimeUtils;
 import net.ymate.platform.webmvc.annotation.Controller;
 import net.ymate.platform.webmvc.annotation.FileUpload;
 import net.ymate.platform.webmvc.annotation.RequestMapping;
@@ -30,13 +31,17 @@ import net.ymate.platform.webmvc.support.MultipartRequestWrapper;
 import net.ymate.platform.webmvc.support.RequestExecutor;
 import net.ymate.platform.webmvc.support.RequestMappingParser;
 import net.ymate.platform.webmvc.view.IView;
+import net.ymate.platform.webmvc.view.impl.FreemarkerView;
+import net.ymate.platform.webmvc.view.impl.HtmlView;
 import net.ymate.platform.webmvc.view.impl.HttpStatusView;
+import net.ymate.platform.webmvc.view.impl.JspView;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.io.File;
 import java.lang.reflect.Method;
 
 /**
@@ -158,6 +163,58 @@ public class WebMVC implements IModule, IWebMvc {
                 }
             } else {
                 response.sendError(HttpServletResponse.SC_METHOD_NOT_ALLOWED);
+            }
+        } else if (__moduleCfg.isConventionMode()) {
+            boolean _isAllowConvention = false;
+            if (!__moduleCfg.getConventionViewPaths().isEmpty()) {
+                for (String _vPath : __moduleCfg.getConventionViewPaths()) {
+                    if (_vPath.charAt(0) != '/') {
+                        _vPath = "/" + _vPath;
+                    }
+                    if (context.getRequestMapping().startsWith(_vPath)) {
+                        _isAllowConvention = true;
+                        break;
+                    }
+                }
+            } else {
+                _isAllowConvention = true;
+            }
+            if (_isAllowConvention) {
+                WebContext.create(this, context, servletContext, request, response);
+                try {
+                    IView _view = null;
+                    if (__moduleCfg.getErrorProcessor() != null) {
+                        _view = __moduleCfg.getErrorProcessor().onConvention(this, context);
+                    }
+                    if (_view == null) {
+                        // 采用系统默认方式处理约定优于配置的URL请求映射
+                        String[] _fileTypes = {".html", ".jsp", ".ftl"};
+                        for (String _fileType : _fileTypes) {
+                            File _targetFile = new File(__moduleCfg.getAbstractBaseViewPath(), context.getRequestMapping() + _fileType);
+                            if (_targetFile.exists()) {
+                                if (".html".equals(_fileType)) {
+                                    _view = HtmlView.bind(this, context.getRequestMapping().substring(1));
+                                    break;
+                                } else if (".jsp".equals(_fileType)) {
+                                    _view = JspView.bind(this, context.getRequestMapping().substring(1));
+                                    break;
+                                } else if (".ftl".equals(_fileType)) {
+                                    _view = FreemarkerView.bind(this, context.getRequestMapping().substring(1));
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                    if (_view != null) {
+                        _view.render();
+                    } else {
+                        HttpStatusView.NOT_FOUND.render();
+                    }
+                } finally {
+                    WebContext.destroy();
+                }
+            } else {
+                response.sendError(HttpServletResponse.SC_NOT_FOUND);
             }
         } else {
             response.sendError(HttpServletResponse.SC_NOT_FOUND);

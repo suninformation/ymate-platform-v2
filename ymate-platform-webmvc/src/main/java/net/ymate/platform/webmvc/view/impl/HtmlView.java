@@ -15,6 +15,7 @@
  */
 package net.ymate.platform.webmvc.view.impl;
 
+import net.ymate.platform.webmvc.IWebMvc;
 import net.ymate.platform.webmvc.base.Type;
 import net.ymate.platform.webmvc.context.WebContext;
 import net.ymate.platform.webmvc.view.AbstractView;
@@ -37,9 +38,15 @@ public class HtmlView extends AbstractView {
      */
     protected String __content;
 
-    public static HtmlView bind(String htmlFile) throws Exception {
+    public static HtmlView bind(IWebMvc owner, String htmlFile) throws Exception {
         if (StringUtils.isNotBlank(htmlFile)) {
-            return bind(new File(htmlFile));
+            if (htmlFile.charAt(0) == '/') {
+                htmlFile = htmlFile.substring(1);
+            }
+            if (!htmlFile.endsWith(".html")) {
+                htmlFile += ".html";
+            }
+            return bind(new File(owner.getModuleCfg().getAbstractBaseViewPath(), htmlFile));
         }
         return null;
     }

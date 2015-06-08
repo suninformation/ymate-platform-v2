@@ -110,7 +110,7 @@ public class RequestExecutor {
                         _view = FreemarkerView.bind(__owner, _parts[1]);
                         break;
                     case HTML:
-                        _view = HtmlView.bind(new File(_parts[1]));
+                        _view = HtmlView.bind(__owner, _parts[1]);
                         break;
                     case HTTP_STATES:
                         _view = HttpStatusView.bind(Integer.parseInt(_parts[1]), _parts.length >= 3 ? _parts[2] : null);
