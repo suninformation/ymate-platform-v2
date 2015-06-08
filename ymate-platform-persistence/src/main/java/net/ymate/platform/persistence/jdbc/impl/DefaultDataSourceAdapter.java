@@ -19,6 +19,7 @@ import net.ymate.platform.persistence.jdbc.AbstractDataSourceAdapter;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.SQLException;
 
 /**
  * 默认数据源适配器
@@ -46,8 +47,13 @@ public class DefaultDataSourceAdapter extends AbstractDataSourceAdapter {
 
     public void destroy() {
         if (__inited) {
-            super.destroy();
+            try {
+                DriverManager.deregisterDriver(DriverManager.getDriver(__cfgMeta.getConnectionUrl()));
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
             __password = null;
+            super.destroy();
         }
     }
 }
