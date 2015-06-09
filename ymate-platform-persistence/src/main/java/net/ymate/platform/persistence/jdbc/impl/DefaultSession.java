@@ -442,7 +442,11 @@ public class DefaultSession implements ISession {
             if (__doCheckField(filter, _fieldName)) {
                 Object _value = null;
                 if (entityMeta.isPrimaryKey(_fieldName) && includePK) {
-                    _value = entityMeta.getPropertyByName(_fieldName).getField().get(((IEntity) targetObj).getId());
+                    if (entityMeta.isMultiplePrimaryKey()) {
+                        _value = entityMeta.getPropertyByName(_fieldName).getField().get(targetObj.getId());
+                    } else {
+                        _value = targetObj.getId();
+                    }
                 } else {
                     _value = entityMeta.getPropertyByName(_fieldName).getField().get(targetObj);
                 }
