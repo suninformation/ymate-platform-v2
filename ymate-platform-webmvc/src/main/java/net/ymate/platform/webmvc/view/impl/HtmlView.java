@@ -58,6 +58,10 @@ public class HtmlView extends AbstractView {
         return null;
     }
 
+    public static HtmlView bind(String content) throws Exception {
+        return new HtmlView(content);
+    }
+
     /**
      * 构造器
      *

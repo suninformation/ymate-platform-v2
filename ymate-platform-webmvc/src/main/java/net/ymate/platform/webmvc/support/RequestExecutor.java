@@ -130,6 +130,8 @@ public class RequestExecutor {
                     case TEXT:
                         _view = TextView.bind(_parts[1]);
                 }
+            } else {
+                _view = HtmlView.bind((String) result);
             }
         }
         return _view;
