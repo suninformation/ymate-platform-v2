@@ -420,7 +420,7 @@ public class DefaultSession implements ISession {
                 String _fieldName = entityMeta.getPrimaryKeys().get(0);
                 if (__doCheckField(filter, _fieldName)) {
                     _fields.add(_fieldName);
-                    _values.add(targetObj);
+                    _values.add(((IEntity) targetObj).getId());
                 }
             }
         }
