@@ -20,15 +20,18 @@ import net.ymate.platform.core.beans.intercept.IInterceptor;
 import java.lang.annotation.*;
 
 /**
- * 配置目标方法的后置拦截器
+ * 拦截器清理
  *
- * @author 刘镇 (suninformation@163.com) on 15/5/19 下午1:32
+ * @author 刘镇 (suninformation@163.com) on 15/7/1 上午11:13
  * @version 1.0
  */
-@Target({ElementType.TYPE, ElementType.METHOD})
+@Target({ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
-public @interface After {
+public @interface Clean {
 
-    Class<? extends IInterceptor>[] value();
+    /**
+     * @return 设置需要清理的类拦截器，若不提供则默认清理全部类拦截器
+     */
+    Class<? extends IInterceptor>[] value() default {};
 }
