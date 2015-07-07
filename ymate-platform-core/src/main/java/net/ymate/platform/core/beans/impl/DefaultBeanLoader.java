@@ -79,8 +79,8 @@ public class DefaultBeanLoader implements IBeanLoader {
         String _resFileName = resourceFile.getName();
         if (resourceFile.isFile()) {
             if (_resFileName.endsWith(".class") && _resFileName.indexOf('$') < 0) {
-                Class<?> _class = ClassUtils.loadClass(packageName + "." + _resFileName.replace(".class", ""), getClassLoader().getClass());
-                //
+                String _className = packageName + "." + _resFileName.replace(".class", "");
+                Class<?> _class = __doLoadClass(_className);
                 __doAddClass(_returnValue, _class, filter);
             }
         } else {
@@ -101,8 +101,8 @@ public class DefaultBeanLoader implements IBeanLoader {
             String _className = _entry.getName().replaceAll("/", ".");
             if (_className.endsWith(".class") && _className.indexOf('$') < 0) {
                 if (_className.startsWith(packageName)) {
-                    Class<?> _class = ClassUtils.loadClass(_className.substring(0, _className.lastIndexOf('.')), getClassLoader().getClass());
-                    //
+                    _className = _className.substring(0, _className.lastIndexOf('.'));
+                    Class<?> _class = __doLoadClass(_className);
                     __doAddClass(_returnValue, _class, filter);
                 }
             }
@@ -120,27 +120,36 @@ public class DefaultBeanLoader implements IBeanLoader {
             } else {
                 _zipFilePath = StringUtils.substringAfter(zipUrl.toString(), "zip:");
             }
-            ClassUtils.InnerClassLoader _innerLoader = ((ClassUtils.InnerClassLoader) ClassUtils.getDefaultClassLoader());
             _zipStream = new ZipInputStream(new FileInputStream(new File(_zipFilePath)));
             ZipEntry _zipEntry = null;
             while (null != (_zipEntry = _zipStream.getNextEntry())) {
                 if (!_zipEntry.isDirectory()) {
                     if (_zipEntry.getName().endsWith(".class") && _zipEntry.getName().indexOf('$') < 0) {
-                        _innerLoader.addURL(zipUrl);
                         String _className = StringUtils.substringBefore(_zipEntry.getName().replace("/", "."), ".class");
-                        //
-                        __doAddClass(_returnValue, Class.forName(_className, false, _innerLoader), filter);
+                        __doAddClass(_returnValue, __doLoadClass(_className), filter);
                     }
                 }
                 _zipStream.closeEntry();
             }
         } finally {
-            try {
-                _zipStream.close();
-            } catch (IOException e) {
+            if (_zipStream != null) {
+                try {
+                    _zipStream.close();
+                } catch (IOException ignored) {
+                }
             }
         }
         return _returnValue;
+    }
+
+    private Class<?> __doLoadClass(String className) throws ClassNotFoundException {
+        Class<?> _class = null;
+        try {
+            _class = ClassUtils.loadClass(className, this.getClass());
+        } catch (ClassNotFoundException e) {
+            _class = getClassLoader().loadClass(className);
+        }
+        return _class;
     }
 
     private void __doAddClass(List<Class<?>> collection, Class<?> targetClass, IBeanFilter filter) {
