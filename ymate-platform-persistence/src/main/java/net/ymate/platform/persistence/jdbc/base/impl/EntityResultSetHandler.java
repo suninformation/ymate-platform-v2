@@ -15,7 +15,6 @@
  */
 package net.ymate.platform.persistence.jdbc.base.impl;
 
-import net.ymate.platform.core.util.ClassUtils;
 import net.ymate.platform.persistence.base.EntityMeta;
 import net.ymate.platform.persistence.base.IEntity;
 import net.ymate.platform.persistence.jdbc.base.AbstractResultSetHandler;
@@ -39,13 +38,14 @@ public class EntityResultSetHandler<T extends IEntity> extends AbstractResultSet
         this.__entityMeta = EntityMeta.createAndGet(entityClass);
     }
 
+    @SuppressWarnings("unchecked")
     protected T __doProcessResultRow(ResultSet resultSet) throws Exception {
         T _returnValue = __entityClass.newInstance();
         Object _primaryKeyObject = null;
         if (__entityMeta.isMultiplePrimaryKey()) {
             _primaryKeyObject = __entityMeta.getPrimaryKeyClass().newInstance();
             //
-            ((IEntity) _returnValue).setId((Serializable) _primaryKeyObject);
+            _returnValue.setId((Serializable) _primaryKeyObject);
         }
         for (int _idx = 0; _idx < __doGetColumnCount(); _idx++) {
             EntityMeta.PropertyMeta _meta = __entityMeta.getPropertyByName(_doGetColumnMeta(_idx).getName());

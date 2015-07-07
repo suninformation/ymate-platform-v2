@@ -15,8 +15,6 @@
  */
 package net.ymate.platform.webmvc.view;
 
-import net.ymate.platform.webmvc.base.Type;
-
 import java.io.OutputStream;
 import java.util.Map;
 
