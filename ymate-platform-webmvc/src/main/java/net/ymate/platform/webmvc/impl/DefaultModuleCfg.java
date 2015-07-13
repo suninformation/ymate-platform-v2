@@ -58,10 +58,6 @@ public class DefaultModuleCfg implements IWebMvcModuleCfg {
 
     private String __abstractBaseViewPath;
 
-    private String __pluginHome;
-
-    private String __abstractPluginHome;
-
     private String __cookiePrefix;
 
     private String __cookieDomain;
@@ -112,11 +108,6 @@ public class DefaultModuleCfg implements IWebMvcModuleCfg {
         if (__abstractBaseViewPath.startsWith("/WEB-INF")) {
             __abstractBaseViewPath = new File(RuntimeUtils.getRootPath(false), __abstractBaseViewPath).getPath();
         }
-        __pluginHome = RuntimeUtils.replaceEnvVariable(StringUtils.defaultIfBlank(_moduleCfgs.get("plugin_home"), "/WEB-INF/plugins"));
-        __abstractPluginHome = __pluginHome;
-        if (__abstractPluginHome.startsWith("/WEB-INF")) {
-            __abstractPluginHome = new File(RuntimeUtils.getRootPath(false), __abstractPluginHome).getPath();
-        }
         //
         __cookiePrefix = StringUtils.trimToEmpty(_moduleCfgs.get("cookie_prefix"));
         __cookieDomain = StringUtils.trimToEmpty(_moduleCfgs.get("cookie_domain"));
@@ -166,14 +157,6 @@ public class DefaultModuleCfg implements IWebMvcModuleCfg {
 
     public String getAbstractBaseViewPath() {
         return __abstractBaseViewPath;
-    }
-
-    public String getPluginHome() {
-        return __pluginHome;
-    }
-
-    public String getAbstractPluginHome() {
-        return __abstractPluginHome;
     }
 
     public String getCookiePrefix() {

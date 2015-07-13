@@ -72,16 +72,6 @@ public interface IWebMvcModuleCfg {
     public String getAbstractBaseViewPath();
 
     /**
-     * @return 插件主目录路径，可选参数，默认值为/WEB-INF/plugins
-     */
-    public String getPluginHome();
-
-    /**
-     * @return 尽量返回插件主目录绝对路径
-     */
-    public String getAbstractPluginHome();
-
-    /**
      * @return Cookie键前缀，可选参数，默认值为空
      */
     public String getCookiePrefix();

@@ -44,8 +44,6 @@ public abstract class AbstractView implements IView {
 
     protected static String __baseViewPath;
 
-    protected static String __pluginViewPath;
-
     private static final Object __LOCKER = new Object();
 
     ////
@@ -163,15 +161,6 @@ public abstract class AbstractView implements IView {
                     }
                     __baseViewPath = _vPath;
                 }
-                // 插件模板基准路径，以'/WEB-INF'开始，以'/'结束
-                if (__pluginViewPath == null) {
-                    String _pHome = StringUtils.trimToNull(owner.getModuleCfg().getPluginHome());
-                    // 为了适应Web环境JSP文件的特殊性(即不能引用工程路径外的JSP文件), 建议采用默认"/WEB-INF/plugins/
-                    if (!_pHome.endsWith("/")) {
-                        _pHome += "/";
-                    }
-                    __pluginViewPath = _pHome;
-                }
                 // 初始化Freemarker模板引擎配置
                 if (__freemarkerConfig == null) {
                     __freemarkerConfig = new Configuration(Configuration.VERSION_2_3_22);
@@ -184,12 +173,6 @@ public abstract class AbstractView implements IView {
                             _tmpLoaders.add(new FileTemplateLoader(new File(RuntimeUtils.getRootPath(), StringUtils.substringAfter(__baseViewPath, "/WEB-INF/"))));
                         } else {
                             _tmpLoaders.add(new FileTemplateLoader(new File(__baseViewPath)));
-                        }
-                        //
-                        if (__pluginViewPath.startsWith("/WEB-INF")) {
-                            _tmpLoaders.add(new FileTemplateLoader(new File(RuntimeUtils.getRootPath(), StringUtils.substringAfter(__pluginViewPath, "/WEB-INF/"))));
-                        } else {
-                            _tmpLoaders.add(new FileTemplateLoader(new File(__pluginViewPath)));
                         }
                         //
                         __freemarkerConfig.setTemplateLoader(new MultiTemplateLoader(_tmpLoaders.toArray(new TemplateLoader[_tmpLoaders.size()])));
