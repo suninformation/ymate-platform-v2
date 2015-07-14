@@ -80,7 +80,7 @@ public class Plugins implements IModule, IPlugins {
                 //
                 _LOG.info("Initializing ymate-platform-plugin-" + VERSION);
                 //
-                String _pHome = RuntimeUtils.replaceEnvVariable(StringUtils.defaultIfBlank(_moduleCfgs.get("plugin_home"), "${root}plugins"));
+                String _pHome = RuntimeUtils.replaceEnvVariable(StringUtils.defaultIfBlank(_moduleCfgs.get("plugin_home"), "${root}/plugins"));
                 //
                 DefaultPluginConfig _config = loadConfig(_pHome, StringUtils.split(StringUtils.trimToEmpty(_moduleCfgs.get("autoscan_packages")), "|"));
                 if (_config.getAutoscanPackages().isEmpty()) {

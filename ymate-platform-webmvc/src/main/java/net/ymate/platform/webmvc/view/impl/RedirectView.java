@@ -54,13 +54,7 @@ public class RedirectView extends AbstractView {
             }
             // 重定向相对路径
             else {
-                String _rootPath = RuntimeUtils.getRootPath();
-                int pos = _rootPath.lastIndexOf('/');
-                if (pos > 0) {
-                    __path = _rootPath.substring(0, pos) + "/" + __path;
-                } else {
-                    __path = "/" + __path;
-                }
+                __path = RuntimeUtils.getRootPath() + "/" + __path;
             }
         }
         WebContext.getResponse().sendRedirect(__doBuildURL(__path));
