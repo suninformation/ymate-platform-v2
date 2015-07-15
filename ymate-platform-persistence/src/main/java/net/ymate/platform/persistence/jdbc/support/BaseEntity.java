@@ -19,6 +19,7 @@ import net.ymate.platform.core.util.ClassUtils;
 import net.ymate.platform.persistence.base.IEntity;
 import net.ymate.platform.persistence.jdbc.IConnectionHolder;
 import net.ymate.platform.persistence.jdbc.ISession;
+import net.ymate.platform.persistence.jdbc.JDBC;
 import net.ymate.platform.persistence.jdbc.base.IResultSet;
 import net.ymate.platform.persistence.jdbc.impl.DefaultSession;
 import net.ymate.platform.persistence.jdbc.query.EntitySQL;
@@ -67,8 +68,19 @@ public abstract class BaseEntity<Entity extends IEntity, PK extends Serializable
         return this.__entityClass;
     }
 
+    /**
+     * @return 确保能够正确获取到数据库连接持有对象，即连接持有对象为null时尝试获取JDBC默认连接
+     * @throws Exception
+     */
+    protected IConnectionHolder __doGetConnectionHolderSafed() throws Exception {
+        if (this.__connectionHolder == null) {
+            return JDBC.get().getDefaultConnectionHolder();
+        }
+        return this.__connectionHolder;
+    }
+
     public Entity load(Fields fields) throws Exception {
-        ISession _session = new DefaultSession(this.__connectionHolder);
+        ISession _session = new DefaultSession(__doGetConnectionHolderSafed());
         try {
             return _session.find(EntitySQL.create(this.getEntityClass()).field(fields), this.getId());
         } finally {
@@ -78,7 +90,7 @@ public abstract class BaseEntity<Entity extends IEntity, PK extends Serializable
 
     @SuppressWarnings("unchecked")
     public Entity save() throws Exception {
-        ISession _session = new DefaultSession(this.__connectionHolder);
+        ISession _session = new DefaultSession(__doGetConnectionHolderSafed());
         try {
             _session.find(EntitySQL.create(this.getEntityClass()), this.getId());
             return _session.insert((Entity) this);
@@ -89,7 +101,7 @@ public abstract class BaseEntity<Entity extends IEntity, PK extends Serializable
 
     @SuppressWarnings("unchecked")
     public Entity saveOrUpdate(Fields fields) throws Exception {
-        ISession _session = new DefaultSession(this.__connectionHolder);
+        ISession _session = new DefaultSession(__doGetConnectionHolderSafed());
         try {
             Entity _t = _session.find(EntitySQL.create(this.getEntityClass()).field(fields), this.getId());
             if (_t == null) {
@@ -103,7 +115,7 @@ public abstract class BaseEntity<Entity extends IEntity, PK extends Serializable
 
     @SuppressWarnings("unchecked")
     public Entity update(Fields fields) throws Exception {
-        ISession _session = new DefaultSession(this.__connectionHolder);
+        ISession _session = new DefaultSession(__doGetConnectionHolderSafed());
         try {
             return _session.update((Entity) this, fields);
         } finally {
@@ -113,7 +125,7 @@ public abstract class BaseEntity<Entity extends IEntity, PK extends Serializable
 
     @SuppressWarnings("unchecked")
     public Entity delete() throws Exception {
-        ISession _session = new DefaultSession(this.__connectionHolder);
+        ISession _session = new DefaultSession(__doGetConnectionHolderSafed());
         try {
             _session.delete(this.getEntityClass(), this.getId());
             return (Entity) this;
@@ -123,7 +135,7 @@ public abstract class BaseEntity<Entity extends IEntity, PK extends Serializable
     }
 
     public IResultSet<Entity> find(Where where, Fields fields) throws Exception {
-        ISession _session = new DefaultSession(this.__connectionHolder);
+        ISession _session = new DefaultSession(__doGetConnectionHolderSafed());
         try {
             return _session.find(EntitySQL.create(this.getEntityClass()).field(fields), where);
         } finally {
@@ -132,7 +144,7 @@ public abstract class BaseEntity<Entity extends IEntity, PK extends Serializable
     }
 
     public IResultSet<Entity> find(Where where, Fields fields, Page page) throws Exception {
-        ISession _session = new DefaultSession(this.__connectionHolder);
+        ISession _session = new DefaultSession(__doGetConnectionHolderSafed());
         try {
             return _session.find(EntitySQL.create(this.getEntityClass()).field(fields), where, page);
         } finally {
@@ -141,7 +153,7 @@ public abstract class BaseEntity<Entity extends IEntity, PK extends Serializable
     }
 
     public Entity findFirst(Where where, Fields fields) throws Exception {
-        ISession _session = new DefaultSession(this.__connectionHolder);
+        ISession _session = new DefaultSession(__doGetConnectionHolderSafed());
         try {
             return _session.findFirst(EntitySQL.create(this.getEntityClass()).field(fields), where);
         } finally {
