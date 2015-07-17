@@ -43,7 +43,7 @@ public class CompareValidator implements IValidator {
                     break;
                 case EQ:
             }
-            if (_matched) {
+            if (!_matched) {
                 return new ValidateResult(context.getParamName(), _condStr.concat(" ").concat(_vCompare.with()));
             }
         }
