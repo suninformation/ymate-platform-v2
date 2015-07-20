@@ -22,6 +22,7 @@ import org.apache.commons.logging.LogFactory;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.text.MessageFormat;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -158,6 +159,21 @@ public class I18N {
             }
         }
         return StringUtils.defaultIfEmpty(_returnValue, defaultValue);
+    }
+
+    /**
+     * @param resourceName
+     * @param key
+     * @param defaultValue
+     * @param args
+     * @return 格式化消息字符串与参数绑定
+     */
+    public static String formatMessage(String resourceName, String key, String defaultValue, Object... args) {
+        String _msg = load(resourceName, key, defaultValue);
+        if (args != null && args.length > 0) {
+            return MessageFormat.format(_msg, args);
+        }
+        return _msg;
     }
 
     /**
