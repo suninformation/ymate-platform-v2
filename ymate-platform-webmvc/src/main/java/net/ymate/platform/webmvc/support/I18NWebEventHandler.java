@@ -1,0 +1,72 @@
+/*
+ * Copyright 2007-2107 the original author or authors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package net.ymate.platform.webmvc.support;
+
+import net.ymate.platform.core.i18n.II18NEventHandler;
+import net.ymate.platform.core.lang.BlurObject;
+import net.ymate.platform.core.util.RuntimeUtils;
+import net.ymate.platform.webmvc.context.WebContext;
+import net.ymate.platform.webmvc.util.CookieHelper;
+import org.apache.commons.lang.LocaleUtils;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Locale;
+
+/**
+ * @author 刘镇 (suninformation@163.com) on 15/7/20 上午10:02
+ * @version 1.0
+ */
+public class I18NWebEventHandler implements II18NEventHandler {
+
+    public static final String I18N_LANG_KEY = "_long";
+
+    public Locale onLocale() {
+        String _langStr = null;
+        // 先尝试取URL参数变量
+        if (WebContext.getContext() != null) {
+            _langStr = WebContext.getRequestContext().getAttribute(I18N_LANG_KEY);
+            if (_langStr == null) {
+                // 再尝试从请求参数中获取
+                _langStr = WebContext.getRequest().getParameter(I18N_LANG_KEY);
+                if (_langStr == null) {
+                    // 最后一次机会，尝试读取Cookies
+                    BlurObject _langCookie = CookieHelper.bind(WebContext.getContext().getOwner()).getCookie(I18N_LANG_KEY);
+                    if (_langCookie != null) {
+                        _langStr = _langCookie.toStringValue();
+                    }
+                }
+            }
+        }
+        return LocaleUtils.toLocale(_langStr);
+    }
+
+    public void onChanged(Locale locale) {
+        if (WebContext.getContext() != null) {
+            CookieHelper.bind(WebContext.getContext().getOwner()).setCookie(I18N_LANG_KEY, locale.toString());
+        }
+    }
+
+    public InputStream onLoad(String resourceName) throws IOException {
+        File _resFile = new File(RuntimeUtils.replaceEnvVariable("${user.dir}/i18n/"), resourceName);
+        if (_resFile.exists() && _resFile.canRead()) {
+            return new FileInputStream(_resFile);
+        }
+        return null;
+    }
+}
