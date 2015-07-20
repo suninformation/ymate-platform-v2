@@ -32,13 +32,15 @@ import org.apache.commons.lang.StringUtils;
 @Validator(VEmail.class)
 public class EmailValidator implements IValidator {
 
+    private static String __EMAIL_VALIDATOR = "ymp.validation.email_validator";
+
     public ValidateResult validate(ValidateContext context) {
         if (context.getParamValue() != null) {
             if (!context.getParamValue().getClass().isArray()) {
                 String _value = BlurObject.bind(context.getParamValue()).toStringValue();
                 if (StringUtils.isNotBlank(_value)) {
                     if (!_value.matches("(?:\\w[-._\\w]*\\w@\\w[-._\\w]*\\w\\.\\w{2,3}$)")) {
-                        return new ValidateResult(context.getParamName(), I18N.formatMessage(VALIDATION_I18N_RESOURCE, "ymp.validation.email_validator", "not a valid email address."));
+                        return new ValidateResult(context.getParamName(), I18N.formatMessage(VALIDATION_I18N_RESOURCE, __EMAIL_VALIDATOR, "{0} not a valid email address.", context.getParamName()));
                     }
                 }
             }

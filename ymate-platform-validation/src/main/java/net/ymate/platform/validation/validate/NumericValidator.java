@@ -32,25 +32,52 @@ import org.apache.commons.lang.math.NumberUtils;
 @Validator(VNumeric.class)
 public class NumericValidator implements IValidator {
 
+    private static String __NUMERIC_VALIDATOR = "ymp.validation.numeric_validator";
+
+    private static String __NUMERIC_VALIDATOR_BETWEEN = "ymp.validation.numeric_validator_between";
+
+    private static String __NUMERIC_VALIDATOR_MIN = "ymp.validation.numeric_validator_min";
+
+    private static String __NUMERIC_VALIDATOR_MAX = "ymp.validation.numeric_validator_max";
+
     public ValidateResult validate(ValidateContext context) {
         boolean _matched = false;
+        boolean _flag = false;
+        double _max = 0d;
+        double _min = 0d;
         try {
             Number _number = NumberUtils.createNumber(BlurObject.bind(context.getParamValue()).toStringValue());
             if (_number == null) {
                 _matched = true;
+                _flag = true;
             } else {
                 VNumeric _vNumeric = (VNumeric) context.getAnnotation();
-                if (_vNumeric.min() > 0 && _number.doubleValue() < _vNumeric.min()) {
+                _max = _vNumeric.max();
+                _min = _vNumeric.min();
+                if (_min > 0 && _number.doubleValue() < _min) {
                     _matched = true;
-                } else if (_vNumeric.max() > 0 && _number.doubleValue() > _vNumeric.max()) {
+                } else if (_max > 0 && _number.doubleValue() > _max) {
                     _matched = true;
                 }
             }
         } catch (Exception e) {
             _matched = true;
+            _flag = true;
         }
         if (_matched) {
-            return new ValidateResult(context.getParamName(), I18N.formatMessage(VALIDATION_I18N_RESOURCE, "ymp.validation.numeric_validator", "not a valid number size."));
+            String _msg = null;
+            if (_flag) {
+                _msg = I18N.formatMessage(VALIDATION_I18N_RESOURCE, __NUMERIC_VALIDATOR, "{0} not a valid numeric.", context.getParamName());
+            } else {
+                if (_max > 0 && _min > 0) {
+                    _msg = I18N.formatMessage(VALIDATION_I18N_RESOURCE, __NUMERIC_VALIDATOR_BETWEEN, "{0} numeric must be between {1} and {2}.", context.getParamName(), _max, _min);
+                } else if (_max > 0) {
+                    _msg = I18N.formatMessage(VALIDATION_I18N_RESOURCE, __NUMERIC_VALIDATOR_MAX, "{0} numeric must be gt {1}.", context.getParamName(), _max);
+                } else {
+                    _msg = I18N.formatMessage(VALIDATION_I18N_RESOURCE, __NUMERIC_VALIDATOR_MIN, "{0} numeric must be lt {1}.", context.getParamName(), _min);
+                }
+            }
+            return new ValidateResult(context.getParamName(), _msg);
         }
         return null;
     }

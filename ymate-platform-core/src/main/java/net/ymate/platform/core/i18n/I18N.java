@@ -171,9 +171,16 @@ public class I18N {
     public static String formatMessage(String resourceName, String key, String defaultValue, Object... args) {
         String _msg = load(resourceName, key, defaultValue);
         if (args != null && args.length > 0) {
-            return MessageFormat.format(_msg, args);
+            return formatMessage(_msg, args);
         }
         return _msg;
+    }
+
+    public static String formatMessage(String message, Object... args) {
+        if (args != null && args.length > 0) {
+            return MessageFormat.format(message, args);
+        }
+        return message;
     }
 
     /**

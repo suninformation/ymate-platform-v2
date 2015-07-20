@@ -21,6 +21,7 @@ import net.ymate.platform.validation.IValidator;
 import net.ymate.platform.validation.ValidateContext;
 import net.ymate.platform.validation.ValidateResult;
 import net.ymate.platform.validation.annotation.Validator;
+import org.apache.commons.lang.StringUtils;
 
 /**
  * 参数值比较验证
@@ -30,6 +31,10 @@ import net.ymate.platform.validation.annotation.Validator;
  */
 @Validator(VCompare.class)
 public class CompareValidator implements IValidator {
+
+    private static String __COMPARE_VALIDATOR_NOT_EQ = "ymp.validation.compare_validator_not_eq";
+
+    private static String __COMPARE_VALIDATOR_EQ = "ymp.validation.compare_validator_eq";
 
     public ValidateResult validate(ValidateContext context) {
         if (context.getParamValue() != null && !context.getParamValue().getClass().isArray()) {
@@ -45,7 +50,18 @@ public class CompareValidator implements IValidator {
                 case EQ:
             }
             if (!_matched) {
-                return new ValidateResult(context.getParamName(), I18N.formatMessage(VALIDATION_I18N_RESOURCE, "ymp.validation.compare_validator", "must {0} {1}", _condStr, _vCompare.with()));
+                String _msg = null;
+                switch (_vCompare.cond()) {
+                    case NOT_EQ:
+                        _msg = I18N.formatMessage(VALIDATION_I18N_RESOURCE, __COMPARE_VALIDATOR_NOT_EQ, context.getParamName(), _vCompare.with());
+                        break;
+                    case EQ:
+                        _msg = I18N.formatMessage(VALIDATION_I18N_RESOURCE, __COMPARE_VALIDATOR_EQ, context.getParamName(), _vCompare.with());
+                }
+                if (StringUtils.trimToNull(_msg) == null) {
+                    _msg = I18N.formatMessage("{0} must be {1} {2}", context.getParamName(), _condStr, _vCompare.with());
+                }
+                return new ValidateResult(context.getParamName(), _msg);
             }
         }
         return null;

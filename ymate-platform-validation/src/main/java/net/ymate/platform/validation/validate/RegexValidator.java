@@ -32,6 +32,8 @@ import org.apache.commons.lang.StringUtils;
 @Validator(VRegex.class)
 public class RegexValidator implements IValidator {
 
+    private static String __REGEX_VALIDATOR = "ymp.validation.regex_validator";
+
     public ValidateResult validate(ValidateContext context) {
         if (context.getParamValue() != null) {
             if (!context.getParamValue().getClass().isArray()) {
@@ -39,7 +41,7 @@ public class RegexValidator implements IValidator {
                 if (StringUtils.isNotBlank(_value)) {
                     VRegex _vRegex = (VRegex) context.getAnnotation();
                     if (!_value.matches(_vRegex.regex())) {
-                        return new ValidateResult(context.getParamName(), I18N.formatMessage(VALIDATION_I18N_RESOURCE, "ymp.validation.regex_validator", "regex not match."));
+                        return new ValidateResult(context.getParamName(), I18N.formatMessage(VALIDATION_I18N_RESOURCE, __REGEX_VALIDATOR, "{0} regex not match.", context.getParamName()));
                     }
                 }
             }

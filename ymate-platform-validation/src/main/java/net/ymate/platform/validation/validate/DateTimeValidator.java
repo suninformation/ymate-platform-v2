@@ -33,6 +33,8 @@ import org.apache.commons.lang.StringUtils;
 @Validator(VDateTime.class)
 public class DateTimeValidator implements IValidator {
 
+    private static String __DATETIME_VALIDATOR = "ymp.validation.datetime_validator";
+
     public ValidateResult validate(ValidateContext context) {
         if (context.getParamValue() != null) {
             if (!context.getParamValue().getClass().isArray()) {
@@ -42,7 +44,7 @@ public class DateTimeValidator implements IValidator {
                     try {
                         DateTimeUtils.parseDateTime(_dateStr, _vDate.pattern());
                     } catch (Exception e) {
-                        return new ValidateResult(context.getParamName(), I18N.formatMessage(VALIDATION_I18N_RESOURCE, "ymp.validation.datetime_validator", "not a valid datetime string."));
+                        return new ValidateResult(context.getParamName(), I18N.formatMessage(VALIDATION_I18N_RESOURCE, __DATETIME_VALIDATOR, "{0} not a valid datetime.", context.getParamName()));
                     }
                 }
             }

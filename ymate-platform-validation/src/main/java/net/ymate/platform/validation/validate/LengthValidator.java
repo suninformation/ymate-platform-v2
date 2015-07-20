@@ -32,6 +32,12 @@ import org.apache.commons.lang.StringUtils;
 @Validator(VLength.class)
 public class LengthValidator implements IValidator {
 
+    private static String __LENGTH_VALIDATOR_BETWEEN = "ymp.validation.length_validator_between";
+
+    private static String __LENGTH_VALIDATOR_MIN = "ymp.validation.length_validator_min";
+
+    private static String __LENGTH_VALIDATOR_MAX = "ymp.validation.length_validator_max";
+
     public ValidateResult validate(ValidateContext context) {
         if (context.getParamValue() != null) {
             if (!context.getParamValue().getClass().isArray()) {
@@ -45,7 +51,15 @@ public class LengthValidator implements IValidator {
                         _matched = true;
                     }
                     if (_matched) {
-                        return new ValidateResult(context.getParamName(), I18N.formatMessage(VALIDATION_I18N_RESOURCE, "ymp.validation.length_validator", "not a valid string length."));
+                        String _msg = null;
+                        if (_vLength.max() > 0 && _vLength.min() > 0) {
+                            _msg = I18N.formatMessage(VALIDATION_I18N_RESOURCE, __LENGTH_VALIDATOR_BETWEEN, "{0} length must be between {1} and {2}.", context.getParamName(), _vLength.max(), _vLength.min());
+                        } else if (_vLength.max() > 0) {
+                            _msg = I18N.formatMessage(VALIDATION_I18N_RESOURCE, __LENGTH_VALIDATOR_MAX, "{0} length must be gt {1}.", context.getParamName(), _vLength.max());
+                        } else {
+                            _msg = I18N.formatMessage(VALIDATION_I18N_RESOURCE, __LENGTH_VALIDATOR_MIN, "{0} length must be lt {1}.", context.getParamName(), _vLength.min());
+                        }
+                        return new ValidateResult(context.getParamName(), _msg);
                     }
                 }
             }
