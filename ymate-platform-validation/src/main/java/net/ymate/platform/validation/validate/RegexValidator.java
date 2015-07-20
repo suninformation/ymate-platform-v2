@@ -37,7 +37,7 @@ public class RegexValidator implements IValidator {
                 String _value = BlurObject.bind(context.getParamValue()).toStringValue();
                 if (StringUtils.isNotBlank(_value)) {
                     VRegex _vRegex = (VRegex) context.getAnnotation();
-                    if (_value.matches(_vRegex.regex())) {
+                    if (!_value.matches(_vRegex.regex())) {
                         return new ValidateResult(context.getParamName(), "regex not match.");
                     }
                 }
