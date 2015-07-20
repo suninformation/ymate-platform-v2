@@ -15,6 +15,7 @@
  */
 package net.ymate.platform.validation.validate;
 
+import net.ymate.platform.core.i18n.I18N;
 import net.ymate.platform.core.lang.BlurObject;
 import net.ymate.platform.validation.IValidator;
 import net.ymate.platform.validation.ValidateContext;
@@ -46,7 +47,7 @@ public class RequriedValidator implements IValidator {
             }
         }
         if (_matched) {
-            return new ValidateResult(context.getParamName(), "can not be null.");
+            return new ValidateResult(context.getParamName(), I18N.formatMessage(VALIDATION_I18N_RESOURCE, "ymp.validation.requried_validator", "can not be null."));
         }
         return null;
     }

@@ -15,6 +15,7 @@
  */
 package net.ymate.platform.validation.validate;
 
+import net.ymate.platform.core.i18n.I18N;
 import net.ymate.platform.core.lang.BlurObject;
 import net.ymate.platform.core.util.DateTimeUtils;
 import net.ymate.platform.validation.IValidator;
@@ -41,7 +42,7 @@ public class DateTimeValidator implements IValidator {
                     try {
                         DateTimeUtils.parseDateTime(_dateStr, _vDate.pattern());
                     } catch (Exception e) {
-                        return new ValidateResult(context.getParamName(), "not a valid datetime string.");
+                        return new ValidateResult(context.getParamName(), I18N.formatMessage(VALIDATION_I18N_RESOURCE, "ymp.validation.datetime_validator", "not a valid datetime string."));
                     }
                 }
             }

@@ -15,6 +15,7 @@
  */
 package net.ymate.platform.validation.validate;
 
+import net.ymate.platform.core.i18n.I18N;
 import net.ymate.platform.core.lang.BlurObject;
 import net.ymate.platform.validation.IValidator;
 import net.ymate.platform.validation.ValidateContext;
@@ -38,7 +39,7 @@ public class RegexValidator implements IValidator {
                 if (StringUtils.isNotBlank(_value)) {
                     VRegex _vRegex = (VRegex) context.getAnnotation();
                     if (!_value.matches(_vRegex.regex())) {
-                        return new ValidateResult(context.getParamName(), "regex not match.");
+                        return new ValidateResult(context.getParamName(), I18N.formatMessage(VALIDATION_I18N_RESOURCE, "ymp.validation.regex_validator", "regex not match."));
                     }
                 }
             }

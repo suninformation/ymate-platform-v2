@@ -15,6 +15,7 @@
  */
 package net.ymate.platform.validation.validate;
 
+import net.ymate.platform.core.i18n.I18N;
 import net.ymate.platform.core.lang.BlurObject;
 import net.ymate.platform.validation.IValidator;
 import net.ymate.platform.validation.ValidateContext;
@@ -44,7 +45,7 @@ public class CompareValidator implements IValidator {
                 case EQ:
             }
             if (!_matched) {
-                return new ValidateResult(context.getParamName(), _condStr.concat(" ").concat(_vCompare.with()));
+                return new ValidateResult(context.getParamName(), I18N.formatMessage(VALIDATION_I18N_RESOURCE, "ymp.validation.compare_validator", "must {0} {1}", _condStr, _vCompare.with()));
             }
         }
         return null;
