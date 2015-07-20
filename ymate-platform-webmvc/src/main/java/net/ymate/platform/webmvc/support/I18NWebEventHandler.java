@@ -21,6 +21,7 @@ import net.ymate.platform.core.util.RuntimeUtils;
 import net.ymate.platform.webmvc.context.WebContext;
 import net.ymate.platform.webmvc.util.CookieHelper;
 import org.apache.commons.lang.LocaleUtils;
+import org.apache.commons.lang.StringUtils;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -53,7 +54,7 @@ public class I18NWebEventHandler implements II18NEventHandler {
                 }
             }
         }
-        return LocaleUtils.toLocale(_langStr);
+        return LocaleUtils.toLocale(StringUtils.trimToNull(_langStr));
     }
 
     public void onChanged(Locale locale) {

@@ -149,7 +149,7 @@ public class WebMVC implements IModule, IWebMvc {
                 if (context.getHttpMethod().equals(Type.HttpMethod.POST) && _meta.getMethod().isAnnotationPresent(FileUpload.class)) {
                     request = new MultipartRequestWrapper(this, request);
                 }
-                WebContext.getContext().addAttribute(Type.Context.WEB_REQUEST_CONTEXT, request);
+                WebContext.getContext().addAttribute(Type.Context.HTTP_REQUEST, request);
                 IView _view = RequestExecutor.bind(this, _meta).execute();
                 if (_view != null) {
                     _view.render();
