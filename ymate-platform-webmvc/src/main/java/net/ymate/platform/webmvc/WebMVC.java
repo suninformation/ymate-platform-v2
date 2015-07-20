@@ -149,16 +149,12 @@ public class WebMVC implements IModule, IWebMvc {
                 if (context.getHttpMethod().equals(Type.HttpMethod.POST) && _meta.getMethod().isAnnotationPresent(FileUpload.class)) {
                     request = new MultipartRequestWrapper(this, request);
                 }
-                WebContext.create(this, context, servletContext, request, response);
-                try {
-                    IView _view = RequestExecutor.bind(this, _meta).execute();
-                    if (_view != null) {
-                        _view.render();
-                    } else {
-                        HttpStatusView.NOT_FOUND.render();
-                    }
-                } finally {
-                    WebContext.destroy();
+                WebContext.getContext().addAttribute(Type.Context.WEB_REQUEST_CONTEXT, request);
+                IView _view = RequestExecutor.bind(this, _meta).execute();
+                if (_view != null) {
+                    _view.render();
+                } else {
+                    HttpStatusView.NOT_FOUND.render();
                 }
             } else {
                 response.sendError(HttpServletResponse.SC_METHOD_NOT_ALLOWED);
@@ -179,38 +175,33 @@ public class WebMVC implements IModule, IWebMvc {
                 _isAllowConvention = true;
             }
             if (_isAllowConvention) {
-                WebContext.create(this, context, servletContext, request, response);
-                try {
-                    IView _view = null;
-                    if (__moduleCfg.getErrorProcessor() != null) {
-                        _view = __moduleCfg.getErrorProcessor().onConvention(this, context);
-                    }
-                    if (_view == null) {
-                        // 采用系统默认方式处理约定优于配置的URL请求映射
-                        String[] _fileTypes = {".html", ".jsp", ".ftl"};
-                        for (String _fileType : _fileTypes) {
-                            File _targetFile = new File(__moduleCfg.getAbstractBaseViewPath(), context.getRequestMapping() + _fileType);
-                            if (_targetFile.exists()) {
-                                if (".html".equals(_fileType)) {
-                                    _view = HtmlView.bind(this, context.getRequestMapping().substring(1));
-                                    break;
-                                } else if (".jsp".equals(_fileType)) {
-                                    _view = JspView.bind(this, context.getRequestMapping().substring(1));
-                                    break;
-                                } else if (".ftl".equals(_fileType)) {
-                                    _view = FreemarkerView.bind(this, context.getRequestMapping().substring(1));
-                                    break;
-                                }
+                IView _view = null;
+                if (__moduleCfg.getErrorProcessor() != null) {
+                    _view = __moduleCfg.getErrorProcessor().onConvention(this, context);
+                }
+                if (_view == null) {
+                    // 采用系统默认方式处理约定优于配置的URL请求映射
+                    String[] _fileTypes = {".html", ".jsp", ".ftl"};
+                    for (String _fileType : _fileTypes) {
+                        File _targetFile = new File(__moduleCfg.getAbstractBaseViewPath(), context.getRequestMapping() + _fileType);
+                        if (_targetFile.exists()) {
+                            if (".html".equals(_fileType)) {
+                                _view = HtmlView.bind(this, context.getRequestMapping().substring(1));
+                                break;
+                            } else if (".jsp".equals(_fileType)) {
+                                _view = JspView.bind(this, context.getRequestMapping().substring(1));
+                                break;
+                            } else if (".ftl".equals(_fileType)) {
+                                _view = FreemarkerView.bind(this, context.getRequestMapping().substring(1));
+                                break;
                             }
                         }
                     }
-                    if (_view != null) {
-                        _view.render();
-                    } else {
-                        HttpStatusView.NOT_FOUND.render();
-                    }
-                } finally {
-                    WebContext.destroy();
+                }
+                if (_view != null) {
+                    _view.render();
+                } else {
+                    HttpStatusView.NOT_FOUND.render();
                 }
             } else {
                 response.sendError(HttpServletResponse.SC_NOT_FOUND);

@@ -20,6 +20,7 @@ import net.ymate.platform.core.util.RuntimeUtils;
 import net.ymate.platform.webmvc.IRequestContext;
 import net.ymate.platform.webmvc.IWebMvc;
 import net.ymate.platform.webmvc.WebEvent;
+import net.ymate.platform.webmvc.context.WebContext;
 
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
@@ -59,6 +60,8 @@ public class GenericDispatcher {
             request.setCharacterEncoding(__owner.getModuleCfg().getDefaultCharsetEncoding());
             response.setCharacterEncoding(__owner.getModuleCfg().getDefaultCharsetEncoding());
             //
+            WebContext.create(__owner, requestContext, servletContext, request, response);
+            //
             __doFireEvent(WebEvent.EVENT.REQUEST_RECEIVED, requestContext);
             //
             __owner.processRequest(requestContext, servletContext, request, response);
@@ -70,6 +73,7 @@ public class GenericDispatcher {
             }
         } finally {
             __doFireEvent(WebEvent.EVENT.REQUEST_COMPLETED, requestContext);
+            WebContext.destroy();
         }
     }
 }
