@@ -53,10 +53,10 @@ public class CompareValidator implements IValidator {
                 String _msg = null;
                 switch (_vCompare.cond()) {
                     case NOT_EQ:
-                        _msg = I18N.formatMessage(VALIDATION_I18N_RESOURCE, __COMPARE_VALIDATOR_NOT_EQ, context.getParamName(), _vCompare.with());
+                        _msg = I18N.formatMessage(VALIDATION_I18N_RESOURCE, __COMPARE_VALIDATOR_NOT_EQ, "{0} can not eq {1}.", context.getParamName(), _vCompare.with());
                         break;
                     case EQ:
-                        _msg = I18N.formatMessage(VALIDATION_I18N_RESOURCE, __COMPARE_VALIDATOR_EQ, context.getParamName(), _vCompare.with());
+                        _msg = I18N.formatMessage(VALIDATION_I18N_RESOURCE, __COMPARE_VALIDATOR_EQ, "{0} must be eq {1}.", context.getParamName(), _vCompare.with());
                 }
                 if (StringUtils.trimToNull(_msg) == null) {
                     _msg = I18N.formatMessage("{0} must be {1} {2}", context.getParamName(), _condStr, _vCompare.with());
