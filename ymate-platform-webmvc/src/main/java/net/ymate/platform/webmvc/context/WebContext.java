@@ -59,14 +59,11 @@ public class WebContext {
         _contextMap.put(Type.Context.REQUEST, new RequestMap(request));
         _contextMap.put(Type.Context.SESSION, new SessionMap(request));
         _contextMap.put(Type.Context.APPLICATION, new ApplicationMap(servletContext));
-        Locale _locale = webMvc.getModuleCfg().getDefaultLocale();
-        if (_locale == null) {
-            _locale = request.getLocale();
-        }
-        _contextMap.put(Type.Context.LOCALE, _locale);
+        _contextMap.put(Type.Context.LOCALE, webMvc.getOwner().getConfig().getDefaultLocale());
         _contextMap.put(Type.Context.HTTP_REQUEST, request);
         _contextMap.put(Type.Context.HTTP_RESPONSE, response);
         _contextMap.put(Type.Context.SERVLET_CONTEXT, servletContext);
+        _contextMap.put(Type.Context.WEB_CONTEXT_OWNER, webMvc);
         //
         WebContext _context = new WebContext(_contextMap);
         __LOCAL_CONTEXT.set(_context);
@@ -130,5 +127,9 @@ public class WebContext {
 
     public Map<String, Object> getParameters() {
         return getAttribute(Type.Context.PARAMETERS);
+    }
+
+    public IWebMvc getOwner() {
+        return getAttribute(Type.Context.WEB_CONTEXT_OWNER);
     }
 }

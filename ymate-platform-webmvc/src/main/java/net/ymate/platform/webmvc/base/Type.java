@@ -98,7 +98,9 @@ public class Type {
 
         public static final String PAGE_CONTEXT = "net.ymate.platform.webmvc.context.PAGE_CONTEXT";
 
-        public static final String WEB_REQUEST_CONTEXT = "nnet.ymate.platform.webmvc.context.WEB_REQUEST_CONTEXT";
+        public static final String WEB_REQUEST_CONTEXT = "net.ymate.platform.webmvc.context.WEB_REQUEST_CONTEXT";
+
+        public static final String WEB_CONTEXT_OWNER = "net.ymate.platform.webmvc.context.WEB_CONTEXT_OWNER";
     }
 
     public final static Map<String, Class<? extends IRequestProcessor>> REQUEST_PROCESSORS;

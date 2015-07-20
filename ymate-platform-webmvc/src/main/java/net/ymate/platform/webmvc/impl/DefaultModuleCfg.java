@@ -24,11 +24,13 @@ import net.ymate.platform.webmvc.IWebErrorProcessor;
 import net.ymate.platform.webmvc.IWebMvc;
 import net.ymate.platform.webmvc.IWebMvcModuleCfg;
 import net.ymate.platform.webmvc.base.Type;
-import org.apache.commons.lang.LocaleUtils;
 import org.apache.commons.lang.StringUtils;
 
 import java.io.File;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 
 /**
  * 默认WebMVC模块配置接口实现
@@ -38,13 +40,11 @@ import java.util.*;
  */
 public class DefaultModuleCfg implements IWebMvcModuleCfg {
 
-    private static final String __IGNORE = "^.+\\.(jsp|jspx|png|gif|jpg|jpeg|js|css|swf|ico|htm|html|eot|woff|ttf|svg)$";
+    private static final String __IGNORE = "^.+\\.(jsp|jspx|png|gif|jpg|jpeg|js|css|swf|ico|htm|html|eot|woff|woff2|ttf|svg)$";
 
     private IRequestProcessor __requestProcessor;
 
     private IWebErrorProcessor __errorProcessor;
-
-    private Locale __locale;
 
     private String __charsetEncoding;
 
@@ -97,7 +97,6 @@ public class DefaultModuleCfg implements IWebMvcModuleCfg {
             __errorProcessor = ClassUtils.impl(_errorProcessorClass, IWebErrorProcessor.class, this.getClass());
         }
         //
-        __locale = LocaleUtils.toLocale(_moduleCfgs.get("default_locale"));
         __charsetEncoding = StringUtils.defaultIfBlank(_moduleCfgs.get("default_charset_encoding"), "UTF-8");
         __requestIgnoreRegex = StringUtils.defaultIfBlank(_moduleCfgs.get("request_ignore_regex"), __IGNORE);
         __requestMethodParam = StringUtils.defaultIfBlank(_moduleCfgs.get("request_method_param"), "_method");
@@ -129,10 +128,6 @@ public class DefaultModuleCfg implements IWebMvcModuleCfg {
 
     public IWebErrorProcessor getErrorProcessor() {
         return __errorProcessor;
-    }
-
-    public Locale getDefaultLocale() {
-        return __locale;
     }
 
     public String getDefaultCharsetEncoding() {

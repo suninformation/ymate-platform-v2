@@ -37,11 +37,6 @@ public interface IWebMvcModuleCfg {
     public IWebErrorProcessor getErrorProcessor();
 
     /**
-     * @return 默认语言设置，可选参数，默认采用系统环境语言
-     */
-    public Locale getDefaultLocale();
-
-    /**
      * @return 默认字符编码集设置，可选参数，默认值为UTF-8
      */
     public String getDefaultCharsetEncoding();

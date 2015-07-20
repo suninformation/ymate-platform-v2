@@ -15,7 +15,10 @@
  */
 package net.ymate.platform.core;
 
+import net.ymate.platform.core.i18n.II18NEventHandler;
+
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 /**
@@ -40,6 +43,16 @@ public interface IConfig {
      * @return 返回模块类排除列表，被包含的模块在加载过程中将被忽略
      */
     public List<String> getExcludedModules();
+
+    /**
+     * @return 国际化资源默认语言设置，可选参数，默认采用系统环境语言
+     */
+    public Locale getDefaultLocale();
+
+    /**
+     * @return 国际化资源管理器事件监听处理器，可选参数
+     */
+    public II18NEventHandler getI18NEventHandlerClass();
 
     /**
      * @return 返回框架全局参数映射

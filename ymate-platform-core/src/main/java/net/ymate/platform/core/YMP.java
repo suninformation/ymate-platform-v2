@@ -31,11 +31,15 @@ import net.ymate.platform.core.event.impl.DefaultEventConfig;
 import net.ymate.platform.core.handle.EventRegisterHandler;
 import net.ymate.platform.core.handle.ModuleHandler;
 import net.ymate.platform.core.handle.ProxyHandler;
+import net.ymate.platform.core.i18n.I18N;
+import net.ymate.platform.core.i18n.II18NEventHandler;
 import net.ymate.platform.core.lang.BlurObject;
 import net.ymate.platform.core.module.IModule;
 import net.ymate.platform.core.module.ModuleEvent;
 import net.ymate.platform.core.module.annotation.Module;
+import net.ymate.platform.core.util.ClassUtils;
 import net.ymate.platform.core.util.RuntimeUtils;
+import org.apache.commons.lang.LocaleUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -96,6 +100,8 @@ public class YMP {
      */
     public YMP(IConfig config) {
         __config = config;
+        // 初始化I18N
+        I18N.initialize(__config.getDefaultLocale(), __config.getI18NEventHandlerClass());
         // 初始化事件管理器，并注册框架、模块事件
         __events = Events.create(new DefaultEventConfig(__config.getEventConfigs()));
         __events.registerEvent(ApplicationEvent.class);
@@ -349,6 +355,10 @@ public class YMP {
 
         private List<String> __excludeModules;
 
+        private Locale __locale;
+
+        private II18NEventHandler __i18nEventHandler;
+
         private Map<String, String> __paramsMap;
 
         private Map<String, Map<String, String>> __moduleCfgs;
@@ -411,6 +421,25 @@ public class YMP {
                 }
             }
             return __excludeModules;
+        }
+
+        public Locale getDefaultLocale() {
+            if (__locale != null) {
+                String _localStr = StringUtils.trimToNull(__props.getProperty("ymp.i18n_default_locale"));
+                if (_localStr == null) {
+                    __locale = Locale.getDefault();
+                } else {
+                    __locale = LocaleUtils.toLocale(_localStr);
+                }
+            }
+            return __locale;
+        }
+
+        public II18NEventHandler getI18NEventHandlerClass() {
+            if (__i18nEventHandler == null) {
+                __i18nEventHandler = ClassUtils.impl(__props.getProperty("ymp.i18n_event_handler_class"), II18NEventHandler.class, this.getClass());
+            }
+            return __i18nEventHandler;
         }
 
         public Map<String, String> getParams() {
