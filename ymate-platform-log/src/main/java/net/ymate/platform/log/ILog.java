@@ -15,6 +15,8 @@
  */
 package net.ymate.platform.log;
 
+import net.ymate.platform.core.YMP;
+
 /**
  * 日志记录器模块管理器接口定义
  *
@@ -24,6 +26,8 @@ package net.ymate.platform.log;
 public interface ILog {
 
     public static final String MODULE_NAME = "log";
+
+    public YMP getOwner();
 
     /**
      * @return 返回日志记录器模块配置对象

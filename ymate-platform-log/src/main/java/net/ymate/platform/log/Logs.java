@@ -97,6 +97,8 @@ public class Logs implements IModule, ILog {
             __currentLogger.console(__moduleCfg.allowOutputConsole());
             //
             __inited = true;
+            // 注册日志记录器事件
+            __owner.getEvents().registerEvent(LogEvent.class);
         }
     }
 
@@ -115,6 +117,10 @@ public class Logs implements IModule, ILog {
             __moduleCfg = null;
             __owner = null;
         }
+    }
+
+    public YMP getOwner() {
+        return __owner;
     }
 
     public ILogModuleCfg getModuleCfg() {

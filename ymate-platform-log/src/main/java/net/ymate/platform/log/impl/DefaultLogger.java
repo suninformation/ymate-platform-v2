@@ -15,9 +15,11 @@
  */
 package net.ymate.platform.log.impl;
 
+import net.ymate.platform.core.event.Events;
 import net.ymate.platform.log.AbstractLogger;
 import net.ymate.platform.log.ILog;
 import net.ymate.platform.log.ILogger;
+import net.ymate.platform.log.LogEvent;
 import org.apache.commons.lang.StringUtils;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
@@ -87,6 +89,10 @@ public class DefaultLogger extends AbstractLogger {
 
     protected void __doLogWrite(LogLevel level, String content) {
         __logger.log(__parseLogLevel(level), content);
+        // 日志写入后触发异步事件
+        __owner.getOwner().getEvents().fireEvent(Events.MODE.ASYNC, new LogEvent(this, LogEvent.EVENT.LOG_WRITE_IN)
+                .addParamExtend(LogEvent.LOG_LEVEL, level)
+                .addParamExtend(LogEvent.LOG_CONTENT, content));
     }
 
     @Override
@@ -94,7 +100,7 @@ public class DefaultLogger extends AbstractLogger {
         if (level == null) {
             level = ILogger.LogLevel.ALL;
         }
-        if (__logger.getLevel().intLevel() > level.getLevel()) {
+        if (level.getLevel() > __logger.getLevel().intLevel()) {
             return;
         }
         super.__doBuildEx(info, e, level);
