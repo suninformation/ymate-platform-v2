@@ -51,13 +51,18 @@ public class LengthValidator implements IValidator {
                         _matched = true;
                     }
                     if (_matched) {
-                        String _msg = null;
-                        if (_vLength.max() > 0 && _vLength.min() > 0) {
-                            _msg = I18N.formatMessage(VALIDATION_I18N_RESOURCE, __LENGTH_VALIDATOR_BETWEEN, "{0} length must be between {1} and {2}.", context.getParamName(), _vLength.max(), _vLength.min());
-                        } else if (_vLength.max() > 0) {
-                            _msg = I18N.formatMessage(VALIDATION_I18N_RESOURCE, __LENGTH_VALIDATOR_MAX, "{0} length must be gt {1}.", context.getParamName(), _vLength.max());
+                        String _pName = StringUtils.defaultIfBlank(context.getParamLabel(), context.getParamName());
+                        String _msg = StringUtils.trimToNull(_vLength.msg());
+                        if (_msg != null) {
+                            _msg = I18N.formatMessage(VALIDATION_I18N_RESOURCE, _msg, _msg, _pName);
                         } else {
-                            _msg = I18N.formatMessage(VALIDATION_I18N_RESOURCE, __LENGTH_VALIDATOR_MIN, "{0} length must be lt {1}.", context.getParamName(), _vLength.min());
+                            if (_vLength.max() > 0 && _vLength.min() > 0) {
+                                _msg = I18N.formatMessage(VALIDATION_I18N_RESOURCE, __LENGTH_VALIDATOR_BETWEEN, "{0} length must be between {1} and {2}.", _pName, _vLength.max(), _vLength.min());
+                            } else if (_vLength.max() > 0) {
+                                _msg = I18N.formatMessage(VALIDATION_I18N_RESOURCE, __LENGTH_VALIDATOR_MAX, "{0} length must be lt {1}.", _pName, _vLength.max());
+                            } else {
+                                _msg = I18N.formatMessage(VALIDATION_I18N_RESOURCE, __LENGTH_VALIDATOR_MIN, "{0} length must be gt {1}.", _pName, _vLength.min());
+                            }
                         }
                         return new ValidateResult(context.getParamName(), _msg);
                     }

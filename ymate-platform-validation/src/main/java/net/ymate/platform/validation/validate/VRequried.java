@@ -27,4 +27,9 @@ import java.lang.annotation.*;
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
 public @interface VRequried {
+
+    /**
+     * @return 自定义验证消息
+     */
+    String msg() default "";
 }

@@ -41,7 +41,15 @@ public class RegexValidator implements IValidator {
                 if (StringUtils.isNotBlank(_value)) {
                     VRegex _vRegex = (VRegex) context.getAnnotation();
                     if (!_value.matches(_vRegex.regex())) {
-                        return new ValidateResult(context.getParamName(), I18N.formatMessage(VALIDATION_I18N_RESOURCE, __REGEX_VALIDATOR, "{0} regex not match.", context.getParamName()));
+                        String _pName = StringUtils.defaultIfBlank(context.getParamLabel(), context.getParamName());
+                        //
+                        String _msg = StringUtils.trimToNull(_vRegex.msg());
+                        if (_msg != null) {
+                            _msg = I18N.formatMessage(VALIDATION_I18N_RESOURCE, _msg, _msg, _pName);
+                        } else {
+                            _msg = I18N.formatMessage(VALIDATION_I18N_RESOURCE, __REGEX_VALIDATOR, "{0} regex not match.", _pName);
+                        }
+                        return new ValidateResult(context.getParamName(), _msg);
                     }
                 }
             }

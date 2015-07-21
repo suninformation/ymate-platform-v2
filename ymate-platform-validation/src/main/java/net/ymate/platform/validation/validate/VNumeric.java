@@ -37,4 +37,9 @@ public @interface VNumeric {
      * @return 设置最大值，0为不限制
      */
     double max() default 0;
+
+    /**
+     * @return 自定义验证消息
+     */
+    String msg() default "";
 }

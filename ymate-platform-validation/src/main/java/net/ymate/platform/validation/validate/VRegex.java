@@ -32,4 +32,9 @@ public @interface VRegex {
      * @return 正则表达式
      */
     String regex();
+
+    /**
+     * @return 自定义验证消息
+     */
+    String msg() default "";
 }

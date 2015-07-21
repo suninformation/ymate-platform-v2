@@ -42,6 +42,8 @@ public class ValidationMeta {
 
     private Map<String, Annotation[]> __fields;
 
+    private Map<String, String> __labels;
+
     private Map<Method, Validation> __methods;
 
     private Map<Method, Map<String, Annotation[]>> __methodParams;
@@ -57,6 +59,7 @@ public class ValidationMeta {
         }
         __targetClass = targetClass;
         __fields = new LinkedHashMap<String, Annotation[]>();
+        __labels = new LinkedHashMap<String, String>();
         __methods = new LinkedHashMap<Method, Validation>();
         __methodParams = new LinkedHashMap<Method, Map<String, Annotation[]>>();
 
@@ -80,10 +83,14 @@ public class ValidationMeta {
                 // 尝试获取自定义的参数别名
                 for (Annotation _vField : _params[_idx]) {
                     if (_vField instanceof VField) {
-                        if (StringUtils.isNotBlank(((VField) _vField).name())) {
+                        VField _vF = (VField) _vField;
+                        if (StringUtils.isNotBlank(_vF.name())) {
                             _paramName = ((VField) _vField).name();
-                            break;
                         }
+                        if (StringUtils.isNotBlank(_vF.label())) {
+                            __labels.put(_paramName, _vF.label());
+                        }
+                        break;
                     }
                 }
                 for (Annotation _annotation : _params[_idx]) {
@@ -124,6 +131,9 @@ public class ValidationMeta {
                     VField _vField = _field.getAnnotation(VField.class);
                     if (StringUtils.isNotBlank(_vField.name())) {
                         _fieldName = _vField.name();
+                    }
+                    if (StringUtils.isNotBlank(_vField.label())) {
+                        __labels.put(_fieldName, _vField.label());
                     }
                 }
                 List<Annotation> _annotations = new ArrayList<Annotation>();
@@ -174,6 +184,10 @@ public class ValidationMeta {
 
     public Set<String> getFieldNames() {
         return Collections.unmodifiableSet(__fields.keySet());
+    }
+
+    public String getFieldLabel(String fieldName) {
+        return __labels.get(fieldName);
     }
 
     public Annotation[] getFieldAnnotations(String fieldName) {

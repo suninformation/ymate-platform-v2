@@ -27,4 +27,9 @@ import java.lang.annotation.*;
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
 public @interface VEmail {
+
+    /**
+     * @return 自定义验证消息
+     */
+    String msg() default "";
 }

@@ -50,16 +50,23 @@ public class CompareValidator implements IValidator {
                 case EQ:
             }
             if (!_matched) {
-                String _msg = null;
-                switch (_vCompare.cond()) {
-                    case NOT_EQ:
-                        _msg = I18N.formatMessage(VALIDATION_I18N_RESOURCE, __COMPARE_VALIDATOR_NOT_EQ, "{0} can not eq {1}.", context.getParamName(), _vCompare.with());
-                        break;
-                    case EQ:
-                        _msg = I18N.formatMessage(VALIDATION_I18N_RESOURCE, __COMPARE_VALIDATOR_EQ, "{0} must be eq {1}.", context.getParamName(), _vCompare.with());
-                }
-                if (StringUtils.trimToNull(_msg) == null) {
-                    _msg = I18N.formatMessage("{0} must be {1} {2}", context.getParamName(), _condStr, _vCompare.with());
+                String _pName = StringUtils.defaultIfBlank(context.getParamLabel(), context.getParamName());
+                String _pLabel = StringUtils.defaultIfBlank(_vCompare.withLabel(), _vCompare.with());
+                //
+                String _msg = StringUtils.trimToNull(_vCompare.msg());
+                if (_msg != null) {
+                    _msg = I18N.formatMessage(VALIDATION_I18N_RESOURCE, _msg, _msg, _pName, _pLabel);
+                } else {
+                    switch (_vCompare.cond()) {
+                        case NOT_EQ:
+                            _msg = I18N.formatMessage(VALIDATION_I18N_RESOURCE, __COMPARE_VALIDATOR_NOT_EQ, "{0} can not eq {1}.", _pName, _pLabel);
+                            break;
+                        case EQ:
+                            _msg = I18N.formatMessage(VALIDATION_I18N_RESOURCE, __COMPARE_VALIDATOR_EQ, "{0} must be eq {1}.", _pName, _pLabel);
+                    }
+                    if (StringUtils.trimToNull(_msg) == null) {
+                        _msg = I18N.formatMessage("{0} must be {1} {2}", _pName, _condStr, _pLabel);
+                    }
                 }
                 return new ValidateResult(context.getParamName(), _msg);
             }

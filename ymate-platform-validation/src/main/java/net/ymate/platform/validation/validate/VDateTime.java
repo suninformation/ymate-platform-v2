@@ -34,4 +34,9 @@ public @interface VDateTime {
      * @return 日期格式字符串
      */
     String pattern() default DateTimeUtils.YYYY_MM_DD_HH_MM_SS;
+
+    /**
+     * @return 自定义验证消息
+     */
+    String msg() default "";
 }

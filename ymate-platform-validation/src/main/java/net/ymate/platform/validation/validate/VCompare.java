@@ -35,7 +35,23 @@ public @interface VCompare {
         EQ, NOT_EQ
     }
 
+    /**
+     * @return 比较的条件
+     */
     Cond cond() default Cond.EQ;
 
+    /**
+     * @return 与之比较的参数名称
+     */
     String with();
+
+    /**
+     * @return 与之比较的参数标签名称
+     */
+    String withLabel() default "";
+
+    /**
+     * @return 自定义验证消息
+     */
+    String msg() default "";
 }

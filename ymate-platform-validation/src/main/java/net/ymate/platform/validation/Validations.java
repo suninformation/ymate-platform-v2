@@ -106,7 +106,7 @@ public class Validations implements IModule, IValidation {
         Map<String, ValidateResult> _returnValues = new LinkedHashMap<String, ValidateResult>();
         ValidationMeta _meta = __doGetCachedMeta(targetClass);
         for (String _fieldName : _meta.getFieldNames()) {
-            ValidateResult _result = __doValidate(_meta.getFieldAnnotations(_fieldName), _fieldName, paramValues);
+            ValidateResult _result = __doValidate(_meta.getFieldAnnotations(_fieldName), _fieldName, _meta.getFieldLabel(_fieldName), paramValues);
             if (_result != null) {
                 _returnValues.put(_fieldName, _result);
                 if (_meta.getMode() == Validation.MODE.NORMAL) {
@@ -125,7 +125,7 @@ public class Validations implements IModule, IValidation {
         //
         Map<String, Annotation[]> _paramAnnoMap = _meta.getMethodParamAnnotations(targetMethod);
         for (String _paramName : _paramAnnoMap.keySet()) {
-            ValidateResult _result = __doValidate(_paramAnnoMap.get(_paramName), _paramName, paramValues);
+            ValidateResult _result = __doValidate(_paramAnnoMap.get(_paramName), _paramName, _meta.getFieldLabel(_paramName), paramValues);
             if (_result != null) {
                 _returnValues.put(_paramName, _result);
                 //
@@ -150,11 +150,11 @@ public class Validations implements IModule, IValidation {
         return _meta;
     }
 
-    protected ValidateResult __doValidate(Annotation[] annotations, String paramName, Map<String, Object> paramValues) {
+    protected ValidateResult __doValidate(Annotation[] annotations, String paramName, String paramLabel, Map<String, Object> paramValues) {
         ValidateResult _result = null;
         for (Annotation _ann : annotations) {
             IValidator _validator = __validators.get(_ann.annotationType());
-            _result = _validator.validate(new ValidateContext(__owner, _ann, paramName, paramValues));
+            _result = _validator.validate(new ValidateContext(__owner, _ann, paramName, paramLabel, paramValues));
             if (_result != null) {
                 break;
             }

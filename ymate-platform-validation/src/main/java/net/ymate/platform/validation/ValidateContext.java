@@ -34,13 +34,16 @@ public class ValidateContext {
 
     private String paramName;
 
+    private String paramLabel;
+
     private Map<String, Object> paramValues;
 
-    public ValidateContext(YMP owner, Annotation annotation, String paramName, Map<String, Object> paramValues) {
+    public ValidateContext(YMP owner, Annotation annotation, String paramName, String paramLabel, Map<String, Object> paramValues) {
         this.__owner = owner;
         //
         this.annotation = annotation;
         this.paramName = paramName;
+        this.paramLabel = paramLabel;
         this.paramValues = paramValues;
     }
 
@@ -54,6 +57,10 @@ public class ValidateContext {
 
     public String getParamName() {
         return paramName;
+    }
+
+    public String getParamLabel() {
+        return paramLabel;
     }
 
     public Object getParamValue() {

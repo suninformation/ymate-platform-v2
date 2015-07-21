@@ -40,7 +40,15 @@ public class EmailValidator implements IValidator {
                 String _value = BlurObject.bind(context.getParamValue()).toStringValue();
                 if (StringUtils.isNotBlank(_value)) {
                     if (!_value.matches("(?:\\w[-._\\w]*\\w@\\w[-._\\w]*\\w\\.\\w{2,3}$)")) {
-                        return new ValidateResult(context.getParamName(), I18N.formatMessage(VALIDATION_I18N_RESOURCE, __EMAIL_VALIDATOR, "{0} not a valid email address.", context.getParamName()));
+                        String _pName = StringUtils.defaultIfBlank(context.getParamLabel(), context.getParamName());
+                        //
+                        String _msg = StringUtils.trimToNull(((VEmail) context.getAnnotation()).msg());
+                        if (_msg != null) {
+                            _msg = I18N.formatMessage(VALIDATION_I18N_RESOURCE, _msg, _msg, _pName);
+                        } else {
+                            _msg = I18N.formatMessage(VALIDATION_I18N_RESOURCE, __EMAIL_VALIDATOR, "{0} not a valid email address.", _pName);
+                        }
+                        return new ValidateResult(context.getParamName(), _msg);
                     }
                 }
             }

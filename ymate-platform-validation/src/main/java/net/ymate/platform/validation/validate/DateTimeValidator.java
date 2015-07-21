@@ -44,7 +44,15 @@ public class DateTimeValidator implements IValidator {
                     try {
                         DateTimeUtils.parseDateTime(_dateStr, _vDate.pattern());
                     } catch (Exception e) {
-                        return new ValidateResult(context.getParamName(), I18N.formatMessage(VALIDATION_I18N_RESOURCE, __DATETIME_VALIDATOR, "{0} not a valid datetime.", context.getParamName()));
+                        String _pName = StringUtils.defaultIfBlank(context.getParamLabel(), context.getParamName());
+                        //
+                        String _msg = StringUtils.trimToNull(_vDate.msg());
+                        if (_msg != null) {
+                            _msg = I18N.formatMessage(VALIDATION_I18N_RESOURCE, _msg, _msg, _pName);
+                        } else {
+                            _msg = I18N.formatMessage(VALIDATION_I18N_RESOURCE, __DATETIME_VALIDATOR, "{0} not a valid datetime.", _pName);
+                        }
+                        return new ValidateResult(context.getParamName(), _msg);
                     }
                 }
             }
