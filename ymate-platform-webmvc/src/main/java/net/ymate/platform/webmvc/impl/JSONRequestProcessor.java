@@ -17,6 +17,7 @@ package net.ymate.platform.webmvc.impl;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONException;
 import com.alibaba.fastjson.JSONObject;
 import net.ymate.platform.core.lang.BlurObject;
 import net.ymate.platform.core.lang.PairObject;
@@ -45,7 +46,12 @@ import java.util.Map;
 public class JSONRequestProcessor implements IRequestProcessor {
 
     public Map<String, Object> processRequestParams(IWebMvc owner, RequestMeta requestMeta, String[] methodParamNames) throws Exception {
-        JSONObject _protocol = JSON.parseObject(StringUtils.defaultIfBlank(IOUtils.toString(WebContext.getRequest().getInputStream(), owner.getModuleCfg().getDefaultCharsetEncoding()), "{}"));
+        JSONObject _protocol = null;
+        try {
+            _protocol = JSON.parseObject(StringUtils.defaultIfBlank(IOUtils.toString(WebContext.getRequest().getInputStream(), owner.getModuleCfg().getDefaultCharsetEncoding()), "{}"));
+        } catch (JSONException e) {
+            _protocol = JSON.parseObject("{}");
+        }
         //
         Map<String, Object> _returnValues = new LinkedHashMap<String, Object>();
         //
