@@ -47,7 +47,7 @@ public class DefaultRequestProcessor implements IRequestProcessor {
         ClassUtils.BeanWrapper<?> _wrapper = ClassUtils.wrapper(requestMeta.getTargetClass());
         if (_wrapper != null) {
             for (String _fieldName : _wrapper.getFieldNames()) {
-                PairObject<String, Object> _result = __doGetParamValue(owner, _fieldName, _wrapper.getFieldType(_fieldName), _wrapper.getFieldAnnotations(_fieldName));
+                PairObject<String, Object> _result = __doGetParamValue(owner, "", _fieldName, _wrapper.getFieldType(_fieldName), _wrapper.getFieldAnnotations(_fieldName));
                 if (_result != null) {
                     _returnValues.put(_result.getKey(), _result.getValue());
                     _returnValues.put(_fieldName, _result.getValue());
@@ -59,7 +59,7 @@ public class DefaultRequestProcessor implements IRequestProcessor {
         if (methodParamNames.length > 0) {
             Annotation[][] _paramAnnotations = requestMeta.getMethod().getParameterAnnotations();
             for (int _idx = 0; _idx < methodParamNames.length; _idx++) {
-                PairObject<String, Object> _result = __doGetParamValue(owner, methodParamNames[_idx], _paramTypes[_idx], _paramAnnotations[_idx]);
+                PairObject<String, Object> _result = __doGetParamValue(owner, "", methodParamNames[_idx], _paramTypes[_idx], _paramAnnotations[_idx]);
                 if (_result != null) {
                     _returnValues.put(_result.getKey(), _result.getValue());
                     _returnValues.put(methodParamNames[_idx], _result.getValue());
@@ -69,13 +69,24 @@ public class DefaultRequestProcessor implements IRequestProcessor {
         return _returnValues;
     }
 
-    private PairObject<String, Object> __doGetParamValue(IWebMvc owner, String paramName, Class<?> paramType, Annotation[] annotations) throws Exception {
+    /**
+     * 分析请求参数的值
+     *
+     * @param owner
+     * @param prefix      参数前缀
+     * @param paramName   参数名称
+     * @param paramType   参数类型
+     * @param annotations 参数上声明的注解集合
+     * @return 返回参数名称与值对象
+     * @throws Exception
+     */
+    private PairObject<String, Object> __doGetParamValue(IWebMvc owner, String prefix, String paramName, Class<?> paramType, Annotation[] annotations) throws Exception {
         String _pName = null;
         Object _pValue = null;
         for (Annotation _annotation : annotations) {
             if (_annotation instanceof CookieVariable) {
                 CookieVariable _anno = (CookieVariable) _annotation;
-                _pName = __doGetParamName(_anno.prefix(), _anno.value(), paramName);
+                _pName = __doGetParamName(StringUtils.defaultIfBlank(_anno.prefix(), prefix), _anno.value(), paramName);
                 _pValue = BlurObject.bind(StringUtils.defaultIfBlank(CookieHelper.bind(owner).getCookie(_pName).toStringValue(), StringUtils.trimToNull(_anno.defaultValue()))).toObjectValue(paramType);
                 break;
             } else if (_annotation instanceof PathVariable) {
@@ -85,17 +96,18 @@ public class DefaultRequestProcessor implements IRequestProcessor {
                 break;
             } else if (_annotation instanceof RequestHeader) {
                 RequestHeader _anno = (RequestHeader) _annotation;
-                _pName = __doGetParamName(_anno.prefix(), _anno.value(), paramName);
+                _pName = __doGetParamName(StringUtils.defaultIfBlank(_anno.prefix(), prefix), _anno.value(), paramName);
                 _pValue = BlurObject.bind(StringUtils.defaultIfBlank(WebContext.getRequest().getHeader(_pName), StringUtils.trimToNull(_anno.defaultValue()))).toObjectValue(paramType);
                 break;
             } else if (_annotation instanceof RequestParam) {
                 RequestParam _anno = (RequestParam) _annotation;
-                _pName = __doGetParamName(_anno.prefix(), _anno.value(), paramName);
+                _pName = __doGetParamName(StringUtils.defaultIfBlank(_anno.prefix(), prefix), _anno.value(), paramName);
                 _pValue = this.__doParseRequestParam(_pName, StringUtils.trimToNull(_anno.defaultValue()), paramType);
                 break;
             } else if (_annotation instanceof ModelBind) {
+                ModelBind _mBind = (ModelBind) _annotation;
                 _pName = paramName;
-                _pValue = __doParseModelBind(owner, paramType);
+                _pValue = __doParseModelBind(owner, _mBind.prefix(), paramType);
                 break;
             }
         }
@@ -105,10 +117,18 @@ public class DefaultRequestProcessor implements IRequestProcessor {
         return null;
     }
 
+    /**
+     * 根据前缀生成有效的参数名称
+     *
+     * @param prefix
+     * @param pName
+     * @param defaultName
+     * @return
+     */
     private String __doGetParamName(String prefix, String pName, String defaultName) {
         String _name = StringUtils.defaultIfBlank(pName, defaultName);
         if (StringUtils.isNotBlank(prefix)) {
-            _name = prefix.trim().concat(".").concat(_name);
+            _name = prefix.trim().concat("_").concat(_name);
         }
         return _name;
     }
@@ -144,12 +164,12 @@ public class DefaultRequestProcessor implements IRequestProcessor {
         return new BlurObject(_value).toObjectValue(paramType);
     }
 
-    private Object __doParseModelBind(IWebMvc owner, Class<?> paramType) throws Exception {
+    private Object __doParseModelBind(IWebMvc owner, String prefix, Class<?> paramType) throws Exception {
         ClassUtils.BeanWrapper<?> _wrapper = ClassUtils.wrapper(paramType);
         if (_wrapper != null) {
             for (String _fName : _wrapper.getFieldNames()) {
                 Annotation[] _fieldAnnotations = _wrapper.getFieldAnnotations(_fName);
-                PairObject<String, Object> _result = __doGetParamValue(owner, _fName, _wrapper.getFieldType(_fName), _fieldAnnotations);
+                PairObject<String, Object> _result = __doGetParamValue(owner, prefix, _fName, _wrapper.getFieldType(_fName), _fieldAnnotations);
                 if (_result != null) {
                     _wrapper.setValue(_fName, _result.getValue());
                 }

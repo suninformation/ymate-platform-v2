@@ -42,6 +42,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.File;
 import java.lang.reflect.Method;
+import java.util.Map;
 
 /**
  * MVC框架管理器
@@ -145,6 +146,24 @@ public class WebMVC implements IModule, IWebMvc {
         if (_meta != null) {
             // 先判断当前请求方式是否允许
             if (_meta.allowHttpMethod(context.getHttpMethod())) {
+                // 判断允许的请求头
+                Map<String, String> _allowMap = _meta.getAllowHeaders();
+                for (Map.Entry<String, String> _entry : _allowMap.entrySet()) {
+                    String _value = WebContext.getRequest().getHeader(_entry.getKey());
+                    if (_value == null || !_value.equalsIgnoreCase(_entry.getValue())) {
+                        response.sendError(HttpServletResponse.SC_BAD_REQUEST);
+                        return;
+                    }
+                }
+                // 判断允许的请求参数
+                _allowMap = _meta.getAllowParams();
+                for (Map.Entry<String, String> _entry : _allowMap.entrySet()) {
+                    String _value = WebContext.getRequest().getParameter(_entry.getKey());
+                    if (_value == null || !_value.equalsIgnoreCase(_entry.getValue())) {
+                        response.sendError(HttpServletResponse.SC_BAD_REQUEST);
+                        return;
+                    }
+                }
                 // 判断是否需要处理文件上传
                 if (context.getHttpMethod().equals(Type.HttpMethod.POST) && _meta.getMethod().isAnnotationPresent(FileUpload.class)) {
                     request = new MultipartRequestWrapper(this, request);

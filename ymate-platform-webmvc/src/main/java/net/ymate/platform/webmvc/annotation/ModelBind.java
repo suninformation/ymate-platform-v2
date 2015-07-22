@@ -27,4 +27,9 @@ import java.lang.annotation.*;
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
 public @interface ModelBind {
+
+    /**
+     * @return 绑定的参数名称前缀
+     */
+    String prefix() default "";
 }
