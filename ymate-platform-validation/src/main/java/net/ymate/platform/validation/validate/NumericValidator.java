@@ -42,44 +42,46 @@ public class NumericValidator implements IValidator {
     private static String __NUMERIC_VALIDATOR_MAX = "ymp.validation.numeric_validator_max";
 
     public ValidateResult validate(ValidateContext context) {
-        boolean _matched = false;
-        boolean _flag = false;
-        VNumeric _vNumeric = (VNumeric) context.getAnnotation();
-        try {
-            Number _number = NumberUtils.createNumber(BlurObject.bind(context.getParamValue()).toStringValue());
-            if (_number == null) {
-                _matched = true;
-                _flag = true;
-            } else {
-                if (_vNumeric.min() > 0 && _number.doubleValue() < _vNumeric.min()) {
+        if (context.getParamValue() != null) {
+            boolean _matched = false;
+            boolean _flag = false;
+            VNumeric _vNumeric = (VNumeric) context.getAnnotation();
+            try {
+                Number _number = NumberUtils.createNumber(BlurObject.bind(context.getParamValue()).toStringValue());
+                if (_number == null) {
                     _matched = true;
-                } else if (_vNumeric.max() > 0 && _number.doubleValue() > _vNumeric.max()) {
-                    _matched = true;
-                }
-            }
-        } catch (Exception e) {
-            _matched = true;
-            _flag = true;
-        }
-        if (_matched) {
-            String _pName = StringUtils.defaultIfBlank(context.getParamLabel(), context.getParamName());
-            String _msg = StringUtils.trimToNull(_vNumeric.msg());
-            if (_msg != null) {
-                _msg = I18N.formatMessage(VALIDATION_I18N_RESOURCE, _msg, _msg, _pName);
-            } else {
-                if (_flag) {
-                    _msg = I18N.formatMessage(VALIDATION_I18N_RESOURCE, __NUMERIC_VALIDATOR, "{0} not a valid numeric.", _pName);
+                    _flag = true;
                 } else {
-                    if (_vNumeric.max() > 0 && _vNumeric.min() > 0) {
-                        _msg = I18N.formatMessage(VALIDATION_I18N_RESOURCE, __NUMERIC_VALIDATOR_BETWEEN, "{0} numeric must be between {1} and {2}.", _pName, _vNumeric.max(), _vNumeric.min());
-                    } else if (_vNumeric.max() > 0) {
-                        _msg = I18N.formatMessage(VALIDATION_I18N_RESOURCE, __NUMERIC_VALIDATOR_MAX, "{0} numeric must be lt {1}.", _pName, _vNumeric.max());
-                    } else {
-                        _msg = I18N.formatMessage(VALIDATION_I18N_RESOURCE, __NUMERIC_VALIDATOR_MIN, "{0} numeric must be gt {1}.", _pName, _vNumeric.min());
+                    if (_vNumeric.min() > 0 && _number.doubleValue() < _vNumeric.min()) {
+                        _matched = true;
+                    } else if (_vNumeric.max() > 0 && _number.doubleValue() > _vNumeric.max()) {
+                        _matched = true;
                     }
                 }
+            } catch (Exception e) {
+                _matched = true;
+                _flag = true;
             }
-            return new ValidateResult(context.getParamName(), _msg);
+            if (_matched) {
+                String _pName = StringUtils.defaultIfBlank(context.getParamLabel(), context.getParamName());
+                String _msg = StringUtils.trimToNull(_vNumeric.msg());
+                if (_msg != null) {
+                    _msg = I18N.formatMessage(VALIDATION_I18N_RESOURCE, _msg, _msg, _pName);
+                } else {
+                    if (_flag) {
+                        _msg = I18N.formatMessage(VALIDATION_I18N_RESOURCE, __NUMERIC_VALIDATOR, "{0} not a valid numeric.", _pName);
+                    } else {
+                        if (_vNumeric.max() > 0 && _vNumeric.min() > 0) {
+                            _msg = I18N.formatMessage(VALIDATION_I18N_RESOURCE, __NUMERIC_VALIDATOR_BETWEEN, "{0} numeric must be between {1} and {2}.", _pName, _vNumeric.max(), _vNumeric.min());
+                        } else if (_vNumeric.max() > 0) {
+                            _msg = I18N.formatMessage(VALIDATION_I18N_RESOURCE, __NUMERIC_VALIDATOR_MAX, "{0} numeric must be lt {1}.", _pName, _vNumeric.max());
+                        } else {
+                            _msg = I18N.formatMessage(VALIDATION_I18N_RESOURCE, __NUMERIC_VALIDATOR_MIN, "{0} numeric must be gt {1}.", _pName, _vNumeric.min());
+                        }
+                    }
+                }
+                return new ValidateResult(context.getParamName(), _msg);
+            }
         }
         return null;
     }
