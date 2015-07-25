@@ -22,6 +22,7 @@ import com.alibaba.fastjson.JSONObject;
 import net.ymate.platform.core.lang.BlurObject;
 import net.ymate.platform.core.lang.PairObject;
 import net.ymate.platform.core.util.ClassUtils;
+import net.ymate.platform.core.util.RuntimeUtils;
 import net.ymate.platform.webmvc.IRequestProcessor;
 import net.ymate.platform.webmvc.IUploadFileWrapper;
 import net.ymate.platform.webmvc.IWebMvc;
@@ -31,6 +32,8 @@ import net.ymate.platform.webmvc.context.WebContext;
 import net.ymate.platform.webmvc.util.CookieHelper;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Array;
@@ -45,12 +48,18 @@ import java.util.Map;
  */
 public class JSONRequestProcessor implements IRequestProcessor {
 
+    private static final Log _LOG = LogFactory.getLog(JSONRequestProcessor.class);
+
     public Map<String, Object> processRequestParams(IWebMvc owner, RequestMeta requestMeta, String[] methodParamNames) throws Exception {
         JSONObject _protocol = null;
         try {
             _protocol = JSON.parseObject(StringUtils.defaultIfBlank(IOUtils.toString(WebContext.getRequest().getInputStream(), owner.getModuleCfg().getDefaultCharsetEncoding()), "{}"));
         } catch (JSONException e) {
             _protocol = JSON.parseObject("{}");
+            //
+            if (WebContext.getContext().getOwner().getOwner().getConfig().isDevelopMode()) {
+                _LOG.warn("", RuntimeUtils.unwrapThrow(e));
+            }
         }
         //
         Map<String, Object> _returnValues = new LinkedHashMap<String, Object>();
