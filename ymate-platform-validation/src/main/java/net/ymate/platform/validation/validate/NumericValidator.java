@@ -33,13 +33,13 @@ import org.apache.commons.lang.math.NumberUtils;
 @Validator(VNumeric.class)
 public class NumericValidator implements IValidator {
 
-    private static String __NUMERIC_VALIDATOR = "ymp.validation.numeric_validator";
+    private static String __NUMERIC = "ymp.validation.numeric";
 
-    private static String __NUMERIC_VALIDATOR_BETWEEN = "ymp.validation.numeric_validator_between";
+    private static String __NUMERIC_BETWEEN = "ymp.validation.numeric_between";
 
-    private static String __NUMERIC_VALIDATOR_MIN = "ymp.validation.numeric_validator_min";
+    private static String __NUMERIC_MIN = "ymp.validation.numeric_min";
 
-    private static String __NUMERIC_VALIDATOR_MAX = "ymp.validation.numeric_validator_max";
+    private static String __NUMERIC_MAX = "ymp.validation.numeric_max";
 
     public ValidateResult validate(ValidateContext context) {
         if (context.getParamValue() != null) {
@@ -69,14 +69,14 @@ public class NumericValidator implements IValidator {
                     _msg = I18N.formatMessage(VALIDATION_I18N_RESOURCE, _msg, _msg, _pName);
                 } else {
                     if (_flag) {
-                        _msg = I18N.formatMessage(VALIDATION_I18N_RESOURCE, __NUMERIC_VALIDATOR, "{0} not a valid numeric.", _pName);
+                        _msg = I18N.formatMessage(VALIDATION_I18N_RESOURCE, __NUMERIC, "{0} not a valid numeric.", _pName);
                     } else {
                         if (_vNumeric.max() > 0 && _vNumeric.min() > 0) {
-                            _msg = I18N.formatMessage(VALIDATION_I18N_RESOURCE, __NUMERIC_VALIDATOR_BETWEEN, "{0} numeric must be between {1} and {2}.", _pName, _vNumeric.max(), _vNumeric.min());
+                            _msg = I18N.formatMessage(VALIDATION_I18N_RESOURCE, __NUMERIC_BETWEEN, "{0} numeric must be between {1} and {2}.", _pName, _vNumeric.max(), _vNumeric.min());
                         } else if (_vNumeric.max() > 0) {
-                            _msg = I18N.formatMessage(VALIDATION_I18N_RESOURCE, __NUMERIC_VALIDATOR_MAX, "{0} numeric must be lt {1}.", _pName, _vNumeric.max());
+                            _msg = I18N.formatMessage(VALIDATION_I18N_RESOURCE, __NUMERIC_MAX, "{0} numeric must be lt {1}.", _pName, _vNumeric.max());
                         } else {
-                            _msg = I18N.formatMessage(VALIDATION_I18N_RESOURCE, __NUMERIC_VALIDATOR_MIN, "{0} numeric must be gt {1}.", _pName, _vNumeric.min());
+                            _msg = I18N.formatMessage(VALIDATION_I18N_RESOURCE, __NUMERIC_MIN, "{0} numeric must be gt {1}.", _pName, _vNumeric.min());
                         }
                     }
                 }

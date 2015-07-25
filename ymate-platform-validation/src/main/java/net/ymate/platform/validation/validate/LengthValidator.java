@@ -32,11 +32,11 @@ import org.apache.commons.lang.StringUtils;
 @Validator(VLength.class)
 public class LengthValidator implements IValidator {
 
-    private static String __LENGTH_VALIDATOR_BETWEEN = "ymp.validation.length_validator_between";
+    private static String __LENGTH_BETWEEN = "ymp.validation.length_between";
 
-    private static String __LENGTH_VALIDATOR_MIN = "ymp.validation.length_validator_min";
+    private static String __LENGTH_MIN = "ymp.validation.length_min";
 
-    private static String __LENGTH_VALIDATOR_MAX = "ymp.validation.length_validator_max";
+    private static String __LENGTH_MAX = "ymp.validation.length_max";
 
     public ValidateResult validate(ValidateContext context) {
         if (context.getParamValue() != null) {
@@ -57,11 +57,11 @@ public class LengthValidator implements IValidator {
                             _msg = I18N.formatMessage(VALIDATION_I18N_RESOURCE, _msg, _msg, _pName);
                         } else {
                             if (_vLength.max() > 0 && _vLength.min() > 0) {
-                                _msg = I18N.formatMessage(VALIDATION_I18N_RESOURCE, __LENGTH_VALIDATOR_BETWEEN, "{0} length must be between {1} and {2}.", _pName, _vLength.max(), _vLength.min());
+                                _msg = I18N.formatMessage(VALIDATION_I18N_RESOURCE, __LENGTH_BETWEEN, "{0} length must be between {1} and {2}.", _pName, _vLength.max(), _vLength.min());
                             } else if (_vLength.max() > 0) {
-                                _msg = I18N.formatMessage(VALIDATION_I18N_RESOURCE, __LENGTH_VALIDATOR_MAX, "{0} length must be lt {1}.", _pName, _vLength.max());
+                                _msg = I18N.formatMessage(VALIDATION_I18N_RESOURCE, __LENGTH_MAX, "{0} length must be lt {1}.", _pName, _vLength.max());
                             } else {
-                                _msg = I18N.formatMessage(VALIDATION_I18N_RESOURCE, __LENGTH_VALIDATOR_MIN, "{0} length must be gt {1}.", _pName, _vLength.min());
+                                _msg = I18N.formatMessage(VALIDATION_I18N_RESOURCE, __LENGTH_MIN, "{0} length must be gt {1}.", _pName, _vLength.min());
                             }
                         }
                         return new ValidateResult(context.getParamName(), _msg);

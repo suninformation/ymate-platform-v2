@@ -32,7 +32,7 @@ import org.apache.commons.lang.StringUtils;
 @Validator(VRegex.class)
 public class RegexValidator implements IValidator {
 
-    private static String __REGEX_VALIDATOR = "ymp.validation.regex_validator";
+    private static String __REGEX = "ymp.validation.regex";
 
     public ValidateResult validate(ValidateContext context) {
         if (context.getParamValue() != null) {
@@ -47,7 +47,7 @@ public class RegexValidator implements IValidator {
                         if (_msg != null) {
                             _msg = I18N.formatMessage(VALIDATION_I18N_RESOURCE, _msg, _msg, _pName);
                         } else {
-                            _msg = I18N.formatMessage(VALIDATION_I18N_RESOURCE, __REGEX_VALIDATOR, "{0} regex not match.", _pName);
+                            _msg = I18N.formatMessage(VALIDATION_I18N_RESOURCE, __REGEX, "{0} regex not match.", _pName);
                         }
                         return new ValidateResult(context.getParamName(), _msg);
                     }

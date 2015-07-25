@@ -32,9 +32,9 @@ import org.apache.commons.lang.StringUtils;
 @Validator(VCompare.class)
 public class CompareValidator implements IValidator {
 
-    private static String __COMPARE_VALIDATOR_NOT_EQ = "ymp.validation.compare_validator_not_eq";
+    private static String __COMPARE_NOT_EQ = "ymp.validation.compare_not_eq";
 
-    private static String __COMPARE_VALIDATOR_EQ = "ymp.validation.compare_validator_eq";
+    private static String __COMPARE_EQ = "ymp.validation.compare_eq";
 
     public ValidateResult validate(ValidateContext context) {
         if (context.getParamValue() != null && !context.getParamValue().getClass().isArray()) {
@@ -59,10 +59,10 @@ public class CompareValidator implements IValidator {
                 } else {
                     switch (_vCompare.cond()) {
                         case NOT_EQ:
-                            _msg = I18N.formatMessage(VALIDATION_I18N_RESOURCE, __COMPARE_VALIDATOR_NOT_EQ, "{0} can not eq {1}.", _pName, _pLabel);
+                            _msg = I18N.formatMessage(VALIDATION_I18N_RESOURCE, __COMPARE_NOT_EQ, "{0} can not eq {1}.", _pName, _pLabel);
                             break;
                         case EQ:
-                            _msg = I18N.formatMessage(VALIDATION_I18N_RESOURCE, __COMPARE_VALIDATOR_EQ, "{0} must be eq {1}.", _pName, _pLabel);
+                            _msg = I18N.formatMessage(VALIDATION_I18N_RESOURCE, __COMPARE_EQ, "{0} must be eq {1}.", _pName, _pLabel);
                     }
                     if (StringUtils.trimToNull(_msg) == null) {
                         _msg = I18N.formatMessage("{0} must be {1} {2}", _pName, _condStr, _pLabel);

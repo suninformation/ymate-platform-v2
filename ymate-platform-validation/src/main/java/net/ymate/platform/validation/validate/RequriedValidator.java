@@ -33,7 +33,7 @@ import org.apache.commons.lang.StringUtils;
 @Validator(VRequried.class)
 public class RequriedValidator implements IValidator {
 
-    private static String __REQURIED_VALIDATOR = "ymp.validation.requried_validator";
+    private static String __REQURIED = "ymp.validation.requried";
 
     public ValidateResult validate(ValidateContext context) {
         boolean _matched = false;
@@ -55,7 +55,7 @@ public class RequriedValidator implements IValidator {
             if (_msg != null) {
                 _msg = I18N.formatMessage(VALIDATION_I18N_RESOURCE, _msg, _msg, _pName);
             } else {
-                _msg = I18N.formatMessage(VALIDATION_I18N_RESOURCE, __REQURIED_VALIDATOR, "{0} must be requried.", _pName);
+                _msg = I18N.formatMessage(VALIDATION_I18N_RESOURCE, __REQURIED, "{0} must be requried.", _pName);
             }
             return new ValidateResult(context.getParamName(), _msg);
         }

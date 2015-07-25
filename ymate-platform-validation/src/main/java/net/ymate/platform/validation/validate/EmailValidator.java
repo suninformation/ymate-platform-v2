@@ -32,7 +32,7 @@ import org.apache.commons.lang.StringUtils;
 @Validator(VEmail.class)
 public class EmailValidator implements IValidator {
 
-    private static String __EMAIL_VALIDATOR = "ymp.validation.email_validator";
+    private static String __EMAIL = "ymp.validation.email";
 
     public ValidateResult validate(ValidateContext context) {
         if (context.getParamValue() != null) {
@@ -46,7 +46,7 @@ public class EmailValidator implements IValidator {
                         if (_msg != null) {
                             _msg = I18N.formatMessage(VALIDATION_I18N_RESOURCE, _msg, _msg, _pName);
                         } else {
-                            _msg = I18N.formatMessage(VALIDATION_I18N_RESOURCE, __EMAIL_VALIDATOR, "{0} not a valid email address.", _pName);
+                            _msg = I18N.formatMessage(VALIDATION_I18N_RESOURCE, __EMAIL, "{0} not a valid email address.", _pName);
                         }
                         return new ValidateResult(context.getParamName(), _msg);
                     }
