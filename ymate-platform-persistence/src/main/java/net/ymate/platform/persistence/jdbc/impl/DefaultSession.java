@@ -242,7 +242,7 @@ public class DefaultSession implements ISession {
         String _updateSql = __dialect.buildUpdateByPkSQL(entity.getClass(), __tablePrefix, _entity.getKey(), filter);
         IUpdateOperator _opt = new DefaultUpdateOperator(_updateSql, this.__connectionHolder);
         // 先获取并添加需要更新的字段值
-        for (Object _param : __doGetNotEmptyFieldAndValues(_meta, entity, filter, false).getValue().getParams()) {
+        for (Object _param : __doGetEntityFieldAndValues(_meta, entity, filter, false).getValue().getParams()) {
             _opt.addParameter(_param);
         }
         // 再获取并添加主键条件字段值
@@ -261,7 +261,7 @@ public class DefaultSession implements ISession {
         IBatchUpdateOperator _opt = new BatchUpdateOperator(_updateSql, this.__connectionHolder);
         for (T entity : entities) {
             SQLBatchParameter _batchParam = SQLBatchParameter.create();
-            _entity = __doGetNotEmptyFieldAndValues(_meta, entity, filter, false);
+            _entity = __doGetEntityFieldAndValues(_meta, entity, filter, false);
             // 先获取并添加需要更新的字段值
             for (Object _param : _entity.getValue().getParams()) {
                 _batchParam.addParameter(_param);
@@ -279,7 +279,7 @@ public class DefaultSession implements ISession {
 
     public <T extends IEntity> T insert(T entity) throws Exception {
         EntityMeta _meta = EntityMeta.createAndGet(entity.getClass());
-        PairObject<Fields, Params> _entity = __doGetNotEmptyFieldAndValues(_meta, entity, null, true);
+        PairObject<Fields, Params> _entity = __doGetEntityFieldAndValues(_meta, entity, null, true);
         String _insertSql = __dialect.buildInsertSQL(entity.getClass(), __tablePrefix, _entity.getKey());
         IUpdateOperator _opt = new DefaultUpdateOperator(_insertSql, this.__connectionHolder);
         // 获取并添加主键条件字段值
@@ -292,12 +292,12 @@ public class DefaultSession implements ISession {
 
     public <T extends IEntity> List<T> insert(List<T> entities) throws Exception {
         EntityMeta _meta = EntityMeta.createAndGet(entities.get(0).getClass());
-        PairObject<Fields, Params> _entity = __doGetNotEmptyFieldAndValues(_meta, entities.get(0), null, true);
+        PairObject<Fields, Params> _entity = __doGetEntityFieldAndValues(_meta, entities.get(0), null, true);
         String _insertSql = __dialect.buildInsertSQL(entities.get(0).getClass(), __tablePrefix, _entity.getKey());
         IBatchUpdateOperator _opt = new BatchUpdateOperator(_insertSql, this.__connectionHolder);
         for (T entity : entities) {
             SQLBatchParameter _batchParam = SQLBatchParameter.create();
-            for (Object _param : __doGetNotEmptyFieldAndValues(_meta, entity, null, true).getValue().getParams()) {
+            for (Object _param : __doGetEntityFieldAndValues(_meta, entity, null, true).getValue().getParams()) {
                 _batchParam.addParameter(_param);
             }
             _opt.addBatchParameter(_batchParam);
@@ -435,7 +435,7 @@ public class DefaultSession implements ISession {
      * @return 获取实体的所有字段和值
      * @throws Exception
      */
-    protected PairObject<Fields, Params> __doGetNotEmptyFieldAndValues(EntityMeta entityMeta, IEntity targetObj, Fields filter, boolean includePK) throws Exception {
+    protected PairObject<Fields, Params> __doGetEntityFieldAndValues(EntityMeta entityMeta, IEntity targetObj, Fields filter, boolean includePK) throws Exception {
         Fields _fields = Fields.create();
         Params _values = Params.create();
         for (String _fieldName : entityMeta.getPropertyNames()) {
@@ -450,10 +450,9 @@ public class DefaultSession implements ISession {
                 } else {
                     _value = entityMeta.getPropertyByName(_fieldName).getField().get(targetObj);
                 }
-                if (_value != null) {
-                    _fields.add(_fieldName);
-                    _values.add(_value);
-                }
+                // 不管是不是空值都要塞进去，避免出现参数不对称的问题
+                _fields.add(_fieldName);
+                _values.add(_value);
             }
         }
         return new PairObject<Fields, Params>(_fields, _values);
