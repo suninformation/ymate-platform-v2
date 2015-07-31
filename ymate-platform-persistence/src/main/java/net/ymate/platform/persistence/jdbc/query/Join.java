@@ -15,6 +15,8 @@
  */
 package net.ymate.platform.persistence.jdbc.query;
 
+import org.apache.commons.lang.StringUtils;
+
 /**
  * 连接查询语句对象
  *
@@ -24,6 +26,8 @@ package net.ymate.platform.persistence.jdbc.query;
 public class Join {
 
     private String __from;
+
+    private String __alias;
 
     private Cond __on;
 
@@ -47,6 +51,11 @@ public class Join {
         __from = type.concat(" ").concat(from);
     }
 
+    public Join alias(String alias) {
+        __alias = alias;
+        return this;
+    }
+
     public Join on(Cond cond) {
         __on = cond;
         return this;
@@ -58,6 +67,12 @@ public class Join {
 
     @Override
     public String toString() {
-        return new StringBuilder(__from).append(" ON ").append(__on.toString()).toString();
+        __alias = StringUtils.trimToNull(__alias);
+        if (__alias == null) {
+            __alias = "";
+        } else {
+            __alias = " ".concat(__alias);
+        }
+        return new StringBuilder(__from).append(__alias).append(" ON ").append(__on.toString()).toString();
     }
 }

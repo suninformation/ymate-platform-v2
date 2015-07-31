@@ -86,6 +86,9 @@ public class Select {
 
     public Select join(Join join) {
         __joins.add(join);
+        if (__where == null) {
+            __where = Where.create();
+        }
         __where.param(join.getParams());
         return this;
     }

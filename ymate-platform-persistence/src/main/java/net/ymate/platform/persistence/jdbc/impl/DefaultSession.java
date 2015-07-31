@@ -89,6 +89,9 @@ public class DefaultSession implements ISession {
 
     public <T> IResultSet<T> find(SQL sql, IResultSetHandler<T> handler) throws Exception {
         IQueryOperator<T> _opt = new DefaultQueryOperator<T>(sql.getSQL(), this.__connectionHolder, handler);
+        for (Object _param : sql.getParams().getParams()) {
+            _opt.addParameter(_param);
+        }
         _opt.execute();
         return new DefaultResultSet<T>(_opt.getResultSet());
     }
@@ -422,6 +425,12 @@ public class DefaultSession implements ISession {
                     _fields.add(_fieldName);
                     _values.add(((IEntity) targetObj).getId());
                 }
+            }
+        } else {
+            String _fieldName = entityMeta.getPrimaryKeys().get(0);
+            if (__doCheckField(filter, _fieldName)) {
+                _fields.add(_fieldName);
+                _values.add(targetObj);
             }
         }
         return new PairObject<Fields, Params>(_fields, _values);

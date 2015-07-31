@@ -35,6 +35,18 @@ public class SQL {
         return new SQL(select.toString()).param(select.getParams());
     }
 
+    public static SQL create(Insert insert) {
+        return new SQL(insert.toString()).param(insert.getParams());
+    }
+
+    public static SQL create(Update update) {
+        return new SQL(update.toString()).param(update.getParams());
+    }
+
+    public static SQL create(Delete delete) {
+        return new SQL(delete.toString()).param(delete.getParams());
+    }
+
     private SQL(String sql) {
         this.__params = Params.create();
         this.__sql = sql;
