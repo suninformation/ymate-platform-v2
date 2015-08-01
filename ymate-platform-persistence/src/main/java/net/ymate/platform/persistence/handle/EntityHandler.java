@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.ymate.platform.persistence.jdbc.support;
+package net.ymate.platform.persistence.handle;
 
 import net.ymate.platform.core.YMP;
 import net.ymate.platform.core.beans.IBeanHandler;

@@ -19,11 +19,9 @@ import net.ymate.platform.core.Version;
 import net.ymate.platform.core.YMP;
 import net.ymate.platform.core.module.IModule;
 import net.ymate.platform.core.module.annotation.Module;
-import net.ymate.platform.persistence.annotation.Entity;
 import net.ymate.platform.persistence.jdbc.dialect.IDialect;
 import net.ymate.platform.persistence.jdbc.dialect.impl.*;
 import net.ymate.platform.persistence.jdbc.impl.*;
-import net.ymate.platform.persistence.jdbc.support.EntityHandler;
 import net.ymate.platform.persistence.jdbc.transaction.Transactions;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -84,7 +82,6 @@ public class JDBC implements IModule, IDatabase {
             //
             __owner = owner;
             __moduleCfg = new DefaultModuleCfg(owner);
-            __owner.registerHandler(Entity.class, new EntityHandler(__owner));
             //
             __dsCaches = new HashMap<String, IDataSourceAdapter>();
             for (DataSourceCfgMeta _meta : __moduleCfg.getDataSourceCfgs().values()) {
