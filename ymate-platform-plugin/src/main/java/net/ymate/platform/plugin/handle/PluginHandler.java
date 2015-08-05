@@ -30,10 +30,7 @@ import org.apache.commons.lang.StringUtils;
  */
 public class PluginHandler implements IBeanHandler {
 
-    private IPluginFactory __pluginFactory;
-
     public PluginHandler(IPluginFactory pluginFactory) {
-        __pluginFactory = pluginFactory;
         pluginFactory.addExcludedInterfaceClass(IPlugin.class);
         pluginFactory.addExcludedInterfaceClass(IPluginConfig.class);
         pluginFactory.addExcludedInterfaceClass(IPluginContext.class);
@@ -44,7 +41,7 @@ public class PluginHandler implements IBeanHandler {
 
     @SuppressWarnings("unchecked")
     public Object handle(Class<?> targetClass) throws Exception {
-        if (targetClass.isAnnotationPresent(Plugin.class) && ClassUtils.isInterfaceOf(targetClass, IPlugin.class)) {
+        if (ClassUtils.isInterfaceOf(targetClass, IPlugin.class)) {
             Plugin _plugin = targetClass.getAnnotation(Plugin.class);
             PluginMeta _meta = new PluginMeta(targetClass.getClassLoader());
             //

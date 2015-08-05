@@ -15,6 +15,8 @@
  */
 package net.ymate.platform.plugin;
 
+import net.ymate.platform.core.YMP;
+
 /**
  * 插件工厂接口定义
  *
@@ -49,6 +51,11 @@ public interface IPluginFactory {
      * @param interfaceClass
      */
     public void addExcludedInterfaceClass(Class<?> interfaceClass);
+
+    /**
+     * @return 返回所属YMP框架管理器实例
+     */
+    public YMP getOwner();
 
     /**
      * @return 返回插件工厂配置对象

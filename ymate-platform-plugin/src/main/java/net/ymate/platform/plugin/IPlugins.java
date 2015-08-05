@@ -16,6 +16,8 @@
 package net.ymate.platform.plugin;
 
 /**
+ * 插件框架模块管理器接口
+ *
  * @author 刘镇 (suninformation@163.com) on 15/7/9 下午2:09
  * @version 1.0
  */
@@ -23,5 +25,8 @@ public interface IPlugins {
 
     public static final String MODULE_NAME = "plugin";
 
+    /**
+     * @return 返回插件工厂接口实例
+     */
     public IPluginFactory getPluginFactory();
 }

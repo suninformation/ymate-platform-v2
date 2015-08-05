@@ -257,6 +257,10 @@ public class DefaultPluginFactory implements IPluginFactory {
         __outerBeanFactory.registerExcludedClass(interfaceClass);
     }
 
+    public YMP getOwner() {
+        return __owner;
+    }
+
     public IPluginConfig getPluginConfig() {
         return __config;
     }
