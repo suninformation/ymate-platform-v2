@@ -17,6 +17,7 @@ package net.ymate.platform.webmvc;
 
 import net.ymate.platform.core.Version;
 import net.ymate.platform.core.YMP;
+import net.ymate.platform.core.beans.BeanMeta;
 import net.ymate.platform.core.module.IModule;
 import net.ymate.platform.core.module.annotation.Module;
 import net.ymate.platform.webmvc.annotation.Controller;
@@ -98,7 +99,7 @@ public class WebMVC implements IModule, IWebMvc {
             __moduleCfg = new DefaultModuleCfg(owner);
             __mappingParser = new RequestMappingParser();
             __owner.getEvents().registerEvent(WebEvent.class);
-            __owner.registerHandler(Controller.class, new ControllerHandler(__owner, this));
+            __owner.registerHandler(Controller.class, new ControllerHandler(this));
             //
             __inited = true;
         }
@@ -132,6 +133,14 @@ public class WebMVC implements IModule, IWebMvc {
                 __mappingParser.registerRequestMeta(_meta);
                 //
                 _isValid = true;
+            }
+        }
+        //
+        if (_isValid) {
+            if (!targetClass.getAnnotation(Controller.class).singleton()) {
+                __owner.registerBean(BeanMeta.create(targetClass.newInstance(), targetClass));
+            } else {
+                __owner.registerBean(BeanMeta.create(targetClass));
             }
         }
         return _isValid;

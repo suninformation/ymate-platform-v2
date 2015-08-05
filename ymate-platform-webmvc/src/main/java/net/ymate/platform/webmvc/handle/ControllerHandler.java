@@ -15,8 +15,6 @@
  */
 package net.ymate.platform.webmvc.handle;
 
-import net.ymate.platform.core.YMP;
-import net.ymate.platform.core.beans.BeanMeta;
 import net.ymate.platform.core.beans.IBeanHandler;
 import net.ymate.platform.webmvc.IWebMvc;
 import net.ymate.platform.webmvc.annotation.Controller;
@@ -29,26 +27,15 @@ import net.ymate.platform.webmvc.annotation.Controller;
  */
 public class ControllerHandler implements IBeanHandler {
 
-    private YMP __owner;
-
     private IWebMvc __webMvc;
 
-    public ControllerHandler(YMP owner, IWebMvc webMvc) {
-        __owner = owner;
+    public ControllerHandler(IWebMvc webMvc) {
         __webMvc = webMvc;
     }
 
     @SuppressWarnings("unchecked")
     public Object handle(Class<?> targetClass) throws Exception {
-        if (targetClass.isAnnotationPresent(Controller.class)) {
-            if (__webMvc.registerController((Class<? extends Controller>) targetClass)) {
-                if (!targetClass.getAnnotation(Controller.class).singleton()) {
-                    return targetClass.newInstance();
-                } else {
-                    __owner.registerBean(BeanMeta.create(targetClass));
-                }
-            }
-        }
+        __webMvc.registerController((Class<? extends Controller>) targetClass);
         return null;
     }
 }
