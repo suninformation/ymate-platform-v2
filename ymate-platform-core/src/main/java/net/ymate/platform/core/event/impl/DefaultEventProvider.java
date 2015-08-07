@@ -98,8 +98,11 @@ public class DefaultEventProvider<T, E extends Enum<E>, EVENT extends Class<IEve
                         }
                         break;
                     default:
-                        for (final IEventListener<CONTEXT> _listener : _listeners) {
-                            _listener.handle(context);
+                        for (IEventListener<CONTEXT> _listener : _listeners) {
+                            if (_listener.handle(context)) {
+                                // 返回值若为true则表示终止事件广播并结束执行
+                                break;
+                            }
                         }
                 }
             }

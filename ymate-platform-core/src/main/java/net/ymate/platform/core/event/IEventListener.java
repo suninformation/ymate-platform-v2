@@ -24,9 +24,10 @@ package net.ymate.platform.core.event;
 public interface IEventListener<CONTEXT extends EventContext> {
 
     /**
-     * 处理事件监听
+     * 处理事件监听，其返回值将影响事件队列是否继续执行(仅支持同步事件，异步事件将忽略此返回值)
      *
      * @param context
+     * @return 返回true将停止事件同步队列继续执行
      */
-    public void handle(CONTEXT context);
+    public boolean handle(CONTEXT context);
 }
