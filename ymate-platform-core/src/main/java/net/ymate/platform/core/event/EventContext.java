@@ -33,11 +33,15 @@ public class EventContext<T, E extends Enum> extends EventObject {
 
     private Map<String, Object> __params;
 
+    private final long __timestamp;
+
     public EventContext(T owner, Class<? extends IEvent> eventClass, E eventName) {
         super(owner);
         __eventClass = eventClass;
         __eventName = eventName;
         __params = new HashMap<String, Object>();
+        //
+        __timestamp = System.currentTimeMillis();
     }
 
     @Override
@@ -71,5 +75,9 @@ public class EventContext<T, E extends Enum> extends EventObject {
 
     public Object getParamExtend(String paramName) {
         return __params.get(paramName);
+    }
+
+    public long getTimestamp() {
+        return __timestamp;
     }
 }
