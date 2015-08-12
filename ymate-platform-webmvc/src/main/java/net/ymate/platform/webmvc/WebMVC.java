@@ -99,7 +99,7 @@ public class WebMVC implements IModule, IWebMvc {
             __moduleCfg = new DefaultModuleCfg(owner);
             __mappingParser = new RequestMappingParser();
             __owner.getEvents().registerEvent(WebEvent.class);
-            __owner.registerHandler(Controller.class, new ControllerHandler(this));
+            __owner.registerHandler(Controller.class, new ControllerHandler(__owner));
             //
             __inited = true;
         }

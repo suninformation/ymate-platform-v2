@@ -84,7 +84,7 @@ public class Validations implements IModule, IValidation {
             __owner = owner;
             __validators = new HashMap<Class<? extends Annotation>, IValidator>();
             __VALIDATION_META_CACHES = new HashMap<Class<?>, ValidationMeta>();
-            __owner.registerHandler(Validator.class, new ValidateHandler(__owner, this));
+            __owner.registerHandler(Validator.class, new ValidateHandler(__owner));
             //
             __inited = true;
         }

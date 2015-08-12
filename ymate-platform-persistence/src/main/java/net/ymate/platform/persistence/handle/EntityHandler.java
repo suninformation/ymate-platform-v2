@@ -29,11 +29,8 @@ import net.ymate.platform.persistence.base.IEntity;
  */
 public class EntityHandler implements IBeanHandler {
 
-    private YMP __owner;
-
     public EntityHandler(YMP owner) throws Exception {
-        __owner = owner;
-        __owner.registerExcludedClass(IEntity.class);
+        owner.registerExcludedClass(IEntity.class);
     }
 
     @SuppressWarnings("unchecked")
