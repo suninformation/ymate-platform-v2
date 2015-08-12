@@ -80,15 +80,12 @@ public class BeanMeta implements Serializable {
 
     public List<Class<?>> getBeanInterfaces(List<Class<?>> excludedClassSet) {
         List<Class<?>> _returnValues = new ArrayList<Class<?>>();
-        if (__singleton && __beanObject != null) { // 仅处理单例且非空对象
-            Class<?>[] _interfaces = __beanObject.getClass().getInterfaces();
-            for (Class<?> _interface : _interfaces) {
-                // 排除自定义接口
-                if (excludedClassSet != null && excludedClassSet.contains(_interface)) {
-                    continue;
-                }
-                _returnValues.add(_interface);
+        for (Class<?> _interface : __beanClass.getInterfaces()) {
+            // 排除自定义接口
+            if (excludedClassSet != null && excludedClassSet.contains(_interface)) {
+                continue;
             }
+            _returnValues.add(_interface);
         }
         return _returnValues;
     }
