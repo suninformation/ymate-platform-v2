@@ -33,6 +33,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Map;
 
@@ -74,43 +75,46 @@ public class Plugins implements IModule, IPlugins {
     public void init(YMP owner) throws Exception {
         if (!__inited) {
             Map<String, String> _moduleCfgs = owner.getConfig().getModuleConfigs(MODULE_NAME);
-            if (!_moduleCfgs.isEmpty()) {
-                __owner = owner;
-                __owner.getEvents().registerEvent(PluginEvent.class);
-                //
-                _LOG.info("Initializing ymate-platform-plugin-" + VERSION);
-                //
-                String _pHome = RuntimeUtils.replaceEnvVariable(StringUtils.defaultIfBlank(_moduleCfgs.get("plugin_home"), "${root}/plugins"));
-                //
-                DefaultPluginConfig _config = loadConfig(_pHome, StringUtils.split(StringUtils.trimToEmpty(_moduleCfgs.get("autoscan_packages")), "|"));
-                if (_config.getAutoscanPackages().isEmpty()) {
-                    _config.setAutoscanPackages(__owner.getConfig().getAutoscanPackages());
+            __owner = owner;
+            __owner.getEvents().registerEvent(PluginEvent.class);
+            //
+            _LOG.info("Initializing ymate-platform-plugin-" + VERSION);
+            //
+            DefaultPluginConfig _config = new DefaultPluginConfig();
+            _config.setPluginHome(new File(RuntimeUtils.replaceEnvVariable(StringUtils.defaultIfBlank(_moduleCfgs.get("plugin_home"), "${root}/plugins"))));
+            _config.setAutoscanPackages(new ArrayList<String>(Arrays.asList(StringUtils.split(StringUtils.trimToEmpty(_moduleCfgs.get("autoscan_packages")), "|"))));
+            //
+            for (String _package : __owner.getConfig().getAutoscanPackages()) {
+                if (!_config.getAutoscanPackages().contains(_package)) {
+                    _config.getAutoscanPackages().add(_package);
                 }
-                _config.setAutomatic(BlurObject.bind(StringUtils.defaultIfBlank(_moduleCfgs.get("automatic"), "true")).toBooleanValue());
-                _config.setIncludedClassPath(BlurObject.bind(StringUtils.defaultIfBlank(_moduleCfgs.get("included_classpath"), "true")).toBooleanValue());
-                //
-                _config.setPluginEventListener(new IPluginEventListener() {
-                    public void onInited(IPluginContext context, IPlugin plugin) {
-                        __owner.getEvents().fireEvent(Events.MODE.NORMAL, new PluginEvent(plugin, PluginEvent.EVENT.PLUGIN_INITED));
-                    }
-
-                    public void onStarted(IPluginContext context, IPlugin plugin) {
-                        __owner.getEvents().fireEvent(Events.MODE.NORMAL, new PluginEvent(plugin, PluginEvent.EVENT.PLUGIN_STARTED));
-                    }
-
-                    public void onShutdown(IPluginContext context, IPlugin plugin) {
-                        __owner.getEvents().fireEvent(Events.MODE.NORMAL, new PluginEvent(plugin, PluginEvent.EVENT.PLUGIN_SHUTDOWN));
-                    }
-
-                    public void onDestroy(IPluginContext context, IPlugin plugin) {
-                        __owner.getEvents().fireEvent(Events.MODE.NORMAL, new PluginEvent(plugin, PluginEvent.EVENT.PLUGIN_DESTROYED));
-                    }
-                });
-                //
-                __pluginFactory = createFactory(_config);
-                //
-                __inited = true;
             }
+            //
+            _config.setAutomatic(BlurObject.bind(StringUtils.defaultIfBlank(_moduleCfgs.get("automatic"), "true")).toBooleanValue());
+            _config.setIncludedClassPath(BlurObject.bind(StringUtils.defaultIfBlank(_moduleCfgs.get("included_classpath"), "true")).toBooleanValue());
+            //
+            _config.setPluginEventListener(new IPluginEventListener() {
+                public void onInited(IPluginContext context, IPlugin plugin) {
+                    __owner.getEvents().fireEvent(Events.MODE.NORMAL, new PluginEvent(plugin, PluginEvent.EVENT.PLUGIN_INITED));
+                }
+
+                public void onStarted(IPluginContext context, IPlugin plugin) {
+                    __owner.getEvents().fireEvent(Events.MODE.NORMAL, new PluginEvent(plugin, PluginEvent.EVENT.PLUGIN_STARTED));
+                }
+
+                public void onShutdown(IPluginContext context, IPlugin plugin) {
+                    __owner.getEvents().fireEvent(Events.MODE.NORMAL, new PluginEvent(plugin, PluginEvent.EVENT.PLUGIN_SHUTDOWN));
+                }
+
+                public void onDestroy(IPluginContext context, IPlugin plugin) {
+                    __owner.getEvents().fireEvent(Events.MODE.NORMAL, new PluginEvent(plugin, PluginEvent.EVENT.PLUGIN_DESTROYED));
+                }
+            });
+            //
+            __pluginFactory = new DefaultPluginFactory(__owner);
+            __pluginFactory.init(_config);
+            //
+            __inited = true;
         }
     }
 
@@ -133,13 +137,15 @@ public class Plugins implements IModule, IPlugins {
         return __pluginFactory;
     }
 
+    //---------------------=================------------------------
+
     /**
      * @param pluginHome   插件根路径
      * @param autoPackages 自动扫描包路径
      * @return 创建默认插件工厂初始化配置
      * @throws Exception
      */
-    public static DefaultPluginConfig loadConfig(String pluginHome, String[] autoPackages) throws Exception {
+    private static DefaultPluginConfig loadConfig(String pluginHome, String[] autoPackages) throws Exception {
         DefaultPluginConfig _config = new DefaultPluginConfig();
         _config.setPluginHome(new File(pluginHome));
         _config.setAutoscanPackages(Arrays.asList(autoPackages));
@@ -151,7 +157,7 @@ public class Plugins implements IModule, IPlugins {
      * @return 通过注解分析插件工厂初始化配置
      * @throws Exception
      */
-    public static DefaultPluginConfig loadConfig(Class<? extends IPluginFactory> clazz) throws Exception {
+    private static DefaultPluginConfig loadConfig(Class<? extends IPluginFactory> clazz) throws Exception {
         DefaultPluginConfig _config = null;
         if (clazz != null && clazz.isAnnotationPresent(PluginFactory.class)) {
             _config = new DefaultPluginConfig();
@@ -187,20 +193,6 @@ public class Plugins implements IModule, IPlugins {
     public static IPluginFactory createFactory(String pluginHome, String[] autoPackages) throws Exception {
         IPluginFactory _factory = new DefaultPluginFactory();
         _factory.init(loadConfig(pluginHome, autoPackages));
-        return _factory;
-    }
-
-    /**
-     * @param config
-     * @return 采用指定的初始化配置创建并返回默认插件工厂实例
-     * @throws Exception
-     */
-    public static IPluginFactory createFactory(IPluginConfig config) throws Exception {
-        IPluginFactory _factory = null;
-        if (config != null) {
-            _factory = new DefaultPluginFactory();
-            _factory.init(config);
-        }
         return _factory;
     }
 

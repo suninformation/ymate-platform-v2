@@ -16,14 +16,18 @@
 package net.ymate.platform.plugin.impl;
 
 import net.ymate.platform.core.YMP;
-import net.ymate.platform.core.beans.BeanMeta;
-import net.ymate.platform.core.beans.IBeanFactory;
+import net.ymate.platform.core.beans.*;
+import net.ymate.platform.core.beans.annotation.Bean;
+import net.ymate.platform.core.beans.annotation.Proxy;
 import net.ymate.platform.core.beans.impl.DefaultBeanFactory;
 import net.ymate.platform.core.beans.impl.DefaultBeanLoader;
+import net.ymate.platform.core.handle.ProxyHandler;
 import net.ymate.platform.core.util.ClassUtils;
 import net.ymate.platform.core.util.RuntimeUtils;
 import net.ymate.platform.plugin.*;
+import net.ymate.platform.plugin.annotation.Handler;
 import net.ymate.platform.plugin.annotation.Plugin;
+import net.ymate.platform.plugin.handle.BeanHandler;
 import net.ymate.platform.plugin.handle.PluginHandler;
 import org.apache.commons.lang.StringUtils;
 
@@ -85,27 +89,57 @@ public class DefaultPluginFactory implements IPluginFactory {
         __outerBeanFactory.registerHandler(Plugin.class, new PluginHandler(this));
     }
 
+    @SuppressWarnings("unchecked")
+    private List<Class<? extends IBeanHandler>> __doLoadBeanHandles() throws Exception {
+        List<Class<? extends IBeanHandler>> _returnValues = new ArrayList<Class<? extends IBeanHandler>>();
+        IBeanLoader _loader = new DefaultBeanLoader();
+        //
+        IBeanFilter _beanFilter = new IBeanFilter() {
+            public boolean filter(Class<?> targetClass) {
+                if (targetClass.isInterface() || targetClass.isAnnotation() || targetClass.isEnum()) {
+                    return false;
+                }
+                return (targetClass.isAnnotationPresent(Handler.class) && ClassUtils.isInterfaceOf(targetClass, IBeanHandler.class));
+            }
+        };
+        //
+        for (String _package : __config.getAutoscanPackages()) {
+            for (Class<?> _targetClass : _loader.load(_package, _beanFilter)) {
+                _returnValues.add((Class<? extends IBeanHandler>) _targetClass);
+            }
+        }
+        return _returnValues;
+    }
+
     public void init(IPluginConfig pluginConfig) throws Exception {
         if (!__inited) {
             this.__config = pluginConfig;
+            //
+            if (__owner != null) {
+                __owner.bindBeanFactory(__innerBeanFactory);
+                //
+                __outerBeanFactory.registerHandler(Bean.class, new BeanHandler(__owner));
+                __outerBeanFactory.registerHandler(Proxy.class, new ProxyHandler(__owner));
+                //
+                for (Class<? extends IBeanHandler> _targetClass : __doLoadBeanHandles()) {
+                    __outerBeanFactory.registerHandler(_targetClass.getAnnotation(Handler.class).value(), _targetClass.getConstructor(YMP.class).newInstance(__owner));
+                }
+            }
             //
             __event = __config.getPluginEventListener();
             if (__event == null) {
                 __event = new DefaultPluginEventListener();
             }
             //
-            this.__pluginClassLoader = __buildPluginClassLoader();
-            //
-            if (__owner != null) {
-                __owner.bindBeanFactory(__innerBeanFactory);
-            }
-            __outerBeanFactory.setParent(__innerBeanFactory);
+            __pluginClassLoader = __buildPluginClassLoader();
             __outerBeanFactory.setLoader(new DefaultBeanLoader() {
                 @Override
                 public ClassLoader getClassLoader() {
                     return __pluginClassLoader;
                 }
             });
+            __outerBeanFactory.setParent(__innerBeanFactory);
+            //
             for (String _package : __config.getAutoscanPackages()) {
                 __innerBeanFactory.registerPackage(_package);
                 __outerBeanFactory.registerPackage(_package);
@@ -114,6 +148,7 @@ public class DefaultPluginFactory implements IPluginFactory {
                 __innerBeanFactory.init();
             }
             __outerBeanFactory.init();
+            __outerBeanFactory.initIoC();
             __inited = true;
             //
             for (Map.Entry<Class<? extends IPlugin>, PluginMeta> _meta : __pluginMetaWithClass.entrySet()) {
