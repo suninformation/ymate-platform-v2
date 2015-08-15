@@ -110,9 +110,13 @@ public class DateTimeUtils {
     public static SimpleDateFormat getSimpleDateFormat(String format, String timeOffset) {
         SimpleDateFormat _format = new SimpleDateFormat(format, Locale.ENGLISH);
         if (StringUtils.isNotBlank(timeOffset) && TIME_ZONES.containsKey(timeOffset)) {
-            _format.setTimeZone(TimeZone.getTimeZone(TIME_ZONES.get(timeOffset)[0]));
+            _format.setTimeZone(getTimeZone(timeOffset));
         }
         return _format;
+    }
+
+    public static TimeZone getTimeZone(String timeOffset) {
+        return TimeZone.getTimeZone(TIME_ZONES.get(timeOffset)[0]);
     }
 
     /**
@@ -144,28 +148,14 @@ public class DateTimeUtils {
      * @return 获得当前时间
      */
     public static Date currentTime() {
-        return new Date(currentTimeMillis());
-    }
-
-    /**
-     * @return 获取系统时间
-     */
-    public static long systemTimeMillis() {
-        return System.currentTimeMillis();
-    }
-
-    /**
-     * @return 获取系统时间
-     */
-    public static Date systemTime() {
-        return new Date(System.currentTimeMillis());
+        return new Date();
     }
 
     /**
      * @return 获取系统UTC时间
      */
     public static int systemTimeUTC() {
-        return (int) (systemTimeMillis() / 1000);
+        return (int) currentTimeUTC();
     }
 
     /**
