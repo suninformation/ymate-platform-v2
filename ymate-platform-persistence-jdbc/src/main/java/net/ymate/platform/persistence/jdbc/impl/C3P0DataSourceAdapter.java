@@ -35,7 +35,11 @@ public class C3P0DataSourceAdapter extends AbstractDataSourceAdapter {
         __ds.setDriverClass(__cfgMeta.getDriverClass());
         __ds.setJdbcUrl(__cfgMeta.getConnectionUrl());
         __ds.setUser(__cfgMeta.getUsername());
-        __ds.setPassword(__cfgMeta.getPassword());
+        if (__cfgMeta.isPasswordEncrypted() && __cfgMeta.getPasswordClass() != null) {
+            __ds.setPassword(__cfgMeta.getPasswordClass().newInstance().decrypt(__cfgMeta.getPassword()));
+        } else {
+            __ds.setPassword(__cfgMeta.getPassword());
+        }
     }
 
     @Override

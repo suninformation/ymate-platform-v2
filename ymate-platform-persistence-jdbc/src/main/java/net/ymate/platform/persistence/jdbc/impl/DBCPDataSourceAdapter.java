@@ -45,7 +45,11 @@ public class DBCPDataSourceAdapter extends AbstractDataSourceAdapter {
         _props.put("driverClassName", __cfgMeta.getDriverClass());
         _props.put("url", __cfgMeta.getConnectionUrl());
         _props.put("username", __cfgMeta.getUsername());
-        _props.put("password", __cfgMeta.getPassword());
+        if (__cfgMeta.isPasswordEncrypted() && __cfgMeta.getPasswordClass() != null) {
+            _props.put("password", __cfgMeta.getPasswordClass().newInstance().decrypt(__cfgMeta.getPassword()));
+        } else {
+            _props.put("password", __cfgMeta.getPassword());
+        }
         __ds = (BasicDataSource) BasicDataSourceFactory.createDataSource(_props);
 
     }
