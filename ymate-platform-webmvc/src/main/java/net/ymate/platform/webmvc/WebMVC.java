@@ -35,6 +35,7 @@ import net.ymate.platform.webmvc.view.impl.FreemarkerView;
 import net.ymate.platform.webmvc.view.impl.HtmlView;
 import net.ymate.platform.webmvc.view.impl.HttpStatusView;
 import net.ymate.platform.webmvc.view.impl.JspView;
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -167,10 +168,15 @@ public class WebMVC implements IModule, IWebMvc {
                 // 判断允许的请求参数
                 _allowMap = _meta.getAllowParams();
                 for (Map.Entry<String, String> _entry : _allowMap.entrySet()) {
-                    String _value = WebContext.getRequest().getParameter(_entry.getKey());
-                    if (_value == null || !_value.equalsIgnoreCase(_entry.getValue())) {
+                    if (StringUtils.trimToEmpty(_entry.getValue()).equals("*") && !WebContext.getRequest().getParameterMap().containsKey(_entry.getKey())) {
                         response.sendError(HttpServletResponse.SC_BAD_REQUEST);
                         return;
+                    } else {
+                        String _value = WebContext.getRequest().getParameter(_entry.getKey());
+                        if (_value == null || !_value.equalsIgnoreCase(_entry.getValue())) {
+                            response.sendError(HttpServletResponse.SC_BAD_REQUEST);
+                            return;
+                        }
                     }
                 }
                 // 判断是否需要处理文件上传
