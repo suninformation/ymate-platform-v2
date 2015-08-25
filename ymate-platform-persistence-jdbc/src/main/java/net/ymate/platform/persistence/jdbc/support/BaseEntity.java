@@ -92,7 +92,6 @@ public abstract class BaseEntity<Entity extends IEntity, PK extends Serializable
     public Entity save() throws Exception {
         ISession _session = new DefaultSession(__doGetConnectionHolderSafed());
         try {
-            _session.find(EntitySQL.create(this.getEntityClass()), this.getId());
             return _session.insert((Entity) this);
         } finally {
             _session.close();
