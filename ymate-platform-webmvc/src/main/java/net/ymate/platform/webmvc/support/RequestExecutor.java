@@ -15,6 +15,7 @@
  */
 package net.ymate.platform.webmvc.support;
 
+import com.alibaba.fastjson.JSON;
 import net.ymate.platform.core.util.ClassUtils;
 import net.ymate.platform.validation.ValidateResult;
 import net.ymate.platform.validation.Validations;
@@ -71,8 +72,14 @@ public class RequestExecutor {
             _resultMap.putAll(Validations.get(__owner.getOwner()).validate(__requestMeta.getTargetClass(), __requestMeta.getMethod(), _paramValues));
         }
         if (!_resultMap.isEmpty()) {
+            IView _validationView = null;
             if (__owner.getModuleCfg().getErrorProcessor() != null) {
-                return __owner.getModuleCfg().getErrorProcessor().onValidation(__owner, _resultMap);
+                _validationView = __owner.getModuleCfg().getErrorProcessor().onValidation(__owner, _resultMap);
+            }
+            if (_validationView == null) {
+                throw new IllegalArgumentException(JSON.toJSONString(_resultMap.values()));
+            } else {
+                return _validationView;
             }
         }
         Object _targetObj = __owner.getOwner().getBean(__requestMeta.getTargetClass());
