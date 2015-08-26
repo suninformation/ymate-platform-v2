@@ -79,6 +79,10 @@ public abstract class BaseEntity<Entity extends IEntity, PK extends Serializable
         return this.__connectionHolder;
     }
 
+    public Entity load() throws Exception {
+        return load(Fields.create());
+    }
+
     public Entity load(Fields fields) throws Exception {
         ISession _session = new DefaultSession(__doGetConnectionHolderSafed());
         try {
@@ -98,6 +102,10 @@ public abstract class BaseEntity<Entity extends IEntity, PK extends Serializable
         }
     }
 
+    public Entity saveOrUpdate() throws Exception {
+        return saveOrUpdate(Fields.create());
+    }
+
     @SuppressWarnings("unchecked")
     public Entity saveOrUpdate(Fields fields) throws Exception {
         ISession _session = new DefaultSession(__doGetConnectionHolderSafed());
@@ -110,6 +118,10 @@ public abstract class BaseEntity<Entity extends IEntity, PK extends Serializable
         } finally {
             _session.close();
         }
+    }
+
+    public Entity update() throws Exception {
+        return update(null);
     }
 
     @SuppressWarnings("unchecked")
@@ -133,6 +145,10 @@ public abstract class BaseEntity<Entity extends IEntity, PK extends Serializable
         }
     }
 
+    public IResultSet<Entity> find(Where where) throws Exception {
+        return find(where, Fields.create());
+    }
+
     public IResultSet<Entity> find(Where where, Fields fields) throws Exception {
         ISession _session = new DefaultSession(__doGetConnectionHolderSafed());
         try {
@@ -149,6 +165,26 @@ public abstract class BaseEntity<Entity extends IEntity, PK extends Serializable
         } finally {
             _session.close();
         }
+    }
+
+    public IResultSet<Entity> findAll() throws Exception {
+        return find(null, Fields.create());
+    }
+
+    public IResultSet<Entity> findAll(Fields fields, Page page) throws Exception {
+        return find(null, fields, page);
+    }
+
+    public IResultSet<Entity> findAll(Page page) throws Exception {
+        return find(null, Fields.create(), page);
+    }
+
+    public Entity findFirst() throws Exception {
+        return findFirst(null, Fields.create());
+    }
+
+    public Entity findFirst(Fields fields) throws Exception {
+        return findFirst(null, fields);
     }
 
     public Entity findFirst(Where where, Fields fields) throws Exception {
