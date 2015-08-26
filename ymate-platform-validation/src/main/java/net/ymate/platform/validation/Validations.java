@@ -19,6 +19,7 @@ import net.ymate.platform.core.Version;
 import net.ymate.platform.core.YMP;
 import net.ymate.platform.core.module.IModule;
 import net.ymate.platform.core.module.annotation.Module;
+import net.ymate.platform.core.util.RuntimeUtils;
 import net.ymate.platform.validation.annotation.Validation;
 import net.ymate.platform.validation.annotation.Validator;
 import net.ymate.platform.validation.handle.ValidateHandler;
@@ -50,7 +51,7 @@ public class Validations implements IModule, IValidation {
 
     private boolean __inited;
 
-    private Map<Class<? extends Annotation>, IValidator> __validators;
+    private Map<Class<? extends Annotation>, Class<? extends IValidator>> __validators;
 
     private Map<Class<?>, ValidationMeta> __VALIDATION_META_CACHES;
 
@@ -82,7 +83,7 @@ public class Validations implements IModule, IValidation {
             _LOG.info("Initializing ymate-platform-validation-" + VERSION);
             //
             __owner = owner;
-            __validators = new HashMap<Class<? extends Annotation>, IValidator>();
+            __validators = new HashMap<Class<? extends Annotation>, Class<? extends IValidator>>();
             __VALIDATION_META_CACHES = new HashMap<Class<?>, ValidationMeta>();
             __owner.registerHandler(Validator.class, new ValidateHandler(__owner));
             //
@@ -94,8 +95,13 @@ public class Validations implements IModule, IValidation {
         return __inited;
     }
 
-    public void registerValidator(Class<? extends Annotation> annotationClass, IValidator validator) {
-        __validators.put(annotationClass, validator);
+    public void registerValidator(Class<? extends Annotation> annotationClass, Class<? extends IValidator> validatorClass) {
+        try {
+            __owner.registerBean(validatorClass, validatorClass.newInstance());
+            __validators.put(annotationClass, validatorClass);
+        } catch (Exception e) {
+            _LOG.error("", RuntimeUtils.unwrapThrow(e));
+        }
     }
 
     public boolean containsValidator(Class<? extends Annotation> annotationClass) {
@@ -153,7 +159,7 @@ public class Validations implements IModule, IValidation {
     protected ValidateResult __doValidate(Annotation[] annotations, String paramName, String paramLabel, Map<String, Object> paramValues) {
         ValidateResult _result = null;
         for (Annotation _ann : annotations) {
-            IValidator _validator = __validators.get(_ann.annotationType());
+            IValidator _validator = __owner.getBean(__validators.get(_ann.annotationType()));
             _result = _validator.validate(new ValidateContext(__owner, _ann, paramName, paramLabel, paramValues));
             if (_result != null) {
                 break;

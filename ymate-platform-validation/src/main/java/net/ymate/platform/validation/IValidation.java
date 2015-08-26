@@ -31,9 +31,9 @@ public interface IValidation {
      * 注册验证器
      *
      * @param annotationClass 验证器作用的注解
-     * @param validator       验证器接口实例
+     * @param validatorClass  验证器接口类型
      */
-    public void registerValidator(Class<? extends Annotation> annotationClass, IValidator validator);
+    public void registerValidator(Class<? extends Annotation> annotationClass, Class<? extends IValidator> validatorClass);
 
     /**
      * @param annotationClass 验证器作用的注解

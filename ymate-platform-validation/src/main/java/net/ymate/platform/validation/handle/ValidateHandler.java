@@ -38,9 +38,10 @@ public class ValidateHandler implements IBeanHandler {
         __owner.registerExcludedClass(IValidator.class);
     }
 
+    @SuppressWarnings("unchecked")
     public Object handle(Class<?> targetClass) throws Exception {
         if (ClassUtils.isInterfaceOf(targetClass, IValidator.class)) {
-            Validations.get(__owner).registerValidator(targetClass.getAnnotation(Validator.class).value(), (IValidator) targetClass.newInstance());
+            Validations.get(__owner).registerValidator(targetClass.getAnnotation(Validator.class).value(), (Class<? extends IValidator>) targetClass);
         }
         return null;
     }
