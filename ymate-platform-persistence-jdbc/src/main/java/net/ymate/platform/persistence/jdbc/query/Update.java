@@ -19,6 +19,9 @@ import net.ymate.platform.persistence.base.EntityMeta;
 import net.ymate.platform.persistence.base.IEntity;
 import org.apache.commons.lang.StringUtils;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * Update语句对象
  *
@@ -30,6 +33,8 @@ public class Update {
     private String __tableName;
 
     private Fields __fields;
+
+    private List<Join> __joins;
 
     private Where __where;
 
@@ -66,6 +71,7 @@ public class Update {
         }
         this.__tableName = tableName;
         this.__fields = Fields.create();
+        this.__joins = new ArrayList<Join>();
     }
 
     public Fields getFields() {
@@ -79,6 +85,15 @@ public class Update {
 
     public Update field(Fields fields) {
         this.__fields.add(fields);
+        return this;
+    }
+
+    public Update join(Join join) {
+        __joins.add(join);
+        if (__where == null) {
+            __where = Where.create();
+        }
+        __where.param(join.getParams());
         return this;
     }
 
@@ -96,8 +111,17 @@ public class Update {
 
     @Override
     public String toString() {
-        return "UPDATE ".concat(__tableName).concat(" SET (")
-                .concat(StringUtils.join(__fields.getFields(), " = ?, ").concat(" = ?"))
-                .concat(") ").concat(__where == null ? "" : __where.toString());
+        StringBuilder __updateSB = new StringBuilder("UPDATE ")
+                .append(__tableName)
+                .append(" SET (").append(StringUtils.join(__fields.getFields(), " = ?, ").concat(" = ?")).append(") ");
+        //
+        for (Join _join : __joins) {
+            __updateSB.append(" ").append(_join);
+        }
+        //
+        if (__where != null) {
+            __updateSB.append(" ").append(__where.toString());
+        }
+        return __updateSB.toString();
     }
 }

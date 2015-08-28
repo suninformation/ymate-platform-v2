@@ -19,6 +19,9 @@ import net.ymate.platform.persistence.base.EntityMeta;
 import net.ymate.platform.persistence.base.IEntity;
 import org.apache.commons.lang.StringUtils;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * DELETE语句对象
  *
@@ -29,30 +32,60 @@ public class Delete {
 
     private String __from;
 
+    private List<Join> __joins;
+
     private Where __where;
 
-    public static Delete create(String prefix, IEntity<?> entity) {
-        return create(prefix, entity.getClass());
+    public static Delete create(Class<? extends IEntity> entityClass) {
+        return new Delete(null, EntityMeta.createAndGet(entityClass).getEntityName(), null);
     }
 
     public static Delete create(String prefix, Class<? extends IEntity> entityClass) {
-        return new Delete(StringUtils.defaultIfBlank(prefix, "").concat(EntityMeta.createAndGet(entityClass).getEntityName()));
+        return new Delete(prefix, EntityMeta.createAndGet(entityClass).getEntityName(), null);
     }
 
-    public static Delete create(IEntity<?> entity) {
-        return create(entity.getClass());
+    public static Delete create(Class<? extends IEntity> entityClass, String alias) {
+        return new Delete(null, EntityMeta.createAndGet(entityClass).getEntityName(), alias);
     }
 
-    public static Delete create(Class<? extends IEntity> entityClass) {
-        return new Delete(EntityMeta.createAndGet(entityClass).getEntityName());
+    public static Delete create(String prefix, Class<? extends IEntity> entityClass, String alias) {
+        return new Delete(prefix, EntityMeta.createAndGet(entityClass).getEntityName(), alias);
+    }
+
+    public static Delete create(Select select) {
+        return new Delete(null, select.toString(), null);
+    }
+
+    public static Delete create(String prefix, String tableName, String alias) {
+        return new Delete(prefix, tableName, alias);
+    }
+
+    public static Delete create(String tableName, String alias) {
+        return new Delete(null, tableName, alias);
     }
 
     public static Delete create(String tableName) {
-        return new Delete(tableName);
+        return new Delete(null, tableName, null);
     }
 
-    private Delete(String from) {
+    private Delete(String prefix, String from, String alias) {
+        if (StringUtils.isNotBlank(prefix)) {
+            from = prefix.concat(from);
+        }
+        if (StringUtils.isNotBlank(alias)) {
+            from = from.concat(" ").concat(alias);
+        }
         this.__from = from;
+        this.__joins = new ArrayList<Join>();
+    }
+
+    public Delete join(Join join) {
+        __joins.add(join);
+        if (__where == null) {
+            __where = Where.create();
+        }
+        __where.param(join.getParams());
+        return this;
     }
 
     public Delete where(Where where) {
@@ -69,6 +102,15 @@ public class Delete {
 
     @Override
     public String toString() {
-        return "DELETE FROM ".concat(__from).concat(" ").concat(__where == null ? "" : __where.toString());
+        StringBuilder _deleteSB = new StringBuilder("DELETE FROM ").append(__from).append(" ");
+        //
+        for (Join _join : __joins) {
+            _deleteSB.append(" ").append(_join);
+        }
+        //
+        if (__where != null) {
+            _deleteSB.append(" ").append(__where.toString());
+        }
+        return _deleteSB.toString();
     }
 }

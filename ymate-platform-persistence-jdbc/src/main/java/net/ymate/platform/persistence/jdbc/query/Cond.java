@@ -81,9 +81,26 @@ public class Cond {
         return this;
     }
 
+    public Cond opt(String prefixA, String fieldA, OPT opt, String prefixB, String fieldB) {
+        if (StringUtils.isNotBlank(prefixA)) {
+            fieldA = prefixA.concat(".").concat(fieldA);
+        }
+        if (StringUtils.isNotBlank(prefixB)) {
+            fieldB = prefixB.concat(".").concat(fieldB);
+        }
+        return opt(fieldA, opt, fieldB);
+    }
+
     public Cond opt(String fieldA, OPT opt, String fieldB) {
         __condSB.append(fieldA).append(" ").append(opt).append(" ").append(fieldB);
         return this;
+    }
+
+    public Cond opt(String prefix, String field, OPT opt) {
+        if (StringUtils.isNotBlank(prefix)) {
+            field = prefix.concat(".").concat(field);
+        }
+        return opt(field, opt);
     }
 
     public Cond opt(String field, OPT opt) {
