@@ -32,22 +32,37 @@ public class Join {
     private Cond __on;
 
     public static Join inner(String from) {
-        return new Join("INNER JOIN", from);
+        return inner(null, from);
+    }
+
+    public static Join inner(String prefix, String from) {
+        return new Join("INNER JOIN", prefix, from);
     }
 
     public static Join inner(Select select) {
-        return inner(select.toString());
+        return inner(null, select.toString());
     }
 
     public static Join left(String from) {
-        return new Join("LEFT JOIN", from);
+        return left(null, from);
+    }
+
+    public static Join left(String prefix, String from) {
+        return new Join("LEFT JOIN", prefix, from);
     }
 
     public static Join right(String from) {
-        return new Join("RIGHT JOIN", from);
+        return right(null, from);
     }
 
-    private Join(String type, String from) {
+    public static Join right(String prefix, String from) {
+        return new Join("RIGHT JOIN", prefix, from);
+    }
+
+    private Join(String type, String prefix, String from) {
+        if (StringUtils.isNotBlank(prefix)) {
+            from = prefix.concat(from);
+        }
         __from = type.concat(" ").concat(from);
     }
 
@@ -73,6 +88,6 @@ public class Join {
         } else {
             __alias = " ".concat(__alias);
         }
-        return new StringBuilder(__from).append(__alias).append(" ON ").append(__on.toString()).toString();
+        return __from + __alias + " ON " + __on.toString();
     }
 }
