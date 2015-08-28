@@ -15,6 +15,8 @@
  */
 package net.ymate.platform.persistence.jdbc.query;
 
+import org.apache.commons.lang.StringUtils;
+
 /**
  * 排序对象
  *
@@ -42,16 +44,30 @@ public class OrderBy {
     }
 
     public OrderBy asc(String field) {
+        return asc(null, field);
+    }
+
+    public OrderBy asc(String prefix, String field) {
         if (__orderBySB.length() > 0) {
             __orderBySB.append(", ");
+        }
+        if (StringUtils.isNotBlank(prefix)) {
+            __orderBySB.append(prefix).append(".");
         }
         __orderBySB.append(field);
         return this;
     }
 
     public OrderBy desc(String field) {
+        return desc(null, field);
+    }
+
+    public OrderBy desc(String prefix, String field) {
         if (__orderBySB.length() > 0) {
             __orderBySB.append(", ");
+        }
+        if (StringUtils.isNotBlank(prefix)) {
+            __orderBySB.append(prefix).append(".");
         }
         __orderBySB.append(field).append(" DESC");
         return this;

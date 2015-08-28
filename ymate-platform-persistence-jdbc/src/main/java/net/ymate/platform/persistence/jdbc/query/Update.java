@@ -33,27 +33,37 @@ public class Update {
 
     private Where __where;
 
-    public static Update create(String prefix, IEntity<?> entity) {
-        return create(prefix, entity.getClass());
+    public static Update create(String prefix, Class<? extends IEntity> entityClass, String alias) {
+        return new Update(prefix, EntityMeta.createAndGet(entityClass).getEntityName(), alias);
     }
 
     public static Update create(String prefix, Class<? extends IEntity> entityClass) {
-        return new Update(StringUtils.defaultIfBlank(prefix, "").concat(EntityMeta.createAndGet(entityClass).getEntityName()));
-    }
-
-    public static Update create(IEntity<?> entity) {
-        return create(entity.getClass());
+        return new Update(prefix, EntityMeta.createAndGet(entityClass).getEntityName(), null);
     }
 
     public static Update create(Class<? extends IEntity> entityClass) {
-        return new Update(EntityMeta.createAndGet(entityClass).getEntityName());
+        return new Update(null, EntityMeta.createAndGet(entityClass).getEntityName(), null);
+    }
+
+    public static Update create(String prefix, String tableName, String alias) {
+        return new Update(prefix, tableName, alias);
+    }
+
+    public static Update create(String tableName, String alias) {
+        return new Update(null, tableName, alias);
     }
 
     public static Update create(String tableName) {
-        return new Update(tableName);
+        return new Update(null, tableName, null);
     }
 
-    private Update(String tableName) {
+    private Update(String prefix, String tableName, String alias) {
+        if (StringUtils.isNotBlank(prefix)) {
+            tableName = prefix.concat(tableName);
+        }
+        if (StringUtils.isNotBlank(alias)) {
+            tableName = tableName.concat(" ").concat(alias);
+        }
         this.__tableName = tableName;
         this.__fields = Fields.create();
     }

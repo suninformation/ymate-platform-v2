@@ -29,6 +29,14 @@ public class GroupBy {
 
     private Cond __having;
 
+    public static GroupBy create(String prefix, String field, String alias) {
+        return new GroupBy(Fields.create().add(prefix, field, alias));
+    }
+
+    public static GroupBy create(String prefix, String field) {
+        return new GroupBy(Fields.create().add(prefix, field));
+    }
+
     public static GroupBy create(String field) {
         return new GroupBy(Fields.create().add(field));
     }

@@ -40,31 +40,45 @@ public class Select {
 
     private String __alias;
 
-    public static Select create(String prefix, IEntity<?> entity) {
-        return create(prefix, entity.getClass());
+    public static Select create(Class<? extends IEntity> entityClass) {
+        return new Select(null, EntityMeta.createAndGet(entityClass).getEntityName(), null);
     }
 
     public static Select create(String prefix, Class<? extends IEntity> entityClass) {
-        return new Select(StringUtils.defaultIfBlank(prefix, "").concat(EntityMeta.createAndGet(entityClass).getEntityName()));
+        return new Select(prefix, EntityMeta.createAndGet(entityClass).getEntityName(), null);
     }
 
-    public static Select create(IEntity<?> entity) {
-        return create(entity.getClass());
+    public static Select create(Class<? extends IEntity> entityClass, String alias) {
+        return new Select(null, EntityMeta.createAndGet(entityClass).getEntityName(), alias);
     }
 
-    public static Select create(Class<? extends IEntity> entityClass) {
-        return new Select(EntityMeta.createAndGet(entityClass).getEntityName());
+    public static Select create(String prefix, Class<? extends IEntity> entityClass, String alias) {
+        return new Select(prefix, EntityMeta.createAndGet(entityClass).getEntityName(), alias);
     }
 
     public static Select create(Select select) {
-        return new Select(select.toString());
+        return new Select(null, select.toString(), null);
+    }
+
+    public static Select create(String prefix, String from, String alias) {
+        return new Select(prefix, from, alias);
+    }
+
+    public static Select create(String from, String alias) {
+        return new Select(null, from, alias);
     }
 
     public static Select create(String from) {
-        return new Select(from);
+        return new Select(null, from, null);
     }
 
-    private Select(String from) {
+    private Select(String prefix, String from, String alias) {
+        if (StringUtils.isNotBlank(prefix)) {
+            from = prefix.concat(from);
+        }
+        if (StringUtils.isNotBlank(alias)) {
+            from = from.concat(" ").concat(alias);
+        }
         this.__from = from;
         this.__fields = Fields.create();
         this.__joins = new ArrayList<Join>();
@@ -105,6 +119,12 @@ public class Select {
         return this.__where.getParams();
     }
 
+    /**
+     * 设置Select语句的别名
+     *
+     * @param alias
+     * @return
+     */
     public Select alias(String alias) {
         this.__alias = alias;
         return this;

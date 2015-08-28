@@ -63,6 +63,16 @@ public class Insert {
         return this.__fields;
     }
 
+    public Insert field(String prefix, String field, String alias) {
+        this.__fields.add(prefix, field, alias);
+        return this;
+    }
+
+    public Insert field(String prefix, String field) {
+        this.__fields.add(prefix, field);
+        return this;
+    }
+
     public Insert field(String field) {
         this.__fields.add(field);
         return this;

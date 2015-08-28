@@ -91,28 +91,56 @@ public class Cond {
         return this;
     }
 
+    public Cond eq(String prefix, String field) {
+        return eq(prefix.concat(field));
+    }
+
     public Cond eq(String field) {
         return opt(field, OPT.EQ);
+    }
+
+    public Cond notEq(String prefix, String field) {
+        return notEq(prefix.concat(field));
     }
 
     public Cond notEq(String field) {
         return opt(field, OPT.NOT_EQ);
     }
 
+    public Cond gtEq(String prefix, String field) {
+        return gtEq(prefix.concat(field));
+    }
+
     public Cond gtEq(String field) {
         return opt(field, OPT.GT_EQ);
+    }
+
+    public Cond gt(String prefix, String field) {
+        return gt(prefix.concat(field));
     }
 
     public Cond gt(String field) {
         return opt(field, OPT.GT);
     }
 
+    public Cond ltEq(String prefix, String field) {
+        return ltEq(prefix.concat(field));
+    }
+
     public Cond ltEq(String field) {
         return opt(field, OPT.LT_EQ);
     }
 
+    public Cond lt(String prefix, String field) {
+        return lt(prefix.concat(field));
+    }
+
     public Cond lt(String field) {
         return opt(field, OPT.LT);
+    }
+
+    public Cond like(String prefix, String field) {
+        return like(prefix.concat(field));
     }
 
     public Cond like(String field) {
@@ -139,10 +167,18 @@ public class Cond {
         return cond(")");
     }
 
+    public Cond in(String prefix, String field, SQL subSql) {
+        return in(prefix.concat(field), subSql);
+    }
+
     public Cond in(String field, SQL subSql) {
         __condSB.append(field).append(" IN (").append(subSql.getSQL()).append(")");
         __params.add(subSql.getParams());
         return this;
+    }
+
+    public Cond in(String prefix, String field, Params params) {
+        return in(prefix.concat(field), params);
     }
 
     public Cond in(String field, Params params) {
