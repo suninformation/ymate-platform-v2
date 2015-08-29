@@ -460,12 +460,12 @@ public class DefaultSession implements ISession {
                     _value = entityMeta.getPropertyByName(_fieldName).getField().get(targetObj);
                 }
                 // 以下操作是为了使@Default起效果的同时也保证数据库中的字段默认值不被null值替代
+                EntityMeta.PropertyMeta _propMeta = entityMeta.getPropertyByName(_fieldName);
                 if (_value == null) {
                     // 如果value为空则尝试提取默认值
-                    EntityMeta.PropertyMeta _propMeta = entityMeta.getPropertyByName(_fieldName);
                     _value = BlurObject.bind(_propMeta.getDefaultValue()).toObjectValue(_propMeta.getField().getType());
                 }
-                if (_value != null) {
+                if (_value != null || _propMeta.isNullable()) {
                     // 若value不为空则添加至返回对象中
                     _fields.add(_fieldName);
                     _values.add(_value);
