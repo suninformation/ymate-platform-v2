@@ -109,7 +109,7 @@ public class Cond {
     }
 
     public Cond eq(String prefix, String field) {
-        return eq(prefix.concat(field));
+        return eq(prefix.concat(".").concat(field));
     }
 
     public Cond eq(String field) {
@@ -117,7 +117,7 @@ public class Cond {
     }
 
     public Cond notEq(String prefix, String field) {
-        return notEq(prefix.concat(field));
+        return notEq(prefix.concat(".").concat(field));
     }
 
     public Cond notEq(String field) {
@@ -125,7 +125,7 @@ public class Cond {
     }
 
     public Cond gtEq(String prefix, String field) {
-        return gtEq(prefix.concat(field));
+        return gtEq(prefix.concat(".").concat(field));
     }
 
     public Cond gtEq(String field) {
@@ -133,7 +133,7 @@ public class Cond {
     }
 
     public Cond gt(String prefix, String field) {
-        return gt(prefix.concat(field));
+        return gt(prefix.concat(".").concat(field));
     }
 
     public Cond gt(String field) {
@@ -141,7 +141,7 @@ public class Cond {
     }
 
     public Cond ltEq(String prefix, String field) {
-        return ltEq(prefix.concat(field));
+        return ltEq(prefix.concat(".").concat(field));
     }
 
     public Cond ltEq(String field) {
@@ -149,7 +149,7 @@ public class Cond {
     }
 
     public Cond lt(String prefix, String field) {
-        return lt(prefix.concat(field));
+        return lt(prefix.concat(".").concat(field));
     }
 
     public Cond lt(String field) {
@@ -157,7 +157,7 @@ public class Cond {
     }
 
     public Cond like(String prefix, String field) {
-        return like(prefix.concat(field));
+        return like(prefix.concat(".").concat(field));
     }
 
     public Cond like(String field) {
@@ -185,7 +185,7 @@ public class Cond {
     }
 
     public Cond in(String prefix, String field, SQL subSql) {
-        return in(prefix.concat(field), subSql);
+        return in(prefix.concat(".").concat(field), subSql);
     }
 
     public Cond in(String field, SQL subSql) {
@@ -195,7 +195,7 @@ public class Cond {
     }
 
     public Cond in(String prefix, String field, Params params) {
-        return in(prefix.concat(field), params);
+        return in(prefix.concat(".").concat(field), params);
     }
 
     public Cond in(String field, Params params) {
