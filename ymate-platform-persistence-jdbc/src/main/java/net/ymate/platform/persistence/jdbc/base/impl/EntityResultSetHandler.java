@@ -15,6 +15,7 @@
  */
 package net.ymate.platform.persistence.jdbc.base.impl;
 
+import net.ymate.platform.core.lang.BlurObject;
 import net.ymate.platform.persistence.base.EntityMeta;
 import net.ymate.platform.persistence.base.IEntity;
 import net.ymate.platform.persistence.jdbc.base.AbstractResultSetHandler;
@@ -49,7 +50,7 @@ public class EntityResultSetHandler<T extends IEntity> extends AbstractResultSet
         }
         for (int _idx = 0; _idx < __doGetColumnCount(); _idx++) {
             EntityMeta.PropertyMeta _meta = __entityMeta.getPropertyByName(_doGetColumnMeta(_idx).getName());
-            Object _fValue = resultSet.getObject(_idx + 1);
+            Object _fValue = BlurObject.bind(resultSet.getObject(_idx + 1)).toObjectValue(_meta.getField().getType());
             if (__entityMeta.isPrimaryKey(_meta.getName()) && __entityMeta.isMultiplePrimaryKey()) {
                 _meta.getField().set(_primaryKeyObject, _fValue);
             } else {

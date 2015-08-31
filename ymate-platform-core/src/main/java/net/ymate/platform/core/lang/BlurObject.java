@@ -21,6 +21,8 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import java.io.Serializable;
+import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.util.*;
 
 /**
@@ -462,6 +464,10 @@ public class BlurObject implements Serializable, Cloneable {
             object = attr == null ? null : this.toLongValue();
         } else if (clazz.equals(long.class)) {
             object = this.toLongValue();
+        }  else if (clazz.equals(BigInteger.class)) {
+            object = new BigInteger(toStringValue());
+        } else if (clazz.equals(BigDecimal.class)) {
+            object = new BigDecimal(toStringValue());
         } else if (clazz.equals(Boolean.class)) {
             object = attr == null ? null : this.toBooleanValue();
         } else if (clazz.equals(boolean.class)) {
