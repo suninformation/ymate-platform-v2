@@ -194,19 +194,23 @@ public class WebMVC implements IModule, IWebMvc {
                 response.sendError(HttpServletResponse.SC_METHOD_NOT_ALLOWED);
             }
         } else if (__moduleCfg.isConventionMode()) {
-            boolean _isAllowConvention = false;
-            if (!__moduleCfg.getConventionViewPaths().isEmpty()) {
-                for (String _vPath : __moduleCfg.getConventionViewPaths()) {
-                    if (_vPath.charAt(0) != '/') {
-                        _vPath = "/" + _vPath;
+            boolean _isAllowConvention = true;
+            if (!__moduleCfg.getConventionViewNotAllowPaths().isEmpty()) {
+                for (String _vPath : __moduleCfg.getConventionViewNotAllowPaths()) {
+                    if (context.getRequestMapping().startsWith(_vPath)) {
+                        _isAllowConvention = false;
+                        break;
                     }
+                }
+            }
+            if (_isAllowConvention && !__moduleCfg.getConventionViewAllowPaths().isEmpty()) {
+                _isAllowConvention = false;
+                for (String _vPath : __moduleCfg.getConventionViewAllowPaths()) {
                     if (context.getRequestMapping().startsWith(_vPath)) {
                         _isAllowConvention = true;
                         break;
                     }
                 }
-            } else {
-                _isAllowConvention = true;
             }
             if (_isAllowConvention) {
                 IView _view = null;

@@ -15,8 +15,7 @@
  */
 package net.ymate.platform.webmvc;
 
-import java.util.List;
-import java.util.Locale;
+import java.util.Set;
 
 /**
  * WebMVC模块配置接口
@@ -112,7 +111,12 @@ public interface IWebMvcModuleCfg {
     public boolean isConventionMode();
 
     /**
-     * @return 零配置模式视图文件路径(基于base_view_path的相对路径)，可选参数，默认值为空(即不限制访问路径)，多个路径间用'|'分隔
+     * @return 零配置模式视图文件路径(基于base_view_path的相对路径, 加号或无符串代表允许访问)，可选参数，默认值为空(即不限制访问路径)，多个路径间用'|'分隔
      */
-    public List<String> getConventionViewPaths();
+    public Set<String> getConventionViewAllowPaths();
+
+    /**
+     * @return 零配置模式视图文件路径(基于base_view_path的相对路径, 减号代表不允许访问)，可选参数，默认值为空(即不限制访问路径)，多个路径间用'|'分隔
+     */
+    public Set<String> getConventionViewNotAllowPaths();
 }

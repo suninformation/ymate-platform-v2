@@ -27,10 +27,10 @@ import net.ymate.platform.webmvc.base.Type;
 import org.apache.commons.lang.StringUtils;
 
 import java.io.File;
-import java.util.Arrays;
 import java.util.Collections;
-import java.util.List;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * 默认WebMVC模块配置接口实现
@@ -76,7 +76,9 @@ public class DefaultModuleCfg implements IWebMvcModuleCfg {
 
     private boolean __conventionMode;
 
-    private List<String> __conventionViewPaths;
+    private Set<String> __conventionViewAllowPaths;
+
+    private Set<String> __conventionViewNotAllowPaths;
 
     public DefaultModuleCfg(YMP owner) throws Exception {
         Map<String, String> _moduleCfgs = owner.getConfig().getModuleConfigs(IWebMvc.MODULE_NAME);
@@ -119,7 +121,36 @@ public class DefaultModuleCfg implements IWebMvcModuleCfg {
         __uploadSizeThreshold = Integer.parseInt(StringUtils.defaultIfBlank(_moduleCfgs.get("upload_size_threshold"), "10240"));
         //
         __conventionMode = BlurObject.bind(_moduleCfgs.get("convention_mode")).toBooleanValue();
-        __conventionViewPaths = Arrays.asList(StringUtils.split(StringUtils.defaultIfBlank(_moduleCfgs.get("convention_view_paths"), ""), "|"));
+        //
+        __conventionViewAllowPaths = new HashSet<String>();
+        __conventionViewNotAllowPaths = new HashSet<String>();
+        //
+        String[] _cViewPaths = StringUtils.split(StringUtils.defaultIfBlank(_moduleCfgs.get("convention_view_paths"), ""), "|");
+        if (_cViewPaths != null) {
+            for (String _cvPath : _cViewPaths) {
+                _cvPath = StringUtils.trimToNull(_cvPath);
+                if (_cvPath != null) {
+                    boolean _flag = true;
+                    if (_cvPath.length() > 1) {
+                        char _c = _cvPath.charAt(_cvPath.length() - 1);
+                        if (_c == '+') {
+                            _cvPath = StringUtils.substring(_cvPath, 0, _cvPath.length() - 1);
+                        } else if (_c == '-') {
+                            _cvPath = StringUtils.substring(_cvPath, 0, _cvPath.length() - 1);
+                            _flag = false;
+                        }
+                    }
+                    if (_cvPath.charAt(0) != '/') {
+                        _cvPath = "/" + _cvPath;
+                    }
+                    if (_flag) {
+                        __conventionViewAllowPaths.add(_cvPath);
+                    } else {
+                        __conventionViewNotAllowPaths.add(_cvPath);
+                    }
+                }
+            }
+        }
     }
 
     public IRequestProcessor getRequestProcessor() {
@@ -190,7 +221,11 @@ public class DefaultModuleCfg implements IWebMvcModuleCfg {
         return __conventionMode;
     }
 
-    public List<String> getConventionViewPaths() {
-        return Collections.unmodifiableList(__conventionViewPaths);
+    public Set<String> getConventionViewAllowPaths() {
+        return Collections.unmodifiableSet(__conventionViewAllowPaths);
+    }
+
+    public Set<String> getConventionViewNotAllowPaths() {
+        return Collections.unmodifiableSet(__conventionViewNotAllowPaths);
     }
 }
