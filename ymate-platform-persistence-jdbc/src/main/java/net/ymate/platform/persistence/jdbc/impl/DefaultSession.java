@@ -281,8 +281,12 @@ public class DefaultSession implements ISession {
     }
 
     public <T extends IEntity> T insert(T entity) throws Exception {
+        return insert(entity, null);
+    }
+
+    public <T extends IEntity> T insert(T entity, Fields filter) throws Exception {
         EntityMeta _meta = EntityMeta.createAndGet(entity.getClass());
-        PairObject<Fields, Params> _entity = __doGetEntityFieldAndValues(_meta, entity, null, true);
+        PairObject<Fields, Params> _entity = __doGetEntityFieldAndValues(_meta, entity, filter, true);
         String _insertSql = __dialect.buildInsertSQL(entity.getClass(), __tablePrefix, _entity.getKey());
         IUpdateOperator _opt = new DefaultUpdateOperator(_insertSql, this.__connectionHolder);
         // 获取并添加主键条件字段值
@@ -294,13 +298,17 @@ public class DefaultSession implements ISession {
     }
 
     public <T extends IEntity> List<T> insert(List<T> entities) throws Exception {
+        return insert(entities, null);
+    }
+
+    public <T extends IEntity> List<T> insert(List<T> entities, Fields filter) throws Exception {
         EntityMeta _meta = EntityMeta.createAndGet(entities.get(0).getClass());
-        PairObject<Fields, Params> _entity = __doGetEntityFieldAndValues(_meta, entities.get(0), null, true);
+        PairObject<Fields, Params> _entity = __doGetEntityFieldAndValues(_meta, entities.get(0), filter, true);
         String _insertSql = __dialect.buildInsertSQL(entities.get(0).getClass(), __tablePrefix, _entity.getKey());
         IBatchUpdateOperator _opt = new BatchUpdateOperator(_insertSql, this.__connectionHolder);
         for (T entity : entities) {
             SQLBatchParameter _batchParam = SQLBatchParameter.create();
-            for (Object _param : __doGetEntityFieldAndValues(_meta, entity, null, true).getValue().getParams()) {
+            for (Object _param : __doGetEntityFieldAndValues(_meta, entity, filter, true).getValue().getParams()) {
                 _batchParam.addParameter(_param);
             }
             _opt.addBatchParameter(_batchParam);

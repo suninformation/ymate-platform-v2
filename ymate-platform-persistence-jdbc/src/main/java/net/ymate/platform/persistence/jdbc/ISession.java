@@ -175,6 +175,8 @@ public interface ISession {
      */
     public <T extends IEntity> T insert(T entity) throws Exception;
 
+    public <T extends IEntity> T insert(T entity, Fields filter) throws Exception;
+
     /**
      * @param <T>      指定结果集数据类型
      * @param entities 实体对象集合
@@ -182,6 +184,8 @@ public interface ISession {
      * @throws Exception
      */
     public <T extends IEntity> List<T> insert(List<T> entities) throws Exception;
+
+    public <T extends IEntity> List<T> insert(List<T> entities, Fields filter) throws Exception;
 
     /**
      * @param <T>    指定结果集数据类型
