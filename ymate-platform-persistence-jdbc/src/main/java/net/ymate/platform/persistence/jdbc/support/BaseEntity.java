@@ -102,6 +102,15 @@ public abstract class BaseEntity<Entity extends IEntity, PK extends Serializable
         }
     }
 
+    public Entity save(Fields fields) throws Exception {
+        ISession _session = new DefaultSession(__doGetConnectionHolderSafed());
+        try {
+            return _session.insert((Entity) this, fields);
+        } finally {
+            _session.close();
+        }
+    }
+
     public Entity saveOrUpdate() throws Exception {
         return saveOrUpdate(Fields.create());
     }
@@ -112,7 +121,7 @@ public abstract class BaseEntity<Entity extends IEntity, PK extends Serializable
         try {
             Entity _t = _session.find(EntitySQL.create(this.getEntityClass()).field(fields), this.getId());
             if (_t == null) {
-                return _session.insert((Entity) this);
+                return _session.insert((Entity) this, fields);
             }
             return _session.update((Entity) this, fields);
         } finally {
