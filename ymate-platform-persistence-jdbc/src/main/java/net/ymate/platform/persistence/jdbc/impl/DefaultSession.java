@@ -140,7 +140,7 @@ public class DefaultSession implements ISession {
     }
 
     public <T extends IEntity> IResultSet<T> find(EntitySQL<T> entity, Where where, Page page) throws Exception {
-        String _selectSql = __dialect.buildSelectSQL(entity.getEntityClass(), __tablePrefix, __doGetNotExcludedFields(EntityMeta.createAndGet(entity.getEntityClass()), entity.getFields(), false));
+        String _selectSql = __dialect.buildSelectSQL(entity.getEntityClass(), __tablePrefix, __doGetNotExcludedFields(EntityMeta.createAndGet(entity.getEntityClass()), entity.getFields(), false, true));
         if (where != null) {
             _selectSql = _selectSql.concat(" ").concat(where.getWhereSQL()).concat(" ").concat(where.getOrderBy().getOrderBySQL());
         }
@@ -168,7 +168,7 @@ public class DefaultSession implements ISession {
     public <T extends IEntity> T find(EntitySQL<T> entity, Serializable id) throws Exception {
         EntityMeta _meta = EntityMeta.createAndGet(entity.getEntityClass());
         PairObject<Fields, Params> _entityPK = __doGetPrimaryKeyFieldAndValues(_meta, id, null);
-        String _selectSql = __dialect.buildSelectByPkSQL(entity.getEntityClass(), __tablePrefix, _entityPK.getKey(), __doGetNotExcludedFields(_meta, entity.getFields(), false));
+        String _selectSql = __dialect.buildSelectByPkSQL(entity.getEntityClass(), __tablePrefix, _entityPK.getKey(), __doGetNotExcludedFields(_meta, entity.getFields(), false, true));
         IQueryOperator<T> _opt = new DefaultQueryOperator<T>(_selectSql, this.__connectionHolder, new EntityResultSetHandler<T>(entity.getEntityClass()));
         if (_meta.isMultiplePrimaryKey()) {
             for (Object _param : _entityPK.getValue().getParams()) {
@@ -192,7 +192,7 @@ public class DefaultSession implements ISession {
     }
 
     public <T extends IEntity> T findFirst(EntitySQL<T> entity, Where where) throws Exception {
-        String _selectSql = __dialect.buildSelectSQL(entity.getEntityClass(), __tablePrefix, __doGetNotExcludedFields(EntityMeta.createAndGet(entity.getEntityClass()), entity.getFields(), false));
+        String _selectSql = __dialect.buildSelectSQL(entity.getEntityClass(), __tablePrefix, __doGetNotExcludedFields(EntityMeta.createAndGet(entity.getEntityClass()), entity.getFields(), false, true));
         if (where != null) {
             _selectSql = _selectSql.concat(" ").concat(where.getWhereSQL()).concat(" ").concat(where.getOrderBy().getOrderBySQL());
         }
@@ -240,8 +240,8 @@ public class DefaultSession implements ISession {
 
     public <T extends IEntity> T update(T entity, Fields filter) throws Exception {
         EntityMeta _meta = EntityMeta.createAndGet(entity.getClass());
-        PairObject<Fields, Params> _entity = __doGetPrimaryKeyFieldAndValues(_meta, entity, null);
-        filter = __doGetNotExcludedFields(_meta, filter, true);
+        PairObject<Fields, Params> _entity = __doGetPrimaryKeyFieldAndValues(_meta, entity, filter);
+        filter = __doGetNotExcludedFields(_meta, filter, true, false);
         String _updateSql = __dialect.buildUpdateByPkSQL(entity.getClass(), __tablePrefix, _entity.getKey(), filter);
         IUpdateOperator _opt = new DefaultUpdateOperator(_updateSql, this.__connectionHolder);
         // 先获取并添加需要更新的字段值
@@ -259,7 +259,7 @@ public class DefaultSession implements ISession {
     public <T extends IEntity> List<T> update(List<T> entities, Fields filter) throws Exception {
         EntityMeta _meta = EntityMeta.createAndGet(entities.get(0).getClass());
         PairObject<Fields, Params> _entity = __doGetPrimaryKeyFieldAndValues(_meta, entities.get(0), null);
-        filter = __doGetNotExcludedFields(_meta, filter, true);
+        filter = __doGetNotExcludedFields(_meta, filter, true, false);
         String _updateSql = __dialect.buildUpdateByPkSQL(entities.get(0).getClass(), __tablePrefix, _entity.getKey(), filter);
         IBatchUpdateOperator _opt = new BatchUpdateOperator(_updateSql, this.__connectionHolder);
         for (T entity : entities) {
@@ -289,7 +289,7 @@ public class DefaultSession implements ISession {
         PairObject<Fields, Params> _entity = __doGetEntityFieldAndValues(_meta, entity, filter, true);
         String _insertSql = __dialect.buildInsertSQL(entity.getClass(), __tablePrefix, _entity.getKey());
         IUpdateOperator _opt = new DefaultUpdateOperator(_insertSql, this.__connectionHolder);
-        // 获取并添加主键条件字段值
+        // 获取并添加字段值
         for (Object _param : _entity.getValue().getParams()) {
             _opt.addParameter(_param);
         }
@@ -458,11 +458,13 @@ public class DefaultSession implements ISession {
         for (String _fieldName : entityMeta.getPropertyNames()) {
             if (__doCheckField(filter, _fieldName)) {
                 Object _value = null;
-                if (entityMeta.isPrimaryKey(_fieldName) && includePK) {
-                    if (entityMeta.isMultiplePrimaryKey()) {
-                        _value = entityMeta.getPropertyByName(_fieldName).getField().get(targetObj.getId());
-                    } else {
-                        _value = targetObj.getId();
+                if (entityMeta.isPrimaryKey(_fieldName)) {
+                    if (includePK) {
+                        if (entityMeta.isMultiplePrimaryKey()) {
+                            _value = entityMeta.getPropertyByName(_fieldName).getField().get(targetObj.getId());
+                        } else {
+                            _value = targetObj.getId();
+                        }
                     }
                 } else {
                     _value = entityMeta.getPropertyByName(_fieldName).getField().get(targetObj);
@@ -503,12 +505,16 @@ public class DefaultSession implements ISession {
      * @param entityMeta 目标数据实体属性描述对象
      * @param filter     字段过滤对象
      * @param forUpdate  若是更新操作则需要过滤掉声明了@Readonly的字段
+     * @param includePK  是否包含主键
      * @return 返回目标实体中所有未被过滤的字段名称集合
      */
-    protected Fields __doGetNotExcludedFields(EntityMeta entityMeta, Fields filter, boolean forUpdate) {
+    protected Fields __doGetNotExcludedFields(EntityMeta entityMeta, Fields filter, boolean forUpdate, boolean includePK) {
         Fields _returnValue = Fields.create();
         for (String _field : entityMeta.getPropertyNames()) {
             if (__doCheckField(filter, _field)) {
+                if (includePK && entityMeta.isPrimaryKey(_field)) {
+                    continue;
+                }
                 if (forUpdate && entityMeta.isReadonly(_field)) {
                     continue;
                 }
@@ -534,11 +540,11 @@ public class DefaultSession implements ISession {
         }
 
         public Statement getStatement(Connection conn) throws Exception {
-            return null;
+            return conn.createStatement();
         }
 
         public CallableStatement getCallableStatement(Connection conn, String sql) throws Exception {
-            return null;
+            return conn.prepareCall(sql);
         }
 
         public PreparedStatement getPreparedStatement(Connection conn, String sql) throws Exception {
