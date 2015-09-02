@@ -240,7 +240,7 @@ public class DefaultSession implements ISession {
 
     public <T extends IEntity> T update(T entity, Fields filter) throws Exception {
         EntityMeta _meta = EntityMeta.createAndGet(entity.getClass());
-        PairObject<Fields, Params> _entity = __doGetPrimaryKeyFieldAndValues(_meta, entity, filter);
+        PairObject<Fields, Params> _entity = __doGetPrimaryKeyFieldAndValues(_meta, entity, null);
         filter = __doGetNotExcludedFields(_meta, filter, true, false);
         String _updateSql = __dialect.buildUpdateByPkSQL(entity.getClass(), __tablePrefix, _entity.getKey(), filter);
         IUpdateOperator _opt = new DefaultUpdateOperator(_updateSql, this.__connectionHolder);
