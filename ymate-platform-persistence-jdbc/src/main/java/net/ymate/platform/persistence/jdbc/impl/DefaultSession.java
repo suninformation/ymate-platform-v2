@@ -512,7 +512,7 @@ public class DefaultSession implements ISession {
         Fields _returnValue = Fields.create();
         for (String _field : entityMeta.getPropertyNames()) {
             if (__doCheckField(filter, _field)) {
-                if (includePK && entityMeta.isPrimaryKey(_field)) {
+                if (!includePK && entityMeta.isPrimaryKey(_field)) {
                     continue;
                 }
                 if (forUpdate && entityMeta.isReadonly(_field)) {
