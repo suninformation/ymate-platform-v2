@@ -15,9 +15,12 @@
  */
 package net.ymate.platform.webmvc.context;
 
+import net.ymate.platform.core.lang.BlurObject;
 import net.ymate.platform.webmvc.IRequestContext;
+import net.ymate.platform.webmvc.IUploadFileWrapper;
 import net.ymate.platform.webmvc.IWebMvc;
 import net.ymate.platform.webmvc.base.Type;
+import net.ymate.platform.webmvc.support.MultipartRequestWrapper;
 
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
@@ -131,5 +134,128 @@ public class WebContext {
 
     public IWebMvc getOwner() {
         return getAttribute(Type.Context.WEB_CONTEXT_OWNER);
+    }
+
+    // -----------------
+
+    @SuppressWarnings("unchecked")
+    public <T> T getApplicationAttributeToObject(String name) {
+        return (T) getApplication().get(name);
+    }
+
+    public String getApplicationAttributeToString(String name) {
+        return BlurObject.bind(getApplication().get(name)).toStringValue();
+    }
+
+    public int getApplicationAttributeToInt(String name) {
+        return BlurObject.bind(getApplication().get(name)).toIntValue();
+    }
+
+    public long getApplicationAttributeToLong(String name) {
+        return BlurObject.bind(getApplication().get(name)).toLongValue();
+    }
+
+    public boolean getApplicationAttributeToBoolean(String name) {
+        return BlurObject.bind(getApplication().get(name)).toBooleanValue();
+    }
+
+    public WebContext addApplicationAttribute(String name, Object value) {
+        getApplication().put(name, value);
+        return this;
+    }
+
+    // -----------------
+
+    @SuppressWarnings("unchecked")
+    public <T> T getSessionAttributeToObject(String name) {
+        return (T) getSession().get(name);
+    }
+
+    public String getSessionAttributeToString(String name) {
+        return BlurObject.bind(getSession().get(name)).toStringValue();
+    }
+
+    public int getSessionAttributeToInt(String name) {
+        return BlurObject.bind(getSession().get(name)).toIntValue();
+    }
+
+    public long getSessionAttributeToLong(String name) {
+        return BlurObject.bind(getSession().get(name)).toLongValue();
+    }
+
+    public boolean getSessionAttributeToBoolean(String name) {
+        return BlurObject.bind(getSession().get(name)).toBooleanValue();
+    }
+
+    public WebContext addSessionAttribute(String name, Object value) {
+        getSession().put(name, value);
+        return this;
+    }
+
+    // -----------------
+
+    @SuppressWarnings("unchecked")
+    public <T> T getRequestAttributeToObject(String name) {
+        return (T) getRequest().getAttribute(name);
+    }
+
+    public String getRequestAttributeToString(String name) {
+        return BlurObject.bind(getRequest().getAttribute(name)).toStringValue();
+    }
+
+    public int getRequestAttributeToInt(String name) {
+        return BlurObject.bind(getRequest().getAttribute(name)).toIntValue();
+    }
+
+    public long getRequestAttributeToLong(String name) {
+        return BlurObject.bind(getRequest().getAttribute(name)).toLongValue();
+    }
+
+    public boolean getRequestAttributeToBoolean(String name) {
+        return BlurObject.bind(getRequest().getAttribute(name)).toBooleanValue();
+    }
+
+    public WebContext addRequestAttribute(String name, Object value) {
+        getRequest().setAttribute(name, value);
+        return this;
+    }
+
+    // -----------------
+
+    @SuppressWarnings("unchecked")
+    public <T> T getParameterToObject(String name) {
+        return (T) getParameters().get(name);
+    }
+
+    public String getParameterToString(String name) {
+        return BlurObject.bind(getParameters().get(name)).toStringValue();
+    }
+
+    public int getParameterToInt(String name) {
+        return BlurObject.bind(getParameters().get(name)).toIntValue();
+    }
+
+    public long getParameterToLong(String name) {
+        return BlurObject.bind(getParameters().get(name)).toLongValue();
+    }
+
+    public boolean getParameterToBoolean(String name) {
+        return BlurObject.bind(getParameters().get(name)).toBooleanValue();
+    }
+
+    // MultipartRequestWrapper
+
+    public IUploadFileWrapper getUploadFile(String name) {
+        if (getRequest() instanceof MultipartRequestWrapper) {
+            return ((MultipartRequestWrapper) getRequest()).getUploadFile(name);
+        }
+        return null;
+    }
+
+    public IUploadFileWrapper[] getUploadFiles(String name) {
+        if (getRequest() instanceof MultipartRequestWrapper) {
+            return ((MultipartRequestWrapper) getRequest()).getUploadFiles(name);
+        }
+        return null;
     }
 }
