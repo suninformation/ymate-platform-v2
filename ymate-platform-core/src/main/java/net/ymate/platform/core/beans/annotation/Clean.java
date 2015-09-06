@@ -34,4 +34,9 @@ public @interface Clean {
      * @return 设置需要清理的类拦截器，若不提供则默认清理全部类拦截器
      */
     Class<? extends IInterceptor>[] value() default {};
+
+    /**
+     * @return 拦截器清理方式
+     */
+    IInterceptor.CleanType type() default IInterceptor.CleanType.ALL;
 }

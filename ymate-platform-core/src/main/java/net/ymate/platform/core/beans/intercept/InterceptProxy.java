@@ -78,7 +78,8 @@ public class InterceptProxy implements IProxy {
             Before _before = targetClass.getAnnotation(Before.class);
             Clean _clean = __doGetCleanIntercepts(targetMethod);
             //
-            if (_clean != null) {
+            if (_clean != null &&
+                    (_clean.type().equals(IInterceptor.CleanType.ALL) || _clean.type().equals(IInterceptor.CleanType.BEFORE))) {
                 if (_clean.value().length > 0) {
                     for (Class<? extends IInterceptor> _clazz : _before.value()) {
                         if (ArrayUtils.contains(_clean.value(), _clazz)) {
@@ -104,7 +105,8 @@ public class InterceptProxy implements IProxy {
             After _after = targetClass.getAnnotation(After.class);
             Clean _clean = __doGetCleanIntercepts(targetMethod);
             //
-            if (_clean != null) {
+            if (_clean != null &&
+                    (_clean.type().equals(IInterceptor.CleanType.ALL) || _clean.type().equals(IInterceptor.CleanType.AFTER))) {
                 if (_clean.value().length > 0) {
                     for (Class<? extends IInterceptor> _clazz : _after.value()) {
                         if (ArrayUtils.contains(_clean.value(), _clazz)) {

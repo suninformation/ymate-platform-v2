@@ -27,6 +27,10 @@ public interface IInterceptor {
         BEFORE, AFTER
     }
 
+    public enum CleanType {
+        BEFORE, AFTER, ALL
+    }
+
     /**
      * @param context 拦截器环境上下文对象
      * @return 执行拦截动作并返回执行结果，返回结果将影响前置拦截器组是否继续执行，后置拦截器将忽略返回值
