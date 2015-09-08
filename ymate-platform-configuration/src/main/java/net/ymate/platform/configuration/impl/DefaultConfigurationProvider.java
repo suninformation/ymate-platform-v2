@@ -97,7 +97,7 @@ public class DefaultConfigurationProvider implements IConfigurationProvider {
         Map<String, XMLConfigFileHandler.XMLProperty> _props = __config.getCategory(category).getPropertyMap();
         if (_props != null && !_props.isEmpty()) {
             for (String name : _props.keySet()) {
-                if (name.toString().startsWith(key)) { // 以给定key开头的键值对
+                if (name.startsWith(key)) { // 以给定key开头的键值对
                     String value = _props.get(name).getContent();
                     if (StringUtils.isNotBlank(value)) {
                         _returnValue.add(value);
@@ -116,11 +116,11 @@ public class DefaultConfigurationProvider implements IConfigurationProvider {
         Map<String, String> _returnValue = new LinkedHashMap<String, String>();
         Map<String, XMLConfigFileHandler.XMLProperty> _props = __config.getCategory(category).getPropertyMap();
         if (_props != null && !_props.isEmpty()) {
-            for (Object name : _props.keySet()) {
-                if (name != null && name.toString().startsWith(keyHead)) {
+            for (String name : _props.keySet()) {
+                if (name != null && name.startsWith(keyHead)) {
                     String value = _props.get(name).getContent();
                     if (StringUtils.isNotBlank(value)) {
-                        _returnValue.put(name.toString().substring(keyHead.length()), value);
+                        _returnValue.put(name.substring(keyHead.length()), value);
                     }
                 }
             }
