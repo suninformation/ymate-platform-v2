@@ -118,8 +118,10 @@ public class DefaultConfigurationProvider implements IConfigurationProvider {
         if (_props != null && !_props.isEmpty()) {
             for (Object name : _props.keySet()) {
                 if (name != null && name.toString().startsWith(keyHead)) {
-                    Object value = _props.get(name);
-                    _returnValue.put(name.toString().substring(keyHead.length()), value.toString());
+                    String value = _props.get(name).getContent();
+                    if (StringUtils.isNotBlank(value)) {
+                        _returnValue.put(name.toString().substring(keyHead.length()), value);
+                    }
                 }
             }
         }
@@ -265,6 +267,6 @@ public class DefaultConfigurationProvider implements IConfigurationProvider {
 
     public boolean contains(String category, String key) {
         XMLConfigFileHandler.XMLCategory _category = __config.getCategory(category);
-        return _category == null ? false : _category.getProperty(key) != null;
+        return _category != null && _category.getProperty(key) != null;
     }
 }
