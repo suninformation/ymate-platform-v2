@@ -218,15 +218,15 @@ public class YMP {
      * @param handler
      */
     public void registerHandler(Class<? extends Annotation> annoClass, IBeanHandler handler) {
+        if (annoClass.equals(Module.class) || annoClass.equals(Proxy.class) || annoClass.equals(EventRegister.class)) {
+            _LOG.warn("Handler [" + annoClass.getSimpleName() + "] duplicate registration is not allowed");
+            return;
+        }
         __beanFactory.registerHandler(annoClass, handler);
     }
 
     public void registerHandler(Class<? extends Annotation> annoClass) {
-        if (annoClass.equals(Module.class) || annoClass.equals(Proxy.class) || annoClass.equals(EventRegister.class)) {
-            _LOG.warn("Handler class [" + annoClass.getSimpleName() + "] duplicate registration is not allowed");
-            return;
-        }
-        __beanFactory.registerHandler(annoClass);
+        registerHandler(annoClass, IBeanHandler.DEFAULT_HANDLER);
     }
 
     /**
