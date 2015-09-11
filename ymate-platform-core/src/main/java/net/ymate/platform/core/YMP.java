@@ -399,26 +399,24 @@ public class YMP {
             return __isDevelopMode;
         }
 
+        private List<String> __doParserArrayStr(String key) {
+            String[] _strArr = StringUtils.split(__props.getProperty(key), "|");
+            if (_strArr != null) {
+                return new ArrayList<String>(Arrays.asList(_strArr));
+            }
+            return Collections.emptyList();
+        }
+
         public List<String> getAutoscanPackages() {
             if (__packageNames == null) {
-                String[] _packageNameArr = StringUtils.split(__props.getProperty("ymp.autoscan_packages"), "|");
-                if (_packageNameArr != null) {
-                    __packageNames = new ArrayList<String>(Arrays.asList(_packageNameArr));
-                } else {
-                    __packageNames = Collections.emptyList();
-                }
+                __packageNames = __doParserArrayStr("ymp.autoscan_packages");
             }
             return __packageNames;
         }
 
         public List<String> getExcludedModules() {
             if (__excludeModules == null) {
-                String[] _excludeModules = StringUtils.split(__props.getProperty("ymp.excluded_modules"), "|");
-                if (_excludeModules != null) {
-                    __excludeModules = new ArrayList<String>(Arrays.asList(_excludeModules));
-                } else {
-                    __excludeModules = Collections.emptyList();
-                }
+                __excludeModules = __doParserArrayStr("ymp.excluded_modules");
             }
             return __excludeModules;
         }
