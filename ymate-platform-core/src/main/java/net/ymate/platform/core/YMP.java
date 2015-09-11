@@ -222,6 +222,10 @@ public class YMP {
     }
 
     public void registerHandler(Class<? extends Annotation> annoClass) {
+        if (annoClass.equals(Module.class) || annoClass.equals(Proxy.class) || annoClass.equals(EventRegister.class)) {
+            _LOG.warn("Handler class [" + annoClass.getSimpleName() + "] duplicate registration is not allowed");
+            return;
+        }
         __beanFactory.registerHandler(annoClass);
     }
 
