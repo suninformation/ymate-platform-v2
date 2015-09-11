@@ -27,6 +27,8 @@ import net.ymate.platform.core.beans.proxy.IProxyFactory;
 import net.ymate.platform.core.beans.proxy.IProxyFilter;
 import net.ymate.platform.core.util.ClassUtils;
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
@@ -39,6 +41,8 @@ import java.util.*;
  * @version 1.0
  */
 public class DefaultBeanFactory implements IBeanFactory {
+
+    private static final Log _LOG = LogFactory.getLog(DefaultBeanFactory.class);
 
     private IBeanFactory __parentFactory;
 
@@ -72,15 +76,21 @@ public class DefaultBeanFactory implements IBeanFactory {
     }
 
     public void registerHandler(Class<? extends Annotation> annoClass, IBeanHandler handler) {
-        this.__beanHandlerMap.put(annoClass, handler);
+        if (!__beanHandlerMap.containsKey(annoClass)) {
+            this.__beanHandlerMap.put(annoClass, handler);
+        } else {
+            _LOG.warn("Handler class [" + annoClass.getSimpleName() + "] duplicate registration is not allowed");
+        }
     }
 
     public void registerHandler(Class<? extends Annotation> annoClass) {
-        this.__beanHandlerMap.put(annoClass, IBeanHandler.DEFAULT_HANDLER);
+        registerHandler(annoClass, IBeanHandler.DEFAULT_HANDLER);
     }
 
     public void registerPackage(String packageName) {
-        this.__packageNames.add(packageName);
+        if (!__packageNames.contains(packageName)) {
+            this.__packageNames.add(packageName);
+        }
     }
 
     public void registerExcludedClass(Class<?> excludedClass) {
