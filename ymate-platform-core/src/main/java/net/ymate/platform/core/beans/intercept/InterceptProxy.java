@@ -21,6 +21,7 @@ import net.ymate.platform.core.beans.annotation.Clean;
 import net.ymate.platform.core.beans.annotation.Proxy;
 import net.ymate.platform.core.beans.proxy.IProxy;
 import net.ymate.platform.core.beans.proxy.IProxyChain;
+import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.lang.ArrayUtils;
 
 import java.lang.reflect.Method;
@@ -39,17 +40,17 @@ import java.util.concurrent.ConcurrentHashMap;
 @Proxy
 public class InterceptProxy implements IProxy {
 
-    private static Map<Class<?>, List<Class<? extends IInterceptor>>> __beforeInterceptsCache;
+    private static Map<String, List<Class<? extends IInterceptor>>> __beforeInterceptsCache;
 
-    private static Map<Class<?>, List<Class<? extends IInterceptor>>> __afterInterceptsCache;
+    private static Map<String, List<Class<? extends IInterceptor>>> __afterInterceptsCache;
 
     private static final Object __beforeCacheLocker = new Object();
 
     private static final Object __afterCacheLocker = new Object();
 
     public InterceptProxy() {
-        __beforeInterceptsCache = new ConcurrentHashMap<Class<?>, List<Class<? extends IInterceptor>>>();
-        __afterInterceptsCache = new ConcurrentHashMap<Class<?>, List<Class<? extends IInterceptor>>>();
+        __beforeInterceptsCache = new ConcurrentHashMap<String, List<Class<? extends IInterceptor>>>();
+        __afterInterceptsCache = new ConcurrentHashMap<String, List<Class<? extends IInterceptor>>>();
     }
 
     public Object doProxy(IProxyChain proxyChain) throws Throwable {
@@ -96,11 +97,13 @@ public class InterceptProxy implements IProxy {
     }
 
     private List<Class<? extends IInterceptor>> __doGetBeforeIntercepts(Class<?> targetClass, Method targetMethod) {
-        if (__beforeInterceptsCache.containsKey(targetClass)) {
-            return __beforeInterceptsCache.get(targetClass);
+        String _cacheKey = DigestUtils.md5Hex(targetClass.toString() + targetMethod.toString());
+        //
+        if (__beforeInterceptsCache.containsKey(_cacheKey)) {
+            return __beforeInterceptsCache.get(_cacheKey);
         }
         synchronized (__beforeCacheLocker) {
-            List<Class<? extends IInterceptor>> _classes = __beforeInterceptsCache.get(targetClass);
+            List<Class<? extends IInterceptor>> _classes = __beforeInterceptsCache.get(_cacheKey);
             if (_classes != null) {
                 return _classes;
             }
@@ -129,7 +132,7 @@ public class InterceptProxy implements IProxy {
             }
             //
             if (!_classes.isEmpty()) {
-                __beforeInterceptsCache.put(targetClass, _classes);
+                __beforeInterceptsCache.put(_cacheKey, _classes);
             }
             //
             return _classes;
@@ -137,11 +140,13 @@ public class InterceptProxy implements IProxy {
     }
 
     private List<Class<? extends IInterceptor>> __doGetAfterIntercepts(Class<?> targetClass, Method targetMethod) {
-        if (__afterInterceptsCache.containsKey(targetClass)) {
-            return __afterInterceptsCache.get(targetClass);
+        String _cacheKey = DigestUtils.md5Hex(targetClass.toString() + targetMethod.toString());
+        //
+        if (__afterInterceptsCache.containsKey(_cacheKey)) {
+            return __afterInterceptsCache.get(_cacheKey);
         }
         synchronized (__afterCacheLocker) {
-            List<Class<? extends IInterceptor>> _classes = __afterInterceptsCache.get(targetClass);
+            List<Class<? extends IInterceptor>> _classes = __afterInterceptsCache.get(_cacheKey);
             if (_classes != null) {
                 return _classes;
             }
@@ -170,7 +175,7 @@ public class InterceptProxy implements IProxy {
             }
             //
             if (!_classes.isEmpty()) {
-                __afterInterceptsCache.put(targetClass, _classes);
+                __afterInterceptsCache.put(_cacheKey, _classes);
             }
             //
             return _classes;
