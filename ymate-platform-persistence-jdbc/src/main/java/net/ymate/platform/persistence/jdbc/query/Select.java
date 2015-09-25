@@ -42,6 +42,8 @@ public class Select {
 
     private String __alias;
 
+    private boolean __distinct;
+
     public static Select create(Class<? extends IEntity> entityClass) {
         return new Select(null, EntityMeta.createAndGet(entityClass).getEntityName(), null);
     }
@@ -130,7 +132,7 @@ public class Select {
         }
         return this.__where.getParams();
     }
-
+o
     /**
      * 设置Select语句的别名
      *
@@ -142,9 +144,17 @@ public class Select {
         return this;
     }
 
+    public Select distinct() {
+        __distinct = true;
+        return this;
+    }
+
     @Override
     public String toString() {
         StringBuilder _selectSB = new StringBuilder("SELECT ");
+        if (__distinct) {
+            _selectSB.append("DISTINCT ");
+        }
         if (__fields.getFields().isEmpty()) {
             _selectSB.append(" * ");
         } else {
