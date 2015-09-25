@@ -38,6 +38,8 @@ public class Select {
 
     private Where __where;
 
+    private List<Union> __unions;
+
     private String __alias;
 
     public static Select create(Class<? extends IEntity> entityClass) {
@@ -82,6 +84,7 @@ public class Select {
         this.__from = from;
         this.__fields = Fields.create();
         this.__joins = new ArrayList<Join>();
+        this.__unions = new ArrayList<Union>();
     }
 
     public Fields getFields() {
@@ -104,6 +107,15 @@ public class Select {
             __where = Where.create();
         }
         __where.param(join.getParams());
+        return this;
+    }
+
+    public Select union(Union union) {
+        __unions.add(union);
+        if (__where == null) {
+            __where = Where.create();
+        }
+        __where.param(union.select().getParams());
         return this;
     }
 
@@ -147,6 +159,15 @@ public class Select {
         if (__where != null) {
             _selectSB.append(" ").append(__where.toString());
         }
+        //
+        for (Union _union : __unions) {
+            _selectSB.append(" UNION ");
+            if (_union.isAll()) {
+                _selectSB.append("ALL ");
+            }
+            _selectSB.append(_union.select().toString());
+        }
+        _selectSB.append(" ");
         //
         if (StringUtils.isNotBlank(__alias)) {
             return "(".concat(_selectSB.toString()).concat(") ").concat(__alias);
