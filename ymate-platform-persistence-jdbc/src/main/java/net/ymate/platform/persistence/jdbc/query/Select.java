@@ -132,7 +132,7 @@ public class Select {
         }
         return this.__where.getParams();
     }
-o
+
     /**
      * 设置Select语句的别名
      *
