@@ -110,6 +110,11 @@ public class Where {
         return this;
     }
 
+    public Where groupBy(String prefix, String field) {
+        __groupBy = GroupBy.create(prefix, field);
+        return this;
+    }
+
     public Where groupBy(GroupBy groupBy) {
         __groupBy = groupBy;
         return this;
@@ -125,8 +130,18 @@ public class Where {
         return this;
     }
 
+    public Where orderAsc(String prefix, String field) {
+        this.__orderBy.asc(prefix, field);
+        return this;
+    }
+
     public Where orderDesc(String field) {
         this.__orderBy.desc(field);
+        return this;
+    }
+
+    public Where orderDesc(String prefix, String field) {
+        this.__orderBy.desc(prefix, field);
         return this;
     }
 
