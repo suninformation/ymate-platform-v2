@@ -141,6 +141,12 @@ public class YMP {
     public synchronized YMP init() throws Exception {
         if (!__inited) {
             //
+            _LOG.info("\n__   ____  __ ____          ____  \n" +
+                    "\\ \\ / /  \\/  |  _ \\  __   _|___ \\ \n" +
+                    " \\ V /| |\\/| | |_) | \\ \\ / / __) |\n" +
+                    "  | | | |  | |  __/   \\ V / / __/ \n" +
+                    "  |_| |_|  |_|_|       \\_/ |_____|  Website: http://www.ymate.net/");
+            //
             _LOG.info("Initializing ymate-platform-core-" + VERSION + " - debug:" + __config.isDevelopMode());
             // 初始化根对象工厂
             __moduleFactory.init();
