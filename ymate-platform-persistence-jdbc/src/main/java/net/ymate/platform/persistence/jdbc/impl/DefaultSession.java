@@ -337,7 +337,7 @@ public class DefaultSession implements ISession {
 
     public <T extends IEntity> List<T> delete(List<T> entities) throws Exception {
         EntityMeta _meta = EntityMeta.createAndGet(entities.get(0).getClass());
-        PairObject<Fields, Params> _entity = __doGetPrimaryKeyFieldAndValues(_meta, entities.get(0).getClass(), null);
+        PairObject<Fields, Params> _entity = __doGetPrimaryKeyFieldAndValues(_meta, entities.get(0), null);
         String _deleteSql = __dialect.buildDeleteByPkSQL(entities.get(0).getClass(), __tablePrefix, _entity.getKey());
         IBatchUpdateOperator _opt = new BatchUpdateOperator(_deleteSql, this.__connectionHolder);
         for (T entity : entities) {
@@ -355,7 +355,7 @@ public class DefaultSession implements ISession {
 
     public <T extends IEntity> int[] delete(Class<T> entityClass, Serializable[] ids) throws Exception {
         EntityMeta _meta = EntityMeta.createAndGet(entityClass);
-        PairObject<Fields, Params> _entity = __doGetPrimaryKeyFieldAndValues(_meta, entityClass, null);
+        PairObject<Fields, Params> _entity = __doGetPrimaryKeyFieldAndValues(_meta, ids[0], null);
         String _deleteSql = __dialect.buildDeleteByPkSQL(entityClass, __tablePrefix, _entity.getKey());
         IBatchUpdateOperator _opt = new BatchUpdateOperator(_deleteSql, this.__connectionHolder);
         for (Serializable _id : ids) {
