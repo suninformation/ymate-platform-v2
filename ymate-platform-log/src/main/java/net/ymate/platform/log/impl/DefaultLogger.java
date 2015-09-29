@@ -106,6 +106,37 @@ public class DefaultLogger extends AbstractLogger {
         super.__doBuildEx(info, e, level);
     }
 
+    private boolean __doIsLogEnabled(LogLevel logLevel) {
+        if (__logger.getLevel().intLevel() <= logLevel.getLevel()) {
+            return true;
+        }
+        return false;
+    }
+
+    public boolean isDebugEnabled() {
+        return __doIsLogEnabled(LogLevel.DEBUG);
+    }
+
+    public boolean isErrorEnabled() {
+        return __doIsLogEnabled(LogLevel.ERROR);
+    }
+
+    public boolean isFatalEnabled() {
+        return __doIsLogEnabled(LogLevel.FATAL);
+    }
+
+    public boolean isInfoEnabled() {
+        return __doIsLogEnabled(LogLevel.INFO);
+    }
+
+    public boolean isTraceEnabled() {
+        return __doIsLogEnabled(LogLevel.TRACE);
+    }
+
+    public boolean isWarnEnabled() {
+        return __doIsLogEnabled(LogLevel.WARN);
+    }
+
     public synchronized void init(ILog owner, String loggerName) throws Exception {
         if (!__inited) {
             __owner = owner;

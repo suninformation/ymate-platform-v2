@@ -15,6 +15,8 @@
  */
 package net.ymate.platform.log;
 
+import org.apache.commons.lang.StringUtils;
+
 /**
  * 日志记录器接口定义
  *
@@ -66,7 +68,7 @@ public interface ILogger {
         }
 
         public static LogLevel parse(String levelName) {
-            if (levelName != null && levelName.trim() != "") {
+            if (StringUtils.isNotBlank(levelName)) {
                 for (LogLevel level : LogLevel.values()) {
                     if (level.name.equalsIgnoreCase(levelName)) {
                         return level;
@@ -191,4 +193,18 @@ public interface ILogger {
     void fatal(Throwable e);
 
     void fatal(String info, Throwable e);
+
+    //
+
+    boolean isDebugEnabled();
+
+    boolean isErrorEnabled();
+
+    boolean isFatalEnabled();
+
+    boolean isInfoEnabled();
+
+    boolean isTraceEnabled();
+
+    boolean isWarnEnabled();
 }

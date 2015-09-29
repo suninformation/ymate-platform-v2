@@ -34,6 +34,8 @@ public interface ILog {
      */
     public ILogModuleCfg getModuleCfg();
 
+    public boolean isInited();
+
     public ILogger getLogger();
 
     public ILogger getLogger(String loggerName) throws Exception;
