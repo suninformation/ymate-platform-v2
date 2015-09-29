@@ -98,6 +98,16 @@ public class Select {
         return this;
     }
 
+    public Select field(String prefix, String field) {
+        this.__fields.add(prefix, field);
+        return this;
+    }
+
+    public Select field(String prefix, String field, String alias) {
+        this.__fields.add(prefix, field, alias);
+        return this;
+    }
+
     public Select field(Fields fields) {
         this.__fields.add(fields);
         return this;

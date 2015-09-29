@@ -184,12 +184,34 @@ public class Cond {
         return cond(")");
     }
 
+    public Cond exists(SQL subSql) {
+        __condSB.append(" EXISTS (").append(subSql.getSQL()).append(")");
+        __params.add(subSql.getParams());
+        return this;
+    }
+
+    public Cond exists(Select subSql) {
+        __condSB.append(" EXISTS (").append(subSql.toString()).append(")");
+        __params.add(subSql.getParams());
+        return this;
+    }
+
     public Cond in(String prefix, String field, SQL subSql) {
         return in(prefix.concat(".").concat(field), subSql);
     }
 
     public Cond in(String field, SQL subSql) {
         __condSB.append(field).append(" IN (").append(subSql.getSQL()).append(")");
+        __params.add(subSql.getParams());
+        return this;
+    }
+
+    public Cond in(String prefix, String field, Select subSql) {
+        return in(prefix.concat(".").concat(field), subSql);
+    }
+
+    public Cond in(String field, Select subSql) {
+        __condSB.append(field).append(" IN (").append(subSql.toString()).append(")");
         __params.add(subSql.getParams());
         return this;
     }
