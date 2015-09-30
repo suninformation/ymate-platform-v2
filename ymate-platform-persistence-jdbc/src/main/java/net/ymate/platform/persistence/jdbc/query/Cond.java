@@ -164,6 +164,34 @@ public class Cond {
         return opt(field, OPT.LIKE);
     }
 
+    public Cond between(String prefix, String field, Object valueOne, Object valueTwo) {
+        return between(prefix.concat(".").concat(field), valueOne, valueTwo);
+    }
+
+    public Cond between(String field, Object valueOne, Object valueTwo) {
+        __condSB.append(field).append(" BETWEEN ? AND ?");
+        __params.add(valueOne).add(valueTwo);
+        return this;
+    }
+
+    public Cond isNull(String prefix, String field) {
+        return isNull(prefix.concat(".").concat(field));
+    }
+
+    public Cond isNull(String field) {
+        __condSB.append(field).append(" IS NULL");
+        return this;
+    }
+
+    public Cond isNotNull(String prefix, String field) {
+        return isNotNull(prefix.concat(".").concat(field));
+    }
+
+    public Cond isNotNull(String field) {
+        __condSB.append(field).append(" IS NOT NULL");
+        return this;
+    }
+
     public Cond and() {
         return cond("AND");
     }
