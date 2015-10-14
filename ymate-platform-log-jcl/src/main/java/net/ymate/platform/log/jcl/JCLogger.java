@@ -34,8 +34,11 @@ public class JCLogger implements Log, Serializable {
 
     private final Logger __logger;
 
-    public JCLogger(final Logger logger) {
+    private boolean __allowOutputConsole;
+
+    public JCLogger(final Logger logger, boolean allowOutputConsole) {
         __logger = logger;
+        __allowOutputConsole = allowOutputConsole;
     }
 
     protected void __doBuildEx(Object info, Throwable e, ILogger.LogLevel level) {
@@ -63,6 +66,10 @@ public class JCLogger implements Log, Serializable {
             _exSB.append("- ").append(_stackSB);
         }
         __logger.log(Level.toLevel(level.getName(), Level.ALL), _exSB.toString());
+        //
+        if (__allowOutputConsole) {
+            System.out.println(_exSB.toString());
+        }
     }
 
     /**
