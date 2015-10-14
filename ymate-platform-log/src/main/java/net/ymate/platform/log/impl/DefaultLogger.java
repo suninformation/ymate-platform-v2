@@ -137,7 +137,7 @@ public class DefaultLogger extends AbstractLogger {
         return __doIsLogEnabled(LogLevel.WARN);
     }
 
-    public synchronized void init(ILog owner, String loggerName) throws Exception {
+    public synchronized ILogger init(ILog owner, String loggerName) throws Exception {
         if (!__inited) {
             __owner = owner;
             //
@@ -156,12 +156,11 @@ public class DefaultLogger extends AbstractLogger {
             __logger = LogManager.getLogger(StringUtils.defaultIfBlank(loggerName, __owner.getModuleCfg().getLoggerName()));
             __inited = true;
         }
+        return this;
     }
 
     public ILogger getLogger(String loggerName) throws Exception {
-        ILogger _logger = new DefaultLogger();
-        _logger.init(__owner, loggerName);
-        return _logger;
+        return new DefaultLogger().init(__owner, loggerName);
     }
 
     public void destroy() {

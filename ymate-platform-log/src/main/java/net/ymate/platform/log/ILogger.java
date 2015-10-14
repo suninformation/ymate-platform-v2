@@ -96,9 +96,10 @@ public interface ILogger {
      *
      * @param owner      日志记录器模块管理器
      * @param loggerName 启动的日志记录名称
+     * @return
      * @throws Exception
      */
-    void init(ILog owner, String loggerName) throws Exception;
+    public ILogger init(ILog owner, String loggerName) throws Exception;
 
     /**
      * @param loggerName 日志记录器名称
@@ -116,15 +117,17 @@ public interface ILogger {
      * 设置是否控制台输出
      *
      * @param enable
+     * @return
      */
-    void console(boolean enable);
+    public ILogger console(boolean enable);
 
     /**
      * 设置调用者深度
      *
      * @param depth 必须大于等于零
+     * @return
      */
-    public void depth(int depth);
+    public ILogger depth(int depth);
 
     /**
      * 是否存在某个日志记录器
@@ -132,12 +135,12 @@ public interface ILogger {
      * @param loggerName 日志记录器名称
      * @return 如果当前日志记录器存在那么返回true，如果不存在那么返回false
      */
-    boolean contains(String loggerName);
+    public boolean contains(String loggerName);
 
     /**
      * @return 返回当前日志级别
      */
-    LogLevel getLevel();
+    public LogLevel getLevel();
 
     //
 
