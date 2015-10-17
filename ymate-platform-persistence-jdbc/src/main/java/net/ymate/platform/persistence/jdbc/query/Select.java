@@ -30,7 +30,7 @@ import java.util.List;
  */
 public class Select {
 
-    private String __from;
+    private List<String> __froms;
 
     private Fields __fields;
 
@@ -77,16 +77,53 @@ public class Select {
     }
 
     private Select(String prefix, String from, String alias) {
+        this.__froms = new ArrayList<String>();
+        this.__fields = Fields.create();
+        this.__joins = new ArrayList<Join>();
+        this.__unions = new ArrayList<Union>();
+        //
         if (StringUtils.isNotBlank(prefix)) {
             from = prefix.concat(from);
         }
         if (StringUtils.isNotBlank(alias)) {
             from = from.concat(" ").concat(alias);
         }
-        this.__from = from;
-        this.__fields = Fields.create();
-        this.__joins = new ArrayList<Join>();
-        this.__unions = new ArrayList<Union>();
+        this.__froms.add(from);
+    }
+
+    public Select from(Class<? extends IEntity> entityClass) {
+        return from(null, EntityMeta.createAndGet(entityClass).getEntityName(), null);
+    }
+
+    public Select from(Class<? extends IEntity> entityClass, String alias) {
+        return from(null, EntityMeta.createAndGet(entityClass).getEntityName(), null);
+    }
+
+    public Select from(String prefix, Class<? extends IEntity> entityClass, String alias) {
+        return from(prefix, EntityMeta.createAndGet(entityClass).getEntityName(), alias);
+    }
+
+    public Select from(Select select) {
+        return from(null, select.toString(), null);
+    }
+
+    public Select from(String tableName, String alias) {
+        return from(null, tableName, alias);
+    }
+
+    public Select from(String tableName) {
+        return from(null, tableName, null);
+    }
+
+    public Select from(String prefix, String from, String alias) {
+        if (StringUtils.isNotBlank(prefix)) {
+            from = prefix.concat(from);
+        }
+        if (StringUtils.isNotBlank(alias)) {
+            from = from.concat(" ").concat(alias);
+        }
+        this.__froms.add(from);
+        return this;
     }
 
     public Fields getFields() {
@@ -170,7 +207,7 @@ public class Select {
         } else {
             _selectSB.append(StringUtils.join(__fields.getFields(), ", "));
         }
-        _selectSB.append(" FROM ").append(__from);
+        _selectSB.append(" FROM ").append(StringUtils.join(__froms, ", "));
         //
         for (Join _join : __joins) {
             _selectSB.append(" ").append(_join);

@@ -30,7 +30,9 @@ import java.util.List;
  */
 public class Delete {
 
-    private String __from;
+    private List<String> __froms;
+
+    private Fields __fields;
 
     private List<Join> __joins;
 
@@ -69,14 +71,56 @@ public class Delete {
     }
 
     private Delete(String prefix, String from, String alias) {
+        this.__froms = new ArrayList<String>();
+        this.__joins = new ArrayList<Join>();
+        this.__fields = Fields.create();
+        //
+        this.from(prefix, from, alias);
+    }
+
+    public Delete from(Class<? extends IEntity> entityClass) {
+        return from(null, EntityMeta.createAndGet(entityClass).getEntityName(), null);
+    }
+
+    public Delete from(Class<? extends IEntity> entityClass, String alias) {
+        return from(null, EntityMeta.createAndGet(entityClass).getEntityName(), null);
+    }
+
+    public Delete from(String prefix, Class<? extends IEntity> entityClass, String alias) {
+        return from(prefix, EntityMeta.createAndGet(entityClass).getEntityName(), alias);
+    }
+
+    public Delete from(Select select) {
+        return from(null, select.toString(), null);
+    }
+
+    public Delete from(String tableName, String alias) {
+        return from(null, tableName, alias);
+    }
+
+    public Delete from(String tableName) {
+        return from(null, tableName, null);
+    }
+
+    public Delete from(String prefix, String from, String alias) {
         if (StringUtils.isNotBlank(prefix)) {
             from = prefix.concat(from);
         }
         if (StringUtils.isNotBlank(alias)) {
             from = from.concat(" ").concat(alias);
         }
-        this.__from = from;
-        this.__joins = new ArrayList<Join>();
+        this.__froms.add(from);
+        return this;
+    }
+
+    public Delete table(String tableName) {
+        this.__fields.add(tableName);
+        return this;
+    }
+
+    public Delete table(String prefix, String tableName) {
+        this.__fields.add(prefix, tableName);
+        return this;
     }
 
     public Delete join(Join join) {
@@ -102,7 +146,11 @@ public class Delete {
 
     @Override
     public String toString() {
-        StringBuilder _deleteSB = new StringBuilder("DELETE FROM ").append(__from).append(" ");
+        StringBuilder _deleteSB = new StringBuilder("DELETE ");
+        if (!__fields.getFields().isEmpty()) {
+            _deleteSB.append(StringUtils.join(__fields.getFields(), ", "));
+        }
+        _deleteSB.append(" FROM ").append(StringUtils.join(__froms, ", "));
         //
         for (Join _join : __joins) {
             _deleteSB.append(" ").append(_join);
