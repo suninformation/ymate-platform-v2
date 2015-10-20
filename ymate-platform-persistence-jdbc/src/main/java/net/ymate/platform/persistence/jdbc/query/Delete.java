@@ -55,7 +55,9 @@ public class Delete {
     }
 
     public static Delete create(Select select) {
-        return new Delete(null, select.toString(), null);
+        Delete _target = new Delete(null, select.toString(), null);
+        _target.getWhere().param(select.getParams());
+        return _target;
     }
 
     public static Delete create(String prefix, String tableName, String alias) {
@@ -91,7 +93,9 @@ public class Delete {
     }
 
     public Delete from(Select select) {
-        return from(null, select.toString(), null);
+        Delete _target = from(null, select.toString(), null);
+        _target.getWhere().param(select.getParams());
+        return _target;
     }
 
     public Delete from(String tableName, String alias) {
@@ -138,10 +142,14 @@ public class Delete {
     }
 
     public Params getParams() {
+        return getWhere().getParams();
+    }
+
+    public Where getWhere() {
         if (this.__where == null) {
-            return Params.create();
+            this.__where = Where.create();
         }
-        return this.__where.getParams();
+        return __where;
     }
 
     @Override

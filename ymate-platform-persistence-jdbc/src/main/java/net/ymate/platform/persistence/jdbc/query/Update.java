@@ -113,10 +113,14 @@ public class Update {
     }
 
     public Params getParams() {
+        return getWhere().getParams();
+    }
+
+    public Where getWhere() {
         if (this.__where == null) {
-            return Params.create();
+            this.__where = Where.create();
         }
-        return this.__where.getParams();
+        return __where;
     }
 
     @Override

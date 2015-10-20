@@ -61,7 +61,9 @@ public class Select {
     }
 
     public static Select create(Select select) {
-        return new Select(null, select.toString(), null);
+        Select _target = new Select(null, select.toString(), null);
+        _target.getWhere().param(select.getParams());
+        return _target;
     }
 
     public static Select create(String prefix, String from, String alias) {
@@ -82,13 +84,7 @@ public class Select {
         this.__joins = new ArrayList<Join>();
         this.__unions = new ArrayList<Union>();
         //
-        if (StringUtils.isNotBlank(prefix)) {
-            from = prefix.concat(from);
-        }
-        if (StringUtils.isNotBlank(alias)) {
-            from = from.concat(" ").concat(alias);
-        }
-        this.__froms.add(from);
+        from(prefix, from, alias);
     }
 
     public Select from(Class<? extends IEntity> entityClass) {
@@ -104,7 +100,9 @@ public class Select {
     }
 
     public Select from(Select select) {
-        return from(null, select.toString(), null);
+        Select _target = from(null, select.toString(), null);
+        _target.getWhere().param(select.getParams());
+        return _target;
     }
 
     public Select from(String tableName, String alias) {
@@ -152,19 +150,13 @@ public class Select {
 
     public Select join(Join join) {
         __joins.add(join);
-        if (__where == null) {
-            __where = Where.create();
-        }
-        __where.param(join.getParams());
+        getWhere().param(join.getParams());
         return this;
     }
 
     public Select union(Union union) {
         __unions.add(union);
-        if (__where == null) {
-            __where = Where.create();
-        }
-        __where.param(union.select().getParams());
+        getWhere().param(union.select().getParams());
         return this;
     }
 
@@ -174,10 +166,14 @@ public class Select {
     }
 
     public Params getParams() {
+        return getWhere().getParams();
+    }
+
+    public Where getWhere() {
         if (this.__where == null) {
-            return Params.create();
+            this.__where = Where.create();
         }
-        return this.__where.getParams();
+        return __where;
     }
 
     /**

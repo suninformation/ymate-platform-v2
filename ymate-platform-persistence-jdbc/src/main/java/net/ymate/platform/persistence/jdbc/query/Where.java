@@ -75,6 +75,9 @@ public class Where {
         return __orderBy;
     }
 
+    /**
+     * @return 此方法仅返回只读参数集合,若要维护参数请调用getWhere().param(...)相关方法
+     */
     public Params getParams() {
         Params _p = Params.create().add(this.__params);
         if (__groupBy != null && __groupBy.getHaving() != null) {
