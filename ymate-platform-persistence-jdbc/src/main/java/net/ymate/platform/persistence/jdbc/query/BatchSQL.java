@@ -48,7 +48,7 @@ public class BatchSQL {
         this.__batchSQL = batchSQL;
     }
 
-    public List<Params> getParams() {
+    public List<Params> params() {
         return this.__params;
     }
 

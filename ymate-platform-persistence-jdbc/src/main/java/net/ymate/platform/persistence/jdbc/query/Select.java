@@ -62,7 +62,7 @@ public class Select {
 
     public static Select create(Select select) {
         Select _target = new Select(null, select.toString(), null);
-        _target.getWhere().param(select.getParams());
+        _target.where().param(select.getParams());
         return _target;
     }
 
@@ -101,7 +101,7 @@ public class Select {
 
     public Select from(Select select) {
         Select _target = from(null, select.toString(), null);
-        _target.getWhere().param(select.getParams());
+        _target.where().param(select.getParams());
         return _target;
     }
 
@@ -124,7 +124,7 @@ public class Select {
         return this;
     }
 
-    public Fields getFields() {
+    public Fields fields() {
         return this.__fields;
     }
 
@@ -150,13 +150,13 @@ public class Select {
 
     public Select join(Join join) {
         __joins.add(join);
-        getWhere().param(join.getParams());
+        where().param(join.params());
         return this;
     }
 
     public Select union(Union union) {
         __unions.add(union);
-        getWhere().param(union.select().getParams());
+        where().param(union.select().getParams());
         return this;
     }
 
@@ -166,10 +166,10 @@ public class Select {
     }
 
     public Params getParams() {
-        return getWhere().getParams();
+        return where().getParams();
     }
 
-    public Where getWhere() {
+    public Where where() {
         if (this.__where == null) {
             this.__where = Where.create();
         }
@@ -198,10 +198,10 @@ public class Select {
         if (__distinct) {
             _selectSB.append("DISTINCT ");
         }
-        if (__fields.getFields().isEmpty()) {
+        if (__fields.fields().isEmpty()) {
             _selectSB.append(" * ");
         } else {
-            _selectSB.append(StringUtils.join(__fields.getFields(), ", "));
+            _selectSB.append(StringUtils.join(__fields.fields(), ", "));
         }
         _selectSB.append(" FROM ").append(StringUtils.join(__froms, ", "));
         //
@@ -210,7 +210,7 @@ public class Select {
         }
         //
         if (__where != null) {
-            _selectSB.append(" ").append(__where.toString());
+            _selectSB.append(" ").append(__where);
         }
         //
         for (Union _union : __unions) {
@@ -218,7 +218,7 @@ public class Select {
             if (_union.isAll()) {
                 _selectSB.append("ALL ");
             }
-            _selectSB.append(_union.select().toString());
+            _selectSB.append(_union.select());
         }
         _selectSB.append(" ");
         //

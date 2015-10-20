@@ -64,29 +64,29 @@ public class Where {
     private Where(Cond cond) {
         this.__orderBy = OrderBy.create();
         this.__cond = cond.toString();
-        this.__params = cond.getParams();
+        this.__params = cond.params();
     }
 
-    public GroupBy getGroupBy() {
+    public GroupBy groupBy() {
         return __groupBy;
     }
 
-    public OrderBy getOrderBy() {
+    public OrderBy orderBy() {
         return __orderBy;
     }
 
     /**
-     * @return 此方法仅返回只读参数集合,若要维护参数请调用getWhere().param(...)相关方法
+     * @return 此方法仅返回只读参数集合, 若要维护参数请调用where().param(...)相关方法
      */
     public Params getParams() {
         Params _p = Params.create().add(this.__params);
-        if (__groupBy != null && __groupBy.getHaving() != null) {
-            _p.add(__groupBy.getHaving().getParams());
+        if (__groupBy != null && __groupBy.having() != null) {
+            _p.add(__groupBy.having().params());
         }
         return _p;
     }
 
-    public String getWhereSQL() {
+    public String toSQL() {
         if (StringUtils.isNotBlank(this.__cond)) {
             return "WHERE ".concat(this.__cond);
         }
@@ -150,10 +150,10 @@ public class Where {
 
     @Override
     public String toString() {
-        StringBuilder _whereSB = new StringBuilder(getWhereSQL());
+        StringBuilder _whereSB = new StringBuilder(toSQL());
         if (__groupBy != null) {
-            _whereSB.append(" ").append(__groupBy.getGroupBySQL());
+            _whereSB.append(" ").append(__groupBy);
         }
-        return _whereSB.append(" ").append(__orderBy.getOrderBySQL()).toString();
+        return _whereSB.append(" ").append(__orderBy).toString();
     }
 }

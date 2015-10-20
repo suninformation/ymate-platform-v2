@@ -36,7 +36,7 @@ public class SQL {
     }
 
     public static SQL create(Insert insert) {
-        return new SQL(insert.toString()).param(insert.getParams());
+        return new SQL(insert.toString()).param(insert.params());
     }
 
     public static SQL create(Update update) {
@@ -66,7 +66,7 @@ public class SQL {
         return this;
     }
 
-    public Params getParams() {
+    public Params params() {
         return this.__params;
     }
 

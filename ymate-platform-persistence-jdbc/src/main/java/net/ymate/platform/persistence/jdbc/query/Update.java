@@ -74,7 +74,7 @@ public class Update {
         this.__joins = new ArrayList<Join>();
     }
 
-    public Fields getFields() {
+    public Fields fields() {
         return this.__fields;
     }
 
@@ -103,7 +103,7 @@ public class Update {
         if (__where == null) {
             __where = Where.create();
         }
-        __where.param(join.getParams());
+        __where.param(join.params());
         return this;
     }
 
@@ -127,14 +127,14 @@ public class Update {
     public String toString() {
         StringBuilder __updateSB = new StringBuilder("UPDATE ")
                 .append(__tableName)
-                .append(" SET (").append(StringUtils.join(__fields.getFields(), " = ?, ").concat(" = ?")).append(") ");
+                .append(" SET (").append(StringUtils.join(__fields.fields(), " = ?, ").concat(" = ?")).append(") ");
         //
         for (Join _join : __joins) {
             __updateSB.append(" ").append(_join);
         }
         //
         if (__where != null) {
-            __updateSB.append(" ").append(__where.toString());
+            __updateSB.append(" ").append(__where);
         }
         return __updateSB.toString();
     }

@@ -58,7 +58,7 @@ public class EntitySQL<T extends IEntity> {
         return this;
     }
 
-    public Fields getFields() {
+    public Fields fields() {
         return this.__fields;
     }
 }

@@ -62,7 +62,7 @@ public class Cond {
         __params = Params.create();
     }
 
-    public Params getParams() {
+    public Params params() {
         return this.__params;
     }
 
@@ -214,7 +214,7 @@ public class Cond {
 
     public Cond exists(SQL subSql) {
         __condSB.append(" EXISTS (").append(subSql.getSQL()).append(")");
-        __params.add(subSql.getParams());
+        __params.add(subSql.params());
         return this;
     }
 
@@ -230,7 +230,7 @@ public class Cond {
 
     public Cond in(String field, SQL subSql) {
         __condSB.append(field).append(" IN (").append(subSql.getSQL()).append(")");
-        __params.add(subSql.getParams());
+        __params.add(subSql.params());
         return this;
     }
 
@@ -249,7 +249,7 @@ public class Cond {
     }
 
     public Cond in(String field, Params params) {
-        __condSB.append(field).append(" IN (").append(StringUtils.repeat("?", ", ", params.getParams().size())).append(")");
+        __condSB.append(field).append(" IN (").append(StringUtils.repeat("?", ", ", params.params().size())).append(")");
         __params.add(params);
         return this;
     }

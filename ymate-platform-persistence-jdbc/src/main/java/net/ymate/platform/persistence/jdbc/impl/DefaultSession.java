@@ -89,7 +89,7 @@ public class DefaultSession implements ISession {
 
     public <T> IResultSet<T> find(SQL sql, IResultSetHandler<T> handler) throws Exception {
         IQueryOperator<T> _opt = new DefaultQueryOperator<T>(sql.getSQL(), this.__connectionHolder, handler);
-        for (Object _param : sql.getParams().getParams()) {
+        for (Object _param : sql.params().params()) {
             _opt.addParameter(_param);
         }
         _opt.execute();
@@ -97,7 +97,7 @@ public class DefaultSession implements ISession {
     }
 
     public <T> IResultSet<T> find(SQL sql, IResultSetHandler<T> handler, Page page) throws Exception {
-        String _pagedSql = __dialect.buildPagedQuerySQL(sql.getSQL(), page.getPage(), page.getPageSize());
+        String _pagedSql = __dialect.buildPagedQuerySQL(sql.getSQL(), page.page(), page.pageSize());
         //
         long _count = 0;
         if (page.isCount()) {
@@ -105,11 +105,11 @@ public class DefaultSession implements ISession {
         }
         //
         IQueryOperator<T> _opt = new DefaultQueryOperator<T>(_pagedSql, this.__connectionHolder, handler);
-        for (Object _param : sql.getParams().getParams()) {
+        for (Object _param : sql.params().params()) {
             _opt.addParameter(_param);
         }
         _opt.execute();
-        return new DefaultResultSet<T>(_opt.getResultSet(), page.getPage(), page.getPageSize(), _count);
+        return new DefaultResultSet<T>(_opt.getResultSet(), page.page(), page.pageSize(), _count);
     }
 
     @SuppressWarnings("unchecked")
@@ -140,27 +140,27 @@ public class DefaultSession implements ISession {
     }
 
     public <T extends IEntity> IResultSet<T> find(EntitySQL<T> entity, Where where, Page page) throws Exception {
-        String _selectSql = __dialect.buildSelectSQL(entity.getEntityClass(), __tablePrefix, __doGetNotExcludedFields(EntityMeta.createAndGet(entity.getEntityClass()), entity.getFields(), false, true));
+        String _selectSql = __dialect.buildSelectSQL(entity.getEntityClass(), __tablePrefix, __doGetNotExcludedFields(EntityMeta.createAndGet(entity.getEntityClass()), entity.fields(), false, true));
         if (where != null) {
-            _selectSql = _selectSql.concat(" ").concat(where.getWhereSQL()).concat(" ").concat(where.getOrderBy().getOrderBySQL());
+            _selectSql = _selectSql.concat(" ").concat(where.toSQL()).concat(" ").concat(where.orderBy().toSQL());
         }
         long _count = 0;
         if (page != null) {
-            _selectSql = __dialect.buildPagedQuerySQL(_selectSql, page.getPage(), page.getPageSize());
+            _selectSql = __dialect.buildPagedQuerySQL(_selectSql, page.page(), page.pageSize());
             if (page.isCount()) {
                 _count = this.count(entity.getEntityClass(), where);
             }
         }
         IQueryOperator<T> _opt = new DefaultQueryOperator<T>(_selectSql, this.__connectionHolder, new EntityResultSetHandler<T>(entity.getEntityClass()));
         if (where != null) {
-            for (Object _param : where.getParams().getParams()) {
+            for (Object _param : where.getParams().params()) {
                 _opt.addParameter(_param);
             }
         }
         _opt.execute();
         //
         if (page != null) {
-            return new DefaultResultSet<T>(_opt.getResultSet(), page.getPage(), page.getPageSize(), _count);
+            return new DefaultResultSet<T>(_opt.getResultSet(), page.page(), page.pageSize(), _count);
         }
         return new DefaultResultSet<T>(_opt.getResultSet());
     }
@@ -168,10 +168,10 @@ public class DefaultSession implements ISession {
     public <T extends IEntity> T find(EntitySQL<T> entity, Serializable id) throws Exception {
         EntityMeta _meta = EntityMeta.createAndGet(entity.getEntityClass());
         PairObject<Fields, Params> _entityPK = __doGetPrimaryKeyFieldAndValues(_meta, id, null);
-        String _selectSql = __dialect.buildSelectByPkSQL(entity.getEntityClass(), __tablePrefix, _entityPK.getKey(), __doGetNotExcludedFields(_meta, entity.getFields(), false, true));
+        String _selectSql = __dialect.buildSelectByPkSQL(entity.getEntityClass(), __tablePrefix, _entityPK.getKey(), __doGetNotExcludedFields(_meta, entity.fields(), false, true));
         IQueryOperator<T> _opt = new DefaultQueryOperator<T>(_selectSql, this.__connectionHolder, new EntityResultSetHandler<T>(entity.getEntityClass()));
         if (_meta.isMultiplePrimaryKey()) {
-            for (Object _param : _entityPK.getValue().getParams()) {
+            for (Object _param : _entityPK.getValue().params()) {
                 _opt.addParameter(_param);
             }
         } else {
@@ -184,7 +184,7 @@ public class DefaultSession implements ISession {
     public <T> T findFirst(SQL sql, IResultSetHandler<T> handler) throws Exception {
         String _selectSql = __dialect.buildPagedQuerySQL(sql.getSQL(), 1, 1);
         IQueryOperator<T> _opt = new DefaultQueryOperator<T>(_selectSql, this.__connectionHolder, handler);
-        for (Object _param : sql.getParams().getParams()) {
+        for (Object _param : sql.params().params()) {
             _opt.addParameter(_param);
         }
         _opt.execute();
@@ -192,14 +192,14 @@ public class DefaultSession implements ISession {
     }
 
     public <T extends IEntity> T findFirst(EntitySQL<T> entity, Where where) throws Exception {
-        String _selectSql = __dialect.buildSelectSQL(entity.getEntityClass(), __tablePrefix, __doGetNotExcludedFields(EntityMeta.createAndGet(entity.getEntityClass()), entity.getFields(), false, true));
+        String _selectSql = __dialect.buildSelectSQL(entity.getEntityClass(), __tablePrefix, __doGetNotExcludedFields(EntityMeta.createAndGet(entity.getEntityClass()), entity.fields(), false, true));
         if (where != null) {
-            _selectSql = _selectSql.concat(" ").concat(where.getWhereSQL()).concat(" ").concat(where.getOrderBy().getOrderBySQL());
+            _selectSql = _selectSql.concat(" ").concat(where.toSQL()).concat(" ").concat(where.orderBy().toSQL());
         }
         _selectSql = __dialect.buildPagedQuerySQL(_selectSql, 1, 1);
         IQueryOperator<T> _opt = new DefaultQueryOperator<T>(_selectSql, this.__connectionHolder, new EntityResultSetHandler<T>(entity.getEntityClass()));
         if (where != null) {
-            for (Object _param : where.getParams().getParams()) {
+            for (Object _param : where.getParams().params()) {
                 _opt.addParameter(_param);
             }
         }
@@ -210,7 +210,7 @@ public class DefaultSession implements ISession {
 
     public int executeForUpdate(SQL sql) throws Exception {
         IUpdateOperator _opt = new DefaultUpdateOperator(sql.getSQL(), this.getConnectionHolder());
-        for (Object _param : sql.getParams().getParams()) {
+        for (Object _param : sql.params().params()) {
             _opt.addParameter(_param);
         }
         _opt.execute();
@@ -221,9 +221,9 @@ public class DefaultSession implements ISession {
         IBatchUpdateOperator _opt = null;
         if (sql.getSQL() != null) {
             _opt = new BatchUpdateOperator(sql.getSQL(), this.getConnectionHolder());
-            for (Params _param : sql.getParams()) {
+            for (Params _param : sql.params()) {
                 SQLBatchParameter _batchParam = SQLBatchParameter.create();
-                for (Object _p : _param.getParams()) {
+                for (Object _p : _param.params()) {
                     _batchParam.addParameter(_p);
                 }
                 _opt.addBatchParameter(_batchParam);
@@ -245,11 +245,11 @@ public class DefaultSession implements ISession {
         String _updateSql = __dialect.buildUpdateByPkSQL(entity.getClass(), __tablePrefix, _entity.getKey(), filter);
         IUpdateOperator _opt = new DefaultUpdateOperator(_updateSql, this.__connectionHolder);
         // 先获取并添加需要更新的字段值
-        for (Object _param : __doGetEntityFieldAndValues(_meta, entity, filter, false).getValue().getParams()) {
+        for (Object _param : __doGetEntityFieldAndValues(_meta, entity, filter, false).getValue().params()) {
             _opt.addParameter(_param);
         }
         // 再获取并添加主键条件字段值
-        for (Object _param : _entity.getValue().getParams()) {
+        for (Object _param : _entity.getValue().params()) {
             _opt.addParameter(_param);
         }
         _opt.execute();
@@ -266,12 +266,12 @@ public class DefaultSession implements ISession {
             SQLBatchParameter _batchParam = SQLBatchParameter.create();
             _entity = __doGetEntityFieldAndValues(_meta, entity, filter, false);
             // 先获取并添加需要更新的字段值
-            for (Object _param : _entity.getValue().getParams()) {
+            for (Object _param : _entity.getValue().params()) {
                 _batchParam.addParameter(_param);
             }
             // 再获取并添加主键条件字段值
             _entity = __doGetPrimaryKeyFieldAndValues(_meta, entity, null);
-            for (Object _param : _entity.getValue().getParams()) {
+            for (Object _param : _entity.getValue().params()) {
                 _batchParam.addParameter(_param);
             }
             _opt.addBatchParameter(_batchParam);
@@ -290,7 +290,7 @@ public class DefaultSession implements ISession {
         String _insertSql = __dialect.buildInsertSQL(entity.getClass(), __tablePrefix, _entity.getKey());
         IUpdateOperator _opt = new DefaultUpdateOperator(_insertSql, this.__connectionHolder);
         // 获取并添加字段值
-        for (Object _param : _entity.getValue().getParams()) {
+        for (Object _param : _entity.getValue().params()) {
             _opt.addParameter(_param);
         }
         _opt.execute();
@@ -308,7 +308,7 @@ public class DefaultSession implements ISession {
         IBatchUpdateOperator _opt = new BatchUpdateOperator(_insertSql, this.__connectionHolder);
         for (T entity : entities) {
             SQLBatchParameter _batchParam = SQLBatchParameter.create();
-            for (Object _param : __doGetEntityFieldAndValues(_meta, entity, filter, true).getValue().getParams()) {
+            for (Object _param : __doGetEntityFieldAndValues(_meta, entity, filter, true).getValue().params()) {
                 _batchParam.addParameter(_param);
             }
             _opt.addBatchParameter(_batchParam);
@@ -328,7 +328,7 @@ public class DefaultSession implements ISession {
         String _deleteSql = __dialect.buildDeleteByPkSQL(entityClass, __tablePrefix, _entity.getKey());
         IUpdateOperator _opt = new DefaultUpdateOperator(_deleteSql, this.__connectionHolder);
         // 获取并添加主键条件字段值
-        for (Object _param : _entity.getValue().getParams()) {
+        for (Object _param : _entity.getValue().params()) {
             _opt.addParameter(_param);
         }
         _opt.execute();
@@ -344,7 +344,7 @@ public class DefaultSession implements ISession {
             SQLBatchParameter _batchParam = SQLBatchParameter.create();
             // 获取并添加主键条件字段值
             _entity = __doGetPrimaryKeyFieldAndValues(_meta, entity, null);
-            for (Object _param : _entity.getValue().getParams()) {
+            for (Object _param : _entity.getValue().params()) {
                 _batchParam.addParameter(_param);
             }
             _opt.addBatchParameter(_batchParam);
@@ -362,7 +362,7 @@ public class DefaultSession implements ISession {
             SQLBatchParameter _batchParam = SQLBatchParameter.create();
             // 获取并添加主键条件字段值
             _entity = __doGetPrimaryKeyFieldAndValues(_meta, _id, null);
-            for (Object _param : _entity.getValue().getParams()) {
+            for (Object _param : _entity.getValue().params()) {
                 _batchParam.addParameter(_param);
             }
             _opt.addBatchParameter(_batchParam);
@@ -375,9 +375,9 @@ public class DefaultSession implements ISession {
         EntityMeta _meta = EntityMeta.createAndGet(entityClass);
         ExpressionUtils _exp = ExpressionUtils.bind("SELECT count(1) FROM ${table_name} ${where}")
                 .set("table_name", __dialect.buildTableName(__tablePrefix, _meta.getEntityName()))
-                .set("where", where.getWhereSQL());
+                .set("where", where.toSQL());
         IQueryOperator<Object[]> _opt = new DefaultQueryOperator<Object[]>(_exp.getResult(), this.getConnectionHolder(), IResultSetHandler.ARRAY);
-        for (Object _param : where.getParams().getParams()) {
+        for (Object _param : where.getParams().params()) {
             _opt.addParameter(_param);
         }
         _opt.execute();
@@ -387,7 +387,7 @@ public class DefaultSession implements ISession {
     public long count(SQL sql) throws Exception {
         String _sql = ExpressionUtils.bind("SELECT count(1) FROM (${sql}) c_t").set("sql", sql.getSQL()).getResult();
         IQueryOperator<Object[]> _opt = new DefaultQueryOperator<Object[]>(_sql, this.getConnectionHolder(), IResultSetHandler.ARRAY);
-        for (Object _param : sql.getParams().getParams()) {
+        for (Object _param : sql.params().params()) {
             _opt.addParameter(_param);
         }
         _opt.execute();
@@ -493,9 +493,9 @@ public class DefaultSession implements ISession {
     protected boolean __doCheckField(Fields filter, String fieldName) {
         if (filter != null) {
             if (filter.isExcluded()) {
-                return !filter.getFields().contains(fieldName);
+                return !filter.fields().contains(fieldName);
             } else {
-                return filter.getFields().contains(fieldName);
+                return filter.fields().contains(fieldName);
             }
         }
         return true;

@@ -84,7 +84,7 @@ public abstract class AbstractDialect implements IDialect {
      */
     protected String __doGenerateFieldsFormatStr(Fields fields, String suffix, String separator) {
         StringBuilder _fieldsSB = new StringBuilder();
-        Iterator<String> _fieldsIt = fields.getFields().iterator();
+        Iterator<String> _fieldsIt = fields.fields().iterator();
         suffix = StringUtils.defaultIfBlank(suffix, "");
         separator = StringUtils.defaultIfBlank(separator, ", ");
         while (_fieldsIt.hasNext()) {
@@ -109,13 +109,13 @@ public abstract class AbstractDialect implements IDialect {
      */
     protected void __doValidProperty(EntityMeta entityMeta, Fields fields, boolean isPrimaryKeys) {
         if (isPrimaryKeys) {
-            for (String _pkField : fields.getFields()) {
+            for (String _pkField : fields.fields()) {
                 if (!entityMeta.isPrimaryKey(_pkField)) {
                     throw new IllegalArgumentException("'".concat(_pkField).concat("' isn't primary key field"));
                 }
             }
         } else {
-            for (String _field : fields.getFields()) {
+            for (String _field : fields.fields()) {
                 if (!entityMeta.containsProperty(_field)) {
                     throw new IllegalArgumentException("'".concat(_field).concat("' isn't table field"));
                 }
@@ -129,13 +129,13 @@ public abstract class AbstractDialect implements IDialect {
                 .set("table_name", buildTableName(prefix, _meta.getEntityName()));
         //
         Fields _fields = Fields.create();
-        if (fields == null || fields.getFields().isEmpty()) {
+        if (fields == null || fields.fields().isEmpty()) {
             _fields.add(_meta.getPropertyNames());
         } else {
             _fields.add(fields);
             __doValidProperty(_meta, _fields, false);
         }
-        return _exp.set("fields", __doGenerateFieldsFormatStr(_fields, null, null)).set("values", StringUtils.repeat("?", ", ", _fields.getFields().size())).getResult();
+        return _exp.set("fields", __doGenerateFieldsFormatStr(_fields, null, null)).set("values", StringUtils.repeat("?", ", ", _fields.fields().size())).getResult();
     }
 
     public String buildDeleteByPkSQL(Class<? extends IEntity> entityClass, String prefix, Fields pkFields) {
@@ -144,7 +144,7 @@ public abstract class AbstractDialect implements IDialect {
                 .set("table_name", buildTableName(prefix, _meta.getEntityName()));
         //
         Fields _fields = Fields.create();
-        if (pkFields == null || pkFields.getFields().isEmpty()) {
+        if (pkFields == null || pkFields.fields().isEmpty()) {
             _fields.add(_meta.getPrimaryKeys());
         } else {
             _fields.add(pkFields);
@@ -159,7 +159,7 @@ public abstract class AbstractDialect implements IDialect {
                 .set("table_name", buildTableName(prefix, _meta.getEntityName()));
         //
         Fields _fields = Fields.create();
-        for (String _field : (fields == null || fields.getFields().isEmpty()) ? _meta.getPropertyNames() : fields.getFields()) {
+        for (String _field : (fields == null || fields.fields().isEmpty()) ? _meta.getPropertyNames() : fields.fields()) {
             if (_meta.containsProperty(_field)) {
                 if (_meta.isPrimaryKey(_field)) {
                     // 排除主键
@@ -172,7 +172,7 @@ public abstract class AbstractDialect implements IDialect {
         }
         _exp.set("fields", __doGenerateFieldsFormatStr(_fields, " = ?", null));
         //
-        if (pkFields != null && !pkFields.getFields().isEmpty()) {
+        if (pkFields != null && !pkFields.fields().isEmpty()) {
             _fields = pkFields;
             __doValidProperty(_meta, _fields, true);
         } else {
@@ -186,14 +186,14 @@ public abstract class AbstractDialect implements IDialect {
         ExpressionUtils _exp = ExpressionUtils.bind("SELECT ${fields} FROM ${table_name} WHERE ${pk}")
                 .set("table_name", buildTableName(prefix, _meta.getEntityName()));
         //
-        if (fields == null || fields.getFields().isEmpty()) {
+        if (fields == null || fields.fields().isEmpty()) {
             fields = Fields.create().add(_meta.getPropertyNames());
         } else {
             __doValidProperty(_meta, fields, false);
         }
         _exp.set("fields", __doGenerateFieldsFormatStr(fields, null, null));
         //
-        if (pkFields != null && !pkFields.getFields().isEmpty()) {
+        if (pkFields != null && !pkFields.fields().isEmpty()) {
             __doValidProperty(_meta, pkFields, true);
         } else {
             pkFields = Fields.create().add(_meta.getPrimaryKeys());
@@ -206,7 +206,7 @@ public abstract class AbstractDialect implements IDialect {
         ExpressionUtils _exp = ExpressionUtils.bind("SELECT ${fields} FROM ${table_name}")
                 .set("table_name", buildTableName(prefix, _meta.getEntityName()));
         //
-        if (fields == null || fields.getFields().isEmpty()) {
+        if (fields == null || fields.fields().isEmpty()) {
             fields = Fields.create().add(_meta.getPropertyNames());
         } else {
             __doValidProperty(_meta, fields, false);

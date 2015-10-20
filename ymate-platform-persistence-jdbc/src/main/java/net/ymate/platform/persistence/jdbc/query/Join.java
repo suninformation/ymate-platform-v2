@@ -76,8 +76,8 @@ public class Join {
         return this;
     }
 
-    public Params getParams() {
-        return __on.getParams();
+    public Params params() {
+        return __on.params();
     }
 
     @Override
@@ -88,6 +88,6 @@ public class Join {
         } else {
             __alias = " ".concat(__alias);
         }
-        return __from + __alias + " ON " + __on.toString();
+        return __from + __alias + " ON " + __on;
     }
 }

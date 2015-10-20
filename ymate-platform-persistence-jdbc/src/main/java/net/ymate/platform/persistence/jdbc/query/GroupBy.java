@@ -49,7 +49,7 @@ public class GroupBy {
         __groupByNames = Fields.create().add(fields);
     }
 
-    public Cond getHaving() {
+    public Cond having() {
         return this.__having;
     }
 
@@ -58,10 +58,11 @@ public class GroupBy {
         return this;
     }
 
-    public String getGroupBySQL() {
-        StringBuilder _groupBySB = new StringBuilder("GROUP BY ").append(StringUtils.join(__groupByNames.getFields(), ", "));
+    @Override
+    public String toString() {
+        StringBuilder _groupBySB = new StringBuilder("GROUP BY ").append(StringUtils.join(__groupByNames.fields(), ", "));
         if (__having != null) {
-            _groupBySB.append(" HAVING ").append(__having.toString());
+            _groupBySB.append(" HAVING ").append(__having);
         }
         return _groupBySB.toString();
     }

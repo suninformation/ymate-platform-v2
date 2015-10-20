@@ -38,7 +38,7 @@ public class Params {
         this.__params = new ArrayList<Object>();
     }
 
-    public List<Object> getParams() {
+    public List<Object> params() {
         return this.__params;
     }
 
@@ -48,7 +48,7 @@ public class Params {
     }
 
     public Params add(Params params) {
-        this.__params.addAll(params.getParams());
+        this.__params.addAll(params.params());
         return this;
     }
 

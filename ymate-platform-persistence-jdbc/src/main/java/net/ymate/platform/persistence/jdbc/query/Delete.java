@@ -56,7 +56,7 @@ public class Delete {
 
     public static Delete create(Select select) {
         Delete _target = new Delete(null, select.toString(), null);
-        _target.getWhere().param(select.getParams());
+        _target.where().param(select.getParams());
         return _target;
     }
 
@@ -94,7 +94,7 @@ public class Delete {
 
     public Delete from(Select select) {
         Delete _target = from(null, select.toString(), null);
-        _target.getWhere().param(select.getParams());
+        _target.where().param(select.getParams());
         return _target;
     }
 
@@ -132,7 +132,7 @@ public class Delete {
         if (__where == null) {
             __where = Where.create();
         }
-        __where.param(join.getParams());
+        __where.param(join.params());
         return this;
     }
 
@@ -142,10 +142,10 @@ public class Delete {
     }
 
     public Params getParams() {
-        return getWhere().getParams();
+        return where().getParams();
     }
 
-    public Where getWhere() {
+    public Where where() {
         if (this.__where == null) {
             this.__where = Where.create();
         }
@@ -155,8 +155,8 @@ public class Delete {
     @Override
     public String toString() {
         StringBuilder _deleteSB = new StringBuilder("DELETE ");
-        if (!__fields.getFields().isEmpty()) {
-            _deleteSB.append(StringUtils.join(__fields.getFields(), ", "));
+        if (!__fields.fields().isEmpty()) {
+            _deleteSB.append(StringUtils.join(__fields.fields(), ", "));
         }
         _deleteSB.append(" FROM ").append(StringUtils.join(__froms, ", "));
         //
@@ -165,7 +165,7 @@ public class Delete {
         }
         //
         if (__where != null) {
-            _deleteSB.append(" ").append(__where.toString());
+            _deleteSB.append(" ").append(__where);
         }
         return _deleteSB.toString();
     }

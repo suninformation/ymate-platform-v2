@@ -55,7 +55,7 @@ public class Insert {
         this.__params = Params.create();
     }
 
-    public Fields getFields() {
+    public Fields fields() {
         return this.__fields;
     }
 
@@ -79,7 +79,7 @@ public class Insert {
         return this;
     }
 
-    public Params getParams() {
+    public Params params() {
         return this.__params;
     }
 
@@ -96,7 +96,7 @@ public class Insert {
     @Override
     public String toString() {
         return "INSERT INTO ".concat(__tableName).concat(" (")
-                .concat(StringUtils.join(__fields.getFields(), ", "))
-                .concat(") VALUES (").concat(StringUtils.repeat("?", ", ", __params.getParams().size())).concat(")");
+                .concat(StringUtils.join(__fields.fields(), ", "))
+                .concat(") VALUES (").concat(StringUtils.repeat("?", ", ", __params.params().size())).concat(")");
     }
 }

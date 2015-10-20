@@ -35,14 +35,6 @@ public class OrderBy {
         __orderBySB = new StringBuilder();
     }
 
-    public String getOrderBySQL() {
-        StringBuilder _returnSB = new StringBuilder();
-        if (__orderBySB.length() > 0) {
-            _returnSB.append("ORDER BY ").append(__orderBySB);
-        }
-        return _returnSB.toString();
-    }
-
     public OrderBy asc(String field) {
         return asc(null, field);
     }
@@ -71,5 +63,18 @@ public class OrderBy {
         }
         __orderBySB.append(field).append(" DESC");
         return this;
+    }
+
+    public String toSQL() {
+        StringBuilder _returnSB = new StringBuilder();
+        if (__orderBySB.length() > 0) {
+            _returnSB.append("ORDER BY ").append(__orderBySB);
+        }
+        return _returnSB.toString();
+    }
+
+    @Override
+    public String toString() {
+        return toSQL();
     }
 }

@@ -73,7 +73,7 @@ public class Fields {
     }
 
     public Fields add(Fields fields) {
-        this.__fields.addAll(fields.getFields());
+        this.__fields.addAll(fields.fields());
         return this;
     }
 
@@ -91,7 +91,7 @@ public class Fields {
         return __excluded;
     }
 
-    public List<String> getFields() {
+    public List<String> fields() {
         return this.__fields;
     }
 

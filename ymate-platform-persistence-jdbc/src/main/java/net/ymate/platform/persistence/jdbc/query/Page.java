@@ -52,7 +52,7 @@ public class Page {
         this.__count = true;
     }
 
-    public int getPageSize() {
+    public int pageSize() {
         return __pageSize;
     }
 
@@ -61,7 +61,7 @@ public class Page {
         return this;
     }
 
-    public int getPage() {
+    public int page() {
         return __page;
     }
 
