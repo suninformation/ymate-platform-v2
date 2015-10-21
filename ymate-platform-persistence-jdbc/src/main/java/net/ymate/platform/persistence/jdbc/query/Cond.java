@@ -81,6 +81,12 @@ public class Cond {
         return this;
     }
 
+    public Cond cond(Cond cond) {
+        __condSB.append(cond.toString());
+        __params.add(cond.params());
+        return this;
+    }
+
     public Cond opt(String prefixA, String fieldA, OPT opt, String prefixB, String fieldB) {
         if (StringUtils.isNotBlank(prefixA)) {
             fieldA = prefixA.concat(".").concat(fieldA);
