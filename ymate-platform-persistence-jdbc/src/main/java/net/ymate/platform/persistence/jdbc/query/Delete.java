@@ -129,20 +129,27 @@ public class Delete {
 
     public Delete join(Join join) {
         __joins.add(join);
-        if (__where == null) {
-            __where = Where.create();
-        }
-        __where.param(join.params());
+        where().param(join.params());
         return this;
     }
 
     public Delete where(Where where) {
-        this.__where = where;
+        where().cond().cond(where.cond());
         return this;
     }
 
     public Params getParams() {
         return where().getParams();
+    }
+
+    public Delete param(Object param) {
+        where().param(param);
+        return this;
+    }
+
+    public Delete param(Params params) {
+        where().param(params);
+        return this;
     }
 
     public Where where() {

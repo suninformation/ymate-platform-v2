@@ -100,23 +100,30 @@ public class Update {
 
     public Update join(Join join) {
         __joins.add(join);
-        if (__where == null) {
-            __where = Where.create();
-        }
-        __where.param(join.params());
+        where().param(join.params());
         return this;
     }
 
     public Update where(Where where) {
-        this.__where = where;
+        where().cond().cond(where.cond());
         return this;
     }
 
     public Params getParams() {
-        return getWhere().getParams();
+        return where().getParams();
     }
 
-    public Where getWhere() {
+    public Update param(Object param) {
+        where().param(param);
+        return this;
+    }
+
+    public Update param(Params params) {
+        where().param(params);
+        return this;
+    }
+
+    public Where where() {
         if (this.__where == null) {
             this.__where = Where.create();
         }
@@ -127,7 +134,7 @@ public class Update {
     public String toString() {
         StringBuilder __updateSB = new StringBuilder("UPDATE ")
                 .append(__tableName)
-                .append(" SET (").append(StringUtils.join(__fields.fields(), " = ?, ").concat(" = ?")).append(") ");
+                .append(" SET ").append(StringUtils.join(__fields.fields(), " = ?, ").concat(" = ? "));
         //
         for (Join _join : __joins) {
             __updateSB.append(" ").append(_join);

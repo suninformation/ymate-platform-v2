@@ -161,7 +161,7 @@ public class Select {
     }
 
     public Select where(Where where) {
-        this.__where = where;
+        where().cond().cond(where.cond());
         return this;
     }
 

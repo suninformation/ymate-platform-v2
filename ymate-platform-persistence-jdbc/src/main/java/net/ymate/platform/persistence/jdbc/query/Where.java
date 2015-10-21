@@ -28,7 +28,7 @@ public class Where {
     /**
      * Where条件SQL语句
      */
-    private String __cond;
+    private Cond __cond;
 
     /**
      * SQL参数集合
@@ -54,17 +54,22 @@ public class Where {
     private Where() {
         this.__params = Params.create();
         this.__orderBy = OrderBy.create();
+        this.__cond = Cond.create();
     }
 
     private Where(String whereCond) {
         this();
-        this.__cond = whereCond;
+        __cond.cond(whereCond);
     }
 
     private Where(Cond cond) {
         this.__orderBy = OrderBy.create();
-        this.__cond = cond.toString();
+        this.__cond = cond;
         this.__params = cond.params();
+    }
+
+    public Cond cond() {
+        return __cond;
     }
 
     public GroupBy groupBy() {
@@ -87,8 +92,8 @@ public class Where {
     }
 
     public String toSQL() {
-        if (StringUtils.isNotBlank(this.__cond)) {
-            return "WHERE ".concat(this.__cond);
+        if (__cond != null && StringUtils.isNotBlank(__cond.toString())) {
+            return "WHERE ".concat(__cond.toString());
         }
         return "";
     }
