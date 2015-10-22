@@ -35,6 +35,17 @@ public class OrderBy {
         __orderBySB = new StringBuilder();
     }
 
+    public OrderBy orderBy(OrderBy orderBy) {
+        String _orderBy = StringUtils.substringAfter(orderBy.toSQL(), "ORDER BY ");
+        if (StringUtils.isNotBlank(_orderBy)) {
+            if (__orderBySB.length() > 0) {
+                __orderBySB.append(", ");
+            }
+            __orderBySB.append(_orderBy);
+        }
+        return this;
+    }
+
     public OrderBy asc(String field) {
         return asc(null, field);
     }

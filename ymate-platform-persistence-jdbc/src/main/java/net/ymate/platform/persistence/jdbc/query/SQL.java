@@ -70,4 +70,8 @@ public class SQL {
         return this.__params;
     }
 
+    @Override
+    public String toString() {
+        return this.__sql;
+    }
 }

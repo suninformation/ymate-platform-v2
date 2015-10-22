@@ -161,7 +161,7 @@ public class Select {
     }
 
     public Select where(Where where) {
-        where().cond().cond(where.cond());
+        where().where(where);
         return this;
     }
 
@@ -210,7 +210,7 @@ public class Select {
         }
         //
         if (__where != null) {
-            _selectSB.append(" ").append(__where);
+            _selectSB.append(" ").append(__where.toString());
         }
         //
         for (Union _union : __unions) {

@@ -26,14 +26,9 @@ import org.apache.commons.lang.StringUtils;
 public class Where {
 
     /**
-     * Where条件SQL语句
+     * SQL条件对象
      */
     private Cond __cond;
-
-    /**
-     * SQL参数集合
-     */
-    private Params __params;
 
     private GroupBy __groupBy;
 
@@ -52,9 +47,8 @@ public class Where {
     }
 
     private Where() {
-        this.__params = Params.create();
-        this.__orderBy = OrderBy.create();
-        this.__cond = Cond.create();
+        __orderBy = OrderBy.create();
+        __cond = Cond.create();
     }
 
     private Where(String whereCond) {
@@ -63,9 +57,23 @@ public class Where {
     }
 
     private Where(Cond cond) {
-        this.__orderBy = OrderBy.create();
-        this.__cond = cond;
-        this.__params = cond.params();
+        __orderBy = OrderBy.create();
+        __cond = cond;
+    }
+
+    public Where where(Where where) {
+        __cond.cond(where.cond());
+        __orderBy.orderBy(where.orderBy());
+        //
+        if (where.groupBy() != null) {
+            if (__groupBy != null) {
+                __groupBy.fields().add(where.groupBy().fields());
+                __groupBy.having().cond(where.groupBy().having());
+            } else {
+                __groupBy = where.groupBy();
+            }
+        }
+        return this;
     }
 
     public Cond cond() {
@@ -84,7 +92,7 @@ public class Where {
      * @return 此方法仅返回只读参数集合, 若要维护参数请调用where().param(...)相关方法
      */
     public Params getParams() {
-        Params _p = Params.create().add(this.__params);
+        Params _p = Params.create().add(__cond.params());
         if (__groupBy != null && __groupBy.having() != null) {
             _p.add(__groupBy.having().params());
         }
@@ -99,12 +107,12 @@ public class Where {
     }
 
     public Where param(Object param) {
-        this.__params.add(param);
+        __cond.param(param);
         return this;
     }
 
     public Where param(Params params) {
-        this.__params.add(params);
+        __cond.param(params);
         return this;
     }
 
@@ -134,22 +142,22 @@ public class Where {
     }
 
     public Where orderAsc(String field) {
-        this.__orderBy.asc(field);
+        __orderBy.asc(field);
         return this;
     }
 
     public Where orderAsc(String prefix, String field) {
-        this.__orderBy.asc(prefix, field);
+        __orderBy.asc(prefix, field);
         return this;
     }
 
     public Where orderDesc(String field) {
-        this.__orderBy.desc(field);
+        __orderBy.desc(field);
         return this;
     }
 
     public Where orderDesc(String prefix, String field) {
-        this.__orderBy.desc(prefix, field);
+        __orderBy.desc(prefix, field);
         return this;
     }
 

@@ -134,7 +134,7 @@ public class Delete {
     }
 
     public Delete where(Where where) {
-        where().cond().cond(where.cond());
+        where().where(where);
         return this;
     }
 

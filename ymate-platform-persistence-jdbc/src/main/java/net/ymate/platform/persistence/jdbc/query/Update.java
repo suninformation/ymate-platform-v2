@@ -30,7 +30,7 @@ import java.util.List;
  */
 public class Update {
 
-    private String __tableName;
+    private List<String> __tables;
 
     private Fields __fields;
 
@@ -63,15 +63,30 @@ public class Update {
     }
 
     private Update(String prefix, String tableName, String alias) {
-        if (StringUtils.isNotBlank(prefix)) {
-            tableName = prefix.concat(tableName);
-        }
-        if (StringUtils.isNotBlank(alias)) {
-            tableName = tableName.concat(" ").concat(alias);
-        }
-        this.__tableName = tableName;
+        this.__tables = new ArrayList<String>();
         this.__fields = Fields.create();
         this.__joins = new ArrayList<Join>();
+        //
+        table(prefix, tableName, alias);
+    }
+
+    public Update table(String tableName, String alias) {
+        return table(null, tableName, alias);
+    }
+
+    public Update table(String tableName) {
+        return table(null, tableName, null);
+    }
+
+    public Update table(String prefix, String from, String alias) {
+        if (StringUtils.isNotBlank(prefix)) {
+            from = prefix.concat(from);
+        }
+        if (StringUtils.isNotBlank(alias)) {
+            from = from.concat(" ").concat(alias);
+        }
+        this.__tables.add(from);
+        return this;
     }
 
     public Fields fields() {
@@ -105,7 +120,7 @@ public class Update {
     }
 
     public Update where(Where where) {
-        where().cond().cond(where.cond());
+        where().where(where);
         return this;
     }
 
@@ -133,8 +148,22 @@ public class Update {
     @Override
     public String toString() {
         StringBuilder __updateSB = new StringBuilder("UPDATE ")
-                .append(__tableName)
-                .append(" SET ").append(StringUtils.join(__fields.fields(), " = ?, ").concat(" = ? "));
+                .append(StringUtils.join(__tables, ", "))
+                .append(" SET ");
+        boolean _flag = false;
+        for (String _field : __fields.fields()) {
+            if (_flag) {
+                __updateSB.append(", ");
+            }
+            //
+            __updateSB.append(_field);
+            //
+            if (!_field.contains("=")) {
+                __updateSB.append(" = ?");
+            }
+            //
+            _flag = true;
+        }
         //
         for (Join _join : __joins) {
             __updateSB.append(" ").append(_join);

@@ -49,8 +49,12 @@ public class GroupBy {
         __groupByNames = Fields.create().add(fields);
     }
 
+    public Fields fields() {
+        return __groupByNames;
+    }
+
     public Cond having() {
-        return this.__having;
+        return __having;
     }
 
     public GroupBy having(Cond cond) {
