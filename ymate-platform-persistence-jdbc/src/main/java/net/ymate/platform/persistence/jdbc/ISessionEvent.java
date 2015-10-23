@@ -24,6 +24,20 @@ package net.ymate.platform.persistence.jdbc;
 public interface ISessionEvent {
 
     /**
+     * 查询操用之前事件调用
+     *
+     * @param eventContext
+     */
+    public void onQueryBefore(SessionEventContext eventContext);
+
+    /**
+     * 查询操作之后事件调用
+     *
+     * @param eventContext
+     */
+    public void onQueryAfter(SessionEventContext eventContext);
+
+    /**
      * 插入操用之前事件调用
      *
      * @param eventContext

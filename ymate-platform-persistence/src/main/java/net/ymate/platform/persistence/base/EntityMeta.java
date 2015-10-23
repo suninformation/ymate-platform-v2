@@ -181,6 +181,9 @@ public class EntityMeta {
                 if (_meta != null) {
                     targetMeta.__properties.put(_meta.getName(), _meta);
                     targetMeta.__fields.put(_meta.getField().getName(), _meta);
+                    if (_meta.isAutoincrement()) {
+                        targetMeta.__autoincrementProps.add(_meta.getName());
+                    }
                 }
             }
         }

@@ -41,7 +41,7 @@ public @interface Property {
     boolean autoincrement() default false;
 
     /**
-     * @return 序列名称，适用束于类似Oracle等数据库，配合autoincrement参数一同使用
+     * @return 序列名称，适用于类似Oracle等数据库，配合autoincrement参数一同使用
      */
     String sequenceName() default "";
 

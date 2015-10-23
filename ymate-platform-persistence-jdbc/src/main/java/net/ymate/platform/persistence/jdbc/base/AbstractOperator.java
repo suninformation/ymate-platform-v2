@@ -121,6 +121,10 @@ public abstract class AbstractOperator implements IOperator {
         return accessorConfig;
     }
 
+    public void setAccessorConfig(IAccessorConfig accessorConfig) {
+        this.accessorConfig = accessorConfig;
+    }
+
     public IConnectionHolder getConnectionHolder() {
         return connectionHolder;
     }

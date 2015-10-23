@@ -26,11 +26,14 @@ import net.ymate.platform.persistence.base.IEntityPK;
 import net.ymate.platform.persistence.jdbc.IConnectionHolder;
 import net.ymate.platform.persistence.jdbc.ISession;
 import net.ymate.platform.persistence.jdbc.ISessionEvent;
+import net.ymate.platform.persistence.jdbc.SessionEventContext;
 import net.ymate.platform.persistence.jdbc.base.*;
 import net.ymate.platform.persistence.jdbc.base.impl.*;
 import net.ymate.platform.persistence.jdbc.dialect.IDialect;
 import net.ymate.platform.persistence.jdbc.query.*;
+import net.ymate.platform.persistence.jdbc.support.ResultSetHelper;
 import net.ymate.platform.persistence.jdbc.transaction.Transactions;
+import org.apache.commons.lang.StringUtils;
 
 import java.io.Serializable;
 import java.lang.reflect.Field;
@@ -38,6 +41,7 @@ import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.Statement;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -74,7 +78,6 @@ public class DefaultSession implements ISession {
 
     public ISession setSessionEvent(ISessionEvent sessionEvent) {
         this.__sessionEvent = sessionEvent;
-        // TODO 会话事件有待进一步确认后处理
         return this;
     }
 
@@ -92,7 +95,13 @@ public class DefaultSession implements ISession {
         for (Object _param : sql.params().params()) {
             _opt.addParameter(_param);
         }
+        if (__sessionEvent != null) {
+            __sessionEvent.onQueryBefore(new SessionEventContext(_opt));
+        }
         _opt.execute();
+        if (__sessionEvent != null) {
+            __sessionEvent.onQueryAfter(new SessionEventContext(_opt));
+        }
         return new DefaultResultSet<T>(_opt.getResultSet());
     }
 
@@ -108,7 +117,13 @@ public class DefaultSession implements ISession {
         for (Object _param : sql.params().params()) {
             _opt.addParameter(_param);
         }
+        if (__sessionEvent != null) {
+            __sessionEvent.onQueryBefore(new SessionEventContext(_opt));
+        }
         _opt.execute();
+        if (__sessionEvent != null) {
+            __sessionEvent.onQueryAfter(new SessionEventContext(_opt));
+        }
         return new DefaultResultSet<T>(_opt.getResultSet(), page.page(), page.pageSize(), _count);
     }
 
@@ -157,7 +172,13 @@ public class DefaultSession implements ISession {
                 _opt.addParameter(_param);
             }
         }
+        if (__sessionEvent != null) {
+            __sessionEvent.onQueryBefore(new SessionEventContext(_opt));
+        }
         _opt.execute();
+        if (__sessionEvent != null) {
+            __sessionEvent.onQueryAfter(new SessionEventContext(_opt));
+        }
         //
         if (page != null) {
             return new DefaultResultSet<T>(_opt.getResultSet(), page.page(), page.pageSize(), _count);
@@ -177,7 +198,13 @@ public class DefaultSession implements ISession {
         } else {
             _opt.addParameter(id);
         }
+        if (__sessionEvent != null) {
+            __sessionEvent.onQueryBefore(new SessionEventContext(_opt));
+        }
         _opt.execute();
+        if (__sessionEvent != null) {
+            __sessionEvent.onQueryAfter(new SessionEventContext(_opt));
+        }
         return _opt.getResultSet().isEmpty() ? null : _opt.getResultSet().get(0);
     }
 
@@ -187,7 +214,13 @@ public class DefaultSession implements ISession {
         for (Object _param : sql.params().params()) {
             _opt.addParameter(_param);
         }
+        if (__sessionEvent != null) {
+            __sessionEvent.onQueryBefore(new SessionEventContext(_opt));
+        }
         _opt.execute();
+        if (__sessionEvent != null) {
+            __sessionEvent.onQueryAfter(new SessionEventContext(_opt));
+        }
         return _opt.getResultSet().isEmpty() ? null : _opt.getResultSet().get(0);
     }
 
@@ -203,7 +236,13 @@ public class DefaultSession implements ISession {
                 _opt.addParameter(_param);
             }
         }
+        if (__sessionEvent != null) {
+            __sessionEvent.onQueryBefore(new SessionEventContext(_opt));
+        }
         _opt.execute();
+        if (__sessionEvent != null) {
+            __sessionEvent.onQueryAfter(new SessionEventContext(_opt));
+        }
         //
         return _opt.getResultSet().isEmpty() ? null : _opt.getResultSet().get(0);
     }
@@ -213,7 +252,13 @@ public class DefaultSession implements ISession {
         for (Object _param : sql.params().params()) {
             _opt.addParameter(_param);
         }
+        if (__sessionEvent != null) {
+            __sessionEvent.onUpdateBefore(new SessionEventContext(_opt));
+        }
         _opt.execute();
+        if (__sessionEvent != null) {
+            __sessionEvent.onUpdateAfter(new SessionEventContext(_opt));
+        }
         return _opt.getEffectCounts();
     }
 
@@ -234,7 +279,13 @@ public class DefaultSession implements ISession {
         for (String _sql : sql.getSQLs()) {
             _opt.addBatchSQL(_sql);
         }
+        if (__sessionEvent != null) {
+            __sessionEvent.onUpdateBefore(new SessionEventContext(_opt));
+        }
         _opt.execute();
+        if (__sessionEvent != null) {
+            __sessionEvent.onUpdateAfter(new SessionEventContext(_opt));
+        }
         return _opt.getEffectCounts();
     }
 
@@ -252,7 +303,13 @@ public class DefaultSession implements ISession {
         for (Object _param : _entity.getValue().params()) {
             _opt.addParameter(_param);
         }
+        if (__sessionEvent != null) {
+            __sessionEvent.onUpdateBefore(new SessionEventContext(_opt));
+        }
         _opt.execute();
+        if (__sessionEvent != null) {
+            __sessionEvent.onUpdateAfter(new SessionEventContext(_opt));
+        }
         return entity;
     }
 
@@ -276,7 +333,13 @@ public class DefaultSession implements ISession {
             }
             _opt.addBatchParameter(_batchParam);
         }
+        if (__sessionEvent != null) {
+            __sessionEvent.onUpdateBefore(new SessionEventContext(_opt));
+        }
         _opt.execute();
+        if (__sessionEvent != null) {
+            __sessionEvent.onUpdateAfter(new SessionEventContext(_opt));
+        }
         return entities;
     }
 
@@ -286,14 +349,26 @@ public class DefaultSession implements ISession {
 
     public <T extends IEntity> T insert(T entity, Fields filter) throws Exception {
         EntityMeta _meta = EntityMeta.createAndGet(entity.getClass());
+        if (_meta.hasAutoincrement()) {
+            __doSequenceNextValue(_meta, entity);
+        }
         PairObject<Fields, Params> _entity = __doGetEntityFieldAndValues(_meta, entity, filter, true);
         String _insertSql = __dialect.buildInsertSQL(entity.getClass(), __tablePrefix, _entity.getKey());
         IUpdateOperator _opt = new DefaultUpdateOperator(_insertSql, this.__connectionHolder);
+        if (_meta.hasAutoincrement()) {
+            _opt.setAccessorConfig(new EntityAccessorConfig(_meta, __connectionHolder, entity));
+        }
         // 获取并添加字段值
         for (Object _param : _entity.getValue().params()) {
             _opt.addParameter(_param);
         }
+        if (__sessionEvent != null) {
+            __sessionEvent.onInsertBefore(new SessionEventContext(_opt));
+        }
         _opt.execute();
+        if (__sessionEvent != null) {
+            __sessionEvent.onInsertAfter(new SessionEventContext(_opt));
+        }
         return entity;
     }
 
@@ -301,11 +376,18 @@ public class DefaultSession implements ISession {
         return insert(entities, null);
     }
 
+    @SuppressWarnings("unchecked")
     public <T extends IEntity> List<T> insert(List<T> entities, Fields filter) throws Exception {
         EntityMeta _meta = EntityMeta.createAndGet(entities.get(0).getClass());
+        if (_meta.hasAutoincrement()) {
+            __doSequenceNextValue(_meta, (List<IEntity<?>>) entities);
+        }
         PairObject<Fields, Params> _entity = __doGetEntityFieldAndValues(_meta, entities.get(0), filter, true);
         String _insertSql = __dialect.buildInsertSQL(entities.get(0).getClass(), __tablePrefix, _entity.getKey());
         IBatchUpdateOperator _opt = new BatchUpdateOperator(_insertSql, this.__connectionHolder);
+        if (_meta.hasAutoincrement()) {
+            _opt.setAccessorConfig(new EntityAccessorConfig(_meta, __connectionHolder, (List<IEntity<?>>) entities));
+        }
         for (T entity : entities) {
             SQLBatchParameter _batchParam = SQLBatchParameter.create();
             for (Object _param : __doGetEntityFieldAndValues(_meta, entity, filter, true).getValue().params()) {
@@ -313,7 +395,13 @@ public class DefaultSession implements ISession {
             }
             _opt.addBatchParameter(_batchParam);
         }
+        if (__sessionEvent != null) {
+            __sessionEvent.onInsertBefore(new SessionEventContext(_opt));
+        }
         _opt.execute();
+        if (__sessionEvent != null) {
+            __sessionEvent.onInsertAfter(new SessionEventContext(_opt));
+        }
         return entities;
     }
 
@@ -331,7 +419,13 @@ public class DefaultSession implements ISession {
         for (Object _param : _entity.getValue().params()) {
             _opt.addParameter(_param);
         }
+        if (__sessionEvent != null) {
+            __sessionEvent.onRemoveBefore(new SessionEventContext(_opt));
+        }
         _opt.execute();
+        if (__sessionEvent != null) {
+            __sessionEvent.onRemoveAfter(new SessionEventContext(_opt));
+        }
         return _opt.getEffectCounts();
     }
 
@@ -367,7 +461,13 @@ public class DefaultSession implements ISession {
             }
             _opt.addBatchParameter(_batchParam);
         }
+        if (__sessionEvent != null) {
+            __sessionEvent.onRemoveBefore(new SessionEventContext(_opt));
+        }
         _opt.execute();
+        if (__sessionEvent != null) {
+            __sessionEvent.onRemoveAfter(new SessionEventContext(_opt));
+        }
         return _opt.getEffectCounts();
     }
 
@@ -380,7 +480,13 @@ public class DefaultSession implements ISession {
         for (Object _param : where.getParams().params()) {
             _opt.addParameter(_param);
         }
+        if (__sessionEvent != null) {
+            __sessionEvent.onQueryBefore(new SessionEventContext(_opt));
+        }
         _opt.execute();
+        if (__sessionEvent != null) {
+            __sessionEvent.onQueryAfter(new SessionEventContext(_opt));
+        }
         return BlurObject.bind(((Object[]) _opt.getResultSet().get(0)[0])[1]).toLongValue();
     }
 
@@ -524,31 +630,82 @@ public class DefaultSession implements ISession {
         return _returnValue;
     }
 
+    protected void __doSequenceNextValue(EntityMeta entityMeta, List<IEntity<?>> entities) throws Exception {
+        for (final IEntity<?> _entity : entities) {
+            __doSequenceNextValue(entityMeta, _entity);
+        }
+    }
+
+    protected void __doSequenceNextValue(final EntityMeta entityMeta, final IEntity<?> entity) throws Exception {
+        if (entity != null && entityMeta.hasAutoincrement()) {
+            for (final String _autoFieldName : entityMeta.getAutoincrementKeys()) {
+                String _seqName = entityMeta.getPropertyByName(_autoFieldName).getSequenceName();
+                if (StringUtils.isNotBlank(_seqName)) {
+                    IQueryOperator<Object[]> _seqOpt = new DefaultQueryOperator<Object[]>(__connectionHolder.getDialect().getSequenceNextValSql(_seqName), __connectionHolder, IResultSetHandler.ARRAY);
+                    _seqOpt.execute();
+                    ResultSetHelper.bind(_seqOpt.getResultSet()).forEach(new ResultSetHelper.ItemHandler() {
+                        public boolean handle(ResultSetHelper.ItemWrapper wrapper, int row) throws Exception {
+                            // 将获得的序列值赋予实体对应的主键属性
+                            Field _field = entityMeta.getPropertyByField(_autoFieldName).getField();
+                            if (entityMeta.isMultiplePrimaryKey()) {
+                                if (_field.get(entity.getId()) == null) {
+                                    // 若执行插入操作时已为自生成主键赋值则将不再自动填充
+                                    _field.set(entity.getId(), wrapper.getObject(0));
+                                }
+                            } else {
+                                if (_field.get(entity) == null) {
+                                    // 若执行插入操作时已为自生成主键赋值则将不再自动填充
+                                    _field.set(entity, wrapper.getObject(0));
+                                }
+                            }
+                            return true;
+                        }
+                    });
+                }
+            }
+        }
+    }
+
     /**
      * 访问器配置接口私有实现，只为DefaultSession提供扩展服务
      */
     private class EntityAccessorConfig implements IAccessorConfig {
 
         private EntityMeta __entityMeta;
-        private IDialect __dialect;
-        private IEntity<?>[] __entities;
+        private final IConnectionHolder __conn;
+        private List<IEntity<?>> __entities;
 
-        public EntityAccessorConfig(EntityMeta entityMeta, IDialect dialect, IEntity<?>... entities) {
+        public EntityAccessorConfig(EntityMeta entityMeta, IConnectionHolder connectionHolder, IEntity<?>... entity) {
             __entityMeta = entityMeta;
-            __dialect = dialect;
+            __conn = connectionHolder;
+            __entities = Arrays.asList(entity);
+        }
+
+        public EntityAccessorConfig(EntityMeta entityMeta, IConnectionHolder connectionHolder, List<IEntity<?>> entities) {
+            __entityMeta = entityMeta;
+            __conn = connectionHolder;
             __entities = entities;
         }
 
         public Statement getStatement(Connection conn) throws Exception {
-            return conn.createStatement();
+            if (conn != null && !conn.isClosed()) {
+                return conn.createStatement();
+            }
+            return __conn.getConnection().createStatement();
         }
 
         public CallableStatement getCallableStatement(Connection conn, String sql) throws Exception {
-            return conn.prepareCall(sql);
+            if (conn != null && !conn.isClosed()) {
+                return conn.prepareCall(sql);
+            }
+            return __conn.getConnection().prepareCall(sql);
         }
 
         public PreparedStatement getPreparedStatement(Connection conn, String sql) throws Exception {
-            return conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
+            if (conn != null && !conn.isClosed()) {
+                return conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
+            }
+            return __conn.getConnection().prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
         }
 
         public void beforeStatementExecution(AccessorEventContext context) throws Exception {
@@ -556,22 +713,28 @@ public class DefaultSession implements ISession {
 
         public void afterStatementExecution(AccessorEventContext context) throws Exception {
             if (__entities != null && __entityMeta.hasAutoincrement()) {
-                // 注意：自动主键生成仅支持每个数据表一个自动主键
+                // 注: 数据表最多一个自动生成主键
+                // 获取返回的自动生成主键集合
                 Object[] _genKeyValue = __dialect.getGeneratedKey(context.getStatement());
-                for (int _idx = 0; _idx < this.__entities.length; _idx++) {
-                    for (String _autoFieldName : __entityMeta.getAutoincrementKeys()) {
-                        Field _field = __entityMeta.getPropertyByName(_autoFieldName).getField();
-                        if (__entityMeta.isMultiplePrimaryKey()) {
-                            Object _fieldValue = _field.get(__entities[_idx].getId());
-                            if (_fieldValue == null) {
-                                // 若执行插入操作时已为自生成主键赋值则将不再自动填充
-                                _field.set(__entities[_idx].getId(), _genKeyValue[_idx]);
+                if (_genKeyValue != null && _genKeyValue.length > 0) {
+                    for (int _idx = 0; _idx < this.__entities.size(); _idx++) {
+                        IEntity<?> _entity = __entities.get(_idx);
+                        for (String _autoFieldName : __entityMeta.getAutoincrementKeys()) {
+                            // 如果自动主键列设置了序列名称则跳过
+                            if (StringUtils.isNotBlank(__entityMeta.getPropertyByField(_autoFieldName).getSequenceName())) {
+                                continue;
                             }
-                        } else {
-                            Object _fieldValue = _field.get(__entities[_idx]);
-                            if (_fieldValue == null) {
-                                // 若执行插入操作时已为自生成主键赋值则将不再自动填充
-                                _field.set(__entities[_idx], _genKeyValue[_idx]);
+                            Field _field = __entityMeta.getPropertyByField(_autoFieldName).getField();
+                            if (__entityMeta.isMultiplePrimaryKey()) {
+                                if (_field.get(_entity.getId()) == null) {
+                                    // 若执行插入操作时已为自生成主键赋值则将不再自动填充
+                                    _field.set(_entity.getId(), _genKeyValue[_idx]);
+                                }
+                            } else {
+                                if (_field.get(_entity) == null) {
+                                    // 若执行插入操作时已为自生成主键赋值则将不再自动填充
+                                    _field.set(_entity, _genKeyValue[_idx]);
+                                }
                             }
                         }
                     }

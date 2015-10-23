@@ -49,6 +49,13 @@ public interface IOperator {
     public IAccessorConfig getAccessorConfig();
 
     /**
+     * 设置访问器配置
+     *
+     * @param accessorConfig
+     */
+    public void setAccessorConfig(IAccessorConfig accessorConfig);
+
+    /**
      * @return 获取当前使用的数据库连接对象
      */
     public IConnectionHolder getConnectionHolder();
