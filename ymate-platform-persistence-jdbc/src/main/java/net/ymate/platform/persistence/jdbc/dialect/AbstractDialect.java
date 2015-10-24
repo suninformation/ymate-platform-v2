@@ -52,10 +52,10 @@ public abstract class AbstractDialect implements IDialect {
 
     public Object[] getGeneratedKey(Statement statement) throws SQLException {
         // 检索由于执行此 Statement 对象而创建的所有自动生成的键
-        List<Long> _ids = new ArrayList<Long>();
+        List<Object> _ids = new ArrayList<Object>();
         ResultSet _keyRSet = statement.getGeneratedKeys();
         while (_keyRSet.next()) {
-            _ids.add(_keyRSet.getLong(1));
+            _ids.add(_keyRSet.getObject(1));
         }
         return _ids.toArray();
     }

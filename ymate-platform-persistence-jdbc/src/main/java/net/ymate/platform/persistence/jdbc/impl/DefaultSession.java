@@ -30,17 +30,14 @@ import net.ymate.platform.persistence.jdbc.SessionEventContext;
 import net.ymate.platform.persistence.jdbc.base.*;
 import net.ymate.platform.persistence.jdbc.base.impl.*;
 import net.ymate.platform.persistence.jdbc.dialect.IDialect;
+import net.ymate.platform.persistence.jdbc.dialect.impl.OracleDialect;
 import net.ymate.platform.persistence.jdbc.query.*;
-import net.ymate.platform.persistence.jdbc.support.ResultSetHelper;
 import net.ymate.platform.persistence.jdbc.transaction.Transactions;
 import org.apache.commons.lang.StringUtils;
 
 import java.io.Serializable;
 import java.lang.reflect.Field;
-import java.sql.CallableStatement;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.Statement;
+import java.sql.*;
 import java.util.Arrays;
 import java.util.List;
 
@@ -349,14 +346,25 @@ public class DefaultSession implements ISession {
 
     public <T extends IEntity> T insert(T entity, Fields filter) throws Exception {
         EntityMeta _meta = EntityMeta.createAndGet(entity.getClass());
-        if (_meta.hasAutoincrement()) {
-            __doSequenceNextValue(_meta, entity);
-        }
         PairObject<Fields, Params> _entity = __doGetEntityFieldAndValues(_meta, entity, filter, true);
         String _insertSql = __dialect.buildInsertSQL(entity.getClass(), __tablePrefix, _entity.getKey());
         IUpdateOperator _opt = new DefaultUpdateOperator(_insertSql, this.__connectionHolder);
         if (_meta.hasAutoincrement()) {
-            _opt.setAccessorConfig(new EntityAccessorConfig(_meta, __connectionHolder, entity));
+            // 兼容Oracle无法直接获取生成的主键问题
+            if (__connectionHolder.getDialect() instanceof OracleDialect) {
+                final String[] _ids = _meta.getAutoincrementKeys().toArray(new String[_meta.getAutoincrementKeys().size()]);
+                _opt.setAccessorConfig(new EntityAccessorConfig(_meta, __connectionHolder, entity) {
+                    @Override
+                    public PreparedStatement getPreparedStatement(Connection conn, String sql) throws SQLException {
+                        if (conn != null && !conn.isClosed()) {
+                            return conn.prepareStatement(sql, _ids);
+                        }
+                        return __conn.getConnection().prepareStatement(sql, _ids);
+                    }
+                });
+            } else {
+                _opt.setAccessorConfig(new EntityAccessorConfig(_meta, __connectionHolder, entity));
+            }
         }
         // 获取并添加字段值
         for (Object _param : _entity.getValue().params()) {
@@ -379,14 +387,25 @@ public class DefaultSession implements ISession {
     @SuppressWarnings("unchecked")
     public <T extends IEntity> List<T> insert(List<T> entities, Fields filter) throws Exception {
         EntityMeta _meta = EntityMeta.createAndGet(entities.get(0).getClass());
-        if (_meta.hasAutoincrement()) {
-            __doSequenceNextValue(_meta, (List<IEntity<?>>) entities);
-        }
         PairObject<Fields, Params> _entity = __doGetEntityFieldAndValues(_meta, entities.get(0), filter, true);
         String _insertSql = __dialect.buildInsertSQL(entities.get(0).getClass(), __tablePrefix, _entity.getKey());
         IBatchUpdateOperator _opt = new BatchUpdateOperator(_insertSql, this.__connectionHolder);
         if (_meta.hasAutoincrement()) {
-            _opt.setAccessorConfig(new EntityAccessorConfig(_meta, __connectionHolder, (List<IEntity<?>>) entities));
+            // 兼容Oracle无法直接获取生成的主键问题
+            if (__connectionHolder.getDialect() instanceof OracleDialect) {
+                final String[] _ids = _meta.getAutoincrementKeys().toArray(new String[_meta.getAutoincrementKeys().size()]);
+                _opt.setAccessorConfig(new EntityAccessorConfig(_meta, __connectionHolder, (List<IEntity<?>>) entities) {
+                    @Override
+                    public PreparedStatement getPreparedStatement(Connection conn, String sql) throws SQLException {
+                        if (conn != null && !conn.isClosed()) {
+                            return conn.prepareStatement(sql, _ids);
+                        }
+                        return __conn.getConnection().prepareStatement(sql, _ids);
+                    }
+                });
+            } else {
+                _opt.setAccessorConfig(new EntityAccessorConfig(_meta, __connectionHolder, (List<IEntity<?>>) entities));
+            }
         }
         for (T entity : entities) {
             SQLBatchParameter _batchParam = SQLBatchParameter.create();
@@ -563,25 +582,37 @@ public class DefaultSession implements ISession {
         Params _values = Params.create();
         for (String _fieldName : entityMeta.getPropertyNames()) {
             if (__doCheckField(filter, _fieldName)) {
+                EntityMeta.PropertyMeta _propMeta = entityMeta.getPropertyByName(_fieldName);
                 Object _value = null;
                 if (entityMeta.isPrimaryKey(_fieldName)) {
                     if (includePK) {
-                        if (entityMeta.isMultiplePrimaryKey()) {
-                            _value = entityMeta.getPropertyByName(_fieldName).getField().get(targetObj.getId());
+                        // 自增字段将被忽略, 指定序列的除外
+                        if (_propMeta.isAutoincrement()) {
+                            if (StringUtils.isNotBlank(_propMeta.getSequenceName())) {
+                                _fields.add(_fieldName);
+                                // 尝试调用序列, 若当前数据库不支持序列将会抛出异常以示警告
+                                __dialect.getSequenceNextValSql(_propMeta.getSequenceName());
+                            }
                         } else {
-                            _value = targetObj.getId();
+                            if (entityMeta.isMultiplePrimaryKey()) {
+                                _value = _propMeta.getField().get(targetObj.getId());
+                            } else {
+                                _value = targetObj.getId();
+                            }
                         }
                     }
                 } else {
-                    _value = entityMeta.getPropertyByName(_fieldName).getField().get(targetObj);
+                    _value = _propMeta.getField().get(targetObj);
                 }
                 // 以下操作是为了使@Default起效果的同时也保证数据库中的字段默认值不被null值替代
-                EntityMeta.PropertyMeta _propMeta = entityMeta.getPropertyByName(_fieldName);
                 if (_value == null) {
                     // 如果value为空则尝试提取默认值
                     _value = BlurObject.bind(_propMeta.getDefaultValue()).toObjectValue(_propMeta.getField().getType());
                 }
                 if (_value != null || _propMeta.isNullable()) {
+                    if (includePK && entityMeta.isPrimaryKey(_fieldName) && entityMeta.isAutoincrement(_fieldName)) {
+                        break;
+                    }
                     // 若value不为空则添加至返回对象中
                     _fields.add(_fieldName);
                     _values.add(_value);
@@ -630,50 +661,14 @@ public class DefaultSession implements ISession {
         return _returnValue;
     }
 
-    protected void __doSequenceNextValue(EntityMeta entityMeta, List<IEntity<?>> entities) throws Exception {
-        for (final IEntity<?> _entity : entities) {
-            __doSequenceNextValue(entityMeta, _entity);
-        }
-    }
-
-    protected void __doSequenceNextValue(final EntityMeta entityMeta, final IEntity<?> entity) throws Exception {
-        if (entity != null && entityMeta.hasAutoincrement()) {
-            for (final String _autoFieldName : entityMeta.getAutoincrementKeys()) {
-                String _seqName = entityMeta.getPropertyByName(_autoFieldName).getSequenceName();
-                if (StringUtils.isNotBlank(_seqName)) {
-                    IQueryOperator<Object[]> _seqOpt = new DefaultQueryOperator<Object[]>(__connectionHolder.getDialect().getSequenceNextValSql(_seqName), __connectionHolder, IResultSetHandler.ARRAY);
-                    _seqOpt.execute();
-                    ResultSetHelper.bind(_seqOpt.getResultSet()).forEach(new ResultSetHelper.ItemHandler() {
-                        public boolean handle(ResultSetHelper.ItemWrapper wrapper, int row) throws Exception {
-                            // 将获得的序列值赋予实体对应的主键属性
-                            Field _field = entityMeta.getPropertyByField(_autoFieldName).getField();
-                            if (entityMeta.isMultiplePrimaryKey()) {
-                                if (_field.get(entity.getId()) == null) {
-                                    // 若执行插入操作时已为自生成主键赋值则将不再自动填充
-                                    _field.set(entity.getId(), wrapper.getObject(0));
-                                }
-                            } else {
-                                if (_field.get(entity) == null) {
-                                    // 若执行插入操作时已为自生成主键赋值则将不再自动填充
-                                    _field.set(entity, wrapper.getObject(0));
-                                }
-                            }
-                            return true;
-                        }
-                    });
-                }
-            }
-        }
-    }
-
     /**
      * 访问器配置接口私有实现，只为DefaultSession提供扩展服务
      */
     private class EntityAccessorConfig implements IAccessorConfig {
 
-        private EntityMeta __entityMeta;
-        private final IConnectionHolder __conn;
-        private List<IEntity<?>> __entities;
+        protected EntityMeta __entityMeta;
+        protected final IConnectionHolder __conn;
+        protected List<IEntity<?>> __entities;
 
         public EntityAccessorConfig(EntityMeta entityMeta, IConnectionHolder connectionHolder, IEntity<?>... entity) {
             __entityMeta = entityMeta;
@@ -720,21 +715,12 @@ public class DefaultSession implements ISession {
                     for (int _idx = 0; _idx < this.__entities.size(); _idx++) {
                         IEntity<?> _entity = __entities.get(_idx);
                         for (String _autoFieldName : __entityMeta.getAutoincrementKeys()) {
-                            // 如果自动主键列设置了序列名称则跳过
-                            if (StringUtils.isNotBlank(__entityMeta.getPropertyByField(_autoFieldName).getSequenceName())) {
-                                continue;
-                            }
                             Field _field = __entityMeta.getPropertyByField(_autoFieldName).getField();
+                            // 为自生成主键赋值, 自动填充
                             if (__entityMeta.isMultiplePrimaryKey()) {
-                                if (_field.get(_entity.getId()) == null) {
-                                    // 若执行插入操作时已为自生成主键赋值则将不再自动填充
-                                    _field.set(_entity.getId(), _genKeyValue[_idx]);
-                                }
+                                _field.set(_entity.getId(), BlurObject.bind(_genKeyValue[_idx]).toObjectValue(_field.getType()));
                             } else {
-                                if (_field.get(_entity) == null) {
-                                    // 若执行插入操作时已为自生成主键赋值则将不再自动填充
-                                    _field.set(_entity, _genKeyValue[_idx]);
-                                }
+                                _field.set(_entity, BlurObject.bind(_genKeyValue[_idx]).toObjectValue(_field.getType()));
                             }
                         }
                     }

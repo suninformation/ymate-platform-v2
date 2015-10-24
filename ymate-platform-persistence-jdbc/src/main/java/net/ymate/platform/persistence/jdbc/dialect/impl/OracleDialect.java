@@ -15,8 +15,12 @@
  */
 package net.ymate.platform.persistence.jdbc.dialect.impl;
 
+import net.ymate.platform.core.util.ExpressionUtils;
+import net.ymate.platform.persistence.base.EntityMeta;
+import net.ymate.platform.persistence.base.IEntity;
 import net.ymate.platform.persistence.jdbc.JDBC;
 import net.ymate.platform.persistence.jdbc.dialect.AbstractDialect;
+import net.ymate.platform.persistence.jdbc.query.Fields;
 import org.apache.commons.lang.StringUtils;
 
 /**
@@ -28,7 +32,7 @@ import org.apache.commons.lang.StringUtils;
 public class OracleDialect extends AbstractDialect {
 
     public OracleDialect() {
-        this.identifierQuote_begin = this.identifierQuote_end = "\"";
+//        this.identifierQuote_begin = this.identifierQuote_end = "\"";
     }
 
     public String getName() {
@@ -42,7 +46,32 @@ public class OracleDialect extends AbstractDialect {
 
     @Override
     public String getSequenceNextValSql(String sequenceName) {
-        return "SELECT ".concat(sequenceName).concat(".nextval FROM dual");
+        return sequenceName.concat(".nextval");
+    }
+
+    @Override
+    public String buildInsertSQL(Class<? extends IEntity> entityClass, String prefix, Fields fields) {
+        EntityMeta _meta = EntityMeta.createAndGet(entityClass);
+        ExpressionUtils _exp = ExpressionUtils.bind("INSERT INTO ${table_name} (${fields}) VALUES (${values})")
+                .set("table_name", buildTableName(prefix, _meta.getEntityName()));
+        //
+        Fields _fields = Fields.create();
+        Fields _values = Fields.create();
+        for (String _fieldName : (fields == null || fields.fields().isEmpty() ? _meta.getPropertyNames() : fields.fields())) {
+            EntityMeta.PropertyMeta _propMeta = _meta.getPropertyByName(_fieldName);
+            if (_propMeta.isAutoincrement()) {
+                //  若主键指定了序列, 则该主建需加到字段集合中
+                if (StringUtils.isNotBlank(_propMeta.getSequenceName())) {
+                    _fields.add(_fieldName);
+                    _values.add(getSequenceNextValSql(_propMeta.getSequenceName()));
+                }
+            } else {
+                _fields.add(_fieldName);
+                _values.add("?");
+            }
+        }
+        __doValidProperty(_meta, _fields, false);
+        return _exp.set("fields", __doGenerateFieldsFormatStr(_fields, null, null)).set("values", StringUtils.join(_values.fields(), ", ")).getResult();
     }
 
     @Override
