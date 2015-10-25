@@ -24,6 +24,7 @@ import net.ymate.platform.webmvc.IWebErrorProcessor;
 import net.ymate.platform.webmvc.IWebMvc;
 import net.ymate.platform.webmvc.IWebMvcModuleCfg;
 import net.ymate.platform.webmvc.base.Type;
+import org.apache.commons.fileupload.ProgressListener;
 import org.apache.commons.lang.StringUtils;
 
 import java.io.File;
@@ -74,6 +75,8 @@ public class DefaultModuleCfg implements IWebMvcModuleCfg {
 
     private int __uploadSizeThreshold;
 
+    private ProgressListener __uploadFileListener;
+
     private boolean __conventionMode;
 
     private Set<String> __conventionViewAllowPaths;
@@ -119,6 +122,7 @@ public class DefaultModuleCfg implements IWebMvcModuleCfg {
         __uploadFileSizeMax = Integer.parseInt(StringUtils.defaultIfBlank(_moduleCfgs.get("upload_file_size_max"), "10485760"));
         __uploadTotalSizeMax = Integer.parseInt(StringUtils.defaultIfBlank(_moduleCfgs.get("upload_total_size_max"), "10485760"));
         __uploadSizeThreshold = Integer.parseInt(StringUtils.defaultIfBlank(_moduleCfgs.get("upload_size_threshold"), "10240"));
+        __uploadFileListener = ClassUtils.impl(_moduleCfgs.get("upload_file_listener_class"), ProgressListener.class, this.getClass());
         //
         __conventionMode = BlurObject.bind(_moduleCfgs.get("convention_mode")).toBooleanValue();
         //
@@ -215,6 +219,10 @@ public class DefaultModuleCfg implements IWebMvcModuleCfg {
 
     public int getUploadSizeThreshold() {
         return __uploadSizeThreshold;
+    }
+
+    public ProgressListener getUploadFileListener() {
+        return __uploadFileListener;
     }
 
     public boolean isConventionMode() {

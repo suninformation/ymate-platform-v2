@@ -15,6 +15,8 @@
  */
 package net.ymate.platform.webmvc;
 
+import org.apache.commons.fileupload.ProgressListener;
+
 import java.util.Set;
 
 /**
@@ -104,6 +106,11 @@ public interface IWebMvcModuleCfg {
      * @return 内存缓冲区的大小，默认值： 10240字节（=10K），即如果文件大于10K，将使用临时文件缓存上传文件
      */
     public int getUploadSizeThreshold();
+
+    /**
+     * @return 文件上传状态监听器
+     */
+    public ProgressListener getUploadFileListener();
 
     /**
      * @return 零配置模式(无需编写控制器代码, 直接匹配并执行视图)，可选参数，默认值为false
