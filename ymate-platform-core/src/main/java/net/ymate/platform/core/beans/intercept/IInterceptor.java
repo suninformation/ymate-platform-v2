@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2107 the original author or authors.
+ * Copyright 2007-2016 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,7 +34,7 @@ public interface IInterceptor {
     /**
      * @param context 拦截器环境上下文对象
      * @return 执行拦截动作并返回执行结果，返回结果将影响前置拦截器组是否继续执行，后置拦截器将忽略返回值
-     * @throws Exception
+     * @throws Exception 执行拦截逻辑可能产生的异常
      */
     public Object intercept(InterceptContext context) throws Exception;
 }

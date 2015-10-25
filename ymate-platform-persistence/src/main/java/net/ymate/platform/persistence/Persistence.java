@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2107 the original author or authors.
+ * Copyright 2007-2016 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,6 +35,8 @@ public class Persistence implements IModule {
 
     public static final Version VERSION = new Version(2, 0, 0, Persistence.class.getPackage().getImplementationVersion(), Version.VersionType.Alphal);
 
+    private YMP __owner;
+
     private boolean __inited;
 
     public void init(YMP owner) throws Exception {
@@ -48,6 +50,10 @@ public class Persistence implements IModule {
 
     public boolean isInited() {
         return __inited;
+    }
+
+    public YMP getOwner() {
+        return __owner;
     }
 
     public void destroy() throws Exception {

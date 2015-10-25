@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2107 the original author or authors.
+ * Copyright 2007-2016 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -95,6 +95,10 @@ public class Validations implements IModule, IValidation {
         return __inited;
     }
 
+    public YMP getOwner() {
+        return __owner;
+    }
+
     public void registerValidator(Class<? extends Annotation> annotationClass, Class<? extends IValidator> validatorClass) {
         try {
             __owner.registerBean(validatorClass, validatorClass.newInstance());
@@ -108,7 +112,7 @@ public class Validations implements IModule, IValidation {
         return __validators.containsKey(annotationClass);
     }
 
-    public <T> Map<String, ValidateResult> validate(Class<T> targetClass, Map<String, Object> paramValues) {
+    public Map<String, ValidateResult> validate(Class<?> targetClass, Map<String, Object> paramValues) {
         Map<String, ValidateResult> _returnValues = new LinkedHashMap<String, ValidateResult>();
         ValidationMeta _meta = __doGetCachedMeta(targetClass);
         for (String _fieldName : _meta.getFieldNames()) {
@@ -123,7 +127,7 @@ public class Validations implements IModule, IValidation {
         return _returnValues;
     }
 
-    public <T> Map<String, ValidateResult> validate(Class<T> targetClass, Method targetMethod, Map<String, Object> paramValues) {
+    public Map<String, ValidateResult> validate(Class<?> targetClass, Method targetMethod, Map<String, Object> paramValues) {
         Map<String, ValidateResult> _returnValues = new LinkedHashMap<String, ValidateResult>();
         ValidationMeta _meta = __doGetCachedMeta(targetClass);
         Validation _validation = _meta.getMethodValidation(targetMethod);

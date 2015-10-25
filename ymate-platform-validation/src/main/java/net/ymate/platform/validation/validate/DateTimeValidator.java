@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2107 the original author or authors.
+ * Copyright 2007-2016 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,8 +33,6 @@ import org.apache.commons.lang.StringUtils;
 @Validator(VDateTime.class)
 public class DateTimeValidator implements IValidator {
 
-    private static String __DATETIME = "ymp.validation.datetime";
-
     public ValidateResult validate(ValidateContext context) {
         if (context.getParamValue() != null) {
             if (!context.getParamValue().getClass().isArray()) {
@@ -50,6 +48,7 @@ public class DateTimeValidator implements IValidator {
                         if (_msg != null) {
                             _msg = I18N.formatMessage(VALIDATION_I18N_RESOURCE, _msg, _msg, _pName);
                         } else {
+                            String __DATETIME = "ymp.validation.datetime";
                             _msg = I18N.formatMessage(VALIDATION_I18N_RESOURCE, __DATETIME, "{0} not a valid datetime.", _pName);
                         }
                         return new ValidateResult(context.getParamName(), _msg);

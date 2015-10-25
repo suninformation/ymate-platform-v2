@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2107 the original author or authors.
+ * Copyright 2007-2016 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,28 +28,10 @@ import java.net.URLClassLoader;
 import java.util.*;
 
 /**
- * <p>
- * ClassUtils
- * </p>
- * <p>
- * 类操作相关工具；
- * </p>
+ * 类操作相关工具
  *
- * @author 刘镇 (suninformation@163.com)
- * @version 0.0.0
- *          <table style="border:1px solid gray;">
- *          <tr>
- *          <th width="100px">版本号</th><th width="100px">动作</th><th
- *          width="100px">修改人</th><th width="100px">修改时间</th>
- *          </tr>
- *          <!-- 以 Table 方式书写修改历史 -->
- *          <tr>
- *          <td>0.0.0</td>
- *          <td>创建类</td>
- *          <td>刘镇</td>
- *          <td>2012-12-5下午6:41:23</td>
- *          </tr>
- *          </table>
+ * @author 刘镇 (suninformation@163.com) on 2012-12-5 下午6:41:23
+ * @version 1.0
  */
 public class ClassUtils {
 
@@ -80,10 +62,10 @@ public class ClassUtils {
     /**
      * 获得指定名称、限定接口的实现类
      *
-     * @param <T>
+     * @param <T>            接口类型
      * @param className      实现类名
      * @param interfaceClass 限制接口名
-     * @param callingClass
+     * @param callingClass   调用者
      * @return 如果可以得到并且限定于指定实现，那么返回实例，否则为空
      */
     @SuppressWarnings("unchecked")
@@ -115,12 +97,6 @@ public class ClassUtils {
         return null;
     }
 
-    /**
-     * @param className
-     * @param callingClass
-     * @return
-     * @throws ClassNotFoundException
-     */
     public static Class<?> loadClass(String className, Class<?> callingClass) throws ClassNotFoundException {
         Class<?> _targetClass = null;
         try {
@@ -140,11 +116,9 @@ public class ClassUtils {
     }
 
     /**
-     * 判断类clazz是否是superClass类的子类对象
-     *
-     * @param clazz
-     * @param superClass
-     * @return
+     * @param clazz      目标类
+     * @param superClass 父类
+     * @return 判断类clazz是否是superClass类的子类对象
      */
     public static boolean isSubclassOf(Class<?> clazz, Class<?> superClass) {
         boolean _flag = false;
@@ -263,9 +237,9 @@ public class ClassUtils {
     }
 
     /**
-     * @param <A>
-     * @param clazz
-     * @param annotationClazz
+     * @param <A>             注解类型
+     * @param clazz           目标类
+     * @param annotationClazz 目标注解类
      * @return 获取clazz类中成员声明的所有annotationClazz注解
      */
     public static <A extends Annotation> List<PairObject<Field, A>> getFieldAnnotations(Class<?> clazz, Class<A> annotationClazz) {
@@ -280,9 +254,9 @@ public class ClassUtils {
     }
 
     /**
-     * @param clazz
-     * @param annotationClazz
-     * @param <A>
+     * @param <A>             注解类型
+     * @param clazz           目标类
+     * @param annotationClazz 目标注解类
      * @return 获取clazz类中成员声明的第一个annotationClazz注解
      */
     public static <A extends Annotation> PairObject<Field, A> getFieldAnnotationFirst(Class<?> clazz, Class<A> annotationClazz) {
@@ -298,7 +272,7 @@ public class ClassUtils {
     }
 
     /**
-     * @param method
+     * @param method 目标方法
      * @return 获取方法的参数名
      */
     public static String[] getMethodParamNames(final Method method) {
@@ -319,6 +293,7 @@ public class ClassUtils {
     }
 
     /**
+     * @param <T>    目标类型
      * @param clazz 目标类型
      * @return 创建一个类对象实例，包裹它并赋予其简单对象属性操作能力，可能返回空
      */
@@ -332,6 +307,7 @@ public class ClassUtils {
     }
 
     /**
+     * @param <T>    目标类型
      * @param target 目标类对象
      * @return 包裹它并赋予其简单对象属性操作能力，可能返回空
      */
@@ -340,28 +316,10 @@ public class ClassUtils {
     }
 
     /**
-     * <p>
-     * BeanWrapper
-     * </p>
-     * <p>
-     * 类对象包裹器，赋予对象简单的属性操作能力；
-     * </p>
+     * 类对象包裹器，赋予对象简单的属性操作能力
      *
-     * @author 刘镇 (suninformation@163.com)
-     * @version 0.0.0
-     *          <table style="border:1px solid gray;">
-     *          <tr>
-     *          <th width="100px">版本号</th><th width="100px">动作</th><th
-     *          width="100px">修改人</th><th width="100px">修改时间</th>
-     *          </tr>
-     *          <!-- 以 Table 方式书写修改历史 -->
-     *          <tr>
-     *          <td>0.0.0</td>
-     *          <td>创建类</td>
-     *          <td>刘镇</td>
-     *          <td>2012-12-23上午12:46:50</td>
-     *          </tr>
-     *          </table>
+     * @author 刘镇 (suninformation@163.com) on 2012-12-23 上午12:46:50
+     * @version 1.0
      */
     public static class BeanWrapper<T> {
 
@@ -369,11 +327,6 @@ public class ClassUtils {
 
         private Map<String, Field> _fields;
 
-        /**
-         * 构造器
-         *
-         * @param target
-         */
         protected BeanWrapper(T target) {
             this.target = target;
             this._fields = new LinkedHashMap<String, Field>();
@@ -442,7 +395,7 @@ public class ClassUtils {
 
         /**
          * @param dist 目标对象
-         * @param <D>
+         * @param <D>  目标对象类型
          * @return 拷贝当前对象的成员属性值到目标对象
          */
         public <D> D duplicate(D dist) {

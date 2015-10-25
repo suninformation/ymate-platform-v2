@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2107 the original author or authors.
+ * Copyright 2007-2016 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -40,7 +40,7 @@ public interface II18NEventHandler {
     /**
      * @param resourceName 资源名称
      * @return 加载资源文件的具体处理方法
-     * @throws IOException
+     * @throws IOException 加载资源文件可能发生异常
      */
     public InputStream onLoad(String resourceName) throws IOException;
 }

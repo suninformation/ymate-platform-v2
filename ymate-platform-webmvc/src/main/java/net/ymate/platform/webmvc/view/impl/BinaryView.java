@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2107 the original author or authors.
+ * Copyright 2007-2016 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -216,9 +216,8 @@ public class BinaryView extends AbstractView {
     }
 
     /**
-     * 采用档案下载的方式
-     *
      * @param dispFileName 显示的文件名称
+     * @return 设置采用档案下载的方式
      */
     public BinaryView useAttachment(String dispFileName) {
         __fileName = dispFileName;

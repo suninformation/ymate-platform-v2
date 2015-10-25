@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2107 the original author or authors.
+ * Copyright 2007-2016 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -60,11 +60,6 @@ public class CookieHelper {
 
     private String __charsetEncoding;
 
-    /**
-     * 构造器
-     *
-     * @param owner
-     */
     private CookieHelper(IWebMvc owner) {
         __owner = owner;
         __charsetEncoding = __owner.getModuleCfg().getDefaultCharsetEncoding();
@@ -74,6 +69,7 @@ public class CookieHelper {
     }
 
     /**
+     * @param owner 所属WebMVC对象
      * @return 构建Cookies操作助手类实例
      */
     public static CookieHelper bind(IWebMvc owner) {

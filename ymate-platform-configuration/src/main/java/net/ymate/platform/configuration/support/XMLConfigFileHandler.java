@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2107 the original author or authors.
+ * Copyright 2007-2016 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -235,9 +235,9 @@ public class XMLConfigFileHandler {
 
         public XMLCategory(String name, List<XMLAttribute> attributes, List<XMLProperty> properties, boolean sorted) {
             this.name = name;
+            this.__sorted = sorted;
             this.attributeMap = new HashMap<String, XMLAttribute>();
-            if (sorted) {
-                __sorted = sorted;
+            if (__sorted) {
                 this.propertyMap = new LinkedHashMap<String, XMLProperty>();
             } else {
                 this.propertyMap = new HashMap<String, XMLProperty>();

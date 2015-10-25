@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2107 the original author or authors.
+ * Copyright 2007-2016 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,14 +33,6 @@ import org.apache.commons.lang.math.NumberUtils;
 @Validator(VNumeric.class)
 public class NumericValidator implements IValidator {
 
-    private static String __NUMERIC = "ymp.validation.numeric";
-
-    private static String __NUMERIC_BETWEEN = "ymp.validation.numeric_between";
-
-    private static String __NUMERIC_MIN = "ymp.validation.numeric_min";
-
-    private static String __NUMERIC_MAX = "ymp.validation.numeric_max";
-
     public ValidateResult validate(ValidateContext context) {
         if (context.getParamValue() != null) {
             boolean _matched = false;
@@ -69,13 +61,17 @@ public class NumericValidator implements IValidator {
                     _msg = I18N.formatMessage(VALIDATION_I18N_RESOURCE, _msg, _msg, _pName);
                 } else {
                     if (_flag) {
+                        String __NUMERIC = "ymp.validation.numeric";
                         _msg = I18N.formatMessage(VALIDATION_I18N_RESOURCE, __NUMERIC, "{0} not a valid numeric.", _pName);
                     } else {
                         if (_vNumeric.max() > 0 && _vNumeric.min() > 0) {
+                            String __NUMERIC_BETWEEN = "ymp.validation.numeric_between";
                             _msg = I18N.formatMessage(VALIDATION_I18N_RESOURCE, __NUMERIC_BETWEEN, "{0} numeric must be between {1} and {2}.", _pName, _vNumeric.max(), _vNumeric.min());
                         } else if (_vNumeric.max() > 0) {
+                            String __NUMERIC_MAX = "ymp.validation.numeric_max";
                             _msg = I18N.formatMessage(VALIDATION_I18N_RESOURCE, __NUMERIC_MAX, "{0} numeric must be lt {1}.", _pName, _vNumeric.max());
                         } else {
+                            String __NUMERIC_MIN = "ymp.validation.numeric_min";
                             _msg = I18N.formatMessage(VALIDATION_I18N_RESOURCE, __NUMERIC_MIN, "{0} numeric must be gt {1}.", _pName, _vNumeric.min());
                         }
                     }

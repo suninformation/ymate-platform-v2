@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2107 the original author or authors.
+ * Copyright 2007-2016 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,7 +37,7 @@ public class UUIDUtils {
     }
 
     /**
-     * @param o
+     * @param o 预加密字符串
      * @return 返回唯一的16位字符串(基于32位当前时间和32位对象的identityHashCode和32位随机数)
      */
     public static String generateCharUUID(Object o) {
@@ -115,11 +115,11 @@ public class UUIDUtils {
      */
     public static String randomStr(int length, boolean isOnlyNum) {
         int size = isOnlyNum ? 10 : 62;
-        StringBuffer hash = new StringBuffer(length);
+        StringBuilder _hash = new StringBuilder(length);
         for (int i = 0; i < length; i++) {
-            hash.append(__randChars.charAt(__random.nextInt(size)));
+            _hash.append(__randChars.charAt(__random.nextInt(size)));
         }
-        return hash.toString();
+        return _hash.toString();
     }
 
     /**

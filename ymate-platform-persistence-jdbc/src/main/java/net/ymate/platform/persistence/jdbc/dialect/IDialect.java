@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2107 the original author or authors.
+ * Copyright 2007-2016 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -48,9 +48,9 @@ public interface IDialect {
     public String buildTableName(String prefix, String entityName);
 
     /**
-     * @param statement
+     * @param statement Statement对象
      * @return 返回主键值（按 long 类型返回），采用JDBC Statement对象获取自动生成的主键（仅处理单主键）
-     * @throws SQLException
+     * @throws SQLException 可能产生的异常
      */
     public Object[] getGeneratedKey(Statement statement) throws SQLException;
 
@@ -62,8 +62,8 @@ public interface IDialect {
 
     /**
      * @param originSql 原SQL语句
-     * @param page
-     * @param pageSize
+     * @param page      页号
+     * @param pageSize  每页记录数
      * @return 返回分页SQL语句
      */
     public String buildPagedQuerySQL(String originSql, int page, int pageSize);
@@ -100,6 +100,7 @@ public interface IDialect {
 
     /**
      * @param entityClass 实体模模型类
+     * @param prefix      前缀名称
      * @param pkFields    主键字段名称集合，可选参数，若不指定则包括全部主键
      * @param fields      字段名称集合，可选参数，若不指定则包括全部字段
      * @return 返回更新实体数据记录SQL语句

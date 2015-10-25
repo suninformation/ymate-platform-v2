@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2107 the original author or authors.
+ * Copyright 2007-2016 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,7 +35,7 @@ public interface IBeanLoader {
     /**
      * @param packageName 扫描的包名称
      * @return 返回加载的类对象集合
-     * @throws Exception
+     * @throws Exception 类加载过程可能产生异常
      */
     public List<Class<?>> load(String packageName) throws Exception;
 
@@ -43,7 +43,7 @@ public interface IBeanLoader {
      * @param packageName 扫描的包名称
      * @param filter      类对象过滤器
      * @return 返回加载的类对象集合
-     * @throws Exception
+     * @throws Exception 类加载过程可能产生异常
      */
     public List<Class<?>> load(String packageName, IBeanFilter filter) throws Exception;
 }

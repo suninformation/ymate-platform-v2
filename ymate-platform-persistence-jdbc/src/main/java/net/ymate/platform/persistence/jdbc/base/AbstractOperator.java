@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2107 the original author or authors.
+ * Copyright 2007-2016 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -94,7 +94,7 @@ public abstract class AbstractOperator implements IOperator {
 
     /**
      * @return 执行具体的操作过程，并返回影响行数
-     * @throws Exception
+     * @throws Exception 执行过程中产生的异常
      */
     protected abstract int __doExecute() throws Exception;
 

@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2107 the original author or authors.
+ * Copyright 2007-2016 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,8 +31,8 @@ public interface IBeanFactory {
     /**
      * 注册自定义注解类处理器，重复注册将覆盖前者
      *
-     * @param annoClass
-     * @param handler
+     * @param annoClass 注解类型
+     * @param handler   注解处理器
      */
     public void registerHandler(Class<? extends Annotation> annoClass, IBeanHandler handler);
 
@@ -41,20 +41,20 @@ public interface IBeanFactory {
     /**
      * 注册扫描包路径(仅在工厂对象执行初始化前有效)
      *
-     * @param packageName
+     * @param packageName 包名称
      */
     public void registerPackage(String packageName);
 
     /**
      * 注册排除的接口类
      *
-     * @param excludedClass
+     * @param excludedClass 预排除接口类型
      */
     public void registerExcludedClass(Class<?> excludedClass);
 
     /**
-     * @param clazz
-     * @param <T>
+     * @param clazz 目标类型
+     * @param <T>   类型
      * @return 提取类型为clazz的对象实例，可能返回null
      */
     public <T> T getBean(Class<T> clazz);
@@ -67,7 +67,7 @@ public interface IBeanFactory {
     /**
      * 注册一个类到工厂
      *
-     * @param clazz
+     * @param clazz 预注册类型
      */
     public void registerBean(Class<?> clazz);
 
@@ -78,14 +78,14 @@ public interface IBeanFactory {
     /**
      * 初始化对象工厂
      *
-     * @throws Exception
+     * @throws Exception 工厂初始化时可能产生的异常
      */
     public void init() throws Exception;
 
     /**
      * 销毁对象工厂
      *
-     * @throws Exception
+     * @throws Exception 工厂销毁时可能产生的异常
      */
     public void destroy() throws Exception;
 
@@ -97,7 +97,7 @@ public interface IBeanFactory {
     /**
      * 设置Parent对象工厂
      *
-     * @param parent
+     * @param parent 父类工厂对象
      */
     public void setParent(IBeanFactory parent);
 
@@ -109,21 +109,22 @@ public interface IBeanFactory {
     /**
      * 设置自定义对象加载器
      *
-     * @param loader
+     * @param loader 自定义对象加载器
      */
     public void setLoader(IBeanLoader loader);
 
     /**
      * 初始化代理工厂
      *
-     * @param proxyFactory
+     * @param proxyFactory 目标代码工厂对象
+     * @throws Exception 初始化时可能产生的异常
      */
     public void initProxy(IProxyFactory proxyFactory) throws Exception;
 
     /**
      * 初始化依赖注入
      *
-     * @throws Exception
+     * @throws Exception 初始化IoC时可能产生的异常
      */
     public void initIoC() throws Exception;
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2107 the original author or authors.
+ * Copyright 2007-2016 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -118,7 +118,7 @@ public class DefaultTransaction implements ITransaction {
          * @param dataSourceName   数据源名称
          * @param connectionHolder 数据库连接持有者对象
          * @param initLevel        初始事务级别
-         * @throws SQLException
+         * @throws SQLException 可能产生的异常
          */
         TransactionMeta(String dataSourceName, IConnectionHolder connectionHolder, JDBC.TRANSACTION initLevel) throws SQLException {
             this.dataSourceName = dataSourceName;

@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2107 the original author or authors.
+ * Copyright 2007-2016 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,15 +29,15 @@ public interface IConfigurationProvider {
     /**
      * 根据配置文件绝对路径加载配置
      *
-     * @param cfgFileName
-     * @throws Exception
+     * @param cfgFileName 配置文件路径及名称
+     * @throws Exception 加载配置文件可能产生的异常
      */
     public void load(String cfgFileName) throws Exception;
 
     /**
      * 重新加载配置文件内容
      *
-     * @throws Exception
+     * @throws Exception 加载配置文件可能产生的异常
      */
     public void reload() throws Exception;
 
@@ -49,7 +49,7 @@ public interface IConfigurationProvider {
     // ----------
 
     /**
-     * @param key
+     * @param key 属性键
      * @return 获得对应的文字值
      */
     public String getString(String key);
@@ -59,7 +59,7 @@ public interface IConfigurationProvider {
     public String getString(String category, String key, String defaultValue);
 
     /**
-     * @param key
+     * @param key 属性键
      * @return 获得对应的文字值列表，其中匹配以key开头的键串
      */
     public List<String> getList(String key);
@@ -75,7 +75,7 @@ public interface IConfigurationProvider {
     public Map<String, String> getMap(String category, String keyHead);
 
     /**
-     * @param key
+     * @param key 属性键
      * @return 获取键值数组值
      */
     public String[] getArray(String key);
@@ -85,7 +85,7 @@ public interface IConfigurationProvider {
     public String[] getArray(String category, String key, boolean zeroSize);
 
     /**
-     * @param key
+     * @param key 属性键
      * @return 获得对应的数字值
      */
     public int getInt(String key);
@@ -95,7 +95,7 @@ public interface IConfigurationProvider {
     public int getInt(String category, String key, int defaultValue);
 
     /**
-     * @param key
+     * @param key 属性键
      * @return 获得对应的布尔值
      */
     public boolean getBoolean(String key);
@@ -105,7 +105,7 @@ public interface IConfigurationProvider {
     public boolean getBoolean(String category, String key, boolean defaultValue);
 
     /**
-     * @param key
+     * @param key 属性键
      * @return 获取长整数
      */
     public long getLong(String key);
@@ -115,7 +115,7 @@ public interface IConfigurationProvider {
     public long getLong(String category, String key, long defaultValue);
 
     /**
-     * @param key
+     * @param key 属性键
      * @return 获取浮点数
      */
     public float getFloat(String key);
@@ -125,7 +125,7 @@ public interface IConfigurationProvider {
     public float getFloat(String category, String key, float defaultValue);
 
     /**
-     * @param key
+     * @param key 属性键
      * @return 获取双精度浮点数
      */
     public double getDouble(String key);
@@ -149,7 +149,7 @@ public interface IConfigurationProvider {
     /**
      * 判断键key的配置项是否存在
      *
-     * @param key
+     * @param key 属性键
      * @return 如果存在配置项那么返回true，否则返回false
      */
     public boolean contains(String key);

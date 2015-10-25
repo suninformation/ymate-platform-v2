@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2107 the original author or authors.
+ * Copyright 2007-2016 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,7 +31,7 @@ public interface IDataSourceAdapter {
      * 数据源适配器初始化
      *
      * @param cfgMeta 数据源配置参数
-     * @throws Exception
+     * @throws Exception 可能产生的异常
      */
     public void initialize(DataSourceCfgMeta cfgMeta) throws Exception;
 
@@ -42,7 +42,7 @@ public interface IDataSourceAdapter {
 
     /**
      * @return 获取数据库连接
-     * @throws Exception
+     * @throws Exception 可能产生的异常
      */
     public Connection getConnection() throws Exception;
 

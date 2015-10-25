@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2107 the original author or authors.
+ * Copyright 2007-2016 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,7 +26,7 @@ public interface IProxyFilter {
     /**
      * 执行类过滤
      *
-     * @param targetProxy
+     * @param targetProxy 目标代理
      * @return 返回过滤结果，true表示通过，false则表示丢弃当前类对象
      */
     public boolean filter(IProxy targetProxy);

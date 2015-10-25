@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2107 the original author or authors.
+ * Copyright 2007-2016 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -66,13 +66,6 @@ public class CodecUtils {
 
         protected final int KEY_SIZE;
 
-        /**
-         * 私有构造方法
-         *
-         * @param keySize
-         * @param keyAlgorithm
-         * @param cipherAlgorithm
-         */
         public CodecHelper(int keySize, String keyAlgorithm, String cipherAlgorithm) {
             KEY_SIZE = keySize;
             KEY_ALGORITHM = keyAlgorithm;
@@ -83,6 +76,7 @@ public class CodecUtils {
          * 生成密钥
          *
          * @return byte[] 二进制密钥
+         * @throws Exception if an error occurs.
          */
         public byte[] initKey() throws Exception {
             // 实例化密钥生成器
@@ -104,6 +98,7 @@ public class CodecUtils {
          *
          * @param key 二进制密钥
          * @return Key 密钥
+         * @throws Exception if an error occurs.
          */
         public Key toKey(byte[] key) throws Exception {
             // 实例化密钥工厂
@@ -118,6 +113,7 @@ public class CodecUtils {
          * @param data 待加密数据
          * @param key  密钥
          * @return byte[] 加密后的数据
+         * @throws Exception if an error occurs.
          */
         public byte[] encrypt(byte[] data, byte[] key) throws Exception {
             // 实例化
@@ -138,6 +134,7 @@ public class CodecUtils {
          * @param data 待解密数据
          * @param key  密钥
          * @return byte[] 解密后的数据
+         * @throws Exception if an error occurs.
          */
         public byte[] decrypt(byte[] data, byte[] key) throws Exception {
             // 实例化

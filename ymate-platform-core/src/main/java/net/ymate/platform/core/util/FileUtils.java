@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2107 the original author or authors.
+ * Copyright 2007-2016 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -44,7 +44,7 @@ public class FileUtils {
     }
 
     /**
-     * @param url
+     * @param url 目标URL地址
      * @return 将URL地址转换成File对象, 若url指向的是jar包中文件，则返回null
      */
     public static File toFile(URL url) {
@@ -64,7 +64,7 @@ public class FileUtils {
     }
 
     /**
-     * @param filePath
+     * @param filePath 目标文件路径
      * @return 将文件路径转换成URL对象, 返回值可能为NULL, 若想将jar包中文件，必须使用URL.toString()方法生成filePath参数—即以"jar:"开头
      */
     public static URL toURL(String filePath) {

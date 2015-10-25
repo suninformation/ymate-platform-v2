@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2107 the original author or authors.
+ * Copyright 2007-2016 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -51,7 +51,7 @@ public abstract class AbstractResultSetHandler<T> implements IResultSetHandler<T
     /**
      * @param resultSet 数据结果集对象，切勿对其进行游标移动等操作，仅约定用于提取当前行字段数据
      * @return 处理当前行结果集数据并返回指定的T类型对象
-     * @throws Exception
+     * @throws Exception 可能产生的异常
      */
     protected abstract T __doProcessResultRow(ResultSet resultSet) throws Exception;
 

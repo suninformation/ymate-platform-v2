@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2107 the original author or authors.
+ * Copyright 2007-2016 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -116,8 +116,8 @@ public abstract class AbstractView implements IView {
     }
 
     /**
-     * 将参数与URL地址进行绑定
-     *
+     * @param url 原始URL路径
+     * @return 将参数与URL地址进行绑定
      * @throws UnsupportedEncodingException URL编码异常
      */
     protected String __doBuildURL(String url) throws UnsupportedEncodingException {

@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2107 the original author or authors.
+ * Copyright 2007-2016 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -46,7 +46,7 @@ public class Transactions {
      * 开始事务
      *
      * @param level 事务级别
-     * @throws Exception
+     * @throws Exception 可能产生的异常
      */
     static void __begin(JDBC.TRANSACTION level) throws Exception {
         if (__TRANS_LOCAL.get() == null) {
@@ -59,7 +59,7 @@ public class Transactions {
     /**
      * 提交事务
      *
-     * @throws Exception
+     * @throws Exception 可能产生的异常
      */
     static void __commit() throws Exception {
         if (__COUNT.get() > 0) {
@@ -74,7 +74,7 @@ public class Transactions {
      * 回滚事务
      *
      * @param number 事务层级计数
-     * @throws Exception
+     * @throws Exception 可能产生的异常
      */
     static void __rollback(int number) throws Exception {
         __COUNT.set(number);
@@ -88,7 +88,7 @@ public class Transactions {
     /**
      * 关闭事务
      *
-     * @throws Exception
+     * @throws Exception 可能产生的异常
      */
     static void __close() throws Exception {
         if (__COUNT.get() == 0) {
@@ -104,7 +104,7 @@ public class Transactions {
      * 执行一组事务操作，事务级别默认采用ITransaction.Level.READ_COMMITTED
      *
      * @param trades 事务业务操作对象集合
-     * @throws Exception
+     * @throws Exception 可能产生的异常
      */
     public static void execute(ITrade... trades) throws Exception {
         execute(JDBC.TRANSACTION.READ_COMMITTED, trades);
@@ -115,7 +115,7 @@ public class Transactions {
      *
      * @param level  事务级别
      * @param trades 事务业务操作对象集合
-     * @throws Exception
+     * @throws Exception 可能产生的异常
      */
     public static void execute(JDBC.TRANSACTION level, ITrade... trades) throws Exception {
         int _number = __COUNT.get() == null ? 0 : __COUNT.get();
@@ -143,7 +143,7 @@ public class Transactions {
      * @param trade 事务业务操作对象
      * @param <T>   返回值类型
      * @return 执行一个有返回值的事务操作，事务级别默认采用ITransaction.Level.READ_COMMITTED
-     * @throws Exception
+     * @throws Exception 可能产生的异常
      */
     public static <T> T execute(Trade<T> trade) throws Exception {
         return execute(JDBC.TRANSACTION.READ_COMMITTED, trade);
@@ -154,7 +154,7 @@ public class Transactions {
      * @param trade 事务业务操作对象
      * @param <T>   返回值类型
      * @return 执行一个由level参数指定事务级别的有返回值的事务操作
-     * @throws Exception
+     * @throws Exception 可能产生的异常
      */
     public static <T> T execute(JDBC.TRANSACTION level, Trade<T> trade) throws Exception {
         int _number = __COUNT.get() == null ? 0 : __COUNT.get();

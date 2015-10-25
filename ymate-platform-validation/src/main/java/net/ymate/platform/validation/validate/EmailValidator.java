@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2107 the original author or authors.
+ * Copyright 2007-2016 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,8 +32,6 @@ import org.apache.commons.lang.StringUtils;
 @Validator(VEmail.class)
 public class EmailValidator implements IValidator {
 
-    private static String __EMAIL = "ymp.validation.email";
-
     public ValidateResult validate(ValidateContext context) {
         if (context.getParamValue() != null) {
             if (!context.getParamValue().getClass().isArray()) {
@@ -46,6 +44,7 @@ public class EmailValidator implements IValidator {
                         if (_msg != null) {
                             _msg = I18N.formatMessage(VALIDATION_I18N_RESOURCE, _msg, _msg, _pName);
                         } else {
+                            String __EMAIL = "ymp.validation.email";
                             _msg = I18N.formatMessage(VALIDATION_I18N_RESOURCE, __EMAIL, "{0} not a valid email address.", _pName);
                         }
                         return new ValidateResult(context.getParamName(), _msg);

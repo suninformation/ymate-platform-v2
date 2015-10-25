@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2107 the original author or authors.
+ * Copyright 2007-2016 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,7 +22,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 /**
- * 采用Map<String, Object>存储数据的结果集数据处理接口实现
+ * 采用Map存储数据的结果集数据处理接口实现
  *
  * @author 刘镇 (suninformation@163.com) on 2011-10-25下午11:51:38
  * @version 1.0

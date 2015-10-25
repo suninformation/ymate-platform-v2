@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2107 the original author or authors.
+ * Copyright 2007-2016 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -227,7 +227,7 @@ public class RuntimeUtils {
      *
      * @return 回收的字节数，如果为负数则表示当前内存使用情况很差，基本属于没有内存可用了
      */
-    public static final long gc() {
+    public static long gc() {
         Runtime rt = Runtime.getRuntime();
         long lastUsed = rt.totalMemory() - rt.freeMemory();
         rt.gc();

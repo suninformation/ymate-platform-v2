@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2107 the original author or authors.
+ * Copyright 2007-2016 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,7 +27,7 @@ import java.util.Map;
 public interface IConfiguration {
 
     /**
-     * @param key
+     * @param key 属性键
      * @return 获得对应的文字值
      */
     public String getString(String key);
@@ -37,7 +37,7 @@ public interface IConfiguration {
     public String getString(String category, String key, String defaultValue);
 
     /**
-     * @param key
+     * @param key 属性键
      * @return 获得对应的文字值列表，其中匹配以key开头的键串
      */
     public List<String> getList(String key);
@@ -53,7 +53,7 @@ public interface IConfiguration {
     public Map<String, String> getMap(String category, String keyHead);
 
     /**
-     * @param key
+     * @param key 属性键
      * @return 获取键值数组值
      */
     public String[] getArray(String key);
@@ -63,7 +63,7 @@ public interface IConfiguration {
     public String[] getArray(String category, String key, boolean zeroSize);
 
     /**
-     * @param key
+     * @param key 属性键
      * @return 获得对应的数字值
      */
     public int getInt(String key);
@@ -73,7 +73,7 @@ public interface IConfiguration {
     public int getInt(String category, String key, int defaultValue);
 
     /**
-     * @param key
+     * @param key 属性键
      * @return 获得对应的布尔值
      */
     public boolean getBoolean(String key);
@@ -83,7 +83,7 @@ public interface IConfiguration {
     public boolean getBoolean(String category, String key, boolean defaultValue);
 
     /**
-     * @param key
+     * @param key 属性键
      * @return 获取长整数
      */
     public long getLong(String key);
@@ -91,7 +91,7 @@ public interface IConfiguration {
     public long getLong(String key, long defaultValue);
 
     /**
-     * @param key
+     * @param key 属性键
      * @return 获取浮点数
      */
     public float getFloat(String key);
@@ -99,7 +99,7 @@ public interface IConfiguration {
     public float getFloat(String key, float defaultValue);
 
     /**
-     * @param key
+     * @param key 属性键
      * @return 获取双精度浮点数
      */
     public double getDouble(String key);
@@ -121,7 +121,7 @@ public interface IConfiguration {
     /**
      * 判断键key的配置项是否存在
      *
-     * @param key
+     * @param key 属性键
      * @return 如果存在配置项那么返回true，否则返回false
      */
     public boolean contains(String key);

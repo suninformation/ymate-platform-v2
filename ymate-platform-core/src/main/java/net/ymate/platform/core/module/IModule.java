@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2107 the original author or authors.
+ * Copyright 2007-2016 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,7 +29,7 @@ public interface IModule {
      * 模块初始化
      *
      * @param owner 加载当前模块的YMP框架核心管理器对象
-     * @throws Exception
+     * @throws Exception 当模块初始化失败时抛出异常
      */
     public void init(YMP owner) throws Exception;
 
@@ -39,9 +39,14 @@ public interface IModule {
     public boolean isInited();
 
     /**
+     * @return 返回所属YMP框架管理器实例
+     */
+    public YMP getOwner();
+
+    /**
      * 销毁模块
      *
-     * @throws Exception
+     * @throws Exception 当模块销毁失败时抛出异常
      */
     public void destroy() throws Exception;
 }

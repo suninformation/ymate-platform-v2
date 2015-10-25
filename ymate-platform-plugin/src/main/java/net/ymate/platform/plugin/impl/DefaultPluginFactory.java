@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2107 the original author or authors.
+ * Copyright 2007-2016 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -58,12 +58,12 @@ public class DefaultPluginFactory implements IPluginFactory {
     private PluginClassLoader __pluginClassLoader;
 
     /**
-     * PluginID -> PluginMeta
+     * PluginID -&gt; PluginMeta
      */
     private Map<String, PluginMeta> __pluginMetaWithId;
 
     /**
-     * PluginClass -> PluginMeta
+     * PluginClass -&gt; PluginMeta
      */
     private Map<Class<? extends IPlugin>, PluginMeta> __pluginMetaWithClass;
 

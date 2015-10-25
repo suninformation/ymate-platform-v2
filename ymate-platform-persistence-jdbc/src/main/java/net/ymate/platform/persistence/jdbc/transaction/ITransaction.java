@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2107 the original author or authors.
+ * Copyright 2007-2016 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -47,16 +47,22 @@ public interface ITransaction {
 
     /**
      * 提交事务
+     *
+     * @throws SQLException 可能产生的异常
      */
     public void commit() throws SQLException;
 
     /**
      * 回滚事务
+     *
+     * @throws SQLException 可能产生的异常
      */
     public void rollback() throws SQLException;
 
     /**
      * 关闭事务（连接）
+     *
+     * @throws SQLException 可能产生的异常
      */
     public void close() throws SQLException;
 
@@ -70,7 +76,7 @@ public interface ITransaction {
      * 注册一个ConnectionHolder对象由事务管理(相同数据源仅允许注册一次)
      *
      * @param connectionHolder 数据库连接持有者对象
-     * @throws SQLException
+     * @throws SQLException 可能产生的异常
      */
     public void registerConnectionHolder(IConnectionHolder connectionHolder) throws SQLException;
 }

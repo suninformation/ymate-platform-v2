@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2107 the original author or authors.
+ * Copyright 2007-2016 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,12 +32,6 @@ import org.apache.commons.lang.StringUtils;
 @Validator(VLength.class)
 public class LengthValidator implements IValidator {
 
-    private static String __LENGTH_BETWEEN = "ymp.validation.length_between";
-
-    private static String __LENGTH_MIN = "ymp.validation.length_min";
-
-    private static String __LENGTH_MAX = "ymp.validation.length_max";
-
     public ValidateResult validate(ValidateContext context) {
         if (context.getParamValue() != null) {
             if (!context.getParamValue().getClass().isArray()) {
@@ -57,10 +51,13 @@ public class LengthValidator implements IValidator {
                             _msg = I18N.formatMessage(VALIDATION_I18N_RESOURCE, _msg, _msg, _pName);
                         } else {
                             if (_vLength.max() > 0 && _vLength.min() > 0) {
+                                String __LENGTH_BETWEEN = "ymp.validation.length_between";
                                 _msg = I18N.formatMessage(VALIDATION_I18N_RESOURCE, __LENGTH_BETWEEN, "{0} length must be between {1} and {2}.", _pName, _vLength.max(), _vLength.min());
                             } else if (_vLength.max() > 0) {
+                                String __LENGTH_MAX = "ymp.validation.length_max";
                                 _msg = I18N.formatMessage(VALIDATION_I18N_RESOURCE, __LENGTH_MAX, "{0} length must be lt {1}.", _pName, _vLength.max());
                             } else {
+                                String __LENGTH_MIN = "ymp.validation.length_min";
                                 _msg = I18N.formatMessage(VALIDATION_I18N_RESOURCE, __LENGTH_MIN, "{0} length must be gt {1}.", _pName, _vLength.min());
                             }
                         }

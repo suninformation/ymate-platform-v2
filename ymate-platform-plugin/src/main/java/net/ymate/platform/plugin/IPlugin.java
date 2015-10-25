@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2107 the original author or authors.
+ * Copyright 2007-2016 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,8 +26,8 @@ public interface IPlugin {
     /**
      * 插件初始化
      *
-     * @param context
-     * @throws Exception
+     * @param context 插件上下文对象
+     * @throws Exception 初始化插件时可能产生的异常
      */
     public void init(IPluginContext context) throws Exception;
 
@@ -49,21 +49,21 @@ public interface IPlugin {
     /**
      * 启动插件
      *
-     * @throws Exception
+     * @throws Exception 启动插件时可能产生的异常
      */
     public void startup() throws Exception;
 
     /**
      * 停止插件
      *
-     * @throws Exception
+     * @throws Exception 停止插件时可能产生的异常
      */
     public void shutdown() throws Exception;
 
     /**
      * 销毁插件对象
      *
-     * @throws Exception
+     * @throws Exception 销毁插件时可能产生的异常
      */
     public void destroy() throws Exception;
 }

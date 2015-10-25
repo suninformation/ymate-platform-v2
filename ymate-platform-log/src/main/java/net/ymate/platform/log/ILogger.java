@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2107 the original author or authors.
+ * Copyright 2007-2016 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -96,15 +96,15 @@ public interface ILogger {
      *
      * @param owner      日志记录器模块管理器
      * @param loggerName 启动的日志记录名称
-     * @return
-     * @throws Exception
+     * @return 返回日志记录器实例
+     * @throws Exception 初始化时可能产生的异常
      */
     public ILogger init(ILog owner, String loggerName) throws Exception;
 
     /**
      * @param loggerName 日志记录器名称
      * @return 获取指定名称的日志记录器对象
-     * @throws Exception
+     * @throws Exception 获取日志记录器时可能产生异常
      */
     public ILogger getLogger(String loggerName) throws Exception;
 
@@ -116,8 +116,8 @@ public interface ILogger {
     /**
      * 设置是否控制台输出
      *
-     * @param enable
-     * @return
+     * @param enable 状态
+     * @return 返回当前日志记录器
      */
     public ILogger console(boolean enable);
 
@@ -125,7 +125,7 @@ public interface ILogger {
      * 设置调用者深度
      *
      * @param depth 必须大于等于零
-     * @return
+     * @return 返回当前日志记录器
      */
     public ILogger depth(int depth);
 

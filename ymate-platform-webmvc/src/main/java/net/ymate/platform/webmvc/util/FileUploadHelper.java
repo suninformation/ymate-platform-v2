@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2107 the original author or authors.
+ * Copyright 2007-2016 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -78,12 +78,6 @@ public class FileUploadHelper {
         return new FileUploadHelper(owner, request);
     }
 
-    /**
-     * 构造器
-     *
-     * @param owner
-     * @param request
-     */
     private FileUploadHelper(IWebMvc owner, HttpServletRequest request) {
         __request = request;
         if (StringUtils.isBlank(__charsetEncoding = owner.getModuleCfg().getDefaultCharsetEncoding())) {
@@ -92,10 +86,10 @@ public class FileUploadHelper {
     }
 
     /**
-     * @param processer
+     * @param processer 文件上传处理器
      * @return 处理表单提交，使用提供的文件上传处理器处理文件流
-     * @throws FileUploadException
-     * @throws IOException
+     * @throws FileUploadException 文件上传时可能产生的异常
+     * @throws IOException         文件读写可能产生的异常
      */
     public UploadFormWrapper processUpload(IUploadFileItemProcesser processer) throws FileUploadException, IOException {
         boolean _isMultipart = ServletFileUpload.isMultipartContent(__request);
@@ -111,8 +105,8 @@ public class FileUploadHelper {
 
     /**
      * @return 处理表单提交
-     * @throws FileUploadException
-     * @throws IOException
+     * @throws FileUploadException 文件上传时可能产生的异常
+     * @throws IOException         文件读写可能产生的异常
      */
     public UploadFormWrapper processUpload() throws FileUploadException, IOException {
         return this.processUpload(null);
@@ -121,9 +115,9 @@ public class FileUploadHelper {
     /**
      * 采用文件流的方式处理上传文件（即将上传文件流对象交给用户做进一步处理）
      *
-     * @param processer
-     * @throws IOException
-     * @throws FileUploadException
+     * @param processer 文件上传处理器
+     * @throws FileUploadException 文件上传时可能产生的异常
+     * @throws IOException         文件读写可能产生的异常
      */
     private UploadFormWrapper __doUploadFileAsStream(IUploadFileItemProcesser processer) throws FileUploadException, IOException {
         ServletFileUpload _upload = new ServletFileUpload();
@@ -169,7 +163,7 @@ public class FileUploadHelper {
     /**
      * 采用文件方式处理上传文件（即先将文件上传后，再交给用户已上传文件对象集合）
      *
-     * @throws FileUploadException
+     * @throws FileUploadException 文件上传时可能产生的异常
      */
     private UploadFormWrapper UploadFileAsDiskBased() throws FileUploadException {
         DiskFileItemFactory _factory = new DiskFileItemFactory();
@@ -226,9 +220,8 @@ public class FileUploadHelper {
     }
 
     /**
-     * 监听器
-     *
-     * @param listener
+     * @param listener 文件上传进度监听器
+     * @return 设置监听器
      */
     public FileUploadHelper setFileUploadListener(ProgressListener listener) {
         this.__listener = listener;
@@ -243,9 +236,8 @@ public class FileUploadHelper {
     }
 
     /**
-     * 上传文件临时目录（不支持自定义文件流处理），默认使用：System.getProperty("java.io.tmpdir")
-     *
-     * @param uploadDir
+     * @param uploadDir 临时目录
+     * @return 上传文件临时目录（不支持自定义文件流处理），默认使用：System.getProperty("java.io.tmpdir")
      */
     public FileUploadHelper setUploadTempDir(File uploadDir) {
         __uploadTempDir = uploadDir;
@@ -260,9 +252,8 @@ public class FileUploadHelper {
     }
 
     /**
-     * 上传文件最大值
-     *
-     * @param fileSize
+     * @param fileSize 文件大小
+     * @return 设置上传文件最大值
      */
     public FileUploadHelper setFileSizeMax(long fileSize) {
         __fileSizeMax = fileSize;
@@ -277,9 +268,8 @@ public class FileUploadHelper {
     }
 
     /**
-     * 内存缓冲区的大小,默认值为10K,如果文件大于10K,将使用临时文件缓存上传文件
-     *
-     * @param threshold
+     * @param threshold 缓冲区大小
+     * @return 内存缓冲区的大小, 默认值为10K, 如果文件大于10K, 将使用临时文件缓存上传文件
      */
     public FileUploadHelper setSizeThreshold(int threshold) {
         __sizeThreshold = threshold;
@@ -294,9 +284,8 @@ public class FileUploadHelper {
     }
 
     /**
-     * 上传文件总量的最大值
-     *
-     * @param size
+     * @param size 文件总量大小
+     * @return 设置上传文件总量的最大值
      */
     public FileUploadHelper setSizeMax(long size) {
         __sizeMax = size;
@@ -314,10 +303,10 @@ public class FileUploadHelper {
         /**
          * 处理文件或文件流
          *
-         * @param item
-         * @return
-         * @throws IOException
-         * @throws FileUploadException
+         * @param item FileItemStream
+         * @return 返回文件上传包装器
+         * @throws IOException         文件读写可能产生的异常
+         * @throws FileUploadException 文件上传时可能产生的异常
          */
         public UploadFileWrapper process(FileItemStream item) throws IOException, FileUploadException;
 
@@ -335,18 +324,9 @@ public class FileUploadHelper {
 
         private Map<String, IUploadFileWrapper[]> __fileMap = new HashMap<String, IUploadFileWrapper[]>();
 
-        /**
-         * 构造器
-         */
         public UploadFormWrapper() {
         }
 
-        /**
-         * 构造器
-         *
-         * @param fieldMap
-         * @param fileMap
-         */
         public UploadFormWrapper(Map<String, String[]> fieldMap, Map<String, UploadFileWrapper[]> fileMap) {
             __fieldMap.putAll(fieldMap);
             __fileMap.putAll(fileMap);
@@ -382,20 +362,10 @@ public class FileUploadHelper {
         private File __fileObj;
         private boolean __isFileObj;
 
-        /**
-         * 构造器
-         *
-         * @param fileItem
-         */
         public UploadFileWrapper(FileItem fileItem) {
             __fileItemObj = fileItem;
         }
 
-        /**
-         * 构造器
-         *
-         * @param file
-         */
         public UploadFileWrapper(File file) {
             __fileObj = file;
             __isFileObj = true;

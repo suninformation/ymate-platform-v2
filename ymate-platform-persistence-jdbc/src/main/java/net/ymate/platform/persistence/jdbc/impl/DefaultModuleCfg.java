@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2107 the original author or authors.
+ * Copyright 2007-2016 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -62,7 +62,7 @@ public class DefaultModuleCfg implements IDatabaseModuleCfg {
      * @param dsName      数据源名称
      * @param _moduleCfgs 模块配置参数映射
      * @return 分析并封装数据源配置
-     * @throws Exception
+     * @throws Exception 可能产生的异常
      */
     @SuppressWarnings("unchecked")
     protected DataSourceCfgMeta __doParserDataSourceCfgMeta(String dsName, Map<String, String> _moduleCfgs) throws Exception {

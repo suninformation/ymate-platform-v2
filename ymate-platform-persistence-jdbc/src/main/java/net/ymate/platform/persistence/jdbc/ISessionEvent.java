@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2107 the original author or authors.
+ * Copyright 2007-2016 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,56 +26,56 @@ public interface ISessionEvent {
     /**
      * 查询操用之前事件调用
      *
-     * @param eventContext
+     * @param eventContext 事件上下文对象
      */
     public void onQueryBefore(SessionEventContext eventContext);
 
     /**
      * 查询操作之后事件调用
      *
-     * @param eventContext
+     * @param eventContext 事件上下文对象
      */
     public void onQueryAfter(SessionEventContext eventContext);
 
     /**
      * 插入操用之前事件调用
      *
-     * @param eventContext
+     * @param eventContext 事件上下文对象
      */
     public void onInsertBefore(SessionEventContext eventContext);
 
     /**
      * 插入操作之后事件调用
      *
-     * @param eventContext
+     * @param eventContext 事件上下文对象
      */
     public void onInsertAfter(SessionEventContext eventContext);
 
     /**
      * 更新操作之前事件调用
      *
-     * @param eventContext
+     * @param eventContext 事件上下文对象
      */
     public void onUpdateBefore(SessionEventContext eventContext);
 
     /**
      * 更新操作之后事件调用
      *
-     * @param eventContext
+     * @param eventContext 事件上下文对象
      */
     public void onUpdateAfter(SessionEventContext eventContext);
 
     /**
      * 删除操作之前事件调用
      *
-     * @param eventContext
+     * @param eventContext 事件上下文对象
      */
     public void onRemoveBefore(SessionEventContext eventContext);
 
     /**
      * 删除操作之后事件调用
      *
-     * @param eventContext
+     * @param eventContext 事件上下文对象
      */
     public void onRemoveAfter(SessionEventContext eventContext);
 }

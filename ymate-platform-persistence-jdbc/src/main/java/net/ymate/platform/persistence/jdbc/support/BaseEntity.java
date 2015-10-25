@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2107 the original author or authors.
+ * Copyright 2007-2016 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -70,7 +70,7 @@ public abstract class BaseEntity<Entity extends IEntity, PK extends Serializable
 
     /**
      * @return 确保能够正确获取到数据库连接持有对象，即连接持有对象为null时尝试获取JDBC默认连接
-     * @throws Exception
+     * @throws Exception 可能产生的异常
      */
     protected IConnectionHolder __doGetConnectionHolderSafed() throws Exception {
         if (this.__connectionHolder == null) {
@@ -102,6 +102,7 @@ public abstract class BaseEntity<Entity extends IEntity, PK extends Serializable
         }
     }
 
+    @SuppressWarnings("unchecked")
     public Entity save(Fields fields) throws Exception {
         ISession _session = new DefaultSession(__doGetConnectionHolderSafed());
         try {

@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2107 the original author or authors.
+ * Copyright 2007-2016 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -41,7 +41,7 @@ public class DefaultResultSet<T> implements IResultSet<T> {
     /**
      * 构造方法，不采用分页方式
      *
-     * @param resultData
+     * @param resultData 结果集
      */
     public DefaultResultSet(List<T> resultData) {
         this(resultData, 0, 0, 0);
@@ -53,7 +53,7 @@ public class DefaultResultSet<T> implements IResultSet<T> {
      * @param resultData  当前页数据
      * @param pageNumber  当前页号
      * @param pageSize    每页记录数
-     * @param recordCount
+     * @param recordCount 总记录数
      */
     public DefaultResultSet(List<T> resultData, int pageNumber, int pageSize, long recordCount) {
         this.resultData = Collections.unmodifiableList(resultData);

@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2107 the original author or authors.
+ * Copyright 2007-2016 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,14 +37,6 @@ public class MultipartRequestWrapper extends HttpServletRequestWrapper {
 
     private FileUploadHelper.UploadFormWrapper __formWarpper;
 
-    /**
-     * Constructs a request object wrapping the given request.
-     *
-     * @param owner
-     * @param request
-     * @throws IOException
-     * @throws FileUploadException
-     */
     public MultipartRequestWrapper(IWebMvc owner, HttpServletRequest request) throws IOException, FileUploadException {
         super(request);
         // 绑定并初始化文件上传帮助类
@@ -53,7 +45,7 @@ public class MultipartRequestWrapper extends HttpServletRequestWrapper {
                 .setFileSizeMax(owner.getModuleCfg().getUploadTotalSizeMax())
                 .setSizeMax(owner.getModuleCfg().getUploadFileSizeMax())
                 .setSizeThreshold(owner.getModuleCfg().getUploadSizeThreshold())
-//                .setFileUploadListener(...)
+//                .setFileUploadListener(...) TODO FileUploadListener
                 .processUpload();
     }
 

@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2107 the original author or authors.
+ * Copyright 2007-2016 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,28 +18,10 @@ package net.ymate.platform.core.lang;
 import java.io.Serializable;
 
 /**
- * <p>
- * PairObject
- * </p>
- * <p>
- * 结对对象类型；
- * </p>
+ * 结对对象类型
  *
- * @author 刘镇 (suninformation@163.com)
- * @version 0.0.0
- *          <table style="border:1px solid gray;">
- *          <tr>
- *          <th width="100px">版本号</th><th width="100px">动作</th><th
- *          width="100px">修改人</th><th width="100px">修改时间</th>
- *          </tr>
- *          <!-- 以 Table 方式书写修改历史 -->
- *          <tr>
- *          <td>0.0.0</td>
- *          <td>创建类</td>
- *          <td>刘镇</td>
- *          <td>2010-4-17上午12:07:42</td>
- *          </tr>
- *          </table>
+ * @author 刘镇 (suninformation@163.com) on 2010-4-17 上午12:07:42
+ * @version 1.0
  */
 public class PairObject<K, V> implements Serializable, Cloneable {
 
@@ -58,27 +40,13 @@ public class PairObject<K, V> implements Serializable, Cloneable {
      */
     private V value;
 
-    /**
-     * 构造器
-     */
     public PairObject() {
     }
 
-    /**
-     * 构造器
-     *
-     * @param key
-     */
     public PairObject(K key) {
         this.key = key;
     }
 
-    /**
-     * 构造器
-     *
-     * @param key
-     * @param value
-     */
     public PairObject(K key, V value) {
         this.key = key;
         this.value = value;
@@ -100,17 +68,11 @@ public class PairObject<K, V> implements Serializable, Cloneable {
         this.value = value;
     }
 
-    /* (non-Javadoc)
-     * @see java.lang.Object#clone()
-     */
     @Override
     protected Object clone() throws CloneNotSupportedException {
         return super.clone();
     }
 
-    /* (non-Javadoc)
-     * @see java.lang.Object#equals(java.lang.Object)
-     */
     @Override
     public boolean equals(Object obj) {
         if (obj instanceof PairObject) {
@@ -122,9 +84,6 @@ public class PairObject<K, V> implements Serializable, Cloneable {
         return false;
     }
 
-    /* (non-Javadoc)
-     * @see java.lang.Object#toString()
-     */
     @Override
     public String toString() {
         return "{" + "key : '" + this.key + "', value : '" + this.value + "'}";

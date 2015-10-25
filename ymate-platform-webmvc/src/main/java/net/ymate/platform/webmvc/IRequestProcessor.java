@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2107 the original author or authors.
+ * Copyright 2007-2016 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,11 +28,11 @@ public interface IRequestProcessor {
     /**
      * 分析请求协议内容
      *
-     * @param owner
-     * @param requestMeta
-     * @param methodParamNames
+     * @param owner            YMP owner
+     * @param requestMeta      请求元描述
+     * @param methodParamNames 方法参数名称
      * @return 返回请求的参数映射
-     * @throws Exception
+     * @throws Exception 可能产生的异常
      */
     public Map<String, Object> processRequestParams(IWebMvc owner, RequestMeta requestMeta, String[] methodParamNames) throws Exception;
 }

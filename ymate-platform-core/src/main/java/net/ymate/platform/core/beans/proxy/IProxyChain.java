@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2107 the original author or authors.
+ * Copyright 2007-2016 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -52,7 +52,7 @@ public interface IProxyChain {
 
     /**
      * @return 执行代理链
-     * @throws Throwable
+     * @throws Throwable 执行过程中可能产生的异常
      */
     public Object doProxyChain() throws Throwable;
 }

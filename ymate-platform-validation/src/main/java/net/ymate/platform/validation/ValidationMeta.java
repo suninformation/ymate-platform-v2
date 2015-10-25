@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2107 the original author or authors.
+ * Copyright 2007-2016 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -112,11 +112,9 @@ public class ValidationMeta {
     }
 
     /**
-     * 处理targetClass所有Field成员属性
-     *
-     * @param parentFieldName
-     * @param targetClass
-     * @return
+     * @param parentFieldName 父类属性名称(用于递归)
+     * @param targetClass     目标类
+     * @return 处理targetClass所有Field成员属性
      */
     public Map<String, Annotation[]> __doGetMetaFromFields(String parentFieldName, Class<?> targetClass) {
         Map<String, Annotation[]> _returnValues = new LinkedHashMap<String, Annotation[]>();
@@ -158,8 +156,8 @@ public class ValidationMeta {
     }
 
     /**
-     * @param parentFieldName
-     * @param fieldName
+     * @param parentFieldName 父类属性名称
+     * @param fieldName       属性名称
      * @return 返回带层级关系的Field名称
      */
     private String __doGetFieldName(String parentFieldName, String fieldName) {

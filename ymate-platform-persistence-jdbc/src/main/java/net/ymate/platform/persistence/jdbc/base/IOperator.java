@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2107 the original author or authors.
+ * Copyright 2007-2016 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,8 +28,9 @@ import java.util.List;
 public interface IOperator {
 
     /**
-     * @return 执行操作
-     * @throws Exception
+     * 执行操作
+     *
+     * @throws Exception 可能产生的异常
      */
     public void execute() throws Exception;
 
@@ -51,7 +52,7 @@ public interface IOperator {
     /**
      * 设置访问器配置
      *
-     * @param accessorConfig
+     * @param accessorConfig 访问器配置对象
      */
     public void setAccessorConfig(IAccessorConfig accessorConfig);
 
@@ -71,13 +72,13 @@ public interface IOperator {
     public List<SQLParameter> getParameters();
 
     /**
-     * @param parameter
+     * @param parameter SQL参数对象
      * @return 添加SQL参数，若参数为NULL则忽略
      */
     public IOperator addParameter(SQLParameter parameter);
 
     /**
-     * @param parameter
+     * @param parameter SQL参数值
      * @return 添加SQL参数，若参数为NULL则将默认向SQL传递NULL值对象
      */
     public IOperator addParameter(Object parameter);

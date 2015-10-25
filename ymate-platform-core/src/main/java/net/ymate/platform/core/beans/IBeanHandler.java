@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2107 the original author or authors.
+ * Copyright 2007-2016 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,9 +38,9 @@ public interface IBeanHandler {
     /**
      * 执行Bean处理过程
      *
-     * @param targetClass
+     * @param targetClass 目标类型
      * @return 返回实例化对象，若返回null则表示丢弃当前类对象
-     * @throws Exception
+     * @throws Exception 处理过程可能产生的异常
      */
     public Object handle(Class<?> targetClass) throws Exception;
 }

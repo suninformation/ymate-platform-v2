@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2107 the original author or authors.
+ * Copyright 2007-2016 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -162,7 +162,7 @@ public class ResultSetHelper {
      * 遍历结果集合
      *
      * @param handler 结果集元素处理器
-     * @throws Exception
+     * @throws Exception 可能产生的异常
      */
     public void forEach(ItemHandler handler) throws Exception {
         this.forEach(1, handler);
@@ -173,7 +173,7 @@ public class ResultSetHelper {
      *
      * @param step    步长
      * @param handler 结果集元素处理器
-     * @throws Exception
+     * @throws Exception 可能产生的异常
      */
     public void forEach(int step, ItemHandler handler) throws Exception {
         step = (step > 0 ? step : 1);
@@ -193,7 +193,7 @@ public class ResultSetHelper {
          * @param wrapper 元素包装对象，提供多种数据提取方法
          * @param row     结果集当前所在行数
          * @return 返回值将决定此次遍历是否继续执行，true或false
-         * @throws Exception
+         * @throws Exception 可能产生的异常
          */
         boolean handle(ItemWrapper wrapper, int row) throws Exception;
     }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2107 the original author or authors.
+ * Copyright 2007-2016 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -59,7 +59,7 @@ public interface ISession {
      * @param sql     SQL语句对象
      * @param handler 结果集数据处理器
      * @return 执行SQL查询，返回全部结果数据
-     * @throws Exception
+     * @throws Exception 可能产生的异常
      */
     public <T> IResultSet<T> find(SQL sql, IResultSetHandler<T> handler) throws Exception;
 
@@ -69,7 +69,7 @@ public interface ISession {
      * @param handler 结果集数据处理器
      * @param page    分页参数对象
      * @return 执行SQL分页查询（执行总记录数统计）
-     * @throws Exception
+     * @throws Exception 可能产生的异常
      */
     public <T> IResultSet<T> find(SQL sql, IResultSetHandler<T> handler, Page page) throws Exception;
 
@@ -77,7 +77,7 @@ public interface ISession {
      * @param entity 实体对象
      * @param <T>    指定结果集数据类型
      * @return 根据实体属性值执行SQL查询，返回全部结果数据
-     * @throws Exception
+     * @throws Exception 可能产生的异常
      */
     public <T extends IEntity> IResultSet<T> find(T entity) throws Exception;
 
@@ -85,7 +85,7 @@ public interface ISession {
      * @param <T>    指定结果集数据类型
      * @param entity 实体查询对象
      * @return 根据实体执行SQL查询，返回全部结果数据
-     * @throws Exception
+     * @throws Exception 可能产生的异常
      */
     public <T extends IEntity> IResultSet<T> find(EntitySQL<T> entity) throws Exception;
 
@@ -94,7 +94,7 @@ public interface ISession {
      * @param entity 实体对象
      * @param where  查询条件对象
      * @return 根据实体执行SQL查询，返回全部结果数据
-     * @throws Exception
+     * @throws Exception 可能产生的异常
      */
     public <T extends IEntity> IResultSet<T> find(EntitySQL<T> entity, Where where) throws Exception;
 
@@ -104,7 +104,7 @@ public interface ISession {
      * @param where  查询条件对象
      * @param page   分页参数对象
      * @return 根据实体执行SQL分页查询
-     * @throws Exception
+     * @throws Exception 可能产生的异常
      */
     public <T extends IEntity> IResultSet<T> find(EntitySQL<T> entity, Where where, Page page) throws Exception;
 
@@ -113,7 +113,7 @@ public interface ISession {
      * @param entity 实体查询对象
      * @param id     记录Id
      * @return 通过ID查找指定的实体对象
-     * @throws Exception
+     * @throws Exception 可能产生的异常
      */
     public <T extends IEntity> T find(EntitySQL<T> entity, Serializable id) throws Exception;
 
@@ -122,7 +122,7 @@ public interface ISession {
      * @param sql     SQL语句对象
      * @param handler 结果集数据处理器
      * @return 执行SQL查询，返回结果集中第一条数据
-     * @throws Exception
+     * @throws Exception 可能产生的异常
      */
     public <T> T findFirst(SQL sql, IResultSetHandler<T> handler) throws Exception;
 
@@ -131,21 +131,21 @@ public interface ISession {
      * @param entity 实体查询对象
      * @param where  查询条件对象
      * @return 根据实体执行SQL查询，返回结果集中第一条数据
-     * @throws Exception
+     * @throws Exception 可能产生的异常
      */
     public <T extends IEntity> T findFirst(EntitySQL<T> entity, Where where) throws Exception;
 
     /**
      * @param sql SQL语句对象
      * @return 执行SQL更新（如更新、插入和删除），返回此次更新影响的记录数
-     * @throws Exception
+     * @throws Exception 可能产生的异常
      */
     public int executeForUpdate(SQL sql) throws Exception;
 
     /**
      * @param sql 批量SQL更新语句
      * @return 执行SQL批量更新（如批更新、插入和删除），返回此次更新影响的记录数
-     * @throws Exception
+     * @throws Exception 可能产生的异常
      */
     public int[] executeForUpdate(BatchSQL sql) throws Exception;
 
@@ -154,7 +154,7 @@ public interface ISession {
      * @param entity 实体查询对象
      * @param filter 显示字段过滤集合
      * @return 根据实体执行SQL更新，返回更新后的实体对象
-     * @throws Exception
+     * @throws Exception 可能产生的异常
      */
     public <T extends IEntity> T update(T entity, Fields filter) throws Exception;
 
@@ -163,7 +163,7 @@ public interface ISession {
      * @param entities 实体查询对象集合
      * @param filter   显示字段过滤集合
      * @return 根据实体执行SQL批量更新，返回更新后的实体对象集合
-     * @throws Exception
+     * @throws Exception 可能产生的异常
      */
     public <T extends IEntity> List<T> update(List<T> entities, Fields filter) throws Exception;
 
@@ -171,7 +171,7 @@ public interface ISession {
      * @param <T>    指定结果集数据类型
      * @param entity 实体对象
      * @return 根据实体执行记录插入，返回插入后的实体对象
-     * @throws Exception
+     * @throws Exception 可能产生的异常
      */
     public <T extends IEntity> T insert(T entity) throws Exception;
 
@@ -181,7 +181,7 @@ public interface ISession {
      * @param <T>      指定结果集数据类型
      * @param entities 实体对象集合
      * @return 根据实体执行记录批量插入，返回插入后的实体对象集合
-     * @throws Exception
+     * @throws Exception 可能产生的异常
      */
     public <T extends IEntity> List<T> insert(List<T> entities) throws Exception;
 
@@ -191,7 +191,7 @@ public interface ISession {
      * @param <T>    指定结果集数据类型
      * @param entity 实体对象
      * @return 根据实体执行记录删除，返回删除后的实体对象
-     * @throws Exception
+     * @throws Exception 可能产生的异常
      */
     public <T extends IEntity> T delete(T entity) throws Exception;
 
@@ -201,7 +201,7 @@ public interface ISession {
      * @param <T>      指定结果集数据类型
      * @param entities 实体对象集合
      * @return 根据实体执行记录批量删除，返回删除后的实体对象集合
-     * @throws Exception
+     * @throws Exception 可能产生的异常
      */
     public <T extends IEntity> List<T> delete(List<T> entities) throws Exception;
 
@@ -212,14 +212,14 @@ public interface ISession {
      * @param entityClass 实体类对象
      * @param where       查询条件对象
      * @return 计算查询结果总记录数量
-     * @throws Exception
+     * @throws Exception 可能产生的异常
      */
     public <T extends IEntity> long count(Class<T> entityClass, Where where) throws Exception;
 
     /**
      * @param sql SQL语句对象
      * @return 计算查询结果总记录数量
-     * @throws Exception
+     * @throws Exception 可能产生的异常
      */
     public long count(SQL sql) throws Exception;
 }

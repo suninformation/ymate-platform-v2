@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2107 the original author or authors.
+ * Copyright 2007-2016 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,7 +27,7 @@ public interface IEventRegister {
      * 执行自定义事件注册
      *
      * @param events 事件管理器
-     * @throws Exception
+     * @throws Exception 事件注册过程可能产生的异常
      */
     public void register(Events events) throws Exception;
 }

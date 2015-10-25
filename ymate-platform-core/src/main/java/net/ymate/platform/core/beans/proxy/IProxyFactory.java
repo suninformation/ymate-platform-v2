@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2107 the original author or authors.
+ * Copyright 2007-2016 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,12 +33,6 @@ public interface IProxyFactory {
      */
     public YMP getOwner();
 
-    /**
-     * 向工厂注册代理类对象
-     *
-     * @param proxy
-     * @return
-     */
     public IProxyFactory registerProxy(IProxy proxy);
 
     public IProxyFactory registerProxy(Collection<? extends IProxy> proxies);
@@ -49,23 +43,12 @@ public interface IProxyFactory {
     public List<IProxy> getProxies();
 
     /**
-     * @param filter
+     * @param filter 代理过滤器
      * @return 返回通过filter过滤后的代理对象集合
      */
     public List<IProxy> getProxies(IProxyFilter filter);
 
-    /**
-     * @param targetClass 被代理目标类型
-     * @param <T>
-     * @return 创建并返回代理对象
-     */
     public <T> T createProxy(Class<?> targetClass);
 
-    /**
-     * @param targetClass
-     * @param proxies
-     * @param <T>
-     * @return 创建并返回代理对象
-     */
     public <T> T createProxy(Class<?> targetClass, List<IProxy> proxies);
 }

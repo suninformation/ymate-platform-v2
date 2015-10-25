@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2107 the original author or authors.
+ * Copyright 2007-2016 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -49,7 +49,7 @@ public interface IWebErrorProcessor {
      * @param owner          所属YMP框架管理器实例
      * @param requestContext 请求上下文
      * @return 可用视图对象，若为空则采用系统默认
-     * @throws Exception
+     * @throws Exception 可能产生的异常
      */
     public IView onConvention(IWebMvc owner, IRequestContext requestContext) throws Exception;
 }

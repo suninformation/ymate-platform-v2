@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2107 the original author or authors.
+ * Copyright 2007-2016 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -52,7 +52,7 @@ public interface IUploadFileWrapper {
      * 转移文件
      *
      * @param dest 目标
-     * @throws Exception
+     * @throws Exception 可能产生的异常
      */
     public void transferTo(File dest) throws Exception;
 
@@ -60,7 +60,7 @@ public interface IUploadFileWrapper {
      * 保存文件
      *
      * @param dest 目标
-     * @throws Exception
+     * @throws Exception 可能产生的异常
      */
     public void writeTo(File dest) throws Exception;
 
@@ -71,13 +71,13 @@ public interface IUploadFileWrapper {
 
     /**
      * @return 获取文件输入流对象
-     * @throws IOException
+     * @throws IOException 可能产生的异常
      */
     public InputStream getInputStream() throws IOException;
 
     /**
      * @return 获取文件输出流对象
-     * @throws IOException
+     * @throws IOException 可能产生的异常
      */
     public OutputStream getOutputStream() throws IOException;
 }

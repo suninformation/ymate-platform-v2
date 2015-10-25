@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2107 the original author or authors.
+ * Copyright 2007-2016 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,15 +26,14 @@ import java.util.List;
 public interface IBatchUpdateOperator extends IOperator {
 
     /**
-     * 获取批量更新操作执行后，每组SQL影响的记录行数的数组；
      * 对于 INSERT、UPDATE 或 DELETE 语句，返回行数; 对于无返回结果的SQL语句，返回 0
      *
-     * @return int[]
+     * @return int[] 获取批量更新操作执行后，每组SQL影响的记录行数的数组；
      */
     public int[] getEffectCounts();
 
     /**
-     * @param sql
+     * @param sql SQL语句
      * @return 添加SQL语句
      */
     public IBatchUpdateOperator addBatchSQL(String sql);

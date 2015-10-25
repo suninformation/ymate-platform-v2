@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2107 the original author or authors.
+ * Copyright 2007-2016 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -52,14 +52,14 @@ public class DefaultEventConfig implements IEventConfig {
             __params = Collections.emptyMap();
         }
         //
-        __eventProvider = ClassUtils.impl(params.get("provider_class"), IEventProvider.class, this.getClass());
+        __eventProvider = ClassUtils.impl(params != null ? params.get("provider_class") : null, IEventProvider.class, this.getClass());
         if (__eventProvider == null) {
             __eventProvider = new DefaultEventProvider();
         }
         //
-        __defaultMode = Events.MODE.valueOf(StringUtils.defaultIfBlank(params.get("default_mode"), "ASYNC").toUpperCase());
+        __defaultMode = Events.MODE.valueOf(StringUtils.defaultIfBlank(params != null ? params.get("default_mode") : null, "ASYNC").toUpperCase());
         //
-        __threadPoolSize = BlurObject.bind(params.get("thread_pool_size")).toIntValue();
+        __threadPoolSize = BlurObject.bind(params != null ? params.get("thread_pool_size") : null).toIntValue();
         if (__threadPoolSize <= 0) {
             __threadPoolSize = Runtime.getRuntime().availableProcessors();
         }

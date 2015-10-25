@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2107 the original author or authors.
+ * Copyright 2007-2016 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,15 +27,14 @@ import java.util.Map;
 public interface IView {
 
     /**
-     * 添加视图属性
-     *
      * @param name  属性名称
      * @param value 属性值
-     * @return
+     * @return 添加视图属性
      */
     public IView addAttribute(String name, Object value);
 
     /**
+     * @param <T>  属性类型
      * @param name 属性名称
      * @return 返回视图对象属性key的值
      */
@@ -52,29 +51,28 @@ public interface IView {
     public String getContentType();
 
     /**
-     * 设置视图内容类型
-     *
      * @param contentType 内容类型
+     * @return 设置视图内容类型
      */
     public IView setContentType(String contentType);
 
     /**
-     * @param name
-     * @param date
+     * @param name Head名称
+     * @param date 值
      * @return 设置请求回应头
      */
     public IView addDateHeader(String name, long date);
 
     /**
-     * @param name
-     * @param value
+     * @param name  Head名称
+     * @param value 值
      * @return 设置请求回应头
      */
     public IView addHeader(String name, String value);
 
     /**
-     * @param name
-     * @param value
+     * @param name  Head名称
+     * @param value 值
      * @return 设置请求回应头
      */
     public IView addIntHeader(String name, int value);

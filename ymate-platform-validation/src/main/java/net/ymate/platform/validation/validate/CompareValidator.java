@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2107 the original author or authors.
+ * Copyright 2007-2016 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,10 +32,6 @@ import org.apache.commons.lang.StringUtils;
 @Validator(VCompare.class)
 public class CompareValidator implements IValidator {
 
-    private static String __COMPARE_NOT_EQ = "ymp.validation.compare_not_eq";
-
-    private static String __COMPARE_EQ = "ymp.validation.compare_eq";
-
     public ValidateResult validate(ValidateContext context) {
         if (context.getParamValue() != null && !context.getParamValue().getClass().isArray()) {
             VCompare _vCompare = (VCompare) context.getAnnotation();
@@ -59,9 +55,11 @@ public class CompareValidator implements IValidator {
                 } else {
                     switch (_vCompare.cond()) {
                         case NOT_EQ:
+                            String __COMPARE_NOT_EQ = "ymp.validation.compare_not_eq";
                             _msg = I18N.formatMessage(VALIDATION_I18N_RESOURCE, __COMPARE_NOT_EQ, "{0} can not eq {1}.", _pName, _pLabel);
                             break;
                         case EQ:
+                            String __COMPARE_EQ = "ymp.validation.compare_eq";
                             _msg = I18N.formatMessage(VALIDATION_I18N_RESOURCE, __COMPARE_EQ, "{0} must be eq {1}.", _pName, _pLabel);
                     }
                     if (StringUtils.trimToNull(_msg) == null) {

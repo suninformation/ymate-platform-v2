@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2107 the original author or authors.
+ * Copyright 2007-2016 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,13 +28,6 @@ import java.util.*;
  */
 public class ResourceUtils {
 
-    /**
-     * @param resourceName
-     * @param callingClass
-     * @param aggregate
-     * @return
-     * @throws java.io.IOException
-     */
     public static Iterator<URL> getResources(String resourceName, Class<?> callingClass, boolean aggregate) throws IOException {
         AggregateIterator<URL> iterator = new AggregateIterator<URL>();
         iterator.addEnumeration(Thread.currentThread().getContextClassLoader().getResources(resourceName));
@@ -53,11 +46,6 @@ public class ResourceUtils {
         return iterator;
     }
 
-    /**
-     * @param resourceName
-     * @param callingClass
-     * @return
-     */
     public static URL getResource(String resourceName, Class<?> callingClass) {
         URL url = Thread.currentThread().getContextClassLoader().getResource(resourceName);
         if (url == null) {
@@ -78,12 +66,6 @@ public class ResourceUtils {
         return url;
     }
 
-    /**
-     * @param resourceName
-     * @param callingClass
-     * @return 以流的方式加载类资源，若加载失败则返回null
-     * @throws java.io.IOException
-     */
     public static InputStream getResourceAsStream(String resourceName, Class<?> callingClass) throws IOException {
         URL url = getResource(resourceName, callingClass);
         return (url != null) ? url.openStream() : null;

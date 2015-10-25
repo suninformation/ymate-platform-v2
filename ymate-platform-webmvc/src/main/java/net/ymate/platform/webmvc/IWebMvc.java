@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2107 the original author or authors.
+ * Copyright 2007-2016 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -45,9 +45,9 @@ public interface IWebMvc {
     /**
      * 注册并分析控制器
      *
-     * @param targetClass
+     * @param targetClass 目标类型
      * @return 返回是否有效注册
-     * @throws Exception
+     * @throws Exception 可能产生的异常
      */
     public boolean registerController(Class<? extends Controller> targetClass) throws Exception;
 
@@ -55,10 +55,10 @@ public interface IWebMvc {
      * 处理控制器请求
      *
      * @param context        请求上下文
-     * @param servletContext
-     * @param request
-     * @param response
-     * @throws Exception
+     * @param servletContext ServletContext对象
+     * @param request        HttpServletRequest对象
+     * @param response       HttpServletResponse对象
+     * @throws Exception 可能产生的异常
      */
     public void processRequest(IRequestContext context,
                                ServletContext servletContext,

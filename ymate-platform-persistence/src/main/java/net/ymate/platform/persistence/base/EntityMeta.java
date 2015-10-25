@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2107 the original author or authors.
+ * Copyright 2007-2016 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -171,8 +171,8 @@ public class EntityMeta {
     /**
      * 处理@Property注解
      *
-     * @param targetClass
-     * @param targetMeta
+     * @param targetClass 目标类型
+     * @param targetMeta  实体元数据
      */
     private static void __doParseProperties(Class<? extends IEntity> targetClass, EntityMeta targetMeta) {
         for (Field _field : ClassUtils.getFields(targetClass, true)) {
@@ -214,8 +214,8 @@ public class EntityMeta {
     /**
      * 处理@Id注解
      *
-     * @param targetClass
-     * @param targetMeta
+     * @param targetClass 目标类型
+     * @param targetMeta  实体元数据
      */
     private static void __doParsePrimaryKeys(Class<? extends IEntity> targetClass, EntityMeta targetMeta) {
         PairObject<Field, Id> _id = ClassUtils.getFieldAnnotationFirst(targetClass, Id.class);
@@ -251,8 +251,8 @@ public class EntityMeta {
     /**
      * 处理@Indexes和@Index注解
      *
-     * @param targetClass
-     * @param targetMeta
+     * @param targetClass 目标类型
+     * @param targetMeta  实体元数据
      */
     private static void __doParseIndexes(Class<? extends IEntity> targetClass, EntityMeta targetMeta) {
         List<Index> _indexes = new ArrayList<Index>();

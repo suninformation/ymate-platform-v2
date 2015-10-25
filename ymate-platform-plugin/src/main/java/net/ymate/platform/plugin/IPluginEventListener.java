@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2107 the original author or authors.
+ * Copyright 2007-2016 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,32 +26,32 @@ public interface IPluginEventListener {
     /**
      * 插件初始化完毕将调用此方法
      *
-     * @param context
-     * @param plugin
+     * @param context 插件上下文对象
+     * @param plugin  插件实例
      */
     public void onInited(IPluginContext context, IPlugin plugin);
 
     /**
      * 插件启动完毕后将调用此方法
      *
-     * @param context
-     * @param plugin
+     * @param context 插件上下文对象
+     * @param plugin  插件实例
      */
     public void onStarted(IPluginContext context, IPlugin plugin);
 
     /**
      * 插件停止完毕将调用此方法
      *
-     * @param context
-     * @param plugin
+     * @param context 插件上下文对象
+     * @param plugin  插件实例
      */
     public void onShutdown(IPluginContext context, IPlugin plugin);
 
     /**
      * 插件初销毁前将调用此方法
      *
-     * @param context
-     * @param plugin
+     * @param context 插件上下文对象
+     * @param plugin  插件实例
      */
     public void onDestroy(IPluginContext context, IPlugin plugin);
 }

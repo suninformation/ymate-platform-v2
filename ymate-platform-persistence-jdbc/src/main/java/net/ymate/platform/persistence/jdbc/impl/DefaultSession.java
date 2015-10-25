@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2107 the original author or authors.
+ * Copyright 2007-2016 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -520,11 +520,11 @@ public class DefaultSession implements ISession {
     }
 
     /**
-     * @param entityMeta
-     * @param targetObj
+     * @param entityMeta 实体元描述对象
+     * @param targetObj  目标实体对象
      * @param filter     字段名称过滤集合
      * @return 获取主键对象的所有字段和值
-     * @throws Exception
+     * @throws Exception 可能产生的异常
      */
     protected PairObject<Fields, Params> __doGetPrimaryKeyFieldAndValues(EntityMeta entityMeta, Object targetObj, Fields filter) throws Exception {
         Fields _fields = Fields.create();
@@ -570,12 +570,12 @@ public class DefaultSession implements ISession {
     }
 
     /**
-     * @param entityMeta
-     * @param targetObj
+     * @param entityMeta 实体元描述对象
+     * @param targetObj  目标实体对象
      * @param filter     进滤的字段名称集合
      * @param includePK  是否提取主键对象的值
      * @return 获取实体的所有字段和值
-     * @throws Exception
+     * @throws Exception 可能产生的异常
      */
     protected PairObject<Fields, Params> __doGetEntityFieldAndValues(EntityMeta entityMeta, IEntity targetObj, Fields filter, boolean includePK) throws Exception {
         Fields _fields = Fields.create();

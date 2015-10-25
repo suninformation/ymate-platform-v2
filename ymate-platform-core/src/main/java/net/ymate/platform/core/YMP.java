@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2107 the original author or authors.
+ * Copyright 2007-2016 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -136,7 +136,7 @@ public class YMP {
      * 初始化YMP框架
      *
      * @return 返回当前YMP核心框架管理器对象
-     * @throws Exception
+     * @throws Exception 框架初始化失败时将抛出异常
      */
     public synchronized YMP init() throws Exception {
         if (!__inited) {
@@ -174,7 +174,7 @@ public class YMP {
     /**
      * 销毁YMP框架
      *
-     * @throws Exception
+     * @throws Exception 框架销毁失败时将抛出异常
      */
     public void destroy() throws Exception {
         if (__inited) {
@@ -220,8 +220,8 @@ public class YMP {
     /**
      * 注册自定义注解类处理器，重复注册将覆盖前者
      *
-     * @param annoClass
-     * @param handler
+     * @param annoClass 自定义注解类型
+     * @param handler   注解对象处理器
      */
     public void registerHandler(Class<? extends Annotation> annoClass, IBeanHandler handler) {
         if (annoClass.equals(Module.class) || annoClass.equals(Proxy.class) || annoClass.equals(EventRegister.class)) {
@@ -238,19 +238,18 @@ public class YMP {
     /**
      * 注册排除的接口类
      *
-     * @param excludedClass
+     * @param excludedClass 预排除的接口类型
      */
     public void registerExcludedClass(Class<?> excludedClass) {
         __beanFactory.registerExcludedClass(excludedClass);
     }
 
     /**
-     * 注册自定义类型
+     * 注册类
      *
-     * @param clazz
-     * @throws Exception
+     * @param clazz 目标类
      */
-    public void registerBean(Class<?> clazz) throws Exception {
+    public void registerBean(Class<?> clazz) {
         __beanFactory.registerBean(clazz);
     }
 
@@ -263,6 +262,8 @@ public class YMP {
     }
 
     /**
+     * @param <T>   返回类型
+     * @param clazz 接口类型
      * @return 提取类型为clazz的对象实例
      */
     public <T> T getBean(Class<T> clazz) {
@@ -272,7 +273,7 @@ public class YMP {
     /**
      * 向工厂注册代理类对象
      *
-     * @param proxy
+     * @param proxy 目标代理类
      */
     public void registerProxy(IProxy proxy) {
         __proxyFactory.registerProxy(proxy);
@@ -285,7 +286,7 @@ public class YMP {
     /**
      * 注册模块实例(此方法仅在YMP框架核心管理器未初始化前有效)
      *
-     * @param module
+     * @param module 目标模块
      */
     public void registerModule(IModule module) {
         if (!__inited) {
@@ -297,8 +298,8 @@ public class YMP {
     }
 
     /**
-     * @param moduleClass
-     * @param <T>
+     * @param moduleClass 模块类型
+     * @param <T>         模块类型
      * @return 获取模块类实例对象
      */
     public <T extends IModule> T getModule(Class<T> moduleClass) {
@@ -314,7 +315,7 @@ public class YMP {
 
     /**
      * @param targetFactory 目标对象工厂
-     * @param <T>
+     * @param <T>           对象工厂类型
      * @return 将目标对象工厂的Parent设置为当前YMP容器的对象工厂
      */
     public <T extends IBeanFactory> T bindBeanFactory(T targetFactory) {

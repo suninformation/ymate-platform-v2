@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2107 the original author or authors.
+ * Copyright 2007-2016 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,28 +26,10 @@ import java.math.BigInteger;
 import java.util.*;
 
 /**
- * <p>
- * BlurObject
- * </p>
- * <p>
- * 模糊对象，任意数据类型间转换；
- * </p>
+ * 模糊对象，任意数据类型间转换
  *
- * @author 刘镇 (suninformation@163.com)
- * @version 0.0.0
- *          <table style="border:1px solid gray;">
- *          <tr>
- *          <th width="100px">版本号</th><th width="100px">动作</th><th
- *          width="100px">修改人</th><th width="100px">修改时间</th>
- *          </tr>
- *          <!-- 以 Table 方式书写修改历史 -->
- *          <tr>
- *          <td>0.0.0</td>
- *          <td>创建类</td>
- *          <td>刘镇</td>
- *          <td>2010-4-16下午11:51:39</td>
- *          </tr>
- *          </table>
+ * @author 刘镇 (suninformation@163.com) on 2010-4-16 下午11:51:39
+ * @version 1.0
  */
 public class BlurObject implements Serializable, Cloneable {
 
@@ -67,28 +49,19 @@ public class BlurObject implements Serializable, Cloneable {
         return new BlurObject(o);
     }
 
-    /**
-     * 构造器
-     *
-     * @param o
-     */
     public BlurObject(Object o) {
         attr = o;
     }
 
     /**
-     * 输出对象
-     *
-     * @return
+     * @return 输出对象
      */
     public Object toObjectValue() {
         return attr;
     }
 
     /**
-     * 输出模糊对象
-     *
-     * @return
+     * @return 输出模糊对象
      */
     public BlurObject toBlurObjectValue() {
         if (attr instanceof BlurObject) {
@@ -98,9 +71,7 @@ public class BlurObject implements Serializable, Cloneable {
     }
 
     /**
-     * 输出为映射
-     *
-     * @return
+     * @return 输出为映射
      */
     public Map<?, ?> toMapValue() {
         if (attr == null) {
@@ -113,9 +84,7 @@ public class BlurObject implements Serializable, Cloneable {
     }
 
     /**
-     * 输出为列表
-     *
-     * @return
+     * @return 输出为列表
      */
     public List<?> toListValue() {
         if (attr == null) {
@@ -130,9 +99,7 @@ public class BlurObject implements Serializable, Cloneable {
     }
 
     /**
-     * 输出为集合
-     *
-     * @return
+     * @return 输出为集合
      */
     public Set<?> toSetValue() {
         if (attr == null) {
@@ -147,9 +114,7 @@ public class BlurObject implements Serializable, Cloneable {
     }
 
     /**
-     * 输出布尔值，如果当前类型非布尔值，那么尝试转换
-     *
-     * @return
+     * @return 输出布尔值，如果当前类型非布尔值，那么尝试转换
      */
     public boolean toBooleanValue() {
         if (attr == null) {
@@ -159,7 +124,7 @@ public class BlurObject implements Serializable, Cloneable {
             return "true".equalsIgnoreCase(this.attr.toString()) || "on".equalsIgnoreCase(this.attr.toString()) || "1".equalsIgnoreCase(this.attr.toString());
         }
         if (boolean.class.isAssignableFrom(attr.getClass())) {
-            return (Boolean) attr ? true : false;
+            return (Boolean) attr;
         }
         if (float.class.isAssignableFrom(attr.getClass())) {
             return ((Float) attr) > 0;
@@ -182,16 +147,11 @@ public class BlurObject implements Serializable, Cloneable {
         if (attr instanceof Map) {
             return ((Map) attr).size() > 0;
         }
-        if (attr instanceof BlurObject) {
-            return ((BlurObject) this.attr).toBooleanValue();
-        }
-        return false;
+        return attr instanceof BlurObject && ((BlurObject) this.attr).toBooleanValue();
     }
 
     /**
-     * 输出整数
-     *
-     * @return
+     * @return 输出整数
      */
     public int toIntValue() {
         if (attr == null) {
@@ -238,9 +198,7 @@ public class BlurObject implements Serializable, Cloneable {
     }
 
     /**
-     * 输出串
-     *
-     * @return
+     * @return 输出串
      */
     public String toStringValue() {
         if (attr == null) {
@@ -256,9 +214,7 @@ public class BlurObject implements Serializable, Cloneable {
     }
 
     /**
-     * 输出浮点数
-     *
-     * @return
+     * @return 输出浮点数
      */
     public float toFloatValue() {
         if (attr == null) {
@@ -302,9 +258,7 @@ public class BlurObject implements Serializable, Cloneable {
     }
 
     /**
-     * 输出双精度
-     *
-     * @return
+     * @return 输出双精度
      */
     public double toDoubleValue() {
         if (attr == null) {
@@ -348,13 +302,11 @@ public class BlurObject implements Serializable, Cloneable {
     }
 
     /**
-     * 输出长整形
-     *
-     * @return
+     * @return 输出长整形
      */
     public long toLongValue() {
         if (attr == null) {
-            return 0l;
+            return 0;
         }
         if (long.class.isAssignableFrom(attr.getClass())) {
             return (Long) attr;
@@ -375,7 +327,7 @@ public class BlurObject implements Serializable, Cloneable {
             if (StringUtils.isNotBlank(attr.toString())) {
                 return Long.parseLong(attr.toString(), 10);
             } else {
-                return 0l;
+                return 0;
             }
         }
         if (attr instanceof Boolean || boolean.class.isAssignableFrom(attr.getClass())) {
@@ -390,7 +342,7 @@ public class BlurObject implements Serializable, Cloneable {
         if (attr instanceof BlurObject) {
             return ((BlurObject) this.attr).toLongValue();
         }
-        return 0l;
+        return 0;
     }
 
     public byte toByteValue() {
@@ -464,7 +416,7 @@ public class BlurObject implements Serializable, Cloneable {
             object = attr == null ? null : this.toLongValue();
         } else if (clazz.equals(long.class)) {
             object = this.toLongValue();
-        }  else if (clazz.equals(BigInteger.class)) {
+        } else if (clazz.equals(BigInteger.class)) {
             object = new BigInteger(toStringValue());
         } else if (clazz.equals(BigDecimal.class)) {
             object = new BigDecimal(toStringValue());
@@ -502,9 +454,7 @@ public class BlurObject implements Serializable, Cloneable {
     }
 
     /**
-     * 获得对象类
-     *
-     * @return
+     * @return 获得对象类
      */
     public Class<?> getObjectClass() {
         if (attr != null) {
@@ -513,26 +463,18 @@ public class BlurObject implements Serializable, Cloneable {
         return null;
     }
 
-    /*
-     * (non-Javadoc)
-     *
-     * @see java.lang.Object#hashCode()
-     */
+    @Override
     public int hashCode() {
         final int prime = 31;
         int result = 1;
         result = prime * result + ((attr == null) ? 0 : attr.hashCode());
-        Class<?> _attrClass = attr.getClass();
+        Class<?> _attrClass = attr == null ? null : attr.getClass();
         result = prime * result + ((_attrClass == null) ? 0 : _attrClass.hashCode());
         result = prime * result;
         return result;
     }
 
-    /*
-     * (non-Javadoc)
-     *
-     * @see java.lang.Object#equals(java.lang.Object)
-     */
+    @Override
     public boolean equals(Object obj) {
         if (this == obj) {
             return true;
@@ -551,9 +493,9 @@ public class BlurObject implements Serializable, Cloneable {
         } else if (!this.attr.equals(other.attr)) {
             return false;
         }
-        Class<?> _attrClass = attr.getClass();
+        Class<?> _attrClass = attr == null ? null : attr.getClass();
         if (_attrClass == null) {
-            if (other.attr.getClass() != null) {
+            if ((other.attr != null ? other.attr.getClass() : null) != null) {
                 return false;
             }
         } else if (!_attrClass.equals(other.attr.getClass())) {
@@ -562,11 +504,7 @@ public class BlurObject implements Serializable, Cloneable {
         return attr == other.attr;
     }
 
-    /*
-     * (non-Javadoc)
-     *
-     * @see java.lang.Object#toString()
-     */
+    @Override
     public String toString() {
         if (attr != null) {
             return attr.toString();

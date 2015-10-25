@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2107 the original author or authors.
+ * Copyright 2007-2016 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,8 +28,8 @@ public interface IPluginFactory {
     /**
      * 插件工厂初始化
      *
-     * @param pluginConfig
-     * @throws Exception
+     * @param pluginConfig 插件初始化配置
+     * @throws Exception 工厂初始化时可能产生的异常
      */
     public void init(IPluginConfig pluginConfig) throws Exception;
 
@@ -41,14 +41,14 @@ public interface IPluginFactory {
     /**
      * 销毁插件工厂
      *
-     * @throws Exception
+     * @throws Exception 工厂销毁时可能产生的异常
      */
     public void destroy() throws Exception;
 
     /**
      * 添加被排除的接口
      *
-     * @param interfaceClass
+     * @param interfaceClass 预排除的接口
      */
     public void addExcludedInterfaceClass(Class<?> interfaceClass);
 
@@ -69,20 +69,20 @@ public interface IPluginFactory {
     public IPlugin getPlugin(String id);
 
     /**
-     * @param clazz
-     * @param <T>
+     * @param clazz 插件接口类
+     * @param <T>   插件接口类型
      * @return 通过接口类型获取插件实例
      */
     public <T> T getPlugin(Class<T> clazz);
 
     /**
-     * @param id
+     * @param id 插件ID
      * @return 通过ID获取插件配置信息元数据描述
      */
     public PluginMeta getPluginMeta(String id);
 
     /**
-     * @param clazz
+     * @param clazz 插件接口类
      * @return 通过接口类型获取插件配置信息元数据描述
      */
     public PluginMeta getPluginMeta(Class<? extends IPlugin> clazz);

@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2107 the original author or authors.
+ * Copyright 2007-2016 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,7 +28,7 @@ public abstract class Trade<T> implements ITrade {
     /**
      * 设置执行结果
      *
-     * @param returns
+     * @param returns 预返回的结果对象
      */
     protected void setReturns(T returns) {
         this.__returns = returns;

@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2107 the original author or authors.
+ * Copyright 2007-2016 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,39 +29,41 @@ import java.sql.Statement;
 public interface IAccessorConfig {
 
     /**
+     * @param conn 连接对象
      * @return 创建自定义Statement对象，默认null
-     * @throws Exception
+     * @throws Exception 可能产生的异常
      */
     public Statement getStatement(Connection conn) throws Exception;
 
     /**
-     * @param conn
-     * @param sql
+     * @param conn 连接对象
+     * @param sql  SQL语句
      * @return 创建自定义 CallableStatement对象，默认null
-     * @throws Exception
+     * @throws Exception 可能产生的异常
      */
     public CallableStatement getCallableStatement(Connection conn, String sql) throws Exception;
 
     /**
-     * @param conn
-     * @param sql
+     * @param conn 连接对象
+     * @param sql  SQL语句
      * @return 创建自定义PerparedStatement对象，默认null
-     * @throws Exception
+     * @throws Exception 可能产生的异常
      */
     public PreparedStatement getPreparedStatement(Connection conn, String sql) throws Exception;
 
     /**
      * Statement对象执行之前调用
      *
-     * @param context
-     * @throws Exception
+     * @param context 访问器配置事件上下文对象
+     * @throws Exception 可能产生的异常
      */
     public void beforeStatementExecution(AccessorEventContext context) throws Exception;
 
     /**
      * Statement对象执行之后调用
      *
-     * @throws Exception
+     * @param context 访问器配置事件上下文对象
+     * @throws Exception 可能产生的异常
      */
     public void afterStatementExecution(AccessorEventContext context) throws Exception;
 
@@ -70,7 +72,7 @@ public interface IAccessorConfig {
      * 注意，此方法为此 Statement 对象生成的结果集合设置默认获取方向。每个结果集合都具有它自己用于获取和设置其自身获取方向的方法。
      * 取值范围：ResultSet.FETCH_FORWARD、ResultSet.FETCH_REVERSE 和 ResultSet.FETCH_UNKNOWN
      *
-     * @return
+     * @return 获取方向
      */
     public int getFetchDirection();
 
@@ -78,7 +80,7 @@ public interface IAccessorConfig {
      * 为 JDBC 驱动程序提供一个提示，它提示此 Statement 生成的 ResultSet 对象需要更多行时应该从数据库获取的行数。
      * 指定的行数仅影响使用此语句创建的结果集合。如果指定的值为 0，则忽略该提示。默认值为 0。
      *
-     * @return
+     * @return 获取行数
      */
     public int getFetchSize();
 
@@ -88,7 +90,7 @@ public interface IAccessorConfig {
      * LONGVARCHAR 字段。如果超过了该限制，则直接丢弃多出的数据。为了获得最大的可移植性，应该使用大于 256 的值。
      * 以字节为单位的新列大小限制；0 表示没有任何限制
      *
-     * @return
+     * @return 字段最大数
      */
     public int getMaxFieldSize();
 
@@ -96,7 +98,7 @@ public interface IAccessorConfig {
      * 将此 Statement 对象生成的所有 ResultSet 对象可以包含的最大行数限制设置为给定数。如果超过了该限制，则直接撤消多出的行。
      * 新的最大行数限制；0 表示没有任何限制
      *
-     * @return
+     * @return 最大行数
      */
     public int getMaxRows();
 
@@ -106,7 +108,7 @@ public interface IAccessorConfig {
      * 驱动程序实现也可以将此限制应用于 ResultSet 方法（有关详细信息，请参考驱动程序供应商文档）。
      * 以秒为单位的查询超时限制；0 表示没有任何限制
      *
-     * @return
+     * @return 查询超时时间
      */
     public int getQueryTimeout();
 }

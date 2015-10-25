@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2107 the original author or authors.
+ * Copyright 2007-2016 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,28 +28,10 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
- * <p>
- * TreeObject
- * </p>
- * <p>
- * 树对象，使用级联方式存储各种数据类型，不限层级深度；
- * </p>
+ * 树对象，使用级联方式存储各种数据类型，不限层级深度
  *
- * @author 刘镇 (suninformation@163.com)
- * @version 0.0.0
- *          <table style="border:1px solid gray;">
- *          <tr>
- *          <th width="100px">版本号</th><th width="100px">动作</th><th
- *          width="100px">修改人</th><th width="100px">修改时间</th>
- *          </tr>
- *          <!-- 以 Table 方式书写修改历史 -->
- *          <tr>
- *          <td>0.0.0</td>
- *          <td>创建类</td>
- *          <td>刘镇</td>
- *          <td>2010-3-27下午10:32:09</td>
- *          </tr>
- *          </table>
+ * @author 刘镇 (suninformation@163.com) on 2010-3-27 下午10:32:09
+ * @version 1.0
  */
 @SuppressWarnings("unchecked")
 public class TreeObject implements Serializable, Cloneable {
@@ -381,167 +363,84 @@ public class TreeObject implements Serializable, Cloneable {
 
     //////////
 
-    /**
-     * 构造器
-     */
     public TreeObject() {
     }
 
-    /**
-     * 构造器
-     *
-     * @param bool
-     */
     public TreeObject(boolean bool) {
         _object = bool;
         _type = TYPE_BOOLEAN;
     }
 
-    /**
-     * 构造器
-     *
-     * @param bool
-     */
     public TreeObject(Boolean bool) {
-        _object = bool != null && bool.booleanValue();
+        _object = bool != null && bool;
         _type = TYPE_BOOLEAN;
     }
 
-    /**
-     * 构造器
-     *
-     * @param b
-     */
     public TreeObject(byte b) {
         _object = b;
         _type = TYPE_BYTE;
     }
 
-    /**
-     * 构造器
-     *
-     * @param b
-     */
     public TreeObject(Byte b) {
-        _object = b != null ? b.byteValue() : Byte.MIN_VALUE;
+        _object = b != null ? b : Byte.MIN_VALUE;
         _type = TYPE_BYTE;
     }
 
-    /**
-     * 构造器
-     *
-     * @param bytes
-     */
     public TreeObject(byte[] bytes) {
         _object = bytes;
         _type = TYPE_BYTES;
     }
 
-    /**
-     * 构造器
-     *
-     * @param bytes
-     */
     public TreeObject(Byte[] bytes) {
         _object = bytes;
         _type = TYPE_BYTES;
     }
 
-    /**
-     * 构造器
-     *
-     * @param c
-     */
     public TreeObject(char c) {
         _object = c;
         _type = TYPE_CHAR;
     }
 
-    /**
-     * 构造器
-     *
-     * @param c
-     */
     public TreeObject(Character c) {
-        _object = c != null ? c.charValue() : Character.MIN_VALUE;
+        _object = c != null ? c : Character.MIN_VALUE;
         _type = TYPE_CHAR;
     }
 
-    /**
-     * 构造器
-     *
-     * @param c
-     */
     public TreeObject(Collection<?> c) {
         _object = c;
         _type = TYPE_COLLECTION;
     }
 
-    /**
-     * 构造器
-     *
-     * @param d
-     */
     public TreeObject(double d) {
         _object = d;
         _type = TYPE_DOUBLE;
     }
 
-    /**
-     * 构造器
-     *
-     * @param d
-     */
     public TreeObject(Double d) {
-        _object = d != null ? d.doubleValue() : Double.MIN_VALUE;
+        _object = d != null ? d : Double.MIN_VALUE;
         _type = TYPE_DOUBLE;
     }
 
-    /**
-     * 构造器
-     *
-     * @param f
-     */
     public TreeObject(float f) {
         _object = f;
         _type = TYPE_FLOAT;
     }
 
-    /**
-     * 构造器
-     *
-     * @param f
-     */
     public TreeObject(Float f) {
-        _object = f != null ? f.floatValue() : Float.MIN_VALUE;
+        _object = f != null ? f : Float.MIN_VALUE;
         _type = TYPE_FLOAT;
     }
 
-    /**
-     * 构造器
-     *
-     * @param i
-     */
     public TreeObject(int i) {
         _object = i;
         _type = TYPE_INTEGER;
     }
 
-    /**
-     * 构造器
-     *
-     * @param i
-     */
     public TreeObject(Integer i) {
-        _object = i != null ? i.intValue() : Integer.MIN_VALUE;
+        _object = i != null ? i : Integer.MIN_VALUE;
         _type = TYPE_INTEGER;
     }
 
-    /**
-     * 构造器
-     *
-     * @param l
-     */
     public TreeObject(long l) {
         _object = l;
         _type = TYPE_LONG;
@@ -550,7 +449,7 @@ public class TreeObject implements Serializable, Cloneable {
     /**
      * 构造器
      *
-     * @param t
+     * @param t      时间毫秒值
      * @param isTime 是否时间类型，如果是时间类型，则存储的是时间的UTC时间毫秒值
      */
     public TreeObject(long t, boolean isTime) {
@@ -558,62 +457,37 @@ public class TreeObject implements Serializable, Cloneable {
         _type = isTime ? TYPE_TIME : TYPE_LONG;
     }
 
-    /**
-     * 构造器
-     *
-     * @param l
-     */
     public TreeObject(Long l) {
-        _object = l != null ? l.longValue() : Long.MIN_VALUE;
+        _object = l != null ? l : Long.MIN_VALUE;
         _type = TYPE_LONG;
     }
 
     /**
      * 构造器
      *
-     * @param t
-     * @param isTime
+     * @param t      时间毫秒值
+     * @param isTime 是否时间类型，如果是时间类型，则存储的是时间的UTC时间毫秒值
      */
     public TreeObject(Long t, boolean isTime) {
-        _object = t != null ? t.longValue() : Long.MIN_VALUE;
+        _object = t != null ? t : Long.MIN_VALUE;
         _type = isTime ? TYPE_TIME : TYPE_LONG;
     }
 
-    /**
-     * 构造器
-     *
-     * @param m
-     */
     public TreeObject(Map<?, ?> m) {
         _object = m;
         _type = TYPE_MAP;
     }
 
-    /**
-     * 构造器
-     *
-     * @param s
-     */
     public TreeObject(short s) {
         _object = s;
         _type = TYPE_SHORT;
     }
 
-    /**
-     * 构造器
-     *
-     * @param s
-     */
     public TreeObject(Short s) {
-        _object = s != null ? s.shortValue() : Short.MIN_VALUE;
+        _object = s != null ? s : Short.MIN_VALUE;
         _type = TYPE_SHORT;
     }
 
-    /**
-     * 构造器
-     *
-     * @param s
-     */
     public TreeObject(String s) {
         _object = s;
         _type = TYPE_STRING;
@@ -630,11 +504,6 @@ public class TreeObject implements Serializable, Cloneable {
         _type = isMix ? TYPE_MIX_STRING : TYPE_STRING;
     }
 
-    /**
-     * 构造器
-     *
-     * @param tObject
-     */
     public TreeObject(TreeObject tObject) {
         if (tObject != null) {
             _object = tObject._object;
@@ -792,231 +661,116 @@ public class TreeObject implements Serializable, Cloneable {
 
     ////////
 
-    /**
-     * 添加元素 - 布尔型
-     *
-     * @param b
-     */
     public TreeObject add(boolean b) {
         return add(b, TYPE_BOOLEAN);
     }
 
-    /**
-     * 添加元素 - 布尔型
-     *
-     * @param b
-     */
     public TreeObject add(Boolean b) {
-        return add(b != null && b.booleanValue(), TYPE_BOOLEAN);
+        return add(b != null && b, TYPE_BOOLEAN);
     }
 
-    /**
-     * 添加元素 - byte字节
-     *
-     * @param b
-     */
     public TreeObject add(byte b) {
         return add(b, TYPE_BYTE);
     }
 
-    /**
-     * 添加元素 - Byte型
-     *
-     * @param b
-     */
     public TreeObject add(Byte b) {
-        return add(b != null ? b.byteValue() : 0, TYPE_BYTE);
+        return add(b != null ? b : 0, TYPE_BYTE);
     }
 
-    /**
-     * 添加元素 - byte字节数组
-     *
-     * @param bytes
-     */
     public TreeObject add(byte[] bytes) {
         return add(bytes, TYPE_BYTES);
     }
 
-    /**
-     * 添加元素 - Byte型数组
-     *
-     * @param bytes
-     */
     public TreeObject add(Byte[] bytes) {
         return add(bytes, TYPE_BYTES);
     }
 
-    /**
-     * 添加元素 - char字符
-     *
-     * @param c
-     */
     public TreeObject add(char c) {
         return add(c, TYPE_CHAR);
     }
 
-    /**
-     * 添加元素 - Char型
-     *
-     * @param c
-     */
     public TreeObject add(Character c) {
-        return add(c != null ? c.charValue() : Character.MIN_CODE_POINT, TYPE_CHAR);
+        return add(c != null ? c : Character.MIN_CODE_POINT, TYPE_CHAR);
     }
 
-    /**
-     * 添加元素 - double双精度
-     *
-     * @param d
-     */
     public TreeObject add(double d) {
         return add(d, TYPE_DOUBLE);
     }
 
-    /**
-     * 添加元素 - Double型
-     *
-     * @param d
-     */
     public TreeObject add(Double d) {
-        return add(d != null ? d.doubleValue() : 0d, TYPE_DOUBLE);
+        return add(d != null ? d : 0d, TYPE_DOUBLE);
     }
 
-    /**
-     * 添加元素 - float浮点
-     *
-     * @param f
-     */
     public TreeObject add(float f) {
         return add(f, TYPE_FLOAT);
     }
 
-    /**
-     * 添加元素 - Float型
-     *
-     * @param f
-     */
     public TreeObject add(Float f) {
-        return add(f != null ? f.floatValue() : 0f, TYPE_FLOAT);
+        return add(f != null ? f : 0f, TYPE_FLOAT);
     }
 
-    /**
-     * 添加元素 - int整数
-     *
-     * @param i
-     */
     public TreeObject add(int i) {
         return add(i, TYPE_INTEGER);
     }
 
-    /**
-     * 添加元素 - Integer型
-     *
-     * @param i
-     */
     public TreeObject add(Integer i) {
-        return add(i != null ? i.intValue() : 0, TYPE_INTEGER);
+        return add(i != null ? i : 0, TYPE_INTEGER);
     }
 
-    /**
-     * 添加元素 - long长整数
-     *
-     * @param l
-     */
     public TreeObject add(long l) {
         return add(l, TYPE_LONG);
     }
 
-    /**
-     * 添加元素 - long或utc时间
-     *
-     * @param t
-     * @param isTime
-     */
     public TreeObject add(long t, boolean isTime) {
         return add(t, isTime ? TYPE_TIME : TYPE_LONG);
     }
 
-    /**
-     * 添加元素 - Long型
-     *
-     * @param l
-     */
     public TreeObject add(Long l) {
-        return add(l != null ? l.longValue() : 0l, TYPE_LONG);
+        return add(l != null ? l : 0, TYPE_LONG);
     }
 
-    /**
-     * 添加元素 - Long型或utc时间
-     *
-     * @param t
-     * @param isTime
-     */
     public TreeObject add(Long t, boolean isTime) {
-        return add(t != null ? t.longValue() : 0l, isTime ? TYPE_TIME : TYPE_LONG);
+        return add(t != null ? t : 0, isTime ? TYPE_TIME : TYPE_LONG);
     }
 
-    /**
-     * 添加元素 - Object对象
-     *
-     * @param o
-     */
     public TreeObject add(Object o) {
         return add(o, __checkType(o));
     }
 
     /**
-     * 添加元素 - Object对象并指定type类型
+     * 添加元素
      *
-     * @param o
-     * @param type
+     * @param o    Object对象
+     * @param type 指定type类型
+     * @return 返回当前TreeObject实例
      */
     public TreeObject add(Object o, int type) {
         return add(new TreeObject(o, type));
     }
 
-    /**
-     * 添加元素 - short短整型
-     *
-     * @param s
-     */
     public TreeObject add(short s) {
         return add(s, TYPE_SHORT);
     }
 
-    /**
-     * 添加元素 - Short型
-     *
-     * @param s
-     */
     public TreeObject add(Short s) {
-        return add(s != null ? s.shortValue() : 0, TYPE_SHORT);
+        return add(s != null ? s : 0, TYPE_SHORT);
     }
 
-    /**
-     * 添加元素 - String字符串
-     *
-     * @param s
-     */
     public TreeObject add(String s) {
         return add(s, TYPE_STRING);
     }
 
     /**
-     * 添加元素 - String字符串并指定是否混淆
+     * 添加元素
      *
-     * @param s
-     * @param isMix
+     * @param s     String字符串
+     * @param isMix 指定是否混淆
+     * @return 返回当前TreeObject实例
      */
     public TreeObject add(String s, boolean isMix) {
         return add(s, isMix ? TYPE_MIX_STRING : TYPE_STRING);
     }
 
-    /**
-     * 添加元素 - TreeObject树对象
-     *
-     * @param tObject
-     */
     public TreeObject add(TreeObject tObject) {
         if (tObject != null) {
             if (_mode != MODE_MAP) {
@@ -1038,165 +792,82 @@ public class TreeObject implements Serializable, Cloneable {
 
     //////////
 
-    /**
-     * @param k
-     * @param b
-     */
     public TreeObject put(String k, boolean b) {
         return put(k, b, TYPE_BOOLEAN);
     }
 
-    /**
-     * @param k
-     * @param b
-     */
     public TreeObject put(String k, Boolean b) {
         return put(k, b, TYPE_BOOLEAN);
     }
 
-    /**
-     * @param k
-     * @param b
-     */
     public TreeObject put(String k, byte b) {
         return put(k, b, TYPE_BYTE);
     }
 
-    /**
-     * @param k
-     * @param b
-     */
     public TreeObject put(String k, Byte b) {
         return put(k, b, TYPE_BYTE);
     }
 
-    /**
-     * @param k
-     * @param bytes
-     */
     public TreeObject put(String k, byte[] bytes) {
         return put(k, bytes, TYPE_BYTES);
     }
 
-    /**
-     * @param k
-     * @param bytes
-     */
     public TreeObject put(String k, Byte[] bytes) {
         return put(k, bytes, TYPE_BYTES);
     }
 
-    /**
-     * @param k
-     * @param c
-     */
     public TreeObject put(String k, char c) {
         return put(k, c, TYPE_CHAR);
     }
 
-    /**
-     * @param k
-     * @param c
-     */
     public TreeObject put(String k, Character c) {
         return put(k, c, TYPE_CHAR);
     }
 
-    /**
-     * @param k
-     * @param d
-     */
     public TreeObject put(String k, double d) {
         return put(k, d, TYPE_DOUBLE);
     }
 
-    /**
-     * @param k
-     * @param d
-     */
     public TreeObject put(String k, Double d) {
         return put(k, d, TYPE_DOUBLE);
     }
 
-    /**
-     * @param k
-     * @param f
-     */
     public TreeObject put(String k, float f) {
         return put(k, f, TYPE_FLOAT);
     }
 
-    /**
-     * @param k
-     * @param f
-     */
     public TreeObject put(String k, Float f) {
         return put(k, f, TYPE_FLOAT);
     }
 
-    /**
-     * @param k
-     * @param i
-     */
     public TreeObject put(String k, int i) {
         return put(k, i, TYPE_INTEGER);
     }
 
-    /**
-     * @param k
-     * @param i
-     */
     public TreeObject put(String k, Integer i) {
         return put(k, i, TYPE_INTEGER);
     }
 
-    /**
-     * @param k
-     * @param l
-     */
     public TreeObject put(String k, long l) {
         return put(k, l, TYPE_LONG);
     }
 
-    /**
-     * @param k
-     * @param t
-     * @param isTime
-     */
     public TreeObject put(String k, long t, boolean isTime) {
         return put(k, t, isTime ? TYPE_TIME : TYPE_LONG);
     }
 
-    /**
-     * @param k
-     * @param l
-     */
     public TreeObject put(String k, Long l) {
         return put(k, l, TYPE_LONG);
     }
 
-    /**
-     * @param k
-     * @param t
-     * @param isTime
-     */
     public TreeObject put(String k, Long t, boolean isTime) {
         return put(k, t, isTime ? TYPE_TIME : TYPE_LONG);
     }
 
-    /**
-     * @param k
-     * @param o
-     */
     public TreeObject put(String k, Object o) {
         return put(k, o, __checkType(o));
     }
 
-    /**
-     * @param k
-     * @param o
-     * @param type
-     */
     public TreeObject put(String k, Object o, int type) {
         if (o != null) {
             put(k, new TreeObject(o, type));
@@ -1204,43 +875,22 @@ public class TreeObject implements Serializable, Cloneable {
         return this;
     }
 
-    /**
-     * @param k
-     * @param s
-     */
     public TreeObject put(String k, short s) {
         return put(k, s, TYPE_SHORT);
     }
 
-    /**
-     * @param k
-     * @param s
-     */
     public TreeObject put(String k, Short s) {
         return put(k, s, TYPE_SHORT);
     }
 
-    /**
-     * @param k
-     * @param s
-     */
     public TreeObject put(String k, String s) {
         return put(k, s, TYPE_STRING);
     }
 
-    /**
-     * @param k
-     * @param s
-     * @param isMix
-     */
     public TreeObject put(String k, String s, boolean isMix) {
         return put(k, s, isMix ? TYPE_MIX_STRING : TYPE_STRING);
     }
 
-    /**
-     * @param k
-     * @param tObject
-     */
     public TreeObject put(String k, TreeObject tObject) {
         if (StringUtils.isNotBlank(k) && tObject != null) {
             if (_mode != MODE_ARRAY) {
@@ -1263,10 +913,8 @@ public class TreeObject implements Serializable, Cloneable {
     //////////
 
     /**
-     * 若存在指定序列的对象且对象不为空，则返回true
-     *
-     * @param index
-     * @return
+     * @param index 序列索引
+     * @return 若存在指定序列的对象且对象不为空，则返回true
      */
     public boolean has(int index) {
         if (isMap() || isValue()) {
@@ -1282,10 +930,8 @@ public class TreeObject implements Serializable, Cloneable {
     }
 
     /**
-     * 若当前为映射模式，并存在key对应的元素且此对象不为空，是返回true
-     *
-     * @param key
-     * @return
+     * @param key 元素KEY
+     * @return 若当前为映射模式，并存在key对应的元素且此对象不为空，是返回true
      */
     public boolean has(String key) {
         if (isList() || isValue()) {
@@ -1301,27 +947,21 @@ public class TreeObject implements Serializable, Cloneable {
     }
 
     /**
-     * 是否数组集合模式
-     *
-     * @return
+     * @return 是否数组集合模式
      */
     public boolean isList() {
         return _mode == MODE_ARRAY;
     }
 
     /**
-     * 是否映射模式
-     *
-     * @return
+     * @return 是否映射模式
      */
     public boolean isMap() {
         return _mode == MODE_MAP;
     }
 
     /**
-     * 是否值模式
-     *
-     * @return
+     * @return 是否值模式
      */
     public boolean isValue() {
         return _mode == MODE_VALUE;
@@ -1333,9 +973,6 @@ public class TreeObject implements Serializable, Cloneable {
 
     //////////
 
-    /**
-     * @return
-     */
     public List<TreeObject> getList() {
         if (isList()) {
             List<TreeObject> _returnValue = new ArrayList<TreeObject>();
@@ -1352,9 +989,6 @@ public class TreeObject implements Serializable, Cloneable {
         throw new IllegalStateException();
     }
 
-    /**
-     * @return
-     */
     public Map<String, TreeObject> getMap() {
         if (isMap()) {
             Map<String, TreeObject> _returnValue = new HashMap<String, TreeObject>();
@@ -1375,9 +1009,6 @@ public class TreeObject implements Serializable, Cloneable {
         throw new IllegalStateException();
     }
 
-    /**
-     * @return
-     */
     public Object getObject() {
         if (isValue()) {
             return _object;
@@ -1388,9 +1019,7 @@ public class TreeObject implements Serializable, Cloneable {
     //////////
 
     /**
-     * 转换为布尔型
-     *
-     * @return
+     * @return 转换为布尔型
      */
     public boolean toBooleanValue() {
         if (isValue()) {
@@ -1407,9 +1036,7 @@ public class TreeObject implements Serializable, Cloneable {
     }
 
     /**
-     * 转换为字节
-     *
-     * @return
+     * @return 转换为字节
      */
     public byte toByteValue() {
         if (isValue()) {
@@ -1426,9 +1053,7 @@ public class TreeObject implements Serializable, Cloneable {
     }
 
     /**
-     * 转换为字节数组
-     *
-     * @return
+     * @return 转换为字节数组
      */
     public byte[] toBytesValue() {
         if (isValue()) {
@@ -1448,9 +1073,7 @@ public class TreeObject implements Serializable, Cloneable {
     }
 
     /**
-     * 转换为字符型
-     *
-     * @return
+     * @return 转换为字符型
      */
     public char toCharValue() {
         if (isValue()) {
@@ -1468,9 +1091,7 @@ public class TreeObject implements Serializable, Cloneable {
     }
 
     /**
-     * 转换为双精度浮点型
-     *
-     * @return
+     * @return 转换为双精度浮点型
      */
     public double toDoubleValue() {
         if (isValue()) {
@@ -1487,9 +1108,7 @@ public class TreeObject implements Serializable, Cloneable {
     }
 
     /**
-     * 转换为浮点型
-     *
-     * @return
+     * @return 转换为浮点型
      */
     public float toFloatValue() {
         if (isValue()) {
@@ -1506,9 +1125,7 @@ public class TreeObject implements Serializable, Cloneable {
     }
 
     /**
-     * 转换为整型
-     *
-     * @return
+     * @return 转换为整型
      */
     public int toIntValue() {
         if (isValue()) {
@@ -1525,14 +1142,12 @@ public class TreeObject implements Serializable, Cloneable {
     }
 
     /**
-     * 转换为长整型
-     *
-     * @return
+     * @return 转换为长整型
      */
     public long toLongValue() {
         if (isValue()) {
             if (_object == null) {
-                return 0l;
+                return 0;
             }
             if (_type == TYPE_LONG && (long.class.isAssignableFrom(_object.getClass()) || _object instanceof Long)) {
                 return (Long) _object;
@@ -1544,9 +1159,7 @@ public class TreeObject implements Serializable, Cloneable {
     }
 
     /**
-     * 转换为混合字符串
-     *
-     * @return
+     * @return 转换为混合字符串
      */
     public String toMixStringValue() {
         if (isValue()) {
@@ -1563,9 +1176,7 @@ public class TreeObject implements Serializable, Cloneable {
     }
 
     /**
-     * 转换为短整型
-     *
-     * @return
+     * @return 转换为短整型
      */
     public short toShortValue() {
         if (isValue()) {
@@ -1582,33 +1193,19 @@ public class TreeObject implements Serializable, Cloneable {
     }
 
     /**
-     * 转换为字符串
-     *
-     * @return
+     * @return 转换为字符串
      */
     public String toStringValue() {
-        if (isValue()) {
-            if (_object == null) {
-                return null;
-            }
-            if ((_type == TYPE_MIX_STRING || _type == TYPE_STRING) && _object instanceof String) {
-                return (String) _object;
-            } else {
-                return new BlurObject(_object).toStringValue();
-            }
-        }
-        throw new IllegalStateException();
+        return toMixStringValue();
     }
 
     /**
-     * 转换为UTC时间毫秒数
-     *
-     * @return
+     * @return 转换为UTC时间毫秒数
      */
     public long toTimeValue() {
         if (isValue()) {
             if (_object == null) {
-                return 0l;
+                return 0;
             }
             if ((_type == TYPE_TIME || _type == TYPE_LONG)
                     && (long.class.isAssignableFrom(_object.getClass()) || _object instanceof Long)) {
@@ -1622,10 +1219,6 @@ public class TreeObject implements Serializable, Cloneable {
 
     //////////
 
-    /**
-     * @param index
-     * @return
-     */
     public TreeObject get(int index) {
         if (isList()) {
             List<TreeObject> _list = ((List<TreeObject>) _object);
@@ -1637,11 +1230,6 @@ public class TreeObject implements Serializable, Cloneable {
         throw new IllegalStateException();
     }
 
-    /**
-     * @param index
-     * @param defaultValue
-     * @return
-     */
     public TreeObject get(int index, TreeObject defaultValue) {
         if (isList()) {
             List<TreeObject> _list = ((List<TreeObject>) _object);
@@ -1653,10 +1241,6 @@ public class TreeObject implements Serializable, Cloneable {
         throw new IllegalStateException();
     }
 
-    /**
-     * @param key
-     * @return
-     */
     public TreeObject get(String key) {
         if (isMap()) {
             Map<String, TreeObject> _map = (Map<String, TreeObject>) _object;
@@ -1668,11 +1252,6 @@ public class TreeObject implements Serializable, Cloneable {
         throw new IllegalStateException();
     }
 
-    /**
-     * @param key
-     * @param defaultValue
-     * @return
-     */
     public TreeObject get(String key, TreeObject defaultValue) {
         if (isMap()) {
             Map<String, TreeObject> _map = (Map<String, TreeObject>) _object;
@@ -1684,19 +1263,10 @@ public class TreeObject implements Serializable, Cloneable {
         throw new IllegalStateException();
     }
 
-    /**
-     * @param index
-     * @return
-     */
     public boolean getBoolean(int index) {
         return getBoolean(index, false);
     }
 
-    /**
-     * @param index
-     * @param defaultValue
-     * @return
-     */
     public boolean getBoolean(int index, boolean defaultValue) {
         TreeObject _tObj = get(index);
         if (_tObj != null) {
@@ -1705,19 +1275,10 @@ public class TreeObject implements Serializable, Cloneable {
         return defaultValue;
     }
 
-    /**
-     * @param key
-     * @return
-     */
     public boolean getBoolean(String key) {
         return getBoolean(key, false);
     }
 
-    /**
-     * @param key
-     * @param defaultValue
-     * @return
-     */
     public boolean getBoolean(String key, boolean defaultValue) {
         TreeObject _tObj = get(key);
         if (_tObj != null) {
@@ -1726,19 +1287,10 @@ public class TreeObject implements Serializable, Cloneable {
         return defaultValue;
     }
 
-    /**
-     * @param index
-     * @return
-     */
     public byte getByte(int index) {
         return getByte(index, (byte) 0);
     }
 
-    /**
-     * @param index
-     * @param defaultValue
-     * @return
-     */
     public byte getByte(int index, byte defaultValue) {
         TreeObject _tObj = get(index);
         if (_tObj != null) {
@@ -1747,19 +1299,10 @@ public class TreeObject implements Serializable, Cloneable {
         return defaultValue;
     }
 
-    /**
-     * @param key
-     * @return
-     */
     public byte getByte(String key) {
         return getByte(key, (byte) 0);
     }
 
-    /**
-     * @param key
-     * @param defaultValue
-     * @return
-     */
     public byte getByte(String key, byte defaultValue) {
         TreeObject _tObj = get(key);
         if (_tObj != null) {
@@ -1768,19 +1311,10 @@ public class TreeObject implements Serializable, Cloneable {
         return defaultValue;
     }
 
-    /**
-     * @param index
-     * @return
-     */
     public byte[] getBytes(int index) {
         return getBytes(index, null);
     }
 
-    /**
-     * @param index
-     * @param defaultValue
-     * @return
-     */
     public byte[] getBytes(int index, byte[] defaultValue) {
         TreeObject _tObj = get(index);
         if (_tObj != null) {
@@ -1789,19 +1323,10 @@ public class TreeObject implements Serializable, Cloneable {
         return defaultValue;
     }
 
-    /**
-     * @param key
-     * @return
-     */
     public byte[] getBytes(String key) {
         return getBytes(key, null);
     }
 
-    /**
-     * @param key
-     * @param defaultValue
-     * @return
-     */
     public byte[] getBytes(String key, byte[] defaultValue) {
         TreeObject _tObj = get(key);
         if (_tObj != null) {
@@ -1810,19 +1335,10 @@ public class TreeObject implements Serializable, Cloneable {
         return defaultValue;
     }
 
-    /**
-     * @param index
-     * @return
-     */
     public char getChar(int index) {
         return getChar(index, (char) 0);
     }
 
-    /**
-     * @param index
-     * @param defaultValue
-     * @return
-     */
     public char getChar(int index, char defaultValue) {
         TreeObject _tObj = get(index);
         if (_tObj != null) {
@@ -1831,19 +1347,10 @@ public class TreeObject implements Serializable, Cloneable {
         return defaultValue;
     }
 
-    /**
-     * @param key
-     * @return
-     */
     public char getChar(String key) {
         return getChar(key, (char) 0);
     }
 
-    /**
-     * @param key
-     * @param defaultValue
-     * @return
-     */
     public char getChar(String key, char defaultValue) {
         TreeObject _tObj = get(key);
         if (_tObj != null) {
@@ -1852,19 +1359,10 @@ public class TreeObject implements Serializable, Cloneable {
         return defaultValue;
     }
 
-    /**
-     * @param index
-     * @return
-     */
     public double getDouble(int index) {
         return getDouble(index, 0d);
     }
 
-    /**
-     * @param index
-     * @param defaultValue
-     * @return
-     */
     public double getDouble(int index, double defaultValue) {
         TreeObject _tObj = get(index);
         if (_tObj != null) {
@@ -1873,19 +1371,10 @@ public class TreeObject implements Serializable, Cloneable {
         return defaultValue;
     }
 
-    /**
-     * @param key
-     * @return
-     */
     public double getDouble(String key) {
         return getDouble(key, 0d);
     }
 
-    /**
-     * @param key
-     * @param defaultValue
-     * @return
-     */
     public double getDouble(String key, double defaultValue) {
         TreeObject _tObj = get(key);
         if (_tObj != null) {
@@ -1894,19 +1383,10 @@ public class TreeObject implements Serializable, Cloneable {
         return defaultValue;
     }
 
-    /**
-     * @param index
-     * @return
-     */
     public float getFloat(int index) {
         return getFloat(index, 0f);
     }
 
-    /**
-     * @param index
-     * @param defaultValue
-     * @return
-     */
     public float getFloat(int index, float defaultValue) {
         TreeObject _tObj = get(index);
         if (_tObj != null) {
@@ -1915,10 +1395,6 @@ public class TreeObject implements Serializable, Cloneable {
         return defaultValue;
     }
 
-    /**
-     * @param key
-     * @return
-     */
     public float getFloat(String key) {
         return getFloat(key, 0f);
     }
@@ -1931,19 +1407,10 @@ public class TreeObject implements Serializable, Cloneable {
         return defaultValue;
     }
 
-    /**
-     * @param index
-     * @return
-     */
     public int getInt(int index) {
         return getInt(index, 0);
     }
 
-    /**
-     * @param index
-     * @param defaultValue
-     * @return
-     */
     public int getInt(int index, int defaultValue) {
         TreeObject _tObj = get(index);
         if (_tObj != null) {
@@ -1952,19 +1419,10 @@ public class TreeObject implements Serializable, Cloneable {
         return defaultValue;
     }
 
-    /**
-     * @param key
-     * @return
-     */
     public int getInt(String key) {
         return getInt(key, 0);
     }
 
-    /**
-     * @param key
-     * @param defaultValue
-     * @return
-     */
     public int getInt(String key, int defaultValue) {
         TreeObject _tObj = get(key);
         if (_tObj != null) {
@@ -1973,19 +1431,10 @@ public class TreeObject implements Serializable, Cloneable {
         return defaultValue;
     }
 
-    /**
-     * @param index
-     * @return
-     */
     public long getLong(int index) {
         return getLong(index, 0l);
     }
 
-    /**
-     * @param index
-     * @param defaultValue
-     * @return
-     */
     public long getLong(int index, long defaultValue) {
         TreeObject _tObj = get(index);
         if (_tObj != null) {
@@ -1994,19 +1443,10 @@ public class TreeObject implements Serializable, Cloneable {
         return defaultValue;
     }
 
-    /**
-     * @param key
-     * @return
-     */
     public long getLong(String key) {
         return getLong(key, 0l);
     }
 
-    /**
-     * @param key
-     * @param defaultValue
-     * @return
-     */
     public long getLong(String key, long defaultValue) {
         TreeObject _tObj = get(key);
         if (_tObj != null) {
@@ -2015,19 +1455,10 @@ public class TreeObject implements Serializable, Cloneable {
         return defaultValue;
     }
 
-    /**
-     * @param index
-     * @return
-     */
     public String getMixString(int index) {
         return getMixString(index, null);
     }
 
-    /**
-     * @param index
-     * @param defaultValue
-     * @return
-     */
     public String getMixString(int index, String defaultValue) {
         TreeObject _tObj = get(index);
         if (_tObj != null) {
@@ -2036,19 +1467,10 @@ public class TreeObject implements Serializable, Cloneable {
         return defaultValue;
     }
 
-    /**
-     * @param key
-     * @return
-     */
     public String getMixString(String key) {
         return getMixString(key, null);
     }
 
-    /**
-     * @param key
-     * @param defaultValue
-     * @return
-     */
     public String getMixString(String key, String defaultValue) {
         TreeObject _tObj = get(key);
         if (_tObj != null) {
@@ -2057,19 +1479,10 @@ public class TreeObject implements Serializable, Cloneable {
         return defaultValue;
     }
 
-    /**
-     * @param index
-     * @return
-     */
     public short getShort(int index) {
         return getShort(index, (short) 0);
     }
 
-    /**
-     * @param index
-     * @param defaultValue
-     * @return
-     */
     public short getShort(int index, short defaultValue) {
         TreeObject _tObj = get(index);
         if (_tObj != null) {
@@ -2078,19 +1491,10 @@ public class TreeObject implements Serializable, Cloneable {
         return defaultValue;
     }
 
-    /**
-     * @param key
-     * @return
-     */
     public short getShort(String key) {
         return getShort(key, (short) 0);
     }
 
-    /**
-     * @param key
-     * @param defaultValue
-     * @return
-     */
     public short getShort(String key, short defaultValue) {
         TreeObject _tObj = get(key);
         if (_tObj != null) {
@@ -2099,19 +1503,10 @@ public class TreeObject implements Serializable, Cloneable {
         return defaultValue;
     }
 
-    /**
-     * @param index
-     * @return
-     */
     public String getString(int index) {
         return getString(index, null);
     }
 
-    /**
-     * @param index
-     * @param defaultValue
-     * @return
-     */
     public String getString(int index, String defaultValue) {
         TreeObject _tObj = get(index);
         if (_tObj != null) {
@@ -2120,19 +1515,10 @@ public class TreeObject implements Serializable, Cloneable {
         return defaultValue;
     }
 
-    /**
-     * @param key
-     * @return
-     */
     public String getString(String key) {
         return getString(key, null);
     }
 
-    /**
-     * @param key
-     * @param defaultValue
-     * @return
-     */
     public String getString(String key, String defaultValue) {
         TreeObject _tObj = get(key);
         if (_tObj != null) {
@@ -2141,19 +1527,10 @@ public class TreeObject implements Serializable, Cloneable {
         return defaultValue;
     }
 
-    /**
-     * @param index
-     * @return
-     */
     public long getTime(int index) {
-        return getTime(index, 0l);
+        return getTime(index, 0);
     }
 
-    /**
-     * @param index
-     * @param defaultValue
-     * @return
-     */
     public long getTime(int index, long defaultValue) {
         TreeObject _tObj = get(index);
         if (_tObj != null) {
@@ -2162,19 +1539,10 @@ public class TreeObject implements Serializable, Cloneable {
         return defaultValue;
     }
 
-    /**
-     * @param key
-     * @return
-     */
     public long getTime(String key) {
-        return getTime(key, 0l);
+        return getTime(key, 0);
     }
 
-    /**
-     * @param key
-     * @param defaultValue
-     * @return
-     */
     public long getTime(String key, long defaultValue) {
         TreeObject _tObj = get(key);
         if (_tObj != null) {

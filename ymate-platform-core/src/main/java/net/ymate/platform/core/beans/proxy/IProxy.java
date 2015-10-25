@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2107 the original author or authors.
+ * Copyright 2007-2016 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,12 +23,5 @@ package net.ymate.platform.core.beans.proxy;
  */
 public interface IProxy {
 
-    /**
-     * 执行代理链
-     *
-     * @param proxyChain
-     * @return
-     * @throws Throwable
-     */
     public Object doProxy(IProxyChain proxyChain) throws Throwable;
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2107 the original author or authors.
+ * Copyright 2007-2016 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 package net.ymate.platform.configuration;
+
+import net.ymate.platform.core.YMP;
 
 import java.io.File;
 
@@ -33,6 +35,11 @@ public interface IConfig {
     public static final String __CONFIG_HOME = "CONFIG_HOME";
     public static final String __USER_HOME = "user.home";
     public static final String __USER_DIR = "user.dir";
+
+    /**
+     * @return 返回所属YMP框架管理器实例
+     */
+    public YMP getOwner();
 
     /**
      * @return 返回配置体系模块配置对象
@@ -73,7 +80,7 @@ public interface IConfig {
     public String searchPath(String cfgFile);
 
     /**
-     * 按照模块路径->项目路径->主路径(CONFIG_HOME)->用户路径(user.dir)->系统用户路径(user.home)的顺序寻找指定文件
+     * 按照模块路径-&gt;项目路径-&gt;主路径(CONFIG_HOME)-&gt;用户路径(user.dir)-&gt;系统用户路径(user.home)的顺序寻找指定文件
      *
      * @param cfgFile 配置文件路径及名称
      * @return 找到的文件File对象，只要找到存在的File，立即停止寻找并返回当前File实例

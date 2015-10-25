@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2107 the original author or authors.
+ * Copyright 2007-2016 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,37 +29,16 @@ public class PluginClassLoader extends URLClassLoader {
 
     private String __pluginHome;
 
-    /**
-     * 构造器
-     *
-     * @param pluginHome
-     * @param urls
-     */
     public PluginClassLoader(String pluginHome, URL[] urls) {
         super(urls);
         this.__pluginHome = pluginHome;
     }
 
-    /**
-     * 构造器
-     *
-     * @param pluginHome
-     * @param urls
-     * @param parent
-     */
     public PluginClassLoader(String pluginHome, URL[] urls, ClassLoader parent) {
         super(urls, parent);
         this.__pluginHome = pluginHome;
     }
 
-    /**
-     * 构造器
-     *
-     * @param pluginHome
-     * @param urls
-     * @param parent
-     * @param factory
-     */
     public PluginClassLoader(String pluginHome, URL[] urls, ClassLoader parent, URLStreamHandlerFactory factory) {
         super(urls, parent, factory);
         this.__pluginHome = pluginHome;

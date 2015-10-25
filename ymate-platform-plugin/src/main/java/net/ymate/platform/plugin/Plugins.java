@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2107 the original author or authors.
+ * Copyright 2007-2016 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -122,6 +122,10 @@ public class Plugins implements IModule, IPlugins {
         return __inited;
     }
 
+    public YMP getOwner() {
+        return __owner;
+    }
+
     public void destroy() throws Exception {
         if (__inited) {
             __inited = false;
@@ -143,7 +147,7 @@ public class Plugins implements IModule, IPlugins {
      * @param pluginHome   插件根路径
      * @param autoPackages 自动扫描包路径
      * @return 创建默认插件工厂初始化配置
-     * @throws Exception
+     * @throws Exception 加载配置可能产生的异常
      */
     private static DefaultPluginConfig loadConfig(String pluginHome, String[] autoPackages) throws Exception {
         DefaultPluginConfig _config = new DefaultPluginConfig();
@@ -155,7 +159,7 @@ public class Plugins implements IModule, IPlugins {
     /**
      * @param clazz
      * @return 通过注解分析插件工厂初始化配置
-     * @throws Exception
+     * @throws Exception 加载配置可能产生的异常
      */
     private static DefaultPluginConfig loadConfig(Class<? extends IPluginFactory> clazz) throws Exception {
         DefaultPluginConfig _config = null;
@@ -188,7 +192,7 @@ public class Plugins implements IModule, IPlugins {
      * @param pluginHome   插件根路径
      * @param autoPackages 自动扫描包路径
      * @return 创建并返回默认插件工厂实例
-     * @throws Exception
+     * @throws Exception 创建插件工厂时可能产生的异常
      */
     public static IPluginFactory createFactory(String pluginHome, String[] autoPackages) throws Exception {
         IPluginFactory _factory = new DefaultPluginFactory();
@@ -197,9 +201,9 @@ public class Plugins implements IModule, IPlugins {
     }
 
     /**
-     * @param clazz
+     * @param clazz 指定的插件工厂类型
      * @return 创建并返回由clazz指定类型的插件工厂实例
-     * @throws Exception
+     * @throws Exception 创建插件工厂时可能产生的异常
      */
     public static IPluginFactory createFactory(Class<? extends IPluginFactory> clazz) throws Exception {
         IPluginFactory _factory = ClassUtils.impl(clazz, IPluginFactory.class);
@@ -212,10 +216,10 @@ public class Plugins implements IModule, IPlugins {
     }
 
     /**
-     * @param clazz
-     * @param config
+     * @param clazz  指定的插件工厂类型
+     * @param config 指定的插件工厂初始化配置
      * @return 采用指定的初始化配置创建并返回由clazz指定类型的插件工厂实例
-     * @throws Exception
+     * @throws Exception 创建插件工厂时可能产生的异常
      */
     public static IPluginFactory createFactory(Class<? extends IPluginFactory> clazz, IPluginConfig config) throws Exception {
         IPluginFactory _factory = ClassUtils.impl(clazz, IPluginFactory.class);

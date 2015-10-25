@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2107 the original author or authors.
+ * Copyright 2007-2016 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -179,8 +179,8 @@ public class Select {
     /**
      * 设置Select语句的别名
      *
-     * @param alias
-     * @return
+     * @param alias 别名
+     * @return 返回当前Select对象
      */
     public Select alias(String alias) {
         this.__alias = alias;

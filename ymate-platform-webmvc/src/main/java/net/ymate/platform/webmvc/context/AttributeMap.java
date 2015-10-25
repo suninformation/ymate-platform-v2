@@ -1,24 +1,18 @@
 /*
- * $Id: AttributeMap.java 651946 2008-04-27 13:41:38Z apetrelli $
+ * Copyright 2007-2016 the original author or authors.
  *
- * Licensed to the Apache Software Foundation (ASF) under one
- * or more contributor license agreements.  See the NOTICE file
- * distributed with this work for additional information
- * regarding copyright ownership.  The ASF licenses this file
- * to you under the Apache License, Version 2.0 (the
- * "License"); you may not use this file except in compliance
- * with the License.  You may obtain a copy of the License at
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
- *  http://www.apache.org/licenses/LICENSE-2.0
+ *      http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing,
- * software distributed under the License is distributed on an
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
- * KIND, either express or implied.  See the License for the
- * specific language governing permissions and limitations
- * under the License.
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
-
 package net.ymate.platform.webmvc.context;
 
 import net.ymate.platform.webmvc.base.Type;
@@ -31,12 +25,7 @@ import java.util.Set;
 
 
 /**
- * <p>
- * AttributeMap
- * </p>
- * <p>
- * A Map that holds 4 levels of scope.
- * <p/>
+ * A Map that holds 4 levels of scope.<br>
  * The scopes are the ones known in the web world.:
  * <ul>
  *   <li>Page scope</li>
@@ -45,7 +34,6 @@ import java.util.Set;
  *   <li>Application scope</li>
  * </ul>
  * A object is searched in the order above, starting from page and ending at application scope.
- * </p>
  */
 public class AttributeMap implements Map {
 

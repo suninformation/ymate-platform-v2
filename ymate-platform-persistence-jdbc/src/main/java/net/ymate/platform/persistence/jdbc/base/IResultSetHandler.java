@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2107 the original author or authors.
+ * Copyright 2007-2016 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,9 +35,9 @@ public interface IResultSetHandler<T> {
     public static final IResultSetHandler<Map<String, Object>> MAP = new MapResultSetHandler();
 
     /**
-     * @param resultSet
+     * @param resultSet 查询结果集
      * @return 执行结果集处理过程，并返回查询结果，决不为NULL
-     * @throws Exception
+     * @throws Exception 可能产生的异常
      */
     public List<T> handle(ResultSet resultSet) throws Exception;
 }

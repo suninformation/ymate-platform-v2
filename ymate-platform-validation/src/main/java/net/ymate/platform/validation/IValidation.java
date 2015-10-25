@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2107 the original author or authors.
+ * Copyright 2007-2016 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,6 +15,8 @@
  */
 package net.ymate.platform.validation;
 
+import net.ymate.platform.core.YMP;
+
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.util.Map;
@@ -26,6 +28,11 @@ import java.util.Map;
  * @version 1.0
  */
 public interface IValidation {
+
+    /**
+     * @return 返回所属YMP框架管理器实例
+     */
+    public YMP getOwner();
 
     /**
      * 注册验证器
@@ -44,19 +51,19 @@ public interface IValidation {
     /**
      * 执行类成员参数验证
      *
-     * @param targetClass
-     * @param paramValues
+     * @param targetClass 目标类型
+     * @param paramValues 参数集合
      * @return 返回验证结果映射
      */
-    public <T> Map<String, ValidateResult> validate(Class<T> targetClass, Map<String, Object> paramValues);
+    public Map<String, ValidateResult> validate(Class<?> targetClass, Map<String, Object> paramValues);
 
     /**
      * 执行类方法参数验证
      *
-     * @param targetClass
-     * @param targetMethod
-     * @param paramValues
+     * @param targetClass  目标类型
+     * @param targetMethod 目标方法
+     * @param paramValues  参数集合
      * @return 返回验证结果映射
      */
-    public <T> Map<String, ValidateResult> validate(Class<T> targetClass, Method targetMethod, Map<String, Object> paramValues);
+    public Map<String, ValidateResult> validate(Class<?> targetClass, Method targetMethod, Map<String, Object> paramValues);
 }

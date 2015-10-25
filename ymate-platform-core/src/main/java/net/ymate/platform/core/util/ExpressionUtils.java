@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2107 the original author or authors.
+ * Copyright 2007-2016 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,12 +18,10 @@ package net.ymate.platform.core.util;
 import java.util.regex.Matcher;
 
 /**
- * <p>
- * 字符串表达式工具类，用于处理${variable}字符替换；<br/>
+ * 字符串表达式工具类，用于处理${variable}字符替换;
  * 例: I am ${name},and sex is ${sex}. <br>
  * name=Henry,sex=M <br>
  * result:I am Henry,and sex is M.
- * </p>
  *
  * @author 刘镇 (suninformation@163.com) on 2010-12-20 上午11:37:00
  * @version 1.0
@@ -35,26 +33,19 @@ public class ExpressionUtils {
     private String __result;
 
     /**
-     * 创建表达式工具类实例对象
-     *
-     * @param expressionStr
-     * @return
+     * @param expressionStr 目标字符串
+     * @return 创建表达式工具类实例对象
      */
     public static ExpressionUtils bind(String expressionStr) {
         return new ExpressionUtils(expressionStr);
     }
 
-    /**
-     * 构造器
-     */
     private ExpressionUtils(String expressionStr) {
         this.__result = expressionStr;
     }
 
     /**
-     * 获取结果
-     *
-     * @return
+     * @return 获取结果
      */
     public String getResult() {
         return this.__result;
@@ -65,7 +56,7 @@ public class ExpressionUtils {
      *
      * @param key   变量名称
      * @param value 变量值
-     * @return
+     * @return 当前表达式工具类实例
      */
     public ExpressionUtils set(String key, String value) {
         String namePattern = __pre + key + __suf;

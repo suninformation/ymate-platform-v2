@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2107 the original author or authors.
+ * Copyright 2007-2016 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -83,7 +83,7 @@ public class I18N {
     }
 
     /**
-     * @param locale
+     * @param locale 预设置语言
      * @return 修改当前线程语言设置，不触发事件，并返回修改结果
      */
     public static boolean current(Locale locale) {
@@ -97,7 +97,7 @@ public class I18N {
     /**
      * 修改当前线程语言设置并触发onLocaleChanged事件
      *
-     * @param locale
+     * @param locale 预设置语言
      */
     public static void change(Locale locale) {
         if (current(locale)) {
@@ -162,10 +162,10 @@ public class I18N {
     }
 
     /**
-     * @param resourceName
-     * @param key
-     * @param defaultValue
-     * @param args
+     * @param resourceName 资源名称
+     * @param key          资源键名
+     * @param defaultValue 默认值
+     * @param args         参数集合
      * @return 格式化消息字符串与参数绑定
      */
     public static String formatMessage(String resourceName, String key, String defaultValue, Object... args) {
@@ -184,8 +184,8 @@ public class I18N {
     }
 
     /**
-     * @param locale
-     * @param resourceName
+     * @param locale       指定语言
+     * @param resourceName 资源名称
      * @return 拼装资源文件名称集合
      */
     protected static List<String> __doGetResourceNames(Locale locale, String resourceName) {

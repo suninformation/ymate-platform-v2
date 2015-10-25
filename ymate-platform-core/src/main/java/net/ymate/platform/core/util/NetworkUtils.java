@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2107 the original author or authors.
+ * Copyright 2007-2016 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -73,7 +73,7 @@ public class NetworkUtils {
         }
 
         /**
-         * @param ipOrName
+         * @param ipOrName IP地址或计算机名称
          * @return 获取一个DNS或计算机名称所对应的IP地址数组
          */
         public static String[] getHostIPAddrs(String ipOrName) {
@@ -101,7 +101,7 @@ public class NetworkUtils {
          * @param ipAddr 待验证的IPv4地址
          * @return 检查IPv4地址的合法性
          */
-        public final static boolean isIPv4(String ipAddr) {
+        public static boolean isIPv4(String ipAddr) {
             return Pattern.compile("\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}").matcher(ipAddr).matches();
         }
 
@@ -135,7 +135,7 @@ public class NetworkUtils {
 
         /**
          * @return 获取本机IPv6地址，遍历网络接口的各个地址并排除诸如0:0:0:0:0:0:0:1等特殊地址，确保外部设置能够访问
-         * @throws IOException
+         * @throws IOException if an I/O error occurs.
          */
         @Deprecated
         public static String getLocalIPAddr() throws IOException {
@@ -163,14 +163,11 @@ public class NetworkUtils {
         }
 
         /**
-         * @param inetAddr
+         * @param inetAddr IP地址
          * @return 检查inetAddr是否为保留IP
          */
         private static boolean isReservedAddr(InetAddress inetAddr) {
-            if (inetAddr.isAnyLocalAddress() || inetAddr.isLinkLocalAddress() || inetAddr.isLoopbackAddress()) {
-                return true;
-            }
-            return false;
+            return inetAddr.isAnyLocalAddress() || inetAddr.isLinkLocalAddress() || inetAddr.isLoopbackAddress();
         }
     }
 }

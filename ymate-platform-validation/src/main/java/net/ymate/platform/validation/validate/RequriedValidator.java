@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2107 the original author or authors.
+ * Copyright 2007-2016 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,8 +33,6 @@ import org.apache.commons.lang.StringUtils;
 @Validator(VRequried.class)
 public class RequriedValidator implements IValidator {
 
-    private static String __REQURIED = "ymp.validation.requried";
-
     public ValidateResult validate(ValidateContext context) {
         boolean _matched = false;
         if (context.getParamValue() == null) {
@@ -55,6 +53,7 @@ public class RequriedValidator implements IValidator {
             if (_msg != null) {
                 _msg = I18N.formatMessage(VALIDATION_I18N_RESOURCE, _msg, _msg, _pName);
             } else {
+                String __REQURIED = "ymp.validation.requried";
                 _msg = I18N.formatMessage(VALIDATION_I18N_RESOURCE, __REQURIED, "{0} must be requried.", _pName);
             }
             return new ValidateResult(context.getParamName(), _msg);
