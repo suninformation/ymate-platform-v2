@@ -191,7 +191,7 @@ public class XMLConfigFileHandler {
     }
 
     public Map<String, XMLAttribute> getAttributes() {
-        return Collections.unmodifiableMap(__rootAttributes);
+        return __rootAttributes;
     }
 
     public XMLCategory getDefaultCategory() {
@@ -203,7 +203,7 @@ public class XMLConfigFileHandler {
     }
 
     public Map<String, XMLCategory> getCategories() {
-        return Collections.unmodifiableMap(__categories);
+        return __categories;
     }
 
     public JSONObject toJSON() {
@@ -263,7 +263,7 @@ public class XMLConfigFileHandler {
         }
 
         public Map<String, XMLAttribute> getAttributeMap() {
-            return Collections.unmodifiableMap(attributeMap);
+            return attributeMap;
         }
 
         public XMLProperty getProperty(String name) {
@@ -271,15 +271,19 @@ public class XMLConfigFileHandler {
         }
 
         public Map<String, XMLProperty> getPropertyMap() {
-            return Collections.unmodifiableMap(propertyMap);
+            return propertyMap;
         }
 
         public JSONObject toJSON() {
             JSONObject _jsonO = new JSONObject(__sorted);
             _jsonO.put("name", name);
+
+            JSONObject _jsonATTR = new JSONObject();
             for (XMLAttribute _attr : attributeMap.values()) {
-                _jsonO.put(_attr.getKey(), _attr.getValue());
+                _jsonATTR.put(_attr.getKey(), _attr.getValue());
             }
+            _jsonO.put("attributes", _jsonATTR);
+
             JSONArray _jsonArrayPROP = new JSONArray();
             for (XMLProperty _prop : propertyMap.values()) {
                 _jsonArrayPROP.add(_prop.toJSON());
@@ -313,6 +317,14 @@ public class XMLConfigFileHandler {
             return name;
         }
 
+        public void setName(String name) {
+            this.name = name;
+        }
+
+        public void setContent(String content) {
+            this.content = content;
+        }
+
         public String getContent() {
             return content;
         }
@@ -322,16 +334,19 @@ public class XMLConfigFileHandler {
         }
 
         public Map<String, XMLAttribute> getAttributeMap() {
-            return Collections.unmodifiableMap(attributeMap);
+            return attributeMap;
         }
 
         public JSONObject toJSON() {
             JSONObject _jsonO = new JSONObject();
             _jsonO.put("name", name);
             _jsonO.put("content", content);
+
+            JSONObject _jsonATTR = new JSONObject();
             for (XMLAttribute _attr : attributeMap.values()) {
-                _jsonO.put(_attr.getKey(), _attr.getValue());
+                _jsonATTR.put(_attr.getKey(), _attr.getValue());
             }
+            _jsonO.put("attributes", _jsonATTR);
             return _jsonO;
         }
 
@@ -350,6 +365,14 @@ public class XMLConfigFileHandler {
 
         public String getKey() {
             return key;
+        }
+
+        public void setKey(String key) {
+            this.key = key;
+        }
+
+        public void setValue(String value) {
+            this.value = value;
         }
 
         public String getValue() {
