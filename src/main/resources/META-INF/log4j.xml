@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration>
+    <Appenders>
+        <RollingFile name="default" fileName="${sys:LOG_OUT_DIR}/default.log"
+                     filePattern="logs/$${date:yyyy-MM}/default-%d{MM-dd-yyyy}-%i.log.gz">
+            <PatternLayout pattern="%m %n" charset="UTF-8"/>
+            <SizeBasedTriggeringPolicy size="500 MB"/>
+        </RollingFile>
+        <!--
+        <RollingFile name="custom-logname" fileName="${sys:LOG_OUT_DIR}/test.log"
+                     filePattern="logs/$${date:yyyy-MM}/custom-logname-%d{MM-dd-yyyy}-%i.log.gz">
+            <PatternLayout pattern="%m %n" charset="UTF-8"/>
+            <SizeBasedTriggeringPolicy size="500 MB"/>
+        </RollingFile>
+        -->
+    </Appenders>
+    <Loggers>
+        <!--
+        <Logger name="custom-logname" level="debug">
+            <AppenderRef ref="custom-logname"/>
+        </Logger>
+        -->
+        <!-- 配置记录器级别 -->
+        <Root level="debug">
+            <!-- 输出设置 -->
+            <AppenderRef ref="default"/>
+        </Root>
+    </Loggers>
+</Configuration>
