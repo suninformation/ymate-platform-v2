@@ -86,9 +86,6 @@ public class FreemarkerView extends AbstractView {
         if (StringUtils.isNotBlank(__contentType)) {
             WebContext.getResponse().setContentType(__contentType);
         }
-        for (Map.Entry<String, Object> _entry : __attributes.entrySet()) {
-            WebContext.getRequest().setAttribute(_entry.getKey(), _entry.getValue());
-        }
         if (StringUtils.isBlank(__path)) {
             String _mapping = WebContext.getRequestContext().getRequestMapping();
             if (_mapping.endsWith("/")) {
