@@ -15,14 +15,20 @@
  */
 package net.ymate.platform.webmvc.view.impl;
 
+import freemarker.cache.FileTemplateLoader;
+import freemarker.cache.MultiTemplateLoader;
+import freemarker.cache.TemplateLoader;
+import freemarker.template.Configuration;
+import freemarker.template.TemplateExceptionHandler;
+import net.ymate.platform.core.util.RuntimeUtils;
 import net.ymate.platform.webmvc.IWebMvc;
 import net.ymate.platform.webmvc.context.WebContext;
 import net.ymate.platform.webmvc.view.AbstractView;
 import org.apache.commons.lang.StringUtils;
 
-import java.io.BufferedWriter;
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
+import java.io.*;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -32,6 +38,8 @@ import java.util.Map;
  * @version 1.0
  */
 public class FreemarkerView extends AbstractView {
+
+    protected static Configuration __freemarkerConfig;
 
     protected String __path;
 
@@ -46,8 +54,32 @@ public class FreemarkerView extends AbstractView {
      * @param path  FTL文件路径
      */
     public FreemarkerView(IWebMvc owner, String path) {
-        __doInitConfiguration(owner);
+        __doViewInit(owner);
         __path = path;
+    }
+
+    @Override
+    protected void __doViewInit(IWebMvc owner) {
+        super.__doViewInit(owner);
+        // 初始化Freemarker模板引擎配置
+        if (__freemarkerConfig == null) {
+            __freemarkerConfig = new Configuration(Configuration.VERSION_2_3_22);
+            __freemarkerConfig.setDefaultEncoding(owner.getModuleCfg().getDefaultCharsetEncoding());
+            __freemarkerConfig.setTemplateExceptionHandler(TemplateExceptionHandler.HTML_DEBUG_HANDLER);
+            //
+            List<TemplateLoader> _tmpLoaders = new ArrayList<TemplateLoader>();
+            try {
+                if (__baseViewPath.startsWith("/WEB-INF")) {
+                    _tmpLoaders.add(new FileTemplateLoader(new File(RuntimeUtils.getRootPath(), StringUtils.substringAfter(__baseViewPath, "/WEB-INF/"))));
+                } else {
+                    _tmpLoaders.add(new FileTemplateLoader(new File(__baseViewPath)));
+                }
+                //
+                __freemarkerConfig.setTemplateLoader(new MultiTemplateLoader(_tmpLoaders.toArray(new TemplateLoader[_tmpLoaders.size()])));
+            } catch (IOException e) {
+                throw new Error(RuntimeUtils.unwrapThrow(e));
+            }
+        }
     }
 
     protected void __doProcessPath() {

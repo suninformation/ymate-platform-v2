@@ -15,22 +15,16 @@
  */
 package net.ymate.platform.webmvc.view;
 
-import freemarker.cache.FileTemplateLoader;
-import freemarker.cache.MultiTemplateLoader;
-import freemarker.cache.TemplateLoader;
-import freemarker.template.Configuration;
-import freemarker.template.TemplateExceptionHandler;
-import net.ymate.platform.core.util.RuntimeUtils;
 import net.ymate.platform.webmvc.IWebMvc;
 import net.ymate.platform.webmvc.context.WebContext;
 import org.apache.commons.lang.StringUtils;
 
-import java.io.File;
-import java.io.IOException;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
-import java.util.*;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * 抽象MVC视图接口
@@ -40,11 +34,7 @@ import java.util.*;
  */
 public abstract class AbstractView implements IView {
 
-    protected static Configuration __freemarkerConfig;
-
     protected static String __baseViewPath;
-
-    private static final Object __LOCKER = new Object();
 
     ////
 
@@ -150,37 +140,15 @@ public abstract class AbstractView implements IView {
      *
      * @param owner 所属WebMVC框架管理器
      */
-    protected void __doInitConfiguration(IWebMvc owner) {
-        if (__freemarkerConfig == null) {
-            synchronized (__LOCKER) {
-                // 模板基准路径并以'/WEB-INF'开始，以'/'结束
-                if (__baseViewPath == null) {
-                    String _vPath = StringUtils.trimToNull(owner.getModuleCfg().getBaseViewPath());
-                    if (!_vPath.endsWith("/")) {
-                        _vPath += "/";
-                    }
-                    __baseViewPath = _vPath;
-                }
-                // 初始化Freemarker模板引擎配置
-                if (__freemarkerConfig == null) {
-                    __freemarkerConfig = new Configuration(Configuration.VERSION_2_3_22);
-                    __freemarkerConfig.setDefaultEncoding(owner.getModuleCfg().getDefaultCharsetEncoding());
-                    __freemarkerConfig.setTemplateExceptionHandler(TemplateExceptionHandler.HTML_DEBUG_HANDLER);
-                    //
-                    List<TemplateLoader> _tmpLoaders = new ArrayList<TemplateLoader>();
-                    try {
-                        if (__baseViewPath.startsWith("/WEB-INF")) {
-                            _tmpLoaders.add(new FileTemplateLoader(new File(RuntimeUtils.getRootPath(), StringUtils.substringAfter(__baseViewPath, "/WEB-INF/"))));
-                        } else {
-                            _tmpLoaders.add(new FileTemplateLoader(new File(__baseViewPath)));
-                        }
-                        //
-                        __freemarkerConfig.setTemplateLoader(new MultiTemplateLoader(_tmpLoaders.toArray(new TemplateLoader[_tmpLoaders.size()])));
-                    } catch (IOException e) {
-                        throw new Error(RuntimeUtils.unwrapThrow(e));
-                    }
-                }
+    protected void __doViewInit(IWebMvc owner) {
+        // 模板基准路径并以'/WEB-INF'开始，以'/'结束
+        if (__baseViewPath == null) {
+            String _vPath = StringUtils.trimToNull(owner.getModuleCfg().getBaseViewPath());
+            if (!_vPath.endsWith("/")) {
+                _vPath += "/";
             }
+            __baseViewPath = _vPath;
         }
     }
+
 }

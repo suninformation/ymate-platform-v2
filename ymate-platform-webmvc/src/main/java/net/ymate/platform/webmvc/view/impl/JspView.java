@@ -48,7 +48,7 @@ public class JspView extends AbstractView {
     }
 
     public JspView(IWebMvc owner) {
-        __doInitConfiguration(owner);
+        __doViewInit(owner);
     }
 
     /**
@@ -58,7 +58,7 @@ public class JspView extends AbstractView {
      * @param path  JSP文件路径
      */
     public JspView(IWebMvc owner, String path) {
-        __doInitConfiguration(owner);
+        __doViewInit(owner);
         __path = path;
     }
 
