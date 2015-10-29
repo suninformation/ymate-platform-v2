@@ -113,17 +113,22 @@ public interface IWebMvcModuleCfg {
     public ProgressListener getUploadFileListener();
 
     /**
-     * @return 零配置模式(无需编写控制器代码, 直接匹配并执行视图)，可选参数，默认值为false
+     * @return 是否开启视图自动渲染（约定优于配置，无需编写控制器代码，直接匹配并执行视图）模式，可选参数，默认值为false
      */
     public boolean isConventionMode();
 
     /**
-     * @return 零配置模式视图文件路径(基于base_view_path的相对路径, 加号或无符串代表允许访问)，可选参数，默认值为空(即不限制访问路径)，多个路径间用'|'分隔
+     * @return Convention模式开启时是否采用URL伪静态(URL中通过分隔符'_'传递多个请求参数，通过_path[index]方式引用参数值)模式，可选参数，默认值为false
+     */
+    public boolean isConventionUrlrewriteMode();
+
+    /**
+     * @return Convention模式开启时视图文件路径(基于base_view_path的相对路径, 加号或无符串代表允许访问)，可选参数，默认值为空(即不限制访问路径)，多个路径间用'|'分隔
      */
     public Set<String> getConventionViewAllowPaths();
 
     /**
-     * @return 零配置模式视图文件路径(基于base_view_path的相对路径, 减号代表不允许访问)，可选参数，默认值为空(即不限制访问路径)，多个路径间用'|'分隔
+     * @return Convention模式开启时视图文件路径(基于base_view_path的相对路径, 减号代表不允许访问)，可选参数，默认值为空(即不限制访问路径)，多个路径间用'|'分隔
      */
     public Set<String> getConventionViewNotAllowPaths();
 }

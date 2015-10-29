@@ -31,10 +31,7 @@ import net.ymate.platform.webmvc.support.MultipartRequestWrapper;
 import net.ymate.platform.webmvc.support.RequestExecutor;
 import net.ymate.platform.webmvc.support.RequestMappingParser;
 import net.ymate.platform.webmvc.view.IView;
-import net.ymate.platform.webmvc.view.impl.FreemarkerView;
-import net.ymate.platform.webmvc.view.impl.HtmlView;
-import net.ymate.platform.webmvc.view.impl.HttpStatusView;
-import net.ymate.platform.webmvc.view.impl.JspView;
+import net.ymate.platform.webmvc.view.impl.*;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -44,6 +41,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.File;
 import java.lang.reflect.Method;
+import java.util.Arrays;
 import java.util.Map;
 
 /**
@@ -213,25 +211,35 @@ public class WebMVC implements IModule, IWebMvc {
                 }
             }
             if (_isAllowConvention) {
+                // 处理Convention模式下URL参数集合
+                String _requestMapping = context.getRequestMapping();
+                String[] _urlParamArr = StringUtils.split(_requestMapping, '_');
+                if (_urlParamArr != null && _urlParamArr.length > 1) {
+                    _requestMapping = _urlParamArr[0];
+                    WebContext.getRequest().setAttribute("UrlParams", Arrays.asList(_urlParamArr).subList(1, _urlParamArr.length));
+                }
+                //
                 IView _view = null;
                 if (__moduleCfg.getErrorProcessor() != null) {
                     _view = __moduleCfg.getErrorProcessor().onConvention(this, context);
                 }
                 if (_view == null) {
                     // 采用系统默认方式处理约定优于配置的URL请求映射
-                    String[] _fileTypes = {".html", ".jsp", ".ftl"};
+                    String[] _fileTypes = {".html", ".jsp", ".ftl", ".vm"};
                     for (String _fileType : _fileTypes) {
-                        File _targetFile = new File(__moduleCfg.getAbstractBaseViewPath(), context.getRequestMapping() + _fileType);
+                        File _targetFile = new File(__moduleCfg.getAbstractBaseViewPath(), _requestMapping + _fileType);
                         if (_targetFile.exists()) {
                             if (".html".equals(_fileType)) {
-                                _view = HtmlView.bind(this, context.getRequestMapping().substring(1));
+                                _view = HtmlView.bind(this, _requestMapping.substring(1));
                                 break;
                             } else if (".jsp".equals(_fileType)) {
-                                _view = JspView.bind(this, context.getRequestMapping().substring(1));
+                                _view = JspView.bind(this, _requestMapping.substring(1));
                                 break;
                             } else if (".ftl".equals(_fileType)) {
-                                _view = FreemarkerView.bind(this, context.getRequestMapping().substring(1));
+                                _view = FreemarkerView.bind(this, _requestMapping.substring(1));
                                 break;
+                            } else if (".vm".equals(_fileType)) {
+                                _view = VelocityView.bind(this, _requestMapping.substring(1));
                             }
                         }
                     }

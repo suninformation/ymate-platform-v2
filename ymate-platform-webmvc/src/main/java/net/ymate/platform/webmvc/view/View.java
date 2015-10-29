@@ -38,6 +38,10 @@ public class View {
         return FreemarkerView.bind(owner, path);
     }
 
+    public static VelocityView velocityView(IWebMvc owner, String path) {
+        return VelocityView.bind(owner, path);
+    }
+
     public static HtmlView htmlView(IWebMvc owner, String htmlFile) throws Exception {
         return HtmlView.bind(owner, htmlFile);
     }
