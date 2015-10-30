@@ -116,6 +116,9 @@ public class RequestExecutor {
                     case FREEMARKER:
                         _view = FreemarkerView.bind(__owner, _respView.value());
                         break;
+                    case VELOCITY:
+                        _view = VelocityView.bind(__owner, _respView.value());
+                        break;
                     case HTML:
                         _view = HtmlView.bind(__owner, _respView.value());
                         break;
@@ -155,6 +158,9 @@ public class RequestExecutor {
                         break;
                     case FREEMARKER:
                         _view = FreemarkerView.bind(__owner, _parts[1]);
+                        break;
+                    case VELOCITY:
+                        _view = VelocityView.bind(__owner, _parts[1]);
                         break;
                     case HTML:
                         _view = HtmlView.bind(__owner, _parts[1]);
