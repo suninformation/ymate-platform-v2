@@ -48,7 +48,6 @@ public class PropertyConfigurationProvider implements IConfigurationProvider {
     private String __cfgFileName;
 
     public void load(String cfgFileName) throws Exception {
-
         if (StringUtils.isBlank(cfgFileName)) {
             throw new NullArgumentException("cfgFileName");
         }
@@ -108,7 +107,7 @@ public class PropertyConfigurationProvider implements IConfigurationProvider {
     public Map<String, String> getMap(String category, String keyHead) {
         Map<String, String> _returnValue = new LinkedHashMap<String, String>();
         XMLConfigFileHandler.XMLProperty _prop = __config.getCategory(category).getProperty(keyHead);
-        if (_prop != null && !_prop.getAttributeMap().isEmpty()) {
+        if (_prop != null) {
             for (String name : _prop.getAttributeMap().keySet()) {
                 String value = _prop.getAttribute(name).getValue();
                 if (StringUtils.isNotBlank(value)) {
@@ -244,10 +243,8 @@ public class PropertyConfigurationProvider implements IConfigurationProvider {
         Map<String, String> _returnValue = new LinkedHashMap<String, String>(_properties.size());
         for (XMLConfigFileHandler.XMLProperty _prop : _properties) {
             _returnValue.put(_prop.getName(), _prop.getContent());
-            if (!_prop.getAttributeMap().isEmpty()) {
-                for (XMLConfigFileHandler.XMLAttribute _attr : _prop.getAttributeMap().values()) {
-                    _returnValue.put(_prop.getName().concat(".").concat(_attr.getKey()), _attr.getValue());
-                }
+            for (XMLConfigFileHandler.XMLAttribute _attr : _prop.getAttributeMap().values()) {
+                _returnValue.put(_prop.getName().concat(".").concat(_attr.getKey()), _attr.getValue());
             }
         }
         return _returnValue;

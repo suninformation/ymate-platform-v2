@@ -48,7 +48,6 @@ public class DefaultConfigurationProvider implements IConfigurationProvider {
     private String __cfgFileName;
 
     public void load(String cfgFileName) throws Exception {
-
         if (StringUtils.isBlank(cfgFileName)) {
             throw new NullArgumentException("cfgFileName");
         }
@@ -94,34 +93,29 @@ public class DefaultConfigurationProvider implements IConfigurationProvider {
 
     public List<String> getList(String category, String key) {
         List<String> _returnValue = new ArrayList<String>();
-        Map<String, XMLConfigFileHandler.XMLProperty> _props = __config.getCategory(category).getPropertyMap();
-        if (_props != null && !_props.isEmpty()) {
-            for (String name : _props.keySet()) {
-                if (name.startsWith(key)) { // 以给定key开头的键值对
-                    String value = _props.get(name).getContent();
-                    if (StringUtils.isNotBlank(value)) {
-                        _returnValue.add(value);
-                    }
+        XMLConfigFileHandler.XMLProperty _prop = __config.getCategory(category).getProperty(key);
+        if (_prop != null) {
+            for (XMLConfigFileHandler.XMLAttribute _attr : _prop.getAttributeMap().values()) {
+                if (StringUtils.isBlank(_attr.getValue())) {
+                    _returnValue.add(_attr.getKey());
                 }
             }
         }
         return _returnValue;
     }
 
-    public Map<String, String> getMap(String keyHead) {
-        return getMap(XMLConfigFileHandler.DEFAULT_CATEGORY_NAME, keyHead);
+    public Map<String, String> getMap(String key) {
+        return getMap(XMLConfigFileHandler.DEFAULT_CATEGORY_NAME, key);
     }
 
-    public Map<String, String> getMap(String category, String keyHead) {
+    public Map<String, String> getMap(String category, String key) {
         Map<String, String> _returnValue = new LinkedHashMap<String, String>();
-        Map<String, XMLConfigFileHandler.XMLProperty> _props = __config.getCategory(category).getPropertyMap();
-        if (_props != null && !_props.isEmpty()) {
-            for (String name : _props.keySet()) {
-                if (name != null && name.startsWith(keyHead)) {
-                    String value = _props.get(name).getContent();
-                    if (StringUtils.isNotBlank(value)) {
-                        _returnValue.put(name.substring(keyHead.length()), value);
-                    }
+        XMLConfigFileHandler.XMLProperty _prop = __config.getCategory(category).getProperty(key);
+        if (_prop != null) {
+            for (String name : _prop.getAttributeMap().keySet()) {
+                String value = _prop.getAttribute(name).getValue();
+                if (StringUtils.isNotBlank(value)) {
+                    _returnValue.put(name, value);
                 }
             }
         }
@@ -253,6 +247,9 @@ public class DefaultConfigurationProvider implements IConfigurationProvider {
         Map<String, String> _returnValue = new LinkedHashMap<String, String>(_properties.size());
         for (XMLConfigFileHandler.XMLProperty _prop : _properties) {
             _returnValue.put(_prop.getName(), _prop.getContent());
+            for (XMLConfigFileHandler.XMLAttribute _attr : _prop.getAttributeMap().values()) {
+                _returnValue.put(_prop.getName().concat(".").concat(_attr.getKey()), _attr.getValue());
+            }
         }
         return _returnValue;
     }

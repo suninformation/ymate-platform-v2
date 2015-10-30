@@ -17,6 +17,7 @@ package net.ymate.platform.configuration.support;
 
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import net.ymate.platform.core.lang.PairObject;
 import org.apache.commons.lang.StringUtils;
 import org.w3c.dom.*;
 import org.xml.sax.SAXException;
@@ -45,6 +46,10 @@ public class XMLConfigFileHandler {
     public static String TAG_NAME_CATEGORY = "category";
 
     public static String TAG_NAME_PROPERTY = "property";
+
+    public static String TAG_NAME_ITEM = "item";
+
+    public static String TAG_NAME_VALUE = "value";
 
     //
 
@@ -109,60 +114,58 @@ public class XMLConfigFileHandler {
             if (_nodes.getLength() > 0) {
                 for (int _idx = 0; _idx < _nodes.getLength(); _idx++) {
                     Element _categoryElement = (Element) _nodes.item(_idx);
-                    // 先处理category的属性
-                    String _categoryNameAttr = null;
+                    // 1. 处理category的属性
                     List<XMLAttribute> _categoryAttrs = new ArrayList<XMLAttribute>();
-                    NamedNodeMap _categoryAttrNodes = _categoryElement.getAttributes();
-                    if (_categoryAttrNodes != null && _categoryAttrNodes.getLength() > 0) {
-                        // 提取category标签的所有属性
-                        for (int _attrIdx = 0; _attrIdx < _categoryAttrNodes.getLength(); _attrIdx++) {
-                            String _attrKey = _categoryAttrNodes.item(_attrIdx).getNodeName();
-                            String _attrValue = _categoryAttrNodes.item(_attrIdx).getNodeValue();
-                            if (StringUtils.isNotBlank(_attrKey) && StringUtils.isNotBlank(_attrValue)) {
-                                if (_attrKey.equals("name")) {
-                                    _categoryNameAttr = _attrValue;
-                                } else {
-                                    _categoryAttrs.add(new XMLAttribute(_attrKey, _attrValue));
-                                }
-                            }
-                        }
-                    }
-                    if (_categoryNameAttr != null) {
-                        // 再处理category的property标签
+                    PairObject<String, String> _category = __doParseNodeAttributes(_categoryAttrs, _categoryElement, false, false);
+                    //
+                    if (_category != null) {
+                        // 2. 处理category的property标签
                         List<XMLProperty> _properties = new ArrayList<XMLProperty>();
                         //
                         NodeList _propertyNodes = _categoryElement.getElementsByTagName(TAG_NAME_PROPERTY);
                         if (_propertyNodes.getLength() > 0) {
                             for (int _idy = 0; _idy < _propertyNodes.getLength(); _idy++) {
                                 Element _node = (Element) _propertyNodes.item(_idy);
-                                NamedNodeMap _attrNodes = _node.getAttributes();
-                                List<XMLAttribute> _attrs = new ArrayList<XMLAttribute>();
-                                String _propertyNameValue = null;
-                                String _propertyContent = _node.getTextContent();
-                                if (_attrNodes != null && _attrNodes.getLength() > 0) {
-                                    // 提取property标签的所有属性
-                                    for (int _attrIdx = 0; _attrIdx < _attrNodes.getLength(); _attrIdx++) {
-                                        String _attrKey = _attrNodes.item(_attrIdx).getNodeName();
-                                        String _attrValue = _attrNodes.item(_attrIdx).getNodeValue();
-                                        if (StringUtils.isNotBlank(_attrKey) && StringUtils.isNotBlank(_attrValue)) {
-                                            if (_attrKey.equals("name")) {
-                                                _propertyNameValue = _attrValue;
-                                            } else if (_attrKey.equals("value")) {
-                                                _propertyContent = _attrValue;
-                                            } else {
-                                                _attrs.add(new XMLAttribute(_attrKey, _attrValue));
+                                // 3. 处理property的属性
+                                List<XMLAttribute> _propertyAttrs = new ArrayList<XMLAttribute>();
+                                PairObject<String, String> _property = __doParseNodeAttributes(_propertyAttrs, _node, false, false);
+                                if (_property != null) {
+                                    // 是否有子标签
+                                    boolean _hasSubTag = false;
+                                    // 4.1 处理property->value标签
+                                    NodeList _childNodes = _node.getElementsByTagName(TAG_NAME_VALUE);
+                                    if (_childNodes.getLength() > 0) {
+                                        _hasSubTag = true;
+                                        for (int _idxItem = 0; _idxItem < _childNodes.getLength(); _idxItem++) {
+                                            Element _nodeItem = (Element) _childNodes.item(_idxItem);
+                                            String _value = _nodeItem.getTextContent();
+                                            if (StringUtils.isNotBlank(_value)) {
+                                                _propertyAttrs.add(new XMLAttribute(_value, ""));
+                                            }
+                                        }
+                                    } else {
+                                        // 4.2 处理property->item标签
+                                        _childNodes = _node.getElementsByTagName(TAG_NAME_ITEM);
+                                        if (_childNodes.getLength() > 0) {
+                                            _hasSubTag = true;
+                                            for (int _idxItem = 0; _idxItem < _childNodes.getLength(); _idxItem++) {
+                                                __doParseNodeAttributes(_propertyAttrs, (Element) _childNodes.item(_idxItem), true, true);
                                             }
                                         }
                                     }
-                                    // 只有name属性与标签体内容均为非空时才保留
-                                    if (_propertyNameValue != null && StringUtils.isNotBlank(_propertyContent)) {
-                                        _properties.add(new XMLProperty(_propertyNameValue, _propertyContent, _attrs));
+                                    //
+                                    if (!_hasSubTag) {
+                                        if (StringUtils.isNotBlank(_property.getValue())) {
+                                            _properties.add(new XMLProperty(_property.getKey(), _property.getValue(), _propertyAttrs));
+                                        }
+                                    } else {
+                                        _properties.add(new XMLProperty(_property.getKey(), null, _propertyAttrs));
                                     }
                                 }
                             }
                         }
                         //
-                        __categories.put(_categoryNameAttr, new XMLCategory(_categoryNameAttr, _categoryAttrs, _properties, sorted));
+                        __categories.put(_category.getKey(), new XMLCategory(_category.getKey(), _categoryAttrs, _properties, sorted));
                     }
                 }
             }
@@ -174,6 +177,39 @@ public class XMLConfigFileHandler {
             this.__loaded = true;
         }
         return this;
+    }
+
+    protected PairObject<String, String> __doParseNodeAttributes(List<XMLAttribute> attributes, Element node, boolean collections, boolean textContent) {
+        String _propertyName = null;
+        String _propertyContent = null;
+        //
+        NamedNodeMap _attrNodes = node.getAttributes();
+        if (_attrNodes != null && _attrNodes.getLength() > 0) {
+            for (int _idy = 0; _idy < _attrNodes.getLength(); _idy++) {
+                String _attrKey = _attrNodes.item(_idy).getNodeName();
+                String _attrValue = _attrNodes.item(_idy).getNodeValue();
+                if (collections) {
+                    if (_attrKey.equals("name")) {
+                        attributes.add(new XMLAttribute(_attrValue, node.getTextContent()));
+                    }
+                } else {
+                    if (textContent && StringUtils.isNotBlank(_attrValue)) {
+                        _attrValue = node.getTextContent();
+                    }
+                    if (_attrKey.equals("name")) {
+                        _propertyName = _attrValue;
+                    } else if (_attrKey.equals("value")) {
+                        _propertyContent = _attrValue;
+                    } else {
+                        attributes.add(new XMLAttribute(_attrKey, _attrValue));
+                    }
+                }
+            }
+        }
+        if (!collections && StringUtils.isNotBlank(_propertyName)) {
+            return new PairObject<String, String>(_propertyName, _propertyContent);
+        }
+        return null;
     }
 
     public boolean writeTo(File targetFile) {

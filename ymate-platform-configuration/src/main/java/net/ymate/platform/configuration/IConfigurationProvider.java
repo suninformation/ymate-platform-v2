@@ -67,12 +67,12 @@ public interface IConfigurationProvider {
     public List<String> getList(String category, String key);
 
     /**
-     * @param keyHead 键头标识
+     * @param key 键标识
      * @return 获取键值映射
      */
-    public Map<String, String> getMap(String keyHead);
+    public Map<String, String> getMap(String key);
 
-    public Map<String, String> getMap(String category, String keyHead);
+    public Map<String, String> getMap(String category, String key);
 
     /**
      * @param key 属性键
