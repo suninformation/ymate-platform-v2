@@ -54,7 +54,7 @@ public class XMLRequestProcessor implements IRequestProcessor {
 
     private static final Log _LOG = LogFactory.getLog(XMLRequestProcessor.class);
 
-    public Map<String, Object> processRequestParams(IWebMvc owner, RequestMeta requestMeta, String[] methodParamNames) throws Exception {
+    public Map<String, ParameterMeta> processRequestParams(IWebMvc owner, RequestMeta requestMeta, String[] methodParamNames) throws Exception {
         XMLProtocol _protocol = null;
         try {
             _protocol = new XMLProtocol(WebContext.getRequest().getInputStream(), owner.getModuleCfg().getDefaultCharsetEncoding());
@@ -66,15 +66,16 @@ public class XMLRequestProcessor implements IRequestProcessor {
             }
         }
         //
-        Map<String, Object> _returnValues = new LinkedHashMap<String, Object>();
+        Map<String, ParameterMeta> _returnValues = new LinkedHashMap<String, ParameterMeta>();
         //
         ClassUtils.BeanWrapper<?> _wrapper = ClassUtils.wrapper(requestMeta.getTargetClass());
         if (_wrapper != null) {
             for (String _fieldName : _wrapper.getFieldNames()) {
                 PairObject<String, Object> _result = __doGetParamValue(owner, "", _fieldName, _wrapper.getFieldType(_fieldName), _wrapper.getFieldAnnotations(_fieldName), _protocol);
                 if (_result != null) {
-                    _returnValues.put(_result.getKey(), _result.getValue());
-                    _returnValues.put(_fieldName, _result.getValue());
+                    ParameterMeta _pMeta = new ParameterMeta(_result.getKey(), _fieldName, _result.getValue());
+                    _returnValues.put(_pMeta.getParamName(), _pMeta);
+                    _returnValues.put(_pMeta.getFieldName(), _pMeta);
                 }
             }
         }
@@ -85,8 +86,9 @@ public class XMLRequestProcessor implements IRequestProcessor {
             for (int _idx = 0; _idx < methodParamNames.length; _idx++) {
                 PairObject<String, Object> _result = __doGetParamValue(owner, "", methodParamNames[_idx], _paramTypes[_idx], _paramAnnotations[_idx], _protocol);
                 if (_result != null) {
-                    _returnValues.put(_result.getKey(), _result.getValue());
-                    _returnValues.put(methodParamNames[_idx], _result.getValue());
+                    ParameterMeta _pMeta = new ParameterMeta(_result.getKey(), methodParamNames[_idx], _result.getValue());
+                    _returnValues.put(_pMeta.getParamName(), _pMeta);
+                    _returnValues.put(_pMeta.getFieldName(), _pMeta);
                 }
             }
         }

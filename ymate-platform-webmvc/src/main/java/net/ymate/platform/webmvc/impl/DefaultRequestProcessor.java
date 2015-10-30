@@ -41,16 +41,17 @@ import java.util.Map;
  */
 public class DefaultRequestProcessor implements IRequestProcessor {
 
-    public Map<String, Object> processRequestParams(IWebMvc owner, RequestMeta requestMeta, String[] methodParamNames) throws Exception {
-        Map<String, Object> _returnValues = new LinkedHashMap<String, Object>();
+    public Map<String, ParameterMeta> processRequestParams(IWebMvc owner, RequestMeta requestMeta, String[] methodParamNames) throws Exception {
+        Map<String, ParameterMeta> _returnValues = new LinkedHashMap<String, ParameterMeta>();
         //
         ClassUtils.BeanWrapper<?> _wrapper = ClassUtils.wrapper(requestMeta.getTargetClass());
         if (_wrapper != null) {
             for (String _fieldName : _wrapper.getFieldNames()) {
                 PairObject<String, Object> _result = __doGetParamValue(owner, "", _fieldName, _wrapper.getFieldType(_fieldName), _wrapper.getFieldAnnotations(_fieldName));
                 if (_result != null) {
-                    _returnValues.put(_result.getKey(), _result.getValue());
-                    _returnValues.put(_fieldName, _result.getValue());
+                    ParameterMeta _pMeta = new ParameterMeta(_result.getKey(), _fieldName, _result.getValue());
+                    _returnValues.put(_pMeta.getParamName(), _pMeta);
+                    _returnValues.put(_pMeta.getFieldName(), _pMeta);
                 }
             }
         }
@@ -61,8 +62,9 @@ public class DefaultRequestProcessor implements IRequestProcessor {
             for (int _idx = 0; _idx < methodParamNames.length; _idx++) {
                 PairObject<String, Object> _result = __doGetParamValue(owner, "", methodParamNames[_idx], _paramTypes[_idx], _paramAnnotations[_idx]);
                 if (_result != null) {
-                    _returnValues.put(_result.getKey(), _result.getValue());
-                    _returnValues.put(methodParamNames[_idx], _result.getValue());
+                    ParameterMeta _pMeta = new ParameterMeta(_result.getKey(), methodParamNames[_idx], _result.getValue());
+                    _returnValues.put(_pMeta.getParamName(), _pMeta);
+                    _returnValues.put(_pMeta.getFieldName(), _pMeta);
                 }
             }
         }

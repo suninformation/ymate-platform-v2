@@ -20,18 +20,22 @@ import net.ymate.platform.core.lang.BlurObject;
 import net.ymate.platform.core.util.ClassUtils;
 import net.ymate.platform.validation.ValidateResult;
 import net.ymate.platform.validation.Validations;
+import net.ymate.platform.webmvc.IParameterEscapeProcessor;
 import net.ymate.platform.webmvc.IRequestProcessor;
 import net.ymate.platform.webmvc.IWebMvc;
 import net.ymate.platform.webmvc.RequestMeta;
 import net.ymate.platform.webmvc.annotation.Header;
+import net.ymate.platform.webmvc.annotation.ParameterEscape;
 import net.ymate.platform.webmvc.annotation.ResponseView;
 import net.ymate.platform.webmvc.base.Type;
+import net.ymate.platform.webmvc.impl.DefaultParameterEscapeProcessor;
 import net.ymate.platform.webmvc.view.IView;
 import net.ymate.platform.webmvc.view.impl.*;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 
 import java.io.File;
+import java.lang.annotation.Annotation;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -66,13 +70,60 @@ public class RequestExecutor {
 
     public IView execute() throws Exception {
         String[] _methodParamNames = ClassUtils.getMethodParamNames(__requestMeta.getMethod());
-        Map<String, Object> _paramValues = __requestProcessor.processRequestParams(__owner, __requestMeta, _methodParamNames);
+        Map<String, IRequestProcessor.ParameterMeta> _paramValues = __requestProcessor.processRequestParams(__owner, __requestMeta, _methodParamNames);
+        //
+        if (!_paramValues.isEmpty()) {
+            IParameterEscapeProcessor _defaultEscapeProc = new DefaultParameterEscapeProcessor();
+            Class<?>[] _paramTypes = __requestMeta.getMethod().getParameterTypes();
+            Annotation[][] _paramAnnotations = __requestMeta.getMethod().getParameterAnnotations();
+            for (int _idx = 0; _idx < _paramAnnotations.length; _idx++) {
+                for (Annotation _annotation : _paramAnnotations[_idx]) {
+                    if (_annotation instanceof ParameterEscape) {
+                        IRequestProcessor.ParameterMeta _paramMeta = _paramValues.get(_methodParamNames[_idx]);
+                        if (_paramMeta != null) {
+                            if (_paramTypes[_idx].isArray()) {
+                                if (_paramTypes[_idx].equals(String[].class)) {
+                                    String[] _values = (String[]) _paramMeta.getValue();
+                                    if (_values != null) {
+                                        IParameterEscapeProcessor _process = _defaultEscapeProc;
+                                        if (!((ParameterEscape) _annotation).processor().equals(DefaultParameterEscapeProcessor.class)) {
+                                            _process = ClassUtils.impl(((ParameterEscape) _annotation).processor(), IParameterEscapeProcessor.class);
+                                        }
+                                        for (int _valueIdx = 0; _valueIdx < _values.length; _valueIdx++) {
+                                            _values[_valueIdx] = _process.processEscape(((ParameterEscape) _annotation).scope(), _values[_valueIdx]);
+                                        }
+                                        //
+//                                _paramMeta.setValue(_values);
+                                    }
+                                }
+                            } else if (_paramTypes[_idx].equals(String.class)) {
+                                String _value = (String) _paramMeta.getValue();
+                                if (_value != null) {
+                                    IParameterEscapeProcessor _process = _defaultEscapeProc;
+                                    if (!((ParameterEscape) _annotation).processor().equals(DefaultParameterEscapeProcessor.class)) {
+                                        _process = ClassUtils.impl(((ParameterEscape) _annotation).processor(), IParameterEscapeProcessor.class);
+                                    }
+                                    _paramMeta.setValue(_process.processEscape(((ParameterEscape) _annotation).scope(), _value));
+                                }
+                            }
+                        }
+                        break;
+                    }
+                }
+            }
+        }
+        //
+        Map<String, Object> _paramValuesForValid = new HashMap<String, Object>(_paramValues.size());
+        for (Map.Entry<String, IRequestProcessor.ParameterMeta> _paramValue : _paramValues.entrySet()) {
+            _paramValuesForValid.put(_paramValue.getKey(), _paramValue.getValue().getValue());
+        }
+        //
         Map<String, ValidateResult> _resultMap = new HashMap<String, ValidateResult>();
         if (!__requestMeta.isSingleton()) {
-            _resultMap = Validations.get(__owner.getOwner()).validate(__requestMeta.getTargetClass(), _paramValues);
+            _resultMap = Validations.get(__owner.getOwner()).validate(__requestMeta.getTargetClass(), _paramValuesForValid);
         }
         if (_methodParamNames.length > 0) {
-            _resultMap.putAll(Validations.get(__owner.getOwner()).validate(__requestMeta.getTargetClass(), __requestMeta.getMethod(), _paramValues));
+            _resultMap.putAll(Validations.get(__owner.getOwner()).validate(__requestMeta.getTargetClass(), __requestMeta.getMethod(), _paramValuesForValid));
         }
         if (!_resultMap.isEmpty()) {
             IView _validationView = null;
@@ -87,12 +138,12 @@ public class RequestExecutor {
         }
         Object _targetObj = __owner.getOwner().getBean(__requestMeta.getTargetClass());
         if (!__requestMeta.isSingleton()) {
-            ClassUtils.wrapper(_targetObj).fromMap(_paramValues);
+            ClassUtils.wrapper(_targetObj).fromMap(_paramValuesForValid);
         }
         if (_methodParamNames.length > 0) {
             Object[] _mParamValues = new Object[_methodParamNames.length];
             for (int _idx = 0; _idx < _methodParamNames.length; _idx++) {
-                _mParamValues[_idx] = _paramValues.get(_methodParamNames[_idx]);
+                _mParamValues[_idx] = _paramValuesForValid.get(_methodParamNames[_idx]);
             }
             return __doProcessResultToView(__requestMeta.getMethod().invoke(_targetObj, _mParamValues));
         } else {

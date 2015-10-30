@@ -49,6 +49,13 @@ public class Type {
     }
 
     /**
+     * 字符串参数转义范围
+     */
+    public enum EscapeScope {
+        JAVA, JS, HTML, XML, SQL, CSV, DEFAULT
+    }
+
+    /**
      * 视图类型枚举
      * <p>
      * Create At 2015-6-4 上午08:01:45
