@@ -42,13 +42,20 @@ public class Type {
     }
 
     /**
+     * HTTP请求头数据类型
+     */
+    public enum HeaderType {
+        STRING, INI, DATE
+    }
+
+    /**
      * 视图类型枚举
      * <p>
      * Create At 2015-6-4 上午08:01:45
      * </p>
      */
     public enum View {
-        BINARY, FORWARD, FREEMARKER, HTML, HTTP_STATES, JSON, JSP, NULL, REDIRECT, TEXT
+        BINARY, FORWARD, FREEMARKER, VELOCITY, HTML, HTTP_STATES, JSON, JSP, NULL, REDIRECT, TEXT
     }
 
     public enum ContentType {

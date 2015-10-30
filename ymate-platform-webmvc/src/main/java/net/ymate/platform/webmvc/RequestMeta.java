@@ -15,9 +15,7 @@
  */
 package net.ymate.platform.webmvc;
 
-import net.ymate.platform.webmvc.annotation.Controller;
-import net.ymate.platform.webmvc.annotation.RequestMapping;
-import net.ymate.platform.webmvc.annotation.RequestProcessor;
+import net.ymate.platform.webmvc.annotation.*;
 import net.ymate.platform.webmvc.base.Type;
 import org.apache.commons.lang.StringUtils;
 
@@ -40,6 +38,9 @@ public class RequestMeta {
 
     private boolean singleton;
 
+    private ResponseView responseView;
+    private Set<Header> responseHeaders;
+
     private Set<Type.HttpMethod> allowMethods;
     private Map<String, String> allowHeaders;
     private Map<String, String> allowParams;
@@ -55,6 +56,21 @@ public class RequestMeta {
         Controller _controller = targetClass.getAnnotation(Controller.class);
         this.name = StringUtils.defaultIfBlank(_controller.name(), targetClass.getName());
         this.singleton = _controller.singleton();
+        //
+        this.responseView = method.getAnnotation(ResponseView.class);
+        if (this.responseView == null) {
+            this.responseView = targetClass.getAnnotation(ResponseView.class);
+        }
+        //
+        this.responseHeaders = new HashSet<Header>();
+        ResponseHeader _respHeader = targetClass.getAnnotation(ResponseHeader.class);
+        if (_respHeader != null) {
+            Collections.addAll(responseHeaders, _respHeader.value());
+        }
+        _respHeader = method.getAnnotation(ResponseHeader.class);
+        if (_respHeader != null) {
+            Collections.addAll(responseHeaders, _respHeader.value());
+        }
         //
         RequestMapping _reqMapping = targetClass.getAnnotation(RequestMapping.class);
         String _root = null;
@@ -145,6 +161,14 @@ public class RequestMeta {
 
     public boolean isSingleton() {
         return singleton;
+    }
+
+    public ResponseView getResponseView() {
+        return responseView;
+    }
+
+    public Set<Header> getResponseHeaders() {
+        return Collections.unmodifiableSet(responseHeaders);
     }
 
     /**

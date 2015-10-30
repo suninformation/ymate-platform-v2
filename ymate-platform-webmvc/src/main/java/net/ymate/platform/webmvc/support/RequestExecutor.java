@@ -16,12 +16,15 @@
 package net.ymate.platform.webmvc.support;
 
 import com.alibaba.fastjson.JSON;
+import net.ymate.platform.core.lang.BlurObject;
 import net.ymate.platform.core.util.ClassUtils;
 import net.ymate.platform.validation.ValidateResult;
 import net.ymate.platform.validation.Validations;
 import net.ymate.platform.webmvc.IRequestProcessor;
 import net.ymate.platform.webmvc.IWebMvc;
 import net.ymate.platform.webmvc.RequestMeta;
+import net.ymate.platform.webmvc.annotation.Header;
+import net.ymate.platform.webmvc.annotation.ResponseView;
 import net.ymate.platform.webmvc.base.Type;
 import net.ymate.platform.webmvc.view.IView;
 import net.ymate.platform.webmvc.view.impl.*;
@@ -100,7 +103,44 @@ public class RequestExecutor {
     protected IView __doProcessResultToView(Object result) throws Exception {
         IView _view = null;
         if (result == null) {
-            _view = JspView.bind(__owner);
+            if (__requestMeta.getResponseView() != null) {
+                ResponseView _respView = __requestMeta.getResponseView();
+                String[] _viewParts = StringUtils.split(_respView.value(), ":");
+                switch (_respView.type()) {
+                    case BINARY:
+                        _view = BinaryView.bind(new File(_viewParts[0])).useAttachment(_viewParts.length > 1 ? _viewParts[1] : null);
+                        break;
+                    case FORWARD:
+                        _view = ForwardView.bind(_respView.value());
+                        break;
+                    case FREEMARKER:
+                        _view = FreemarkerView.bind(__owner, _respView.value());
+                        break;
+                    case HTML:
+                        _view = HtmlView.bind(__owner, _respView.value());
+                        break;
+                    case HTTP_STATES:
+                        _view = HttpStatusView.bind(Integer.parseInt(_viewParts[0]), _viewParts.length > 1 ? _viewParts[1] : null);
+                        break;
+                    case JSON:
+                        _view = JsonView.bind(_viewParts[0]);
+                        break;
+                    case JSP:
+                        _view = JspView.bind(__owner, _viewParts[0]);
+                        break;
+                    case REDIRECT:
+                        _view = RedirectView.bind(_viewParts[0]);
+                        break;
+                    case TEXT:
+                        _view = TextView.bind(_viewParts[0]);
+                        break;
+                    default:
+                        _view = NullView.bind();
+                }
+            } else {
+                //
+                _view = JspView.bind(__owner);
+            }
         } else if (result instanceof IView) {
             _view = (IView) result;
         } else if (result instanceof String) {
@@ -139,6 +179,21 @@ public class RequestExecutor {
                 }
             } else {
                 _view = HtmlView.bind((String) result);
+            }
+        }
+        //
+        if (_view != null) {
+            for (Header _header : __requestMeta.getResponseHeaders()) {
+                switch (_header.type()) {
+                    case STRING:
+                        _view.addHeader(_header.name(), _header.value());
+                        break;
+                    case DATE:
+                        _view.addDateHeader(_header.name(), BlurObject.bind(_header.value()).toLongValue());
+                        break;
+                    case INI:
+                        _view.addIntHeader(_header.name(), BlurObject.bind(_header.value()).toIntValue());
+                }
             }
         }
         return _view;
