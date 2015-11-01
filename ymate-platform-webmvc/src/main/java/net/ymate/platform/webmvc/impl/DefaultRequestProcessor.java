@@ -16,20 +16,21 @@
 package net.ymate.platform.webmvc.impl;
 
 import net.ymate.platform.core.lang.BlurObject;
-import net.ymate.platform.core.lang.PairObject;
 import net.ymate.platform.core.util.ClassUtils;
-import net.ymate.platform.webmvc.IRequestProcessor;
-import net.ymate.platform.webmvc.IUploadFileWrapper;
-import net.ymate.platform.webmvc.IWebMvc;
-import net.ymate.platform.webmvc.RequestMeta;
+import net.ymate.platform.core.util.RuntimeUtils;
+import net.ymate.platform.webmvc.*;
 import net.ymate.platform.webmvc.annotation.*;
 import net.ymate.platform.webmvc.context.WebContext;
 import net.ymate.platform.webmvc.support.MultipartRequestWrapper;
 import net.ymate.platform.webmvc.util.CookieHelper;
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Array;
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -41,101 +42,67 @@ import java.util.Map;
  */
 public class DefaultRequestProcessor implements IRequestProcessor {
 
-    public Map<String, ParameterMeta> processRequestParams(IWebMvc owner, RequestMeta requestMeta, String[] methodParamNames) throws Exception {
-        Map<String, ParameterMeta> _returnValues = new LinkedHashMap<String, ParameterMeta>();
-        //
-        ClassUtils.BeanWrapper<?> _wrapper = ClassUtils.wrapper(requestMeta.getTargetClass());
-        if (_wrapper != null) {
-            for (String _fieldName : _wrapper.getFieldNames()) {
-                PairObject<String, Object> _result = __doGetParamValue(owner, "", _fieldName, _wrapper.getFieldType(_fieldName), _wrapper.getFieldAnnotations(_fieldName));
-                if (_result != null) {
-                    ParameterMeta _pMeta = new ParameterMeta(_result.getKey(), _fieldName, _result.getValue());
-                    _returnValues.put(_pMeta.getParamName(), _pMeta);
-                    _returnValues.put(_pMeta.getFieldName(), _pMeta);
-                }
-            }
+    private final Log _LOG = LogFactory.getLog(DefaultRequestProcessor.class);
+
+    public Map<String, Object> processRequestParams(IWebMvc owner, RequestMeta requestMeta) throws Exception {
+        Map<String, Object> _returnValues = new LinkedHashMap<String, Object>();
+        // 非单例控制器类将不执行类成员的参数处理
+        if (!requestMeta.isSingleton()) {
+            _returnValues.putAll(__doGetParamValueFromParameterMetas(owner, requestMeta.getClassParameterMetas()));
         }
+        // 处理控制器方法参数
+        _returnValues.putAll(__doGetParamValueFromParameterMetas(owner, requestMeta.getMethodParameterMetas()));
         //
-        Class<?>[] _paramTypes = requestMeta.getMethod().getParameterTypes();
-        if (methodParamNames.length > 0) {
-            Annotation[][] _paramAnnotations = requestMeta.getMethod().getParameterAnnotations();
-            for (int _idx = 0; _idx < methodParamNames.length; _idx++) {
-                PairObject<String, Object> _result = __doGetParamValue(owner, "", methodParamNames[_idx], _paramTypes[_idx], _paramAnnotations[_idx]);
-                if (_result != null) {
-                    ParameterMeta _pMeta = new ParameterMeta(_result.getKey(), methodParamNames[_idx], _result.getValue());
-                    _returnValues.put(_pMeta.getParamName(), _pMeta);
-                    _returnValues.put(_pMeta.getFieldName(), _pMeta);
-                }
-            }
-        }
         return _returnValues;
+    }
+
+    protected Map<String, Object> __doGetParamValueFromParameterMetas(IWebMvc owner, Collection<ParameterMeta> metas) throws Exception {
+        Map<String, Object> _resultMap = new HashMap<String, Object>();
+        for (ParameterMeta _meta : metas) {
+            Object _result = __doGetParamValue(owner, _meta, _meta.getParamName(), _meta.getParamType(), _meta.getParamAnno());
+            if (_result != null) {
+                _result = _meta.doParamEscape(_meta, _result);
+                //
+                _resultMap.put(_meta.getParamName(), _result);
+                _resultMap.put(_meta.getFieldName(), _result);
+            }
+        }
+        return _resultMap;
     }
 
     /**
      * 分析请求参数的值
      *
-     * @param owner
-     * @param prefix      参数前缀
+     * @param owner       Owner
      * @param paramName   参数名称
      * @param paramType   参数类型
-     * @param annotations 参数上声明的注解集合
+     * @param _annotation 参数上声明的参数绑定注解
      * @return 返回参数名称与值对象
      * @throws Exception
      */
-    private PairObject<String, Object> __doGetParamValue(IWebMvc owner, String prefix, String paramName, Class<?> paramType, Annotation[] annotations) throws Exception {
-        String _pName = null;
+    protected Object __doGetParamValue(IWebMvc owner, ParameterMeta paramMeta, String paramName, Class<?> paramType, Annotation _annotation) throws Exception {
         Object _pValue = null;
-        for (Annotation _annotation : annotations) {
-            if (_annotation instanceof CookieVariable) {
-                CookieVariable _anno = (CookieVariable) _annotation;
-                _pName = __doGetParamName(StringUtils.defaultIfBlank(_anno.prefix(), prefix), _anno.value(), paramName);
-                _pValue = BlurObject.bind(StringUtils.defaultIfBlank(CookieHelper.bind(owner).getCookie(_pName).toStringValue(), StringUtils.trimToNull(_anno.defaultValue()))).toObjectValue(paramType);
-                break;
-            } else if (_annotation instanceof PathVariable) {
-                PathVariable _anno = (PathVariable) _annotation;
-                _pName = __doGetParamName("", _anno.value(), paramName);
-                _pValue = BlurObject.bind(WebContext.getRequestContext().getAttribute(_pName)).toObjectValue(paramType);
-                break;
-            } else if (_annotation instanceof RequestHeader) {
-                RequestHeader _anno = (RequestHeader) _annotation;
-                _pName = __doGetParamName(StringUtils.defaultIfBlank(_anno.prefix(), prefix), _anno.value(), paramName);
-                _pValue = BlurObject.bind(StringUtils.defaultIfBlank(WebContext.getRequest().getHeader(_pName), StringUtils.trimToNull(_anno.defaultValue()))).toObjectValue(paramType);
-                break;
-            } else if (_annotation instanceof RequestParam) {
-                RequestParam _anno = (RequestParam) _annotation;
-                _pName = __doGetParamName(StringUtils.defaultIfBlank(_anno.prefix(), prefix), _anno.value(), paramName);
-                _pValue = this.__doParseRequestParam(_pName, StringUtils.trimToNull(_anno.defaultValue()), paramType);
-                break;
-            } else if (_annotation instanceof ModelBind) {
-                ModelBind _mBind = (ModelBind) _annotation;
-                _pName = paramName;
-                _pValue = __doParseModelBind(owner, _mBind.prefix(), paramType);
-                break;
-            }
+        if (_annotation instanceof CookieVariable) {
+            CookieVariable _anno = (CookieVariable) _annotation;
+            String _v = CookieHelper.bind(owner).getCookie(paramName).toStringValue();
+            _pValue = __doSafeGetParamValue(owner, paramName, paramType, _v, StringUtils.trimToNull(_anno.defaultValue()));
+        } else if (_annotation instanceof PathVariable) {
+            String _v = WebContext.getRequestContext().getAttribute(paramName);
+            _pValue = __doSafeGetParamValue(owner, paramName, paramType, _v, null);
+        } else if (_annotation instanceof RequestHeader) {
+            RequestHeader _anno = (RequestHeader) _annotation;
+            String _v = WebContext.getRequest().getHeader(paramName);
+            _pValue = __doSafeGetParamValue(owner, paramName, paramType, _v, StringUtils.trimToNull(_anno.defaultValue()));
+        } else if (_annotation instanceof RequestParam) {
+            RequestParam _anno = (RequestParam) _annotation;
+            _pValue = this.__doParseRequestParam(owner, paramName, StringUtils.trimToNull(_anno.defaultValue()), paramType);
+        } else if (_annotation instanceof ModelBind) {
+            _pValue = __doParseModelBind(owner, paramMeta, paramType);
         }
-        if (_pName != null && _pValue != null) {
-            return new PairObject<String, Object>(_pName, _pValue);
-        }
-        return null;
+        return _pValue;
     }
 
-    /**
-     * 根据前缀生成有效的参数名称
-     *
-     * @param prefix
-     * @param pName
-     * @param defaultName
-     * @return
-     */
-    private String __doGetParamName(String prefix, String pName, String defaultName) {
-        String _name = StringUtils.defaultIfBlank(pName, defaultName);
-        if (StringUtils.isNotBlank(prefix)) {
-            _name = prefix.trim().concat("_").concat(_name);
-        }
-        return _name;
-    }
-
-    private Object __doParseRequestParam(String paramName, String defaultValue, Class<?> paramType) {
+    protected Object __doParseRequestParam(IWebMvc owner, String paramName, String defaultValue, Class<?> paramType) {
         if (paramType.isArray()) {
             if (paramType.equals(IUploadFileWrapper[].class)) {
                 if (WebContext.getRequest() instanceof MultipartRequestWrapper) {
@@ -151,7 +118,7 @@ public class DefaultRequestProcessor implements IRequestProcessor {
                 Class<?> _arrayClassType = ClassUtils.getArrayClassType(paramType);
                 Object[] _tempParams = (Object[]) Array.newInstance(_arrayClassType, _values.length);
                 for (int _tempIdx = 0; _tempIdx < _values.length; _tempIdx++) {
-                    _tempParams[_tempIdx] = new BlurObject(_values[_tempIdx]).toObjectValue(_arrayClassType);
+                    _tempParams[_tempIdx] = __doSafeGetParamValue(owner, paramName, _arrayClassType, _values[_tempIdx], null);
                 }
                 return _tempParams;
             }
@@ -162,18 +129,35 @@ public class DefaultRequestProcessor implements IRequestProcessor {
             }
             return null;
         }
-        String _value = StringUtils.defaultIfBlank(WebContext.getRequest().getParameter(paramName), defaultValue);
-        return new BlurObject(_value).toObjectValue(paramType);
+        return __doSafeGetParamValue(owner, paramName, paramType, null, defaultValue);
     }
 
-    private Object __doParseModelBind(IWebMvc owner, String prefix, Class<?> paramType) throws Exception {
+    protected Object __doSafeGetParamValue(IWebMvc owner, String paramName, Class<?> paramType, String paramValue, String defaultValue) {
+        Object _returnValue = null;
+        String _pValue = paramValue;
+        try {
+            if (_pValue == null) {
+                _pValue = WebContext.getRequest().getParameter(paramName);
+            }
+            _returnValue = new BlurObject(StringUtils.defaultIfBlank(_pValue, defaultValue)).toObjectValue(paramType);
+        } catch (Throwable e) {
+            if (owner.getOwner().getConfig().isDevelopMode()) {
+                _LOG.warn("Invalid '" + paramName + "' value: " + _pValue, RuntimeUtils.unwrapThrow(e));
+            }
+        }
+        return _returnValue;
+    }
+
+    protected Object __doParseModelBind(IWebMvc owner, ParameterMeta paramMeta, Class<?> paramType) throws Exception {
         ClassUtils.BeanWrapper<?> _wrapper = ClassUtils.wrapper(paramType);
         if (_wrapper != null) {
             for (String _fName : _wrapper.getFieldNames()) {
-                Annotation[] _fieldAnnotations = _wrapper.getFieldAnnotations(_fName);
-                PairObject<String, Object> _result = __doGetParamValue(owner, prefix, _fName, _wrapper.getFieldType(_fName), _fieldAnnotations);
-                if (_result != null) {
-                    _wrapper.setValue(_fName, _result.getValue());
+                ParameterMeta _meta = new ParameterMeta(_wrapper.getField(_fName));
+                if (_meta.isParamField()) {
+                    Object _result = __doGetParamValue(owner, _meta, _meta.doBuildParamName(paramMeta.getPrefix(), _meta.getParamName(), _fName), _meta.getParamType(), _meta.getParamAnno());
+                    if (_result != null) {
+                        _wrapper.setValue(_fName, _meta.doParamEscape(_meta, _result));
+                    }
                 }
             }
             return _wrapper.getTargetObject();

@@ -15,12 +15,15 @@
  */
 package net.ymate.platform.webmvc;
 
+import net.ymate.platform.core.util.ClassUtils;
 import net.ymate.platform.webmvc.annotation.*;
 import net.ymate.platform.webmvc.base.Type;
 import org.apache.commons.lang.StringUtils;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * 控制器请求映射元数据描述
@@ -30,11 +33,21 @@ import java.util.*;
  */
 public class RequestMeta {
 
+    private static Map<Class<?>, Map<String, ParameterMeta>> __CLASS_PARAMETER_METAS;
+
+    static {
+        __CLASS_PARAMETER_METAS = new ConcurrentHashMap<Class<?>, Map<String, ParameterMeta>>();
+    }
+
+    private List<ParameterMeta> __methodParameterMetas;
+
     private Class<?> targetClass;
     private String name;
     private String mapping;
     private Class<? extends IRequestProcessor> processor;
     private Method method;
+
+    private List<String> methodParamNames;
 
     private boolean singleton;
 
@@ -65,11 +78,11 @@ public class RequestMeta {
         this.responseHeaders = new HashSet<Header>();
         ResponseHeader _respHeader = targetClass.getAnnotation(ResponseHeader.class);
         if (_respHeader != null) {
-            Collections.addAll(responseHeaders, _respHeader.value());
+            Collections.addAll(this.responseHeaders, _respHeader.value());
         }
         _respHeader = method.getAnnotation(ResponseHeader.class);
         if (_respHeader != null) {
-            Collections.addAll(responseHeaders, _respHeader.value());
+            Collections.addAll(this.responseHeaders, _respHeader.value());
         }
         //
         RequestMapping _reqMapping = targetClass.getAnnotation(RequestMapping.class);
@@ -95,6 +108,37 @@ public class RequestMeta {
             _reqProcessor = targetClass.getAnnotation(RequestProcessor.class);
             if (_reqProcessor != null) {
                 this.processor = _reqProcessor.value();
+            }
+        }
+        //
+        Map<String, ParameterMeta> _targetClassParameterMetas = __CLASS_PARAMETER_METAS.get(targetClass);
+        if (_targetClassParameterMetas == null) {
+            ClassUtils.BeanWrapper<?> _wrapper = ClassUtils.wrapper(targetClass);
+            if (_wrapper != null) {
+                _targetClassParameterMetas = new HashMap<String, ParameterMeta>();
+                //
+                for (String _fieldName : _wrapper.getFieldNames()) {
+                    if (!_targetClassParameterMetas.containsKey(_fieldName)) {
+                        ParameterMeta _meta = new ParameterMeta(_wrapper.getField(_fieldName));
+                        if (_meta.isParamField()) {
+                            _targetClassParameterMetas.put(_fieldName, _meta);
+                        }
+                    }
+                }
+                __CLASS_PARAMETER_METAS.put(targetClass, _targetClassParameterMetas);
+            }
+        }
+        //
+        this.__methodParameterMetas = new ArrayList<ParameterMeta>();
+        this.methodParamNames = Arrays.asList(ClassUtils.getMethodParamNames(method));
+        if (!this.methodParamNames.isEmpty()) {
+            Class<?>[] _paramTypes = method.getParameterTypes();
+            Annotation[][] _paramAnnotations = method.getParameterAnnotations();
+            for (int _idx = 0; _idx < this.methodParamNames.size(); _idx++) {
+                ParameterMeta _meta = new ParameterMeta(_paramTypes[_idx], this.methodParamNames.get(_idx), _paramAnnotations[_idx]);
+                if (_meta.isParamField()) {
+                    this.__methodParameterMetas.add(_meta);
+                }
             }
         }
     }
@@ -155,6 +199,10 @@ public class RequestMeta {
         return method;
     }
 
+    public List<String> getMethodParamNames() {
+        return Collections.unmodifiableList(methodParamNames);
+    }
+
     public String getName() {
         return name;
     }
@@ -190,5 +238,13 @@ public class RequestMeta {
 
     public Map<String, String> getAllowParams() {
         return Collections.unmodifiableMap(allowParams);
+    }
+
+    public Collection<ParameterMeta> getClassParameterMetas() {
+        return Collections.unmodifiableCollection(__CLASS_PARAMETER_METAS.get(targetClass).values());
+    }
+
+    public List<ParameterMeta> getMethodParameterMetas() {
+        return Collections.unmodifiableList(__methodParameterMetas);
     }
 }

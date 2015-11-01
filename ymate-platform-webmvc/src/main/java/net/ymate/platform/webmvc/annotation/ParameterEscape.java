@@ -27,7 +27,7 @@ import java.lang.annotation.*;
  * @author 刘镇 (suninformation@163.com) on 15/10/29 下午7:31
  * @version 1.0
  */
-@Target({ElementType.TYPE, ElementType.METHOD, ElementType.PARAMETER})
+@Target({ElementType.FIELD, ElementType.PARAMETER})
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
 public @interface ParameterEscape {

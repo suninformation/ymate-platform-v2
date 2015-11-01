@@ -28,49 +28,11 @@ public interface IRequestProcessor {
     /**
      * 分析请求协议内容
      *
-     * @param owner            Owner
-     * @param requestMeta      请求元描述
-     * @param methodParamNames 方法参数名称
+     * @param owner       Owner
+     * @param requestMeta 请求元描述
      * @return 返回请求的参数映射
      * @throws Exception 可能产生的异常
      */
-    public Map<String, ParameterMeta> processRequestParams(IWebMvc owner, RequestMeta requestMeta, String[] methodParamNames) throws Exception;
+    public Map<String, Object> processRequestParams(IWebMvc owner, RequestMeta requestMeta) throws Exception;
 
-    public class ParameterMeta {
-        String paramName;
-
-        String fieldName;
-
-        Object value;
-
-        public ParameterMeta(String paramName, String fieldName, Object value) {
-            this.paramName = paramName;
-            this.fieldName = fieldName;
-            this.value = value;
-        }
-
-        public String getParamName() {
-            return paramName;
-        }
-
-        public void setParamName(String paramName) {
-            this.paramName = paramName;
-        }
-
-        public String getFieldName() {
-            return fieldName;
-        }
-
-        public void setFieldName(String fieldName) {
-            this.fieldName = fieldName;
-        }
-
-        public Object getValue() {
-            return value;
-        }
-
-        public void setValue(Object value) {
-            this.value = value;
-        }
-    }
 }

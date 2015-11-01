@@ -17,28 +17,19 @@ package net.ymate.platform.webmvc.impl;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
-import com.alibaba.fastjson.JSONException;
 import com.alibaba.fastjson.JSONObject;
 import net.ymate.platform.core.lang.BlurObject;
-import net.ymate.platform.core.lang.PairObject;
 import net.ymate.platform.core.util.ClassUtils;
 import net.ymate.platform.core.util.RuntimeUtils;
-import net.ymate.platform.webmvc.IRequestProcessor;
 import net.ymate.platform.webmvc.IUploadFileWrapper;
 import net.ymate.platform.webmvc.IWebMvc;
-import net.ymate.platform.webmvc.RequestMeta;
-import net.ymate.platform.webmvc.annotation.*;
 import net.ymate.platform.webmvc.context.WebContext;
-import net.ymate.platform.webmvc.util.CookieHelper;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import java.lang.annotation.Annotation;
 import java.lang.reflect.Array;
-import java.util.LinkedHashMap;
-import java.util.Map;
 
 /**
  * 基于JSON作为协议格式的控制器请求处理器接口实现
@@ -46,110 +37,44 @@ import java.util.Map;
  * @author 刘镇 (suninformation@163.com) on 15/5/28 上午11:51
  * @version 1.0
  */
-public class JSONRequestProcessor implements IRequestProcessor {
+public class JSONRequestProcessor extends DefaultRequestProcessor {
 
-    private static final Log _LOG = LogFactory.getLog(JSONRequestProcessor.class);
+    private final Log _LOG = LogFactory.getLog(JSONRequestProcessor.class);
 
-    public Map<String, ParameterMeta> processRequestParams(IWebMvc owner, RequestMeta requestMeta, String[] methodParamNames) throws Exception {
-        JSONObject _protocol = null;
-        try {
-            _protocol = JSON.parseObject(StringUtils.defaultIfBlank(IOUtils.toString(WebContext.getRequest().getInputStream(), owner.getModuleCfg().getDefaultCharsetEncoding()), "{}"));
-        } catch (JSONException e) {
-            _protocol = JSON.parseObject("{}");
-            //
-            if (WebContext.getContext().getOwner().getOwner().getConfig().isDevelopMode()) {
-                _LOG.warn("", RuntimeUtils.unwrapThrow(e));
-            }
-        }
-        //
-        Map<String, ParameterMeta> _returnValues = new LinkedHashMap<String, ParameterMeta>();
-        //
-        ClassUtils.BeanWrapper<?> _wrapper = ClassUtils.wrapper(requestMeta.getTargetClass());
-        if (_wrapper != null) {
-            for (String _fieldName : _wrapper.getFieldNames()) {
-                PairObject<String, Object> _result = __doGetParamValue(owner, "", _fieldName, _wrapper.getFieldType(_fieldName), _wrapper.getFieldAnnotations(_fieldName), _protocol);
-                if (_result != null) {
-                    ParameterMeta _pMeta = new ParameterMeta(_result.getKey(), _fieldName, _result.getValue());
-                    _returnValues.put(_pMeta.getParamName(), _pMeta);
-                    _returnValues.put(_pMeta.getFieldName(), _pMeta);
+    private JSONObject __doGetProtocol(IWebMvc owner) {
+        JSONObject _protocol = WebContext.getRequestContext().getAttribute(JSONRequestProcessor.class.getName());
+        if (_protocol == null) {
+            try {
+                _protocol = JSON.parseObject(StringUtils.defaultIfBlank(IOUtils.toString(WebContext.getRequest().getInputStream(), owner.getModuleCfg().getDefaultCharsetEncoding()), "{}"));
+            } catch (Exception e) {
+                _protocol = JSON.parseObject("{}");
+                //
+                if (WebContext.getContext().getOwner().getOwner().getConfig().isDevelopMode()) {
+                    _LOG.warn("Invalid protocol", RuntimeUtils.unwrapThrow(e));
                 }
             }
+            WebContext.getRequestContext().addAttribute(JSONRequestProcessor.class.getName(), _protocol);
         }
-        //
-        Class<?>[] _paramTypes = requestMeta.getMethod().getParameterTypes();
-        if (methodParamNames.length > 0) {
-            Annotation[][] _paramAnnotations = requestMeta.getMethod().getParameterAnnotations();
-            for (int _idx = 0; _idx < methodParamNames.length; _idx++) {
-                PairObject<String, Object> _result = __doGetParamValue(owner, "", methodParamNames[_idx], _paramTypes[_idx], _paramAnnotations[_idx], _protocol);
-                if (_result != null) {
-                    ParameterMeta _pMeta = new ParameterMeta(_result.getKey(), methodParamNames[_idx], _result.getValue());
-                    _returnValues.put(_pMeta.getParamName(), _pMeta);
-                    _returnValues.put(_pMeta.getFieldName(), _pMeta);
-                }
-            }
-        }
-        return _returnValues;
+        return _protocol;
     }
 
-    private PairObject<String, Object> __doGetParamValue(IWebMvc owner, String prefix, String paramName, Class<?> paramType, Annotation[] annotations, JSONObject protocol) throws Exception {
-        String _pName = null;
-        Object _pValue = null;
-        for (Annotation _annotation : annotations) {
-            if (_annotation instanceof CookieVariable) {
-                CookieVariable _anno = (CookieVariable) _annotation;
-                _pName = __doGetParamName(_anno.prefix(), _anno.value(), paramName);
-                _pValue = BlurObject.bind(StringUtils.defaultIfBlank(CookieHelper.bind(owner).getCookie(_pName).toStringValue(), StringUtils.trimToNull(_anno.defaultValue()))).toObjectValue(paramType);
-                break;
-            } else if (_annotation instanceof PathVariable) {
-                PathVariable _anno = (PathVariable) _annotation;
-                _pName = __doGetParamName("", _anno.value(), paramName);
-                _pValue = BlurObject.bind(WebContext.getRequestContext().getAttribute(_pName)).toObjectValue(paramType);
-                break;
-            } else if (_annotation instanceof RequestHeader) {
-                RequestHeader _anno = (RequestHeader) _annotation;
-                _pName = __doGetParamName(_anno.prefix(), _anno.value(), paramName);
-                _pValue = BlurObject.bind(StringUtils.defaultIfBlank(WebContext.getRequest().getHeader(_pName), StringUtils.trimToNull(_anno.defaultValue()))).toObjectValue(paramType);
-                break;
-            } else if (_annotation instanceof RequestParam) {
-                RequestParam _anno = (RequestParam) _annotation;
-                _pName = __doGetParamName("", _anno.value(), paramName);
-                _pValue = this.__doParseRequestParam(_pName, StringUtils.defaultIfBlank(_anno.prefix(), prefix), StringUtils.trimToNull(_anno.defaultValue()), paramType, protocol);
-                break;
-            } else if (_annotation instanceof ModelBind) {
-                ModelBind _mBind = (ModelBind) _annotation;
-                _pName = paramName;
-                _pValue = __doParseModelBind(owner, StringUtils.defaultIfBlank(_mBind.prefix(), prefix), paramType, protocol);
-                break;
-            }
-        }
-        if (_pName != null && _pValue != null) {
-            return new PairObject<String, Object>(_pName, _pValue);
-        }
-        return null;
-    }
-
-    private String __doGetParamName(String prefix, String pName, String defaultName) {
-        String _name = StringUtils.defaultIfBlank(pName, defaultName);
-        if (StringUtils.isNotBlank(prefix)) {
-            _name = prefix.trim().concat("_").concat(_name);
-        }
-        return _name;
-    }
-
-    private Object __doParseRequestParam(String paramName, String prefix, String defaultValue, Class<?> paramType, JSONObject protocol) {
+    protected Object __doParseRequestParam(IWebMvc owner, String paramName, String defaultValue, Class<?> paramType) {
+        Object _returnValue = null;
+        JSONObject _protocol = __doGetProtocol(owner);
+        String[] _paramNameArr = StringUtils.split(paramName, ".");
         if (paramType.isArray()) {
             if (!paramType.equals(IUploadFileWrapper[].class)) {
                 Object[] _values = null;
-                if (StringUtils.isNotBlank(prefix)) {
-                    JSONObject _jsonObj = protocol.getJSONObject(prefix);
+                if (_paramNameArr.length > 1) {
+                    JSONObject _jsonObj = _protocol.getJSONObject(_paramNameArr[0]);
                     if (_jsonObj != null) {
-                        JSONArray _jsonArr = _jsonObj.getJSONArray(paramName);
+                        JSONArray _jsonArr = _jsonObj.getJSONArray(_paramNameArr[1]);
                         if (_jsonArr != null) {
                             _values = _jsonArr.toArray();
                         }
                     }
                 } else {
-                    JSONArray _jsonArr = protocol.getJSONArray(paramName);
+                    JSONArray _jsonArr = _protocol.getJSONArray(paramName);
                     if (_jsonArr != null) {
                         _values = _jsonArr.toArray();
                     }
@@ -158,39 +83,28 @@ public class JSONRequestProcessor implements IRequestProcessor {
                     Class<?> _arrayClassType = ClassUtils.getArrayClassType(paramType);
                     Object[] _tempParams = (Object[]) Array.newInstance(_arrayClassType, _values.length);
                     for (int _tempIdx = 0; _tempIdx < _values.length; _tempIdx++) {
-                        _tempParams[_tempIdx] = new BlurObject(_values[_tempIdx]).toObjectValue(_arrayClassType);
+                        try {
+                            String _value = BlurObject.bind(_values[_tempIdx]).toStringValue();
+                            _tempParams[_tempIdx] = __doSafeGetParamValue(owner, paramName, _arrayClassType, _value, null);
+                        } catch (Throwable e) {
+                            if (owner.getOwner().getConfig().isDevelopMode()) {
+                                _LOG.warn("Invalid '" + paramName + "' value", RuntimeUtils.unwrapThrow(e));
+                            }
+                        }
                     }
-                    return _tempParams;
+                    _returnValue = _tempParams;
                 }
             }
-            return null;
-        } else if (paramType.equals(IUploadFileWrapper.class)) {
-            return null;
-        }
-        String _value = null;
-        if (StringUtils.isNotBlank(prefix)) {
-            JSONObject _jsonObj = protocol.getJSONObject(prefix);
-            if (_jsonObj != null) {
-                _value = StringUtils.defaultIfBlank(_jsonObj.getString(paramName), defaultValue);
-            }
-        } else {
-            _value = StringUtils.defaultIfBlank(protocol.getString(paramName), defaultValue);
-        }
-        return new BlurObject(_value).toObjectValue(paramType);
-    }
-
-    private Object __doParseModelBind(IWebMvc owner, String prefix, Class<?> paramType, JSONObject protocol) throws Exception {
-        ClassUtils.BeanWrapper<?> _wrapper = ClassUtils.wrapper(paramType);
-        if (_wrapper != null) {
-            for (String _fName : _wrapper.getFieldNames()) {
-                Annotation[] _fieldAnnotations = _wrapper.getFieldAnnotations(_fName);
-                PairObject<String, Object> _result = __doGetParamValue(owner, prefix, _fName, _wrapper.getFieldType(_fName), _fieldAnnotations, protocol);
-                if (_result != null) {
-                    _wrapper.setValue(_fName, _result.getValue());
+        } else if (!paramType.equals(IUploadFileWrapper.class)) {
+            if (_paramNameArr.length > 1) {
+                JSONObject _jsonObj = _protocol.getJSONObject(_paramNameArr[0]);
+                if (_jsonObj != null) {
+                    _returnValue = __doSafeGetParamValue(owner, paramName, paramType, _jsonObj.getString(_paramNameArr[1]), defaultValue);
                 }
+            } else {
+                _returnValue = __doSafeGetParamValue(owner, paramName, paramType, _protocol.getString(paramName), defaultValue);
             }
-            return _wrapper.getTargetObject();
         }
-        return null;
+        return _returnValue;
     }
 }
