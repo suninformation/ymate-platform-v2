@@ -213,7 +213,7 @@ public class WebMVC implements IModule, IWebMvc {
             if (_isAllowConvention) {
                 // 处理Convention模式下URL参数集合
                 String _requestMapping = context.getRequestMapping();
-                String[] _urlParamArr = StringUtils.split(_requestMapping, '_');
+                String[] _urlParamArr = getModuleCfg().isConventionUrlrewriteMode() ? StringUtils.split(_requestMapping, '_') : new String[]{_requestMapping};
                 if (_urlParamArr != null && _urlParamArr.length > 1) {
                     _requestMapping = _urlParamArr[0];
                     WebContext.getRequest().setAttribute("UrlParams", Arrays.asList(_urlParamArr).subList(1, _urlParamArr.length));
