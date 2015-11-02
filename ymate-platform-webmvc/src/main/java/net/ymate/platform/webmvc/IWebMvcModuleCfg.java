@@ -131,4 +131,9 @@ public interface IWebMvcModuleCfg {
      * @return Convention模式开启时视图文件路径(基于base_view_path的相对路径, 减号代表不允许访问)，可选参数，默认值为空(即不限制访问路径)，多个路径间用'|'分隔
      */
     public Set<String> getConventionViewNotAllowPaths();
+
+    /**
+     * @return 请求参数转义模式是否开启（开启状态时，控制器方法的所有参数将默认支持转移，可针对具体控制器主法或参数设置忽略转义操作），可选参数，默认值为false
+     */
+    public boolean isParameterEscapeMode();
 }

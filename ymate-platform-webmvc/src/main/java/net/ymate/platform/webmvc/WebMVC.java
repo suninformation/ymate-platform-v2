@@ -128,7 +128,7 @@ public class WebMVC implements IModule, IWebMvc {
         boolean _isValid = false;
         for (Method _method : targetClass.getDeclaredMethods()) {
             if (_method.isAnnotationPresent(RequestMapping.class)) {
-                RequestMeta _meta = new RequestMeta(targetClass, _method);
+                RequestMeta _meta = new RequestMeta(this, targetClass, _method);
                 __mappingParser.registerRequestMeta(_meta);
                 //
                 _isValid = true;

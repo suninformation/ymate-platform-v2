@@ -55,6 +55,8 @@ public class DefaultModuleCfg implements IWebMvcModuleCfg {
 
     private String __requestPrefix;
 
+    private boolean __parameterEscapeMode;
+
     private String __baseViewPath;
 
     private String __abstractBaseViewPath;
@@ -108,6 +110,8 @@ public class DefaultModuleCfg implements IWebMvcModuleCfg {
         __requestIgnoreRegex = StringUtils.defaultIfBlank(_moduleCfgs.get("request_ignore_regex"), __IGNORE);
         __requestMethodParam = StringUtils.defaultIfBlank(_moduleCfgs.get("request_method_param"), "_method");
         __requestPrefix = StringUtils.trimToEmpty(_moduleCfgs.get("request_prefix"));
+        //
+        __parameterEscapeMode = BlurObject.bind(_moduleCfgs.get("parameter_escape_mode")).toBooleanValue();
         //
         __baseViewPath = RuntimeUtils.replaceEnvVariable(StringUtils.defaultIfBlank(_moduleCfgs.get("base_view_path"), "/WEB-INF/templates/"));
         __abstractBaseViewPath = __baseViewPath;
@@ -242,5 +246,9 @@ public class DefaultModuleCfg implements IWebMvcModuleCfg {
 
     public Set<String> getConventionViewNotAllowPaths() {
         return Collections.unmodifiableSet(__conventionViewNotAllowPaths);
+    }
+
+    public boolean isParameterEscapeMode() {
+        return __parameterEscapeMode;
     }
 }

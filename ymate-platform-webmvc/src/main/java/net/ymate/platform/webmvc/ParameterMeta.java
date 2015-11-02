@@ -82,7 +82,7 @@ public class ParameterMeta {
 
     private boolean isParamField;
 
-    public ParameterMeta(Class<?> paramType, String fieldName, Annotation[] fieldAnnos) {
+    public ParameterMeta(RequestMeta parent, Class<?> paramType, String fieldName, Annotation[] fieldAnnos) {
         this.fieldName = fieldName;
         this.paramType = paramType;
         this.isArray = paramType.isArray();
@@ -98,14 +98,27 @@ public class ParameterMeta {
                 }
             }
         }
+        //
+        if (this.parameterEscape == null) {
+            this.parameterEscape = parent.getParameterEscape();
+        } else if (parent.getParameterEscape() != null && this.parameterEscape.skiped()) {
+            this.parameterEscape = null;
+        }
     }
 
-    public ParameterMeta(Field paramField) {
+    public ParameterMeta(RequestMeta parent, Field paramField) {
         this.fieldName = paramField.getName();
         this.paramType = paramField.getType();
         this.isArray = this.paramType.isArray();
         this.isUploadFile = this.paramType.equals(IUploadFileWrapper.class);
+        //
         this.parameterEscape = paramField.getAnnotation(ParameterEscape.class);
+        if (this.parameterEscape == null) {
+            this.parameterEscape = parent.getParameterEscape();
+        }
+        if (this.parameterEscape != null && this.parameterEscape.skiped()) {
+            this.parameterEscape = null;
+        }
         //
         for (Annotation _anno : paramField.getAnnotations()) {
             this.isParamField = __doParseAnnotation(_anno);
@@ -224,10 +237,6 @@ public class ParameterMeta {
 
     public ParameterEscape getParameterEscape() {
         return parameterEscape;
-    }
-
-    public void setParameterEscape(ParameterEscape parameterEscape) {
-        this.parameterEscape = parameterEscape;
     }
 
     public boolean isParamField() {

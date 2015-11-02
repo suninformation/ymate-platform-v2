@@ -31,6 +31,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * @author 刘镇 (suninformation@163.com) on 2012-12-10 下午10:59:14
  * @version 1.0
  */
+@ParameterEscape
 public class RequestMeta {
 
     private static Map<Class<?>, Map<String, ParameterMeta>> __CLASS_PARAMETER_METAS;
@@ -51,6 +52,11 @@ public class RequestMeta {
 
     private boolean singleton;
 
+    /**
+     * 参数转义注解, 若未设置则该值为null
+     */
+    private ParameterEscape parameterEscape;
+
     private ResponseView responseView;
     private Set<Header> responseHeaders;
 
@@ -58,7 +64,7 @@ public class RequestMeta {
     private Map<String, String> allowHeaders;
     private Map<String, String> allowParams;
 
-    public RequestMeta(Class<?> targetClass, Method method) throws Exception {
+    public RequestMeta(IWebMvc owner, Class<?> targetClass, Method method) throws Exception {
         this.targetClass = targetClass;
         this.method = method;
         //
@@ -69,6 +75,17 @@ public class RequestMeta {
         Controller _controller = targetClass.getAnnotation(Controller.class);
         this.name = StringUtils.defaultIfBlank(_controller.name(), targetClass.getName());
         this.singleton = _controller.singleton();
+        //
+        this.parameterEscape = method.getAnnotation(ParameterEscape.class);
+        if (this.parameterEscape == null) {
+            this.parameterEscape = targetClass.getAnnotation(ParameterEscape.class);
+            if (this.parameterEscape == null && owner.getModuleCfg().isParameterEscapeMode()) {
+                this.parameterEscape = this.getClass().getAnnotation(ParameterEscape.class);
+            }
+        }
+        if (this.parameterEscape.skiped()) {
+            this.parameterEscape = null;
+        }
         //
         this.responseView = method.getAnnotation(ResponseView.class);
         if (this.responseView == null) {
@@ -119,7 +136,7 @@ public class RequestMeta {
                 //
                 for (String _fieldName : _wrapper.getFieldNames()) {
                     if (!_targetClassParameterMetas.containsKey(_fieldName)) {
-                        ParameterMeta _meta = new ParameterMeta(_wrapper.getField(_fieldName));
+                        ParameterMeta _meta = new ParameterMeta(this, _wrapper.getField(_fieldName));
                         if (_meta.isParamField()) {
                             _targetClassParameterMetas.put(_fieldName, _meta);
                         }
@@ -135,7 +152,7 @@ public class RequestMeta {
             Class<?>[] _paramTypes = method.getParameterTypes();
             Annotation[][] _paramAnnotations = method.getParameterAnnotations();
             for (int _idx = 0; _idx < this.methodParamNames.size(); _idx++) {
-                ParameterMeta _meta = new ParameterMeta(_paramTypes[_idx], this.methodParamNames.get(_idx), _paramAnnotations[_idx]);
+                ParameterMeta _meta = new ParameterMeta(this, _paramTypes[_idx], this.methodParamNames.get(_idx), _paramAnnotations[_idx]);
                 if (_meta.isParamField()) {
                     this.__methodParameterMetas.add(_meta);
                 }
@@ -209,6 +226,10 @@ public class RequestMeta {
 
     public boolean isSingleton() {
         return singleton;
+    }
+
+    public ParameterEscape getParameterEscape() {
+        return parameterEscape;
     }
 
     public ResponseView getResponseView() {

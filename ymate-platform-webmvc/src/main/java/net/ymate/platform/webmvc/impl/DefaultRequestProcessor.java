@@ -48,18 +48,18 @@ public class DefaultRequestProcessor implements IRequestProcessor {
         Map<String, Object> _returnValues = new LinkedHashMap<String, Object>();
         // 非单例控制器类将不执行类成员的参数处理
         if (!requestMeta.isSingleton()) {
-            _returnValues.putAll(__doGetParamValueFromParameterMetas(owner, requestMeta.getClassParameterMetas()));
+            _returnValues.putAll(__doGetParamValueFromParameterMetas(owner, requestMeta, requestMeta.getClassParameterMetas()));
         }
         // 处理控制器方法参数
-        _returnValues.putAll(__doGetParamValueFromParameterMetas(owner, requestMeta.getMethodParameterMetas()));
+        _returnValues.putAll(__doGetParamValueFromParameterMetas(owner, requestMeta, requestMeta.getMethodParameterMetas()));
         //
         return _returnValues;
     }
 
-    protected Map<String, Object> __doGetParamValueFromParameterMetas(IWebMvc owner, Collection<ParameterMeta> metas) throws Exception {
+    protected Map<String, Object> __doGetParamValueFromParameterMetas(IWebMvc owner, RequestMeta requestMeta, Collection<ParameterMeta> metas) throws Exception {
         Map<String, Object> _resultMap = new HashMap<String, Object>();
         for (ParameterMeta _meta : metas) {
-            Object _result = __doGetParamValue(owner, _meta, _meta.getParamName(), _meta.getParamType(), _meta.getParamAnno());
+            Object _result = __doGetParamValue(owner, requestMeta, _meta, _meta.getParamName(), _meta.getParamType(), _meta.getParamAnno());
             if (_result != null) {
                 _result = _meta.doParamEscape(_meta, _result);
                 //
@@ -74,13 +74,15 @@ public class DefaultRequestProcessor implements IRequestProcessor {
      * 分析请求参数的值
      *
      * @param owner       Owner
+     * @param requestMeta 请求元描述对象
+     * @param paramMeta   参数元描述对象
      * @param paramName   参数名称
      * @param paramType   参数类型
      * @param _annotation 参数上声明的参数绑定注解
      * @return 返回参数名称与值对象
-     * @throws Exception
+     * @throws Exception 可能产生的异常
      */
-    protected Object __doGetParamValue(IWebMvc owner, ParameterMeta paramMeta, String paramName, Class<?> paramType, Annotation _annotation) throws Exception {
+    protected Object __doGetParamValue(IWebMvc owner, RequestMeta requestMeta, ParameterMeta paramMeta, String paramName, Class<?> paramType, Annotation _annotation) throws Exception {
         Object _pValue = null;
         if (_annotation instanceof CookieVariable) {
             CookieVariable _anno = (CookieVariable) _annotation;
@@ -97,7 +99,7 @@ public class DefaultRequestProcessor implements IRequestProcessor {
             RequestParam _anno = (RequestParam) _annotation;
             _pValue = this.__doParseRequestParam(owner, paramName, StringUtils.trimToNull(_anno.defaultValue()), paramType);
         } else if (_annotation instanceof ModelBind) {
-            _pValue = __doParseModelBind(owner, paramMeta, paramType);
+            _pValue = __doParseModelBind(owner, requestMeta, paramMeta, paramType);
         }
         return _pValue;
     }
@@ -148,13 +150,13 @@ public class DefaultRequestProcessor implements IRequestProcessor {
         return _returnValue;
     }
 
-    protected Object __doParseModelBind(IWebMvc owner, ParameterMeta paramMeta, Class<?> paramType) throws Exception {
+    protected Object __doParseModelBind(IWebMvc owner, RequestMeta requestMeta, ParameterMeta paramMeta, Class<?> paramType) throws Exception {
         ClassUtils.BeanWrapper<?> _wrapper = ClassUtils.wrapper(paramType);
         if (_wrapper != null) {
             for (String _fName : _wrapper.getFieldNames()) {
-                ParameterMeta _meta = new ParameterMeta(_wrapper.getField(_fName));
+                ParameterMeta _meta = new ParameterMeta(requestMeta, _wrapper.getField(_fName));
                 if (_meta.isParamField()) {
-                    Object _result = __doGetParamValue(owner, _meta, _meta.doBuildParamName(paramMeta.getPrefix(), _meta.getParamName(), _fName), _meta.getParamType(), _meta.getParamAnno());
+                    Object _result = __doGetParamValue(owner, requestMeta, _meta, _meta.doBuildParamName(paramMeta.getPrefix(), _meta.getParamName(), _fName), _meta.getParamType(), _meta.getParamAnno());
                     if (_result != null) {
                         _wrapper.setValue(_fName, _meta.doParamEscape(_meta, _result));
                     }

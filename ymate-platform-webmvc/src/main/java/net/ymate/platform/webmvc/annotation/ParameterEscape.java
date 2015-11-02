@@ -27,7 +27,7 @@ import java.lang.annotation.*;
  * @author 刘镇 (suninformation@163.com) on 15/10/29 下午7:31
  * @version 1.0
  */
-@Target({ElementType.FIELD, ElementType.PARAMETER})
+@Target({ElementType.TYPE, ElementType.METHOD, ElementType.FIELD, ElementType.PARAMETER})
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
 public @interface ParameterEscape {
@@ -36,6 +36,11 @@ public @interface ParameterEscape {
      * @return 字符串参数转义范围
      */
     Type.EscapeScope scope() default Type.EscapeScope.DEFAULT;
+
+    /**
+     * @return 通知父级注解当前方法或参数的转义操作将被忽略
+     */
+    boolean skiped() default false;
 
     /**
      * @return 字符串参数转义处理器
