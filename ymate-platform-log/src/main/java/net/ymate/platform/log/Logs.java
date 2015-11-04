@@ -75,6 +75,10 @@ public class Logs implements IModule, ILog {
         return owner.getModule(Logs.class);
     }
 
+    public String getName() {
+        return ILog.MODULE_NAME;
+    }
+
     public void init(YMP owner) throws Exception {
         if (!__inited) {
             //

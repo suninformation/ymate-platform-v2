@@ -29,6 +29,8 @@ import java.util.Map;
  */
 public interface IValidation {
 
+    public static final String MODULE_NAME = "validation";
+
     /**
      * @return 返回所属YMP框架管理器实例
      */

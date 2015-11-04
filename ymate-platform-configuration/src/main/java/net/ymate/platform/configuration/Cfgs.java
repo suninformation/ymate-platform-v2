@@ -84,6 +84,10 @@ public class Cfgs implements IModule, IConfig {
         return owner.getModule(Cfgs.class);
     }
 
+    public String getName() {
+        return IConfig.MODULE_NAME;
+    }
+
     public void init(YMP owner) throws Exception {
         if (!__inited) {
             //

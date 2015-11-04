@@ -89,6 +89,10 @@ public class WebMVC implements IModule, IWebMvc {
         return owner.getModule(WebMVC.class);
     }
 
+    public String getName() {
+        return IWebMvc.MODULE_NAME;
+    }
+
     public void init(YMP owner) throws Exception {
         if (!__inited) {
             //

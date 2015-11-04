@@ -77,6 +77,10 @@ public class Validations implements IModule, IValidation {
         return owner.getModule(Validations.class);
     }
 
+    public String getName() {
+        return IValidation.MODULE_NAME;
+    }
+
     public void init(YMP owner) throws Exception {
         if (!__inited) {
             //

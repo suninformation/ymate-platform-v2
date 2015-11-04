@@ -75,6 +75,10 @@ public class JDBC implements IModule, IDatabase {
         return owner.getModule(JDBC.class);
     }
 
+    public String getName() {
+        return IDatabase.MODULE_NAME;
+    }
+
     public void init(YMP owner) throws Exception {
         if (!__inited) {
             //

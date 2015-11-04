@@ -40,7 +40,9 @@ public class ModuleHandler implements IBeanHandler {
         if (!__owner.getConfig().getExcludedModules().contains(targetClass.getName())) {
             if (ClassUtils.isInterfaceOf(targetClass, IModule.class)) {
                 IModule _module = (IModule) targetClass.newInstance();
-                __owner.registerModule(_module);
+                if (!__owner.getConfig().getExcludedModules().contains(_module.getName())) {
+                    __owner.registerModule(_module);
+                }
             }
         }
         return null;

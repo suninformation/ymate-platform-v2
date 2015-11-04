@@ -39,6 +39,10 @@ public class Persistence implements IModule {
 
     private boolean __inited;
 
+    public String getName() {
+        return "persistence";
+    }
+
     public void init(YMP owner) throws Exception {
         if (!__inited) {
             //

@@ -72,6 +72,10 @@ public class Plugins implements IModule, IPlugins {
         return __instance;
     }
 
+    public String getName() {
+        return IPlugins.MODULE_NAME;
+    }
+
     public void init(YMP owner) throws Exception {
         if (!__inited) {
             Map<String, String> _moduleCfgs = owner.getConfig().getModuleConfigs(MODULE_NAME);

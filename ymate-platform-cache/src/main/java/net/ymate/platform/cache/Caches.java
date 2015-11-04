@@ -73,6 +73,10 @@ public class Caches implements IModule, ICaches {
         return owner.getModule(Caches.class);
     }
 
+    public String getName() {
+        return ICaches.MODULE_NAME;
+    }
+
     public void init(YMP owner) throws Exception {
         if (!__inited) {
             //

@@ -26,6 +26,11 @@ import net.ymate.platform.core.YMP;
 public interface IModule {
 
     /**
+     * @return 返回模块名称
+     */
+    public String getName();
+
+    /**
      * 模块初始化
      *
      * @param owner 加载当前模块的YMP框架核心管理器对象
