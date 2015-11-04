@@ -16,6 +16,7 @@
 package net.ymate.platform.webmvc.view;
 
 import java.io.OutputStream;
+import java.io.Serializable;
 import java.util.Map;
 
 /**
@@ -24,7 +25,7 @@ import java.util.Map;
  * @author 刘镇 (suninformation@163.com) on 2012-12-5 下午3:11:32
  * @version 1.0
  */
-public interface IView {
+public interface IView extends Serializable {
 
     /**
      * @param name  属性名称
