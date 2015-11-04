@@ -17,6 +17,7 @@
         <module>ymate-platform-configuration</module>
         <module>ymate-platform-log</module>
         <module>ymate-platform-log-jcl</module>
+        <module>ymate-platform-log-slf4j</module>
         <module>ymate-platform-persistence</module>
         <module>ymate-platform-persistence-jdbc</module>
         <module>ymate-platform-plugin</module>
