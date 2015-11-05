@@ -88,9 +88,24 @@ public class DefaultBeanFactory implements IBeanFactory {
     }
 
     public void registerPackage(String packageName) {
-        if (!__packageNames.contains(packageName)) {
-            this.__packageNames.add(packageName);
-        }
+        boolean _flag = false;
+        do {
+            if (!this.__packageNames.contains(packageName)) {
+                for (int _idx = 0; _idx < this.__packageNames.size(); _idx++) {
+                    if (packageName.startsWith(this.__packageNames.get(_idx))) {
+                        _flag = true;
+                    } else if (this.__packageNames.get(_idx).startsWith(packageName)) {
+                        this.__packageNames.remove(_idx);
+                        this.__packageNames.add(packageName);
+                        _flag = true;
+                    }
+                }
+                if (!_flag) {
+                    this.__packageNames.add(packageName);
+                    _flag = true;
+                }
+            }
+        } while (!_flag);
     }
 
     public void registerExcludedClass(Class<?> excludedClass) {

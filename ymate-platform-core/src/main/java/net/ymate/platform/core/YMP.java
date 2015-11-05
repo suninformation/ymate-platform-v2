@@ -100,35 +100,12 @@ public class YMP {
      */
     public YMP(IConfig config) {
         __config = config;
-        // 初始化I18N
-        I18N.initialize(__config.getDefaultLocale(), __config.getI18NEventHandlerClass());
-        // 初始化事件管理器，并注册框架、模块事件
-        __events = Events.create(new DefaultEventConfig(__config.getEventConfigs()));
-        __events.registerEvent(ApplicationEvent.class);
-        __events.registerEvent(ModuleEvent.class);
-        // 创建根对象工厂
-        __beanFactory = new DefaultBeanFactory();
-        __beanFactory.registerHandler(Bean.class);
-        // 创建模块对象引用集合
-        __modules = new HashMap<Class<? extends IModule>, IModule>();
-        // 创建模块对象工厂
-        __moduleFactory = new BeanFactory(this);
-        __moduleFactory.registerHandler(Module.class, new ModuleHandler(this));
-        __moduleFactory.registerHandler(Proxy.class, new ProxyHandler(this));
-        __moduleFactory.registerHandler(EventRegister.class, new EventRegisterHandler(this));
-        // 设置自动扫描应用包路径
-        __registerScanPackages(__moduleFactory);
-        __registerScanPackages(__beanFactory);
-        // 创建代理工厂并初始化
-        __proxyFactory = new DefaultProxyFactory(this).registerProxy(new InterceptProxy());
     }
 
     private void __registerScanPackages(IBeanFactory factory) {
         factory.registerPackage(__YMP_BASE_PACKAGE);
         for (String _packageName : __config.getAutoscanPackages()) {
-            if (!_packageName.startsWith(__YMP_BASE_PACKAGE)) {
-                factory.registerPackage(_packageName);
-            }
+            factory.registerPackage(_packageName);
         }
     }
 
@@ -148,6 +125,28 @@ public class YMP {
                     "  |_| |_|  |_|_|       \\_/ |_____|  Website: http://www.ymate.net/");
             //
             _LOG.info("Initializing ymate-platform-core-" + VERSION + " - debug:" + __config.isDevelopMode());
+
+            // 初始化I18N
+            I18N.initialize(__config.getDefaultLocale(), __config.getI18NEventHandlerClass());
+            // 初始化事件管理器，并注册框架、模块事件
+            __events = Events.create(new DefaultEventConfig(__config.getEventConfigs()));
+            __events.registerEvent(ApplicationEvent.class);
+            __events.registerEvent(ModuleEvent.class);
+            // 创建根对象工厂
+            __beanFactory = new DefaultBeanFactory();
+            __beanFactory.registerHandler(Bean.class);
+            // 创建模块对象引用集合
+            __modules = new HashMap<Class<? extends IModule>, IModule>();
+            // 创建模块对象工厂
+            __moduleFactory = new BeanFactory(this);
+            __moduleFactory.registerHandler(Module.class, new ModuleHandler(this));
+            __moduleFactory.registerHandler(Proxy.class, new ProxyHandler(this));
+            __moduleFactory.registerHandler(EventRegister.class, new EventRegisterHandler(this));
+            // 设置自动扫描应用包路径
+            __registerScanPackages(__moduleFactory);
+            __registerScanPackages(__beanFactory);
+            // 创建代理工厂并初始化
+            __proxyFactory = new DefaultProxyFactory(this).registerProxy(new InterceptProxy());
             // 初始化根对象工厂
             __moduleFactory.init();
             for (IModule _module : __modules.values()) {
