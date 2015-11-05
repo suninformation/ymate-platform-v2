@@ -16,6 +16,7 @@
 package net.ymate.platform.persistence.jdbc.query;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
@@ -30,12 +31,15 @@ public class Params {
      */
     private List<Object> __params;
 
-    public static Params create() {
-        return new Params();
+    public static Params create(Object... params) {
+        return new Params(params);
     }
 
-    private Params() {
+    private Params(Object... params) {
         this.__params = new ArrayList<Object>();
+        if (params != null && params.length > 0) {
+            this.__params.addAll(Arrays.asList(params));
+        }
     }
 
     public List<Object> params() {

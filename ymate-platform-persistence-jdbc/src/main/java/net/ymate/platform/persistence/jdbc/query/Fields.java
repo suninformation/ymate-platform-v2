@@ -18,6 +18,7 @@ package net.ymate.platform.persistence.jdbc.query;
 import org.apache.commons.lang.StringUtils;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
@@ -39,12 +40,15 @@ public class Fields {
      */
     private boolean __excluded;
 
-    public static Fields create() {
-        return new Fields();
+    public static Fields create(String... fields) {
+        return new Fields(fields);
     }
 
-    private Fields() {
+    private Fields(String... fields) {
         this.__fields = new ArrayList<String>();
+        if (fields != null && fields.length > 0) {
+            this.__fields.addAll(Arrays.asList(fields));
+        }
     }
 
     public Fields add(String prefix, String field) {
