@@ -15,10 +15,7 @@
  */
 package net.ymate.platform.core.beans.intercept;
 
-import net.ymate.platform.core.beans.annotation.After;
-import net.ymate.platform.core.beans.annotation.Before;
-import net.ymate.platform.core.beans.annotation.Clean;
-import net.ymate.platform.core.beans.annotation.Proxy;
+import net.ymate.platform.core.beans.annotation.*;
 import net.ymate.platform.core.beans.proxy.IProxy;
 import net.ymate.platform.core.beans.proxy.IProxyChain;
 import org.apache.commons.codec.digest.DigestUtils;
@@ -37,7 +34,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * @author 刘镇 (suninformation@163.com) on 15/5/19 下午12:01
  * @version 1.0
  */
-@Proxy
+@Proxy(order = @Order(-99))
 public class InterceptProxy implements IProxy {
 
     private static Map<String, List<Class<? extends IInterceptor>>> __beforeInterceptsCache;

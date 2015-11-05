@@ -19,15 +19,13 @@ import net.sf.cglib.proxy.Enhancer;
 import net.sf.cglib.proxy.MethodInterceptor;
 import net.sf.cglib.proxy.MethodProxy;
 import net.ymate.platform.core.YMP;
+import net.ymate.platform.core.beans.annotation.Proxy;
 import net.ymate.platform.core.beans.proxy.IProxy;
 import net.ymate.platform.core.beans.proxy.IProxyFactory;
 import net.ymate.platform.core.beans.proxy.IProxyFilter;
 
 import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 /**
  * 默认代理工厂接口实现
@@ -50,13 +48,27 @@ public class DefaultProxyFactory implements IProxyFactory {
         return __owner;
     }
 
+    private void __doSort() {
+        if (__proxies.size() > 1) {
+            Collections.sort(__proxies, new Comparator<IProxy>() {
+                public int compare(IProxy o1, IProxy o2) {
+                    Proxy _o1 = o1.getClass().getAnnotation(Proxy.class);
+                    Proxy _o2 = o2.getClass().getAnnotation(Proxy.class);
+                    return _o1.order().value() - _o2.order().value();
+                }
+            });
+        }
+    }
+
     public IProxyFactory registerProxy(IProxy proxy) {
         this.__proxies.add(proxy);
+        __doSort();
         return this;
     }
 
     public IProxyFactory registerProxy(Collection<? extends IProxy> proxies) {
         this.__proxies.addAll(proxies);
+        __doSort();
         return this;
     }
 
@@ -73,7 +85,6 @@ public class DefaultProxyFactory implements IProxyFactory {
         }
         return _returnValue;
     }
-
 
     public <T> T createProxy(Class<?> targetClass) {
         return createProxy(targetClass, __proxies);

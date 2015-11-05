@@ -18,28 +18,18 @@ package net.ymate.platform.core.beans.annotation;
 import java.lang.annotation.*;
 
 /**
- * 声明一个类为代理类的注解
+ * 排序注解
  *
- * @author 刘镇 (suninformation@163.com) on 15-3-8 下午1:59
+ * @author 刘镇 (suninformation@163.com) on 15/11/5 下午7:44
  * @version 1.0
  */
-@Target({ElementType.TYPE})
+@Target(ElementType.ANNOTATION_TYPE)
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
-public @interface Proxy {
+public @interface Order {
 
     /**
-     * @return 指定代理类作用包路径范围，若未提供则默认全局范围
+     * @return 排序号
      */
-    String packageScope() default "";
-
-    /**
-     * @return 指定代理类作用的自定义注解集合，若未提供则默认全部
-     */
-    Class<? extends Annotation>[] annotation() default {};
-
-    /**
-     * @return 执行顺序, 数值大的最先执行, 默认值为0表示按默认顺序
-     */
-    Order order() default @Order(0);
+    int value();
 }

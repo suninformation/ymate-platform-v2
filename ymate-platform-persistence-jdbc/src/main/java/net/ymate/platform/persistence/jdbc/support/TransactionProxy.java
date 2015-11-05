@@ -15,6 +15,7 @@
  */
 package net.ymate.platform.persistence.jdbc.support;
 
+import net.ymate.platform.core.beans.annotation.Order;
 import net.ymate.platform.core.beans.annotation.Proxy;
 import net.ymate.platform.core.beans.proxy.IProxy;
 import net.ymate.platform.core.beans.proxy.IProxyChain;
@@ -29,7 +30,7 @@ import net.ymate.platform.persistence.jdbc.transaction.Transactions;
  * @author 刘镇 (suninformation@163.com) on 15/4/29 上午10:07
  * @version 1.0
  */
-@Proxy(annotation = Transaction.class)
+@Proxy(annotation = Transaction.class, order = @Order(79))
 public class TransactionProxy implements IProxy {
 
     public Object doProxy(final IProxyChain proxyChain) throws Throwable {

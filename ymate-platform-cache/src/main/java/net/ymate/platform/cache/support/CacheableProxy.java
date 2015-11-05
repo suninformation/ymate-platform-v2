@@ -19,6 +19,7 @@ import net.ymate.platform.cache.CacheElement;
 import net.ymate.platform.cache.Caches;
 import net.ymate.platform.cache.ICaches;
 import net.ymate.platform.cache.annotation.Cacheable;
+import net.ymate.platform.core.beans.annotation.Order;
 import net.ymate.platform.core.beans.annotation.Proxy;
 import net.ymate.platform.core.beans.proxy.IProxy;
 import net.ymate.platform.core.beans.proxy.IProxyChain;
@@ -28,7 +29,7 @@ import org.apache.commons.lang.StringUtils;
  * @author 刘镇 (suninformation@163.com) on 15/11/3 下午6:20
  * @version 1.0
  */
-@Proxy(annotation = Cacheable.class)
+@Proxy(annotation = Cacheable.class, order = @Order(-89))
 public class CacheableProxy implements IProxy {
 
 

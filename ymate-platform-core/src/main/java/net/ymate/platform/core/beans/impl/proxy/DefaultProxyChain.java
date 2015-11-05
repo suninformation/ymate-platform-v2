@@ -21,7 +21,6 @@ import net.ymate.platform.core.beans.proxy.IProxyChain;
 import net.ymate.platform.core.beans.proxy.IProxyFactory;
 
 import java.lang.reflect.Method;
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -37,7 +36,7 @@ public class DefaultProxyChain implements IProxyChain {
     private final MethodProxy methodProxy;
     private final Object[] methodParams;
 
-    private List<IProxy> proxies = new ArrayList<IProxy>();
+    private List<IProxy> proxies;
     private int __index = 0;
 
     public DefaultProxyChain(IProxyFactory owner,
