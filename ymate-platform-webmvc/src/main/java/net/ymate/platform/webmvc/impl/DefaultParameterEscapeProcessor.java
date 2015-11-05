@@ -17,7 +17,7 @@ package net.ymate.platform.webmvc.impl;
 
 import net.ymate.platform.webmvc.IParameterEscapeProcessor;
 import net.ymate.platform.webmvc.base.Type;
-import org.apache.commons.lang.StringEscapeUtils;
+import net.ymate.platform.webmvc.util.StringEscapeUtils;
 
 /**
  * 默认参数字符串转义处理器接口实现
@@ -48,8 +48,8 @@ public class DefaultParameterEscapeProcessor implements IParameterEscapeProcesso
                 original = StringEscapeUtils.escapeCsv(original);
                 break;
             case DEFAULT:
-                original = StringEscapeUtils.escapeHtml(original);
                 original = StringEscapeUtils.escapeSql(original);
+                original = StringEscapeUtils.escapeHtml(original);
         }
         return original;
     }
