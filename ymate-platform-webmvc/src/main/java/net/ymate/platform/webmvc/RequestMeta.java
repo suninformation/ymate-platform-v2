@@ -83,7 +83,7 @@ public class RequestMeta {
                 this.parameterEscape = this.getClass().getAnnotation(ParameterEscape.class);
             }
         }
-        if (this.parameterEscape.skiped()) {
+        if (this.parameterEscape != null && this.parameterEscape.skiped()) {
             this.parameterEscape = null;
         }
         //
