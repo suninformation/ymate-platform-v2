@@ -41,6 +41,7 @@ import net.ymate.platform.core.util.ClassUtils;
 import net.ymate.platform.core.util.RuntimeUtils;
 import org.apache.commons.lang.LocaleUtils;
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.time.StopWatch;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -57,13 +58,13 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class YMP {
 
-    private static final Log _LOG = LogFactory.getLog(YMP.class);
-
     public static final Version VERSION = new Version(2, 0, 0, Version.VersionType.Alphal);
+
+    private static final Log _LOG = LogFactory.getLog(YMP.class);
 
     private static final String __YMP_BASE_PACKAGE = "net.ymate.platform";
 
-    private static YMP __instance;
+    private static final YMP __instance = new YMP(new Config());
 
     private IConfig __config;
 
@@ -83,13 +84,6 @@ public class YMP {
      * @return 返回默认YMP框架核心管理器对象实例，若未实例化或已销毁则重新创建对象实例
      */
     public static YMP get() {
-        if (__instance == null || !__instance.isInited()) {
-            synchronized (__YMP_BASE_PACKAGE) {
-                if (__instance == null) {
-                    __instance = new YMP(new Config());
-                }
-            }
-        }
         return __instance;
     }
 
@@ -115,7 +109,7 @@ public class YMP {
      * @return 返回当前YMP核心框架管理器对象
      * @throws Exception 框架初始化失败时将抛出异常
      */
-    public synchronized YMP init() throws Exception {
+    public YMP init() throws Exception {
         if (!__inited) {
             //
             _LOG.info("\n__   ____  __ ____          ____  \n" +
@@ -123,6 +117,9 @@ public class YMP {
                     " \\ V /| |\\/| | |_) | \\ \\ / / __) |\n" +
                     "  | | | |  | |  __/   \\ V / / __/ \n" +
                     "  |_| |_|  |_|_|       \\_/ |_____|  Website: http://www.ymate.net/");
+            //
+            StopWatch _watch = new StopWatch();
+            _watch.start();
             //
             _LOG.info("Initializing ymate-platform-core-" + VERSION + " - debug:" + __config.isDevelopMode());
 
@@ -164,6 +161,9 @@ public class YMP {
             __beanFactory.initIoC();
             //
             __inited = true;
+            //
+            _watch.stop();
+            _LOG.info("Initialization completed, Total time: " + _watch.getTime() + "ms");
             // 触发框架初始化完成事件
             __events.fireEvent(Events.MODE.NORMAL, new ApplicationEvent(this, ApplicationEvent.EVENT.APPLICATION_INITED));
         }

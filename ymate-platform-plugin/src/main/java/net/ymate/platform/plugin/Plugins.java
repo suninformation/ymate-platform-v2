@@ -46,9 +46,9 @@ import java.util.Map;
 @Module
 public class Plugins implements IModule, IPlugins {
 
-    private static final Log _LOG = LogFactory.getLog(Plugins.class);
-
     public static final Version VERSION = new Version(2, 0, 0, Plugins.class.getPackage().getImplementationVersion(), Version.VersionType.Alphal);
+
+    private final Log _LOG = LogFactory.getLog(Plugins.class);
 
     private YMP __owner;
 
@@ -161,7 +161,7 @@ public class Plugins implements IModule, IPlugins {
     }
 
     /**
-     * @param clazz
+     * @param clazz 插件工厂类
      * @return 通过注解分析插件工厂初始化配置
      * @throws Exception 加载配置可能产生的异常
      */

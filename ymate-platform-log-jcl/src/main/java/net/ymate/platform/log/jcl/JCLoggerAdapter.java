@@ -31,7 +31,7 @@ import java.io.IOException;
 public class JCLoggerAdapter implements LoggerAdapter<Log> {
 
     public Log getLogger(String name) {
-        if (YMP.get().isInited() && Logs.get().isInited()) {
+        if (YMP.get() != null && YMP.get().isInited() && Logs.get().isInited()) {
             return new JCLogger(LogManager.getRootLogger(), Logs.get().getModuleCfg().allowOutputConsole());
         }
         return new SimpleLog(name);

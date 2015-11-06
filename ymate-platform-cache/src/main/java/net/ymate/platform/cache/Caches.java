@@ -37,9 +37,9 @@ import java.util.Map;
 @Module
 public class Caches implements IModule, ICaches {
 
-    private static final Log _LOG = LogFactory.getLog(Caches.class);
-
     public static final Version VERSION = new Version(2, 0, 0, Caches.class.getPackage().getImplementationVersion(), Version.VersionType.Alphal);
+
+    private final Log _LOG = LogFactory.getLog(Caches.class);
 
     private static ICaches __instance;
 

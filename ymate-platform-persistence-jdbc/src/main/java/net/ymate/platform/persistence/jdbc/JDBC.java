@@ -39,9 +39,9 @@ import java.util.Map;
 @Module
 public class JDBC implements IModule, IDatabase {
 
-    private static final Log _LOG = LogFactory.getLog(JDBC.class);
-
     public static final Version VERSION = new Version(2, 0, 0, JDBC.class.getPackage().getImplementationVersion(), Version.VersionType.Alphal);
+
+    private final Log _LOG = LogFactory.getLog(JDBC.class);
 
     private static IDatabase __instance;
 

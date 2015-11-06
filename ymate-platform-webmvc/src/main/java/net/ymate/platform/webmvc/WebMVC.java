@@ -53,9 +53,9 @@ import java.util.Map;
 @Module
 public class WebMVC implements IModule, IWebMvc {
 
-    private static final Log _LOG = LogFactory.getLog(WebMVC.class);
-
     public static final Version VERSION = new Version(2, 0, 0, WebMVC.class.getPackage().getImplementationVersion(), Version.VersionType.Alphal);
+
+    private final Log _LOG = LogFactory.getLog(WebMVC.class);
 
     private static IWebMvc __instance;
 

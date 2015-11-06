@@ -43,9 +43,9 @@ import java.net.URL;
 @Module
 public class Cfgs implements IModule, IConfig {
 
-    private static final Log _LOG = LogFactory.getLog(Cfgs.class);
-
     public static final Version VERSION = new Version(2, 0, 0, Cfgs.class.getPackage().getImplementationVersion(), Version.VersionType.Alphal);
+
+    private final Log _LOG = LogFactory.getLog(Cfgs.class);
 
     private static IConfig __instance;
 
