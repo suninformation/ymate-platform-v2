@@ -58,7 +58,7 @@ public class Log4jLogger implements LocationAwareLogger, Serializable {
                 .append(':')
                 .append(__doMakeCallerInfo())
                 .append(']')
-                .append(' ').append(StringUtils.trimToEmpty(info.toString()));
+                .append(' ').append(info == null ? StringUtils.EMPTY : StringUtils.trimToEmpty(info.toString()));
         if (e != null) {
             StringBuilder _stackSB = new StringBuilder(e.getClass().getName())
                     .append(": ")
