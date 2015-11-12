@@ -20,12 +20,10 @@ import net.ymate.platform.core.beans.proxy.IProxy;
 import net.ymate.platform.core.beans.proxy.IProxyChain;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.lang.ArrayUtils;
+import org.apache.commons.lang.StringUtils;
 
 import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -59,7 +57,8 @@ public class InterceptProxy implements IProxy {
                     proxyChain.getProxyFactory().getOwner(),
                     proxyChain.getTargetObject(),
                     proxyChain.getTargetMethod(),
-                    proxyChain.getMethodParams());
+                    proxyChain.getMethodParams(),
+                    __doGetContextParams(proxyChain.getTargetClass(), proxyChain.getTargetMethod()));
             //
             for (Class<? extends IInterceptor> _interceptClass : __doGetBeforeIntercepts(proxyChain.getTargetClass(), proxyChain.getTargetMethod())) {
                 IInterceptor _interceptor = _interceptClass.newInstance();
@@ -81,7 +80,8 @@ public class InterceptProxy implements IProxy {
                     proxyChain.getProxyFactory().getOwner(),
                     proxyChain.getTargetObject(),
                     proxyChain.getTargetMethod(),
-                    proxyChain.getMethodParams());
+                    proxyChain.getMethodParams(),
+                    __doGetContextParams(proxyChain.getTargetClass(), proxyChain.getTargetMethod()));
             _context.setResultObject(_returnValue);
             //
             for (Class<? extends IInterceptor> _interceptClass : __doGetAfterIntercepts(proxyChain.getTargetClass(), proxyChain.getTargetMethod())) {
@@ -184,5 +184,26 @@ public class InterceptProxy implements IProxy {
             return targetMethod.getAnnotation(Clean.class);
         }
         return null;
+    }
+
+    private Map<String, String> __doGetContextParams(Class<?> targetClass, Method targetMethod) {
+        Map<String, String> _contextParams = new HashMap<String, String>();
+        //
+        ContextParam _param = targetClass.getAnnotation(ContextParam.class);
+        if (_param != null) {
+            for (ParamItem _item : _param.value()) {
+                String _key = StringUtils.defaultIfBlank(_item.key(), _item.value());
+                _contextParams.put(_key, _item.value());
+            }
+        }
+        _param = targetMethod.getAnnotation(ContextParam.class);
+        if (_param != null) {
+            for (ParamItem _item : _param.value()) {
+                String _key = StringUtils.defaultIfBlank(_item.key(), _item.value());
+                _contextParams.put(_key, _item.value());
+            }
+        }
+        //
+        return _contextParams;
     }
 }

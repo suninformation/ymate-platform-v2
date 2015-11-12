@@ -18,6 +18,7 @@ package net.ymate.platform.core.beans.intercept;
 import net.ymate.platform.core.YMP;
 
 import java.lang.reflect.Method;
+import java.util.Map;
 
 /**
  * 拦截器环境上下文对象
@@ -37,14 +38,17 @@ public class InterceptContext {
 
     private final Object[] __methodParams;
 
+    private final Map<String, String> __contextParams;
+
     private Object __resultObject;
 
-    public InterceptContext(IInterceptor.Direction direction, YMP owner, Object targetObject, Method targetMethod, Object[] methodParams) {
+    public InterceptContext(IInterceptor.Direction direction, YMP owner, Object targetObject, Method targetMethod, Object[] methodParams, Map<String, String> contextParams) {
         __direction = direction;
         __owner = owner;
         __targetObject = targetObject;
         __targetMethod = targetMethod;
         __methodParams = methodParams;
+        __contextParams = contextParams;
     }
 
     /**
@@ -87,6 +91,10 @@ public class InterceptContext {
      */
     public Object[] getMethodParams() {
         return __methodParams;
+    }
+
+    public Map<String, String> getContextParams() {
+        return __contextParams;
     }
 
     /**
