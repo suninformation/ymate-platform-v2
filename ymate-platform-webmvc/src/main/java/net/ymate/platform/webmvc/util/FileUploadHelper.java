@@ -308,7 +308,7 @@ public class FileUploadHelper {
          * @throws IOException         文件读写可能产生的异常
          * @throws FileUploadException 文件上传时可能产生的异常
          */
-        public UploadFileWrapper process(FileItemStream item) throws IOException, FileUploadException;
+        UploadFileWrapper process(FileItemStream item) throws IOException, FileUploadException;
 
     }
 

@@ -32,47 +32,47 @@ public interface IConfig {
     /**
      * @return 返回是否为开发模式
      */
-    public boolean isDevelopMode();
+    boolean isDevelopMode();
 
     /**
      * @return 返回框架自动扫描的包路径集合
      */
-    public List<String> getAutoscanPackages();
+    List<String> getAutoscanPackages();
 
     /**
      * @return 返回模块类排除列表，被包含的模块在加载过程中将被忽略
      */
-    public List<String> getExcludedModules();
+    List<String> getExcludedModules();
 
     /**
      * @return 国际化资源默认语言设置，可选参数，默认采用系统环境语言
      */
-    public Locale getDefaultLocale();
+    Locale getDefaultLocale();
 
     /**
      * @return 国际化资源管理器事件监听处理器，可选参数
      */
-    public II18NEventHandler getI18NEventHandlerClass();
+    II18NEventHandler getI18NEventHandlerClass();
 
     /**
      * @return 返回框架全局参数映射
      */
-    public Map<String, String> getParams();
+    Map<String, String> getParams();
 
     /**
      * @param name 参数名称
      * @return 返回由name指定的全局参数值
      */
-    public String getParam(String name);
+    String getParam(String name);
 
     /**
      * @param moduleName 模块名称
      * @return 返回模块配置参数映射
      */
-    public Map<String, String> getModuleConfigs(String moduleName);
+    Map<String, String> getModuleConfigs(String moduleName);
 
     /**
      * @return 返回框架事件配置参数映射
      */
-    public Map<String, String> getEventConfigs();
+    Map<String, String> getEventConfigs();
 }

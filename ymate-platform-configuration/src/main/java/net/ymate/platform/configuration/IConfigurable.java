@@ -28,13 +28,13 @@ public interface IConfigurable {
      *
      * @return 继承IConfiguration接口的具体类
      */
-    public IConfiguration getConfig();
+    IConfiguration getConfig();
 
     /**
      * 设置配置对象类实例
      *
      * @param config 任何继承IConfiguration接口的具体类
      */
-    public void setConfig(IConfiguration config);
+    void setConfig(IConfiguration config);
 
 }

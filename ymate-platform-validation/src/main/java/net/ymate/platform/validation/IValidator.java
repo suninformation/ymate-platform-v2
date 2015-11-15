@@ -23,11 +23,11 @@ package net.ymate.platform.validation;
  */
 public interface IValidator {
 
-    public static final String VALIDATION_I18N_RESOURCE = "validation";
+    String VALIDATION_I18N_RESOURCE = "validation";
 
     /**
      * @param context 验证器上下文对象
      * @return 执行并返回验证结果，若无错误则返回空
      */
-    public ValidateResult validate(ValidateContext context);
+    ValidateResult validate(ValidateContext context);
 }

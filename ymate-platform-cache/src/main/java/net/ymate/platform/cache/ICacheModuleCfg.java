@@ -26,15 +26,15 @@ public interface ICacheModuleCfg {
     /**
      * @return 缓存提供者，可选参数，默认值为net.ymate.platform.cache.impl.DefaultCacheProvider
      */
-    public ICacheProvider getCacheProvider();
+    ICacheProvider getCacheProvider();
 
     /**
      * @return 缓存Key生成器，可选参数，默认值为net.ymate.platform.cache.impl.DefaultKeyGenerator
      */
-    public IKeyGenerator<?> getKeyGenerator();
+    IKeyGenerator<?> getKeyGenerator();
 
     /**
      * @return 默认缓存名称，可选参数，默认值为default，对应于Ehcache配置文件中设置name="__DEFAULT__"
      */
-    public String getDefaultCacheName();
+    String getDefaultCacheName();
 }

@@ -23,11 +23,11 @@ package net.ymate.platform.core.beans.intercept;
  */
 public interface IInterceptor {
 
-    public enum Direction {
+    enum Direction {
         BEFORE, AFTER
     }
 
-    public enum CleanType {
+    enum CleanType {
         BEFORE, AFTER, ALL
     }
 
@@ -36,5 +36,5 @@ public interface IInterceptor {
      * @return 执行拦截动作并返回执行结果，返回结果将影响前置拦截器组是否继续执行，后置拦截器将忽略返回值
      * @throws Exception 执行拦截逻辑可能产生的异常
      */
-    public Object intercept(InterceptContext context) throws Exception;
+    Object intercept(InterceptContext context) throws Exception;
 }

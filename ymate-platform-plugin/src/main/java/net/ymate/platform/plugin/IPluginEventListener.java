@@ -29,7 +29,7 @@ public interface IPluginEventListener {
      * @param context 插件上下文对象
      * @param plugin  插件实例
      */
-    public void onInited(IPluginContext context, IPlugin plugin);
+    void onInited(IPluginContext context, IPlugin plugin);
 
     /**
      * 插件启动完毕后将调用此方法
@@ -37,7 +37,7 @@ public interface IPluginEventListener {
      * @param context 插件上下文对象
      * @param plugin  插件实例
      */
-    public void onStarted(IPluginContext context, IPlugin plugin);
+    void onStarted(IPluginContext context, IPlugin plugin);
 
     /**
      * 插件停止完毕将调用此方法
@@ -45,7 +45,7 @@ public interface IPluginEventListener {
      * @param context 插件上下文对象
      * @param plugin  插件实例
      */
-    public void onShutdown(IPluginContext context, IPlugin plugin);
+    void onShutdown(IPluginContext context, IPlugin plugin);
 
     /**
      * 插件初销毁前将调用此方法
@@ -53,5 +53,5 @@ public interface IPluginEventListener {
      * @param context 插件上下文对象
      * @param plugin  插件实例
      */
-    public void onDestroy(IPluginContext context, IPlugin plugin);
+    void onDestroy(IPluginContext context, IPlugin plugin);
 }

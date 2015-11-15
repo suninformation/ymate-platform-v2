@@ -29,5 +29,5 @@ public interface IEventRegister {
      * @param events 事件管理器
      * @throws Exception 事件注册过程可能产生的异常
      */
-    public void register(Events events) throws Exception;
+    void register(Events events) throws Exception;
 }

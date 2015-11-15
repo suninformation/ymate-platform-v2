@@ -217,7 +217,7 @@ public class JDBC implements IModule, IDatabase {
          *
          * @param level 事务级别
          */
-        private TRANSACTION(int level) {
+        TRANSACTION(int level) {
             this._level = level;
         }
 

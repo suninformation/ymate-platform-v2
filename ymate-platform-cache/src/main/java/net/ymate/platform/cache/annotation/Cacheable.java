@@ -15,8 +15,8 @@
  */
 package net.ymate.platform.cache.annotation;
 
+import net.ymate.platform.cache.ICaches;
 import net.ymate.platform.cache.IKeyGenerator;
-import net.ymate.platform.cache.base.Type;
 import net.ymate.platform.cache.impl.DefaultKeyGenerator;
 
 import java.lang.annotation.*;
@@ -50,7 +50,7 @@ public @interface Cacheable {
     /**
      * @return 缓存作用域
      */
-    Type.CacheScope scope() default Type.CacheScope.DEFAULT;
+    ICaches.Scope scope() default ICaches.Scope.DEFAULT;
 
     /**
      * @return 缓存数据超时时间, 默认60秒

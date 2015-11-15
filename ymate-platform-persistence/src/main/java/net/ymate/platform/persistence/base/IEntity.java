@@ -28,12 +28,12 @@ public interface IEntity<PK extends Serializable> extends Serializable {
     /**
      * @return 获取实体主键值
      */
-    public PK getId();
+    PK getId();
 
     /**
      * 设置实体主键值
      *
      * @param id 主键值
      */
-    public void setId(PK id);
+    void setId(PK id);
 }

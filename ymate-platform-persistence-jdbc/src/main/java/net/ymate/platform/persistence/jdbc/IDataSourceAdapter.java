@@ -33,26 +33,26 @@ public interface IDataSourceAdapter {
      * @param cfgMeta 数据源配置参数
      * @throws Exception 可能产生的异常
      */
-    public void initialize(DataSourceCfgMeta cfgMeta) throws Exception;
+    void initialize(DataSourceCfgMeta cfgMeta) throws Exception;
 
     /**
      * @return 获取数据源配置参数
      */
-    public DataSourceCfgMeta getDataSourceCfgMeta();
+    DataSourceCfgMeta getDataSourceCfgMeta();
 
     /**
      * @return 获取数据库连接
      * @throws Exception 可能产生的异常
      */
-    public Connection getConnection() throws Exception;
+    Connection getConnection() throws Exception;
 
     /**
      * @return 获取数据库方言
      */
-    public IDialect getDialect();
+    IDialect getDialect();
 
     /**
      * 销毁数据源适配器
      */
-    public void destroy();
+    void destroy();
 }

@@ -26,17 +26,24 @@ import java.util.Map;
  */
 public interface ICaches {
 
-    public static final String MODULE_NAME = "cache";
+    String MODULE_NAME = "cache";
+
+    /**
+     * 缓存作用域
+     */
+    enum Scope {
+        APPLICATION, SESSION, REQUEST, PAGE, DEFAULT
+    }
 
     /**
      * @return 返回所属YMP框架管理器实例
      */
-    public YMP getOwner();
+    YMP getOwner();
 
     /**
      * @return 返回缓存模块配置对象
      */
-    public ICacheModuleCfg getModuleCfg();
+    ICacheModuleCfg getModuleCfg();
 
     /**
      * 从缓存中获取对象
@@ -46,7 +53,7 @@ public interface ICaches {
      * @return 返回缓存的对象，若不存在则返回null
      * @throws CacheException 可能产生的异常
      */
-    public Object get(String cacheName, Object key) throws CacheException;
+    Object get(String cacheName, Object key) throws CacheException;
 
     /**
      * 从缓存中获取所有对象
@@ -55,7 +62,7 @@ public interface ICaches {
      * @return 返回缓存内对象映射
      * @throws CacheException 可能产生的异常
      */
-    public Map<Object, Object> getAll(String cacheName) throws CacheException;
+    Map<Object, Object> getAll(String cacheName) throws CacheException;
 
     /**
      * 添加对象到缓存
@@ -65,7 +72,7 @@ public interface ICaches {
      * @param value     预缓存的元素对象
      * @throws CacheException 可能产生的异常
      */
-    public void put(String cacheName, Object key, Object value) throws CacheException;
+    void put(String cacheName, Object key, Object value) throws CacheException;
 
     /**
      * 更新对象到缓存
@@ -75,7 +82,7 @@ public interface ICaches {
      * @param value     缓存元素对象
      * @throws CacheException 可能产生的异常
      */
-    public void update(String cacheName, Object key, Object value) throws CacheException;
+    void update(String cacheName, Object key, Object value) throws CacheException;
 
     /**
      * @param cacheName 缓存名称
@@ -83,7 +90,7 @@ public interface ICaches {
      * @throws CacheException 可能产生的异常
      */
     @SuppressWarnings("rawtypes")
-    public List keys(String cacheName) throws CacheException;
+    List keys(String cacheName) throws CacheException;
 
     /**
      * 从缓存中移除对象
@@ -92,7 +99,7 @@ public interface ICaches {
      * @param key       缓存Key
      * @throws CacheException 可能产生的异常
      */
-    public void remove(String cacheName, Object key) throws CacheException;
+    void remove(String cacheName, Object key) throws CacheException;
 
     /**
      * 批量从缓存中移除对象
@@ -102,7 +109,7 @@ public interface ICaches {
      * @throws CacheException 可能产生的异常
      */
     @SuppressWarnings("rawtypes")
-    public void removeAll(String cacheName, List keys) throws CacheException;
+    void removeAll(String cacheName, List keys) throws CacheException;
 
     /**
      * 清理缓存
@@ -110,5 +117,5 @@ public interface ICaches {
      * @param cacheName 缓存名称
      * @throws CacheException 可能产生的异常
      */
-    public void clear(String cacheName) throws CacheException;
+    void clear(String cacheName) throws CacheException;
 }

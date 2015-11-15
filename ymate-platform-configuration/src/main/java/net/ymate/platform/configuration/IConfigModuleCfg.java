@@ -26,20 +26,20 @@ public interface IConfigModuleCfg {
     /**
      * @return 返回配置体系根路径
      */
-    public String getConfigHome();
+    String getConfigHome();
 
     /**
      * @return 返回项目名称
      */
-    public String getProjectName();
+    String getProjectName();
 
     /**
      * @return 返回模块名称
      */
-    public String getModuleName();
+    String getModuleName();
 
     /**
      * @return 返回配置提供者接口类型
      */
-    public Class<? extends IConfigurationProvider> getProviderClass();
+    Class<? extends IConfigurationProvider> getProviderClass();
 }

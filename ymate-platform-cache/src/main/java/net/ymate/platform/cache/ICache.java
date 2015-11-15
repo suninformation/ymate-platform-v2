@@ -33,7 +33,7 @@ public interface ICache {
      * @return 返回缓存的对象，若不存在则返回null
      * @throws CacheException 可能产生的异常
      */
-    public Object get(Object key) throws CacheException;
+    Object get(Object key) throws CacheException;
 
     /**
      * 添加对象到缓存
@@ -42,7 +42,7 @@ public interface ICache {
      * @param value 预缓存的元素对象
      * @throws CacheException 可能产生的异常
      */
-    public void put(Object key, Object value) throws CacheException;
+    void put(Object key, Object value) throws CacheException;
 
     /**
      * 更新对象到缓存
@@ -51,13 +51,13 @@ public interface ICache {
      * @param value 预缓存的元素对象
      * @throws CacheException 可能产生的异常
      */
-    public void update(Object key, Object value) throws CacheException;
+    void update(Object key, Object value) throws CacheException;
 
     /**
      * @return 返回当前所有缓存对象key的集合
      * @throws CacheException 可能产生的异常
      */
-    public List<?> keys() throws CacheException;
+    List<?> keys() throws CacheException;
 
     /**
      * 从缓存中移除对象
@@ -65,7 +65,7 @@ public interface ICache {
      * @param key 缓存key
      * @throws CacheException 可能产生的异常
      */
-    public void remove(Object key) throws CacheException;
+    void remove(Object key) throws CacheException;
 
     /**
      * 批量从缓存中移除对象
@@ -73,19 +73,19 @@ public interface ICache {
      * @param keys 缓存key集合
      * @throws CacheException 可能产生的异常
      */
-    public void removeAll(Collection<?> keys) throws CacheException;
+    void removeAll(Collection<?> keys) throws CacheException;
 
     /**
      * 清理缓存
      *
      * @throws CacheException 可能产生的异常
      */
-    public void clear() throws CacheException;
+    void clear() throws CacheException;
 
     /**
      * 销毁缓存
      *
      * @throws CacheException 可能产生的异常
      */
-    public void destroy() throws CacheException;
+    void destroy() throws CacheException;
 }

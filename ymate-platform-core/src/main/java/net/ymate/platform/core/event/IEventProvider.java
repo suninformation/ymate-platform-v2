@@ -28,24 +28,24 @@ public interface IEventProvider<T, E extends Enum<E>, EVENT extends Class<IEvent
      *
      * @param eventConfig 事件配置接口实例
      */
-    public void init(IEventConfig eventConfig);
+    void init(IEventConfig eventConfig);
 
     /**
      * @return 返回事件配置
      */
-    public IEventConfig getEventConfig();
+    IEventConfig getEventConfig();
 
     /**
      * 销毁
      */
-    public void destroy();
+    void destroy();
 
     /**
      * 注册事件类型
      *
      * @param event 事件接口实例
      */
-    public void registerEvent(EVENT event);
+    void registerEvent(EVENT event);
 
     /**
      * 注册事件监听器
@@ -53,7 +53,7 @@ public interface IEventProvider<T, E extends Enum<E>, EVENT extends Class<IEvent
      * @param eventClass    监听的事件类型
      * @param eventListener 事件监听器接口实例
      */
-    public void registerListener(EVENT eventClass, IEventListener<CONTEXT> eventListener);
+    void registerListener(EVENT eventClass, IEventListener<CONTEXT> eventListener);
 
     /**
      * 触发事件
@@ -61,5 +61,5 @@ public interface IEventProvider<T, E extends Enum<E>, EVENT extends Class<IEvent
      * @param mode    事件触发模式
      * @param context 事件上下文
      */
-    public void fireEvent(Events.MODE mode, CONTEXT context);
+    void fireEvent(Events.MODE mode, CONTEXT context);
 }

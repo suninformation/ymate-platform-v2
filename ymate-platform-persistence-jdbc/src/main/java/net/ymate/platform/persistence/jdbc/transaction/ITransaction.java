@@ -31,46 +31,46 @@ public interface ITransaction {
     /**
      * @return 获取事务级别
      */
-    public JDBC.TRANSACTION getLevel();
+    JDBC.TRANSACTION getLevel();
 
     /**
      * 设置事务级别
      *
      * @param level 事务级别
      */
-    public void setLevel(JDBC.TRANSACTION level);
+    void setLevel(JDBC.TRANSACTION level);
 
     /**
      * @return 获取事务Id
      */
-    public String getId();
+    String getId();
 
     /**
      * 提交事务
      *
      * @throws SQLException 可能产生的异常
      */
-    public void commit() throws SQLException;
+    void commit() throws SQLException;
 
     /**
      * 回滚事务
      *
      * @throws SQLException 可能产生的异常
      */
-    public void rollback() throws SQLException;
+    void rollback() throws SQLException;
 
     /**
      * 关闭事务（连接）
      *
      * @throws SQLException 可能产生的异常
      */
-    public void close() throws SQLException;
+    void close() throws SQLException;
 
     /**
      * @param dsName 数据源名称
      * @return 获取数据库连接持有者对象
      */
-    public IConnectionHolder getConnectionHolder(String dsName);
+    IConnectionHolder getConnectionHolder(String dsName);
 
     /**
      * 注册一个ConnectionHolder对象由事务管理(相同数据源仅允许注册一次)
@@ -78,5 +78,5 @@ public interface ITransaction {
      * @param connectionHolder 数据库连接持有者对象
      * @throws SQLException 可能产生的异常
      */
-    public void registerConnectionHolder(IConnectionHolder connectionHolder) throws SQLException;
+    void registerConnectionHolder(IConnectionHolder connectionHolder) throws SQLException;
 }

@@ -28,12 +28,12 @@ public interface IPasswordProcessor {
      * @return 对source字符串进行加密后返回
      * @throws Exception 可能产生的异常
      */
-    public String encrypt(String source) throws Exception;
+    String encrypt(String source) throws Exception;
 
     /**
      * @param target 目标字符串
      * @return 对target字符串进行解密后返回
      * @throws Exception 可能产生的异常
      */
-    public String decrypt(String target) throws Exception;
+    String decrypt(String target) throws Exception;
 }

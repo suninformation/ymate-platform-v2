@@ -30,110 +30,110 @@ public interface IWebMvcModuleCfg {
     /**
      * @return 控制器请求处理器，可选值为已知处理器名称或自定义处理器类名称，默认为default，目前支持已知处理器[default|json|xml|...]
      */
-    public IRequestProcessor getRequestProcessor();
+    IRequestProcessor getRequestProcessor();
 
     /**
      * @return 异常错误处理器，可选参数
      */
-    public IWebErrorProcessor getErrorProcessor();
+    IWebErrorProcessor getErrorProcessor();
 
     /**
      * @return 默认字符编码集设置，可选参数，默认值为UTF-8
      */
-    public String getDefaultCharsetEncoding();
+    String getDefaultCharsetEncoding();
 
     /**
      * @return 请求忽略正则表达式，可选参数，默认值为^.+\.(jsp|jspx|png|gif|jpg|jpeg|js|css|swf|ico|htm|html|eot|woff|ttf|svg)$
      */
-    public String getRequestIgnoreRegex();
+    String getRequestIgnoreRegex();
 
     /**
      * @return 请求方法参数名称，可选参数， 默认值为_method
      */
-    public String getRequestMethodParam();
+    String getRequestMethodParam();
 
     /**
      * @return 请求路径前缀，可选参数，默认值为空
      */
-    public String getRequestPrefix();
+    String getRequestPrefix();
 
     /**
      * @return 控制器视图文件基础路径（必须是以 '/' 开始和结尾，默认值为/WEB-INF/templates/）
      */
-    public String getBaseViewPath();
+    String getBaseViewPath();
 
     /**
      * @return 尽量返回控制器视图绝对路径
      */
-    public String getAbstractBaseViewPath();
+    String getAbstractBaseViewPath();
 
     /**
      * @return Cookie键前缀，可选参数，默认值为空
      */
-    public String getCookiePrefix();
+    String getCookiePrefix();
 
     /**
      * @return Cookie作用域，可选参数，默认值为空
      */
-    public String getCookieDomain();
+    String getCookieDomain();
 
     /**
      * @return Cookie作用路径，可选参数，默认值为'/'
      */
-    public String getCookiePath();
+    String getCookiePath();
 
     /**
      * @return Cookie密钥，可选参数，默认值为空
      */
-    public String getCookieAuthKey();
+    String getCookieAuthKey();
 
     /**
      * @return 文件上传临时目录，为空则默认使用：System.getProperty("java.io.tmpdir")
      */
-    public String getUploadTempDir();
+    String getUploadTempDir();
 
     /**
      * @return 上传文件大小最大值（字节），默认值：-1（注：10485760 = 10M）
      */
-    public int getUploadFileSizeMax();
+    int getUploadFileSizeMax();
 
     /**
      * @return 上传文件总量大小最大值（字节）, 默认值：-1（注：10485760 = 10M）
      */
-    public int getUploadTotalSizeMax();
+    int getUploadTotalSizeMax();
 
     /**
      * @return 内存缓冲区的大小，默认值： 10240字节（=10K），即如果文件大于10K，将使用临时文件缓存上传文件
      */
-    public int getUploadSizeThreshold();
+    int getUploadSizeThreshold();
 
     /**
      * @return 文件上传状态监听器
      */
-    public ProgressListener getUploadFileListener();
+    ProgressListener getUploadFileListener();
 
     /**
      * @return 是否开启视图自动渲染（约定优于配置，无需编写控制器代码，直接匹配并执行视图）模式，可选参数，默认值为false
      */
-    public boolean isConventionMode();
+    boolean isConventionMode();
 
     /**
      * @return Convention模式开启时是否采用URL伪静态(URL中通过分隔符'_'传递多个请求参数，通过_path[index]方式引用参数值)模式，可选参数，默认值为false
      */
-    public boolean isConventionUrlrewriteMode();
+    boolean isConventionUrlrewriteMode();
 
     /**
      * @return Convention模式开启时视图文件路径(基于base_view_path的相对路径, 加号或无符串代表允许访问)，可选参数，默认值为空(即不限制访问路径)，多个路径间用'|'分隔
      */
-    public Set<String> getConventionViewAllowPaths();
+    Set<String> getConventionViewAllowPaths();
 
     /**
      * @return Convention模式开启时视图文件路径(基于base_view_path的相对路径, 减号代表不允许访问)，可选参数，默认值为空(即不限制访问路径)，多个路径间用'|'分隔
      */
-    public Set<String> getConventionViewNotAllowPaths();
+    Set<String> getConventionViewNotAllowPaths();
 
     /**
      * @return 请求参数转义模式是否开启（开启状态时，控制器方法的所有参数将默认支持转移，可针对具体控制器主法或参数设置忽略转义操作），可选参数，默认值为false
      */
-    public boolean isParameterEscapeMode();
+    boolean isParameterEscapeMode();
 }

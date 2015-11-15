@@ -25,30 +25,30 @@ import net.ymate.platform.core.YMP;
  */
 public interface IDatabase {
 
-    public static final String MODULE_NAME = "persistence.jdbc";
+    String MODULE_NAME = "persistence.jdbc";
 
     /**
      * @return 返回所属YMP框架管理器实例
      */
-    public YMP getOwner();
+    YMP getOwner();
 
     /**
      * @return 返回JDBC数据库模块配置对象
      */
-    public IDatabaseModuleCfg getModuleCfg();
+    IDatabaseModuleCfg getModuleCfg();
 
     /**
      * @return 获取默认数据源连接持有者对象
      * @throws Exception 可能产生的异常
      */
-    public IConnectionHolder getDefaultConnectionHolder() throws Exception;
+    IConnectionHolder getDefaultConnectionHolder() throws Exception;
 
     /**
      * @param dsName 数据源名称
      * @return 获取由dsName指定的数据源连接持有者对象
      * @throws Exception 可能产生的异常
      */
-    public IConnectionHolder getConnectionHolder(String dsName) throws Exception;
+    IConnectionHolder getConnectionHolder(String dsName) throws Exception;
 
     /**
      * 安全关闭数据源的连接持有者(确保非事务状态下执行关闭)
@@ -56,9 +56,9 @@ public interface IDatabase {
      * @param connectionHolder 数据源的连接持有者对象
      * @throws Exception 可能产生的异常
      */
-    public void releaseConnectionHolder(IConnectionHolder connectionHolder) throws Exception;
+    void releaseConnectionHolder(IConnectionHolder connectionHolder) throws Exception;
 
-    public <T> T openSession(ISessionExecutor<T> executor) throws Exception;
+    <T> T openSession(ISessionExecutor<T> executor) throws Exception;
 
-    public <T> T openSession(IConnectionHolder connectionHolder, ISessionExecutor<T> executor) throws Exception;
+    <T> T openSession(IConnectionHolder connectionHolder, ISessionExecutor<T> executor) throws Exception;
 }

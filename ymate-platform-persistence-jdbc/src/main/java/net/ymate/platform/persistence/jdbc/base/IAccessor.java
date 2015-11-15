@@ -33,7 +33,7 @@ public interface IAccessor {
      * @return 使用Statement方式进行数据库访问操作，用于直接使用SQL文；
      * @throws Exception 可能产生的异常
      */
-    public Statement getStatement(Connection conn) throws Exception;
+    Statement getStatement(Connection conn) throws Exception;
 
     /**
      * @param conn 访问数据库的连接对象
@@ -41,7 +41,7 @@ public interface IAccessor {
      * @return 使用PerparedStatement(参数化)方式进行数据库访问操作，用于直接使用SQL文
      * @throws Exception 可能产生的异常
      */
-    public PreparedStatement getPreparedStatement(Connection conn, String sql) throws Exception;
+    PreparedStatement getPreparedStatement(Connection conn, String sql) throws Exception;
 
     /**
      * @param conn 访问数据库的连接对象
@@ -49,10 +49,10 @@ public interface IAccessor {
      * @return 使用CallableStatement方式进行数据库访问操作，用于访问存储过程
      * @throws Exception 可能产生的异常
      */
-    public CallableStatement getCallableStatement(Connection conn, String sql) throws Exception;
+    CallableStatement getCallableStatement(Connection conn, String sql) throws Exception;
 
     /**
      * @return 获取访问器配置对象
      */
-    public IAccessorConfig getAccessorConfig();
+    IAccessorConfig getAccessorConfig();
 }

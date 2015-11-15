@@ -30,5 +30,5 @@ public interface IParameterEscapeProcessor {
      * @param original 原始参数字符串
      * @return 处理参数转义并返回转义后字符串
      */
-    public String processEscape(Type.EscapeScope scope, String original);
+    String processEscape(Type.EscapeScope scope, String original);
 }

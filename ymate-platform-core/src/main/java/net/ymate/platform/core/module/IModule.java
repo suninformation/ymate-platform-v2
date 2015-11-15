@@ -28,7 +28,7 @@ public interface IModule {
     /**
      * @return 返回模块名称
      */
-    public String getName();
+    String getName();
 
     /**
      * 模块初始化
@@ -36,22 +36,22 @@ public interface IModule {
      * @param owner 加载当前模块的YMP框架核心管理器对象
      * @throws Exception 当模块初始化失败时抛出异常
      */
-    public void init(YMP owner) throws Exception;
+    void init(YMP owner) throws Exception;
 
     /**
      * @return 返回模块是否已初始化
      */
-    public boolean isInited();
+    boolean isInited();
 
     /**
      * @return 返回所属YMP框架管理器实例
      */
-    public YMP getOwner();
+    YMP getOwner();
 
     /**
      * 销毁模块
      *
      * @throws Exception 当模块销毁失败时抛出异常
      */
-    public void destroy() throws Exception;
+    void destroy() throws Exception;
 }

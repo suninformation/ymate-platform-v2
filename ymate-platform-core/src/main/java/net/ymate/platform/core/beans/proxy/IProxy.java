@@ -23,5 +23,5 @@ package net.ymate.platform.core.beans.proxy;
  */
 public interface IProxy {
 
-    public Object doProxy(IProxyChain proxyChain) throws Throwable;
+    Object doProxy(IProxyChain proxyChain) throws Throwable;
 }

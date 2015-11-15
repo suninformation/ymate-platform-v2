@@ -28,15 +28,15 @@ public interface IQueryOperator<T> extends IOperator {
     /**
      * @return 返回结果集数据处理对象
      */
-    public IResultSetHandler<T> getResultSetHandler();
+    IResultSetHandler<T> getResultSetHandler();
 
     /**
      * @return 返回查询结果
      */
-    public List<T> getResultSet();
+    List<T> getResultSet();
 
     /**
      * @return 结果集返回最大记录数，默认为0，表示没有任何限制
      */
-    public int getMaxRow();
+    int getMaxRow();
 }

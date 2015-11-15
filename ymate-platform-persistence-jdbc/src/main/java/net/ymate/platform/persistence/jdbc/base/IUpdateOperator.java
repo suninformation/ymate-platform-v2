@@ -29,5 +29,5 @@ public interface IUpdateOperator extends IOperator {
      *
      * @return int
      */
-    public int getEffectCounts();
+    int getEffectCounts();
 }

@@ -28,54 +28,54 @@ public interface ISessionEvent {
      *
      * @param eventContext 事件上下文对象
      */
-    public void onQueryBefore(SessionEventContext eventContext);
+    void onQueryBefore(SessionEventContext eventContext);
 
     /**
      * 查询操作之后事件调用
      *
      * @param eventContext 事件上下文对象
      */
-    public void onQueryAfter(SessionEventContext eventContext);
+    void onQueryAfter(SessionEventContext eventContext);
 
     /**
      * 插入操用之前事件调用
      *
      * @param eventContext 事件上下文对象
      */
-    public void onInsertBefore(SessionEventContext eventContext);
+    void onInsertBefore(SessionEventContext eventContext);
 
     /**
      * 插入操作之后事件调用
      *
      * @param eventContext 事件上下文对象
      */
-    public void onInsertAfter(SessionEventContext eventContext);
+    void onInsertAfter(SessionEventContext eventContext);
 
     /**
      * 更新操作之前事件调用
      *
      * @param eventContext 事件上下文对象
      */
-    public void onUpdateBefore(SessionEventContext eventContext);
+    void onUpdateBefore(SessionEventContext eventContext);
 
     /**
      * 更新操作之后事件调用
      *
      * @param eventContext 事件上下文对象
      */
-    public void onUpdateAfter(SessionEventContext eventContext);
+    void onUpdateAfter(SessionEventContext eventContext);
 
     /**
      * 删除操作之前事件调用
      *
      * @param eventContext 事件上下文对象
      */
-    public void onRemoveBefore(SessionEventContext eventContext);
+    void onRemoveBefore(SessionEventContext eventContext);
 
     /**
      * 删除操作之后事件调用
      *
      * @param eventContext 事件上下文对象
      */
-    public void onRemoveAfter(SessionEventContext eventContext);
+    void onRemoveAfter(SessionEventContext eventContext);
 }

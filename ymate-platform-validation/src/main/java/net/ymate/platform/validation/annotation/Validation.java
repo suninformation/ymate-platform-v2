@@ -33,7 +33,7 @@ public @interface Validation {
      * NORMAL - 短路式验证，即出现验证未通过就返回验证结果<br>
      * FULL   - 对目标对象属性进行全部验证后返回全部验证结果
      */
-    public enum MODE {
+    enum MODE {
         NORMAL, FULL
     }
 

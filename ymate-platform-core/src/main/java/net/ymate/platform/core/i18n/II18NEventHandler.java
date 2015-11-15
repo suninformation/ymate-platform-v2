@@ -30,17 +30,17 @@ public interface II18NEventHandler {
     /**
      * @return 加载当前Locale
      */
-    public Locale onLocale();
+    Locale onLocale();
 
     /**
      * @param locale 当Locale改变时处理此方法
      */
-    public void onChanged(Locale locale);
+    void onChanged(Locale locale);
 
     /**
      * @param resourceName 资源名称
      * @return 加载资源文件的具体处理方法
      * @throws IOException 加载资源文件可能发生异常
      */
-    public InputStream onLoad(String resourceName) throws IOException;
+    InputStream onLoad(String resourceName) throws IOException;
 }

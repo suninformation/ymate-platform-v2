@@ -33,7 +33,7 @@ public interface IAccessorConfig {
      * @return 创建自定义Statement对象，默认null
      * @throws Exception 可能产生的异常
      */
-    public Statement getStatement(Connection conn) throws Exception;
+    Statement getStatement(Connection conn) throws Exception;
 
     /**
      * @param conn 连接对象
@@ -41,7 +41,7 @@ public interface IAccessorConfig {
      * @return 创建自定义 CallableStatement对象，默认null
      * @throws Exception 可能产生的异常
      */
-    public CallableStatement getCallableStatement(Connection conn, String sql) throws Exception;
+    CallableStatement getCallableStatement(Connection conn, String sql) throws Exception;
 
     /**
      * @param conn 连接对象
@@ -49,7 +49,7 @@ public interface IAccessorConfig {
      * @return 创建自定义PerparedStatement对象，默认null
      * @throws Exception 可能产生的异常
      */
-    public PreparedStatement getPreparedStatement(Connection conn, String sql) throws Exception;
+    PreparedStatement getPreparedStatement(Connection conn, String sql) throws Exception;
 
     /**
      * Statement对象执行之前调用
@@ -57,7 +57,7 @@ public interface IAccessorConfig {
      * @param context 访问器配置事件上下文对象
      * @throws Exception 可能产生的异常
      */
-    public void beforeStatementExecution(AccessorEventContext context) throws Exception;
+    void beforeStatementExecution(AccessorEventContext context) throws Exception;
 
     /**
      * Statement对象执行之后调用
@@ -65,7 +65,7 @@ public interface IAccessorConfig {
      * @param context 访问器配置事件上下文对象
      * @throws Exception 可能产生的异常
      */
-    public void afterStatementExecution(AccessorEventContext context) throws Exception;
+    void afterStatementExecution(AccessorEventContext context) throws Exception;
 
     /**
      * 向驱动程序提供关于方向的提示，在使用此 Statement 对象创建的 ResultSet 对象中将按该方向处理行。默认值为 ResultSet.FETCH_FORWARD。
@@ -74,7 +74,7 @@ public interface IAccessorConfig {
      *
      * @return 获取方向
      */
-    public int getFetchDirection();
+    int getFetchDirection();
 
     /**
      * 为 JDBC 驱动程序提供一个提示，它提示此 Statement 生成的 ResultSet 对象需要更多行时应该从数据库获取的行数。
@@ -82,7 +82,7 @@ public interface IAccessorConfig {
      *
      * @return 获取行数
      */
-    public int getFetchSize();
+    int getFetchSize();
 
     /**
      * 设置此 Statement 对象生成的 ResultSet 对象中字符和二进制列值可以返回的最大字节数限制。 此限制仅应用于
@@ -92,7 +92,7 @@ public interface IAccessorConfig {
      *
      * @return 字段最大数
      */
-    public int getMaxFieldSize();
+    int getMaxFieldSize();
 
     /**
      * 将此 Statement 对象生成的所有 ResultSet 对象可以包含的最大行数限制设置为给定数。如果超过了该限制，则直接撤消多出的行。
@@ -100,7 +100,7 @@ public interface IAccessorConfig {
      *
      * @return 最大行数
      */
-    public int getMaxRows();
+    int getMaxRows();
 
     /**
      * 将驱动程序等待 Statement 对象执行的秒数设置为给定秒数。如果超过该限制，则抛出 SQLException。 JDBC
@@ -110,5 +110,5 @@ public interface IAccessorConfig {
      *
      * @return 查询超时时间
      */
-    public int getQueryTimeout();
+    int getQueryTimeout();
 }

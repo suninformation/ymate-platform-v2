@@ -33,6 +33,6 @@ public interface IRequestProcessor {
      * @return 返回请求的参数映射
      * @throws Exception 可能产生的异常
      */
-    public Map<String, Object> processRequestParams(IWebMvc owner, RequestMeta requestMeta) throws Exception;
+    Map<String, Object> processRequestParams(IWebMvc owner, RequestMeta requestMeta) throws Exception;
 
 }

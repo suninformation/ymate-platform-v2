@@ -31,22 +31,22 @@ public interface IUploadFileWrapper {
     /**
      * @return 获取完整的文件名及路径
      */
-    public String getPath();
+    String getPath();
 
     /**
      * @return 获取文件名称
      */
-    public String getName();
+    String getName();
 
     /**
      * @return 获取文件大小
      */
-    public long getSize();
+    long getSize();
 
     /**
      * @return 获取文件Content-Type
      */
-    public String getContentType();
+    String getContentType();
 
     /**
      * 转移文件
@@ -54,7 +54,7 @@ public interface IUploadFileWrapper {
      * @param dest 目标
      * @throws Exception 可能产生的异常
      */
-    public void transferTo(File dest) throws Exception;
+    void transferTo(File dest) throws Exception;
 
     /**
      * 保存文件
@@ -62,22 +62,22 @@ public interface IUploadFileWrapper {
      * @param dest 目标
      * @throws Exception 可能产生的异常
      */
-    public void writeTo(File dest) throws Exception;
+    void writeTo(File dest) throws Exception;
 
     /**
      * 删除文件
      */
-    public void delete();
+    void delete();
 
     /**
      * @return 获取文件输入流对象
      * @throws IOException 可能产生的异常
      */
-    public InputStream getInputStream() throws IOException;
+    InputStream getInputStream() throws IOException;
 
     /**
      * @return 获取文件输出流对象
      * @throws IOException 可能产生的异常
      */
-    public OutputStream getOutputStream() throws IOException;
+    OutputStream getOutputStream() throws IOException;
 }

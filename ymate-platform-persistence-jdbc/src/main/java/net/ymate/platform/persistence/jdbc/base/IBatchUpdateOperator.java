@@ -30,23 +30,23 @@ public interface IBatchUpdateOperator extends IOperator {
      *
      * @return int[] 获取批量更新操作执行后，每组SQL影响的记录行数的数组；
      */
-    public int[] getEffectCounts();
+    int[] getEffectCounts();
 
     /**
      * @param sql SQL语句
      * @return 添加SQL语句
      */
-    public IBatchUpdateOperator addBatchSQL(String sql);
+    IBatchUpdateOperator addBatchSQL(String sql);
 
     /**
      * @param parameter 批量SQL参数对象
      * @return 添加批量SQL参数
      */
-    public IBatchUpdateOperator addBatchParameter(SQLBatchParameter parameter);
+    IBatchUpdateOperator addBatchParameter(SQLBatchParameter parameter);
 
     /**
      * @return 返回批量SQL参数集合
      */
-    public List<SQLBatchParameter> getBatchParameters();
+    List<SQLBatchParameter> getBatchParameters();
 
 }

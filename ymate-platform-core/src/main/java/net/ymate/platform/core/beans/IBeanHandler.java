@@ -25,7 +25,7 @@ import net.ymate.platform.core.beans.annotation.Bean;
  */
 public interface IBeanHandler {
 
-    public static final IBeanHandler DEFAULT_HANDLER = new IBeanHandler() {
+    IBeanHandler DEFAULT_HANDLER = new IBeanHandler() {
         public Object handle(Class<?> targetClass) throws Exception {
             Bean _bean = targetClass.getAnnotation(Bean.class);
             if (_bean.singleton()) {
@@ -42,5 +42,5 @@ public interface IBeanHandler {
      * @return 返回实例化对象，若返回null则表示丢弃当前类对象
      * @throws Exception 处理过程可能产生的异常
      */
-    public Object handle(Class<?> targetClass) throws Exception;
+    Object handle(Class<?> targetClass) throws Exception;
 }

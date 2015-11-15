@@ -23,10 +23,10 @@ package net.ymate.platform.plugin;
  */
 public interface IPlugins {
 
-    public static final String MODULE_NAME = "plugin";
+    String MODULE_NAME = "plugin";
 
     /**
      * @return 返回插件工厂接口实例
      */
-    public IPluginFactory getPluginFactory();
+    IPluginFactory getPluginFactory();
 }

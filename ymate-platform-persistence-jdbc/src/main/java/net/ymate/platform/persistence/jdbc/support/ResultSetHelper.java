@@ -541,7 +541,7 @@ public class ResultSetHelper {
             if (__entityMeta.isMultiplePrimaryKey()) {
                 _primaryKeyObject = __entityMeta.getPrimaryKeyClass().newInstance();
                 //
-                ((IEntity) entityObject).setId((Serializable) _primaryKeyObject);
+                entityObject.setId((Serializable) _primaryKeyObject);
             }
             for (int _idx = 0; _idx < __columnCount; _idx++) {
                 EntityMeta.PropertyMeta _meta = __entityMeta.getPropertyByName(__columnNames[_idx]);

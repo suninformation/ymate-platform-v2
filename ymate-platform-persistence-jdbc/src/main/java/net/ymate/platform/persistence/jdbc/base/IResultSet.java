@@ -28,35 +28,35 @@ public interface IResultSet<T> {
     /**
      * @return 当前结果集是否可用，即是否为空或元素数量为0
      */
-    public boolean isResultsAvailable();
+    boolean isResultsAvailable();
 
     /**
      * @return 返回当前结果集是否已分页
      */
-    public boolean isPaginated();
+    boolean isPaginated();
 
     /**
      * @return 返回当前页号
      */
-    public int getPageNumber();
+    int getPageNumber();
 
     /**
      * @return 返回每页记录数
      */
-    public int getPageSize();
+    int getPageSize();
 
     /**
      * @return 返回总页数
      */
-    public int getPageCount();
+    int getPageCount();
 
     /**
      * @return 返回总记录数
      */
-    public long getRecordCount();
+    long getRecordCount();
 
     /**
      * @return 返回结果集数据
      */
-    public List<T> getResultData();
+    List<T> getResultData();
 }

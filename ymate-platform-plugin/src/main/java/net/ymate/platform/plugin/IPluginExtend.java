@@ -27,5 +27,5 @@ public interface IPluginExtend<T> {
      * @param context 插件环境上下文对象
      * @return 返回封装后的插件扩展对象
      */
-    public T getExtendObject(IPluginContext context);
+    T getExtendObject(IPluginContext context);
 }

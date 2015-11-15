@@ -28,5 +28,5 @@ public interface ISessionExecutor<T> {
      * @return 执行会话处理过程，返回执行结果
      * @throws Exception 可能产生的异常
      */
-    public T execute(ISession session) throws Exception;
+    T execute(ISession session) throws Exception;
 }

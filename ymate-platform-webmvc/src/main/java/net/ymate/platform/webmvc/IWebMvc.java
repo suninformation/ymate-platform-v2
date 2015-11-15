@@ -30,17 +30,17 @@ import javax.servlet.http.HttpServletResponse;
  */
 public interface IWebMvc {
 
-    public static final String MODULE_NAME = "webmvc";
+    String MODULE_NAME = "webmvc";
 
     /**
      * @return 返回所属YMP框架管理器实例
      */
-    public YMP getOwner();
+    YMP getOwner();
 
     /**
      * @return 返回WebMVC模块配置对象
      */
-    public IWebMvcModuleCfg getModuleCfg();
+    IWebMvcModuleCfg getModuleCfg();
 
     /**
      * 注册并分析控制器
@@ -49,7 +49,7 @@ public interface IWebMvc {
      * @return 返回是否有效注册
      * @throws Exception 可能产生的异常
      */
-    public boolean registerController(Class<? extends Controller> targetClass) throws Exception;
+    boolean registerController(Class<? extends Controller> targetClass) throws Exception;
 
     /**
      * 处理控制器请求
@@ -60,8 +60,8 @@ public interface IWebMvc {
      * @param response       HttpServletResponse对象
      * @throws Exception 可能产生的异常
      */
-    public void processRequest(IRequestContext context,
-                               ServletContext servletContext,
-                               HttpServletRequest request,
-                               HttpServletResponse response) throws Exception;
+    void processRequest(IRequestContext context,
+                        ServletContext servletContext,
+                        HttpServletRequest request,
+                        HttpServletResponse response) throws Exception;
 }

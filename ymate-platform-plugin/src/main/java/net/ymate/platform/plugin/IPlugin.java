@@ -29,41 +29,41 @@ public interface IPlugin {
      * @param context 插件上下文对象
      * @throws Exception 初始化插件时可能产生的异常
      */
-    public void init(IPluginContext context) throws Exception;
+    void init(IPluginContext context) throws Exception;
 
     /**
      * @return 返回插件环境上下文对象
      */
-    public IPluginContext getPluginContext();
+    IPluginContext getPluginContext();
 
     /**
      * @return 返回插件是否已初始化
      */
-    public boolean isInited();
+    boolean isInited();
 
     /**
      * @return 返回插件是否已启动
      */
-    public boolean isStarted();
+    boolean isStarted();
 
     /**
      * 启动插件
      *
      * @throws Exception 启动插件时可能产生的异常
      */
-    public void startup() throws Exception;
+    void startup() throws Exception;
 
     /**
      * 停止插件
      *
      * @throws Exception 停止插件时可能产生的异常
      */
-    public void shutdown() throws Exception;
+    void shutdown() throws Exception;
 
     /**
      * 销毁插件对象
      *
      * @throws Exception 销毁插件时可能产生的异常
      */
-    public void destroy() throws Exception;
+    void destroy() throws Exception;
 }

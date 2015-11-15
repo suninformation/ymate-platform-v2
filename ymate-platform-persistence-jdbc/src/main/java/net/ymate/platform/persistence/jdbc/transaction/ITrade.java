@@ -28,5 +28,5 @@ public interface ITrade {
      *
      * @throws Throwable 可能产生的异常
      */
-    public void deal() throws Throwable;
+    void deal() throws Throwable;
 }

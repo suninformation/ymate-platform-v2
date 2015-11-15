@@ -29,5 +29,5 @@ public interface IEventListener<CONTEXT extends EventContext> {
      * @param context 事件上下文对象
      * @return 返回true将停止事件同步队列继续执行
      */
-    public boolean handle(CONTEXT context);
+    boolean handle(CONTEXT context);
 }

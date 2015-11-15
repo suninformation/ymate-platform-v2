@@ -28,25 +28,25 @@ public interface ILogModuleCfg {
     /**
      * @return 返回日志记录器配置文件
      */
-    public File getConfigFile();
+    File getConfigFile();
 
     /**
      * @return 返回日志文件输出路径
      */
-    public File getOutputDir();
+    File getOutputDir();
 
     /**
      * @return 返回默认日志记录器名称
      */
-    public String getLoggerName();
+    String getLoggerName();
 
     /**
      * @return 返回ILogger接口实现类
      */
-    public Class<? extends ILogger> getLoggerClass();
+    Class<? extends ILogger> getLoggerClass();
 
     /**
      * @return 默认日志记录器是否允许控制台输出
      */
-    public boolean allowOutputConsole();
+    boolean allowOutputConsole();
 }

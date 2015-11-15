@@ -30,33 +30,33 @@ public interface IRequestContext {
     /**
      * @return 返回请求映射字符串(注:必须以字符'/'开始且不以'/'结束)
      */
-    public String getRequestMapping();
+    String getRequestMapping();
 
     /**
      * @return 返回原始URL请求路径
      */
-    public String getOriginalUrl();
+    String getOriginalUrl();
 
     /**
      * @return 返回URL前缀
      */
-    public String getPrefix();
+    String getPrefix();
 
     /**
      * @return 返回URL后缀(扩展名称)
      */
-    public String getSuffix();
+    String getSuffix();
 
     /**
      * @return 返回当前请求方式
      */
-    public Type.HttpMethod getHttpMethod();
+    Type.HttpMethod getHttpMethod();
 
     //
 
-    public <T> T getAttribute(String name);
+    <T> T getAttribute(String name);
 
-    public IRequestContext addAttribute(String name, Object value);
+    IRequestContext addAttribute(String name, Object value);
 
-    public Map<String, Object> getAttributes();
+    Map<String, Object> getAttributes();
 }

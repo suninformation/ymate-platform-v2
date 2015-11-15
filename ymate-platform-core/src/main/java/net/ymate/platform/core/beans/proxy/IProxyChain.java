@@ -28,31 +28,31 @@ public interface IProxyChain {
     /**
      * @return 获取所属代理工厂对象
      */
-    public IProxyFactory getProxyFactory();
+    IProxyFactory getProxyFactory();
 
     /**
      * @return 获取方法参数集合
      */
-    public Object[] getMethodParams();
+    Object[] getMethodParams();
 
     /**
      * @return 获取被代理目标类型
      */
-    public Class<?> getTargetClass();
+    Class<?> getTargetClass();
 
     /**
      * @return 获取代理目标对象
      */
-    public Object getTargetObject();
+    Object getTargetObject();
 
     /**
      * @return 获取被代理目标方法对象
      */
-    public Method getTargetMethod();
+    Method getTargetMethod();
 
     /**
      * @return 执行代理链
      * @throws Throwable 执行过程中可能产生的异常
      */
-    public Object doProxyChain() throws Throwable;
+    Object doProxyChain() throws Throwable;
 }

@@ -29,12 +29,12 @@ import java.util.Map;
  */
 public interface IValidation {
 
-    public static final String MODULE_NAME = "validation";
+    String MODULE_NAME = "validation";
 
     /**
      * @return 返回所属YMP框架管理器实例
      */
-    public YMP getOwner();
+    YMP getOwner();
 
     /**
      * 注册验证器
@@ -42,13 +42,13 @@ public interface IValidation {
      * @param annotationClass 验证器作用的注解
      * @param validatorClass  验证器接口类型
      */
-    public void registerValidator(Class<? extends Annotation> annotationClass, Class<? extends IValidator> validatorClass);
+    void registerValidator(Class<? extends Annotation> annotationClass, Class<? extends IValidator> validatorClass);
 
     /**
      * @param annotationClass 验证器作用的注解
      * @return 判断是否包含处理annoClass注解的验证器存在
      */
-    public boolean containsValidator(Class<? extends Annotation> annotationClass);
+    boolean containsValidator(Class<? extends Annotation> annotationClass);
 
     /**
      * 执行类成员参数验证
@@ -57,7 +57,7 @@ public interface IValidation {
      * @param paramValues 参数集合
      * @return 返回验证结果映射
      */
-    public Map<String, ValidateResult> validate(Class<?> targetClass, Map<String, Object> paramValues);
+    Map<String, ValidateResult> validate(Class<?> targetClass, Map<String, Object> paramValues);
 
     /**
      * 执行类方法参数验证
@@ -67,5 +67,5 @@ public interface IValidation {
      * @param paramValues  参数集合
      * @return 返回验证结果映射
      */
-    public Map<String, ValidateResult> validate(Class<?> targetClass, Method targetMethod, Map<String, Object> paramValues);
+    Map<String, ValidateResult> validate(Class<?> targetClass, Method targetMethod, Map<String, Object> paramValues);
 }

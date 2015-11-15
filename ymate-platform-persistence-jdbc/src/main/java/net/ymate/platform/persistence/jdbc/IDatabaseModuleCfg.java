@@ -28,21 +28,21 @@ public interface IDatabaseModuleCfg {
     /**
      * @return 返回默认数据源名称，默认值：default
      */
-    public String getDataSourceDefaultName();
+    String getDataSourceDefaultName();
 
     /**
      * @return 返回数据源配置映射
      */
-    public Map<String, DataSourceCfgMeta> getDataSourceCfgs();
+    Map<String, DataSourceCfgMeta> getDataSourceCfgs();
 
     /**
      * @return 返回默认数据源配置
      */
-    public DataSourceCfgMeta getDefaultDataSourceCfg();
+    DataSourceCfgMeta getDefaultDataSourceCfg();
 
     /**
      * @param name 数据源名称
      * @return 返回指定名称的数据源配置
      */
-    public DataSourceCfgMeta getDataSourceCfg(String name);
+    DataSourceCfgMeta getDataSourceCfg(String name);
 }

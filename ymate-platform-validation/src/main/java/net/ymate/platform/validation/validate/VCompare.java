@@ -31,7 +31,7 @@ public @interface VCompare {
     /**
      * 比较条件
      */
-    public enum Cond {
+    enum Cond {
         EQ, NOT_EQ
     }
 

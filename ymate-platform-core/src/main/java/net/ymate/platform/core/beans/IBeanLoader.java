@@ -28,16 +28,16 @@ public interface IBeanLoader {
     /**
      * @return 返回当前使用的类加载器
      */
-    public ClassLoader getClassLoader();
+    ClassLoader getClassLoader();
 
-    public void setClassLoader(ClassLoader classLoader);
+    void setClassLoader(ClassLoader classLoader);
 
     /**
      * @param packageName 扫描的包名称
      * @return 返回加载的类对象集合
      * @throws Exception 类加载过程可能产生异常
      */
-    public List<Class<?>> load(String packageName) throws Exception;
+    List<Class<?>> load(String packageName) throws Exception;
 
     /**
      * @param packageName 扫描的包名称
@@ -45,5 +45,5 @@ public interface IBeanLoader {
      * @return 返回加载的类对象集合
      * @throws Exception 类加载过程可能产生异常
      */
-    public List<Class<?>> load(String packageName, IBeanFilter filter) throws Exception;
+    List<Class<?>> load(String packageName, IBeanFilter filter) throws Exception;
 }

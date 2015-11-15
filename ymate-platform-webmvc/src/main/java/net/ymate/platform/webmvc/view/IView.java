@@ -32,62 +32,62 @@ public interface IView extends Serializable {
      * @param value 属性值
      * @return 添加视图属性
      */
-    public IView addAttribute(String name, Object value);
+    IView addAttribute(String name, Object value);
 
     /**
      * @param <T>  属性类型
      * @param name 属性名称
      * @return 返回视图对象属性key的值
      */
-    public <T> T getAttribute(String name);
+    <T> T getAttribute(String name);
 
     /**
      * @return 返回视图对象的属性映射
      */
-    public Map<String, Object> getAttributes();
+    Map<String, Object> getAttributes();
 
     /**
      * @return 返回视图内容类型
      */
-    public String getContentType();
+    String getContentType();
 
     /**
      * @param contentType 内容类型
      * @return 设置视图内容类型
      */
-    public IView setContentType(String contentType);
+    IView setContentType(String contentType);
 
     /**
      * @param name Head名称
      * @param date 值
      * @return 设置请求回应头
      */
-    public IView addDateHeader(String name, long date);
+    IView addDateHeader(String name, long date);
 
     /**
      * @param name  Head名称
      * @param value 值
      * @return 设置请求回应头
      */
-    public IView addHeader(String name, String value);
+    IView addHeader(String name, String value);
 
     /**
      * @param name  Head名称
      * @param value 值
      * @return 设置请求回应头
      */
-    public IView addIntHeader(String name, int value);
+    IView addIntHeader(String name, int value);
 
     /**
      * 视图渲染动作
      *
      * @throws Exception 抛出任何可能异常
      */
-    public void render() throws Exception;
+    void render() throws Exception;
 
     /**
      * @param output 视图渲染指定输出流
      * @throws Exception 抛出任何可能异常
      */
-    public void render(OutputStream output) throws Exception;
+    void render(OutputStream output) throws Exception;
 }

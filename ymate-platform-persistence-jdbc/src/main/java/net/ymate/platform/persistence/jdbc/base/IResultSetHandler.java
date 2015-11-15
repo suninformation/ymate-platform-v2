@@ -30,14 +30,14 @@ import java.util.Map;
  */
 public interface IResultSetHandler<T> {
 
-    public static final IResultSetHandler<Object[]> ARRAY = new ArrayResultSetHandler();
+    IResultSetHandler<Object[]> ARRAY = new ArrayResultSetHandler();
 
-    public static final IResultSetHandler<Map<String, Object>> MAP = new MapResultSetHandler();
+    IResultSetHandler<Map<String, Object>> MAP = new MapResultSetHandler();
 
     /**
      * @param resultSet 查询结果集
      * @return 执行结果集处理过程，并返回查询结果，决不为NULL
      * @throws Exception 可能产生的异常
      */
-    public List<T> handle(ResultSet resultSet) throws Exception;
+    List<T> handle(ResultSet resultSet) throws Exception;
 }

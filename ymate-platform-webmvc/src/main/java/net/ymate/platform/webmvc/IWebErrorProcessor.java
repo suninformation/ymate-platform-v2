@@ -34,14 +34,14 @@ public interface IWebErrorProcessor {
      * @param owner 所属YMP框架管理器实例
      * @param e     异常对象
      */
-    public void onError(IWebMvc owner, Throwable e);
+    void onError(IWebMvc owner, Throwable e);
 
     /**
      * @param owner   所属YMP框架管理器实例
      * @param results 验证器执行结果集合
      * @return 处理结果数据并返回视图对象，若返回null则由框架默认处理
      */
-    public IView onValidation(IWebMvc owner, Map<String, ValidateResult> results);
+    IView onValidation(IWebMvc owner, Map<String, ValidateResult> results);
 
     /**
      * 自定义处理URL请求过程
@@ -51,5 +51,5 @@ public interface IWebErrorProcessor {
      * @return 可用视图对象，若为空则采用系统默认
      * @throws Exception 可能产生的异常
      */
-    public IView onConvention(IWebMvc owner, IRequestContext requestContext) throws Exception;
+    IView onConvention(IWebMvc owner, IRequestContext requestContext) throws Exception;
 }

@@ -31,24 +31,24 @@ public interface IProxyFactory {
     /**
      * @return 返回代理工厂所属YMP框架管理器
      */
-    public YMP getOwner();
+    YMP getOwner();
 
-    public IProxyFactory registerProxy(IProxy proxy);
+    IProxyFactory registerProxy(IProxy proxy);
 
-    public IProxyFactory registerProxy(Collection<? extends IProxy> proxies);
+    IProxyFactory registerProxy(Collection<? extends IProxy> proxies);
 
     /**
      * @return 获取当前工厂已注册的代理类对象集合
      */
-    public List<IProxy> getProxies();
+    List<IProxy> getProxies();
 
     /**
      * @param filter 代理过滤器
      * @return 返回通过filter过滤后的代理对象集合
      */
-    public List<IProxy> getProxies(IProxyFilter filter);
+    List<IProxy> getProxies(IProxyFilter filter);
 
-    public <T> T createProxy(Class<?> targetClass);
+    <T> T createProxy(Class<?> targetClass);
 
-    public <T> T createProxy(Class<?> targetClass, List<IProxy> proxies);
+    <T> T createProxy(Class<?> targetClass, List<IProxy> proxies);
 }

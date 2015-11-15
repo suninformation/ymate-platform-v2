@@ -25,21 +25,21 @@ import net.ymate.platform.core.YMP;
  */
 public interface ILog {
 
-    public static final String MODULE_NAME = "log";
+    String MODULE_NAME = "log";
 
     /**
      * @return 返回所属YMP框架管理器实例
      */
-    public YMP getOwner();
+    YMP getOwner();
 
     /**
      * @return 返回日志记录器模块配置对象
      */
-    public ILogModuleCfg getModuleCfg();
+    ILogModuleCfg getModuleCfg();
 
-    public boolean isInited();
+    boolean isInited();
 
-    public ILogger getLogger();
+    ILogger getLogger();
 
-    public ILogger getLogger(String loggerName) throws Exception;
+    ILogger getLogger(String loggerName) throws Exception;
 }

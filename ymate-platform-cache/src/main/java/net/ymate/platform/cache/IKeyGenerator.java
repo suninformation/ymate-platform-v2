@@ -31,5 +31,5 @@ public interface IKeyGenerator<T extends Serializable> {
      * @param params 目标方法参数集合
      * @return 返回生成的Key值
      */
-    public T generateKey(Method method, Object[] params);
+    T generateKey(Method method, Object[] params);
 }

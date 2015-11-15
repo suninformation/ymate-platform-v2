@@ -27,49 +27,49 @@ import java.io.File;
  */
 public interface IConfig {
 
-    public static final String MODULE_NAME = "configuration";
+    String MODULE_NAME = "configuration";
 
-    public static final String __PROJECTS_FOLDER_NAME = "projects";
-    public static final String __MODULES_FOLDER_NAME = "modules";
+    String __PROJECTS_FOLDER_NAME = "projects";
+    String __MODULES_FOLDER_NAME = "modules";
 
-    public static final String __CONFIG_HOME = "CONFIG_HOME";
-    public static final String __USER_HOME = "user.home";
-    public static final String __USER_DIR = "user.dir";
+    String __CONFIG_HOME = "CONFIG_HOME";
+    String __USER_HOME = "user.home";
+    String __USER_DIR = "user.dir";
 
     /**
      * @return 返回所属YMP框架管理器实例
      */
-    public YMP getOwner();
+    YMP getOwner();
 
     /**
      * @return 返回配置体系模块配置对象
      */
-    public IConfigModuleCfg getModuleCfg();
+    IConfigModuleCfg getModuleCfg();
 
     /**
      * @return 返回配置体系主目录路径
      */
-    public String getConfigHome();
+    String getConfigHome();
 
     /**
      * @return 返回项目主目录路径
      */
-    public String getProjectHome();
+    String getProjectHome();
 
     /**
      * @return 返回模块主目录路径
      */
-    public String getModuleHome();
+    String getModuleHome();
 
     /**
      * @return 返回系统变量user.home值
      */
-    public String getUserHome();
+    String getUserHome();
 
     /**
      * @return 返回系统变量user.dir值
      */
-    public String getUserDir();
+    String getUserDir();
 
     /**
      * 搜索配置文件真实资源路径，先在配置体系中查找，再到项目 CLASSPATH 路径中查找，若 cfgFile 以 "jar:" 开头则直接返回
@@ -77,7 +77,7 @@ public interface IConfig {
      * @param cfgFile 配置文件相对路径及名称
      * @return 配置文件真实路径
      */
-    public String searchPath(String cfgFile);
+    String searchPath(String cfgFile);
 
     /**
      * 按照模块路径-&gt;项目路径-&gt;主路径(CONFIG_HOME)-&gt;用户路径(user.dir)-&gt;系统用户路径(user.home)的顺序寻找指定文件
@@ -85,9 +85,9 @@ public interface IConfig {
      * @param cfgFile 配置文件路径及名称
      * @return 找到的文件File对象，只要找到存在的File，立即停止寻找并返回当前File实例
      */
-    public File searchFile(String cfgFile);
+    File searchFile(String cfgFile);
 
-    public boolean fillCfg(IConfiguration config, String cfgFileName);
+    boolean fillCfg(IConfiguration config, String cfgFileName);
 
     /**
      * 填充配置对象
@@ -97,9 +97,9 @@ public interface IConfig {
      * @param search      是否采用搜索
      * @return 是否成功装载配置
      */
-    public boolean fillCfg(IConfiguration config, String cfgFileName, boolean search);
+    boolean fillCfg(IConfiguration config, String cfgFileName, boolean search);
 
-    public boolean fillCfg(IConfiguration config);
+    boolean fillCfg(IConfiguration config);
 
     /**
      * 装载配置，根据Configuration注解指定的配置文件进行加载，否则默认使用当前配置类对象的SimpleName作为配置文件名，即：SimpleName.CfgTagName.xml
@@ -108,7 +108,7 @@ public interface IConfig {
      * @param search 是否采用搜索
      * @return 是否成功装载配置
      */
-    public boolean fillCfg(IConfiguration config, boolean search);
+    boolean fillCfg(IConfiguration config, boolean search);
 
     /**
      * 根据自定义配置提供者填充配置对象
@@ -119,5 +119,5 @@ public interface IConfig {
      * @param search        是否采用搜索
      * @return 是否成功装载配置
      */
-    public boolean fillCfg(Class<? extends IConfigurationProvider> providerClass, IConfiguration config, String cfgFileName, boolean search);
+    boolean fillCfg(Class<? extends IConfigurationProvider> providerClass, IConfiguration config, String cfgFileName, boolean search);
 }

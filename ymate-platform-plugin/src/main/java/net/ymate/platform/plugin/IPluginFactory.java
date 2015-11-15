@@ -31,59 +31,59 @@ public interface IPluginFactory {
      * @param pluginConfig 插件初始化配置
      * @throws Exception 工厂初始化时可能产生的异常
      */
-    public void init(IPluginConfig pluginConfig) throws Exception;
+    void init(IPluginConfig pluginConfig) throws Exception;
 
     /**
      * @return 返回插件工厂是否已初始化
      */
-    public boolean isInited();
+    boolean isInited();
 
     /**
      * 销毁插件工厂
      *
      * @throws Exception 工厂销毁时可能产生的异常
      */
-    public void destroy() throws Exception;
+    void destroy() throws Exception;
 
     /**
      * 添加被排除的接口
      *
      * @param interfaceClass 预排除的接口
      */
-    public void addExcludedInterfaceClass(Class<?> interfaceClass);
+    void addExcludedInterfaceClass(Class<?> interfaceClass);
 
     /**
      * @return 返回所属YMP框架管理器实例
      */
-    public YMP getOwner();
+    YMP getOwner();
 
     /**
      * @return 返回插件工厂配置对象
      */
-    public IPluginConfig getPluginConfig();
+    IPluginConfig getPluginConfig();
 
     /**
      * @param id 插件唯一ID
      * @return 通过ID获取插件实例
      */
-    public IPlugin getPlugin(String id);
+    IPlugin getPlugin(String id);
 
     /**
      * @param clazz 插件接口类
      * @param <T>   插件接口类型
      * @return 通过接口类型获取插件实例
      */
-    public <T> T getPlugin(Class<T> clazz);
+    <T> T getPlugin(Class<T> clazz);
 
     /**
      * @param id 插件ID
      * @return 通过ID获取插件配置信息元数据描述
      */
-    public PluginMeta getPluginMeta(String id);
+    PluginMeta getPluginMeta(String id);
 
     /**
      * @param clazz 插件接口类
      * @return 通过接口类型获取插件配置信息元数据描述
      */
-    public PluginMeta getPluginMeta(Class<? extends IPlugin> clazz);
+    PluginMeta getPluginMeta(Class<? extends IPlugin> clazz);
 }

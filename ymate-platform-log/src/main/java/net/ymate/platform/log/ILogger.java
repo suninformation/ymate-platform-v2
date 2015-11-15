@@ -28,7 +28,7 @@ public interface ILogger {
     /**
      * 日志记录级别
      */
-    public enum LogLevel {
+    enum LogLevel {
 
         ALL(Integer.MAX_VALUE, "all", "[ALL]"),
         TRACE(600, "trace", "[TRACE]"),
@@ -61,7 +61,7 @@ public interface ILogger {
          * @param name     日志输出级别名称
          * @param dispName 日志输出显示名称
          */
-        private LogLevel(int level, String name, String dispName) {
+        LogLevel(int level, String name, String dispName) {
             this.level = level;
             this.name = name;
             this.dispName = dispName;
@@ -99,14 +99,14 @@ public interface ILogger {
      * @return 返回日志记录器实例
      * @throws Exception 初始化时可能产生的异常
      */
-    public ILogger init(ILog owner, String loggerName) throws Exception;
+    ILogger init(ILog owner, String loggerName) throws Exception;
 
     /**
      * @param loggerName 日志记录器名称
      * @return 获取指定名称的日志记录器对象
      * @throws Exception 获取日志记录器时可能产生异常
      */
-    public ILogger getLogger(String loggerName) throws Exception;
+    ILogger getLogger(String loggerName) throws Exception;
 
     /**
      * 销毁(停止)当前的日志记录器，需要清除所占用的资源，而且日志记录器一旦被停止，将无法恢复使用
@@ -119,7 +119,7 @@ public interface ILogger {
      * @param enable 状态
      * @return 返回当前日志记录器
      */
-    public ILogger console(boolean enable);
+    ILogger console(boolean enable);
 
     /**
      * 设置调用者深度
@@ -127,7 +127,7 @@ public interface ILogger {
      * @param depth 必须大于等于零
      * @return 返回当前日志记录器
      */
-    public ILogger depth(int depth);
+    ILogger depth(int depth);
 
     /**
      * 是否存在某个日志记录器
@@ -135,12 +135,12 @@ public interface ILogger {
      * @param loggerName 日志记录器名称
      * @return 如果当前日志记录器存在那么返回true，如果不存在那么返回false
      */
-    public boolean contains(String loggerName);
+    boolean contains(String loggerName);
 
     /**
      * @return 返回当前日志级别
      */
-    public LogLevel getLevel();
+    LogLevel getLevel();
 
     //
 

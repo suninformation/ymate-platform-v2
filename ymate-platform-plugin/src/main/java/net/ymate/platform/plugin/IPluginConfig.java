@@ -29,25 +29,25 @@ public interface IPluginConfig {
     /**
      * @return 返回插件工厂自动扫描的包路径前缀集合
      */
-    public List<String> getAutoscanPackages();
+    List<String> getAutoscanPackages();
 
     /**
      * @return 返回插件生命周期事件监听器接口实例
      */
-    public IPluginEventListener getPluginEventListener();
+    IPluginEventListener getPluginEventListener();
 
     /**
      * @return 是否允许插件自动启动
      */
-    public boolean isAutomatic();
+    boolean isAutomatic();
 
     /**
      * @return 是否加载当前CLASSPATH内的所有包含插件配置文件的Jar包
      */
-    public boolean isIncludedClassPath();
+    boolean isIncludedClassPath();
 
     /**
      * @return 返回插件存放路径
      */
-    public File getPluginHome();
+    File getPluginHome();
 }

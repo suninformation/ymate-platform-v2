@@ -26,21 +26,21 @@ public interface IEventConfig {
     /**
      * @return 返回事件管理提供者接口实现，默认为net.ymate.platform.core.event.impl.DefaultEventProvider
      */
-    public IEventProvider getEventProvider();
+    IEventProvider getEventProvider();
 
     /**
      * @return 返回默认事件触发模式，取值范围：NORMAL-同步执行，ASYNC-异步执行，默认为ASYNC
      */
-    public Events.MODE getDefaultMode();
+    Events.MODE getDefaultMode();
 
     /**
      * @return 返回初始化线程池大小，默认为 Runtime.getRuntime().availableProcessors()
      */
-    public int getThreadPoolSize();
+    int getThreadPoolSize();
 
     /**
      * @param paramName 扩展参数名称
      * @return 返回扩展参数值
      */
-    public String getParamExtend(String paramName);
+    String getParamExtend(String paramName);
 }

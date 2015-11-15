@@ -26,10 +26,10 @@ public interface IPluginContext {
     /**
      * @return 返回当前上下文插件配置元数据描述对象
      */
-    public PluginMeta getPluginMeta();
+    PluginMeta getPluginMeta();
 
     /**
      * @return 返回当前上下文插件工厂对象
      */
-    public IPluginFactory getPluginFactory();
+    IPluginFactory getPluginFactory();
 }

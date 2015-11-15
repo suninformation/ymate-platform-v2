@@ -26,7 +26,7 @@ public interface ICacheProvider {
     /**
      * @return 缓存提供者名称
      */
-    public String getName();
+    String getName();
 
     /**
      * 初始化
@@ -34,25 +34,25 @@ public interface ICacheProvider {
      * @param owner 所属缓存模块
      * @throws CacheException 可能产生的异常
      */
-    public void init(ICaches owner) throws CacheException;
+    void init(ICaches owner) throws CacheException;
 
     /**
      * @param name 缓存名称
      * @return 创建缓存对象，若已存在则直接返回
      * @throws CacheException 可能产生的异常
      */
-    public ICache createCache(String name) throws CacheException;
+    ICache createCache(String name) throws CacheException;
 
     /**
      * @param name 缓存名称
      * @return 获取缓存对象，若不存在则返回null
      */
-    public ICache getCache(String name);
+    ICache getCache(String name);
 
     /**
      * 销毁
      *
      * @throws CacheException 可能产生的异常
      */
-    public void destroy() throws CacheException;
+    void destroy() throws CacheException;
 }

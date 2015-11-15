@@ -29,5 +29,5 @@ public interface IProxyFilter {
      * @param targetProxy 目标代理
      * @return 返回过滤结果，true表示通过，false则表示丢弃当前类对象
      */
-    public boolean filter(IProxy targetProxy);
+    boolean filter(IProxy targetProxy);
 }

@@ -30,21 +30,21 @@ public interface IConnectionHolder {
     /**
      * @return 获取数据源配置参数
      */
-    public DataSourceCfgMeta getDataSourceCfgMeta();
+    DataSourceCfgMeta getDataSourceCfgMeta();
 
     /**
      * @return 获取数据库连接对象
      */
-    public Connection getConnection();
+    Connection getConnection();
 
     /**
      * 释放连接<br>
      * 注意：存在事务操作时严禁手动调用此方法，并由事务控制连接何时释放
      */
-    public void release();
+    void release();
 
     /**
      * @return 获取数据库方言
      */
-    public IDialect getDialect();
+    IDialect getDialect();
 }

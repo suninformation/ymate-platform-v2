@@ -29,5 +29,5 @@ public interface IBeanFilter {
      * @param targetClass 目标类型
      * @return 返回过滤结果，true表示通过，false则表示丢弃当前类对象
      */
-    public boolean filter(Class<?> targetClass);
+    boolean filter(Class<?> targetClass);
 }

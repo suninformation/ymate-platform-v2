@@ -32,54 +32,54 @@ public interface IOperator {
      *
      * @throws Exception 可能产生的异常
      */
-    public void execute() throws Exception;
+    void execute() throws Exception;
 
     /**
      * @return 返回当前操作器是否已执行
      */
-    public boolean isExecuted();
+    boolean isExecuted();
 
     /**
      * @return 获取预执行SQL字符串
      */
-    public String getSQL();
+    String getSQL();
 
     /**
      * @return 获取访问器配置
      */
-    public IAccessorConfig getAccessorConfig();
+    IAccessorConfig getAccessorConfig();
 
     /**
      * 设置访问器配置
      *
      * @param accessorConfig 访问器配置对象
      */
-    public void setAccessorConfig(IAccessorConfig accessorConfig);
+    void setAccessorConfig(IAccessorConfig accessorConfig);
 
     /**
      * @return 获取当前使用的数据库连接对象
      */
-    public IConnectionHolder getConnectionHolder();
+    IConnectionHolder getConnectionHolder();
 
     /**
      * @return 获取本次操作所消耗的时间（单位：毫秒值）
      */
-    public long getExpenseTime();
+    long getExpenseTime();
 
     /**
      * @return 返回SQL参数集合
      */
-    public List<SQLParameter> getParameters();
+    List<SQLParameter> getParameters();
 
     /**
      * @param parameter SQL参数对象
      * @return 添加SQL参数，若参数为NULL则忽略
      */
-    public IOperator addParameter(SQLParameter parameter);
+    IOperator addParameter(SQLParameter parameter);
 
     /**
      * @param parameter SQL参数值
      * @return 添加SQL参数，若参数为NULL则将默认向SQL传递NULL值对象
      */
-    public IOperator addParameter(Object parameter);
+    IOperator addParameter(Object parameter);
 }

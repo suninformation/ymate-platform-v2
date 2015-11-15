@@ -32,19 +32,19 @@ public interface IConfigurationProvider {
      * @param cfgFileName 配置文件路径及名称
      * @throws Exception 加载配置文件可能产生的异常
      */
-    public void load(String cfgFileName) throws Exception;
+    void load(String cfgFileName) throws Exception;
 
     /**
      * 重新加载配置文件内容
      *
      * @throws Exception 加载配置文件可能产生的异常
      */
-    public void reload() throws Exception;
+    void reload() throws Exception;
 
     /**
      * @return 返回当前加载的配置文件路径名称
      */
-    public String getCfgFileName();
+    String getCfgFileName();
 
     // ----------
 
@@ -52,99 +52,99 @@ public interface IConfigurationProvider {
      * @param key 属性键
      * @return 获得对应的文字值
      */
-    public String getString(String key);
+    String getString(String key);
 
-    public String getString(String key, String defaultValue);
+    String getString(String key, String defaultValue);
 
-    public String getString(String category, String key, String defaultValue);
+    String getString(String category, String key, String defaultValue);
 
     /**
      * @param key 属性键
      * @return 获得对应的文字值列表，其中匹配以key开头的键串
      */
-    public List<String> getList(String key);
+    List<String> getList(String key);
 
-    public List<String> getList(String category, String key);
+    List<String> getList(String category, String key);
 
     /**
      * @param key 键标识
      * @return 获取键值映射
      */
-    public Map<String, String> getMap(String key);
+    Map<String, String> getMap(String key);
 
-    public Map<String, String> getMap(String category, String key);
+    Map<String, String> getMap(String category, String key);
 
     /**
      * @param key 属性键
      * @return 获取键值数组值
      */
-    public String[] getArray(String key);
+    String[] getArray(String key);
 
-    public String[] getArray(String key, boolean zeroSize);
+    String[] getArray(String key, boolean zeroSize);
 
-    public String[] getArray(String category, String key, boolean zeroSize);
+    String[] getArray(String category, String key, boolean zeroSize);
 
     /**
      * @param key 属性键
      * @return 获得对应的数字值
      */
-    public int getInt(String key);
+    int getInt(String key);
 
-    public int getInt(String key, int defaultValue);
+    int getInt(String key, int defaultValue);
 
-    public int getInt(String category, String key, int defaultValue);
+    int getInt(String category, String key, int defaultValue);
 
     /**
      * @param key 属性键
      * @return 获得对应的布尔值
      */
-    public boolean getBoolean(String key);
+    boolean getBoolean(String key);
 
-    public boolean getBoolean(String key, boolean defaultValue);
+    boolean getBoolean(String key, boolean defaultValue);
 
-    public boolean getBoolean(String category, String key, boolean defaultValue);
+    boolean getBoolean(String category, String key, boolean defaultValue);
 
     /**
      * @param key 属性键
      * @return 获取长整数
      */
-    public long getLong(String key);
+    long getLong(String key);
 
-    public long getLong(String key, long defaultValue);
+    long getLong(String key, long defaultValue);
 
-    public long getLong(String category, String key, long defaultValue);
+    long getLong(String category, String key, long defaultValue);
 
     /**
      * @param key 属性键
      * @return 获取浮点数
      */
-    public float getFloat(String key);
+    float getFloat(String key);
 
-    public float getFloat(String key, float defaultValue);
+    float getFloat(String key, float defaultValue);
 
-    public float getFloat(String category, String key, float defaultValue);
+    float getFloat(String category, String key, float defaultValue);
 
     /**
      * @param key 属性键
      * @return 获取双精度浮点数
      */
-    public double getDouble(String key);
+    double getDouble(String key);
 
-    public double getDouble(String key, double defaultValue);
+    double getDouble(String key, double defaultValue);
 
-    public double getDouble(String category, String key, double defaultValue);
+    double getDouble(String category, String key, double defaultValue);
 
     /**
      * @return 获得配置对象内部加载的配置项映射
      */
-    public Map<String, String> toMap();
+    Map<String, String> toMap();
 
-    public Map<String, String> toMap(String category);
+    Map<String, String> toMap(String category);
 
     /**
      * @return 获取分类的名称集合
      */
-    public List<String> getCategoryNames();
+    List<String> getCategoryNames();
 
     /**
      * 判断键key的配置项是否存在
@@ -152,8 +152,8 @@ public interface IConfigurationProvider {
      * @param key 属性键
      * @return 如果存在配置项那么返回true，否则返回false
      */
-    public boolean contains(String key);
+    boolean contains(String key);
 
-    public boolean contains(String category, String key);
+    boolean contains(String category, String key);
 
 }
