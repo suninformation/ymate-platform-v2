@@ -23,6 +23,7 @@
         <module>ymate-platform-plugin</module>
         <module>ymate-platform-validation</module>
         <module>ymate-platform-webmvc</module>
+        <module>ymate-platform-serv</module>
         <module>ymate-platform-cache</module>
     </modules>
 
