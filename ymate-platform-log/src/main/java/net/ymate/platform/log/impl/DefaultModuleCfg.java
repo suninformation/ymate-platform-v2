@@ -51,12 +51,12 @@ public class DefaultModuleCfg implements ILogModuleCfg {
         } catch (Exception ignored) {
         }
         //
-        this.configFile = new File(RuntimeUtils.replaceEnvVariable(StringUtils.defaultIfBlank(_moduleCfgs.get("config_file"), "${user.dir}/cfgs/log4j.xml")));
+        this.configFile = new File(RuntimeUtils.replaceEnvVariable(StringUtils.defaultIfBlank(_moduleCfgs.get("config_file"), "${root}/cfgs/log4j.xml")));
         if (!this.configFile.isAbsolute() || !this.configFile.exists() || this.configFile.isDirectory() || !this.configFile.canRead()) {
             throw new IllegalArgumentException("The parameter configFile is invalid or is not a file");
         }
         //
-        this.outputDir = new File(RuntimeUtils.replaceEnvVariable(StringUtils.defaultIfBlank(_moduleCfgs.get("output_dir"), "${user.dir}/logs/")));
+        this.outputDir = new File(RuntimeUtils.replaceEnvVariable(StringUtils.defaultIfBlank(_moduleCfgs.get("output_dir"), "${root}/logs/")));
         if (!this.outputDir.isAbsolute() || !this.outputDir.exists() || !this.outputDir.isDirectory() || !this.outputDir.canRead()) {
             throw new IllegalArgumentException("The parameter outputDir is invalid or is not a directory");
         }
