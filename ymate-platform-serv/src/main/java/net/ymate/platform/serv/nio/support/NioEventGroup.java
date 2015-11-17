@@ -38,20 +38,16 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 public class NioEventGroup<LISTENER extends IListener<INioSession>> extends AbstractEventGroup<INioCodec, LISTENER, INioSession> {
 
-    private SelectableChannel __channel;
-    private int __selectorCount = 1;
+    protected SelectableChannel __channel;
+    protected int __selectorCount = 1;
 
-    private NioEventProcessor[] __processors;
-    private AtomicInteger __handlerIndex = new AtomicInteger(0);
+    protected NioEventProcessor[] __processors;
+    protected AtomicInteger __handlerIndex = new AtomicInteger(0);
 
     public NioEventGroup(INioServerCfg cfg, LISTENER listener, INioCodec codec) throws IOException {
         super(cfg, listener, codec);
         //
-        ServerSocketChannel _channel = ServerSocketChannel.open();
-        _channel.configureBlocking(false);
-        _channel.socket().bind(new InetSocketAddress(cfg.getServerHost(), cfg.getPort()));
-        __channel = _channel;
-        //
+        __channel = __doChannelCreate(cfg);
         __selectorCount = cfg.getSelectorCount();
     }
 
@@ -59,6 +55,13 @@ public class NioEventGroup<LISTENER extends IListener<INioSession>> extends Abst
         super(cfg, listener, codec);
         //
         __selectorCount = cfg.getSelectorCount();
+    }
+
+    protected SelectableChannel __doChannelCreate(INioServerCfg cfg) throws IOException {
+        ServerSocketChannel _channel = ServerSocketChannel.open();
+        _channel.configureBlocking(false);
+        _channel.socket().bind(new InetSocketAddress(cfg.getServerHost(), cfg.getPort()));
+        return _channel;
     }
 
     @SuppressWarnings("unchecked")
@@ -77,10 +80,18 @@ public class NioEventGroup<LISTENER extends IListener<INioSession>> extends Abst
         //
         __processors = new NioEventProcessor[__selectorCount];
         for (int _idx = 0; _idx < __selectorCount; _idx++) {
-            __processors[_idx] = new NioEventProcessor<LISTENER>(this, StringUtils.capitalize(name()).concat(isServer() ? "Server" : "Client").concat("-NioEventProcessor-") + _idx);
+            __processors[_idx] = new NioEventProcessor<LISTENER>(this, __doBuildProcessorName() + _idx);
             __processors[_idx].start();
         }
         //
+        __doStart();
+    }
+
+    protected String __doBuildProcessorName() {
+        return StringUtils.capitalize(name()).concat(isServer() ? "Server" : "Client").concat("-NioEventProcessor-");
+    }
+
+    protected void __doStart() throws IOException {
         if (isServer()) {
             processor().registerEvent(__channel, SelectionKey.OP_ACCEPT, null);
         } else {

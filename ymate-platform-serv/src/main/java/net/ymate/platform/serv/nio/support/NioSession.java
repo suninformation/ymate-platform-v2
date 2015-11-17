@@ -24,8 +24,10 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import java.io.IOException;
-import java.net.InetAddress;
+import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
+import java.nio.channels.DatagramChannel;
+import java.nio.channels.SelectableChannel;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.SocketChannel;
 import java.util.Queue;
@@ -43,13 +45,13 @@ public class NioSession<LISTENER extends IListener<INioSession>> extends Abstrac
 
     private NioEventGroup<LISTENER> __eventGroup;
 
-    private SocketChannel __channel;
+    private SelectableChannel __channel;
 
     private SelectionKey __selectionKey;
 
     private final Queue<ByteBuffer> __writeBufferQueue;
 
-    private ByteBufferBuilder __buffer;
+    protected ByteBufferBuilder __buffer;
 
     private CountDownLatch __connLatch = new CountDownLatch(1);
 
@@ -59,7 +61,7 @@ public class NioSession<LISTENER extends IListener<INioSession>> extends Abstrac
         __writeBufferQueue = new LinkedBlockingQueue<ByteBuffer>();
     }
 
-    public NioSession(NioEventGroup<LISTENER> eventGroup, SocketChannel channel) {
+    public NioSession(NioEventGroup<LISTENER> eventGroup, SelectableChannel channel) {
         super();
         __eventGroup = eventGroup;
         __writeBufferQueue = new LinkedBlockingQueue<ByteBuffer>();
@@ -140,6 +142,21 @@ public class NioSession<LISTENER extends IListener<INioSession>> extends Abstrac
         });
     }
 
+    protected int __doChannelRead(ByteBuffer buffer) throws IOException {
+        return ((SocketChannel) __channel).read(buffer);
+    }
+
+    protected int __doChannelWrite(ByteBuffer buffer) throws IOException {
+        return ((SocketChannel) __channel).write(buffer);
+    }
+
+    private InetSocketAddress __doGetChannelInetAddress() {
+        if (__channel instanceof DatagramChannel) {
+            return (InetSocketAddress) ((DatagramChannel) __channel).socket().getRemoteSocketAddress();
+        }
+        return (InetSocketAddress) ((SocketChannel) __channel).socket().getRemoteSocketAddress();
+    }
+
     private void __doBufferReset(ByteBufferBuilder buffer) {
         if (buffer != null && buffer.remaining() > 0) {
             int _len = buffer.remaining();
@@ -157,7 +174,7 @@ public class NioSession<LISTENER extends IListener<INioSession>> extends Abstrac
         }
         ByteBuffer _data = ByteBuffer.allocate(__eventGroup.bufferSize());
         int _len = 0;
-        while ((_len = __channel.read(_data)) > 0) {
+        while ((_len = __doChannelRead(_data)) > 0) {
             _data.flip();
             __buffer.append(_data.array(), _data.position(), _data.remaining());
             _data.clear();
@@ -210,7 +227,7 @@ public class NioSession<LISTENER extends IListener<INioSession>> extends Abstrac
                     __selectionKey.interestOps(SelectionKey.OP_READ);
                     break;
                 } else {
-                    int _wLen = __channel.write(_buffer);
+                    int _wLen = __doChannelWrite(_buffer);
                     if (_wLen == 0 && _buffer.remaining() > 0) {
                         break;
                     }
@@ -226,10 +243,10 @@ public class NioSession<LISTENER extends IListener<INioSession>> extends Abstrac
 
     private String __doGetRemoteAddress() {
         if (status() != ISession.Status.CLOSED && __selectionKey != null) {
-            if (__channel != null && __channel.socket() != null) {
-                InetAddress _addr = __channel.socket().getInetAddress();
+            if (__channel != null) {
+                InetSocketAddress _addr = __doGetChannelInetAddress();
                 if (_addr != null) {
-                    return _addr.getHostAddress() + ":" + __channel.socket().getPort();
+                    return _addr.getHostName() + ":" + _addr.getPort();
                 }
             }
         }

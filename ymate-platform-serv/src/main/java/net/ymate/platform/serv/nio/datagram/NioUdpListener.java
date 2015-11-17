@@ -13,19 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.ymate.platform.serv.nio.server;
+package net.ymate.platform.serv.nio.datagram;
 
 import net.ymate.platform.serv.AbstractListener;
 import net.ymate.platform.serv.nio.INioSession;
 
 import java.io.IOException;
-import java.nio.channels.SelectionKey;
 
 /**
- * @author 刘镇 (suninformation@163.com) on 15/11/15 下午5:50
+ * @author 刘镇 (suninformation@163.com) on 15/11/17 下午4:44
  * @version 1.0
  */
-public class NioServerListener extends AbstractListener<INioSession> {
+public class NioUdpListener extends AbstractListener<INioSession> {
 
     public void onSessionRegisted(INioSession session) throws IOException {
     }
@@ -33,8 +32,7 @@ public class NioServerListener extends AbstractListener<INioSession> {
     public final void onSessionConnected(INioSession session) throws IOException {
     }
 
-    public void onSessionAccepted(INioSession session) throws IOException {
-        session.registerEvent(SelectionKey.OP_READ);
+    public final void onSessionAccepted(INioSession session) throws IOException {
     }
 
     public void onBeforeSessionClosed(INioSession session) throws IOException {

@@ -35,7 +35,6 @@ public class NioClientListener extends AbstractListener<INioSession> {
     }
 
     public final void onSessionAccepted(INioSession session) throws IOException {
-        throw new UnsupportedOperationException();
     }
 
     public void onBeforeSessionClosed(INioSession session) throws IOException {

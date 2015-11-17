@@ -50,6 +50,14 @@ public interface IClient<LISTENER extends IListener, CODEC extends ICodec> exten
     boolean isConnected();
 
     /**
+     * 向远程服务发送消息
+     *
+     * @param message 消息对象
+     * @throws IOException 可能产生的异常
+     */
+    void send(Object message) throws IOException;
+
+    /**
      * 关闭客户端服务
      *
      * @throws IOException 可能产生的异常
