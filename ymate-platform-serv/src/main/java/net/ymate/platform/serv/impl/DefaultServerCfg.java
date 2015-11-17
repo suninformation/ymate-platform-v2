@@ -44,7 +44,7 @@ public class DefaultServerCfg implements IServerCfg {
 
     private Map<String, String> __params;
 
-    public void init(IServModuleCfg moduleCfg, String serverName) {
+    public DefaultServerCfg(IServModuleCfg moduleCfg, String serverName) {
         __serverName = StringUtils.defaultIfBlank(serverName, "default");
         Map<String, String> _serverCfgs = moduleCfg.getClientCfg(__serverName);
         //

@@ -74,7 +74,7 @@ public class NioEventGroup<LISTENER extends IListener<INioSession>> extends Abst
         //
         __processors = new NioEventProcessor[__selectorCount];
         for (int _idx = 0; _idx < __selectorCount; _idx++) {
-            __processors[_idx] = new NioEventProcessor<LISTENER>(this, StringUtils.capitalize(name()) + "-NioEventProcessor-" + _idx);
+            __processors[_idx] = new NioEventProcessor<LISTENER>(this, StringUtils.capitalize(name()).concat(isServer() ? "Server" : "Client").concat("-NioEventProcessor-") + _idx);
             __processors[_idx].start();
         }
         //

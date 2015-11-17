@@ -17,13 +17,8 @@ package net.ymate.platform.serv.handle;
 
 import net.ymate.platform.core.beans.IBeanHandler;
 import net.ymate.platform.core.util.ClassUtils;
+import net.ymate.platform.serv.IListener;
 import net.ymate.platform.serv.IServ;
-import net.ymate.platform.serv.annotation.Server;
-import net.ymate.platform.serv.nio.INioCodec;
-import net.ymate.platform.serv.nio.INioServerCfg;
-import net.ymate.platform.serv.nio.server.NioServer;
-import net.ymate.platform.serv.nio.server.NioServerCfg;
-import net.ymate.platform.serv.nio.server.NioServerListener;
 
 /**
  * @author 刘镇 (suninformation@163.com) on 15/11/6 下午8:37
@@ -37,23 +32,10 @@ public class ServerHandler implements IBeanHandler {
         __owner = owner;
     }
 
+    @SuppressWarnings("unchecked")
     public Object handle(Class<?> targetClass) throws Exception {
-        if (ClassUtils.isSubclassOf(targetClass, NioServerListener.class)) {
-            Server _anno = targetClass.getAnnotation(Server.class);
-            NioServerListener _instance = ClassUtils.impl(targetClass, NioServerListener.class);
-            INioServerCfg _cfg = new NioServerCfg();
-            _cfg.init(__owner.getModuleCfg(), _cfg.getServerName());
-            INioCodec _codec = ClassUtils.impl(_anno.codec(), INioCodec.class);
-            _codec.init(_cfg.getCharset());
-            //
-            NioServer _server = null;
-//            if (_anno.udp()) {
-//                // TODO
-//            } else {
-            _server = new NioServer();
-//            }
-            _server.init(_cfg, _instance, _codec);
-            __owner.registerServer(_instance.getClass(), _server);
+        if (ClassUtils.isInterfaceOf(targetClass, IListener.class)) {
+            __owner.registerServer((Class<? extends IListener>) targetClass);
         }
         return null;
     }

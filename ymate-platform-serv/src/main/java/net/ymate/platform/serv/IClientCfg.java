@@ -25,8 +25,6 @@ import java.util.Map;
  */
 public interface IClientCfg {
 
-    void init(IServModuleCfg moduleCfg, String clientName);
-
     /**
      * @return 客户端名称
      */

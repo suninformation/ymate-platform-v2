@@ -29,9 +29,9 @@ public class NioServerCfg extends DefaultServerCfg implements INioServerCfg {
 
     private int __selectorCount;
 
-    @Override
-    public void init(IServModuleCfg moduleCfg, String serverName) {
-        super.init(moduleCfg, serverName);
+    public NioServerCfg(IServModuleCfg moduleCfg, String serverName) {
+        super(moduleCfg, serverName);
+        //
         __selectorCount = BlurObject.bind(StringUtils.defaultIfBlank(moduleCfg.getServerCfg(getServerName()).get("selector_count"), "1")).toIntValue();
     }
 

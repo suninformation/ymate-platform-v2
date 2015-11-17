@@ -21,21 +21,21 @@ import java.io.IOException;
 /**
  * 客户端接口
  *
- * @param <CONFIG> 客户端配置接口类型
- * @param <CODEC>  客户端编解码器接口类型
+ * @param <CODEC> 客户端编解码器接口类型
  * @author 刘镇 (suninformation@163.com) on 15/10/15 上午10:21
  * @version 1.0
  */
-public interface IClient<CONFIG extends IClientCfg, LISTENER extends IListener, CODEC extends ICodec> extends Closeable {
+public interface IClient<LISTENER extends IListener, CODEC extends ICodec> extends Closeable {
 
     /**
      * 初始化客户端服务
      *
-     * @param clientCfg 客户端服务配置
-     * @param listener  事件适配器
-     * @param codec     解码器
+     * @param moduleCfg  服务模块配置
+     * @param clientName 服务配置名称
+     * @param listener   事件适配器
+     * @param codec      解码器
      */
-    void init(CONFIG clientCfg, LISTENER listener, CODEC codec);
+    void init(IServModuleCfg moduleCfg, String clientName, LISTENER listener, CODEC codec);
 
     /**
      * 连接远程服务端
@@ -43,6 +43,11 @@ public interface IClient<CONFIG extends IClientCfg, LISTENER extends IListener, 
      * @throws IOException 可能产生的异常
      */
     void connect() throws IOException;
+
+    /**
+     * @return 是否已连接
+     */
+    boolean isConnected();
 
     /**
      * 关闭客户端服务

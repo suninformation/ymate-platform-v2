@@ -35,25 +35,40 @@ public interface IServ {
      */
     IServModuleCfg getModuleCfg();
 
-    <T> T getServer(Class<? extends IListener> clazz);
+    /**
+     * @param clazz 服务端监听器类型
+     * @param <T>   返回值类型声明
+     * @return 返回匹配clazz类型的服务端对象, 若不存在则返回null
+     */
+    <T extends IServer> T getServer(Class<? extends IListener> clazz);
 
-    <T> T getClient(Class<? extends IListener> clazz);
+    /**
+     * @param clazz 客户端监听器类型
+     * @param <T>   返回值类型声明
+     * @return 返回匹配clazz类型的客户端对象, 若不存在则返回null
+     */
+    <T extends IClient> T getClient(Class<? extends IListener> clazz);
 
     /**
      * 注册服务端
      *
      * @param listenerClass 服务监听接口类型
-     * @param server        服务端事件适配器
      * @throws Exception 可能产生的异常
      */
-    void registerServer(Class<? extends IListener> listenerClass, IServer server) throws Exception;
+    void registerServer(Class<? extends IListener> listenerClass) throws Exception;
 
     /**
      * 注册客户端
      *
      * @param listenerClass 服务监听接口类型
-     * @param client        客户端事件适配器
      * @throws Exception 可能产生的异常
      */
-    void registerClient(Class<? extends IListener> listenerClass, IClient client) throws Exception;
+    void registerClient(Class<? extends IListener> listenerClass) throws Exception;
+
+    /**
+     * 启动所有Server端和Client端服务
+     *
+     * @throws Exception
+     */
+    void startup() throws Exception;
 }

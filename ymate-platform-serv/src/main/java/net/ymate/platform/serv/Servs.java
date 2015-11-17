@@ -19,6 +19,7 @@ import net.ymate.platform.core.Version;
 import net.ymate.platform.core.YMP;
 import net.ymate.platform.core.module.IModule;
 import net.ymate.platform.core.module.annotation.Module;
+import net.ymate.platform.core.util.ClassUtils;
 import net.ymate.platform.serv.annotation.Client;
 import net.ymate.platform.serv.annotation.Server;
 import net.ymate.platform.serv.handle.ClientHandler;
@@ -121,23 +122,61 @@ public class Servs implements IModule, IServ {
     }
 
     @SuppressWarnings("unchecked")
-    public <T> T getServer(Class<? extends IListener> clazz) {
+    public <T extends IServer> T getServer(Class<? extends IListener> clazz) {
         return (T) __servers.get(clazz);
     }
 
     @SuppressWarnings("unchecked")
-    public <T> T getClient(Class<? extends IListener> clazz) {
+    public <T extends IClient> T getClient(Class<? extends IListener> clazz) {
         return (T) __clients.get(clazz);
     }
 
-    public void registerServer(Class<? extends IListener> listenerClass, IServer server) throws Exception {
-        server.start();
-        __servers.put(listenerClass, server);
+    @SuppressWarnings("unchecked")
+    public void registerServer(Class<? extends IListener> listenerClass) throws Exception {
+        if (!__servers.containsKey(listenerClass)) {
+            Server _annoServer = listenerClass.getAnnotation(Server.class);
+            if (_annoServer == null) {
+                throw new IllegalArgumentException("No Server annotation present on class");
+            }
+            IListener _listener = ClassUtils.impl(listenerClass, IListener.class);
+            //
+            ICodec _codec = ClassUtils.impl(_annoServer.codec(), ICodec.class);
+            //
+            IServer _server = ClassUtils.impl(_annoServer.implClass(), IServer.class);
+            _server.init(__moduleCfg, _annoServer.name(), _listener, _codec);
+            __servers.put(listenerClass, _server);
+        }
     }
 
-    public void registerClient(Class<? extends IListener> listenerClass, IClient client) throws Exception {
-        client.connect();
-        __clients.put(listenerClass, client);
+    @SuppressWarnings("unchecked")
+    public void registerClient(Class<? extends IListener> listenerClass) throws Exception {
+        if (!__clients.containsKey(listenerClass)) {
+            Client _annoClient = listenerClass.getAnnotation(Client.class);
+            if (_annoClient == null) {
+                throw new IllegalArgumentException("No Client annotation present on class");
+            }
+            IListener _listener = ClassUtils.impl(listenerClass, IListener.class);
+            //
+            ICodec _codec = ClassUtils.impl(_annoClient.codec(), ICodec.class);
+            //
+            IClient _client = ClassUtils.impl(_annoClient.implClass(), IClient.class);
+            _client.init(__moduleCfg, _annoClient.name(), _listener, _codec);
+            __clients.put(listenerClass, _client);
+        }
+    }
+
+    public void startup() throws Exception {
+        for (IServer _server : __servers.values()) {
+            if (!_server.isStarted()) {
+                _server.start();
+            }
+        }
+        //
+        for (IClient _client : __clients.values()) {
+            if (!_client.isConnected()) {
+                _client.connect();
+            }
+        }
     }
 
     public void destroy() throws Exception {
@@ -145,11 +184,18 @@ public class Servs implements IModule, IServ {
             __inited = false;
             //
             for (IClient _client : __clients.values()) {
-                _client.close();
+                if (_client.isConnected()) {
+                    _client.close();
+                }
             }
+            __clients = null;
+            //
             for (IServer _server : __servers.values()) {
-                _server.close();
+                if (_server.isStarted()) {
+                    _server.close();
+                }
             }
+            __servers = null;
             //
             __moduleCfg = null;
             __owner = null;

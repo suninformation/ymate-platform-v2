@@ -15,6 +15,7 @@
  */
 package net.ymate.platform.serv.nio.server;
 
+import net.ymate.platform.serv.IServModuleCfg;
 import net.ymate.platform.serv.IServer;
 import net.ymate.platform.serv.nio.INioCodec;
 import net.ymate.platform.serv.nio.INioServerCfg;
@@ -28,7 +29,7 @@ import java.io.IOException;
  * @author 刘镇 (suninformation@163.com) on 15/11/15 下午6:22
  * @version 1.0
  */
-public class NioServer implements IServer<INioServerCfg, NioServerListener, INioCodec> {
+public class NioServer implements IServer<NioServerListener, INioCodec> {
 
     private final Log _LOG = LogFactory.getLog(NioServer.class);
 
@@ -42,10 +43,12 @@ public class NioServer implements IServer<INioServerCfg, NioServerListener, INio
 
     protected boolean __isStarted;
 
-    public void init(INioServerCfg serverCfg, NioServerListener listener, INioCodec codec) {
-        __serverCfg = serverCfg;
+    public void init(IServModuleCfg moduleCfg, String serverName, NioServerListener listener, INioCodec codec) {
+        __serverCfg = new NioServerCfg(moduleCfg, serverName);
+        //
         __listener = listener;
         __codec = codec;
+        __codec.init(__serverCfg.getCharset());
     }
 
     public void start() throws IOException {
@@ -56,6 +59,10 @@ public class NioServer implements IServer<INioServerCfg, NioServerListener, INio
             //
             _LOG.info("Server [" + __eventGroup.name() + "] started at " + __serverCfg.getServerHost() + ":" + __serverCfg.getPort());
         }
+    }
+
+    public boolean isStarted() {
+        return __isStarted;
     }
 
     public void close() throws IOException {

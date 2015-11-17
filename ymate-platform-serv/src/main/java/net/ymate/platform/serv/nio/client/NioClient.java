@@ -17,6 +17,8 @@ package net.ymate.platform.serv.nio.client;
 
 import net.ymate.platform.serv.IClient;
 import net.ymate.platform.serv.IClientCfg;
+import net.ymate.platform.serv.IServModuleCfg;
+import net.ymate.platform.serv.impl.DefaultClientCfg;
 import net.ymate.platform.serv.nio.INioCodec;
 import net.ymate.platform.serv.nio.support.NioEventGroup;
 import org.apache.commons.logging.Log;
@@ -28,7 +30,7 @@ import java.io.IOException;
  * @author 刘镇 (suninformation@163.com) on 15/11/15 下午6:56
  * @version 1.0
  */
-public class NioClient implements IClient<IClientCfg, NioClientListener, INioCodec> {
+public class NioClient implements IClient<NioClientListener, INioCodec> {
 
     private final Log _LOG = LogFactory.getLog(NioClient.class);
 
@@ -40,10 +42,11 @@ public class NioClient implements IClient<IClientCfg, NioClientListener, INioCod
 
     protected INioCodec __codec;
 
-    public void init(IClientCfg cfg, NioClientListener listener, INioCodec codec) {
-        __clientCfg = cfg;
+    public void init(IServModuleCfg moduleCfg, String serverName, NioClientListener listener, INioCodec codec) {
+        __clientCfg = new DefaultClientCfg(moduleCfg, serverName);
         __listener = listener;
         __codec = codec;
+        __codec.init(__clientCfg.getCharset());
     }
 
     public void connect() throws IOException {
@@ -53,6 +56,9 @@ public class NioClient implements IClient<IClientCfg, NioClientListener, INioCod
             }
         }
         __eventGroup = new NioEventGroup<NioClientListener>(__clientCfg, __listener, __codec);
+        //
+        _LOG.info("Client [" + __eventGroup.name() + "] connecting to " + __clientCfg.getRemoteHost() + ":" + __clientCfg.getPort());
+        //
         __eventGroup.start();
     }
 

@@ -48,7 +48,7 @@ public class DefaultClientCfg implements IClientCfg {
 
     private Map<String, String> __params;
 
-    public void init(IServModuleCfg moduleCfg, String clientName) {
+    public DefaultClientCfg(IServModuleCfg moduleCfg, String clientName) {
         __clientName = StringUtils.defaultIfBlank(clientName, "default");
         //
         Map<String, String> _clientCfgs = moduleCfg.getClientCfg(__clientName);

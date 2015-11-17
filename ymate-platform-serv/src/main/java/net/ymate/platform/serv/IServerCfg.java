@@ -25,8 +25,6 @@ import java.util.Map;
  */
 public interface IServerCfg {
 
-    void init(IServModuleCfg moduleCfg, String serverName);
-
     /**
      * @return 服务名称
      */

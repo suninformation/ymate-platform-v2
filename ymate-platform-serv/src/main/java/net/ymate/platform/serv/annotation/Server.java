@@ -16,6 +16,9 @@
 package net.ymate.platform.serv.annotation;
 
 import net.ymate.platform.serv.ICodec;
+import net.ymate.platform.serv.IServer;
+import net.ymate.platform.serv.nio.codec.NioStringCodec;
+import net.ymate.platform.serv.nio.server.NioServer;
 
 import java.lang.annotation.*;
 
@@ -30,7 +33,7 @@ public @interface Server {
 
     String name() default "default";
 
-    boolean udp() default false;
+    Class<? extends ICodec> codec() default NioStringCodec.class;
 
-    Class<? extends ICodec> codec();
+    Class<? extends IServer> implClass() default NioServer.class;
 }

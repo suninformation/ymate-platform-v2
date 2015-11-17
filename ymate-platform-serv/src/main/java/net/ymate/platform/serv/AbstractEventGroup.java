@@ -46,7 +46,7 @@ public abstract class AbstractEventGroup<CODEC extends ICodec, LISTENER extends 
     private boolean __isServer;
 
     public AbstractEventGroup(IServerCfg cfg, LISTENER listener, CODEC codec) throws IOException {
-        __name = cfg.getServerName().concat("Server");
+        __name = cfg.getServerName();
         if (cfg.getBufferSize() > 0) {
             __bufferSize = cfg.getBufferSize();
         }
@@ -59,7 +59,7 @@ public abstract class AbstractEventGroup<CODEC extends ICodec, LISTENER extends 
     }
 
     public AbstractEventGroup(IClientCfg cfg, LISTENER listener, CODEC codec) throws IOException {
-        __name = cfg.getClientName().concat("Client");
+        __name = cfg.getClientName();
         if (cfg.getBufferSize() > 0) {
             __bufferSize = cfg.getBufferSize();
         }
