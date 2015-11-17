@@ -146,6 +146,8 @@ public class NioSession<LISTENER extends IListener<INioSession>> extends Abstrac
             byte[] _bytes = new byte[_len];
             buffer.get(_bytes);
             __buffer = ByteBufferBuilder.wrap(ByteBuffer.wrap(_bytes)).position(_len);
+        } else {
+            __buffer = null;
         }
     }
 
