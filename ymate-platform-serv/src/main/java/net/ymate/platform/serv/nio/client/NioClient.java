@@ -16,9 +16,8 @@
 package net.ymate.platform.serv.nio.client;
 
 import net.ymate.platform.serv.IClient;
-import net.ymate.platform.serv.IClientCfg;
 import net.ymate.platform.serv.IServModuleCfg;
-import net.ymate.platform.serv.impl.DefaultClientCfg;
+import net.ymate.platform.serv.nio.INioClientCfg;
 import net.ymate.platform.serv.nio.INioCodec;
 import net.ymate.platform.serv.nio.support.NioEventGroup;
 import org.apache.commons.logging.Log;
@@ -34,7 +33,7 @@ public class NioClient implements IClient<NioClientListener, INioCodec> {
 
     private final Log _LOG = LogFactory.getLog(NioClient.class);
 
-    protected IClientCfg __clientCfg;
+    protected INioClientCfg __clientCfg;
 
     protected NioEventGroup<NioClientListener> __eventGroup;
 
@@ -42,8 +41,8 @@ public class NioClient implements IClient<NioClientListener, INioCodec> {
 
     protected INioCodec __codec;
 
-    public void init(IServModuleCfg moduleCfg, String serverName, NioClientListener listener, INioCodec codec) {
-        __clientCfg = new DefaultClientCfg(moduleCfg, serverName);
+    public void init(IServModuleCfg moduleCfg, String clientName, NioClientListener listener, INioCodec codec) {
+        __clientCfg = new NioClientCfg(moduleCfg, clientName);
         __listener = listener;
         __codec = codec;
         __codec.init(__clientCfg.getCharset());

@@ -18,6 +18,7 @@ package net.ymate.platform.serv.nio.support;
 import net.ymate.platform.serv.AbstractEventGroup;
 import net.ymate.platform.serv.IClientCfg;
 import net.ymate.platform.serv.IListener;
+import net.ymate.platform.serv.nio.INioClientCfg;
 import net.ymate.platform.serv.nio.INioCodec;
 import net.ymate.platform.serv.nio.INioServerCfg;
 import net.ymate.platform.serv.nio.INioSession;
@@ -54,8 +55,10 @@ public class NioEventGroup<LISTENER extends IListener<INioSession>> extends Abst
         __selectorCount = cfg.getSelectorCount();
     }
 
-    public NioEventGroup(IClientCfg cfg, LISTENER listener, INioCodec codec) throws IOException {
+    public NioEventGroup(INioClientCfg cfg, LISTENER listener, INioCodec codec) throws IOException {
         super(cfg, listener, codec);
+        //
+        __selectorCount = cfg.getSelectorCount();
     }
 
     @SuppressWarnings("unchecked")

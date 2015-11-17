@@ -53,7 +53,7 @@ public class NioEventProcessor<LISTENER extends IListener<INioSession>> extends 
     public void run() {
         try {
             while (!isInterrupted()) {
-                __selector.select(1000);
+                __selector.select();
                 __doRegisterEvent();
                 Iterator<SelectionKey> _keyIterator = __selector.selectedKeys().iterator();
                 while (_keyIterator.hasNext()) {
