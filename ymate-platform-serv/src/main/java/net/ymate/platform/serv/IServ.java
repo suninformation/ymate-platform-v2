@@ -68,7 +68,7 @@ public interface IServ {
     /**
      * 启动所有Server端和Client端服务
      *
-     * @throws Exception
+     * @throws Exception 可能产生的异常
      */
     void startup() throws Exception;
 }

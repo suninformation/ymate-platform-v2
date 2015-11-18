@@ -24,7 +24,7 @@ import net.ymate.platform.serv.IServerCfg;
 public interface INioServerCfg extends IServerCfg {
 
     /**
-     * @return 选择器线程数量
+     * @return 选择器数量
      */
     int getSelectorCount();
 }
