@@ -53,8 +53,6 @@ public class NioEventGroup<LISTENER extends IListener<INioSession>> extends Abst
 
     public NioEventGroup(INioClientCfg cfg, LISTENER listener, INioCodec codec) throws IOException {
         super(cfg, listener, codec);
-        //
-        __selectorCount = cfg.getSelectorCount();
     }
 
     protected SelectableChannel __doChannelCreate(INioServerCfg cfg) throws IOException {
@@ -78,20 +76,23 @@ public class NioEventGroup<LISTENER extends IListener<INioSession>> extends Abst
     public synchronized void start() throws IOException {
         super.start();
         //
-        __processors = new NioEventProcessor[__selectorCount];
-        for (int _idx = 0; _idx < __selectorCount; _idx++) {
-            __processors[_idx] = new NioEventProcessor<LISTENER>(this, __doBuildProcessorName() + _idx);
-            __processors[_idx].start();
-        }
-        //
-        __doStart();
+        __doInitProcessors();
+        __doRegisterEvent();
     }
 
     protected String __doBuildProcessorName() {
         return StringUtils.capitalize(name()).concat(isServer() ? "Server" : "Client").concat("-NioEventProcessor-");
     }
 
-    protected void __doStart() throws IOException {
+    protected void __doInitProcessors() throws IOException {
+        __processors = new NioEventProcessor[__selectorCount];
+        for (int _idx = 0; _idx < __selectorCount; _idx++) {
+            __processors[_idx] = new NioEventProcessor<LISTENER>(this, __doBuildProcessorName() + _idx);
+            __processors[_idx].start();
+        }
+    }
+
+    protected void __doRegisterEvent() throws IOException {
         if (isServer()) {
             processor().registerEvent(__channel, SelectionKey.OP_ACCEPT, null);
         } else {

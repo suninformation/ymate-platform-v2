@@ -22,9 +22,4 @@ import net.ymate.platform.serv.IClientCfg;
  * @version 1.0
  */
 public interface INioClientCfg extends IClientCfg {
-
-    /**
-     * @return 选择器线程数量
-     */
-    int getSelectorCount();
 }

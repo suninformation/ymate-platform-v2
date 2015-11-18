@@ -15,11 +15,9 @@
  */
 package net.ymate.platform.serv.nio.client;
 
-import net.ymate.platform.core.lang.BlurObject;
 import net.ymate.platform.serv.IServModuleCfg;
 import net.ymate.platform.serv.impl.DefaultClientCfg;
 import net.ymate.platform.serv.nio.INioClientCfg;
-import org.apache.commons.lang.StringUtils;
 
 /**
  * @author 刘镇 (suninformation@163.com) on 15/11/17 下午5:20
@@ -31,11 +29,5 @@ public class NioClientCfg extends DefaultClientCfg implements INioClientCfg {
 
     public NioClientCfg(IServModuleCfg moduleCfg, String clientName) {
         super(moduleCfg, clientName);
-        //
-        __selectorCount = BlurObject.bind(StringUtils.defaultIfBlank(moduleCfg.getClientCfg(clientName).get("selector_count"), "1")).toIntValue();
-    }
-
-    public int getSelectorCount() {
-        return __selectorCount;
     }
 }

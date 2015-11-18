@@ -19,14 +19,24 @@ import net.ymate.platform.serv.AbstractListener;
 import net.ymate.platform.serv.nio.INioSession;
 
 import java.io.IOException;
+import java.net.InetSocketAddress;
+import java.net.SocketAddress;
 
 /**
  * @author 刘镇 (suninformation@163.com) on 15/11/17 下午4:44
  * @version 1.0
  */
-public class NioUdpListener extends AbstractListener<INioSession> {
+public abstract class NioUdpListener extends AbstractListener<INioSession> {
 
-    public void onSessionRegisted(INioSession session) throws IOException {
+    public abstract Object onReady() throws IOException;
+
+    public abstract Object onReceived(InetSocketAddress sourceAddr, Object message) throws IOException;
+
+    public final void onSessionRegisted(INioSession session) throws IOException {
+        Object _result = onReady();
+        if (_result != null) {
+            session.send(_result);
+        }
     }
 
     public final void onSessionConnected(INioSession session) throws IOException {
@@ -35,12 +45,17 @@ public class NioUdpListener extends AbstractListener<INioSession> {
     public final void onSessionAccepted(INioSession session) throws IOException {
     }
 
-    public void onBeforeSessionClosed(INioSession session) throws IOException {
+    public final void onBeforeSessionClosed(INioSession session) throws IOException {
     }
 
-    public void onAfterSessionClosed(INioSession session) throws IOException {
+    public final void onAfterSessionClosed(INioSession session) throws IOException {
     }
 
-    public void onMessageReceived(Object message, INioSession session) throws IOException {
+    public final void onMessageReceived(Object message, INioSession session) throws IOException {
+        InetSocketAddress _sourceAddr = session.attr(SocketAddress.class.getName());
+        Object _result = onReceived(_sourceAddr, message);
+        if (_result != null) {
+            session.send(_result);
+        }
     }
 }

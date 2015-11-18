@@ -15,12 +15,14 @@
  */
 package net.ymate.platform.serv.nio.datagram;
 
+import net.ymate.platform.core.util.RuntimeUtils;
 import net.ymate.platform.serv.IServModuleCfg;
 import net.ymate.platform.serv.IServer;
 import net.ymate.platform.serv.nio.INioCodec;
 import net.ymate.platform.serv.nio.INioServerCfg;
 import net.ymate.platform.serv.nio.server.NioServerCfg;
 import net.ymate.platform.serv.nio.support.NioEventGroup;
+import net.ymate.platform.serv.nio.support.NioEventProcessor;
 import net.ymate.platform.serv.nio.support.NioSession;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
@@ -78,28 +80,44 @@ public class NioUdpServer implements IServer<NioUdpListener, INioCodec> {
                 }
 
                 @Override
-                protected void __doStart() throws IOException {
-                    processor().registerEvent(__channel, SelectionKey.OP_READ, new NioSession<NioUdpListener>(this, __channel) {
-                        @Override
-                        protected int __doChannelRead(ByteBuffer buffer) throws IOException {
-                            SocketAddress _address = ((DatagramChannel) __channel).receive(buffer);
-                            if (_address != null) {
-                                attr(SocketAddress.class.getName(), _address);
-                                return __buffer.remaining();
+                protected void __doInitProcessors() throws IOException {
+                    __processors = new NioEventProcessor[__selectorCount];
+                    for (int _idx = 0; _idx < __selectorCount; _idx++) {
+                        __processors[_idx] = new NioEventProcessor<NioUdpListener>(this, __doBuildProcessorName() + _idx) {
+                            @Override
+                            protected void __doExceptionEvent(SelectionKey key, Throwable e) {
+                                _LOG.error(e.getMessage(), RuntimeUtils.unwrapThrow(e));
                             }
-                            return 0;
-                        }
+                        };
+                        __processors[_idx].start();
+                    }
+                }
 
-                        @Override
-                        protected int __doChannelWrite(ByteBuffer buffer) throws IOException {
-                            SocketAddress _address = attr(SocketAddress.class.getName());
-                            if (_address != null) {
-                                return ((DatagramChannel) __channel).send(buffer, _address);
+                @Override
+                protected void __doRegisterEvent() throws IOException {
+                    for (NioEventProcessor _processor : __processors) {
+                        _processor.registerEvent(__channel, SelectionKey.OP_READ, new NioSession<NioUdpListener>(this, __channel) {
+                            @Override
+                            protected int __doChannelRead(ByteBuffer buffer) throws IOException {
+                                SocketAddress _address = ((DatagramChannel) __channel).receive(buffer);
+                                if (_address != null) {
+                                    attr(SocketAddress.class.getName(), _address);
+                                    return __buffer.remaining();
+                                }
+                                return 0;
                             }
-                            buffer.reset();
-                            return 0;
-                        }
-                    });
+
+                            @Override
+                            protected int __doChannelWrite(ByteBuffer buffer) throws IOException {
+                                SocketAddress _address = attr(SocketAddress.class.getName());
+                                if (_address != null) {
+                                    return ((DatagramChannel) __channel).send(buffer, _address);
+                                }
+                                buffer.reset();
+                                return 0;
+                            }
+                        });
+                    }
                 }
             };
             __eventGroup.start();

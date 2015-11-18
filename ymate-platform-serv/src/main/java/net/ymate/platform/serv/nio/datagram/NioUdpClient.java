@@ -24,6 +24,7 @@ import net.ymate.platform.serv.nio.INioCodec;
 import net.ymate.platform.serv.nio.INioSession;
 import net.ymate.platform.serv.nio.client.NioClientCfg;
 import net.ymate.platform.serv.nio.support.NioEventGroup;
+import net.ymate.platform.serv.nio.support.NioEventProcessor;
 import net.ymate.platform.serv.nio.support.NioSession;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
@@ -72,7 +73,7 @@ public class NioUdpClient implements IClient<NioUdpListener, INioCodec> {
                     _channel.configureBlocking(false);
                     _channel.socket().connect(new InetSocketAddress(cfg.getRemoteHost(), cfg.getPort()));
                     __channel = _channel;
-                    return new NioSession<NioUdpListener>(this, __channel) {
+                    INioSession _session = new NioSession<NioUdpListener>(this, __channel) {
                         @Override
                         protected int __doChannelRead(ByteBuffer buffer) throws IOException {
                             SocketAddress _address = ((DatagramChannel) __channel).receive(buffer);
@@ -92,6 +93,8 @@ public class NioUdpClient implements IClient<NioUdpListener, INioCodec> {
                             return 0;
                         }
                     };
+                    _session.attr(SocketAddress.class.getName(), _channel.socket().getRemoteSocketAddress());
+                    return _session;
                 }
 
                 @Override
@@ -102,11 +105,24 @@ public class NioUdpClient implements IClient<NioUdpListener, INioCodec> {
 
                 @Override
                 protected String __doBuildProcessorName() {
-                    return StringUtils.capitalize(name()).concat("UdpClient-NioEventProcessor-");
+                    return StringUtils.capitalize(name()).concat("UdpClient-NioEventProcessor");
                 }
 
                 @Override
-                protected void __doStart() throws IOException {
+                protected void __doInitProcessors() throws IOException {
+                    __processors = new NioEventProcessor[]{
+                            new NioEventProcessor<NioUdpListener>(this, __doBuildProcessorName()) {
+                                @Override
+                                protected void __doExceptionEvent(SelectionKey key, Throwable e) {
+                                    _LOG.error(e.getMessage(), RuntimeUtils.unwrapThrow(e));
+                                }
+                            }
+                    };
+                    __processors[0].start();
+                }
+
+                @Override
+                protected void __doRegisterEvent() throws IOException {
                     processor().registerEvent(__channel, SelectionKey.OP_READ, session());
                 }
             };
@@ -119,9 +135,6 @@ public class NioUdpClient implements IClient<NioUdpListener, INioCodec> {
     }
 
     public void send(Object message) throws IOException {
-        if (!isConnected()) {
-            throw RuntimeUtils.makeRuntimeThrow("Client was not connected");
-        }
         __eventGroup.session().send(message);
     }
 

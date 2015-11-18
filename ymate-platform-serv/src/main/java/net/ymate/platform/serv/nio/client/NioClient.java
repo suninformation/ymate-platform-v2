@@ -15,7 +15,6 @@
  */
 package net.ymate.platform.serv.nio.client;
 
-import net.ymate.platform.core.util.RuntimeUtils;
 import net.ymate.platform.serv.IClient;
 import net.ymate.platform.serv.IServModuleCfg;
 import net.ymate.platform.serv.nio.INioClientCfg;
@@ -67,9 +66,6 @@ public class NioClient implements IClient<NioClientListener, INioCodec> {
     }
 
     public void send(Object message) throws IOException {
-        if (!isConnected()) {
-            throw RuntimeUtils.makeRuntimeThrow("Client was not connected");
-        }
         __eventGroup.session().send(message);
     }
 

@@ -15,6 +15,7 @@
  */
 package net.ymate.platform.serv.nio.support;
 
+import net.ymate.platform.core.util.DateTimeUtils;
 import net.ymate.platform.core.util.RuntimeUtils;
 import net.ymate.platform.serv.IListener;
 import net.ymate.platform.serv.ISession;
@@ -53,7 +54,7 @@ public class NioEventProcessor<LISTENER extends IListener<INioSession>> extends 
     public void run() {
         try {
             while (!isInterrupted()) {
-                __selector.select();
+                __selector.select(5 * DateTimeUtils.SECOND);
                 __doRegisterEvent();
                 Iterator<SelectionKey> _keyIterator = __selector.selectedKeys().iterator();
                 while (_keyIterator.hasNext()) {
@@ -152,7 +153,7 @@ public class NioEventProcessor<LISTENER extends IListener<INioSession>> extends 
         }
     }
 
-    private void __doExceptionEvent(final SelectionKey key, final Throwable e) {
+    protected void __doExceptionEvent(final SelectionKey key, final Throwable e) {
         final INioSession _session = (INioSession) key.attachment();
         if (_session == null) {
             try {
