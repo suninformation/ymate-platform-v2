@@ -62,7 +62,7 @@ public class NioUdpServer implements IServer<NioUdpListener, INioCodec> {
         __codec.init(__serverCfg.getCharset());
     }
 
-    public void start() throws IOException {
+    public synchronized void start() throws IOException {
         if (!__isStarted) {
             __isStarted = true;
             __eventGroup = new NioEventGroup<NioUdpListener>(__serverCfg, __listener, __codec) {
@@ -130,7 +130,16 @@ public class NioUdpServer implements IServer<NioUdpListener, INioCodec> {
         return __isStarted;
     }
 
-    public void close() throws IOException {
+    public INioServerCfg serverCfg() {
+        return __serverCfg;
+    }
+
+    @SuppressWarnings("unchecked")
+    public <T extends NioUdpListener> T listener() {
+        return (T) __listener;
+    }
+
+    public synchronized void close() throws IOException {
         if (__isStarted) {
             __isStarted = false;
             __eventGroup.close();

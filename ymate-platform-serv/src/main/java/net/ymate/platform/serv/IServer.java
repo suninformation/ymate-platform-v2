@@ -50,6 +50,17 @@ public interface IServer<LISTENER extends IListener, CODEC extends ICodec> exten
     boolean isStarted();
 
     /**
+     * @return 服务端配置对象
+     */
+    IServerCfg serverCfg();
+
+    /**
+     * @param <T> 监听器类型
+     * @return 返回监听器接口实现类对象
+     */
+    <T extends LISTENER> T listener();
+
+    /**
      * 关闭服务端
      *
      * @throws IOException 可能产生的异常

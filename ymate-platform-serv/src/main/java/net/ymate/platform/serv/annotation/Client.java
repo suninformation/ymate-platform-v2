@@ -17,6 +17,8 @@ package net.ymate.platform.serv.annotation;
 
 import net.ymate.platform.serv.IClient;
 import net.ymate.platform.serv.ICodec;
+import net.ymate.platform.serv.IHeartbeatService;
+import net.ymate.platform.serv.IReconnectService;
 import net.ymate.platform.serv.nio.client.NioClient;
 import net.ymate.platform.serv.nio.codec.NioStringCodec;
 
@@ -36,4 +38,14 @@ public @interface Client {
     Class<? extends ICodec> codec() default NioStringCodec.class;
 
     Class<? extends IClient> implClass() default NioClient.class;
+
+    /**
+     * @return 短线重连服务
+     */
+    Class<? extends IReconnectService> reconnectClass() default IReconnectService.NONE.class;
+
+    /**
+     * @return 链路维护(心跳)服务
+     */
+    Class<? extends IHeartbeatService> hearbeatClass() default IHeartbeatService.NONE.class;
 }

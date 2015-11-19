@@ -15,8 +15,7 @@
  */
 package net.ymate.platform.serv.nio.client;
 
-import net.ymate.platform.serv.IClient;
-import net.ymate.platform.serv.IServModuleCfg;
+import net.ymate.platform.serv.*;
 import net.ymate.platform.serv.nio.INioClientCfg;
 import net.ymate.platform.serv.nio.INioCodec;
 import net.ymate.platform.serv.nio.support.NioEventGroup;
@@ -29,7 +28,7 @@ import java.io.IOException;
  * @author 刘镇 (suninformation@163.com) on 15/11/15 下午6:56
  * @version 1.0
  */
-public class NioClient implements IClient<NioClientListener, INioCodec> {
+public class NioClient extends AbstractService implements IClient<NioClientListener, INioCodec> {
 
     private final Log _LOG = LogFactory.getLog(NioClient.class);
 
@@ -41,14 +40,22 @@ public class NioClient implements IClient<NioClientListener, INioCodec> {
 
     protected INioCodec __codec;
 
-    public void init(IServModuleCfg moduleCfg, String clientName, NioClientListener listener, INioCodec codec) {
+    public void init(IServModuleCfg moduleCfg,
+                     String clientName,
+                     NioClientListener listener,
+                     INioCodec codec,
+                     IReconnectService reconnectService,
+                     IHeartbeatService heartbeatService) {
         __clientCfg = new NioClientCfg(moduleCfg, clientName);
         __listener = listener;
         __codec = codec;
         __codec.init(__clientCfg.getCharset());
+        //
+        __doSetReconnectService(reconnectService);
+        __doSetHeartbeatService(heartbeatService);
     }
 
-    public void connect() throws IOException {
+    public synchronized void connect() throws IOException {
         if (__eventGroup != null && __eventGroup.session() != null) {
             if (__eventGroup.session().isConnected() || __eventGroup.session().isNew()) {
                 return;
@@ -59,17 +66,43 @@ public class NioClient implements IClient<NioClientListener, INioCodec> {
         _LOG.info("Client [" + __eventGroup.name() + "] connecting to " + __clientCfg.getRemoteHost() + ":" + __clientCfg.getPort());
         //
         __eventGroup.start();
+        //
+        __doStartHeartbeatService();
+        __doStartReconnectService();
+    }
+
+    public synchronized void reconnect() throws IOException {
+        if (!isConnected() && __eventGroup != null) {
+            __eventGroup.close();
+            __eventGroup = new NioEventGroup<NioClientListener>(__clientCfg, __listener, __codec);
+            //
+            _LOG.info("Client [" + __eventGroup.name() + "] reconnecting to " + __clientCfg.getRemoteHost() + ":" + __clientCfg.getPort());
+            //
+            __eventGroup.start();
+        }
     }
 
     public boolean isConnected() {
         return __eventGroup != null && __eventGroup.session() != null && __eventGroup.session().isConnected();
     }
 
+    public INioClientCfg clientCfg() {
+        return __clientCfg;
+    }
+
+    @SuppressWarnings("unchecked")
+    public <T extends NioClientListener> T listener() {
+        return (T) __listener;
+    }
+
     public void send(Object message) throws IOException {
         __eventGroup.session().send(message);
     }
 
-    public void close() throws IOException {
+    public synchronized void close() throws IOException {
+        __doStopHeartbeatService();
+        __doStopReconnectService();
+        //
         if (__eventGroup != null) {
             __eventGroup.close();
         }

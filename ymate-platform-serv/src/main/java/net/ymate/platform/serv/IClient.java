@@ -30,12 +30,19 @@ public interface IClient<LISTENER extends IListener, CODEC extends ICodec> exten
     /**
      * 初始化客户端服务
      *
-     * @param moduleCfg  服务模块配置
-     * @param clientName 服务配置名称
-     * @param listener   事件适配器
-     * @param codec      解码器
+     * @param moduleCfg        服务模块配置
+     * @param clientName       服务配置名称
+     * @param listener         事件适配器
+     * @param codec            解码器
+     * @param reconnectService 断线重连服务
+     * @param heartbeatService 链路维护(心跳)服务
      */
-    void init(IServModuleCfg moduleCfg, String clientName, LISTENER listener, CODEC codec);
+    void init(IServModuleCfg moduleCfg,
+              String clientName,
+              LISTENER listener,
+              CODEC codec,
+              IReconnectService reconnectService,
+              IHeartbeatService heartbeatService);
 
     /**
      * 连接远程服务端
@@ -45,9 +52,27 @@ public interface IClient<LISTENER extends IListener, CODEC extends ICodec> exten
     void connect() throws IOException;
 
     /**
+     * 重连远程服务端
+     *
+     * @throws IOException 可能产生的异常
+     */
+    void reconnect() throws IOException;
+
+    /**
      * @return 是否已连接
      */
     boolean isConnected();
+
+    /**
+     * @return 客户端配置对象
+     */
+    IClientCfg clientCfg();
+
+    /**
+     * @param <T> 监听器类型
+     * @return 返回监听器接口实现类对象
+     */
+    <T extends LISTENER> T listener();
 
     /**
      * 向远程服务发送消息

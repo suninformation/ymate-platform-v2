@@ -160,7 +160,19 @@ public class Servs implements IModule, IServ {
             ICodec _codec = ClassUtils.impl(_annoClient.codec(), ICodec.class);
             //
             IClient _client = ClassUtils.impl(_annoClient.implClass(), IClient.class);
-            _client.init(__moduleCfg, _annoClient.name(), _listener, _codec);
+            //
+            IReconnectService _reconnectService = null;
+            if (!IReconnectService.NONE.class.equals(_annoClient.reconnectClass())) {
+                _reconnectService = ClassUtils.impl(_annoClient.reconnectClass(), IReconnectService.class);
+                _reconnectService.init(_client);
+            }
+            IHeartbeatService _heartbeatService = null;
+            if (!IHeartbeatService.NONE.class.equals(_annoClient.hearbeatClass())) {
+                _heartbeatService = ClassUtils.impl(_annoClient.hearbeatClass(), IHeartbeatService.class);
+                _heartbeatService.init(_client);
+            }
+            //
+            _client.init(__moduleCfg, _annoClient.name(), _listener, _codec, _reconnectService, _heartbeatService);
             __clients.put(listenerClass, _client);
         }
     }
