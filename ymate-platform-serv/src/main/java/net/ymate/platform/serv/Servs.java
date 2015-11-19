@@ -184,9 +184,7 @@ public class Servs implements IModule, IServ {
             __inited = false;
             //
             for (IClient _client : __clients.values()) {
-                if (_client.isConnected()) {
-                    _client.close();
-                }
+                _client.close();
             }
             __clients = null;
             //

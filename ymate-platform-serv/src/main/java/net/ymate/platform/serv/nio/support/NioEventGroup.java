@@ -105,12 +105,13 @@ public class NioEventGroup<LISTENER extends IListener<INioSession>> extends Abst
 
     @Override
     public synchronized void stop() throws IOException {
-        super.stop();
         for (NioEventProcessor _processor : __processors) {
             _processor.interrupt();
         }
         __channel.close();
         __channel = null;
+        //
+        super.stop();
     }
 
     public NioEventProcessor processor(SelectionKey key) {

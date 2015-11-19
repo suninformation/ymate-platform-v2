@@ -41,11 +41,14 @@ public class NioEventProcessor<LISTENER extends IListener<INioSession>> extends 
 
     protected Selector __selector;
 
+    protected boolean __flag;
+
     private final Queue<Object[]> __eventQueues = new LinkedBlockingQueue<Object[]>();
     private final Queue<INioSession> __closeQueues = new LinkedBlockingQueue<INioSession>();
 
     public NioEventProcessor(NioEventGroup<LISTENER> eventGroup, String name) throws IOException {
         super(name);
+        __flag = true;
         __eventGroup = eventGroup;
         __selector = Selector.open();
     }
@@ -53,7 +56,7 @@ public class NioEventProcessor<LISTENER extends IListener<INioSession>> extends 
     @Override
     public void run() {
         try {
-            while (!isInterrupted()) {
+            while (__flag) {
                 __selector.select(5 * DateTimeUtils.SECOND);
                 __doRegisterEvent();
                 Iterator<SelectionKey> _keyIterator = __selector.selectedKeys().iterator();
@@ -83,18 +86,24 @@ public class NioEventProcessor<LISTENER extends IListener<INioSession>> extends 
                 __doClosedEvent();
             }
         } catch (IOException e) {
-            _LOG.error(e.getMessage(), RuntimeUtils.unwrapThrow(e));
+            if (__flag) {
+                _LOG.error(e.getMessage(), RuntimeUtils.unwrapThrow(e));
+            } else {
+                _LOG.debug(e.getMessage(), RuntimeUtils.unwrapThrow(e));
+            }
         }
     }
 
     @Override
     public void interrupt() {
-        super.interrupt();
         try {
+            __flag = false;
+            join();
             __selector.close();
-        } catch (IOException e) {
+        } catch (Exception e) {
             _LOG.error(e.getMessage(), RuntimeUtils.unwrapThrow(e));
         }
+        super.interrupt();
     }
 
     public void registerEvent(SelectableChannel channel, int ops, INioSession session) throws IOException {
