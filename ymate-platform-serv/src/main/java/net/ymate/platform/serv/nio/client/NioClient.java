@@ -72,7 +72,7 @@ public class NioClient extends AbstractService implements IClient<NioClientListe
     }
 
     public synchronized void reconnect() throws IOException {
-        if (!isConnected() && __eventGroup != null) {
+        if (!isConnected()) {
             __eventGroup.close();
             __eventGroup = new NioEventGroup<NioClientListener>(__clientCfg, __listener, __codec);
             //

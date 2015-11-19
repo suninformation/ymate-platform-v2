@@ -43,7 +43,6 @@ public class DefaultHeartbeatService extends Thread implements IHeartbeatService
     private String __heartbeatMessage;
 
     public void init(IClient client) {
-        setName("HeartbeatService-" + this.getClass().getSimpleName());
         __client = client;
         __inited = true;
     }
@@ -55,6 +54,7 @@ public class DefaultHeartbeatService extends Thread implements IHeartbeatService
     @Override
     public synchronized void start() {
         __flag = true;
+        setName("HeartbeatService-" + __client.listener().getClass().getSimpleName());
         if (__client.clientCfg().getHeartbeatInterval() > 0) {
             __heartbeatInterval = __client.clientCfg().getHeartbeatInterval();
         }

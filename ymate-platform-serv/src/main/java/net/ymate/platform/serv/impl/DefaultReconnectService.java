@@ -43,7 +43,6 @@ public class DefaultReconnectService extends Thread implements IReconnectService
     private long __timeout = 5;
 
     public void init(IClient client) {
-        setName("ReconnectService-" + this.getClass().getSimpleName());
         __client = client;
         __inited = true;
     }
@@ -59,6 +58,7 @@ public class DefaultReconnectService extends Thread implements IReconnectService
     @Override
     public synchronized void start() {
         __flag = true;
+        setName("ReconnectService-" + __client.listener().getClass().getSimpleName());
         if (__client.clientCfg().getConnectionTimeout() > 0) {
             __timeout = __client.clientCfg().getConnectionTimeout();
         }

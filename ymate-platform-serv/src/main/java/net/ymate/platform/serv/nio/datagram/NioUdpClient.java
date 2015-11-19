@@ -51,8 +51,6 @@ public class NioUdpClient extends AbstractService implements IClient<NioUdpListe
 
     protected INioCodec __codec;
 
-    protected boolean __isStarted;
-
     public void init(IServModuleCfg moduleCfg,
                      String clientName,
                      NioUdpListener listener,
@@ -65,31 +63,27 @@ public class NioUdpClient extends AbstractService implements IClient<NioUdpListe
         __codec = codec;
         __codec.init(__clientCfg.getCharset());
         //
-        __doSetReconnectService(reconnectService);
         __doSetHeartbeatService(heartbeatService);
     }
 
     public synchronized void connect() throws IOException {
-        if (!__isStarted) {
-            __isStarted = true;
-            __eventGroup = new NioUdpEventGroup(__clientCfg, __listener, __codec);
-            __eventGroup.start();
+        if (__eventGroup != null && __eventGroup.session() != null) {
+            if (__eventGroup.session().isConnected() || __eventGroup.session().isNew()) {
+                return;
+            }
         }
+        __eventGroup = new NioUdpEventGroup(__clientCfg, __listener, __codec);
+        __eventGroup.start();
+        //
+        __doStartHeartbeatService();
     }
 
     public synchronized void reconnect() throws IOException {
-        if (!isConnected() && __eventGroup != null) {
-            __eventGroup.close();
-            __eventGroup = new NioUdpEventGroup(__clientCfg, __listener, __codec);
-            //
-            _LOG.info("UdpClient [" + __eventGroup.name() + "] reconnecting to " + __clientCfg.getRemoteHost() + ":" + __clientCfg.getPort());
-            //
-            __eventGroup.start();
-        }
+        // Don't need to reconnect
     }
 
     public boolean isConnected() {
-        return __isStarted;
+        return __eventGroup != null && __eventGroup.session() != null && __eventGroup.session().isConnected();
     }
 
     public INioClientCfg clientCfg() {
@@ -106,10 +100,9 @@ public class NioUdpClient extends AbstractService implements IClient<NioUdpListe
     }
 
     public synchronized void close() throws IOException {
-        if (__isStarted) {
-            __isStarted = false;
-            __eventGroup.close();
-        }
+        __doStopHeartbeatService();
+        //
+        __eventGroup.close();
     }
 
     class NioUdpEventGroup extends NioEventGroup<NioUdpListener> {
