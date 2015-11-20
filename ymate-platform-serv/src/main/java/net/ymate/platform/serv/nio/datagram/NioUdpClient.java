@@ -157,8 +157,17 @@ public class NioUdpClient extends AbstractService implements IClient<NioUdpListe
             __processors = new NioEventProcessor[]{
                     new NioEventProcessor<NioUdpListener>(this, __doBuildProcessorName()) {
                         @Override
-                        protected void __doExceptionEvent(SelectionKey key, Throwable e) {
-                            _LOG.error(e.getMessage(), RuntimeUtils.unwrapThrow(e));
+                        protected void __doExceptionEvent(SelectionKey key, final Throwable e) {
+                            final INioSession _session = (INioSession) key.attachment();
+                            __eventGroup.executorService().submit(new Runnable() {
+                                public void run() {
+                                    try {
+                                        __eventGroup.listener().onExceptionCaught(e, _session);
+                                    } catch (Throwable ex) {
+                                        _LOG.error(e.getMessage(), RuntimeUtils.unwrapThrow(ex));
+                                    }
+                                }
+                            });
                         }
                     }
             };

@@ -171,9 +171,9 @@ public class NioEventProcessor<LISTENER extends IListener<INioSession>> extends 
             } catch (Throwable ex) {
                 _LOG.error(e.getMessage(), RuntimeUtils.unwrapThrow(ex));
             }
-            return;
+        } else {
+            _session.status(ISession.Status.ERROR);
         }
-        _session.status(ISession.Status.ERROR);
         __eventGroup.executorService().submit(new Runnable() {
             public void run() {
                 try {
@@ -183,10 +183,12 @@ public class NioEventProcessor<LISTENER extends IListener<INioSession>> extends 
                 }
             }
         });
-        try {
-            _session.close();
-        } catch (Throwable ex) {
-            _LOG.error(e.getMessage(), RuntimeUtils.unwrapThrow(ex));
+        if (_session != null) {
+            try {
+                _session.close();
+            } catch (Throwable ex) {
+                _LOG.error(e.getMessage(), RuntimeUtils.unwrapThrow(ex));
+            }
         }
     }
 

@@ -28,12 +28,35 @@ import java.net.SocketAddress;
  */
 public abstract class NioUdpListener extends AbstractListener<INioSession> {
 
-    public abstract Object onReady() throws IOException;
+    /**
+     * 客户端与服务端连接已建立并准备就绪
+     *
+     * @return 预发送的消息对象, 返回null表示不发送消息
+     * @throws IOException 可能产生的异常
+     */
+    public abstract Object onSessionReady() throws IOException;
 
-    public abstract Object onReceived(InetSocketAddress sourceAddr, Object message) throws IOException;
+    /**
+     * 消息到达事件处理
+     *
+     * @param sourceAddr 目标来源IP地址及端口
+     * @param message    消息对象
+     * @return 预回应的消息对象, 返回null表示不发送回应消息
+     * @throws IOException 可能产生的异常
+     */
+    public abstract Object onMessageReceived(InetSocketAddress sourceAddr, Object message) throws IOException;
+
+    /**
+     * 捕获异常事件处理
+     *
+     * @param sourceAddr 目标来源IP地址及端口, 若为null则代表本端产生的异常
+     * @param e          异常对象
+     * @throws IOException 可能产生的异常
+     */
+    public abstract void onExceptionCaught(InetSocketAddress sourceAddr, Throwable e) throws IOException;
 
     public final void onSessionRegisted(INioSession session) throws IOException {
-        Object _result = onReady();
+        Object _result = onSessionReady();
         if (_result != null) {
             session.send(_result);
         }
@@ -53,9 +76,15 @@ public abstract class NioUdpListener extends AbstractListener<INioSession> {
 
     public final void onMessageReceived(Object message, INioSession session) throws IOException {
         InetSocketAddress _sourceAddr = session.attr(SocketAddress.class.getName());
-        Object _result = onReceived(_sourceAddr, message);
+        Object _result = onMessageReceived(_sourceAddr, message);
         if (_result != null) {
             session.send(_result);
         }
+    }
+
+    @Override
+    public final void onExceptionCaught(Throwable e, INioSession session) throws IOException {
+        InetSocketAddress _sourceAddr = session.attr(SocketAddress.class.getName());
+        onExceptionCaught(_sourceAddr, e);
     }
 }

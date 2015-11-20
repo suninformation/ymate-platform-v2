@@ -20,6 +20,7 @@ import net.ymate.platform.serv.IServModuleCfg;
 import net.ymate.platform.serv.IServer;
 import net.ymate.platform.serv.nio.INioCodec;
 import net.ymate.platform.serv.nio.INioServerCfg;
+import net.ymate.platform.serv.nio.INioSession;
 import net.ymate.platform.serv.nio.server.NioServerCfg;
 import net.ymate.platform.serv.nio.support.NioEventGroup;
 import net.ymate.platform.serv.nio.support.NioEventProcessor;
@@ -85,8 +86,21 @@ public class NioUdpServer implements IServer<NioUdpListener, INioCodec> {
                     for (int _idx = 0; _idx < __selectorCount; _idx++) {
                         __processors[_idx] = new NioEventProcessor<NioUdpListener>(this, __doBuildProcessorName() + _idx) {
                             @Override
-                            protected void __doExceptionEvent(SelectionKey key, Throwable e) {
-                                _LOG.error(e.getMessage(), RuntimeUtils.unwrapThrow(e));
+                            protected void __doExceptionEvent(SelectionKey key, final Throwable e) {
+                                final INioSession _session = (INioSession) key.attachment();
+                                if (_session != null) {
+                                    __eventGroup.executorService().submit(new Runnable() {
+                                        public void run() {
+                                            try {
+                                                __eventGroup.listener().onExceptionCaught(e, _session);
+                                            } catch (Throwable ex) {
+                                                _LOG.error(e.getMessage(), RuntimeUtils.unwrapThrow(ex));
+                                            }
+                                        }
+                                    });
+                                } else {
+                                    _LOG.error(e.getMessage(), RuntimeUtils.unwrapThrow(e));
+                                }
                             }
                         };
                         __processors[_idx].start();
