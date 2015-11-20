@@ -26,12 +26,14 @@ import org.apache.commons.logging.LogFactory;
 import java.io.UnsupportedEncodingException;
 
 /**
- * @author 刘镇 (suninformation@163.com) on 15/11/15 下午7:05
+ * @author 刘镇 (suninformation@163.com) on 15/11/20 下午2:52
  * @version 1.0
  */
-public class NioStringCodec implements INioCodec {
+public class TextLineCodec implements INioCodec {
 
-    private final Log _LOG = LogFactory.getLog(NioStringCodec.class);
+    private final Log _LOG = LogFactory.getLog(TextLineCodec.class);
+
+    private static final String TEXT_EOF = "\r\n";
 
     private String __charset;
 
@@ -41,33 +43,34 @@ public class NioStringCodec implements INioCodec {
     }
 
     public ByteBufferBuilder encode(Object message) {
-        if (message != null && message instanceof String) {
-            try {
-                byte[] _bytes = ((String) message).getBytes(__charset);
-                return ByteBufferBuilder.allocate()
-                        .append(_bytes.length)
-                        .append(_bytes).flip();
-            } catch (UnsupportedEncodingException e) {
-                _LOG.warn(e.getMessage(), RuntimeUtils.unwrapThrow(e));
-            }
+        try {
+            String _msgStr = message.toString().concat(TEXT_EOF);
+            byte[] _bytes = _msgStr.getBytes(__charset);
+            return ByteBufferBuilder.allocate(_bytes.length).append(_bytes).flip();
+        } catch (UnsupportedEncodingException e) {
+            _LOG.warn(e.getMessage(), RuntimeUtils.unwrapThrow(e));
         }
         return null;
     }
 
     public Object decode(ByteBufferBuilder buffer) {
-        if (buffer.remaining() < 4) {
-            return null;
-        }
-        buffer.mark();
-        int _len = buffer.getInt();
-        if (buffer.remaining() < _len) {
-            buffer.reset();
-            return null;
-        }
-        byte[] _bytes = new byte[_len];
-        buffer.get(_bytes);
         try {
-            return new String(_bytes, __charset);
+            int _counter = 0;
+            ByteBufferBuilder _tmpBuffer = ByteBufferBuilder.allocate();
+            do {
+                byte b = buffer.get();
+                switch (b) {
+                    case '\r':
+                        break;
+                    case '\n':
+                        byte[] _bytes = new byte[_counter];
+                        _tmpBuffer.flip().get(_bytes);
+                        return new String(_bytes, __charset);
+                    default:
+                        _tmpBuffer.append(b);
+                        _counter++;
+                }
+            } while (buffer.buffer().hasRemaining());
         } catch (UnsupportedEncodingException e) {
             _LOG.warn(e.getMessage(), RuntimeUtils.unwrapThrow(e));
         }
