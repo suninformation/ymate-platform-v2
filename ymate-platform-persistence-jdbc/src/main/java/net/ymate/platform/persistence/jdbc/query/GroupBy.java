@@ -15,6 +15,7 @@
  */
 package net.ymate.platform.persistence.jdbc.query;
 
+import net.ymate.platform.persistence.Fields;
 import org.apache.commons.lang.StringUtils;
 
 /**

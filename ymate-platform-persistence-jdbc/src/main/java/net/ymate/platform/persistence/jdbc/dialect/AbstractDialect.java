@@ -18,7 +18,7 @@ package net.ymate.platform.persistence.jdbc.dialect;
 import net.ymate.platform.core.util.ExpressionUtils;
 import net.ymate.platform.persistence.base.EntityMeta;
 import net.ymate.platform.persistence.base.IEntity;
-import net.ymate.platform.persistence.jdbc.query.Fields;
+import net.ymate.platform.persistence.Fields;
 import org.apache.commons.lang.StringUtils;
 
 import java.sql.ResultSet;

@@ -15,8 +15,11 @@
  */
 package net.ymate.platform.persistence.jdbc;
 
+import net.ymate.platform.persistence.Fields;
+import net.ymate.platform.persistence.IResultSet;
+import net.ymate.platform.persistence.ISessionBase;
+import net.ymate.platform.persistence.Page;
 import net.ymate.platform.persistence.base.IEntity;
-import net.ymate.platform.persistence.jdbc.base.IResultSet;
 import net.ymate.platform.persistence.jdbc.base.IResultSetHandler;
 import net.ymate.platform.persistence.jdbc.query.*;
 
@@ -29,30 +32,12 @@ import java.util.List;
  * @author 刘镇 (suninformation@163.com) on 2011-9-21 下午01:45:36
  * @version 1.0
  */
-public interface ISession {
-
-    /**
-     * @return 获取会话对象唯一标识ID
-     */
-    String getId();
+public interface ISession extends ISessionBase {
 
     /**
      * @return 获取数据连接对象
      */
     IConnectionHolder getConnectionHolder();
-
-    /**
-     * 设置会话事件处理器
-     *
-     * @param event 事件处理器接口
-     * @return 返回当前会话对象
-     */
-    ISession setSessionEvent(ISessionEvent event);
-
-    /**
-     * 关闭并释放会话
-     */
-    void close();
 
     /**
      * @param <T>     指定结果集数据类型

@@ -20,14 +20,12 @@ import net.ymate.platform.persistence.base.IEntity;
 import net.ymate.platform.persistence.jdbc.IConnectionHolder;
 import net.ymate.platform.persistence.jdbc.ISession;
 import net.ymate.platform.persistence.jdbc.JDBC;
-import net.ymate.platform.persistence.jdbc.base.IResultSet;
+import net.ymate.platform.persistence.IResultSet;
 import net.ymate.platform.persistence.jdbc.impl.DefaultSession;
 import net.ymate.platform.persistence.jdbc.query.EntitySQL;
-import net.ymate.platform.persistence.jdbc.query.Fields;
-import net.ymate.platform.persistence.jdbc.query.Page;
+import net.ymate.platform.persistence.Fields;
+import net.ymate.platform.persistence.Page;
 import net.ymate.platform.persistence.jdbc.query.Where;
-import org.apache.commons.lang.builder.EqualsBuilder;
-import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
 
@@ -207,13 +205,16 @@ public abstract class BaseEntity<Entity extends IEntity, PK extends Serializable
     }
 
     @Override
-    public int hashCode() {
-        return HashCodeBuilder.reflectionHashCode(this);
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        BaseEntity that = (BaseEntity) o;
+        return getId() != null ? getId().equals(that.getId()) : that.getId() == null;
     }
 
     @Override
-    public boolean equals(Object obj) {
-        return EqualsBuilder.reflectionEquals(this, obj);
+    public int hashCode() {
+        return getId() != null ? getId().hashCode() : 0;
     }
 
     @Override

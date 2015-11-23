@@ -20,7 +20,7 @@ import net.ymate.platform.persistence.base.EntityMeta;
 import net.ymate.platform.persistence.base.IEntity;
 import net.ymate.platform.persistence.jdbc.JDBC;
 import net.ymate.platform.persistence.jdbc.dialect.AbstractDialect;
-import net.ymate.platform.persistence.jdbc.query.Fields;
+import net.ymate.platform.persistence.Fields;
 import org.apache.commons.lang.StringUtils;
 
 /**

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.ymate.platform.persistence.jdbc;
+package net.ymate.platform.persistence;
 
 import java.util.EventObject;
 

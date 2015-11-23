@@ -15,6 +15,8 @@
  */
 package net.ymate.platform.persistence.jdbc.query;
 
+import net.ymate.platform.persistence.Params;
+
 /**
  * SQL语句及参数对象
  *

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.ymate.platform.persistence.jdbc.query;
+package net.ymate.platform.persistence;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -27,7 +27,7 @@ import java.util.List;
 public class Params {
 
     /**
-     * SQL参数集合
+     * 参数集合
      */
     private List<Object> __params;
 

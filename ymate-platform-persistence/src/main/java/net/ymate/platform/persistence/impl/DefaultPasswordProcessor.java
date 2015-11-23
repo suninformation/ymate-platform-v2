@@ -13,10 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.ymate.platform.persistence.jdbc.impl;
+package net.ymate.platform.persistence.impl;
 
 import net.ymate.platform.core.util.CodecUtils;
-import net.ymate.platform.persistence.jdbc.IPasswordProcessor;
+import net.ymate.platform.persistence.IPasswordProcessor;
 import org.apache.commons.codec.digest.DigestUtils;
 
 /**

@@ -15,6 +15,7 @@
  */
 package net.ymate.platform.persistence.jdbc.query;
 
+import net.ymate.platform.persistence.Params;
 import org.apache.commons.lang.StringUtils;
 
 import java.util.ArrayList;

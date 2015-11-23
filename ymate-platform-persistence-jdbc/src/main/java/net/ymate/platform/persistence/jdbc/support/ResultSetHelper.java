@@ -19,7 +19,7 @@ import net.ymate.platform.core.lang.BlurObject;
 import net.ymate.platform.core.util.ClassUtils;
 import net.ymate.platform.persistence.base.EntityMeta;
 import net.ymate.platform.persistence.base.IEntity;
-import net.ymate.platform.persistence.jdbc.base.IResultSet;
+import net.ymate.platform.persistence.IResultSet;
 
 import java.io.Serializable;
 import java.math.BigDecimal;

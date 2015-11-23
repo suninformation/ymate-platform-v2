@@ -13,9 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.ymate.platform.persistence.jdbc.base.impl;
+package net.ymate.platform.persistence.impl;
 
-import net.ymate.platform.persistence.jdbc.base.IResultSet;
+import net.ymate.platform.persistence.IResultSet;
 
 import java.util.Collections;
 import java.util.List;
