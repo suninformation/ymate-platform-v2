@@ -21,6 +21,7 @@
         <module>ymate-platform-persistence</module>
         <module>ymate-platform-persistence-jdbc</module>
         <module>ymate-platform-persistence-mongodb</module>
+        <module>ymate-platform-persistence-redis</module>
         <module>ymate-platform-plugin</module>
         <module>ymate-platform-validation</module>
         <module>ymate-platform-webmvc</module>
