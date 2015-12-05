@@ -34,6 +34,11 @@ public interface ICacheModuleCfg {
     IKeyGenerator<?> getKeyGenerator();
 
     /**
+     * @return 对象序列化接口实现，可选参数，默认值为net.ymate.platform.cache.impl.DefaultSerializer
+     */
+    ISerializer getSerializer();
+
+    /**
      * @return 默认缓存名称，可选参数，默认值为default，对应于Ehcache配置文件中设置name="__DEFAULT__"
      */
     String getDefaultCacheName();

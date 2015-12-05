@@ -16,7 +16,8 @@
 package net.ymate.platform.cache.impl;
 
 import net.ymate.platform.cache.IKeyGenerator;
-import net.ymate.platform.core.lang.BlurObject;
+import net.ymate.platform.cache.ISerializer;
+import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.codec.digest.DigestUtils;
 
 import java.io.Serializable;
@@ -28,26 +29,24 @@ import java.lang.reflect.Method;
  */
 public class DefaultKeyGenerator implements IKeyGenerator {
 
-    public Serializable generateKey(Method method, Object[] params) {
-        // [className:methodName:{paramTypeName1:paramValue1,...,paramTypeNameN:paramValueN,}]
-        StringBuilder __keyGenBuilder = new StringBuilder();
-        __keyGenBuilder.append("[").append(method.getDeclaringClass().getName())
-                .append(":").append(method.getName()).append("{");
-        Class<?>[] _paramTypes = method.getParameterTypes();
-        for (int _idx = 0; _idx < _paramTypes.length; _idx++) {
-            __keyGenBuilder.append(_paramTypes[_idx].getName()).append(":");
-            if (_paramTypes[_idx].isArray()) {
-                __keyGenBuilder.append("[");
-                Object[] _arrValues = (Object[]) params[_idx];
-                for (Object _value : _arrValues) {
-                    __keyGenBuilder.append(BlurObject.bind(_value).toStringValue()).append(",");
-                }
-                __keyGenBuilder.append("]");
-            } else {
-                __keyGenBuilder.append(BlurObject.bind(params[_idx]).toStringValue()).append(",");
-            }
+    private ISerializer __serializer;
+
+    public void init(ISerializer serializer) {
+        if (serializer == null) {
+            __serializer = new DefaultSerializer();
+        } else {
+            __serializer = serializer;
         }
-        __keyGenBuilder.append("}]");
+    }
+
+    public Serializable generateKey(Method method, Object[] params) throws Exception {
+        // [className:methodName:{serializeStr}]
+        StringBuilder __keyGenBuilder = new StringBuilder();
+        __keyGenBuilder
+                .append("[").append(method.getDeclaringClass().getName())
+                .append(":").append(method.getName()).append("{");
+        String _paramsB64 = Base64.encodeBase64String(__serializer.serialize(params));
+        __keyGenBuilder.append(_paramsB64).append("}]");
         return DigestUtils.md5Hex(__keyGenBuilder.toString());
     }
 }

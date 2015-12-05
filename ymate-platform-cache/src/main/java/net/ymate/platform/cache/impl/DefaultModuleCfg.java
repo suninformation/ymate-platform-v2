@@ -15,10 +15,7 @@
  */
 package net.ymate.platform.cache.impl;
 
-import net.ymate.platform.cache.ICacheModuleCfg;
-import net.ymate.platform.cache.ICacheProvider;
-import net.ymate.platform.cache.ICaches;
-import net.ymate.platform.cache.IKeyGenerator;
+import net.ymate.platform.cache.*;
 import net.ymate.platform.core.YMP;
 import net.ymate.platform.core.util.ClassUtils;
 import org.apache.commons.lang.StringUtils;
@@ -37,6 +34,8 @@ public class DefaultModuleCfg implements ICacheModuleCfg {
 
     private IKeyGenerator<?> __keyGenerator;
 
+    private ISerializer __serializer;
+
     private String __defaultCacheName;
 
     public DefaultModuleCfg(YMP owner) throws Exception {
@@ -47,10 +46,16 @@ public class DefaultModuleCfg implements ICacheModuleCfg {
             __cacheProvider = new DefaultCacheProvider();
         }
         //
+        __serializer = ClassUtils.impl(_moduleCfgs.get("serializer_class"), ISerializer.class, this.getClass());
+        if (__serializer == null) {
+            __serializer = new DefaultSerializer();
+        }
+        //
         __keyGenerator = ClassUtils.impl(_moduleCfgs.get("key_generator_class"), IKeyGenerator.class, this.getClass());
         if (__keyGenerator == null) {
             __keyGenerator = new DefaultKeyGenerator();
         }
+        __keyGenerator.init(__serializer);
         //
         __defaultCacheName = StringUtils.defaultIfBlank(_moduleCfgs.get("default_cache_name"), "default");
     }
@@ -61,6 +66,10 @@ public class DefaultModuleCfg implements ICacheModuleCfg {
 
     public IKeyGenerator<?> getKeyGenerator() {
         return __keyGenerator;
+    }
+
+    public ISerializer getSerializer() {
+        return __serializer;
     }
 
     public String getDefaultCacheName() {

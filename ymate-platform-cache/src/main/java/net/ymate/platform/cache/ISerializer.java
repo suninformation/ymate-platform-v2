@@ -15,27 +15,13 @@
  */
 package net.ymate.platform.cache;
 
-import java.io.Serializable;
-import java.lang.reflect.Method;
-
 /**
- * 缓存Key生成器接口
- *
- * @author 刘镇 (suninformation@163.com) on 15/11/3 下午1:40
+ * @author 刘镇 (suninformation@163.com) on 15/12/6 上午1:37
  * @version 1.0
  */
-public interface IKeyGenerator<T extends Serializable> {
+public interface ISerializer {
 
-    /**
-     * @param serializer 序列化接口实现
-     */
-    void init(ISerializer serializer);
+    byte[] serialize(Object object) throws Exception;
 
-    /**
-     * @param method 目标方法对象
-     * @param params 目标方法参数集合
-     * @return 返回生成的Key值
-     * @throws Exception 可能产生的异常
-     */
-    T generateKey(Method method, Object[] params) throws Exception;
+    Object deserialize(byte[] bytes) throws Exception;
 }
