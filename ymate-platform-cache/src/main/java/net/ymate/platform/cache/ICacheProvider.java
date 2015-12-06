@@ -37,11 +37,12 @@ public interface ICacheProvider {
     void init(ICaches owner) throws CacheException;
 
     /**
-     * @param name 缓存名称
+     * @param name     缓存名称
+     * @param listener 缓存元素过期监听器接口实现
      * @return 创建缓存对象，若已存在则直接返回
      * @throws CacheException 可能产生的异常
      */
-    ICache createCache(String name) throws CacheException;
+    ICache createCache(String name, ICacheExpiredListener listener) throws CacheException;
 
     /**
      * @param name 缓存名称

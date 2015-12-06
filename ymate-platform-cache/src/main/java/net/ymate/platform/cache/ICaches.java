@@ -46,6 +46,11 @@ public interface ICaches {
     ICacheModuleCfg getModuleCfg();
 
     /**
+     * @return 返回缓存提供者对象
+     */
+    ICacheProvider getCacheProvider();
+
+    /**
      * 从缓存中获取对象
      *
      * @param cacheName 缓存名称

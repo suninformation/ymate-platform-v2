@@ -29,6 +29,11 @@ public interface ICacheModuleCfg {
     ICacheProvider getCacheProvider();
 
     /**
+     * @return 缓存对象过期监听器，可选参数，默认值为空
+     */
+    ICacheExpiredListener getCacheExpiredListener();
+
+    /**
      * @return 缓存Key生成器，可选参数，默认值为net.ymate.platform.cache.impl.DefaultKeyGenerator
      */
     IKeyGenerator<?> getKeyGenerator();

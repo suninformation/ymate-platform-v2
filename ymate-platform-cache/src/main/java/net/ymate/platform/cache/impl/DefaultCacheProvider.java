@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2015 the original author or authors.
+ * Copyright 2007-2016 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,7 +31,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * @author 刘镇 (suninformation@163.com) on 14/10/17
  * @version 1.0
  */
-public class DefaultCacheProvider implements ICacheProvider, CacheEventListener {
+public class DefaultCacheProvider implements ICacheProvider {
 
     private CacheManager __cacheManager;
 
@@ -58,7 +58,7 @@ public class DefaultCacheProvider implements ICacheProvider, CacheEventListener 
         __caches = new ConcurrentHashMap<String, ICache>();
     }
 
-    public ICache createCache(String name) throws CacheException {
+    public ICache createCache(String name, final ICacheExpiredListener listener) throws CacheException {
         name = __safedCacheName(name);
         //
         ICache _cache = __caches.get(name);
@@ -69,7 +69,40 @@ public class DefaultCacheProvider implements ICacheProvider, CacheEventListener 
                 if (__cache == null) {
                     __cacheManager.addCache(name);
                     __cache = __cacheManager.getCache(name);
-                    __cache.getCacheEventNotificationService().registerListener(this);
+                    if (listener != null) {
+                        __cache.getCacheEventNotificationService().registerListener(new CacheEventListener() {
+
+                            private ICacheExpiredListener __listener = listener;
+
+                            public void notifyElementRemoved(Ehcache ehcache, Element element) throws net.sf.ehcache.CacheException {
+                            }
+
+                            public void notifyElementPut(Ehcache ehcache, Element element) throws net.sf.ehcache.CacheException {
+                            }
+
+                            public void notifyElementUpdated(Ehcache ehcache, Element element) throws net.sf.ehcache.CacheException {
+                            }
+
+                            public void notifyElementExpired(Ehcache ehcache, Element element) {
+                                if (__listener != null) {
+                                    __listener.notifyElementExpired(ehcache.getName(), element.getObjectKey());
+                                }
+                            }
+
+                            public void notifyElementEvicted(Ehcache ehcache, Element element) {
+                            }
+
+                            public void notifyRemoveAll(Ehcache ehcache) {
+                            }
+
+                            public void dispose() {
+                            }
+
+                            public Object clone() throws CloneNotSupportedException {
+                                throw new CloneNotSupportedException();
+                            }
+                        });
+                    }
                 }
                 final Ehcache __ehcache = __cache;
                 //
@@ -149,35 +182,5 @@ public class DefaultCacheProvider implements ICacheProvider, CacheEventListener 
         //
         __cacheManager.shutdown();
         __cacheManager = null;
-    }
-
-    public void notifyElementRemoved(Ehcache ehcache, Element element) throws net.sf.ehcache.CacheException {
-        __owner.getOwner().getEvents().fireEvent(new CacheEvent(__owner, CacheEvent.EVENT.ELEMENT_REMOVED).setEventSource(element.getObjectValue()));
-    }
-
-    public void notifyElementPut(Ehcache ehcache, Element element) throws net.sf.ehcache.CacheException {
-        __owner.getOwner().getEvents().fireEvent(new CacheEvent(__owner, CacheEvent.EVENT.ELEMENT_PUT).setEventSource(element.getObjectValue()));
-    }
-
-    public void notifyElementUpdated(Ehcache ehcache, Element element) throws net.sf.ehcache.CacheException {
-        __owner.getOwner().getEvents().fireEvent(new CacheEvent(__owner, CacheEvent.EVENT.ELEMENT_UPDATED).setEventSource(element.getObjectValue()));
-    }
-
-    public void notifyElementExpired(Ehcache ehcache, Element element) {
-        __owner.getOwner().getEvents().fireEvent(new CacheEvent(__owner, CacheEvent.EVENT.ELEMENT_EXPIRED).setEventSource(element.getObjectValue()));
-    }
-
-    public void notifyElementEvicted(Ehcache ehcache, Element element) {
-    }
-
-    public void notifyRemoveAll(Ehcache ehcache) {
-        __owner.getOwner().getEvents().fireEvent(new CacheEvent(__owner, CacheEvent.EVENT.ELEMENT_CLEAR).setEventSource(ehcache.getName()));
-    }
-
-    public void dispose() {
-    }
-
-    public Object clone() throws CloneNotSupportedException {
-        throw new CloneNotSupportedException();
     }
 }

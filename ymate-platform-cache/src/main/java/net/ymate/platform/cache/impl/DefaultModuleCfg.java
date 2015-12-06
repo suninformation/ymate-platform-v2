@@ -32,6 +32,8 @@ public class DefaultModuleCfg implements ICacheModuleCfg {
 
     private ICacheProvider __cacheProvider;
 
+    private ICacheExpiredListener __cacheExpiredListener;
+
     private IKeyGenerator<?> __keyGenerator;
 
     private ISerializer __serializer;
@@ -45,6 +47,8 @@ public class DefaultModuleCfg implements ICacheModuleCfg {
         if (__cacheProvider == null) {
             __cacheProvider = new DefaultCacheProvider();
         }
+        //
+        __cacheExpiredListener = ClassUtils.impl(_moduleCfgs.get("expired_listener_class"), ICacheExpiredListener.class, this.getClass());
         //
         __serializer = ClassUtils.impl(_moduleCfgs.get("serializer_class"), ISerializer.class, this.getClass());
         if (__serializer == null) {
@@ -62,6 +66,10 @@ public class DefaultModuleCfg implements ICacheModuleCfg {
 
     public ICacheProvider getCacheProvider() {
         return __cacheProvider;
+    }
+
+    public ICacheExpiredListener getCacheExpiredListener() {
+        return __cacheExpiredListener;
     }
 
     public IKeyGenerator<?> getKeyGenerator() {

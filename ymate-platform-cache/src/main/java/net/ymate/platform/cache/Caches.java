@@ -104,6 +104,10 @@ public class Caches implements IModule, ICaches {
         return __moduleCfg;
     }
 
+    public ICacheProvider getCacheProvider() {
+        return __cacheProvider;
+    }
+
     public Object get(String cacheName, Object key) throws CacheException {
         ICache _cache = __cacheProvider.getCache(cacheName);
         if (_cache != null) {
@@ -123,7 +127,7 @@ public class Caches implements IModule, ICaches {
     public void put(String cacheName, Object key, Object value) throws CacheException {
         ICache _cache = __cacheProvider.getCache(cacheName);
         if (_cache == null) {
-            _cache = __cacheProvider.createCache(cacheName);
+            _cache = __cacheProvider.createCache(cacheName, __moduleCfg.getCacheExpiredListener());
         }
         _cache.put(key, value);
     }
