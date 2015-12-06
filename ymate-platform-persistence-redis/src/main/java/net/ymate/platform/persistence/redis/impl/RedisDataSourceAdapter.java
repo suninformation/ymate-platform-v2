@@ -42,7 +42,7 @@ public class RedisDataSourceAdapter implements IRedisDataSourceAdapter {
         //
         if ("default".equalsIgnoreCase(cfgMeta.getConnectionType())) {
             if (cfgMeta.getServers().isEmpty()) {
-                __pool = new JedisPool(cfgMeta.getPoolConfig(), "0.0.0.0");
+                __pool = new JedisPool(cfgMeta.getPoolConfig(), "localhost");
             } else {
                 IRedisModuleCfg.ServerMeta _server = cfgMeta.getServers().get("default");
                 __pool = new JedisPool(cfgMeta.getPoolConfig(),

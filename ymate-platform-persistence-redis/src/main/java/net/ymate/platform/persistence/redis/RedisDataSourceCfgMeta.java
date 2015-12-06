@@ -60,6 +60,10 @@ public class RedisDataSourceCfgMeta {
         return __masterServerName;
     }
 
+    public IRedisModuleCfg.ServerMeta getMasterServerMeta() {
+        return __servers.get(__masterServerName);
+    }
+
     public Map<String, IRedisModuleCfg.ServerMeta> getServers() {
         return __servers;
     }

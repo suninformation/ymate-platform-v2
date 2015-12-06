@@ -75,7 +75,7 @@ public class RedisModuleCfg implements IRedisModuleCfg {
         //
         Map<String, String> _dataSourceCfgs = __doGetCfgs(_moduleCfgs, "ds." + dsName + ".");
         //
-        if (!_dataSourceCfgs.isEmpty()) {
+//        if (!_dataSourceCfgs.isEmpty()) {
             String _connectionType = StringUtils.defaultIfBlank(_dataSourceCfgs.get("connection_type"), "default");
             String _masterServerName = StringUtils.defaultIfBlank(_dataSourceCfgs.get("master_server_name"), "default");
             List<ServerMeta> _servers = new ArrayList<ServerMeta>();
@@ -135,7 +135,7 @@ public class RedisModuleCfg implements IRedisModuleCfg {
                 _poolConfig.setTimeBetweenEvictionRunsMillis(BlurObject.bind(StringUtils.defaultIfBlank(_tmpCfgs.get("time_between_eviction_runs_millis"), GenericObjectPoolConfig.DEFAULT_TIME_BETWEEN_EVICTION_RUNS_MILLIS + "")).toLongValue());
             }
             _meta = new RedisDataSourceCfgMeta(dsName, _connectionType, _masterServerName, _servers, _poolConfig);
-        }
+//        }
         return _meta;
     }
 
