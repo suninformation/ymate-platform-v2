@@ -15,7 +15,10 @@
  */
 package net.ymate.platform.cache;
 
+import net.ymate.platform.cache.impl.DefaultCacheProvider;
 import net.ymate.platform.cache.impl.DefaultModuleCfg;
+import net.ymate.platform.cache.impl.MultilevelCacheProvider;
+import net.ymate.platform.cache.impl.RedisCacheProvider;
 import net.ymate.platform.core.Version;
 import net.ymate.platform.core.YMP;
 import net.ymate.platform.core.module.IModule;
@@ -84,7 +87,6 @@ public class Caches implements IModule, ICaches {
             //
             __owner = owner;
             __moduleCfg = new DefaultModuleCfg(owner);
-            __owner.getEvents().registerEvent(CacheEvent.class);
             __cacheProvider = __moduleCfg.getCacheProvider();
             __cacheProvider.init(this);
             //
@@ -116,6 +118,10 @@ public class Caches implements IModule, ICaches {
         return null;
     }
 
+    public Object get(Object key) throws CacheException {
+        return get(__moduleCfg.getDefaultCacheName(), key);
+    }
+
     public Map<Object, Object> getAll(String cacheName) throws CacheException {
         Map<Object, Object> _returnValue = new HashMap<Object, Object>();
         for (Object key : this.keys(cacheName)) {
@@ -124,16 +130,38 @@ public class Caches implements IModule, ICaches {
         return _returnValue;
     }
 
-    public void put(String cacheName, Object key, Object value) throws CacheException {
+    public Map<Object, Object> getAll() throws CacheException {
+        return getAll(__moduleCfg.getDefaultCacheName());
+    }
+
+    protected void __doPut(String cacheName, Object key, Object value) throws CacheException {
         ICache _cache = __cacheProvider.getCache(cacheName);
         if (_cache == null) {
-            _cache = __cacheProvider.createCache(cacheName, __moduleCfg.getCacheExpiredListener());
+            _cache = __cacheProvider.createCache(cacheName, __moduleCfg.getCacheEventListener());
         }
         _cache.put(key, value);
     }
 
+    public void put(String cacheName, Object key, Object value) throws CacheException {
+        __doPut(cacheName, key, value);
+        if (__moduleCfg.getCacheEventListener() != null) {
+            __moduleCfg.getCacheEventListener().notifyElementPut(cacheName, key, value);
+        }
+    }
+
+    public void put(Object key, Object value) throws CacheException {
+        put(__moduleCfg.getDefaultCacheName(), key, value);
+    }
+
     public void update(String cacheName, Object key, Object value) throws CacheException {
-        this.put(cacheName, key, value);
+        __doPut(cacheName, key, value);
+        if (__moduleCfg.getCacheEventListener() != null) {
+            __moduleCfg.getCacheEventListener().notifyElementUpdated(cacheName, key, value);
+        }
+    }
+
+    public void update(Object key, Object value) throws CacheException {
+        update(__moduleCfg.getDefaultCacheName(), key, value);
     }
 
     public List<?> keys(String cacheName) throws CacheException {
@@ -144,11 +172,22 @@ public class Caches implements IModule, ICaches {
         return Collections.emptyList();
     }
 
+    public List keys() throws CacheException {
+        return keys(__moduleCfg.getDefaultCacheName());
+    }
+
     public void remove(String cacheName, Object key) throws CacheException {
         ICache _cache = __cacheProvider.getCache(cacheName);
         if (_cache != null) {
             _cache.remove(key);
         }
+        if (__moduleCfg.getCacheEventListener() != null) {
+            __moduleCfg.getCacheEventListener().notifyElementRemoved(cacheName, key);
+        }
+    }
+
+    public void remove(Object key) throws CacheException {
+        remove(__moduleCfg.getDefaultCacheName(), key);
     }
 
     public void removeAll(String cacheName, List keys) throws CacheException {
@@ -156,6 +195,13 @@ public class Caches implements IModule, ICaches {
         if (_cache != null) {
             _cache.removeAll(keys);
         }
+        if (__moduleCfg.getCacheEventListener() != null) {
+            __moduleCfg.getCacheEventListener().notifyElementEvicted(cacheName, keys);
+        }
+    }
+
+    public void removeAll(List keys) throws CacheException {
+        removeAll(__moduleCfg.getDefaultCacheName(), keys);
     }
 
     public void clear(String cacheName) throws CacheException {
@@ -163,6 +209,13 @@ public class Caches implements IModule, ICaches {
         if (_cache != null) {
             _cache.clear();
         }
+        if (__moduleCfg.getCacheEventListener() != null) {
+            __moduleCfg.getCacheEventListener().notifyRemoveAll(cacheName);
+        }
+    }
+
+    public void clear() throws CacheException {
+        clear(__moduleCfg.getDefaultCacheName());
     }
 
     public void destroy() throws Exception {
@@ -174,5 +227,14 @@ public class Caches implements IModule, ICaches {
             __moduleCfg = null;
             __owner = null;
         }
+    }
+
+    public static Map<String, String> PROVIDERS;
+
+    static {
+        PROVIDERS = new HashMap<String, String>();
+        PROVIDERS.put("default", DefaultCacheProvider.class.getName());
+        PROVIDERS.put("redis", RedisCacheProvider.class.getName());
+        PROVIDERS.put("multilevel", MultilevelCacheProvider.class.getName());
     }
 }

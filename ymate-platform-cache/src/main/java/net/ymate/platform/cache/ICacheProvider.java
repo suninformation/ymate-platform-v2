@@ -42,13 +42,28 @@ public interface ICacheProvider {
      * @return 创建缓存对象，若已存在则直接返回
      * @throws CacheException 可能产生的异常
      */
-    ICache createCache(String name, ICacheExpiredListener listener) throws CacheException;
+    ICache createCache(String name, ICacheEventListener listener) throws CacheException;
 
     /**
      * @param name 缓存名称
      * @return 获取缓存对象，若不存在则返回null
      */
     ICache getCache(String name);
+
+    /**
+     * @param name   缓存名称
+     * @param create 是否创建缓存对象
+     * @return 获取缓存对象，若不存在则根据create参数决定是否创建缓存对象或返回null
+     */
+    ICache getCache(String name, boolean create);
+
+    /**
+     * @param name     缓存名称
+     * @param create   是否创建缓存对象
+     * @param listener 缓存元素过期监听器接口实现
+     * @return 获取缓存对象，若不存在则根据create参数决定是否创建缓存对象或返回null
+     */
+    ICache getCache(String name, boolean create, ICacheEventListener listener);
 
     /**
      * 销毁

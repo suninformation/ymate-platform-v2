@@ -42,7 +42,13 @@ public class CacheableProxy implements IProxy {
             _cacheKey = _caches.getModuleCfg().getKeyGenerator().generateKey(proxyChain.getTargetMethod(), proxyChain.getMethodParams());
         }
         CacheElement _result = (CacheElement) _caches.get(_anno.cacheName(), _cacheKey);
-        if (_result == null || (System.currentTimeMillis() - _result.getLastUpdateTime()) > _anno.timeout()) {
+        boolean _flag = true;
+        if (_result != null) {
+            if ((System.currentTimeMillis() - _result.getLastUpdateTime()) < _anno.timeout()) {
+                _flag = false;
+            }
+        }
+        if (_flag) {
             _result = new CacheElement(proxyChain.doProxyChain());
             if (_result.getObject() != null) {
                 _caches.put(_anno.cacheName(), _cacheKey, _result);

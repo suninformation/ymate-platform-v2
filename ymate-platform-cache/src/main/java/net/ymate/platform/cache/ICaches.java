@@ -60,6 +60,8 @@ public interface ICaches {
      */
     Object get(String cacheName, Object key) throws CacheException;
 
+    Object get(Object key) throws CacheException;
+
     /**
      * 从缓存中获取所有对象
      *
@@ -68,6 +70,8 @@ public interface ICaches {
      * @throws CacheException 可能产生的异常
      */
     Map<Object, Object> getAll(String cacheName) throws CacheException;
+
+    Map<Object, Object> getAll() throws CacheException;
 
     /**
      * 添加对象到缓存
@@ -79,6 +83,8 @@ public interface ICaches {
      */
     void put(String cacheName, Object key, Object value) throws CacheException;
 
+    void put(Object key, Object value) throws CacheException;
+
     /**
      * 更新对象到缓存
      *
@@ -89,6 +95,8 @@ public interface ICaches {
      */
     void update(String cacheName, Object key, Object value) throws CacheException;
 
+    void update(Object key, Object value) throws CacheException;
+
     /**
      * @param cacheName 缓存名称
      * @return 返回缓存cacheName中缓存对象key的集合
@@ -96,6 +104,8 @@ public interface ICaches {
      */
     @SuppressWarnings("rawtypes")
     List keys(String cacheName) throws CacheException;
+
+    List keys() throws CacheException;
 
     /**
      * 从缓存中移除对象
@@ -105,6 +115,8 @@ public interface ICaches {
      * @throws CacheException 可能产生的异常
      */
     void remove(String cacheName, Object key) throws CacheException;
+
+    void remove(Object key) throws CacheException;
 
     /**
      * 批量从缓存中移除对象
@@ -116,6 +128,8 @@ public interface ICaches {
     @SuppressWarnings("rawtypes")
     void removeAll(String cacheName, List keys) throws CacheException;
 
+    void removeAll(List keys) throws CacheException;
+
     /**
      * 清理缓存
      *
@@ -123,4 +137,6 @@ public interface ICaches {
      * @throws CacheException 可能产生的异常
      */
     void clear(String cacheName) throws CacheException;
+
+    void clear() throws CacheException;
 }

@@ -32,7 +32,7 @@ public class DefaultModuleCfg implements ICacheModuleCfg {
 
     private ICacheProvider __cacheProvider;
 
-    private ICacheExpiredListener __cacheExpiredListener;
+    private ICacheEventListener __cacheEventListener;
 
     private IKeyGenerator<?> __keyGenerator;
 
@@ -43,12 +43,13 @@ public class DefaultModuleCfg implements ICacheModuleCfg {
     public DefaultModuleCfg(YMP owner) throws Exception {
         Map<String, String> _moduleCfgs = owner.getConfig().getModuleConfigs(ICaches.MODULE_NAME);
         //
-        __cacheProvider = ClassUtils.impl(_moduleCfgs.get("cache_provider_class"), ICacheProvider.class, this.getClass());
+        String _providerClassStr = StringUtils.defaultIfBlank(_moduleCfgs.get("provider_class"), "default");
+        __cacheProvider = ClassUtils.impl(StringUtils.defaultIfBlank(Caches.PROVIDERS.get(_providerClassStr), _providerClassStr), ICacheProvider.class, this.getClass());
         if (__cacheProvider == null) {
             __cacheProvider = new DefaultCacheProvider();
         }
         //
-        __cacheExpiredListener = ClassUtils.impl(_moduleCfgs.get("expired_listener_class"), ICacheExpiredListener.class, this.getClass());
+        __cacheEventListener = ClassUtils.impl(_moduleCfgs.get("event_listener_class"), ICacheEventListener.class, this.getClass());
         //
         __serializer = ClassUtils.impl(_moduleCfgs.get("serializer_class"), ISerializer.class, this.getClass());
         if (__serializer == null) {
@@ -68,8 +69,8 @@ public class DefaultModuleCfg implements ICacheModuleCfg {
         return __cacheProvider;
     }
 
-    public ICacheExpiredListener getCacheExpiredListener() {
-        return __cacheExpiredListener;
+    public ICacheEventListener getCacheEventListener() {
+        return __cacheEventListener;
     }
 
     public IKeyGenerator<?> getKeyGenerator() {

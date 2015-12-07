@@ -15,26 +15,21 @@
  */
 package net.ymate.platform.cache;
 
-import net.ymate.platform.core.event.EventContext;
-import net.ymate.platform.core.event.IEvent;
-
 /**
- * 缓存事件
- *
- * @author 刘镇 (suninformation@163.com) on 15/11/2 下午3:41
+ * @author 刘镇 (suninformation@163.com) on 15/12/6 上午7:23
  * @version 1.0
  */
-public class CacheEvent extends EventContext<ICaches, CacheEvent.EVENT> implements IEvent {
+public interface ICacheEventListener {
 
-    public enum EVENT {
-        ELEMENT_EXPIRED,
-        ELEMENT_PUT,
-        ELEMENT_REMOVED,
-        ELEMENT_UPDATED,
-        ELEMENT_CLEAR
-    }
+    void notifyElementRemoved(String cacheName, Object key);
 
-    public CacheEvent(ICaches owner, EVENT eventName) {
-        super(owner, CacheEvent.class, eventName);
-    }
+    void notifyElementPut(String cacheName, Object key, Object value);
+
+    void notifyElementUpdated(String cacheName, Object key, Object value);
+
+    void notifyElementExpired(String cacheName, Object key);
+
+    void notifyElementEvicted(String cacheName, Object key);
+
+    void notifyRemoveAll(String cacheName);
 }
