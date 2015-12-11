@@ -150,8 +150,13 @@ public class Update {
     @Override
     public String toString() {
         StringBuilder __updateSB = new StringBuilder("UPDATE ")
-                .append(StringUtils.join(__tables, ", "))
-                .append(" SET ");
+                .append(StringUtils.join(__tables, ", "));
+        //
+        for (Join _join : __joins) {
+            __updateSB.append(" ").append(_join);
+        }
+        //
+        __updateSB.append(" SET ");
         boolean _flag = false;
         for (String _field : __fields.fields()) {
             if (_flag) {
@@ -165,10 +170,6 @@ public class Update {
             }
             //
             _flag = true;
-        }
-        //
-        for (Join _join : __joins) {
-            __updateSB.append(" ").append(_join);
         }
         //
         if (__where != null) {
