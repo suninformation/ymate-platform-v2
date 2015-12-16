@@ -70,12 +70,14 @@
         ymp.configs.configuration.provider_class=
 
 
+#### 示例一: 解析XML配置
+
 - 基于XML文件的基础配置格式如下, 为了配合测试代码, 请将该文件命名为configuration.xml并放置在config_home路径下的cfgs目录里:
 
 
         <?xml version="1.0" encoding="UTF-8"?>
         <!-- XML根节点为properties -->
-        <properties abc="xyz">
+        <properties>
         
             <!-- 分类节点为category, 默认分类名称为default -->
             <category name="default">
@@ -104,7 +106,7 @@
         </properties>
 
 
-- 新建配置类, 通过@Configuration注解指定配置文件相对路径
+- 新建配置类DemoConfig, 通过@Configuration注解指定配置文件相对路径
 
 
         @Configuration("cfgs/configuration.xml")
@@ -135,3 +137,83 @@
         Apple Inc.
         {abc=xzy, color=red, size=small, weight=120g, age=2015}
         [itouch, imac, ipad, iphone]
+
+#### 示例二: 解析Properties配置
+
+- 基于Properties文件的基础配置格式如下, 同样请将该文件命名为configuration.properties并放置在config_home路径下的cfgs目录里:
+
+
+        #--------------------------------------------------------------------------
+        # 配置文件内容格式: properties.<categoryName>.<propertyName>=[propertyValue]
+        #
+        # 注意: attributes将作为关键字使用, 用于表示分类, 属性, 集合和MAP的子属性集合
+        #--------------------------------------------------------------------------
+        
+        # 举例1: 默认分类下表示公司名称, 默认分类名称为default
+        properties.default.company_name=Apple Inc.
+        
+        #--------------------------------------------------------------------------
+        # 数组和集合数据类型的表示方法: 多个值之间用'|'分隔, 如: Value1|Value2|...|ValueN
+        #--------------------------------------------------------------------------
+        properties.default.products=iphone|ipad|imac|itouch
+        
+        #--------------------------------------------------------------------------
+        # MAP<K, V>数据类型的表示方法:
+        # 如:产品规格(product_spec)的K分别是color|weight|size|age, 对应的V分别是热red|120g|small|2015
+        #--------------------------------------------------------------------------
+        properties.default.product_spec.color=red
+        properties.default.product_spec.weight=120g
+        properties.default.product_spec.size=small
+        properties.default.product_spec.age=2015
+        
+        # 每个MAP都有属于其自身的属性列表(深度仅为一级), 用attributes表示, abc代表属性key, xyz代表属性值
+        # 注: MAP数据类型的attributes和MAP本身的表示方法达到的效果是一样的
+        properties.default.product_spec.attributes.abc=xyz
+
+
+- 修改配置类DemoConfig如下, 通过@ConfigurationProvider注解指定配置文件内容解析器:
+
+
+        @Configuration("cfgs/configuration.properties")
+        @ConfigurationProvider(PropertyConfigurationProvider.class)
+        public class DemoConfig extends DefaultConfiguration {
+        }
+
+
+- 重新执行示例代码, 执行结果与示例一结果相同:
+
+
+        Apple Inc.
+        {abc=xzy, color=red, size=small, weight=120g, age=2015}
+        [itouch, imac, ipad, iphone]
+
+
+
+#### 通过配置体系模块还可以完成以下操作:
+
+- 获取路径信息, 下列方法的返回结果会根据配置体系模块配置的不同面不同:
+
+
+        // 返回配置系统体根路径
+        Cfgs.get().getConfigHome();
+        
+        // 返回项目根路径
+        Cfgs.get().getProjectHome();
+        
+        // 返回项目模块根路径
+        Cfgs.get().getModuleHome();
+        
+        // 返回user.dir所在路径
+        Cfgs.get().getUserDir();
+        
+        // 返回user.home所在路径
+        Cfgs.get().getUserHome();
+
+- 搜索目标文件:
+
+
+        // 在配置体系中搜索cfgs/configuration.xml文件并返回其File对象
+        Cfgs.get().searchFile("cfgs/configuration.xml");
+        
+        // 在配置体系中搜索cfgs/configuration.properties文件并返回其绝对路径
+        Cfgs.get().searchPath("cfgs/configuration.properties");
