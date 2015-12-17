@@ -37,6 +37,10 @@ public class CacheableProxy implements IProxy {
         ICaches _caches = Caches.get(proxyChain.getProxyFactory().getOwner());
         //
         Cacheable _anno = proxyChain.getTargetMethod().getAnnotation(Cacheable.class);
+        if (_anno == null) {
+            return proxyChain.doProxyChain();
+        }
+        //
         Object _cacheKey = StringUtils.trimToNull(_anno.key());
         if (_cacheKey == null) {
             _cacheKey = _caches.getModuleCfg().getKeyGenerator().generateKey(proxyChain.getTargetMethod(), proxyChain.getMethodParams());
