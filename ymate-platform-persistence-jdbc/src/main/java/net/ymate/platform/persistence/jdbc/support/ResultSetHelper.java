@@ -17,9 +17,9 @@ package net.ymate.platform.persistence.jdbc.support;
 
 import net.ymate.platform.core.lang.BlurObject;
 import net.ymate.platform.core.util.ClassUtils;
+import net.ymate.platform.persistence.IResultSet;
 import net.ymate.platform.persistence.base.EntityMeta;
 import net.ymate.platform.persistence.base.IEntity;
-import net.ymate.platform.persistence.IResultSet;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
@@ -536,20 +536,21 @@ public class ResultSetHelper {
 
         @SuppressWarnings("unchecked")
         public <T extends IEntity> T toEntity(T entityObject) throws Exception {
-            EntityMeta __entityMeta = EntityMeta.createAndGet(entityObject.getClass());
+            EntityMeta _entityMeta = EntityMeta.createAndGet(entityObject.getClass());
             Object _primaryKeyObject = null;
-            if (__entityMeta.isMultiplePrimaryKey()) {
-                _primaryKeyObject = __entityMeta.getPrimaryKeyClass().newInstance();
+            if (_entityMeta.isMultiplePrimaryKey()) {
+                _primaryKeyObject = _entityMeta.getPrimaryKeyClass().newInstance();
                 //
                 entityObject.setId((Serializable) _primaryKeyObject);
             }
-            for (int _idx = 0; _idx < __columnCount; _idx++) {
-                EntityMeta.PropertyMeta _meta = __entityMeta.getPropertyByName(__columnNames[_idx]);
-                Object _fValue = getObject(_idx);
-                if (__entityMeta.isPrimaryKey(_meta.getName()) && __entityMeta.isMultiplePrimaryKey()) {
-                    _meta.getField().set(_primaryKeyObject, _fValue);
-                } else {
-                    _meta.getField().set(entityObject, _fValue);
+            for (EntityMeta.PropertyMeta _meta : _entityMeta.getProperties()) {
+                Object _fValue = getObject(_meta.getName());
+                if (_fValue != null) {
+                    if (_entityMeta.isPrimaryKey(_meta.getName()) && _entityMeta.isMultiplePrimaryKey()) {
+                        _meta.getField().set(_primaryKeyObject, _fValue);
+                    } else {
+                        _meta.getField().set(entityObject, _fValue);
+                    }
                 }
             }
             return entityObject;
@@ -557,12 +558,12 @@ public class ResultSetHelper {
 
         public <T> T toObject(T valueObject) throws Exception {
             ClassUtils.BeanWrapper<?> _wrapper = ClassUtils.wrapper(valueObject);
-            for (String _columnName : __columnNames) {
+            for (String _fieldName : _wrapper.getFieldNames()) {
+                String _columnName = EntityMeta.fieldNameToPropertyName(_fieldName, 0);
                 Object _value = this.getObject(_columnName);
                 if (_value == null) {
                     continue;
                 }
-                String _fieldName = EntityMeta.propertyNameToFieldName(_columnName);
                 _wrapper.setValue(_fieldName, BlurObject.bind(_value).toObjectValue(_wrapper.getFieldType(_fieldName)));
             }
             return valueObject;
