@@ -15,7 +15,7 @@
  */
 package net.ymate.platform.persistence.jdbc;
 
-import net.ymate.platform.persistence.IPasswordProcessor;
+import net.ymate.platform.core.support.IPasswordProcessor;
 
 /**
  * 数据源配置接口

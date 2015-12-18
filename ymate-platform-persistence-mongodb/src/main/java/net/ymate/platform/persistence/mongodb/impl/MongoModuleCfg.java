@@ -19,7 +19,7 @@ import com.mongodb.ServerAddress;
 import net.ymate.platform.core.YMP;
 import net.ymate.platform.core.lang.BlurObject;
 import net.ymate.platform.core.util.ClassUtils;
-import net.ymate.platform.persistence.IPasswordProcessor;
+import net.ymate.platform.core.support.IPasswordProcessor;
 import net.ymate.platform.persistence.mongodb.IMongo;
 import net.ymate.platform.persistence.mongodb.IMongoClientOptionsHandler;
 import net.ymate.platform.persistence.mongodb.IMongoModuleCfg;

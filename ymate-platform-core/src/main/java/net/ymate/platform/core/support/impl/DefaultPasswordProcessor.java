@@ -13,14 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.ymate.platform.persistence.impl;
+package net.ymate.platform.core.support.impl;
 
 import net.ymate.platform.core.util.CodecUtils;
-import net.ymate.platform.persistence.IPasswordProcessor;
+import net.ymate.platform.core.support.IPasswordProcessor;
 import org.apache.commons.codec.digest.DigestUtils;
 
 /**
- * 默认数据库密码处理器类
+ * 默认密码处理器类
  *
  * @author 刘镇 (suninformation@163.com) on 15/4/13 下午3:47
  * @version 1.0

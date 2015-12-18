@@ -16,7 +16,7 @@
 package net.ymate.platform.persistence.mongodb;
 
 import com.mongodb.ServerAddress;
-import net.ymate.platform.persistence.IPasswordProcessor;
+import net.ymate.platform.core.support.IPasswordProcessor;
 
 import java.util.Collections;
 import java.util.List;
