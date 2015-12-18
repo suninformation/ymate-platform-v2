@@ -32,23 +32,19 @@ import net.ymate.platform.core.handle.EventRegisterHandler;
 import net.ymate.platform.core.handle.ModuleHandler;
 import net.ymate.platform.core.handle.ProxyHandler;
 import net.ymate.platform.core.i18n.I18N;
-import net.ymate.platform.core.i18n.II18NEventHandler;
-import net.ymate.platform.core.lang.BlurObject;
 import net.ymate.platform.core.module.IModule;
 import net.ymate.platform.core.module.ModuleEvent;
 import net.ymate.platform.core.module.annotation.Module;
-import net.ymate.platform.core.util.ClassUtils;
+import net.ymate.platform.core.support.ConfigBuilder;
 import net.ymate.platform.core.util.RuntimeUtils;
-import org.apache.commons.lang.LocaleUtils;
-import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.time.StopWatch;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import java.io.InputStream;
 import java.lang.annotation.Annotation;
-import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * YMP框架核心管理器
@@ -64,7 +60,7 @@ public class YMP {
 
     private static final String __YMP_BASE_PACKAGE = "net.ymate.platform";
 
-    private static final YMP __instance = new YMP(new Config());
+    private static final YMP __instance = new YMP(ConfigBuilder.system().build());
 
     private IConfig __config;
 
@@ -349,159 +345,6 @@ public class YMP {
                 }
             }
             return _bean;
-        }
-    }
-
-    /**
-     * YMP框架配置类
-     */
-    private static class Config implements IConfig {
-
-        private Properties __props;
-
-        private Boolean __isDevelopMode;
-
-        private List<String> __packageNames;
-
-        private List<String> __excludeModules;
-
-        private Locale __locale;
-
-        private II18NEventHandler __i18nEventHandler;
-
-        private Map<String, String> __paramsMap;
-
-        private Map<String, Map<String, String>> __moduleCfgs;
-
-        private Map<String, String> __eventConfigs;
-
-        public Config() {
-            __props = new Properties();
-            __moduleCfgs = new ConcurrentHashMap<String, Map<String, String>>();
-            //
-            InputStream _in = null;
-            try {
-                if (RuntimeUtils.isWindows()) {
-                    _in = Config.class.getClassLoader().getResourceAsStream("ymp-conf_WIN.properties");
-                } else if (RuntimeUtils.isUnixOrLinux()) {
-                    _in = Config.class.getClassLoader().getResourceAsStream("ymp-conf_UNIX.properties");
-                }
-                if (_in == null) {
-                    _in = Config.class.getClassLoader().getResourceAsStream("ymp-conf.properties");
-                }
-                if (_in != null) {
-                    __props.load(_in);
-                }
-            } catch (Exception e) {
-                throw new RuntimeException(RuntimeUtils.unwrapThrow(e));
-            } finally {
-                try {
-                    if (_in != null) _in.close();
-                } catch (Exception ignored) {
-                }
-            }
-        }
-
-        public boolean isDevelopMode() {
-            if (__isDevelopMode == null) {
-                __isDevelopMode = new BlurObject(__props.getProperty("ymp.dev_mode")).toBooleanValue();
-            }
-            return __isDevelopMode;
-        }
-
-        private List<String> __doParserArrayStr(String key) {
-            String[] _strArr = StringUtils.split(__props.getProperty(key), "|");
-            if (_strArr != null) {
-                return new ArrayList<String>(Arrays.asList(_strArr));
-            }
-            return Collections.emptyList();
-        }
-
-        public List<String> getAutoscanPackages() {
-            if (__packageNames == null) {
-                __packageNames = __doParserArrayStr("ymp.autoscan_packages");
-            }
-            return __packageNames;
-        }
-
-        public List<String> getExcludedModules() {
-            if (__excludeModules == null) {
-                __excludeModules = __doParserArrayStr("ymp.excluded_modules");
-            }
-            return __excludeModules;
-        }
-
-        public Locale getDefaultLocale() {
-            if (__locale != null) {
-                String _localStr = StringUtils.trimToNull(__props.getProperty("ymp.i18n_default_locale"));
-                if (_localStr == null) {
-                    __locale = Locale.getDefault();
-                } else {
-                    __locale = LocaleUtils.toLocale(_localStr);
-                }
-            }
-            return __locale;
-        }
-
-        public II18NEventHandler getI18NEventHandlerClass() {
-            if (__i18nEventHandler == null) {
-                __i18nEventHandler = ClassUtils.impl(__props.getProperty("ymp.i18n_event_handler_class"), II18NEventHandler.class, this.getClass());
-            }
-            return __i18nEventHandler;
-        }
-
-        public Map<String, String> getParams() {
-            if (__paramsMap == null) {
-                __paramsMap = new ConcurrentHashMap<String, String>();
-                // 提取模块配置
-                String _prefix = "ymp.params.";
-                for (Object _key : __props.keySet()) {
-                    if (StringUtils.startsWith((String) _key, _prefix)) {
-                        String _cfgKey = StringUtils.substring((String) _key, _prefix.length());
-                        String _cfgValue = __props.getProperty((String) _key);
-                        __paramsMap.put(_cfgKey, _cfgValue);
-                    }
-                }
-            }
-            return Collections.unmodifiableMap(__paramsMap);
-        }
-
-        public String getParam(String name) {
-            return this.getParams().get(name);
-        }
-
-        public Map<String, String> getModuleConfigs(String moduleName) {
-            Map<String, String> _cfgsMap = __moduleCfgs.get(moduleName);
-            if (_cfgsMap == null) {
-                _cfgsMap = new HashMap<String, String>();
-                // 提取模块配置
-                for (Object _key : __props.keySet()) {
-                    String _prefix = "ymp.configs." + moduleName + ".";
-                    if (StringUtils.startsWith((String) _key, _prefix)) {
-                        String _cfgKey = StringUtils.substring((String) _key, _prefix.length());
-                        String _cfgValue = __props.getProperty((String) _key);
-                        _cfgsMap.put(_cfgKey, _cfgValue);
-                    }
-                }
-                __moduleCfgs.put(moduleName, Collections.unmodifiableMap(_cfgsMap));
-            }
-            return _cfgsMap;
-        }
-
-        public Map<String, String> getEventConfigs() {
-            if (__eventConfigs == null) {
-                __eventConfigs = new HashMap<String, String>();
-                // 提取模块配置
-                for (Object _key : __props.keySet()) {
-                    String _prefix = "ymp.event.";
-                    if (StringUtils.startsWith((String) _key, _prefix)) {
-                        String _cfgKey = StringUtils.substring((String) _key, _prefix.length());
-                        String _cfgValue = __props.getProperty((String) _key);
-                        __eventConfigs.put(_cfgKey, _cfgValue);
-                    }
-                }
-            }
-            return Collections.unmodifiableMap(__eventConfigs);
         }
     }
 }
