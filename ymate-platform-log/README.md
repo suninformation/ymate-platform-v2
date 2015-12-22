@@ -69,35 +69,35 @@
 
     + 首先，为了配合演示多个日志记录器的使用方法，修改log4j.xml配置内容如下：
 
-        <?xml version="1.0" encoding="UTF-8"?>
-        <Configuration>
-            <Appenders>
-                <RollingFile name="default" fileName="${sys:LOG_OUT_DIR}/default.log"
-                             filePattern="${sys:LOG_OUT_DIR}/$${date:yyyy-MM}/default-%d{MM-dd-yyyy}-%i.log.gz">
-                    <PatternLayout pattern="%m %n" charset="UTF-8"/>
-                    <SizeBasedTriggeringPolicy size="500 MB"/>
-                </RollingFile>
-
-                <RollingFile name="wechat" fileName="${sys:LOG_OUT_DIR}/wechat.log"
-                             filePattern="${sys:LOG_OUT_DIR}/$${date:yyyy-MM}/wechat-%d{MM-dd-yyyy}-%i.log.gz">
-                    <PatternLayout pattern="%m %n" charset="UTF-8"/>
-                    <SizeBasedTriggeringPolicy size="500 MB"/>
-                </RollingFile>
-
-            </Appenders>
-            <Loggers>
-
-                <Logger name="wechat" level="debug">
-                    <AppenderRef ref="wechat"/>
-                </Logger>
-
-                <!-- 配置记录器级别 -->
-                <Root level="debug">
-                    <!-- 输出设置 -->
-                    <AppenderRef ref="default"/>
-                </Root>
-            </Loggers>
-        </Configuration>
+            <?xml version="1.0" encoding="UTF-8"?>
+            <Configuration>
+                <Appenders>
+                    <RollingFile name="default" fileName="${sys:LOG_OUT_DIR}/default.log"
+                                 filePattern="${sys:LOG_OUT_DIR}/$${date:yyyy-MM}/default-%d{MM-dd-yyyy}-%i.log.gz">
+                        <PatternLayout pattern="%m %n" charset="UTF-8"/>
+                        <SizeBasedTriggeringPolicy size="500 MB"/>
+                    </RollingFile>
+    
+                    <RollingFile name="wechat" fileName="${sys:LOG_OUT_DIR}/wechat.log"
+                                 filePattern="${sys:LOG_OUT_DIR}/$${date:yyyy-MM}/wechat-%d{MM-dd-yyyy}-%i.log.gz">
+                        <PatternLayout pattern="%m %n" charset="UTF-8"/>
+                        <SizeBasedTriggeringPolicy size="500 MB"/>
+                    </RollingFile>
+    
+                </Appenders>
+                <Loggers>
+    
+                    <Logger name="wechat" level="debug">
+                        <AppenderRef ref="wechat"/>
+                    </Logger>
+    
+                    <!-- 配置记录器级别 -->
+                    <Root level="debug">
+                        <!-- 输出设置 -->
+                        <AppenderRef ref="default"/>
+                    </Root>
+                </Loggers>
+            </Configuration>
 
         上面的配置文件中共配置两个日志记录器：
 
