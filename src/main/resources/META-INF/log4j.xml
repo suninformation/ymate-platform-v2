@@ -2,13 +2,13 @@
 <Configuration>
     <Appenders>
         <RollingFile name="default" fileName="${sys:LOG_OUT_DIR}/default.log"
-                     filePattern="logs/$${date:yyyy-MM}/default-%d{MM-dd-yyyy}-%i.log.gz">
+                     filePattern="${sys:LOG_OUT_DIR}/$${date:yyyy-MM}/default-%d{MM-dd-yyyy}-%i.log.gz">
             <PatternLayout pattern="%m %n" charset="UTF-8"/>
             <SizeBasedTriggeringPolicy size="500 MB"/>
         </RollingFile>
         <!--
-        <RollingFile name="custom-logname" fileName="${sys:LOG_OUT_DIR}/test.log"
-                     filePattern="logs/$${date:yyyy-MM}/custom-logname-%d{MM-dd-yyyy}-%i.log.gz">
+        <RollingFile name="custom-logname" fileName="${sys:LOG_OUT_DIR}/custom-logname.log"
+                     filePattern="${sys:LOG_OUT_DIR}/$${date:yyyy-MM}/custom-logname-%d{MM-dd-yyyy}-%i.log.gz">
             <PatternLayout pattern="%m %n" charset="UTF-8"/>
             <SizeBasedTriggeringPolicy size="500 MB"/>
         </RollingFile>
