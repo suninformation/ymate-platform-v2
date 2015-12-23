@@ -105,6 +105,7 @@ public class Cfgs implements IModule, IConfig {
             }
             //
             if (StringUtils.isNotBlank(__configHome)) {
+                __configHome = StringUtils.replace(__configHome, "%20", " ");
                 File _configHomeFile = new File(__configHome);
                 if (_configHomeFile.exists() && _configHomeFile.isDirectory()) {
                     System.setProperty(__USER_DIR, __configHome = _configHomeFile.getPath());

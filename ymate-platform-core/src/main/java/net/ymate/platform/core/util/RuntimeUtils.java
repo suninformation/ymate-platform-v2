@@ -139,7 +139,9 @@ public class RuntimeUtils {
         } else {
             _isWeb = true;
         }
-        String _rootPath = StringUtils.removeEnd(_isWeb ? StringUtils.substringBefore(_rootURL.getPath(), safe ? "classes/" : "WEB-INF/") : _rootURL.getPath(), "/");
+        String _rootPath = StringUtils.replace(StringUtils.removeEnd(
+                _isWeb ? StringUtils.substringBefore(
+                        _rootURL.getPath(), safe ? "classes/" : "WEB-INF/") : _rootURL.getPath(), "/"), "%20", " ");
         if (isWindows()) {
             _rootPath = StringUtils.removeStart(_rootPath, "/");
         }
