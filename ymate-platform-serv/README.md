@@ -13,11 +13,11 @@
 
     + TextLineCodec：用于解析以回车换行符(\r\n)做为消息结束标志的字符串消息的编/解码器；
 
-- 内置服务（Service）：目前提供以下两种内置服务，在不断完善中...；
+- 内置服务（Service）：目前提供以下两种内置服务，更多服务在不断完善中...；
 
-    + IHeartbeatService：内置链路维护(心跳)服务；
+    + IHeartbeatService：内置链路维护(心跳)服务，该服务将在与服务端成功建立连接后按参数配置的时间间隔向服务端发送心跳消息（心跳消息内容默认为0字符，心跳消息内容可以通过自定义参数heartbeat_message设置）；
 
-    + IReconnectService：内置断线重连服务；
+    + IReconnectService：内置断线重连服务，当服务的连接状态异常时将尝试重新与服务端建立连接；
 
 ####服务端（Server）：
 
@@ -237,3 +237,35 @@
                     System.out.println(sourceAddr + "--->" + e);
                 }
             }
+
+####客户端和服务端对象的使用
+
+YMP框架启动时将自动扫描并加载声明了@Server和@Client注解的类，并根据注解设置和对应的参数配置进行客户端或服务端对象的初始化，但此时的客户端和服务端程序并没有直正执行，需要手动完成启动动作，代码如下：
+
+- 示例一：启动所有已加载的客户端、服务端服务
+
+        public static void main(String[] args) throws Exception {
+            YMP.get().init();
+            //
+            Servs.get().startup();
+        }
+
+- 示例二：获取指定的客户端或服务端服务，启动服务并向服务端发送消息
+
+        public static void main(String[] args) throws Exception {
+            YMP.get().init();
+
+            // 获取服务端实例对象
+            NioUdpServer _serv = Servs.get().getServer(UdpServer.class);
+            // 启动服务
+            _serv.start();
+
+            // 获取客户端实例对象
+            NioUdpClient _c = Servs.get().getClient(UdpClient.class);
+            // 连接到远程服务
+            _c.connect();
+            // 通过客户端对象向服务端发送消息
+            _c.send("Message from Client.");
+        }
+
+    **注**：YMP框架初始化过程中，若使用try...finally去执行YMP.get().destroy()销毁动作，则服务刚刚启动就被停止了。
