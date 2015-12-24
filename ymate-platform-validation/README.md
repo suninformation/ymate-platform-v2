@@ -121,7 +121,10 @@
             try {
                 Map<String, Object> _params = new HashMap<String, Object>();
                 _params.put("username", "lz");
-                _params.put("ext.age", "18");
+                _params.put("password", 1233);
+                _params.put("repassword", "12333");
+                _params.put("ext.age", "17");
+                _params.put("ext.email", "@163.com");
 
                 Map<String, ValidateResult> _results = Validations.get().validate(UserBase.class, _params);
                 //
@@ -136,22 +139,19 @@
 - 执行结果：
 
         username : 用户名称长度必须在3到16之间
-        password : password must be requried.
-        repassword : repassword must be requried.
+        repassword : repassword must be eq password.
         ext.age : ext.age numeric must be between 30 and 18.
-        ext.email : ext.email must be requried.
+        ext.email : ext.email not a valid email address.
 
 - 功能注解说明：
 
     * @Validation：验证模式配置，默认为NORMAL；
-        > NORMAL - 短路式验证，即出现验证未通过就返回验证结果
-        >
-        > FULL   - 对目标对象属性进行全部验证后返回全部验证结果
+        - NORMAL - 短路式验证，即出现验证未通过就返回验证结果
+        - FULL   - 对目标对象属性进行全部验证后返回全部验证结果
 
     * @VField：自定义待验证的成员或方法参数名称；
-        > name：自定义参数名称，在嵌套验证时上下层参数以'.'分隔；
-        >
-        > label：自定义参数标签名称，若@VField嵌套使用时功能将不可用；
+        - name：自定义参数名称，在嵌套验证时上下层参数以'.'分隔；
+        - label：自定义参数标签名称，若@VField嵌套使用时功能将不可用；
 
     * @VModel：声明目标对象是否为JavaBean对象，将执行对象嵌套验证；
 
@@ -182,8 +182,6 @@
             public ValidateResult validate(ValidateContext context) {
                 ValidateResult _result = null;
                 if (context.getParamValue() != null) {
-                    // 取参数值
-                    String _email = BlurObject.bind(context.getParamValue()).toStringValue();
                     // 假定邮箱地址已存在
                     VEmailCanUse _anno = (VEmailCanUse) context.getAnnotation();
                     _result = new ValidateResult(context.getParamName(), StringUtils.defaultIfBlank(_anno.msg(), "邮箱地址已存在"));
