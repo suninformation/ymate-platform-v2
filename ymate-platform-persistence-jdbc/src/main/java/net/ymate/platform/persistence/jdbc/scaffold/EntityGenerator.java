@@ -185,7 +185,7 @@ public class EntityGenerator {
         //
         String _dbName = YMP.get().getConfig().getParam("jdbc.db_name");
         String _dbUser = YMP.get().getConfig().getParam("jdbc.db_username");
-        String[] _prefixs = StringUtils.split(YMP.get().getConfig().getParam("jdbc.table_prefix"), '|');
+        String[] _prefixs = StringUtils.split(StringUtils.defaultIfBlank(YMP.get().getConfig().getParam("jdbc.table_prefix"), ""), '|');
         boolean _isRemovePrefix = new BlurObject(YMP.get().getConfig().getParam("jdbc.remove_table_prefix")).toBooleanValue();
         List<String> _tableExcludeList = Arrays.asList(StringUtils.split(StringUtils.defaultIfBlank(YMP.get().getConfig().getParam("jdbc.table_exclude_list"), "").toLowerCase(), "|"));
         for (String _tableName : _tableList) {
