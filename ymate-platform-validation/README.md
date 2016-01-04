@@ -177,7 +177,7 @@
 - 实现IValidator接口并声明@Validator注解：
 
         @Validator(VEmailCanUse.class)
-        public class UserNeedLoginValidator implements IValidator {
+        public class EmailCanUseValidator implements IValidator {
 
             public ValidateResult validate(ValidateContext context) {
                 ValidateResult _result = null;
