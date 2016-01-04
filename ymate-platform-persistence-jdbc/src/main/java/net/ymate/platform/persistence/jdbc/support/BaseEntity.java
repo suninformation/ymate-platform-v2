@@ -16,15 +16,17 @@
 package net.ymate.platform.persistence.jdbc.support;
 
 import net.ymate.platform.core.util.ClassUtils;
+import net.ymate.platform.persistence.Fields;
+import net.ymate.platform.persistence.IResultSet;
+import net.ymate.platform.persistence.Page;
+import net.ymate.platform.persistence.base.EntityMeta;
 import net.ymate.platform.persistence.base.IEntity;
 import net.ymate.platform.persistence.jdbc.IConnectionHolder;
 import net.ymate.platform.persistence.jdbc.ISession;
 import net.ymate.platform.persistence.jdbc.JDBC;
-import net.ymate.platform.persistence.IResultSet;
 import net.ymate.platform.persistence.jdbc.impl.DefaultSession;
+import net.ymate.platform.persistence.jdbc.query.Cond;
 import net.ymate.platform.persistence.jdbc.query.EntitySQL;
-import net.ymate.platform.persistence.Fields;
-import net.ymate.platform.persistence.Page;
 import net.ymate.platform.persistence.jdbc.query.Where;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
@@ -153,6 +155,46 @@ public abstract class BaseEntity<Entity extends IEntity, PK extends Serializable
         }
     }
 
+    @SuppressWarnings("unchecked")
+    public IResultSet<Entity> find() throws Exception {
+        ISession _session = new DefaultSession(__doGetConnectionHolderSafed());
+        try {
+            return _session.find((Entity) this);
+        } finally {
+            _session.close();
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    public IResultSet<Entity> find(Page page) throws Exception {
+        ISession _session = new DefaultSession(__doGetConnectionHolderSafed());
+        try {
+            return _session.find((Entity) this);
+        } finally {
+            _session.close();
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    public IResultSet<Entity> find(Fields fields) throws Exception {
+        ISession _session = new DefaultSession(__doGetConnectionHolderSafed());
+        try {
+            return _session.find((Entity) this, fields);
+        } finally {
+            _session.close();
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    public IResultSet<Entity> find(Fields fields, Page page) throws Exception {
+        ISession _session = new DefaultSession(__doGetConnectionHolderSafed());
+        try {
+            return _session.find((Entity) this, fields, page);
+        } finally {
+            _session.close();
+        }
+    }
+
     public IResultSet<Entity> find(Where where) throws Exception {
         return find(where, Fields.create());
     }
@@ -188,11 +230,11 @@ public abstract class BaseEntity<Entity extends IEntity, PK extends Serializable
     }
 
     public Entity findFirst() throws Exception {
-        return findFirst(null, Fields.create());
+        return findFirst(Where.create(buildEntityCond(this)), Fields.create());
     }
 
     public Entity findFirst(Fields fields) throws Exception {
-        return findFirst(null, fields);
+        return findFirst(Where.create(buildEntityCond(this)), fields);
     }
 
     public Entity findFirst(Where where, Fields fields) throws Exception {
@@ -222,4 +264,21 @@ public abstract class BaseEntity<Entity extends IEntity, PK extends Serializable
         return ToStringBuilder.reflectionToString(this, ToStringStyle.DEFAULT_STYLE);
     }
 
+    public static <T extends IEntity> Cond buildEntityCond(T entity) throws Exception {
+        Cond _cond = Cond.create();
+        EntityMeta _meta = EntityMeta.createAndGet(entity.getClass());
+        ClassUtils.BeanWrapper<T> _beanWrapper = ClassUtils.wrapper(entity);
+        for (String _field : _meta.getPropertyNames()) {
+            Object _value = null;
+            if (_meta.isMultiplePrimaryKey() && _meta.isPrimaryKey(_field)) {
+                _value = _meta.getPropertyByName(_field).getField().get(entity.getId());
+            } else {
+                _value = _beanWrapper.getValue(_meta.getPropertyByName(_field).getField().getName());
+            }
+            if (_value != null) {
+                _cond.and().eq(_field).param(_value);
+            }
+        }
+        return _cond;
+    }
 }

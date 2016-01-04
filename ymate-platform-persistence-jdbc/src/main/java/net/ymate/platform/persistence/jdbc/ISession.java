@@ -21,7 +21,10 @@ import net.ymate.platform.persistence.ISessionBase;
 import net.ymate.platform.persistence.Page;
 import net.ymate.platform.persistence.base.IEntity;
 import net.ymate.platform.persistence.jdbc.base.IResultSetHandler;
-import net.ymate.platform.persistence.jdbc.query.*;
+import net.ymate.platform.persistence.jdbc.query.BatchSQL;
+import net.ymate.platform.persistence.jdbc.query.EntitySQL;
+import net.ymate.platform.persistence.jdbc.query.SQL;
+import net.ymate.platform.persistence.jdbc.query.Where;
 
 import java.io.Serializable;
 import java.util.List;
@@ -65,6 +68,12 @@ public interface ISession extends ISessionBase {
      * @throws Exception 可能产生的异常
      */
     <T extends IEntity> IResultSet<T> find(T entity) throws Exception;
+
+    <T extends IEntity> IResultSet<T> find(T entity, Page page) throws Exception;
+
+    <T extends IEntity> IResultSet<T> find(T entity, Fields filter) throws Exception;
+
+    <T extends IEntity> IResultSet<T> find(T entity, Fields filter, Page page) throws Exception;
 
     /**
      * @param <T>    指定结果集数据类型

@@ -17,7 +17,6 @@ package net.ymate.platform.persistence.jdbc.impl;
 
 import net.ymate.platform.core.lang.BlurObject;
 import net.ymate.platform.core.lang.PairObject;
-import net.ymate.platform.core.util.ClassUtils;
 import net.ymate.platform.core.util.ExpressionUtils;
 import net.ymate.platform.core.util.UUIDUtils;
 import net.ymate.platform.persistence.*;
@@ -28,10 +27,17 @@ import net.ymate.platform.persistence.impl.DefaultResultSet;
 import net.ymate.platform.persistence.jdbc.IConnectionHolder;
 import net.ymate.platform.persistence.jdbc.ISession;
 import net.ymate.platform.persistence.jdbc.base.*;
-import net.ymate.platform.persistence.jdbc.base.impl.*;
+import net.ymate.platform.persistence.jdbc.base.impl.BatchUpdateOperator;
+import net.ymate.platform.persistence.jdbc.base.impl.DefaultQueryOperator;
+import net.ymate.platform.persistence.jdbc.base.impl.DefaultUpdateOperator;
+import net.ymate.platform.persistence.jdbc.base.impl.EntityResultSetHandler;
 import net.ymate.platform.persistence.jdbc.dialect.IDialect;
 import net.ymate.platform.persistence.jdbc.dialect.impl.OracleDialect;
-import net.ymate.platform.persistence.jdbc.query.*;
+import net.ymate.platform.persistence.jdbc.query.BatchSQL;
+import net.ymate.platform.persistence.jdbc.query.EntitySQL;
+import net.ymate.platform.persistence.jdbc.query.SQL;
+import net.ymate.platform.persistence.jdbc.query.Where;
+import net.ymate.platform.persistence.jdbc.support.BaseEntity;
 import net.ymate.platform.persistence.jdbc.transaction.Transactions;
 import org.apache.commons.lang.StringUtils;
 
@@ -126,21 +132,20 @@ public class DefaultSession implements ISession {
 
     @SuppressWarnings("unchecked")
     public <T extends IEntity> IResultSet<T> find(T entity) throws Exception {
-        Cond _cond = Cond.create();
-        EntityMeta _meta = EntityMeta.createAndGet(entity.getClass());
-        ClassUtils.BeanWrapper<T> _beanWrapper = ClassUtils.wrapper(entity);
-        for (String _field : _meta.getPropertyNames()) {
-            Object _value = null;
-            if (_meta.isMultiplePrimaryKey() && _meta.isPrimaryKey(_field)) {
-                _value = _meta.getPropertyByName(_field).getField().get(entity.getId());
-            } else {
-                _value = _beanWrapper.getValue(_meta.getPropertyByName(_field).getField().getName());
-            }
-            if (_value != null) {
-                _cond.and().eq(_field).param(_value);
-            }
-        }
-        return (IResultSet<T>) this.find(EntitySQL.create(entity.getClass()), Where.create(_cond));
+        return find(entity, Fields.create());
+    }
+
+    public <T extends IEntity> IResultSet<T> find(T entity, Page page) throws Exception {
+        return find(entity, Fields.create(), null);
+    }
+
+    public <T extends IEntity> IResultSet<T> find(T entity, Fields filter) throws Exception {
+        return find(entity, filter, null);
+    }
+
+    @SuppressWarnings("unchecked")
+    public <T extends IEntity> IResultSet<T> find(T entity, Fields filter, Page page) throws Exception {
+        return (IResultSet<T>) this.find(EntitySQL.create(entity.getClass()).field(filter), Where.create(BaseEntity.buildEntityCond(entity)), page);
     }
 
     public <T extends IEntity> IResultSet<T> find(EntitySQL<T> entity) throws Exception {
