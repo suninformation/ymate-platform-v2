@@ -18,6 +18,7 @@ package net.ymate.platform.webmvc.support;
 import net.ymate.platform.core.i18n.II18NEventHandler;
 import net.ymate.platform.core.lang.BlurObject;
 import net.ymate.platform.core.util.RuntimeUtils;
+import net.ymate.platform.webmvc.WebMVC;
 import net.ymate.platform.webmvc.context.WebContext;
 import net.ymate.platform.webmvc.util.CookieHelper;
 import org.apache.commons.lang.LocaleUtils;
@@ -37,15 +38,17 @@ public class I18NWebEventHandler implements II18NEventHandler {
 
     public static final String I18N_LANG_KEY = "_long";
 
+    private String __i18nHome;
+
     public Locale onLocale() {
         String _langStr = null;
         // 先尝试取URL参数变量
         if (WebContext.getContext() != null) {
             _langStr = WebContext.getRequestContext().getAttribute(I18N_LANG_KEY);
-            if (_langStr == null) {
+            if (StringUtils.trimToNull(_langStr) == null) {
                 // 再尝试从请求参数中获取
                 _langStr = WebContext.getRequest().getParameter(I18N_LANG_KEY);
-                if (_langStr == null) {
+                if (StringUtils.trimToNull(_langStr) == null) {
                     // 最后一次机会，尝试读取Cookies
                     BlurObject _langCookie = CookieHelper.bind(WebContext.getContext().getOwner()).getCookie(I18N_LANG_KEY);
                     if (_langCookie != null) {
@@ -58,15 +61,20 @@ public class I18NWebEventHandler implements II18NEventHandler {
     }
 
     public void onChanged(Locale locale) {
-        if (WebContext.getContext() != null) {
+        if (WebContext.getContext() != null && locale != null) {
             CookieHelper.bind(WebContext.getContext().getOwner()).setCookie(I18N_LANG_KEY, locale.toString());
         }
     }
 
     public InputStream onLoad(String resourceName) throws IOException {
-        File _resFile = new File(RuntimeUtils.replaceEnvVariable("${user.dir}/i18n/"), resourceName);
-        if (_resFile.exists() && _resFile.canRead()) {
-            return new FileInputStream(_resFile);
+        if (__i18nHome == null) {
+            __i18nHome = RuntimeUtils.replaceEnvVariable(StringUtils.defaultIfBlank(WebMVC.get().getOwner().getConfig().getParam("i18n_resources_home"), "${root}/i18n/"));
+        }
+        if (StringUtils.trimToNull(resourceName) != null) {
+            File _resFile = new File(__i18nHome, resourceName);
+            if (_resFile.exists() && _resFile.isFile() && _resFile.canRead()) {
+                return new FileInputStream(_resFile);
+            }
         }
         return null;
     }
