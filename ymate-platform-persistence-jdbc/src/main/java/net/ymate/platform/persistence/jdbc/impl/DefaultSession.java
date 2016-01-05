@@ -168,6 +168,11 @@ public class DefaultSession implements ISession {
                 _count = this.count(entity.getEntityClass(), where);
             }
         }
+        //
+        if (entity.forUpdate() != null) {
+            _selectSql = _selectSql + " " + entity.forUpdate().toSQL();
+        }
+        //
         IQueryOperator<T> _opt = new DefaultQueryOperator<T>(_selectSql, this.__connectionHolder, new EntityResultSetHandler<T>(entity.getEntityClass()));
         if (where != null) {
             for (Object _param : where.getParams().params()) {
@@ -192,6 +197,11 @@ public class DefaultSession implements ISession {
         EntityMeta _meta = EntityMeta.createAndGet(entity.getEntityClass());
         PairObject<Fields, Params> _entityPK = __doGetPrimaryKeyFieldAndValues(_meta, id, null);
         String _selectSql = __dialect.buildSelectByPkSQL(entity.getEntityClass(), __tablePrefix, _entityPK.getKey(), __doGetNotExcludedFields(_meta, entity.fields(), false, true));
+        //
+        if (entity.forUpdate() != null) {
+            _selectSql = _selectSql + " " + entity.forUpdate().toSQL();
+        }
+        //
         IQueryOperator<T> _opt = new DefaultQueryOperator<T>(_selectSql, this.__connectionHolder, new EntityResultSetHandler<T>(entity.getEntityClass()));
         if (_meta.isMultiplePrimaryKey()) {
             for (Object _param : _entityPK.getValue().params()) {
@@ -232,6 +242,11 @@ public class DefaultSession implements ISession {
             _selectSql = _selectSql.concat(" ").concat(where.toSQL()).concat(" ").concat(where.orderBy().toSQL());
         }
         _selectSql = __dialect.buildPagedQuerySQL(_selectSql, 1, 1);
+        //
+        if (entity.forUpdate() != null) {
+            _selectSql = _selectSql + " " + entity.forUpdate().toSQL();
+        }
+        //
         IQueryOperator<T> _opt = new DefaultQueryOperator<T>(_selectSql, this.__connectionHolder, new EntityResultSetHandler<T>(entity.getEntityClass()));
         if (where != null) {
             for (Object _param : where.getParams().params()) {

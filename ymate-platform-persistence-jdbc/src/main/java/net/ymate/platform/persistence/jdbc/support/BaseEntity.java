@@ -27,6 +27,7 @@ import net.ymate.platform.persistence.jdbc.JDBC;
 import net.ymate.platform.persistence.jdbc.impl.DefaultSession;
 import net.ymate.platform.persistence.jdbc.query.Cond;
 import net.ymate.platform.persistence.jdbc.query.EntitySQL;
+import net.ymate.platform.persistence.jdbc.query.IDBLocker;
 import net.ymate.platform.persistence.jdbc.query.Where;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
@@ -80,13 +81,28 @@ public abstract class BaseEntity<Entity extends IEntity, PK extends Serializable
     }
 
     public Entity load() throws Exception {
-        return load(Fields.create());
+        return load(null, null);
     }
 
     public Entity load(Fields fields) throws Exception {
+        return load(fields, null);
+    }
+
+    public Entity load(IDBLocker dbLocker) throws Exception {
+        return load(null, dbLocker);
+    }
+
+    public Entity load(Fields fields, IDBLocker dbLocker) throws Exception {
         ISession _session = new DefaultSession(__doGetConnectionHolderSafed());
         try {
-            return _session.find(EntitySQL.create(this.getEntityClass()).field(fields), this.getId());
+            EntitySQL<Entity> _entitySQL = EntitySQL.create(this.getEntityClass());
+            if (fields != null) {
+                _entitySQL.field(fields);
+            }
+            if (dbLocker != null) {
+                _entitySQL.forUpdate(dbLocker);
+            }
+            return _session.find(_entitySQL, this.getId());
         } finally {
             _session.close();
         }
@@ -113,14 +129,18 @@ public abstract class BaseEntity<Entity extends IEntity, PK extends Serializable
     }
 
     public Entity saveOrUpdate() throws Exception {
-        return saveOrUpdate(Fields.create());
+        return saveOrUpdate(null);
     }
 
     @SuppressWarnings("unchecked")
     public Entity saveOrUpdate(Fields fields) throws Exception {
         ISession _session = new DefaultSession(__doGetConnectionHolderSafed());
         try {
-            Entity _t = _session.find(EntitySQL.create(this.getEntityClass()).field(fields), this.getId());
+            EntitySQL<Entity> _entitySQL = EntitySQL.create(this.getEntityClass());
+            if (fields != null) {
+                _entitySQL.field(fields);
+            }
+            Entity _t = _session.find(_entitySQL, this.getId());
             if (_t == null) {
                 return _session.insert((Entity) this, fields);
             }
@@ -155,92 +175,117 @@ public abstract class BaseEntity<Entity extends IEntity, PK extends Serializable
         }
     }
 
-    @SuppressWarnings("unchecked")
     public IResultSet<Entity> find() throws Exception {
-        ISession _session = new DefaultSession(__doGetConnectionHolderSafed());
-        try {
-            return _session.find((Entity) this);
-        } finally {
-            _session.close();
-        }
+        return find(Where.create(buildEntityCond(this)), null, null, null);
     }
 
-    @SuppressWarnings("unchecked")
+    public IResultSet<Entity> find(IDBLocker dbLocker) throws Exception {
+        return find(Where.create(buildEntityCond(this)), null, null, dbLocker);
+    }
+
     public IResultSet<Entity> find(Page page) throws Exception {
-        ISession _session = new DefaultSession(__doGetConnectionHolderSafed());
-        try {
-            return _session.find((Entity) this);
-        } finally {
-            _session.close();
-        }
+        return find(Where.create(buildEntityCond(this)), null, page, null);
     }
 
-    @SuppressWarnings("unchecked")
+    public IResultSet<Entity> find(Page page, IDBLocker dbLocker) throws Exception {
+        return find(Where.create(buildEntityCond(this)), null, page, dbLocker);
+    }
+
     public IResultSet<Entity> find(Fields fields) throws Exception {
-        ISession _session = new DefaultSession(__doGetConnectionHolderSafed());
-        try {
-            return _session.find((Entity) this, fields);
-        } finally {
-            _session.close();
-        }
+        return find(Where.create(buildEntityCond(this)), fields, null, null);
     }
 
-    @SuppressWarnings("unchecked")
+    public IResultSet<Entity> find(Fields fields, IDBLocker dbLocker) throws Exception {
+        return find(Where.create(buildEntityCond(this)), fields, null, dbLocker);
+    }
+
     public IResultSet<Entity> find(Fields fields, Page page) throws Exception {
-        ISession _session = new DefaultSession(__doGetConnectionHolderSafed());
-        try {
-            return _session.find((Entity) this, fields, page);
-        } finally {
-            _session.close();
-        }
+        return find(Where.create(buildEntityCond(this)), fields, page, null);
+    }
+
+    public IResultSet<Entity> find(Fields fields, Page page, IDBLocker dbLocker) throws Exception {
+        return find(Where.create(buildEntityCond(this)), fields, page, dbLocker);
     }
 
     public IResultSet<Entity> find(Where where) throws Exception {
-        return find(where, Fields.create());
+        return find(where, null, null, null);
+    }
+
+    public IResultSet<Entity> find(Where where, IDBLocker dbLocker) throws Exception {
+        return find(where, null, null, dbLocker);
     }
 
     public IResultSet<Entity> find(Where where, Fields fields) throws Exception {
-        ISession _session = new DefaultSession(__doGetConnectionHolderSafed());
-        try {
-            return _session.find(EntitySQL.create(this.getEntityClass()).field(fields), where);
-        } finally {
-            _session.close();
-        }
+        return find(where, fields, null, null);
+    }
+
+    public IResultSet<Entity> find(Where where, Fields fields, IDBLocker dbLocker) throws Exception {
+        return find(where, fields, null, dbLocker);
     }
 
     public IResultSet<Entity> find(Where where, Fields fields, Page page) throws Exception {
+        return find(where, fields, page, null);
+    }
+
+    public IResultSet<Entity> find(Where where, Fields fields, Page page, IDBLocker dbLocker) throws Exception {
         ISession _session = new DefaultSession(__doGetConnectionHolderSafed());
         try {
-            return _session.find(EntitySQL.create(this.getEntityClass()).field(fields), where, page);
+            EntitySQL<Entity> _entitySQL = EntitySQL.create(this.getEntityClass());
+            if (fields != null) {
+                _entitySQL.field(fields);
+            }
+            if (dbLocker != null) {
+                _entitySQL.forUpdate(dbLocker);
+            }
+            return _session.find(_entitySQL, where, page);
         } finally {
             _session.close();
         }
     }
 
     public IResultSet<Entity> findAll() throws Exception {
-        return find(null, Fields.create());
+        return find(null, null, null, null);
     }
 
     public IResultSet<Entity> findAll(Fields fields, Page page) throws Exception {
-        return find(null, fields, page);
+        return find(null, fields, page, null);
     }
 
     public IResultSet<Entity> findAll(Page page) throws Exception {
-        return find(null, Fields.create(), page);
+        return find(null, null, page, null);
     }
 
     public Entity findFirst() throws Exception {
-        return findFirst(Where.create(buildEntityCond(this)), Fields.create());
+        return findFirst(Where.create(buildEntityCond(this)), null, null);
+    }
+
+    public Entity findFirst(IDBLocker dbLocker) throws Exception {
+        return findFirst(Where.create(buildEntityCond(this)), null, dbLocker);
     }
 
     public Entity findFirst(Fields fields) throws Exception {
-        return findFirst(Where.create(buildEntityCond(this)), fields);
+        return findFirst(Where.create(buildEntityCond(this)), fields, null);
+    }
+
+    public Entity findFirst(Fields fields, IDBLocker dbLocker) throws Exception {
+        return findFirst(Where.create(buildEntityCond(this)), fields, dbLocker);
     }
 
     public Entity findFirst(Where where, Fields fields) throws Exception {
+        return findFirst(where, fields, null);
+    }
+
+    public Entity findFirst(Where where, Fields fields, IDBLocker dbLocker) throws Exception {
         ISession _session = new DefaultSession(__doGetConnectionHolderSafed());
         try {
-            return _session.findFirst(EntitySQL.create(this.getEntityClass()).field(fields), where);
+            EntitySQL<Entity> _entitySQL = EntitySQL.create(this.getEntityClass());
+            if (fields != null) {
+                _entitySQL.field(fields);
+            }
+            if (dbLocker != null) {
+                _entitySQL.forUpdate(dbLocker);
+            }
+            return _session.findFirst(_entitySQL, where);
         } finally {
             _session.close();
         }

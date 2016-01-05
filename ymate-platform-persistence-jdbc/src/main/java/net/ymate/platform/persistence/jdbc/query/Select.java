@@ -46,6 +46,8 @@ public class Select {
 
     private boolean __distinct;
 
+    private IDBLocker __dbLocker;
+
     public static Select create(Class<? extends IEntity> entityClass) {
         return new Select(null, EntityMeta.createAndGet(entityClass).getEntityName(), null);
     }
@@ -194,6 +196,11 @@ public class Select {
         return this;
     }
 
+    public Select forUpdate(IDBLocker dbLocker) {
+        __dbLocker = dbLocker;
+        return this;
+    }
+
     @Override
     public String toString() {
         StringBuilder _selectSB = new StringBuilder("SELECT ");
@@ -226,6 +233,9 @@ public class Select {
         //
         if (StringUtils.isNotBlank(__alias)) {
             return "(".concat(_selectSB.toString()).concat(") ").concat(__alias);
+        }
+        if (__dbLocker != null) {
+            _selectSB.append(__dbLocker.toSQL());
         }
         return _selectSB.toString();
     }

@@ -36,6 +36,8 @@ public class EntitySQL<T extends IEntity> {
      */
     private Fields __fields;
 
+    private IDBLocker __dbLocker;
+
     public static <T extends IEntity> EntitySQL<T> create(Class<T> entityClass) {
         return new EntitySQL<T>(entityClass);
     }
@@ -61,5 +63,14 @@ public class EntitySQL<T extends IEntity> {
 
     public Fields fields() {
         return this.__fields;
+    }
+
+    public EntitySQL<T> forUpdate(IDBLocker dbLocker) {
+        __dbLocker = dbLocker;
+        return this;
+    }
+
+    public IDBLocker forUpdate() {
+        return __dbLocker;
     }
 }
