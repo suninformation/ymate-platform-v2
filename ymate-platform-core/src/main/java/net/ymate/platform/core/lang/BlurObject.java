@@ -365,7 +365,9 @@ public class BlurObject implements Serializable, Cloneable {
         if (attr instanceof Byte[]) {
             Byte[] _bArr = (Byte[]) attr;
             byte[] _returnBArr = new byte[_bArr.length];
-            System.arraycopy(_bArr, 0, _returnBArr, 0, _bArr.length);
+            for (int _idx = 0; _idx < _bArr.length; _idx++) {
+                _returnBArr[_idx] = _bArr[_idx];
+            }
             return _returnBArr;
         }
         return null;
