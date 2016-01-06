@@ -41,7 +41,7 @@ import java.util.Map;
  * @author 刘镇 (suninformation@163.com) on 2011-6-5 下午02:50:07
  * @version 1.0
  */
-public class FileUploadHelper {
+public final class FileUploadHelper {
 
     private static final Log __LOG = LogFactory.getLog(FileUploadHelper.class);
 
@@ -318,7 +318,7 @@ public class FileUploadHelper {
      * @author 刘镇 (suninformation@163.com) on 2011-6-7 上午09:50:56
      * @version 1.0
      */
-    public class UploadFormWrapper {
+    public static class UploadFormWrapper {
 
         private Map<String, String[]> __fieldMap = new HashMap<String, String[]>();
 
@@ -390,9 +390,9 @@ public class FileUploadHelper {
                 _filePath = __fileItemObj.getName();
             }
             if (_filePath != null) {
-                int _pos = _filePath.lastIndexOf("\\");
+                int _pos = _filePath.lastIndexOf('\\');
                 if (_pos == -1) {
-                    _pos = _filePath.lastIndexOf("/");
+                    _pos = _filePath.lastIndexOf('/');
                 }
                 _filePath = _filePath.substring(_pos + 1);
             }

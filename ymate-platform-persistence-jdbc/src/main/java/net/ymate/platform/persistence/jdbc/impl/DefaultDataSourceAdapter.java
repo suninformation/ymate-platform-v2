@@ -16,6 +16,8 @@
 package net.ymate.platform.persistence.jdbc.impl;
 
 import net.ymate.platform.persistence.jdbc.AbstractDataSourceAdapter;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -28,6 +30,8 @@ import java.sql.SQLException;
  * @version 1.0
  */
 public class DefaultDataSourceAdapter extends AbstractDataSourceAdapter {
+
+    private static final Log _LOG = LogFactory.getLog(DefaultDataSourceAdapter.class);
 
     private String __password;
 
@@ -50,7 +54,7 @@ public class DefaultDataSourceAdapter extends AbstractDataSourceAdapter {
             try {
                 DriverManager.deregisterDriver(DriverManager.getDriver(__cfgMeta.getConnectionUrl()));
             } catch (SQLException e) {
-                e.printStackTrace();
+                _LOG.warn("", e);
             }
             __password = null;
             super.destroy();

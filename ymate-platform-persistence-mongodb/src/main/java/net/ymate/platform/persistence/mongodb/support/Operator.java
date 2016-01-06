@@ -34,7 +34,7 @@ import java.util.regex.Pattern;
  * @author 刘镇 (suninformation@163.com) on 15/11/24 下午1:24
  * @version 1.0
  */
-public class Operator extends AbstractOperator {
+public final class Operator extends AbstractOperator {
 
     public static Operator create() {
         return new Operator();

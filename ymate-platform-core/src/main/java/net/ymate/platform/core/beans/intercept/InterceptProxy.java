@@ -43,7 +43,7 @@ public class InterceptProxy implements IProxy {
 
     private static final Object __afterCacheLocker = new Object();
 
-    public InterceptProxy() {
+    static {
         __beforeInterceptsCache = new ConcurrentHashMap<String, List<Class<? extends IInterceptor>>>();
         __afterInterceptsCache = new ConcurrentHashMap<String, List<Class<? extends IInterceptor>>>();
     }

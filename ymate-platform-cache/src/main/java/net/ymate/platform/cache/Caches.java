@@ -110,7 +110,7 @@ public class Caches implements IModule, ICaches {
         return __cacheProvider;
     }
 
-    public Object get(String cacheName, Object key) throws CacheException {
+    public Object get(String cacheName, Object key) {
         ICache _cache = __cacheProvider.getCache(cacheName);
         if (_cache != null) {
             return _cache.get(key);
@@ -118,11 +118,11 @@ public class Caches implements IModule, ICaches {
         return null;
     }
 
-    public Object get(Object key) throws CacheException {
+    public Object get(Object key) {
         return get(__moduleCfg.getDefaultCacheName(), key);
     }
 
-    public Map<Object, Object> getAll(String cacheName) throws CacheException {
+    public Map<Object, Object> getAll(String cacheName) {
         Map<Object, Object> _returnValue = new HashMap<Object, Object>();
         for (Object key : this.keys(cacheName)) {
             _returnValue.put(key, this.get(cacheName, key));
@@ -130,11 +130,11 @@ public class Caches implements IModule, ICaches {
         return _returnValue;
     }
 
-    public Map<Object, Object> getAll() throws CacheException {
+    public Map<Object, Object> getAll() {
         return getAll(__moduleCfg.getDefaultCacheName());
     }
 
-    protected void __doPut(String cacheName, Object key, Object value) throws CacheException {
+    protected void __doPut(String cacheName, Object key, Object value) {
         ICache _cache = __cacheProvider.getCache(cacheName);
         if (_cache == null) {
             _cache = __cacheProvider.createCache(cacheName, __moduleCfg.getCacheEventListener());
@@ -142,29 +142,29 @@ public class Caches implements IModule, ICaches {
         _cache.put(key, value);
     }
 
-    public void put(String cacheName, Object key, Object value) throws CacheException {
+    public void put(String cacheName, Object key, Object value) {
         __doPut(cacheName, key, value);
         if (__moduleCfg.getCacheEventListener() != null) {
             __moduleCfg.getCacheEventListener().notifyElementPut(cacheName, key, value);
         }
     }
 
-    public void put(Object key, Object value) throws CacheException {
+    public void put(Object key, Object value) {
         put(__moduleCfg.getDefaultCacheName(), key, value);
     }
 
-    public void update(String cacheName, Object key, Object value) throws CacheException {
+    public void update(String cacheName, Object key, Object value) {
         __doPut(cacheName, key, value);
         if (__moduleCfg.getCacheEventListener() != null) {
             __moduleCfg.getCacheEventListener().notifyElementUpdated(cacheName, key, value);
         }
     }
 
-    public void update(Object key, Object value) throws CacheException {
+    public void update(Object key, Object value) {
         update(__moduleCfg.getDefaultCacheName(), key, value);
     }
 
-    public List<?> keys(String cacheName) throws CacheException {
+    public List<?> keys(String cacheName) {
         ICache _cache = __cacheProvider.getCache(cacheName);
         if (_cache != null) {
             return _cache.keys();
@@ -172,11 +172,11 @@ public class Caches implements IModule, ICaches {
         return Collections.emptyList();
     }
 
-    public List keys() throws CacheException {
+    public List keys() {
         return keys(__moduleCfg.getDefaultCacheName());
     }
 
-    public void remove(String cacheName, Object key) throws CacheException {
+    public void remove(String cacheName, Object key) {
         ICache _cache = __cacheProvider.getCache(cacheName);
         if (_cache != null) {
             _cache.remove(key);
@@ -186,11 +186,11 @@ public class Caches implements IModule, ICaches {
         }
     }
 
-    public void remove(Object key) throws CacheException {
+    public void remove(Object key) {
         remove(__moduleCfg.getDefaultCacheName(), key);
     }
 
-    public void removeAll(String cacheName, List keys) throws CacheException {
+    public void removeAll(String cacheName, List keys) {
         ICache _cache = __cacheProvider.getCache(cacheName);
         if (_cache != null) {
             _cache.removeAll(keys);
@@ -200,11 +200,11 @@ public class Caches implements IModule, ICaches {
         }
     }
 
-    public void removeAll(List keys) throws CacheException {
+    public void removeAll(List keys) {
         removeAll(__moduleCfg.getDefaultCacheName(), keys);
     }
 
-    public void clear(String cacheName) throws CacheException {
+    public void clear(String cacheName) {
         ICache _cache = __cacheProvider.getCache(cacheName);
         if (_cache != null) {
             _cache.clear();
@@ -214,7 +214,7 @@ public class Caches implements IModule, ICaches {
         }
     }
 
-    public void clear() throws CacheException {
+    public void clear() {
         clear(__moduleCfg.getDefaultCacheName());
     }
 

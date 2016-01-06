@@ -92,7 +92,7 @@ public class Type {
         }
     }
 
-    public final class Context {
+    public static class Context {
 
         public static final String SESSION = "net.ymate.platform.webmvc.context.SESSION";
 

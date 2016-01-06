@@ -22,7 +22,7 @@ import org.slf4j.spi.MDCAdapter;
  * @author 刘镇 (suninformation@163.com) on 15/11/4 上午11:06
  * @version 1.0
  */
-public class StaticMDCBinder {
+public final class StaticMDCBinder {
 
     public static final StaticMDCBinder SINGLETON = new StaticMDCBinder();
 

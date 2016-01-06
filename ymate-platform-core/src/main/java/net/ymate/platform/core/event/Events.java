@@ -23,7 +23,7 @@ import net.ymate.platform.core.event.impl.DefaultEventConfig;
  * @author 刘镇 (suninformation@163.com) on 15/5/16 上午2:15
  * @version 1.0
  */
-public class Events {
+public final class Events {
 
     /**
      * 事件触发模式枚举：<br>

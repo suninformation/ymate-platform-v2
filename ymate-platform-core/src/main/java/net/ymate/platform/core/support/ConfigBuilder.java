@@ -31,7 +31,7 @@ import java.util.*;
  * @author 刘镇 (suninformation@163.com) on 15/12/18 下午2:19
  * @version 1.0
  */
-public class ConfigBuilder {
+public final class ConfigBuilder {
 
     private boolean __isDevelopMode;
 

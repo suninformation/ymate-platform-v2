@@ -41,6 +41,7 @@ public class JsonView extends AbstractView {
             return new JsonView(obj);
         }
     }
+
     /**
      * 构造器
      *

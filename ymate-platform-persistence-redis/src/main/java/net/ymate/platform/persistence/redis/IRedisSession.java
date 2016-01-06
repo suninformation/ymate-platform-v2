@@ -16,7 +16,6 @@
 package net.ymate.platform.persistence.redis;
 
 import net.ymate.platform.persistence.ISessionBase;
-import redis.clients.jedis.JedisCommands;
 
 /**
  * @author 刘镇 (suninformation@163.com) on 15/11/30 下午11:53

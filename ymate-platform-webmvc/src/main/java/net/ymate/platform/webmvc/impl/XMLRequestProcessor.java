@@ -101,7 +101,7 @@ public class XMLRequestProcessor extends DefaultRequestProcessor {
      * @author 刘镇 (suninformation@163.com) on 15/7/25 下午6:16
      * @version 1.0
      */
-    private class XMLProtocol {
+    private static class XMLProtocol {
         private Element __rootElement;
 
         private boolean __inited;

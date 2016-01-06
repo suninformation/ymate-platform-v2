@@ -19,6 +19,8 @@ import net.ymate.platform.core.util.ResourceUtils;
 import net.ymate.platform.persistence.jdbc.AbstractDataSourceAdapter;
 import org.apache.commons.dbcp.BasicDataSource;
 import org.apache.commons.dbcp.BasicDataSourceFactory;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import java.io.InputStream;
 import java.sql.Connection;
@@ -32,6 +34,8 @@ import java.util.Properties;
  * @version 1.0
  */
 public class DBCPDataSourceAdapter extends AbstractDataSourceAdapter {
+
+    private static final Log _LOG = LogFactory.getLog(DBCPDataSourceAdapter.class);
 
     protected BasicDataSource __ds;
 
@@ -60,7 +64,7 @@ public class DBCPDataSourceAdapter extends AbstractDataSourceAdapter {
             try {
                 __ds.close();
             } catch (SQLException e) {
-                e.printStackTrace();
+                _LOG.warn("", e);
             }
         }
         //

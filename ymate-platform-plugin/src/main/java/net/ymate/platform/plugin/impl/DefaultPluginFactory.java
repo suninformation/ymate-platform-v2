@@ -30,6 +30,8 @@ import net.ymate.platform.plugin.annotation.Plugin;
 import net.ymate.platform.plugin.handle.BeanHandler;
 import net.ymate.platform.plugin.handle.PluginHandler;
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import java.io.File;
 import java.net.MalformedURLException;
@@ -46,6 +48,8 @@ import java.util.concurrent.ConcurrentHashMap;
  * @version 1.0
  */
 public class DefaultPluginFactory implements IPluginFactory {
+
+    private static final Log _LOG = LogFactory.getLog(DefaultPluginFactory.class);
 
     private IBeanFactory __innerBeanFactory;
 
@@ -221,7 +225,7 @@ public class DefaultPluginFactory implements IPluginFactory {
                             _libs.add(_tempFile.toURI().toURL());
                         }
                     } catch (MalformedURLException e) {
-                        e.printStackTrace();
+                        _LOG.warn("", e);
                     }
                 }
                 // 扫描所有正式插件目录(即目录名称不以'.'开头的)

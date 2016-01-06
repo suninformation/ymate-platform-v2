@@ -47,7 +47,12 @@ public class PropertyConfigFileHandler {
 
     public PropertyConfigFileHandler(File file) throws IOException {
         __rootProps = new Properties();
-        __rootProps.load(new FileReader(file));
+        FileReader _reader = new FileReader(file);
+        try {
+            __rootProps.load(_reader);
+        } finally {
+            _reader.close();
+        }
     }
 
     public PropertyConfigFileHandler(InputStream inputStream) throws IOException {
@@ -57,7 +62,12 @@ public class PropertyConfigFileHandler {
 
     public PropertyConfigFileHandler(URL url) throws ParserConfigurationException, IOException, SAXException {
         __rootProps = new Properties();
-        __rootProps.load(url.openStream());
+        InputStream _in = url.openStream();
+        try {
+            __rootProps.load(_in);
+        } finally {
+            _in.close();
+        }
     }
 
     @SuppressWarnings("unchecked")

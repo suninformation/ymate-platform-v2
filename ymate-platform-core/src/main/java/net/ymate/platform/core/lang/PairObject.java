@@ -74,6 +74,13 @@ public class PairObject<K, V> implements Serializable, Cloneable {
     }
 
     @Override
+    public int hashCode() {
+        int result = key.hashCode();
+        result = 31 * result + value.hashCode();
+        return result;
+    }
+
+    @Override
     public boolean equals(Object obj) {
         if (obj instanceof PairObject) {
             PairObject<?, ?> _o = (PairObject<?, ?>) obj;

@@ -365,9 +365,7 @@ public class BlurObject implements Serializable, Cloneable {
         if (attr instanceof Byte[]) {
             Byte[] _bArr = (Byte[]) attr;
             byte[] _returnBArr = new byte[_bArr.length];
-            for (int _idx = 0; _idx < _bArr.length; _idx++) {
-                _returnBArr[_idx] = _bArr[_idx];
-            }
+            System.arraycopy(_bArr, 0, _returnBArr, 0, _bArr.length);
             return _returnBArr;
         }
         return null;
@@ -502,6 +500,11 @@ public class BlurObject implements Serializable, Cloneable {
             return false;
         }
         return attr == other.attr;
+    }
+
+    @Override
+    protected Object clone() throws CloneNotSupportedException {
+        return super.clone();
     }
 
     @Override

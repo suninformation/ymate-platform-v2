@@ -16,9 +16,9 @@
 package net.ymate.platform.persistence.jdbc.dialect;
 
 import net.ymate.platform.core.util.ExpressionUtils;
+import net.ymate.platform.persistence.Fields;
 import net.ymate.platform.persistence.base.EntityMeta;
 import net.ymate.platform.persistence.base.IEntity;
-import net.ymate.platform.persistence.Fields;
 import org.apache.commons.lang.StringUtils;
 
 import java.sql.ResultSet;
@@ -54,8 +54,12 @@ public abstract class AbstractDialect implements IDialect {
         // 检索由于执行此 Statement 对象而创建的所有自动生成的键
         List<Object> _ids = new ArrayList<Object>();
         ResultSet _keyRSet = statement.getGeneratedKeys();
-        while (_keyRSet.next()) {
-            _ids.add(_keyRSet.getObject(1));
+        try {
+            while (_keyRSet.next()) {
+                _ids.add(_keyRSet.getObject(1));
+            }
+        } finally {
+            _keyRSet.close();
         }
         return _ids.toArray();
     }

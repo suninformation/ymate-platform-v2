@@ -26,7 +26,7 @@ import java.util.List;
  * @author 刘镇 (suninformation@163.com) on 2011-8-28 上午01:52:39
  * @version 1.0
  */
-public class SQLBatchParameter {
+public final class SQLBatchParameter {
 
     /**
      * 存放SQL参数的集合

@@ -71,7 +71,7 @@ public class SessionMap<K, V> extends AbstractMap<K, V> implements Serializable 
      * map.
      */
     @SuppressWarnings("unchecked")
-	public void clear() {
+    public void clear() {
         if (session == null) {
             return;
         }
@@ -91,7 +91,7 @@ public class SessionMap<K, V> extends AbstractMap<K, V> implements Serializable 
      * @return a Set of attributes from the http session.
      */
     @SuppressWarnings("unchecked")
-	public Set<Entry<K, V>> entrySet() {
+    public Set<Entry<K, V>> entrySet() {
         if (session == null) {
             return Collections.emptySet();
         }
@@ -110,15 +110,19 @@ public class SessionMap<K, V> extends AbstractMap<K, V> implements Serializable 
                             Entry<K, V> entry = (Entry<K, V>) obj;
                             return ((key == null) ? (entry.getKey() == null) : key.equals(entry.getKey())) && ((value == null) ? (entry.getValue() == null) : value.equals(entry.getValue()));
                         }
+
                         public int hashCode() {
                             return ((key == null) ? 0 : key.hashCode()) ^ ((value == null) ? 0 : value.hashCode());
                         }
+
                         public K getKey() {
                             return (K) key;
                         }
+
                         public V getValue() {
                             return (V) value;
                         }
+
                         public V setValue(Object obj) {
                             session.setAttribute(key, obj);
                             return (V) value;
@@ -137,7 +141,7 @@ public class SessionMap<K, V> extends AbstractMap<K, V> implements Serializable 
      * @return the session attribute or <tt>null</tt> if it doesn't exist.
      */
     @SuppressWarnings("unchecked")
-	public V get(Object key) {
+    public V get(Object key) {
         if (session == null) {
             return null;
         }

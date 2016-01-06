@@ -29,7 +29,6 @@ import org.apache.commons.lang.StringUtils;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Freemarker视图
@@ -39,9 +38,9 @@ import java.util.Map;
  */
 public class FreemarkerView extends AbstractView {
 
-    protected static Configuration __freemarkerConfig;
+    static Configuration __freemarkerConfig;
 
-    protected String __path;
+    String __path;
 
     public static FreemarkerView bind(IWebMvc owner, String path) {
         return new FreemarkerView(owner, path);

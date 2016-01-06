@@ -24,7 +24,7 @@ import org.apache.commons.lang.StringUtils;
  * @author 刘镇 (suninformation@163.com) on 15/5/12 下午6:04
  * @version 1.0
  */
-public class Join {
+public final class Join {
 
     private String __from;
 

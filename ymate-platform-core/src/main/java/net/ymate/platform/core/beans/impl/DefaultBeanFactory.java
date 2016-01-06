@@ -134,7 +134,7 @@ public class DefaultBeanFactory implements IBeanFactory {
                         }
                         __initBeanIoC(_beanMeta.getBeanClass(), _obj);
                     } catch (Exception e) {
-                        e.printStackTrace();
+                        _LOG.warn("", e);
                     }
                 } else {
                     _obj = (T) _beanMeta.getBeanObject();

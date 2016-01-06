@@ -18,6 +18,8 @@ package net.ymate.platform.webmvc.util;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.exception.NestableRuntimeException;
 import org.apache.commons.lang.text.StrBuilder;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -28,6 +30,8 @@ import java.util.*;
  * @version 1.0
  */
 public class StringEscapeUtils {
+
+    private static final Log __LOG = LogFactory.getLog(StringEscapeUtils.class);
 
     private static final Map<String, Character> __HTML_TO_CHAR_MAPS = new HashMap<String, Character>();
     private static final String[] __CHAR_TO_HTML_ARRAY = new String[3000];
@@ -50,24 +54,28 @@ public class StringEscapeUtils {
         if (_in == null) {
             _in = MimeTypeUtils.class.getClassLoader().getResourceAsStream("META-INF/htmlchars-default-conf.properties");
         }
-        if (_in != null) try {
-            _configs.load(_in);
-            //
-            Enumeration _names = _configs.propertyNames();
-            while (_names.hasMoreElements()) {
-                String _name = (String) _names.nextElement();
-                int _char = Integer.parseInt(_name);
-                int _idx = (_char < 1000 ? _char : _char - 7000);
-                String _ref = _configs.getProperty(_name);
-                __CHAR_TO_HTML_ARRAY[_idx] = REFERENCE_START + _ref + REFERENCE_END;
-                __HTML_TO_CHAR_MAPS.put(_ref, (char) _char);
-            }
-        } catch (Exception ignored) {
-        } finally {
+        if (_in != null) {
             try {
-                _in.close();
-            } catch (IOException ignored) {
+                _configs.load(_in);
+            } catch (Exception e) {
+                __LOG.warn("", e);
+            } finally {
+                try {
+                    _in.close();
+                } catch (IOException e) {
+                    __LOG.warn("", e);
+                }
             }
+        }
+        //
+        Enumeration _names = _configs.propertyNames();
+        while (_names.hasMoreElements()) {
+            String _name = (String) _names.nextElement();
+            int _char = Integer.parseInt(_name);
+            int _idx = (_char < 1000 ? _char : _char - 7000);
+            String _ref = _configs.getProperty(_name);
+            __CHAR_TO_HTML_ARRAY[_idx] = REFERENCE_START + _ref + REFERENCE_END;
+            __HTML_TO_CHAR_MAPS.put(_ref, (char) _char);
         }
     }
 

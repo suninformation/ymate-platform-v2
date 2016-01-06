@@ -41,7 +41,7 @@ public class NioStringCodec implements INioCodec {
     }
 
     public ByteBufferBuilder encode(Object message) {
-        if (message != null && message instanceof String) {
+        if (message instanceof String) {
             try {
                 byte[] _bytes = ((String) message).getBytes(__charset);
                 return ByteBufferBuilder.allocate()

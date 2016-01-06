@@ -83,14 +83,8 @@ public class JSONRequestProcessor extends DefaultRequestProcessor {
                     Class<?> _arrayClassType = ClassUtils.getArrayClassType(paramType);
                     Object[] _tempParams = (Object[]) Array.newInstance(_arrayClassType, _values.length);
                     for (int _tempIdx = 0; _tempIdx < _values.length; _tempIdx++) {
-                        try {
-                            String _value = BlurObject.bind(_values[_tempIdx]).toStringValue();
-                            _tempParams[_tempIdx] = __doSafeGetParamValue(owner, paramName, _arrayClassType, _value, null);
-                        } catch (Throwable e) {
-                            if (owner.getOwner().getConfig().isDevelopMode()) {
-                                _LOG.warn("Invalid '" + paramName + "' value", RuntimeUtils.unwrapThrow(e));
-                            }
-                        }
+                        String _value = BlurObject.bind(_values[_tempIdx]).toStringValue();
+                        _tempParams[_tempIdx] = __doSafeGetParamValue(owner, paramName, _arrayClassType, _value, null);
                     }
                     _returnValue = _tempParams;
                 }

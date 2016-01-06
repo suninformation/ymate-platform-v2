@@ -17,7 +17,6 @@ package net.ymate.platform.webmvc.impl;
 
 import net.ymate.platform.core.lang.BlurObject;
 import net.ymate.platform.core.util.ClassUtils;
-import net.ymate.platform.core.util.RuntimeUtils;
 import net.ymate.platform.webmvc.*;
 import net.ymate.platform.webmvc.annotation.*;
 import net.ymate.platform.webmvc.context.WebContext;
@@ -135,19 +134,11 @@ public class DefaultRequestProcessor implements IRequestProcessor {
     }
 
     protected Object __doSafeGetParamValue(IWebMvc owner, String paramName, Class<?> paramType, String paramValue, String defaultValue) {
-        Object _returnValue = null;
         String _pValue = paramValue;
-        try {
-            if (_pValue == null) {
-                _pValue = WebContext.getRequest().getParameter(paramName);
-            }
-            _returnValue = new BlurObject(StringUtils.defaultIfBlank(_pValue, defaultValue)).toObjectValue(paramType);
-        } catch (Throwable e) {
-            if (owner.getOwner().getConfig().isDevelopMode()) {
-                _LOG.warn("Invalid '" + paramName + "' value: " + _pValue, RuntimeUtils.unwrapThrow(e));
-            }
+        if (_pValue == null) {
+            _pValue = WebContext.getRequest().getParameter(paramName);
         }
-        return _returnValue;
+        return new BlurObject(StringUtils.defaultIfBlank(_pValue, defaultValue)).toObjectValue(paramType);
     }
 
     protected Object __doParseModelBind(IWebMvc owner, RequestMeta requestMeta, ParameterMeta paramMeta, Class<?> paramType) throws Exception {

@@ -23,7 +23,7 @@ import net.ymate.platform.persistence.Params;
  * @author 刘镇 (suninformation@163.com) on 15/5/7 上午8:25
  * @version 1.0
  */
-public class SQL {
+public final class SQL {
 
     private String __sql;
 

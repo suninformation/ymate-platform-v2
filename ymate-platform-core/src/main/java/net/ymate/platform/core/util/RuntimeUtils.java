@@ -52,6 +52,7 @@ public class RuntimeUtils {
      */
     public static void initSystemEnvs() {
         Process p = null;
+        BufferedReader br = null;
         try {
             if (SystemUtils.IS_OS_WINDOWS) {
                 p = Runtime.getRuntime().exec("cmd /c set");
@@ -62,10 +63,10 @@ public class RuntimeUtils {
                 SYSTEM_ENV_MAP.clear();
             }
             if (p != null) {
-                BufferedReader br = new BufferedReader(new InputStreamReader(p.getInputStream()));
+                br = new BufferedReader(new InputStreamReader(p.getInputStream()));
                 String line;
                 while ((line = br.readLine()) != null) {
-                    int i = line.indexOf("=");
+                    int i = line.indexOf('=');
                     if (i > -1) {
                         String key = line.substring(0, i);
                         String value = line.substring(i + 1);
@@ -75,6 +76,17 @@ public class RuntimeUtils {
             }
         } catch (IOException e) {
             _LOG.warn(RuntimeUtils.unwrapThrow(e));
+        } finally {
+            if (br != null) {
+                try {
+                    br.close();
+                } catch (IOException e) {
+                    _LOG.warn("", e);
+                }
+            }
+            if (p != null) {
+                p.destroy();
+            }
         }
     }
 

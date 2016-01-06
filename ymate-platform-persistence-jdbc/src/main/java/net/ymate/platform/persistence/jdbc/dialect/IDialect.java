@@ -15,8 +15,8 @@
  */
 package net.ymate.platform.persistence.jdbc.dialect;
 
-import net.ymate.platform.persistence.base.IEntity;
 import net.ymate.platform.persistence.Fields;
+import net.ymate.platform.persistence.base.IEntity;
 
 import java.sql.SQLException;
 import java.sql.Statement;

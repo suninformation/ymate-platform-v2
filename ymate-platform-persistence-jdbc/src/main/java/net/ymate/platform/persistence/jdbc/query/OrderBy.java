@@ -23,7 +23,7 @@ import org.apache.commons.lang.StringUtils;
  * @author 刘镇 (suninformation@163.com) on 15/5/7 上午10:55
  * @version 1.0
  */
-public class OrderBy {
+public final class OrderBy {
 
     private StringBuilder __orderBySB;
 

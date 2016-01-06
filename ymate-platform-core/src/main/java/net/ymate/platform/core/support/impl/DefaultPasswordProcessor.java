@@ -15,8 +15,8 @@
  */
 package net.ymate.platform.core.support.impl;
 
-import net.ymate.platform.core.util.CodecUtils;
 import net.ymate.platform.core.support.IPasswordProcessor;
+import net.ymate.platform.core.util.CodecUtils;
 import org.apache.commons.codec.digest.DigestUtils;
 
 /**

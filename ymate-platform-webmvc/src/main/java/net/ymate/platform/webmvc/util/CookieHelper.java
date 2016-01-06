@@ -37,7 +37,7 @@ import java.util.Map;
  * @author 刘镇 (suninformation@163.com) on 2011-6-10 下午03:50:53
  * @version 1.0
  */
-public class CookieHelper {
+public final class CookieHelper {
 
     private static final Log __LOG = LogFactory.getLog(CookieHelper.class);
 
@@ -243,7 +243,7 @@ public class CookieHelper {
             }
         } else if (this.__useBase64) {
             try {
-                value = new String(Base64.decodeBase64(value.getBytes(__charsetEncoding)));
+                _value = new String(Base64.decodeBase64(value.getBytes(__charsetEncoding)));
             } catch (UnsupportedEncodingException e) {
                 __LOG.warn("", RuntimeUtils.unwrapThrow(e));
             }

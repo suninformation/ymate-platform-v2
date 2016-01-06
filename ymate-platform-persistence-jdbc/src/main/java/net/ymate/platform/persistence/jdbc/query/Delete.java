@@ -30,7 +30,7 @@ import java.util.List;
  * @author 刘镇 (suninformation@163.com) on 15/5/12 下午6:03
  * @version 1.0
  */
-public class Delete {
+public final class Delete {
 
     private List<String> __froms;
 

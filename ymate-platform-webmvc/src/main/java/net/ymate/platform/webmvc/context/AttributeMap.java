@@ -28,10 +28,10 @@ import java.util.Set;
  * A Map that holds 4 levels of scope.<br>
  * The scopes are the ones known in the web world.:
  * <ul>
- *   <li>Page scope</li>
- *   <li>Request scope</li>
- *   <li>Session scope</li>
- *   <li>Application scope</li>
+ * <li>Page scope</li>
+ * <li>Request scope</li>
+ * <li>Session scope</li>
+ * <li>Application scope</li>
  * </ul>
  * A object is searched in the order above, starting from page and ending at application scope.
  */
@@ -79,9 +79,9 @@ public class AttributeMap implements Map {
                 return application.get(key);
             }
         } else {
-            try{
+            try {
                 return pc.findAttribute(key.toString());
-            }catch (NullPointerException npe){
+            } catch (NullPointerException npe) {
                 return null;
             }
         }

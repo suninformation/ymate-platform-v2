@@ -26,7 +26,7 @@ import java.util.regex.Matcher;
  * @author 刘镇 (suninformation@163.com) on 2010-12-20 上午11:37:00
  * @version 1.0
  */
-public class ExpressionUtils {
+public final class ExpressionUtils {
 
     private final static String __pre = "\\$\\{";
     private final static String __suf = "\\}";

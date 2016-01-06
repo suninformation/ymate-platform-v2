@@ -24,7 +24,7 @@ import org.bson.conversions.Bson;
  * @author 刘镇 (suninformation@163.com) on 15/11/23 下午3:45
  * @version 1.0
  */
-public class Query implements IBsonable {
+public final class Query implements IBsonable {
 
     private BasicDBObject __condition = new BasicDBObject();
 

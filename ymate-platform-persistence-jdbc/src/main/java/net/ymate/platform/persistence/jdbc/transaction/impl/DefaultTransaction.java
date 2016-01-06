@@ -95,7 +95,7 @@ public class DefaultTransaction implements ITransaction {
     public void registerConnectionHolder(IConnectionHolder connectionHolder) throws SQLException {
         String _dsName = connectionHolder.getDataSourceCfgMeta().getName();
         if (!this.__transMetas.containsKey(_dsName)) {
-            this.__transMetas.put(_dsName, new TransactionMeta(_dsName, connectionHolder, getLevel()));
+            this.__transMetas.put(_dsName, new TransactionMeta(connectionHolder, getLevel()));
         }
     }
 
@@ -107,21 +107,17 @@ public class DefaultTransaction implements ITransaction {
      */
     private static class TransactionMeta {
 
-        // 数据源名称
-        String dataSourceName;
         // 数据库连接持有者对象
         IConnectionHolder connectionHolder;
 
         /**
          * 构造器
          *
-         * @param dataSourceName   数据源名称
          * @param connectionHolder 数据库连接持有者对象
          * @param initLevel        初始事务级别
          * @throws SQLException 可能产生的异常
          */
-        TransactionMeta(String dataSourceName, IConnectionHolder connectionHolder, JDBC.TRANSACTION initLevel) throws SQLException {
-            this.dataSourceName = dataSourceName;
+        TransactionMeta(IConnectionHolder connectionHolder, JDBC.TRANSACTION initLevel) throws SQLException {
             this.connectionHolder = connectionHolder;
             if (this.connectionHolder.getConnection().getAutoCommit()) {
                 this.connectionHolder.getConnection().setAutoCommit(false);
@@ -143,7 +139,6 @@ public class DefaultTransaction implements ITransaction {
                 }
             } finally {
                 this.connectionHolder = null;
-                this.dataSourceName = null;
             }
         }
     }

@@ -30,7 +30,7 @@ import java.util.List;
  * @author 刘镇 (suninformation@163.com) on 15/5/12 下午6:02
  * @version 1.0
  */
-public class Update {
+public final class Update {
 
     private List<String> __tables;
 

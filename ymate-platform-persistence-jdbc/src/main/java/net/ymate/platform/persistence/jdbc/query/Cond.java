@@ -24,7 +24,7 @@ import org.apache.commons.lang.StringUtils;
  * @author 刘镇 (suninformation@163.com) on 15/5/9 下午8:12
  * @version 1.0
  */
-public class Cond {
+public final class Cond {
 
     public enum OPT {
         EQ("="),

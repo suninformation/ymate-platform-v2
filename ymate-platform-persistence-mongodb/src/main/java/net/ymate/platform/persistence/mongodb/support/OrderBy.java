@@ -22,7 +22,7 @@ import net.ymate.platform.persistence.mongodb.IBsonable;
  * @author 刘镇 (suninformation@163.com) on 15/11/22 下午8:46
  * @version 1.0
  */
-public class OrderBy implements IBsonable {
+public final class OrderBy implements IBsonable {
 
     private BasicDBObject __orderBy;
 

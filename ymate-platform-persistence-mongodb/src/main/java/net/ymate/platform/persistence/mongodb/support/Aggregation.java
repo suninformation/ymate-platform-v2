@@ -17,8 +17,8 @@ package net.ymate.platform.persistence.mongodb.support;
 
 import com.mongodb.BasicDBObject;
 import net.ymate.platform.persistence.Fields;
-import net.ymate.platform.persistence.mongodb.IMongo;
 import net.ymate.platform.persistence.mongodb.IBsonable;
+import net.ymate.platform.persistence.mongodb.IMongo;
 import org.bson.BSONObject;
 import org.bson.conversions.Bson;
 
@@ -26,7 +26,7 @@ import org.bson.conversions.Bson;
  * @author 刘镇 (suninformation@163.com) on 15/11/23 下午5:07
  * @version 1.0
  */
-public class Aggregation implements IBsonable {
+public final class Aggregation implements IBsonable {
 
     private BasicDBObject __pipeline;
 

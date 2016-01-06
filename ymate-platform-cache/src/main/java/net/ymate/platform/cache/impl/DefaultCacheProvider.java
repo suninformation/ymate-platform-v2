@@ -17,7 +17,10 @@ package net.ymate.platform.cache.impl;
 
 import net.sf.ehcache.CacheManager;
 import net.sf.ehcache.Ehcache;
-import net.ymate.platform.cache.*;
+import net.ymate.platform.cache.ICache;
+import net.ymate.platform.cache.ICacheEventListener;
+import net.ymate.platform.cache.ICacheProvider;
+import net.ymate.platform.cache.ICaches;
 import net.ymate.platform.cache.support.EhCacheWraper;
 
 import java.util.Map;
@@ -48,13 +51,13 @@ public class DefaultCacheProvider implements ICacheProvider {
         return name;
     }
 
-    public void init(ICaches owner) throws CacheException {
+    public void init(ICaches owner) {
         __owner = owner;
         __cacheManager = CacheManager.create();
         __caches = new ConcurrentHashMap<String, ICache>();
     }
 
-    public ICache createCache(String name, final ICacheEventListener listener) throws CacheException {
+    public ICache createCache(String name, final ICacheEventListener listener) {
         name = __safedCacheName(name);
         //
         ICache _cache = __caches.get(name);
@@ -89,7 +92,7 @@ public class DefaultCacheProvider implements ICacheProvider {
         return _cache;
     }
 
-    public void destroy() throws CacheException {
+    public void destroy() {
         for (ICache _cache : __caches.values()) {
             _cache.destroy();
         }

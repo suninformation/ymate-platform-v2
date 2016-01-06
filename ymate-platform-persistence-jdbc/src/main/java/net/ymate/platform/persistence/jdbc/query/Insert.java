@@ -27,7 +27,7 @@ import org.apache.commons.lang.StringUtils;
  * @author 刘镇 (suninformation@163.com) on 15/5/12 下午6:00
  * @version 1.0
  */
-public class Insert {
+public final class Insert {
 
     private String __tableName;
 

@@ -160,7 +160,7 @@ public class RequestMappingParser {
                     String _fixedMappingKey = this.__doFixMappingPart(_mappingKey);
                     if (StringUtils.startsWithIgnoreCase(_requestMapping, _fixedMappingKey)) {
                         // 截取参数段，并分析参数段数量
-                        String _paramKey = _key.substring(_key.indexOf("{"));
+                        String _paramKey = _key.substring(_key.indexOf('{'));
                         _filteredMapping.add(new PairObject<String[], Integer>(new String[]{_key, _mappingKey, _fixedMappingKey, _paramKey}, StringUtils.split(_paramKey, "/").length));
                     }
                 }
@@ -182,8 +182,8 @@ public class RequestMappingParser {
             if (_result != null) {
                 Map<String, String> _params = this.__doParserMappingParams(_mappingParamPart, _result.getKey()[3]);
                 // 参数变量存入WebContext容器中的PathVariable参数池
-                for (String _key : _params.keySet()) {
-                    context.addAttribute(_key, _params.get(_key));
+                for (Map.Entry<String, String> _entry : _params.entrySet()) {
+                    context.addAttribute(_entry.getKey(), _entry.getValue());
                 }
                 _meta = _mappingMap.get(_result.getKey()[0]);
             }

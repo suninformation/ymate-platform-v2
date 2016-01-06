@@ -36,7 +36,7 @@ import java.util.Map;
  * @author 刘镇 (suninformation@163.com) on 2011-7-24 下午10:31:48
  * @version 1.0
  */
-public class WebContext {
+public final class WebContext {
 
     private static ThreadLocal<WebContext> __LOCAL_CONTEXT = new ThreadLocal<WebContext>();
 

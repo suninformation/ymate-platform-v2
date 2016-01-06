@@ -30,7 +30,7 @@ import java.util.List;
  * @author 刘镇 (suninformation@163.com) on 15/5/12 下午5:59
  * @version 1.0
  */
-public class Select {
+public final class Select {
 
     private List<String> __froms;
 

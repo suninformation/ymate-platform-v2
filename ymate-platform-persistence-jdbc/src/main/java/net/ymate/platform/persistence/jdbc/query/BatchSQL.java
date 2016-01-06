@@ -27,7 +27,7 @@ import java.util.List;
  * @author 刘镇 (suninformation@163.com) on 15/5/11 下午2:25
  * @version 1.0
  */
-public class BatchSQL {
+public final class BatchSQL {
 
     private String __batchSQL;
 

@@ -21,7 +21,7 @@ import java.nio.ByteBuffer;
  * @author 刘镇 (suninformation@163.com) on 15/11/13 下午3:29
  * @version 1.0
  */
-public class ByteBufferBuilder {
+public final class ByteBufferBuilder {
 
     private ByteBuffer __buffer;
 

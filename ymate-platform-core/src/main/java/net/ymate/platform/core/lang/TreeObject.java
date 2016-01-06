@@ -265,9 +265,9 @@ public class TreeObject implements Serializable, Cloneable {
             Map<String, TreeObject> _nodeValue = tObject.getMap();
             if (_nodeValue != null && !_nodeValue.isEmpty()) {
                 JSONObject _itemJson = new JSONObject();
-                for (String _nodeAttrKey : _nodeValue.keySet()) {
-                    if (StringUtils.isNotBlank(_nodeAttrKey)) {
-                        _itemTObject = _nodeValue.get(_nodeAttrKey);
+                for (Map.Entry<String, TreeObject> _entry : _nodeValue.entrySet()) {
+                    if (StringUtils.isNotBlank(_entry.getKey())) {
+                        _itemTObject = _entry.getValue();
                         if (_itemTObject != null) {
                             _returnJson = toJson(_itemTObject);
                             if (_returnJson != null) {
@@ -275,10 +275,10 @@ public class TreeObject implements Serializable, Cloneable {
                                     JSONObject _nodeAttrValue = new JSONObject();
                                     _nodeAttrValue.put(KEY_VALUE, _returnJson);
                                     _nodeAttrValue.put(KEY_CLASS, TYPE_MAP);
-                                    _itemJson.put(_nodeAttrKey, _nodeAttrValue);
+                                    _itemJson.put(_entry.getKey(), _nodeAttrValue);
                                     continue;
                                 }
-                                _itemJson.put(_nodeAttrKey, _returnJson);
+                                _itemJson.put(_entry.getKey(), _returnJson);
                             }
                         }
                     }
@@ -994,13 +994,12 @@ public class TreeObject implements Serializable, Cloneable {
             Map<String, TreeObject> _returnValue = new HashMap<String, TreeObject>();
             Map<String, TreeObject> _map = (Map<String, TreeObject>) _object;
             if (_map != null && !_map.isEmpty()) {
-                for (String _k : _map.keySet()) {
-                    if (StringUtils.isBlank(_k)) {
+                for (Map.Entry<String, TreeObject> _entry : _map.entrySet()) {
+                    if (StringUtils.isBlank(_entry.getKey())) {
                         continue;
                     }
-                    TreeObject _v = _map.get(_k);
-                    if (_v != null) {
-                        _returnValue.put(_k, _v);
+                    if (_entry.getValue() != null) {
+                        _returnValue.put(_entry.getKey(), _entry.getValue());
                     }
                 }
             }
@@ -1551,4 +1550,8 @@ public class TreeObject implements Serializable, Cloneable {
         return defaultValue;
     }
 
+    @Override
+    protected Object clone() throws CloneNotSupportedException {
+        return super.clone();
+    }
 }

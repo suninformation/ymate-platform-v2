@@ -27,7 +27,7 @@ import java.util.Map;
  * @author 刘镇 (suninformation@163.com) on 15/11/27 上午12:01
  * @version 1.0
  */
-public class GridFSFileBuilder {
+public final class GridFSFileBuilder {
 
     private Object __targetObject;
     private String __filename;

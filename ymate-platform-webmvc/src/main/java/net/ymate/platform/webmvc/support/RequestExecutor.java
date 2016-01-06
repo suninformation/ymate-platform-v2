@@ -42,7 +42,7 @@ import java.util.Map;
  * @author 刘镇 (suninformation@163.com) on 2012-12-14 下午4:30:27
  * @version 1.0
  */
-public class RequestExecutor {
+public final class RequestExecutor {
 
     private IWebMvc __owner;
 

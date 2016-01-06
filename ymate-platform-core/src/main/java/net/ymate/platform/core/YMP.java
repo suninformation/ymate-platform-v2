@@ -332,7 +332,7 @@ public class YMP {
         public <T> T getBean(Class<T> clazz) {
             T _bean = super.getBean(clazz);
             // 重写此方法是为了在获取模块对象时始终保证其已被初始化
-            if (_bean != null && _bean instanceof IModule) {
+            if (_bean instanceof IModule) {
                 IModule _module = (IModule) _bean;
                 if (!_module.isInited()) {
                     try {

@@ -22,6 +22,8 @@ import net.ymate.platform.webmvc.util.MimeTypeUtils;
 import net.ymate.platform.webmvc.view.AbstractView;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -38,6 +40,8 @@ import java.net.URLEncoder;
  * @version 1.0
  */
 public class BinaryView extends AbstractView {
+
+    private static final Log __LOG = LogFactory.getLog(BinaryView.class);
 
     protected String __fileName;
     protected Object __data;
@@ -177,38 +181,34 @@ public class BinaryView extends AbstractView {
                 if (StringUtils.isBlank(_range)) {
                     return null;
                 }
-                try {
-                    // bytes=-100
-                    if (_range.startsWith("-")) {
-                        long _end = Long.parseLong(_range);
-                        long _start = length + _end;
-                        if (_start < 0) {
-                            return null;
-                        }
-                        _returnValue = new PairObject<Long, Long>(_start, length);
-                        break;
+                // bytes=-100
+                if (_range.startsWith("-")) {
+                    long _end = Long.parseLong(_range);
+                    long _start = length + _end;
+                    if (_start < 0) {
+                        return null;
                     }
-                    // bytes=1024-
-                    if (_range.endsWith("-")) {
-                        long _start = Long.parseLong(StringUtils.substringBefore(_range, "-"));
-                        if (_start < 0) {
-                            return null;
-                        }
-                        _returnValue = new PairObject<Long, Long>(_start, length);
-                        break;
+                    _returnValue = new PairObject<Long, Long>(_start, length);
+                    break;
+                }
+                // bytes=1024-
+                if (_range.endsWith("-")) {
+                    long _start = Long.parseLong(StringUtils.substringBefore(_range, "-"));
+                    if (_start < 0) {
+                        return null;
                     }
-                    // bytes=10-1024
-                    if (_range.contains("-")) {
-                        String[] _tmp = _range.split("-");
-                        long _start = Long.parseLong(_tmp[0]);
-                        long _end = Long.parseLong(_tmp[1]);
-                        if (_start > _end) {
-                            return null;
-                        }
-                        _returnValue = new PairObject<Long, Long>(_start, _end + 1);
+                    _returnValue = new PairObject<Long, Long>(_start, length);
+                    break;
+                }
+                // bytes=10-1024
+                if (_range.contains("-")) {
+                    String[] _tmp = _range.split("-");
+                    long _start = Long.parseLong(_tmp[0]);
+                    long _end = Long.parseLong(_tmp[1]);
+                    if (_start > _end) {
+                        return null;
                     }
-                } catch (Throwable e) {
-                    return null;
+                    _returnValue = new PairObject<Long, Long>(_start, _end + 1);
                 }
             }
         }

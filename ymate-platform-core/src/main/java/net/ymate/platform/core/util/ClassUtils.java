@@ -293,7 +293,7 @@ public class ClassUtils {
     }
 
     /**
-     * @param <T>    目标类型
+     * @param <T>   目标类型
      * @param clazz 目标类型
      * @return 创建一个类对象实例，包裹它并赋予其简单对象属性操作能力，可能返回空
      */

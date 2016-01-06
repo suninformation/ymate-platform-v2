@@ -24,7 +24,7 @@ import org.apache.commons.lang.StringUtils;
  * @author 刘镇 (suninformation@163.com) on 15/5/12 下午4:10
  * @version 1.0
  */
-public class GroupBy {
+public final class GroupBy {
 
     private Fields __groupByNames;
 

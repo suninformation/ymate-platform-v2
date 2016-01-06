@@ -17,6 +17,8 @@ package net.ymate.platform.persistence.redis.impl;
 
 import net.ymate.platform.persistence.redis.IRedisCommandsHolder;
 import net.ymate.platform.persistence.redis.RedisDataSourceCfgMeta;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisCommands;
 import redis.clients.jedis.ShardedJedis;
@@ -29,6 +31,8 @@ import java.io.IOException;
  * @version 1.0
  */
 public class RedisCommandsHolder implements IRedisCommandsHolder {
+
+    private static final Log _LOG = LogFactory.getLog(RedisCommandsHolder.class);
 
     private JedisCommands __commands;
 
@@ -70,7 +74,7 @@ public class RedisCommandsHolder implements IRedisCommandsHolder {
             try {
                 ((Closeable) __commands).close();
             } catch (IOException e) {
-                e.printStackTrace();
+                _LOG.warn("", e);
                 __commands = null;
             }
         }

@@ -23,7 +23,7 @@ import org.slf4j.spi.LoggerFactoryBinder;
  * @author 刘镇 (suninformation@163.com) on 15/11/4 上午11:04
  * @version 1.0
  */
-public class StaticLoggerBinder implements LoggerFactoryBinder {
+public final class StaticLoggerBinder implements LoggerFactoryBinder {
 
     public static String REQUESTED_API_VERSION = "1.6";
 

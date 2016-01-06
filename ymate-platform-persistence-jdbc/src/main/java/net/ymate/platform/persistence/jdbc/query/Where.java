@@ -25,7 +25,7 @@ import org.apache.commons.lang.StringUtils;
  * @author 刘镇 (suninformation@163.com) on 15/5/7 下午1:19
  * @version 1.0
  */
-public class Where {
+public final class Where {
 
     /**
      * SQL条件对象

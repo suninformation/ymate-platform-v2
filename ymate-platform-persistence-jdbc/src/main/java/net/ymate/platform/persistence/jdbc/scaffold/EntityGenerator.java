@@ -30,13 +30,13 @@ import net.ymate.platform.persistence.jdbc.base.IResultSetHandler;
 import net.ymate.platform.persistence.jdbc.query.SQL;
 import net.ymate.platform.persistence.jdbc.support.ResultSetHelper;
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import java.io.*;
-import java.sql.DatabaseMetaData;
-import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
-import java.sql.Statement;
+import java.sql.*;
 import java.util.*;
+import java.util.Date;
 
 /**
  * 持久层代码生成脚手架程序，通过已有数据库表结构逆向生成Java代码(create at 2013年9月22日下午9:44:09)
@@ -45,6 +45,8 @@ import java.util.*;
  * @version 1.0
  */
 public class EntityGenerator {
+
+    private static final Log _LOG = LogFactory.getLog(EntityGenerator.class);
 
     private String __templateRootPath = EntityGenerator.class.getPackage().getName().replace(".", "/");
     private Configuration __freemarkerConfig;
@@ -92,31 +94,45 @@ public class EntityGenerator {
                     for (int _idx = 1; _idx <= _rsMetaData.getColumnCount(); _idx++) {
                         // 获取字段元数据对象
                         ResultSet _column = _dbMetaData.getColumns(dbName, _dbType.equalsIgnoreCase("oracle") ? dbUserName.toUpperCase() : dbUserName, tableName, _rsMetaData.getColumnName(_idx));
-                        if (_column.next()) {
-                            // 提取字段定义及字段默认值
-                            _tableFields.put(_rsMetaData.getColumnName(_idx).toLowerCase(), new ColumnInfo(
-                                    _rsMetaData.getColumnName(_idx).toLowerCase(),
-                                    _rsMetaData.getColumnClassName(_idx),
-                                    _rsMetaData.isAutoIncrement(_idx),
-                                    _rsMetaData.isSigned(_idx),
-                                    _rsMetaData.getPrecision(_idx),
-                                    _rsMetaData.getScale(_idx),
-                                    _rsMetaData.isNullable(_idx),
-                                    _column.getString("COLUMN_DEF")));
+                        try {
+                            if (_column.next()) {
+                                // 提取字段定义及字段默认值
+                                _tableFields.put(_rsMetaData.getColumnName(_idx).toLowerCase(), new ColumnInfo(
+                                        _rsMetaData.getColumnName(_idx).toLowerCase(),
+                                        _rsMetaData.getColumnClassName(_idx),
+                                        _rsMetaData.isAutoIncrement(_idx),
+                                        _rsMetaData.isSigned(_idx),
+                                        _rsMetaData.getPrecision(_idx),
+                                        _rsMetaData.getScale(_idx),
+                                        _rsMetaData.isNullable(_idx),
+                                        _column.getString("COLUMN_DEF")));
+                            }
+                        } finally {
+                            _column.close();
                         }
                     }
                 }
             }
-        } catch (Throwable e) {
+        } catch (Exception e) {
             if (e instanceof RuntimeException) {
                 throw (RuntimeException) e;
             }
             throw new RuntimeException(e);
         } finally {
             if (_statement != null) {
+                try {
+                    _statement.close();
+                } catch (SQLException e) {
+                    _LOG.warn("", e);
+                }
                 _statement = null;
             }
             if (_resultSet != null) {
+                try {
+                    _resultSet.close();
+                } catch (SQLException e) {
+                    _LOG.warn("", e);
+                }
                 _resultSet = null;
             }
             if (_connHolder != null) {
@@ -156,7 +172,7 @@ public class EntityGenerator {
                     return _results;
                 }
             });
-        } catch (Throwable e) {
+        } catch (Exception e) {
             if (e instanceof RuntimeException) {
                 throw (RuntimeException) e;
             }
@@ -280,21 +296,21 @@ public class EntityGenerator {
         try {
             File _outputFile = new File(RuntimeUtils.replaceEnvVariable(StringUtils.defaultIfBlank(YMP.get().getConfig().getParam("jdbc.output_path"), "${root}")), new File(((String) propMap.get("packageName")).replace('.', '/'), targetFileName).getPath());
             File _path = _outputFile.getParentFile();
-            if (!_path.exists()) {
-                _path.mkdirs();
+            if (!_path.exists() && _path.mkdirs()) {
+                Template _template = __freemarkerConfig.getTemplate(__templateRootPath + tmplFile);
+                _outWriter = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(_outputFile), StringUtils.defaultIfEmpty(__freemarkerConfig.getOutputEncoding(), __freemarkerConfig.getDefaultEncoding())));
+                _template.process(propMap, _outWriter);
+                System.out.println("Output file \"" + _outputFile + "\".");
             }
-            Template _template = __freemarkerConfig.getTemplate(__templateRootPath + tmplFile);
-            _outWriter = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(_outputFile), StringUtils.defaultIfEmpty(__freemarkerConfig.getOutputEncoding(), __freemarkerConfig.getDefaultEncoding())));
-            _template.process(propMap, _outWriter);
-            System.out.println("Output file \"" + _outputFile + "\".");
         } catch (Exception e) {
-            e.printStackTrace(System.err);
+            _LOG.warn("", e);
         } finally {
             if (_outWriter != null) {
                 try {
                     _outWriter.flush();
                     _outWriter.close();
-                } catch (IOException ignored) {
+                } catch (IOException e) {
+                    _LOG.warn("", e);
                 }
             }
         }
@@ -325,7 +341,7 @@ public class EntityGenerator {
         }
     }
 
-    private class ColumnInfo {
+    private static class ColumnInfo {
 
         private String columnName;
         private String columnType;
@@ -384,7 +400,7 @@ public class EntityGenerator {
         }
     }
 
-    public class Attr {
+    public static class Attr {
         String varType;
         String varName;
         String columnName;

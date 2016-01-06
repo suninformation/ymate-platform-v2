@@ -19,7 +19,7 @@ package net.ymate.platform.persistence.jdbc.query;
  * @author 刘镇 (suninformation@163.com) on 15/9/25 13:23
  * @version 1.0
  */
-public class Union {
+public final class Union {
 
     private Select __select;
 

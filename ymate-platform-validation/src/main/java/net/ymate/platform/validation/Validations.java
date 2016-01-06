@@ -138,10 +138,10 @@ public class Validations implements IModule, IValidation {
         Validation.MODE _mode = _validation == null ? _meta.getMode() : _validation.mode();
         //
         Map<String, Annotation[]> _paramAnnoMap = _meta.getMethodParamAnnotations(targetMethod);
-        for (String _paramName : _paramAnnoMap.keySet()) {
-            ValidateResult _result = __doValidate(_paramAnnoMap.get(_paramName), _paramName, _meta.getFieldLabel(_paramName), paramValues);
+        for (Map.Entry<String, Annotation[]> _entry : _paramAnnoMap.entrySet()) {
+            ValidateResult _result = __doValidate(_entry.getValue(), _entry.getKey(), _meta.getFieldLabel(_entry.getKey()), paramValues);
             if (_result != null) {
-                _returnValues.put(_paramName, _result);
+                _returnValues.put(_entry.getKey(), _result);
                 //
                 if (_mode == Validation.MODE.NORMAL) {
                     break;

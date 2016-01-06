@@ -27,7 +27,7 @@ import java.util.*;
  * @author 刘镇 (suninformation@163.com) on 2010-4-18 上午02:40:41
  * @version 1.0
  */
-public class DateTimeUtils {
+public final class DateTimeUtils {
 
     public static final long SECOND = 1000;         // 1秒
 

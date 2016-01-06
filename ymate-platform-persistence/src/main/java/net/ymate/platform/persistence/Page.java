@@ -21,7 +21,7 @@ package net.ymate.platform.persistence;
  * @author 刘镇 (suninformation@163.com) on 15/5/7 下午1:20
  * @version 1.0
  */
-public class Page {
+public final class Page {
 
     /**
      * 默认分页大小

@@ -31,7 +31,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * @author 刘镇 (suninformation@163.com) on 2014年2月16日 下午2:20:48
  * @version 1.0
  */
-public class EntityMeta {
+public final class EntityMeta {
 
     private static final Map<Class<? extends IEntity>, EntityMeta> __entityMetas;
 

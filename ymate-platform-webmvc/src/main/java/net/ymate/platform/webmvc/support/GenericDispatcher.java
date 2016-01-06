@@ -35,7 +35,7 @@ import java.io.IOException;
  * @author 刘镇 (suninformation@163.com) on 2013年8月18日 下午7:11:29
  * @version 1.0
  */
-public class GenericDispatcher {
+public final class GenericDispatcher {
 
     private IWebMvc __owner;
 

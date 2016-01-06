@@ -17,8 +17,8 @@ package net.ymate.platform.persistence.jdbc.impl;
 
 import net.ymate.platform.core.YMP;
 import net.ymate.platform.core.lang.BlurObject;
-import net.ymate.platform.core.util.ClassUtils;
 import net.ymate.platform.core.support.IPasswordProcessor;
+import net.ymate.platform.core.util.ClassUtils;
 import net.ymate.platform.persistence.jdbc.*;
 import org.apache.commons.lang.StringUtils;
 

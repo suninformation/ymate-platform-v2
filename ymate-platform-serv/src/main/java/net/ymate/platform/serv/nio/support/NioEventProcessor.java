@@ -65,7 +65,7 @@ public class NioEventProcessor<LISTENER extends IListener<INioSession>> extends 
                     _keyIterator.remove();
                     if (_selectionKey.isValid()) {
                         Object _attachment = _selectionKey.attachment();
-                        if (_attachment != null && _attachment instanceof INioSession) {
+                        if (_attachment instanceof INioSession) {
                             ((INioSession) _attachment).touch();
                         }
                         try {

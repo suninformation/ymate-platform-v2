@@ -82,15 +82,19 @@ public class ApplicationMap extends AbstractMap implements Serializable {
                         Entry entry = (Entry) obj;
                         return ((key == null) ? (entry.getKey() == null) : key.equals(entry.getKey())) && ((value == null) ? (entry.getValue() == null) : value.equals(entry.getValue()));
                     }
+
                     public int hashCode() {
                         return ((key == null) ? 0 : key.hashCode()) ^ ((value == null) ? 0 : value.hashCode());
                     }
+
                     public Object getKey() {
                         return key;
                     }
+
                     public Object getValue() {
                         return value;
                     }
+
                     public Object setValue(Object obj) {
                         context.setAttribute(key, obj);
                         return value;
@@ -110,15 +114,19 @@ public class ApplicationMap extends AbstractMap implements Serializable {
                         Entry entry = (Entry) obj;
                         return ((key == null) ? (entry.getKey() == null) : key.equals(entry.getKey())) && ((value == null) ? (entry.getValue() == null) : value.equals(entry.getValue()));
                     }
+
                     public int hashCode() {
                         return ((key == null) ? 0 : key.hashCode()) ^ ((value == null) ? 0 : value.hashCode());
                     }
+
                     public Object getKey() {
                         return key;
                     }
+
                     public Object getValue() {
                         return value;
                     }
+
                     public Object setValue(Object obj) {
                         context.setAttribute(key, obj);
                         return value;

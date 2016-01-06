@@ -36,15 +36,15 @@ public class I18N {
 
     private static final Log _LOG = LogFactory.getLog(I18N.class);
 
-    protected static Locale __DEFAULT_LOCALE;
+    static Locale __DEFAULT_LOCALE;
 
-    protected static ThreadLocal<Locale> __CURRENT_LOCALE;
+    static ThreadLocal<Locale> __CURRENT_LOCALE;
 
-    protected static Map<Locale, Map<String, Properties>> __RESOURCES_CAHCES;
+    static Map<Locale, Map<String, Properties>> __RESOURCES_CAHCES;
 
-    protected static II18NEventHandler __EVENT_HANDLER;
+    static II18NEventHandler __EVENT_HANDLER;
 
-    protected static boolean __IS_INITED;
+    static boolean __IS_INITED;
 
     /**
      * 初始化

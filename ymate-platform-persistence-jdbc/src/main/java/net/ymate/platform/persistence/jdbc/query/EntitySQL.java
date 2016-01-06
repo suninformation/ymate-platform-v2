@@ -24,7 +24,7 @@ import net.ymate.platform.persistence.base.IEntity;
  * @author 刘镇 (suninformation@163.com) on 15/5/9 下午1:14
  * @version 1.0
  */
-public class EntitySQL<T extends IEntity> {
+public final class EntitySQL<T extends IEntity> {
 
     /**
      * 实体对象

@@ -38,7 +38,7 @@ import java.util.Map;
  * @author 刘镇 (suninformation@163.com) on 2010-10-10 上午10:59:40
  * @version 1.0
  */
-public class ResultSetHelper {
+public final class ResultSetHelper {
 
     /**
      * 数据结果集

@@ -24,7 +24,7 @@ import java.util.List;
  * @author 刘镇 (suninformation@163.com) on 15/5/7 下午6:15
  * @version 1.0
  */
-public class Params {
+public final class Params {
 
     /**
      * 参数集合

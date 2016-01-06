@@ -28,7 +28,7 @@ import java.util.List;
  * @author 刘镇 (suninformation@163.com) on 15/5/7 下午4:06
  * @version 1.0
  */
-public class Fields {
+public final class Fields {
 
     /**
      * 字段名称集合
