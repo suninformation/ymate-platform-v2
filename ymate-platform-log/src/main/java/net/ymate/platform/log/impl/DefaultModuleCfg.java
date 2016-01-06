@@ -45,10 +45,15 @@ public class DefaultModuleCfg implements ILogModuleCfg {
     @SuppressWarnings("unchecked")
     public DefaultModuleCfg(YMP owner) {
         Map<String, String> _moduleCfgs = owner.getConfig().getModuleConfigs(ILog.MODULE_NAME);
-        try {
-            // 尝试加载配置体系模块，若存在则将决定配置文件加载的路径
-            owner.getModule((Class<? extends IModule>) ClassUtils.loadClass("net.ymate.platform.configuration.Cfgs", this.getClass()));
-        } catch (Exception ignored) {
+        //
+        String _cfgsClassName = "net.ymate.platform.configuration.Cfgs";
+        if (!owner.getConfig().getExcludedModules().contains("configuration")
+                && !owner.getConfig().getExcludedModules().contains(_cfgsClassName)) {
+            try {
+                // 尝试加载配置体系模块，若存在则将决定配置文件加载的路径
+                owner.getModule((Class<? extends IModule>) ClassUtils.loadClass(_cfgsClassName, this.getClass()));
+            } catch (Exception ignored) {
+            }
         }
         //
         this.configFile = new File(RuntimeUtils.replaceEnvVariable(StringUtils.defaultIfBlank(_moduleCfgs.get("config_file"), "${root}/cfgs/log4j.xml")));

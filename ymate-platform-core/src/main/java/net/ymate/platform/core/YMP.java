@@ -335,6 +335,9 @@ public class YMP {
             if (_bean instanceof IModule) {
                 IModule _module = (IModule) _bean;
                 if (!_module.isInited()) {
+                    if (__owner.getConfig().getExcludedModules().contains(_module.getName())) {
+                        return null;
+                    }
                     try {
                         _module.init(__owner);
                         // 触发模块初始化完成事件
