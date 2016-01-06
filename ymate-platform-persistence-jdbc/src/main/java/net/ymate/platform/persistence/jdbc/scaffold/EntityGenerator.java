@@ -296,12 +296,13 @@ public class EntityGenerator {
         try {
             File _outputFile = new File(RuntimeUtils.replaceEnvVariable(StringUtils.defaultIfBlank(YMP.get().getConfig().getParam("jdbc.output_path"), "${root}")), new File(((String) propMap.get("packageName")).replace('.', '/'), targetFileName).getPath());
             File _path = _outputFile.getParentFile();
-            if (!_path.exists() && _path.mkdirs()) {
-                Template _template = __freemarkerConfig.getTemplate(__templateRootPath + tmplFile);
-                _outWriter = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(_outputFile), StringUtils.defaultIfEmpty(__freemarkerConfig.getOutputEncoding(), __freemarkerConfig.getDefaultEncoding())));
-                _template.process(propMap, _outWriter);
-                System.out.println("Output file \"" + _outputFile + "\".");
+            if (!_path.exists()) {
+                _path.mkdirs();
             }
+            Template _template = __freemarkerConfig.getTemplate(__templateRootPath + tmplFile);
+            _outWriter = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(_outputFile), StringUtils.defaultIfEmpty(__freemarkerConfig.getOutputEncoding(), __freemarkerConfig.getDefaultEncoding())));
+            _template.process(propMap, _outWriter);
+            System.out.println("Output file \"" + _outputFile + "\".");
         } catch (Exception e) {
             _LOG.warn("", e);
         } finally {
