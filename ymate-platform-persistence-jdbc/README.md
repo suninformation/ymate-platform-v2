@@ -6,8 +6,8 @@ JDBC持久化模块针对关系型数据库(RDBMS)数据存取的一套简单解
 - 优化批量数据更新、标准化结果集、预编译SQL语句处理；
 - 支持单实体ORM操作，无需编写SQL语句；
 - 支持结果集与值对象的自动装配，支持自定义装配规则；
-- 支持多数据源、连接池配置，可动态配置，支持JNDI，支持数据源扩展；
-- 支持多种数据库(如:Oracle、MySQL 、SQLServer等)；
+- 支持多数据源，默认支持C3P0、DBCP、JNDI连接池配置，支持数据源扩展；
+- 支持多种数据库(如:Oracle、MySQL、SQLServer等)；
 - 支持面向对象的数据库查询封装，有助于减少或降低程序编译期错误；
 - 支持数据库事务嵌套；
 - 支持数据库存储过程*；
@@ -398,20 +398,20 @@ JDBC持久化模块针对关系型数据库(RDBMS)数据存取的一套简单解
 - 开启会话示例代码：
 
 		// 使用默认数据源开启会话
-		JDBC.get().openSession(new ISessionExecutor<List<User>>() {
+		User _result = JDBC.get().openSession(new ISessionExecutor<User>() {
 			public User execute(ISession session) throws Exception {
 				// TODO 此处填写业务逻辑代码
-				return null;
+				return session.findFirst(EntitySQL.create(User.class));
 			}
 		});
 		
 		// 使用指定的数据源开启会话
 		IConnectionHolder _conn = JDBC.get().getConnectionHolder("oracledb");
 		// 不需要关心_conn对象的资源释放
-		JDBC.get().openSession(_conn, new ISessionExecutor<List<User>>() {
-			public User execute(ISession session) throws Exception {
+		IResultSet<User> _results = JDBC.get().openSession(_conn, new ISessionExecutor<IResultSet<User>>() {
+			public IResultSet<User> execute(ISession session) throws Exception {
 				// TODO 此处填写业务逻辑代码
-				return null;
+				return session.find(EntitySQL.create(User.class));
 			}
 		});
 
@@ -474,7 +474,7 @@ JDBC持久化模块针对关系型数据库(RDBMS)数据存取的一套简单解
 	
 	+ 查询（Find）：
 
-		- 方式一：通过数据实体设置条件，查询所有符合条件的记录；
+		- 方式一：通过数据实体设置条件（非空属性之间将使用and条件连接），查询所有符合条件的记录；
 		
 				User _user = new User();
 	            _user.setUsername("suninformation");
@@ -530,7 +530,7 @@ JDBC持久化模块针对关系型数据库(RDBMS)数据存取的一套简单解
         
         - 根据条件删除记录：
 
-        		// 删除年龄大于20岁的用户记录
+        		// 删除年龄小于20岁的用户记录
         		session.executeForUpdate(
                         SQL.create(
                                 Delete.create(User.class).where(
@@ -540,7 +540,7 @@ JDBC持久化模块针对关系型数据库(RDBMS)数据存取的一套简单解
 	
 	+ 统计（Count）：
 
-				// 统计年龄大于20岁的用户记录总数
+				// 统计年龄小于20岁的用户记录总数
 				
 				// 方式一：
 				long _count = session.count(User.class, 
@@ -559,7 +559,7 @@ JDBC持久化模块针对关系型数据库(RDBMS)数据存取的一套简单解
 	
 	+ 执行更新类操作（ExecuteForUpdate）：
 
-		该方法用于执行ISession接口中并未提供对应的方法封装且执行操作会对数据库产生变化的SQL语句，执行该方法后将返回受影响记录行数，如上面执行的删除年龄大于20岁的用户记录：
+		该方法用于执行ISession接口中并未提供对应的方法封装且执行操作会对数据库产生变化的SQL语句，执行该方法后将返回受影响记录行数，如上面执行的删除年龄小于20岁的用户记录：
 		
 				int _effectCount =session.executeForUpdate(
                         SQL.create(
@@ -570,110 +570,421 @@ JDBC持久化模块针对关系型数据库(RDBMS)数据存取的一套简单解
 	
 	**注**：以上操作均支持批量操作，具体使用请阅读API接口文档和相关源码；
 
-- 基于继承BaseEntity的数据库操作：
+####数据实体操作（Entity）：
 
-	上面阐述的是基于ISession会话对象完成一系列数据库操作，接下来介绍的操作过程更加简单直接，完全基于数据实体对象；
+上面阐述的是基于ISession会话对象完成一系列数据库操作，接下来介绍的操作过程更加简单直接，完全基于数据实体对象；
 	
-	> 需要注意的是，本小节所指的数据实体对象必须通过继承框架提供BaseEntity抽象类；
+> 注意：本小节所指的数据实体对象必须通过继承框架提供BaseEntity抽象类；
 	
-	+ 插入（Insert）：
+- 插入（Insert）：
 
-			User _user = new User();
-            _user.setId(UUIDUtils.UUID());
-            _user.setUsername("suninformation");
-            _user.setPwd(DigestUtils.md5Hex("123456"));
-            _user.setAge(20);
-            _user.setSex("F");
-            // 执行数据插入
-            _user.save();
-            
-            // 或者在插入时也可以指定/排除某些字段
-            _user.save(Fields.create(User.FIELDS.SEX, User.FIELDS.AGE).excluded(true));
-            
-            // 或者插入前判断记录是否已存在，若已存在则执行记录更新操作
-            _user.saveOrUpdate();
-            
-            // 或者执行记录更新操作时仅更新指定的字段
-            _user.saveOrUpdate(Fields.create(User.FIELDS.SEX, User.FIELDS.AGE));
+		User _user = new User();
+        _user.setId(UUIDUtils.UUID());
+        _user.setUsername("suninformation");
+        _user.setPwd(DigestUtils.md5Hex("123456"));
+        _user.setAge(20);
+        _user.setSex("F");
+        // 执行数据插入
+        _user.save();
+        
+        // 或者在插入时也可以指定/排除某些字段
+        _user.save(Fields.create(User.FIELDS.SEX, User.FIELDS.AGE).excluded(true));
+        
+        // 或者插入前判断记录是否已存在，若已存在则执行记录更新操作
+        _user.saveOrUpdate();
+        
+        // 或者执行记录更新操作时仅更新指定的字段
+        _user.saveOrUpdate(Fields.create(User.FIELDS.SEX, User.FIELDS.AGE));
 
-	+ 更新（Update）：
+- 更新（Update）：
 
-			User _user = new User();
-            _user.setId("bc19f5645aa9438089c5e9954e5f1ac5");
-            _user.setPwd(DigestUtils.md5Hex("654321"));
-            _user.setAge(20);
-            _user.setSex("F");
-            // 执行记录更新
-            _user.update();
-            
-            // 或者仅更新指定的字段
-            _user.update(Fields.create(User.FIELDS.SEX, User.FIELDS.AGE));
+		User _user = new User();
+        _user.setId("bc19f5645aa9438089c5e9954e5f1ac5");
+        _user.setPwd(DigestUtils.md5Hex("654321"));
+        _user.setAge(20);
+        _user.setSex("F");
+        // 执行记录更新
+        _user.update();
+        
+        // 或者仅更新指定的字段
+        _user.update(Fields.create(User.FIELDS.SEX, User.FIELDS.AGE));
 
-	+ 查询（Find）：
+- 查询（Find）：
 
-		- 根据记录ID加载：
-		
-				User _user = new User();
-				_user.setId("bc19f5645aa9438089c5e9954e5f1ac5");
-				// 根据记录ID加载全部字段
-				_user = _user.load();
-				
-				// 或者根据记录ID加载指定的字段
-				_user = _user.load(Fields.create(User.FIELDS.USER_NAME, User.FIELDS.SEX, User.FIELDS.AGE));
-		
-		- 通过数据实体设置条件，查询所有符合条件的记录；
-		
-				User _user = new User();
-	            _user.setUsername("suninformation");
-	            _user.setPwd(DigestUtils.md5Hex("123456"));
-	            // 返回所有字段
-	            IResultSet<User> _users = _user.find();
-	            
-	            // 或者返回指定的字段
-	            _users = _user.find(Fields.create(User.FIELDS.ID, User.FIELDS.AGE));
-	            
-	            // 或者分页查询
-                _users = _user.find(Page.create(1).pageSize(10));
+	+ 根据记录ID加载：
 	
-		- 分页查询：
-
-				User _user = new User();
-				_user.setSex("F");
-				
-				// 分页查询，返回全部字段
-				IResultSet<User> _users = _user.find(Page.create(1).pageSize(10));
-			
-				// 或者分页查询，返回指定的字段
-                _users = _user.find(Fields.create(User.FIELDS.ID, User.FIELDS.AGE), Page.create(1).pageSize(10));
-
-		- 仅返回符合条件的第一条记录(FindFirst)：
-
-				User _user = new User();
-                _user.setUsername("suninformation");
-                _user.setPwd(DigestUtils.md5Hex("123456"));
-                
-                // 返回与用户名称和密码匹配的第一条记录
-                _user = _user.findFirst();
-                
-                // 或者返回与用户名称和密码匹配的第一条记录的ID和AGE字段
-                _user = _user.findFirst(Fields.create(User.FIELDS.ID, User.FIELDS.AGE));
-	
-	+ 删除（Delete）：
-
 			User _user = new User();
 			_user.setId("bc19f5645aa9438089c5e9954e5f1ac5");
+			// 根据记录ID加载全部字段
+			_user = _user.load();
 			
-			// 根据实体主键删除记录
-			_user.delete();
+			// 或者根据记录ID加载指定的字段
+			_user = _user.load(Fields.create(User.FIELDS.USER_NAME, User.FIELDS.SEX, User.FIELDS.AGE));
+	
+	+ 通过数据实体设置条件（非空属性之间将使用and条件连接），查询所有符合条件的记录；
+	
+			User _user = new User();
+            _user.setUsername("suninformation");
+            _user.setPwd(DigestUtils.md5Hex("123456"));
+            // 返回所有字段
+            IResultSet<User> _users = _user.find();
+            
+            // 或者返回指定的字段
+            _users = _user.find(Fields.create(User.FIELDS.ID, User.FIELDS.AGE));
+            
+            // 或者分页查询
+            _users = _user.find(Page.create(1).pageSize(10));
+	
+	+ 分页查询：
 
-	**注**：以上介绍的两种数据库操作方式各有特点，请根据实际情况选择更适合的方式，亦可混合使用；
+			User _user = new User();
+			_user.setSex("F");
+			
+			// 分页查询，返回全部字段
+			IResultSet<User> _users = _user.find(Page.create(1).pageSize(10));
+		
+			// 或者分页查询，返回指定的字段
+            _users = _user.find(Fields.create(User.FIELDS.ID, User.FIELDS.AGE), Page.create(1).pageSize(10));
+
+	+ 仅返回符合条件的第一条记录(FindFirst)：
+
+			User _user = new User();
+            _user.setUsername("suninformation");
+            _user.setPwd(DigestUtils.md5Hex("123456"));
+            
+            // 返回与用户名称和密码匹配的第一条记录
+            _user = _user.findFirst();
+            
+            // 或者返回与用户名称和密码匹配的第一条记录的ID和AGE字段
+            _user = _user.findFirst(Fields.create(User.FIELDS.ID, User.FIELDS.AGE));
+	
+- 删除（Delete）：
+
+		User _user = new User();
+		_user.setId("bc19f5645aa9438089c5e9954e5f1ac5");
+		
+		// 根据实体主键删除记录
+		_user.delete();
+
+**注**：以上介绍的两种数据库操作方式各有特点，请根据实际情况选择更适合的方式，亦可混合使用；
+
+
+####结果集（ResultSet）：
+
+JDBC模块将数据查询的结果集合统一使用IResultSet接口进行封装并集成分页参数，下面通过一段代码介绍如何使用IResultSet对象：
+
+	IResultSet<User> _results = JDBC.get().openSession(new ISessionExecutor<IResultSet<User>>() {
+        public IResultSet<User> execute(ISession session) throws Exception {
+            return session.find(EntitySQL.create(User.class), Page.create(1).pageSize(10));
+        }
+    });
+    
+    // 返回当前是否分页查询
+    boolean _isPaginated = _results.isPaginated();
+    
+    // 当前结果集是否可用，即是否为空或元素数量为0
+    boolean _isAvailable = _results.isResultsAvailable();
+    
+    // 返回当前页号
+    int _pNumber = _results.getPageNumber();
+    
+    // 返回每页记录数
+    int _pSize = _results.getPageSize();
+    
+    // 返回总页数
+    int _pCount = _results.getPageCount();
+    
+    // 返回总记录数
+    long _rCount = _results.getRecordCount();
+    
+    // 返回结果集数据
+    List<User> _users = _results.getResultData();
+
+> **注意**：
+> 
+> - Page分页参数将影响总页数和总记录数的返回值是否为0；
+> 
+>  > 当执行Page.create(1).pageSize(10).**count(false)**时，将不进行总记录数的count计算；
+> 
+> - 非分页查询时返回的分页参数值均为0；
+
 
 ####查询（Query）：
 
+本节主要介绍YMP框架v2版本中新增的特性，辅助开发人员像写Java代码一样编写SQL语句，在一定程度上替代传统字符串拼接的模式，再配合数据实体的字段常量一起使用，这样做的好处就是降低字符串拼接过程中出错的机率，一些特定问题编译期间就能发现，因为Java代码就是SQL语句！
+
+- 基础参数对象：
+	
+	+ Fields：字段名称集合对象，用于辅助拼接数据表字段名称，支持前缀、别名等；
+
+		示例代码：
+
+			// 创建Fields对象
+	        Fields _fields = Fields.create("username", "pwd", "age");
+	        // 带前缀和别名
+	        _fields.add("u", "sex", "s");
+	        // 带前缀
+	        _fields = Fields.create().add("u", "id").add(_fields);
+	        // 标记集合中的字段为排除的
+	        _fields.excluded(true);
+	        // 判断是否存在排除标记
+	        _fields.isExcluded();
+	        // 输出
+	        System.out.println(_fields.fields());
+
+		执行结果：
+		
+			[u.id, username, pwd, age, u.sex s]
 
 
+	+ Params：参数集合对象，主要用于存储替换SQL语句中?号占位符；
+
+		示例代码：
+		
+			// 创建Params对象，任何类型参数
+			Params _params = Params.create("p1", 2, false, 0.1).add("param");
+	        // 
+	        _params = Params.create().add("paramN").add(_params);
+	        // 输出
+	        System.out.println(_params.params());
+	    
+	    执行结果：
+	    
+	    	[paramN, p1, 2, false, 0.1, param]
+	
+	+ Pages：分页参数对象；
+
+		示例代码：
+
+			// 查询每1页, 默认每页20条记录
+	        Page.create(1);
+	        // 查询第1页, 每页10条记录
+	        Page.create(1).pageSize(10);
+	        // 查询第1页, 每页10条记录, 不统计总记录数
+	        Page.create(1).pageSize(10).count(false);
+	
+	+ Cond：条件参数对象，用于生成SQL条件和存储条件参数；
+
+		示例代码：
+		
+		> 生成如下SQL条件：
+		>
+		> - (username like ? and age >= ?) or (sex = ? and age < ?)
+
+	        Cond _cond = Cond.create()
+                .bracketBegin().like("username").param("%ymp%").and().gtEq("age").param(20).bracketEnd()
+                .or()
+                .bracketBegin().eq("sex").param("F").and().lt("age").param(18).bracketEnd();
+	
+	        System.out.println("SQL: " + _cond.toString());
+	        System.out.println("参数: " + _cond.params().params());
+
+		执行结果：
+		
+			SQL: ( username LIKE ? AND age >= ? )  OR  ( sex = ? AND age < ? ) 
+			参数: [%ymp%, 20, F, 18]
+
+	+ OrderBy：排序对象，用于生成SQL条件中的Order By语句；
+
+		示例代码：
+		
+			OrderBy _orderBy = OrderBy.create().asc("age").desc("u", "birthday");
+			//
+			System.out.println(_orderBy.toSQL());
+
+		执行结果：
+		
+			ORDER BY age, u.birthday DESC
+
+	+ GroupBy：分组对象，用于生成SQL条件中的Group By语句；
+
+		示例代码：
+		
+			GroupBy _groupBy = GroupBy.create(Fields.create().add("u", "sex").add("dept"))
+                .having(Cond.create().lt("age").param(18));
+
+	        System.out.println("SQL: " + _groupBy.toString());
+	        System.out.println("参数: " + _groupBy.having().params().params());
+
+		执行结果：
+		
+			SQL: GROUP BY u.sex, dept HAVING age < ?
+			参数: [18]
+
+	+ Where：Where语句对象，用于生成SQL语句中的Where子句；
+
+		示例代码：
+		
+			Cond _cond = Cond.create()
+	                .like("username").param("%ymp%")
+	                .and().gtEq("age").param(20);
+
+	        OrderBy _orderBy = OrderBy.create().asc("age").desc("u", "birthday");
+
+	        GroupBy _groupBy = GroupBy.create(Fields.create().add("u", "sex").add("dept"));
+
+	        Where _where = Where.create(_cond).groupBy(_groupBy).orderDesc("username");
+
+	        _where.orderBy().orderBy(_orderBy);
+			//
+	        System.out.println("SQL: " + _where.toString());
+	        System.out.println("参数: " + _where.getParams().params());
+
+		执行结果：
+		
+			SQL: WHERE username LIKE ? AND age >= ? GROUP BY u.sex, dept ORDER BY username DESC, age, u.birthday DESC
+			参数: [%ymp%, 20]
+
+	+ Join：连接语句对象，用于生成SQL语句中的Join子句，支持left、right和inner连接；
+
+		示例代码：
+		
+			Join _join = Join.inner("user_ext").alias("ue")
+                .on(Cond.create().opt("ue", "uid", Cond.OPT.EQ, "u", "id"));
+
+            System.out.println(_join);
+
+		执行结果：
+		
+			INNER JOIN user_ext ue ON ue.uid = u.id
+
+	+ Union：联合语句对象，用于将多个Select查询结果合并；
+
+		示例代码：
+		
+			Select _select = Select.create("user").where(Where.create(Cond.create().eq("dept").param("IT")))
+	                .union(Union.create(
+	                        Select.create("user").where(Where.create(Cond.create().lt("age").param(18)))));
+	        //
+	        System.out.println("SQL: " + _select.toString());
+	        System.out.println("参数: " + _select.getParams().params());
+
+		执行结果：
+		
+			SQL: SELECT  *  FROM user WHERE dept = ?  UNION SELECT  *  FROM user WHERE age < ?   
+			参数: [IT, 18]
+
+- Select：查询语句对象；
+
+	示例代码：
+	
+		Cond _cond = Cond.create()
+	            .like("u", "username").param("%ymp%")
+	            .and().gtEq("age").param(20);
+	    //
+	    GroupBy _groupBy = GroupBy.create(Fields.create().add("u", "sex").add("u", "dept"));
+	    //
+	    Where _where = Where.create(_cond).groupBy(_groupBy).orderDesc("u", "username");
+	    //
+        Join _join = Join.inner("user_ext").alias("ue")
+                .on(Cond.create().opt("ue", "uid", Cond.OPT.EQ, "u", "id"));
+		//
+        Select _select = Select.create(User.class, "u")
+                .field("u", "username").field("ue", "money")
+                .where(_where)
+                .join(_join)
+                .distinct();
+	    //
+	    System.out.println("SQL: " + _select.toString());
+	    System.out.println("参数: " + _select.getParams().params());
+
+	执行结果：
+	
+		SQL: SELECT DISTINCT u.username, ue.money FROM user u INNER JOIN user_ext ue ON ue.uid = u.id WHERE u.username LIKE ? AND age >= ? GROUP BY u.sex, u.dept ORDER BY u.username DESC 
+		参数: [%ymp%, 20]
+
+- Insert：插入语句对象；
+
+	示例代码：
+	
+		Insert _insert = Insert.create(User.class)
+                .field(User.FIELDS.ID).param("123456")
+                .field(User.FIELDS.AGE).param(18)
+                .field(User.FIELDS.USER_NAME).param("suninformation");
+        //
+        System.out.println("SQL: " + _insert.toString());
+        System.out.println("参数: " + _insert.params().params());
+
+	执行结果：
+	
+		SQL: INSERT INTO user (id, age, username) VALUES (?, ?, ?)
+		参数: [123456, 18, suninformation]
+
+- Update：更新语句对象；
+
+	示例代码：
+	
+		Update _update = Update.create(User.class)
+                .field(User.FIELDS.PWD).param("xxxx")
+                .field(User.FIELDS.AGE).param(20)
+                .where(Where.create(
+                        Cond.create().eq(User.FIELDS.ID).param("123456")));
+        //
+        System.out.println("SQL: " + _update.toString());
+        System.out.println("参数: " + _update.getParams().params());
+
+	执行结果：
+	
+		SQL: UPDATE user SET pwd = ?, age = ? WHERE id = ? 
+		参数: [xxxx, 20, 123456]
+
+
+- Delete：删除语句对象；
+
+	示例代码：
+	
+		Delete _delete = Delete.create(User.class)
+                .where(Where.create(
+                        Cond.create().eq(User.FIELDS.ID).param("123456")));
+        //
+        System.out.println("SQL: " + _delete.toString());
+        System.out.println("参数: " + _delete.getParams().params());
+
+	执行结果：
+	
+		SQL: DELETE  FROM user WHERE id = ? 
+		参数: [123456]
+
+- SQL：自定义SQL语句，同时也用于ISession会话接口参数封装；
+
+		// 自定义SQL语句
+		SQL _sql = SQL.create("select * from user where age > ? and username like ?").param(18).param("%ymp%");
+        
+        // 或封装语句对象
+        SQL.create(_select);
+        SQL.create(_insert);
+        SQL.create(_update);
+        SQL.create(_delete);
+
+- BatchSQL：批量SQL语句对象，主要用于ISession会话对批量操作的参数封装；
+
+	示例代码：
+	
+		// 定义批操作
+		BatchSQL _sqls = BatchSQL.create("INSERT INTO user (id, age, username) VALUES (?, ?, ?)")
+                .addParameter(Params.create("xxxx", 18, "user0"))
+                .addParameter(Params.create("xxx1", 20, "user1"))
+                .addParameter(Params.create("xxxN", 20, "userN"))
+                .addSQL("DELETE  FROM user WHERE age > 30")
+                .addSQL("DELETE  FROM user WHERE age < 18");
+        // 执行
+        session.executeForUpdate(_sql);
+
+- EntitySQL：实体参数封装对象，主要用于ISession会话的参数封装；
+
+	示例代码：
+	
+		session.find(EntitySQL.create(User.class)
+                    .field(Fields.create(User.FIELDS.ID, User.FIELDS.USER_NAME)
+                            .excluded(true)));
 
 
 ####高级特性：
+
+- IDBLocker：数据库表/记录锁；
+
+- IResultSetHandler：自定义结果集数据处理；
+
+- ResultSetHelper：辅助结果集数据处理工具；
 
 
