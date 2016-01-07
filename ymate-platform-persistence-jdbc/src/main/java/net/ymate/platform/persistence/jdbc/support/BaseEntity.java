@@ -313,6 +313,7 @@ public abstract class BaseEntity<Entity extends IEntity, PK extends Serializable
         Cond _cond = Cond.create();
         EntityMeta _meta = EntityMeta.createAndGet(entity.getClass());
         ClassUtils.BeanWrapper<T> _beanWrapper = ClassUtils.wrapper(entity);
+        boolean _flag = false;
         for (String _field : _meta.getPropertyNames()) {
             Object _value = null;
             if (_meta.isMultiplePrimaryKey() && _meta.isPrimaryKey(_field)) {
@@ -321,7 +322,12 @@ public abstract class BaseEntity<Entity extends IEntity, PK extends Serializable
                 _value = _beanWrapper.getValue(_meta.getPropertyByName(_field).getField().getName());
             }
             if (_value != null) {
-                _cond.and().eq(_field).param(_value);
+                if (_flag) {
+                    _cond.and();
+                } else {
+                    _flag = true;
+                }
+                _cond.eq(_field).param(_value);
             }
         }
         return _cond;
