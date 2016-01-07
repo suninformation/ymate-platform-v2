@@ -152,6 +152,10 @@ public class DefaultSession implements ISession {
         return this.find(entity, null, null);
     }
 
+    public <T extends IEntity> IResultSet<T> find(EntitySQL<T> entity, Page page) throws Exception {
+        return this.find(entity, null, page);
+    }
+
     public <T extends IEntity> IResultSet<T> find(EntitySQL<T> entity, Where where) throws Exception {
         return this.find(entity, where, null);
     }

@@ -83,6 +83,8 @@ public interface ISession extends ISessionBase {
      */
     <T extends IEntity> IResultSet<T> find(EntitySQL<T> entity) throws Exception;
 
+    <T extends IEntity> IResultSet<T> find(EntitySQL<T> entity, Page page) throws Exception;
+
     /**
      * @param <T>    指定结果集数据类型
      * @param entity 实体对象
