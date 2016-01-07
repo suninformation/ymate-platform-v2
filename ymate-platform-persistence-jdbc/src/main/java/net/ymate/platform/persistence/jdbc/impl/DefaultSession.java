@@ -236,6 +236,10 @@ public class DefaultSession implements ISession {
         return _opt.getResultSet().isEmpty() ? null : _opt.getResultSet().get(0);
     }
 
+    public <T extends IEntity> T findFirst(EntitySQL<T> entity) throws Exception {
+        return findFirst(entity, null);
+    }
+
     public <T extends IEntity> T findFirst(EntitySQL<T> entity, Where where) throws Exception {
         String _selectSql = __dialect.buildSelectSQL(entity.getEntityClass(), __tablePrefix, __doGetNotExcludedFields(EntityMeta.createAndGet(entity.getEntityClass()), entity.fields(), false, true));
         if (where != null) {

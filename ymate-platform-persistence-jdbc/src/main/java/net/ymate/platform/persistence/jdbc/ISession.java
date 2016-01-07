@@ -129,6 +129,8 @@ public interface ISession extends ISessionBase {
      */
     <T extends IEntity> T findFirst(EntitySQL<T> entity, Where where) throws Exception;
 
+    <T extends IEntity> T findFirst(EntitySQL<T> entity) throws Exception;
+
     /**
      * @param sql SQL语句对象
      * @return 执行SQL更新（如更新、插入和删除），返回此次更新影响的记录数
