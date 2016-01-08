@@ -22,10 +22,13 @@ import net.ymate.platform.core.module.IModule;
 import net.ymate.platform.core.module.annotation.Module;
 import net.ymate.platform.webmvc.annotation.Controller;
 import net.ymate.platform.webmvc.annotation.FileUpload;
+import net.ymate.platform.webmvc.annotation.InterceptorRule;
 import net.ymate.platform.webmvc.annotation.RequestMapping;
 import net.ymate.platform.webmvc.base.Type;
 import net.ymate.platform.webmvc.context.WebContext;
 import net.ymate.platform.webmvc.handle.ControllerHandler;
+import net.ymate.platform.webmvc.handle.InterceptorRuleHandler;
+import net.ymate.platform.webmvc.impl.DefaultInterceptorRuleProcessor;
 import net.ymate.platform.webmvc.impl.DefaultModuleCfg;
 import net.ymate.platform.webmvc.support.MultipartRequestWrapper;
 import net.ymate.platform.webmvc.support.RequestExecutor;
@@ -67,6 +70,8 @@ public class WebMVC implements IModule, IWebMvc {
 
     private RequestMappingParser __mappingParser;
 
+    private IInterceptorRuleProcessor __interceptorRuleProcessor;
+
     /**
      * @return 返回默认MVC框架管理器实例对象
      */
@@ -102,7 +107,11 @@ public class WebMVC implements IModule, IWebMvc {
             __moduleCfg = new DefaultModuleCfg(owner);
             __mappingParser = new RequestMappingParser();
             __owner.getEvents().registerEvent(WebEvent.class);
-            __owner.registerHandler(Controller.class, new ControllerHandler(__owner));
+            __owner.registerHandler(Controller.class, new ControllerHandler(this));
+            if (__moduleCfg.isConventionInterceptorMode()) {
+                __interceptorRuleProcessor = new DefaultInterceptorRuleProcessor();
+                __owner.registerHandler(InterceptorRule.class, new InterceptorRuleHandler(this));
+            }
             //
             __inited = true;
         }
@@ -147,6 +156,14 @@ public class WebMVC implements IModule, IWebMvc {
             }
         }
         return _isValid;
+    }
+
+    public boolean registerInterceptorRule(Class<? extends IInterceptorRule> targetClass) throws Exception {
+        if (__interceptorRuleProcessor != null) {
+            __interceptorRuleProcessor.registerInterceptorRule(targetClass);
+            return true;
+        }
+        return false;
     }
 
     public void processRequest(IRequestContext context,
@@ -215,35 +232,41 @@ public class WebMVC implements IModule, IWebMvc {
                 }
             }
             if (_isAllowConvention) {
-                // 处理Convention模式下URL参数集合
-                String _requestMapping = context.getRequestMapping();
-                String[] _urlParamArr = getModuleCfg().isConventionUrlrewriteMode() ? StringUtils.split(_requestMapping, '_') : new String[]{_requestMapping};
-                if (_urlParamArr != null && _urlParamArr.length > 1) {
-                    _requestMapping = _urlParamArr[0];
-                    WebContext.getRequest().setAttribute("UrlParams", Arrays.asList(_urlParamArr).subList(1, _urlParamArr.length));
-                }
-                //
                 IView _view = null;
-                if (__moduleCfg.getErrorProcessor() != null) {
-                    _view = __moduleCfg.getErrorProcessor().onConvention(this, context);
+                if (__interceptorRuleProcessor != null) {
+                    // 尝试执行Convention拦截规则
+                    _view = __interceptorRuleProcessor.processRequest(this, context);
                 }
                 if (_view == null) {
-                    // 采用系统默认方式处理约定优于配置的URL请求映射
-                    String[] _fileTypes = {".html", ".jsp", ".ftl", ".vm"};
-                    for (String _fileType : _fileTypes) {
-                        File _targetFile = new File(__moduleCfg.getAbstractBaseViewPath(), _requestMapping + _fileType);
-                        if (_targetFile.exists()) {
-                            if (".html".equals(_fileType)) {
-                                _view = HtmlView.bind(this, _requestMapping.substring(1));
-                                break;
-                            } else if (".jsp".equals(_fileType)) {
-                                _view = JspView.bind(this, _requestMapping.substring(1));
-                                break;
-                            } else if (".ftl".equals(_fileType)) {
-                                _view = FreemarkerView.bind(this, _requestMapping.substring(1));
-                                break;
-                            } else if (".vm".equals(_fileType)) {
-                                _view = VelocityView.bind(this, _requestMapping.substring(1));
+                    // 处理Convention模式下URL参数集合
+                    String _requestMapping = context.getRequestMapping();
+                    String[] _urlParamArr = getModuleCfg().isConventionUrlrewriteMode() ? StringUtils.split(_requestMapping, '_') : new String[]{_requestMapping};
+                    if (_urlParamArr != null && _urlParamArr.length > 1) {
+                        _requestMapping = _urlParamArr[0];
+                        WebContext.getRequest().setAttribute("UrlParams", Arrays.asList(_urlParamArr).subList(1, _urlParamArr.length));
+                    }
+                    //
+                    if (__moduleCfg.getErrorProcessor() != null) {
+                        _view = __moduleCfg.getErrorProcessor().onConvention(this, context);
+                    }
+                    if (_view == null) {
+                        // 采用系统默认方式处理约定优于配置的URL请求映射
+                        String[] _fileTypes = {".html", ".jsp", ".ftl", ".vm"};
+                        for (String _fileType : _fileTypes) {
+                            File _targetFile = new File(__moduleCfg.getAbstractBaseViewPath(), _requestMapping + _fileType);
+                            if (_targetFile.exists()) {
+                                if (".html".equals(_fileType)) {
+                                    _view = HtmlView.bind(this, _requestMapping.substring(1));
+                                    break;
+                                } else if (".jsp".equals(_fileType)) {
+                                    _view = JspView.bind(this, _requestMapping.substring(1));
+                                    break;
+                                } else if (".ftl".equals(_fileType)) {
+                                    _view = FreemarkerView.bind(this, _requestMapping.substring(1));
+                                    break;
+                                } else if (".vm".equals(_fileType)) {
+                                    _view = VelocityView.bind(this, _requestMapping.substring(1));
+                                }
                             }
                         }
                     }

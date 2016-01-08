@@ -123,6 +123,11 @@ public interface IWebMvcModuleCfg {
     boolean isConventionUrlrewriteMode();
 
     /**
+     * @return Convention模式开启时是否采用拦截器规则设置，可选参数，默认值为false
+     */
+    boolean isConventionInterceptorMode();
+
+    /**
      * @return Convention模式开启时视图文件路径(基于base_view_path的相对路径, 加号或无符串代表允许访问)，可选参数，默认值为空(即不限制访问路径)，多个路径间用'|'分隔
      */
     Set<String> getConventionViewAllowPaths();

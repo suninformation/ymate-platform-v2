@@ -15,11 +15,10 @@
  */
 package net.ymate.platform.validation.handle;
 
-import net.ymate.platform.core.YMP;
 import net.ymate.platform.core.beans.IBeanHandler;
 import net.ymate.platform.core.util.ClassUtils;
+import net.ymate.platform.validation.IValidation;
 import net.ymate.platform.validation.IValidator;
-import net.ymate.platform.validation.Validations;
 import net.ymate.platform.validation.annotation.Validator;
 
 /**
@@ -30,18 +29,18 @@ import net.ymate.platform.validation.annotation.Validator;
  */
 public class ValidateHandler implements IBeanHandler {
 
-    private YMP __owner;
+    private IValidation __owner;
 
-    public ValidateHandler(YMP owner) throws Exception {
+    public ValidateHandler(IValidation owner) throws Exception {
         __owner = owner;
         //
-        __owner.registerExcludedClass(IValidator.class);
+        __owner.getOwner().registerExcludedClass(IValidator.class);
     }
 
     @SuppressWarnings("unchecked")
     public Object handle(Class<?> targetClass) throws Exception {
         if (ClassUtils.isInterfaceOf(targetClass, IValidator.class)) {
-            Validations.get(__owner).registerValidator(targetClass.getAnnotation(Validator.class).value(), (Class<? extends IValidator>) targetClass);
+            __owner.registerValidator(targetClass.getAnnotation(Validator.class).value(), (Class<? extends IValidator>) targetClass);
         }
         return null;
     }

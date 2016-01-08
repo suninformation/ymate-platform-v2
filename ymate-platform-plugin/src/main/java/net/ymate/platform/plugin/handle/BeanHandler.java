@@ -15,10 +15,10 @@
  */
 package net.ymate.platform.plugin.handle;
 
-import net.ymate.platform.core.YMP;
 import net.ymate.platform.core.beans.BeanMeta;
 import net.ymate.platform.core.beans.IBeanHandler;
 import net.ymate.platform.core.beans.annotation.Bean;
+import net.ymate.platform.plugin.IPluginFactory;
 
 /**
  * @author 刘镇 (suninformation@163.com) on 15/8/11 下午6:32
@@ -26,18 +26,18 @@ import net.ymate.platform.core.beans.annotation.Bean;
  */
 public class BeanHandler implements IBeanHandler {
 
-    private YMP __owner;
+    private IPluginFactory __pluginFactory;
 
-    public BeanHandler(YMP owner) {
-        __owner = owner;
+    public BeanHandler(IPluginFactory pluginFactory) {
+        __pluginFactory = pluginFactory;
     }
 
     public Object handle(Class<?> targetClass) throws Exception {
         Bean _bean = targetClass.getAnnotation(Bean.class);
         if (_bean.singleton()) {
-            __owner.registerBean(BeanMeta.create(targetClass.newInstance(), targetClass));
+            __pluginFactory.getOwner().registerBean(BeanMeta.create(targetClass.newInstance(), targetClass));
         } else {
-            __owner.registerBean(BeanMeta.create(targetClass));
+            __pluginFactory.getOwner().registerBean(BeanMeta.create(targetClass));
         }
         return null;
     }

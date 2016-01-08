@@ -122,7 +122,7 @@ public class DefaultPluginFactory implements IPluginFactory {
             if (__owner != null) {
                 __owner.bindBeanFactory(__innerBeanFactory);
                 //
-                __outerBeanFactory.registerHandler(Bean.class, new BeanHandler(__owner));
+                __outerBeanFactory.registerHandler(Bean.class, new BeanHandler(this));
                 __outerBeanFactory.registerHandler(Proxy.class, new ProxyHandler(__owner));
                 //
                 for (Class<? extends IBeanHandler> _targetClass : __doLoadBeanHandles()) {

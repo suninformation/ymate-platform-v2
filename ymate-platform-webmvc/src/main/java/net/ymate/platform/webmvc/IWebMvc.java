@@ -52,6 +52,15 @@ public interface IWebMvc {
     boolean registerController(Class<? extends Controller> targetClass) throws Exception;
 
     /**
+     * 注册拦截器规则配置
+     *
+     * @param targetClass 目标类型
+     * @return 返回是否有效注册
+     * @throws Exception 可能产生的异常
+     */
+    boolean registerInterceptorRule(Class<? extends IInterceptorRule> targetClass) throws Exception;
+
+    /**
      * 处理控制器请求
      *
      * @param context        请求上下文

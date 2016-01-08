@@ -96,7 +96,7 @@ public class Cfgs implements IModule, IConfig {
             __owner = owner;
             __moduleCfg = new DefaultModuleCfg(__owner);
             //
-            __owner.registerHandler(Configuration.class, new ConfigHandler(__owner));
+            __owner.registerHandler(Configuration.class, new ConfigHandler(this));
             //
             __configHome = __moduleCfg.getConfigHome();
             if (StringUtils.isBlank(__configHome)) {

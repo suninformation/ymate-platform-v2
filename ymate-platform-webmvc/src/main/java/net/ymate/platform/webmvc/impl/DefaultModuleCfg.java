@@ -83,6 +83,8 @@ public class DefaultModuleCfg implements IWebMvcModuleCfg {
 
     private boolean __conventionUrlrewriteMode;
 
+    private boolean __conventionInterceptorMode;
+
     private Set<String> __conventionViewAllowPaths;
 
     private Set<String> __conventionViewNotAllowPaths;
@@ -132,6 +134,7 @@ public class DefaultModuleCfg implements IWebMvcModuleCfg {
         //
         __conventionMode = BlurObject.bind(_moduleCfgs.get("convention_mode")).toBooleanValue();
         __conventionUrlrewriteMode = BlurObject.bind(_moduleCfgs.get("convention_urlrewrite_mode")).toBooleanValue();
+        __conventionInterceptorMode = BlurObject.bind(_moduleCfgs.get("convention_interceptor_mode")).toBooleanValue();
         //
         __conventionViewAllowPaths = new HashSet<String>();
         __conventionViewNotAllowPaths = new HashSet<String>();
@@ -238,6 +241,10 @@ public class DefaultModuleCfg implements IWebMvcModuleCfg {
 
     public boolean isConventionUrlrewriteMode() {
         return __conventionUrlrewriteMode;
+    }
+
+    public boolean isConventionInterceptorMode() {
+        return __conventionInterceptorMode;
     }
 
     public Set<String> getConventionViewAllowPaths() {

@@ -15,15 +15,17 @@
  */
 package net.ymate.platform.core.beans.intercept;
 
-import net.ymate.platform.core.beans.annotation.*;
+import net.ymate.platform.core.beans.annotation.After;
+import net.ymate.platform.core.beans.annotation.Before;
+import net.ymate.platform.core.beans.annotation.Order;
+import net.ymate.platform.core.beans.annotation.Proxy;
 import net.ymate.platform.core.beans.proxy.IProxy;
 import net.ymate.platform.core.beans.proxy.IProxyChain;
 import org.apache.commons.codec.digest.DigestUtils;
-import org.apache.commons.lang.ArrayUtils;
-import org.apache.commons.lang.StringUtils;
 
 import java.lang.reflect.Method;
-import java.util.*;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -58,7 +60,7 @@ public class InterceptProxy implements IProxy {
                     proxyChain.getTargetObject(),
                     proxyChain.getTargetMethod(),
                     proxyChain.getMethodParams(),
-                    __doGetContextParams(proxyChain.getTargetClass(), proxyChain.getTargetMethod()));
+                    InterceptAnnoHelper.getContextParams(proxyChain.getTargetClass(), proxyChain.getTargetMethod()));
             //
             for (Class<? extends IInterceptor> _interceptClass : __doGetBeforeIntercepts(proxyChain.getTargetClass(), proxyChain.getTargetMethod())) {
                 IInterceptor _interceptor = _interceptClass.newInstance();
@@ -81,7 +83,7 @@ public class InterceptProxy implements IProxy {
                     proxyChain.getTargetObject(),
                     proxyChain.getTargetMethod(),
                     proxyChain.getMethodParams(),
-                    __doGetContextParams(proxyChain.getTargetClass(), proxyChain.getTargetMethod()));
+                    InterceptAnnoHelper.getContextParams(proxyChain.getTargetClass(), proxyChain.getTargetMethod()));
             _context.setResultObject(_returnValue);
             //
             for (Class<? extends IInterceptor> _interceptClass : __doGetAfterIntercepts(proxyChain.getTargetClass(), proxyChain.getTargetMethod())) {
@@ -104,29 +106,7 @@ public class InterceptProxy implements IProxy {
             if (_classes != null) {
                 return _classes;
             }
-            _classes = new ArrayList<Class<? extends IInterceptor>>();
-            if (targetClass.isAnnotationPresent(Before.class)) {
-                Before _before = targetClass.getAnnotation(Before.class);
-                Clean _clean = __doGetCleanIntercepts(targetMethod);
-                //
-                if (_clean != null &&
-                        (_clean.type().equals(IInterceptor.CleanType.ALL) || _clean.type().equals(IInterceptor.CleanType.BEFORE))) {
-                    if (_clean.value().length > 0) {
-                        for (Class<? extends IInterceptor> _clazz : _before.value()) {
-                            if (ArrayUtils.contains(_clean.value(), _clazz)) {
-                                continue;
-                            }
-                            _classes.add(_clazz);
-                        }
-                    }
-                } else {
-                    Collections.addAll(_classes, _before.value());
-                }
-            }
-            //
-            if (targetMethod.isAnnotationPresent(Before.class)) {
-                Collections.addAll(_classes, targetMethod.getAnnotation(Before.class).value());
-            }
+            _classes = InterceptAnnoHelper.getBeforeIntercepts(targetClass, targetMethod);
             //
             if (!_classes.isEmpty()) {
                 __beforeInterceptsCache.put(_cacheKey, _classes);
@@ -147,29 +127,7 @@ public class InterceptProxy implements IProxy {
             if (_classes != null) {
                 return _classes;
             }
-            _classes = new ArrayList<Class<? extends IInterceptor>>();
-            if (targetClass.isAnnotationPresent(After.class)) {
-                After _after = targetClass.getAnnotation(After.class);
-                Clean _clean = __doGetCleanIntercepts(targetMethod);
-                //
-                if (_clean != null &&
-                        (_clean.type().equals(IInterceptor.CleanType.ALL) || _clean.type().equals(IInterceptor.CleanType.AFTER))) {
-                    if (_clean.value().length > 0) {
-                        for (Class<? extends IInterceptor> _clazz : _after.value()) {
-                            if (ArrayUtils.contains(_clean.value(), _clazz)) {
-                                continue;
-                            }
-                            _classes.add(_clazz);
-                        }
-                    }
-                } else {
-                    Collections.addAll(_classes, _after.value());
-                }
-            }
-            //
-            if (targetMethod.isAnnotationPresent(After.class)) {
-                Collections.addAll(_classes, targetMethod.getAnnotation(After.class).value());
-            }
+            _classes = InterceptAnnoHelper.getAfterIntercepts(targetClass, targetMethod);
             //
             if (!_classes.isEmpty()) {
                 __afterInterceptsCache.put(_cacheKey, _classes);
@@ -177,33 +135,5 @@ public class InterceptProxy implements IProxy {
             //
             return _classes;
         }
-    }
-
-    private Clean __doGetCleanIntercepts(Method targetMethod) {
-        if (targetMethod.isAnnotationPresent(Clean.class)) {
-            return targetMethod.getAnnotation(Clean.class);
-        }
-        return null;
-    }
-
-    private Map<String, String> __doGetContextParams(Class<?> targetClass, Method targetMethod) {
-        Map<String, String> _contextParams = new HashMap<String, String>();
-        //
-        ContextParam _param = targetClass.getAnnotation(ContextParam.class);
-        if (_param != null) {
-            for (ParamItem _item : _param.value()) {
-                String _key = StringUtils.defaultIfBlank(_item.key(), _item.value());
-                _contextParams.put(_key, _item.value());
-            }
-        }
-        _param = targetMethod.getAnnotation(ContextParam.class);
-        if (_param != null) {
-            for (ParamItem _item : _param.value()) {
-                String _key = StringUtils.defaultIfBlank(_item.key(), _item.value());
-                _contextParams.put(_key, _item.value());
-            }
-        }
-        //
-        return _contextParams;
     }
 }
