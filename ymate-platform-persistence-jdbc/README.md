@@ -950,7 +950,7 @@ JDBC模块将数据查询的结果集合统一使用IResultSet接口进行封装
 		// 自定义SQL语句
 		SQL _sql = SQL.create("select * from user where age > ? and username like ?").param(18).param("%ymp%");
 		// 执行
-        session.find(_sql);
+        session.find(_sql, IResultSetHandler.ARRAY);
 
         // 或封装语句对象
         SQL.create(_select);
@@ -983,7 +983,7 @@ JDBC模块将数据查询的结果集合统一使用IResultSet接口进行封装
 
 ####高级特性：
 
-- 多表查询及自定义结果集数据处理；
+- 多表查询及自定义结果集数据处理：
 
 	JDBC模块提供的ORM主要是针对单实体操作，实际业务中往往会涉及到多表关联查询以及返回多个表字段，在单实体ORM中是无法将JDBC结果集记录自动转换为实体对象的，这时就需要对结果集数据自定义处理来满足业务需求。
 	
