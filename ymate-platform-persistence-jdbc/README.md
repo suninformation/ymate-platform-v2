@@ -514,7 +514,7 @@ JDBC持久化模块针对关系型数据库(RDBMS)数据存取的一套简单解
                                         .eq(User.FIELDS.USER_NAME).param("suninformation")
                                         .eq(User.FIELDS.PWD).param(DigestUtils.md5Hex("123456"))));
 
-		**注**：更多的查询方式将在后面的“***查询（Query）***”章节中详细阐述；
+		**注**：更多的查询方式将在后面的 “查询（Query）” 章节中详细阐述；
 	
 	+ 删除（Delete）：
 
@@ -704,7 +704,7 @@ JDBC模块将数据查询的结果集合统一使用IResultSet接口进行封装
 > 
 > - Page分页参数将影响总页数和总记录数的返回值是否为0；
 > 
->  > 当执行Page.create(1).pageSize(10).**count(false)**时，将不进行总记录数的count计算；
+>  > 当执行Page.create(1).pageSize(10).count(false)时，将不进行总记录数的count计算；
 > 
 > - 非分页查询时返回的分页参数值均为0；
 
@@ -870,7 +870,7 @@ JDBC模块将数据查询的结果集合统一使用IResultSet接口进行封装
 	
 		Cond _cond = Cond.create()
 	            .like("u", "username").param("%ymp%")
-	            .and().gtEq("age").param(20);
+	            .and().gtEq("u", "age").param(20);
 	    //
 	    GroupBy _groupBy = GroupBy.create(Fields.create().add("u", "sex").add("u", "dept"));
 	    //
@@ -890,7 +890,7 @@ JDBC模块将数据查询的结果集合统一使用IResultSet接口进行封装
 
 	执行结果：
 	
-		SQL: SELECT DISTINCT u.username, ue.money FROM user u INNER JOIN user_ext ue ON ue.uid = u.id WHERE u.username LIKE ? AND age >= ? GROUP BY u.sex, u.dept ORDER BY u.username DESC 
+		SQL: SELECT DISTINCT u.username, ue.money FROM user u INNER JOIN user_ext ue ON ue.uid = u.id WHERE u.username LIKE ? AND u.age >= ? GROUP BY u.sex, u.dept ORDER BY u.username DESC 
 		参数: [%ymp%, 20]
 
 - Insert：插入语句对象；
@@ -949,7 +949,9 @@ JDBC模块将数据查询的结果集合统一使用IResultSet接口进行封装
 
 		// 自定义SQL语句
 		SQL _sql = SQL.create("select * from user where age > ? and username like ?").param(18).param("%ymp%");
-        
+		// 执行
+        session.find(_sql);
+
         // 或封装语句对象
         SQL.create(_select);
         SQL.create(_insert);
@@ -968,7 +970,7 @@ JDBC模块将数据查询的结果集合统一使用IResultSet接口进行封装
                 .addSQL("DELETE  FROM user WHERE age > 30")
                 .addSQL("DELETE  FROM user WHERE age < 18");
         // 执行
-        session.executeForUpdate(_sql);
+        session.executeForUpdate(_sqls);
 
 - EntitySQL：实体参数封装对象，主要用于ISession会话的参数封装；
 
@@ -981,10 +983,194 @@ JDBC模块将数据查询的结果集合统一使用IResultSet接口进行封装
 
 ####高级特性：
 
-- IDBLocker：数据库表/记录锁；
+- 多表查询及自定义结果集数据处理；
 
-- IResultSetHandler：自定义结果集数据处理；
+	JDBC模块提供的ORM主要是针对单实体操作，实际业务中往往会涉及到多表关联查询以及返回多个表字段，在单实体ORM中是无法将JDBC结果集记录自动转换为实体对象的，这时就需要对结果集数据自定义处理来满足业务需求。
+	
+	若想实现结果集数据的自定义处理，需要了解以下相关接口和类：
+	
+	+ IResultSetHandler接口：结果集数据处理接口，用于完成将JDBC结果集原始数据的每一行记录进行转换为目标对象，JDBC模块默认提供了该接口的三种实现：
 
-- ResultSetHelper：辅助结果集数据处理工具；
+		> EntityResultSetHandler：采用实体类存储结果集数据的接口实现，此类已经集成在ISession会话接口业务逻辑中，仅用于处理单实体的数据转换；
+		>
+		> MapResultSetHandler：采用Map存储结果集数据的接口实现；
+		>
+		> ArrayResultSetHandler：采用Object[]数组存储结果集数据的接口实现；
 
+	+ ResultSetHelper类：数据结果集辅助处理工具，用于帮助开发人员便捷的读取和遍历结果集中数据内容，仅支持由 ArrayResultSetHandler 和 MapResultSetHandler 产生的结果集数据类型；
 
+	下面通过简单的多表关联查询来介绍IResultSetHandler接口和ResultSetHelper类如何配合使用：
+
+	示例代码一：使用ArrayResultSetHandler或MapResultSetHandler处理结果集数据；
+	
+			IResultSet<Object[]> _results = JDBC.get().openSession(new ISessionExecutor<IResultSet<Object[]>>() {
+	            public IResultSet<Object[]> execute(ISession session) throws Exception {
+	                // 通过查询对象创建SQL语句:
+	                //
+	                // SELECT u.id id, u.username username, ue.money money 
+	                // 			FROM user u LEFT JOIN user_ext ue ON u.id = ue.uid
+	                //
+	                Select _uSelect = Select.create(User.class, "u")
+	                        .join(Join.left(UserExt.TABLE_NAME).alias("ue")
+	                                .on(Cond.create()
+	                                        .opt("u", User.FIELDS.ID, Cond.OPT.EQ, "ue", UserExt.FIELDS.UID)))
+	                        .field(Fields.create()
+	                                .add("u", User.FIELDS.ID, "id")
+	                                .add("u", User.FIELDS.USER_NAME, "username")
+	                                .add("ue", UserExt.FIELDS.MONEY, "money"));
+
+	                // 执行查询并指定采用Object[]数组存储结果集数据，若采用Map存储请使用：IResultSetHandler.MAP
+	                return session.find(SQL.create(_uSelect), IResultSetHandler.ARRAY);
+	            }
+	        });
+
+	        // 采用默认步长(step=1)逐行遍历
+	        ResultSetHelper.bind(_results).forEach(new ResultSetHelper.ItemHandler() {
+	            public boolean handle(ResultSetHelper.ItemWrapper wrapper, int row) throws Exception {
+	                System.out.println("当前记录行数: " + row);
+
+	                // 通过返回的结果集字段名取值
+	                String _id = wrapper.getAsString("id");
+	                String _uname = wrapper.getAsString("username");
+
+	                // 也可以通过索引下标取值
+	                Double _money = wrapper.getAsDouble(2);
+
+	                // 也可以直接将当前行数据赋值给实体对象或自定义JavaBean对象
+	                wrapper.toEntity(new User());
+
+	                // 当赋值给自定义的JavaBean对象时需要注意返回的字段名称与对象成员属性名称要一一对应并且要符合命名规范
+	                // 例如：对象成员名称为"userName"，将与名称为"user_name"的字段对应
+	                wrapper.toObject(new User());
+
+	                // 返回值将决定遍历是否继续执行
+	                return true;
+	            }
+	        });
+
+	        // 采用指定的步长进行数据遍历，此处step=2
+	        ResultSetHelper.bind(_results).forEach(2, new ResultSetHelper.ItemHandler() {
+	            public boolean handle(ResultSetHelper.ItemWrapper wrapper, int row) throws Exception {
+	                // 代码略......
+	                return true;
+	            }
+	        });
+	
+	示例代码二：使用自定义IResultSetHandler处理结果集数据；
+	
+			// 自定义JavaBean对象，用于封装多表关联的结果集的记录
+			public class CustomUser {
+
+				private String id;
+
+				private String username;
+
+				private Double money;
+
+				// 忽略Getter和Setter方法
+			}
+
+			// 修改示例一的代码，将结果集中的每一条记录转换成自定义的CustomUser对象
+			IResultSet<CustomUser> _results = JDBC.get().openSession(new ISessionExecutor<IResultSet<CustomUser>>() {
+	            public IResultSet<CustomUser> execute(ISession session) throws Exception {
+	                Select _uSelect = Select.create(User.class, "u")
+	                        .join(Join.left(UserExt.TABLE_NAME).alias("ue")
+	                                .on(Cond.create()
+	                                        .opt("u", User.FIELDS.ID, Cond.OPT.EQ, "ue", UserExt.FIELDS.UID)))
+	                        .field(Fields.create()
+	                                .add("u", User.FIELDS.ID, "id")
+	                                .add("u", User.FIELDS.USER_NAME, "username")
+	                                .add("ue", UserExt.FIELDS.MONEY, "money"));
+
+	                // 通过实现IResultSetHandler接口实现结果集的自定义处理
+	                return session.find(SQL.create(_uSelect), new IResultSetHandler<CustomUser>() {
+	                    public List<CustomUser> handle(ResultSet resultSet) throws Exception {
+	                        List<CustomUser> _results = new ArrayList<CustomUser>();
+	                        while (resultSet.next()) {
+	                            CustomUser _cUser = new CustomUser();
+	                            _cUser.setId(resultSet.getString("id"));
+	                            _cUser.setUsername(resultSet.getString("username"));
+	                            _cUser.setMoney(resultSet.getDouble("money"));
+	                            //
+	                            _results.add(_cUser);
+	                        }
+	                        return _results;
+	                    }
+	                });
+	            }
+	        });
+
+- 数据库锁：
+
+	数据库是一个多用户使用的共享资源，当多个用户并发地存取数据时，在数据库中就会产生多个事务同时存取同一数据的情况，若对并发操作不加以控制就可能会造成数据的错误读取和存储，破坏数据库的数据一致性，所以说，加锁是实现数据库并发控制的一个非常重要的技术；
+	
+	> 数据库加锁的流程是：当事务在对某个数据对象进行操作前，先向系统发出请求对其加锁，加锁后的事务就对该数据对象有了一定的控制，在该事务释放锁之前，其他的事务不能对此数据对象进行更新操作；
+	
+	因此，JDBC模块在数据库查询操作中集成了针对数据库记录锁的控制能力，称之为IDBLocker，以参数的方式使用起来同样的简单！
+	
+	首先了解一下IDBLocker提供的锁的类型：
+	
+	+ MySQL：
+
+		> IDBLocker.MYSQL：行级锁，只有符合条件的数据被加锁，其它进程等待资源解锁后再进行操作；
+
+	+ Oracle：
+
+		> IDBLocker.ORACLE：行级锁，只有符合条件的数据被加锁，其它进程等待资源解锁后再进行操作；
+		>
+		> IDBLocker.ORACLE_NOWAIT：行级锁，不进行资源等待，只要发现结果集中有些数据被加锁，立刻返回“ORA-00054错误”；
+
+	+ SQL Server：
+
+		> IDBLocker.SQLSERVER_NOLOCK：不加锁，在读取或修改数据时不加任何锁；
+		>
+		> IDBLocker.SQLSERVER_HOLDLOCK：保持锁，将此共享锁保持至整个事务结束，而不会在途中释放；
+		>
+		> IDBLocker.SQLSERVER_UPDLOCK：修改锁，能够保证多个进程能同时读取数据但只有该进程能修改数据；
+		>
+		> IDBLocker.SQLSERVER_TABLOCK：表锁，整个表设置共享锁直至该命令结束，保证其他进程只能读取而不能修改数据；
+		>
+		> IDBLocker.SQLSERVER_PAGLOCK：页锁；
+		>
+		> IDBLocker.SQLSERVER_TABLOCKX：排它表锁，将在整个表设置排它锁，能够防止其他进程读取或修改表中的数据；
+	
+	+ 其它数据库：
+
+		> 可以通过IDBLocker接口自行实现；
+	
+	下面通过示例代码展示如何使用锁：
+	
+	示例代码一：通过EntitySQL对象传递锁参数；
+	
+		session.find(EntitySQL.create(User.class)
+                .field(Fields.create(User.FIELDS.ID, User.FIELDS.USER_NAME).excluded(true))
+                .forUpdate(IDBLocker.MYSQL));
+    
+    示例代码二：通过Select查询对象传递锁参数；
+    
+    	Select _select = Select.create(User.class, "u")
+                .field("u", "username").field("ue", "money")
+                .where(Where.create(
+                        Cond.create().eq(User.FIELDS.ID).param("bc19f5645aa9438089c5e9954e5f1ac5")))
+                .forUpdate(IDBLocker.MYSQL);
+
+        session.find(SQL.create(_select), IResultSetHandler.ARRAY);
+    
+    示例代码三：基于数据实体对象传递锁参数
+    
+    	//
+    	User _user = new User();
+        _user.setId("bc19f5645aa9438089c5e9954e5f1ac5");
+        //
+        _user.load(IDBLocker.MYSQL);
+
+		//
+        User _user = new User();
+        _user.setUsername("suninformation");
+        _user.setPwd(DigestUtils.md5Hex("123456"));
+        //
+        IResultSet<User> _users = _user.find(IDBLocker.MYSQL);
+        
+    > **注意**：
+    >
+    > 请谨慎使用数据库锁机制，尽量避免产生锁表，以免发生死锁情况！
