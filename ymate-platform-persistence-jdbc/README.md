@@ -830,9 +830,18 @@ JDBC模块将数据查询的结果集合统一使用IResultSet接口进行封装
 	        System.out.println("SQL: " + _where.toString());
 	        System.out.println("参数: " + _where.getParams().params());
 
-		执行结果：
+		执行结果：（为方便阅读，此处美化了SQL的输出格式:P）
 		
-			SQL: WHERE username LIKE ? AND age >= ? GROUP BY u.sex, dept ORDER BY username DESC, age, u.birthday DESC
+			SQL: WHERE
+					 username LIKE ?
+				 AND age >= ?
+				 GROUP BY
+					 u.sex,
+					 dept
+				 ORDER BY
+					 username DESC,
+					 age,
+					 u.birthday DESC
 			参数: [%ymp%, 20]
 
 	+ Join：连接语句对象，用于生成SQL语句中的Join子句，支持left、right和inner连接；
@@ -888,9 +897,22 @@ JDBC模块将数据查询的结果集合统一使用IResultSet接口进行封装
 	    System.out.println("SQL: " + _select.toString());
 	    System.out.println("参数: " + _select.getParams().params());
 
-	执行结果：
+	执行结果：（为方便阅读，此处美化了SQL的输出格式:P）
 	
-		SQL: SELECT DISTINCT u.username, ue.money FROM user u INNER JOIN user_ext ue ON ue.uid = u.id WHERE u.username LIKE ? AND u.age >= ? GROUP BY u.sex, u.dept ORDER BY u.username DESC 
+		SQL: SELECT DISTINCT
+					u.username,
+					ue.money
+				FROM
+					USER u
+				INNER JOIN user_ext ue ON ue.uid = u.id
+				WHERE
+					u.username LIKE ?
+				AND u.age >= ?
+				GROUP BY
+					u.sex,
+					u.dept
+				ORDER BY
+					u.username DESC 
 		参数: [%ymp%, 20]
 
 - Insert：插入语句对象；
