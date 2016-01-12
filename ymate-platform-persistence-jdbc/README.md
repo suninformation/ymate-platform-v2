@@ -257,6 +257,9 @@ JDBC持久化模块针对关系型数据库(RDBMS)数据存取的一套简单解
         # 是否使用类名后缀，不使用和使用的区别如: User-->UserModel，默认为false
         ymp.params.jdbc.use_class_suffix=
 
+		# 是否采用链式调用模式，默认为false
+		ymp.params.jdbc.use_chain_mode=
+
         # 数据库名称(仅针对特定的数据库使用，如Oracle)，默认为空
         ymp.params.jdbc.db_name=
 
