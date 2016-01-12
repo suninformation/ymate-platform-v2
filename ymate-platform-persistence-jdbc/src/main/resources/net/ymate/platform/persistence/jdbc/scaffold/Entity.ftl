@@ -83,6 +83,28 @@ public class ${modelName?cap_first}<#if (isUseClassSuffix)>Model</#if> extends <
 
 	</#list>
 
+	<#if (isUseChainMode)>
+	//
+	// Chain
+	//
+
+	public static ${modelName?cap_first}<#if (isUseClassSuffix)>Model</#if> create() {
+		return new ${modelName?cap_first}<#if (isUseClassSuffix)>Model</#if>();
+	}
+
+	<#list fieldList as field>
+    public ${field.varType} ${field.varName}() {
+    	return ${field.varName};
+    }
+
+    public ${modelName?cap_first}<#if (isUseClassSuffix)>Model</#if> ${field.varName}(${field.varType} ${field.varName}) {
+    	this.${field.varName} = ${field.varName};
+		return this;
+    }
+
+	</#list>
+	</#if>
+
 	/**
 	 * ${modelName?cap_first}<#if (isUseClassSuffix)>Model</#if> 字段常量表
 	 */
