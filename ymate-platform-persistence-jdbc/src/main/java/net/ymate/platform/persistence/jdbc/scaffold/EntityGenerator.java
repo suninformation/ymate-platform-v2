@@ -34,9 +34,11 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import java.io.*;
-import java.sql.*;
+import java.sql.DatabaseMetaData;
+import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
+import java.sql.Statement;
 import java.util.*;
-import java.util.Date;
 
 /**
  * 持久层代码生成脚手架程序，通过已有数据库表结构逆向生成Java代码(create at 2013年9月22日下午9:44:09)
@@ -119,27 +121,23 @@ public class EntityGenerator {
             }
             throw new RuntimeException(e);
         } finally {
-            if (_statement != null) {
-                try {
-                    _statement.close();
-                } catch (SQLException e) {
-                    _LOG.warn("", e);
-                }
-                _statement = null;
-            }
-            if (_resultSet != null) {
-                try {
-                    _resultSet.close();
-                } catch (SQLException e) {
-                    _LOG.warn("", e);
-                }
-                _resultSet = null;
-            }
+            __doClose(_statement);
+            __doClose(_resultSet);
             if (_connHolder != null) {
                 _connHolder.release();
             }
         }
         return _meta;
+    }
+
+    private void __doClose(AutoCloseable target) {
+        if (target != null) {
+            try {
+                target.close();
+            } catch (Exception e) {
+                _LOG.warn("", e);
+            }
+        }
     }
 
     /**
