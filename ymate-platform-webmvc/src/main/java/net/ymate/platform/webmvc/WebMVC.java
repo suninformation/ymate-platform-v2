@@ -179,9 +179,14 @@ public class WebMVC implements IModule, IWebMvc {
                 Map<String, String> _allowMap = _meta.getAllowHeaders();
                 for (Map.Entry<String, String> _entry : _allowMap.entrySet()) {
                     String _value = WebContext.getRequest().getHeader(_entry.getKey());
-                    if (_value == null || !_value.equalsIgnoreCase(_entry.getValue())) {
+                    if (StringUtils.trimToEmpty(_entry.getValue()).equals("*") && StringUtils.isBlank(_value)) {
                         response.sendError(HttpServletResponse.SC_BAD_REQUEST);
                         return;
+                    } else {
+                        if (_value == null || !_value.equalsIgnoreCase(_entry.getValue())) {
+                            response.sendError(HttpServletResponse.SC_BAD_REQUEST);
+                            return;
+                        }
                     }
                 }
                 // 判断允许的请求参数
