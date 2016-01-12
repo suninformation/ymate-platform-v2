@@ -25,6 +25,9 @@ import net.ymate.platform.core.beans.proxy.IProxy;
 import net.ymate.platform.core.beans.proxy.IProxyChain;
 import org.apache.commons.lang.StringUtils;
 
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.locks.ReentrantLock;
+
 /**
  * @author 刘镇 (suninformation@163.com) on 15/11/3 下午6:20
  * @version 1.0
@@ -32,6 +35,7 @@ import org.apache.commons.lang.StringUtils;
 @Proxy(annotation = Cacheable.class, order = @Order(-89))
 public class CacheableProxy implements IProxy {
 
+    private static ConcurrentHashMap<String, ReentrantLock> __LOCK_MAP = new ConcurrentHashMap<String, ReentrantLock>();
 
     public Object doProxy(IProxyChain proxyChain) throws Throwable {
         ICaches _caches = Caches.get(proxyChain.getProxyFactory().getOwner());
@@ -45,18 +49,30 @@ public class CacheableProxy implements IProxy {
         if (_cacheKey == null) {
             _cacheKey = _caches.getModuleCfg().getKeyGenerator().generateKey(proxyChain.getTargetMethod(), proxyChain.getMethodParams());
         }
-        CacheElement _result = (CacheElement) _caches.get(_anno.cacheName(), _cacheKey);
-        boolean _flag = true;
-        if (_result != null) {
-            if ((System.currentTimeMillis() - _result.getLastUpdateTime()) < _anno.timeout()) {
-                _flag = false;
+        ReentrantLock _locker = __LOCK_MAP.get(_cacheKey.toString());
+        if (_locker == null) {
+            _locker = new ReentrantLock();
+            ReentrantLock _previous = __LOCK_MAP.putIfAbsent(_cacheKey.toString(), _locker);
+            if (_previous != null) {
+                _locker = _previous;
             }
         }
-        if (_flag) {
-            _result = new CacheElement(proxyChain.doProxyChain());
-            if (_result.getObject() != null) {
-                _caches.put(_anno.cacheName(), _cacheKey, _result);
+        _locker.lock();
+        CacheElement _result = null;
+        try {
+            _result = (CacheElement) _caches.get(_anno.cacheName(), _cacheKey);
+            boolean _flag = true;
+            if (_result != null && ((System.currentTimeMillis() - _result.getLastUpdateTime()) < _anno.timeout())) {
+                _flag = false;
             }
+            if (_flag) {
+                _result = new CacheElement(proxyChain.doProxyChain());
+                if (_result.getObject() != null) {
+                    _caches.put(_anno.cacheName(), _cacheKey, _result);
+                }
+            }
+        } finally {
+            _locker.unlock();
         }
         return _result.getObject();
     }
