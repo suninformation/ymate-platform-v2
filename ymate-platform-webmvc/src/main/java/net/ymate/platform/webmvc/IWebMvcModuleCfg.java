@@ -138,7 +138,7 @@ public interface IWebMvcModuleCfg {
     Set<String> getConventionViewNotAllowPaths();
 
     /**
-     * @return 请求参数转义模式是否开启（开启状态时，控制器方法的所有参数将默认支持转移，可针对具体控制器主法或参数设置忽略转义操作），可选参数，默认值为false
+     * @return 请求参数转义模式是否开启（开启状态时，控制器方法的所有参数将默认支持转义，可针对具体控制器方法或参数设置忽略转义操作），可选参数，默认值为false
      */
     boolean isParameterEscapeMode();
 }
