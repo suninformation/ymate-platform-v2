@@ -444,7 +444,7 @@ WebMVC模块不但让编写控制器变得非常简单，处理请求参数也�
 	
 	通过浏览器访问URL测试：
 	
-		http://localhost:8080/v1/api/escape?content=<p>content$<br><script>alert("hello");</script></p>&desc=<script>alert("hello");</script>
+		http://localhost:8080/demo/escape?content=<p>content$<br><script>alert("hello");</script></p>&desc=<script>alert("hello");</script>
 	
 	执行结果：(控制台输出)
 	
@@ -454,7 +454,7 @@ WebMVC模块不但让编写控制器变得非常简单，处理请求参数也�
 	> 示例一说明：
 	>
 	> - 由于控制器类被声明了@ParameterEscape注解，代表整个控制器类中所有的请求参数都需要被转义，因此参数content的内容被成功转义；
-	> - 参数desc声明的@ParameterEscape注解中skiped值被设置为true，表示跳过上级设置，因此参数内容未被转义；
+	> - 由于参数desc声明的@ParameterEscape注解中skiped值被设置为true，表示跳过上级设置，因此参数内容未被转义；
 
 	示例代码二：
 	
@@ -476,7 +476,7 @@ WebMVC模块不但让编写控制器变得非常简单，处理请求参数也�
 	
 	通过浏览器访问URL测试：
 	
-		http://localhost:8080/v1/api/escape2?content=<p>content$<br><script>alert("hello");</script></p>&desc=<script>alert("hello");</script>
+		http://localhost:8080/demo/escape2?content=<p>content$<br><script>alert("hello");</script></p>&desc=<script>alert("hello");</script>
 	
 	执行结果：(控制台输出)
 	
@@ -486,7 +486,7 @@ WebMVC模块不但让编写控制器变得非常简单，处理请求参数也�
 	> 示例二说明：
 	>
 	> - 虽然控制器类被声明了@ParameterEscape注解，但控制器方法通过skiped设置跳过转义，这表示被声明的方法参数内容不进行转义操作，因此参数content的内容未被转义；
-	> - 但参数desc声明@ParameterEscape注解，表示该参数需要转义，因此参数内容被成功转义；
+	> - 由于参数desc声明了@ParameterEscape注解，表示该参数需要转义，因此参数内容被成功转义；
 	>
 	> **注意**：当控制器类和方法都声明了@ParameterEscape注解时，则类上声明的注解将视为无效；
 
@@ -506,25 +506,212 @@ WebMVC模块不但让编写控制器变得非常简单，处理请求参数也�
 		@RequestParam
 		private String content;
 
-	    @RequestMapping("/controller")
-	    public IView controller(@RequestParam String name) {
+	    @RequestMapping("/sayHi")
+	    public IView sayHi(@RequestParam String name) {
 	        return View.textView("Hi, " + name + ", Content: " + content);
 	    }
 	}
 
 通过浏览器访问URL测试：
 
-	http://localhost:8080/v1/api/sayHi?name=YMPer&content=Welcome!
+	http://localhost:8080/demo/sayHi?name=YMPer&content=Welcome!
 
 此示例代码的执行结果：
 
 	Hi, YMPer, Content: Welcome!
 
-####环境上下文对象（Context）：
+> **注意**：在单例模式下，WebMVC模块将忽略为控制器类成员赋值，同时也建议在单例模式下不要使用成员变量做为参数，在并发多线程环境下会发生意想不到的问题！！
+
+####Web环境上下文对象（WebContext）：
+
+为了上开发人员能够随时随地获取和使用Request、Response、Session等这样的Web容器对象，YMP框架在WebMVC模块中提供了一个叫WebContext的Web环境上下文封装类，简单又实用，先了解一下提供的方法：
+
+直接获取Web容器对象：
+> 
+> - 获取ServletContext对象：
+>
+>			WebContext.getServletContext();
+>
+> - 获取HttpServletRequest对象：
+>
+>			WebContext.getRequest();
+>
+> - 获取HttpServletResponse对象：
+>
+>			WebContext.getResponse();
+>
+> - 获取PageContext对象：
+>
+>			WebContext.getPageContext();
+
+获取WebMVC容器对象：
+
+> - 获取IRequestContext对象：
+> 
+> 			WebContext.getRequestContext();
+> 
+> 	> WebMVC请求上下文接口，主要用于分析请求路径及存储相关参数；
+>
+> - 获取WebContext对象实例：
+> 
+> 			WebContext.getContext();
+> 
+
+WebContext将Application、Session、Request等Web容器对象的属性转换成Map映射存储，同时向Map的赋值也将自动同步至对象的Web容器对象中，起初的目的是为了能够方便代码移植并脱离Web环境依赖进行开发测试(功能参考Struts2)：
+
+> - WebContext.getContext().getApplication();
+>
+> - WebContext.getContext().getSession();
+> 
+> - WebContext.getContext().getAttribute(Type.Context.REQUEST);
+> 
+>	> 原本可以通过WebContext.getContext().getRequest方法直接获取的，但由于设计上的失误，方法名已被WebContext.getRequest()占用，若变更方法名受影响的项目太多，所以只好委屈它了:D，后面会介绍更多的辅助方法来操作Request属性，所以可以忽略它的存在！
+>
+> - WebContext.getContext().getAttributes();
+> 
+> - WebContext.getContext().getLocale();
+> 
+> - WebContext.getContext().getOwner();
+> 
+> - WebContext.getContext().getParameters();
+> 
+
+WebContext操作Application的辅助方法：
+
+> - boolean getApplicationAttributeToBoolean(String name);
+> 
+> - int getApplicationAttributeToInt(String name);
+> 
+> - long getApplicationAttributeToLong(String name);
+> 
+> - String getApplicationAttributeToString(String name);
+> 
+> - \<T> T getApplicationAttributeToObject(String name);
+> 
+> - WebContext addApplicationAttribute(String name, Object value)
+> 
+
+WebContext操作Session的辅助方法：
+
+> - boolean getSessionAttributeToBoolean(String name);
+> 
+> - int getSessionAttributeToInt(String name);
+> 
+> - long getSessionAttributeToLong(String name);
+> 
+> - String getSessionAttributeToString(String name);
+> 
+> - \<T> T getSessionAttributeToObject(String name);
+> 
+> - WebContext addSessionAttribute(String name, Object value)
+> 
+
+WebContext操作Request的辅助方法：
+
+> - boolean getRequestAttributeToBoolean(String name);
+> 
+> - int getRequestAttributeToInt(String name);
+> 
+> - long getRequestAttributeToLong(String name);
+> 
+> - String getRequestAttributeToString(String name);
+> 
+> - \<T> T getRequestAttributeToObject(String name);
+> 
+> - WebContext addRequestAttribute(String name, Object value)
+> 
+
+WebContext操作Parameter的辅助方法：
+
+> - boolean getParameterToBoolean(String name);
+> 
+> - int getParameterToInt(String name)
+> 
+> - long getParameterToLong(String name);
+> 
+> - \<T> T getParameterToObject(String name);
+> 
+> - String getParameterToString(String name);
+> 
+
+WebContext操作Attribute的辅助方法：
+
+> - \<T> T getAttribute(String name);
+>
+> - WebContext addAttribute(String name, Object value);
+> 
+
+
+WebContext获取IUploadFileWrapper上传文件包装器：
+
+> - IUploadFileWrapper getUploadFile(String name);
+> 
+> - IUploadFileWrapper[] getUploadFiles(String name);
+>
 
 ####文件上传（Upload）：
 
-- @FileUpload
+WebMVC模块针对文件的上传处理以及对上传的文件操作都非常的简单，通过注解就轻松搞定：
+
+- @FileUpload：声明控制器方法需要处理上传的文件流；
+
+	> 无参数，需要注意的是文件上传处理的表单类型为"multipart/form-data"；
+
+- IUploadFileWrapper：上传文件包装器接口，提供对已上传文件操作的一系列方法；
+
+示例代码：
+
+	@Controller
+	@RequestMapping("/demo)
+	public class UploadController {
+	
+		// 处理单文件上传
+		@RequestMapping(value = "/upload", method = Type.HttpMethod.POST)
+		@FileUpload
+		public IView doUpload(@RequestParam
+					          IUploadFileWrapper file) throws Exception {
+			// 获取文件名称
+			file.getName();
+			
+			// 获取文件大小
+			file.getSize();
+			
+			// 获取完整的文件名及路径
+			file.getPath();
+			
+			// 获取文件Content-Type
+			file.getContentType();
+			
+			// 转移文件
+			file.transferTo(new File("/temp", file.getName()));
+			
+			// 保存文件
+			file.writeTo(new File("/temp", file.getName());
+			
+			// 删除文件
+			file.delete();
+			
+			// 获取文件输入流对象
+			file.getInputStream();
+			
+			// 获取文件输出流对象
+			file.getOutputStream();
+			
+			return View.nullView();
+		}
+
+		// 处理多文件上传
+		@RequestMapping(value = "/uploads", method = Type.HttpMethod.POST)
+		@FileUpload
+		public IView doUpload(@RequestParam
+					          IUploadFileWrapper[] files) throws Exception {
+
+			// ......
+
+			return View.nullView();
+		}
+	}
+
 
 ####视图（View）：
 
