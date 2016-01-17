@@ -38,12 +38,32 @@ public class View {
         return FreemarkerView.bind(owner, path);
     }
 
+    public static FreemarkerView freemarkerView(String path) {
+        return FreemarkerView.bind(path);
+    }
+
+    public static FreemarkerView freemarkerView() {
+        return FreemarkerView.bind();
+    }
+
     public static VelocityView velocityView(IWebMvc owner, String path) {
         return VelocityView.bind(owner, path);
     }
 
+    public static VelocityView velocityView(String path) {
+        return VelocityView.bind(path);
+    }
+
+    public static VelocityView velocityView() {
+        return VelocityView.bind();
+    }
+
     public static HtmlView htmlView(IWebMvc owner, String htmlFile) throws Exception {
         return HtmlView.bind(owner, htmlFile);
+    }
+
+    public static HtmlView htmlView(String htmlFile) throws Exception {
+        return HtmlView.bind(htmlFile);
     }
 
     public static HtmlView htmlView(File htmlFile) throws Exception {
@@ -62,8 +82,16 @@ public class View {
         return JsonView.bind(obj);
     }
 
+    public static JspView jspView() {
+        return JspView.bind();
+    }
+
     public static JspView jspView(IWebMvc owner) {
         return JspView.bind(owner);
+    }
+
+    public static JspView jspView(String path) {
+        return JspView.bind(path);
     }
 
     public static JspView jspView(IWebMvc owner, String path) {

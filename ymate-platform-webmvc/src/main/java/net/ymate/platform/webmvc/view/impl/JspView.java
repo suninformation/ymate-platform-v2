@@ -39,6 +39,14 @@ public class JspView extends AbstractView {
 
     protected String __path;
 
+    public static JspView bind() {
+        return new JspView();
+    }
+
+    public static JspView bind(String path) {
+        return new JspView(path);
+    }
+
     public static JspView bind(IWebMvc owner) {
         return new JspView(owner);
     }
@@ -60,6 +68,14 @@ public class JspView extends AbstractView {
     public JspView(IWebMvc owner, String path) {
         __doViewInit(owner);
         __path = path;
+    }
+
+    public JspView() {
+        __doViewInit(WebContext.getContext().getOwner());
+    }
+
+    public JspView(String path) {
+        this(WebContext.getContext().getOwner(), path);
     }
 
     protected void __doProcessPath() {

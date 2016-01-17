@@ -42,6 +42,14 @@ public class FreemarkerView extends AbstractView {
 
     String __path;
 
+    public static FreemarkerView bind() {
+        return new FreemarkerView();
+    }
+
+    public static FreemarkerView bind(String path) {
+        return new FreemarkerView(path);
+    }
+
     public static FreemarkerView bind(IWebMvc owner, String path) {
         return new FreemarkerView(owner, path);
     }
@@ -55,6 +63,14 @@ public class FreemarkerView extends AbstractView {
     public FreemarkerView(IWebMvc owner, String path) {
         __doViewInit(owner);
         __path = path;
+    }
+
+    public FreemarkerView() {
+        __doViewInit(WebContext.getContext().getOwner());
+    }
+
+    public FreemarkerView(String path) {
+        this(WebContext.getContext().getOwner(), path);
     }
 
     @Override

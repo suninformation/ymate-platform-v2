@@ -46,6 +46,14 @@ public class VelocityView extends AbstractView {
 
     protected String __path;
 
+    public static VelocityView bind() {
+        return new VelocityView();
+    }
+
+    public static VelocityView bind(String path) {
+        return new VelocityView(WebContext.getContext().getOwner(), path);
+    }
+
     public static VelocityView bind(IWebMvc owner, String path) {
         return new VelocityView(owner, path);
     }
@@ -59,6 +67,10 @@ public class VelocityView extends AbstractView {
     public VelocityView(IWebMvc owner, String path) {
         __doViewInit(owner);
         __path = path;
+    }
+
+    public VelocityView() {
+        __doViewInit(WebContext.getContext().getOwner());
     }
 
     @Override
