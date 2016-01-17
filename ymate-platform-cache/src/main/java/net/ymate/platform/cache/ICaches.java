@@ -32,7 +32,7 @@ public interface ICaches {
      * 缓存作用域
      */
     enum Scope {
-        APPLICATION, SESSION, REQUEST, PAGE, DEFAULT
+        APPLICATION, SESSION, DEFAULT
     }
 
     /**

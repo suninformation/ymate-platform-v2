@@ -17,6 +17,7 @@ package net.ymate.platform.cache.impl;
 
 import net.ymate.platform.cache.*;
 import net.ymate.platform.core.YMP;
+import net.ymate.platform.core.lang.BlurObject;
 import net.ymate.platform.core.util.ClassUtils;
 import org.apache.commons.lang.StringUtils;
 
@@ -34,11 +35,15 @@ public class DefaultModuleCfg implements ICacheModuleCfg {
 
     private ICacheEventListener __cacheEventListener;
 
+    private ICacheScopeProcessor __cacheScopeProcessor;
+
     private IKeyGenerator<?> __keyGenerator;
 
     private ISerializer __serializer;
 
     private String __defaultCacheName;
+
+    private long __defaultCacheTimeout;
 
     public DefaultModuleCfg(YMP owner) throws Exception {
         Map<String, String> _moduleCfgs = owner.getConfig().getModuleConfigs(ICaches.MODULE_NAME);
@@ -50,6 +55,8 @@ public class DefaultModuleCfg implements ICacheModuleCfg {
         }
         //
         __cacheEventListener = ClassUtils.impl(_moduleCfgs.get("event_listener_class"), ICacheEventListener.class, this.getClass());
+        //
+        __cacheScopeProcessor = ClassUtils.impl(_moduleCfgs.get("scope_processor_class"), ICacheScopeProcessor.class, this.getClass());
         //
         __serializer = ClassUtils.impl(_moduleCfgs.get("serializer_class"), ISerializer.class, this.getClass());
         if (__serializer == null) {
@@ -63,6 +70,11 @@ public class DefaultModuleCfg implements ICacheModuleCfg {
         __keyGenerator.init(__serializer);
         //
         __defaultCacheName = StringUtils.defaultIfBlank(_moduleCfgs.get("default_cache_name"), "default");
+
+        __defaultCacheTimeout = BlurObject.bind(StringUtils.defaultIfBlank(_moduleCfgs.get("default_cache_timeout"), "0")).toLongValue();
+        if (__defaultCacheTimeout <= 0) {
+            __defaultCacheTimeout = 300L;
+        }
     }
 
     public ICacheProvider getCacheProvider() {
@@ -71,6 +83,10 @@ public class DefaultModuleCfg implements ICacheModuleCfg {
 
     public ICacheEventListener getCacheEventListener() {
         return __cacheEventListener;
+    }
+
+    public ICacheScopeProcessor getCacheScopeProcessor() {
+        return __cacheScopeProcessor;
     }
 
     public IKeyGenerator<?> getKeyGenerator() {
@@ -83,5 +99,9 @@ public class DefaultModuleCfg implements ICacheModuleCfg {
 
     public String getDefaultCacheName() {
         return __defaultCacheName;
+    }
+
+    public long getDefaultCacheTimeout() {
+        return __defaultCacheTimeout;
     }
 }

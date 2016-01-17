@@ -34,6 +34,11 @@ public interface ICacheModuleCfg {
     ICacheEventListener getCacheEventListener();
 
     /**
+     * @return 缓存作用域处理器，可选参数，默认值为空
+     */
+    ICacheScopeProcessor getCacheScopeProcessor();
+
+    /**
      * @return 缓存Key生成器，可选参数，默认值为net.ymate.platform.cache.impl.DefaultKeyGenerator
      */
     IKeyGenerator<?> getKeyGenerator();
@@ -47,4 +52,9 @@ public interface ICacheModuleCfg {
      * @return 默认缓存名称，可选参数，默认值为default，对应于Ehcache配置文件中设置name="__DEFAULT__"
      */
     String getDefaultCacheName();
+
+    /**
+     * @return 缓存数据超时时间，可选参数，数值必须大于等于0，为0表示默认缓存300秒
+     */
+    long getDefaultCacheTimeout();
 }

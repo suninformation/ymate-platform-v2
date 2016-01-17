@@ -17,6 +17,7 @@ package net.ymate.platform.cache.support;
 
 import net.ymate.platform.cache.CacheElement;
 import net.ymate.platform.cache.Caches;
+import net.ymate.platform.cache.ICacheScopeProcessor;
 import net.ymate.platform.cache.ICaches;
 import net.ymate.platform.cache.annotation.Cacheable;
 import net.ymate.platform.core.beans.annotation.Order;
@@ -60,15 +61,24 @@ public class CacheableProxy implements IProxy {
         _locker.lock();
         CacheElement _result = null;
         try {
-            _result = (CacheElement) _caches.get(_anno.cacheName(), _cacheKey);
+            ICacheScopeProcessor _scopeProc = _caches.getModuleCfg().getCacheScopeProcessor();
+            if (!_anno.scope().equals(ICaches.Scope.DEFAULT) && _scopeProc != null) {
+                _result = _scopeProc.getFromCache(_caches, _anno.scope(), _anno.cacheName(), _cacheKey.toString());
+            } else {
+                _result = (CacheElement) _caches.get(_anno.cacheName(), _cacheKey);
+            }
             boolean _flag = true;
-            if (_result != null && ((System.currentTimeMillis() - _result.getLastUpdateTime()) < _anno.timeout())) {
+            if (_result != null && ((System.currentTimeMillis() - _result.getLastUpdateTime()) < (_anno.timeout() > 0 ? _anno.timeout() : _caches.getModuleCfg().getDefaultCacheTimeout()))) {
                 _flag = false;
             }
             if (_flag) {
                 _result = new CacheElement(proxyChain.doProxyChain());
                 if (_result.getObject() != null) {
-                    _caches.put(_anno.cacheName(), _cacheKey, _result);
+                    if (!_anno.scope().equals(ICaches.Scope.DEFAULT) && _scopeProc != null) {
+                        _scopeProc.putInCache(_caches, _anno.scope(), _anno.cacheName(), _cacheKey.toString(), _result);
+                    } else {
+                        _caches.put(_anno.cacheName(), _cacheKey, _result);
+                    }
                 }
             }
         } finally {

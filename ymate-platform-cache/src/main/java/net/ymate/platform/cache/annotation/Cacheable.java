@@ -53,7 +53,7 @@ public @interface Cacheable {
     ICaches.Scope scope() default ICaches.Scope.DEFAULT;
 
     /**
-     * @return 缓存数据超时时间, 默认60秒
+     * @return 缓存数据超时时间, 默认为0, 即缓存300秒
      */
-    long timeout() default 60 * 1000;
+    long timeout() default 0;
 }

@@ -22,6 +22,8 @@
 
 - 缓存事件监听(ICacheEventListener)接口：用于监听被缓存对象发生变化时的事件处理，需开发者实现接口；
 
+- 缓存作用域处理器(ICacheScopeProcessor)接口：用于处理@Cacheable注解的Scope参数设置为非DEFAULT作用域的缓存对象，需开发者实现接口；
+
 ####模块配置及使用:
 
 - 初始化参数配置，缺省使用默认配置：
@@ -36,6 +38,9 @@
         # 缓存对象事件监听器，可选参数，默认值为空
         ymp.configs.cache.event_listener_class=
 
+        # 缓存作用域处理器，可选参数，默认值为空
+        ymp.configs.cache.scope_processor_class=
+
         # 缓存Key生成器，可选参数，默认值为空则采用框架默认net.ymate.platform.cache.impl.DefaultKeyGenerator
         ymp.configs.cache.key_generator_class=
 
@@ -44,6 +49,9 @@
 
         # 默认缓存名称，可选参数，默认值为default，对应于Ehcache配置文件中设置name="__DEFAULT__"
         ymp.configs.cache.default_cache_name=
+
+        # 缓存数据超时时间，可选参数，数值必须大于等于0，为0表示默认缓存300秒
+        ymp.configs.cache.default_cache_timeout=
 
 - EhCache配置示例：
 
@@ -111,9 +119,9 @@
     > 
     > generator：Key生成器接口实现类，默认为DefaultKeyGenerator.class；
     > 
-    > scope：缓存作用域，暂时未启作用；
+    > scope：缓存作用域，可选值为APPLICATION、SESSION和DEFAULT，默认为DEFAULT，非DEFAULT设置需要缓存作用域处理器(ICacheScopeProcessor)接口配合；
     > 
-    > timeout：缓存数据超时时间, 默认60秒；
+    > timeout：缓存数据超时时间, 可选参数，数值必须大于等于0，为0表示默认缓存300秒；
 
     示例代码：
 
