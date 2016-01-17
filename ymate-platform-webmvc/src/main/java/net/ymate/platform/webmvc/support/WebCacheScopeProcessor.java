@@ -19,6 +19,7 @@ import net.ymate.platform.cache.CacheElement;
 import net.ymate.platform.cache.CacheException;
 import net.ymate.platform.cache.ICacheScopeProcessor;
 import net.ymate.platform.cache.ICaches;
+import net.ymate.platform.webmvc.context.WebContext;
 
 /**
  * @author 刘镇 (suninformation@163.com) on 16/1/17 下午6:10
@@ -26,11 +27,16 @@ import net.ymate.platform.cache.ICaches;
  */
 public class WebCacheScopeProcessor implements ICacheScopeProcessor {
 
+    private String __doBuildSessionCacheKey(String cacheKey) {
+        String _sessionId = WebContext.getRequest().getSession().getId();
+        return _sessionId + "|" + cacheKey;
+    }
+
     public CacheElement getFromCache(ICaches caches, ICaches.Scope scope, String cacheName, String cacheKey) throws CacheException {
         CacheElement _returnValue = null;
         switch (scope) {
             case SESSION:
-                _returnValue = (CacheElement) caches.get(scope.name(), cacheKey);
+                _returnValue = (CacheElement) caches.get(scope.name(), __doBuildSessionCacheKey(cacheKey));
                 break;
             case APPLICATION:
             default:
@@ -42,7 +48,7 @@ public class WebCacheScopeProcessor implements ICacheScopeProcessor {
     public void putInCache(ICaches caches, ICaches.Scope scope, String cacheName, String cacheKey, CacheElement cacheElement) throws CacheException {
         switch (scope) {
             case SESSION:
-                caches.put(scope.name(), cacheKey, cacheElement);
+                caches.put(scope.name(), __doBuildSessionCacheKey(cacheKey), cacheElement);
                 break;
             case APPLICATION:
             default:
