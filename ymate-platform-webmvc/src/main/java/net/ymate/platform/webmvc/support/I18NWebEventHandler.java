@@ -36,7 +36,7 @@ import java.util.Locale;
  */
 public class I18NWebEventHandler implements II18NEventHandler {
 
-    public static final String I18N_LANG_KEY = "_long";
+    public static final String I18N_LANG_KEY = "_lang";
 
     private String __i18nHome;
 
