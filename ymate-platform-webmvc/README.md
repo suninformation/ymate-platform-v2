@@ -7,7 +7,7 @@ WebMVC模块在YMP框架中是除了JDBC模块以外的另一个非常重要的�
 - 标准MVC实现，结构清晰，完全基于注解方式配置简单；
 - 支持约定模式，无需编写控制器代码，直接匹配并执行视图；
 - 支持多种视图技术(JSP、Freemarker、Velocity、Text、HTML、JSON、Binary、Forward、Redirect、HttpStatus等)；
-- 支持RESTful模式；
+- 支持RESTful模式及URL风格；
 - 支持请求参数与控制器方法参数的自动绑定；
 - 支持参数有效性验证；
 - 支持控制器方法的拦截；
@@ -74,9 +74,7 @@ WebMVC模块在YMP框架中是除了JDBC模块以外的另一个非常重要的�
 
 ####模块配置：
 
-WebMVC模块的配置由以下四个部份组成：
-
-> 基本初始化参数
+WebMVC模块的基本初始化参数配置：
 
 	#-------------------------------------
 	# 基本初始化参数
@@ -106,65 +104,7 @@ WebMVC模块的配置由以下四个部份组成：
 	# 控制器视图文件基础路径（必须是以 '/' 开始和结尾，默认值为/WEB-INF/templates/）
 	ymp.configs.webmvc.base_view_path=
 
-**说明**：在服务端程序Servlet方式的请求处理中，请求忽略正则表达式参数无效；
-
-> Cookie配置参数
-
-	#-------------------------------------
-	# Cookie配置参数
-	#-------------------------------------
-	
-	# Cookie键前缀，可选参数，默认值为空
-	ymp.configs.webmvc.cookie_prefix=
-	
-	# Cookie作用域，可选参数，默认值为空
-	ymp.configs.webmvc.cookie_domain=
-	
-	# Cookie作用路径，可选参数，默认值为'/'
-	ymp.configs.webmvc.cookie_path=
-	
-	# Cookie密钥，可选参数，默认值为空
-	ymp.configs.webmvc.cookie_auth_key=
-
-> 文件上传配置参数
-
-	#-------------------------------------
-	# 文件上传配置参数
-	#-------------------------------------
-	
-	# 文件上传临时目录，为空则默认使用：System.getProperty("java.io.tmpdir")
-	ymp.configs.webmvc.upload_temp_dir=
-	
-	# 上传文件大小最大值（字节），默认值：-1（注：10485760 = 10M）
-	ymp.configs.webmvc.upload_file_size_max=
-
-	# 上传文件总量大小最大值（字节）, 默认值：-1（注：10485760 = 10M）
-	ymp.configs.webmvc.upload_total_size_max=
-
-	# 内存缓冲区的大小，默认值： 10240字节（=10K），即如果文件大于10K，将使用临时文件缓存上传文件
-	ymp.configs.webmvc.upload_size_threshold=
-
-	# 文件上传状态监听器，可选参数，默认值为空
-	ymp.configs.webmvc.upload_file_listener_class=
-
-> 约定模式配置参数
-
-	#-------------------------------------
-	# 约定模式配置参数
-	#-------------------------------------
-	
-	# 是否开启视图自动渲染（约定优于配置，无需编写控制器代码，直接匹配并执行视图）模式，可选参数，默认值为false
-	ymp.configs.webmvc.convention_mode=
-
-	# Convention模式开启时视图文件路径(基于base_view_path的相对路径，'-'号代表禁止访问，'+'或无符串代表允许访问)，可选参数，默认值为空(即不限制访问路径)，多个路径间用'|'分隔
-	ymp.configs.webmvc.convention_view_paths=
-
-	# Convention模式开启时是否采用URL伪静态(URL中通过分隔符'_'传递多个请求参数，通过_path[index]方式引用参数值)模式，可选参数，默认值为false
-	ymp.configs.webmvc.convention_urlrewrite_mode=
-
-	# Convention模式开启时是否采用拦截器规则设置，可选参数，默认值为false
-	ymp.configs.webmvc.convention_interceptor_mode=
-
+**说明**：在服务端程序Servlet方式的请求处理中，请求忽略正则表达式(request\_ignore\_regex)参数无效；
 
 ####控制器（Controller）：
 
@@ -181,7 +121,7 @@ WebMVC模块的配置由以下四个部份组成：
 		}
 	}
 
-启动Tomcat服务并访问http://localhost:8080/sayhi，得到的输出结果将是：Hi, YMPer!
+启动Tomcat服务并访问`http://localhost:8080/sayhi`，得到的输出结果将是：`Hi, YMPer!`
 
 从以上代码中看到有两个注解，分别是：
 
@@ -655,7 +595,11 @@ WebMVC模块针对文件的上传处理以及对上传的文件操作都非常�
 
 - @FileUpload：声明控制器方法需要处理上传的文件流；
 
-	> 无参数，需要注意的是文件上传处理的表单类型为"multipart/form-data"；
+	> 无参数，需要注意的是文件上传处理的表单enctype属性：
+	
+	>		<form action="/demo/upload" method="POST" enctype="multipart/form-data">
+	>		......
+	>		</form>
 
 - IUploadFileWrapper：上传文件包装器接口，提供对已上传文件操作的一系列方法；
 
@@ -712,32 +656,319 @@ WebMVC模块针对文件的上传处理以及对上传的文件操作都非常�
 		}
 	}
 
+文件上传相关配置参数：
+
+	#-------------------------------------
+	# 文件上传配置参数
+	#-------------------------------------
+	
+	# 文件上传临时目录，为空则默认使用：System.getProperty("java.io.tmpdir")
+	ymp.configs.webmvc.upload_temp_dir=
+	
+	# 上传文件大小最大值（字节），默认值：-1（注：10485760 = 10M）
+	ymp.configs.webmvc.upload_file_size_max=
+
+	# 上传文件总量大小最大值（字节）, 默认值：-1（注：10485760 = 10M）
+	ymp.configs.webmvc.upload_total_size_max=
+
+	# 内存缓冲区的大小，默认值： 10240字节（=10K），即如果文件大于10K，将使用临时文件缓存上传文件
+	ymp.configs.webmvc.upload_size_threshold=
+
+	# 文件上传状态监听器，可选参数，默认值为空
+	ymp.configs.webmvc.upload_file_listener_class=
+
+文件上传状态监听器(upload\_file\_listener\_class)配置：
+
+WebMVC模块的文件上传是基于Apache Commons FileUpload组件实现的，所以通过其自身提供的ProgressListener接口即可实现对文件上传状态的监听；
+
+示例代码：实现上传文件的进度计算；
+
+	public class UploadProgressListener implements ProgressListener {
+	
+	    public void update(long pBytesRead, long pContentLength, int pItems) {
+	        if (pContentLength == 0) {
+	            return;
+	        }
+	        // 计算上传进度百分比
+	        double percent = (double) pBytesRead / (double) pContentLength;
+	        // 将百分比存储在用户会话中
+	        WebContext.getContext().getSession().put("upload_progress", percent);
+	    }
+	}
+
+> - 将该接口实现类配置到 ymp.configs.webmvc.upload\_file\_listener\_class 参数中；
+> 
+> - 通过Ajax定时轮循的方式获取会话中的进度值，并展示在页面中；
 
 ####视图（View）：
 
-- JspView：
-- FreemarkerView：
-- VelocityView：
-- TextView：
-- HtmlView：
-- JsonView：
-- BinaryView：
-- ForwardView：
-- RedirectView：
-- HttpStatusView：
-- NullView：
+WebMVC模块支持多种视图技术，包括JSP、Freemarker、Velocity、Text、HTML、JSON、Binary、Forward、Redirect、HttpStatus等，也可以通过IView接口扩展实现自定义视图；
+
+#####控制器视图的表示方法：
+> - 通过返回IView接口类型；
+> - 通过字符串表达一种视图类型；
+> - 无返回值或返回值为空，将使用当前RequestMapping路径对应的JspView视图；
+
+#####视图文件路径配置：
+
+> 控制器视图文件基础路径，必须是以 '/' 开始和结尾，默认值为/WEB-INF/templates/；
+> 
+>		ymp.configs.webmvc.base_view_path=/WEB-INF/templates/
+
+#####视图对象操作示例：
+
+> 视图文件可以省略扩展名称，通过IView接口可以直接设置请求参数和内容类型；
+>
+>		// 通过View对象创建视图对象
+>		IView _view = View.jspView("/demo/test")
+>	            .addAttribute("attr1", "value")
+>	            .addAttribute("attr2", 2)
+>	            .addHeader("head", "value")
+>	            .setContentType(Type.ContentType.HTML.getContentType());
+>
+>		// 直接创建视图对象
+>		_view = new JspView("/demo/test");
+>
+>		// 下面三种方式的结果是一样的，使用请求路径对应的视图文件返回
+>		_view = View.jspView();
+>		_view = JspView.bind();
+>		_view = new JspView();
+
+#####WebMVC模块提供的视图：
+
+JspView：JSP视图；
+
+>		View.jspView("/demo/test.jsp");
+>		// = "jsp:/demo/test"
+
+FreemarkerView：Freemarker视图；
+
+> 		View.freemarkerView("/demo/test.ftl");
+> 		// = "freemarker:/demo/test"
+
+VelocityView：Velocity视图；
+
+> 		View.velocityView("/demo/test.vm");
+> 		// = "velocity:/demo/test"
+
+TextView：文本视图；
+
+> 		View.textView("Hi, YMPer!");
+> 		// = "text:Hi, YMPer!"
+
+HtmlView：HTML文件内容视图；
+
+> 		View.htmlView("<p>Hi, YMPer!</p>");
+> 		// = "html:<p>Hi, YMPer!</p>"
+
+JsonView：JSON视图；
+
+> 		// 直接传递对象
+> 		User _user = new User();
+> 		user.setId("...");
+> 		...
+> 		View.jsonView(_user);
+> 
+> 		// 传递JSON字符串
+> 		View.jsonView("{id:\"...\", ...}");
+> 		// = "json:{id:\"...\", ...}"
+
+BinaryView：二进制数据流视图；
+
+> 		// 下载文件，并重新指定文件名称
+> 		View.binaryView(new File("/temp/demo.txt"))
+> 				.useAttachment("测试文本.txt");
+> 		// = "binary:/temp/demo.txt:测试文本.txt"
+>
+> > 若不指定文件名称，则回应头中将不包含 "attachment;filename=xxx"
+
+ForwardView：请求转发视图；
+
+> 		View.forwardView("/demo/test");
+> 		// = "forward:/demo/test"
+
+RedirectView：重定向视图；
+
+> 		View.redirectView("/demo/test");
+> 		// = "redirect:/demo/test"
+
+HttpStatusView：HTTP状态视图
+
+> 		View.httpStatusView(404);
+> 		// = "http_status:404"
+> 
+> 		View.httpStatusView(500, "系统忙, 请稍后再试...");
+> 		// = "http_status:500:系统忙, 请稍后再试..."
+
+NullView：空视图；
+
+>		View.nullView();
 
 ####验证（Validation）：
 
+WebMVC模块已集成验证模块，控制器方法可以直接使用验证注解完成参数的有效性验证，详细内容请参阅 [验证(Validation)](http://git.oschina.net/suninformation/ymate-platform-v2/blob/master/ymate-platform-validation/README.md) 模块文档；
+
 ####缓存（Cache）：
+
+WebMVC模块已集成缓存模块，通过@Cacheable注解即可轻松实现控制器方法的缓存，通过配置缓存模块的scope\_processor\_class参数可以支持APPLICATION和SESSION作用域；
+
+	# 设置缓存作用域处理器
+	ymp.configs.cache.scope_processor_class=net.ymate.platform.webmvc.support.WebCacheScopeProcessor
+
+示例代码：将方法执行结果以会话(SESSION)级别缓存180秒；
+
+		@Controller
+		@RequestMapping("/demo")
+		@Cacheable
+		public class CacheController {
+		
+			@RequestMapping("/cache")
+			@Cacheable(scope = ICaches.Scope.SESSION, timeout = 180)
+			public IView doCacheable(@RequestParam String content) throws Exception {
+				// ......
+				return View.textView("Content: " + content);
+			}
+		}
+
+> **注意**：基于@Cacheable的方法缓存只是缓存控制器方法返回的结果对象，并不能缓存IView视图的最终执行结果；
 
 ####拦截器（Intercept）：
 
-####Cookies
+WebMVC模块基于YMPv2.0的新特性，原生支持AOP方法拦截，通过以下注解进行配置：
+
+> @Before：用于设置一个类或方法的前置拦截器，声明在类上的前置拦截器将被应用到该类所有方法上；
+
+> @After：用于设置一个类或方的后置拦截器，声明在类上的后置拦截器将被应用到该类所有方法上；
+
+> @Clean：用于清理类上全部或指定的拦截器，被清理的拦截器将不会被执行；
+
+> @ContextParam：用于设置上下文参数，主要用于向拦截器传递参数配置；
+
+示例代码：
+
+		// 创建自定义拦截器
+        public class UserSessionChecker implements IInterceptor {
+            public Object intercept(InterceptContext context) throws Exception {
+                // 判断当前拦截器执行方向
+                if (context.getDirection() 
+                		&& WebContext.getRequest().getSession(false) == null) {
+                    return View.redirectView("/user/login");
+                }
+                return null;
+            }
+        }
+
+		@Controller
+		@RequestMapping("/user")
+		@Before(UserSessionChecker.class)
+		public class Controller {
+
+			@RequestMapping("/center")
+			public IView userCenter() throws Exception {
+				// ......
+				return View.jspView("/user/center");
+			}
+
+			@RequestMapping("/login")
+			@Clean
+			public IView userLogin() throws Exception {
+				return View.jspView("/user/login");
+			}
+		}
+
+####Cookies操作：
+
+WebMVC模块针对Cookies这个小甜点提供了一个名为CookieHelper的小工具类，支持Cookie参数的设置、读取和移除操作，同时支持对编码和加密处理，并允许通过配置参数调整Cookie策略；
+
+#####Cookie配置参数：
+
+	#-------------------------------------
+	# Cookie配置参数
+	#-------------------------------------
+	
+	# Cookie键前缀，可选参数，默认值为空
+	ymp.configs.webmvc.cookie_prefix=
+	
+	# Cookie作用域，可选参数，默认值为空
+	ymp.configs.webmvc.cookie_domain=
+	
+	# Cookie作用路径，可选参数，默认值为'/'
+	ymp.configs.webmvc.cookie_path=
+	
+	# Cookie密钥，可选参数，默认值为空
+	ymp.configs.webmvc.cookie_auth_key=
+
+#####示例代码：演示Cookie操作方法；
+
+	// 创建CookieHelper对象
+	CookieHelper _helper = CookieHelper.bind(WebContext.getContext().getOwner());
+
+	// 设置开启采用密钥加密(将默认开启Base64编码)
+	_helper.allowUseAuthKey();
+
+	// 设置开启采用Base64编码(默认支持UrlEncode编码)
+	_helper.allowUseBase64();
+
+	// 添加或重设Cookie，过期时间基于Session时效
+	_helper.setCookie("current_username", "YMPer");
+
+	// 添加或重设Cookie，并指定过期时间
+	_helper.setCookie("current_username", "YMPer", 1800);
+
+	// 获取Cookie值
+	BlurObject _currUsername = _helper.getCookie("current_username");
+
+	// 获取全部Cookie
+	Map<String, BlurObject> _cookies = _helper.getCookies();
+
+	// 移除Cookie
+	_helper.removeCookie("current_username");
+
+	// 清理所有的Cookie
+	_helper.clearCookies();
 
 ####国际化（I18N）：
 
+基于YMPv2.0框架I18N支持，整合WebMVC模块并提供了默认II18NEventHandler接口实现，配置方法：
+
+	// 指定WebMVC模块的I18N资源管理事件监听处理器
+	ymp.i18n_event_handler_class=net.ymate.platform.webmvc.support.I18NWebEventHandler
+	
+	// 语言设置的参数名称，可选参数，默认为空
+	ymp.params._lang=
+
+加载当前语言设置的步骤：
+
+>  1. 加载请求作用域是中否存在`_lang`参数；
+>  2. 尝试加载框架自定义配置`ymp.params._lang`是否存在；
+>  3. 尝试从Cookies里加载名称为`_lang`的参数；
+>  4. 使用系统默认语言设置；
+
+I18N资源文件：
+
+> - 所有I18N资源文件将默认被放置在`RuntimeUtils.getRootPath()`方法返回路径的`i18n`目录下；
+> - `RuntimeUtils.getRootPath()`方法的执行结果受配置体系模块影响；
+
+
 ####约定模式（Convention Mode）：
+
+> 约定模式配置参数
+
+	#-------------------------------------
+	# 约定模式配置参数
+	#-------------------------------------
+	
+	# 是否开启视图自动渲染（约定优于配置，无需编写控制器代码，直接匹配并执行视图）模式，可选参数，默认值为false
+	ymp.configs.webmvc.convention_mode=
+
+	# Convention模式开启时视图文件路径(基于base_view_path的相对路径，'-'号代表禁止访问，'+'或无符串代表允许访问)，可选参数，默认值为空(即不限制访问路径)，多个路径间用'|'分隔
+	ymp.configs.webmvc.convention_view_paths=
+
+	# Convention模式开启时是否采用URL伪静态(URL中通过分隔符'_'传递多个请求参数，通过_path[index]方式引用参数值)模式，可选参数，默认值为false
+	ymp.configs.webmvc.convention_urlrewrite_mode=
+
+	# Convention模式开启时是否采用拦截器规则设置，可选参数，默认值为false
+	ymp.configs.webmvc.convention_interceptor_mode=
 
 - 访问权限规则配置
 
@@ -749,5 +980,4 @@ WebMVC模块针对文件的上传处理以及对上传的文件操作都非常�
 
 - 异常错误处理器
 
-- 文件上传状态监听器
 
