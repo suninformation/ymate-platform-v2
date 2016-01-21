@@ -49,7 +49,7 @@ JDBC持久化模块针对关系型数据库(RDBMS)数据存取的一套简单解
     # 数据库访问用户名称，必填参数
     ymp.configs.persistence.jdbc.ds.default.username=
 
-    # 数据库访问密码，可选参数，经过默认密码处理器加密后的admin字符串为TutKfblER6k
+    # 数据库访问密码，可选参数，经过默认密码处理器加密后的admin字符串为wRI2rASW58E
     ymp.configs.persistence.jdbc.ds.default.password=
 
     # 数据库访问密码是否已加密，默认为false
