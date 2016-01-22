@@ -88,21 +88,42 @@ public class ${modelName?cap_first}<#if (isUseClassSuffix)>Model</#if> extends <
 	// Chain
 	//
 
-	public static ${modelName?cap_first}<#if (isUseClassSuffix)>Model</#if> create() {
-		return new ${modelName?cap_first}<#if (isUseClassSuffix)>Model</#if>();
+	public static ${modelName?cap_first}<#if (isUseClassSuffix)>Model</#if>Builder builder() {
+		return new ${modelName?cap_first}<#if (isUseClassSuffix)>Model</#if>Builder();
 	}
 
-	<#list fieldList as field>
-    public ${field.varType} ${field.varName}() {
-    	return ${field.varName};
+	public ${modelName?cap_first}<#if (isUseClassSuffix)>Model</#if>Builder bind() {
+    	return new ${modelName?cap_first}<#if (isUseClassSuffix)>Model</#if>Builder(this);
     }
 
-    public ${modelName?cap_first}<#if (isUseClassSuffix)>Model</#if> ${field.varName}(${field.varType} ${field.varName}) {
-    	this.${field.varName} = ${field.varName};
-		return this;
-    }
+	public static class ${modelName?cap_first}<#if (isUseClassSuffix)>Model</#if>Builder {
+
+		private ${modelName?cap_first}<#if (isUseClassSuffix)>Model</#if> _model;
+
+		public ${modelName?cap_first}<#if (isUseClassSuffix)>Model</#if>Builder() {
+			_model = new ${modelName?cap_first}<#if (isUseClassSuffix)>Model</#if>();
+		}
+
+		public ${modelName?cap_first}<#if (isUseClassSuffix)>Model</#if>Builder(${modelName?cap_first}<#if (isUseClassSuffix)>Model</#if> model) {
+			_model = model;
+		}
+
+		public ${modelName?cap_first}<#if (isUseClassSuffix)>Model</#if> build() {
+			return _model;
+		}
+
+	<#list fieldList as field>
+		public ${field.varType} ${field.varName}() {
+			return _model.get${field.varName?cap_first}();
+		}
+
+		public ${modelName?cap_first}<#if (isUseClassSuffix)>Model</#if>Builder ${field.varName}(${field.varType} ${field.varName}) {
+			_model.set${field.varName?cap_first}(${field.varName});
+			return this;
+		}
 
 	</#list>
+	}
 	</#if>
 
 	/**
