@@ -335,7 +335,10 @@ public class DefaultSession implements ISession {
         if (__sessionEvent != null) {
             __sessionEvent.onUpdateAfter(new SessionEventContext(_opt));
         }
-        return entity;
+        if (_opt.getEffectCounts() > 0) {
+            return entity;
+        }
+        return null;
     }
 
     public <T extends IEntity> List<T> update(List<T> entities, Fields filter) throws Exception {
@@ -405,7 +408,10 @@ public class DefaultSession implements ISession {
         if (__sessionEvent != null) {
             __sessionEvent.onInsertAfter(new SessionEventContext(_opt));
         }
-        return entity;
+        if (_opt.getEffectCounts() > 0) {
+            return entity;
+        }
+        return null;
     }
 
     public <T extends IEntity> List<T> insert(List<T> entities) throws Exception {
@@ -453,8 +459,10 @@ public class DefaultSession implements ISession {
     }
 
     public <T extends IEntity> T delete(T entity) throws Exception {
-        this.delete(entity.getClass(), entity.getId());
-        return entity;
+        if (this.delete(entity.getClass(), entity.getId()) > 0) {
+            return entity;
+        }
+        return null;
     }
 
     public <T extends IEntity> int delete(Class<T> entityClass, Serializable id) throws Exception {

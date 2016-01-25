@@ -151,7 +151,7 @@ public interface ISession extends ISessionBase {
      * @param <T>    指定结果集数据类型
      * @param entity 实体查询对象
      * @param filter 显示字段过滤集合
-     * @return 根据实体执行SQL更新，返回更新后的实体对象
+     * @return 根据实体执行SQL更新，返回更新后的实体对象，若影响记录数为0则返回null
      * @throws Exception 可能产生的异常
      */
     <T extends IEntity> T update(T entity, Fields filter) throws Exception;
@@ -168,7 +168,7 @@ public interface ISession extends ISessionBase {
     /**
      * @param <T>    指定结果集数据类型
      * @param entity 实体对象
-     * @return 根据实体执行记录插入，返回插入后的实体对象
+     * @return 根据实体执行记录插入，返回插入后的实体对象，若影响记录数为0则返回null
      * @throws Exception 可能产生的异常
      */
     <T extends IEntity> T insert(T entity) throws Exception;
@@ -188,7 +188,7 @@ public interface ISession extends ISessionBase {
     /**
      * @param <T>    指定结果集数据类型
      * @param entity 实体对象
-     * @return 根据实体执行记录删除，返回删除后的实体对象
+     * @return 根据实体执行记录删除，返回删除后的实体对象，若影响记录数为0则返回null
      * @throws Exception 可能产生的异常
      */
     <T extends IEntity> T delete(T entity) throws Exception;
