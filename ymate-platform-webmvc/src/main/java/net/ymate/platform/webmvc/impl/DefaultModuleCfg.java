@@ -19,10 +19,7 @@ import net.ymate.platform.core.YMP;
 import net.ymate.platform.core.lang.BlurObject;
 import net.ymate.platform.core.util.ClassUtils;
 import net.ymate.platform.core.util.RuntimeUtils;
-import net.ymate.platform.webmvc.IRequestProcessor;
-import net.ymate.platform.webmvc.IWebErrorProcessor;
-import net.ymate.platform.webmvc.IWebMvc;
-import net.ymate.platform.webmvc.IWebMvcModuleCfg;
+import net.ymate.platform.webmvc.*;
 import net.ymate.platform.webmvc.base.Type;
 import org.apache.commons.fileupload.ProgressListener;
 import org.apache.commons.lang.StringUtils;
@@ -46,6 +43,8 @@ public class DefaultModuleCfg implements IWebMvcModuleCfg {
     private IRequestProcessor __requestProcessor;
 
     private IWebErrorProcessor __errorProcessor;
+
+    private IWebCacheProcessor __cacheProcessor;
 
     private String __charsetEncoding;
 
@@ -106,6 +105,11 @@ public class DefaultModuleCfg implements IWebMvcModuleCfg {
         String _errorProcessorClass = _moduleCfgs.get("error_processor_class");
         if (StringUtils.isNotBlank(_errorProcessorClass)) {
             __errorProcessor = ClassUtils.impl(_errorProcessorClass, IWebErrorProcessor.class, this.getClass());
+        }
+        //
+        String _cacheProcessorClass = _moduleCfgs.get("cache_processor_class");
+        if (StringUtils.isNotBlank(_errorProcessorClass)) {
+            __cacheProcessor = ClassUtils.impl(_cacheProcessorClass, IWebCacheProcessor.class, this.getClass());
         }
         //
         __charsetEncoding = StringUtils.defaultIfBlank(_moduleCfgs.get("default_charset_encoding"), "UTF-8");
@@ -173,6 +177,10 @@ public class DefaultModuleCfg implements IWebMvcModuleCfg {
 
     public IWebErrorProcessor getErrorProcessor() {
         return __errorProcessor;
+    }
+
+    public IWebCacheProcessor getCacheProcessor() {
+        return __cacheProcessor;
     }
 
     public String getDefaultCharsetEncoding() {

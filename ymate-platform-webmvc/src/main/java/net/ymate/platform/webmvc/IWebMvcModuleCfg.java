@@ -38,6 +38,11 @@ public interface IWebMvcModuleCfg {
     IWebErrorProcessor getErrorProcessor();
 
     /**
+     * @return 缓存处理器，可选参数
+     */
+    IWebCacheProcessor getCacheProcessor();
+
+    /**
      * @return 默认字符编码集设置，可选参数，默认值为UTF-8
      */
     String getDefaultCharsetEncoding();

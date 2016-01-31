@@ -18,11 +18,13 @@ package net.ymate.platform.webmvc.impl;
 import net.ymate.platform.core.beans.intercept.IInterceptor;
 import net.ymate.platform.core.beans.intercept.InterceptAnnoHelper;
 import net.ymate.platform.core.beans.intercept.InterceptContext;
+import net.ymate.platform.core.lang.PairObject;
 import net.ymate.platform.webmvc.IInterceptorRule;
 import net.ymate.platform.webmvc.IInterceptorRuleProcessor;
 import net.ymate.platform.webmvc.IRequestContext;
 import net.ymate.platform.webmvc.IWebMvc;
 import net.ymate.platform.webmvc.annotation.InterceptorRule;
+import net.ymate.platform.webmvc.annotation.ResponseCache;
 import net.ymate.platform.webmvc.view.IView;
 import org.apache.commons.lang.StringUtils;
 
@@ -51,10 +53,11 @@ public class DefaultInterceptorRuleProcessor implements IInterceptorRuleProcesso
         }
     }
 
-    public IView processRequest(IWebMvc owner, IRequestContext requestContext) throws Exception {
+    public PairObject<IView, Boolean> processRequest(IWebMvc owner, IRequestContext requestContext) throws Exception {
         String _mapping = requestContext.getRequestMapping();
         InterceptorRuleMeta _ruleMeta = __interceptorRules.get(_mapping);
         IView _view = null;
+        boolean _responseCache = false;
         if (_ruleMeta == null) {
             while (StringUtils.countMatches(_mapping, "/") > 1) {
                 _mapping = StringUtils.substringBeforeLast(_mapping, "/");
@@ -65,6 +68,7 @@ public class DefaultInterceptorRuleProcessor implements IInterceptorRuleProcesso
             }
         }
         if (_ruleMeta != null) {
+            _responseCache = _ruleMeta.isResponseCache();
             InterceptContext _context = new InterceptContext(IInterceptor.Direction.BEFORE, owner.getOwner(), null, null, null, _ruleMeta.getContextParams());
             //
             for (Class<? extends IInterceptor> _interceptClass : _ruleMeta.getBeforeIntercepts()) {
@@ -77,7 +81,7 @@ public class DefaultInterceptorRuleProcessor implements IInterceptorRuleProcesso
                 }
             }
         }
-        return _view;
+        return new PairObject<IView, Boolean>(_view, _responseCache);
     }
 
     static class InterceptorRuleMeta {
@@ -85,6 +89,8 @@ public class DefaultInterceptorRuleProcessor implements IInterceptorRuleProcesso
         private List<Class<? extends IInterceptor>> beforeIntercepts;
         private Map<String, String> contextParams;
         private boolean matchAll;
+
+        private boolean responseCache;
 
         public InterceptorRuleMeta(Class<? extends IInterceptorRule> targetClass, Method targetMethod) {
             InterceptorRule _ruleAnno = targetMethod.getAnnotation(InterceptorRule.class);
@@ -113,6 +119,11 @@ public class DefaultInterceptorRuleProcessor implements IInterceptorRuleProcesso
                 //
                 beforeIntercepts = InterceptAnnoHelper.getBeforeIntercepts(targetClass, targetMethod);
                 contextParams = InterceptAnnoHelper.getContextParams(targetClass, targetMethod);
+                //
+                this.responseCache = targetMethod.isAnnotationPresent(ResponseCache.class);
+                if (!this.responseCache) {
+                    this.responseCache = targetClass.isAnnotationPresent(ResponseCache.class);
+                }
             }
         }
 
@@ -130,6 +141,10 @@ public class DefaultInterceptorRuleProcessor implements IInterceptorRuleProcesso
 
         public boolean isMatchAll() {
             return matchAll;
+        }
+
+        public boolean isResponseCache() {
+            return responseCache;
         }
     }
 }

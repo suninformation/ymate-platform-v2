@@ -18,6 +18,7 @@ package net.ymate.platform.webmvc;
 import net.ymate.platform.core.Version;
 import net.ymate.platform.core.YMP;
 import net.ymate.platform.core.beans.BeanMeta;
+import net.ymate.platform.core.lang.PairObject;
 import net.ymate.platform.core.module.IModule;
 import net.ymate.platform.core.module.annotation.Module;
 import net.ymate.platform.webmvc.annotation.Controller;
@@ -34,6 +35,7 @@ import net.ymate.platform.webmvc.support.MultipartRequestWrapper;
 import net.ymate.platform.webmvc.support.RequestExecutor;
 import net.ymate.platform.webmvc.support.RequestMappingParser;
 import net.ymate.platform.webmvc.view.IView;
+import net.ymate.platform.webmvc.view.View;
 import net.ymate.platform.webmvc.view.impl.*;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
@@ -210,6 +212,11 @@ public class WebMVC implements IModule, IWebMvc {
                 WebContext.getContext().addAttribute(Type.Context.HTTP_REQUEST, request);
                 IView _view = RequestExecutor.bind(this, _meta).execute();
                 if (_view != null) {
+                    if (_meta.isResponseCache() && getModuleCfg().getCacheProcessor() != null) {
+                        if (getModuleCfg().getCacheProcessor().processResponseCache(this, context, _view)) {
+                            _view = View.nullView();
+                        }
+                    }
                     _view.render();
                 } else {
                     HttpStatusView.NOT_FOUND.render();
@@ -238,9 +245,12 @@ public class WebMVC implements IModule, IWebMvc {
             }
             if (_isAllowConvention) {
                 IView _view = null;
+                boolean _responseCache = false;
                 if (__interceptorRuleProcessor != null) {
                     // 尝试执行Convention拦截规则
-                    _view = __interceptorRuleProcessor.processRequest(this, context);
+                    PairObject<IView, Boolean> _result = __interceptorRuleProcessor.processRequest(this, context);
+                    _view = _result.getKey();
+                    _responseCache = _result.getValue();
                 }
                 if (_view == null) {
                     // 处理Convention模式下URL参数集合
@@ -277,6 +287,11 @@ public class WebMVC implements IModule, IWebMvc {
                     }
                 }
                 if (_view != null) {
+                    if (_responseCache && getModuleCfg().getCacheProcessor() != null) {
+                        if (getModuleCfg().getCacheProcessor().processResponseCache(this, context, _view)) {
+                            _view = View.nullView();
+                        }
+                    }
                     _view.render();
                 } else {
                     HttpStatusView.NOT_FOUND.render();

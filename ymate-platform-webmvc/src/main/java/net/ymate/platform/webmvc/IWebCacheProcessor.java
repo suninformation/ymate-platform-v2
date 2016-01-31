@@ -15,32 +15,24 @@
  */
 package net.ymate.platform.webmvc;
 
-import net.ymate.platform.core.lang.PairObject;
 import net.ymate.platform.webmvc.view.IView;
 
 /**
- * 请求拦截规则处理器接口
+ * 控制器视图缓存处理器接口
  *
- * @author 刘镇 (suninformation@163.com) on 16/1/8 下午10:47
+ * @author 刘镇 (suninformation@163.com) on 16/2/1 上午12:00
  * @version 1.0
  */
-public interface IInterceptorRuleProcessor {
+public interface IWebCacheProcessor {
 
     /**
-     * 注册拦截器规则配置
+     * 对控制器方法返回视图进行缓存处理
      *
-     * @param targetClass 目标类型
-     * @throws Exception 可能产生的异常
-     */
-    void registerInterceptorRule(Class<? extends IInterceptorRule> targetClass) throws Exception;
-
-    /**
-     * 处理请求执行拦截规则
-     *
-     * @param owner          Owner
+     * @param owner          所属WebMVC管理器
      * @param requestContext 请求上下文
-     * @return 返回执行结果视图对象及缓存标识
+     * @param resultView     视图对象
+     * @return 返回处理结果是否成功
      * @throws Exception 可能产生的异常
      */
-    PairObject<IView, Boolean> processRequest(IWebMvc owner, IRequestContext requestContext) throws Exception;
+    boolean processResponseCache(IWebMvc owner, IRequestContext requestContext, IView resultView) throws Exception;
 }

@@ -52,6 +52,8 @@ public class RequestMeta {
 
     private boolean singleton;
 
+    private boolean responseCache;
+
     /**
      * 参数转义注解, 若未设置则该值为null
      */
@@ -75,6 +77,11 @@ public class RequestMeta {
         Controller _controller = targetClass.getAnnotation(Controller.class);
         this.name = StringUtils.defaultIfBlank(_controller.name(), targetClass.getName());
         this.singleton = _controller.singleton();
+        //
+        this.responseCache = method.isAnnotationPresent(ResponseCache.class);
+        if (!this.responseCache) {
+            this.responseCache = targetClass.isAnnotationPresent(ResponseCache.class);
+        }
         //
         this.parameterEscape = method.getAnnotation(ParameterEscape.class);
         if (this.parameterEscape == null) {
@@ -226,6 +233,10 @@ public class RequestMeta {
 
     public boolean isSingleton() {
         return singleton;
+    }
+
+    public boolean isResponseCache() {
+        return responseCache;
     }
 
     public ParameterEscape getParameterEscape() {
