@@ -1,21 +1,18 @@
-#ymate-platform-configuration
+###配置体系（Configuration）
 
 配置体系模块，是通过简单的目录结构实现在项目开发以及维护过程中，对配置等各种文件资源的统一管理，为模块化开发和部署提供灵活的、简单有效的解决方案；
 
-###特点:
+####特点
 
 - 从开发角度规范了模块化开发流程、统一资源文件的生命周期管理；
 - 从可维护角度将全部资源集成在整个体系中，具备有效的资源重用和灵活的系统集成构建、部署和数据备份与迁移等优势；
-
 - 简单的配置文件检索、加载及管理模式；
 - 模块间资源共享，模块(modules)可以共用所属项目(projects)的配置、类和jar包等资源文件；
-- 默认支持XML和Property配置文件解析，可以通过IConfigurationProvider接口自定义文件格式，支持缓存，避免重复加载；
-- 配置对象支持@Configuration注解方式声明，无需编码即可自动加载并填充配置内容到类对象；
+- 默认支持XML和Properties配置文件解析，可以通过IConfigurationProvider接口自定义文件格式，支持缓存，避免重复加载；
+- 配置对象支持`@Configuration`注解方式声明，无需编码即可自动加载并填充配置内容到类对象；
 - 集成模块的构建（编译）与分发、服务的启动与停止，以及清晰的资源文件分类结构可快速定位；
 
-
-
-###配置体系目录结构:
+####配置体系目录结构
 
 按优先级由低到高的顺序依次是：全局(configHome) -> 项目(projects) -> 模块(modules)：
 
@@ -48,7 +45,7 @@
         |--temp\
         |--......
 
-###模块配置及使用:
+####模块配置
 
 配置体系模块初始化参数, 将下列配置项按需添加到ymp-conf.properties文件中, 否则模块将使用默认配置进行初始化:
 
@@ -70,9 +67,9 @@
         ymp.configs.configuration.provider_class=
 
 
-#### 示例一: 解析XML配置
+####示例一：解析XML配置
 
-- 基于XML文件的基础配置格式如下, 为了配合测试代码, 请将该文件命名为configuration.xml并放置在config_home路径下的cfgs目录里:
+- 基于XML文件的基础配置格式如下, 为了配合测试代码, 请将该文件命名为configuration.xml并放置在`config_home`路径下的cfgs目录里:
 
 
         <?xml version="1.0" encoding="UTF-8"?>
@@ -106,7 +103,7 @@
         </properties>
 
 
-- 新建配置类DemoConfig, 通过@Configuration注解指定配置文件相对路径
+- 新建配置类DemoConfig, 通过`@Configuration`注解指定配置文件相对路径
 
 
         @Configuration("cfgs/configuration.xml")
@@ -138,9 +135,9 @@
         {abc=xzy, color=red, size=small, weight=120g, age=2015}
         [itouch, imac, ipad, iphone]
 
-#### 示例二: 解析Properties配置
+####示例二：解析Properties配置
 
-- 基于Properties文件的基础配置格式如下, 同样请将该文件命名为configuration.properties并放置在config_home路径下的cfgs目录里:
+- 基于Properties文件的基础配置格式如下, 同样请将该文件命名为configuration.properties并放置在`config_home`路径下的cfgs目录里:
 
 
         #--------------------------------------------------------------------------
@@ -171,7 +168,7 @@
         properties.default.product_spec.attributes.abc=xyz
 
 
-- 修改配置类DemoConfig如下, 通过@ConfigurationProvider注解指定配置文件内容解析器:
+- 修改配置类DemoConfig如下, 通过`@ConfigurationProvider`注解指定配置文件内容解析器:
 
 
         @Configuration("cfgs/configuration.properties")
@@ -189,31 +186,31 @@
 
 
 
-#### 通过配置体系模块还可以完成以下操作:
+####配置体系模块更多操作
 
-- 获取路径信息, 下列方法的返回结果会根据配置体系模块配置的不同而不同:
+#####获取路径信息
 
+下列方法的返回结果会根据配置体系模块配置的不同而不同:
 
-        // 返回配置体系根路径
-        Cfgs.get().getConfigHome();
-        
-        // 返回项目根路径
-        Cfgs.get().getProjectHome();
-        
-        // 返回项目模块根路径
-        Cfgs.get().getModuleHome();
-        
-        // 返回user.dir所在路径
-        Cfgs.get().getUserDir();
-        
-        // 返回user.home所在路径
-        Cfgs.get().getUserHome();
+    // 返回配置体系根路径
+    Cfgs.get().getConfigHome();
+    
+    // 返回项目根路径
+    Cfgs.get().getProjectHome();
+    
+    // 返回项目模块根路径
+    Cfgs.get().getModuleHome();
+    
+    // 返回user.dir所在路径
+    Cfgs.get().getUserDir();
+    
+    // 返回user.home所在路径
+    Cfgs.get().getUserHome();
 
-- 搜索目标文件:
+#####搜索目标文件
 
-
-        // 在配置体系中搜索cfgs/configuration.xml文件并返回其File对象
-        Cfgs.get().searchFile("cfgs/configuration.xml");
-        
-        // 在配置体系中搜索cfgs/configuration.properties文件并返回其绝对路径
-        Cfgs.get().searchPath("cfgs/configuration.properties");
+    // 在配置体系中搜索cfgs/configuration.xml文件并返回其File对象
+    Cfgs.get().searchFile("cfgs/configuration.xml");
+    
+    // 在配置体系中搜索cfgs/configuration.properties文件并返回其绝对路径
+    Cfgs.get().searchPath("cfgs/configuration.properties");

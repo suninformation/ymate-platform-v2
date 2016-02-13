@@ -1,4 +1,4 @@
-###ymate-platform-persistence-jdbc
+###JDBC
 
 JDBC持久化模块针对关系型数据库(RDBMS)数据存取的一套简单解决方案，主要关注数据存取的效率、易用性和透明，其具备以下功能特征：
 
@@ -14,7 +14,7 @@ JDBC持久化模块针对关系型数据库(RDBMS)数据存取的一套简单解
 - 支持数据库存储过程*；
 
 
-####模块初始化配置：
+####模块初始化配置
 
     #-------------------------------------
     # JDBC持久化模块初始化参数
@@ -70,244 +70,244 @@ JDBC持久化模块针对关系型数据库(RDBMS)数据存取的一套简单解
 >
 >   >net.ymate.platform.core.support.impl.DefaultPasswordProcessor
 
-####数据源（DataSource）：
+####数据源（DataSource）
 
-- 多数据源连接：
+#####多数据源连接
 
-    JDBC持久化模块默认支持多数据源配置，下面通过简单的配置来展示如何连接多个数据库：
+JDBC持久化模块默认支持多数据源配置，下面通过简单的配置来展示如何连接多个数据库：
 
-		# 定义两个数据源分别用于连接MySQL和Oracle数据库，同时指定默认数据源为default(即MySQL数据库)
-        ymp.configs.persistence.jdbc.ds_default_name=default
-        ymp.configs.persistence.jdbc.ds_name_list=default|oracledb
-        
-        # 连接到MySQL数据库的数据源配置
-        ymp.configs.persistence.jdbc.ds.default.connection_url=jdbc:mysql://localhost:3306/mydb
-        ymp.configs.persistence.jdbc.ds.default.username=root
-        ymp.configs.persistence.jdbc.ds.default.password=123456
+	# 定义两个数据源分别用于连接MySQL和Oracle数据库，同时指定默认数据源为default(即MySQL数据库)
+    ymp.configs.persistence.jdbc.ds_default_name=default
+    ymp.configs.persistence.jdbc.ds_name_list=default|oracledb
+    
+    # 连接到MySQL数据库的数据源配置
+    ymp.configs.persistence.jdbc.ds.default.connection_url=jdbc:mysql://localhost:3306/mydb
+    ymp.configs.persistence.jdbc.ds.default.username=root
+    ymp.configs.persistence.jdbc.ds.default.password=123456
 
-		# 连接到Oracle数据库的数据源配置
-        ymp.configs.persistence.jdbc.ds.oracledb.connection_url=jdbc:oracle:thin:@localhost:1521:ORCL
-        ymp.configs.persistence.jdbc.ds.oracledb.username=ORCL
-        ymp.configs.persistence.jdbc.ds.oracledb.password=123456
+	# 连接到Oracle数据库的数据源配置
+    ymp.configs.persistence.jdbc.ds.oracledb.connection_url=jdbc:oracle:thin:@localhost:1521:ORCL
+    ymp.configs.persistence.jdbc.ds.oracledb.username=ORCL
+    ymp.configs.persistence.jdbc.ds.oracledb.password=123456
 
-    从上述配置中可以看出，配置不同的数据源时只需要定义数据源名称列表，再根据列表逐一配置即可；
+从上述配置中可以看出，配置不同的数据源时只需要定义数据源名称列表，再根据列表逐一配置即可；
 
-- 连接池配置：
+#####连接池配置
 
-    JDBC持久化模块提供的数据源类型如下：
+JDBC持久化模块提供的数据源类型如下：
 
-    + default：默认数据源适配器，通过DriverManager直接连接数据库，建议仅用于测试；
-    + c3p0：基于C3P0连接池的数据源适配器；
-    + dbcp：基于DBCP连接池的数据源适配器；
-    + jndi：基于JNDI的数据源适配器；
+- default：默认数据源适配器，通过DriverManager直接连接数据库，建议仅用于测试；
+- c3p0：基于C3P0连接池的数据源适配器；
+- dbcp：基于DBCP连接池的数据源适配器；
+- jndi：基于JNDI的数据源适配器；
 
-    只需根据实际情况调整对应数据源名称的配置，如：
+只需根据实际情况调整对应数据源名称的配置，如：
 
-        ymp.configs.persistence.jdbc.ds.default.adapter_class=dbcp
+    ymp.configs.persistence.jdbc.ds.default.adapter_class=dbcp
 
-    针对于dbcp和c3p0连接池的配置文件及内容，请将对应的dbcp.properties或c3p0.properties文件放置在工程的classpath根路径下，配置内容请参看JDBC持久化模块开源工程中的示例文件；
+针对于dbcp和c3p0连接池的配置文件及内容，请将对应的dbcp.properties或c3p0.properties文件放置在工程的classpath根路径下，配置内容请参看JDBC持久化模块开源工程中的示例文件；
 
-    当然，也可以通过IDataSourceAdapter接口自行实现，框架针对IDataSourceAdapter接口提供了一个抽象封装AbstractDataSourceAdapter类，直接继承即可；
+当然，也可以通过IDataSourceAdapter接口自行实现，框架针对IDataSourceAdapter接口提供了一个抽象封装AbstractDataSourceAdapter类，直接继承即可；
 
-- 数据库连接持有者（IConnectionHolder）：
+#####数据库连接持有者（IConnectionHolder）
 
-	用于记录真正的数据库连接对象（Connection）原始的状态及与数据源对应关系；
+用于记录真正的数据库连接对象（Connection）原始的状态及与数据源对应关系；
 
-####数据实体（Entity）：
+####数据实体（Entity）
 
-- 数据实体注解：
+#####数据实体注解
 
-    + @Entity：声明一个类为数据实体对象；
+- @Entity：声明一个类为数据实体对象；
 
-        > value：实体名称(数据库表名称)，默认采用当前类名称；
+    > value：实体名称(数据库表名称)，默认采用当前类名称；
 
-            @Entity("tb_demo")
-            public class Demo {
-                //...
+        @Entity("tb_demo")
+        public class Demo {
+            //...
+        }
+
+- @Id：声明一个类成员为主键；
+
+    > 无参数，配合@Property注解使用；
+
+        @Entity("tb_demo")
+        public class Demo {
+
+            @Id
+            @Property
+            private String id;
+
+            public String getId() {
+                return id;
             }
 
-    + @Id：声明一个类成员为主键；
-
-        > 无参数，配合@Property注解使用；
-
-            @Entity("tb_demo")
-            public class Demo {
-
-                @Id
-                @Property
-                private String id;
-
-                public String getId() {
-                    return id;
-                }
-
-                public void setId(String id) {
-                    this.id = id;
-                }
+            public void setId(String id) {
+                this.id = id;
             }
+        }
 
-    + @Property：声明一个类成员为数据实体属性；
+- @Property：声明一个类成员为数据实体属性；
 
-        > name：实现属性名称，默认采用当前成员名称；
-        >
-        > autoincrement：是否为自动增长，默认为false；
-        >
-        > sequenceName：序列名称，适用于类似Oracle等数据库，配合autoincrement参数一同使用；
-        > 
-        > nullable：允许为空，默认为true；
-        > 
-        > unsigned：是否为无符号，默认为false；
-        > 
-        > length：数据长度，默认0为不限制；
-        > 
-        > decimals：小数位数，默认0为无小数；
-        > 
-        > type：数据类型，默认为Type.FIELD.VARCHAR；
+    > name：实现属性名称，默认采用当前成员名称；
+    >
+    > autoincrement：是否为自动增长，默认为false；
+    >
+    > sequenceName：序列名称，适用于类似Oracle等数据库，配合autoincrement参数一同使用；
+    > 
+    > nullable：允许为空，默认为true；
+    > 
+    > unsigned：是否为无符号，默认为false；
+    > 
+    > length：数据长度，默认0为不限制；
+    > 
+    > decimals：小数位数，默认0为无小数；
+    > 
+    > type：数据类型，默认为Type.FIELD.VARCHAR；
 
-            @Entity("tb_user")
-            public class User {
+        @Entity("tb_user")
+        public class User {
 
-                @Id
-                @Property
-                private String id;
+            @Id
+            @Property
+            private String id;
 
-                @Property(name = "user_name",
-                          nullable = false,
-                          length = 32)
-                private String username;
+            @Property(name = "user_name",
+                      nullable = false,
+                      length = 32)
+            private String username;
 
-                @Property(name = "age",
-                          unsigned = true,
-                          type = Type.FIELD.INT)
-                private Integer age;
+            @Property(name = "age",
+                      unsigned = true,
+                      type = Type.FIELD.INT)
+            private Integer age;
 
-                // 省略Get/Set方法...
-            }
+            // 省略Get/Set方法...
+        }
 
-    + @PK：声明一个类为某数据实体的复合主键对象；
+- @PK：声明一个类为某数据实体的复合主键对象；
 
-        > 无参数；
-        
-            @PK
-            public class UserExtPK {
+    > 无参数；
+    
+        @PK
+        public class UserExtPK {
 
-                @Property
-                private String uid;
+            @Property
+            private String uid;
 
-                @Property(name = "wx_id")
-                private String wxId;
+            @Property(name = "wx_id")
+            private String wxId;
 
-                // 省略Get/Set方法...
-            }
-        
-            @Entity("tb_user_ext")
-            public class UserExt {
+            // 省略Get/Set方法...
+        }
+    
+        @Entity("tb_user_ext")
+        public class UserExt {
 
-                @Id
-                private UserExtPK id;
+            @Id
+            private UserExtPK id;
 
-                @Property(name = "open_id",
-                          nullable = false,
-                          length = 32)
-                private String openId;
+            @Property(name = "open_id",
+                      nullable = false,
+                      length = 32)
+            private String openId;
 
-                // 省略Get/Set方法...
-            }
+            // 省略Get/Set方法...
+        }
 
-    + @Readonly：声明一个成员为只读属性，数据实体更新时其将被忽略；
+- @Readonly：声明一个成员为只读属性，数据实体更新时其将被忽略；
 
-        > 无参数，配合@Property注解使用；
+    > 无参数，配合@Property注解使用；
 
-            @Entity("tb_demo")
-            public class Demo {
+        @Entity("tb_demo")
+        public class Demo {
 
-                @Id
-                @Property
-                private String id;
+            @Id
+            @Property
+            private String id;
 
-                @Property(name = "create_time")
-                @Readonly
-                private Date createTime;
+            @Property(name = "create_time")
+            @Readonly
+            private Date createTime;
 
-                // 省略Get/Set方法...
-            }
+            // 省略Get/Set方法...
+        }
 
-    + @Indexes：声明一组数据实体的索引；
+- @Indexes：声明一组数据实体的索引；
  
-    + @Index：声明一个数据实体的索引；
+- @Index：声明一个数据实体的索引；
     
-    + @Comment：注释内容；
+- @Comment：注释内容；
 
-    + @Default：为一个成员属性或方法参数指定默认值；
+- @Default：为一个成员属性或方法参数指定默认值；
     
-    看着这么多的注解，是不是觉得编写实体很麻烦呢，不要急，框架提供了自动生成实体的方法，往下看:)
+看着这么多的注解，是不是觉得编写实体很麻烦呢，不要急，框架提供了自动生成实体的方法，往下看:)
     
-    **注**：上面注解或注解参数中有一些是用于未来能通过实体对象直接创建数据库表结构（以及SQL脚本文件）的，可以暂时忽略；
+**注**：上面注解或注解参数中有一些是用于未来能通过实体对象直接创建数据库表结构（以及SQL脚本文件）的，可以暂时忽略；
 
-- 自动生成实体类：
+#####自动生成实体类
 
-    YMP框架自v1.0开始就支持通过数据库表结构自动生成实体类代码，所以v2.0版本不但重构了实体代码生成器，而且更简单好用！
+YMP框架自v1.0开始就支持通过数据库表结构自动生成实体类代码，所以v2.0版本不但重构了实体代码生成器，而且更简单好用！
 
-        #-------------------------------------
-        # JDBC数据实体代码生成器配置参数
-        #-------------------------------------
+    #-------------------------------------
+    # JDBC数据实体代码生成器配置参数
+    #-------------------------------------
 
-        # 是否生成新的BaseEntity类，默认为false(即表示使用框架提供的BaseEntity类)
-        ymp.params.jdbc.use_base_entity=
+    # 是否生成新的BaseEntity类，默认为false(即表示使用框架提供的BaseEntity类)
+    ymp.params.jdbc.use_base_entity=
 
-        # 是否使用类名后缀，不使用和使用的区别如: User-->UserModel，默认为false
-        ymp.params.jdbc.use_class_suffix=
+    # 是否使用类名后缀，不使用和使用的区别如: User-->UserModel，默认为false
+    ymp.params.jdbc.use_class_suffix=
 
-		# 是否采用链式调用模式，默认为false
-		ymp.params.jdbc.use_chain_mode=
+	# 是否采用链式调用模式，默认为false
+	ymp.params.jdbc.use_chain_mode=
 
-        # 数据库名称(仅针对特定的数据库使用，如Oracle)，默认为空
-        ymp.params.jdbc.db_name=
+    # 数据库名称(仅针对特定的数据库使用，如Oracle)，默认为空
+    ymp.params.jdbc.db_name=
 
-        # 数据库用户名称(仅针对特定的数据库使用，如Oracle)，默认为空
-        ymp.params.jdbc.db_username=
+    # 数据库用户名称(仅针对特定的数据库使用，如Oracle)，默认为空
+    ymp.params.jdbc.db_username=
 
-        # 数据库表名称前缀，多个用'|'分隔，默认为空
-        ymp.params.jdbc.table_prefix=
+    # 数据库表名称前缀，多个用'|'分隔，默认为空
+    ymp.params.jdbc.table_prefix=
 
-        # 否剔除生成的实体映射表名前缀，默认为false
-        ymp.params.jdbc.remove_table_prefix=
+    # 否剔除生成的实体映射表名前缀，默认为false
+    ymp.params.jdbc.remove_table_prefix=
 
-        # 预生成实体的数据表名称列表，多个用'|'分隔，默认为空表示全部生成
-        ymp.params.jdbc.table_list=
+    # 预生成实体的数据表名称列表，多个用'|'分隔，默认为空表示全部生成
+    ymp.params.jdbc.table_list=
 
-        # 排除的数据表名称列表，在此列表内的数据表将不被生成实体，多个用'|'分隔，默认为空
-        ymp.params.jdbc.table_exclude_list=
+    # 排除的数据表名称列表，在此列表内的数据表将不被生成实体，多个用'|'分隔，默认为空
+    ymp.params.jdbc.table_exclude_list=
 
-        # 生成的代码文件输出路径，默认为${root}
-        ymp.params.jdbc.output_path=
+    # 生成的代码文件输出路径，默认为${root}
+    ymp.params.jdbc.output_path=
 
-        # 生成的代码所属包名称，默认为: packages
-        ymp.params.jdbc.package_name=
+    # 生成的代码所属包名称，默认为: packages
+    ymp.params.jdbc.package_name=
 
-    实际上你可以什么都不用配置（请参看以上配置项说明，根据实际情况进行配置），但使用过程中需要注意以下几点：
+实际上你可以什么都不用配置（请参看以上配置项说明，根据实际情况进行配置），但使用过程中需要注意以下几点：
 
-    > - 代码生成器依赖JDBC持久化模块才能完成与数据库连接等操作；
-    > 
-    > - 在多数据源模式下，代码生成器使用的是默认数据源；
-    > 
-    > - 代码生成器依赖freemarker模板引擎，所以请检查依赖关系是否正确；
-    >
-    > - 在WEB工程中运行代码生成器时请确认servlet-api和jsp-api包依赖关系是否正确；
-    >
-    > - 如果你的工程中引用了很多的模块，在运行代码生成器时可以暂时通过ymp.excluded_modules参数排除掉；
+> - 代码生成器依赖JDBC持久化模块才能完成与数据库连接等操作；
+> 
+> - 在多数据源模式下，代码生成器使用的是默认数据源；
+> 
+> - 代码生成器依赖freemarker模板引擎，所以请检查依赖关系是否正确；
+>
+> - 在WEB工程中运行代码生成器时请确认servlet-api和jsp-api包依赖关系是否正确；
+>
+> - 如果你的工程中引用了很多的模块，在运行代码生成器时可以暂时通过ymp.excluded_modules参数排除掉；
 
-    了解了以上的配置后，直接运行代码生成器：
+了解了以上的配置后，直接运行代码生成器：
 
-        net.ymate.platform.persistence.jdbc.scaffold.EntityGenerator
+    net.ymate.platform.persistence.jdbc.scaffold.EntityGenerator
 
-    找到并运行它，如果是Maven项目，可以通过以下命令执执行：
+找到并运行它，如果是Maven项目，可以通过以下命令执执行：
     
-    	mvn compile exec:java -Dexec.mainClass="net.ymate.platform.persistence.jdbc.scaffold.EntityGenerator"
+	mvn compile exec:java -Dexec.mainClass="net.ymate.platform.persistence.jdbc.scaffold.EntityGenerator"
 
-	OK！就这么简单，一切都结束了！
+OK！就这么简单，一切都结束了！
 
-####事务（Transaction）：
+####事务（Transaction）
 
 基于YMPv2.0的新特性，JDBC模块对数据库事务的处理更加灵活，任何被类对象管理器管理的对象都可以通过@Transaction注解支持事务；
 
@@ -378,7 +378,7 @@ JDBC持久化模块针对关系型数据库(RDBMS)数据存取的一套简单解
 			}
 		}
 
-####会话（Session）：
+####会话（Session）
 
 会话是对应用中具体业务操作触发的一系列与数据库之间的交互过程的封装，通过建立一个临时通道，负责与数据库之间连接资源的创建及回收，同时提供更为高级的抽象指令接口调用，基于会话的优点：
 
@@ -574,106 +574,106 @@ JDBC持久化模块针对关系型数据库(RDBMS)数据存取的一套简单解
 	
 	**注**：以上操作均支持批量操作，具体使用请阅读API接口文档和相关源码；
 
-####数据实体操作（Entity）：
+####数据实体操作
 
 上面阐述的是基于ISession会话对象完成一系列数据库操作，接下来介绍的操作过程更加简单直接，完全基于数据实体对象；
 	
 > 注意：本小节所指的数据实体对象必须通过继承框架提供BaseEntity抽象类；
 	
-- 插入（Insert）：
+#####插入（Insert）
 
-		User _user = new User();
-        _user.setId(UUIDUtils.UUID());
-        _user.setUsername("suninformation");
-        _user.setPwd(DigestUtils.md5Hex("123456"));
-        _user.setAge(20);
-        _user.setSex("F");
-        // 执行数据插入
-        _user.save();
-        
-        // 或者在插入时也可以指定/排除某些字段
-        _user.save(Fields.create(User.FIELDS.SEX, User.FIELDS.AGE).excluded(true));
-        
-        // 或者插入前判断记录是否已存在，若已存在则执行记录更新操作
-        _user.saveOrUpdate();
-        
-        // 或者执行记录更新操作时仅更新指定的字段
-        _user.saveOrUpdate(Fields.create(User.FIELDS.SEX, User.FIELDS.AGE));
+	User _user = new User();
+    _user.setId(UUIDUtils.UUID());
+    _user.setUsername("suninformation");
+    _user.setPwd(DigestUtils.md5Hex("123456"));
+    _user.setAge(20);
+    _user.setSex("F");
+    // 执行数据插入
+    _user.save();
+    
+    // 或者在插入时也可以指定/排除某些字段
+    _user.save(Fields.create(User.FIELDS.SEX, User.FIELDS.AGE).excluded(true));
+    
+    // 或者插入前判断记录是否已存在，若已存在则执行记录更新操作
+    _user.saveOrUpdate();
+    
+    // 或者执行记录更新操作时仅更新指定的字段
+    _user.saveOrUpdate(Fields.create(User.FIELDS.SEX, User.FIELDS.AGE));
 
-- 更新（Update）：
+#####更新（Update）
 
-		User _user = new User();
-        _user.setId("bc19f5645aa9438089c5e9954e5f1ac5");
-        _user.setPwd(DigestUtils.md5Hex("654321"));
-        _user.setAge(20);
-        _user.setSex("F");
-        // 执行记录更新
-        _user.update();
-        
-        // 或者仅更新指定的字段
-        _user.update(Fields.create(User.FIELDS.SEX, User.FIELDS.AGE));
+	User _user = new User();
+    _user.setId("bc19f5645aa9438089c5e9954e5f1ac5");
+    _user.setPwd(DigestUtils.md5Hex("654321"));
+    _user.setAge(20);
+    _user.setSex("F");
+    // 执行记录更新
+    _user.update();
+    
+    // 或者仅更新指定的字段
+    _user.update(Fields.create(User.FIELDS.SEX, User.FIELDS.AGE));
 
-- 查询（Find）：
+#####查询（Find）
 
-	+ 根据记录ID加载：
++ 根据记录ID加载：
 	
-			User _user = new User();
-			_user.setId("bc19f5645aa9438089c5e9954e5f1ac5");
-			// 根据记录ID加载全部字段
-			_user = _user.load();
-			
-			// 或者根据记录ID加载指定的字段
-			_user = _user.load(Fields.create(User.FIELDS.USER_NAME, User.FIELDS.SEX, User.FIELDS.AGE));
-	
-	+ 通过数据实体设置条件（非空属性之间将使用and条件连接），查询所有符合条件的记录；
-	
-			User _user = new User();
-            _user.setUsername("suninformation");
-            _user.setPwd(DigestUtils.md5Hex("123456"));
-            // 返回所有字段
-            IResultSet<User> _users = _user.find();
-            
-            // 或者返回指定的字段
-            _users = _user.find(Fields.create(User.FIELDS.ID, User.FIELDS.AGE));
-            
-            // 或者分页查询
-            _users = _user.find(Page.create(1).pageSize(10));
-	
-	+ 分页查询：
-
-			User _user = new User();
-			_user.setSex("F");
-			
-			// 分页查询，返回全部字段
-			IResultSet<User> _users = _user.find(Page.create(1).pageSize(10));
-		
-			// 或者分页查询，返回指定的字段
-            _users = _user.find(Fields.create(User.FIELDS.ID, User.FIELDS.AGE), Page.create(1).pageSize(10));
-
-	+ 仅返回符合条件的第一条记录(FindFirst)：
-
-			User _user = new User();
-            _user.setUsername("suninformation");
-            _user.setPwd(DigestUtils.md5Hex("123456"));
-            
-            // 返回与用户名称和密码匹配的第一条记录
-            _user = _user.findFirst();
-            
-            // 或者返回与用户名称和密码匹配的第一条记录的ID和AGE字段
-            _user = _user.findFirst(Fields.create(User.FIELDS.ID, User.FIELDS.AGE));
-	
-- 删除（Delete）：
-
 		User _user = new User();
 		_user.setId("bc19f5645aa9438089c5e9954e5f1ac5");
+		// 根据记录ID加载全部字段
+		_user = _user.load();
 		
-		// 根据实体主键删除记录
-		_user.delete();
+		// 或者根据记录ID加载指定的字段
+		_user = _user.load(Fields.create(User.FIELDS.USER_NAME, User.FIELDS.SEX, User.FIELDS.AGE));
+	
++ 通过数据实体设置条件（非空属性之间将使用and条件连接），查询所有符合条件的记录；
+	
+		User _user = new User();
+        _user.setUsername("suninformation");
+        _user.setPwd(DigestUtils.md5Hex("123456"));
+        // 返回所有字段
+        IResultSet<User> _users = _user.find();
+        
+        // 或者返回指定的字段
+        _users = _user.find(Fields.create(User.FIELDS.ID, User.FIELDS.AGE));
+        
+        // 或者分页查询
+        _users = _user.find(Page.create(1).pageSize(10));
+	
++ 分页查询：
+
+		User _user = new User();
+		_user.setSex("F");
+		
+		// 分页查询，返回全部字段
+		IResultSet<User> _users = _user.find(Page.create(1).pageSize(10));
+	
+		// 或者分页查询，返回指定的字段
+        _users = _user.find(Fields.create(User.FIELDS.ID, User.FIELDS.AGE), Page.create(1).pageSize(10));
+
++ 仅返回符合条件的第一条记录(FindFirst)：
+
+		User _user = new User();
+        _user.setUsername("suninformation");
+        _user.setPwd(DigestUtils.md5Hex("123456"));
+        
+        // 返回与用户名称和密码匹配的第一条记录
+        _user = _user.findFirst();
+        
+        // 或者返回与用户名称和密码匹配的第一条记录的ID和AGE字段
+        _user = _user.findFirst(Fields.create(User.FIELDS.ID, User.FIELDS.AGE));
+	
+#####删除（Delete）
+
+	User _user = new User();
+	_user.setId("bc19f5645aa9438089c5e9954e5f1ac5");
+	
+	// 根据实体主键删除记录
+	_user.delete();
 
 **注**：以上介绍的两种数据库操作方式各有特点，请根据实际情况选择更适合的方式，亦可混合使用；
 
 
-####结果集（ResultSet）：
+####结果集（ResultSet）
 
 JDBC模块将数据查询的结果集合统一使用IResultSet接口进行封装并集成分页参数，下面通过一段代码介绍如何使用IResultSet对象：
 
@@ -713,171 +713,171 @@ JDBC模块将数据查询的结果集合统一使用IResultSet接口进行封装
 > - 非分页查询时返回的分页参数值均为0；
 
 
-####查询（Query）：
+####查询（Query）
 
 本节主要介绍YMP框架v2版本中新增的特性，辅助开发人员像写Java代码一样编写SQL语句，在一定程度上替代传统字符串拼接的模式，再配合数据实体的字段常量一起使用，这样做的好处就是降低字符串拼接过程中出错的机率，一些特定问题编译期间就能发现，因为Java代码就是SQL语句！
 
-- 基础参数对象：
+#####基础参数对象
 	
-	+ Fields：字段名称集合对象，用于辅助拼接数据表字段名称，支持前缀、别名等；
+- Fields：字段名称集合对象，用于辅助拼接数据表字段名称，支持前缀、别名等；
 
-		示例代码：
+	示例代码：
 
-			// 创建Fields对象
-	        Fields _fields = Fields.create("username", "pwd", "age");
-	        // 带前缀和别名
-	        _fields.add("u", "sex", "s");
-	        // 带前缀
-	        _fields = Fields.create().add("u", "id").add(_fields);
-	        // 标记集合中的字段为排除的
-	        _fields.excluded(true);
-	        // 判断是否存在排除标记
-	        _fields.isExcluded();
-	        // 输出
-	        System.out.println(_fields.fields());
+		// 创建Fields对象
+        Fields _fields = Fields.create("username", "pwd", "age");
+        // 带前缀和别名
+        _fields.add("u", "sex", "s");
+        // 带前缀
+        _fields = Fields.create().add("u", "id").add(_fields);
+        // 标记集合中的字段为排除的
+        _fields.excluded(true);
+        // 判断是否存在排除标记
+        _fields.isExcluded();
+        // 输出
+        System.out.println(_fields.fields());
 
-		执行结果：
-		
-			[u.id, username, pwd, age, u.sex s]
-
-
-	+ Params：参数集合对象，主要用于存储替换SQL语句中?号占位符；
-
-		示例代码：
-		
-			// 创建Params对象，任何类型参数
-			Params _params = Params.create("p1", 2, false, 0.1).add("param");
-	        // 
-	        _params = Params.create().add("paramN").add(_params);
-	        // 输出
-	        System.out.println(_params.params());
-	    
-	    执行结果：
-	    
-	    	[paramN, p1, 2, false, 0.1, param]
+	执行结果：
 	
-	+ Pages：分页参数对象；
+		[u.id, username, pwd, age, u.sex s]
 
-		示例代码：
 
-			// 查询每1页, 默认每页20条记录
-	        Page.create(1);
-	        // 查询第1页, 每页10条记录
-	        Page.create(1).pageSize(10);
-	        // 查询第1页, 每页10条记录, 不统计总记录数
-	        Page.create(1).pageSize(10).count(false);
+- Params：参数集合对象，主要用于存储替换SQL语句中?号占位符；
+
+	示例代码：
 	
-	+ Cond：条件参数对象，用于生成SQL条件和存储条件参数；
-
-		示例代码：
-		
-		> 生成如下SQL条件：
-		>
-		> - (username like ? and age >= ?) or (sex = ? and age < ?)
-
-	        Cond _cond = Cond.create()
-                .bracketBegin().like("username").param("%ymp%").and().gtEq("age").param(20).bracketEnd()
-                .or()
-                .bracketBegin().eq("sex").param("F").and().lt("age").param(18).bracketEnd();
+		// 创建Params对象，任何类型参数
+		Params _params = Params.create("p1", 2, false, 0.1).add("param");
+        // 
+        _params = Params.create().add("paramN").add(_params);
+        // 输出
+        System.out.println(_params.params());
+    
+    执行结果：
+    
+    	[paramN, p1, 2, false, 0.1, param]
 	
-	        System.out.println("SQL: " + _cond.toString());
-	        System.out.println("参数: " + _cond.params().params());
+- Pages：分页参数对象；
 
-		执行结果：
-		
-			SQL: ( username LIKE ? AND age >= ? )  OR  ( sex = ? AND age < ? ) 
-			参数: [%ymp%, 20, F, 18]
+	示例代码：
 
-	+ OrderBy：排序对象，用于生成SQL条件中的Order By语句；
+		// 查询每1页, 默认每页20条记录
+        Page.create(1);
+        // 查询第1页, 每页10条记录
+        Page.create(1).pageSize(10);
+        // 查询第1页, 每页10条记录, 不统计总记录数
+        Page.create(1).pageSize(10).count(false);
+	
+- Cond：条件参数对象，用于生成SQL条件和存储条件参数；
 
-		示例代码：
-		
-			OrderBy _orderBy = OrderBy.create().asc("age").desc("u", "birthday");
-			//
-			System.out.println(_orderBy.toSQL());
+	示例代码：
+	
+	> 生成如下SQL条件：
+	>
+	> - (username like ? and age >= ?) or (sex = ? and age < ?)
 
-		执行结果：
-		
-			ORDER BY age, u.birthday DESC
+        Cond _cond = Cond.create()
+            .bracketBegin().like("username").param("%ymp%").and().gtEq("age").param(20).bracketEnd()
+            .or()
+            .bracketBegin().eq("sex").param("F").and().lt("age").param(18).bracketEnd();
+	
+        System.out.println("SQL: " + _cond.toString());
+        System.out.println("参数: " + _cond.params().params());
 
-	+ GroupBy：分组对象，用于生成SQL条件中的Group By语句；
+	执行结果：
+	
+		SQL: ( username LIKE ? AND age >= ? )  OR  ( sex = ? AND age < ? ) 
+		参数: [%ymp%, 20, F, 18]
 
-		示例代码：
-		
-			GroupBy _groupBy = GroupBy.create(Fields.create().add("u", "sex").add("dept"))
-                .having(Cond.create().lt("age").param(18));
+- OrderBy：排序对象，用于生成SQL条件中的Order By语句；
 
-	        System.out.println("SQL: " + _groupBy.toString());
-	        System.out.println("参数: " + _groupBy.having().params().params());
+	示例代码：
+	
+		OrderBy _orderBy = OrderBy.create().asc("age").desc("u", "birthday");
+		//
+		System.out.println(_orderBy.toSQL());
 
-		执行结果：
-		
-			SQL: GROUP BY u.sex, dept HAVING age < ?
-			参数: [18]
+	执行结果：
+	
+		ORDER BY age, u.birthday DESC
 
-	+ Where：Where语句对象，用于生成SQL语句中的Where子句；
+- GroupBy：分组对象，用于生成SQL条件中的Group By语句；
 
-		示例代码：
-		
-			Cond _cond = Cond.create()
-	                .like("username").param("%ymp%")
-	                .and().gtEq("age").param(20);
+	示例代码：
+	
+		GroupBy _groupBy = GroupBy.create(Fields.create().add("u", "sex").add("dept"))
+            .having(Cond.create().lt("age").param(18));
 
-	        OrderBy _orderBy = OrderBy.create().asc("age").desc("u", "birthday");
+        System.out.println("SQL: " + _groupBy.toString());
+        System.out.println("参数: " + _groupBy.having().params().params());
 
-	        GroupBy _groupBy = GroupBy.create(Fields.create().add("u", "sex").add("dept"));
+	执行结果：
+	
+		SQL: GROUP BY u.sex, dept HAVING age < ?
+		参数: [18]
 
-	        Where _where = Where.create(_cond).groupBy(_groupBy).orderDesc("username");
+- Where：Where语句对象，用于生成SQL语句中的Where子句；
 
-	        _where.orderBy().orderBy(_orderBy);
-			//
-	        System.out.println("SQL: " + _where.toString());
-	        System.out.println("参数: " + _where.getParams().params());
+	示例代码：
+	
+		Cond _cond = Cond.create()
+                .like("username").param("%ymp%")
+                .and().gtEq("age").param(20);
 
-		执行结果：（为方便阅读，此处美化了SQL的输出格式:P）
-		
-			SQL: WHERE
-					 username LIKE ?
-				 AND age >= ?
-				 GROUP BY
-					 u.sex,
-					 dept
-				 ORDER BY
-					 username DESC,
-					 age,
-					 u.birthday DESC
-			参数: [%ymp%, 20]
+        OrderBy _orderBy = OrderBy.create().asc("age").desc("u", "birthday");
 
-	+ Join：连接语句对象，用于生成SQL语句中的Join子句，支持left、right和inner连接；
+        GroupBy _groupBy = GroupBy.create(Fields.create().add("u", "sex").add("dept"));
 
-		示例代码：
-		
-			Join _join = Join.inner("user_ext").alias("ue")
-                .on(Cond.create().opt("ue", "uid", Cond.OPT.EQ, "u", "id"));
+        Where _where = Where.create(_cond).groupBy(_groupBy).orderDesc("username");
 
-            System.out.println(_join);
+        _where.orderBy().orderBy(_orderBy);
+		//
+        System.out.println("SQL: " + _where.toString());
+        System.out.println("参数: " + _where.getParams().params());
 
-		执行结果：
-		
-			INNER JOIN user_ext ue ON ue.uid = u.id
+	执行结果：（为方便阅读，此处美化了SQL的输出格式:P）
+	
+		SQL: WHERE
+				 username LIKE ?
+			 AND age >= ?
+			 GROUP BY
+				 u.sex,
+				 dept
+			 ORDER BY
+				 username DESC,
+				 age,
+				 u.birthday DESC
+		参数: [%ymp%, 20]
 
-	+ Union：联合语句对象，用于将多个Select查询结果合并；
+- Join：连接语句对象，用于生成SQL语句中的Join子句，支持left、right和inner连接；
 
-		示例代码：
-		
-			Select _select = Select.create("user").where(Where.create(Cond.create().eq("dept").param("IT")))
-	                .union(Union.create(
-	                        Select.create("user").where(Where.create(Cond.create().lt("age").param(18)))));
-	        //
-	        System.out.println("SQL: " + _select.toString());
-	        System.out.println("参数: " + _select.getParams().params());
+	示例代码：
+	
+		Join _join = Join.inner("user_ext").alias("ue")
+            .on(Cond.create().opt("ue", "uid", Cond.OPT.EQ, "u", "id"));
 
-		执行结果：
-		
-			SQL: SELECT  *  FROM user WHERE dept = ?  UNION SELECT  *  FROM user WHERE age < ?   
-			参数: [IT, 18]
+        System.out.println(_join);
 
-- Select：查询语句对象；
+	执行结果：
+	
+		INNER JOIN user_ext ue ON ue.uid = u.id
+
+- Union：联合语句对象，用于将多个Select查询结果合并；
+
+	示例代码：
+	
+		Select _select = Select.create("user").where(Where.create(Cond.create().eq("dept").param("IT")))
+                .union(Union.create(
+                        Select.create("user").where(Where.create(Cond.create().lt("age").param(18)))));
+        //
+        System.out.println("SQL: " + _select.toString());
+        System.out.println("参数: " + _select.getParams().params());
+
+	执行结果：
+	
+		SQL: SELECT  *  FROM user WHERE dept = ?  UNION SELECT  *  FROM user WHERE age < ?   
+		参数: [IT, 18]
+
+#####Select：查询语句对象
 
 	示例代码：
 	
@@ -919,7 +919,7 @@ JDBC模块将数据查询的结果集合统一使用IResultSet接口进行封装
 					u.username DESC 
 		参数: [%ymp%, 20]
 
-- Insert：插入语句对象；
+#####Insert：插入语句对象
 
 	示例代码：
 	
@@ -936,7 +936,7 @@ JDBC模块将数据查询的结果集合统一使用IResultSet接口进行封装
 		SQL: INSERT INTO user (id, age, username) VALUES (?, ?, ?)
 		参数: [123456, 18, suninformation]
 
-- Update：更新语句对象；
+#####Update：更新语句对象
 
 	示例代码：
 	
@@ -955,7 +955,7 @@ JDBC模块将数据查询的结果集合统一使用IResultSet接口进行封装
 		参数: [xxxx, 20, 123456]
 
 
-- Delete：删除语句对象；
+#####Delete：删除语句对象
 
 	示例代码：
 	
@@ -971,232 +971,240 @@ JDBC模块将数据查询的结果集合统一使用IResultSet接口进行封装
 		SQL: DELETE  FROM user WHERE id = ? 
 		参数: [123456]
 
-- SQL：自定义SQL语句，同时也用于ISession会话接口参数封装；
+#####SQL：自定义SQL语句
 
-		// 自定义SQL语句
-		SQL _sql = SQL.create("select * from user where age > ? and username like ?").param(18).param("%ymp%");
-		// 执行
-        session.find(_sql, IResultSetHandler.ARRAY);
+同时也用于ISession会话接口参数封装；
 
-        // 或封装语句对象
-        SQL.create(_select);
-        SQL.create(_insert);
-        SQL.create(_update);
-        SQL.create(_delete);
+示例代码：
 
-- BatchSQL：批量SQL语句对象，主要用于ISession会话对批量操作的参数封装；
+	// 自定义SQL语句
+	SQL _sql = SQL.create("select * from user where age > ? and username like ?").param(18).param("%ymp%");
+	// 执行
+    session.find(_sql, IResultSetHandler.ARRAY);
 
-	示例代码：
+    // 或封装语句对象
+    SQL.create(_select);
+    SQL.create(_insert);
+    SQL.create(_update);
+    SQL.create(_delete);
+
+#####BatchSQL：批量SQL语句对象
+
+主要用于ISession会话对批量操作的参数封装；
+
+示例代码：
 	
-		// 定义批操作
-		BatchSQL _sqls = BatchSQL.create("INSERT INTO user (id, age, username) VALUES (?, ?, ?)")
-                .addParameter(Params.create("xxxx", 18, "user0"))
-                .addParameter(Params.create("xxx1", 20, "user1"))
-                .addParameter(Params.create("xxxN", 20, "userN"))
-                .addSQL("DELETE  FROM user WHERE age > 30")
-                .addSQL("DELETE  FROM user WHERE age < 18");
-        // 执行
-        session.executeForUpdate(_sqls);
+	// 定义批操作
+	BatchSQL _sqls = BatchSQL.create("INSERT INTO user (id, age, username) VALUES (?, ?, ?)")
+            .addParameter(Params.create("xxxx", 18, "user0"))
+            .addParameter(Params.create("xxx1", 20, "user1"))
+            .addParameter(Params.create("xxxN", 20, "userN"))
+            .addSQL("DELETE  FROM user WHERE age > 30")
+            .addSQL("DELETE  FROM user WHERE age < 18");
+    // 执行
+    session.executeForUpdate(_sqls);
 
-- EntitySQL：实体参数封装对象，主要用于ISession会话的参数封装；
+#####EntitySQL：实体参数封装对象
 
-	示例代码：
+主要用于ISession会话的参数封装；
+
+示例代码：
 	
-		session.find(EntitySQL.create(User.class)
-                    .field(Fields.create(User.FIELDS.ID, User.FIELDS.USER_NAME)
-                            .excluded(true)));
+	session.find(EntitySQL.create(User.class)
+                .field(Fields.create(User.FIELDS.ID, User.FIELDS.USER_NAME)
+                        .excluded(true)));
 
 
-####高级特性：
+####高级特性
 
-- 多表查询及自定义结果集数据处理：
+#####多表查询及自定义结果集数据处理
 
-	JDBC模块提供的ORM主要是针对单实体操作，实际业务中往往会涉及到多表关联查询以及返回多个表字段，在单实体ORM中是无法将JDBC结果集记录自动转换为实体对象的，这时就需要对结果集数据自定义处理来满足业务需求。
+JDBC模块提供的ORM主要是针对单实体操作，实际业务中往往会涉及到多表关联查询以及返回多个表字段，在单实体ORM中是无法将JDBC结果集记录自动转换为实体对象的，这时就需要对结果集数据自定义处理来满足业务需求。
 	
-	若想实现结果集数据的自定义处理，需要了解以下相关接口和类：
+若想实现结果集数据的自定义处理，需要了解以下相关接口和类：
 	
-	+ IResultSetHandler接口：结果集数据处理接口，用于完成将JDBC结果集原始数据的每一行记录进行转换为目标对象，JDBC模块默认提供了该接口的三种实现：
++ IResultSetHandler接口：结果集数据处理接口，用于完成将JDBC结果集原始数据的每一行记录进行转换为目标对象，JDBC模块默认提供了该接口的三种实现：
 
-		> EntityResultSetHandler：采用实体类存储结果集数据的接口实现，此类已经集成在ISession会话接口业务逻辑中，仅用于处理单实体的数据转换；
-		>
-		> MapResultSetHandler：采用Map存储结果集数据的接口实现；
-		>
-		> ArrayResultSetHandler：采用Object[]数组存储结果集数据的接口实现；
+	> EntityResultSetHandler：采用实体类存储结果集数据的接口实现，此类已经集成在ISession会话接口业务逻辑中，仅用于处理单实体的数据转换；
+	>
+	> MapResultSetHandler：采用Map存储结果集数据的接口实现；
+	>
+	> ArrayResultSetHandler：采用Object[]数组存储结果集数据的接口实现；
 
-	+ ResultSetHelper类：数据结果集辅助处理工具，用于帮助开发人员便捷的读取和遍历结果集中数据内容，仅支持由 ArrayResultSetHandler 和 MapResultSetHandler 产生的结果集数据类型；
++ ResultSetHelper类：数据结果集辅助处理工具，用于帮助开发人员便捷的读取和遍历结果集中数据内容，仅支持由 ArrayResultSetHandler 和 MapResultSetHandler 产生的结果集数据类型；
 
-	下面通过简单的多表关联查询来介绍IResultSetHandler接口和ResultSetHelper类如何配合使用：
+下面通过简单的多表关联查询来介绍IResultSetHandler接口和ResultSetHelper类如何配合使用：
 
-	示例代码一：使用ArrayResultSetHandler或MapResultSetHandler处理结果集数据；
+示例代码一：使用ArrayResultSetHandler或MapResultSetHandler处理结果集数据；
 	
-			IResultSet<Object[]> _results = JDBC.get().openSession(new ISessionExecutor<IResultSet<Object[]>>() {
-	            public IResultSet<Object[]> execute(ISession session) throws Exception {
-	                // 通过查询对象创建SQL语句:
-	                //
-	                // SELECT u.id id, u.username username, ue.money money 
-	                // 			FROM user u LEFT JOIN user_ext ue ON u.id = ue.uid
-	                //
-	                Select _uSelect = Select.create(User.class, "u")
-	                        .join(Join.left(UserExt.TABLE_NAME).alias("ue")
-	                                .on(Cond.create()
-	                                        .opt("u", User.FIELDS.ID, Cond.OPT.EQ, "ue", UserExt.FIELDS.UID)))
-	                        .field(Fields.create()
-	                                .add("u", User.FIELDS.ID, "id")
-	                                .add("u", User.FIELDS.USER_NAME, "username")
-	                                .add("ue", UserExt.FIELDS.MONEY, "money"));
+		IResultSet<Object[]> _results = JDBC.get().openSession(new ISessionExecutor<IResultSet<Object[]>>() {
+            public IResultSet<Object[]> execute(ISession session) throws Exception {
+                // 通过查询对象创建SQL语句:
+                //
+                // SELECT u.id id, u.username username, ue.money money 
+                // 			FROM user u LEFT JOIN user_ext ue ON u.id = ue.uid
+                //
+                Select _uSelect = Select.create(User.class, "u")
+                        .join(Join.left(UserExt.TABLE_NAME).alias("ue")
+                                .on(Cond.create()
+                                        .opt("u", User.FIELDS.ID, Cond.OPT.EQ, "ue", UserExt.FIELDS.UID)))
+                        .field(Fields.create()
+                                .add("u", User.FIELDS.ID, "id")
+                                .add("u", User.FIELDS.USER_NAME, "username")
+                                .add("ue", UserExt.FIELDS.MONEY, "money"));
 
-	                // 执行查询并指定采用Object[]数组存储结果集数据，若采用Map存储请使用：IResultSetHandler.MAP
-	                return session.find(SQL.create(_uSelect), IResultSetHandler.ARRAY);
-	            }
-	        });
+                // 执行查询并指定采用Object[]数组存储结果集数据，若采用Map存储请使用：IResultSetHandler.MAP
+                return session.find(SQL.create(_uSelect), IResultSetHandler.ARRAY);
+            }
+        });
 
-	        // 采用默认步长(step=1)逐行遍历
-	        ResultSetHelper.bind(_results).forEach(new ResultSetHelper.ItemHandler() {
-	            public boolean handle(ResultSetHelper.ItemWrapper wrapper, int row) throws Exception {
-	                System.out.println("当前记录行数: " + row);
+        // 采用默认步长(step=1)逐行遍历
+        ResultSetHelper.bind(_results).forEach(new ResultSetHelper.ItemHandler() {
+            public boolean handle(ResultSetHelper.ItemWrapper wrapper, int row) throws Exception {
+                System.out.println("当前记录行数: " + row);
 
-	                // 通过返回的结果集字段名取值
-	                String _id = wrapper.getAsString("id");
-	                String _uname = wrapper.getAsString("username");
+                // 通过返回的结果集字段名取值
+                String _id = wrapper.getAsString("id");
+                String _uname = wrapper.getAsString("username");
 
-	                // 也可以通过索引下标取值
-	                Double _money = wrapper.getAsDouble(2);
+                // 也可以通过索引下标取值
+                Double _money = wrapper.getAsDouble(2);
 
-	                // 也可以直接将当前行数据赋值给实体对象或自定义JavaBean对象
-	                wrapper.toEntity(new User());
+                // 也可以直接将当前行数据赋值给实体对象或自定义JavaBean对象
+                wrapper.toEntity(new User());
 
-	                // 当赋值给自定义的JavaBean对象时需要注意返回的字段名称与对象成员属性名称要一一对应并且要符合命名规范
-	                // 例如：对象成员名称为"userName"，将与名称为"user_name"的字段对应
-	                wrapper.toObject(new User());
+                // 当赋值给自定义的JavaBean对象时需要注意返回的字段名称与对象成员属性名称要一一对应并且要符合命名规范
+                // 例如：对象成员名称为"userName"，将与名称为"user_name"的字段对应
+                wrapper.toObject(new User());
 
-	                // 返回值将决定遍历是否继续执行
-	                return true;
-	            }
-	        });
+                // 返回值将决定遍历是否继续执行
+                return true;
+            }
+        });
 
-	        // 采用指定的步长进行数据遍历，此处step=2
-	        ResultSetHelper.bind(_results).forEach(2, new ResultSetHelper.ItemHandler() {
-	            public boolean handle(ResultSetHelper.ItemWrapper wrapper, int row) throws Exception {
-	                // 代码略......
-	                return true;
-	            }
-	        });
+        // 采用指定的步长进行数据遍历，此处step=2
+        ResultSetHelper.bind(_results).forEach(2, new ResultSetHelper.ItemHandler() {
+            public boolean handle(ResultSetHelper.ItemWrapper wrapper, int row) throws Exception {
+                // 代码略......
+                return true;
+            }
+        });
 	
-	示例代码二：使用自定义IResultSetHandler处理结果集数据；
+示例代码二：使用自定义IResultSetHandler处理结果集数据；
 	
-			// 自定义JavaBean对象，用于封装多表关联的结果集的记录
-			public class CustomUser {
+		// 自定义JavaBean对象，用于封装多表关联的结果集的记录
+		public class CustomUser {
 
-				private String id;
+			private String id;
 
-				private String username;
+			private String username;
 
-				private Double money;
+			private Double money;
 
-				// 忽略Getter和Setter方法
-			}
+			// 忽略Getter和Setter方法
+		}
 
-			// 修改示例一的代码，将结果集中的每一条记录转换成自定义的CustomUser对象
-			IResultSet<CustomUser> _results = JDBC.get().openSession(new ISessionExecutor<IResultSet<CustomUser>>() {
-	            public IResultSet<CustomUser> execute(ISession session) throws Exception {
-	                Select _uSelect = Select.create(User.class, "u")
-	                        .join(Join.left(UserExt.TABLE_NAME).alias("ue")
-	                                .on(Cond.create()
-	                                        .opt("u", User.FIELDS.ID, Cond.OPT.EQ, "ue", UserExt.FIELDS.UID)))
-	                        .field(Fields.create()
-	                                .add("u", User.FIELDS.ID, "id")
-	                                .add("u", User.FIELDS.USER_NAME, "username")
-	                                .add("ue", UserExt.FIELDS.MONEY, "money"));
+		// 修改示例一的代码，将结果集中的每一条记录转换成自定义的CustomUser对象
+		IResultSet<CustomUser> _results = JDBC.get().openSession(new ISessionExecutor<IResultSet<CustomUser>>() {
+            public IResultSet<CustomUser> execute(ISession session) throws Exception {
+                Select _uSelect = Select.create(User.class, "u")
+                        .join(Join.left(UserExt.TABLE_NAME).alias("ue")
+                                .on(Cond.create()
+                                        .opt("u", User.FIELDS.ID, Cond.OPT.EQ, "ue", UserExt.FIELDS.UID)))
+                        .field(Fields.create()
+                                .add("u", User.FIELDS.ID, "id")
+                                .add("u", User.FIELDS.USER_NAME, "username")
+                                .add("ue", UserExt.FIELDS.MONEY, "money"));
 
-	                // 通过实现IResultSetHandler接口实现结果集的自定义处理
-	                return session.find(SQL.create(_uSelect), new IResultSetHandler<CustomUser>() {
-	                    public List<CustomUser> handle(ResultSet resultSet) throws Exception {
-	                        List<CustomUser> _results = new ArrayList<CustomUser>();
-	                        while (resultSet.next()) {
-	                            CustomUser _cUser = new CustomUser();
-	                            _cUser.setId(resultSet.getString("id"));
-	                            _cUser.setUsername(resultSet.getString("username"));
-	                            _cUser.setMoney(resultSet.getDouble("money"));
-	                            //
-	                            _results.add(_cUser);
-	                        }
-	                        return _results;
-	                    }
-	                });
-	            }
-	        });
+                // 通过实现IResultSetHandler接口实现结果集的自定义处理
+                return session.find(SQL.create(_uSelect), new IResultSetHandler<CustomUser>() {
+                    public List<CustomUser> handle(ResultSet resultSet) throws Exception {
+                        List<CustomUser> _results = new ArrayList<CustomUser>();
+                        while (resultSet.next()) {
+                            CustomUser _cUser = new CustomUser();
+                            _cUser.setId(resultSet.getString("id"));
+                            _cUser.setUsername(resultSet.getString("username"));
+                            _cUser.setMoney(resultSet.getDouble("money"));
+                            //
+                            _results.add(_cUser);
+                        }
+                        return _results;
+                    }
+                });
+            }
+        });
 
-- 数据库锁：
+#####数据库锁操作
 
-	数据库是一个多用户使用的共享资源，当多个用户并发地存取数据时，在数据库中就会产生多个事务同时存取同一数据的情况，若对并发操作不加以控制就可能会造成数据的错误读取和存储，破坏数据库的数据一致性，所以说，加锁是实现数据库并发控制的一个非常重要的技术；
+数据库是一个多用户使用的共享资源，当多个用户并发地存取数据时，在数据库中就会产生多个事务同时存取同一数据的情况，若对并发操作不加以控制就可能会造成数据的错误读取和存储，破坏数据库的数据一致性，所以说，加锁是实现数据库并发控制的一个非常重要的技术；
 	
-	> 数据库加锁的流程是：当事务在对某个数据对象进行操作前，先向系统发出请求对其加锁，加锁后的事务就对该数据对象有了一定的控制，在该事务释放锁之前，其他的事务不能对此数据对象进行更新操作；
+> 数据库加锁的流程是：当事务在对某个数据对象进行操作前，先向系统发出请求对其加锁，加锁后的事务就对该数据对象有了一定的控制，在该事务释放锁之前，其他的事务不能对此数据对象进行更新操作；
 	
-	因此，JDBC模块在数据库查询操作中集成了针对数据库记录锁的控制能力，称之为IDBLocker，以参数的方式使用起来同样的简单！
+因此，JDBC模块在数据库查询操作中集成了针对数据库记录锁的控制能力，称之为IDBLocker，以参数的方式使用起来同样的简单！
 	
-	首先了解一下IDBLocker提供的锁的类型：
+首先了解一下IDBLocker提供的锁的类型：
 	
-	+ MySQL：
++ MySQL：
 
-		> IDBLocker.MYSQL：行级锁，只有符合条件的数据被加锁，其它进程等待资源解锁后再进行操作；
+	> IDBLocker.MYSQL：行级锁，只有符合条件的数据被加锁，其它进程等待资源解锁后再进行操作；
 
-	+ Oracle：
++ Oracle：
 
-		> IDBLocker.ORACLE：行级锁，只有符合条件的数据被加锁，其它进程等待资源解锁后再进行操作；
-		>
-		> IDBLocker.ORACLE_NOWAIT：行级锁，不进行资源等待，只要发现结果集中有些数据被加锁，立刻返回“ORA-00054错误”；
+	> IDBLocker.ORACLE：行级锁，只有符合条件的数据被加锁，其它进程等待资源解锁后再进行操作；
+	>
+	> IDBLocker.ORACLE_NOWAIT：行级锁，不进行资源等待，只要发现结果集中有些数据被加锁，立刻返回“ORA-00054错误”；
 
-	+ SQL Server：
++ SQL Server：
 
-		> IDBLocker.SQLSERVER_NOLOCK：不加锁，在读取或修改数据时不加任何锁；
-		>
-		> IDBLocker.SQLSERVER_HOLDLOCK：保持锁，将此共享锁保持至整个事务结束，而不会在途中释放；
-		>
-		> IDBLocker.SQLSERVER_UPDLOCK：修改锁，能够保证多个进程能同时读取数据但只有该进程能修改数据；
-		>
-		> IDBLocker.SQLSERVER_TABLOCK：表锁，整个表设置共享锁直至该命令结束，保证其他进程只能读取而不能修改数据；
-		>
-		> IDBLocker.SQLSERVER_PAGLOCK：页锁；
-		>
-		> IDBLocker.SQLSERVER_TABLOCKX：排它表锁，将在整个表设置排它锁，能够防止其他进程读取或修改表中的数据；
+	> IDBLocker.SQLSERVER_NOLOCK：不加锁，在读取或修改数据时不加任何锁；
+	>
+	> IDBLocker.SQLSERVER_HOLDLOCK：保持锁，将此共享锁保持至整个事务结束，而不会在途中释放；
+	>
+	> IDBLocker.SQLSERVER_UPDLOCK：修改锁，能够保证多个进程能同时读取数据但只有该进程能修改数据；
+	>
+	> IDBLocker.SQLSERVER_TABLOCK：表锁，整个表设置共享锁直至该命令结束，保证其他进程只能读取而不能修改数据；
+	>
+	> IDBLocker.SQLSERVER_PAGLOCK：页锁；
+	>
+	> IDBLocker.SQLSERVER_TABLOCKX：排它表锁，将在整个表设置排它锁，能够防止其他进程读取或修改表中的数据；
 	
-	+ 其它数据库：
++ 其它数据库：
 
-		> 可以通过IDBLocker接口自行实现；
+	> 可以通过IDBLocker接口自行实现；
 	
-	下面通过示例代码展示如何使用锁：
+下面通过示例代码展示如何使用锁：
 	
-	示例代码一：通过EntitySQL对象传递锁参数；
+示例代码一：通过EntitySQL对象传递锁参数；
 	
-		session.find(EntitySQL.create(User.class)
-                .field(Fields.create(User.FIELDS.ID, User.FIELDS.USER_NAME).excluded(true))
-                .forUpdate(IDBLocker.MYSQL));
+	session.find(EntitySQL.create(User.class)
+            .field(Fields.create(User.FIELDS.ID, User.FIELDS.USER_NAME).excluded(true))
+            .forUpdate(IDBLocker.MYSQL));
     
-    示例代码二：通过Select查询对象传递锁参数；
+示例代码二：通过Select查询对象传递锁参数；
     
-    	Select _select = Select.create(User.class, "u")
-                .field("u", "username").field("ue", "money")
-                .where(Where.create(
-                        Cond.create().eq(User.FIELDS.ID).param("bc19f5645aa9438089c5e9954e5f1ac5")))
-                .forUpdate(IDBLocker.MYSQL);
+	Select _select = Select.create(User.class, "u")
+            .field("u", "username").field("ue", "money")
+            .where(Where.create(
+                    Cond.create().eq(User.FIELDS.ID).param("bc19f5645aa9438089c5e9954e5f1ac5")))
+            .forUpdate(IDBLocker.MYSQL);
 
-        session.find(SQL.create(_select), IResultSetHandler.ARRAY);
+    session.find(SQL.create(_select), IResultSetHandler.ARRAY);
     
-    示例代码三：基于数据实体对象传递锁参数
+示例代码三：基于数据实体对象传递锁参数
     
-    	//
-    	User _user = new User();
-        _user.setId("bc19f5645aa9438089c5e9954e5f1ac5");
-        //
-        _user.load(IDBLocker.MYSQL);
+	//
+	User _user = new User();
+    _user.setId("bc19f5645aa9438089c5e9954e5f1ac5");
+    //
+    _user.load(IDBLocker.MYSQL);
 
-		//
-        User _user = new User();
-        _user.setUsername("suninformation");
-        _user.setPwd(DigestUtils.md5Hex("123456"));
-        //
-        IResultSet<User> _users = _user.find(IDBLocker.MYSQL);
-        
-    > **注意**：
-    >
-    > 请谨慎使用数据库锁机制，尽量避免产生锁表，以免发生死锁情况！
+	//
+    User _user = new User();
+    _user.setUsername("suninformation");
+    _user.setPwd(DigestUtils.md5Hex("123456"));
+    //
+    IResultSet<User> _users = _user.find(IDBLocker.MYSQL);
+    
+> **注意**：
+>
+> 请谨慎使用数据库锁机制，尽量避免产生锁表，以免发生死锁情况！
