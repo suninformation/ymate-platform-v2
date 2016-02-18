@@ -43,7 +43,7 @@ import java.net.URL;
 @Module
 public class Cfgs implements IModule, IConfig {
 
-    public static final Version VERSION = new Version(2, 0, 0, Cfgs.class.getPackage().getImplementationVersion(), Version.VersionType.Alphal);
+    public static final Version VERSION = new Version(2, 0, 0, Cfgs.class.getPackage().getImplementationVersion(), Version.VersionType.GA);
 
     private final Log _LOG = LogFactory.getLog(Cfgs.class);
 

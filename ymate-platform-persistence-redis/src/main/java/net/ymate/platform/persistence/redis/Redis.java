@@ -35,7 +35,7 @@ import java.util.Map;
 @Module
 public class Redis implements IModule, IRedis {
 
-    public static final Version VERSION = new Version(2, 0, 0, Redis.class.getPackage().getImplementationVersion(), Version.VersionType.Alphal);
+    public static final Version VERSION = new Version(2, 0, 0, Redis.class.getPackage().getImplementationVersion(), Version.VersionType.GA);
 
     private final Log _LOG = LogFactory.getLog(Redis.class);
 

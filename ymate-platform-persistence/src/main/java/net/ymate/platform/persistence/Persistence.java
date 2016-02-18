@@ -29,7 +29,7 @@ import net.ymate.platform.persistence.handle.EntityHandler;
 @Module
 public class Persistence implements IModule {
 
-    public static final Version VERSION = new Version(2, 0, 0, Persistence.class.getPackage().getImplementationVersion(), Version.VersionType.Alphal);
+    public static final Version VERSION = new Version(2, 0, 0, Persistence.class.getPackage().getImplementationVersion(), Version.VersionType.GA);
 
     private YMP __owner;
 
