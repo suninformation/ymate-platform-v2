@@ -73,7 +73,7 @@ public class DefaultModuleCfg implements ICacheModuleCfg {
 
         __defaultCacheTimeout = BlurObject.bind(StringUtils.defaultIfBlank(_moduleCfgs.get("default_cache_timeout"), "0")).toLongValue();
         if (__defaultCacheTimeout <= 0) {
-            __defaultCacheTimeout = 300L;
+            __defaultCacheTimeout = 300000L;
         }
     }
 

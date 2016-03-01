@@ -828,7 +828,7 @@ WebMVC模块已集成缓存模块，通过@Cacheable注解即可轻松实现控�
 		public class CacheController {
 		
 			@RequestMapping("/cache")
-			@Cacheable(scope = ICaches.Scope.SESSION, timeout = 180)
+			@Cacheable(scope = ICaches.Scope.SESSION, timeout = 180000)
 			public IView doCacheable(@RequestParam String content) throws Exception {
 				// ......
 				return View.textView("Content: " + content);
@@ -1026,6 +1026,10 @@ WebMVC模块的约定模式默认为关闭状态，需要通过配置参数开�
 #####拦截器规则配置
 
 由于在约定模式下，访问视图文件无需控制器，所以无法通过控制器方法添加拦截器配置，因此，WebMVC模块针对约定模式单独提供了拦截器规则配置这一扩展功能，主要是通过@InterceptorRule配合IInterceptorRule接口使用；
+
+拦截器规则设置默认为关闭状态，需要通过配置参数开启：
+
+	ymp.configs.webmvc.convention_interceptor_mode=true
 
 拦截规则配置示例：
 
