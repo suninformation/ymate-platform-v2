@@ -47,7 +47,10 @@ public class CompareValidator implements IValidator {
             }
             if (!_matched) {
                 String _pName = StringUtils.defaultIfBlank(context.getParamLabel(), context.getParamName());
+                _pName = I18N.formatMessage(VALIDATION_I18N_RESOURCE, _pName, _pName);
+
                 String _pLabel = StringUtils.defaultIfBlank(_vCompare.withLabel(), _vCompare.with());
+                _pLabel = I18N.formatMessage(VALIDATION_I18N_RESOURCE, _pLabel, _pLabel);
                 //
                 String _msg = StringUtils.trimToNull(_vCompare.msg());
                 if (_msg != null) {

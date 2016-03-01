@@ -56,6 +56,7 @@ public class NumericValidator implements IValidator {
             }
             if (_matched) {
                 String _pName = StringUtils.defaultIfBlank(context.getParamLabel(), context.getParamName());
+                _pName = I18N.formatMessage(VALIDATION_I18N_RESOURCE, _pName, _pName);
                 String _msg = StringUtils.trimToNull(_vNumeric.msg());
                 if (_msg != null) {
                     _msg = I18N.formatMessage(VALIDATION_I18N_RESOURCE, _msg, _msg, _pName);

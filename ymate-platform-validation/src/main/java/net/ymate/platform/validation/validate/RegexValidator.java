@@ -40,6 +40,7 @@ public class RegexValidator implements IValidator {
                     VRegex _vRegex = (VRegex) context.getAnnotation();
                     if (!_value.matches(_vRegex.regex())) {
                         String _pName = StringUtils.defaultIfBlank(context.getParamLabel(), context.getParamName());
+                        _pName = I18N.formatMessage(VALIDATION_I18N_RESOURCE, _pName, _pName);
                         //
                         String _msg = StringUtils.trimToNull(_vRegex.msg());
                         if (_msg != null) {

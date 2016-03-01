@@ -39,6 +39,7 @@ public class EmailValidator implements IValidator {
                 if (StringUtils.isNotBlank(_value)) {
                     if (!_value.matches("(?:\\w[-._\\w]*\\w@\\w[-._\\w]*\\w\\.\\w{2,3}$)")) {
                         String _pName = StringUtils.defaultIfBlank(context.getParamLabel(), context.getParamName());
+                        _pName = I18N.formatMessage(VALIDATION_I18N_RESOURCE, _pName, _pName);
                         //
                         String _msg = StringUtils.trimToNull(((VEmail) context.getAnnotation()).msg());
                         if (_msg != null) {
