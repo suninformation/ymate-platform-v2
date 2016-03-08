@@ -14,11 +14,11 @@
 > - 在项目的pom.xml中添加上述配置，该模块已经默认引入核心包依赖，无需重复配置。
 > - 若需要启用redis作为缓存服务，请添加以下依赖配置：
 >
->       <dependency>
->            <groupId>net.ymate.platform</groupId>
->            <artifactId>ymate-platform-persistence-redis</artifactId>
->            <version>2.0-SNAPSHOT</version>
->        </dependency>
+>         <dependency>
+>             <groupId>net.ymate.platform</groupId>
+>             <artifactId>ymate-platform-persistence-redis</artifactId>
+>             <version>2.0-SNAPSHOT</version>
+>         </dependency>
 
 #### 基础接口概念
 
