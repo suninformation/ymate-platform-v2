@@ -1,8 +1,8 @@
-###框架核心（Core）
+### 框架核心（Core）
 
 YMP框架主要是由核心(Core)和若干模块(Modules)组成，核心主要负责框架的初始化和模块的生命周期管理。
 
-####主要核心功能
+#### 主要核心功能
 
 - Beans：类对象管理器（微型的Spring容器），提供包类的自动扫描（AutoScan）以及Bean生命周期管理、依赖注入（IoC）和方法拦截（AOP）等特性。
 
@@ -19,7 +19,17 @@ YMP框架主要是由核心(Core)和若干模块(Modules)组成，核心主要�
 
 - Util：提供框架中需要的各种工具类。
 
-####框架初始化
+#### Maven包依赖
+
+    <dependency>
+        <groupId>net.ymate.platform</groupId>
+        <artifactId>ymate-platform-core</artifactId>
+        <version>2.0-SNAPSHOT</version>
+    </dependency>
+
+> **注**：若想单独使用YMP核心包时需要在pom.xml中添加上述配置，其它模块已经默认引入核心包依赖，无需重复配置。
+
+#### 框架初始化
 
 YMP框架的初始化是从加载ymp-conf.properties文件开始的，该文件必须被放置在classpath的根路径下；
 
@@ -69,9 +79,9 @@ YMP框架的初始化是从加载ymp-conf.properties文件开始的，该文件�
             }
         }
 
-####Beans
+#### Beans
 
-#####包类的自动扫描（AutoScan）
+##### 包类的自动扫描（AutoScan）
 
 YMP框架初始化时将自动扫描由autoscan_packages参数配置的包路径下所有声明了@Bean注解的类文件，首先分析被加载的类所有已实现接口并注册到Bean容器中，然后执行类成员的依赖注入和方法拦截代理的绑定；
 
@@ -119,7 +129,7 @@ YMP框架初始化时将自动扫描由autoscan_packages参数配置的包路径
             }
         }
 
-#####依赖注入（IoC）
+##### 依赖注入（IoC）
 
 通过在类成员属性上声明`@Inject`和`@By`注解来完成依赖注入的设置，且只有被Bean容器管理的类对象才支持依赖注入，下面举例说明：
 
@@ -176,7 +186,7 @@ YMP框架初始化时将自动扫描由autoscan_packages参数配置的包路径
             }
         }
 
-#####方法拦截（AOP）
+##### 方法拦截（AOP）
 
 YMP框架的AOP是基于CGLIB的MethodInterceptor实现的拦截，通过以下注解进行配置：
 
@@ -282,11 +292,11 @@ YMP框架的AOP是基于CGLIB的MethodInterceptor实现的拦截，通过以下�
             }
         }
 
-####Event
+#### Event
 
 事件服务，通过事件的注册、订阅和广播完成事件消息的处理，目的是为了减少代码侵入，降低模块之间的业务耦合度，事件消息采用队列存储，采用多线程接口回调实现消息及消息上下文对象的传输，支持同步和异步两种处理模式；
 
-#####框架事件初始化配置参数
+##### 框架事件初始化配置参数
 
     #-------------------------------------
     # 框架事件初始化参数
@@ -304,7 +314,7 @@ YMP框架的AOP是基于CGLIB的MethodInterceptor实现的拦截，通过以下�
     # 事件配置扩展参数，xxx表示自定义参数名称，vvv表示参数值
     ymp.event.params.xxx=vvv
 
-#####YMP核心事件对象
+##### YMP核心事件对象
 
 - ApplicationEvent：框架事件
 
@@ -318,7 +328,7 @@ YMP框架的AOP是基于CGLIB的MethodInterceptor实现的拦截，通过以下�
 
 **注**：以上只是YMP框架核心中包含的事件对象，其它模块中包含的事件对象将在其相应的文档描述中阐述；
 
-#####事件的订阅
+##### 事件的订阅
 
 - 方式一：通过代码手动完成事件的订阅
 
@@ -383,7 +393,7 @@ YMP框架的AOP是基于CGLIB的MethodInterceptor实现的拦截，通过以下�
             }
         }
 
-#####自定义事件
+##### 自定义事件
 
 YMP的事件对象必须实现IEvent接口的同时需要继承EventContext对象，下面的代码就是一个自定义事件对象：
 
@@ -469,9 +479,9 @@ YMP的事件对象必须实现IEvent接口的同时需要继承EventContext对�
         }
 
 
-####Module
+#### Module
 
-#####创建自定义模块
+##### 创建自定义模块
 
 - 步骤一：根据业务需求创建需要对外暴露的业务接口
 
@@ -581,7 +591,7 @@ YMP的事件对象必须实现IEvent接口的同时需要继承EventContext对�
         ymp.configs.demomodule.module_param_two=module_param_two_value
 
 
-#####调用自定义模块
+##### 调用自定义模块
 
     public static void main(String[] args) throws Exception {
         YMP.get().init();
@@ -599,7 +609,7 @@ YMP的事件对象必须实现IEvent接口的同时需要继承EventContext对�
 
 **注**：自定义模块不支持IoC、AOP等特性；
 
-####I18N
+#### I18N
 
 I18N服务是在YMP框架启动时初始化，其根据ymp.i18n_default_locale进行语言配置，默认采用系统运行环境的语言设置；
 
@@ -644,13 +654,13 @@ I18N服务是在YMP框架启动时初始化，其根据ymp.i18n_default_locale�
 
     + 语言设置变更的事件处理过程
 
-####Lang
+#### Lang
 
-#####BlurObject：模糊对象
+##### BlurObject：模糊对象
 
     BlurObject.bind("1234").toLongValue();
 
-#####PairObject：结对对象
+##### PairObject：结对对象
 
     List<String> _key = new ArrayList<String>();
     Map<String, String> _value = new HashMap<String, String>();
@@ -662,7 +672,7 @@ I18N服务是在YMP框架启动时初始化，其根据ymp.i18n_default_locale�
     //
     _pObj.getValue();
 
-#####TreeObject：树型对象
+##### TreeObject：树型对象
 
     Object _id = UUIDUtils.UUID();
     TreeObject _target = new TreeObject()
@@ -712,7 +722,7 @@ I18N服务是在YMP框架启动时初始化，其根据ymp.i18n_default_locale�
     System.out.println(_jsonStrTmp);
     System.out.println(_jsonStr.equals(_jsonStrTmp));
 
-####Util
+#### Util
 
 关于YMP框架常用的工具类，这里着重介绍以下几个：
 

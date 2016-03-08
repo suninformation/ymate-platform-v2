@@ -1,15 +1,26 @@
-###服务（Serv）
+### 服务（Serv）
 
 服务模块（Serv）是一套基于NIO实现的通讯服务框架，提供TCP、UDP协议的客户端与服务端封装，灵活的消息监听与消息内容编/解码，简约的配置使二次开发更加便捷；
 同时默认提供断线重连、链路维护(心跳)等服务支持，您只需了解业务即可轻松完成开发工作。
 
-####基础概念
+#### Maven包依赖
 
-#####会话（Session）
+    <dependency>
+        <groupId>net.ymate.platform</groupId>
+        <artifactId>ymate-platform-serv</artifactId>
+        <version>2.0-SNAPSHOT</version>
+    </dependency>
+
+> **注**：在项目的pom.xml中添加上述配置，该模块已经默认引入核心包依赖，无需重复配置。
+
+
+#### 基础概念
+
+##### 会话（Session）
 
 > 用于客户端与服务端之间连接状态的维护和消息发送的对象；
 
-#####编/解码器（Codec）
+##### 编/解码器（Codec）
 
 > 目前提供以下两种编/解码器，开发者可通过实现ICodec接口自行扩展；
 
@@ -17,7 +28,7 @@
 
 > - TextLineCodec：用于解析以回车换行符(\r\n)做为消息结束标志的字符串消息的编/解码器；
 
-#####内置服务（Service）
+##### 内置服务（Service）
 
 > 目前提供以下两种内置服务，更多服务在不断完善中...；
 
@@ -25,7 +36,7 @@
 
 > - IReconnectService：内置断线重连服务，当服务的连接状态异常时将尝试重新与服务端建立连接；
 
-####服务端（Server）
+#### 服务端（Server）
 
 服务端初始化参数：
 
@@ -86,9 +97,9 @@
 |onMessageReceived|收到客户端发送的消息时触发该事件；|
 |onExceptionCaught|出现异常时触发该事件；|
 
-#####示例代码
+##### 示例代码
 
-######TCP服务端
+###### TCP服务端
 
 	// 采用默认配置的TCP服务端
 	@Server
@@ -118,7 +129,7 @@
 		}
 	}
 
-######UDP服务端
+###### UDP服务端
 
     // 采用默认配置的UDP服务端，其中implClass参数必须指定为NioUpdServer.class
     @Server(implClass = NioUdpServer.class, codec = TextLineCodec.class)
@@ -141,7 +152,7 @@
         }
     }
 
-####客户端（Client）：
+#### 客户端（Client）：
 
 客户端初始化参数：
 
@@ -207,9 +218,9 @@
 |onMessageReceived|收到服务端发送的消息时触发该事件；|
 |onExceptionCaught|出现异常时触发该事件；|
 
-#####示例代码
+##### 示例代码
 
-######TCP客户端
+###### TCP客户端
 
     @Client(reconnectClass = DefaultReconnectService.class,
             hearbeatClass = DefaultHeartbeatService.class, codec = TextLineCodec.class)
@@ -235,7 +246,7 @@
         }
     }
 
-######UDP客户端
+###### UDP客户端
 
     @Client(implClass = NioUdpClient.class, codec = TextLineCodec.class)
     public class UdpClient extends NioUdpListener {
@@ -254,7 +265,7 @@
         }
     }
 
-####客户端和服务端对象的使用
+#### 客户端和服务端对象的使用
 
 YMP框架启动时将自动扫描并加载声明了`@Server`和`@Client`注解的类，并根据注解设置和对应的参数配置进行客户端或服务端对象的初始化，但此时的客户端和服务端程序并没有直正执行，需要手动完成启动动作，代码如下：
 

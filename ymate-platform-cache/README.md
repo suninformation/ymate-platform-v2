@@ -1,8 +1,26 @@
-###缓存（Cache）
+### 缓存（Cache）
 
 缓存模块是以EhCache作为默认JVM进程内缓存服务，通过整合外部Redis服务实现多级缓存（MultiLevel）的轻量级缓存框架，并与YMP框架深度集成(支持针对类方法的缓存，可以根据方法参数值进行缓存)，灵活的配置、易于使用和扩展；
 
-####基础接口概念
+#### Maven包依赖
+
+    <dependency>
+        <groupId>net.ymate.platform</groupId>
+        <artifactId>ymate-platform-cache</artifactId>
+        <version>2.0-SNAPSHOT</version>
+    </dependency>
+
+> **注**：
+> - 在项目的pom.xml中添加上述配置，该模块已经默认引入核心包依赖，无需重复配置。
+> - 若需要启用redis作为缓存服务，请添加以下依赖配置：
+>
+>       <dependency>
+>            <groupId>net.ymate.platform</groupId>
+>            <artifactId>ymate-platform-persistence-redis</artifactId>
+>            <version>2.0-SNAPSHOT</version>
+>        </dependency>
+
+#### 基础接口概念
 
 开发者可以根据以下接口完成对缓存模块的自定义扩展实现；
 
@@ -24,9 +42,9 @@
 
 - 缓存作用域处理器(ICacheScopeProcessor)接口：用于处理@Cacheable注解的Scope参数设置为非DEFAULT作用域的缓存对象，需开发者实现接口；
 
-####模块配置
+#### 模块配置
 
-#####初始化参数配置
+##### 初始化参数配置
 
     #-------------------------------------
     # 缓存模块初始化参数
@@ -53,7 +71,7 @@
     # 缓存数据超时时间，可选参数，数值必须大于等于0，为0表示默认缓存300000毫秒
     ymp.configs.cache.default_cache_timeout=
 
-#####EhCache配置示例
+##### EhCache配置示例
 
 请将以下内容保存在ehcache.xml文件中，并放置在classpath根路径下；
 
@@ -80,9 +98,9 @@
         />
     </ehcache>
 
-####模块使用
+#### 模块使用
 
-#####示例一：直接通过缓存模块操作缓存数据
+##### 示例一：直接通过缓存模块操作缓存数据
 
     public static void main(String[] args) throws Exception {
         YMP.get().init();
@@ -105,7 +123,7 @@
     value1
     value2
 
-#####示例二：基于注解完成类方法的缓存
+##### 示例二：基于注解完成类方法的缓存
 
 这里用到了@Cacheable注解，作用是标识类中方法的执行结果是否进行缓存，需要注意的是：
 

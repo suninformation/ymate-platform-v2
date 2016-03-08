@@ -1,4 +1,4 @@
-###WebMVC
+### WebMVC
 
 WebMVC模块在YMP框架中是除了JDBC模块以外的另一个非常重要的模块，集成了YMP框架的诸多特性，在功能结构的设计和使用方法上依然保持一贯的简单风格，同时也继承了主流MVC框架的基因，对于了解和熟悉SSH等框架技术的开发人员来说，上手极其容易，毫无学习成本。
 
@@ -19,8 +19,24 @@ WebMVC模块在YMP框架中是除了JDBC模块以外的另一个非常重要的�
 - 支持控制器参数转义；
 - 支持插件扩展；
 
+#### Maven包依赖
 
-####模块初始化
+    <dependency>
+        <groupId>net.ymate.platform</groupId>
+        <artifactId>ymate-platform-webmvc</artifactId>
+        <version>2.0-SNAPSHOT</version>
+    </dependency>
+
+> **注**：在项目的pom.xml中添加上述配置，该模块已经默认引入核心包和验证框架包依赖，无需重复配置。
+> 若想启用缓存服务需要添加缓存模块的包依赖：
+>
+>       <dependency>
+>           <groupId>net.ymate.platform</groupId>
+>           <artifactId>ymate-platform-cache</artifactId>
+>           <version>2.0-SNAPSHOT</version>
+>       </dependency>
+
+#### 模块初始化
 
 在Web程序中监听器(Listener)是最先被容器初始化的，所以WebMVC模块是由监听器负责对YMP框架进行初始化：
 
@@ -72,7 +88,7 @@ WebMVC模块在YMP框架中是除了JDBC模块以外的另一个非常重要的�
 	    </welcome-file-list>
 	</web-app>
 
-####模块配置
+#### 模块配置
 
 WebMVC模块的基本初始化参数配置：
 
@@ -109,7 +125,7 @@ WebMVC模块的基本初始化参数配置：
 
 **说明**：在服务端程序Servlet方式的请求处理中，请求忽略正则表达式`request_ignore_regex`参数无效；
 
-####控制器（Controller）
+#### 控制器（Controller）
 
 控制器(Controller)是MVC体系中的核心，它负责处理浏览器发起的所有请求和决定响应内容的逻辑处理，控制器就是一个标准的Java类，不需要继承任何基类，通过类中的方法向外部暴露接口，该方法的返回结果将决定向浏览器响应的具体内容；
 
@@ -214,11 +230,11 @@ WebMVC模块的基本初始化参数配置：
 	> type：响应头参数类型，支持STRING, INI, DATE，默认为Type.HeaderType.STRING；
 
 
-####控制器参数（Parameter）
+#### 控制器参数（Parameter）
 
 WebMVC模块不但让编写控制器变得非常简单，处理请求参数也变得更加容易！WebMVC会根据控制器方法参数或类成员的注解配置，自动转换与方法参数或类成员对应的数据类型，参数的绑定涉及以下注解：
 
-#####基本参数注解
+##### 基本参数注解
 
 - @RequestParam：绑定请求中的参数；
 
@@ -266,7 +282,7 @@ WebMVC模块不但让编写控制器变得非常简单，处理请求参数也�
 		浏览器输出：
 		Hi, webmvc, UserName: ymper, Age: 18
 
-#####特别的参数注解
+##### 特别的参数注解
 
 - @PathVariable：绑定请求映射中的路径参数变量；
 	> value：参数名称，若未指定则默认采用方法参数变量名；
@@ -433,7 +449,7 @@ WebMVC模块不但让编写控制器变得非常简单，处理请求参数也�
 	>
 	> **注意**：当控制器类和方法都声明了@ParameterEscape注解时，则类上声明的注解将视为无效；
 
-#####非单例控制器的特殊用法
+##### 非单例控制器的特殊用法
 
 单例控制器与非单例控制器的区别：
 
@@ -465,7 +481,7 @@ WebMVC模块不但让编写控制器变得非常简单，处理请求参数也�
 
 > **注意**：在单例模式下，WebMVC模块将忽略为控制器类成员赋值，同时也建议在单例模式下不要使用成员变量做为参数，在并发多线程环境下会发生意想不到的问题！！
 
-####环境上下文对象（WebContext）
+#### 环境上下文对象（WebContext）
 
 为了让开发人员能够随时随地获取和使用Request、Response、Session等Web容器对象，YMP框架在WebMVC模块中提供了一个名叫WebContext的Web环境上下文封装类，简单又实用，先了解一下提供的方法：
 
@@ -592,7 +608,7 @@ WebContext获取IUploadFileWrapper上传文件包装器：
 > - IUploadFileWrapper[] getUploadFiles(String name);
 >
 
-####文件上传（Upload）
+#### 文件上传（Upload）
 
 WebMVC模块针对文件的上传处理以及对上传的文件操作都非常的简单，通过注解就轻松搞定：
 
@@ -703,22 +719,22 @@ WebMVC模块的文件上传是基于Apache Commons FileUpload组件实现的，�
 > 
 > - 通过Ajax定时轮循的方式获取会话中的进度值，并展示在页面中；
 
-####视图（View）
+#### 视图（View）
 
 WebMVC模块支持多种视图技术，包括JSP、Freemarker、Velocity、Text、HTML、JSON、Binary、Forward、Redirect、HttpStatus等，也可以通过IView接口扩展实现自定义视图；
 
-#####控制器视图的表示方法
+##### 控制器视图的表示方法
 > - 通过返回IView接口类型；
 > - 通过字符串表达一种视图类型；
 > - 无返回值或返回值为空，将使用当前RequestMapping路径对应的JspView视图；
 
-#####视图文件路径配置
+##### 视图文件路径配置
 
 > 控制器视图文件基础路径，必须是以 '/' 开始和结尾，默认值为/WEB-INF/templates/；
 > 
 >		ymp.configs.webmvc.base_view_path=/WEB-INF/templates/
 
-#####视图对象操作示例
+##### 视图对象操作示例
 
 > 视图文件可以省略扩展名称，通过IView接口可以直接设置请求参数和内容类型；
 >
@@ -737,7 +753,7 @@ WebMVC模块支持多种视图技术，包括JSP、Freemarker、Velocity、Text�
 >		_view = JspView.bind();
 >		_view = new JspView();
 
-#####WebMVC模块提供的视图
+##### WebMVC模块提供的视图
 
 JspView：JSP视图；
 
@@ -807,13 +823,13 @@ NullView：空视图；
 
 >		View.nullView();
 
-####验证（Validation）
+#### 验证（Validation）
 
 WebMVC模块已集成验证模块，控制器方法可以直接使用验证注解完成参数的有效性验证，详细内容请参阅 [验证(Validation)](http://git.oschina.net/suninformation/ymate-platform-v2/blob/master/ymate-platform-validation/README.md) 模块文档；
 
-####缓存（Cache）
+#### 缓存（Cache）
 
-######集成缓存模块
+###### 集成缓存模块
 
 WebMVC模块已集成缓存模块，通过@Cacheable注解即可轻松实现控制器方法的缓存，通过配置缓存模块的scope\_processor\_class参数可以支持APPLICATION和SESSION作用域；
 
@@ -837,7 +853,7 @@ WebMVC模块已集成缓存模块，通过@Cacheable注解即可轻松实现控�
 
 > **注意**：基于@Cacheable的方法缓存只是缓存控制器方法返回的结果对象，并不能缓存IView视图的最终执行结果；
 
-######自定义缓存处理器
+###### 自定义缓存处理器
 
 WebMVC模块提供了缓存处理器IWebCacheProcessor接口，可以让开发者通过此接口对控制器执行结果进行最终处理，该接口作用于被声明@ResponseCache注解的控制器类和方法上；
 
@@ -874,7 +890,7 @@ WebMVC模块提供了缓存处理器IWebCacheProcessor接口，可以让开发�
 
 > **说明**：该接口方法返回布尔值，用于通知WebMVC框架是否继续处理控制器视图；
 
-####拦截器（Intercept）
+#### 拦截器（Intercept）
 
 WebMVC模块基于YMPv2.0的新特性，原生支持AOP方法拦截，通过以下注解进行配置：
 
@@ -918,11 +934,11 @@ WebMVC模块基于YMPv2.0的新特性，原生支持AOP方法拦截，通过以�
 			}
 		}
 
-####Cookies操作
+#### Cookies操作
 
 WebMVC模块针对Cookies这个小甜点提供了一个名为CookieHelper的小工具类，支持Cookie参数的设置、读取和移除操作，同时支持对编码和加密处理，并允许通过配置参数调整Cookie策略；
 
-#####Cookie配置参数
+##### Cookie配置参数
 
 	#-------------------------------------
 	# Cookie配置参数
@@ -940,7 +956,7 @@ WebMVC模块针对Cookies这个小甜点提供了一个名为CookieHelper的小�
 	# Cookie密钥，可选参数，默认值为空
 	ymp.configs.webmvc.cookie_auth_key=
 
-#####示例代码：演示Cookie操作
+##### 示例代码：演示Cookie操作
 
 	// 创建CookieHelper对象
 	CookieHelper _helper = CookieHelper.bind(WebContext.getContext().getOwner());
@@ -969,7 +985,7 @@ WebMVC模块针对Cookies这个小甜点提供了一个名为CookieHelper的小�
 	// 清理所有的Cookie
 	_helper.clearCookies();
 
-####国际化（I18N）
+#### 国际化（I18N）
 
 基于YMPv2.0框架I18N支持，整合WebMVC模块并提供了默认II18NEventHandler接口实现，配置方法：
 
@@ -989,7 +1005,7 @@ WebMVC模块针对Cookies这个小甜点提供了一个名为CookieHelper的小�
 >  3. 尝试从Cookies里加载`_lang`的参数；
 >  4. 使用系统默认语言设置；
 
-####约定模式（Convention Mode）
+#### 约定模式（Convention Mode）
 
 **名词解释**：约定优于配置（Convention Over Configuration），也称作按约定编程，是一种软件设计范式，通过命名规则之类的约束来减少程序中的配置，旨在减少软件开发人员需要做决定的数量，获得简单的好处，而又不失灵活性。
 
@@ -999,7 +1015,7 @@ WebMVC模块的约定模式默认为关闭状态，需要通过配置参数开�
 
 	ymp.configs.webmvc.convention_mode=true
 
-#####访问权限规则配置
+##### 访问权限规则配置
 
 在约定模式模式下，支持设置不同路径的访问权限，规则是：`-`号代表禁止访问，`+`或无符串代表允许访问，多个路径间用`|`分隔；
 
@@ -1023,7 +1039,7 @@ WebMVC模块的约定模式默认为关闭状态，需要通过配置参数开�
 
 	ymp.configs.webmvc.convention_view_paths=admin-|index-|users|reports+
 
-#####拦截器规则配置
+##### 拦截器规则配置
 
 由于在约定模式下，访问视图文件无需控制器，所以无法通过控制器方法添加拦截器配置，因此，WebMVC模块针对约定模式单独提供了拦截器规则配置这一扩展功能，主要是通过@InterceptorRule配合IInterceptorRule接口使用；
 
@@ -1072,7 +1088,7 @@ WebMVC模块的约定模式默认为关闭状态，需要通过配置参数开�
 
 > **注意**：配置规则类的方法可以是任意的，方法本身无任何意义，仅是通过方法使用注解；
 
-#####URL伪静态
+##### URL伪静态
 
 WebMVC模块通过约定模式可以将参数融合在URL中，不再通过`?`传递参数，让URL看上去更好看一些；
 
@@ -1102,7 +1118,7 @@ WebMVC模块通过约定模式可以将参数融合在URL中，不再通过`?`�
 
 > **注意**：伪静态参数必须是连续的，UrlParams参数集合存储在Request作用域内；
 
-#####约定模式完整的配置参数
+##### 约定模式完整的配置参数
 
 	#-------------------------------------
 	# 约定模式配置参数
@@ -1120,9 +1136,9 @@ WebMVC模块通过约定模式可以将参数融合在URL中，不再通过`?`�
 	# Convention模式开启时是否采用拦截器规则设置，可选参数，默认值为false
 	ymp.configs.webmvc.convention_interceptor_mode=
 
-####高级特性
+#### 高级特性
 
-#####控制器请求处理器
+##### 控制器请求处理器
 
 在WebMVC模块中除了支持标准Web请求的处理过程，同时也对基于XML和JSON协议格式的请求提供支持，有两种使用场景：
 
@@ -1164,7 +1180,7 @@ WebMVC模块通过约定模式可以将参数融合在URL中，不再通过`?`�
 
 > 以上JSON和XML这两种协议格式的控制器方法，同样支持参数的验证等特性；
 
-#####异常错误处理器
+##### 异常错误处理器
 
 WebMVC模块为开发者提供了一个IWebErrorProcessor接口，允许针对异常、验证结果和约定模式的URL解析逻辑实现自定义扩展；
 

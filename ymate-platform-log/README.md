@@ -1,4 +1,4 @@
-###日志（Log）
+### 日志（Log）
 
 基于开源日志框架Log4J 2实现，提供对日志记录器对象的统一管理，可以在任意位置调用任意日志记录器输出日志，实现系统与业务日志的分离；与YMP配置体系模块配合使用，效果更佳:)
 
@@ -7,9 +7,35 @@
 > - log-jcl：用于整合apache-commons-logging日志框架；
 > - log-slf4j：针对slf4j日志系统提供支持；
 
-**注**：请根据您项目的实际情况添加对应的依赖关系即可，无需额外配置。
+#### Maven包依赖
 
-####模块配置
+- Log依赖配置
+
+        <dependency>
+            <groupId>net.ymate.platform</groupId>
+            <artifactId>ymate-platform-log</artifactId>
+            <version>2.0-SNAPSHOT</version>
+        </dependency>
+
+- log-jcl依赖配置
+
+        <dependency>
+            <groupId>net.ymate.platform</groupId>
+            <artifactId>ymate-platform-log-jcl</artifactId>
+            <version>2.0-SNAPSHOT</version>
+        </dependency>
+
+- log-slf4j依赖配置
+
+        <dependency>
+            <groupId>net.ymate.platform</groupId>
+            <artifactId>ymate-platform-log-slf4j</artifactId>
+            <version>2.0-SNAPSHOT</version>
+        </dependency>
+
+> **注**：请根据您项目的实际情况，在项目的pom.xml中添加相应配置，该模块已经默认引入核心包依赖，无需重复配置。
+
+#### 模块配置
 
 日志模块初始化参数, 将下列配置项按需添加到ymp-conf.properties文件中, 否则模块将使用默认配置进行初始化:
 
@@ -71,7 +97,7 @@ Log4J配置文件，内容如下：
 
     **注**：该文件应根据ymp.configs.log.config_file指定的位置，其内容请根据实际情况调整。
 
-####使用示例
+#### 使用示例
 
 首先，为了配合演示多个日志记录器的使用方法，修改log4j.xml配置内容如下：
 

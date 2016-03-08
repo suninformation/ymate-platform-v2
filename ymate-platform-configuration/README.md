@@ -1,8 +1,18 @@
-###配置体系（Configuration）
+### 配置体系（Configuration）
 
 配置体系模块，是通过简单的目录结构实现在项目开发以及维护过程中，对配置等各种文件资源的统一管理，为模块化开发和部署提供灵活的、简单有效的解决方案；
 
-####特点
+#### Maven包依赖
+
+    <dependency>
+        <groupId>net.ymate.platform</groupId>
+        <artifactId>ymate-platform-configuration</artifactId>
+        <version>2.0-SNAPSHOT</version>
+    </dependency>
+
+> **注**：在项目的pom.xml中添加上述配置，该模块已经默认引入核心包依赖，无需重复配置。
+
+#### 特点
 
 - 从开发角度规范了模块化开发流程、统一资源文件的生命周期管理；
 - 从可维护角度将全部资源集成在整个体系中，具备有效的资源重用和灵活的系统集成构建、部署和数据备份与迁移等优势；
@@ -12,7 +22,7 @@
 - 配置对象支持`@Configuration`注解方式声明，无需编码即可自动加载并填充配置内容到类对象；
 - 集成模块的构建（编译）与分发、服务的启动与停止，以及清晰的资源文件分类结构可快速定位；
 
-####配置体系目录结构
+#### 配置体系目录结构
 
 按优先级由低到高的顺序依次是：全局(configHome) -> 项目(projects) -> 模块(modules)：
 

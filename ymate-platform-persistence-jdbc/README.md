@@ -1,4 +1,4 @@
-###JDBC
+### JDBC
 
 JDBC持久化模块针对关系型数据库(RDBMS)数据存取的一套简单解决方案，主要关注数据存取的效率、易用性和透明，其具备以下功能特征：
 
@@ -13,6 +13,15 @@ JDBC持久化模块针对关系型数据库(RDBMS)数据存取的一套简单解
 - 支持数据库事务嵌套；
 - 支持数据库存储过程*；
 
+#### Maven包依赖
+
+    <dependency>
+        <groupId>net.ymate.platform</groupId>
+        <artifactId>ymate-platform-persistence-jdbc</artifactId>
+        <version>2.0-SNAPSHOT</version>
+    </dependency>
+
+> **注**：在项目的pom.xml中添加上述配置，该模块已经默认引入核心包及持久化基础包依赖，无需重复配置。
 
 ####模块初始化配置
 
@@ -70,9 +79,9 @@ JDBC持久化模块针对关系型数据库(RDBMS)数据存取的一套简单解
 >
 >   >net.ymate.platform.core.support.impl.DefaultPasswordProcessor
 
-####数据源（DataSource）
+#### 数据源（DataSource）
 
-#####多数据源连接
+##### 多数据源连接
 
 JDBC持久化模块默认支持多数据源配置，下面通过简单的配置来展示如何连接多个数据库：
 
@@ -92,7 +101,7 @@ JDBC持久化模块默认支持多数据源配置，下面通过简单的配置�
 
 从上述配置中可以看出，配置不同的数据源时只需要定义数据源名称列表，再根据列表逐一配置即可；
 
-#####连接池配置
+##### 连接池配置
 
 JDBC持久化模块提供的数据源类型如下：
 
@@ -109,13 +118,13 @@ JDBC持久化模块提供的数据源类型如下：
 
 当然，也可以通过IDataSourceAdapter接口自行实现，框架针对IDataSourceAdapter接口提供了一个抽象封装AbstractDataSourceAdapter类，直接继承即可；
 
-#####数据库连接持有者（IConnectionHolder）
+##### 数据库连接持有者（IConnectionHolder）
 
 用于记录真正的数据库连接对象（Connection）原始的状态及与数据源对应关系；
 
-####数据实体（Entity）
+#### 数据实体（Entity）
 
-#####数据实体注解
+##### 数据实体注解
 
 - @Entity：声明一个类为数据实体对象；
 
@@ -244,7 +253,7 @@ JDBC持久化模块提供的数据源类型如下：
     
 **注**：上面注解或注解参数中有一些是用于未来能通过实体对象直接创建数据库表结构（以及SQL脚本文件）的，可以暂时忽略；
 
-#####自动生成实体类
+##### 自动生成实体类
 
 YMP框架自v1.0开始就支持通过数据库表结构自动生成实体类代码，所以v2.0版本不但重构了实体代码生成器，而且更简单好用！
 
@@ -307,7 +316,7 @@ YMP框架自v1.0开始就支持通过数据库表结构自动生成实体类代�
 
 OK！就这么简单，一切都结束了！
 
-####事务（Transaction）
+#### 事务（Transaction）
 
 基于YMPv2.0的新特性，JDBC模块对数据库事务的处理更加灵活，任何被类对象管理器管理的对象都可以通过@Transaction注解支持事务；
 
@@ -378,7 +387,7 @@ OK！就这么简单，一切都结束了！
 			}
 		}
 
-####会话（Session）
+#### 会话（Session）
 
 会话是对应用中具体业务操作触发的一系列与数据库之间的交互过程的封装，通过建立一个临时通道，负责与数据库之间连接资源的创建及回收，同时提供更为高级的抽象指令接口调用，基于会话的优点：
 
@@ -574,13 +583,13 @@ OK！就这么简单，一切都结束了！
 	
 	**注**：以上操作均支持批量操作，具体使用请阅读API接口文档和相关源码；
 
-####数据实体操作
+#### 数据实体操作
 
 上面阐述的是基于ISession会话对象完成一系列数据库操作，接下来介绍的操作过程更加简单直接，完全基于数据实体对象；
 	
 > 注意：本小节所指的数据实体对象必须通过继承框架提供BaseEntity抽象类；
 	
-#####插入（Insert）
+##### 插入（Insert）
 
 	User _user = new User();
     _user.setId(UUIDUtils.UUID());
@@ -600,7 +609,7 @@ OK！就这么简单，一切都结束了！
     // 或者执行记录更新操作时仅更新指定的字段
     _user.saveOrUpdate(Fields.create(User.FIELDS.SEX, User.FIELDS.AGE));
 
-#####更新（Update）
+##### 更新（Update）
 
 	User _user = new User();
     _user.setId("bc19f5645aa9438089c5e9954e5f1ac5");
@@ -613,7 +622,7 @@ OK！就这么简单，一切都结束了！
     // 或者仅更新指定的字段
     _user.update(Fields.create(User.FIELDS.SEX, User.FIELDS.AGE));
 
-#####查询（Find）
+##### 查询（Find）
 
 + 根据记录ID加载：
 	
@@ -662,7 +671,7 @@ OK！就这么简单，一切都结束了！
         // 或者返回与用户名称和密码匹配的第一条记录的ID和AGE字段
         _user = _user.findFirst(Fields.create(User.FIELDS.ID, User.FIELDS.AGE));
 	
-#####删除（Delete）
+##### 删除（Delete）
 
 	User _user = new User();
 	_user.setId("bc19f5645aa9438089c5e9954e5f1ac5");
@@ -673,7 +682,7 @@ OK！就这么简单，一切都结束了！
 **注**：以上介绍的两种数据库操作方式各有特点，请根据实际情况选择更适合的方式，亦可混合使用；
 
 
-####结果集（ResultSet）
+#### 结果集（ResultSet）
 
 JDBC模块将数据查询的结果集合统一使用IResultSet接口进行封装并集成分页参数，下面通过一段代码介绍如何使用IResultSet对象：
 
@@ -713,11 +722,11 @@ JDBC模块将数据查询的结果集合统一使用IResultSet接口进行封装
 > - 非分页查询时返回的分页参数值均为0；
 
 
-####查询（Query）
+#### 查询（Query）
 
 本节主要介绍YMP框架v2版本中新增的特性，辅助开发人员像写Java代码一样编写SQL语句，在一定程度上替代传统字符串拼接的模式，再配合数据实体的字段常量一起使用，这样做的好处就是降低字符串拼接过程中出错的机率，一些特定问题编译期间就能发现，因为Java代码就是SQL语句！
 
-#####基础参数对象
+##### 基础参数对象
 	
 - Fields：字段名称集合对象，用于辅助拼接数据表字段名称，支持前缀、别名等；
 
@@ -877,7 +886,7 @@ JDBC模块将数据查询的结果集合统一使用IResultSet接口进行封装
 		SQL: SELECT  *  FROM user WHERE dept = ?  UNION SELECT  *  FROM user WHERE age < ?   
 		参数: [IT, 18]
 
-#####Select：查询语句对象
+##### Select：查询语句对象
 
 	示例代码：
 	
@@ -919,7 +928,7 @@ JDBC模块将数据查询的结果集合统一使用IResultSet接口进行封装
 					u.username DESC 
 		参数: [%ymp%, 20]
 
-#####Insert：插入语句对象
+##### Insert：插入语句对象
 
 	示例代码：
 	
@@ -936,7 +945,7 @@ JDBC模块将数据查询的结果集合统一使用IResultSet接口进行封装
 		SQL: INSERT INTO user (id, age, username) VALUES (?, ?, ?)
 		参数: [123456, 18, suninformation]
 
-#####Update：更新语句对象
+##### Update：更新语句对象
 
 	示例代码：
 	
@@ -955,7 +964,7 @@ JDBC模块将数据查询的结果集合统一使用IResultSet接口进行封装
 		参数: [xxxx, 20, 123456]
 
 
-#####Delete：删除语句对象
+##### Delete：删除语句对象
 
 	示例代码：
 	
@@ -971,7 +980,7 @@ JDBC模块将数据查询的结果集合统一使用IResultSet接口进行封装
 		SQL: DELETE  FROM user WHERE id = ? 
 		参数: [123456]
 
-#####SQL：自定义SQL语句
+##### SQL：自定义SQL语句
 
 同时也用于ISession会话接口参数封装；
 
@@ -988,7 +997,7 @@ JDBC模块将数据查询的结果集合统一使用IResultSet接口进行封装
     SQL.create(_update);
     SQL.create(_delete);
 
-#####BatchSQL：批量SQL语句对象
+##### BatchSQL：批量SQL语句对象
 
 主要用于ISession会话对批量操作的参数封装；
 
@@ -1004,7 +1013,7 @@ JDBC模块将数据查询的结果集合统一使用IResultSet接口进行封装
     // 执行
     session.executeForUpdate(_sqls);
 
-#####EntitySQL：实体参数封装对象
+##### EntitySQL：实体参数封装对象
 
 主要用于ISession会话的参数封装；
 
@@ -1015,9 +1024,9 @@ JDBC模块将数据查询的结果集合统一使用IResultSet接口进行封装
                         .excluded(true)));
 
 
-####高级特性
+#### 高级特性
 
-#####多表查询及自定义结果集数据处理
+##### 多表查询及自定义结果集数据处理
 
 JDBC模块提供的ORM主要是针对单实体操作，实际业务中往往会涉及到多表关联查询以及返回多个表字段，在单实体ORM中是无法将JDBC结果集记录自动转换为实体对象的，这时就需要对结果集数据自定义处理来满足业务需求。
 	
@@ -1134,7 +1143,7 @@ JDBC模块提供的ORM主要是针对单实体操作，实际业务中往往会�
             }
         });
 
-#####数据库锁操作
+##### 数据库锁操作
 
 数据库是一个多用户使用的共享资源，当多个用户并发地存取数据时，在数据库中就会产生多个事务同时存取同一数据的情况，若对并发操作不加以控制就可能会造成数据的错误读取和存储，破坏数据库的数据一致性，所以说，加锁是实现数据库并发控制的一个非常重要的技术；
 	
