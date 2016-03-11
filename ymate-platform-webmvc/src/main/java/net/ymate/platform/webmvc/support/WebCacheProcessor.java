@@ -49,6 +49,9 @@ public class WebCacheProcessor implements IWebCacheProcessor {
         // 仅缓存处理状态为200响应
         if (_response.getStatus() == HttpServletResponse.SC_OK) {
             String _cacheKey = __doBuildCacheKey(_request, responseCache.key());
+            if (responseCache.scope().equals(ICaches.Scope.SESSION)) {
+                _cacheKey = _request.getSession().getId() + "|" + _cacheKey;
+            }
             ReentrantLock _locker = __LOCK_MAP.get(_cacheKey);
             if (_locker == null) {
                 _locker = new ReentrantLock();
