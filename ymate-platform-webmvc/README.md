@@ -27,14 +27,8 @@ WebMVC模块在YMP框架中是除了JDBC模块以外的另一个非常重要的�
         <version>2.0-SNAPSHOT</version>
     </dependency>
 
-> **注**：在项目的pom.xml中添加上述配置，该模块已经默认引入核心包和验证框架包依赖，无需重复配置。
-> 若想启用缓存服务需要添加缓存模块的包依赖：
->
->       <dependency>
->           <groupId>net.ymate.platform</groupId>
->           <artifactId>ymate-platform-cache</artifactId>
->           <version>2.0-SNAPSHOT</version>
->       </dependency>
+> **注**：在项目的pom.xml中添加上述配置，该模块已经默认引入核心包、验证框架包和缓存包的依赖，无需重复配置。
+> 若不想启用缓存服务只需在`ymp-conf.properties`中增加排除caches模块配置，如：`ymp.excluded_modules=cache`
 
 #### 模块初始化
 
