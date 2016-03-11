@@ -44,7 +44,8 @@ public class DispatchServlet extends HttpServlet {
 
     protected void service(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         HttpServletRequest _request = new RequestMethodWrapper(request, WebMVC.get().getModuleCfg().getRequestMethodParam());
+        HttpServletResponse _response = new GenericResponseWrapper(response);
         IRequestContext _requestContext = new DefaultRequestContext(_request, WebMVC.get().getModuleCfg().getRequestPrefix());
-        GenericDispatcher.create(WebMVC.get()).execute(_requestContext, __servletContext, _request, response);
+        GenericDispatcher.create(WebMVC.get()).execute(_requestContext, __servletContext, _request, _response);
     }
 }

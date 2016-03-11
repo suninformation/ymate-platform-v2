@@ -844,7 +844,7 @@ WebMVC模块已集成缓存模块，通过@Cacheable注解即可轻松实现控�
 		public class CacheController {
 		
 			@RequestMapping("/cache")
-			@Cacheable(scope = ICaches.Scope.SESSION, timeout = 180000)
+			@Cacheable(scope = ICaches.Scope.SESSION, timeout = 180)
 			public IView doCacheable(@RequestParam String content) throws Exception {
 				// ......
 				return View.textView("Content: " + content);

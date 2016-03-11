@@ -13,28 +13,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.ymate.platform.webmvc;
+package net.ymate.platform.webmvc.impl;
 
+import net.ymate.platform.webmvc.IRequestContext;
+import net.ymate.platform.webmvc.IWebCacheProcessor;
+import net.ymate.platform.webmvc.IWebMvc;
 import net.ymate.platform.webmvc.annotation.ResponseCache;
 import net.ymate.platform.webmvc.view.IView;
 
 /**
- * 控制器视图缓存处理器接口
+ * 空视图缓存处理器实现
  *
- * @author 刘镇 (suninformation@163.com) on 16/2/1 上午12:00
+ * @author 刘镇 (suninformation@163.com) on 16/3/10 下午6:28
  * @version 1.0
  */
-public interface IWebCacheProcessor {
-
-    /**
-     * 对控制器方法返回视图进行缓存处理
-     *
-     * @param owner          所属WebMVC管理器
-     * @param responseCache  控制器方法回应结果缓存注解
-     * @param requestContext 请求上下文
-     * @param resultView     视图对象
-     * @return 返回处理结果是否成功
-     * @throws Exception 可能产生的异常
-     */
-    boolean processResponseCache(IWebMvc owner, ResponseCache responseCache, IRequestContext requestContext, IView resultView) throws Exception;
+public final class NullWebCacheProcessor implements IWebCacheProcessor {
+    public boolean processResponseCache(IWebMvc owner, ResponseCache responseCache, IRequestContext requestContext, IView resultView) throws Exception {
+        return false;
+    }
 }

@@ -27,9 +27,16 @@ public class CacheElement implements Serializable {
 
     private long __lastUpdateTime;
 
-    public CacheElement(Object object) {
+    private int __timeout;
+
+    public CacheElement(final Object object) {
         __object = object;
         __lastUpdateTime = System.currentTimeMillis();
+    }
+
+    public CacheElement(final Object object, final int timeout) {
+        this(object);
+        __timeout = timeout;
     }
 
     public Object getObject() {
@@ -38,5 +45,22 @@ public class CacheElement implements Serializable {
 
     public long getLastUpdateTime() {
         return __lastUpdateTime;
+    }
+
+    public int getTimeout() {
+        return __timeout;
+    }
+
+    public void setTimeout(int timeout) {
+        this.__timeout = timeout;
+    }
+
+    public CacheElement touch() {
+        __lastUpdateTime = System.currentTimeMillis();
+        return this;
+    }
+
+    public boolean isExpired() {
+        return ((System.currentTimeMillis() - __lastUpdateTime) >= __timeout * 1000);
     }
 }

@@ -68,7 +68,7 @@
     # 默认缓存名称，可选参数，默认值为default，对应于Ehcache配置文件中设置name="__DEFAULT__"
     ymp.configs.cache.default_cache_name=
 
-    # 缓存数据超时时间，可选参数，数值必须大于等于0，为0表示默认缓存300000毫秒
+    # 缓存数据超时时间，可选参数，数值必须大于等于0，为0表示默认缓存300秒
     ymp.configs.cache.default_cache_timeout=
 
 ##### EhCache配置示例
@@ -141,7 +141,7 @@
 > 
 > scope：缓存作用域，可选值为APPLICATION、SESSION和DEFAULT，默认为DEFAULT，非DEFAULT设置需要缓存作用域处理器(ICacheScopeProcessor)接口配合；
 > 
-> timeout：缓存数据超时时间, 可选参数，数值必须大于等于0，为0表示默认缓存300000毫秒；
+> timeout：缓存数据超时时间, 可选参数，数值必须大于等于0，为0表示默认缓存300秒；
 
 示例代码：
 

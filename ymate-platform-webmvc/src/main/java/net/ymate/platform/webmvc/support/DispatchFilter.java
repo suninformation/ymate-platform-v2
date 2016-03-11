@@ -47,12 +47,12 @@ public class DispatchFilter implements Filter {
 
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
         HttpServletRequest _request = new RequestMethodWrapper((HttpServletRequest) request, WebMVC.get().getModuleCfg().getRequestMethodParam());
+        HttpServletResponse _response = new GenericResponseWrapper((HttpServletResponse) response);
         IRequestContext _requestContext = new DefaultRequestContext(_request, WebMVC.get().getModuleCfg().getRequestPrefix());
         if (null == __ignorePatern || !__ignorePatern.matcher(_requestContext.getOriginalUrl()).find()) {
-            GenericDispatcher.create(WebMVC.get()).execute(_requestContext,
-                    __filterConfig.getServletContext(), (HttpServletRequest) request, (HttpServletResponse) response);
+            GenericDispatcher.create(WebMVC.get()).execute(_requestContext, __filterConfig.getServletContext(), _request, _response);
         } else {
-            chain.doFilter(request, response);
+            chain.doFilter(_request, _response);
         }
     }
 

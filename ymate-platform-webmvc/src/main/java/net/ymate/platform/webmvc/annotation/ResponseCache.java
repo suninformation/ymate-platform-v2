@@ -15,6 +15,10 @@
  */
 package net.ymate.platform.webmvc.annotation;
 
+import net.ymate.platform.cache.ICaches;
+import net.ymate.platform.webmvc.IWebCacheProcessor;
+import net.ymate.platform.webmvc.impl.NullWebCacheProcessor;
+
 import java.lang.annotation.*;
 
 /**
@@ -27,4 +31,29 @@ import java.lang.annotation.*;
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
 public @interface ResponseCache {
+
+    /**
+     * @return 缓存名称, 默认值为default
+     */
+    String cacheName() default "default";
+
+    /**
+     * @return 缓存Key, 若未设置则自动生成
+     */
+    String key() default "";
+
+    /**
+     * @return 缓存作用域
+     */
+    ICaches.Scope scope() default ICaches.Scope.DEFAULT;
+
+    /**
+     * @return 自定义视图缓存处理器
+     */
+    Class<? extends IWebCacheProcessor> processorClass() default NullWebCacheProcessor.class;
+
+    /**
+     * @return 缓存数据超时时间, 默认为0, 即缓存300秒
+     */
+    int timeout() default 0;
 }

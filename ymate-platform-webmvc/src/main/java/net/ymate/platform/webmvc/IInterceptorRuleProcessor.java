@@ -16,6 +16,7 @@
 package net.ymate.platform.webmvc;
 
 import net.ymate.platform.core.lang.PairObject;
+import net.ymate.platform.webmvc.annotation.ResponseCache;
 import net.ymate.platform.webmvc.view.IView;
 
 /**
@@ -42,5 +43,5 @@ public interface IInterceptorRuleProcessor {
      * @return 返回执行结果视图对象及缓存标识
      * @throws Exception 可能产生的异常
      */
-    PairObject<IView, Boolean> processRequest(IWebMvc owner, IRequestContext requestContext) throws Exception;
+    PairObject<IView, ResponseCache> processRequest(IWebMvc owner, IRequestContext requestContext) throws Exception;
 }

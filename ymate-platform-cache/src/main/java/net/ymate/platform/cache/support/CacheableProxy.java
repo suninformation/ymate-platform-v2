@@ -68,12 +68,17 @@ public class CacheableProxy implements IProxy {
                 _result = (CacheElement) _caches.get(_anno.cacheName(), _cacheKey);
             }
             boolean _flag = true;
-            if (_result != null && ((System.currentTimeMillis() - _result.getLastUpdateTime()) < (_anno.timeout() > 0 ? _anno.timeout() : _caches.getModuleCfg().getDefaultCacheTimeout()))) {
+            if (_result != null && !_result.isExpired()) {
                 _flag = false;
             }
             if (_flag) {
-                _result = new CacheElement(proxyChain.doProxyChain());
-                if (_result.getObject() != null) {
+                Object _cacheTarget = proxyChain.doProxyChain();
+                if (_cacheTarget != null) {
+                    _result = new CacheElement(_cacheTarget);
+                    int _timeout = _anno.timeout() > 0 ? _anno.timeout() : _caches.getModuleCfg().getDefaultCacheTimeout();
+                    if (_timeout > 0) {
+                        _result.setTimeout(_timeout);
+                    }
                     if (!_anno.scope().equals(ICaches.Scope.DEFAULT) && _scopeProc != null) {
                         _scopeProc.putInCache(_caches, _anno.scope(), _anno.cacheName(), _cacheKey.toString(), _result);
                     } else {
@@ -84,6 +89,6 @@ public class CacheableProxy implements IProxy {
         } finally {
             _locker.unlock();
         }
-        return _result.getObject();
+        return _result != null ? _result.getObject() : null;
     }
 }

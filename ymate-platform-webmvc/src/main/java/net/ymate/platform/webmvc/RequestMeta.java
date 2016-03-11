@@ -52,7 +52,7 @@ public class RequestMeta {
 
     private boolean singleton;
 
-    private boolean responseCache;
+    private ResponseCache responseCache;
 
     /**
      * 参数转义注解, 若未设置则该值为null
@@ -78,9 +78,9 @@ public class RequestMeta {
         this.name = StringUtils.defaultIfBlank(_controller.name(), targetClass.getName());
         this.singleton = _controller.singleton();
         //
-        this.responseCache = method.isAnnotationPresent(ResponseCache.class);
-        if (!this.responseCache) {
-            this.responseCache = targetClass.isAnnotationPresent(ResponseCache.class);
+        this.responseCache = method.getAnnotation(ResponseCache.class);
+        if (this.responseCache == null) {
+            this.responseCache = targetClass.getAnnotation(ResponseCache.class);
         }
         //
         this.parameterEscape = method.getAnnotation(ParameterEscape.class);
@@ -235,7 +235,7 @@ public class RequestMeta {
         return singleton;
     }
 
-    public boolean isResponseCache() {
+    public ResponseCache getResponseCache() {
         return responseCache;
     }
 

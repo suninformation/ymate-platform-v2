@@ -53,11 +53,10 @@ public class DefaultInterceptorRuleProcessor implements IInterceptorRuleProcesso
         }
     }
 
-    public PairObject<IView, Boolean> processRequest(IWebMvc owner, IRequestContext requestContext) throws Exception {
+    public PairObject<IView, ResponseCache> processRequest(IWebMvc owner, IRequestContext requestContext) throws Exception {
         String _mapping = requestContext.getRequestMapping();
         InterceptorRuleMeta _ruleMeta = __interceptorRules.get(_mapping);
         IView _view = null;
-        boolean _responseCache = false;
         if (_ruleMeta == null) {
             while (StringUtils.countMatches(_mapping, "/") > 1) {
                 _mapping = StringUtils.substringBeforeLast(_mapping, "/");
@@ -67,8 +66,9 @@ public class DefaultInterceptorRuleProcessor implements IInterceptorRuleProcesso
                 }
             }
         }
+        ResponseCache _responseCache = null;
         if (_ruleMeta != null) {
-            _responseCache = _ruleMeta.isResponseCache();
+            _responseCache = _ruleMeta.getResponseCache();
             InterceptContext _context = new InterceptContext(IInterceptor.Direction.BEFORE, owner.getOwner(), null, null, null, _ruleMeta.getContextParams());
             //
             for (Class<? extends IInterceptor> _interceptClass : _ruleMeta.getBeforeIntercepts()) {
@@ -81,7 +81,7 @@ public class DefaultInterceptorRuleProcessor implements IInterceptorRuleProcesso
                 }
             }
         }
-        return new PairObject<IView, Boolean>(_view, _responseCache);
+        return new PairObject<IView, ResponseCache>(_view, _responseCache);
     }
 
     static class InterceptorRuleMeta {
@@ -90,7 +90,7 @@ public class DefaultInterceptorRuleProcessor implements IInterceptorRuleProcesso
         private Map<String, String> contextParams;
         private boolean matchAll;
 
-        private boolean responseCache;
+        private ResponseCache responseCache;
 
         public InterceptorRuleMeta(Class<? extends IInterceptorRule> targetClass, Method targetMethod) {
             InterceptorRule _ruleAnno = targetMethod.getAnnotation(InterceptorRule.class);
@@ -120,9 +120,9 @@ public class DefaultInterceptorRuleProcessor implements IInterceptorRuleProcesso
                 beforeIntercepts = InterceptAnnoHelper.getBeforeIntercepts(targetClass, targetMethod);
                 contextParams = InterceptAnnoHelper.getContextParams(targetClass, targetMethod);
                 //
-                this.responseCache = targetMethod.isAnnotationPresent(ResponseCache.class);
-                if (!this.responseCache) {
-                    this.responseCache = targetClass.isAnnotationPresent(ResponseCache.class);
+                this.responseCache = targetMethod.getAnnotation(ResponseCache.class);
+                if (this.responseCache == null) {
+                    this.responseCache = targetClass.getAnnotation(ResponseCache.class);
                 }
             }
         }
@@ -143,7 +143,7 @@ public class DefaultInterceptorRuleProcessor implements IInterceptorRuleProcesso
             return matchAll;
         }
 
-        public boolean isResponseCache() {
+        public ResponseCache getResponseCache() {
             return responseCache;
         }
     }

@@ -54,7 +54,7 @@ public interface ICacheModuleCfg {
     String getDefaultCacheName();
 
     /**
-     * @return 缓存数据超时时间，可选参数，数值必须大于等于0，为0表示默认缓存300000毫秒
+     * @return 缓存数据超时时间，可选参数，数值必须大于等于0，为0表示默认缓存300毫秒
      */
-    long getDefaultCacheTimeout();
+    int getDefaultCacheTimeout();
 }

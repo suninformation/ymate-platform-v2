@@ -18,10 +18,7 @@ package net.ymate.platform.cache.support;
 import net.sf.ehcache.Ehcache;
 import net.sf.ehcache.Element;
 import net.sf.ehcache.event.CacheEventListener;
-import net.ymate.platform.cache.CacheException;
-import net.ymate.platform.cache.ICache;
-import net.ymate.platform.cache.ICacheEventListener;
-import net.ymate.platform.cache.ICaches;
+import net.ymate.platform.cache.*;
 import net.ymate.platform.core.util.RuntimeUtils;
 
 import java.util.ArrayList;
@@ -34,9 +31,12 @@ import java.util.List;
  */
 public class EhCacheWraper implements ICache {
 
+    private ICaches __owner;
+
     private Ehcache __ehcache;
 
     public EhCacheWraper(ICaches owner, Ehcache ehcache, final ICacheEventListener listener) {
+        __owner = owner;
         __ehcache = ehcache;
         if (listener != null) {
             __ehcache.getCacheEventNotificationService().registerListener(new CacheEventListener() {
@@ -90,7 +90,18 @@ public class EhCacheWraper implements ICache {
 
     public void put(Object key, Object value) throws CacheException {
         try {
-            __ehcache.put(new Element(key, value));
+            Element _element = new Element(key, value);
+            int _timeout = 0;
+            if (value instanceof CacheElement) {
+                _timeout = ((CacheElement) value).getTimeout();
+            }
+            if (_timeout <= 0) {
+                _timeout = __owner.getModuleCfg().getDefaultCacheTimeout();
+            }
+            if (_timeout > 0) {
+                _element.setTimeToLive(_timeout);
+            }
+            __ehcache.put(_element);
         } catch (Exception e) {
             throw new CacheException(RuntimeUtils.unwrapThrow(e));
         }

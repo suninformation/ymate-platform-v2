@@ -21,16 +21,15 @@ import net.ymate.platform.core.beans.BeanMeta;
 import net.ymate.platform.core.lang.PairObject;
 import net.ymate.platform.core.module.IModule;
 import net.ymate.platform.core.module.annotation.Module;
-import net.ymate.platform.webmvc.annotation.Controller;
-import net.ymate.platform.webmvc.annotation.FileUpload;
-import net.ymate.platform.webmvc.annotation.InterceptorRule;
-import net.ymate.platform.webmvc.annotation.RequestMapping;
+import net.ymate.platform.core.util.ClassUtils;
+import net.ymate.platform.webmvc.annotation.*;
 import net.ymate.platform.webmvc.base.Type;
 import net.ymate.platform.webmvc.context.WebContext;
 import net.ymate.platform.webmvc.handle.ControllerHandler;
 import net.ymate.platform.webmvc.handle.InterceptorRuleHandler;
 import net.ymate.platform.webmvc.impl.DefaultInterceptorRuleProcessor;
 import net.ymate.platform.webmvc.impl.DefaultModuleCfg;
+import net.ymate.platform.webmvc.impl.NullWebCacheProcessor;
 import net.ymate.platform.webmvc.support.MultipartRequestWrapper;
 import net.ymate.platform.webmvc.support.RequestExecutor;
 import net.ymate.platform.webmvc.support.RequestMappingParser;
@@ -212,9 +211,18 @@ public class WebMVC implements IModule, IWebMvc {
                 WebContext.getContext().addAttribute(Type.Context.HTTP_REQUEST, request);
                 IView _view = RequestExecutor.bind(this, _meta).execute();
                 if (_view != null) {
-                    if (_meta.isResponseCache() && getModuleCfg().getCacheProcessor() != null) {
-                        if (getModuleCfg().getCacheProcessor().processResponseCache(this, context, _view)) {
-                            _view = View.nullView();
+                    if (_meta.getResponseCache() != null) {
+                        IWebCacheProcessor _processor = null;
+                        if (!NullWebCacheProcessor.class.equals(_meta.getResponseCache().processorClass())) {
+                            _processor = ClassUtils.impl(_meta.getResponseCache().processorClass(), IWebCacheProcessor.class);
+                        }
+                        if (_processor == null) {
+                            _processor = getModuleCfg().getCacheProcessor();
+                        }
+                        if (_processor != null) {
+                            if (_processor.processResponseCache(this, _meta.getResponseCache(), context, _view)) {
+                                _view = View.nullView();
+                            }
                         }
                     }
                     _view.render();
@@ -245,10 +253,10 @@ public class WebMVC implements IModule, IWebMvc {
             }
             if (_isAllowConvention) {
                 IView _view = null;
-                boolean _responseCache = false;
+                ResponseCache _responseCache = null;
                 if (__interceptorRuleProcessor != null) {
                     // 尝试执行Convention拦截规则
-                    PairObject<IView, Boolean> _result = __interceptorRuleProcessor.processRequest(this, context);
+                    PairObject<IView, ResponseCache> _result = __interceptorRuleProcessor.processRequest(this, context);
                     _view = _result.getKey();
                     _responseCache = _result.getValue();
                 }
@@ -287,9 +295,18 @@ public class WebMVC implements IModule, IWebMvc {
                     }
                 }
                 if (_view != null) {
-                    if (_responseCache && getModuleCfg().getCacheProcessor() != null) {
-                        if (getModuleCfg().getCacheProcessor().processResponseCache(this, context, _view)) {
-                            _view = View.nullView();
+                    if (_responseCache != null) {
+                        IWebCacheProcessor _processor = null;
+                        if (!NullWebCacheProcessor.class.equals(_responseCache.processorClass())) {
+                            _processor = ClassUtils.impl(_responseCache.processorClass(), IWebCacheProcessor.class);
+                        }
+                        if (_processor == null) {
+                            _processor = getModuleCfg().getCacheProcessor();
+                        }
+                        if (_processor != null) {
+                            if (_processor.processResponseCache(this, _responseCache, context, _view)) {
+                                _view = View.nullView();
+                            }
                         }
                     }
                     _view.render();

@@ -43,7 +43,7 @@ public class DefaultModuleCfg implements ICacheModuleCfg {
 
     private String __defaultCacheName;
 
-    private long __defaultCacheTimeout;
+    private int __defaultCacheTimeout;
 
     public DefaultModuleCfg(YMP owner) throws Exception {
         Map<String, String> _moduleCfgs = owner.getConfig().getModuleConfigs(ICaches.MODULE_NAME);
@@ -71,9 +71,9 @@ public class DefaultModuleCfg implements ICacheModuleCfg {
         //
         __defaultCacheName = StringUtils.defaultIfBlank(_moduleCfgs.get("default_cache_name"), "default");
 
-        __defaultCacheTimeout = BlurObject.bind(StringUtils.defaultIfBlank(_moduleCfgs.get("default_cache_timeout"), "0")).toLongValue();
+        __defaultCacheTimeout = BlurObject.bind(StringUtils.defaultIfBlank(_moduleCfgs.get("default_cache_timeout"), "0")).toIntValue();
         if (__defaultCacheTimeout <= 0) {
-            __defaultCacheTimeout = 300000L;
+            __defaultCacheTimeout = 300;
         }
     }
 
@@ -101,7 +101,7 @@ public class DefaultModuleCfg implements ICacheModuleCfg {
         return __defaultCacheName;
     }
 
-    public long getDefaultCacheTimeout() {
+    public int getDefaultCacheTimeout() {
         return __defaultCacheTimeout;
     }
 }
