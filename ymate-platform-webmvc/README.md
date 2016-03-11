@@ -68,7 +68,6 @@ WebMVC模块在YMP框架中是除了JDBC模块以外的另一个非常重要的�
 	        <url-pattern>/*</url-pattern>
 	        <dispatcher>REQUEST</dispatcher>
 	        <dispatcher>FORWARD</dispatcher>
-	        <dispatcher>INCLUDE</dispatcher>
 	    </filter-mapping>
 	    
 	    <!--
@@ -857,7 +856,22 @@ WebMVC模块已集成缓存模块，通过@Cacheable注解即可轻松实现控�
 
 WebMVC模块提供了缓存处理器IWebCacheProcessor接口，可以让开发者通过此接口对控制器执行结果进行最终处理，该接口作用于被声明@ResponseCache注解的控制器类和方法上；
 
-接口参数配置：
+> **说明**: 框架提供IWebCacheProcessor接口默认实现`net.ymate.platform.webmvc.support.WebCacheProcessor`用以缓存视图执行结果，
+> 但需要注意的是当使用它时, 请检查web.xml的过滤器`DispatchFilter`中不要配置`<dispatcher>INCLUDE</dispatcher>`，否则将会产生死循环；
+
+@ResponseCache注解参数说明：
+
+> cacheName：缓存名称, 可选参数, 默认值为default；
+>
+> key：缓存Key, 可选参数, 若未设置则由IWebCacheProcessor接口实现自动生成；
+>
+> processorClass：自定义视图缓存处理器, 可选参数，若未提供则采用默认IWebCacheProcessor接口参数配置；
+>
+> scope：缓存作用域, 可选参数，可选值为APPLICATION、SESSION和DEFAULT，默认为DEFAULT；
+>
+> timeout：缓存数据超时时间, 可选参数，数值必须大于等于0，为0表示默认缓存300秒；
+
+默认IWebCacheProcessor接口参数配置：
 
 	# 缓存处理器，可选参数
 	ymp.configs.webmvc.cache_processor_class=demo.WebCacheProc
@@ -870,8 +884,9 @@ WebMVC模块提供了缓存处理器IWebCacheProcessor接口，可以让开发�
 	import net.ymate.platform.webmvc.view.IView;
 
 	public class WebCacheProc implements IWebCacheProcessor {
-	    public boolean processResponseCache(IWebMvc owner, IRequestContext requestContext, IView resultView) throws Exception {
+	    public boolean processResponseCache(IWebMvc owner, ResponseCache responseCache, IRequestContext requestContext, IView resultView) throws Exception {
 	    	// 这里是对View视图自定义处理逻辑...
+	    	// 完整的示例代码请查看net.ymate.platform.webmvc.support.WebCacheProcessor类源码
 	        return false;
 	    }
 	}
