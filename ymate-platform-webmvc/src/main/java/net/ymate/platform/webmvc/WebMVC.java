@@ -22,6 +22,7 @@ import net.ymate.platform.core.lang.PairObject;
 import net.ymate.platform.core.module.IModule;
 import net.ymate.platform.core.module.annotation.Module;
 import net.ymate.platform.core.util.ClassUtils;
+import net.ymate.platform.core.util.RuntimeUtils;
 import net.ymate.platform.webmvc.annotation.*;
 import net.ymate.platform.webmvc.base.Type;
 import net.ymate.platform.webmvc.context.WebContext;
@@ -212,17 +213,22 @@ public class WebMVC implements IModule, IWebMvc {
                 IView _view = RequestExecutor.bind(this, _meta).execute();
                 if (_view != null) {
                     if (_meta.getResponseCache() != null) {
-                        IWebCacheProcessor _processor = null;
-                        if (!NullWebCacheProcessor.class.equals(_meta.getResponseCache().processorClass())) {
-                            _processor = ClassUtils.impl(_meta.getResponseCache().processorClass(), IWebCacheProcessor.class);
-                        }
-                        if (_processor == null) {
-                            _processor = getModuleCfg().getCacheProcessor();
-                        }
-                        if (_processor != null) {
-                            if (_processor.processResponseCache(this, _meta.getResponseCache(), context, _view)) {
-                                _view = View.nullView();
+                        try {
+                            IWebCacheProcessor _processor = null;
+                            if (!NullWebCacheProcessor.class.equals(_meta.getResponseCache().processorClass())) {
+                                _processor = ClassUtils.impl(_meta.getResponseCache().processorClass(), IWebCacheProcessor.class);
                             }
+                            if (_processor == null) {
+                                _processor = getModuleCfg().getCacheProcessor();
+                            }
+                            if (_processor != null) {
+                                if (_processor.processResponseCache(this, _meta.getResponseCache(), context, _view)) {
+                                    _view = View.nullView();
+                                }
+                            }
+                        } catch (Exception e) {
+                            // 缓存处理过程中的任何异常都不能影响本交请求的正常响应, 仅输出异常日志
+                            _LOG.warn(e.getMessage(), RuntimeUtils.unwrapThrow(e));
                         }
                     }
                     _view.render();
@@ -296,17 +302,22 @@ public class WebMVC implements IModule, IWebMvc {
                 }
                 if (_view != null) {
                     if (_responseCache != null) {
-                        IWebCacheProcessor _processor = null;
-                        if (!NullWebCacheProcessor.class.equals(_responseCache.processorClass())) {
-                            _processor = ClassUtils.impl(_responseCache.processorClass(), IWebCacheProcessor.class);
-                        }
-                        if (_processor == null) {
-                            _processor = getModuleCfg().getCacheProcessor();
-                        }
-                        if (_processor != null) {
-                            if (_processor.processResponseCache(this, _responseCache, context, _view)) {
-                                _view = View.nullView();
+                        try {
+                            IWebCacheProcessor _processor = null;
+                            if (!NullWebCacheProcessor.class.equals(_responseCache.processorClass())) {
+                                _processor = ClassUtils.impl(_responseCache.processorClass(), IWebCacheProcessor.class);
                             }
+                            if (_processor == null) {
+                                _processor = getModuleCfg().getCacheProcessor();
+                            }
+                            if (_processor != null) {
+                                if (_processor.processResponseCache(this, _responseCache, context, _view)) {
+                                    _view = View.nullView();
+                                }
+                            }
+                        } catch (Exception e) {
+                            // 缓存处理过程中的任何异常都不能影响本交请求的正常响应, 仅输出异常日志
+                            _LOG.warn(e.getMessage(), RuntimeUtils.unwrapThrow(e));
                         }
                     }
                     _view.render();
