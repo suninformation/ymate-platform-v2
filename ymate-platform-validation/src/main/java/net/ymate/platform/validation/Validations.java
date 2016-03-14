@@ -139,7 +139,7 @@ public class Validations implements IModule, IValidation {
         //
         Map<String, Annotation[]> _paramAnnoMap = _meta.getMethodParamAnnotations(targetMethod);
         for (Map.Entry<String, Annotation[]> _entry : _paramAnnoMap.entrySet()) {
-            ValidateResult _result = __doValidate(_entry.getValue(), _entry.getKey(), _meta.getFieldLabel(_entry.getKey()), paramValues);
+            ValidateResult _result = __doValidate(_entry.getValue(), _entry.getKey(), _meta.getFieldLabel(targetMethod, _entry.getKey()), paramValues);
             if (_result != null) {
                 _returnValues.put(_entry.getKey(), _result);
                 //

@@ -44,6 +44,8 @@ public class ValidationMeta {
 
     private Map<String, String> __labels;
 
+    private Map<Method, Map<String, String>> __methodLabels;
+
     private Map<Method, Validation> __methods;
 
     private Map<Method, Map<String, Annotation[]>> __methodParams;
@@ -60,14 +62,17 @@ public class ValidationMeta {
         __targetClass = targetClass;
         __fields = new LinkedHashMap<String, Annotation[]>();
         __labels = new LinkedHashMap<String, String>();
+        __methodLabels = new LinkedHashMap<Method, Map<String, String>>();
         __methods = new LinkedHashMap<Method, Validation>();
         __methodParams = new LinkedHashMap<Method, Map<String, Annotation[]>>();
 
         // 处理targetClass所有Field成员属性
-        __fields.putAll(__doGetMetaFromFields(null, targetClass));
+        __fields.putAll(__doGetMetaFromFields(null, targetClass, __labels));
 
         // 处理targetClass所有Method方法
         for (Method _method : targetClass.getDeclaredMethods()) {
+            Map<String, String> _paramLabels = new LinkedHashMap<String, String>();
+            __methodLabels.put(_method, _paramLabels);
             // 处理每个方法上有@Validation的注解
             Validation _methodValidation = _method.getAnnotation(Validation.class);
             if (_methodValidation != null) {
@@ -88,7 +93,7 @@ public class ValidationMeta {
                             _paramName = ((VField) _vField).name();
                         }
                         if (StringUtils.isNotBlank(_vF.label())) {
-                            __labels.put(_paramName, _vF.label());
+                            _paramLabels.put(_paramName, _vF.label());
                         }
                         break;
                     }
@@ -98,7 +103,7 @@ public class ValidationMeta {
                         _tmpAnnoList.add(_annotation);
                     } else if (_annotation instanceof VModel) {
                         // 递归处理@VModel
-                        _paramAnnos.putAll(__doGetMetaFromFields(_paramName, _method.getParameterTypes()[_idx]));
+                        _paramAnnos.putAll(__doGetMetaFromFields(_paramName, _method.getParameterTypes()[_idx], _paramLabels));
                     }
                 }
                 if (!_tmpAnnoList.isEmpty()) {
@@ -116,7 +121,7 @@ public class ValidationMeta {
      * @param targetClass     目标类
      * @return 处理targetClass所有Field成员属性
      */
-    public Map<String, Annotation[]> __doGetMetaFromFields(String parentFieldName, Class<?> targetClass) {
+    public Map<String, Annotation[]> __doGetMetaFromFields(String parentFieldName, Class<?> targetClass, Map<String, String> paramLabels) {
         Map<String, Annotation[]> _returnValues = new LinkedHashMap<String, Annotation[]>();
         //
         parentFieldName = StringUtils.defaultIfBlank(parentFieldName, "");
@@ -142,7 +147,7 @@ public class ValidationMeta {
                         // 拼装带层级关系的Field名称
                         _fieldName = __doGetFieldName(parentFieldName, _fieldName);
                         // 递归处理@VModel
-                        _returnValues.putAll(__doGetMetaFromFields(__doGetFieldName(parentFieldName, _fieldName), _field.getType()));
+                        _returnValues.putAll(__doGetMetaFromFields(__doGetFieldName(parentFieldName, _fieldName), _field.getType(), paramLabels));
                     }
                 }
                 if (!_annotations.isEmpty()) {
@@ -186,6 +191,10 @@ public class ValidationMeta {
 
     public String getFieldLabel(String fieldName) {
         return __labels.get(fieldName);
+    }
+
+    public String getFieldLabel(Method method, String fieldName) {
+        return __methodLabels.get(method).get(fieldName);
     }
 
     public Annotation[] getFieldAnnotations(String fieldName) {
