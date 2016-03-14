@@ -56,6 +56,13 @@ public class Type {
     }
 
     /**
+     * 执行字符串参数转义顺序
+     */
+    public enum EscapeOrder {
+        BEFORE, AFTER
+    }
+
+    /**
      * 视图类型枚举
      * <p>
      * Create At 2015-6-4 上午08:01:45

@@ -26,6 +26,7 @@ import net.ymate.platform.webmvc.RequestMeta;
 import net.ymate.platform.webmvc.annotation.Header;
 import net.ymate.platform.webmvc.annotation.ResponseView;
 import net.ymate.platform.webmvc.base.Type;
+import net.ymate.platform.webmvc.context.WebContext;
 import net.ymate.platform.webmvc.view.IView;
 import net.ymate.platform.webmvc.view.impl.*;
 import org.apache.commons.lang.ArrayUtils;
@@ -87,6 +88,10 @@ public final class RequestExecutor {
             } else {
                 return _validationView;
             }
+        }
+        if (__owner.getModuleCfg().isParameterEscapeMode() && Type.EscapeOrder.AFTER.equals(__owner.getModuleCfg().getParameterEscapeOrder())) {
+            // 若执行转义顺序为after时, 取出暂存在WebContext中已被转义处理的参数
+            _paramValues = WebContext.getContext().getAttribute(Type.EscapeOrder.class.getName());
         }
         Object _targetObj = __owner.getOwner().getBean(__requestMeta.getTargetClass());
         if (!__requestMeta.isSingleton()) {

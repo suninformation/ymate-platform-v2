@@ -20,6 +20,7 @@ import net.ymate.platform.core.util.ClassUtils;
 import net.ymate.platform.core.util.RuntimeUtils;
 import net.ymate.platform.webmvc.*;
 import net.ymate.platform.webmvc.annotation.*;
+import net.ymate.platform.webmvc.base.Type;
 import net.ymate.platform.webmvc.context.WebContext;
 import net.ymate.platform.webmvc.support.MultipartRequestWrapper;
 import net.ymate.platform.webmvc.util.CookieHelper;
@@ -58,13 +59,37 @@ public class DefaultRequestProcessor implements IRequestProcessor {
 
     protected Map<String, Object> __doGetParamValueFromParameterMetas(IWebMvc owner, RequestMeta requestMeta, Collection<ParameterMeta> metas) throws Exception {
         Map<String, Object> _resultMap = new HashMap<String, Object>();
+        Map<String, Object> _resultEscapedMap = new HashMap<String, Object>();
+        boolean _escapeBeforeFlag = Type.EscapeOrder.BEFORE.equals(owner.getModuleCfg().getParameterEscapeOrder());
+        if (owner.getModuleCfg().isParameterEscapeMode() && !_escapeBeforeFlag) {
+            // 将转义预处理的参数暂存至WebContext中
+            WebContext.getContext().addAttribute(Type.EscapeOrder.class.getName(), _resultEscapedMap);
+        }
         for (ParameterMeta _meta : metas) {
             Object _result = __doGetParamValue(owner, requestMeta, _meta, _meta.getParamName(), _meta.getParamType(), _meta.getParamAnno());
             if (_result != null) {
-                _result = _meta.doParamEscape(_meta, _result);
+                if (owner.getModuleCfg().isParameterEscapeMode()) {
+                    // 若执行转义顺序为before时, 直接处理
+                    if (_escapeBeforeFlag) {
+                        _result = _meta.doParamEscape(_meta, _result);
+                    } else {
+                        // 排除掉@ModelBind参数, 因为内部已特殊处理
+                        if (!_meta.isModelBind()) {
+                            // 否则, 进行参数转义预处理
+                            Object _resultEscaped = _meta.doParamEscape(_meta, _result);
+                            //
+                            _resultEscapedMap.put(_meta.getFieldName(), _resultEscaped);
+                            if (StringUtils.isNotBlank(_meta.getParamName())) {
+                                _resultEscapedMap.put(_meta.getParamName(), _resultEscaped);
+                            }
+                        }
+                    }
+                }
                 //
-                _resultMap.put(_meta.getParamName(), _result);
                 _resultMap.put(_meta.getFieldName(), _result);
+                if (StringUtils.isNotBlank(_meta.getParamName())) {
+                    _resultMap.put(_meta.getParamName(), _result);
+                }
             }
         }
         return _resultMap;
@@ -152,15 +177,33 @@ public class DefaultRequestProcessor implements IRequestProcessor {
 
     protected Object __doParseModelBind(IWebMvc owner, RequestMeta requestMeta, ParameterMeta paramMeta, Class<?> paramType) throws Exception {
         ClassUtils.BeanWrapper<?> _wrapper = ClassUtils.wrapper(paramType);
+        //
+        ClassUtils.BeanWrapper<?> _wrapperEscaped = null;
+        boolean _escapeBeforeFlag = Type.EscapeOrder.BEFORE.equals(owner.getModuleCfg().getParameterEscapeOrder());
+        if (!_escapeBeforeFlag) {
+            _wrapperEscaped = ClassUtils.wrapper(paramType);
+        }
         if (_wrapper != null) {
             for (String _fName : _wrapper.getFieldNames()) {
                 ParameterMeta _meta = new ParameterMeta(requestMeta, _wrapper.getField(_fName));
                 if (_meta.isParamField()) {
                     Object _result = __doGetParamValue(owner, requestMeta, _meta, _meta.doBuildParamName(paramMeta.getPrefix(), _meta.getParamName(), _fName), _meta.getParamType(), _meta.getParamAnno());
                     if (_result != null) {
-                        _wrapper.setValue(_fName, _meta.doParamEscape(_meta, _result));
+                        if (owner.getModuleCfg().isParameterEscapeMode()) {
+                            if (_escapeBeforeFlag) {
+                                _result = _meta.doParamEscape(_meta, _result);
+                            } else {
+                                Object _resultEscaped = _meta.doParamEscape(_meta, _result);
+                                _wrapperEscaped.setValue(_fName, _resultEscaped);
+                            }
+                        }
+                        _wrapper.setValue(_fName, _result);
                     }
                 }
+            }
+            if (!_escapeBeforeFlag) {
+                Map<String, Object> _resultEscapedMap = WebContext.getContext().getAttribute(Type.EscapeOrder.class.getName());
+                _resultEscapedMap.put(paramMeta.getFieldName(), _wrapperEscaped.getTargetObject());
             }
             return _wrapper.getTargetObject();
         }

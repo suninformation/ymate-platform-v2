@@ -15,6 +15,7 @@
  */
 package net.ymate.platform.webmvc;
 
+import net.ymate.platform.webmvc.base.Type;
 import org.apache.commons.fileupload.ProgressListener;
 
 import java.util.Set;
@@ -146,4 +147,9 @@ public interface IWebMvcModuleCfg {
      * @return 请求参数转义模式是否开启（开启状态时，控制器方法的所有参数将默认支持转义，可针对具体控制器方法或参数设置忽略转义操作），可选参数，默认值为false
      */
     boolean isParameterEscapeMode();
+
+    /**
+     * @return 执行请求参数转义顺序，可选参数，取值范围：before(参数验证之前)和after(参数验证之后)，默认值为after
+     */
+    Type.EscapeOrder getParameterEscapeOrder();
 }

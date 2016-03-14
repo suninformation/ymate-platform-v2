@@ -56,6 +56,8 @@ public class DefaultModuleCfg implements IWebMvcModuleCfg {
 
     private boolean __parameterEscapeMode;
 
+    private Type.EscapeOrder __parameterEscapeOrder;
+
     private String __baseViewPath;
 
     private String __abstractBaseViewPath;
@@ -118,6 +120,7 @@ public class DefaultModuleCfg implements IWebMvcModuleCfg {
         __requestPrefix = StringUtils.trimToEmpty(_moduleCfgs.get("request_prefix"));
         //
         __parameterEscapeMode = BlurObject.bind(_moduleCfgs.get("parameter_escape_mode")).toBooleanValue();
+        __parameterEscapeOrder = Type.EscapeOrder.valueOf(StringUtils.defaultIfBlank(_moduleCfgs.get("parameter_escape_order"), "after").toUpperCase());
         //
         __baseViewPath = RuntimeUtils.replaceEnvVariable(StringUtils.defaultIfBlank(_moduleCfgs.get("base_view_path"), "/WEB-INF/templates/"));
         __abstractBaseViewPath = __baseViewPath;
@@ -265,5 +268,9 @@ public class DefaultModuleCfg implements IWebMvcModuleCfg {
 
     public boolean isParameterEscapeMode() {
         return __parameterEscapeMode;
+    }
+
+    public Type.EscapeOrder getParameterEscapeOrder() {
+        return __parameterEscapeOrder;
     }
 }

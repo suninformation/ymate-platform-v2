@@ -112,6 +112,9 @@ WebMVC模块的基本初始化参数配置：
 	
 	# 请求参数转义模式是否开启（开启状态时，控制器方法的所有参数将默认支持转义，可针对具体控制器主法或参数设置忽略转义操作），可选参数，默认值为false
 	ymp.configs.webmvc.parameter_escape_mode=
+
+	# 执行请求参数转义顺序，可选参数，取值范围：before(参数验证之前)和after(参数验证之后)，默认值为after
+    ymp.configs.webmvc.parameter_escape_order=
 	
 	# 控制器视图文件基础路径（必须是以 '/' 开始和结尾，默认值为/WEB-INF/templates/）
 	ymp.configs.webmvc.base_view_path=
@@ -348,6 +351,9 @@ WebMVC模块不但让编写控制器变得非常简单，处理请求参数也�
 		Hi, webmvc, Age: 20, Sex: F
 
 - @ParameterEscape：控制器方法参数转义注解；
+
+    可以通过WebMVC模块配置参数`parameter_escape_order`设定是在控制器方法参数执行验证之前还是之后执行参数转义动作，参数取值范围为`before`或`after`，默认为`after`即参数验证之后进行转义；
+
 	> scope：字符串参数转义范围，默认为Type.EscapeScope.DEFAULT；
 	>
 	> - 取值范围包括：JAVA, JS, HTML, XML, SQL, CSV, DEFAULT；
