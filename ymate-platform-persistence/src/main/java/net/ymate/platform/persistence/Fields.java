@@ -78,6 +78,7 @@ public final class Fields {
 
     public Fields add(Fields fields) {
         this.__fields.addAll(fields.fields());
+        this.__excluded = fields.isExcluded();
         return this;
     }
 

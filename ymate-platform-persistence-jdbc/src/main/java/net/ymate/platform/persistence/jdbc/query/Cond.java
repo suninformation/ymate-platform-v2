@@ -116,7 +116,10 @@ public final class Cond {
     }
 
     public Cond eq(String prefix, String field) {
-        return eq(prefix.concat(".").concat(field));
+        if (StringUtils.isNotBlank(prefix)) {
+            field = prefix.concat(".").concat(field);
+        }
+        return eq(field);
     }
 
     public Cond eq(String field) {
@@ -124,7 +127,10 @@ public final class Cond {
     }
 
     public Cond notEq(String prefix, String field) {
-        return notEq(prefix.concat(".").concat(field));
+        if (StringUtils.isNotBlank(prefix)) {
+            field = prefix.concat(".").concat(field);
+        }
+        return notEq(field);
     }
 
     public Cond notEq(String field) {
@@ -132,7 +138,10 @@ public final class Cond {
     }
 
     public Cond gtEq(String prefix, String field) {
-        return gtEq(prefix.concat(".").concat(field));
+        if (StringUtils.isNotBlank(prefix)) {
+            field = prefix.concat(".").concat(field);
+        }
+        return gtEq(field);
     }
 
     public Cond gtEq(String field) {
@@ -140,7 +149,10 @@ public final class Cond {
     }
 
     public Cond gt(String prefix, String field) {
-        return gt(prefix.concat(".").concat(field));
+        if (StringUtils.isNotBlank(prefix)) {
+            field = prefix.concat(".").concat(field);
+        }
+        return gt(field);
     }
 
     public Cond gt(String field) {
@@ -148,7 +160,10 @@ public final class Cond {
     }
 
     public Cond ltEq(String prefix, String field) {
-        return ltEq(prefix.concat(".").concat(field));
+        if (StringUtils.isNotBlank(prefix)) {
+            field = prefix.concat(".").concat(field);
+        }
+        return ltEq(field);
     }
 
     public Cond ltEq(String field) {
@@ -156,7 +171,10 @@ public final class Cond {
     }
 
     public Cond lt(String prefix, String field) {
-        return lt(prefix.concat(".").concat(field));
+        if (StringUtils.isNotBlank(prefix)) {
+            field = prefix.concat(".").concat(field);
+        }
+        return lt(field);
     }
 
     public Cond lt(String field) {
@@ -164,7 +182,10 @@ public final class Cond {
     }
 
     public Cond like(String prefix, String field) {
-        return like(prefix.concat(".").concat(field));
+        if (StringUtils.isNotBlank(prefix)) {
+            field = prefix.concat(".").concat(field);
+        }
+        return like(field);
     }
 
     public Cond like(String field) {
@@ -172,7 +193,10 @@ public final class Cond {
     }
 
     public Cond between(String prefix, String field, Object valueOne, Object valueTwo) {
-        return between(prefix.concat(".").concat(field), valueOne, valueTwo);
+        if (StringUtils.isNotBlank(prefix)) {
+            field = prefix.concat(".").concat(field);
+        }
+        return between(field, valueOne, valueTwo);
     }
 
     public Cond between(String field, Object valueOne, Object valueTwo) {
@@ -182,7 +206,10 @@ public final class Cond {
     }
 
     public Cond isNull(String prefix, String field) {
-        return isNull(prefix.concat(".").concat(field));
+        if (StringUtils.isNotBlank(prefix)) {
+            field = prefix.concat(".").concat(field);
+        }
+        return isNull(field);
     }
 
     public Cond isNull(String field) {
@@ -191,7 +218,10 @@ public final class Cond {
     }
 
     public Cond isNotNull(String prefix, String field) {
-        return isNotNull(prefix.concat(".").concat(field));
+        if (StringUtils.isNotBlank(prefix)) {
+            field = prefix.concat(".").concat(field);
+        }
+        return isNotNull(field);
     }
 
     public Cond isNotNull(String field) {
@@ -232,7 +262,10 @@ public final class Cond {
     }
 
     public Cond in(String prefix, String field, SQL subSql) {
-        return in(prefix.concat(".").concat(field), subSql);
+        if (StringUtils.isNotBlank(prefix)) {
+            field = prefix.concat(".").concat(field);
+        }
+        return in(field, subSql);
     }
 
     public Cond in(String field, SQL subSql) {
@@ -242,7 +275,10 @@ public final class Cond {
     }
 
     public Cond in(String prefix, String field, Select subSql) {
-        return in(prefix.concat(".").concat(field), subSql);
+        if (StringUtils.isNotBlank(prefix)) {
+            field = prefix.concat(".").concat(field);
+        }
+        return in(field, subSql);
     }
 
     public Cond in(String field, Select subSql) {
@@ -252,7 +288,10 @@ public final class Cond {
     }
 
     public Cond in(String prefix, String field, Params params) {
-        return in(prefix.concat(".").concat(field), params);
+        if (StringUtils.isNotBlank(prefix)) {
+            field = prefix.concat(".").concat(field);
+        }
+        return in(field, params);
     }
 
     public Cond in(String field, Params params) {
