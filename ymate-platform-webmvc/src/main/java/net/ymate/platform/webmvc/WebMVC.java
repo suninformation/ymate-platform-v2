@@ -168,6 +168,19 @@ public class WebMVC implements IModule, IWebMvc {
         return false;
     }
 
+    private IWebCacheProcessor __doGetWebCacheProcessor(ResponseCache responseCache) {
+        IWebCacheProcessor _cacheProcessor = null;
+        if (responseCache != null) {
+            if (!NullWebCacheProcessor.class.equals(responseCache.processorClass())) {
+                _cacheProcessor = ClassUtils.impl(responseCache.processorClass(), IWebCacheProcessor.class);
+            }
+            if (_cacheProcessor == null) {
+                _cacheProcessor = getModuleCfg().getCacheProcessor();
+            }
+        }
+        return _cacheProcessor;
+    }
+
     public void processRequest(IRequestContext context,
                                ServletContext servletContext,
                                HttpServletRequest request,
@@ -210,30 +223,38 @@ public class WebMVC implements IModule, IWebMvc {
                     request = new MultipartRequestWrapper(this, request);
                 }
                 WebContext.getContext().addAttribute(Type.Context.HTTP_REQUEST, request);
-                IView _view = RequestExecutor.bind(this, _meta).execute();
-                if (_view != null) {
-                    if (_meta.getResponseCache() != null) {
-                        try {
-                            IWebCacheProcessor _processor = null;
-                            if (!NullWebCacheProcessor.class.equals(_meta.getResponseCache().processorClass())) {
-                                _processor = ClassUtils.impl(_meta.getResponseCache().processorClass(), IWebCacheProcessor.class);
-                            }
-                            if (_processor == null) {
-                                _processor = getModuleCfg().getCacheProcessor();
-                            }
-                            if (_processor != null) {
-                                if (_processor.processResponseCache(this, _meta.getResponseCache(), context, _view)) {
+                //
+                //
+                IWebCacheProcessor _cacheProcessor = __doGetWebCacheProcessor(_meta.getResponseCache());
+                IView _view = null;
+                // 首先判断是否可以使用缓存
+                if (_cacheProcessor != null) {
+                    // 尝试从缓存中加载执行结果
+                    if (_cacheProcessor.processResponseCache(this, _meta.getResponseCache(), context, null)) {
+                        // 加载成功, 则
+                        _view = View.nullView();
+                    }
+                }
+                if (_view == null) {
+                    _view = RequestExecutor.bind(this, _meta).execute();
+                    if (_view != null) {
+                        if (_cacheProcessor != null) {
+                            try {
+                                // 生成缓存
+                                if (_cacheProcessor.processResponseCache(this, _meta.getResponseCache(), context, _view)) {
                                     _view = View.nullView();
                                 }
+                            } catch (Exception e) {
+                                // 缓存处理过程中的任何异常都不能影响本交请求的正常响应, 仅输出异常日志
+                                _LOG.warn(e.getMessage(), RuntimeUtils.unwrapThrow(e));
                             }
-                        } catch (Exception e) {
-                            // 缓存处理过程中的任何异常都不能影响本交请求的正常响应, 仅输出异常日志
-                            _LOG.warn(e.getMessage(), RuntimeUtils.unwrapThrow(e));
                         }
+                        _view.render();
+                    } else {
+                        HttpStatusView.NOT_FOUND.render();
                     }
-                    _view.render();
                 } else {
-                    HttpStatusView.NOT_FOUND.render();
+                    _view.render();
                 }
             } else {
                 response.sendError(HttpServletResponse.SC_METHOD_NOT_ALLOWED);
@@ -265,6 +286,16 @@ public class WebMVC implements IModule, IWebMvc {
                     PairObject<IView, ResponseCache> _result = __interceptorRuleProcessor.processRequest(this, context);
                     _view = _result.getKey();
                     _responseCache = _result.getValue();
+                }
+                // 判断是否可以使用缓存
+                IWebCacheProcessor _cacheProcessor = __doGetWebCacheProcessor(_responseCache);
+                // 首先判断是否可以使用缓存
+                if (_cacheProcessor != null) {
+                    // 尝试从缓存中加载执行结果
+                    if (_cacheProcessor.processResponseCache(this, _responseCache, context, null)) {
+                        // 加载成功, 则
+                        _view = View.nullView();
+                    }
                 }
                 if (_view == null) {
                     // 处理Convention模式下URL参数集合
@@ -299,27 +330,19 @@ public class WebMVC implements IModule, IWebMvc {
                             }
                         }
                     }
-                }
-                if (_view != null) {
-                    if (_responseCache != null) {
+                    //
+                    if (_view != null && _cacheProcessor != null) {
                         try {
-                            IWebCacheProcessor _processor = null;
-                            if (!NullWebCacheProcessor.class.equals(_responseCache.processorClass())) {
-                                _processor = ClassUtils.impl(_responseCache.processorClass(), IWebCacheProcessor.class);
-                            }
-                            if (_processor == null) {
-                                _processor = getModuleCfg().getCacheProcessor();
-                            }
-                            if (_processor != null) {
-                                if (_processor.processResponseCache(this, _responseCache, context, _view)) {
-                                    _view = View.nullView();
-                                }
+                            if (_cacheProcessor.processResponseCache(this, _responseCache, context, _view)) {
+                                _view = View.nullView();
                             }
                         } catch (Exception e) {
                             // 缓存处理过程中的任何异常都不能影响本交请求的正常响应, 仅输出异常日志
                             _LOG.warn(e.getMessage(), RuntimeUtils.unwrapThrow(e));
                         }
                     }
+                }
+                if (_view != null) {
                     _view.render();
                 } else {
                     HttpStatusView.NOT_FOUND.render();
