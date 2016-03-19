@@ -18,6 +18,7 @@ package net.ymate.platform.webmvc.support;
 import net.ymate.platform.cache.CacheElement;
 import net.ymate.platform.cache.Caches;
 import net.ymate.platform.cache.ICaches;
+import net.ymate.platform.core.i18n.I18N;
 import net.ymate.platform.webmvc.IRequestContext;
 import net.ymate.platform.webmvc.IWebCacheProcessor;
 import net.ymate.platform.webmvc.IWebMvc;
@@ -113,7 +114,8 @@ public class WebCacheProcessor implements IWebCacheProcessor {
     protected String __doBuildCacheKey(HttpServletRequest request, ResponseCache responseCache) {
         // 计算缓存KEY值
         StringBuilder _keyBuilder = new StringBuilder()
-                .append(ResponseCache.class.getName());
+                .append(ResponseCache.class.getName())
+                .append(I18N.current());
         if (StringUtils.isNotBlank(responseCache.key())) {
             _keyBuilder.append(":").append(responseCache.key());
         } else {
