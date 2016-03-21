@@ -151,7 +151,7 @@ public class WebMVC implements IModule, IWebMvc {
         }
         //
         if (_isValid) {
-            if (!targetClass.getAnnotation(Controller.class).singleton()) {
+            if (targetClass.getAnnotation(Controller.class).singleton()) {
                 __owner.registerBean(BeanMeta.create(targetClass.newInstance(), targetClass));
             } else {
                 __owner.registerBean(BeanMeta.create(targetClass));

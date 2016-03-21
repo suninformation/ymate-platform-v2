@@ -15,11 +15,8 @@
  */
 package net.ymate.platform.webmvc.support;
 
-import com.alibaba.fastjson.JSON;
 import net.ymate.platform.core.lang.BlurObject;
 import net.ymate.platform.core.util.ClassUtils;
-import net.ymate.platform.validation.ValidateResult;
-import net.ymate.platform.validation.Validations;
 import net.ymate.platform.webmvc.IRequestProcessor;
 import net.ymate.platform.webmvc.IWebMvc;
 import net.ymate.platform.webmvc.RequestMeta;
@@ -33,7 +30,6 @@ import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 
 import java.io.File;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -67,37 +63,17 @@ public final class RequestExecutor {
     }
 
     public IView execute() throws Exception {
+        // 将当前RequestMeta对象放入WebContext中, 便于其它环节中获取并使用
+        WebContext.getContext().addAttribute(RequestMeta.class.getName(), __requestMeta);
+        // 取得当前控制器方法参数的名称集合
         List<String> _methodParamNames = __requestMeta.getMethodParamNames();
-        //
+        // 根据参数名称, 从请求中提取对应的参数值
         Map<String, Object> _paramValues = __requestProcessor.processRequestParams(__owner, __requestMeta);
-        //
-        Map<String, ValidateResult> _resultMap = new HashMap<String, ValidateResult>();
-        if (!__requestMeta.isSingleton()) {
-            _resultMap = Validations.get(__owner.getOwner()).validate(__requestMeta.getTargetClass(), _paramValues);
-        }
-        if (!_methodParamNames.isEmpty()) {
-            _resultMap.putAll(Validations.get(__owner.getOwner()).validate(__requestMeta.getTargetClass(), __requestMeta.getMethod(), _paramValues));
-        }
-        if (!_resultMap.isEmpty()) {
-            IView _validationView = null;
-            if (__owner.getModuleCfg().getErrorProcessor() != null) {
-                _validationView = __owner.getModuleCfg().getErrorProcessor().onValidation(__owner, _resultMap);
-            }
-            if (_validationView == null) {
-                throw new IllegalArgumentException(JSON.toJSONString(_resultMap.values()));
-            } else {
-                return _validationView;
-            }
-        }
-        if (__owner.getModuleCfg().isParameterEscapeMode() && Type.EscapeOrder.AFTER.equals(__owner.getModuleCfg().getParameterEscapeOrder())) {
-            // 若执行转义顺序为after时, 取出暂存在WebContext中已被转义处理的参数
-            _paramValues = WebContext.getContext().getAttribute(Type.EscapeOrder.class.getName());
-        }
+        WebContext.getContext().addAttribute(RequestParametersProxy.class.getName(), _paramValues);
+        // 提取控制器类实例
         Object _targetObj = __owner.getOwner().getBean(__requestMeta.getTargetClass());
-        if (!__requestMeta.isSingleton()) {
-            ClassUtils.wrapper(_targetObj).fromMap(_paramValues);
-        }
         if (!_methodParamNames.isEmpty()) {
+            // 组装方法所需参数
             Object[] _mParamValues = new Object[_methodParamNames.size()];
             for (int _idx = 0; _idx < _methodParamNames.size(); _idx++) {
                 _mParamValues[_idx] = _paramValues.get(_methodParamNames.get(_idx));
