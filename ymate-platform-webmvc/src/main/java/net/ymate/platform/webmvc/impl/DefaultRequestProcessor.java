@@ -201,7 +201,7 @@ public class DefaultRequestProcessor implements IRequestProcessor {
                     }
                 }
             }
-            if (!_escapeBeforeFlag) {
+            if (owner.getModuleCfg().isParameterEscapeMode() && !_escapeBeforeFlag) {
                 Map<String, Object> _resultEscapedMap = WebContext.getContext().getAttribute(Type.EscapeOrder.class.getName());
                 _resultEscapedMap.put(paramMeta.getFieldName(), _wrapperEscaped.getTargetObject());
             }
