@@ -826,6 +826,10 @@ NullView：空视图；
 
 WebMVC模块已集成验证模块，控制器方法可以直接使用验证注解完成参数的有效性验证，详细内容请参阅 [验证(Validation)](http://git.oschina.net/suninformation/ymate-platform-v2/blob/master/ymate-platform-validation/README.md) 模块文档；
 
+> **说明**：
+> - 控制器的参数验证规则全部通过验证注解进行配置并按顺序执行，由WebMVC框架自动调用完成验证过程，无需手动干预；
+> - 参数验证过程将在控制器配置的拦截器执行完毕后执行，也就是说拦截器中获取的请求参数值并未验证过；
+
 #### 缓存（Cache）
 
 ###### 集成缓存模块
@@ -923,7 +927,7 @@ WebMVC模块基于YMPv2.0的新特性，原生支持AOP方法拦截，通过以�
         public class UserSessionChecker implements IInterceptor {
             public Object intercept(InterceptContext context) throws Exception {
                 // 判断当前拦截器执行方向
-                if (context.getDirection() 
+                if (context.getDirection().equals(Direction.BEFORE)
                 		&& WebContext.getRequest().getSession(false) == null) {
                     return View.redirectView("/user/login");
                 }
