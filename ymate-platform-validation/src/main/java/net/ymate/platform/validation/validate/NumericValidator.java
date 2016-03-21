@@ -15,6 +15,7 @@
  */
 package net.ymate.platform.validation.validate;
 
+import net.ymate.platform.core.beans.annotation.CleanProxy;
 import net.ymate.platform.core.i18n.I18N;
 import net.ymate.platform.core.lang.BlurObject;
 import net.ymate.platform.validation.IValidator;
@@ -31,6 +32,7 @@ import org.apache.commons.lang.math.NumberUtils;
  * @version 1.0
  */
 @Validator(VNumeric.class)
+@CleanProxy
 public class NumericValidator implements IValidator {
 
     public ValidateResult validate(ValidateContext context) {
@@ -67,7 +69,7 @@ public class NumericValidator implements IValidator {
                     } else {
                         if (_vNumeric.max() > 0 && _vNumeric.min() > 0) {
                             String __NUMERIC_BETWEEN = "ymp.validation.numeric_between";
-                            _msg = I18N.formatMessage(VALIDATION_I18N_RESOURCE, __NUMERIC_BETWEEN, "{0} numeric must be between {1} and {2}.", _pName, _vNumeric.max(), _vNumeric.min());
+                            _msg = I18N.formatMessage(VALIDATION_I18N_RESOURCE, __NUMERIC_BETWEEN, "{0} numeric must be between {1} and {2}.", _vNumeric.min(), _pName, _vNumeric.max());
                         } else if (_vNumeric.max() > 0) {
                             String __NUMERIC_MAX = "ymp.validation.numeric_max";
                             _msg = I18N.formatMessage(VALIDATION_I18N_RESOURCE, __NUMERIC_MAX, "{0} numeric must be lt {1}.", _pName, _vNumeric.max());

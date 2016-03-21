@@ -15,6 +15,7 @@
  */
 package net.ymate.platform.validation.validate;
 
+import net.ymate.platform.core.beans.annotation.CleanProxy;
 import net.ymate.platform.core.i18n.I18N;
 import net.ymate.platform.core.lang.BlurObject;
 import net.ymate.platform.validation.IValidator;
@@ -30,6 +31,7 @@ import org.apache.commons.lang.StringUtils;
  * @version 1.0
  */
 @Validator(VEmail.class)
+@CleanProxy
 public class EmailValidator implements IValidator {
 
     public ValidateResult validate(ValidateContext context) {

@@ -20,6 +20,7 @@ import net.ymate.platform.core.beans.IBeanFactory;
 import net.ymate.platform.core.beans.IBeanHandler;
 import net.ymate.platform.core.beans.IBeanLoader;
 import net.ymate.platform.core.beans.annotation.By;
+import net.ymate.platform.core.beans.annotation.CleanProxy;
 import net.ymate.platform.core.beans.annotation.Inject;
 import net.ymate.platform.core.beans.annotation.Proxy;
 import net.ymate.platform.core.beans.proxy.IProxy;
@@ -260,7 +261,7 @@ public class DefaultBeanFactory implements IBeanFactory {
 
             private boolean __doCheckAnnotation(Proxy targetProxyAnno) {
                 // 若设置了自定义注解类型，则判断targetClass是否匹配，否则返回true
-                if (targetProxyAnno.annotation() != null && targetProxyAnno.annotation().length > 0) {
+                if (targetProxyAnno.annotation().length > 0) {
                     for (Class<? extends Annotation> _annoClass : targetProxyAnno.annotation()) {
                         if (_targetClass.isAnnotationPresent(_annoClass)) {
                             return true;
@@ -272,6 +273,18 @@ public class DefaultBeanFactory implements IBeanFactory {
             }
 
             public boolean filter(IProxy targetProxy) {
+                CleanProxy _cleanProxy = _targetClass.getAnnotation(CleanProxy.class);
+                if (_cleanProxy != null) {
+                    if (_cleanProxy.value().length > 0) {
+                        for (Class<? extends Proxy> _proxyClass : _cleanProxy.value()) {
+                            if (_proxyClass.equals(targetProxy.getClass())) {
+                                return false;
+                            }
+                        }
+                    } else {
+                        return false;
+                    }
+                }
                 Proxy _targetProxyAnno = targetProxy.getClass().getAnnotation(Proxy.class);
                 // 若已设置作用包路径
                 if (StringUtils.isNotBlank(_targetProxyAnno.packageScope())) {

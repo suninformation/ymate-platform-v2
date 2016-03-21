@@ -15,6 +15,7 @@
  */
 package net.ymate.platform.validation.validate;
 
+import net.ymate.platform.core.beans.annotation.CleanProxy;
 import net.ymate.platform.core.i18n.I18N;
 import net.ymate.platform.core.lang.BlurObject;
 import net.ymate.platform.validation.IValidator;
@@ -30,6 +31,7 @@ import org.apache.commons.lang.StringUtils;
  * @version 1.0
  */
 @Validator(VLength.class)
+@CleanProxy
 public class LengthValidator implements IValidator {
 
     public ValidateResult validate(ValidateContext context) {
@@ -53,7 +55,7 @@ public class LengthValidator implements IValidator {
                         } else {
                             if (_vLength.max() > 0 && _vLength.min() > 0) {
                                 String __LENGTH_BETWEEN = "ymp.validation.length_between";
-                                _msg = I18N.formatMessage(VALIDATION_I18N_RESOURCE, __LENGTH_BETWEEN, "{0} length must be between {1} and {2}.", _pName, _vLength.max(), _vLength.min());
+                                _msg = I18N.formatMessage(VALIDATION_I18N_RESOURCE, __LENGTH_BETWEEN, "{0} length must be between {1} and {2}.", _pName, _vLength.min(), _vLength.max());
                             } else if (_vLength.max() > 0) {
                                 String __LENGTH_MAX = "ymp.validation.length_max";
                                 _msg = I18N.formatMessage(VALIDATION_I18N_RESOURCE, __LENGTH_MAX, "{0} length must be lt {1}.", _pName, _vLength.max());

@@ -15,6 +15,7 @@
  */
 package net.ymate.platform.validation.validate;
 
+import net.ymate.platform.core.beans.annotation.CleanProxy;
 import net.ymate.platform.core.i18n.I18N;
 import net.ymate.platform.core.lang.BlurObject;
 import net.ymate.platform.core.util.DateTimeUtils;
@@ -31,6 +32,7 @@ import org.apache.commons.lang.StringUtils;
  * @version 1.0
  */
 @Validator(VDateTime.class)
+@CleanProxy
 public class DateTimeValidator implements IValidator {
 
     public ValidateResult validate(ValidateContext context) {
