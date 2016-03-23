@@ -47,6 +47,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.File;
 import java.lang.reflect.Method;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -146,6 +147,10 @@ public class WebMVC implements IModule, IWebMvc {
                 RequestMeta _meta = new RequestMeta(this, targetClass, _method);
                 __mappingParser.registerRequestMeta(_meta);
                 //
+                if (__owner.getConfig().isDevelopMode()) {
+                    _LOG.debug("--> " + _meta.getAllowMethods() + ": " + _meta.getMapping() + " : " + _meta.getTargetClass().getName());
+                }
+                //
                 _isValid = true;
             }
         }
@@ -186,172 +191,211 @@ public class WebMVC implements IModule, IWebMvc {
                                HttpServletRequest request,
                                HttpServletResponse response) throws Exception {
 
-        RequestMeta _meta = __mappingParser.doParse(context);
-        if (_meta != null) {
-            // 先判断当前请求方式是否允许
-            if (_meta.allowHttpMethod(context.getHttpMethod())) {
-                // 判断允许的请求头
-                Map<String, String> _allowMap = _meta.getAllowHeaders();
-                for (Map.Entry<String, String> _entry : _allowMap.entrySet()) {
-                    String _value = WebContext.getRequest().getHeader(_entry.getKey());
-                    if (StringUtils.trimToEmpty(_entry.getValue()).equals("*") && StringUtils.isBlank(_value)) {
-                        response.sendError(HttpServletResponse.SC_BAD_REQUEST);
-                        return;
-                    } else {
-                        if (_value == null || !_value.equalsIgnoreCase(_entry.getValue())) {
+        try {
+            _LOG.debug("--> Process request start: " + context.getHttpMethod() + ":" + context.getRequestMapping());
+            //
+            RequestMeta _meta = __mappingParser.doParse(context);
+            if (_meta != null) {
+                //
+                _LOG.debug("--- Request mode: controller");
+                // 先判断当前请求方式是否允许
+                if (_meta.allowHttpMethod(context.getHttpMethod())) {
+                    // 判断允许的请求头
+                    Map<String, String> _allowMap = _meta.getAllowHeaders();
+                    for (Map.Entry<String, String> _entry : _allowMap.entrySet()) {
+                        String _value = WebContext.getRequest().getHeader(_entry.getKey());
+                        if (StringUtils.trimToEmpty(_entry.getValue()).equals("*") && StringUtils.isBlank(_value)) {
                             response.sendError(HttpServletResponse.SC_BAD_REQUEST);
+                            //
+                            _LOG.debug("--- Check request allowed: NO");
                             return;
+                        } else {
+                            if (_value == null || !_value.equalsIgnoreCase(_entry.getValue())) {
+                                response.sendError(HttpServletResponse.SC_BAD_REQUEST);
+                                //
+                                _LOG.debug("--- Check request allowed: NO");
+                                return;
+                            }
+                        }
+                    }
+                    // 判断允许的请求参数
+                    _allowMap = _meta.getAllowParams();
+                    for (Map.Entry<String, String> _entry : _allowMap.entrySet()) {
+                        if (StringUtils.trimToEmpty(_entry.getValue()).equals("*") && !WebContext.getRequest().getParameterMap().containsKey(_entry.getKey())) {
+                            response.sendError(HttpServletResponse.SC_BAD_REQUEST);
+                            //
+                            _LOG.debug("--- Check request allowed: NO");
+                            return;
+                        } else {
+                            String _value = WebContext.getRequest().getParameter(_entry.getKey());
+                            if (_value == null || !_value.equalsIgnoreCase(_entry.getValue())) {
+                                response.sendError(HttpServletResponse.SC_BAD_REQUEST);
+                                //
+                                _LOG.debug("--- Check request allowed: NO");
+                                return;
+                            }
+                        }
+                    }
+                    // 判断是否需要处理文件上传
+                    if (context.getHttpMethod().equals(Type.HttpMethod.POST) && _meta.getMethod().isAnnotationPresent(FileUpload.class)) {
+                        request = new MultipartRequestWrapper(this, request);
+                        //
+                        _LOG.debug("--- Include file upload: YES");
+                    }
+                    WebContext.getContext().addAttribute(Type.Context.HTTP_REQUEST, request);
+                    //
+                    IWebCacheProcessor _cacheProcessor = __doGetWebCacheProcessor(_meta.getResponseCache());
+                    IView _view = null;
+                    // 首先判断是否可以使用缓存
+                    if (_cacheProcessor != null) {
+                        // 尝试从缓存中加载执行结果
+                        if (_cacheProcessor.processResponseCache(this, _meta.getResponseCache(), context, null)) {
+                            // 加载成功, 则
+                            _view = View.nullView();
+                            //
+                            _LOG.debug("--- Load data from the cache: YES");
+                        }
+                    }
+                    if (_view == null) {
+                        _view = RequestExecutor.bind(this, _meta).execute();
+                        if (_view != null) {
+                            if (_cacheProcessor != null) {
+                                try {
+                                    // 生成缓存
+                                    if (_cacheProcessor.processResponseCache(this, _meta.getResponseCache(), context, _view)) {
+                                        _view = View.nullView();
+                                        //
+                                        _LOG.debug("--- Results data cached: YES");
+                                    }
+                                } catch (Exception e) {
+                                    // 缓存处理过程中的任何异常都不能影响本交请求的正常响应, 仅输出异常日志
+                                    _LOG.warn(e.getMessage(), RuntimeUtils.unwrapThrow(e));
+                                }
+                            }
+                            _view.render();
+                        } else {
+                            HttpStatusView.NOT_FOUND.render();
+                        }
+                    } else {
+                        _view.render();
+                    }
+                } else {
+                    response.sendError(HttpServletResponse.SC_METHOD_NOT_ALLOWED);
+                }
+            } else if (__moduleCfg.isConventionMode()) {
+                boolean _isAllowConvention = true;
+                if (!__moduleCfg.getConventionViewNotAllowPaths().isEmpty()) {
+                    for (String _vPath : __moduleCfg.getConventionViewNotAllowPaths()) {
+                        if (context.getRequestMapping().startsWith(_vPath)) {
+                            _isAllowConvention = false;
+                            break;
                         }
                     }
                 }
-                // 判断允许的请求参数
-                _allowMap = _meta.getAllowParams();
-                for (Map.Entry<String, String> _entry : _allowMap.entrySet()) {
-                    if (StringUtils.trimToEmpty(_entry.getValue()).equals("*") && !WebContext.getRequest().getParameterMap().containsKey(_entry.getKey())) {
-                        response.sendError(HttpServletResponse.SC_BAD_REQUEST);
-                        return;
-                    } else {
-                        String _value = WebContext.getRequest().getParameter(_entry.getKey());
-                        if (_value == null || !_value.equalsIgnoreCase(_entry.getValue())) {
-                            response.sendError(HttpServletResponse.SC_BAD_REQUEST);
-                            return;
+                if (_isAllowConvention && !__moduleCfg.getConventionViewAllowPaths().isEmpty()) {
+                    _isAllowConvention = false;
+                    for (String _vPath : __moduleCfg.getConventionViewAllowPaths()) {
+                        if (context.getRequestMapping().startsWith(_vPath)) {
+                            _isAllowConvention = true;
+                            break;
                         }
                     }
                 }
-                // 判断是否需要处理文件上传
-                if (context.getHttpMethod().equals(Type.HttpMethod.POST) && _meta.getMethod().isAnnotationPresent(FileUpload.class)) {
-                    request = new MultipartRequestWrapper(this, request);
-                }
-                WebContext.getContext().addAttribute(Type.Context.HTTP_REQUEST, request);
-                //
-                //
-                IWebCacheProcessor _cacheProcessor = __doGetWebCacheProcessor(_meta.getResponseCache());
-                IView _view = null;
-                // 首先判断是否可以使用缓存
-                if (_cacheProcessor != null) {
-                    // 尝试从缓存中加载执行结果
-                    if (_cacheProcessor.processResponseCache(this, _meta.getResponseCache(), context, null)) {
-                        // 加载成功, 则
-                        _view = View.nullView();
+                if (_isAllowConvention) {
+                    //
+                    _LOG.debug("--- Request mode: convention");
+                    //
+                    IView _view = null;
+                    ResponseCache _responseCache = null;
+                    if (__interceptorRuleProcessor != null) {
+                        // 尝试执行Convention拦截规则
+                        PairObject<IView, ResponseCache> _result = __interceptorRuleProcessor.processRequest(this, context);
+                        _view = _result.getKey();
+                        _responseCache = _result.getValue();
                     }
-                }
-                if (_view == null) {
-                    _view = RequestExecutor.bind(this, _meta).execute();
-                    if (_view != null) {
-                        if (_cacheProcessor != null) {
+                    // 判断是否可以使用缓存
+                    IWebCacheProcessor _cacheProcessor = __doGetWebCacheProcessor(_responseCache);
+                    // 首先判断是否可以使用缓存
+                    if (_cacheProcessor != null) {
+                        // 尝试从缓存中加载执行结果
+                        if (_cacheProcessor.processResponseCache(this, _responseCache, context, null)) {
+                            // 加载成功, 则
+                            _view = View.nullView();
+                            //
+                            _LOG.debug("--- Load data from the cache: YES");
+                        }
+                    }
+                    if (_view == null) {
+                        // 处理Convention模式下URL参数集合
+                        String _requestMapping = context.getRequestMapping();
+                        String[] _urlParamArr = getModuleCfg().isConventionUrlrewriteMode() ? StringUtils.split(_requestMapping, '_') : new String[]{_requestMapping};
+                        if (_urlParamArr != null && _urlParamArr.length > 1) {
+                            _requestMapping = _urlParamArr[0];
+                            List<String> _urlParams = Arrays.asList(_urlParamArr).subList(1, _urlParamArr.length);
+                            WebContext.getRequest().setAttribute("UrlParams", _urlParams);
+                            //
+                            _LOG.debug("--- With parameters : " + _urlParams);
+                        }
+                        //
+                        if (__moduleCfg.getErrorProcessor() != null) {
+                            _view = __moduleCfg.getErrorProcessor().onConvention(this, context);
+                        }
+                        if (_view == null) {
+                            // 采用系统默认方式处理约定优于配置的URL请求映射
+                            String[] _fileTypes = {".html", ".jsp", ".ftl", ".vm"};
+                            for (String _fileType : _fileTypes) {
+                                File _targetFile = new File(__moduleCfg.getAbstractBaseViewPath(), _requestMapping + _fileType);
+                                if (_targetFile.exists()) {
+                                    if (".html".equals(_fileType)) {
+                                        _view = HtmlView.bind(this, _requestMapping.substring(1));
+                                        //
+                                        _LOG.debug("--- Rendering template file : " + _requestMapping + _fileType);
+                                        break;
+                                    } else if (".jsp".equals(_fileType)) {
+                                        _view = JspView.bind(this, _requestMapping.substring(1));
+                                        //
+                                        _LOG.debug("--- Rendering template file : " + _requestMapping + _fileType);
+                                        break;
+                                    } else if (".ftl".equals(_fileType)) {
+                                        _view = FreemarkerView.bind(this, _requestMapping.substring(1));
+                                        //
+                                        _LOG.debug("--- Rendering template file : " + _requestMapping + _fileType);
+                                        break;
+                                    } else if (".vm".equals(_fileType)) {
+                                        _view = VelocityView.bind(this, _requestMapping.substring(1));
+                                        //
+                                        _LOG.debug("--- Rendering template file : " + _requestMapping + _fileType);
+                                    }
+                                }
+                            }
+                        }
+                        //
+                        if (_view != null && _cacheProcessor != null) {
                             try {
-                                // 生成缓存
-                                if (_cacheProcessor.processResponseCache(this, _meta.getResponseCache(), context, _view)) {
+                                if (_cacheProcessor.processResponseCache(this, _responseCache, context, _view)) {
                                     _view = View.nullView();
+                                    //
+                                    _LOG.debug("--- Results data cached: YES");
                                 }
                             } catch (Exception e) {
                                 // 缓存处理过程中的任何异常都不能影响本交请求的正常响应, 仅输出异常日志
                                 _LOG.warn(e.getMessage(), RuntimeUtils.unwrapThrow(e));
                             }
                         }
+                    }
+                    if (_view != null) {
                         _view.render();
                     } else {
                         HttpStatusView.NOT_FOUND.render();
                     }
                 } else {
-                    _view.render();
-                }
-            } else {
-                response.sendError(HttpServletResponse.SC_METHOD_NOT_ALLOWED);
-            }
-        } else if (__moduleCfg.isConventionMode()) {
-            boolean _isAllowConvention = true;
-            if (!__moduleCfg.getConventionViewNotAllowPaths().isEmpty()) {
-                for (String _vPath : __moduleCfg.getConventionViewNotAllowPaths()) {
-                    if (context.getRequestMapping().startsWith(_vPath)) {
-                        _isAllowConvention = false;
-                        break;
-                    }
-                }
-            }
-            if (_isAllowConvention && !__moduleCfg.getConventionViewAllowPaths().isEmpty()) {
-                _isAllowConvention = false;
-                for (String _vPath : __moduleCfg.getConventionViewAllowPaths()) {
-                    if (context.getRequestMapping().startsWith(_vPath)) {
-                        _isAllowConvention = true;
-                        break;
-                    }
-                }
-            }
-            if (_isAllowConvention) {
-                IView _view = null;
-                ResponseCache _responseCache = null;
-                if (__interceptorRuleProcessor != null) {
-                    // 尝试执行Convention拦截规则
-                    PairObject<IView, ResponseCache> _result = __interceptorRuleProcessor.processRequest(this, context);
-                    _view = _result.getKey();
-                    _responseCache = _result.getValue();
-                }
-                // 判断是否可以使用缓存
-                IWebCacheProcessor _cacheProcessor = __doGetWebCacheProcessor(_responseCache);
-                // 首先判断是否可以使用缓存
-                if (_cacheProcessor != null) {
-                    // 尝试从缓存中加载执行结果
-                    if (_cacheProcessor.processResponseCache(this, _responseCache, context, null)) {
-                        // 加载成功, 则
-                        _view = View.nullView();
-                    }
-                }
-                if (_view == null) {
-                    // 处理Convention模式下URL参数集合
-                    String _requestMapping = context.getRequestMapping();
-                    String[] _urlParamArr = getModuleCfg().isConventionUrlrewriteMode() ? StringUtils.split(_requestMapping, '_') : new String[]{_requestMapping};
-                    if (_urlParamArr != null && _urlParamArr.length > 1) {
-                        _requestMapping = _urlParamArr[0];
-                        WebContext.getRequest().setAttribute("UrlParams", Arrays.asList(_urlParamArr).subList(1, _urlParamArr.length));
-                    }
-                    //
-                    if (__moduleCfg.getErrorProcessor() != null) {
-                        _view = __moduleCfg.getErrorProcessor().onConvention(this, context);
-                    }
-                    if (_view == null) {
-                        // 采用系统默认方式处理约定优于配置的URL请求映射
-                        String[] _fileTypes = {".html", ".jsp", ".ftl", ".vm"};
-                        for (String _fileType : _fileTypes) {
-                            File _targetFile = new File(__moduleCfg.getAbstractBaseViewPath(), _requestMapping + _fileType);
-                            if (_targetFile.exists()) {
-                                if (".html".equals(_fileType)) {
-                                    _view = HtmlView.bind(this, _requestMapping.substring(1));
-                                    break;
-                                } else if (".jsp".equals(_fileType)) {
-                                    _view = JspView.bind(this, _requestMapping.substring(1));
-                                    break;
-                                } else if (".ftl".equals(_fileType)) {
-                                    _view = FreemarkerView.bind(this, _requestMapping.substring(1));
-                                    break;
-                                } else if (".vm".equals(_fileType)) {
-                                    _view = VelocityView.bind(this, _requestMapping.substring(1));
-                                }
-                            }
-                        }
-                    }
-                    //
-                    if (_view != null && _cacheProcessor != null) {
-                        try {
-                            if (_cacheProcessor.processResponseCache(this, _responseCache, context, _view)) {
-                                _view = View.nullView();
-                            }
-                        } catch (Exception e) {
-                            // 缓存处理过程中的任何异常都不能影响本交请求的正常响应, 仅输出异常日志
-                            _LOG.warn(e.getMessage(), RuntimeUtils.unwrapThrow(e));
-                        }
-                    }
-                }
-                if (_view != null) {
-                    _view.render();
-                } else {
-                    HttpStatusView.NOT_FOUND.render();
+                    response.sendError(HttpServletResponse.SC_NOT_FOUND);
                 }
             } else {
                 response.sendError(HttpServletResponse.SC_NOT_FOUND);
             }
-        } else {
-            response.sendError(HttpServletResponse.SC_NOT_FOUND);
+        } finally {
+            _LOG.debug("<-- Process request completed: " + context.getHttpMethod() + ":" + context.getRequestMapping());
         }
     }
 }

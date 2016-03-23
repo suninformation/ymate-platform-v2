@@ -121,6 +121,16 @@ public class Cfgs implements IModule, IConfig {
                     __userDir = System.getProperty(__USER_DIR, "");
                     //
                     __inited = true;
+                    //
+                    _LOG.info("-->  CONFIG_HOME: " + __configHome);
+                    _LOG.info("-->    USER_HOME: " + __userHome);
+                    _LOG.info("-->     USER_DIR: " + __userDir);
+                    if (StringUtils.isNotBlank(__moduleCfg.getProjectName())) {
+                        _LOG.info("--> PROJECT_NAME: " + __moduleCfg.getProjectName());
+                    }
+                    if (StringUtils.isNotBlank(__moduleCfg.getModuleName())) {
+                        _LOG.info("-->  MODULE_NAME: " + __moduleCfg.getModuleName());
+                    }
                 }
             }
             if (!__inited) {
