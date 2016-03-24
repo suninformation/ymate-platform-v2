@@ -144,20 +144,26 @@ public class RuntimeUtils {
      * @return 返回应用根路径
      */
     public static String getRootPath(boolean safe) {
+        //
+        String _rootPath = null;
+        //
         URL _rootURL = RuntimeUtils.class.getClassLoader().getResource("/");
-        boolean _isWeb = false;
         if (_rootURL == null) {
             _rootURL = RuntimeUtils.class.getClassLoader().getResource("");
+            if (_rootURL != null) {
+                _rootPath = _rootURL.getPath();
+            }
         } else {
-            _isWeb = true;
+            _rootPath = StringUtils.removeEnd(StringUtils.substringBefore(_rootURL.getPath(), safe ? "classes/" : "WEB-INF/"), "/");
         }
-        String _rootPath = StringUtils.replace(StringUtils.removeEnd(
-                _isWeb ? StringUtils.substringBefore(
-                        _rootURL.getPath(), safe ? "classes/" : "WEB-INF/") : _rootURL.getPath(), "/"), "%20", " ");
-        if (isWindows()) {
-            _rootPath = StringUtils.removeStart(_rootPath, "/");
+        //
+        if (_rootPath != null) {
+            _rootPath = StringUtils.replace(_rootPath, "%20", " ");
+            if (isWindows()) {
+                _rootPath = StringUtils.removeStart(_rootPath, "/");
+            }
         }
-        return _rootPath;
+        return StringUtils.trimToEmpty(_rootPath);
     }
 
     /**
