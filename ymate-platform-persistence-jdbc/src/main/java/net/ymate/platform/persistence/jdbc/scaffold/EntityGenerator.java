@@ -22,10 +22,7 @@ import net.ymate.platform.core.YMP;
 import net.ymate.platform.core.lang.BlurObject;
 import net.ymate.platform.core.util.RuntimeUtils;
 import net.ymate.platform.persistence.base.EntityMeta;
-import net.ymate.platform.persistence.jdbc.IConnectionHolder;
-import net.ymate.platform.persistence.jdbc.ISession;
-import net.ymate.platform.persistence.jdbc.ISessionExecutor;
-import net.ymate.platform.persistence.jdbc.JDBC;
+import net.ymate.platform.persistence.jdbc.*;
 import net.ymate.platform.persistence.jdbc.base.IResultSetHandler;
 import net.ymate.platform.persistence.jdbc.query.SQL;
 import net.ymate.platform.persistence.jdbc.support.ResultSetHelper;
@@ -51,11 +48,23 @@ public class EntityGenerator {
     private String __templateRootPath = EntityGenerator.class.getPackage().getName().replace(".", "/");
     private Configuration __freemarkerConfig;
 
-    public EntityGenerator() {
+    private YMP __owner;
+    private IDatabase __jdbc;
+
+    private EntityGenerator() {
         __freemarkerConfig = new Configuration(Configuration.VERSION_2_3_22);
         __freemarkerConfig.setTemplateExceptionHandler(TemplateExceptionHandler.HTML_DEBUG_HANDLER);
         __freemarkerConfig.setClassForTemplateLoading(EntityGenerator.class, "/");
         __freemarkerConfig.setDefaultEncoding("UTF-8");
+    }
+
+    public EntityGenerator(YMP owner) {
+        this();
+        if (owner == null) {
+            owner = YMP.get();
+        }
+        this.__owner = owner;
+        this.__jdbc = JDBC.get(__owner);
     }
 
     /**
@@ -72,7 +81,7 @@ public class EntityGenerator {
         List<String> _pkFields = new LinkedList<String>();
         TableMeta _meta = new TableMeta(_pkFields, _tableFields);
         try {
-            _connHolder = JDBC.get().getDefaultConnectionHolder();
+            _connHolder = __jdbc.getDefaultConnectionHolder();
             String _dbType = _connHolder.getDialect().getName();
             DatabaseMetaData _dbMetaData = _connHolder.getConnection().getMetaData();
             _resultSet = _dbMetaData.getPrimaryKeys(dbName, _dbType.equalsIgnoreCase("oracle") ? dbUserName.toUpperCase() : dbUserName, tableName);
@@ -94,22 +103,19 @@ public class EntityGenerator {
                     for (int _idx = 1; _idx <= _rsMetaData.getColumnCount(); _idx++) {
                         // 获取字段元数据对象
                         ResultSet _column = _dbMetaData.getColumns(dbName, _dbType.equalsIgnoreCase("oracle") ? dbUserName.toUpperCase() : dbUserName, tableName, _rsMetaData.getColumnName(_idx));
-                        try {
-                            if (_column.next()) {
-                                // 提取字段定义及字段默认值
-                                _tableFields.put(_rsMetaData.getColumnName(_idx).toLowerCase(), new ColumnInfo(
-                                        _rsMetaData.getColumnName(_idx).toLowerCase(),
-                                        _rsMetaData.getColumnClassName(_idx),
-                                        _rsMetaData.isAutoIncrement(_idx),
-                                        _rsMetaData.isSigned(_idx),
-                                        _rsMetaData.getPrecision(_idx),
-                                        _rsMetaData.getScale(_idx),
-                                        _rsMetaData.isNullable(_idx),
-                                        _column.getString("COLUMN_DEF")));
-                            }
-                        } finally {
-                            _column.close();
+                        if (_column.next()) {
+                            // 提取字段定义及字段默认值
+                            _tableFields.put(_rsMetaData.getColumnName(_idx).toLowerCase(), new ColumnInfo(
+                                    _rsMetaData.getColumnName(_idx).toLowerCase(),
+                                    _rsMetaData.getColumnClassName(_idx),
+                                    _rsMetaData.isAutoIncrement(_idx),
+                                    _rsMetaData.isSigned(_idx),
+                                    _rsMetaData.getPrecision(_idx),
+                                    _rsMetaData.getScale(_idx),
+                                    _rsMetaData.isNullable(_idx),
+                                    _column.getString("COLUMN_DEF")));
                         }
+                        _column.close();
                     }
                 }
             }
@@ -145,7 +151,7 @@ public class EntityGenerator {
      */
     private List<String> getTableNames() {
         try {
-            return JDBC.get().openSession(new ISessionExecutor<List<String>>() {
+            return __jdbc.openSession(new ISessionExecutor<List<String>>() {
                 @Override
                 public List<String> execute(ISession session) throws Exception {
                     String _dbType = session.getConnectionHolder().getDialect().getName();
@@ -184,9 +190,9 @@ public class EntityGenerator {
     public void createEntityClassFiles() {
         Map<String, Object> _propMap = buildPropMap();
         //
-        boolean _isUseBaseEntity = BlurObject.bind(YMP.get().getConfig().getParam("jdbc.use_base_entity")).toBooleanValue();
-        boolean _isUseClassSuffix = BlurObject.bind(YMP.get().getConfig().getParam("jdbc.use_class_suffix")).toBooleanValue();
-        boolean _isUseChainMode = BlurObject.bind(YMP.get().getConfig().getParam("jdbc.use_chain_mode")).toBooleanValue();
+        boolean _isUseBaseEntity = BlurObject.bind(__owner.getConfig().getParam("jdbc.use_base_entity")).toBooleanValue();
+        boolean _isUseClassSuffix = BlurObject.bind(__owner.getConfig().getParam("jdbc.use_class_suffix")).toBooleanValue();
+        boolean _isUseChainMode = BlurObject.bind(__owner.getConfig().getParam("jdbc.use_chain_mode")).toBooleanValue();
         _propMap.put("isUseBaseEntity", _isUseBaseEntity);
         _propMap.put("isUseClassSuffix", _isUseClassSuffix);
         _propMap.put("isUseChainMode", _isUseChainMode);
@@ -194,16 +200,16 @@ public class EntityGenerator {
             buildTargetFile("/model/BaseEntity.java", "/BaseEntity.ftl", _propMap);
         }
         //
-        List<String> _tableList = Arrays.asList(StringUtils.split(StringUtils.defaultIfBlank(YMP.get().getConfig().getParam("jdbc.table_list"), ""), "|"));
+        List<String> _tableList = Arrays.asList(StringUtils.split(StringUtils.defaultIfBlank(__owner.getConfig().getParam("jdbc.table_list"), ""), "|"));
         if (_tableList.isEmpty()) {
             _tableList = getTableNames();
         }
         //
-        String _dbName = YMP.get().getConfig().getParam("jdbc.db_name");
-        String _dbUser = YMP.get().getConfig().getParam("jdbc.db_username");
-        String[] _prefixs = StringUtils.split(StringUtils.defaultIfBlank(YMP.get().getConfig().getParam("jdbc.table_prefix"), ""), '|');
-        boolean _isRemovePrefix = new BlurObject(YMP.get().getConfig().getParam("jdbc.remove_table_prefix")).toBooleanValue();
-        List<String> _tableExcludeList = Arrays.asList(StringUtils.split(StringUtils.defaultIfBlank(YMP.get().getConfig().getParam("jdbc.table_exclude_list"), "").toLowerCase(), "|"));
+        String _dbName = __owner.getConfig().getParam("jdbc.db_name");
+        String _dbUser = __owner.getConfig().getParam("jdbc.db_username");
+        String[] _prefixs = StringUtils.split(StringUtils.defaultIfBlank(__owner.getConfig().getParam("jdbc.table_prefix"), ""), '|');
+        boolean _isRemovePrefix = new BlurObject(__owner.getConfig().getParam("jdbc.remove_table_prefix")).toBooleanValue();
+        List<String> _tableExcludeList = Arrays.asList(StringUtils.split(StringUtils.defaultIfBlank(__owner.getConfig().getParam("jdbc.table_exclude_list"), "").toLowerCase(), "|"));
         for (String _tableName : _tableList) {
             // 判断黑名单
             if (!_tableExcludeList.isEmpty() && _tableExcludeList.contains(_tableName.toLowerCase())) {
@@ -294,7 +300,7 @@ public class EntityGenerator {
     private void buildTargetFile(String targetFileName, String tmplFile, Map<String, Object> propMap) {
         Writer _outWriter = null;
         try {
-            File _outputFile = new File(RuntimeUtils.replaceEnvVariable(StringUtils.defaultIfBlank(YMP.get().getConfig().getParam("jdbc.output_path"), "${root}")), new File(((String) propMap.get("packageName")).replace('.', '/'), targetFileName).getPath());
+            File _outputFile = new File(RuntimeUtils.replaceEnvVariable(StringUtils.defaultIfBlank(__owner.getConfig().getParam("jdbc.output_path"), "${root}")), new File(((String) propMap.get("packageName")).replace('.', '/'), targetFileName).getPath());
             File _path = _outputFile.getParentFile();
             if (!_path.exists()) {
                 _path.mkdirs();
@@ -319,7 +325,7 @@ public class EntityGenerator {
 
     private Map<String, Object> buildPropMap() {
         Map<String, Object> _propMap = new HashMap<String, Object>();
-        _propMap.put("packageName", StringUtils.defaultIfBlank(YMP.get().getConfig().getParam("jdbc.package_name"), "packages"));
+        _propMap.put("packageName", StringUtils.defaultIfBlank(__owner.getConfig().getParam("jdbc.package_name"), "packages"));
         _propMap.put("lastUpdateTime", new Date());
         return _propMap;
     }
@@ -470,7 +476,7 @@ public class EntityGenerator {
     public static void main(String[] args) throws Exception {
         YMP.get().init();
         try {
-            new EntityGenerator().createEntityClassFiles();
+            new EntityGenerator(YMP.get()).createEntityClassFiles();
         } finally {
             YMP.get().destroy();
         }
