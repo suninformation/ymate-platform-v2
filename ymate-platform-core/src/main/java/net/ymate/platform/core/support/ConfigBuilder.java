@@ -59,6 +59,53 @@ public final class ConfigBuilder {
         return Collections.emptyList();
     }
 
+    public static ConfigBuilder create(final Properties properties) {
+        //
+        IModuleCfgProcessor _processor = new IModuleCfgProcessor() {
+            @Override
+            public Map<String, String> getModuleCfg(String moduleName) {
+                Map<String, String> _cfgsMap = new HashMap<String, String>();
+                // 提取模块配置
+                for (Object _key : properties.keySet()) {
+                    String _prefix = "ymp.configs." + moduleName + ".";
+                    if (StringUtils.startsWith((String) _key, _prefix)) {
+                        String _cfgKey = StringUtils.substring((String) _key, _prefix.length());
+                        String _cfgValue = properties.getProperty((String) _key);
+                        _cfgsMap.put(_cfgKey, _cfgValue);
+                    }
+                }
+                return _cfgsMap;
+            }
+        };
+        //
+        ConfigBuilder _builder = ConfigBuilder.create(_processor)
+                .developMode(new BlurObject(properties.getProperty("ymp.dev_mode")).toBooleanValue())
+                .packageNames(__doParserArrayStr(properties, "ymp.autoscan_packages"))
+                .excludeModules(__doParserArrayStr(properties, "ymp.excluded_modules"))
+                .locale(StringUtils.trimToNull(properties.getProperty("ymp.i18n_default_locale")))
+                .i18nEventHandler(ClassUtils.impl(properties.getProperty("ymp.i18n_event_handler_class"), II18NEventHandler.class, ConfigBuilder.class));
+        // 提取模块配置
+        String _prefix = "ymp.params.";
+        for (Object _key : properties.keySet()) {
+            if (StringUtils.startsWith((String) _key, _prefix)) {
+                String _cfgKey = StringUtils.substring((String) _key, _prefix.length());
+                String _cfgValue = properties.getProperty((String) _key);
+                _builder.param(_cfgKey, _cfgValue);
+            }
+        }
+        //
+        _prefix = "ymp.event.";
+        for (Object _key : properties.keySet()) {
+            if (StringUtils.startsWith((String) _key, _prefix)) {
+                String _cfgKey = StringUtils.substring((String) _key, _prefix.length());
+                String _cfgValue = properties.getProperty((String) _key);
+                _builder.__eventConfigs.put(_cfgKey, _cfgValue);
+            }
+        }
+        //
+        return _builder;
+    }
+
     public static ConfigBuilder system() {
         final Properties __props = new Properties();
         InputStream _in = null;
@@ -76,50 +123,7 @@ public final class ConfigBuilder {
             if (_in != null) {
                 __props.load(_in);
             }
-            //
-            IModuleCfgProcessor _processor = new IModuleCfgProcessor() {
-                @Override
-                public Map<String, String> getModuleCfg(String moduleName) {
-                    Map<String, String> _cfgsMap = new HashMap<String, String>();
-                    // 提取模块配置
-                    for (Object _key : __props.keySet()) {
-                        String _prefix = "ymp.configs." + moduleName + ".";
-                        if (StringUtils.startsWith((String) _key, _prefix)) {
-                            String _cfgKey = StringUtils.substring((String) _key, _prefix.length());
-                            String _cfgValue = __props.getProperty((String) _key);
-                            _cfgsMap.put(_cfgKey, _cfgValue);
-                        }
-                    }
-                    return _cfgsMap;
-                }
-            };
-            //
-            ConfigBuilder _builder = ConfigBuilder.create(_processor)
-                    .developMode(new BlurObject(__props.getProperty("ymp.dev_mode")).toBooleanValue())
-                    .packageNames(__doParserArrayStr(__props, "ymp.autoscan_packages"))
-                    .excludeModules(__doParserArrayStr(__props, "ymp.excluded_modules"))
-                    .locale(StringUtils.trimToNull(__props.getProperty("ymp.i18n_default_locale")))
-                    .i18nEventHandler(ClassUtils.impl(__props.getProperty("ymp.i18n_event_handler_class"), II18NEventHandler.class, ConfigBuilder.class));
-            // 提取模块配置
-            String _prefix = "ymp.params.";
-            for (Object _key : __props.keySet()) {
-                if (StringUtils.startsWith((String) _key, _prefix)) {
-                    String _cfgKey = StringUtils.substring((String) _key, _prefix.length());
-                    String _cfgValue = __props.getProperty((String) _key);
-                    _builder.param(_cfgKey, _cfgValue);
-                }
-            }
-            //
-            _prefix = "ymp.event.";
-            for (Object _key : __props.keySet()) {
-                if (StringUtils.startsWith((String) _key, _prefix)) {
-                    String _cfgKey = StringUtils.substring((String) _key, _prefix.length());
-                    String _cfgValue = __props.getProperty((String) _key);
-                    _builder.__eventConfigs.put(_cfgKey, _cfgValue);
-                }
-            }
-            //
-            return _builder;
+            return create(__props);
         } catch (Exception e) {
             throw new RuntimeException(RuntimeUtils.unwrapThrow(e));
         } finally {
