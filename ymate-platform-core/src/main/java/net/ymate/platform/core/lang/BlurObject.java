@@ -123,7 +123,7 @@ public class BlurObject implements Serializable, Cloneable {
         if (attr instanceof String) {
             return "true".equalsIgnoreCase(this.attr.toString()) || "on".equalsIgnoreCase(this.attr.toString()) || "1".equalsIgnoreCase(this.attr.toString());
         }
-        if (boolean.class.isAssignableFrom(attr.getClass())) {
+        if (attr instanceof Boolean || boolean.class.isAssignableFrom(attr.getClass())) {
             return (Boolean) attr;
         }
         if (float.class.isAssignableFrom(attr.getClass())) {
