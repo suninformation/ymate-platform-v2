@@ -17,6 +17,7 @@ package net.ymate.platform.validation;
 
 import net.ymate.platform.core.Version;
 import net.ymate.platform.core.YMP;
+import net.ymate.platform.core.beans.intercept.InterceptAnnoHelper;
 import net.ymate.platform.core.module.IModule;
 import net.ymate.platform.core.module.annotation.Module;
 import net.ymate.platform.core.util.RuntimeUtils;
@@ -119,8 +120,9 @@ public class Validations implements IModule, IValidation {
     public Map<String, ValidateResult> validate(Class<?> targetClass, Map<String, Object> paramValues) {
         Map<String, ValidateResult> _returnValues = new LinkedHashMap<String, ValidateResult>();
         ValidationMeta _meta = __doGetCachedMeta(targetClass);
+        Map<String, String> _contextParams = InterceptAnnoHelper.getContextParams(targetClass, null);
         for (String _fieldName : _meta.getFieldNames()) {
-            ValidateResult _result = __doValidate(_meta.getFieldAnnotations(_fieldName), _fieldName, _meta.getFieldLabel(_fieldName), paramValues);
+            ValidateResult _result = __doValidate(_meta.getFieldAnnotations(_fieldName), _fieldName, _meta.getFieldLabel(_fieldName), paramValues, _contextParams);
             if (_result != null) {
                 _returnValues.put(_fieldName, _result);
                 if (_meta.getMode() == Validation.MODE.NORMAL) {
@@ -138,8 +140,9 @@ public class Validations implements IModule, IValidation {
         Validation.MODE _mode = _validation == null ? _meta.getMode() : _validation.mode();
         //
         Map<String, Annotation[]> _paramAnnoMap = _meta.getMethodParamAnnotations(targetMethod);
+        Map<String, String> _contextParams = InterceptAnnoHelper.getContextParams(targetClass, targetMethod);
         for (Map.Entry<String, Annotation[]> _entry : _paramAnnoMap.entrySet()) {
-            ValidateResult _result = __doValidate(_entry.getValue(), _entry.getKey(), _meta.getFieldLabel(targetMethod, _entry.getKey()), paramValues);
+            ValidateResult _result = __doValidate(_entry.getValue(), _entry.getKey(), _meta.getFieldLabel(targetMethod, _entry.getKey()), paramValues, _contextParams);
             if (_result != null) {
                 _returnValues.put(_entry.getKey(), _result);
                 //
@@ -164,11 +167,11 @@ public class Validations implements IModule, IValidation {
         return _meta;
     }
 
-    protected ValidateResult __doValidate(Annotation[] annotations, String paramName, String paramLabel, Map<String, Object> paramValues) {
+    protected ValidateResult __doValidate(Annotation[] annotations, String paramName, String paramLabel, Map<String, Object> paramValues, Map<String, String> contextParams) {
         ValidateResult _result = null;
         for (Annotation _ann : annotations) {
             IValidator _validator = __owner.getBean(__validators.get(_ann.annotationType()));
-            _result = _validator.validate(new ValidateContext(__owner, _ann, paramName, paramLabel, paramValues));
+            _result = _validator.validate(new ValidateContext(__owner, _ann, paramName, paramLabel, paramValues, contextParams));
             if (_result != null) {
                 break;
             }

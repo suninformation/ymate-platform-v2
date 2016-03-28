@@ -93,6 +93,9 @@ public class InterceptContext {
         return __methodParams;
     }
 
+    /**
+     * @return 返回上下文参数映射
+     */
     public Map<String, String> getContextParams() {
         return __contextParams;
     }

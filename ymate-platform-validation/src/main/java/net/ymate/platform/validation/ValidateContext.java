@@ -38,13 +38,17 @@ public class ValidateContext {
 
     private Map<String, Object> paramValues;
 
-    public ValidateContext(YMP owner, Annotation annotation, String paramName, String paramLabel, Map<String, Object> paramValues) {
+    private Map<String, String> contextParams;
+
+    public ValidateContext(YMP owner, Annotation annotation, String paramName, String paramLabel, Map<String, Object> paramValues, Map<String, String> contextParams) {
         this.__owner = owner;
         //
         this.annotation = annotation;
         this.paramName = paramName;
         this.paramLabel = paramLabel;
         this.paramValues = paramValues;
+        //
+        this.contextParams = contextParams;
     }
 
     public YMP getOwner() {
@@ -69,5 +73,12 @@ public class ValidateContext {
 
     public Map<String, Object> getParamValues() {
         return paramValues;
+    }
+
+    /**
+     * @return 返回上下文参数映射
+     */
+    public Map<String, String> getContextParams() {
+        return contextParams;
     }
 }

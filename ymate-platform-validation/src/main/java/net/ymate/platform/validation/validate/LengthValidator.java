@@ -35,39 +35,45 @@ import org.apache.commons.lang.StringUtils;
 public class LengthValidator implements IValidator {
 
     public ValidateResult validate(ValidateContext context) {
+        boolean _matched = false;
+        VLength _vLength = (VLength) context.getAnnotation();
         if (context.getParamValue() != null) {
             if (!context.getParamValue().getClass().isArray()) {
                 String _value = BlurObject.bind(context.getParamValue()).toStringValue();
                 if (StringUtils.isNotBlank(_value)) {
-                    VLength _vLength = (VLength) context.getAnnotation();
-                    boolean _matched = false;
                     if (_vLength.min() > 0 && _value.length() < _vLength.min()) {
                         _matched = true;
                     } else if (_vLength.max() > 0 && _value.length() > _vLength.max()) {
                         _matched = true;
                     }
-                    if (_matched) {
-                        String _pName = StringUtils.defaultIfBlank(context.getParamLabel(), context.getParamName());
-                        _pName = I18N.formatMessage(VALIDATION_I18N_RESOURCE, _pName, _pName);
-                        String _msg = StringUtils.trimToNull(_vLength.msg());
-                        if (_msg != null) {
-                            _msg = I18N.formatMessage(VALIDATION_I18N_RESOURCE, _msg, _msg, _pName);
-                        } else {
-                            if (_vLength.max() > 0 && _vLength.min() > 0) {
-                                String __LENGTH_BETWEEN = "ymp.validation.length_between";
-                                _msg = I18N.formatMessage(VALIDATION_I18N_RESOURCE, __LENGTH_BETWEEN, "{0} length must be between {1} and {2}.", _pName, _vLength.min(), _vLength.max());
-                            } else if (_vLength.max() > 0) {
-                                String __LENGTH_MAX = "ymp.validation.length_max";
-                                _msg = I18N.formatMessage(VALIDATION_I18N_RESOURCE, __LENGTH_MAX, "{0} length must be lt {1}.", _pName, _vLength.max());
-                            } else {
-                                String __LENGTH_MIN = "ymp.validation.length_min";
-                                _msg = I18N.formatMessage(VALIDATION_I18N_RESOURCE, __LENGTH_MIN, "{0} length must be gt {1}.", _pName, _vLength.min());
-                            }
-                        }
-                        return new ValidateResult(context.getParamName(), _msg);
+                }
+            } else {
+                Object[] _values = (Object[]) context.getParamValue();
+                if (_values != null) {
+                    if (_vLength.min() > 0 && _values.length < _vLength.min()) {
+                        _matched = true;
+                    } else if (_vLength.max() > 0 && _values.length > _vLength.max()) {
+                        _matched = true;
                     }
                 }
             }
+        }
+        if (_matched) {
+            String _pName = StringUtils.defaultIfBlank(context.getParamLabel(), context.getParamName());
+            _pName = I18N.formatMessage(VALIDATION_I18N_RESOURCE, _pName, _pName);
+            String _msg = StringUtils.trimToNull(_vLength.msg());
+            if (_msg != null) {
+                _msg = I18N.formatMessage(VALIDATION_I18N_RESOURCE, _msg, _msg, _pName);
+            } else {
+                if (_vLength.max() > 0 && _vLength.min() > 0) {
+                    _msg = I18N.formatMessage(VALIDATION_I18N_RESOURCE, "ymp.validation.length_between", "{0} length must be between {1} and {2}.", _pName, _vLength.min(), _vLength.max());
+                } else if (_vLength.max() > 0) {
+                    _msg = I18N.formatMessage(VALIDATION_I18N_RESOURCE, "ymp.validation.length_max", "{0} length must be lt {1}.", _pName, _vLength.max());
+                } else {
+                    _msg = I18N.formatMessage(VALIDATION_I18N_RESOURCE, "ymp.validation.length_min", "{0} length must be gt {1}.", _pName, _vLength.min());
+                }
+            }
+            return new ValidateResult(context.getParamName(), _msg);
         }
         return null;
     }

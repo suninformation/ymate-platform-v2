@@ -94,18 +94,22 @@ public class InterceptAnnoHelper {
     public static Map<String, String> getContextParams(Class<?> targetClass, Method targetMethod) {
         Map<String, String> _contextParams = new HashMap<String, String>();
         //
-        ContextParam _param = targetClass.getAnnotation(ContextParam.class);
-        if (_param != null) {
-            for (ParamItem _item : _param.value()) {
-                String _key = StringUtils.defaultIfBlank(_item.key(), _item.value());
-                _contextParams.put(_key, _item.value());
+        if (targetClass != null) {
+            ContextParam _param = targetClass.getAnnotation(ContextParam.class);
+            if (_param != null) {
+                for (ParamItem _item : _param.value()) {
+                    String _key = StringUtils.defaultIfBlank(_item.key(), _item.value());
+                    _contextParams.put(_key, _item.value());
+                }
             }
         }
-        _param = targetMethod.getAnnotation(ContextParam.class);
-        if (_param != null) {
-            for (ParamItem _item : _param.value()) {
-                String _key = StringUtils.defaultIfBlank(_item.key(), _item.value());
-                _contextParams.put(_key, _item.value());
+        if (targetMethod != null) {
+            ContextParam _param = targetMethod.getAnnotation(ContextParam.class);
+            if (_param != null) {
+                for (ParamItem _item : _param.value()) {
+                    String _key = StringUtils.defaultIfBlank(_item.key(), _item.value());
+                    _contextParams.put(_key, _item.value());
+                }
             }
         }
         //
