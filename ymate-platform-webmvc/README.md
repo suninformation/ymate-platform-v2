@@ -874,11 +874,17 @@ WebMVC模块提供了缓存处理器IWebCacheProcessor接口，可以让开发�
 > scope：缓存作用域, 可选参数，可选值为APPLICATION、SESSION和DEFAULT，默认为DEFAULT；
 >
 > timeout：缓存数据超时时间, 可选参数，数值必须大于等于0，为0表示默认缓存300秒；
+>
+> useGZip：是否使用GZIP压缩, 默认值为true
 
 默认IWebCacheProcessor接口参数配置：
 
 	# 缓存处理器，可选参数
 	ymp.configs.webmvc.cache_processor_class=demo.WebCacheProc
+
+> 框架默认提供了该接口的实现类：`net.ymate.platform.webmvc.support.WebCacheProcessor`
+>
+> - 基于Cache缓存模块使其对@ResponseCache注解中的Scope.DEFAULT作用域支持Last-Modified等浏览器相关配置，并支持GZIP压缩等特性
 
 示例代码：
 
