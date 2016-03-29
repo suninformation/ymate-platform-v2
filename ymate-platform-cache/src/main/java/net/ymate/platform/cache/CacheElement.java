@@ -29,6 +29,10 @@ public class CacheElement implements Serializable {
 
     private int __timeout;
 
+    public CacheElement() {
+        __lastUpdateTime = System.currentTimeMillis();
+    }
+
     public CacheElement(final Object object) {
         __object = object;
         __lastUpdateTime = System.currentTimeMillis();
@@ -41,6 +45,10 @@ public class CacheElement implements Serializable {
 
     public Object getObject() {
         return __object;
+    }
+
+    public void setObject(Object object) {
+        __object = object;
     }
 
     public long getLastUpdateTime() {

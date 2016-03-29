@@ -56,4 +56,9 @@ public @interface ResponseCache {
      * @return 缓存数据超时时间, 默认为0, 即缓存300秒
      */
     int timeout() default 0;
+
+    /**
+     * @return 是否使用GZIP压缩
+     */
+    boolean useGZip() default true;
 }

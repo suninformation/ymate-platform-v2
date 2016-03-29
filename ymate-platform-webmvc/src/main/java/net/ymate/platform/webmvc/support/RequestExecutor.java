@@ -84,7 +84,7 @@ public final class RequestExecutor {
         }
     }
 
-    protected IView __doProcessResultToView(Object result) throws Exception {
+    private IView __doProcessResultToView(Object result) throws Exception {
         IView _view = null;
         if (result == null) {
             if (__requestMeta.getResponseView() != null) {
@@ -181,7 +181,7 @@ public final class RequestExecutor {
                     case DATE:
                         _view.addDateHeader(_header.name(), BlurObject.bind(_header.value()).toLongValue());
                         break;
-                    case INI:
+                    case INT:
                         _view.addIntHeader(_header.name(), BlurObject.bind(_header.value()).toIntValue());
                 }
             }

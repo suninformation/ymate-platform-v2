@@ -15,15 +15,16 @@
  */
 package net.ymate.platform.webmvc.support;
 
-import net.ymate.platform.cache.CacheElement;
 import net.ymate.platform.cache.Caches;
 import net.ymate.platform.cache.ICaches;
 import net.ymate.platform.core.i18n.I18N;
 import net.ymate.platform.webmvc.IRequestContext;
 import net.ymate.platform.webmvc.IWebCacheProcessor;
 import net.ymate.platform.webmvc.IWebMvc;
+import net.ymate.platform.webmvc.PageMeta;
 import net.ymate.platform.webmvc.annotation.ResponseCache;
 import net.ymate.platform.webmvc.context.WebContext;
+import net.ymate.platform.webmvc.util.WebCacheHelper;
 import net.ymate.platform.webmvc.view.IView;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.lang.StringUtils;
@@ -33,7 +34,6 @@ import org.apache.commons.logging.LogFactory;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.ByteArrayOutputStream;
-import java.io.OutputStream;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -51,38 +51,40 @@ public class WebCacheProcessor implements IWebCacheProcessor {
     public boolean processResponseCache(IWebMvc owner, ResponseCache responseCache, IRequestContext requestContext, IView resultView) throws Exception {
         HttpServletRequest _request = WebContext.getRequest();
         GenericResponseWrapper _response = (GenericResponseWrapper) WebContext.getResponse();
-        // 仅缓存处理状态为200响应
-        if (_response.getStatus() == HttpServletResponse.SC_OK) {
-            String _cacheKey = __doBuildCacheKey(_request, responseCache);
-            ICaches _caches = Caches.get(owner.getOwner());
-            CacheElement _element = (CacheElement) _caches.get(responseCache.cacheName(), _cacheKey);
-            if (_element == null && resultView != null) {
-                _element = __doPutCacheElement(_caches, responseCache, _cacheKey, resultView);
+
+        String _cacheKey = __doBuildCacheKey(_request, responseCache);
+        ICaches _caches = Caches.get(owner.getOwner());
+        PageMeta _element = (PageMeta) _caches.get(responseCache.cacheName(), _cacheKey);
+        if (_element == null && resultView != null) {
+            // 仅缓存处理状态为200响应
+            if (_response.getStatus() == HttpServletResponse.SC_OK) {
+                _element = __doPutCacheElement(_response, _caches, responseCache, _cacheKey, resultView);
             }
-            if (_element != null) {
-                // 输出内容
-                _response.getWriter().write((String) _element.getObject());
-                //
-                return true;
-            }
+        }
+        if (_element != null) {
+            // 输出内容
+            WebCacheHelper.bind(_request, _response, _element, responseCache.scope()).writeResponse();
+            //
+            return true;
         }
         return false;
     }
 
-    protected CacheElement __doPutCacheElement(ICaches caches, ResponseCache responseCache, String cacheKey, IView resultView) throws Exception {
+    private PageMeta __doPutCacheElement(GenericResponseWrapper response, ICaches caches, ResponseCache responseCache, String cacheKey, IView resultView) throws Exception {
         ReentrantLock _locker = __doGetCacheLocker(cacheKey);
         _locker.lock();
         //
-        CacheElement _element = null;
+        PageMeta _element = null;
         try {
             // 尝试读取缓存
-            _element = (CacheElement) caches.get(responseCache.cacheName(), cacheKey);
+            _element = (PageMeta) caches.get(responseCache.cacheName(), cacheKey);
             // 若缓存内容不存在或已过期
             if (_element == null || _element.isExpired()) {
                 // 重新生成缓存内容
-                OutputStream _output = new ByteArrayOutputStream();
+                ByteArrayOutputStream _output = new ByteArrayOutputStream();
                 resultView.render(_output);
-                _element = new CacheElement(_output.toString());
+
+                _element = new PageMeta(response.getContentType(), response.getHeaders(), _output.toByteArray(), responseCache.useGZip());
                 // 计算超时时间
                 int _timeout = responseCache.timeout() > 0 ? responseCache.timeout() : caches.getModuleCfg().getDefaultCacheTimeout();
                 if (_timeout > 0) {
@@ -99,7 +101,7 @@ public class WebCacheProcessor implements IWebCacheProcessor {
         return _element;
     }
 
-    protected ReentrantLock __doGetCacheLocker(String cacheKey) {
+    private ReentrantLock __doGetCacheLocker(String cacheKey) {
         ReentrantLock _locker = __LOCK_MAP.get(cacheKey);
         if (_locker == null) {
             _locker = new ReentrantLock();
@@ -111,7 +113,7 @@ public class WebCacheProcessor implements IWebCacheProcessor {
         return _locker;
     }
 
-    protected String __doBuildCacheKey(HttpServletRequest request, ResponseCache responseCache) {
+    private String __doBuildCacheKey(HttpServletRequest request, ResponseCache responseCache) {
         // 计算缓存KEY值
         StringBuilder _keyBuilder = new StringBuilder()
                 .append(ResponseCache.class.getName())

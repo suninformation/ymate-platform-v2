@@ -15,9 +15,14 @@
  */
 package net.ymate.platform.webmvc.support;
 
+import net.ymate.platform.core.lang.PairObject;
+import net.ymate.platform.webmvc.base.Type;
+
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpServletResponseWrapper;
 import java.io.IOException;
+import java.util.Map;
+import java.util.TreeMap;
 
 /**
  * @author 刘镇 (suninformation@163.com) on 16/3/10 下午10:20
@@ -26,6 +31,10 @@ import java.io.IOException;
 public class GenericResponseWrapper extends HttpServletResponseWrapper {
 
     private int statusCode = SC_OK;
+
+    private int contentLength;
+    private String contentType;
+    private final Map<String, PairObject<Type.HeaderType, Object>> headersMap = new TreeMap<String, PairObject<Type.HeaderType, Object>>(String.CASE_INSENSITIVE_ORDER);
 
     public GenericResponseWrapper(HttpServletResponse response) {
         super(response);
@@ -62,6 +71,100 @@ public class GenericResponseWrapper extends HttpServletResponseWrapper {
 
     public void reset() {
         super.reset();
+        headersMap.clear();
         statusCode = SC_OK;
+        contentType = null;
+        contentLength = 0;
+    }
+
+    public void setContentLength(final int length) {
+        this.contentLength = length;
+        super.setContentLength(length);
+    }
+
+    public int getContentLength() {
+        return contentLength;
+    }
+
+    public void setContentType(final String type) {
+        this.contentType = type;
+        super.setContentType(type);
+    }
+
+    public String getContentType() {
+        return contentType;
+    }
+
+    @Override
+    public void addHeader(String name, String value) {
+        PairObject<Type.HeaderType, Object> values = this.headersMap.get(name);
+        if (values == null) {
+            values = new PairObject<Type.HeaderType, Object>();
+            values.setKey(Type.HeaderType.STRING);
+            this.headersMap.put(name, values);
+        }
+        values.setValue(value);
+
+        super.addHeader(name, value);
+    }
+
+    @Override
+    public void setHeader(String name, String value) {
+        PairObject<Type.HeaderType, Object> values = new PairObject<Type.HeaderType, Object>();
+        values.setKey(Type.HeaderType.STRING);
+        values.setValue(value);
+        this.headersMap.put(name, values);
+        //
+        super.setHeader(name, value);
+    }
+
+    @Override
+    public void addDateHeader(String name, long date) {
+        PairObject<Type.HeaderType, Object> values = this.headersMap.get(name);
+        if (values == null) {
+            values = new PairObject<Type.HeaderType, Object>();
+            values.setKey(Type.HeaderType.DATE);
+            this.headersMap.put(name, values);
+        }
+        values.setValue(date);
+        //
+        super.addDateHeader(name, date);
+    }
+
+    @Override
+    public void setDateHeader(String name, long date) {
+        PairObject<Type.HeaderType, Object> values = new PairObject<Type.HeaderType, Object>();
+        values.setKey(Type.HeaderType.DATE);
+        values.setValue(date);
+        this.headersMap.put(name, values);
+        //
+        super.setDateHeader(name, date);
+    }
+
+    @Override
+    public void addIntHeader(String name, int value) {
+        PairObject<Type.HeaderType, Object> values = this.headersMap.get(name);
+        if (values == null) {
+            values = new PairObject<Type.HeaderType, Object>();
+            values.setKey(Type.HeaderType.INT);
+            this.headersMap.put(name, values);
+        }
+        values.setValue(value);
+        //
+        super.addIntHeader(name, value);
+    }
+
+    @Override
+    public void setIntHeader(String name, int value) {
+        PairObject<Type.HeaderType, Object> values = new PairObject<Type.HeaderType, Object>();
+        values.setKey(Type.HeaderType.INT);
+        values.setValue(value);
+        this.headersMap.put(name, values);
+        //
+        super.setIntHeader(name, value);
+    }
+
+    public Map<String, PairObject<Type.HeaderType, Object>> getHeaders() {
+        return headersMap;
     }
 }

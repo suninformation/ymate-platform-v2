@@ -45,7 +45,7 @@ public class Type {
      * HTTP请求头数据类型
      */
     public enum HeaderType {
-        STRING, INI, DATE
+        STRING, INT, DATE
     }
 
     /**
