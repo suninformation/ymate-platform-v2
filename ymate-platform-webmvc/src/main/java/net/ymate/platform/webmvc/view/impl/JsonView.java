@@ -17,7 +17,6 @@ package net.ymate.platform.webmvc.view.impl;
 
 import com.alibaba.fastjson.JSON;
 import net.ymate.platform.webmvc.base.Type;
-import net.ymate.platform.webmvc.context.WebContext;
 import net.ymate.platform.webmvc.view.AbstractView;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
@@ -79,18 +78,18 @@ public class JsonView extends AbstractView {
 
     protected void __doRenderView() throws Exception {
         if (StringUtils.isNotBlank(getContentType())) {
-            WebContext.getResponse().setContentType(getContentType());
+            __response.setContentType(getContentType());
         } else if (this.__withContentType) {
             if (__jsonCallback == null) {
-                WebContext.getResponse().setContentType(Type.ContentType.JSON.getContentType());
+                __response.setContentType(Type.ContentType.JSON.getContentType());
             } else {
-                WebContext.getResponse().setContentType(Type.ContentType.JAVASCRIPT.getContentType());
+                __response.setContentType(Type.ContentType.JAVASCRIPT.getContentType());
             }
         }
         StringBuilder _jsonStr = new StringBuilder(__jsonObj.toString());
         if (__jsonCallback != null) {
             _jsonStr.insert(0, __jsonCallback + "(").append(");");
         }
-        IOUtils.write(_jsonStr.toString(), WebContext.getResponse().getOutputStream(), WebContext.getResponse().getCharacterEncoding());
+        IOUtils.write(_jsonStr.toString(), __response.getOutputStream(), __response.getCharacterEncoding());
     }
 }

@@ -25,7 +25,6 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.File;
 import java.io.FileInputStream;
@@ -85,9 +84,6 @@ public class BinaryView extends AbstractView {
     }
 
     protected void __doRenderView() throws Exception {
-        HttpServletResponse __response = WebContext.getResponse();
-        HttpServletRequest __request = WebContext.getRequest();
-        //
         if (StringUtils.isNotBlank(__fileName)) {
             StringBuilder _dispositionSB = new StringBuilder("attachment;filename=");
             if (__request.getHeader("User-Agent").toLowerCase().contains("firefox")) {
@@ -152,12 +148,12 @@ public class BinaryView extends AbstractView {
 
     private void __doSetRangeHeader(HttpServletResponse response, PairObject<Long, Long> range) {
         // 表示使用了断点续传（默认是“none”，可以不指定）
-        response.setHeader("Accept-Ranges", "bytes");
+        addHeader("Accept-Ranges", "bytes");
         // Content-Length: [文件的总大小] - [客户端请求的下载的文件块的开始字节]
         long _totalLength = range.getValue() - range.getKey();
-        response.setHeader("Content-Length", _totalLength + "");
+        addHeader("Content-Length", _totalLength + "");
         // Content-Range: bytes [文件块的开始字节]-[文件的总大小 - 1]/[文件的总大小]
-        response.setHeader("Content-Range", "bytes " + range.getKey() + "-" + (range.getValue() - 1) + "/" + __length);
+        addHeader("Content-Range", "bytes " + range.getKey() + "-" + (range.getValue() - 1) + "/" + __length);
         // response.setHeader("Connection", "Close"); //此语句将不能用IE直接下载
         // Status: 206
         response.setStatus(HttpServletResponse.SC_PARTIAL_CONTENT);

@@ -19,6 +19,8 @@ import net.ymate.platform.webmvc.IWebMvc;
 import net.ymate.platform.webmvc.context.WebContext;
 import org.apache.commons.lang.StringUtils;
 
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
@@ -42,7 +44,13 @@ public abstract class AbstractView implements IView {
 
     protected String __contentType;
 
+    protected HttpServletRequest __request;
+
+    protected HttpServletResponse __response;
+
     public AbstractView() {
+        __request = WebContext.getRequest();
+        __response = WebContext.getResponse();
         __attributes = new HashMap<String, Object>();
     }
 
@@ -70,26 +78,38 @@ public abstract class AbstractView implements IView {
     }
 
     public IView addDateHeader(String name, long date) {
-        WebContext.getResponse().addDateHeader(name, date);
+        if (__response.containsHeader(name)) {
+            __response.addDateHeader(name, date);
+        } else {
+            __response.setDateHeader(name, date);
+        }
         return this;
     }
 
     public IView addHeader(String name, String value) {
-        WebContext.getResponse().addHeader(name, value);
+        if (__response.containsHeader(name)) {
+            __response.addHeader(name, value);
+        } else {
+            __response.setHeader(name, value);
+        }
         return this;
     }
 
     public IView addIntHeader(String name, int value) {
-        WebContext.getResponse().addIntHeader(name, value);
+        if (__response.containsHeader(name)) {
+            __response.addIntHeader(name, value);
+        } else {
+            __response.setIntHeader(name, value);
+        }
         return this;
     }
 
     public void render() throws Exception {
-        if (WebContext.getResponse().isCommitted()) {
+        if (__response.isCommitted()) {
             return;
         }
         if (StringUtils.isNotBlank(__contentType)) {
-            WebContext.getResponse().setContentType(__contentType);
+            __response.setContentType(__contentType);
         }
         __doRenderView();
     }
@@ -129,7 +149,7 @@ public abstract class AbstractView implements IView {
             }
             _paramSB.append(_entry.getKey()).append("=");
             if (_entry.getValue() != null && StringUtils.isNotEmpty(_entry.getValue().toString())) {
-                _paramSB.append(URLEncoder.encode(_entry.getValue().toString(), WebContext.getRequest().getCharacterEncoding()));
+                _paramSB.append(URLEncoder.encode(_entry.getValue().toString(), __request.getCharacterEncoding()));
             }
         }
         return _paramSB.toString();

@@ -100,7 +100,7 @@ public class VelocityView extends AbstractView {
 
     protected void __doProcessPath() {
         if (StringUtils.isNotBlank(__contentType)) {
-            WebContext.getResponse().setContentType(__contentType);
+            __response.setContentType(__contentType);
         }
         __velocityContext = new VelocityContext();
         for (Map.Entry<String, Object> _entry : __attributes.entrySet()) {
@@ -124,7 +124,7 @@ public class VelocityView extends AbstractView {
 
     protected void __doRenderView() throws Exception {
         __doProcessPath();
-        Velocity.getTemplate(__path).merge(__velocityContext, WebContext.getResponse().getWriter());
+        Velocity.getTemplate(__path).merge(__velocityContext, __response.getWriter());
     }
 
     public void render(OutputStream output) throws Exception {

@@ -15,7 +15,6 @@
  */
 package net.ymate.platform.webmvc.view.impl;
 
-import net.ymate.platform.webmvc.context.WebContext;
 import net.ymate.platform.webmvc.view.AbstractView;
 
 /**
@@ -51,6 +50,6 @@ public class ForwardView extends AbstractView {
             path = "/WEB-INF/" + path;
         }
         // 执行 Forward
-        WebContext.getRequest().getRequestDispatcher(__doBuildURL(path)).forward(WebContext.getRequest(), WebContext.getResponse());
+        __request.getRequestDispatcher(__doBuildURL(path)).forward(__request, __response);
     }
 }

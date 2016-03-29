@@ -73,6 +73,6 @@ public class HtmlView extends AbstractView {
     }
 
     protected void __doRenderView() throws Exception {
-        IOUtils.write(__content, WebContext.getResponse().getOutputStream(), WebContext.getResponse().getCharacterEncoding());
+        IOUtils.write(__content, __response.getOutputStream(), __response.getCharacterEncoding());
     }
 }

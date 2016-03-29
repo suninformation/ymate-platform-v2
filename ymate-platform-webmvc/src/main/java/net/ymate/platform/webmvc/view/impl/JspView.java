@@ -80,10 +80,10 @@ public class JspView extends AbstractView {
 
     protected void __doProcessPath() {
         if (StringUtils.isNotBlank(__contentType)) {
-            WebContext.getResponse().setContentType(__contentType);
+            __response.setContentType(__contentType);
         }
         for (Map.Entry<String, Object> _entry : __attributes.entrySet()) {
-            WebContext.getRequest().setAttribute(_entry.getKey(), _entry.getValue());
+            __request.setAttribute(_entry.getKey(), _entry.getValue());
         }
         if (StringUtils.isBlank(__path)) {
             String _mapping = WebContext.getRequestContext().getRequestMapping();
@@ -106,7 +106,7 @@ public class JspView extends AbstractView {
 
     protected void __doRenderView() throws Exception {
         __doProcessPath();
-        WebContext.getRequest().getRequestDispatcher(__path).forward(WebContext.getRequest(), WebContext.getResponse());
+        __request.getRequestDispatcher(__path).forward(__request, __response);
     }
 
     public void render(final OutputStream output) throws Exception {
@@ -122,7 +122,7 @@ public class JspView extends AbstractView {
             }
         };
         final PrintWriter _printWriter = new PrintWriter(new OutputStreamWriter(output));
-        HttpServletResponse _newResponse = new HttpServletResponseWrapper(WebContext.getResponse()) {
+        HttpServletResponse _newResponse = new HttpServletResponseWrapper(__response) {
             public ServletOutputStream getOutputStream() {
                 return _oStream;
             }
@@ -131,7 +131,7 @@ public class JspView extends AbstractView {
                 return _printWriter;
             }
         };
-        WebContext.getRequest().getRequestDispatcher(__path).include(WebContext.getRequest(), _newResponse);
+        __request.getRequestDispatcher(__path).include(__request, _newResponse);
         _printWriter.flush();
     }
 }

@@ -16,7 +16,6 @@
 package net.ymate.platform.webmvc.view.impl;
 
 import net.ymate.platform.webmvc.base.Type;
-import net.ymate.platform.webmvc.context.WebContext;
 import net.ymate.platform.webmvc.view.AbstractView;
 import org.apache.commons.io.IOUtils;
 
@@ -58,6 +57,6 @@ public class TextView extends AbstractView {
     }
 
     protected void __doRenderView() throws Exception {
-        IOUtils.write(__content, WebContext.getResponse().getOutputStream(), WebContext.getResponse().getCharacterEncoding());
+        IOUtils.write(__content, __response.getOutputStream(), __response.getCharacterEncoding());
     }
 }
