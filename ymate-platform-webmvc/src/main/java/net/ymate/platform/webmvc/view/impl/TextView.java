@@ -16,8 +16,11 @@
 package net.ymate.platform.webmvc.view.impl;
 
 import net.ymate.platform.webmvc.base.Type;
+import net.ymate.platform.webmvc.context.WebContext;
 import net.ymate.platform.webmvc.view.AbstractView;
 import org.apache.commons.io.IOUtils;
+
+import javax.servlet.http.HttpServletResponse;
 
 /**
  * 文本视图
@@ -57,6 +60,7 @@ public class TextView extends AbstractView {
     }
 
     protected void __doRenderView() throws Exception {
-        IOUtils.write(__content, __response.getOutputStream(), __response.getCharacterEncoding());
+        HttpServletResponse _response = WebContext.getResponse();
+        IOUtils.write(__content, _response.getOutputStream(), _response.getCharacterEncoding());
     }
 }

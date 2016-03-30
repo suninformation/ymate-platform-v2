@@ -16,6 +16,7 @@
 package net.ymate.platform.webmvc.view.impl;
 
 import net.ymate.platform.core.util.RuntimeUtils;
+import net.ymate.platform.webmvc.context.WebContext;
 import net.ymate.platform.webmvc.view.AbstractView;
 
 /**
@@ -49,13 +50,13 @@ public class RedirectView extends AbstractView {
         if (!__path.startsWith("http://") && !__path.startsWith("https://")) {
             // 重定向决对路径
             if (__path.length() > 0 && __path.charAt(0) == '/') {
-                __path = __request.getContextPath() + __path;
+                __path = WebContext.getRequest().getContextPath() + __path;
             }
             // 重定向相对路径
             else {
                 __path = RuntimeUtils.getRootPath() + "/" + __path;
             }
         }
-        __response.sendRedirect(__doBuildURL(__path));
+        WebContext.getResponse().sendRedirect(__doBuildURL(__path));
     }
 }

@@ -99,7 +99,7 @@ public class FreemarkerView extends AbstractView {
 
     protected void __doProcessPath() {
         if (StringUtils.isNotBlank(__contentType)) {
-            __response.setContentType(__contentType);
+            WebContext.getResponse().setContentType(__contentType);
         }
         if (StringUtils.isBlank(__path)) {
             String _mapping = WebContext.getRequestContext().getRequestMapping();
@@ -119,7 +119,7 @@ public class FreemarkerView extends AbstractView {
 
     protected void __doRenderView() throws Exception {
         __doProcessPath();
-        __freemarkerConfig.getTemplate(__path, WebContext.getContext().getLocale()).process(__attributes, __response.getWriter());
+        __freemarkerConfig.getTemplate(__path, WebContext.getContext().getLocale()).process(__attributes, WebContext.getResponse().getWriter());
     }
 
     public void render(OutputStream output) throws Exception {

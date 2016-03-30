@@ -25,6 +25,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.File;
 import java.io.FileInputStream;
@@ -84,14 +85,17 @@ public class BinaryView extends AbstractView {
     }
 
     protected void __doRenderView() throws Exception {
+        HttpServletRequest _request = WebContext.getRequest();
+        HttpServletResponse _response = WebContext.getResponse();
+        //
         if (StringUtils.isNotBlank(__fileName)) {
             StringBuilder _dispositionSB = new StringBuilder("attachment;filename=");
-            if (__request.getHeader("User-Agent").toLowerCase().contains("firefox")) {
+            if (_request.getHeader("User-Agent").toLowerCase().contains("firefox")) {
                 _dispositionSB.append(new String(__fileName.getBytes("UTF-8"), "ISO8859-1"));
             } else {
                 _dispositionSB.append(URLEncoder.encode(__fileName, "UTF-8"));
             }
-            __response.setHeader("Content-Disposition", _dispositionSB.toString());
+            _response.setHeader("Content-Disposition", _dispositionSB.toString());
         }
         //
         if (__data == null) {
@@ -105,44 +109,44 @@ public class BinaryView extends AbstractView {
             PairObject<Long, Long> _rangePO = __doParseRange(__length);
             // 若为断点续传
             if (_rangePO != null) {
-                __doSetRangeHeader(__response, _rangePO);
+                __doSetRangeHeader(_response, _rangePO);
                 // 开始续传文件流
-                IOUtils.copyLarge(new FileInputStream((File) __data), __response.getOutputStream(), _rangePO.getKey(), _rangePO.getValue());
+                IOUtils.copyLarge(new FileInputStream((File) __data), _response.getOutputStream(), _rangePO.getKey(), _rangePO.getValue());
             } else {
                 // 正常下载
-                __response.setContentLength((int) IOUtils.copyLarge(new FileInputStream((File) __data), __response.getOutputStream()));
+                _response.setContentLength((int) IOUtils.copyLarge(new FileInputStream((File) __data), _response.getOutputStream()));
             }
         }
         // 字节数组
         else if (__data instanceof byte[]) {
             byte[] _datas = (byte[]) __data;
-            IOUtils.write(_datas, __response.getOutputStream());
-            __response.setContentLength(_datas.length);
+            IOUtils.write(_datas, _response.getOutputStream());
+            _response.setContentLength(_datas.length);
         }
         // 字符数组
         else if (__data instanceof char[]) {
             char[] _datas = (char[]) __data;
-            IOUtils.write(_datas, __response.getOutputStream());
-            __response.setContentLength(_datas.length);
+            IOUtils.write(_datas, _response.getOutputStream());
+            _response.setContentLength(_datas.length);
         }
         // 文本流
         else if (__data instanceof Reader) {
             Reader r = (Reader) __data;
-            IOUtils.copy(r, __response.getOutputStream());
+            IOUtils.copy(r, _response.getOutputStream());
         }
         // 二进制流
         else if (__data instanceof InputStream) {
             PairObject<Long, Long> _rangePO = __doParseRange(__length);
             if (_rangePO != null) {
-                __doSetRangeHeader(__response, _rangePO);
-                IOUtils.copyLarge((InputStream) __data, __response.getOutputStream(), _rangePO.getKey(), _rangePO.getValue());
+                __doSetRangeHeader(_response, _rangePO);
+                IOUtils.copyLarge((InputStream) __data, _response.getOutputStream(), _rangePO.getKey(), _rangePO.getValue());
             } else {
-                __response.setContentLength((int) IOUtils.copyLarge((InputStream) __data, __response.getOutputStream()));
+                _response.setContentLength((int) IOUtils.copyLarge((InputStream) __data, _response.getOutputStream()));
             }
         }
         // 普通对象
         else {
-            IOUtils.write(String.valueOf(__data), __response.getOutputStream());
+            IOUtils.write(String.valueOf(__data), _response.getOutputStream());
         }
     }
 

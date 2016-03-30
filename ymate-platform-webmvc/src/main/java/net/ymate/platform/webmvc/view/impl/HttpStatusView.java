@@ -15,6 +15,7 @@
  */
 package net.ymate.platform.webmvc.view.impl;
 
+import net.ymate.platform.webmvc.context.WebContext;
 import net.ymate.platform.webmvc.view.AbstractView;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
@@ -103,16 +104,17 @@ public class HttpStatusView extends AbstractView {
     }
 
     protected void __doRenderView() throws Exception {
+        HttpServletResponse _response = WebContext.getResponse();
         if (StringUtils.isNotBlank(__body)) {
-            IOUtils.write(__body, __response.getOutputStream(), __response.getCharacterEncoding());
+            IOUtils.write(__body, _response.getOutputStream(), _response.getCharacterEncoding());
         }
         if (StringUtils.isNotBlank(__msg)) {
-            __response.sendError(__status, __msg);
+            _response.sendError(__status, __msg);
         } else {
             if (__error) {
-                __response.sendError(__status);
+                _response.sendError(__status);
             } else {
-                __response.setStatus(__status);
+                _response.setStatus(__status);
             }
         }
     }

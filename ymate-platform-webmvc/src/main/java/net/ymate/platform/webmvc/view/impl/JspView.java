@@ -21,6 +21,7 @@ import net.ymate.platform.webmvc.view.AbstractView;
 import org.apache.commons.lang.StringUtils;
 
 import javax.servlet.ServletOutputStream;
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpServletResponseWrapper;
 import java.io.IOException;
@@ -80,10 +81,10 @@ public class JspView extends AbstractView {
 
     protected void __doProcessPath() {
         if (StringUtils.isNotBlank(__contentType)) {
-            __response.setContentType(__contentType);
+            WebContext.getResponse().setContentType(__contentType);
         }
         for (Map.Entry<String, Object> _entry : __attributes.entrySet()) {
-            __request.setAttribute(_entry.getKey(), _entry.getValue());
+            WebContext.getRequest().setAttribute(_entry.getKey(), _entry.getValue());
         }
         if (StringUtils.isBlank(__path)) {
             String _mapping = WebContext.getRequestContext().getRequestMapping();
@@ -106,7 +107,8 @@ public class JspView extends AbstractView {
 
     protected void __doRenderView() throws Exception {
         __doProcessPath();
-        __request.getRequestDispatcher(__path).forward(__request, __response);
+        HttpServletRequest _request = WebContext.getRequest();
+        _request.getRequestDispatcher(__path).forward(_request, WebContext.getResponse());
     }
 
     public void render(final OutputStream output) throws Exception {
@@ -122,7 +124,10 @@ public class JspView extends AbstractView {
             }
         };
         final PrintWriter _printWriter = new PrintWriter(new OutputStreamWriter(output));
-        HttpServletResponse _newResponse = new HttpServletResponseWrapper(__response) {
+        //
+        HttpServletRequest _request = WebContext.getRequest();
+        HttpServletResponse _response = WebContext.getResponse();
+        HttpServletResponse _newResponse = new HttpServletResponseWrapper(_response) {
             public ServletOutputStream getOutputStream() {
                 return _oStream;
             }
@@ -131,7 +136,7 @@ public class JspView extends AbstractView {
                 return _printWriter;
             }
         };
-        __request.getRequestDispatcher(__path).include(__request, _newResponse);
+        _request.getRequestDispatcher(__path).include(_request, _newResponse);
         _printWriter.flush();
     }
 }

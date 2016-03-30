@@ -19,7 +19,6 @@ import net.ymate.platform.webmvc.IWebMvc;
 import net.ymate.platform.webmvc.context.WebContext;
 import org.apache.commons.lang.StringUtils;
 
-import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
@@ -44,13 +43,7 @@ public abstract class AbstractView implements IView {
 
     protected String __contentType;
 
-    protected HttpServletRequest __request;
-
-    protected HttpServletResponse __response;
-
     public AbstractView() {
-        __request = WebContext.getRequest();
-        __response = WebContext.getResponse();
         __attributes = new HashMap<String, Object>();
     }
 
@@ -78,38 +71,42 @@ public abstract class AbstractView implements IView {
     }
 
     public IView addDateHeader(String name, long date) {
-        if (__response.containsHeader(name)) {
-            __response.addDateHeader(name, date);
+        HttpServletResponse _response = WebContext.getResponse();
+        if (_response.containsHeader(name)) {
+            _response.addDateHeader(name, date);
         } else {
-            __response.setDateHeader(name, date);
+            _response.setDateHeader(name, date);
         }
         return this;
     }
 
     public IView addHeader(String name, String value) {
-        if (__response.containsHeader(name)) {
-            __response.addHeader(name, value);
+        HttpServletResponse _response = WebContext.getResponse();
+        if (_response.containsHeader(name)) {
+            _response.addHeader(name, value);
         } else {
-            __response.setHeader(name, value);
+            _response.setHeader(name, value);
         }
         return this;
     }
 
     public IView addIntHeader(String name, int value) {
-        if (__response.containsHeader(name)) {
-            __response.addIntHeader(name, value);
+        HttpServletResponse _response = WebContext.getResponse();
+        if (_response.containsHeader(name)) {
+            _response.addIntHeader(name, value);
         } else {
-            __response.setIntHeader(name, value);
+            _response.setIntHeader(name, value);
         }
         return this;
     }
 
     public void render() throws Exception {
-        if (__response.isCommitted()) {
+        HttpServletResponse _response = WebContext.getResponse();
+        if (_response.isCommitted()) {
             return;
         }
         if (StringUtils.isNotBlank(__contentType)) {
-            __response.setContentType(__contentType);
+            _response.setContentType(__contentType);
         }
         __doRenderView();
     }
@@ -149,7 +146,7 @@ public abstract class AbstractView implements IView {
             }
             _paramSB.append(_entry.getKey()).append("=");
             if (_entry.getValue() != null && StringUtils.isNotEmpty(_entry.getValue().toString())) {
-                _paramSB.append(URLEncoder.encode(_entry.getValue().toString(), __request.getCharacterEncoding()));
+                _paramSB.append(URLEncoder.encode(_entry.getValue().toString(), WebContext.getRequest().getCharacterEncoding()));
             }
         }
         return _paramSB.toString();
