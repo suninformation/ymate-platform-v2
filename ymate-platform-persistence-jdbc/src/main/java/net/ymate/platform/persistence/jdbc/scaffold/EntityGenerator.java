@@ -114,7 +114,8 @@ public class EntityGenerator {
                                     _rsMetaData.getPrecision(_idx),
                                     _rsMetaData.getScale(_idx),
                                     _rsMetaData.isNullable(_idx),
-                                    _column.getString("COLUMN_DEF")));
+                                    _column.getString("COLUMN_DEF"),
+                                    _column.getString("REMARKS")));
                         }
                         _column.close();
                     }
@@ -242,14 +243,14 @@ public class EntityGenerator {
                     _propMap.put("primaryKeyName", StringUtils.uncapitalize((String) _propMap.get("primaryKeyType")));
                     List<Attr> _primaryKeyList = new ArrayList<Attr>();
                     _propMap.put("primaryKeyList", _primaryKeyList);
-                    Attr _pkAttr = new Attr((String) _propMap.get("primaryKeyType"), (String) _propMap.get("primaryKeyName"), null, false, _tableMeta.getFieldMap().get((String) _propMap.get("primaryKeyName")).isSigned(), 0, 0, 0, null);
+                    Attr _pkAttr = new Attr((String) _propMap.get("primaryKeyType"), (String) _propMap.get("primaryKeyName"), null, false, _tableMeta.getFieldMap().get((String) _propMap.get("primaryKeyName")).isSigned(), 0, 0, 0, null, null);
                     _fieldList.add(_pkAttr);
                     _fieldListForNotNullable.add(_pkAttr);
                     //
                     for (String pkey : _tableMeta.getPkSet()) {
                         ColumnInfo _ci = _tableMeta.getFieldMap().get(pkey);
                         _primaryKeyList.add(_ci.toAttr());
-                        _allFieldList.add(new Attr("String", _ci.getColumnName().toUpperCase(), _ci.getColumnName(), false, _ci.isSigned(), 0, 0, 0, _ci.getDefaultValue()));
+                        _allFieldList.add(new Attr("String", _ci.getColumnName().toUpperCase(), _ci.getColumnName(), false, _ci.isSigned(), 0, 0, 0, _ci.getDefaultValue(), _ci.getRemarks()));
                     }
                     for (String key : _tableMeta.getFieldMap().keySet()) {
                         if (_tableMeta.getPkSet().contains(key)) {
@@ -259,7 +260,7 @@ public class EntityGenerator {
                         Attr _attr = _ci.toAttr();
                         _fieldList.add(_attr);
                         _fieldListForNotNullable.add(_attr);
-                        _allFieldList.add(new Attr("String", _ci.getColumnName().toUpperCase(), _ci.getColumnName(), false, _ci.isSigned(), 0, 0, 0, _ci.getDefaultValue()));
+                        _allFieldList.add(new Attr("String", _ci.getColumnName().toUpperCase(), _ci.getColumnName(), false, _ci.isSigned(), 0, 0, 0, _ci.getDefaultValue(), _ci.getRemarks()));
                     }
                 } else {
                     _propMap.put("primaryKeyType", _tableMeta.getFieldMap().get(_tableMeta.getPkSet().get(0)).getColumnType());
@@ -271,7 +272,7 @@ public class EntityGenerator {
                         if (_attr.getNullable() == 0) {
                             _fieldListForNotNullable.add(_attr);
                         }
-                        _allFieldList.add(new Attr("String", _ci.getColumnName().toUpperCase(), _ci.getColumnName(), false, _ci.isSigned(), 0, 0, 0, _ci.getDefaultValue()));
+                        _allFieldList.add(new Attr("String", _ci.getColumnName().toUpperCase(), _ci.getColumnName(), false, _ci.isSigned(), 0, 0, 0, _ci.getDefaultValue(), _ci.getRemarks()));
                     }
                 }
                 _propMap.put("fieldList", _fieldList);
@@ -359,8 +360,9 @@ public class EntityGenerator {
         private int scale;
         private int nullable;
         private String defaultValue;
+        private String remarks;
 
-        public ColumnInfo(String columnName, String columnType, boolean autoIncrement, boolean isSigned, int precision, int scale, int nullable, String defaultValue) {
+        public ColumnInfo(String columnName, String columnType, boolean autoIncrement, boolean isSigned, int precision, int scale, int nullable, String defaultValue, String remarks) {
             this.columnName = columnName;
             this.columnType = columnType;
             this.autoIncrement = autoIncrement;
@@ -369,6 +371,7 @@ public class EntityGenerator {
             this.scale = scale;
             this.nullable = nullable;
             this.defaultValue = defaultValue;
+            this.remarks = remarks;
         }
 
         public String getColumnName() {
@@ -403,8 +406,12 @@ public class EntityGenerator {
             return defaultValue;
         }
 
+        public String getRemarks() {
+            return remarks;
+        }
+
         public Attr toAttr() {
-            return new Attr(getColumnType(), StringUtils.uncapitalize(EntityMeta.propertyNameToFieldName(getColumnName().toLowerCase())), getColumnName(), isAutoIncrement(), isSigned(), getPrecision(), getScale(), getNullable(), getDefaultValue());
+            return new Attr(getColumnType(), StringUtils.uncapitalize(EntityMeta.propertyNameToFieldName(getColumnName().toLowerCase())), getColumnName(), isAutoIncrement(), isSigned(), getPrecision(), getScale(), getNullable(), getDefaultValue(), getRemarks());
         }
     }
 
@@ -418,8 +425,9 @@ public class EntityGenerator {
         private int scale;
         int nullable;
         String defaultValue;
+        String remarks;
 
-        public Attr(String varType, String varName, String columnName, boolean autoIncrement, boolean isSigned, int precision, int scale, int nullable, String defaultValue) {
+        public Attr(String varType, String varName, String columnName, boolean autoIncrement, boolean isSigned, int precision, int scale, int nullable, String defaultValue, String remarks) {
             this.varName = varName;
             this.varType = varType;
             this.columnName = columnName;
@@ -435,6 +443,7 @@ public class EntityGenerator {
             this.scale = scale;
             this.nullable = nullable;
             this.defaultValue = defaultValue;
+            this.remarks = remarks;
         }
 
         public String getVarType() {
@@ -471,6 +480,10 @@ public class EntityGenerator {
 
         public String getDefaultValue() {
             return defaultValue;
+        }
+
+        public String getRemarks() {
+            return remarks;
         }
 
         @Override
