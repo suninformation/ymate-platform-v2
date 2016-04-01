@@ -20,6 +20,7 @@ import freemarker.template.Template;
 import freemarker.template.TemplateExceptionHandler;
 import net.ymate.platform.core.YMP;
 import net.ymate.platform.core.lang.BlurObject;
+import net.ymate.platform.core.util.ClassUtils;
 import net.ymate.platform.core.util.RuntimeUtils;
 import net.ymate.platform.persistence.base.EntityMeta;
 import net.ymate.platform.persistence.jdbc.*;
@@ -241,14 +242,14 @@ public class EntityGenerator {
                     _propMap.put("primaryKeyName", StringUtils.uncapitalize((String) _propMap.get("primaryKeyType")));
                     List<Attr> _primaryKeyList = new ArrayList<Attr>();
                     _propMap.put("primaryKeyList", _primaryKeyList);
-                    Attr _pkAttr = new Attr((String) _propMap.get("primaryKeyType"), (String) _propMap.get("primaryKeyName"), null, false, false, 0, 0, 0, null);
+                    Attr _pkAttr = new Attr((String) _propMap.get("primaryKeyType"), (String) _propMap.get("primaryKeyName"), null, false, _tableMeta.getFieldMap().get((String) _propMap.get("primaryKeyName")).isSigned(), 0, 0, 0, null);
                     _fieldList.add(_pkAttr);
                     _fieldListForNotNullable.add(_pkAttr);
                     //
                     for (String pkey : _tableMeta.getPkSet()) {
                         ColumnInfo _ci = _tableMeta.getFieldMap().get(pkey);
                         _primaryKeyList.add(_ci.toAttr());
-                        _allFieldList.add(new Attr("String", _ci.getColumnName().toUpperCase(), _ci.getColumnName(), false, false, 0, 0, 0, _ci.getDefaultValue()));
+                        _allFieldList.add(new Attr("String", _ci.getColumnName().toUpperCase(), _ci.getColumnName(), false, _ci.isSigned(), 0, 0, 0, _ci.getDefaultValue()));
                     }
                     for (String key : _tableMeta.getFieldMap().keySet()) {
                         if (_tableMeta.getPkSet().contains(key)) {
@@ -258,7 +259,7 @@ public class EntityGenerator {
                         Attr _attr = _ci.toAttr();
                         _fieldList.add(_attr);
                         _fieldListForNotNullable.add(_attr);
-                        _allFieldList.add(new Attr("String", _ci.getColumnName().toUpperCase(), _ci.getColumnName(), false, false, 0, 0, 0, _ci.getDefaultValue()));
+                        _allFieldList.add(new Attr("String", _ci.getColumnName().toUpperCase(), _ci.getColumnName(), false, _ci.isSigned(), 0, 0, 0, _ci.getDefaultValue()));
                     }
                 } else {
                     _propMap.put("primaryKeyType", _tableMeta.getFieldMap().get(_tableMeta.getPkSet().get(0)).getColumnType());
@@ -270,7 +271,7 @@ public class EntityGenerator {
                         if (_attr.getNullable() == 0) {
                             _fieldListForNotNullable.add(_attr);
                         }
-                        _allFieldList.add(new Attr("String", _ci.getColumnName().toUpperCase(), _ci.getColumnName(), false, false, 0, 0, 0, _ci.getDefaultValue()));
+                        _allFieldList.add(new Attr("String", _ci.getColumnName().toUpperCase(), _ci.getColumnName(), false, _ci.isSigned(), 0, 0, 0, _ci.getDefaultValue()));
                     }
                 }
                 _propMap.put("fieldList", _fieldList);
@@ -424,6 +425,12 @@ public class EntityGenerator {
             this.columnName = columnName;
             this.autoIncrement = autoIncrement;
             this.isSigned = isSigned;
+            try {
+                if (!isSigned && !ClassUtils.isSubclassOf(Class.forName(varType), Number.class)) {
+                    this.isSigned = true;
+                }
+            } catch (Exception ignored) {
+            }
             this.precision = precision;
             this.scale = scale;
             this.nullable = nullable;
