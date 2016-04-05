@@ -50,11 +50,13 @@ public class EntityResultSetHandler<T extends IEntity> extends AbstractResultSet
         }
         for (int _idx = 0; _idx < __doGetColumnCount(); _idx++) {
             EntityMeta.PropertyMeta _meta = __entityMeta.getPropertyByName(_doGetColumnMeta(_idx).getName());
-            Object _fValue = BlurObject.bind(resultSet.getObject(_idx + 1)).toObjectValue(_meta.getField().getType());
-            if (__entityMeta.isPrimaryKey(_meta.getName()) && __entityMeta.isMultiplePrimaryKey()) {
-                _meta.getField().set(_primaryKeyObject, _fValue);
-            } else {
-                _meta.getField().set(_returnValue, _fValue);
+            if (_meta != null) {
+                Object _fValue = BlurObject.bind(resultSet.getObject(_idx + 1)).toObjectValue(_meta.getField().getType());
+                if (__entityMeta.isPrimaryKey(_meta.getName()) && __entityMeta.isMultiplePrimaryKey()) {
+                    _meta.getField().set(_primaryKeyObject, _fValue);
+                } else {
+                    _meta.getField().set(_returnValue, _fValue);
+                }
             }
         }
         return _returnValue;
