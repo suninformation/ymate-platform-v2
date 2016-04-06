@@ -364,7 +364,7 @@ YMP框架的AOP是基于CGLIB的MethodInterceptor实现的拦截，通过以下�
         public class DemoEventRegister implements IEventRegister {
             public void register(Events events) throws Exception {
                 // 订阅模块事件
-                events.registerListener(new IEventListener<ModuleEvent>() {
+                events.registerListener(ModuleEvent.class, new IEventListener<ModuleEvent>() {
                     @Override
                     public boolean handle(ModuleEvent context) {
                         switch (context.getEventName()) {
