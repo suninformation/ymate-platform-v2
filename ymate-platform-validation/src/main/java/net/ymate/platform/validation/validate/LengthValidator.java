@@ -38,24 +38,25 @@ public class LengthValidator implements IValidator {
         boolean _matched = false;
         VLength _vLength = (VLength) context.getAnnotation();
         if (context.getParamValue() != null) {
+            int _length = 0;
             if (!context.getParamValue().getClass().isArray()) {
                 String _value = BlurObject.bind(context.getParamValue()).toStringValue();
                 if (StringUtils.isNotBlank(_value)) {
-                    if (_vLength.min() > 0 && _value.length() < _vLength.min()) {
-                        _matched = true;
-                    } else if (_vLength.max() > 0 && _value.length() > _vLength.max()) {
-                        _matched = true;
-                    }
+                    _length = _value.length();
                 }
             } else {
                 Object[] _values = (Object[]) context.getParamValue();
                 if (_values != null) {
-                    if (_vLength.min() > 0 && _values.length < _vLength.min()) {
-                        _matched = true;
-                    } else if (_vLength.max() > 0 && _values.length > _vLength.max()) {
-                        _matched = true;
-                    }
+                    _length = _values.length;
                 }
+            }
+            //
+            if (_vLength.min() > 0 && _vLength.max() == _vLength.min() && _length != _vLength.max()) {
+                _matched = true;
+            } else if (_vLength.min() > 0 && _length < _vLength.min()) {
+                _matched = true;
+            } else if (_vLength.max() > 0 && _length > _vLength.max()) {
+                _matched = true;
             }
         }
         if (_matched) {
@@ -66,7 +67,11 @@ public class LengthValidator implements IValidator {
                 _msg = I18N.formatMessage(VALIDATION_I18N_RESOURCE, _msg, _msg, _pName);
             } else {
                 if (_vLength.max() > 0 && _vLength.min() > 0) {
-                    _msg = I18N.formatMessage(VALIDATION_I18N_RESOURCE, "ymp.validation.length_between", "{0} length must be between {1} and {2}.", _pName, _vLength.min(), _vLength.max());
+                    if (_vLength.max() == _vLength.min()) {
+                        _msg = I18N.formatMessage(VALIDATION_I18N_RESOURCE, "ymp.validation.length_eq", "{0} length must be eq {1}.", _pName, _vLength.max());
+                    } else {
+                        _msg = I18N.formatMessage(VALIDATION_I18N_RESOURCE, "ymp.validation.length_between", "{0} length must be between {1} and {2}.", _pName, _vLength.min(), _vLength.max());
+                    }
                 } else if (_vLength.max() > 0) {
                     _msg = I18N.formatMessage(VALIDATION_I18N_RESOURCE, "ymp.validation.length_max", "{0} length must be lt {1}.", _pName, _vLength.max());
                 } else {
