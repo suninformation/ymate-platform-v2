@@ -79,6 +79,20 @@ public class ${modelName?cap_first}<#if (isUseClassSuffix)>Model</#if> extends <
 	public void set${field.varName?cap_first}(${field.varType} ${field.varName}) {
 		this.${field.varName} = ${field.varName};
 	}
+	<#elseif field.varName != primaryKeyName>
+    /**
+     * @return the ${field.varName}
+     */
+    public ${field.varType} get_${field.varName?cap_first}() {
+    	return ${field.varName};
+    }
+
+    /**
+     * @param ${field.varName} the ${field.varName} to set
+     */
+    public void set_${field.varName?cap_first}(${field.varType} ${field.varName}) {
+    	this.${field.varName} = ${field.varName};
+    }
 	</#if>
 
 	</#list>
@@ -114,11 +128,11 @@ public class ${modelName?cap_first}<#if (isUseClassSuffix)>Model</#if> extends <
 
 	<#list fieldList as field>
 		public ${field.varType} ${field.varName}() {
-			return _model.get${field.varName?cap_first}();
+			return _model.${field.varName};
 		}
 
 		public ${modelName?cap_first}<#if (isUseClassSuffix)>Model</#if>Builder ${field.varName}(${field.varType} ${field.varName}) {
-			_model.set${field.varName?cap_first}(${field.varName});
+			_model.${field.varName} = ${field.varName};
 			return this;
 		}
 
