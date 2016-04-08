@@ -209,7 +209,7 @@ YMP框架的AOP是基于CGLIB的MethodInterceptor实现的拦截，通过以下�
                     case BEFORE:
                         System.out.println("before intercept...");
                         // 获取拦截器参数
-                        String _param = context.getContextParams("param");
+                        String _param = context.getContextParams().get("param");
                         if (StringUtils.isNotBlank(_param)) {
                             System.out.println(_param);
                         }
@@ -218,6 +218,7 @@ YMP框架的AOP是基于CGLIB的MethodInterceptor实现的拦截，通过以下�
                     case AFTER:
                         System.out.println("after intercept...");
                 }
+                return null;
             }
         }
 
