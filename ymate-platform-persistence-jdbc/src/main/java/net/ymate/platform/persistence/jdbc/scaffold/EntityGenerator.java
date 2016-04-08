@@ -85,6 +85,9 @@ public class EntityGenerator {
             _connHolder = __jdbc.getDefaultConnectionHolder();
             String _dbType = _connHolder.getDialect().getName();
             DatabaseMetaData _dbMetaData = _connHolder.getConnection().getMetaData();
+            System.out.println(">>> Catalog: " + dbName);
+            System.out.println(">>> Schema: " + dbUserName);
+            System.out.println(">>> Table: " + tableName);
             _resultSet = _dbMetaData.getPrimaryKeys(dbName, _dbType.equalsIgnoreCase("oracle") ? dbUserName.toUpperCase() : dbUserName, tableName);
             if (_resultSet == null) {
                 System.err.println("Database table \"" + tableName + "\" primaryKey resultSet is null, ignored");
@@ -97,6 +100,18 @@ public class EntityGenerator {
                     System.err.println("Database table \"" + tableName + "\" does not set the primary key, ignored");
                     return null;
                 } else {
+                    //
+                    System.out.println(">>> " + "COLUMN_NAME / " +
+                            "COLUMN_CLASS_NAME / " +
+                            "PRIMARY_KEY / " +
+                            "AUTO_INCREMENT / " +
+                            "SIGNED / " +
+                            "PRECISION / " +
+                            "SCALE / " +
+                            "NULLABLE / " +
+                            "DEFAULT / " +
+                            "REMARKS");
+                    //
                     _statement = _connHolder.getConnection().createStatement(ResultSet.TYPE_SCROLL_SENSITIVE, ResultSet.CONCUR_UPDATABLE);
                     _resultSet = _statement.executeQuery("SELECT * FROM ".concat(_connHolder.getDialect().wrapIdentifierQuote(tableName)));
                     ResultSetMetaData _rsMetaData = _resultSet.getMetaData();
@@ -116,6 +131,16 @@ public class EntityGenerator {
                                     _rsMetaData.isNullable(_idx),
                                     _column.getString("COLUMN_DEF"),
                                     _column.getString("REMARKS")));
+                            System.out.println("--> " + _rsMetaData.getColumnName(_idx).toLowerCase() + "\t" +
+                                    _rsMetaData.getColumnClassName(_idx) + "\t" +
+                                    _pkFields.contains(_rsMetaData.getColumnName(_idx).toLowerCase()) + "\t" +
+                                    _rsMetaData.isAutoIncrement(_idx) + "\t" +
+                                    _rsMetaData.isSigned(_idx) + "\t" +
+                                    _rsMetaData.getPrecision(_idx) + "\t" +
+                                    _rsMetaData.getScale(_idx) + "\t" +
+                                    _rsMetaData.isNullable(_idx) + "\t" +
+                                    _column.getString("COLUMN_DEF") + "\t" +
+                                    _column.getString("REMARKS"));
                         }
                         _column.close();
                     }
@@ -243,18 +268,8 @@ public class EntityGenerator {
                     _propMap.put("primaryKeyName", StringUtils.uncapitalize((String) _propMap.get("primaryKeyType")));
                     List<Attr> _primaryKeyList = new ArrayList<Attr>();
                     _propMap.put("primaryKeyList", _primaryKeyList);
-                    String _pkName = (String) _propMap.get("primaryKeyName");
-                    ColumnInfo _pkColumnInfo = _tableMeta.getFieldMap().get(_pkName);
                     Attr _pkAttr = new Attr((String) _propMap.get("primaryKeyType"),
-                            _pkColumnInfo.getColumnName().toUpperCase(),
-                            _pkColumnInfo.getColumnName(),
-                            _pkColumnInfo.isAutoIncrement(),
-                            _pkColumnInfo.isSigned(),
-                            _pkColumnInfo.getPrecision(),
-                            _pkColumnInfo.getScale(),
-                            _pkColumnInfo.getNullable(),
-                            _pkColumnInfo.getDefaultValue(),
-                            _pkColumnInfo.getRemarks());
+                            (String) _propMap.get("primaryKeyName"), null, false, false, 0, 0, 0, null, null);
                     _fieldList.add(_pkAttr);
                     _fieldListForNotNullable.add(_pkAttr);
                     //
