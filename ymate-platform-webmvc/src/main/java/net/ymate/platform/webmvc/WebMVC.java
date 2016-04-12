@@ -204,11 +204,13 @@ public class WebMVC implements IModule, IWebMvc {
                     Map<String, String> _allowMap = _meta.getAllowHeaders();
                     for (Map.Entry<String, String> _entry : _allowMap.entrySet()) {
                         String _value = WebContext.getRequest().getHeader(_entry.getKey());
-                        if (StringUtils.trimToEmpty(_entry.getValue()).equals("*") && StringUtils.isBlank(_value)) {
-                            response.sendError(HttpServletResponse.SC_BAD_REQUEST);
-                            //
-                            _LOG.debug("--- Check request allowed: NO");
-                            return;
+                        if (StringUtils.trimToEmpty(_entry.getValue()).equals("*")) {
+                            if (StringUtils.isBlank(_value)) {
+                                response.sendError(HttpServletResponse.SC_BAD_REQUEST);
+                                //
+                                _LOG.debug("--- Check request allowed: NO");
+                                return;
+                            }
                         } else {
                             if (_value == null || !_value.equalsIgnoreCase(_entry.getValue())) {
                                 response.sendError(HttpServletResponse.SC_BAD_REQUEST);
@@ -221,11 +223,13 @@ public class WebMVC implements IModule, IWebMvc {
                     // 判断允许的请求参数
                     _allowMap = _meta.getAllowParams();
                     for (Map.Entry<String, String> _entry : _allowMap.entrySet()) {
-                        if (StringUtils.trimToEmpty(_entry.getValue()).equals("*") && !WebContext.getRequest().getParameterMap().containsKey(_entry.getKey())) {
-                            response.sendError(HttpServletResponse.SC_BAD_REQUEST);
-                            //
-                            _LOG.debug("--- Check request allowed: NO");
-                            return;
+                        if (StringUtils.trimToEmpty(_entry.getValue()).equals("*")) {
+                            if (!WebContext.getRequest().getParameterMap().containsKey(_entry.getKey())) {
+                                response.sendError(HttpServletResponse.SC_BAD_REQUEST);
+                                //
+                                _LOG.debug("--- Check request allowed: NO");
+                                return;
+                            }
                         } else {
                             String _value = WebContext.getRequest().getParameter(_entry.getKey());
                             if (_value == null || !_value.equalsIgnoreCase(_entry.getValue())) {
