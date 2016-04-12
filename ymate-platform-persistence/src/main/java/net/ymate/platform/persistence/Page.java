@@ -53,7 +53,7 @@ public final class Page {
     }
 
     public int pageSize() {
-        return __pageSize;
+        return __pageSize > 0 ? __pageSize : DEFAULT_PAGE_SIZE;
     }
 
     public Page pageSize(int pageSize) {
