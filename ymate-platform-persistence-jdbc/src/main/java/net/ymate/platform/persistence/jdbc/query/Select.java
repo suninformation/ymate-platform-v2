@@ -16,9 +16,12 @@
 package net.ymate.platform.persistence.jdbc.query;
 
 import net.ymate.platform.persistence.Fields;
+import net.ymate.platform.persistence.Page;
 import net.ymate.platform.persistence.Params;
 import net.ymate.platform.persistence.base.EntityMeta;
 import net.ymate.platform.persistence.base.IEntity;
+import net.ymate.platform.persistence.jdbc.JDBC;
+import net.ymate.platform.persistence.jdbc.dialect.IDialect;
 import org.apache.commons.lang.StringUtils;
 
 import java.util.ArrayList;
@@ -47,6 +50,10 @@ public final class Select {
     private boolean __distinct;
 
     private IDBLocker __dbLocker;
+
+    private Page __page;
+
+    private IDialect __dialect;
 
     public static Select create(Class<? extends IEntity> entityClass) {
         return new Select(null, EntityMeta.createAndGet(entityClass).getEntityName(), null);
@@ -201,6 +208,17 @@ public final class Select {
         return this;
     }
 
+    public Select page(Page page) {
+        __page = page;
+        return this;
+    }
+
+    public Select page(IDialect dialect, Page page) {
+        __page = page;
+        __dialect = dialect;
+        return this;
+    }
+
     @Override
     public String toString() {
         StringBuilder _selectSB = new StringBuilder("SELECT ");
@@ -231,9 +249,23 @@ public final class Select {
         }
         _selectSB.append(" ");
         //
+        if (__page != null) {
+            if (__dialect == null) {
+                try {
+                    __dialect = JDBC.get().getDefaultConnectionHolder().getDialect();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+            if (__dialect != null) {
+                _selectSB = new StringBuilder(__dialect.buildPagedQuerySQL(_selectSB.toString(), __page.page(), __page.pageSize())).append(" ");
+            }
+        }
+        //
         if (StringUtils.isNotBlank(__alias)) {
             return "(".concat(_selectSB.toString()).concat(") ").concat(__alias);
         }
+        //
         if (__dbLocker != null) {
             _selectSB.append(__dbLocker.toSQL());
         }
