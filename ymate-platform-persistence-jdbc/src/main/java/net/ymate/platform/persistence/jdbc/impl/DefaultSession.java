@@ -163,7 +163,7 @@ public class DefaultSession implements ISession {
     public <T extends IEntity> IResultSet<T> find(EntitySQL<T> entity, Where where, Page page) throws Exception {
         String _selectSql = __dialect.buildSelectSQL(entity.getEntityClass(), __tablePrefix, __doGetNotExcludedFields(EntityMeta.createAndGet(entity.getEntityClass()), entity.fields(), false, true));
         if (where != null) {
-            _selectSql = _selectSql.concat(" ").concat(where.toSQL()).concat(" ").concat(where.orderBy().toSQL());
+            _selectSql = _selectSql.concat(" ").concat(where.toString());
         }
         long _count = 0;
         if (page != null) {
@@ -247,7 +247,7 @@ public class DefaultSession implements ISession {
     public <T extends IEntity> T findFirst(EntitySQL<T> entity, Where where) throws Exception {
         String _selectSql = __dialect.buildSelectSQL(entity.getEntityClass(), __tablePrefix, __doGetNotExcludedFields(EntityMeta.createAndGet(entity.getEntityClass()), entity.fields(), false, true));
         if (where != null) {
-            _selectSql = _selectSql.concat(" ").concat(where.toSQL()).concat(" ").concat(where.orderBy().toSQL());
+            _selectSql = _selectSql.concat(" ").concat(where.toString());
         }
         _selectSql = __dialect.buildPagedQuerySQL(_selectSql, 1, 1);
         //
@@ -530,7 +530,7 @@ public class DefaultSession implements ISession {
         EntityMeta _meta = EntityMeta.createAndGet(entityClass);
         ExpressionUtils _exp = ExpressionUtils.bind("SELECT count(1) FROM ${table_name} ${where}")
                 .set("table_name", __dialect.buildTableName(__tablePrefix, _meta.getEntityName()))
-                .set("where", where.toSQL());
+                .set("where", where.toString());
         IQueryOperator<Object[]> _opt = new DefaultQueryOperator<Object[]>(_exp.getResult(), this.getConnectionHolder(), IResultSetHandler.ARRAY);
         for (Object _param : where.getParams().params()) {
             _opt.addParameter(_param);
