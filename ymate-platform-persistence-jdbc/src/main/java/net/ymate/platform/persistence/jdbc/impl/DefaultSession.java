@@ -647,7 +647,7 @@ public class DefaultSession implements ISession {
                 }
                 if (_value != null || _propMeta.isNullable()) {
                     if (includePK && entityMeta.isPrimaryKey(_fieldName) && entityMeta.isAutoincrement(_fieldName)) {
-                        break;
+                        continue;
                     }
                     // 若value不为空则添加至返回对象中
                     _fields.add(_fieldName);

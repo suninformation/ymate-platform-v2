@@ -181,9 +181,6 @@ public final class EntityMeta {
                 if (_meta != null) {
                     targetMeta.__properties.put(_meta.getName(), _meta);
                     targetMeta.__fields.put(_meta.getField().getName(), _meta);
-                    if (_meta.isAutoincrement()) {
-                        targetMeta.__autoincrementProps.add(_meta.getName());
-                    }
                 }
             }
         }
@@ -206,6 +203,9 @@ public final class EntityMeta {
             if (ClassUtils.isAnnotationOf(field, Readonly.class)) {
                 _meta.setReadonly(true);
                 targetMeta.__readonlyProps.add(_meta.getName());
+            }
+            if (_meta.isAutoincrement()) {
+                targetMeta.__autoincrementProps.add(_meta.getName());
             }
         }
         return _meta;
