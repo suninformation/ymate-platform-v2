@@ -15,17 +15,17 @@
  */
 package net.ymate.platform.core.beans.intercept;
 
-import net.ymate.platform.core.beans.annotation.After;
-import net.ymate.platform.core.beans.annotation.Before;
-import net.ymate.platform.core.beans.annotation.Order;
-import net.ymate.platform.core.beans.annotation.Proxy;
+import net.ymate.platform.core.beans.annotation.*;
 import net.ymate.platform.core.beans.proxy.IProxy;
 import net.ymate.platform.core.beans.proxy.IProxyChain;
 import org.apache.commons.codec.digest.DigestUtils;
 
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -45,12 +45,26 @@ public class InterceptProxy implements IProxy {
 
     private static final Object __afterCacheLocker = new Object();
 
+    private static final Set<String> __excludedMethodNames;
+
     static {
         __beforeInterceptsCache = new ConcurrentHashMap<String, List<Class<? extends IInterceptor>>>();
         __afterInterceptsCache = new ConcurrentHashMap<String, List<Class<? extends IInterceptor>>>();
+        //
+        __excludedMethodNames = new HashSet<String>();
+        for (Method _method : Object.class.getDeclaredMethods()) {
+            __excludedMethodNames.add(_method.getName());
+        }
     }
 
     public Object doProxy(IProxyChain proxyChain) throws Throwable {
+        // 方法声明了@Ignored注解或非PUBLIC方法和Object类方法将被排除
+        boolean _ignored = proxyChain.getTargetMethod().isAnnotationPresent(Ignored.class);
+        if (_ignored || __excludedMethodNames.contains(proxyChain.getTargetMethod().getName())
+                || proxyChain.getTargetMethod().getDeclaringClass().equals(Object.class)
+                || proxyChain.getTargetMethod().getModifiers() != Modifier.PUBLIC) {
+            return proxyChain.doProxyChain();
+        }
         // 尝试处理@Before注解
         if (proxyChain.getTargetClass().isAnnotationPresent(Before.class)
                 || proxyChain.getTargetMethod().isAnnotationPresent(Before.class)) {
