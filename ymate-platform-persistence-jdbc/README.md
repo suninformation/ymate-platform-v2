@@ -6,6 +6,7 @@ JDBC持久化模块针对关系型数据库(RDBMS)数据存取的一套简单解
 - 优化批量数据更新、标准化结果集、预编译SQL语句处理；
 - 支持单实体ORM操作，无需编写SQL语句；
 - 提供脚手架工具，快速生成数据实体类，支持链式调用；
+- 支持通过存储器注解自定义SQL语句或从配置文件中加载SQL并自动执行；
 - 支持结果集与值对象的自动装配，支持自定义装配规则；
 - 支持多数据源，默认支持C3P0、DBCP、JNDI连接池配置，支持数据源扩展；
 - 支持多种数据库(如:Oracle、MySQL、SQLServer等)；
@@ -1023,6 +1024,95 @@ JDBC模块将数据查询的结果集合统一使用IResultSet接口进行封装
                 .field(Fields.create(User.FIELDS.ID, User.FIELDS.USER_NAME)
                         .excluded(true)));
 
+#### 存储器（Repository）
+
+为了能够更方便的维护和执行SQL语句，JDBC模块提供了存储器的支持，可以通过`@Repository`注解自定义SQL或自定义SQL语句或从配置文件中加载SQL并自动执行。
+
+- @Repository注解：
+	+ 参数说明：
+
+        > dsName：数据源名称，默认为空则采用默认数据源；
+        >
+        > item：从资源文件中加载item指定的配置项，默认为空；
+        >
+		> value：自定义SQL配置；
+		>
+		> type：操作类型，默认为查询，可选值：Type.OPT.QUERY或Type.OPT.UPDATE
+
+
+- 存储器示例代码：
+
+    + 存储器：
+
+            @Repository
+            public class DemoRepository implements IRepository {
+
+                /**
+                 * 注入SQL配置文件
+                 */
+                @Inject
+                private DefaultRepoConfig _repoCfg;
+
+                /**
+                 * 返回SQL配置文件对象, 若不需要配置文件请不要实现IRepository接口
+                 */
+                public IConfiguration getConfig() {
+                    return _repoCfg;
+                }
+
+                /**
+                 * 自定义SQL
+                 */
+                @Repository("select * from ymcms_attachment where hash = ?")
+                public IResultSet<Object[]> getSQLResults(String hash, IResultSet<Object[]> results) throws Exception {
+                    return results;
+                }
+
+                /**
+                 * 读取配置文件中的SQL
+                 */
+                @Repository(item = "demo_query")
+                public List<Attachment> getAttachments(String hash, IResultSet<Object[]>... results) throws Exception {
+                    final List<Attachment> _returnValues = new ArrayList<Attachment>();
+                    if (results != null && results.length > 0) {
+                        ResultSetHelper _help = ResultSetHelper.bind(results[0]);
+                        if (_help != null)
+                            _help.forEach(new ResultSetHelper.ItemHandler() {
+                                @Override
+                                public boolean handle(ResultSetHelper.ItemWrapper wrapper, int row) throws Exception {
+                                    _returnValues.add(wrapper.toEntity(new Attachment()));
+                                    return true;
+                                }
+                            });
+                    }
+                    return _returnValues;
+                }
+            }
+
+    + SQL配置文件对象：
+
+            @Configuration("cfgs/default.repo.xml")
+            public class DefaultRepoConfig extends DefaultConfiguration {
+            }
+
+    + SQL配置文件`default.repo.xml`内容：
+
+            <?xml version="1.0" encoding="UTF-8"?>
+            <properties>
+                <category name="default">
+                    <property name="demo_query">
+                        <value><![CDATA[select * from ymcms_attachment where hash = ?]]></value>
+                    </property>
+                </category>
+            </properties>
+
+- 说明：
+
+    > - 存储器类通过声明`@Repository`注解被框架自动扫描并加载；
+    > - 与其它被容器管理的`@Bean`一样支持拦截器、事务、缓存等注解；
+    > - 存储器类方法的参数至少有一个参数(方法有多个参数时，采用最后一个参数)用于接收SQL执行结果；
+    > - 查询类型SQL的执行结果数据类型为`IResultSet<Object[]>`，更新类型SQL的执行结果数据类型为`int`；
+    > - 用于接收SQL执行结果的方法参数支持变长类型，如：`IResultSet<Object[]> results`和`IResultSet<Object[]>... results`是一样的；
 
 #### 高级特性
 
