@@ -1035,7 +1035,7 @@ JDBC模块将数据查询的结果集合统一使用IResultSet接口进行封装
         >
         > item：从资源文件中加载item指定的配置项，默认为空；
         >
-		> value：自定义SQL配置；
+		> value：自定义SQL配置(value的优先级高于item)；
 		>
 		> type：操作类型，默认为查询，可选值：Type.OPT.QUERY或Type.OPT.UPDATE
 
@@ -1048,7 +1048,7 @@ JDBC模块将数据查询的结果集合统一使用IResultSet接口进行封装
             public class DemoRepository implements IRepository {
 
                 /**
-                 * 注入SQL配置文件
+                 * 注入SQL配置文件(任意配置对象均可)
                  */
                 @Inject
                 private DefaultRepoConfig _repoCfg;
@@ -1105,6 +1105,25 @@ JDBC模块将数据查询的结果集合统一使用IResultSet接口进行封装
                     </property>
                 </category>
             </properties>
+
+    + 在控制器中调用：在浏览器中访问`http://localhost:8080/hello`查看执行结果
+
+            @Controller
+            @RequestMapping("/hello")
+            public class HelloController {
+
+                /**
+                 * 注入存储器
+                 */
+                @Inject
+                private DemoRepository _repo;
+
+                @RequestMapping("/")
+                public IView hello() throws Exception {
+                    // 调用存储器方法
+                    return View.jsonView(_repo.getAttachments("44f5b005c7a94a0d42f53946f16b6bb2"));
+                }
+            }
 
 - 说明：
 
