@@ -57,4 +57,11 @@ public class Type {
             this.type = type;
         }
     }
+
+    /**
+     * 操作类型: 查询、更新、批量更新、存储过程
+     */
+    public enum OPT {
+        QUERY, UPDATE // , BATCH_UPDATE, PROC
+    }
 }

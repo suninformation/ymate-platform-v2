@@ -22,6 +22,8 @@ import net.ymate.platform.core.module.annotation.Module;
 import net.ymate.platform.persistence.jdbc.dialect.IDialect;
 import net.ymate.platform.persistence.jdbc.dialect.impl.*;
 import net.ymate.platform.persistence.jdbc.impl.*;
+import net.ymate.platform.persistence.jdbc.repo.RepoHandler;
+import net.ymate.platform.persistence.jdbc.repo.annotation.Repository;
 import net.ymate.platform.persistence.jdbc.transaction.Transactions;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -86,6 +88,8 @@ public class JDBC implements IModule, IDatabase {
             //
             __owner = owner;
             __moduleCfg = new DefaultModuleCfg(owner);
+            //
+            __owner.registerHandler(Repository.class, new RepoHandler(this));
             //
             __dsCaches = new HashMap<String, IDataSourceAdapter>();
             for (DataSourceCfgMeta _meta : __moduleCfg.getDataSourceCfgs().values()) {
