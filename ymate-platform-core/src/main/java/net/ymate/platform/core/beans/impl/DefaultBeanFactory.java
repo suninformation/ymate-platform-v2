@@ -276,7 +276,7 @@ public class DefaultBeanFactory implements IBeanFactory {
                 CleanProxy _cleanProxy = _targetClass.getAnnotation(CleanProxy.class);
                 if (_cleanProxy != null) {
                     if (_cleanProxy.value().length > 0) {
-                        for (Class<? extends Proxy> _proxyClass : _cleanProxy.value()) {
+                        for (Class<? extends IProxy> _proxyClass : _cleanProxy.value()) {
                             if (_proxyClass.equals(targetProxy.getClass())) {
                                 return false;
                             }

@@ -15,6 +15,8 @@
  */
 package net.ymate.platform.core.beans.annotation;
 
+import net.ymate.platform.core.beans.proxy.IProxy;
+
 import java.lang.annotation.*;
 
 /**
@@ -31,5 +33,5 @@ public @interface CleanProxy {
     /**
      * @return 设置需要清理的代理类，若不提供则默认清理全部代理
      */
-    Class<? extends Proxy>[] value() default {};
+    Class<? extends IProxy>[] value() default {};
 }
