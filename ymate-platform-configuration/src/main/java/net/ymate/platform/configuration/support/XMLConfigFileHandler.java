@@ -135,12 +135,16 @@ public class XMLConfigFileHandler {
                                     // 4.1 处理property->value标签
                                     NodeList _childNodes = _node.getElementsByTagName(TAG_NAME_VALUE);
                                     if (_childNodes.getLength() > 0) {
-                                        _hasSubTag = true;
-                                        for (int _idxItem = 0; _idxItem < _childNodes.getLength(); _idxItem++) {
-                                            Element _nodeItem = (Element) _childNodes.item(_idxItem);
-                                            String _value = _nodeItem.getTextContent();
-                                            if (StringUtils.isNotBlank(_value)) {
-                                                _propertyAttrs.add(new XMLAttribute(_value, ""));
+                                        if (_childNodes.getLength() == 1) {
+                                            _property.setValue(_childNodes.item(0).getTextContent());
+                                        } else {
+                                            _hasSubTag = true;
+                                            for (int _idxItem = 0; _idxItem < _childNodes.getLength(); _idxItem++) {
+                                                Element _nodeItem = (Element) _childNodes.item(_idxItem);
+                                                String _value = _nodeItem.getTextContent();
+                                                if (StringUtils.isNotBlank(_value)) {
+                                                    _propertyAttrs.add(new XMLAttribute(_value, ""));
+                                                }
                                             }
                                         }
                                     } else {
