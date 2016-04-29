@@ -16,19 +16,17 @@
 package net.ymate.platform.webmvc.context;
 
 import net.ymate.platform.core.lang.BlurObject;
+import net.ymate.platform.webmvc.IMultipartRequestWrapper;
 import net.ymate.platform.webmvc.IRequestContext;
 import net.ymate.platform.webmvc.IUploadFileWrapper;
 import net.ymate.platform.webmvc.IWebMvc;
 import net.ymate.platform.webmvc.base.Type;
-import net.ymate.platform.webmvc.support.MultipartRequestWrapper;
 
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.jsp.PageContext;
-import java.util.HashMap;
-import java.util.Locale;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Web环境上下文封装类，为了能够方便代码移植并脱离Web环境依赖进行开发测试(功能参考Struts2)
@@ -246,16 +244,23 @@ public final class WebContext {
     // MultipartRequestWrapper
 
     public IUploadFileWrapper getUploadFile(String name) {
-        if (getRequest() instanceof MultipartRequestWrapper) {
-            return ((MultipartRequestWrapper) getRequest()).getUploadFile(name);
+        if (getRequest() instanceof IMultipartRequestWrapper) {
+            return ((IMultipartRequestWrapper) getRequest()).getUploadFile(name);
         }
         return null;
     }
 
     public IUploadFileWrapper[] getUploadFiles(String name) {
-        if (getRequest() instanceof MultipartRequestWrapper) {
-            return ((MultipartRequestWrapper) getRequest()).getUploadFiles(name);
+        if (getRequest() instanceof IMultipartRequestWrapper) {
+            return ((IMultipartRequestWrapper) getRequest()).getUploadFiles(name);
         }
         return null;
+    }
+
+    public Set<IUploadFileWrapper> getUploadFiles() {
+        if (getRequest() instanceof IMultipartRequestWrapper) {
+            return ((IMultipartRequestWrapper) getRequest()).getUploadFiles();
+        }
+        return Collections.emptySet();
     }
 }

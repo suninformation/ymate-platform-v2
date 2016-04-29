@@ -242,7 +242,10 @@ public class WebMVC implements IModule, IWebMvc {
                     }
                     // 判断是否需要处理文件上传
                     if (context.getHttpMethod().equals(Type.HttpMethod.POST) && _meta.getMethod().isAnnotationPresent(FileUpload.class)) {
-                        request = new MultipartRequestWrapper(this, request);
+                        if (!(request instanceof IMultipartRequestWrapper)) {
+                            // 避免重复处理
+                            request = new MultipartRequestWrapper(this, request);
+                        }
                         //
                         _LOG.debug("--- Include file upload: YES");
                     }

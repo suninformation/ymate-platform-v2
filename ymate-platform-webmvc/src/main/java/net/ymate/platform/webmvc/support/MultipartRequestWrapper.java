@@ -15,10 +15,12 @@
  */
 package net.ymate.platform.webmvc.support;
 
+import net.ymate.platform.webmvc.IMultipartRequestWrapper;
 import net.ymate.platform.webmvc.IUploadFileWrapper;
 import net.ymate.platform.webmvc.IWebMvc;
 import net.ymate.platform.webmvc.util.FileUploadHelper;
 import org.apache.commons.fileupload.FileUploadException;
+import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 
 import javax.servlet.http.HttpServletRequest;
@@ -33,7 +35,7 @@ import java.util.*;
  * @author 刘镇 (suninformation@163.com) on 2011-8-5 上午10:19:47
  * @version 1.0
  */
-public class MultipartRequestWrapper extends HttpServletRequestWrapper {
+public class MultipartRequestWrapper extends HttpServletRequestWrapper implements IMultipartRequestWrapper {
 
     private FileUploadHelper.UploadFormWrapper __formWarpper;
 
@@ -102,5 +104,18 @@ public class MultipartRequestWrapper extends HttpServletRequestWrapper {
      */
     public IUploadFileWrapper[] getUploadFiles(String name) {
         return __formWarpper.getFileMap().get(name);
+    }
+
+    /**
+     * @return 获取所有的上传文件
+     */
+    public Set<IUploadFileWrapper> getUploadFiles() {
+        Set<IUploadFileWrapper> _returnValues = new HashSet<IUploadFileWrapper>();
+        for (IUploadFileWrapper[] _fileWraps : __formWarpper.getFileMap().values()) {
+            if (ArrayUtils.isNotEmpty(_fileWraps)) {
+                Collections.addAll(_returnValues, _fileWraps);
+            }
+        }
+        return _returnValues;
     }
 }

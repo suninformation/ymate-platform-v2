@@ -22,7 +22,6 @@ import net.ymate.platform.webmvc.*;
 import net.ymate.platform.webmvc.annotation.*;
 import net.ymate.platform.webmvc.base.Type;
 import net.ymate.platform.webmvc.context.WebContext;
-import net.ymate.platform.webmvc.support.MultipartRequestWrapper;
 import net.ymate.platform.webmvc.util.CookieHelper;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
@@ -132,8 +131,8 @@ public class DefaultRequestProcessor implements IRequestProcessor {
     protected Object __doParseRequestParam(IWebMvc owner, String paramName, String defaultValue, Class<?> paramType) {
         if (paramType.isArray()) {
             if (paramType.equals(IUploadFileWrapper[].class)) {
-                if (WebContext.getRequest() instanceof MultipartRequestWrapper) {
-                    return ((MultipartRequestWrapper) WebContext.getRequest()).getUploadFiles(paramName);
+                if (WebContext.getRequest() instanceof IMultipartRequestWrapper) {
+                    return ((IMultipartRequestWrapper) WebContext.getRequest()).getUploadFiles(paramName);
                 }
                 return null;
             }
@@ -151,8 +150,8 @@ public class DefaultRequestProcessor implements IRequestProcessor {
             }
             return null;
         } else if (paramType.equals(IUploadFileWrapper.class)) {
-            if (WebContext.getRequest() instanceof MultipartRequestWrapper) {
-                return ((MultipartRequestWrapper) WebContext.getRequest()).getUploadFile(paramName);
+            if (WebContext.getRequest() instanceof IMultipartRequestWrapper) {
+                return ((IMultipartRequestWrapper) WebContext.getRequest()).getUploadFile(paramName);
             }
             return null;
         }
