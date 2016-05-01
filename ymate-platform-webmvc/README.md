@@ -1141,9 +1141,9 @@ WebMVC模块通过约定模式可以将参数融合在URL中，不再通过`?`�
 请求参数的引用：
 
 	// 通过EL表达式获取参数
-	${UrlParams[0]}：front
-	${UrlParams[1]}：18
-	${UrlParams[2]}：30
+	${UrlParams[0]}：all
+	${UrlParams[1]}：2
+	${UrlParams[2]}：15
 
 > **注意**：伪静态参数必须是连续的，UrlParams参数集合存储在Request作用域内；
 
