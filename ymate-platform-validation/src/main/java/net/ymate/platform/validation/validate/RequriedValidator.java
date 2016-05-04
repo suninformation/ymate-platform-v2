@@ -37,15 +37,16 @@ public class RequriedValidator implements IValidator {
 
     public ValidateResult validate(ValidateContext context) {
         boolean _matched = false;
-        if (context.getParamValue() == null) {
+        Object _paramValue = context.getParamValue();
+        if (_paramValue == null) {
             _matched = true;
         } else {
-            if (!context.getParamValue().getClass().isArray()) {
-                if (StringUtils.isBlank(BlurObject.bind(context.getParamValue()).toStringValue())) {
+            if (!_paramValue.getClass().isArray()) {
+                if (StringUtils.isBlank(BlurObject.bind(_paramValue).toStringValue())) {
                     _matched = true;
                 }
             } else {
-                _matched = ArrayUtils.isEmpty((Object[]) context.getParamValue());
+                _matched = ArrayUtils.isEmpty((Object[]) _paramValue);
             }
         }
         if (_matched) {

@@ -36,12 +36,13 @@ import org.apache.commons.lang.math.NumberUtils;
 public class NumericValidator implements IValidator {
 
     public ValidateResult validate(ValidateContext context) {
-        if (context.getParamValue() != null) {
+        Object _paramValue = context.getParamValue();
+        if (_paramValue != null) {
             boolean _matched = false;
             boolean _flag = false;
             VNumeric _vNumeric = (VNumeric) context.getAnnotation();
             try {
-                Number _number = NumberUtils.createNumber(BlurObject.bind(context.getParamValue()).toStringValue());
+                Number _number = NumberUtils.createNumber(BlurObject.bind(_paramValue).toStringValue());
                 if (_number == null) {
                     _matched = true;
                     _flag = true;

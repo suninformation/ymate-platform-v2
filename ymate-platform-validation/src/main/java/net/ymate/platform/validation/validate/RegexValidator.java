@@ -35,9 +35,10 @@ import org.apache.commons.lang.StringUtils;
 public class RegexValidator implements IValidator {
 
     public ValidateResult validate(ValidateContext context) {
-        if (context.getParamValue() != null) {
-            if (!context.getParamValue().getClass().isArray()) {
-                String _value = BlurObject.bind(context.getParamValue()).toStringValue();
+        Object _paramValue = context.getParamValue();
+        if (_paramValue != null) {
+            if (!_paramValue.getClass().isArray()) {
+                String _value = BlurObject.bind(_paramValue).toStringValue();
                 if (StringUtils.isNotBlank(_value)) {
                     VRegex _vRegex = (VRegex) context.getAnnotation();
                     if (!_value.matches(_vRegex.regex())) {

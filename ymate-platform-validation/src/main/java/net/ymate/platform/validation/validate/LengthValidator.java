@@ -37,18 +37,17 @@ public class LengthValidator implements IValidator {
     public ValidateResult validate(ValidateContext context) {
         boolean _matched = false;
         VLength _vLength = (VLength) context.getAnnotation();
-        if (context.getParamValue() != null) {
+        Object _paramValue = context.getParamValue();
+        if (_paramValue != null) {
             int _length = 0;
-            if (!context.getParamValue().getClass().isArray()) {
-                String _value = BlurObject.bind(context.getParamValue()).toStringValue();
+            if (!_paramValue.getClass().isArray()) {
+                String _value = BlurObject.bind(_paramValue).toStringValue();
                 if (StringUtils.isNotBlank(_value)) {
                     _length = _value.length();
                 }
             } else {
-                Object[] _values = (Object[]) context.getParamValue();
-                if (_values != null) {
-                    _length = _values.length;
-                }
+                Object[] _values = (Object[]) _paramValue;
+                _length = _values.length;
             }
             //
             if (_vLength.min() > 0 && _vLength.max() == _vLength.min() && _length != _vLength.max()) {

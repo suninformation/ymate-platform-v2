@@ -35,9 +35,10 @@ import org.apache.commons.lang.StringUtils;
 public class EmailValidator implements IValidator {
 
     public ValidateResult validate(ValidateContext context) {
-        if (context.getParamValue() != null) {
+        Object _paramValue = context.getParamValue();
+        if (_paramValue != null) {
             if (!context.getParamValue().getClass().isArray()) {
-                String _value = BlurObject.bind(context.getParamValue()).toStringValue();
+                String _value = BlurObject.bind(_paramValue).toStringValue();
                 if (StringUtils.isNotBlank(_value)) {
                     if (!_value.matches("(?:\\w[-._\\w]*\\w@\\w[-._\\w]*\\w\\.\\w{2,3}$)")) {
                         String _pName = StringUtils.defaultIfBlank(context.getParamLabel(), context.getParamName());

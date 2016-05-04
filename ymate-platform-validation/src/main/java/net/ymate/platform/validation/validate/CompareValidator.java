@@ -35,10 +35,11 @@ import org.apache.commons.lang.StringUtils;
 public class CompareValidator implements IValidator {
 
     public ValidateResult validate(ValidateContext context) {
-        if (context.getParamValue() != null && !context.getParamValue().getClass().isArray()) {
+        Object _paramValue = context.getParamValue();
+        if (_paramValue != null && !_paramValue.getClass().isArray()) {
             VCompare _vCompare = (VCompare) context.getAnnotation();
-            boolean _matched = BlurObject.bind(context.getParamValue()).toStringValue()
-                    .equals(BlurObject.bind(context.getParamValues().get(_vCompare.with())).toString());
+            boolean _matched = BlurObject.bind(_paramValue).toStringValue()
+                    .equals(BlurObject.bind(context.getParamValue(_vCompare.with())).toString());
             String _condStr = "equals";
             switch (_vCompare.cond()) {
                 case NOT_EQ:

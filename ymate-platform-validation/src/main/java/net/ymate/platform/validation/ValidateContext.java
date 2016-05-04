@@ -16,6 +16,8 @@
 package net.ymate.platform.validation;
 
 import net.ymate.platform.core.YMP;
+import net.ymate.platform.core.util.ClassUtils;
+import org.apache.commons.lang.StringUtils;
 
 import java.lang.annotation.Annotation;
 import java.util.Map;
@@ -68,7 +70,34 @@ public class ValidateContext {
     }
 
     public Object getParamValue() {
-        return paramValues.get(this.paramName);
+        return getParamValue(this.paramName);
+    }
+
+    public Object getParamValue(String paramName) {
+        Object _targetValue = this.paramValues.get(paramName);
+        if (_targetValue == null) {
+            // 修正对JavaBean对象验证时无法正确获取属性参数值的问题:
+            // 先以'.'拆分参数名称并按层级关系尝试获取参数值
+            String[] _pNames = StringUtils.split(paramName, '.');
+            if (_pNames.length > 1) {
+                try {
+                    for (String _pName : _pNames) {
+                        if (_targetValue == null) {
+                            _targetValue = this.paramValues.get(_pName);
+                        } else {
+                            _targetValue = ClassUtils.wrapper(_targetValue).getValue(_pName);
+                        }
+                    }
+                } catch (Exception e) {
+                    // 出现任何异常都将返回null
+                    _targetValue = null;
+                } finally {
+                    // 上述过程无论取值是否为空都将被缓存, 防止多次执行
+                    this.paramValues.put(this.paramName, _targetValue);
+                }
+            }
+        }
+        return _targetValue;
     }
 
     public Map<String, Object> getParamValues() {
