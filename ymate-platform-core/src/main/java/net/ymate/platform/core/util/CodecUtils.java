@@ -27,6 +27,7 @@ import javax.crypto.SecretKeyFactory;
 import javax.crypto.spec.PBEKeySpec;
 import javax.crypto.spec.PBEParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
+import java.io.ByteArrayOutputStream;
 import java.security.*;
 import java.security.interfaces.RSAPrivateKey;
 import java.security.interfaces.RSAPublicKey;
@@ -37,7 +38,7 @@ import java.security.spec.X509EncodedKeySpec;
 /**
  * DES/AES/PBE/RSA加密/解密工具类
  *
- * @author 刘  (suninformation@163.com) on 2011-6-14 下午12:24:17
+ * @author 刘镇  (suninformation@163.com) on 2011-6-14 下午12:24:17
  * @version 1.0
  */
 public class CodecUtils {
@@ -52,45 +53,8 @@ public class CodecUtils {
 
     static {
         DES = new CodecHelper(56, "DES", "DES/ECB/PKCS5Padding");
-        AES = new CodecHelper(128, "AES", "AES") {
-            @Override
-            public Key toKey(byte[] key) throws Exception {
-                SecretKeyFactory factory = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA1");
-                KeySpec spec = new PBEKeySpec(StringUtils.newStringUtf8(key).toCharArray(), key, KEY_SIZE * Runtime.getRuntime().availableProcessors(), KEY_SIZE);
-                SecretKey tmp = factory.generateSecret(spec);
-                return new SecretKeySpec(tmp.getEncoded(), CIPHER_ALGORITHM);
-            }
-        };
-        PBE = new CodecHelper(128, "PBE", "PBEWithMD5AndDES") {
-            @Override
-            public Key toKey(byte[] key) throws Exception {
-                SecretKeyFactory factory = SecretKeyFactory.getInstance(CIPHER_ALGORITHM);
-                KeySpec spec = new PBEKeySpec(StringUtils.newStringUtf8(key).toCharArray());
-                return factory.generateSecret(spec);
-            }
-
-            @Override
-            public byte[] encrypt(byte[] data, byte[] key) throws Exception {
-                // 实例化
-                Cipher cipher = Cipher.getInstance(CIPHER_ALGORITHM);
-                // 初始化，设置为加密模式
-                PBEParameterSpec parameterSpec = new PBEParameterSpec(DigestUtils.md5Hex(key).substring(0, 8).getBytes(), KEY_SIZE * Runtime.getRuntime().availableProcessors());
-                cipher.init(Cipher.ENCRYPT_MODE, toKey(key), parameterSpec);
-                // 执行操作
-                return cipher.doFinal(data);
-            }
-
-            @Override
-            public byte[] decrypt(byte[] data, byte[] key) throws Exception {
-                // 实例化
-                Cipher cipher = Cipher.getInstance(CIPHER_ALGORITHM);
-                // 初始化，设置为解密模式
-                PBEParameterSpec parameterSpec = new PBEParameterSpec(DigestUtils.md5Hex(key).substring(0, 8).getBytes(), KEY_SIZE * Runtime.getRuntime().availableProcessors());
-                cipher.init(Cipher.DECRYPT_MODE, toKey(key), parameterSpec);
-                // 执行操作
-                return cipher.doFinal(data);
-            }
-        };
+        AES = new AESCodecHelper(128, 128);
+        PBE = new PBECodecHelper(128);
         RSA = new RSACodecHelper(1024);
     }
 
@@ -192,6 +156,89 @@ public class CodecUtils {
         }
     }
 
+    public static class AESCodecHelper extends CodecHelper {
+
+        private final int ITERATION_COUNT;
+
+        public AESCodecHelper(int keySize, int iterationCount) {
+            super(keySize, "AES", "AES");
+            ITERATION_COUNT = iterationCount <= 0 ? 128 : iterationCount;
+        }
+
+        @Override
+        public Key toKey(byte[] key) throws Exception {
+            SecretKeyFactory factory = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA1");
+            KeySpec spec = new PBEKeySpec(StringUtils.newStringUtf8(key).toCharArray(), key, ITERATION_COUNT, KEY_SIZE);
+            SecretKey tmp = factory.generateSecret(spec);
+            return new SecretKeySpec(tmp.getEncoded(), CIPHER_ALGORITHM);
+        }
+    }
+
+    public static class PBECodecHelper extends CodecHelper {
+
+        private final int ITERATION_COUNT;
+
+        public PBECodecHelper(int iterationCount) {
+            super(0, "PBE", "PBEWithMD5AndDES");
+            ITERATION_COUNT = iterationCount <= 0 ? 128 : iterationCount;
+        }
+
+        @Override
+        public byte[] initKey() throws Exception {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public String initKeyToString() throws Exception {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public Key toKey(byte[] key) throws Exception {
+            SecretKeyFactory factory = SecretKeyFactory.getInstance(CIPHER_ALGORITHM);
+            KeySpec spec = new PBEKeySpec(StringUtils.newStringUtf8(key).toCharArray());
+            return factory.generateSecret(spec);
+        }
+
+        @Override
+        public byte[] encrypt(byte[] data, byte[] key) throws Exception {
+            return encrypt(data, key, DigestUtils.md5Hex(key).substring(0, 8).getBytes());
+        }
+
+        public byte[] encrypt(byte[] data, byte[] key, byte[] salt) throws Exception {
+            // 实例化
+            Cipher cipher = Cipher.getInstance(CIPHER_ALGORITHM);
+            // 初始化，设置为加密模式
+            PBEParameterSpec parameterSpec = new PBEParameterSpec(salt, ITERATION_COUNT);
+            cipher.init(Cipher.ENCRYPT_MODE, toKey(key), parameterSpec);
+            // 执行操作
+            return cipher.doFinal(data);
+        }
+
+        public String encrypt(String data, String key, String salt) throws Exception {
+            return Base64.encodeBase64URLSafeString(encrypt(data.getBytes(), key.getBytes(), salt.getBytes()));
+        }
+
+        @Override
+        public byte[] decrypt(byte[] data, byte[] key) throws Exception {
+            return decrypt(data, key, DigestUtils.md5Hex(key).substring(0, 8).getBytes());
+        }
+
+        public byte[] decrypt(byte[] data, byte[] key, byte[] salt) throws Exception {
+            // 实例化
+            Cipher cipher = Cipher.getInstance(CIPHER_ALGORITHM);
+            // 初始化，设置为解密模式
+            PBEParameterSpec parameterSpec = new PBEParameterSpec(salt, ITERATION_COUNT);
+            cipher.init(Cipher.DECRYPT_MODE, toKey(key), parameterSpec);
+            // 执行操作
+            return cipher.doFinal(data);
+        }
+
+        public String decrypt(String data, String key, String salt) throws Exception {
+            return Base64.encodeBase64URLSafeString(decrypt(data.getBytes(), key.getBytes(), salt.getBytes()));
+        }
+    }
+
     public static class RSACodecHelper extends CodecHelper {
 
         public RSACodecHelper(int keySize) {
@@ -247,6 +294,36 @@ public class CodecUtils {
             return _sign.verify(Base64.decodeBase64(sign.getBytes()));
         }
 
+        private byte[] __doDataSegment(byte[] data, Cipher cipher, int inputLen) throws Exception {
+            ByteArrayOutputStream _outStream = null;
+            try {
+                _outStream = new ByteArrayOutputStream();
+                int _offSet = 0;
+                byte[] _buffer;
+                int _idx = 0;
+                int _dataLen = data.length;
+                while (_dataLen - _offSet > 0) {
+                    if (_dataLen - _offSet > inputLen) {
+                        _buffer = cipher.doFinal(data, _offSet, inputLen);
+                    } else {
+                        _buffer = cipher.doFinal(data, _offSet, _dataLen - _offSet);
+                    }
+                    _outStream.write(_buffer, 0, _buffer.length);
+                    _idx++;
+                    _offSet = _idx * inputLen;
+                }
+                return _outStream.toByteArray();
+            } finally {
+                if (_outStream != null) {
+                    try {
+                        _outStream.close();
+                    } catch (Exception e) {
+                        // Nothing...
+                    }
+                }
+            }
+        }
+
         @Override
         public byte[] encrypt(byte[] data, byte[] key) throws Exception {
             PKCS8EncodedKeySpec _keySpec = new PKCS8EncodedKeySpec(key);
@@ -255,7 +332,7 @@ public class CodecUtils {
             Cipher _cipher = Cipher.getInstance(_keyFactory.getAlgorithm());
             _cipher.init(Cipher.ENCRYPT_MODE, _privKey);
             //
-            return _cipher.doFinal(data);
+            return __doDataSegment(data, _cipher, 117);
         }
 
         @Override
@@ -273,7 +350,7 @@ public class CodecUtils {
             Cipher _cipher = Cipher.getInstance(_keyFactory.getAlgorithm());
             _cipher.init(Cipher.DECRYPT_MODE, _privKey);
             //
-            return _cipher.doFinal(data);
+            return __doDataSegment(data, _cipher, 128);
         }
 
         @Override
@@ -290,7 +367,7 @@ public class CodecUtils {
             Cipher _cipher = Cipher.getInstance(_keyFactory.getAlgorithm());
             _cipher.init(Cipher.ENCRYPT_MODE, _pubKey);
             //
-            return _cipher.doFinal(data);
+            return __doDataSegment(data, _cipher, 117);
         }
 
         public String encryptPublicKey(String data, String key) throws Exception {
@@ -306,7 +383,7 @@ public class CodecUtils {
             Cipher _cipher = Cipher.getInstance(_keyFactory.getAlgorithm());
             _cipher.init(Cipher.DECRYPT_MODE, _pubKey);
             //
-            return _cipher.doFinal(data);
+            return __doDataSegment(data, _cipher, 128);
         }
 
         public String decryptPublicKey(String data, String key) throws Exception {
