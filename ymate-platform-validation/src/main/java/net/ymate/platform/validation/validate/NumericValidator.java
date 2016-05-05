@@ -70,7 +70,7 @@ public class NumericValidator implements IValidator {
                     } else {
                         if (_vNumeric.max() > 0 && _vNumeric.min() > 0) {
                             String __NUMERIC_BETWEEN = "ymp.validation.numeric_between";
-                            _msg = I18N.formatMessage(VALIDATION_I18N_RESOURCE, __NUMERIC_BETWEEN, "{0} numeric must be between {1} and {2}.", _vNumeric.min(), _pName, _vNumeric.max());
+                            _msg = I18N.formatMessage(VALIDATION_I18N_RESOURCE, __NUMERIC_BETWEEN, "{0} numeric must be between {1} and {2}.", _pName, _vNumeric.min(), _vNumeric.max());
                         } else if (_vNumeric.max() > 0) {
                             String __NUMERIC_MAX = "ymp.validation.numeric_max";
                             _msg = I18N.formatMessage(VALIDATION_I18N_RESOURCE, __NUMERIC_MAX, "{0} numeric must be lt {1}.", _pName, _vNumeric.max());

@@ -124,19 +124,21 @@ public class ValidationMeta {
     public Map<String, Annotation[]> __doGetMetaFromFields(String parentFieldName, Class<?> targetClass, Map<String, String> paramLabels) {
         Map<String, Annotation[]> _returnValues = new LinkedHashMap<String, Annotation[]>();
         //
-        parentFieldName = StringUtils.defaultIfBlank(parentFieldName, "");
+        parentFieldName = StringUtils.trimToEmpty(parentFieldName);
         ClassUtils.BeanWrapper<?> _beanWrapper = ClassUtils.wrapper(targetClass);
         if (_beanWrapper != null) {
             for (String _fieldName : _beanWrapper.getFieldNames()) {
                 // 尝试获取自定义的Field别名
+                VField _vField = null;
                 Field _field = _beanWrapper.getField(_fieldName);
                 if (_field.isAnnotationPresent(VField.class)) {
-                    VField _vField = _field.getAnnotation(VField.class);
+                    _vField = _field.getAnnotation(VField.class);
                     if (StringUtils.isNotBlank(_vField.name())) {
                         _fieldName = _vField.name();
                     }
                     if (StringUtils.isNotBlank(_vField.label())) {
                         __labels.put(_fieldName, _vField.label());
+                        paramLabels.put(__doGetFieldName(parentFieldName, _fieldName), _vField.label());
                     }
                 }
                 List<Annotation> _annotations = new ArrayList<Annotation>();
@@ -145,15 +147,18 @@ public class ValidationMeta {
                         _annotations.add(_annotation);
                     } else if (_annotation instanceof VModel) {
                         // 拼装带层级关系的Field名称
-                        _fieldName = __doGetFieldName(parentFieldName, _fieldName);
+                        String _fieldNamePR = __doGetFieldName(parentFieldName, _fieldName);
+                        if (_vField != null && StringUtils.isNotBlank(_vField.label())) {
+                            paramLabels.put(_fieldNamePR, _vField.label());
+                        }
                         // 递归处理@VModel
-                        _returnValues.putAll(__doGetMetaFromFields(__doGetFieldName(parentFieldName, _fieldName), _field.getType(), paramLabels));
+                        _returnValues.putAll(__doGetMetaFromFields(_fieldNamePR, _field.getType(), paramLabels));
                     }
                 }
                 if (!_annotations.isEmpty()) {
                     // 拼装带层级关系的Field名称
-                    _fieldName = __doGetFieldName(parentFieldName, _fieldName);
-                    _returnValues.put(_fieldName, _annotations.toArray(new Annotation[_annotations.size()]));
+                    String _fieldNamePR = __doGetFieldName(parentFieldName, _fieldName);
+                    _returnValues.put(_fieldNamePR, _annotations.toArray(new Annotation[_annotations.size()]));
                 }
             }
         }
