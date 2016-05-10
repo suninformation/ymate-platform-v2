@@ -20,6 +20,7 @@ import net.ymate.platform.core.beans.annotation.Order;
 import net.ymate.platform.core.beans.annotation.Proxy;
 import net.ymate.platform.core.beans.proxy.IProxy;
 import net.ymate.platform.core.beans.proxy.IProxyChain;
+import net.ymate.platform.core.util.RuntimeUtils;
 import net.ymate.platform.persistence.IResultSet;
 import net.ymate.platform.persistence.jdbc.*;
 import net.ymate.platform.persistence.jdbc.base.IResultSetHandler;
@@ -27,6 +28,8 @@ import net.ymate.platform.persistence.jdbc.query.SQL;
 import net.ymate.platform.persistence.jdbc.repo.annotation.Repository;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 /**
  * JDBC存储器代理
@@ -36,6 +39,9 @@ import org.apache.commons.lang.StringUtils;
  */
 @Proxy(annotation = Repository.class, order = @Order(89))
 public class RepoProxy implements IProxy {
+
+    private static final Log _LOG = LogFactory.getLog(RepoProxy.class);
+
     public Object doProxy(IProxyChain proxyChain) throws Throwable {
         Repository _repo = proxyChain.getTargetMethod().getAnnotation(Repository.class);
         if (_repo == null) {
@@ -47,7 +53,7 @@ public class RepoProxy implements IProxy {
             IConfiguration _conf = ((IRepository) proxyChain.getTargetObject()).getConfig();
             _targetSQL = _conf.getString(_repo.item());
         } catch (Exception e) {
-            // Nothing..
+            _LOG.warn("", RuntimeUtils.unwrapThrow(e));
         }
         if (StringUtils.isNotBlank(_targetSQL)) {
             IDatabase _db = JDBC.get(proxyChain.getProxyFactory().getOwner());

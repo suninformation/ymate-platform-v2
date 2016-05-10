@@ -229,7 +229,7 @@ public class Caches implements IModule, ICaches {
         }
     }
 
-    public static Map<String, String> PROVIDERS;
+    public static final Map<String, String> PROVIDERS;
 
     static {
         PROVIDERS = new HashMap<String, String>();

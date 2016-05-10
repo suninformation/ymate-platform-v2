@@ -15,14 +15,18 @@
  */
 package net.ymate.platform.persistence.jdbc.query;
 
+import net.ymate.platform.core.util.RuntimeUtils;
 import net.ymate.platform.persistence.Fields;
 import net.ymate.platform.persistence.Page;
 import net.ymate.platform.persistence.Params;
 import net.ymate.platform.persistence.base.EntityMeta;
 import net.ymate.platform.persistence.base.IEntity;
+import net.ymate.platform.persistence.jdbc.IConnectionHolder;
 import net.ymate.platform.persistence.jdbc.JDBC;
 import net.ymate.platform.persistence.jdbc.dialect.IDialect;
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -34,6 +38,8 @@ import java.util.List;
  * @version 1.0
  */
 public final class Select {
+
+    private static final Log _LOG = LogFactory.getLog(Select.class);
 
     private List<String> __froms;
 
@@ -251,10 +257,16 @@ public final class Select {
         //
         if (__page != null) {
             if (__dialect == null) {
+                IConnectionHolder _connHolder = null;
                 try {
-                    __dialect = JDBC.get().getDefaultConnectionHolder().getDialect();
+                    _connHolder = JDBC.get().getDefaultConnectionHolder();
+                    __dialect = _connHolder.getDialect();
                 } catch (Exception e) {
-                    e.printStackTrace();
+                    _LOG.warn("", RuntimeUtils.unwrapThrow(e));
+                } finally {
+                    if (_connHolder != null) {
+                        _connHolder.release();
+                    }
                 }
             }
             if (__dialect != null) {
