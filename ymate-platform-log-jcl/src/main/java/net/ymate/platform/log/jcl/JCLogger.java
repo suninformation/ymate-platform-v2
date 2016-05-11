@@ -126,35 +126,51 @@ public class JCLogger implements Log, Serializable {
     }
 
     public void debug(Object message) {
-        __doBuildEx(message, null, ILogger.LogLevel.DEBUG);
+        if (isDebugEnabled()) {
+            __doBuildEx(message, null, ILogger.LogLevel.DEBUG);
+        }
     }
 
     public void debug(Object message, Throwable t) {
-        __doBuildEx(message, t, ILogger.LogLevel.DEBUG);
+        if (isDebugEnabled()) {
+            __doBuildEx(message, t, ILogger.LogLevel.DEBUG);
+        }
     }
 
     public void error(Object message) {
-        __doBuildEx(message, null, ILogger.LogLevel.ERROR);
+        if (isErrorEnabled()) {
+            __doBuildEx(message, null, ILogger.LogLevel.ERROR);
+        }
     }
 
     public void error(Object message, Throwable t) {
-        __doBuildEx(message, t, ILogger.LogLevel.ERROR);
+        if (isErrorEnabled()) {
+            __doBuildEx(message, t, ILogger.LogLevel.ERROR);
+        }
     }
 
     public void fatal(Object message) {
-        __doBuildEx(message, null, ILogger.LogLevel.FATAL);
+        if (isFatalEnabled()) {
+            __doBuildEx(message, null, ILogger.LogLevel.FATAL);
+        }
     }
 
     public void fatal(Object message, Throwable t) {
-        __doBuildEx(message, t, ILogger.LogLevel.FATAL);
+        if (isFatalEnabled()) {
+            __doBuildEx(message, t, ILogger.LogLevel.FATAL);
+        }
     }
 
     public void info(Object message) {
-        __doBuildEx(message, null, ILogger.LogLevel.INFO);
+        if (isInfoEnabled()) {
+            __doBuildEx(message, null, ILogger.LogLevel.INFO);
+        }
     }
 
     public void info(Object message, Throwable t) {
-        __doBuildEx(message, t, ILogger.LogLevel.INFO);
+        if (isInfoEnabled()) {
+            __doBuildEx(message, t, ILogger.LogLevel.INFO);
+        }
     }
 
     public boolean isDebugEnabled() {
@@ -182,18 +198,26 @@ public class JCLogger implements Log, Serializable {
     }
 
     public void trace(Object message) {
-        __doBuildEx(message, null, ILogger.LogLevel.TRACE);
+        if (isTraceEnabled()) {
+            __doBuildEx(message, null, ILogger.LogLevel.TRACE);
+        }
     }
 
     public void trace(Object message, Throwable t) {
-        __doBuildEx(message, t, ILogger.LogLevel.TRACE);
+        if (isTraceEnabled()) {
+            __doBuildEx(message, t, ILogger.LogLevel.TRACE);
+        }
     }
 
     public void warn(Object message) {
-        __doBuildEx(message, null, ILogger.LogLevel.WARN);
+        if (isWarnEnabled()) {
+            __doBuildEx(message, null, ILogger.LogLevel.WARN);
+        }
     }
 
     public void warn(Object message, Throwable t) {
-        __doBuildEx(message, t, ILogger.LogLevel.WARN);
+        if (isWarnEnabled()) {
+            __doBuildEx(message, t, ILogger.LogLevel.WARN);
+        }
     }
 }

@@ -15,7 +15,9 @@
  */
 package net.ymate.platform.log.slf4j;
 
+import net.ymate.platform.log.ILog;
 import net.ymate.platform.log.Logs;
+import org.apache.commons.lang.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.spi.AbstractLoggerAdapter;
 import org.apache.logging.log4j.spi.LoggerContext;
@@ -31,17 +33,33 @@ public class Log4jLoggerFactory extends AbstractLoggerAdapter<Logger> implements
 
     private static final String FQCN = Log4jLoggerFactory.class.getName();
     private static final String PACKAGE = "org.slf4j";
-    private boolean _allowOutputConsole = false;
+
+    private ILog __logs;
 
     @Override
     protected Logger newLogger(final String name, final LoggerContext context) {
-        return new Log4jLogger(context.getLogger(LogManager.ROOT_LOGGER_NAME), name, _allowOutputConsole);
+        Logger _logger = null;
+        if (context == null) {
+            try {
+                String _key = Logger.ROOT_LOGGER_NAME.equals(name) ? __logs.getModuleCfg().getLoggerName() : name;
+                if (StringUtils.isBlank(_key)) {
+                    _logger = new Log4jLogger((org.apache.logging.log4j.Logger) __logs.getLogger().getLoggerImpl(), name, __logs.getModuleCfg().allowOutputConsole());
+                } else {
+                    _logger = new Log4jLogger((org.apache.logging.log4j.Logger) __logs.getLogger().getLogger(_key).getLoggerImpl(), name, __logs.getModuleCfg().allowOutputConsole());
+                }
+            } catch (Exception e) {
+                _logger = new Log4jLogger((org.apache.logging.log4j.Logger) __logs.getLogger().getLoggerImpl(), name, __logs.getModuleCfg().allowOutputConsole());
+            }
+        } else {
+            _logger = new Log4jLogger(context.getLogger(Logger.ROOT_LOGGER_NAME.equals(name) ? LogManager.ROOT_LOGGER_NAME : name), name, false);
+        }
+        return _logger;
     }
 
     @Override
     protected LoggerContext getContext() {
-        if (Logs.get().isInited()) {
-            _allowOutputConsole = Logs.get().getModuleCfg().allowOutputConsole();
+        __logs = Logs.get();
+        if (__logs == null || !__logs.isInited()) {
             final Class<?> anchor = ReflectionUtil.getCallerClass(FQCN, PACKAGE);
             return anchor == null ? LogManager.getContext() : getContext(ReflectionUtil.getCallerClass(anchor));
         }

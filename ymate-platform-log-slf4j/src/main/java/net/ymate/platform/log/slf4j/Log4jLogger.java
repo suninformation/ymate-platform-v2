@@ -135,23 +135,33 @@ public class Log4jLogger implements LocationAwareLogger, Serializable {
     }
 
     public void trace(final String msg) {
-        __doBuildEx(msg, null, ILogger.LogLevel.TRACE, null);
+        if (isTraceEnabled()) {
+            __doBuildEx(msg, null, ILogger.LogLevel.TRACE, null);
+        }
     }
 
     public void trace(final String format, final Object arg) {
-        __doBuildEx(__getSafeMessages(format, arg), null, ILogger.LogLevel.TRACE, null);
+        if (isTraceEnabled()) {
+            __doBuildEx(__getSafeMessages(format, arg), null, ILogger.LogLevel.TRACE, null);
+        }
     }
 
     public void trace(final String format, final Object arg1, final Object arg2) {
-        __doBuildEx(__getSafeMessages(format, arg1, arg2), null, ILogger.LogLevel.TRACE, null);
+        if (isTraceEnabled()) {
+            __doBuildEx(__getSafeMessages(format, arg1, arg2), null, ILogger.LogLevel.TRACE, null);
+        }
     }
 
     public void trace(final String format, final Object... args) {
-        __doBuildEx(__getSafeMessages(format, args), null, ILogger.LogLevel.TRACE, null);
+        if (isTraceEnabled()) {
+            __doBuildEx(__getSafeMessages(format, args), null, ILogger.LogLevel.TRACE, null);
+        }
     }
 
     public void trace(final String msg, final Throwable t) {
-        __doBuildEx(msg, t, ILogger.LogLevel.TRACE, null);
+        if (isTraceEnabled()) {
+            __doBuildEx(msg, t, ILogger.LogLevel.TRACE, null);
+        }
     }
 
     public boolean isTraceEnabled() {
@@ -163,43 +173,63 @@ public class Log4jLogger implements LocationAwareLogger, Serializable {
     }
 
     public void trace(final Marker marker, final String msg) {
-        __doBuildEx(msg, null, ILogger.LogLevel.TRACE, null);
+        if (isTraceEnabled(marker)) {
+            __doBuildEx(msg, null, ILogger.LogLevel.TRACE, null);
+        }
     }
 
     public void trace(final Marker marker, final String format, final Object arg) {
-        __doBuildEx(__getSafeMessages(format, arg), null, ILogger.LogLevel.TRACE, marker);
+        if (isTraceEnabled(marker)) {
+            __doBuildEx(__getSafeMessages(format, arg), null, ILogger.LogLevel.TRACE, marker);
+        }
     }
 
     public void trace(final Marker marker, final String format, final Object arg1, final Object arg2) {
-        __doBuildEx(__getSafeMessages(format, arg1, arg2), null, ILogger.LogLevel.TRACE, marker);
+        if (isTraceEnabled(marker)) {
+            __doBuildEx(__getSafeMessages(format, arg1, arg2), null, ILogger.LogLevel.TRACE, marker);
+        }
     }
 
     public void trace(final Marker marker, final String format, final Object... args) {
-        __doBuildEx(__getSafeMessages(format, args), null, ILogger.LogLevel.TRACE, marker);
+        if (isTraceEnabled(marker)) {
+            __doBuildEx(__getSafeMessages(format, args), null, ILogger.LogLevel.TRACE, marker);
+        }
     }
 
     public void trace(final Marker marker, final String msg, final Throwable throwable) {
-        __doBuildEx(msg, throwable, ILogger.LogLevel.TRACE, marker);
+        if (isTraceEnabled(marker)) {
+            __doBuildEx(msg, throwable, ILogger.LogLevel.TRACE, marker);
+        }
     }
 
     public void debug(final String msg) {
-        __doBuildEx(msg, null, ILogger.LogLevel.DEBUG, null);
+        if (isDebugEnabled()) {
+            __doBuildEx(msg, null, ILogger.LogLevel.DEBUG, null);
+        }
     }
 
     public void debug(final String format, final Object arg) {
-        __doBuildEx(__getSafeMessages(format, arg), null, ILogger.LogLevel.DEBUG, null);
+        if (isDebugEnabled()) {
+            __doBuildEx(__getSafeMessages(format, arg), null, ILogger.LogLevel.DEBUG, null);
+        }
     }
 
     public void debug(final String format, final Object arg1, final Object arg2) {
-        __doBuildEx(__getSafeMessages(format, arg1, arg2), null, ILogger.LogLevel.DEBUG, null);
+        if (isDebugEnabled()) {
+            __doBuildEx(__getSafeMessages(format, arg1, arg2), null, ILogger.LogLevel.DEBUG, null);
+        }
     }
 
     public void debug(final String format, final Object... args) {
-        __doBuildEx(__getSafeMessages(format, args), null, ILogger.LogLevel.DEBUG, null);
+        if (isDebugEnabled()) {
+            __doBuildEx(__getSafeMessages(format, args), null, ILogger.LogLevel.DEBUG, null);
+        }
     }
 
     public void debug(final String msg, final Throwable t) {
-        __doBuildEx(msg, t, ILogger.LogLevel.DEBUG, null);
+        if (isDebugEnabled()) {
+            __doBuildEx(msg, t, ILogger.LogLevel.DEBUG, null);
+        }
     }
 
     public boolean isDebugEnabled() {
@@ -211,43 +241,63 @@ public class Log4jLogger implements LocationAwareLogger, Serializable {
     }
 
     public void debug(final Marker marker, final String msg) {
-        __doBuildEx(msg, null, ILogger.LogLevel.DEBUG, null);
+        if (isDebugEnabled(marker)) {
+            __doBuildEx(msg, null, ILogger.LogLevel.DEBUG, null);
+        }
     }
 
     public void debug(final Marker marker, final String format, final Object arg) {
-        __doBuildEx(__getSafeMessages(format, arg), null, ILogger.LogLevel.DEBUG, marker);
+        if (isDebugEnabled(marker)) {
+            __doBuildEx(__getSafeMessages(format, arg), null, ILogger.LogLevel.DEBUG, marker);
+        }
     }
 
     public void debug(final Marker marker, final String format, final Object arg1, final Object arg2) {
-        __doBuildEx(__getSafeMessages(format, arg1, arg2), null, ILogger.LogLevel.DEBUG, marker);
+        if (isDebugEnabled(marker)) {
+            __doBuildEx(__getSafeMessages(format, arg1, arg2), null, ILogger.LogLevel.DEBUG, marker);
+        }
     }
 
     public void debug(final Marker marker, final String format, final Object... args) {
-        __doBuildEx(__getSafeMessages(format, args), null, ILogger.LogLevel.DEBUG, marker);
+        if (isDebugEnabled(marker)) {
+            __doBuildEx(__getSafeMessages(format, args), null, ILogger.LogLevel.DEBUG, marker);
+        }
     }
 
     public void debug(final Marker marker, final String msg, final Throwable throwable) {
-        __doBuildEx(msg, throwable, ILogger.LogLevel.DEBUG, marker);
+        if (isDebugEnabled(marker)) {
+            __doBuildEx(msg, throwable, ILogger.LogLevel.DEBUG, marker);
+        }
     }
 
     public void info(final String msg) {
-        __doBuildEx(msg, null, ILogger.LogLevel.INFO, null);
+        if (isInfoEnabled()) {
+            __doBuildEx(msg, null, ILogger.LogLevel.INFO, null);
+        }
     }
 
     public void info(final String format, final Object arg) {
-        __doBuildEx(__getSafeMessages(format, arg), null, ILogger.LogLevel.INFO, null);
+        if (isInfoEnabled()) {
+            __doBuildEx(__getSafeMessages(format, arg), null, ILogger.LogLevel.INFO, null);
+        }
     }
 
     public void info(final String format, final Object arg1, final Object arg2) {
-        __doBuildEx(__getSafeMessages(format, arg1, arg2), null, ILogger.LogLevel.INFO, null);
+        if (isInfoEnabled()) {
+            __doBuildEx(__getSafeMessages(format, arg1, arg2), null, ILogger.LogLevel.INFO, null);
+        }
     }
 
     public void info(final String format, final Object... args) {
-        __doBuildEx(__getSafeMessages(format, args), null, ILogger.LogLevel.INFO, null);
+        if (isInfoEnabled()) {
+            __doBuildEx(__getSafeMessages(format, args), null, ILogger.LogLevel.INFO, null);
+        }
     }
 
     public void info(final String msg, final Throwable t) {
-        __doBuildEx(msg, t, ILogger.LogLevel.INFO, null);
+        if (isInfoEnabled()) {
+            __doBuildEx(msg, t, ILogger.LogLevel.INFO, null);
+        }
     }
 
     public boolean isInfoEnabled() {
@@ -259,43 +309,63 @@ public class Log4jLogger implements LocationAwareLogger, Serializable {
     }
 
     public void info(final Marker marker, final String msg) {
-        __doBuildEx(msg, null, ILogger.LogLevel.INFO, null);
+        if (isInfoEnabled(marker)) {
+            __doBuildEx(msg, null, ILogger.LogLevel.INFO, null);
+        }
     }
 
     public void info(final Marker marker, final String format, final Object arg) {
-        __doBuildEx(__getSafeMessages(format, arg), null, ILogger.LogLevel.INFO, marker);
+        if (isInfoEnabled(marker)) {
+            __doBuildEx(__getSafeMessages(format, arg), null, ILogger.LogLevel.INFO, marker);
+        }
     }
 
     public void info(final Marker marker, final String format, final Object arg1, final Object arg2) {
-        __doBuildEx(__getSafeMessages(format, arg1, arg2), null, ILogger.LogLevel.INFO, marker);
+        if (isInfoEnabled(marker)) {
+            __doBuildEx(__getSafeMessages(format, arg1, arg2), null, ILogger.LogLevel.INFO, marker);
+        }
     }
 
     public void info(final Marker marker, final String format, final Object... args) {
-        __doBuildEx(__getSafeMessages(format, args), null, ILogger.LogLevel.INFO, marker);
+        if (isInfoEnabled(marker)) {
+            __doBuildEx(__getSafeMessages(format, args), null, ILogger.LogLevel.INFO, marker);
+        }
     }
 
     public void info(final Marker marker, final String msg, final Throwable throwable) {
-        __doBuildEx(msg, throwable, ILogger.LogLevel.INFO, marker);
+        if (isInfoEnabled(marker)) {
+            __doBuildEx(msg, throwable, ILogger.LogLevel.INFO, marker);
+        }
     }
 
     public void warn(final String msg) {
-        __doBuildEx(msg, null, ILogger.LogLevel.WARN, null);
+        if (isWarnEnabled()) {
+            __doBuildEx(msg, null, ILogger.LogLevel.WARN, null);
+        }
     }
 
     public void warn(final String format, final Object arg) {
-        __doBuildEx(__getSafeMessages(format, arg), null, ILogger.LogLevel.WARN, null);
+        if (isWarnEnabled()) {
+            __doBuildEx(__getSafeMessages(format, arg), null, ILogger.LogLevel.WARN, null);
+        }
     }
 
     public void warn(final String format, final Object arg1, final Object arg2) {
-        __doBuildEx(__getSafeMessages(format, arg1, arg2), null, ILogger.LogLevel.WARN, null);
+        if (isWarnEnabled()) {
+            __doBuildEx(__getSafeMessages(format, arg1, arg2), null, ILogger.LogLevel.WARN, null);
+        }
     }
 
     public void warn(final String format, final Object... args) {
-        __doBuildEx(__getSafeMessages(format, args), null, ILogger.LogLevel.WARN, null);
+        if (isWarnEnabled()) {
+            __doBuildEx(__getSafeMessages(format, args), null, ILogger.LogLevel.WARN, null);
+        }
     }
 
     public void warn(final String msg, final Throwable t) {
-        __doBuildEx(msg, t, ILogger.LogLevel.WARN, null);
+        if (isWarnEnabled()) {
+            __doBuildEx(msg, t, ILogger.LogLevel.WARN, null);
+        }
     }
 
     public boolean isWarnEnabled() {
@@ -307,43 +377,63 @@ public class Log4jLogger implements LocationAwareLogger, Serializable {
     }
 
     public void warn(final Marker marker, final String msg) {
-        __doBuildEx(msg, null, ILogger.LogLevel.WARN, null);
+        if (isWarnEnabled(marker)) {
+            __doBuildEx(msg, null, ILogger.LogLevel.WARN, null);
+        }
     }
 
     public void warn(final Marker marker, final String format, final Object arg) {
-        __doBuildEx(__getSafeMessages(format, arg), null, ILogger.LogLevel.WARN, marker);
+        if (isWarnEnabled(marker)) {
+            __doBuildEx(__getSafeMessages(format, arg), null, ILogger.LogLevel.WARN, marker);
+        }
     }
 
     public void warn(final Marker marker, final String format, final Object arg1, final Object arg2) {
-        __doBuildEx(__getSafeMessages(format, arg1, arg2), null, ILogger.LogLevel.WARN, marker);
+        if (isWarnEnabled(marker)) {
+            __doBuildEx(__getSafeMessages(format, arg1, arg2), null, ILogger.LogLevel.WARN, marker);
+        }
     }
 
     public void warn(final Marker marker, final String format, final Object... args) {
-        __doBuildEx(__getSafeMessages(format, args), null, ILogger.LogLevel.WARN, marker);
+        if (isWarnEnabled(marker)) {
+            __doBuildEx(__getSafeMessages(format, args), null, ILogger.LogLevel.WARN, marker);
+        }
     }
 
     public void warn(final Marker marker, final String msg, final Throwable throwable) {
-        __doBuildEx(msg, throwable, ILogger.LogLevel.WARN, marker);
+        if (isWarnEnabled(marker)) {
+            __doBuildEx(msg, throwable, ILogger.LogLevel.WARN, marker);
+        }
     }
 
     public void error(final String msg) {
-        __doBuildEx(msg, null, ILogger.LogLevel.ERROR, null);
+        if (isErrorEnabled()) {
+            __doBuildEx(msg, null, ILogger.LogLevel.ERROR, null);
+        }
     }
 
     public void error(final String format, final Object arg) {
-        __doBuildEx(__getSafeMessages(format, arg), null, ILogger.LogLevel.ERROR, null);
+        if (isErrorEnabled()) {
+            __doBuildEx(__getSafeMessages(format, arg), null, ILogger.LogLevel.ERROR, null);
+        }
     }
 
     public void error(final String format, final Object arg1, final Object arg2) {
-        __doBuildEx(__getSafeMessages(format, arg1, arg2), null, ILogger.LogLevel.ERROR, null);
+        if (isErrorEnabled()) {
+            __doBuildEx(__getSafeMessages(format, arg1, arg2), null, ILogger.LogLevel.ERROR, null);
+        }
     }
 
     public void error(final String format, final Object... args) {
-        __doBuildEx(__getSafeMessages(format, args), null, ILogger.LogLevel.ERROR, null);
+        if (isErrorEnabled()) {
+            __doBuildEx(__getSafeMessages(format, args), null, ILogger.LogLevel.ERROR, null);
+        }
     }
 
     public void error(final String msg, final Throwable t) {
-        __doBuildEx(msg, t, ILogger.LogLevel.ERROR, null);
+        if (isErrorEnabled()) {
+            __doBuildEx(msg, t, ILogger.LogLevel.ERROR, null);
+        }
     }
 
     public boolean isErrorEnabled() {
@@ -355,23 +445,33 @@ public class Log4jLogger implements LocationAwareLogger, Serializable {
     }
 
     public void error(final Marker marker, final String msg) {
-        __doBuildEx(msg, null, ILogger.LogLevel.ERROR, null);
+        if (isErrorEnabled(marker)) {
+            __doBuildEx(msg, null, ILogger.LogLevel.ERROR, null);
+        }
     }
 
     public void error(final Marker marker, final String format, final Object arg) {
-        __doBuildEx(__getSafeMessages(format, arg), null, ILogger.LogLevel.ERROR, marker);
+        if (isErrorEnabled(marker)) {
+            __doBuildEx(__getSafeMessages(format, arg), null, ILogger.LogLevel.ERROR, marker);
+        }
     }
 
     public void error(final Marker marker, final String format, final Object arg1, final Object arg2) {
-        __doBuildEx(__getSafeMessages(format, arg1, arg2), null, ILogger.LogLevel.ERROR, marker);
+        if (isErrorEnabled(marker)) {
+            __doBuildEx(__getSafeMessages(format, arg1, arg2), null, ILogger.LogLevel.ERROR, marker);
+        }
     }
 
     public void error(final Marker marker, final String format, final Object... args) {
-        __doBuildEx(__getSafeMessages(format, args), null, ILogger.LogLevel.ERROR, marker);
+        if (isErrorEnabled(marker)) {
+            __doBuildEx(__getSafeMessages(format, args), null, ILogger.LogLevel.ERROR, marker);
+        }
     }
 
     public void error(final Marker marker, final String msg, final Throwable throwable) {
-        __doBuildEx(msg, throwable, ILogger.LogLevel.ERROR, marker);
+        if (isErrorEnabled(marker)) {
+            __doBuildEx(msg, throwable, ILogger.LogLevel.ERROR, marker);
+        }
     }
 
     public void log(final Marker marker, final String fqcn, final int level, final String message, final Object[] params, Throwable throwable) {

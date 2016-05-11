@@ -163,6 +163,10 @@ public class DefaultLogger extends AbstractLogger {
         return new DefaultLogger().init(__owner, loggerName);
     }
 
+    public Object getLoggerImpl() {
+        return __logger;
+    }
+
     public void destroy() {
         __logger = null;
     }
