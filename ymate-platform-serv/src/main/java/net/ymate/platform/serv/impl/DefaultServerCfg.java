@@ -46,7 +46,7 @@ public class DefaultServerCfg implements IServerCfg {
 
     public DefaultServerCfg(IServModuleCfg moduleCfg, String serverName) {
         __serverName = StringUtils.defaultIfBlank(serverName, "default");
-        Map<String, String> _serverCfgs = moduleCfg.getClientCfg(__serverName);
+        Map<String, String> _serverCfgs = moduleCfg.getServerCfg(__serverName);
         //
         __serverHost = StringUtils.defaultIfBlank(_serverCfgs.get("host"), "0.0.0.0");
         __port = BlurObject.bind(StringUtils.defaultIfBlank(_serverCfgs.get("port"), "8281")).toIntValue();
