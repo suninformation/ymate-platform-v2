@@ -220,25 +220,24 @@ public final class WebContext {
 
     // -----------------
 
-    @SuppressWarnings("unchecked")
-    public <T> T getParameterToObject(String name) {
-        return (T) getParameters().get(name);
-    }
-
     public String getParameterToString(String name) {
-        return BlurObject.bind(getParameters().get(name)).toStringValue();
+        String[] _values = (String[]) getParameters().get(name);
+        if (_values != null && _values.length > 0) {
+            return _values[0];
+        }
+        return null;
     }
 
     public int getParameterToInt(String name) {
-        return BlurObject.bind(getParameters().get(name)).toIntValue();
+        return BlurObject.bind(getParameterToString(name)).toIntValue();
     }
 
     public long getParameterToLong(String name) {
-        return BlurObject.bind(getParameters().get(name)).toLongValue();
+        return BlurObject.bind(getParameterToString(name)).toLongValue();
     }
 
     public boolean getParameterToBoolean(String name) {
-        return BlurObject.bind(getParameters().get(name)).toBooleanValue();
+        return BlurObject.bind(getParameterToString(name)).toBooleanValue();
     }
 
     // MultipartRequestWrapper
