@@ -62,6 +62,7 @@ public final class CookieHelper {
 
     private CookieHelper(IWebMvc owner) {
         __owner = owner;
+        __useAuthKey = owner.getModuleCfg().isDefaultEnabledCookieAuth();
         __charsetEncoding = __owner.getModuleCfg().getDefaultCharsetEncoding();
         if (StringUtils.isBlank(__charsetEncoding)) {
             __charsetEncoding = WebContext.getRequest().getCharacterEncoding();
@@ -164,6 +165,11 @@ public final class CookieHelper {
      */
     public CookieHelper allowUseAuthKey() {
         this.__useAuthKey = true;
+        return this;
+    }
+
+    public CookieHelper disabledUseAuthKey() {
+        this.__useAuthKey = false;
         return this;
     }
 

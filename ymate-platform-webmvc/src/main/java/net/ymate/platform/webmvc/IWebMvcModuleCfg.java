@@ -94,6 +94,11 @@ public interface IWebMvcModuleCfg {
     String getCookieAuthKey();
 
     /**
+     * @return Cookie密钥验证是否默认开启, 默认值为false
+     */
+    boolean isDefaultEnabledCookieAuth();
+
+    /**
      * @return 文件上传临时目录，为空则默认使用：System.getProperty("java.io.tmpdir")
      */
     String getUploadTempDir();

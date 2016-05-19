@@ -587,8 +587,6 @@ WebContext操作Parameter的辅助方法：
 > 
 > - long getParameterToLong(String name);
 > 
-> - \<T> T getParameterToObject(String name);
-> 
 > - String getParameterToString(String name);
 > 
 
@@ -984,6 +982,9 @@ WebMVC模块针对Cookies这个小甜点提供了一个名为CookieHelper的小�
 	
 	# Cookie密钥，可选参数，默认值为空
 	ymp.configs.webmvc.cookie_auth_key=
+	
+	# Cookie密钥验证是否默认开启, 默认值为false
+    ymp.configs.webmvc.default_enabled_cookie_auth=
 
 ##### 示例代码：演示Cookie操作
 
