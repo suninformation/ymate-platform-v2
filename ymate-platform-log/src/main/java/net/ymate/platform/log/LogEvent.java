@@ -28,7 +28,7 @@ public class LogEvent extends EventContext<ILogger, LogEvent.EVENT> implements I
 
     public static final String LOG_LEVEL = "__LogLevel__";
 
-    public static final String LOG_CONTENT = "__LogContent__";
+    public static final String LOG_INFO = "__LogInfo__";
 
     public enum EVENT {
         LOG_WRITE_IN
@@ -42,8 +42,8 @@ public class LogEvent extends EventContext<ILogger, LogEvent.EVENT> implements I
         return (ILogger.LogLevel) getParamExtend(LOG_LEVEL);
     }
 
-    public String getLogContent() {
-        return (String) getParamExtend(LOG_CONTENT);
+    public LogInfo getLogInfo() {
+        return (LogInfo) getParamExtend(LOG_INFO);
     }
 
 }

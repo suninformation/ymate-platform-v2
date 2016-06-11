@@ -110,6 +110,8 @@ public interface ILogger {
 
     Object getLoggerImpl();
 
+    String getLoggerName();
+
     /**
      * 销毁(停止)当前的日志记录器，需要清除所占用的资源，而且日志记录器一旦被停止，将无法恢复使用
      */

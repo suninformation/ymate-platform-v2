@@ -44,25 +44,18 @@ public abstract class AbstractLogger implements ILogger {
         return this;
     }
 
-    protected abstract void __doLogWrite(LogLevel level, String content);
+    protected abstract void __doLogWrite(LogLevel level, LogInfo content);
 
     protected void __doBuildEx(String info, Throwable e, ILogger.LogLevel level) {
-        StringBuilder _exSB = new StringBuilder(DateTimeUtils.formatTime(System.currentTimeMillis(), DateTimeUtils.YYYY_MM_DD_HH_MM_SS_SSS))
-                .append(level.getDispName())
-                .append('[')
-                .append(Thread.currentThread().getId())
-                .append(':')
-                .append(__doMakeCallerInfo())
-                .append(']')
-                .append(' ').append(StringUtils.trimToEmpty(info));
-        if (e != null) {
-            _exSB.append("- ").append(__doMakeStackInfo(e));
-        }
+        LogInfo _info = new LogInfo(getLoggerName(),
+                level.getDispName(),
+                Thread.currentThread().getId(), __doMakeCallerInfo(), info, __doMakeStackInfo(e),
+                DateTimeUtils.formatTime(System.currentTimeMillis(), DateTimeUtils.YYYY_MM_DD_HH_MM_SS_SSS));
         //
-        __doLogWrite(level, _exSB.toString());
+        __doLogWrite(level, _info);
         // 判断是否输出到控制台
         if (__allowOutputConsole) {
-            System.out.println(_exSB.toString());
+            System.out.println(_info.toString());
         }
     }
 

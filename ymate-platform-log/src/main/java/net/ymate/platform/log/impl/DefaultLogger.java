@@ -16,10 +16,7 @@
 package net.ymate.platform.log.impl;
 
 import net.ymate.platform.core.event.Events;
-import net.ymate.platform.log.AbstractLogger;
-import net.ymate.platform.log.ILog;
-import net.ymate.platform.log.ILogger;
-import net.ymate.platform.log.LogEvent;
+import net.ymate.platform.log.*;
 import org.apache.commons.lang.StringUtils;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
@@ -42,6 +39,8 @@ public class DefaultLogger extends AbstractLogger {
     private ILog __owner;
 
     private Logger __logger;
+
+    private String __loggerName;
 
     private boolean __inited;
 
@@ -87,12 +86,12 @@ public class DefaultLogger extends AbstractLogger {
         }
     }
 
-    protected void __doLogWrite(LogLevel level, String content) {
-        __logger.log(__parseLogLevel(level), content);
+    protected void __doLogWrite(LogLevel level, LogInfo content) {
+        __logger.log(__parseLogLevel(level), content.toString());
         // 日志写入后触发异步事件
         __owner.getOwner().getEvents().fireEvent(Events.MODE.ASYNC, new LogEvent(this, LogEvent.EVENT.LOG_WRITE_IN)
                 .addParamExtend(LogEvent.LOG_LEVEL, level)
-                .addParamExtend(LogEvent.LOG_CONTENT, content));
+                .addParamExtend(LogEvent.LOG_INFO, content));
     }
 
     @Override
@@ -107,10 +106,7 @@ public class DefaultLogger extends AbstractLogger {
     }
 
     private boolean __doIsLogEnabled(LogLevel logLevel) {
-        if (__logger.getLevel().intLevel() <= logLevel.getLevel()) {
-            return true;
-        }
-        return false;
+        return __logger.getLevel().intLevel() <= logLevel.getLevel();
     }
 
     public boolean isDebugEnabled() {
@@ -140,6 +136,7 @@ public class DefaultLogger extends AbstractLogger {
     public synchronized ILogger init(ILog owner, String loggerName) throws Exception {
         if (!__inited) {
             __owner = owner;
+            __loggerName = loggerName;
             //
             if (!__logInited) {
                 ConfigurationSource _source = new ConfigurationSource(new FileInputStream(__owner.getModuleCfg().getConfigFile()));
@@ -165,6 +162,10 @@ public class DefaultLogger extends AbstractLogger {
 
     public Object getLoggerImpl() {
         return __logger;
+    }
+
+    public String getLoggerName() {
+        return __loggerName;
     }
 
     public void destroy() {
