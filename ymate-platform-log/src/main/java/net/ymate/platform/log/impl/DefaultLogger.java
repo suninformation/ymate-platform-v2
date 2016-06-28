@@ -99,14 +99,14 @@ public class DefaultLogger extends AbstractLogger {
         if (level == null) {
             level = ILogger.LogLevel.ALL;
         }
-        if (level.getLevel() > __logger.getLevel().intLevel()) {
+        if (!__doIsLogEnabled(level)) {
             return;
         }
         super.__doBuildEx(info, e, level);
     }
 
     private boolean __doIsLogEnabled(LogLevel logLevel) {
-        return __logger.getLevel().intLevel() <= logLevel.getLevel();
+        return __logger.getLevel().intLevel() >= logLevel.getLevel();
     }
 
     public boolean isDebugEnabled() {

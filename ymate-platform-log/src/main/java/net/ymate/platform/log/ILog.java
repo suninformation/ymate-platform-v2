@@ -42,4 +42,6 @@ public interface ILog {
     ILogger getLogger();
 
     ILogger getLogger(String loggerName) throws Exception;
+
+    ILogger getLogger(Class<?> clazz) throws Exception;
 }

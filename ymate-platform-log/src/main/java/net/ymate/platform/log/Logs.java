@@ -140,9 +140,14 @@ public class Logs implements IModule, ILog {
         if (_logger == null) {
             _logger = __currentLogger.getLogger(loggerName);
             if (_logger != null) {
+                _logger.console(__moduleCfg.allowOutputConsole());
                 __LOGGER_CACHE.put(loggerName, _logger);
             }
         }
         return _logger;
+    }
+
+    public ILogger getLogger(Class<?> clazz) throws Exception {
+        return getLogger(clazz.getName());
     }
 }
