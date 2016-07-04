@@ -23,6 +23,7 @@ import net.ymate.platform.persistence.*;
 import net.ymate.platform.persistence.base.EntityMeta;
 import net.ymate.platform.persistence.base.IEntity;
 import net.ymate.platform.persistence.base.IEntityPK;
+import net.ymate.platform.persistence.base.ShardingList;
 import net.ymate.platform.persistence.impl.DefaultResultSet;
 import net.ymate.platform.persistence.jdbc.IConnectionHolder;
 import net.ymate.platform.persistence.jdbc.ISession;
@@ -39,11 +40,13 @@ import net.ymate.platform.persistence.jdbc.query.SQL;
 import net.ymate.platform.persistence.jdbc.query.Where;
 import net.ymate.platform.persistence.jdbc.support.BaseEntity;
 import net.ymate.platform.persistence.jdbc.transaction.Transactions;
+import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 
 import java.io.Serializable;
 import java.lang.reflect.Field;
 import java.sql.*;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -420,6 +423,17 @@ public class DefaultSession implements ISession {
         return entities;
     }
 
+    public <T extends IEntity> List<T> update(ShardingList<T> entities, Fields filter) throws Exception {
+        List<T> _results = new ArrayList<T>();
+        for (ShardingList.ShardingElement<T> _element : entities) {
+            T _entity = this.update(_element.getElement(), filter, _element);
+            if (_entity != null) {
+                _results.add(_entity);
+            }
+        }
+        return _results;
+    }
+
     public <T extends IEntity> T insert(T entity) throws Exception {
         return insert(entity, null, (entity instanceof IShardingable ? (IShardingable) entity : null));
     }
@@ -475,6 +489,10 @@ public class DefaultSession implements ISession {
         return insert(entities, null);
     }
 
+    public <T extends IEntity> List<T> insert(ShardingList<T> entities) throws Exception {
+        return this.insert(entities, null);
+    }
+
     @SuppressWarnings("unchecked")
     public <T extends IEntity> List<T> insert(List<T> entities, Fields filter) throws Exception {
         T _element = entities.get(0);
@@ -514,6 +532,17 @@ public class DefaultSession implements ISession {
             __sessionEvent.onInsertAfter(new SessionEventContext(_opt));
         }
         return entities;
+    }
+
+    public <T extends IEntity> List<T> insert(ShardingList<T> entities, Fields filter) throws Exception {
+        List<T> _results = new ArrayList<T>();
+        for (ShardingList.ShardingElement<T> _element : entities) {
+            T _entity = this.insert(_element.getElement(), filter, _element);
+            if (_entity != null) {
+                _results.add(_entity);
+            }
+        }
+        return _results;
     }
 
     public <T extends IEntity> T delete(T entity) throws Exception {
@@ -568,6 +597,17 @@ public class DefaultSession implements ISession {
         return entities;
     }
 
+    public <T extends IEntity> List<T> delete(ShardingList<T> entities) throws Exception {
+        List<T> _results = new ArrayList<T>();
+        for (ShardingList.ShardingElement<T> _element : entities) {
+            T _entity = this.delete(_element.getElement(), _element);
+            if (_entity != null) {
+                _results.add(_entity);
+            }
+        }
+        return _results;
+    }
+
     public <T extends IEntity> int[] delete(Class<T> entityClass, Serializable[] ids) throws Exception {
         EntityMeta _meta = EntityMeta.createAndGet(entityClass);
         PairObject<Fields, Params> _entity = __doGetPrimaryKeyFieldAndValues(_meta, ids[0], null);
@@ -590,6 +630,14 @@ public class DefaultSession implements ISession {
             __sessionEvent.onRemoveAfter(new SessionEventContext(_opt));
         }
         return _opt.getEffectCounts();
+    }
+
+    public <T extends IEntity> int[] delete(Class<T> entityClass, ShardingList<Serializable> ids) throws Exception {
+        List<Integer> _results = new ArrayList<Integer>();
+        for (ShardingList.ShardingElement<Serializable> _element : ids) {
+            _results.add(this.delete(entityClass, _element.getElement(), _element));
+        }
+        return ArrayUtils.toPrimitive(_results.toArray(new Integer[0]));
     }
 
     public <T extends IEntity> long count(Class<T> entityClass, Where where) throws Exception {

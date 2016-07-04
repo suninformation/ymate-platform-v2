@@ -17,6 +17,7 @@ package net.ymate.platform.persistence.jdbc;
 
 import net.ymate.platform.persistence.*;
 import net.ymate.platform.persistence.base.IEntity;
+import net.ymate.platform.persistence.base.ShardingList;
 import net.ymate.platform.persistence.jdbc.base.IResultSetHandler;
 import net.ymate.platform.persistence.jdbc.query.BatchSQL;
 import net.ymate.platform.persistence.jdbc.query.EntitySQL;
@@ -186,6 +187,8 @@ public interface ISession extends ISessionBase {
      */
     <T extends IEntity> List<T> update(List<T> entities, Fields filter) throws Exception;
 
+    <T extends IEntity> List<T> update(ShardingList<T> entities, Fields filter) throws Exception;
+
     /**
      * @param <T>    指定结果集数据类型
      * @param entity 实体对象
@@ -208,7 +211,11 @@ public interface ISession extends ISessionBase {
      */
     <T extends IEntity> List<T> insert(List<T> entities) throws Exception;
 
+    <T extends IEntity> List<T> insert(ShardingList<T> entities) throws Exception;
+
     <T extends IEntity> List<T> insert(List<T> entities, Fields filter) throws Exception;
+
+    <T extends IEntity> List<T> insert(ShardingList<T> entities, Fields filter) throws Exception;
 
     /**
      * @param <T>    指定结果集数据类型
@@ -232,7 +239,11 @@ public interface ISession extends ISessionBase {
      */
     <T extends IEntity> List<T> delete(List<T> entities) throws Exception;
 
+    <T extends IEntity> List<T> delete(ShardingList<T> entities) throws Exception;
+
     <T extends IEntity> int[] delete(Class<T> entityClass, Serializable[] ids) throws Exception;
+
+    <T extends IEntity> int[] delete(Class<T> entityClass, ShardingList<Serializable> ids) throws Exception;
 
     /**
      * @param <T>         指定实体类型
