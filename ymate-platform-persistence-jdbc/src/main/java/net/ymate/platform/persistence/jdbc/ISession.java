@@ -15,10 +15,7 @@
  */
 package net.ymate.platform.persistence.jdbc;
 
-import net.ymate.platform.persistence.Fields;
-import net.ymate.platform.persistence.IResultSet;
-import net.ymate.platform.persistence.ISessionBase;
-import net.ymate.platform.persistence.Page;
+import net.ymate.platform.persistence.*;
 import net.ymate.platform.persistence.base.IEntity;
 import net.ymate.platform.persistence.jdbc.base.IResultSetHandler;
 import net.ymate.platform.persistence.jdbc.query.BatchSQL;
@@ -69,11 +66,19 @@ public interface ISession extends ISessionBase {
      */
     <T extends IEntity> IResultSet<T> find(T entity) throws Exception;
 
+    <T extends IEntity> IResultSet<T> find(T entity, IShardingable shardingable) throws Exception;
+
     <T extends IEntity> IResultSet<T> find(T entity, Page page) throws Exception;
+
+    <T extends IEntity> IResultSet<T> find(T entity, Page page, IShardingable shardingable) throws Exception;
 
     <T extends IEntity> IResultSet<T> find(T entity, Fields filter) throws Exception;
 
+    <T extends IEntity> IResultSet<T> find(T entity, Fields filter, IShardingable shardingable) throws Exception;
+
     <T extends IEntity> IResultSet<T> find(T entity, Fields filter, Page page) throws Exception;
+
+    <T extends IEntity> IResultSet<T> find(T entity, Fields filter, Page page, IShardingable shardingable) throws Exception;
 
     /**
      * @param <T>    指定结果集数据类型
@@ -83,7 +88,11 @@ public interface ISession extends ISessionBase {
      */
     <T extends IEntity> IResultSet<T> find(EntitySQL<T> entity) throws Exception;
 
+    <T extends IEntity> IResultSet<T> find(EntitySQL<T> entity, IShardingable shardingable) throws Exception;
+
     <T extends IEntity> IResultSet<T> find(EntitySQL<T> entity, Page page) throws Exception;
+
+    <T extends IEntity> IResultSet<T> find(EntitySQL<T> entity, Page page, IShardingable shardingable) throws Exception;
 
     /**
      * @param <T>    指定结果集数据类型
@@ -93,6 +102,8 @@ public interface ISession extends ISessionBase {
      * @throws Exception 可能产生的异常
      */
     <T extends IEntity> IResultSet<T> find(EntitySQL<T> entity, Where where) throws Exception;
+
+    <T extends IEntity> IResultSet<T> find(EntitySQL<T> entity, Where where, IShardingable shardingable) throws Exception;
 
     /**
      * @param <T>    指定结果集数据类型
@@ -104,6 +115,8 @@ public interface ISession extends ISessionBase {
      */
     <T extends IEntity> IResultSet<T> find(EntitySQL<T> entity, Where where, Page page) throws Exception;
 
+    <T extends IEntity> IResultSet<T> find(EntitySQL<T> entity, Where where, Page page, IShardingable shardingable) throws Exception;
+
     /**
      * @param <T>    指定结果集数据类型
      * @param entity 实体查询对象
@@ -112,6 +125,8 @@ public interface ISession extends ISessionBase {
      * @throws Exception 可能产生的异常
      */
     <T extends IEntity> T find(EntitySQL<T> entity, Serializable id) throws Exception;
+
+    <T extends IEntity> T find(EntitySQL<T> entity, Serializable id, IShardingable shardingable) throws Exception;
 
     /**
      * @param <T>     指定结果集数据类型
@@ -131,7 +146,11 @@ public interface ISession extends ISessionBase {
      */
     <T extends IEntity> T findFirst(EntitySQL<T> entity, Where where) throws Exception;
 
+    <T extends IEntity> T findFirst(EntitySQL<T> entity, Where where, IShardingable shardingable) throws Exception;
+
     <T extends IEntity> T findFirst(EntitySQL<T> entity) throws Exception;
+
+    <T extends IEntity> T findFirst(EntitySQL<T> entity, IShardingable shardingable) throws Exception;
 
     /**
      * @param sql SQL语句对象
@@ -156,6 +175,8 @@ public interface ISession extends ISessionBase {
      */
     <T extends IEntity> T update(T entity, Fields filter) throws Exception;
 
+    <T extends IEntity> T update(T entity, Fields filter, IShardingable shardingable) throws Exception;
+
     /**
      * @param <T>      指定结果集数据类型
      * @param entities 实体查询对象集合
@@ -173,7 +194,11 @@ public interface ISession extends ISessionBase {
      */
     <T extends IEntity> T insert(T entity) throws Exception;
 
+    <T extends IEntity> T insert(T entity, IShardingable shardingable) throws Exception;
+
     <T extends IEntity> T insert(T entity, Fields filter) throws Exception;
+
+    <T extends IEntity> T insert(T entity, Fields filter, IShardingable shardingable) throws Exception;
 
     /**
      * @param <T>      指定结果集数据类型
@@ -193,7 +218,11 @@ public interface ISession extends ISessionBase {
      */
     <T extends IEntity> T delete(T entity) throws Exception;
 
+    <T extends IEntity> T delete(T entity, IShardingable shardingable) throws Exception;
+
     <T extends IEntity> int delete(Class<T> entityClass, Serializable id) throws Exception;
+
+    <T extends IEntity> int delete(Class<T> entityClass, Serializable id, IShardingable shardingable) throws Exception;
 
     /**
      * @param <T>      指定结果集数据类型
@@ -213,6 +242,8 @@ public interface ISession extends ISessionBase {
      * @throws Exception 可能产生的异常
      */
     <T extends IEntity> long count(Class<T> entityClass, Where where) throws Exception;
+
+    <T extends IEntity> long count(Class<T> entityClass, Where where, IShardingable shardingable) throws Exception;
 
     /**
      * @param sql SQL语句对象

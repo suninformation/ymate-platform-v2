@@ -17,6 +17,7 @@ package net.ymate.platform.persistence.jdbc.dialect.impl;
 
 import net.ymate.platform.core.util.ExpressionUtils;
 import net.ymate.platform.persistence.Fields;
+import net.ymate.platform.persistence.IShardingable;
 import net.ymate.platform.persistence.base.EntityMeta;
 import net.ymate.platform.persistence.base.IEntity;
 import net.ymate.platform.persistence.jdbc.JDBC;
@@ -40,20 +41,15 @@ public class OracleDialect extends AbstractDialect {
     }
 
     @Override
-    public String buildTableName(String prefix, String entityName) {
-        return StringUtils.defaultIfBlank(prefix, "").concat(entityName);
-    }
-
-    @Override
     public String getSequenceNextValSql(String sequenceName) {
         return sequenceName.concat(".nextval");
     }
 
     @Override
-    public String buildInsertSQL(Class<? extends IEntity> entityClass, String prefix, Fields fields) {
+    public String buildInsertSQL(Class<? extends IEntity> entityClass, String prefix, IShardingable shardingable, Fields fields) {
         EntityMeta _meta = EntityMeta.createAndGet(entityClass);
         ExpressionUtils _exp = ExpressionUtils.bind("INSERT INTO ${table_name} (${fields}) VALUES (${values})")
-                .set("table_name", buildTableName(prefix, _meta.getEntityName()));
+                .set("table_name", buildTableName(prefix, _meta, shardingable));
         //
         Fields _fields = Fields.create();
         Fields _values = Fields.create();

@@ -19,6 +19,7 @@ import net.ymate.platform.core.Version;
 import net.ymate.platform.core.YMP;
 import net.ymate.platform.core.module.IModule;
 import net.ymate.platform.core.module.annotation.Module;
+import net.ymate.platform.persistence.IDataSourceRouter;
 import net.ymate.platform.persistence.jdbc.dialect.IDialect;
 import net.ymate.platform.persistence.jdbc.dialect.impl.*;
 import net.ymate.platform.persistence.jdbc.impl.*;
@@ -167,6 +168,10 @@ public class JDBC implements IModule, IDatabase {
         } finally {
             _session.close();
         }
+    }
+
+    public <T> T openSession(IDataSourceRouter dataSourceRouter, ISessionExecutor<T> executor) throws Exception {
+        return openSession(getConnectionHolder(dataSourceRouter.getDataSourceName()), executor);
     }
 
     /////

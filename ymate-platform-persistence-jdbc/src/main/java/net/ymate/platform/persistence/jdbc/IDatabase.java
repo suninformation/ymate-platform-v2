@@ -16,6 +16,7 @@
 package net.ymate.platform.persistence.jdbc;
 
 import net.ymate.platform.core.YMP;
+import net.ymate.platform.persistence.IDataSourceRouter;
 
 /**
  * JDBC数据库模块管理器接口
@@ -61,4 +62,6 @@ public interface IDatabase {
     <T> T openSession(ISessionExecutor<T> executor) throws Exception;
 
     <T> T openSession(IConnectionHolder connectionHolder, ISessionExecutor<T> executor) throws Exception;
+
+    <T> T openSession(IDataSourceRouter dataSourceRouter, ISessionExecutor<T> executor) throws Exception;
 }

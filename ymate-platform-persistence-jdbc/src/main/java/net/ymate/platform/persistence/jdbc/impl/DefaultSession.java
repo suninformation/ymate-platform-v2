@@ -132,36 +132,68 @@ public class DefaultSession implements ISession {
 
     @SuppressWarnings("unchecked")
     public <T extends IEntity> IResultSet<T> find(T entity) throws Exception {
-        return find(entity, Fields.create());
+        return find(entity, Fields.create(), null, entity instanceof IShardingable ? (IShardingable) entity : null);
+    }
+
+    public <T extends IEntity> IResultSet<T> find(T entity, IShardingable shardingable) throws Exception {
+        return find(entity, Fields.create(), null, shardingable);
     }
 
     public <T extends IEntity> IResultSet<T> find(T entity, Page page) throws Exception {
-        return find(entity, Fields.create(), null);
+        return find(entity, Fields.create(), null, entity instanceof IShardingable ? (IShardingable) entity : null);
+    }
+
+    public <T extends IEntity> IResultSet<T> find(T entity, Page page, IShardingable shardingable) throws Exception {
+        return find(entity, Fields.create(), null, shardingable);
     }
 
     public <T extends IEntity> IResultSet<T> find(T entity, Fields filter) throws Exception {
-        return find(entity, filter, null);
+        return find(entity, filter, null, entity instanceof IShardingable ? (IShardingable) entity : null);
+    }
+
+    public <T extends IEntity> IResultSet<T> find(T entity, Fields filter, IShardingable shardingable) throws Exception {
+        return find(entity, filter, null, shardingable);
+    }
+
+    public <T extends IEntity> IResultSet<T> find(T entity, Fields filter, Page page) throws Exception {
+        return find(entity, filter, page, entity instanceof IShardingable ? (IShardingable) entity : null);
     }
 
     @SuppressWarnings("unchecked")
-    public <T extends IEntity> IResultSet<T> find(T entity, Fields filter, Page page) throws Exception {
-        return (IResultSet<T>) this.find(EntitySQL.create(entity.getClass()).field(filter), Where.create(BaseEntity.buildEntityCond(entity)), page);
+    public <T extends IEntity> IResultSet<T> find(T entity, Fields filter, Page page, IShardingable shardingable) throws Exception {
+        return (IResultSet<T>) this.find(EntitySQL.create(entity.getClass()).field(filter), Where.create(BaseEntity.buildEntityCond(entity)), page, shardingable);
     }
 
     public <T extends IEntity> IResultSet<T> find(EntitySQL<T> entity) throws Exception {
-        return this.find(entity, null, null);
+        return find(entity, null, null, null);
+    }
+
+    public <T extends IEntity> IResultSet<T> find(EntitySQL<T> entity, IShardingable shardingable) throws Exception {
+        return this.find(entity, null, null, shardingable);
     }
 
     public <T extends IEntity> IResultSet<T> find(EntitySQL<T> entity, Page page) throws Exception {
-        return this.find(entity, null, page);
+        return find(entity, null, page, null);
+    }
+
+    public <T extends IEntity> IResultSet<T> find(EntitySQL<T> entity, Page page, IShardingable shardingable) throws Exception {
+        return this.find(entity, null, page, shardingable);
     }
 
     public <T extends IEntity> IResultSet<T> find(EntitySQL<T> entity, Where where) throws Exception {
-        return this.find(entity, where, null);
+        return find(entity, where, null, null);
+    }
+
+    public <T extends IEntity> IResultSet<T> find(EntitySQL<T> entity, Where where, IShardingable shardingable) throws Exception {
+        return this.find(entity, where, null, shardingable);
     }
 
     public <T extends IEntity> IResultSet<T> find(EntitySQL<T> entity, Where where, Page page) throws Exception {
-        String _selectSql = __dialect.buildSelectSQL(entity.getEntityClass(), __tablePrefix, __doGetNotExcludedFields(EntityMeta.createAndGet(entity.getEntityClass()), entity.fields(), false, true));
+        return find(entity, where, page, null);
+    }
+
+    public <T extends IEntity> IResultSet<T> find(EntitySQL<T> entity, Where where, Page page, IShardingable shardingable) throws Exception {
+        String _selectSql = __dialect.buildSelectSQL(entity.getEntityClass(), __tablePrefix, shardingable, __doGetNotExcludedFields(EntityMeta.createAndGet(entity.getEntityClass()), entity.fields(), false, true));
         if (where != null) {
             _selectSql = _selectSql.concat(" ").concat(where.toString());
         }
@@ -198,9 +230,13 @@ public class DefaultSession implements ISession {
     }
 
     public <T extends IEntity> T find(EntitySQL<T> entity, Serializable id) throws Exception {
+        return find(entity, id, null);
+    }
+
+    public <T extends IEntity> T find(EntitySQL<T> entity, Serializable id, IShardingable shardingable) throws Exception {
         EntityMeta _meta = EntityMeta.createAndGet(entity.getEntityClass());
         PairObject<Fields, Params> _entityPK = __doGetPrimaryKeyFieldAndValues(_meta, id, null);
-        String _selectSql = __dialect.buildSelectByPkSQL(entity.getEntityClass(), __tablePrefix, _entityPK.getKey(), __doGetNotExcludedFields(_meta, entity.fields(), false, true));
+        String _selectSql = __dialect.buildSelectByPkSQL(entity.getEntityClass(), __tablePrefix, shardingable, _entityPK.getKey(), __doGetNotExcludedFields(_meta, entity.fields(), false, true));
         //
         if (entity.forUpdate() != null) {
             _selectSql = _selectSql + " " + entity.forUpdate().toSQL();
@@ -241,11 +277,19 @@ public class DefaultSession implements ISession {
     }
 
     public <T extends IEntity> T findFirst(EntitySQL<T> entity) throws Exception {
-        return findFirst(entity, null);
+        return findFirst(entity, null, null);
+    }
+
+    public <T extends IEntity> T findFirst(EntitySQL<T> entity, IShardingable shardingable) throws Exception {
+        return findFirst(entity, null, shardingable);
     }
 
     public <T extends IEntity> T findFirst(EntitySQL<T> entity, Where where) throws Exception {
-        String _selectSql = __dialect.buildSelectSQL(entity.getEntityClass(), __tablePrefix, __doGetNotExcludedFields(EntityMeta.createAndGet(entity.getEntityClass()), entity.fields(), false, true));
+        return findFirst(entity, where, null);
+    }
+
+    public <T extends IEntity> T findFirst(EntitySQL<T> entity, Where where, IShardingable shardingable) throws Exception {
+        String _selectSql = __dialect.buildSelectSQL(entity.getEntityClass(), __tablePrefix, shardingable, __doGetNotExcludedFields(EntityMeta.createAndGet(entity.getEntityClass()), entity.fields(), false, true));
         if (where != null) {
             _selectSql = _selectSql.concat(" ").concat(where.toString());
         }
@@ -315,10 +359,14 @@ public class DefaultSession implements ISession {
     }
 
     public <T extends IEntity> T update(T entity, Fields filter) throws Exception {
+        return update(entity, filter, entity instanceof IShardingable ? (IShardingable) entity : null);
+    }
+
+    public <T extends IEntity> T update(T entity, Fields filter, IShardingable shardingable) throws Exception {
         EntityMeta _meta = EntityMeta.createAndGet(entity.getClass());
         PairObject<Fields, Params> _entity = __doGetPrimaryKeyFieldAndValues(_meta, entity, null);
         filter = __doGetNotExcludedFields(_meta, filter, true, false);
-        String _updateSql = __dialect.buildUpdateByPkSQL(entity.getClass(), __tablePrefix, _entity.getKey(), filter);
+        String _updateSql = __dialect.buildUpdateByPkSQL(entity.getClass(), __tablePrefix, shardingable, _entity.getKey(), filter);
         IUpdateOperator _opt = new DefaultUpdateOperator(_updateSql, this.__connectionHolder);
         // 先获取并添加需要更新的字段值
         for (Object _param : __doGetEntityFieldAndValues(_meta, entity, filter, false).getValue().params()) {
@@ -342,10 +390,11 @@ public class DefaultSession implements ISession {
     }
 
     public <T extends IEntity> List<T> update(List<T> entities, Fields filter) throws Exception {
-        EntityMeta _meta = EntityMeta.createAndGet(entities.get(0).getClass());
-        PairObject<Fields, Params> _entity = __doGetPrimaryKeyFieldAndValues(_meta, entities.get(0), null);
+        T _element = entities.get(0);
+        EntityMeta _meta = EntityMeta.createAndGet(_element.getClass());
+        PairObject<Fields, Params> _entity = __doGetPrimaryKeyFieldAndValues(_meta, _element, null);
         filter = __doGetNotExcludedFields(_meta, filter, true, false);
-        String _updateSql = __dialect.buildUpdateByPkSQL(entities.get(0).getClass(), __tablePrefix, _entity.getKey(), filter);
+        String _updateSql = __dialect.buildUpdateByPkSQL(_element.getClass(), __tablePrefix, null, _entity.getKey(), filter);
         IBatchUpdateOperator _opt = new BatchUpdateOperator(_updateSql, this.__connectionHolder);
         for (T entity : entities) {
             SQLBatchParameter _batchParam = SQLBatchParameter.create();
@@ -372,13 +421,21 @@ public class DefaultSession implements ISession {
     }
 
     public <T extends IEntity> T insert(T entity) throws Exception {
-        return insert(entity, null);
+        return insert(entity, null, (entity instanceof IShardingable ? (IShardingable) entity : null));
+    }
+
+    public <T extends IEntity> T insert(T entity, IShardingable shardingable) throws Exception {
+        return insert(entity, null, shardingable);
     }
 
     public <T extends IEntity> T insert(T entity, Fields filter) throws Exception {
+        return insert(entity, filter, (entity instanceof IShardingable ? (IShardingable) entity : null));
+    }
+
+    public <T extends IEntity> T insert(T entity, Fields filter, IShardingable shardingable) throws Exception {
         EntityMeta _meta = EntityMeta.createAndGet(entity.getClass());
         PairObject<Fields, Params> _entity = __doGetEntityFieldAndValues(_meta, entity, filter, true);
-        String _insertSql = __dialect.buildInsertSQL(entity.getClass(), __tablePrefix, _entity.getKey());
+        String _insertSql = __dialect.buildInsertSQL(entity.getClass(), __tablePrefix, shardingable, _entity.getKey());
         IUpdateOperator _opt = new DefaultUpdateOperator(_insertSql, this.__connectionHolder);
         if (_meta.hasAutoincrement()) {
             // 兼容Oracle无法直接获取生成的主键问题
@@ -420,9 +477,10 @@ public class DefaultSession implements ISession {
 
     @SuppressWarnings("unchecked")
     public <T extends IEntity> List<T> insert(List<T> entities, Fields filter) throws Exception {
-        EntityMeta _meta = EntityMeta.createAndGet(entities.get(0).getClass());
-        PairObject<Fields, Params> _entity = __doGetEntityFieldAndValues(_meta, entities.get(0), filter, true);
-        String _insertSql = __dialect.buildInsertSQL(entities.get(0).getClass(), __tablePrefix, _entity.getKey());
+        T _element = entities.get(0);
+        EntityMeta _meta = EntityMeta.createAndGet(_element.getClass());
+        PairObject<Fields, Params> _entity = __doGetEntityFieldAndValues(_meta, _element, filter, true);
+        String _insertSql = __dialect.buildInsertSQL(_element.getClass(), __tablePrefix, null, _entity.getKey());
         IBatchUpdateOperator _opt = new BatchUpdateOperator(_insertSql, this.__connectionHolder);
         if (_meta.hasAutoincrement()) {
             // 兼容Oracle无法直接获取生成的主键问题
@@ -459,16 +517,24 @@ public class DefaultSession implements ISession {
     }
 
     public <T extends IEntity> T delete(T entity) throws Exception {
-        if (this.delete(entity.getClass(), entity.getId()) > 0) {
+        return delete(entity, (entity instanceof IShardingable ? (IShardingable) entity : null));
+    }
+
+    public <T extends IEntity> T delete(T entity, IShardingable shardingable) throws Exception {
+        if (this.delete(entity.getClass(), entity.getId(), shardingable) > 0) {
             return entity;
         }
         return null;
     }
 
     public <T extends IEntity> int delete(Class<T> entityClass, Serializable id) throws Exception {
+        return delete(entityClass, id, null);
+    }
+
+    public <T extends IEntity> int delete(Class<T> entityClass, Serializable id, IShardingable shardingable) throws Exception {
         EntityMeta _meta = EntityMeta.createAndGet(entityClass);
         PairObject<Fields, Params> _entity = __doGetPrimaryKeyFieldAndValues(_meta, id, null);
-        String _deleteSql = __dialect.buildDeleteByPkSQL(entityClass, __tablePrefix, _entity.getKey());
+        String _deleteSql = __dialect.buildDeleteByPkSQL(entityClass, __tablePrefix, shardingable, _entity.getKey());
         IUpdateOperator _opt = new DefaultUpdateOperator(_deleteSql, this.__connectionHolder);
         // 获取并添加主键条件字段值
         for (Object _param : _entity.getValue().params()) {
@@ -487,7 +553,7 @@ public class DefaultSession implements ISession {
     public <T extends IEntity> List<T> delete(List<T> entities) throws Exception {
         EntityMeta _meta = EntityMeta.createAndGet(entities.get(0).getClass());
         PairObject<Fields, Params> _entity = __doGetPrimaryKeyFieldAndValues(_meta, entities.get(0), null);
-        String _deleteSql = __dialect.buildDeleteByPkSQL(entities.get(0).getClass(), __tablePrefix, _entity.getKey());
+        String _deleteSql = __dialect.buildDeleteByPkSQL(entities.get(0).getClass(), __tablePrefix, null, _entity.getKey());
         IBatchUpdateOperator _opt = new BatchUpdateOperator(_deleteSql, this.__connectionHolder);
         for (T entity : entities) {
             SQLBatchParameter _batchParam = SQLBatchParameter.create();
@@ -505,7 +571,7 @@ public class DefaultSession implements ISession {
     public <T extends IEntity> int[] delete(Class<T> entityClass, Serializable[] ids) throws Exception {
         EntityMeta _meta = EntityMeta.createAndGet(entityClass);
         PairObject<Fields, Params> _entity = __doGetPrimaryKeyFieldAndValues(_meta, ids[0], null);
-        String _deleteSql = __dialect.buildDeleteByPkSQL(entityClass, __tablePrefix, _entity.getKey());
+        String _deleteSql = __dialect.buildDeleteByPkSQL(entityClass, __tablePrefix, null, _entity.getKey());
         IBatchUpdateOperator _opt = new BatchUpdateOperator(_deleteSql, this.__connectionHolder);
         for (Serializable _id : ids) {
             SQLBatchParameter _batchParam = SQLBatchParameter.create();
@@ -527,9 +593,13 @@ public class DefaultSession implements ISession {
     }
 
     public <T extends IEntity> long count(Class<T> entityClass, Where where) throws Exception {
+        return count(entityClass, where, null);
+    }
+
+    public <T extends IEntity> long count(Class<T> entityClass, Where where, IShardingable shardingable) throws Exception {
         EntityMeta _meta = EntityMeta.createAndGet(entityClass);
         ExpressionUtils _exp = ExpressionUtils.bind("SELECT count(1) FROM ${table_name} ${where}")
-                .set("table_name", __dialect.buildTableName(__tablePrefix, _meta.getEntityName()))
+                .set("table_name", __dialect.buildTableName(__tablePrefix, _meta, shardingable))
                 .set("where", where.toString());
         IQueryOperator<Object[]> _opt = new DefaultQueryOperator<Object[]>(_exp.getResult(), this.getConnectionHolder(), IResultSetHandler.ARRAY);
         for (Object _param : where.getParams().params()) {

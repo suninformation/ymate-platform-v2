@@ -45,6 +45,11 @@ public final class EntityMeta {
     private String __entityName;
 
     /**
+     * 数据分片(表)规则注解
+     */
+    private ShardingRule __shardingRuleAnno;
+
+    /**
      * 主键类型
      */
     private Class<?> __primaryKeyClass;
@@ -98,7 +103,7 @@ public final class EntityMeta {
         if (_returnMeta == null) {
             // 判断clazz对象是否声明了@Entity注解
             if (ClassUtils.isAnnotationOf(targetClass, Entity.class)) {
-                _returnMeta = new EntityMeta(StringUtils.defaultIfBlank(targetClass.getAnnotation(Entity.class).value(), fieldNameToPropertyName(targetClass.getSimpleName(), 0)));
+                _returnMeta = new EntityMeta(StringUtils.defaultIfBlank(targetClass.getAnnotation(Entity.class).value(), fieldNameToPropertyName(targetClass.getSimpleName(), 0)), targetClass.getAnnotation(ShardingRule.class));
                 // 判断clazz对象是否声明了@Comment注解
                 if (ClassUtils.isAnnotationOf(targetClass, Comment.class)) {
                     _returnMeta.__comment = targetClass.getAnnotation(Comment.class).value();
@@ -282,9 +287,10 @@ public final class EntityMeta {
     /**
      * 私有构造方法
      *
-     * @param name 实体名称
+     * @param name         实体名称
+     * @param shardingRule 据分片(表)规则
      */
-    private EntityMeta(String name) {
+    private EntityMeta(String name, ShardingRule shardingRule) {
         this.__primaryKeys = new ArrayList<String>();
         this.__autoincrementProps = new ArrayList<String>();
         this.__readonlyProps = new ArrayList<String>();
@@ -369,6 +375,13 @@ public final class EntityMeta {
      */
     public String getEntityName() {
         return this.__entityName;
+    }
+
+    /**
+     * @return 返回实体数据分片(表)规则注解对象
+     */
+    public ShardingRule getShardingRule() {
+        return __shardingRuleAnno;
     }
 
     /**

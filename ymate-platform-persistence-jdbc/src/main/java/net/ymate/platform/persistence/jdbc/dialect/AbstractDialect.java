@@ -15,8 +15,11 @@
  */
 package net.ymate.platform.persistence.jdbc.dialect;
 
+import net.ymate.platform.core.util.ClassUtils;
 import net.ymate.platform.core.util.ExpressionUtils;
 import net.ymate.platform.persistence.Fields;
+import net.ymate.platform.persistence.IShardingRule;
+import net.ymate.platform.persistence.IShardingable;
 import net.ymate.platform.persistence.base.EntityMeta;
 import net.ymate.platform.persistence.base.IEntity;
 import org.apache.commons.lang.StringUtils;
@@ -72,11 +75,11 @@ public abstract class AbstractDialect implements IDialect {
         throw new UnsupportedOperationException();
     }
 
-    public String buildCreateSQL(Class<? extends IEntity> entityClass, String prefix) {
+    public String buildCreateSQL(Class<? extends IEntity> entityClass, String prefix, IShardingable shardingable) {
         throw new UnsupportedOperationException();
     }
 
-    public String buildDropSQL(Class<? extends IEntity> entityClass, String prefix) {
+    public String buildDropSQL(Class<? extends IEntity> entityClass, String prefix, IShardingable shardingable) {
         throw new UnsupportedOperationException();
     }
 
@@ -100,8 +103,15 @@ public abstract class AbstractDialect implements IDialect {
         return _fieldsSB.toString();
     }
 
-    public String buildTableName(String prefix, String entityName) {
-        return this.wrapIdentifierQuote(StringUtils.defaultIfBlank(prefix, "").concat(entityName));
+    public String buildTableName(String prefix, EntityMeta entityMeta, IShardingable shardingable) {
+        String _entityName = entityMeta.getEntityName();
+        if (shardingable != null && entityMeta.getShardingRule() != null) {
+            IShardingRule _rule = ClassUtils.impl(entityMeta.getShardingRule().value(), IShardingRule.class);
+            if (_rule != null) {
+                _entityName = _rule.getShardName(entityMeta.getEntityName(), shardingable.getShardingParam());
+            }
+        }
+        return this.wrapIdentifierQuote(StringUtils.defaultIfBlank(prefix, "").concat(_entityName));
     }
 
     /**
@@ -127,10 +137,10 @@ public abstract class AbstractDialect implements IDialect {
         }
     }
 
-    public String buildInsertSQL(Class<? extends IEntity> entityClass, String prefix, Fields fields) {
+    public String buildInsertSQL(Class<? extends IEntity> entityClass, String prefix, IShardingable shardingable, Fields fields) {
         EntityMeta _meta = EntityMeta.createAndGet(entityClass);
         ExpressionUtils _exp = ExpressionUtils.bind("INSERT INTO ${table_name} (${fields}) VALUES (${values})")
-                .set("table_name", buildTableName(prefix, _meta.getEntityName()));
+                .set("table_name", buildTableName(prefix, _meta, shardingable));
         //
         Fields _fields = Fields.create();
         if (fields == null || fields.fields().isEmpty()) {
@@ -142,10 +152,10 @@ public abstract class AbstractDialect implements IDialect {
         return _exp.set("fields", __doGenerateFieldsFormatStr(_fields, null, null)).set("values", StringUtils.repeat("?", ", ", _fields.fields().size())).getResult();
     }
 
-    public String buildDeleteByPkSQL(Class<? extends IEntity> entityClass, String prefix, Fields pkFields) {
+    public String buildDeleteByPkSQL(Class<? extends IEntity> entityClass, String prefix, IShardingable shardingable, Fields pkFields) {
         EntityMeta _meta = EntityMeta.createAndGet(entityClass);
         ExpressionUtils _exp = ExpressionUtils.bind("DELETE FROM ${table_name} WHERE ${pk}")
-                .set("table_name", buildTableName(prefix, _meta.getEntityName()));
+                .set("table_name", buildTableName(prefix, _meta, shardingable));
         //
         Fields _fields = Fields.create();
         if (pkFields == null || pkFields.fields().isEmpty()) {
@@ -157,10 +167,10 @@ public abstract class AbstractDialect implements IDialect {
         return _exp.set("pk", __doGenerateFieldsFormatStr(_fields, " = ?", " and ")).getResult();
     }
 
-    public String buildUpdateByPkSQL(Class<? extends IEntity> entityClass, String prefix, Fields pkFields, Fields fields) {
+    public String buildUpdateByPkSQL(Class<? extends IEntity> entityClass, String prefix, IShardingable shardingable, Fields pkFields, Fields fields) {
         EntityMeta _meta = EntityMeta.createAndGet(entityClass);
         ExpressionUtils _exp = ExpressionUtils.bind("UPDATE ${table_name} SET ${fields} WHERE ${pk}")
-                .set("table_name", buildTableName(prefix, _meta.getEntityName()));
+                .set("table_name", buildTableName(prefix, _meta, shardingable));
         //
         Fields _fields = Fields.create();
         for (String _field : (fields == null || fields.fields().isEmpty()) ? _meta.getPropertyNames() : fields.fields()) {
@@ -185,10 +195,10 @@ public abstract class AbstractDialect implements IDialect {
         return _exp.set("pk", __doGenerateFieldsFormatStr(_fields, " = ?", " and ")).getResult();
     }
 
-    public String buildSelectByPkSQL(Class<? extends IEntity> entityClass, String prefix, Fields pkFields, Fields fields) {
+    public String buildSelectByPkSQL(Class<? extends IEntity> entityClass, String prefix, IShardingable shardingable, Fields pkFields, Fields fields) {
         EntityMeta _meta = EntityMeta.createAndGet(entityClass);
         ExpressionUtils _exp = ExpressionUtils.bind("SELECT ${fields} FROM ${table_name} WHERE ${pk}")
-                .set("table_name", buildTableName(prefix, _meta.getEntityName()));
+                .set("table_name", buildTableName(prefix, _meta, shardingable));
         //
         if (fields == null || fields.fields().isEmpty()) {
             fields = Fields.create().add(_meta.getPropertyNames());
@@ -205,10 +215,10 @@ public abstract class AbstractDialect implements IDialect {
         return _exp.set("pk", __doGenerateFieldsFormatStr(pkFields, " = ?", " and ")).getResult();
     }
 
-    public String buildSelectSQL(Class<? extends IEntity> entityClass, String prefix, Fields fields) {
+    public String buildSelectSQL(Class<? extends IEntity> entityClass, String prefix, IShardingable shardingable, Fields fields) {
         EntityMeta _meta = EntityMeta.createAndGet(entityClass);
         ExpressionUtils _exp = ExpressionUtils.bind("SELECT ${fields} FROM ${table_name}")
-                .set("table_name", buildTableName(prefix, _meta.getEntityName()));
+                .set("table_name", buildTableName(prefix, _meta, shardingable));
         //
         if (fields == null || fields.fields().isEmpty()) {
             fields = Fields.create().add(_meta.getPropertyNames());

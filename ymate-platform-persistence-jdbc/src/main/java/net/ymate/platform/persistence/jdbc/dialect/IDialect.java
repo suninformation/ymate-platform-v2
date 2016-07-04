@@ -16,6 +16,8 @@
 package net.ymate.platform.persistence.jdbc.dialect;
 
 import net.ymate.platform.persistence.Fields;
+import net.ymate.platform.persistence.IShardingable;
+import net.ymate.platform.persistence.base.EntityMeta;
 import net.ymate.platform.persistence.base.IEntity;
 
 import java.sql.SQLException;
@@ -41,11 +43,12 @@ public interface IDialect {
     String wrapIdentifierQuote(String origin);
 
     /**
-     * @param prefix     数据表名称前缀
-     * @param entityName 数据实体名称
+     * @param prefix       数据表名称前缀
+     * @param entityMeta   数据实体属性描述对象
+     * @param shardingable 分片(表)参数对象
      * @return 返回完整的数据表名称，并根据数据库特性决定是否添加引用标识符
      */
-    String buildTableName(String prefix, String entityName);
+    String buildTableName(String prefix, EntityMeta entityMeta, IShardingable shardingable);
 
     /**
      * @param statement Statement对象
@@ -69,58 +72,65 @@ public interface IDialect {
     String buildPagedQuerySQL(String originSql, int page, int pageSize);
 
     /**
-     * @param entityClass 实体模型类
-     * @param prefix      实体名称前缀
+     * @param entityClass  实体模型类
+     * @param prefix       实体名称前缀
+     * @param shardingable 分片(表)参数对象
      * @return 返回创建实体数据表SQL语句
      */
-    String buildCreateSQL(Class<? extends IEntity> entityClass, String prefix);
+    String buildCreateSQL(Class<? extends IEntity> entityClass, String prefix, IShardingable shardingable);
 
     /**
-     * @param entityClass 实体模型类
-     * @param prefix      实体名称前缀
+     * @param entityClass  实体模型类
+     * @param prefix       实体名称前缀
+     * @param shardingable 分片(表)参数对象
      * @return 返回删除实体数据表SQL语句
      */
-    String buildDropSQL(Class<? extends IEntity> entityClass, String prefix);
+    String buildDropSQL(Class<? extends IEntity> entityClass, String prefix, IShardingable shardingable);
 
     /**
-     * @param entityClass 实体模模型类
-     * @param prefix      实体名称前缀
-     * @param fields      字段名称集合，可选参数，若不指定则包括全部字段
+     * @param entityClass  实体模模型类
+     * @param prefix       实体名称前缀
+     * @param shardingable 分片(表)参数对象
+     * @param fields       字段名称集合，可选参数，若不指定则包括全部字段
      * @return 返回插入实体数据记录SQL语句
      */
-    String buildInsertSQL(Class<? extends IEntity> entityClass, String prefix, Fields fields);
+    String buildInsertSQL(Class<? extends IEntity> entityClass, String prefix, IShardingable shardingable, Fields fields);
 
     /**
-     * @param entityClass 实体模模型类
-     * @param prefix      实体名称前缀
-     * @param pkFields    主键字段名称集合，可选参数，若不指定则包括全部主键
+     * @param entityClass  实体模模型类
+     * @param prefix       实体名称前缀
+     * @param shardingable 分片(表)参数对象
+     * @param pkFields     主键字段名称集合，可选参数，若不指定则包括全部主键
      * @return 返回删除实体数据记录SQL语句
      */
-    String buildDeleteByPkSQL(Class<? extends IEntity> entityClass, String prefix, Fields pkFields);
+    String buildDeleteByPkSQL(Class<? extends IEntity> entityClass, String prefix, IShardingable shardingable, Fields pkFields);
 
     /**
-     * @param entityClass 实体模模型类
-     * @param prefix      前缀名称
-     * @param pkFields    主键字段名称集合，可选参数，若不指定则包括全部主键
-     * @param fields      字段名称集合，可选参数，若不指定则包括全部字段
+     * @param entityClass  实体模模型类
+     * @param prefix       前缀名称
+     * @param shardingable 分片(表)参数对象
+     * @param pkFields     主键字段名称集合，可选参数，若不指定则包括全部主键
+     * @param fields       字段名称集合，可选参数，若不指定则包括全部字段
      * @return 返回更新实体数据记录SQL语句
      */
-    String buildUpdateByPkSQL(Class<? extends IEntity> entityClass, String prefix, Fields pkFields, Fields fields);
+    String buildUpdateByPkSQL(Class<? extends IEntity> entityClass, String prefix, IShardingable shardingable, Fields pkFields, Fields fields);
 
     /**
-     * @param entityClass 实体模模型类
-     * @param prefix      实体名称前缀
-     * @param pkFields    主键字段名称集合，可选参数，若不指定则包括全部主键
-     * @param fields      字段名称集合，可选参数，若不指定则包括全部字段
+     * @param entityClass  实体模模型类
+     * @param prefix       实体名称前缀
+     * @param shardingable 分片(表)参数对象
+     * @param pkFields     主键字段名称集合，可选参数，若不指定则包括全部主键
+     * @param fields       字段名称集合，可选参数，若不指定则包括全部字段
      * @return 返回根据主键查询实体数据记录SQL语句
      */
-    String buildSelectByPkSQL(Class<? extends IEntity> entityClass, String prefix, Fields pkFields, Fields fields);
+    String buildSelectByPkSQL(Class<? extends IEntity> entityClass, String prefix, IShardingable shardingable, Fields pkFields, Fields fields);
 
     /**
-     * @param entityClass 实体模模型类
-     * @param prefix      实体名称前缀
-     * @param fields      字段名称集合，可选参数，若不指定则包括全部字段
+     * @param entityClass  实体模模型类
+     * @param prefix       实体名称前缀
+     * @param shardingable 分片(表)参数对象
+     * @param fields       字段名称集合，可选参数，若不指定则包括全部字段
      * @return 返回查询全部实体数据记录SQL语句
      */
-    String buildSelectSQL(Class<? extends IEntity> entityClass, String prefix, Fields fields);
+    String buildSelectSQL(Class<? extends IEntity> entityClass, String prefix, IShardingable shardingable, Fields fields);
 }
