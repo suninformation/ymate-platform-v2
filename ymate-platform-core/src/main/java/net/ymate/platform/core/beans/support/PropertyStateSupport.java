@@ -53,7 +53,7 @@ public class PropertyStateSupport<T> {
             PropertyState _state = _wrapper.getField(_fieldName).getAnnotation(PropertyState.class);
             if (_state != null) {
                 __propertyStates.put(StringUtils.defaultIfBlank(_state.setterName(), "set" + StringUtils.capitalize(_fieldName)),
-                        new PropertyStateMeta(StringUtils.defaultIfBlank(_state.propertyName(), _fieldName), _wrapper.getValue(_fieldName)));
+                        new PropertyStateMeta(StringUtils.defaultIfBlank(_state.propertyName(), _fieldName), _state.aliasName(), _wrapper.getValue(_fieldName)));
             }
         }
     }
@@ -94,18 +94,24 @@ public class PropertyStateSupport<T> {
 
     public static class PropertyStateMeta {
         private String propertyName;
+        private String aliasName;
         private Object originalValue;
         private Object newValue;
 
         private boolean changed;
 
-        public PropertyStateMeta(String propertyName, Object originalValue) {
+        public PropertyStateMeta(String propertyName, String aliasName, Object originalValue) {
             this.propertyName = propertyName;
+            this.aliasName = aliasName;
             this.originalValue = originalValue;
         }
 
         public String getPropertyName() {
             return propertyName;
+        }
+
+        public String getAliasName() {
+            return aliasName;
         }
 
         public Object getOriginalValue() {
@@ -131,7 +137,7 @@ public class PropertyStateSupport<T> {
 
         @Override
         public String toString() {
-            return JSON.toJSONString(this, SerializerFeature.WriteMapNullValue);
+            return JSON.toJSONString(this, SerializerFeature.WriteMapNullValue, SerializerFeature.WriteNullStringAsEmpty);
         }
     }
 }

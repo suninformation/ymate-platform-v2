@@ -34,6 +34,11 @@ public @interface PropertyState {
     String propertyName() default "";
 
     /**
+     * @return 自定义别名
+     */
+    String aliasName() default "";
+
+    /**
      * @return 成员属性设置方法名称
      */
     String setterName() default "";
