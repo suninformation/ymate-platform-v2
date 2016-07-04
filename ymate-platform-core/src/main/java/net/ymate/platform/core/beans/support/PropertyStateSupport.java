@@ -36,19 +36,21 @@ import java.util.Set;
  */
 public class PropertyStateSupport<T> {
 
+    private T __source;
     private final Class<?> __targetClass;
 
     private Map<String, PropertyStateMeta> __propertyStates;
 
-    public static <T> PropertyStateSupport<T> create(T original) throws Exception {
-        return new PropertyStateSupport<T>(original);
+    public static <T> PropertyStateSupport<T> create(T source) throws Exception {
+        return new PropertyStateSupport<T>(source);
     }
 
-    public PropertyStateSupport(T original) throws Exception {
-        __targetClass = original.getClass();
+    public PropertyStateSupport(T source) throws Exception {
+        __source = source;
+        __targetClass = source.getClass();
         __propertyStates = new HashMap<String, PropertyStateMeta>();
         //
-        ClassUtils.BeanWrapper<T> _wrapper = ClassUtils.wrapper(original);
+        ClassUtils.BeanWrapper<T> _wrapper = ClassUtils.wrapper(source);
         for (String _fieldName : _wrapper.getFieldNames()) {
             PropertyState _state = _wrapper.getField(_fieldName).getAnnotation(PropertyState.class);
             if (_state != null) {
@@ -60,7 +62,7 @@ public class PropertyStateSupport<T> {
 
     @SuppressWarnings("unchecked")
     public T bind() {
-        return (T) Enhancer.create(__targetClass, new MethodInterceptor() {
+        return (T) ClassUtils.wrapper(__source).duplicate(Enhancer.create(__targetClass, new MethodInterceptor() {
             public Object intercept(Object targetObject, Method targetMethod, Object[] methodParams, MethodProxy methodProxy) throws Throwable {
                 Object _result = methodProxy.invokeSuper(targetObject, methodParams);
                 PropertyStateMeta _meta = __propertyStates.get(targetMethod.getName());
@@ -69,7 +71,7 @@ public class PropertyStateSupport<T> {
                 }
                 return _result;
             }
-        });
+        }));
     }
 
     public String[] getChangedPropertyNames() {
