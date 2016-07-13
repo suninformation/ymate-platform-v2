@@ -20,6 +20,7 @@ import net.ymate.platform.cache.CacheException;
 import net.ymate.platform.cache.ICache;
 import net.ymate.platform.cache.ICacheEventListener;
 import net.ymate.platform.cache.ICaches;
+import net.ymate.platform.core.lang.BlurObject;
 import net.ymate.platform.persistence.redis.IRedis;
 
 import java.util.Collection;
@@ -34,16 +35,29 @@ public class MultilevelCacheWraper implements ICache {
     private ICache __masterCache;
     private ICache __slaveCache;
 
+    private boolean __slaveCacheAutosync;
+
     public MultilevelCacheWraper(ICaches owner, String cacheName, Ehcache ehcache, IRedis redis, ICacheEventListener listener) {
         __masterCache = new EhCacheWraper(owner, ehcache, listener);
         __slaveCache = new RedisCacheWraper(owner, redis, cacheName, null);
+        //
+        __slaveCacheAutosync = BlurObject.bind(owner.getOwner().getConfig().getParam("cache.multilevel_slave_autosync")).toBooleanValue();
     }
 
     @Override
     public Object get(Object key) throws CacheException {
         MultilevelKey _key = MultilevelKey.bind(key);
         if (_key.isMaster()) {
-            return __masterCache.get(key);
+            Object _obj = __masterCache.get(_key.getKey());
+            if (__slaveCacheAutosync) {
+                if (_obj == null) {
+                    _obj = __slaveCache.get(_key.getKey());
+                    if (_obj != null) {
+                        __masterCache.put(_key.getKey(), _obj);
+                    }
+                }
+            }
+            return _obj;
         }
         return __slaveCache.get(_key.getKey());
     }
@@ -53,6 +67,9 @@ public class MultilevelCacheWraper implements ICache {
         MultilevelKey _key = MultilevelKey.bind(key);
         if (_key.isMaster()) {
             __masterCache.put(_key.getKey(), value);
+            if (__slaveCacheAutosync) {
+                __slaveCache.put(_key.getKey(), value);
+            }
         } else {
             __slaveCache.put(_key.getKey(), value);
         }
@@ -63,6 +80,9 @@ public class MultilevelCacheWraper implements ICache {
         MultilevelKey _key = MultilevelKey.bind(key);
         if (_key.isMaster()) {
             __masterCache.update(_key.getKey(), value);
+            if (__slaveCacheAutosync) {
+                __slaveCache.update(_key.getKey(), value);
+            }
         } else {
             __slaveCache.update(_key.getKey(), value);
         }
@@ -85,6 +105,9 @@ public class MultilevelCacheWraper implements ICache {
         MultilevelKey _key = MultilevelKey.bind(key);
         if (_key.isMaster()) {
             __masterCache.remove(_key.getKey());
+            if (__slaveCacheAutosync) {
+                __slaveCache.remove(_key.getKey());
+            }
         } else {
             __slaveCache.remove(_key.getKey());
         }
@@ -98,6 +121,9 @@ public class MultilevelCacheWraper implements ICache {
     public void removeAll(boolean master, Collection<?> keys) throws CacheException {
         if (master) {
             __masterCache.removeAll(keys);
+            if (__slaveCacheAutosync) {
+                __slaveCache.removeAll(keys);
+            }
         } else {
             __slaveCache.removeAll(keys);
         }
@@ -111,6 +137,9 @@ public class MultilevelCacheWraper implements ICache {
     public void clear(boolean master) throws CacheException {
         if (master) {
             __masterCache.clear();
+            if (__slaveCacheAutosync) {
+                __slaveCache.clear();
+            }
         } else {
             __slaveCache.clear();
         }
