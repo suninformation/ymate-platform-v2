@@ -15,6 +15,7 @@
  */
 package net.ymate.platform.webmvc.view.impl;
 
+import net.ymate.platform.core.lang.BlurObject;
 import net.ymate.platform.core.lang.PairObject;
 import net.ymate.platform.core.util.FileUtils;
 import net.ymate.platform.webmvc.context.WebContext;
@@ -55,7 +56,7 @@ public class BinaryView extends AbstractView {
      */
     public static BinaryView bind(File targetFile) throws Exception {
         if (targetFile != null && targetFile.exists() && targetFile.isFile() && targetFile.canRead()) {
-            BinaryView _binaryView = new BinaryView(new FileInputStream(targetFile));
+            BinaryView _binaryView = new BinaryView(targetFile);
             _binaryView.setContentType(MimeTypeUtils.getFileMimeType(FileUtils.getExtName(targetFile.getPath())));
             return _binaryView;
         }
@@ -114,20 +115,21 @@ public class BinaryView extends AbstractView {
                 IOUtils.copyLarge(new FileInputStream((File) __data), _response.getOutputStream(), _rangePO.getKey(), _rangePO.getValue());
             } else {
                 // 正常下载
-                _response.setContentLength((int) IOUtils.copyLarge(new FileInputStream((File) __data), _response.getOutputStream()));
+                _response.setContentLength(BlurObject.bind(__length).toIntValue());
+                IOUtils.copyLarge(new FileInputStream((File) __data), _response.getOutputStream());
             }
         }
         // 字节数组
         else if (__data instanceof byte[]) {
             byte[] _datas = (byte[]) __data;
-            IOUtils.write(_datas, _response.getOutputStream());
             _response.setContentLength(_datas.length);
+            IOUtils.write(_datas, _response.getOutputStream());
         }
         // 字符数组
         else if (__data instanceof char[]) {
             char[] _datas = (char[]) __data;
-            IOUtils.write(_datas, _response.getOutputStream());
             _response.setContentLength(_datas.length);
+            IOUtils.write(_datas, _response.getOutputStream());
         }
         // 文本流
         else if (__data instanceof Reader) {
@@ -141,12 +143,15 @@ public class BinaryView extends AbstractView {
                 __doSetRangeHeader(_response, _rangePO);
                 IOUtils.copyLarge((InputStream) __data, _response.getOutputStream(), _rangePO.getKey(), _rangePO.getValue());
             } else {
-                _response.setContentLength((int) IOUtils.copyLarge((InputStream) __data, _response.getOutputStream()));
+                _response.setContentLength(BlurObject.bind(__length).toIntValue());
+                IOUtils.copyLarge((InputStream) __data, _response.getOutputStream());
             }
         }
         // 普通对象
         else {
-            IOUtils.write(String.valueOf(__data), _response.getOutputStream());
+            String _content = StringUtils.trimToEmpty(BlurObject.bind(__data).toStringValue());
+            _response.setContentLength(_content.length());
+            IOUtils.write(_content, _response.getOutputStream());
         }
     }
 
