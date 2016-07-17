@@ -63,6 +63,9 @@ public class TextLineCodec implements INioCodec {
                     case '\r':
                         break;
                     case '\n':
+                        if (_tmpBuffer.buffer() == null ) {
+                            break;
+                        }
                         byte[] _bytes = new byte[_counter];
                         _tmpBuffer.flip().get(_bytes);
                         return new String(_bytes, __charset);
