@@ -44,7 +44,7 @@ public class Caches implements IModule, ICaches {
 
     private final Log _LOG = LogFactory.getLog(Caches.class);
 
-    private static ICaches __instance;
+    private static volatile ICaches __instance;
 
     private YMP __owner;
 

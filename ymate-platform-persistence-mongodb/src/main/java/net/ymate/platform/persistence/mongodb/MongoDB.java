@@ -40,7 +40,7 @@ public class MongoDB implements IModule, IMongo {
 
     private final Log _LOG = LogFactory.getLog(MongoDB.class);
 
-    private static IMongo __instance;
+    private static volatile IMongo __instance;
 
     private YMP __owner;
 

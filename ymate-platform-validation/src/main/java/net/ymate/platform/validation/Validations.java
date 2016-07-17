@@ -46,7 +46,7 @@ public class Validations implements IModule, IValidation {
 
     private final Log _LOG = LogFactory.getLog(Validations.class);
 
-    private static IValidation __instance;
+    private static volatile IValidation __instance;
 
     private YMP __owner;
 

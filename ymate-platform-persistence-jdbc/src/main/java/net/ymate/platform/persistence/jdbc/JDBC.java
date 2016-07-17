@@ -46,7 +46,7 @@ public class JDBC implements IModule, IDatabase {
 
     private final Log _LOG = LogFactory.getLog(JDBC.class);
 
-    private static IDatabase __instance;
+    private static volatile IDatabase __instance;
 
     private YMP __owner;
 

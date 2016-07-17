@@ -43,7 +43,7 @@ public class Logs implements IModule, ILog {
 
     private static Map<String, ILogger> __LOGGER_CACHE = new ConcurrentHashMap<String, ILogger>();
 
-    private static ILog __instance;
+    private static volatile ILog __instance;
 
     private YMP __owner;
 

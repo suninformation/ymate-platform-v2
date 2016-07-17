@@ -47,7 +47,7 @@ public class Cfgs implements IModule, IConfig {
 
     private final Log _LOG = LogFactory.getLog(Cfgs.class);
 
-    private static IConfig __instance;
+    private static volatile IConfig __instance;
 
     private YMP __owner;
 

@@ -39,7 +39,7 @@ public class Redis implements IModule, IRedis {
 
     private final Log _LOG = LogFactory.getLog(Redis.class);
 
-    private static IRedis __instance;
+    private static volatile IRedis __instance;
 
     private YMP __owner;
 

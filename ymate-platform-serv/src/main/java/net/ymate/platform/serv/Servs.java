@@ -44,7 +44,7 @@ public class Servs implements IModule, IServ {
 
     private final Log _LOG = LogFactory.getLog(Servs.class);
 
-    private static IServ __instance;
+    private static volatile IServ __instance;
 
     private YMP __owner;
 

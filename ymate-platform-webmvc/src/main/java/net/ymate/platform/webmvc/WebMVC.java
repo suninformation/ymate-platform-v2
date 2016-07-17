@@ -63,7 +63,7 @@ public class WebMVC implements IModule, IWebMvc {
 
     private final Log _LOG = LogFactory.getLog(WebMVC.class);
 
-    private static IWebMvc __instance;
+    private static volatile IWebMvc __instance;
 
     private YMP __owner;
 

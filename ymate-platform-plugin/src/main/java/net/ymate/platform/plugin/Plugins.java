@@ -54,7 +54,7 @@ public class Plugins implements IModule, IPlugins {
 
     private boolean __inited;
 
-    private static IPlugins __instance;
+    private static volatile IPlugins __instance;
 
     private IPluginFactory __pluginFactory;
 
