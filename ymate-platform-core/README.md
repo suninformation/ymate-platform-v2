@@ -299,6 +299,67 @@ YMP框架的AOP是基于CGLIB的MethodInterceptor实现的拦截，通过以下�
             }
         }
 
+##### 记录类属性状态 (PropertyState)
+
+通过在类成员变量上声明`@PropertyState`注解，并使用`PropertyStateSupport`工具类配合，便可以轻松实现对类成员属性的变化情况进行监控。
+
+- @PropertyState注解：声明记录类成员属性值的变化；
+
+    > propertyName：成员属性名称，默认为空则采用当前成员名称；
+    >
+    > aliasName：自定义别名，默认为空；
+    >
+    > setterName：成员属性SET方法名称，默认为空；
+
+- 示例代码：
+
+        public class PropertyStateTest {
+        
+            @PropertyState(propertyName = "user_name")
+            private String username;
+        
+            @PropertyState(aliasName = "年龄")
+            private int age;
+        
+            public String getUsername() {
+                return username;
+            }
+        
+            public void setUsername(String username) {
+                this.username = username;
+            }
+        
+            public int getAge() {
+                return age;
+            }
+        
+            public void setAge(int age) {
+                this.age = age;
+            }
+        
+            public static void main(String[] args) throws Exception {
+                PropertyStateTest _original = new PropertyStateTest();
+                _original.setUsername("123456");
+                _original.setAge(20);
+                //
+                PropertyStateSupport<PropertyStateTest> _support = PropertyStateSupport.create(_original);
+                PropertyStateTest _new = _support.bind();
+                _new.setUsername("YMPer");
+                _new.setAge(30);
+                //
+                System.out.println("发生变更的字段名集合: " + Arrays.asList(_support.getChangedPropertyNames()));
+                for (PropertyStateSupport.PropertyStateMeta _meta : _support.getChangedProperties()) {
+                    System.out.println("已将" + StringUtils.defaultIfBlank(_meta.getAliasName(), _meta.getPropertyName()) + "由" + _meta.getOriginalValue() + "变更为" + _meta.getNewValue());
+                }
+            }
+        }
+
+- 执行结果：
+
+        发生变更的字段名集合: [user_name, age]
+        已将user_name由123456变更为YMPer
+        已将年龄由20变更为30
+
 #### Event
 
 事件服务，通过事件的注册、订阅和广播完成事件消息的处理，目的是为了减少代码侵入，降低模块之间的业务耦合度，事件消息采用队列存储，采用多线程接口回调实现消息及消息上下文对象的传输，支持同步和异步两种处理模式；
