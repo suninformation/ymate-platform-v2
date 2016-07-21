@@ -1,5 +1,6 @@
 package ${packageName}.model;
 
+<#if (isUseStateSupport)>import net.ymate.platform.core.beans.annotation.PropertyState;</#if>
 import net.ymate.platform.persistence.annotation.Default;
 import net.ymate.platform.persistence.annotation.Entity;
 import net.ymate.platform.persistence.annotation.Id;
@@ -20,7 +21,8 @@ public class ${modelName?cap_first}<#if (isUseClassSuffix)>Model</#if> extends <
 	<#list fieldList as field>
 	<#if primaryKeyName = field.varName>@Id</#if><#if (field.columnName!"undefined") != "undefined">
 	@Property(name = "${field.columnName}"<#if (field.autoIncrement)>, autoincrement=true</#if><#if (field.nullable == 0)>, nullable = false</#if><#if (!field.signed)>, unsigned = true</#if><#if (field.precision > 0)>, length = ${field.precision?string('#')}</#if><#if (field.scale > 0)>, decimals = ${field.scale}</#if>)<#if (field.defaultValue!"undefined") != "undefined">
-	@Default("${field.defaultValue}")</#if></#if>
+	@Default("${field.defaultValue}")</#if><#if (isUseStateSupport)>
+    @PropertyState(propertyName = "${field.columnName}")</#if></#if>
 	private ${field.varType} ${field.varName};
 	</#list>
 
@@ -128,11 +130,11 @@ public class ${modelName?cap_first}<#if (isUseClassSuffix)>Model</#if> extends <
 
 	<#list fieldList as field>
 		public ${field.varType} ${field.varName}() {
-			return _model.${field.varName};
+			return _model.get${field.varName?cap_first}();
 		}
 
 		public ${modelName?cap_first}<#if (isUseClassSuffix)>Model</#if>Builder ${field.varName}(${field.varType} ${field.varName}) {
-			_model.${field.varName} = ${field.varName};
+			_model.set${field.varName?cap_first}(${field.varName});
 			return this;
 		}
 

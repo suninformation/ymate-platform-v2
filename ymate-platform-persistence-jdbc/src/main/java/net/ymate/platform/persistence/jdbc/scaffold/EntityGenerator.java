@@ -220,9 +220,11 @@ public class EntityGenerator {
         boolean _isUseBaseEntity = BlurObject.bind(__owner.getConfig().getParam("jdbc.use_base_entity")).toBooleanValue();
         boolean _isUseClassSuffix = BlurObject.bind(__owner.getConfig().getParam("jdbc.use_class_suffix")).toBooleanValue();
         boolean _isUseChainMode = BlurObject.bind(__owner.getConfig().getParam("jdbc.use_chain_mode")).toBooleanValue();
+        boolean _isUseStateSupport = BlurObject.bind(__owner.getConfig().getParam("jdbc.use_state_support")).toBooleanValue();
         _propMap.put("isUseBaseEntity", _isUseBaseEntity);
         _propMap.put("isUseClassSuffix", _isUseClassSuffix);
         _propMap.put("isUseChainMode", _isUseChainMode);
+        _propMap.put("isUseStateSupport", _isUseStateSupport);
         if (_isUseBaseEntity) {
             buildTargetFile("/model/BaseEntity.java", "/BaseEntity.ftl", _propMap);
         }
