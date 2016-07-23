@@ -37,6 +37,7 @@ import java.util.Set;
 public class PropertyStateSupport<T> {
 
     private T __source;
+    private T __bound;
     private final Class<?> __targetClass;
 
     private Map<String, PropertyStateMeta> __propertyStates;
@@ -62,16 +63,23 @@ public class PropertyStateSupport<T> {
 
     @SuppressWarnings("unchecked")
     public T bind() {
-        return (T) ClassUtils.wrapper(__source).duplicate(Enhancer.create(__targetClass, new MethodInterceptor() {
-            public Object intercept(Object targetObject, Method targetMethod, Object[] methodParams, MethodProxy methodProxy) throws Throwable {
-                Object _result = methodProxy.invokeSuper(targetObject, methodParams);
-                PropertyStateMeta _meta = __propertyStates.get(targetMethod.getName());
-                if (_meta != null) {
-                    _meta.setNewValue(methodParams != null ? methodParams[0] : null);
+        if (__bound == null) {
+            __bound = (T) ClassUtils.wrapper(__source).duplicate(Enhancer.create(__targetClass, new MethodInterceptor() {
+                public Object intercept(Object targetObject, Method targetMethod, Object[] methodParams, MethodProxy methodProxy) throws Throwable {
+                    Object _result = methodProxy.invokeSuper(targetObject, methodParams);
+                    PropertyStateMeta _meta = __propertyStates.get(targetMethod.getName());
+                    if (_meta != null) {
+                        _meta.setNewValue(methodParams != null ? methodParams[0] : null);
+                    }
+                    return _result;
                 }
-                return _result;
-            }
-        }));
+            }));
+        }
+        return __bound;
+    }
+
+    public T unbind() {
+        return ClassUtils.wrapper(__bound).duplicate(__source);
     }
 
     public String[] getChangedPropertyNames() {
