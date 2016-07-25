@@ -37,9 +37,9 @@ public class DefaultEventProvider<T, E extends Enum<E>, EVENT extends Class<IEve
 
     private ExecutorService __eventExecPool;
 
-    private List<EVENT> __events;
+    private List<String> __events;
 
-    private Map<EVENT, List<IEventListener<CONTEXT>>> __listenersMap;
+    private Map<String, List<IEventListener<CONTEXT>>> __listenersMap;
 
     public void init(IEventConfig eventConfig) {
         __eventConfig = eventConfig;
@@ -50,8 +50,8 @@ public class DefaultEventProvider<T, E extends Enum<E>, EVENT extends Class<IEve
         }
         __eventExecPool = Executors.newFixedThreadPool(_poolSize);
         //
-        __events = new ArrayList<EVENT>();
-        __listenersMap = new ConcurrentHashMap<EVENT, List<IEventListener<CONTEXT>>>();
+        __events = new ArrayList<String>();
+        __listenersMap = new ConcurrentHashMap<String, List<IEventListener<CONTEXT>>>();
     }
 
     public IEventConfig getEventConfig() {
@@ -68,22 +68,23 @@ public class DefaultEventProvider<T, E extends Enum<E>, EVENT extends Class<IEve
     }
 
     public void registerEvent(EVENT event) {
-        __events.add(event);
+        __events.add(event.getName());
     }
 
     public void registerListener(EVENT eventClass, IEventListener<CONTEXT> eventListener) {
-        if (__listenersMap.containsKey(eventClass)) {
-            __listenersMap.get(eventClass).add(eventListener);
+        if (__listenersMap.containsKey(eventClass.getName())) {
+            __listenersMap.get(eventClass.getName()).add(eventListener);
         } else {
             List<IEventListener<CONTEXT>> _listeners = new ArrayList<IEventListener<CONTEXT>>();
             _listeners.add(eventListener);
-            __listenersMap.put(eventClass, _listeners);
+            __listenersMap.put(eventClass.getName(), _listeners);
         }
     }
 
     public void fireEvent(Events.MODE mode, final CONTEXT context) {
-        if (__events.contains(context.getEventClass())) {
-            Collection<IEventListener<CONTEXT>> _listeners = __listenersMap.get(context.getEventClass());
+        String _eventKey = context.getEventClass().getName();
+        if (__events.contains(_eventKey)) {
+            Collection<IEventListener<CONTEXT>> _listeners = __listenersMap.get(_eventKey);
             if (_listeners != null && !_listeners.isEmpty()) {
                 switch (mode) {
                     case ASYNC:
