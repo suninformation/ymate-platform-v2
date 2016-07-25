@@ -18,6 +18,11 @@ package net.ymate.platform.persistence.jdbc;
 import net.ymate.platform.core.util.ClassUtils;
 import net.ymate.platform.persistence.jdbc.dialect.IDialect;
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
+import java.sql.DriverManager;
+import java.sql.SQLException;
 
 /**
  * 抽象数据源适配器
@@ -26,6 +31,8 @@ import org.apache.commons.lang.StringUtils;
  * @version 1.0
  */
 public abstract class AbstractDataSourceAdapter implements IDataSourceAdapter {
+
+    private static final Log _LOG = LogFactory.getLog(AbstractDataSourceAdapter.class);
 
     protected DataSourceCfgMeta __cfgMeta;
 
@@ -62,6 +69,12 @@ public abstract class AbstractDataSourceAdapter implements IDataSourceAdapter {
     public void destroy() {
         if (__inited) {
             __inited = false;
+            //
+            try {
+                DriverManager.deregisterDriver(DriverManager.getDriver(__cfgMeta.getConnectionUrl()));
+            } catch (SQLException e) {
+                _LOG.warn("", e);
+            }
             //
             __cfgMeta = null;
             __dialect = null;
