@@ -24,11 +24,9 @@ import net.ymate.platform.core.beans.annotation.PropertyState;
 import net.ymate.platform.core.util.ClassUtils;
 import org.apache.commons.lang.StringUtils;
 
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 /**
  * @author 刘镇 (suninformation@163.com) on 16/7/3 上午2:05
@@ -40,6 +38,7 @@ public class PropertyStateSupport<T> {
     private T __bound;
     private final Class<?> __targetClass;
 
+    private List<PropertyStateMeta> __stateMetas;
     private Map<String, PropertyStateMeta> __propertyStates;
 
     public static <T> PropertyStateSupport<T> create(T source) throws Exception {
@@ -49,14 +48,19 @@ public class PropertyStateSupport<T> {
     public PropertyStateSupport(T source) throws Exception {
         __source = source;
         __targetClass = source.getClass();
+        __stateMetas = new ArrayList<PropertyStateMeta>();
         __propertyStates = new HashMap<String, PropertyStateMeta>();
         //
         ClassUtils.BeanWrapper<T> _wrapper = ClassUtils.wrapper(source);
         for (String _fieldName : _wrapper.getFieldNames()) {
             PropertyState _state = _wrapper.getField(_fieldName).getAnnotation(PropertyState.class);
             if (_state != null) {
-                __propertyStates.put(StringUtils.defaultIfBlank(_state.setterName(), "set" + StringUtils.capitalize(_fieldName)),
-                        new PropertyStateMeta(StringUtils.defaultIfBlank(_state.propertyName(), _fieldName), _state.aliasName(), _wrapper.getValue(_fieldName)));
+                PropertyStateMeta _stateMeta = new PropertyStateMeta(StringUtils.defaultIfBlank(_state.propertyName(), _fieldName), _state.aliasName(), _wrapper.getValue(_fieldName));
+                __stateMetas.add(_stateMeta);
+                __propertyStates.put("set" + StringUtils.capitalize(_fieldName), _stateMeta);
+                if (StringUtils.isNotBlank(_state.setterName())) {
+                    __propertyStates.put(_state.setterName(), _stateMeta);
+                }
             }
         }
     }
@@ -82,9 +86,31 @@ public class PropertyStateSupport<T> {
         return ClassUtils.wrapper(__bound).duplicate(__source);
     }
 
+    public T duplicate(Object source) {
+        return duplicate(source, false);
+    }
+
+    public T duplicate(Object source, boolean ignoreNull) {
+        ClassUtils.BeanWrapper<Object> _wrapperSource = ClassUtils.wrapper(source);
+        for (String _fieldName : _wrapperSource.getFieldNames()) {
+            Field _field = _wrapperSource.getField(_fieldName);
+            try {
+                Object _obj = _field.get(source);
+                if (ignoreNull && _obj == null) {
+                    continue;
+                }
+                Method _method = __bound.getClass().getMethod("set" + StringUtils.capitalize(_fieldName), _field.getType());
+                _method.invoke(__bound, _field.get(source));
+            } catch (Exception e) {
+                // Nothing...
+            }
+        }
+        return __bound;
+    }
+
     public String[] getChangedPropertyNames() {
         Set<String> _states = new HashSet<String>();
-        for (PropertyStateMeta _meta : __propertyStates.values()) {
+        for (PropertyStateMeta _meta : __stateMetas) {
             if (_meta.isChanged()) {
                 _states.add(_meta.getPropertyName());
             }
@@ -94,7 +120,7 @@ public class PropertyStateSupport<T> {
 
     public Set<PropertyStateMeta> getChangedProperties() {
         Set<PropertyStateMeta> _states = new HashSet<PropertyStateMeta>();
-        for (PropertyStateMeta _meta : __propertyStates.values()) {
+        for (PropertyStateMeta _meta : __stateMetas) {
             if (_meta.isChanged()) {
                 _states.add(_meta);
             }
