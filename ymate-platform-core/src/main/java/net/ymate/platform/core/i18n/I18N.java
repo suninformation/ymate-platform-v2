@@ -36,15 +36,15 @@ public class I18N {
 
     private static final Log _LOG = LogFactory.getLog(I18N.class);
 
-    static Locale __DEFAULT_LOCALE;
+    private static Locale __DEFAULT_LOCALE;
 
-    static ThreadLocal<Locale> __CURRENT_LOCALE;
+    private static final ThreadLocal<Locale> __CURRENT_LOCALE = new ThreadLocal<Locale>();
 
-    static Map<Locale, Map<String, Properties>> __RESOURCES_CAHCES;
+    private static final Map<Locale, Map<String, Properties>> __RESOURCES_CAHCES = new ConcurrentHashMap<Locale, Map<String, Properties>>();
 
-    static II18NEventHandler __EVENT_HANDLER;
+    private static II18NEventHandler __EVENT_HANDLER;
 
-    static boolean __IS_INITED;
+    private static boolean __IS_INITED;
 
     /**
      * 初始化
@@ -54,12 +54,17 @@ public class I18N {
      */
     public static void initialize(Locale defaultLocale, II18NEventHandler eventHandler) {
         if (!__IS_INITED) {
-            __CURRENT_LOCALE = new ThreadLocal<Locale>();
-            __RESOURCES_CAHCES = new ConcurrentHashMap<Locale, Map<String, Properties>>();
             __DEFAULT_LOCALE = defaultLocale == null ? Locale.getDefault() : defaultLocale;
             __EVENT_HANDLER = eventHandler;
             __IS_INITED = true;
         }
+    }
+
+    /**
+     * 当前线程使用完毕切记一定要执行该方法进行清理
+     */
+    public static void cleanCurrent() {
+        __CURRENT_LOCALE.remove();
     }
 
     /**
@@ -76,10 +81,12 @@ public class I18N {
         Locale _locale = __CURRENT_LOCALE.get();
         if (_locale == null) {
             if (__EVENT_HANDLER != null) {
-                _locale = __EVENT_HANDLER.onLocale();
+                Locale _loca = __EVENT_HANDLER.onLocale();
+                _locale = _loca == null ? __DEFAULT_LOCALE : _loca;
+                __CURRENT_LOCALE.set(_locale);
             }
         }
-        return _locale == null ? __DEFAULT_LOCALE : _locale;
+        return _locale;
     }
 
     /**
@@ -207,7 +214,8 @@ public class I18N {
             __IS_INITED = false;
             //
             __DEFAULT_LOCALE = null;
-            __RESOURCES_CAHCES = null;
+            __EVENT_HANDLER = null;
+            __RESOURCES_CAHCES.clear();
         }
     }
 }

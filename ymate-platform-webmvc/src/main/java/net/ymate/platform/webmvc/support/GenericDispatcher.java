@@ -16,6 +16,7 @@
 package net.ymate.platform.webmvc.support;
 
 import net.ymate.platform.core.event.Events;
+import net.ymate.platform.core.i18n.I18N;
 import net.ymate.platform.core.util.RuntimeUtils;
 import net.ymate.platform.webmvc.IRequestContext;
 import net.ymate.platform.webmvc.IWebMvc;
@@ -77,6 +78,7 @@ public final class GenericDispatcher {
         } finally {
             __doFireEvent(WebEvent.EVENT.REQUEST_COMPLETED, requestContext);
             WebContext.destroy();
+            I18N.cleanCurrent();
         }
     }
 }
