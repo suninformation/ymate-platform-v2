@@ -41,12 +41,18 @@ import java.util.Map;
  */
 public class DefaultInterceptorRuleProcessor implements IInterceptorRuleProcessor {
 
+    private IWebMvc __owner;
+
     private Map<String, InterceptorRuleMeta> __interceptorRules = new HashMap<String, InterceptorRuleMeta>();
+
+    public void init(IWebMvc owner) throws Exception {
+        __owner = owner;
+    }
 
     public void registerInterceptorRule(Class<? extends IInterceptorRule> targetClass) throws Exception {
         Method[] _methods = targetClass.getMethods();
         for (Method _method : _methods) {
-            InterceptorRuleMeta _meta = new InterceptorRuleMeta(targetClass, _method);
+            InterceptorRuleMeta _meta = new InterceptorRuleMeta(__owner, targetClass, _method);
             if (StringUtils.isNotBlank(_meta.getMapping())) {
                 __interceptorRules.put(_meta.getMapping(), _meta);
             }
@@ -92,7 +98,7 @@ public class DefaultInterceptorRuleProcessor implements IInterceptorRuleProcesso
 
         private ResponseCache responseCache;
 
-        public InterceptorRuleMeta(Class<? extends IInterceptorRule> targetClass, Method targetMethod) {
+        public InterceptorRuleMeta(IWebMvc owner, Class<? extends IInterceptorRule> targetClass, Method targetMethod) {
             InterceptorRule _ruleAnno = targetMethod.getAnnotation(InterceptorRule.class);
             if (_ruleAnno != null && StringUtils.trimToNull(_ruleAnno.value()) != null) {
                 String _mapping = _ruleAnno.value();
@@ -118,7 +124,7 @@ public class DefaultInterceptorRuleProcessor implements IInterceptorRuleProcesso
                 }
                 //
                 beforeIntercepts = InterceptAnnoHelper.getBeforeIntercepts(targetClass, targetMethod);
-                contextParams = InterceptAnnoHelper.getContextParams(targetClass, targetMethod);
+                contextParams = InterceptAnnoHelper.getContextParams(owner.getOwner(), targetClass, targetMethod);
                 //
                 this.responseCache = targetMethod.getAnnotation(ResponseCache.class);
                 if (this.responseCache == null) {

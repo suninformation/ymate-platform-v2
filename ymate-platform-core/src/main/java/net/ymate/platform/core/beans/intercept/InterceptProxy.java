@@ -65,16 +65,19 @@ public class InterceptProxy implements IProxy {
                 || proxyChain.getTargetMethod().getModifiers() != Modifier.PUBLIC) {
             return proxyChain.doProxyChain();
         }
+        //
+        Map<String, String> _contextParams = null;
         // 尝试处理@Before注解
         if (proxyChain.getTargetClass().isAnnotationPresent(Before.class)
                 || proxyChain.getTargetMethod().isAnnotationPresent(Before.class)) {
+
+            _contextParams = InterceptAnnoHelper.getContextParams(proxyChain.getProxyFactory().getOwner(), proxyChain.getTargetClass(), proxyChain.getTargetMethod());
 
             InterceptContext _context = new InterceptContext(IInterceptor.Direction.BEFORE,
                     proxyChain.getProxyFactory().getOwner(),
                     proxyChain.getTargetObject(),
                     proxyChain.getTargetMethod(),
-                    proxyChain.getMethodParams(),
-                    InterceptAnnoHelper.getContextParams(proxyChain.getTargetClass(), proxyChain.getTargetMethod()));
+                    proxyChain.getMethodParams(), _contextParams);
             //
             for (Class<? extends IInterceptor> _interceptClass : __doGetBeforeIntercepts(proxyChain.getTargetClass(), proxyChain.getTargetMethod())) {
                 IInterceptor _interceptor = _interceptClass.newInstance();
@@ -91,13 +94,15 @@ public class InterceptProxy implements IProxy {
         if (proxyChain.getTargetClass().isAnnotationPresent(After.class)
                 || proxyChain.getTargetMethod().isAnnotationPresent(After.class)) {
 
+            if (_contextParams == null) {
+                _contextParams = InterceptAnnoHelper.getContextParams(proxyChain.getProxyFactory().getOwner(), proxyChain.getTargetClass(), proxyChain.getTargetMethod());
+            }
             // 初始化拦截器上下文对象，并将当前方法的执行结果对象赋予后置拦截器使用
             InterceptContext _context = new InterceptContext(IInterceptor.Direction.AFTER,
                     proxyChain.getProxyFactory().getOwner(),
                     proxyChain.getTargetObject(),
                     proxyChain.getTargetMethod(),
-                    proxyChain.getMethodParams(),
-                    InterceptAnnoHelper.getContextParams(proxyChain.getTargetClass(), proxyChain.getTargetMethod()));
+                    proxyChain.getMethodParams(), _contextParams);
             _context.setResultObject(_returnValue);
             //
             for (Class<? extends IInterceptor> _interceptClass : __doGetAfterIntercepts(proxyChain.getTargetClass(), proxyChain.getTargetMethod())) {

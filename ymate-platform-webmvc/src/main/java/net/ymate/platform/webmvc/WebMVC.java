@@ -113,6 +113,7 @@ public class WebMVC implements IModule, IWebMvc {
             __owner.registerHandler(Controller.class, new ControllerHandler(this));
             if (__moduleCfg.isConventionInterceptorMode()) {
                 __interceptorRuleProcessor = new DefaultInterceptorRuleProcessor();
+                __interceptorRuleProcessor.init(this);
                 __owner.registerHandler(InterceptorRule.class, new InterceptorRuleHandler(this));
             }
             //

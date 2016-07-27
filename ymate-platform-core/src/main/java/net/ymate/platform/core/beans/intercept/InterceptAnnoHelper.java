@@ -15,6 +15,7 @@
  */
 package net.ymate.platform.core.beans.intercept;
 
+import net.ymate.platform.core.YMP;
 import net.ymate.platform.core.beans.annotation.*;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
@@ -91,26 +92,35 @@ public class InterceptAnnoHelper {
         return null;
     }
 
-    public static Map<String, String> getContextParams(Class<?> targetClass, Method targetMethod) {
+    private static void __doParseContextParamValue(YMP owner, ContextParam contextParam, Map<String, String> paramsMap) {
+        if (contextParam != null) {
+            for (ParamItem _item : contextParam.value()) {
+                String _key = _item.key();
+                String _value = _item.value();
+                boolean _flag = _value.length() > 1 && _value.charAt(0) == '$';
+                if (StringUtils.isBlank(_key)) {
+                    if (_flag) {
+                        _key = _value.substring(1);
+                        _value = StringUtils.trimToEmpty(owner.getConfig().getParam(_key));
+                    } else {
+                        _key = _value;
+                    }
+                } else if (_flag) {
+                    _value = StringUtils.trimToEmpty(owner.getConfig().getParam(_value.substring(1)));
+                }
+                paramsMap.put(_key, _value);
+            }
+        }
+    }
+
+    public static Map<String, String> getContextParams(YMP owner, Class<?> targetClass, Method targetMethod) {
         Map<String, String> _contextParams = new HashMap<String, String>();
         //
         if (targetClass != null) {
-            ContextParam _param = targetClass.getAnnotation(ContextParam.class);
-            if (_param != null) {
-                for (ParamItem _item : _param.value()) {
-                    String _key = StringUtils.defaultIfBlank(_item.key(), _item.value());
-                    _contextParams.put(_key, _item.value());
-                }
-            }
+            __doParseContextParamValue(owner, targetClass.getAnnotation(ContextParam.class), _contextParams);
         }
         if (targetMethod != null) {
-            ContextParam _param = targetMethod.getAnnotation(ContextParam.class);
-            if (_param != null) {
-                for (ParamItem _item : _param.value()) {
-                    String _key = StringUtils.defaultIfBlank(_item.key(), _item.value());
-                    _contextParams.put(_key, _item.value());
-                }
-            }
+            __doParseContextParamValue(owner, targetMethod.getAnnotation(ContextParam.class), _contextParams);
         }
         //
         return _contextParams;

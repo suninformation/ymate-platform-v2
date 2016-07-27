@@ -28,6 +28,14 @@ import net.ymate.platform.webmvc.view.IView;
 public interface IInterceptorRuleProcessor {
 
     /**
+     * 初始化
+     *
+     * @param owner 所属模块管理器对象
+     * @throws Exception 可能产生的异常
+     */
+    void init(IWebMvc owner) throws Exception;
+
+    /**
      * 注册拦截器规则配置
      *
      * @param targetClass 目标类型

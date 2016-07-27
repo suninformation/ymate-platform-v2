@@ -120,7 +120,7 @@ public class Validations implements IModule, IValidation {
     public Map<String, ValidateResult> validate(Class<?> targetClass, Map<String, Object> paramValues) {
         Map<String, ValidateResult> _returnValues = new LinkedHashMap<String, ValidateResult>();
         ValidationMeta _meta = __doGetCachedMeta(targetClass);
-        Map<String, String> _contextParams = InterceptAnnoHelper.getContextParams(targetClass, null);
+        Map<String, String> _contextParams = InterceptAnnoHelper.getContextParams(__owner, targetClass, null);
         for (String _fieldName : _meta.getFieldNames()) {
             ValidateResult _result = __doValidate(_meta.getFieldAnnotations(_fieldName), _fieldName, _meta.getFieldLabel(_fieldName), paramValues, _contextParams);
             if (_result != null) {
@@ -140,7 +140,7 @@ public class Validations implements IModule, IValidation {
         Validation.MODE _mode = _validation == null ? _meta.getMode() : _validation.mode();
         //
         Map<String, Annotation[]> _paramAnnoMap = _meta.getMethodParamAnnotations(targetMethod);
-        Map<String, String> _contextParams = InterceptAnnoHelper.getContextParams(targetClass, targetMethod);
+        Map<String, String> _contextParams = InterceptAnnoHelper.getContextParams(__owner, targetClass, targetMethod);
         for (Map.Entry<String, Annotation[]> _entry : _paramAnnoMap.entrySet()) {
             ValidateResult _result = __doValidate(_entry.getValue(), _entry.getKey(), _meta.getFieldLabel(targetMethod, _entry.getKey()), paramValues, _contextParams);
             if (_result != null) {
