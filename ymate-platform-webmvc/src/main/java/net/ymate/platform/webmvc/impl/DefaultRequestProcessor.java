@@ -111,24 +111,24 @@ public class DefaultRequestProcessor implements IRequestProcessor {
         if (_annotation instanceof CookieVariable) {
             CookieVariable _anno = (CookieVariable) _annotation;
             String _v = CookieHelper.bind(owner).getCookie(paramName).toStringValue();
-            _pValue = __doSafeGetParamValue(owner, paramName, paramType, _v, StringUtils.trimToNull(_anno.defaultValue()));
+            _pValue = __doSafeGetParamValue(owner, paramName, paramType, _v, StringUtils.trimToNull(_anno.defaultValue()), _anno.fullScope());
         } else if (_annotation instanceof PathVariable) {
             String _v = WebContext.getRequestContext().getAttribute(paramName);
-            _pValue = __doSafeGetParamValue(owner, paramName, paramType, _v, null);
+            _pValue = __doSafeGetParamValue(owner, paramName, paramType, _v, null, false);
         } else if (_annotation instanceof RequestHeader) {
             RequestHeader _anno = (RequestHeader) _annotation;
             String _v = WebContext.getRequest().getHeader(paramName);
-            _pValue = __doSafeGetParamValue(owner, paramName, paramType, _v, StringUtils.trimToNull(_anno.defaultValue()));
+            _pValue = __doSafeGetParamValue(owner, paramName, paramType, _v, StringUtils.trimToNull(_anno.defaultValue()), _anno.fullScope());
         } else if (_annotation instanceof RequestParam) {
             RequestParam _anno = (RequestParam) _annotation;
-            _pValue = this.__doParseRequestParam(owner, paramName, StringUtils.trimToNull(_anno.defaultValue()), paramType);
+            _pValue = this.__doParseRequestParam(owner, paramName, StringUtils.trimToNull(_anno.defaultValue()), paramType, _anno.fullScope());
         } else if (_annotation instanceof ModelBind) {
             _pValue = __doParseModelBind(owner, requestMeta, paramMeta, paramType);
         }
         return _pValue;
     }
 
-    protected Object __doParseRequestParam(IWebMvc owner, String paramName, String defaultValue, Class<?> paramType) {
+    protected Object __doParseRequestParam(IWebMvc owner, String paramName, String defaultValue, Class<?> paramType, boolean fullScope) {
         if (paramType.isArray()) {
             if (paramType.equals(IUploadFileWrapper[].class)) {
                 if (WebContext.getRequest() instanceof IMultipartRequestWrapper) {
@@ -144,7 +144,7 @@ public class DefaultRequestProcessor implements IRequestProcessor {
                 Class<?> _arrayClassType = ClassUtils.getArrayClassType(paramType);
                 Object[] _tempParams = (Object[]) Array.newInstance(_arrayClassType, _values.length);
                 for (int _tempIdx = 0; _tempIdx < _values.length; _tempIdx++) {
-                    _tempParams[_tempIdx] = __doSafeGetParamValue(owner, paramName, _arrayClassType, _values[_tempIdx], null);
+                    _tempParams[_tempIdx] = __doSafeGetParamValue(owner, paramName, _arrayClassType, _values[_tempIdx], null, false);
                 }
                 return _tempParams;
             }
@@ -155,20 +155,28 @@ public class DefaultRequestProcessor implements IRequestProcessor {
             }
             return null;
         }
-        return __doSafeGetParamValue(owner, paramName, paramType, null, defaultValue);
+        return __doSafeGetParamValue(owner, paramName, paramType, WebContext.getRequest().getParameter(paramName), defaultValue, fullScope);
     }
 
-    protected Object __doSafeGetParamValue(IWebMvc owner, String paramName, Class<?> paramType, String paramValue, String defaultValue) {
+    protected Object __doSafeGetParamValue(IWebMvc owner, String paramName, Class<?> paramType, String paramValue, String defaultValue, boolean fullScope) {
         Object _returnValue = null;
-        String _pValue = paramValue;
         try {
-            if (_pValue == null) {
-                _pValue = WebContext.getRequest().getParameter(paramName);
+            if (paramValue == null) {
+                if (fullScope) {
+                    _returnValue = new BlurObject(WebContext.getRequest().getParameter(paramName)).toObjectValue(paramType);
+                    if (_returnValue == null) {
+                        _returnValue = new BlurObject(WebContext.getContext().getSession().get(paramName)).toObjectValue(paramType);
+                        if (_returnValue == null) {
+                            _returnValue = new BlurObject(WebContext.getContext().getApplication().get(paramName)).toObjectValue(paramType);
+                        }
+                    }
+                }
+            } else {
+                _returnValue = new BlurObject(StringUtils.defaultIfBlank(paramValue, defaultValue)).toObjectValue(paramType);
             }
-            _returnValue = new BlurObject(StringUtils.defaultIfBlank(_pValue, defaultValue)).toObjectValue(paramType);
         } catch (Throwable e) {
             if (owner.getOwner().getConfig().isDevelopMode()) {
-                _LOG.warn("Invalid '" + paramName + "' value: " + _pValue, RuntimeUtils.unwrapThrow(e));
+                _LOG.warn("Invalid '" + paramName + "' value: " + paramValue, RuntimeUtils.unwrapThrow(e));
             }
         }
         return _returnValue;
@@ -193,7 +201,9 @@ public class DefaultRequestProcessor implements IRequestProcessor {
                                 _result = _meta.doParamEscape(_meta, _result);
                             } else {
                                 Object _resultEscaped = _meta.doParamEscape(_meta, _result);
-                                _wrapperEscaped.setValue(_fName, _resultEscaped);
+                                if (_wrapperEscaped != null) {
+                                    _wrapperEscaped.setValue(_fName, _resultEscaped);
+                                }
                             }
                         }
                         _wrapper.setValue(_fName, _result);
@@ -202,7 +212,9 @@ public class DefaultRequestProcessor implements IRequestProcessor {
             }
             if (owner.getModuleCfg().isParameterEscapeMode() && !_escapeBeforeFlag) {
                 Map<String, Object> _resultEscapedMap = WebContext.getContext().getAttribute(Type.EscapeOrder.class.getName());
-                _resultEscapedMap.put(paramMeta.getFieldName(), _wrapperEscaped.getTargetObject());
+                if (_wrapperEscaped != null) {
+                    _resultEscapedMap.put(paramMeta.getFieldName(), _wrapperEscaped.getTargetObject());
+                }
             }
             return _wrapper.getTargetObject();
         }

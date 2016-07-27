@@ -58,7 +58,7 @@ public class JSONRequestProcessor extends DefaultRequestProcessor {
         return _protocol;
     }
 
-    protected Object __doParseRequestParam(IWebMvc owner, String paramName, String defaultValue, Class<?> paramType) {
+    protected Object __doParseRequestParam(IWebMvc owner, String paramName, String defaultValue, Class<?> paramType, boolean fullScope) {
         Object _returnValue = null;
         JSONObject _protocol = __doGetProtocol(owner);
         String[] _paramNameArr = StringUtils.split(paramName, ".");
@@ -84,7 +84,7 @@ public class JSONRequestProcessor extends DefaultRequestProcessor {
                     Object[] _tempParams = (Object[]) Array.newInstance(_arrayClassType, _values.length);
                     for (int _tempIdx = 0; _tempIdx < _values.length; _tempIdx++) {
                         String _value = BlurObject.bind(_values[_tempIdx]).toStringValue();
-                        _tempParams[_tempIdx] = __doSafeGetParamValue(owner, paramName, _arrayClassType, _value, null);
+                        _tempParams[_tempIdx] = __doSafeGetParamValue(owner, paramName, _arrayClassType, _value, null, false);
                     }
                     _returnValue = _tempParams;
                 }
@@ -93,10 +93,10 @@ public class JSONRequestProcessor extends DefaultRequestProcessor {
             if (_paramNameArr.length > 1) {
                 JSONObject _jsonObj = _protocol.getJSONObject(_paramNameArr[0]);
                 if (_jsonObj != null) {
-                    _returnValue = __doSafeGetParamValue(owner, paramName, paramType, _jsonObj.getString(_paramNameArr[1]), defaultValue);
+                    _returnValue = __doSafeGetParamValue(owner, paramName, paramType, _jsonObj.getString(_paramNameArr[1]), defaultValue, fullScope);
                 }
             } else {
-                _returnValue = __doSafeGetParamValue(owner, paramName, paramType, _protocol.getString(paramName), defaultValue);
+                _returnValue = __doSafeGetParamValue(owner, paramName, paramType, _protocol.getString(paramName), defaultValue, fullScope);
             }
         }
         return _returnValue;

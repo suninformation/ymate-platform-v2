@@ -62,7 +62,7 @@ public class XMLRequestProcessor extends DefaultRequestProcessor {
         return _protocol;
     }
 
-    protected Object __doParseRequestParam(IWebMvc owner, String paramName, String defaultValue, Class<?> paramType) {
+    protected Object __doParseRequestParam(IWebMvc owner, String paramName, String defaultValue, Class<?> paramType, boolean fullScope) {
         Object _returnValue = null;
         XMLProtocol _protocol = __doGetProtocol(owner);
         String[] _paramNameArr = StringUtils.split(paramName, ".");
@@ -80,16 +80,16 @@ public class XMLRequestProcessor extends DefaultRequestProcessor {
                     Class<?> _arrayClassType = ClassUtils.getArrayClassType(paramType);
                     Object[] _tempParams = (Object[]) Array.newInstance(_arrayClassType, _values.length);
                     for (int _tempIdx = 0; _tempIdx < _values.length; _tempIdx++) {
-                        _tempParams[_tempIdx] = __doSafeGetParamValue(owner, paramName, _arrayClassType, _values[_tempIdx], null);
+                        _tempParams[_tempIdx] = __doSafeGetParamValue(owner, paramName, _arrayClassType, _values[_tempIdx], null, false);
                     }
                     _returnValue = _tempParams;
                 }
             }
         } else if (!paramType.equals(IUploadFileWrapper.class)) {
             if (_paramNameArr.length > 1) {
-                _returnValue = __doSafeGetParamValue(owner, paramName, paramType, _protocol.getSubProperty(_paramNameArr[0], _paramNameArr[1], defaultValue), defaultValue);
+                _returnValue = __doSafeGetParamValue(owner, paramName, paramType, _protocol.getSubProperty(_paramNameArr[0], _paramNameArr[1], defaultValue), defaultValue, fullScope);
             } else {
-                _returnValue = __doSafeGetParamValue(owner, paramName, paramType, _protocol.getProperty(paramName, defaultValue), defaultValue);
+                _returnValue = __doSafeGetParamValue(owner, paramName, paramType, _protocol.getProperty(paramName, defaultValue), defaultValue, fullScope);
             }
         }
         return _returnValue;

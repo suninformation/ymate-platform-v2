@@ -42,4 +42,9 @@ public @interface RequestHeader {
      * @return 默认值
      */
     String defaultValue() default "";
+
+    /**
+     * @return 是否尝试其它作用域下获取参数值, 优先级顺序为request->session->application, 默认为仅从请求头中尝试获取
+     */
+    boolean fullScope() default false;
 }
