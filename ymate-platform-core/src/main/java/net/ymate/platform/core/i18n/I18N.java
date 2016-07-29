@@ -81,10 +81,10 @@ public class I18N {
         Locale _locale = __CURRENT_LOCALE.get();
         if (_locale == null) {
             if (__EVENT_HANDLER != null) {
-                Locale _loca = __EVENT_HANDLER.onLocale();
-                _locale = _loca == null ? __DEFAULT_LOCALE : _loca;
-                __CURRENT_LOCALE.set(_locale);
+                _locale = __EVENT_HANDLER.onLocale();
             }
+            _locale = _locale == null ? __DEFAULT_LOCALE : _locale;
+            __CURRENT_LOCALE.set(_locale);
         }
         return _locale;
     }
@@ -130,12 +130,13 @@ public class I18N {
      * @return 加载资源并提取key指定的值
      */
     public static String load(String resourceName, String key, String defaultValue) {
-        Map<String, Properties> _cache = __RESOURCES_CAHCES.get(current());
+        Locale _local = current();
+        Map<String, Properties> _cache = __RESOURCES_CAHCES.get(_local);
         Properties _prop = _cache != null ? _cache.get(resourceName) : null;
         if (_prop == null) {
             if (__EVENT_HANDLER != null) {
                 try {
-                    List<String> _localeResourceNames = __doGetResourceNames(current(), resourceName);
+                    List<String> _localeResourceNames = __doGetResourceNames(_local, resourceName);
                     InputStream _inputStream = null;
                     for (String _localeResourceName : _localeResourceNames) {
                         _inputStream = __EVENT_HANDLER.onLoad(_localeResourceName);
@@ -147,9 +148,9 @@ public class I18N {
                     }
                     if (_prop != null && !_prop.isEmpty()) {
                         if (_cache == null) {
-                            __RESOURCES_CAHCES.put(current(), new ConcurrentHashMap<String, Properties>());
+                            __RESOURCES_CAHCES.put(_local, new ConcurrentHashMap<String, Properties>());
                         }
-                        __RESOURCES_CAHCES.get(current()).put(resourceName, _prop);
+                        __RESOURCES_CAHCES.get(_local).put(resourceName, _prop);
                     }
                 } catch (IOException e) {
                     _LOG.warn("", RuntimeUtils.unwrapThrow(e));
@@ -161,7 +162,7 @@ public class I18N {
             _returnValue = _prop.getProperty(key, defaultValue);
         } else {
             try {
-                _returnValue = ResourceBundle.getBundle(resourceName, current()).getString(key);
+                _returnValue = ResourceBundle.getBundle(resourceName, _local).getString(key);
             } catch (Exception ignored) {
             }
         }
