@@ -15,8 +15,17 @@
  */
 package net.ymate.platform.persistence.jdbc.dialect.impl;
 
+import net.ymate.platform.core.util.ExpressionUtils;
+import net.ymate.platform.persistence.IShardingable;
+import net.ymate.platform.persistence.base.EntityMeta;
+import net.ymate.platform.persistence.base.IEntity;
+import net.ymate.platform.persistence.base.Type;
 import net.ymate.platform.persistence.jdbc.JDBC;
 import net.ymate.platform.persistence.jdbc.dialect.AbstractDialect;
+import org.apache.commons.lang.StringUtils;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * MySQL数据库方言接口实现
@@ -42,5 +51,93 @@ public class MySQLDialect extends AbstractDialect {
         } else {
             return originSql.concat(" limit ").concat(Integer.toString(_limit)).concat(", ").concat(Integer.toString(pageSize));
         }
+    }
+
+    @Override
+    public String buildCreateSQL(Class<? extends IEntity> entityClass, String prefix, IShardingable shardingable) {
+        EntityMeta _meta = EntityMeta.createAndGet(entityClass);
+        if (_meta != null) {
+            ExpressionUtils _exp = ExpressionUtils.bind("CREATE TABLE ${table_name} (\n${fields} ${primary_keys} ${indexes})").set("table_name", buildTableName(prefix, _meta, shardingable));
+            StringBuilder _tmpBuilder = new StringBuilder();
+            // FIELDs
+            for (EntityMeta.PropertyMeta _propMeta : _meta.getProperties()) {
+                _tmpBuilder.append("\t").append(wrapIdentifierQuote(_propMeta.getName())).append(" ");
+                String _propType = "";
+                if (!_propMeta.getType().equals(Type.FIELD.UNKNOW)) {
+                    _propType = _propMeta.getType().name();
+                } else {
+                    _propType = __doGetColumnType(_propMeta.getField().getType());
+                }
+                boolean _isText = _propMeta.getType().equals(Type.FIELD.TEXT);
+                if ("VARCHAR".equals(_propType) && _propMeta.getLength() > 2000) {
+                    _propType = "TEXT";
+                    _isText = true;
+                }
+                _tmpBuilder.append(_propType);
+                if (!_isText) {
+                    _tmpBuilder.append("(").append(_propMeta.getLength());
+                    if (_propMeta.getDecimals() > 0) {
+                        _tmpBuilder.append(",").append(_propMeta.getDecimals());
+                    }
+                    _tmpBuilder.append(")");
+                }
+                if (_propMeta.isUnsigned()) {
+                    _tmpBuilder.append(" unsigned ");
+                }
+                if (StringUtils.isNotBlank(_propMeta.getDefaultValue())) {
+                    _tmpBuilder.append(" DEFAULT '").append(_propMeta.getDefaultValue()).append("'");
+                }
+                if (StringUtils.isNotBlank(_propMeta.getComment())) {
+                    _tmpBuilder.append("COMMENT '").append(_propMeta.getComment()).append("'");
+                }
+                _tmpBuilder.append(__LINE_END_FLAG);
+            }
+            _exp.set("fields", _tmpBuilder.length() > 2 ? _tmpBuilder.substring(0, _tmpBuilder.lastIndexOf(__LINE_END_FLAG)) : "");
+            // PKs
+            _tmpBuilder.setLength(0);
+            for (String _key : _meta.getPrimaryKeys()) {
+                _tmpBuilder.append(wrapIdentifierQuote(_key)).append(",");
+            }
+            if (_tmpBuilder.length() > 0) {
+                _tmpBuilder.setLength(_tmpBuilder.length() - 1);
+                _tmpBuilder.insert(0, ",\n\tPRIMARY KEY (").append(")");
+                _exp.set("primary_keys", _tmpBuilder.toString());
+            }
+            // INDEXs
+            _tmpBuilder.setLength(0);
+            if (!_meta.getIndexes().isEmpty()) {
+                _tmpBuilder.append(__LINE_END_FLAG);
+                for (EntityMeta.IndexMeta _index : _meta.getIndexes()) {
+                    if (!_index.getFields().isEmpty()) {
+                        List<String> _idxFields = new ArrayList<String>(_index.getFields().size());
+                        for (String _idxField : _index.getFields()) {
+                            _idxFields.add(wrapIdentifierQuote(_idxField));
+                        }
+                        if (_index.isUnique()) {
+                            _tmpBuilder.append("\tUNIQUE KEY ");
+                        } else {
+                            _tmpBuilder.append("\tINDEX ");
+                        }
+                        _tmpBuilder.append(wrapIdentifierQuote(_index.getName())).append(" (").append(StringUtils.join(_idxFields, ",")).append(")").append(__LINE_END_FLAG);
+                    }
+                }
+                if (_tmpBuilder.length() > 2) {
+                    _tmpBuilder.setLength(_tmpBuilder.length() - 2);
+                }
+            } else {
+                _tmpBuilder.append("");
+            }
+            return _exp.set("indexes", _tmpBuilder.toString()).getResult();
+        }
+        return null;
+    }
+
+    @Override
+    public String buildDropSQL(Class<? extends IEntity> entityClass, String prefix, IShardingable shardingable) {
+        EntityMeta _meta = EntityMeta.createAndGet(entityClass);
+        if (_meta != null) {
+            return "DROP TABLE IF EXISTS " + buildTableName(prefix, _meta, shardingable);
+        }
+        return null;
     }
 }

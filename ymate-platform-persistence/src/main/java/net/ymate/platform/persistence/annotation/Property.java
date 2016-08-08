@@ -68,7 +68,7 @@ public @interface Property {
     /**
      * @return 数据类型
      */
-    Type.FIELD type() default Type.FIELD.VARCHAR;
+    Type.FIELD type() default Type.FIELD.UNKNOW;
 
 
 }

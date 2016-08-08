@@ -121,6 +121,10 @@ public final class EntityMeta {
         return _returnMeta;
     }
 
+    public static Set<Class<? extends IEntity>> getEntityClasses() {
+        return Collections.unmodifiableSet(__entityMetas.keySet());
+    }
+
     /**
      * 处理字段名称，使其符合JavaBean属性串格式<br>
      * 例如：属性名称为"user_name"，其处理结果为"UserName"<br>

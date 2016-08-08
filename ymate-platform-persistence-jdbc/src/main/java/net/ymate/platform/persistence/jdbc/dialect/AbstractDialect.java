@@ -24,6 +24,7 @@ import net.ymate.platform.persistence.base.EntityMeta;
 import net.ymate.platform.persistence.base.IEntity;
 import org.apache.commons.lang.StringUtils;
 
+import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -38,6 +39,8 @@ import java.util.List;
  * @version 1.0
  */
 public abstract class AbstractDialect implements IDialect {
+
+    protected static final String __LINE_END_FLAG = ",\n";
 
     /**
      * 引用标识符-开始
@@ -81,6 +84,40 @@ public abstract class AbstractDialect implements IDialect {
 
     public String buildDropSQL(Class<? extends IEntity> entityClass, String prefix, IShardingable shardingable) {
         throw new UnsupportedOperationException();
+    }
+
+    protected String __doGetColumnType(Class<?> clazz) {
+        String _columnType = "VARCHAR";
+        if (BigDecimal.class.equals(clazz)) {
+            _columnType = "NUMERIC";
+        } else if (Boolean.class.equals(clazz) || boolean.class.equals(clazz)) {
+            _columnType = "BIT";
+        } else if (Byte.class.equals(clazz) || byte.class.equals(clazz)) {
+            _columnType = "TINYINT";
+        } else if (Short.class.equals(clazz) || short.class.equals(clazz)) {
+            _columnType = "SMALLINT";
+        } else if (Integer.class.equals(clazz) || int.class.equals(clazz)) {
+            _columnType = "INTEGER";
+        } else if (Long.class.equals(clazz) || long.class.equals(clazz)) {
+            _columnType = "BIGINT";
+        } else if (Float.class.equals(clazz) || float.class.equals(clazz)) {
+            _columnType = "FLOAT";
+        } else if (Double.class.equals(clazz) || double.class.equals(clazz)) {
+            _columnType = "DOUBLE";
+        } else if (byte[].class.equals(clazz) || Byte[].class.equals(clazz)) {
+            _columnType = "BINARY";
+        } else if (java.sql.Date.class.equals(clazz) || java.util.Date.class.equals(clazz)) {
+            _columnType = "DATE";
+        } else if (java.sql.Time.class.equals(clazz)) {
+            _columnType = "TIME";
+        } else if (java.sql.Timestamp.class.equals(clazz)) {
+            _columnType = "TIMESTAMP";
+        } else if (java.sql.Blob.class.equals(clazz)) {
+            _columnType = "BLOB";
+        } else if (java.sql.Clob.class.equals(clazz)) {
+            _columnType = "CLOB";
+        }
+        return _columnType;
     }
 
     /**
