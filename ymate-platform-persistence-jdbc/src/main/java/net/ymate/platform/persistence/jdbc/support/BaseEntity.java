@@ -18,6 +18,7 @@ package net.ymate.platform.persistence.jdbc.support;
 import net.ymate.platform.core.util.ClassUtils;
 import net.ymate.platform.persistence.Fields;
 import net.ymate.platform.persistence.IResultSet;
+import net.ymate.platform.persistence.IShardingable;
 import net.ymate.platform.persistence.Page;
 import net.ymate.platform.persistence.base.EntityMeta;
 import net.ymate.platform.persistence.base.IEntity;
@@ -25,10 +26,7 @@ import net.ymate.platform.persistence.jdbc.IConnectionHolder;
 import net.ymate.platform.persistence.jdbc.ISession;
 import net.ymate.platform.persistence.jdbc.JDBC;
 import net.ymate.platform.persistence.jdbc.impl.DefaultSession;
-import net.ymate.platform.persistence.jdbc.query.Cond;
-import net.ymate.platform.persistence.jdbc.query.EntitySQL;
-import net.ymate.platform.persistence.jdbc.query.IDBLocker;
-import net.ymate.platform.persistence.jdbc.query.Where;
+import net.ymate.platform.persistence.jdbc.query.*;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
 
@@ -46,6 +44,8 @@ public abstract class BaseEntity<Entity extends IEntity, PK extends Serializable
 
     private IConnectionHolder __connectionHolder;
 
+    private IShardingable __shardingable;
+
     /**
      * 构造器
      */
@@ -60,6 +60,14 @@ public abstract class BaseEntity<Entity extends IEntity, PK extends Serializable
 
     public void setConnectionHolder(IConnectionHolder connectionHolder) {
         this.__connectionHolder = connectionHolder;
+    }
+
+    public IShardingable getShardingable() {
+        return this.__shardingable;
+    }
+
+    public void setShardingable(IShardingable shardingable) {
+        this.__shardingable = shardingable;
     }
 
     /**
@@ -78,6 +86,24 @@ public abstract class BaseEntity<Entity extends IEntity, PK extends Serializable
             return JDBC.get().getDefaultConnectionHolder();
         }
         return this.__connectionHolder;
+    }
+
+    public void entityCreate() throws Exception {
+        ISession _session = new DefaultSession(__doGetConnectionHolderSafed());
+        try {
+            _session.executeForUpdate(SQL.create(_session.getConnectionHolder().getDialect().buildCreateSQL(this.__entityClass, _session.getConnectionHolder().getDataSourceCfgMeta().getTablePrefix(), this.getShardingable())));
+        } finally {
+            _session.close();
+        }
+    }
+
+    public void entityDrop() throws Exception {
+        ISession _session = new DefaultSession(__doGetConnectionHolderSafed());
+        try {
+            _session.executeForUpdate(SQL.create(_session.getConnectionHolder().getDialect().buildDropSQL(this.__entityClass, _session.getConnectionHolder().getDataSourceCfgMeta().getTablePrefix(), this.getShardingable())));
+        } finally {
+            _session.close();
+        }
     }
 
     public Entity load() throws Exception {
@@ -102,7 +128,7 @@ public abstract class BaseEntity<Entity extends IEntity, PK extends Serializable
             if (dbLocker != null) {
                 _entitySQL.forUpdate(dbLocker);
             }
-            return _session.find(_entitySQL, this.getId());
+            return _session.find(_entitySQL, this.getId(), this.getShardingable());
         } finally {
             _session.close();
         }
@@ -112,7 +138,7 @@ public abstract class BaseEntity<Entity extends IEntity, PK extends Serializable
     public Entity save() throws Exception {
         ISession _session = new DefaultSession(__doGetConnectionHolderSafed());
         try {
-            return _session.insert((Entity) this);
+            return _session.insert((Entity) this, this.getShardingable());
         } finally {
             _session.close();
         }
@@ -122,7 +148,7 @@ public abstract class BaseEntity<Entity extends IEntity, PK extends Serializable
     public Entity save(Fields fields) throws Exception {
         ISession _session = new DefaultSession(__doGetConnectionHolderSafed());
         try {
-            return _session.insert((Entity) this, fields);
+            return _session.insert((Entity) this, fields, this.getShardingable());
         } finally {
             _session.close();
         }
@@ -140,11 +166,11 @@ public abstract class BaseEntity<Entity extends IEntity, PK extends Serializable
             if (fields != null) {
                 _entitySQL.field(fields);
             }
-            Entity _t = _session.find(_entitySQL, this.getId());
+            Entity _t = _session.find(_entitySQL, this.getId(), this.getShardingable());
             if (_t == null) {
-                return _session.insert((Entity) this, fields);
+                return _session.insert((Entity) this, fields, this.getShardingable());
             }
-            return _session.update((Entity) this, fields);
+            return _session.update((Entity) this, fields, this.getShardingable());
         } finally {
             _session.close();
         }
@@ -158,7 +184,7 @@ public abstract class BaseEntity<Entity extends IEntity, PK extends Serializable
     public Entity update(Fields fields) throws Exception {
         ISession _session = new DefaultSession(__doGetConnectionHolderSafed());
         try {
-            return _session.update((Entity) this, fields);
+            return _session.update((Entity) this, fields, this.getShardingable());
         } finally {
             _session.close();
         }
@@ -168,7 +194,7 @@ public abstract class BaseEntity<Entity extends IEntity, PK extends Serializable
     public Entity delete() throws Exception {
         ISession _session = new DefaultSession(__doGetConnectionHolderSafed());
         try {
-            _session.delete(this.getEntityClass(), this.getId());
+            _session.delete(this.getEntityClass(), this.getId(), this.getShardingable());
             return (Entity) this;
         } finally {
             _session.close();
@@ -237,7 +263,7 @@ public abstract class BaseEntity<Entity extends IEntity, PK extends Serializable
             if (dbLocker != null) {
                 _entitySQL.forUpdate(dbLocker);
             }
-            return _session.find(_entitySQL, where, page);
+            return _session.find(_entitySQL, where, page, this.getShardingable());
         } finally {
             _session.close();
         }
@@ -285,7 +311,7 @@ public abstract class BaseEntity<Entity extends IEntity, PK extends Serializable
             if (dbLocker != null) {
                 _entitySQL.forUpdate(dbLocker);
             }
-            return _session.findFirst(_entitySQL, where);
+            return _session.findFirst(_entitySQL, where, this.getShardingable());
         } finally {
             _session.close();
         }
