@@ -25,6 +25,8 @@ import net.ymate.platform.persistence.jdbc.dialect.AbstractDialect;
 import org.apache.commons.lang.StringUtils;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 /**
@@ -60,7 +62,14 @@ public class MySQLDialect extends AbstractDialect {
             ExpressionUtils _exp = ExpressionUtils.bind("CREATE TABLE ${table_name} (\n${fields} ${primary_keys} ${indexes})").set("table_name", buildTableName(prefix, _meta, shardingable));
             StringBuilder _tmpBuilder = new StringBuilder();
             // FIELDs
-            for (EntityMeta.PropertyMeta _propMeta : _meta.getProperties()) {
+            List<EntityMeta.PropertyMeta> _propMetas = new ArrayList<EntityMeta.PropertyMeta>(_meta.getProperties());
+            Collections.sort(_propMetas, new Comparator<EntityMeta.PropertyMeta>() {
+                @Override
+                public int compare(EntityMeta.PropertyMeta o1, EntityMeta.PropertyMeta o2) {
+                    return o1.getName().compareTo(o2.getName());
+                }
+            });
+            for (EntityMeta.PropertyMeta _propMeta : _propMetas) {
                 _tmpBuilder.append("\t").append(wrapIdentifierQuote(_propMeta.getName())).append(" ");
                 String _propType = "";
                 if (!_propMeta.getType().equals(Type.FIELD.UNKNOW)) {
@@ -84,11 +93,18 @@ public class MySQLDialect extends AbstractDialect {
                 if (_propMeta.isUnsigned()) {
                     _tmpBuilder.append(" unsigned ");
                 }
-                if (StringUtils.isNotBlank(_propMeta.getDefaultValue())) {
-                    _tmpBuilder.append(" DEFAULT '").append(_propMeta.getDefaultValue()).append("'");
+                if (_propMeta.isNullable()) {
+                    if (StringUtils.isNotBlank(_propMeta.getDefaultValue())) {
+                        _tmpBuilder.append(" DEFAULT '").append(_propMeta.getDefaultValue()).append("'");
+                    }
+                } else {
+                    _tmpBuilder.append(" NOT NULL");
+                }
+                if (_propMeta.isAutoincrement()) {
+                    _tmpBuilder.append(" AUTO_INCREMENT");
                 }
                 if (StringUtils.isNotBlank(_propMeta.getComment())) {
-                    _tmpBuilder.append("COMMENT '").append(_propMeta.getComment()).append("'");
+                    _tmpBuilder.append(" COMMENT '").append(_propMeta.getComment()).append("'");
                 }
                 _tmpBuilder.append(__LINE_END_FLAG);
             }
