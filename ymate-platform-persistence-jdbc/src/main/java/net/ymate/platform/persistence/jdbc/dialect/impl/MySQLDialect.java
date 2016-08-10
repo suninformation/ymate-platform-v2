@@ -59,7 +59,13 @@ public class MySQLDialect extends AbstractDialect {
     public String buildCreateSQL(Class<? extends IEntity> entityClass, String prefix, IShardingable shardingable) {
         EntityMeta _meta = EntityMeta.createAndGet(entityClass);
         if (_meta != null) {
-            ExpressionUtils _exp = ExpressionUtils.bind("CREATE TABLE ${table_name} (\n${fields} ${primary_keys} ${indexes})").set("table_name", buildTableName(prefix, _meta, shardingable));
+            ExpressionUtils _exp = ExpressionUtils.bind("CREATE TABLE ${table_name} (\n${fields} ${primary_keys} ${indexes}) ${comment} ")
+                    .set("table_name", buildTableName(prefix, _meta, shardingable));
+            if (StringUtils.isNotBlank(_meta.getComment())) {
+                _exp.set("comment", "COMMENT='" + StringUtils.trimToEmpty(_meta.getComment()) + "'");
+            } else {
+                _exp.set("comment", "");
+            }
             StringBuilder _tmpBuilder = new StringBuilder();
             // FIELDs
             List<EntityMeta.PropertyMeta> _propMetas = new ArrayList<EntityMeta.PropertyMeta>(_meta.getProperties());
@@ -77,13 +83,17 @@ public class MySQLDialect extends AbstractDialect {
                 } else {
                     _propType = __doGetColumnType(_propMeta.getField().getType());
                 }
-                boolean _isText = _propMeta.getType().equals(Type.FIELD.TEXT);
                 if ("VARCHAR".equals(_propType) && _propMeta.getLength() > 2000) {
                     _propType = "TEXT";
-                    _isText = true;
+                } else if ("BOOLEAN".equals(_propType) || "BIT".equals(_propType)) {
+                    _propType = "SMALLINT";
+                }
+                boolean _needLength = true;
+                if ("DATE".equals(_propType) || "TIME".equals(_propType) || "TIMESTAMP".equals(_propType) || "TEXT".equals(_propType)) {
+                    _needLength = false;
                 }
                 _tmpBuilder.append(_propType);
-                if (!_isText) {
+                if (_needLength) {
                     _tmpBuilder.append("(").append(_propMeta.getLength());
                     if (_propMeta.getDecimals() > 0) {
                         _tmpBuilder.append(",").append(_propMeta.getDecimals());
@@ -91,11 +101,19 @@ public class MySQLDialect extends AbstractDialect {
                     _tmpBuilder.append(")");
                 }
                 if (_propMeta.isUnsigned()) {
-                    _tmpBuilder.append(" unsigned ");
+                    if ("NUMERIC".equals(_propType) || "LONG".equals(_propType) || "FLOAT".equals(_propType)
+                            || "DOUBLE".equals(_propType) || "SMALLINT".equals(_propType) || "TINYINT".equals(_propType)
+                            || "DOUBLE".equals(_propType) || "INTEGER".equals(_propType)) {
+                        _tmpBuilder.append(" unsigned ");
+                    }
                 }
                 if (_propMeta.isNullable()) {
                     if (StringUtils.isNotBlank(_propMeta.getDefaultValue())) {
-                        _tmpBuilder.append(" DEFAULT '").append(_propMeta.getDefaultValue()).append("'");
+                        if ("@NULL".equals(_propMeta.getDefaultValue())) {
+                            _tmpBuilder.append(" DEFAULT NULL");
+                        } else {
+                            _tmpBuilder.append(" DEFAULT '").append(_propMeta.getDefaultValue()).append("'");
+                        }
                     }
                 } else {
                     _tmpBuilder.append(" NOT NULL");
