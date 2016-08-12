@@ -411,7 +411,7 @@ public class ClassUtils {
                         // 当首次赋值发生异常时，若成员变量值不为NULL则尝试转换一下
                         if (_fValue != null) {
                             try {
-                                _wrapDist.setValue(_fieldName, BlurObject.bind(_fValue).toObjectValue(getFieldType(_fieldName)));
+                                _wrapDist.setValue(_fieldName, BlurObject.bind(_fValue).toObjectValue(_wrapDist.getFieldType(_fieldName)));
                             } catch (Exception ignored) {
                                 // 当再次赋值发生异常时，彻底忽略当前值，不中断整个拷贝过程
                             }
