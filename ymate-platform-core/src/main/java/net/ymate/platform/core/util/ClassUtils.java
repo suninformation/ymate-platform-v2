@@ -16,6 +16,7 @@
 package net.ymate.platform.core.util;
 
 import com.thoughtworks.paranamer.AdaptiveParanamer;
+import net.ymate.platform.core.lang.BlurObject;
 import net.ymate.platform.core.lang.PairObject;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
@@ -402,10 +403,19 @@ public class ClassUtils {
             BeanWrapper<D> _wrapDist = wrapper(dist);
             for (String _fieldName : getFieldNames()) {
                 if (_wrapDist.getFieldNames().contains(_fieldName)) {
+                    Object _fValue = null;
                     try {
-                        _wrapDist.setValue(_fieldName, getValue(_fieldName));
-                    } catch (Exception ignored) {
-                        // 当赋值发生异常时，忽略当前值，不中断整个拷贝过程
+                        _fValue = getValue(_fieldName);
+                        _wrapDist.setValue(_fieldName, _fValue);
+                    } catch (Exception e) {
+                        // 当首次赋值发生异常时，若成员变量值不为NULL则尝试转换一下
+                        if (_fValue != null) {
+                            try {
+                                _wrapDist.setValue(_fieldName, BlurObject.bind(_fValue).toObjectValue(getFieldType(_fieldName)));
+                            } catch (Exception ignored) {
+                                // 当再次赋值发生异常时，彻底忽略当前值，不中断整个拷贝过程
+                            }
+                        }
                     }
                 }
             }
