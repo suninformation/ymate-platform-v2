@@ -40,6 +40,11 @@ public interface IConfig {
     List<String> getAutoscanPackages();
 
     /**
+     * @return 返回包文件排除列表，被包含的JAR或ZIP文件在扫描过程中将被忽略
+     */
+    List<String> getExcudedFiles();
+
+    /**
      * @return 返回模块类排除列表，被包含的模块在加载过程中将被忽略
      */
     List<String> getExcludedModules();

@@ -33,6 +33,13 @@ public interface IBeanLoader {
     void setClassLoader(ClassLoader classLoader);
 
     /**
+     * @return 返回当前被排除的jar或zip等包文件名称集合
+     */
+    List<String> getExcludedFiles();
+
+    void setExcludedFiles(List<String> excludedFiles);
+
+    /**
      * @param packageName 扫描的包名称
      * @return 返回加载的类对象集合
      * @throws Exception 类加载过程可能产生异常

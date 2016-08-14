@@ -21,6 +21,7 @@ import net.ymate.platform.core.beans.IBeanHandler;
 import net.ymate.platform.core.beans.annotation.Bean;
 import net.ymate.platform.core.beans.annotation.Proxy;
 import net.ymate.platform.core.beans.impl.DefaultBeanFactory;
+import net.ymate.platform.core.beans.impl.DefaultBeanLoader;
 import net.ymate.platform.core.beans.impl.proxy.DefaultProxyFactory;
 import net.ymate.platform.core.beans.intercept.InterceptProxy;
 import net.ymate.platform.core.beans.proxy.IProxy;
@@ -127,11 +128,13 @@ public class YMP {
             __events.registerEvent(ModuleEvent.class);
             // 创建根对象工厂
             __beanFactory = new DefaultBeanFactory();
+            __beanFactory.setLoader(new DefaultBeanLoader(__config.getExcudedFiles()));
             __beanFactory.registerHandler(Bean.class);
             // 创建模块对象引用集合
             __modules = new HashMap<Class<? extends IModule>, IModule>();
             // 创建模块对象工厂
             __moduleFactory = new BeanFactory(this);
+            __moduleFactory.setLoader(new DefaultBeanLoader(__config.getExcudedFiles()));
             __moduleFactory.registerHandler(Module.class, new ModuleHandler(this));
             __moduleFactory.registerHandler(Proxy.class, new ProxyHandler(this));
             __moduleFactory.registerHandler(EventRegister.class, new EventRegisterHandler(this));

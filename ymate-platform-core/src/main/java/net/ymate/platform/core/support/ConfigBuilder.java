@@ -37,7 +37,9 @@ public final class ConfigBuilder {
 
     private List<String> __packageNames;
 
-    private List<String> __excludeModules;
+    private List<String> __excludedFiles;
+
+    private List<String> __excludedModules;
 
     private Locale __locale;
 
@@ -81,7 +83,8 @@ public final class ConfigBuilder {
         ConfigBuilder _builder = ConfigBuilder.create(_processor)
                 .developMode(new BlurObject(properties.getProperty("ymp.dev_mode")).toBooleanValue())
                 .packageNames(__doParserArrayStr(properties, "ymp.autoscan_packages"))
-                .excludeModules(__doParserArrayStr(properties, "ymp.excluded_modules"))
+                .excludedFiles(__doParserArrayStr(properties, "ymp.excluded_files"))
+                .excludedModules(__doParserArrayStr(properties, "ymp.excluded_modules"))
                 .locale(StringUtils.trimToNull(properties.getProperty("ymp.i18n_default_locale")))
                 .i18nEventHandler(ClassUtils.impl(properties.getProperty("ymp.i18n_event_handler_class"), II18NEventHandler.class, ConfigBuilder.class));
         // 提取模块配置
@@ -148,7 +151,8 @@ public final class ConfigBuilder {
 
     private ConfigBuilder(IModuleCfgProcessor processor) {
         __packageNames = new ArrayList<String>();
-        __excludeModules = new ArrayList<String>();
+        __excludedFiles = new ArrayList<String>();
+        __excludedModules = new ArrayList<String>();
         __paramsMap = new HashMap<String, String>();
         __moduleCfgs = new HashMap<String, Map<String, String>>();
         __eventConfigs = new HashMap<String, String>();
@@ -171,13 +175,23 @@ public final class ConfigBuilder {
         return this;
     }
 
-    public ConfigBuilder excludeModules(Collection<String> excludeModules) {
-        __excludeModules.addAll(excludeModules);
+    public ConfigBuilder excludedFiles(Collection<String> excludedFiles) {
+        __excludedFiles.addAll(excludedFiles);
         return this;
     }
 
-    public ConfigBuilder excludeModule(String excludeModule) {
-        __excludeModules.add(excludeModule);
+    public ConfigBuilder excludedFiles(String excludedFile) {
+        __excludedFiles.add(excludedFile);
+        return this;
+    }
+
+    public ConfigBuilder excludedModules(Collection<String> excludeModules) {
+        __excludedModules.addAll(excludeModules);
+        return this;
+    }
+
+    public ConfigBuilder excludedModule(String excludeModule) {
+        __excludedModules.add(excludeModule);
         return this;
     }
 
@@ -244,8 +258,12 @@ public final class ConfigBuilder {
                 return Collections.unmodifiableList(__packageNames);
             }
 
+            public List<String> getExcudedFiles() {
+                return Collections.unmodifiableList(__excludedFiles);
+            }
+
             public List<String> getExcludedModules() {
-                return Collections.unmodifiableList(__excludeModules);
+                return Collections.unmodifiableList(__excludedModules);
             }
 
             public Locale getDefaultLocale() {

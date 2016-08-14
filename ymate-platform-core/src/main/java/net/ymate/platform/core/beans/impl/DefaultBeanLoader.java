@@ -26,6 +26,7 @@ import java.io.IOException;
 import java.net.JarURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.jar.JarEntry;
@@ -43,12 +44,29 @@ public class DefaultBeanLoader implements IBeanLoader {
 
     private ClassLoader __classLoader;
 
+    private List<String> __excludedFileSet;
+
+    public DefaultBeanLoader() {
+    }
+
+    public DefaultBeanLoader(List<String> excludedFiles) {
+        __excludedFileSet = excludedFiles;
+    }
+
     public ClassLoader getClassLoader() {
         return __classLoader == null ? this.getClass().getClassLoader() : __classLoader;
     }
 
     public void setClassLoader(ClassLoader classLoader) {
         this.__classLoader = classLoader;
+    }
+
+    public List<String> getExcludedFiles() {
+        return __excludedFileSet == null ? Collections.<String>emptyList() : __excludedFileSet;
+    }
+
+    public void setExcludedFiles(List<String> excludedFiles) {
+        __excludedFileSet = excludedFiles;
     }
 
     public List<Class<?>> load(String packageName) throws Exception {
@@ -92,18 +110,37 @@ public class DefaultBeanLoader implements IBeanLoader {
         return _returnValue;
     }
 
+    private boolean __doCheckExculedFile(String targetFileName) {
+        if (__excludedFileSet != null && !__excludedFileSet.isEmpty() && StringUtils.isNotBlank(targetFileName)) {
+            if (__excludedFileSet.contains(targetFileName)) {
+                return true;
+            } else {
+                for (String _exculedFile : __excludedFileSet) {
+                    if (_exculedFile.indexOf('*') > 0)
+                        _exculedFile = StringUtils.substringBefore(_exculedFile, "*");
+                    if (targetFileName.startsWith(_exculedFile)) {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
     private List<Class<?>> __doFindClassByJar(String packageName, JarFile jarFile, IBeanFilter filter) throws Exception {
         List<Class<?>> _returnValue = new ArrayList<Class<?>>();
-        Enumeration<JarEntry> _entriesEnum = jarFile.entries();
-        for (; _entriesEnum.hasMoreElements(); ) {
-            JarEntry _entry = _entriesEnum.nextElement();
-            // 替换文件名中所有的 '/' 为 '.'，并且只存放.class结尾的类名称，剔除所有包含'$'的内部类名称
-            String _className = _entry.getName().replaceAll("/", ".");
-            if (_className.endsWith(".class") && _className.indexOf('$') < 0) {
-                if (_className.startsWith(packageName)) {
-                    _className = _className.substring(0, _className.lastIndexOf('.'));
-                    Class<?> _class = __doLoadClass(_className);
-                    __doAddClass(_returnValue, _class, filter);
+        if (!__doCheckExculedFile(new File(jarFile.getName()).getName())) {
+            Enumeration<JarEntry> _entriesEnum = jarFile.entries();
+            for (; _entriesEnum.hasMoreElements(); ) {
+                JarEntry _entry = _entriesEnum.nextElement();
+                // 替换文件名中所有的 '/' 为 '.'，并且只存放.class结尾的类名称，剔除所有包含'$'的内部类名称
+                String _className = _entry.getName().replaceAll("/", ".");
+                if (_className.endsWith(".class") && _className.indexOf('$') < 0) {
+                    if (_className.startsWith(packageName)) {
+                        _className = _className.substring(0, _className.lastIndexOf('.'));
+                        Class<?> _class = __doLoadClass(_className);
+                        __doAddClass(_returnValue, _class, filter);
+                    }
                 }
             }
         }
@@ -120,16 +157,19 @@ public class DefaultBeanLoader implements IBeanLoader {
             } else {
                 _zipFilePath = StringUtils.substringAfter(zipUrl.toString(), "zip:");
             }
-            _zipStream = new ZipInputStream(new FileInputStream(new File(_zipFilePath)));
-            ZipEntry _zipEntry = null;
-            while (null != (_zipEntry = _zipStream.getNextEntry())) {
-                if (!_zipEntry.isDirectory()) {
-                    if (_zipEntry.getName().endsWith(".class") && _zipEntry.getName().indexOf('$') < 0) {
-                        String _className = StringUtils.substringBefore(_zipEntry.getName().replace("/", "."), ".class");
-                        __doAddClass(_returnValue, __doLoadClass(_className), filter);
+            File _zipFile = new File(_zipFilePath);
+            if (!__doCheckExculedFile(_zipFile.getName())) {
+                _zipStream = new ZipInputStream(new FileInputStream(_zipFile));
+                ZipEntry _zipEntry = null;
+                while (null != (_zipEntry = _zipStream.getNextEntry())) {
+                    if (!_zipEntry.isDirectory()) {
+                        if (_zipEntry.getName().endsWith(".class") && _zipEntry.getName().indexOf('$') < 0) {
+                            String _className = StringUtils.substringBefore(_zipEntry.getName().replace("/", "."), ".class");
+                            __doAddClass(_returnValue, __doLoadClass(_className), filter);
+                        }
                     }
+                    _zipStream.closeEntry();
                 }
-                _zipStream.closeEntry();
             }
         } finally {
             if (_zipStream != null) {
