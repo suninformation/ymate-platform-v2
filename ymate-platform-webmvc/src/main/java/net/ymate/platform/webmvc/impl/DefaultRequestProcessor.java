@@ -171,7 +171,8 @@ public class DefaultRequestProcessor implements IRequestProcessor {
                         }
                     }
                 }
-            } else {
+            }
+            if (_returnValue == null) {
                 _returnValue = new BlurObject(StringUtils.defaultIfBlank(paramValue, defaultValue)).toObjectValue(paramType);
             }
         } catch (Throwable e) {
