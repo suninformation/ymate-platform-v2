@@ -38,6 +38,7 @@ import net.ymate.platform.webmvc.view.IView;
 import net.ymate.platform.webmvc.view.View;
 import net.ymate.platform.webmvc.view.impl.*;
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.time.StopWatch;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -192,13 +193,19 @@ public class WebMVC implements IModule, IWebMvc {
                                HttpServletRequest request,
                                HttpServletResponse response) throws Exception {
 
+        StopWatch _consumeTime = null;
+        long _threadId = Thread.currentThread().getId();
         try {
-            _LOG.debug("--> Process request start: " + context.getHttpMethod() + ":" + context.getRequestMapping());
+            if (__owner.getConfig().isDevelopMode()) {
+                _consumeTime = new StopWatch();
+                _consumeTime.start();
+            }
+            _LOG.debug("--> [" + _threadId + "] Process request start: " + context.getHttpMethod() + ":" + context.getRequestMapping());
             //
             RequestMeta _meta = __mappingParser.doParse(context);
             if (_meta != null) {
                 //
-                _LOG.debug("--- Request mode: controller");
+                _LOG.debug("--- [" + _threadId + "] Request mode: controller");
                 // 先判断当前请求方式是否允许
                 if (_meta.allowHttpMethod(context.getHttpMethod())) {
                     // 判断允许的请求头
@@ -209,14 +216,14 @@ public class WebMVC implements IModule, IWebMvc {
                             if (StringUtils.isBlank(_value)) {
                                 response.sendError(HttpServletResponse.SC_BAD_REQUEST);
                                 //
-                                _LOG.debug("--- Check request allowed: NO");
+                                _LOG.debug("--- [" + _threadId + "] Check request allowed: NO");
                                 return;
                             }
                         } else {
                             if (_value == null || !_value.equalsIgnoreCase(_entry.getValue())) {
                                 response.sendError(HttpServletResponse.SC_BAD_REQUEST);
                                 //
-                                _LOG.debug("--- Check request allowed: NO");
+                                _LOG.debug("--- [" + _threadId + "] Check request allowed: NO");
                                 return;
                             }
                         }
@@ -228,7 +235,7 @@ public class WebMVC implements IModule, IWebMvc {
                             if (!WebContext.getRequest().getParameterMap().containsKey(_entry.getKey())) {
                                 response.sendError(HttpServletResponse.SC_BAD_REQUEST);
                                 //
-                                _LOG.debug("--- Check request allowed: NO");
+                                _LOG.debug("--- [" + _threadId + "] Check request allowed: NO");
                                 return;
                             }
                         } else {
@@ -236,7 +243,7 @@ public class WebMVC implements IModule, IWebMvc {
                             if (_value == null || !_value.equalsIgnoreCase(_entry.getValue())) {
                                 response.sendError(HttpServletResponse.SC_BAD_REQUEST);
                                 //
-                                _LOG.debug("--- Check request allowed: NO");
+                                _LOG.debug("--- [" + _threadId + "] Check request allowed: NO");
                                 return;
                             }
                         }
@@ -248,7 +255,7 @@ public class WebMVC implements IModule, IWebMvc {
                             request = new MultipartRequestWrapper(this, request);
                         }
                         //
-                        _LOG.debug("--- Include file upload: YES");
+                        _LOG.debug("--- [" + _threadId + "] Include file upload: YES");
                     }
                     WebContext.getContext().addAttribute(Type.Context.HTTP_REQUEST, request);
                     //
@@ -261,7 +268,7 @@ public class WebMVC implements IModule, IWebMvc {
                             // 加载成功, 则
                             _view = View.nullView();
                             //
-                            _LOG.debug("--- Load data from the cache: YES");
+                            _LOG.debug("--- [" + _threadId + "] Load data from the cache: YES");
                         }
                     }
                     if (_view == null) {
@@ -273,7 +280,7 @@ public class WebMVC implements IModule, IWebMvc {
                                     if (_cacheProcessor.processResponseCache(this, _meta.getResponseCache(), context, _view)) {
                                         _view = View.nullView();
                                         //
-                                        _LOG.debug("--- Results data cached: YES");
+                                        _LOG.debug("--- [" + _threadId + "] Results data cached: YES");
                                     }
                                 } catch (Exception e) {
                                     // 缓存处理过程中的任何异常都不能影响本交请求的正常响应, 仅输出异常日志
@@ -311,7 +318,7 @@ public class WebMVC implements IModule, IWebMvc {
                 }
                 if (_isAllowConvention) {
                     //
-                    _LOG.debug("--- Request mode: convention");
+                    _LOG.debug("--- [" + _threadId + "] Request mode: convention");
                     //
                     IView _view = null;
                     ResponseCache _responseCache = null;
@@ -330,7 +337,7 @@ public class WebMVC implements IModule, IWebMvc {
                             // 加载成功, 则
                             _view = View.nullView();
                             //
-                            _LOG.debug("--- Load data from the cache: YES");
+                            _LOG.debug("--- [" + _threadId + "] Load data from the cache: YES");
                         }
                     }
                     if (_view == null) {
@@ -342,7 +349,7 @@ public class WebMVC implements IModule, IWebMvc {
                             List<String> _urlParams = Arrays.asList(_urlParamArr).subList(1, _urlParamArr.length);
                             WebContext.getRequest().setAttribute("UrlParams", _urlParams);
                             //
-                            _LOG.debug("--- With parameters : " + _urlParams);
+                            _LOG.debug("--- [" + _threadId + "] With parameters : " + _urlParams);
                         }
                         //
                         if (__moduleCfg.getErrorProcessor() != null) {
@@ -357,22 +364,22 @@ public class WebMVC implements IModule, IWebMvc {
                                     if (".html".equals(_fileType)) {
                                         _view = HtmlView.bind(this, _requestMapping.substring(1));
                                         //
-                                        _LOG.debug("--- Rendering template file : " + _requestMapping + _fileType);
+                                        _LOG.debug("--- [" + _threadId + "] Rendering template file : " + _requestMapping + _fileType);
                                         break;
                                     } else if (".jsp".equals(_fileType)) {
                                         _view = JspView.bind(this, _requestMapping.substring(1));
                                         //
-                                        _LOG.debug("--- Rendering template file : " + _requestMapping + _fileType);
+                                        _LOG.debug("--- [" + _threadId + "] Rendering template file : " + _requestMapping + _fileType);
                                         break;
                                     } else if (".ftl".equals(_fileType)) {
                                         _view = FreemarkerView.bind(this, _requestMapping.substring(1));
                                         //
-                                        _LOG.debug("--- Rendering template file : " + _requestMapping + _fileType);
+                                        _LOG.debug("--- [" + _threadId + "] Rendering template file : " + _requestMapping + _fileType);
                                         break;
                                     } else if (".vm".equals(_fileType)) {
                                         _view = VelocityView.bind(this, _requestMapping.substring(1));
                                         //
-                                        _LOG.debug("--- Rendering template file : " + _requestMapping + _fileType);
+                                        _LOG.debug("--- [" + _threadId + "] Rendering template file : " + _requestMapping + _fileType);
                                     }
                                 }
                             }
@@ -383,7 +390,7 @@ public class WebMVC implements IModule, IWebMvc {
                                 if (_cacheProcessor.processResponseCache(this, _responseCache, context, _view)) {
                                     _view = View.nullView();
                                     //
-                                    _LOG.debug("--- Results data cached: YES");
+                                    _LOG.debug("--- [" + _threadId + "] Results data cached: YES");
                                 }
                             } catch (Exception e) {
                                 // 缓存处理过程中的任何异常都不能影响本交请求的正常响应, 仅输出异常日志
@@ -403,7 +410,11 @@ public class WebMVC implements IModule, IWebMvc {
                 response.sendError(HttpServletResponse.SC_NOT_FOUND);
             }
         } finally {
-            _LOG.debug("<-- Process request completed: " + context.getHttpMethod() + ":" + context.getRequestMapping());
+            if (_consumeTime != null && __owner.getConfig().isDevelopMode()) {
+                _consumeTime.stop();
+                _LOG.debug("--- [" + _threadId + "] Total execution time: " + _consumeTime.getTime() + "ms");
+            }
+            _LOG.debug("<-- [" + _threadId + "] Process request completed: " + context.getHttpMethod() + ":" + context.getRequestMapping());
         }
     }
 }
