@@ -1,22 +1,32 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Configuration>
     <Appenders>
-        <RollingFile name="default" fileName="${sys:LOG_OUT_DIR}/default.log"
-                     filePattern="${sys:LOG_OUT_DIR}/$${date:yyyy-MM}/default-%d{MM-dd-yyyy}-%i.log.gz">
+        <RollingRandomAccessFileAppender name="default"
+                                         fileName="${sys:LOG_OUT_DIR}/default.log"
+                                         filePattern="${sys:LOG_OUT_DIR}/default-%d{yyMMddHH}-%i.log">
             <PatternLayout pattern="%m %n" charset="UTF-8"/>
-            <SizeBasedTriggeringPolicy size="500 MB"/>
-        </RollingFile>
+            <Policies>
+                <TimeBasedTriggeringPolicy modulate="true" interval="1"/>
+                <SizeBasedTriggeringPolicy size="200 MB"/>
+            </Policies>
+            <DefaultRolloverStrategy max="100"/>
+        </RollingRandomAccessFileAppender>
         <!--
-        <RollingFile name="custom-logname" fileName="${sys:LOG_OUT_DIR}/custom-logname.log"
-                     filePattern="${sys:LOG_OUT_DIR}/$${date:yyyy-MM}/custom-logname-%d{MM-dd-yyyy}-%i.log.gz">
+        <RollingRandomAccessFileAppender name="custom-logname"
+                                         fileName="${sys:LOG_OUT_DIR}/custom-logname.log"
+                                         filePattern="${sys:LOG_OUT_DIR}/custom-logname-%d{yyMMddHH}-%i.log">
             <PatternLayout pattern="%m %n" charset="UTF-8"/>
-            <SizeBasedTriggeringPolicy size="500 MB"/>
-        </RollingFile>
+            <Policies>
+                <TimeBasedTriggeringPolicy modulate="true" interval="1"/>
+                <SizeBasedTriggeringPolicy size="200 MB"/>
+            </Policies>
+            <DefaultRolloverStrategy max="100"/>
+        </RollingRandomAccessFileAppender>
         -->
     </Appenders>
     <Loggers>
         <!--
-        <Logger name="custom-logname" level="debug">
+        <Logger name="custom-logname" level="debug" additivity="false">
             <AppenderRef ref="custom-logname"/>
         </Logger>
         -->
