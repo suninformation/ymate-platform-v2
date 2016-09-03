@@ -51,6 +51,9 @@ YMP框架的初始化是从加载ymp-conf.properties文件开始的，该文件�
 		# 框架自动扫描的包路径集合，多个包名之间用'|'分隔，默认已包含net.ymate.platform包，其子包也将被扫描
 		ymp.autoscan_packages=
 		
+		# 包文件排除列表，多个文件名称之间用'|'分隔，被包含的JAR或ZIP文件在扫描过程中将被忽略
+        ymp.excluded_files=
+        
 		# 模块排除列表，多个模块名称或类名之间用'|'分隔，被包含的模块在加载过程中将被忽略
 		ymp.excluded_modules=
 		
@@ -298,6 +301,8 @@ YMP框架的AOP是基于CGLIB的MethodInterceptor实现的拦截，通过以下�
                 }
             }
         }
+
+**注**：`@ContextParam`注解的value属性允许通过$xxx的格式支持从框架全局参数中获取xxx的值
 
 ##### 记录类属性状态 (PropertyState)
 

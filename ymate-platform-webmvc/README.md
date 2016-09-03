@@ -273,7 +273,7 @@ WebMVC模块不但让编写控制器变得非常简单，处理请求参数也�
 
 		控制台输出：
 		AuthType: BASIC
-		AuthType: false
+		IsLogin: false
 		
 		浏览器输出：
 		Hi, webmvc, UserName: ymper, Age: 18
