@@ -15,7 +15,10 @@
  */
 package net.ymate.platform.core.util;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * 字符串表达式工具类，用于处理${variable}字符替换;
@@ -64,4 +67,27 @@ public final class ExpressionUtils {
         return this;
     }
 
+    /**
+     * @return 返回expressionStr中变量名称集合, 返回的数量将受set方法影响
+     */
+    public List<String> getVariables() {
+        List<String> _vars = new ArrayList<String>();
+//        Matcher _match = Pattern.compile("\\$\\{([\\s\\S]*?)\\}").matcher("I am ${name},and sex is ${sex}.");
+        Matcher _match = Pattern.compile("(?<=\\$\\{)(.+?)(?=\\})").matcher(this.__result);
+        boolean _result = _match.find();
+        if (_result) {
+            do {
+                _vars.add(_match.group());
+                _result = _match.find();
+            } while (_result);
+        }
+        return _vars;
+    }
+
+    /**
+     * @return 清理所有变量并返回当前表达式工具类实例
+     */
+    public ExpressionUtils clean() {
+        return set("(.+?)", "");
+    }
 }
