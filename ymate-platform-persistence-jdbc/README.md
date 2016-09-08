@@ -1066,7 +1066,7 @@ JDBC模块将数据查询的结果集合统一使用IResultSet接口进行封装
                 /**
                  * 自定义SQL
                  */
-                @Repository("select * from ymcms_attachment where hash = ?")
+                @Repository("select * from ymcms_attachment where hash = ${hash}")
                 public IResultSet<Object[]> getSQLResults(String hash, IResultSet<Object[]> results) throws Exception {
                     return results;
                 }
@@ -1104,7 +1104,7 @@ JDBC模块将数据查询的结果集合统一使用IResultSet接口进行封装
             <properties>
                 <category name="default">
                     <property name="demo_query">
-                        <value><![CDATA[select * from ymcms_attachment where hash = ?]]></value>
+                        <value><![CDATA[select * from ymcms_attachment where hash = ${hash}]]></value>
                     </property>
                 </category>
             </properties>

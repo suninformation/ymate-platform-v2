@@ -20,8 +20,11 @@ import net.ymate.platform.core.beans.annotation.Order;
 import net.ymate.platform.core.beans.annotation.Proxy;
 import net.ymate.platform.core.beans.proxy.IProxy;
 import net.ymate.platform.core.beans.proxy.IProxyChain;
+import net.ymate.platform.core.util.ClassUtils;
+import net.ymate.platform.core.util.ExpressionUtils;
 import net.ymate.platform.core.util.RuntimeUtils;
 import net.ymate.platform.persistence.IResultSet;
+import net.ymate.platform.persistence.Params;
 import net.ymate.platform.persistence.jdbc.*;
 import net.ymate.platform.persistence.jdbc.base.IResultSetHandler;
 import net.ymate.platform.persistence.jdbc.query.SQL;
@@ -30,6 +33,10 @@ import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+
+import java.lang.reflect.Method;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * JDBC存储器代理
@@ -72,10 +79,10 @@ public class RepoProxy implements IProxy {
             Object _result = null;
             switch (_repo.type()) {
                 case UPDATE:
-                    _result = __doUpdate(_db, _connHolder, _targetSQL, proxyChain.getMethodParams());
+                    _result = __doUpdate(_db, _connHolder, _targetSQL, proxyChain.getTargetMethod(), proxyChain.getMethodParams());
                     break;
                 default:
-                    _result = __doQuery(_db, _connHolder, _targetSQL, proxyChain.getMethodParams());
+                    _result = __doQuery(_db, _connHolder, _targetSQL, proxyChain.getTargetMethod(), proxyChain.getMethodParams());
             }
             // 将执行结果赋予目标方法的最后一个参数
             int _position = proxyChain.getMethodParams().length - 1;
@@ -91,29 +98,37 @@ public class RepoProxy implements IProxy {
         return proxyChain.doProxyChain();
     }
 
-    private IResultSet<Object[]> __doQuery(IDatabase db, IConnectionHolder connHolder, final String targetSql, final Object[] params) throws Exception {
+    private IResultSet<Object[]> __doQuery(IDatabase db, IConnectionHolder connHolder, final String targetSql, final Method targetMethod, final Object[] params) throws Exception {
         return db.openSession(connHolder, new ISessionExecutor<IResultSet<Object[]>>() {
             public IResultSet<Object[]> execute(ISession session) throws Exception {
-                return session.find(__buildSQL(targetSql, params), IResultSetHandler.ARRAY);
+                return session.find(__buildSQL(targetSql, targetMethod, params), IResultSetHandler.ARRAY);
             }
         });
     }
 
-    private int __doUpdate(IDatabase db, IConnectionHolder connHolder, final String targetSql, final Object[] params) throws Exception {
+    private int __doUpdate(IDatabase db, IConnectionHolder connHolder, final String targetSql, final Method targetMethod, final Object[] params) throws Exception {
         return db.openSession(connHolder, new ISessionExecutor<Integer>() {
             public Integer execute(ISession session) throws Exception {
-                return session.executeForUpdate(__buildSQL(targetSql, params));
+                return session.executeForUpdate(__buildSQL(targetSql, targetMethod, params));
             }
         });
     }
 
-    private SQL __buildSQL(String targetSql, Object[] params) {
-        SQL _sql = SQL.create(targetSql);
-        if (params != null && params.length > 1) {
-            for (int _idx = 0; _idx < params.length - 1; _idx++) {
-                _sql.param(params[_idx]);
-            }
+    private SQL __buildSQL(String targetSql, Method targetMethod, Object[] params) {
+        Map<String, Object> _paramMap = new HashMap<String, Object>();
+        String[] _paramNames = ClassUtils.getMethodParamNames(targetMethod);
+        for (int _idx = 0; _idx < _paramNames.length - 1; _idx++) {
+            _paramMap.put(_paramNames[_idx], params[_idx]);
         }
-        return _sql;
+        if (!_paramMap.isEmpty()) {
+            ExpressionUtils _exp = ExpressionUtils.bind(targetSql);
+            Params _paramValues = Params.create();
+            for (String _paramName : _exp.getVariables()) {
+                _exp.set(_paramName, "?");
+                _paramValues.add(_paramMap.get(_paramName));
+            }
+            return SQL.create(_exp.getResult()).param(_paramValues);
+        }
+        return SQL.create(targetSql);
     }
 }
