@@ -82,8 +82,6 @@ public class DefaultPluginFactory implements IPluginFactory {
     public DefaultPluginFactory(YMP owner) {
         __owner = owner;
         //
-        final IPluginFactory _factory = this;
-        //
         __pluginMetaWithId = new ConcurrentHashMap<String, PluginMeta>();
         __pluginMetaWithClass = new ConcurrentHashMap<Class<? extends IPlugin>, PluginMeta>();
         //
@@ -100,10 +98,7 @@ public class DefaultPluginFactory implements IPluginFactory {
         //
         IBeanFilter _beanFilter = new IBeanFilter() {
             public boolean filter(Class<?> targetClass) {
-                if (targetClass.isInterface() || targetClass.isAnnotation() || targetClass.isEnum()) {
-                    return false;
-                }
-                return (targetClass.isAnnotationPresent(Handler.class) && ClassUtils.isInterfaceOf(targetClass, IBeanHandler.class));
+                return !(targetClass.isInterface() || targetClass.isAnnotation() || targetClass.isEnum()) && (targetClass.isAnnotationPresent(Handler.class) && ClassUtils.isInterfaceOf(targetClass, IBeanHandler.class));
             }
         };
         //
@@ -136,7 +131,7 @@ public class DefaultPluginFactory implements IPluginFactory {
             }
             //
             __pluginClassLoader = __buildPluginClassLoader();
-            __outerBeanFactory.setLoader(new DefaultBeanLoader() {
+            __outerBeanFactory.setLoader(new DefaultBeanLoader(__owner != null ? __owner.getConfig().getExcudedFiles() : null) {
                 @Override
                 public ClassLoader getClassLoader() {
                     return __pluginClassLoader;
