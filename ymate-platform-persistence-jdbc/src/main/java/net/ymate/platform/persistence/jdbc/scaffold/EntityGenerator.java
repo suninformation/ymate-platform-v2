@@ -241,8 +241,21 @@ public class EntityGenerator {
         List<String> _tableExcludeList = Arrays.asList(StringUtils.split(StringUtils.defaultIfBlank(__owner.getConfig().getParam("jdbc.table_exclude_list"), "").toLowerCase(), "|"));
         for (String _tableName : _tableList) {
             // 判断黑名单
-            if (!_tableExcludeList.isEmpty() && _tableExcludeList.contains(_tableName.toLowerCase())) {
-                continue;
+            if (!_tableExcludeList.isEmpty()) {
+                if (_tableExcludeList.contains(_tableName.toLowerCase())) {
+                    continue;
+                } else {
+                    boolean _flag = false;
+                    for (String _excludedName : _tableExcludeList) {
+                        if (StringUtils.contains(_excludedName, "*") && StringUtils.startsWithIgnoreCase(_tableName, StringUtils.substringBefore(_excludedName, "*"))) {
+                            _flag = true;
+                            break;
+                        }
+                    }
+                    if (_flag) {
+                        continue;
+                    }
+                }
             }
             TableMeta _tableMeta = getTableMeta(_dbName, _dbUser, _tableName);
             if (_tableMeta != null) {
