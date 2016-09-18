@@ -114,17 +114,26 @@ public final class ConfigBuilder {
         InputStream _in = null;
         try {
             ClassLoader _classLoader = ConfigBuilder.class.getClassLoader();
-            if (RuntimeUtils.isWindows()) {
-                _in = _classLoader.getResourceAsStream("ymp-conf_WIN.properties");
-            } else if (RuntimeUtils.isUnixOrLinux()) {
-                _in = _classLoader.getResourceAsStream("ymp-conf_UNIX.properties");
-            }
-            //
+            boolean _devFlag = false;
+            _in = _classLoader.getResourceAsStream("ymp-conf_DEV.properties");
             if (_in == null) {
-                _in = _classLoader.getResourceAsStream("ymp-conf.properties");
+                if (RuntimeUtils.isWindows()) {
+                    _in = _classLoader.getResourceAsStream("ymp-conf_WIN.properties");
+                } else if (RuntimeUtils.isUnixOrLinux()) {
+                    _in = _classLoader.getResourceAsStream("ymp-conf_UNIX.properties");
+                }
+                //
+                if (_in == null) {
+                    _in = _classLoader.getResourceAsStream("ymp-conf.properties");
+                }
+            } else {
+                _devFlag = true;
             }
             if (_in != null) {
                 __props.load(_in);
+                if (_devFlag) {
+                    __props.setProperty("ymp.dev_mode", "true");
+                }
             }
             return create(__props);
         } catch (Exception e) {
