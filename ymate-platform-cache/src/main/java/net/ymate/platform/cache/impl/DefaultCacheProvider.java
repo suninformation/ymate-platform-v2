@@ -77,7 +77,7 @@ public class DefaultCacheProvider implements ICacheProvider {
     }
 
     public ICache getCache(String name) {
-        return __caches.get(__safedCacheName(name));
+        return getCache(name, true);
     }
 
     public ICache getCache(String name, boolean create) {
