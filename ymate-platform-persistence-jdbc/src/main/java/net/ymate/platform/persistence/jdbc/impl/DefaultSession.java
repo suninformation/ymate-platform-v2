@@ -112,14 +112,17 @@ public class DefaultSession implements ISession {
     }
 
     public <T> IResultSet<T> find(SQL sql, IResultSetHandler<T> handler, Page page) throws Exception {
-        String _pagedSql = __dialect.buildPagedQuerySQL(sql.getSQL(), page.page(), page.pageSize());
+        String _selectSql = sql.getSQL();
         //
         long _count = 0;
-        if (page.isCount()) {
-            _count = this.count(sql);
+        if (page != null) {
+            _selectSql = __dialect.buildPagedQuerySQL(sql.getSQL(), page.page(), page.pageSize());
+            if (page.isCount()) {
+                _count = this.count(sql);
+            }
         }
         //
-        IQueryOperator<T> _opt = new DefaultQueryOperator<T>(_pagedSql, this.__connectionHolder, handler);
+        IQueryOperator<T> _opt = new DefaultQueryOperator<T>(_selectSql, this.__connectionHolder, handler);
         for (Object _param : sql.params().params()) {
             _opt.addParameter(_param);
         }
@@ -130,7 +133,10 @@ public class DefaultSession implements ISession {
         if (__sessionEvent != null) {
             __sessionEvent.onQueryAfter(new SessionEventContext(_opt));
         }
-        return new DefaultResultSet<T>(_opt.getResultSet(), page.page(), page.pageSize(), _count);
+        if (page != null) {
+            return new DefaultResultSet<T>(_opt.getResultSet(), page.page(), page.pageSize(), _count);
+        }
+        return new DefaultResultSet<T>(_opt.getResultSet());
     }
 
     @SuppressWarnings("unchecked")
@@ -143,11 +149,11 @@ public class DefaultSession implements ISession {
     }
 
     public <T extends IEntity> IResultSet<T> find(T entity, Page page) throws Exception {
-        return find(entity, Fields.create(), null, entity instanceof IShardingable ? (IShardingable) entity : null);
+        return find(entity, Fields.create(), page, entity instanceof IShardingable ? (IShardingable) entity : null);
     }
 
     public <T extends IEntity> IResultSet<T> find(T entity, Page page, IShardingable shardingable) throws Exception {
-        return find(entity, Fields.create(), null, shardingable);
+        return find(entity, Fields.create(), page, shardingable);
     }
 
     public <T extends IEntity> IResultSet<T> find(T entity, Fields filter) throws Exception {
