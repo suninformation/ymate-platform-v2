@@ -300,6 +300,44 @@ public final class Cond {
         return this;
     }
 
+    /**
+     * @param expression 逻辑表达式
+     * @param cond       条件对象
+     * @return 根据逻辑表达式运算结果决定是否采纳cond条件
+     */
+    public Cond expr(boolean expression, Cond cond) {
+        if (expression && cond != null) {
+            this.cond(cond);
+        }
+        return this;
+    }
+
+    public Cond expr(boolean expression, String cond) {
+        if (expression && cond != null) {
+            this.cond(cond);
+        }
+        return this;
+    }
+
+    /**
+     * @param target 目标对象
+     * @param cond   条件对象
+     * @return 当目标对象非空则采纳cond条件
+     */
+    public Cond exprNotEmpty(Object target, Cond cond) {
+        if (target != null && cond != null) {
+            boolean _flag = true;
+            if (target instanceof String) {
+                _flag = StringUtils.isNotBlank((String) target);
+            }
+            //
+            if (_flag) {
+                this.cond(cond);
+            }
+        }
+        return this;
+    }
+
     @Override
     public String toString() {
         return __condSB.toString();
