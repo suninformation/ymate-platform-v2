@@ -44,7 +44,7 @@ public @interface CookieVariable {
     String defaultValue() default "";
 
     /**
-     * @return 是否尝试其它作用域下获取参数值, 优先级顺序为request->session->application, 默认为仅从cookie中尝试获取
+     * @return 是否尝试其它作用域下获取参数值, 优先级顺序为request-&gt;session-&gt;application, 默认为仅从cookie中尝试获取
      */
     boolean fullScope() default false;
 }

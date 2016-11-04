@@ -119,6 +119,7 @@ public class ValidationMeta {
     /**
      * @param parentFieldName 父类属性名称(用于递归)
      * @param targetClass     目标类
+     * @param paramLabels     自定义参数标签名称映射
      * @return 处理targetClass所有Field成员属性
      */
     public Map<String, Annotation[]> __doGetMetaFromFields(String parentFieldName, Class<?> targetClass, Map<String, String> paramLabels) {
