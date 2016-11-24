@@ -327,7 +327,9 @@ public final class Cond {
     public Cond exprNotEmpty(Object target, Cond cond) {
         if (target != null && cond != null) {
             boolean _flag = true;
-            if (target instanceof String) {
+            if (target.getClass().isArray()) {
+                _flag = ((Object[]) target).length > 0;
+            } else if (target instanceof String) {
                 _flag = StringUtils.isNotBlank((String) target);
             }
             //
