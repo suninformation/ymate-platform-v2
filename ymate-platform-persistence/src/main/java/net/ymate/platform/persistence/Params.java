@@ -47,7 +47,13 @@ public final class Params {
     }
 
     public Params add(Object param) {
-        this.__params.add(param);
+        if (param instanceof Collection) {
+            this.__params.addAll((Collection<?>) param);
+        } else if (param != null && param.getClass().isArray()) {
+            this.__params.addAll(Arrays.asList((Object[]) param));
+        } else {
+            this.__params.add(param);
+        }
         return this;
     }
 
