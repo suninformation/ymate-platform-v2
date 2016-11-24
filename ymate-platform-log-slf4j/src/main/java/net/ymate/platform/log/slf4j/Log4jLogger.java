@@ -91,11 +91,7 @@ public class Log4jLogger implements LocationAwareLogger, Serializable {
         // 追溯到对应的调用行，如果对应行不存在，则不给出无法确定行号的输出
         if (_stacks.length > 3) {
             StackTraceElement _element = _stacks[3];
-            return StringUtils.substringBeforeLast(_element.getClassName(), ".")
-                    .concat(".")
-                    .concat(_element.getMethodName())
-                    .concat(":")
-                    .concat(_element.getLineNumber() + StringUtils.EMPTY);
+            return _element.getClassName() + "." + _element.getMethodName() + ":" + _element.getLineNumber() + StringUtils.EMPTY;
         }
         return "NO_STACK_TRACE:-1";
     }
