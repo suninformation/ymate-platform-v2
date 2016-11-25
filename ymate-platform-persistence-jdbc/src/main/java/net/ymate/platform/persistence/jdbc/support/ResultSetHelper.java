@@ -185,6 +185,13 @@ public final class ResultSetHelper {
     }
 
     /**
+     * @return 返回结果集中第一个元素的包装对象
+     */
+    public ItemWrapper firstItemWrapper() {
+        return new ItemWrapper(__dataSet.get(0), __isArray);
+    }
+
+    /**
      * 结果集元素处理器
      */
     public interface ItemHandler {
