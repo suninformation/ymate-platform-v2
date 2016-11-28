@@ -28,6 +28,8 @@ import org.apache.commons.logging.LogFactory;
 
 import javax.servlet.http.Cookie;
 import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
+import java.net.URLEncoder;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -52,6 +54,11 @@ public final class CookieHelper {
      * 是否使用Base64编码
      */
     private boolean __useBase64;
+
+    /**
+     * 是否使用URLEncoder/URLDecoder编码
+     */
+    private boolean __useURLCoder;
 
     /**
      * 加密密钥
@@ -174,10 +181,18 @@ public final class CookieHelper {
     }
 
     /**
-     * @return 设置开启采用Base64编码(默认支持UrlEncode编码)
+     * @return 设置开启采用Base64编码
      */
     public CookieHelper allowUseBase64() {
         this.__useBase64 = true;
+        return this;
+    }
+
+    /**
+     * @return 设置开启URLEncoder/URLDecoder编码
+     */
+    public CookieHelper allowUseURLCoder() {
+        this.__useURLCoder = true;
         return this;
     }
 
@@ -226,6 +241,13 @@ public final class CookieHelper {
                     __LOG.warn("", RuntimeUtils.unwrapThrow(e));
                 }
             }
+            if (__useURLCoder) {
+                try {
+                    _value = URLEncoder.encode(value, __charsetEncoding);
+                } catch (UnsupportedEncodingException e) {
+                    __LOG.warn("", RuntimeUtils.unwrapThrow(e));
+                }
+            }
         } else {
             _value = "";
         }
@@ -234,27 +256,38 @@ public final class CookieHelper {
 
     public String decodeValue(String value) {
         String _value = null;
-        if (this.__useAuthKey) {
-            if (__cookieKey == null) {
-                __cookieKey = __getEncodedAuthKeyStr();
-            }
-            if (StringUtils.isNotBlank(__cookieKey)) {
+        if (StringUtils.isNotBlank(value)) {
+            if (__useURLCoder) {
                 try {
-                    _value = new String(CodecUtils.DES.decrypt(Base64.decodeBase64(value.getBytes(__charsetEncoding)), __cookieKey.getBytes()));
-                } catch (Exception e) {
+                    value = URLDecoder.decode(value, __charsetEncoding);
+                } catch (UnsupportedEncodingException e) {
+                    __LOG.warn("", RuntimeUtils.unwrapThrow(e));
+                }
+            }
+            if (this.__useAuthKey) {
+                if (__cookieKey == null) {
+                    __cookieKey = __getEncodedAuthKeyStr();
+                }
+                if (StringUtils.isNotBlank(__cookieKey)) {
+                    try {
+                        _value = new String(CodecUtils.DES.decrypt(Base64.decodeBase64(value.getBytes(__charsetEncoding)), __cookieKey.getBytes()));
+                    } catch (Exception e) {
+                        __LOG.warn("", RuntimeUtils.unwrapThrow(e));
+                    }
+                } else {
+                    _value = value;
+                }
+            } else if (this.__useBase64) {
+                try {
+                    _value = new String(Base64.decodeBase64(value.getBytes(__charsetEncoding)));
+                } catch (UnsupportedEncodingException e) {
                     __LOG.warn("", RuntimeUtils.unwrapThrow(e));
                 }
             } else {
                 _value = value;
             }
-        } else if (this.__useBase64) {
-            try {
-                _value = new String(Base64.decodeBase64(value.getBytes(__charsetEncoding)));
-            } catch (UnsupportedEncodingException e) {
-                __LOG.warn("", RuntimeUtils.unwrapThrow(e));
-            }
         } else {
-            _value = value;
+            _value = "";
         }
         return _value;
     }
