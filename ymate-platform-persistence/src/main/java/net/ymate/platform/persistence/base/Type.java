@@ -31,7 +31,7 @@ public class Type {
     public enum FIELD {
         VARCHAR(Types.VARCHAR),
         CHAR(Types.CHAR),
-        TEXT(Types.LONGNVARCHAR),
+        TEXT(Types.LONGVARCHAR),
         BOOLEAN(Types.SMALLINT),
         BINARY(Types.BINARY),
         TIMESTAMP(Types.TIMESTAMP),

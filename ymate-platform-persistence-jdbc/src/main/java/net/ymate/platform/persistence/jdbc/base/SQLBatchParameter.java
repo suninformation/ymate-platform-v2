@@ -66,6 +66,8 @@ public final class SQLBatchParameter {
     public SQLBatchParameter addParameter(Object parameter) {
         if (parameter == null) {
             this.__parameters.add(new SQLParameter(Type.FIELD.UNKNOW, null));
+        } else if (parameter instanceof SQLParameter) {
+            this.__parameters.add((SQLParameter) parameter);
         } else {
             this.__parameters.add(new SQLParameter(parameter));
         }
