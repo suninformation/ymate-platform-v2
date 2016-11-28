@@ -18,6 +18,8 @@ package net.ymate.platform.persistence.jdbc.base.impl;
 import net.ymate.platform.persistence.jdbc.IConnectionHolder;
 import net.ymate.platform.persistence.jdbc.JDBC;
 import net.ymate.platform.persistence.jdbc.base.*;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -30,6 +32,8 @@ import java.util.List;
  * @version 1.0
  */
 public class DefaultQueryOperator<T> extends AbstractOperator implements IQueryOperator<T> {
+
+    private static final Log _LOG = LogFactory.getLog(DefaultQueryOperator.class);
 
     private IResultSetHandler<T> resultSetHandler;
 
@@ -59,6 +63,7 @@ public class DefaultQueryOperator<T> extends AbstractOperator implements IQueryO
         PreparedStatement _statement = null;
         ResultSet _resultSet = null;
         AccessorEventContext _context = null;
+        boolean _hasEx = false;
         try {
             IAccessor _accessor = new BaseAccessor(this.getAccessorConfig());
             _statement = _accessor.getPreparedStatement(this.getConnectionHolder().getConnection(), this.getSQL());
@@ -71,8 +76,12 @@ public class DefaultQueryOperator<T> extends AbstractOperator implements IQueryO
             }
             this.resultSet = this.getResultSetHandler().handle(_resultSet = _statement.executeQuery());
             return this.resultSet.size();
+        } catch (Exception ex) {
+            _LOG.error("", ex);
+            _hasEx = true;
+            throw ex;
         } finally {
-            if (this.getAccessorConfig() != null && _context != null) {
+            if (!_hasEx && this.getAccessorConfig() != null && _context != null) {
                 this.getAccessorConfig().afterStatementExecution(_context);
             }
             if (_resultSet != null) {

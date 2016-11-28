@@ -19,6 +19,8 @@ import net.ymate.platform.persistence.jdbc.IConnectionHolder;
 import net.ymate.platform.persistence.jdbc.JDBC;
 import net.ymate.platform.persistence.jdbc.base.*;
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import java.sql.PreparedStatement;
 import java.sql.Statement;
@@ -32,6 +34,8 @@ import java.util.List;
  * @version 1.0
  */
 public class BatchUpdateOperator extends AbstractOperator implements IBatchUpdateOperator {
+
+    private static final Log _LOG = LogFactory.getLog(BatchUpdateOperator.class);
 
     private int[] effectCounts;
 
@@ -67,6 +71,7 @@ public class BatchUpdateOperator extends AbstractOperator implements IBatchUpdat
     protected int __doExecute() throws Exception {
         Statement _statement = null;
         AccessorEventContext _context = null;
+        boolean _hasEx = false;
         try {
             IAccessor _accessor = new BaseAccessor(this.getAccessorConfig());
             if (StringUtils.isNotBlank(this.getSQL())) {
@@ -101,8 +106,12 @@ public class BatchUpdateOperator extends AbstractOperator implements IBatchUpdat
                 _count += _c;
             }
             return _count;
+        } catch (Exception ex) {
+            _LOG.error("", ex);
+            _hasEx = true;
+            throw ex;
         } finally {
-            if (this.getAccessorConfig() != null && _context != null) {
+            if (!_hasEx && this.getAccessorConfig() != null && _context != null) {
                 this.getAccessorConfig().afterStatementExecution(_context);
             }
             if (_statement != null) {

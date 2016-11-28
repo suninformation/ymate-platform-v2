@@ -18,6 +18,8 @@ package net.ymate.platform.persistence.jdbc.base.impl;
 import net.ymate.platform.persistence.jdbc.IConnectionHolder;
 import net.ymate.platform.persistence.jdbc.JDBC;
 import net.ymate.platform.persistence.jdbc.base.*;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import java.sql.PreparedStatement;
 
@@ -28,6 +30,8 @@ import java.sql.PreparedStatement;
  * @version 1.0
  */
 public class DefaultUpdateOperator extends AbstractOperator implements IUpdateOperator {
+
+    private static final Log _LOG = LogFactory.getLog(DefaultUpdateOperator.class);
 
     private int effectCounts;
 
@@ -42,6 +46,7 @@ public class DefaultUpdateOperator extends AbstractOperator implements IUpdateOp
     protected int __doExecute() throws Exception {
         PreparedStatement _statement = null;
         AccessorEventContext _context = null;
+        boolean _hasEx = false;
         try {
             IAccessor _accessor = new BaseAccessor(this.getAccessorConfig());
             _statement = _accessor.getPreparedStatement(this.getConnectionHolder().getConnection(), this.getSQL());
@@ -50,8 +55,12 @@ public class DefaultUpdateOperator extends AbstractOperator implements IUpdateOp
                 this.getAccessorConfig().beforeStatementExecution(_context = new AccessorEventContext(_statement, JDBC.DB_OPERATION_TYPE.UPDATE));
             }
             return effectCounts = _statement.executeUpdate();
+        } catch (Exception ex) {
+            _LOG.error("", ex);
+            _hasEx = true;
+            throw ex;
         } finally {
-            if (this.getAccessorConfig() != null && _context != null) {
+            if (!_hasEx && this.getAccessorConfig() != null && _context != null) {
                 this.getAccessorConfig().afterStatementExecution(_context);
             }
             if (_statement != null) {
