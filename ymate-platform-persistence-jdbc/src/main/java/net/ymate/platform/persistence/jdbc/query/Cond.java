@@ -115,6 +115,14 @@ public final class Cond {
         return this;
     }
 
+    /**
+     * @return 用于生成Where条件辅助表达式1=1
+     */
+    public Cond eqOne() {
+        __condSB.append("1 = 1");
+        return this;
+    }
+
     public Cond eq(String prefix, String field) {
         if (StringUtils.isNotBlank(prefix)) {
             field = prefix.concat(".").concat(field);
