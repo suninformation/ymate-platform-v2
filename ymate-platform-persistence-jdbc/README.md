@@ -1261,49 +1261,64 @@ JDBC模块提供的ORM主要是针对单实体操作，实际业务中往往会�
 
 + 有输入参数无输出参数：
 
-        // 执行名称为`procedure_name`的存储过程，并向该存储过程转入两个字符串参数
-        IProcedureOperator<Object[]> _opt = new DefaultProcedureOperator<Object[]>("procedure_name", JDBC.get().getDefaultConnectionHolder())
+        IConnectionHolder _conn = JDBC.get().getDefaultConnectionHolder();
+        try {
+            // 执行名称为`procedure_name`的存储过程，并向该存储过程转入两个字符串参数
+            IProcedureOperator<Object[]> _opt = new DefaultProcedureOperator<Object[]>("procedure_name", _conn)
                     .addParameter("param1")
                     .addParameter("param2")
                     .execute(IResultSetHandler.ARRAY);
-        // 遍历结果集集合
-        for (List<Object[]> _item : _opt.getResultSets()) {
-            ResultSetHelper.bind(_item).forEach(new ResultSetHelper.ItemHandler() {
-                public boolean handle(ResultSetHelper.ItemWrapper wrapper, int row) throws Exception {
-                    System.out.println(wrapper.toObject(new ArchiveVObject()).toJSON());
-                    return true;
-                }
-            });
+            // 遍历结果集集合
+            for (List<Object[]> _item : _opt.getResultSets()) {
+                ResultSetHelper.bind(_item).forEach(new ResultSetHelper.ItemHandler() {
+                    public boolean handle(ResultSetHelper.ItemWrapper wrapper, int row) throws Exception {
+                        System.out.println(wrapper.toObject(new ArchiveVObject()).toJSON());
+                        return true;
+                    }
+                });
+            }
+        } finally {
+            _conn.release();
         }
 
 + 有输入输出参数：
 
-        // 通过addOutParameter方法按存储过程输出参数顺序指定JDBC参数类型
-        new DefaultProcedureOperator("procedure_name", JDBC.get().getDefaultConnectionHolder())
-                .addParameter("param1")
-                .addParameter("param2")
-                .addOutParameter(Types.VARCHAR)
-                .execute(new IProcedureOperator.IOutResultProcessor() {
-                    public void process(int idx, int paramType, Object result) throws Exception {
-                        System.out.println(result);
-                    }
-                });
+        IConnectionHolder _conn = JDBC.get().getDefaultConnectionHolder();
+        try {
+            // 通过addOutParameter方法按存储过程输出参数顺序指定JDBC参数类型
+            new DefaultProcedureOperator("procedure_name", JDBC.get().getDefaultConnectionHolder())
+                    .addParameter("param1")
+                    .addParameter("param2")
+                    .addOutParameter(Types.VARCHAR)
+                    .execute(new IProcedureOperator.IOutResultProcessor() {
+                        public void process(int idx, int paramType, Object result) throws Exception {
+                            System.out.println(result);
+                        }
+                    });
+        } finally {
+            _conn.release();
+        }
 
 + 另一种写法：
 
-        // 创建存储过程操作器对象
-        IProcedureOperator<Object[]> _opt = new DefaultProcedureOperator<Object[]>("procedure_name", JDBC.get().getDefaultConnectionHolder())
-                .addParameter("param1")
-                .addParameter("param2")
-                .addOutParameter(Types.VARCHAR)
-                .addOutParameter(Types.INTEGER)
-                .setOutResultProcessor(new IProcedureOperator.IOutResultProcessor() {
-                    public void process(int idx, int paramType, Object result) throws Exception {
-                        System.out.println(result);
-                    }
-                }).setResultSetHandler(IResultSetHandler.ARRAY);
-        // 执行
-        _opt.execute();
+        JDBC.get().openSession(new ISessionExecutor<List<List<Object[]>>>() {
+            public List<List<Object[]>> execute(ISession session) throws Exception {
+                // 创建存储过程操作器对象
+                IProcedureOperator<Object[]> _opt = new DefaultProcedureOperator<Object[]>("procedure_name", session.getConnectionHolder())
+                        .addParameter("param1")
+                        .addParameter("param2")
+                        .addOutParameter(Types.VARCHAR)
+                        .addOutParameter(Types.INTEGER)
+                        .setOutResultProcessor(new IProcedureOperator.IOutResultProcessor() {
+                            public void process(int idx, int paramType, Object result) throws Exception {
+                                System.out.println(result);
+                            }
+                        }).setResultSetHandler(IResultSetHandler.ARRAY);
+                // 执行
+                _opt.execute();
+                return _opt.getResultSets();
+            }
+        });
 
 ##### 数据库锁操作
 
