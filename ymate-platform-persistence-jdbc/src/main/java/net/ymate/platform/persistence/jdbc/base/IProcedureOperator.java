@@ -23,19 +23,27 @@ import java.util.List;
  * @author 刘镇 (suninformation@163.com) on 2010-12-25 下午02:40:48
  * @version 1.0
  */
-public interface IProcedureOperator extends IOperator {
+public interface IProcedureOperator<T> extends IOperator {
+
+    IProcedureOperator<T> execute(IResultSetHandler<T> resultSetHandler) throws Exception;
+
+    IProcedureOperator<T> execute(IOutResultProcessor resultProcessor) throws Exception;
 
     /**
      * @param sqlParamType SQL参数类型(参考java.sql.Types)
      * @return 添加输出参数
      */
-    IProcedureOperator addOutParameter(Integer sqlParamType);
+    IProcedureOperator<T> addOutParameter(Integer sqlParamType);
 
-    IProcedureOperator setOutResultProcessor(IOutResultProcessor outResultProcessor);
+    IProcedureOperator<T> addParameter(SQLParameter parameter);
 
-    IProcedureOperator setResultSetHandler(IResultSetHandler<Object[]> resultSetHandler);
+    IProcedureOperator<T> addParameter(Object parameter);
 
-    List<List<Object[]>> getResultSets();
+    IProcedureOperator<T> setOutResultProcessor(IOutResultProcessor outResultProcessor);
+
+    IProcedureOperator<T> setResultSetHandler(IResultSetHandler<T> resultSetHandler);
+
+    List<List<T>> getResultSets();
 
     interface IOutResultProcessor {
         void process(int idx, int paramType, Object result) throws Exception;

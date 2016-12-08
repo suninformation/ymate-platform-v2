@@ -36,7 +36,7 @@ import java.util.List;
  * @author 刘镇 (suninformation@163.com) on 16/12/8 上午1:04
  * @version 1.0
  */
-public class DefaultProcedureOperator extends AbstractOperator implements IProcedureOperator {
+public class DefaultProcedureOperator<T> extends AbstractOperator implements IProcedureOperator<T> {
 
     private static final Log _LOG = LogFactory.getLog(DefaultProcedureOperator.class);
 
@@ -47,9 +47,9 @@ public class DefaultProcedureOperator extends AbstractOperator implements IProce
 
     private IOutResultProcessor __resultProcessor;
 
-    private IResultSetHandler<Object[]> __resultSetHandler;
+    private IResultSetHandler<T> __resultSetHandler;
 
-    private List<List<Object[]>> __resultSets = new ArrayList<List<Object[]>>();
+    private List<List<T>> __resultSets = new ArrayList<List<T>>();
 
     public DefaultProcedureOperator(String sql, IConnectionHolder connectionHolder) {
         super(sql, connectionHolder);
@@ -81,6 +81,18 @@ public class DefaultProcedureOperator extends AbstractOperator implements IProce
                 }
             }
         }
+    }
+
+    public IProcedureOperator<T> execute(IResultSetHandler<T> resultSetHandler) throws Exception {
+        __resultSetHandler = resultSetHandler;
+        this.execute();
+        return this;
+    }
+
+    public IProcedureOperator<T> execute(IOutResultProcessor resultProcessor) throws Exception {
+        __resultProcessor = resultProcessor;
+        this.execute();
+        return this;
     }
 
     protected int __doExecute() throws Exception {
@@ -150,22 +162,34 @@ public class DefaultProcedureOperator extends AbstractOperator implements IProce
         }
     }
 
-    public IProcedureOperator addOutParameter(Integer sqlParamType) {
+    @Override
+    @SuppressWarnings("unchecked")
+    public IProcedureOperator<T> addParameter(SQLParameter parameter) {
+        return (IProcedureOperator<T>) super.addParameter(parameter);
+    }
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public IProcedureOperator<T> addParameter(Object parameter) {
+        return (IProcedureOperator<T>) super.addParameter(parameter);
+    }
+
+    public IProcedureOperator<T> addOutParameter(Integer sqlParamType) {
         this.__outParams.add(sqlParamType);
         return this;
     }
 
-    public IProcedureOperator setOutResultProcessor(IOutResultProcessor outResultProcessor) {
+    public IProcedureOperator<T> setOutResultProcessor(IOutResultProcessor outResultProcessor) {
         __resultProcessor = outResultProcessor;
         return this;
     }
 
-    public IProcedureOperator setResultSetHandler(IResultSetHandler<Object[]> resultSetHandler) {
+    public IProcedureOperator<T> setResultSetHandler(IResultSetHandler<T> resultSetHandler) {
         __resultSetHandler = resultSetHandler;
         return this;
     }
 
-    public List<List<Object[]>> getResultSets() {
+    public List<List<T>> getResultSets() {
         return __resultSets;
     }
 }

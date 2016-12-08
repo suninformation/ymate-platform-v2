@@ -1255,6 +1255,56 @@ JDBC模块提供的ORM主要是针对单实体操作，实际业务中往往会�
             }
         });
 
+##### 存储过程调用与结果集数据处理
+
+针对于存储过程，JDBC模块提供了`IProcedureOperator`操作器接口及其默认接口实现类`DefaultProcedureOperator`来帮助你完成，存储过程有以下几种调用方式，举例说明：
+
++ 有输入参数无输出参数：
+
+        // 执行名称为`procedure_name`的存储过程，并向该存储过程转入两个字符串参数
+        IProcedureOperator<Object[]> _opt = new DefaultProcedureOperator<Object[]>("procedure_name", JDBC.get().getDefaultConnectionHolder())
+                    .addParameter("param1")
+                    .addParameter("param2")
+                    .execute(IResultSetHandler.ARRAY);
+        // 遍历结果集集合
+        for (List<Object[]> _item : _opt.getResultSets()) {
+            ResultSetHelper.bind(_item).forEach(new ResultSetHelper.ItemHandler() {
+                public boolean handle(ResultSetHelper.ItemWrapper wrapper, int row) throws Exception {
+                    System.out.println(wrapper.toObject(new ArchiveVObject()).toJSON());
+                    return true;
+                }
+            });
+        }
+
++ 有输入输出参数：
+
+        // 通过addOutParameter方法按存储过程输出参数顺序指定JDBC参数类型
+        new DefaultProcedureOperator("procedure_name", JDBC.get().getDefaultConnectionHolder())
+                .addParameter("param1")
+                .addParameter("param2")
+                .addOutParameter(Types.VARCHAR)
+                .execute(new IProcedureOperator.IOutResultProcessor() {
+                    public void process(int idx, int paramType, Object result) throws Exception {
+                        System.out.println(result);
+                    }
+                });
+
++ 另一种写法：
+
+        // 创建存储过程操作器对象
+        IProcedureOperator<Object[]> _opt = new DefaultProcedureOperator<Object[]>("procedure_name", JDBC.get().getDefaultConnectionHolder())
+                .addParameter("param1")
+                .addParameter("param2")
+                .addOutParameter(Types.VARCHAR)
+                .addOutParameter(Types.INTEGER)
+                .setOutResultProcessor(new IProcedureOperator.IOutResultProcessor() {
+                    public void process(int idx, int paramType, Object result) throws Exception {
+                        System.out.println(result);
+                    }
+                }).setResultSetHandler(IResultSetHandler.ARRAY);
+        // 执行
+        _opt.execute();
+
 ##### 数据库锁操作
 
 数据库是一个多用户使用的共享资源，当多个用户并发地存取数据时，在数据库中就会产生多个事务同时存取同一数据的情况，若对并发操作不加以控制就可能会造成数据的错误读取和存储，破坏数据库的数据一致性，所以说，加锁是实现数据库并发控制的一个非常重要的技术；
