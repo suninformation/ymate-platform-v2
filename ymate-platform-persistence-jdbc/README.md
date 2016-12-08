@@ -1286,7 +1286,7 @@ JDBC模块提供的ORM主要是针对单实体操作，实际业务中往往会�
         IConnectionHolder _conn = JDBC.get().getDefaultConnectionHolder();
         try {
             // 通过addOutParameter方法按存储过程输出参数顺序指定JDBC参数类型
-            new DefaultProcedureOperator("procedure_name", JDBC.get().getDefaultConnectionHolder())
+            new DefaultProcedureOperator("procedure_name", _conn)
                     .addParameter("param1")
                     .addParameter("param2")
                     .addOutParameter(Types.VARCHAR)
