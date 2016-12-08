@@ -15,6 +15,8 @@
  */
 package net.ymate.platform.persistence.jdbc.base;
 
+import java.util.List;
+
 /**
  * 数据库存储过程操作器接口定义
  *
@@ -22,4 +24,20 @@ package net.ymate.platform.persistence.jdbc.base;
  * @version 1.0
  */
 public interface IProcedureOperator extends IOperator {
+
+    /**
+     * @param sqlParamType SQL参数类型(参考java.sql.Types)
+     * @return 添加输出参数
+     */
+    IProcedureOperator addOutParameter(Integer sqlParamType);
+
+    IProcedureOperator setOutResultProcessor(IOutResultProcessor outResultProcessor);
+
+    IProcedureOperator setResultSetHandler(IResultSetHandler<Object[]> resultSetHandler);
+
+    List<List<Object[]>> getResultSets();
+
+    interface IOutResultProcessor {
+        void process(int idx, int paramType, Object result) throws Exception;
+    }
 }

@@ -188,7 +188,7 @@ public class JDBC implements IModule, IDatabase {
      * 数据库操作类型
      */
     public enum DB_OPERATION_TYPE {
-        QUERY, UPDATE, BATCH_UPDATE
+        QUERY, UPDATE, BATCH_UPDATE, PROCEDURE
     }
 
     /**

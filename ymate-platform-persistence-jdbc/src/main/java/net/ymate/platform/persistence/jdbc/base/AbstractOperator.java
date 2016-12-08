@@ -38,7 +38,7 @@ public abstract class AbstractOperator implements IOperator {
 
     private static final Log _LOG = LogFactory.getLog(AbstractOperator.class);
 
-    private String sql;
+    protected String sql;
 
     private IConnectionHolder connectionHolder;
 
@@ -46,12 +46,12 @@ public abstract class AbstractOperator implements IOperator {
 
     private List<SQLParameter> parameters;
 
-    private long expenseTime;
+    protected long expenseTime;
 
     /**
      * 是否已执行
      */
-    private boolean executed;
+    protected boolean executed;
 
     public AbstractOperator(String sql, IConnectionHolder connectionHolder) {
         this(sql, connectionHolder, null);
@@ -99,14 +99,14 @@ public abstract class AbstractOperator implements IOperator {
     protected abstract int __doExecute() throws Exception;
 
     protected void __doSetParameters(PreparedStatement statement) throws SQLException {
-        for (int i = 0; i < this.getParameters().size(); i++) {
-            SQLParameter _param = this.getParameters().get(i);
+        int _idx = 1;
+        for (SQLParameter _param : this.getParameters()) {
             if (_param.getValue() == null) {
-                statement.setNull(i + 1, 0);
+                statement.setNull(_idx++, 0);
             } else if (_param.getType() != null && !Type.FIELD.UNKNOW.equals(_param.getType())) {
-                statement.setObject(i + 1, _param.getValue(), _param.getType().getType());
+                statement.setObject(_idx++, _param.getValue(), _param.getType().getType());
             } else {
-                statement.setObject(i + 1, _param.getValue());
+                statement.setObject(_idx++, _param.getValue());
             }
         }
     }
