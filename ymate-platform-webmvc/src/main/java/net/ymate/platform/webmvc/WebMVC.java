@@ -15,6 +15,7 @@
  */
 package net.ymate.platform.webmvc;
 
+import com.alibaba.fastjson.JSON;
 import net.ymate.platform.core.Version;
 import net.ymate.platform.core.YMP;
 import net.ymate.platform.core.beans.BeanMeta;
@@ -31,6 +32,7 @@ import net.ymate.platform.webmvc.handle.InterceptorRuleHandler;
 import net.ymate.platform.webmvc.impl.DefaultInterceptorRuleProcessor;
 import net.ymate.platform.webmvc.impl.DefaultModuleCfg;
 import net.ymate.platform.webmvc.impl.NullWebCacheProcessor;
+import net.ymate.platform.webmvc.support.GenericResponseWrapper;
 import net.ymate.platform.webmvc.support.MultipartRequestWrapper;
 import net.ymate.platform.webmvc.support.RequestExecutor;
 import net.ymate.platform.webmvc.support.RequestMappingParser;
@@ -150,7 +152,7 @@ public class WebMVC implements IModule, IWebMvc {
                 __mappingParser.registerRequestMeta(_meta);
                 //
                 if (__owner.getConfig().isDevelopMode()) {
-                    _LOG.debug("--> " + _meta.getAllowMethods() + ": " + _meta.getMapping() + " : " + _meta.getTargetClass().getName());
+                    _LOG.debug("--> " + _meta.getAllowMethods() + ": " + _meta.getMapping() + " : " + _meta.getTargetClass().getName() + "." + _meta.getMethod().getName());
                 }
                 //
                 _isValid = true;
@@ -196,11 +198,12 @@ public class WebMVC implements IModule, IWebMvc {
         StopWatch _consumeTime = null;
         long _threadId = Thread.currentThread().getId();
         try {
+            _LOG.debug("--> [" + _threadId + "] Process request start: " + context.getHttpMethod() + ":" + context.getRequestMapping());
             if (__owner.getConfig().isDevelopMode()) {
                 _consumeTime = new StopWatch();
                 _consumeTime.start();
+                _LOG.debug("--- [" + _threadId + "] Parameters: " + JSON.toJSONString(request.getParameterMap()));
             }
-            _LOG.debug("--> [" + _threadId + "] Process request start: " + context.getHttpMethod() + ":" + context.getRequestMapping());
             //
             RequestMeta _meta = __mappingParser.doParse(context);
             if (_meta != null) {
@@ -414,7 +417,7 @@ public class WebMVC implements IModule, IWebMvc {
                 _consumeTime.stop();
                 _LOG.debug("--- [" + _threadId + "] Total execution time: " + _consumeTime.getTime() + "ms");
             }
-            _LOG.debug("<-- [" + _threadId + "] Process request completed: " + context.getHttpMethod() + ":" + context.getRequestMapping());
+            _LOG.debug("<-- [" + _threadId + "] Process request completed: " + context.getHttpMethod() + ":" + context.getRequestMapping() + ": " + ((GenericResponseWrapper) response).getStatus());
         }
     }
 }
