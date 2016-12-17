@@ -371,7 +371,7 @@ public class EntityGenerator {
                     _propMap.put("primaryKeyName", StringUtils.uncapitalize(EntityMeta.propertyNameToFieldName(_tableMeta.getPkSet().get(0))));
                 } else {
                     ColumnInfo _tmpCI = _tableMeta.getFieldMap().get("id");
-                    _propMap.put("primaryKeyType", _tmpCI == null ? "Object" : _tmpCI.getColumnType());
+                    _propMap.put("primaryKeyType", _tmpCI == null ? "Serializable" : _tmpCI.getColumnType());
                     _propMap.put("primaryKeyName", "id");
                 }
                 for (String key : _tableMeta.getFieldMap().keySet()) {
