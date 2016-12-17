@@ -72,9 +72,10 @@ public class EntityGenerator {
      * @param dbName     数据库名称
      * @param dbUserName 所属用户名称
      * @param tableName  表名称
+     * @param view       指定当前查询的是视图
      * @return 获取数据表元数据描述对象
      */
-    private TableMeta getTableMeta(String dbName, String dbUserName, String tableName) {
+    private TableMeta getTableMeta(String dbName, String dbUserName, String tableName, boolean view) {
         IConnectionHolder _connHolder = null;
         Statement _statement = null;
         ResultSet _resultSet = null;
@@ -88,63 +89,65 @@ public class EntityGenerator {
             System.out.println(">>> Catalog: " + dbName);
             System.out.println(">>> Schema: " + dbUserName);
             System.out.println(">>> Table: " + tableName);
-            _resultSet = _dbMetaData.getPrimaryKeys(dbName, _dbType.equalsIgnoreCase("oracle") ? dbUserName.toUpperCase() : dbUserName, tableName);
-            if (_resultSet == null) {
-                System.err.println("Database table \"" + tableName + "\" primaryKey resultSet is null, ignored");
-                return null;
-            } else {
-                while (_resultSet.next()) {
-                    _pkFields.add(_resultSet.getString(4).toLowerCase());
-                }
-                if (_pkFields.isEmpty()) {
-                    System.err.println("Database table \"" + tableName + "\" does not set the primary key, ignored");
+            if (!view) {
+                _resultSet = _dbMetaData.getPrimaryKeys(dbName, _dbType.equalsIgnoreCase("oracle") ? dbUserName.toUpperCase() : dbUserName, tableName);
+                if (_resultSet == null) {
+                    System.err.println("Database table \"" + tableName + "\" primaryKey resultSet is null, ignored");
                     return null;
                 } else {
-                    //
-                    System.out.println(">>> " + "COLUMN_NAME / " +
-                            "COLUMN_CLASS_NAME / " +
-                            "PRIMARY_KEY / " +
-                            "AUTO_INCREMENT / " +
-                            "SIGNED / " +
-                            "PRECISION / " +
-                            "SCALE / " +
-                            "NULLABLE / " +
-                            "DEFAULT / " +
-                            "REMARKS");
-                    //
-                    _statement = _connHolder.getConnection().createStatement(ResultSet.TYPE_SCROLL_SENSITIVE, ResultSet.CONCUR_UPDATABLE);
-                    _resultSet = _statement.executeQuery("SELECT * FROM ".concat(_connHolder.getDialect().wrapIdentifierQuote(tableName)));
-                    ResultSetMetaData _rsMetaData = _resultSet.getMetaData();
-                    //
-                    for (int _idx = 1; _idx <= _rsMetaData.getColumnCount(); _idx++) {
-                        // 获取字段元数据对象
-                        ResultSet _column = _dbMetaData.getColumns(dbName, _dbType.equalsIgnoreCase("oracle") ? dbUserName.toUpperCase() : dbUserName, tableName, _rsMetaData.getColumnName(_idx));
-                        if (_column.next()) {
-                            // 提取字段定义及字段默认值
-                            _tableFields.put(_rsMetaData.getColumnName(_idx).toLowerCase(), new ColumnInfo(
-                                    _rsMetaData.getColumnName(_idx).toLowerCase(),
-                                    _rsMetaData.getColumnClassName(_idx),
-                                    _rsMetaData.isAutoIncrement(_idx),
-                                    _rsMetaData.isSigned(_idx),
-                                    _rsMetaData.getPrecision(_idx),
-                                    _rsMetaData.getScale(_idx),
-                                    _rsMetaData.isNullable(_idx),
-                                    _column.getString("COLUMN_DEF"),
-                                    _column.getString("REMARKS")));
-                            System.out.println("--> " + _rsMetaData.getColumnName(_idx).toLowerCase() + "\t" +
-                                    _rsMetaData.getColumnClassName(_idx) + "\t" +
-                                    _pkFields.contains(_rsMetaData.getColumnName(_idx).toLowerCase()) + "\t" +
-                                    _rsMetaData.isAutoIncrement(_idx) + "\t" +
-                                    _rsMetaData.isSigned(_idx) + "\t" +
-                                    _rsMetaData.getPrecision(_idx) + "\t" +
-                                    _rsMetaData.getScale(_idx) + "\t" +
-                                    _rsMetaData.isNullable(_idx) + "\t" +
-                                    _column.getString("COLUMN_DEF") + "\t" +
-                                    _column.getString("REMARKS"));
-                        }
-                        _column.close();
+                    while (_resultSet.next()) {
+                        _pkFields.add(_resultSet.getString(4).toLowerCase());
+                    }
+                    if (_pkFields.isEmpty()) {
+                        System.err.println("Database table \"" + tableName + "\" does not set the primary key, ignored");
+                        return null;
                     }
                 }
+            }
+            //
+            //
+            System.out.println(">>> " + "COLUMN_NAME / " +
+                    "COLUMN_CLASS_NAME / " +
+                    "PRIMARY_KEY / " +
+                    "AUTO_INCREMENT / " +
+                    "SIGNED / " +
+                    "PRECISION / " +
+                    "SCALE / " +
+                    "NULLABLE / " +
+                    "DEFAULT / " +
+                    "REMARKS");
+            //
+            _statement = _connHolder.getConnection().createStatement(ResultSet.TYPE_SCROLL_SENSITIVE, ResultSet.CONCUR_UPDATABLE);
+            _resultSet = _statement.executeQuery("SELECT * FROM ".concat(_connHolder.getDialect().wrapIdentifierQuote(tableName)));
+            ResultSetMetaData _rsMetaData = _resultSet.getMetaData();
+            //
+            for (int _idx = 1; _idx <= _rsMetaData.getColumnCount(); _idx++) {
+                // 获取字段元数据对象
+                ResultSet _column = _dbMetaData.getColumns(dbName, _dbType.equalsIgnoreCase("oracle") ? dbUserName.toUpperCase() : dbUserName, tableName, _rsMetaData.getColumnName(_idx));
+                if (_column.next()) {
+                    // 提取字段定义及字段默认值
+                    _tableFields.put(_rsMetaData.getColumnName(_idx).toLowerCase(), new ColumnInfo(
+                            _rsMetaData.getColumnName(_idx).toLowerCase(),
+                            _rsMetaData.getColumnClassName(_idx),
+                            _rsMetaData.isAutoIncrement(_idx),
+                            _rsMetaData.isSigned(_idx),
+                            _rsMetaData.getPrecision(_idx),
+                            _rsMetaData.getScale(_idx),
+                            _rsMetaData.isNullable(_idx),
+                            _column.getString("COLUMN_DEF"),
+                            _column.getString("REMARKS")));
+                    System.out.println("--> " + _rsMetaData.getColumnName(_idx).toLowerCase() + "\t" +
+                            _rsMetaData.getColumnClassName(_idx) + "\t" +
+                            _pkFields.contains(_rsMetaData.getColumnName(_idx).toLowerCase()) + "\t" +
+                            _rsMetaData.isAutoIncrement(_idx) + "\t" +
+                            _rsMetaData.isSigned(_idx) + "\t" +
+                            _rsMetaData.getPrecision(_idx) + "\t" +
+                            _rsMetaData.getScale(_idx) + "\t" +
+                            _rsMetaData.isNullable(_idx) + "\t" +
+                            _column.getString("COLUMN_DEF") + "\t" +
+                            _column.getString("REMARKS"));
+                }
+                _column.close();
             }
         } catch (Exception e) {
             if (e instanceof RuntimeException) {
@@ -184,7 +187,7 @@ public class EntityGenerator {
                     String _dbType = session.getConnectionHolder().getDialect().getName();
                     String _sql = null;
                     if ("mysql".equalsIgnoreCase(_dbType)) {
-                        _sql = "show tables";
+                        _sql = "show full tables where Table_type='BASE TABLE'";
                     } else if ("oracle".equalsIgnoreCase(_dbType)) {
                         _sql = "select t.table_name from user_tables t";
                     } else if ("sqlserver".equalsIgnoreCase(_dbType)) {
@@ -212,144 +215,192 @@ public class EntityGenerator {
     }
 
     /**
-     * 根据数据库表定义创建实体类文件
+     * @return 获取数据库视图名称集合
      */
-    public void createEntityClassFiles() {
-        Map<String, Object> _propMap = buildPropMap();
-        //
-        boolean _isUseBaseEntity = BlurObject.bind(__owner.getConfig().getParam("jdbc.use_base_entity")).toBooleanValue();
-        boolean _isUseClassSuffix = BlurObject.bind(__owner.getConfig().getParam("jdbc.use_class_suffix")).toBooleanValue();
-        boolean _isUseChainMode = BlurObject.bind(__owner.getConfig().getParam("jdbc.use_chain_mode")).toBooleanValue();
-        boolean _isUseStateSupport = BlurObject.bind(__owner.getConfig().getParam("jdbc.use_state_support")).toBooleanValue();
-        _propMap.put("isUseBaseEntity", _isUseBaseEntity);
-        _propMap.put("isUseClassSuffix", _isUseClassSuffix);
-        _propMap.put("isUseChainMode", _isUseChainMode);
-        _propMap.put("isUseStateSupport", _isUseStateSupport);
-        if (_isUseBaseEntity) {
-            buildTargetFile("/model/BaseEntity.java", "/BaseEntity.ftl", _propMap);
+    private List<String> getViewNames() {
+        try {
+            return __jdbc.openSession(new ISessionExecutor<List<String>>() {
+                @Override
+                public List<String> execute(ISession session) throws Exception {
+                    String _dbType = session.getConnectionHolder().getDialect().getName();
+                    String _sql = null;
+                    if ("mysql".equalsIgnoreCase(_dbType)) {
+                        _sql = "show full tables where Table_type='VIEW'";
+                    } else if ("oracle".equalsIgnoreCase(_dbType)) {
+                        _sql = "select view_name from user_views";
+                    } else if ("sqlserver".equalsIgnoreCase(_dbType)) {
+                        _sql = "select name from sysobjects where xtype='V'";
+                    } else {
+                        throw new Error("The current database \"" + _dbType + "\" type not supported");
+                    }
+                    final List<String> _results = new ArrayList<String>();
+                    ResultSetHelper _helper = ResultSetHelper.bind(session.find(SQL.create(_sql), IResultSetHandler.ARRAY));
+                    _helper.forEach(new ResultSetHelper.ItemHandler() {
+                        public boolean handle(ResultSetHelper.ItemWrapper wrapper, int row) throws Exception {
+                            _results.add(wrapper.getAsString(0));
+                            return true;
+                        }
+                    });
+                    return _results;
+                }
+            });
+        } catch (Exception e) {
+            if (e instanceof RuntimeException) {
+                throw (RuntimeException) e;
+            }
+            throw new RuntimeException(e);
         }
-        //
-        List<String> _tableList = Arrays.asList(StringUtils.split(StringUtils.defaultIfBlank(__owner.getConfig().getParam("jdbc.table_list"), ""), "|"));
-        if (_tableList.isEmpty()) {
-            _tableList = getTableNames();
-        }
-        //
+    }
+
+    /**
+     * 根据数据库表定义创建实体类文件
+     *
+     * @param view 指定当前创建的是视图
+     */
+    public void createEntityClassFiles(boolean view) {
         String _dbName = __owner.getConfig().getParam("jdbc.db_name");
         String _dbUser = __owner.getConfig().getParam("jdbc.db_username");
         String[] _prefixs = StringUtils.split(StringUtils.defaultIfBlank(__owner.getConfig().getParam("jdbc.table_prefix"), ""), '|');
         boolean _isRemovePrefix = new BlurObject(__owner.getConfig().getParam("jdbc.remove_table_prefix")).toBooleanValue();
         List<String> _tableExcludeList = Arrays.asList(StringUtils.split(StringUtils.defaultIfBlank(__owner.getConfig().getParam("jdbc.table_exclude_list"), "").toLowerCase(), "|"));
-        for (String _tableName : _tableList) {
-            // 判断黑名单
-            if (!_tableExcludeList.isEmpty()) {
-                if (_tableExcludeList.contains(_tableName.toLowerCase())) {
-                    continue;
-                } else {
-                    boolean _flag = false;
-                    for (String _excludedName : _tableExcludeList) {
-                        if (StringUtils.contains(_excludedName, "*") && StringUtils.startsWithIgnoreCase(_tableName, StringUtils.substringBefore(_excludedName, "*"))) {
-                            _flag = true;
-                            break;
-                        }
-                    }
-                    if (_flag) {
-                        continue;
-                    }
-                }
+        //
+        List<String> _tableList = Arrays.asList(StringUtils.split(StringUtils.defaultIfBlank(__owner.getConfig().getParam("jdbc.table_list"), ""), "|"));
+        if (_tableList.isEmpty()) {
+            if (view) {
+                _tableList = getViewNames();
+            } else {
+                _tableList = getTableNames();
             }
-            TableMeta _tableMeta = getTableMeta(_dbName, _dbUser, _tableName);
-            if (_tableMeta != null) {
-                String _modelName = null;
-                for (String _prefix : _prefixs) {
-                    if (_tableName.startsWith(_prefix)) {
-                        if (_isRemovePrefix) {
-                            _tableName = _tableName.substring(_prefix.length());
-                        }
-                        _modelName = StringUtils.capitalize(EntityMeta.propertyNameToFieldName(_tableName));
+        }
+        for (String _tableName : _tableList) {
+            if (checkTableNameBlacklist(_tableExcludeList, _tableName)) {
+                buildEntityClassFile(getTableMeta(_dbName, _dbUser, _tableName, view), _tableName, _prefixs, _isRemovePrefix, view);
+            }
+        }
+    }
+
+    private boolean checkTableNameBlacklist(List<String> _tableExcludeList, String _tableName) {
+        // 判断黑名单
+        if (!_tableExcludeList.isEmpty()) {
+            if (_tableExcludeList.contains(_tableName.toLowerCase())) {
+                return false;
+            } else {
+                boolean _flag = false;
+                for (String _excludedName : _tableExcludeList) {
+                    if (StringUtils.contains(_excludedName, "*") && StringUtils.startsWithIgnoreCase(_tableName, StringUtils.substringBefore(_excludedName, "*"))) {
+                        _flag = true;
                         break;
                     }
                 }
-                if (StringUtils.isBlank(_modelName)) {
-                    _modelName = StringUtils.capitalize(EntityMeta.propertyNameToFieldName(_tableName));
+                if (_flag) {
+                    return false;
                 }
+            }
+        }
+        return true;
+    }
+
+    private void buildEntityClassFile(TableMeta _tableMeta, String _tableName, String[] _prefixs, boolean _isRemovePrefix, boolean view) {
+        if (_tableMeta != null) {
+            Map<String, Object> _propMap = buildPropMap();
+            String _modelName = null;
+            for (String _prefix : _prefixs) {
+                if (_tableName.startsWith(_prefix)) {
+                    if (_isRemovePrefix) {
+                        _tableName = _tableName.substring(_prefix.length());
+                    }
+                    _modelName = StringUtils.capitalize(EntityMeta.propertyNameToFieldName(_tableName));
+                    break;
+                }
+            }
+            if (StringUtils.isBlank(_modelName)) {
+                _modelName = StringUtils.capitalize(EntityMeta.propertyNameToFieldName(_tableName));
+            }
+            //
+            _propMap.put("tableName", _tableName);
+            _propMap.put("modelName", _modelName);
+            List<Attr> _fieldList = new ArrayList<Attr>(); // 用于完整的构造方法
+            List<Attr> _fieldListForNotNullable = new ArrayList<Attr>(); // 用于非空字段的构造方法
+            List<Attr> _allFieldList = new ArrayList<Attr>(); // 用于生成字段名称常量
+            if (_tableMeta.getPkSet().size() > 1) {
+                _propMap.put("primaryKeyType", _modelName + "PK");
+                _propMap.put("primaryKeyName", StringUtils.uncapitalize((String) _propMap.get("primaryKeyType")));
+                List<Attr> _primaryKeyList = new ArrayList<Attr>();
+                _propMap.put("primaryKeyList", _primaryKeyList);
+                Attr _pkAttr = new Attr((String) _propMap.get("primaryKeyType"),
+                        (String) _propMap.get("primaryKeyName"), null, false, false, 0, 0, 0, null, null);
+                _fieldList.add(_pkAttr);
+                _fieldListForNotNullable.add(_pkAttr);
                 //
-                _propMap.put("tableName", _tableName);
-                _propMap.put("modelName", _modelName);
-                List<Attr> _fieldList = new ArrayList<Attr>(); // 用于完整的构造方法
-                List<Attr> _fieldListForNotNullable = new ArrayList<Attr>(); // 用于非空字段的构造方法
-                List<Attr> _allFieldList = new ArrayList<Attr>(); // 用于生成字段名称常量
-                if (_tableMeta.getPkSet().size() > 1) {
-                    _propMap.put("primaryKeyType", _modelName + "PK");
-                    _propMap.put("primaryKeyName", StringUtils.uncapitalize((String) _propMap.get("primaryKeyType")));
-                    List<Attr> _primaryKeyList = new ArrayList<Attr>();
-                    _propMap.put("primaryKeyList", _primaryKeyList);
-                    Attr _pkAttr = new Attr((String) _propMap.get("primaryKeyType"),
-                            (String) _propMap.get("primaryKeyName"), null, false, false, 0, 0, 0, null, null);
-                    _fieldList.add(_pkAttr);
-                    _fieldListForNotNullable.add(_pkAttr);
-                    //
-                    for (String pkey : _tableMeta.getPkSet()) {
-                        ColumnInfo _ci = _tableMeta.getFieldMap().get(pkey);
-                        _primaryKeyList.add(_ci.toAttr());
-                        _allFieldList.add(new Attr("String",
-                                _ci.getColumnName().toUpperCase(),
-                                _ci.getColumnName(),
-                                _ci.isAutoIncrement(),
-                                _ci.isSigned(),
-                                _ci.getPrecision(),
-                                _ci.getScale(),
-                                _ci.getNullable(),
-                                _ci.getDefaultValue(),
-                                _ci.getRemarks()));
+                for (String pkey : _tableMeta.getPkSet()) {
+                    ColumnInfo _ci = _tableMeta.getFieldMap().get(pkey);
+                    _primaryKeyList.add(_ci.toAttr());
+                    _allFieldList.add(new Attr("String",
+                            _ci.getColumnName().toUpperCase(),
+                            _ci.getColumnName(),
+                            _ci.isAutoIncrement(),
+                            _ci.isSigned(),
+                            _ci.getPrecision(),
+                            _ci.getScale(),
+                            _ci.getNullable(),
+                            _ci.getDefaultValue(),
+                            _ci.getRemarks()));
+                }
+                for (String key : _tableMeta.getFieldMap().keySet()) {
+                    if (_tableMeta.getPkSet().contains(key)) {
+                        continue;
                     }
-                    for (String key : _tableMeta.getFieldMap().keySet()) {
-                        if (_tableMeta.getPkSet().contains(key)) {
-                            continue;
-                        }
-                        ColumnInfo _ci = _tableMeta.getFieldMap().get(key);
-                        Attr _attr = _ci.toAttr();
-                        _fieldList.add(_attr);
-                        _fieldListForNotNullable.add(_attr);
-                        _allFieldList.add(new Attr("String",
-                                _ci.getColumnName().toUpperCase(),
-                                _ci.getColumnName(),
-                                _ci.isAutoIncrement(),
-                                _ci.isSigned(),
-                                _ci.getPrecision(),
-                                _ci.getScale(),
-                                _ci.getNullable(),
-                                _ci.getDefaultValue(),
-                                _ci.getRemarks()));
-                    }
-                } else {
+                    ColumnInfo _ci = _tableMeta.getFieldMap().get(key);
+                    Attr _attr = _ci.toAttr();
+                    _fieldList.add(_attr);
+                    _fieldListForNotNullable.add(_attr);
+                    _allFieldList.add(new Attr("String",
+                            _ci.getColumnName().toUpperCase(),
+                            _ci.getColumnName(),
+                            _ci.isAutoIncrement(),
+                            _ci.isSigned(),
+                            _ci.getPrecision(),
+                            _ci.getScale(),
+                            _ci.getNullable(),
+                            _ci.getDefaultValue(),
+                            _ci.getRemarks()));
+                }
+            } else {
+                if (!view) {
                     _propMap.put("primaryKeyType", _tableMeta.getFieldMap().get(_tableMeta.getPkSet().get(0)).getColumnType());
                     _propMap.put("primaryKeyName", StringUtils.uncapitalize(EntityMeta.propertyNameToFieldName(_tableMeta.getPkSet().get(0))));
-                    for (String key : _tableMeta.getFieldMap().keySet()) {
-                        ColumnInfo _ci = _tableMeta.getFieldMap().get(key);
-                        Attr _attr = _ci.toAttr();
-                        _fieldList.add(_attr);
-                        if (_attr.getNullable() == 0) {
-                            _fieldListForNotNullable.add(_attr);
-                        }
-                        _allFieldList.add(new Attr("String",
-                                _ci.getColumnName().toUpperCase(),
-                                _ci.getColumnName(),
-                                _ci.isAutoIncrement(),
-                                _ci.isSigned(),
-                                _ci.getPrecision(),
-                                _ci.getScale(),
-                                _ci.getNullable(),
-                                _ci.getDefaultValue(),
-                                _ci.getRemarks()));
-                    }
+                } else {
+                    ColumnInfo _tmpCI = _tableMeta.getFieldMap().get("id");
+                    _propMap.put("primaryKeyType", _tmpCI == null ? "Object" : _tmpCI.getColumnType());
+                    _propMap.put("primaryKeyName", "id");
                 }
-                _propMap.put("fieldList", _fieldList);
-                // 为必免构造方法重复，构造参数数量相同则清空
-                _propMap.put("notNullableFieldList", _fieldList.size() == _fieldListForNotNullable.size() ? Collections.emptyList() : _fieldListForNotNullable);
-                _propMap.put("allFieldList", _allFieldList);
-                //
-                buildTargetFile("/model/" + _modelName + (_isUseClassSuffix ? "Model.java" : ".java"), "/Entity.ftl", _propMap);
-                //
+                for (String key : _tableMeta.getFieldMap().keySet()) {
+                    ColumnInfo _ci = _tableMeta.getFieldMap().get(key);
+                    Attr _attr = _ci.toAttr();
+                    _fieldList.add(_attr);
+                    if (_attr.getNullable() == 0) {
+                        _fieldListForNotNullable.add(_attr);
+                    }
+                    _allFieldList.add(new Attr("String",
+                            _ci.getColumnName().toUpperCase(),
+                            _ci.getColumnName(),
+                            _ci.isAutoIncrement(),
+                            _ci.isSigned(),
+                            _ci.getPrecision(),
+                            _ci.getScale(),
+                            _ci.getNullable(),
+                            _ci.getDefaultValue(),
+                            _ci.getRemarks()));
+                }
+            }
+            _propMap.put("fieldList", _fieldList);
+            // 为必免构造方法重复，构造参数数量相同则清空
+            _propMap.put("notNullableFieldList", _fieldList.size() == _fieldListForNotNullable.size() ? Collections.emptyList() : _fieldListForNotNullable);
+            _propMap.put("allFieldList", _allFieldList);
+            //
+            buildTargetFile("/model/" + _modelName + (((Boolean) _propMap.get("isUseClassSuffix")) ? "Model.java" : ".java"), view ? "/View.ftl" : "/Entity.ftl", _propMap);
+            //
+            if (!view) {
                 if (_tableMeta.getPkSet().size() > 1) {
                     _propMap.put("modelName", _modelName);
                     if (_tableMeta.getPkSet().size() > 1) {
@@ -397,6 +448,20 @@ public class EntityGenerator {
         Map<String, Object> _propMap = new HashMap<String, Object>();
         _propMap.put("packageName", StringUtils.defaultIfBlank(__owner.getConfig().getParam("jdbc.package_name"), "packages"));
         _propMap.put("lastUpdateTime", new Date());
+        //
+        //
+        boolean _isUseBaseEntity = BlurObject.bind(__owner.getConfig().getParam("jdbc.use_base_entity")).toBooleanValue();
+        boolean _isUseClassSuffix = BlurObject.bind(__owner.getConfig().getParam("jdbc.use_class_suffix")).toBooleanValue();
+        boolean _isUseChainMode = BlurObject.bind(__owner.getConfig().getParam("jdbc.use_chain_mode")).toBooleanValue();
+        boolean _isUseStateSupport = BlurObject.bind(__owner.getConfig().getParam("jdbc.use_state_support")).toBooleanValue();
+        _propMap.put("isUseBaseEntity", _isUseBaseEntity);
+        _propMap.put("isUseClassSuffix", _isUseClassSuffix);
+        _propMap.put("isUseChainMode", _isUseChainMode);
+        _propMap.put("isUseStateSupport", _isUseStateSupport);
+        if (_isUseBaseEntity) {
+            buildTargetFile("/model/BaseEntity.java", "/BaseEntity.ftl", _propMap);
+        }
+        //
         return _propMap;
     }
 
@@ -564,7 +629,7 @@ public class EntityGenerator {
     public static void main(String[] args) throws Exception {
         YMP.get().init();
         try {
-            new EntityGenerator(YMP.get()).createEntityClassFiles();
+            new EntityGenerator(YMP.get()).createEntityClassFiles((args != null && args.length > 0) && BlurObject.bind(args[0]).toBooleanValue());
         } finally {
             YMP.get().destroy();
         }

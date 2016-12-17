@@ -90,6 +90,11 @@ public final class EntityMeta {
     private boolean __multiplePrimaryKey;
 
     /**
+     * 是否为视图
+     */
+    private boolean __view;
+
+    /**
      * 实体注释说明信息
      */
     private String __comment;
@@ -103,15 +108,17 @@ public final class EntityMeta {
         if (_returnMeta == null) {
             // 判断clazz对象是否声明了@Entity注解
             if (ClassUtils.isAnnotationOf(targetClass, Entity.class)) {
-                _returnMeta = new EntityMeta(StringUtils.defaultIfBlank(targetClass.getAnnotation(Entity.class).value(), fieldNameToPropertyName(targetClass.getSimpleName(), 0)), targetClass.getAnnotation(ShardingRule.class));
+                _returnMeta = new EntityMeta(StringUtils.defaultIfBlank(targetClass.getAnnotation(Entity.class).value(), fieldNameToPropertyName(targetClass.getSimpleName(), 0)), ClassUtils.isAnnotationOf(targetClass, Readonly.class), targetClass.getAnnotation(ShardingRule.class));
                 // 判断clazz对象是否声明了@Comment注解
                 if (ClassUtils.isAnnotationOf(targetClass, Comment.class)) {
                     _returnMeta.__comment = targetClass.getAnnotation(Comment.class).value();
                 }
                 // 处理字段属性
                 __doParseProperties(targetClass, _returnMeta);
-                // 处理主键
-                __doParsePrimaryKeys(targetClass, _returnMeta);
+                // 处理主键(排除视图)
+                if (!_returnMeta.isView()) {
+                    __doParsePrimaryKeys(targetClass, _returnMeta);
+                }
                 // 处理索引
                 __doParseIndexes(targetClass, _returnMeta);
                 // 注册数据实体类
@@ -292,9 +299,10 @@ public final class EntityMeta {
      * 私有构造方法
      *
      * @param name         实体名称
+     * @param view         是否为视图
      * @param shardingRule 据分片(表)规则
      */
-    private EntityMeta(String name, ShardingRule shardingRule) {
+    private EntityMeta(String name, boolean view, ShardingRule shardingRule) {
         this.__primaryKeys = new ArrayList<String>();
         this.__autoincrementProps = new ArrayList<String>();
         this.__readonlyProps = new ArrayList<String>();
@@ -303,6 +311,7 @@ public final class EntityMeta {
         this.__indexes = new HashMap<String, IndexMeta>();
         //
         this.__entityName = name;
+        this.__view = view;
     }
 
     /**
@@ -365,6 +374,13 @@ public final class EntityMeta {
      */
     public boolean isReadonly(String propertyName) {
         return this.__readonlyProps.contains(propertyName);
+    }
+
+    /**
+     * @return 返回当前实体是否为视图
+     */
+    public boolean isView() {
+        return __view;
     }
 
     /**

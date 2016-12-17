@@ -18,13 +18,13 @@ package net.ymate.platform.persistence.annotation;
 import java.lang.annotation.*;
 
 /**
- * 声明一个成员为只读属性，数据实体更新时其将被忽略
+ * 声明一个类或成员为只读属性，数据实体更新时其将被忽略
  *
  * @author 刘镇 (suninformation@163.com) on 15/3/28 下午3:51
  * @version 1.0
  */
 @Retention(RetentionPolicy.RUNTIME)
-@Target({ElementType.FIELD})
+@Target({ElementType.FIELD, ElementType.TYPE})
 @Documented
 public @interface Readonly {
 }

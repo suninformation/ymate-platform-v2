@@ -373,6 +373,9 @@ public class DefaultSession implements ISession {
 
     public <T extends IEntity> T update(T entity, Fields filter, IShardingable shardingable) throws Exception {
         EntityMeta _meta = EntityMeta.createAndGet(entity.getClass());
+        if (_meta.isView()) {
+            throw new UnsupportedOperationException("View does not support this operation.");
+        }
         PairObject<Fields, Params> _entity = __doGetPrimaryKeyFieldAndValues(_meta, entity, null);
         filter = __doGetNotExcludedFields(_meta, filter, true, false);
         String _updateSql = __dialect.buildUpdateByPkSQL(entity.getClass(), __tablePrefix, shardingable, _entity.getKey(), filter);
@@ -401,6 +404,9 @@ public class DefaultSession implements ISession {
     public <T extends IEntity> List<T> update(List<T> entities, Fields filter) throws Exception {
         T _element = entities.get(0);
         EntityMeta _meta = EntityMeta.createAndGet(_element.getClass());
+        if (_meta.isView()) {
+            throw new UnsupportedOperationException("View does not support this operation.");
+        }
         PairObject<Fields, Params> _entity = __doGetPrimaryKeyFieldAndValues(_meta, _element, null);
         filter = __doGetNotExcludedFields(_meta, filter, true, false);
         String _updateSql = __dialect.buildUpdateByPkSQL(_element.getClass(), __tablePrefix, null, _entity.getKey(), filter);
@@ -454,6 +460,9 @@ public class DefaultSession implements ISession {
 
     public <T extends IEntity> T insert(T entity, Fields filter, IShardingable shardingable) throws Exception {
         EntityMeta _meta = EntityMeta.createAndGet(entity.getClass());
+        if (_meta.isView()) {
+            throw new UnsupportedOperationException("View does not support this operation.");
+        }
         PairObject<Fields, Params> _entity = __doGetEntityFieldAndValues(_meta, entity, filter, true);
         String _insertSql = __dialect.buildInsertSQL(entity.getClass(), __tablePrefix, shardingable, _entity.getKey());
         IUpdateOperator _opt = new DefaultUpdateOperator(_insertSql, this.__connectionHolder);
@@ -503,6 +512,9 @@ public class DefaultSession implements ISession {
     public <T extends IEntity> List<T> insert(List<T> entities, Fields filter) throws Exception {
         T _element = entities.get(0);
         EntityMeta _meta = EntityMeta.createAndGet(_element.getClass());
+        if (_meta.isView()) {
+            throw new UnsupportedOperationException("View does not support this operation.");
+        }
         PairObject<Fields, Params> _entity = __doGetEntityFieldAndValues(_meta, _element, filter, true);
         String _insertSql = __dialect.buildInsertSQL(_element.getClass(), __tablePrefix, null, _entity.getKey());
         IBatchUpdateOperator _opt = new BatchUpdateOperator(_insertSql, this.__connectionHolder);
@@ -568,6 +580,9 @@ public class DefaultSession implements ISession {
 
     public <T extends IEntity> int delete(Class<T> entityClass, Serializable id, IShardingable shardingable) throws Exception {
         EntityMeta _meta = EntityMeta.createAndGet(entityClass);
+        if (_meta.isView()) {
+            throw new UnsupportedOperationException("View does not support this operation.");
+        }
         PairObject<Fields, Params> _entity = __doGetPrimaryKeyFieldAndValues(_meta, id, null);
         String _deleteSql = __dialect.buildDeleteByPkSQL(entityClass, __tablePrefix, shardingable, _entity.getKey());
         IUpdateOperator _opt = new DefaultUpdateOperator(_deleteSql, this.__connectionHolder);
@@ -587,6 +602,9 @@ public class DefaultSession implements ISession {
 
     public <T extends IEntity> List<T> delete(List<T> entities) throws Exception {
         EntityMeta _meta = EntityMeta.createAndGet(entities.get(0).getClass());
+        if (_meta.isView()) {
+            throw new UnsupportedOperationException("View does not support this operation.");
+        }
         PairObject<Fields, Params> _entity = __doGetPrimaryKeyFieldAndValues(_meta, entities.get(0), null);
         String _deleteSql = __dialect.buildDeleteByPkSQL(entities.get(0).getClass(), __tablePrefix, null, _entity.getKey());
         IBatchUpdateOperator _opt = new BatchUpdateOperator(_deleteSql, this.__connectionHolder);
@@ -616,6 +634,9 @@ public class DefaultSession implements ISession {
 
     public <T extends IEntity> int[] delete(Class<T> entityClass, Serializable[] ids) throws Exception {
         EntityMeta _meta = EntityMeta.createAndGet(entityClass);
+        if (_meta.isView()) {
+            throw new UnsupportedOperationException("View does not support this operation.");
+        }
         PairObject<Fields, Params> _entity = __doGetPrimaryKeyFieldAndValues(_meta, ids[0], null);
         String _deleteSql = __dialect.buildDeleteByPkSQL(entityClass, __tablePrefix, null, _entity.getKey());
         IBatchUpdateOperator _opt = new BatchUpdateOperator(_deleteSql, this.__connectionHolder);
