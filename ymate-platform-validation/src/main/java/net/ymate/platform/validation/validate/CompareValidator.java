@@ -16,9 +16,8 @@
 package net.ymate.platform.validation.validate;
 
 import net.ymate.platform.core.beans.annotation.CleanProxy;
-import net.ymate.platform.core.i18n.I18N;
 import net.ymate.platform.core.lang.BlurObject;
-import net.ymate.platform.validation.IValidator;
+import net.ymate.platform.validation.AbstractValidator;
 import net.ymate.platform.validation.ValidateContext;
 import net.ymate.platform.validation.ValidateResult;
 import net.ymate.platform.validation.annotation.Validator;
@@ -32,44 +31,37 @@ import org.apache.commons.lang.StringUtils;
  */
 @Validator(VCompare.class)
 @CleanProxy
-public class CompareValidator implements IValidator {
+public class CompareValidator extends AbstractValidator {
 
     public ValidateResult validate(ValidateContext context) {
         Object _paramValue = context.getParamValue();
         if (_paramValue != null && !_paramValue.getClass().isArray()) {
             VCompare _vCompare = (VCompare) context.getAnnotation();
-            boolean _matched = BlurObject.bind(_paramValue).toStringValue()
-                    .equals(BlurObject.bind(context.getParamValue(_vCompare.with())).toString());
-            String _condStr = "equals";
+            boolean _matched = BlurObject.bind(_paramValue).toStringValue().equals(BlurObject.bind(context.getParamValue(_vCompare.with())).toString());
             switch (_vCompare.cond()) {
                 case NOT_EQ:
                     _matched = !_matched;
-                    _condStr = "not equals";
                     break;
-                case EQ:
             }
             if (!_matched) {
                 String _pName = StringUtils.defaultIfBlank(context.getParamLabel(), context.getParamName());
-                _pName = I18N.formatMessage(VALIDATION_I18N_RESOURCE, _pName, _pName);
+                _pName = __doGetI18nFormatMessage(context, _pName, _pName);
 
                 String _pLabel = StringUtils.defaultIfBlank(_vCompare.withLabel(), _vCompare.with());
-                _pLabel = I18N.formatMessage(VALIDATION_I18N_RESOURCE, _pLabel, _pLabel);
+                _pLabel = __doGetI18nFormatMessage(context, _pLabel, _pLabel);
                 //
                 String _msg = StringUtils.trimToNull(_vCompare.msg());
                 if (_msg != null) {
-                    _msg = I18N.formatMessage(VALIDATION_I18N_RESOURCE, _msg, _msg, _pName, _pLabel);
+                    _msg = __doGetI18nFormatMessage(context, _msg, _msg, _pName, _pLabel);
                 } else {
                     switch (_vCompare.cond()) {
                         case NOT_EQ:
                             String __COMPARE_NOT_EQ = "ymp.validation.compare_not_eq";
-                            _msg = I18N.formatMessage(VALIDATION_I18N_RESOURCE, __COMPARE_NOT_EQ, "{0} can not eq {1}.", _pName, _pLabel);
+                            _msg = __doGetI18nFormatMessage(context, __COMPARE_NOT_EQ, "{0} can not eq {1}.", _pName, _pLabel);
                             break;
                         case EQ:
                             String __COMPARE_EQ = "ymp.validation.compare_eq";
-                            _msg = I18N.formatMessage(VALIDATION_I18N_RESOURCE, __COMPARE_EQ, "{0} must be eq {1}.", _pName, _pLabel);
-                    }
-                    if (StringUtils.trimToNull(_msg) == null) {
-                        _msg = I18N.formatMessage("{0} must be {1} {2}", _pName, _condStr, _pLabel);
+                            _msg = __doGetI18nFormatMessage(context, __COMPARE_EQ, "{0} must be eq {1}.", _pName, _pLabel);
                     }
                 }
                 return new ValidateResult(context.getParamName(), _msg);

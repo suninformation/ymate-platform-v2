@@ -16,9 +16,8 @@
 package net.ymate.platform.validation.validate;
 
 import net.ymate.platform.core.beans.annotation.CleanProxy;
-import net.ymate.platform.core.i18n.I18N;
 import net.ymate.platform.core.lang.BlurObject;
-import net.ymate.platform.validation.IValidator;
+import net.ymate.platform.validation.AbstractValidator;
 import net.ymate.platform.validation.ValidateContext;
 import net.ymate.platform.validation.ValidateResult;
 import net.ymate.platform.validation.annotation.Validator;
@@ -32,7 +31,7 @@ import org.apache.commons.lang.StringUtils;
  */
 @Validator(VRegex.class)
 @CleanProxy
-public class RegexValidator implements IValidator {
+public class RegexValidator extends AbstractValidator {
 
     public ValidateResult validate(ValidateContext context) {
         Object _paramValue = context.getParamValue();
@@ -43,14 +42,14 @@ public class RegexValidator implements IValidator {
                     VRegex _vRegex = (VRegex) context.getAnnotation();
                     if (!_value.matches(_vRegex.regex())) {
                         String _pName = StringUtils.defaultIfBlank(context.getParamLabel(), context.getParamName());
-                        _pName = I18N.formatMessage(VALIDATION_I18N_RESOURCE, _pName, _pName);
+                        _pName = __doGetI18nFormatMessage(context, _pName, _pName);
                         //
                         String _msg = StringUtils.trimToNull(_vRegex.msg());
                         if (_msg != null) {
-                            _msg = I18N.formatMessage(VALIDATION_I18N_RESOURCE, _msg, _msg, _pName);
+                            _msg = __doGetI18nFormatMessage(context, _msg, _msg, _pName);
                         } else {
                             String __REGEX = "ymp.validation.regex";
-                            _msg = I18N.formatMessage(VALIDATION_I18N_RESOURCE, __REGEX, "{0} regex not match.", _pName);
+                            _msg = __doGetI18nFormatMessage(context, __REGEX, "{0} regex not match.", _pName);
                         }
                         return new ValidateResult(context.getParamName(), _msg);
                     }

@@ -41,4 +41,9 @@ public @interface Validation {
      * @return 验证模式，默认为NORMAL
      */
     MODE mode() default MODE.NORMAL;
+
+    /**
+     * @return 自定义I18N资源文件名称
+     */
+    String resourcesName() default "";
 }

@@ -38,6 +38,8 @@ public class ValidationMeta {
 
     private Validation.MODE __mode;
 
+    private String __resourcesName;
+
     private Class<?> __targetClass;
 
     private Map<String, Annotation[]> __fields;
@@ -56,6 +58,7 @@ public class ValidationMeta {
         Validation _classValidation = targetClass.getAnnotation(Validation.class);
         if (_classValidation != null) {
             __mode = _classValidation.mode();
+            __resourcesName = _classValidation.resourcesName();
         } else {
             __mode = Validation.MODE.NORMAL;
         }
@@ -185,6 +188,10 @@ public class ValidationMeta {
 
     public Validation.MODE getMode() {
         return __mode;
+    }
+
+    public String getResourcesName() {
+        return __resourcesName;
     }
 
     public Class<?> getTargetClass() {

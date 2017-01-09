@@ -16,9 +16,8 @@
 package net.ymate.platform.validation.validate;
 
 import net.ymate.platform.core.beans.annotation.CleanProxy;
-import net.ymate.platform.core.i18n.I18N;
 import net.ymate.platform.core.lang.BlurObject;
-import net.ymate.platform.validation.IValidator;
+import net.ymate.platform.validation.AbstractValidator;
 import net.ymate.platform.validation.ValidateContext;
 import net.ymate.platform.validation.ValidateResult;
 import net.ymate.platform.validation.annotation.Validator;
@@ -32,7 +31,7 @@ import org.apache.commons.lang.StringUtils;
  */
 @Validator(VLength.class)
 @CleanProxy
-public class LengthValidator implements IValidator {
+public class LengthValidator extends AbstractValidator {
 
     public ValidateResult validate(ValidateContext context) {
         boolean _matched = false;
@@ -60,21 +59,21 @@ public class LengthValidator implements IValidator {
         }
         if (_matched) {
             String _pName = StringUtils.defaultIfBlank(context.getParamLabel(), context.getParamName());
-            _pName = I18N.formatMessage(VALIDATION_I18N_RESOURCE, _pName, _pName);
+            _pName = __doGetI18nFormatMessage(context, _pName, _pName);
             String _msg = StringUtils.trimToNull(_vLength.msg());
             if (_msg != null) {
-                _msg = I18N.formatMessage(VALIDATION_I18N_RESOURCE, _msg, _msg, _pName);
+                _msg = __doGetI18nFormatMessage(context, _msg, _msg, _pName);
             } else {
                 if (_vLength.max() > 0 && _vLength.min() > 0) {
                     if (_vLength.max() == _vLength.min()) {
-                        _msg = I18N.formatMessage(VALIDATION_I18N_RESOURCE, "ymp.validation.length_eq", "{0} length must be eq {1}.", _pName, _vLength.max());
+                        _msg = __doGetI18nFormatMessage(context, "ymp.validation.length_eq", "{0} length must be eq {1}.", _pName, _vLength.max());
                     } else {
-                        _msg = I18N.formatMessage(VALIDATION_I18N_RESOURCE, "ymp.validation.length_between", "{0} length must be between {1} and {2}.", _pName, _vLength.min(), _vLength.max());
+                        _msg = __doGetI18nFormatMessage(context, "ymp.validation.length_between", "{0} length must be between {1} and {2}.", _pName, _vLength.min(), _vLength.max());
                     }
                 } else if (_vLength.max() > 0) {
-                    _msg = I18N.formatMessage(VALIDATION_I18N_RESOURCE, "ymp.validation.length_max", "{0} length must be lt {1}.", _pName, _vLength.max());
+                    _msg = __doGetI18nFormatMessage(context, "ymp.validation.length_max", "{0} length must be lt {1}.", _pName, _vLength.max());
                 } else {
-                    _msg = I18N.formatMessage(VALIDATION_I18N_RESOURCE, "ymp.validation.length_min", "{0} length must be gt {1}.", _pName, _vLength.min());
+                    _msg = __doGetI18nFormatMessage(context, "ymp.validation.length_min", "{0} length must be gt {1}.", _pName, _vLength.min());
                 }
             }
             return new ValidateResult(context.getParamName(), _msg);

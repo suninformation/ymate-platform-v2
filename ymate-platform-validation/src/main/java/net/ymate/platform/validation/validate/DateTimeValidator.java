@@ -16,10 +16,9 @@
 package net.ymate.platform.validation.validate;
 
 import net.ymate.platform.core.beans.annotation.CleanProxy;
-import net.ymate.platform.core.i18n.I18N;
 import net.ymate.platform.core.lang.BlurObject;
 import net.ymate.platform.core.util.DateTimeUtils;
-import net.ymate.platform.validation.IValidator;
+import net.ymate.platform.validation.AbstractValidator;
 import net.ymate.platform.validation.ValidateContext;
 import net.ymate.platform.validation.ValidateResult;
 import net.ymate.platform.validation.annotation.Validator;
@@ -33,7 +32,7 @@ import org.apache.commons.lang.StringUtils;
  */
 @Validator(VDateTime.class)
 @CleanProxy
-public class DateTimeValidator implements IValidator {
+public class DateTimeValidator extends AbstractValidator {
 
     public ValidateResult validate(ValidateContext context) {
         Object _paramValue = context.getParamValue();
@@ -46,14 +45,14 @@ public class DateTimeValidator implements IValidator {
                         DateTimeUtils.parseDateTime(_dateStr, _vDate.pattern());
                     } catch (Exception e) {
                         String _pName = StringUtils.defaultIfBlank(context.getParamLabel(), context.getParamName());
-                        _pName = I18N.formatMessage(VALIDATION_I18N_RESOURCE, _pName, _pName);
+                        _pName = __doGetI18nFormatMessage(context, _pName, _pName);
                         //
                         String _msg = StringUtils.trimToNull(_vDate.msg());
                         if (_msg != null) {
-                            _msg = I18N.formatMessage(VALIDATION_I18N_RESOURCE, _msg, _msg, _pName);
+                            _msg = __doGetI18nFormatMessage(context, _msg, _msg, _pName);
                         } else {
                             String __DATETIME = "ymp.validation.datetime";
-                            _msg = I18N.formatMessage(VALIDATION_I18N_RESOURCE, __DATETIME, "{0} not a valid datetime.", _pName);
+                            _msg = __doGetI18nFormatMessage(context, __DATETIME, "{0} not a valid datetime.", _pName);
                         }
                         return new ValidateResult(context.getParamName(), _msg);
                     }

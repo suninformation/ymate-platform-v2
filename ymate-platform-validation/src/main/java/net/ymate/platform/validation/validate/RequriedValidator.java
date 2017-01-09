@@ -16,9 +16,8 @@
 package net.ymate.platform.validation.validate;
 
 import net.ymate.platform.core.beans.annotation.CleanProxy;
-import net.ymate.platform.core.i18n.I18N;
 import net.ymate.platform.core.lang.BlurObject;
-import net.ymate.platform.validation.IValidator;
+import net.ymate.platform.validation.AbstractValidator;
 import net.ymate.platform.validation.ValidateContext;
 import net.ymate.platform.validation.ValidateResult;
 import net.ymate.platform.validation.annotation.Validator;
@@ -33,7 +32,7 @@ import org.apache.commons.lang.StringUtils;
  */
 @Validator(VRequried.class)
 @CleanProxy
-public class RequriedValidator implements IValidator {
+public class RequriedValidator extends AbstractValidator {
 
     public ValidateResult validate(ValidateContext context) {
         boolean _matched = false;
@@ -51,14 +50,14 @@ public class RequriedValidator implements IValidator {
         }
         if (_matched) {
             String _pName = StringUtils.defaultIfBlank(context.getParamLabel(), context.getParamName());
-            _pName = I18N.formatMessage(VALIDATION_I18N_RESOURCE, _pName, _pName);
+            _pName = __doGetI18nFormatMessage(context, _pName, _pName);
             //
             String _msg = StringUtils.trimToNull(((VRequried) context.getAnnotation()).msg());
             if (_msg != null) {
-                _msg = I18N.formatMessage(VALIDATION_I18N_RESOURCE, _msg, _msg, _pName);
+                _msg = __doGetI18nFormatMessage(context, _msg, _msg, _pName);
             } else {
                 String __REQURIED = "ymp.validation.requried";
-                _msg = I18N.formatMessage(VALIDATION_I18N_RESOURCE, __REQURIED, "{0} must be requried.", _pName);
+                _msg = __doGetI18nFormatMessage(context, __REQURIED, "{0} must be requried.", _pName);
             }
             return new ValidateResult(context.getParamName(), _msg);
         }

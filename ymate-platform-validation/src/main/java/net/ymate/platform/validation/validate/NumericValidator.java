@@ -16,9 +16,8 @@
 package net.ymate.platform.validation.validate;
 
 import net.ymate.platform.core.beans.annotation.CleanProxy;
-import net.ymate.platform.core.i18n.I18N;
 import net.ymate.platform.core.lang.BlurObject;
-import net.ymate.platform.validation.IValidator;
+import net.ymate.platform.validation.AbstractValidator;
 import net.ymate.platform.validation.ValidateContext;
 import net.ymate.platform.validation.ValidateResult;
 import net.ymate.platform.validation.annotation.Validator;
@@ -33,7 +32,7 @@ import org.apache.commons.lang.math.NumberUtils;
  */
 @Validator(VNumeric.class)
 @CleanProxy
-public class NumericValidator implements IValidator {
+public class NumericValidator extends AbstractValidator {
 
     public ValidateResult validate(ValidateContext context) {
         Object _paramValue = context.getParamValue();
@@ -59,24 +58,24 @@ public class NumericValidator implements IValidator {
             }
             if (_matched) {
                 String _pName = StringUtils.defaultIfBlank(context.getParamLabel(), context.getParamName());
-                _pName = I18N.formatMessage(VALIDATION_I18N_RESOURCE, _pName, _pName);
+                _pName = __doGetI18nFormatMessage(context, _pName, _pName);
                 String _msg = StringUtils.trimToNull(_vNumeric.msg());
                 if (_msg != null) {
-                    _msg = I18N.formatMessage(VALIDATION_I18N_RESOURCE, _msg, _msg, _pName);
+                    _msg = __doGetI18nFormatMessage(context, _msg, _msg, _pName);
                 } else {
                     if (_flag) {
                         String __NUMERIC = "ymp.validation.numeric";
-                        _msg = I18N.formatMessage(VALIDATION_I18N_RESOURCE, __NUMERIC, "{0} not a valid numeric.", _pName);
+                        _msg = __doGetI18nFormatMessage(context, __NUMERIC, "{0} not a valid numeric.", _pName);
                     } else {
                         if (_vNumeric.max() > 0 && _vNumeric.min() > 0) {
                             String __NUMERIC_BETWEEN = "ymp.validation.numeric_between";
-                            _msg = I18N.formatMessage(VALIDATION_I18N_RESOURCE, __NUMERIC_BETWEEN, "{0} numeric must be between {1} and {2}.", _pName, _vNumeric.min(), _vNumeric.max());
+                            _msg = __doGetI18nFormatMessage(context, __NUMERIC_BETWEEN, "{0} numeric must be between {1} and {2}.", _pName, _vNumeric.min(), _vNumeric.max());
                         } else if (_vNumeric.max() > 0) {
                             String __NUMERIC_MAX = "ymp.validation.numeric_max";
-                            _msg = I18N.formatMessage(VALIDATION_I18N_RESOURCE, __NUMERIC_MAX, "{0} numeric must be lt {1}.", _pName, _vNumeric.max());
+                            _msg = __doGetI18nFormatMessage(context, __NUMERIC_MAX, "{0} numeric must be lt {1}.", _pName, _vNumeric.max());
                         } else {
                             String __NUMERIC_MIN = "ymp.validation.numeric_min";
-                            _msg = I18N.formatMessage(VALIDATION_I18N_RESOURCE, __NUMERIC_MIN, "{0} numeric must be gt {1}.", _pName, _vNumeric.min());
+                            _msg = __doGetI18nFormatMessage(context, __NUMERIC_MIN, "{0} numeric must be gt {1}.", _pName, _vNumeric.min());
                         }
                     }
                 }

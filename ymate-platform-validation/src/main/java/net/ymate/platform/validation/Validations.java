@@ -24,6 +24,7 @@ import net.ymate.platform.core.util.RuntimeUtils;
 import net.ymate.platform.validation.annotation.Validation;
 import net.ymate.platform.validation.annotation.Validator;
 import net.ymate.platform.validation.handle.ValidateHandler;
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -122,7 +123,7 @@ public class Validations implements IModule, IValidation {
         ValidationMeta _meta = __doGetCachedMeta(targetClass);
         Map<String, String> _contextParams = InterceptAnnoHelper.getContextParams(__owner, targetClass, null);
         for (String _fieldName : _meta.getFieldNames()) {
-            ValidateResult _result = __doValidate(_meta.getFieldAnnotations(_fieldName), _fieldName, _meta.getFieldLabel(_fieldName), paramValues, _contextParams);
+            ValidateResult _result = __doValidate(_meta.getFieldAnnotations(_fieldName), _fieldName, _meta.getFieldLabel(_fieldName), paramValues, _contextParams, _meta.getResourcesName());
             if (_result != null) {
                 _returnValues.put(_fieldName, _result);
                 if (_meta.getMode() == Validation.MODE.NORMAL) {
@@ -138,11 +139,12 @@ public class Validations implements IModule, IValidation {
         ValidationMeta _meta = __doGetCachedMeta(targetClass);
         Validation _validation = _meta.getMethodValidation(targetMethod);
         Validation.MODE _mode = _validation == null ? _meta.getMode() : _validation.mode();
+        String _resourceName = _validation == null ? _meta.getResourcesName() : (StringUtils.defaultIfBlank(_validation.resourcesName(), _meta.getResourcesName()));
         //
         Map<String, Annotation[]> _paramAnnoMap = _meta.getMethodParamAnnotations(targetMethod);
         Map<String, String> _contextParams = InterceptAnnoHelper.getContextParams(__owner, targetClass, targetMethod);
         for (Map.Entry<String, Annotation[]> _entry : _paramAnnoMap.entrySet()) {
-            ValidateResult _result = __doValidate(_entry.getValue(), _entry.getKey(), _meta.getFieldLabel(targetMethod, _entry.getKey()), paramValues, _contextParams);
+            ValidateResult _result = __doValidate(_entry.getValue(), _entry.getKey(), _meta.getFieldLabel(targetMethod, _entry.getKey()), paramValues, _contextParams, _resourceName);
             if (_result != null) {
                 _returnValues.put(_entry.getKey(), _result);
                 //
@@ -167,11 +169,11 @@ public class Validations implements IModule, IValidation {
         return _meta;
     }
 
-    protected ValidateResult __doValidate(Annotation[] annotations, String paramName, String paramLabel, Map<String, Object> paramValues, Map<String, String> contextParams) {
+    protected ValidateResult __doValidate(Annotation[] annotations, String paramName, String paramLabel, Map<String, Object> paramValues, Map<String, String> contextParams, String resourceName) {
         ValidateResult _result = null;
         for (Annotation _ann : annotations) {
             IValidator _validator = __owner.getBean(__validators.get(_ann.annotationType()));
-            _result = _validator.validate(new ValidateContext(__owner, _ann, paramName, paramLabel, paramValues, contextParams));
+            _result = _validator.validate(new ValidateContext(__owner, _ann, paramName, paramLabel, paramValues, contextParams, resourceName));
             if (_result != null) {
                 break;
             }
