@@ -19,6 +19,7 @@ import net.ymate.platform.core.lang.BlurObject;
 import net.ymate.platform.core.util.ClassUtils;
 import net.ymate.platform.persistence.base.EntityMeta;
 import net.ymate.platform.persistence.jdbc.base.AbstractResultSetHandler;
+import org.apache.commons.lang.StringUtils;
 
 import java.lang.reflect.Field;
 import java.sql.ResultSet;
@@ -40,7 +41,7 @@ public class BeanResultSetHandler<T> extends AbstractResultSetHandler<T> {
     protected T __doProcessResultRow(ResultSet resultSet) throws Exception {
         ClassUtils.BeanWrapper<T> _targetWrapper = ClassUtils.wrapper(__beanClass.newInstance());
         for (int _idx = 0; _idx < __doGetColumnCount(); _idx++) {
-            Field _field = _targetWrapper.getField(EntityMeta.propertyNameToFieldName(_doGetColumnMeta(_idx).getName()));
+            Field _field = _targetWrapper.getField(StringUtils.uncapitalize(EntityMeta.propertyNameToFieldName(_doGetColumnMeta(_idx).getName())));
             if (_field != null) {
                 _field.set(_targetWrapper.getTargetObject(), BlurObject.bind(resultSet.getObject(_idx + 1)).toObjectValue(_field.getType()));
             }
