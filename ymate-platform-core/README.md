@@ -717,7 +717,7 @@ I18N服务是在YMP框架启动时初始化，其根据ymp.i18n_default_locale�
             I18N.formatMessage("resources", "site_title", "Welcome {0}, {1}"，"YMP"，“GoodLuck！”);
 
             // 使用格式化参数绑定
-            I18N.formatMessage("Hello, {0}, {1}", "YMP"，“GoodLuck！”);
+            I18N.formatMsg("Hello, {0}, {1}", "YMP"，“GoodLuck！”);
 
 - 国际化资源管理器事件监听处理器，通过实现II18NEventHandler接口，在YMP配置文件中的`i18n_event_handler_class`参数进行设置，该监听器可以完成如下操作：
 
