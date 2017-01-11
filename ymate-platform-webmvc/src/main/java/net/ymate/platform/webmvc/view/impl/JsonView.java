@@ -23,6 +23,7 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 
 import javax.servlet.http.HttpServletResponse;
+import java.io.OutputStream;
 
 /**
  * JSON视图
@@ -95,5 +96,14 @@ public class JsonView extends AbstractView {
             _jsonStr.insert(0, __jsonCallback + "(").append(");");
         }
         IOUtils.write(_jsonStr.toString(), _response.getOutputStream(), _response.getCharacterEncoding());
+    }
+
+    @Override
+    public void render(OutputStream output) throws Exception {
+        StringBuilder _jsonStr = new StringBuilder(__jsonObj.toString());
+        if (__jsonCallback != null) {
+            _jsonStr.insert(0, __jsonCallback + "(").append(");");
+        }
+        IOUtils.write(_jsonStr, output, WebContext.getResponse().getCharacterEncoding());
     }
 }

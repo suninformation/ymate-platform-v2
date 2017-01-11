@@ -17,8 +17,6 @@ package net.ymate.platform.webmvc.view.impl;
 
 import net.ymate.platform.webmvc.view.AbstractView;
 
-import java.io.OutputStream;
-
 /**
  * 空视图，用于防止控制器返回值为NULL时受Convention模式影响
  *
@@ -33,10 +31,6 @@ public class NullView extends AbstractView {
 
     @Override
     public void render() throws Exception {
-    }
-
-    @Override
-    public void render(OutputStream output) throws Exception {
     }
 
     protected void __doRenderView() throws Exception {

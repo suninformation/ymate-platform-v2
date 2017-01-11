@@ -21,6 +21,7 @@ import net.ymate.platform.webmvc.view.AbstractView;
 import org.apache.commons.io.IOUtils;
 
 import javax.servlet.http.HttpServletResponse;
+import java.io.OutputStream;
 
 /**
  * 文本视图
@@ -62,5 +63,10 @@ public class TextView extends AbstractView {
     protected void __doRenderView() throws Exception {
         HttpServletResponse _response = WebContext.getResponse();
         IOUtils.write(__content, _response.getOutputStream(), _response.getCharacterEncoding());
+    }
+
+    @Override
+    public void render(OutputStream output) throws Exception {
+        IOUtils.write(__content, output, WebContext.getResponse().getCharacterEncoding());
     }
 }

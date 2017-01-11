@@ -25,6 +25,7 @@ import org.apache.commons.lang.StringUtils;
 import javax.servlet.http.HttpServletResponse;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.OutputStream;
 
 /**
  * HTML文件内容视图
@@ -76,5 +77,10 @@ public class HtmlView extends AbstractView {
     protected void __doRenderView() throws Exception {
         HttpServletResponse _response = WebContext.getResponse();
         IOUtils.write(__content, _response.getOutputStream(), _response.getCharacterEncoding());
+    }
+
+    @Override
+    public void render(OutputStream output) throws Exception {
+        IOUtils.write(__content, output, WebContext.getResponse().getCharacterEncoding());
     }
 }

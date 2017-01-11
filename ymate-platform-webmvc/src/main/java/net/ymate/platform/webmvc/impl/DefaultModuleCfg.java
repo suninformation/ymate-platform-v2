@@ -112,7 +112,7 @@ public class DefaultModuleCfg implements IWebMvcModuleCfg {
         }
         //
         String _cacheProcessorClass = _moduleCfgs.get("cache_processor_class");
-        if (StringUtils.isNotBlank(_errorProcessorClass)) {
+        if (StringUtils.isNotBlank(_cacheProcessorClass)) {
             __cacheProcessor = ClassUtils.impl(_cacheProcessorClass, IWebCacheProcessor.class, this.getClass());
         }
         //
