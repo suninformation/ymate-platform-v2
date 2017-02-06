@@ -44,9 +44,9 @@
     </licenses>
 
     <scm>
-        <connection>scm:git:git@git.oschina.net:suninformation/ymate-platform-v2.git</connection>
-        <developerConnection>scm:git:git@git.oschina.net:suninformation/ymate-platform-v2.git</developerConnection>
-        <url>git@git.oschina.net:suninformation/ymate-platform-v2.git</url>
+        <connection>scm:git:git@github.com:suninformation/ymate-platform-v2.git</connection>
+        <developerConnection>scm:git:git@github.com:suninformation/ymate-platform-v2.git</developerConnection>
+        <url>git@github.com:suninformation/ymate-platform-v2.git</url>
     </scm>
 
     <properties>
@@ -63,6 +63,15 @@
                 <configuration>
                     <source>1.6</source>
                     <target>1.6</target>
+                </configuration>
+            </plugin>
+            <!-- Javadoc -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-javadoc-plugin</artifactId>
+                <version>2.9.1</version>
+                <configuration>
+                    <aggregate>true</aggregate>
                 </configuration>
             </plugin>
             <!-- Test -->

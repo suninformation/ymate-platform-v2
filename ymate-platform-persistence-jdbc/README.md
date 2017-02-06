@@ -19,7 +19,7 @@ JDBC持久化模块针对关系型数据库(RDBMS)数据存取的一套简单解
     <dependency>
         <groupId>net.ymate.platform</groupId>
         <artifactId>ymate-platform-persistence-jdbc</artifactId>
-        <version>2.0-SNAPSHOT</version>
+        <version>2.0.0</version>
     </dependency>
 
 > **注**：在项目的pom.xml中添加上述配置，该模块已经默认引入核心包及持久化基础包依赖，无需重复配置。
