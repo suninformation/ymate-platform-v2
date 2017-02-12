@@ -16,7 +16,6 @@
 package net.ymate.platform.webmvc.support;
 
 import net.ymate.platform.core.i18n.II18NEventHandler;
-import net.ymate.platform.core.lang.BlurObject;
 import net.ymate.platform.core.util.RuntimeUtils;
 import net.ymate.platform.webmvc.WebMVC;
 import net.ymate.platform.webmvc.context.WebContext;
@@ -50,10 +49,7 @@ public class I18NWebEventHandler implements II18NEventHandler {
                 _langStr = WebContext.getRequest().getParameter(I18N_LANG_KEY);
                 if (StringUtils.trimToNull(_langStr) == null) {
                     // 最后一次机会，尝试读取Cookies
-                    BlurObject _langCookie = CookieHelper.bind(WebContext.getContext().getOwner()).getCookie(I18N_LANG_KEY);
-                    if (_langCookie != null) {
-                        _langStr = _langCookie.toStringValue();
-                    }
+                    _langStr = CookieHelper.bind(WebContext.getContext().getOwner()).getCookie(I18N_LANG_KEY).toStringValue();
                 }
             }
         }

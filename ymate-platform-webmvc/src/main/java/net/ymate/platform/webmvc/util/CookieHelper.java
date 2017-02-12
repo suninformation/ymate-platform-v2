@@ -27,7 +27,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import javax.servlet.http.Cookie;
-import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.util.HashMap;
@@ -168,7 +167,7 @@ public final class CookieHelper {
     }
 
     /**
-     * @return 设置开启采用密钥加密(将默认开启Base64编码)
+     * @return 设置开启采用密钥加密
      */
     public CookieHelper allowUseAuthKey() {
         this.__useAuthKey = true;
@@ -221,74 +220,50 @@ public final class CookieHelper {
     }
 
     public String encodeValue(String value) {
-        String _value = value;
         if (StringUtils.isNotBlank(value)) {
-            if (this.__useAuthKey) {
-                if (__cookieKey == null) {
-                    __cookieKey = __getEncodedAuthKeyStr();
-                }
-                if (StringUtils.isNotBlank(__cookieKey)) {
-                    try {
-                        _value = new String(Base64.encodeBase64URLSafe(CodecUtils.DES.encrypt(value.getBytes(__charsetEncoding), __cookieKey.getBytes())), __charsetEncoding);
-                    } catch (Exception e) {
-                        __LOG.warn("", RuntimeUtils.unwrapThrow(e));
+            try {
+                if (this.__useAuthKey) {
+                    if (__cookieKey == null) {
+                        __cookieKey = __getEncodedAuthKeyStr();
+                    }
+                    if (StringUtils.isNotBlank(__cookieKey)) {
+                        value = new String(CodecUtils.DES.encrypt(value.getBytes(__charsetEncoding), __cookieKey.getBytes()), __charsetEncoding);
                     }
                 }
-            } else if (this.__useBase64) {
-                try {
-                    _value = new String(Base64.encodeBase64URLSafe(_value.getBytes(__charsetEncoding)), __charsetEncoding);
-                } catch (UnsupportedEncodingException e) {
-                    __LOG.warn("", RuntimeUtils.unwrapThrow(e));
+                if (this.__useBase64) {
+                    value = new String(Base64.encodeBase64(value.getBytes(__charsetEncoding)), __charsetEncoding);
                 }
-            }
-            if (__useURLCoder) {
-                try {
-                    _value = URLEncoder.encode(value, __charsetEncoding);
-                } catch (UnsupportedEncodingException e) {
-                    __LOG.warn("", RuntimeUtils.unwrapThrow(e));
+                if (__useURLCoder) {
+                    value = URLEncoder.encode(value, __charsetEncoding);
                 }
+            } catch (Exception e) {
+                __LOG.warn("", RuntimeUtils.unwrapThrow(e));
             }
-        } else {
-            _value = "";
         }
-        return _value;
+        return StringUtils.trimToEmpty(value);
     }
 
     public String decodeValue(String value) {
-        String _value = null;
         if (StringUtils.isNotBlank(value)) {
-            if (__useURLCoder) {
-                try {
+            try {
+                if (__useURLCoder) {
                     value = URLDecoder.decode(value, __charsetEncoding);
-                } catch (UnsupportedEncodingException e) {
-                    __LOG.warn("", RuntimeUtils.unwrapThrow(e));
                 }
-            }
-            if (this.__useAuthKey) {
-                if (__cookieKey == null) {
-                    __cookieKey = __getEncodedAuthKeyStr();
+                if (this.__useBase64) {
+                    value = new String(Base64.decodeBase64(value.getBytes(__charsetEncoding)), __charsetEncoding);
                 }
-                if (StringUtils.isNotBlank(__cookieKey)) {
-                    try {
-                        _value = new String(CodecUtils.DES.decrypt(Base64.decodeBase64(value.getBytes(__charsetEncoding)), __cookieKey.getBytes()));
-                    } catch (Exception e) {
-                        __LOG.warn("", RuntimeUtils.unwrapThrow(e));
+                if (this.__useAuthKey) {
+                    if (__cookieKey == null) {
+                        __cookieKey = __getEncodedAuthKeyStr();
                     }
-                } else {
-                    _value = value;
+                    if (StringUtils.isNotBlank(__cookieKey)) {
+                        value = new String(CodecUtils.DES.decrypt(value.getBytes(__charsetEncoding), __cookieKey.getBytes()));
+                    }
                 }
-            } else if (this.__useBase64) {
-                try {
-                    _value = new String(Base64.decodeBase64(value.getBytes(__charsetEncoding)));
-                } catch (UnsupportedEncodingException e) {
-                    __LOG.warn("", RuntimeUtils.unwrapThrow(e));
-                }
-            } else {
-                _value = value;
+            } catch (Exception e) {
+                __LOG.warn("", RuntimeUtils.unwrapThrow(e));
             }
-        } else {
-            _value = "";
         }
-        return _value;
+        return StringUtils.trimToEmpty(value);
     }
 }
