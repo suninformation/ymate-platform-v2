@@ -96,7 +96,7 @@ public class CodecUtils {
         }
 
         public String initKeyToString() throws Exception {
-            return Base64.encodeBase64URLSafeString(initKey());
+            return Base64.encodeBase64String(initKey());
         }
 
         /**
@@ -131,7 +131,7 @@ public class CodecUtils {
         }
 
         public String encrypt(String data, String key) throws Exception {
-            return Base64.encodeBase64URLSafeString(encrypt(data.getBytes(), key.getBytes()));
+            return Base64.encodeBase64String(encrypt(data.getBytes(), key.getBytes()));
         }
 
         /**
@@ -216,7 +216,7 @@ public class CodecUtils {
         }
 
         public String encrypt(String data, String key, String salt) throws Exception {
-            return Base64.encodeBase64URLSafeString(encrypt(data.getBytes(), key.getBytes(), salt.getBytes()));
+            return Base64.encodeBase64String(encrypt(data.getBytes(), key.getBytes(), salt.getBytes()));
         }
 
         @Override
@@ -235,7 +235,7 @@ public class CodecUtils {
         }
 
         public String decrypt(String data, String key, String salt) throws Exception {
-            return Base64.encodeBase64URLSafeString(decrypt(data.getBytes(), key.getBytes(), salt.getBytes()));
+            return StringUtils.newStringUtf8(decrypt(Base64.decodeBase64(data), key.getBytes(), salt.getBytes()));
         }
     }
 
@@ -263,13 +263,12 @@ public class CodecUtils {
         }
 
         public String getRSAKey(Key rsaKey) throws Exception {
-            return Base64.encodeBase64URLSafeString(rsaKey.getEncoded());
+            return Base64.encodeBase64String(rsaKey.getEncoded());
         }
 
         public String sign(byte[] data, String privateKey) throws Exception {
-            byte[] _keyBytes = Base64.decodeBase64(privateKey);
             //
-            PKCS8EncodedKeySpec _keySpec = new PKCS8EncodedKeySpec(_keyBytes);
+            PKCS8EncodedKeySpec _keySpec = new PKCS8EncodedKeySpec(Base64.decodeBase64(privateKey));
             KeyFactory _keyFactory = KeyFactory.getInstance(KEY_ALGORITHM);
             PrivateKey _privKey = _keyFactory.generatePrivate(_keySpec);
             //
@@ -277,13 +276,12 @@ public class CodecUtils {
             _sign.initSign(_privKey);
             _sign.update(data);
             //
-            return Base64.encodeBase64URLSafeString(_sign.sign());
+            return Base64.encodeBase64String(_sign.sign());
         }
 
         public boolean verify(byte[] data, String publicKey, String sign) throws Exception {
-            byte[] _keyBytes = Base64.decodeBase64(publicKey);
             //
-            X509EncodedKeySpec _keySpec = new X509EncodedKeySpec(_keyBytes);
+            X509EncodedKeySpec _keySpec = new X509EncodedKeySpec(Base64.decodeBase64(publicKey));
             KeyFactory _keyFactory = KeyFactory.getInstance(KEY_ALGORITHM);
             PublicKey _pubKey = _keyFactory.generatePublic(_keySpec);
             //
@@ -337,9 +335,7 @@ public class CodecUtils {
 
         @Override
         public String encrypt(String data, String key) throws Exception {
-            byte[] _keyBytes = Base64.decodeBase64(key);
-            //
-            return Base64.encodeBase64String(encrypt(data.getBytes(), _keyBytes));
+            return Base64.encodeBase64String(encrypt(data.getBytes(), Base64.decodeBase64(key)));
         }
 
         @Override
@@ -355,9 +351,7 @@ public class CodecUtils {
 
         @Override
         public String decrypt(String data, String key) throws Exception {
-            byte[] _keyBytes = Base64.decodeBase64(key);
-            //
-            return new String(decrypt(Base64.decodeBase64(data), _keyBytes));
+            return StringUtils.newStringUtf8(decrypt(Base64.decodeBase64(data), Base64.decodeBase64(key)));
         }
 
         public byte[] encryptPublicKey(byte[] data, byte[] key) throws Exception {
@@ -371,9 +365,7 @@ public class CodecUtils {
         }
 
         public String encryptPublicKey(String data, String key) throws Exception {
-            byte[] _keyBytes = Base64.decodeBase64(key);
-            //
-            return Base64.encodeBase64String(encryptPublicKey(data.getBytes(), _keyBytes));
+            return Base64.encodeBase64String(encryptPublicKey(data.getBytes(), Base64.decodeBase64(key)));
         }
 
         public byte[] decryptPublicKey(byte[] data, byte[] key) throws Exception {
@@ -387,9 +379,7 @@ public class CodecUtils {
         }
 
         public String decryptPublicKey(String data, String key) throws Exception {
-            byte[] _keyBytes = Base64.decodeBase64(key);
-            //
-            return new String(decryptPublicKey(Base64.decodeBase64(data), _keyBytes));
+            return new String(decryptPublicKey(Base64.decodeBase64(data), Base64.decodeBase64(key)));
         }
     }
 }
