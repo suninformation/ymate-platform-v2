@@ -63,9 +63,8 @@ public class DefaultProcedureOperator<T> extends AbstractOperator implements IPr
         if (!this.executed) {
             StopWatch _time = new StopWatch();
             _time.start();
-            int _effectCounts = 0;
             try {
-                _effectCounts = __doExecute();
+                __doExecute();
                 // 执行过程未发生异常将标记已执行，避免重复执行
                 this.executed = true;
             } finally {
@@ -113,6 +112,7 @@ public class DefaultProcedureOperator<T> extends AbstractOperator implements IPr
                     ResultSet _result = _statement.getResultSet();
                     if (_result != null) {
                         __resultSets.add(__resultSetHandler.handle(_result));
+                        _result.close();
                     }
                 } while (_statement.getMoreResults());
             } else {
