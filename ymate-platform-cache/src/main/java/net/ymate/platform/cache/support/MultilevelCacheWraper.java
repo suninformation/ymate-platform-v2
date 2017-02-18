@@ -16,10 +16,7 @@
 package net.ymate.platform.cache.support;
 
 import net.sf.ehcache.Ehcache;
-import net.ymate.platform.cache.CacheException;
-import net.ymate.platform.cache.ICache;
-import net.ymate.platform.cache.ICacheEventListener;
-import net.ymate.platform.cache.ICaches;
+import net.ymate.platform.cache.*;
 import net.ymate.platform.core.lang.BlurObject;
 import net.ymate.platform.persistence.redis.IRedis;
 
@@ -30,7 +27,7 @@ import java.util.List;
  * @author 刘镇 (suninformation@163.com) on 15/12/7 上午2:23
  * @version 1.0
  */
-public class MultilevelCacheWraper implements ICache {
+public class MultilevelCacheWraper implements ICache, ICacheLocker {
 
     private ICache __masterCache;
     private ICache __slaveCache;
@@ -149,5 +146,39 @@ public class MultilevelCacheWraper implements ICache {
     public void destroy() throws CacheException {
         __slaveCache.destroy();
         __masterCache.destroy();
+    }
+
+    public ICacheLocker acquireCacheLocker() {
+        return this;
+    }
+
+    public void readLock(Object key) {
+        MultilevelKey _key = MultilevelKey.bind(key);
+        __masterCache.acquireCacheLocker().readLock(_key.getKey());
+    }
+
+    public void writeLock(Object key) {
+        MultilevelKey _key = MultilevelKey.bind(key);
+        __masterCache.acquireCacheLocker().writeLock(_key.getKey());
+    }
+
+    public boolean tryReadLock(Object key, long timeout) throws CacheException {
+        MultilevelKey _key = MultilevelKey.bind(key);
+        return __masterCache.acquireCacheLocker().tryReadLock(_key.getKey(), timeout);
+    }
+
+    public boolean tryWriteLock(Object key, long timeout) throws CacheException {
+        MultilevelKey _key = MultilevelKey.bind(key);
+        return __masterCache.acquireCacheLocker().tryWriteLock(_key.getKey(), timeout);
+    }
+
+    public void releaseReadLock(Object key) {
+        MultilevelKey _key = MultilevelKey.bind(key);
+        __masterCache.acquireCacheLocker().releaseReadLock(_key.getKey());
+    }
+
+    public void releaseWriteLock(Object key) {
+        MultilevelKey _key = MultilevelKey.bind(key);
+        __masterCache.acquireCacheLocker().releaseWriteLock(_key.getKey());
     }
 }

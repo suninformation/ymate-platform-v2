@@ -29,7 +29,7 @@ import java.util.List;
  * @author 刘镇 (suninformation@163.com) on 15/12/7 上午12:16
  * @version 1.0
  */
-public class EhCacheWraper implements ICache {
+public class EhCacheWraper implements ICache, ICacheLocker {
 
     private ICaches __owner;
 
@@ -138,5 +138,41 @@ public class EhCacheWraper implements ICache {
         } catch (Exception e) {
             throw new CacheException(RuntimeUtils.unwrapThrow(e));
         }
+    }
+
+    public ICacheLocker acquireCacheLocker() {
+        return this;
+    }
+
+    public void readLock(Object key) {
+        __ehcache.acquireReadLockOnKey(key);
+    }
+
+    public void writeLock(Object key) {
+        __ehcache.acquireWriteLockOnKey(key);
+    }
+
+    public boolean tryReadLock(Object key, long timeout) throws CacheException {
+        try {
+            return __ehcache.tryReadLockOnKey(key, timeout);
+        } catch (InterruptedException e) {
+            throw new CacheException(e.getMessage(), RuntimeUtils.unwrapThrow(e));
+        }
+    }
+
+    public boolean tryWriteLock(Object key, long timeout) throws CacheException {
+        try {
+            return __ehcache.tryWriteLockOnKey(key, timeout);
+        } catch (InterruptedException e) {
+            throw new CacheException(e.getMessage(), RuntimeUtils.unwrapThrow(e));
+        }
+    }
+
+    public void releaseReadLock(Object key) {
+        __ehcache.releaseReadLockOnKey(key);
+    }
+
+    public void releaseWriteLock(Object key) {
+        __ehcache.releaseWriteLockOnKey(key);
     }
 }

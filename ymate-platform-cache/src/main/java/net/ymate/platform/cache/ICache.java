@@ -88,4 +88,9 @@ public interface ICache {
      * @throws CacheException 可能产生的异常
      */
     void destroy() throws CacheException;
+
+    /**
+     * @return 返回缓存锁对象，若缓存实例不支持锁则返回null
+     */
+    ICacheLocker acquireCacheLocker();
 }

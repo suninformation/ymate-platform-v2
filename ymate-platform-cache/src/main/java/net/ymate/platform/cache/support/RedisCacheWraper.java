@@ -15,10 +15,7 @@
  */
 package net.ymate.platform.cache.support;
 
-import net.ymate.platform.cache.CacheException;
-import net.ymate.platform.cache.ICache;
-import net.ymate.platform.cache.ICacheEventListener;
-import net.ymate.platform.cache.ICaches;
+import net.ymate.platform.cache.*;
 import net.ymate.platform.core.util.RuntimeUtils;
 import net.ymate.platform.persistence.redis.IRedis;
 import net.ymate.platform.persistence.redis.IRedisCommandsHolder;
@@ -186,5 +183,9 @@ public class RedisCacheWraper implements ICache {
 
     public void destroy() throws CacheException {
         __redis = null;
+    }
+
+    public ICacheLocker acquireCacheLocker() {
+        return null;
     }
 }
