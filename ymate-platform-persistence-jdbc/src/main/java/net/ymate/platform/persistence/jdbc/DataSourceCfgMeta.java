@@ -96,6 +96,7 @@ public class DataSourceCfgMeta {
                              String username,
                              String password,
                              boolean isPasswordEncrypted) {
+        this.name = name;
         this.adapterClass = adapterClass;
         this.connectionUrl = connectionUrl;
         this.username = username;

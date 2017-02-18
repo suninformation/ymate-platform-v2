@@ -312,6 +312,7 @@ public final class EntityMeta {
         //
         this.__entityName = name;
         this.__view = view;
+        this.__shardingRuleAnno = shardingRule;
     }
 
     /**
