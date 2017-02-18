@@ -34,7 +34,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * @author 刘镇 (suninformation@163.com) on 15/5/19 下午12:01
  * @version 1.0
  */
-@Proxy(order = @Order(-99))
+@Proxy(order = @Order(-999))
 public class InterceptProxy implements IProxy {
 
     private static Map<String, List<Class<? extends IInterceptor>>> __beforeInterceptsCache;

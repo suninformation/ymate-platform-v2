@@ -44,7 +44,7 @@ import java.util.Map;
  * @author 刘镇 (suninformation@163.com) on 16/4/22 下午2:06
  * @version 1.0
  */
-@Proxy(annotation = Repository.class, order = @Order(89))
+@Proxy(annotation = Repository.class, order = @Order(888))
 public class RepoProxy implements IProxy {
 
     private static final Log _LOG = LogFactory.getLog(RepoProxy.class);

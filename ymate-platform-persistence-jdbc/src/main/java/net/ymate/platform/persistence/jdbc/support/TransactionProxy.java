@@ -30,7 +30,7 @@ import net.ymate.platform.persistence.jdbc.transaction.Transactions;
  * @author 刘镇 (suninformation@163.com) on 15/4/29 上午10:07
  * @version 1.0
  */
-@Proxy(annotation = Transaction.class, order = @Order(79))
+@Proxy(annotation = Transaction.class, order = @Order(666))
 public class TransactionProxy implements IProxy {
 
     public Object doProxy(final IProxyChain proxyChain) throws Throwable {

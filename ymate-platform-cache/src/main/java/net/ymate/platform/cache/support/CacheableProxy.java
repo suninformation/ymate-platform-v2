@@ -33,7 +33,7 @@ import java.util.concurrent.locks.ReentrantLock;
  * @author 刘镇 (suninformation@163.com) on 15/11/3 下午6:20
  * @version 1.0
  */
-@Proxy(annotation = Cacheable.class, order = @Order(-89))
+@Proxy(annotation = Cacheable.class, order = @Order(-666))
 public class CacheableProxy implements IProxy {
 
     private static ConcurrentHashMap<String, ReentrantLock> __LOCK_MAP = new ConcurrentHashMap<String, ReentrantLock>();

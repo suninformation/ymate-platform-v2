@@ -40,7 +40,7 @@ import java.util.Map;
  * @author 刘镇 (suninformation@163.com) on 16/3/21 下午8:42
  * @version 1.0
  */
-@Proxy(annotation = Controller.class, order = @Order(-90))
+@Proxy(annotation = Controller.class, order = @Order(-888))
 public class RequestParametersProxy implements IProxy {
 
     public Object doProxy(IProxyChain proxyChain) throws Throwable {

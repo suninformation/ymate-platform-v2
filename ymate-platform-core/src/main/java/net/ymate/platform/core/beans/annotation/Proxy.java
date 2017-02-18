@@ -39,7 +39,7 @@ public @interface Proxy {
     Class<? extends Annotation>[] annotation() default {};
 
     /**
-     * @return 执行顺序, 数值大的最先执行, 默认值为0表示按默认顺序
+     * @return 执行顺序, 数值小的最先执行, 默认值为0表示按默认顺序
      */
     Order order() default @Order(0);
 }
