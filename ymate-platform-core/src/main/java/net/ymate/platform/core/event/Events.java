@@ -70,14 +70,14 @@ public final class Events {
     }
 
     @SuppressWarnings("unchecked")
-    public <CONTEXT extends EventContext> Events fireEvent(CONTEXT context) {
-        __provider.fireEvent(__provider.getEventConfig().getDefaultMode(), context);
+    public <CONTEXT extends EventContext> Events registerListener(Events.MODE mode, Class<? extends IEvent> eventClass, IEventListener<CONTEXT> eventListener) {
+        __provider.registerListener(mode, eventClass, eventListener);
         return this;
     }
 
     @SuppressWarnings("unchecked")
-    public <CONTEXT extends EventContext> Events fireEvent(Events.MODE mode, CONTEXT context) {
-        __provider.fireEvent(mode, context);
+    public <CONTEXT extends EventContext> Events fireEvent(CONTEXT context) {
+        __provider.fireEvent(context);
         return this;
     }
 }

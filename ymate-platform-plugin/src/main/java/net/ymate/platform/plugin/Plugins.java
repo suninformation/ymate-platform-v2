@@ -99,19 +99,19 @@ public class Plugins implements IModule, IPlugins {
             //
             _config.setPluginEventListener(new IPluginEventListener() {
                 public void onInited(IPluginContext context, IPlugin plugin) {
-                    __owner.getEvents().fireEvent(Events.MODE.NORMAL, new PluginEvent(plugin, PluginEvent.EVENT.PLUGIN_INITED));
+                    __owner.getEvents().fireEvent(new PluginEvent(plugin, PluginEvent.EVENT.PLUGIN_INITED));
                 }
 
                 public void onStarted(IPluginContext context, IPlugin plugin) {
-                    __owner.getEvents().fireEvent(Events.MODE.NORMAL, new PluginEvent(plugin, PluginEvent.EVENT.PLUGIN_STARTED));
+                    __owner.getEvents().fireEvent(new PluginEvent(plugin, PluginEvent.EVENT.PLUGIN_STARTED));
                 }
 
                 public void onShutdown(IPluginContext context, IPlugin plugin) {
-                    __owner.getEvents().fireEvent(Events.MODE.NORMAL, new PluginEvent(plugin, PluginEvent.EVENT.PLUGIN_SHUTDOWN));
+                    __owner.getEvents().fireEvent(new PluginEvent(plugin, PluginEvent.EVENT.PLUGIN_SHUTDOWN));
                 }
 
                 public void onDestroy(IPluginContext context, IPlugin plugin) {
-                    __owner.getEvents().fireEvent(Events.MODE.NORMAL, new PluginEvent(plugin, PluginEvent.EVENT.PLUGIN_DESTROYED));
+                    __owner.getEvents().fireEvent(new PluginEvent(plugin, PluginEvent.EVENT.PLUGIN_DESTROYED));
                 }
             });
             //

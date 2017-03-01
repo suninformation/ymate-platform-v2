@@ -149,7 +149,7 @@ public class YMP {
                 if (!_module.isInited()) {
                     _module.init(this);
                     // 触发模块初始化完成事件
-                    __events.fireEvent(Events.MODE.NORMAL, new ModuleEvent(_module, ModuleEvent.EVENT.MODULE_INITED));
+                    __events.fireEvent(new ModuleEvent(_module, ModuleEvent.EVENT.MODULE_INITED));
                 }
             }
             // 初始化对象工厂
@@ -164,7 +164,7 @@ public class YMP {
             _watch.stop();
             _LOG.info("Initialization completed, Total time: " + _watch.getTime() + "ms");
             // 触发框架初始化完成事件
-            __events.fireEvent(Events.MODE.NORMAL, new ApplicationEvent(this, ApplicationEvent.EVENT.APPLICATION_INITED));
+            __events.fireEvent(new ApplicationEvent(this, ApplicationEvent.EVENT.APPLICATION_INITED));
         }
         return this;
     }
@@ -183,7 +183,7 @@ public class YMP {
             // 销毁所有已加载模块
             for (IModule _module : __modules.values()) {
                 // 触发模块销毁事件
-                __events.fireEvent(Events.MODE.NORMAL, new ModuleEvent(_module, ModuleEvent.EVENT.MODULE_DESTROYED));
+                __events.fireEvent(new ModuleEvent(_module, ModuleEvent.EVENT.MODULE_DESTROYED));
                 //
                 _module.destroy();
             }
@@ -344,7 +344,7 @@ public class YMP {
                     try {
                         _module.init(__owner);
                         // 触发模块初始化完成事件
-                        __owner.getEvents().fireEvent(Events.MODE.NORMAL, new ModuleEvent(_module, ModuleEvent.EVENT.MODULE_INITED));
+                        __owner.getEvents().fireEvent(new ModuleEvent(_module, ModuleEvent.EVENT.MODULE_INITED));
                     } catch (Exception e) {
                         throw new RuntimeException(RuntimeUtils.unwrapThrow(e));
                     }

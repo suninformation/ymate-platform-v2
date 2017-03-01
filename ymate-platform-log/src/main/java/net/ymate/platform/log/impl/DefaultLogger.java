@@ -15,7 +15,6 @@
  */
 package net.ymate.platform.log.impl;
 
-import net.ymate.platform.core.event.Events;
 import net.ymate.platform.log.*;
 import org.apache.commons.lang.StringUtils;
 import org.apache.logging.log4j.Level;
@@ -89,7 +88,7 @@ public class DefaultLogger extends AbstractLogger {
     protected void __doLogWrite(LogLevel level, LogInfo content) {
         __logger.log(__parseLogLevel(level), content.toString());
         // 日志写入后触发异步事件
-        __owner.getOwner().getEvents().fireEvent(Events.MODE.ASYNC, new LogEvent(this, LogEvent.EVENT.LOG_WRITE_IN)
+        __owner.getOwner().getEvents().fireEvent(new LogEvent(this, LogEvent.EVENT.LOG_WRITE_IN)
                 .addParamExtend(LogEvent.LOG_LEVEL, level)
                 .addParamExtend(LogEvent.LOG_INFO, content));
     }

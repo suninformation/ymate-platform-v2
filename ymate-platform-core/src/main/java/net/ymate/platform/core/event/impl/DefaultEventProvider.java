@@ -39,7 +39,9 @@ public class DefaultEventProvider<T, E extends Enum<E>, EVENT extends Class<IEve
 
     private List<String> __events;
 
-    private Map<String, List<IEventListener<CONTEXT>>> __listenersMap;
+    private Map<String, List<IEventListener<CONTEXT>>> __asyncListeners;
+
+    private Map<String, List<IEventListener<CONTEXT>>> __normalListeners;
 
     public void init(IEventConfig eventConfig) {
         __eventConfig = eventConfig;
@@ -51,7 +53,8 @@ public class DefaultEventProvider<T, E extends Enum<E>, EVENT extends Class<IEve
         __eventExecPool = Executors.newFixedThreadPool(_poolSize);
         //
         __events = new ArrayList<String>();
-        __listenersMap = new ConcurrentHashMap<String, List<IEventListener<CONTEXT>>>();
+        __asyncListeners = new ConcurrentHashMap<String, List<IEventListener<CONTEXT>>>();
+        __normalListeners = new ConcurrentHashMap<String, List<IEventListener<CONTEXT>>>();
     }
 
     public IEventConfig getEventConfig() {
@@ -64,47 +67,62 @@ public class DefaultEventProvider<T, E extends Enum<E>, EVENT extends Class<IEve
             __eventExecPool = null;
         }
         __events = null;
-        __listenersMap = null;
+        __asyncListeners = null;
+        __normalListeners = null;
     }
 
     public void registerEvent(EVENT event) {
         __events.add(event.getName());
     }
 
-    public void registerListener(EVENT eventClass, IEventListener<CONTEXT> eventListener) {
-        if (__listenersMap.containsKey(eventClass.getName())) {
-            __listenersMap.get(eventClass.getName()).add(eventListener);
+    private void __doRegisterEventListeners(Map<String, List<IEventListener<CONTEXT>>> listenersMap, EVENT eventClass, IEventListener<CONTEXT> eventListener) {
+        if (listenersMap.containsKey(eventClass.getName())) {
+            listenersMap.get(eventClass.getName()).add(eventListener);
         } else {
             List<IEventListener<CONTEXT>> _listeners = new ArrayList<IEventListener<CONTEXT>>();
             _listeners.add(eventListener);
-            __listenersMap.put(eventClass.getName(), _listeners);
+            listenersMap.put(eventClass.getName(), _listeners);
         }
     }
 
-    public void fireEvent(Events.MODE mode, final CONTEXT context) {
+    public void registerListener(EVENT eventClass, IEventListener<CONTEXT> eventListener) {
+        registerListener(__eventConfig.getDefaultMode(), eventClass, eventListener);
+    }
+
+    public void registerListener(Events.MODE mode, EVENT eventClass, IEventListener<CONTEXT> eventListener) {
+        switch (mode) {
+            case ASYNC:
+                __doRegisterEventListeners(__asyncListeners, eventClass, eventListener);
+                break;
+            default:
+                __doRegisterEventListeners(__normalListeners, eventClass, eventListener);
+        }
+    }
+
+    public void fireEvent(final CONTEXT context) {
         String _eventKey = context.getEventClass().getName();
         if (__events.contains(_eventKey)) {
-            Collection<IEventListener<CONTEXT>> _listeners = __listenersMap.get(_eventKey);
+            // 先执行同步事件
+            Collection<IEventListener<CONTEXT>> _listeners = __normalListeners.get(_eventKey);
             if (_listeners != null && !_listeners.isEmpty()) {
-                switch (mode) {
-                    case ASYNC:
-                        for (final IEventListener<CONTEXT> _listener : _listeners) {
-                            if (__eventExecPool != null) {
-                                __eventExecPool.execute(new Runnable() {
-                                    public void run() {
-                                        _listener.handle(context);
-                                    }
-                                });
-                            }
-                        }
+                for (IEventListener<CONTEXT> _listener : _listeners) {
+                    if (_listener.handle(context)) {
+                        // 返回值若为true则表示终止同步事件广播并结束执行
                         break;
-                    default:
-                        for (IEventListener<CONTEXT> _listener : _listeners) {
-                            if (_listener.handle(context)) {
-                                // 返回值若为true则表示终止事件广播并结束执行
-                                break;
+                    }
+                }
+            }
+            // 再触发异步事件
+            _listeners = __asyncListeners.get(_eventKey);
+            if (_listeners != null && !_listeners.isEmpty()) {
+                for (final IEventListener<CONTEXT> _listener : _listeners) {
+                    if (__eventExecPool != null) {
+                        __eventExecPool.execute(new Runnable() {
+                            public void run() {
+                                _listener.handle(context);
                             }
-                        }
+                        });
+                    }
                 }
             }
         }

@@ -16,7 +16,6 @@
 package net.ymate.platform.webmvc.support;
 
 import net.ymate.platform.core.YMP;
-import net.ymate.platform.core.event.Events;
 import net.ymate.platform.core.util.RuntimeUtils;
 import net.ymate.platform.webmvc.WebEvent;
 import net.ymate.platform.webmvc.WebMVC;
@@ -43,8 +42,7 @@ public class WebAppEventListener implements ServletContextListener, ServletConte
     }
 
     private void __doFireEvent(WebEvent.EVENT event, Object eventSource) {
-        YMP.get().getEvents()
-                .fireEvent(Events.MODE.NORMAL, new WebEvent(WebMVC.get(), event).addParamExtend(WebEvent.EVENT_SOURCE, eventSource));
+        YMP.get().getEvents().fireEvent(new WebEvent(WebMVC.get(), event).addParamExtend(WebEvent.EVENT_SOURCE, eventSource));
     }
 
     //// ServletContextListener

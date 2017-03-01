@@ -15,7 +15,6 @@
  */
 package net.ymate.platform.webmvc.support;
 
-import net.ymate.platform.core.event.Events;
 import net.ymate.platform.core.i18n.I18N;
 import net.ymate.platform.core.util.RuntimeUtils;
 import net.ymate.platform.webmvc.IRequestContext;
@@ -49,8 +48,7 @@ public final class GenericDispatcher {
     }
 
     private void __doFireEvent(WebEvent.EVENT event, Object eventSource) {
-        __owner.getOwner().getEvents()
-                .fireEvent(Events.MODE.NORMAL, new WebEvent(__owner, event).addParamExtend(WebEvent.EVENT_SOURCE, eventSource));
+        __owner.getOwner().getEvents().fireEvent(new WebEvent(__owner, event).addParamExtend(WebEvent.EVENT_SOURCE, eventSource));
     }
 
     public void execute(IRequestContext requestContext,

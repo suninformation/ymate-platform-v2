@@ -56,10 +56,18 @@ public interface IEventProvider<T, E extends Enum<E>, EVENT extends Class<IEvent
     void registerListener(EVENT eventClass, IEventListener<CONTEXT> eventListener);
 
     /**
+     * 注册事件监听器
+     *
+     * @param mode          事件触发模式
+     * @param eventClass    监听的事件类型
+     * @param eventListener 事件监听器接口实例
+     */
+    void registerListener(Events.MODE mode, EVENT eventClass, IEventListener<CONTEXT> eventListener);
+
+    /**
      * 触发事件
      *
-     * @param mode    事件触发模式
      * @param context 事件上下文
      */
-    void fireEvent(Events.MODE mode, CONTEXT context);
+    void fireEvent(CONTEXT context);
 }

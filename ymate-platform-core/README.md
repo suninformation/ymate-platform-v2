@@ -491,8 +491,9 @@ YMP的事件对象必须实现IEvent接口的同时需要继承EventContext对�
 
 - 订阅自定义事件
 
-    事件订阅（或监听）需实现IEventListener接口，该接口的handle方法返回值在异步触发模式下将影响事件监听队列是否终止执行，同步触发模式下请忽略此返回值；
+    事件订阅（或监听）需实现IEventListener接口，该接口的handle方法返回值在同步触发模式下将影响事件监听队列是否终止执行，异步触发模式下请忽略此返回值；
 
+        // 采用默认模式执行事件监听器
         YMP.get().getEvents().registerListener(DemoEvent.class, new IEventListener<DemoEvent>() {
 
             public boolean handle(DemoEvent context) {
@@ -507,6 +508,14 @@ YMP的事件对象必须实现IEvent接口的同时需要继承EventContext对�
                 return false;
             }
         });
+        
+        // 采用异步模式执行事件监听器
+        YMP.get().getEvents().registerListener(Events.MODE.ASYNC, DemoEvent.class, new IEventListener<DemoEvent>() {
+
+            public boolean handle(DemoEvent context) {
+                ......
+            }
+        });
 
     当然，也可以通过`@EventRegister`注解和IEventRegister接口实现自定义事件的订阅；
 
@@ -514,11 +523,9 @@ YMP的事件对象必须实现IEvent接口的同时需要继承EventContext对�
 
 - 触发自定义事件
 
-        // 采用默认模式触发事件
         YMP.get().getEvents().fireEvent(new DemoEvent(YMP.get(), DemoEvent.class, DemoEvent.EVENT.CUSTOM_EVENT_ONE));
-
-        // 采用异步模式触发事件
-        YMP.get().getEvents().fireEvent(Events.MODE.ASYNC, new DemoEvent(YMP.get(), DemoEvent.class, DemoEvent.EVENT.CUSTOM_EVENT_TWO));
+        //
+        YMP.get().getEvents().fireEvent(new DemoEvent(YMP.get(), DemoEvent.class, DemoEvent.EVENT.CUSTOM_EVENT_TWO));
 
 - 示例测试代码：
 
@@ -542,10 +549,9 @@ YMP的事件对象必须实现IEvent接口的同时需要继承EventContext对�
                         return false;
                     }
                 });
-                // 采用默认模式触发事件
+                // 触发事件
                 YMP.get().getEvents().fireEvent(new DemoEvent(YMP.get(), DemoEvent.class, DemoEvent.EVENT.CUSTOM_EVENT_ONE));
-                // 采用异步模式触发事件
-                YMP.get().getEvents().fireEvent(Events.MODE.ASYNC, new DemoEvent(YMP.get(), DemoEvent.class, DemoEvent.EVENT.CUSTOM_EVENT_TWO));
+                YMP.get().getEvents().fireEvent(new DemoEvent(YMP.get(), DemoEvent.class, DemoEvent.EVENT.CUSTOM_EVENT_TWO));
             } finally {
                 YMP.get().destroy();
             }
