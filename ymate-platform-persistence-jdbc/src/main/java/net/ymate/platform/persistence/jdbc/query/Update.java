@@ -115,6 +115,13 @@ public final class Update {
         return this;
     }
 
+    public Update field(String prefix, Fields fields) {
+        for (String _field : fields.fields()) {
+            this.__fields.add(prefix, _field);
+        }
+        return this;
+    }
+
     public Update join(Join join) {
         __joins.add(join);
         where().param(join.params());
@@ -176,5 +183,9 @@ public final class Update {
             __updateSB.append(" ").append(__where);
         }
         return __updateSB.toString();
+    }
+
+    public SQL toSQL() {
+        return SQL.create(this);
     }
 }

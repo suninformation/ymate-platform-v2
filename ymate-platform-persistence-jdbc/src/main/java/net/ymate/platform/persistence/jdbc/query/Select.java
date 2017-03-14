@@ -165,6 +165,13 @@ public final class Select {
         return this;
     }
 
+    public Select field(String prefix, Fields fields) {
+        for (String _field : fields.fields()) {
+            this.__fields.add(prefix, _field);
+        }
+        return this;
+    }
+
     public Select join(Join join) {
         __joins.add(join);
         where().param(join.params());
@@ -282,5 +289,9 @@ public final class Select {
             _selectSB.append(__dbLocker.toSQL());
         }
         return _selectSB.toString();
+    }
+
+    public SQL toSQL() {
+        return SQL.create(this);
     }
 }

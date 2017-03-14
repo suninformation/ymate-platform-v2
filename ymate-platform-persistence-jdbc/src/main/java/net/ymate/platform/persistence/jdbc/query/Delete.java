@@ -178,4 +178,8 @@ public final class Delete {
         }
         return _deleteSB.toString();
     }
+
+    public SQL toSQL() {
+        return SQL.create(this);
+    }
 }

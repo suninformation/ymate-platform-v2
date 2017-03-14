@@ -81,6 +81,13 @@ public final class Insert {
         return this;
     }
 
+    public Insert field(String prefix, Fields fields) {
+        for (String _field : fields.fields()) {
+            this.__fields.add(prefix, _field);
+        }
+        return this;
+    }
+
     public Params params() {
         return this.__params;
     }
@@ -100,5 +107,9 @@ public final class Insert {
         return "INSERT INTO ".concat(__tableName).concat(" (")
                 .concat(StringUtils.join(__fields.fields(), ", "))
                 .concat(") VALUES (").concat(StringUtils.repeat("?", ", ", __params.params().size())).concat(")");
+    }
+
+    public SQL toSQL() {
+        return SQL.create(this);
     }
 }
