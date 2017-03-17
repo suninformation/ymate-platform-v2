@@ -89,6 +89,9 @@ WebMVC模块的基本初始化参数配置：
 	# 基本初始化参数
 	#-------------------------------------
 	
+	# 控制器请求映射路径分析器，，可选值为已知分析器名称或自定义分析器类名称，默认为default，目前支持已知分析器[default|restful|...]
+    ymp.configs.webmvc.request_mapping_parser_class=
+	
 	# 控制器请求处理器，可选值为已知处理器名称或自定义处理器类名称，自定义类需实现net.ymate.platform.webmvc.IRequestProcessor接口，默认为default，目前支持已知处理器[default|json|xml|...]
 	ymp.configs.webmvc.request_processor_class=
 	
@@ -306,11 +309,21 @@ WebMVC模块不但让编写控制器变得非常简单，处理请求参数也�
 	
 		Hi, webmvc, Age: 20, Sex: F
 	
-	> **注意**：基于路径的参数变量必须是连续的，如：
+	> **注意**：
+	> 
+	> + 默认请求解析`request_mapping_parser_class=default`时，基于路径的参数变量必须是连续的：
 	>
-	> - 正确：/path/{name}/{age}
+	>   - 正确：/path/{name}/{age}
 	>
-	> - 错误：/path/{name}/age/{sex}
+	>   - 错误：/path/{name}/age/{sex}
+	> 
+    > + 当配置请求解析`request_mapping_parser_class=restful`时，则以下均能正确解析：
+    >
+    >   - 正确：/path/{name}/{age}
+    >
+    >   - 正确：/path/{name}/age/{sex}
+    >
+    > + 可以通过实现IRequestMappingParser接口自行定义控制器请求规则；
 
 - @ModelBind：值对象参数绑定注解；
 	> prefix：绑定的参数名称前缀，可选参数，默认为""；

@@ -21,6 +21,7 @@ import net.ymate.platform.core.util.ClassUtils;
 import net.ymate.platform.core.util.RuntimeUtils;
 import net.ymate.platform.webmvc.*;
 import net.ymate.platform.webmvc.base.Type;
+import net.ymate.platform.webmvc.support.RequestMappingParser;
 import org.apache.commons.fileupload.ProgressListener;
 import org.apache.commons.lang.StringUtils;
 
@@ -39,6 +40,8 @@ import java.util.Set;
 public class DefaultModuleCfg implements IWebMvcModuleCfg {
 
     private static final String __IGNORE = "^.+\\.(jsp|jspx|png|gif|jpg|jpeg|js|css|swf|ico|htm|html|eot|woff|woff2|ttf|svg)$";
+
+    private IRequestMappingParser __mappingParser;
 
     private IRequestProcessor __requestProcessor;
 
@@ -94,6 +97,17 @@ public class DefaultModuleCfg implements IWebMvcModuleCfg {
 
     public DefaultModuleCfg(YMP owner) throws Exception {
         Map<String, String> _moduleCfgs = owner.getConfig().getModuleConfigs(IWebMvc.MODULE_NAME);
+        //
+        String _reqMappingParserClass = StringUtils.defaultIfBlank(_moduleCfgs.get("request_mapping_parser_class"), "default");
+        Class<? extends IRequestMappingParser> _mappingParserClass = Type.REQUEST_MAPPING_PARSERS.get(_reqMappingParserClass);
+        if (_mappingParserClass == null && StringUtils.isNotBlank(_reqMappingParserClass)) {
+            __mappingParser = ClassUtils.impl(_reqMappingParserClass, IRequestMappingParser.class, this.getClass());
+        } else if (_mappingParserClass != null) {
+            __mappingParser = _mappingParserClass.newInstance();
+        }
+        if (__mappingParser == null) {
+            __mappingParser = new RequestMappingParser();
+        }
         //
         String _reqProcessorClass = StringUtils.defaultIfBlank(_moduleCfgs.get("request_processor_class"), "default");
         Class<? extends IRequestProcessor> _requestProcessorClass = Type.REQUEST_PROCESSORS.get(_reqProcessorClass);
@@ -175,6 +189,10 @@ public class DefaultModuleCfg implements IWebMvcModuleCfg {
                 }
             }
         }
+    }
+
+    public IRequestMappingParser getRequestMappingParser() {
+        return __mappingParser;
     }
 
     public IRequestProcessor getRequestProcessor() {

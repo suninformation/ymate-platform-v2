@@ -29,6 +29,11 @@ import java.util.Set;
 public interface IWebMvcModuleCfg {
 
     /**
+     * @return 控制器请求映射路径分析器，，可选值为已知分析器名称或自定义分析器类名称，默认为default，目前支持已知分析器[default|restful|...]
+     */
+    IRequestMappingParser getRequestMappingParser();
+
+    /**
      * @return 控制器请求处理器，可选值为已知处理器名称或自定义处理器类名称，默认为default，目前支持已知处理器[default|json|xml|...]
      */
     IRequestProcessor getRequestProcessor();

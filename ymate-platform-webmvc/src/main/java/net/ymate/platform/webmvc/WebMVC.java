@@ -35,7 +35,6 @@ import net.ymate.platform.webmvc.impl.NullWebCacheProcessor;
 import net.ymate.platform.webmvc.support.GenericResponseWrapper;
 import net.ymate.platform.webmvc.support.MultipartRequestWrapper;
 import net.ymate.platform.webmvc.support.RequestExecutor;
-import net.ymate.platform.webmvc.support.RequestMappingParser;
 import net.ymate.platform.webmvc.view.IView;
 import net.ymate.platform.webmvc.view.View;
 import net.ymate.platform.webmvc.view.impl.*;
@@ -74,8 +73,6 @@ public class WebMVC implements IModule, IWebMvc {
 
     private boolean __inited;
 
-    private RequestMappingParser __mappingParser;
-
     private IInterceptorRuleProcessor __interceptorRuleProcessor;
 
     /**
@@ -111,7 +108,6 @@ public class WebMVC implements IModule, IWebMvc {
             //
             __owner = owner;
             __moduleCfg = new DefaultModuleCfg(owner);
-            __mappingParser = new RequestMappingParser();
             __owner.getEvents().registerEvent(WebEvent.class);
             __owner.registerHandler(Controller.class, new ControllerHandler(this));
             if (__moduleCfg.isConventionInterceptorMode()) {
@@ -149,7 +145,7 @@ public class WebMVC implements IModule, IWebMvc {
         for (Method _method : targetClass.getDeclaredMethods()) {
             if (_method.isAnnotationPresent(RequestMapping.class)) {
                 RequestMeta _meta = new RequestMeta(this, targetClass, _method);
-                __mappingParser.registerRequestMeta(_meta);
+                __moduleCfg.getRequestMappingParser().registerRequestMeta(_meta);
                 //
                 if (__owner.getConfig().isDevelopMode()) {
                     _LOG.debug("--> " + _meta.getAllowMethods() + ": " + _meta.getMapping() + " : " + _meta.getTargetClass().getName() + "." + _meta.getMethod().getName());
@@ -205,7 +201,7 @@ public class WebMVC implements IModule, IWebMvc {
                 _LOG.debug("--- [" + _threadId + "] Parameters: " + JSON.toJSONString(request.getParameterMap()));
             }
             //
-            RequestMeta _meta = __mappingParser.doParse(context);
+            RequestMeta _meta = __moduleCfg.getRequestMappingParser().doParse(context);
             if (_meta != null) {
                 //
                 _LOG.debug("--- [" + _threadId + "] Request mode: controller");
