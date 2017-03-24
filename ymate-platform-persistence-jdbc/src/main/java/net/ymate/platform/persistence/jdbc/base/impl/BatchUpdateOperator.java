@@ -107,7 +107,6 @@ public class BatchUpdateOperator extends AbstractOperator implements IBatchUpdat
             }
             return _count;
         } catch (Exception ex) {
-            _LOG.error("", ex);
             _hasEx = true;
             throw ex;
         } finally {

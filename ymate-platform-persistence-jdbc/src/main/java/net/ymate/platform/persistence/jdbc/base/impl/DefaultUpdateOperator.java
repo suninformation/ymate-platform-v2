@@ -56,7 +56,6 @@ public class DefaultUpdateOperator extends AbstractOperator implements IUpdateOp
             }
             return effectCounts = _statement.executeUpdate();
         } catch (Exception ex) {
-            _LOG.error("", ex);
             _hasEx = true;
             throw ex;
         } finally {

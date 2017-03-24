@@ -124,7 +124,6 @@ public class DefaultProcedureOperator<T> extends AbstractOperator implements IPr
             }
             return -1;
         } catch (Exception ex) {
-            _LOG.error("", ex);
             _hasEx = true;
             throw ex;
         } finally {

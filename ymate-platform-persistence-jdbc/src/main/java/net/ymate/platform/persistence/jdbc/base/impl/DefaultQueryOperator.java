@@ -77,7 +77,6 @@ public class DefaultQueryOperator<T> extends AbstractOperator implements IQueryO
             this.resultSet = this.getResultSetHandler().handle(_resultSet = _statement.executeQuery());
             return this.resultSet.size();
         } catch (Exception ex) {
-            _LOG.error("", ex);
             _hasEx = true;
             throw ex;
         } finally {
