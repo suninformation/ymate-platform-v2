@@ -529,6 +529,7 @@ OK！就这么简单，一切都结束了！
                         Where.create(
                                 Cond.create()
                                         .eq(User.FIELDS.USER_NAME).param("suninformation")
+                                        .and()
                                         .eq(User.FIELDS.PWD).param(DigestUtils.md5Hex("123456"))));
 
 		**注**：更多的查询方式将在后面的 “查询（Query）” 章节中详细阐述；

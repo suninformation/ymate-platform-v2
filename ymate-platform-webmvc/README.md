@@ -89,7 +89,7 @@ WebMVC模块的基本初始化参数配置：
 	# 基本初始化参数
 	#-------------------------------------
 	
-	# 控制器请求映射路径分析器，，可选值为已知分析器名称或自定义分析器类名称，默认为default，目前支持已知分析器[default|restful|...]
+	# 控制器请求映射路径分析器，可选值为已知分析器名称或自定义分析器类名称，默认为default，目前支持已知分析器[default|restful|...]
     ymp.configs.webmvc.request_mapping_parser_class=
 	
 	# 控制器请求处理器，可选值为已知处理器名称或自定义处理器类名称，自定义类需实现net.ymate.platform.webmvc.IRequestProcessor接口，默认为default，目前支持已知处理器[default|json|xml|...]
@@ -694,10 +694,10 @@ WebMVC模块针对文件的上传处理以及对上传的文件操作都非常�
 	# 文件上传临时目录，为空则默认使用：System.getProperty("java.io.tmpdir")
 	ymp.configs.webmvc.upload_temp_dir=
 	
-	# 上传文件大小最大值（字节），默认值：-1（注：10485760 = 10M）
+	# 上传文件大小最大值（字节），默认值：10485760（注：10485760 = 10M）
 	ymp.configs.webmvc.upload_file_size_max=
 
-	# 上传文件总量大小最大值（字节）, 默认值：-1（注：10485760 = 10M）
+	# 上传文件总量大小最大值（字节）, 默认值：10485760（注：10485760 = 10M）
 	ymp.configs.webmvc.upload_total_size_max=
 
 	# 内存缓冲区的大小，默认值： 10240字节（=10K），即如果文件大于10K，将使用临时文件缓存上传文件

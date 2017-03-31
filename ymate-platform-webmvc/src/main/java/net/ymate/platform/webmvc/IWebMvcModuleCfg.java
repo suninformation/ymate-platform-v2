@@ -29,7 +29,7 @@ import java.util.Set;
 public interface IWebMvcModuleCfg {
 
     /**
-     * @return 控制器请求映射路径分析器，，可选值为已知分析器名称或自定义分析器类名称，默认为default，目前支持已知分析器[default|restful|...]
+     * @return 控制器请求映射路径分析器，可选值为已知分析器名称或自定义分析器类名称，默认为default，目前支持已知分析器[default|restful|...]
      */
     IRequestMappingParser getRequestMappingParser();
 
@@ -109,12 +109,12 @@ public interface IWebMvcModuleCfg {
     String getUploadTempDir();
 
     /**
-     * @return 上传文件大小最大值（字节），默认值：-1（注：10485760 = 10M）
+     * @return 上传文件大小最大值（字节），默认值：10485760（注：10485760 = 10M）
      */
     int getUploadFileSizeMax();
 
     /**
-     * @return 上传文件总量大小最大值（字节）, 默认值：-1（注：10485760 = 10M）
+     * @return 上传文件总量大小最大值（字节）, 默认值：10485760（注：10485760 = 10M）
      */
     int getUploadTotalSizeMax();
 
@@ -134,7 +134,7 @@ public interface IWebMvcModuleCfg {
     boolean isConventionMode();
 
     /**
-     * @return Convention模式开启时是否采用URL伪静态(URL中通过分隔符'_'传递多个请求参数，通过_path[index]方式引用参数值)模式，可选参数，默认值为false
+     * @return Convention模式开启时是否采用URL伪静态 (URL中通过分隔符'_'传递多个请求参数，通过_path[index]方式引用参数值) 模式，可选参数，默认值为false
      */
     boolean isConventionUrlrewriteMode();
 
