@@ -16,13 +16,18 @@
 package net.ymate.platform.core.lang;
 
 import net.ymate.platform.core.util.RuntimeUtils;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import java.io.InputStream;
+import java.io.Reader;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.sql.Blob;
+import java.sql.Clob;
 import java.util.*;
 
 /**
@@ -207,6 +212,20 @@ public class BlurObject implements Serializable, Cloneable {
         if (attr instanceof String) {
             return (String) attr;
         }
+        if (attr instanceof Clob) {
+            Clob _clob = (Clob) attr;
+            Reader _reader = null;
+            try {
+                _reader = _clob.getCharacterStream();
+                if (_clob.length() > 0 && _reader != null) {
+                    return IOUtils.toString(_reader);
+                }
+            } catch (Exception e) {
+                _LOG.warn("", RuntimeUtils.unwrapThrow(e));
+            } finally {
+                IOUtils.closeQuietly(_reader);
+            }
+        }
         if (attr instanceof BlurObject) {
             return ((BlurObject) this.attr).toStringValue();
         }
@@ -369,6 +388,23 @@ public class BlurObject implements Serializable, Cloneable {
                 _returnBArr[_idx] = _bArr[_idx];
             }
             return _returnBArr;
+        }
+        if (attr instanceof Blob) {
+            Blob _blob = ((Blob) attr);
+            InputStream _input = null;
+            try {
+                _input = _blob.getBinaryStream();
+                if (_blob.length() > 0 && _input != null) {
+                    byte[] _bArr = new byte[(int) _blob.length()];
+                    if (_input.read(_bArr) > 0) {
+                        return _bArr;
+                    }
+                }
+            } catch (Exception e) {
+                _LOG.warn("", RuntimeUtils.unwrapThrow(e));
+            } finally {
+                IOUtils.closeQuietly(_input);
+            }
         }
         return null;
     }
