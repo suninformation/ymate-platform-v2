@@ -39,7 +39,7 @@ public class EmailValidator extends AbstractValidator {
             if (!context.getParamValue().getClass().isArray()) {
                 String _value = BlurObject.bind(_paramValue).toStringValue();
                 if (StringUtils.isNotBlank(_value)) {
-                    if (!_value.matches("(?:\\w[-._\\w]*\\w@\\w[-._\\w]*\\w\\.\\w{2,3}$)")) {
+                    if (!_value.matches("(?:\\w[-._\\w]*\\w@\\w[-._\\w]*\\w\\.\\w{2,8}$)")) {
                         String _pName = StringUtils.defaultIfBlank(context.getParamLabel(), context.getParamName());
                         _pName = __doGetI18nFormatMessage(context, _pName, _pName);
                         //
