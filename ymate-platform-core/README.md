@@ -35,6 +35,7 @@ YMP框架的初始化是从加载ymp-conf.properties文件开始的，该文件�
 
 - 根据程序运行环境的不同，YMP框架初始化时将根据当前操作系统优先级加载配置：
 
+    + 优先加载 ymp-conf_DEV.properties (若加载成功则强制设置ymp.dev_mode=true)
     + Unix/Linux环境下，优先加载 ymp-conf_UNIX.properties；
     + Windows环境下，优先加载 ymp-conf_WIN.properties；
     + 若以上配置文件未找到，则加载默认配置 ymp-conf.properties；
