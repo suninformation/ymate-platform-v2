@@ -42,7 +42,12 @@ public class DefaultModuleCfg implements IConfigModuleCfg {
     public DefaultModuleCfg(YMP owner) {
         Map<String, String> _moduleCfgs = owner.getConfig().getModuleConfigs(IConfig.MODULE_NAME);
         //
-        this.configHome = RuntimeUtils.replaceEnvVariable(StringUtils.defaultIfEmpty(_moduleCfgs.get("config_home"), "${root}"));
+        this.configHome = _moduleCfgs.get("config_home");
+        if (StringUtils.isBlank(this.configHome)) {
+            // 尝试通过运行时变量或系统变量获取CONFIG_HOME参数
+            this.configHome = StringUtils.defaultIfBlank(System.getenv(IConfig.__CONFIG_HOME), RuntimeUtils.getSystemEnv(IConfig.__CONFIG_HOME));
+        }
+        this.configHome = RuntimeUtils.replaceEnvVariable(StringUtils.defaultIfEmpty(this.configHome, "${root}"));
         //
         this.projectName = _moduleCfgs.get("project_name");
         this.moduleName = _moduleCfgs.get("module_name");

@@ -26,7 +26,6 @@ import net.ymate.platform.core.module.annotation.Module;
 import net.ymate.platform.core.util.ClassUtils;
 import net.ymate.platform.core.util.FileUtils;
 import net.ymate.platform.core.util.ResourceUtils;
-import net.ymate.platform.core.util.RuntimeUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -99,10 +98,6 @@ public class Cfgs implements IModule, IConfig {
             __owner.registerHandler(Configuration.class, new ConfigHandler(this));
             //
             __configHome = __moduleCfg.getConfigHome();
-            if (StringUtils.isBlank(__configHome)) {
-                // 尝试通过运行时变量或系统变量获取CONFIG_HOME参数
-                __configHome = StringUtils.defaultIfBlank(System.getenv(__CONFIG_HOME), RuntimeUtils.getSystemEnv(__CONFIG_HOME));
-            }
             //
             if (StringUtils.isNotBlank(__configHome)) {
                 __configHome = StringUtils.replace(__configHome, "%20", " ");
