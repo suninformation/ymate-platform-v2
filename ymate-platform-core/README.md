@@ -305,6 +305,36 @@ YMP框架的AOP是基于CGLIB的MethodInterceptor实现的拦截，通过以下�
 
 **注**：`@ContextParam`注解的value属性允许通过$xxx的格式支持从框架全局参数中获取xxx的值
 
+##### 拦截器全局规则设置
+
+有些时候，我们需要对指定的拦截器或某些类和方法的拦截器配置进行调整，往往我们要修改代码、编译打包并重新部署，这样做显然很麻烦！
+
+现在我们可以通过配置文件来完成此项工作，配置格式及说明如下：
+
+    #-------------------------------------
+    # 框架拦截器全局规则设置参数
+    #-------------------------------------
+    
+    # 是否开启拦截器全局规则设置, 默认为false
+    ymp.intercept_settings_enabled=true
+    
+    # 全局设置指定的拦截器状态为禁止执行, 仅当取值为disabled时生效, 格式: ymp.intercept.globals.<拦截器类名>=disabled
+    ymp.intercept.globals.net.ymate.framework.webmvc.intercept.UserSessionAlreadyInterceptor=disabled
+    
+    # 为目标类配置拦截器执行规则:
+    #
+    # -- 格式: ymp.intercept.settings.<目标类名>#[方法名称]=<[*|before:*|after:*]或[before:|after:]interceptor_class_name[+|-]]>
+    # -- 假设目标类名称为: net.ymate.demo.controller.DemoController
+    #
+    # -- 方式一: 指定目标类所有方法禁止所有拦截器(*表示全部, 即包括前置和后置拦截器)
+    ymp.intercept.settings.net.ymate.demo.controller.DemoController#=*
+    
+    # -- 方式二: 指定目标类的doLogin方法禁止所有前置拦截器(before:表示规则限定为前置拦截器, after:表示规则限定为后置拦截器)
+    ymp.intercept.settings.net.ymate.demo.controller.DemoController#doLogin=before:*
+    
+    # -- 方式三: 指定目标类的doLogout方法禁止某个前置拦截器并增加一个新的后置拦截器(多个执行规则通过'|'分隔, 增加拦截器的'+'可以省略)
+    ymp.intercept.settings.net.ymate.demo.controller.DemoController#__doLogout=before:net.ymate.demo.intercept.UserSessionInterceptor-|after:net.ymate.demo.intercept.UserStatusUpdateInterceptor+
+
 ##### 记录类属性状态 (PropertyState)
 
 通过在类成员变量上声明`@PropertyState`注解，并使用`PropertyStateSupport`工具类配合，便可以轻松实现对类成员属性的变化情况进行监控。
