@@ -16,6 +16,7 @@
 package net.ymate.platform.webmvc.support;
 
 import net.ymate.platform.core.YMP;
+import net.ymate.platform.core.module.IModule;
 import net.ymate.platform.core.util.RuntimeUtils;
 import net.ymate.platform.webmvc.WebEvent;
 import net.ymate.platform.webmvc.WebMVC;
@@ -33,16 +34,21 @@ public class WebAppEventListener implements ServletContextListener, ServletConte
         HttpSessionListener, HttpSessionAttributeListener, HttpSessionBindingListener,
         ServletRequestListener, ServletRequestAttributeListener {
 
+    private static boolean __isInited;
+
     static {
         try {
             YMP.get().init();
+            __isInited = YMP.get().isInited() && WebMVC.get() != null && ((IModule) WebMVC.get()).isInited();
         } catch (Exception ex) {
             throw new RuntimeException(RuntimeUtils.unwrapThrow(ex));
         }
     }
 
     private void __doFireEvent(WebEvent.EVENT event, Object eventSource) {
-        YMP.get().getEvents().fireEvent(new WebEvent(WebMVC.get(), event).addParamExtend(WebEvent.EVENT_SOURCE, eventSource));
+        if (__isInited) {
+            YMP.get().getEvents().fireEvent(new WebEvent(WebMVC.get(), event).addParamExtend(WebEvent.EVENT_SOURCE, eventSource));
+        }
     }
 
     //// ServletContextListener
