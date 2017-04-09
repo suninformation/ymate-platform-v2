@@ -15,6 +15,7 @@
  */
 package net.ymate.platform.core.beans.intercept;
 
+import net.ymate.platform.core.YMP;
 import net.ymate.platform.core.beans.annotation.*;
 import net.ymate.platform.core.beans.proxy.IProxy;
 import net.ymate.platform.core.beans.proxy.IProxyChain;
@@ -66,10 +67,11 @@ public class InterceptProxy implements IProxy {
             return proxyChain.doProxyChain();
         }
         //
+        boolean _hasInterceptSettings = __hasInterceptSettings(proxyChain.getProxyFactory().getOwner(), proxyChain.getTargetClass(), proxyChain.getTargetMethod());
         Map<String, String> _contextParams = null;
         // 尝试处理@Before注解
         if (proxyChain.getTargetClass().isAnnotationPresent(Before.class)
-                || proxyChain.getTargetMethod().isAnnotationPresent(Before.class)) {
+                || proxyChain.getTargetMethod().isAnnotationPresent(Before.class) || _hasInterceptSettings) {
 
             _contextParams = InterceptAnnoHelper.getContextParams(proxyChain.getProxyFactory().getOwner(), proxyChain.getTargetClass(), proxyChain.getTargetMethod());
 
@@ -79,7 +81,7 @@ public class InterceptProxy implements IProxy {
                     proxyChain.getTargetMethod(),
                     proxyChain.getMethodParams(), _contextParams);
             //
-            for (Class<? extends IInterceptor> _interceptClass : __doGetBeforeIntercepts(proxyChain.getTargetClass(), proxyChain.getTargetMethod())) {
+            for (Class<? extends IInterceptor> _interceptClass : __doGetBeforeIntercepts(proxyChain.getProxyFactory().getOwner(), proxyChain.getTargetClass(), proxyChain.getTargetMethod())) {
                 IInterceptor _interceptor = _interceptClass.newInstance();
                 // 执行前置拦截器，若其结果对象不为空则返回并停止执行
                 Object _resultObj = _interceptor.intercept(_context);
@@ -92,7 +94,7 @@ public class InterceptProxy implements IProxy {
         Object _returnValue = proxyChain.doProxyChain();
         // 尝试处理@After注解
         if (proxyChain.getTargetClass().isAnnotationPresent(After.class)
-                || proxyChain.getTargetMethod().isAnnotationPresent(After.class)) {
+                || proxyChain.getTargetMethod().isAnnotationPresent(After.class) || _hasInterceptSettings) {
 
             if (_contextParams == null) {
                 _contextParams = InterceptAnnoHelper.getContextParams(proxyChain.getProxyFactory().getOwner(), proxyChain.getTargetClass(), proxyChain.getTargetMethod());
@@ -105,7 +107,7 @@ public class InterceptProxy implements IProxy {
                     proxyChain.getMethodParams(), _contextParams);
             _context.setResultObject(_returnValue);
             //
-            for (Class<? extends IInterceptor> _interceptClass : __doGetAfterIntercepts(proxyChain.getTargetClass(), proxyChain.getTargetMethod())) {
+            for (Class<? extends IInterceptor> _interceptClass : __doGetAfterIntercepts(proxyChain.getProxyFactory().getOwner(), proxyChain.getTargetClass(), proxyChain.getTargetMethod())) {
                 IInterceptor _interceptor = _interceptClass.newInstance();
                 // 执行后置拦截器，所有后置拦截器的执行结果都将被忽略
                 _interceptor.intercept(_context);
@@ -114,7 +116,11 @@ public class InterceptProxy implements IProxy {
         return _returnValue;
     }
 
-    private List<Class<? extends IInterceptor>> __doGetBeforeIntercepts(Class<?> targetClass, Method targetMethod) {
+    private boolean __hasInterceptSettings(YMP owner, Class<?> targetClass, Method targetMethod) {
+        return owner.getConfig().isInterceptSettingsEnabled() && owner.getConfig().getInterceptSettings().hasInterceptSettings(targetClass, targetMethod);
+    }
+
+    private List<Class<? extends IInterceptor>> __doGetBeforeIntercepts(YMP owner, Class<?> targetClass, Method targetMethod) {
         String _cacheKey = DigestUtils.md5Hex(targetClass.toString() + targetMethod.toString());
         //
         if (__beforeInterceptsCache.containsKey(_cacheKey)) {
@@ -127,15 +133,16 @@ public class InterceptProxy implements IProxy {
             }
             _classes = InterceptAnnoHelper.getBeforeIntercepts(targetClass, targetMethod);
             //
-            if (!_classes.isEmpty()) {
-                __beforeInterceptsCache.put(_cacheKey, _classes);
+            if (owner.getConfig().isInterceptSettingsEnabled()) {
+                _classes = owner.getConfig().getInterceptSettings().doBeforeSet(_classes, targetClass, targetMethod);
             }
+            __beforeInterceptsCache.put(_cacheKey, _classes);
             //
             return _classes;
         }
     }
 
-    private List<Class<? extends IInterceptor>> __doGetAfterIntercepts(Class<?> targetClass, Method targetMethod) {
+    private List<Class<? extends IInterceptor>> __doGetAfterIntercepts(YMP owner, Class<?> targetClass, Method targetMethod) {
         String _cacheKey = DigestUtils.md5Hex(targetClass.toString() + targetMethod.toString());
         //
         if (__afterInterceptsCache.containsKey(_cacheKey)) {
@@ -148,9 +155,10 @@ public class InterceptProxy implements IProxy {
             }
             _classes = InterceptAnnoHelper.getAfterIntercepts(targetClass, targetMethod);
             //
-            if (!_classes.isEmpty()) {
-                __afterInterceptsCache.put(_cacheKey, _classes);
+            if (owner.getConfig().isInterceptSettingsEnabled()) {
+                _classes = owner.getConfig().getInterceptSettings().doAfterSet(_classes, targetClass, targetMethod);
             }
+            __afterInterceptsCache.put(_cacheKey, _classes);
             //
             return _classes;
         }

@@ -16,6 +16,7 @@
 package net.ymate.platform.core.support;
 
 import net.ymate.platform.core.IConfig;
+import net.ymate.platform.core.beans.intercept.InterceptSettings;
 import net.ymate.platform.core.event.IEventProvider;
 import net.ymate.platform.core.i18n.II18NEventHandler;
 import net.ymate.platform.core.lang.BlurObject;
@@ -52,6 +53,10 @@ public final class ConfigBuilder {
     private Map<String, String> __eventConfigs;
 
     private IModuleCfgProcessor __processor;
+
+    private boolean __interceptSettingsEnabled;
+
+    private InterceptSettings __interceptSettings;
 
     private static List<String> __doParserArrayStr(Properties properties, String key) {
         String[] _strArr = StringUtils.split(properties.getProperty(key), "|");
@@ -103,6 +108,32 @@ public final class ConfigBuilder {
                 String _cfgKey = StringUtils.substring((String) _key, _prefix.length());
                 String _cfgValue = properties.getProperty((String) _key);
                 _builder.__eventConfigs.put(_cfgKey, _cfgValue);
+            }
+        }
+        //
+        _builder.__interceptSettingsEnabled = new BlurObject(properties.getProperty("ymp.intercept_settings_enabled")).toBooleanValue();
+        //
+        if (_builder.__interceptSettingsEnabled) {
+            _prefix = "ymp.intercept.globals.";
+            for (Object _key : properties.keySet()) {
+                if (StringUtils.startsWith((String) _key, _prefix)) {
+                    String _cfgKey = StringUtils.substring((String) _key, _prefix.length());
+                    String _cfgValue = properties.getProperty((String) _key);
+                    if (StringUtils.equalsIgnoreCase(_cfgValue, "disabled")) {
+                        _builder.__interceptSettings.registerInterceptGlobal(_cfgKey);
+                    }
+                }
+            }
+            //
+            _prefix = "ymp.intercept.settings.";
+            for (Object _key : properties.keySet()) {
+                if (StringUtils.startsWith((String) _key, _prefix)) {
+                    String _cfgKey = StringUtils.substring((String) _key, _prefix.length());
+                    String _cfgValue = properties.getProperty((String) _key);
+                    if (StringUtils.isNotBlank(_cfgValue)) {
+                        _builder.__interceptSettings.registerInterceptSetting(_cfgKey, _cfgValue);
+                    }
+                }
             }
         }
         //
@@ -167,6 +198,8 @@ public final class ConfigBuilder {
         __eventConfigs = new HashMap<String, String>();
         //
         __processor = processor;
+        //
+        __interceptSettings = new InterceptSettings();
     }
 
     public ConfigBuilder developMode(boolean isDevelopMode) {
@@ -302,6 +335,14 @@ public final class ConfigBuilder {
 
             public Map<String, String> getEventConfigs() {
                 return Collections.unmodifiableMap(__eventConfigs);
+            }
+
+            public boolean isInterceptSettingsEnabled() {
+                return __interceptSettingsEnabled;
+            }
+
+            public InterceptSettings getInterceptSettings() {
+                return __interceptSettings;
             }
         };
     }

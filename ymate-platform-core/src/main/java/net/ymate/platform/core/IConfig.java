@@ -15,6 +15,7 @@
  */
 package net.ymate.platform.core;
 
+import net.ymate.platform.core.beans.intercept.InterceptSettings;
 import net.ymate.platform.core.i18n.II18NEventHandler;
 
 import java.util.List;
@@ -80,4 +81,14 @@ public interface IConfig {
      * @return 返回框架事件配置参数映射
      */
     Map<String, String> getEventConfigs();
+
+    /**
+     * @return 是否开启拦截器全局规则设置, 默认为false
+     */
+    boolean isInterceptSettingsEnabled();
+
+    /**
+     * @return 返回拦截器全局规则设置
+     */
+    InterceptSettings getInterceptSettings();
 }
