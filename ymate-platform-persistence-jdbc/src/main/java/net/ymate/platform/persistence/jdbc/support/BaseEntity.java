@@ -194,8 +194,10 @@ public abstract class BaseEntity<Entity extends IEntity, PK extends Serializable
     public Entity delete() throws Exception {
         ISession _session = new DefaultSession(__doGetConnectionHolderSafed());
         try {
-            _session.delete(this.getEntityClass(), this.getId(), this.getShardingable());
-            return (Entity) this;
+            if (_session.delete(this.getEntityClass(), this.getId(), this.getShardingable()) > 0) {
+                return (Entity) this;
+            }
+            return null;
         } finally {
             _session.close();
         }
@@ -336,6 +338,10 @@ public abstract class BaseEntity<Entity extends IEntity, PK extends Serializable
     }
 
     public static <T extends IEntity> Cond buildEntityCond(T entity) throws Exception {
+        return buildEntityCond(entity, false);
+    }
+
+    public static <T extends IEntity> Cond buildEntityCond(T entity, boolean or) throws Exception {
         Cond _cond = Cond.create();
         EntityMeta _meta = EntityMeta.createAndGet(entity.getClass());
         ClassUtils.BeanWrapper<T> _beanWrapper = ClassUtils.wrapper(entity);
@@ -349,7 +355,11 @@ public abstract class BaseEntity<Entity extends IEntity, PK extends Serializable
             }
             if (_value != null) {
                 if (_flag) {
-                    _cond.and();
+                    if (or) {
+                        _cond.or();
+                    } else {
+                        _cond.and();
+                    }
                 } else {
                     _flag = true;
                 }
