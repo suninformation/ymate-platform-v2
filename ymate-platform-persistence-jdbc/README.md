@@ -304,11 +304,13 @@ YMP框架自v1.0开始就支持通过数据库表结构自动生成实体类代�
 > 
 > - 在多数据源模式下，代码生成器使用的是默认数据源；
 > 
-> - 代码生成器依赖freemarker模板引擎，所以请检查依赖关系是否正确；
+> - 代码生成器依赖`freemarker`模板引擎，所以请检查依赖关系是否正确；
 >
-> - 在WEB工程中运行代码生成器时请确认servlet-api和jsp-api包依赖关系是否正确；
+> - 在WEB工程中运行代码生成器时请确认`servlet-api`和`jsp-api`包依赖关系是否正确；
 >
 > - 如果你的工程中引用了很多的模块，在运行代码生成器时可以暂时通过ymp.excluded_modules参数排除掉；
+>
+> - 如果使用的JDBC驱动是`mysql-connector-java-6.x`及以上版本时，则必须配置`db_name`和`db_username`参数；
 
 了解了以上的配置后，直接运行代码生成器：
 
@@ -319,6 +321,65 @@ YMP框架自v1.0开始就支持通过数据库表结构自动生成实体类代�
 	mvn compile exec:java -Dexec.mainClass="net.ymate.platform.persistence.jdbc.scaffold.EntityGenerator"
 
 OK！就这么简单，一切都结束了！
+
+当然，上面介绍的实体生成方法还是有些麻烦，所以我们提供了另外一种更方便的方式 —— 通过YMP框架提供的Maven扩展工具生成实体：
+
+- 步骤1：编译并安装`ymate-maven-extension`扩展工具
+
+    - 下载YMP框架Maven扩展工具源码（[点击这里查看此项目](https://git.oschina.net/suninformation/ymate-maven-extension)）
+    
+        执行命令：
+
+            git clone https://git.oschina.net/suninformation/ymate-maven-extension.git
+
+    - 编译并安装到本地Maven仓库
+
+        执行命令: 
+
+            cd ymate-maven-extension
+            mvn clean install
+
+- 步骤2：将pom.xml中添加`ymate-maven-plugin`插件
+
+        <plugin>
+            <groupId>net.ymate.maven.plugins</groupId>
+            <artifactId>ymate-maven-plugin</artifactId>
+            <version>1.0-SNAPSHOT</version>
+        </plugin>
+
+- 步骤3：执行插件生成实体
+
+    在工程根路径下执行命令：
+
+        mvn ymate:entity
+
+    输出内容：
+    
+        Picked up JAVA_TOOL_OPTIONS: -Dfile.encoding=UTF-8
+        [INFO] Scanning for projects...
+        [INFO] ......（此处省略若干字）
+        [INFO] --- ymate-maven-plugin:1.0-SNAPSHOT:entity (default-cli) @ ymp-examples-webapp ---
+        三月 25, 2016 12:25:07 上午 net.ymate.platform.core.YMP init
+        信息: 
+        __   ____  __ ____          ____  
+        \ \ / /  \/  |  _ \  __   _|___ \ 
+         \ V /| |\/| | |_) | \ \ / / __) |
+          | | | |  | |  __/   \ V / / __/ 
+          |_| |_|  |_|_|       \_/ |_____|  Website: http://www.ymate.net/
+        三月 25, 2016 12:25:07 上午 net.ymate.platform.core.YMP init
+        信息: Initializing ymate-platform-core-2.0.0-GA build-20160324-2339 - debug:true
+        ......（此处省略若干字）
+        信息: [show tables][][1][13ms]
+        Output file "/Users/suninformation/IdeaProjects/ymate-platform-examples/ymp-examples-webapp/src/main/java/net/ymate/platform/examples/model/User.java".
+        [INFO] ------------------------------------------------------------------------
+        [INFO] BUILD SUCCESS
+        [INFO] ------------------------------------------------------------------------
+        [INFO] Total time: 1.577s
+        [INFO] Finished at: Fri Mar 25 00:25:08 CST 2016
+        [INFO] Final Memory: 10M/163M
+        [INFO] ------------------------------------------------------------------------
+
+    通过插件生成的代码默认放置在`src/main/java`路径，当数据库表发生变化时，直接执行插件命令就可以快速更新数据实体对象，**是不是很更方便呢，大家可以动手尝试一下！**:p
 
 #### 事务（Transaction）
 
