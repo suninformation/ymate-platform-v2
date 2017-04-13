@@ -16,6 +16,7 @@
 package net.ymate.platform.webmvc.view.impl;
 
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.serializer.SerializerFeature;
 import net.ymate.platform.webmvc.base.Type;
 import net.ymate.platform.webmvc.context.WebContext;
 import net.ymate.platform.webmvc.view.AbstractView;
@@ -36,6 +37,7 @@ public class JsonView extends AbstractView {
     protected Object __jsonObj;
     protected boolean __withContentType;
     protected String __jsonCallback;
+    protected boolean __keepNullValue;
 
     public static JsonView bind(Object obj) {
         if (obj instanceof String) {
@@ -80,6 +82,30 @@ public class JsonView extends AbstractView {
         return this;
     }
 
+    /**
+     * @return 设置是否保留空值属性
+     */
+    public JsonView keepNullValue() {
+        __keepNullValue = true;
+        return this;
+    }
+
+    /**
+     * @return 将视图数据对象转换为JSON字符串
+     */
+    protected String __doObjectToJsonString() {
+        if (__keepNullValue) {
+            return JSON.toJSONString(__jsonObj,
+                    SerializerFeature.WriteMapNullValue,
+                    SerializerFeature.WriteNullBooleanAsFalse,
+                    SerializerFeature.WriteNullListAsEmpty,
+                    SerializerFeature.WriteNullNumberAsZero,
+                    SerializerFeature.WriteNullStringAsEmpty,
+                    SerializerFeature.WriteNullNumberAsZero);
+        }
+        return __jsonObj.toString();
+    }
+
     protected void __doRenderView() throws Exception {
         HttpServletResponse _response = WebContext.getResponse();
         if (StringUtils.isNotBlank(getContentType())) {
@@ -91,7 +117,7 @@ public class JsonView extends AbstractView {
                 _response.setContentType(Type.ContentType.JAVASCRIPT.getContentType());
             }
         }
-        StringBuilder _jsonStr = new StringBuilder(__jsonObj.toString());
+        StringBuilder _jsonStr = new StringBuilder(__doObjectToJsonString());
         if (__jsonCallback != null) {
             _jsonStr.insert(0, __jsonCallback + "(").append(");");
         }
@@ -100,7 +126,7 @@ public class JsonView extends AbstractView {
 
     @Override
     public void render(OutputStream output) throws Exception {
-        StringBuilder _jsonStr = new StringBuilder(__jsonObj.toString());
+        StringBuilder _jsonStr = new StringBuilder(__doObjectToJsonString());
         if (__jsonCallback != null) {
             _jsonStr.insert(0, __jsonCallback + "(").append(");");
         }
