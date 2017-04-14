@@ -227,7 +227,7 @@ public final class CookieHelper {
                         __cookieKey = __getEncodedAuthKeyStr();
                     }
                     if (StringUtils.isNotBlank(__cookieKey)) {
-                        value = new String(CodecUtils.DES.encrypt(value.getBytes(__charsetEncoding), __cookieKey.getBytes()), __charsetEncoding);
+                        value = new String(Base64.encodeBase64(CodecUtils.DES.encrypt(value.getBytes(__charsetEncoding), __cookieKey.getBytes())), __charsetEncoding);
                     }
                 }
                 if (this.__useBase64) {
@@ -257,7 +257,7 @@ public final class CookieHelper {
                         __cookieKey = __getEncodedAuthKeyStr();
                     }
                     if (StringUtils.isNotBlank(__cookieKey)) {
-                        value = new String(CodecUtils.DES.decrypt(value.getBytes(__charsetEncoding), __cookieKey.getBytes()));
+                        value = new String(CodecUtils.DES.decrypt(Base64.decodeBase64(value.getBytes(__charsetEncoding)), __cookieKey.getBytes()));
                     }
                 }
             } catch (Exception e) {
