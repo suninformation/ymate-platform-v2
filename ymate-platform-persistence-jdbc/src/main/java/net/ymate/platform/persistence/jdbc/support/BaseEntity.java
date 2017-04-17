@@ -15,6 +15,7 @@
  */
 package net.ymate.platform.persistence.jdbc.support;
 
+import com.alibaba.fastjson.annotation.JSONField;
 import net.ymate.platform.core.util.ClassUtils;
 import net.ymate.platform.persistence.Fields;
 import net.ymate.platform.persistence.IResultSet;
@@ -54,18 +55,22 @@ public abstract class BaseEntity<Entity extends IEntity, PK extends Serializable
         __entityClass = (Class<Entity>) ClassUtils.getParameterizedTypes(getClass()).get(0);
     }
 
+    @JSONField(serialize = false)
     public IConnectionHolder getConnectionHolder() {
         return this.__connectionHolder;
     }
 
+    @JSONField(deserialize = false)
     public void setConnectionHolder(IConnectionHolder connectionHolder) {
         this.__connectionHolder = connectionHolder;
     }
 
+    @JSONField(serialize = false)
     public IShardingable getShardingable() {
         return this.__shardingable;
     }
 
+    @JSONField(deserialize = false)
     public void setShardingable(IShardingable shardingable) {
         this.__shardingable = shardingable;
     }
