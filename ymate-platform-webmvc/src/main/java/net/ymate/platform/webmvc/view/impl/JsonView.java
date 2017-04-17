@@ -25,6 +25,9 @@ import org.apache.commons.lang.StringUtils;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.OutputStream;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * JSON视图
@@ -38,6 +41,8 @@ public class JsonView extends AbstractView {
     protected boolean __withContentType;
     protected String __jsonCallback;
     protected boolean __keepNullValue;
+    protected boolean __quoteFieldNames;
+    protected boolean __useSingleQuotes;
 
     public static JsonView bind(Object obj) {
         if (obj instanceof String) {
@@ -91,19 +96,42 @@ public class JsonView extends AbstractView {
     }
 
     /**
+     * @return 设置JSON属性KEY使用引号
+     */
+    public JsonView quoteFieldNames() {
+        __quoteFieldNames = true;
+        return this;
+    }
+
+    /**
+     * @return 设置JSON属性KEY使用单引号
+     */
+    public JsonView useSingleQuotes() {
+        __useSingleQuotes = true;
+        return this;
+    }
+
+    /**
      * @return 将视图数据对象转换为JSON字符串
      */
     protected String __doObjectToJsonString() {
+        List<SerializerFeature> _features = new ArrayList<SerializerFeature>();
+        if (__quoteFieldNames) {
+            _features.add(SerializerFeature.QuoteFieldNames);
+            if (__useSingleQuotes) {
+                _features.add(SerializerFeature.UseSingleQuotes);
+            }
+        }
         if (__keepNullValue) {
-            return JSON.toJSONString(__jsonObj,
+            _features.addAll(Arrays.asList(
                     SerializerFeature.WriteMapNullValue,
                     SerializerFeature.WriteNullBooleanAsFalse,
                     SerializerFeature.WriteNullListAsEmpty,
                     SerializerFeature.WriteNullNumberAsZero,
                     SerializerFeature.WriteNullStringAsEmpty,
-                    SerializerFeature.WriteNullNumberAsZero);
+                    SerializerFeature.WriteNullNumberAsZero));
         }
-        return __jsonObj.toString();
+        return JSON.toJSONString(__jsonObj, _features.toArray(new SerializerFeature[_features.size()]));
     }
 
     protected void __doRenderView() throws Exception {
