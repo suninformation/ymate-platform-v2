@@ -53,7 +53,13 @@ public class I18NWebEventHandler implements II18NEventHandler {
                 }
             }
         }
-        return LocaleUtils.toLocale(StringUtils.trimToNull(_langStr));
+        Locale _locale = null;
+        try {
+            _locale = LocaleUtils.toLocale(StringUtils.trimToNull(_langStr));
+        } catch (IllegalArgumentException e) {
+            _locale = WebContext.getContext().getLocale();
+        }
+        return _locale;
     }
 
     public void onChanged(Locale locale) {
