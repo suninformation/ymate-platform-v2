@@ -52,6 +52,8 @@ public class EntityGenerator {
     private YMP __owner;
     private IDatabase __jdbc;
 
+    private IEntityNamedFilter __namedFilter;
+
     private EntityGenerator() {
         __freemarkerConfig = new Configuration(Configuration.VERSION_2_3_22);
         __freemarkerConfig.setTemplateExceptionHandler(TemplateExceptionHandler.HTML_DEBUG_HANDLER);
@@ -66,6 +68,8 @@ public class EntityGenerator {
         }
         this.__owner = owner;
         this.__jdbc = JDBC.get(__owner);
+        //
+        __namedFilter = ClassUtils.impl(__owner.getConfig().getParam("jdbc.named_filter_class"), IEntityNamedFilter.class, this.getClass());
     }
 
     /**
@@ -127,6 +131,7 @@ public class EntityGenerator {
                 if (_column.next()) {
                     // 提取字段定义及字段默认值
                     _tableFields.put(_rsMetaData.getColumnName(_idx).toLowerCase(), new ColumnInfo(
+                            __namedFilter,
                             _rsMetaData.getColumnName(_idx).toLowerCase(),
                             _rsMetaData.getColumnClassName(_idx),
                             _rsMetaData.isAutoIncrement(_idx),
@@ -300,6 +305,13 @@ public class EntityGenerator {
         return true;
     }
 
+    private String __doNamedFilter(String original) {
+        if (__namedFilter != null) {
+            return StringUtils.defaultIfBlank(__namedFilter.doFilter(original), original);
+        }
+        return original;
+    }
+
     private void buildEntityClassFile(TableMeta _tableMeta, String _tableName, String[] _prefixs, boolean _isRemovePrefix, boolean view) {
         if (_tableMeta != null) {
             Map<String, Object> _propMap = buildPropMap();
@@ -309,12 +321,12 @@ public class EntityGenerator {
                     if (_isRemovePrefix) {
                         _tableName = _tableName.substring(_prefix.length());
                     }
-                    _modelName = StringUtils.capitalize(EntityMeta.propertyNameToFieldName(_tableName));
+                    _modelName = StringUtils.capitalize(EntityMeta.propertyNameToFieldName(__doNamedFilter(_tableName)));
                     break;
                 }
             }
             if (StringUtils.isBlank(_modelName)) {
-                _modelName = StringUtils.capitalize(EntityMeta.propertyNameToFieldName(_tableName));
+                _modelName = StringUtils.capitalize(EntityMeta.propertyNameToFieldName(__doNamedFilter(_tableName)));
             }
             //
             _propMap.put("tableName", _tableName);
@@ -336,7 +348,7 @@ public class EntityGenerator {
                     ColumnInfo _ci = _tableMeta.getFieldMap().get(pkey);
                     _primaryKeyList.add(_ci.toAttr());
                     _allFieldList.add(new Attr("String",
-                            _ci.getColumnName().toUpperCase(),
+                            __doNamedFilter(_ci.getColumnName()).toUpperCase(),
                             _ci.getColumnName(),
                             _ci.isAutoIncrement(),
                             _ci.isSigned(),
@@ -355,7 +367,7 @@ public class EntityGenerator {
                     _fieldList.add(_attr);
                     _fieldListForNotNullable.add(_attr);
                     _allFieldList.add(new Attr("String",
-                            _ci.getColumnName().toUpperCase(),
+                            __doNamedFilter(_ci.getColumnName()).toUpperCase(),
                             _ci.getColumnName(),
                             _ci.isAutoIncrement(),
                             _ci.isSigned(),
@@ -382,7 +394,7 @@ public class EntityGenerator {
                         _fieldListForNotNullable.add(_attr);
                     }
                     _allFieldList.add(new Attr("String",
-                            _ci.getColumnName().toUpperCase(),
+                            __doNamedFilter(_ci.getColumnName()).toUpperCase(),
                             _ci.getColumnName(),
                             _ci.isAutoIncrement(),
                             _ci.isSigned(),
@@ -485,6 +497,8 @@ public class EntityGenerator {
 
     private static class ColumnInfo {
 
+        private String varName;
+        //
         private String columnName;
         private String columnType;
         private boolean autoIncrement;
@@ -495,7 +509,7 @@ public class EntityGenerator {
         private String defaultValue;
         private String remarks;
 
-        public ColumnInfo(String columnName, String columnType, boolean autoIncrement, boolean isSigned, int precision, int scale, int nullable, String defaultValue, String remarks) {
+        public ColumnInfo(IEntityNamedFilter namedFilter, String columnName, String columnType, boolean autoIncrement, boolean isSigned, int precision, int scale, int nullable, String defaultValue, String remarks) {
             this.columnName = columnName;
             this.columnType = columnType;
             this.autoIncrement = autoIncrement;
@@ -505,6 +519,13 @@ public class EntityGenerator {
             this.nullable = nullable;
             this.defaultValue = defaultValue;
             this.remarks = remarks;
+            //
+            if (namedFilter != null) {
+                this.varName = StringUtils.defaultIfBlank(namedFilter.doFilter(columnName), columnName);
+            } else {
+                this.varName = columnName;
+            }
+            this.varName = StringUtils.uncapitalize(EntityMeta.propertyNameToFieldName(this.varName.toLowerCase()));
         }
 
         public String getColumnName() {
@@ -544,7 +565,7 @@ public class EntityGenerator {
         }
 
         public Attr toAttr() {
-            return new Attr(getColumnType(), StringUtils.uncapitalize(EntityMeta.propertyNameToFieldName(getColumnName().toLowerCase())), getColumnName(), isAutoIncrement(), isSigned(), getPrecision(), getScale(), getNullable(), getDefaultValue(), getRemarks());
+            return new Attr(getColumnType(), this.varName, getColumnName(), isAutoIncrement(), isSigned(), getPrecision(), getScale(), getNullable(), getDefaultValue(), getRemarks());
         }
     }
 
