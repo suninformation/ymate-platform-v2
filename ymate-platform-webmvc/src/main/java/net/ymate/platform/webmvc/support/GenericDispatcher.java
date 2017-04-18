@@ -18,9 +18,9 @@ package net.ymate.platform.webmvc.support;
 import net.ymate.platform.core.i18n.I18N;
 import net.ymate.platform.core.util.RuntimeUtils;
 import net.ymate.platform.webmvc.IRequestContext;
+import net.ymate.platform.webmvc.IWebErrorProcessor;
 import net.ymate.platform.webmvc.IWebMvc;
 import net.ymate.platform.webmvc.WebEvent;
-import net.ymate.platform.webmvc.base.Type;
 import net.ymate.platform.webmvc.context.WebContext;
 
 import javax.servlet.ServletContext;
@@ -39,12 +39,15 @@ public final class GenericDispatcher {
 
     private IWebMvc __owner;
 
+    private IWebErrorProcessor __errorProcessor;
+
     public static GenericDispatcher create(IWebMvc webMvc) {
         return new GenericDispatcher(webMvc);
     }
 
     private GenericDispatcher(IWebMvc webMvc) {
         __owner = webMvc;
+        __errorProcessor = __owner.getModuleCfg().getErrorProcessor();
     }
 
     private void __doFireEvent(WebEvent.EVENT event, Object eventSource) {
@@ -55,12 +58,7 @@ public final class GenericDispatcher {
                         ServletContext servletContext,
                         HttpServletRequest request,
                         HttpServletResponse response) throws IOException, ServletException {
-
         try {
-            request.setCharacterEncoding(__owner.getModuleCfg().getDefaultCharsetEncoding());
-            response.setCharacterEncoding(__owner.getModuleCfg().getDefaultCharsetEncoding());
-            //
-            response.setContentType(Type.ContentType.HTML.getContentType().concat(";charset=").concat(__owner.getModuleCfg().getDefaultCharsetEncoding()));
             //
             WebContext.create(__owner, requestContext, servletContext, request, response);
             //
@@ -68,8 +66,8 @@ public final class GenericDispatcher {
             //
             __owner.processRequest(requestContext, servletContext, request, response);
         } catch (Throwable e) {
-            if (__owner.getModuleCfg().getErrorProcessor() != null) {
-                __owner.getModuleCfg().getErrorProcessor().onError(__owner, e);
+            if (__errorProcessor != null) {
+                __errorProcessor.onError(__owner, e);
             } else {
                 throw new ServletException(RuntimeUtils.unwrapThrow(e));
             }

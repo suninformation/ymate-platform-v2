@@ -17,6 +17,7 @@ package net.ymate.platform.webmvc.support;
 
 import net.ymate.platform.webmvc.IRequestContext;
 import net.ymate.platform.webmvc.WebMVC;
+import net.ymate.platform.webmvc.base.Type;
 import net.ymate.platform.webmvc.impl.DefaultRequestContext;
 
 import javax.servlet.ServletConfig;
@@ -37,15 +38,28 @@ public class DispatchServlet extends HttpServlet {
 
     private ServletContext __servletContext;
 
+    private String __charsetEncoding;
+    private String __requestMethodParam;
+    private String __requestPrefix;
+
     @Override
     public void init(ServletConfig config) throws ServletException {
         __servletContext = config.getServletContext();
+        //
+        __charsetEncoding = WebMVC.get().getModuleCfg().getDefaultCharsetEncoding();
+        __requestMethodParam = WebMVC.get().getModuleCfg().getRequestMethodParam();
+        __requestPrefix = WebMVC.get().getModuleCfg().getRequestPrefix();
     }
 
     protected void service(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        HttpServletRequest _request = new RequestMethodWrapper(request, WebMVC.get().getModuleCfg().getRequestMethodParam());
+        request.setCharacterEncoding(__charsetEncoding);
+        response.setCharacterEncoding(__charsetEncoding);
+        //
+        response.setContentType(Type.ContentType.HTML.getContentType().concat("; charset=").concat(__charsetEncoding));
+        //
+        HttpServletRequest _request = new RequestMethodWrapper(request, __requestMethodParam);
         HttpServletResponse _response = new GenericResponseWrapper(response);
-        IRequestContext _requestContext = new DefaultRequestContext(_request, WebMVC.get().getModuleCfg().getRequestPrefix());
+        IRequestContext _requestContext = new DefaultRequestContext(_request, __requestPrefix);
         GenericDispatcher.create(WebMVC.get()).execute(_requestContext, __servletContext, _request, _response);
     }
 }

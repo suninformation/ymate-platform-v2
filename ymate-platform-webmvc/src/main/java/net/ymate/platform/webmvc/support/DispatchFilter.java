@@ -17,6 +17,7 @@ package net.ymate.platform.webmvc.support;
 
 import net.ymate.platform.webmvc.IRequestContext;
 import net.ymate.platform.webmvc.WebMVC;
+import net.ymate.platform.webmvc.base.Type;
 import net.ymate.platform.webmvc.impl.DefaultRequestContext;
 
 import javax.servlet.*;
@@ -33,9 +34,13 @@ import java.util.regex.Pattern;
  */
 public class DispatchFilter implements Filter {
 
+    private FilterConfig __filterConfig;
+
     private Pattern __ignorePatern;
 
-    private FilterConfig __filterConfig;
+    private String __charsetEncoding;
+    private String __requestMethodParam;
+    private String __requestPrefix;
 
     public void init(FilterConfig filterConfig) throws ServletException {
         __filterConfig = filterConfig;
@@ -43,12 +48,20 @@ public class DispatchFilter implements Filter {
         if (!"false".equalsIgnoreCase(_regex)) {
             __ignorePatern = Pattern.compile(_regex, Pattern.CASE_INSENSITIVE);
         }
+        __charsetEncoding = WebMVC.get().getModuleCfg().getDefaultCharsetEncoding();
+        __requestMethodParam = WebMVC.get().getModuleCfg().getRequestMethodParam();
+        __requestPrefix = WebMVC.get().getModuleCfg().getRequestPrefix();
     }
 
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
-        HttpServletRequest _request = new RequestMethodWrapper((HttpServletRequest) request, WebMVC.get().getModuleCfg().getRequestMethodParam());
+        request.setCharacterEncoding(__charsetEncoding);
+        response.setCharacterEncoding(__charsetEncoding);
+        //
+        response.setContentType(Type.ContentType.HTML.getContentType().concat("; charset=").concat(__charsetEncoding));
+        //
+        HttpServletRequest _request = new RequestMethodWrapper((HttpServletRequest) request, __requestMethodParam);
         HttpServletResponse _response = new GenericResponseWrapper((HttpServletResponse) response);
-        IRequestContext _requestContext = new DefaultRequestContext(_request, WebMVC.get().getModuleCfg().getRequestPrefix());
+        IRequestContext _requestContext = new DefaultRequestContext(_request, __requestPrefix);
         if (null == __ignorePatern || !__ignorePatern.matcher(_requestContext.getOriginalUrl()).find()) {
             GenericDispatcher.create(WebMVC.get()).execute(_requestContext, __filterConfig.getServletContext(), _request, _response);
         } else {
