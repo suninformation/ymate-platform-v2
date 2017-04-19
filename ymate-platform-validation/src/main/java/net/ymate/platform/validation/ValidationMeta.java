@@ -84,37 +84,39 @@ public class ValidationMeta {
             // 处理每个方法参数上有关验证的注解
             Map<String, Annotation[]> _paramAnnos = new LinkedHashMap<String, Annotation[]>();
             String[] _paramNames = ClassUtils.getMethodParamNames(_method);
-            Annotation[][] _params = _method.getParameterAnnotations();
-            for (int _idx = 0; _idx < _paramNames.length; _idx++) {
-                List<Annotation> _tmpAnnoList = new ArrayList<Annotation>();
-                String _paramName = _paramNames[_idx];
-                // 尝试获取自定义的参数别名
-                for (Annotation _vField : _params[_idx]) {
-                    if (_vField instanceof VField) {
-                        VField _vF = (VField) _vField;
-                        if (StringUtils.isNotBlank(_vF.name())) {
-                            _paramName = ((VField) _vField).name();
+            if (_paramNames != null && _paramNames.length > 0) {
+                Annotation[][] _params = _method.getParameterAnnotations();
+                for (int _idx = 0; _idx < _paramNames.length; _idx++) {
+                    List<Annotation> _tmpAnnoList = new ArrayList<Annotation>();
+                    String _paramName = _paramNames[_idx];
+                    // 尝试获取自定义的参数别名
+                    for (Annotation _vField : _params[_idx]) {
+                        if (_vField instanceof VField) {
+                            VField _vF = (VField) _vField;
+                            if (StringUtils.isNotBlank(_vF.name())) {
+                                _paramName = ((VField) _vField).name();
+                            }
+                            if (StringUtils.isNotBlank(_vF.label())) {
+                                _paramLabels.put(_paramName, _vF.label());
+                            }
+                            break;
                         }
-                        if (StringUtils.isNotBlank(_vF.label())) {
-                            _paramLabels.put(_paramName, _vF.label());
+                    }
+                    for (Annotation _annotation : _params[_idx]) {
+                        if (__doIsValid(_annotation)) {
+                            _tmpAnnoList.add(_annotation);
+                        } else if (_annotation instanceof VModel) {
+                            // 递归处理@VModel
+                            _paramAnnos.putAll(__doGetMetaFromFields(_paramName, _method.getParameterTypes()[_idx], _paramLabels));
                         }
-                        break;
+                    }
+                    if (!_tmpAnnoList.isEmpty()) {
+                        _paramAnnos.put(_paramName, _tmpAnnoList.toArray(new Annotation[_tmpAnnoList.size()]));
                     }
                 }
-                for (Annotation _annotation : _params[_idx]) {
-                    if (__doIsValid(_annotation)) {
-                        _tmpAnnoList.add(_annotation);
-                    } else if (_annotation instanceof VModel) {
-                        // 递归处理@VModel
-                        _paramAnnos.putAll(__doGetMetaFromFields(_paramName, _method.getParameterTypes()[_idx], _paramLabels));
-                    }
+                if (!_paramAnnos.isEmpty()) {
+                    __methodParams.put(_method, _paramAnnos);
                 }
-                if (!_tmpAnnoList.isEmpty()) {
-                    _paramAnnos.put(_paramName, _tmpAnnoList.toArray(new Annotation[_tmpAnnoList.size()]));
-                }
-            }
-            if (!_paramAnnos.isEmpty()) {
-                __methodParams.put(_method, _paramAnnos);
             }
         }
     }

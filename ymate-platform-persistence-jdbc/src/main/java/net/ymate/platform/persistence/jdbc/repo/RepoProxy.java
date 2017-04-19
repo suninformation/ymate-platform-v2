@@ -117,17 +117,19 @@ public class RepoProxy implements IProxy {
     private SQL __buildSQL(String targetSql, Method targetMethod, Object[] params) {
         Map<String, Object> _paramMap = new HashMap<String, Object>();
         String[] _paramNames = ClassUtils.getMethodParamNames(targetMethod);
-        for (int _idx = 0; _idx < _paramNames.length - 1; _idx++) {
-            _paramMap.put(_paramNames[_idx], params[_idx]);
-        }
-        if (!_paramMap.isEmpty()) {
-            ExpressionUtils _exp = ExpressionUtils.bind(targetSql);
-            Params _paramValues = Params.create();
-            for (String _paramName : _exp.getVariables()) {
-                _exp.set(_paramName, "?");
-                _paramValues.add(_paramMap.get(_paramName));
+        if (_paramNames != null && _paramNames.length > 0) {
+            for (int _idx = 0; _idx < _paramNames.length - 1; _idx++) {
+                _paramMap.put(_paramNames[_idx], params[_idx]);
             }
-            return SQL.create(_exp.getResult()).param(_paramValues);
+            if (!_paramMap.isEmpty()) {
+                ExpressionUtils _exp = ExpressionUtils.bind(targetSql);
+                Params _paramValues = Params.create();
+                for (String _paramName : _exp.getVariables()) {
+                    _exp.set(_paramName, "?");
+                    _paramValues.add(_paramMap.get(_paramName));
+                }
+                return SQL.create(_exp.getResult()).param(_paramValues);
+            }
         }
         return SQL.create(targetSql);
     }

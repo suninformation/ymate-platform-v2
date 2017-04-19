@@ -274,10 +274,10 @@ public class ClassUtils {
 
     /**
      * @param method 目标方法
-     * @return 获取方法的参数名
+     * @return 获取方法的参数名集合，若找不到则返回元素数量为0的空数组
      */
     public static String[] getMethodParamNames(final Method method) {
-        return new AdaptiveParanamer().lookupParameterNames(method);
+        return new AdaptiveParanamer().lookupParameterNames(method, false);
     }
 
     /**
