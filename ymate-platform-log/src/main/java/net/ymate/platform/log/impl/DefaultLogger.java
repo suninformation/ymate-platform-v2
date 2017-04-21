@@ -43,8 +43,8 @@ public class DefaultLogger extends AbstractLogger {
 
     private boolean __inited;
 
-    private static LogLevel __parseLevel(Level level) {
-        switch (level.intLevel()) {
+    public static LogLevel __parseLevel(int level) {
+        switch (level) {
             case 600:
                 return LogLevel.TRACE;
             case 500:
@@ -64,7 +64,7 @@ public class DefaultLogger extends AbstractLogger {
         }
     }
 
-    private static Level __parseLogLevel(LogLevel level) {
+    public static Level __parseLogLevel(LogLevel level) {
         switch (level.getLevel()) {
             case 600:
                 return Level.TRACE;
@@ -176,7 +176,7 @@ public class DefaultLogger extends AbstractLogger {
     }
 
     public LogLevel getLevel() {
-        return __parseLevel(__logger.getLevel());
+        return __parseLevel(__logger.getLevel().intLevel());
     }
 
     public void log(String info, LogLevel level) {

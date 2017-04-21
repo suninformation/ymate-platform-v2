@@ -67,14 +67,6 @@ public class Logs implements IModule, ILog {
         return __instance;
     }
 
-    /**
-     * @param owner YMP框架管理器实例
-     * @return 返回指定YMP框架管理器容器内的日志记录器模块实例
-     */
-    public static ILog get(YMP owner) {
-        return owner.getModule(Logs.class);
-    }
-
     public String getName() {
         return ILog.MODULE_NAME;
     }

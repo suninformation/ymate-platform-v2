@@ -15,7 +15,7 @@
  */
 package org.slf4j.impl;
 
-import net.ymate.platform.log.slf4j.Log4jMDCAdapter;
+import org.slf4j.helpers.BasicMDCAdapter;
 import org.slf4j.spi.MDCAdapter;
 
 /**
@@ -30,10 +30,10 @@ public final class StaticMDCBinder {
     }
 
     public MDCAdapter getMDCA() {
-        return new Log4jMDCAdapter();
+        return new BasicMDCAdapter();
     }
 
     public String getMDCAdapterClassStr() {
-        return Log4jMDCAdapter.class.getName();
+        return BasicMDCAdapter.class.getName();
     }
 }

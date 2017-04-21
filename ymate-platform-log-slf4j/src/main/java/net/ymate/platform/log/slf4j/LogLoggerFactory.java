@@ -15,23 +15,26 @@
  */
 package net.ymate.platform.log.slf4j;
 
+import org.slf4j.ILoggerFactory;
+import org.slf4j.Logger;
+
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+
 /**
- * @author 刘镇 (suninformation@163.com) on 15/11/4 下午12:03
+ * @author 刘镇 (suninformation@163.com) on 15/11/4 上午11:28
  * @version 1.0
  */
-public class SLF4JLoggingException extends RuntimeException {
+public class LogLoggerFactory implements ILoggerFactory {
 
-    private static final long serialVersionUID = 1L;
+    private static Map<String, Logger> __LOGGER_CACHE = new ConcurrentHashMap<String, Logger>();
 
-    public SLF4JLoggingException(final String msg) {
-        super(msg);
-    }
-
-    public SLF4JLoggingException(final String msg, final Exception ex) {
-        super(msg, ex);
-    }
-
-    public SLF4JLoggingException(final Exception ex) {
-        super(ex);
+    public Logger getLogger(String name) {
+        Logger _logger = __LOGGER_CACHE.get(name);
+        if (_logger == null) {
+            _logger = new LogLogger(name);
+            __LOGGER_CACHE.put(name, _logger);
+        }
+        return _logger;
     }
 }

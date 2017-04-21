@@ -15,8 +15,8 @@
  */
 package org.slf4j.impl;
 
-import net.ymate.platform.log.slf4j.Log4jMarkerFactory;
 import org.slf4j.IMarkerFactory;
+import org.slf4j.helpers.BasicMarkerFactory;
 import org.slf4j.spi.MarkerFactoryBinder;
 
 /**
@@ -27,13 +27,16 @@ public class StaticMarkerBinder implements MarkerFactoryBinder {
 
     public static final StaticMarkerBinder SINGLETON = new StaticMarkerBinder();
 
-    private final IMarkerFactory markerFactory = new Log4jMarkerFactory();
+    final IMarkerFactory markerFactory = new BasicMarkerFactory();
+
+    private StaticMarkerBinder() {
+    }
 
     public IMarkerFactory getMarkerFactory() {
         return markerFactory;
     }
 
     public String getMarkerFactoryClassStr() {
-        return Log4jMarkerFactory.class.getName();
+        return BasicMarkerFactory.class.getName();
     }
 }
