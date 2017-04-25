@@ -317,6 +317,19 @@ public class ClassUtils {
     }
 
     /**
+     * 类成员属性过滤器接口
+     */
+    public interface IFieldValueFilter {
+
+        /**
+         * @param fieldName  成员属性名称
+         * @param fieldValue 属性值对象
+         * @return 若返回true则该属性将被忽略
+         */
+        boolean filter(String fieldName, Object fieldValue);
+    }
+
+    /**
      * 类对象包裹器，赋予对象简单的属性操作能力
      *
      * @author 刘镇 (suninformation@163.com) on 2012-12-23 上午12:46:50
@@ -382,11 +395,41 @@ public class ClassUtils {
             return this;
         }
 
+        public BeanWrapper<T> fromMap(Map<String, Object> map, IFieldValueFilter filter) {
+            for (Map.Entry<String, Object> _entry : map.entrySet()) {
+                try {
+                    if (filter != null && filter.filter(_entry.getKey(), _entry.getValue())) {
+                        continue;
+                    }
+                    setValue(_entry.getKey(), _entry.getValue());
+                } catch (Exception ignored) {
+                    // 当赋值发生异常时，忽略当前值
+                }
+            }
+            return this;
+        }
+
         public Map<String, Object> toMap() {
             Map<String, Object> _returnValues = new HashMap<String, Object>();
             for (Field _field : _fields.values()) {
                 try {
                     _returnValues.put(_field.getName(), getValue(_field.getName()));
+                } catch (Exception ignored) {
+                    // 当赋值发生异常时，忽略当前值
+                }
+            }
+            return _returnValues;
+        }
+
+        public Map<String, Object> toMap(IFieldValueFilter filter) {
+            Map<String, Object> _returnValues = new HashMap<String, Object>();
+            for (Field _field : _fields.values()) {
+                try {
+                    Object _fValue = getValue(_field.getName());
+                    if (filter != null && filter.filter(_field.getName(), _fValue)) {
+                        continue;
+                    }
+                    _returnValues.put(_field.getName(), _fValue);
                 } catch (Exception ignored) {
                     // 当赋值发生异常时，忽略当前值
                 }
@@ -406,6 +449,38 @@ public class ClassUtils {
                     Object _fValue = null;
                     try {
                         _fValue = getValue(_fieldName);
+                        _wrapDist.setValue(_fieldName, _fValue);
+                    } catch (Exception e) {
+                        // 当首次赋值发生异常时，若成员变量值不为NULL则尝试转换一下
+                        if (_fValue != null) {
+                            try {
+                                _wrapDist.setValue(_fieldName, BlurObject.bind(_fValue).toObjectValue(_wrapDist.getFieldType(_fieldName)));
+                            } catch (Exception ignored) {
+                                // 当再次赋值发生异常时，彻底忽略当前值，不中断整个拷贝过程
+                            }
+                        }
+                    }
+                }
+            }
+            return _wrapDist.getTargetObject();
+        }
+
+        /**
+         * @param dist   目标对象
+         * @param filter 类成员属性过滤器
+         * @param <D>    目标对象类型
+         * @return 拷贝当前对象的成员属性值到目标对象
+         */
+        public <D> D duplicate(D dist, IFieldValueFilter filter) {
+            BeanWrapper<D> _wrapDist = wrapper(dist);
+            for (String _fieldName : getFieldNames()) {
+                if (_wrapDist.getFieldNames().contains(_fieldName)) {
+                    Object _fValue = null;
+                    try {
+                        _fValue = getValue(_fieldName);
+                        if (filter != null && filter.filter(_fieldName, _fValue)) {
+                            continue;
+                        }
                         _wrapDist.setValue(_fieldName, _fValue);
                     } catch (Exception e) {
                         // 当首次赋值发生异常时，若成员变量值不为NULL则尝试转换一下
