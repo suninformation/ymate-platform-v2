@@ -304,6 +304,14 @@ public abstract class BaseEntity<Entity extends IEntity, PK extends Serializable
         return findFirst(Where.create(buildEntityCond(this)), fields, dbLocker);
     }
 
+    public Entity findFirst(Where where) throws Exception {
+        return findFirst(where, null, null);
+    }
+
+    public Entity findFirst(Where where, IDBLocker dbLocker) throws Exception {
+        return findFirst(where, null, dbLocker);
+    }
+
     public Entity findFirst(Where where, Fields fields) throws Exception {
         return findFirst(where, fields, null);
     }
