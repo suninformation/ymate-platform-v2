@@ -260,6 +260,14 @@ public abstract class BaseEntity<Entity extends IEntity, PK extends Serializable
         return find(where, fields, page, null);
     }
 
+    public IResultSet<Entity> find(Where where, Page page) throws Exception {
+        return find(where, null, page, null);
+    }
+
+    public IResultSet<Entity> find(Where where, Page page, IDBLocker dbLocker) throws Exception {
+        return find(where, null, page, dbLocker);
+    }
+
     public IResultSet<Entity> find(Where where, Fields fields, Page page, IDBLocker dbLocker) throws Exception {
         ISession _session = new DefaultSession(__doGetConnectionHolderSafed());
         try {
@@ -282,6 +290,10 @@ public abstract class BaseEntity<Entity extends IEntity, PK extends Serializable
 
     public IResultSet<Entity> findAll(Fields fields, Page page) throws Exception {
         return find(null, fields, page, null);
+    }
+
+    public IResultSet<Entity> findAll(Fields fields) throws Exception {
+        return find(null, fields, null, null);
     }
 
     public IResultSet<Entity> findAll(Page page) throws Exception {
