@@ -19,10 +19,7 @@ import net.ymate.platform.core.beans.BeanMeta;
 import net.ymate.platform.core.beans.IBeanFactory;
 import net.ymate.platform.core.beans.IBeanHandler;
 import net.ymate.platform.core.beans.IBeanLoader;
-import net.ymate.platform.core.beans.annotation.By;
-import net.ymate.platform.core.beans.annotation.CleanProxy;
-import net.ymate.platform.core.beans.annotation.Inject;
-import net.ymate.platform.core.beans.annotation.Proxy;
+import net.ymate.platform.core.beans.annotation.*;
 import net.ymate.platform.core.beans.proxy.IProxy;
 import net.ymate.platform.core.beans.proxy.IProxyFactory;
 import net.ymate.platform.core.beans.proxy.IProxyFilter;
@@ -196,8 +193,8 @@ public class DefaultBeanFactory implements IBeanFactory {
         if (!__packageNames.isEmpty()) for (String _packageName : __packageNames) {
             List<Class<?>> _classes = this.__beanLoader.load(_packageName);
             for (Class<?> _class : _classes) {
-                // 不扫描注解、枚举和接口类
-                if (!_class.isAnnotation() && !_class.isEnum() && !_class.isInterface()) {
+                // 不扫描注解、枚举和接口类，被声明@Ingored注解的类也将被忽略
+                if (!_class.isAnnotation() && !_class.isEnum() && !_class.isInterface() && !_class.isAnnotationPresent(Ignored.class)) {
                     Annotation[] _annotations = _class.getAnnotations();
                     if (_annotations != null && _annotations.length > 0) {
                         for (Annotation _anno : _annotations) {
