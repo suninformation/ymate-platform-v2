@@ -63,7 +63,7 @@ public class JCLogger extends AbstractLogger implements Log, Serializable {
             } else if (__simplog == null) {
                 this.__simplog = new SimpleLog(__loggerName);
             }
-        } else if (!Logs.get().isInited()) {
+        } else if (YMP.get() == null || !YMP.get().isInited() || Logs.get() == null || !Logs.get().isInited()) {
             return false;
         }
         return __inited;
