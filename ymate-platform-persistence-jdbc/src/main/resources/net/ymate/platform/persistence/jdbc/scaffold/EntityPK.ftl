@@ -3,6 +3,7 @@ package ${packageName}.model;
 <#if (isUseStateSupport)>import net.ymate.platform.core.beans.annotation.PropertyState;</#if>
 import net.ymate.platform.persistence.annotation.Default;
 import net.ymate.platform.persistence.annotation.Property;
+import net.ymate.platform.persistence.annotation.Readonly;
 import net.ymate.platform.persistence.annotation.PK;
 import net.ymate.platform.persistence.base.IEntityPK;
 
@@ -20,7 +21,8 @@ public class ${modelName?cap_first}PK implements IEntityPK {
 	<#list primaryKeyList as field><#if (field.columnName!"undefined") != "undefined">
 	@Property(name = "${field.columnName}"<#if (field.autoIncrement)>, autoincrement=true</#if><#if (field.nullable == 0)>, nullable = false</#if><#if (!field.signed)>, unsigned = true</#if><#if (field.precision > 0)>, length = ${field.precision?string('#')}</#if><#if (field.scale > 0)>, decimals = ${field.scale}</#if>)<#if (field.defaultValue!"undefined") != "undefined">
 	@Default("${field.defaultValue}")</#if><#if (isUseStateSupport)>
-	@PropertyState(propertyName = "${field.columnName}")</#if></#if>
+	@PropertyState(propertyName = "${field.columnName}")</#if><#if (field.readonly)>
+	@Readonly</#if></#if>
     private ${field.varType} ${field.varName};
 
 	</#list>

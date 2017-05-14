@@ -54,6 +54,8 @@ public class EntityGenerator {
 
     private IEntityNamedFilter __namedFilter;
 
+    private List<String> __readonlyFields;
+
     private EntityGenerator() {
         __freemarkerConfig = new Configuration(Configuration.VERSION_2_3_22);
         __freemarkerConfig.setTemplateExceptionHandler(TemplateExceptionHandler.HTML_DEBUG_HANDLER);
@@ -70,6 +72,8 @@ public class EntityGenerator {
         this.__jdbc = JDBC.get(__owner);
         //
         __namedFilter = ClassUtils.impl(__owner.getConfig().getParam("jdbc.named_filter_class"), IEntityNamedFilter.class, this.getClass());
+        //
+        __readonlyFields = Arrays.asList(StringUtils.split(StringUtils.trimToEmpty(__owner.getConfig().getParam("jdbc.readonly_field_list")).toLowerCase(), '|'));
     }
 
     /**
@@ -265,11 +269,11 @@ public class EntityGenerator {
     public void createEntityClassFiles(boolean view) {
         String _dbName = __owner.getConfig().getParam("jdbc.db_name");
         String _dbUser = __owner.getConfig().getParam("jdbc.db_username");
-        String[] _prefixs = StringUtils.split(StringUtils.defaultIfBlank(__owner.getConfig().getParam("jdbc.table_prefix"), ""), '|');
+        String[] _prefixs = StringUtils.split(StringUtils.trimToEmpty(__owner.getConfig().getParam("jdbc.table_prefix")), '|');
         boolean _isRemovePrefix = new BlurObject(__owner.getConfig().getParam("jdbc.remove_table_prefix")).toBooleanValue();
-        List<String> _tableExcludeList = Arrays.asList(StringUtils.split(StringUtils.defaultIfBlank(__owner.getConfig().getParam("jdbc.table_exclude_list"), "").toLowerCase(), "|"));
+        List<String> _tableExcludeList = Arrays.asList(StringUtils.split(StringUtils.trimToEmpty(__owner.getConfig().getParam("jdbc.table_exclude_list")).toLowerCase(), "|"));
         //
-        List<String> _tableList = Arrays.asList(StringUtils.split(StringUtils.defaultIfBlank(__owner.getConfig().getParam("jdbc.table_list"), ""), "|"));
+        List<String> _tableList = Arrays.asList(StringUtils.split(StringUtils.trimToEmpty(__owner.getConfig().getParam("jdbc.table_list")), "|"));
         if (_tableList.isEmpty()) {
             if (view) {
                 _tableList = getViewNames();
@@ -346,7 +350,11 @@ public class EntityGenerator {
                 //
                 for (String pkey : _tableMeta.getPkSet()) {
                     ColumnInfo _ci = _tableMeta.getFieldMap().get(pkey);
-                    _primaryKeyList.add(_ci.toAttr());
+                    Attr _attr = _ci.toAttr();
+                    if (__readonlyFields.contains(_attr.getColumnName().toLowerCase())) {
+                        _attr.setReadonly(true);
+                    }
+                    _primaryKeyList.add(_attr);
                     _allFieldList.add(new Attr("String",
                             __doNamedFilter(_ci.getColumnName()).toUpperCase(),
                             _ci.getColumnName(),
@@ -364,6 +372,9 @@ public class EntityGenerator {
                     }
                     ColumnInfo _ci = _tableMeta.getFieldMap().get(key);
                     Attr _attr = _ci.toAttr();
+                    if (__readonlyFields.contains(_attr.getColumnName().toLowerCase())) {
+                        _attr.setReadonly(true);
+                    }
                     _fieldList.add(_attr);
                     _fieldListForNotNullable.add(_attr);
                     _allFieldList.add(new Attr("String",
@@ -389,6 +400,9 @@ public class EntityGenerator {
                 for (String key : _tableMeta.getFieldMap().keySet()) {
                     ColumnInfo _ci = _tableMeta.getFieldMap().get(key);
                     Attr _attr = _ci.toAttr();
+                    if (__readonlyFields.contains(_attr.getColumnName().toLowerCase())) {
+                        _attr.setReadonly(true);
+                    }
                     _fieldList.add(_attr);
                     if (_attr.getNullable() == 0) {
                         _fieldListForNotNullable.add(_attr);
@@ -580,6 +594,7 @@ public class EntityGenerator {
         int nullable;
         String defaultValue;
         String remarks;
+        boolean readonly;
 
         public Attr(String varType, String varName, String columnName, boolean autoIncrement, boolean isSigned, int precision, int scale, int nullable, String defaultValue, String remarks) {
             this.varName = varName;
@@ -638,6 +653,14 @@ public class EntityGenerator {
 
         public String getRemarks() {
             return remarks;
+        }
+
+        public void setReadonly(boolean readonly) {
+            this.readonly = readonly;
+        }
+
+        public boolean isReadonly() {
+            return readonly;
         }
 
         @Override
