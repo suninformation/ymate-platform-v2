@@ -292,6 +292,9 @@ YMP框架自v1.0开始就支持通过数据库表结构自动生成实体类代�
     # 排除的数据表名称列表，在此列表内的数据表将不被生成实体，多个用'|'分隔，默认为空
     ymp.params.jdbc.table_exclude_list=
 
+    # 需要添加@Readonly注解声明的字段名称列表，多个用'|'分隔，默认为空
+    ymp.params.jdbc.readonly_field_list=
+
     # 生成的代码文件输出路径，默认为${root}
     ymp.params.jdbc.output_path=
 
