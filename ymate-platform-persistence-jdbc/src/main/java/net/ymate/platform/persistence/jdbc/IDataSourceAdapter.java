@@ -36,6 +36,12 @@ public interface IDataSourceAdapter {
     void initialize(DataSourceCfgMeta cfgMeta) throws Exception;
 
     /**
+     * @return 判断是否已初始化, 若尚未执行则尝试初始化
+     * @throws Exception 可能产生的异常
+     */
+    boolean tryInitializeIfNeed() throws Exception;
+
+    /**
      * @return 获取数据源配置参数
      */
     DataSourceCfgMeta getDataSourceCfgMeta();

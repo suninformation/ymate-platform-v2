@@ -16,6 +16,7 @@
 package net.ymate.platform.persistence.jdbc;
 
 import net.ymate.platform.core.util.ClassUtils;
+import net.ymate.platform.core.util.RuntimeUtils;
 import net.ymate.platform.persistence.jdbc.dialect.IDialect;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
@@ -50,10 +51,21 @@ public abstract class AbstractDataSourceAdapter implements IDataSourceAdapter {
                 __dialect = JDBC.DB_DIALECTS.get(__cfgMeta.getType()).newInstance();
             }
             //
-            __doInit();
-            //
-            __inited = true;
+            __inited = tryInitializeIfNeed();
         }
+    }
+
+    public boolean tryInitializeIfNeed() throws Exception {
+        if (!__inited) {
+            try {
+                __doInit();
+                //
+                __inited = true;
+            } catch (Exception e) {
+                _LOG.warn("Data source '" + __cfgMeta.getName() + "' initialization failed...", RuntimeUtils.unwrapThrow(e));
+            }
+        }
+        return __inited;
     }
 
     public DataSourceCfgMeta getDataSourceCfgMeta() {

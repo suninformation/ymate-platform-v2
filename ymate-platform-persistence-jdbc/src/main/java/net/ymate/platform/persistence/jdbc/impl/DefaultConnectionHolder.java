@@ -37,7 +37,9 @@ public class DefaultConnectionHolder implements IConnectionHolder {
 
     public DefaultConnectionHolder(IDataSourceAdapter dsAdapter) throws Exception {
         __dsAdapter = dsAdapter;
-        __conn = dsAdapter.getConnection();
+        if (__dsAdapter.tryInitializeIfNeed()) {
+            __conn = dsAdapter.getConnection();
+        }
     }
 
     public DataSourceCfgMeta getDataSourceCfgMeta() {
