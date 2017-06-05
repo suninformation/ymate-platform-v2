@@ -40,7 +40,7 @@ import java.util.Map;
 @Module
 public class Servs implements IModule, IServ {
 
-    public static final Version VERSION = new Version(2, 0, 0, Servs.class.getPackage().getImplementationVersion(), Version.VersionType.Release);
+    public static final Version VERSION = new Version(2, 0, 1, Servs.class.getPackage().getImplementationVersion(), Version.VersionType.Release);
 
     private final Log _LOG = LogFactory.getLog(Servs.class);
 

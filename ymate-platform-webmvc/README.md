@@ -24,7 +24,7 @@ WebMVC模块在YMP框架中是除了JDBC模块以外的另一个非常重要的�
     <dependency>
         <groupId>net.ymate.platform</groupId>
         <artifactId>ymate-platform-webmvc</artifactId>
-        <version>2.0.0</version>
+        <version>2.0.1</version>
     </dependency>
 
 > **注**：在项目的pom.xml中添加上述配置，该模块已经默认引入核心包、验证框架包和缓存包的依赖，无需重复配置。

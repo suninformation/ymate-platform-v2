@@ -37,7 +37,7 @@ import java.util.concurrent.ConcurrentHashMap;
 @Module
 public class Logs implements IModule, ILog {
 
-    public static final Version VERSION = new Version(2, 0, 0, Logs.class.getPackage().getImplementationVersion(), Version.VersionType.Release);
+    public static final Version VERSION = new Version(2, 0, 1, Logs.class.getPackage().getImplementationVersion(), Version.VersionType.Release);
 
     private final Log _LOG = LogFactory.getLog(Logs.class);
 
