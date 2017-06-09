@@ -245,6 +245,10 @@ public class CodecUtils {
             super(keySize, "RSA", "MD5withRSA");
         }
 
+        public RSACodecHelper(int keySize, String cipherAlgorithm) {
+            super(keySize, "RSA", cipherAlgorithm);
+        }
+
         public byte[] initKey() throws Exception {
             throw new UnsupportedOperationException();
         }
