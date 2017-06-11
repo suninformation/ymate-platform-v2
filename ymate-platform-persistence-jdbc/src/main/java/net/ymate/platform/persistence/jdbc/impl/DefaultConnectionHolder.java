@@ -56,9 +56,6 @@ public class DefaultConnectionHolder implements IConnectionHolder {
                 this.__conn.close();
             }
         } catch (SQLException ignored) {
-        } finally {
-            this.__dsAdapter = null;
-            this.__conn = null;
         }
     }
 

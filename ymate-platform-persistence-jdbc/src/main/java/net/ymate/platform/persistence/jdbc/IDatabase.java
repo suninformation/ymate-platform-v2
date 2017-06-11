@@ -61,6 +61,8 @@ public interface IDatabase {
 
     <T> T openSession(ISessionExecutor<T> executor) throws Exception;
 
+    <T> T openSession(String dsName, ISessionExecutor<T> executor) throws Exception;
+
     <T> T openSession(IConnectionHolder connectionHolder, ISessionExecutor<T> executor) throws Exception;
 
     <T> T openSession(IDataSourceRouter dataSourceRouter, ISessionExecutor<T> executor) throws Exception;

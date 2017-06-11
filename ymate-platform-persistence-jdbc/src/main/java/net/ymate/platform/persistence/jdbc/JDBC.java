@@ -161,6 +161,10 @@ public class JDBC implements IModule, IDatabase {
         return openSession(getDefaultConnectionHolder(), executor);
     }
 
+    public <T> T openSession(String dsName, ISessionExecutor<T> executor) throws Exception {
+        return openSession(getConnectionHolder(dsName), executor);
+    }
+
     public <T> T openSession(IConnectionHolder connectionHolder, ISessionExecutor<T> executor) throws Exception {
         ISession _session = new DefaultSession(connectionHolder);
         try {

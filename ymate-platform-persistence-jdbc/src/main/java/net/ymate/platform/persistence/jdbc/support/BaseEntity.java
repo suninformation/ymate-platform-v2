@@ -28,6 +28,7 @@ import net.ymate.platform.persistence.jdbc.ISession;
 import net.ymate.platform.persistence.jdbc.JDBC;
 import net.ymate.platform.persistence.jdbc.impl.DefaultSession;
 import net.ymate.platform.persistence.jdbc.query.*;
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
 
@@ -47,6 +48,8 @@ public abstract class BaseEntity<Entity extends IEntity, PK extends Serializable
 
     private IShardingable __shardingable;
 
+    private String __dsName;
+
     /**
      * 构造器
      */
@@ -63,6 +66,12 @@ public abstract class BaseEntity<Entity extends IEntity, PK extends Serializable
     @JSONField(deserialize = false)
     public void setConnectionHolder(IConnectionHolder connectionHolder) {
         this.__connectionHolder = connectionHolder;
+        // 每次设置将记录数据源名称，若设置为空将重置
+        if (this.__connectionHolder != null) {
+            this.__dsName = this.__connectionHolder.getDataSourceCfgMeta().getName();
+        } else {
+            this.__dsName = null;
+        }
     }
 
     @JSONField(serialize = false)
@@ -73,6 +82,16 @@ public abstract class BaseEntity<Entity extends IEntity, PK extends Serializable
     @JSONField(deserialize = false)
     public void setShardingable(IShardingable shardingable) {
         this.__shardingable = shardingable;
+    }
+
+    @JSONField(serialize = false)
+    public String getDataSourceName() {
+        return this.__dsName;
+    }
+
+    @JSONField(deserialize = false)
+    public void setDataSourceName(String dsName) {
+        this.__dsName = StringUtils.trimToNull(dsName);
     }
 
     /**
@@ -88,6 +107,9 @@ public abstract class BaseEntity<Entity extends IEntity, PK extends Serializable
      */
     protected IConnectionHolder __doGetConnectionHolderSafed() throws Exception {
         if (this.__connectionHolder == null) {
+            if (StringUtils.isNotBlank(this.__dsName)) {
+                return JDBC.get().getConnectionHolder(this.__dsName);
+            }
             return JDBC.get().getDefaultConnectionHolder();
         }
         return this.__connectionHolder;
