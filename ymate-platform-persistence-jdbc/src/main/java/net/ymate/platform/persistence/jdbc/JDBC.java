@@ -178,6 +178,22 @@ public class JDBC implements IModule, IDatabase {
         return openSession(getConnectionHolder(dataSourceRouter.getDataSourceName()), executor);
     }
 
+    public ISession openSession() throws Exception {
+        return new DefaultSession(getDefaultConnectionHolder());
+    }
+
+    public ISession openSession(String dsName) throws Exception {
+        return new DefaultSession(getConnectionHolder(dsName));
+    }
+
+    public ISession openSession(IConnectionHolder connectionHolder) throws Exception {
+        return new DefaultSession(connectionHolder);
+    }
+
+    public ISession openSession(IDataSourceRouter dataSourceRouter) throws Exception {
+        return new DefaultSession(getConnectionHolder(dataSourceRouter.getDataSourceName()));
+    }
+
     /////
 
 

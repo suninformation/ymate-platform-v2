@@ -16,6 +16,7 @@
 package net.ymate.platform.persistence.jdbc.base.impl;
 
 import net.ymate.platform.core.lang.BlurObject;
+import net.ymate.platform.core.util.ClassUtils;
 import net.ymate.platform.persistence.base.EntityMeta;
 import net.ymate.platform.persistence.base.IEntity;
 import net.ymate.platform.persistence.jdbc.base.AbstractResultSetHandler;
@@ -33,6 +34,12 @@ public class EntityResultSetHandler<T extends IEntity> extends AbstractResultSet
 
     private Class<T> __entityClass;
     private EntityMeta __entityMeta;
+
+    @SuppressWarnings("unchecked")
+    public EntityResultSetHandler() {
+        this.__entityClass = (Class<T>) ClassUtils.getParameterizedTypes(getClass()).get(0);
+        this.__entityMeta = EntityMeta.createAndGet(this.__entityClass);
+    }
 
     public EntityResultSetHandler(Class<T> entityClass) {
         this.__entityClass = entityClass;

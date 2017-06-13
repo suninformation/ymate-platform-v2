@@ -34,6 +34,11 @@ public class BeanResultSetHandler<T> extends AbstractResultSetHandler<T> {
 
     private Class<T> __beanClass;
 
+    @SuppressWarnings("unchecked")
+    public BeanResultSetHandler() {
+        __beanClass = (Class<T>) ClassUtils.getParameterizedTypes(getClass()).get(0);
+    }
+
     public BeanResultSetHandler(Class<T> beanClass) {
         __beanClass = beanClass;
     }

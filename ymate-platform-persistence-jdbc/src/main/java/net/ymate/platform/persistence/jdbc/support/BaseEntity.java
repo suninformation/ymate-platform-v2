@@ -106,11 +106,12 @@ public abstract class BaseEntity<Entity extends IEntity, PK extends Serializable
      * @throws Exception 可能产生的异常
      */
     protected IConnectionHolder __doGetConnectionHolderSafed() throws Exception {
-        if (this.__connectionHolder == null) {
+        if (this.__connectionHolder == null || this.__connectionHolder.getConnection() == null || this.__connectionHolder.getConnection().isClosed()) {
             if (StringUtils.isNotBlank(this.__dsName)) {
-                return JDBC.get().getConnectionHolder(this.__dsName);
+                this.__connectionHolder = JDBC.get().getConnectionHolder(this.__dsName);
+            } else {
+                this.__connectionHolder = JDBC.get().getDefaultConnectionHolder();
             }
-            return JDBC.get().getDefaultConnectionHolder();
         }
         return this.__connectionHolder;
     }

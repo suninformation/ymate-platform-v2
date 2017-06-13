@@ -66,4 +66,16 @@ public interface IDatabase {
     <T> T openSession(IConnectionHolder connectionHolder, ISessionExecutor<T> executor) throws Exception;
 
     <T> T openSession(IDataSourceRouter dataSourceRouter, ISessionExecutor<T> executor) throws Exception;
+
+    /**
+     * @return 开启数据库连接会话(注意一定记得关闭会话)
+     * @throws Exception 可能产生的异常
+     */
+    ISession openSession() throws Exception;
+
+    ISession openSession(String dsName) throws Exception;
+
+    ISession openSession(IConnectionHolder connectionHolder) throws Exception;
+
+    ISession openSession(IDataSourceRouter dataSourceRouter) throws Exception;
 }
