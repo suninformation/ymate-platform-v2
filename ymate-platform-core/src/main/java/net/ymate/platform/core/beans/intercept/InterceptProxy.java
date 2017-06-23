@@ -30,7 +30,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * 拦截器代理，支持@Before和@After方法注解
+ * 拦截器代理，支持@Before、@After和@Around方法注解
  *
  * @author 刘镇 (suninformation@163.com) on 15/5/19 下午12:01
  * @version 1.0
@@ -69,9 +69,11 @@ public class InterceptProxy implements IProxy {
         //
         boolean _hasInterceptSettings = __hasInterceptSettings(proxyChain.getProxyFactory().getOwner(), proxyChain.getTargetClass(), proxyChain.getTargetMethod());
         Map<String, String> _contextParams = null;
-        // 尝试处理@Before注解
+        // 尝试处理@Around和@Before注解
         if (proxyChain.getTargetClass().isAnnotationPresent(Before.class)
-                || proxyChain.getTargetMethod().isAnnotationPresent(Before.class) || _hasInterceptSettings) {
+                || proxyChain.getTargetClass().isAnnotationPresent(Around.class)
+                || proxyChain.getTargetMethod().isAnnotationPresent(Before.class)
+                || proxyChain.getTargetMethod().isAnnotationPresent(Around.class) || _hasInterceptSettings) {
 
             _contextParams = InterceptAnnoHelper.getContextParams(proxyChain.getProxyFactory().getOwner(), proxyChain.getTargetClass(), proxyChain.getTargetMethod());
 
@@ -92,9 +94,11 @@ public class InterceptProxy implements IProxy {
         }
         // 若前置拦截器未返回结果，则正常执行目标方法
         Object _returnValue = proxyChain.doProxyChain();
-        // 尝试处理@After注解
+        // 尝试处理@Around和@After注解
         if (proxyChain.getTargetClass().isAnnotationPresent(After.class)
-                || proxyChain.getTargetMethod().isAnnotationPresent(After.class) || _hasInterceptSettings) {
+                || proxyChain.getTargetClass().isAnnotationPresent(Around.class)
+                || proxyChain.getTargetMethod().isAnnotationPresent(After.class)
+                || proxyChain.getTargetMethod().isAnnotationPresent(Around.class) || _hasInterceptSettings) {
 
             if (_contextParams == null) {
                 _contextParams = InterceptAnnoHelper.getContextParams(proxyChain.getProxyFactory().getOwner(), proxyChain.getTargetClass(), proxyChain.getTargetMethod());

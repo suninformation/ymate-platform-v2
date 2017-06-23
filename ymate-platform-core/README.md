@@ -202,6 +202,8 @@ YMP框架的AOP是基于CGLIB的MethodInterceptor实现的拦截，通过以下�
 
 - @After：用于设置一个类或方法的后置拦截器，声明在类上的后置拦截器将被应用到该类所有方法上；
 
+- @Around：用于同时配置一个类或方法的前置和后置拦截器；
+
 - @Clean：用于清理类上全部或指定的拦截器，被清理的拦截器将不会被执行；
 
 - @ContextParam：用于设置上下文参数，主要用于向拦截器传递参数配置；
@@ -249,8 +251,7 @@ YMP框架的AOP是基于CGLIB的MethodInterceptor实现的拦截，通过以下�
                 return "后置拦截测试";
             }
 
-            @Before(DemoInterceptor.class)
-            @After(DemoInterceptor.class)
+            @Around(DemoInterceptor.class)
             @ContextParam({
                     @ParamItem(key = "param", value = "helloworld")
                 })

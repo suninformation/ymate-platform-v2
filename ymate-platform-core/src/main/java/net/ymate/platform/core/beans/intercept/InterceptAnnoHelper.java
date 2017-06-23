@@ -31,25 +31,16 @@ public class InterceptAnnoHelper {
 
     public static List<Class<? extends IInterceptor>> getBeforeIntercepts(Class<?> targetClass, Method targetMethod) {
         List<Class<? extends IInterceptor>> _classes = new ArrayList<Class<? extends IInterceptor>>();
+        if (targetClass.isAnnotationPresent(Around.class)) {
+            __doParseIntercept(targetMethod, IInterceptor.CleanType.BEFORE, targetClass.getAnnotation(Around.class).value(), _classes);
+        }
         if (targetClass.isAnnotationPresent(Before.class)) {
-            Before _before = targetClass.getAnnotation(Before.class);
-            Clean _clean = getCleanIntercepts(targetMethod);
-            //
-            if (_clean != null &&
-                    (_clean.type().equals(IInterceptor.CleanType.ALL) || _clean.type().equals(IInterceptor.CleanType.BEFORE))) {
-                if (_clean.value().length > 0) {
-                    for (Class<? extends IInterceptor> _clazz : _before.value()) {
-                        if (ArrayUtils.contains(_clean.value(), _clazz)) {
-                            continue;
-                        }
-                        _classes.add(_clazz);
-                    }
-                }
-            } else {
-                Collections.addAll(_classes, _before.value());
-            }
+            __doParseIntercept(targetMethod, IInterceptor.CleanType.BEFORE, targetClass.getAnnotation(Before.class).value(), _classes);
         }
         //
+        if (targetMethod.isAnnotationPresent(Around.class)) {
+            Collections.addAll(_classes, targetMethod.getAnnotation(Around.class).value());
+        }
         if (targetMethod.isAnnotationPresent(Before.class)) {
             Collections.addAll(_classes, targetMethod.getAnnotation(Before.class).value());
         }
@@ -59,25 +50,16 @@ public class InterceptAnnoHelper {
 
     public static List<Class<? extends IInterceptor>> getAfterIntercepts(Class<?> targetClass, Method targetMethod) {
         List<Class<? extends IInterceptor>> _classes = new ArrayList<Class<? extends IInterceptor>>();
+        if (targetClass.isAnnotationPresent(Around.class)) {
+            __doParseIntercept(targetMethod, IInterceptor.CleanType.AFTER, targetClass.getAnnotation(Around.class).value(), _classes);
+        }
         if (targetClass.isAnnotationPresent(After.class)) {
-            After _after = targetClass.getAnnotation(After.class);
-            Clean _clean = getCleanIntercepts(targetMethod);
-            //
-            if (_clean != null &&
-                    (_clean.type().equals(IInterceptor.CleanType.ALL) || _clean.type().equals(IInterceptor.CleanType.AFTER))) {
-                if (_clean.value().length > 0) {
-                    for (Class<? extends IInterceptor> _clazz : _after.value()) {
-                        if (ArrayUtils.contains(_clean.value(), _clazz)) {
-                            continue;
-                        }
-                        _classes.add(_clazz);
-                    }
-                }
-            } else {
-                Collections.addAll(_classes, _after.value());
-            }
+            __doParseIntercept(targetMethod, IInterceptor.CleanType.AFTER, targetClass.getAnnotation(After.class).value(), _classes);
         }
         //
+        if (targetMethod.isAnnotationPresent(Around.class)) {
+            Collections.addAll(_classes, targetMethod.getAnnotation(Around.class).value());
+        }
         if (targetMethod.isAnnotationPresent(After.class)) {
             Collections.addAll(_classes, targetMethod.getAnnotation(After.class).value());
         }
@@ -90,6 +72,23 @@ public class InterceptAnnoHelper {
             return targetMethod.getAnnotation(Clean.class);
         }
         return null;
+    }
+
+    private static void __doParseIntercept(Method targetMethod, IInterceptor.CleanType cleanType, Class<? extends IInterceptor>[] interceptors, List<Class<? extends IInterceptor>> results) {
+        Clean _clean = getCleanIntercepts(targetMethod);
+        if (_clean != null &&
+                (_clean.type().equals(IInterceptor.CleanType.ALL) || _clean.type().equals(cleanType))) {
+            if (_clean.value().length > 0) {
+                for (Class<? extends IInterceptor> _clazz : interceptors) {
+                    if (ArrayUtils.contains(_clean.value(), _clazz)) {
+                        continue;
+                    }
+                    results.add(_clazz);
+                }
+            }
+        } else {
+            Collections.addAll(results, interceptors);
+        }
     }
 
     private static void __doParseContextParamValue(YMP owner, ContextParam contextParam, Map<String, String> paramsMap) {
