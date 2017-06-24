@@ -40,6 +40,18 @@ public final class Fields {
      */
     private boolean __excluded;
 
+    /**
+     * @param prefix 字段名前缀
+     * @param field  字段名
+     * @return 组合后的字段名称
+     */
+    public static String field(String prefix, String field) {
+        if (StringUtils.isNotBlank(prefix)) {
+            field = prefix.concat(".").concat(field);
+        }
+        return field;
+    }
+
     public static Fields create(String... fields) {
         return new Fields(fields);
     }
@@ -52,18 +64,12 @@ public final class Fields {
     }
 
     public Fields add(String prefix, String field) {
-        if (StringUtils.isNotBlank(prefix)) {
-            this.__fields.add(prefix.concat(".").concat(field));
-        } else {
-            this.__fields.add(field);
-        }
+        this.__fields.add(field(prefix, field));
         return this;
     }
 
     public Fields add(String prefix, String field, String alias) {
-        if (StringUtils.isNotBlank(prefix)) {
-            field = prefix.concat(".").concat(field);
-        }
+        field = field(prefix, field);
         if (StringUtils.isNotBlank(alias)) {
             field = field.concat(" ").concat(alias);
         }
