@@ -16,6 +16,7 @@
 package net.ymate.platform.persistence.jdbc.query;
 
 import net.ymate.platform.persistence.Fields;
+import net.ymate.platform.persistence.IFunction;
 import net.ymate.platform.persistence.Params;
 import org.apache.commons.lang.StringUtils;
 
@@ -83,6 +84,10 @@ public final class Cond {
         return this;
     }
 
+    public Cond cond(IFunction func) {
+        return cond(func.build());
+    }
+
     public Cond cond(Cond cond) {
         __condSB.append(cond.toString());
         __params.add(cond.params());
@@ -107,6 +112,10 @@ public final class Cond {
         return this;
     }
 
+    public Cond opt(IFunction func, OPT opt) {
+        return opt(func.build(), opt);
+    }
+
     /**
      * @return 用于生成Where条件辅助表达式1=1
      */
@@ -123,12 +132,20 @@ public final class Cond {
         return opt(field, OPT.EQ);
     }
 
+    public Cond eq(IFunction func) {
+        return opt(func, OPT.EQ);
+    }
+
     public Cond notEq(String prefix, String field) {
         return notEq(Fields.field(prefix, field));
     }
 
     public Cond notEq(String field) {
         return opt(field, OPT.NOT_EQ);
+    }
+
+    public Cond notEq(IFunction func) {
+        return opt(func, OPT.NOT_EQ);
     }
 
     public Cond gtEq(String prefix, String field) {
@@ -139,12 +156,20 @@ public final class Cond {
         return opt(field, OPT.GT_EQ);
     }
 
+    public Cond gtEq(IFunction func) {
+        return opt(func, OPT.GT_EQ);
+    }
+
     public Cond gt(String prefix, String field) {
         return gt(Fields.field(prefix, field));
     }
 
     public Cond gt(String field) {
         return opt(field, OPT.GT);
+    }
+
+    public Cond gt(IFunction func) {
+        return opt(func, OPT.GT);
     }
 
     public Cond ltEq(String prefix, String field) {
@@ -155,6 +180,10 @@ public final class Cond {
         return opt(field, OPT.LT_EQ);
     }
 
+    public Cond ltEq(IFunction func) {
+        return opt(func, OPT.LT_EQ);
+    }
+
     public Cond lt(String prefix, String field) {
         return lt(Fields.field(prefix, field));
     }
@@ -163,12 +192,20 @@ public final class Cond {
         return opt(field, OPT.LT);
     }
 
+    public Cond lt(IFunction func) {
+        return opt(func, OPT.LT);
+    }
+
     public Cond like(String prefix, String field) {
         return like(Fields.field(prefix, field));
     }
 
     public Cond like(String field) {
         return opt(field, OPT.LIKE);
+    }
+
+    public Cond like(IFunction func) {
+        return opt(func, OPT.LIKE);
     }
 
     public Cond between(String prefix, String field, Object valueOne, Object valueTwo) {
@@ -181,6 +218,10 @@ public final class Cond {
         return this;
     }
 
+    public Cond between(IFunction func, Object valueOne, Object valueTwo) {
+        return between(func.build(), valueOne, valueTwo);
+    }
+
     public Cond isNull(String prefix, String field) {
         return isNull(Fields.field(prefix, field));
     }
@@ -190,6 +231,10 @@ public final class Cond {
         return this;
     }
 
+    public Cond isNull(IFunction func) {
+        return isNull(func.build());
+    }
+
     public Cond isNotNull(String prefix, String field) {
         return isNotNull(Fields.field(prefix, field));
     }
@@ -197,6 +242,10 @@ public final class Cond {
     public Cond isNotNull(String field) {
         __condSB.append(field).append(" IS NOT NULL");
         return this;
+    }
+
+    public Cond isNotNull(IFunction func) {
+        return isNotNull(func.build());
     }
 
     public Cond and() {

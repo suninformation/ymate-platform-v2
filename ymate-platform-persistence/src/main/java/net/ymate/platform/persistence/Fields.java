@@ -82,6 +82,11 @@ public final class Fields {
         return this;
     }
 
+    public Fields add(IFunction func) {
+        this.__fields.add(func.build());
+        return this;
+    }
+
     public Fields add(Fields fields) {
         this.__fields.addAll(fields.fields());
         this.__excluded = fields.isExcluded();

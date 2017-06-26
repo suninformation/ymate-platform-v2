@@ -15,6 +15,8 @@
  */
 package net.ymate.platform.persistence;
 
+import org.apache.commons.lang.StringUtils;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -30,6 +32,15 @@ public final class Params {
      * 参数集合
      */
     private List<Object> __params;
+
+    public static String wrapQuote(String param) {
+        return wrapQuote(param, "'");
+    }
+
+    public static String wrapQuote(String param, String quote) {
+        quote = StringUtils.trimToEmpty(quote);
+        return quote + StringUtils.trimToEmpty(param) + quote;
+    }
 
     public static Params create(Object... params) {
         return new Params(params);
