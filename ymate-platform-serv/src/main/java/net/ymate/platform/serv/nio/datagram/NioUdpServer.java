@@ -43,7 +43,7 @@ import java.nio.channels.SelectionKey;
  */
 public class NioUdpServer implements IServer<NioUdpListener, INioCodec> {
 
-    private final Log _LOG = LogFactory.getLog(NioUdpServer.class);
+    private static final Log _LOG = LogFactory.getLog(NioUdpServer.class);
 
     protected INioServerCfg __serverCfg;
 

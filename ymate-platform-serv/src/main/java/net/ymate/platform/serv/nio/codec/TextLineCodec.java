@@ -31,7 +31,7 @@ import java.io.UnsupportedEncodingException;
  */
 public class TextLineCodec implements INioCodec {
 
-    private final Log _LOG = LogFactory.getLog(TextLineCodec.class);
+    private static final Log _LOG = LogFactory.getLog(TextLineCodec.class);
 
     private static final String TEXT_EOF = "\r\n";
 

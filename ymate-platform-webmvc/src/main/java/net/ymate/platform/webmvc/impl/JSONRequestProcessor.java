@@ -39,7 +39,7 @@ import java.lang.reflect.Array;
  */
 public class JSONRequestProcessor extends DefaultRequestProcessor {
 
-    private final Log _LOG = LogFactory.getLog(JSONRequestProcessor.class);
+    private static final Log _LOG = LogFactory.getLog(JSONRequestProcessor.class);
 
     private JSONObject __doGetProtocol(IWebMvc owner) {
         JSONObject _protocol = WebContext.getRequestContext().getAttribute(JSONRequestProcessor.class.getName());

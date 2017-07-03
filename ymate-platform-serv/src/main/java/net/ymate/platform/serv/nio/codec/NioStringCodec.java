@@ -31,7 +31,7 @@ import java.io.UnsupportedEncodingException;
  */
 public class NioStringCodec implements INioCodec {
 
-    private final Log _LOG = LogFactory.getLog(NioStringCodec.class);
+    private static final Log _LOG = LogFactory.getLog(NioStringCodec.class);
 
     private String __charset;
 

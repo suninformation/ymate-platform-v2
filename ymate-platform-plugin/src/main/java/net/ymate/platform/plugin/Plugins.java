@@ -48,7 +48,7 @@ public class Plugins implements IModule, IPlugins {
 
     public static final Version VERSION = new Version(2, 0, 1, Plugins.class.getPackage().getImplementationVersion(), Version.VersionType.Release);
 
-    private final Log _LOG = LogFactory.getLog(Plugins.class);
+    private static final Log _LOG = LogFactory.getLog(Plugins.class);
 
     private YMP __owner;
 

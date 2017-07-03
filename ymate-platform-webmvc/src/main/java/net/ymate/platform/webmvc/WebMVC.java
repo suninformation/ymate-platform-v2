@@ -63,7 +63,7 @@ public class WebMVC implements IModule, IWebMvc {
 
     public static final Version VERSION = new Version(2, 0, 1, WebMVC.class.getPackage().getImplementationVersion(), Version.VersionType.Release);
 
-    private final Log _LOG = LogFactory.getLog(WebMVC.class);
+    private static final Log _LOG = LogFactory.getLog(WebMVC.class);
 
     private static volatile IWebMvc __instance;
 

@@ -35,7 +35,7 @@ import java.util.concurrent.LinkedBlockingQueue;
  */
 public class NioEventProcessor<LISTENER extends IListener<INioSession>> extends Thread {
 
-    private final Log _LOG = LogFactory.getLog(NioEventProcessor.class);
+    private static final Log _LOG = LogFactory.getLog(NioEventProcessor.class);
 
     private final NioEventGroup<LISTENER> __eventGroup;
 

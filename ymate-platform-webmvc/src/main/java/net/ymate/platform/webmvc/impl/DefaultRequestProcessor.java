@@ -42,7 +42,7 @@ import java.util.Map;
  */
 public class DefaultRequestProcessor implements IRequestProcessor {
 
-    private final Log _LOG = LogFactory.getLog(DefaultRequestProcessor.class);
+    private static final Log _LOG = LogFactory.getLog(DefaultRequestProcessor.class);
 
     public Map<String, Object> processRequestParams(IWebMvc owner, RequestMeta requestMeta) throws Exception {
         Map<String, Object> _returnValues = new LinkedHashMap<String, Object>();

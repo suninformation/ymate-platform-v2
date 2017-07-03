@@ -38,7 +38,7 @@ public class MongoDB implements IModule, IMongo {
 
     public static final Version VERSION = new Version(2, 0, 1, MongoDB.class.getPackage().getImplementationVersion(), Version.VersionType.Release);
 
-    private final Log _LOG = LogFactory.getLog(MongoDB.class);
+    private static final Log _LOG = LogFactory.getLog(MongoDB.class);
 
     private static volatile IMongo __instance;
 

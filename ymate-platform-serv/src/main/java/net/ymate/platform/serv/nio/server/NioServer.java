@@ -31,7 +31,7 @@ import java.io.IOException;
  */
 public class NioServer implements IServer<NioServerListener, INioCodec> {
 
-    private final Log _LOG = LogFactory.getLog(NioServer.class);
+    private static final Log _LOG = LogFactory.getLog(NioServer.class);
 
     protected INioServerCfg __serverCfg;
 

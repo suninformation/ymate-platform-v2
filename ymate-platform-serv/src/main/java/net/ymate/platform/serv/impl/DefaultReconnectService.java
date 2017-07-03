@@ -31,7 +31,7 @@ import java.util.concurrent.atomic.AtomicLong;
  */
 public class DefaultReconnectService extends Thread implements IReconnectService {
 
-    private final Log _LOG = LogFactory.getLog(DefaultReconnectService.class);
+    private static final Log _LOG = LogFactory.getLog(DefaultReconnectService.class);
 
     private static AtomicLong __counter = new AtomicLong(0);
 

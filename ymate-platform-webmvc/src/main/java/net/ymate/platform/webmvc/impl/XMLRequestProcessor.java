@@ -43,7 +43,7 @@ import java.lang.reflect.Array;
  */
 public class XMLRequestProcessor extends DefaultRequestProcessor {
 
-    private final Log _LOG = LogFactory.getLog(XMLRequestProcessor.class);
+    private static final Log _LOG = LogFactory.getLog(XMLRequestProcessor.class);
 
     private XMLProtocol __doGetProtocol(IWebMvc owner) {
         XMLProtocol _protocol = WebContext.getRequestContext().getAttribute(XMLRequestProcessor.class.getName());

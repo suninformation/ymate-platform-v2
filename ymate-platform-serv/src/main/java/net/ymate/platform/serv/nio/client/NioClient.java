@@ -30,7 +30,7 @@ import java.io.IOException;
  */
 public class NioClient extends AbstractService implements IClient<NioClientListener, INioCodec> {
 
-    private final Log _LOG = LogFactory.getLog(NioClient.class);
+    private static final Log _LOG = LogFactory.getLog(NioClient.class);
 
     protected INioClientCfg __clientCfg;
 

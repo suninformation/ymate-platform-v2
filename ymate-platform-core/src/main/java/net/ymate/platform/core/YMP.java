@@ -67,6 +67,8 @@ public class YMP {
 
     private boolean __inited;
 
+    private boolean __errorFlag;
+
     private IBeanFactory __moduleFactory;
 
     private IBeanFactory __beanFactory;
@@ -145,26 +147,37 @@ public class YMP {
             __proxyFactory = new DefaultProxyFactory(this).registerProxy(new InterceptProxy());
             // 初始化根对象工厂
             __moduleFactory.init();
+            //
             for (IModule _module : __modules.values()) {
                 if (!_module.isInited()) {
-                    _module.init(this);
-                    // 触发模块初始化完成事件
-                    __events.fireEvent(new ModuleEvent(_module, ModuleEvent.EVENT.MODULE_INITED));
+                    try {
+                        _module.init(this);
+                        // 触发模块初始化完成事件
+                        __events.fireEvent(new ModuleEvent(_module, ModuleEvent.EVENT.MODULE_INITED));
+                    } catch (Exception e) {
+                        _LOG.error("Module '" + _module.getName() + "' initialization error: ", RuntimeUtils.unwrapThrow(e));
+                        //
+                        __errorFlag = true;
+                        __inited = true;
+                        break;
+                    }
                 }
             }
-            // 初始化对象工厂
-            __beanFactory.init();
-            // 初始化对象代理
-            __beanFactory.initProxy(__proxyFactory);
-            // IoC依赖注入
-            __beanFactory.initIoC();
-            //
-            __inited = true;
-            //
-            _watch.stop();
-            _LOG.info("Initialization completed, Total time: " + _watch.getTime() + "ms");
-            // 触发框架初始化完成事件
-            __events.fireEvent(new ApplicationEvent(this, ApplicationEvent.EVENT.APPLICATION_INITED));
+            if (!__errorFlag) {
+                // 初始化对象工厂
+                __beanFactory.init();
+                // 初始化对象代理
+                __beanFactory.initProxy(__proxyFactory);
+                // IoC依赖注入
+                __beanFactory.initIoC();
+                //
+                __inited = true;
+                //
+                _watch.stop();
+                _LOG.info("Initialization completed, Total time: " + _watch.getTime() + "ms");
+                // 触发框架初始化完成事件
+                __events.fireEvent(new ApplicationEvent(this, ApplicationEvent.EVENT.APPLICATION_INITED));
+            }
         }
         return this;
     }
@@ -176,16 +189,20 @@ public class YMP {
      */
     public void destroy() throws Exception {
         if (__inited) {
-            // 触发框架销毁事件
-            __events.fireEvent(new ApplicationEvent(this, ApplicationEvent.EVENT.APPLICATION_DESTROYED));
+            if (!__errorFlag) {
+                // 触发框架销毁事件
+                __events.fireEvent(new ApplicationEvent(this, ApplicationEvent.EVENT.APPLICATION_DESTROYED));
+            }
             //
             __inited = false;
             // 销毁所有已加载模块
             for (IModule _module : __modules.values()) {
-                // 触发模块销毁事件
-                __events.fireEvent(new ModuleEvent(_module, ModuleEvent.EVENT.MODULE_DESTROYED));
-                //
-                _module.destroy();
+                if (_module.isInited()) {
+                    // 触发模块销毁事件
+                    __events.fireEvent(new ModuleEvent(_module, ModuleEvent.EVENT.MODULE_DESTROYED));
+                    //
+                    _module.destroy();
+                }
             }
             __modules = null;
             // 销毁代理工厂

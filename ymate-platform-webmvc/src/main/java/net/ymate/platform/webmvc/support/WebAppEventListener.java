@@ -20,6 +20,8 @@ import net.ymate.platform.core.module.IModule;
 import net.ymate.platform.core.util.RuntimeUtils;
 import net.ymate.platform.webmvc.WebEvent;
 import net.ymate.platform.webmvc.WebMVC;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import javax.servlet.*;
 import javax.servlet.http.*;
@@ -34,6 +36,8 @@ public class WebAppEventListener implements ServletContextListener, ServletConte
         HttpSessionListener, HttpSessionAttributeListener, HttpSessionBindingListener,
         ServletRequestListener, ServletRequestAttributeListener {
 
+    private static final Log _LOG = LogFactory.getLog(WebAppEventListener.class);
+
     private static boolean __isInited;
 
     static {
@@ -41,7 +45,7 @@ public class WebAppEventListener implements ServletContextListener, ServletConte
             YMP.get().init();
             __isInited = YMP.get().isInited() && WebMVC.get() != null && ((IModule) WebMVC.get()).isInited();
         } catch (Exception ex) {
-            throw new RuntimeException(RuntimeUtils.unwrapThrow(ex));
+            _LOG.error("", RuntimeUtils.unwrapThrow(ex));
         }
     }
 

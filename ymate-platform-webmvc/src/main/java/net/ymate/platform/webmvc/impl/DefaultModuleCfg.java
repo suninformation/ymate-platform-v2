@@ -21,7 +21,7 @@ import net.ymate.platform.core.util.ClassUtils;
 import net.ymate.platform.core.util.RuntimeUtils;
 import net.ymate.platform.webmvc.*;
 import net.ymate.platform.webmvc.base.Type;
-import net.ymate.platform.webmvc.support.RequestMappingParser;
+import net.ymate.platform.webmvc.support.RestfulRequestMappingParser;
 import org.apache.commons.fileupload.ProgressListener;
 import org.apache.commons.lang.StringUtils;
 
@@ -98,7 +98,7 @@ public class DefaultModuleCfg implements IWebMvcModuleCfg {
     public DefaultModuleCfg(YMP owner) throws Exception {
         Map<String, String> _moduleCfgs = owner.getConfig().getModuleConfigs(IWebMvc.MODULE_NAME);
         //
-        String _reqMappingParserClass = StringUtils.defaultIfBlank(_moduleCfgs.get("request_mapping_parser_class"), "default");
+        String _reqMappingParserClass = StringUtils.defaultIfBlank(_moduleCfgs.get("request_mapping_parser_class"), "restful");
         Class<? extends IRequestMappingParser> _mappingParserClass = Type.REQUEST_MAPPING_PARSERS.get(_reqMappingParserClass);
         if (_mappingParserClass == null && StringUtils.isNotBlank(_reqMappingParserClass)) {
             __mappingParser = ClassUtils.impl(_reqMappingParserClass, IRequestMappingParser.class, this.getClass());
@@ -106,7 +106,7 @@ public class DefaultModuleCfg implements IWebMvcModuleCfg {
             __mappingParser = _mappingParserClass.newInstance();
         }
         if (__mappingParser == null) {
-            __mappingParser = new RequestMappingParser();
+            __mappingParser = new RestfulRequestMappingParser();
         }
         //
         String _reqProcessorClass = StringUtils.defaultIfBlank(_moduleCfgs.get("request_processor_class"), "default");

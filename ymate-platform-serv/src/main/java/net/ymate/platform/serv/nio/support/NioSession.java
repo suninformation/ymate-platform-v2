@@ -41,7 +41,7 @@ import java.util.concurrent.TimeUnit;
  */
 public class NioSession<LISTENER extends IListener<INioSession>> extends AbstractSession implements INioSession {
 
-    private final Log _LOG = LogFactory.getLog(NioSession.class);
+    private static final Log _LOG = LogFactory.getLog(NioSession.class);
 
     private NioEventGroup<LISTENER> __eventGroup;
 

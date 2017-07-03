@@ -41,7 +41,7 @@ import java.nio.channels.SelectionKey;
  */
 public class NioUdpClient extends AbstractService implements IClient<NioUdpListener, INioCodec> {
 
-    private final Log _LOG = LogFactory.getLog(NioUdpClient.class);
+    private static final Log _LOG = LogFactory.getLog(NioUdpClient.class);
 
     protected INioClientCfg __clientCfg;
 

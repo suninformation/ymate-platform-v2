@@ -44,7 +44,7 @@ public class JDBC implements IModule, IDatabase {
 
     public static final Version VERSION = new Version(2, 0, 1, JDBC.class.getPackage().getImplementationVersion(), Version.VersionType.Release);
 
-    private final Log _LOG = LogFactory.getLog(JDBC.class);
+    private static final Log _LOG = LogFactory.getLog(JDBC.class);
 
     private static volatile IDatabase __instance;
 

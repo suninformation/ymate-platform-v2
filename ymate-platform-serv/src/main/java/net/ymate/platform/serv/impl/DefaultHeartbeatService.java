@@ -31,7 +31,7 @@ import java.io.IOException;
  */
 public class DefaultHeartbeatService extends Thread implements IHeartbeatService {
 
-    private final Log _LOG = LogFactory.getLog(DefaultReconnectService.class);
+    private static final Log _LOG = LogFactory.getLog(DefaultReconnectService.class);
 
     private IClient __client;
 

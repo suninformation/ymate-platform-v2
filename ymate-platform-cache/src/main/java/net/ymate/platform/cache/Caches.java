@@ -42,7 +42,7 @@ public class Caches implements IModule, ICaches {
 
     public static final Version VERSION = new Version(2, 0, 1, Caches.class.getPackage().getImplementationVersion(), Version.VersionType.Release);
 
-    private final Log _LOG = LogFactory.getLog(Caches.class);
+    private static final Log _LOG = LogFactory.getLog(Caches.class);
 
     private static volatile ICaches __instance;
 

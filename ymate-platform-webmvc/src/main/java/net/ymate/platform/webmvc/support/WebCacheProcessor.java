@@ -44,7 +44,7 @@ import java.util.concurrent.locks.ReentrantLock;
  */
 public class WebCacheProcessor implements IWebCacheProcessor {
 
-    private final Log _LOG = LogFactory.getLog(WebCacheProcessor.class);
+    private static final Log _LOG = LogFactory.getLog(WebCacheProcessor.class);
 
     private static ConcurrentHashMap<String, ReentrantLock> __LOCK_MAP = new ConcurrentHashMap<String, ReentrantLock>();
 

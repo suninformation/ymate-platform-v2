@@ -39,7 +39,7 @@ public class Logs implements IModule, ILog {
 
     public static final Version VERSION = new Version(2, 0, 1, Logs.class.getPackage().getImplementationVersion(), Version.VersionType.Release);
 
-    private final Log _LOG = LogFactory.getLog(Logs.class);
+    private static final Log _LOG = LogFactory.getLog(Logs.class);
 
     private static Map<String, ILogger> __LOGGER_CACHE = new ConcurrentHashMap<String, ILogger>();
 
