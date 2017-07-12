@@ -19,6 +19,7 @@ import net.ymate.platform.webmvc.IRequestContext;
 import net.ymate.platform.webmvc.WebMVC;
 import net.ymate.platform.webmvc.base.Type;
 import net.ymate.platform.webmvc.impl.DefaultRequestContext;
+import org.apache.commons.lang.StringUtils;
 
 import javax.servlet.*;
 import javax.servlet.http.HttpServletRequest;
@@ -54,18 +55,23 @@ public class DispatchFilter implements Filter {
     }
 
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
-        request.setCharacterEncoding(__charsetEncoding);
-        response.setCharacterEncoding(__charsetEncoding);
-        //
-        response.setContentType(Type.ContentType.HTML.getContentType().concat("; charset=").concat(__charsetEncoding));
-        //
-        HttpServletRequest _request = new RequestMethodWrapper((HttpServletRequest) request, __requestMethodParam);
-        HttpServletResponse _response = new GenericResponseWrapper((HttpServletResponse) response);
-        IRequestContext _requestContext = new DefaultRequestContext(_request, __requestPrefix);
-        if (null == __ignorePatern || !__ignorePatern.matcher(_requestContext.getOriginalUrl()).find()) {
-            GenericDispatcher.create(WebMVC.get()).execute(_requestContext, __filterConfig.getServletContext(), _request, _response);
+        if (StringUtils.equalsIgnoreCase(((HttpServletRequest) request).getHeader("Connection"), "Upgrade")
+                && StringUtils.equalsIgnoreCase(((HttpServletRequest) request).getHeader("Upgrade"), "websocket")) {
+            chain.doFilter(request, response);
         } else {
-            chain.doFilter(_request, _response);
+            request.setCharacterEncoding(__charsetEncoding);
+            response.setCharacterEncoding(__charsetEncoding);
+            //
+            response.setContentType(Type.ContentType.HTML.getContentType().concat("; charset=").concat(__charsetEncoding));
+            //
+            HttpServletRequest _request = new RequestMethodWrapper((HttpServletRequest) request, __requestMethodParam);
+            HttpServletResponse _response = new GenericResponseWrapper((HttpServletResponse) response);
+            IRequestContext _requestContext = new DefaultRequestContext(_request, __requestPrefix);
+            if (null == __ignorePatern || !__ignorePatern.matcher(_requestContext.getOriginalUrl()).find()) {
+                GenericDispatcher.create(WebMVC.get()).execute(_requestContext, __filterConfig.getServletContext(), _request, _response);
+            } else {
+                chain.doFilter(_request, _response);
+            }
         }
     }
 
