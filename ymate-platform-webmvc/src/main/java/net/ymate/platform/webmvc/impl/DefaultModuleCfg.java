@@ -75,6 +75,8 @@ public class DefaultModuleCfg implements IWebMvcModuleCfg {
 
     private boolean __defaultEnabledCookieAuth;
 
+    private boolean __defaultUseHttpOnly;
+
     private String __uploadTempDir;
 
     private int __uploadFileSizeMax;
@@ -149,6 +151,7 @@ public class DefaultModuleCfg implements IWebMvcModuleCfg {
         __cookiePath = StringUtils.defaultIfBlank(_moduleCfgs.get("cookie_path"), "/");
         __cookieAuthKey = StringUtils.trimToEmpty(_moduleCfgs.get("cookie_auth_key"));
         __defaultEnabledCookieAuth = BlurObject.bind(_moduleCfgs.get("default_enabled_cookie_auth")).toBooleanValue();
+        __defaultUseHttpOnly = BlurObject.bind(_moduleCfgs.get("default_use_http_only")).toBooleanValue();
         //
         __uploadTempDir = RuntimeUtils.replaceEnvVariable(StringUtils.trimToEmpty(_moduleCfgs.get("upload_temp_dir")));
         __uploadFileSizeMax = Integer.parseInt(StringUtils.defaultIfBlank(_moduleCfgs.get("upload_file_size_max"), "10485760"));
@@ -249,6 +252,10 @@ public class DefaultModuleCfg implements IWebMvcModuleCfg {
 
     public boolean isDefaultEnabledCookieAuth() {
         return __defaultEnabledCookieAuth;
+    }
+
+    public boolean isDefaultUseHttpOnly() {
+        return __defaultUseHttpOnly;
     }
 
     public String getUploadTempDir() {

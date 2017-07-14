@@ -998,6 +998,9 @@ WebMVC模块针对Cookies这个小甜点提供了一个名为CookieHelper的小�
 	
 	# Cookie密钥验证是否默认开启, 默认值为false
     ymp.configs.webmvc.default_enabled_cookie_auth=
+    
+    # Cookie是否默认使用HttpOnly, 默认值为false
+    ymp.configs.webmvc.default_use_http_only=
 
 ##### 示例代码：演示Cookie操作
 
@@ -1009,6 +1012,9 @@ WebMVC模块针对Cookies这个小甜点提供了一个名为CookieHelper的小�
 
 	// 设置开启采用Base64编码(默认支持UrlEncode编码)
 	_helper.allowUseBase64();
+
+	// 设置开启使用HttpOnly
+	_helper.allowUseHttpOnly();
 
 	// 添加或重设Cookie，过期时间基于Session时效
 	_helper.setCookie("current_username", "YMPer");

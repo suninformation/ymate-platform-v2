@@ -19,6 +19,7 @@ import net.ymate.platform.core.lang.BlurObject;
 import net.ymate.platform.core.util.CodecUtils;
 import net.ymate.platform.core.util.RuntimeUtils;
 import net.ymate.platform.webmvc.IWebMvc;
+import net.ymate.platform.webmvc.WebMVC;
 import net.ymate.platform.webmvc.context.WebContext;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.codec.digest.DigestUtils;
@@ -59,6 +60,8 @@ public final class CookieHelper {
      */
     private boolean __useURLCoder;
 
+    private boolean __useHttpOnly;
+
     /**
      * 加密密钥
      */
@@ -69,6 +72,7 @@ public final class CookieHelper {
     private CookieHelper(IWebMvc owner) {
         __owner = owner;
         __useAuthKey = owner.getModuleCfg().isDefaultEnabledCookieAuth();
+        __useHttpOnly = owner.getModuleCfg().isDefaultUseHttpOnly();
         __charsetEncoding = __owner.getModuleCfg().getDefaultCharsetEncoding();
         if (StringUtils.isBlank(__charsetEncoding)) {
             __charsetEncoding = WebContext.getRequest().getCharacterEncoding();
@@ -81,6 +85,10 @@ public final class CookieHelper {
      */
     public static CookieHelper bind(IWebMvc owner) {
         return new CookieHelper(owner);
+    }
+
+    public static CookieHelper bind() {
+        return new CookieHelper(WebMVC.get());
     }
 
     private Cookie __doGetCookie(String cookieName) {
@@ -158,11 +166,32 @@ public final class CookieHelper {
         Cookie _cookie = new Cookie(__owner.getModuleCfg().getCookiePrefix() + key, StringUtils.isBlank(value) ? "" : encodeValue(value));
         _cookie.setMaxAge(maxAge);
         _cookie.setPath(__owner.getModuleCfg().getCookiePath());
+        _cookie.setSecure(WebContext.getRequest().isSecure());
         if (StringUtils.isNotBlank(__owner.getModuleCfg().getCookieDomain())) {
             _cookie.setDomain(__owner.getModuleCfg().getCookieDomain());
         }
-        _cookie.setSecure(WebContext.getRequest().isSecure());
-        WebContext.getResponse().addCookie(_cookie);
+        //
+        if (__useHttpOnly) {
+            StringBuilder _cookieSB = new StringBuilder();
+            _cookieSB.append(_cookie.getName()).append("=").append(_cookie.getValue()).append("; ");
+            if (maxAge == 0) {
+                _cookieSB.append("Expires=Thu Jan 01 08:00:00 CST 1970; ");
+            } else if (maxAge > 0) {
+                _cookieSB.append("Max-Age=").append(_cookie.getMaxAge()).append("; ");
+            }
+            if (StringUtils.isNotBlank(_cookie.getDomain())) {
+                _cookieSB.append("Domain=").append(_cookie.getDomain()).append("; ");
+            }
+            _cookieSB.append("Path=").append(_cookie.getPath()).append("; ");
+            if (_cookie.getSecure()) {
+                _cookieSB.append("Secure; ");
+            }
+            _cookieSB.append("HttpOnly;");
+            //
+            WebContext.getResponse().addHeader("Set-Cookie", _cookieSB.toString());
+        } else {
+            WebContext.getResponse().addCookie(_cookie);
+        }
         return this;
     }
 
@@ -192,6 +221,16 @@ public final class CookieHelper {
      */
     public CookieHelper allowUseURLCoder() {
         this.__useURLCoder = true;
+        return this;
+    }
+
+    public CookieHelper allowUseHttpOnly() {
+        this.__useHttpOnly = true;
+        return this;
+    }
+
+    public CookieHelper disabledUseHttpOnly() {
+        this.__useHttpOnly = false;
         return this;
     }
 

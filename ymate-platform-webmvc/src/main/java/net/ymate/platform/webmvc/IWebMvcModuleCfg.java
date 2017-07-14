@@ -104,6 +104,11 @@ public interface IWebMvcModuleCfg {
     boolean isDefaultEnabledCookieAuth();
 
     /**
+     * @return Cookie是否默认使用HttpOnly, 默认值为false
+     */
+    boolean isDefaultUseHttpOnly();
+
+    /**
      * @return 文件上传临时目录，为空则默认使用：System.getProperty("java.io.tmpdir")
      */
     String getUploadTempDir();
