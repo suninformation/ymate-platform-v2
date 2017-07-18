@@ -28,6 +28,8 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import javax.servlet.http.Cookie;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.util.HashMap;
@@ -44,6 +46,10 @@ public final class CookieHelper {
     private static final Log __LOG = LogFactory.getLog(CookieHelper.class);
 
     private IWebMvc __owner;
+
+    private HttpServletRequest __request;
+
+    private HttpServletResponse __response;
 
     /**
      * 是否使用密钥加密
@@ -69,13 +75,15 @@ public final class CookieHelper {
 
     private String __charsetEncoding;
 
-    private CookieHelper(IWebMvc owner) {
+    private CookieHelper(IWebMvc owner, HttpServletRequest request, HttpServletResponse response) {
         __owner = owner;
+        __request = request;
+        __response = response;
         __useAuthKey = owner.getModuleCfg().isDefaultEnabledCookieAuth();
         __useHttpOnly = owner.getModuleCfg().isDefaultUseHttpOnly();
         __charsetEncoding = __owner.getModuleCfg().getDefaultCharsetEncoding();
         if (StringUtils.isBlank(__charsetEncoding)) {
-            __charsetEncoding = WebContext.getRequest().getCharacterEncoding();
+            __charsetEncoding = __request.getCharacterEncoding();
         }
     }
 
@@ -84,15 +92,23 @@ public final class CookieHelper {
      * @return 构建Cookies操作助手类实例
      */
     public static CookieHelper bind(IWebMvc owner) {
-        return new CookieHelper(owner);
+        return new CookieHelper(owner, WebContext.getRequest(), WebContext.getResponse());
     }
 
     public static CookieHelper bind() {
-        return new CookieHelper(WebMVC.get());
+        return new CookieHelper(WebMVC.get(), WebContext.getRequest(), WebContext.getResponse());
+    }
+
+    public static CookieHelper bind(IWebMvc owner, HttpServletRequest request, HttpServletResponse response) {
+        return new CookieHelper(owner, request, response);
+    }
+
+    public static CookieHelper bind(HttpServletRequest request, HttpServletResponse response) {
+        return new CookieHelper(WebMVC.get(), request, response);
     }
 
     private Cookie __doGetCookie(String cookieName) {
-        Cookie _cookies[] = WebContext.getRequest().getCookies();
+        Cookie _cookies[] = __request.getCookies();
         if (_cookies == null) {
             return null;
         } else {
@@ -124,7 +140,7 @@ public final class CookieHelper {
      */
     public Map<String, BlurObject> getCookies() {
         Map<String, BlurObject> _returnValue = new HashMap<String, BlurObject>();
-        Cookie[] _cookies = WebContext.getRequest().getCookies();
+        Cookie[] _cookies = __request.getCookies();
         if (_cookies != null) {
             String _cookiePre = __owner.getModuleCfg().getCookiePrefix();
             int _preLength = StringUtils.length(_cookiePre);
@@ -166,7 +182,7 @@ public final class CookieHelper {
         Cookie _cookie = new Cookie(__owner.getModuleCfg().getCookiePrefix() + key, StringUtils.isBlank(value) ? "" : encodeValue(value));
         _cookie.setMaxAge(maxAge);
         _cookie.setPath(__owner.getModuleCfg().getCookiePath());
-        _cookie.setSecure(WebContext.getRequest().isSecure());
+        _cookie.setSecure(__request.isSecure());
         if (StringUtils.isNotBlank(__owner.getModuleCfg().getCookieDomain())) {
             _cookie.setDomain(__owner.getModuleCfg().getCookieDomain());
         }
@@ -188,9 +204,9 @@ public final class CookieHelper {
             }
             _cookieSB.append("HttpOnly;");
             //
-            WebContext.getResponse().addHeader("Set-Cookie", _cookieSB.toString());
+            __response.addHeader("Set-Cookie", _cookieSB.toString());
         } else {
-            WebContext.getResponse().addCookie(_cookie);
+            __response.addCookie(_cookie);
         }
         return this;
     }
@@ -252,7 +268,7 @@ public final class CookieHelper {
         if (this.__useAuthKey) {
             String _key = __owner.getModuleCfg().getCookieAuthKey();
             if (StringUtils.isNotBlank(_key)) {
-                return DigestUtils.md5Hex(_key + WebContext.getRequest().getHeader("User-Agent"));
+                return DigestUtils.md5Hex(_key + __request.getHeader("User-Agent"));
             }
         }
         return "";
