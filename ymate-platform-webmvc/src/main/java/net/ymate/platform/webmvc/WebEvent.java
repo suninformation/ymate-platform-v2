@@ -38,8 +38,6 @@ public class WebEvent extends EventContext<IWebMvc, WebEvent.EVENT> implements I
      * SESSION_ATTR_ADDED
      * SESSION_ATTR_REMOVEED
      * SESSION_ATTR_REPLACED
-     * SESSION_VALUE_BOUND
-     * SESSION_VALUE_UNBOUND
      * REQUEST_INITED               - 请求初始化事件<br>
      * REQUEST_DESTROYED            - 请求销毁事件<br>
      * REQUEST_ATTR_ADDED
@@ -59,8 +57,6 @@ public class WebEvent extends EventContext<IWebMvc, WebEvent.EVENT> implements I
         SESSION_ATTR_ADDED,
         SESSION_ATTR_REMOVEED,
         SESSION_ATTR_REPLACED,
-        SESSION_VALUE_BOUND,
-        SESSION_VALUE_UNBOUND,
         REQUEST_INITED,
         REQUEST_DESTROYED,
         REQUEST_ATTR_ADDED,

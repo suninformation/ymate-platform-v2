@@ -24,7 +24,10 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import javax.servlet.*;
-import javax.servlet.http.*;
+import javax.servlet.http.HttpSessionAttributeListener;
+import javax.servlet.http.HttpSessionBindingEvent;
+import javax.servlet.http.HttpSessionEvent;
+import javax.servlet.http.HttpSessionListener;
 
 /**
  * WebMVC框架初始化及上下文事件监听器(初始化YMP框架)
@@ -33,7 +36,7 @@ import javax.servlet.http.*;
  * @version 1.0
  */
 public class WebAppEventListener implements ServletContextListener, ServletContextAttributeListener,
-        HttpSessionListener, HttpSessionAttributeListener, HttpSessionBindingListener,
+        HttpSessionListener, HttpSessionAttributeListener,
         ServletRequestListener, ServletRequestAttributeListener {
 
     private static final Log _LOG = LogFactory.getLog(WebAppEventListener.class);
@@ -106,16 +109,6 @@ public class WebAppEventListener implements ServletContextListener, ServletConte
 
     public void attributeReplaced(HttpSessionBindingEvent se) {
         __doFireEvent(WebEvent.EVENT.SESSION_ATTR_REPLACED, se);
-    }
-
-    //// HttpSessionBindingListener
-
-    public void valueBound(HttpSessionBindingEvent event) {
-        __doFireEvent(WebEvent.EVENT.SESSION_VALUE_BOUND, event);
-    }
-
-    public void valueUnbound(HttpSessionBindingEvent event) {
-        __doFireEvent(WebEvent.EVENT.SESSION_VALUE_UNBOUND, event);
     }
 
     //// ServletRequestListener
