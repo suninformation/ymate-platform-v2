@@ -124,6 +124,30 @@ WebMVC模块的基本初始化参数配置：
 
 **说明**：在服务端程序Servlet方式的请求处理中，请求忽略正则表达式`request_ignore_regex`参数无效；
 
+#### 模块事件
+
+WebEvent事件枚举对象包括以下事件类型：
+
+|事务类型|说明|
+|---|---|
+|SERVLET_CONTEXT_INITED|容器初始化事件|
+|SERVLET_CONTEXT_DESTROYED|容器销毁事件|
+|SERVLET_CONTEXT_ATTR_ADDED||
+|SERVLET_CONTEXT_ATTR_REMOVEED||
+|SERVLET_CONTEXT_ATTR_REPLACED||
+|SESSION_CREATED|会话创建事件|
+|SESSION_DESTROYED|会话销毁事件|
+|SESSION_ATTR_ADDED||
+|SESSION_ATTR_REMOVEED||
+|SESSION_ATTR_REPLACED||
+|REQUEST_INITED|请求初始化事件|
+|REQUEST_DESTROYED|请求销毁事件|
+|REQUEST_ATTR_ADDED||
+|REQUEST_ATTR_REMOVEED||
+|REQUEST_ATTR_REPLACED||
+|REQUEST_RECEIVED|接收控制器方法请求事件|
+|REQUEST_COMPLETED|完成控制器方法请求事件|
+
 #### 控制器（Controller）
 
 控制器(Controller)是MVC体系中的核心，它负责处理浏览器发起的所有请求和决定响应内容的逻辑处理，控制器就是一个标准的Java类，不需要继承任何基类，通过类中的方法向外部暴露接口，该方法的返回结果将决定向浏览器响应的具体内容；
@@ -933,6 +957,8 @@ WebMVC模块基于YMPv2.0的新特性，原生支持AOP方法拦截，通过以�
 > @Before：用于设置一个类或方法的前置拦截器，声明在类上的前置拦截器将被应用到该类所有方法上；
 
 > @After：用于设置一个类或方的后置拦截器，声明在类上的后置拦截器将被应用到该类所有方法上；
+
+> @Around：用于同时配置一个类或方法的前置和后置拦截器；
 
 > @Clean：用于清理类上全部或指定的拦截器，被清理的拦截器将不会被执行；
 
