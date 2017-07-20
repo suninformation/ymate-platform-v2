@@ -38,33 +38,28 @@ public class JCLogger extends AbstractLogger implements Log, Serializable {
     private boolean __inited;
 
     public JCLogger(String name) {
-        this.__loggerName = name;
+        __loggerName = name;
         //
         __tryCheckAndInitLogImpl();
     }
 
+    private Log __tryGetLogSafely() {
+        if (__simplog == null) {
+            __simplog = new SimpleLog(__loggerName);
+        }
+        return __simplog;
+    }
+
     private boolean __tryCheckAndInitLogImpl() {
-        if (!__inited) {
-            ILog _logs = null;
-            if (YMP.get() != null && YMP.get().isInited()) {
-                _logs = Logs.get();
-            }
-            if (_logs != null && _logs.isInited()) {
-                try {
-                    this.__logger = _logs.getLogger(__loggerName).depth(5);
-                    this.__inited = true;
-                } catch (Exception e) {
-                    if (__simplog != null) {
-                        this.__simplog.warn("", RuntimeUtils.unwrapThrow(e));
-                    } else {
-                        e.printStackTrace();
-                    }
-                }
-            } else if (__simplog == null) {
-                this.__simplog = new SimpleLog(__loggerName);
-            }
-        } else if (YMP.get() == null || !YMP.get().isInited() || Logs.get() == null || !Logs.get().isInited()) {
+        if (YMP.get() == null || !YMP.get().isInited() || Logs.get() == null || !Logs.get().isInited()) {
             return false;
+        } else if (!__inited && YMP.get() != null && YMP.get().isInited() && Logs.get() != null && Logs.get().isInited()) {
+            try {
+                __logger = Logs.get().getLogger(__loggerName).depth(5);
+                __inited = true;
+            } catch (Exception e) {
+                __tryGetLogSafely().warn("", RuntimeUtils.unwrapThrow(e));
+            }
         }
         return __inited;
     }
@@ -74,6 +69,7 @@ public class JCLogger extends AbstractLogger implements Log, Serializable {
         if (__tryCheckAndInitLogImpl()) {
             __logger.log(info, e, level);
         } else {
+            __tryGetLogSafely();
             switch (level) {
                 case TRACE:
                     __simplog.trace(info, e);
@@ -264,42 +260,42 @@ public class JCLogger extends AbstractLogger implements Log, Serializable {
         if (__tryCheckAndInitLogImpl()) {
             return __logger.isDebugEnabled();
         }
-        return __simplog.isDebugEnabled();
+        return __tryGetLogSafely().isDebugEnabled();
     }
 
     public boolean isErrorEnabled() {
         if (__tryCheckAndInitLogImpl()) {
             return __logger.isErrorEnabled();
         }
-        return __simplog.isErrorEnabled();
+        return __tryGetLogSafely().isErrorEnabled();
     }
 
     public boolean isFatalEnabled() {
         if (__tryCheckAndInitLogImpl()) {
             return __logger.isFatalEnabled();
         }
-        return __simplog.isFatalEnabled();
+        return __tryGetLogSafely().isFatalEnabled();
     }
 
     public boolean isInfoEnabled() {
         if (__tryCheckAndInitLogImpl()) {
             return __logger.isInfoEnabled();
         }
-        return __simplog.isInfoEnabled();
+        return __tryGetLogSafely().isInfoEnabled();
     }
 
     public boolean isTraceEnabled() {
         if (__tryCheckAndInitLogImpl()) {
             return __logger.isTraceEnabled();
         }
-        return __simplog.isTraceEnabled();
+        return __tryGetLogSafely().isTraceEnabled();
     }
 
     public boolean isWarnEnabled() {
         if (__tryCheckAndInitLogImpl()) {
             return __logger.isWarnEnabled();
         }
-        return __simplog.isWarnEnabled();
+        return __tryGetLogSafely().isWarnEnabled();
     }
 
     public void trace(Object message) {

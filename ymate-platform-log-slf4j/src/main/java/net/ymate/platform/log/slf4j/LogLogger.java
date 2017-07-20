@@ -42,33 +42,29 @@ public class LogLogger extends AbstractLogger implements LocationAwareLogger, Se
     private boolean __inited;
 
     public LogLogger(String name) {
-        this.__loggerName = name;
+        __loggerName = name;
         //
         __tryCheckAndInitLogImpl();
     }
 
+    private Log __tryGetLogSafely() {
+        if (__simplog == null) {
+            __simplog = new SimpleLog(__loggerName);
+        }
+        return __simplog;
+    }
+
     private boolean __tryCheckAndInitLogImpl() {
-        if (!__inited) {
-            ILog _logs = null;
-            if (YMP.get() != null && YMP.get().isInited()) {
-                _logs = Logs.get();
-            }
-            if (_logs != null && _logs.isInited()) {
-                try {
-                    this.__logger = _logs.getLogger(__loggerName).depth(5);
-                    this.__inited = true;
-                } catch (Exception e) {
-                    if (__simplog != null) {
-                        this.__simplog.warn("", RuntimeUtils.unwrapThrow(e));
-                    } else {
-                        e.printStackTrace();
-                    }
-                }
-            } else if (__simplog == null) {
-                this.__simplog = new SimpleLog(__loggerName);
-            }
-        } else if (YMP.get() == null || !YMP.get().isInited() || Logs.get() == null || !Logs.get().isInited()) {
+        if (YMP.get() == null || !YMP.get().isInited() || Logs.get() == null || !Logs.get().isInited()) {
             return false;
+        } else if (!__inited && YMP.get() != null && YMP.get().isInited() && Logs.get() != null && Logs.get().isInited()) {
+            try {
+                __logger = Logs.get().getLogger(__loggerName).depth(5);
+                __inited = true;
+            } catch (Exception e) {
+                __tryGetLogSafely();
+                __simplog.warn("", RuntimeUtils.unwrapThrow(e));
+            }
         }
         return __inited;
     }
@@ -150,7 +146,7 @@ public class LogLogger extends AbstractLogger implements LocationAwareLogger, Se
         if (__tryCheckAndInitLogImpl()) {
             return __logger.isTraceEnabled();
         }
-        return __simplog.isTraceEnabled();
+        return __tryGetLogSafely().isTraceEnabled();
     }
 
     public boolean isTraceEnabled(final Marker marker) {
@@ -225,7 +221,7 @@ public class LogLogger extends AbstractLogger implements LocationAwareLogger, Se
         if (__tryCheckAndInitLogImpl()) {
             return __logger.isDebugEnabled();
         }
-        return __simplog.isDebugEnabled();
+        return __tryGetLogSafely().isDebugEnabled();
     }
 
     public boolean isDebugEnabled(final Marker marker) {
@@ -300,7 +296,7 @@ public class LogLogger extends AbstractLogger implements LocationAwareLogger, Se
         if (__tryCheckAndInitLogImpl()) {
             return __logger.isInfoEnabled();
         }
-        return __simplog.isInfoEnabled();
+        return __tryGetLogSafely().isInfoEnabled();
     }
 
     public boolean isInfoEnabled(final Marker marker) {
@@ -375,7 +371,7 @@ public class LogLogger extends AbstractLogger implements LocationAwareLogger, Se
         if (__tryCheckAndInitLogImpl()) {
             return __logger.isWarnEnabled();
         }
-        return __simplog.isWarnEnabled();
+        return __tryGetLogSafely().isWarnEnabled();
     }
 
     public boolean isWarnEnabled(final Marker marker) {
@@ -462,7 +458,7 @@ public class LogLogger extends AbstractLogger implements LocationAwareLogger, Se
         if (__tryCheckAndInitLogImpl()) {
             return __logger.isErrorEnabled();
         }
-        return __simplog.isErrorEnabled();
+        return __tryGetLogSafely().isErrorEnabled();
     }
 
     public boolean isFatalEnabled() {
@@ -542,23 +538,23 @@ public class LogLogger extends AbstractLogger implements LocationAwareLogger, Se
         } else {
             switch (level) {
                 case TRACE:
-                    __simplog.trace(info, e);
+                    __tryGetLogSafely().trace(info, e);
                     break;
                 case DEBUG:
-                    __simplog.debug(info, e);
+                    __tryGetLogSafely().debug(info, e);
                     break;
                 case ALL:
                 case INFO:
-                    __simplog.info(info, e);
+                    __tryGetLogSafely().info(info, e);
                     break;
                 case WARN:
-                    __simplog.warn(info, e);
+                    __tryGetLogSafely().warn(info, e);
                     break;
                 case ERROR:
-                    __simplog.error(info, e);
+                    __tryGetLogSafely().error(info, e);
                     break;
                 case FATAL:
-                    __simplog.fatal(info, e);
+                    __tryGetLogSafely().fatal(info, e);
             }
         }
     }
