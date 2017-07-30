@@ -87,6 +87,15 @@ public interface IConfig {
      */
     File searchFile(String cfgFile);
 
+    /**
+     * @param cfgFileName 配置所需要的装载参数
+     * @param search      是否采用搜索
+     * @return 根据配置文件名称自动分析文件类型(xml或properties)并填充配置对象, 若未找到则返回null
+     */
+    IConfiguration loadCfg(String cfgFileName, boolean search);
+
+    IConfiguration loadCfg(String cfgFileName);
+
     boolean fillCfg(IConfiguration config, String cfgFileName);
 
     /**

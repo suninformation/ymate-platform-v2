@@ -18,7 +18,10 @@ package net.ymate.platform.configuration;
 import net.ymate.platform.configuration.annotation.Configuration;
 import net.ymate.platform.configuration.annotation.ConfigurationProvider;
 import net.ymate.platform.configuration.handle.ConfigHandler;
+import net.ymate.platform.configuration.impl.DefaultConfiguration;
+import net.ymate.platform.configuration.impl.DefaultConfigurationProvider;
 import net.ymate.platform.configuration.impl.DefaultModuleCfg;
+import net.ymate.platform.configuration.impl.PropertyConfigurationProvider;
 import net.ymate.platform.core.Version;
 import net.ymate.platform.core.YMP;
 import net.ymate.platform.core.module.IModule;
@@ -26,6 +29,7 @@ import net.ymate.platform.core.module.annotation.Module;
 import net.ymate.platform.core.util.ClassUtils;
 import net.ymate.platform.core.util.FileUtils;
 import net.ymate.platform.core.util.ResourceUtils;
+import net.ymate.platform.core.util.RuntimeUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -201,6 +205,29 @@ public class Cfgs implements IModule, IConfig {
         return null;
     }
 
+    @Override
+    public IConfiguration loadCfg(String cfgFileName, boolean search) {
+        String _ext = FileUtils.getExtName(cfgFileName);
+        Class<? extends IConfigurationProvider> __providerClass = null;
+        if (StringUtils.equalsIgnoreCase(_ext, "xml")) {
+            __providerClass = DefaultConfigurationProvider.class;
+        } else if (StringUtils.equalsIgnoreCase(_ext, "properties")) {
+            __providerClass = PropertyConfigurationProvider.class;
+        }
+        if (__providerClass != null) {
+            IConfiguration _conf = new DefaultConfiguration();
+            if (fillCfg(__providerClass, _conf, cfgFileName, search)) {
+                return _conf;
+            }
+        }
+        return null;
+    }
+
+    @Override
+    public IConfiguration loadCfg(String cfgFileName) {
+        return loadCfg(cfgFileName, true);
+    }
+
     private File __doSearch(String cfgFile) {
         // 若指定的 cfgFile 为文件绝对路径名，则直接返回
         File _result = new File(cfgFile);
@@ -289,11 +316,11 @@ public class Cfgs implements IModule, IConfig {
                     config.initialize(_provider);
                     return true;
                 } catch (Exception e) {
-                    System.err.println("Warnring: " + e.getMessage() + " [" + StringUtils.trimToEmpty(cfgFileName) + "]");
+                    _LOG.warn("An exception occurred while filling the configuration file [" + StringUtils.trimToEmpty(cfgFileName) + "]", RuntimeUtils.unwrapThrow(e));
                 }
             }
         } else {
-            System.err.println("Module configuration has not been initialized, unable to complete the configuration object filling operation");
+            _LOG.warn("Module configuration has not been initialized, unable to complete the configuration object filling operation");
         }
         return false;
     }
