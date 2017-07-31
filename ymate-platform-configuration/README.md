@@ -55,7 +55,7 @@
         |--temp\
         |--......
 
-####模块配置
+#### 模块配置
 
 配置体系模块初始化参数, 将下列配置项按需添加到ymp-conf.properties文件中, 否则模块将使用默认配置进行初始化:
 
@@ -77,7 +77,7 @@
         ymp.configs.configuration.provider_class=
 
 
-####示例一：解析XML配置
+#### 示例一：解析XML配置
 
 - 基于XML文件的基础配置格式如下, 为了配合测试代码, 请将该文件命名为configuration.xml并放置在`config_home`路径下的cfgs目录里:
 
@@ -145,7 +145,7 @@
         {abc=xzy, color=red, size=small, weight=120g, age=2015}
         [itouch, imac, ipad, iphone]
 
-####示例二：解析Properties配置
+#### 示例二：解析Properties配置
 
 - 基于Properties文件的基础配置格式如下, 同样请将该文件命名为configuration.properties并放置在`config_home`路径下的cfgs目录里:
 
@@ -194,11 +194,26 @@
         {abc=xzy, color=red, size=small, weight=120g, age=2015}
         [itouch, imac, ipad, iphone]
 
+#### 示例三：无需创建配置对象, 直接加载配置文件
+
+    public static void main(String[] args) throws Exception {
+        YMP.get().init();
+        try {
+            IConfiguration _cfg = Cfgs.get().loadCfg("cfgs/configuration.properties");
+            if (_cfg != null) {
+                System.out.println(_cfg.getString("company_name"));
+                System.out.println(_cfg.getMap("product_spec"));
+                System.out.println(_cfg.getList("products"));
+            }
+        } finally {
+            YMP.get().destroy();
+        }
+    }
 
 
-####配置体系模块更多操作
+#### 配置体系模块更多操作
 
-#####获取路径信息
+##### 获取路径信息
 
 下列方法的返回结果会根据配置体系模块配置的不同而不同:
 
@@ -217,7 +232,7 @@
     // 返回user.home所在路径
     Cfgs.get().getUserHome();
 
-#####搜索目标文件
+##### 搜索目标文件
 
     // 在配置体系中搜索cfgs/configuration.xml文件并返回其File对象
     Cfgs.get().searchFile("cfgs/configuration.xml");
