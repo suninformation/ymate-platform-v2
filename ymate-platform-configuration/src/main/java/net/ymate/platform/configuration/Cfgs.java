@@ -207,17 +207,19 @@ public class Cfgs implements IModule, IConfig {
 
     @Override
     public IConfiguration loadCfg(String cfgFileName, boolean search) {
-        String _ext = FileUtils.getExtName(cfgFileName);
-        Class<? extends IConfigurationProvider> __providerClass = null;
-        if (StringUtils.equalsIgnoreCase(_ext, "xml")) {
-            __providerClass = DefaultConfigurationProvider.class;
-        } else if (StringUtils.equalsIgnoreCase(_ext, "properties")) {
-            __providerClass = PropertyConfigurationProvider.class;
-        }
-        if (__providerClass != null) {
-            IConfiguration _conf = new DefaultConfiguration();
-            if (fillCfg(__providerClass, _conf, cfgFileName, search)) {
-                return _conf;
+        if (StringUtils.isNotBlank(cfgFileName)) {
+            Class<? extends IConfigurationProvider> _providerClass = null;
+            String _ext = FileUtils.getExtName(cfgFileName);
+            if (StringUtils.equalsIgnoreCase(_ext, "xml")) {
+                _providerClass = DefaultConfigurationProvider.class;
+            } else if (StringUtils.equalsIgnoreCase(_ext, "properties")) {
+                _providerClass = PropertyConfigurationProvider.class;
+            }
+            if (_providerClass != null) {
+                IConfiguration _conf = new DefaultConfiguration();
+                if (fillCfg(_providerClass, _conf, cfgFileName, search)) {
+                    return _conf;
+                }
             }
         }
         return null;
