@@ -233,41 +233,41 @@ public class Cfgs implements IModule, IConfig {
     private File __doSearch(String cfgFile) {
         // 若指定的 cfgFile 为文件绝对路径名，则直接返回
         File _result = new File(cfgFile);
-        if (_result.isAbsolute()) {
+        if (_result.isFile() && _result.canRead() && _result.isAbsolute() && _result.exists()) {
             return _result;
         }
         // 到 moduleHome(模块路径)路径中去寻找 cfgFile 指定的文件
         if (StringUtils.isNotBlank(__moduleHome)) {
             _result = new File(__moduleHome, cfgFile);
-            if (_result.canRead() && _result.isAbsolute() && _result.exists()) {
+            if (_result.isFile() && _result.canRead() && _result.isAbsolute() && _result.exists()) {
                 return _result;
             }
         }
         // 到 projectHome(项目路径)路径中去寻找 cfgFile 指定的文件
         if (StringUtils.isNotBlank(__projectHome)) {
             _result = new File(__projectHome, cfgFile);
-            if (_result.canRead() && _result.isAbsolute() && _result.exists()) {
+            if (_result.isFile() && _result.canRead() && _result.isAbsolute() && _result.exists()) {
                 return _result;
             }
         }
         // 到 configHome(主路径)路径中去寻找 cfgFile 指定的文件
         if (StringUtils.isNotBlank(__configHome)) {
             _result = new File(__configHome, cfgFile);
-            if (_result.canRead() && _result.isAbsolute() && _result.exists()) {
+            if (_result.isFile() && _result.canRead() && _result.isAbsolute() && _result.exists()) {
                 return _result;
             }
         }
         // 到 userDir(用户路径)路径中去寻找 cfgFile 指定的文件
         if (StringUtils.isNotBlank(__userDir)) {
             _result = new File(__userDir, cfgFile);
-            if (_result.canRead() && _result.isAbsolute() && _result.exists()) {
+            if (_result.isFile() && _result.canRead() && _result.isAbsolute() && _result.exists()) {
                 return _result;
             }
         }
         // 到 osUserHome(系统用户路径)路径中去寻找 cfgFile 指定的文件
         if (StringUtils.isNotBlank(__userHome)) {
             _result = new File(__userHome, cfgFile);
-            if (_result.canRead() && _result.isAbsolute() && _result.exists()) {
+            if (_result.isFile() && _result.canRead() && _result.isAbsolute() && _result.exists()) {
                 return _result;
             }
         }
@@ -302,23 +302,24 @@ public class Cfgs implements IModule, IConfig {
     public synchronized boolean fillCfg(Class<? extends IConfigurationProvider> providerClass, IConfiguration config, String cfgFileName, boolean search) {
         if (__inited) {
             if (config != null) {
-                try {
-                    IConfigurationProvider _provider = null;
-                    if (providerClass != null) {
-                        _provider = ClassUtils.impl(providerClass, IConfigurationProvider.class);
+                String _targetCfgFile = search ? searchPath(cfgFileName) : cfgFileName;
+                if (StringUtils.isNotBlank(_targetCfgFile)) {
+                    try {
+                        IConfigurationProvider _provider = null;
+                        if (providerClass != null) {
+                            _provider = ClassUtils.impl(providerClass, IConfigurationProvider.class);
+                        }
+                        if (_provider == null) {
+                            _provider = __moduleCfg.getProviderClass().newInstance();
+                        }
+                        _provider.load(_targetCfgFile);
+                        config.initialize(_provider);
+                        return true;
+                    } catch (Exception e) {
+                        _LOG.warn("An exception occurred while filling the configuration file [" + StringUtils.trimToEmpty(cfgFileName) + "]", RuntimeUtils.unwrapThrow(e));
                     }
-                    if (_provider == null) {
-                        _provider = __moduleCfg.getProviderClass().newInstance();
-                    }
-                    if (search) {
-                        _provider.load(searchPath(cfgFileName));
-                    } else {
-                        _provider.load(cfgFileName);
-                    }
-                    config.initialize(_provider);
-                    return true;
-                } catch (Exception e) {
-                    _LOG.warn("An exception occurred while filling the configuration file [" + StringUtils.trimToEmpty(cfgFileName) + "]", RuntimeUtils.unwrapThrow(e));
+                } else {
+                    _LOG.warn("The configuration file [" + StringUtils.trimToEmpty(cfgFileName) + "] was not found");
                 }
             }
         } else {
