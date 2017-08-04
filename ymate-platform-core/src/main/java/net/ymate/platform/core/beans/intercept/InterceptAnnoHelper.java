@@ -91,7 +91,7 @@ public class InterceptAnnoHelper {
         }
     }
 
-    private static void __doParseContextParamValue(YMP owner, ContextParam contextParam, Map<String, String> paramsMap) {
+    public static void parseContextParamValue(YMP owner, ContextParam contextParam, Map<String, String> paramsMap) {
         if (contextParam != null) {
             for (ParamItem _item : contextParam.value()) {
                 String _key = _item.key();
@@ -116,10 +116,10 @@ public class InterceptAnnoHelper {
         Map<String, String> _contextParams = new HashMap<String, String>();
         //
         if (targetClass != null) {
-            __doParseContextParamValue(owner, targetClass.getAnnotation(ContextParam.class), _contextParams);
+            parseContextParamValue(owner, targetClass.getAnnotation(ContextParam.class), _contextParams);
         }
         if (targetMethod != null) {
-            __doParseContextParamValue(owner, targetMethod.getAnnotation(ContextParam.class), _contextParams);
+            parseContextParamValue(owner, targetMethod.getAnnotation(ContextParam.class), _contextParams);
         }
         //
         return _contextParams;

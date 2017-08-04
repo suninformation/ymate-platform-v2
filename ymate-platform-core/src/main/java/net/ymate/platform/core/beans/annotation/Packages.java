@@ -18,13 +18,11 @@ package net.ymate.platform.core.beans.annotation;
 import java.lang.annotation.*;
 
 /**
- * @author 刘镇 (suninformation@163.com) on 15/11/12 下午3:43
+ * @author 刘镇 (suninformation@163.com) on 2017/8/3 下午6:41
  * @version 1.0
  */
-@Target({ElementType.PACKAGE, ElementType.TYPE, ElementType.METHOD})
+@Target(ElementType.PACKAGE)
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
-public @interface ContextParam {
-
-    ParamItem[] value();
+public @interface Packages {
 }

@@ -19,6 +19,7 @@ import net.ymate.platform.core.beans.BeanMeta;
 import net.ymate.platform.core.beans.IBeanFactory;
 import net.ymate.platform.core.beans.IBeanHandler;
 import net.ymate.platform.core.beans.annotation.Bean;
+import net.ymate.platform.core.beans.annotation.Packages;
 import net.ymate.platform.core.beans.annotation.Proxy;
 import net.ymate.platform.core.beans.impl.DefaultBeanFactory;
 import net.ymate.platform.core.beans.impl.DefaultBeanLoader;
@@ -31,6 +32,7 @@ import net.ymate.platform.core.event.annotation.EventRegister;
 import net.ymate.platform.core.event.impl.DefaultEventConfig;
 import net.ymate.platform.core.handle.EventRegisterHandler;
 import net.ymate.platform.core.handle.ModuleHandler;
+import net.ymate.platform.core.handle.PackagesHandler;
 import net.ymate.platform.core.handle.ProxyHandler;
 import net.ymate.platform.core.i18n.I18N;
 import net.ymate.platform.core.module.IModule;
@@ -132,6 +134,7 @@ public class YMP {
             __beanFactory = new DefaultBeanFactory();
             __beanFactory.setLoader(new DefaultBeanLoader(__config.getExcudedFiles()));
             __beanFactory.registerHandler(Bean.class);
+            __beanFactory.registerHandler(Packages.class, new PackagesHandler(this));
             // 创建模块对象引用集合
             __modules = new HashMap<Class<? extends IModule>, IModule>();
             // 创建模块对象工厂

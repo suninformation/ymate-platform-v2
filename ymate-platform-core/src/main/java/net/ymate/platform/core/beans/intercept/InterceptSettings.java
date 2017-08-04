@@ -15,6 +15,10 @@
  */
 package net.ymate.platform.core.beans.intercept;
 
+import net.ymate.platform.core.beans.annotation.After;
+import net.ymate.platform.core.beans.annotation.Around;
+import net.ymate.platform.core.beans.annotation.Before;
+import net.ymate.platform.core.beans.annotation.ContextParam;
 import net.ymate.platform.core.util.ClassUtils;
 import net.ymate.platform.core.util.RuntimeUtils;
 import org.apache.commons.lang.StringUtils;
@@ -22,10 +26,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * 拦截器全局规则设置
@@ -37,13 +38,85 @@ public class InterceptSettings {
 
     private static final Log _LOG = LogFactory.getLog(InterceptSettings.class);
 
+    private Map<String, InterceptPackageMeta> __packages;
+
     private List<Class<? extends IInterceptor>> __globals;
 
     private Map<String, InterceptSettingMeta> __settings;
 
     public InterceptSettings() {
+        __packages = new HashMap<String, InterceptPackageMeta>();
         __globals = new ArrayList<Class<? extends IInterceptor>>();
         __settings = new HashMap<String, InterceptSettingMeta>();
+    }
+
+    public void registerInterceptPackage(Class<?> targetClass) {
+        if (targetClass != null) {
+            Package _package = targetClass.getPackage();
+            if (_package != null) {
+                Around _around = _package.getAnnotation(Around.class);
+                Before _before = _package.getAnnotation(Before.class);
+                After _after = _package.getAnnotation(After.class);
+                if (_around != null || _before != null || _after != null) {
+                    InterceptPackageMeta _meta = __packages.get(_package.getName());
+                    if (_meta == null) {
+                        _meta = new InterceptPackageMeta(_package.getName());
+                        __packages.put(_package.getName(), _meta);
+                    }
+                    if (_around != null && _around.value().length > 0) {
+                        List<Class<? extends IInterceptor>> _intercepts = Arrays.asList(_around.value());
+                        _meta.beforeIntercepts.addAll(_intercepts);
+                        _meta.afterIntercepts.addAll(_intercepts);
+                    }
+                    if (_before != null && _before.value().length > 0) {
+                        _meta.beforeIntercepts.addAll(Arrays.asList(_before.value()));
+                    }
+                    if (_after != null && _after.value().length > 0) {
+                        _meta.afterIntercepts.addAll(Arrays.asList(_after.value()));
+                    }
+                    //
+                    ContextParam _ctxParam = _package.getAnnotation(ContextParam.class);
+                    if (_ctxParam != null) {
+                        _meta.getContextParams().add(_ctxParam);
+                    }
+                }
+            }
+        }
+    }
+
+    public void registerInterceptPackage(String name, String setting) {
+        if (StringUtils.isNotBlank(name) && StringUtils.isNotBlank(setting)) {
+            InterceptPackageMeta _meta = __packages.get(name);
+            if (_meta == null) {
+                _meta = new InterceptPackageMeta(name);
+                __packages.put(name, _meta);
+            }
+            String[] _settingArr = StringUtils.split(setting, "|");
+            if (_settingArr != null) {
+                for (String _item : _settingArr) {
+                    String[] _itemArr = StringUtils.split(_item, ":");
+                    if (_itemArr != null) {
+                        if (_itemArr.length == 1) {
+                            Class<? extends IInterceptor> _class = __doGetInterceptorClass(_itemArr[0]);
+                            if (_class != null) {
+                                _meta.beforeIntercepts.add(_class);
+                                _meta.afterIntercepts.add(_class);
+                            }
+                        } else if (StringUtils.equalsIgnoreCase(_itemArr[0], "before")) {
+                            Class<? extends IInterceptor> _class = __doGetInterceptorClass(_itemArr[1]);
+                            if (_class != null) {
+                                _meta.beforeIntercepts.add(_class);
+                            }
+                        } else if (StringUtils.equalsIgnoreCase(_itemArr[0], "after")) {
+                            Class<? extends IInterceptor> _class = __doGetInterceptorClass(_itemArr[1]);
+                            if (_class != null) {
+                                _meta.afterIntercepts.add(_class);
+                            }
+                        }
+                    }
+                }
+            }
+        }
     }
 
     public void registerInterceptGlobal(String className) {
@@ -155,6 +228,35 @@ public class InterceptSettings {
                 __settings.put(_meta.toString(), _meta);
             }
         }
+    }
+
+    public List<InterceptPackageMeta> getInterceptPackages(Class<?> targetClass) {
+        List<InterceptPackageMeta> _returnValue = new ArrayList<InterceptPackageMeta>();
+        String _packageName = targetClass.getPackage().getName();
+        if (__packages.containsKey(_packageName)) {
+            _returnValue.add(0, __packages.get(_packageName));
+        }
+        while (StringUtils.contains(_packageName, '.')) {
+            _packageName = StringUtils.substringBeforeLast(_packageName, ".");
+            if (__packages.containsKey(_packageName)) {
+                _returnValue.add(0, __packages.get(_packageName));
+            }
+        }
+        return _returnValue;
+    }
+
+    public boolean hasInterceptPackages(Class<?> targetClass) {
+        String _packageName = targetClass.getPackage().getName();
+        if (__packages.containsKey(_packageName)) {
+            return true;
+        }
+        while (StringUtils.contains(_packageName, '.')) {
+            _packageName = StringUtils.substringBeforeLast(_packageName, ".");
+            if (__packages.containsKey(_packageName)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public boolean hasInterceptSettings(Class<?> targetClass, Method targetMethod) {
@@ -276,6 +378,38 @@ public class InterceptSettings {
         }
         //
         return _flag ? _results : classes;
+    }
+
+    static class InterceptPackageMeta {
+        private String packageName;
+        private List<Class<? extends IInterceptor>> beforeIntercepts;
+        private List<Class<? extends IInterceptor>> afterIntercepts;
+
+        private List<ContextParam> contextParams;
+
+        public InterceptPackageMeta(String packageName) {
+            this.packageName = packageName;
+            beforeIntercepts = new ArrayList<Class<? extends IInterceptor>>();
+            afterIntercepts = new ArrayList<Class<? extends IInterceptor>>();
+            //
+            contextParams = new ArrayList<ContextParam>();
+        }
+
+        public String getPackageName() {
+            return packageName;
+        }
+
+        public List<Class<? extends IInterceptor>> getBeforeIntercepts() {
+            return beforeIntercepts;
+        }
+
+        public List<Class<? extends IInterceptor>> getAfterIntercepts() {
+            return afterIntercepts;
+        }
+
+        public List<ContextParam> getContextParams() {
+            return contextParams;
+        }
     }
 
     static class InterceptSettingMeta {

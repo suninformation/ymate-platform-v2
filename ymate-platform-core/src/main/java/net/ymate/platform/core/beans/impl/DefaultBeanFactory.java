@@ -193,8 +193,8 @@ public class DefaultBeanFactory implements IBeanFactory {
         if (!__packageNames.isEmpty()) for (String _packageName : __packageNames) {
             List<Class<?>> _classes = this.__beanLoader.load(_packageName);
             for (Class<?> _class : _classes) {
-                // 不扫描注解、枚举和接口类，被声明@Ingored注解的类也将被忽略
-                if (!_class.isAnnotation() && !_class.isEnum() && !_class.isInterface() && !_class.isAnnotationPresent(Ignored.class)) {
+                // 不扫描注解、枚举类，被声明@Ingored注解的类也将被忽略，因为需要处理package-info信息，所以放开接口限制
+                if (!_class.isAnnotation() && !_class.isEnum() /* && !_class.isInterface() */ && !_class.isAnnotationPresent(Ignored.class)) {
                     Annotation[] _annotations = _class.getAnnotations();
                     if (_annotations != null && _annotations.length > 0) {
                         for (Annotation _anno : _annotations) {

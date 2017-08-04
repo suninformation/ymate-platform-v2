@@ -135,6 +135,17 @@ public final class ConfigBuilder {
                     }
                 }
             }
+            //
+            _prefix = "ymp.intercept.packages.";
+            for (Object _key : properties.keySet()) {
+                if (StringUtils.startsWith((String) _key, _prefix)) {
+                    String _cfgKey = StringUtils.substring((String) _key, _prefix.length());
+                    String _cfgValue = properties.getProperty((String) _key);
+                    if (StringUtils.isNotBlank(_cfgValue)) {
+                        _builder.__interceptSettings.registerInterceptPackage(_cfgKey, _cfgValue);
+                    }
+                }
+            }
         }
         //
         return _builder;

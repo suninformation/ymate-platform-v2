@@ -13,18 +13,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.ymate.platform.core.beans.annotation;
+package net.ymate.platform.core.handle;
 
-import java.lang.annotation.*;
+import net.ymate.platform.core.YMP;
+import net.ymate.platform.core.beans.IBeanHandler;
 
 /**
- * @author 刘镇 (suninformation@163.com) on 15/11/12 下午3:43
+ * @author 刘镇 (suninformation@163.com) on 2017/8/3 下午6:45
  * @version 1.0
  */
-@Target({ElementType.PACKAGE, ElementType.TYPE, ElementType.METHOD})
-@Retention(RetentionPolicy.RUNTIME)
-@Documented
-public @interface ContextParam {
+public class PackagesHandler implements IBeanHandler {
 
-    ParamItem[] value();
+    private YMP __owner;
+
+    public PackagesHandler(YMP owner) {
+        __owner = owner;
+    }
+
+    public Object handle(Class<?> targetClass) throws Exception {
+        if (targetClass.isInterface() && targetClass.getSimpleName().equalsIgnoreCase("package-info")) {
+            __owner.getConfig().getInterceptSettings().registerInterceptPackage(targetClass);
+        }
+        return null;
+    }
 }

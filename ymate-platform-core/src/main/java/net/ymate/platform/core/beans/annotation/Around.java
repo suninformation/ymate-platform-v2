@@ -25,7 +25,7 @@ import java.lang.annotation.*;
  * @author 刘镇 (suninformation@163.com) on 17/6/23 下午4:19
  * @version 1.0
  */
-@Target({ElementType.TYPE, ElementType.METHOD})
+@Target({ElementType.PACKAGE, ElementType.TYPE, ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
 public @interface Around {

@@ -16,17 +16,17 @@
 package net.ymate.platform.core.beans.intercept;
 
 import net.ymate.platform.core.YMP;
-import net.ymate.platform.core.beans.annotation.*;
+import net.ymate.platform.core.beans.annotation.ContextParam;
+import net.ymate.platform.core.beans.annotation.Ignored;
+import net.ymate.platform.core.beans.annotation.Order;
+import net.ymate.platform.core.beans.annotation.Proxy;
 import net.ymate.platform.core.beans.proxy.IProxy;
 import net.ymate.platform.core.beans.proxy.IProxyChain;
 import org.apache.commons.codec.digest.DigestUtils;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -38,19 +38,14 @@ import java.util.concurrent.ConcurrentHashMap;
 @Proxy(order = @Order(-999))
 public class InterceptProxy implements IProxy {
 
-    private static Map<String, List<Class<? extends IInterceptor>>> __beforeInterceptsCache;
+    private static Map<String, InterceptMeta> __interceptMetasCache;
 
-    private static Map<String, List<Class<? extends IInterceptor>>> __afterInterceptsCache;
-
-    private static final Object __beforeCacheLocker = new Object();
-
-    private static final Object __afterCacheLocker = new Object();
+    private static final Object __cacheLocker = new Object();
 
     private static final Set<String> __excludedMethodNames;
 
     static {
-        __beforeInterceptsCache = new ConcurrentHashMap<String, List<Class<? extends IInterceptor>>>();
-        __afterInterceptsCache = new ConcurrentHashMap<String, List<Class<? extends IInterceptor>>>();
+        __interceptMetasCache = new ConcurrentHashMap<String, InterceptMeta>();
         //
         __excludedMethodNames = new HashSet<String>();
         for (Method _method : Object.class.getDeclaredMethods()) {
@@ -67,23 +62,16 @@ public class InterceptProxy implements IProxy {
             return proxyChain.doProxyChain();
         }
         //
-        boolean _hasInterceptSettings = __hasInterceptSettings(proxyChain.getProxyFactory().getOwner(), proxyChain.getTargetClass(), proxyChain.getTargetMethod());
-        Map<String, String> _contextParams = null;
-        // 尝试处理@Around和@Before注解
-        if (proxyChain.getTargetClass().isAnnotationPresent(Before.class)
-                || proxyChain.getTargetClass().isAnnotationPresent(Around.class)
-                || proxyChain.getTargetMethod().isAnnotationPresent(Before.class)
-                || proxyChain.getTargetMethod().isAnnotationPresent(Around.class) || _hasInterceptSettings) {
-
-            _contextParams = InterceptAnnoHelper.getContextParams(proxyChain.getProxyFactory().getOwner(), proxyChain.getTargetClass(), proxyChain.getTargetMethod());
-
+        InterceptMeta _interceptMeta = __doGetInterceptMeta(proxyChain.getProxyFactory().getOwner(), proxyChain.getTargetClass(), proxyChain.getTargetMethod());
+        //
+        if (_interceptMeta.hasBeforeIntercepts()) {
             InterceptContext _context = new InterceptContext(IInterceptor.Direction.BEFORE,
                     proxyChain.getProxyFactory().getOwner(),
                     proxyChain.getTargetObject(),
                     proxyChain.getTargetMethod(),
-                    proxyChain.getMethodParams(), _contextParams);
+                    proxyChain.getMethodParams(), _interceptMeta.getContextParams());
             //
-            for (Class<? extends IInterceptor> _interceptClass : __doGetBeforeIntercepts(proxyChain.getProxyFactory().getOwner(), proxyChain.getTargetClass(), proxyChain.getTargetMethod())) {
+            for (Class<? extends IInterceptor> _interceptClass : _interceptMeta.getBeforeIntercepts()) {
                 IInterceptor _interceptor = _interceptClass.newInstance();
                 // 执行前置拦截器，若其结果对象不为空则返回并停止执行
                 Object _resultObj = _interceptor.intercept(_context);
@@ -92,26 +80,19 @@ public class InterceptProxy implements IProxy {
                 }
             }
         }
-        // 若前置拦截器未返回结果，则正常执行目标方法
+        //
         Object _returnValue = proxyChain.doProxyChain();
-        // 尝试处理@Around和@After注解
-        if (proxyChain.getTargetClass().isAnnotationPresent(After.class)
-                || proxyChain.getTargetClass().isAnnotationPresent(Around.class)
-                || proxyChain.getTargetMethod().isAnnotationPresent(After.class)
-                || proxyChain.getTargetMethod().isAnnotationPresent(Around.class) || _hasInterceptSettings) {
-
-            if (_contextParams == null) {
-                _contextParams = InterceptAnnoHelper.getContextParams(proxyChain.getProxyFactory().getOwner(), proxyChain.getTargetClass(), proxyChain.getTargetMethod());
-            }
-            // 初始化拦截器上下文对象，并将当前方法的执行结果对象赋予后置拦截器使用
+        //
+        if (_interceptMeta.hasAfterIntercepts()) {
             InterceptContext _context = new InterceptContext(IInterceptor.Direction.AFTER,
                     proxyChain.getProxyFactory().getOwner(),
                     proxyChain.getTargetObject(),
                     proxyChain.getTargetMethod(),
-                    proxyChain.getMethodParams(), _contextParams);
+                    proxyChain.getMethodParams(), _interceptMeta.getContextParams());
+            // 初始化拦截器上下文对象，并将当前方法的执行结果对象赋予后置拦截器使用
             _context.setResultObject(_returnValue);
             //
-            for (Class<? extends IInterceptor> _interceptClass : __doGetAfterIntercepts(proxyChain.getProxyFactory().getOwner(), proxyChain.getTargetClass(), proxyChain.getTargetMethod())) {
+            for (Class<? extends IInterceptor> _interceptClass : _interceptMeta.getAfterIntercepts()) {
                 IInterceptor _interceptor = _interceptClass.newInstance();
                 // 执行后置拦截器，所有后置拦截器的执行结果都将被忽略
                 _interceptor.intercept(_context);
@@ -120,51 +101,95 @@ public class InterceptProxy implements IProxy {
         return _returnValue;
     }
 
-    private boolean __hasInterceptSettings(YMP owner, Class<?> targetClass, Method targetMethod) {
-        return owner.getConfig().isInterceptSettingsEnabled() && owner.getConfig().getInterceptSettings().hasInterceptSettings(targetClass, targetMethod);
-    }
-
-    private List<Class<? extends IInterceptor>> __doGetBeforeIntercepts(YMP owner, Class<?> targetClass, Method targetMethod) {
-        String _cacheKey = DigestUtils.md5Hex(targetClass.toString() + targetMethod.toString());
+    private InterceptMeta __doGetInterceptMeta(YMP owner, Class<?> targetClass, Method targetMethod) {
+        String _id = DigestUtils.md5Hex(targetClass.toString() + targetMethod.toString());
         //
-        if (__beforeInterceptsCache.containsKey(_cacheKey)) {
-            return __beforeInterceptsCache.get(_cacheKey);
+        if (__interceptMetasCache.containsKey(_id)) {
+            return __interceptMetasCache.get(_id);
         }
-        synchronized (__beforeCacheLocker) {
-            List<Class<? extends IInterceptor>> _classes = __beforeInterceptsCache.get(_cacheKey);
-            if (_classes != null) {
-                return _classes;
+        synchronized (__cacheLocker) {
+            InterceptMeta _meta = __interceptMetasCache.get(_id);
+            if (_meta == null) {
+                _meta = new InterceptMeta(owner, _id, targetClass, targetMethod);
+                __interceptMetasCache.put(_id, _meta);
             }
-            _classes = InterceptAnnoHelper.getBeforeIntercepts(targetClass, targetMethod);
-            //
-            if (owner.getConfig().isInterceptSettingsEnabled()) {
-                _classes = owner.getConfig().getInterceptSettings().doBeforeSet(_classes, targetClass, targetMethod);
-            }
-            __beforeInterceptsCache.put(_cacheKey, _classes);
-            //
-            return _classes;
+            return _meta;
         }
     }
 
-    private List<Class<? extends IInterceptor>> __doGetAfterIntercepts(YMP owner, Class<?> targetClass, Method targetMethod) {
-        String _cacheKey = DigestUtils.md5Hex(targetClass.toString() + targetMethod.toString());
+    static class InterceptMeta {
+
+        private String id;
+        private Class<?> targetClass;
+        private Method targetMethod;
         //
-        if (__afterInterceptsCache.containsKey(_cacheKey)) {
-            return __afterInterceptsCache.get(_cacheKey);
-        }
-        synchronized (__afterCacheLocker) {
-            List<Class<? extends IInterceptor>> _classes = __afterInterceptsCache.get(_cacheKey);
-            if (_classes != null) {
-                return _classes;
+        private List<Class<? extends IInterceptor>> beforeIntercepts;
+        private List<Class<? extends IInterceptor>> afterIntercepts;
+        //
+        private Map<String, String> contextParams;
+
+        InterceptMeta(YMP owner, String id, Class<?> targetClass, Method targetMethod) {
+            this.id = id;
+            this.targetClass = targetClass;
+            this.targetMethod = targetMethod;
+            this.contextParams = new HashMap<String, String>();
+            //
+            this.beforeIntercepts = InterceptAnnoHelper.getBeforeIntercepts(targetClass, targetMethod);
+            this.afterIntercepts = InterceptAnnoHelper.getAfterIntercepts(targetClass, targetMethod);
+            //
+            InterceptSettings _interceptSettings = owner.getConfig().getInterceptSettings();
+            //
+            for (InterceptSettings.InterceptPackageMeta _item : _interceptSettings.getInterceptPackages(targetClass)) {
+                if (!_item.getBeforeIntercepts().isEmpty()) {
+                    this.beforeIntercepts.addAll(0, _item.getBeforeIntercepts());
+                }
+                if (!_item.getAfterIntercepts().isEmpty()) {
+                    this.afterIntercepts.addAll(0, _item.getAfterIntercepts());
+                }
+                //
+                for (ContextParam _ctxParam : _item.getContextParams()) {
+                    InterceptAnnoHelper.parseContextParamValue(owner, _ctxParam, this.contextParams);
+                }
             }
-            _classes = InterceptAnnoHelper.getAfterIntercepts(targetClass, targetMethod);
+            //
+            this.contextParams.putAll(InterceptAnnoHelper.getContextParams(owner, targetClass, targetMethod));
             //
             if (owner.getConfig().isInterceptSettingsEnabled()) {
-                _classes = owner.getConfig().getInterceptSettings().doAfterSet(_classes, targetClass, targetMethod);
+                this.beforeIntercepts = _interceptSettings.doBeforeSet(this.beforeIntercepts, targetClass, targetMethod);
+                this.afterIntercepts = _interceptSettings.doAfterSet(this.afterIntercepts, targetClass, targetMethod);
             }
-            __afterInterceptsCache.put(_cacheKey, _classes);
-            //
-            return _classes;
+        }
+
+        public String getId() {
+            return id;
+        }
+
+        public Class<?> getTargetClass() {
+            return targetClass;
+        }
+
+        public Method getTargetMethod() {
+            return targetMethod;
+        }
+
+        public List<Class<? extends IInterceptor>> getBeforeIntercepts() {
+            return beforeIntercepts;
+        }
+
+        public List<Class<? extends IInterceptor>> getAfterIntercepts() {
+            return afterIntercepts;
+        }
+
+        public Map<String, String> getContextParams() {
+            return contextParams;
+        }
+
+        public boolean hasBeforeIntercepts() {
+            return !beforeIntercepts.isEmpty();
+        }
+
+        public boolean hasAfterIntercepts() {
+            return !afterIntercepts.isEmpty();
         }
     }
 }

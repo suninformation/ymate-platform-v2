@@ -310,6 +310,29 @@ YMP框架的AOP是基于CGLIB的MethodInterceptor实现的拦截，通过以下�
 
 **注**：`@ContextParam`注解的value属性允许通过$xxx的格式支持从框架全局参数中获取xxx的值
 
+##### 包拦截器配置
+
+YMP框架支持将`@Before`、`@After`、`@Around`和`@ContextParam`注解在`package-info.java`类中声明，声明后该拦截器配置将作用于其所在包下所有类(子包将继承父级包配置)。
+
+拦截器的执行顺序: `package` \> `class` \> `method`
+
+通过`@Packages`注解让框架自动扫描`package-info.java`类并完成配置注册。
+
+示例: 
+
+> 本例将为`net.ymate.demo.controller`包指定拦截器配置，其`package-info.java`内容如下：
+
+    @Packages
+    @Before(DemoInterceptor.class)
+    @ContextParam(@ParamItem(key = "param", value = "helloworld"))
+    package net.ymate.demo.controller;
+    
+    import net.ymate.demo.intercept.DemoInterceptor;
+    import net.ymate.platform.core.beans.annotation.Before;
+    import net.ymate.platform.core.beans.annotation.ContextParam;
+    import net.ymate.platform.core.beans.annotation.Packages;
+    import net.ymate.platform.core.beans.annotation.ParamItem;
+
 ##### 拦截器全局规则设置
 
 有些时候，我们需要对指定的拦截器或某些类和方法的拦截器配置进行调整，往往我们要修改代码、编译打包并重新部署，这样做显然很麻烦！
@@ -322,6 +345,9 @@ YMP框架的AOP是基于CGLIB的MethodInterceptor实现的拦截，通过以下�
     
     # 是否开启拦截器全局规则设置, 默认为false
     ymp.intercept_settings_enabled=true
+    
+    # 为指定包配置拦截器, 格式: ymp.intercept.packages.<包名>=<[before:|after:]拦截器类名> (通过'|'分隔多个拦截器)
+    ymp.intercept.packages.net.ymate.demo.controller=before:net.ymate.demo.intercept.UserSessionInterceptor
     
     # 全局设置指定的拦截器状态为禁止执行, 仅当取值为disabled时生效, 格式: ymp.intercept.globals.<拦截器类名>=disabled
     ymp.intercept.globals.net.ymate.framework.webmvc.intercept.UserSessionAlreadyInterceptor=disabled
