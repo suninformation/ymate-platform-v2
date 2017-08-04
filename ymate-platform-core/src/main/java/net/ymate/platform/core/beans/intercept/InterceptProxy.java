@@ -16,10 +16,7 @@
 package net.ymate.platform.core.beans.intercept;
 
 import net.ymate.platform.core.YMP;
-import net.ymate.platform.core.beans.annotation.ContextParam;
-import net.ymate.platform.core.beans.annotation.Ignored;
-import net.ymate.platform.core.beans.annotation.Order;
-import net.ymate.platform.core.beans.annotation.Proxy;
+import net.ymate.platform.core.beans.annotation.*;
 import net.ymate.platform.core.beans.proxy.IProxy;
 import net.ymate.platform.core.beans.proxy.IProxyChain;
 import org.apache.commons.codec.digest.DigestUtils;
@@ -107,31 +104,41 @@ public class InterceptProxy implements IProxy {
         if (__interceptMetasCache.containsKey(_id)) {
             return __interceptMetasCache.get(_id);
         }
-        synchronized (__cacheLocker) {
-            InterceptMeta _meta = __interceptMetasCache.get(_id);
-            if (_meta == null) {
-                _meta = new InterceptMeta(owner, _id, targetClass, targetMethod);
-                __interceptMetasCache.put(_id, _meta);
+        if (targetClass.isAnnotationPresent(Before.class) || targetClass.isAnnotationPresent(After.class) || targetClass.isAnnotationPresent(Around.class)
+                || targetMethod.isAnnotationPresent(Before.class) || targetMethod.isAnnotationPresent(After.class) || targetMethod.isAnnotationPresent(Around.class)
+                || owner.getConfig().getInterceptSettings().hasInterceptPackages(targetClass)) {
+            synchronized (__cacheLocker) {
+                InterceptMeta _meta = __interceptMetasCache.get(_id);
+                if (_meta == null) {
+                    _meta = new InterceptMeta(owner, _id, targetClass, targetMethod);
+                    __interceptMetasCache.put(_id, _meta);
+                }
+                return _meta;
             }
-            return _meta;
         }
+        return InterceptMeta.__DEFAULT;
     }
 
     static class InterceptMeta {
 
+        static InterceptMeta __DEFAULT = new InterceptMeta("default");
+
         private String id;
-        private Class<?> targetClass;
-        private Method targetMethod;
         //
         private List<Class<? extends IInterceptor>> beforeIntercepts;
         private List<Class<? extends IInterceptor>> afterIntercepts;
         //
         private Map<String, String> contextParams;
 
+        InterceptMeta(String id) {
+            this.id = id;
+            this.beforeIntercepts = Collections.emptyList();
+            this.afterIntercepts = Collections.emptyList();
+            this.contextParams = Collections.emptyMap();
+        }
+
         InterceptMeta(YMP owner, String id, Class<?> targetClass, Method targetMethod) {
             this.id = id;
-            this.targetClass = targetClass;
-            this.targetMethod = targetMethod;
             this.contextParams = new HashMap<String, String>();
             //
             this.beforeIntercepts = InterceptAnnoHelper.getBeforeIntercepts(targetClass, targetMethod);
@@ -160,35 +167,27 @@ public class InterceptProxy implements IProxy {
             }
         }
 
-        public String getId() {
+        String getId() {
             return id;
         }
 
-        public Class<?> getTargetClass() {
-            return targetClass;
-        }
-
-        public Method getTargetMethod() {
-            return targetMethod;
-        }
-
-        public List<Class<? extends IInterceptor>> getBeforeIntercepts() {
+        List<Class<? extends IInterceptor>> getBeforeIntercepts() {
             return beforeIntercepts;
         }
 
-        public List<Class<? extends IInterceptor>> getAfterIntercepts() {
+        List<Class<? extends IInterceptor>> getAfterIntercepts() {
             return afterIntercepts;
         }
 
-        public Map<String, String> getContextParams() {
+        Map<String, String> getContextParams() {
             return contextParams;
         }
 
-        public boolean hasBeforeIntercepts() {
+        boolean hasBeforeIntercepts() {
             return !beforeIntercepts.isEmpty();
         }
 
-        public boolean hasAfterIntercepts() {
+        boolean hasAfterIntercepts() {
             return !afterIntercepts.isEmpty();
         }
     }
