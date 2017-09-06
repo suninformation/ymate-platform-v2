@@ -39,6 +39,15 @@ JDBC持久化模块针对关系型数据库(RDBMS)数据存取的一套简单解
     # 是否显示执行的SQL语句，默认为false
     ymp.configs.persistence.jdbc.ds.default.show_sql=
 
+    # 是否开启堆栈跟踪，默认为false
+    ymp.configs.persistence.jdbc.ds.default.stack_traces=
+
+    # 堆栈跟踪层级深度，默认为0(即全部)
+    ymp.configs.persistence.jdbc.ds.default.stack_trace_depth=
+
+    # 堆栈跟踪包名前缀过滤，默认为空
+    ymp.configs.persistence.jdbc.ds.default.stack_trace_package=
+
     # 数据库表前缀名称，默认为空
     ymp.configs.persistence.jdbc.ds.default.table_prefix=
 

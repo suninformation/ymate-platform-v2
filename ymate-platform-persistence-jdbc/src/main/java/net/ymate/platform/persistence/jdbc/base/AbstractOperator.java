@@ -17,6 +17,7 @@ package net.ymate.platform.persistence.jdbc.base;
 
 import net.ymate.platform.core.util.ExpressionUtils;
 import net.ymate.platform.persistence.base.Type;
+import net.ymate.platform.persistence.jdbc.DataSourceCfgMeta;
 import net.ymate.platform.persistence.jdbc.IConnectionHolder;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.time.StopWatch;
@@ -77,12 +78,30 @@ public abstract class AbstractOperator implements IOperator {
                 _time.stop();
                 this.expenseTime = _time.getTime();
                 //
-                if (this.connectionHolder.getDataSourceCfgMeta().isShowSQL()) {
-                    _LOG.info(ExpressionUtils.bind("[${sql}]${param}[${count}][${time}]")
+                DataSourceCfgMeta _meta = this.connectionHolder.getDataSourceCfgMeta();
+                if (_meta.isShowSQL()) {
+                    String _logStr = ExpressionUtils.bind("[${sql}]${param}[${count}][${time}]")
                             .set("sql", StringUtils.defaultIfBlank(this.sql, "@NULL"))
                             .set("param", __doSerializeParameters())
                             .set("count", _effectCounts + "")
-                            .set("time", this.expenseTime + "ms").getResult());
+                            .set("time", this.expenseTime + "ms").getResult();
+                    StringBuilder _stackSB = new StringBuilder(_logStr);
+                    if (_meta.isStackTraces()) {
+                        boolean _packageFilter = StringUtils.isNotBlank(_meta.getStackTracePackage());
+                        StackTraceElement[] _stacks = new Throwable().getStackTrace();
+                        if (_stacks != null && _stacks.length > 0) {
+                            int _depth = _meta.getStackTraceDepth() <= 0 ? _stacks.length : (_meta.getStackTraceDepth() > _stacks.length ? _stacks.length : _meta.getStackTraceDepth());
+                            if (_depth > 0) {
+                                for (int _idx = 0; _idx < _depth; _idx++) {
+                                    if (_packageFilter && (!StringUtils.startsWith(_stacks[_idx].getClassName(), _meta.getStackTracePackage()) || StringUtils.contains(_stacks[_idx].getClassName(), "$$EnhancerByCGLIB$$"))) {
+                                        continue;
+                                    }
+                                    _stackSB.append("\n\t--> ").append(_stacks[_idx]);
+                                }
+                            }
+                        }
+                    }
+                    _LOG.info(_stackSB.toString());
                 }
             }
         }

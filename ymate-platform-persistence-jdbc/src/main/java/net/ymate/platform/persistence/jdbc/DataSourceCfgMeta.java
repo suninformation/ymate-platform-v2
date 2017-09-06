@@ -83,6 +83,21 @@ public class DataSourceCfgMeta {
     private boolean isShowSQL;
 
     /**
+     * 是否开启堆栈跟踪，默认为false
+     */
+    private boolean isStackTraces;
+
+    /**
+     * 堆栈跟踪层级深度，默认为0(即全部)
+     */
+    private int stackTraceDepth;
+
+    /**
+     * 堆栈跟踪包名前缀过滤，默认为空
+     */
+    private String stackTracePackage;
+
+    /**
      * 数据库密码处理器，可选参数，用于对已加密码数据库访问密码进行解密，默认为空
      */
     private Class<? extends IPasswordProcessor> passwordClass;
@@ -140,6 +155,30 @@ public class DataSourceCfgMeta {
 
     public void setIsShowSQL(boolean isShowSQL) {
         this.isShowSQL = isShowSQL;
+    }
+
+    public boolean isStackTraces() {
+        return isStackTraces;
+    }
+
+    public void setIsStackTraces(boolean isStackTraces) {
+        this.isStackTraces = isStackTraces;
+    }
+
+    public int getStackTraceDepth() {
+        return stackTraceDepth;
+    }
+
+    public void setStackTraceDepth(int stackTraceDepth) {
+        this.stackTraceDepth = stackTraceDepth;
+    }
+
+    public String getStackTracePackage() {
+        return stackTracePackage;
+    }
+
+    public void setStackTracePackage(String stackTracePackage) {
+        this.stackTracePackage = stackTracePackage;
     }
 
     public String getTablePrefix() {

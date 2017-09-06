@@ -19,6 +19,7 @@ import net.ymate.platform.core.YMP;
 import net.ymate.platform.core.lang.BlurObject;
 import net.ymate.platform.core.support.IPasswordProcessor;
 import net.ymate.platform.core.util.ClassUtils;
+import net.ymate.platform.core.util.RuntimeUtils;
 import net.ymate.platform.persistence.jdbc.*;
 import org.apache.commons.lang.StringUtils;
 
@@ -67,15 +68,7 @@ public class DefaultModuleCfg implements IDatabaseModuleCfg {
      */
     @SuppressWarnings("unchecked")
     protected DataSourceCfgMeta __doParserDataSourceCfgMeta(String dsName, Map<String, String> _moduleCfgs) throws Exception {
-        Map<String, String> _dataSourceCfgs = new HashMap<String, String>();
-        for (Map.Entry<String, String> _cfgEntry : _moduleCfgs.entrySet()) {
-            String _key = _cfgEntry.getKey();
-            String _prefix = "ds." + dsName + ".";
-            if (StringUtils.startsWith(_key, _prefix)) {
-                String _cfgKey = StringUtils.substring(_key, _prefix.length());
-                _dataSourceCfgs.put(_cfgKey, _cfgEntry.getValue());
-            }
-        }
+        Map<String, String> _dataSourceCfgs = RuntimeUtils.keyStartsWith(_moduleCfgs, "ds." + dsName + ".");
         if (!_dataSourceCfgs.isEmpty()) {
             //
             DataSourceCfgMeta _meta = new DataSourceCfgMeta();
@@ -86,6 +79,9 @@ public class DefaultModuleCfg implements IDatabaseModuleCfg {
             if (StringUtils.isNotBlank(_meta.getConnectionUrl()) && StringUtils.isNotBlank(_meta.getUsername())) {
                 // 基础参数
                 _meta.setIsShowSQL(new BlurObject(_dataSourceCfgs.get("show_sql")).toBooleanValue());
+                _meta.setIsStackTraces(new BlurObject(_dataSourceCfgs.get("stack_traces")).toBooleanValue());
+                _meta.setStackTraceDepth(new BlurObject(_dataSourceCfgs.get("stack_trace_depth")).toIntValue());
+                _meta.setStackTracePackage(_dataSourceCfgs.get("stack_trace_package"));
                 _meta.setTablePrefix(_dataSourceCfgs.get("table_prefix"));
                 // 数据源适配器
                 String _adapterClassName = JDBC.DS_ADAPTERS.get(StringUtils.defaultIfBlank(_dataSourceCfgs.get("adapter_class"), "default"));
