@@ -19,6 +19,7 @@ import net.ymate.platform.core.YMP;
 import net.ymate.platform.core.lang.BlurObject;
 import net.ymate.platform.core.support.IPasswordProcessor;
 import net.ymate.platform.core.util.ClassUtils;
+import net.ymate.platform.core.util.RuntimeUtils;
 import net.ymate.platform.persistence.redis.IRedis;
 import net.ymate.platform.persistence.redis.IRedisModuleCfg;
 import net.ymate.platform.persistence.redis.RedisDataSourceCfgMeta;
@@ -57,23 +58,11 @@ public class RedisModuleCfg implements IRedisModuleCfg {
         }
     }
 
-    private Map<String, String> __doGetCfgs(Map<String, String> _moduleCfgs, String keyPrefix) {
-        Map<String, String> _returnValues = new HashMap<String, String>();
-        for (Map.Entry<String, String> _cfgEntry : _moduleCfgs.entrySet()) {
-            String _key = _cfgEntry.getKey();
-            if (StringUtils.startsWith(_key, keyPrefix)) {
-                String _cfgKey = StringUtils.substring(_key, keyPrefix.length());
-                _returnValues.put(_cfgKey, _cfgEntry.getValue());
-            }
-        }
-        return _returnValues;
-    }
-
     @SuppressWarnings("unchecked")
     protected RedisDataSourceCfgMeta __doParserDataSourceCfgMeta(String dsName, Map<String, String> _moduleCfgs) throws Exception {
         RedisDataSourceCfgMeta _meta = null;
         //
-        Map<String, String> _dataSourceCfgs = __doGetCfgs(_moduleCfgs, "ds." + dsName + ".");
+        Map<String, String> _dataSourceCfgs = RuntimeUtils.keyStartsWith(_moduleCfgs, "ds." + dsName + ".");
         //
 //        if (!_dataSourceCfgs.isEmpty()) {
         String _connectionType = StringUtils.defaultIfBlank(_dataSourceCfgs.get("connection_type"), "default");
@@ -83,7 +72,7 @@ public class RedisModuleCfg implements IRedisModuleCfg {
         Map<String, String> _tmpCfgs = null;
         if (_serverNames != null) {
             for (String _serverName : _serverNames) {
-                _tmpCfgs = __doGetCfgs(_dataSourceCfgs, "server." + _serverName + ".");
+                _tmpCfgs = RuntimeUtils.keyStartsWith(_dataSourceCfgs, "server." + _serverName + ".");
                 if (!_tmpCfgs.isEmpty()) {
                     ServerMeta _servMeta = new ServerMeta();
                     _servMeta.setName(_serverName);
@@ -112,7 +101,7 @@ public class RedisModuleCfg implements IRedisModuleCfg {
         }
         //
         GenericObjectPoolConfig _poolConfig = new GenericObjectPoolConfig();
-        _tmpCfgs = __doGetCfgs(_dataSourceCfgs, "pool.");
+        _tmpCfgs = RuntimeUtils.keyStartsWith(_dataSourceCfgs, "pool.");
         if (!_tmpCfgs.isEmpty()) {
             _poolConfig.setMinIdle(BlurObject.bind(StringUtils.defaultIfBlank(_tmpCfgs.get("min_idle"), GenericObjectPoolConfig.DEFAULT_MIN_IDLE + "")).toIntValue());
             _poolConfig.setMaxIdle(BlurObject.bind(StringUtils.defaultIfBlank(_tmpCfgs.get("max_idle"), GenericObjectPoolConfig.DEFAULT_MAX_IDLE + "")).toIntValue());

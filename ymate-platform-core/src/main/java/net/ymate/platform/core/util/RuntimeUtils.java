@@ -254,4 +254,15 @@ public class RuntimeUtils {
         return lastUsed - rt.totalMemory() + rt.freeMemory();
     }
 
+    public static Map<String, String> keyStartsWith(Map<String, String> map, String keyPrefix) {
+        Map<String, String> _returnValues = new HashMap<String, String>();
+        for (Map.Entry<String, String> _entry : map.entrySet()) {
+            String _key = _entry.getKey();
+            if (StringUtils.startsWith(_key, keyPrefix)) {
+                String _cfgKey = StringUtils.substring(_key, keyPrefix.length());
+                _returnValues.put(_cfgKey, _entry.getValue());
+            }
+        }
+        return _returnValues;
+    }
 }
