@@ -17,7 +17,6 @@ package net.ymate.platform.webmvc.handle;
 
 import net.ymate.platform.core.beans.IBeanHandler;
 import net.ymate.platform.webmvc.IWebMvc;
-import net.ymate.platform.webmvc.annotation.Controller;
 
 /**
  * 控制器类处理器
@@ -33,9 +32,8 @@ public class ControllerHandler implements IBeanHandler {
         __owner = owner;
     }
 
-    @SuppressWarnings("unchecked")
     public Object handle(Class<?> targetClass) throws Exception {
-        __owner.registerController((Class<? extends Controller>) targetClass);
+        __owner.registerController(targetClass);
         return null;
     }
 }

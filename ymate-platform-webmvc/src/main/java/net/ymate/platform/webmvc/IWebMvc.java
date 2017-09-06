@@ -49,7 +49,7 @@ public interface IWebMvc {
      * @return 返回是否有效注册
      * @throws Exception 可能产生的异常
      */
-    boolean registerController(Class<? extends Controller> targetClass) throws Exception;
+    boolean registerController(Class<?> targetClass) throws Exception;
 
     /**
      * 注册拦截器规则配置

@@ -140,26 +140,28 @@ public class WebMVC implements IModule, IWebMvc {
         return __owner;
     }
 
-    public boolean registerController(Class<? extends Controller> targetClass) throws Exception {
+    public boolean registerController(Class<?> targetClass) throws Exception {
         boolean _isValid = false;
-        for (Method _method : targetClass.getDeclaredMethods()) {
-            if (_method.isAnnotationPresent(RequestMapping.class)) {
-                RequestMeta _meta = new RequestMeta(this, targetClass, _method);
-                __moduleCfg.getRequestMappingParser().registerRequestMeta(_meta);
-                //
-                if (__owner.getConfig().isDevelopMode()) {
-                    _LOG.debug("--> " + _meta.getAllowMethods() + ": " + _meta.getMapping() + " : " + _meta.getTargetClass().getName() + "." + _meta.getMethod().getName());
+        if (targetClass.isAnnotationPresent(Controller.class)) {
+            for (Method _method : targetClass.getDeclaredMethods()) {
+                if (_method.isAnnotationPresent(RequestMapping.class)) {
+                    RequestMeta _meta = new RequestMeta(this, targetClass, _method);
+                    __moduleCfg.getRequestMappingParser().registerRequestMeta(_meta);
+                    //
+                    if (__owner.getConfig().isDevelopMode()) {
+                        _LOG.debug("--> " + _meta.getAllowMethods() + ": " + _meta.getMapping() + " : " + _meta.getTargetClass().getName() + "." + _meta.getMethod().getName());
+                    }
+                    //
+                    _isValid = true;
                 }
-                //
-                _isValid = true;
             }
-        }
-        //
-        if (_isValid) {
-            if (targetClass.getAnnotation(Controller.class).singleton()) {
-                __owner.registerBean(BeanMeta.create(targetClass.newInstance(), targetClass));
-            } else {
-                __owner.registerBean(BeanMeta.create(targetClass));
+            //
+            if (_isValid) {
+                if (targetClass.getAnnotation(Controller.class).singleton()) {
+                    __owner.registerBean(BeanMeta.create(targetClass.newInstance(), targetClass));
+                } else {
+                    __owner.registerBean(BeanMeta.create(targetClass));
+                }
             }
         }
         return _isValid;
