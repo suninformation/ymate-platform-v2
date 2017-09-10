@@ -14,7 +14,7 @@
         <dependency>
             <groupId>net.ymate.platform</groupId>
             <artifactId>ymate-platform-log</artifactId>
-            <version>2.0.1</version>
+            <version>2.0.2</version>
         </dependency>
 
 - log-jcl依赖配置
@@ -22,7 +22,7 @@
         <dependency>
             <groupId>net.ymate.platform</groupId>
             <artifactId>ymate-platform-log-jcl</artifactId>
-            <version>2.0.1</version>
+            <version>2.0.2</version>
         </dependency>
 
 - log-slf4j依赖配置
@@ -30,7 +30,7 @@
         <dependency>
             <groupId>net.ymate.platform</groupId>
             <artifactId>ymate-platform-log-slf4j</artifactId>
-            <version>2.0.1</version>
+            <version>2.0.2</version>
         </dependency>
 
 > **注**：请根据您项目的实际情况，在项目的pom.xml中添加相应配置，该模块已经默认引入核心包依赖，无需重复配置。

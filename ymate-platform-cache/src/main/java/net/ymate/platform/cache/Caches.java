@@ -40,7 +40,7 @@ import java.util.Map;
 @Module
 public class Caches implements IModule, ICaches {
 
-    public static final Version VERSION = new Version(2, 0, 1, Caches.class.getPackage().getImplementationVersion(), Version.VersionType.Release);
+    public static final Version VERSION = new Version(2, 0, 2, Caches.class.getPackage().getImplementationVersion(), Version.VersionType.Release);
 
     private static final Log _LOG = LogFactory.getLog(Caches.class);
 

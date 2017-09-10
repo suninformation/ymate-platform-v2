@@ -9,7 +9,7 @@
     <dependency>
         <groupId>net.ymate.platform</groupId>
         <artifactId>ymate-platform-plugin</artifactId>
-        <version>2.0.1</version>
+        <version>2.0.2</version>
     </dependency>
 
 > **注**：在项目的pom.xml中添加上述配置，该模块已经默认引入核心包依赖，无需重复配置。
