@@ -675,7 +675,7 @@ public class DefaultSession implements ISession {
         EntityMeta _meta = EntityMeta.createAndGet(entityClass);
         ExpressionUtils _exp = ExpressionUtils.bind("SELECT count(1) FROM ${table_name} ${where}")
                 .set("table_name", __dialect.buildTableName(__tablePrefix, _meta, shardingable))
-                .set("where", where.toString());
+                .set("where", where.toSQL());
         IQueryOperator<Object[]> _opt = new DefaultQueryOperator<Object[]>(_exp.getResult(), this.getConnectionHolder(), IResultSetHandler.ARRAY);
         for (Object _param : where.getParams().params()) {
             _opt.addParameter(_param);

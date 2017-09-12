@@ -102,10 +102,14 @@ public final class Where {
     }
 
     public String toSQL() {
+        StringBuilder _whereSB = new StringBuilder("");
         if (__cond != null && StringUtils.isNotBlank(__cond.toString())) {
-            return "WHERE ".concat(__cond.toString());
+            _whereSB.append("WHERE ").append(__cond.toString());
         }
-        return "";
+        if (__groupBy != null) {
+            _whereSB.append(" ").append(__groupBy);
+        }
+        return _whereSB.toString();
     }
 
     public Where param(Object param) {
@@ -165,10 +169,6 @@ public final class Where {
 
     @Override
     public String toString() {
-        StringBuilder _whereSB = new StringBuilder(toSQL());
-        if (__groupBy != null) {
-            _whereSB.append(" ").append(__groupBy);
-        }
-        return _whereSB.append(" ").append(__orderBy).toString();
+        return toSQL() + " " + __orderBy;
     }
 }
