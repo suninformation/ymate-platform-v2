@@ -283,6 +283,9 @@ YMP框架自v1.0开始就支持通过数据库表结构自动生成实体类代�
     # 是否添加类成员属性值状态变化注解，默认为false
     ymp.params.jdbc.use_state_support=
 
+    # 实体及属性命名过滤器接口实现类，默认为空
+    ymp.params.jdbc.named_filter_class=
+
     # 数据库名称(仅针对特定的数据库使用，如Oracle)，默认为空
     ymp.params.jdbc.db_name=
 
@@ -323,6 +326,8 @@ YMP框架自v1.0开始就支持通过数据库表结构自动生成实体类代�
 > - 如果你的工程中引用了很多的模块，在运行代码生成器时可以暂时通过ymp.excluded_modules参数排除掉；
 >
 > - 如果使用的JDBC驱动是`mysql-connector-java-6.x`及以上版本时，则必须配置`db_name`和`db_username`参数；
+>
+> - 实体及属性命名过滤器参数`named_filter_class`指定的类需要实现`IEntityNamedFilter`接口；
 
 了解了以上的配置后，直接运行代码生成器：
 
