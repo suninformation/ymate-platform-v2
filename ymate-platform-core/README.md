@@ -194,6 +194,120 @@ YMP框架初始化时将自动扫描由`autoscan_packages`参数配置的包路�
             }
         }
 
+也可以通过`@Injector`注解声明一个`IBeanInjector`接口实现类向框架注册自定义的注入处理逻辑，下面举例说明如何为注入对象添加包装器：
+
+- 示例：
+
+        // 定义一个业务接口
+        
+        public interface IInjectBean {
+        
+            String getName();
+        
+            void setName(String name);
+        }
+        
+        // 业务接口实现类
+        
+        @Bean
+        public class InjectBeanImpl implements IInjectBean {
+        
+            private String name;
+        
+            public String getName() {
+                return name;
+            }
+        
+            public void setName(String name) {
+                this.name = name;
+            }
+        }
+        
+        // 业务对象包装器类
+        
+        public class InjectBeanWrapper implements IInjectBean {
+        
+            private IInjectBean __targetBean;
+        
+            public InjectBeanWrapper(IInjectBean targetBean) {
+                __targetBean = targetBean;
+            }
+        
+            public String getName() {
+                return __targetBean.getName();
+            }
+        
+            public void setName(String name) {
+                __targetBean.setName(name);
+            }
+        }
+        
+        // 自定义一个注解
+                
+        @Target({ElementType.FIELD})
+        @Retention(RetentionPolicy.RUNTIME)
+        @Documented
+        public @interface Demo {
+        
+            String value();
+        }
+        
+        // 为注解编写自定义注入逻辑
+        
+        @Injector(Demo.class)
+        public class DemoBeanInjector implements IBeanInjector {
+        
+            public Object inject(IBeanFactory beanFactory, Annotation annotation, Class<?> targetClass, Field field, Object originInject) {
+                // 为从自定义注解取值做准备
+                Demo _anno = (Demo) annotation;
+                if (originInject == null) {
+                    // 若通过@Inject注入的对象不为空则为其赋值
+                    IInjectBean _bean = new InjectBeanImpl();
+                    _bean.setName(_anno.value());
+                    // 创建包装器
+                    originInject = new InjectBeanWrapper(_bean);
+                } else {
+                    // 直接创建包装器并赋值
+                    InjectBeanWrapper _wrapper = new InjectBeanWrapper((IInjectBean) originInject);
+                    _wrapper.setName(_anno.value());
+                    //
+                    originInject = _wrapper;
+                }
+                return originInject;
+            }
+        }
+
+- 测试代码：
+
+        @Bean
+        public class App {
+        
+            @Inject
+            @Demo("demo")
+            private IInjectBean __bean;
+        
+            public IInjectBean getBean() {
+                return __bean;
+            }
+        
+            public static void main(String[] args) throws Exception {
+                try {
+                    YMP.get().init();
+                    //
+                    App _app = YMP.get().getBean(App.class);
+                    IInjectBean _bean = _app.getBean();
+                    System.out.println(_bean.getName());
+                } finally {
+                    YMP.get().destroy();
+                }
+            }
+        }
+
+> 说明：
+>
+> - 当使用自定义注解进行依赖注入操作时可以忽略`@Inject`注解，若存在则优先执行`@Inject`注入并将此对象当作`IBeanInjector`接口方法参数传入；
+> - 当成员变量被声明多个自定义注入规则注解时（不推荐），根据框架加载顺序，仅执行首个注入规则；
+
 ##### 方法拦截（AOP）
 
 YMP框架的AOP是基于CGLIB的MethodInterceptor实现的拦截，通过以下注解进行配置：

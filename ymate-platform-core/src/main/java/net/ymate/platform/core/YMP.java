@@ -18,7 +18,9 @@ package net.ymate.platform.core;
 import net.ymate.platform.core.beans.BeanMeta;
 import net.ymate.platform.core.beans.IBeanFactory;
 import net.ymate.platform.core.beans.IBeanHandler;
+import net.ymate.platform.core.beans.IBeanInjector;
 import net.ymate.platform.core.beans.annotation.Bean;
+import net.ymate.platform.core.beans.annotation.Injector;
 import net.ymate.platform.core.beans.annotation.Packages;
 import net.ymate.platform.core.beans.annotation.Proxy;
 import net.ymate.platform.core.beans.impl.DefaultBeanFactory;
@@ -30,10 +32,7 @@ import net.ymate.platform.core.beans.proxy.IProxyFactory;
 import net.ymate.platform.core.event.Events;
 import net.ymate.platform.core.event.annotation.EventRegister;
 import net.ymate.platform.core.event.impl.DefaultEventConfig;
-import net.ymate.platform.core.handle.EventRegisterHandler;
-import net.ymate.platform.core.handle.ModuleHandler;
-import net.ymate.platform.core.handle.PackagesHandler;
-import net.ymate.platform.core.handle.ProxyHandler;
+import net.ymate.platform.core.handle.*;
 import net.ymate.platform.core.i18n.I18N;
 import net.ymate.platform.core.module.IModule;
 import net.ymate.platform.core.module.ModuleEvent;
@@ -143,6 +142,7 @@ public class YMP {
             __moduleFactory.registerHandler(Module.class, new ModuleHandler(this));
             __moduleFactory.registerHandler(Proxy.class, new ProxyHandler(this));
             __moduleFactory.registerHandler(EventRegister.class, new EventRegisterHandler(this));
+            __moduleFactory.registerHandler(Injector.class, new InjectorHandler(__beanFactory));
             // 设置自动扫描应用包路径
             __registerScanPackages(__moduleFactory);
             __registerScanPackages(__beanFactory);
@@ -242,7 +242,7 @@ public class YMP {
      * @param handler   注解对象处理器
      */
     public void registerHandler(Class<? extends Annotation> annoClass, IBeanHandler handler) {
-        if (annoClass.equals(Module.class) || annoClass.equals(Proxy.class) || annoClass.equals(EventRegister.class)) {
+        if (annoClass.equals(Module.class) || annoClass.equals(Proxy.class) || annoClass.equals(EventRegister.class) || annoClass.equals(Injector.class)) {
             _LOG.warn("Handler [" + annoClass.getSimpleName() + "] duplicate registration is not allowed");
             return;
         }
@@ -251,6 +251,10 @@ public class YMP {
 
     public void registerHandler(Class<? extends Annotation> annoClass) {
         registerHandler(annoClass, IBeanHandler.DEFAULT_HANDLER);
+    }
+
+    public void registerInjector(Class<? extends Annotation> annoClass, IBeanInjector injector) {
+        __beanFactory.registerInjector(annoClass, injector);
     }
 
     /**

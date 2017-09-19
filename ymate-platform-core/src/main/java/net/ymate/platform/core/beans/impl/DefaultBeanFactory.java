@@ -15,10 +15,7 @@
  */
 package net.ymate.platform.core.beans.impl;
 
-import net.ymate.platform.core.beans.BeanMeta;
-import net.ymate.platform.core.beans.IBeanFactory;
-import net.ymate.platform.core.beans.IBeanHandler;
-import net.ymate.platform.core.beans.IBeanLoader;
+import net.ymate.platform.core.beans.*;
 import net.ymate.platform.core.beans.annotation.*;
 import net.ymate.platform.core.beans.proxy.IProxy;
 import net.ymate.platform.core.beans.proxy.IProxyFactory;
@@ -50,6 +47,8 @@ public class DefaultBeanFactory implements IBeanFactory {
 
     private Map<Class<? extends Annotation>, IBeanHandler> __beanHandlerMap;
 
+    private Map<Class<? extends Annotation>, IBeanInjector> __beanInjectorMap;
+
     // 对象类型 -> 对象实例
     private Map<Class<?>, BeanMeta> __beanInstancesMap;
 
@@ -64,6 +63,7 @@ public class DefaultBeanFactory implements IBeanFactory {
         this.__packageNames = new ArrayList<String>();
         this.__excludedClassSet = new ArrayList<Class<?>>();
         this.__beanHandlerMap = new HashMap<Class<? extends Annotation>, IBeanHandler>();
+        this.__beanInjectorMap = new HashMap<Class<? extends Annotation>, IBeanInjector>();
         this.__beanInstancesMap = new HashMap<Class<?>, BeanMeta>();
         this.__beanInterfacesMap = new HashMap<Class<?>, Class<?>>();
     }
@@ -83,6 +83,15 @@ public class DefaultBeanFactory implements IBeanFactory {
 
     public void registerHandler(Class<? extends Annotation> annoClass) {
         registerHandler(annoClass, IBeanHandler.DEFAULT_HANDLER);
+    }
+
+    @Override
+    public void registerInjector(Class<? extends Annotation> annoClass, IBeanInjector injector) {
+        if (!__beanInjectorMap.containsKey(annoClass)) {
+            this.__beanInjectorMap.put(annoClass, injector);
+        } else {
+            _LOG.warn("Injector class [" + annoClass.getSimpleName() + "] duplicate registration is not allowed");
+        }
     }
 
     public void registerPackage(String packageName) {
@@ -319,20 +328,33 @@ public class DefaultBeanFactory implements IBeanFactory {
         Field[] _fields = targetClass.getDeclaredFields();
         if (_fields != null && _fields.length > 0) {
             for (Field _field : _fields) {
+                Object _injectObj = null;
                 if (_field.isAnnotationPresent(Inject.class)) {
-                    Object _injectObj = null;
                     if (_field.isAnnotationPresent(By.class)) {
                         By _injectBy = _field.getAnnotation(By.class);
                         _injectObj = this.getBean(_injectBy.value());
                     } else {
                         _injectObj = this.getBean(_field.getType());
                     }
-                    if (_injectObj != null) {
-                        _field.setAccessible(true);
-                        _field.set(targetObject, _injectObj);
-                    }
+                }
+                _injectObj = __tryInjector(targetClass, _field, _injectObj);
+                if (_injectObj != null) {
+                    _field.setAccessible(true);
+                    _field.set(targetObject, _injectObj);
                 }
             }
         }
+    }
+
+    protected Object __tryInjector(Class<?> targetClass, Field field, Object originInject) {
+        if (!__beanInjectorMap.isEmpty()) {
+            for (Map.Entry<Class<? extends Annotation>, IBeanInjector> _entry : __beanInjectorMap.entrySet()) {
+                Annotation _annotation = field.getAnnotation(_entry.getKey());
+                if (_annotation != null) {
+                    return _entry.getValue().inject(this, _annotation, targetClass, field, originInject);
+                }
+            }
+        }
+        return originInject;
     }
 }

@@ -29,7 +29,7 @@ import java.util.Map;
 public interface IBeanFactory {
 
     /**
-     * 注册自定义注解类处理器，重复注册将覆盖前者
+     * 注册自定义注解类处理器
      *
      * @param annoClass 注解类型
      * @param handler   注解处理器
@@ -37,6 +37,8 @@ public interface IBeanFactory {
     void registerHandler(Class<? extends Annotation> annoClass, IBeanHandler handler);
 
     void registerHandler(Class<? extends Annotation> annoClass);
+
+    void registerInjector(Class<? extends Annotation> annoClass, IBeanInjector injector);
 
     /**
      * 注册扫描包路径(仅在工厂对象执行初始化前有效)
