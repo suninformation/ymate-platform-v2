@@ -57,6 +57,8 @@ public interface IServ {
      */
     void registerServer(Class<? extends IListener> listenerClass) throws Exception;
 
+    void registerServer(String serverName, Class<? extends IServer> implClass, Class<? extends ICodec> codec, Class<? extends IListener> listenerClass) throws Exception;
+
     /**
      * 注册客户端
      *
@@ -64,6 +66,8 @@ public interface IServ {
      * @throws Exception 可能产生的异常
      */
     void registerClient(Class<? extends IListener> listenerClass) throws Exception;
+
+    void registerClient(String clientName, Class<? extends IClient> implClass, Class<? extends ICodec> codec, Class<? extends IListener> listenerClass, Class<? extends IReconnectService> reconnectClass, Class<? extends IHeartbeatService> hearbeatClass) throws Exception;
 
     /**
      * 启动所有Server端和Client端服务

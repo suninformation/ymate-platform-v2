@@ -28,8 +28,8 @@ import net.ymate.platform.serv.impl.DefaultModuleCfg;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * 服务模块管理器
@@ -52,9 +52,9 @@ public class Servs implements IModule, IServ {
 
     private boolean __inited;
 
-    private Map<Class<? extends IListener>, IServer> __servers;
+    private Map<String, IServer> __servers;
 
-    private Map<Class<? extends IListener>, IClient> __clients;
+    private Map<String, IClient> __clients;
 
     /**
      * @return 返回默认服务模块管理器实例对象
@@ -79,14 +79,16 @@ public class Servs implements IModule, IServ {
     }
 
     public Servs() {
-        __servers = new HashMap<Class<? extends IListener>, IServer>();
-        __clients = new HashMap<Class<? extends IListener>, IClient>();
+        __servers = new ConcurrentHashMap<String, IServer>();
+        __clients = new ConcurrentHashMap<String, IClient>();
     }
 
+    @Override
     public String getName() {
         return IServ.MODULE_NAME;
     }
 
+    @Override
     public void init(YMP owner) throws Exception {
         if (!__inited) {
             //
@@ -109,74 +111,85 @@ public class Servs implements IModule, IServ {
         }
     }
 
+    @Override
     public boolean isInited() {
         return __inited;
     }
 
+    @Override
     public YMP getOwner() {
         return __owner;
     }
 
+    @Override
     public IServModuleCfg getModuleCfg() {
         return __moduleCfg;
     }
 
+    @Override
     @SuppressWarnings("unchecked")
     public <T extends IServer> T getServer(Class<? extends IListener> clazz) {
-        return (T) __servers.get(clazz);
+        return (T) __servers.get(clazz.getName());
     }
 
+    @Override
     @SuppressWarnings("unchecked")
     public <T extends IClient> T getClient(Class<? extends IListener> clazz) {
-        return (T) __clients.get(clazz);
+        return (T) __clients.get(clazz.getName());
     }
 
-    @SuppressWarnings("unchecked")
+    @Override
     public void registerServer(Class<? extends IListener> listenerClass) throws Exception {
-        if (!__servers.containsKey(listenerClass)) {
-            Server _annoServer = listenerClass.getAnnotation(Server.class);
-            if (_annoServer == null) {
-                throw new IllegalArgumentException("No Server annotation present on class");
-            }
-            IListener _listener = ClassUtils.impl(listenerClass, IListener.class);
-            //
-            ICodec _codec = ClassUtils.impl(_annoServer.codec(), ICodec.class);
-            //
-            IServer _server = ClassUtils.impl(_annoServer.implClass(), IServer.class);
-            _server.init(__moduleCfg, _annoServer.name(), _listener, _codec);
-            __servers.put(listenerClass, _server);
+        Server _annoServer = listenerClass.getAnnotation(Server.class);
+        if (_annoServer == null) {
+            throw new IllegalArgumentException("No Server annotation present on class");
+        }
+        registerServer(_annoServer.name(), _annoServer.implClass(), _annoServer.codec(), listenerClass);
+    }
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public void registerServer(String serverName, Class<? extends IServer> implClass, Class<? extends ICodec> codec, Class<? extends IListener> listenerClass) throws Exception {
+        if (!__servers.containsKey(listenerClass.getName())) {
+            IServer _server = ClassUtils.impl(implClass, IServer.class);
+            _server.init(__moduleCfg, serverName, ClassUtils.impl(listenerClass, IListener.class), ClassUtils.impl(codec, ICodec.class));
+            __servers.put(listenerClass.getName(), _server);
         }
     }
 
+    @Override
     @SuppressWarnings("unchecked")
     public void registerClient(Class<? extends IListener> listenerClass) throws Exception {
-        if (!__clients.containsKey(listenerClass)) {
-            Client _annoClient = listenerClass.getAnnotation(Client.class);
-            if (_annoClient == null) {
-                throw new IllegalArgumentException("No Client annotation present on class");
-            }
-            IListener _listener = ClassUtils.impl(listenerClass, IListener.class);
-            //
-            ICodec _codec = ClassUtils.impl(_annoClient.codec(), ICodec.class);
-            //
-            IClient _client = ClassUtils.impl(_annoClient.implClass(), IClient.class);
+        Client _annoClient = listenerClass.getAnnotation(Client.class);
+        if (_annoClient == null) {
+            throw new IllegalArgumentException("No Client annotation present on class");
+        }
+        registerClient(_annoClient.name(), _annoClient.implClass(), _annoClient.codec(), listenerClass, _annoClient.reconnectClass(), _annoClient.hearbeatClass());
+    }
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public void registerClient(String clientName, Class<? extends IClient> implClass, Class<? extends ICodec> codec, Class<? extends IListener> listenerClass, Class<? extends IReconnectService> reconnectClass, Class<? extends IHeartbeatService> hearbeatClass) throws Exception {
+        if (!__clients.containsKey(listenerClass.getName())) {
+            IClient _client = ClassUtils.impl(implClass, IClient.class);
             //
             IReconnectService _reconnectService = null;
-            if (!IReconnectService.NONE.class.equals(_annoClient.reconnectClass())) {
-                _reconnectService = ClassUtils.impl(_annoClient.reconnectClass(), IReconnectService.class);
+            if (!IReconnectService.NONE.class.equals(reconnectClass)) {
+                _reconnectService = ClassUtils.impl(reconnectClass, IReconnectService.class);
                 _reconnectService.init(_client);
             }
             IHeartbeatService _heartbeatService = null;
-            if (!IHeartbeatService.NONE.class.equals(_annoClient.hearbeatClass())) {
-                _heartbeatService = ClassUtils.impl(_annoClient.hearbeatClass(), IHeartbeatService.class);
+            if (!IHeartbeatService.NONE.class.equals(hearbeatClass)) {
+                _heartbeatService = ClassUtils.impl(hearbeatClass, IHeartbeatService.class);
                 _heartbeatService.init(_client);
             }
             //
-            _client.init(__moduleCfg, _annoClient.name(), _listener, _codec, _reconnectService, _heartbeatService);
-            __clients.put(listenerClass, _client);
+            _client.init(__moduleCfg, clientName, ClassUtils.impl(listenerClass, IListener.class), ClassUtils.impl(codec, ICodec.class), _reconnectService, _heartbeatService);
+            __clients.put(listenerClass.getName(), _client);
         }
     }
 
+    @Override
     public void startup() throws Exception {
         for (IServer _server : __servers.values()) {
             if (!_server.isStarted()) {
@@ -191,6 +204,7 @@ public class Servs implements IModule, IServ {
         }
     }
 
+    @Override
     public void destroy() throws Exception {
         if (__inited) {
             __inited = false;
