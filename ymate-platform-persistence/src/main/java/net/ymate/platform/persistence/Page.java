@@ -47,6 +47,13 @@ public final class Page {
         return new Page(page);
     }
 
+    public static Page createIfNeed(int page, int pageSize) {
+        if (page > 0 && pageSize > 0) {
+            return new Page(page).pageSize(pageSize);
+        }
+        return null;
+    }
+
     private Page(int page) {
         this.__page = page > 0 ? page : 1;
         this.__count = true;
