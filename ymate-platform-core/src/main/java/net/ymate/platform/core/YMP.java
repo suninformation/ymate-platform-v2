@@ -38,6 +38,7 @@ import net.ymate.platform.core.module.IModule;
 import net.ymate.platform.core.module.ModuleEvent;
 import net.ymate.platform.core.module.annotation.Module;
 import net.ymate.platform.core.support.ConfigBuilder;
+import net.ymate.platform.core.support.IInitializable;
 import net.ymate.platform.core.util.RuntimeUtils;
 import org.apache.commons.lang.time.StopWatch;
 import org.apache.commons.logging.Log;
@@ -132,6 +133,7 @@ public class YMP {
             // 创建根对象工厂
             __beanFactory = new DefaultBeanFactory();
             __beanFactory.setLoader(new DefaultBeanLoader(__config.getExcudedFiles()));
+            __beanFactory.registerExcludedClass(IInitializable.class);
             __beanFactory.registerHandler(Bean.class);
             __beanFactory.registerHandler(Packages.class, new PackagesHandler(this));
             // 创建模块对象引用集合
@@ -139,6 +141,7 @@ public class YMP {
             // 创建模块对象工厂
             __moduleFactory = new BeanFactory(this);
             __moduleFactory.setLoader(new DefaultBeanLoader(__config.getExcudedFiles()));
+            __moduleFactory.registerExcludedClass(IInitializable.class);
             __moduleFactory.registerHandler(Module.class, new ModuleHandler(this));
             __moduleFactory.registerHandler(Proxy.class, new ProxyHandler(this));
             __moduleFactory.registerHandler(EventRegister.class, new EventRegisterHandler(this));

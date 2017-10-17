@@ -110,6 +110,10 @@ public class WebMVC implements IModule, IWebMvc {
             __moduleCfg = new DefaultModuleCfg(owner);
             __owner.getEvents().registerEvent(WebEvent.class);
             __owner.registerHandler(Controller.class, new ControllerHandler(this));
+            //
+            if (__moduleCfg.getErrorProcessor() instanceof IWebInitializable) {
+                ((IWebInitializable) __moduleCfg.getErrorProcessor()).init(this);
+            }
             if (__moduleCfg.isConventionInterceptorMode()) {
                 __interceptorRuleProcessor = new DefaultInterceptorRuleProcessor();
                 __interceptorRuleProcessor.init(this);
@@ -127,6 +131,10 @@ public class WebMVC implements IModule, IWebMvc {
     public void destroy() throws Exception {
         if (__inited) {
             __inited = false;
+            //
+            if (__moduleCfg.getErrorProcessor() instanceof IWebInitializable) {
+                ((IWebInitializable) __moduleCfg.getErrorProcessor()).destroy();
+            }
             //
             __owner = null;
         }

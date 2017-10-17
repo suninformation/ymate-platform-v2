@@ -13,31 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.ymate.platform.core.module;
+package net.ymate.platform.webmvc;
 
-import net.ymate.platform.core.YMP;
 import net.ymate.platform.core.support.IInitializable;
 
 /**
- * 模块接口定义
- *
- * @author 刘镇 (suninformation@163.com) on 2012-11-24 下午6:13:22
+ * @author 刘镇 (suninformation@163.com) on 2017/10/17 上午11:16
  * @version 1.0
  */
-public interface IModule extends IInitializable<YMP> {
-
-    /**
-     * @return 返回模块名称
-     */
-    String getName();
-
-    /**
-     * @return 返回模块是否已初始化
-     */
-    boolean isInited();
-
-    /**
-     * @return 返回所属YMP框架管理器实例
-     */
-    YMP getOwner();
+public interface IWebInitializable extends IInitializable<WebMVC> {
 }

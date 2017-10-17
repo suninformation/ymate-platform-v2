@@ -13,31 +13,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.ymate.platform.core.module;
-
-import net.ymate.platform.core.YMP;
-import net.ymate.platform.core.support.IInitializable;
+package net.ymate.platform.core.support;
 
 /**
- * 模块接口定义
+ * 指定对象具备初始化及销毁能力, 需调用者自行处理判断逻辑
  *
- * @author 刘镇 (suninformation@163.com) on 2012-11-24 下午6:13:22
+ * @author 刘镇 (suninformation@163.com) on 2017/10/17 上午10:51
  * @version 1.0
  */
-public interface IModule extends IInitializable<YMP> {
+public interface IInitializable<T> {
 
     /**
-     * @return 返回模块名称
+     * 初始化
+     *
+     * @param owner 指定所属容器对象
+     * @throws Exception 初始过程中产生的任何异常
      */
-    String getName();
+    void init(T owner) throws Exception;
 
     /**
-     * @return 返回模块是否已初始化
+     * 销毁
+     *
+     * @throws Exception 销毁过程中产生的任何异常
      */
-    boolean isInited();
-
-    /**
-     * @return 返回所属YMP框架管理器实例
-     */
-    YMP getOwner();
+    void destroy() throws Exception;
 }
