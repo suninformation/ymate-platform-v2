@@ -1,6 +1,6 @@
 package ${packageName}.model;
 
-<#if (isUseStateSupport)>import net.ymate.platform.core.beans.annotation.PropertyState;</#if>
+<#if (useStateSupport)>import net.ymate.platform.core.beans.annotation.PropertyState;</#if>
 import net.ymate.platform.persistence.annotation.Default;
 import net.ymate.platform.persistence.annotation.Property;
 import net.ymate.platform.persistence.annotation.Readonly;
@@ -19,8 +19,8 @@ public class ${modelName?cap_first}PK implements IEntityPK {
 	private static final long serialVersionUID = 1L;
 
 	<#list primaryKeyList as field><#if (field.columnName!"undefined") != "undefined">
-	@Property(name = "${field.columnName}"<#if (field.autoIncrement)>, autoincrement=true</#if><#if (field.nullable == 0)>, nullable = false</#if><#if (!field.signed)>, unsigned = true</#if><#if (field.precision > 0)>, length = ${field.precision?string('#')}</#if><#if (field.scale > 0)>, decimals = ${field.scale}</#if>)<#if (field.defaultValue!"undefined") != "undefined">
-	@Default("${field.defaultValue}")</#if><#if (isUseStateSupport)>
+	@Property(name = "${field.columnName}"<#if (field.autoIncrement)>, autoincrement=true</#if><#if (field.nullable)>, nullable = false</#if><#if (!field.signed)>, unsigned = true</#if><#if (field.precision > 0)>, length = ${field.precision?string('#')}</#if><#if (field.scale > 0)>, decimals = ${field.scale}</#if>)<#if (field.defaultValue!"undefined") != "undefined">
+	@Default("${field.defaultValue}")</#if><#if (useStateSupport)>
 	@PropertyState(propertyName = "${field.columnName}")</#if><#if (field.readonly)>
 	@Readonly</#if></#if>
     private ${field.varType} ${field.varName};

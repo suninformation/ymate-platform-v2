@@ -1,12 +1,12 @@
 package ${packageName}.model;
 
-<#if (isUseStateSupport)>import net.ymate.platform.core.beans.annotation.PropertyState;</#if>
+<#if (useStateSupport)>import net.ymate.platform.core.beans.annotation.PropertyState;</#if>
 import net.ymate.platform.persistence.annotation.Default;
 import net.ymate.platform.persistence.annotation.Entity;
 import net.ymate.platform.persistence.annotation.Id;
 import net.ymate.platform.persistence.annotation.Property;
 import net.ymate.platform.persistence.annotation.Readonly;
-<#if (!isUseBaseEntity)>import net.ymate.platform.persistence.jdbc.support.BaseEntity;
+<#if (!useBaseEntity)>import net.ymate.platform.persistence.jdbc.support.BaseEntity;
 import net.ymate.platform.persistence.IShardingable;
 import net.ymate.platform.persistence.jdbc.IConnectionHolder;</#if>
 
@@ -17,14 +17,14 @@ import net.ymate.platform.persistence.jdbc.IConnectionHolder;</#if>
  * @version 1.0
  */
 @Entity("${tableName}")
-public class ${modelName?cap_first}<#if (isUseClassSuffix)>Model</#if> extends <#if (isUseBaseEntity)>BaseEntity<${primaryKeyType}><#else>BaseEntity<${modelName?cap_first}<#if (isUseClassSuffix)>Model</#if>, ${primaryKeyType}></#if> {
+public class ${modelName?cap_first}<#if (useClassSuffix)>Model</#if> extends <#if (useBaseEntity)>BaseEntity<${primaryKeyType}><#else>BaseEntity<${modelName?cap_first}<#if (useClassSuffix)>Model</#if>, ${primaryKeyType}></#if> {
 
 	private static final long serialVersionUID = 1L;
 
 	<#list fieldList as field>
 	<#if primaryKeyName = field.varName>@Id</#if><#if (field.columnName!"undefined") != "undefined">
-	@Property(name = "${field.columnName}"<#if (field.autoIncrement)>, autoincrement=true</#if><#if (field.nullable == 0)>, nullable = false</#if><#if (!field.signed)>, unsigned = true</#if><#if (field.precision > 0)>, length = ${field.precision?string('#')}</#if><#if (field.scale > 0)>, decimals = ${field.scale}</#if>)<#if (field.defaultValue!"undefined") != "undefined">
-	@Default("${field.defaultValue}")</#if><#if (isUseStateSupport)>
+	@Property(name = "${field.columnName}"<#if (field.autoIncrement)>, autoincrement=true</#if><#if (field.nullable)>, nullable = false</#if><#if (!field.signed)>, unsigned = true</#if><#if (field.precision > 0)>, length = ${field.precision?string('#')}</#if><#if (field.scale > 0)>, decimals = ${field.scale}</#if>)<#if (field.defaultValue!"undefined") != "undefined">
+	@Default("${field.defaultValue}")</#if><#if (useStateSupport)>
     @PropertyState(propertyName = "${field.columnName}")</#if><#if (field.readonly)>
     @Readonly</#if></#if>
 	private ${field.varType} ${field.varName};
@@ -33,7 +33,7 @@ public class ${modelName?cap_first}<#if (isUseClassSuffix)>Model</#if> extends <
 	/**
 	 * 构造器
 	 */
-	public ${modelName?cap_first}<#if (isUseClassSuffix)>Model</#if>() {
+	public ${modelName?cap_first}<#if (useClassSuffix)>Model</#if>() {
 	}
 
     <#if (notNullableFieldList?size > 0)>
@@ -43,7 +43,7 @@ public class ${modelName?cap_first}<#if (isUseClassSuffix)>Model</#if> extends <
      *	@param ${field.varName}
     </#list>
      */
-    public ${modelName?cap_first}<#if (isUseClassSuffix)>Model</#if>(<#list notNullableFieldList as field>${field.varType} ${field.varName}<#if field_has_next>, </#if></#list>) {
+    public ${modelName?cap_first}<#if (useClassSuffix)>Model</#if>(<#list notNullableFieldList as field>${field.varType} ${field.varName}<#if field_has_next>, </#if></#list>) {
         <#list notNullableFieldList as field>
         this.${field.varName} = ${field.varName};
         </#list>
@@ -56,16 +56,18 @@ public class ${modelName?cap_first}<#if (isUseClassSuffix)>Model</#if> extends <
 	 *	@param ${field.varName}
 	</#list>
 	 */
-	public ${modelName?cap_first}<#if (isUseClassSuffix)>Model</#if>(<#list fieldList as field>${field.varType} ${field.varName}<#if field_has_next>, </#if></#list>) {
+	public ${modelName?cap_first}<#if (useClassSuffix)>Model</#if>(<#list fieldList as field>${field.varType} ${field.varName}<#if field_has_next>, </#if></#list>) {
 		<#list fieldList as field>
 		this.${field.varName} = ${field.varName};
 		</#list>
 	}
 
+    @Override
 	public ${primaryKeyType} getId() {
 		return ${primaryKeyName};
 	}
 
+    @Override
 	public void setId(${primaryKeyType} id) {
 		this.${primaryKeyName} = id;
 	}
@@ -103,42 +105,42 @@ public class ${modelName?cap_first}<#if (isUseClassSuffix)>Model</#if> extends <
 
 	</#list>
 
-	<#if (isUseChainMode)>
+	<#if (useChainMode)>
 	//
 	// Chain
 	//
 
-	public static ${modelName?cap_first}<#if (isUseClassSuffix)>Model</#if>Builder builder() {
-		return new ${modelName?cap_first}<#if (isUseClassSuffix)>Model</#if>Builder();
+	public static ${modelName?cap_first}<#if (useClassSuffix)>Model</#if>Builder builder() {
+		return new ${modelName?cap_first}<#if (useClassSuffix)>Model</#if>Builder();
 	}
 
-	public ${modelName?cap_first}<#if (isUseClassSuffix)>Model</#if>Builder bind() {
-    	return new ${modelName?cap_first}<#if (isUseClassSuffix)>Model</#if>Builder(this);
+	public ${modelName?cap_first}<#if (useClassSuffix)>Model</#if>Builder bind() {
+    	return new ${modelName?cap_first}<#if (useClassSuffix)>Model</#if>Builder(this);
     }
 
-	public static class ${modelName?cap_first}<#if (isUseClassSuffix)>Model</#if>Builder {
+	public static class ${modelName?cap_first}<#if (useClassSuffix)>Model</#if>Builder {
 
-		private ${modelName?cap_first}<#if (isUseClassSuffix)>Model</#if> _model;
+		private ${modelName?cap_first}<#if (useClassSuffix)>Model</#if> _model;
 
-		public ${modelName?cap_first}<#if (isUseClassSuffix)>Model</#if>Builder() {
-			_model = new ${modelName?cap_first}<#if (isUseClassSuffix)>Model</#if>();
+		public ${modelName?cap_first}<#if (useClassSuffix)>Model</#if>Builder() {
+			_model = new ${modelName?cap_first}<#if (useClassSuffix)>Model</#if>();
 		}
 
-		public ${modelName?cap_first}<#if (isUseClassSuffix)>Model</#if>Builder(${modelName?cap_first}<#if (isUseClassSuffix)>Model</#if> model) {
+		public ${modelName?cap_first}<#if (useClassSuffix)>Model</#if>Builder(${modelName?cap_first}<#if (useClassSuffix)>Model</#if> model) {
 			_model = model;
 		}
 
-		public ${modelName?cap_first}<#if (isUseClassSuffix)>Model</#if> build() {
+		public ${modelName?cap_first}<#if (useClassSuffix)>Model</#if> build() {
 			return _model;
 		}
 
-	<#if (!isUseBaseEntity)>
+	<#if (!useBaseEntity)>
 
 		public IConnectionHolder connectionHolder() {
 			return _model.getConnectionHolder();
 		}
 
-		public ${modelName?cap_first}<#if (isUseClassSuffix)>Model</#if>Builder connectionHolder(IConnectionHolder connectionHolder) {
+		public ${modelName?cap_first}<#if (useClassSuffix)>Model</#if>Builder connectionHolder(IConnectionHolder connectionHolder) {
 			_model.setConnectionHolder(connectionHolder);
 			return this;
 		}
@@ -147,7 +149,7 @@ public class ${modelName?cap_first}<#if (isUseClassSuffix)>Model</#if> extends <
 			return _model.getDataSourceName();
 		}
 
-		public ${modelName?cap_first}<#if (isUseClassSuffix)>Model</#if>Builder dataSourceName(String dsName) {
+		public ${modelName?cap_first}<#if (useClassSuffix)>Model</#if>Builder dataSourceName(String dsName) {
 			_model.setDataSourceName(dsName);
 			return this;
 		}
@@ -156,7 +158,7 @@ public class ${modelName?cap_first}<#if (isUseClassSuffix)>Model</#if> extends <
 			return _model.getShardingable();
 		}
 
-		public ${modelName?cap_first}<#if (isUseClassSuffix)>Model</#if>Builder shardingable(IShardingable shardingable) {
+		public ${modelName?cap_first}<#if (useClassSuffix)>Model</#if>Builder shardingable(IShardingable shardingable) {
     		_model.setShardingable(shardingable);
     		return this;
     	}
@@ -167,7 +169,7 @@ public class ${modelName?cap_first}<#if (isUseClassSuffix)>Model</#if> extends <
 			return _model.get${field.varName?cap_first}();
 		}
 
-		public ${modelName?cap_first}<#if (isUseClassSuffix)>Model</#if>Builder ${field.varName}(${field.varType} ${field.varName}) {
+		public ${modelName?cap_first}<#if (useClassSuffix)>Model</#if>Builder ${field.varName}(${field.varType} ${field.varName}) {
 			_model.set${field.varName?cap_first}(${field.varName});
 			return this;
 		}
@@ -177,7 +179,7 @@ public class ${modelName?cap_first}<#if (isUseClassSuffix)>Model</#if> extends <
 	</#if>
 
 	/**
-	 * ${modelName?cap_first}<#if (isUseClassSuffix)>Model</#if> 字段常量表
+	 * ${modelName?cap_first}<#if (useClassSuffix)>Model</#if> 字段常量表
 	 */
 	public class FIELDS {
 	<#list allFieldList as field>
