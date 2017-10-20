@@ -35,17 +35,6 @@ public class ColumnInfo {
     public static Map<String, ColumnInfo> create(ConfigInfo configInfo, String dbType, String tableName, List<String> primaryKeys, DatabaseMetaData databaseMetaData, ResultSetMetaData metaData) throws SQLException {
         Map<String, ColumnInfo> _returnValue = new LinkedHashMap<String, ColumnInfo>(metaData.getColumnCount());
         //
-        System.out.println(">>> " + "COLUMN_NAME / " +
-                "COLUMN_CLASS_NAME / " +
-                "PRIMARY_KEY / " +
-                "AUTO_INCREMENT / " +
-                "SIGNED / " +
-                "PRECISION / " +
-                "SCALE / " +
-                "NULLABLE / " +
-                "DEFAULT / " +
-                "REMARKS");
-        //
         for (int _idx = 1; _idx <= metaData.getColumnCount(); _idx++) {
             // 获取字段元数据对象
             ResultSet _column = databaseMetaData.getColumns(configInfo.getDbName(),
@@ -58,6 +47,7 @@ public class ColumnInfo {
                         _name,
                         metaData.getColumnClassName(_idx),
                         metaData.isAutoIncrement(_idx),
+                        primaryKeys.contains(_name),
                         metaData.isSigned(_idx),
                         metaData.getPrecision(_idx),
                         metaData.getScale(_idx),
@@ -65,17 +55,6 @@ public class ColumnInfo {
                         _column.getString("COLUMN_DEF"),
                         _column.getString("REMARKS"));
                 _returnValue.put(_name, _columnInfo);
-                //
-                System.out.println("--> " + _name + "\t" +
-                        _columnInfo.getColumnName() + "\t" +
-                        primaryKeys.contains(_name) + "\t" +
-                        _columnInfo.isAutoIncrement() + "\t" +
-                        _columnInfo.isSigned() + "\t" +
-                        _columnInfo.getPrecision() + "\t" +
-                        _columnInfo.getScale() + "\t" +
-                        _columnInfo.isNullable() + "\t" +
-                        _columnInfo.getDefaultValue() + "\t" +
-                        _columnInfo.getRemarks());
             }
             _column.close();
         }
@@ -90,6 +69,8 @@ public class ColumnInfo {
 
     private boolean autoIncrement;
 
+    private boolean primaryKey;
+
     private boolean signed;
 
     private int precision;
@@ -102,14 +83,15 @@ public class ColumnInfo {
 
     private String remarks;
 
-    public ColumnInfo(IEntityNamedFilter namedFilter, String columnName, String columnType, boolean autoIncrement, boolean signed, int precision, int scale, int nullable, String defaultValue, String remarks) {
+    public ColumnInfo(IEntityNamedFilter namedFilter, String columnName, String columnType, boolean autoIncrement, boolean primaryKey, boolean signed, int precision, int scale, int nullable, String defaultValue, String remarks) {
         this.columnName = columnName;
         this.columnType = columnType;
         this.autoIncrement = autoIncrement;
+        this.primaryKey = primaryKey;
         this.signed = signed;
         this.precision = precision;
         this.scale = scale;
-        this.nullable = nullable <= 0;
+        this.nullable = nullable > 0;
         this.defaultValue = defaultValue;
         this.remarks = remarks;
         //
@@ -127,6 +109,10 @@ public class ColumnInfo {
 
     public String getColumnType() {
         return columnType;
+    }
+
+    public boolean isPrimaryKey() {
+        return primaryKey;
     }
 
     public boolean isAutoIncrement() {

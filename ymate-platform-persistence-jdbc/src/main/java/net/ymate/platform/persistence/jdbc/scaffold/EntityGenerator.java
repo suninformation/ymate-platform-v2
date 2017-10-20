@@ -19,6 +19,7 @@ import freemarker.template.Configuration;
 import freemarker.template.TemplateExceptionHandler;
 import net.ymate.platform.core.YMP;
 import net.ymate.platform.core.lang.BlurObject;
+import net.ymate.platform.core.support.ConsoleTableBuilder;
 import net.ymate.platform.core.util.RuntimeUtils;
 import net.ymate.platform.persistence.base.EntityMeta;
 import net.ymate.platform.persistence.jdbc.IDatabase;
@@ -52,6 +53,8 @@ public class EntityGenerator {
 
     private ConfigInfo __config;
 
+    private boolean __markdown;
+
     private EntityGenerator() {
         __freemarkerConfig = new Configuration(Configuration.VERSION_2_3_22);
         __freemarkerConfig.setTemplateExceptionHandler(TemplateExceptionHandler.HTML_DEBUG_HANDLER);
@@ -64,6 +67,11 @@ public class EntityGenerator {
         __owner = JDBC.get(owner == null ? YMP.get() : owner);
         //
         __config = new ConfigInfo(__owner.getOwner());
+    }
+
+    public EntityGenerator markdown() {
+        __markdown = true;
+        return this;
     }
 
     /**
@@ -109,35 +117,17 @@ public class EntityGenerator {
         return true;
     }
 
-    private String __doNamedFilter(String original) {
-        if (__config.getNamedFilter() != null) {
-            return StringUtils.defaultIfBlank(__config.getNamedFilter().doFilter(original), original);
-        }
-        return original;
-    }
-
     private void buildEntityClassFile(TableInfo tableInfo, String _tableName, boolean view) {
         if (tableInfo != null) {
             Map<String, Object> _properties = __config.toMap();
             if (__config.isUseBaseEntity()) {
                 buildTargetFile("/model/BaseEntity.java", "/BaseEntity.ftl", _properties);
             }
-            String _modelName = null;
-            for (String _prefix : __config.getTablePrefixes()) {
-                if (_tableName.startsWith(_prefix)) {
-                    if (__config.isRemovePrefix()) {
-                        _tableName = _tableName.substring(_prefix.length());
-                    }
-                    _modelName = StringUtils.capitalize(EntityMeta.propertyNameToFieldName(__doNamedFilter(_tableName)));
-                    break;
-                }
-            }
-            if (StringUtils.isBlank(_modelName)) {
-                _modelName = StringUtils.capitalize(EntityMeta.propertyNameToFieldName(__doNamedFilter(_tableName)));
-            }
+            String _modelName = __config.buildModelName(_tableName);
             //
             _properties.put("tableName", _tableName);
             _properties.put("modelName", _modelName);
+            //
             List<Attr> _fieldList = new ArrayList<Attr>(); // 用于完整的构造方法
             List<Attr> _fieldListForNotNullable = new ArrayList<Attr>(); // 用于非空字段的构造方法
             List<Attr> _allFieldList = new ArrayList<Attr>(); // 用于生成字段名称常量
@@ -157,7 +147,7 @@ public class EntityGenerator {
                         _attr.setReadonly(true);
                     }
                     _primaryKeyList.add(_attr);
-                    _allFieldList.add(new Attr("String", __doNamedFilter(_ci.getColumnName()).toUpperCase(),
+                    _allFieldList.add(new Attr("String", __config.namedFilter(_ci.getColumnName()).toUpperCase(),
                             _ci.getColumnName(),
                             _ci.isAutoIncrement(),
                             _ci.isSigned(),
@@ -178,7 +168,7 @@ public class EntityGenerator {
                     }
                     _fieldList.add(_attr);
                     _fieldListForNotNullable.add(_attr);
-                    _allFieldList.add(new Attr("String", __doNamedFilter(_ci.getColumnName()).toUpperCase(),
+                    _allFieldList.add(new Attr("String", __config.namedFilter(_ci.getColumnName()).toUpperCase(),
                             _ci.getColumnName(),
                             _ci.isAutoIncrement(),
                             _ci.isSigned(),
@@ -207,7 +197,7 @@ public class EntityGenerator {
                     if (_attr.isNullable()) {
                         _fieldListForNotNullable.add(_attr);
                     }
-                    _allFieldList.add(new Attr("String", __doNamedFilter(_ci.getColumnName()).toUpperCase(),
+                    _allFieldList.add(new Attr("String", __config.namedFilter(_ci.getColumnName()).toUpperCase(),
                             _ci.getColumnName(),
                             _ci.isAutoIncrement(),
                             _ci.isSigned(),
@@ -240,6 +230,39 @@ public class EntityGenerator {
                     buildTargetFile("/model/" + _modelName + "PK.java", "/EntityPK.ftl", _properties);
                 }
             }
+            //
+            ConsoleTableBuilder _console = ConsoleTableBuilder.create(10);
+            System.out.println("TABLE_NAME: " + _tableName);
+            System.out.println("MODEL_NAME: " + _modelName);
+            System.out.println("VIEW: " + (view ? "TRUE" : "FALSE"));
+            //
+            if (__markdown) {
+                _console.markdown();
+            }
+            //
+            _console.addRow().addColumn("COLUMN_NAME")
+                    .addColumn("COLUMN_CLASS_NAME")
+                    .addColumn("PRIMARY_KEY")
+                    .addColumn("AUTO_INCREMENT")
+                    .addColumn("SIGNED")
+                    .addColumn("PRECISION")
+                    .addColumn("SCALE")
+                    .addColumn("NULLABLE")
+                    .addColumn("DEFAULT")
+                    .addColumn("REMARKS");
+            for (ColumnInfo _c : tableInfo.getFieldMap().values()) {
+                _console.addRow().addColumn(_c.getColumnName())
+                        .addColumn(_c.getColumnType())
+                        .addColumn(_c.isPrimaryKey() ? "TRUE" : "FALSE")
+                        .addColumn(_c.isAutoIncrement() ? "TRUE" : "FALSE")
+                        .addColumn(_c.isSigned() ? "TRUE" : "FALSE")
+                        .addColumn(_c.getPrecision() + "")
+                        .addColumn(_c.getScale() + "")
+                        .addColumn(_c.isNullable() ? "TRUE" : "FALSE")
+                        .addColumn(_c.getDefaultValue())
+                        .addColumn(_c.getRemarks());
+            }
+            System.out.println(_console.toString());
         }
     }
 

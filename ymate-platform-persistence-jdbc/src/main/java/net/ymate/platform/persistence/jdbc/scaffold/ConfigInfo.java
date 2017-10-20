@@ -20,6 +20,7 @@ import net.ymate.platform.core.YMP;
 import net.ymate.platform.core.lang.BlurObject;
 import net.ymate.platform.core.util.ClassUtils;
 import net.ymate.platform.core.util.RuntimeUtils;
+import net.ymate.platform.persistence.base.EntityMeta;
 import org.apache.commons.lang.StringUtils;
 
 import java.util.Arrays;
@@ -96,6 +97,30 @@ public class ConfigInfo {
         this.readonlyFields = readonlyFields;
         this.packageName = StringUtils.defaultIfBlank(packageName, "packages");
         this.outputPath = RuntimeUtils.replaceEnvVariable(StringUtils.defaultIfBlank(outputPath, "${root}"));
+    }
+
+    public String buildModelName(String tableName) {
+        String _modelName = null;
+        for (String _prefix : tablePrefixes) {
+            if (tableName.startsWith(_prefix)) {
+                if (removePrefix) {
+                    tableName = tableName.substring(_prefix.length());
+                }
+                _modelName = StringUtils.capitalize(EntityMeta.propertyNameToFieldName(namedFilter(tableName)));
+                break;
+            }
+        }
+        if (StringUtils.isBlank(_modelName)) {
+            _modelName = StringUtils.capitalize(EntityMeta.propertyNameToFieldName(namedFilter(tableName)));
+        }
+        return _modelName;
+    }
+
+    public String namedFilter(String original) {
+        if (this.namedFilter != null) {
+            return StringUtils.defaultIfBlank(this.namedFilter.doFilter(original), original);
+        }
+        return original;
     }
 
     public Map<String, Object> toMap() {

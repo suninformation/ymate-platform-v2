@@ -108,10 +108,6 @@ public class TableInfo {
         //
         Statement _statement = null;
         //
-        System.out.println(">>> Catalog: " + configInfo.getDbName());
-        System.out.println(">>> Schema: " + configInfo.getDbUserName());
-        System.out.println(">>> Table: " + tableName);
-        //
         List<String> _primaryKeys = new LinkedList<String>();
         try {
             if (!view) {
@@ -131,21 +127,10 @@ public class TableInfo {
                 }
             }
             //
-            System.out.println(">>> " + "COLUMN_NAME / " +
-                    "COLUMN_CLASS_NAME / " +
-                    "PRIMARY_KEY / " +
-                    "AUTO_INCREMENT / " +
-                    "SIGNED / " +
-                    "PRECISION / " +
-                    "SCALE / " +
-                    "NULLABLE / " +
-                    "DEFAULT / " +
-                    "REMARKS");
-            //
             _statement = connectionHolder.getConnection().createStatement(ResultSet.TYPE_SCROLL_SENSITIVE, ResultSet.CONCUR_UPDATABLE);
             ResultSet _resultSet = _statement.executeQuery("SELECT * FROM ".concat(connectionHolder.getDialect().wrapIdentifierQuote(tableName)));
             //
-            return new TableInfo(_primaryKeys, ColumnInfo.create(configInfo, connectionHolder.getDialect().getName(), tableName, _primaryKeys, _databaseMetaData, _resultSet.getMetaData()));
+            return new TableInfo(configInfo.getDbName(), configInfo.getDbUserName(), tableName, _primaryKeys, ColumnInfo.create(configInfo, connectionHolder.getDialect().getName(), tableName, _primaryKeys, _databaseMetaData, _resultSet.getMetaData()));
         } finally {
             if (_statement != null) {
                 try {
@@ -157,13 +142,34 @@ public class TableInfo {
         }
     }
 
+    private String catalog;
+
+    private String schema;
+
+    private String name;
+
     private List<String> pkSet;
 
     private Map<String, ColumnInfo> fieldMap;
 
-    public TableInfo(List<String> pkSet, Map<String, ColumnInfo> fieldMap) {
+    public TableInfo(String catalog, String schema, String name, List<String> pkSet, Map<String, ColumnInfo> fieldMap) {
+        this.catalog = catalog;
+        this.schema = schema;
+        this.name = name;
         this.pkSet = pkSet;
         this.fieldMap = fieldMap;
+    }
+
+    public String getCatalog() {
+        return catalog;
+    }
+
+    public String getSchema() {
+        return schema;
+    }
+
+    public String getName() {
+        return name;
     }
 
     public List<String> getPkSet() {
