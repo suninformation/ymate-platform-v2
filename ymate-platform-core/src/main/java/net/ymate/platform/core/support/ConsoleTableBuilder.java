@@ -26,6 +26,8 @@ import java.util.List;
  */
 public class ConsoleTableBuilder {
 
+    private static final int __margin = 1;
+
     private List<Row> rows = new ArrayList<Row>();
 
     private int column;
@@ -51,14 +53,6 @@ public class ConsoleTableBuilder {
         return _row;
     }
 
-    public int getRowMaxLength(int[] columnLengths) {
-        int _amount = 0;
-        for (int _len : columnLengths) {
-            _amount = _amount + _len;
-        }
-        return _amount;
-    }
-
     public int[] getColumnLengths() {
         int[] _lengths = new int[column];
         for (int _idx = 0; _idx < column; _idx++) {
@@ -82,21 +76,30 @@ public class ConsoleTableBuilder {
         return _sb.toString();
     }
 
+    private String __printHeader(int[] columnLengths) {
+        StringBuilder _sb = new StringBuilder("+");
+        for (int _idx = 0; _idx < columnLengths.length; _idx++) {
+            _sb.append(__printStr('-', columnLengths[_idx] + __margin * 2)).append('+');
+            if (_idx == columnLengths.length - 1) {
+                _sb.append('\n');
+            }
+        }
+        //
+        return _sb.toString();
+    }
+
     public String toString() {
         StringBuilder _sb = new StringBuilder();
         //
         int[] _columnLengths = null;
-        int _rowMaxLength = 0;
         if (__markdown) {
             _columnLengths = new int[0];
         } else {
             _columnLengths = this.getColumnLengths();
-            _rowMaxLength = getRowMaxLength(_columnLengths);
         }
         //
-        int _margin = 2;
         if (!__markdown) {
-            _sb.append("+").append(__printStr('-', _rowMaxLength + _margin * 2 * column + (column - 1))).append("+\n");
+            _sb.append(__printHeader(_columnLengths));
         }
         //
         int _rowIdx = 0;
@@ -112,14 +115,14 @@ public class ConsoleTableBuilder {
                 _sb.append('|');
                 //
                 if (!__markdown) {
-                    _sb.append(__printStr(' ', _margin)).append(_content).append(__printStr(' ', _columnLengths[_columnIdx] - _length + _margin));
+                    _sb.append(__printStr(' ', __margin)).append(_content).append(__printStr(' ', _columnLengths[_columnIdx] - _length + __margin));
                 } else {
                     _sb.append(_content);
                 }
             }
             _sb.append("|\n");
             if (!__markdown) {
-                _sb.append("+").append(__printStr('-', _rowMaxLength + _margin * 2 * column + (column - 1))).append("+\n");
+                _sb.append(__printHeader(_columnLengths));
             } else if (_rowIdx <= 0) {
                 _sb.append("|");
                 for (int _idx = 0; _idx < column; _idx++) {

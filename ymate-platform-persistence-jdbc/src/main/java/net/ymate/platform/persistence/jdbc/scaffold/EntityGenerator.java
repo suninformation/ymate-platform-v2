@@ -232,12 +232,12 @@ public class EntityGenerator {
             }
             //
             ConsoleTableBuilder _console = ConsoleTableBuilder.create(10);
-            System.out.println("TABLE_NAME: " + _tableName);
+            System.out.println((view ? "VIEW" : "TABLE") + "_NAME: " + _tableName);
             System.out.println("MODEL_NAME: " + _modelName);
-            System.out.println("VIEW: " + (view ? "TRUE" : "FALSE"));
             //
             if (__markdown) {
                 _console.markdown();
+                System.out.println();
             }
             //
             _console.addRow().addColumn("COLUMN_NAME")
