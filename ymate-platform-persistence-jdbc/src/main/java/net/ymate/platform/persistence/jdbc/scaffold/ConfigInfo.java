@@ -18,6 +18,7 @@ package net.ymate.platform.persistence.jdbc.scaffold;
 import net.ymate.platform.core.IConfig;
 import net.ymate.platform.core.YMP;
 import net.ymate.platform.core.lang.BlurObject;
+import net.ymate.platform.core.lang.PairObject;
 import net.ymate.platform.core.util.ClassUtils;
 import net.ymate.platform.core.util.RuntimeUtils;
 import net.ymate.platform.persistence.base.EntityMeta;
@@ -99,7 +100,7 @@ public class ConfigInfo {
         this.outputPath = RuntimeUtils.replaceEnvVariable(StringUtils.defaultIfBlank(outputPath, "${root}"));
     }
 
-    public String buildModelName(String tableName) {
+    public PairObject<String, String> buildNamePrefix(String tableName) {
         String _modelName = null;
         for (String _prefix : tablePrefixes) {
             if (tableName.startsWith(_prefix)) {
@@ -113,7 +114,7 @@ public class ConfigInfo {
         if (StringUtils.isBlank(_modelName)) {
             _modelName = StringUtils.capitalize(EntityMeta.propertyNameToFieldName(namedFilter(tableName)));
         }
-        return _modelName;
+        return new PairObject<String, String>(_modelName, tableName);
     }
 
     public String namedFilter(String original) {

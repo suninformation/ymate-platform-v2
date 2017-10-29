@@ -19,6 +19,7 @@ import freemarker.template.Configuration;
 import freemarker.template.TemplateExceptionHandler;
 import net.ymate.platform.core.YMP;
 import net.ymate.platform.core.lang.BlurObject;
+import net.ymate.platform.core.lang.PairObject;
 import net.ymate.platform.core.support.ConsoleTableBuilder;
 import net.ymate.platform.core.util.RuntimeUtils;
 import net.ymate.platform.persistence.base.EntityMeta;
@@ -123,16 +124,16 @@ public class EntityGenerator {
             if (__config.isUseBaseEntity()) {
                 buildTargetFile("/model/BaseEntity.java", "/BaseEntity.ftl", _properties);
             }
-            String _modelName = __config.buildModelName(_tableName);
+            PairObject<String, String> _fixedName = __config.buildNamePrefix(_tableName);
             //
-            _properties.put("tableName", _tableName);
-            _properties.put("modelName", _modelName);
+            _properties.put("modelName", _fixedName.getKey());
+            _properties.put("tableName", _fixedName.getValue());
             //
             List<Attr> _fieldList = new ArrayList<Attr>(); // 用于完整的构造方法
             List<Attr> _fieldListForNotNullable = new ArrayList<Attr>(); // 用于非空字段的构造方法
             List<Attr> _allFieldList = new ArrayList<Attr>(); // 用于生成字段名称常量
             if (tableInfo.getPkSet().size() > 1) {
-                _properties.put("primaryKeyType", _modelName + "PK");
+                _properties.put("primaryKeyType", _fixedName.getKey() + "PK");
                 _properties.put("primaryKeyName", StringUtils.uncapitalize((String) _properties.get("primaryKeyType")));
                 List<Attr> _primaryKeyList = new ArrayList<Attr>();
                 _properties.put("primaryKeyList", _primaryKeyList);
@@ -213,11 +214,11 @@ public class EntityGenerator {
             _properties.put("notNullableFieldList", _fieldList.size() == _fieldListForNotNullable.size() ? Collections.emptyList() : _fieldListForNotNullable);
             _properties.put("allFieldList", _allFieldList);
             //
-            buildTargetFile("/model/" + _modelName + (__config.isUseClassSuffix() ? "Model.java" : ".java"), view ? "/View.ftl" : "/Entity.ftl", _properties);
+            buildTargetFile("/model/" + _fixedName.getKey() + (__config.isUseClassSuffix() ? "Model.java" : ".java"), view ? "/View.ftl" : "/Entity.ftl", _properties);
             //
             if (!view) {
                 if (tableInfo.getPkSet().size() > 1) {
-                    _properties.put("modelName", _modelName);
+                    _properties.put("modelName", _fixedName.getKey());
                     if (tableInfo.getPkSet().size() > 1) {
                         List<Attr> _primaryKeyList = new ArrayList<Attr>();
                         _properties.put("primaryKeyList", _primaryKeyList);
@@ -227,13 +228,13 @@ public class EntityGenerator {
                             _primaryKeyList.add(_ci.toAttr());
                         }
                     }
-                    buildTargetFile("/model/" + _modelName + "PK.java", "/EntityPK.ftl", _properties);
+                    buildTargetFile("/model/" + _fixedName.getKey() + "PK.java", "/EntityPK.ftl", _properties);
                 }
             }
             //
             ConsoleTableBuilder _console = ConsoleTableBuilder.create(10);
             System.out.println((view ? "VIEW" : "TABLE") + "_NAME: " + _tableName);
-            System.out.println("MODEL_NAME: " + _modelName);
+            System.out.println("MODEL_NAME: " + _fixedName.getKey());
             //
             if (__markdown) {
                 _console.markdown();
