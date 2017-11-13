@@ -288,15 +288,13 @@ public final class ConfigBuilder {
         return this;
     }
 
-    public ConfigBuilder eventParams(Map<String, String> params) {
-        for (Map.Entry<String, String> _param : params.entrySet()) {
-            __eventConfigs.put("params." + _param.getKey(), _param.getValue());
-        }
+    public ConfigBuilder eventThreadMaxPoolSize(int threadMaxPoolSize) {
+        __eventConfigs.put("thread_max_pool_size", threadMaxPoolSize + "");
         return this;
     }
 
-    public ConfigBuilder eventParam(String paramName, String paramValue) {
-        __eventConfigs.put("params." + paramName, paramValue);
+    public ConfigBuilder eventThreadWorkQueueSize(int threadWorkQueueSize) {
+        __eventConfigs.put("thread_work_queue_size", threadWorkQueueSize + "");
         return this;
     }
 

@@ -21,17 +21,20 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * 默认事件管理提供者接口实现
  *
+ * @param <T>       事件所有者类型
+ * @param <E>       事件枚举
+ * @param <EVENT>   事件对象类型
+ * @param <CONTEXT> 事件监听器上下文对象类型
  * @author 刘镇 (suninformation@163.com) on 15/5/16 上午2:38
  * @version 1.0
  */
-public class DefaultEventProvider<T, E extends Enum<E>, EVENT extends Class<IEvent>, CONTEXT extends EventContext<T, E>> implements IEventProvider<T, E, EVENT, CONTEXT> {
+public final class DefaultEventProvider<T, E extends Enum<E>, EVENT extends Class<? extends IEvent>, CONTEXT extends EventContext<T, E>> implements IEventProvider<T, E, EVENT, CONTEXT> {
 
     private IEventConfig __eventConfig;
 
@@ -43,24 +46,24 @@ public class DefaultEventProvider<T, E extends Enum<E>, EVENT extends Class<IEve
 
     private Map<String, List<IEventListener<CONTEXT>>> __normalListeners;
 
+    @Override
     public void init(IEventConfig eventConfig) {
         __eventConfig = eventConfig;
-        //
-        int _poolSize = eventConfig.getThreadPoolSize();
-        if (_poolSize <= 0) {
-            _poolSize = Runtime.getRuntime().availableProcessors();
-        }
-        __eventExecPool = Executors.newFixedThreadPool(_poolSize);
-        //
+        __eventExecPool = new ThreadPoolExecutor(eventConfig.getThreadPoolSize() > 0 ? eventConfig.getThreadPoolSize() : Runtime.getRuntime().availableProcessors(),
+                eventConfig.getThreadMaxPoolSize(), 0L, TimeUnit.MILLISECONDS,
+                new LinkedBlockingQueue<Runnable>(eventConfig.getThreadWorkQueueSize() > 0 ? eventConfig.getThreadWorkQueueSize() : 1024),
+                new DefaultThreadFactory(), new ThreadPoolExecutor.AbortPolicy());
         __events = new ArrayList<String>();
         __asyncListeners = new ConcurrentHashMap<String, List<IEventListener<CONTEXT>>>();
         __normalListeners = new ConcurrentHashMap<String, List<IEventListener<CONTEXT>>>();
     }
 
+    @Override
     public IEventConfig getEventConfig() {
         return __eventConfig;
     }
 
+    @Override
     public void destroy() {
         if (__eventExecPool != null) {
             __eventExecPool.shutdown();
@@ -71,11 +74,12 @@ public class DefaultEventProvider<T, E extends Enum<E>, EVENT extends Class<IEve
         __normalListeners = null;
     }
 
+    @Override
     public void registerEvent(EVENT event) {
         __events.add(event.getName());
     }
 
-    private void __doRegisterEventListeners(Map<String, List<IEventListener<CONTEXT>>> listenersMap, EVENT eventClass, IEventListener<CONTEXT> eventListener) {
+    private synchronized void __doRegisterEventListener(Map<String, List<IEventListener<CONTEXT>>> listenersMap, EVENT eventClass, IEventListener<CONTEXT> eventListener) {
         if (listenersMap.containsKey(eventClass.getName())) {
             listenersMap.get(eventClass.getName()).add(eventListener);
         } else {
@@ -85,20 +89,23 @@ public class DefaultEventProvider<T, E extends Enum<E>, EVENT extends Class<IEve
         }
     }
 
+    @Override
     public void registerListener(EVENT eventClass, IEventListener<CONTEXT> eventListener) {
         registerListener(__eventConfig.getDefaultMode(), eventClass, eventListener);
     }
 
+    @Override
     public void registerListener(Events.MODE mode, EVENT eventClass, IEventListener<CONTEXT> eventListener) {
         switch (mode) {
             case ASYNC:
-                __doRegisterEventListeners(__asyncListeners, eventClass, eventListener);
+                __doRegisterEventListener(__asyncListeners, eventClass, eventListener);
                 break;
             default:
-                __doRegisterEventListeners(__normalListeners, eventClass, eventListener);
+                __doRegisterEventListener(__normalListeners, eventClass, eventListener);
         }
     }
 
+    @Override
     public void fireEvent(final CONTEXT context) {
         String _eventKey = context.getEventClass().getName();
         if (__events.contains(_eventKey)) {
@@ -118,6 +125,7 @@ public class DefaultEventProvider<T, E extends Enum<E>, EVENT extends Class<IEve
                 for (final IEventListener<CONTEXT> _listener : _listeners) {
                     if (__eventExecPool != null) {
                         __eventExecPool.execute(new Runnable() {
+                            @Override
                             public void run() {
                                 _listener.handle(context);
                             }
@@ -125,6 +133,31 @@ public class DefaultEventProvider<T, E extends Enum<E>, EVENT extends Class<IEve
                     }
                 }
             }
+        }
+    }
+
+    static class DefaultThreadFactory implements ThreadFactory {
+        private static final AtomicInteger __poolNumber = new AtomicInteger(1);
+        private final ThreadGroup __group;
+        private final AtomicInteger __threadNumber = new AtomicInteger(1);
+        private final String __namePrefix;
+
+        DefaultThreadFactory() {
+            SecurityManager _securityManager = System.getSecurityManager();
+            __group = (_securityManager != null) ? _securityManager.getThreadGroup() : Thread.currentThread().getThreadGroup();
+            __namePrefix = "event-pool-" + __poolNumber.getAndIncrement() + "-thread-";
+        }
+
+        @Override
+        public Thread newThread(Runnable r) {
+            Thread _thread = new Thread(__group, r, __namePrefix + __threadNumber.getAndIncrement(), 0);
+            if (_thread.isDaemon()) {
+                _thread.setDaemon(false);
+            }
+            if (_thread.getPriority() != Thread.NORM_PRIORITY) {
+                _thread.setPriority(Thread.NORM_PRIORITY);
+            }
+            return _thread;
         }
     }
 }

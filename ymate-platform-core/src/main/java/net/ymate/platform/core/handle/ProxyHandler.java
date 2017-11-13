@@ -27,18 +27,20 @@ import net.ymate.platform.core.util.ClassUtils;
  * @author 刘镇 (suninformation@163.com) on 15/3/12 下午5:10
  * @version 1.0
  */
-public class ProxyHandler implements IBeanHandler {
+public final class ProxyHandler implements IBeanHandler {
 
-    private YMP __owner;
+    private final YMP __owner;
 
     public ProxyHandler(YMP owner) {
         __owner = owner;
         __owner.registerExcludedClass(IProxy.class);
     }
 
+    @Override
     public Object handle(Class<?> targetClass) throws Exception {
-        if (ClassUtils.isInterfaceOf(targetClass, IProxy.class)) {
-            if (!targetClass.equals(InterceptProxy.class)) { // 排除框架内部拦截器代理类，因为YMP框架已经注册了它
+        if (!targetClass.isInterface() && ClassUtils.isInterfaceOf(targetClass, IProxy.class)) {
+            // 排除框架内部拦截器代理类，因为YMP框架已经注册了它
+            if (!targetClass.equals(InterceptProxy.class)) {
                 __owner.registerProxy((IProxy) targetClass.newInstance());
             }
         }

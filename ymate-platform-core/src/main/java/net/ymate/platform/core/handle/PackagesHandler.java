@@ -22,14 +22,15 @@ import net.ymate.platform.core.beans.IBeanHandler;
  * @author 刘镇 (suninformation@163.com) on 2017/8/3 下午6:45
  * @version 1.0
  */
-public class PackagesHandler implements IBeanHandler {
+public final class PackagesHandler implements IBeanHandler {
 
-    private YMP __owner;
+    private final YMP __owner;
 
     public PackagesHandler(YMP owner) {
         __owner = owner;
     }
 
+    @Override
     public Object handle(Class<?> targetClass) throws Exception {
         if (targetClass.isInterface() && targetClass.getSimpleName().equalsIgnoreCase("package-info")) {
             __owner.getConfig().getInterceptSettings().registerInterceptPackage(targetClass);

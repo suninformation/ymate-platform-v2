@@ -26,22 +26,25 @@ import net.ymate.platform.core.util.ClassUtils;
  * @author 刘镇 (suninformation@163.com) on 15/3/12 上午11:59
  * @version 1.0
  */
-public class ModuleHandler implements IBeanHandler {
+public final class ModuleHandler implements IBeanHandler {
 
-    private YMP __owner;
+    private final YMP __owner;
 
     public ModuleHandler(YMP owner) {
         __owner = owner;
         __owner.registerExcludedClass(IModule.class);
     }
 
+    @Override
     public Object handle(Class<?> targetClass) throws Exception {
-        // 首先判断当前预加载的模块是否存在于被排除列表中，若存在则忽略它
-        if (!__owner.getConfig().getExcludedModules().contains(targetClass.getName())) {
-            if (ClassUtils.isInterfaceOf(targetClass, IModule.class)) {
-                IModule _module = (IModule) targetClass.newInstance();
-                if (!__owner.getConfig().getExcludedModules().contains(_module.getName())) {
-                    __owner.registerModule(_module);
+        if (!targetClass.isInterface()) {
+            // 首先判断当前预加载的模块是否存在于被排除列表中，若存在则忽略它
+            if (!__owner.getConfig().getExcludedModules().contains(targetClass.getName())) {
+                if (ClassUtils.isInterfaceOf(targetClass, IModule.class)) {
+                    IModule _module = (IModule) targetClass.newInstance();
+                    if (!__owner.getConfig().getExcludedModules().contains(_module.getName())) {
+                        __owner.registerModule(_module);
+                    }
                 }
             }
         }

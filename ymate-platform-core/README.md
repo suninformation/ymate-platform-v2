@@ -560,8 +560,11 @@ YMP框架支持将`@Before`、`@After`、`@Around`和`@ContextParam`注解在`pa
     # 事件线程池初始化大小，默认为Runtime.getRuntime().availableProcessors()
     ymp.event.thread_pool_size=
 
-    # 事件配置扩展参数，xxx表示自定义参数名称，vvv表示参数值
-    ymp.event.params.xxx=vvv
+    # 最大线程池大小，默认为 200
+    ymp.event.thread_max_pool_size=
+
+    # 线程队列大小，默认为 1024
+    ymp.event.thread_work_queue_size=
 
 ##### YMP核心事件对象
 

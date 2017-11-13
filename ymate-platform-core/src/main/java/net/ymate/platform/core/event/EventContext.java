@@ -25,7 +25,7 @@ import java.util.Map;
  * @author 刘镇 (suninformation@163.com) on 15/5/16 上午2:58
  * @version 1.0
  */
-public class EventContext<T, E extends Enum> extends EventObject {
+public abstract class EventContext<T, E extends Enum> extends EventObject {
 
     private Class<? extends IEvent> __eventClass;
 
@@ -35,8 +35,9 @@ public class EventContext<T, E extends Enum> extends EventObject {
 
     private final long __timestamp;
 
-    public EventContext(T owner, Class<? extends IEvent> eventClass, E eventName) {
+    protected EventContext(T owner, Class<? extends IEvent> eventClass, E eventName) {
         super(owner);
+        //
         __eventClass = eventClass;
         __eventName = eventName;
         __params = new HashMap<String, Object>();

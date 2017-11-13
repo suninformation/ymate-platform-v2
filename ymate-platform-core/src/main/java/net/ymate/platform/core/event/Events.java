@@ -26,15 +26,21 @@ import net.ymate.platform.core.event.impl.DefaultEventConfig;
 public final class Events {
 
     /**
-     * 事件触发模式枚举：<br>
-     * NORMAL - 同步执行<br>
-     * ASYNC  - 异步执行
+     * 事件触发模式枚举
      */
     public enum MODE {
-        NORMAL, ASYNC
+        /**
+         * NORMAL - 同步执行
+         */
+        NORMAL,
+
+        /**
+         * ASYNC  - 异步执行
+         */
+        ASYNC
     }
 
-    private IEventProvider __provider;
+    private final IEventProvider __eventProvider;
 
     public static Events create() {
         return new Events();
@@ -49,35 +55,35 @@ public final class Events {
     }
 
     private Events(IEventConfig eventConfig) {
-        __provider = eventConfig.getEventProvider();
-        __provider.init(eventConfig);
+        __eventProvider = eventConfig.getEventProvider();
+        __eventProvider.init(eventConfig);
     }
 
     public void destroy() {
-        __provider.destroy();
+        __eventProvider.destroy();
     }
 
     @SuppressWarnings("unchecked")
-    public <EVENT extends IEvent> Events registerEvent(Class<EVENT> event) {
-        __provider.registerEvent(event);
+    public Events registerEvent(Class<? extends IEvent> event) {
+        __eventProvider.registerEvent(event);
         return this;
     }
 
     @SuppressWarnings("unchecked")
     public <CONTEXT extends EventContext> Events registerListener(Class<? extends IEvent> eventClass, IEventListener<CONTEXT> eventListener) {
-        __provider.registerListener(eventClass, eventListener);
+        __eventProvider.registerListener(eventClass, eventListener);
         return this;
     }
 
     @SuppressWarnings("unchecked")
     public <CONTEXT extends EventContext> Events registerListener(Events.MODE mode, Class<? extends IEvent> eventClass, IEventListener<CONTEXT> eventListener) {
-        __provider.registerListener(mode, eventClass, eventListener);
+        __eventProvider.registerListener(mode, eventClass, eventListener);
         return this;
     }
 
     @SuppressWarnings("unchecked")
     public <CONTEXT extends EventContext> Events fireEvent(CONTEXT context) {
-        __provider.fireEvent(context);
+        __eventProvider.fireEvent(context);
         return this;
     }
 }

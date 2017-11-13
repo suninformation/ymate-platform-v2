@@ -20,8 +20,12 @@ package net.ymate.platform.core.event;
  *
  * @author 刘镇 (suninformation@163.com) on 15/5/16 上午2:15
  * @version 1.0
+ * @param <T> 事件所有者类型
+ * @param <E> 事件枚举
+ * @param <EVENT> 事件对象类型
+ * @param <CONTEXT> 事件监听器上下文对象类型
  */
-public interface IEventProvider<T, E extends Enum<E>, EVENT extends Class<IEvent>, CONTEXT extends EventContext<T, E>> {
+public interface IEventProvider<T, E extends Enum<E>, EVENT extends Class<? extends IEvent>, CONTEXT extends EventContext<T, E>> {
 
     /**
      * 初始化事件管理提供者对象

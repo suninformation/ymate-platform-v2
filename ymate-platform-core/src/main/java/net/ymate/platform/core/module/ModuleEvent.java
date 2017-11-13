@@ -24,15 +24,21 @@ import net.ymate.platform.core.event.IEvent;
  * @author 刘镇 (suninformation@163.com) on 15/5/17 下午8:51
  * @version 1.0
  */
-public class ModuleEvent extends EventContext<IModule, ModuleEvent.EVENT> implements IEvent {
+public final class ModuleEvent extends EventContext<IModule, ModuleEvent.EVENT> implements IEvent {
 
     /**
-     * 模块事件枚举：<br>
-     * MODULE_INITED - 模块初始化事件<br>
-     * MODULE_DESTROYED - 模块销毁事件
+     * 模块事件枚举
      */
     public enum EVENT {
-        MODULE_INITED, MODULE_DESTROYED
+        /**
+         * MODULE_INITED - 模块初始化事件
+         */
+        MODULE_INITED,
+
+        /**
+         * MODULE_DESTROYED - 模块销毁事件
+         */
+        MODULE_DESTROYED
     }
 
     public ModuleEvent(IModule owner, EVENT eventName) {

@@ -39,8 +39,12 @@ public interface IEventConfig {
     int getThreadPoolSize();
 
     /**
-     * @param paramName 扩展参数名称
-     * @return 返回扩展参数值
+     * @return 返回最大线程池大小，默认为 200
      */
-    String getParamExtend(String paramName);
+    int getThreadMaxPoolSize();
+
+    /**
+     * @return 返回线程队列大小，默认为 1024
+     */
+    int getThreadWorkQueueSize();
 }

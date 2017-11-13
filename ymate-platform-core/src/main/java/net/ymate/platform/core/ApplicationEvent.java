@@ -24,15 +24,22 @@ import net.ymate.platform.core.event.IEvent;
  * @author 刘镇 (suninformation@163.com) on 15/5/17 下午6:35
  * @version 1.0
  */
-public class ApplicationEvent extends EventContext<YMP, ApplicationEvent.EVENT> implements IEvent {
+public final class ApplicationEvent extends EventContext<YMP, ApplicationEvent.EVENT> implements IEvent {
 
     /**
-     * 框架事件枚举：<br>
-     * APPLICATION_INITED - 框架初始化事件<br>
-     * APPLICATION_DESTROYED - 框架销毁事件
+     * 框架事件枚举
      */
     public enum EVENT {
-        APPLICATION_INITED, APPLICATION_DESTROYED
+
+        /**
+         * APPLICATION_INITED - 框架初始化事件
+         */
+        APPLICATION_INITED,
+
+        /**
+         * APPLICATION_DESTROYED - 框架销毁事件
+         */
+        APPLICATION_DESTROYED
     }
 
     public ApplicationEvent(YMP owner, EVENT eventName) {

@@ -26,19 +26,19 @@ import net.ymate.platform.core.util.ClassUtils;
  * @author 刘镇 (suninformation@163.com) on 15/5/20 上午12:11
  * @version 1.0
  */
-public class EventRegisterHandler implements IBeanHandler {
+public final class EventRegisterHandler implements IBeanHandler {
 
-    private YMP __owner;
+    private final YMP __owner;
 
     public EventRegisterHandler(YMP owner) {
         __owner = owner;
         __owner.registerExcludedClass(IEventRegister.class);
     }
 
+    @Override
     public Object handle(Class<?> targetClass) throws Exception {
-        if (ClassUtils.isInterfaceOf(targetClass, IEventRegister.class)) {
-            IEventRegister _register = (IEventRegister) targetClass.newInstance();
-            _register.register(__owner.getEvents());
+        if (!targetClass.isInterface() && ClassUtils.isInterfaceOf(targetClass, IEventRegister.class)) {
+            ((IEventRegister) targetClass.newInstance()).register(__owner.getEvents());
         }
         return null;
     }

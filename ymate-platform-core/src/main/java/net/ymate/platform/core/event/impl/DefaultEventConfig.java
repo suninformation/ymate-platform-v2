@@ -22,7 +22,6 @@ import net.ymate.platform.core.lang.BlurObject;
 import net.ymate.platform.core.util.ClassUtils;
 import org.apache.commons.lang.StringUtils;
 
-import java.util.Collections;
 import java.util.Map;
 
 /**
@@ -31,7 +30,7 @@ import java.util.Map;
  * @author 刘镇 (suninformation@163.com) on 15/5/17 下午4:06
  * @version 1.0
  */
-public class DefaultEventConfig implements IEventConfig {
+public final class DefaultEventConfig implements IEventConfig {
 
     private IEventProvider __eventProvider;
 
@@ -39,45 +38,68 @@ public class DefaultEventConfig implements IEventConfig {
 
     private int __threadPoolSize;
 
-    private Map<String, String> __params;
+    private int __threadMaxPoolSize;
+
+    private int __threadWorkQueueSize;
 
     public DefaultEventConfig() {
         this(null);
     }
 
     public DefaultEventConfig(Map<String, String> params) {
-        if (params != null) {
-            __params = params;
-        } else {
-            __params = Collections.emptyMap();
-        }
-        //
-        __eventProvider = ClassUtils.impl(params != null ? params.get("provider_class") : null, IEventProvider.class, this.getClass());
-        if (__eventProvider == null) {
+        if (params == null || params.isEmpty()) {
             __eventProvider = new DefaultEventProvider();
-        }
-        //
-        __defaultMode = Events.MODE.valueOf(StringUtils.defaultIfBlank(params != null ? params.get("default_mode") : null, "ASYNC").toUpperCase());
-        //
-        __threadPoolSize = BlurObject.bind(params != null ? params.get("thread_pool_size") : null).toIntValue();
-        if (__threadPoolSize <= 0) {
+            __defaultMode = Events.MODE.ASYNC;
             __threadPoolSize = Runtime.getRuntime().availableProcessors();
+            __threadMaxPoolSize = 200;
+            __threadWorkQueueSize = 1024;
+        } else {
+            __eventProvider = ClassUtils.impl(params.get("provider_class"), IEventProvider.class, this.getClass());
+            if (__eventProvider == null) {
+                __eventProvider = new DefaultEventProvider();
+            }
+            //
+            __defaultMode = Events.MODE.valueOf(StringUtils.defaultIfBlank(params.get("default_mode"), "ASYNC").toUpperCase());
+            //
+            __threadPoolSize = BlurObject.bind(params.get("thread_pool_size")).toIntValue();
+            if (__threadPoolSize <= 0) {
+                __threadPoolSize = Runtime.getRuntime().availableProcessors();
+            }
+            //
+            __threadMaxPoolSize = BlurObject.bind(params.get("thread_max_pool_size")).toIntValue();
+            if (__threadMaxPoolSize <= 0) {
+                __threadMaxPoolSize = 200;
+            }
+            //
+            __threadWorkQueueSize = BlurObject.bind(params.get("thread_work_queue_size")).toIntValue();
+            if (__threadWorkQueueSize <= 0) {
+                __threadWorkQueueSize = 1024;
+            }
         }
     }
 
+    @Override
     public IEventProvider getEventProvider() {
         return __eventProvider;
     }
 
+    @Override
     public Events.MODE getDefaultMode() {
         return __defaultMode;
     }
 
+    @Override
     public int getThreadPoolSize() {
         return __threadPoolSize;
     }
 
-    public String getParamExtend(String paramName) {
-        return __params.get("params." + paramName);
+    @Override
+    public int getThreadMaxPoolSize() {
+        return __threadMaxPoolSize;
+    }
+
+    @Override
+    public int getThreadWorkQueueSize() {
+        return __threadWorkQueueSize;
     }
 }

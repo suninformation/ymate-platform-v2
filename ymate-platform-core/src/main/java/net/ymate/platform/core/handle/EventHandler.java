@@ -15,29 +15,29 @@
  */
 package net.ymate.platform.core.handle;
 
-import net.ymate.platform.core.beans.IBeanFactory;
+import net.ymate.platform.core.YMP;
 import net.ymate.platform.core.beans.IBeanHandler;
-import net.ymate.platform.core.beans.IBeanInjector;
-import net.ymate.platform.core.beans.annotation.Injector;
+import net.ymate.platform.core.event.IEvent;
 import net.ymate.platform.core.util.ClassUtils;
 
 /**
- * @author 刘镇 (suninformation@163.com) on 2017/9/19 下午1:41
+ * @author 刘镇 (suninformation@163.com) on 2017/11/14 上午2:17
  * @version 1.0
  */
-public final class InjectorHandler implements IBeanHandler {
+public final class EventHandler implements IBeanHandler {
 
-    private final IBeanFactory __beanFactory;
+    private final YMP __owner;
 
-    public InjectorHandler(IBeanFactory beanFactory) {
-        __beanFactory = beanFactory;
-        __beanFactory.registerExcludedClass(IBeanInjector.class);
+    public EventHandler(YMP owner) {
+        __owner = owner;
+        __owner.registerExcludedClass(IEvent.class);
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public Object handle(Class<?> targetClass) throws Exception {
-        if (!targetClass.isInterface() && ClassUtils.isInterfaceOf(targetClass, IBeanInjector.class)) {
-            __beanFactory.registerInjector(targetClass.getAnnotation(Injector.class).value(), (IBeanInjector) targetClass.newInstance());
+        if (!targetClass.isInterface() && ClassUtils.isInterfaceOf(targetClass, IEvent.class)) {
+            __owner.getEvents().registerEvent((Class<? extends IEvent>) targetClass);
         }
         return null;
     }
