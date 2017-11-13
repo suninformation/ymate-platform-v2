@@ -50,7 +50,7 @@ public final class DefaultEventProvider<T, E extends Enum<E>, EVENT extends Clas
     public void init(IEventConfig eventConfig) {
         __eventConfig = eventConfig;
         __eventExecPool = new ThreadPoolExecutor(eventConfig.getThreadPoolSize() > 0 ? eventConfig.getThreadPoolSize() : Runtime.getRuntime().availableProcessors(),
-                eventConfig.getThreadMaxPoolSize(), 0L, TimeUnit.MILLISECONDS,
+                eventConfig.getThreadMaxPoolSize() > 0 ? eventConfig.getThreadMaxPoolSize() : 200, 0L, TimeUnit.MILLISECONDS,
                 new LinkedBlockingQueue<Runnable>(eventConfig.getThreadWorkQueueSize() > 0 ? eventConfig.getThreadWorkQueueSize() : 1024),
                 new DefaultThreadFactory(), new ThreadPoolExecutor.AbortPolicy());
         __events = new ArrayList<String>();
