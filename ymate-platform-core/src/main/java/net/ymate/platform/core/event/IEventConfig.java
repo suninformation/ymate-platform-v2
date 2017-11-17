@@ -46,5 +46,5 @@ public interface IEventConfig {
     /**
      * @return 返回线程队列大小，默认为 1024
      */
-    int getThreadWorkQueueSize();
+    int getThreadQueueSize();
 }

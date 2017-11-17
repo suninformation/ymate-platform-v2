@@ -564,7 +564,7 @@ YMP框架支持将`@Before`、`@After`、`@Around`和`@ContextParam`注解在`pa
     ymp.event.thread_max_pool_size=
 
     # 线程队列大小，默认为 1024
-    ymp.event.thread_work_queue_size=
+    ymp.event.thread_queue_size=
 
 ##### YMP核心事件对象
 

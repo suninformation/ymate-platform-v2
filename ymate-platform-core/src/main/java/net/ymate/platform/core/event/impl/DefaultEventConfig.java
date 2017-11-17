@@ -40,7 +40,7 @@ public final class DefaultEventConfig implements IEventConfig {
 
     private int __threadMaxPoolSize;
 
-    private int __threadWorkQueueSize;
+    private int __threadQueueSize;
 
     public DefaultEventConfig() {
         this(null);
@@ -52,7 +52,7 @@ public final class DefaultEventConfig implements IEventConfig {
             __defaultMode = Events.MODE.ASYNC;
             __threadPoolSize = Runtime.getRuntime().availableProcessors();
             __threadMaxPoolSize = 200;
-            __threadWorkQueueSize = 1024;
+            __threadQueueSize = 1024;
         } else {
             __eventProvider = ClassUtils.impl(params.get("provider_class"), IEventProvider.class, this.getClass());
             if (__eventProvider == null) {
@@ -71,9 +71,9 @@ public final class DefaultEventConfig implements IEventConfig {
                 __threadMaxPoolSize = 200;
             }
             //
-            __threadWorkQueueSize = BlurObject.bind(params.get("thread_work_queue_size")).toIntValue();
-            if (__threadWorkQueueSize <= 0) {
-                __threadWorkQueueSize = 1024;
+            __threadQueueSize = BlurObject.bind(params.get("thread_queue_size")).toIntValue();
+            if (__threadQueueSize <= 0) {
+                __threadQueueSize = 1024;
             }
         }
     }
@@ -99,7 +99,7 @@ public final class DefaultEventConfig implements IEventConfig {
     }
 
     @Override
-    public int getThreadWorkQueueSize() {
-        return __threadWorkQueueSize;
+    public int getThreadQueueSize() {
+        return __threadQueueSize;
     }
 }
