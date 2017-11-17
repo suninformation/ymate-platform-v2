@@ -91,11 +91,12 @@ public class Transactions {
      * @throws Exception 可能产生的异常
      */
     static void __close() throws Exception {
-        if (__COUNT.get() == 0) {
+        if (__COUNT.get() != null && __COUNT.get() == 0) {
             try {
                 __TRANS_LOCAL.get().close();
             } finally {
-                __TRANS_LOCAL.set(null);
+                __TRANS_LOCAL.remove();
+                __COUNT.remove();
             }
         }
     }

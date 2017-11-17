@@ -41,6 +41,11 @@ public class NetworkUtils {
      */
     public static class IP {
 
+        private static Pattern _pattern = Pattern.compile("\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}");
+
+        private static Pattern _pattern1 = Pattern.compile(":");
+        private static Pattern _pattern2 = Pattern.compile("::");
+
         private static String _hostName;
 
         private static String[] _hostIPs;
@@ -102,7 +107,7 @@ public class NetworkUtils {
          * @return 检查IPv4地址的合法性
          */
         public static boolean isIPv4(String ipAddr) {
-            return Pattern.compile("\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}").matcher(ipAddr).matches();
+            return _pattern.matcher(ipAddr).matches();
         }
 
         /**
@@ -120,17 +125,17 @@ public class NetworkUtils {
             if (ipAddr.charAt(0) == '[' && ipAddr.charAt(ipAddr.length() - 1) == ']') {
                 ipAddr = ipAddr.substring(1, ipAddr.length() - 1);
             }
-            return (1 < Pattern.compile(":").split(ipAddr).length)
+            return (1 < _pattern1.split(ipAddr).length)
                     // a valid IPv6 address should contains no less than 1, and no more than 7 “:” as separators
-                    && (Pattern.compile(":").split(ipAddr).length <= 8)
+                    && (_pattern1.split(ipAddr).length <= 8)
                     // the address can be compressed, but “::” can appear only once
-                    && (Pattern.compile("::").split(ipAddr).length <= 2)
+                    && (_pattern2.split(ipAddr).length <= 2)
                     // if a compressed address
-                    && (Pattern.compile("::").split(ipAddr).length == 2)
+                    && (_pattern2.split(ipAddr).length == 2)
                     // if starts with “::” – leading zeros are compressed
-                    ? (((ipAddr.substring(0, 2).equals("::")) ? Pattern.matches("^::([\\da-f]{1,4}(:)){0,4}(([\\da-f]{1,4}(:)[\\da-f]{1,4})|([\\da-f]{1,4})|((\\d{1,3}.){3}\\d{1,3}))", ipAddr) : Pattern.matches("^([\\da-f]{1,4}(:|::)){1,5}(([\\da-f]{1,4}(:|::)[\\da-f]{1,4})|([\\da-f]{1,4})|((\\d{1,3}.){3}\\d{1,3}))", ipAddr)))
+                    ? (("::".equals(ipAddr.substring(0, 2)) ? Pattern.matches("^::([\\da-f]{1,4}(:)){0,4}(([\\da-f]{1,4}(:)[\\da-f]{1,4})|([\\da-f]{1,4})|((\\d{1,3}.){3}\\d{1,3}))", ipAddr) : Pattern.matches("^([\\da-f]{1,4}(:|::)){1,5}(([\\da-f]{1,4}(:|::)[\\da-f]{1,4})|([\\da-f]{1,4})|((\\d{1,3}.){3}\\d{1,3}))", ipAddr)))
                     // if ends with "::" - ending zeros are compressed
-                    : ((ipAddr.substring(ipAddr.length() - 2).equals("::")) ? Pattern.matches("^([\\da-f]{1,4}(:|::)){1,7}", ipAddr) : Pattern.matches("^([\\da-f]{1,4}:){6}(([\\da-f]{1,4}:[\\da-f]{1,4})|((\\d{1,3}.){3}\\d{1,3}))", ipAddr));
+                    : ("::".equals(ipAddr.substring(ipAddr.length() - 2)) ? Pattern.matches("^([\\da-f]{1,4}(:|::)){1,7}", ipAddr) : Pattern.matches("^([\\da-f]{1,4}:){6}(([\\da-f]{1,4}:[\\da-f]{1,4})|((\\d{1,3}.){3}\\d{1,3}))", ipAddr));
         }
 
         /**

@@ -31,8 +31,10 @@ import java.util.regex.Pattern;
  */
 public final class ExpressionUtils {
 
+    private final static Pattern __pattern = Pattern.compile("(?<=\\$\\{)(.+?)(?=})");
+
     private final static String __pre = "\\$\\{";
-    private final static String __suf = "\\}";
+    private final static String __suf = "}";
     private String __result;
 
     /**
@@ -72,8 +74,7 @@ public final class ExpressionUtils {
      */
     public List<String> getVariables() {
         List<String> _vars = new ArrayList<String>();
-//        Matcher _match = Pattern.compile("\\$\\{([\\s\\S]*?)\\}").matcher("I am ${name},and sex is ${sex}.");
-        Matcher _match = Pattern.compile("(?<=\\$\\{)(.+?)(?=\\})").matcher(this.__result);
+        Matcher _match = __pattern.matcher(this.__result);
         boolean _result = _match.find();
         if (_result) {
             do {
