@@ -20,16 +20,13 @@ import java.lang.annotation.*;
 /**
  * 必填项验证注解
  *
- * @author 刘镇 (suninformation@163.com) on 15/5/23 下午4:45
+ * @author 刘镇 (suninformation@163.com) on 2017/11/20 上午2:22
  * @version 1.0
- * @deprecated 当前注解类名称单词拼写错误，将在未来版本中移除，请使用@VRequried代替
- * @see VRequired
  */
 @Target({ElementType.FIELD, ElementType.PARAMETER})
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
-@Deprecated
-public @interface VRequried {
+public @interface VRequired {
 
     /**
      * @return 自定义验证消息

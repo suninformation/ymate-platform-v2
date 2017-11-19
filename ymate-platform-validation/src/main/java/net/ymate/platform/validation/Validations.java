@@ -24,6 +24,8 @@ import net.ymate.platform.core.util.RuntimeUtils;
 import net.ymate.platform.validation.annotation.Validation;
 import net.ymate.platform.validation.annotation.Validator;
 import net.ymate.platform.validation.handle.ValidateHandler;
+import net.ymate.platform.validation.validate.RequriedValidator;
+import net.ymate.platform.validation.validate.VRequired;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -109,6 +111,10 @@ public class Validations implements IModule, IValidation {
         try {
             __owner.registerBean(validatorClass, validatorClass.newInstance());
             __validators.put(annotationClass, validatorClass);
+            if (RequriedValidator.class.equals(annotationClass)) {
+                // TODO 为了未来剔除@VRequried做准备
+                __validators.put(VRequired.class, validatorClass);
+            }
         } catch (Exception e) {
             _LOG.error("", RuntimeUtils.unwrapThrow(e));
         }
@@ -160,7 +166,7 @@ public class Validations implements IModule, IValidation {
      * @param targetClass 目标类型
      * @return 缓存中获取目标类型验证配置描述，若不存在则尝试创建它并加入缓存中
      */
-    protected ValidationMeta __doGetCachedMeta(Class<?> targetClass) {
+    private ValidationMeta __doGetCachedMeta(Class<?> targetClass) {
         ValidationMeta _meta = __VALIDATION_META_CACHES.get(targetClass);
         if (_meta == null) {
             _meta = new ValidationMeta(this, targetClass);
@@ -169,7 +175,7 @@ public class Validations implements IModule, IValidation {
         return _meta;
     }
 
-    protected ValidateResult __doValidate(Annotation[] annotations, String paramName, String paramLabel, Map<String, Object> paramValues, Map<String, String> contextParams, String resourceName) {
+    private ValidateResult __doValidate(Annotation[] annotations, String paramName, String paramLabel, Map<String, Object> paramValues, Map<String, String> contextParams, String resourceName) {
         ValidateResult _result = null;
         for (Annotation _ann : annotations) {
             IValidator _validator = __owner.getBean(__validators.get(_ann.annotationType()));
