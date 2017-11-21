@@ -49,6 +49,11 @@ public class HttpStatusView extends AbstractView {
      */
     public static HttpStatusView NOT_FOUND = new HttpStatusView(HttpServletResponse.SC_NOT_FOUND);
 
+    /**
+     * STATUS: 400
+     */
+    public static HttpStatusView BAD_REQUEST = new HttpStatusView(HttpServletResponse.SC_BAD_REQUEST);
+
     public static HttpStatusView bind(int status) {
         return new HttpStatusView(status);
     }

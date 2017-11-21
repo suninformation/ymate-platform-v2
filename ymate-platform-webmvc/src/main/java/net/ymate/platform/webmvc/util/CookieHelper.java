@@ -19,7 +19,6 @@ import net.ymate.platform.core.lang.BlurObject;
 import net.ymate.platform.core.util.CodecUtils;
 import net.ymate.platform.core.util.RuntimeUtils;
 import net.ymate.platform.webmvc.IWebMvc;
-import net.ymate.platform.webmvc.WebMVC;
 import net.ymate.platform.webmvc.context.WebContext;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.codec.digest.DigestUtils;
@@ -96,7 +95,7 @@ public final class CookieHelper {
     }
 
     public static CookieHelper bind() {
-        return new CookieHelper(WebMVC.get(), WebContext.getRequest(), WebContext.getResponse());
+        return new CookieHelper(WebContext.getContext().getOwner(), WebContext.getRequest(), WebContext.getResponse());
     }
 
     public static CookieHelper bind(IWebMvc owner, HttpServletRequest request, HttpServletResponse response) {
@@ -104,7 +103,7 @@ public final class CookieHelper {
     }
 
     public static CookieHelper bind(HttpServletRequest request, HttpServletResponse response) {
-        return new CookieHelper(WebMVC.get(), request, response);
+        return new CookieHelper(WebContext.getContext().getOwner(), request, response);
     }
 
     private Cookie __doGetCookie(String cookieName) {
