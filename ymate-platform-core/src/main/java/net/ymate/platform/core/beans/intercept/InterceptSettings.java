@@ -284,49 +284,40 @@ public class InterceptSettings {
         //
         String _className = targetClass.getName().concat("#");
         String _methodName = _className.concat(targetMethod.getName());
-        // 先加载类级别的配置
+        //
         InterceptSettingMeta _classMeta = __settings.get(_className);
         if (_classMeta != null) {
             _flag = true;
-            // 若有新增的前置拦截器先添加到集合中
-            if (!_classMeta.getBeforeIntercepts().isEmpty()) {
-                for (Class<? extends IInterceptor> _interceptor : _classMeta.getBeforeIntercepts()) {
-                    if (!__globals.contains(_interceptor) && !_results.contains(_interceptor)) {
-                        _results.add(_interceptor);
-                    }
-                }
-            }
-            // 判断并尝试过滤类级别前置拦截器
-            if (!_classMeta.isCleanAll() && !_classMeta.isBeforeCleanAll()) {
-                for (Class<? extends IInterceptor> _interceptor : classes) {
-                    if (!__globals.contains(_interceptor) && _classMeta.beforeCleanIntercepts.contains(_interceptor.getName()) && !_results.contains(_interceptor)) {
-                        _results.add(_interceptor);
-                    }
-                }
-            }
+            __doInterceptSettingFilter(true, _classMeta, classes, _results);
         }
         InterceptSettingMeta _methodMeta = __settings.get(_methodName);
         if (_methodMeta != null) {
             _flag = true;
-            // 若有新增的前置拦截器先添加到集合中
-            if (!_methodMeta.getBeforeIntercepts().isEmpty()) {
-                for (Class<? extends IInterceptor> _interceptor : _methodMeta.getBeforeIntercepts()) {
-                    if (!__globals.contains(_interceptor) && !_results.contains(_interceptor)) {
-                        _results.add(_interceptor);
-                    }
-                }
-            }
-            // 判断并尝试过滤方法级别前置拦截器
-            if ((_classMeta != null && !_classMeta.isCleanAll()) && !_methodMeta.isBeforeCleanAll()) {
-                for (Class<? extends IInterceptor> _interceptor : classes) {
-                    if (!__globals.contains(_interceptor) && _methodMeta.beforeCleanIntercepts.contains(_interceptor.getName()) && !_results.contains(_interceptor)) {
-                        _results.add(_interceptor);
-                    }
-                }
-            }
+            __doInterceptSettingFilter(true, _methodMeta, classes, _results);
         }
         //
         return _flag ? _results : classes;
+    }
+
+    private void __doInterceptSettingFilter(boolean before, InterceptSettingMeta settingMeta, List<Class<? extends IInterceptor>> interceptors, List<Class<? extends IInterceptor>> results) {
+        // 若有新增的前置拦截器先添加到集合中
+        List<Class<? extends IInterceptor>> _target = before ? settingMeta.getBeforeIntercepts() : settingMeta.getAfterIntercepts();
+        if (!_target.isEmpty()) {
+            for (Class<? extends IInterceptor> _interceptor : (before ? settingMeta.getBeforeIntercepts() : settingMeta.getAfterIntercepts())) {
+                if (!__globals.contains(_interceptor) && !results.contains(_interceptor) && !settingMeta.beforeCleanIntercepts.contains(_interceptor.getName())) {
+                    results.add(_interceptor);
+                }
+            }
+        }
+        // 判断并尝试过滤前置拦截器
+        if (!settingMeta.isCleanAll() && (before ? !settingMeta.isBeforeCleanAll() : !settingMeta.isAfterCleanAll())) {
+            for (Class<? extends IInterceptor> _interceptor : interceptors) {
+                boolean _flag = before ? !settingMeta.beforeCleanIntercepts.contains(_interceptor.getName()) : !settingMeta.afterCleanIntercepts.contains(_interceptor.getName());
+                if (!__globals.contains(_interceptor) && !results.contains(_interceptor) && _flag) {
+                    results.add(_interceptor);
+                }
+            }
+        }
     }
 
     public List<Class<? extends IInterceptor>> doAfterSet(List<Class<? extends IInterceptor>> classes, Class<?> targetClass, Method targetMethod) {
@@ -335,46 +326,16 @@ public class InterceptSettings {
         //
         String _className = targetClass.getName().concat("#");
         String _methodName = _className.concat(targetMethod.getName());
-        // 先加载类级别的配置
+        //
         InterceptSettingMeta _classMeta = __settings.get(_className);
         if (_classMeta != null) {
             _flag = true;
-            // 若有新增的后置拦截器先添加到集合中
-            if (!_classMeta.getAfterIntercepts().isEmpty()) {
-                for (Class<? extends IInterceptor> _interceptor : _classMeta.getAfterIntercepts()) {
-                    if (!__globals.contains(_interceptor) && !_results.contains(_interceptor)) {
-                        _results.add(_interceptor);
-                    }
-                }
-            }
-            // 判断并尝试过滤类级别后置拦截器
-            if (!_classMeta.isCleanAll() && !_classMeta.isAfterCleanAll()) {
-                for (Class<? extends IInterceptor> _interceptor : classes) {
-                    if (!__globals.contains(_interceptor) && _classMeta.afterCleanIntercepts.contains(_interceptor.getName()) && !_results.contains(_interceptor)) {
-                        _results.add(_interceptor);
-                    }
-                }
-            }
+            __doInterceptSettingFilter(false, _classMeta, classes, _results);
         }
         InterceptSettingMeta _methodMeta = __settings.get(_methodName);
         if (_methodMeta != null) {
             _flag = true;
-            // 若有新增的后置拦截器先添加到集合中
-            if (!_methodMeta.getAfterIntercepts().isEmpty()) {
-                for (Class<? extends IInterceptor> _interceptor : _methodMeta.getAfterIntercepts()) {
-                    if (!_results.contains(_interceptor)) {
-                        _results.add(_interceptor);
-                    }
-                }
-            }
-            // 判断并尝试过滤方法级别后置拦截器
-            if ((_classMeta != null && !_classMeta.isCleanAll()) && !_methodMeta.isAfterCleanAll()) {
-                for (Class<? extends IInterceptor> _interceptor : classes) {
-                    if (!__globals.contains(_interceptor) && _methodMeta.afterCleanIntercepts.contains(_interceptor.getName()) && !_results.contains(_interceptor)) {
-                        _results.add(_interceptor);
-                    }
-                }
-            }
+            __doInterceptSettingFilter(false, _methodMeta, classes, _results);
         }
         //
         return _flag ? _results : classes;
