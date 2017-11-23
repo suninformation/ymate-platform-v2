@@ -52,14 +52,14 @@
             <scope>test</scope>
         </dependency>
         <dependency>
+            <groupId>org.mongodb</groupId>
+            <artifactId>mongodb-driver</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
             <groupId>net.ymate.platform</groupId>
             <artifactId>ymate-platform-persistence</artifactId>
             <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.mongodb</groupId>
-            <artifactId>mongodb-driver</artifactId>
-            <version>3.1.1</version>
         </dependency>
     </dependencies>
 </project>
