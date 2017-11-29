@@ -23,13 +23,17 @@ package net.ymate.platform.persistence.jdbc.query;
  */
 public interface IDBLocker {
 
-    IDBLocker MYSQL = new IDBLocker() {
+    IDBLocker DEFAULT = new IDBLocker() {
         public String toSQL() {
             return " FOR UPDATE";
         }
     };
 
-    IDBLocker ORACLE = MYSQL;
+    @Deprecated
+    IDBLocker MYSQL = DEFAULT;
+
+    @Deprecated
+    IDBLocker ORACLE = DEFAULT;
 
     IDBLocker ORACLE_NOWAIT = new IDBLocker() {
         public String toSQL() {
