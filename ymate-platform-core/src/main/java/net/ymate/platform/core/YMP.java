@@ -40,6 +40,7 @@ import net.ymate.platform.core.module.ModuleEvent;
 import net.ymate.platform.core.module.annotation.Module;
 import net.ymate.platform.core.support.ConfigBuilder;
 import net.ymate.platform.core.support.IInitializable;
+import net.ymate.platform.core.util.ClassUtils;
 import net.ymate.platform.core.util.RuntimeUtils;
 import org.apache.commons.lang.time.StopWatch;
 import org.apache.commons.logging.Log;
@@ -331,6 +332,30 @@ public class YMP {
      */
     public <T extends IModule> T getModule(Class<T> moduleClass) {
         return __moduleFactory.getBean(moduleClass);
+    }
+
+    /**
+     * @param moduleClassName 模块类名称
+     * @param <T>             模块类型
+     * @return 获取模块类实例对象
+     */
+    @SuppressWarnings("unchecked")
+    public <T extends IModule> T getModule(String moduleClassName) {
+        if (!isModuleExcluded(moduleClassName)) {
+            try {
+                return (T) __moduleFactory.getBean(ClassUtils.loadClass(moduleClassName, this.getClass()));
+            } catch (Exception ignored) {
+            }
+        }
+        return null;
+    }
+
+    /**
+     * @param moduleName 模块名称或类名
+     * @return 判断指定名称或类名的模块是否已被排除
+     */
+    public boolean isModuleExcluded(String moduleName) {
+        return __config.getExcludedModules().contains("moduleName");
     }
 
     /**
