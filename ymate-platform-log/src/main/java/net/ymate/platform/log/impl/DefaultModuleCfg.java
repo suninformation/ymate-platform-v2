@@ -17,7 +17,6 @@ package net.ymate.platform.log.impl;
 
 import net.ymate.platform.core.YMP;
 import net.ymate.platform.core.lang.BlurObject;
-import net.ymate.platform.core.module.IModule;
 import net.ymate.platform.core.util.ClassUtils;
 import net.ymate.platform.core.util.RuntimeUtils;
 import net.ymate.platform.log.ILog;
@@ -45,15 +44,9 @@ public class DefaultModuleCfg implements ILogModuleCfg {
     @SuppressWarnings("unchecked")
     public DefaultModuleCfg(YMP owner) {
         Map<String, String> _moduleCfgs = owner.getConfig().getModuleConfigs(ILog.MODULE_NAME);
-        //
-        String _cfgsClassName = "net.ymate.platform.configuration.Cfgs";
-        if (!owner.getConfig().getExcludedModules().contains("configuration")
-                && !owner.getConfig().getExcludedModules().contains(_cfgsClassName)) {
-            try {
-                // 尝试加载配置体系模块，若存在则将决定配置文件加载的路径
-                owner.getModule((Class<? extends IModule>) ClassUtils.loadClass(_cfgsClassName, this.getClass()));
-            } catch (Exception ignored) {
-            }
+        // 尝试加载配置体系模块，若存在则将决定配置文件加载的路径
+        if (!owner.isModuleExcluded("configuration")) {
+            owner.getModule("net.ymate.platform.configuration.Cfgs");
         }
         //
         this.configFile = new File(RuntimeUtils.replaceEnvVariable(StringUtils.defaultIfBlank(_moduleCfgs.get("config_file"), "${root}/cfgs/log4j.xml")));

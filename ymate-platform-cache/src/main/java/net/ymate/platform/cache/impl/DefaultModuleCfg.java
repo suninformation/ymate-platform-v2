@@ -47,6 +47,10 @@ public class DefaultModuleCfg implements ICacheModuleCfg {
 
     public DefaultModuleCfg(YMP owner) throws Exception {
         Map<String, String> _moduleCfgs = owner.getConfig().getModuleConfigs(ICaches.MODULE_NAME);
+        // 尝试加载配置体系模块，若存在则将决定配置文件加载的路径
+        if (!owner.isModuleExcluded("configuration")) {
+            owner.getModule("net.ymate.platform.configuration.Cfgs");
+        }
         //
         String _providerClassStr = StringUtils.defaultIfBlank(_moduleCfgs.get("provider_class"), "default");
         __cacheProvider = ClassUtils.impl(StringUtils.defaultIfBlank(Caches.PROVIDERS.get(_providerClassStr), _providerClassStr), ICacheProvider.class, this.getClass());
