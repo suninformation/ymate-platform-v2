@@ -25,7 +25,7 @@ import java.lang.annotation.*;
  * @author 刘镇 (suninformation@163.com) on 2013年9月13日 下午7:37:48
  * @version 1.0
  */
-@Target({ElementType.TYPE, ElementType.METHOD})
+@Target({ElementType.PACKAGE, ElementType.TYPE, ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
 public @interface RequestProcessor {

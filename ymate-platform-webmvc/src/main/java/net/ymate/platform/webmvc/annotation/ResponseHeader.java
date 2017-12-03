@@ -23,7 +23,7 @@ import java.lang.annotation.*;
  * @author 刘镇 (suninformation@163.com) on 15/10/29 下午7:25
  * @version 1.0
  */
-@Target({ElementType.TYPE, ElementType.METHOD})
+@Target({ElementType.PACKAGE, ElementType.TYPE, ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
 public @interface ResponseHeader {

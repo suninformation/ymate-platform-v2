@@ -33,7 +33,9 @@ public class ControllerHandler implements IBeanHandler {
     }
 
     public Object handle(Class<?> targetClass) throws Exception {
-        __owner.registerController(targetClass);
+        if (!targetClass.isInterface() && !targetClass.isAnnotation()) {
+            __owner.registerController(targetClass);
+        }
         return null;
     }
 }

@@ -81,13 +81,19 @@ public class RequestMeta {
         this.responseCache = method.getAnnotation(ResponseCache.class);
         if (this.responseCache == null) {
             this.responseCache = targetClass.getAnnotation(ResponseCache.class);
+            if (this.responseCache == null) {
+                this.responseCache = targetClass.getPackage().getAnnotation(ResponseCache.class);
+            }
         }
         //
         this.parameterEscape = method.getAnnotation(ParameterEscape.class);
         if (this.parameterEscape == null) {
             this.parameterEscape = targetClass.getAnnotation(ParameterEscape.class);
-            if (this.parameterEscape == null && owner.getModuleCfg().isParameterEscapeMode()) {
-                this.parameterEscape = this.getClass().getAnnotation(ParameterEscape.class);
+            if (this.parameterEscape == null) {
+                this.parameterEscape = targetClass.getPackage().getAnnotation(ParameterEscape.class);
+                if (this.parameterEscape == null && owner.getModuleCfg().isParameterEscapeMode()) {
+                    this.parameterEscape = this.getClass().getAnnotation(ParameterEscape.class);
+                }
             }
         }
         if (this.parameterEscape != null && this.parameterEscape.skiped()) {
@@ -97,10 +103,17 @@ public class RequestMeta {
         this.responseView = method.getAnnotation(ResponseView.class);
         if (this.responseView == null) {
             this.responseView = targetClass.getAnnotation(ResponseView.class);
+            if (this.responseView == null) {
+                this.responseView = targetClass.getPackage().getAnnotation(ResponseView.class);
+            }
         }
         //
         this.responseHeaders = new HashSet<Header>();
-        ResponseHeader _respHeader = targetClass.getAnnotation(ResponseHeader.class);
+        ResponseHeader _respHeader = targetClass.getPackage().getAnnotation(ResponseHeader.class);
+        if (_respHeader != null) {
+            Collections.addAll(this.responseHeaders, _respHeader.value());
+        }
+        _respHeader = targetClass.getAnnotation(ResponseHeader.class);
         if (_respHeader != null) {
             Collections.addAll(this.responseHeaders, _respHeader.value());
         }
@@ -109,10 +122,15 @@ public class RequestMeta {
             Collections.addAll(this.responseHeaders, _respHeader.value());
         }
         //
-        RequestMapping _reqMapping = targetClass.getAnnotation(RequestMapping.class);
+        RequestMapping _reqMapping = targetClass.getPackage().getAnnotation(RequestMapping.class);
         String _root = null;
         if (_reqMapping != null) {
             _root = _reqMapping.value();
+            __doSetAllowValues(_reqMapping);
+        }
+        _reqMapping = targetClass.getAnnotation(RequestMapping.class);
+        if (_reqMapping != null) {
+            _root = __doBuildRequestMapping(_root, _reqMapping);
             __doSetAllowValues(_reqMapping);
         }
         _reqMapping = method.getAnnotation(RequestMapping.class);
@@ -125,14 +143,14 @@ public class RequestMeta {
         this.mapping = __doBuildRequestMapping(_root, _reqMapping);
         //
         RequestProcessor _reqProcessor = method.getAnnotation(RequestProcessor.class);
+        if (_reqProcessor == null) {
+            _reqProcessor = targetClass.getAnnotation(RequestProcessor.class);
+            if (_reqProcessor == null) {
+                _reqProcessor = targetClass.getPackage().getAnnotation(RequestProcessor.class);
+            }
+        }
         if (_reqProcessor != null) {
             this.processor = _reqProcessor.value();
-        }
-        if (this.processor == null) {
-            _reqProcessor = targetClass.getAnnotation(RequestProcessor.class);
-            if (_reqProcessor != null) {
-                this.processor = _reqProcessor.value();
-            }
         }
         //
         Map<String, ParameterMeta> _targetClassParameterMetas = __CLASS_PARAMETER_METAS.get(targetClass);
