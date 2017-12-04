@@ -195,7 +195,7 @@ public class EntityGenerator {
                         _attr.setReadonly(true);
                     }
                     _fieldList.add(_attr);
-                    if (_attr.isNullable()) {
+                    if (!_attr.isNullable()) {
                         _fieldListForNotNullable.add(_attr);
                     }
                     _allFieldList.add(new Attr("String", __config.namedFilter(_ci.getColumnName()).toUpperCase(),
