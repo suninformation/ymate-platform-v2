@@ -22,6 +22,8 @@ import net.sf.cglib.proxy.MethodInterceptor;
 import net.sf.cglib.proxy.MethodProxy;
 import net.ymate.platform.core.beans.annotation.PropertyState;
 import net.ymate.platform.core.util.ClassUtils;
+import org.apache.commons.lang.ArrayUtils;
+import org.apache.commons.lang.ObjectUtils;
 import org.apache.commons.lang.StringUtils;
 
 import java.lang.reflect.Field;
@@ -72,8 +74,8 @@ public class PropertyStateSupport<T> {
                 public Object intercept(Object targetObject, Method targetMethod, Object[] methodParams, MethodProxy methodProxy) throws Throwable {
                     Object _result = methodProxy.invokeSuper(targetObject, methodParams);
                     PropertyStateMeta _meta = __propertyStates.get(targetMethod.getName());
-                    if (_meta != null) {
-                        _meta.setNewValue(methodParams != null ? methodParams[0] : null);
+                    if (_meta != null && ArrayUtils.isNotEmpty(methodParams) && !ObjectUtils.equals(_meta.getOriginalValue(), methodParams[0])) {
+                        _meta.setNewValue(methodParams[0]);
                     }
                     return _result;
                 }
