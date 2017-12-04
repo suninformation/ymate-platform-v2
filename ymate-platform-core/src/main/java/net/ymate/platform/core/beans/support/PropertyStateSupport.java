@@ -162,11 +162,7 @@ public class PropertyStateSupport<T> {
 
         public void setNewValue(Object newValue) {
             this.newValue = newValue;
-            if (originalValue != null) {
-                changed = !originalValue.equals(newValue);
-            } else {
-                changed = newValue != null;
-            }
+            this.changed = !ObjectUtils.equals(this.originalValue, newValue);
         }
 
         public boolean isChanged() {
