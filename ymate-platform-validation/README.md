@@ -19,57 +19,57 @@
 
 ​比较两个参数值，使用场景如：新密码与重复新密码两参数值是否一致的比较；
 
-   >cond：比较条件，可选EQ和NOT_EQ，默认为EQ；
+   > cond：比较条件，可选EQ和NOT_EQ，默认为EQ；
    >
-   >with：与之比较的参数名称；
+   > with：与之比较的参数名称；
    >
-   >withLabel：与之比较的参数标签名称 (用于在验证消息里显示的名称)，默认为空；
+   > withLabel：与之比较的参数标签名称 (用于在验证消息里显示的名称)，默认为空；
    >
-   >msg：自定义验证消息，默认为空；
+   > msg：自定义验证消息，默认为空；
 
 ##### @VDateTime
 
 日期类型参数验证；
 
-   >pattern：日期格式字符串，默认为yyyy-MM-dd HH:mm:ss
+   > pattern：日期格式字符串，默认为yyyy-MM-dd HH:mm:ss
    >
-   >msg：自定义验证消息，默认为空；
+   > msg：自定义验证消息，默认为空；
 
 ##### @VEmail
 
 邮箱地址格式验证；
 
-   >msg：自定义验证消息，默认为空；
+   > msg：自定义验证消息，默认为空；
 
 ##### @VLength
 
 字符串长度验证；
 
-   >min：设置最小长度，0为不限制；
-   >max：设置最大长度，0为不限制；
-   >msg：自定义验证消息，默认为空；
+   > min：设置最小长度，0为不限制；
+   > max：设置最大长度，0为不限制；
+   > msg：自定义验证消息，默认为空；
 
 ##### @VNumeric
 
 数值类型参数验证；
 
-   >min：设置最小值，0为不限制；
-   >max：设置最大值，0为不限制；
-   >msg：自定义验证消息，默认为空；
+   > min：设置最小值，0为不限制；
+   > max：设置最大值，0为不限制；
+   > msg：自定义验证消息，默认为空；
 
 ##### @VRegex
 
 正则表达式验证；
 
-   >regex：正则表达式；
+   > regex：正则表达式；
    >
-   >msg：自定义验证消息，默认为空；
+   > msg：自定义验证消息，默认为空；
 
-##### @VRequried
+##### @VRequired
 
 必填项验证；
 
-   >msg：自定义验证消息，默认为空；
+   > msg：自定义验证消息，默认为空；
 
 **注**：
 
@@ -98,7 +98,7 @@
 
     ymp.validation.regex={0} regex not match.
 
-    ymp.validation.requried={0} must be requried.
+    ymp.validation.required={0} must be required.
 
 #### 验证框架使用示例
 
@@ -107,16 +107,16 @@
         @Validation(mode = Validation.MODE.FULL)
         public class UserBase {
 
-            @VRequried(msg = "{0}不能为空")
+            @VRequired(msg = "{0}不能为空")
             @VLength(min = 3, max = 16, msg = "{0}长度必须在3到16之间")
             @VField(label = "用户名称")
             private String username;
 
-            @VRequried
+            @VRequired
             @VLength(max = 32)
             private String password;
 
-            @VRequried
+            @VRequired
             @VCompare(cond = VCompare.Cond.EQ, with = "password")
             private String repassword;
 
@@ -134,7 +134,7 @@
             @VLength(max = 10)
             private String sex;
 
-            @VRequried
+            @VRequired
             @VNumeric(min = 18, max = 30)
             private int age;
 
