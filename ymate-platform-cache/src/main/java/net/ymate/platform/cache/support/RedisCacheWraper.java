@@ -41,12 +41,15 @@ public class RedisCacheWraper implements ICache {
 
     private ICaches __owner;
 
+    private ICacheEventListener __listener;
+
     public RedisCacheWraper(ICaches owner, IRedis redis, String cacheName, final ICacheEventListener listener) {
         __owner = owner;
         __redis = redis;
         __cacheName = cacheName;
+        __listener = listener;
         //
-        if (listener != null) {
+        if (__listener != null) {
             IRedisCommandsHolder _holder = null;
             try {
                 _holder = __redis.getDefaultDataSourceAdapter().getCommandsHolder();
@@ -55,7 +58,7 @@ public class RedisCacheWraper implements ICache {
                     _jedis.subscribe(new JedisPubSub() {
                         public void onMessage(String channel, String message) {
                             if (StringUtils.isNotBlank(message)) {
-                                listener.notifyElementExpired(__cacheName, message);
+                                __listener.notifyElementExpired(__cacheName, message);
                             }
                         }
                     }, "__keyevent@" + _holder.getDataSourceCfgMeta().getMasterServerMeta().getDatabase() + "__:expired");
@@ -103,11 +106,22 @@ public class RedisCacheWraper implements ICache {
         }
     }
 
-    public void put(Object key, Object value) throws CacheException {
+    private void __doPut(Object key, Object value, boolean update) throws CacheException {
         IRedisCommandsHolder _holder = null;
         try {
+            String _cacheKey = __doSerializeKey(key);
+            String _cacheValue = __doSerializeValue(value);
+            //
             _holder = __redis.getDefaultDataSourceAdapter().getCommandsHolder();
-            _holder.getCommands().hset(__cacheName, __doSerializeKey(key), __doSerializeValue(value));
+            _holder.getCommands().hset(__cacheName, _cacheKey, _cacheValue);
+            //
+            if (__listener != null) {
+                if (update) {
+                    __listener.notifyElementUpdated(__cacheName, _cacheKey, _cacheValue);
+                } else {
+                    __listener.notifyElementPut(__cacheName, _cacheKey, _cacheValue);
+                }
+            }
         } catch (Exception e) {
             throw new CacheException(RuntimeUtils.unwrapThrow(e));
         } finally {
@@ -117,8 +131,12 @@ public class RedisCacheWraper implements ICache {
         }
     }
 
+    public void put(Object key, Object value) throws CacheException {
+        __doPut(key, value, false);
+    }
+
     public void update(Object key, Object value) throws CacheException {
-        put(key, value);
+        __doPut(key, value, true);
     }
 
     public List<String> keys() throws CacheException {
@@ -138,8 +156,14 @@ public class RedisCacheWraper implements ICache {
     public void remove(Object key) throws CacheException {
         IRedisCommandsHolder _holder = null;
         try {
+            String _cacheKey = __doSerializeKey(key);
+            //
             _holder = __redis.getDefaultDataSourceAdapter().getCommandsHolder();
-            _holder.getCommands().hdel(__cacheName, __doSerializeKey(key));
+            _holder.getCommands().hdel(__cacheName, _cacheKey);
+            //
+            if (__listener != null) {
+                __listener.notifyElementRemoved(__cacheName, _cacheKey);
+            }
         } catch (Exception e) {
             throw new CacheException(RuntimeUtils.unwrapThrow(e));
         } finally {
@@ -158,6 +182,12 @@ public class RedisCacheWraper implements ICache {
                 _keys.add(__doSerializeKey(_key));
             }
             _holder.getCommands().hdel(__cacheName, _keys.toArray(new String[_keys.size()]));
+            //
+            if (__listener != null) {
+                for (String _k : _keys) {
+                    __listener.notifyElementRemoved(__cacheName, _k);
+                }
+            }
         } catch (Exception e) {
             throw new CacheException(RuntimeUtils.unwrapThrow(e));
         } finally {
@@ -172,6 +202,10 @@ public class RedisCacheWraper implements ICache {
         try {
             _holder = __redis.getDefaultDataSourceAdapter().getCommandsHolder();
             _holder.getCommands().del(__cacheName);
+            //
+            if (__listener != null) {
+                __listener.notifyRemoveAll(__cacheName);
+            }
         } catch (Exception e) {
             throw new CacheException(RuntimeUtils.unwrapThrow(e));
         } finally {

@@ -41,27 +41,28 @@ public class EhCacheWraper implements ICache, ICacheLocker {
         if (listener != null) {
             __ehcache.getCacheEventNotificationService().registerListener(new CacheEventListener() {
 
-                private ICacheEventListener __listener = listener;
-
                 public void notifyElementRemoved(Ehcache ehcache, Element element) throws net.sf.ehcache.CacheException {
+                    listener.notifyElementRemoved(ehcache.getName(), element.getObjectKey());
                 }
 
                 public void notifyElementPut(Ehcache ehcache, Element element) throws net.sf.ehcache.CacheException {
+                    listener.notifyElementPut(ehcache.getName(), element.getObjectKey(), element.getObjectValue());
                 }
 
                 public void notifyElementUpdated(Ehcache ehcache, Element element) throws net.sf.ehcache.CacheException {
+                    listener.notifyElementUpdated(ehcache.getName(), element.getObjectKey(), element.getObjectValue());
                 }
 
                 public void notifyElementExpired(Ehcache ehcache, Element element) {
-                    if (__listener != null) {
-                        __listener.notifyElementExpired(ehcache.getName(), element.getObjectKey());
-                    }
+                    listener.notifyElementExpired(ehcache.getName(), element.getObjectKey());
                 }
 
                 public void notifyElementEvicted(Ehcache ehcache, Element element) {
+                    listener.notifyElementEvicted(ehcache.getName(), element.getObjectKey());
                 }
 
                 public void notifyRemoveAll(Ehcache ehcache) {
+                    listener.notifyRemoveAll(ehcache.getName());
                 }
 
                 public void dispose() {

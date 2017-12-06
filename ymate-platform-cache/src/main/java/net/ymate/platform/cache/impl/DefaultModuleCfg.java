@@ -59,6 +59,9 @@ public class DefaultModuleCfg implements ICacheModuleCfg {
         }
         //
         __cacheEventListener = ClassUtils.impl(_moduleCfgs.get("event_listener_class"), ICacheEventListener.class, this.getClass());
+        if (__cacheEventListener == null) {
+            __cacheEventListener = new DefaultCacheEventListener();
+        }
         //
         __cacheScopeProcessor = ClassUtils.impl(_moduleCfgs.get("scope_processor_class"), ICacheScopeProcessor.class, this.getClass());
         //

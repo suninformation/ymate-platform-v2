@@ -86,7 +86,9 @@ public class Caches implements IModule, ICaches {
             _LOG.info("Initializing ymate-platform-cache-" + VERSION);
             //
             __owner = owner;
+            __owner.getEvents().registerEvent(CacheEvent.class);
             __moduleCfg = new DefaultModuleCfg(owner);
+            __moduleCfg.getCacheEventListener().init(this);
             __cacheProvider = __moduleCfg.getCacheProvider();
             __cacheProvider.init(this);
             //
@@ -134,7 +136,7 @@ public class Caches implements IModule, ICaches {
         return getAll(__moduleCfg.getDefaultCacheName());
     }
 
-    protected void __doPut(String cacheName, Object key, Object value) {
+    private void __doPut(String cacheName, Object key, Object value) {
         ICache _cache = __cacheProvider.getCache(cacheName);
         if (_cache == null) {
             _cache = __cacheProvider.createCache(cacheName, __moduleCfg.getCacheEventListener());
@@ -144,9 +146,6 @@ public class Caches implements IModule, ICaches {
 
     public void put(String cacheName, Object key, Object value) {
         __doPut(cacheName, key, value);
-        if (__moduleCfg.getCacheEventListener() != null) {
-            __moduleCfg.getCacheEventListener().notifyElementPut(cacheName, key, value);
-        }
     }
 
     public void put(Object key, Object value) {
@@ -155,9 +154,6 @@ public class Caches implements IModule, ICaches {
 
     public void update(String cacheName, Object key, Object value) {
         __doPut(cacheName, key, value);
-        if (__moduleCfg.getCacheEventListener() != null) {
-            __moduleCfg.getCacheEventListener().notifyElementUpdated(cacheName, key, value);
-        }
     }
 
     public void update(Object key, Object value) {
@@ -181,9 +177,6 @@ public class Caches implements IModule, ICaches {
         if (_cache != null) {
             _cache.remove(key);
         }
-        if (__moduleCfg.getCacheEventListener() != null) {
-            __moduleCfg.getCacheEventListener().notifyElementRemoved(cacheName, key);
-        }
     }
 
     public void remove(Object key) {
@@ -195,9 +188,6 @@ public class Caches implements IModule, ICaches {
         if (_cache != null) {
             _cache.removeAll(keys);
         }
-        if (__moduleCfg.getCacheEventListener() != null) {
-            __moduleCfg.getCacheEventListener().notifyElementEvicted(cacheName, keys);
-        }
     }
 
     public void removeAll(List keys) {
@@ -208,9 +198,6 @@ public class Caches implements IModule, ICaches {
         ICache _cache = __cacheProvider.getCache(cacheName);
         if (_cache != null) {
             _cache.clear();
-        }
-        if (__moduleCfg.getCacheEventListener() != null) {
-            __moduleCfg.getCacheEventListener().notifyRemoveAll(cacheName);
         }
     }
 

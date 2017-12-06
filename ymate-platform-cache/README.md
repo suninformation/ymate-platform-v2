@@ -53,13 +53,13 @@
     # 缓存提供者，可选参数，默认值为default，目前支持[default|redis|multilevel]或自定义类名称
     ymp.configs.cache.provider_class=
 
-    # 缓存对象事件监听器，可选参数，默认值为空
+    # 缓存对象事件监听器，可选参数，默认值为net.ymate.platform.cache.impl.DefaultCacheEventListener
     ymp.configs.cache.event_listener_class=
 
     # 缓存作用域处理器，可选参数，默认值为空
     ymp.configs.cache.scope_processor_class=
 
-    # 缓存Key生成器，可选参数，默认值为空则采用框架默认net.ymate.platform.cache.impl.DefaultKeyGenerator
+    # 缓存Key生成器，可选参数，为空则采用框架默认net.ymate.platform.cache.impl.DefaultKeyGenerator
     ymp.configs.cache.key_generator_class=
 
     # 对象序列化接口实现，可选参数，默认值为net.ymate.platform.cache.impl.DefaultSerializer
@@ -97,6 +97,19 @@
                overflowToDisk="false"
         />
     </ehcache>
+
+#### 模块事件
+
+当`event_listener_class`采用默认配置时，可以通过CacheEvent捕获缓存事件，事件枚举对象包括以下事件类型：
+
+|事务类型|说明|
+|---|---|
+|ELEMENT_PUT|添加元素到缓存|
+|ELEMENT_UPDATED|缓存元素更新|
+|ELEMENT_EXPIRED|缓存元素过期|
+|ELEMENT_EVICTED||
+|ELEMENT_REMOVED|缓存元素删除|
+|ELEMENT_REMOVED_ALL|缓存清空|
 
 #### 模块使用
 
