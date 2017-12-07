@@ -15,6 +15,7 @@
  */
 package net.ymate.platform.persistence.jdbc.repo;
 
+import jdk.nashorn.api.scripting.ScriptObjectMirror;
 import net.ymate.platform.configuration.IConfiguration;
 import net.ymate.platform.core.beans.annotation.Order;
 import net.ymate.platform.core.beans.annotation.Proxy;
@@ -34,6 +35,9 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import javax.script.Invocable;
+import javax.script.ScriptEngine;
+import javax.script.ScriptEngineManager;
 import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
@@ -49,16 +53,43 @@ public class RepoProxy implements IProxy {
 
     private static final Log _LOG = LogFactory.getLog(RepoProxy.class);
 
+    private static final String __LANGUAGE_JAVASCRIPT = "JavaScript";
+
+    private static final String __SQL = "sql";
+    private static final String __FILTER = "filter";
+
     public Object doProxy(IProxyChain proxyChain) throws Throwable {
         Repository _repo = proxyChain.getTargetMethod().getAnnotation(Repository.class);
         if (_repo == null) {
             return proxyChain.doProxyChain();
         }
         //
+        ScriptObjectMirror _processor = null;
         String _targetSQL = _repo.value();
         if (StringUtils.isBlank(_targetSQL)) try {
             IConfiguration _conf = ((IRepository) proxyChain.getTargetObject()).getConfig();
-            _targetSQL = _conf.getString(_repo.item());
+            String _targetType = StringUtils.trimToNull(_conf.getMap(_repo.item()).get("language"));
+            if (StringUtils.equalsIgnoreCase(__LANGUAGE_JAVASCRIPT, _targetType)) {
+                ScriptEngine _engine = new ScriptEngineManager().getEngineByName(__LANGUAGE_JAVASCRIPT);
+                _engine.eval(_conf.getString(_repo.item()));
+                Invocable inv = (Invocable) _engine;
+                Object _result = inv.invokeFunction(_repo.item(), proxyChain.getMethodParams());
+                if (_result instanceof String) {
+                    _targetSQL = (String) _result;
+                } else {
+                    ScriptObjectMirror _mirror = (ScriptObjectMirror) _result;
+                    if (_mirror != null && _mirror.isExtensible() && _mirror.hasMember(__SQL)) {
+                        _targetSQL = (String) _mirror.getMember(__SQL);
+                        if (_mirror.hasMember(__FILTER)) {
+                            _processor = _mirror;
+                        }
+                    } else {
+                        throw new IllegalStateException("Invalid script statement code.");
+                    }
+                }
+            } else {
+                _targetSQL = _conf.getString(_repo.item());
+            }
         } catch (Exception e) {
             _LOG.warn("", RuntimeUtils.unwrapThrow(e));
         }
@@ -83,6 +114,14 @@ public class RepoProxy implements IProxy {
                     break;
                 default:
                     _result = __doQuery(_db, _connHolder, _targetSQL, proxyChain.getTargetMethod(), proxyChain.getMethodParams());
+            }
+            if (_processor != null) {
+                switch (_repo.type()) {
+                    case QUERY:
+                        _result = _processor.callMember(__FILTER, _result);
+                        break;
+                    default:
+                }
             }
             // 将执行结果赋予目标方法的最后一个参数
             int _position = proxyChain.getMethodParams().length - 1;
