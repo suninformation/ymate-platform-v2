@@ -8,7 +8,7 @@
     <dependency>
         <groupId>net.ymate.platform</groupId>
         <artifactId>ymate-platform-serv</artifactId>
-        <version>2.0.2</version>
+        <version><VERSION></version>
     </dependency>
 
 > **注**：在项目的pom.xml中添加上述配置，该模块已经默认引入核心包依赖，无需重复配置。
@@ -65,8 +65,17 @@
     # NIO选择器数量, 默认为1
     ymp.configs.serv.server.default.selector_count=1
     
-    # 执行线程池大小, 默认为10
+    # 执行线程池大小, 默认为 Runtime.getRuntime().availableProcessors()
     ymp.configs.serv.server.default.executor_count=10
+    
+    # 空闲线程等待新任务的最长时间, 默认为 0
+    ymp.configs.serv.server.default.keep_alive_time=0
+    
+    # 最大线程池大小，默认为 200
+    ymp.configs.serv.server.default.thread_max_pool_size=200
+    
+    # 线程队列大小，默认为 1024
+    ymp.configs.serv.server.default.thread_queue_size=1024
     
     # 自定义参数, 可选
     ymp.configs.serv.server.default.params.xxx=xxx
@@ -178,7 +187,7 @@
     # 缓冲区大小, 默认为4096
     ymp.configs.serv.client.default.buffer_size=4096
     
-    # 执行线程池大小, 默认为10
+    # 执行线程池大小, 默认为 Runtime.getRuntime().availableProcessors()
     ymp.configs.serv.client.default.executor_count=10
     
     # 连接超时时间(秒), 默认为30

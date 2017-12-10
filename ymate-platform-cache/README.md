@@ -7,7 +7,7 @@
     <dependency>
         <groupId>net.ymate.platform</groupId>
         <artifactId>ymate-platform-cache</artifactId>
-        <version>2.0.2</version>
+        <version><VERSION></version>
     </dependency>
 
 > **注**：
@@ -17,7 +17,7 @@
 >         <dependency>
 >             <groupId>net.ymate.platform</groupId>
 >             <artifactId>ymate-platform-persistence-redis</artifactId>
->             <version>2.0.2</version>
+>             <version><VERSION></version>
 >         </dependency>
 
 #### 基础接口概念
