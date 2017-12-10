@@ -1190,7 +1190,7 @@ JDBC模块将数据查询的结果集合统一使用IResultSet接口进行封装
                     <property name="demo_query" language="javascript">
                         <value><![CDATA[
                             // 方法名称要与name属性名称一致
-                            funcation demo_query(hash) {
+                            function demo_query(hash) {
                                 var _sql = "select * from ymcms_attachment";
                                 if (hash && hash != "admin") {
                                     _sql += " where hash = ${hash}";
@@ -1198,8 +1198,9 @@ JDBC模块将数据查询的结果集合统一使用IResultSet接口进行封装
                                 // 方式一：直接返回拼装后的SQL字符串
                                 return _sql;
                                 // 方式二：添加回调方法用于过滤查询结果集
+                                /*
                                 return {
-                                    "sql": _sql,
+                                    "sql": function() { return _sql },
                                     "filter": function(datas) {
                                         var List = Java.type("java.util.ArrayList");
                                         var _list = new List();
@@ -1213,7 +1214,7 @@ JDBC模块将数据查询的结果集合统一使用IResultSet接口进行封装
                                         // 注意：返回的结果类型需与Java接口方法参数类型匹配
                                         return _list;
                                     }
-                                }
+                                } */
                             }
                         ]]></value>
                     </property>
