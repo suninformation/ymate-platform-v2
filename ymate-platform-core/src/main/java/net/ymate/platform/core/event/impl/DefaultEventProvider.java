@@ -16,13 +16,13 @@
 package net.ymate.platform.core.event.impl;
 
 import net.ymate.platform.core.event.*;
+import net.ymate.platform.core.support.DefaultThreadFactory;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.*;
-import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * 默认事件管理提供者接口实现
@@ -52,7 +52,7 @@ public final class DefaultEventProvider<T, E extends Enum<E>, EVENT extends Clas
         __eventExecPool = new ThreadPoolExecutor(eventConfig.getThreadPoolSize() > 0 ? eventConfig.getThreadPoolSize() : Runtime.getRuntime().availableProcessors(),
                 eventConfig.getThreadMaxPoolSize() > 0 ? eventConfig.getThreadMaxPoolSize() : 200, 0L, TimeUnit.MILLISECONDS,
                 new LinkedBlockingQueue<Runnable>(eventConfig.getThreadQueueSize() > 0 ? eventConfig.getThreadQueueSize() : 1024),
-                new DefaultThreadFactory(), new ThreadPoolExecutor.AbortPolicy());
+                new DefaultThreadFactory("event-pool-"), new ThreadPoolExecutor.AbortPolicy());
         __events = new ArrayList<String>();
         __asyncListeners = new ConcurrentHashMap<String, List<IEventListener<CONTEXT>>>();
         __normalListeners = new ConcurrentHashMap<String, List<IEventListener<CONTEXT>>>();
@@ -133,31 +133,6 @@ public final class DefaultEventProvider<T, E extends Enum<E>, EVENT extends Clas
                     }
                 }
             }
-        }
-    }
-
-    static class DefaultThreadFactory implements ThreadFactory {
-        private static final AtomicInteger __poolNumber = new AtomicInteger(1);
-        private final ThreadGroup __group;
-        private final AtomicInteger __threadNumber = new AtomicInteger(1);
-        private final String __namePrefix;
-
-        DefaultThreadFactory() {
-            SecurityManager _securityManager = System.getSecurityManager();
-            __group = (_securityManager != null) ? _securityManager.getThreadGroup() : Thread.currentThread().getThreadGroup();
-            __namePrefix = "event-pool-" + __poolNumber.getAndIncrement() + "-thread-";
-        }
-
-        @Override
-        public Thread newThread(Runnable r) {
-            Thread _thread = new Thread(__group, r, __namePrefix + __threadNumber.getAndIncrement(), 0);
-            if (_thread.isDaemon()) {
-                _thread.setDaemon(false);
-            }
-            if (_thread.getPriority() != Thread.NORM_PRIORITY) {
-                _thread.setPriority(Thread.NORM_PRIORITY);
-            }
-            return _thread;
         }
     }
 }
