@@ -56,7 +56,10 @@ public class DefaultClientCfg implements IClientCfg {
         __remoteHost = StringUtils.defaultIfBlank(_clientCfgs.get("host"), "0.0.0.0");
         __port = BlurObject.bind(StringUtils.defaultIfBlank(_clientCfgs.get("port"), "8281")).toIntValue();
         __charset = StringUtils.defaultIfBlank(_clientCfgs.get("charset"), "UTF-8");
-        __executorCount = BlurObject.bind(StringUtils.defaultIfBlank(_clientCfgs.get("executor_count"), Runtime.getRuntime().availableProcessors() + "")).toIntValue();
+        __executorCount = BlurObject.bind(_clientCfgs.get("executor_count")).toIntValue();
+        if (__executorCount <= 0) {
+            __executorCount = Runtime.getRuntime().availableProcessors();
+        }
         __bufferSize = BlurObject.bind(StringUtils.defaultIfBlank(_clientCfgs.get("buffer_size"), "4096")).toIntValue();
         __connectionTimeout = BlurObject.bind(StringUtils.defaultIfBlank(_clientCfgs.get("connection_timeout"), "0")).toIntValue();
         __heartbeatInterval = BlurObject.bind(StringUtils.defaultIfBlank(_clientCfgs.get("heartbeat_interval"), "0")).toIntValue();
