@@ -42,15 +42,18 @@ public class DefaultReconnectService extends Thread implements IReconnectService
 
     private long __timeout = 5;
 
+    @Override
     public void init(IClient client) {
         __client = client;
         __inited = true;
     }
 
+    @Override
     public boolean isInited() {
         return __inited;
     }
 
+    @Override
     public boolean isStarted() {
         return __flag;
     }
@@ -97,6 +100,7 @@ public class DefaultReconnectService extends Thread implements IReconnectService
         super.interrupt();
     }
 
+    @Override
     public void close() throws IOException {
         interrupt();
     }

@@ -69,42 +69,52 @@ public class DefaultClientCfg implements IClientCfg {
         }
     }
 
+    @Override
     public String getClientName() {
         return __clientName;
     }
 
+    @Override
     public String getRemoteHost() {
         return __remoteHost;
     }
 
+    @Override
     public int getPort() {
         return __port;
     }
 
+    @Override
     public String getCharset() {
         return __charset;
     }
 
+    @Override
     public int getBufferSize() {
         return __bufferSize;
     }
 
+    @Override
     public int getExecutorCount() {
         return __executorCount;
     }
 
+    @Override
     public int getConnectionTimeout() {
         return __connectionTimeout;
     }
 
+    @Override
     public int getHeartbeatInterval() {
         return __heartbeatInterval;
     }
 
+    @Override
     public Map<String, String> getParams() {
         return Collections.unmodifiableMap(__params);
     }
 
+    @Override
     public String getParam(String key) {
         return __params.get(key);
     }

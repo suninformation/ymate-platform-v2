@@ -35,11 +35,13 @@ public class NioStringCodec implements INioCodec {
 
     private String __charset;
 
+    @Override
     public ICodec init(String charset) {
         __charset = StringUtils.defaultIfBlank(charset, "UTF-8");
         return this;
     }
 
+    @Override
     public ByteBufferBuilder encode(Object message) {
         if (message instanceof String) {
             try {
@@ -54,6 +56,7 @@ public class NioStringCodec implements INioCodec {
         return null;
     }
 
+    @Override
     public Object decode(ByteBufferBuilder buffer) {
         if (buffer.remaining() < 4) {
             return null;

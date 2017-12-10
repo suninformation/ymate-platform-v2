@@ -41,47 +41,60 @@ public abstract class AbstractSession implements ISession {
         __attributes = new ConcurrentHashMap<String, Object>();
     }
 
+    @Override
     public String id() {
         return __id;
     }
 
+    @Override
     public boolean isNew() {
         return __status == Status.NEW;
     }
 
+    @Override
     public boolean isConnected() {
         return __status == Status.CONNECTED;
     }
 
+    @Override
     public Status status() {
         return __status;
     }
 
+    @Override
     public void status(Status status) {
         __status = status;
     }
 
+    @Override
     public void touch() {
         __lastTouchTime = System.currentTimeMillis();
     }
 
+    @Override
     public long lastTouchTime() {
         return __lastTouchTime;
     }
 
+    @Override
     @SuppressWarnings("unchecked")
     public <T> T attr(String key) {
         return (T) __attributes.get(key);
     }
 
+    @Override
     public void attr(String key, Object value) {
         __attributes.put(key, value);
     }
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
         AbstractSession session = (AbstractSession) o;
         return __id.equals(session.__id);
     }

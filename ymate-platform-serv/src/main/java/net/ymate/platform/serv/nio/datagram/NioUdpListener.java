@@ -55,6 +55,7 @@ public abstract class NioUdpListener extends AbstractListener<INioSession> {
      */
     public abstract void onExceptionCaught(InetSocketAddress sourceAddr, Throwable e) throws IOException;
 
+    @Override
     public final void onSessionRegisted(INioSession session) throws IOException {
         Object _result = onSessionReady();
         if (_result != null) {
@@ -62,18 +63,23 @@ public abstract class NioUdpListener extends AbstractListener<INioSession> {
         }
     }
 
+    @Override
     public final void onSessionConnected(INioSession session) throws IOException {
     }
 
+    @Override
     public final void onSessionAccepted(INioSession session) throws IOException {
     }
 
+    @Override
     public final void onBeforeSessionClosed(INioSession session) throws IOException {
     }
 
+    @Override
     public final void onAfterSessionClosed(INioSession session) throws IOException {
     }
 
+    @Override
     public final void onMessageReceived(Object message, INioSession session) throws IOException {
         InetSocketAddress _sourceAddr = session.attr(SocketAddress.class.getName());
         Object _result = onMessageReceived(_sourceAddr, message);

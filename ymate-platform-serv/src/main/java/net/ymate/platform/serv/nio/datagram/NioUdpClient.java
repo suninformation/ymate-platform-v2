@@ -51,6 +51,7 @@ public class NioUdpClient extends AbstractService implements IClient<NioUdpListe
 
     protected INioCodec __codec;
 
+    @Override
     public void init(IServModuleCfg moduleCfg,
                      String clientName,
                      NioUdpListener listener,
@@ -66,6 +67,7 @@ public class NioUdpClient extends AbstractService implements IClient<NioUdpListe
         __doSetHeartbeatService(heartbeatService);
     }
 
+    @Override
     public synchronized void connect() throws IOException {
         if (__eventGroup != null && __eventGroup.session() != null) {
             if (__eventGroup.session().isConnected() || __eventGroup.session().isNew()) {
@@ -78,27 +80,33 @@ public class NioUdpClient extends AbstractService implements IClient<NioUdpListe
         __doStartHeartbeatService();
     }
 
+    @Override
     public synchronized void reconnect() throws IOException {
         // Don't need to reconnect
     }
 
+    @Override
     public boolean isConnected() {
         return __eventGroup != null && __eventGroup.session() != null && __eventGroup.session().isConnected();
     }
 
+    @Override
     public INioClientCfg clientCfg() {
         return __clientCfg;
     }
 
+    @Override
     @SuppressWarnings("unchecked")
     public <T extends NioUdpListener> T listener() {
         return (T) __listener;
     }
 
+    @Override
     public void send(Object message) throws IOException {
         __eventGroup.session().send(message);
     }
 
+    @Override
     public synchronized void close() throws IOException {
         __doStopHeartbeatService();
         //
@@ -160,6 +168,7 @@ public class NioUdpClient extends AbstractService implements IClient<NioUdpListe
                         protected void __doExceptionEvent(SelectionKey key, final Throwable e) {
                             final INioSession _session = (INioSession) key.attachment();
                             __eventGroup.executorService().submit(new Runnable() {
+                                @Override
                                 public void run() {
                                     try {
                                         __eventGroup.listener().onExceptionCaught(e, _session);

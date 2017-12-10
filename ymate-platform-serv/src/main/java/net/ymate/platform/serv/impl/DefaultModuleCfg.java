@@ -64,6 +64,7 @@ public class DefaultModuleCfg implements IServModuleCfg {
         dst.put(name, _cfgs);
     }
 
+    @Override
     public Map<String, String> getServerCfg(String serverName) {
         Map<String, String> _serverMap = __serverCfgs.get(serverName);
         if (_serverMap != null) {
@@ -72,6 +73,7 @@ public class DefaultModuleCfg implements IServModuleCfg {
         return Collections.emptyMap();
     }
 
+    @Override
     public Map<String, String> getClientCfg(String clientName) {
         Map<String, String> _clientMap = __clientCfgs.get(clientName);
         if (_clientMap != null) {

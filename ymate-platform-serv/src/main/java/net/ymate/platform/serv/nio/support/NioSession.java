@@ -69,6 +69,7 @@ public class NioSession<LISTENER extends IListener<INioSession>> extends Abstrac
         __channel = channel;
     }
 
+    @Override
     public boolean connectSync(long time) {
         try {
             return this.__connLatch.await(time, TimeUnit.MILLISECONDS);
@@ -78,22 +79,27 @@ public class NioSession<LISTENER extends IListener<INioSession>> extends Abstrac
         return false;
     }
 
+    @Override
     public void finishConnect() {
         this.__connLatch.countDown();
     }
 
+    @Override
     public void registerEvent(int ops) throws IOException {
         __eventGroup.processor().registerEvent(__channel, ops, this);
     }
 
+    @Override
     public void selectionKey(SelectionKey key) {
         __selectionKey = key;
     }
 
+    @Override
     public SelectionKey selectionKey() {
         return __selectionKey;
     }
 
+    @Override
     public void send(Object message) throws IOException {
         if (__selectionKey != null) {
             ByteBufferBuilder _msgBuffer = __eventGroup.codec().encode(message);
@@ -106,6 +112,7 @@ public class NioSession<LISTENER extends IListener<INioSession>> extends Abstrac
         }
     }
 
+    @Override
     public void close() throws IOException {
         if (__selectionKey == null) {
             return;
@@ -118,6 +125,7 @@ public class NioSession<LISTENER extends IListener<INioSession>> extends Abstrac
         }
     }
 
+    @Override
     public void closeNow() throws IOException {
         if (status() == ISession.Status.CLOSED) {
             return;
@@ -132,6 +140,7 @@ public class NioSession<LISTENER extends IListener<INioSession>> extends Abstrac
         }
         //
         __eventGroup.executorService().submit(new Runnable() {
+            @Override
             public void run() {
                 try {
                     __eventGroup.listener().onAfterSessionClosed(NioSession.this);
@@ -168,6 +177,7 @@ public class NioSession<LISTENER extends IListener<INioSession>> extends Abstrac
         }
     }
 
+    @Override
     public void read() throws IOException {
         if (__buffer == null) {
             __buffer = ByteBufferBuilder.allocate(__eventGroup.bufferSize());
@@ -199,6 +209,7 @@ public class NioSession<LISTENER extends IListener<INioSession>> extends Abstrac
             } else {
                 final Object _copiedObj = _message;
                 __eventGroup.executorService().submit(new Runnable() {
+                    @Override
                     public void run() {
                         try {
                             __eventGroup.listener().onMessageReceived(_copiedObj, NioSession.this);
@@ -219,6 +230,7 @@ public class NioSession<LISTENER extends IListener<INioSession>> extends Abstrac
         }
     }
 
+    @Override
     public void write() throws IOException {
         synchronized (__writeBufferQueue) {
             while (true) {

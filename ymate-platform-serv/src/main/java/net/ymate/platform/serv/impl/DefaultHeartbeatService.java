@@ -42,11 +42,13 @@ public class DefaultHeartbeatService extends Thread implements IHeartbeatService
 
     private String __heartbeatMessage;
 
+    @Override
     public void init(IClient client) {
         __client = client;
         __inited = true;
     }
 
+    @Override
     public boolean isInited() {
         return __inited;
     }
@@ -80,6 +82,7 @@ public class DefaultHeartbeatService extends Thread implements IHeartbeatService
         }
     }
 
+    @Override
     public boolean isStarted() {
         return __flag;
     }
@@ -95,6 +98,7 @@ public class DefaultHeartbeatService extends Thread implements IHeartbeatService
         super.interrupt();
     }
 
+    @Override
     public void close() throws IOException {
         interrupt();
     }

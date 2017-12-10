@@ -15,9 +15,13 @@
  */
 package net.ymate.platform.serv;
 
+import net.ymate.platform.core.support.DefaultThreadFactory;
+
 import java.io.IOException;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @author 刘镇 (suninformation@163.com) on 15/11/15 下午10:10
@@ -39,6 +43,12 @@ public abstract class AbstractEventGroup<CODEC extends ICodec, LISTENER extends 
 
     private int __executorCount = Runtime.getRuntime().availableProcessors();
 
+    private long __keepAliveTime;
+
+    private int __threadMaxPoolSize;
+
+    private int __threadQueueSize;
+
     private int __connectionTimeout = 5000;
 
     private boolean __isStarted = false;
@@ -51,6 +61,9 @@ public abstract class AbstractEventGroup<CODEC extends ICodec, LISTENER extends 
             __bufferSize = cfg.getBufferSize();
         }
         __executorCount = cfg.getExecutorCount();
+        __keepAliveTime = cfg.getKeepAliveTime();
+        __threadMaxPoolSize = cfg.getThreadMaxPoolSize();
+        __threadQueueSize = cfg.getThreadQueueSize();
         //
         __codec = codec;
         __listener = listener;
@@ -73,15 +86,19 @@ public abstract class AbstractEventGroup<CODEC extends ICodec, LISTENER extends 
         __session = __doSessionCreate(cfg);
     }
 
+    @Override
     public synchronized void start() throws IOException {
         if (__isStarted) {
             return;
         }
-        __executorService = Executors.newFixedThreadPool(__executorCount);
+        __executorService = new ThreadPoolExecutor(__executorCount, __threadMaxPoolSize, __keepAliveTime, TimeUnit.MILLISECONDS,
+                new LinkedBlockingQueue<Runnable>(__threadQueueSize),
+                new DefaultThreadFactory("serv-pool-"), new ThreadPoolExecutor.AbortPolicy());
         //
         __isStarted = true;
     }
 
+    @Override
     public synchronized void stop() throws IOException {
         if (!__isStarted) {
             return;
@@ -93,20 +110,24 @@ public abstract class AbstractEventGroup<CODEC extends ICodec, LISTENER extends 
         __executorService.shutdown();
     }
 
+    @Override
     public void close() throws IOException {
         stop();
     }
 
     protected abstract SESSION __doSessionCreate(IClientCfg cfg) throws IOException;
 
+    @Override
     public CODEC codec() {
         return __codec;
     }
 
+    @Override
     public LISTENER listener() {
         return __listener;
     }
 
+    @Override
     public SESSION session() {
         return __session;
     }
@@ -115,30 +136,37 @@ public abstract class AbstractEventGroup<CODEC extends ICodec, LISTENER extends 
         return __isServer;
     }
 
+    @Override
     public boolean isStarted() {
         return __isStarted;
     }
 
+    @Override
     public String name() {
         return __name;
     }
 
+    @Override
     public void name(String name) {
         __name = name;
     }
 
+    @Override
     public int bufferSize() {
         return __bufferSize;
     }
 
+    @Override
     public int executorCount() {
         return __executorCount;
     }
 
+    @Override
     public int connectionTimeout() {
         return __connectionTimeout;
     }
 
+    @Override
     public ExecutorService executorService() {
         return __executorService;
     }

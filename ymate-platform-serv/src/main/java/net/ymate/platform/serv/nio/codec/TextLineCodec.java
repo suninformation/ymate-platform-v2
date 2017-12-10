@@ -37,11 +37,13 @@ public class TextLineCodec implements INioCodec {
 
     private String __charset;
 
+    @Override
     public ICodec init(String charset) {
         __charset = StringUtils.defaultIfBlank(charset, "UTF-8");
         return this;
     }
 
+    @Override
     public ByteBufferBuilder encode(Object message) {
         try {
             String _msgStr = message.toString().concat(TEXT_EOF);
@@ -53,6 +55,7 @@ public class TextLineCodec implements INioCodec {
         return null;
     }
 
+    @Override
     public Object decode(ByteBufferBuilder buffer) {
         try {
             int _counter = 0;

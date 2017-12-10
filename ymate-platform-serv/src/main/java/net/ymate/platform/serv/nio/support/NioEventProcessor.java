@@ -175,6 +175,7 @@ public class NioEventProcessor<LISTENER extends IListener<INioSession>> extends 
             _session.status(ISession.Status.ERROR);
         }
         __eventGroup.executorService().submit(new Runnable() {
+            @Override
             public void run() {
                 try {
                     __eventGroup.listener().onExceptionCaught(e, _session);

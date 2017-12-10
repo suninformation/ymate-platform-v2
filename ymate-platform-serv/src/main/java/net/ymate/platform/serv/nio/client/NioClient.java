@@ -40,6 +40,7 @@ public class NioClient extends AbstractService implements IClient<NioClientListe
 
     protected INioCodec __codec;
 
+    @Override
     public void init(IServModuleCfg moduleCfg,
                      String clientName,
                      NioClientListener listener,
@@ -55,6 +56,7 @@ public class NioClient extends AbstractService implements IClient<NioClientListe
         __doSetHeartbeatService(heartbeatService);
     }
 
+    @Override
     public synchronized void connect() throws IOException {
         if (__eventGroup != null && __eventGroup.session() != null) {
             if (__eventGroup.session().isConnected() || __eventGroup.session().isNew()) {
@@ -71,6 +73,7 @@ public class NioClient extends AbstractService implements IClient<NioClientListe
         __doStartReconnectService();
     }
 
+    @Override
     public synchronized void reconnect() throws IOException {
         if (!isConnected()) {
             __eventGroup.close();
@@ -82,23 +85,28 @@ public class NioClient extends AbstractService implements IClient<NioClientListe
         }
     }
 
+    @Override
     public boolean isConnected() {
         return __eventGroup != null && __eventGroup.session() != null && __eventGroup.session().isConnected();
     }
 
+    @Override
     public INioClientCfg clientCfg() {
         return __clientCfg;
     }
 
+    @Override
     @SuppressWarnings("unchecked")
     public <T extends NioClientListener> T listener() {
         return (T) __listener;
     }
 
+    @Override
     public void send(Object message) throws IOException {
         __eventGroup.session().send(message);
     }
 
+    @Override
     public synchronized void close() throws IOException {
         __doStopHeartbeatService();
         __doStopReconnectService();

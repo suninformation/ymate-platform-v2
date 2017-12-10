@@ -27,22 +27,28 @@ import java.nio.channels.SelectionKey;
  */
 public class NioClientListener extends AbstractListener<INioSession> {
 
+    @Override
     public void onSessionRegisted(INioSession session) throws IOException {
     }
 
+    @Override
     public void onSessionConnected(INioSession session) throws IOException {
         session.selectionKey().interestOps(SelectionKey.OP_READ | SelectionKey.OP_WRITE);
     }
 
+    @Override
     public final void onSessionAccepted(INioSession session) throws IOException {
     }
 
+    @Override
     public void onBeforeSessionClosed(INioSession session) throws IOException {
     }
 
+    @Override
     public void onAfterSessionClosed(INioSession session) throws IOException {
     }
 
+    @Override
     public void onMessageReceived(Object message, INioSession session) throws IOException {
     }
 }

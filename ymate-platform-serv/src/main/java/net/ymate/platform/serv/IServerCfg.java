@@ -51,9 +51,24 @@ public interface IServerCfg {
     int getBufferSize();
 
     /**
-     * @return 执行线程数量
+     * @return 执行线程数量，默认为 Runtime.getRuntime().availableProcessors()
      */
     int getExecutorCount();
+
+    /**
+     * @return 空闲线程等待新任务的最长时间, 默认为 0
+     */
+    long getKeepAliveTime();
+
+    /**
+     * @return 返回最大线程池大小，默认为 200
+     */
+    int getThreadMaxPoolSize();
+
+    /**
+     * @return 返回线程队列大小，默认为 1024
+     */
+    int getThreadQueueSize();
 
     /**
      * @return 服务端自定义参数映射

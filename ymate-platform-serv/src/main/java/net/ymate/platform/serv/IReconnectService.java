@@ -27,20 +27,26 @@ import java.io.IOException;
 public interface IReconnectService extends Closeable {
 
     final class NONE implements IReconnectService {
+
+        @Override
         public void init(IClient client) {
         }
 
+        @Override
         public boolean isInited() {
             return false;
         }
 
+        @Override
         public void start() {
         }
 
+        @Override
         public boolean isStarted() {
             return false;
         }
 
+        @Override
         public void close() throws IOException {
         }
     }

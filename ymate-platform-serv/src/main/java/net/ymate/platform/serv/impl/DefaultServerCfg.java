@@ -42,6 +42,12 @@ public class DefaultServerCfg implements IServerCfg {
 
     private int __executorCount;
 
+    private long __keepAliveTime;
+
+    private int __threadMaxPoolSize;
+
+    private int __threadQueueSize;
+
     private Map<String, String> __params;
 
     public DefaultServerCfg(IServModuleCfg moduleCfg, String serverName) {
@@ -52,7 +58,22 @@ public class DefaultServerCfg implements IServerCfg {
         __port = BlurObject.bind(StringUtils.defaultIfBlank(_serverCfgs.get("port"), "8281")).toIntValue();
         __charset = StringUtils.defaultIfBlank(_serverCfgs.get("charset"), "UTF-8");
         __bufferSize = BlurObject.bind(StringUtils.defaultIfBlank(_serverCfgs.get("buffer_size"), "4096")).toIntValue();
-        __executorCount = BlurObject.bind(StringUtils.defaultIfBlank(_serverCfgs.get("executor_count"), Runtime.getRuntime().availableProcessors() + "")).toIntValue();
+        __executorCount = BlurObject.bind(_serverCfgs.get("executor_count")).toIntValue();
+        if (__executorCount <= 0) {
+            __executorCount = Runtime.getRuntime().availableProcessors();
+        }
+        //
+        __keepAliveTime = BlurObject.bind(_serverCfgs.get("keep_alive_time")).toLongValue();
+        //
+        __threadMaxPoolSize = BlurObject.bind(_serverCfgs.get("thread_max_pool_size")).toIntValue();
+        if (__threadMaxPoolSize <= 0) {
+            __threadMaxPoolSize = 200;
+        }
+        //
+        __threadQueueSize = BlurObject.bind(_serverCfgs.get("thread_queue_size")).toIntValue();
+        if (__threadQueueSize <= 0) {
+            __threadQueueSize = 1024;
+        }
         __params = new HashMap<String, String>();
         for (Map.Entry<String, String> _entry : _serverCfgs.entrySet()) {
             if (_entry.getKey().startsWith("params.")) {
@@ -62,30 +83,52 @@ public class DefaultServerCfg implements IServerCfg {
         }
     }
 
+    @Override
     public String getServerName() {
         return __serverName;
     }
 
+    @Override
     public String getServerHost() {
         return __serverHost;
     }
 
+    @Override
     public int getPort() {
         return __port;
     }
 
+    @Override
     public String getCharset() {
         return __charset;
     }
 
+    @Override
     public int getBufferSize() {
         return __bufferSize;
     }
 
+    @Override
     public int getExecutorCount() {
         return __executorCount;
     }
 
+    @Override
+    public long getKeepAliveTime() {
+        return __keepAliveTime;
+    }
+
+    @Override
+    public int getThreadMaxPoolSize() {
+        return __threadMaxPoolSize;
+    }
+
+    @Override
+    public int getThreadQueueSize() {
+        return __threadQueueSize;
+    }
+
+    @Override
     public Map<String, String> getParams() {
         return Collections.unmodifiableMap(__params);
     }

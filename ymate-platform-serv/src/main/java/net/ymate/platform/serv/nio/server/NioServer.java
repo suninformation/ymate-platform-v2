@@ -43,6 +43,7 @@ public class NioServer implements IServer<NioServerListener, INioCodec> {
 
     protected boolean __isStarted;
 
+    @Override
     public void init(IServModuleCfg moduleCfg, String serverName, NioServerListener listener, INioCodec codec) {
         __serverCfg = new NioServerCfg(moduleCfg, serverName);
         //
@@ -51,6 +52,7 @@ public class NioServer implements IServer<NioServerListener, INioCodec> {
         __codec.init(__serverCfg.getCharset());
     }
 
+    @Override
     public synchronized void start() throws IOException {
         if (!__isStarted) {
             __isStarted = true;
@@ -61,19 +63,23 @@ public class NioServer implements IServer<NioServerListener, INioCodec> {
         }
     }
 
+    @Override
     public boolean isStarted() {
         return __isStarted;
     }
 
+    @Override
     public INioServerCfg serverCfg() {
         return __serverCfg;
     }
 
+    @Override
     @SuppressWarnings("unchecked")
     public <T extends NioServerListener> T listener() {
         return (T) __listener;
     }
 
+    @Override
     public synchronized void close() throws IOException {
         if (__isStarted) {
             __isStarted = false;

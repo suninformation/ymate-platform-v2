@@ -25,6 +25,7 @@ import java.io.IOException;
  */
 public abstract class AbstractListener<T extends ISession> implements IListener<T> {
 
+    @Override
     public void onExceptionCaught(Throwable e, T session) throws IOException {
         if (e instanceof IOException) {
             throw (IOException) e;

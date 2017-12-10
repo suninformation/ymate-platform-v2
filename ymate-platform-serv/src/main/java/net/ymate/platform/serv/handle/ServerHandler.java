@@ -32,6 +32,7 @@ public class ServerHandler implements IBeanHandler {
         __owner = owner;
     }
 
+    @Override
     @SuppressWarnings("unchecked")
     public Object handle(Class<?> targetClass) throws Exception {
         if (ClassUtils.isInterfaceOf(targetClass, IListener.class)) {
