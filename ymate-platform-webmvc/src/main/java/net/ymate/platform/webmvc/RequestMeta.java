@@ -46,6 +46,7 @@ public class RequestMeta {
     private String name;
     private String mapping;
     private Class<? extends IRequestProcessor> processor;
+    private Class<? extends IResponseErrorProcessor> errorProcessor;
     private Method method;
 
     private List<String> methodParamNames;
@@ -153,6 +154,17 @@ public class RequestMeta {
             this.processor = _reqProcessor.value();
         }
         //
+        ResponseErrorProcessor _errorProcessor = method.getAnnotation(ResponseErrorProcessor.class);
+        if (_errorProcessor == null) {
+            _errorProcessor = targetClass.getAnnotation(ResponseErrorProcessor.class);
+            if (_errorProcessor == null) {
+                _errorProcessor = targetClass.getPackage().getAnnotation(ResponseErrorProcessor.class);
+            }
+        }
+        if (_errorProcessor != null) {
+            this.errorProcessor = _errorProcessor.value();
+        }
+        //
         Map<String, ParameterMeta> _targetClassParameterMetas = __CLASS_PARAMETER_METAS.get(targetClass);
         if (_targetClassParameterMetas == null) {
             ClassUtils.BeanWrapper<?> _wrapper = ClassUtils.wrapper(targetClass);
@@ -235,6 +247,10 @@ public class RequestMeta {
 
     public Class<? extends IRequestProcessor> getProcessor() {
         return processor;
+    }
+
+    public Class<? extends IResponseErrorProcessor> getErrorProcessor() {
+        return errorProcessor;
     }
 
     public Method getMethod() {

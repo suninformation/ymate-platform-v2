@@ -1255,34 +1255,9 @@ WebMVC模块通过约定模式可以将参数融合在URL中，不再通过`?`�
 
 > 以上JSON和XML这两种协议格式的控制器方法，同样支持参数的验证等特性；
 
-##### 控制器包配置
-
-通过`package-info.java`为包中同级的控制器类添加通用配置，允许使用的注解：
-
-- @RequestMapping：控制器请求路径映射；
-- @RequestProcessor：控制器请求自定义处理器注解；
-- @ParameterEscape：控制器方法参数转义注解；
-- @ResponseCache：控制器方法返回视图对象执行结果缓存注解；
-- @ResponseHeader：控制器方法返回结果时增加响应头参数；
-- @ResponseView：控制器方法默认返回视图对象；
-
-示例代码：
-
-> 本例将为`net.ymate.demo.controller`包指定统一的请求路径映射和响应头配置，其`package-info.java`内容如下：
-
-    @RequestMapping("/v1/api")
-    @ResponseHeader({
-            @Header(name = "X-Request-Token", value = "c43e3bab82ab45278b0d5872d6c6d3b6"),
-            @Header(name = "X-Request-Scope", value = "request")})
-    package net.ymate.demo.controller;
-    
-    import net.ymate.platform.webmvc.annotation.Header;
-    import net.ymate.platform.webmvc.annotation.RequestMapping;
-    import net.ymate.platform.webmvc.annotation.ResponseHeader;
-
 ##### 异常错误处理器
 
-WebMVC模块为开发者提供了一个IWebErrorProcessor接口，允许针对异常、验证结果和约定模式的URL解析逻辑实现自定义扩展；
+**方式一**：WebMVC模块为开发者提供了一个IWebErrorProcessor接口，允许针对异常、验证结果和约定模式的URL解析逻辑实现自定义扩展；
 
 通过下面的参数配置即可：
 
@@ -1326,5 +1301,54 @@ WebMVC模块为开发者提供了一个IWebErrorProcessor接口，允许针对�
 	    }
 	}
 
+**方式二**：通过`@ResponseErrorProcessor`注解并配合`IResponseErrorProcessor`接口实现控制器类或方法指定自定义异常处理过程；
+
+示例代码：
+
+    public class DemoRequestProcessor implements IResponseErrorProcessor {
+    
+        @Override
+        public IView processError(IWebMvc owner, Throwable e) {
+            return TextView.bind("Error: " + e.getMessage);
+        }
+    }
+
+    @Controller
+    @RequestMapping("/demo")
+    public class DemoController {
+
+        @RequestMapping("/sayHi")
+        @ResponseErrorProcessor(DemoRequestProcessor.class)
+        public IView sayHi(@RequestParam String name， @RequestParam String content) {
+            // 模拟异常
+            System.out.println(1 / 0);
+            return View.textView("Hi, " + name + ", Content: " + content);
+        }
+    }
 
 
+##### 控制器包配置
+
+通过`package-info.java`为包中同级的控制器类添加通用配置，允许使用的注解：
+
+- @RequestMapping：控制器请求路径映射；
+- @RequestProcessor：控制器请求自定义处理器注解；
+- @ParameterEscape：控制器方法参数转义注解；
+- @ResponseCache：控制器方法返回视图对象执行结果缓存注解；
+- @ResponseHeader：控制器方法返回结果时增加响应头参数；
+- @ResponseView：控制器方法默认返回视图对象；
+- @ResponseErrorProcessor：控制器方法的默认异常处理器；
+
+示例代码：
+
+> 本例将为`net.ymate.demo.controller`包指定统一的请求路径映射和响应头配置，其`package-info.java`内容如下：
+
+    @RequestMapping("/v1/api")
+    @ResponseHeader({
+            @Header(name = "X-Request-Token", value = "c43e3bab82ab45278b0d5872d6c6d3b6"),
+            @Header(name = "X-Request-Scope", value = "request")})
+    package net.ymate.demo.controller;
+    
+    import net.ymate.platform.webmvc.annotation.Header;
+    import net.ymate.platform.webmvc.annotation.RequestMapping;
+    import net.ymate.platform.webmvc.annotation.ResponseHeader;

@@ -204,6 +204,7 @@ public class WebMVC implements IModule, IWebMvc {
         StopWatch _consumeTime = null;
         long _threadId = 0;
         boolean _devMode = __owner.getConfig().isDevelopMode();
+        RequestMeta _meta = null;
         try {
             if (_devMode && _LOG.isDebugEnabled()) {
                 _threadId = Thread.currentThread().getId();
@@ -214,7 +215,7 @@ public class WebMVC implements IModule, IWebMvc {
                 _LOG.debug("--- [" + _threadId + "] Parameters: " + JSON.toJSONString(request.getParameterMap()));
             }
             //
-            RequestMeta _meta = __moduleCfg.getRequestMappingParser().doParse(context);
+            _meta = __moduleCfg.getRequestMappingParser().doParse(context);
             if (_meta != null) {
                 //
                 if (_devMode && _LOG.isDebugEnabled()) {
@@ -450,6 +451,20 @@ public class WebMVC implements IModule, IWebMvc {
                 }
             } else {
                 response.sendError(HttpServletResponse.SC_NOT_FOUND);
+            }
+        } catch (Exception e) {
+            IView _view = null;
+            if (_meta != null && _meta.getErrorProcessor() != null) {
+                IResponseErrorProcessor _errorProcessor = ClassUtils.impl(_meta.getErrorProcessor(), IResponseErrorProcessor.class);
+                if (_errorProcessor != null) {
+                    _view = _errorProcessor.processError(this, e);
+                }
+            }
+            if (_view != null) {
+                _LOG.debug("--- [" + _threadId + "] An exception processed with: " + _meta.getErrorProcessor().getName());
+                _view.render();
+            } else {
+                throw e;
             }
         } finally {
             if (_consumeTime != null && _devMode && _LOG.isDebugEnabled()) {
