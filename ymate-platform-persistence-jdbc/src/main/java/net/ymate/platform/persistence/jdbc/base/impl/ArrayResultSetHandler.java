@@ -27,6 +27,7 @@ import java.sql.ResultSet;
  */
 public class ArrayResultSetHandler extends AbstractResultSetHandler<Object[]> {
 
+    @Override
     protected Object[] __doProcessResultRow(ResultSet resultSet) throws Exception {
         Object[] _result = new Object[__doGetColumnCount()];
         for (int _idx = 0; _idx < __doGetColumnCount(); _idx++) {

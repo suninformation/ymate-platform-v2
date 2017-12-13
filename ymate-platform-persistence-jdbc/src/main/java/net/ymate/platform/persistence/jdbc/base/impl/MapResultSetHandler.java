@@ -29,8 +29,10 @@ import java.util.Map;
  */
 public class MapResultSetHandler extends AbstractResultSetHandler<Map<String, Object>> {
 
+    @Override
     protected Map<String, Object> __doProcessResultRow(ResultSet resultSet) throws Exception {
-        Map<String, Object> _result = new LinkedHashMap<String, Object>(__doGetColumnCount()); // 要保持字段的顺序!!
+        // 要保持字段的顺序!!
+        Map<String, Object> _result = new LinkedHashMap<String, Object>(__doGetColumnCount());
         for (int _idx = 0; _idx < __doGetColumnCount(); _idx++) {
             _result.put(_doGetColumnMeta(_idx).getName(), resultSet.getObject(_idx + 1));
         }

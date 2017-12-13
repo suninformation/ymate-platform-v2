@@ -41,6 +41,7 @@ public class MySQLDialect extends AbstractDialect {
         this.identifierQuote_begin = this.identifierQuote_end = "`";
     }
 
+    @Override
     public String getName() {
         return JDBC.DATABASE.MYSQL.name();
     }

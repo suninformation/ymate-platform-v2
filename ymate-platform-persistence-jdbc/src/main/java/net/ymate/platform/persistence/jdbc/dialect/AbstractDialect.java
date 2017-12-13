@@ -52,10 +52,12 @@ public abstract class AbstractDialect implements IDialect {
      */
     protected String identifierQuote_end = "";
 
+    @Override
     public String wrapIdentifierQuote(String origin) {
         return identifierQuote_begin.concat(origin).concat(identifierQuote_end);
     }
 
+    @Override
     public Object[] getGeneratedKey(Statement statement) throws SQLException {
         // 检索由于执行此 Statement 对象而创建的所有自动生成的键
         List<Object> _ids = new ArrayList<Object>();
@@ -70,18 +72,22 @@ public abstract class AbstractDialect implements IDialect {
         return _ids.toArray();
     }
 
+    @Override
     public String getSequenceNextValSql(String sequenceName) {
         throw new UnsupportedOperationException();
     }
 
+    @Override
     public String buildPagedQuerySQL(String originSql, int page, int pageSize) {
         throw new UnsupportedOperationException();
     }
 
+    @Override
     public String buildCreateSQL(Class<? extends IEntity> entityClass, String prefix, IShardingable shardingable) {
         throw new UnsupportedOperationException();
     }
 
+    @Override
     public String buildDropSQL(Class<? extends IEntity> entityClass, String prefix, IShardingable shardingable) {
         throw new UnsupportedOperationException();
     }
@@ -140,6 +146,7 @@ public abstract class AbstractDialect implements IDialect {
         return _fieldsSB.toString();
     }
 
+    @Override
     public String buildTableName(String prefix, EntityMeta entityMeta, IShardingable shardingable) {
         String _entityName = entityMeta.getEntityName();
         if (shardingable != null && entityMeta.getShardingRule() != null) {
@@ -174,6 +181,7 @@ public abstract class AbstractDialect implements IDialect {
         }
     }
 
+    @Override
     public String buildInsertSQL(Class<? extends IEntity> entityClass, String prefix, IShardingable shardingable, Fields fields) {
         EntityMeta _meta = EntityMeta.createAndGet(entityClass);
         ExpressionUtils _exp = ExpressionUtils.bind("INSERT INTO ${table_name} (${fields}) VALUES (${values})")
@@ -189,6 +197,7 @@ public abstract class AbstractDialect implements IDialect {
         return _exp.set("fields", __doGenerateFieldsFormatStr(_fields, null, null)).set("values", StringUtils.repeat("?", ", ", _fields.fields().size())).getResult();
     }
 
+    @Override
     public String buildDeleteByPkSQL(Class<? extends IEntity> entityClass, String prefix, IShardingable shardingable, Fields pkFields) {
         EntityMeta _meta = EntityMeta.createAndGet(entityClass);
         ExpressionUtils _exp = ExpressionUtils.bind("DELETE FROM ${table_name} WHERE ${pk}")
@@ -204,6 +213,7 @@ public abstract class AbstractDialect implements IDialect {
         return _exp.set("pk", __doGenerateFieldsFormatStr(_fields, " = ?", " and ")).getResult();
     }
 
+    @Override
     public String buildUpdateByPkSQL(Class<? extends IEntity> entityClass, String prefix, IShardingable shardingable, Fields pkFields, Fields fields) {
         EntityMeta _meta = EntityMeta.createAndGet(entityClass);
         ExpressionUtils _exp = ExpressionUtils.bind("UPDATE ${table_name} SET ${fields} WHERE ${pk}")
@@ -232,6 +242,7 @@ public abstract class AbstractDialect implements IDialect {
         return _exp.set("pk", __doGenerateFieldsFormatStr(_fields, " = ?", " and ")).getResult();
     }
 
+    @Override
     public String buildSelectByPkSQL(Class<? extends IEntity> entityClass, String prefix, IShardingable shardingable, Fields pkFields, Fields fields) {
         EntityMeta _meta = EntityMeta.createAndGet(entityClass);
         ExpressionUtils _exp = ExpressionUtils.bind("SELECT ${fields} FROM ${table_name} WHERE ${pk}")
@@ -252,6 +263,7 @@ public abstract class AbstractDialect implements IDialect {
         return _exp.set("pk", __doGenerateFieldsFormatStr(pkFields, " = ?", " and ")).getResult();
     }
 
+    @Override
     public String buildSelectSQL(Class<? extends IEntity> entityClass, String prefix, IShardingable shardingable, Fields fields) {
         EntityMeta _meta = EntityMeta.createAndGet(entityClass);
         ExpressionUtils _exp = ExpressionUtils.bind("SELECT ${fields} FROM ${table_name}")

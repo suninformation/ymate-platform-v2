@@ -24,6 +24,8 @@ package net.ymate.platform.persistence.jdbc.query;
 public interface IDBLocker {
 
     IDBLocker DEFAULT = new IDBLocker() {
+
+        @Override
         public String toSQL() {
             return " FOR UPDATE";
         }
@@ -36,6 +38,8 @@ public interface IDBLocker {
     IDBLocker ORACLE = DEFAULT;
 
     IDBLocker ORACLE_NOWAIT = new IDBLocker() {
+
+        @Override
         public String toSQL() {
             return "FOR UPDATE NOWAIT";
         }
@@ -95,6 +99,7 @@ public interface IDBLocker {
             __lockType = lockType;
         }
 
+        @Override
         public String toSQL() {
             return "WITH (" + __lockType.name() + ")";
         }

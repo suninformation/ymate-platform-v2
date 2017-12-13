@@ -13,19 +13,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.ymate.platform.persistence.jdbc.dialect.impl;
+package net.ymate.platform.persistence.jdbc;
 
-import net.ymate.platform.persistence.jdbc.JDBC;
-import net.ymate.platform.persistence.jdbc.dialect.AbstractDialect;
+import net.ymate.platform.core.event.EventContext;
+import net.ymate.platform.core.event.IEvent;
 
 /**
- * @author 刘镇 (suninformation@163.com) on 15/4/16 上午11:26
+ * @author 刘镇 (suninformation@163.com) on 2017/12/13 上午11:50
  * @version 1.0
  */
-public class DB2Dialect extends AbstractDialect {
+public class DatabaseEvent extends EventContext<IDatabase, DatabaseEvent.EVENT> implements IEvent {
 
-    @Override
-    public String getName() {
-        return JDBC.DATABASE.DB2.name();
+    /**
+     * Database事件枚举
+     */
+    public enum EVENT {
+        QUERY_AFTER,
+        INSERT_AFTER,
+        UPDATE_AFTER,
+        REMOVE_AFTER
+    }
+
+    public DatabaseEvent(IDatabase owner, EVENT eventName) {
+        super(owner, DatabaseEvent.class, eventName);
     }
 }

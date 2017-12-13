@@ -78,10 +78,12 @@ public class JDBC implements IModule, IDatabase {
         return owner.getModule(JDBC.class);
     }
 
+    @Override
     public String getName() {
         return IDatabase.MODULE_NAME;
     }
 
+    @Override
     public void init(YMP owner) throws Exception {
         if (!__inited) {
             //
@@ -90,6 +92,7 @@ public class JDBC implements IModule, IDatabase {
             __owner = owner;
             __moduleCfg = new DefaultModuleCfg(owner);
             //
+            __owner.getEvents().registerEvent(DatabaseEvent.class);
             __owner.registerHandler(Repository.class, new RepoHandler(this));
             //
             __dsCaches = new HashMap<String, IDataSourceAdapter>();
@@ -104,10 +107,12 @@ public class JDBC implements IModule, IDatabase {
         }
     }
 
+    @Override
     public boolean isInited() {
         return __inited;
     }
 
+    @Override
     public void destroy() throws Exception {
         if (__inited) {
             __inited = false;
@@ -121,19 +126,23 @@ public class JDBC implements IModule, IDatabase {
         }
     }
 
+    @Override
     public YMP getOwner() {
         return __owner;
     }
 
+    @Override
     public IDatabaseModuleCfg getModuleCfg() {
         return __moduleCfg;
     }
 
+    @Override
     public IConnectionHolder getDefaultConnectionHolder() throws Exception {
         String _defaultDSName = __moduleCfg.getDataSourceDefaultName();
         return getConnectionHolder(_defaultDSName);
     }
 
+    @Override
     public IConnectionHolder getConnectionHolder(String dsName) throws Exception {
         IConnectionHolder _returnValue = null;
         if (Transactions.get() != null) {
@@ -148,6 +157,7 @@ public class JDBC implements IModule, IDatabase {
         return _returnValue;
     }
 
+    @Override
     public void releaseConnectionHolder(IConnectionHolder connectionHolder) throws Exception {
         // 需要判断当前连接是否参与事务，若存在事务则不进行关闭操作
         if (Transactions.get() == null) {
@@ -157,16 +167,19 @@ public class JDBC implements IModule, IDatabase {
         }
     }
 
+    @Override
     public <T> T openSession(ISessionExecutor<T> executor) throws Exception {
         return openSession(getDefaultConnectionHolder(), executor);
     }
 
+    @Override
     public <T> T openSession(String dsName, ISessionExecutor<T> executor) throws Exception {
         return openSession(getConnectionHolder(dsName), executor);
     }
 
+    @Override
     public <T> T openSession(IConnectionHolder connectionHolder, ISessionExecutor<T> executor) throws Exception {
-        ISession _session = new DefaultSession(connectionHolder);
+        ISession _session = new DefaultSession(this, connectionHolder);
         try {
             return executor.execute(_session);
         } finally {
@@ -174,41 +187,38 @@ public class JDBC implements IModule, IDatabase {
         }
     }
 
+    @Override
     public <T> T openSession(IDataSourceRouter dataSourceRouter, ISessionExecutor<T> executor) throws Exception {
         return openSession(getConnectionHolder(dataSourceRouter.getDataSourceName()), executor);
     }
 
+    @Override
     public ISession openSession() throws Exception {
-        return new DefaultSession(getDefaultConnectionHolder());
+        return new DefaultSession(this, getDefaultConnectionHolder());
     }
 
+    @Override
     public ISession openSession(String dsName) throws Exception {
-        return new DefaultSession(getConnectionHolder(dsName));
+        return new DefaultSession(this, getConnectionHolder(dsName));
     }
 
+    @Override
     public ISession openSession(IConnectionHolder connectionHolder) throws Exception {
-        return new DefaultSession(connectionHolder);
+        return new DefaultSession(this, connectionHolder);
     }
 
+    @Override
     public ISession openSession(IDataSourceRouter dataSourceRouter) throws Exception {
-        return new DefaultSession(getConnectionHolder(dataSourceRouter.getDataSourceName()));
+        return new DefaultSession(this, getConnectionHolder(dataSourceRouter.getDataSourceName()));
     }
 
     /////
-
 
     /**
      * 数据库类型
      */
     public enum DATABASE {
         MYSQL, ORACLE, SQLSERVER, DB2, SQLLITE, POSTGRESQL, HSQLDB, H2, UNKNOW
-    }
-
-    /**
-     * 数据库操作类型
-     */
-    public enum DB_OPERATION_TYPE {
-        QUERY, UPDATE, BATCH_UPDATE, PROCEDURE
     }
 
     /**

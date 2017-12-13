@@ -33,6 +33,11 @@ public interface IBatchUpdateOperator extends IOperator {
     int[] getEffectCounts();
 
     /**
+     * @return 累计受影响的总记录数
+     */
+    int getEffectCountsTotal();
+
+    /**
      * @param sql SQL语句
      * @return 添加SQL语句
      */

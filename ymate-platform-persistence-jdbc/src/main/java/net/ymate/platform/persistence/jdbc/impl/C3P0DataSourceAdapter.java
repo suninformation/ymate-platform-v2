@@ -28,8 +28,9 @@ import java.sql.Connection;
  */
 public class C3P0DataSourceAdapter extends AbstractDataSourceAdapter {
 
-    protected ComboPooledDataSource __ds;
+    private ComboPooledDataSource __ds;
 
+    @Override
     protected void __doInit() throws Exception {
         __ds = new ComboPooledDataSource();
         __ds.setDriverClass(__cfgMeta.getDriverClass());
@@ -51,6 +52,7 @@ public class C3P0DataSourceAdapter extends AbstractDataSourceAdapter {
         super.destroy();
     }
 
+    @Override
     public Connection getConnection() throws Exception {
         return __ds.getConnection();
     }

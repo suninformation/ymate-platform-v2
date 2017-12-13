@@ -42,14 +42,17 @@ public class DefaultConnectionHolder implements IConnectionHolder {
         }
     }
 
+    @Override
     public DataSourceCfgMeta getDataSourceCfgMeta() {
         return __dsAdapter.getDataSourceCfgMeta();
     }
 
+    @Override
     public Connection getConnection() {
         return __conn;
     }
 
+    @Override
     public void release() {
         try {
             if (this.__conn != null && !this.__conn.isClosed()) {
@@ -59,6 +62,7 @@ public class DefaultConnectionHolder implements IConnectionHolder {
         }
     }
 
+    @Override
     public IDialect getDialect() {
         return __dsAdapter.getDialect();
     }

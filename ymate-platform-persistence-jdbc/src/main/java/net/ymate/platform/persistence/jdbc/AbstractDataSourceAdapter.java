@@ -37,10 +37,11 @@ public abstract class AbstractDataSourceAdapter implements IDataSourceAdapter {
 
     protected DataSourceCfgMeta __cfgMeta;
 
-    protected IDialect __dialect;
+    private IDialect __dialect;
 
     protected boolean __inited;
 
+    @Override
     public void initialize(DataSourceCfgMeta cfgMeta) throws Exception {
         if (!__inited) {
             this.__cfgMeta = cfgMeta;
@@ -55,6 +56,7 @@ public abstract class AbstractDataSourceAdapter implements IDataSourceAdapter {
         }
     }
 
+    @Override
     public boolean tryInitializeIfNeed() throws Exception {
         if (!__inited) {
             try {
@@ -68,16 +70,19 @@ public abstract class AbstractDataSourceAdapter implements IDataSourceAdapter {
         return __inited;
     }
 
+    @Override
     public DataSourceCfgMeta getDataSourceCfgMeta() {
         return __cfgMeta;
     }
 
     protected abstract void __doInit() throws Exception;
 
+    @Override
     public IDialect getDialect() {
         return __dialect;
     }
 
+    @Override
     public void destroy() {
         if (__inited) {
             __inited = false;

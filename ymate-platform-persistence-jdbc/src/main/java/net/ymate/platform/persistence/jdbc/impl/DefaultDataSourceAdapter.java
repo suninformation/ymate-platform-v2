@@ -30,6 +30,7 @@ public class DefaultDataSourceAdapter extends AbstractDataSourceAdapter {
 
     private String __password;
 
+    @Override
     protected void __doInit() throws Exception {
         //
         Class.forName(__cfgMeta.getDriverClass());
@@ -40,10 +41,12 @@ public class DefaultDataSourceAdapter extends AbstractDataSourceAdapter {
         }
     }
 
+    @Override
     public Connection getConnection() throws Exception {
         return DriverManager.getConnection(__cfgMeta.getConnectionUrl(), __cfgMeta.getUsername(), __password);
     }
 
+    @Override
     public void destroy() {
         if (__inited) {
             __password = null;

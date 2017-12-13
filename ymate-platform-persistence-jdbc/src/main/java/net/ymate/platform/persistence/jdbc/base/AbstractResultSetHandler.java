@@ -32,6 +32,7 @@ public abstract class AbstractResultSetHandler<T> implements IResultSetHandler<T
 
     private ColumnMeta[] __columnMetas;
 
+    @Override
     public List<T> handle(ResultSet resultSet) throws Exception {
         // 分析结果集字段信息
         ResultSetMetaData _metaData = resultSet.getMetaData();

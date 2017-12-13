@@ -32,6 +32,7 @@ public class SQLServerDialect extends AbstractDialect {
         this.identifierQuote_end = "]";
     }
 
+    @Override
     public String getName() {
         return JDBC.DATABASE.SQLSERVER.name();
     }

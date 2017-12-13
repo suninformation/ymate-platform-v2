@@ -65,6 +65,7 @@ public abstract class AbstractOperator implements IOperator {
         this.parameters = new ArrayList<SQLParameter>();
     }
 
+    @Override
     public void execute() throws Exception {
         if (!this.executed) {
             StopWatch _time = new StopWatch();
@@ -130,34 +131,42 @@ public abstract class AbstractOperator implements IOperator {
         }
     }
 
+    @Override
     public boolean isExecuted() {
         return executed;
     }
 
+    @Override
     public String getSQL() {
         return sql;
     }
 
+    @Override
     public IAccessorConfig getAccessorConfig() {
         return accessorConfig;
     }
 
+    @Override
     public void setAccessorConfig(IAccessorConfig accessorConfig) {
         this.accessorConfig = accessorConfig;
     }
 
+    @Override
     public IConnectionHolder getConnectionHolder() {
         return connectionHolder;
     }
 
+    @Override
     public long getExpenseTime() {
         return expenseTime;
     }
 
+    @Override
     public List<SQLParameter> getParameters() {
         return this.parameters;
     }
 
+    @Override
     public IOperator addParameter(SQLParameter parameter) {
         if (parameter != null) {
             this.parameters.add(parameter);
@@ -165,6 +174,7 @@ public abstract class AbstractOperator implements IOperator {
         return this;
     }
 
+    @Override
     public IOperator addParameter(Object parameter) {
         if (parameter == null) {
             this.parameters.add(new SQLParameter(Type.FIELD.UNKNOW, null));

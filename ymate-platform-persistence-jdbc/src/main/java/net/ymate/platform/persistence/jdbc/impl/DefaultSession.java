@@ -25,8 +25,7 @@ import net.ymate.platform.persistence.base.IEntity;
 import net.ymate.platform.persistence.base.IEntityPK;
 import net.ymate.platform.persistence.base.ShardingList;
 import net.ymate.platform.persistence.impl.DefaultResultSet;
-import net.ymate.platform.persistence.jdbc.IConnectionHolder;
-import net.ymate.platform.persistence.jdbc.ISession;
+import net.ymate.platform.persistence.jdbc.*;
 import net.ymate.platform.persistence.jdbc.base.*;
 import net.ymate.platform.persistence.jdbc.base.impl.BatchUpdateOperator;
 import net.ymate.platform.persistence.jdbc.base.impl.DefaultQueryOperator;
@@ -58,6 +57,8 @@ import java.util.List;
  */
 public class DefaultSession implements ISession {
 
+    private IDatabase __owner;
+
     private String __id;
 
     private IConnectionHolder __connectionHolder;
@@ -67,6 +68,11 @@ public class DefaultSession implements ISession {
     private ISessionEvent __sessionEvent;
 
     public DefaultSession(IConnectionHolder connectionHolder) {
+        this(JDBC.get(), connectionHolder);
+    }
+
+    public DefaultSession(IDatabase owner, IConnectionHolder connectionHolder) {
+        this.__owner = owner;
         this.__id = UUIDUtils.UUID();
         this.__connectionHolder = connectionHolder;
         //
@@ -74,19 +80,27 @@ public class DefaultSession implements ISession {
         __tablePrefix = connectionHolder.getDataSourceCfgMeta().getTablePrefix();
     }
 
+    public IDatabase getOwner() {
+        return __owner;
+    }
+
+    @Override
     public String getId() {
         return __id;
     }
 
+    @Override
     public IConnectionHolder getConnectionHolder() {
         return __connectionHolder;
     }
 
+    @Override
     public ISession setSessionEvent(ISessionEvent sessionEvent) {
         this.__sessionEvent = sessionEvent;
         return this;
     }
 
+    @Override
     public void close() {
         // 同时需要判断当前连接是否参与事务，若存在事务则不进行关闭操作
         if (__connectionHolder != null) {
@@ -96,21 +110,27 @@ public class DefaultSession implements ISession {
         }
     }
 
+    @Override
     public <T> IResultSet<T> find(SQL sql, IResultSetHandler<T> handler) throws Exception {
         IQueryOperator<T> _opt = new DefaultQueryOperator<T>(sql.getSQL(), this.__connectionHolder, handler);
         for (Object _param : sql.params().params()) {
             _opt.addParameter(_param);
         }
+        SessionEventContext _eventContext = new SessionEventContext(_opt, Persistence.OperationType.QUERY);
         if (__sessionEvent != null) {
-            __sessionEvent.onQueryBefore(new SessionEventContext(_opt));
+            __sessionEvent.onQueryBefore(_eventContext);
         }
         _opt.execute();
         if (__sessionEvent != null) {
-            __sessionEvent.onQueryAfter(new SessionEventContext(_opt));
+            __sessionEvent.onQueryAfter(_eventContext);
         }
+        //
+        __owner.getOwner().getEvents().fireEvent(new DatabaseEvent(__owner, DatabaseEvent.EVENT.QUERY_AFTER).setEventSource(_eventContext));
+        //
         return new DefaultResultSet<T>(_opt.getResultSet());
     }
 
+    @Override
     public <T> IResultSet<T> find(SQL sql, IResultSetHandler<T> handler, Page page) throws Exception {
         String _selectSql = sql.getSQL();
         //
@@ -126,81 +146,101 @@ public class DefaultSession implements ISession {
         for (Object _param : sql.params().params()) {
             _opt.addParameter(_param);
         }
+        SessionEventContext _eventContext = new SessionEventContext(_opt, Persistence.OperationType.QUERY);
         if (__sessionEvent != null) {
-            __sessionEvent.onQueryBefore(new SessionEventContext(_opt));
+            __sessionEvent.onQueryBefore(_eventContext);
         }
         _opt.execute();
         if (__sessionEvent != null) {
-            __sessionEvent.onQueryAfter(new SessionEventContext(_opt));
+            __sessionEvent.onQueryAfter(_eventContext);
         }
+        //
+        __owner.getOwner().getEvents().fireEvent(new DatabaseEvent(__owner, DatabaseEvent.EVENT.QUERY_AFTER).setEventSource(_eventContext));
+        //
         if (page != null) {
             return new DefaultResultSet<T>(_opt.getResultSet(), page.page(), page.pageSize(), _count);
         }
         return new DefaultResultSet<T>(_opt.getResultSet());
     }
 
+    @Override
     @SuppressWarnings("unchecked")
     public <T extends IEntity> IResultSet<T> find(T entity) throws Exception {
         return find(entity, Fields.create(), null, entity instanceof IShardingable ? (IShardingable) entity : null);
     }
 
+    @Override
     public <T extends IEntity> IResultSet<T> find(T entity, IShardingable shardingable) throws Exception {
         return find(entity, Fields.create(), null, shardingable);
     }
 
+    @Override
     public <T extends IEntity> IResultSet<T> find(T entity, Page page) throws Exception {
         return find(entity, Fields.create(), page, entity instanceof IShardingable ? (IShardingable) entity : null);
     }
 
+    @Override
     public <T extends IEntity> IResultSet<T> find(T entity, Page page, IShardingable shardingable) throws Exception {
         return find(entity, Fields.create(), page, shardingable);
     }
 
+    @Override
     public <T extends IEntity> IResultSet<T> find(T entity, Fields filter) throws Exception {
         return find(entity, filter, null, entity instanceof IShardingable ? (IShardingable) entity : null);
     }
 
+    @Override
     public <T extends IEntity> IResultSet<T> find(T entity, Fields filter, IShardingable shardingable) throws Exception {
         return find(entity, filter, null, shardingable);
     }
 
+    @Override
     public <T extends IEntity> IResultSet<T> find(T entity, Fields filter, Page page) throws Exception {
         return find(entity, filter, page, entity instanceof IShardingable ? (IShardingable) entity : null);
     }
 
+    @Override
     @SuppressWarnings("unchecked")
     public <T extends IEntity> IResultSet<T> find(T entity, Fields filter, Page page, IShardingable shardingable) throws Exception {
         return (IResultSet<T>) this.find(EntitySQL.create(entity.getClass()).field(filter), Where.create(BaseEntity.buildEntityCond(entity)), page, shardingable);
     }
 
+    @Override
     public <T extends IEntity> IResultSet<T> find(EntitySQL<T> entity) throws Exception {
         return find(entity, null, null, null);
     }
 
+    @Override
     public <T extends IEntity> IResultSet<T> find(EntitySQL<T> entity, IShardingable shardingable) throws Exception {
         return this.find(entity, null, null, shardingable);
     }
 
+    @Override
     public <T extends IEntity> IResultSet<T> find(EntitySQL<T> entity, Page page) throws Exception {
         return find(entity, null, page, null);
     }
 
+    @Override
     public <T extends IEntity> IResultSet<T> find(EntitySQL<T> entity, Page page, IShardingable shardingable) throws Exception {
         return this.find(entity, null, page, shardingable);
     }
 
+    @Override
     public <T extends IEntity> IResultSet<T> find(EntitySQL<T> entity, Where where) throws Exception {
         return find(entity, where, null, null);
     }
 
+    @Override
     public <T extends IEntity> IResultSet<T> find(EntitySQL<T> entity, Where where, IShardingable shardingable) throws Exception {
         return this.find(entity, where, null, shardingable);
     }
 
+    @Override
     public <T extends IEntity> IResultSet<T> find(EntitySQL<T> entity, Where where, Page page) throws Exception {
         return find(entity, where, page, null);
     }
 
+    @Override
     public <T extends IEntity> IResultSet<T> find(EntitySQL<T> entity, Where where, Page page, IShardingable shardingable) throws Exception {
         String _selectSql = __dialect.buildSelectSQL(entity.getEntityClass(), __tablePrefix, shardingable, __doGetNotExcludedFields(EntityMeta.createAndGet(entity.getEntityClass()), entity.fields(), false, true));
         if (where != null) {
@@ -224,13 +264,16 @@ public class DefaultSession implements ISession {
                 _opt.addParameter(_param);
             }
         }
+        SessionEventContext _eventContext = new SessionEventContext(_opt, Persistence.OperationType.QUERY);
         if (__sessionEvent != null) {
-            __sessionEvent.onQueryBefore(new SessionEventContext(_opt));
+            __sessionEvent.onQueryBefore(_eventContext);
         }
         _opt.execute();
         if (__sessionEvent != null) {
-            __sessionEvent.onQueryAfter(new SessionEventContext(_opt));
+            __sessionEvent.onQueryAfter(_eventContext);
         }
+        //
+        __owner.getOwner().getEvents().fireEvent(new DatabaseEvent(__owner, DatabaseEvent.EVENT.QUERY_AFTER).setEventSource(_eventContext));
         //
         if (page != null) {
             return new DefaultResultSet<T>(_opt.getResultSet(), page.page(), page.pageSize(), _count);
@@ -238,10 +281,12 @@ public class DefaultSession implements ISession {
         return new DefaultResultSet<T>(_opt.getResultSet());
     }
 
+    @Override
     public <T extends IEntity> T find(EntitySQL<T> entity, Serializable id) throws Exception {
         return find(entity, id, null);
     }
 
+    @Override
     public <T extends IEntity> T find(EntitySQL<T> entity, Serializable id, IShardingable shardingable) throws Exception {
         EntityMeta _meta = EntityMeta.createAndGet(entity.getEntityClass());
         PairObject<Fields, Params> _entityPK = __doGetPrimaryKeyFieldAndValues(_meta, id, null);
@@ -259,44 +304,57 @@ public class DefaultSession implements ISession {
         } else {
             _opt.addParameter(id);
         }
+        SessionEventContext _eventContext = new SessionEventContext(_opt, Persistence.OperationType.QUERY);
         if (__sessionEvent != null) {
-            __sessionEvent.onQueryBefore(new SessionEventContext(_opt));
+            __sessionEvent.onQueryBefore(_eventContext);
         }
         _opt.execute();
         if (__sessionEvent != null) {
-            __sessionEvent.onQueryAfter(new SessionEventContext(_opt));
+            __sessionEvent.onQueryAfter(_eventContext);
         }
+        //
+        __owner.getOwner().getEvents().fireEvent(new DatabaseEvent(__owner, DatabaseEvent.EVENT.QUERY_AFTER).setEventSource(_eventContext));
+        //
         return _opt.getResultSet().isEmpty() ? null : _opt.getResultSet().get(0);
     }
 
+    @Override
     public <T> T findFirst(SQL sql, IResultSetHandler<T> handler) throws Exception {
         String _selectSql = __dialect.buildPagedQuerySQL(sql.getSQL(), 1, 1);
         IQueryOperator<T> _opt = new DefaultQueryOperator<T>(_selectSql, this.__connectionHolder, handler);
         for (Object _param : sql.params().params()) {
             _opt.addParameter(_param);
         }
+        SessionEventContext _eventContext = new SessionEventContext(_opt, Persistence.OperationType.QUERY);
         if (__sessionEvent != null) {
-            __sessionEvent.onQueryBefore(new SessionEventContext(_opt));
+            __sessionEvent.onQueryBefore(_eventContext);
         }
         _opt.execute();
         if (__sessionEvent != null) {
-            __sessionEvent.onQueryAfter(new SessionEventContext(_opt));
+            __sessionEvent.onQueryAfter(_eventContext);
         }
+        //
+        __owner.getOwner().getEvents().fireEvent(new DatabaseEvent(__owner, DatabaseEvent.EVENT.QUERY_AFTER).setEventSource(_eventContext));
+        //
         return _opt.getResultSet().isEmpty() ? null : _opt.getResultSet().get(0);
     }
 
+    @Override
     public <T extends IEntity> T findFirst(EntitySQL<T> entity) throws Exception {
         return findFirst(entity, null, null);
     }
 
+    @Override
     public <T extends IEntity> T findFirst(EntitySQL<T> entity, IShardingable shardingable) throws Exception {
         return findFirst(entity, null, shardingable);
     }
 
+    @Override
     public <T extends IEntity> T findFirst(EntitySQL<T> entity, Where where) throws Exception {
         return findFirst(entity, where, null);
     }
 
+    @Override
     public <T extends IEntity> T findFirst(EntitySQL<T> entity, Where where, IShardingable shardingable) throws Exception {
         String _selectSql = __dialect.buildSelectSQL(entity.getEntityClass(), __tablePrefix, shardingable, __doGetNotExcludedFields(EntityMeta.createAndGet(entity.getEntityClass()), entity.fields(), false, true));
         if (where != null) {
@@ -314,34 +372,43 @@ public class DefaultSession implements ISession {
                 _opt.addParameter(_param);
             }
         }
+        SessionEventContext _eventContext = new SessionEventContext(_opt, Persistence.OperationType.QUERY);
         if (__sessionEvent != null) {
-            __sessionEvent.onQueryBefore(new SessionEventContext(_opt));
+            __sessionEvent.onQueryBefore(_eventContext);
         }
         _opt.execute();
         if (__sessionEvent != null) {
-            __sessionEvent.onQueryAfter(new SessionEventContext(_opt));
+            __sessionEvent.onQueryAfter(_eventContext);
         }
+        //
+        __owner.getOwner().getEvents().fireEvent(new DatabaseEvent(__owner, DatabaseEvent.EVENT.QUERY_AFTER).setEventSource(_eventContext));
         //
         return _opt.getResultSet().isEmpty() ? null : _opt.getResultSet().get(0);
     }
 
+    @Override
     public int executeForUpdate(SQL sql) throws Exception {
         IUpdateOperator _opt = new DefaultUpdateOperator(sql.getSQL(), this.getConnectionHolder());
         for (Object _param : sql.params().params()) {
             _opt.addParameter(_param);
         }
+        SessionEventContext _eventContext = new SessionEventContext(_opt, Persistence.OperationType.UPDATE);
         if (__sessionEvent != null) {
-            __sessionEvent.onUpdateBefore(new SessionEventContext(_opt));
+            __sessionEvent.onUpdateBefore(_eventContext);
         }
         _opt.execute();
         if (__sessionEvent != null) {
-            __sessionEvent.onUpdateAfter(new SessionEventContext(_opt));
+            __sessionEvent.onUpdateAfter(_eventContext);
         }
+        //
+        __owner.getOwner().getEvents().fireEvent(new DatabaseEvent(__owner, DatabaseEvent.EVENT.UPDATE_AFTER).setEventSource(_eventContext));
+        //
         return _opt.getEffectCounts();
     }
 
+    @Override
     public int[] executeForUpdate(BatchSQL sql) throws Exception {
-        IBatchUpdateOperator _opt = null;
+        IBatchUpdateOperator _opt;
         if (sql.getSQL() != null) {
             _opt = new BatchUpdateOperator(sql.getSQL(), this.getConnectionHolder());
             for (Params _param : sql.params()) {
@@ -357,20 +424,26 @@ public class DefaultSession implements ISession {
         for (String _sql : sql.getSQLs()) {
             _opt.addBatchSQL(_sql);
         }
+        SessionEventContext _eventContext = new SessionEventContext(_opt, Persistence.OperationType.BATCH_UPDATE);
         if (__sessionEvent != null) {
-            __sessionEvent.onUpdateBefore(new SessionEventContext(_opt));
+            __sessionEvent.onUpdateBefore(_eventContext);
         }
         _opt.execute();
         if (__sessionEvent != null) {
-            __sessionEvent.onUpdateAfter(new SessionEventContext(_opt));
+            __sessionEvent.onUpdateAfter(_eventContext);
         }
+        //
+        __owner.getOwner().getEvents().fireEvent(new DatabaseEvent(__owner, DatabaseEvent.EVENT.UPDATE_AFTER).setEventSource(_eventContext));
+        //
         return _opt.getEffectCounts();
     }
 
+    @Override
     public <T extends IEntity> T update(T entity, Fields filter) throws Exception {
         return update(entity, filter, entity instanceof IShardingable ? (IShardingable) entity : null);
     }
 
+    @Override
     public <T extends IEntity> T update(T entity, Fields filter, IShardingable shardingable) throws Exception {
         EntityMeta _meta = EntityMeta.createAndGet(entity.getClass());
         if (_meta.isView()) {
@@ -388,19 +461,24 @@ public class DefaultSession implements ISession {
         for (Object _param : _entity.getValue().params()) {
             _opt.addParameter(_param);
         }
+        SessionEventContext _eventContext = new SessionEventContext(_opt, Persistence.OperationType.UPDATE);
         if (__sessionEvent != null) {
-            __sessionEvent.onUpdateBefore(new SessionEventContext(_opt));
+            __sessionEvent.onUpdateBefore(_eventContext);
         }
         _opt.execute();
         if (__sessionEvent != null) {
-            __sessionEvent.onUpdateAfter(new SessionEventContext(_opt));
+            __sessionEvent.onUpdateAfter(_eventContext);
         }
+        //
+        __owner.getOwner().getEvents().fireEvent(new DatabaseEvent(__owner, DatabaseEvent.EVENT.UPDATE_AFTER).setEventSource(_eventContext));
+        //
         if (_opt.getEffectCounts() > 0) {
             return entity;
         }
         return null;
     }
 
+    @Override
     public <T extends IEntity> List<T> update(List<T> entities, Fields filter) throws Exception {
         T _element = entities.get(0);
         EntityMeta _meta = EntityMeta.createAndGet(_element.getClass());
@@ -425,16 +503,21 @@ public class DefaultSession implements ISession {
             }
             _opt.addBatchParameter(_batchParam);
         }
+        SessionEventContext _eventContext = new SessionEventContext(_opt, Persistence.OperationType.BATCH_UPDATE);
         if (__sessionEvent != null) {
-            __sessionEvent.onUpdateBefore(new SessionEventContext(_opt));
+            __sessionEvent.onUpdateBefore(_eventContext);
         }
         _opt.execute();
         if (__sessionEvent != null) {
-            __sessionEvent.onUpdateAfter(new SessionEventContext(_opt));
+            __sessionEvent.onUpdateAfter(_eventContext);
         }
+        //
+        __owner.getOwner().getEvents().fireEvent(new DatabaseEvent(__owner, DatabaseEvent.EVENT.UPDATE_AFTER).setEventSource(_eventContext));
+        //
         return entities;
     }
 
+    @Override
     public <T extends IEntity> List<T> update(ShardingList<T> entities, Fields filter) throws Exception {
         List<T> _results = new ArrayList<T>();
         for (ShardingList.ShardingElement<T> _element : entities) {
@@ -446,18 +529,22 @@ public class DefaultSession implements ISession {
         return _results;
     }
 
+    @Override
     public <T extends IEntity> T insert(T entity) throws Exception {
         return insert(entity, null, (entity instanceof IShardingable ? (IShardingable) entity : null));
     }
 
+    @Override
     public <T extends IEntity> T insert(T entity, IShardingable shardingable) throws Exception {
         return insert(entity, null, shardingable);
     }
 
+    @Override
     public <T extends IEntity> T insert(T entity, Fields filter) throws Exception {
         return insert(entity, filter, (entity instanceof IShardingable ? (IShardingable) entity : null));
     }
 
+    @Override
     public <T extends IEntity> T insert(T entity, Fields filter, IShardingable shardingable) throws Exception {
         EntityMeta _meta = EntityMeta.createAndGet(entity.getClass());
         if (_meta.isView()) {
@@ -487,27 +574,34 @@ public class DefaultSession implements ISession {
         for (Object _param : _entity.getValue().params()) {
             _opt.addParameter(_param);
         }
+        SessionEventContext _eventContext = new SessionEventContext(_opt, Persistence.OperationType.UPDATE);
         if (__sessionEvent != null) {
-            __sessionEvent.onInsertBefore(new SessionEventContext(_opt));
+            __sessionEvent.onInsertBefore(_eventContext);
         }
         _opt.execute();
         if (__sessionEvent != null) {
-            __sessionEvent.onInsertAfter(new SessionEventContext(_opt));
+            __sessionEvent.onInsertAfter(_eventContext);
         }
+        //
+        __owner.getOwner().getEvents().fireEvent(new DatabaseEvent(__owner, DatabaseEvent.EVENT.INSERT_AFTER).setEventSource(_eventContext));
+        //
         if (_opt.getEffectCounts() > 0) {
             return entity;
         }
         return null;
     }
 
+    @Override
     public <T extends IEntity> List<T> insert(List<T> entities) throws Exception {
         return insert(entities, null);
     }
 
+    @Override
     public <T extends IEntity> List<T> insert(ShardingList<T> entities) throws Exception {
         return this.insert(entities, null);
     }
 
+    @Override
     @SuppressWarnings("unchecked")
     public <T extends IEntity> List<T> insert(List<T> entities, Fields filter) throws Exception {
         T _element = entities.get(0);
@@ -542,16 +636,21 @@ public class DefaultSession implements ISession {
             }
             _opt.addBatchParameter(_batchParam);
         }
+        SessionEventContext _eventContext = new SessionEventContext(_opt, Persistence.OperationType.BATCH_UPDATE);
         if (__sessionEvent != null) {
-            __sessionEvent.onInsertBefore(new SessionEventContext(_opt));
+            __sessionEvent.onInsertBefore(_eventContext);
         }
         _opt.execute();
         if (__sessionEvent != null) {
-            __sessionEvent.onInsertAfter(new SessionEventContext(_opt));
+            __sessionEvent.onInsertAfter(_eventContext);
         }
+        //
+        __owner.getOwner().getEvents().fireEvent(new DatabaseEvent(__owner, DatabaseEvent.EVENT.INSERT_AFTER).setEventSource(_eventContext));
+        //
         return entities;
     }
 
+    @Override
     public <T extends IEntity> List<T> insert(ShardingList<T> entities, Fields filter) throws Exception {
         List<T> _results = new ArrayList<T>();
         for (ShardingList.ShardingElement<T> _element : entities) {
@@ -563,10 +662,12 @@ public class DefaultSession implements ISession {
         return _results;
     }
 
+    @Override
     public <T extends IEntity> T delete(T entity) throws Exception {
         return delete(entity, (entity instanceof IShardingable ? (IShardingable) entity : null));
     }
 
+    @Override
     public <T extends IEntity> T delete(T entity, IShardingable shardingable) throws Exception {
         if (this.delete(entity.getClass(), entity.getId(), shardingable) > 0) {
             return entity;
@@ -574,10 +675,12 @@ public class DefaultSession implements ISession {
         return null;
     }
 
+    @Override
     public <T extends IEntity> int delete(Class<T> entityClass, Serializable id) throws Exception {
         return delete(entityClass, id, null);
     }
 
+    @Override
     public <T extends IEntity> int delete(Class<T> entityClass, Serializable id, IShardingable shardingable) throws Exception {
         EntityMeta _meta = EntityMeta.createAndGet(entityClass);
         if (_meta.isView()) {
@@ -590,16 +693,21 @@ public class DefaultSession implements ISession {
         for (Object _param : _entity.getValue().params()) {
             _opt.addParameter(_param);
         }
+        SessionEventContext _eventContext = new SessionEventContext(_opt, Persistence.OperationType.UPDATE);
         if (__sessionEvent != null) {
-            __sessionEvent.onRemoveBefore(new SessionEventContext(_opt));
+            __sessionEvent.onRemoveBefore(_eventContext);
         }
         _opt.execute();
         if (__sessionEvent != null) {
-            __sessionEvent.onRemoveAfter(new SessionEventContext(_opt));
+            __sessionEvent.onRemoveAfter(_eventContext);
         }
+        //
+        __owner.getOwner().getEvents().fireEvent(new DatabaseEvent(__owner, DatabaseEvent.EVENT.REMOVE_AFTER).setEventSource(_eventContext));
+        //
         return _opt.getEffectCounts();
     }
 
+    @Override
     public <T extends IEntity> List<T> delete(List<T> entities) throws Exception {
         EntityMeta _meta = EntityMeta.createAndGet(entities.get(0).getClass());
         if (_meta.isView()) {
@@ -617,10 +725,21 @@ public class DefaultSession implements ISession {
             }
             _opt.addBatchParameter(_batchParam);
         }
+        SessionEventContext _eventContext = new SessionEventContext(_opt, Persistence.OperationType.BATCH_UPDATE);
+        if (__sessionEvent != null) {
+            __sessionEvent.onRemoveBefore(_eventContext);
+        }
         _opt.execute();
+        if (__sessionEvent != null) {
+            __sessionEvent.onRemoveAfter(_eventContext);
+        }
+        //
+        __owner.getOwner().getEvents().fireEvent(new DatabaseEvent(__owner, DatabaseEvent.EVENT.REMOVE_AFTER).setEventSource(_eventContext));
+        //
         return entities;
     }
 
+    @Override
     public <T extends IEntity> List<T> delete(ShardingList<T> entities) throws Exception {
         List<T> _results = new ArrayList<T>();
         for (ShardingList.ShardingElement<T> _element : entities) {
@@ -632,6 +751,7 @@ public class DefaultSession implements ISession {
         return _results;
     }
 
+    @Override
     public <T extends IEntity> int[] delete(Class<T> entityClass, Serializable[] ids) throws Exception {
         EntityMeta _meta = EntityMeta.createAndGet(entityClass);
         if (_meta.isView()) {
@@ -649,16 +769,21 @@ public class DefaultSession implements ISession {
             }
             _opt.addBatchParameter(_batchParam);
         }
+        SessionEventContext _eventContext = new SessionEventContext(_opt, Persistence.OperationType.BATCH_UPDATE);
         if (__sessionEvent != null) {
-            __sessionEvent.onRemoveBefore(new SessionEventContext(_opt));
+            __sessionEvent.onRemoveBefore(_eventContext);
         }
         _opt.execute();
         if (__sessionEvent != null) {
-            __sessionEvent.onRemoveAfter(new SessionEventContext(_opt));
+            __sessionEvent.onRemoveAfter(_eventContext);
         }
+        //
+        __owner.getOwner().getEvents().fireEvent(new DatabaseEvent(__owner, DatabaseEvent.EVENT.REMOVE_AFTER).setEventSource(_eventContext));
+        //
         return _opt.getEffectCounts();
     }
 
+    @Override
     public <T extends IEntity> int[] delete(Class<T> entityClass, ShardingList<Serializable> ids) throws Exception {
         List<Integer> _results = new ArrayList<Integer>();
         for (ShardingList.ShardingElement<Serializable> _element : ids) {
@@ -667,10 +792,12 @@ public class DefaultSession implements ISession {
         return ArrayUtils.toPrimitive(_results.toArray(new Integer[0]));
     }
 
+    @Override
     public <T extends IEntity> long count(Class<T> entityClass, Where where) throws Exception {
         return count(entityClass, where, null);
     }
 
+    @Override
     public <T extends IEntity> long count(Class<T> entityClass, Where where, IShardingable shardingable) throws Exception {
         EntityMeta _meta = EntityMeta.createAndGet(entityClass);
         ExpressionUtils _exp = ExpressionUtils.bind("SELECT count(1) FROM ${table_name} ${where}")
@@ -680,23 +807,38 @@ public class DefaultSession implements ISession {
         for (Object _param : where.getParams().params()) {
             _opt.addParameter(_param);
         }
+        SessionEventContext _eventContext = new SessionEventContext(_opt, Persistence.OperationType.QUERY);
         if (__sessionEvent != null) {
-            __sessionEvent.onQueryBefore(new SessionEventContext(_opt));
+            __sessionEvent.onQueryBefore(_eventContext);
         }
         _opt.execute();
         if (__sessionEvent != null) {
-            __sessionEvent.onQueryAfter(new SessionEventContext(_opt));
+            __sessionEvent.onQueryAfter(_eventContext);
         }
+        //
+        __owner.getOwner().getEvents().fireEvent(new DatabaseEvent(__owner, DatabaseEvent.EVENT.QUERY_AFTER).setEventSource(_eventContext));
+        //
         return BlurObject.bind(((Object[]) _opt.getResultSet().get(0)[0])[1]).toLongValue();
     }
 
+    @Override
     public long count(SQL sql) throws Exception {
         String _sql = ExpressionUtils.bind("SELECT count(1) FROM (${sql}) c_t").set("sql", sql.getSQL()).getResult();
         IQueryOperator<Object[]> _opt = new DefaultQueryOperator<Object[]>(_sql, this.getConnectionHolder(), IResultSetHandler.ARRAY);
         for (Object _param : sql.params().params()) {
             _opt.addParameter(_param);
         }
+        SessionEventContext _eventContext = new SessionEventContext(_opt, Persistence.OperationType.QUERY);
+        if (__sessionEvent != null) {
+            __sessionEvent.onQueryBefore(_eventContext);
+        }
         _opt.execute();
+        if (__sessionEvent != null) {
+            __sessionEvent.onQueryAfter(_eventContext);
+        }
+        //
+        __owner.getOwner().getEvents().fireEvent(new DatabaseEvent(__owner, DatabaseEvent.EVENT.QUERY_AFTER).setEventSource(_eventContext));
+        //
         return BlurObject.bind(((Object[]) _opt.getResultSet().get(0)[0])[1]).toLongValue();
     }
 
@@ -707,7 +849,7 @@ public class DefaultSession implements ISession {
      * @return 获取主键对象的所有字段和值
      * @throws Exception 可能产生的异常
      */
-    protected PairObject<Fields, Params> __doGetPrimaryKeyFieldAndValues(EntityMeta entityMeta, Object targetObj, Fields filter) throws Exception {
+    private PairObject<Fields, Params> __doGetPrimaryKeyFieldAndValues(EntityMeta entityMeta, Object targetObj, Fields filter) throws Exception {
         Fields _fields = Fields.create();
         Params _values = Params.create();
         if (targetObj instanceof IEntityPK) {
@@ -758,7 +900,7 @@ public class DefaultSession implements ISession {
      * @return 获取实体的所有字段和值
      * @throws Exception 可能产生的异常
      */
-    protected PairObject<Fields, Params> __doGetEntityFieldAndValues(EntityMeta entityMeta, IEntity targetObj, Fields filter, boolean includePK) throws Exception {
+    private PairObject<Fields, Params> __doGetEntityFieldAndValues(EntityMeta entityMeta, IEntity targetObj, Fields filter, boolean includePK) throws Exception {
         Fields _fields = Fields.create();
         Params _values = Params.create();
         for (String _fieldName : entityMeta.getPropertyNames()) {
@@ -808,7 +950,7 @@ public class DefaultSession implements ISession {
      * @param fieldName 数据表字段名称
      * @return 返回字段是否被过滤
      */
-    protected boolean __doCheckField(Fields filter, String fieldName) {
+    private boolean __doCheckField(Fields filter, String fieldName) {
         if (filter != null) {
             if (filter.isExcluded()) {
                 return !filter.fields().contains(fieldName);
@@ -826,7 +968,7 @@ public class DefaultSession implements ISession {
      * @param includePK  是否包含主键
      * @return 返回目标实体中所有未被过滤的字段名称集合
      */
-    protected Fields __doGetNotExcludedFields(EntityMeta entityMeta, Fields filter, boolean forUpdate, boolean includePK) {
+    private Fields __doGetNotExcludedFields(EntityMeta entityMeta, Fields filter, boolean forUpdate, boolean includePK) {
         Fields _returnValue = Fields.create();
         for (String _field : entityMeta.getPropertyNames()) {
             if (__doCheckField(filter, _field)) {
@@ -847,22 +989,23 @@ public class DefaultSession implements ISession {
      */
     private class EntityAccessorConfig implements IAccessorConfig {
 
-        protected EntityMeta __entityMeta;
-        protected final IConnectionHolder __conn;
-        protected List<IEntity<?>> __entities;
+        EntityMeta __entityMeta;
+        final IConnectionHolder __conn;
+        List<IEntity<?>> __entities;
 
-        public EntityAccessorConfig(EntityMeta entityMeta, IConnectionHolder connectionHolder, IEntity<?>... entity) {
+        EntityAccessorConfig(EntityMeta entityMeta, IConnectionHolder connectionHolder, IEntity<?>... entity) {
             __entityMeta = entityMeta;
             __conn = connectionHolder;
             __entities = Arrays.asList(entity);
         }
 
-        public EntityAccessorConfig(EntityMeta entityMeta, IConnectionHolder connectionHolder, List<IEntity<?>> entities) {
+        EntityAccessorConfig(EntityMeta entityMeta, IConnectionHolder connectionHolder, List<IEntity<?>> entities) {
             __entityMeta = entityMeta;
             __conn = connectionHolder;
             __entities = entities;
         }
 
+        @Override
         public Statement getStatement(Connection conn) throws Exception {
             if (conn != null && !conn.isClosed()) {
                 return conn.createStatement();
@@ -870,6 +1013,7 @@ public class DefaultSession implements ISession {
             return __conn.getConnection().createStatement();
         }
 
+        @Override
         public CallableStatement getCallableStatement(Connection conn, String sql) throws Exception {
             if (conn != null && !conn.isClosed()) {
                 return conn.prepareCall(sql);
@@ -877,6 +1021,7 @@ public class DefaultSession implements ISession {
             return __conn.getConnection().prepareCall(sql);
         }
 
+        @Override
         public PreparedStatement getPreparedStatement(Connection conn, String sql) throws Exception {
             if (conn != null && !conn.isClosed()) {
                 return conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
@@ -884,9 +1029,11 @@ public class DefaultSession implements ISession {
             return __conn.getConnection().prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
         }
 
+        @Override
         public void beforeStatementExecution(AccessorEventContext context) throws Exception {
         }
 
+        @Override
         public void afterStatementExecution(AccessorEventContext context) throws Exception {
             if (__entities != null && __entityMeta.hasAutoincrement()) {
                 // 注: 数据表最多一个自动生成主键
@@ -909,22 +1056,27 @@ public class DefaultSession implements ISession {
             }
         }
 
+        @Override
         public int getFetchDirection() {
             return 0;
         }
 
+        @Override
         public int getFetchSize() {
             return 10000;
         }
 
+        @Override
         public int getMaxFieldSize() {
             return 0;
         }
 
+        @Override
         public int getMaxRows() {
             return 1000;
         }
 
+        @Override
         public int getQueryTimeout() {
             return 0;
         }

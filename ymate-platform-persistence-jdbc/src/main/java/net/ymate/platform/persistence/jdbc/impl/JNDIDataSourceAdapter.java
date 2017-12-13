@@ -30,8 +30,9 @@ import java.sql.Connection;
  */
 public class JNDIDataSourceAdapter extends AbstractDataSourceAdapter {
 
-    protected DataSource __dataSource;
+    private DataSource __dataSource;
 
+    @Override
     protected void __doInit() throws Exception {
         Context _initContext = new InitialContext();
         Context _envContext = (Context) _initContext.lookup("java:/comp/env");
@@ -39,6 +40,7 @@ public class JNDIDataSourceAdapter extends AbstractDataSourceAdapter {
         __dataSource = (DataSource) _envContext.lookup(__cfgMeta.getConnectionUrl());
     }
 
+    @Override
     public Connection getConnection() throws Exception {
         return __dataSource.getConnection();
     }

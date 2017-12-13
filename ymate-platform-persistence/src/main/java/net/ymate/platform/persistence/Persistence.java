@@ -35,10 +35,12 @@ public class Persistence implements IModule {
 
     private boolean __inited;
 
+    @Override
     public String getName() {
         return "persistence";
     }
 
+    @Override
     public void init(YMP owner) throws Exception {
         if (!__inited) {
             //
@@ -48,17 +50,27 @@ public class Persistence implements IModule {
         }
     }
 
+    @Override
     public boolean isInited() {
         return __inited;
     }
 
+    @Override
     public YMP getOwner() {
         return __owner;
     }
 
+    @Override
     public void destroy() throws Exception {
         if (__inited) {
             __inited = false;
         }
+    }
+
+    /**
+     * 数据操作类型
+     */
+    public enum OperationType {
+        QUERY, UPDATE, BATCH_UPDATE, PROCEDURE
     }
 }

@@ -48,10 +48,12 @@ public class DefaultTransaction implements ITransaction {
         this.setLevel(level);
     }
 
+    @Override
     public JDBC.TRANSACTION getLevel() {
         return __level;
     }
 
+    @Override
     public void setLevel(JDBC.TRANSACTION level) {
         if (level == null || (this.__level != null && this.__level.getLevel() > 0)) {
             return;
@@ -59,22 +61,26 @@ public class DefaultTransaction implements ITransaction {
         this.__level = level;
     }
 
+    @Override
     public String getId() {
         return __id;
     }
 
+    @Override
     public void commit() throws SQLException {
         for (TransactionMeta _meta : this.__transMetas.values()) {
             _meta.connectionHolder.getConnection().commit();
         }
     }
 
+    @Override
     public void rollback() throws SQLException {
         for (TransactionMeta _meta : this.__transMetas.values()) {
             _meta.connectionHolder.getConnection().rollback();
         }
     }
 
+    @Override
     public void close() throws SQLException {
         try {
             for (TransactionMeta _meta : this.__transMetas.values()) {
@@ -85,6 +91,7 @@ public class DefaultTransaction implements ITransaction {
         }
     }
 
+    @Override
     public IConnectionHolder getConnectionHolder(String dsName) {
         if (this.__transMetas.containsKey(dsName)) {
             return this.__transMetas.get(dsName).connectionHolder;
@@ -92,6 +99,7 @@ public class DefaultTransaction implements ITransaction {
         return null;
     }
 
+    @Override
     public void registerConnectionHolder(IConnectionHolder connectionHolder) throws SQLException {
         String _dsName = connectionHolder.getDataSourceCfgMeta().getName();
         if (!this.__transMetas.containsKey(_dsName)) {

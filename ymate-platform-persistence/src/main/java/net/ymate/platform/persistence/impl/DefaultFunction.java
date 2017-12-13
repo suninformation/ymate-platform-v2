@@ -46,59 +46,73 @@ public class DefaultFunction implements IFunction {
         return space().param(opt).space().param(param);
     }
 
+    @Override
     public IFunction addition(Number param) {
         return __opt("+", param.toString());
     }
 
+    @Override
     public IFunction addition(String param) {
         return __opt("+", param);
     }
 
+    @Override
     public IFunction addition(IFunction param) {
         return __opt("+", param.build());
     }
 
+    @Override
     public IFunction subtract(Number param) {
         return __opt("-", param.toString());
     }
 
+    @Override
     public IFunction subtract(String param) {
         return __opt("-", param);
     }
 
+    @Override
     public IFunction subtract(IFunction param) {
         return __opt("-", param.build());
     }
 
+    @Override
     public IFunction multiply(Number param) {
         return __opt("*", param.toString());
     }
 
+    @Override
     public IFunction multiply(String param) {
         return __opt("*", param);
     }
 
+    @Override
     public IFunction multiply(IFunction param) {
         return __opt("*", param.build());
     }
 
+    @Override
     public IFunction divide(Number param) {
         return __opt("/", param.toString());
     }
 
+    @Override
     public IFunction divide(String param) {
         return __opt("/", param);
     }
 
+    @Override
     public IFunction divide(IFunction param) {
         return __opt("/", param.build());
     }
 
+    @Override
     public IFunction param(Number param) {
         __params.add(param.toString());
         return this;
     }
 
+    @Override
     public IFunction param(Number[] params) {
         if (params != null && params.length > 0) {
             boolean _flag = false;
@@ -115,31 +129,37 @@ public class DefaultFunction implements IFunction {
         return this;
     }
 
+    @Override
     public IFunction separator() {
         __params.add(", ");
         return this;
     }
 
+    @Override
     public IFunction space() {
         __params.add(" ");
         return this;
     }
 
+    @Override
     public IFunction bracketBegin() {
         __params.add("(");
         return this;
     }
 
+    @Override
     public IFunction bracketEnd() {
         __params.add(")");
         return this;
     }
 
+    @Override
     public IFunction param(IFunction param) {
         __params.add(param.build());
         return this;
     }
 
+    @Override
     public IFunction paramWS(Object... params) {
         if (params != null && params.length > 0) {
             boolean _flag = false;
@@ -160,11 +180,13 @@ public class DefaultFunction implements IFunction {
         return this;
     }
 
+    @Override
     public IFunction param(String param) {
         __params.add(param);
         return this;
     }
 
+    @Override
     public IFunction param(String[] params) {
         if (params != null && params.length > 0) {
             boolean _flag = false;
@@ -181,6 +203,7 @@ public class DefaultFunction implements IFunction {
         return this;
     }
 
+    @Override
     public IFunction param(String prefix, String field) {
         __params.add(prefix, field);
         return this;
@@ -190,6 +213,7 @@ public class DefaultFunction implements IFunction {
         return __params;
     }
 
+    @Override
     public String build() {
         if (__flag) {
             __params.add(")");

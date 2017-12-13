@@ -15,8 +15,8 @@
  */
 package net.ymate.platform.persistence.jdbc.base.impl;
 
+import net.ymate.platform.persistence.Persistence;
 import net.ymate.platform.persistence.jdbc.IConnectionHolder;
-import net.ymate.platform.persistence.jdbc.JDBC;
 import net.ymate.platform.persistence.jdbc.base.*;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -43,6 +43,7 @@ public class DefaultUpdateOperator extends AbstractOperator implements IUpdateOp
         super(sql, connectionHolder, accessorConfig);
     }
 
+    @Override
     protected int __doExecute() throws Exception {
         PreparedStatement _statement = null;
         AccessorEventContext _context = null;
@@ -52,7 +53,7 @@ public class DefaultUpdateOperator extends AbstractOperator implements IUpdateOp
             _statement = _accessor.getPreparedStatement(this.getConnectionHolder().getConnection(), this.getSQL());
             __doSetParameters(_statement);
             if (this.getAccessorConfig() != null) {
-                this.getAccessorConfig().beforeStatementExecution(_context = new AccessorEventContext(_statement, JDBC.DB_OPERATION_TYPE.UPDATE));
+                this.getAccessorConfig().beforeStatementExecution(_context = new AccessorEventContext(_statement, Persistence.OperationType.UPDATE));
             }
             return effectCounts = _statement.executeUpdate();
         } catch (Exception ex) {
@@ -68,6 +69,7 @@ public class DefaultUpdateOperator extends AbstractOperator implements IUpdateOp
         }
     }
 
+    @Override
     public int getEffectCounts() {
         return effectCounts;
     }

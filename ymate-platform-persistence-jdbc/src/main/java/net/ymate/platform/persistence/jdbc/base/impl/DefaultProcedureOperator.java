@@ -16,8 +16,8 @@
 package net.ymate.platform.persistence.jdbc.base.impl;
 
 import net.ymate.platform.core.util.ExpressionUtils;
+import net.ymate.platform.persistence.Persistence;
 import net.ymate.platform.persistence.jdbc.IConnectionHolder;
-import net.ymate.platform.persistence.jdbc.JDBC;
 import net.ymate.platform.persistence.jdbc.base.*;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.time.StopWatch;
@@ -59,6 +59,7 @@ public class DefaultProcedureOperator<T> extends AbstractOperator implements IPr
         super(sql, connectionHolder, accessorConfig);
     }
 
+    @Override
     public void execute() throws Exception {
         if (!this.executed) {
             StopWatch _time = new StopWatch();
@@ -82,18 +83,21 @@ public class DefaultProcedureOperator<T> extends AbstractOperator implements IPr
         }
     }
 
+    @Override
     public IProcedureOperator<T> execute(IResultSetHandler<T> resultSetHandler) throws Exception {
         __resultSetHandler = resultSetHandler;
         this.execute();
         return this;
     }
 
+    @Override
     public IProcedureOperator<T> execute(IOutResultProcessor resultProcessor) throws Exception {
         __resultProcessor = resultProcessor;
         this.execute();
         return this;
     }
 
+    @Override
     protected int __doExecute() throws Exception {
         CallableStatement _statement = null;
         AccessorEventContext _context = null;
@@ -104,7 +108,7 @@ public class DefaultProcedureOperator<T> extends AbstractOperator implements IPr
             __doSetParameters(_statement);
             __doRegisterOutParams(_statement);
             if (this.getAccessorConfig() != null) {
-                this.getAccessorConfig().beforeStatementExecution(_context = new AccessorEventContext(_statement, JDBC.DB_OPERATION_TYPE.PROCEDURE));
+                this.getAccessorConfig().beforeStatementExecution(_context = new AccessorEventContext(_statement, Persistence.OperationType.PROCEDURE));
             }
             boolean _flag = _statement.execute();
             if (_flag) {
@@ -173,21 +177,25 @@ public class DefaultProcedureOperator<T> extends AbstractOperator implements IPr
         return (IProcedureOperator<T>) super.addParameter(parameter);
     }
 
+    @Override
     public IProcedureOperator<T> addOutParameter(Integer sqlParamType) {
         this.__outParams.add(sqlParamType);
         return this;
     }
 
+    @Override
     public IProcedureOperator<T> setOutResultProcessor(IOutResultProcessor outResultProcessor) {
         __resultProcessor = outResultProcessor;
         return this;
     }
 
+    @Override
     public IProcedureOperator<T> setResultSetHandler(IResultSetHandler<T> resultSetHandler) {
         __resultSetHandler = resultSetHandler;
         return this;
     }
 
+    @Override
     public List<List<T>> getResultSets() {
         return __resultSets;
     }

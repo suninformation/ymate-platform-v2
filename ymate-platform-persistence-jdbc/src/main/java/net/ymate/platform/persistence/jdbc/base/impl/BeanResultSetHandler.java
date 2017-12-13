@@ -43,6 +43,7 @@ public class BeanResultSetHandler<T> extends AbstractResultSetHandler<T> {
         __beanClass = beanClass;
     }
 
+    @Override
     protected T __doProcessResultRow(ResultSet resultSet) throws Exception {
         ClassUtils.BeanWrapper<T> _targetWrapper = ClassUtils.wrapper(__beanClass.newInstance());
         for (int _idx = 0; _idx < __doGetColumnCount(); _idx++) {

@@ -15,8 +15,8 @@
  */
 package net.ymate.platform.persistence.jdbc.base.impl;
 
+import net.ymate.platform.persistence.Persistence;
 import net.ymate.platform.persistence.jdbc.IConnectionHolder;
-import net.ymate.platform.persistence.jdbc.JDBC;
 import net.ymate.platform.persistence.jdbc.base.*;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -59,6 +59,7 @@ public class DefaultQueryOperator<T> extends AbstractOperator implements IQueryO
         this.maxRow = maxRow;
     }
 
+    @Override
     protected int __doExecute() throws Exception {
         PreparedStatement _statement = null;
         ResultSet _resultSet = null;
@@ -72,7 +73,7 @@ public class DefaultQueryOperator<T> extends AbstractOperator implements IQueryO
             }
             __doSetParameters(_statement);
             if (this.getAccessorConfig() != null) {
-                this.getAccessorConfig().beforeStatementExecution(_context = new AccessorEventContext(_statement, JDBC.DB_OPERATION_TYPE.QUERY));
+                this.getAccessorConfig().beforeStatementExecution(_context = new AccessorEventContext(_statement, Persistence.OperationType.QUERY));
             }
             this.resultSet = this.getResultSetHandler().handle(_resultSet = _statement.executeQuery());
             return this.resultSet.size();
@@ -92,14 +93,17 @@ public class DefaultQueryOperator<T> extends AbstractOperator implements IQueryO
         }
     }
 
+    @Override
     public IResultSetHandler<T> getResultSetHandler() {
         return resultSetHandler;
     }
 
+    @Override
     public List<T> getResultSet() {
         return resultSet;
     }
 
+    @Override
     public int getMaxRow() {
         return maxRow;
     }

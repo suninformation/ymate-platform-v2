@@ -49,6 +49,7 @@ public class RepoProxy implements IProxy {
 
     private static final Log _LOG = LogFactory.getLog(RepoProxy.class);
 
+    @Override
     public Object doProxy(IProxyChain proxyChain) throws Throwable {
         Repository _repo = proxyChain.getTargetMethod().getAnnotation(Repository.class);
         if (_repo == null) {
@@ -117,6 +118,7 @@ public class RepoProxy implements IProxy {
 
     private IResultSet<Object[]> __doQuery(IDatabase db, IConnectionHolder connHolder, final String targetSql, final Method targetMethod, final Object[] params) throws Exception {
         return db.openSession(connHolder, new ISessionExecutor<IResultSet<Object[]>>() {
+            @Override
             public IResultSet<Object[]> execute(ISession session) throws Exception {
                 return session.find(__buildSQL(targetSql, targetMethod, params), IResultSetHandler.ARRAY);
             }
@@ -125,6 +127,7 @@ public class RepoProxy implements IProxy {
 
     private int __doUpdate(IDatabase db, IConnectionHolder connHolder, final String targetSql, final Method targetMethod, final Object[] params) throws Exception {
         return db.openSession(connHolder, new ISessionExecutor<Integer>() {
+            @Override
             public Integer execute(ISession session) throws Exception {
                 return session.executeForUpdate(__buildSQL(targetSql, targetMethod, params));
             }

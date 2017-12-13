@@ -33,6 +33,7 @@ import net.ymate.platform.persistence.jdbc.transaction.Transactions;
 @Proxy(annotation = Transaction.class, order = @Order(666))
 public class TransactionProxy implements IProxy {
 
+    @Override
     public Object doProxy(final IProxyChain proxyChain) throws Throwable {
         JDBC.TRANSACTION _currentLevel = null;
         // 判断方法对象是否被声明@Transaction注解，否则忽略

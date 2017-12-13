@@ -28,6 +28,7 @@ public class RepoHandler implements IBeanHandler {
         owner.getOwner().registerExcludedClass(IRepository.class);
     }
 
+    @Override
     public Object handle(Class<?> targetClass) throws Exception {
         return targetClass.newInstance();
     }

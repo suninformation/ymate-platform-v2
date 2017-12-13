@@ -25,7 +25,18 @@ import java.util.EventObject;
  */
 public class SessionEventContext extends EventObject {
 
+    private Persistence.OperationType operationType;
+
     public SessionEventContext(Object source) {
         super(source);
+    }
+
+    public SessionEventContext(Object source, Persistence.OperationType operationType) {
+        super(source);
+        this.operationType = operationType;
+    }
+
+    public Persistence.OperationType getOperationType() {
+        return operationType;
     }
 }

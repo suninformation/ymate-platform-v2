@@ -33,6 +33,7 @@ public class EntityHandler implements IBeanHandler {
         owner.registerExcludedClass(IEntity.class);
     }
 
+    @Override
     @SuppressWarnings("unchecked")
     public Object handle(Class<?> targetClass) throws Exception {
         if (ClassUtils.isInterfaceOf(targetClass, IEntity.class)) {

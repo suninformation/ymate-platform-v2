@@ -369,8 +369,12 @@ public abstract class BaseEntity<Entity extends IEntity, PK extends Serializable
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
         BaseEntity that = (BaseEntity) o;
         return getId() != null ? getId().equals(that.getId()) : that.getId() == null;
     }
@@ -395,7 +399,7 @@ public abstract class BaseEntity<Entity extends IEntity, PK extends Serializable
         ClassUtils.BeanWrapper<T> _beanWrapper = ClassUtils.wrapper(entity);
         boolean _flag = false;
         for (String _field : _meta.getPropertyNames()) {
-            Object _value = null;
+            Object _value;
             if (_meta.isMultiplePrimaryKey() && _meta.isPrimaryKey(_field)) {
                 _value = _meta.getPropertyByName(_field).getField().get(entity.getId());
             } else {

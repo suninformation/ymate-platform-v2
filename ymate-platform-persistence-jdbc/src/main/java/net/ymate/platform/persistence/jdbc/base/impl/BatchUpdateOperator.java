@@ -15,8 +15,8 @@
  */
 package net.ymate.platform.persistence.jdbc.base.impl;
 
+import net.ymate.platform.persistence.Persistence;
 import net.ymate.platform.persistence.jdbc.IConnectionHolder;
-import net.ymate.platform.persistence.jdbc.JDBC;
 import net.ymate.platform.persistence.jdbc.base.*;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
@@ -38,6 +38,8 @@ public class BatchUpdateOperator extends AbstractOperator implements IBatchUpdat
     private static final Log _LOG = LogFactory.getLog(BatchUpdateOperator.class);
 
     private int[] effectCounts;
+
+    private int effectCountsTotal;
 
     private List<String> __batchSQL;
 
@@ -68,6 +70,7 @@ public class BatchUpdateOperator extends AbstractOperator implements IBatchUpdat
         return _params.toString();
     }
 
+    @Override
     protected int __doExecute() throws Exception {
         Statement _statement = null;
         AccessorEventContext _context = null;
@@ -97,15 +100,14 @@ public class BatchUpdateOperator extends AbstractOperator implements IBatchUpdat
             }
             //
             if (this.getAccessorConfig() != null) {
-                this.getAccessorConfig().beforeStatementExecution(_context = new AccessorEventContext(_statement, JDBC.DB_OPERATION_TYPE.BATCH_UPDATE));
+                this.getAccessorConfig().beforeStatementExecution(_context = new AccessorEventContext(_statement, Persistence.OperationType.BATCH_UPDATE));
             }
             effectCounts = _statement.executeBatch();
             // 累计受影响的总记录数
-            int _count = 0;
             for (int _c : effectCounts) {
-                _count += _c;
+                effectCountsTotal += _c;
             }
-            return _count;
+            return effectCountsTotal;
         } catch (Exception ex) {
             _hasEx = true;
             throw ex;
@@ -120,15 +122,23 @@ public class BatchUpdateOperator extends AbstractOperator implements IBatchUpdat
         }
     }
 
+    @Override
     public int[] getEffectCounts() {
         return effectCounts;
     }
 
+    @Override
+    public int getEffectCountsTotal() {
+        return effectCountsTotal;
+    }
+
+    @Override
     public IBatchUpdateOperator addBatchSQL(String sql) {
         this.__batchSQL.add(sql);
         return this;
     }
 
+    @Override
     public IBatchUpdateOperator addBatchParameter(SQLBatchParameter parameter) {
         if (StringUtils.isBlank(this.getSQL())) {
             // 构造未设置SQL时将不支持添加批量参数
@@ -140,6 +150,7 @@ public class BatchUpdateOperator extends AbstractOperator implements IBatchUpdat
         return this;
     }
 
+    @Override
     public List<SQLBatchParameter> getBatchParameters() {
         return __batchParameters;
     }

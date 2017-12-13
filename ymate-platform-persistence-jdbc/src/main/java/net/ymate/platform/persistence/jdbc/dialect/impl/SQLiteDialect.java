@@ -24,6 +24,7 @@ import net.ymate.platform.persistence.jdbc.dialect.AbstractDialect;
  */
 public class SQLiteDialect extends AbstractDialect {
 
+    @Override
     public String getName() {
         return JDBC.DATABASE.SQLLITE.name();
     }

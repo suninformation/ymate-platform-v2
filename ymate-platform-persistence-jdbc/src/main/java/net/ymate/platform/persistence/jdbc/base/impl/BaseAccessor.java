@@ -57,6 +57,7 @@ public class BaseAccessor implements IAccessor {
         }
     }
 
+    @Override
     public Statement getStatement(Connection conn) throws Exception {
         Statement _statement = null;
         if (accessorConfig != null) {
@@ -69,6 +70,7 @@ public class BaseAccessor implements IAccessor {
         return _statement;
     }
 
+    @Override
     public PreparedStatement getPreparedStatement(Connection conn, String sql) throws Exception {
         PreparedStatement _statement = null;
         if (this.accessorConfig != null) {
@@ -81,6 +83,7 @@ public class BaseAccessor implements IAccessor {
         return _statement;
     }
 
+    @Override
     public CallableStatement getCallableStatement(Connection conn, String sql) throws Exception {
         CallableStatement _statement = null;
         if (accessorConfig != null) {
@@ -93,6 +96,7 @@ public class BaseAccessor implements IAccessor {
         return _statement;
     }
 
+    @Override
     public IAccessorConfig getAccessorConfig() {
         return accessorConfig;
     }

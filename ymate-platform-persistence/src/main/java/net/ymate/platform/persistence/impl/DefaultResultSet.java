@@ -73,30 +73,37 @@ public class DefaultResultSet<T> implements IResultSet<T> {
         }
     }
 
+    @Override
     public boolean isResultsAvailable() {
         return resultData != null && !resultData.isEmpty();
     }
 
+    @Override
     public boolean isPaginated() {
         return pageNumber > 0 && pageSize > 0;
     }
 
+    @Override
     public int getPageNumber() {
         return pageNumber;
     }
 
+    @Override
     public int getPageSize() {
         return pageSize;
     }
 
+    @Override
     public int getPageCount() {
         return pageCount;
     }
 
+    @Override
     public long getRecordCount() {
         return recordCount;
     }
 
+    @Override
     public List<T> getResultData() {
         return resultData;
     }

@@ -67,7 +67,7 @@ public class DefaultModuleCfg implements IDatabaseModuleCfg {
      * @throws Exception 可能产生的异常
      */
     @SuppressWarnings("unchecked")
-    protected DataSourceCfgMeta __doParserDataSourceCfgMeta(String dsName, Map<String, String> _moduleCfgs) throws Exception {
+    private DataSourceCfgMeta __doParserDataSourceCfgMeta(String dsName, Map<String, String> _moduleCfgs) throws Exception {
         Map<String, String> _dataSourceCfgs = RuntimeUtils.keyStartsWith(_moduleCfgs, "ds." + dsName + ".");
         if (!_dataSourceCfgs.isEmpty()) {
             //
@@ -95,7 +95,7 @@ public class DefaultModuleCfg implements IDatabaseModuleCfg {
                     String _connUrl = URI.create(_meta.getConnectionUrl()).toString();
                     String[] _type = StringUtils.split(_connUrl, ":");
                     if (_type != null && _type.length > 0) {
-                        if (_type[1].equals("microsoft")) {
+                        if ("microsoft".equals(_type[1])) {
                             _type[1] = "sqlserver";
                         }
                         _meta.setType(JDBC.DATABASE.valueOf(_type[1].toUpperCase()));
@@ -119,18 +119,22 @@ public class DefaultModuleCfg implements IDatabaseModuleCfg {
         return null;
     }
 
+    @Override
     public String getDataSourceDefaultName() {
         return dataSourceDefaultName;
     }
 
+    @Override
     public Map<String, DataSourceCfgMeta> getDataSourceCfgs() {
         return Collections.unmodifiableMap(dataSourceCfgMetas);
     }
 
+    @Override
     public DataSourceCfgMeta getDefaultDataSourceCfg() {
         return dataSourceCfgMetas.get(dataSourceDefaultName);
     }
 
+    @Override
     public DataSourceCfgMeta getDataSourceCfg(String name) {
         return dataSourceCfgMetas.get(name);
     }

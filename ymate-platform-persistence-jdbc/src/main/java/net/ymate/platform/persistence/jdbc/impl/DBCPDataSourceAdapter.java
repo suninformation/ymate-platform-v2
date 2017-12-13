@@ -37,8 +37,9 @@ public class DBCPDataSourceAdapter extends AbstractDataSourceAdapter {
 
     private static final Log _LOG = LogFactory.getLog(DBCPDataSourceAdapter.class);
 
-    protected BasicDataSource __ds;
+    private BasicDataSource __ds;
 
+    @Override
     protected void __doInit() throws Exception {
         Properties _props = new Properties();
         InputStream _in = ResourceUtils.getResourceAsStream("dbcp.properties", this.getClass());
@@ -71,6 +72,7 @@ public class DBCPDataSourceAdapter extends AbstractDataSourceAdapter {
         super.destroy();
     }
 
+    @Override
     public Connection getConnection() throws Exception {
         return __ds.getConnection();
     }

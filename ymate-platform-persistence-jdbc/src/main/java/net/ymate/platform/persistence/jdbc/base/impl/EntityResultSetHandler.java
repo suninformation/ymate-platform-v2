@@ -46,6 +46,7 @@ public class EntityResultSetHandler<T extends IEntity> extends AbstractResultSet
         this.__entityMeta = EntityMeta.createAndGet(entityClass);
     }
 
+    @Override
     @SuppressWarnings("unchecked")
     protected T __doProcessResultRow(ResultSet resultSet) throws Exception {
         T _returnValue = __entityClass.newInstance();
