@@ -178,15 +178,19 @@ public class I18N {
      */
     public static String formatMessage(String resourceName, String key, String defaultValue, Object... args) {
         String _msg = load(resourceName, key, defaultValue);
-        if (args != null && args.length > 0) {
-            return formatMsg(_msg, args);
+        if (StringUtils.isNotBlank(_msg)) {
+            if (args != null && args.length > 0) {
+                return formatMsg(_msg, args);
+            }
         }
         return _msg;
     }
 
     public static String formatMsg(String message, Object... args) {
-        if (args != null && args.length > 0) {
-            return MessageFormat.format(message, args);
+        if (StringUtils.isNotBlank(message)) {
+            if (args != null && args.length > 0) {
+                return MessageFormat.format(message, args);
+            }
         }
         return message;
     }
