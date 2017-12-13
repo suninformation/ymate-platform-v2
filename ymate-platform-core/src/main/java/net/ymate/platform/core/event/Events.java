@@ -64,9 +64,14 @@ public final class Events {
     }
 
     @SuppressWarnings("unchecked")
-    public Events registerEvent(Class<? extends IEvent> event) {
-        __eventProvider.registerEvent(event);
+    public Events registerEvent(Class<? extends IEvent> eventClass) {
+        __eventProvider.registerEvent(eventClass);
         return this;
+    }
+
+    @SuppressWarnings("unchecked")
+    public boolean unregisterEvent(Class<? extends IEvent> eventClass) {
+        return __eventProvider.unregisterEvent(eventClass);
     }
 
     @SuppressWarnings("unchecked")
@@ -79,6 +84,11 @@ public final class Events {
     public <CONTEXT extends EventContext> Events registerListener(Events.MODE mode, Class<? extends IEvent> eventClass, IEventListener<CONTEXT> eventListener) {
         __eventProvider.registerListener(mode, eventClass, eventListener);
         return this;
+    }
+
+    @SuppressWarnings("unchecked")
+    public boolean unregisterListener(Class<? extends IEvent> eventClass, Class<? extends IEventListener> listenerClass) {
+        return __eventProvider.unregisterListener(eventClass, listenerClass);
     }
 
     @SuppressWarnings("unchecked")

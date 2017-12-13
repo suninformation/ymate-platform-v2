@@ -17,6 +17,8 @@ package net.ymate.platform.core.event.impl;
 
 import net.ymate.platform.core.event.*;
 import net.ymate.platform.core.support.DefaultThreadFactory;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -36,15 +38,17 @@ import java.util.concurrent.*;
  */
 public final class DefaultEventProvider<T, E extends Enum<E>, EVENT extends Class<? extends IEvent>, CONTEXT extends EventContext<T, E>> implements IEventProvider<T, E, EVENT, CONTEXT> {
 
+    private static final Log _LOG = LogFactory.getLog(DefaultEventProvider.class);
+
     private IEventConfig __eventConfig;
 
     private ExecutorService __eventExecPool;
 
-    private List<String> __events;
+    private List<EVENT> __events = new CopyOnWriteArrayList<EVENT>();
 
-    private Map<String, List<IEventListener<CONTEXT>>> __asyncListeners;
+    private Map<EVENT, List<IEventListener<CONTEXT>>> __asyncListeners = new ConcurrentHashMap<EVENT, List<IEventListener<CONTEXT>>>();
 
-    private Map<String, List<IEventListener<CONTEXT>>> __normalListeners;
+    private Map<EVENT, List<IEventListener<CONTEXT>>> __normalListeners = new ConcurrentHashMap<EVENT, List<IEventListener<CONTEXT>>>();
 
     @Override
     public void init(IEventConfig eventConfig) {
@@ -53,9 +57,6 @@ public final class DefaultEventProvider<T, E extends Enum<E>, EVENT extends Clas
                 eventConfig.getThreadMaxPoolSize() > 0 ? eventConfig.getThreadMaxPoolSize() : 200, 0L, TimeUnit.MILLISECONDS,
                 new LinkedBlockingQueue<Runnable>(eventConfig.getThreadQueueSize() > 0 ? eventConfig.getThreadQueueSize() : 1024),
                 new DefaultThreadFactory("event-pool-"), new ThreadPoolExecutor.AbortPolicy());
-        __events = new ArrayList<String>();
-        __asyncListeners = new ConcurrentHashMap<String, List<IEventListener<CONTEXT>>>();
-        __normalListeners = new ConcurrentHashMap<String, List<IEventListener<CONTEXT>>>();
     }
 
     @Override
@@ -75,18 +76,47 @@ public final class DefaultEventProvider<T, E extends Enum<E>, EVENT extends Clas
     }
 
     @Override
-    public void registerEvent(EVENT event) {
-        __events.add(event.getName());
+    public void registerEvent(EVENT eventClass) {
+        if (!__events.contains(eventClass)) {
+            __events.add(eventClass);
+        } else {
+            _LOG.warn("Event class [" + eventClass + "] duplicate registration is not allowed");
+        }
     }
 
-    private synchronized void __doRegisterEventListener(Map<String, List<IEventListener<CONTEXT>>> listenersMap, EVENT eventClass, IEventListener<CONTEXT> eventListener) {
-        if (listenersMap.containsKey(eventClass.getName())) {
-            listenersMap.get(eventClass.getName()).add(eventListener);
+    @Override
+    public boolean unregisterEvent(EVENT eventClass) {
+        return __events.remove(eventClass);
+    }
+
+    private void __doRegisterEventListener(Map<EVENT, List<IEventListener<CONTEXT>>> listenersMap, EVENT eventClass, IEventListener<CONTEXT> eventListener) {
+        if (listenersMap.containsKey(eventClass)) {
+            List<IEventListener<CONTEXT>> _listeners = listenersMap.get(eventClass);
+            if (!_listeners.contains(eventListener)) {
+                _listeners.add(eventListener);
+            } else {
+                _LOG.warn("EventListener object [" + eventListener.getClass() + "] duplicate registration is not allowed");
+            }
         } else {
             List<IEventListener<CONTEXT>> _listeners = new ArrayList<IEventListener<CONTEXT>>();
             _listeners.add(eventListener);
-            listenersMap.put(eventClass.getName(), _listeners);
+            listenersMap.put(eventClass, _listeners);
         }
+    }
+
+    private boolean __doUnregisterEventListener(Map<EVENT, List<IEventListener<CONTEXT>>> listenersMap, EVENT eventClass, Class<? extends IEventListener> listenerClass) {
+        boolean _flag = false;
+        List<IEventListener<CONTEXT>> _listeners = listenersMap.get(eventClass);
+        if (_listeners != null) {
+            for (IEventListener<CONTEXT> _item : _listeners) {
+                if (_item.getClass().equals(listenerClass)) {
+                    _listeners.remove(_item);
+                    _flag = true;
+                    break;
+                }
+            }
+        }
+        return _flag;
     }
 
     @Override
@@ -106,8 +136,14 @@ public final class DefaultEventProvider<T, E extends Enum<E>, EVENT extends Clas
     }
 
     @Override
+    public boolean unregisterListener(EVENT eventClass, Class<? extends IEventListener> listenerClass) {
+        return __doUnregisterEventListener(__asyncListeners, eventClass, listenerClass) || __doUnregisterEventListener(__normalListeners, eventClass, listenerClass);
+    }
+
+    @Override
+    @SuppressWarnings("unchecked")
     public void fireEvent(final CONTEXT context) {
-        String _eventKey = context.getEventClass().getName();
+        EVENT _eventKey = (EVENT) context.getEventClass();
         if (__events.contains(_eventKey)) {
             // 先执行同步事件
             Collection<IEventListener<CONTEXT>> _listeners = __normalListeners.get(_eventKey);
