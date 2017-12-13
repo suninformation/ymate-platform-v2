@@ -15,7 +15,8 @@
  */
 package net.ymate.platform.configuration;
 
-import net.ymate.platform.configuration.IConfigFileParser;
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
 
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -27,23 +28,11 @@ import java.util.Map;
  */
 public abstract class AbstractConfigFileParser implements IConfigFileParser {
 
-    public static String DEFAULT_CATEGORY_NAME = "default";
+    protected Map<String, Attribute> __rootAttributes;
 
-    public static String TAG_NAME_ROOT = "properties";
+    protected Map<String, Category> __categories;
 
-    public static String TAG_NAME_CATEGORY = "category";
-
-    public static String TAG_NAME_PROPERTY = "property";
-
-    public static String TAG_NAME_ITEM = "item";
-
-    public static String TAG_NAME_VALUE = "value";
-
-    protected Map<String, XMLAttribute> __rootAttributes;
-
-    protected Map<String, XMLCategory> __categories;
-
-    protected boolean __loaded;
+    private boolean __loaded;
 
     protected boolean __sorted;
 
@@ -53,11 +42,11 @@ public abstract class AbstractConfigFileParser implements IConfigFileParser {
             // 判断是否保证顺序
             if (sorted) {
                 __sorted = true;
-                __categories = new LinkedHashMap<String, XMLCategory>();
-                __rootAttributes = new LinkedHashMap<String, XMLAttribute>();
+                __categories = new LinkedHashMap<String, Category>();
+                __rootAttributes = new LinkedHashMap<String, Attribute>();
             } else {
-                __categories = new HashMap<String, XMLCategory>();
-                __rootAttributes = new HashMap<String, XMLAttribute>();
+                __categories = new HashMap<String, Category>();
+                __rootAttributes = new HashMap<String, Attribute>();
             }
             __doLoad();
             //
@@ -67,4 +56,47 @@ public abstract class AbstractConfigFileParser implements IConfigFileParser {
     }
 
     protected abstract void __doLoad();
+
+    @Override
+    public Attribute getAttribute(String key) {
+        return this.__rootAttributes.get(key);
+    }
+
+    @Override
+    public Map<String, Attribute> getAttributes() {
+        return __rootAttributes;
+    }
+
+    @Override
+    public Category getDefaultCategory() {
+        return this.__categories.get(DEFAULT_CATEGORY_NAME);
+    }
+
+    @Override
+    public Category getCategory(String name) {
+        return this.__categories.get(name);
+    }
+
+    @Override
+    public Map<String, Category> getCategories() {
+        return __categories;
+    }
+
+    @Override
+    public JSONObject toJSON() {
+        JSONObject _jsonObject = new JSONObject(__sorted);
+        //
+        JSONObject _jsonAttrs = new JSONObject();
+        for (Attribute _attr : __rootAttributes.values()) {
+            _jsonAttrs.put(_attr.getKey(), _attr.getValue());
+        }
+        _jsonObject.put(TAG_NAME_ATTRIBUTES, _jsonAttrs);
+        //
+        JSONArray _jsonCategories = new JSONArray();
+        for (Category _category : __categories.values()) {
+            _jsonCategories.add(_category.toJSON());
+        }
+        _jsonObject.put(TAG_NAME_CATEGORIES, _jsonCategories);
+        return _jsonObject;
+    }
 }

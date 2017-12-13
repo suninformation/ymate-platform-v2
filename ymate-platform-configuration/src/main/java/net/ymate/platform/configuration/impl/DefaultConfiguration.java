@@ -31,118 +31,147 @@ public class DefaultConfiguration implements IConfiguration {
 
     private IConfigurationProvider __provider;
 
+    @Override
     public String getString(String key) {
         return __provider.getString(key);
     }
 
+    @Override
     public String getString(String key, String defaultValue) {
         return __provider.getString(key, defaultValue);
     }
 
+    @Override
     public String getString(String category, String key, String defaultValue) {
         return __provider.getString(category, key, defaultValue);
     }
 
+    @Override
     public List<String> getList(String key) {
         return __provider.getList(key);
     }
 
+    @Override
     public List<String> getList(String category, String key) {
         return __provider.getList(category, key);
     }
 
+    @Override
     public Map<String, String> getMap(String keyHead) {
         return __provider.getMap(keyHead);
     }
 
+    @Override
     public Map<String, String> getMap(String category, String keyHead) {
         return __provider.getMap(category, keyHead);
     }
 
+    @Override
     public String[] getArray(String key) {
         return __provider.getArray(key);
     }
 
+    @Override
     public String[] getArray(String key, boolean zeroSize) {
         return __provider.getArray(key, zeroSize);
     }
 
+    @Override
     public String[] getArray(String category, String key, boolean zeroSize) {
         return __provider.getArray(category, key, zeroSize);
     }
 
+    @Override
     public int getInt(String key) {
         return __provider.getInt(key);
     }
 
+    @Override
     public int getInt(String key, int defaultValue) {
         return __provider.getInt(key, defaultValue);
     }
 
+    @Override
     public int getInt(String category, String key, int defaultValue) {
         return __provider.getInt(category, key, defaultValue);
     }
 
+    @Override
     public boolean getBoolean(String key) {
         return __provider.getBoolean(key);
     }
 
+    @Override
     public boolean getBoolean(String key, boolean defaultValue) {
         return __provider.getBoolean(key, defaultValue);
     }
 
+    @Override
     public boolean getBoolean(String category, String key, boolean defaultValue) {
         return __provider.getBoolean(category, key, defaultValue);
     }
 
+    @Override
     public long getLong(String key) {
         return __provider.getLong(key);
     }
 
+    @Override
     public long getLong(String key, long defaultValue) {
         return __provider.getLong(key, defaultValue);
     }
 
+    @Override
     public float getFloat(String key) {
         return __provider.getFloat(key);
     }
 
+    @Override
     public float getFloat(String key, float defaultValue) {
         return __provider.getFloat(key, defaultValue);
     }
 
+    @Override
     public double getDouble(String key) {
         return __provider.getDouble(key);
     }
 
+    @Override
     public double getDouble(String key, double defaultValue) {
         return __provider.getDouble(key, defaultValue);
     }
 
+    @Override
     public Map<String, String> toMap() {
         return __provider.toMap();
     }
 
+    @Override
     public Map<String, String> toMap(String category) {
         return __provider.toMap(category);
     }
 
+    @Override
     public List<String> getCategoryNames() {
         return __provider.getCategoryNames();
     }
 
+    @Override
     public void initialize(IConfigurationProvider provider) {
         this.__provider = provider;
     }
 
+    @Override
     public String getTagName() {
         return ".cfg";
     }
 
+    @Override
     public boolean contains(String key) {
         return __provider.contains(key);
     }
 
+    @Override
     public boolean contains(String category, String key) {
         return __provider.contains(category, key);
     }

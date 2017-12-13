@@ -35,6 +35,7 @@ public class ConfigHandler implements IBeanHandler {
         __owner.getOwner().registerExcludedClass(IConfiguration.class);
     }
 
+    @Override
     public Object handle(Class<?> targetClass) throws Exception {
         if (ClassUtils.isInterfaceOf(targetClass, IConfiguration.class)) {
             IConfiguration _cfg = (IConfiguration) targetClass.newInstance();

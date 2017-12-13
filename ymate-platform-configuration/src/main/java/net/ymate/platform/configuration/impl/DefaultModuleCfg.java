@@ -63,18 +63,22 @@ public class DefaultModuleCfg implements IConfigModuleCfg {
         }
     }
 
+    @Override
     public String getConfigHome() {
         return this.configHome;
     }
 
+    @Override
     public String getProjectName() {
         return this.projectName;
     }
 
+    @Override
     public String getModuleName() {
         return this.moduleName;
     }
 
+    @Override
     public Class<? extends IConfigurationProvider> getProviderClass() {
         return this.providerClass;
     }

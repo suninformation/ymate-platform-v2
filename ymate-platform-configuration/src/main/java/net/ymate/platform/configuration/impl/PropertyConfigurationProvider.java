@@ -40,7 +40,7 @@ public class PropertyConfigurationProvider extends AbstractConfigurationProvider
     @Override
     public List<String> getList(String category, String key) {
         List<String> _returnValue = new ArrayList<String>();
-        XMLConfigFileParser.XMLProperty _prop = __getConfigFileParser().getCategory(category).getProperty(key);
+        IConfigFileParser.Property _prop = __getConfigFileParser().getCategory(category).getProperty(key);
         if (_prop != null && StringUtils.isNotBlank(_prop.getContent())) {
             _returnValue.addAll(Arrays.asList(StringUtils.split(_prop.getContent(), "|")));
         }

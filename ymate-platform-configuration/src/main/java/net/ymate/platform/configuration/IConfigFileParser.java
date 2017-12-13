@@ -19,6 +19,7 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 
 import java.io.File;
+import java.io.IOException;
 import java.io.OutputStream;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -31,50 +32,68 @@ import java.util.Map;
  */
 public interface IConfigFileParser {
 
+    String DEFAULT_CATEGORY_NAME = "default";
+
+    String TAG_NAME_ROOT = "properties";
+
+    String TAG_NAME_CATEGORY = "category";
+
+    String TAG_NAME_PROPERTY = "property";
+
+    String TAG_NAME_ITEM = "item";
+
+    String TAG_NAME_VALUE = "value";
+
+    String TAG_NAME_CATEGORIES = "categories";
+
+    String TAG_NAME_ATTRIBUTES = "attributes";
+
+    //
+
     IConfigFileParser load(boolean sorted);
 
-    boolean writeTo(File targetFile);
+    void writeTo(File targetFile) throws IOException;
 
-    boolean writeTo(OutputStream outputStream);
+    void writeTo(OutputStream outputStream) throws IOException;
 
-    XMLAttribute getAttribute(String key);
+    Attribute getAttribute(String key);
 
-    Map<String, XMLAttribute> getAttributes();
+    Map<String, Attribute> getAttributes();
 
-    XMLCategory getDefaultCategory();
+    Category getDefaultCategory();
 
-    XMLCategory getCategory(String name);
+    Category getCategory(String name);
 
-    Map<String, XMLCategory> getCategories();
+    Map<String, Category> getCategories();
 
     JSONObject toJSON();
 
-    class XMLCategory {
+    class Category {
 
         private String name;
 
-        private Map<String, XMLAttribute> attributeMap;
+        private Map<String, Attribute> attributeMap;
 
-        private Map<String, XMLProperty> propertyMap;
+        private Map<String, Property> propertyMap;
 
         private boolean __sorted;
 
-        public XMLCategory(String name, List<XMLAttribute> attributes, List<XMLProperty> properties, boolean sorted) {
+        public Category(String name, List<Attribute> attributes, List<Property> properties, boolean sorted) {
             this.name = name;
             this.__sorted = sorted;
-            this.attributeMap = new HashMap<String, XMLAttribute>();
+            this.attributeMap = new HashMap<String, Attribute>();
             if (__sorted) {
-                this.propertyMap = new LinkedHashMap<String, XMLProperty>();
+                this.propertyMap = new LinkedHashMap<String, Property>();
             } else {
-                this.propertyMap = new HashMap<String, XMLProperty>();
+                this.propertyMap = new HashMap<String, Property>();
             }
             if (attributes != null) {
-                for (XMLAttribute _attr : attributes) {
+                for (Attribute _attr : attributes) {
                     this.attributeMap.put(_attr.getKey(), _attr);
                 }
             }
             if (properties != null) {
-                for (XMLProperty _prop : properties) {
+                for (Property _prop : properties) {
                     this.propertyMap.put(_prop.getName(), _prop);
                 }
             }
@@ -84,19 +103,19 @@ public interface IConfigFileParser {
             return name;
         }
 
-        public XMLAttribute getAttribute(String key) {
+        public Attribute getAttribute(String key) {
             return this.attributeMap.get(name);
         }
 
-        public Map<String, XMLAttribute> getAttributeMap() {
+        public Map<String, Attribute> getAttributeMap() {
             return attributeMap;
         }
 
-        public XMLProperty getProperty(String name) {
+        public Property getProperty(String name) {
             return this.propertyMap.get(name);
         }
 
-        public Map<String, XMLProperty> getPropertyMap() {
+        public Map<String, Property> getPropertyMap() {
             return propertyMap;
         }
 
@@ -105,13 +124,13 @@ public interface IConfigFileParser {
             _jsonO.put("name", name);
 
             JSONObject _jsonATTR = new JSONObject();
-            for (XMLAttribute _attr : attributeMap.values()) {
+            for (Attribute _attr : attributeMap.values()) {
                 _jsonATTR.put(_attr.getKey(), _attr.getValue());
             }
             _jsonO.put("attributes", _jsonATTR);
 
             JSONArray _jsonArrayPROP = new JSONArray();
-            for (XMLProperty _prop : propertyMap.values()) {
+            for (Property _prop : propertyMap.values()) {
                 _jsonArrayPROP.add(_prop.toJSON());
             }
             _jsonO.put("properties", _jsonArrayPROP);
@@ -119,20 +138,20 @@ public interface IConfigFileParser {
         }
     }
 
-    class XMLProperty {
+    class Property {
 
         private String name;
 
         private String content;
 
-        private Map<String, XMLAttribute> attributeMap;
+        private Map<String, Attribute> attributeMap;
 
-        public XMLProperty(String name, String content, List<XMLAttribute> attributes) {
+        public Property(String name, String content, List<Attribute> attributes) {
             this.name = name;
             this.content = content;
-            this.attributeMap = new HashMap<String, XMLAttribute>();
+            this.attributeMap = new HashMap<String, Attribute>();
             if (attributes != null) {
-                for (XMLAttribute _attr : attributes) {
+                for (Attribute _attr : attributes) {
                     this.attributeMap.put(_attr.getKey(), _attr);
                 }
             }
@@ -154,11 +173,11 @@ public interface IConfigFileParser {
             return content;
         }
 
-        public XMLAttribute getAttribute(String key) {
+        public Attribute getAttribute(String key) {
             return this.attributeMap.get(key);
         }
 
-        public Map<String, XMLAttribute> getAttributeMap() {
+        public Map<String, Attribute> getAttributeMap() {
             return attributeMap;
         }
 
@@ -168,21 +187,21 @@ public interface IConfigFileParser {
             _jsonO.put("content", content);
 
             JSONObject _jsonATTR = new JSONObject();
-            for (XMLAttribute _attr : attributeMap.values()) {
+            for (Attribute _attr : attributeMap.values()) {
                 _jsonATTR.put(_attr.getKey(), _attr.getValue());
             }
-            _jsonO.put("attributes", _jsonATTR);
+            _jsonO.put(TAG_NAME_ATTRIBUTES, _jsonATTR);
             return _jsonO;
         }
     }
 
-    class XMLAttribute {
+    class Attribute {
 
         private String key;
 
         private String value;
 
-        public XMLAttribute(String key, String value) {
+        public Attribute(String key, String value) {
             this.key = key;
             this.value = value;
         }

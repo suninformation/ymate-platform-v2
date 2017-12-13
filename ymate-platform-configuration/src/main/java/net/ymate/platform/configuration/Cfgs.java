@@ -87,10 +87,12 @@ public class Cfgs implements IModule, IConfig {
         return owner.getModule(Cfgs.class);
     }
 
+    @Override
     public String getName() {
         return IConfig.MODULE_NAME;
     }
 
+    @Override
     public void init(YMP owner) throws Exception {
         if (!__inited) {
             //
@@ -138,14 +140,17 @@ public class Cfgs implements IModule, IConfig {
         }
     }
 
+    @Override
     public boolean isInited() {
         return __inited;
     }
 
+    @Override
     public YMP getOwner() {
         return __owner;
     }
 
+    @Override
     public void destroy() throws Exception {
         if (__inited) {
             __inited = false;
@@ -155,30 +160,37 @@ public class Cfgs implements IModule, IConfig {
         }
     }
 
+    @Override
     public IConfigModuleCfg getModuleCfg() {
         return __moduleCfg;
     }
 
+    @Override
     public String getConfigHome() {
         return __configHome;
     }
 
+    @Override
     public String getProjectHome() {
         return __projectHome;
     }
 
+    @Override
     public String getModuleHome() {
         return __moduleHome;
     }
 
+    @Override
     public String getUserHome() {
         return __userHome;
     }
 
+    @Override
     public String getUserDir() {
         return __userDir;
     }
 
+    @Override
     public String searchPath(String cfgFile) {
         if (StringUtils.isNotBlank(cfgFile)) {
             if (cfgFile.startsWith("jar:")) {
@@ -198,6 +210,7 @@ public class Cfgs implements IModule, IConfig {
         return null;
     }
 
+    @Override
     public File searchFile(String cfgFile) {
         if (StringUtils.isNotBlank(cfgFile)) {
             return __doSearch(cfgFile);
@@ -274,18 +287,22 @@ public class Cfgs implements IModule, IConfig {
         return null;
     }
 
+    @Override
     public boolean fillCfg(IConfiguration config, String cfgFileName) {
         return fillCfg(config, cfgFileName, true);
     }
 
+    @Override
     public synchronized boolean fillCfg(IConfiguration config, String cfgFileName, boolean search) {
         return fillCfg(null, config, cfgFileName, search);
     }
 
+    @Override
     public boolean fillCfg(IConfiguration config) {
         return fillCfg(config, true);
     }
 
+    @Override
     public boolean fillCfg(IConfiguration config, boolean search) {
         if (config != null) {
             Configuration _configuration = config.getClass().getAnnotation(Configuration.class);
@@ -299,6 +316,7 @@ public class Cfgs implements IModule, IConfig {
         return false;
     }
 
+    @Override
     public synchronized boolean fillCfg(Class<? extends IConfigurationProvider> providerClass, IConfiguration config, String cfgFileName, boolean search) {
         if (__inited) {
             if (config != null) {

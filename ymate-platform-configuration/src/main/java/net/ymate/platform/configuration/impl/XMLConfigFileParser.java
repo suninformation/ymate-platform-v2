@@ -15,12 +15,13 @@
  */
 package net.ymate.platform.configuration.impl;
 
-import com.alibaba.fastjson.JSONArray;
-import com.alibaba.fastjson.JSONObject;
 import net.ymate.platform.configuration.AbstractConfigFileParser;
 import net.ymate.platform.core.lang.PairObject;
 import org.apache.commons.lang.StringUtils;
-import org.w3c.dom.*;
+import org.w3c.dom.Element;
+import org.w3c.dom.NamedNodeMap;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -32,7 +33,6 @@ import java.io.OutputStream;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 /**
  * 基于JDK自带的解析工具处理XML配置文件的读写操作
@@ -45,18 +45,15 @@ public class XMLConfigFileParser extends AbstractConfigFileParser {
     private Element __rootElement;
 
     public XMLConfigFileParser(File file) throws ParserConfigurationException, IOException, SAXException {
-        Document _document = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(file);
-        __rootElement = _document.getDocumentElement();
+        __rootElement = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(file).getDocumentElement();
     }
 
     public XMLConfigFileParser(InputStream inputStream) throws ParserConfigurationException, IOException, SAXException {
-        Document _document = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(inputStream);
-        __rootElement = _document.getDocumentElement();
+        __rootElement = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(inputStream).getDocumentElement();
     }
 
     public XMLConfigFileParser(URL url) throws ParserConfigurationException, IOException, SAXException {
-        Document _document = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(url.openStream());
-        __rootElement = _document.getDocumentElement();
+        __rootElement = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(url.openStream()).getDocumentElement();
     }
 
     public XMLConfigFileParser(Node node) {
@@ -72,7 +69,7 @@ public class XMLConfigFileParser extends AbstractConfigFileParser {
                 String _attrKey = __rootAttrNodes.item(_attrIdx).getNodeName();
                 String _attrValue = __rootAttrNodes.item(_attrIdx).getNodeValue();
                 if (StringUtils.isNotBlank(_attrKey) && StringUtils.isNotBlank(_attrValue)) {
-                    __rootAttributes.put(_attrKey, new XMLAttribute(_attrKey, _attrValue));
+                    __rootAttributes.put(_attrKey, new Attribute(_attrKey, _attrValue));
                 }
             }
         }
@@ -82,19 +79,19 @@ public class XMLConfigFileParser extends AbstractConfigFileParser {
             for (int _idx = 0; _idx < _nodes.getLength(); _idx++) {
                 Element _categoryElement = (Element) _nodes.item(_idx);
                 // 1. 处理category的属性
-                List<XMLAttribute> _categoryAttrs = new ArrayList<XMLAttribute>();
+                List<Attribute> _categoryAttrs = new ArrayList<Attribute>();
                 PairObject<String, String> _category = __doParseNodeAttributes(_categoryAttrs, _categoryElement, false, false);
                 //
                 if (_category != null) {
                     // 2. 处理category的property标签
-                    List<XMLProperty> _properties = new ArrayList<XMLProperty>();
+                    List<Property> _properties = new ArrayList<Property>();
                     //
                     NodeList _propertyNodes = _categoryElement.getElementsByTagName(TAG_NAME_PROPERTY);
                     if (_propertyNodes.getLength() > 0) {
                         for (int _idy = 0; _idy < _propertyNodes.getLength(); _idy++) {
                             Element _node = (Element) _propertyNodes.item(_idy);
                             // 3. 处理property的属性
-                            List<XMLAttribute> _propertyAttrs = new ArrayList<XMLAttribute>();
+                            List<Attribute> _propertyAttrs = new ArrayList<Attribute>();
                             PairObject<String, String> _property = __doParseNodeAttributes(_propertyAttrs, _node, false, false);
                             if (_property != null) {
                                 // 是否有子标签
@@ -110,7 +107,7 @@ public class XMLConfigFileParser extends AbstractConfigFileParser {
                                             Element _nodeItem = (Element) _childNodes.item(_idxItem);
                                             String _value = _nodeItem.getTextContent();
                                             if (StringUtils.isNotBlank(_value)) {
-                                                _propertyAttrs.add(new XMLAttribute(_value, ""));
+                                                _propertyAttrs.add(new Attribute(_value, ""));
                                             }
                                         }
                                     }
@@ -127,26 +124,26 @@ public class XMLConfigFileParser extends AbstractConfigFileParser {
                                 //
                                 if (!_hasSubTag) {
                                     if (StringUtils.isNotBlank(_property.getValue())) {
-                                        _properties.add(new XMLProperty(_property.getKey(), _property.getValue(), _propertyAttrs));
+                                        _properties.add(new Property(_property.getKey(), _property.getValue(), _propertyAttrs));
                                     }
                                 } else {
-                                    _properties.add(new XMLProperty(_property.getKey(), null, _propertyAttrs));
+                                    _properties.add(new Property(_property.getKey(), null, _propertyAttrs));
                                 }
                             }
                         }
                     }
                     //
-                    __categories.put(_category.getKey(), new XMLCategory(_category.getKey(), _categoryAttrs, _properties, __sorted));
+                    __categories.put(_category.getKey(), new Category(_category.getKey(), _categoryAttrs, _properties, __sorted));
                 }
             }
         }
         // 必须保证DEFAULT_CATEGORY_NAME配置集合存在
         if (!__categories.containsKey(DEFAULT_CATEGORY_NAME)) {
-            __categories.put(DEFAULT_CATEGORY_NAME, new XMLCategory(DEFAULT_CATEGORY_NAME, null, null, __sorted));
+            __categories.put(DEFAULT_CATEGORY_NAME, new Category(DEFAULT_CATEGORY_NAME, null, null, __sorted));
         }
     }
 
-    protected PairObject<String, String> __doParseNodeAttributes(List<XMLAttribute> attributes, Element node, boolean collections, boolean textContent) {
+    private PairObject<String, String> __doParseNodeAttributes(List<Attribute> attributes, Element node, boolean collections, boolean textContent) {
         String _propertyName = null;
         String _propertyContent = null;
         //
@@ -157,7 +154,7 @@ public class XMLConfigFileParser extends AbstractConfigFileParser {
                 String _attrValue = _attrNodes.item(_idy).getNodeValue();
                 if (collections) {
                     if (_attrKey.equals("name")) {
-                        attributes.add(new XMLAttribute(_attrValue, node.getTextContent()));
+                        attributes.add(new Attribute(_attrValue, node.getTextContent()));
                     }
                 } else {
                     if (textContent && StringUtils.isNotBlank(_attrValue)) {
@@ -168,7 +165,7 @@ public class XMLConfigFileParser extends AbstractConfigFileParser {
                     } else if (_attrKey.equals("value")) {
                         _propertyContent = _attrValue;
                     } else {
-                        attributes.add(new XMLAttribute(_attrKey, _attrValue));
+                        attributes.add(new Attribute(_attrKey, _attrValue));
                     }
                 }
             }
@@ -179,48 +176,13 @@ public class XMLConfigFileParser extends AbstractConfigFileParser {
         return null;
     }
 
-    public boolean writeTo(File targetFile) {
+    @Override
+    public void writeTo(File targetFile) throws IOException {
         // TODO write file
-        return false;
     }
 
-    public boolean writeTo(OutputStream outputStream) {
+    @Override
+    public void writeTo(OutputStream outputStream) throws IOException {
         // TODO write file
-        return false;
-    }
-
-    public XMLAttribute getAttribute(String key) {
-        return this.__rootAttributes.get(key);
-    }
-
-    public Map<String, XMLAttribute> getAttributes() {
-        return __rootAttributes;
-    }
-
-    public XMLCategory getDefaultCategory() {
-        return this.__categories.get(DEFAULT_CATEGORY_NAME);
-    }
-
-    public XMLCategory getCategory(String name) {
-        return this.__categories.get(name);
-    }
-
-    public Map<String, XMLCategory> getCategories() {
-        return __categories;
-    }
-
-    public JSONObject toJSON() {
-        JSONObject _jsonO = new JSONObject(__sorted);
-        //
-        for (XMLAttribute _attr : __rootAttributes.values()) {
-            _jsonO.put(_attr.getKey(), _attr.getValue());
-        }
-        //
-        JSONArray _jsonArrayCATEGORY = new JSONArray();
-        for (XMLCategory _category : __categories.values()) {
-            _jsonArrayCATEGORY.add(_category.toJSON());
-        }
-        _jsonO.put("categories", _jsonArrayCATEGORY);
-        return _jsonO;
     }
 }

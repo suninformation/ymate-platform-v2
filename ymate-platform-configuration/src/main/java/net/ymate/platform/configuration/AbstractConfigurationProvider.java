@@ -15,7 +15,6 @@
  */
 package net.ymate.platform.configuration;
 
-import net.ymate.platform.configuration.impl.XMLConfigFileParser;
 import net.ymate.platform.core.lang.BlurObject;
 import net.ymate.platform.core.util.FileUtils;
 import org.apache.commons.lang.NullArgumentException;
@@ -46,6 +45,7 @@ public abstract class AbstractConfigurationProvider implements IConfigurationPro
      */
     private String __cfgFileName;
 
+    @Override
     public void load(String cfgFileName) throws Exception {
         if (StringUtils.isBlank(cfgFileName)) {
             throw new NullArgumentException("cfgFileName");
@@ -63,6 +63,7 @@ public abstract class AbstractConfigurationProvider implements IConfigurationPro
         return __configFileParser;
     }
 
+    @Override
     public void reload() throws Exception {
         // 移除缓存项
         __CONFIG_CACHE_MAPS.remove(__cfgFileName);
@@ -70,37 +71,43 @@ public abstract class AbstractConfigurationProvider implements IConfigurationPro
         load(__cfgFileName);
     }
 
+    @Override
     public String getCfgFileName() {
         return __cfgFileName;
     }
 
+    @Override
     public String getString(String key) {
-        XMLConfigFileParser.XMLProperty _prop = __configFileParser.getDefaultCategory().getProperty(key);
+        IConfigFileParser.Property _prop = __configFileParser.getDefaultCategory().getProperty(key);
         return _prop == null ? null : _prop.getContent();
     }
 
+    @Override
     public String getString(String key, String defaultValue) {
         return StringUtils.defaultIfEmpty(getString(key), defaultValue);
     }
 
+    @Override
     public String getString(String category, String key, String defaultValue) {
-        XMLConfigFileParser.XMLCategory _category = __configFileParser.getCategory(category);
+        IConfigFileParser.Category _category = __configFileParser.getCategory(category);
         if (_category == null) {
             return null;
         }
-        XMLConfigFileParser.XMLProperty _prop = _category.getProperty(key);
+        IConfigFileParser.Property _prop = _category.getProperty(key);
         return StringUtils.defaultIfEmpty(_prop == null ? null : _prop.getContent(), defaultValue);
     }
 
+    @Override
     public List<String> getList(String key) {
-        return getList(XMLConfigFileParser.DEFAULT_CATEGORY_NAME, key);
+        return getList(IConfigFileParser.DEFAULT_CATEGORY_NAME, key);
     }
 
+    @Override
     public List<String> getList(String category, String key) {
         List<String> _returnValue = new ArrayList<String>();
-        XMLConfigFileParser.XMLProperty _prop = __configFileParser.getCategory(category).getProperty(key);
+        IConfigFileParser.Property _prop = __configFileParser.getCategory(category).getProperty(key);
         if (_prop != null) {
-            for (XMLConfigFileParser.XMLAttribute _attr : _prop.getAttributeMap().values()) {
+            for (IConfigFileParser.Attribute _attr : _prop.getAttributeMap().values()) {
                 if (StringUtils.isBlank(_attr.getValue())) {
                     _returnValue.add(_attr.getKey());
                 }
@@ -109,15 +116,17 @@ public abstract class AbstractConfigurationProvider implements IConfigurationPro
         return _returnValue;
     }
 
+    @Override
     public Map<String, String> getMap(String key) {
-        return getMap(XMLConfigFileParser.DEFAULT_CATEGORY_NAME, key);
+        return getMap(IConfigFileParser.DEFAULT_CATEGORY_NAME, key);
     }
 
+    @Override
     public Map<String, String> getMap(String category, String key) {
         Map<String, String> _returnValue = new LinkedHashMap<String, String>();
-        XMLConfigFileParser.XMLProperty _prop = __configFileParser.getCategory(category).getProperty(key);
+        IConfigFileParser.Property _prop = __configFileParser.getCategory(category).getProperty(key);
         if (_prop != null) {
-            for (XMLConfigFileParser.XMLAttribute _attr : _prop.getAttributeMap().values()) {
+            for (IConfigFileParser.Attribute _attr : _prop.getAttributeMap().values()) {
                 if (StringUtils.isNotBlank(_attr.getValue())) {
                     _returnValue.put(_attr.getKey(), _attr.getValue());
                 }
@@ -126,15 +135,18 @@ public abstract class AbstractConfigurationProvider implements IConfigurationPro
         return _returnValue;
     }
 
+    @Override
     public String[] getArray(String key) {
         List<String> _resultValue = getList(key);
         return _resultValue.toArray(new String[_resultValue.size()]);
     }
 
+    @Override
     public String[] getArray(String key, boolean zeroSize) {
-        return getArray(XMLConfigFileParser.DEFAULT_CATEGORY_NAME, key, zeroSize);
+        return getArray(IConfigFileParser.DEFAULT_CATEGORY_NAME, key, zeroSize);
     }
 
+    @Override
     public String[] getArray(String category, String key, boolean zeroSize) {
         List<String> _values = getList(category, key);
         if (_values.isEmpty() && !zeroSize) {
@@ -143,18 +155,21 @@ public abstract class AbstractConfigurationProvider implements IConfigurationPro
         return _values.toArray(new String[_values.size()]);
     }
 
+    @Override
     public int getInt(String key) {
-        return getInt(XMLConfigFileParser.DEFAULT_CATEGORY_NAME, key, 0);
+        return getInt(IConfigFileParser.DEFAULT_CATEGORY_NAME, key, 0);
     }
 
+    @Override
     public int getInt(String key, int defaultValue) {
-        return getInt(XMLConfigFileParser.DEFAULT_CATEGORY_NAME, key, defaultValue);
+        return getInt(IConfigFileParser.DEFAULT_CATEGORY_NAME, key, defaultValue);
     }
 
+    @Override
     public int getInt(String category, String key, int defaultValue) {
-        XMLConfigFileParser.XMLCategory _category = __configFileParser.getCategory(category);
+        IConfigFileParser.Category _category = __configFileParser.getCategory(category);
         if (_category != null) {
-            XMLConfigFileParser.XMLProperty _prop = _category.getProperty(key);
+            IConfigFileParser.Property _prop = _category.getProperty(key);
             if (_prop != null) {
                 return new BlurObject(_prop.getContent()).toIntValue();
             }
@@ -162,18 +177,21 @@ public abstract class AbstractConfigurationProvider implements IConfigurationPro
         return defaultValue;
     }
 
+    @Override
     public boolean getBoolean(String key) {
-        return getBoolean(XMLConfigFileParser.DEFAULT_CATEGORY_NAME, key, false);
+        return getBoolean(IConfigFileParser.DEFAULT_CATEGORY_NAME, key, false);
     }
 
+    @Override
     public boolean getBoolean(String key, boolean defaultValue) {
-        return getBoolean(XMLConfigFileParser.DEFAULT_CATEGORY_NAME, key, defaultValue);
+        return getBoolean(IConfigFileParser.DEFAULT_CATEGORY_NAME, key, defaultValue);
     }
 
+    @Override
     public boolean getBoolean(String category, String key, boolean defaultValue) {
-        XMLConfigFileParser.XMLCategory _category = __configFileParser.getCategory(category);
+        IConfigFileParser.Category _category = __configFileParser.getCategory(category);
         if (_category != null) {
-            XMLConfigFileParser.XMLProperty _prop = _category.getProperty(key);
+            IConfigFileParser.Property _prop = _category.getProperty(key);
             if (_prop != null) {
                 return new BlurObject(_prop.getContent()).toBooleanValue();
             }
@@ -181,18 +199,21 @@ public abstract class AbstractConfigurationProvider implements IConfigurationPro
         return defaultValue;
     }
 
+    @Override
     public long getLong(String key) {
-        return getLong(XMLConfigFileParser.DEFAULT_CATEGORY_NAME, key, 0l);
+        return getLong(IConfigFileParser.DEFAULT_CATEGORY_NAME, key, 0L);
     }
 
+    @Override
     public long getLong(String key, long defaultValue) {
-        return getLong(XMLConfigFileParser.DEFAULT_CATEGORY_NAME, key, defaultValue);
+        return getLong(IConfigFileParser.DEFAULT_CATEGORY_NAME, key, defaultValue);
     }
 
+    @Override
     public long getLong(String category, String key, long defaultValue) {
-        XMLConfigFileParser.XMLCategory _category = __configFileParser.getCategory(category);
+        IConfigFileParser.Category _category = __configFileParser.getCategory(category);
         if (_category != null) {
-            XMLConfigFileParser.XMLProperty _prop = _category.getProperty(key);
+            IConfigFileParser.Property _prop = _category.getProperty(key);
             if (_prop != null) {
                 return new BlurObject(_prop.getContent()).toLongValue();
             }
@@ -200,18 +221,21 @@ public abstract class AbstractConfigurationProvider implements IConfigurationPro
         return defaultValue;
     }
 
+    @Override
     public float getFloat(String key) {
-        return getFloat(XMLConfigFileParser.DEFAULT_CATEGORY_NAME, key, 0f);
+        return getFloat(IConfigFileParser.DEFAULT_CATEGORY_NAME, key, 0f);
     }
 
+    @Override
     public float getFloat(String key, float defaultValue) {
-        return getFloat(XMLConfigFileParser.DEFAULT_CATEGORY_NAME, key, defaultValue);
+        return getFloat(IConfigFileParser.DEFAULT_CATEGORY_NAME, key, defaultValue);
     }
 
+    @Override
     public float getFloat(String category, String key, float defaultValue) {
-        XMLConfigFileParser.XMLCategory _category = __configFileParser.getCategory(category);
+        IConfigFileParser.Category _category = __configFileParser.getCategory(category);
         if (_category != null) {
-            XMLConfigFileParser.XMLProperty _prop = _category.getProperty(key);
+            IConfigFileParser.Property _prop = _category.getProperty(key);
             if (_prop != null) {
                 return new BlurObject(_prop.getContent()).toFloatValue();
             }
@@ -219,18 +243,21 @@ public abstract class AbstractConfigurationProvider implements IConfigurationPro
         return defaultValue;
     }
 
+    @Override
     public double getDouble(String key) {
-        return getDouble(XMLConfigFileParser.DEFAULT_CATEGORY_NAME, key, 0d);
+        return getDouble(IConfigFileParser.DEFAULT_CATEGORY_NAME, key, 0d);
     }
 
+    @Override
     public double getDouble(String key, double defaultValue) {
-        return getDouble(XMLConfigFileParser.DEFAULT_CATEGORY_NAME, key, defaultValue);
+        return getDouble(IConfigFileParser.DEFAULT_CATEGORY_NAME, key, defaultValue);
     }
 
+    @Override
     public double getDouble(String category, String key, double defaultValue) {
-        XMLConfigFileParser.XMLCategory _category = __configFileParser.getCategory(category);
+        IConfigFileParser.Category _category = __configFileParser.getCategory(category);
         if (_category != null) {
-            XMLConfigFileParser.XMLProperty _prop = _category.getProperty(key);
+            IConfigFileParser.Property _prop = _category.getProperty(key);
             if (_prop != null) {
                 return new BlurObject(_prop.getContent()).toDoubleValue();
             }
@@ -238,36 +265,41 @@ public abstract class AbstractConfigurationProvider implements IConfigurationPro
         return defaultValue;
     }
 
+    @Override
     public Map<String, String> toMap() {
-        return toMap(XMLConfigFileParser.DEFAULT_CATEGORY_NAME);
+        return toMap(IConfigFileParser.DEFAULT_CATEGORY_NAME);
     }
 
+    @Override
     public Map<String, String> toMap(String category) {
-        XMLConfigFileParser.XMLCategory _category = __configFileParser.getCategory(category);
+        IConfigFileParser.Category _category = __configFileParser.getCategory(category);
         if (_category == null) {
             return Collections.emptyMap();
         }
-        Collection<XMLConfigFileParser.XMLProperty> _properties = _category.getPropertyMap().values();
+        Collection<IConfigFileParser.Property> _properties = _category.getPropertyMap().values();
         Map<String, String> _returnValue = new LinkedHashMap<String, String>(_properties.size());
-        for (XMLConfigFileParser.XMLProperty _prop : _properties) {
+        for (IConfigFileParser.Property _prop : _properties) {
             _returnValue.put(_prop.getName(), _prop.getContent());
-            for (XMLConfigFileParser.XMLAttribute _attr : _prop.getAttributeMap().values()) {
+            for (IConfigFileParser.Attribute _attr : _prop.getAttributeMap().values()) {
                 _returnValue.put(_prop.getName().concat(".").concat(_attr.getKey()), _attr.getValue());
             }
         }
         return _returnValue;
     }
 
+    @Override
     public List<String> getCategoryNames() {
         return new ArrayList<String>(__configFileParser.getCategories().keySet());
     }
 
+    @Override
     public boolean contains(String key) {
         return __configFileParser.getDefaultCategory().getProperty(key) != null;
     }
 
+    @Override
     public boolean contains(String category, String key) {
-        XMLConfigFileParser.XMLCategory _category = __configFileParser.getCategory(category);
+        IConfigFileParser.Category _category = __configFileParser.getCategory(category);
         return _category != null && _category.getProperty(key) != null;
     }
 }
