@@ -36,6 +36,11 @@ public class DataSourceCfgMeta {
     private String tablePrefix;
 
     /**
+     * 自定义引用标识符
+     */
+    private String identifierQuote;
+
+    /**
      * 数据源适配器，可选值为已知适配器名称或自定义适配置类名称，默认为default
      * <br>目前支持已知适配器名称：default|dbcp|c3p0|jndi
      */
@@ -187,6 +192,14 @@ public class DataSourceCfgMeta {
 
     public void setTablePrefix(String tablePrefix) {
         this.tablePrefix = tablePrefix;
+    }
+
+    public String getIdentifierQuote() {
+        return identifierQuote;
+    }
+
+    public void setIdentifierQuote(String identifierQuote) {
+        this.identifierQuote = identifierQuote;
     }
 
     public Class<? extends IDataSourceAdapter> getAdapterClass() {

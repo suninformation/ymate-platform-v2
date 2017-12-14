@@ -43,6 +43,21 @@ public interface IDialect {
     String wrapIdentifierQuote(String origin);
 
     /**
+     * 设置引用标识符
+     *
+     * @param identifierQuoteBegin 引用标识符开始
+     * @param identifierQuoteEnd   引用标识符结束
+     */
+    void setIdentifierQuote(String identifierQuoteBegin, String identifierQuoteEnd);
+
+    /**
+     * @return 返回引用标识符
+     */
+    String getIdentifierQuoteBegin();
+
+    String getIdentifierQuoteEnd();
+
+    /**
      * @param prefix       数据表名称前缀
      * @param entityMeta   数据实体属性描述对象
      * @param shardingable 分片(表)参数对象

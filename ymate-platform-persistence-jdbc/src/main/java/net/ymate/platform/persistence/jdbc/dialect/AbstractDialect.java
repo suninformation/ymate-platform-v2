@@ -45,16 +45,39 @@ public abstract class AbstractDialect implements IDialect {
     /**
      * 引用标识符-开始
      */
-    protected String identifierQuote_begin = "";
+    private String identifierQuoteBegin = "";
 
     /**
      * 引用标识符-结束
      */
-    protected String identifierQuote_end = "";
+    private String identifierQuoteEnd = "";
+
+    public AbstractDialect() {
+    }
+
+    public AbstractDialect(String identifierQuoteBegin, String identifierQuoteEnd) {
+        this.setIdentifierQuote(identifierQuoteBegin, identifierQuoteEnd);
+    }
 
     @Override
     public String wrapIdentifierQuote(String origin) {
-        return identifierQuote_begin.concat(origin).concat(identifierQuote_end);
+        return identifierQuoteBegin.concat(origin).concat(identifierQuoteEnd);
+    }
+
+    @Override
+    public void setIdentifierQuote(String identifierQuoteBegin, String identifierQuoteEnd) {
+        this.identifierQuoteBegin = StringUtils.trimToEmpty(identifierQuoteBegin);
+        this.identifierQuoteEnd = StringUtils.trimToEmpty(identifierQuoteEnd);
+    }
+
+    @Override
+    public String getIdentifierQuoteBegin() {
+        return identifierQuoteBegin;
+    }
+
+    @Override
+    public String getIdentifierQuoteEnd() {
+        return identifierQuoteEnd;
     }
 
     @Override

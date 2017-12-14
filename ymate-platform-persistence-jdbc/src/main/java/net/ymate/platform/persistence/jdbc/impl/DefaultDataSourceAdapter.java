@@ -16,6 +16,7 @@
 package net.ymate.platform.persistence.jdbc.impl;
 
 import net.ymate.platform.persistence.jdbc.AbstractDataSourceAdapter;
+import org.apache.commons.lang.StringUtils;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -36,7 +37,7 @@ public class DefaultDataSourceAdapter extends AbstractDataSourceAdapter {
         Class.forName(__cfgMeta.getDriverClass());
         //
         __password = __cfgMeta.getPassword();
-        if (__cfgMeta.isPasswordEncrypted() && __cfgMeta.getPasswordClass() != null) {
+        if (StringUtils.isNotBlank(__password) && __cfgMeta.isPasswordEncrypted() && __cfgMeta.getPasswordClass() != null) {
             __password = __cfgMeta.getPasswordClass().newInstance().decrypt(__password);
         }
     }

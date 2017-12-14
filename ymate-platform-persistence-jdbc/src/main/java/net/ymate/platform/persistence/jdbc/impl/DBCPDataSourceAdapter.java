@@ -19,6 +19,7 @@ import net.ymate.platform.core.util.ResourceUtils;
 import net.ymate.platform.persistence.jdbc.AbstractDataSourceAdapter;
 import org.apache.commons.dbcp.BasicDataSource;
 import org.apache.commons.dbcp.BasicDataSourceFactory;
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -50,7 +51,7 @@ public class DBCPDataSourceAdapter extends AbstractDataSourceAdapter {
         _props.put("driverClassName", __cfgMeta.getDriverClass());
         _props.put("url", __cfgMeta.getConnectionUrl());
         _props.put("username", __cfgMeta.getUsername());
-        if (__cfgMeta.isPasswordEncrypted() && __cfgMeta.getPasswordClass() != null) {
+        if (StringUtils.isNotBlank(__cfgMeta.getPassword()) && __cfgMeta.isPasswordEncrypted() && __cfgMeta.getPasswordClass() != null) {
             _props.put("password", __cfgMeta.getPasswordClass().newInstance().decrypt(__cfgMeta.getPassword()));
         } else {
             _props.put("password", __cfgMeta.getPassword());

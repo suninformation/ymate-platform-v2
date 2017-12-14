@@ -38,7 +38,7 @@ import java.util.List;
 public class MySQLDialect extends AbstractDialect {
 
     public MySQLDialect() {
-        this.identifierQuote_begin = this.identifierQuote_end = "`";
+        super("`", "`");
     }
 
     @Override

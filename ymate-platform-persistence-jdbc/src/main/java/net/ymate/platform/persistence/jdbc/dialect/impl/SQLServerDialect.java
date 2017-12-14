@@ -28,8 +28,7 @@ import net.ymate.platform.persistence.jdbc.dialect.AbstractDialect;
 public class SQLServerDialect extends AbstractDialect {
 
     public SQLServerDialect() {
-        this.identifierQuote_begin = "[";
-        this.identifierQuote_end = "]";
+        super("[", "]");
     }
 
     @Override

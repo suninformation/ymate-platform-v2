@@ -83,6 +83,7 @@ public class DefaultModuleCfg implements IDatabaseModuleCfg {
                 _meta.setStackTraceDepth(new BlurObject(_dataSourceCfgs.get("stack_trace_depth")).toIntValue());
                 _meta.setStackTracePackage(_dataSourceCfgs.get("stack_trace_package"));
                 _meta.setTablePrefix(_dataSourceCfgs.get("table_prefix"));
+                _meta.setIdentifierQuote(_dataSourceCfgs.get("identifier_quote"));
                 // 数据源适配器
                 String _adapterClassName = JDBC.DS_ADAPTERS.get(StringUtils.defaultIfBlank(_dataSourceCfgs.get("adapter_class"), "default"));
                 _meta.setAdapterClass((Class<? extends IDataSourceAdapter>) ClassUtils.loadClass(_adapterClassName, this.getClass()));

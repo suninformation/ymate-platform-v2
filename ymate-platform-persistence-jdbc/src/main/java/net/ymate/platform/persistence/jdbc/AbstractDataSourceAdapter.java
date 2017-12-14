@@ -51,6 +51,14 @@ public abstract class AbstractDataSourceAdapter implements IDataSourceAdapter {
             } else {
                 __dialect = JDBC.DB_DIALECTS.get(__cfgMeta.getType()).newInstance();
             }
+            if (__dialect != null && StringUtils.isNotBlank(__cfgMeta.getIdentifierQuote())) {
+                char[] _quotes = __cfgMeta.getIdentifierQuote().toCharArray();
+                if (_quotes.length == 1) {
+                    __dialect.setIdentifierQuote(__cfgMeta.getIdentifierQuote(), __cfgMeta.getIdentifierQuote());
+                } else if (_quotes.length > 1) {
+                    __dialect.setIdentifierQuote(Character.toString(_quotes[0]), Character.toString(_quotes[1]));
+                }
+            }
             //
             __inited = tryInitializeIfNeed();
         }

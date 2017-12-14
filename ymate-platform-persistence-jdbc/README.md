@@ -60,6 +60,9 @@ JDBC持久化模块针对关系型数据库(RDBMS)数据存取的一套简单解
     # 数据库方言，可选参数，自定义方言将覆盖默认配置
     ymp.configs.persistence.jdbc.ds.default.dialect_class=
 
+    # 数据库引用标识符，默认为空
+    ymp.configs.persistence.jdbc.ds.default.identifier_quote=
+
     # 数据库连接驱动，可选参数，框架默认将根据数据库类型进行自动匹配
     ymp.configs.persistence.jdbc.ds.default.driver_class=
 

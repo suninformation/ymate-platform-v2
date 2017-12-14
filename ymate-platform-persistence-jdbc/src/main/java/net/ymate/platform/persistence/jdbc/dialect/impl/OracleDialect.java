@@ -33,7 +33,6 @@ import org.apache.commons.lang.StringUtils;
 public class OracleDialect extends AbstractDialect {
 
     public OracleDialect() {
-//        this.identifierQuote_begin = this.identifierQuote_end = "\"";
     }
 
     @Override
