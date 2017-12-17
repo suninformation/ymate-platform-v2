@@ -80,10 +80,10 @@ public class DefaultRepoScriptProcessor implements IRepoScriptProcessor {
     }
 
     @Override
-    public Object doFilter(Object datas) {
+    public Object doFilter(Object results) {
         if (__filterable && __filter != null) {
-            return __filter.filter(datas);
+            return __filter.filter(results);
         }
-        return datas;
+        return results;
     }
 }

@@ -23,5 +23,5 @@ public interface IRepoDataFilter {
 
     String sql();
 
-    String filter(Object results);
+    Object filter(Object results);
 }

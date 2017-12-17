@@ -1123,6 +1123,8 @@ JDBC模块将数据查询的结果集合统一使用IResultSet接口进行封装
 		> value：自定义SQL配置(value的优先级高于item)；
 		>
 		> type：操作类型，默认为查询，可选值：Type.OPT.QUERY或Type.OPT.UPDATE
+		>
+		> useFilter：是否调用方法过滤, 默认为true
 
 
 - 存储器示例代码：
@@ -1204,13 +1206,13 @@ JDBC模块将数据查询的结果集合统一使用IResultSet接口进行封装
                                 /*
                                 return {
                                     "sql": function() { return _sql },
-                                    "filter": function(datas) {
+                                    "filter": function(results) {
                                         var List = Java.type("java.util.ArrayList");
                                         var _list = new List();
-                                        if (data && data.isResultsAvailable) {
-                                            for (i=0; i< data.resultData.length; i++) {
+                                        if (results && results.isResultsAvailable) {
+                                            for (i=0; i< results.resultData.length; i++) {
                                                 if (i % 2 == 0) {
-                                                    _list.add(data.resultData[i])
+                                                    _list.add(results.resultData.get(i))
                                                 }
                                             }
                                         }
@@ -1248,9 +1250,11 @@ JDBC模块将数据查询的结果集合统一使用IResultSet接口进行封装
 
     > - 存储器类通过声明`@Repository`注解被框架自动扫描并加载；
     > - 与其它被容器管理的`@Bean`一样支持拦截器、事务、缓存等注解；
-    > - 存储器类方法的参数至少有一个参数(方法有多个参数时，采用最后一个参数)用于接收SQL执行结果；
+    > - 当`useFilter=true`时，存储器类方法的参数至少有一个参数(方法有多个参数时，采用最后一个参数)用于接收SQL执行结果；
     > - 查询类型SQL的执行结果数据类型为`IResultSet<Object[]>`，更新类型SQL的执行结果数据类型为`int`；
     > - 用于接收SQL执行结果的方法参数支持变长类型，如：`IResultSet<Object[]> results`和`IResultSet<Object[]>... results`是一样的；
+    > - 读取配置文件中的SQL配置时，配置项名称必须全部采用小写字符，如：`demo_query`；
+    > - 框架将优先加载以当前数据源连接的数据库类型名称作为后缀的配置项，如：`demo_query_mysql`、`demo_query_oracle`，若找不到则加载默认名称，即`demo_query`；
 
 #### 高级特性
 

@@ -30,6 +30,7 @@ import net.ymate.platform.persistence.jdbc.base.IResultSetHandler;
 import net.ymate.platform.persistence.jdbc.query.SQL;
 import net.ymate.platform.persistence.jdbc.repo.annotation.Repository;
 import org.apache.commons.lang.ArrayUtils;
+import org.apache.commons.lang.NullArgumentException;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -56,42 +57,49 @@ public class RepoProxy implements IProxy {
             return proxyChain.doProxyChain();
         }
         //
+        IDatabase _db = JDBC.get(proxyChain.getProxyFactory().getOwner());
+        IConnectionHolder _connHolder = null;
+        if (StringUtils.isNotBlank(_repo.dsName())) {
+            _connHolder = _db.getConnectionHolder(_repo.dsName());
+        } else {
+            Repository _superRepo = proxyChain.getTargetClass().getAnnotation(Repository.class);
+            if (StringUtils.isNotBlank(_superRepo.dsName())) {
+                _connHolder = _db.getConnectionHolder(_superRepo.dsName());
+            } else {
+                _connHolder = _db.getDefaultConnectionHolder();
+            }
+        }
+        //
         IRepoScriptProcessor _processor = null;
         String _targetSQL = _repo.value();
         if (StringUtils.isBlank(_targetSQL)) {
             try {
                 IConfiguration _conf = ((IRepository) proxyChain.getTargetObject()).getConfig();
-                String _targetType = StringUtils.trimToNull(_conf.getMap(_repo.item()).get("language"));
+                String _keyStr = StringUtils.lowerCase(_repo.item() + "_" + _connHolder.getDialect().getName());
+                Map<String, String> _statementMap = _conf.getMap(_keyStr);
+                if (_statementMap == null || _statementMap.isEmpty()) {
+                    _keyStr = StringUtils.lowerCase(_repo.item());
+                    _statementMap = _conf.getMap(_keyStr);
+                }
+                if (_statementMap == null || _statementMap.isEmpty()) {
+                    throw new NullArgumentException(_keyStr);
+                } else {
+                    _targetSQL = _conf.getString(_keyStr);
+                }
+                String _targetType = StringUtils.trimToNull(_statementMap.get("language"));
                 if (StringUtils.isNotBlank(_targetType)) {
                     _processor = IRepoScriptProcessor.Manager.getScriptProcessor(_targetType);
                     if (_processor != null) {
-                        _processor.init(_conf.getString(_repo.item()));
+                        _processor.init(_targetSQL);
                         _targetSQL = _processor.process(_repo.item(), proxyChain.getMethodParams());
-                    } else {
-                        _targetSQL = _conf.getString(_repo.item());
                     }
-                } else {
-                    _targetSQL = _conf.getString(_repo.item());
                 }
             } catch (Exception e) {
                 _LOG.warn("", RuntimeUtils.unwrapThrow(e));
             }
         }
         if (StringUtils.isNotBlank(_targetSQL)) {
-            IDatabase _db = JDBC.get(proxyChain.getProxyFactory().getOwner());
-            IConnectionHolder _connHolder = null;
-            if (StringUtils.isNotBlank(_repo.dsName())) {
-                _connHolder = _db.getConnectionHolder(_repo.dsName());
-            } else {
-                Repository _superRepo = proxyChain.getTargetClass().getAnnotation(Repository.class);
-                if (StringUtils.isNotBlank(_superRepo.dsName())) {
-                    _connHolder = _db.getConnectionHolder(_superRepo.dsName());
-                } else {
-                    _connHolder = _db.getDefaultConnectionHolder();
-                }
-            }
-            //
-            Object _result = null;
+            Object _result;
             switch (_repo.type()) {
                 case UPDATE:
                     _result = __doUpdate(_db, _connHolder, _targetSQL, proxyChain.getTargetMethod(), proxyChain.getMethodParams());
@@ -102,15 +110,20 @@ public class RepoProxy implements IProxy {
                         _result = _processor.doFilter(_result);
                     }
             }
-            // 将执行结果赋予目标方法的最后一个参数
-            int _position = proxyChain.getMethodParams().length - 1;
-            Class<?> _paramType = proxyChain.getMethodParams()[_position].getClass();
-            if (_paramType.isArray()) {
-                if (_result != null) {
-                    proxyChain.getMethodParams()[_position] = ArrayUtils.add((Object[]) proxyChain.getMethodParams()[_position], _result);
+            if (_repo.useFilter()) {
+                // 将执行结果赋予目标方法的最后一个参数
+                int _position = proxyChain.getMethodParams().length - 1;
+                Object _lastParam = proxyChain.getMethodParams()[_position];
+                Class<?> _paramType = _lastParam != null ? proxyChain.getMethodParams()[_position].getClass() : null;
+                if (_paramType != null && _paramType.isArray()) {
+                    if (_result != null) {
+                        proxyChain.getMethodParams()[_position] = ArrayUtils.add((Object[]) proxyChain.getMethodParams()[_position], _result);
+                    }
+                } else {
+                    proxyChain.getMethodParams()[_position] = _result;
                 }
             } else {
-                proxyChain.getMethodParams()[_position] = _result;
+                return _result;
             }
         }
         return proxyChain.doProxyChain();

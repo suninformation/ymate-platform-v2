@@ -49,4 +49,9 @@ public @interface Repository {
      * @return 操作类型, 默认为查询
      */
     Type.OPT type() default Type.OPT.QUERY;
+
+    /**
+     * @return 是否调用方法过滤, 默认为true
+     */
+    boolean useFilter() default true;
 }

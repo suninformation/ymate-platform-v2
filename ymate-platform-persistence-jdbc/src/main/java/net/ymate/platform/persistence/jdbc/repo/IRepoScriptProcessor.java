@@ -58,10 +58,10 @@ public interface IRepoScriptProcessor {
     /**
      * 执行结果数据过滤
      *
-     * @param datas 待过滤结果对象
+     * @param results 待过滤结果对象
      * @return 返回过滤后的结果对象
      */
-    Object doFilter(Object datas);
+    Object doFilter(Object results);
 
     /**
      * 存储器脚本处理器类管理器
