@@ -153,7 +153,7 @@ public final class EntityMeta {
                 return StringUtils.capitalize(_words[0].toLowerCase());
             }
         }
-        return propertyName;
+        return StringUtils.capitalize(propertyName.toLowerCase());
     }
 
     /**
