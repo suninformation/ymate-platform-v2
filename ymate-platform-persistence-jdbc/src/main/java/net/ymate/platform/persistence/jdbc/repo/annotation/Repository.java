@@ -16,6 +16,7 @@
 package net.ymate.platform.persistence.jdbc.repo.annotation;
 
 import net.ymate.platform.persistence.base.Type;
+import net.ymate.platform.persistence.jdbc.JDBC;
 
 import java.lang.annotation.*;
 
@@ -54,4 +55,9 @@ public @interface Repository {
      * @return 是否调用方法过滤, 默认为true
      */
     boolean useFilter() default true;
+
+    /**
+     * @return 指定当前存储器适用的数据库类型，默认为全部，否则将根据数据库类型进行存储器加载
+     */
+    JDBC.DATABASE dbType() default JDBC.DATABASE.UNKNOW;
 }

@@ -23,9 +23,10 @@ import net.ymate.platform.core.beans.proxy.IProxyChain;
 import net.ymate.platform.core.util.ClassUtils;
 import net.ymate.platform.core.util.ExpressionUtils;
 import net.ymate.platform.core.util.RuntimeUtils;
-import net.ymate.platform.persistence.IResultSet;
 import net.ymate.platform.persistence.Params;
-import net.ymate.platform.persistence.jdbc.*;
+import net.ymate.platform.persistence.jdbc.IDatabase;
+import net.ymate.platform.persistence.jdbc.ISession;
+import net.ymate.platform.persistence.jdbc.JDBC;
 import net.ymate.platform.persistence.jdbc.base.IResultSetHandler;
 import net.ymate.platform.persistence.jdbc.query.SQL;
 import net.ymate.platform.persistence.jdbc.repo.annotation.Repository;
@@ -58,93 +59,81 @@ public class RepoProxy implements IProxy {
         }
         //
         IDatabase _db = JDBC.get(proxyChain.getProxyFactory().getOwner());
-        IConnectionHolder _connHolder = null;
-        if (StringUtils.isNotBlank(_repo.dsName())) {
-            _connHolder = _db.getConnectionHolder(_repo.dsName());
-        } else {
-            Repository _superRepo = proxyChain.getTargetClass().getAnnotation(Repository.class);
-            if (StringUtils.isNotBlank(_superRepo.dsName())) {
-                _connHolder = _db.getConnectionHolder(_superRepo.dsName());
+        ISession _session = null;
+        try {
+            if (StringUtils.isNotBlank(_repo.dsName())) {
+                _session = _db.openSession(_repo.dsName());
             } else {
-                _connHolder = _db.getDefaultConnectionHolder();
-            }
-        }
-        //
-        IRepoScriptProcessor _processor = null;
-        String _targetSQL = _repo.value();
-        if (StringUtils.isBlank(_targetSQL)) {
-            try {
-                IConfiguration _conf = ((IRepository) proxyChain.getTargetObject()).getConfig();
-                String _keyStr = StringUtils.lowerCase(_repo.item() + "_" + _connHolder.getDialect().getName());
-                Map<String, String> _statementMap = _conf.getMap(_keyStr);
-                if (_statementMap == null || _statementMap.isEmpty()) {
-                    _keyStr = StringUtils.lowerCase(_repo.item());
-                    _statementMap = _conf.getMap(_keyStr);
-                }
-                if (_statementMap == null || _statementMap.isEmpty()) {
-                    throw new NullArgumentException(_keyStr);
+                Repository _superRepo = proxyChain.getTargetClass().getAnnotation(Repository.class);
+                if (StringUtils.isNotBlank(_superRepo.dsName())) {
+                    _session = _db.openSession(_superRepo.dsName());
                 } else {
-                    _targetSQL = _conf.getString(_keyStr);
+                    _session = _db.openSession();
                 }
-                String _targetType = StringUtils.trimToNull(_statementMap.get("language"));
-                if (StringUtils.isNotBlank(_targetType)) {
-                    _processor = IRepoScriptProcessor.Manager.getScriptProcessor(_targetType);
-                    if (_processor != null) {
-                        _processor.init(_targetSQL);
-                        _targetSQL = _processor.process(_repo.item(), proxyChain.getMethodParams());
+            }
+            //
+            IRepoScriptProcessor _processor = null;
+            String _targetSQL = _repo.value();
+            if (StringUtils.isBlank(_targetSQL)) {
+                try {
+                    IConfiguration _conf = ((IRepository) proxyChain.getTargetObject()).getConfig();
+                    String _keyStr = StringUtils.lowerCase(_repo.item() + "_" + _session.getConnectionHolder().getDialect().getName());
+                    Map<String, String> _statementMap = _conf.getMap(_keyStr);
+                    if (_statementMap == null || _statementMap.isEmpty()) {
+                        _keyStr = StringUtils.lowerCase(_repo.item());
+                        _statementMap = _conf.getMap(_keyStr);
                     }
+                    if (_statementMap == null || _statementMap.isEmpty()) {
+                        throw new NullArgumentException(_keyStr);
+                    } else {
+                        _targetSQL = _conf.getString(_keyStr);
+                    }
+                    String _targetType = StringUtils.trimToNull(_statementMap.get("language"));
+                    if (StringUtils.isNotBlank(_targetType)) {
+                        _processor = IRepoScriptProcessor.Manager.getScriptProcessor(_targetType);
+                        if (_processor != null) {
+                            _processor.init(_targetSQL);
+                            _targetSQL = _processor.process(_repo.item(), proxyChain.getMethodParams());
+                        }
+                    }
+                } catch (Exception e) {
+                    _LOG.warn("", RuntimeUtils.unwrapThrow(e));
                 }
-            } catch (Exception e) {
-                _LOG.warn("", RuntimeUtils.unwrapThrow(e));
             }
-        }
-        if (StringUtils.isNotBlank(_targetSQL)) {
-            Object _result;
-            switch (_repo.type()) {
-                case UPDATE:
-                    _result = __doUpdate(_db, _connHolder, _targetSQL, proxyChain.getTargetMethod(), proxyChain.getMethodParams());
-                    break;
-                default:
-                    _result = __doQuery(_db, _connHolder, _targetSQL, proxyChain.getTargetMethod(), proxyChain.getMethodParams());
-                    if (_processor != null && _processor.isFilterable()) {
-                        _result = _processor.doFilter(_result);
-                    }
-            }
-            if (_repo.useFilter()) {
-                // 将执行结果赋予目标方法的最后一个参数
-                int _position = proxyChain.getMethodParams().length - 1;
-                Object _lastParam = proxyChain.getMethodParams()[_position];
-                Class<?> _paramType = _lastParam != null ? proxyChain.getMethodParams()[_position].getClass() : null;
-                if (_paramType != null && _paramType.isArray()) {
-                    if (_result != null) {
-                        proxyChain.getMethodParams()[_position] = ArrayUtils.add((Object[]) proxyChain.getMethodParams()[_position], _result);
+            if (StringUtils.isNotBlank(_targetSQL)) {
+                Object _result;
+                switch (_repo.type()) {
+                    case UPDATE:
+                        _result = _session.executeForUpdate(__buildSQL(_targetSQL, proxyChain.getTargetMethod(), proxyChain.getMethodParams()));
+                        break;
+                    default:
+                        _result = _session.find(__buildSQL(_targetSQL, proxyChain.getTargetMethod(), proxyChain.getMethodParams()), IResultSetHandler.ARRAY);
+                        if (_processor != null && _processor.isFilterable()) {
+                            _result = _processor.doFilter(_result);
+                        }
+                }
+                if (_repo.useFilter()) {
+                    // 将执行结果赋予目标方法的最后一个参数
+                    int _position = proxyChain.getMethodParams().length - 1;
+                    Object _lastParam = proxyChain.getMethodParams()[_position];
+                    Class<?> _paramType = _lastParam != null ? proxyChain.getMethodParams()[_position].getClass() : null;
+                    if (_paramType != null && _paramType.isArray()) {
+                        if (_result != null) {
+                            proxyChain.getMethodParams()[_position] = ArrayUtils.add((Object[]) proxyChain.getMethodParams()[_position], _result);
+                        }
+                    } else {
+                        proxyChain.getMethodParams()[_position] = _result;
                     }
                 } else {
-                    proxyChain.getMethodParams()[_position] = _result;
+                    return _result;
                 }
-            } else {
-                return _result;
+            }
+            return proxyChain.doProxyChain();
+        } finally {
+            if (_session != null) {
+                _session.close();
             }
         }
-        return proxyChain.doProxyChain();
-    }
-
-    private IResultSet<Object[]> __doQuery(IDatabase db, IConnectionHolder connHolder, final String targetSql, final Method targetMethod, final Object[] params) throws Exception {
-        return db.openSession(connHolder, new ISessionExecutor<IResultSet<Object[]>>() {
-            @Override
-            public IResultSet<Object[]> execute(ISession session) throws Exception {
-                return session.find(__buildSQL(targetSql, targetMethod, params), IResultSetHandler.ARRAY);
-            }
-        });
-    }
-
-    private int __doUpdate(IDatabase db, IConnectionHolder connHolder, final String targetSql, final Method targetMethod, final Object[] params) throws Exception {
-        return db.openSession(connHolder, new ISessionExecutor<Integer>() {
-            @Override
-            public Integer execute(ISession session) throws Exception {
-                return session.executeForUpdate(__buildSQL(targetSql, targetMethod, params));
-            }
-        });
     }
 
     private SQL __buildSQL(String targetSql, Method targetMethod, Object[] params) {

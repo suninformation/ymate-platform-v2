@@ -1125,6 +1125,8 @@ JDBC模块将数据查询的结果集合统一使用IResultSet接口进行封装
 		> type：操作类型，默认为查询，可选值：Type.OPT.QUERY或Type.OPT.UPDATE
 		>
 		> useFilter：是否调用方法过滤, 默认为true
+		>
+		> dbType：指定当前存储器适用的数据库类型，默认为全部，否则将根据数据库类型进行存储器加载
 
 
 - 存储器示例代码：

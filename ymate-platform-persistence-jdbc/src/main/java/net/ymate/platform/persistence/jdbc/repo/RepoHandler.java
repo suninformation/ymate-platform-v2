@@ -16,7 +16,11 @@
 package net.ymate.platform.persistence.jdbc.repo;
 
 import net.ymate.platform.core.beans.IBeanHandler;
+import net.ymate.platform.persistence.jdbc.DataSourceCfgMeta;
 import net.ymate.platform.persistence.jdbc.IDatabase;
+import net.ymate.platform.persistence.jdbc.JDBC;
+import net.ymate.platform.persistence.jdbc.repo.annotation.Repository;
+import org.apache.commons.lang.StringUtils;
 
 /**
  * @author 刘镇 (suninformation@163.com) on 16/4/24 上午12:35
@@ -24,12 +28,29 @@ import net.ymate.platform.persistence.jdbc.IDatabase;
  */
 public class RepoHandler implements IBeanHandler {
 
+    private IDatabase __owner;
+
     public RepoHandler(IDatabase owner) throws Exception {
-        owner.getOwner().registerExcludedClass(IRepository.class);
+        __owner = owner;
+        __owner.getOwner().registerExcludedClass(IRepository.class);
     }
 
     @Override
     public Object handle(Class<?> targetClass) throws Exception {
-        return targetClass.newInstance();
+        Repository _anno = targetClass.getAnnotation(Repository.class);
+        if (JDBC.DATABASE.UNKNOW.equals(_anno.dbType())) {
+            return targetClass.newInstance();
+        } else {
+            DataSourceCfgMeta _cfgMeta = null;
+            if (StringUtils.isBlank(_anno.dsName())) {
+                _cfgMeta = __owner.getModuleCfg().getDefaultDataSourceCfg();
+            } else {
+                _cfgMeta = __owner.getModuleCfg().getDataSourceCfg(_anno.dsName());
+            }
+            if (_cfgMeta != null && _cfgMeta.getType().equals(_anno.dbType())) {
+                return targetClass.newInstance();
+            }
+        }
+        return null;
     }
 }
