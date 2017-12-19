@@ -222,8 +222,21 @@ public abstract class BaseEntity<Entity extends IEntity, PK extends Serializable
     public Entity delete() throws Exception {
         ISession _session = new DefaultSession(__doGetConnectionHolderSafed());
         try {
-            if (_session.delete(this.getEntityClass(), this.getId(), this.getShardingable()) > 0) {
-                return (Entity) this;
+            if (null != this.getId()) {
+                if (_session.delete(this.getEntityClass(), this.getId(), this.getShardingable()) > 0) {
+                    return (Entity) this;
+                }
+            } else {
+                Cond _cond = buildEntityCond(this);
+                if (StringUtils.isNotBlank(_cond.toString())) {
+                    if (_session.executeForUpdate(Delete.create()
+                            .set(_session)
+                            .shardingable(this.getShardingable())
+                            .from(this.getEntityClass())
+                            .where(Where.create(_cond)).toSQL()) > 0) {
+                        return (Entity) this;
+                    }
+                }
             }
             return null;
         } finally {
