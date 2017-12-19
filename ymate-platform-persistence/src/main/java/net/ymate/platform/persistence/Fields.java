@@ -87,6 +87,15 @@ public final class Fields {
         return this;
     }
 
+    public Fields add(IFunction func, String alias) {
+        String _field = func.build();
+        if (StringUtils.isNotBlank(alias)) {
+            _field = _field.concat(" ").concat(alias);
+        }
+        this.__fields.add(_field);
+        return this;
+    }
+
     public Fields add(Fields fields) {
         this.__fields.addAll(fields.fields());
         this.__excluded = fields.isExcluded();

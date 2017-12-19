@@ -27,16 +27,24 @@ import org.apache.commons.lang.StringUtils;
  * @author 刘镇 (suninformation@163.com) on 15/5/12 下午6:00
  * @version 1.0
  */
-public final class Insert {
+public final class Insert extends Query<Insert> {
+
+    private String __prefix;
 
     private String __tableName;
+
+    private Class<? extends IEntity> __entityClass;
 
     private Fields __fields;
 
     private Params __params;
 
+    private Select __select;
+
+    private boolean __safePrefix;
+
     public static Insert create(String prefix, Class<? extends IEntity> entityClass) {
-        return new Insert(StringUtils.defaultIfBlank(prefix, "").concat(EntityMeta.createAndGet(entityClass).getEntityName()));
+        return new Insert(prefix, entityClass);
     }
 
     public static Insert create(IEntity<?> entity) {
@@ -44,15 +52,29 @@ public final class Insert {
     }
 
     public static Insert create(Class<? extends IEntity> entityClass) {
-        return new Insert(EntityMeta.createAndGet(entityClass).getEntityName());
+        return new Insert(null, entityClass);
     }
 
     public static Insert create(String tableName) {
-        return new Insert(tableName);
+        return new Insert(null, tableName, true);
     }
 
-    private Insert(String tableName) {
+    public static Insert create(String tableName, boolean safePrefix) {
+        return new Insert(null, tableName, safePrefix);
+    }
+
+    private Insert(String prefix, Class<? extends IEntity> entityClass) {
+        this.__prefix = prefix;
+        this.__entityClass = entityClass;
+        this.__safePrefix = true;
+        this.__fields = Fields.create();
+        this.__params = Params.create();
+    }
+
+    private Insert(String prefix, String tableName, boolean safePrefix) {
+        this.__prefix = prefix;
         this.__tableName = tableName;
+        this.__safePrefix = safePrefix;
         this.__fields = Fields.create();
         this.__params = Params.create();
     }
@@ -62,28 +84,48 @@ public final class Insert {
     }
 
     public Insert field(String prefix, String field, String alias) {
-        this.__fields.add(prefix, field, alias);
+        return field(prefix, field, alias, true);
+    }
+
+    public Insert field(String prefix, String field, String alias, boolean wrapIdentifier) {
+        this.__fields.add(prefix, wrapIdentifier ? __wrapIdentifierField(field) : field, alias);
         return this;
     }
 
     public Insert field(String prefix, String field) {
-        this.__fields.add(prefix, field);
+        return field(prefix, field, true);
+    }
+
+    public Insert field(String prefix, String field, boolean wrapIdentifier) {
+        this.__fields.add(prefix, wrapIdentifier ? __wrapIdentifierField(field) : field);
         return this;
     }
 
     public Insert field(String field) {
-        this.__fields.add(field);
+        return field(field, true);
+    }
+
+    public Insert field(String field, boolean wrapIdentifier) {
+        this.__fields.add(wrapIdentifier ? __wrapIdentifierField(field) : field);
         return this;
     }
 
     public Insert field(Fields fields) {
-        this.__fields.add(fields);
+        return field(fields, true);
+    }
+
+    public Insert field(Fields fields, boolean wrapIdentifier) {
+        this.__fields.add(wrapIdentifier ? __wrapIdentifierFields(fields.toArray()) : fields);
         return this;
     }
 
     public Insert field(String prefix, Fields fields) {
+        return field(prefix, fields, true);
+    }
+
+    public Insert field(String prefix, Fields fields, boolean wrapIdentifier) {
         for (String _field : fields.fields()) {
-            this.__fields.add(prefix, _field);
+            this.__fields.add(prefix, wrapIdentifier ? __wrapIdentifierField(_field) : _field);
         }
         return this;
     }
@@ -102,11 +144,19 @@ public final class Insert {
         return this;
     }
 
+    public Insert select(Select select) {
+        this.__select = select;
+        return this;
+    }
+
     @Override
     public String toString() {
-        return "INSERT INTO ".concat(__tableName).concat(" (")
-                .concat(StringUtils.join(__fields.fields(), ", "))
-                .concat(") VALUES (").concat(StringUtils.repeat("?", ", ", __params.params().size())).concat(")");
+        String _sqlStr = "INSERT INTO ".concat(__safePrefix ? (__entityClass != null ? __buildSafeTableName(__prefix, EntityMeta.createAndGet(__entityClass), __safePrefix) : __buildSafeTableName(__prefix, __tableName, true)) : __tableName)
+                .concat(" (").concat(StringUtils.join(__fields.fields(), ", "));
+        if (__select != null) {
+            return _sqlStr.concat(") ").concat(__select.toString());
+        }
+        return _sqlStr.concat(") VALUES (").concat(StringUtils.repeat("?", ", ", __params.params().size())).concat(")");
     }
 
     public SQL toSQL() {

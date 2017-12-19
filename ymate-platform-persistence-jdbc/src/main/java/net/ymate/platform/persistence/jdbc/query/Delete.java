@@ -30,7 +30,7 @@ import java.util.List;
  * @author 刘镇 (suninformation@163.com) on 15/5/12 下午6:03
  * @version 1.0
  */
-public final class Delete {
+public final class Delete extends Query<Delete> {
 
     private List<String> __froms;
 
@@ -40,58 +40,78 @@ public final class Delete {
 
     private Where __where;
 
+    public static Delete create() {
+        return new Delete();
+    }
+
     public static Delete create(Class<? extends IEntity> entityClass) {
-        return new Delete(null, EntityMeta.createAndGet(entityClass).getEntityName(), null);
+        return new Delete().from(entityClass);
     }
 
     public static Delete create(String prefix, Class<? extends IEntity> entityClass) {
-        return new Delete(prefix, EntityMeta.createAndGet(entityClass).getEntityName(), null);
+        return new Delete().from(prefix, entityClass, null);
     }
 
     public static Delete create(Class<? extends IEntity> entityClass, String alias) {
-        return new Delete(null, EntityMeta.createAndGet(entityClass).getEntityName(), alias);
+        return new Delete().from(null, entityClass, alias);
     }
 
     public static Delete create(String prefix, Class<? extends IEntity> entityClass, String alias) {
-        return new Delete(prefix, EntityMeta.createAndGet(entityClass).getEntityName(), alias);
+        return new Delete().from(prefix, entityClass, alias);
     }
 
     public static Delete create(Select select) {
-        Delete _target = new Delete(null, select.toString(), null);
+        Delete _target = new Delete(null, select.toString(), null, false);
         _target.where().param(select.getParams());
         return _target;
     }
 
     public static Delete create(String prefix, String tableName, String alias) {
-        return new Delete(prefix, tableName, alias);
+        return new Delete(prefix, tableName, alias, true);
     }
 
     public static Delete create(String tableName, String alias) {
-        return new Delete(null, tableName, alias);
+        return new Delete(null, tableName, alias, true);
+    }
+
+    public static Delete create(String tableName, String alias, boolean safePrefix) {
+        return new Delete(null, tableName, alias, safePrefix);
     }
 
     public static Delete create(String tableName) {
-        return new Delete(null, tableName, null);
+        return new Delete(null, tableName, null, true);
     }
 
-    private Delete(String prefix, String from, String alias) {
+    public static Delete create(String tableName, boolean safePrefix) {
+        return new Delete(null, tableName, null, safePrefix);
+    }
+
+    private Delete() {
         this.__froms = new ArrayList<String>();
         this.__joins = new ArrayList<Join>();
         this.__fields = Fields.create();
+    }
+
+    private Delete(String prefix, String from, String alias, boolean safePrefix) {
+        this();
         //
-        this.from(prefix, from, alias);
+        if (safePrefix) {
+            from(null, __buildSafeTableName(prefix, from, true), alias);
+        } else {
+            from(prefix, from, alias);
+        }
     }
 
     public Delete from(Class<? extends IEntity> entityClass) {
-        return from(null, EntityMeta.createAndGet(entityClass).getEntityName(), null);
+        return from(null, __buildSafeTableName(null, EntityMeta.createAndGet(entityClass), true), null);
     }
 
     public Delete from(Class<? extends IEntity> entityClass, String alias) {
-        return from(null, EntityMeta.createAndGet(entityClass).getEntityName(), null);
+        return from(null, __buildSafeTableName(null, EntityMeta.createAndGet(entityClass), true), alias);
     }
 
     public Delete from(String prefix, Class<? extends IEntity> entityClass, String alias) {
-        return from(prefix, EntityMeta.createAndGet(entityClass).getEntityName(), alias);
+        return from(null, __buildSafeTableName(prefix, EntityMeta.createAndGet(entityClass), true), alias);
     }
 
     public Delete from(Select select) {
@@ -101,17 +121,15 @@ public final class Delete {
     }
 
     public Delete from(String tableName, String alias) {
-        return from(null, tableName, alias);
+        return from(null, __buildSafeTableName(null, tableName, true), alias);
     }
 
     public Delete from(String tableName) {
-        return from(null, tableName, null);
+        return from(null, __buildSafeTableName(null, tableName, true), null);
     }
 
     public Delete from(String prefix, String from, String alias) {
-        if (StringUtils.isNotBlank(prefix)) {
-            from = prefix.concat(from);
-        }
+        from = __buildSafeTableName(prefix, from, false);
         if (StringUtils.isNotBlank(alias)) {
             from = from.concat(" ").concat(alias);
         }

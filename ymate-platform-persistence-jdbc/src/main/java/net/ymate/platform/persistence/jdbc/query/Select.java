@@ -15,18 +15,14 @@
  */
 package net.ymate.platform.persistence.jdbc.query;
 
-import net.ymate.platform.core.util.RuntimeUtils;
 import net.ymate.platform.persistence.Fields;
+import net.ymate.platform.persistence.IFunction;
 import net.ymate.platform.persistence.Page;
 import net.ymate.platform.persistence.Params;
 import net.ymate.platform.persistence.base.EntityMeta;
 import net.ymate.platform.persistence.base.IEntity;
-import net.ymate.platform.persistence.jdbc.IConnectionHolder;
-import net.ymate.platform.persistence.jdbc.JDBC;
 import net.ymate.platform.persistence.jdbc.dialect.IDialect;
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -37,9 +33,7 @@ import java.util.List;
  * @author 刘镇 (suninformation@163.com) on 15/5/12 下午5:59
  * @version 1.0
  */
-public final class Select {
-
-    private static final Log _LOG = LogFactory.getLog(Select.class);
+public final class Select extends Query<Select> {
 
     private List<String> __froms;
 
@@ -59,61 +53,78 @@ public final class Select {
 
     private Page __page;
 
-    private IDialect __dialect;
+    public static Select create() {
+        return new Select();
+    }
 
     public static Select create(Class<? extends IEntity> entityClass) {
-        return new Select(null, EntityMeta.createAndGet(entityClass).getEntityName(), null);
+        return new Select().from(null, entityClass, null);
     }
 
     public static Select create(String prefix, Class<? extends IEntity> entityClass) {
-        return new Select(prefix, EntityMeta.createAndGet(entityClass).getEntityName(), null);
+        return new Select().from(prefix, entityClass, null);
     }
 
     public static Select create(Class<? extends IEntity> entityClass, String alias) {
-        return new Select(null, EntityMeta.createAndGet(entityClass).getEntityName(), alias);
+        return new Select().from(null, entityClass, alias);
     }
 
     public static Select create(String prefix, Class<? extends IEntity> entityClass, String alias) {
-        return new Select(prefix, EntityMeta.createAndGet(entityClass).getEntityName(), alias);
+        return new Select().from(prefix, entityClass, alias);
     }
 
     public static Select create(Select select) {
-        Select _target = new Select(null, select.toString(), null);
+        Select _target = new Select(null, select.toString(), null, false);
         _target.where().param(select.getParams());
         return _target;
     }
 
     public static Select create(String prefix, String from, String alias) {
-        return new Select(prefix, from, alias);
+        return new Select(prefix, from, alias, true);
     }
 
     public static Select create(String from, String alias) {
-        return new Select(null, from, alias);
+        return new Select(null, from, alias, true);
+    }
+
+    public static Select create(String from, String alias, boolean safePrefix) {
+        return new Select(null, from, alias, safePrefix);
     }
 
     public static Select create(String from) {
-        return new Select(null, from, null);
+        return new Select(null, from, null, true);
     }
 
-    private Select(String prefix, String from, String alias) {
+    public static Select create(String from, boolean safePrefix) {
+        return new Select(null, from, null, safePrefix);
+    }
+
+    private Select() {
         this.__froms = new ArrayList<String>();
         this.__fields = Fields.create();
         this.__joins = new ArrayList<Join>();
         this.__unions = new ArrayList<Union>();
-        //
-        from(prefix, from, alias);
+    }
+
+    private Select(String prefix, String from, String alias, boolean safePrefix) {
+        this();
+        if (safePrefix) {
+            from(null, __buildSafeTableName(prefix, from, true), alias);
+        } else {
+            from(prefix, from, alias);
+        }
     }
 
     public Select from(Class<? extends IEntity> entityClass) {
-        return from(null, EntityMeta.createAndGet(entityClass).getEntityName(), null);
+        return from(null, __buildSafeTableName(null, EntityMeta.createAndGet(entityClass), true), null);
     }
 
     public Select from(Class<? extends IEntity> entityClass, String alias) {
-        return from(null, EntityMeta.createAndGet(entityClass).getEntityName(), null);
+        return from(null, __buildSafeTableName(null, EntityMeta.createAndGet(entityClass), true), alias);
     }
 
     public Select from(String prefix, Class<? extends IEntity> entityClass, String alias) {
-        return from(prefix, EntityMeta.createAndGet(entityClass).getEntityName(), alias);
+        return from(null, __buildSafeTableName(prefix, EntityMeta.createAndGet(entityClass), true), alias);
     }
 
     public Select from(Select select) {
@@ -123,17 +134,15 @@ public final class Select {
     }
 
     public Select from(String tableName, String alias) {
-        return from(null, tableName, alias);
+        return from(null, __buildSafeTableName(null, tableName, true), alias);
     }
 
     public Select from(String tableName) {
-        return from(null, tableName, null);
+        return from(null, __buildSafeTableName(null, tableName, true), null);
     }
 
     public Select from(String prefix, String from, String alias) {
-        if (StringUtils.isNotBlank(prefix)) {
-            from = prefix.concat(from);
-        }
+        from = __buildSafeTableName(prefix, from, false);
         if (StringUtils.isNotBlank(alias)) {
             from = from.concat(" ").concat(alias);
         }
@@ -146,29 +155,54 @@ public final class Select {
     }
 
     public Select field(String field) {
-        this.__fields.add(field);
+        return field(field, true);
+    }
+
+    public Select field(String field, boolean wrapIdentifier) {
+        this.__fields.add(wrapIdentifier ? __wrapIdentifierField(field) : field);
         return this;
     }
 
     public Select field(String prefix, String field) {
-        this.__fields.add(prefix, field);
+        return field(prefix, field, true);
+    }
+
+    public Select field(String prefix, String field, boolean wrapIdentifier) {
+        this.__fields.add(prefix, wrapIdentifier ? __wrapIdentifierField(field) : field);
         return this;
     }
 
     public Select field(String prefix, String field, String alias) {
-        this.__fields.add(prefix, field, alias);
+        return field(prefix, field, alias, true);
+    }
+
+    public Select field(String prefix, String field, String alias, boolean wrapIdentifier) {
+        this.__fields.add(prefix, wrapIdentifier ? __wrapIdentifierField(field) : field, alias);
         return this;
     }
 
     public Select field(Fields fields) {
-        this.__fields.add(fields);
+        return field(fields, true);
+    }
+
+    public Select field(Fields fields, boolean wrapIdentifier) {
+        this.__fields.add(wrapIdentifier ? __wrapIdentifierFields(fields.toArray()) : fields);
         return this;
     }
 
     public Select field(String prefix, Fields fields) {
+        return field(prefix, fields, true);
+    }
+
+    public Select field(String prefix, Fields fields, boolean wrapIdentifier) {
         for (String _field : fields.fields()) {
-            this.__fields.add(prefix, _field);
+            this.__fields.add(prefix, wrapIdentifier ? __wrapIdentifierField(_field) : _field);
         }
+        return this;
+    }
+
+    public Select field(IFunction func, String alias) {
+        this.__fields.add(func, alias);
         return this;
     }
 
@@ -227,8 +261,8 @@ public final class Select {
     }
 
     public Select page(IDialect dialect, Page page) {
+        this.dialect(dialect);
         __page = page;
-        __dialect = dialect;
         return this;
     }
 
@@ -263,22 +297,7 @@ public final class Select {
         _selectSB.append(" ");
         //
         if (__page != null) {
-            if (__dialect == null) {
-                IConnectionHolder _connHolder = null;
-                try {
-                    _connHolder = JDBC.get().getDefaultConnectionHolder();
-                    __dialect = _connHolder.getDialect();
-                } catch (Exception e) {
-                    _LOG.warn("", RuntimeUtils.unwrapThrow(e));
-                } finally {
-                    if (_connHolder != null) {
-                        _connHolder.release();
-                    }
-                }
-            }
-            if (__dialect != null) {
-                _selectSB = new StringBuilder(__dialect.buildPagedQuerySQL(_selectSB.toString(), __page.page(), __page.pageSize())).append(" ");
-            }
+            _selectSB = new StringBuilder(this.dialect().buildPagedQuerySQL(_selectSB.toString(), __page.page(), __page.pageSize())).append(" ");
         }
         //
         if (StringUtils.isNotBlank(__alias)) {

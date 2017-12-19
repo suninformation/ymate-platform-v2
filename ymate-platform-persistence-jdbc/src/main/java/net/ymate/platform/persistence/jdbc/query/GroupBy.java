@@ -24,7 +24,7 @@ import org.apache.commons.lang.StringUtils;
  * @author 刘镇 (suninformation@163.com) on 15/5/12 下午4:10
  * @version 1.0
  */
-public final class GroupBy {
+public final class GroupBy extends Query<GroupBy> {
 
     private Fields __groupByNames;
 
@@ -65,7 +65,7 @@ public final class GroupBy {
 
     @Override
     public String toString() {
-        StringBuilder _groupBySB = new StringBuilder("GROUP BY ").append(StringUtils.join(__groupByNames.fields(), ", "));
+        StringBuilder _groupBySB = new StringBuilder("GROUP BY ").append(StringUtils.join(__wrapIdentifierFields(__groupByNames.toArray()).fields(), ", "));
         if (__having != null) {
             _groupBySB.append(" HAVING ").append(__having);
         }

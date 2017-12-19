@@ -30,7 +30,7 @@ import java.util.List;
  * @author 刘镇 (suninformation@163.com) on 15/5/12 下午6:02
  * @version 1.0
  */
-public final class Update {
+public final class Update extends Query<Update> {
 
     private List<String> __tables;
 
@@ -40,50 +40,84 @@ public final class Update {
 
     private Where __where;
 
+    public static Update create() {
+        return new Update();
+    }
+
     public static Update create(String prefix, Class<? extends IEntity> entityClass, String alias) {
-        return new Update(prefix, EntityMeta.createAndGet(entityClass).getEntityName(), alias);
+        return new Update().table(prefix, entityClass, alias);
     }
 
     public static Update create(String prefix, Class<? extends IEntity> entityClass) {
-        return new Update(prefix, EntityMeta.createAndGet(entityClass).getEntityName(), null);
+        return new Update().table(prefix, entityClass, null);
     }
 
     public static Update create(Class<? extends IEntity> entityClass) {
-        return new Update(null, EntityMeta.createAndGet(entityClass).getEntityName(), null);
+        return new Update().table(entityClass, null);
     }
 
     public static Update create(String prefix, String tableName, String alias) {
-        return new Update(prefix, tableName, alias);
+        return new Update(prefix, tableName, alias, true);
+    }
+
+    public static Update create(String prefix, String tableName, String alias, boolean safePrefix) {
+        return new Update(prefix, tableName, alias, safePrefix);
     }
 
     public static Update create(String tableName, String alias) {
-        return new Update(null, tableName, alias);
+        return new Update(null, tableName, alias, true);
+    }
+
+    public static Update create(String tableName, String alias, boolean safePrefix) {
+        return new Update(null, tableName, alias, safePrefix);
     }
 
     public static Update create(String tableName) {
-        return new Update(null, tableName, null);
+        return new Update(null, tableName, null, true);
     }
 
-    private Update(String prefix, String tableName, String alias) {
+    public static Update create(String tableName, boolean safePrefix) {
+        return new Update(null, tableName, null, safePrefix);
+    }
+
+    private Update() {
         this.__tables = new ArrayList<String>();
         this.__fields = Fields.create();
         this.__joins = new ArrayList<Join>();
+    }
+
+    private Update(String prefix, String tableName, String alias, boolean safePrefix) {
+        this();
         //
-        table(prefix, tableName, alias);
+        table(prefix, tableName, alias, safePrefix);
+    }
+
+    public Update table(Class<? extends IEntity> entityClass) {
+        return table(null, __buildSafeTableName(null, EntityMeta.createAndGet(entityClass), true), null);
+    }
+
+    public Update table(Class<? extends IEntity> entityClass, String alias) {
+        return table(null, __buildSafeTableName(null, EntityMeta.createAndGet(entityClass), true), alias);
+    }
+
+    public Update table(String prefix, Class<? extends IEntity> entityClass, String alias) {
+        return table(null, __buildSafeTableName(prefix, EntityMeta.createAndGet(entityClass), true), alias);
     }
 
     public Update table(String tableName, String alias) {
-        return table(null, tableName, alias);
+        return table(null, tableName, alias, true);
     }
 
     public Update table(String tableName) {
-        return table(null, tableName, null);
+        return table(null, tableName, null, true);
     }
 
     public Update table(String prefix, String from, String alias) {
-        if (StringUtils.isNotBlank(prefix)) {
-            from = prefix.concat(from);
-        }
+        return table(prefix, from, alias, true);
+    }
+
+    public Update table(String prefix, String from, String alias, boolean safePrefix) {
+        from = __buildSafeTableName(prefix, from, safePrefix);
         if (StringUtils.isNotBlank(alias)) {
             from = from.concat(" ").concat(alias);
         }
@@ -95,29 +129,49 @@ public final class Update {
         return this.__fields;
     }
 
+    public Update field(String field) {
+        return field(field, true);
+    }
+
+    public Update field(String field, boolean wrapIdentifier) {
+        this.__fields.add(wrapIdentifier ? __wrapIdentifierField(field) : field);
+        return this;
+    }
+
     public Update field(String prefix, String field) {
-        this.__fields.add(prefix, field);
+        return field(prefix, field, true);
+    }
+
+    public Update field(String prefix, String field, boolean wrapIdentifier) {
+        this.__fields.add(prefix, wrapIdentifier ? __wrapIdentifierField(field) : field);
         return this;
     }
 
     public Update field(String prefix, String field, String alias) {
-        this.__fields.add(prefix, field, alias);
-        return this;
+        return field(prefix, field, alias, true);
     }
 
-    public Update field(String field) {
-        this.__fields.add(field);
+    public Update field(String prefix, String field, String alias, boolean wrapIdentifier) {
+        this.__fields.add(prefix, wrapIdentifier ? __wrapIdentifierField(field) : field, alias);
         return this;
     }
 
     public Update field(Fields fields) {
-        this.__fields.add(fields);
+        return field(fields, true);
+    }
+
+    public Update field(Fields fields, boolean wrapIdentifier) {
+        this.__fields.add(wrapIdentifier ? __wrapIdentifierFields(fields.toArray()) : fields);
         return this;
     }
 
     public Update field(String prefix, Fields fields) {
+        return field(prefix, fields, true);
+    }
+
+    public Update field(String prefix, Fields fields, boolean wrapIdentifier) {
         for (String _field : fields.fields()) {
-            this.__fields.add(prefix, _field);
+            this.__fields.add(prefix, wrapIdentifier ? __wrapIdentifierField(_field) : _field);
         }
         return this;
     }

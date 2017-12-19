@@ -24,7 +24,7 @@ import org.apache.commons.lang.StringUtils;
  * @author 刘镇 (suninformation@163.com) on 15/5/12 下午6:04
  * @version 1.0
  */
-public final class Join {
+public final class Join extends Query<Join> {
 
     private String __from;
 
@@ -33,54 +33,78 @@ public final class Join {
     private Cond __on;
 
     public static Join inner(String from) {
-        return inner(null, from);
+        return inner(from, true);
+    }
+
+    public static Join inner(String from, boolean safePrefix) {
+        return inner(null, from, safePrefix);
     }
 
     public static Join inner(Select select) {
-        Join _target = inner(null, select.toString());
+        Join _target = inner(null, select.toString(), false);
         _target.params().add(select.getParams());
         return _target;
     }
 
     public static Join inner(String prefix, String from) {
-        return new Join("INNER JOIN", prefix, from);
+        return inner(prefix, from, true);
+    }
+
+    public static Join inner(String prefix, String from, boolean safePrefix) {
+        return new Join("INNER JOIN", prefix, from, safePrefix);
     }
 
     //
 
     public static Join left(String from) {
-        return left(null, from);
+        return left(from, true);
+    }
+
+    public static Join left(String from, boolean safePrefix) {
+        return left(null, from, safePrefix);
     }
 
     public static Join left(Select select) {
-        Join _target = left(null, select.toString());
+        Join _target = left(null, select.toString(), false);
         _target.params().add(select.getParams());
         return _target;
     }
 
     public static Join left(String prefix, String from) {
-        return new Join("LEFT JOIN", prefix, from);
+        return left(prefix, from, true);
+    }
+
+    public static Join left(String prefix, String from, boolean safePrefix) {
+        return new Join("LEFT JOIN", prefix, from, safePrefix);
     }
 
     //
 
     public static Join right(String from) {
-        return right(null, from);
+        return right(from, true);
+    }
+
+    public static Join right(String from, boolean safePrefix) {
+        return right(null, from, safePrefix);
     }
 
     public static Join right(Select select) {
-        Join _target = right(null, select.toString());
+        Join _target = right(null, select.toString(), false);
         _target.params().add(select.getParams());
         return _target;
     }
 
     public static Join right(String prefix, String from) {
-        return new Join("RIGHT JOIN", prefix, from);
+        return right(prefix, from, true);
     }
 
-    private Join(String type, String prefix, String from) {
-        if (StringUtils.isNotBlank(prefix)) {
-            from = prefix.concat(from);
+    public static Join right(String prefix, String from, boolean safePrefix) {
+        return new Join("RIGHT JOIN", prefix, from, safePrefix);
+    }
+
+    private Join(String type, String prefix, String from, boolean safePrefix) {
+        if (safePrefix) {
+            from = __buildSafeTableName(prefix, from, true);
         }
         __from = type.concat(" ").concat(from);
         __on = Cond.create();

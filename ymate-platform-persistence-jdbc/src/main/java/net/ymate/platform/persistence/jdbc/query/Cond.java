@@ -26,7 +26,7 @@ import org.apache.commons.lang.StringUtils;
  * @author 刘镇 (suninformation@163.com) on 15/5/9 下午8:12
  * @version 1.0
  */
-public final class Cond {
+public final class Cond extends Query<Cond> {
 
     public enum OPT {
         EQ("="),
@@ -95,7 +95,7 @@ public final class Cond {
     }
 
     public Cond opt(String prefixA, String fieldA, OPT opt, String prefixB, String fieldB) {
-        return opt(Fields.field(prefixA, fieldA), opt, Fields.field(prefixB, fieldB));
+        return opt(Fields.field(prefixA, __wrapIdentifierField(fieldA)), opt, Fields.field(prefixB, __wrapIdentifierField(fieldB)));
     }
 
     public Cond opt(String fieldA, OPT opt, String fieldB) {
@@ -103,13 +103,21 @@ public final class Cond {
         return this;
     }
 
+    public Cond optWrap(String fieldA, OPT opt, String fieldB) {
+        return opt(__wrapIdentifierField(fieldA), opt, __wrapIdentifierField(fieldB));
+    }
+
     public Cond opt(String prefix, String field, OPT opt) {
-        return opt(Fields.field(prefix, field), opt);
+        return opt(Fields.field(prefix, __wrapIdentifierField(field)), opt);
     }
 
     public Cond opt(String field, OPT opt) {
         __condSB.append(field).append(" ").append(opt).append(" ?");
         return this;
+    }
+
+    public Cond optWrap(String field, OPT opt) {
+        return opt(__wrapIdentifierField(field), opt);
     }
 
     public Cond opt(IFunction func, OPT opt) {
@@ -125,91 +133,133 @@ public final class Cond {
     }
 
     public Cond eq(String prefix, String field) {
-        return eq(Fields.field(prefix, field));
+        return eq(Fields.field(prefix, __wrapIdentifierField(field)));
     }
 
     public Cond eq(String field) {
         return opt(field, OPT.EQ);
     }
 
+    public Cond eqWrap(String field) {
+        return optWrap(field, OPT.EQ);
+    }
+
     public Cond eq(IFunction func) {
         return opt(func, OPT.EQ);
     }
 
+    // ------
+
     public Cond notEq(String prefix, String field) {
-        return notEq(Fields.field(prefix, field));
+        return notEq(Fields.field(prefix, __wrapIdentifierField(field)));
     }
 
     public Cond notEq(String field) {
         return opt(field, OPT.NOT_EQ);
     }
 
+    public Cond notEqWrap(String field) {
+        return optWrap(field, OPT.NOT_EQ);
+    }
+
     public Cond notEq(IFunction func) {
         return opt(func, OPT.NOT_EQ);
     }
 
+    // ------
+
     public Cond gtEq(String prefix, String field) {
-        return gtEq(Fields.field(prefix, field));
+        return gtEq(Fields.field(prefix, __wrapIdentifierField(field)));
     }
 
     public Cond gtEq(String field) {
         return opt(field, OPT.GT_EQ);
     }
 
+    public Cond gtEqWrap(String field) {
+        return optWrap(field, OPT.GT_EQ);
+    }
+
     public Cond gtEq(IFunction func) {
         return opt(func, OPT.GT_EQ);
     }
 
+    // ------
+
     public Cond gt(String prefix, String field) {
-        return gt(Fields.field(prefix, field));
+        return gt(Fields.field(prefix, __wrapIdentifierField(field)));
     }
 
     public Cond gt(String field) {
         return opt(field, OPT.GT);
     }
 
+    public Cond gtWrap(String field) {
+        return optWrap(field, OPT.GT);
+    }
+
     public Cond gt(IFunction func) {
         return opt(func, OPT.GT);
     }
 
+    // ------
+
     public Cond ltEq(String prefix, String field) {
-        return ltEq(Fields.field(prefix, field));
+        return ltEq(Fields.field(prefix, __wrapIdentifierField(field)));
     }
 
     public Cond ltEq(String field) {
         return opt(field, OPT.LT_EQ);
     }
 
+    public Cond ltEqWrap(String field) {
+        return optWrap(field, OPT.LT_EQ);
+    }
+
     public Cond ltEq(IFunction func) {
         return opt(func, OPT.LT_EQ);
     }
 
+    // ------
+
     public Cond lt(String prefix, String field) {
-        return lt(Fields.field(prefix, field));
+        return lt(Fields.field(prefix, __wrapIdentifierField(field)));
     }
 
     public Cond lt(String field) {
         return opt(field, OPT.LT);
     }
 
+    public Cond ltWrap(String field) {
+        return optWrap(field, OPT.LT);
+    }
+
     public Cond lt(IFunction func) {
         return opt(func, OPT.LT);
     }
 
+    // ------
+
     public Cond like(String prefix, String field) {
-        return like(Fields.field(prefix, field));
+        return like(Fields.field(prefix, __wrapIdentifierField(field)));
     }
 
     public Cond like(String field) {
         return opt(field, OPT.LIKE);
     }
 
+    public Cond likeWrap(String field) {
+        return optWrap(field, OPT.LIKE);
+    }
+
     public Cond like(IFunction func) {
         return opt(func, OPT.LIKE);
     }
 
+    // ------
+
     public Cond between(String prefix, String field, Object valueOne, Object valueTwo) {
-        return between(Fields.field(prefix, field), valueOne, valueTwo);
+        return between(Fields.field(prefix, __wrapIdentifierField(field)), valueOne, valueTwo);
     }
 
     public Cond between(String field, Object valueOne, Object valueTwo) {
@@ -218,12 +268,18 @@ public final class Cond {
         return this;
     }
 
+    public Cond betweenWrap(String field, Object valueOne, Object valueTwo) {
+        return between(null, field, valueOne, valueTwo);
+    }
+
     public Cond between(IFunction func, Object valueOne, Object valueTwo) {
         return between(func.build(), valueOne, valueTwo);
     }
 
+    // ------
+
     public Cond isNull(String prefix, String field) {
-        return isNull(Fields.field(prefix, field));
+        return isNull(Fields.field(prefix, __wrapIdentifierField(field)));
     }
 
     public Cond isNull(String field) {
@@ -231,12 +287,18 @@ public final class Cond {
         return this;
     }
 
+    public Cond isNullWrap(String field) {
+        return isNull(null, field);
+    }
+
     public Cond isNull(IFunction func) {
         return isNull(func.build());
     }
 
+    // ------
+
     public Cond isNotNull(String prefix, String field) {
-        return isNotNull(Fields.field(prefix, field));
+        return isNotNull(Fields.field(prefix, __wrapIdentifierField(field)));
     }
 
     public Cond isNotNull(String field) {
@@ -244,9 +306,15 @@ public final class Cond {
         return this;
     }
 
+    public Cond isNotNullWrap(String field) {
+        return isNotNull(null, field);
+    }
+
     public Cond isNotNull(IFunction func) {
         return isNotNull(func.build());
     }
+
+    // ------
 
     public Cond and() {
         return cond("AND");
@@ -280,8 +348,10 @@ public final class Cond {
         return this;
     }
 
+    // ------
+
     public Cond in(String prefix, String field, SQL subSql) {
-        return in(Fields.field(prefix, field), subSql);
+        return in(Fields.field(prefix, __wrapIdentifierField(field)), subSql);
     }
 
     public Cond in(String field, SQL subSql) {
@@ -290,8 +360,12 @@ public final class Cond {
         return this;
     }
 
+    public Cond inWrap(String field, SQL subSql) {
+        return in(null, field, subSql);
+    }
+
     public Cond in(String prefix, String field, Select subSql) {
-        return in(Fields.field(prefix, field), subSql);
+        return in(Fields.field(prefix, __wrapIdentifierField(field)), subSql);
     }
 
     public Cond in(String field, Select subSql) {
@@ -300,14 +374,22 @@ public final class Cond {
         return this;
     }
 
+    public Cond inWrap(String field, Select subSql) {
+        return in(null, field, subSql);
+    }
+
     public Cond in(String prefix, String field, Params params) {
-        return in(Fields.field(prefix, field), params);
+        return in(Fields.field(prefix, __wrapIdentifierField(field)), params);
     }
 
     public Cond in(String field, Params params) {
         __condSB.append(field).append(" IN (").append(StringUtils.repeat("?", ", ", params.params().size())).append(")");
         __params.add(params);
         return this;
+    }
+
+    public Cond inWrap(String field, Params params) {
+        return in(null, field, params);
     }
 
     /**

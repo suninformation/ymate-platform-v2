@@ -23,7 +23,7 @@ import org.apache.commons.lang.StringUtils;
  * @author 刘镇 (suninformation@163.com) on 15/5/7 上午10:55
  * @version 1.0
  */
-public final class OrderBy {
+public final class OrderBy extends Query<OrderBy> {
 
     private StringBuilder __orderBySB;
 
@@ -57,7 +57,7 @@ public final class OrderBy {
         if (StringUtils.isNotBlank(prefix)) {
             __orderBySB.append(prefix).append(".");
         }
-        __orderBySB.append(field);
+        __orderBySB.append(__wrapIdentifierField(field));
         return this;
     }
 
@@ -72,7 +72,7 @@ public final class OrderBy {
         if (StringUtils.isNotBlank(prefix)) {
             __orderBySB.append(prefix).append(".");
         }
-        __orderBySB.append(field).append(" DESC");
+        __orderBySB.append(__wrapIdentifierField(field)).append(" DESC");
         return this;
     }
 

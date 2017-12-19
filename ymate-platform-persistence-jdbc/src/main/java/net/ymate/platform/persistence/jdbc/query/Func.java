@@ -867,6 +867,10 @@ public final class Func {
         return create("GROUP_CONCAT").param(expr);
     }
 
+    public static IFunction WM_CONCAT(String expr) {
+        return create("WM_CONCAT").param(expr);
+    }
+
     // ------ 返回expr 的最小值和最大值。
 
     public static IFunction MAX(String expr) {
