@@ -56,7 +56,7 @@ public class DefaultRequestProcessor implements IRequestProcessor {
         return _returnValues;
     }
 
-    protected Map<String, Object> __doGetParamValueFromParameterMetas(IWebMvc owner, RequestMeta requestMeta, Collection<ParameterMeta> metas) throws Exception {
+    private Map<String, Object> __doGetParamValueFromParameterMetas(IWebMvc owner, RequestMeta requestMeta, Collection<ParameterMeta> metas) throws Exception {
         Map<String, Object> _resultMap = new HashMap<String, Object>();
         Map<String, Object> _resultEscapedMap = new HashMap<String, Object>();
         boolean _escapeBeforeFlag = Type.EscapeOrder.BEFORE.equals(owner.getModuleCfg().getParameterEscapeOrder());
@@ -106,7 +106,7 @@ public class DefaultRequestProcessor implements IRequestProcessor {
      * @return 返回参数名称与值对象
      * @throws Exception 可能产生的异常
      */
-    protected Object __doGetParamValue(IWebMvc owner, RequestMeta requestMeta, ParameterMeta paramMeta, String paramName, Class<?> paramType, Annotation _annotation) throws Exception {
+    private Object __doGetParamValue(IWebMvc owner, RequestMeta requestMeta, ParameterMeta paramMeta, String paramName, Class<?> paramType, Annotation _annotation) throws Exception {
         Object _pValue = null;
         if (_annotation instanceof CookieVariable) {
             CookieVariable _anno = (CookieVariable) _annotation;
@@ -183,7 +183,7 @@ public class DefaultRequestProcessor implements IRequestProcessor {
         return _returnValue;
     }
 
-    protected Object __doParseModelBind(IWebMvc owner, RequestMeta requestMeta, ParameterMeta paramMeta, Class<?> paramType) throws Exception {
+    private Object __doParseModelBindSingleton(IWebMvc owner, RequestMeta requestMeta, ParameterMeta paramMeta, Class<?> paramType) throws Exception {
         ClassUtils.BeanWrapper<?> _wrapper = ClassUtils.wrapper(paramType);
         //
         ClassUtils.BeanWrapper<?> _wrapperEscaped = null;
@@ -220,5 +220,81 @@ public class DefaultRequestProcessor implements IRequestProcessor {
             return _wrapper.getTargetObject();
         }
         return null;
+    }
+
+    private Object __doParseModelBind(IWebMvc owner, RequestMeta requestMeta, ParameterMeta paramMeta, Class<?> paramType) throws Exception {
+        if (paramType.isArray()) {
+            Map<String, ParameterMeta> _metas = new HashMap<String, ParameterMeta>();
+            Object[] _returnValue = null;
+            //
+            Class<?> _arrayClassType = ClassUtils.getArrayClassType(paramType);
+            ClassUtils.BeanWrapper<?> _wrapperTmp = ClassUtils.wrapper(_arrayClassType);
+            if (_wrapperTmp != null) {
+                int _maxLength = 0;
+                for (String _fName : _wrapperTmp.getFieldNames()) {
+                    // 当控制器参数为@ModelBind数组时，仅支持通过@RequestParam注解获取参数
+                    ParameterMeta _meta = new ParameterMeta(requestMeta, _wrapperTmp.getField(_fName));
+                    if (_meta.getParamAnno() instanceof RequestParam) {
+                        _metas.put(_fName, _meta);
+                        // 尝试计算数组长度并创建数组对象实例
+                        String[] _param = ((String[]) WebContext.getRequest().getParameterMap().get(_meta.doBuildParamName(paramMeta.getPrefix(), _meta.getParamName(), _fName)));
+                        if (_param != null) {
+                            if (_param.length > _maxLength) {
+                                _maxLength = _param.length;
+                            }
+                        }
+                    }
+                }
+                _returnValue = (Object[]) Array.newInstance(_arrayClassType, _maxLength);
+            }
+            //
+            if (_returnValue != null && !_metas.isEmpty()) {
+                for (int _idx = 0; _idx < _returnValue.length; _idx++) {
+                    ClassUtils.BeanWrapper<?> _wrapperItem = ClassUtils.wrapper(_arrayClassType);
+                    if (_wrapperItem != null) {
+                        for (Map.Entry<String, ParameterMeta> _entry : _metas.entrySet()) {
+                            String _pName = _entry.getValue().doBuildParamName(paramMeta.getPrefix(), _entry.getValue().getParamName(), _entry.getKey());
+                            Object _pValue = null;
+                            if (_entry.getValue().getParamAnno() instanceof RequestParam) {
+                                RequestParam _anno = (RequestParam) _entry.getValue().getParamAnno();
+                                if (_entry.getValue().isArray()) {
+                                    if (_entry.getValue().getParamType().equals(IUploadFileWrapper[].class)) {
+                                        if (WebContext.getRequest() instanceof IMultipartRequestWrapper) {
+                                            return ((IMultipartRequestWrapper) WebContext.getRequest()).getUploadFiles(_pName);
+                                        }
+                                        return null;
+                                    }
+                                    String[] _values = (String[]) WebContext.getRequest().getParameterMap().get(_pName);
+                                    if (_values == null || _values.length == 0) {
+                                        _values = StringUtils.split(_anno.defaultValue(), ",");
+                                    }
+                                    if (_values != null && _values.length > 0) {
+                                        Class<?> __pArrayClassType = ClassUtils.getArrayClassType(_entry.getValue().getParamType());
+                                        Object[] _tempParams = (Object[]) Array.newInstance(__pArrayClassType, _values.length);
+                                        for (int _tempIdx = 0; _tempIdx < _values.length; _tempIdx++) {
+                                            _tempParams[_tempIdx] = new BlurObject(_values[_tempIdx]).toObjectValue(__pArrayClassType);
+                                        }
+                                        _pValue = _tempParams;
+                                    }
+                                } else if (_entry.getValue().getParamType().equals(IUploadFileWrapper.class)) {
+                                    if (WebContext.getRequest() instanceof IMultipartRequestWrapper) {
+                                        return ((IMultipartRequestWrapper) WebContext.getRequest()).getUploadFile(_pName);
+                                    }
+                                } else {
+                                    String[] _values = (String[]) WebContext.getRequest().getParameterMap().get(_pName);
+                                    if (_values != null && _values.length >= _idx) {
+                                        _pValue = new BlurObject(StringUtils.defaultIfBlank(_values[_idx], _anno.defaultValue())).toObjectValue(_entry.getValue().getParamType());
+                                    }
+                                }
+                            }
+                            _wrapperItem.setValue(_entry.getKey(), _pValue);
+                        }
+                        _returnValue[_idx] = _wrapperItem.getTargetObject();
+                    }
+                }
+            }
+            return _returnValue;
+        }
+        return __doParseModelBindSingleton(owner, requestMeta, paramMeta, paramType);
     }
 }
