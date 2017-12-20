@@ -93,15 +93,15 @@ public final class Update extends Query<Update> {
     }
 
     public Update table(Class<? extends IEntity> entityClass) {
-        return table(null, __buildSafeTableName(null, EntityMeta.createAndGet(entityClass), true), null);
+        return table(null, __buildSafeTableName(null, EntityMeta.createAndGet(entityClass), true), null, false);
     }
 
     public Update table(Class<? extends IEntity> entityClass, String alias) {
-        return table(null, __buildSafeTableName(null, EntityMeta.createAndGet(entityClass), true), alias);
+        return table(null, __buildSafeTableName(null, EntityMeta.createAndGet(entityClass), true), alias, false);
     }
 
     public Update table(String prefix, Class<? extends IEntity> entityClass, String alias) {
-        return table(null, __buildSafeTableName(prefix, EntityMeta.createAndGet(entityClass), true), alias);
+        return table(null, __buildSafeTableName(prefix, EntityMeta.createAndGet(entityClass), true), alias, false);
     }
 
     public Update table(String tableName, String alias) {
@@ -113,7 +113,7 @@ public final class Update extends Query<Update> {
     }
 
     public Update table(String prefix, String from, String alias) {
-        return table(prefix, from, alias, true);
+        return table(prefix, from, alias, false);
     }
 
     public Update table(String prefix, String from, String alias, boolean safePrefix) {
