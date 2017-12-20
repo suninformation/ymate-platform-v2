@@ -145,26 +145,31 @@ public class Query<T> {
         Fields _returnValue = Fields.create();
         if (fields != null) {
             for (String _field : fields) {
-                String[] _split = StringUtils.split(_field, ".");
-                if (_split != null) {
-                    if (_split.length == 2) {
-                        _returnValue.add(_split[0] + "." + this.dialect().wrapIdentifierQuote(_split[1]));
-                    } else {
-                        _returnValue.add(this.dialect().wrapIdentifierQuote(_field));
-                    }
-                }
+                _returnValue.add(__wrapIdentifierField(_field));
             }
         }
         return _returnValue;
     }
 
     protected String __wrapIdentifierField(String field) {
+        String[] _split = StringUtils.split(field, ".");
+        if (_split != null && _split.length == 2) {
+            String[] _alias = StringUtils.split(_split[1]);
+            if (_alias != null && _alias.length == 2) {
+                return _split[0] + "." + this.dialect().wrapIdentifierQuote(_alias[0]) + " " + _alias[1];
+            }
+            return _split[0] + "." + this.dialect().wrapIdentifierQuote(_split[1]);
+        }
         return this.dialect().wrapIdentifierQuote(field);
     }
 
     public static String wrapIdentifierField(IConnectionHolder connectionHolder, String field) {
         String[] _split = StringUtils.split(field, ".");
         if (_split != null && _split.length == 2) {
+            String[] _alias = StringUtils.split(_split[1]);
+            if (_alias != null && _alias.length == 2) {
+                return _split[0] + "." + connectionHolder.getDialect().wrapIdentifierQuote(_alias[0]) + " " + _alias[1];
+            }
             return _split[0] + "." + connectionHolder.getDialect().wrapIdentifierQuote(_split[1]);
         }
         return connectionHolder.getDialect().wrapIdentifierQuote(field);
