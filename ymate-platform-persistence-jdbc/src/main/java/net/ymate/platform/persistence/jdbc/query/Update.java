@@ -113,7 +113,7 @@ public final class Update extends Query<Update> {
     }
 
     public Update table(String prefix, String from, String alias) {
-        return table(prefix, from, alias, false);
+        return table(prefix, from, alias, true);
     }
 
     public Update table(String prefix, String from, String alias, boolean safePrefix) {
