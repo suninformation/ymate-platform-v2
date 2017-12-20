@@ -135,7 +135,8 @@ public class Query<T> {
 
     protected String __buildSafeTableName(String prefix, EntityMeta entityMeta, boolean safePrefix) {
         if (safePrefix) {
-            return __buildSafeTableName(prefix, this.dialect().buildTableName(null, entityMeta, this.shardingable()), true);
+            prefix = StringUtils.defaultIfBlank(prefix, this.tablePrefix());
+            return this.dialect().buildTableName(prefix, entityMeta, this.shardingable());
         }
         return StringUtils.trimToEmpty(prefix).concat(entityMeta.getEntityName());
     }
