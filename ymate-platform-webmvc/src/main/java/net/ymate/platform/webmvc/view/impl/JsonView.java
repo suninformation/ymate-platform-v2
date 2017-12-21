@@ -16,6 +16,8 @@
 package net.ymate.platform.webmvc.view.impl;
 
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.TypeReference;
+import com.alibaba.fastjson.parser.Feature;
 import com.alibaba.fastjson.serializer.SerializerFeature;
 import net.ymate.platform.webmvc.base.Type;
 import net.ymate.platform.webmvc.context.WebContext;
@@ -27,6 +29,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.LinkedHashMap;
 import java.util.List;
 
 /**
@@ -67,7 +70,8 @@ public class JsonView extends AbstractView {
      * @param jsonStr JSON字符串
      */
     public JsonView(String jsonStr) {
-        __jsonObj = JSON.parse(jsonStr);
+        __jsonObj = JSON.parseObject(jsonStr, new TypeReference<LinkedHashMap<String, Object>>() {
+        }, Feature.OrderedField);
     }
 
     /**
