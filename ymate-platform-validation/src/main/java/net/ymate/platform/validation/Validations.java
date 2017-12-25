@@ -24,8 +24,8 @@ import net.ymate.platform.core.util.RuntimeUtils;
 import net.ymate.platform.validation.annotation.Validation;
 import net.ymate.platform.validation.annotation.Validator;
 import net.ymate.platform.validation.handle.ValidateHandler;
-import net.ymate.platform.validation.validate.RequriedValidator;
-import net.ymate.platform.validation.validate.VRequired;
+import net.ymate.platform.validation.validate.RequiredValidator;
+import net.ymate.platform.validation.validate.VRequried;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -111,9 +111,9 @@ public class Validations implements IModule, IValidation {
         try {
             __owner.registerBean(validatorClass, validatorClass.newInstance());
             __validators.put(annotationClass, validatorClass);
-            if (RequriedValidator.class.equals(annotationClass)) {
+            if (RequiredValidator.class.equals(validatorClass)) {
                 // TODO 为了未来剔除@VRequried做准备
-                __validators.put(VRequired.class, validatorClass);
+                __validators.put(VRequried.class, validatorClass);
             }
         } catch (Exception e) {
             _LOG.error("", RuntimeUtils.unwrapThrow(e));

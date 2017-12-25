@@ -30,9 +30,9 @@ import org.apache.commons.lang.StringUtils;
  * @author 刘镇 (suninformation@163.com) on 2013-4-13 下午6:06:29
  * @version 1.0
  */
-@Validator(VRequried.class)
+@Validator(VRequired.class)
 @CleanProxy
-public class RequriedValidator extends AbstractValidator {
+public class RequiredValidator extends AbstractValidator {
 
     public ValidateResult validate(ValidateContext context) {
         boolean _matched = false;
@@ -51,8 +51,14 @@ public class RequriedValidator extends AbstractValidator {
         if (_matched) {
             String _pName = StringUtils.defaultIfBlank(context.getParamLabel(), context.getParamName());
             _pName = __doGetI18nFormatMessage(context, _pName, _pName);
-            //
-            String _msg = StringUtils.trimToNull(((VRequried) context.getAnnotation()).msg());
+            // TODO 为了未来剔除@VRequried做准备
+            String _annoMsg = null;
+            if (context.getAnnotation() instanceof VRequired) {
+                _annoMsg = ((VRequired) context.getAnnotation()).msg();
+            } else if (context.getAnnotation() instanceof VRequried) {
+                _annoMsg = ((VRequried) context.getAnnotation()).msg();
+            }
+            String _msg = StringUtils.trimToNull(_annoMsg);
             if (_msg != null) {
                 _msg = __doGetI18nFormatMessage(context, _msg, _msg, _pName);
             } else {
