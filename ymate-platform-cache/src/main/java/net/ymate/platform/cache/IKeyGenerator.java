@@ -15,6 +15,8 @@
  */
 package net.ymate.platform.cache;
 
+import net.ymate.platform.core.serialize.ISerializer;
+
 import java.io.Serializable;
 import java.lang.reflect.Method;
 

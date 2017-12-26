@@ -13,11 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.ymate.platform.cache.impl;
+package net.ymate.platform.core.serialize.impl;
 
-import net.ymate.platform.cache.ISerializer;
+import net.ymate.platform.core.serialize.ISerializer;
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang.ArrayUtils;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -25,11 +24,12 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 
 /**
- * @author 刘镇 (suninformation@163.com) on 15/12/6 上午1:41
+ * @author 刘镇 (suninformation@163.com) on 2017/10/10 上午11:13
  * @version 1.0
  */
 public class DefaultSerializer implements ISerializer {
 
+    @Override
     public byte[] serialize(Object object) throws Exception {
         ObjectOutputStream _output = null;
         try {
@@ -42,14 +42,13 @@ public class DefaultSerializer implements ISerializer {
         }
     }
 
-    public Object deserialize(byte[] bytes) throws Exception {
-        if (ArrayUtils.isEmpty(bytes)) {
-            return null;
-        }
+    @Override
+    @SuppressWarnings("unchecked")
+    public <T> T deserialize(byte[] bytes, Class<T> clazz) throws Exception {
         ObjectInputStream _input = null;
         try {
             _input = new ObjectInputStream(new ByteArrayInputStream(bytes));
-            return _input.readObject();
+            return (T) _input.readObject();
         } finally {
             IOUtils.closeQuietly(_input);
         }

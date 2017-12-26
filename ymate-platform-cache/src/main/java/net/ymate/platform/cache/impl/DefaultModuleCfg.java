@@ -18,6 +18,7 @@ package net.ymate.platform.cache.impl;
 import net.ymate.platform.cache.*;
 import net.ymate.platform.core.YMP;
 import net.ymate.platform.core.lang.BlurObject;
+import net.ymate.platform.core.serialize.ISerializer;
 import net.ymate.platform.core.util.ClassUtils;
 import org.apache.commons.lang.StringUtils;
 
@@ -67,7 +68,7 @@ public class DefaultModuleCfg implements ICacheModuleCfg {
         //
         __serializer = ClassUtils.impl(_moduleCfgs.get("serializer_class"), ISerializer.class, this.getClass());
         if (__serializer == null) {
-            __serializer = new DefaultSerializer();
+            __serializer = ISerializer.SerializerManager.getDefaultSerializer();
         }
         //
         __keyGenerator = ClassUtils.impl(_moduleCfgs.get("key_generator_class"), IKeyGenerator.class, this.getClass());

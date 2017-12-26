@@ -89,7 +89,7 @@ public class RedisCacheWraper implements ICache {
             return null;
         }
         byte[] _bytes = Base64.decodeBase64(value);
-        return __owner.getModuleCfg().getSerializer().deserialize(_bytes);
+        return __owner.getModuleCfg().getSerializer().deserialize(_bytes, Object.class);
     }
 
     public Object get(Object key) throws CacheException {

@@ -15,6 +15,8 @@
  */
 package net.ymate.platform.cache;
 
+import net.ymate.platform.core.serialize.ISerializer;
+
 /**
  * 缓存配置接口
  *

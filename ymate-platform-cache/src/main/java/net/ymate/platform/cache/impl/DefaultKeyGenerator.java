@@ -16,7 +16,7 @@
 package net.ymate.platform.cache.impl;
 
 import net.ymate.platform.cache.IKeyGenerator;
-import net.ymate.platform.cache.ISerializer;
+import net.ymate.platform.core.serialize.ISerializer;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.codec.digest.DigestUtils;
 
@@ -33,7 +33,7 @@ public class DefaultKeyGenerator implements IKeyGenerator {
 
     public void init(ISerializer serializer) {
         if (serializer == null) {
-            __serializer = new DefaultSerializer();
+            __serializer = ISerializer.SerializerManager.getDefaultSerializer();
         } else {
             __serializer = serializer;
         }
