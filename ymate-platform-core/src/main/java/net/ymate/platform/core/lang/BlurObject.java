@@ -45,6 +45,24 @@ public class BlurObject implements Serializable, Cloneable {
      */
     private static final long serialVersionUID = 4141840934670622411L;
 
+    private static final Map<Class<?>, Map<Class<?>, IConverter<?>>> __converters = new HashMap<Class<?>, Map<Class<?>, IConverter<?>>>();
+
+    /**
+     * 注册类型转换器
+     *
+     * @param fromClass 原类型
+     * @param toClass   目标类型
+     * @param converter 类型转换器实例
+     */
+    public static void registerConverter(Class<?> fromClass, Class<?> toClass, IConverter<?> converter) {
+        Map<Class<?>, IConverter<?>> _map = __converters.get(toClass);
+        if (_map == null) {
+            _map = new HashMap<Class<?>, IConverter<?>>();
+            __converters.put(toClass, _map);
+        }
+        _map.put(fromClass, converter);
+    }
+
     /**
      * 当前存储对象值
      */
@@ -485,6 +503,15 @@ public class BlurObject implements Serializable, Cloneable {
         } else if (clazz.equals(Set.class)) {
             object = this.toSetValue();
         }
+        if (object == null && !__converters.isEmpty()) {
+            Map<Class<?>, IConverter<?>> _map = __converters.get(clazz);
+            if (_map != null && !_map.isEmpty()) {
+                IConverter<?> _converter = _map.get(attr.getClass());
+                if (_converter != null) {
+                    object = _converter.convert(attr);
+                }
+            }
+        }
         if (object == null) {
             try {
                 object = clazz.cast(attr);
@@ -557,5 +584,19 @@ public class BlurObject implements Serializable, Cloneable {
             return attr.toString();
         }
         return "";
+    }
+
+    /**
+     * 类型转换器接口
+     *
+     * @param <T> 目标类型
+     */
+    public interface IConverter<T> {
+
+        /**
+         * @param target 目标对象
+         * @return 尝试类型转换
+         */
+        T convert(Object target);
     }
 }
