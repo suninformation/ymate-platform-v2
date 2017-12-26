@@ -46,7 +46,7 @@ public interface ICacheModuleCfg {
     IKeyGenerator<?> getKeyGenerator();
 
     /**
-     * @return 对象序列化接口实现，可选参数，默认值为net.ymate.platform.cache.impl.DefaultSerializer
+     * @return 对象序列化接口实现，可选参数，默认值为ISerializer.SerializerManager.getDefaultSerializer()
      */
     ISerializer getSerializer();
 

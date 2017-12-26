@@ -45,7 +45,7 @@ import java.util.Map;
 @Module
 public class Validations implements IModule, IValidation {
 
-    public static final Version VERSION = new Version(2, 0, 3, Validations.class.getPackage().getImplementationVersion(), Version.VersionType.Release);
+    public static final Version VERSION = new Version(2, 0, 4, Validations.class.getPackage().getImplementationVersion(), Version.VersionType.Release);
 
     private static final Log _LOG = LogFactory.getLog(Validations.class);
 
