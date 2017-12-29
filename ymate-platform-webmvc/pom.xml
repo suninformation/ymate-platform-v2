@@ -3,7 +3,7 @@
     <parent>
         <artifactId>ymate-platform-parent</artifactId>
         <groupId>net.ymate.platform</groupId>
-        <version>2</version>
+        <version>3</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
