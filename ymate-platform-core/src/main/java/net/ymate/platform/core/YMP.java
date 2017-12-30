@@ -38,6 +38,7 @@ import net.ymate.platform.core.i18n.I18N;
 import net.ymate.platform.core.module.IModule;
 import net.ymate.platform.core.module.ModuleEvent;
 import net.ymate.platform.core.module.annotation.Module;
+import net.ymate.platform.core.serialize.annotation.Serializer;
 import net.ymate.platform.core.support.ConfigBuilder;
 import net.ymate.platform.core.support.IInitializable;
 import net.ymate.platform.core.util.ClassUtils;
@@ -59,7 +60,7 @@ import java.util.Map;
  */
 public class YMP {
 
-    public static final Version VERSION = new Version(2, 0, 4, Version.VersionType.Release);
+    public static final Version VERSION = new Version(2, 0, 5, Version.VersionType.Release);
 
     private static final Log _LOG = LogFactory.getLog(YMP.class);
 
@@ -149,6 +150,7 @@ public class YMP {
             __moduleFactory.registerHandler(Event.class, new EventHandler(this));
             __moduleFactory.registerHandler(EventRegister.class, new EventRegisterHandler(this));
             __moduleFactory.registerHandler(Injector.class, new InjectorHandler(__beanFactory));
+            __moduleFactory.registerHandler(Serializer.class, new SerializerHandler(this));
             // 设置自动扫描应用包路径
             __registerScanPackages(__moduleFactory);
             __registerScanPackages(__beanFactory);
