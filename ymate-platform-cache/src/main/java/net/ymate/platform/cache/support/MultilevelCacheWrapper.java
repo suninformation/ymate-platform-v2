@@ -27,16 +27,16 @@ import java.util.List;
  * @author 刘镇 (suninformation@163.com) on 15/12/7 上午2:23
  * @version 1.0
  */
-public class MultilevelCacheWraper implements ICache, ICacheLocker {
+public class MultilevelCacheWrapper implements ICache, ICacheLocker {
 
     private ICache __masterCache;
     private ICache __slaveCache;
 
     private boolean __slaveCacheAutosync;
 
-    public MultilevelCacheWraper(ICaches owner, String cacheName, Ehcache ehcache, IRedis redis, ICacheEventListener listener) {
-        __masterCache = new EhCacheWraper(owner, ehcache, listener);
-        __slaveCache = new RedisCacheWraper(owner, redis, cacheName, null);
+    public MultilevelCacheWrapper(ICaches owner, String cacheName, Ehcache ehcache, IRedis redis, ICacheEventListener listener) {
+        __masterCache = new EhCacheWrapper(owner, ehcache, listener);
+        __slaveCache = new RedisCacheWrapper(owner, redis, cacheName, null);
         //
         __slaveCacheAutosync = BlurObject.bind(owner.getOwner().getConfig().getParam("cache.multilevel_slave_autosync")).toBooleanValue();
     }

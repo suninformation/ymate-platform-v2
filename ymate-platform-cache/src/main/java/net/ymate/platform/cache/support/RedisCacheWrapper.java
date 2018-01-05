@@ -33,7 +33,7 @@ import java.util.List;
  * @author 刘镇 (suninformation@163.com) on 15/12/7 上午12:16
  * @version 1.0
  */
-public class RedisCacheWraper implements ICache {
+public class RedisCacheWrapper implements ICache {
 
     private String __cacheName;
 
@@ -43,7 +43,7 @@ public class RedisCacheWraper implements ICache {
 
     private ICacheEventListener __listener;
 
-    public RedisCacheWraper(ICaches owner, IRedis redis, String cacheName, final ICacheEventListener listener) {
+    public RedisCacheWrapper(ICaches owner, IRedis redis, String cacheName, final ICacheEventListener listener) {
         __owner = owner;
         __redis = redis;
         __cacheName = cacheName;

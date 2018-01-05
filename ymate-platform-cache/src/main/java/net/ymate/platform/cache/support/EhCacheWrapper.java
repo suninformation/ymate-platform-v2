@@ -29,13 +29,13 @@ import java.util.List;
  * @author 刘镇 (suninformation@163.com) on 15/12/7 上午12:16
  * @version 1.0
  */
-public class EhCacheWraper implements ICache, ICacheLocker {
+public class EhCacheWrapper implements ICache, ICacheLocker {
 
     private ICaches __owner;
 
     private Ehcache __ehcache;
 
-    public EhCacheWraper(ICaches owner, Ehcache ehcache, final ICacheEventListener listener) {
+    public EhCacheWrapper(ICaches owner, Ehcache ehcache, final ICacheEventListener listener) {
         __owner = owner;
         __ehcache = ehcache;
         if (listener != null) {

@@ -16,7 +16,7 @@
 package net.ymate.platform.cache.impl;
 
 import net.ymate.platform.cache.*;
-import net.ymate.platform.cache.support.RedisCacheWraper;
+import net.ymate.platform.cache.support.RedisCacheWrapper;
 import net.ymate.platform.persistence.redis.IRedis;
 import net.ymate.platform.persistence.redis.Redis;
 
@@ -37,35 +37,41 @@ public class RedisCacheProvider implements ICacheProvider {
 
     protected ICaches __owner;
 
+    @Override
     public String getName() {
-        return "redis";
+        return ICache.REDIS;
     }
 
+    @Override
     public void init(ICaches owner) throws CacheException {
         __owner = owner;
         __caches = new ConcurrentHashMap<String, ICache>();
         __redis = Redis.get(__owner.getOwner());
     }
 
+    @Override
     public ICache createCache(final String name, final ICacheEventListener listener) throws CacheException {
         ICache _cache = __caches.get(name);
         if (_cache == null) {
             synchronized (__LOCKER) {
-                _cache = new RedisCacheWraper(__owner, __redis, name, listener);
+                _cache = new RedisCacheWrapper(__owner, __redis, name, listener);
                 __caches.put(name, _cache);
             }
         }
         return _cache;
     }
 
+    @Override
     public ICache getCache(String name) {
         return getCache(name, true);
     }
 
+    @Override
     public ICache getCache(String name, boolean create) {
         return getCache(name, create, __owner.getModuleCfg().getCacheEventListener());
     }
 
+    @Override
     public ICache getCache(String name, boolean create, ICacheEventListener listener) {
         ICache _cache = __caches.get(name);
         if (_cache == null && create) {
@@ -74,6 +80,7 @@ public class RedisCacheProvider implements ICacheProvider {
         return _cache;
     }
 
+    @Override
     public void destroy() throws CacheException {
         for (ICache _cache : __caches.values()) {
             _cache.destroy();

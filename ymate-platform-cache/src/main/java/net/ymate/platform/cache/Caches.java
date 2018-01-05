@@ -220,8 +220,8 @@ public class Caches implements IModule, ICaches {
 
     static {
         PROVIDERS = new HashMap<String, String>();
-        PROVIDERS.put("default", DefaultCacheProvider.class.getName());
-        PROVIDERS.put("redis", RedisCacheProvider.class.getName());
-        PROVIDERS.put("multilevel", MultilevelCacheProvider.class.getName());
+        PROVIDERS.put(ICache.DEFAULT, DefaultCacheProvider.class.getName());
+        PROVIDERS.put(ICache.REDIS, RedisCacheProvider.class.getName());
+        PROVIDERS.put(ICache.MULTILEVEL, MultilevelCacheProvider.class.getName());
     }
 }

@@ -21,7 +21,7 @@ import net.ymate.platform.cache.ICache;
 import net.ymate.platform.cache.ICacheEventListener;
 import net.ymate.platform.cache.ICacheProvider;
 import net.ymate.platform.cache.ICaches;
-import net.ymate.platform.cache.support.EhCacheWraper;
+import net.ymate.platform.cache.support.EhCacheWrapper;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -40,23 +40,26 @@ public class DefaultCacheProvider implements ICacheProvider {
 
     protected ICaches __owner;
 
+    @Override
     public String getName() {
-        return "default";
+        return ICache.DEFAULT;
     }
 
     private String __safedCacheName(String name) {
-        if ("default".equalsIgnoreCase(name)) {
+        if (ICache.DEFAULT.equalsIgnoreCase(name)) {
             name = CacheManager.DEFAULT_NAME;
         }
         return name;
     }
 
+    @Override
     public void init(ICaches owner) {
         __owner = owner;
         __cacheManager = CacheManager.create();
         __caches = new ConcurrentHashMap<String, ICache>();
     }
 
+    @Override
     public ICache createCache(String name, final ICacheEventListener listener) {
         name = __safedCacheName(name);
         //
@@ -69,21 +72,24 @@ public class DefaultCacheProvider implements ICacheProvider {
                     __cacheManager.addCache(name);
                     _ehcache = __cacheManager.getCache(name);
                 }
-                _cache = new EhCacheWraper(__owner, _ehcache, listener);
+                _cache = new EhCacheWrapper(__owner, _ehcache, listener);
                 __caches.put(name, _cache);
             }
         }
         return _cache;
     }
 
+    @Override
     public ICache getCache(String name) {
         return getCache(name, true);
     }
 
+    @Override
     public ICache getCache(String name, boolean create) {
         return getCache(name, create, __owner.getModuleCfg().getCacheEventListener());
     }
 
+    @Override
     public ICache getCache(String name, boolean create, ICacheEventListener listener) {
         ICache _cache = __caches.get(__safedCacheName(name));
         if (_cache == null && create) {
@@ -92,6 +98,7 @@ public class DefaultCacheProvider implements ICacheProvider {
         return _cache;
     }
 
+    @Override
     public void destroy() {
         for (ICache _cache : __caches.values()) {
             _cache.destroy();

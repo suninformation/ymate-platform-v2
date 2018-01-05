@@ -26,6 +26,12 @@ import java.util.List;
  */
 public interface ICache {
 
+    String DEFAULT = "default";
+
+    String REDIS = "redis";
+
+    String MULTILEVEL = "multilevel";
+
     /**
      * 从缓存中获取对象
      *

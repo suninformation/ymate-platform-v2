@@ -18,7 +18,7 @@ package net.ymate.platform.cache.impl;
 import net.sf.ehcache.CacheManager;
 import net.sf.ehcache.Ehcache;
 import net.ymate.platform.cache.*;
-import net.ymate.platform.cache.support.MultilevelCacheWraper;
+import net.ymate.platform.cache.support.MultilevelCacheWrapper;
 import net.ymate.platform.persistence.redis.IRedis;
 import net.ymate.platform.persistence.redis.Redis;
 
@@ -41,10 +41,12 @@ public class MultilevelCacheProvider implements ICacheProvider {
 
     private IRedis __redis;
 
+    @Override
     public String getName() {
-        return "multilevel";
+        return ICache.MULTILEVEL;
     }
 
+    @Override
     public void init(ICaches owner) throws CacheException {
         __owner = owner;
         __cacheManager = CacheManager.create();
@@ -53,12 +55,13 @@ public class MultilevelCacheProvider implements ICacheProvider {
     }
 
     private String __safedCacheName(String name) {
-        if ("default".equalsIgnoreCase(name)) {
+        if (ICache.DEFAULT.equalsIgnoreCase(name)) {
             name = CacheManager.DEFAULT_NAME;
         }
         return name;
     }
 
+    @Override
     public ICache createCache(String name, ICacheEventListener listener) throws CacheException {
         ICache _cache = __caches.get(name);
         if (_cache == null) {
@@ -70,21 +73,24 @@ public class MultilevelCacheProvider implements ICacheProvider {
                     _ehcache = __cacheManager.getCache(name);
                 }
                 //
-                _cache = new MultilevelCacheWraper(__owner, name, _ehcache, __redis, listener);
+                _cache = new MultilevelCacheWrapper(__owner, name, _ehcache, __redis, listener);
                 __caches.put(name, _cache);
             }
         }
         return _cache;
     }
 
+    @Override
     public ICache getCache(String name) {
         return getCache(name, true);
     }
 
+    @Override
     public ICache getCache(String name, boolean create) {
         return getCache(name, create, __owner.getModuleCfg().getCacheEventListener());
     }
 
+    @Override
     public ICache getCache(String name, boolean create, ICacheEventListener listener) {
         ICache _cache = __caches.get(name);
         if (_cache == null && create) {
@@ -93,6 +99,7 @@ public class MultilevelCacheProvider implements ICacheProvider {
         return _cache;
     }
 
+    @Override
     public void destroy() throws CacheException {
         for (ICache _cache : __caches.values()) {
             _cache.destroy();
