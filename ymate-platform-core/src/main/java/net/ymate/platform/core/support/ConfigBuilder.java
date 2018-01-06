@@ -22,9 +22,11 @@ import net.ymate.platform.core.i18n.II18NEventHandler;
 import net.ymate.platform.core.lang.BlurObject;
 import net.ymate.platform.core.util.ClassUtils;
 import net.ymate.platform.core.util.RuntimeUtils;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.LocaleUtils;
 import org.apache.commons.lang.StringUtils;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.*;
 
@@ -36,27 +38,27 @@ public final class ConfigBuilder {
 
     private boolean __isDevelopMode;
 
-    private List<String> __packageNames;
+    private final List<String> __packageNames;
 
-    private List<String> __excludedFiles;
+    private final List<String> __excludedFiles;
 
-    private List<String> __excludedModules;
+    private final List<String> __excludedModules;
 
     private Locale __locale;
 
     private II18NEventHandler __i18nEventHandler;
 
-    private Map<String, String> __paramsMap;
+    private final Map<String, String> __paramsMap;
 
-    private Map<String, Map<String, String>> __moduleCfgs;
+    private final Map<String, Map<String, String>> __moduleCfgs;
 
-    private Map<String, String> __eventConfigs;
+    private final Map<String, String> __eventConfigs;
 
-    private IModuleCfgProcessor __processor;
+    private final IModuleCfgProcessor __processor;
 
     private boolean __interceptSettingsEnabled;
 
-    private InterceptSettings __interceptSettings;
+    private final InterceptSettings __interceptSettings;
 
     private static List<String> __doParserArrayStr(Properties properties, String key) {
         String[] _strArr = StringUtils.split(properties.getProperty(key), "|");
@@ -178,18 +180,16 @@ public final class ConfigBuilder {
                 }
             }
             return create(__props);
-        } catch (Exception e) {
-            throw new RuntimeException(RuntimeUtils.unwrapThrow(e));
+        } catch (IOException e) {
+            throw new RuntimeException(e.getMessage(), e);
         } finally {
-            try {
-                if (_in != null) _in.close();
-            } catch (Exception ignored) {
-            }
+            IOUtils.closeQuietly(_in);
         }
     }
 
     public static ConfigBuilder create() {
         return new ConfigBuilder(new IModuleCfgProcessor() {
+            @Override
             public Map<String, String> getModuleCfg(String moduleName) {
                 return Collections.emptyMap();
             }
@@ -301,38 +301,47 @@ public final class ConfigBuilder {
     public IConfig build() {
         return new IConfig() {
 
+            @Override
             public boolean isDevelopMode() {
                 return __isDevelopMode;
             }
 
+            @Override
             public List<String> getAutoscanPackages() {
                 return Collections.unmodifiableList(__packageNames);
             }
 
+            @Override
             public List<String> getExcludedFiles() {
                 return Collections.unmodifiableList(__excludedFiles);
             }
 
+            @Override
             public List<String> getExcludedModules() {
                 return Collections.unmodifiableList(__excludedModules);
             }
 
+            @Override
             public Locale getDefaultLocale() {
                 return __locale != null ? __locale : Locale.getDefault();
             }
 
+            @Override
             public II18NEventHandler getI18NEventHandlerClass() {
                 return __i18nEventHandler;
             }
 
+            @Override
             public Map<String, String> getParams() {
                 return Collections.unmodifiableMap(__paramsMap);
             }
 
+            @Override
             public String getParam(String name) {
                 return __paramsMap.get(name);
             }
 
+            @Override
             public Map<String, String> getModuleConfigs(String moduleName) {
                 Map<String, String> _cfgsMap = __moduleCfgs.get(moduleName);
                 if (_cfgsMap == null) {
@@ -342,14 +351,17 @@ public final class ConfigBuilder {
                 return _cfgsMap;
             }
 
+            @Override
             public Map<String, String> getEventConfigs() {
                 return Collections.unmodifiableMap(__eventConfigs);
             }
 
+            @Override
             public boolean isInterceptSettingsEnabled() {
                 return __interceptSettingsEnabled;
             }
 
+            @Override
             public InterceptSettings getInterceptSettings() {
                 return __interceptSettings;
             }

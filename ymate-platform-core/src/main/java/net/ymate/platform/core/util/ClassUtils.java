@@ -38,7 +38,7 @@ public class ClassUtils {
 
     private static final Log _LOG = LogFactory.getLog(ClassUtils.class);
 
-    private static InnerClassLoader _INNER_CLASS_LOADER = new InnerClassLoader(new URL[]{}, ClassUtils.class.getClassLoader());
+    private static final InnerClassLoader _INNER_CLASS_LOADER = new InnerClassLoader(new URL[]{}, ClassUtils.class.getClassLoader());
 
     public static class InnerClassLoader extends URLClassLoader {
 
@@ -99,7 +99,7 @@ public class ClassUtils {
     }
 
     public static Class<?> loadClass(String className, Class<?> callingClass) throws ClassNotFoundException {
-        Class<?> _targetClass = null;
+        Class<?> _targetClass;
         try {
             _targetClass = Thread.currentThread().getContextClassLoader().loadClass(className);
         } catch (ClassNotFoundException e) {
@@ -332,6 +332,7 @@ public class ClassUtils {
     /**
      * 类对象包裹器，赋予对象简单的属性操作能力
      *
+     * @param <T> 对象类型
      * @author 刘镇 (suninformation@163.com) on 2012-12-23 上午12:46:50
      * @version 1.0
      */

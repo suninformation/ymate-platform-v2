@@ -37,7 +37,7 @@ public final class Cond extends Query<Cond> {
         GT_EQ(">="),
         LIKE("LIKE");
 
-        private String __opt;
+        private final String __opt;
 
         OPT(String opt) {
             this.__opt = opt;
@@ -49,12 +49,12 @@ public final class Cond extends Query<Cond> {
         }
     }
 
-    private StringBuilder __condSB;
+    private final StringBuilder __condSB;
 
     /**
      * SQL参数集合
      */
-    private Params __params;
+    private final Params __params;
 
     public static Cond create() {
         return new Cond();

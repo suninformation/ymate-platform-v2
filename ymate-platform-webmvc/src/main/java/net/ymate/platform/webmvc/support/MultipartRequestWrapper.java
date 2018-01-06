@@ -37,7 +37,7 @@ import java.util.*;
  */
 public class MultipartRequestWrapper extends HttpServletRequestWrapper implements IMultipartRequestWrapper {
 
-    private FileUploadHelper.UploadFormWrapper __formWarpper;
+    private final FileUploadHelper.UploadFormWrapper __formWarpper;
 
     public MultipartRequestWrapper(IWebMvc owner, HttpServletRequest request) throws IOException, FileUploadException {
         super(request);
@@ -51,6 +51,7 @@ public class MultipartRequestWrapper extends HttpServletRequestWrapper implement
                 .processUpload();
     }
 
+    @Override
     public String getParameter(String name) {
         String _returnStr = super.getParameter(name);
         if (StringUtils.isBlank(_returnStr)) {
@@ -60,6 +61,7 @@ public class MultipartRequestWrapper extends HttpServletRequestWrapper implement
         return _returnStr;
     }
 
+    @Override
     public String[] getParameterValues(String name) {
         String[] _returnStr = super.getParameterValues(name);
         if (_returnStr == null || _returnStr.length == 0) {
@@ -68,6 +70,7 @@ public class MultipartRequestWrapper extends HttpServletRequestWrapper implement
         return _returnStr;
     }
 
+    @Override
     @SuppressWarnings("unchecked")
     public Map<String, String[]> getParameterMap() {
         Map<String, String[]> _returnMap = new HashMap<String, String[]>(super.getParameterMap());
@@ -75,14 +78,17 @@ public class MultipartRequestWrapper extends HttpServletRequestWrapper implement
         return Collections.unmodifiableMap(_returnMap);
     }
 
+    @Override
     public Enumeration<String> getParameterNames() {
         return new Enumeration<String>() {
-            private Iterator<String> it = getParameterMap().keySet().iterator();
+            private final Iterator<String> it = getParameterMap().keySet().iterator();
 
+            @Override
             public boolean hasMoreElements() {
                 return it.hasNext();
             }
 
+            @Override
             public String nextElement() {
                 return it.next();
             }
@@ -93,6 +99,7 @@ public class MultipartRequestWrapper extends HttpServletRequestWrapper implement
      * @param name 文件字段名称
      * @return 获取上传的文件
      */
+    @Override
     public IUploadFileWrapper getUploadFile(String name) {
         IUploadFileWrapper[] files = __formWarpper.getFileMap().get(name);
         return files == null ? null : files[0];
@@ -102,6 +109,7 @@ public class MultipartRequestWrapper extends HttpServletRequestWrapper implement
      * @param name 文件字段名称
      * @return 获取上传的文数组
      */
+    @Override
     public IUploadFileWrapper[] getUploadFiles(String name) {
         return __formWarpper.getFileMap().get(name);
     }
@@ -109,6 +117,7 @@ public class MultipartRequestWrapper extends HttpServletRequestWrapper implement
     /**
      * @return 获取所有的上传文件
      */
+    @Override
     public Set<IUploadFileWrapper> getUploadFiles() {
         Set<IUploadFileWrapper> _returnValues = new HashSet<IUploadFileWrapper>();
         for (IUploadFileWrapper[] _fileWraps : __formWarpper.getFileMap().values()) {

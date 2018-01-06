@@ -32,9 +32,9 @@ import java.util.Map;
  */
 public class DefaultModuleCfg implements IServModuleCfg {
 
-    private Map<String, Map<String, String>> __serverCfgs;
+    private final Map<String, Map<String, String>> __serverCfgs;
 
-    private Map<String, Map<String, String>> __clientCfgs;
+    private final Map<String, Map<String, String>> __clientCfgs;
 
     public DefaultModuleCfg(YMP owner) throws Exception {
         Map<String, String> _moduleCfgs = owner.getConfig().getModuleConfigs(IServ.MODULE_NAME);

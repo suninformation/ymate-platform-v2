@@ -34,7 +34,7 @@ public class DefaultRequestContext implements IRequestContext {
     /**
      * 原始URL
      */
-    private String originalUrl;
+    private final String originalUrl;
 
     /**
      * 控制器请求映射
@@ -49,11 +49,11 @@ public class DefaultRequestContext implements IRequestContext {
     /**
      * 后缀名称
      */
-    private String suffix;
+    private final String suffix;
 
-    private Type.HttpMethod __httpMethod;
+    private final Type.HttpMethod __httpMethod;
 
-    private Map<String, Object> __attributes;
+    private final Map<String, Object> __attributes;
 
     public DefaultRequestContext(HttpServletRequest request, String prefix) {
         this.requestMapping = this.originalUrl = StringUtils.defaultIfBlank(request.getPathInfo(), request.getServletPath());
@@ -82,38 +82,46 @@ public class DefaultRequestContext implements IRequestContext {
         __attributes = new HashMap<String, Object>();
     }
 
+    @Override
     public String getRequestMapping() {
         return requestMapping;
     }
 
+    @Override
     public String getOriginalUrl() {
         return originalUrl;
     }
 
+    @Override
     public String getPrefix() {
         return prefix;
     }
 
+    @Override
     public String getSuffix() {
         return suffix;
     }
 
+    @Override
     public Type.HttpMethod getHttpMethod() {
         return __httpMethod;
     }
 
     ////
 
+    @Override
     @SuppressWarnings("unchecked")
     public <T> T getAttribute(String name) {
         return (T) __attributes.get(name);
     }
 
+    @Override
     public IRequestContext addAttribute(String name, Object value) {
         __attributes.put(name, value);
         return this;
     }
 
+    @Override
     public Map<String, Object> getAttributes() {
         return __attributes;
     }

@@ -66,12 +66,13 @@ public class DefaultHeartbeatService extends Thread implements IHeartbeatService
 
     @Override
     public void run() {
+        long _millis = __heartbeatInterval * DateTimeUtils.SECOND;
         while (__flag) {
             try {
                 if (__client.isConnected()) {
                     __client.send(__heartbeatMessage);
                 }
-                sleep(__heartbeatInterval * DateTimeUtils.SECOND);
+                sleep(_millis);
             } catch (Exception e) {
                 if (__flag) {
                     _LOG.error(e.getMessage(), RuntimeUtils.unwrapThrow(e));
@@ -92,7 +93,7 @@ public class DefaultHeartbeatService extends Thread implements IHeartbeatService
         try {
             __flag = false;
             join();
-        } catch (Exception e) {
+        } catch (InterruptedException e) {
             _LOG.debug(e.getMessage(), RuntimeUtils.unwrapThrow(e));
         }
         super.interrupt();

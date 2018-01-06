@@ -28,7 +28,7 @@ import net.ymate.platform.core.util.ClassUtils;
  */
 public class ConfigHandler implements IBeanHandler {
 
-    private IConfig __owner;
+    private final IConfig __owner;
 
     public ConfigHandler(IConfig owner) throws Exception {
         __owner = owner;

@@ -87,7 +87,7 @@ public class Type {
          */
         OCTET_STREAM("application/octet-stream");
 
-        private String __contentType;
+        private final String __contentType;
 
         ContentType(String contentType) {
             __contentType = contentType;
@@ -97,6 +97,7 @@ public class Type {
             return __contentType;
         }
 
+        @Override
         public String toString() {
             return __contentType;
         }

@@ -29,10 +29,10 @@ import java.util.List;
  */
 public class MultilevelCacheWrapper implements ICache, ICacheLocker {
 
-    private ICache __masterCache;
-    private ICache __slaveCache;
+    private final ICache __masterCache;
+    private final ICache __slaveCache;
 
-    private boolean __slaveCacheAutosync;
+    private final boolean __slaveCacheAutosync;
 
     public MultilevelCacheWrapper(ICaches owner, String cacheName, Ehcache ehcache, IRedis redis, ICacheEventListener listener) {
         __masterCache = new EhCacheWrapper(owner, ehcache, listener);
@@ -148,35 +148,42 @@ public class MultilevelCacheWrapper implements ICache, ICacheLocker {
         __masterCache.destroy();
     }
 
+    @Override
     public ICacheLocker acquireCacheLocker() {
         return this;
     }
 
+    @Override
     public void readLock(Object key) {
         MultilevelKey _key = MultilevelKey.bind(key);
         __masterCache.acquireCacheLocker().readLock(_key.getKey());
     }
 
+    @Override
     public void writeLock(Object key) {
         MultilevelKey _key = MultilevelKey.bind(key);
         __masterCache.acquireCacheLocker().writeLock(_key.getKey());
     }
 
+    @Override
     public boolean tryReadLock(Object key, long timeout) throws CacheException {
         MultilevelKey _key = MultilevelKey.bind(key);
         return __masterCache.acquireCacheLocker().tryReadLock(_key.getKey(), timeout);
     }
 
+    @Override
     public boolean tryWriteLock(Object key, long timeout) throws CacheException {
         MultilevelKey _key = MultilevelKey.bind(key);
         return __masterCache.acquireCacheLocker().tryWriteLock(_key.getKey(), timeout);
     }
 
+    @Override
     public void releaseReadLock(Object key) {
         MultilevelKey _key = MultilevelKey.bind(key);
         __masterCache.acquireCacheLocker().releaseReadLock(_key.getKey());
     }
 
+    @Override
     public void releaseWriteLock(Object key) {
         MultilevelKey _key = MultilevelKey.bind(key);
         __masterCache.acquireCacheLocker().releaseWriteLock(_key.getKey());

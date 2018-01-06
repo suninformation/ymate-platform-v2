@@ -22,16 +22,18 @@ import java.util.Map;
 /**
  * 事件上下文接口
  *
+ * @param <T> 事件源类型
+ * @param <E> 事件枚举
  * @author 刘镇 (suninformation@163.com) on 15/5/16 上午2:58
  * @version 1.0
  */
 public abstract class EventContext<T, E extends Enum> extends EventObject {
 
-    private Class<? extends IEvent> __eventClass;
+    private final Class<? extends IEvent> __eventClass;
 
-    private E __eventName;
+    private final E __eventName;
 
-    private Map<String, Object> __params;
+    private final Map<String, Object> __params;
 
     private final long __timestamp;
 

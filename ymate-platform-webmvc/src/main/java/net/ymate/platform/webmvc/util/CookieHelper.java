@@ -44,11 +44,11 @@ public final class CookieHelper {
 
     private static final Log __LOG = LogFactory.getLog(CookieHelper.class);
 
-    private IWebMvc __owner;
+    private final IWebMvc __owner;
 
-    private HttpServletRequest __request;
+    private final HttpServletRequest __request;
 
-    private HttpServletResponse __response;
+    private final HttpServletResponse __response;
 
     /**
      * 是否使用密钥加密

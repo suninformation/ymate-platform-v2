@@ -97,10 +97,12 @@ public class ResourceUtils {
             return this;
         }
 
+        @Override
         public boolean hasNext() {
             return this.next != null;
         }
 
+        @Override
         public E next() {
             if (this.next != null) {
                 E prev = this.next;
@@ -112,9 +114,9 @@ public class ResourceUtils {
 
         private Enumeration<E> determineCurrentEnumeration() {
             if ((this.cur != null) && (!this.cur.hasMoreElements())) {
-                if (this.enums.size() > 0)
+                if (this.enums.size() > 0) {
                     this.cur = this.enums.removeLast();
-                else {
+                } else {
                     this.cur = null;
                 }
             }
@@ -125,8 +127,9 @@ public class ResourceUtils {
             if (determineCurrentEnumeration() != null) {
                 E tmp = this.cur.nextElement();
                 do {
-                    if (!this.loaded.contains(tmp))
+                    if (!this.loaded.contains(tmp)) {
                         break;
+                    }
                     tmp = loadNext();
                 } while (tmp != null);
 
@@ -138,6 +141,7 @@ public class ResourceUtils {
             return null;
         }
 
+        @Override
         public void remove() {
             throw new UnsupportedOperationException();
         }

@@ -25,6 +25,7 @@ import java.util.Map;
 /**
  * 结果集数据处理接口，用于完成对JDBC结果集原始数据的二次加工
  *
+ * @param <T> 元素类型
  * @author 刘镇 (suninformation@163.com) on 2010-6-2 下午02:16:09
  * @version 1.0
  */

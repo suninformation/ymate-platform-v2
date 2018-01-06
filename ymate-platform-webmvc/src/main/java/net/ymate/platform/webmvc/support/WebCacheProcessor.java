@@ -46,8 +46,9 @@ public class WebCacheProcessor implements IWebCacheProcessor {
 
     private static final Log _LOG = LogFactory.getLog(WebCacheProcessor.class);
 
-    private static ConcurrentHashMap<String, ReentrantLock> __LOCK_MAP = new ConcurrentHashMap<String, ReentrantLock>();
+    private static final ConcurrentHashMap<String, ReentrantLock> __LOCK_MAP = new ConcurrentHashMap<String, ReentrantLock>();
 
+    @Override
     public boolean processResponseCache(IWebMvc owner, ResponseCache responseCache, IRequestContext requestContext, IView resultView) throws Exception {
         HttpServletRequest _request = WebContext.getRequest();
         GenericResponseWrapper _response = (GenericResponseWrapper) WebContext.getResponse();

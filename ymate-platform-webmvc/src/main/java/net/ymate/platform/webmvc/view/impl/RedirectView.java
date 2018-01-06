@@ -45,6 +45,7 @@ public class RedirectView extends AbstractView {
         this.__path = path;
     }
 
+    @Override
     protected void __doRenderView() throws Exception {
         // 重定向到其它站点
         if (!__path.startsWith("http://") && !__path.startsWith("https://")) {

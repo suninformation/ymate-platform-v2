@@ -28,6 +28,7 @@ import java.util.List;
 /**
  * 数据库查询操作器接口实现
  *
+ * @param <T> 元素类型
  * @author 刘镇 (suninformation@163.com) on 2011-9-23 上午09:32:37
  * @version 1.0
  */

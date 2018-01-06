@@ -53,26 +53,32 @@ public class DefaultBeanLoader implements IBeanLoader {
         __excludedFileSet = excludedFiles;
     }
 
+    @Override
     public ClassLoader getClassLoader() {
         return __classLoader == null ? this.getClass().getClassLoader() : __classLoader;
     }
 
+    @Override
     public void setClassLoader(ClassLoader classLoader) {
         this.__classLoader = classLoader;
     }
 
+    @Override
     public List<String> getExcludedFiles() {
         return __excludedFileSet == null ? Collections.<String>emptyList() : __excludedFileSet;
     }
 
+    @Override
     public void setExcludedFiles(List<String> excludedFiles) {
         __excludedFileSet = excludedFiles;
     }
 
+    @Override
     public List<Class<?>> load(String packageName) throws Exception {
         return load(packageName, null);
     }
 
+    @Override
     public List<Class<?>> load(String packageName, IBeanFilter filter) throws Exception {
         List<Class<?>> _returnValue = new ArrayList<Class<?>>();
         Enumeration<URL> _resources = this.getClassLoader().getResources(packageName.replaceAll("\\.", "/"));
@@ -80,8 +86,10 @@ public class DefaultBeanLoader implements IBeanLoader {
             URL _res = _resources.nextElement();
             if (_res.getProtocol().equalsIgnoreCase("file") || _res.getProtocol().equalsIgnoreCase("vfsfile")) {
                 File[] _files = new File(_res.toURI()).listFiles();
-                if (_files != null && _files.length > 0) for (File _file : _files) {
-                    _returnValue.addAll(__doFindClassByClazz(packageName, _file, filter));
+                if (_files != null && _files.length > 0) {
+                    for (File _file : _files) {
+                        _returnValue.addAll(__doFindClassByClazz(packageName, _file, filter));
+                    }
                 }
             } else if (_res.getProtocol().equalsIgnoreCase("jar") || _res.getProtocol().equalsIgnoreCase("wsjar")) {
                 _returnValue.addAll(__doFindClassByJar(packageName, ((JarURLConnection) _res.openConnection()).getJarFile(), filter));
@@ -103,8 +111,10 @@ public class DefaultBeanLoader implements IBeanLoader {
             }
         } else {
             File[] _tmpFiles = resourceFile.listFiles();
-            if (_tmpFiles != null && _tmpFiles.length > 0) for (File _tmpFile : _tmpFiles) {
-                _returnValue.addAll(__doFindClassByClazz(packageName + "." + _resFileName, _tmpFile, filter));
+            if (_tmpFiles != null && _tmpFiles.length > 0) {
+                for (File _tmpFile : _tmpFiles) {
+                    _returnValue.addAll(__doFindClassByClazz(packageName + "." + _resFileName, _tmpFile, filter));
+                }
             }
         }
         return _returnValue;
@@ -116,8 +126,9 @@ public class DefaultBeanLoader implements IBeanLoader {
                 return true;
             } else {
                 for (String _exculedFile : __excludedFileSet) {
-                    if (_exculedFile.indexOf('*') > 0)
+                    if (_exculedFile.indexOf('*') > 0) {
                         _exculedFile = StringUtils.substringBefore(_exculedFile, "*");
+                    }
                     if (targetFileName.startsWith(_exculedFile)) {
                         return true;
                     }
@@ -183,7 +194,7 @@ public class DefaultBeanLoader implements IBeanLoader {
     }
 
     private Class<?> __doLoadClass(String className) throws ClassNotFoundException {
-        Class<?> _class = null;
+        Class<?> _class;
         try {
             _class = ClassUtils.loadClass(className, this.getClass());
         } catch (ClassNotFoundException e) {

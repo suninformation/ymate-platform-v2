@@ -22,14 +22,15 @@ import java.util.ArrayList;
 /**
  * @author 刘镇 (suninformation@163.com) on 16/7/4 下午6:39
  * @version 1.0
+ * @param <T> 元素类型
  */
 public class ShardingList<T> extends ArrayList<ShardingList.ShardingElement<T>> {
 
     public static class ShardingElement<T> implements IShardingable {
 
-        private T element;
+        private final T element;
 
-        private Object shardingParam;
+        private final Object shardingParam;
 
         public ShardingElement(T element, Object shardingParam) {
             this.element = element;

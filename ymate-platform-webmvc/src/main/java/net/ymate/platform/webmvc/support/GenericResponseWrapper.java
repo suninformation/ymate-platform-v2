@@ -40,11 +40,13 @@ public class GenericResponseWrapper extends HttpServletResponseWrapper {
         super(response);
     }
 
+    @Override
     public void setStatus(final int code) {
         statusCode = code;
         super.setStatus(code);
     }
 
+    @Override
     public void setStatus(final int code, final String msg) {
         statusCode = code;
         super.setStatus(code);
@@ -54,21 +56,25 @@ public class GenericResponseWrapper extends HttpServletResponseWrapper {
         return statusCode;
     }
 
+    @Override
     public void sendError(int i, String string) throws IOException {
         statusCode = i;
         super.sendError(i, string);
     }
 
+    @Override
     public void sendError(int i) throws IOException {
         statusCode = i;
         super.sendError(i);
     }
 
+    @Override
     public void sendRedirect(String string) throws IOException {
         statusCode = HttpServletResponse.SC_MOVED_TEMPORARILY;
         super.sendRedirect(string);
     }
 
+    @Override
     public void reset() {
         super.reset();
         headersMap.clear();
@@ -77,6 +83,7 @@ public class GenericResponseWrapper extends HttpServletResponseWrapper {
         contentLength = 0;
     }
 
+    @Override
     public void setContentLength(final int length) {
         this.contentLength = length;
         super.setContentLength(length);
@@ -86,11 +93,13 @@ public class GenericResponseWrapper extends HttpServletResponseWrapper {
         return contentLength;
     }
 
+    @Override
     public void setContentType(final String type) {
         this.contentType = type;
         super.setContentType(type);
     }
 
+    @Override
     public String getContentType() {
         return contentType;
     }

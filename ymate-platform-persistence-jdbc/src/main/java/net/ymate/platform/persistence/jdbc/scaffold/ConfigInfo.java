@@ -35,33 +35,33 @@ import java.util.Map;
  */
 public class ConfigInfo {
 
-    private String dbName;
+    private final String dbName;
 
-    private String dbUserName;
+    private final String dbUserName;
 
-    private boolean removePrefix;
+    private final boolean removePrefix;
 
-    private List<String> tablePrefixes;
+    private final List<String> tablePrefixes;
 
-    private List<String> tableList;
+    private final List<String> tableList;
 
-    private List<String> tableExcludeList;
+    private final List<String> tableExcludeList;
 
-    private boolean useBaseEntity;
+    private final boolean useBaseEntity;
 
-    private boolean useClassSuffix;
+    private final boolean useClassSuffix;
 
-    private boolean useChainMode;
+    private final boolean useChainMode;
 
-    private boolean useStateSupport;
+    private final boolean useStateSupport;
 
-    private IEntityNamedFilter namedFilter;
+    private final IEntityNamedFilter namedFilter;
 
-    private List<String> readonlyFields;
+    private final List<String> readonlyFields;
 
-    private String packageName;
+    private final String packageName;
 
-    private String outputPath;
+    private final String outputPath;
 
     public ConfigInfo(YMP owner) {
         IConfig _config = owner.getConfig();
@@ -127,7 +127,7 @@ public class ConfigInfo {
     public Map<String, Object> toMap() {
         Map<String, Object> _returnValue = ClassUtils.wrapper(this).toMap(new ClassUtils.IFieldValueFilter() {
 
-            private List<String> __fields = Arrays.asList("packageName", "useBaseEntity", "useClassSuffix", "useChainMode", "useStateSupport");
+            private final List<String> __fields = Arrays.asList("packageName", "useBaseEntity", "useClassSuffix", "useChainMode", "useStateSupport");
 
             @Override
             public boolean filter(String fieldName, Object fieldValue) {

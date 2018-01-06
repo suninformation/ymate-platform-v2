@@ -51,6 +51,7 @@ public class DispatchServlet extends HttpServlet {
         __requestPrefix = WebMVC.get().getModuleCfg().getRequestPrefix();
     }
 
+    @Override
     protected void service(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         request.setCharacterEncoding(__charsetEncoding);
         response.setCharacterEncoding(__charsetEncoding);

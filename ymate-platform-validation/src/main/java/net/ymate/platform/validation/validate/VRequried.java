@@ -22,8 +22,8 @@ import java.lang.annotation.*;
  *
  * @author 刘镇 (suninformation@163.com) on 15/5/23 下午4:45
  * @version 1.0
- * @deprecated 当前注解类名称单词拼写错误，将在未来版本中移除，请使用@VRequried代替
  * @see VRequired
+ * @deprecated 当前注解类名称单词拼写错误，将在未来版本中移除，请使用@VRequried代替
  */
 @Target({ElementType.FIELD, ElementType.PARAMETER})
 @Retention(RetentionPolicy.RUNTIME)

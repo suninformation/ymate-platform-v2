@@ -26,12 +26,13 @@ import net.ymate.platform.webmvc.IWebMvc;
  */
 public class ControllerHandler implements IBeanHandler {
 
-    private IWebMvc __owner;
+    private final IWebMvc __owner;
 
     public ControllerHandler(IWebMvc owner) {
         __owner = owner;
     }
 
+    @Override
     public Object handle(Class<?> targetClass) throws Exception {
         if (!targetClass.isInterface() && !targetClass.isAnnotation()) {
             __owner.registerController(targetClass);

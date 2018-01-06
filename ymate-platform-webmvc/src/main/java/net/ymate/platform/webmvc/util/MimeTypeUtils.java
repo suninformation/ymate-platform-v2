@@ -37,19 +37,21 @@ public class MimeTypeUtils {
         if (_in == null) {
             _in = MimeTypeUtils.class.getClassLoader().getResourceAsStream("META-INF/mimetypes-default-conf.properties");
         }
-        if (_in != null) try {
-            _configs.load(_in);
-            for (Object _key : _configs.keySet()) {
-                String[] _values = StringUtils.split(_configs.getProperty((String) _key, ""), "|");
-                for (String _value : _values) {
-                    __MIME_TYPE_MAPS.put(_value, (String) _key);
-                }
-            }
-        } catch (Exception ignored) {
-        } finally {
+        if (_in != null) {
             try {
-                _in.close();
-            } catch (IOException ignored) {
+                _configs.load(_in);
+                for (Object _key : _configs.keySet()) {
+                    String[] _values = StringUtils.split(_configs.getProperty((String) _key, ""), "|");
+                    for (String _value : _values) {
+                        __MIME_TYPE_MAPS.put(_value, (String) _key);
+                    }
+                }
+            } catch (Exception ignored) {
+            } finally {
+                try {
+                    _in.close();
+                } catch (IOException ignored) {
+                }
             }
         }
     }

@@ -63,25 +63,25 @@ public class ColumnInfo {
 
     private String name;
 
-    private String columnName;
+    private final String columnName;
 
-    private String columnType;
+    private final String columnType;
 
-    private boolean autoIncrement;
+    private final boolean autoIncrement;
 
-    private boolean primaryKey;
+    private final boolean primaryKey;
 
-    private boolean signed;
+    private final boolean signed;
 
-    private int precision;
+    private final int precision;
 
-    private int scale;
+    private final int scale;
 
-    private boolean nullable;
+    private final boolean nullable;
 
-    private String defaultValue;
+    private final String defaultValue;
 
-    private String remarks;
+    private final String remarks;
 
     public ColumnInfo(IEntityNamedFilter namedFilter, String columnName, String columnType, boolean autoIncrement, boolean primaryKey, boolean signed, int precision, int scale, int nullable, String defaultValue, String remarks) {
         this.columnName = columnName;

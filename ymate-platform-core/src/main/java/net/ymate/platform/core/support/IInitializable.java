@@ -18,6 +18,7 @@ package net.ymate.platform.core.support;
 /**
  * 指定对象具备初始化及销毁能力, 需调用者自行处理判断逻辑
  *
+ * @param <T> 所属容器类型
  * @author 刘镇 (suninformation@163.com) on 2017/10/17 上午10:51
  * @version 1.0
  */

@@ -49,53 +49,53 @@ public class DefaultModuleCfg implements IWebMvcModuleCfg {
 
     private IWebCacheProcessor __cacheProcessor;
 
-    private String __charsetEncoding;
+    private final String __charsetEncoding;
 
-    private String __requestIgnoreRegex;
+    private final String __requestIgnoreRegex;
 
-    private String __requestMethodParam;
+    private final String __requestMethodParam;
 
-    private String __requestPrefix;
+    private final String __requestPrefix;
 
-    private boolean __parameterEscapeMode;
+    private final boolean __parameterEscapeMode;
 
-    private Type.EscapeOrder __parameterEscapeOrder;
+    private final Type.EscapeOrder __parameterEscapeOrder;
 
-    private String __baseViewPath;
+    private final String __baseViewPath;
 
     private String __abstractBaseViewPath;
 
-    private String __cookiePrefix;
+    private final String __cookiePrefix;
 
-    private String __cookieDomain;
+    private final String __cookieDomain;
 
-    private String __cookiePath;
+    private final String __cookiePath;
 
-    private String __cookieAuthKey;
+    private final String __cookieAuthKey;
 
-    private boolean __defaultEnabledCookieAuth;
+    private final boolean __defaultEnabledCookieAuth;
 
-    private boolean __defaultUseHttpOnly;
+    private final boolean __defaultUseHttpOnly;
 
-    private String __uploadTempDir;
+    private final String __uploadTempDir;
 
-    private int __uploadFileSizeMax;
+    private final int __uploadFileSizeMax;
 
-    private int __uploadTotalSizeMax;
+    private final int __uploadTotalSizeMax;
 
-    private int __uploadSizeThreshold;
+    private final int __uploadSizeThreshold;
 
-    private ProgressListener __uploadFileListener;
+    private final ProgressListener __uploadFileListener;
 
-    private boolean __conventionMode;
+    private final boolean __conventionMode;
 
-    private boolean __conventionUrlrewriteMode;
+    private final boolean __conventionUrlrewriteMode;
 
-    private boolean __conventionInterceptorMode;
+    private final boolean __conventionInterceptorMode;
 
-    private Set<String> __conventionViewAllowPaths;
+    private final Set<String> __conventionViewAllowPaths;
 
-    private Set<String> __conventionViewNotAllowPaths;
+    private final Set<String> __conventionViewNotAllowPaths;
 
     public DefaultModuleCfg(YMP owner) throws Exception {
         Map<String, String> _moduleCfgs = owner.getConfig().getModuleConfigs(IWebMvc.MODULE_NAME);
@@ -194,114 +194,142 @@ public class DefaultModuleCfg implements IWebMvcModuleCfg {
         }
     }
 
+    @Override
     public IRequestMappingParser getRequestMappingParser() {
         return __mappingParser;
     }
 
+    @Override
     public IRequestProcessor getRequestProcessor() {
         return __requestProcessor;
     }
 
+    @Override
     public IWebErrorProcessor getErrorProcessor() {
         return __errorProcessor;
     }
 
+    @Override
     public IWebCacheProcessor getCacheProcessor() {
         return __cacheProcessor;
     }
 
+    @Override
     public String getDefaultCharsetEncoding() {
         return __charsetEncoding;
     }
 
+    @Override
     public String getRequestIgnoreRegex() {
         return __requestIgnoreRegex;
     }
 
+    @Override
     public String getRequestMethodParam() {
         return __requestMethodParam;
     }
 
+    @Override
     public String getRequestPrefix() {
         return __requestPrefix;
     }
 
+    @Override
     public String getBaseViewPath() {
         return __baseViewPath;
     }
 
+    @Override
     public String getAbstractBaseViewPath() {
         return __abstractBaseViewPath;
     }
 
+    @Override
     public String getCookiePrefix() {
         return __cookiePrefix;
     }
 
+    @Override
     public String getCookieDomain() {
         return __cookieDomain;
     }
 
+    @Override
     public String getCookiePath() {
         return __cookiePath;
     }
 
+    @Override
     public String getCookieAuthKey() {
         return __cookieAuthKey;
     }
 
+    @Override
     public boolean isDefaultEnabledCookieAuth() {
         return __defaultEnabledCookieAuth;
     }
 
+    @Override
     public boolean isDefaultUseHttpOnly() {
         return __defaultUseHttpOnly;
     }
 
+    @Override
     public String getUploadTempDir() {
         return __uploadTempDir;
     }
 
+    @Override
     public int getUploadFileSizeMax() {
         return __uploadFileSizeMax;
     }
 
+    @Override
     public int getUploadTotalSizeMax() {
         return __uploadTotalSizeMax;
     }
 
+    @Override
     public int getUploadSizeThreshold() {
         return __uploadSizeThreshold;
     }
 
+    @Override
     public ProgressListener getUploadFileListener() {
         return __uploadFileListener;
     }
 
+    @Override
     public boolean isConventionMode() {
         return __conventionMode;
     }
 
+    @Override
     public boolean isConventionUrlrewriteMode() {
         return __conventionUrlrewriteMode;
     }
 
+    @Override
     public boolean isConventionInterceptorMode() {
         return __conventionInterceptorMode;
     }
 
+    @Override
     public Set<String> getConventionViewAllowPaths() {
         return Collections.unmodifiableSet(__conventionViewAllowPaths);
     }
 
+    @Override
     public Set<String> getConventionViewNotAllowPaths() {
         return Collections.unmodifiableSet(__conventionViewNotAllowPaths);
     }
 
+    @Override
     public boolean isParameterEscapeMode() {
         return __parameterEscapeMode;
     }
 
+    @Override
     public Type.EscapeOrder getParameterEscapeOrder() {
         return __parameterEscapeOrder;
     }

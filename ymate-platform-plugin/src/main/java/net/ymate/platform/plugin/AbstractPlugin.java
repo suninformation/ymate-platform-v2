@@ -29,31 +29,38 @@ public abstract class AbstractPlugin implements IPlugin {
 
     protected boolean __started;
 
+    @Override
     public void init(IPluginContext context) throws Exception {
         this.__context = context;
         this.__inited = true;
     }
 
+    @Override
     public IPluginContext getPluginContext() {
         return __context;
     }
 
+    @Override
     public boolean isInited() {
         return __inited;
     }
 
+    @Override
     public boolean isStarted() {
         return __started;
     }
 
+    @Override
     public void startup() throws Exception {
         this.__started = true;
     }
 
+    @Override
     public void shutdown() throws Exception {
         this.__started = false;
     }
 
+    @Override
     public void destroy() throws Exception {
         this.__inited = false;
         this.__context = null;

@@ -27,6 +27,7 @@ import net.ymate.platform.webmvc.util.StringEscapeUtils;
  */
 public class DefaultParameterEscapeProcessor implements IParameterEscapeProcessor {
 
+    @Override
     public String processEscape(Type.EscapeScope scope, String original) {
         switch (scope) {
             case JAVA:
@@ -47,7 +48,7 @@ public class DefaultParameterEscapeProcessor implements IParameterEscapeProcesso
             case CSV:
                 original = StringEscapeUtils.escapeCsv(original);
                 break;
-            case DEFAULT:
+            default:
                 original = StringEscapeUtils.escapeSql(original);
                 original = StringEscapeUtils.escapeHtml(original);
         }

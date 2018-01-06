@@ -96,7 +96,7 @@ public class NioUdpServer implements IServer<NioUdpListener, INioCodec> {
                                         public void run() {
                                             try {
                                                 __eventGroup.listener().onExceptionCaught(e, _session);
-                                            } catch (Throwable ex) {
+                                            } catch (IOException ex) {
                                                 _LOG.error(e.getMessage(), RuntimeUtils.unwrapThrow(ex));
                                             }
                                         }

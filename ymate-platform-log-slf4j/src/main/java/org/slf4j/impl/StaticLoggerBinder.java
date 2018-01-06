@@ -41,10 +41,12 @@ public final class StaticLoggerBinder implements LoggerFactoryBinder {
         return SINGLETON;
     }
 
+    @Override
     public ILoggerFactory getLoggerFactory() {
         return loggerFactory;
     }
 
+    @Override
     public String getLoggerFactoryClassStr() {
         return LOGGER_FACTORY_CLASS_STR;
     }

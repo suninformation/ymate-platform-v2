@@ -61,7 +61,7 @@ public final class ByteBufferBuilder {
                 _currentSize = _currentSize * 2;
             }
             if (_currentSize != __buffer.capacity()) {
-                ByteBuffer _newBuffer = null;
+                ByteBuffer _newBuffer;
                 if (__buffer.isDirect()) {
                     _newBuffer = ByteBuffer.allocateDirect(_currentSize);
                 } else {

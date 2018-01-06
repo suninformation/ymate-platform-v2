@@ -28,9 +28,9 @@ public class ConsoleTableBuilder {
 
     private static final int __margin = 1;
 
-    private List<Row> rows = new ArrayList<Row>();
+    private final List<Row> rows = new ArrayList<Row>();
 
-    private int column;
+    private final int column;
 
     private boolean __markdown;
 
@@ -88,10 +88,11 @@ public class ConsoleTableBuilder {
         return _sb.toString();
     }
 
+    @Override
     public String toString() {
         StringBuilder _sb = new StringBuilder();
         //
-        int[] _columnLengths = null;
+        int[] _columnLengths;
         if (__markdown) {
             _columnLengths = new int[0];
         } else {
@@ -138,9 +139,9 @@ public class ConsoleTableBuilder {
 
     public static class Column {
 
-        private int length;
+        private final int length;
 
-        private String content;
+        private final String content;
 
         public Column(String content) {
             if (content == null) {
@@ -161,7 +162,7 @@ public class ConsoleTableBuilder {
 
     public static class Row {
 
-        private List<Column> columns;
+        private final List<Column> columns;
 
         public Row(int column) {
             this.columns = new ArrayList<Column>(column);

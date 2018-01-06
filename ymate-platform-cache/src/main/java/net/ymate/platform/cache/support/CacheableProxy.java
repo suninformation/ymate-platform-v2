@@ -36,8 +36,9 @@ import java.util.concurrent.locks.ReentrantLock;
 @Proxy(annotation = Cacheable.class, order = @Order(-666))
 public class CacheableProxy implements IProxy {
 
-    private static ConcurrentHashMap<String, ReentrantLock> __LOCK_MAP = new ConcurrentHashMap<String, ReentrantLock>();
+    private static final ConcurrentHashMap<String, ReentrantLock> __LOCK_MAP = new ConcurrentHashMap<String, ReentrantLock>();
 
+    @Override
     public Object doProxy(IProxyChain proxyChain) throws Throwable {
         ICaches _caches = Caches.get(proxyChain.getProxyFactory().getOwner());
         //

@@ -27,7 +27,7 @@ import java.net.URLStreamHandlerFactory;
  */
 public class PluginClassLoader extends URLClassLoader {
 
-    private String __pluginHome;
+    private final String __pluginHome;
 
     public PluginClassLoader(String pluginHome, URL[] urls) {
         super(urls);

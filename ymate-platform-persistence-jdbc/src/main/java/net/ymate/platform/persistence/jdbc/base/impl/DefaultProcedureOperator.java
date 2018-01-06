@@ -33,6 +33,7 @@ import java.util.List;
 /**
  * 数据库存储过程操作器接口实现
  *
+ * @param <T> 元素类型
  * @author 刘镇 (suninformation@163.com) on 16/12/8 上午1:04
  * @version 1.0
  */
@@ -43,13 +44,13 @@ public class DefaultProcedureOperator<T> extends AbstractOperator implements IPr
     /**
      * 存储过程OUT参数类型集合
      */
-    private List<Integer> __outParams = new ArrayList<Integer>();
+    private final List<Integer> __outParams = new ArrayList<Integer>();
 
     private IOutResultProcessor __resultProcessor;
 
     private IResultSetHandler<T> __resultSetHandler;
 
-    private List<List<T>> __resultSets = new ArrayList<List<T>>();
+    private final List<List<T>> __resultSets = new ArrayList<List<T>>();
 
     public DefaultProcedureOperator(String sql, IConnectionHolder connectionHolder) {
         super(sql, connectionHolder);

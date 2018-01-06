@@ -42,7 +42,7 @@ import java.util.List;
  */
 public class XMLConfigFileParser extends AbstractConfigFileParser {
 
-    private Element __rootElement;
+    private final Element __rootElement;
 
     public XMLConfigFileParser(File file) throws ParserConfigurationException, IOException, SAXException {
         __rootElement = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(file).getDocumentElement();

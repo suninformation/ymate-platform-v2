@@ -43,6 +43,7 @@ public class DispatchFilter implements Filter {
     private String __requestMethodParam;
     private String __requestPrefix;
 
+    @Override
     public void init(FilterConfig filterConfig) throws ServletException {
         __filterConfig = filterConfig;
         String _regex = WebMVC.get().getModuleCfg().getRequestIgnoreRegex();
@@ -54,6 +55,7 @@ public class DispatchFilter implements Filter {
         __requestPrefix = WebMVC.get().getModuleCfg().getRequestPrefix();
     }
 
+    @Override
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
         if (StringUtils.equalsIgnoreCase(((HttpServletRequest) request).getHeader("Connection"), "Upgrade")
                 && StringUtils.equalsIgnoreCase(((HttpServletRequest) request).getHeader("Upgrade"), "websocket")) {
@@ -75,6 +77,7 @@ public class DispatchFilter implements Filter {
         }
     }
 
+    @Override
     public void destroy() {
     }
 }

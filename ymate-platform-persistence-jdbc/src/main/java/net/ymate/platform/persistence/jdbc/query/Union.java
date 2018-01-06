@@ -21,7 +21,7 @@ package net.ymate.platform.persistence.jdbc.query;
  */
 public final class Union {
 
-    private Select __select;
+    private final Select __select;
 
     private boolean __all;
 

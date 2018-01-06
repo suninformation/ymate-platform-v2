@@ -25,6 +25,7 @@ import java.util.List;
  *
  * @author 刘镇 (suninformation@163.com) on 2011-9-24 下午08:32:02
  * @version 1.0
+ * @param <T> 元素类型
  */
 public class DefaultResultSet<T> implements IResultSet<T> {
 

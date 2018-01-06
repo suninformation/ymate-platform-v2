@@ -36,9 +36,9 @@ import java.util.Map;
  */
 public class DefaultModuleCfg implements IDatabaseModuleCfg {
 
-    private String dataSourceDefaultName;
+    private final String dataSourceDefaultName;
 
-    private Map<String, DataSourceCfgMeta> dataSourceCfgMetas;
+    private final Map<String, DataSourceCfgMeta> dataSourceCfgMetas;
 
     public DefaultModuleCfg(YMP owner) throws Exception {
         Map<String, String> _moduleCfgs = owner.getConfig().getModuleConfigs(IDatabase.MODULE_NAME);

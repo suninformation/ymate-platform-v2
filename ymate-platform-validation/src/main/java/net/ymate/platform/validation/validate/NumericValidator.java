@@ -34,6 +34,7 @@ import org.apache.commons.lang.math.NumberUtils;
 @CleanProxy
 public class NumericValidator extends AbstractValidator {
 
+    @Override
     public ValidateResult validate(ValidateContext context) {
         Object _paramValue = context.getParamValue();
         if (_paramValue != null) {

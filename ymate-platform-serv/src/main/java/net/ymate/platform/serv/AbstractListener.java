@@ -20,6 +20,7 @@ import net.ymate.platform.core.util.RuntimeUtils;
 import java.io.IOException;
 
 /**
+ * @param <T> 会话类型
  * @author 刘镇 (suninformation@163.com) on 15/11/15 下午6:01
  * @version 1.0
  */

@@ -29,11 +29,11 @@ import java.util.List;
  */
 public class BeanMeta implements Serializable {
 
-    private Class<?> __beanClass;
+    private final Class<?> __beanClass;
 
     private Object __beanObject;
 
-    private boolean __singleton;
+    private final boolean __singleton;
 
     public static BeanMeta create(Object beanObject, Class<?> beanClass) {
         return new BeanMeta(beanClass, true, beanObject);

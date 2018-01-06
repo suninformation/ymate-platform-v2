@@ -21,6 +21,7 @@ import net.ymate.platform.persistence.base.IEntity;
 /**
  * 实体SQL及参数对象
  *
+ * @param <T> 实体类型
  * @author 刘镇 (suninformation@163.com) on 15/5/9 下午1:14
  * @version 1.0
  */
@@ -29,12 +30,12 @@ public final class EntitySQL<T extends IEntity> {
     /**
      * 实体对象
      */
-    private Class<T> __entityClass;
+    private final Class<T> __entityClass;
 
     /**
      * 显示字段过滤集合
      */
-    private Fields __fields;
+    private final Fields __fields;
 
     private IDBLocker __dbLocker;
 

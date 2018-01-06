@@ -47,29 +47,35 @@ public abstract class AbstractView implements IView {
         __attributes = new HashMap<String, Object>();
     }
 
+    @Override
     public IView addAttribute(String name, Object value) {
         __attributes.put(name, value);
         return this;
     }
 
+    @Override
     @SuppressWarnings("unchecked")
     public <T> T getAttribute(String name) {
         return (T) __attributes.get(name);
     }
 
+    @Override
     public Map<String, Object> getAttributes() {
         return Collections.unmodifiableMap(__attributes);
     }
 
+    @Override
     public String getContentType() {
         return __contentType;
     }
 
+    @Override
     public IView setContentType(String contentType) {
         __contentType = contentType;
         return this;
     }
 
+    @Override
     public IView addDateHeader(String name, long date) {
         HttpServletResponse _response = WebContext.getResponse();
         if (_response.containsHeader(name)) {
@@ -80,6 +86,7 @@ public abstract class AbstractView implements IView {
         return this;
     }
 
+    @Override
     public IView addHeader(String name, String value) {
         HttpServletResponse _response = WebContext.getResponse();
         if (_response.containsHeader(name)) {
@@ -90,6 +97,7 @@ public abstract class AbstractView implements IView {
         return this;
     }
 
+    @Override
     public IView addIntHeader(String name, int value) {
         HttpServletResponse _response = WebContext.getResponse();
         if (_response.containsHeader(name)) {
@@ -100,6 +108,7 @@ public abstract class AbstractView implements IView {
         return this;
     }
 
+    @Override
     public void render() throws Exception {
         HttpServletResponse _response = WebContext.getResponse();
         if (_response.isCommitted()) {
@@ -118,6 +127,7 @@ public abstract class AbstractView implements IView {
      */
     protected abstract void __doRenderView() throws Exception;
 
+    @Override
     public void render(OutputStream output) throws Exception {
         throw new UnsupportedOperationException();
     }

@@ -32,10 +32,12 @@ public class StaticMarkerBinder implements MarkerFactoryBinder {
     private StaticMarkerBinder() {
     }
 
+    @Override
     public IMarkerFactory getMarkerFactory() {
         return markerFactory;
     }
 
+    @Override
     public String getMarkerFactoryClassStr() {
         return BasicMarkerFactory.class.getName();
     }

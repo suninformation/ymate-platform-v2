@@ -26,12 +26,13 @@ import net.ymate.platform.webmvc.IWebMvc;
  */
 public class InterceptorRuleHandler implements IBeanHandler {
 
-    private IWebMvc __owner;
+    private final IWebMvc __owner;
 
     public InterceptorRuleHandler(IWebMvc owner) {
         __owner = owner;
     }
 
+    @Override
     @SuppressWarnings("unchecked")
     public Object handle(Class<?> targetClass) throws Exception {
         if (ClassUtils.isInterfaceOf(targetClass, IInterceptorRule.class)) {

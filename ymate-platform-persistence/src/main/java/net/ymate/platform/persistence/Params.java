@@ -31,7 +31,7 @@ public final class Params {
     /**
      * 参数集合
      */
-    private List<Object> __params;
+    private final List<Object> __params;
 
     public static String wrapQuote(String param) {
         return wrapQuote(param, "'");

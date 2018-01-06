@@ -62,6 +62,7 @@ public class TableInfo {
                 ResultSetHelper _helper = ResultSetHelper.bind(session.find(SQL.create(_sql), IResultSetHandler.ARRAY));
                 if (_helper != null) {
                     _helper.forEach(new ResultSetHelper.ItemHandler() {
+                        @Override
                         public boolean handle(ResultSetHelper.ItemWrapper wrapper, int row) throws Exception {
                             _results.add(wrapper.getAsString(0));
                             return true;
@@ -92,6 +93,7 @@ public class TableInfo {
                 ResultSetHelper _helper = ResultSetHelper.bind(session.find(SQL.create(_sql), IResultSetHandler.ARRAY));
                 if (_helper != null) {
                     _helper.forEach(new ResultSetHelper.ItemHandler() {
+                        @Override
                         public boolean handle(ResultSetHelper.ItemWrapper wrapper, int row) throws Exception {
                             _results.add(wrapper.getAsString(0));
                             return true;
@@ -142,15 +144,15 @@ public class TableInfo {
         }
     }
 
-    private String catalog;
+    private final String catalog;
 
-    private String schema;
+    private final String schema;
 
-    private String name;
+    private final String name;
 
-    private List<String> pkSet;
+    private final List<String> pkSet;
 
-    private Map<String, ColumnInfo> fieldMap;
+    private final Map<String, ColumnInfo> fieldMap;
 
     public TableInfo(String catalog, String schema, String name, List<String> pkSet, Map<String, ColumnInfo> fieldMap) {
         this.catalog = catalog;

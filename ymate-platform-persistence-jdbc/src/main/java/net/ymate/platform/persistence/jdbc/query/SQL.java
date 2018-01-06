@@ -25,9 +25,9 @@ import net.ymate.platform.persistence.Params;
  */
 public final class SQL {
 
-    private String __sql;
+    private final String __sql;
 
-    private Params __params;
+    private final Params __params;
 
     public static SQL create(String sql) {
         return new SQL(sql);

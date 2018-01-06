@@ -29,11 +29,11 @@ import java.util.List;
  */
 public final class BatchSQL {
 
-    private String __batchSQL;
+    private final String __batchSQL;
 
-    private List<Params> __params;
+    private final List<Params> __params;
 
-    private List<String> __sqls;
+    private final List<String> __sqls;
 
     public static BatchSQL create(String batchSQL) {
         return new BatchSQL(batchSQL);

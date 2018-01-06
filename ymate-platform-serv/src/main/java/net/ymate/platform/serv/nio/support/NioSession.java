@@ -36,6 +36,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
 /**
+ * @param <LISTENER> 监听器类型
  * @author 刘镇 (suninformation@163.com) on 15/11/15 下午11:47
  * @version 1.0
  */
@@ -43,7 +44,7 @@ public class NioSession<LISTENER extends IListener<INioSession>> extends Abstrac
 
     private static final Log _LOG = LogFactory.getLog(NioSession.class);
 
-    private NioEventGroup<LISTENER> __eventGroup;
+    private final NioEventGroup<LISTENER> __eventGroup;
 
     private SelectableChannel __channel;
 
@@ -53,7 +54,7 @@ public class NioSession<LISTENER extends IListener<INioSession>> extends Abstrac
 
     protected ByteBufferBuilder __buffer;
 
-    private CountDownLatch __connLatch = new CountDownLatch(1);
+    private final CountDownLatch __connLatch = new CountDownLatch(1);
 
     public NioSession(NioEventGroup<LISTENER> eventGroup) throws IOException {
         super();
@@ -144,7 +145,7 @@ public class NioSession<LISTENER extends IListener<INioSession>> extends Abstrac
             public void run() {
                 try {
                     __eventGroup.listener().onAfterSessionClosed(NioSession.this);
-                } catch (Throwable ex) {
+                } catch (IOException ex) {
                     _LOG.error(ex.getMessage(), RuntimeUtils.unwrapThrow(ex));
                 }
             }
@@ -196,7 +197,7 @@ public class NioSession<LISTENER extends IListener<INioSession>> extends Abstrac
         ByteBufferBuilder _copiedBuffer = __buffer.duplicate().flip();
         while (true) {
             _copiedBuffer.mark();
-            Object _message = null;
+            Object _message;
             if (_copiedBuffer.remaining() > 0) {
                 _message = __eventGroup.codec().decode(_copiedBuffer);
             } else {
@@ -219,7 +220,7 @@ public class NioSession<LISTENER extends IListener<INioSession>> extends Abstrac
                             } catch (IOException ex) {
                                 try {
                                     close();
-                                } catch (Throwable exx) {
+                                } catch (IOException exx) {
                                     _LOG.error(exx.getMessage(), RuntimeUtils.unwrapThrow(exx));
                                 }
                             }

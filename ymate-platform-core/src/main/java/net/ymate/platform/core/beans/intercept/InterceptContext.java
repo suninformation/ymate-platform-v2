@@ -28,9 +28,9 @@ import java.util.Map;
  */
 public class InterceptContext {
 
-    private IInterceptor.Direction __direction;
+    private final IInterceptor.Direction __direction;
 
-    private YMP __owner;
+    private final YMP __owner;
 
     private final Object __targetObject;
 

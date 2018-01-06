@@ -33,7 +33,7 @@ public class DefaultReconnectService extends Thread implements IReconnectService
 
     private static final Log _LOG = LogFactory.getLog(DefaultReconnectService.class);
 
-    private static AtomicLong __counter = new AtomicLong(0);
+    private static final AtomicLong __counter = new AtomicLong(0);
 
     private IClient __client;
 
@@ -70,6 +70,7 @@ public class DefaultReconnectService extends Thread implements IReconnectService
 
     @Override
     public void run() {
+        long _millis = __timeout * DateTimeUtils.SECOND;
         while (__flag) {
             try {
                 if (!__client.isConnected() && __counter.getAndIncrement() > 1) {
@@ -77,7 +78,7 @@ public class DefaultReconnectService extends Thread implements IReconnectService
                     //
                     __counter.set(0);
                 } else {
-                    sleep(__timeout * DateTimeUtils.SECOND);
+                    sleep(_millis);
                 }
             } catch (Exception e) {
                 if (__flag) {
@@ -94,7 +95,7 @@ public class DefaultReconnectService extends Thread implements IReconnectService
         try {
             __flag = false;
             join();
-        } catch (Exception e) {
+        } catch (InterruptedException e) {
             _LOG.debug(e.getMessage(), RuntimeUtils.unwrapThrow(e));
         }
         super.interrupt();

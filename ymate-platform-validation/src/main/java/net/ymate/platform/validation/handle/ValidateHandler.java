@@ -29,7 +29,7 @@ import net.ymate.platform.validation.annotation.Validator;
  */
 public class ValidateHandler implements IBeanHandler {
 
-    private IValidation __owner;
+    private final IValidation __owner;
 
     public ValidateHandler(IValidation owner) throws Exception {
         __owner = owner;
@@ -37,6 +37,7 @@ public class ValidateHandler implements IBeanHandler {
         __owner.getOwner().registerExcludedClass(IValidator.class);
     }
 
+    @Override
     @SuppressWarnings("unchecked")
     public Object handle(Class<?> targetClass) throws Exception {
         if (ClassUtils.isInterfaceOf(targetClass, IValidator.class)) {

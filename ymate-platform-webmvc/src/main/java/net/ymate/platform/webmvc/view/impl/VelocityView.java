@@ -122,11 +122,13 @@ public class VelocityView extends AbstractView {
         }
     }
 
+    @Override
     protected void __doRenderView() throws Exception {
         __doProcessPath();
         Velocity.getTemplate(__path).merge(__velocityContext, WebContext.getResponse().getWriter());
     }
 
+    @Override
     public void render(OutputStream output) throws Exception {
         __doProcessPath();
         Velocity.getTemplate(__path).merge(__velocityContext, new BufferedWriter(new OutputStreamWriter(output)));

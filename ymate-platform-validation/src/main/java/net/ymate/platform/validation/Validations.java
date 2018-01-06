@@ -81,10 +81,12 @@ public class Validations implements IModule, IValidation {
         return owner.getModule(Validations.class);
     }
 
+    @Override
     public String getName() {
         return IValidation.MODULE_NAME;
     }
 
+    @Override
     public void init(YMP owner) throws Exception {
         if (!__inited) {
             //
@@ -99,14 +101,17 @@ public class Validations implements IModule, IValidation {
         }
     }
 
+    @Override
     public boolean isInited() {
         return __inited;
     }
 
+    @Override
     public YMP getOwner() {
         return __owner;
     }
 
+    @Override
     public void registerValidator(Class<? extends Annotation> annotationClass, Class<? extends IValidator> validatorClass) {
         try {
             __owner.registerBean(validatorClass, validatorClass.newInstance());
@@ -120,10 +125,12 @@ public class Validations implements IModule, IValidation {
         }
     }
 
+    @Override
     public boolean containsValidator(Class<? extends Annotation> annotationClass) {
         return __validators.containsKey(annotationClass);
     }
 
+    @Override
     public Map<String, ValidateResult> validate(Class<?> targetClass, Map<String, Object> paramValues) {
         Map<String, ValidateResult> _returnValues = new LinkedHashMap<String, ValidateResult>();
         ValidationMeta _meta = __doGetCachedMeta(targetClass);
@@ -140,6 +147,7 @@ public class Validations implements IModule, IValidation {
         return _returnValues;
     }
 
+    @Override
     public Map<String, ValidateResult> validate(Class<?> targetClass, Method targetMethod, Map<String, Object> paramValues) {
         Map<String, ValidateResult> _returnValues = new LinkedHashMap<String, ValidateResult>();
         ValidationMeta _meta = __doGetCachedMeta(targetClass);
@@ -187,6 +195,7 @@ public class Validations implements IModule, IValidation {
         return _result;
     }
 
+    @Override
     public void destroy() throws Exception {
         if (__inited) {
             __inited = false;

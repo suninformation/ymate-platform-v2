@@ -60,6 +60,7 @@ public class TextView extends AbstractView {
         __contentType = contentType;
     }
 
+    @Override
     protected void __doRenderView() throws Exception {
         HttpServletResponse _response = WebContext.getResponse();
         IOUtils.write(__content, _response.getOutputStream(), _response.getCharacterEncoding());

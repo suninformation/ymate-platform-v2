@@ -27,15 +27,19 @@ import net.ymate.platform.plugin.IPluginEventListener;
  */
 public class DefaultPluginEventListener implements IPluginEventListener {
 
+    @Override
     public void onInited(IPluginContext context, IPlugin plugin) {
     }
 
+    @Override
     public void onStarted(IPluginContext context, IPlugin plugin) {
     }
 
+    @Override
     public void onShutdown(IPluginContext context, IPlugin plugin) {
     }
 
+    @Override
     public void onDestroy(IPluginContext context, IPlugin plugin) {
     }
 }

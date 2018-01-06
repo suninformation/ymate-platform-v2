@@ -108,6 +108,7 @@ public class HttpStatusView extends AbstractView {
         return this;
     }
 
+    @Override
     protected void __doRenderView() throws Exception {
         HttpServletResponse _response = WebContext.getResponse();
         if (StringUtils.isNotBlank(__body)) {

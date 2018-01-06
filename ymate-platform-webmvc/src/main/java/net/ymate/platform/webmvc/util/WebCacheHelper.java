@@ -39,13 +39,13 @@ public class WebCacheHelper {
 
     private static final int EMPTY_GZIPPED_CONTENT_SIZE = 20;
 
-    private HttpServletRequest __request;
+    private final HttpServletRequest __request;
 
-    private HttpServletResponse __response;
+    private final HttpServletResponse __response;
 
-    private PageMeta __element;
+    private final PageMeta __element;
 
-    private ICaches.Scope __scope;
+    private final ICaches.Scope __scope;
 
     private WebCacheHelper(HttpServletRequest request, HttpServletResponse response, PageMeta pageMeta, ICaches.Scope scope) {
         __request = request;

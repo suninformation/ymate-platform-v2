@@ -20,6 +20,9 @@ import java.io.IOException;
 import java.util.concurrent.ExecutorService;
 
 /**
+ * @param <CODEC>    编码器类型
+ * @param <LISTENER> 监听器类型
+ * @param <SESSION>  会话类型
  * @author 刘镇 (suninformation@163.com) on 15/11/15 下午6:28
  * @version 1.0
  */

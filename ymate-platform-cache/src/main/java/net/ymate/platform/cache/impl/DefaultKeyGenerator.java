@@ -31,6 +31,7 @@ public class DefaultKeyGenerator implements IKeyGenerator {
 
     private ISerializer __serializer;
 
+    @Override
     public void init(ISerializer serializer) {
         if (serializer == null) {
             __serializer = ISerializer.SerializerManager.getDefaultSerializer();
@@ -39,6 +40,7 @@ public class DefaultKeyGenerator implements IKeyGenerator {
         }
     }
 
+    @Override
     public Serializable generateKey(Method method, Object[] params) throws Exception {
         // [className:methodName:{serializeStr}]
         StringBuilder __keyGenBuilder = new StringBuilder();

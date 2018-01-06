@@ -29,19 +29,19 @@ import org.apache.commons.lang.StringUtils;
  */
 public final class Insert extends Query<Insert> {
 
-    private String __prefix;
+    private final String __prefix;
 
     private String __tableName;
 
     private Class<? extends IEntity> __entityClass;
 
-    private Fields __fields;
+    private final Fields __fields;
 
-    private Params __params;
+    private final Params __params;
 
     private Select __select;
 
-    private boolean __safePrefix;
+    private final boolean __safePrefix;
 
     public static Insert create(String prefix, Class<? extends IEntity> entityClass) {
         return new Insert(prefix, entityClass);

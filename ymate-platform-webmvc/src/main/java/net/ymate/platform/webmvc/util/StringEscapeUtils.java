@@ -57,7 +57,7 @@ public class StringEscapeUtils {
         if (_in != null) {
             try {
                 _configs.load(_in);
-            } catch (Exception e) {
+            } catch (IOException e) {
                 __LOG.warn("", e);
             } finally {
                 try {
@@ -451,9 +451,9 @@ public class StringEscapeUtils {
                         originalMessage.indexOf('&', nextPotentialReferencePosition);
 
                 if (nextSemicolonPosition != -1 &&
-                        nextSemicolonPosition < nextPotentialReferencePosition)
+                        nextSemicolonPosition < nextPotentialReferencePosition) {
                     nextSemicolonPosition = originalMessage.indexOf(';', nextPotentialReferencePosition + 1);
-
+                }
                 boolean isPotentialReference =
                         nextPotentialReferencePosition != -1
                                 && nextSemicolonPosition != -1
@@ -484,8 +484,9 @@ public class StringEscapeUtils {
                     decodedMessage.append(originalMessage.substring(currentPosition, skipUntilIndex));
                     currentPosition = skipUntilIndex;
                 } else {
-                    while (currentPosition < skipUntilIndex)
+                    while (currentPosition < skipUntilIndex) {
                         decodedMessage.append(originalMessage.charAt(currentPosition++));
+                    }
                 }
             }
         }

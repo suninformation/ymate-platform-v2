@@ -26,12 +26,13 @@ import net.ymate.platform.plugin.IPluginFactory;
  */
 public class BeanHandler implements IBeanHandler {
 
-    private IPluginFactory __pluginFactory;
+    private final IPluginFactory __pluginFactory;
 
     public BeanHandler(IPluginFactory pluginFactory) {
         __pluginFactory = pluginFactory;
     }
 
+    @Override
     public Object handle(Class<?> targetClass) throws Exception {
         Bean _bean = targetClass.getAnnotation(Bean.class);
         if (_bean.singleton()) {

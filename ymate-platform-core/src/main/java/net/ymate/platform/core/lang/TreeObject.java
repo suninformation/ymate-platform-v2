@@ -229,24 +229,34 @@ public class TreeObject implements Serializable, Cloneable {
         }
         int _class = json.getIntValue(KEY_CLASS);
         TreeObject _target = new TreeObject();
-        if (_class == TYPE_MAP) { // MAP
-            JSONObject _value = json.getJSONObject(KEY_VALUE);
-            for (String _key : _value.keySet()) {
-                _target.put(_key, fromJson(_value.getJSONObject(_key)));
+        switch (_class) {
+            case TYPE_MAP: {
+                // MAP
+                JSONObject _value = json.getJSONObject(KEY_VALUE);
+                for (String _key : _value.keySet()) {
+                    _target.put(_key, fromJson(_value.getJSONObject(_key)));
+                }
+                break;
             }
-        } else if (_class == TYPE_COLLECTION) { // COLLECTION
-            JSONArray _value = json.getJSONArray(KEY_VALUE);
-            for (int _idx = 0; _idx < _value.size(); _idx++) {
-                _target.add(fromJson(_value.getJSONObject(_idx)));
+            case TYPE_COLLECTION: {
+                // COLLECTION
+                JSONArray _value = json.getJSONArray(KEY_VALUE);
+                for (int _idx = 0; _idx < _value.size(); _idx++) {
+                    _target.add(fromJson(_value.getJSONObject(_idx)));
+                }
+                break;
             }
-        } else { // VALUE
-            Object _value = json.get(KEY_VALUE);
-            if (_class == TYPE_MIX_STRING) {
-                _value = new String(Base64.decodeBase64((String) _value));
-            } else if (_class == TYPE_BYTES) {
-                _value = Base64.decodeBase64((String) _value);
+            default: {
+                // VALUE
+                Object _value = json.get(KEY_VALUE);
+                if (_class == TYPE_MIX_STRING) {
+                    _value = new String(Base64.decodeBase64((String) _value));
+                } else if (_class == TYPE_BYTES) {
+                    _value = Base64.decodeBase64((String) _value);
+                }
+                _target = new TreeObject(_value, _class);
+                break;
             }
-            _target = new TreeObject(_value, _class);
         }
         return _target;
     }
@@ -325,21 +335,26 @@ public class TreeObject implements Serializable, Cloneable {
             JSONObject _nodeJson = new JSONObject();
             _nodeJson.put(KEY_CLASS, tObject.getType());
             //
-            if (tObject.getType() == TYPE_MIX_STRING) {
-                // 混淆(Mix)类型编码为Base64
-                if (tObject.getObject() != null) {
-                    String _bStr = Base64.encodeBase64String(tObject.toMixStringValue().getBytes());
-                    _nodeJson.put(KEY_VALUE, _bStr);
-                }
-            } else if (tObject.getType() == TYPE_BYTES) {
-                if (tObject.getObject() instanceof byte[]) {
-                    String _bytes = String.valueOf(Base64.encodeBase64String(tObject.toBytesValue()));
-                    _nodeJson.put(KEY_VALUE, _bytes);
-                }
-            } else if (tObject.getType() == TYPE_TIME) {
-                _nodeJson.put(KEY_VALUE, tObject.toTimeValue());
-            } else {
-                _nodeJson.put(KEY_VALUE, tObject.getObject());
+            switch (tObject.getType()) {
+                case TYPE_MIX_STRING:
+                    // 混淆(Mix)类型编码为Base64
+                    if (tObject.getObject() != null) {
+                        String _bStr = Base64.encodeBase64String(tObject.toMixStringValue().getBytes());
+                        _nodeJson.put(KEY_VALUE, _bStr);
+                    }
+                    break;
+                case TYPE_BYTES:
+                    if (tObject.getObject() instanceof byte[]) {
+                        String _bytes = String.valueOf(Base64.encodeBase64String(tObject.toBytesValue()));
+                        _nodeJson.put(KEY_VALUE, _bytes);
+                    }
+                    break;
+                case TYPE_TIME:
+                    _nodeJson.put(KEY_VALUE, tObject.toTimeValue());
+                    break;
+                default:
+                    _nodeJson.put(KEY_VALUE, tObject.getObject());
+                    break;
             }
             return _nodeJson;
         }
@@ -1431,7 +1446,7 @@ public class TreeObject implements Serializable, Cloneable {
     }
 
     public long getLong(int index) {
-        return getLong(index, 0l);
+        return getLong(index, 0L);
     }
 
     public long getLong(int index, long defaultValue) {
@@ -1443,7 +1458,7 @@ public class TreeObject implements Serializable, Cloneable {
     }
 
     public long getLong(String key) {
-        return getLong(key, 0l);
+        return getLong(key, 0L);
     }
 
     public long getLong(String key, long defaultValue) {

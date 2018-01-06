@@ -29,10 +29,11 @@ import java.util.concurrent.ConcurrentMap;
  */
 public class JCLogFactory extends LogFactory {
 
-    private static Map<String, Log> __LOGGER_CACHE = new ConcurrentHashMap<String, Log>();
+    private static final Map<String, Log> __LOGGER_CACHE = new ConcurrentHashMap<String, Log>();
 
     private final ConcurrentMap<String, Object> attributes = new ConcurrentHashMap<String, Object>();
 
+    @Override
     public Log getInstance(final String name) throws LogConfigurationException {
         Log _logger = __LOGGER_CACHE.get(name);
         if (_logger == null) {
@@ -42,26 +43,32 @@ public class JCLogFactory extends LogFactory {
         return _logger;
     }
 
+    @Override
     public Object getAttribute(final String name) {
         return attributes.get(name);
     }
 
+    @Override
     public String[] getAttributeNames() {
         return attributes.keySet().toArray(new String[attributes.size()]);
     }
 
+    @Override
     public Log getInstance(@SuppressWarnings("rawtypes") final Class clazz) throws LogConfigurationException {
         return getInstance(clazz.getName());
     }
 
+    @Override
     public void release() {
         __LOGGER_CACHE.clear();
     }
 
+    @Override
     public void removeAttribute(final String name) {
         attributes.remove(name);
     }
 
+    @Override
     public void setAttribute(final String name, final Object value) {
         if (value != null) {
             attributes.put(name, value);

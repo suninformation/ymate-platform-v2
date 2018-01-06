@@ -85,6 +85,7 @@ public class DefaultLogger extends AbstractLogger {
         }
     }
 
+    @Override
     protected void __doLogWrite(LogLevel level, LogInfo content) {
         __logger.log(__parseLogLevel(level), content.toString());
         // 日志写入后触发异步事件
@@ -108,30 +109,37 @@ public class DefaultLogger extends AbstractLogger {
         return __logger.getLevel().intLevel() >= logLevel.getLevel();
     }
 
+    @Override
     public boolean isDebugEnabled() {
         return __doIsLogEnabled(LogLevel.DEBUG);
     }
 
+    @Override
     public boolean isErrorEnabled() {
         return __doIsLogEnabled(LogLevel.ERROR);
     }
 
+    @Override
     public boolean isFatalEnabled() {
         return __doIsLogEnabled(LogLevel.FATAL);
     }
 
+    @Override
     public boolean isInfoEnabled() {
         return __doIsLogEnabled(LogLevel.INFO);
     }
 
+    @Override
     public boolean isTraceEnabled() {
         return __doIsLogEnabled(LogLevel.TRACE);
     }
 
+    @Override
     public boolean isWarnEnabled() {
         return __doIsLogEnabled(LogLevel.WARN);
     }
 
+    @Override
     public synchronized ILogger init(ILog owner, String loggerName) throws Exception {
         if (!__inited) {
             __owner = owner;
@@ -142,6 +150,7 @@ public class DefaultLogger extends AbstractLogger {
                 Configurator.initialize(null, _source);
                 final Configuration _config = new DefaultConfiguration();
                 ConfigurationFactory.setConfigurationFactory(new XmlConfigurationFactory() {
+                    @Override
                     public Configuration getConfiguration(ConfigurationSource source) {
                         return _config;
                     }
@@ -155,110 +164,137 @@ public class DefaultLogger extends AbstractLogger {
         return this;
     }
 
+    @Override
     public ILogger getLogger(String loggerName) throws Exception {
         return new DefaultLogger().init(__owner, loggerName);
     }
 
+    @Override
     public Object getLoggerImpl() {
         return __logger;
     }
 
+    @Override
     public String getLoggerName() {
         return __loggerName;
     }
 
+    @Override
     public void destroy() {
         __logger = null;
     }
 
+    @Override
     public boolean contains(String loggerName) {
         return LogManager.exists(loggerName);
     }
 
+    @Override
     public LogLevel getLevel() {
         return __parseLevel(__logger.getLevel().intLevel());
     }
 
+    @Override
     public void log(String info, LogLevel level) {
         __doBuildEx(info, null, level);
     }
 
+    @Override
     public void log(Throwable e, LogLevel level) {
         __doBuildEx(null, e, level);
     }
 
+    @Override
     public void log(String info, Throwable e, LogLevel level) {
         __doBuildEx(info, e, level);
     }
 
+    @Override
     public void trace(String info) {
         __doBuildEx(info, null, LogLevel.INFO);
     }
 
+    @Override
     public void trace(Throwable e) {
         __doBuildEx(null, e, LogLevel.TRACE);
     }
 
+    @Override
     public void trace(String info, Throwable e) {
         __doBuildEx(info, e, LogLevel.TRACE);
     }
 
+    @Override
     public void debug(String info) {
         __doBuildEx(info, null, LogLevel.DEBUG);
     }
 
+    @Override
     public void debug(Throwable e) {
         __doBuildEx(null, e, LogLevel.DEBUG);
     }
 
+    @Override
     public void debug(String info, Throwable e) {
         __doBuildEx(info, e, LogLevel.DEBUG);
     }
 
+    @Override
     public void info(String info) {
         __doBuildEx(info, null, LogLevel.INFO);
     }
 
+    @Override
     public void info(Throwable e) {
         __doBuildEx(null, e, LogLevel.INFO);
     }
 
+    @Override
     public void info(String info, Throwable e) {
         __doBuildEx(info, e, LogLevel.INFO);
     }
 
+    @Override
     public void warn(String info) {
         __doBuildEx(info, null, LogLevel.WARN);
     }
 
+    @Override
     public void warn(Throwable e) {
         __doBuildEx(null, e, LogLevel.WARN);
     }
 
+    @Override
     public void warn(String info, Throwable e) {
         __doBuildEx(info, e, LogLevel.WARN);
     }
 
+    @Override
     public void error(String info) {
         __doBuildEx(info, null, LogLevel.ERROR);
     }
 
+    @Override
     public void error(Throwable e) {
         __doBuildEx(null, e, LogLevel.ERROR);
     }
 
+    @Override
     public void error(String info, Throwable e) {
         __doBuildEx(info, e, LogLevel.ERROR);
     }
 
+    @Override
     public void fatal(String info) {
         __doBuildEx(info, null, LogLevel.FATAL);
     }
 
+    @Override
     public void fatal(Throwable e) {
         __doBuildEx(null, e, LogLevel.FATAL);
     }
 
+    @Override
     public void fatal(String info, Throwable e) {
         __doBuildEx(info, e, LogLevel.FATAL);
     }

@@ -18,6 +18,7 @@ package net.ymate.platform.persistence.jdbc.transaction;
 /**
  * 事务业务操作类，支持业务返回执行结果
  *
+ * @param <T> 元素类型
  * @author 刘镇 (suninformation@163.com) on 15/4/28 下午9:26
  * @version 1.0
  */

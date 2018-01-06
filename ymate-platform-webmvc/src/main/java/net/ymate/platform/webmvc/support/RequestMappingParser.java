@@ -32,19 +32,19 @@ import java.util.*;
  */
 public class RequestMappingParser implements IRequestMappingParser {
 
-    private Map<String, RequestMeta> __MAPPING_META_FOR_GET;
+    private final Map<String, RequestMeta> __MAPPING_META_FOR_GET;
 
-    private Map<String, RequestMeta> __MAPPING_META_FOR_POST;
+    private final Map<String, RequestMeta> __MAPPING_META_FOR_POST;
 
-    private Map<String, RequestMeta> __MAPPING_META_FOR_DELETE;
+    private final Map<String, RequestMeta> __MAPPING_META_FOR_DELETE;
 
-    private Map<String, RequestMeta> __MAPPING_META_FOR_PUT;
+    private final Map<String, RequestMeta> __MAPPING_META_FOR_PUT;
 
-    private Map<String, RequestMeta> __MAPPING_META_FOR_OPTIONS;
+    private final Map<String, RequestMeta> __MAPPING_META_FOR_OPTIONS;
 
-    private Map<String, RequestMeta> __MAPPING_META_FOR_HEAD;
+    private final Map<String, RequestMeta> __MAPPING_META_FOR_HEAD;
 
-    private Map<String, RequestMeta> __MAPPING_META_FOR_TRACE;
+    private final Map<String, RequestMeta> __MAPPING_META_FOR_TRACE;
 
     public RequestMappingParser() {
         __MAPPING_META_FOR_GET = new HashMap<String, RequestMeta>();
@@ -56,6 +56,7 @@ public class RequestMappingParser implements IRequestMappingParser {
         __MAPPING_META_FOR_TRACE = new HashMap<String, RequestMeta>();
     }
 
+    @Override
     public final void registerRequestMeta(RequestMeta requestMeta) {
         for (Type.HttpMethod _method : requestMeta.getAllowMethods()) {
             switch (_method) {
@@ -118,8 +119,9 @@ public class RequestMappingParser implements IRequestMappingParser {
         return _params;
     }
 
+    @Override
     public final RequestMeta doParse(IRequestContext context) {
-        Map<String, RequestMeta> _mappingMap = null;
+        Map<String, RequestMeta> _mappingMap;
         switch (context.getHttpMethod()) {
             case POST:
                 _mappingMap = __MAPPING_META_FOR_POST;

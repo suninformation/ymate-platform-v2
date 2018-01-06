@@ -62,13 +62,14 @@ public class XMLRequestProcessor extends DefaultRequestProcessor {
         return _protocol;
     }
 
+    @Override
     protected Object __doParseRequestParam(IWebMvc owner, String paramName, String defaultValue, Class<?> paramType, boolean fullScope) {
         Object _returnValue = null;
         XMLProtocol _protocol = __doGetProtocol(owner);
         String[] _paramNameArr = StringUtils.split(paramName, ".");
         if (paramType.isArray()) {
             if (!paramType.equals(IUploadFileWrapper[].class)) {
-                String[] _values = null;
+                String[] _values;
                 if (_paramNameArr.length > 1) {
                     String _valueStr = _protocol.getSubProperty(_paramNameArr[0], _paramNameArr[1], defaultValue);
                     _values = StringUtils.split(_valueStr, "|");

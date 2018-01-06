@@ -28,6 +28,7 @@ import net.ymate.platform.webmvc.view.IView;
  * @version 1.0
  */
 public final class NullWebCacheProcessor implements IWebCacheProcessor {
+    @Override
     public boolean processResponseCache(IWebMvc owner, ResponseCache responseCache, IRequestContext requestContext, IView resultView) throws Exception {
         return false;
     }

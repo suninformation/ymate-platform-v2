@@ -30,23 +30,23 @@ import java.util.Map;
  */
 public class DefaultClientCfg implements IClientCfg {
 
-    private String __clientName;
+    private final String __clientName;
 
-    private String __remoteHost;
+    private final String __remoteHost;
 
-    private int __port;
+    private final int __port;
 
-    private String __charset;
+    private final String __charset;
 
     private int __executorCount;
 
-    private int __connectionTimeout;
+    private final int __connectionTimeout;
 
-    private int __bufferSize;
+    private final int __bufferSize;
 
-    private int __heartbeatInterval;
+    private final int __heartbeatInterval;
 
-    private Map<String, String> __params;
+    private final Map<String, String> __params;
 
     public DefaultClientCfg(IServModuleCfg moduleCfg, String clientName) {
         __clientName = StringUtils.defaultIfBlank(clientName, "default");

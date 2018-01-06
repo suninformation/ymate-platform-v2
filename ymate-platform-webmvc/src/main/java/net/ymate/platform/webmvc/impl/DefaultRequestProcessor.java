@@ -44,6 +44,7 @@ public class DefaultRequestProcessor implements IRequestProcessor {
 
     private static final Log _LOG = LogFactory.getLog(DefaultRequestProcessor.class);
 
+    @Override
     public Map<String, Object> processRequestParams(IWebMvc owner, RequestMeta requestMeta) throws Exception {
         Map<String, Object> _returnValues = new LinkedHashMap<String, Object>();
         // 非单例控制器类将不执行类成员的参数处理

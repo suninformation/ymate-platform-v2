@@ -18,6 +18,7 @@ package net.ymate.platform.plugin;
 /**
  * 插件扩展能力支持接口定义
  *
+ * @param <T> 扩展类型
  * @author 刘镇 (suninformation@163.com) on 15/3/19 下午8:27
  * @version 1.0
  */

@@ -35,15 +35,16 @@ import java.util.*;
  */
 public class DefaultProxyFactory implements IProxyFactory {
 
-    private YMP __owner;
+    private final YMP __owner;
 
-    private List<IProxy> __proxies;
+    private final List<IProxy> __proxies;
 
     public DefaultProxyFactory(YMP owner) {
         this.__owner = owner;
         this.__proxies = new ArrayList<IProxy>();
     }
 
+    @Override
     public YMP getOwner() {
         return __owner;
     }
@@ -51,6 +52,7 @@ public class DefaultProxyFactory implements IProxyFactory {
     private void __doSort() {
         if (__proxies.size() > 1) {
             Collections.sort(__proxies, new Comparator<IProxy>() {
+                @Override
                 public int compare(IProxy o1, IProxy o2) {
                     Proxy _o1 = o1.getClass().getAnnotation(Proxy.class);
                     Proxy _o2 = o2.getClass().getAnnotation(Proxy.class);
@@ -60,22 +62,26 @@ public class DefaultProxyFactory implements IProxyFactory {
         }
     }
 
+    @Override
     public IProxyFactory registerProxy(IProxy proxy) {
         this.__proxies.add(proxy);
         __doSort();
         return this;
     }
 
+    @Override
     public IProxyFactory registerProxy(Collection<? extends IProxy> proxies) {
         this.__proxies.addAll(proxies);
         __doSort();
         return this;
     }
 
+    @Override
     public List<IProxy> getProxies() {
         return Collections.unmodifiableList(this.__proxies);
     }
 
+    @Override
     public List<IProxy> getProxies(IProxyFilter filter) {
         List<IProxy> _returnValue = new ArrayList<IProxy>();
         for (IProxy _proxy : __proxies) {
@@ -86,14 +92,17 @@ public class DefaultProxyFactory implements IProxyFactory {
         return _returnValue;
     }
 
+    @Override
     public <T> T createProxy(Class<?> targetClass) {
         return createProxy(targetClass, __proxies);
     }
 
+    @Override
     @SuppressWarnings("unchecked")
     public <T> T createProxy(final Class<?> targetClass, final List<IProxy> proxies) {
         final IProxyFactory _owner = this;
         return (T) Enhancer.create(targetClass, new MethodInterceptor() {
+            @Override
             public Object intercept(Object targetObject, Method targetMethod, Object[] methodParams, MethodProxy methodProxy) throws Throwable {
                 return new DefaultProxyChain(_owner, targetClass, targetObject, targetMethod, methodProxy, methodParams, proxies).doProxyChain();
             }

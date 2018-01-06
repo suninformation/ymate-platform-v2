@@ -34,6 +34,7 @@ import org.apache.commons.lang.StringUtils;
 @CleanProxy
 public class RequiredValidator extends AbstractValidator {
 
+    @Override
     public ValidateResult validate(ValidateContext context) {
         boolean _matched = false;
         Object _paramValue = context.getParamValue();

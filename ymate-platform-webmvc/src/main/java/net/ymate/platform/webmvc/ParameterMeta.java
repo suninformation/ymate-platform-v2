@@ -180,7 +180,7 @@ public class ParameterMeta {
         Object _resultValue = originalResult;
         if (_meta.getParameterEscape() != null && _meta.getParamType().equals(String.class)) {
             // 获取参数转义处理器接口实例
-            IParameterEscapeProcessor _escapeProc = null;
+            IParameterEscapeProcessor _escapeProc;
             if (!_meta.getParameterEscape().processor().equals(DefaultRequestProcessor.class)) {
                 _escapeProc = ClassUtils.impl(_meta.getParameterEscape().processor(), IParameterEscapeProcessor.class);
             } else {

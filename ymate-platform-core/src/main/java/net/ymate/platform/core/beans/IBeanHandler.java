@@ -26,9 +26,10 @@ import net.ymate.platform.core.beans.annotation.Bean;
 public interface IBeanHandler {
 
     IBeanHandler DEFAULT_HANDLER = new IBeanHandler() {
+        @Override
         public Object handle(Class<?> targetClass) throws Exception {
             Bean _bean = targetClass.getAnnotation(Bean.class);
-            if (_bean.singleton()) {
+            if (_bean != null && _bean.singleton()) {
                 return BeanMeta.create(targetClass.newInstance(), targetClass);
             }
             return BeanMeta.create(targetClass);

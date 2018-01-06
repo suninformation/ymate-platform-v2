@@ -30,6 +30,9 @@ import java.util.*;
  * attributes. The {@link #entrySet()} method enumerates over all session attributes and creates a Set of entries.
  * Note, this will occur lazily - only when the entry set is asked for.
  * </p>
+ *
+ * @param <K> 键类型
+ * @param <V> 值类型
  */
 public class SessionMap<K, V> extends AbstractMap<K, V> implements Serializable {
 
@@ -70,6 +73,7 @@ public class SessionMap<K, V> extends AbstractMap<K, V> implements Serializable 
      * Removes all attributes from the session as well as clears entries in this
      * map.
      */
+    @Override
     @SuppressWarnings("unchecked")
     public void clear() {
         if (session == null) {
@@ -90,6 +94,7 @@ public class SessionMap<K, V> extends AbstractMap<K, V> implements Serializable 
      *
      * @return a Set of attributes from the http session.
      */
+    @Override
     @SuppressWarnings("unchecked")
     public Set<Entry<K, V>> entrySet() {
         if (session == null) {
@@ -103,6 +108,7 @@ public class SessionMap<K, V> extends AbstractMap<K, V> implements Serializable 
                     final String key = enumeration.nextElement().toString();
                     final Object value = session.getAttribute(key);
                     entries.add(new Entry<K, V>() {
+                        @Override
                         public boolean equals(Object obj) {
                             if (!(obj instanceof Entry)) {
                                 return false;
@@ -111,18 +117,22 @@ public class SessionMap<K, V> extends AbstractMap<K, V> implements Serializable 
                             return ((key == null) ? (entry.getKey() == null) : key.equals(entry.getKey())) && ((value == null) ? (entry.getValue() == null) : value.equals(entry.getValue()));
                         }
 
+                        @Override
                         public int hashCode() {
                             return ((key == null) ? 0 : key.hashCode()) ^ ((value == null) ? 0 : value.hashCode());
                         }
 
+                        @Override
                         public K getKey() {
                             return (K) key;
                         }
 
+                        @Override
                         public V getValue() {
                             return (V) value;
                         }
 
+                        @Override
                         public V setValue(Object obj) {
                             session.setAttribute(key, obj);
                             return (V) value;
@@ -140,6 +150,7 @@ public class SessionMap<K, V> extends AbstractMap<K, V> implements Serializable 
      * @param key the name of the session attribute.
      * @return the session attribute or <tt>null</tt> if it doesn't exist.
      */
+    @Override
     @SuppressWarnings("unchecked")
     public V get(Object key) {
         if (session == null) {
@@ -157,6 +168,7 @@ public class SessionMap<K, V> extends AbstractMap<K, V> implements Serializable 
      * @param value the value to set.
      * @return the object that was just set.
      */
+    @Override
     public V put(K key, V value) {
         synchronized (this) {
             if (session == null) {
@@ -177,6 +189,7 @@ public class SessionMap<K, V> extends AbstractMap<K, V> implements Serializable 
      * @param key the name of the attribute to remove.
      * @return the value that was removed or <tt>null</tt> if the value was not found (and hence, not removed).
      */
+    @Override
     public V remove(Object key) {
         if (session == null) {
             return null;
@@ -196,6 +209,7 @@ public class SessionMap<K, V> extends AbstractMap<K, V> implements Serializable 
      * @param key the name of the session attribute.
      * @return <tt>true</tt> if the session attribute exits or <tt>false</tt> if it doesn't exist.
      */
+    @Override
     public boolean containsKey(Object key) {
         if (session == null) {
             return false;

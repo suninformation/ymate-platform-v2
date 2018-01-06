@@ -33,6 +33,7 @@ public class NullView extends AbstractView {
     public void render() throws Exception {
     }
 
+    @Override
     protected void __doRenderView() throws Exception {
     }
 }

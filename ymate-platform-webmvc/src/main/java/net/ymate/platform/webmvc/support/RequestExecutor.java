@@ -41,9 +41,9 @@ import java.util.Map;
  */
 public final class RequestExecutor {
 
-    private IWebMvc __owner;
+    private final IWebMvc __owner;
 
-    private RequestMeta __requestMeta;
+    private final RequestMeta __requestMeta;
 
     private IRequestProcessor __requestProcessor;
 

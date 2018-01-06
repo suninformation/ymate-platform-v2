@@ -29,10 +29,12 @@ public class DefaultPasswordProcessor implements IPasswordProcessor {
 
     private final String __KEY = DigestUtils.md5Hex(DefaultPasswordProcessor.class.getName());
 
+    @Override
     public String encrypt(String source) throws Exception {
         return CodecUtils.DES.encrypt(source, __KEY);
     }
 
+    @Override
     public String decrypt(String target) throws Exception {
         return CodecUtils.DES.decrypt(target, __KEY);
     }

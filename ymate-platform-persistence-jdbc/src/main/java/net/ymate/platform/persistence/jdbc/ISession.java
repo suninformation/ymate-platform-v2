@@ -254,6 +254,8 @@ public interface ISession extends ISessionBase {
      */
     <T extends IEntity> long count(Class<T> entityClass, Where where) throws Exception;
 
+    <T extends IEntity> long count(Class<T> entityClass) throws Exception;
+
     <T extends IEntity> long count(Class<T> entityClass, Where where, IShardingable shardingable) throws Exception;
 
     /**

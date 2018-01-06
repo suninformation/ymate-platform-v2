@@ -93,7 +93,7 @@ public interface IDBLocker {
             NOLOCK, HOLDLOCK, UPDLOCK, TABLOCK, PAGLOCK, TABLOCKX
         }
 
-        private LockType __lockType;
+        private final LockType __lockType;
 
         SQLServerLocker(LockType lockType) {
             __lockType = lockType;

@@ -32,8 +32,9 @@ public class WebCacheScopeProcessor implements ICacheScopeProcessor {
         return _sessionId + "|" + cacheKey;
     }
 
+    @Override
     public CacheElement getFromCache(ICaches caches, ICaches.Scope scope, String cacheName, String cacheKey) throws CacheException {
-        CacheElement _returnValue = null;
+        CacheElement _returnValue;
         switch (scope) {
             case SESSION:
                 _returnValue = (CacheElement) caches.get(scope.name(), __doBuildSessionCacheKey(cacheKey));
@@ -45,6 +46,7 @@ public class WebCacheScopeProcessor implements ICacheScopeProcessor {
         return _returnValue;
     }
 
+    @Override
     public void putInCache(ICaches caches, ICaches.Scope scope, String cacheName, String cacheKey, CacheElement cacheElement) throws CacheException {
         switch (scope) {
             case SESSION:

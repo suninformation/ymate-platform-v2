@@ -26,13 +26,13 @@ import java.util.concurrent.ConcurrentMap;
  */
 public abstract class AbstractSession implements ISession {
 
-    private String __id;
+    private final String __id;
 
     private ISession.Status __status;
 
     private long __lastTouchTime;
 
-    private ConcurrentMap<String, Object> __attributes;
+    private final ConcurrentMap<String, Object> __attributes;
 
     public AbstractSession() {
         __id = UUIDUtils.UUID();

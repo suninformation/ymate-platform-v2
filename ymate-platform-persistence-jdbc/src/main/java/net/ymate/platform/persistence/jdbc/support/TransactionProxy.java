@@ -50,6 +50,7 @@ public class TransactionProxy implements IProxy {
         // 如果事务级别非空，则开启事务
         if (_currentLevel != null) {
             return Transactions.execute(_currentLevel, new Trade<Object>() {
+                @Override
                 public void deal() throws Throwable {
                     this.setReturns(proxyChain.doProxyChain());
                 }

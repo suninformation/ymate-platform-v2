@@ -137,7 +137,7 @@ public class I18N {
             if (__EVENT_HANDLER != null) {
                 try {
                     List<String> _localeResourceNames = __doGetResourceNames(_local, resourceName);
-                    InputStream _inputStream = null;
+                    InputStream _inputStream;
                     for (String _localeResourceName : _localeResourceNames) {
                         _inputStream = __EVENT_HANDLER.onLoad(_localeResourceName);
                         if (_inputStream != null) {

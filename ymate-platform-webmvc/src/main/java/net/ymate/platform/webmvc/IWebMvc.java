@@ -16,7 +16,6 @@
 package net.ymate.platform.webmvc;
 
 import net.ymate.platform.core.YMP;
-import net.ymate.platform.webmvc.annotation.Controller;
 
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;

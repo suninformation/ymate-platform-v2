@@ -33,15 +33,15 @@ public class Attr {
 
     private boolean signed;
 
-    private int precision;
+    private final int precision;
 
-    private int scale;
+    private final int scale;
 
-    private boolean nullable;
+    private final boolean nullable;
 
-    private String defaultValue;
+    private final String defaultValue;
 
-    private String remarks;
+    private final String remarks;
 
     private boolean readonly;
 

@@ -23,9 +23,9 @@ package net.ymate.platform.validation;
  */
 public class ValidateResult {
 
-    private String name;
+    private final String name;
 
-    private String msg;
+    private final String msg;
 
     public ValidateResult(String name, String msg) {
         this.name = name;

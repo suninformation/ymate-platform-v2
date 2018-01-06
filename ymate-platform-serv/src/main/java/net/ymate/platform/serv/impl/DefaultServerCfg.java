@@ -30,25 +30,25 @@ import java.util.Map;
  */
 public class DefaultServerCfg implements IServerCfg {
 
-    private String __serverName;
+    private final String __serverName;
 
-    private String __serverHost;
+    private final String __serverHost;
 
-    private int __port;
+    private final int __port;
 
-    private String __charset;
+    private final String __charset;
 
-    private int __bufferSize;
+    private final int __bufferSize;
 
     private int __executorCount;
 
-    private long __keepAliveTime;
+    private final long __keepAliveTime;
 
     private int __threadMaxPoolSize;
 
     private int __threadQueueSize;
 
-    private Map<String, String> __params;
+    private final Map<String, String> __params;
 
     public DefaultServerCfg(IServModuleCfg moduleCfg, String serverName) {
         __serverName = StringUtils.defaultIfBlank(serverName, "default");

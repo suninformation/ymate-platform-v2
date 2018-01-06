@@ -58,6 +58,7 @@ public class JSONRequestProcessor extends DefaultRequestProcessor {
         return _protocol;
     }
 
+    @Override
     protected Object __doParseRequestParam(IWebMvc owner, String paramName, String defaultValue, Class<?> paramType, boolean fullScope) {
         Object _returnValue = null;
         JSONObject _protocol = __doGetProtocol(owner);

@@ -33,7 +33,7 @@ import java.util.Properties;
  */
 public class PropertyConfigFileParser extends AbstractConfigFileParser {
 
-    private Properties __rootProps = new Properties();
+    private final Properties __rootProps = new Properties();
 
     public PropertyConfigFileParser(File file) throws IOException {
         FileReader _reader = new FileReader(file);
@@ -83,26 +83,30 @@ public class PropertyConfigFileParser extends AbstractConfigFileParser {
                         __categories.put(_propArr[0], _category);
                     }
                     //
-                    if (_propArr.length == 4) {
-                        if (_propArr[2].equalsIgnoreCase(TAG_NAME_ATTRIBUTES)) {
-                            Property _prop = __safeGetProperty(_category, _propName, _propArr[1]);
-                            if (_prop != null) {
-                                __fixedSetAttribute(_prop, _propName, _propArr[3]);
+                    switch (_propArr.length) {
+                        case 4:
+                            if (_propArr[2].equalsIgnoreCase(TAG_NAME_ATTRIBUTES)) {
+                                Property _prop = __safeGetProperty(_category, _propName, _propArr[1]);
+                                if (_prop != null) {
+                                    __fixedSetAttribute(_prop, _propName, _propArr[3]);
+                                }
+                            } else {
+                                _category.getPropertyMap().put(_propArr[3], new Property(_propArr[3], __rootProps.getProperty(_propName), null));
                             }
-                        } else {
-                            _category.getPropertyMap().put(_propArr[3], new Property(_propArr[3], __rootProps.getProperty(_propName), null));
-                        }
-                    } else if (_propArr.length == 2) {
-                        __fixedSetProperty(_category, _propName, _propArr[1]);
-                    } else {
-                        if (_propArr[1].equalsIgnoreCase(TAG_NAME_ATTRIBUTES)) {
-                            _category.getAttributeMap().put(_propArr[2], new Attribute(_propArr[2], __rootProps.getProperty(_propName)));
-                        } else {
-                            Property _prop = __safeGetProperty(_category, _propName, _propArr[1]);
-                            if (_prop != null) {
-                                __fixedSetAttribute(_prop, _propName, _propArr[2]);
+                            break;
+                        case 2:
+                            __fixedSetProperty(_category, _propName, _propArr[1]);
+                            break;
+                        default:
+                            if (_propArr[1].equalsIgnoreCase(TAG_NAME_ATTRIBUTES)) {
+                                _category.getAttributeMap().put(_propArr[2], new Attribute(_propArr[2], __rootProps.getProperty(_propName)));
+                            } else {
+                                Property _prop = __safeGetProperty(_category, _propName, _propArr[1]);
+                                if (_prop != null) {
+                                    __fixedSetAttribute(_prop, _propName, _propArr[2]);
+                                }
                             }
-                        }
+                            break;
                     }
                 }
             }

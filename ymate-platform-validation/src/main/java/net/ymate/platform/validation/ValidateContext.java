@@ -30,19 +30,19 @@ import java.util.Map;
  */
 public class ValidateContext {
 
-    private YMP __owner;
+    private final YMP __owner;
 
-    private String __resourceName;
+    private final String __resourceName;
 
-    private Annotation annotation;
+    private final Annotation annotation;
 
-    private String paramName;
+    private final String paramName;
 
-    private String paramLabel;
+    private final String paramLabel;
 
-    private Map<String, Object> paramValues;
+    private final Map<String, Object> paramValues;
 
-    private Map<String, String> contextParams;
+    private final Map<String, String> contextParams;
 
     public ValidateContext(YMP owner, Annotation annotation, String paramName, String paramLabel, Map<String, Object> paramValues, Map<String, String> contextParams, String resourceName) {
         this.__owner = owner;

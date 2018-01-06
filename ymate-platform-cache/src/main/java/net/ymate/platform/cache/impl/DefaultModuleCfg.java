@@ -36,13 +36,13 @@ public class DefaultModuleCfg implements ICacheModuleCfg {
 
     private ICacheEventListener __cacheEventListener;
 
-    private ICacheScopeProcessor __cacheScopeProcessor;
+    private final ICacheScopeProcessor __cacheScopeProcessor;
 
     private IKeyGenerator<?> __keyGenerator;
 
     private ISerializer __serializer;
 
-    private String __defaultCacheName;
+    private final String __defaultCacheName;
 
     private int __defaultCacheTimeout;
 
@@ -85,30 +85,37 @@ public class DefaultModuleCfg implements ICacheModuleCfg {
         }
     }
 
+    @Override
     public ICacheProvider getCacheProvider() {
         return __cacheProvider;
     }
 
+    @Override
     public ICacheEventListener getCacheEventListener() {
         return __cacheEventListener;
     }
 
+    @Override
     public ICacheScopeProcessor getCacheScopeProcessor() {
         return __cacheScopeProcessor;
     }
 
+    @Override
     public IKeyGenerator<?> getKeyGenerator() {
         return __keyGenerator;
     }
 
+    @Override
     public ISerializer getSerializer() {
         return __serializer;
     }
 
+    @Override
     public String getDefaultCacheName() {
         return __defaultCacheName;
     }
 
+    @Override
     public int getDefaultCacheTimeout() {
         return __defaultCacheTimeout;
     }

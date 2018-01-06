@@ -798,14 +798,21 @@ public class DefaultSession implements ISession {
     }
 
     @Override
+    public <T extends IEntity> long count(Class<T> entityClass) throws Exception {
+        return count(entityClass, null, null);
+    }
+
+    @Override
     public <T extends IEntity> long count(Class<T> entityClass, Where where, IShardingable shardingable) throws Exception {
         EntityMeta _meta = EntityMeta.createAndGet(entityClass);
         ExpressionUtils _exp = ExpressionUtils.bind("SELECT count(1) FROM ${table_name} ${where}")
                 .set("table_name", __dialect.buildTableName(__tablePrefix, _meta, shardingable))
-                .set("where", where.toSQL());
+                .set("where", where == null ? "" : where.toSQL());
         IQueryOperator<Object[]> _opt = new DefaultQueryOperator<Object[]>(_exp.getResult(), this.getConnectionHolder(), IResultSetHandler.ARRAY);
-        for (Object _param : where.getParams().params()) {
-            _opt.addParameter(_param);
+        if (where != null) {
+            for (Object _param : where.getParams().params()) {
+                _opt.addParameter(_param);
+            }
         }
         SessionEventContext _eventContext = new SessionEventContext(_opt, Persistence.OperationType.QUERY);
         if (__sessionEvent != null) {

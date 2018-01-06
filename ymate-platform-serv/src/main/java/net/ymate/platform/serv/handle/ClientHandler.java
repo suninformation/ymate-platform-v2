@@ -26,7 +26,7 @@ import net.ymate.platform.serv.IServ;
  */
 public class ClientHandler implements IBeanHandler {
 
-    private IServ __owner;
+    private final IServ __owner;
 
     public ClientHandler(IServ owner) throws Exception {
         __owner = owner;

@@ -20,6 +20,8 @@ import java.io.Serializable;
 /**
  * 结对对象类型
  *
+ * @param <K> 键类型
+ * @param <V> 值类型
  * @author 刘镇 (suninformation@163.com) on 2010-4-17 上午12:07:42
  * @version 1.0
  */

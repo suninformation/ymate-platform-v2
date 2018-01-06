@@ -25,7 +25,7 @@ import org.apache.commons.lang.StringUtils;
  */
 public final class OrderBy extends Query<OrderBy> {
 
-    private StringBuilder __orderBySB;
+    private final StringBuilder __orderBySB;
 
     public static OrderBy create() {
         return new OrderBy();

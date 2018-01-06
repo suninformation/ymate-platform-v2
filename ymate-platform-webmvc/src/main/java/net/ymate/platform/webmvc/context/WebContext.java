@@ -36,9 +36,9 @@ import java.util.*;
  */
 public final class WebContext {
 
-    private static ThreadLocal<WebContext> __LOCAL_CONTEXT = new ThreadLocal<WebContext>();
+    private static final ThreadLocal<WebContext> __LOCAL_CONTEXT = new ThreadLocal<WebContext>();
 
-    private Map<String, Object> __attributes;
+    private final Map<String, Object> __attributes;
 
     public static WebContext getContext() {
         return __LOCAL_CONTEXT.get();

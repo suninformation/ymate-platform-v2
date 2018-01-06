@@ -33,6 +33,7 @@ import org.apache.commons.lang.StringUtils;
 @CleanProxy
 public class RegexValidator extends AbstractValidator {
 
+    @Override
     public ValidateResult validate(ValidateContext context) {
         Object _paramValue = context.getParamValue();
         if (_paramValue != null) {

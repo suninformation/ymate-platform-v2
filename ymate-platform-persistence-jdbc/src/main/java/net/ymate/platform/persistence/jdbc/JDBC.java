@@ -144,7 +144,7 @@ public class JDBC implements IModule, IDatabase {
 
     @Override
     public IConnectionHolder getConnectionHolder(String dsName) throws Exception {
-        IConnectionHolder _returnValue = null;
+        IConnectionHolder _returnValue;
         if (Transactions.get() != null) {
             _returnValue = Transactions.get().getConnectionHolder(dsName);
             if (_returnValue == null) {

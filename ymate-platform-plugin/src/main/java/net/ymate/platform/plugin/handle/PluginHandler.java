@@ -39,6 +39,7 @@ public class PluginHandler implements IBeanHandler {
         pluginFactory.addExcludedInterfaceClass(IPluginFactory.class);
     }
 
+    @Override
     @SuppressWarnings("unchecked")
     public Object handle(Class<?> targetClass) throws Exception {
         if (ClassUtils.isInterfaceOf(targetClass, IPlugin.class)) {

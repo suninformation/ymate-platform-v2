@@ -39,6 +39,7 @@ public class I18NWebEventHandler implements II18NEventHandler {
 
     private String __i18nHome;
 
+    @Override
     public Locale onLocale() {
         String _langStr = null;
         // 先尝试取URL参数变量
@@ -53,7 +54,7 @@ public class I18NWebEventHandler implements II18NEventHandler {
                 }
             }
         }
-        Locale _locale = null;
+        Locale _locale;
         try {
             _locale = LocaleUtils.toLocale(StringUtils.trimToNull(_langStr));
         } catch (IllegalArgumentException e) {
@@ -62,12 +63,14 @@ public class I18NWebEventHandler implements II18NEventHandler {
         return _locale;
     }
 
+    @Override
     public void onChanged(Locale locale) {
         if (WebContext.getContext() != null && locale != null) {
             CookieHelper.bind(WebContext.getContext().getOwner()).setCookie(I18N_LANG_KEY, locale.toString());
         }
     }
 
+    @Override
     public InputStream onLoad(String resourceName) throws IOException {
         if (__i18nHome == null) {
             __i18nHome = RuntimeUtils.replaceEnvVariable(StringUtils.defaultIfBlank(WebMVC.get().getOwner().getConfig().getParam("i18n_resources_home"), "${root}/i18n/"));

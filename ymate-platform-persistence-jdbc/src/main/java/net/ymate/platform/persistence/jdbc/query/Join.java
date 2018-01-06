@@ -26,11 +26,11 @@ import org.apache.commons.lang.StringUtils;
  */
 public final class Join extends Query<Join> {
 
-    private String __from;
+    private final String __from;
 
     private String __alias;
 
-    private Cond __on;
+    private final Cond __on;
 
     public static Join inner(String from) {
         return inner(from, true);

@@ -26,7 +26,7 @@ import org.apache.commons.lang.StringUtils;
  */
 public final class GroupBy extends Query<GroupBy> {
 
-    private Fields __groupByNames;
+    private final Fields __groupByNames;
 
     private Cond __having;
 

@@ -74,6 +74,7 @@ public class HtmlView extends AbstractView {
         __contentType = Type.ContentType.HTML.getContentType();
     }
 
+    @Override
     protected void __doRenderView() throws Exception {
         HttpServletResponse _response = WebContext.getResponse();
         IOUtils.write(__content, _response.getOutputStream(), _response.getCharacterEncoding());

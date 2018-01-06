@@ -36,7 +36,7 @@ public class DefaultProxyChain implements IProxyChain {
     private final MethodProxy methodProxy;
     private final Object[] methodParams;
 
-    private List<IProxy> proxies;
+    private final List<IProxy> proxies;
     private int __index = 0;
 
     public DefaultProxyChain(IProxyFactory owner,
@@ -55,26 +55,32 @@ public class DefaultProxyChain implements IProxyChain {
         this.proxies = proxies;
     }
 
+    @Override
     public IProxyFactory getProxyFactory() {
         return __owner;
     }
 
+    @Override
     public Object[] getMethodParams() {
         return this.methodParams;
     }
 
+    @Override
     public Class<?> getTargetClass() {
         return this.targetClass;
     }
 
+    @Override
     public Object getTargetObject() {
         return this.targetObject;
     }
 
+    @Override
     public Method getTargetMethod() {
         return this.targetMethod;
     }
 
+    @Override
     public Object doProxyChain() throws Throwable {
         Object _result;
         if (__index < proxies.size()) {

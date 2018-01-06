@@ -97,10 +97,12 @@ public class WebMVC implements IModule, IWebMvc {
         return owner.getModule(WebMVC.class);
     }
 
+    @Override
     public String getName() {
         return IWebMvc.MODULE_NAME;
     }
 
+    @Override
     public void init(YMP owner) throws Exception {
         if (!__inited) {
             //
@@ -124,10 +126,12 @@ public class WebMVC implements IModule, IWebMvc {
         }
     }
 
+    @Override
     public boolean isInited() {
         return __inited;
     }
 
+    @Override
     public void destroy() throws Exception {
         if (__inited) {
             __inited = false;
@@ -140,14 +144,17 @@ public class WebMVC implements IModule, IWebMvc {
         }
     }
 
+    @Override
     public IWebMvcModuleCfg getModuleCfg() {
         return __moduleCfg;
     }
 
+    @Override
     public YMP getOwner() {
         return __owner;
     }
 
+    @Override
     public boolean registerController(Class<?> targetClass) throws Exception {
         boolean _isValid = false;
         if (targetClass.isAnnotationPresent(Controller.class)) {
@@ -175,6 +182,7 @@ public class WebMVC implements IModule, IWebMvc {
         return _isValid;
     }
 
+    @Override
     public boolean registerInterceptorRule(Class<? extends IInterceptorRule> targetClass) throws Exception {
         if (__interceptorRuleProcessor != null) {
             __interceptorRuleProcessor.registerInterceptorRule(targetClass);
@@ -196,6 +204,7 @@ public class WebMVC implements IModule, IWebMvc {
         return _cacheProcessor;
     }
 
+    @Override
     public void processRequest(IRequestContext context,
                                ServletContext servletContext,
                                HttpServletRequest request,
@@ -458,10 +467,10 @@ public class WebMVC implements IModule, IWebMvc {
                 IResponseErrorProcessor _errorProcessor = ClassUtils.impl(_meta.getErrorProcessor(), IResponseErrorProcessor.class);
                 if (_errorProcessor != null) {
                     _view = _errorProcessor.processError(this, e);
+                    _LOG.debug("--- [" + _threadId + "] An exception processed with: " + _meta.getErrorProcessor().getName());
                 }
             }
             if (_view != null) {
-                _LOG.debug("--- [" + _threadId + "] An exception processed with: " + _meta.getErrorProcessor().getName());
                 _view.render();
             } else {
                 throw e;

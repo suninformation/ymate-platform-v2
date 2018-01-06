@@ -45,7 +45,7 @@ public final class ResultSetHelper {
      */
     private List<?> __dataSet;
 
-    private boolean __isArray;
+    private final boolean __isArray;
 
     private int __rowCount;
 
@@ -210,9 +210,9 @@ public final class ResultSetHelper {
      */
     public class ItemWrapper {
 
-        private Object __item;
+        private final Object __item;
 
-        private boolean __isArray;
+        private final boolean __isArray;
 
         public ItemWrapper(Object item, boolean isArray) {
             __item = item;

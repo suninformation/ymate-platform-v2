@@ -113,7 +113,7 @@ public class NioUdpClient extends AbstractService implements IClient<NioUdpListe
         __eventGroup.close();
     }
 
-    class NioUdpEventGroup extends NioEventGroup<NioUdpListener> {
+    public class NioUdpEventGroup extends NioEventGroup<NioUdpListener> {
 
         public NioUdpEventGroup(INioClientCfg cfg, NioUdpListener listener, INioCodec codec) throws IOException {
             super(cfg, listener, codec);
@@ -172,7 +172,7 @@ public class NioUdpClient extends AbstractService implements IClient<NioUdpListe
                                 public void run() {
                                     try {
                                         __eventGroup.listener().onExceptionCaught(e, _session);
-                                    } catch (Throwable ex) {
+                                    } catch (IOException ex) {
                                         _LOG.error(e.getMessage(), RuntimeUtils.unwrapThrow(ex));
                                     }
                                 }

@@ -36,7 +36,7 @@ public final class Page {
     /**
      * 当前页号
      */
-    private int __page;
+    private final int __page;
 
     /**
      * 是否执行总记录数统计

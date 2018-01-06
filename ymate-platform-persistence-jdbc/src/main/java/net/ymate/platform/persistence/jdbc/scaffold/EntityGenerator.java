@@ -46,7 +46,7 @@ public class EntityGenerator {
 
     private static final Log _LOG = LogFactory.getLog(EntityGenerator.class);
 
-    private String __templateRootPath = EntityGenerator.class.getPackage().getName().replace(".", "/");
+    private final String __templateRootPath = EntityGenerator.class.getPackage().getName().replace(".", "/");
 
     private Configuration __freemarkerConfig;
 

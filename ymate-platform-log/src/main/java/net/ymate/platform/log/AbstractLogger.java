@@ -34,11 +34,13 @@ public abstract class AbstractLogger implements ILogger {
     // 打印堆栈数量，超过这个数量会省略输出
     public static int PRINT_STACK_COUNT = 5;
 
+    @Override
     public ILogger console(boolean enable) {
         __allowOutputConsole = enable;
         return this;
     }
 
+    @Override
     public ILogger depth(int depth) {
         __depth = depth;
         return this;

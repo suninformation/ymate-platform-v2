@@ -74,22 +74,27 @@ public class DefaultModuleCfg implements ILogModuleCfg {
         this.allowOutputConsole = new BlurObject(_moduleCfgs.get("allow_output_console")).toBooleanValue();
     }
 
+    @Override
     public File getConfigFile() {
         return this.configFile;
     }
 
+    @Override
     public File getOutputDir() {
         return this.outputDir;
     }
 
+    @Override
     public String getLoggerName() {
         return this.loggerName;
     }
 
+    @Override
     public Class<? extends ILogger> getLoggerClass() {
         return this.loggerClass;
     }
 
+    @Override
     public boolean allowOutputConsole() {
         return this.allowOutputConsole;
     }

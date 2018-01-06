@@ -30,6 +30,7 @@ import java.util.Queue;
 import java.util.concurrent.LinkedBlockingQueue;
 
 /**
+ * @param <LISTENER> 监听器类型
  * @author 刘镇 (suninformation@163.com) on 15/11/9 上午9:28
  * @version 1.0
  */
@@ -78,7 +79,7 @@ public class NioEventProcessor<LISTENER extends IListener<INioSession>> extends 
                             } else if (_selectionKey.isWritable()) {
                                 __doWriteEvent(_selectionKey);
                             }
-                        } catch (Throwable e) {
+                        } catch (IOException e) {
                             __doExceptionEvent(_selectionKey, e);
                         }
                     }
@@ -100,7 +101,9 @@ public class NioEventProcessor<LISTENER extends IListener<INioSession>> extends 
             __flag = false;
             join();
             __selector.close();
-        } catch (Exception e) {
+        } catch (IOException e) {
+            _LOG.error(e.getMessage(), RuntimeUtils.unwrapThrow(e));
+        } catch (InterruptedException e) {
             _LOG.error(e.getMessage(), RuntimeUtils.unwrapThrow(e));
         }
         super.interrupt();
@@ -145,7 +148,7 @@ public class NioEventProcessor<LISTENER extends IListener<INioSession>> extends 
                     //
                     __eventGroup.listener().onSessionRegisted(_session);
                 }
-            } catch (Exception e) {
+            } catch (IOException e) {
                 _LOG.error(e.getMessage(), RuntimeUtils.unwrapThrow(e));
             }
         }
@@ -168,7 +171,7 @@ public class NioEventProcessor<LISTENER extends IListener<INioSession>> extends 
             try {
                 key.channel().close();
                 key.cancel();
-            } catch (Throwable ex) {
+            } catch (IOException ex) {
                 _LOG.error(e.getMessage(), RuntimeUtils.unwrapThrow(ex));
             }
         } else {
@@ -179,7 +182,7 @@ public class NioEventProcessor<LISTENER extends IListener<INioSession>> extends 
             public void run() {
                 try {
                     __eventGroup.listener().onExceptionCaught(e, _session);
-                } catch (Throwable ex) {
+                } catch (IOException ex) {
                     _LOG.error(e.getMessage(), RuntimeUtils.unwrapThrow(ex));
                 }
             }
@@ -187,7 +190,7 @@ public class NioEventProcessor<LISTENER extends IListener<INioSession>> extends 
         if (_session != null) {
             try {
                 _session.close();
-            } catch (Throwable ex) {
+            } catch (IOException ex) {
                 _LOG.error(e.getMessage(), RuntimeUtils.unwrapThrow(ex));
             }
         }

@@ -76,10 +76,12 @@ public class Caches implements IModule, ICaches {
         return owner.getModule(Caches.class);
     }
 
+    @Override
     public String getName() {
         return ICaches.MODULE_NAME;
     }
 
+    @Override
     public void init(YMP owner) throws Exception {
         if (!__inited) {
             //
@@ -96,22 +98,27 @@ public class Caches implements IModule, ICaches {
         }
     }
 
+    @Override
     public boolean isInited() {
         return __inited;
     }
 
+    @Override
     public YMP getOwner() {
         return __owner;
     }
 
+    @Override
     public ICacheModuleCfg getModuleCfg() {
         return __moduleCfg;
     }
 
+    @Override
     public ICacheProvider getCacheProvider() {
         return __cacheProvider;
     }
 
+    @Override
     public Object get(String cacheName, Object key) {
         ICache _cache = __cacheProvider.getCache(cacheName);
         if (_cache != null) {
@@ -120,10 +127,12 @@ public class Caches implements IModule, ICaches {
         return null;
     }
 
+    @Override
     public Object get(Object key) {
         return get(__moduleCfg.getDefaultCacheName(), key);
     }
 
+    @Override
     public Map<Object, Object> getAll(String cacheName) {
         Map<Object, Object> _returnValue = new HashMap<Object, Object>();
         for (Object key : this.keys(cacheName)) {
@@ -132,6 +141,7 @@ public class Caches implements IModule, ICaches {
         return _returnValue;
     }
 
+    @Override
     public Map<Object, Object> getAll() {
         return getAll(__moduleCfg.getDefaultCacheName());
     }
@@ -144,22 +154,27 @@ public class Caches implements IModule, ICaches {
         _cache.put(key, value);
     }
 
+    @Override
     public void put(String cacheName, Object key, Object value) {
         __doPut(cacheName, key, value);
     }
 
+    @Override
     public void put(Object key, Object value) {
         put(__moduleCfg.getDefaultCacheName(), key, value);
     }
 
+    @Override
     public void update(String cacheName, Object key, Object value) {
         __doPut(cacheName, key, value);
     }
 
+    @Override
     public void update(Object key, Object value) {
         update(__moduleCfg.getDefaultCacheName(), key, value);
     }
 
+    @Override
     public List<?> keys(String cacheName) {
         ICache _cache = __cacheProvider.getCache(cacheName);
         if (_cache != null) {
@@ -168,10 +183,12 @@ public class Caches implements IModule, ICaches {
         return Collections.emptyList();
     }
 
+    @Override
     public List keys() {
         return keys(__moduleCfg.getDefaultCacheName());
     }
 
+    @Override
     public void remove(String cacheName, Object key) {
         ICache _cache = __cacheProvider.getCache(cacheName);
         if (_cache != null) {
@@ -179,10 +196,12 @@ public class Caches implements IModule, ICaches {
         }
     }
 
+    @Override
     public void remove(Object key) {
         remove(__moduleCfg.getDefaultCacheName(), key);
     }
 
+    @Override
     public void removeAll(String cacheName, List keys) {
         ICache _cache = __cacheProvider.getCache(cacheName);
         if (_cache != null) {
@@ -190,10 +209,12 @@ public class Caches implements IModule, ICaches {
         }
     }
 
+    @Override
     public void removeAll(List keys) {
         removeAll(__moduleCfg.getDefaultCacheName(), keys);
     }
 
+    @Override
     public void clear(String cacheName) {
         ICache _cache = __cacheProvider.getCache(cacheName);
         if (_cache != null) {
@@ -201,10 +222,12 @@ public class Caches implements IModule, ICaches {
         }
     }
 
+    @Override
     public void clear() {
         clear(__moduleCfg.getDefaultCacheName());
     }
 
+    @Override
     public void destroy() throws Exception {
         if (__inited) {
             __inited = false;

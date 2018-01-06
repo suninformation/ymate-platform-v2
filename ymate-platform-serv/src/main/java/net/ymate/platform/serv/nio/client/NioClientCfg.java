@@ -25,8 +25,6 @@ import net.ymate.platform.serv.nio.INioClientCfg;
  */
 public class NioClientCfg extends DefaultClientCfg implements INioClientCfg {
 
-    private int __selectorCount;
-
     public NioClientCfg(IServModuleCfg moduleCfg, String clientName) {
         super(moduleCfg, clientName);
     }

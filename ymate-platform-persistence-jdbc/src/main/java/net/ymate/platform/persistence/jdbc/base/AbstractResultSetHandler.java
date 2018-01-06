@@ -23,6 +23,7 @@ import java.util.List;
 /**
  * 结果集数据处理接口抽象实现
  *
+ * @param <T> 元素类型
  * @author 刘镇 (suninformation@163.com) on 2011-9-22 下午04:14:15
  * @version 1.0
  */
@@ -68,8 +69,8 @@ public abstract class AbstractResultSetHandler<T> implements IResultSetHandler<T
      * 字段描述对象
      */
     public static class ColumnMeta {
-        private String name;
-        private int type;
+        private final String name;
+        private final int type;
 
         public ColumnMeta(String name, int type) {
             this.name = name;

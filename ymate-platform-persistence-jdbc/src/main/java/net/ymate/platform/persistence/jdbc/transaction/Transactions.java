@@ -31,9 +31,9 @@ import net.ymate.platform.persistence.jdbc.transaction.impl.DefaultTransaction;
  */
 public class Transactions {
 
-    private static ThreadLocal<ITransaction> __TRANS_LOCAL = new ThreadLocal<ITransaction>();
+    private static final ThreadLocal<ITransaction> __TRANS_LOCAL = new ThreadLocal<ITransaction>();
 
-    private static ThreadLocal<Integer> __COUNT = new ThreadLocal<Integer>();
+    private static final ThreadLocal<Integer> __COUNT = new ThreadLocal<Integer>();
 
     /**
      * @return 返回当前线程的事务对象，如果不存在事务则返回null

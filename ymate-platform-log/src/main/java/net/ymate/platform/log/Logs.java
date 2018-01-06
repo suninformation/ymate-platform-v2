@@ -41,7 +41,7 @@ public class Logs implements IModule, ILog {
 
     private static final Log _LOG = LogFactory.getLog(Logs.class);
 
-    private static Map<String, ILogger> __LOGGER_CACHE = new ConcurrentHashMap<String, ILogger>();
+    private static final Map<String, ILogger> __LOGGER_CACHE = new ConcurrentHashMap<String, ILogger>();
 
     private static volatile ILog __instance;
 
@@ -67,10 +67,12 @@ public class Logs implements IModule, ILog {
         return __instance;
     }
 
+    @Override
     public String getName() {
         return ILog.MODULE_NAME;
     }
 
+    @Override
     public void init(YMP owner) throws Exception {
         if (!__inited) {
             //
@@ -98,10 +100,12 @@ public class Logs implements IModule, ILog {
         }
     }
 
+    @Override
     public boolean isInited() {
         return __inited;
     }
 
+    @Override
     public void destroy() throws Exception {
         if (__inited) {
             __inited = false;
@@ -115,18 +119,22 @@ public class Logs implements IModule, ILog {
         }
     }
 
+    @Override
     public YMP getOwner() {
         return __owner;
     }
 
+    @Override
     public ILogModuleCfg getModuleCfg() {
         return __moduleCfg;
     }
 
+    @Override
     public ILogger getLogger() {
         return __currentLogger;
     }
 
+    @Override
     public ILogger getLogger(String loggerName) throws Exception {
         ILogger _logger = __LOGGER_CACHE.get(loggerName);
         if (_logger == null) {
@@ -139,6 +147,7 @@ public class Logs implements IModule, ILog {
         return _logger;
     }
 
+    @Override
     public ILogger getLogger(Class<?> clazz) throws Exception {
         return getLogger(clazz.getName());
     }

@@ -41,10 +41,10 @@ public class NetworkUtils {
      */
     public static class IP {
 
-        private static Pattern _pattern = Pattern.compile("\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}");
+        private static final Pattern _pattern = Pattern.compile("\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}");
 
-        private static Pattern _pattern1 = Pattern.compile(":");
-        private static Pattern _pattern2 = Pattern.compile("::");
+        private static final Pattern _pattern1 = Pattern.compile(":");
+        private static final Pattern _pattern2 = Pattern.compile("::");
 
         private static String _hostName;
 

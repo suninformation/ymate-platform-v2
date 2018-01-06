@@ -27,19 +27,21 @@ import net.ymate.platform.plugin.PluginMeta;
  */
 public class DefaultPluginContext implements IPluginContext {
 
-    private PluginMeta __meta;
+    private final PluginMeta __meta;
 
-    private IPluginFactory __factory;
+    private final IPluginFactory __factory;
 
     public DefaultPluginContext(IPluginFactory factory, PluginMeta meta) {
         this.__meta = meta;
         this.__factory = factory;
     }
 
+    @Override
     public PluginMeta getPluginMeta() {
         return __meta;
     }
 
+    @Override
     public IPluginFactory getPluginFactory() {
         return __factory;
     }

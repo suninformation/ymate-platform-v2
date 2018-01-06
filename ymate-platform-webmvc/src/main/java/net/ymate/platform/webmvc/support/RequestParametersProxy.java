@@ -43,6 +43,7 @@ import java.util.Map;
 @Proxy(annotation = Controller.class, order = @Order(-888))
 public class RequestParametersProxy implements IProxy {
 
+    @Override
     public Object doProxy(IProxyChain proxyChain) throws Throwable {
         // 该代理仅处理控制器中声明@RequestMapping的方法
         if (proxyChain.getTargetMethod().getAnnotation(RequestMapping.class) != null) {

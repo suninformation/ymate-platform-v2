@@ -33,7 +33,7 @@ public final class Fields {
     /**
      * 字段名称集合
      */
-    private List<String> __fields;
+    private final List<String> __fields;
 
     /**
      * 是否为排除字段集合

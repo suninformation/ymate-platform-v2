@@ -28,9 +28,9 @@ import java.util.EventObject;
  */
 public class AccessorEventContext extends EventObject {
 
-    private Statement statement;
+    private final Statement statement;
 
-    private Persistence.OperationType operationType;
+    private final Persistence.OperationType operationType;
 
     public AccessorEventContext(Statement statement, Persistence.OperationType operationType) {
         super(statement);

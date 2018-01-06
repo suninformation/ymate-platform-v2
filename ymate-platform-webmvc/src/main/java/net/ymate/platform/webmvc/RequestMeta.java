@@ -34,24 +34,24 @@ import java.util.concurrent.ConcurrentHashMap;
 @ParameterEscape
 public class RequestMeta {
 
-    private static Map<Class<?>, Map<String, ParameterMeta>> __CLASS_PARAMETER_METAS;
+    private static final Map<Class<?>, Map<String, ParameterMeta>> __CLASS_PARAMETER_METAS;
 
     static {
         __CLASS_PARAMETER_METAS = new ConcurrentHashMap<Class<?>, Map<String, ParameterMeta>>();
     }
 
-    private List<ParameterMeta> __methodParameterMetas;
+    private final List<ParameterMeta> __methodParameterMetas;
 
-    private Class<?> targetClass;
-    private String name;
-    private String mapping;
+    private final Class<?> targetClass;
+    private final String name;
+    private final String mapping;
     private Class<? extends IRequestProcessor> processor;
     private Class<? extends IResponseErrorProcessor> errorProcessor;
-    private Method method;
+    private final Method method;
 
-    private List<String> methodParamNames;
+    private final List<String> methodParamNames;
 
-    private boolean singleton;
+    private final boolean singleton;
 
     private ResponseCache responseCache;
 
@@ -61,11 +61,11 @@ public class RequestMeta {
     private ParameterEscape parameterEscape;
 
     private ResponseView responseView;
-    private Set<Header> responseHeaders;
+    private final Set<Header> responseHeaders;
 
-    private Set<Type.HttpMethod> allowMethods;
-    private Map<String, String> allowHeaders;
-    private Map<String, String> allowParams;
+    private final Set<Type.HttpMethod> allowMethods;
+    private final Map<String, String> allowHeaders;
+    private final Map<String, String> allowParams;
 
     public RequestMeta(IWebMvc owner, Class<?> targetClass, Method method) throws Exception {
         this.targetClass = targetClass;

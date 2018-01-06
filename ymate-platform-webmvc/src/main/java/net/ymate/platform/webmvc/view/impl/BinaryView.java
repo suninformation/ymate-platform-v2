@@ -23,8 +23,6 @@ import net.ymate.platform.webmvc.util.MimeTypeUtils;
 import net.ymate.platform.webmvc.view.AbstractView;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -41,8 +39,6 @@ import java.net.URLEncoder;
  * @version 1.0
  */
 public class BinaryView extends AbstractView {
-
-    private static final Log __LOG = LogFactory.getLog(BinaryView.class);
 
     protected String __fileName;
     protected Object __data;
@@ -85,6 +81,7 @@ public class BinaryView extends AbstractView {
         }
     }
 
+    @Override
     protected void __doRenderView() throws Exception {
         HttpServletRequest _request = WebContext.getRequest();
         HttpServletResponse _response = WebContext.getResponse();
@@ -129,12 +126,12 @@ public class BinaryView extends AbstractView {
         else if (__data instanceof char[]) {
             char[] _datas = (char[]) __data;
             _response.setContentLength(_datas.length);
-            IOUtils.write(_datas, _response.getOutputStream());
+            IOUtils.write(_datas, _response.getOutputStream(), _request.getCharacterEncoding());
         }
         // 文本流
         else if (__data instanceof Reader) {
             Reader r = (Reader) __data;
-            IOUtils.copy(r, _response.getOutputStream());
+            IOUtils.copy(r, _response.getOutputStream(), _request.getCharacterEncoding());
         }
         // 二进制流
         else if (__data instanceof InputStream) {
@@ -151,7 +148,7 @@ public class BinaryView extends AbstractView {
         else {
             String _content = StringUtils.trimToEmpty(BlurObject.bind(__data).toStringValue());
             _response.setContentLength(_content.length());
-            IOUtils.write(_content, _response.getOutputStream());
+            IOUtils.write(_content, _response.getOutputStream(), _request.getCharacterEncoding());
         }
     }
 

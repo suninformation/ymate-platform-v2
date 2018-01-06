@@ -19,6 +19,7 @@ import net.ymate.platform.core.lang.PairObject;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.codec.binary.StringUtils;
 import org.apache.commons.codec.digest.DigestUtils;
+import org.apache.commons.io.IOUtils;
 
 import javax.crypto.Cipher;
 import javax.crypto.KeyGenerator;
@@ -249,10 +250,12 @@ public class CodecUtils {
             super(keySize, "RSA", cipherAlgorithm);
         }
 
+        @Override
         public byte[] initKey() throws Exception {
             throw new UnsupportedOperationException();
         }
 
+        @Override
         public String initKeyToString() throws Exception {
             throw new UnsupportedOperationException();
         }
@@ -316,13 +319,7 @@ public class CodecUtils {
                 }
                 return _outStream.toByteArray();
             } finally {
-                if (_outStream != null) {
-                    try {
-                        _outStream.close();
-                    } catch (Exception e) {
-                        // Nothing...
-                    }
-                }
+                IOUtils.closeQuietly(_outStream);
             }
         }
 

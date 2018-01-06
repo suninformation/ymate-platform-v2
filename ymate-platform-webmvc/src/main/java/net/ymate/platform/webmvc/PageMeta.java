@@ -38,10 +38,10 @@ public class PageMeta extends CacheElement {
     private static final int GZIP_MAGIC_NUMBER_BYTE_2 = -117;
     private static final int ONE_YEAR_IN_SECONDS = 60 * 60 * 24 * 365;
     private final Map<String, PairObject<Type.HeaderType, Object>> responseHeaders = new TreeMap<String, PairObject<Type.HeaderType, Object>>(String.CASE_INSENSITIVE_ORDER);
-    private String contentType;
+    private final String contentType;
     private byte[] gzippedBody;
     private byte[] ungzippedBody;
-    private boolean storeGzipped;
+    private final boolean storeGzipped;
 
     public PageMeta(final String contentType,
                     final Map<String, PairObject<Type.HeaderType, Object>> headers,

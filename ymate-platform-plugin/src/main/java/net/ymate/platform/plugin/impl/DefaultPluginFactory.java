@@ -97,6 +97,7 @@ public class DefaultPluginFactory implements IPluginFactory {
         IBeanLoader _loader = new DefaultBeanLoader();
         //
         IBeanFilter _beanFilter = new IBeanFilter() {
+            @Override
             public boolean filter(Class<?> targetClass) {
                 return !(targetClass.isInterface() || targetClass.isAnnotation() || targetClass.isEnum()) && (targetClass.isAnnotationPresent(Handler.class) && ClassUtils.isInterfaceOf(targetClass, IBeanHandler.class));
             }
@@ -110,6 +111,7 @@ public class DefaultPluginFactory implements IPluginFactory {
         return _returnValues;
     }
 
+    @Override
     public void init(IPluginConfig pluginConfig) throws Exception {
         if (!__inited) {
             this.__config = pluginConfig;
@@ -225,22 +227,26 @@ public class DefaultPluginFactory implements IPluginFactory {
                 }
                 // 扫描所有正式插件目录(即目录名称不以'.'开头的)
                 File[] _pluginDirs = __config.getPluginHome().listFiles();
-                if (_pluginDirs != null) for (File _pluginDir : _pluginDirs) {
-                    if (_pluginDir.isDirectory() && _pluginDir.getName().charAt(0) != '.') {
-                        // 设置JAR包路径
-                        File _pluginLibDir = new File(_pluginDir, "lib");
-                        if (_pluginLibDir.exists() && _pluginLibDir.isDirectory()) {
-                            File[] _libFiles = _pluginLibDir.listFiles();
-                            if (_libFiles != null) for (File _libFile : _libFiles) {
-                                if (_libFile.isFile() && _libFile.getAbsolutePath().endsWith("jar")) {
-                                    _libs.add(_libFile.toURI().toURL());
+                if (_pluginDirs != null) {
+                    for (File _pluginDir : _pluginDirs) {
+                        if (_pluginDir.isDirectory() && _pluginDir.getName().charAt(0) != '.') {
+                            // 设置JAR包路径
+                            File _pluginLibDir = new File(_pluginDir, "lib");
+                            if (_pluginLibDir.exists() && _pluginLibDir.isDirectory()) {
+                                File[] _libFiles = _pluginLibDir.listFiles();
+                                if (_libFiles != null) {
+                                    for (File _libFile : _libFiles) {
+                                        if (_libFile.isFile() && _libFile.getAbsolutePath().endsWith("jar")) {
+                                            _libs.add(_libFile.toURI().toURL());
+                                        }
+                                    }
                                 }
                             }
-                        }
-                        // 设置类文件路径
-                        _pluginLibDir = new File(_pluginDir, "classes");
-                        if (_pluginLibDir.exists() && _pluginLibDir.isDirectory()) {
-                            _libs.add(_pluginLibDir.toURI().toURL());
+                            // 设置类文件路径
+                            _pluginLibDir = new File(_pluginDir, "classes");
+                            if (_pluginLibDir.exists() && _pluginLibDir.isDirectory()) {
+                                _libs.add(_pluginLibDir.toURI().toURL());
+                            }
                         }
                     }
                 }
@@ -253,10 +259,12 @@ public class DefaultPluginFactory implements IPluginFactory {
         return __pluginClassLoader;
     }
 
+    @Override
     public boolean isInited() {
         return __inited;
     }
 
+    @Override
     public void destroy() throws Exception {
         if (__inited) {
             __inited = false;
@@ -286,15 +294,18 @@ public class DefaultPluginFactory implements IPluginFactory {
         }
     }
 
+    @Override
     public void addExcludedInterfaceClass(Class<?> interfaceClass) {
         __innerBeanFactory.registerExcludedClass(interfaceClass);
         __outerBeanFactory.registerExcludedClass(interfaceClass);
     }
 
+    @Override
     public YMP getOwner() {
         return __owner;
     }
 
+    @Override
     public IPluginConfig getPluginConfig() {
         return __config;
     }
@@ -310,6 +321,7 @@ public class DefaultPluginFactory implements IPluginFactory {
         }
     }
 
+    @Override
     public IPlugin getPlugin(String id) {
         IPlugin _plugin = null;
         if (__pluginMetaWithId.containsKey(id)) {
@@ -319,16 +331,19 @@ public class DefaultPluginFactory implements IPluginFactory {
         return _plugin;
     }
 
+    @Override
     public <T> T getPlugin(Class<T> clazz) {
         T _target = __outerBeanFactory.getBean(clazz);
         __pluginStatusChecker((IPlugin) _target);
         return _target;
     }
 
+    @Override
     public PluginMeta getPluginMeta(String id) {
         return __pluginMetaWithId.get(id);
     }
 
+    @Override
     public PluginMeta getPluginMeta(Class<? extends IPlugin> clazz) {
         return __pluginMetaWithClass.get(clazz);
     }

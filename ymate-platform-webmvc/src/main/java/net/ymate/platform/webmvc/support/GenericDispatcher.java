@@ -37,9 +37,9 @@ import java.io.IOException;
  */
 public final class GenericDispatcher {
 
-    private IWebMvc __owner;
+    private final IWebMvc __owner;
 
-    private IWebErrorProcessor __errorProcessor;
+    private final IWebErrorProcessor __errorProcessor;
 
     public static GenericDispatcher create(IWebMvc webMvc) {
         return new GenericDispatcher(webMvc);

@@ -50,6 +50,7 @@ public class InterceptProxy implements IProxy {
         }
     }
 
+    @Override
     public Object doProxy(IProxyChain proxyChain) throws Throwable {
         // 方法声明了@Ignored注解或非PUBLIC方法和Object类方法将被排除
         boolean _ignored = proxyChain.getTargetMethod().isAnnotationPresent(Ignored.class);
@@ -123,12 +124,12 @@ public class InterceptProxy implements IProxy {
 
         static InterceptMeta __DEFAULT = new InterceptMeta("default");
 
-        private String id;
+        private final String id;
         //
         private List<Class<? extends IInterceptor>> beforeIntercepts;
         private List<Class<? extends IInterceptor>> afterIntercepts;
         //
-        private Map<String, String> contextParams;
+        private final Map<String, String> contextParams;
 
         InterceptMeta(String id) {
             this.id = id;

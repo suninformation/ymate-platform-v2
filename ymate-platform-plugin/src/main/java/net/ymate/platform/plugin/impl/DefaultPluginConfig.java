@@ -42,6 +42,7 @@ public class DefaultPluginConfig implements IPluginConfig {
     public DefaultPluginConfig() {
     }
 
+    @Override
     public List<String> getAutoscanPackages() {
         return __packageNames;
     }
@@ -50,6 +51,7 @@ public class DefaultPluginConfig implements IPluginConfig {
         this.__packageNames = autoscanPackages;
     }
 
+    @Override
     public IPluginEventListener getPluginEventListener() {
         return __pluginEventListener;
     }
@@ -58,6 +60,7 @@ public class DefaultPluginConfig implements IPluginConfig {
         this.__pluginEventListener = pluginEventListener;
     }
 
+    @Override
     public boolean isAutomatic() {
         return __automatic;
     }
@@ -66,6 +69,7 @@ public class DefaultPluginConfig implements IPluginConfig {
         this.__automatic = automatic;
     }
 
+    @Override
     public boolean isIncludedClassPath() {
         return __includedClassPath;
     }
@@ -74,6 +78,7 @@ public class DefaultPluginConfig implements IPluginConfig {
         this.__includedClassPath = includedClassPath;
     }
 
+    @Override
     public File getPluginHome() {
         return __pluginHome;
     }

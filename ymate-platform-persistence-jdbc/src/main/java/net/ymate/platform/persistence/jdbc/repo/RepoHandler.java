@@ -28,7 +28,7 @@ import org.apache.commons.lang.StringUtils;
  */
 public class RepoHandler implements IBeanHandler {
 
-    private IDatabase __owner;
+    private final IDatabase __owner;
 
     public RepoHandler(IDatabase owner) throws Exception {
         __owner = owner;
@@ -41,7 +41,7 @@ public class RepoHandler implements IBeanHandler {
         if (JDBC.DATABASE.UNKNOW.equals(_anno.dbType())) {
             return targetClass.newInstance();
         } else {
-            DataSourceCfgMeta _cfgMeta = null;
+            DataSourceCfgMeta _cfgMeta;
             if (StringUtils.isBlank(_anno.dsName())) {
                 _cfgMeta = __owner.getModuleCfg().getDefaultDataSourceCfg();
             } else {

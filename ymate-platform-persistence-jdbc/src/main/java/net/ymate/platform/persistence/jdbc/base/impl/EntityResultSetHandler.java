@@ -27,13 +27,14 @@ import java.sql.ResultSet;
 /**
  * 采用实体类存储数据的结果集数据处理接口实现
  *
+ * @param <T> 实体类型
  * @author 刘镇 (suninformation@163.com) on 15/5/8 下午3:58
  * @version 1.0
  */
 public class EntityResultSetHandler<T extends IEntity> extends AbstractResultSetHandler<T> {
 
-    private Class<T> __entityClass;
-    private EntityMeta __entityMeta;
+    private final Class<T> __entityClass;
+    private final EntityMeta __entityMeta;
 
     @SuppressWarnings("unchecked")
     public EntityResultSetHandler() {

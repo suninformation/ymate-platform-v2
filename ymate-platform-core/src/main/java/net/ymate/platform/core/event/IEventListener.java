@@ -18,6 +18,7 @@ package net.ymate.platform.core.event;
 /**
  * 事件监听器接口，用于接收并处理一种事件类型
  *
+ * @param <CONTEXT> 上下文对象类型
  * @author 刘镇 (suninformation@163.com) on 15/5/16 上午2:20
  * @version 1.0
  */

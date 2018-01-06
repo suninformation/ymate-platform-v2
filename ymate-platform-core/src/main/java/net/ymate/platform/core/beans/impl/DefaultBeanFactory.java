@@ -73,6 +73,7 @@ public class DefaultBeanFactory implements IBeanFactory {
         this.__parentFactory = parent;
     }
 
+    @Override
     public void registerHandler(Class<? extends Annotation> annoClass, IBeanHandler handler) {
         if (!__beanHandlerMap.containsKey(annoClass)) {
             this.__beanHandlerMap.put(annoClass, handler);
@@ -81,6 +82,7 @@ public class DefaultBeanFactory implements IBeanFactory {
         }
     }
 
+    @Override
     public void registerHandler(Class<? extends Annotation> annoClass) {
         registerHandler(annoClass, IBeanHandler.DEFAULT_HANDLER);
     }
@@ -94,6 +96,7 @@ public class DefaultBeanFactory implements IBeanFactory {
         }
     }
 
+    @Override
     public void registerPackage(String packageName) {
         boolean _flag = false;
         do {
@@ -115,17 +118,19 @@ public class DefaultBeanFactory implements IBeanFactory {
         } while (!_flag);
     }
 
+    @Override
     public void registerExcludedClass(Class<?> excludedClass) {
         if (excludedClass.isInterface()) {
             this.__excludedClassSet.add(excludedClass);
         }
     }
 
+    @Override
     @SuppressWarnings("unchecked")
     public <T> T getBean(Class<T> clazz) {
         T _obj = null;
         if (clazz != null && !clazz.isAnnotation()) {
-            BeanMeta _beanMeta = null;
+            BeanMeta _beanMeta;
             if (clazz.isInterface()) {
                 Class<?> _targetClass = this.__beanInterfacesMap.get(clazz);
                 _beanMeta = this.__beanInstancesMap.get(_targetClass);
@@ -154,10 +159,12 @@ public class DefaultBeanFactory implements IBeanFactory {
         return _obj;
     }
 
+    @Override
     public Map<Class<?>, BeanMeta> getBeans() {
         return Collections.unmodifiableMap(this.__beanInstancesMap);
     }
 
+    @Override
     public void registerBean(BeanMeta beanMeta) {
         // 注解、枚举和接口类型采用不同方式处理
         if (beanMeta.getBeanClass().isInterface()) {
@@ -170,10 +177,12 @@ public class DefaultBeanFactory implements IBeanFactory {
         }
     }
 
+    @Override
     public void registerBean(Class<?> clazz) {
         registerBean(BeanMeta.create(clazz));
     }
 
+    @Override
     public void registerBean(Class<?> clazz, Object object) {
         registerBean(BeanMeta.create(object, clazz));
     }
@@ -190,6 +199,7 @@ public class DefaultBeanFactory implements IBeanFactory {
         }
     }
 
+    @Override
     public void init() throws Exception {
         if (this.__beanLoader == null) {
             if (this.__parentFactory != null) {
@@ -199,22 +209,24 @@ public class DefaultBeanFactory implements IBeanFactory {
                 this.__beanLoader = new DefaultBeanLoader();
             }
         }
-        if (!__packageNames.isEmpty()) for (String _packageName : __packageNames) {
-            List<Class<?>> _classes = this.__beanLoader.load(_packageName);
-            for (Class<?> _class : _classes) {
-                // 不扫描注解、枚举类，被声明@Ingored注解的类也将被忽略，因为需要处理package-info信息，所以放开接口限制
-                if (!_class.isAnnotation() && !_class.isEnum() /* && !_class.isInterface() */ && !_class.isAnnotationPresent(Ignored.class)) {
-                    Annotation[] _annotations = _class.getAnnotations();
-                    if (_annotations != null && _annotations.length > 0) {
-                        for (Annotation _anno : _annotations) {
-                            IBeanHandler _handler = __beanHandlerMap.get(_anno.annotationType());
-                            if (_handler != null) {
-                                Object _instance = _handler.handle(_class);
-                                if (_instance != null) {
-                                    if (_instance instanceof BeanMeta) {
-                                        __addClass((BeanMeta) _instance);
-                                    } else {
-                                        __addClass(BeanMeta.create(_instance, _class));
+        if (!__packageNames.isEmpty()) {
+            for (String _packageName : __packageNames) {
+                List<Class<?>> _classes = this.__beanLoader.load(_packageName);
+                for (Class<?> _class : _classes) {
+                    // 不扫描注解、枚举类，被声明@Ingored注解的类也将被忽略，因为需要处理package-info信息，所以放开接口限制
+                    if (!_class.isAnnotation() && !_class.isEnum() /* && !_class.isInterface() */ && !_class.isAnnotationPresent(Ignored.class)) {
+                        Annotation[] _annotations = _class.getAnnotations();
+                        if (_annotations != null && _annotations.length > 0) {
+                            for (Annotation _anno : _annotations) {
+                                IBeanHandler _handler = __beanHandlerMap.get(_anno.annotationType());
+                                if (_handler != null) {
+                                    Object _instance = _handler.handle(_class);
+                                    if (_instance != null) {
+                                        if (_instance instanceof BeanMeta) {
+                                            __addClass((BeanMeta) _instance);
+                                        } else {
+                                            __addClass(BeanMeta.create(_instance, _class));
+                                        }
                                     }
                                 }
                             }
@@ -225,6 +237,7 @@ public class DefaultBeanFactory implements IBeanFactory {
         }
     }
 
+    @Override
     public void destroy() throws Exception {
         this.__parentFactory = null;
         this.__packageNames = null;
@@ -235,22 +248,27 @@ public class DefaultBeanFactory implements IBeanFactory {
         this.__beanLoader = null;
     }
 
+    @Override
     public IBeanFactory getParent() {
         return __parentFactory;
     }
 
+    @Override
     public void setParent(IBeanFactory parent) {
         this.__parentFactory = parent;
     }
 
+    @Override
     public IBeanLoader getLoader() {
         return this.__beanLoader;
     }
 
+    @Override
     public void setLoader(IBeanLoader loader) {
         this.__beanLoader = loader;
     }
 
+    @Override
     public void initProxy(IProxyFactory proxyFactory) throws Exception {
         __proxyFactory = proxyFactory;
         for (Map.Entry<Class<?>, BeanMeta> _entry : this.getBeans().entrySet()) {
@@ -278,6 +296,7 @@ public class DefaultBeanFactory implements IBeanFactory {
                 return true;
             }
 
+            @Override
             public boolean filter(IProxy targetProxy) {
                 CleanProxy _cleanProxy = _targetClass.getAnnotation(CleanProxy.class);
                 if (_cleanProxy != null) {
@@ -309,6 +328,7 @@ public class DefaultBeanFactory implements IBeanFactory {
         return targetObject;
     }
 
+    @Override
     public void initIoC() throws Exception {
         for (Map.Entry<Class<?>, BeanMeta> _bean : this.getBeans().entrySet()) {
             if (!_bean.getKey().isInterface() && _bean.getValue().isSingleton()) {

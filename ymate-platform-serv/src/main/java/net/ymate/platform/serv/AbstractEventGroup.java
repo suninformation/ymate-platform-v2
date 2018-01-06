@@ -24,6 +24,9 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 /**
+ * @param <CODEC>    编码器类型
+ * @param <LISTENER> 监听器类型
+ * @param <SESSION>  会话类型
  * @author 刘镇 (suninformation@163.com) on 15/11/15 下午10:10
  * @version 1.0
  */
@@ -34,8 +37,8 @@ public abstract class AbstractEventGroup<CODEC extends ICodec, LISTENER extends 
 
     private ExecutorService __executorService;
 
-    private CODEC __codec;
-    private LISTENER __listener;
+    private final CODEC __codec;
+    private final LISTENER __listener;
 
     private SESSION __session;
 

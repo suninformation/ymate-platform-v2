@@ -32,17 +32,18 @@ import java.lang.reflect.Method;
 import java.util.*;
 
 /**
+ * @param <T> 元素类型
  * @author 刘镇 (suninformation@163.com) on 16/7/3 上午2:05
  * @version 1.0
  */
 public class PropertyStateSupport<T> {
 
-    private T __source;
+    private final T __source;
     private T __bound;
     private final Class<?> __targetClass;
 
-    private List<PropertyStateMeta> __stateMetas;
-    private Map<String, PropertyStateMeta> __propertyStates;
+    private final List<PropertyStateMeta> __stateMetas;
+    private final Map<String, PropertyStateMeta> __propertyStates;
 
     public static <T> PropertyStateSupport<T> create(T source) throws Exception {
         return new PropertyStateSupport<T>(source);
@@ -72,6 +73,7 @@ public class PropertyStateSupport<T> {
     public T bind() {
         if (__bound == null) {
             __bound = (T) ClassUtils.wrapper(__source).duplicate(Enhancer.create(__targetClass, new MethodInterceptor() {
+                @Override
                 public Object intercept(Object targetObject, Method targetMethod, Object[] methodParams, MethodProxy methodProxy) throws Throwable {
                     Object _result = methodProxy.invokeSuper(targetObject, methodParams);
                     PropertyStateMeta _meta = __propertyStates.get(targetMethod.getName());
@@ -132,9 +134,9 @@ public class PropertyStateSupport<T> {
     }
 
     public static class PropertyStateMeta {
-        private String propertyName;
-        private String aliasName;
-        private Object originalValue;
+        private final String propertyName;
+        private final String aliasName;
+        private final Object originalValue;
         private Object newValue;
 
         private boolean changed;

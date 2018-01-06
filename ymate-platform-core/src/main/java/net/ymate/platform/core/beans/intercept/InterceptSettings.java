@@ -38,11 +38,11 @@ public class InterceptSettings {
 
     private static final Log _LOG = LogFactory.getLog(InterceptSettings.class);
 
-    private Map<String, InterceptPackageMeta> __packages;
+    private final Map<String, InterceptPackageMeta> __packages;
 
-    private List<Class<? extends IInterceptor>> __globals;
+    private final List<Class<? extends IInterceptor>> __globals;
 
-    private Map<String, InterceptSettingMeta> __settings;
+    private final Map<String, InterceptSettingMeta> __settings;
 
     public InterceptSettings() {
         __packages = new HashMap<String, InterceptPackageMeta>();
@@ -341,12 +341,12 @@ public class InterceptSettings {
         return _flag ? _results : classes;
     }
 
-    static class InterceptPackageMeta {
-        private String packageName;
+    public static class InterceptPackageMeta {
+        private final String packageName;
         private List<Class<? extends IInterceptor>> beforeIntercepts;
         private List<Class<? extends IInterceptor>> afterIntercepts;
 
-        private List<ContextParam> contextParams;
+        private final List<ContextParam> contextParams;
 
         public InterceptPackageMeta(String packageName) {
             this.packageName = packageName;
@@ -373,7 +373,7 @@ public class InterceptSettings {
         }
     }
 
-    static class InterceptSettingMeta {
+    public static class InterceptSettingMeta {
         private String className;
         private String methodName;
         private boolean cleanAll;

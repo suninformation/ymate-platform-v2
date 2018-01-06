@@ -23,6 +23,7 @@ import java.lang.reflect.Method;
 /**
  * 缓存Key生成器接口
  *
+ * @param <T> 键类型
  * @author 刘镇 (suninformation@163.com) on 15/11/3 下午1:40
  * @version 1.0
  */

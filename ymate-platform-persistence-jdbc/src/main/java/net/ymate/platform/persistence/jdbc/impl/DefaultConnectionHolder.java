@@ -31,7 +31,7 @@ import java.sql.SQLException;
  */
 public class DefaultConnectionHolder implements IConnectionHolder {
 
-    private IDataSourceAdapter __dsAdapter;
+    private final IDataSourceAdapter __dsAdapter;
 
     private Connection __conn;
 

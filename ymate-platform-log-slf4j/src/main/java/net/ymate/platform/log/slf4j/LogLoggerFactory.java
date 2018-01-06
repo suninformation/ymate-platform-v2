@@ -27,8 +27,9 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class LogLoggerFactory implements ILoggerFactory {
 
-    private static Map<String, Logger> __LOGGER_CACHE = new ConcurrentHashMap<String, Logger>();
+    private static final Map<String, Logger> __LOGGER_CACHE = new ConcurrentHashMap<String, Logger>();
 
+    @Override
     public Logger getLogger(String name) {
         Logger _logger = __LOGGER_CACHE.get(name);
         if (_logger == null) {

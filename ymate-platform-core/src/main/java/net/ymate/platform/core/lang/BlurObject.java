@@ -21,6 +21,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
 import java.io.Serializable;
@@ -28,6 +29,7 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.sql.Blob;
 import java.sql.Clob;
+import java.sql.SQLException;
 import java.util.*;
 
 /**
@@ -66,7 +68,7 @@ public class BlurObject implements Serializable, Cloneable {
     /**
      * 当前存储对象值
      */
-    private Object attr;
+    private final Object attr;
 
     public static BlurObject bind(Object o) {
         return new BlurObject(o);
@@ -114,7 +116,7 @@ public class BlurObject implements Serializable, Cloneable {
             return null;
         }
         if (attr instanceof List) {
-            return (List<? extends Object>) attr;
+            return (List<?>) attr;
         }
         List<Object> _returnValue = new LinkedList<Object>();
         _returnValue.add(attr);
@@ -129,7 +131,7 @@ public class BlurObject implements Serializable, Cloneable {
             return null;
         }
         if (attr instanceof List) {
-            return (Set<? extends Object>) attr;
+            return (Set<?>) attr;
         }
         Set<Object> _returnValue = new LinkedHashSet<Object>();
         _returnValue.add(attr);
@@ -238,8 +240,10 @@ public class BlurObject implements Serializable, Cloneable {
                 if (_clob.length() > 0 && _reader != null) {
                     return IOUtils.toString(_reader);
                 }
-            } catch (Exception e) {
-                _LOG.warn("", RuntimeUtils.unwrapThrow(e));
+            } catch (IOException e) {
+                _LOG.warn("", e);
+            } catch (SQLException e) {
+                _LOG.warn("", e);
             } finally {
                 IOUtils.closeQuietly(_reader);
             }
@@ -418,8 +422,10 @@ public class BlurObject implements Serializable, Cloneable {
                         return _bArr;
                     }
                 }
-            } catch (Exception e) {
-                _LOG.warn("", RuntimeUtils.unwrapThrow(e));
+            } catch (IOException e) {
+                _LOG.warn("", e);
+            } catch (SQLException e) {
+                _LOG.warn("", e);
             } finally {
                 IOUtils.closeQuietly(_input);
             }

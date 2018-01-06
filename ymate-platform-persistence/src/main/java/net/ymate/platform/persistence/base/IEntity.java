@@ -22,6 +22,7 @@ import java.io.Serializable;
  *
  * @author 刘镇 (suninformation@163.com) on 2010-12-20 下午02:16:46
  * @version 1.0
+ * @param <PK> 主键类型
  */
 public interface IEntity<PK extends Serializable> extends Serializable {
 

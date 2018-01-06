@@ -68,7 +68,7 @@ public class YMP {
 
     private static final YMP __instance = new YMP(ConfigBuilder.system().build());
 
-    private IConfig __config;
+    private final IConfig __config;
 
     private boolean __inited;
 

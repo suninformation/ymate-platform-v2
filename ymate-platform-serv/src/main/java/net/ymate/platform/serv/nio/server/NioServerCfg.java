@@ -27,7 +27,7 @@ import org.apache.commons.lang.StringUtils;
  */
 public class NioServerCfg extends DefaultServerCfg implements INioServerCfg {
 
-    private int __selectorCount;
+    private final int __selectorCount;
 
     public NioServerCfg(IServModuleCfg moduleCfg, String serverName) {
         super(moduleCfg, serverName);

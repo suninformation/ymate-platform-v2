@@ -371,6 +371,7 @@ public final class FileUploadHelper {
             __isFileObj = true;
         }
 
+        @Override
         public String getPath() {
             if (__isFileObj) {
                 if (__fileObj == null) {
@@ -382,8 +383,9 @@ public final class FileUploadHelper {
             return __fileItemObj.getName();
         }
 
+        @Override
         public String getName() {
-            String _filePath = null;
+            String _filePath;
             if (__isFileObj) {
                 _filePath = __fileObj == null ? "" : __fileObj.getAbsolutePath();
             } else {
@@ -429,6 +431,7 @@ public final class FileUploadHelper {
             return __fileItemObj.get();
         }
 
+        @Override
         public void delete() {
             if (__isFileObj) {
                 if (__fileObj != null && __fileObj.exists()) {
@@ -439,10 +442,12 @@ public final class FileUploadHelper {
             }
         }
 
+        @Override
         public void transferTo(File dest) throws Exception {
             this.__fileItemObj.write(dest);
         }
 
+        @Override
         public void writeTo(File file) throws Exception {
             if (__isFileObj) {
                 if (__fileObj == null) {
@@ -477,6 +482,7 @@ public final class FileUploadHelper {
             }
         }
 
+        @Override
         public InputStream getInputStream() throws IOException {
             if (__isFileObj) {
                 if (__fileObj == null) {
@@ -487,6 +493,7 @@ public final class FileUploadHelper {
             return this.__fileItemObj.getInputStream();
         }
 
+        @Override
         public long getSize() {
             if (__isFileObj) {
                 if (__fileObj == null) {
@@ -498,6 +505,7 @@ public final class FileUploadHelper {
             return __fileItemObj.getSize();
         }
 
+        @Override
         public OutputStream getOutputStream() throws IOException {
             if (this.__isFileObj) {
                 if (__fileObj == null) {
@@ -508,6 +516,7 @@ public final class FileUploadHelper {
             return __fileItemObj.getOutputStream();
         }
 
+        @Override
         public String getContentType() {
             if (__isFileObj) {
                 if (__fileObj != null) {

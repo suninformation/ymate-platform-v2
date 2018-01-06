@@ -43,12 +43,14 @@ public class DefaultInterceptorRuleProcessor implements IInterceptorRuleProcesso
 
     private IWebMvc __owner;
 
-    private Map<String, InterceptorRuleMeta> __interceptorRules = new HashMap<String, InterceptorRuleMeta>();
+    private final Map<String, InterceptorRuleMeta> __interceptorRules = new HashMap<String, InterceptorRuleMeta>();
 
+    @Override
     public void init(IWebMvc owner) throws Exception {
         __owner = owner;
     }
 
+    @Override
     public void registerInterceptorRule(Class<? extends IInterceptorRule> targetClass) throws Exception {
         Method[] _methods = targetClass.getMethods();
         for (Method _method : _methods) {
@@ -59,6 +61,7 @@ public class DefaultInterceptorRuleProcessor implements IInterceptorRuleProcesso
         }
     }
 
+    @Override
     public PairObject<IView, ResponseCache> processRequest(IWebMvc owner, IRequestContext requestContext) throws Exception {
         String _mapping = requestContext.getRequestMapping();
         InterceptorRuleMeta _ruleMeta = __interceptorRules.get(_mapping);

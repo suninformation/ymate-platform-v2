@@ -27,12 +27,13 @@ import java.sql.ResultSet;
 /**
  * 将数据直接映射到类成员属性的结果集处理接口实现
  *
+ * @param <T> 元素类型
  * @author 刘镇 (suninformation@163.com) on 17/1/7 下午10:20
  * @version 1.0
  */
 public class BeanResultSetHandler<T> extends AbstractResultSetHandler<T> {
 
-    private Class<T> __beanClass;
+    private final Class<T> __beanClass;
 
     @SuppressWarnings("unchecked")
     public BeanResultSetHandler() {

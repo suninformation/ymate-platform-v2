@@ -138,6 +138,7 @@ public class JsonView extends AbstractView {
         return JSON.toJSONString(__jsonObj, _features.toArray(new SerializerFeature[_features.size()]));
     }
 
+    @Override
     protected void __doRenderView() throws Exception {
         HttpServletResponse _response = WebContext.getResponse();
         if (StringUtils.isNotBlank(getContentType())) {

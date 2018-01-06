@@ -37,12 +37,14 @@ import java.io.Serializable;
 /**
  * 实体模型接口抽象实现，提供基本数据库操作方法
  *
+ * @param <Entity> 实体类型
+ * @param <PK>     主键类型
  * @author 刘镇 (suninformation@163.com) on 2013-7-16 下午5:22:15
  * @version 1.0
  */
 public abstract class BaseEntity<Entity extends IEntity, PK extends Serializable> implements IEntity<PK> {
 
-    private Class<Entity> __entityClass;
+    private final Class<Entity> __entityClass;
 
     private IConnectionHolder __connectionHolder;
 

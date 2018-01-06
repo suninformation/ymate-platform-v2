@@ -21,7 +21,8 @@ import java.io.IOException;
 /**
  * 服务端接口
  *
- * @param <CODEC> 服务端编解码器接口类型
+ * @param <LISTENER> 监听器类型
+ * @param <CODEC>    服务端编解码器接口类型
  * @author 刘镇 (suninformation@163.com) on 15/10/15 上午10:21
  * @version 1.0
  */

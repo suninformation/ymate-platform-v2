@@ -20,6 +20,7 @@ import java.util.List;
 /**
  * 数据库存储过程操作器接口定义
  *
+ * @param <T> 元素类型
  * @author 刘镇 (suninformation@163.com) on 2010-12-25 下午02:40:48
  * @version 1.0
  */
@@ -35,8 +36,10 @@ public interface IProcedureOperator<T> extends IOperator {
      */
     IProcedureOperator<T> addOutParameter(Integer sqlParamType);
 
+    @Override
     IProcedureOperator<T> addParameter(SQLParameter parameter);
 
+    @Override
     IProcedureOperator<T> addParameter(Object parameter);
 
     IProcedureOperator<T> setOutResultProcessor(IOutResultProcessor outResultProcessor);

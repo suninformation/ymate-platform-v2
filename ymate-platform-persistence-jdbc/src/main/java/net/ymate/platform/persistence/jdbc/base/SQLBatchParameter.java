@@ -31,7 +31,7 @@ public final class SQLBatchParameter {
     /**
      * 存放SQL参数的集合
      */
-    private List<SQLParameter> __parameters;
+    private final List<SQLParameter> __parameters;
 
     public static SQLBatchParameter create() {
         return new SQLBatchParameter();

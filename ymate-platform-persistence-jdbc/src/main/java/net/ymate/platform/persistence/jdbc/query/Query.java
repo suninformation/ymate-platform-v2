@@ -28,6 +28,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 /**
+ * @param <T> 当前实现类类型
  * @author 刘镇 (suninformation@163.com) on 2017/12/14 下午11:43
  * @version 1.0
  */

@@ -71,10 +71,12 @@ public class Plugins implements IModule, IPlugins {
         return __instance;
     }
 
+    @Override
     public String getName() {
         return IPlugins.MODULE_NAME;
     }
 
+    @Override
     public void init(YMP owner) throws Exception {
         if (!__inited) {
             Map<String, String> _moduleCfgs = owner.getConfig().getModuleConfigs(MODULE_NAME);
@@ -97,18 +99,22 @@ public class Plugins implements IModule, IPlugins {
             _config.setIncludedClassPath(BlurObject.bind(StringUtils.defaultIfBlank(_moduleCfgs.get("included_classpath"), "true")).toBooleanValue());
             //
             _config.setPluginEventListener(new IPluginEventListener() {
+                @Override
                 public void onInited(IPluginContext context, IPlugin plugin) {
                     __owner.getEvents().fireEvent(new PluginEvent(plugin, PluginEvent.EVENT.PLUGIN_INITED));
                 }
 
+                @Override
                 public void onStarted(IPluginContext context, IPlugin plugin) {
                     __owner.getEvents().fireEvent(new PluginEvent(plugin, PluginEvent.EVENT.PLUGIN_STARTED));
                 }
 
+                @Override
                 public void onShutdown(IPluginContext context, IPlugin plugin) {
                     __owner.getEvents().fireEvent(new PluginEvent(plugin, PluginEvent.EVENT.PLUGIN_SHUTDOWN));
                 }
 
+                @Override
                 public void onDestroy(IPluginContext context, IPlugin plugin) {
                     __owner.getEvents().fireEvent(new PluginEvent(plugin, PluginEvent.EVENT.PLUGIN_DESTROYED));
                 }
@@ -121,14 +127,17 @@ public class Plugins implements IModule, IPlugins {
         }
     }
 
+    @Override
     public boolean isInited() {
         return __inited;
     }
 
+    @Override
     public YMP getOwner() {
         return __owner;
     }
 
+    @Override
     public void destroy() throws Exception {
         if (__inited) {
             __inited = false;
@@ -140,6 +149,7 @@ public class Plugins implements IModule, IPlugins {
         }
     }
 
+    @Override
     public IPluginFactory getPluginFactory() {
         return __pluginFactory;
     }
