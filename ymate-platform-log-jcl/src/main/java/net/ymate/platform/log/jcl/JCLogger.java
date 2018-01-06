@@ -77,10 +77,6 @@ public class JCLogger extends AbstractLogger implements Log, Serializable {
                 case DEBUG:
                     __simplog.debug(info, e);
                     break;
-                case ALL:
-                case INFO:
-                    __simplog.info(info, e);
-                    break;
                 case WARN:
                     __simplog.warn(info, e);
                     break;
@@ -89,6 +85,9 @@ public class JCLogger extends AbstractLogger implements Log, Serializable {
                     break;
                 case FATAL:
                     __simplog.fatal(info, e);
+                    break;
+                default:
+                    __simplog.info(info, e);
             }
         }
     }

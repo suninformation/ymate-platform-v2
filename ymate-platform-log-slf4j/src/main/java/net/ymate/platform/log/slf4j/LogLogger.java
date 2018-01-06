@@ -500,7 +500,7 @@ public class LogLogger extends AbstractLogger implements LocationAwareLogger, Se
     }
 
     public void log(final Marker marker, final String fqcn, final int level, final String message, final Object[] params, Throwable throwable) {
-        LogLevel _level = null;
+        LogLevel _level;
         switch (level) {
             case TRACE_INT:
                 _level = LogLevel.TRACE;
@@ -508,14 +508,14 @@ public class LogLogger extends AbstractLogger implements LocationAwareLogger, Se
             case DEBUG_INT:
                 _level = LogLevel.DEBUG;
                 break;
-            case INFO_INT:
-                _level = LogLevel.INFO;
-                break;
             case WARN_INT:
                 _level = LogLevel.WARN;
                 break;
             case ERROR_INT:
                 _level = LogLevel.ERROR;
+                break;
+            default:
+                _level = LogLevel.INFO;
         }
         __doBuildEx(__getSafeMessages(message, params), throwable, _level);
     }
@@ -543,10 +543,6 @@ public class LogLogger extends AbstractLogger implements LocationAwareLogger, Se
                 case DEBUG:
                     __tryGetLogSafely().debug(info, e);
                     break;
-                case ALL:
-                case INFO:
-                    __tryGetLogSafely().info(info, e);
-                    break;
                 case WARN:
                     __tryGetLogSafely().warn(info, e);
                     break;
@@ -555,6 +551,9 @@ public class LogLogger extends AbstractLogger implements LocationAwareLogger, Se
                     break;
                 case FATAL:
                     __tryGetLogSafely().fatal(info, e);
+                    break;
+                default:
+                    __tryGetLogSafely().info(info, e);
             }
         }
     }
