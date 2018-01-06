@@ -17,7 +17,6 @@ package net.ymate.platform.persistence.jdbc.impl;
 
 import com.mchange.v2.c3p0.ComboPooledDataSource;
 import net.ymate.platform.persistence.jdbc.AbstractDataSourceAdapter;
-import org.apache.commons.lang.StringUtils;
 
 import java.sql.Connection;
 
@@ -37,11 +36,7 @@ public class C3P0DataSourceAdapter extends AbstractDataSourceAdapter {
         __ds.setDriverClass(__cfgMeta.getDriverClass());
         __ds.setJdbcUrl(__cfgMeta.getConnectionUrl());
         __ds.setUser(__cfgMeta.getUsername());
-        if (StringUtils.isNotBlank(__cfgMeta.getPassword()) && __cfgMeta.isPasswordEncrypted() && __cfgMeta.getPasswordClass() != null) {
-            __ds.setPassword(__cfgMeta.getPasswordClass().newInstance().decrypt(__cfgMeta.getPassword()));
-        } else {
-            __ds.setPassword(__cfgMeta.getPassword());
-        }
+        __ds.setPassword(__doGetPasswordDecryptIfNeed());
     }
 
     @Override

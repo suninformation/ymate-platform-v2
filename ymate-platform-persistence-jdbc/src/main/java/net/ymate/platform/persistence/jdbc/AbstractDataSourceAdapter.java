@@ -83,6 +83,13 @@ public abstract class AbstractDataSourceAdapter implements IDataSourceAdapter {
         return __cfgMeta;
     }
 
+    protected String __doGetPasswordDecryptIfNeed() throws Exception {
+        if (StringUtils.isNotBlank(__cfgMeta.getPassword()) && __cfgMeta.isPasswordEncrypted() && __cfgMeta.getPasswordClass() != null) {
+            return __cfgMeta.getPasswordClass().newInstance().decrypt(__cfgMeta.getPassword());
+        }
+        return __cfgMeta.getPassword();
+    }
+
     protected abstract void __doInit() throws Exception;
 
     @Override

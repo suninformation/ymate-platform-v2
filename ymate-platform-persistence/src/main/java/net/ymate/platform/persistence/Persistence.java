@@ -21,6 +21,8 @@ import net.ymate.platform.core.module.IModule;
 import net.ymate.platform.core.module.annotation.Module;
 import net.ymate.platform.persistence.annotation.Entity;
 import net.ymate.platform.persistence.handle.EntityHandler;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 /**
  * @author 刘镇 (suninformation@163.com) on 15/8/1 上午10:11
@@ -30,6 +32,8 @@ import net.ymate.platform.persistence.handle.EntityHandler;
 public class Persistence implements IModule {
 
     public static final Version VERSION = new Version(2, 0, 5, Persistence.class.getPackage().getImplementationVersion(), Version.VersionType.Release);
+
+    private static final Log _LOG = LogFactory.getLog(Persistence.class);
 
     private YMP __owner;
 
@@ -44,7 +48,10 @@ public class Persistence implements IModule {
     public void init(YMP owner) throws Exception {
         if (!__inited) {
             //
-            owner.registerHandler(Entity.class, new EntityHandler(owner));
+            _LOG.info("Initializing ymate-platform-persistence-" + VERSION);
+            //
+            __owner = owner;
+            __owner.registerHandler(Entity.class, new EntityHandler(owner));
             //
             __inited = true;
         }
