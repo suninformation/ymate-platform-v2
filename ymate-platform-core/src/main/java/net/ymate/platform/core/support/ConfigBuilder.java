@@ -309,7 +309,7 @@ public final class ConfigBuilder {
                 return Collections.unmodifiableList(__packageNames);
             }
 
-            public List<String> getExcudedFiles() {
+            public List<String> getExcludedFiles() {
                 return Collections.unmodifiableList(__excludedFiles);
             }
 

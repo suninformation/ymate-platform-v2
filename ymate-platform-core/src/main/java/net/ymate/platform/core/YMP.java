@@ -135,7 +135,7 @@ public class YMP {
             __events.registerEvent(ModuleEvent.class);
             // 创建根对象工厂
             __beanFactory = new DefaultBeanFactory();
-            __beanFactory.setLoader(new DefaultBeanLoader(__config.getExcudedFiles()));
+            __beanFactory.setLoader(new DefaultBeanLoader(__config.getExcludedFiles()));
             __beanFactory.registerExcludedClass(IInitializable.class);
             __beanFactory.registerHandler(Bean.class);
             __beanFactory.registerHandler(Packages.class, new PackagesHandler(this));
@@ -143,7 +143,7 @@ public class YMP {
             __modules = new HashMap<Class<? extends IModule>, IModule>();
             // 创建模块对象工厂
             __moduleFactory = new BeanFactory(this);
-            __moduleFactory.setLoader(new DefaultBeanLoader(__config.getExcudedFiles()));
+            __moduleFactory.setLoader(new DefaultBeanLoader(__config.getExcludedFiles()));
             __moduleFactory.registerExcludedClass(IInitializable.class);
             __moduleFactory.registerHandler(Module.class, new ModuleHandler(this));
             __moduleFactory.registerHandler(Proxy.class, new ProxyHandler(this));

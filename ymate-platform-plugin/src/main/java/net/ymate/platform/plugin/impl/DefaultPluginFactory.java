@@ -131,7 +131,7 @@ public class DefaultPluginFactory implements IPluginFactory {
             }
             //
             __pluginClassLoader = __buildPluginClassLoader();
-            __outerBeanFactory.setLoader(new DefaultBeanLoader(__owner != null ? __owner.getConfig().getExcudedFiles() : null) {
+            __outerBeanFactory.setLoader(new DefaultBeanLoader(__owner != null ? __owner.getConfig().getExcludedFiles() : null) {
                 @Override
                 public ClassLoader getClassLoader() {
                     return __pluginClassLoader;

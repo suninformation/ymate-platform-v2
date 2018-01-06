@@ -15,8 +15,6 @@
  */
 package net.ymate.platform.core.beans.support;
 
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.serializer.SerializerFeature;
 import net.sf.cglib.proxy.Enhancer;
 import net.sf.cglib.proxy.MethodInterceptor;
 import net.sf.cglib.proxy.MethodProxy;
@@ -25,6 +23,9 @@ import net.ymate.platform.core.util.ClassUtils;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.ObjectUtils;
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.builder.EqualsBuilder;
+import org.apache.commons.lang.builder.HashCodeBuilder;
+import org.apache.commons.lang.builder.ToStringBuilder;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -170,8 +171,43 @@ public class PropertyStateSupport<T> {
         }
 
         @Override
+        public boolean equals(Object o) {
+            if (this == o) {
+                return true;
+            }
+            if (o == null || getClass() != o.getClass()) {
+                return false;
+            }
+            PropertyStateMeta that = (PropertyStateMeta) o;
+            return new EqualsBuilder()
+                    .append(changed, that.changed)
+                    .append(propertyName, that.propertyName)
+                    .append(aliasName, that.aliasName)
+                    .append(originalValue, that.originalValue)
+                    .append(newValue, that.newValue)
+                    .isEquals();
+        }
+
+        @Override
+        public int hashCode() {
+            return new HashCodeBuilder(17, 37)
+                    .append(propertyName)
+                    .append(aliasName)
+                    .append(originalValue)
+                    .append(newValue)
+                    .append(changed)
+                    .toHashCode();
+        }
+
+        @Override
         public String toString() {
-            return JSON.toJSONString(this, SerializerFeature.WriteMapNullValue, SerializerFeature.WriteNullStringAsEmpty);
+            return new ToStringBuilder(this)
+                    .append("propertyName", propertyName)
+                    .append("aliasName", aliasName)
+                    .append("originalValue", originalValue)
+                    .append("newValue", newValue)
+                    .append("changed", changed)
+                    .toString();
         }
     }
 }
