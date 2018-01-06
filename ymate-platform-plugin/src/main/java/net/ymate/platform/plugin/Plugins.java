@@ -17,7 +17,6 @@ package net.ymate.platform.plugin;
 
 import net.ymate.platform.core.Version;
 import net.ymate.platform.core.YMP;
-import net.ymate.platform.core.event.Events;
 import net.ymate.platform.core.lang.BlurObject;
 import net.ymate.platform.core.module.IModule;
 import net.ymate.platform.core.module.annotation.Module;

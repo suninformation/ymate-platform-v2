@@ -268,4 +268,37 @@
     Hi, from Plugin.
     shutdown.
 
+#### 通过依赖注入引用插件
+
+通过`@PluginRefer`注解指定注入插件实例，注解参数说明如下：
+
+|参数|说明|
+|---|---|
+|value|插件唯一ID，若不指定则默认根据成员对象类型查找插件|
+
+示例代码：
+
+    @Bean
+    public class App {
+    
+      @PluginRefer
+      private IBusiness _business;
+    
+      public IBusiness getBusiness() {
+          return _business;
+      }
+    
+      public static void main(String[] args) throws Exception {
+          try {
+              YMP.get().init();
+              //
+              App _app = YMP.get().getBean(App.class);
+              IBusiness _biz = _app.getBusiness();
+              _biz.sayHi();
+          } finally {
+              YMP.get().destroy();
+          }
+      }
+    }
+
 **注**：同一个插件可以实现多个业务接口，若多个插件实现同一个业务接口，根据插件加载顺序，最后加载的插件实例对象将替换前者；
