@@ -164,3 +164,48 @@ Log4J配置文件，内容如下：
 		
 		// 或者
 		Logs.get().getLogger("wechat").info("日志内容");
+
+#### 怀旧版业务日志记录工具使用示例
+
+通过`@Loggable`注解与`Logoo`类配合来记录完整业务逻辑处理过程；
+
+- @Loggable: 声明一个类对业务日志记录工具的支持或声明一个方法开始业务日志记录器：
+
+    > value[]：设定输出到日志记录器名称集合，可选；
+    >
+    > flag：自定义标识；
+    >
+    > action：自定义动作标识；
+    >
+    > level：日志输出级别, 默认为: INFO；
+    >
+    > merge：是否日志合并输出, 默认为: false；
+    >
+    > adapterClass：自定义日志适配器类；
+
+- 示例代码：：
+
+        public class DemoLogooAdapter extends DefaultLogooAdapter {
+        
+            @Override
+            public void onLogWritten(String flag, String action, Map<String, Object> attributes) {
+                // 自定义业务逻辑处理过程中传递的参数, 如: 写入数据库等
+                System.out.println("业务逻辑处理完毕...");
+            }
+        }
+    
+        @Controller
+        @RequestMapping("/hello")
+        @Loggable(value = "custom", flag = "示例:")
+        public class HelloController {
+        
+            @RequestMapping("/")
+            @Loggable(flag = "逻辑处理", merge = true, adapterClass = DemoLogooAdapter.class)
+            public IView hello() throws Exception {
+                // 输出日志
+                Logoo.log("日志输出...");
+                // 传递参数
+                Logoo.addAttribute("key1", "value1);
+                return View.textView("Hello YMP world!");
+            }
+        }
