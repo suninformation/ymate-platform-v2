@@ -18,9 +18,11 @@ package net.ymate.platform.webmvc.support;
 import net.ymate.platform.core.lang.BlurObject;
 import net.ymate.platform.core.util.ClassUtils;
 import net.ymate.platform.webmvc.IRequestProcessor;
+import net.ymate.platform.webmvc.IResponseBodyProcessor;
 import net.ymate.platform.webmvc.IWebMvc;
 import net.ymate.platform.webmvc.RequestMeta;
 import net.ymate.platform.webmvc.annotation.Header;
+import net.ymate.platform.webmvc.annotation.ResponseBody;
 import net.ymate.platform.webmvc.annotation.ResponseView;
 import net.ymate.platform.webmvc.base.Type;
 import net.ymate.platform.webmvc.context.WebContext;
@@ -72,16 +74,47 @@ public final class RequestExecutor {
         WebContext.getContext().addAttribute(RequestParametersProxy.class.getName(), _paramValues);
         // 提取控制器类实例
         Object _targetObj = __owner.getOwner().getBean(__requestMeta.getTargetClass());
+        Object _resultObj;
         if (!_methodParamNames.isEmpty()) {
             // 组装方法所需参数
             Object[] _mParamValues = new Object[_methodParamNames.size()];
             for (int _idx = 0; _idx < _methodParamNames.size(); _idx++) {
                 _mParamValues[_idx] = _paramValues.get(_methodParamNames.get(_idx));
             }
-            return __doProcessResultToView(__requestMeta.getMethod().invoke(_targetObj, _mParamValues));
+            _resultObj = __requestMeta.getMethod().invoke(_targetObj, _mParamValues);
         } else {
-            return __doProcessResultToView(__requestMeta.getMethod().invoke(_targetObj));
+            _resultObj = __requestMeta.getMethod().invoke(_targetObj);
         }
+        //
+        IView _resultView = null;
+        ResponseBody _respBody = __requestMeta.getResponseBody();
+        if (_respBody != null) {
+            if (_resultObj instanceof IView || _resultObj instanceof String) {
+                _resultView = __doProcessResultToView(_resultObj);
+            } else {
+                IResponseBodyProcessor _bodyProcessor = ClassUtils.impl(_respBody.value(), IResponseBodyProcessor.class);
+                if (_bodyProcessor != null) {
+                    _resultView = _bodyProcessor.processBody(__owner, _resultObj, _respBody.contentType(), _respBody.keepNull(), _respBody.quoteField());
+                }
+            }
+        } else {
+            _resultView = __doProcessResultToView(_resultObj);
+        }
+        if (_resultView != null) {
+            for (Header _header : __requestMeta.getResponseHeaders()) {
+                switch (_header.type()) {
+                    case DATE:
+                        _resultView.addDateHeader(_header.name(), BlurObject.bind(_header.value()).toLongValue());
+                        break;
+                    case INT:
+                        _resultView.addIntHeader(_header.name(), BlurObject.bind(_header.value()).toIntValue());
+                        break;
+                    default:
+                        _resultView.addHeader(_header.name(), _header.value());
+                }
+            }
+        }
+        return _resultView;
     }
 
     private IView __doProcessResultToView(Object result) throws Exception {
@@ -169,21 +202,6 @@ public final class RequestExecutor {
                 }
             } else {
                 _view = HtmlView.bind((String) result);
-            }
-        }
-        //
-        if (_view != null) {
-            for (Header _header : __requestMeta.getResponseHeaders()) {
-                switch (_header.type()) {
-                    case STRING:
-                        _view.addHeader(_header.name(), _header.value());
-                        break;
-                    case DATE:
-                        _view.addDateHeader(_header.name(), BlurObject.bind(_header.value()).toLongValue());
-                        break;
-                    case INT:
-                        _view.addIntHeader(_header.name(), BlurObject.bind(_header.value()).toIntValue());
-                }
             }
         }
         return _view;

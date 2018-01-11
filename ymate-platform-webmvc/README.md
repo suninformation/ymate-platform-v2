@@ -1255,6 +1255,20 @@ WebMVC模块通过约定模式可以将参数融合在URL中，不再通过`?`�
 
 > 以上JSON和XML这两种协议格式的控制器方法，同样支持参数的验证等特性；
 
+##### 控制器执响应行结果自定义处理
+
+通过`@ResponseBody`注解可以将控制器方法返回的执行结果对象（`String`或`IView`除外）进行自定义输出，默认将以`JSON`格式输出，可以通过`IResponseBodyProcessor`接口自定义实现输出方式；
+
+- @ResponseBody注解说明：
+
+    > value：自定义对象输出处理器（即IResponseBodyProcessor接口实现类）, 默认为：DefaultResponseBodyProcessor.class；
+    
+    > contentType：响应头是否携带Content-Type参数项，默认为：true；
+    
+    > keepNull：是否保留空值参数项，默认为：true；
+    
+    > quoteField：参数键名是否使有引号标识符，默认为：true；
+
 ##### 异常错误处理器
 
 **方式一**：WebMVC模块为开发者提供了一个IWebErrorProcessor接口，允许针对异常、验证结果和约定模式的URL解析逻辑实现自定义扩展；
@@ -1337,6 +1351,7 @@ WebMVC模块通过约定模式可以将参数融合在URL中，不再通过`?`�
 - @ResponseCache：控制器方法返回视图对象执行结果缓存注解；
 - @ResponseHeader：控制器方法返回结果时增加响应头参数；
 - @ResponseView：控制器方法默认返回视图对象；
+- @ResponseBody: 控制器方法返回结果对象自定义输出；
 - @ResponseErrorProcessor：控制器方法的默认异常处理器；
 
 示例代码：

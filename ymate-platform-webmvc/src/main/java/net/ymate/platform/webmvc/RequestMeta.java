@@ -61,6 +61,7 @@ public class RequestMeta {
     private ParameterEscape parameterEscape;
 
     private ResponseView responseView;
+    private ResponseBody responseBody;
     private final Set<Header> responseHeaders;
 
     private final Set<Type.HttpMethod> allowMethods;
@@ -106,6 +107,14 @@ public class RequestMeta {
             this.responseView = targetClass.getAnnotation(ResponseView.class);
             if (this.responseView == null) {
                 this.responseView = targetClass.getPackage().getAnnotation(ResponseView.class);
+            }
+        }
+        //
+        this.responseBody = method.getAnnotation(ResponseBody.class);
+        if (this.responseBody == null) {
+            this.responseBody = targetClass.getAnnotation(ResponseBody.class);
+            if (this.responseBody == null) {
+                this.responseBody = targetClass.getPackage().getAnnotation(ResponseBody.class);
             }
         }
         //
@@ -279,6 +288,10 @@ public class RequestMeta {
 
     public ResponseView getResponseView() {
         return responseView;
+    }
+
+    public ResponseBody getResponseBody() {
+        return responseBody;
     }
 
     public Set<Header> getResponseHeaders() {
