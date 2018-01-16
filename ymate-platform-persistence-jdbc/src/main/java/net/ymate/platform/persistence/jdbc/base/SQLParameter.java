@@ -16,6 +16,10 @@
 package net.ymate.platform.persistence.jdbc.base;
 
 import net.ymate.platform.persistence.base.Type;
+import org.apache.commons.codec.binary.Base64;
+import org.apache.commons.lang.StringUtils;
+
+import java.io.UnsupportedEncodingException;
 
 /**
  * SQL参数对象
@@ -46,10 +50,24 @@ public class SQLParameter {
         return this.value;
     }
 
+    private String __tryBase64Str(String str) {
+        String _base64Str;
+        try {
+            _base64Str = "BASE64@" + Base64.encodeBase64String(((String) value).getBytes("UTF-8"));
+        } catch (UnsupportedEncodingException e) {
+            _base64Str = str;
+        }
+        return _base64Str;
+    }
+
     @Override
     public String toString() {
         if (value instanceof String) {
-            return "\"".concat(value.toString()).concat("\"");
+            if (StringUtils.containsAny((String) value, new char[]{'\r', '\n'})) {
+                return "\"".concat(__tryBase64Str((String) value)).concat("\"");
+            } else {
+                return "\"".concat(value.toString()).concat("\"");
+            }
         }
         return value != null ? value.toString() : "@NULL";
     }
