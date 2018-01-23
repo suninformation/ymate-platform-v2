@@ -30,6 +30,8 @@ import java.math.BigInteger;
 import java.sql.Blob;
 import java.sql.Clob;
 import java.sql.SQLException;
+import java.text.NumberFormat;
+import java.text.ParseException;
 import java.util.*;
 
 /**
@@ -148,7 +150,10 @@ public class BlurObject implements Serializable, Cloneable {
         if (attr instanceof String) {
             return "true".equalsIgnoreCase(this.attr.toString()) || "on".equalsIgnoreCase(this.attr.toString()) || "1".equalsIgnoreCase(this.attr.toString());
         }
-        if (attr instanceof Boolean || boolean.class.isAssignableFrom(attr.getClass())) {
+        if (boolean.class.isAssignableFrom(attr.getClass())) {
+            return (Boolean) attr;
+        }
+        if (attr instanceof Boolean) {
             return (Boolean) attr;
         }
         if (float.class.isAssignableFrom(attr.getClass())) {
@@ -182,15 +187,8 @@ public class BlurObject implements Serializable, Cloneable {
         if (attr == null) {
             return 0;
         }
-        if (attr instanceof Integer || int.class.isAssignableFrom(attr.getClass())) {
+        if (int.class.isAssignableFrom(attr.getClass())) {
             return (Integer) attr;
-        }
-        if (attr instanceof String) {
-            if (StringUtils.isNotBlank(attr.toString())) {
-                return Integer.parseInt(attr.toString(), 10);
-            } else {
-                return 0;
-            }
         }
         if (long.class.isAssignableFrom(attr.getClass())) {
             return ((Long) attr).intValue();
@@ -201,10 +199,26 @@ public class BlurObject implements Serializable, Cloneable {
         if (double.class.isAssignableFrom(attr.getClass())) {
             return ((Double) attr).intValue();
         }
+        if (short.class.isAssignableFrom(attr.getClass())) {
+            return ((Short) attr).intValue();
+        }
         if (attr instanceof Number) {
             return ((Number) attr).intValue();
         }
-        if (attr instanceof Boolean || boolean.class.isAssignableFrom(attr.getClass())) {
+        if (attr instanceof String) {
+            if (StringUtils.isNotBlank((String) attr)) {
+                try {
+                    return NumberFormat.getInstance().parse((String) attr).intValue();
+                } catch (ParseException e) {
+                    _LOG.warn("", RuntimeUtils.unwrapThrow(e));
+                }
+            }
+            return 0;
+        }
+        if (boolean.class.isAssignableFrom(attr.getClass())) {
+            return (Boolean) attr ? 1 : 0;
+        }
+        if (attr instanceof Boolean) {
             return (Boolean) attr ? 1 : 0;
         }
         if (attr instanceof Map) {
@@ -212,9 +226,6 @@ public class BlurObject implements Serializable, Cloneable {
         }
         if (attr instanceof List) {
             return ((List) attr).size();
-        }
-        if (attr instanceof Short || short.class.isAssignableFrom(attr.getClass())) {
-            return ((Short) attr).intValue();
         }
         if (attr instanceof BlurObject) {
             return ((BlurObject) this.attr).toIntValue();
@@ -241,9 +252,9 @@ public class BlurObject implements Serializable, Cloneable {
                     return IOUtils.toString(_reader);
                 }
             } catch (IOException e) {
-                _LOG.warn("", e);
+                _LOG.warn("", RuntimeUtils.unwrapThrow(e));
             } catch (SQLException e) {
-                _LOG.warn("", e);
+                _LOG.warn("", RuntimeUtils.unwrapThrow(e));
             } finally {
                 IOUtils.closeQuietly(_reader);
             }
@@ -273,17 +284,26 @@ public class BlurObject implements Serializable, Cloneable {
         if (double.class.isAssignableFrom(attr.getClass())) {
             return ((Double) attr).floatValue();
         }
+        if (short.class.isAssignableFrom(attr.getClass())) {
+            return ((Short) attr).floatValue();
+        }
         if (attr instanceof Number) {
             return ((Number) attr).floatValue();
         }
         if (attr instanceof String) {
-            if (StringUtils.isNotBlank(attr.toString())) {
-                return Float.parseFloat(attr.toString());
-            } else {
-                return 0f;
+            if (StringUtils.isNotBlank((String) attr)) {
+                try {
+                    return NumberFormat.getInstance().parse((String) attr).floatValue();
+                } catch (ParseException e) {
+                    _LOG.warn("", RuntimeUtils.unwrapThrow(e));
+                }
             }
+            return 0f;
         }
-        if (attr instanceof Boolean || boolean.class.isAssignableFrom(attr.getClass())) {
+        if (boolean.class.isAssignableFrom(attr.getClass())) {
+            return (Boolean) attr ? 1f : 0f;
+        }
+        if (attr instanceof Boolean) {
             return (Boolean) attr ? 1f : 0f;
         }
         if (attr instanceof Map) {
@@ -317,17 +337,26 @@ public class BlurObject implements Serializable, Cloneable {
         if (float.class.isAssignableFrom(attr.getClass())) {
             return ((Float) attr).doubleValue();
         }
+        if (short.class.isAssignableFrom(attr.getClass())) {
+            return ((Short) attr).doubleValue();
+        }
         if (attr instanceof Number) {
             return ((Number) attr).doubleValue();
         }
         if (attr instanceof String) {
-            if (StringUtils.isNotBlank(attr.toString())) {
-                return Double.parseDouble(attr.toString());
-            } else {
-                return 0d;
+            if (StringUtils.isNotBlank((String) attr)) {
+                try {
+                    return NumberFormat.getInstance().parse((String) attr).doubleValue();
+                } catch (ParseException e) {
+                    _LOG.warn("", RuntimeUtils.unwrapThrow(e));
+                }
             }
+            return 0d;
         }
-        if (attr instanceof Boolean || boolean.class.isAssignableFrom(attr.getClass())) {
+        if (boolean.class.isAssignableFrom(attr.getClass())) {
+            return (Boolean) attr ? 1d : 0d;
+        }
+        if (attr instanceof Boolean) {
             return (Boolean) attr ? 1d : 0d;
         }
         if (attr instanceof Map) {
@@ -361,17 +390,26 @@ public class BlurObject implements Serializable, Cloneable {
         if (double.class.isAssignableFrom(attr.getClass())) {
             return ((Double) attr).longValue();
         }
+        if (short.class.isAssignableFrom(attr.getClass())) {
+            return ((Short) attr).longValue();
+        }
         if (attr instanceof Number) {
             return ((Number) attr).longValue();
         }
         if (attr instanceof String) {
-            if (StringUtils.isNotBlank(attr.toString())) {
-                return Long.parseLong(attr.toString(), 10);
-            } else {
-                return 0;
+            if (StringUtils.isNotBlank((String) attr)) {
+                try {
+                    return NumberFormat.getInstance().parse((String) attr).longValue();
+                } catch (ParseException e) {
+                    _LOG.warn("", RuntimeUtils.unwrapThrow(e));
+                }
             }
+            return 0;
         }
-        if (attr instanceof Boolean || boolean.class.isAssignableFrom(attr.getClass())) {
+        if (boolean.class.isAssignableFrom(attr.getClass())) {
+            return (Boolean) attr ? 1 : 0;
+        }
+        if (attr instanceof Boolean) {
             return (Boolean) attr ? 1 : 0;
         }
         if (attr instanceof Map) {
@@ -423,9 +461,9 @@ public class BlurObject implements Serializable, Cloneable {
                     }
                 }
             } catch (IOException e) {
-                _LOG.warn("", e);
+                _LOG.warn("", RuntimeUtils.unwrapThrow(e));
             } catch (SQLException e) {
-                _LOG.warn("", e);
+                _LOG.warn("", RuntimeUtils.unwrapThrow(e));
             } finally {
                 IOUtils.closeQuietly(_input);
             }
@@ -509,7 +547,7 @@ public class BlurObject implements Serializable, Cloneable {
         } else if (clazz.equals(Set.class)) {
             object = this.toSetValue();
         }
-        if (object == null && !__converters.isEmpty()) {
+        if (object == null && attr != null && !__converters.isEmpty()) {
             Map<Class<?>, IConverter<?>> _map = __converters.get(clazz);
             if (_map != null && !_map.isEmpty()) {
                 IConverter<?> _converter = _map.get(attr.getClass());
