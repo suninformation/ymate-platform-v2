@@ -80,6 +80,9 @@ public abstract class AbstractEventGroup<CODEC extends ICodec, LISTENER extends 
             __bufferSize = cfg.getBufferSize();
         }
         //
+        __executorCount = __threadMaxPoolSize = cfg.getExecutorCount();
+        __threadQueueSize = Integer.MAX_VALUE;
+        //
         __codec = codec;
         __listener = listener;
         //
