@@ -106,6 +106,8 @@ public final class Logoo {
 
     private final StringBuilder contentSB;
 
+    private final long startTime = System.currentTimeMillis();
+
     /**
      * @param loggerNames 输出到日志记录器名称集合
      * @param flags       自定义标识
@@ -131,6 +133,10 @@ public final class Logoo {
         } else {
             this.contentSB = null;
         }
+    }
+
+    private long getStartTime() {
+        return startTime;
     }
 
     private String doBuildLogLinePrefix() {
@@ -261,5 +267,16 @@ public final class Logoo {
         if (_log != null) {
             _log.doWriteLog(msg, t);
         }
+    }
+
+    /**
+     * @return 返回当前时间与日志记录开始时间的差值, 返回值可能为0
+     */
+    public static long getTotalTime() {
+        Logoo _log = CURRENT.get();
+        if (_log != null) {
+            return System.currentTimeMillis() - _log.getStartTime();
+        }
+        return 0L;
     }
 }
