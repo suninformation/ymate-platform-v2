@@ -88,14 +88,16 @@ public abstract class AbstractOperator implements IOperator {
                             .set("time", this.expenseTime + "ms").getResult();
                     StringBuilder _stackSB = new StringBuilder(_logStr);
                     if (_meta.isStackTraces()) {
-                        boolean _packageFilter = StringUtils.isNotBlank(_meta.getStackTracePackage());
+                        String[] _tracePackages = StringUtils.split(_meta.getStackTracePackage(), "|");
                         StackTraceElement[] _stacks = new Throwable().getStackTrace();
                         if (_stacks != null && _stacks.length > 0) {
                             int _depth = _meta.getStackTraceDepth() <= 0 ? _stacks.length : (_meta.getStackTraceDepth() > _stacks.length ? _stacks.length : _meta.getStackTraceDepth());
                             if (_depth > 0) {
                                 for (int _idx = 0; _idx < _depth; _idx++) {
-                                    if (_packageFilter && (!StringUtils.startsWith(_stacks[_idx].getClassName(), _meta.getStackTracePackage()) || StringUtils.contains(_stacks[_idx].getClassName(), "$$EnhancerByCGLIB$$"))) {
-                                        continue;
+                                    if (_tracePackages != null && _tracePackages.length > 0) {
+                                        if (StringUtils.contains(_stacks[_idx].getClassName(), "$$EnhancerByCGLIB$$") || !StringUtils.startsWithAny(_stacks[_idx].getClassName(), _tracePackages)) {
+                                            continue;
+                                        }
                                     }
                                     _stackSB.append("\n\t--> ").append(_stacks[_idx]);
                                 }
