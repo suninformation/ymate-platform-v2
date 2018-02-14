@@ -124,14 +124,13 @@ public final class Logoo {
         this.level = level;
         this.merge = merge;
         this.logooAdapter = adapter;
+        this.contentSB = new StringBuilder();
         if (merge) {
-            this.contentSB = new StringBuilder().append(doBuildLogLinePrefix());
+            this.contentSB.append(doBuildLogLinePrefix());
             if (StringUtils.isNotBlank(flag)) {
-                this.contentSB.append(flag);
+                this.contentSB.append(" ---> ").append(flag);
             }
-            contentSB.append("---------->>").append("\n");
-        } else {
-            this.contentSB = null;
+            contentSB.append("\n");
         }
     }
 
@@ -146,25 +145,26 @@ public final class Logoo {
     private void doWriteLogs() {
         if (logooAdapter != null) {
             if (merge) {
-                contentSB.append(doBuildLogLinePrefix()).append("<<---------- ");
+                contentSB.append(doBuildLogLinePrefix());
                 if (StringUtils.isNotBlank(flag)) {
-                    contentSB.append(flag);
+                    contentSB.append(" <--- ").append(flag);
                 }
                 contentSB.append("\n");
                 //
+                String _content = contentSB.toString();
                 if (loggerNames == null || loggerNames.isEmpty()) {
-                    Logs.get().getLogger().log(contentSB.toString(), null, level);
+                    Logs.get().getLogger().log(_content, null, level);
                 } else {
                     for (String _name : loggerNames) {
                         try {
-                            Logs.get().getLogger(_name).log(contentSB.toString(), null, level);
+                            Logs.get().getLogger(_name).log(_content, null, level);
                         } catch (Exception e) {
                             _LOG.warn("", RuntimeUtils.unwrapThrow(e));
                         }
                     }
                 }
             }
-            logooAdapter.onLogWritten(flag, action, attributes);
+            logooAdapter.onLogWritten(flag, action, contentSB.toString(), attributes);
         }
     }
 
@@ -176,7 +176,7 @@ public final class Logoo {
         if (msg != null) {
             if (!merge) {
                 if (StringUtils.isNotBlank(flag)) {
-                    msg = flag + msg;
+                    msg = "[" + flag + "] " + msg;
                 }
                 if (loggerNames == null || loggerNames.isEmpty()) {
                     Logs.get().getLogger().log(msg, t, level);

@@ -30,12 +30,12 @@ public class DefaultLogooAdapter implements ILogooAdapter {
     @Override
     public String buildFlag(String[] flags) {
         if (ArrayUtils.isNotEmpty(flags)) {
-            return "[" + StringUtils.join(flags) + "] ";
+            return StringUtils.join(flags);
         }
         return StringUtils.EMPTY;
     }
 
     @Override
-    public void onLogWritten(String flag, String action, Map<String, Object> attributes) {
+    public void onLogWritten(String flag, String action, String content, Map<String, Object> attributes) {
     }
 }

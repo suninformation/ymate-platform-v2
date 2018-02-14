@@ -34,7 +34,8 @@ public interface ILogooAdapter {
      *
      * @param flag       自定义标识
      * @param action     自定义动作标识
+     * @param content    日志内容
      * @param attributes 扩展属性映射
      */
-    void onLogWritten(String flag, String action, Map<String, Object> attributes);
+    void onLogWritten(String flag, String action, String content, Map<String, Object> attributes);
 }
