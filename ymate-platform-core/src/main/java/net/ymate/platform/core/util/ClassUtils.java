@@ -99,19 +99,23 @@ public class ClassUtils {
     }
 
     public static Class<?> loadClass(String className, Class<?> callingClass) throws ClassNotFoundException {
-        Class<?> _targetClass;
+        Class<?> _targetClass = null;
         try {
-            _targetClass = Thread.currentThread().getContextClassLoader().loadClass(className);
-        } catch (ClassNotFoundException e) {
             try {
-                _targetClass = Class.forName(className, false, ClassUtils.class.getClassLoader());
-            } catch (ClassNotFoundException ex) {
+                _targetClass = Thread.currentThread().getContextClassLoader().loadClass(className);
+            } catch (ClassNotFoundException e) {
                 try {
-                    _targetClass = _INNER_CLASS_LOADER.loadClass(className);
-                } catch (ClassNotFoundException exc) {
-                    _targetClass = callingClass.getClassLoader().loadClass(className);
+                    _targetClass = Class.forName(className, false, ClassUtils.class.getClassLoader());
+                } catch (ClassNotFoundException ex) {
+                    try {
+                        _targetClass = _INNER_CLASS_LOADER.loadClass(className);
+                    } catch (ClassNotFoundException exc) {
+                        _targetClass = callingClass.getClassLoader().loadClass(className);
+                    }
                 }
             }
+        } catch (NoClassDefFoundError e) {
+            _LOG.warn(e.toString());
         }
         return _targetClass;
     }
