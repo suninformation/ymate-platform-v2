@@ -206,6 +206,9 @@ Log4J配置文件，内容如下：
                 Logoo.log("日志输出...");
                 // 传递参数
                 Logoo.addAttribute("key1", "value1);
+                //
+                Logoo.finished();
+                //
                 return View.textView("Hello YMP world!");
             }
         }

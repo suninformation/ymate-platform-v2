@@ -77,10 +77,14 @@ public final class Logoo {
         }
     }
 
+    static void clean() {
+        CURRENT.remove();
+    }
+
     static void release() {
         try {
             Logoo _logoo = CURRENT.get();
-            if (_logoo != null) {
+            if (_logoo != null && _logoo.__finished) {
                 _logoo.doWriteLogs();
             }
         } finally {
@@ -108,6 +112,8 @@ public final class Logoo {
 
     private final long startTime = System.currentTimeMillis();
 
+    private boolean __finished;
+
     /**
      * @param loggerNames 输出到日志记录器名称集合
      * @param flags       自定义标识
@@ -132,10 +138,6 @@ public final class Logoo {
             }
             contentSB.append("\n");
         }
-    }
-
-    private long getStartTime() {
-        return startTime;
     }
 
     private String doBuildLogLinePrefix() {
@@ -164,7 +166,9 @@ public final class Logoo {
                     }
                 }
             }
-            logooAdapter.onLogWritten(flag, action, contentSB.toString(), attributes);
+            if (__finished) {
+                logooAdapter.onLogWritten(flag, action, contentSB.toString(), attributes);
+            }
         }
     }
 
@@ -275,8 +279,15 @@ public final class Logoo {
     public static long getTotalTime() {
         Logoo _log = CURRENT.get();
         if (_log != null) {
-            return System.currentTimeMillis() - _log.getStartTime();
+            return System.currentTimeMillis() - _log.startTime;
         }
         return 0L;
+    }
+
+    public static void finished() {
+        Logoo _log = CURRENT.get();
+        if (_log != null) {
+            _log.__finished = true;
+        }
     }
 }

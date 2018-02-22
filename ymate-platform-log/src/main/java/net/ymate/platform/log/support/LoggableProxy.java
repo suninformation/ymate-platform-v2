@@ -35,6 +35,9 @@ public class LoggableProxy implements IProxy {
                 Logoo.createIfNeed(proxyChain.getTargetClass().getAnnotation(Loggable.class), proxyChain.getTargetMethod().getAnnotation(Loggable.class));
             }
             return proxyChain.doProxyChain();
+        } catch (Throwable e) {
+            Logoo.clean();
+            throw e;
         } finally {
             Logoo.release();
         }
