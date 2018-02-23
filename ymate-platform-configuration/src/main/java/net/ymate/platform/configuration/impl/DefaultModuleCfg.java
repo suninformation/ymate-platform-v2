@@ -19,6 +19,7 @@ import net.ymate.platform.configuration.IConfig;
 import net.ymate.platform.configuration.IConfigModuleCfg;
 import net.ymate.platform.configuration.IConfigurationProvider;
 import net.ymate.platform.core.YMP;
+import net.ymate.platform.core.lang.BlurObject;
 import net.ymate.platform.core.util.ClassUtils;
 import net.ymate.platform.core.util.RuntimeUtils;
 import org.apache.commons.lang.StringUtils;
@@ -36,6 +37,7 @@ public class DefaultModuleCfg implements IConfigModuleCfg {
     private String configHome;
     private String projectName;
     private String moduleName;
+    private long configCheckTimeInterval;
     private Class<? extends IConfigurationProvider> providerClass;
 
     @SuppressWarnings("unchecked")
@@ -51,6 +53,8 @@ public class DefaultModuleCfg implements IConfigModuleCfg {
         //
         this.projectName = _moduleCfgs.get("project_name");
         this.moduleName = _moduleCfgs.get("module_name");
+        //
+        this.configCheckTimeInterval = BlurObject.bind(_moduleCfgs.get("config_check_time_interval")).toLongValue();
         //
         try {
             if (StringUtils.isNotBlank(_moduleCfgs.get("provider_class"))) {
@@ -76,6 +80,11 @@ public class DefaultModuleCfg implements IConfigModuleCfg {
     @Override
     public String getModuleName() {
         return this.moduleName;
+    }
+
+    @Override
+    public long getConfigCheckTimeInterval() {
+        return this.configCheckTimeInterval;
     }
 
     @Override

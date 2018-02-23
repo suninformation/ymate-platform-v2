@@ -73,6 +73,9 @@
         # 模块名称，此模块一般指现实项目中分拆的若干子项目的名称，默认为空
         ymp.configs.configuration.module_name=
         
+        # 配置文件检查时间间隔(毫秒)，默认值为0表示不开启
+        ymp.configs.configuration.config_check_time_interval=
+        
         # 指定配置体系下的默认配置文件分析器，默认为net.ymate.platform.configuration.impl.DefaultConfigurationProvider
         ymp.configs.configuration.provider_class=
 

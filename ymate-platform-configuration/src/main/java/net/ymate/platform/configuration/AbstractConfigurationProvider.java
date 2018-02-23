@@ -23,6 +23,7 @@ import org.apache.commons.lang.StringUtils;
 import java.net.URL;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * @author 刘镇 (suninformation@163.com) on 2017/7/31 上午12:39
@@ -34,6 +35,8 @@ public abstract class AbstractConfigurationProvider implements IConfigurationPro
      * 配置对象缓存，对于重复的文件加载会使用缓存，减少文件读写频率
      */
     private static final Map<String, IConfigFileParser> __CONFIG_CACHE_MAPS = new ConcurrentHashMap<String, IConfigFileParser>();
+
+    private static final ConcurrentHashMap<String, ReentrantLock> __LOCK_CACHES = new ConcurrentHashMap<String, ReentrantLock>();
 
     /**
      * 配置对象
@@ -51,9 +54,34 @@ public abstract class AbstractConfigurationProvider implements IConfigurationPro
             throw new NullArgumentException("cfgFileName");
         }
         __cfgFileName = cfgFileName;
-        if ((__configFileParser = __CONFIG_CACHE_MAPS.get(cfgFileName)) == null) {
-            __configFileParser = __buildConfigFileParser(FileUtils.toURL(cfgFileName)).load(true);
-            __CONFIG_CACHE_MAPS.put(cfgFileName, __configFileParser);
+        //
+        ReentrantLock _locker = __doGetLocker();
+        try {
+            _locker.lock();
+            __doLoad();
+        } finally {
+            if (_locker.isLocked()) {
+                _locker.unlock();
+            }
+        }
+    }
+
+    private ReentrantLock __doGetLocker() {
+        ReentrantLock _locker = __LOCK_CACHES.get(__cfgFileName);
+        if (_locker == null) {
+            _locker = new ReentrantLock();
+            ReentrantLock _previous = __LOCK_CACHES.putIfAbsent(__cfgFileName, _locker);
+            if (_previous != null) {
+                _locker = _previous;
+            }
+        }
+        return _locker;
+    }
+
+    private void __doLoad() throws Exception {
+        if ((__configFileParser = __CONFIG_CACHE_MAPS.get(__cfgFileName)) == null) {
+            __configFileParser = __buildConfigFileParser(FileUtils.toURL(__cfgFileName)).load(true);
+            __CONFIG_CACHE_MAPS.put(__cfgFileName, __configFileParser);
         }
     }
 
@@ -65,10 +93,18 @@ public abstract class AbstractConfigurationProvider implements IConfigurationPro
 
     @Override
     public void reload() throws Exception {
-        // 移除缓存项
-        __CONFIG_CACHE_MAPS.remove(__cfgFileName);
-        // 加载配置
-        load(__cfgFileName);
+        ReentrantLock _locker = __doGetLocker();
+        try {
+            _locker.lock();
+            // 移除缓存项
+            __CONFIG_CACHE_MAPS.remove(__cfgFileName);
+            // 加载配置
+            __doLoad();
+        } finally {
+            if (_locker.isLocked()) {
+                _locker.unlock();
+            }
+        }
     }
 
     @Override

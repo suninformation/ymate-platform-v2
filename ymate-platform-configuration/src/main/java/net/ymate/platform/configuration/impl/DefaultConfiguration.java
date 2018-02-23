@@ -162,6 +162,11 @@ public class DefaultConfiguration implements IConfiguration {
     }
 
     @Override
+    public void reload() throws Exception {
+        this.__provider.reload();
+    }
+
+    @Override
     public String getTagName() {
         return ".cfg";
     }

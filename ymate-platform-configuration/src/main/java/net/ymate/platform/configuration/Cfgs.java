@@ -36,6 +36,11 @@ import org.apache.commons.logging.LogFactory;
 
 import java.io.File;
 import java.net.URL;
+import java.util.Map;
+import java.util.Timer;
+import java.util.TimerTask;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * 配置体系模块管理器
@@ -62,6 +67,8 @@ public class Cfgs implements IModule, IConfig {
 
     private String __userHome;
     private String __userDir;
+
+    private ConfigFileChecker __fileChecker;
 
     private boolean __inited;
 
@@ -102,6 +109,9 @@ public class Cfgs implements IModule, IConfig {
             __moduleCfg = new DefaultModuleCfg(__owner);
             //
             __owner.registerHandler(Configuration.class, new ConfigHandler(this));
+            //
+            __fileChecker = new ConfigFileChecker(__moduleCfg.getConfigCheckTimeInterval());
+            __fileChecker.start();
             //
             __configHome = __moduleCfg.getConfigHome();
             //
@@ -154,6 +164,10 @@ public class Cfgs implements IModule, IConfig {
     public void destroy() throws Exception {
         if (__inited) {
             __inited = false;
+            //
+            if (__fileChecker.isInited()) {
+                __fileChecker.stop();
+            }
             //
             __moduleCfg = null;
             __owner = null;
@@ -332,6 +346,9 @@ public class Cfgs implements IModule, IConfig {
                         }
                         _provider.load(_targetCfgFile);
                         config.initialize(_provider);
+                        //
+                        __fileChecker.putFileStatus(_targetCfgFile, new ConfigFileStatus(config, new File(_targetCfgFile).lastModified()));
+                        //
                         return true;
                     } catch (Exception e) {
                         _LOG.warn("An exception occurred while filling the configuration file [" + StringUtils.trimToEmpty(cfgFileName) + "]", RuntimeUtils.unwrapThrow(e));
@@ -344,5 +361,102 @@ public class Cfgs implements IModule, IConfig {
             _LOG.warn("Module configuration has not been initialized, unable to complete the configuration object filling operation");
         }
         return false;
+    }
+
+    /**
+     * 配置文件状态变化检查器
+     */
+    class ConfigFileChecker extends TimerTask {
+
+        private final Map<String, ConfigFileStatus> __configFileStatus = new ConcurrentHashMap<String, ConfigFileStatus>();
+
+        private final ReentrantLock __locker = new ReentrantLock();
+
+        private Timer __timer;
+
+        private long __timeInterval;
+
+        private boolean __inited;
+
+        ConfigFileChecker(long timeInterval) {
+            __timeInterval = timeInterval;
+            if (__timeInterval > 0) {
+                __timer = new Timer("ConfigFileChangedChecker");
+                __inited = true;
+            }
+        }
+
+        boolean isInited() {
+            return __inited;
+        }
+
+        void putFileStatus(String fileName, ConfigFileStatus fileStatus) {
+            if (StringUtils.isNotBlank(fileName) && fileStatus != null) {
+                __locker.lock();
+                try {
+                    __configFileStatus.put(fileName, fileStatus);
+                } finally {
+                    __locker.unlock();
+                }
+            }
+        }
+
+        void start() {
+            if (__inited && __timer != null) {
+                __timer.schedule(this, __timeInterval, __timeInterval);
+            }
+        }
+
+        void stop() {
+            if (__inited && __timer != null) {
+                __timer.cancel();
+            }
+        }
+
+        @Override
+        public void run() {
+            __locker.lock();
+            try {
+                for (Map.Entry<String, ConfigFileStatus> _entry : __configFileStatus.entrySet()) {
+                    File _file = new File(_entry.getKey());
+                    if (_file.lastModified() != _entry.getValue().getLastModifyTime()) {
+                        try {
+                            _entry.getValue().getConfiguration().reload();
+                        } catch (Exception e) {
+                            _LOG.warn("", RuntimeUtils.unwrapThrow(e));
+                        }
+                    }
+                }
+            } finally {
+                __locker.unlock();
+            }
+        }
+    }
+
+    /**
+     * 配置文件状态
+     */
+    class ConfigFileStatus {
+
+        private IConfiguration configuration;
+
+        private long lastModifyTime;
+
+        ConfigFileStatus(IConfiguration configuration, long lastModifyTime) {
+            this.configuration = configuration;
+            this.lastModifyTime = lastModifyTime;
+        }
+
+        public IConfiguration getConfiguration() {
+            return configuration;
+        }
+
+        public long getLastModifyTime() {
+            return lastModifyTime;
+        }
+
+        public void setLastModifyTime(long lastModifyTime) {
+            this.lastModifyTime = lastModifyTime;
+        }
     }
 }

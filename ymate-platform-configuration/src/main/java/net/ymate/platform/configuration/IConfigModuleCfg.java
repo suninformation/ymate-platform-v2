@@ -39,6 +39,11 @@ public interface IConfigModuleCfg {
     String getModuleName();
 
     /**
+     * @return 配置文件检查时间间隔(毫秒)，默认值为0表示不开启
+     */
+    long getConfigCheckTimeInterval();
+
+    /**
      * @return 返回配置提供者接口类型
      */
     Class<? extends IConfigurationProvider> getProviderClass();

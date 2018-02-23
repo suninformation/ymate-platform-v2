@@ -57,6 +57,13 @@ public interface IConfiguration extends IConfigReader {
     void initialize(IConfigurationProvider provider);
 
     /**
+     * 重新加载配置文件内容
+     *
+     * @throws Exception 加载配置文件可能产生的异常
+     */
+    void reload() throws Exception;
+
+    /**
      * @return 获得配置文件自定义标签名称，即返回值加在配置文件名与扩展名中间，形成XXXX.YYY.xml形式，其中需要返回.YYY
      */
     String getTagName();
