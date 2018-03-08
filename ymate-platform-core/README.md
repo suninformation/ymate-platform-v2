@@ -120,6 +120,20 @@ YMP框架初始化时将自动扫描由`autoscan_packages`参数配置的包路�
             }
         }
 
+- 示例三：
+
+        // 自定义Bean实例初始化后处理逻辑
+        @Bean
+        public class DemoBean implements IDemo, IBeanInitializer {
+            public String sayHi() {
+                return "Hello, YMP!";
+            }
+
+            public void afterInitialized() throws Exception {
+                System.out.println(sayHi() + " ---- afterInitialized.");
+            }
+        }
+
 - 测试代码：
 
         public static void main(String[] args) throws Exception {

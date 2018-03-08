@@ -364,6 +364,9 @@ public class DefaultBeanFactory implements IBeanFactory {
                 }
             }
         }
+        if (targetObject instanceof IBeanInitializer) {
+            ((IBeanInitializer) targetObject).afterInitialized();
+        }
     }
 
     protected Object __tryInjector(Class<?> targetClass, Field field, Object originInject) {
