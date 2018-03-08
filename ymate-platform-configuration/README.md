@@ -213,6 +213,22 @@
         }
     }
 
+#### 示例四：通过`@Cacheable`注解并配合`IConfigurable`接口实现配置文件自动装配
+
+    public interface IDemoService {
+    
+        String getCompanyName();
+    }
+
+    @Bean
+    @Configurable(type = DemoConfig.class)
+    public class DemoService extends AbstractConfigurable<DemoConfig> implements IDemoService {
+    
+        @Override
+        public String getCompanyName() {
+            return getConfig().getString("company_name");
+        }
+    }
 
 #### 配置体系模块更多操作
 
