@@ -15,6 +15,8 @@
  */
 package net.ymate.platform.core.beans.annotation;
 
+import net.ymate.platform.core.beans.IBeanHandler;
+
 import java.lang.annotation.*;
 
 /**
@@ -32,4 +34,9 @@ public @interface Bean {
      * @return 是否为单例，默认为true
      */
     boolean singleton() default true;
+
+    /**
+     * @return 自定义对象处理器 (将取代原来的处理器)
+     */
+    Class<? extends IBeanHandler> handler() default IBeanHandler.class;
 }

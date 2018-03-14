@@ -17,6 +17,9 @@ package net.ymate.platform.core.beans;
 
 import net.ymate.platform.core.beans.annotation.Bean;
 
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+
 /**
  * 对象处理器
  *
@@ -25,12 +28,23 @@ import net.ymate.platform.core.beans.annotation.Bean;
  */
 public interface IBeanHandler {
 
+    Map<Class<? extends IBeanHandler>, IBeanHandler> __beanHandlers = new ConcurrentHashMap<Class<? extends IBeanHandler>, IBeanHandler>();
+
     IBeanHandler DEFAULT_HANDLER = new IBeanHandler() {
         @Override
         public Object handle(Class<?> targetClass) throws Exception {
             Bean _bean = targetClass.getAnnotation(Bean.class);
-            if (_bean != null && _bean.singleton()) {
-                return BeanMeta.create(targetClass.newInstance(), targetClass);
+            if (_bean != null) {
+                if (!_bean.handler().equals(IBeanHandler.class)) {
+                    IBeanHandler _handler = __beanHandlers.get(_bean.handler());
+                    if (_handler == null) {
+                        _handler = _bean.handler().newInstance();
+                        __beanHandlers.put(_bean.handler(), _handler);
+                    }
+                    return _handler.handle(targetClass);
+                } else if (_bean.singleton()) {
+                    return BeanMeta.create(targetClass.newInstance(), targetClass);
+                }
             }
             return BeanMeta.create(targetClass);
         }

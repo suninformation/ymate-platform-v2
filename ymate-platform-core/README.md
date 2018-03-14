@@ -122,6 +122,25 @@ YMP框架初始化时将自动扫描由`autoscan_packages`参数配置的包路�
 
 - 示例三：
 
+        public class DemoBeanHandler implements IBeanHandler {
+        
+            @Override
+            public Object handle(Class<?> targetClass) throws Exception {
+                // 自定义对象处理逻辑...
+                return targetClass.newInstance();
+            }
+        }
+
+        // 自定义对象处理器 (将取代原来的处理器)
+        @Bean(handler=DemoBeanHandler.class)
+        public class DemoBean implements IDemo {
+            public String sayHi() {
+                return "Hello, YMP!";
+            }
+        }
+
+- 示例四：
+
         // 自定义Bean实例初始化后处理逻辑
         @Bean
         public class DemoBean implements IDemo, IBeanInitializer {
