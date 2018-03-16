@@ -42,11 +42,16 @@ import net.ymate.platform.core.serialize.annotation.Serializer;
 import net.ymate.platform.core.support.ConfigBuilder;
 import net.ymate.platform.core.support.IInitializable;
 import net.ymate.platform.core.util.ClassUtils;
+import net.ymate.platform.core.util.ResourceUtils;
 import net.ymate.platform.core.util.RuntimeUtils;
+import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.time.StopWatch;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.lang.annotation.Annotation;
 import java.util.Collection;
 import java.util.HashMap;
@@ -108,6 +113,31 @@ public class YMP {
     }
 
     /**
+     * @return 加载Banner字符徽标
+     */
+    private String __loadBanner() {
+        String _banner = null;
+        InputStream _input = null;
+        try {
+            _input = ResourceUtils.getResourceAsStream("banner.txt", YMP.class);
+            if (_input != null) {
+                _banner = IOUtils.toString(_input, "UTF-8");
+            }
+        } catch (IOException ignored) {
+        } finally {
+            IOUtils.closeQuietly(_input);
+        }
+        if (StringUtils.isBlank(_banner)) {
+            _banner = "\n__   ____  __ ____          ____  \n" +
+                    "\\ \\ / /  \\/  |  _ \\  __   _|___ \\ \n" +
+                    " \\ V /| |\\/| | |_) | \\ \\ / / __) |\n" +
+                    "  | | | |  | |  __/   \\ V / / __/ \n" +
+                    "  |_| |_|  |_|_|       \\_/ |_____|  Website: http://www.ymate.net/";
+        }
+        return _banner;
+    }
+
+    /**
      * 初始化YMP框架
      *
      * @return 返回当前YMP核心框架管理器对象
@@ -116,11 +146,7 @@ public class YMP {
     public YMP init() throws Exception {
         if (!__inited) {
             //
-            _LOG.info("\n__   ____  __ ____          ____  \n" +
-                    "\\ \\ / /  \\/  |  _ \\  __   _|___ \\ \n" +
-                    " \\ V /| |\\/| | |_) | \\ \\ / / __) |\n" +
-                    "  | | | |  | |  __/   \\ V / / __/ \n" +
-                    "  |_| |_|  |_|_|       \\_/ |_____|  Website: http://www.ymate.net/");
+            _LOG.info(__loadBanner());
             //
             StopWatch _watch = new StopWatch();
             _watch.start();
