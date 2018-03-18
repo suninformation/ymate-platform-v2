@@ -35,6 +35,8 @@ public class BeanMeta implements Serializable {
 
     private final boolean __singleton;
 
+    private boolean __skipInterface;
+
     public static BeanMeta create(Object beanObject, Class<?> beanClass) {
         return new BeanMeta(beanClass, true, beanObject);
     }
@@ -76,6 +78,18 @@ public class BeanMeta implements Serializable {
             throw new NullArgumentException("Not singleton Or beanObject was null");
         }
         __beanObject = beanObject;
+    }
+
+    public BeanMeta setSkipInterface(boolean skipInterface) {
+        __skipInterface = skipInterface;
+        return this;
+    }
+
+    /**
+     * @return 是否忽略接口分析
+     */
+    public boolean isSkipInterface() {
+        return __skipInterface;
     }
 
     public List<Class<?>> getBeanInterfaces(List<Class<?>> excludedClassSet) {

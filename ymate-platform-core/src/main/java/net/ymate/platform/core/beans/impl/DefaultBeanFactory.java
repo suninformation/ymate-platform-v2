@@ -194,8 +194,12 @@ public class DefaultBeanFactory implements IBeanFactory {
     }
 
     protected void __addClassInterfaces(BeanMeta beanMeta) {
-        for (Class<?> _interface : beanMeta.getBeanInterfaces(__excludedClassSet)) {
-            __beanInterfacesMap.put(_interface, beanMeta.getBeanClass());
+        if (!beanMeta.isSkipInterface()) {
+            for (Class<?> _interface : beanMeta.getBeanInterfaces(__excludedClassSet)) {
+                __beanInterfacesMap.put(_interface, beanMeta.getBeanClass());
+            }
+        } else if (beanMeta.isSkipInterface() && beanMeta.getBeanClass().isInterface() && !__excludedClassSet.contains(beanMeta.getBeanClass())) {
+            __beanInterfacesMap.put(beanMeta.getBeanClass(), beanMeta.getBeanClass());
         }
     }
 
