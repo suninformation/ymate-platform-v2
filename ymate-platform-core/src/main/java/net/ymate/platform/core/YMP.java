@@ -102,7 +102,13 @@ public class YMP {
      * @param config YMP框架初始化配置
      */
     public YMP(IConfig config) {
+        // 创建模块对象引用集合
+        __modules = new HashMap<Class<? extends IModule>, IModule>();
+        //
         __config = config;
+        __moduleFactory = new BeanFactory(this);
+        __beanFactory = new DefaultBeanFactory();
+        __proxyFactory = new DefaultProxyFactory(this);
     }
 
     private void __registerScanPackages(IBeanFactory factory) {
@@ -159,16 +165,12 @@ public class YMP {
             __events = Events.create(new DefaultEventConfig(__config.getEventConfigs()));
             __events.registerEvent(ApplicationEvent.class);
             __events.registerEvent(ModuleEvent.class);
-            // 创建根对象工厂
-            __beanFactory = new DefaultBeanFactory();
+            // 配置根对象工厂
             __beanFactory.setLoader(new DefaultBeanLoader(__config.getExcludedFiles()));
             __beanFactory.registerExcludedClass(IInitializable.class);
             __beanFactory.registerHandler(Bean.class);
             __beanFactory.registerHandler(Packages.class, new PackagesHandler(this));
-            // 创建模块对象引用集合
-            __modules = new HashMap<Class<? extends IModule>, IModule>();
-            // 创建模块对象工厂
-            __moduleFactory = new BeanFactory(this);
+            // 配置模块对象工厂
             __moduleFactory.setLoader(new DefaultBeanLoader(__config.getExcludedFiles()));
             __moduleFactory.registerExcludedClass(IInitializable.class);
             __moduleFactory.registerHandler(Module.class, new ModuleHandler(this));
@@ -180,9 +182,7 @@ public class YMP {
             // 设置自动扫描应用包路径
             __registerScanPackages(__moduleFactory);
             __registerScanPackages(__beanFactory);
-            // 创建代理工厂并初始化
-            __proxyFactory = new DefaultProxyFactory(this).registerProxy(new InterceptProxy());
-            // 初始化根对象工厂
+            // 初始化模块对象工厂
             __moduleFactory.init();
             //
             for (IModule _module : __modules.values()) {
@@ -201,10 +201,10 @@ public class YMP {
                 }
             }
             if (!__errorFlag) {
-                // 初始化对象工厂
+                // 初始化根对象工厂
                 __beanFactory.init();
-                // 初始化对象代理
-                __beanFactory.initProxy(__proxyFactory);
+                // 配置代理工厂并初始化对象代理
+                __beanFactory.initProxy(__proxyFactory.registerProxy(new InterceptProxy()));
                 // IoC依赖注入
                 __beanFactory.initIoC();
                 //
