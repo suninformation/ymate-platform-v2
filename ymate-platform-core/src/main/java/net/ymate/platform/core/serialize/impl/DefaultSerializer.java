@@ -30,6 +30,11 @@ import java.io.ObjectOutputStream;
 public class DefaultSerializer implements ISerializer {
 
     @Override
+    public String getContentType() {
+        return "application/x-java-serialized-object";
+    }
+
+    @Override
     public byte[] serialize(Object object) throws Exception {
         ObjectOutputStream _output = null;
         try {

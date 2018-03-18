@@ -30,6 +30,8 @@ public interface ISerializer {
 
     String DEFAULT_CHARSET = "UTF-8";
 
+    String getContentType();
+
     byte[] serialize(Object object) throws Exception;
 
     <T> T deserialize(byte[] bytes, Class<T> clazz) throws Exception;

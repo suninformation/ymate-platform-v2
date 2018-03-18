@@ -26,6 +26,11 @@ import net.ymate.platform.core.serialize.ISerializer;
 public class JSONSerializer implements ISerializer {
 
     @Override
+    public String getContentType() {
+        return "application/json";
+    }
+
+    @Override
     public byte[] serialize(Object object) throws Exception {
         com.alibaba.fastjson.serializer.JSONSerializer _serializer = new com.alibaba.fastjson.serializer.JSONSerializer();
         _serializer.config(SerializerFeature.WriteEnumUsingToString, true);
