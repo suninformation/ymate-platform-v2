@@ -66,7 +66,7 @@ public class DefaultModuleCfg implements ICacheModuleCfg {
         //
         __cacheScopeProcessor = ClassUtils.impl(_moduleCfgs.get("scope_processor_class"), ICacheScopeProcessor.class, this.getClass());
         //
-        __serializer = ClassUtils.impl(_moduleCfgs.get("serializer_class"), ISerializer.class, this.getClass());
+        __serializer = ISerializer.SerializerManager.getSerializer(StringUtils.defaultIfBlank(_moduleCfgs.get("serializer_class"), "default"));
         if (__serializer == null) {
             __serializer = ISerializer.SerializerManager.getDefaultSerializer();
         }
