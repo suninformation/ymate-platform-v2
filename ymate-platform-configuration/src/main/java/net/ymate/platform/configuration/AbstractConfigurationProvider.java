@@ -58,7 +58,7 @@ public abstract class AbstractConfigurationProvider implements IConfigurationPro
         ReentrantLock _locker = __doGetLocker();
         try {
             _locker.lock();
-            __doLoad();
+            __doLoad(false);
         } finally {
             if (_locker.isLocked()) {
                 _locker.unlock();
@@ -78,10 +78,12 @@ public abstract class AbstractConfigurationProvider implements IConfigurationPro
         return _locker;
     }
 
-    private void __doLoad() throws Exception {
-        if ((__configFileParser = __CONFIG_CACHE_MAPS.get(__cfgFileName)) == null) {
+    private void __doLoad(boolean update) throws Exception {
+        if (update || !__CONFIG_CACHE_MAPS.containsKey(__cfgFileName)) {
             __configFileParser = __buildConfigFileParser(FileUtils.toURL(__cfgFileName)).load(true);
             __CONFIG_CACHE_MAPS.put(__cfgFileName, __configFileParser);
+        } else {
+            __configFileParser = __CONFIG_CACHE_MAPS.get(__cfgFileName);
         }
     }
 
@@ -96,10 +98,8 @@ public abstract class AbstractConfigurationProvider implements IConfigurationPro
         ReentrantLock _locker = __doGetLocker();
         try {
             _locker.lock();
-            // 移除缓存项
-            __CONFIG_CACHE_MAPS.remove(__cfgFileName);
             // 加载配置
-            __doLoad();
+            __doLoad(true);
         } finally {
             if (_locker.isLocked()) {
                 _locker.unlock();
