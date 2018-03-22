@@ -432,7 +432,7 @@ OK！就这么简单，一切都结束了！
 			public User doGetUser(final String username, final String pwd) {
 				return JDBC.get().openSession(new ISessionExecutor<User>() {
 	                public User execute(ISession session) throws Exception {
-	                    Cond _cond = Cond.create().eq("username").param(username).eq("pwd").param(pwd);
+	                    Cond _cond = Cond.create().eq("username").param(username).and().eq("pwd").param(pwd);
 	                    return session.findFirst(EntitySQL.create(User.class), Where.create(_cond));
 	                }
 	            });
@@ -1488,7 +1488,7 @@ JDBC模块提供的ORM主要是针对单实体操作，实际业务中往往会�
 	
 	session.find(EntitySQL.create(User.class)
             .field(Fields.create(User.FIELDS.ID, User.FIELDS.USER_NAME).excluded(true))
-            .forUpdate(IDBLocker.MYSQL));
+            .forUpdate(IDBLocker.DEFAULT));
     
 示例代码二：通过Select查询对象传递锁参数；
     
@@ -1496,7 +1496,7 @@ JDBC模块提供的ORM主要是针对单实体操作，实际业务中往往会�
             .field("u", "username").field("ue", "money")
             .where(Where.create(
                     Cond.create().eq(User.FIELDS.ID).param("bc19f5645aa9438089c5e9954e5f1ac5")))
-            .forUpdate(IDBLocker.MYSQL);
+            .forUpdate(IDBLocker.DEFAULT);
 
     session.find(SQL.create(_select), IResultSetHandler.ARRAY);
     
@@ -1506,14 +1506,14 @@ JDBC模块提供的ORM主要是针对单实体操作，实际业务中往往会�
 	User _user = new User();
     _user.setId("bc19f5645aa9438089c5e9954e5f1ac5");
     //
-    _user.load(IDBLocker.MYSQL);
+    _user.load(IDBLocker.DEFAULT);
 
 	//
     User _user = new User();
     _user.setUsername("suninformation");
     _user.setPwd(DigestUtils.md5Hex("123456"));
     //
-    IResultSet<User> _users = _user.find(IDBLocker.MYSQL);
+    IResultSet<User> _users = _user.find(IDBLocker.DEFAULT);
     
 > **注意**：
 >
