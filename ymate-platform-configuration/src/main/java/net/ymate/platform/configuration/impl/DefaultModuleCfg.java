@@ -44,7 +44,7 @@ public class DefaultModuleCfg implements IConfigModuleCfg {
     public DefaultModuleCfg(YMP owner) {
         Map<String, String> _moduleCfgs = owner.getConfig().getModuleConfigs(IConfig.MODULE_NAME);
         //
-        this.configHome = _moduleCfgs.get("config_home");
+        this.configHome = StringUtils.defaultIfBlank(System.getProperty("ymp.config_home"), _moduleCfgs.get("config_home"));
         if (StringUtils.isBlank(this.configHome)) {
             // 尝试通过运行时变量或系统变量获取CONFIG_HOME参数
             this.configHome = StringUtils.defaultIfBlank(System.getenv(IConfig.__CONFIG_HOME), RuntimeUtils.getSystemEnv(IConfig.__CONFIG_HOME));

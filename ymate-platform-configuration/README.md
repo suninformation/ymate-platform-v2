@@ -79,6 +79,7 @@
         # 指定配置体系下的默认配置文件分析器，默认为net.ymate.platform.configuration.impl.DefaultConfigurationProvider
         ymp.configs.configuration.provider_class=
 
+> **注**：配置体系根路径`config_home`配置参数，可以通过`JVM`启动参数方式进行配置，如：`java -jar -Dymp.config_home=...`，这种方式将优先于配置文件。
 
 #### 示例一：解析XML配置
 
