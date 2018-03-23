@@ -38,6 +38,8 @@ public final class ConfigBuilder {
 
     private boolean __isDevelopMode;
 
+    private String __runMode;
+
     private final List<String> __packageNames;
 
     private final List<String> __excludedFiles;
@@ -88,7 +90,8 @@ public final class ConfigBuilder {
         };
         //
         ConfigBuilder _builder = ConfigBuilder.create(_processor)
-                .developMode(new BlurObject(properties.getProperty("ymp.dev_mode")).toBooleanValue())
+                .developMode(BlurObject.bind(properties.getProperty("ymp.dev_mode")).toBooleanValue())
+                .runMode(properties.getProperty("ymp.run_mode"))
                 .packageNames(__doParserArrayStr(properties, "ymp.autoscan_packages"))
                 .excludedFiles(__doParserArrayStr(properties, "ymp.excluded_files"))
                 .excludedModules(__doParserArrayStr(properties, "ymp.excluded_modules"))
@@ -153,30 +156,52 @@ public final class ConfigBuilder {
         return _builder;
     }
 
+    private static InputStream __doLoadResourceStream(String prefix) {
+        prefix = "ymp-conf" + StringUtils.trimToEmpty(prefix);
+        ClassLoader _classLoader = ConfigBuilder.class.getClassLoader();
+        InputStream _in = _classLoader.getResourceAsStream(prefix + ".properties");
+        if (_in == null) {
+            if (RuntimeUtils.isWindows()) {
+                _in = _classLoader.getResourceAsStream(prefix + "_WIN.properties");
+            } else if (RuntimeUtils.isUnixOrLinux()) {
+                _in = _classLoader.getResourceAsStream(prefix + "_UNIX.properties");
+            }
+        }
+        return _in;
+    }
+
     public static ConfigBuilder system() {
         final Properties __props = new Properties();
+        boolean _devFlag = false;
+        boolean _testFlag = false;
         InputStream _in = null;
         try {
-            ClassLoader _classLoader = ConfigBuilder.class.getClassLoader();
-            boolean _devFlag = false;
-            _in = _classLoader.getResourceAsStream("ymp-conf_DEV.properties");
+            String _mode = System.getProperty("ymp.run_env");
+            if (StringUtils.isNotBlank(_mode)) {
+                if (StringUtils.equalsIgnoreCase(_mode, "dev")) {
+                    _in = __doLoadResourceStream("_DEV");
+                    _devFlag = _in != null;
+                } else if (StringUtils.equalsIgnoreCase(_mode, "test")) {
+                    _in = __doLoadResourceStream("_TEST");
+                    _testFlag = _in != null;
+                }
+            }
             if (_in == null) {
-                if (RuntimeUtils.isWindows()) {
-                    _in = _classLoader.getResourceAsStream("ymp-conf_WIN.properties");
-                } else if (RuntimeUtils.isUnixOrLinux()) {
-                    _in = _classLoader.getResourceAsStream("ymp-conf_UNIX.properties");
-                }
-                //
+                _in = __doLoadResourceStream("_DEV");
+                _devFlag = _in != null;
                 if (_in == null) {
-                    _in = _classLoader.getResourceAsStream("ymp-conf.properties");
+                    _in = __doLoadResourceStream(null);
                 }
-            } else {
-                _devFlag = true;
             }
             if (_in != null) {
                 __props.load(_in);
                 if (_devFlag) {
                     __props.setProperty("ymp.dev_mode", "true");
+                    __props.setProperty("ymp.run_mode", "dev");
+                } else if (_testFlag) {
+                    __props.setProperty("ymp.run_mode", "test");
+                } else {
+                    __props.setProperty("ymp.run_mode", "product");
                 }
             }
             return create(__props);
@@ -215,6 +240,11 @@ public final class ConfigBuilder {
 
     public ConfigBuilder developMode(boolean isDevelopMode) {
         __isDevelopMode = isDevelopMode;
+        return this;
+    }
+
+    public ConfigBuilder runMode(String runMode) {
+        __runMode = runMode;
         return this;
     }
 
@@ -304,6 +334,26 @@ public final class ConfigBuilder {
             @Override
             public boolean isDevelopMode() {
                 return __isDevelopMode;
+            }
+
+            @Override
+            public boolean isTestEnv() {
+                return StringUtils.equalsIgnoreCase(__runMode, "test");
+            }
+
+            @Override
+            public boolean isDevEnv() {
+                return StringUtils.equalsIgnoreCase(__runMode, "dev");
+            }
+
+            @Override
+            public boolean isProductEnv() {
+                return StringUtils.equalsIgnoreCase(__runMode, "product");
+            }
+
+            @Override
+            public String getRunEnv() {
+                return __runMode;
             }
 
             @Override

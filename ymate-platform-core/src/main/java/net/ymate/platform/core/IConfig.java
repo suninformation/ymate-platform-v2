@@ -36,6 +36,26 @@ public interface IConfig {
     boolean isDevelopMode();
 
     /**
+     * @return 返回是否为测试环境
+     */
+    boolean isTestEnv();
+
+    /**
+     * @return 返回是否为开发环境
+     */
+    boolean isDevEnv();
+
+    /**
+     * @return 返回是否为生产环境
+     */
+    boolean isProductEnv();
+
+    /**
+     * @return 返回当前运行环境
+     */
+    String getRunEnv();
+
+    /**
      * @return 返回框架自动扫描的包路径集合
      */
     List<String> getAutoscanPackages();

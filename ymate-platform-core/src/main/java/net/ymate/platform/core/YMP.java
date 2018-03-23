@@ -157,7 +157,7 @@ public class YMP {
             StopWatch _watch = new StopWatch();
             _watch.start();
             //
-            _LOG.info("Initializing ymate-platform-core-" + VERSION + " - debug:" + __config.isDevelopMode());
+            _LOG.info("Initializing ymate-platform-core-" + VERSION + " - debug:" + __config.isDevelopMode() + " - env:" + __config.getRunEnv());
 
             // 初始化I18N
             I18N.initialize(__config.getDefaultLocale(), __config.getI18NEventHandlerClass());

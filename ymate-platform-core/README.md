@@ -40,6 +40,12 @@ YMP框架的初始化是从加载ymp-conf.properties文件开始的，该文件�
     + Windows环境下，优先加载 ymp-conf_WIN.properties；
     + 若以上配置文件未找到，则加载默认配置 ymp-conf.properties；
 
+- 同时，也可以通过JVM启动参数配置系统环境，框架将优先根据当前操作系统及运行环境加载匹配的配置文件：
+
+    + `-Dymp.run_env=test`：测试环境，将优先加载`ymp-conf_TEST.properties`
+    + `-Dymp.run_env=dev`：开发环境，将优先加载`ymp-conf_DEV.properties`
+    + `-Dymp.run_env=product`：生产环境，将优先加载`ymp-conf.properties`
+
 - 框架初始化基本配置参数：
 
 		#-------------------------------------
