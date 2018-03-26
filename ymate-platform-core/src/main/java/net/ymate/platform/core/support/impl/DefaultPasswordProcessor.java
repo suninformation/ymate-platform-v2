@@ -18,6 +18,7 @@ package net.ymate.platform.core.support.impl;
 import net.ymate.platform.core.support.IPasswordProcessor;
 import net.ymate.platform.core.util.CodecUtils;
 import org.apache.commons.codec.digest.DigestUtils;
+import org.apache.commons.lang.StringUtils;
 
 /**
  * 默认密码处理器类
@@ -29,13 +30,25 @@ public class DefaultPasswordProcessor implements IPasswordProcessor {
 
     private final String __KEY = DigestUtils.md5Hex(DefaultPasswordProcessor.class.getName());
 
+    private String __passKey;
+
+    @Override
+    public void setPassKey(String passKey) {
+        __passKey = passKey;
+    }
+
+    @Override
+    public String getPassKey() {
+        return StringUtils.defaultIfBlank(__passKey, __KEY);
+    }
+
     @Override
     public String encrypt(String source) throws Exception {
-        return CodecUtils.DES.encrypt(source, __KEY);
+        return CodecUtils.DES.encrypt(source, getPassKey());
     }
 
     @Override
     public String decrypt(String target) throws Exception {
-        return CodecUtils.DES.decrypt(target, __KEY);
+        return CodecUtils.DES.decrypt(target, getPassKey());
     }
 }

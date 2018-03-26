@@ -24,6 +24,18 @@ package net.ymate.platform.core.support;
 public interface IPasswordProcessor {
 
     /**
+     * 设置加/解密密钥, 若为未提供则采用默认
+     *
+     * @param passKey 加/解密KEY
+     */
+    void setPassKey(String passKey);
+
+    /**
+     * @return 返回当前设置的加/解密密钥
+     */
+    String getPassKey();
+
+    /**
      * @param source 源字符串
      * @return 对source字符串进行加密后返回
      * @throws Exception 可能产生的异常
