@@ -15,6 +15,8 @@
  */
 package net.ymate.platform.core.support;
 
+import org.apache.commons.lang.StringUtils;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -32,7 +34,10 @@ public class ConsoleTableBuilder {
 
     private final int column;
 
-    private boolean __markdown;
+    /**
+     * 输出格式：table|markdown|csv
+     */
+    private String __format;
 
     public static ConsoleTableBuilder create(int column) {
         return new ConsoleTableBuilder(column);
@@ -43,7 +48,12 @@ public class ConsoleTableBuilder {
     }
 
     public ConsoleTableBuilder markdown() {
-        __markdown = true;
+        __format = "markdown";
+        return this;
+    }
+
+    public ConsoleTableBuilder csv() {
+        __format = "csv";
         return this;
     }
 
@@ -92,46 +102,60 @@ public class ConsoleTableBuilder {
     public String toString() {
         StringBuilder _sb = new StringBuilder();
         //
-        int[] _columnLengths;
-        if (__markdown) {
-            _columnLengths = new int[0];
-        } else {
-            _columnLengths = this.getColumnLengths();
-        }
+        boolean _markdownFmt = StringUtils.equals(__format, "markdown");
+        boolean _csvFmt = StringUtils.equals(__format, "csv");
         //
-        if (!__markdown) {
-            _sb.append(__printHeader(_columnLengths));
-        }
-        //
-        int _rowIdx = 0;
-        for (Row _row : rows) {
-            for (int _columnIdx = 0; _columnIdx < this.column; _columnIdx++) {
-                String _content = "";
-                int _length = 0;
-                if (_columnIdx < _row.getColumns().size()) {
+        if (_csvFmt) {
+            for (Row _row : rows) {
+                for (int _columnIdx = 0; _columnIdx < this.column; _columnIdx++) {
                     Column _column = _row.getColumns().get(_columnIdx);
-                    _content = _column.getContent();
-                    _length = _column.getLength();
-                }
-                _sb.append('|');
-                //
-                if (!__markdown) {
-                    _sb.append(__printStr(' ', __margin)).append(_content).append(__printStr(' ', _columnLengths[_columnIdx] - _length + __margin));
-                } else {
-                    _sb.append(_content);
-                }
-            }
-            _sb.append("|\n");
-            if (!__markdown) {
-                _sb.append(__printHeader(_columnLengths));
-            } else if (_rowIdx <= 0) {
-                _sb.append("|");
-                for (int _idx = 0; _idx < column; _idx++) {
-                    _sb.append(__printStr('-', 3)).append("|");
+                    _sb.append(_column.getContent());
+                    _sb.append(',');
                 }
                 _sb.append("\n");
             }
-            _rowIdx++;
+        } else {
+            int[] _columnLengths;
+            if (_markdownFmt) {
+                _columnLengths = new int[0];
+            } else {
+                _columnLengths = this.getColumnLengths();
+            }
+            //
+            if (!_markdownFmt) {
+                _sb.append(__printHeader(_columnLengths));
+            }
+            //
+            int _rowIdx = 0;
+            for (Row _row : rows) {
+                for (int _columnIdx = 0; _columnIdx < this.column; _columnIdx++) {
+                    String _content = "";
+                    int _length = 0;
+                    if (_columnIdx < _row.getColumns().size()) {
+                        Column _column = _row.getColumns().get(_columnIdx);
+                        _content = _column.getContent();
+                        _length = _column.getLength();
+                    }
+                    _sb.append('|');
+                    //
+                    if (!_markdownFmt) {
+                        _sb.append(__printStr(' ', __margin)).append(_content).append(__printStr(' ', _columnLengths[_columnIdx] - _length + __margin));
+                    } else {
+                        _sb.append(_content);
+                    }
+                }
+                _sb.append("|\n");
+                if (!_markdownFmt) {
+                    _sb.append(__printHeader(_columnLengths));
+                } else if (_rowIdx <= 0) {
+                    _sb.append("|");
+                    for (int _idx = 0; _idx < column; _idx++) {
+                        _sb.append(__printStr('-', 3)).append("|");
+                    }
+                    _sb.append("\n");
+                }
+                _rowIdx++;
+            }
         }
         //
         return _sb.toString();
