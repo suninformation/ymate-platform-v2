@@ -350,7 +350,7 @@ public class ClassUtils {
             this.target = target;
             this._fields = new LinkedHashMap<String, Field>();
             //
-            for (Field _field : getFields(target.getClass(), true)/*target.getClass().getDeclaredFields()*/) {
+            for (Field _field : ClassUtils.getFields(target.getClass(), true)/*target.getClass().getDeclaredFields()*/) {
                 if (Modifier.isStatic(_field.getModifiers())) {
                     // 忽略静态成员
                     continue;
@@ -372,6 +372,10 @@ public class ClassUtils {
             return _fields.get(fieldName).getAnnotations();
         }
 
+        public Collection<Field> getFields() {
+            return _fields.values();
+        }
+
         public Field getField(String fieldName) {
             return _fields.get(fieldName);
         }
@@ -385,8 +389,17 @@ public class ClassUtils {
             return this;
         }
 
+        public BeanWrapper<T> setValue(Field field, Object value) throws IllegalAccessException {
+            field.set(target, value);
+            return this;
+        }
+
         public Object getValue(String fieldName) throws IllegalAccessException {
             return _fields.get(fieldName).get(target);
+        }
+
+        public Object getValue(Field field) throws IllegalAccessException {
+            return field.get(target);
         }
 
         public BeanWrapper<T> fromMap(Map<String, Object> map) {
