@@ -19,6 +19,8 @@ import net.ymate.platform.core.lang.BlurObject;
 import net.ymate.platform.core.util.FileUtils;
 import org.apache.commons.lang.NullArgumentException;
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import java.net.URL;
 import java.util.*;
@@ -30,6 +32,8 @@ import java.util.concurrent.locks.ReentrantLock;
  * @version 1.0
  */
 public abstract class AbstractConfigurationProvider implements IConfigurationProvider {
+
+    private static final Log _LOG = LogFactory.getLog(AbstractConfigurationProvider.class);
 
     /**
      * 配置对象缓存，对于重复的文件加载会使用缓存，减少文件读写频率
@@ -82,6 +86,9 @@ public abstract class AbstractConfigurationProvider implements IConfigurationPro
         if (update || !__CONFIG_CACHE_MAPS.containsKey(__cfgFileName)) {
             __configFileParser = __buildConfigFileParser(FileUtils.toURL(__cfgFileName)).load(true);
             __CONFIG_CACHE_MAPS.put(__cfgFileName, __configFileParser);
+            if (update && _LOG.isInfoEnabled()) {
+                _LOG.info("The configuration file \"" + __cfgFileName + "\" is reloaded.");
+            }
         } else {
             __configFileParser = __CONFIG_CACHE_MAPS.get(__cfgFileName);
         }
