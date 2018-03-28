@@ -110,8 +110,10 @@ public class Cfgs implements IModule, IConfig {
             //
             __owner.registerHandler(Configuration.class, new ConfigHandler(this));
             //
-            __fileChecker = new ConfigFileChecker(__moduleCfg.getConfigCheckTimeInterval());
-            __fileChecker.start();
+            if (__moduleCfg.getConfigCheckTimeInterval() > 0) {
+                __fileChecker = new ConfigFileChecker(__moduleCfg.getConfigCheckTimeInterval());
+                __fileChecker.start();
+            }
             //
             __configHome = __moduleCfg.getConfigHome();
             //
@@ -165,7 +167,7 @@ public class Cfgs implements IModule, IConfig {
         if (__inited) {
             __inited = false;
             //
-            if (__fileChecker.isInited()) {
+            if (__fileChecker != null && __fileChecker.isInited()) {
                 __fileChecker.stop();
             }
             //
@@ -347,7 +349,9 @@ public class Cfgs implements IModule, IConfig {
                         _provider.load(_targetCfgFile);
                         config.initialize(_provider);
                         //
-                        __fileChecker.putFileStatus(_targetCfgFile, new ConfigFileStatus(config, new File(_targetCfgFile).lastModified()));
+                        if (__fileChecker != null) {
+                            __fileChecker.putFileStatus(_targetCfgFile, new ConfigFileStatus(config, new File(_targetCfgFile).lastModified()));
+                        }
                         //
                         return true;
                     } catch (Exception e) {
