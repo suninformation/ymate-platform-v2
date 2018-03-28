@@ -214,7 +214,7 @@
         }
     }
 
-#### 示例四：通过`@Cacheable`注解并配合`IConfigurable`接口实现配置文件自动装配
+#### 示例四：通过`@Configurable`注解并配合`IConfigurable`接口实现配置文件自动装配
 
     public interface IDemoService {
     
