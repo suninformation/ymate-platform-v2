@@ -15,6 +15,7 @@
  */
 package net.ymate.platform.configuration.impl;
 
+import net.ymate.platform.configuration.IConfigFileParser;
 import net.ymate.platform.configuration.IConfiguration;
 import net.ymate.platform.configuration.IConfigurationProvider;
 
@@ -30,6 +31,20 @@ import java.util.Map;
 public class DefaultConfiguration implements IConfiguration {
 
     private IConfigurationProvider __provider;
+
+    @Override
+    public IConfigFileParser.Property getProperty(String category, String key) {
+        IConfigFileParser.Category _category = __provider.getConfigFileParser().getDefaultCategory();
+        if (_category == null) {
+            return null;
+        }
+        return _category.getProperty(key);
+    }
+
+    @Override
+    public IConfigFileParser.Property getProperty(String key) {
+        return __provider.getConfigFileParser().getDefaultCategory().getProperty(key);
+    }
 
     @Override
     public String getString(String key) {

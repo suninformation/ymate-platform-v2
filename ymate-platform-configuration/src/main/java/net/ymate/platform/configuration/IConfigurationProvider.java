@@ -27,6 +27,11 @@ import java.util.Map;
 public interface IConfigurationProvider {
 
     /**
+     * @return 返回当前配置文件分析器
+     */
+    IConfigFileParser getConfigFileParser();
+
+    /**
      * 根据配置文件绝对路径加载配置
      *
      * @param cfgFileName 配置文件路径及名称

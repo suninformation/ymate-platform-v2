@@ -28,6 +28,10 @@ import java.util.Map;
  */
 public interface IConfiguration extends IConfigReader {
 
+    IConfigFileParser.Property getProperty(String category, String key);
+
+    IConfigFileParser.Property getProperty(String key);
+
     String getString(String category, String key, String defaultValue);
 
     List<String> getList(String category, String key);
