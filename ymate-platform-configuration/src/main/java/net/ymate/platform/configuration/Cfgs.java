@@ -426,6 +426,7 @@ public class Cfgs implements IModule, IConfig {
                     if (_file.lastModified() != _entry.getValue().getLastModifyTime()) {
                         try {
                             _entry.getValue().getConfiguration().reload();
+                            _entry.getValue().setLastModifyTime(_file.lastModified());
                         } catch (Exception e) {
                             _LOG.warn("", RuntimeUtils.unwrapThrow(e));
                         }
