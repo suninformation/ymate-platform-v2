@@ -129,4 +129,16 @@ public interface IConfig {
      * @return 是否成功装载配置
      */
     boolean fillCfg(Class<? extends IConfigurationProvider> providerClass, IConfiguration config, String cfgFileName, boolean search);
+
+    /**
+     * 根据自定义配置提供者填充配置对象
+     *
+     * @param providerClass 配置提供者类对象，若为空则采用框架默认
+     * @param config        配置对象，不可为空
+     * @param cfgFileName   配置所需要的装载参数
+     * @param search        是否采用搜索
+     * @param reload        是否自动重新加载
+     * @return 是否成功装载配置
+     */
+    boolean fillCfg(Class<? extends IConfigurationProvider> providerClass, IConfiguration config, String cfgFileName, boolean search, boolean reload);
 }

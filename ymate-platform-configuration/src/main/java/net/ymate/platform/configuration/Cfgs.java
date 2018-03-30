@@ -324,16 +324,22 @@ public class Cfgs implements IModule, IConfig {
             Configuration _configuration = config.getClass().getAnnotation(Configuration.class);
             ConfigurationProvider _providerClass = config.getClass().getAnnotation(ConfigurationProvider.class);
             String _cfgFileName = _configuration == null ? null : _configuration.value();
+            boolean _reload = _configuration == null || _configuration.relaod();
             if (StringUtils.isBlank(_cfgFileName)) {
                 _cfgFileName = config.getClass().getSimpleName().toLowerCase().concat(config.getTagName()).concat(".xml");
             }
-            return fillCfg((_providerClass != null ? _providerClass.value() : null), config, _cfgFileName, search);
+            return fillCfg((_providerClass != null ? _providerClass.value() : null), config, _cfgFileName, search, _reload);
         }
         return false;
     }
 
     @Override
     public synchronized boolean fillCfg(Class<? extends IConfigurationProvider> providerClass, IConfiguration config, String cfgFileName, boolean search) {
+        return fillCfg(providerClass, config, cfgFileName, search, true);
+    }
+
+    @Override
+    public boolean fillCfg(Class<? extends IConfigurationProvider> providerClass, IConfiguration config, String cfgFileName, boolean search, boolean reload) {
         if (__inited) {
             if (config != null) {
                 String _targetCfgFile = search ? searchPath(cfgFileName) : cfgFileName;
@@ -349,7 +355,7 @@ public class Cfgs implements IModule, IConfig {
                         _provider.load(_targetCfgFile);
                         config.initialize(_provider);
                         //
-                        if (__fileChecker != null) {
+                        if (__fileChecker != null && reload) {
                             __fileChecker.putFileStatus(_targetCfgFile, new ConfigFileStatus(config, new File(_targetCfgFile).lastModified()));
                         }
                         //

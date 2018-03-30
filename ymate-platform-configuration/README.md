@@ -20,6 +20,7 @@
 - 模块间资源共享，模块(modules)可以共用所属项目(projects)的配置、类和jar包等资源文件；
 - 默认支持XML和Properties配置文件解析，可以通过IConfigurationProvider接口自定义文件格式，支持缓存，避免重复加载；
 - 配置对象支持`@Configuration`注解方式声明，无需编码即可自动加载并填充配置内容到类对象；
+- 修改配置文件无需重启服务，支持自动重新加载；
 - 集成模块的构建（编译）与分发、服务的启动与停止，以及清晰的资源文件分类结构可快速定位；
 
 #### 配置体系目录结构
@@ -120,7 +121,7 @@
 - 新建配置类DemoConfig, 通过`@Configuration`注解指定配置文件相对路径
 
 
-        @Configuration("cfgs/configuration.xml")
+        @Configuration(value = "cfgs/configuration.xml", reload = true)
         public class DemoConfig extends DefaultConfiguration {
         }
 
