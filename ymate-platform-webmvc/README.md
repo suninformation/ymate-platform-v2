@@ -859,7 +859,7 @@ NullView：空视图；
 
 #### 验证（Validation）
 
-WebMVC模块已集成验证模块，控制器方法可以直接使用验证注解完成参数的有效性验证，详细内容请参阅 [验证(Validation)](http://git.oschina.net/suninformation/ymate-platform-v2/blob/master/ymate-platform-validation/README.md) 模块文档；
+WebMVC模块已集成验证模块，控制器方法可以直接使用验证注解完成参数的有效性验证，详细内容请参阅 [验证(Validation)](https://gitee.com/suninformation/ymate-platform-v2/blob/master/ymate-platform-validation/README.md) 模块文档；
 
 > **说明**：
 > - 控制器的参数验证规则全部通过验证注解进行配置并按顺序执行，由WebMVC框架自动调用完成验证过程，无需手动干预；

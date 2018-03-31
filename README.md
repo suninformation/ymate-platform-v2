@@ -1,6 +1,6 @@
 ### YMP v2——轻量级JAVA应用开发框架
 
-![LOGO](http://git.oschina.net/suninformation/ymate-platform-v2/raw/master/misc/logo_small.png "LOGO")
+![LOGO](https://gitee.com/suninformation/ymate-platform-v2/raw/master/misc/logo_small.png "LOGO")
 
 YMP是一个非常简单、易用的一套轻量级JAVA应用开发框架，设计原则主要侧重于简化工作任务、规范开发流程、提高开发效率，让开发工作像搭积木一样轻松是我们一直不懈努力的目标！
 
@@ -32,7 +32,7 @@ YMP是一个非常简单、易用的一套轻量级JAVA应用开发框架，设�
 
 > YMP框架主要是由框架核心(Core)和若干模块(Modules)组成，整体结构非常简约、清晰，如图所示：
 
-![Structure](http://git.oschina.net/suninformation/ymate-platform-v2/raw/master/misc/structure_diagram.png "Structure")
+![Structure](https://gitee.com/suninformation/ymate-platform-v2/raw/master/misc/structure_diagram.png "Structure")
 
 ##### 框架核心(Core)
 > 主要负责框架的初始化和模块的加载及其生命周期管理，功能包括：
@@ -43,7 +43,7 @@ YMP是一个非常简单、易用的一套轻量级JAVA应用开发框架，设�
 > - 国际化资源管理器：提供统一的资源文件加载、销毁和内容读取，支持自定义资源加载和语言变化的事件监听；
 > - 另外，提供了一组自定义的数据结构和框架中需要的各种工具类；
 >
-> [查看文档...](http://git.oschina.net/suninformation/ymate-platform-v2/blob/master/ymate-platform-core/README.md)
+> [查看文档...](https://gitee.com/suninformation/ymate-platform-v2/blob/master/ymate-platform-core/README.md)
 
 
 ##### 配置体系(Configuration)
@@ -57,12 +57,12 @@ YMP是一个非常简单、易用的一套轻量级JAVA应用开发框架，设�
 > - 配置对象支持注解方式声明，无需编码即可自动加载并填充配置内容到类对象；
 > - 集成模块的构建与分发、服务的启动与停止*，以及清晰的资源文件分类结构可快速定位；
 >
-> [查看文档...](http://git.oschina.net/suninformation/ymate-platform-v2/blob/master/ymate-platform-configuration/README.md)
+> [查看文档...](https://gitee.com/suninformation/ymate-platform-v2/blob/master/ymate-platform-configuration/README.md)
 
 ##### 日志(Log)
 > 基于开源日志框架Log4J 2实现，提供对日志记录器对象的统一管理，可以在任意位置调用任意日志记录器输出日志，实现系统与业务日志的分离，并针对apache-commons-logging日志框架和slf4j日志系统提供支持；
 >
-> [查看文档...](http://git.oschina.net/suninformation/ymate-platform-v2/blob/master/ymate-platform-log/README.md)
+> [查看文档...](https://gitee.com/suninformation/ymate-platform-v2/blob/master/ymate-platform-log/README.md)
 
 ##### 持久化(Persistence)
 
@@ -82,7 +82,7 @@ YMP是一个非常简单、易用的一套轻量级JAVA应用开发框架，设�
 > - 支持数据库事务嵌套；
 > - 支持数据库视图和存储过程；
 >
-> [查看文档...](http://git.oschina.net/suninformation/ymate-platform-v2/blob/master/ymate-platform-persistence-jdbc/README.md)
+> [查看文档...](https://gitee.com/suninformation/ymate-platform-v2/blob/master/ymate-platform-persistence-jdbc/README.md)
 
 ###### MongoDB
 > 
@@ -99,7 +99,7 @@ YMP是一个非常简单、易用的一套轻量级JAVA应用开发框架，设�
 
 >
 >
-> [查看文档...](http://git.oschina.net/suninformation/ymate-platform-v2/blob/master/ymate-platform-plugin/README.md)
+> [查看文档...](https://gitee.com/suninformation/ymate-platform-v2/blob/master/ymate-platform-plugin/README.md)
 
 ##### 服务(Serv)
 > 一套基于NIO实现的通讯服务框架，提供TCP、UDP协议的客户端与服务端封装，灵活的消息监听与消息内容编/解码，简约的配置使二次开发更加便捷；
@@ -107,17 +107,17 @@ YMP是一个非常简单、易用的一套轻量级JAVA应用开发框架，设�
 > 同时默认提供断线重连、链路维护(心跳)等服务支持，您只需了解业务即可轻松完成开发工作。
 >
 >
->[查看文档...](http://git.oschina.net/suninformation/ymate-platform-v2/blob/master/ymate-platform-serv/README.md)
+>[查看文档...](https://gitee.com/suninformation/ymate-platform-v2/blob/master/ymate-platform-serv/README.md)
 
 ##### 验证(Validation)
 > 服务端参数有效性验证工具，采用注解声明方式配置验证规则，更简单、更直观、更友好，支持方法参数和类成员属性验证，支持验证结果国际化I18N资源绑定，支持自定义验证器，支持多种验证模式；
 >
-> [查看文档...](http://git.oschina.net/suninformation/ymate-platform-v2/blob/master/ymate-platform-validation/README.md)
+> [查看文档...](https://gitee.com/suninformation/ymate-platform-v2/blob/master/ymate-platform-validation/README.md)
 
 ##### 缓存(Cache)
 > 以EhCache作为默认JVM进程内缓存服务，通过整合外部Redis服务实现多级缓存（MultiLevel）的轻量级缓存框架，并与YMP框架深度集成(支持针对类方法的缓存，可以根据方法参数值进行缓存)，灵活的配置、易于使用和扩展；
 >
-> [查看文档...](http://git.oschina.net/suninformation/ymate-platform-v2/blob/master/ymate-platform-cache/README.md)
+> [查看文档...](https://gitee.com/suninformation/ymate-platform-v2/blob/master/ymate-platform-cache/README.md)
 
 ##### WebMVC框架
 > WebMVC模块在YMP框架中是除了JDBC模块以外的另一个非常重要的模块，集成了YMP框架的诸多特性，在功能结构的设计和使用方法上依然保持一贯的简单风格，同时也继承了主流MVC框架的基因，对于了解和熟悉SSH等框架技术的开发人员来说，上手极其容易，毫无学习成本。
@@ -139,14 +139,14 @@ YMP是一个非常简单、易用的一套轻量级JAVA应用开发框架，设�
 > - 支持控制器参数转义；
 > - 支持插件扩展；
 >
-> [查看文档...](http://git.oschina.net/suninformation/ymate-platform-v2/blob/master/ymate-platform-webmvc/README.md)
+> [查看文档...](https://gitee.com/suninformation/ymate-platform-v2/blob/master/ymate-platform-webmvc/README.md)
 
 
 #### 相关阅读
 
-- [Quickstart——快速上手](http://git.oschina.net/suninformation/ymate-platform-v2/wikis/Quickstart)
+- [Quickstart——快速上手](https://gitee.com/suninformation/ymate-platform-v2/wikis/Quickstart)
 
-- [Quickstart_New——扩展工具篇](http://git.oschina.net/suninformation/ymate-platform-v2/wikis/Quickstart_New)
+- [Quickstart_New——扩展工具篇](https://gitee.com/suninformation/ymate-platform-v2/wikis/Quickstart_New)
 
 
 
