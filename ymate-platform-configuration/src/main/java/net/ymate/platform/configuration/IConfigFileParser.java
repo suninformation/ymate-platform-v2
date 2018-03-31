@@ -17,6 +17,7 @@ package net.ymate.platform.configuration;
 
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import org.apache.commons.lang.StringUtils;
 
 import java.io.File;
 import java.io.IOException;
@@ -104,7 +105,15 @@ public interface IConfigFileParser {
         }
 
         public Attribute getAttribute(String key) {
-            return this.attributeMap.get(name);
+            return this.attributeMap.get(key);
+        }
+
+        public String getAttribute(String key, String defaultValue) {
+            Attribute _attr = this.attributeMap.get(key);
+            if (_attr != null) {
+                return _attr.getValue(defaultValue);
+            }
+            return defaultValue;
         }
 
         public Map<String, Attribute> getAttributeMap() {
@@ -177,6 +186,14 @@ public interface IConfigFileParser {
             return this.attributeMap.get(key);
         }
 
+        public String getAttribute(String key, String defaultValue) {
+            Attribute _attr = this.attributeMap.get(key);
+            if (_attr != null) {
+                return _attr.getValue(defaultValue);
+            }
+            return defaultValue;
+        }
+
         public Map<String, Attribute> getAttributeMap() {
             return attributeMap;
         }
@@ -220,6 +237,10 @@ public interface IConfigFileParser {
 
         public String getValue() {
             return value;
+        }
+
+        public String getValue(String defaultValue) {
+            return StringUtils.defaultIfBlank(value, defaultValue);
         }
 
         public JSONObject toJSON() {
