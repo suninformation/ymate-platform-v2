@@ -20,6 +20,7 @@ import net.ymate.platform.configuration.IConfigurable;
 import net.ymate.platform.configuration.IConfiguration;
 import net.ymate.platform.configuration.annotation.Configurable;
 import net.ymate.platform.configuration.impl.DefaultConfiguration;
+import net.ymate.platform.core.YMP;
 import net.ymate.platform.core.beans.annotation.Order;
 import net.ymate.platform.core.beans.annotation.Proxy;
 import net.ymate.platform.core.beans.proxy.IProxy;
@@ -39,12 +40,17 @@ public class ConfigurableProxy implements IProxy {
             if (proxyChain.getTargetMethod().getName().equals("getConfig")) {
                 IConfiguration _config = (IConfiguration) proxyChain.doProxyChain();
                 if (_config == null) {
+                    YMP _owner = proxyChain.getProxyFactory().getOwner();
                     Configurable _annotation = proxyChain.getTargetClass().getAnnotation(Configurable.class);
-                    _config = _annotation.type().newInstance();
                     if (_annotation.type().equals(DefaultConfiguration.class)) {
-                        Cfgs.get(proxyChain.getProxyFactory().getOwner()).fillCfg(_config, _annotation.value());
+                        _config = _annotation.type().newInstance();
+                        Cfgs.get(_owner).fillCfg(_config, _annotation.value());
                     } else {
-                        Cfgs.get(proxyChain.getProxyFactory().getOwner()).fillCfg(_config);
+                        _config = _owner.getBean(_annotation.type());
+                        if (_config == null) {
+                            _config = _annotation.type().newInstance();
+                            Cfgs.get(_owner).fillCfg(_config);
+                        }
                     }
                     ((IConfigurable) proxyChain.getTargetObject()).setConfig(_config);
                 }
