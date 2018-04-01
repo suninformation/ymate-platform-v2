@@ -15,6 +15,7 @@
  */
 package net.ymate.platform.webmvc;
 
+import net.ymate.platform.webmvc.impl.DefaultResponseBodyProcessor;
 import net.ymate.platform.webmvc.view.IView;
 
 /**
@@ -22,6 +23,8 @@ import net.ymate.platform.webmvc.view.IView;
  * @version 1.0
  */
 public interface IResponseBodyProcessor {
+
+    IResponseBodyProcessor DEFAULT = new DefaultResponseBodyProcessor();
 
     /**
      * 处理响应内容

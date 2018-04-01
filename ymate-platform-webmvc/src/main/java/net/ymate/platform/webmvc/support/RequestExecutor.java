@@ -26,6 +26,7 @@ import net.ymate.platform.webmvc.annotation.ResponseBody;
 import net.ymate.platform.webmvc.annotation.ResponseView;
 import net.ymate.platform.webmvc.base.Type;
 import net.ymate.platform.webmvc.context.WebContext;
+import net.ymate.platform.webmvc.impl.DefaultResponseBodyProcessor;
 import net.ymate.platform.webmvc.view.IView;
 import net.ymate.platform.webmvc.view.impl.*;
 import org.apache.commons.lang.ArrayUtils;
@@ -92,7 +93,12 @@ public final class RequestExecutor {
             if (_resultObj instanceof IView || _resultObj instanceof String) {
                 _resultView = __doProcessResultToView(_resultObj);
             } else {
-                IResponseBodyProcessor _bodyProcessor = ClassUtils.impl(_respBody.value(), IResponseBodyProcessor.class);
+                IResponseBodyProcessor _bodyProcessor;
+                if (DefaultResponseBodyProcessor.class.equals(_respBody.value())) {
+                    _bodyProcessor = IResponseBodyProcessor.DEFAULT;
+                } else {
+                    _bodyProcessor = ClassUtils.impl(_respBody.value(), IResponseBodyProcessor.class);
+                }
                 if (_bodyProcessor != null) {
                     _resultView = _bodyProcessor.processBody(__owner, _resultObj, _respBody.contentType(), _respBody.keepNull(), _respBody.quoteField());
                 }
@@ -203,6 +209,8 @@ public final class RequestExecutor {
             } else {
                 _view = HtmlView.bind((String) result);
             }
+        } else {
+            _view = IResponseBodyProcessor.DEFAULT.processBody(__owner, result, true, true, true);
         }
         return _view;
     }
