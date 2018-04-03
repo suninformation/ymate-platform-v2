@@ -72,7 +72,7 @@ public class Type {
      * </p>
      */
     public enum View {
-        BINARY, FORWARD, FREEMARKER, VELOCITY, HTML, HTTP_STATES, JSON, JSP, NULL, REDIRECT, TEXT
+        BINARY, FORWARD, FREEMARKER, VELOCITY, HTML, HTTP_STATES, JSON, JSP, NULL, REDIRECT, TEXT, BEETL
     }
 
     public enum ContentType {

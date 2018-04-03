@@ -399,39 +399,36 @@ public class WebMVC implements IModule, IWebMvc {
                         }
                         if (_view == null) {
                             // 采用系统默认方式处理约定优于配置的URL请求映射
-                            String[] _fileTypes = {".html", ".jsp", ".ftl", ".vm"};
+                            String[] _fileTypes = {".html", ".jsp", ".ftl", ".vm", ".btl"};
+                            String _flagFileType = null;
                             for (String _fileType : _fileTypes) {
                                 File _targetFile = new File(__moduleCfg.getAbstractBaseViewPath(), _requestMapping + _fileType);
                                 if (_targetFile.exists()) {
                                     if (".html".equals(_fileType)) {
                                         _view = HtmlView.bind(this, _requestMapping.substring(1));
-                                        //
-                                        if (_devMode && _LOG.isDebugEnabled()) {
-                                            _LOG.debug("--- [" + _threadId + "] Rendering template file : " + _requestMapping + _fileType);
-                                        }
+                                        _flagFileType = _fileType;
                                         break;
                                     } else if (".jsp".equals(_fileType)) {
                                         _view = JspView.bind(this, _requestMapping.substring(1));
-                                        //
-                                        if (_devMode && _LOG.isDebugEnabled()) {
-                                            _LOG.debug("--- [" + _threadId + "] Rendering template file : " + _requestMapping + _fileType);
-                                        }
+                                        _flagFileType = _fileType;
                                         break;
                                     } else if (".ftl".equals(_fileType)) {
                                         _view = FreemarkerView.bind(this, _requestMapping.substring(1));
-                                        //
-                                        if (_devMode && _LOG.isDebugEnabled()) {
-                                            _LOG.debug("--- [" + _threadId + "] Rendering template file : " + _requestMapping + _fileType);
-                                        }
+                                        _flagFileType = _fileType;
                                         break;
                                     } else if (".vm".equals(_fileType)) {
                                         _view = VelocityView.bind(this, _requestMapping.substring(1));
-                                        //
-                                        if (_devMode && _LOG.isDebugEnabled()) {
-                                            _LOG.debug("--- [" + _threadId + "] Rendering template file : " + _requestMapping + _fileType);
-                                        }
+                                        _flagFileType = _fileType;
+                                        break;
+                                    } else if (".btl".equals(_fileType)) {
+                                        _view = BeetlView.bind(this, _requestMapping.substring(1));
+                                        _flagFileType = _fileType;
+                                        break;
                                     }
                                 }
+                            }
+                            if (_flagFileType != null && _devMode && _LOG.isDebugEnabled()) {
+                                _LOG.debug("--- [" + _threadId + "] Rendering template file : " + _requestMapping + _flagFileType);
                             }
                         }
                         //

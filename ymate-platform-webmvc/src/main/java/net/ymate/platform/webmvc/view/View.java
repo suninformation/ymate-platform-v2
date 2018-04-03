@@ -26,6 +26,18 @@ import java.io.File;
  */
 public class View {
 
+    public static BeetlView beetlView(IWebMvc owner, String path) {
+        return BeetlView.bind(owner, path);
+    }
+
+    public static BeetlView beetlView(String path) {
+        return BeetlView.bind(path);
+    }
+
+    public static BeetlView beetlView() {
+        return BeetlView.bind();
+    }
+
     public static BinaryView binaryView(File targetFile) throws Exception {
         return BinaryView.bind(targetFile);
     }

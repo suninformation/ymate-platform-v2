@@ -167,7 +167,7 @@ public abstract class AbstractView implements IView {
      *
      * @param owner 所属WebMVC框架管理器
      */
-    protected void __doViewInit(IWebMvc owner) {
+    protected synchronized void __doViewInit(IWebMvc owner) {
         // 模板基准路径并以'/WEB-INF'开始，以'/'结束
         if (__baseViewPath == null) {
             String _vPath = StringUtils.trimToNull(owner.getModuleCfg().getBaseViewPath());

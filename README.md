@@ -126,7 +126,7 @@ YMP是一个非常简单、易用的一套轻量级JAVA应用开发框架，设�
 > 
 > - 标准MVC实现，结构清晰，完全基于注解方式配置简单；
 > - 支持约定模式，无需编写控制器代码，直接匹配并执行视图；
-> - 支持多种视图技术(JSP、Freemarker、Velocity、Text、HTML、JSON、Binary、Forward、Redirect、HttpStatus等)；
+> - 支持多种视图技术(JSP、Freemarker、Velocity、Text、HTML、JSON、Binary、Forward、Redirect、HttpStatus、Beetl等)；
 > - 支持RESTful模式及URL风格；
 > - 支持请求参数与控制器方法参数的自动绑定；
 > - 支持参数有效性验证；

@@ -6,7 +6,7 @@ WebMVC模块在YMP框架中是除了JDBC模块以外的另一个非常重要的�
 
 - 标准MVC实现，结构清晰，完全基于注解方式配置简单；
 - 支持约定模式，无需编写控制器代码，直接匹配并执行视图；
-- 支持多种视图技术(JSP、Freemarker、Velocity、Text、HTML、JSON、Binary、Forward、Redirect、HttpStatus等)；
+- 支持多种视图技术(JSP、Freemarker、Velocity、Text、HTML、JSON、Binary、Forward、Redirect、HttpStatus、Beetl等)；
 - 支持RESTful模式及URL风格；
 - 支持请求参数与控制器方法参数的自动绑定；
 - 支持参数有效性验证；
@@ -755,7 +755,7 @@ WebMVC模块的文件上传是基于Apache Commons FileUpload组件实现的，�
 
 #### 视图（View）
 
-WebMVC模块支持多种视图技术，包括JSP、Freemarker、Velocity、Text、HTML、JSON、Binary、Forward、Redirect、HttpStatus等，也可以通过IView接口扩展实现自定义视图；
+WebMVC模块支持多种视图技术，包括JSP、Freemarker、Velocity、Text、HTML、JSON、Binary、Forward、Redirect、HttpStatus、Beetl等，也可以通过IView接口扩展实现自定义视图；
 
 ##### 控制器视图的表示方法
 > - 通过返回IView接口类型；
@@ -852,6 +852,11 @@ HttpStatusView：HTTP状态视图
 > 
 > 		View.httpStatusView(500, "系统忙, 请稍后再试...");
 > 		// = "http_status:500:系统忙, 请稍后再试..."
+
+BeeltView：Beetl视图；
+
+> 		View.beetlView("/demo/test.ftl");
+> 		// = "beetl:/demo/test"
 
 NullView：空视图；
 

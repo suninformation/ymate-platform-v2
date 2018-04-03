@@ -74,13 +74,12 @@ public class VelocityView extends AbstractView {
     }
 
     @Override
-    protected void __doViewInit(IWebMvc owner) {
+    protected synchronized void __doViewInit(IWebMvc owner) {
         super.__doViewInit(owner);
         // 初始化Velocity模板引擎配置
         if (!__inited) {
-            __velocityConfig.setProperty(Velocity.ENCODING_DEFAULT, owner.getModuleCfg().getDefaultCharsetEncoding());
-            __velocityConfig.setProperty(Velocity.INPUT_ENCODING, owner.getModuleCfg().getDefaultCharsetEncoding());
-            __velocityConfig.setProperty(Velocity.OUTPUT_ENCODING, owner.getModuleCfg().getDefaultCharsetEncoding());
+            __velocityConfig.setProperty(Velocity.INPUT_ENCODING, DEFAULT_CHARSET);
+            __velocityConfig.setProperty(Velocity.OUTPUT_ENCODING, DEFAULT_CHARSET);
             //
             if (__baseViewPath.startsWith("/WEB-INF")) {
                 __velocityConfig.setProperty(Velocity.FILE_RESOURCE_LOADER_PATH, new File(RuntimeUtils.getRootPath(), StringUtils.substringAfter(__baseViewPath, "/WEB-INF/")).getPath());

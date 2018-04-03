@@ -27,6 +27,8 @@ import java.util.Map;
  */
 public interface IView extends Serializable {
 
+    String DEFAULT_CHARSET = "UTF-8";
+
     /**
      * @param name  属性名称
      * @param value 属性值

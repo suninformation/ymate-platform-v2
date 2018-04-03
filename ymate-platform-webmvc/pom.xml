@@ -76,6 +76,11 @@
             <scope>provided</scope>
         </dependency>
         <dependency>
+            <groupId>com.ibeetl</groupId>
+            <artifactId>beetl</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
             <groupId>net.ymate.platform</groupId>
             <artifactId>ymate-platform-validation</artifactId>
             <version>${project.version}</version>

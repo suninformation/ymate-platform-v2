@@ -160,6 +160,9 @@ public final class RequestExecutor {
                     case TEXT:
                         _view = TextView.bind(_viewParts[0]);
                         break;
+                    case BEETL:
+                        _view = BeetlView.bind(_viewParts[0]);
+                        break;
                     default:
                         _view = NullView.bind();
                 }
@@ -205,6 +208,10 @@ public final class RequestExecutor {
                         break;
                     case TEXT:
                         _view = TextView.bind(_parts[1]);
+                        break;
+                    case BEETL:
+                        _view = BeetlView.bind(_parts[1]);
+                        break;
                 }
             } else {
                 _view = HtmlView.bind((String) result);
