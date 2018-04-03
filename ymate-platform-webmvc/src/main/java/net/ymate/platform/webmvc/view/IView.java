@@ -36,6 +36,8 @@ public interface IView extends Serializable {
      */
     IView addAttribute(String name, Object value);
 
+    IView addAttributes(Map<String, Object> attributes);
+
     /**
      * @param <T>  属性类型
      * @param name 属性名称

@@ -23,7 +23,6 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -54,6 +53,14 @@ public abstract class AbstractView implements IView {
     }
 
     @Override
+    public IView addAttributes(Map<String, Object> attributes) {
+        if (attributes != null && !attributes.isEmpty()) {
+            __attributes.putAll(attributes);
+        }
+        return this;
+    }
+
+    @Override
     @SuppressWarnings("unchecked")
     public <T> T getAttribute(String name) {
         return (T) __attributes.get(name);
@@ -61,7 +68,7 @@ public abstract class AbstractView implements IView {
 
     @Override
     public Map<String, Object> getAttributes() {
-        return Collections.unmodifiableMap(__attributes);
+        return __attributes;
     }
 
     @Override
