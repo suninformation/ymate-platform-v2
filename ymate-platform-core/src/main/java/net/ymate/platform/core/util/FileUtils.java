@@ -15,12 +15,18 @@
  */
 package net.ymate.platform.core.util;
 
+import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.NullArgumentException;
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
-import java.io.File;
+import java.io.*;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
 /**
  * 文件处理工具类
@@ -29,6 +35,8 @@ import java.net.URL;
  * @version 1.0
  */
 public class FileUtils {
+
+    private static final Log _LOG = LogFactory.getLog(FileUtils.class);
 
     /**
      * @param fileName 原始文件名称
@@ -87,4 +95,69 @@ public class FileUtils {
         return null;
     }
 
+    /**
+     * @param prefix 临时文件名前缀, 若为空则由系统随机生成8位长度字符串
+     * @param files  文件集合
+     * @return 将文件集合压缩成单个ZIP文件
+     * @throws IOException 可能产生的异常
+     */
+    public static File toZip(String prefix, File... files) throws IOException {
+        if (ArrayUtils.isEmpty(files)) {
+            throw new NullArgumentException("files");
+        }
+        if (StringUtils.isBlank(prefix)) {
+            prefix = UUIDUtils.randomStr(8, false);
+        }
+        if (StringUtils.endsWith(prefix, "_")) {
+            prefix = prefix.concat("_");
+        }
+        File _zipFile = File.createTempFile(prefix, ".zip");
+        ZipOutputStream _outputStream = null;
+        try {
+            _outputStream = new ZipOutputStream(new FileOutputStream(_zipFile));
+            for (File file : files) {
+                ZipEntry _zipEntry = new ZipEntry(file.getName());
+                _outputStream.putNextEntry(_zipEntry);
+                //
+                InputStream _inputStream = null;
+                try {
+                    _inputStream = new FileInputStream(file);
+                    IOUtils.copyLarge(_inputStream, _outputStream);
+                } finally {
+                    IOUtils.closeQuietly(_inputStream);
+                }
+            }
+        } finally {
+            IOUtils.closeQuietly(_outputStream);
+        }
+        return _zipFile;
+    }
+
+    /**
+     * 复制文件
+     *
+     * @param src  原文件
+     * @param dest 目标文件
+     * @throws IOException 可能产生的异常
+     */
+    public static void writeTo(File src, File dest) throws IOException {
+        if (src == null || !src.exists() || !src.isFile()) {
+            throw new IllegalArgumentException("Failure to write file, Source file type must be file and exists.");
+        }
+        if (dest == null || !dest.isAbsolute()) {
+            throw new IllegalArgumentException("Failure to write file, Dest file must be absolute path.");
+        }
+        if (!src.renameTo(dest)) {
+            BufferedInputStream _inStream = null;
+            BufferedOutputStream _outStream = null;
+            try {
+                _inStream = new BufferedInputStream(new FileInputStream(src));
+                _outStream = new BufferedOutputStream(new FileOutputStream(dest));
+                IOUtils.copyLarge(_inStream, _outStream);
+            } finally {
+                IOUtils.closeQuietly(_inStream);
+                IOUtils.closeQuietly(_outStream);
+            }
+        }
+    }
 }
