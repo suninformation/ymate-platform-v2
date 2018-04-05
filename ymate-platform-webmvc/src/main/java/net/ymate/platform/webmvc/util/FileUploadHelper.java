@@ -415,18 +415,13 @@ public final class FileUploadHelper {
                 FileInputStream _fis = null;
                 try {
                     _fis = new FileInputStream(__fileObj);
-                    _fis.read(_fileData);
-                    return _fileData;
+                    IOUtils.readFully(_fis, _fileData);
                 } catch (IOException e) {
-                    return null;
+                    _fileData = null;
                 } finally {
-                    if (_fis != null) {
-                        try {
-                            _fis.close();
-                        } catch (IOException ignore) {
-                        }
-                    }
+                    IOUtils.closeQuietly(_fis);
                 }
+                return _fileData;
             }
             return __fileItemObj.get();
         }
@@ -444,39 +439,13 @@ public final class FileUploadHelper {
 
         @Override
         public void transferTo(File dest) throws Exception {
-            this.__fileItemObj.write(dest);
+            writeTo(dest);
         }
 
         @Override
         public void writeTo(File file) throws Exception {
             if (__isFileObj) {
-                if (__fileObj == null) {
-                    throw new IOException("Cannot write, file object was null!");
-                }
-                if (!__fileObj.renameTo(file)) {
-                    BufferedInputStream _inStream = null;
-                    BufferedOutputStream _outStream = null;
-                    try {
-                        _inStream = new BufferedInputStream(new FileInputStream(__fileObj));
-                        _outStream = new BufferedOutputStream(new FileOutputStream(file));
-                        IOUtils.copy(_inStream, _outStream);
-                    } finally {
-                        if (_inStream != null) {
-                            try {
-                                _inStream.close();
-                            } catch (IOException ignore) {
-                            }
-                        }
-                        if (_outStream != null) {
-                            try {
-                                _outStream.close();
-                            } catch (IOException ignore) {
-                            }
-                        }
-                    }
-                } else {
-                    throw new IOException("Cannot write file to disk!");
-                }
+                FileUtils.writeTo(__fileObj, file);
             } else {
                 __fileItemObj.write(file);
             }
@@ -485,9 +454,6 @@ public final class FileUploadHelper {
         @Override
         public InputStream getInputStream() throws IOException {
             if (__isFileObj) {
-                if (__fileObj == null) {
-                    throw new IOException("Cannot get input stream, file object was null!");
-                }
                 return new FileInputStream(__fileObj);
             }
             return this.__fileItemObj.getInputStream();
@@ -508,9 +474,6 @@ public final class FileUploadHelper {
         @Override
         public OutputStream getOutputStream() throws IOException {
             if (this.__isFileObj) {
-                if (__fileObj == null) {
-                    throw new IOException("Cannot get output stream, file object was null!");
-                }
                 return new FileOutputStream(__fileObj);
             }
             return __fileItemObj.getOutputStream();
