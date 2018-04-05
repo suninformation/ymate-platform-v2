@@ -41,6 +41,7 @@ import net.ymate.platform.core.module.annotation.Module;
 import net.ymate.platform.core.serialize.annotation.Serializer;
 import net.ymate.platform.core.support.ConfigBuilder;
 import net.ymate.platform.core.support.IInitializable;
+import net.ymate.platform.core.support.RecycleHelper;
 import net.ymate.platform.core.util.ClassUtils;
 import net.ymate.platform.core.util.ResourceUtils;
 import net.ymate.platform.core.util.RuntimeUtils;
@@ -230,6 +231,8 @@ public class YMP {
                 // 触发框架销毁事件
                 __events.fireEvent(new ApplicationEvent(this, ApplicationEvent.EVENT.APPLICATION_DESTROYED));
             }
+            //
+            RecycleHelper.getInstance().recycle();
             //
             __inited = false;
             // 销毁所有已加载模块
