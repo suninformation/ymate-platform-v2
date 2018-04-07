@@ -15,6 +15,8 @@
  */
 package net.ymate.platform.webmvc.view.impl;
 
+import net.ymate.platform.core.support.IDestroyable;
+import net.ymate.platform.core.support.RecycleHelper;
 import net.ymate.platform.core.util.RuntimeUtils;
 import net.ymate.platform.webmvc.IWebMvc;
 import net.ymate.platform.webmvc.context.WebContext;
@@ -92,6 +94,16 @@ public class BeetlView extends AbstractView {
                 FileResourceLoader resourceLoader = new FileResourceLoader(_viewRoot, DEFAULT_CHARSET);
                 Configuration cfg = Configuration.defaultConfiguration();
                 __groupTemplate = new GroupTemplate(resourceLoader, cfg);
+                //
+                RecycleHelper.getInstance().register(new IDestroyable() {
+                    @Override
+                    public void destroy() throws Exception {
+                        if (__groupTemplate != null) {
+                            __groupTemplate.close();
+                            __groupTemplate = null;
+                        }
+                    }
+                });
             } catch (IOException e) {
                 throw new Error(RuntimeUtils.unwrapThrow(e));
             }
