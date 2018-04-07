@@ -19,6 +19,7 @@ import net.ymate.platform.core.util.ResourceUtils;
 import net.ymate.platform.persistence.jdbc.AbstractDataSourceAdapter;
 import org.apache.commons.dbcp.BasicDataSource;
 import org.apache.commons.dbcp.BasicDataSourceFactory;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -43,17 +44,20 @@ public class DBCPDataSourceAdapter extends AbstractDataSourceAdapter {
     protected void __doInit() throws Exception {
         Properties _props = new Properties();
         InputStream _in = ResourceUtils.getResourceAsStream("dbcp.properties", this.getClass());
-        if (_in != null) {
-            _props.load(_in);
+        try {
+            if (_in != null) {
+                _props.load(_in);
+            }
+            //
+            _props.put("driverClassName", __cfgMeta.getDriverClass());
+            _props.put("url", __cfgMeta.getConnectionUrl());
+            _props.put("username", __cfgMeta.getUsername());
+            _props.put("password", __doGetPasswordDecryptIfNeed());
+            //
+            __ds = (BasicDataSource) BasicDataSourceFactory.createDataSource(_props);
+        } finally {
+            IOUtils.closeQuietly(_in);
         }
-        //
-        _props.put("driverClassName", __cfgMeta.getDriverClass());
-        _props.put("url", __cfgMeta.getConnectionUrl());
-        _props.put("username", __cfgMeta.getUsername());
-        _props.put("password", __doGetPasswordDecryptIfNeed());
-        //
-        __ds = (BasicDataSource) BasicDataSourceFactory.createDataSource(_props);
-
     }
 
     @Override
