@@ -855,7 +855,7 @@ HttpStatusView：HTTP状态视图
 
 BeeltView：Beetl视图；
 
-> 		View.beetlView("/demo/test.ftl");
+> 		View.beetlView("/demo/test.btl");
 > 		// = "beetl:/demo/test"
 
 NullView：空视图；
