@@ -48,6 +48,7 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
 /**
  * 默认数据库会话操作接口实现
@@ -1045,17 +1046,18 @@ public class DefaultSession implements ISession {
             if (__entities != null && __entityMeta.hasAutoincrement()) {
                 // 注: 数据表最多一个自动生成主键
                 // 获取返回的自动生成主键集合
-                Object[] _genKeyValue = __dialect.getGeneratedKey(context.getStatement());
-                if (_genKeyValue != null && _genKeyValue.length > 0) {
-                    for (int _idx = 0; _idx < this.__entities.size(); _idx++) {
-                        IEntity<?> _entity = __entities.get(_idx);
-                        for (String _autoFieldName : __entityMeta.getAutoincrementKeys()) {
-                            Field _field = __entityMeta.getPropertyByField(_autoFieldName).getField();
+                Map<String, Object> _keyValues = __dialect.getGeneratedKey(context.getStatement(), __entityMeta.getAutoincrementKeys());
+                if (!_keyValues.isEmpty()) {
+                    for (IEntity<?> _entity : this.__entities) {
+                        for (Map.Entry<String, Object> _autoField : _keyValues.entrySet()) {
+                            Field _field = __entityMeta.getPropertyByField(_autoField.getKey()).getField();
                             // 为自生成主键赋值, 自动填充
-                            if (__entityMeta.isMultiplePrimaryKey()) {
-                                _field.set(_entity.getId(), BlurObject.bind(_genKeyValue[_idx]).toObjectValue(_field.getType()));
-                            } else {
-                                _field.set(_entity, BlurObject.bind(_genKeyValue[_idx]).toObjectValue(_field.getType()));
+                            if (_autoField.getValue() != null) {
+                                if (__entityMeta.isMultiplePrimaryKey()) {
+                                    _field.set(_entity.getId(), BlurObject.bind(_autoField.getValue()).toObjectValue(_field.getType()));
+                                } else {
+                                    _field.set(_entity, BlurObject.bind(_autoField.getValue()).toObjectValue(_field.getType()));
+                                }
                             }
                         }
                     }

@@ -28,9 +28,10 @@ import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 /**
  * 数据库方言接口抽象实现
@@ -81,18 +82,20 @@ public abstract class AbstractDialect implements IDialect {
     }
 
     @Override
-    public Object[] getGeneratedKey(Statement statement) throws SQLException {
+    public Map<String, Object> getGeneratedKey(Statement statement, List<String> autoincrementKeys) throws SQLException {
         // 检索由于执行此 Statement 对象而创建的所有自动生成的键
-        List<Object> _ids = new ArrayList<Object>();
+        Map<String, Object> _ids = new HashMap<String, Object>();
         ResultSet _keyRSet = statement.getGeneratedKeys();
         try {
-            while (_keyRSet.next()) {
-                _ids.add(_keyRSet.getObject(1));
+            for (String _autoKey : autoincrementKeys) {
+                while (_keyRSet.next()) {
+                    _ids.put(_autoKey, _keyRSet.getObject(_autoKey));
+                }
             }
         } finally {
             _keyRSet.close();
         }
-        return _ids.toArray();
+        return _ids;
     }
 
     @Override

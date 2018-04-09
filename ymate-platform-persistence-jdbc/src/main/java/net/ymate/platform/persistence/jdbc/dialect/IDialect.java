@@ -22,6 +22,8 @@ import net.ymate.platform.persistence.base.IEntity;
 
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.List;
+import java.util.Map;
 
 /**
  * 数据库方言接口定义，用于适配不同数据库特性
@@ -66,11 +68,12 @@ public interface IDialect {
     String buildTableName(String prefix, EntityMeta entityMeta, IShardingable shardingable);
 
     /**
-     * @param statement Statement对象
+     * @param statement         Statement对象
+     * @param autoincrementKeys 自定义自增字段名称集合
      * @return 返回主键值（按 long 类型返回），采用JDBC Statement对象获取自动生成的主键（仅处理单主键）
      * @throws SQLException 可能产生的异常
      */
-    Object[] getGeneratedKey(Statement statement) throws SQLException;
+    Map<String, Object> getGeneratedKey(Statement statement, List<String> autoincrementKeys) throws SQLException;
 
     /**
      * @param sequenceName 序列名称
