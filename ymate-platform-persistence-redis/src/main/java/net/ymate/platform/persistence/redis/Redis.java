@@ -19,14 +19,23 @@ import net.ymate.platform.core.Version;
 import net.ymate.platform.core.YMP;
 import net.ymate.platform.core.module.IModule;
 import net.ymate.platform.core.module.annotation.Module;
+import net.ymate.platform.core.support.DefaultThreadFactory;
+import net.ymate.platform.core.util.RuntimeUtils;
+import net.ymate.platform.persistence.IDataSourceRouter;
+import net.ymate.platform.persistence.redis.impl.RedisCommandsHolder;
 import net.ymate.platform.persistence.redis.impl.RedisDataSourceAdapter;
 import net.ymate.platform.persistence.redis.impl.RedisModuleCfg;
 import net.ymate.platform.persistence.redis.impl.RedisSession;
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import redis.clients.jedis.JedisPubSub;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 /**
  * @author 刘镇 (suninformation@163.com) on 15/11/30 上午3:14
@@ -46,6 +55,10 @@ public class Redis implements IModule, IRedis {
     private IRedisModuleCfg __moduleCfg;
 
     private Map<String, IRedisDataSourceAdapter> __dataSourceCaches;
+
+    private Map<String, JedisPubSub> __pubSubs = new ConcurrentHashMap<String, JedisPubSub>();
+
+    private ExecutorService __subscribePool;
 
     private boolean __inited;
 
@@ -91,6 +104,8 @@ public class Redis implements IModule, IRedis {
                 __dataSourceCaches.put(_meta.getName(), _adapter);
             }
             //
+            __subscribePool = Executors.newCachedThreadPool(new DefaultThreadFactory("redis-subscribe-pool"));
+            //
             __inited = true;
         }
     }
@@ -107,6 +122,12 @@ public class Redis implements IModule, IRedis {
         if (__inited) {
             __inited = false;
             //
+            for (Map.Entry<String, JedisPubSub> _entry : __pubSubs.entrySet()) {
+                _entry.getValue().unsubscribe();
+            }
+            __subscribePool.shutdown();
+            __subscribePool = null;
+            //
             for (IRedisDataSourceAdapter _adapter : __dataSourceCaches.values()) {
                 _adapter.destroy();
             }
@@ -120,16 +141,28 @@ public class Redis implements IModule, IRedis {
         return __moduleCfg;
     }
 
-    public IRedisDataSourceAdapter getDefaultDataSourceAdapter() throws Exception {
-        return __dataSourceCaches.get(__moduleCfg.getDataSourceDefaultName());
+    @Override
+    public IRedisCommandsHolder getDefaultCommandsHolder() {
+        return new RedisCommandsHolder(__dataSourceCaches.get(__moduleCfg.getDataSourceDefaultName()));
     }
 
-    public IRedisDataSourceAdapter getDataSourceAdapter(String dataSourceName) throws Exception {
-        return __dataSourceCaches.get(dataSourceName);
+    @Override
+    public IRedisCommandsHolder getCommandsHolder(String dsName) {
+        return new RedisCommandsHolder(__dataSourceCaches.get(dsName));
     }
 
     public <T> T openSession(IRedisSessionExecutor<T> executor) throws Exception {
-        IRedisSession _session = new RedisSession(getDefaultDataSourceAdapter().getCommandsHolder());
+        IRedisSession _session = new RedisSession(this, getDefaultCommandsHolder());
+        try {
+            return executor.execute(_session);
+        } finally {
+            _session.close();
+        }
+    }
+
+    @Override
+    public <T> T openSession(String dsName, IRedisSessionExecutor<T> executor) throws Exception {
+        IRedisSession _session = new RedisSession(this, getCommandsHolder(dsName));
         try {
             return executor.execute(_session);
         } finally {
@@ -138,11 +171,72 @@ public class Redis implements IModule, IRedis {
     }
 
     public <T> T openSession(IRedisCommandsHolder commandsHolder, IRedisSessionExecutor<T> executor) throws Exception {
-        IRedisSession _session = new RedisSession(commandsHolder);
+        IRedisSession _session = new RedisSession(this, commandsHolder);
         try {
             return executor.execute(_session);
         } finally {
             _session.close();
+        }
+    }
+
+    @Override
+    public <T> T openSession(IDataSourceRouter dataSourceRouter, IRedisSessionExecutor<T> executor) throws Exception {
+        return openSession(dataSourceRouter.getDataSourceName(), executor);
+    }
+
+    @Override
+    public IRedisSession openSession() {
+        return new RedisSession(this, getDefaultCommandsHolder());
+    }
+
+    @Override
+    public IRedisSession openSession(String dsName) {
+        return new RedisSession(this, getCommandsHolder(dsName));
+    }
+
+    @Override
+    public IRedisSession openSession(IRedisCommandsHolder commandsHolder) {
+        return new RedisSession(this, commandsHolder);
+    }
+
+    @Override
+    public IRedisSession openSession(IDataSourceRouter dataSourceRouter) {
+        return new RedisSession(this, getCommandsHolder(dataSourceRouter.getDataSourceName()));
+    }
+
+    @Override
+    public void subscribe(JedisPubSub jedisPubSub, String... channels) {
+        subscribe(__moduleCfg.getDataSourceDefaultName(), jedisPubSub, channels);
+    }
+
+    @Override
+    public void subscribe(final String dsName, final JedisPubSub jedisPubSub, final String... channels) {
+        String _key = dsName + "@" + jedisPubSub.getClass().getName() + ":" + StringUtils.join(channels, '|');
+        if (!__pubSubs.containsKey(_key)) {
+            __pubSubs.put(_key, jedisPubSub);
+            __subscribePool.execute(new Runnable() {
+                @Override
+                public void run() {
+                    while (__inited) {
+                        try {
+                            openSession(dsName, new IRedisSessionExecutor<Object>() {
+                                @Override
+                                public Void execute(IRedisSession session) throws Exception {
+                                    session.getCommandHolder().getJedis().subscribe(jedisPubSub, channels);
+                                    return null;
+                                }
+                            });
+                        } catch (Exception e) {
+                            _LOG.error("Redis connection [" + dsName + "] has been interrupted and is constantly trying to reconnect....", RuntimeUtils.unwrapThrow(e));
+                            try {
+                                Thread.sleep(1000);
+                            } catch (InterruptedException e1) {
+                                break;
+                            }
+                        }
+                    }
+                }
+            });
         }
     }
 }

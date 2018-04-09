@@ -17,6 +17,7 @@ package net.ymate.platform.persistence.redis.impl;
 
 import net.ymate.platform.core.util.UUIDUtils;
 import net.ymate.platform.persistence.ISessionEvent;
+import net.ymate.platform.persistence.redis.IRedis;
 import net.ymate.platform.persistence.redis.IRedisCommandsHolder;
 import net.ymate.platform.persistence.redis.IRedisSession;
 import redis.clients.jedis.JedisCommands;
@@ -27,15 +28,22 @@ import redis.clients.jedis.JedisCommands;
  */
 public class RedisSession implements IRedisSession {
 
+    private IRedis __owner;
+
     private String __id;
 
     private IRedisCommandsHolder __commandsHolder;
 
     private ISessionEvent __sessionEvent;
 
-    public <T extends JedisCommands> RedisSession(IRedisCommandsHolder commandsHolder) {
+    public <T extends JedisCommands> RedisSession(IRedis owner, IRedisCommandsHolder commandsHolder) {
+        this.__owner = owner;
         this.__id = UUIDUtils.UUID();
         this.__commandsHolder = commandsHolder;
+    }
+
+    public IRedis getOwner() {
+        return __owner;
     }
 
     public String getId() {

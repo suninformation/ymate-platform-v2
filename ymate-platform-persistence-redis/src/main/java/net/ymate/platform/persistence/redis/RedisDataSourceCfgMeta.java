@@ -56,6 +56,22 @@ public class RedisDataSourceCfgMeta {
         return __connectionType;
     }
 
+    public boolean isDefault() {
+        return "default".equalsIgnoreCase(__connectionType);
+    }
+
+    public boolean isSentinel() {
+        return "sentinel".equalsIgnoreCase(__connectionType);
+    }
+
+    public boolean isSharded() {
+        return "shard".equalsIgnoreCase(__connectionType);
+    }
+
+    public boolean isCluster() {
+        return "cluster".equalsIgnoreCase(__connectionType);
+    }
+
     public String getMasterServerName() {
         return __masterServerName;
     }

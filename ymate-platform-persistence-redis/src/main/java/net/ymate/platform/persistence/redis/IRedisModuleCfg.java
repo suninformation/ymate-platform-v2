@@ -36,6 +36,8 @@ public interface IRedisModuleCfg {
         private String host;
         private int port;
         private int timeout;
+        private int socketTimeout;
+        private int maxAttempts;
         private int weight;
         private int database;
         private String clientName;
@@ -71,6 +73,22 @@ public interface IRedisModuleCfg {
 
         public void setTimeout(int timeout) {
             this.timeout = timeout;
+        }
+
+        public int getSocketTimeout() {
+            return socketTimeout;
+        }
+
+        public void setSocketTimeout(int socketTimeout) {
+            this.socketTimeout = socketTimeout;
+        }
+
+        public int getMaxAttempts() {
+            return maxAttempts;
+        }
+
+        public void setMaxAttempts(int maxAttempts) {
+            this.maxAttempts = maxAttempts;
         }
 
         public int getWeight() {

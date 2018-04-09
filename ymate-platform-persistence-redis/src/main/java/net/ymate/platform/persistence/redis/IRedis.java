@@ -16,6 +16,8 @@
 package net.ymate.platform.persistence.redis;
 
 import net.ymate.platform.core.YMP;
+import net.ymate.platform.persistence.IDataSourceRouter;
+import redis.clients.jedis.JedisPubSub;
 
 /**
  * @author 刘镇 (suninformation@163.com) on 15/11/30 上午3:16
@@ -35,11 +37,43 @@ public interface IRedis {
      */
     IRedisModuleCfg getModuleCfg();
 
-    IRedisDataSourceAdapter getDefaultDataSourceAdapter() throws Exception;
+    /**
+     * @return 获取默认命令对象持有者对象
+     */
+    IRedisCommandsHolder getDefaultCommandsHolder();
 
-    IRedisDataSourceAdapter getDataSourceAdapter(String dataSourceName) throws Exception;
+    /**
+     * @param dsName 数据源名称
+     * @return 获取由dsName指定的命令对象持有者对象
+     */
+    IRedisCommandsHolder getCommandsHolder(String dsName);
 
     <T> T openSession(IRedisSessionExecutor<T> executor) throws Exception;
 
+    <T> T openSession(String dsName, IRedisSessionExecutor<T> executor) throws Exception;
+
     <T> T openSession(IRedisCommandsHolder commandsHolder, IRedisSessionExecutor<T> executor) throws Exception;
+
+    <T> T openSession(IDataSourceRouter dataSourceRouter, IRedisSessionExecutor<T> executor) throws Exception;
+
+    /**
+     * @return 开启Redis连接会话(注意一定记得关闭会话)
+     */
+    IRedisSession openSession();
+
+    IRedisSession openSession(String dsName);
+
+    IRedisSession openSession(IRedisCommandsHolder commandsHolder);
+
+    IRedisSession openSession(IDataSourceRouter dataSourceRouter);
+
+    /**
+     * 订阅
+     *
+     * @param jedisPubSub 发布订阅对象
+     * @param channels    频道
+     */
+    void subscribe(JedisPubSub jedisPubSub, String... channels);
+
+    void subscribe(String dsName, JedisPubSub jedisPubSub, String... channels);
 }

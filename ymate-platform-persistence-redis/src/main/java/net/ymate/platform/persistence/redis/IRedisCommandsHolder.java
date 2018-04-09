@@ -17,7 +17,6 @@ package net.ymate.platform.persistence.redis;
 
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisCommands;
-import redis.clients.jedis.ShardedJedis;
 
 /**
  * @author 刘镇 (suninformation@163.com) on 15/12/4 上午12:59
@@ -32,9 +31,10 @@ public interface IRedisCommandsHolder {
 
     Jedis getJedis();
 
-    ShardedJedis getShardedJedis();
-
     JedisCommands getCommands();
 
+    /**
+     * 释放命令对象
+     */
     void release();
 }

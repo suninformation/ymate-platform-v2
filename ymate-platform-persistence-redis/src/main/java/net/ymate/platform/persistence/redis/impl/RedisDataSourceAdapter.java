@@ -15,7 +15,6 @@
  */
 package net.ymate.platform.persistence.redis.impl;
 
-import net.ymate.platform.persistence.redis.IRedisCommandsHolder;
 import net.ymate.platform.persistence.redis.IRedisDataSourceAdapter;
 import net.ymate.platform.persistence.redis.IRedisModuleCfg;
 import net.ymate.platform.persistence.redis.RedisDataSourceCfgMeta;
@@ -33,14 +32,18 @@ import java.util.Set;
  */
 public class RedisDataSourceAdapter implements IRedisDataSourceAdapter {
 
+    private RedisDataSourceCfgMeta __cfgMeta;
+
     private Pool __pool;
 
-    private RedisDataSourceCfgMeta __cfgMeta;
+    private JedisCluster __cluster;
+
+    private boolean __isCluster;
 
     public void initialize(RedisDataSourceCfgMeta cfgMeta) throws Exception {
         __cfgMeta = cfgMeta;
         //
-        if ("default".equalsIgnoreCase(cfgMeta.getConnectionType())) {
+        if (cfgMeta.isDefault()) {
             if (cfgMeta.getServers().isEmpty()) {
                 __pool = new JedisPool(cfgMeta.getPoolConfig(), "localhost");
             } else {
@@ -53,7 +56,7 @@ public class RedisDataSourceAdapter implements IRedisDataSourceAdapter {
                         _server.getDatabase(),
                         _server.getClientName());
             }
-        } else if ("shard".equalsIgnoreCase(cfgMeta.getConnectionType())) {
+        } else if (__cfgMeta.isSharded()) {
             if (!cfgMeta.getServers().isEmpty()) {
                 List<JedisShardInfo> _shards = new ArrayList<JedisShardInfo>();
                 for (IRedisModuleCfg.ServerMeta _server : cfgMeta.getServers().values()) {
@@ -61,22 +64,35 @@ public class RedisDataSourceAdapter implements IRedisDataSourceAdapter {
                 }
                 __pool = new ShardedJedisPool(cfgMeta.getPoolConfig(), _shards);
             }
-        } else if ("sentinel".equalsIgnoreCase(cfgMeta.getConnectionType())) {
+        } else if (__cfgMeta.isSentinel()) {
             if (!cfgMeta.getServers().isEmpty()) {
                 Set<String> _sentinel = new HashSet<String>();
                 for (IRedisModuleCfg.ServerMeta _server : cfgMeta.getServers().values()) {
                     _sentinel.add(_server.getHost() + ":" + _server.getPort());
                 }
-                IRedisModuleCfg.ServerMeta _server = cfgMeta.getServers().get(cfgMeta.getMasterServerName());
-                __pool = new JedisSentinelPool(cfgMeta.getMasterServerName(),
+                IRedisModuleCfg.ServerMeta _server = cfgMeta.getMasterServerMeta();
+                __pool = new JedisSentinelPool(_server.getName(),
                         _sentinel, cfgMeta.getPoolConfig(),
                         _server.getTimeout(), _server.getPassword(), _server.getDatabase(), _server.getClientName());
             }
+        } else if (__cfgMeta.isCluster()) {
+            Set<HostAndPort> _cluster = new HashSet<HostAndPort>();
+            for (IRedisModuleCfg.ServerMeta _server : cfgMeta.getServers().values()) {
+                _cluster.add(new HostAndPort(_server.getHost(), _server.getPort()));
+            }
+            IRedisModuleCfg.ServerMeta _server = cfgMeta.getMasterServerMeta();
+            __cluster = new JedisCluster(_cluster, _server.getTimeout(), _server.getSocketTimeout(), _server.getMaxAttempts(), _server.getPassword(), cfgMeta.getPoolConfig());
+            __isCluster = true;
+        } else {
+            throw new UnsupportedOperationException("Redis connection type Unsupported.");
         }
     }
 
-    public IRedisCommandsHolder getCommandsHolder() {
-        return new RedisCommandsHolder(__cfgMeta, (JedisCommands) __pool.getResource());
+    public JedisCommands getCommands() {
+        if (__isCluster) {
+            return __cluster;
+        }
+        return (JedisCommands) __pool.getResource();
     }
 
     public RedisDataSourceCfgMeta getDataSourceCfgMeta() {

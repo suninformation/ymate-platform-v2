@@ -24,7 +24,7 @@ import net.ymate.platform.persistence.ISessionBase;
 public interface IRedisSession extends ISessionBase {
 
     /**
-     * @return JedisCommands接口实例
+     * @return 命令对象持有者实例
      */
     IRedisCommandsHolder getCommandHolder();
 }

@@ -15,13 +15,14 @@
  */
 package net.ymate.platform.persistence.redis.impl;
 
+import net.ymate.platform.core.util.RuntimeUtils;
 import net.ymate.platform.persistence.redis.IRedisCommandsHolder;
+import net.ymate.platform.persistence.redis.IRedisDataSourceAdapter;
 import net.ymate.platform.persistence.redis.RedisDataSourceCfgMeta;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisCommands;
-import redis.clients.jedis.ShardedJedis;
 
 import java.io.Closeable;
 import java.io.IOException;
@@ -34,49 +35,46 @@ public class RedisCommandsHolder implements IRedisCommandsHolder {
 
     private static final Log _LOG = LogFactory.getLog(RedisCommandsHolder.class);
 
-    private JedisCommands __commands;
+    private IRedisDataSourceAdapter __dataSourceAdapter;
 
-    private RedisDataSourceCfgMeta __cfgMeta;
+    private ThreadLocal<JedisCommands> __jedisCommands = new ThreadLocal<JedisCommands>();
 
-    public RedisCommandsHolder(RedisDataSourceCfgMeta cfgMeta, JedisCommands commands) {
-        __cfgMeta = cfgMeta;
-        __commands = commands;
-    }
-
-    public JedisCommands getCommands() {
-        return __commands;
+    public RedisCommandsHolder(IRedisDataSourceAdapter dataSourceAdapter) {
+        __dataSourceAdapter = dataSourceAdapter;
     }
 
     public RedisDataSourceCfgMeta getDataSourceCfgMeta() {
-        return __cfgMeta;
+        return __dataSourceAdapter.getDataSourceCfgMeta();
     }
 
     public Jedis getJedis() {
-        if (__commands instanceof Jedis) {
-            return (Jedis) __commands;
+        JedisCommands _commands = getCommands();
+        if (_commands instanceof Jedis) {
+            return (Jedis) _commands;
         }
         return null;
     }
 
-    public ShardedJedis getShardedJedis() {
-        if (__commands instanceof ShardedJedis) {
-            return (ShardedJedis) __commands;
+    public JedisCommands getCommands() {
+        JedisCommands _commands = __jedisCommands.get();
+        if (_commands == null) {
+            _commands = __dataSourceAdapter.getCommands();
+            __jedisCommands.set(_commands);
         }
-        return null;
+        return _commands;
     }
 
     public void release() {
-        if (__commands instanceof Jedis) {
-            ((Jedis) __commands).close();
-        } else if (__commands instanceof ShardedJedis) {
-            ((ShardedJedis) __commands).close();
-        } else if (__commands instanceof Closeable) {
-            try {
-                ((Closeable) __commands).close();
-            } catch (IOException e) {
-                _LOG.warn("", e);
-                __commands = null;
+        JedisCommands _commands = __jedisCommands.get();
+        if (_commands != null && !__dataSourceAdapter.getDataSourceCfgMeta().isCluster()) {
+            if (_commands instanceof Closeable) {
+                try {
+                    ((Closeable) _commands).close();
+                } catch (IOException e) {
+                    _LOG.warn("An exception occurs when the JedisCommands is released: ", RuntimeUtils.unwrapThrow(e));
+                }
             }
         }
+        __jedisCommands.remove();
     }
 }

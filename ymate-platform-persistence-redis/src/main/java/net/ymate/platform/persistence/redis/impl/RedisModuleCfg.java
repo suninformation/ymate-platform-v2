@@ -40,7 +40,7 @@ public class RedisModuleCfg implements IRedisModuleCfg {
 
     public RedisModuleCfg(YMP owner) throws Exception {
         Map<String, String> _moduleCfgs = owner.getConfig().getModuleConfigs(IRedis.MODULE_NAME);
-//
+        //
         this.dataSourceDefaultName = StringUtils.defaultIfBlank(_moduleCfgs.get("ds_default_name"), "default");
         //
         this.dataSourceCfgMetas = new HashMap<String, RedisDataSourceCfgMeta>();
@@ -49,9 +49,7 @@ public class RedisModuleCfg implements IRedisModuleCfg {
             String[] _dsNameList = StringUtils.split(_dsNameStr, "|");
             for (String _dsName : _dsNameList) {
                 RedisDataSourceCfgMeta _meta = __doParserDataSourceCfgMeta(_dsName, _moduleCfgs);
-                if (_meta != null) {
-                    this.dataSourceCfgMetas.put(_dsName, _meta);
-                }
+                this.dataSourceCfgMetas.put(_dsName, _meta);
             }
         } else {
             throw new IllegalArgumentException("The default datasource name does not match");
@@ -59,17 +57,14 @@ public class RedisModuleCfg implements IRedisModuleCfg {
     }
 
     @SuppressWarnings("unchecked")
-    protected RedisDataSourceCfgMeta __doParserDataSourceCfgMeta(String dsName, Map<String, String> _moduleCfgs) throws Exception {
-        RedisDataSourceCfgMeta _meta = null;
-        //
+    private RedisDataSourceCfgMeta __doParserDataSourceCfgMeta(String dsName, Map<String, String> _moduleCfgs) throws Exception {
         Map<String, String> _dataSourceCfgs = RuntimeUtils.keyStartsWith(_moduleCfgs, "ds." + dsName + ".");
         //
-//        if (!_dataSourceCfgs.isEmpty()) {
         String _connectionType = StringUtils.defaultIfBlank(_dataSourceCfgs.get("connection_type"), "default");
         String _masterServerName = StringUtils.defaultIfBlank(_dataSourceCfgs.get("master_server_name"), "default");
         List<ServerMeta> _servers = new ArrayList<ServerMeta>();
         String[] _serverNames = StringUtils.split(StringUtils.defaultIfBlank(_dataSourceCfgs.get("server_name_list"), "default"), "|");
-        Map<String, String> _tmpCfgs = null;
+        Map<String, String> _tmpCfgs;
         if (_serverNames != null) {
             for (String _serverName : _serverNames) {
                 _tmpCfgs = RuntimeUtils.keyStartsWith(_dataSourceCfgs, "server." + _serverName + ".");
@@ -79,6 +74,8 @@ public class RedisModuleCfg implements IRedisModuleCfg {
                     _servMeta.setHost(StringUtils.defaultIfBlank(_tmpCfgs.get("host"), "localhost"));
                     _servMeta.setPort(BlurObject.bind(StringUtils.defaultIfBlank(_tmpCfgs.get("port"), "6379")).toIntValue());
                     _servMeta.setTimeout(BlurObject.bind(StringUtils.defaultIfBlank(_tmpCfgs.get("timeout"), "2000")).toIntValue());
+                    _servMeta.setSocketTimeout(BlurObject.bind(StringUtils.defaultIfBlank(_tmpCfgs.get("socket_timeout"), "2000")).toIntValue());
+                    _servMeta.setMaxAttempts(BlurObject.bind(StringUtils.defaultIfBlank(_tmpCfgs.get("max_attempts"), "3")).toIntValue());
                     _servMeta.setWeight(BlurObject.bind(StringUtils.defaultIfBlank(_tmpCfgs.get("weight"), "1")).toIntValue());
                     _servMeta.setDatabase(BlurObject.bind(StringUtils.defaultIfBlank(_tmpCfgs.get("database"), "0")).toIntValue());
                     _servMeta.setClientName(StringUtils.trimToNull(_tmpCfgs.get("client_name")));
@@ -123,9 +120,7 @@ public class RedisModuleCfg implements IRedisModuleCfg {
             _poolConfig.setNumTestsPerEvictionRun(BlurObject.bind(StringUtils.defaultIfBlank(_tmpCfgs.get("num_tests_per_eviction_run"), GenericObjectPoolConfig.DEFAULT_NUM_TESTS_PER_EVICTION_RUN + "")).toIntValue());
             _poolConfig.setTimeBetweenEvictionRunsMillis(BlurObject.bind(StringUtils.defaultIfBlank(_tmpCfgs.get("time_between_eviction_runs_millis"), GenericObjectPoolConfig.DEFAULT_TIME_BETWEEN_EVICTION_RUNS_MILLIS + "")).toLongValue());
         }
-        _meta = new RedisDataSourceCfgMeta(dsName, _connectionType, _masterServerName, _servers, _poolConfig);
-//        }
-        return _meta;
+        return new RedisDataSourceCfgMeta(dsName, _connectionType, _masterServerName, _servers, _poolConfig);
     }
 
     public String getDataSourceDefaultName() {

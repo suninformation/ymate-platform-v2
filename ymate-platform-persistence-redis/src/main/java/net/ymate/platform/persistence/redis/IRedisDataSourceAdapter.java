@@ -15,6 +15,8 @@
  */
 package net.ymate.platform.persistence.redis;
 
+import redis.clients.jedis.JedisCommands;
+
 /**
  * @author 刘镇 (suninformation@163.com) on 15/12/2 上午2:28
  * @version 1.0
@@ -30,12 +32,12 @@ public interface IRedisDataSourceAdapter {
     void initialize(RedisDataSourceCfgMeta cfgMeta) throws Exception;
 
     /**
-     * @return RedisCommands实例持有者接口对象
+     * @return 命令接口实例对象
      */
-    IRedisCommandsHolder getCommandsHolder();
+    JedisCommands getCommands();
 
     /**
-     * @return 获取MongoDB数据源配置参数
+     * @return 获取数据源配置参数
      */
     RedisDataSourceCfgMeta getDataSourceCfgMeta();
 
