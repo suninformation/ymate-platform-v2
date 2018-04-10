@@ -21,12 +21,14 @@ import net.ymate.platform.persistence.redis.IRedis;
 import net.ymate.platform.persistence.redis.IRedisCommandsHolder;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.codec.digest.DigestUtils;
+import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 import redis.clients.jedis.JedisPubSub;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 
 /**
  * @author 刘镇 (suninformation@163.com) on 15/12/7 上午12:16
@@ -77,7 +79,12 @@ public class RedisCacheWrapper extends JedisPubSub implements ICache {
         IRedisCommandsHolder _holder = null;
         try {
             _holder = __redis.getDefaultCommandsHolder();
-            return __doUnserializeValue(_holder.getCommands().hget(__cacheName, __doSerializeKey(key)));
+            String _cacheKey = __doSerializeKey(key);
+            Object _cacheValue = __doUnserializeValue(_holder.getCommands().hget(__cacheName, _cacheKey));
+            if (_cacheValue != null && !_holder.getCommands().exists(__cacheName.concat("@@").concat(_cacheKey))) {
+                remove(key);
+            }
+            return _cacheValue;
         } catch (Exception e) {
             throw new CacheException(RuntimeUtils.unwrapThrow(e));
         } finally {
@@ -92,9 +99,19 @@ public class RedisCacheWrapper extends JedisPubSub implements ICache {
         try {
             String _cacheKey = __doSerializeKey(key);
             String _cacheValue = __doSerializeValue(value);
+            int _timeout = 0;
+            if (value instanceof CacheElement) {
+                _timeout = ((CacheElement) value).getTimeout();
+            }
             //
             _holder = __redis.getDefaultCommandsHolder();
             _holder.getCommands().hset(__cacheName, _cacheKey, _cacheValue);
+            if (_timeout <= 0) {
+                _timeout = __owner.getModuleCfg().getDefaultCacheTimeout();
+            }
+            if (_timeout > 0) {
+                _holder.getCommands().setex(__cacheName.concat("@@").concat(_cacheKey), _timeout, StringUtils.EMPTY);
+            }
             //
             if (__listener != null) {
                 if (update) {
@@ -145,6 +162,7 @@ public class RedisCacheWrapper extends JedisPubSub implements ICache {
             //
             _holder = __redis.getDefaultCommandsHolder();
             _holder.getCommands().hdel(__cacheName, _cacheKey);
+            _holder.getCommands().del(__cacheName.concat("@@").concat(_cacheKey));
             //
             if (__listener != null) {
                 __listener.notifyElementRemoved(__cacheName, _cacheKey);
@@ -168,6 +186,9 @@ public class RedisCacheWrapper extends JedisPubSub implements ICache {
                 _keys.add(__doSerializeKey(_key));
             }
             _holder.getCommands().hdel(__cacheName, _keys.toArray(new String[_keys.size()]));
+            for (String _key : _keys) {
+                _holder.getCommands().del(__cacheName.concat("@@").concat(_key));
+            }
             //
             if (__listener != null) {
                 for (String _k : _keys) {
@@ -188,6 +209,10 @@ public class RedisCacheWrapper extends JedisPubSub implements ICache {
         IRedisCommandsHolder _holder = null;
         try {
             _holder = __redis.getDefaultCommandsHolder();
+            Set<String> _keys = _holder.getCommands().hkeys(__cacheName);
+            for (String _key : _keys) {
+                _holder.getCommands().del(__cacheName.concat("@@").concat(_key));
+            }
             _holder.getCommands().del(__cacheName);
             //
             if (__listener != null) {
@@ -215,7 +240,11 @@ public class RedisCacheWrapper extends JedisPubSub implements ICache {
     @Override
     public void onMessage(String channel, String message) {
         if (StringUtils.isNotBlank(message)) {
-            __listener.notifyElementExpired(__cacheName, message);
+            String[] _keyStr = StringUtils.split(message, "@@");
+            if (ArrayUtils.isNotEmpty(_keyStr) && _keyStr.length == 2 && StringUtils.equals(__cacheName, _keyStr[0])) {
+                remove(_keyStr[1]);
+                __listener.notifyElementExpired(__cacheName, _keyStr[1]);
+            }
         }
     }
 }
