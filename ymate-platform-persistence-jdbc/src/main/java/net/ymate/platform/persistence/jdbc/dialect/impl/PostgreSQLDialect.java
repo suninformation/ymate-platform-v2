@@ -41,7 +41,7 @@ public class PostgreSQLDialect extends AbstractDialect {
         if (pageSize == 0) {
             return originSql.concat(" limit ").concat(Integer.toString(_limit));
         } else {
-            return originSql.concat(" limit ").concat(Integer.toString(_limit)).concat(" offset ").concat(Integer.toString(pageSize));
+            return originSql.concat(" limit ").concat(Integer.toString(pageSize)).concat(" offset ").concat(Integer.toString(_limit));
         }
     }
 

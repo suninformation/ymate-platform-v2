@@ -30,14 +30,4 @@ public class SQLiteDialect extends AbstractDialect {
     public String getName() {
         return JDBC.DATABASE.SQLITE.name();
     }
-
-    @Override
-    public String buildPagedQuerySQL(String originSql, int page, int pageSize) {
-        int _limit = ((page - 1) * pageSize);
-        if (pageSize == 0) {
-            return originSql.concat(" limit ").concat(Integer.toString(_limit));
-        } else {
-            return originSql.concat(" limit ").concat(Integer.toString(_limit)).concat(", ").concat(Integer.toString(pageSize));
-        }
-    }
 }

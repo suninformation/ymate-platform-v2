@@ -105,7 +105,12 @@ public abstract class AbstractDialect implements IDialect {
 
     @Override
     public String buildPagedQuerySQL(String originSql, int page, int pageSize) {
-        throw new UnsupportedOperationException();
+        int _limit = ((page - 1) * pageSize);
+        if (pageSize == 0) {
+            return originSql.concat(" limit ").concat(Integer.toString(_limit));
+        } else {
+            return originSql.concat(" limit ").concat(Integer.toString(_limit)).concat(", ").concat(Integer.toString(pageSize));
+        }
     }
 
     @Override

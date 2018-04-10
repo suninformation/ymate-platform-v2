@@ -19,6 +19,8 @@ import net.ymate.platform.persistence.jdbc.JDBC;
 import net.ymate.platform.persistence.jdbc.dialect.AbstractDialect;
 
 /**
+ * H2数据库方言接口实现
+ *
  * @author 刘镇 (suninformation@163.com) on 15/4/16 上午11:33
  * @version 1.0
  */

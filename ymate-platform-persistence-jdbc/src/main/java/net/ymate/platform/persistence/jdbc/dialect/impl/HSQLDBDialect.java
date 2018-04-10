@@ -19,6 +19,8 @@ import net.ymate.platform.persistence.jdbc.JDBC;
 import net.ymate.platform.persistence.jdbc.dialect.AbstractDialect;
 
 /**
+ * HSQLDB数据库方言接口实现
+ *
  * @author 刘镇 (suninformation@163.com) on 15/4/16 上午11:33
  * @version 1.0
  */
@@ -27,5 +29,15 @@ public class HSQLDBDialect extends AbstractDialect {
     @Override
     public String getName() {
         return JDBC.DATABASE.HSQLDB.name();
+    }
+
+    @Override
+    public String buildPagedQuerySQL(String originSql, int page, int pageSize) {
+        int _limit = ((page - 1) * pageSize);
+        if (pageSize == 0) {
+            return originSql.concat(" limit ").concat(Integer.toString(_limit));
+        } else {
+            return originSql.concat(" limit ").concat(Integer.toString(pageSize)).concat(" offset ").concat(Integer.toString(_limit));
+        }
     }
 }

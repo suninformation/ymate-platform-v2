@@ -47,16 +47,6 @@ public class MySQLDialect extends AbstractDialect {
     }
 
     @Override
-    public String buildPagedQuerySQL(String originSql, int page, int pageSize) {
-        int _limit = ((page - 1) * pageSize);
-        if (pageSize == 0) {
-            return originSql.concat(" limit ").concat(Integer.toString(_limit));
-        } else {
-            return originSql.concat(" limit ").concat(Integer.toString(_limit)).concat(", ").concat(Integer.toString(pageSize));
-        }
-    }
-
-    @Override
     public String buildCreateSQL(Class<? extends IEntity> entityClass, String prefix, IShardingable shardingable) {
         EntityMeta _meta = EntityMeta.createAndGet(entityClass);
         if (_meta != null) {
