@@ -218,7 +218,7 @@ public class JDBC implements IModule, IDatabase {
      * 数据库类型
      */
     public enum DATABASE {
-        MYSQL, ORACLE, SQLSERVER, DB2, SQLLITE, POSTGRESQL, HSQLDB, H2, UNKNOW
+        MYSQL, ORACLE, SQLSERVER, DB2, SQLITE, POSTGRESQL, HSQLDB, H2, UNKNOW
     }
 
     /**
@@ -303,7 +303,7 @@ public class JDBC implements IModule, IDatabase {
         DB_DRIVERS.put(DATABASE.ORACLE, "oracle.jdbc.OracleDriver");
         DB_DRIVERS.put(DATABASE.SQLSERVER, "com.microsoft.sqlserver.jdbc.SQLServerDriver");
         DB_DRIVERS.put(DATABASE.DB2, "com.ibm.db2.jcc.DB2Driver");
-        DB_DRIVERS.put(DATABASE.SQLLITE, "org.sqlite.JDBC");
+        DB_DRIVERS.put(DATABASE.SQLITE, "org.sqlite.JDBC");
         DB_DRIVERS.put(DATABASE.POSTGRESQL, "org.postgresql.Driver");
         DB_DRIVERS.put(DATABASE.HSQLDB, "org.hsqldb.jdbcDriver");
         DB_DRIVERS.put(DATABASE.H2, "org.h2.Driver");
@@ -313,7 +313,7 @@ public class JDBC implements IModule, IDatabase {
         DB_DIALECTS.put(DATABASE.ORACLE, OracleDialect.class);
         DB_DIALECTS.put(DATABASE.SQLSERVER, SQLServerDialect.class);
         DB_DIALECTS.put(DATABASE.DB2, DB2Dialect.class);
-        DB_DIALECTS.put(DATABASE.SQLLITE, SQLiteDialect.class);
+        DB_DIALECTS.put(DATABASE.SQLITE, SQLiteDialect.class);
         DB_DIALECTS.put(DATABASE.POSTGRESQL, PostgreSQLDialect.class);
         DB_DIALECTS.put(DATABASE.HSQLDB, HSQLDBDialect.class);
         DB_DIALECTS.put(DATABASE.H2, H2Dialect.class);

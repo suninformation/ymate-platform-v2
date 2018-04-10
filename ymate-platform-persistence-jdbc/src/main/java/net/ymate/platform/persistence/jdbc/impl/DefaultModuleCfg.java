@@ -73,7 +73,7 @@ public class DefaultModuleCfg implements IDatabaseModuleCfg {
             //
             DataSourceCfgMeta _meta = new DataSourceCfgMeta();
             _meta.setName(dsName);
-            _meta.setConnectionUrl(_dataSourceCfgs.get("connection_url"));
+            _meta.setConnectionUrl(RuntimeUtils.replaceEnvVariable(_dataSourceCfgs.get("connection_url")));
             _meta.setUsername(_dataSourceCfgs.get("username"));
             // 验证必填参数
             if (StringUtils.isNotBlank(_meta.getConnectionUrl()) && StringUtils.isNotBlank(_meta.getUsername())) {

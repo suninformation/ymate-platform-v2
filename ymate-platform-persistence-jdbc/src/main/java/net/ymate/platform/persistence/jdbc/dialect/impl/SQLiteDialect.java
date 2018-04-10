@@ -28,7 +28,7 @@ public class SQLiteDialect extends AbstractDialect {
 
     @Override
     public String getName() {
-        return JDBC.DATABASE.SQLLITE.name();
+        return JDBC.DATABASE.SQLITE.name();
     }
 
     @Override
