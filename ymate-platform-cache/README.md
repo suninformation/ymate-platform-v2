@@ -59,10 +59,10 @@
     # 缓存作用域处理器，可选参数，默认值为空
     ymp.configs.cache.scope_processor_class=
 
-    # 缓存Key生成器，可选参数，为空则采用框架默认net.ymate.platform.cache.impl.DefaultKeyGenerator
+    # 缓存Key生成器，可选参数，默认采用框架默认net.ymate.platform.cache.impl.DefaultKeyGenerator
     ymp.configs.cache.key_generator_class=
 
-    # 对象序列化接口实现，可选参数，默认值为net.ymate.platform.cache.impl.DefaultSerializer
+    # 对象序列化接口实现，可选参数，默认值为ISerializer.SerializerManager.getDefaultSerializer()
     ymp.configs.cache.serializer_class=
 
     # 默认缓存名称，可选参数，默认值为default，对应于Ehcache配置文件中设置name="__DEFAULT__"
@@ -70,6 +70,12 @@
 
     # 缓存数据超时时间，可选参数，数值必须大于等于0，为0表示默认缓存300秒
     ymp.configs.cache.default_cache_timeout=
+
+    # 禁用Redis订阅缓存元素过期事件，可选参数，默认值为false
+    ymp.params.cache.disabled_subscribe_expired=
+
+    # Multilevel模式下是否自动同步Master和Slave级缓存，可选扩展参数, 默认值为false
+    ymp.params.cache.multilevel_slave_autosync=false
 
 ##### EhCache配置示例
 
