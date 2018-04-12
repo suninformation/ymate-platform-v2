@@ -70,6 +70,9 @@ YMP框架的初始化是从加载ymp-conf.properties文件开始的，该文件�
 		# 国际化资源管理器事件监听处理器，可选参数，默认为空
 		ymp.i18n_event_handler_class=
 		
+		# 默认密码处理器，可选参数，用于对已加密参数值进行解密，默认为net.ymate.platform.core.support.impl.DefaultPasswordProcessor
+        ymp.default_password_class=
+		
 		# 框架全局自定义参数，xxx表示自定义参数名称，vvv表示参数值
 		ymp.params.xxx=vvv
 		

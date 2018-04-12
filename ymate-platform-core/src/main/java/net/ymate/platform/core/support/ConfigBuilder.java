@@ -20,6 +20,7 @@ import net.ymate.platform.core.beans.intercept.InterceptSettings;
 import net.ymate.platform.core.event.IEventProvider;
 import net.ymate.platform.core.i18n.II18NEventHandler;
 import net.ymate.platform.core.lang.BlurObject;
+import net.ymate.platform.core.support.impl.DefaultPasswordProcessor;
 import net.ymate.platform.core.util.ClassUtils;
 import net.ymate.platform.core.util.RuntimeUtils;
 import org.apache.commons.io.IOUtils;
@@ -50,6 +51,8 @@ public final class ConfigBuilder {
 
     private II18NEventHandler __i18nEventHandler;
 
+    private Class<? extends IPasswordProcessor> __defaultPasswordClass;
+
     private final Map<String, String> __paramsMap;
 
     private final Map<String, Map<String, String>> __moduleCfgs;
@@ -70,6 +73,7 @@ public final class ConfigBuilder {
         return Collections.emptyList();
     }
 
+    @SuppressWarnings("unchecked")
     public static ConfigBuilder create(final Properties properties) {
         //
         IModuleCfgProcessor _processor = new IModuleCfgProcessor() {
@@ -89,6 +93,18 @@ public final class ConfigBuilder {
             }
         };
         //
+        Class<? extends IPasswordProcessor> _passProcessor;
+        try {
+            String _passClassName = properties.getProperty("ymp.default_password_class");
+            if (StringUtils.isNotBlank(_passClassName)) {
+                _passProcessor = (Class<? extends IPasswordProcessor>) ClassUtils.loadClass(_passClassName, ConfigBuilder.class);
+            } else {
+                _passProcessor = DefaultPasswordProcessor.class;
+            }
+        } catch (ClassNotFoundException e) {
+            throw new RuntimeException(e.getMessage(), RuntimeUtils.unwrapThrow(e));
+        }
+        //
         ConfigBuilder _builder = ConfigBuilder.create(_processor)
                 .developMode(BlurObject.bind(properties.getProperty("ymp.dev_mode")).toBooleanValue())
                 .runMode(properties.getProperty("ymp.run_mode"))
@@ -96,7 +112,8 @@ public final class ConfigBuilder {
                 .excludedFiles(__doParserArrayStr(properties, "ymp.excluded_files"))
                 .excludedModules(__doParserArrayStr(properties, "ymp.excluded_modules"))
                 .locale(StringUtils.trimToNull(properties.getProperty("ymp.i18n_default_locale")))
-                .i18nEventHandler(ClassUtils.impl(properties.getProperty("ymp.i18n_event_handler_class"), II18NEventHandler.class, ConfigBuilder.class));
+                .i18nEventHandler(ClassUtils.impl(properties.getProperty("ymp.i18n_event_handler_class"), II18NEventHandler.class, ConfigBuilder.class))
+                .defaultPasswordProcessor(_passProcessor);
         // 提取模块配置
         String _prefix = "ymp.params.";
         for (Object _key : properties.keySet()) {
@@ -293,6 +310,11 @@ public final class ConfigBuilder {
         return this;
     }
 
+    public ConfigBuilder defaultPasswordProcessor(Class<? extends IPasswordProcessor> passwordClass) {
+        __defaultPasswordClass = passwordClass;
+        return this;
+    }
+
     public ConfigBuilder params(Map<String, String> params) {
         __paramsMap.putAll(params);
         return this;
@@ -379,6 +401,11 @@ public final class ConfigBuilder {
             @Override
             public II18NEventHandler getI18NEventHandlerClass() {
                 return __i18nEventHandler;
+            }
+
+            @Override
+            public Class<? extends IPasswordProcessor> getDefaultPasswordClass() {
+                return __defaultPasswordClass;
             }
 
             @Override

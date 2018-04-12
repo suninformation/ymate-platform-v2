@@ -17,6 +17,7 @@ package net.ymate.platform.core;
 
 import net.ymate.platform.core.beans.intercept.InterceptSettings;
 import net.ymate.platform.core.i18n.II18NEventHandler;
+import net.ymate.platform.core.support.IPasswordProcessor;
 
 import java.util.List;
 import java.util.Locale;
@@ -79,6 +80,11 @@ public interface IConfig {
      * @return 国际化资源管理器事件监听处理器，可选参数
      */
     II18NEventHandler getI18NEventHandlerClass();
+
+    /**
+     * @return 默认密码处理器，可选参数，用于对已加密参数值进行解密，默认为net.ymate.platform.core.support.impl.DefaultPasswordProcessor
+     */
+    Class<? extends IPasswordProcessor> getDefaultPasswordClass();
 
     /**
      * @return 返回框架全局参数映射

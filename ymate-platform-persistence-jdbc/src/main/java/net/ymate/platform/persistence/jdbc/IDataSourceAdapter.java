@@ -30,10 +30,11 @@ public interface IDataSourceAdapter {
     /**
      * 数据源适配器初始化
      *
+     * @param owner   所属JDBC模块对象
      * @param cfgMeta 数据源配置参数
      * @throws Exception 可能产生的异常
      */
-    void initialize(DataSourceCfgMeta cfgMeta) throws Exception;
+    void initialize(IDatabase owner, DataSourceCfgMeta cfgMeta) throws Exception;
 
     /**
      * @return 判断是否已初始化, 若尚未执行则尝试初始化

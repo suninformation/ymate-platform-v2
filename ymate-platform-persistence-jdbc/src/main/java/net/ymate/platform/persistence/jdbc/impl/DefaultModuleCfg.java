@@ -36,11 +36,14 @@ import java.util.Map;
  */
 public class DefaultModuleCfg implements IDatabaseModuleCfg {
 
+    private final YMP owner;
+
     private final String dataSourceDefaultName;
 
     private final Map<String, DataSourceCfgMeta> dataSourceCfgMetas;
 
     public DefaultModuleCfg(YMP owner) throws Exception {
+        this.owner = owner;
         Map<String, String> _moduleCfgs = owner.getConfig().getModuleConfigs(IDatabase.MODULE_NAME);
         //
         this.dataSourceDefaultName = StringUtils.defaultIfBlank(_moduleCfgs.get("ds_default_name"), "default");
@@ -108,10 +111,13 @@ public class DefaultModuleCfg implements IDatabaseModuleCfg {
                 _meta.setPassword(_dataSourceCfgs.get("password"));
                 _meta.setIsPasswordEncrypted(new BlurObject(_dataSourceCfgs.get("password_encrypted")).toBooleanValue());
                 //
+                String _passwordClass = _dataSourceCfgs.get("password_class");
                 if (_meta.isPasswordEncrypted()
                         && StringUtils.isNotBlank(_meta.getPassword())
-                        && StringUtils.isNotBlank(_dataSourceCfgs.get("password_class"))) {
-                    _meta.setPasswordClass((Class<? extends IPasswordProcessor>) ClassUtils.loadClass(_dataSourceCfgs.get("password_class"), this.getClass()));
+                        && StringUtils.isNotBlank(_passwordClass)) {
+                    if (!StringUtils.equals(owner.getConfig().getDefaultPasswordClass().getName(), _passwordClass)) {
+                        _meta.setPasswordClass((Class<? extends IPasswordProcessor>) ClassUtils.loadClass(_passwordClass, this.getClass()));
+                    }
                 }
                 //
                 return _meta;

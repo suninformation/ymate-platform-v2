@@ -35,6 +35,8 @@ public abstract class AbstractDataSourceAdapter implements IDataSourceAdapter {
 
     private static final Log _LOG = LogFactory.getLog(AbstractDataSourceAdapter.class);
 
+    private IDatabase __owner;
+
     protected DataSourceCfgMeta __cfgMeta;
 
     private IDialect __dialect;
@@ -42,8 +44,9 @@ public abstract class AbstractDataSourceAdapter implements IDataSourceAdapter {
     protected boolean __inited;
 
     @Override
-    public void initialize(DataSourceCfgMeta cfgMeta) throws Exception {
+    public void initialize(IDatabase owner, DataSourceCfgMeta cfgMeta) throws Exception {
         if (!__inited) {
+            this.__owner = owner;
             this.__cfgMeta = cfgMeta;
             //
             if (StringUtils.isNotBlank(cfgMeta.getDialectClass())) {
@@ -84,8 +87,11 @@ public abstract class AbstractDataSourceAdapter implements IDataSourceAdapter {
     }
 
     protected String __doGetPasswordDecryptIfNeed() throws Exception {
-        if (StringUtils.isNotBlank(__cfgMeta.getPassword()) && __cfgMeta.isPasswordEncrypted() && __cfgMeta.getPasswordClass() != null) {
-            return __cfgMeta.getPasswordClass().newInstance().decrypt(__cfgMeta.getPassword());
+        if (StringUtils.isNotBlank(__cfgMeta.getPassword()) && __cfgMeta.isPasswordEncrypted()) {
+            if (__cfgMeta.getPasswordClass() != null) {
+                return __cfgMeta.getPasswordClass().newInstance().decrypt(__cfgMeta.getPassword());
+            }
+            return __owner.getOwner().getConfig().getDefaultPasswordClass().newInstance().decrypt(__cfgMeta.getPassword());
         }
         return __cfgMeta.getPassword();
     }
@@ -110,6 +116,7 @@ public abstract class AbstractDataSourceAdapter implements IDataSourceAdapter {
             //
             __cfgMeta = null;
             __dialect = null;
+            __owner = null;
         }
     }
 }

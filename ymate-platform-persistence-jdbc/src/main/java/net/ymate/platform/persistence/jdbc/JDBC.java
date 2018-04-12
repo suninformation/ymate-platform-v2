@@ -98,7 +98,7 @@ public class JDBC implements IModule, IDatabase {
             __dsCaches = new HashMap<String, IDataSourceAdapter>();
             for (DataSourceCfgMeta _meta : __moduleCfg.getDataSourceCfgs().values()) {
                 IDataSourceAdapter _adapter = _meta.getAdapterClass().newInstance();
-                _adapter.initialize(_meta);
+                _adapter.initialize(this, _meta);
                 // 将数据源适配器添加到缓存
                 __dsCaches.put(_meta.getName(), _adapter);
             }
