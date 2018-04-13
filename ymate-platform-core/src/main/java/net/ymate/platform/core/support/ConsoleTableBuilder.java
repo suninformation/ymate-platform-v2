@@ -34,6 +34,10 @@ public class ConsoleTableBuilder {
 
     private final int column;
 
+    private boolean __separateLine;
+
+    private boolean __escape;
+
     /**
      * 输出格式：table|markdown|csv
      */
@@ -57,8 +61,18 @@ public class ConsoleTableBuilder {
         return this;
     }
 
+    public ConsoleTableBuilder separateLine() {
+        __separateLine = true;
+        return this;
+    }
+
+    public ConsoleTableBuilder escape() {
+        __escape = true;
+        return this;
+    }
+
     public Row addRow() {
-        Row _row = new Row(column);
+        Row _row = new Row(this, column);
         this.rows.add(_row);
         return _row;
     }
@@ -110,7 +124,9 @@ public class ConsoleTableBuilder {
                 for (int _columnIdx = 0; _columnIdx < this.column; _columnIdx++) {
                     Column _column = _row.getColumns().get(_columnIdx);
                     _sb.append(_column.getContent());
-                    _sb.append(',');
+                    if (_columnIdx < this.column - 1) {
+                        _sb.append(',');
+                    }
                 }
                 _sb.append("\n");
             }
@@ -146,7 +162,9 @@ public class ConsoleTableBuilder {
                 }
                 _sb.append("|\n");
                 if (!_markdownFmt) {
-                    _sb.append(__printHeader(_columnLengths));
+                    if (__separateLine || _rowIdx == 0 || _rowIdx == rows.size() - 1) {
+                        _sb.append(__printHeader(_columnLengths));
+                    }
                 } else if (_rowIdx <= 0) {
                     _sb.append("|");
                     for (int _idx = 0; _idx < column; _idx++) {
@@ -188,13 +206,37 @@ public class ConsoleTableBuilder {
 
         private final List<Column> columns;
 
-        public Row(int column) {
+        private final ConsoleTableBuilder builder;
+
+        public Row(ConsoleTableBuilder builder, int column) {
+            this.builder = builder;
             this.columns = new ArrayList<Column>(column);
         }
 
         public Row addColumn(String content) {
+            boolean _csv = StringUtils.equals(builder.__format, "csv");
+            boolean _markdown = StringUtils.equals(builder.__format, "markdown");
+            if (!_csv && builder.__escape) {
+                if (_markdown) {
+                    content = StringUtils.replaceEach(content, new String[]{"|", "\r\n", "\r", "\n", "\t"}, new String[]{"\\|", "<br>", "", "<br>", ""});
+                } else {
+                    content = StringUtils.replaceEach(content, new String[]{"\r\n", "\r", "\n", "\t"}, new String[]{"[\\r][\\n]", "[\\r]", "[\\n]", "[\\t]"});
+                }
+            }
+            if (_csv) {
+                if (StringUtils.contains(content, '"')) {
+                    content = StringUtils.replace(content, "\"", "\"\"");
+                }
+                if (StringUtils.contains(content, ',')) {
+                    content = "\"" + content + "\"";
+                }
+            }
             this.columns.add(new Column(content));
             return this;
+        }
+
+        public ConsoleTableBuilder builder() {
+            return builder;
         }
 
         public List<Column> getColumns() {
