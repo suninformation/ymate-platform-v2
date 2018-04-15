@@ -18,12 +18,12 @@ package net.ymate.platform.core.beans.annotation;
 import java.lang.annotation.*;
 
 /**
- * 若在方法上声明则该方法将忽略一切拦截器配置, 若在类上声明则该类将被自动扫描忽略
+ * 若在方法上声明则该方法将忽略一切拦截器配置, 若在包或类上声明则该类将被自动扫描忽略
  *
  * @author 刘镇 (suninformation@163.com) on 16/4/19 上午10:49
  * @version 1.0
  */
-@Target({ElementType.TYPE, ElementType.METHOD})
+@Target({ElementType.PACKAGE, ElementType.TYPE, ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
 public @interface Ignored {
