@@ -16,11 +16,11 @@
 package net.ymate.platform.persistence.jdbc.scaffold;
 
 import freemarker.template.Configuration;
-import freemarker.template.TemplateExceptionHandler;
 import net.ymate.platform.core.YMP;
 import net.ymate.platform.core.lang.BlurObject;
 import net.ymate.platform.core.lang.PairObject;
 import net.ymate.platform.core.support.ConsoleTableBuilder;
+import net.ymate.platform.core.support.FreemarkerConfigBuilder;
 import net.ymate.platform.core.util.RuntimeUtils;
 import net.ymate.platform.persistence.base.EntityMeta;
 import net.ymate.platform.persistence.jdbc.IDatabase;
@@ -57,10 +57,11 @@ public class EntityGenerator {
     private boolean __markdown;
 
     private EntityGenerator() {
-        __freemarkerConfig = new Configuration(Configuration.VERSION_2_3_22);
-        __freemarkerConfig.setTemplateExceptionHandler(TemplateExceptionHandler.HTML_DEBUG_HANDLER);
-        __freemarkerConfig.setClassForTemplateLoading(EntityGenerator.class, "/");
-        __freemarkerConfig.setDefaultEncoding("UTF-8");
+        try {
+            __freemarkerConfig = FreemarkerConfigBuilder.create().addTemplateClass(EntityGenerator.class, "/").build();
+        } catch (IOException e) {
+            _LOG.error(e.getMessage(), RuntimeUtils.unwrapThrow(e));
+        }
     }
 
     public EntityGenerator(YMP owner) {
