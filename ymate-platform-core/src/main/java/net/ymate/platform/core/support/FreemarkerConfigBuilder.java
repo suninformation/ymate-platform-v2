@@ -15,10 +15,7 @@
  */
 package net.ymate.platform.core.support;
 
-import freemarker.cache.FileTemplateLoader;
-import freemarker.cache.MultiTemplateLoader;
-import freemarker.cache.StringTemplateLoader;
-import freemarker.cache.TemplateLoader;
+import freemarker.cache.*;
 import freemarker.template.Configuration;
 import freemarker.template.TemplateExceptionHandler;
 import freemarker.template.Version;
@@ -97,6 +94,13 @@ public final class FreemarkerConfigBuilder {
     public FreemarkerConfigBuilder addTemplateSource(String name, String templateSource) {
         if (StringUtils.isNotBlank(name) && StringUtils.isNotBlank(templateSource)) {
             this.templateSources.put(name, templateSource);
+        }
+        return this;
+    }
+
+    public FreemarkerConfigBuilder addTemplateClass(Class<?> resourceLoaderClass, String basePackagePath) {
+        if (resourceLoaderClass != null && StringUtils.isNotBlank(basePackagePath)) {
+            this.templateLoaders.add(new ClassTemplateLoader(resourceLoaderClass, basePackagePath));
         }
         return this;
     }
