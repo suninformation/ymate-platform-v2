@@ -166,7 +166,13 @@ public class RedisCacheWrapper extends JedisPubSub implements ICache {
             if (__storageWithSet) {
                 return new ArrayList<String>(_holder.getCommands().hkeys(__cacheName));
             } else {
-                return new ArrayList<String>(_holder.getJedis().keys(__cacheName.concat(__separator)));
+                List<String> _returnValue = new ArrayList<String>();
+                String _keyPrefx = __cacheName.concat(__separator);
+                Set<String> _keys = _holder.getJedis().keys(_keyPrefx.concat("*"));
+                for (String _key : _keys) {
+                    _returnValue.add(StringUtils.substringAfterLast(_key, _keyPrefx));
+                }
+                return _returnValue;
             }
         } catch (Exception e) {
             throw new CacheException(RuntimeUtils.unwrapThrow(e));
@@ -256,7 +262,7 @@ public class RedisCacheWrapper extends JedisPubSub implements ICache {
                 }
                 _holder.getCommands().del(__cacheName);
             } else {
-                List<String> _keys = new ArrayList<String>(_holder.getJedis().keys(__cacheName.concat(__separator)));
+                Set<String> _keys = _holder.getJedis().keys(__cacheName.concat(__separator).concat("*"));
                 for (String _key : _keys) {
                     _holder.getCommands().del(_key);
                 }
