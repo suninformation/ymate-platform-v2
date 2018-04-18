@@ -37,6 +37,8 @@ import java.util.Set;
  */
 public class RedisCacheWrapper extends JedisPubSub implements ICache {
 
+    private static final String __separator = ":";
+
     private String __cacheName;
 
     private IRedis __redis;
@@ -45,6 +47,8 @@ public class RedisCacheWrapper extends JedisPubSub implements ICache {
 
     private ICacheEventListener __listener;
 
+    private boolean __storageWithSet;
+
     private boolean __disabledSubscribeExpired;
 
     public RedisCacheWrapper(ICaches owner, IRedis redis, String cacheName, final ICacheEventListener listener) {
@@ -52,6 +56,7 @@ public class RedisCacheWrapper extends JedisPubSub implements ICache {
         __redis = redis;
         __cacheName = cacheName;
         __listener = listener;
+        __storageWithSet = BlurObject.bind(__owner.getOwner().getConfig().getParam("cache.storage_with_set")).toBooleanValue();
         __disabledSubscribeExpired = BlurObject.bind(__owner.getOwner().getConfig().getParam("cache.disabled_subscribe_expired")).toBooleanValue();
         //
         if (__listener != null && !__disabledSubscribeExpired) {
@@ -84,9 +89,14 @@ public class RedisCacheWrapper extends JedisPubSub implements ICache {
         try {
             _holder = __redis.getDefaultCommandsHolder();
             String _cacheKey = __doSerializeKey(key);
-            Object _cacheValue = __doUnserializeValue(_holder.getCommands().hget(__cacheName, _cacheKey));
-            if (!__disabledSubscribeExpired && _cacheValue != null && !_holder.getCommands().exists(__cacheName.concat("@@").concat(_cacheKey))) {
-                remove(key);
+            Object _cacheValue;
+            if (__storageWithSet) {
+                _cacheValue = __doUnserializeValue(_holder.getCommands().hget(__cacheName, _cacheKey));
+                if (!__disabledSubscribeExpired && _cacheValue != null && !_holder.getCommands().exists(__cacheName.concat(__separator).concat(_cacheKey))) {
+                    remove(key);
+                }
+            } else {
+                _cacheValue = __doUnserializeValue(_holder.getCommands().get(__cacheName.concat(__separator).concat(_cacheKey)));
             }
             return _cacheValue;
         } catch (Exception e) {
@@ -103,21 +113,23 @@ public class RedisCacheWrapper extends JedisPubSub implements ICache {
         try {
             String _cacheKey = __doSerializeKey(key);
             String _cacheValue = __doSerializeValue(value);
+            int _timeout = 0;
+            if (value instanceof CacheElement) {
+                _timeout = ((CacheElement) value).getTimeout();
+            }
+            if (_timeout <= 0) {
+                _timeout = __owner.getModuleCfg().getDefaultCacheTimeout();
+            }
             //
             _holder = __redis.getDefaultCommandsHolder();
-            _holder.getCommands().hset(__cacheName, _cacheKey, _cacheValue);
-            //
-            if (!__disabledSubscribeExpired) {
-                int _timeout = 0;
-                if (value instanceof CacheElement) {
-                    _timeout = ((CacheElement) value).getTimeout();
+            if (__storageWithSet) {
+                _holder.getCommands().hset(__cacheName, _cacheKey, _cacheValue);
+                //
+                if (!__disabledSubscribeExpired) {
+                    _holder.getCommands().setex(__cacheName.concat(__separator).concat(_cacheKey), _timeout, StringUtils.EMPTY);
                 }
-                if (_timeout <= 0) {
-                    _timeout = __owner.getModuleCfg().getDefaultCacheTimeout();
-                }
-                if (_timeout > 0) {
-                    _holder.getCommands().setex(__cacheName.concat("@@").concat(_cacheKey), _timeout, StringUtils.EMPTY);
-                }
+            } else {
+                _holder.getCommands().setex(__cacheName.concat(__separator).concat(_cacheKey), _timeout, _cacheValue);
             }
             //
             if (__listener != null) {
@@ -151,7 +163,11 @@ public class RedisCacheWrapper extends JedisPubSub implements ICache {
         IRedisCommandsHolder _holder = null;
         try {
             _holder = __redis.getDefaultCommandsHolder();
-            return new ArrayList<String>(_holder.getCommands().hkeys(__cacheName));
+            if (__storageWithSet) {
+                return new ArrayList<String>(_holder.getCommands().hkeys(__cacheName));
+            } else {
+                return new ArrayList<String>(_holder.getJedis().keys(__cacheName.concat(__separator)));
+            }
         } catch (Exception e) {
             throw new CacheException(RuntimeUtils.unwrapThrow(e));
         } finally {
@@ -168,10 +184,14 @@ public class RedisCacheWrapper extends JedisPubSub implements ICache {
             String _cacheKey = __doSerializeKey(key);
             //
             _holder = __redis.getDefaultCommandsHolder();
-            _holder.getCommands().hdel(__cacheName, _cacheKey);
-            //
-            if (!__disabledSubscribeExpired) {
-                _holder.getCommands().del(__cacheName.concat("@@").concat(_cacheKey));
+            if (__storageWithSet) {
+                _holder.getCommands().hdel(__cacheName, _cacheKey);
+                //
+                if (!__disabledSubscribeExpired) {
+                    _holder.getCommands().del(__cacheName.concat(__separator).concat(_cacheKey));
+                }
+            } else {
+                _holder.getCommands().del(__cacheName.concat(__separator).concat(_cacheKey));
             }
             //
             if (__listener != null) {
@@ -195,16 +215,22 @@ public class RedisCacheWrapper extends JedisPubSub implements ICache {
             for (Object _key : keys) {
                 _keys.add(__doSerializeKey(_key));
             }
-            _holder.getCommands().hdel(__cacheName, _keys.toArray(new String[_keys.size()]));
-            if (!__disabledSubscribeExpired) {
-                for (String _key : _keys) {
-                    _holder.getCommands().del(__cacheName.concat("@@").concat(_key));
+            if (__storageWithSet) {
+                _holder.getCommands().hdel(__cacheName, _keys.toArray(new String[_keys.size()]));
+                if (!__disabledSubscribeExpired) {
+                    for (String _key : _keys) {
+                        _holder.getCommands().del(__cacheName.concat(__separator).concat(_key));
+                        if (__listener != null) {
+                            __listener.notifyElementRemoved(__cacheName, _key);
+                        }
+                    }
                 }
-            }
-            //
-            if (__listener != null) {
-                for (String _k : _keys) {
-                    __listener.notifyElementRemoved(__cacheName, _k);
+            } else {
+                for (String _key : _keys) {
+                    _holder.getCommands().del(__cacheName.concat(__separator).concat(_key));
+                    if (__listener != null) {
+                        __listener.notifyElementRemoved(__cacheName, _key);
+                    }
                 }
             }
         } catch (Exception e) {
@@ -221,13 +247,20 @@ public class RedisCacheWrapper extends JedisPubSub implements ICache {
         IRedisCommandsHolder _holder = null;
         try {
             _holder = __redis.getDefaultCommandsHolder();
-            if (!__disabledSubscribeExpired) {
-                Set<String> _keys = _holder.getCommands().hkeys(__cacheName);
+            if (__storageWithSet) {
+                if (!__disabledSubscribeExpired) {
+                    Set<String> _keys = _holder.getCommands().hkeys(__cacheName);
+                    for (String _key : _keys) {
+                        _holder.getCommands().del(__cacheName.concat(__separator).concat(_key));
+                    }
+                }
+                _holder.getCommands().del(__cacheName);
+            } else {
+                List<String> _keys = new ArrayList<String>(_holder.getJedis().keys(__cacheName.concat(__separator)));
                 for (String _key : _keys) {
-                    _holder.getCommands().del(__cacheName.concat("@@").concat(_key));
+                    _holder.getCommands().del(_key);
                 }
             }
-            _holder.getCommands().del(__cacheName);
             //
             if (__listener != null) {
                 __listener.notifyRemoveAll(__cacheName);
@@ -254,9 +287,11 @@ public class RedisCacheWrapper extends JedisPubSub implements ICache {
     @Override
     public void onMessage(String channel, String message) {
         if (StringUtils.isNotBlank(message)) {
-            String[] _keyStr = StringUtils.split(message, "@@");
+            String[] _keyStr = StringUtils.split(message, __separator);
             if (ArrayUtils.isNotEmpty(_keyStr) && _keyStr.length == 2 && StringUtils.equals(__cacheName, _keyStr[0])) {
-                remove(_keyStr[1]);
+                if (__storageWithSet) {
+                    remove(_keyStr[1]);
+                }
                 __listener.notifyElementExpired(__cacheName, _keyStr[1]);
             }
         }

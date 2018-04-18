@@ -71,11 +71,14 @@
     # 缓存数据超时时间，可选参数，数值必须大于等于0，为0表示默认缓存300秒
     ymp.configs.cache.default_cache_timeout=
 
+    # 是否采用SET进行缓存数据存储，默认值为false
+    ymp.params.cache.storage_with_set=
+
     # 禁用Redis订阅缓存元素过期事件，可选参数，默认值为false
     ymp.params.cache.disabled_subscribe_expired=
 
     # Multilevel模式下是否自动同步Master和Slave级缓存，可选扩展参数, 默认值为false
-    ymp.params.cache.multilevel_slave_autosync=false
+    ymp.params.cache.multilevel_slave_autosync=
 
 ##### EhCache配置示例
 
