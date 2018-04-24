@@ -34,12 +34,15 @@ import java.util.*;
  */
 public class RedisModuleCfg implements IRedisModuleCfg {
 
+    private YMP __owner;
+
     private String dataSourceDefaultName;
 
     private Map<String, RedisDataSourceCfgMeta> dataSourceCfgMetas;
 
     public RedisModuleCfg(YMP owner) throws Exception {
-        Map<String, String> _moduleCfgs = owner.getConfig().getModuleConfigs(IRedis.MODULE_NAME);
+        __owner = owner;
+        Map<String, String> _moduleCfgs = __owner.getConfig().getModuleConfigs(IRedis.MODULE_NAME);
         //
         this.dataSourceDefaultName = StringUtils.defaultIfBlank(_moduleCfgs.get("ds_default_name"), "default");
         //
@@ -83,10 +86,14 @@ public class RedisModuleCfg implements IRedisModuleCfg {
                     //
                     boolean _pwdEncrypted = new BlurObject(_tmpCfgs.get("password_encrypted")).toBooleanValue();
                     //
-                    if (_pwdEncrypted
-                            && StringUtils.isNotBlank(_servMeta.getPassword())
-                            && StringUtils.isNotBlank(_tmpCfgs.get("password_class"))) {
-                        IPasswordProcessor _proc = ClassUtils.impl(_dataSourceCfgs.get("password_class"), IPasswordProcessor.class, this.getClass());
+                    if (_pwdEncrypted && StringUtils.isNotBlank(_servMeta.getPassword())) {
+                        IPasswordProcessor _proc = null;
+                        if (StringUtils.isNotBlank(_tmpCfgs.get("password_class"))) {
+                            _proc = ClassUtils.impl(_dataSourceCfgs.get("password_class"), IPasswordProcessor.class, this.getClass());
+                        }
+                        if (_proc == null) {
+                            _proc = __owner.getConfig().getDefaultPasswordClass().newInstance();
+                        }
                         if (_proc != null) {
                             _servMeta.setPassword(_proc.decrypt(_servMeta.getPassword()));
                         }
