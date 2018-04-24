@@ -3,6 +3,7 @@
 ![LOGO](https://gitee.com/suninformation/ymate-platform-v2/raw/master/misc/logo_small.png "LOGO")
 
 [![Maven Central status](https://img.shields.io/maven-central/v/net.ymate.platform/ymate-platform-core.svg)](http://search.maven.org/#search%7Cga%7C1%7Cnet.ymate.platform)
+[![LICENSE](https://img.shields.io/github/license/suninformation/ymate-platform-v2.svg)](https://gitee.com/suninformation/ymate-platform-v2)
 
 YMP是一个非常简单、易用的一套轻量级JAVA应用开发框架，设计原则主要侧重于简化工作任务、规范开发流程、提高开发效率，让开发工作像搭积木一样轻松是我们一直不懈努力的目标！
 
