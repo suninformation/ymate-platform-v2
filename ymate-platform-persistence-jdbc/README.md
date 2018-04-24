@@ -24,7 +24,7 @@ JDBC持久化模块针对关系型数据库(RDBMS)数据存取的一套简单解
 
 > **注**：在项目的pom.xml中添加上述配置，该模块已经默认引入核心包及持久化基础包依赖，无需重复配置。
 
-####模块初始化配置
+#### 模块初始化配置
 
     #-------------------------------------
     # JDBC持久化模块初始化参数
@@ -82,6 +82,7 @@ JDBC持久化模块针对关系型数据库(RDBMS)数据存取的一套简单解
     ymp.configs.persistence.jdbc.ds.default.password_class=
 
 配置参数补充说明：
+
 > 数据源的数据库连接字符串和用户名是必填项，其它均为可选参数，最简配置如下：
 >
 >   >ymp.configs.persistence.jdbc.ds.default.connection_url=jdbc:mysql://localhost:3306/mydb
@@ -346,11 +347,11 @@ OK！就这么简单，一切都结束了！
 
 - 步骤1：编译并安装`ymate-maven-extension`扩展工具
 
-    - 下载YMP框架Maven扩展工具源码（[点击这里查看此项目](https://git.oschina.net/suninformation/ymate-maven-extension)）
+    - 下载YMP框架Maven扩展工具源码（[点击这里查看此项目](https://gitee.com/suninformation/ymate-maven-extension)）
     
         执行命令：
 
-            git clone https://git.oschina.net/suninformation/ymate-maven-extension.git
+            git clone https://gitee.com/suninformation/ymate-maven-extension.git
 
     - 编译并安装到本地Maven仓库
 

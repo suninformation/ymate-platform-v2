@@ -1,6 +1,8 @@
-### YMP v2——轻量级JAVA应用开发框架
+### YMP ——轻量级JAVA应用开发框架
 
 ![LOGO](https://gitee.com/suninformation/ymate-platform-v2/raw/master/misc/logo_small.png "LOGO")
+
+[![Maven Central status](https://img.shields.io/maven-central/v/net.ymate.platform/ymate-platform-core.svg)](http://search.maven.org/#search%7Cga%7C1%7Cnet.ymate.platform)
 
 YMP是一个非常简单、易用的一套轻量级JAVA应用开发框架，设计原则主要侧重于简化工作任务、规范开发流程、提高开发效率，让开发工作像搭积木一样轻松是我们一直不懈努力的目标！
 
@@ -35,6 +37,7 @@ YMP是一个非常简单、易用的一套轻量级JAVA应用开发框架，设�
 ![Structure](https://gitee.com/suninformation/ymate-platform-v2/raw/master/misc/structure_diagram.png "Structure")
 
 ##### 框架核心(Core)
+
 > 主要负责框架的初始化和模块的加载及其生命周期管理，功能包括：
 >
 > - 类对象管理器：提供包类的自动扫描以及Bean生命周期管理、依赖注入和方法拦截等特性；
@@ -47,6 +50,7 @@ YMP是一个非常简单、易用的一套轻量级JAVA应用开发框架，设�
 
 
 ##### 配置体系(Configuration)
+
 > 通过简单的目录结构实现在项目开发以及维护过程中，对配置等各种文件资源的统一管理，为模块化开发和部署提供灵活的、简单有效的解决方案：
 >
 > - 规范模块化开发流程、统一资源文件管理；
@@ -61,6 +65,7 @@ YMP是一个非常简单、易用的一套轻量级JAVA应用开发框架，设�
 > [查看文档...](https://gitee.com/suninformation/ymate-platform-v2/blob/master/ymate-platform-configuration/README.md)
 
 ##### 日志(Log)
+
 > 基于开源日志框架Log4J 2实现，提供对日志记录器对象的统一管理，可以在任意位置调用任意日志记录器输出日志，实现系统与业务日志的分离，并针对apache-commons-logging日志框架和slf4j日志系统提供支持；
 >
 > [查看文档...](https://gitee.com/suninformation/ymate-platform-v2/blob/master/ymate-platform-log/README.md)
@@ -86,41 +91,45 @@ YMP是一个非常简单、易用的一套轻量级JAVA应用开发框架，设�
 > [查看文档...](https://gitee.com/suninformation/ymate-platform-v2/blob/master/ymate-platform-persistence-jdbc/README.md)
 
 ###### MongoDB
-> 
+
 > 针对MongoDB的数据存取操作的特点，以JDBC模块的设计思想进行简单封装，采用会话机制，支持多数据源配置和实体操作、基于对象查询、MapReduce、GridFS、聚合及函数表达式集成等，仍需进一步完善改进，文档整理中，敬请期待...
 
 ###### Redis
+
+> 基于Jedis驱动封装，以JDBC模块的设计思想进行简单封装，采用会话机制，简化订阅(`subscribe`)和发布(`publish`)处理，支持多数据源及连接池配置，支持`jedis`、`shard`、`sentinel`和`cluster`等数据源连接方式；
 >
-> 基于Jedis驱动封装，采用会话机制，支持多数据源及连接池配置，仍需进一步完善改进，文档整理中，敬请期待...
+> [查看文档...](https://gitee.com/suninformation/ymate-platform-v2/blob/master/ymate-platform-persistence-redis/README.md)
 
 ##### 插件(Plugin)
+
 > 采用独立的ClassLoader类加载器来管理私有JAR包、类、资源文件等，设计目标是在接口开发模式下，将需求进行更细颗粒度拆分，从而达到一个理想化可重用代码的封装形态；
 >
 > 每个插件都是封闭的世界，插件与外界之间沟通的唯一方法是通过业务接口调用，管理这些插件的容器被称之为插件工厂，负责插件的分析、加载和初始化，以及插件的生命周期管理，插件模块支持创建多个插件工厂实例，工厂对象之间完全独立，无任何依赖关系；
-
->
 >
 > [查看文档...](https://gitee.com/suninformation/ymate-platform-v2/blob/master/ymate-platform-plugin/README.md)
 
 ##### 服务(Serv)
+
 > 一套基于NIO实现的通讯服务框架，提供TCP、UDP协议的客户端与服务端封装，灵活的消息监听与消息内容编/解码，简约的配置使二次开发更加便捷；
 > 
 > 同时默认提供断线重连、链路维护(心跳)等服务支持，您只需了解业务即可轻松完成开发工作。
 >
->
 >[查看文档...](https://gitee.com/suninformation/ymate-platform-v2/blob/master/ymate-platform-serv/README.md)
 
 ##### 验证(Validation)
+
 > 服务端参数有效性验证工具，采用注解声明方式配置验证规则，更简单、更直观、更友好，支持方法参数和类成员属性验证，支持验证结果国际化I18N资源绑定，支持自定义验证器，支持多种验证模式；
 >
 > [查看文档...](https://gitee.com/suninformation/ymate-platform-v2/blob/master/ymate-platform-validation/README.md)
 
 ##### 缓存(Cache)
+
 > 以EhCache作为默认JVM进程内缓存服务，通过整合外部Redis服务实现多级缓存（MultiLevel）的轻量级缓存框架，并与YMP框架深度集成(支持针对类方法的缓存，可以根据方法参数值进行缓存)，灵活的配置、易于使用和扩展；
 >
 > [查看文档...](https://gitee.com/suninformation/ymate-platform-v2/blob/master/ymate-platform-cache/README.md)
 
 ##### WebMVC框架
+
 > WebMVC模块在YMP框架中是除了JDBC模块以外的另一个非常重要的模块，集成了YMP框架的诸多特性，在功能结构的设计和使用方法上依然保持一贯的简单风格，同时也继承了主流MVC框架的基因，对于了解和熟悉SSH等框架技术的开发人员来说，上手极其容易，毫无学习成本。
 > 
 > 其主要功能特性如下：
