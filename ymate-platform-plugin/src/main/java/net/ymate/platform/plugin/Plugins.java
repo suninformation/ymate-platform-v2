@@ -45,7 +45,7 @@ import java.util.Map;
 @Module
 public class Plugins implements IModule, IPlugins {
 
-    public static final Version VERSION = new Version(2, 0, 5, Plugins.class.getPackage().getImplementationVersion(), Version.VersionType.Release);
+    public static final Version VERSION = new Version(2, 0, 6, Plugins.class.getPackage().getImplementationVersion(), Version.VersionType.Release);
 
     private static final Log _LOG = LogFactory.getLog(Plugins.class);
 

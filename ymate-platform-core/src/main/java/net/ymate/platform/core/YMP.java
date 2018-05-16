@@ -66,7 +66,7 @@ import java.util.Map;
  */
 public class YMP {
 
-    public static final Version VERSION = new Version(2, 0, 5, Version.VersionType.Release);
+    public static final Version VERSION = new Version(2, 0, 6, Version.VersionType.Release);
 
     private static final Log _LOG = LogFactory.getLog(YMP.class);
 

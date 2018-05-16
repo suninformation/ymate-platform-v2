@@ -89,7 +89,13 @@ public abstract class AbstractDialect implements IDialect {
         try {
             for (String _autoKey : autoincrementKeys) {
                 while (_keyRSet.next()) {
-                    _ids.put(_autoKey, _keyRSet.getObject(_autoKey));
+                    Object _keyValue;
+                    try {
+                        _keyValue = _keyRSet.getObject(_autoKey);
+                    } catch (SQLException e) {
+                        _keyValue = _keyRSet.getObject(1);
+                    }
+                    _ids.put(_autoKey, _keyValue);
                 }
             }
         } finally {

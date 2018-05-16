@@ -31,7 +31,7 @@ import org.apache.commons.logging.LogFactory;
 @Module
 public class Persistence implements IModule {
 
-    public static final Version VERSION = new Version(2, 0, 5, Persistence.class.getPackage().getImplementationVersion(), Version.VersionType.Release);
+    public static final Version VERSION = new Version(2, 0, 6, Persistence.class.getPackage().getImplementationVersion(), Version.VersionType.Release);
 
     private static final Log _LOG = LogFactory.getLog(Persistence.class);
 
