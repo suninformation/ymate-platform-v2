@@ -198,7 +198,7 @@ public abstract class BaseEntity<Entity extends IEntity, PK extends Serializable
             }
             Entity _t = _session.find(_entitySQL, this.getId(), this.getShardingable());
             if (_t == null) {
-                return _session.insert((Entity) this, fields, this.getShardingable());
+                return _session.insert((Entity) this, this.getShardingable());
             }
             return _session.update((Entity) this, fields, this.getShardingable());
         } finally {
