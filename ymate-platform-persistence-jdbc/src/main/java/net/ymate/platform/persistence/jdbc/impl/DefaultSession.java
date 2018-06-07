@@ -806,7 +806,7 @@ public class DefaultSession implements ISession {
     @Override
     public <T extends IEntity> long count(Class<T> entityClass, Where where, IShardingable shardingable) throws Exception {
         EntityMeta _meta = EntityMeta.createAndGet(entityClass);
-        ExpressionUtils _exp = ExpressionUtils.bind("SELECT count(1) FROM ${table_name} ${where}")
+        ExpressionUtils _exp = ExpressionUtils.bind("SELECT count(*) FROM ${table_name} ${where}")
                 .set("table_name", __dialect.buildTableName(__tablePrefix, _meta, shardingable))
                 .set("where", where == null ? "" : where.toSQL());
         IQueryOperator<Object[]> _opt = new DefaultQueryOperator<Object[]>(_exp.getResult(), this.getConnectionHolder(), IResultSetHandler.ARRAY);
@@ -831,7 +831,7 @@ public class DefaultSession implements ISession {
 
     @Override
     public long count(SQL sql) throws Exception {
-        String _sql = ExpressionUtils.bind("SELECT count(1) FROM (${sql}) c_t").set("sql", sql.getSQL()).getResult();
+        String _sql = ExpressionUtils.bind("SELECT count(*) FROM (${sql}) c_t").set("sql", sql.getSQL()).getResult();
         IQueryOperator<Object[]> _opt = new DefaultQueryOperator<Object[]>(_sql, this.getConnectionHolder(), IResultSetHandler.ARRAY);
         for (Object _param : sql.params().params()) {
             _opt.addParameter(_param);
