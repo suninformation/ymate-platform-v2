@@ -140,6 +140,9 @@ public class DefaultSession implements ISession {
             _selectSql = __dialect.buildPagedQuerySQL(sql.getSQL(), page.page(), page.pageSize());
             if (page.isCount()) {
                 _count = this.count(sql);
+                if (_count == 0) {
+                    return new DefaultResultSet<T>(new ArrayList<T>(), page.page(), page.pageSize(), _count);
+                }
             }
         }
         //
@@ -252,6 +255,9 @@ public class DefaultSession implements ISession {
             _selectSql = __dialect.buildPagedQuerySQL(_selectSql, page.page(), page.pageSize());
             if (page.isCount()) {
                 _count = this.count(entity.getEntityClass(), where);
+                if (_count == 0) {
+                    return new DefaultResultSet<T>(new ArrayList<T>(), page.page(), page.pageSize(), _count);
+                }
             }
         }
         //
