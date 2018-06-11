@@ -83,9 +83,9 @@ public class FreemarkerView extends AbstractView {
             try {
                 FreemarkerConfigBuilder _builder = FreemarkerConfigBuilder.create();
                 if (__baseViewPath.startsWith("/WEB-INF")) {
-                    _builder.addTemplateFileDir(new File(RuntimeUtils.getRootPath(), StringUtils.substringAfter(__baseViewPath, "/WEB-INF/"))).build();
+                    __freemarkerConfig = _builder.addTemplateFileDir(new File(RuntimeUtils.getRootPath(), StringUtils.substringAfter(__baseViewPath, "/WEB-INF/"))).build();
                 } else {
-                    _builder.addTemplateFileDir(new File(__baseViewPath)).build();
+                    __freemarkerConfig = _builder.addTemplateFileDir(new File(__baseViewPath)).build();
                 }
             } catch (IOException e) {
                 throw new Error(RuntimeUtils.unwrapThrow(e));
