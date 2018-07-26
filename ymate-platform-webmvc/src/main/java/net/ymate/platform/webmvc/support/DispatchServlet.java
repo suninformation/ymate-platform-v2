@@ -39,6 +39,7 @@ public class DispatchServlet extends HttpServlet {
     private ServletContext __servletContext;
 
     private String __charsetEncoding;
+    private String __contentType;
     private String __requestMethodParam;
     private String __requestPrefix;
 
@@ -47,6 +48,7 @@ public class DispatchServlet extends HttpServlet {
         __servletContext = config.getServletContext();
         //
         __charsetEncoding = WebMVC.get().getModuleCfg().getDefaultCharsetEncoding();
+        __contentType = WebMVC.get().getModuleCfg().getDefaultContentType();
         __requestMethodParam = WebMVC.get().getModuleCfg().getRequestMethodParam();
         __requestPrefix = WebMVC.get().getModuleCfg().getRequestPrefix();
     }
@@ -56,7 +58,7 @@ public class DispatchServlet extends HttpServlet {
         request.setCharacterEncoding(__charsetEncoding);
         response.setCharacterEncoding(__charsetEncoding);
         //
-        response.setContentType(Type.ContentType.HTML.getContentType().concat("; charset=").concat(__charsetEncoding));
+        response.setContentType(__contentType.concat("; charset=").concat(__charsetEncoding));
         //
         HttpServletRequest _request = new RequestMethodWrapper(request, __requestMethodParam);
         HttpServletResponse _response = new GenericResponseWrapper(response);

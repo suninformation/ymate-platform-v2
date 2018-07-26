@@ -51,6 +51,8 @@ public class DefaultModuleCfg implements IWebMvcModuleCfg {
 
     private final String __charsetEncoding;
 
+    private final String __contentType;
+
     private final String __requestIgnoreRegex;
 
     private final String __requestMethodParam;
@@ -133,6 +135,7 @@ public class DefaultModuleCfg implements IWebMvcModuleCfg {
         }
         //
         __charsetEncoding = StringUtils.defaultIfBlank(_moduleCfgs.get("default_charset_encoding"), "UTF-8");
+        __contentType = StringUtils.defaultIfBlank(_moduleCfgs.get("default_content_type"), Type.ContentType.HTML.getContentType());
         __requestIgnoreRegex = StringUtils.defaultIfBlank(_moduleCfgs.get("request_ignore_regex"), __IGNORE);
         __requestMethodParam = StringUtils.defaultIfBlank(_moduleCfgs.get("request_method_param"), "_method");
         __requestPrefix = StringUtils.trimToEmpty(_moduleCfgs.get("request_prefix"));
@@ -217,6 +220,11 @@ public class DefaultModuleCfg implements IWebMvcModuleCfg {
     @Override
     public String getDefaultCharsetEncoding() {
         return __charsetEncoding;
+    }
+
+    @Override
+    public String getDefaultContentType() {
+        return __contentType;
     }
 
     @Override

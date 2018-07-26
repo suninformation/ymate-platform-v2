@@ -104,6 +104,9 @@ WebMVC模块的基本初始化参数配置：
 	# 默认字符编码集设置，可选参数，默认值为UTF-8
 	ymp.configs.webmvc.default_charset_encoding=
 	
+	# 默认Content-Type设置，可选参数，默认值为text/html
+    ymp.configs.webmvc.default_content_type=
+	
 	# 请求忽略正则表达式，可选参数，默认值为^.+\.(jsp|jspx|png|gif|jpg|jpeg|js|css|swf|ico|htm|html|eot|woff|woff2|ttf|svg)$
 	ymp.configs.webmvc.request_ignore_regex=
 	
