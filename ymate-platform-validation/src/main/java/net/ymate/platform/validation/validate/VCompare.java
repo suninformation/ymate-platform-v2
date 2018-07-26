@@ -32,7 +32,35 @@ public @interface VCompare {
      * 比较条件
      */
     enum Cond {
-        EQ, NOT_EQ
+        /**
+         * 相等
+         */
+        EQ,
+
+        /**
+         * 不相等
+         */
+        NOT_EQ,
+
+        /**
+         * 大于
+         */
+        GT,
+
+        /**
+         * 大于等于
+         */
+        GT_EQ,
+
+        /**
+         * 小于
+         */
+        LT,
+
+        /**
+         * 小于等于
+         */
+        LT_EQ
     }
 
     /**

@@ -23,6 +23,8 @@ import net.ymate.platform.validation.ValidateResult;
 import net.ymate.platform.validation.annotation.Validator;
 import org.apache.commons.lang.StringUtils;
 
+import java.math.BigDecimal;
+
 /**
  * 参数值比较验证
  *
@@ -38,11 +40,44 @@ public class CompareValidator extends AbstractValidator {
         Object _paramValue = context.getParamValue();
         if (_paramValue != null && !_paramValue.getClass().isArray()) {
             VCompare _vCompare = (VCompare) context.getAnnotation();
-            boolean _matched = BlurObject.bind(_paramValue).toStringValue().equals(BlurObject.bind(context.getParamValue(_vCompare.with())).toString());
-            switch (_vCompare.cond()) {
-                case NOT_EQ:
-                    _matched = !_matched;
-                    break;
+            //
+            String _paramValueStr = BlurObject.bind(_paramValue).toStringValue();
+            String _compareValueStr = BlurObject.bind(context.getParamValue(_vCompare.with())).toStringValue();
+            //
+            boolean _matched = true;
+            if (StringUtils.isNumeric(_paramValueStr)) {
+                int _compValue = new BigDecimal(_paramValueStr).compareTo(new BigDecimal(_compareValueStr));
+                switch (_vCompare.cond()) {
+                    case EQ:
+                        _matched = _compValue == 0;
+                        break;
+                    case NOT_EQ:
+                        _matched = _compValue != 0;
+                        break;
+                    case GT:
+                        _matched = _compValue > 0;
+                        break;
+                    case LT:
+                        _matched = _compValue < 0;
+                        break;
+                    case GT_EQ:
+                        _matched = _compValue >= 0;
+                        break;
+                    case LT_EQ:
+                        _matched = _compValue <= 0;
+                        break;
+                    default:
+                }
+            } else {
+                switch (_vCompare.cond()) {
+                    case EQ:
+                        _matched = StringUtils.equals(_paramValueStr, _compareValueStr);
+                        break;
+                    case NOT_EQ:
+                        _matched = !StringUtils.equals(_paramValueStr, _compareValueStr);
+                        break;
+                    default:
+                }
             }
             if (!_matched) {
                 String _pName = StringUtils.defaultIfBlank(context.getParamLabel(), context.getParamName());
