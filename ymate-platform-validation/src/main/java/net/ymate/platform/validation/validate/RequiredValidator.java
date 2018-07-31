@@ -63,9 +63,8 @@ public class RequiredValidator extends AbstractValidator {
             if (_msg != null) {
                 _msg = __doGetI18nFormatMessage(context, _msg, _msg, _pName);
             } else {
-                String __REQUIRED = "ymp.validation.required";
                 // TODO 为了未来剔除@VRequried做准备
-                _msg = __doGetI18nFormatMessage(context, __REQUIRED, null, _pName);
+                _msg = __doGetI18nFormatMessage(context, "ymp.validation.required", null, _pName);
                 if (StringUtils.isBlank(_msg)) {
                     _msg = __doGetI18nFormatMessage(context, "ymp.validation.requried", "{0} must be required.", _pName);
                 }

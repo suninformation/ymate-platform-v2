@@ -65,18 +65,14 @@ public class NumericValidator extends AbstractValidator {
                     _msg = __doGetI18nFormatMessage(context, _msg, _msg, _pName);
                 } else {
                     if (_flag) {
-                        String __NUMERIC = "ymp.validation.numeric";
-                        _msg = __doGetI18nFormatMessage(context, __NUMERIC, "{0} not a valid numeric.", _pName);
+                        _msg = __doGetI18nFormatMessage(context, "ymp.validation.numeric", "{0} not a valid numeric.", _pName);
                     } else {
                         if (_vNumeric.max() > 0 && _vNumeric.min() > 0) {
-                            String __NUMERIC_BETWEEN = "ymp.validation.numeric_between";
-                            _msg = __doGetI18nFormatMessage(context, __NUMERIC_BETWEEN, "{0} numeric must be between {1} and {2}.", _pName, _vNumeric.min(), _vNumeric.max());
+                            _msg = __doGetI18nFormatMessage(context, "ymp.validation.numeric_between", "{0} numeric must be between {1} and {2}.", _pName, _vNumeric.min(), _vNumeric.max());
                         } else if (_vNumeric.max() > 0) {
-                            String __NUMERIC_MAX = "ymp.validation.numeric_max";
-                            _msg = __doGetI18nFormatMessage(context, __NUMERIC_MAX, "{0} numeric must be lt {1}.", _pName, _vNumeric.max());
+                            _msg = __doGetI18nFormatMessage(context, "ymp.validation.numeric_max", "{0} numeric must be lt {1}.", _pName, _vNumeric.max());
                         } else {
-                            String __NUMERIC_MIN = "ymp.validation.numeric_min";
-                            _msg = __doGetI18nFormatMessage(context, __NUMERIC_MIN, "{0} numeric must be gt {1}.", _pName, _vNumeric.min());
+                            _msg = __doGetI18nFormatMessage(context, "ymp.validation.numeric_min", "{0} numeric must be gt {1}.", _pName, _vNumeric.min());
                         }
                     }
                 }

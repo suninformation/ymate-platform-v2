@@ -52,8 +52,7 @@ public class DateTimeValidator extends AbstractValidator {
                         if (_msg != null) {
                             _msg = __doGetI18nFormatMessage(context, _msg, _msg, _pName);
                         } else {
-                            String __DATETIME = "ymp.validation.datetime";
-                            _msg = __doGetI18nFormatMessage(context, __DATETIME, "{0} not a valid datetime.", _pName);
+                            _msg = __doGetI18nFormatMessage(context, "ymp.validation.datetime", "{0} not a valid datetime.", _pName);
                         }
                         return new ValidateResult(context.getParamName(), _msg);
                     }

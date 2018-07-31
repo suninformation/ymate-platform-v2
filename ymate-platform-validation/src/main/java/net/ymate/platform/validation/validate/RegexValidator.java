@@ -49,8 +49,7 @@ public class RegexValidator extends AbstractValidator {
                         if (_msg != null) {
                             _msg = __doGetI18nFormatMessage(context, _msg, _msg, _pName);
                         } else {
-                            String __REGEX = "ymp.validation.regex";
-                            _msg = __doGetI18nFormatMessage(context, __REGEX, "{0} regex not match.", _pName);
+                            _msg = __doGetI18nFormatMessage(context, "ymp.validation.regex", "{0} regex not match.", _pName);
                         }
                         return new ValidateResult(context.getParamName(), _msg);
                     }

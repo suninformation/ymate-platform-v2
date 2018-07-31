@@ -92,12 +92,22 @@ public class CompareValidator extends AbstractValidator {
                 } else {
                     switch (_vCompare.cond()) {
                         case NOT_EQ:
-                            String __COMPARE_NOT_EQ = "ymp.validation.compare_not_eq";
-                            _msg = __doGetI18nFormatMessage(context, __COMPARE_NOT_EQ, "{0} can not eq {1}.", _pName, _pLabel);
+                            _msg = __doGetI18nFormatMessage(context, "ymp.validation.compare_not_eq", "{0} can not eq {1}.", _pName, _pLabel);
                             break;
                         case EQ:
-                            String __COMPARE_EQ = "ymp.validation.compare_eq";
-                            _msg = __doGetI18nFormatMessage(context, __COMPARE_EQ, "{0} must be eq {1}.", _pName, _pLabel);
+                            _msg = __doGetI18nFormatMessage(context, "ymp.validation.compare_eq", "{0} must be eq {1}.", _pName, _pLabel);
+                            break;
+                        case GT:
+                            _msg = __doGetI18nFormatMessage(context, "ymp.validation.compare_gt", "{0} must be gt {1}.", _pName, _pLabel);
+                            break;
+                        case LT:
+                            _msg = __doGetI18nFormatMessage(context, "ymp.validation.compare_lt", "{0} must be lt {1}.", _pName, _pLabel);
+                            break;
+                        case GT_EQ:
+                            _msg = __doGetI18nFormatMessage(context, "ymp.validation.compare_gt_eq", "{0} must be gt eq {1}.", _pName, _pLabel);
+                            break;
+                        case LT_EQ:
+                            _msg = __doGetI18nFormatMessage(context, "ymp.validation.compare_lt_eq", "{0} must be lt eq {1}.", _pName, _pLabel);
                     }
                 }
                 return new ValidateResult(context.getParamName(), _msg);

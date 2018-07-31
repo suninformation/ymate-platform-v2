@@ -48,8 +48,7 @@ public class EmailValidator extends AbstractValidator {
                         if (_msg != null) {
                             _msg = __doGetI18nFormatMessage(context, _msg, _msg, _pName);
                         } else {
-                            String __EMAIL = "ymp.validation.email";
-                            _msg = __doGetI18nFormatMessage(context, __EMAIL, "{0} not a valid email address.", _pName);
+                            _msg = __doGetI18nFormatMessage(context, "ymp.validation.email", "{0} not a valid email address.", _pName);
                         }
                         return new ValidateResult(context.getParamName(), _msg);
                     }
