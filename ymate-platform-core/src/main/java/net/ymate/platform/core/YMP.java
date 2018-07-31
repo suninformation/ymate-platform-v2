@@ -19,10 +19,7 @@ import net.ymate.platform.core.beans.BeanMeta;
 import net.ymate.platform.core.beans.IBeanFactory;
 import net.ymate.platform.core.beans.IBeanHandler;
 import net.ymate.platform.core.beans.IBeanInjector;
-import net.ymate.platform.core.beans.annotation.Bean;
-import net.ymate.platform.core.beans.annotation.Injector;
-import net.ymate.platform.core.beans.annotation.Packages;
-import net.ymate.platform.core.beans.annotation.Proxy;
+import net.ymate.platform.core.beans.annotation.*;
 import net.ymate.platform.core.beans.impl.DefaultBeanFactory;
 import net.ymate.platform.core.beans.impl.DefaultBeanLoader;
 import net.ymate.platform.core.beans.impl.proxy.DefaultProxyFactory;
@@ -108,7 +105,7 @@ public class YMP {
         //
         __config = config;
         __moduleFactory = new BeanFactory(this);
-        __beanFactory = new DefaultBeanFactory();
+        __beanFactory = new DefaultBeanFactory(this, __moduleFactory);
         __proxyFactory = new DefaultProxyFactory(this);
     }
 
@@ -170,6 +167,7 @@ public class YMP {
             __beanFactory.setLoader(new DefaultBeanLoader(__config.getExcludedFiles()));
             __beanFactory.registerExcludedClass(IInitializable.class);
             __beanFactory.registerHandler(Bean.class);
+            __beanFactory.registerHandler(Interceptor.class, new InterceptorHandler(this));
             __beanFactory.registerHandler(Packages.class, new PackagesHandler(this));
             // 配置模块对象工厂
             __moduleFactory.setLoader(new DefaultBeanLoader(__config.getExcludedFiles()));
@@ -279,7 +277,10 @@ public class YMP {
      * @param handler   注解对象处理器
      */
     public void registerHandler(Class<? extends Annotation> annoClass, IBeanHandler handler) {
-        if (annoClass.equals(Module.class) || annoClass.equals(Proxy.class) || annoClass.equals(EventRegister.class) || annoClass.equals(Injector.class)) {
+        if (annoClass.equals(Event.class) || annoClass.equals(EventRegister.class)
+                || annoClass.equals(Injector.class) || annoClass.equals(Interceptor.class)
+                || annoClass.equals(Module.class) || annoClass.equals(Packages.class)
+                || annoClass.equals(Proxy.class) || annoClass.equals(Serializer.class)) {
             _LOG.warn("Handler [" + annoClass.getSimpleName() + "] duplicate registration is not allowed");
             return;
         }
@@ -410,10 +411,9 @@ public class YMP {
      * YMP框架根对象工厂类
      */
     private static class BeanFactory extends DefaultBeanFactory {
-        private final YMP __owner;
 
         public BeanFactory(YMP owner) {
-            this.__owner = owner;
+            super(owner);
         }
 
         @Override
@@ -423,13 +423,13 @@ public class YMP {
             if (_bean instanceof IModule) {
                 IModule _module = (IModule) _bean;
                 if (!_module.isInited()) {
-                    if (__owner.getConfig().getExcludedModules().contains(_module.getName())) {
+                    if (getOwner().getConfig().getExcludedModules().contains(_module.getName())) {
                         return null;
                     }
                     try {
-                        _module.init(__owner);
+                        _module.init(getOwner());
                         // 触发模块初始化完成事件
-                        __owner.getEvents().fireEvent(new ModuleEvent(_module, ModuleEvent.EVENT.MODULE_INITED));
+                        getOwner().getEvents().fireEvent(new ModuleEvent(_module, ModuleEvent.EVENT.MODULE_INITED));
                     } catch (Exception e) {
                         throw new RuntimeException(RuntimeUtils.unwrapThrow(e));
                     }

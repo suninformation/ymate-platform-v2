@@ -52,6 +52,10 @@ public class InterceptProxy implements IProxy {
 
     @Override
     public Object doProxy(IProxyChain proxyChain) throws Throwable {
+        // 若当前目标类为拦截器接口实现类则跳过本次拦截
+        if (proxyChain.getTargetObject() instanceof IInterceptor) {
+            return proxyChain.doProxyChain();
+        }
         // 方法声明了@Ignored注解或非PUBLIC方法和Object类方法将被排除
         boolean _ignored = proxyChain.getTargetMethod().isAnnotationPresent(Ignored.class);
         if (_ignored || __excludedMethodNames.contains(proxyChain.getTargetMethod().getName())
@@ -70,7 +74,7 @@ public class InterceptProxy implements IProxy {
                     proxyChain.getMethodParams(), _interceptMeta.getContextParams());
             //
             for (Class<? extends IInterceptor> _interceptClass : _interceptMeta.getBeforeIntercepts()) {
-                IInterceptor _interceptor = _interceptClass.newInstance();
+                IInterceptor _interceptor = __doGetInterceptorInstance(proxyChain.getProxyFactory().getOwner(), _interceptClass);
                 // 执行前置拦截器，若其结果对象不为空则返回并停止执行
                 Object _resultObj = _interceptor.intercept(_context);
                 if (_resultObj != null) {
@@ -91,12 +95,22 @@ public class InterceptProxy implements IProxy {
             _context.setResultObject(_returnValue);
             //
             for (Class<? extends IInterceptor> _interceptClass : _interceptMeta.getAfterIntercepts()) {
-                IInterceptor _interceptor = _interceptClass.newInstance();
+                IInterceptor _interceptor = __doGetInterceptorInstance(proxyChain.getProxyFactory().getOwner(), _interceptClass);
                 // 执行后置拦截器，所有后置拦截器的执行结果都将被忽略
                 _interceptor.intercept(_context);
             }
         }
         return _returnValue;
+    }
+
+    private IInterceptor __doGetInterceptorInstance(YMP owner, Class<? extends IInterceptor> interceptClass) throws IllegalAccessException, InstantiationException {
+        if (interceptClass.isAnnotationPresent(Interceptor.class)) {
+            IInterceptor _instance = owner.getBean(interceptClass);
+            if (_instance != null) {
+                return _instance;
+            }
+        }
+        return interceptClass.newInstance();
     }
 
     private InterceptMeta __doGetInterceptMeta(YMP owner, Class<?> targetClass, Method targetMethod) {

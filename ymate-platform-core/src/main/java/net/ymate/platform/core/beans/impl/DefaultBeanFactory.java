@@ -15,6 +15,7 @@
  */
 package net.ymate.platform.core.beans.impl;
 
+import net.ymate.platform.core.YMP;
 import net.ymate.platform.core.beans.*;
 import net.ymate.platform.core.beans.annotation.*;
 import net.ymate.platform.core.beans.proxy.IProxy;
@@ -39,6 +40,8 @@ public class DefaultBeanFactory implements IBeanFactory {
 
     private static final Log _LOG = LogFactory.getLog(DefaultBeanFactory.class);
 
+    private final YMP __owner;
+
     private IBeanFactory __parentFactory;
 
     private List<String> __packageNames;
@@ -59,7 +62,8 @@ public class DefaultBeanFactory implements IBeanFactory {
 
     private IProxyFactory __proxyFactory;
 
-    public DefaultBeanFactory() {
+    public DefaultBeanFactory(YMP owner) {
+        this.__owner = owner;
         this.__packageNames = new ArrayList<String>();
         this.__excludedClassSet = new ArrayList<Class<?>>();
         this.__beanHandlerMap = new HashMap<Class<? extends Annotation>, IBeanHandler>();
@@ -68,8 +72,8 @@ public class DefaultBeanFactory implements IBeanFactory {
         this.__beanInterfacesMap = new HashMap<Class<?>, Class<?>>();
     }
 
-    public DefaultBeanFactory(IBeanFactory parent) {
-        this();
+    public DefaultBeanFactory(YMP owner, IBeanFactory parent) {
+        this(owner);
         this.__parentFactory = parent;
     }
 
@@ -239,6 +243,11 @@ public class DefaultBeanFactory implements IBeanFactory {
                 }
             }
         }
+    }
+
+    @Override
+    public YMP getOwner() {
+        return __owner;
     }
 
     @Override

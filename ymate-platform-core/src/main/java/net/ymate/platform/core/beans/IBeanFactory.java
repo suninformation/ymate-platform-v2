@@ -15,6 +15,7 @@
  */
 package net.ymate.platform.core.beans;
 
+import net.ymate.platform.core.YMP;
 import net.ymate.platform.core.beans.proxy.IProxyFactory;
 
 import java.lang.annotation.Annotation;
@@ -83,6 +84,11 @@ public interface IBeanFactory {
      * @throws Exception 工厂初始化时可能产生的异常
      */
     void init() throws Exception;
+
+    /**
+     * @return 返回类工厂所属YMP框架管理器
+     */
+    YMP getOwner();
 
     /**
      * 销毁对象工厂

@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2017 the original author or authors.
+ * Copyright 2007-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,26 +16,31 @@
 package net.ymate.platform.core.handle;
 
 import net.ymate.platform.core.YMP;
+import net.ymate.platform.core.beans.BeanMeta;
 import net.ymate.platform.core.beans.IBeanHandler;
-import net.ymate.platform.core.serialize.ISerializer;
-import net.ymate.platform.core.serialize.annotation.Serializer;
-import net.ymate.platform.core.util.ClassUtils;
+import net.ymate.platform.core.beans.annotation.Interceptor;
+import net.ymate.platform.core.beans.intercept.IInterceptor;
 
 /**
- * @author 刘镇 (suninformation@163.com) on 2017/10/10 上午11:46
+ * @author 刘镇 (suninformation@163.com) on 2018/7/30 下午10:02
  * @version 1.0
  */
-public final class SerializerHandler implements IBeanHandler {
+public final class InterceptorHandler implements IBeanHandler {
 
-    public SerializerHandler(YMP owner) {
-        owner.registerExcludedClass(ISerializer.class);
+    public InterceptorHandler(YMP owner) {
+        owner.registerExcludedClass(IInterceptor.class);
     }
 
     @Override
-    @SuppressWarnings("unchecked")
     public Object handle(Class<?> targetClass) throws Exception {
-        if (!targetClass.isInterface() && ClassUtils.isInterfaceOf(targetClass, ISerializer.class)) {
-            ISerializer.SerializerManager.registerSerializer(targetClass.getAnnotation(Serializer.class).value(), (Class<? extends ISerializer>) targetClass);
+        if (!targetClass.isInterface()) {
+            Interceptor _bean = targetClass.getAnnotation(Interceptor.class);
+            if (_bean != null) {
+                if (_bean.singleton()) {
+                    return BeanMeta.create(targetClass.newInstance(), targetClass);
+                }
+            }
+            return BeanMeta.create(targetClass);
         }
         return null;
     }

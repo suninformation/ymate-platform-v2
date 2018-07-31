@@ -368,7 +368,8 @@ YMP框架的AOP是基于CGLIB的MethodInterceptor实现的拦截，通过以下�
 
 > 说明:
 >
-> 声明`@Ignored`注解的方法、非公有方法和Object类方法及Object类重载方法将不被拦截器处理。
+> - 声明`@Ignored`注解的方法、非公有方法和Object类方法及Object类重载方法将不被拦截器处理。
+> - 使用`@Interceptor`注解声明拦截器类，框架将自动扫描加载并支持IoC依赖注入特性。
 
 示例一：
 

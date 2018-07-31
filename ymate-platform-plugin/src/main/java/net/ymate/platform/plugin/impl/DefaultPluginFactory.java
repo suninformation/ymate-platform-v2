@@ -166,7 +166,7 @@ public class DefaultPluginFactory implements IPluginFactory {
     }
 
     private IBeanFactory __doBuildBeanFactory(final IPluginFactory factory, final boolean inner) {
-        return new DefaultBeanFactory() {
+        return new DefaultBeanFactory(__owner) {
             @Override
             protected void __addClass(BeanMeta beanMeta) {
                 PluginMeta _meta = (PluginMeta) beanMeta.getBeanObject();
