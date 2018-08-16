@@ -16,16 +16,16 @@ import net.ymate.platform.persistence.jdbc.IConnectionHolder;</#if>
  * @author YMP
  * @version 1.0
  */
-@Entity("${tableName}")
+@Entity(${modelName?cap_first}<#if (useClassSuffix)>Model</#if>.TABLE_NAME)
 public class ${modelName?cap_first}<#if (useClassSuffix)>Model</#if> extends <#if (useBaseEntity)>BaseEntity<${primaryKeyType}><#else>BaseEntity<${modelName?cap_first}<#if (useClassSuffix)>Model</#if>, ${primaryKeyType}></#if> {
 
 	private static final long serialVersionUID = 1L;
 
 	<#list fieldList as field>
 	<#if primaryKeyName = field.varName>@Id</#if><#if (field.columnName!"undefined") != "undefined">
-	@Property(name = "${field.columnName}"<#if (field.autoIncrement)>, autoincrement=true</#if><#if (!field.nullable)>, nullable = false</#if><#if (!field.signed)>, unsigned = true</#if><#if (field.precision > 0)>, length = ${field.precision?string('#')}</#if><#if (field.scale > 0)>, decimals = ${field.scale}</#if>)<#if (field.defaultValue!"undefined") != "undefined">
+	@Property(name = FIELDS.${field.columnName?upper_case}<#if (field.autoIncrement)>, autoincrement=true</#if><#if (!field.nullable)>, nullable = false</#if><#if (!field.signed)>, unsigned = true</#if><#if (field.precision > 0)>, length = ${field.precision?string('#')}</#if><#if (field.scale > 0)>, decimals = ${field.scale}</#if>)<#if (field.defaultValue!"undefined") != "undefined">
 	@Default("${field.defaultValue}")</#if><#if (useStateSupport)>
-    @PropertyState(propertyName = "${field.columnName}")</#if><#if (field.readonly)>
+    @PropertyState(propertyName = FIELDS.${field.columnName?upper_case})</#if><#if (field.readonly)>
     @Readonly</#if></#if>
 	private ${field.varType} ${field.varName};
 	</#list>
