@@ -42,6 +42,8 @@ public class PropertyStateSupport<T> {
     private T __bound;
     private final Class<?> __targetClass;
 
+    private final boolean __ignoreNull;
+
     private final List<PropertyStateMeta> __stateMetas;
     private final Map<String, PropertyStateMeta> __propertyStates;
 
@@ -49,9 +51,18 @@ public class PropertyStateSupport<T> {
         return new PropertyStateSupport<T>(source);
     }
 
+    public static <T> PropertyStateSupport<T> create(T source, boolean ignoreNull) throws Exception {
+        return new PropertyStateSupport<T>(source, ignoreNull);
+    }
+
     public PropertyStateSupport(T source) throws Exception {
+        this(source, false);
+    }
+
+    public PropertyStateSupport(T source, boolean ignoreNull) throws Exception {
         __source = source;
         __targetClass = source.getClass();
+        __ignoreNull = ignoreNull;
         __stateMetas = new ArrayList<PropertyStateMeta>();
         __propertyStates = new HashMap<String, PropertyStateMeta>();
         //
@@ -75,12 +86,14 @@ public class PropertyStateSupport<T> {
             __bound = (T) ClassUtils.wrapper(__source).duplicate(Enhancer.create(__targetClass, new MethodInterceptor() {
                 @Override
                 public Object intercept(Object targetObject, Method targetMethod, Object[] methodParams, MethodProxy methodProxy) throws Throwable {
-                    Object _result = methodProxy.invokeSuper(targetObject, methodParams);
                     PropertyStateMeta _meta = __propertyStates.get(targetMethod.getName());
                     if (_meta != null && ArrayUtils.isNotEmpty(methodParams) && !ObjectUtils.equals(_meta.getOriginalValue(), methodParams[0])) {
+                        if (__ignoreNull && methodParams[0] == null) {
+                            methodParams[0] = _meta.getOriginalValue();
+                        }
                         _meta.setNewValue(methodParams[0]);
                     }
-                    return _result;
+                    return methodProxy.invokeSuper(targetObject, methodParams);
                 }
             }));
         }
