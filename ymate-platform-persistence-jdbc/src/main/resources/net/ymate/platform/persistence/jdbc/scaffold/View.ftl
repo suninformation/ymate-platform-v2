@@ -1,5 +1,6 @@
 package ${packageName}.model;
 
+import net.ymate.platform.persistence.annotation.Comment;
 import net.ymate.platform.persistence.annotation.Default;
 import net.ymate.platform.persistence.annotation.Entity;
 import net.ymate.platform.persistence.annotation.Id;
@@ -22,7 +23,8 @@ public class ${modelName?cap_first}<#if (useClassSuffix)>Model</#if> extends <#i
 
 	<#list fieldList as field>
 	<#if (field.columnName!"undefined") != "undefined">
-	@Property(name = "${field.columnName}")</#if>
+	@Property(name = "${field.columnName}")</#if><#if (field.remarks!"undefined") != "undefined">
+	@Comment("${field.remarks}")</#if>
 	private ${field.varType} ${field.varName};
 
 	</#list>

@@ -93,7 +93,7 @@ public class ColumnInfo {
         this.scale = scale;
         this.nullable = nullable > 0;
         this.defaultValue = defaultValue;
-        this.remarks = remarks;
+        this.remarks = StringUtils.replaceEach(remarks, new String[]{"\r\n", "\r", "\n", "\t"}, new String[]{"[\\r][\\n]", "[\\r]", "[\\n]", "[\\t]"});
         //
         if (namedFilter != null) {
             this.name = StringUtils.defaultIfBlank(namedFilter.doFilter(columnName), columnName);
