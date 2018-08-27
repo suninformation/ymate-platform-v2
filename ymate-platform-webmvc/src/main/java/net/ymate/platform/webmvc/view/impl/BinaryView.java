@@ -146,9 +146,9 @@ public class BinaryView extends AbstractView {
         }
         // 普通对象
         else {
-            String _content = StringUtils.trimToEmpty(BlurObject.bind(__data).toStringValue());
-            _response.setContentLength(_content.length());
-            IOUtils.write(_content, _response.getOutputStream(), _request.getCharacterEncoding());
+            byte[] _content = StringUtils.trimToEmpty(BlurObject.bind(__data).toStringValue()).getBytes(_request.getCharacterEncoding());
+            _response.setContentLength(_content.length);
+            IOUtils.write(_content, _response.getOutputStream());
         }
     }
 
