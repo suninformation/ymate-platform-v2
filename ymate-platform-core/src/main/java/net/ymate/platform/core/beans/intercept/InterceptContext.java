@@ -16,6 +16,7 @@
 package net.ymate.platform.core.beans.intercept;
 
 import net.ymate.platform.core.YMP;
+import net.ymate.platform.core.support.IContext;
 
 import java.lang.reflect.Method;
 import java.util.Map;
@@ -26,7 +27,7 @@ import java.util.Map;
  * @author 刘镇 (suninformation@163.com) on 15/5/19 下午3:26
  * @version 1.0
  */
-public class InterceptContext {
+public class InterceptContext implements IContext {
 
     private final IInterceptor.Direction __direction;
 

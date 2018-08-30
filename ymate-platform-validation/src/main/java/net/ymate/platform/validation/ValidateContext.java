@@ -16,6 +16,7 @@
 package net.ymate.platform.validation;
 
 import net.ymate.platform.core.YMP;
+import net.ymate.platform.core.support.IContext;
 import net.ymate.platform.core.util.ClassUtils;
 import org.apache.commons.lang.StringUtils;
 
@@ -28,7 +29,7 @@ import java.util.Map;
  * @author 刘镇 (suninformation@163.com) on 2013-4-13 上午11:28:22
  * @version 1.0
  */
-public class ValidateContext {
+public class ValidateContext implements IContext {
 
     private final YMP __owner;
 
