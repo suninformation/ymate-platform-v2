@@ -38,27 +38,41 @@ public class DateTimeValidator extends AbstractValidator {
     public ValidateResult validate(ValidateContext context) {
         Object _paramValue = context.getParamValue();
         if (_paramValue != null) {
-            if (!context.getParamValue().getClass().isArray()) {
-                String _dateStr = BlurObject.bind(_paramValue).toStringValue();
-                if (StringUtils.isNotBlank(_dateStr)) {
-                    VDateTime _vDate = (VDateTime) context.getAnnotation();
-                    try {
-                        DateTimeUtils.parseDateTime(_dateStr, _vDate.pattern());
-                    } catch (Exception e) {
-                        String _pName = StringUtils.defaultIfBlank(context.getParamLabel(), context.getParamName());
-                        _pName = __doGetI18nFormatMessage(context, _pName, _pName);
-                        //
-                        String _msg = StringUtils.trimToNull(_vDate.msg());
-                        if (_msg != null) {
-                            _msg = __doGetI18nFormatMessage(context, _msg, _msg, _pName);
-                        } else {
-                            _msg = __doGetI18nFormatMessage(context, "ymp.validation.datetime", "{0} not a valid datetime.", _pName);
-                        }
-                        return new ValidateResult(context.getParamName(), _msg);
+            VDateTime _vDate = (VDateTime) context.getAnnotation();
+            boolean _matched = false;
+            if (context.getParamValue().getClass().isArray()) {
+                Object[] _values = (Object[]) _paramValue;
+                for (Object _pValue : _values) {
+                    _matched = !checkDateTime(BlurObject.bind(_pValue).toStringValue(), _vDate.pattern());
+                    if (_matched) {
+                        break;
                     }
                 }
+            } else {
+                _matched = !checkDateTime(BlurObject.bind(_paramValue).toStringValue(), _vDate.pattern());
+            }
+            if (_matched) {
+                String _pName = StringUtils.defaultIfBlank(context.getParamLabel(), context.getParamName());
+                _pName = __doGetI18nFormatMessage(context, _pName, _pName);
+                //
+                String _msg = StringUtils.trimToNull(_vDate.msg());
+                if (_msg != null) {
+                    _msg = __doGetI18nFormatMessage(context, _msg, _msg, _pName);
+                } else {
+                    _msg = __doGetI18nFormatMessage(context, "ymp.validation.datetime", "{0} not a valid datetime.", _pName);
+                }
+                return new ValidateResult(context.getParamName(), _msg);
             }
         }
         return null;
+    }
+
+    private boolean checkDateTime(String paramValue, String pattern) {
+        try {
+            DateTimeUtils.parseDateTime(paramValue, pattern);
+        } catch (Exception e) {
+            return false;
+        }
+        return true;
     }
 }

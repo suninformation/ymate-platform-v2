@@ -38,33 +38,27 @@ public class NumericValidator extends AbstractValidator {
     public ValidateResult validate(ValidateContext context) {
         Object _paramValue = context.getParamValue();
         if (_paramValue != null) {
-            boolean _matched = false;
-            boolean _flag = false;
             VNumeric _vNumeric = (VNumeric) context.getAnnotation();
-            try {
-                Number _number = NumberUtils.createNumber(BlurObject.bind(_paramValue).toStringValue());
-                if (_number == null) {
-                    _matched = true;
-                    _flag = true;
-                } else {
-                    if (_vNumeric.min() > 0 && _number.doubleValue() < _vNumeric.min()) {
-                        _matched = true;
-                    } else if (_vNumeric.max() > 0 && _number.doubleValue() > _vNumeric.max()) {
-                        _matched = true;
+            int _result = 0;
+            if (_paramValue.getClass().isArray()) {
+                Object[] _values = (Object[]) _paramValue;
+                for (Object _pValue : _values) {
+                    _result = checkNumeric(_pValue, _vNumeric);
+                    if (_result > 0) {
+                        break;
                     }
                 }
-            } catch (Exception e) {
-                _matched = true;
-                _flag = true;
+            } else {
+                _result = checkNumeric(_paramValue, _vNumeric);
             }
-            if (_matched) {
+            if (_result > 0) {
                 String _pName = StringUtils.defaultIfBlank(context.getParamLabel(), context.getParamName());
                 _pName = __doGetI18nFormatMessage(context, _pName, _pName);
                 String _msg = StringUtils.trimToNull(_vNumeric.msg());
                 if (_msg != null) {
                     _msg = __doGetI18nFormatMessage(context, _msg, _msg, _pName);
                 } else {
-                    if (_flag) {
+                    if (_result > 1) {
                         _msg = __doGetI18nFormatMessage(context, "ymp.validation.numeric", "{0} not a valid numeric.", _pName);
                     } else {
                         if (_vNumeric.max() > 0 && _vNumeric.min() > 0) {
@@ -80,5 +74,27 @@ public class NumericValidator extends AbstractValidator {
             }
         }
         return null;
+    }
+
+    private int checkNumeric(Object paramValue, VNumeric vNumeric) {
+        boolean _matched = false;
+        boolean _flag = false;
+        try {
+            Number _number = NumberUtils.createNumber(BlurObject.bind(paramValue).toStringValue());
+            if (_number == null) {
+                _matched = true;
+                _flag = true;
+            } else {
+                if (vNumeric.min() > 0 && _number.doubleValue() < vNumeric.min()) {
+                    _matched = true;
+                } else if (vNumeric.max() > 0 && _number.doubleValue() > vNumeric.max()) {
+                    _matched = true;
+                }
+            }
+        } catch (Exception e) {
+            _matched = true;
+            _flag = true;
+        }
+        return _matched ? (_flag ? 2 : 1) : 0;
     }
 }

@@ -33,26 +33,35 @@ import org.apache.commons.lang.StringUtils;
 @CleanProxy
 public class EmailValidator extends AbstractValidator {
 
+    private static final String REGEX_STR = "(?:\\w[-._\\w]*\\w@\\w[-._\\w]*\\w\\.\\w{2,8}$)";
+
     @Override
     public ValidateResult validate(ValidateContext context) {
         Object _paramValue = context.getParamValue();
         if (_paramValue != null) {
-            if (!context.getParamValue().getClass().isArray()) {
-                String _value = BlurObject.bind(_paramValue).toStringValue();
-                if (StringUtils.isNotBlank(_value)) {
-                    if (!_value.matches("(?:\\w[-._\\w]*\\w@\\w[-._\\w]*\\w\\.\\w{2,8}$)")) {
-                        String _pName = StringUtils.defaultIfBlank(context.getParamLabel(), context.getParamName());
-                        _pName = __doGetI18nFormatMessage(context, _pName, _pName);
-                        //
-                        String _msg = StringUtils.trimToNull(((VEmail) context.getAnnotation()).msg());
-                        if (_msg != null) {
-                            _msg = __doGetI18nFormatMessage(context, _msg, _msg, _pName);
-                        } else {
-                            _msg = __doGetI18nFormatMessage(context, "ymp.validation.email", "{0} not a valid email address.", _pName);
-                        }
-                        return new ValidateResult(context.getParamName(), _msg);
+            boolean _matched = false;
+            if (context.getParamValue().getClass().isArray()) {
+                Object[] _values = (Object[]) _paramValue;
+                for (Object _pValue : _values) {
+                    _matched = !StringUtils.trimToEmpty(BlurObject.bind(_pValue).toStringValue()).matches(REGEX_STR);
+                    if (_matched) {
+                        break;
                     }
                 }
+            } else {
+                _matched = !StringUtils.trimToEmpty(BlurObject.bind(_paramValue).toStringValue()).matches(REGEX_STR);
+            }
+            if (_matched) {
+                String _pName = StringUtils.defaultIfBlank(context.getParamLabel(), context.getParamName());
+                _pName = __doGetI18nFormatMessage(context, _pName, _pName);
+                //
+                String _msg = StringUtils.trimToNull(((VEmail) context.getAnnotation()).msg());
+                if (_msg != null) {
+                    _msg = __doGetI18nFormatMessage(context, _msg, _msg, _pName);
+                } else {
+                    _msg = __doGetI18nFormatMessage(context, "ymp.validation.email", "{0} not a valid email address.", _pName);
+                }
+                return new ValidateResult(context.getParamName(), _msg);
             }
         }
         return null;

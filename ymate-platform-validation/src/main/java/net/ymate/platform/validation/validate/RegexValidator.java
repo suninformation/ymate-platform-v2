@@ -37,23 +37,30 @@ public class RegexValidator extends AbstractValidator {
     public ValidateResult validate(ValidateContext context) {
         Object _paramValue = context.getParamValue();
         if (_paramValue != null) {
-            if (!_paramValue.getClass().isArray()) {
-                String _value = BlurObject.bind(_paramValue).toStringValue();
-                if (StringUtils.isNotBlank(_value)) {
-                    VRegex _vRegex = (VRegex) context.getAnnotation();
-                    if (!_value.matches(_vRegex.regex())) {
-                        String _pName = StringUtils.defaultIfBlank(context.getParamLabel(), context.getParamName());
-                        _pName = __doGetI18nFormatMessage(context, _pName, _pName);
-                        //
-                        String _msg = StringUtils.trimToNull(_vRegex.msg());
-                        if (_msg != null) {
-                            _msg = __doGetI18nFormatMessage(context, _msg, _msg, _pName);
-                        } else {
-                            _msg = __doGetI18nFormatMessage(context, "ymp.validation.regex", "{0} regex not match.", _pName);
-                        }
-                        return new ValidateResult(context.getParamName(), _msg);
+            VRegex _vRegex = (VRegex) context.getAnnotation();
+            boolean _matched = false;
+            if (_paramValue.getClass().isArray()) {
+                Object[] _values = (Object[]) _paramValue;
+                for (Object _pValue : _values) {
+                    _matched = !StringUtils.trimToEmpty(BlurObject.bind(_pValue).toStringValue()).matches(_vRegex.regex());
+                    if (_matched) {
+                        break;
                     }
                 }
+            } else {
+                _matched = !StringUtils.trimToEmpty(BlurObject.bind(_paramValue).toStringValue()).matches(_vRegex.regex());
+            }
+            if (_matched) {
+                String _pName = StringUtils.defaultIfBlank(context.getParamLabel(), context.getParamName());
+                _pName = __doGetI18nFormatMessage(context, _pName, _pName);
+                //
+                String _msg = StringUtils.trimToNull(_vRegex.msg());
+                if (_msg != null) {
+                    _msg = __doGetI18nFormatMessage(context, _msg, _msg, _pName);
+                } else {
+                    _msg = __doGetI18nFormatMessage(context, "ymp.validation.regex", "{0} regex not match.", _pName);
+                }
+                return new ValidateResult(context.getParamName(), _msg);
             }
         }
         return null;

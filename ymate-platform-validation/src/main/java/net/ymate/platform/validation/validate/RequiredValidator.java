@@ -52,22 +52,11 @@ public class RequiredValidator extends AbstractValidator {
         if (_matched) {
             String _pName = StringUtils.defaultIfBlank(context.getParamLabel(), context.getParamName());
             _pName = __doGetI18nFormatMessage(context, _pName, _pName);
-            // TODO 为了未来剔除@VRequried做准备
-            String _annoMsg = null;
-            if (context.getAnnotation() instanceof VRequired) {
-                _annoMsg = ((VRequired) context.getAnnotation()).msg();
-            } else if (context.getAnnotation() instanceof VRequried) {
-                _annoMsg = ((VRequried) context.getAnnotation()).msg();
-            }
-            String _msg = StringUtils.trimToNull(_annoMsg);
+            String _msg = StringUtils.trimToNull(((VRequired) context.getAnnotation()).msg());
             if (_msg != null) {
                 _msg = __doGetI18nFormatMessage(context, _msg, _msg, _pName);
             } else {
-                // TODO 为了未来剔除@VRequried做准备
-                _msg = __doGetI18nFormatMessage(context, "ymp.validation.required", null, _pName);
-                if (StringUtils.isBlank(_msg)) {
-                    _msg = __doGetI18nFormatMessage(context, "ymp.validation.requried", "{0} must be required.", _pName);
-                }
+                _msg = __doGetI18nFormatMessage(context, "ymp.validation.required", "{0} must be required.", _pName);
             }
             return new ValidateResult(context.getParamName(), _msg);
         }

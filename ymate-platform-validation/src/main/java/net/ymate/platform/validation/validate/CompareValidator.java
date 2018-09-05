@@ -38,13 +38,12 @@ public class CompareValidator extends AbstractValidator {
     @Override
     public ValidateResult validate(ValidateContext context) {
         Object _paramValue = context.getParamValue();
-        if (_paramValue != null && !_paramValue.getClass().isArray()) {
+        if (_paramValue != null) {
             VCompare _vCompare = (VCompare) context.getAnnotation();
-            //
-            String _paramValueStr = BlurObject.bind(_paramValue).toStringValue();
-            String _compareValueStr = BlurObject.bind(context.getParamValue(_vCompare.with())).toStringValue();
-            //
             boolean _matched = true;
+            String _paramValueStr = getParamValue(_paramValue);
+            String _compareValueStr = getParamValue(context.getParamValue(_vCompare.with()));
+            //
             if (StringUtils.isNumeric(_paramValueStr)) {
                 int _compValue = new BigDecimal(_paramValueStr).compareTo(new BigDecimal(_compareValueStr));
                 switch (_vCompare.cond()) {
@@ -114,5 +113,18 @@ public class CompareValidator extends AbstractValidator {
             }
         }
         return null;
+    }
+
+    private String getParamValue(Object paramValue) {
+        String _pValue = null;
+        if (paramValue.getClass().isArray()) {
+            Object[] _objArr = (Object[]) paramValue;
+            if (_objArr.length > 0) {
+                _pValue = BlurObject.bind(_objArr[0]).toStringValue();
+            }
+        } else {
+            _pValue = BlurObject.bind(paramValue).toStringValue();
+        }
+        return StringUtils.trimToEmpty(_pValue);
     }
 }

@@ -39,23 +39,16 @@ public class LengthValidator extends AbstractValidator {
         VLength _vLength = (VLength) context.getAnnotation();
         Object _paramValue = context.getParamValue();
         if (_paramValue != null) {
-            int _length = 0;
             if (!_paramValue.getClass().isArray()) {
-                String _value = BlurObject.bind(_paramValue).toStringValue();
-                if (StringUtils.isNotBlank(_value)) {
-                    _length = _value.length();
-                }
+                _matched = checkLength(_paramValue, _vLength);
             } else {
                 Object[] _values = (Object[]) _paramValue;
-                _length = _values.length;
-            }
-            //
-            if (_vLength.min() > 0 && _vLength.max() == _vLength.min() && _length != _vLength.max()) {
-                _matched = true;
-            } else if (_vLength.min() > 0 && _length < _vLength.min()) {
-                _matched = true;
-            } else if (_vLength.max() > 0 && _length > _vLength.max()) {
-                _matched = true;
+                for (Object _pValue : _values) {
+                    _matched = checkLength(_pValue, _vLength);
+                    if (_matched) {
+                        break;
+                    }
+                }
             }
         }
         if (_matched) {
@@ -80,5 +73,23 @@ public class LengthValidator extends AbstractValidator {
             return new ValidateResult(context.getParamName(), _msg);
         }
         return null;
+    }
+
+    private boolean checkLength(Object paramValue, VLength vLength) {
+        int _length = 0;
+        String _value = BlurObject.bind(paramValue).toStringValue();
+        if (StringUtils.isNotBlank(_value)) {
+            _length = _value.length();
+        }
+        //
+        boolean _matched = false;
+        if (vLength.min() > 0 && vLength.max() == vLength.min() && _length != vLength.max()) {
+            _matched = true;
+        } else if (vLength.min() > 0 && _length < vLength.min()) {
+            _matched = true;
+        } else if (vLength.max() > 0 && _length > vLength.max()) {
+            _matched = true;
+        }
+        return _matched;
     }
 }
