@@ -35,6 +35,15 @@ public class EmailValidator extends AbstractValidator {
 
     private static final String REGEX_STR = "(?:\\w[-._\\w]*\\w@\\w[-._\\w]*\\w\\.\\w{2,8}$)";
 
+    /**
+     * @param email 邮件地址
+     * @return 返回email字符串是否为合法邮件地址
+     * @since 2.0.6
+     */
+    public static boolean isEmail(String email) {
+        return StringUtils.trimToEmpty(email).matches(REGEX_STR);
+    }
+
     @Override
     public ValidateResult validate(ValidateContext context) {
         Object _paramValue = context.getParamValue();
@@ -43,13 +52,13 @@ public class EmailValidator extends AbstractValidator {
             if (context.getParamValue().getClass().isArray()) {
                 Object[] _values = (Object[]) _paramValue;
                 for (Object _pValue : _values) {
-                    _matched = !StringUtils.trimToEmpty(BlurObject.bind(_pValue).toStringValue()).matches(REGEX_STR);
+                    _matched = !isEmail(BlurObject.bind(_pValue).toStringValue());
                     if (_matched) {
                         break;
                     }
                 }
             } else {
-                _matched = !StringUtils.trimToEmpty(BlurObject.bind(_paramValue).toStringValue()).matches(REGEX_STR);
+                _matched = !isEmail(BlurObject.bind(_paramValue).toStringValue());
             }
             if (_matched) {
                 String _pName = StringUtils.defaultIfBlank(context.getParamLabel(), context.getParamName());

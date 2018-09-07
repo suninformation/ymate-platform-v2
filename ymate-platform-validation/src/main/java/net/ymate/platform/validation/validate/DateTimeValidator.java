@@ -34,6 +34,30 @@ import org.apache.commons.lang.StringUtils;
 @CleanProxy
 public class DateTimeValidator extends AbstractValidator {
 
+    /**
+     * @param paramValue 参数值
+     * @return 返回paramValue字符串是否为合法的时间戳
+     * @since 2.0.6
+     */
+    public static boolean isDateTime(String paramValue) {
+        return isDateTime(paramValue, null);
+    }
+
+    /**
+     * @param paramValue 参数值
+     * @param pattern    日期时间格式
+     * @return 返回paramValue字符串是否为合法的时间戳
+     * @since 2.0.6
+     */
+    public static boolean isDateTime(String paramValue, String pattern) {
+        try {
+            DateTimeUtils.parseDateTime(paramValue, StringUtils.defaultIfBlank(pattern, DateTimeUtils.YYYY_MM_DD_HH_MM_SS));
+        } catch (Exception e) {
+            return false;
+        }
+        return true;
+    }
+
     @Override
     public ValidateResult validate(ValidateContext context) {
         Object _paramValue = context.getParamValue();
@@ -43,13 +67,13 @@ public class DateTimeValidator extends AbstractValidator {
             if (context.getParamValue().getClass().isArray()) {
                 Object[] _values = (Object[]) _paramValue;
                 for (Object _pValue : _values) {
-                    _matched = !checkDateTime(BlurObject.bind(_pValue).toStringValue(), _vDate.pattern());
+                    _matched = !isDateTime(BlurObject.bind(_pValue).toStringValue(), _vDate.pattern());
                     if (_matched) {
                         break;
                     }
                 }
             } else {
-                _matched = !checkDateTime(BlurObject.bind(_paramValue).toStringValue(), _vDate.pattern());
+                _matched = !isDateTime(BlurObject.bind(_paramValue).toStringValue(), _vDate.pattern());
             }
             if (_matched) {
                 String _pName = StringUtils.defaultIfBlank(context.getParamLabel(), context.getParamName());
@@ -65,14 +89,5 @@ public class DateTimeValidator extends AbstractValidator {
             }
         }
         return null;
-    }
-
-    private boolean checkDateTime(String paramValue, String pattern) {
-        try {
-            DateTimeUtils.parseDateTime(paramValue, pattern);
-        } catch (Exception e) {
-            return false;
-        }
-        return true;
     }
 }
