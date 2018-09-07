@@ -59,7 +59,7 @@ public interface IWebMvcModuleCfg {
     String getDefaultContentType();
 
     /**
-     * @return 请求忽略正则表达式，可选参数，默认值为^.+\.(jsp|jspx|png|gif|jpg|jpeg|js|css|swf|ico|htm|html|eot|woff|ttf|svg)$
+     * @return 请求忽略正则表达式，可选参数，默认值为^.+\.(jsp|jspx|png|gif|jpg|jpeg|js|css|swf|ico|htm|html|eot|woff|ttf|svg|map)$
      */
     String getRequestIgnoreRegex();
 

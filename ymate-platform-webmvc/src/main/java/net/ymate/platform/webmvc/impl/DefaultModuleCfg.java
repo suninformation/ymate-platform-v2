@@ -39,7 +39,7 @@ import java.util.Set;
  */
 public class DefaultModuleCfg implements IWebMvcModuleCfg {
 
-    private static final String __IGNORE = "^.+\\.(jsp|jspx|png|gif|jpg|jpeg|js|css|swf|ico|htm|html|eot|woff|woff2|ttf|svg)$";
+    private static final String __IGNORE = "^.+\\.(jsp|jspx|png|gif|jpg|jpeg|js|css|swf|ico|htm|html|eot|woff|woff2|ttf|svg|map)$";
 
     private IRequestMappingParser __mappingParser;
 
