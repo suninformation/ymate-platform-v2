@@ -38,7 +38,7 @@ public class ColumnInfo {
         for (int _idx = 1; _idx <= metaData.getColumnCount(); _idx++) {
             // 获取字段元数据对象
             ResultSet _column = databaseMetaData.getColumns(configInfo.getDbName(),
-                    dbType.equalsIgnoreCase("oracle") ? configInfo.getDbUserName().toUpperCase() : configInfo.getDbUserName(), tableName, metaData.getColumnName(_idx));
+                    "oracle".equalsIgnoreCase(dbType) ? configInfo.getDbUserName().toUpperCase() : configInfo.getDbUserName(), tableName, metaData.getColumnName(_idx));
             if (_column.next()) {
                 // 提取字段定义及字段默认值
                 String _name = metaData.getColumnName(_idx).toLowerCase();

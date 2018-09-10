@@ -57,11 +57,13 @@ public abstract class AbstractOperator implements IOperator {
         }
     }
 
+    @Override
     public IOperator add(IOperator operator) {
         __operation.putAll((Map) operator.toBson());
         return this;
     }
 
+    @Override
     public BasicDBObject toBson() {
         return __operation;
     }

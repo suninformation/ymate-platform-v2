@@ -107,7 +107,7 @@ public final class CookieHelper {
     }
 
     private Cookie __doGetCookie(String cookieName) {
-        Cookie _cookies[] = __request.getCookies();
+        Cookie[] _cookies = __request.getCookies();
         if (_cookies == null) {
             return null;
         } else {

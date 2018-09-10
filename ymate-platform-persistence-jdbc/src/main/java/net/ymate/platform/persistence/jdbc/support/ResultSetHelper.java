@@ -53,7 +53,7 @@ public final class ResultSetHelper {
 
     private boolean __clearFlag;
 
-    private String __columnNames[];
+    private String[] __columnNames;
 
     public static ResultSetHelper bind(Object[] data) {
         List<Object[]> _data = new ArrayList<Object[]>();

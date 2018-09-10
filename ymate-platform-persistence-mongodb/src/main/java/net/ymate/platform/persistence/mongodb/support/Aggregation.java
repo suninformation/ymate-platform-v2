@@ -106,6 +106,7 @@ public final class Aggregation implements IBsonable {
         return this;
     }
 
+    @Override
     public BasicDBObject toBson() {
         return __pipeline;
     }

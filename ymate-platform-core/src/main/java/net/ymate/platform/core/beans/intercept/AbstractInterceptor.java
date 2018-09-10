@@ -30,6 +30,8 @@ public abstract class AbstractInterceptor implements IInterceptor {
                 break;
             case AFTER:
                 _result = __after(context);
+                break;
+            default:
         }
         return _result;
     }

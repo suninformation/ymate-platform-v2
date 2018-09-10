@@ -43,10 +43,12 @@ public class RedisCommandsHolder implements IRedisCommandsHolder {
         __dataSourceAdapter = dataSourceAdapter;
     }
 
+    @Override
     public RedisDataSourceCfgMeta getDataSourceCfgMeta() {
         return __dataSourceAdapter.getDataSourceCfgMeta();
     }
 
+    @Override
     public Jedis getJedis() {
         JedisCommands _commands = getCommands();
         if (_commands instanceof Jedis) {
@@ -55,6 +57,7 @@ public class RedisCommandsHolder implements IRedisCommandsHolder {
         return null;
     }
 
+    @Override
     public JedisCommands getCommands() {
         JedisCommands _commands = __jedisCommands.get();
         if (_commands == null) {
@@ -64,6 +67,7 @@ public class RedisCommandsHolder implements IRedisCommandsHolder {
         return _commands;
     }
 
+    @Override
     public void release() {
         JedisCommands _commands = __jedisCommands.get();
         if (_commands != null && !__dataSourceAdapter.getDataSourceCfgMeta().isCluster()) {

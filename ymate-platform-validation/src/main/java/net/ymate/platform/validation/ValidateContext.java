@@ -58,6 +58,7 @@ public class ValidateContext implements IContext {
         this.__resourceName = resourceName;
     }
 
+    @Override
     public YMP getOwner() {
         return __owner;
     }
@@ -116,6 +117,7 @@ public class ValidateContext implements IContext {
     /**
      * @return 返回上下文参数映射
      */
+    @Override
     public Map<String, String> getContextParams() {
         return contextParams;
     }

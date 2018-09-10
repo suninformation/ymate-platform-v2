@@ -84,16 +84,16 @@ public class DefaultBeanLoader implements IBeanLoader {
         Enumeration<URL> _resources = this.getClassLoader().getResources(packageName.replaceAll("\\.", "/"));
         while (_resources.hasMoreElements()) {
             URL _res = _resources.nextElement();
-            if (_res.getProtocol().equalsIgnoreCase("file") || _res.getProtocol().equalsIgnoreCase("vfsfile")) {
+            if ("file".equalsIgnoreCase(_res.getProtocol()) || "vfsfile".equalsIgnoreCase(_res.getProtocol())) {
                 File[] _files = new File(_res.toURI()).listFiles();
                 if (_files != null && _files.length > 0) {
                     for (File _file : _files) {
                         _returnValue.addAll(__doFindClassByClazz(packageName, _file, filter));
                     }
                 }
-            } else if (_res.getProtocol().equalsIgnoreCase("jar") || _res.getProtocol().equalsIgnoreCase("wsjar")) {
+            } else if ("jar".equalsIgnoreCase(_res.getProtocol()) || "wsjar".equalsIgnoreCase(_res.getProtocol())) {
                 _returnValue.addAll(__doFindClassByJar(packageName, ((JarURLConnection) _res.openConnection()).getJarFile(), filter));
-            } else if (_res.getProtocol().equalsIgnoreCase("zip")) {
+            } else if ("zip".equalsIgnoreCase(_res.getProtocol())) {
                 _returnValue.addAll(__doFindClassByZip(_res, filter));
             }
         }

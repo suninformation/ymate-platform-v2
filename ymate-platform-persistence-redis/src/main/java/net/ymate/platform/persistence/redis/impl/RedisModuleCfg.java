@@ -130,18 +130,22 @@ public class RedisModuleCfg implements IRedisModuleCfg {
         return new RedisDataSourceCfgMeta(dsName, _connectionType, _masterServerName, _servers, _poolConfig);
     }
 
+    @Override
     public String getDataSourceDefaultName() {
         return dataSourceDefaultName;
     }
 
+    @Override
     public Map<String, RedisDataSourceCfgMeta> getDataSourceCfgs() {
         return Collections.unmodifiableMap(dataSourceCfgMetas);
     }
 
+    @Override
     public RedisDataSourceCfgMeta getDefaultDataSourceCfg() {
         return dataSourceCfgMetas.get(dataSourceDefaultName);
     }
 
+    @Override
     public RedisDataSourceCfgMeta getDataSourceCfg(String name) {
         return dataSourceCfgMetas.get(name);
     }

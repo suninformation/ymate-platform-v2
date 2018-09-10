@@ -44,6 +44,7 @@ public final class OrderBy implements IBsonable {
         return this;
     }
 
+    @Override
     public BasicDBObject toBson() {
         return this.__orderBy;
     }

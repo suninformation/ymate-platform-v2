@@ -37,7 +37,7 @@ public class ConfigurableProxy implements IProxy {
     @Override
     public Object doProxy(IProxyChain proxyChain) throws Throwable {
         if (ClassUtils.isInterfaceOf(proxyChain.getTargetClass(), IConfigurable.class)) {
-            if (proxyChain.getTargetMethod().getName().equals("getConfig")) {
+            if ("getConfig".equals(proxyChain.getTargetMethod().getName())) {
                 IConfiguration _config = (IConfiguration) proxyChain.doProxyChain();
                 if (_config == null) {
                     YMP _owner = proxyChain.getProxyFactory().getOwner();

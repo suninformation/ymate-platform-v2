@@ -408,6 +408,7 @@ public final class Operator extends AbstractOperator {
         return this;
     }
 
+    @Override
     public BasicDBObject toBson() {
         return __operation;
     }

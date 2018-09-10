@@ -32,7 +32,7 @@ public final class PackagesHandler implements IBeanHandler {
 
     @Override
     public Object handle(Class<?> targetClass) throws Exception {
-        if (targetClass.isInterface() && targetClass.getSimpleName().equalsIgnoreCase("package-info")) {
+        if (targetClass.isInterface() && "package-info".equalsIgnoreCase(targetClass.getSimpleName())) {
             __owner.getConfig().getInterceptSettings().registerInterceptPackage(targetClass);
         }
         return null;

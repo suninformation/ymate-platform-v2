@@ -57,6 +57,7 @@ public final class Query implements IBsonable {
         return this;
     }
 
+    @Override
     public BasicDBObject toBson() {
         return __condition;
     }

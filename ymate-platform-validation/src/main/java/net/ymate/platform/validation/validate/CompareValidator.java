@@ -107,6 +107,7 @@ public class CompareValidator extends AbstractValidator {
                             break;
                         case LT_EQ:
                             _msg = __doGetI18nFormatMessage(context, "ymp.validation.compare_lt_eq", "{0} must be lt eq {1}.", _pName, _pLabel);
+                        default:
                     }
                 }
                 return new ValidateResult(context.getParamName(), _msg);

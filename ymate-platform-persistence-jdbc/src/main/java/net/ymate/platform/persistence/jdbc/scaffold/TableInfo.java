@@ -114,7 +114,7 @@ public class TableInfo {
         try {
             if (!view) {
                 ResultSet _resultSet = _databaseMetaData.getPrimaryKeys(configInfo.getDbName(),
-                        connectionHolder.getDialect().getName().equalsIgnoreCase("oracle") ? configInfo.getDbUserName().toUpperCase() : configInfo.getDbUserName(), tableName);
+                        "oracle".equalsIgnoreCase(connectionHolder.getDialect().getName()) ? configInfo.getDbUserName().toUpperCase() : configInfo.getDbUserName(), tableName);
                 if (_resultSet == null) {
                     System.err.println("Database table \"" + tableName + "\" primaryKey resultSet is null, ignored");
                     return null;

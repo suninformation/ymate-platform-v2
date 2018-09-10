@@ -114,22 +114,27 @@ public class MongoModuleCfg implements IMongoModuleCfg {
         return _meta;
     }
 
+    @Override
     public String getDataSourceDefaultName() {
         return dataSourceDefaultName;
     }
 
+    @Override
     public IMongoClientOptionsHandler getClientOptionsHandler() {
         return clientOptionsHandler;
     }
 
+    @Override
     public Map<String, MongoDataSourceCfgMeta> getDataSourceCfgs() {
         return Collections.unmodifiableMap(dataSourceCfgMetas);
     }
 
+    @Override
     public MongoDataSourceCfgMeta getDefaultDataSourceCfg() {
         return dataSourceCfgMetas.get(dataSourceDefaultName);
     }
 
+    @Override
     public MongoDataSourceCfgMeta getDataSourceCfg(String name) {
         return dataSourceCfgMetas.get(name);
     }

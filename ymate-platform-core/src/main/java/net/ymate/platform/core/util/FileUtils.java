@@ -56,7 +56,7 @@ public class FileUtils {
      * @return 将URL地址转换成File对象, 若url指向的是jar包中文件，则返回null
      */
     public static File toFile(URL url) {
-        if ((url == null) || (!url.getProtocol().equals("file"))) {
+        if ((url == null) || (!"file".equals(url.getProtocol()))) {
             return null;
         }
         String filename = url.getFile().replace('/', File.separatorChar);

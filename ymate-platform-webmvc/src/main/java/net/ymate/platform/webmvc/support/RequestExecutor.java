@@ -212,6 +212,7 @@ public final class RequestExecutor {
                     case BEETL:
                         _view = BeetlView.bind(_parts[1]);
                         break;
+                    default:
                 }
             } else {
                 _view = HtmlView.bind((String) result);

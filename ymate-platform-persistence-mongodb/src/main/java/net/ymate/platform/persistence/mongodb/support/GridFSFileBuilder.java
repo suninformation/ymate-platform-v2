@@ -93,6 +93,8 @@ public final class GridFSFileBuilder {
                 break;
             case 3: // is Array
                 _inFile = gridFS.getGridFS().createFile((byte[]) __targetObject);
+                break;
+            default:
         }
         if (_inFile != null) {
             _inFile.setFilename(__filename);

@@ -84,10 +84,12 @@ public class Redis implements IModule, IRedis {
         return owner.getModule(Redis.class);
     }
 
+    @Override
     public String getName() {
         return IRedis.MODULE_NAME;
     }
 
+    @Override
     public void init(YMP owner) throws Exception {
         if (!__inited) {
             //
@@ -110,14 +112,17 @@ public class Redis implements IModule, IRedis {
         }
     }
 
+    @Override
     public boolean isInited() {
         return __inited;
     }
 
+    @Override
     public YMP getOwner() {
         return __owner;
     }
 
+    @Override
     public void destroy() throws Exception {
         if (__inited) {
             __inited = false;
@@ -137,6 +142,7 @@ public class Redis implements IModule, IRedis {
         }
     }
 
+    @Override
     public IRedisModuleCfg getModuleCfg() {
         return __moduleCfg;
     }
@@ -151,6 +157,7 @@ public class Redis implements IModule, IRedis {
         return new RedisCommandsHolder(__dataSourceCaches.get(dsName));
     }
 
+    @Override
     public <T> T openSession(IRedisSessionExecutor<T> executor) throws Exception {
         IRedisSession _session = new RedisSession(this, getDefaultCommandsHolder());
         try {
@@ -170,6 +177,7 @@ public class Redis implements IModule, IRedis {
         }
     }
 
+    @Override
     public <T> T openSession(IRedisCommandsHolder commandsHolder, IRedisSessionExecutor<T> executor) throws Exception {
         IRedisSession _session = new RedisSession(this, commandsHolder);
         try {

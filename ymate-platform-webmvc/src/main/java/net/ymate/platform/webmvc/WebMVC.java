@@ -236,7 +236,7 @@ public class WebMVC implements IModule, IWebMvc {
                     Map<String, String> _allowMap = _meta.getAllowHeaders();
                     for (Map.Entry<String, String> _entry : _allowMap.entrySet()) {
                         String _value = WebContext.getRequest().getHeader(_entry.getKey());
-                        if (StringUtils.trimToEmpty(_entry.getValue()).equals("*")) {
+                        if (StringUtils.equals(_entry.getValue(), "*")) {
                             if (StringUtils.isBlank(_value)) {
                                 if (_devMode && _LOG.isDebugEnabled()) {
                                     _LOG.debug("--- [" + _threadId + "] Check request allowed: NO");
@@ -257,7 +257,7 @@ public class WebMVC implements IModule, IWebMvc {
                     // 判断允许的请求参数
                     _allowMap = _meta.getAllowParams();
                     for (Map.Entry<String, String> _entry : _allowMap.entrySet()) {
-                        if (StringUtils.trimToEmpty(_entry.getValue()).equals("*")) {
+                        if (StringUtils.equals(_entry.getValue(), "*")) {
                             if (!WebContext.getRequest().getParameterMap().containsKey(_entry.getKey())) {
                                 response.sendError(HttpServletResponse.SC_BAD_REQUEST);
                                 //

@@ -34,10 +34,12 @@ public class MongoDatabaseHolder implements IMongoDatabaseHolder {
         __database = database;
     }
 
+    @Override
     public MongoDataSourceCfgMeta getDataSourceCfgMeta() {
         return __cfgMeta;
     }
 
+    @Override
     public MongoDatabase getDatabase() {
         return __database;
     }

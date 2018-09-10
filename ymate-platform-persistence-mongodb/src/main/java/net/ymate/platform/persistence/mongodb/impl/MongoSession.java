@@ -59,18 +59,22 @@ public class MongoSession implements IMongoSession {
         __collectionPrefix = databaseHolder.getDataSourceCfgMeta().getCollectionPrefix();
     }
 
+    @Override
     public String getId() {
         return __id;
     }
 
+    @Override
     public IMongoSession setSessionEvent(ISessionEvent event) {
         __sessionEvent = event;
         return this;
     }
 
+    @Override
     public void close() {
     }
 
+    @Override
     public IMongoDatabaseHolder getDatabaseHolder() {
         return __databaseHolder;
     }
@@ -88,6 +92,7 @@ public class MongoSession implements IMongoSession {
         return false;
     }
 
+    @Override
     public <T extends IEntity> IResultSet<T> find(final Class<T> entity) throws Exception {
         if (__sessionEvent != null) {
             __sessionEvent.onQueryBefore(new SessionEventContext(entity));
@@ -95,14 +100,17 @@ public class MongoSession implements IMongoSession {
         return new DefaultResultSet<T>(ResultSetHelper.toEntities(entity, __doGetCollection(entity).find()));
     }
 
+    @Override
     public <T extends IEntity> IResultSet<T> find(Class<T> entity, OrderBy orderBy) throws Exception {
         return find(entity, orderBy, null);
     }
 
+    @Override
     public <T extends IEntity> IResultSet<T> find(Class<T> entity, Page page) throws Exception {
         return find(entity, null, page);
     }
 
+    @Override
     public <T extends IEntity> IResultSet<T> find(Class<T> entity, OrderBy orderBy, Page page) throws Exception {
         MongoCollection<Document> _collection = __doGetCollection(entity);
         FindIterable<Document> _findIterable = _collection.find();
@@ -116,30 +124,37 @@ public class MongoSession implements IMongoSession {
         return new DefaultResultSet<T>(ResultSetHelper.toEntities(entity, _findIterable), page.page(), page.pageSize(), _recordCount);
     }
 
+    @Override
     public <T extends IEntity> T findFirst(Class<T> entity, Query filter) throws Exception {
         return ResultSetHelper.toEntity(entity, __doGetCollection(entity).find(filter.toBson()).first());
     }
 
+    @Override
     public <T extends IEntity> T find(Class<T> entity, Serializable id) throws Exception {
         return findFirst(entity, Query.create(IMongo.OPT.ID, ComparisonExp.eq(new ObjectId(id.toString()))));
     }
 
+    @Override
     public <T extends IEntity> long count(Class<T> entity) throws Exception {
         return __doGetCollection(entity).count();
     }
 
+    @Override
     public <T extends IEntity> long count(Class<T> entity, Query filter) throws Exception {
         return __doGetCollection(entity).count(filter.toBson());
     }
 
+    @Override
     public <T extends IEntity> boolean exists(Class<T> entity, Serializable id) throws Exception {
         return find(entity, id) != null;
     }
 
+    @Override
     public <T extends IEntity> boolean exists(Class<T> entity, Query filter) throws Exception {
         return findFirst(entity, filter) != null;
     }
 
+    @Override
     public <T extends IEntity, RESULT> AggregateIterable<RESULT> aggregate(Class<T> entity, Class<RESULT> resultClass, Aggregation... aggregations) throws Exception {
         List<Bson> _pipeline = new ArrayList<Bson>(aggregations.length);
         for (Aggregation _aggregation : aggregations) {
@@ -148,26 +163,32 @@ public class MongoSession implements IMongoSession {
         return __doGetCollection(entity).aggregate(_pipeline, resultClass);
     }
 
+    @Override
     public <T extends IEntity, RESULT> DistinctIterable<RESULT> distinct(Class<T> entity, Class<RESULT> resultClass, String fieldName) throws Exception {
         return __doGetCollection(entity).distinct(fieldName, resultClass);
     }
 
+    @Override
     public <T extends IEntity, RESULT> DistinctIterable<RESULT> distinct(Class<T> entity, Class<RESULT> resultClass, String fieldName, Query query) throws Exception {
         return __doGetCollection(entity).distinct(fieldName, query.toBson(), resultClass);
     }
 
+    @Override
     public <T extends IEntity, RESULT> MapReduceIterable<RESULT> mapReduce(Class<T> entity, Class<RESULT> resultClass, String mapFunction, String reduceFunction) throws Exception {
         return __doGetCollection(entity).mapReduce(mapFunction, reduceFunction, resultClass);
     }
 
+    @Override
     public <T extends IEntity> MapReduceIterable<Document> mapReduce(Class<T> entity, String mapFunction, String reduceFunction) throws Exception {
         return __doGetCollection(entity).mapReduce(mapFunction, reduceFunction);
     }
 
+    @Override
     public <T extends IEntity> T update(T entity) throws Exception {
         return update(entity, null);
     }
 
+    @Override
     @SuppressWarnings("unchecked")
     public <T extends IEntity> T update(T entity, Fields filter) throws Exception {
         Document _document = ResultSetHelper.toDocument(entity);
@@ -190,10 +211,12 @@ public class MongoSession implements IMongoSession {
         return (T) ResultSetHelper.toEntity(entity.getClass(), _document);
     }
 
+    @Override
     public <T extends IEntity> List<T> update(List<T> entities) throws Exception {
         return update(entities, null);
     }
 
+    @Override
     public <T extends IEntity> List<T> update(List<T> entities, Fields filter) throws Exception {
         List<T> _results = new ArrayList<T>();
         for (T _entity : entities) {
@@ -202,6 +225,7 @@ public class MongoSession implements IMongoSession {
         return _results;
     }
 
+    @Override
     @SuppressWarnings("unchecked")
     public <T extends IEntity> T insert(T entity) throws Exception {
         Document _document = ResultSetHelper.toDocument(entity);
@@ -214,6 +238,7 @@ public class MongoSession implements IMongoSession {
         return entity;
     }
 
+    @Override
     @SuppressWarnings("unchecked")
     public <T extends IEntity> List<T> insert(List<T> entities) throws Exception {
         for (T _entity : entities) {
@@ -228,17 +253,20 @@ public class MongoSession implements IMongoSession {
         return entities;
     }
 
+    @Override
     @SuppressWarnings("unchecked")
     public <T extends IEntity> T delete(T entity) throws Exception {
         return (T) delete(entity.getClass(), entity.getId());
     }
 
+    @Override
     public <T extends IEntity> T delete(Class<T> entity, Serializable id) throws Exception {
         Document _document = __doGetCollection(entity).findOneAndDelete(
                 Query.create(IMongo.OPT.ID, ComparisonExp.eq(new ObjectId(id.toString()))).toBson());
         return ResultSetHelper.toEntity(entity, _document);
     }
 
+    @Override
     public <T extends IEntity> List<T> delete(List<T> entities) throws Exception {
         List<T> _results = new ArrayList<T>();
         for (T _entity : entities) {
@@ -247,6 +275,7 @@ public class MongoSession implements IMongoSession {
         return _results;
     }
 
+    @Override
     public <T extends IEntity> List<T> delete(Class<T> entity, Params ids) throws Exception {
         List<T> _results = new ArrayList<T>();
         for (Object _id : ids.params()) {

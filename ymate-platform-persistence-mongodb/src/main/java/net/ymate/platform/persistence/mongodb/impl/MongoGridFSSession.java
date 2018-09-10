@@ -70,64 +70,79 @@ public class MongoGridFSSession implements IGridFSSession {
         __dbCollection = __gridFS.getDB().getCollection(__bucketName.concat(".files"));
     }
 
+    @Override
     public IMongoDataSourceAdapter getDataSourceAdapter() {
         return __dataSourceHolder;
     }
 
+    @Override
     public GridFS getGridFS() {
         return __gridFS;
     }
 
+    @Override
     public String getId() {
         return __id;
     }
 
+    @Override
     public IGridFSSession setSessionEvent(ISessionEvent event) {
         __sessionEvent = event;
         return this;
     }
 
+    @Override
     public String getBucketName() {
         return __bucketName;
     }
 
+    @Override
     public void close() {
     }
 
+    @Override
     public GridFSFile upload(GridFSFileBuilder inputFile) throws Exception {
         GridFSInputFile _inFile = inputFile.build(this);
         _inFile.save();
         return _inFile;
     }
 
+    @Override
     public boolean existsById(String id) {
         return findById(id) != null;
     }
 
+    @Override
     public boolean exists(String filename) {
         return __gridFS.findOne(filename) != null;
     }
 
+    @Override
     public GridFSDBFile findFirst(String filename) {
         return __gridFS.findOne(filename);
     }
 
+    @Override
     public GridFSDBFile findFirst(Query query) {
         return __gridFS.findOne(query.toBson());
     }
 
+    @Override
     public GridFSDBFile findById(String id) {
         return __gridFS.find(new ObjectId(id));
     }
 
+    @Override
     public List<GridFSDBFile> findAll() {
         return findAll(null, null);
     }
 
+    @Override
     public List<GridFSDBFile> findAll(OrderBy orderBy) {
         return findAll(orderBy, null);
     }
 
+    @Override
     public List<GridFSDBFile> findAll(OrderBy orderBy, Page page) {
         DBCursor _cursor = __dbCollection.find();
         if (orderBy != null) {
@@ -144,22 +159,27 @@ public class MongoGridFSSession implements IGridFSSession {
         return _results;
     }
 
+    @Override
     public List<GridFSDBFile> find(String filename) {
         return __gridFS.find(filename);
     }
 
+    @Override
     public List<GridFSDBFile> find(String filename, OrderBy orderBy) {
         return __gridFS.find(filename, orderBy.toBson());
     }
 
+    @Override
     public List<GridFSDBFile> find(Query query) {
         return __gridFS.find(query.toBson());
     }
 
+    @Override
     public List<GridFSDBFile> find(Query query, OrderBy orderBy) {
         return __gridFS.find(query.toBson(), orderBy.toBson());
     }
 
+    @Override
     public List<GridFSDBFile> find(Query query, OrderBy orderBy, Page page) {
         DBCursor _cursor = __dbCollection.find(query.toBson());
         if (orderBy != null) {
@@ -176,30 +196,36 @@ public class MongoGridFSSession implements IGridFSSession {
         return _results;
     }
 
+    @Override
     public List<GridFSDBFile> find(Query query, Page page) {
         return find(query, null, page);
     }
 
+    @Override
     public void renameById(String id, String newName) {
         DBObject _dbObj = __dbCollection.findOne(new ObjectId(id));
         _dbObj.put(IMongo.GridFS.FILE_NAME, newName);
         __dbCollection.save(_dbObj);
     }
 
+    @Override
     public void rename(String currentName, String newName) {
         DBObject _dbObj = __dbCollection.findOne(Query.create().cond(IMongo.GridFS.FILE_NAME, Operator.create().eq(currentName)).toBson());
         _dbObj.put(IMongo.GridFS.FILE_NAME, newName);
         __dbCollection.save(_dbObj);
     }
 
+    @Override
     public void removeById(String id) {
         __gridFS.remove(new ObjectId(id));
     }
 
+    @Override
     public void remove(String filename) {
         __gridFS.remove(filename);
     }
 
+    @Override
     public void remove(Query query) {
         __gridFS.remove(query.toBson());
     }

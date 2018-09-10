@@ -153,16 +153,16 @@ public class XMLConfigFileParser extends AbstractConfigFileParser {
                 String _attrKey = _attrNodes.item(_idy).getNodeName();
                 String _attrValue = _attrNodes.item(_idy).getNodeValue();
                 if (collections) {
-                    if (_attrKey.equals("name")) {
+                    if ("name".equals(_attrKey)) {
                         attributes.add(new Attribute(_attrValue, node.getTextContent()));
                     }
                 } else {
                     if (textContent && StringUtils.isNotBlank(_attrValue)) {
                         _attrValue = node.getTextContent();
                     }
-                    if (_attrKey.equals("name")) {
+                    if ("name".equals(_attrKey)) {
                         _propertyName = _attrValue;
-                    } else if (_attrKey.equals("value")) {
+                    } else if ("value".equals(_attrKey)) {
                         _propertyContent = _attrValue;
                     } else {
                         attributes.add(new Attribute(_attrKey, _attrValue));

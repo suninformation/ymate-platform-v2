@@ -96,6 +96,7 @@ public abstract class AbstractConfigurationProvider implements IConfigurationPro
 
     protected abstract IConfigFileParser __buildConfigFileParser(URL cfgFileName) throws Exception;
 
+    @Override
     public IConfigFileParser getConfigFileParser() {
         return __configFileParser;
     }

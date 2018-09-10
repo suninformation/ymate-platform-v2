@@ -62,6 +62,7 @@ public class InterceptContext implements IContext {
     /**
      * @return 获取所属YMP框架管理器
      */
+    @Override
     public YMP getOwner() {
         return __owner;
     }
@@ -97,6 +98,7 @@ public class InterceptContext implements IContext {
     /**
      * @return 返回上下文参数映射
      */
+    @Override
     public Map<String, String> getContextParams() {
         return __contextParams;
     }

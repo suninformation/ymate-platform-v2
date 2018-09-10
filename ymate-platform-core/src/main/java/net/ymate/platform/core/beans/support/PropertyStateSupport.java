@@ -133,7 +133,7 @@ public class PropertyStateSupport<T> {
                 _states.add(_meta.getPropertyName());
             }
         }
-        return _states.toArray(new String[_states.size()]);
+        return _states.toArray(new String[0]);
     }
 
     public Set<PropertyStateMeta> getChangedProperties() {

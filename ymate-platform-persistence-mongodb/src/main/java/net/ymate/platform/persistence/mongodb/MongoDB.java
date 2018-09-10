@@ -72,10 +72,12 @@ public class MongoDB implements IModule, IMongo {
         return owner.getModule(MongoDB.class);
     }
 
+    @Override
     public String getName() {
         return IMongo.MODULE_NAME;
     }
 
+    @Override
     public void init(YMP owner) throws Exception {
         if (!__inited) {
             //
@@ -96,26 +98,32 @@ public class MongoDB implements IModule, IMongo {
         }
     }
 
+    @Override
     public boolean isInited() {
         return __inited;
     }
 
+    @Override
     public YMP getOwner() {
         return __owner;
     }
 
+    @Override
     public IMongoModuleCfg getModuleCfg() {
         return __moduleCfg;
     }
 
+    @Override
     public IMongoDataSourceAdapter getDefaultDataSourceAdapter() throws Exception {
         return __dataSourceCaches.get(__moduleCfg.getDataSourceDefaultName());
     }
 
+    @Override
     public IMongoDataSourceAdapter getDataSourceAdapter(String dataSourceName) throws Exception {
         return __dataSourceCaches.get(dataSourceName);
     }
 
+    @Override
     public void destroy() throws Exception {
         if (__inited) {
             __inited = false;
@@ -129,10 +137,12 @@ public class MongoDB implements IModule, IMongo {
         }
     }
 
+    @Override
     public <T> T openSession(IMongoSessionExecutor<T> executor) throws Exception {
         return openSession(getDefaultDataSourceAdapter().getDefaultDatabaseHolder(), executor);
     }
 
+    @Override
     public <T> T openSession(IMongoDatabaseHolder databaseHolder, IMongoSessionExecutor<T> executor) throws Exception {
         IMongoSession _session = new MongoSession(databaseHolder);
         try {
@@ -142,18 +152,22 @@ public class MongoDB implements IModule, IMongo {
         }
     }
 
+    @Override
     public <T> T openSession(IGridFSSessionExecutor<T> executor) throws Exception {
         return openSession(getDefaultDataSourceAdapter(), null, executor);
     }
 
+    @Override
     public <T> T openSession(String bucketName, IGridFSSessionExecutor<T> executor) throws Exception {
         return openSession(getDefaultDataSourceAdapter(), bucketName, executor);
     }
 
+    @Override
     public <T> T openSession(IMongoDataSourceAdapter dataSourceAdapter, IGridFSSessionExecutor<T> executor) throws Exception {
         return openSession(dataSourceAdapter, null, executor);
     }
 
+    @Override
     public <T> T openSession(IMongoDataSourceAdapter dataSourceAdapter, String bucketName, IGridFSSessionExecutor<T> executor) throws Exception {
         IGridFSSession _gridFS = new MongoGridFSSession(dataSourceAdapter, bucketName);
         try {

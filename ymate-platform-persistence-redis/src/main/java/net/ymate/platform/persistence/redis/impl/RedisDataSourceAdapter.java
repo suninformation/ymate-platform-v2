@@ -40,6 +40,7 @@ public class RedisDataSourceAdapter implements IRedisDataSourceAdapter {
 
     private boolean __isCluster;
 
+    @Override
     public void initialize(RedisDataSourceCfgMeta cfgMeta) throws Exception {
         __cfgMeta = cfgMeta;
         //
@@ -88,6 +89,7 @@ public class RedisDataSourceAdapter implements IRedisDataSourceAdapter {
         }
     }
 
+    @Override
     public JedisCommands getCommands() {
         if (__isCluster) {
             return __cluster;
@@ -95,10 +97,12 @@ public class RedisDataSourceAdapter implements IRedisDataSourceAdapter {
         return (JedisCommands) __pool.getResource();
     }
 
+    @Override
     public RedisDataSourceCfgMeta getDataSourceCfgMeta() {
         return __cfgMeta;
     }
 
+    @Override
     public void destroy() {
         __pool.destroy();
     }

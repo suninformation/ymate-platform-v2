@@ -37,6 +37,7 @@ public class MongoDataSourceAdapter implements IMongoDataSourceAdapter {
 
     private MongoDataSourceCfgMeta __cfgMeta;
 
+    @Override
     public void initialize(IMongoClientOptionsHandler optionsHandler, MongoDataSourceCfgMeta cfgMeta) throws Exception {
         __cfgMeta = cfgMeta;
         MongoClientOptions.Builder _builder = null;
@@ -63,22 +64,27 @@ public class MongoDataSourceAdapter implements IMongoDataSourceAdapter {
         }
     }
 
+    @Override
     public MongoDataSourceCfgMeta getDataSourceCfgMeta() {
         return __cfgMeta;
     }
 
+    @Override
     public MongoClient getMongoClient() {
         return __mongoClient;
     }
 
+    @Override
     public IMongoDatabaseHolder getDefaultDatabaseHolder() {
         return new MongoDatabaseHolder(__cfgMeta, __mongoClient.getDatabase(__cfgMeta.getDatabaseName()));
     }
 
+    @Override
     public IMongoDatabaseHolder getDatabaseHolder(String databaseName) {
         return new MongoDatabaseHolder(__cfgMeta, __mongoClient.getDatabase(databaseName));
     }
 
+    @Override
     public void destroy() {
         if (__mongoClient != null) {
             __mongoClient.close();

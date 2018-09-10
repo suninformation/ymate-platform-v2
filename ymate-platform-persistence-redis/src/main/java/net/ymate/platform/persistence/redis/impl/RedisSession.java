@@ -46,19 +46,23 @@ public class RedisSession implements IRedisSession {
         return __owner;
     }
 
+    @Override
     public String getId() {
         return __id;
     }
 
+    @Override
     public RedisSession setSessionEvent(ISessionEvent event) {
         __sessionEvent = event;
         return this;
     }
 
+    @Override
     public void close() {
         __commandsHolder.release();
     }
 
+    @Override
     public IRedisCommandsHolder getCommandHolder() {
         return __commandsHolder;
     }
