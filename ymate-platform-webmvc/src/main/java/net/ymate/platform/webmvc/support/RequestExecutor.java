@@ -15,8 +15,10 @@
  */
 package net.ymate.platform.webmvc.support;
 
+import net.ymate.platform.core.beans.intercept.InterceptException;
 import net.ymate.platform.core.lang.BlurObject;
 import net.ymate.platform.core.util.ClassUtils;
+import net.ymate.platform.core.util.RuntimeUtils;
 import net.ymate.platform.webmvc.IRequestProcessor;
 import net.ymate.platform.webmvc.IResponseBodyProcessor;
 import net.ymate.platform.webmvc.IWebMvc;
@@ -76,15 +78,24 @@ public final class RequestExecutor {
         // 提取控制器类实例
         Object _targetObj = __owner.getOwner().getBean(__requestMeta.getTargetClass());
         Object _resultObj;
-        if (!_methodParamNames.isEmpty()) {
-            // 组装方法所需参数
-            Object[] _mParamValues = new Object[_methodParamNames.size()];
-            for (int _idx = 0; _idx < _methodParamNames.size(); _idx++) {
-                _mParamValues[_idx] = _paramValues.get(_methodParamNames.get(_idx));
+        try {
+            if (!_methodParamNames.isEmpty()) {
+                // 组装方法所需参数
+                Object[] _mParamValues = new Object[_methodParamNames.size()];
+                for (int _idx = 0; _idx < _methodParamNames.size(); _idx++) {
+                    _mParamValues[_idx] = _paramValues.get(_methodParamNames.get(_idx));
+                }
+                _resultObj = __requestMeta.getMethod().invoke(_targetObj, _mParamValues);
+            } else {
+                _resultObj = __requestMeta.getMethod().invoke(_targetObj);
             }
-            _resultObj = __requestMeta.getMethod().invoke(_targetObj, _mParamValues);
-        } else {
-            _resultObj = __requestMeta.getMethod().invoke(_targetObj);
+        } catch (Exception e) {
+            Throwable _e = RuntimeUtils.unwrapThrow(e);
+            if (_e instanceof InterceptException) {
+                _resultObj = ((InterceptException) _e).getReturnValue();
+            } else {
+                throw e;
+            }
         }
         //
         IView _resultView = null;

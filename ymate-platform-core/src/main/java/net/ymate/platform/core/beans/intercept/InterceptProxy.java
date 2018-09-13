@@ -78,6 +78,10 @@ public class InterceptProxy implements IProxy {
                 // 执行前置拦截器，若其结果对象不为空则返回并停止执行
                 Object _resultObj = _interceptor.intercept(_context);
                 if (_resultObj != null) {
+                    // 如果目标方法的返回值类型为void则采用异常形式向上层返回拦截器执行结果
+                    if (void.class.equals(proxyChain.getTargetMethod().getReturnType())) {
+                        throw new InterceptException(_resultObj);
+                    }
                     return _resultObj;
                 }
             }
