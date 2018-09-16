@@ -218,7 +218,7 @@ public class ConsoleTableBuilder {
             boolean _markdown = StringUtils.equals(builder.__format, "markdown");
             if (!_csv && builder.__escape) {
                 if (_markdown) {
-                    content = StringUtils.replaceEach(content, new String[]{"|", "\r\n", "\r", "\n", "\t"}, new String[]{"\\|", "<br>", "", "<br>", ""});
+                    content = StringUtils.replaceEach(content, new String[]{"_", "|", "\r\n", "\r", "\n", "\t"}, new String[]{"\\_", "\\|", "<br>", "", "<br>", ""});
                 } else {
                     content = StringUtils.replaceEach(content, new String[]{"\r\n", "\r", "\n", "\t"}, new String[]{"[\\r][\\n]", "[\\r]", "[\\n]", "[\\t]"});
                 }
