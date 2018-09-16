@@ -56,6 +56,10 @@ public class EntityGenerator {
 
     private boolean __markdown;
 
+    private boolean __csv;
+
+    private boolean __onlyShow;
+
     private EntityGenerator() {
         try {
             __freemarkerConfig = FreemarkerConfigBuilder.create().addTemplateClass(EntityGenerator.class, "/").build();
@@ -73,6 +77,16 @@ public class EntityGenerator {
 
     public EntityGenerator markdown() {
         __markdown = true;
+        return this;
+    }
+
+    public EntityGenerator csv() {
+        __csv = true;
+        return this;
+    }
+
+    public EntityGenerator onlyShow() {
+        __onlyShow = true;
         return this;
     }
 
@@ -233,13 +247,15 @@ public class EntityGenerator {
                 }
             }
             //
-            ConsoleTableBuilder _console = ConsoleTableBuilder.create(10);
+            ConsoleTableBuilder _console = ConsoleTableBuilder.create(10).escape();
             System.out.println((view ? "VIEW" : "TABLE") + "_NAME: " + _tableName);
             System.out.println("MODEL_NAME: " + _fixedName.getKey());
             //
             if (__markdown) {
                 _console.markdown();
                 System.out.println();
+            } else if (__csv) {
+                _console.csv();
             }
             //
             _console.addRow().addColumn("COLUMN_NAME")
@@ -269,20 +285,22 @@ public class EntityGenerator {
     }
 
     private void buildTargetFile(String targetFileName, String tmplFile, Map<String, Object> properties) {
-        Writer _outWriter = null;
-        try {
-            File _outputFile = new File(__config.getOutputPath(), new File(__config.getPackageName().replace('.', '/'), targetFileName).getPath());
-            File _path = _outputFile.getParentFile();
-            if (_path.exists() || _path.mkdirs()) {
-                _outWriter = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(_outputFile), StringUtils.defaultIfEmpty(__freemarkerConfig.getOutputEncoding(), __freemarkerConfig.getDefaultEncoding())));
-                __freemarkerConfig.getTemplate(__templateRootPath + tmplFile).process(properties, _outWriter);
-                //
-                System.out.println("Output file " + _outputFile);
+        if (!__onlyShow) {
+            Writer _outWriter = null;
+            try {
+                File _outputFile = new File(__config.getOutputPath(), new File(__config.getPackageName().replace('.', '/'), targetFileName).getPath());
+                File _path = _outputFile.getParentFile();
+                if (_path.exists() || _path.mkdirs()) {
+                    _outWriter = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(_outputFile), StringUtils.defaultIfEmpty(__freemarkerConfig.getOutputEncoding(), __freemarkerConfig.getDefaultEncoding())));
+                    __freemarkerConfig.getTemplate(__templateRootPath + tmplFile).process(properties, _outWriter);
+                    //
+                    System.out.println("Output file " + _outputFile);
+                }
+            } catch (Exception e) {
+                _LOG.warn("", RuntimeUtils.unwrapThrow(e));
+            } finally {
+                IOUtils.closeQuietly(_outWriter);
             }
-        } catch (Exception e) {
-            _LOG.warn("", RuntimeUtils.unwrapThrow(e));
-        } finally {
-            IOUtils.closeQuietly(_outWriter);
         }
     }
 
