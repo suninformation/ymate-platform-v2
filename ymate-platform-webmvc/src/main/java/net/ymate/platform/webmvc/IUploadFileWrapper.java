@@ -44,6 +44,13 @@ public interface IUploadFileWrapper {
     long getSize();
 
     /**
+     * @return 获取临时文件对象
+     * @throws Exception 可能产生的异常
+     * @since 2.0.6
+     */
+    File getFile() throws Exception;
+
+    /**
      * @return 获取文件Content-Type
      */
     String getContentType();

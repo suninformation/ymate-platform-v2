@@ -472,6 +472,16 @@ public final class FileUploadHelper {
         }
 
         @Override
+        public File getFile() throws Exception {
+            if (this.__isFileObj) {
+                return __fileObj;
+            }
+            File _tmpFile = File.createTempFile("upload_", getName());
+            __fileItemObj.write(_tmpFile);
+            return _tmpFile;
+        }
+
+        @Override
         public OutputStream getOutputStream() throws IOException {
             if (this.__isFileObj) {
                 return new FileOutputStream(__fileObj);
