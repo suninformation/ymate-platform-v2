@@ -123,7 +123,7 @@ public final class FreemarkerConfigBuilder {
         //
         if (!templateLoaders.isEmpty()) {
             if (templateLoaders.size() > 1) {
-                _config.setTemplateLoader(new MultiTemplateLoader(templateLoaders.toArray(new TemplateLoader[templateLoaders.size()])));
+                _config.setTemplateLoader(new MultiTemplateLoader(templateLoaders.toArray(new TemplateLoader[0])));
             } else {
                 _config.setTemplateLoader(templateLoaders.get(0));
             }
