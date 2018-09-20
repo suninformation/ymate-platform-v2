@@ -115,6 +115,9 @@ public class JspView extends AbstractView {
     @Override
     public void render(final OutputStream output) throws Exception {
         __doProcessPath();
+        //
+        HttpServletRequest _request = WebContext.getRequest();
+        HttpServletResponse _response = WebContext.getResponse();
         // 输出JSP内容到文件流(生成静态文件), 字符编码默认采用UTF-8
         final ServletOutputStream _oStream = new ServletOutputStream() {
             @Override
@@ -127,10 +130,8 @@ public class JspView extends AbstractView {
                 output.write(b, off, len);
             }
         };
-        final PrintWriter _printWriter = new PrintWriter(new OutputStreamWriter(output));
+        final PrintWriter _printWriter = new PrintWriter(new OutputStreamWriter(output, _response.getCharacterEncoding()));
         //
-        HttpServletRequest _request = WebContext.getRequest();
-        HttpServletResponse _response = WebContext.getResponse();
         HttpServletResponse _newResponse = new HttpServletResponseWrapper(_response) {
             @Override
             public ServletOutputStream getOutputStream() {
