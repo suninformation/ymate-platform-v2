@@ -46,6 +46,8 @@ public class DefaultBeanFactory implements IBeanFactory {
 
     private List<String> __packageNames;
 
+    private List<String> __excludedPackages;
+
     private List<Class<?>> __excludedClassSet;
 
     private Map<Class<? extends Annotation>, IBeanHandler> __beanHandlerMap;
@@ -65,6 +67,7 @@ public class DefaultBeanFactory implements IBeanFactory {
     public DefaultBeanFactory(YMP owner) {
         this.__owner = owner;
         this.__packageNames = new ArrayList<String>();
+        this.__excludedPackages = new ArrayList<String>();
         this.__excludedClassSet = new ArrayList<Class<?>>();
         this.__beanHandlerMap = new HashMap<Class<? extends Annotation>, IBeanHandler>();
         this.__beanInjectorMap = new HashMap<Class<? extends Annotation>, IBeanInjector>();
@@ -100,26 +103,35 @@ public class DefaultBeanFactory implements IBeanFactory {
         }
     }
 
-    @Override
-    public void registerPackage(String packageName) {
+    private void __doParsePackagePath(List<String> targetList, String packageName) {
         boolean _flag = false;
         do {
-            if (!this.__packageNames.contains(packageName)) {
-                for (int _idx = 0; _idx < this.__packageNames.size(); _idx++) {
-                    if (packageName.startsWith(this.__packageNames.get(_idx))) {
+            if (!targetList.contains(packageName)) {
+                for (int _idx = 0; _idx < targetList.size(); _idx++) {
+                    if (packageName.startsWith(targetList.get(_idx))) {
                         _flag = true;
-                    } else if (this.__packageNames.get(_idx).startsWith(packageName)) {
-                        this.__packageNames.remove(_idx);
-                        this.__packageNames.add(packageName);
+                    } else if (targetList.get(_idx).startsWith(packageName)) {
+                        targetList.remove(_idx);
+                        targetList.add(packageName);
                         _flag = true;
                     }
                 }
                 if (!_flag) {
-                    this.__packageNames.add(packageName);
+                    targetList.add(packageName);
                     _flag = true;
                 }
             }
         } while (!_flag);
+    }
+
+    @Override
+    public void registerPackage(String packageName) {
+        __doParsePackagePath(this.__packageNames, packageName);
+    }
+
+    @Override
+    public void registerExcludedPackage(String packageName) {
+        __doParsePackagePath(this.__excludedPackages, packageName);
     }
 
     @Override
@@ -218,22 +230,25 @@ public class DefaultBeanFactory implements IBeanFactory {
             }
         }
         if (!__packageNames.isEmpty()) {
+            String[] _excludedPackages = this.__excludedPackages.toArray(new String[0]);
             for (String _packageName : __packageNames) {
                 List<Class<?>> _classes = this.__beanLoader.load(_packageName);
                 for (Class<?> _class : _classes) {
-                    // 不扫描注解、枚举类，被声明@Ingored注解的类也将被忽略，因为需要处理package-info信息，所以放开接口限制
-                    if (!_class.isAnnotation() && !_class.isEnum() /* && !_class.isInterface() */ && !_class.isAnnotationPresent(Ignored.class)) {
-                        Annotation[] _annotations = _class.getAnnotations();
-                        if (_annotations != null && _annotations.length > 0) {
-                            for (Annotation _anno : _annotations) {
-                                IBeanHandler _handler = __beanHandlerMap.get(_anno.annotationType());
-                                if (_handler != null) {
-                                    Object _instance = _handler.handle(_class);
-                                    if (_instance != null) {
-                                        if (_instance instanceof BeanMeta) {
-                                            __addClass((BeanMeta) _instance);
-                                        } else {
-                                            __addClass(BeanMeta.create(_instance, _class));
+                    if (!StringUtils.startsWithAny(_class.getPackage().getName(), _excludedPackages)) {
+                        // 不扫描注解、枚举类，被声明@Ingored注解的类也将被忽略，因为需要处理package-info信息，所以放开接口限制
+                        if (!_class.isAnnotation() && !_class.isEnum() /* && !_class.isInterface() */ && !_class.isAnnotationPresent(Ignored.class)) {
+                            Annotation[] _annotations = _class.getAnnotations();
+                            if (_annotations != null && _annotations.length > 0) {
+                                for (Annotation _anno : _annotations) {
+                                    IBeanHandler _handler = __beanHandlerMap.get(_anno.annotationType());
+                                    if (_handler != null) {
+                                        Object _instance = _handler.handle(_class);
+                                        if (_instance != null) {
+                                            if (_instance instanceof BeanMeta) {
+                                                __addClass((BeanMeta) _instance);
+                                            } else {
+                                                __addClass(BeanMeta.create(_instance, _class));
+                                            }
                                         }
                                     }
                                 }

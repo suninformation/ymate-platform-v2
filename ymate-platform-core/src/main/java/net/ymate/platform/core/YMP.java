@@ -109,10 +109,13 @@ public class YMP {
         __proxyFactory = new DefaultProxyFactory(this);
     }
 
-    private void __registerScanPackages(IBeanFactory factory) {
+    private void __registerPackages(IBeanFactory factory) {
         factory.registerPackage(__YMP_BASE_PACKAGE);
         for (String _packageName : __config.getAutoscanPackages()) {
             factory.registerPackage(_packageName);
+        }
+        for (String _packageName : __config.getExcludedPackages()) {
+            factory.registerExcludedPackage(_packageName);
         }
     }
 
@@ -179,8 +182,8 @@ public class YMP {
             __moduleFactory.registerHandler(Injector.class, new InjectorHandler(__beanFactory));
             __moduleFactory.registerHandler(Serializer.class, new SerializerHandler(this));
             // 设置自动扫描应用包路径
-            __registerScanPackages(__moduleFactory);
-            __registerScanPackages(__beanFactory);
+            __registerPackages(__moduleFactory);
+            __registerPackages(__beanFactory);
             // 初始化模块对象工厂
             __moduleFactory.init();
             //

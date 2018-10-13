@@ -62,6 +62,11 @@ public interface IConfig {
     List<String> getAutoscanPackages();
 
     /**
+     * @return 返回包排除列表，多个包名之间用'|'分隔，被包含在包路径下的类文件在扫描过程中将被忽略
+     */
+    List<String> getExcludedPackages();
+
+    /**
      * @return 返回包文件排除列表，被包含的JAR或ZIP文件在扫描过程中将被忽略
      */
     List<String> getExcludedFiles();

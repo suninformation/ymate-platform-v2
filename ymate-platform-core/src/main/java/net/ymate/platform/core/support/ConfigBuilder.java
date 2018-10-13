@@ -43,6 +43,8 @@ public final class ConfigBuilder {
 
     private final List<String> __packageNames;
 
+    private final List<String> __excludedPackages;
+
     private final List<String> __excludedFiles;
 
     private final List<String> __excludedModules;
@@ -109,6 +111,7 @@ public final class ConfigBuilder {
                 .developMode(BlurObject.bind(properties.getProperty("ymp.dev_mode")).toBooleanValue())
                 .runMode(properties.getProperty("ymp.run_mode"))
                 .packageNames(__doParserArrayStr(properties, "ymp.autoscan_packages"))
+                .excludedPackages(__doParserArrayStr(properties, "ymp.excluded_packages"))
                 .excludedFiles(__doParserArrayStr(properties, "ymp.excluded_files"))
                 .excludedModules(__doParserArrayStr(properties, "ymp.excluded_modules"))
                 .locale(StringUtils.trimToNull(properties.getProperty("ymp.i18n_default_locale")))
@@ -244,6 +247,7 @@ public final class ConfigBuilder {
 
     private ConfigBuilder(IModuleCfgProcessor processor) {
         __packageNames = new ArrayList<String>();
+        __excludedPackages = new ArrayList<String>();
         __excludedFiles = new ArrayList<String>();
         __excludedModules = new ArrayList<String>();
         __paramsMap = new HashMap<String, String>();
@@ -272,6 +276,16 @@ public final class ConfigBuilder {
 
     public ConfigBuilder packageName(String packageName) {
         __packageNames.add(packageName);
+        return this;
+    }
+
+    public ConfigBuilder excludedPackages(Collection<String> excludedPackages) {
+        __excludedPackages.addAll(excludedPackages);
+        return this;
+    }
+
+    public ConfigBuilder excludedPackages(String excludedPackage) {
+        __excludedPackages.add(excludedPackage);
         return this;
     }
 
@@ -381,6 +395,11 @@ public final class ConfigBuilder {
             @Override
             public List<String> getAutoscanPackages() {
                 return Collections.unmodifiableList(__packageNames);
+            }
+
+            @Override
+            public List<String> getExcludedPackages() {
+                return Collections.unmodifiableList(__excludedPackages);
             }
 
             @Override

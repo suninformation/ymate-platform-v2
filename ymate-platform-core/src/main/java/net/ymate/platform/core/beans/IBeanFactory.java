@@ -49,6 +49,13 @@ public interface IBeanFactory {
     void registerPackage(String packageName);
 
     /**
+     * 注册排除的包名称
+     *
+     * @param packageName 包名称
+     */
+    void registerExcludedPackage(String packageName);
+
+    /**
      * 注册排除的接口类
      *
      * @param excludedClass 预排除接口类型
