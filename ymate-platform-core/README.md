@@ -58,6 +58,9 @@ YMP框架的初始化是从加载ymp-conf.properties文件开始的，该文件�
 		# 框架自动扫描的包路径集合，多个包名之间用'|'分隔，默认已包含net.ymate.platform包，其子包也将被扫描
 		ymp.autoscan_packages=
 		
+		# 包排除列表，多个包名之间用'|'分隔，被包含在包路径下的类文件在扫描过程中将被忽略
+        ymp.excluded_packages=
+		
 		# 包文件排除列表，多个文件名称之间用'|'分隔，被包含的JAR或ZIP文件在扫描过程中将被忽略
         ymp.excluded_files=
         

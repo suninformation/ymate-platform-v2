@@ -269,6 +269,7 @@ public class DefaultBeanFactory implements IBeanFactory {
     public void destroy() throws Exception {
         this.__parentFactory = null;
         this.__packageNames = null;
+        this.__excludedPackages = null;
         this.__excludedClassSet = null;
         this.__beanHandlerMap = null;
         this.__beanInstancesMap = null;
