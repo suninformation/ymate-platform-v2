@@ -15,8 +15,8 @@
  */
 package net.ymate.platform.serv.nio.server;
 
-import net.ymate.platform.serv.IServModuleCfg;
 import net.ymate.platform.serv.IServer;
+import net.ymate.platform.serv.IServerCfg;
 import net.ymate.platform.serv.nio.INioCodec;
 import net.ymate.platform.serv.nio.INioServerCfg;
 import net.ymate.platform.serv.nio.support.NioEventGroup;
@@ -44,8 +44,8 @@ public class NioServer implements IServer<NioServerListener, INioCodec> {
     protected boolean __isStarted;
 
     @Override
-    public void init(IServModuleCfg moduleCfg, String serverName, NioServerListener listener, INioCodec codec) {
-        __serverCfg = new NioServerCfg(moduleCfg, serverName);
+    public void init(IServerCfg serverCfg, NioServerListener listener, INioCodec codec) {
+        __serverCfg = (INioServerCfg) serverCfg;
         //
         __listener = listener;
         __codec = codec;

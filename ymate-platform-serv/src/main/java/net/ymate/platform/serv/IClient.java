@@ -31,15 +31,13 @@ public interface IClient<LISTENER extends IListener, CODEC extends ICodec> exten
     /**
      * 初始化客户端服务
      *
-     * @param moduleCfg        服务模块配置
-     * @param clientName       服务配置名称
+     * @param clientCfg        客户端配置
      * @param listener         事件适配器
      * @param codec            解码器
      * @param reconnectService 断线重连服务
      * @param heartbeatService 链路维护(心跳)服务
      */
-    void init(IServModuleCfg moduleCfg,
-              String clientName,
+    void init(IClientCfg clientCfg,
               LISTENER listener,
               CODEC codec,
               IReconnectService reconnectService,

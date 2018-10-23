@@ -24,7 +24,21 @@ import net.ymate.platform.serv.annotation.Client;
 import net.ymate.platform.serv.annotation.Server;
 import net.ymate.platform.serv.handle.ClientHandler;
 import net.ymate.platform.serv.handle.ServerHandler;
+import net.ymate.platform.serv.impl.DefaultClientCfg;
 import net.ymate.platform.serv.impl.DefaultModuleCfg;
+import net.ymate.platform.serv.impl.DefaultServerCfg;
+import net.ymate.platform.serv.nio.INioClientCfg;
+import net.ymate.platform.serv.nio.INioCodec;
+import net.ymate.platform.serv.nio.INioServerCfg;
+import net.ymate.platform.serv.nio.client.NioClient;
+import net.ymate.platform.serv.nio.client.NioClientCfg;
+import net.ymate.platform.serv.nio.client.NioClientListener;
+import net.ymate.platform.serv.nio.datagram.NioUdpClient;
+import net.ymate.platform.serv.nio.datagram.NioUdpListener;
+import net.ymate.platform.serv.nio.datagram.NioUdpServer;
+import net.ymate.platform.serv.nio.server.NioServer;
+import net.ymate.platform.serv.nio.server.NioServerCfg;
+import net.ymate.platform.serv.nio.server.NioServerListener;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -139,7 +153,7 @@ public class Servs implements IModule, IServ {
     }
 
     @Override
-    public void registerServer(Class<? extends IListener> listenerClass) throws Exception {
+    public void registerServer(Class<? extends IListener> listenerClass) {
         Server _annoServer = listenerClass.getAnnotation(Server.class);
         if (_annoServer == null) {
             throw new IllegalArgumentException("No Server annotation present on class");
@@ -149,17 +163,37 @@ public class Servs implements IModule, IServ {
 
     @Override
     @SuppressWarnings("unchecked")
-    public void registerServer(String serverName, Class<? extends IServer> implClass, Class<? extends ICodec> codec, Class<? extends IListener> listenerClass) throws Exception {
+    public void registerServer(String serverName, Class<? extends IServer> implClass, Class<? extends ICodec> codec, Class<? extends IListener> listenerClass) {
         if (!__servers.containsKey(listenerClass.getName())) {
             IServer _server = ClassUtils.impl(implClass, IServer.class);
-            _server.init(__moduleCfg, serverName, ClassUtils.impl(listenerClass, IListener.class), ClassUtils.impl(codec, ICodec.class));
+            IServerCfg _serverCfg;
+            if (_server instanceof NioServer || _server instanceof NioUdpServer) {
+                _serverCfg = new NioServerCfg(__moduleCfg, serverName);
+            } else {
+                _serverCfg = new DefaultServerCfg(__moduleCfg, serverName);
+            }
+            _server.init(_serverCfg, ClassUtils.impl(listenerClass, IListener.class), ClassUtils.impl(codec, ICodec.class));
             __servers.put(listenerClass.getName(), _server);
         }
     }
 
     @Override
+    public <LISTENER extends NioServerListener, CODEC extends INioCodec> NioServer buildNioServer(INioServerCfg serverCfg, CODEC codec, LISTENER listener) {
+        NioServer _server = new NioServer();
+        _server.init(serverCfg, listener, codec);
+        return _server;
+    }
+
+    @Override
+    public <LISTENER extends NioUdpListener, CODEC extends INioCodec> NioUdpServer buildNioUdpServer(INioServerCfg serverCfg, CODEC codec, LISTENER listener) {
+        NioUdpServer _server = new NioUdpServer();
+        _server.init(serverCfg, listener, codec);
+        return _server;
+    }
+
+    @Override
     @SuppressWarnings("unchecked")
-    public void registerClient(Class<? extends IListener> listenerClass) throws Exception {
+    public void registerClient(Class<? extends IListener> listenerClass) {
         Client _annoClient = listenerClass.getAnnotation(Client.class);
         if (_annoClient == null) {
             throw new IllegalArgumentException("No Client annotation present on class");
@@ -169,7 +203,7 @@ public class Servs implements IModule, IServ {
 
     @Override
     @SuppressWarnings("unchecked")
-    public void registerClient(String clientName, Class<? extends IClient> implClass, Class<? extends ICodec> codec, Class<? extends IListener> listenerClass, Class<? extends IReconnectService> reconnectClass, Class<? extends IHeartbeatService> hearbeatClass) throws Exception {
+    public void registerClient(String clientName, Class<? extends IClient> implClass, Class<? extends ICodec> codec, Class<? extends IListener> listenerClass, Class<? extends IReconnectService> reconnectClass, Class<? extends IHeartbeatService> heartbeatClass) {
         if (!__clients.containsKey(listenerClass.getName())) {
             IClient _client = ClassUtils.impl(implClass, IClient.class);
             //
@@ -179,14 +213,46 @@ public class Servs implements IModule, IServ {
                 _reconnectService.init(_client);
             }
             IHeartbeatService _heartbeatService = null;
-            if (!IHeartbeatService.NONE.class.equals(hearbeatClass)) {
-                _heartbeatService = ClassUtils.impl(hearbeatClass, IHeartbeatService.class);
+            if (!IHeartbeatService.NONE.class.equals(heartbeatClass)) {
+                _heartbeatService = ClassUtils.impl(heartbeatClass, IHeartbeatService.class);
                 _heartbeatService.init(_client);
             }
+            IClientCfg _clientCfg;
+            if (_client instanceof NioClient || _client instanceof NioUdpClient) {
+                _clientCfg = new NioClientCfg(__moduleCfg, clientName);
+            } else {
+                _clientCfg = new DefaultClientCfg(__moduleCfg, clientName);
+            }
             //
-            _client.init(__moduleCfg, clientName, ClassUtils.impl(listenerClass, IListener.class), ClassUtils.impl(codec, ICodec.class), _reconnectService, _heartbeatService);
+            _client.init(_clientCfg, ClassUtils.impl(listenerClass, IListener.class), ClassUtils.impl(codec, ICodec.class), _reconnectService, _heartbeatService);
             __clients.put(listenerClass.getName(), _client);
         }
+    }
+
+    @Override
+    public <LISTENER extends NioClientListener, CODEC extends INioCodec> NioClient buildNioClient(INioClientCfg clientCfg, CODEC codec, IReconnectService reconnect, IHeartbeatService heartbeat, LISTENER listener) {
+        NioClient _client = new NioClient();
+        if (reconnect != null && !reconnect.isInited()) {
+            reconnect.init(_client);
+        }
+        if (heartbeat != null && !heartbeat.isInited()) {
+            heartbeat.init(_client);
+        }
+        _client.init(clientCfg, listener, codec, reconnect, heartbeat);
+        return _client;
+    }
+
+    @Override
+    public <LISTENER extends NioUdpListener, CODEC extends INioCodec> NioUdpClient buildNioUdpClient(INioClientCfg clientCfg, CODEC codec, IReconnectService reconnect, IHeartbeatService heartbeat, LISTENER listener) {
+        NioUdpClient _client = new NioUdpClient();
+        if (reconnect != null && !reconnect.isInited()) {
+            reconnect.init(_client);
+        }
+        if (heartbeat != null && !heartbeat.isInited()) {
+            heartbeat.init(_client);
+        }
+        _client.init(clientCfg, listener, codec, reconnect, heartbeat);
+        return _client;
     }
 
     @Override

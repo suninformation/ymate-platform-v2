@@ -41,13 +41,12 @@ public class NioClient extends AbstractService implements IClient<NioClientListe
     protected INioCodec __codec;
 
     @Override
-    public void init(IServModuleCfg moduleCfg,
-                     String clientName,
+    public void init(IClientCfg clientCfg,
                      NioClientListener listener,
                      INioCodec codec,
                      IReconnectService reconnectService,
                      IHeartbeatService heartbeatService) {
-        __clientCfg = new NioClientCfg(moduleCfg, clientName);
+        __clientCfg = (NioClientCfg) clientCfg;
         __listener = listener;
         __codec = codec;
         __codec.init(__clientCfg.getCharset());

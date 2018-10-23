@@ -16,6 +16,16 @@
 package net.ymate.platform.serv;
 
 import net.ymate.platform.core.YMP;
+import net.ymate.platform.serv.nio.INioClientCfg;
+import net.ymate.platform.serv.nio.INioCodec;
+import net.ymate.platform.serv.nio.INioServerCfg;
+import net.ymate.platform.serv.nio.client.NioClient;
+import net.ymate.platform.serv.nio.client.NioClientListener;
+import net.ymate.platform.serv.nio.datagram.NioUdpClient;
+import net.ymate.platform.serv.nio.datagram.NioUdpListener;
+import net.ymate.platform.serv.nio.datagram.NioUdpServer;
+import net.ymate.platform.serv.nio.server.NioServer;
+import net.ymate.platform.serv.nio.server.NioServerListener;
 
 /**
  * @author 刘镇 (suninformation@163.com) on 15/10/15 上午10:22
@@ -53,21 +63,27 @@ public interface IServ {
      * 注册服务端
      *
      * @param listenerClass 服务监听接口类型
-     * @throws Exception 可能产生的异常
      */
-    void registerServer(Class<? extends IListener> listenerClass) throws Exception;
+    void registerServer(Class<? extends IListener> listenerClass);
 
-    void registerServer(String serverName, Class<? extends IServer> implClass, Class<? extends ICodec> codec, Class<? extends IListener> listenerClass) throws Exception;
+    void registerServer(String serverName, Class<? extends IServer> implClass, Class<? extends ICodec> codec, Class<? extends IListener> listenerClass);
+
+    <LISTENER extends NioServerListener, CODEC extends INioCodec> NioServer buildNioServer(INioServerCfg serverCfg, CODEC codec, LISTENER listener);
+
+    <LISTENER extends NioUdpListener, CODEC extends INioCodec> NioUdpServer buildNioUdpServer(INioServerCfg serverCfg, CODEC codec, LISTENER listener);
 
     /**
      * 注册客户端
      *
      * @param listenerClass 服务监听接口类型
-     * @throws Exception 可能产生的异常
      */
-    void registerClient(Class<? extends IListener> listenerClass) throws Exception;
+    void registerClient(Class<? extends IListener> listenerClass);
 
-    void registerClient(String clientName, Class<? extends IClient> implClass, Class<? extends ICodec> codec, Class<? extends IListener> listenerClass, Class<? extends IReconnectService> reconnectClass, Class<? extends IHeartbeatService> hearbeatClass) throws Exception;
+    void registerClient(String clientName, Class<? extends IClient> implClass, Class<? extends ICodec> codec, Class<? extends IListener> listenerClass, Class<? extends IReconnectService> reconnectClass, Class<? extends IHeartbeatService> heartbeatClass);
+
+    <LISTENER extends NioClientListener, CODEC extends INioCodec> NioClient buildNioClient(INioClientCfg clientCfg, CODEC codec, IReconnectService reconnect, IHeartbeatService heartbeat, LISTENER listener);
+
+    <LISTENER extends NioUdpListener, CODEC extends INioCodec> NioUdpClient buildNioUdpClient(INioClientCfg clientCfg, CODEC codec, IReconnectService reconnect, IHeartbeatService heartbeat, LISTENER listener);
 
     /**
      * 启动所有Server端和Client端服务

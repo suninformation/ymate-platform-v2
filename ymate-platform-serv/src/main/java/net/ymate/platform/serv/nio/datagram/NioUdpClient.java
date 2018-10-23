@@ -20,7 +20,6 @@ import net.ymate.platform.serv.*;
 import net.ymate.platform.serv.nio.INioClientCfg;
 import net.ymate.platform.serv.nio.INioCodec;
 import net.ymate.platform.serv.nio.INioSession;
-import net.ymate.platform.serv.nio.client.NioClientCfg;
 import net.ymate.platform.serv.nio.support.NioEventGroup;
 import net.ymate.platform.serv.nio.support.NioEventProcessor;
 import net.ymate.platform.serv.nio.support.NioSession;
@@ -52,13 +51,12 @@ public class NioUdpClient extends AbstractService implements IClient<NioUdpListe
     protected INioCodec __codec;
 
     @Override
-    public void init(IServModuleCfg moduleCfg,
-                     String clientName,
+    public void init(IClientCfg clientCfg,
                      NioUdpListener listener,
                      INioCodec codec,
                      IReconnectService reconnectService,
                      IHeartbeatService heartbeatService) {
-        __clientCfg = new NioClientCfg(moduleCfg, clientName);
+        __clientCfg = (INioClientCfg) clientCfg;
         //
         __listener = listener;
         __codec = codec;

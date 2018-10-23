@@ -31,12 +31,11 @@ public interface IServer<LISTENER extends IListener, CODEC extends ICodec> exten
     /**
      * 初始化服务端
      *
-     * @param moduleCfg  服务模块配置
-     * @param serverName 服务配置名称
-     * @param listener   事件适配器
-     * @param codec      解码器
+     * @param serverCfg 服务端配置
+     * @param listener  事件适配器
+     * @param codec     解码器
      */
-    void init(IServModuleCfg moduleCfg, String serverName, LISTENER listener, CODEC codec);
+    void init(IServerCfg serverCfg, LISTENER listener, CODEC codec);
 
     /**
      * 启动服务端
