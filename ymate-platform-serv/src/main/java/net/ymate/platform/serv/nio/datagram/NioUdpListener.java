@@ -57,9 +57,15 @@ public abstract class NioUdpListener extends AbstractListener<INioSession> {
 
     @Override
     public final void onSessionRegisted(INioSession session) throws IOException {
-        Object _result = onSessionReady();
-        if (_result != null) {
-            session.send(_result);
+        boolean _flag = false;
+        while (!_flag) {
+            if (session.isConnected()) {
+                Object _result = onSessionReady();
+                if (_result != null) {
+                    session.send(_result);
+                }
+                _flag = true;
+            }
         }
     }
 
