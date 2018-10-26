@@ -24,6 +24,17 @@ public class CodecUtilsTest {
     }
 
     @Test
+    public void DESCodecHelper() throws Exception {
+        String _key = CodecUtils.DES.initKeyToString();
+        //
+        System.out.println("密钥：" + _key);
+        //
+        String _desStr = CodecUtils.DES.encrypt("123456", _key);
+        System.out.println("加密串：" + _desStr);
+        System.out.println("解密串：" + CodecUtils.DES.decrypt(_desStr, _key));
+    }
+
+    @Test
     public void AESCodecHelper() throws Exception {
         CodecUtils.AESCodecHelper _helper = new CodecUtils.AESCodecHelper(128, 128);
         String _key = _helper.initKeyToString();
