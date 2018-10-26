@@ -21,10 +21,7 @@ import org.apache.commons.codec.binary.StringUtils;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.io.IOUtils;
 
-import javax.crypto.Cipher;
-import javax.crypto.KeyGenerator;
-import javax.crypto.SecretKey;
-import javax.crypto.SecretKeyFactory;
+import javax.crypto.*;
 import javax.crypto.spec.PBEKeySpec;
 import javax.crypto.spec.PBEParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
@@ -43,6 +40,10 @@ import java.security.spec.X509EncodedKeySpec;
  * @version 1.0
  */
 public class CodecUtils {
+
+    public static final String RSA_SIGN_MD5withRSA = "MD5withRSA";
+
+    public static final String RSA_SIGN_SHA1withRSA = "SHA1withRSA";
 
     public static final CodecHelper DES;
 
@@ -73,10 +74,27 @@ public class CodecUtils {
 
         protected final int KEY_SIZE;
 
+        private Provider __cipherProvider;
+
         public CodecHelper(int keySize, String keyAlgorithm, String cipherAlgorithm) {
             KEY_SIZE = keySize;
             KEY_ALGORITHM = keyAlgorithm;
             CIPHER_ALGORITHM = cipherAlgorithm;
+        }
+
+        public CodecHelper(int keySize, String keyAlgorithm, String cipherAlgorithm, Provider provider) {
+            this(keySize, keyAlgorithm, cipherAlgorithm);
+            __cipherProvider = provider;
+        }
+
+        protected Cipher __doGetCipherInstance() throws NoSuchPaddingException, NoSuchAlgorithmException {
+            Cipher _cipher;
+            if (__cipherProvider != null) {
+                _cipher = Cipher.getInstance(CIPHER_ALGORITHM, __cipherProvider);
+            } else {
+                _cipher = Cipher.getInstance(CIPHER_ALGORITHM);
+            }
+            return _cipher;
         }
 
         /**
@@ -124,7 +142,7 @@ public class CodecUtils {
          */
         public byte[] encrypt(byte[] data, byte[] key) throws Exception {
             // 实例化
-            Cipher cipher = Cipher.getInstance(CIPHER_ALGORITHM);
+            Cipher cipher = __doGetCipherInstance();
             // 初始化，设置为加密模式
             cipher.init(Cipher.ENCRYPT_MODE, toKey(key));
             // 执行操作
@@ -145,7 +163,7 @@ public class CodecUtils {
          */
         public byte[] decrypt(byte[] data, byte[] key) throws Exception {
             // 实例化
-            Cipher cipher = Cipher.getInstance(CIPHER_ALGORITHM);
+            Cipher cipher = __doGetCipherInstance();
             // 初始化，设置为解密模式
             cipher.init(Cipher.DECRYPT_MODE, toKey(key));
             // 执行操作
@@ -208,7 +226,7 @@ public class CodecUtils {
 
         public byte[] encrypt(byte[] data, byte[] key, byte[] salt) throws Exception {
             // 实例化
-            Cipher cipher = Cipher.getInstance(CIPHER_ALGORITHM);
+            Cipher cipher = __doGetCipherInstance();
             // 初始化，设置为加密模式
             PBEParameterSpec parameterSpec = new PBEParameterSpec(salt, ITERATION_COUNT);
             cipher.init(Cipher.ENCRYPT_MODE, toKey(key), parameterSpec);
@@ -227,7 +245,7 @@ public class CodecUtils {
 
         public byte[] decrypt(byte[] data, byte[] key, byte[] salt) throws Exception {
             // 实例化
-            Cipher cipher = Cipher.getInstance(CIPHER_ALGORITHM);
+            Cipher cipher = __doGetCipherInstance();
             // 初始化，设置为解密模式
             PBEParameterSpec parameterSpec = new PBEParameterSpec(salt, ITERATION_COUNT);
             cipher.init(Cipher.DECRYPT_MODE, toKey(key), parameterSpec);
@@ -242,12 +260,40 @@ public class CodecUtils {
 
     public static class RSACodecHelper extends CodecHelper {
 
+        private String __signatureAlgorithm;
+
+        private Provider __signatureAlgorithmProvider;
+
         public RSACodecHelper(int keySize) {
-            super(keySize, "RSA", "MD5withRSA");
+            super(keySize, "RSA", "RSA/ECB/PKCS1Padding");
+        }
+
+        public RSACodecHelper(int keySize, String signatureAlgorithm, Provider signatureAlgorithmProvider) {
+            this(keySize, "RSA/ECB/PKCS1Padding", null, signatureAlgorithm, signatureAlgorithmProvider);
         }
 
         public RSACodecHelper(int keySize, String cipherAlgorithm) {
             super(keySize, "RSA", cipherAlgorithm);
+        }
+
+        public RSACodecHelper(int keySize, String cipherAlgorithm, String signatureAlgorithm, Provider signatureAlgorithmProvider) {
+            this(keySize, cipherAlgorithm, null, signatureAlgorithm, signatureAlgorithmProvider);
+        }
+
+        public RSACodecHelper(int keySize, String cipherAlgorithm, Provider cipherAlgorithmProvider, String signatureAlgorithm, Provider signatureAlgorithmProvider) {
+            super(keySize, "RSA", cipherAlgorithm, cipherAlgorithmProvider);
+            __signatureAlgorithm = org.apache.commons.lang.StringUtils.defaultIfBlank(signatureAlgorithm, RSA_SIGN_MD5withRSA);
+            __signatureAlgorithmProvider = signatureAlgorithmProvider;
+        }
+
+        private Signature __doGetSignatureInstance() throws NoSuchAlgorithmException {
+            Signature _sign;
+            if (__signatureAlgorithmProvider != null) {
+                _sign = Signature.getInstance(__signatureAlgorithm, __signatureAlgorithmProvider);
+            } else {
+                _sign = Signature.getInstance(__signatureAlgorithm);
+            }
+            return _sign;
         }
 
         @Override
@@ -279,7 +325,7 @@ public class CodecUtils {
             KeyFactory _keyFactory = KeyFactory.getInstance(KEY_ALGORITHM);
             PrivateKey _privKey = _keyFactory.generatePrivate(_keySpec);
             //
-            Signature _sign = Signature.getInstance(CIPHER_ALGORITHM);
+            Signature _sign = __doGetSignatureInstance();
             _sign.initSign(_privKey);
             _sign.update(data);
             //
@@ -292,11 +338,11 @@ public class CodecUtils {
             KeyFactory _keyFactory = KeyFactory.getInstance(KEY_ALGORITHM);
             PublicKey _pubKey = _keyFactory.generatePublic(_keySpec);
             //
-            Signature _sign = Signature.getInstance(CIPHER_ALGORITHM);
+            Signature _sign = __doGetSignatureInstance();
             _sign.initVerify(_pubKey);
             _sign.update(data);
             //
-            return _sign.verify(Base64.decodeBase64(sign.getBytes()));
+            return _sign.verify(Base64.decodeBase64(sign));
         }
 
         private byte[] __doDataSegment(byte[] data, Cipher cipher, int inputLen) throws Exception {
@@ -328,7 +374,7 @@ public class CodecUtils {
             PKCS8EncodedKeySpec _keySpec = new PKCS8EncodedKeySpec(key);
             KeyFactory _keyFactory = KeyFactory.getInstance(KEY_ALGORITHM);
             Key _privKey = _keyFactory.generatePrivate(_keySpec);
-            Cipher _cipher = Cipher.getInstance(_keyFactory.getAlgorithm());
+            Cipher _cipher = __doGetCipherInstance();
             _cipher.init(Cipher.ENCRYPT_MODE, _privKey);
             //
             return __doDataSegment(data, _cipher, 117);
@@ -344,7 +390,7 @@ public class CodecUtils {
             PKCS8EncodedKeySpec _keySpec = new PKCS8EncodedKeySpec(key);
             KeyFactory _keyFactory = KeyFactory.getInstance(KEY_ALGORITHM);
             Key _privKey = _keyFactory.generatePrivate(_keySpec);
-            Cipher _cipher = Cipher.getInstance(_keyFactory.getAlgorithm());
+            Cipher _cipher = __doGetCipherInstance();
             _cipher.init(Cipher.DECRYPT_MODE, _privKey);
             //
             return __doDataSegment(data, _cipher, 128);
@@ -359,7 +405,7 @@ public class CodecUtils {
             X509EncodedKeySpec _keySpec = new X509EncodedKeySpec(key);
             KeyFactory _keyFactory = KeyFactory.getInstance(KEY_ALGORITHM);
             Key _pubKey = _keyFactory.generatePublic(_keySpec);
-            Cipher _cipher = Cipher.getInstance(_keyFactory.getAlgorithm());
+            Cipher _cipher = __doGetCipherInstance();
             _cipher.init(Cipher.ENCRYPT_MODE, _pubKey);
             //
             return __doDataSegment(data, _cipher, 117);
@@ -373,14 +419,14 @@ public class CodecUtils {
             X509EncodedKeySpec _keySpec = new X509EncodedKeySpec(key);
             KeyFactory _keyFactory = KeyFactory.getInstance(KEY_ALGORITHM);
             Key _pubKey = _keyFactory.generatePublic(_keySpec);
-            Cipher _cipher = Cipher.getInstance(_keyFactory.getAlgorithm());
+            Cipher _cipher = __doGetCipherInstance();
             _cipher.init(Cipher.DECRYPT_MODE, _pubKey);
             //
             return __doDataSegment(data, _cipher, 128);
         }
 
         public String decryptPublicKey(String data, String key) throws Exception {
-            return new String(decryptPublicKey(Base64.decodeBase64(data), Base64.decodeBase64(key)));
+            return StringUtils.newStringUtf8(decryptPublicKey(Base64.decodeBase64(data), Base64.decodeBase64(key)));
         }
     }
 }
