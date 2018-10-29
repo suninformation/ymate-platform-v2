@@ -25,8 +25,6 @@ import net.ymate.platform.persistence.mongodb.IMongoDatabaseHolder;
 import net.ymate.platform.persistence.mongodb.MongoDataSourceCfgMeta;
 import org.apache.commons.lang.StringUtils;
 
-import java.util.Collections;
-
 /**
  * @author 刘镇 (suninformation@163.com) on 15/11/22 上午12:00
  * @version 1.0
@@ -57,7 +55,7 @@ public class MongoDataSourceAdapter implements IMongoDataSourceAdapter {
                     _password = __cfgMeta.getPasswordClass().newInstance().decrypt(_password);
                 }
                 MongoCredential _credential = MongoCredential.createCredential(cfgMeta.getUserName(), cfgMeta.getDatabaseName(), _password == null ? null : _password.toCharArray());
-                __mongoClient = new MongoClient(cfgMeta.getServers(), Collections.singletonList(_credential), _builder.build());
+                __mongoClient = new MongoClient(cfgMeta.getServers(), _credential, _builder.build());
             } else {
                 __mongoClient = new MongoClient(cfgMeta.getServers(), _builder.build());
             }

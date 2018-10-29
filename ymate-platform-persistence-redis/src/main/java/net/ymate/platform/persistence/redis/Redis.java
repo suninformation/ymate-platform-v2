@@ -35,7 +35,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 /**
  * @author 刘镇 (suninformation@163.com) on 15/11/30 上午3:14
@@ -106,7 +105,7 @@ public class Redis implements IModule, IRedis {
                 __dataSourceCaches.put(_meta.getName(), _adapter);
             }
             //
-            __subscribePool = Executors.newCachedThreadPool(new DefaultThreadFactory("redis-subscribe-pool"));
+            __subscribePool = DefaultThreadFactory.newCachedThreadPool(DefaultThreadFactory.create("redis-subscribe-pool"));
             //
             __inited = true;
         }

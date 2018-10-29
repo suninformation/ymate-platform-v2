@@ -19,9 +19,6 @@ import net.ymate.platform.core.support.DefaultThreadFactory;
 
 import java.io.IOException;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
 
 /**
  * @param <CODEC>    编码器类型
@@ -97,9 +94,7 @@ public abstract class AbstractEventGroup<CODEC extends ICodec, LISTENER extends 
         if (__isStarted) {
             return;
         }
-        __executorService = new ThreadPoolExecutor(__executorCount, __threadMaxPoolSize, __keepAliveTime, TimeUnit.MILLISECONDS,
-                new LinkedBlockingQueue<Runnable>(__threadQueueSize),
-                new DefaultThreadFactory("serv-pool-"), new ThreadPoolExecutor.AbortPolicy());
+        __executorService = DefaultThreadFactory.newThreadExecutor(__executorCount, __threadMaxPoolSize, __keepAliveTime, __threadQueueSize, DefaultThreadFactory.create("serv-pool-"));
         //
         __isStarted = true;
     }

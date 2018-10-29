@@ -88,7 +88,7 @@ public class NetworkUtils {
                 for (InetAddress _idAddr : _ipAddrs) {
                     _ips.add(_idAddr.getHostAddress());
                 }
-                return _ips.toArray(new String[_ips.size()]);
+                return _ips.toArray(new String[0]);
             } catch (UnknownHostException e) {
                 return null;
             }

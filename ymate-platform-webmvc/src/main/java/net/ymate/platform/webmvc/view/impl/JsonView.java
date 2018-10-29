@@ -135,7 +135,7 @@ public class JsonView extends AbstractView {
                     SerializerFeature.WriteNullStringAsEmpty,
                     SerializerFeature.WriteNullNumberAsZero));
         }
-        return JSON.toJSONString(__jsonObj, _features.toArray(new SerializerFeature[_features.size()]));
+        return JSON.toJSONString(__jsonObj, _features.toArray(new SerializerFeature[0]));
     }
 
     @Override

@@ -71,8 +71,7 @@ public final class Logoo {
                 _adapter = ClassUtils.impl(classAnno.adapterClass(), ILogooAdapter.class);
             }
             //
-            Logoo _logoo = new Logoo(_logNames, _flags.toArray(new String[_flags.size()]), methodAnno.action(), methodAnno.level(),
-                    classAnno.merge() || methodAnno.merge(), _adapter);
+            Logoo _logoo = new Logoo(_logNames, _flags.toArray(new String[0]), methodAnno.action(), methodAnno.level(), classAnno.merge() || methodAnno.merge(), _adapter);
             CURRENT.set(_logoo);
         }
     }

@@ -563,7 +563,7 @@ public class DefaultSession implements ISession {
         if (_meta.hasAutoincrement()) {
             // 兼容Oracle无法直接获取生成的主键问题
             if (__connectionHolder.getDialect() instanceof OracleDialect) {
-                final String[] _ids = _meta.getAutoincrementKeys().toArray(new String[_meta.getAutoincrementKeys().size()]);
+                final String[] _ids = _meta.getAutoincrementKeys().toArray(new String[0]);
                 _opt.setAccessorConfig(new EntityAccessorConfig(_meta, __connectionHolder, entity) {
                     @Override
                     public PreparedStatement getPreparedStatement(Connection conn, String sql) throws SQLException {
@@ -622,7 +622,7 @@ public class DefaultSession implements ISession {
         if (_meta.hasAutoincrement()) {
             // 兼容Oracle无法直接获取生成的主键问题
             if (__connectionHolder.getDialect() instanceof OracleDialect) {
-                final String[] _ids = _meta.getAutoincrementKeys().toArray(new String[_meta.getAutoincrementKeys().size()]);
+                final String[] _ids = _meta.getAutoincrementKeys().toArray(new String[0]);
                 _opt.setAccessorConfig(new EntityAccessorConfig(_meta, __connectionHolder, (List<IEntity<?>>) entities) {
                     @Override
                     public PreparedStatement getPreparedStatement(Connection conn, String sql) throws SQLException {

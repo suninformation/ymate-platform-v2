@@ -50,7 +50,7 @@ public class JCLogFactory extends LogFactory {
 
     @Override
     public String[] getAttributeNames() {
-        return attributes.keySet().toArray(new String[attributes.size()]);
+        return attributes.keySet().toArray(new String[0]);
     }
 
     @Override

@@ -26,6 +26,7 @@ import net.ymate.platform.core.Version;
 import net.ymate.platform.core.YMP;
 import net.ymate.platform.core.module.IModule;
 import net.ymate.platform.core.module.annotation.Module;
+import net.ymate.platform.core.support.DefaultThreadFactory;
 import net.ymate.platform.core.util.ClassUtils;
 import net.ymate.platform.core.util.FileUtils;
 import net.ymate.platform.core.util.ResourceUtils;
@@ -37,9 +38,9 @@ import org.apache.commons.logging.LogFactory;
 import java.io.File;
 import java.net.URL;
 import java.util.Map;
-import java.util.Timer;
-import java.util.TimerTask;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantLock;
 
 /**
@@ -376,13 +377,13 @@ public class Cfgs implements IModule, IConfig {
     /**
      * 配置文件状态变化检查器
      */
-    class ConfigFileChecker extends TimerTask {
+    class ConfigFileChecker implements Runnable {
 
         private final Map<String, ConfigFileStatus> __configFileStatus = new ConcurrentHashMap<String, ConfigFileStatus>();
 
         private final ReentrantLock __locker = new ReentrantLock();
 
-        private Timer __timer;
+        private ScheduledExecutorService __scheduledExecutorService;
 
         private long __timeInterval;
 
@@ -391,7 +392,7 @@ public class Cfgs implements IModule, IConfig {
         ConfigFileChecker(long timeInterval) {
             __timeInterval = timeInterval;
             if (__timeInterval > 0) {
-                __timer = new Timer("ConfigFileChangedChecker");
+                __scheduledExecutorService = DefaultThreadFactory.newScheduledThreadPool(1, DefaultThreadFactory.create("ConfigFileChangedChecker"));
                 __inited = true;
             }
         }
@@ -412,14 +413,15 @@ public class Cfgs implements IModule, IConfig {
         }
 
         void start() {
-            if (__inited && __timer != null) {
-                __timer.schedule(this, __timeInterval, __timeInterval);
+            if (__inited && __scheduledExecutorService != null) {
+                __scheduledExecutorService.scheduleWithFixedDelay(this, __timeInterval, __timeInterval, TimeUnit.MILLISECONDS);
             }
         }
 
         void stop() {
-            if (__inited && __timer != null) {
-                __timer.cancel();
+            if (__inited && __scheduledExecutorService != null) {
+                __scheduledExecutorService.shutdown();
+                __scheduledExecutorService = null;
             }
         }
 

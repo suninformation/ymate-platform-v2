@@ -121,6 +121,6 @@ public final class Fields {
     }
 
     public String[] toArray() {
-        return __fields.toArray(new String[__fields.size()]);
+        return __fields.toArray(new String[0]);
     }
 }

@@ -152,10 +152,10 @@ public final class FileUploadHelper {
         //
         UploadFormWrapper _form = new UploadFormWrapper();
         for (Map.Entry<String, List<String>> entry : tmpParams.entrySet()) {
-            _form.getFieldMap().put(entry.getKey(), entry.getValue().toArray(new String[entry.getValue().size()]));
+            _form.getFieldMap().put(entry.getKey(), entry.getValue().toArray(new String[0]));
         }
         for (Map.Entry<String, List<UploadFileWrapper>> entry : tmpFiles.entrySet()) {
-            _form.getFileMap().put(entry.getKey(), entry.getValue().toArray(new UploadFileWrapper[entry.getValue().size()]));
+            _form.getFileMap().put(entry.getKey(), entry.getValue().toArray(new UploadFileWrapper[0]));
         }
         return _form;
     }
@@ -204,10 +204,10 @@ public final class FileUploadHelper {
         }
         //
         for (Map.Entry<String, List<String>> entry : tmpParams.entrySet()) {
-            _form.getFieldMap().put(entry.getKey(), entry.getValue().toArray(new String[entry.getValue().size()]));
+            _form.getFieldMap().put(entry.getKey(), entry.getValue().toArray(new String[0]));
         }
         for (Map.Entry<String, List<UploadFileWrapper>> entry : tmpFiles.entrySet()) {
-            _form.getFileMap().put(entry.getKey(), entry.getValue().toArray(new UploadFileWrapper[entry.getValue().size()]));
+            _form.getFileMap().put(entry.getKey(), entry.getValue().toArray(new UploadFileWrapper[0]));
         }
         return _form;
     }

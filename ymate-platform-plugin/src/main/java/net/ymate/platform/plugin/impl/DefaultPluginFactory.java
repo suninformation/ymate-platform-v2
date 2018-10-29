@@ -251,7 +251,7 @@ public class DefaultPluginFactory implements IPluginFactory {
                     }
                 }
                 //
-                __pluginClassLoader = new PluginClassLoader(__config.getPluginHome().getPath(), _libs.toArray(new URL[_libs.size()]), this.getClass().getClassLoader());
+                __pluginClassLoader = new PluginClassLoader(__config.getPluginHome().getPath(), _libs.toArray(new URL[0]), this.getClass().getClassLoader());
             } else {
                 throw new IllegalArgumentException("The pluginHome parameter is invalid");
             }

@@ -182,7 +182,7 @@ public abstract class AbstractConfigurationProvider implements IConfigurationPro
     @Override
     public String[] getArray(String key) {
         List<String> _resultValue = getList(key);
-        return _resultValue.toArray(new String[_resultValue.size()]);
+        return _resultValue.toArray(new String[0]);
     }
 
     @Override
@@ -196,7 +196,7 @@ public abstract class AbstractConfigurationProvider implements IConfigurationPro
         if (_values.isEmpty() && !zeroSize) {
             return null;
         }
-        return _values.toArray(new String[_values.size()]);
+        return _values.toArray(new String[0]);
     }
 
     @Override

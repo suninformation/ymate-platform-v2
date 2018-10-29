@@ -79,6 +79,6 @@ public final class Params {
     }
 
     public Object[] toArray() {
-        return __params.toArray(new Object[__params.size()]);
+        return __params.toArray(new Object[0]);
     }
 }

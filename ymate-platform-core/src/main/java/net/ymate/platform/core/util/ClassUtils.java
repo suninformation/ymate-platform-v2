@@ -193,7 +193,7 @@ public class ClassUtils {
         for (Class<?> i : interfaces) {
             names.add(i.getName());
         }
-        return names.toArray(new String[names.size()]);
+        return names.toArray(new String[0]);
     }
 
     /**

@@ -111,7 +111,7 @@ public class ValidationMeta {
                         }
                     }
                     if (!_tmpAnnoList.isEmpty()) {
-                        _paramAnnos.put(_paramName, _tmpAnnoList.toArray(new Annotation[_tmpAnnoList.size()]));
+                        _paramAnnos.put(_paramName, _tmpAnnoList.toArray(new Annotation[0]));
                     }
                 }
                 if (!_paramAnnos.isEmpty()) {
@@ -164,7 +164,7 @@ public class ValidationMeta {
                 if (!_annotations.isEmpty()) {
                     // 拼装带层级关系的Field名称
                     String _fieldNamePR = __doGetFieldName(parentFieldName, _fieldName);
-                    _returnValues.put(_fieldNamePR, _annotations.toArray(new Annotation[_annotations.size()]));
+                    _returnValues.put(_fieldNamePR, _annotations.toArray(new Annotation[0]));
                 }
             }
         }

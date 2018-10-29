@@ -18,7 +18,7 @@ package net.ymate.platform.core.support;
 import org.apache.commons.lang.NullArgumentException;
 import org.apache.commons.lang.StringUtils;
 
-import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
@@ -28,9 +28,106 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class DefaultThreadFactory implements ThreadFactory {
 
     private static final AtomicInteger __poolNumber = new AtomicInteger(1);
+
     private final ThreadGroup __group;
+
     private final AtomicInteger __threadNumber = new AtomicInteger(1);
+
     private final String __namePrefix;
+
+    private boolean __daemon;
+
+    private int __priority = Thread.NORM_PRIORITY;
+
+    private Thread.UncaughtExceptionHandler __uncaughtExceptionHandler;
+
+    public static ExecutorService newThreadExecutor(int corePoolSize, int maximumPoolSize, long keepAliveTime) {
+        return new ThreadPoolExecutor(corePoolSize, maximumPoolSize, keepAliveTime, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<Runnable>(1024), create(), new ThreadPoolExecutor.AbortPolicy());
+    }
+
+    public static ExecutorService newThreadExecutor(int corePoolSize, int maximumPoolSize, long keepAliveTime, int queueCapacity) {
+        return new ThreadPoolExecutor(corePoolSize, maximumPoolSize, keepAliveTime, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<Runnable>(queueCapacity), create(), new ThreadPoolExecutor.AbortPolicy());
+    }
+
+    public static ExecutorService newThreadExecutor(int corePoolSize, int maximumPoolSize, long keepAliveTime, int queueCapacity, ThreadFactory threadFactory) {
+        return new ThreadPoolExecutor(corePoolSize, maximumPoolSize, keepAliveTime, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<Runnable>(queueCapacity), threadFactory, new ThreadPoolExecutor.AbortPolicy());
+    }
+
+    public static ExecutorService newThreadExecutor(int corePoolSize, int maximumPoolSize, long keepAliveTime, int queueCapacity, ThreadFactory threadFactory, RejectedExecutionHandler handler) {
+        return new ThreadPoolExecutor(corePoolSize, maximumPoolSize, keepAliveTime, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<Runnable>(queueCapacity), threadFactory, handler);
+    }
+
+    public static ExecutorService newSingleThreadExecutor() {
+        return new ThreadPoolExecutor(1, 1, 0L, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<Runnable>(1024), create(), new ThreadPoolExecutor.AbortPolicy());
+    }
+
+    public static ExecutorService newSingleThreadExecutor(int queueCapacity) {
+        return new ThreadPoolExecutor(1, 1, 0L, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<Runnable>(queueCapacity), create(), new ThreadPoolExecutor.AbortPolicy());
+    }
+
+    public static ExecutorService newSingleThreadExecutor(int queueCapacity, ThreadFactory threadFactory) {
+        return new ThreadPoolExecutor(1, 1, 0L, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<Runnable>(1024), threadFactory, new ThreadPoolExecutor.AbortPolicy());
+    }
+
+    public static ScheduledExecutorService newSingleThreadScheduledExecutor() {
+        return new ScheduledThreadPoolExecutor(1, create(), new ThreadPoolExecutor.AbortPolicy());
+    }
+
+    public static ScheduledExecutorService newSingleThreadScheduledExecutor(ThreadFactory threadFactory) {
+        return new ScheduledThreadPoolExecutor(1, threadFactory, new ThreadPoolExecutor.AbortPolicy());
+    }
+
+    public static ExecutorService newCachedThreadPool() {
+        return new ThreadPoolExecutor(0, 1024, 60L, TimeUnit.SECONDS, new SynchronousQueue<Runnable>());
+    }
+
+    public static ExecutorService newCachedThreadPool(int maximumPoolSize) {
+        return new ThreadPoolExecutor(0, maximumPoolSize, 60L, TimeUnit.SECONDS, new SynchronousQueue<Runnable>());
+    }
+
+    public static ExecutorService newCachedThreadPool(ThreadFactory threadFactory) {
+        return new ThreadPoolExecutor(0, 1024, 60L, TimeUnit.SECONDS, new SynchronousQueue<Runnable>(), threadFactory);
+    }
+
+    public static ExecutorService newCachedThreadPool(int maximumPoolSize, long keepAliveTime) {
+        return new ThreadPoolExecutor(0, maximumPoolSize, keepAliveTime, TimeUnit.MILLISECONDS, new SynchronousQueue<Runnable>());
+    }
+
+    public static ExecutorService newCachedThreadPool(int maximumPoolSize, long keepAliveTime, ThreadFactory threadFactory) {
+        return new ThreadPoolExecutor(0, maximumPoolSize, keepAliveTime, TimeUnit.MILLISECONDS, new SynchronousQueue<Runnable>(), threadFactory);
+    }
+
+    public static ExecutorService newFixedThreadPool(int nThreads) {
+        return new ThreadPoolExecutor(nThreads, nThreads, 0L, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<Runnable>(1024));
+    }
+
+    public static ExecutorService newFixedThreadPool(int nThreads, int queueCapacity) {
+        return new ThreadPoolExecutor(nThreads, nThreads, 0L, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<Runnable>(queueCapacity));
+    }
+
+    public static ExecutorService newFixedThreadPool(int nThreads, int queueCapacity, ThreadFactory threadFactory) {
+        return new ThreadPoolExecutor(nThreads, nThreads, 0L, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<Runnable>(queueCapacity), threadFactory);
+    }
+
+    public static ScheduledExecutorService newScheduledThreadPool(int corePoolSize) {
+        return new ScheduledThreadPoolExecutor(corePoolSize, create());
+    }
+
+    public static ScheduledExecutorService newScheduledThreadPool(int corePoolSize, ThreadFactory threadFactory) {
+        return new ScheduledThreadPoolExecutor(corePoolSize, threadFactory);
+    }
+
+    public static ScheduledExecutorService newScheduledThreadPool(int corePoolSize, ThreadFactory threadFactory, RejectedExecutionHandler handler) {
+        return new ScheduledThreadPoolExecutor(corePoolSize, threadFactory, handler);
+    }
+
+    public static ThreadFactory create() {
+        return new DefaultThreadFactory();
+    }
+
+    public static ThreadFactory create(String prefix) {
+        return new DefaultThreadFactory(prefix);
+    }
 
     public DefaultThreadFactory() {
         this("ymp-pool-");
@@ -45,14 +142,32 @@ public class DefaultThreadFactory implements ThreadFactory {
         __namePrefix = prefix + __poolNumber.getAndIncrement() + "-thread-";
     }
 
+    public DefaultThreadFactory daemon(boolean daemon) {
+        __daemon = daemon;
+        return this;
+    }
+
+    public DefaultThreadFactory priority(int priority) {
+        __priority = priority;
+        return this;
+    }
+
+    public DefaultThreadFactory uncaughtExceptionHandler(Thread.UncaughtExceptionHandler uncaughtExceptionHandler) {
+        __uncaughtExceptionHandler = uncaughtExceptionHandler;
+        return this;
+    }
+
     @Override
     public Thread newThread(Runnable r) {
         Thread _thread = new Thread(__group, r, __namePrefix + __threadNumber.getAndIncrement(), 0);
-        if (_thread.isDaemon()) {
-            _thread.setDaemon(false);
+        if (__daemon) {
+            _thread.setDaemon(true);
         }
-        if (_thread.getPriority() != Thread.NORM_PRIORITY) {
-            _thread.setPriority(Thread.NORM_PRIORITY);
+        if (__priority > 0) {
+            _thread.setPriority(__priority);
+        }
+        if (__uncaughtExceptionHandler != null) {
+            _thread.setUncaughtExceptionHandler(__uncaughtExceptionHandler);
         }
         return _thread;
     }

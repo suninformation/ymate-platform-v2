@@ -222,7 +222,7 @@ public class RedisCacheWrapper extends JedisPubSub implements ICache {
                 _keys.add(__doSerializeKey(_key));
             }
             if (__storageWithSet) {
-                _holder.getCommands().hdel(__cacheName, _keys.toArray(new String[_keys.size()]));
+                _holder.getCommands().hdel(__cacheName, _keys.toArray(new String[0]));
                 if (!__disabledSubscribeExpired) {
                     for (String _key : _keys) {
                         _holder.getCommands().del(__cacheName.concat(__separator).concat(_key));

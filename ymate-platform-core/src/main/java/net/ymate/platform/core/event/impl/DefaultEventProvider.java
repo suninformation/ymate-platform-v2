@@ -24,7 +24,9 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.ExecutorService;
 
 /**
  * 默认事件管理提供者接口实现
@@ -42,7 +44,7 @@ public final class DefaultEventProvider<T, E extends Enum<E>, EVENT extends Clas
 
     private IEventConfig __eventConfig;
 
-    private ExecutorService __eventExecPool;
+    private ExecutorService __eventExecutorService;
 
     private List<EVENT> __events = new CopyOnWriteArrayList<EVENT>();
 
@@ -53,10 +55,8 @@ public final class DefaultEventProvider<T, E extends Enum<E>, EVENT extends Clas
     @Override
     public void init(IEventConfig eventConfig) {
         __eventConfig = eventConfig;
-        __eventExecPool = new ThreadPoolExecutor(eventConfig.getThreadPoolSize() > 0 ? eventConfig.getThreadPoolSize() : Runtime.getRuntime().availableProcessors(),
-                eventConfig.getThreadMaxPoolSize() > 0 ? eventConfig.getThreadMaxPoolSize() : 200, 0L, TimeUnit.MILLISECONDS,
-                new LinkedBlockingQueue<Runnable>(eventConfig.getThreadQueueSize() > 0 ? eventConfig.getThreadQueueSize() : 1024),
-                new DefaultThreadFactory("event-pool-"), new ThreadPoolExecutor.AbortPolicy());
+        __eventExecutorService = DefaultThreadFactory.newThreadExecutor(eventConfig.getThreadPoolSize() > 0 ? eventConfig.getThreadPoolSize() : Runtime.getRuntime().availableProcessors(),
+                eventConfig.getThreadMaxPoolSize() > 0 ? eventConfig.getThreadMaxPoolSize() : 200, 0L, eventConfig.getThreadQueueSize() > 0 ? eventConfig.getThreadQueueSize() : 1024, DefaultThreadFactory.create("event-pool-"));
     }
 
     @Override
@@ -66,9 +66,9 @@ public final class DefaultEventProvider<T, E extends Enum<E>, EVENT extends Clas
 
     @Override
     public void destroy() {
-        if (__eventExecPool != null) {
-            __eventExecPool.shutdown();
-            __eventExecPool = null;
+        if (__eventExecutorService != null) {
+            __eventExecutorService.shutdown();
+            __eventExecutorService = null;
         }
         __events = null;
         __asyncListeners = null;
@@ -159,8 +159,8 @@ public final class DefaultEventProvider<T, E extends Enum<E>, EVENT extends Clas
             _listeners = __asyncListeners.get(_eventKey);
             if (_listeners != null && !_listeners.isEmpty()) {
                 for (final IEventListener<CONTEXT> _listener : _listeners) {
-                    if (__eventExecPool != null) {
-                        __eventExecPool.execute(new Runnable() {
+                    if (__eventExecutorService != null) {
+                        __eventExecutorService.execute(new Runnable() {
                             @Override
                             public void run() {
                                 _listener.handle(context);
