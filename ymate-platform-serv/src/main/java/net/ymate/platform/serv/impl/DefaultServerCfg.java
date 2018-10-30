@@ -16,7 +16,8 @@
 package net.ymate.platform.serv.impl;
 
 import net.ymate.platform.core.lang.BlurObject;
-import net.ymate.platform.serv.IServModuleCfg;
+import net.ymate.platform.core.util.RuntimeUtils;
+import net.ymate.platform.serv.IServ;
 import net.ymate.platform.serv.IServerCfg;
 import org.apache.commons.lang.StringUtils;
 
@@ -30,57 +31,57 @@ import java.util.Map;
  */
 public class DefaultServerCfg implements IServerCfg {
 
-    private final String __serverName;
+    public static Builder create() {
+        return new Builder();
+    }
 
-    private final String __serverHost;
+    private String __serverName;
 
-    private final int __port;
+    private String __serverHost;
 
-    private final String __charset;
+    private int __port;
 
-    private final int __bufferSize;
+    private String __charset;
+
+    private int __bufferSize;
 
     private int __executorCount;
 
-    private final long __keepAliveTime;
+    private long __keepAliveTime;
 
     private int __threadMaxPoolSize;
 
     private int __threadQueueSize;
 
-    private final Map<String, String> __params;
+    private int __selectorCount;
 
-    public DefaultServerCfg(IServModuleCfg moduleCfg, String serverName) {
-        __serverName = StringUtils.defaultIfBlank(serverName, "default");
-        Map<String, String> _serverCfgs = moduleCfg.getServerCfg(__serverName);
-        //
-        __serverHost = StringUtils.defaultIfBlank(_serverCfgs.get("host"), "0.0.0.0");
-        __port = BlurObject.bind(StringUtils.defaultIfBlank(_serverCfgs.get("port"), "8281")).toIntValue();
-        __charset = StringUtils.defaultIfBlank(_serverCfgs.get("charset"), "UTF-8");
-        __bufferSize = BlurObject.bind(StringUtils.defaultIfBlank(_serverCfgs.get("buffer_size"), "4096")).toIntValue();
-        __executorCount = BlurObject.bind(_serverCfgs.get("executor_count")).toIntValue();
+    private Map<String, String> __params;
+
+    public DefaultServerCfg(Map<String, String> serverCfg, String serverName) {
+        __serverName = StringUtils.defaultIfBlank(serverName, IServ.Const.DEFAULT_NAME);
+        __serverHost = StringUtils.defaultIfBlank(serverCfg.get(IServ.Const.HOST), IServ.Const.DEFAULT_HOST);
+        __port = BlurObject.bind(StringUtils.defaultIfBlank(serverCfg.get(IServ.Const.PORT), IServ.Const.DEFAULT_PORT)).toIntValue();
+        __charset = StringUtils.defaultIfBlank(serverCfg.get(IServ.Const.CHARSET), IServ.Const.DEFAULT_CHARSET);
+        __bufferSize = BlurObject.bind(StringUtils.defaultIfBlank(serverCfg.get(IServ.Const.BUFFER_SIZE), IServ.Const.DEFAULT_BUFFER_SIZE)).toIntValue();
+        __executorCount = BlurObject.bind(serverCfg.get(IServ.Const.EXECUTOR_COUNT)).toIntValue();
         if (__executorCount <= 0) {
             __executorCount = Runtime.getRuntime().availableProcessors();
         }
         //
-        __keepAliveTime = BlurObject.bind(_serverCfgs.get("keep_alive_time")).toLongValue();
+        __keepAliveTime = BlurObject.bind(serverCfg.get(IServ.Const.KEEP_ALIVE_TIME)).toLongValue();
         //
-        __threadMaxPoolSize = BlurObject.bind(_serverCfgs.get("thread_max_pool_size")).toIntValue();
+        __threadMaxPoolSize = BlurObject.bind(serverCfg.get(IServ.Const.THREAD_MAX_POOL_SIZE)).toIntValue();
         if (__threadMaxPoolSize <= 0) {
             __threadMaxPoolSize = 200;
         }
         //
-        __threadQueueSize = BlurObject.bind(_serverCfgs.get("thread_queue_size")).toIntValue();
+        __threadQueueSize = BlurObject.bind(serverCfg.get(IServ.Const.THREAD_QUEUE_SIZE)).toIntValue();
         if (__threadQueueSize <= 0) {
             __threadQueueSize = 1024;
         }
-        __params = new HashMap<String, String>();
-        for (Map.Entry<String, String> _entry : _serverCfgs.entrySet()) {
-            if (_entry.getKey().startsWith("params.")) {
-                String _paramKey = StringUtils.substring(_entry.getKey(), ("params.").length());
-                __params.put(_paramKey, _entry.getValue());
-            }
-        }
+        __selectorCount = BlurObject.bind(StringUtils.defaultIfBlank(serverCfg.get(IServ.Const.SELECTOR_COUNT), "1")).toIntValue();
+        //
+        __params = RuntimeUtils.keyStartsWith(serverCfg, IServ.Const.PARAMS_PREFIX);
     }
 
     @Override
@@ -129,7 +130,87 @@ public class DefaultServerCfg implements IServerCfg {
     }
 
     @Override
+    public int getSelectorCount() {
+        return __selectorCount;
+    }
+
+    @Override
     public Map<String, String> getParams() {
         return Collections.unmodifiableMap(__params);
+    }
+
+    public static class Builder {
+
+        private String serverName;
+
+        Map<String, String> params = new HashMap<String, String>();
+
+        public Builder serverName(String serverName) {
+            this.serverName = serverName;
+            return this;
+        }
+
+        public Builder serverHost(String serverHost) {
+            params.put(IServ.Const.HOST, serverHost);
+            return this;
+        }
+
+        public Builder port(int port) {
+            params.put(IServ.Const.PORT, port + "");
+            return this;
+        }
+
+        public Builder charset(String charset) {
+            params.put(IServ.Const.CHARSET, charset);
+            return this;
+        }
+
+        public Builder bufferSize(int bufferSize) {
+            params.put(IServ.Const.BUFFER_SIZE, bufferSize + "");
+            return this;
+        }
+
+        public Builder executorCount(int executorCount) {
+            params.put(IServ.Const.EXECUTOR_COUNT, executorCount + "");
+            return this;
+        }
+
+        public Builder keepAliveTime(long keepAliveTime) {
+            params.put(IServ.Const.KEEP_ALIVE_TIME, keepAliveTime + "");
+            return this;
+        }
+
+        public Builder threadMaxPoolSize(int threadMaxPoolSize) {
+            params.put(IServ.Const.EXECUTOR_COUNT, threadMaxPoolSize + "");
+            return this;
+        }
+
+        public Builder threadQueueSize(int threadQueueSize) {
+            params.put(IServ.Const.THREAD_QUEUE_SIZE, threadQueueSize + "");
+            return this;
+        }
+
+        public Builder selectorCount(int selectorCount) {
+            params.put(IServ.Const.SELECTOR_COUNT, selectorCount + "");
+            return this;
+        }
+
+        public Builder params(String key, String value) {
+            if (StringUtils.isNotBlank(key)) {
+                params.put(IServ.Const.PARAMS_PREFIX + "." + key, value);
+            }
+            return this;
+        }
+
+        public Builder params(Map<String, String> params) {
+            for (Map.Entry<String, String> param : params.entrySet()) {
+                params.put(IServ.Const.PARAMS_PREFIX + "." + param.getKey(), param.getValue());
+            }
+            return this;
+        }
+
+        public IServerCfg build() {
+            return new DefaultServerCfg(params, serverName);
+        }
     }
 }

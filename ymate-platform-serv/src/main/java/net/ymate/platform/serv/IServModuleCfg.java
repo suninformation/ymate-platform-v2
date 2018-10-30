@@ -15,8 +15,6 @@
  */
 package net.ymate.platform.serv;
 
-import java.util.Map;
-
 /**
  * 服务模块配置接口
  *
@@ -29,11 +27,11 @@ public interface IServModuleCfg {
      * @param serverName 服务端名称
      * @return 返回指定名称的服务端配置
      */
-    Map<String, String> getServerCfg(String serverName);
+    IServerCfg getServerCfg(String serverName);
 
     /**
      * @param clientName 客户端名称
      * @return 返回指定名称的客户端配置
      */
-    Map<String, String> getClientCfg(String clientName);
+    IClientCfg getClientCfg(String clientName);
 }

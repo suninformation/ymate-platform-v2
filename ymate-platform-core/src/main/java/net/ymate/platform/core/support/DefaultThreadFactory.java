@@ -18,6 +18,9 @@ package net.ymate.platform.core.support;
 import org.apache.commons.lang.NullArgumentException;
 import org.apache.commons.lang.StringUtils;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -119,6 +122,49 @@ public class DefaultThreadFactory implements ThreadFactory {
 
     public static ScheduledExecutorService newScheduledThreadPool(int corePoolSize, ThreadFactory threadFactory, RejectedExecutionHandler handler) {
         return new ScheduledThreadPoolExecutor(corePoolSize, threadFactory, handler);
+    }
+
+    //
+
+    public static <T> T executeOnce(Callable<T> worker) throws InterruptedException, ExecutionException {
+        return executeOnce(worker, 0L);
+    }
+
+    public static <T> T executeOnce(Callable<T> worker, long timeout) throws InterruptedException, ExecutionException {
+        FutureTask<T> _future = new FutureTask<T>(worker);
+        //
+        ExecutorService _executorService = newSingleThreadExecutor();
+        _executorService.submit(_future);
+        _executorService.shutdown();
+        _executorService.awaitTermination(timeout > 0L ? timeout : 30L, TimeUnit.SECONDS);
+        //
+        return _future.get();
+    }
+
+    public static <T> List<T> executeOnce(List<Callable<T>> workers) throws InterruptedException, ExecutionException {
+        return executeOnce(workers, 0L);
+    }
+
+    public static <T> List<T> executeOnce(List<Callable<T>> workers, long timeout) throws InterruptedException, ExecutionException {
+        if (workers != null && !workers.isEmpty()) {
+            ExecutorService _executorService = newFixedThreadPool(workers.size());
+            //
+            List<FutureTask<T>> _futures = new ArrayList<FutureTask<T>>();
+            for (Callable<T> _worker : workers) {
+                FutureTask<T> _future = new FutureTask<T>(_worker);
+                _executorService.submit(_future);
+                _futures.add(_future);
+            }
+            _executorService.shutdown();
+            _executorService.awaitTermination(timeout > 0L ? timeout : 30L, TimeUnit.SECONDS);
+            //
+            List<T> _results = new ArrayList<T>();
+            for (FutureTask<T> _future : _futures) {
+                _results.add(_future.get());
+            }
+            return _results;
+        }
+        return Collections.emptyList();
     }
 
     public static ThreadFactory create() {

@@ -24,20 +24,14 @@ import net.ymate.platform.serv.annotation.Client;
 import net.ymate.platform.serv.annotation.Server;
 import net.ymate.platform.serv.handle.ClientHandler;
 import net.ymate.platform.serv.handle.ServerHandler;
-import net.ymate.platform.serv.impl.DefaultClientCfg;
 import net.ymate.platform.serv.impl.DefaultModuleCfg;
-import net.ymate.platform.serv.impl.DefaultServerCfg;
-import net.ymate.platform.serv.nio.INioClientCfg;
 import net.ymate.platform.serv.nio.INioCodec;
-import net.ymate.platform.serv.nio.INioServerCfg;
 import net.ymate.platform.serv.nio.client.NioClient;
-import net.ymate.platform.serv.nio.client.NioClientCfg;
 import net.ymate.platform.serv.nio.client.NioClientListener;
 import net.ymate.platform.serv.nio.datagram.NioUdpClient;
 import net.ymate.platform.serv.nio.datagram.NioUdpListener;
 import net.ymate.platform.serv.nio.datagram.NioUdpServer;
 import net.ymate.platform.serv.nio.server.NioServer;
-import net.ymate.platform.serv.nio.server.NioServerCfg;
 import net.ymate.platform.serv.nio.server.NioServerListener;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -166,26 +160,21 @@ public class Servs implements IModule, IServ {
     public void registerServer(String serverName, Class<? extends IServer> implClass, Class<? extends ICodec> codec, Class<? extends IListener> listenerClass) {
         if (!__servers.containsKey(listenerClass.getName())) {
             IServer _server = ClassUtils.impl(implClass, IServer.class);
-            IServerCfg _serverCfg;
-            if (_server instanceof NioServer || _server instanceof NioUdpServer) {
-                _serverCfg = new NioServerCfg(__moduleCfg, serverName);
-            } else {
-                _serverCfg = new DefaultServerCfg(__moduleCfg, serverName);
-            }
+            IServerCfg _serverCfg = __moduleCfg.getServerCfg(serverName);
             _server.init(_serverCfg, ClassUtils.impl(listenerClass, IListener.class), ClassUtils.impl(codec, ICodec.class));
             __servers.put(listenerClass.getName(), _server);
         }
     }
 
     @Override
-    public <LISTENER extends NioServerListener, CODEC extends INioCodec> NioServer buildNioServer(INioServerCfg serverCfg, CODEC codec, LISTENER listener) {
+    public <LISTENER extends NioServerListener, CODEC extends INioCodec> NioServer buildServer(IServerCfg serverCfg, CODEC codec, LISTENER listener) {
         NioServer _server = new NioServer();
         _server.init(serverCfg, listener, codec);
         return _server;
     }
 
     @Override
-    public <LISTENER extends NioUdpListener, CODEC extends INioCodec> NioUdpServer buildNioUdpServer(INioServerCfg serverCfg, CODEC codec, LISTENER listener) {
+    public <LISTENER extends NioUdpListener, CODEC extends INioCodec> NioUdpServer buildUdpServer(IServerCfg serverCfg, CODEC codec, LISTENER listener) {
         NioUdpServer _server = new NioUdpServer();
         _server.init(serverCfg, listener, codec);
         return _server;
@@ -217,12 +206,7 @@ public class Servs implements IModule, IServ {
                 _heartbeatService = ClassUtils.impl(heartbeatClass, IHeartbeatService.class);
                 _heartbeatService.init(_client);
             }
-            IClientCfg _clientCfg;
-            if (_client instanceof NioClient || _client instanceof NioUdpClient) {
-                _clientCfg = new NioClientCfg(__moduleCfg, clientName);
-            } else {
-                _clientCfg = new DefaultClientCfg(__moduleCfg, clientName);
-            }
+            IClientCfg _clientCfg = __moduleCfg.getClientCfg(clientName);
             //
             _client.init(_clientCfg, ClassUtils.impl(listenerClass, IListener.class), ClassUtils.impl(codec, ICodec.class), _reconnectService, _heartbeatService);
             __clients.put(listenerClass.getName(), _client);
@@ -230,7 +214,7 @@ public class Servs implements IModule, IServ {
     }
 
     @Override
-    public <LISTENER extends NioClientListener, CODEC extends INioCodec> NioClient buildNioClient(INioClientCfg clientCfg, CODEC codec, IReconnectService reconnect, IHeartbeatService heartbeat, LISTENER listener) {
+    public <LISTENER extends NioClientListener, CODEC extends INioCodec> NioClient buildClient(IClientCfg clientCfg, CODEC codec, IReconnectService reconnect, IHeartbeatService heartbeat, LISTENER listener) {
         NioClient _client = new NioClient();
         if (reconnect != null && !reconnect.isInited()) {
             reconnect.init(_client);
@@ -243,7 +227,7 @@ public class Servs implements IModule, IServ {
     }
 
     @Override
-    public <LISTENER extends NioUdpListener, CODEC extends INioCodec> NioUdpClient buildNioUdpClient(INioClientCfg clientCfg, CODEC codec, IReconnectService reconnect, IHeartbeatService heartbeat, LISTENER listener) {
+    public <LISTENER extends NioUdpListener, CODEC extends INioCodec> NioUdpClient buildUdpClient(IClientCfg clientCfg, CODEC codec, IReconnectService reconnect, IHeartbeatService heartbeat, LISTENER listener) {
         NioUdpClient _client = new NioUdpClient();
         if (reconnect != null && !reconnect.isInited()) {
             reconnect.init(_client);

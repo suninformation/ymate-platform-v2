@@ -17,7 +17,6 @@ package net.ymate.platform.serv.nio.datagram;
 
 import net.ymate.platform.core.util.RuntimeUtils;
 import net.ymate.platform.serv.*;
-import net.ymate.platform.serv.nio.INioClientCfg;
 import net.ymate.platform.serv.nio.INioCodec;
 import net.ymate.platform.serv.nio.INioSession;
 import net.ymate.platform.serv.nio.support.NioEventGroup;
@@ -42,7 +41,7 @@ public class NioUdpClient extends AbstractService implements IClient<NioUdpListe
 
     private static final Log _LOG = LogFactory.getLog(NioUdpClient.class);
 
-    protected INioClientCfg __clientCfg;
+    protected IClientCfg __clientCfg;
 
     protected NioUdpEventGroup __eventGroup;
 
@@ -56,7 +55,7 @@ public class NioUdpClient extends AbstractService implements IClient<NioUdpListe
                      INioCodec codec,
                      IReconnectService reconnectService,
                      IHeartbeatService heartbeatService) {
-        __clientCfg = (INioClientCfg) clientCfg;
+        __clientCfg = clientCfg;
         //
         __listener = listener;
         __codec = codec;
@@ -89,7 +88,7 @@ public class NioUdpClient extends AbstractService implements IClient<NioUdpListe
     }
 
     @Override
-    public INioClientCfg clientCfg() {
+    public IClientCfg clientCfg() {
         return __clientCfg;
     }
 
@@ -113,7 +112,7 @@ public class NioUdpClient extends AbstractService implements IClient<NioUdpListe
 
     public class NioUdpEventGroup extends NioEventGroup<NioUdpListener> {
 
-        public NioUdpEventGroup(INioClientCfg cfg, NioUdpListener listener, INioCodec codec) throws IOException {
+        public NioUdpEventGroup(IClientCfg cfg, NioUdpListener listener, INioCodec codec) throws IOException {
             super(cfg, listener, codec);
         }
 

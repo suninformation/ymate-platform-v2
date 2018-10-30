@@ -71,6 +71,11 @@ public interface IServerCfg {
     int getThreadQueueSize();
 
     /**
+     * @return 选择器数量
+     */
+    int getSelectorCount();
+
+    /**
      * @return 服务端自定义参数映射
      */
     Map<String, String> getParams();

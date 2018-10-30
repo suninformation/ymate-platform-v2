@@ -18,7 +18,6 @@ package net.ymate.platform.serv.nio.server;
 import net.ymate.platform.serv.IServer;
 import net.ymate.platform.serv.IServerCfg;
 import net.ymate.platform.serv.nio.INioCodec;
-import net.ymate.platform.serv.nio.INioServerCfg;
 import net.ymate.platform.serv.nio.support.NioEventGroup;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -33,7 +32,7 @@ public class NioServer implements IServer<NioServerListener, INioCodec> {
 
     private static final Log _LOG = LogFactory.getLog(NioServer.class);
 
-    protected INioServerCfg __serverCfg;
+    protected IServerCfg __serverCfg;
 
     protected NioEventGroup<NioServerListener> __eventGroup;
 
@@ -45,7 +44,7 @@ public class NioServer implements IServer<NioServerListener, INioCodec> {
 
     @Override
     public void init(IServerCfg serverCfg, NioServerListener listener, INioCodec codec) {
-        __serverCfg = (INioServerCfg) serverCfg;
+        __serverCfg = serverCfg;
         //
         __listener = listener;
         __codec = codec;
@@ -69,7 +68,7 @@ public class NioServer implements IServer<NioServerListener, INioCodec> {
     }
 
     @Override
-    public INioServerCfg serverCfg() {
+    public IServerCfg serverCfg() {
         return __serverCfg;
     }
 

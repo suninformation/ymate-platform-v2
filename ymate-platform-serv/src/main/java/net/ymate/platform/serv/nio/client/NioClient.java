@@ -16,7 +16,6 @@
 package net.ymate.platform.serv.nio.client;
 
 import net.ymate.platform.serv.*;
-import net.ymate.platform.serv.nio.INioClientCfg;
 import net.ymate.platform.serv.nio.INioCodec;
 import net.ymate.platform.serv.nio.support.NioEventGroup;
 import org.apache.commons.logging.Log;
@@ -32,7 +31,7 @@ public class NioClient extends AbstractService implements IClient<NioClientListe
 
     private static final Log _LOG = LogFactory.getLog(NioClient.class);
 
-    protected INioClientCfg __clientCfg;
+    protected IClientCfg __clientCfg;
 
     protected NioEventGroup<NioClientListener> __eventGroup;
 
@@ -46,7 +45,7 @@ public class NioClient extends AbstractService implements IClient<NioClientListe
                      INioCodec codec,
                      IReconnectService reconnectService,
                      IHeartbeatService heartbeatService) {
-        __clientCfg = (NioClientCfg) clientCfg;
+        __clientCfg = clientCfg;
         __listener = listener;
         __codec = codec;
         __codec.init(__clientCfg.getCharset());
@@ -90,7 +89,7 @@ public class NioClient extends AbstractService implements IClient<NioClientListe
     }
 
     @Override
-    public INioClientCfg clientCfg() {
+    public IClientCfg clientCfg() {
         return __clientCfg;
     }
 

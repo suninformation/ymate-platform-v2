@@ -19,7 +19,6 @@ import net.ymate.platform.core.util.RuntimeUtils;
 import net.ymate.platform.serv.IServer;
 import net.ymate.platform.serv.IServerCfg;
 import net.ymate.platform.serv.nio.INioCodec;
-import net.ymate.platform.serv.nio.INioServerCfg;
 import net.ymate.platform.serv.nio.INioSession;
 import net.ymate.platform.serv.nio.support.NioEventGroup;
 import net.ymate.platform.serv.nio.support.NioEventProcessor;
@@ -44,7 +43,7 @@ public class NioUdpServer implements IServer<NioUdpListener, INioCodec> {
 
     private static final Log _LOG = LogFactory.getLog(NioUdpServer.class);
 
-    protected INioServerCfg __serverCfg;
+    protected IServerCfg __serverCfg;
 
     protected NioEventGroup<NioUdpListener> __eventGroup;
 
@@ -56,7 +55,7 @@ public class NioUdpServer implements IServer<NioUdpListener, INioCodec> {
 
     @Override
     public void init(IServerCfg serverCfg, NioUdpListener listener, INioCodec codec) {
-        __serverCfg = (INioServerCfg) serverCfg;
+        __serverCfg = serverCfg;
         //
         __listener = listener;
         __codec = codec;
@@ -69,7 +68,7 @@ public class NioUdpServer implements IServer<NioUdpListener, INioCodec> {
             __isStarted = true;
             __eventGroup = new NioEventGroup<NioUdpListener>(__serverCfg, __listener, __codec) {
                 @Override
-                protected SelectableChannel __doChannelCreate(INioServerCfg cfg) throws IOException {
+                protected SelectableChannel __doChannelCreate(IServerCfg cfg) throws IOException {
                     DatagramChannel _channel = DatagramChannel.open();
                     _channel.configureBlocking(false);
                     _channel.socket().bind(new InetSocketAddress(cfg.getServerHost(), cfg.getPort()));
@@ -148,7 +147,7 @@ public class NioUdpServer implements IServer<NioUdpListener, INioCodec> {
     }
 
     @Override
-    public INioServerCfg serverCfg() {
+    public IServerCfg serverCfg() {
         return __serverCfg;
     }
 

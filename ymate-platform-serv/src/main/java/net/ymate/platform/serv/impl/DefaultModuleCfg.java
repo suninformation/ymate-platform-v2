@@ -16,11 +16,13 @@
 package net.ymate.platform.serv.impl;
 
 import net.ymate.platform.core.YMP;
+import net.ymate.platform.core.util.RuntimeUtils;
+import net.ymate.platform.serv.IClientCfg;
 import net.ymate.platform.serv.IServ;
 import net.ymate.platform.serv.IServModuleCfg;
+import net.ymate.platform.serv.IServerCfg;
 import org.apache.commons.lang.StringUtils;
 
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -32,53 +34,33 @@ import java.util.Map;
  */
 public class DefaultModuleCfg implements IServModuleCfg {
 
-    private final Map<String, Map<String, String>> __serverCfgs;
+    private final Map<String, IServerCfg> __serverCfgs;
 
-    private final Map<String, Map<String, String>> __clientCfgs;
+    private final Map<String, IClientCfg> __clientCfgs;
 
     public DefaultModuleCfg(YMP owner) throws Exception {
         Map<String, String> _moduleCfgs = owner.getConfig().getModuleConfigs(IServ.MODULE_NAME);
         //
-        String[] _serverNames = StringUtils.split(StringUtils.defaultIfBlank(_moduleCfgs.get("server.name_list"), "default"), "|");
-        __serverCfgs = new HashMap<String, Map<String, String>>(_serverNames.length);
+        String[] _serverNames = StringUtils.split(StringUtils.defaultIfBlank(_moduleCfgs.get("server.name_list"), IServ.Const.DEFAULT_NAME), "|");
+        __serverCfgs = new HashMap<String, IServerCfg>(_serverNames.length);
         for (String _name : _serverNames) {
-            __doConfigMapLoad("server", _name, _moduleCfgs, __serverCfgs);
+            __serverCfgs.put(_name, new DefaultServerCfg(RuntimeUtils.keyStartsWith(_moduleCfgs, "server." + _name + "."), _name));
         }
         //
-        String[] _clientNames = StringUtils.split(StringUtils.defaultIfBlank(_moduleCfgs.get("client.name_list"), "default"), "|");
-        __clientCfgs = new HashMap<String, Map<String, String>>(_clientNames.length);
+        String[] _clientNames = StringUtils.split(StringUtils.defaultIfBlank(_moduleCfgs.get("client.name_list"), IServ.Const.DEFAULT_NAME), "|");
+        __clientCfgs = new HashMap<String, IClientCfg>(_clientNames.length);
         for (String _name : _clientNames) {
-            __doConfigMapLoad("client", _name, _moduleCfgs, __clientCfgs);
+            __clientCfgs.put(_name, new DefaultClientCfg(RuntimeUtils.keyStartsWith(_moduleCfgs, "client." + _name + "."), _name));
         }
-    }
-
-    private void __doConfigMapLoad(String prefix, String name, Map<String, String> sources, Map<String, Map<String, String>> dst) {
-        Map<String, String> _cfgs = new HashMap<String, String>();
-        String _key = prefix.concat(".").concat(name).concat(".");
-        for (Map.Entry<String, String> _entry : sources.entrySet()) {
-            if (_entry.getKey().startsWith(_key)) {
-                String _paramKey = StringUtils.substring(_entry.getKey(), _key.length());
-                _cfgs.put(_paramKey, _entry.getValue());
-            }
-        }
-        dst.put(name, _cfgs);
     }
 
     @Override
-    public Map<String, String> getServerCfg(String serverName) {
-        Map<String, String> _serverMap = __serverCfgs.get(serverName);
-        if (_serverMap != null) {
-            return Collections.unmodifiableMap(__serverCfgs.get(serverName));
-        }
-        return Collections.emptyMap();
+    public IServerCfg getServerCfg(String serverName) {
+        return __serverCfgs.get(serverName);
     }
 
     @Override
-    public Map<String, String> getClientCfg(String clientName) {
-        Map<String, String> _clientMap = __clientCfgs.get(clientName);
-        if (_clientMap != null) {
-            return Collections.unmodifiableMap(__clientCfgs.get(clientName));
-        }
-        return Collections.emptyMap();
+    public IClientCfg getClientCfg(String clientName) {
+        return __clientCfgs.get(clientName);
     }
 }

@@ -16,9 +16,7 @@
 package net.ymate.platform.serv;
 
 import net.ymate.platform.core.YMP;
-import net.ymate.platform.serv.nio.INioClientCfg;
 import net.ymate.platform.serv.nio.INioCodec;
-import net.ymate.platform.serv.nio.INioServerCfg;
 import net.ymate.platform.serv.nio.client.NioClient;
 import net.ymate.platform.serv.nio.client.NioClientListener;
 import net.ymate.platform.serv.nio.datagram.NioUdpClient;
@@ -68,9 +66,9 @@ public interface IServ {
 
     void registerServer(String serverName, Class<? extends IServer> implClass, Class<? extends ICodec> codec, Class<? extends IListener> listenerClass);
 
-    <LISTENER extends NioServerListener, CODEC extends INioCodec> NioServer buildNioServer(INioServerCfg serverCfg, CODEC codec, LISTENER listener);
+    <LISTENER extends NioServerListener, CODEC extends INioCodec> NioServer buildServer(IServerCfg serverCfg, CODEC codec, LISTENER listener);
 
-    <LISTENER extends NioUdpListener, CODEC extends INioCodec> NioUdpServer buildNioUdpServer(INioServerCfg serverCfg, CODEC codec, LISTENER listener);
+    <LISTENER extends NioUdpListener, CODEC extends INioCodec> NioUdpServer buildUdpServer(IServerCfg serverCfg, CODEC codec, LISTENER listener);
 
     /**
      * 注册客户端
@@ -81,9 +79,9 @@ public interface IServ {
 
     void registerClient(String clientName, Class<? extends IClient> implClass, Class<? extends ICodec> codec, Class<? extends IListener> listenerClass, Class<? extends IReconnectService> reconnectClass, Class<? extends IHeartbeatService> heartbeatClass);
 
-    <LISTENER extends NioClientListener, CODEC extends INioCodec> NioClient buildNioClient(INioClientCfg clientCfg, CODEC codec, IReconnectService reconnect, IHeartbeatService heartbeat, LISTENER listener);
+    <LISTENER extends NioClientListener, CODEC extends INioCodec> NioClient buildClient(IClientCfg clientCfg, CODEC codec, IReconnectService reconnect, IHeartbeatService heartbeat, LISTENER listener);
 
-    <LISTENER extends NioUdpListener, CODEC extends INioCodec> NioUdpClient buildNioUdpClient(INioClientCfg clientCfg, CODEC codec, IReconnectService reconnect, IHeartbeatService heartbeat, LISTENER listener);
+    <LISTENER extends NioUdpListener, CODEC extends INioCodec> NioUdpClient buildUdpClient(IClientCfg clientCfg, CODEC codec, IReconnectService reconnect, IHeartbeatService heartbeat, LISTENER listener);
 
     /**
      * 启动所有Server端和Client端服务
@@ -91,4 +89,32 @@ public interface IServ {
      * @throws Exception 可能产生的异常
      */
     void startup() throws Exception;
+
+    /**
+     * 常量
+     */
+    interface Const {
+        String DEFAULT_NAME = "default";
+        String DEFAULT_HOST = "0.0.0.0";
+        String DEFAULT_CHARSET = "UTF-8";
+        String DEFAULT_PORT = "8281";
+        String DEFAULT_BUFFER_SIZE = "4096";
+
+        //
+
+        String HOST = "host";
+        String PORT = "port";
+        String CHARSET = "charset";
+        String BUFFER_SIZE = "buffer_size";
+        String EXECUTOR_COUNT = "executor_count";
+        String KEEP_ALIVE_TIME = "keep_alive_time";
+        String THREAD_MAX_POOL_SIZE = "thread_max_pool_size";
+        String THREAD_QUEUE_SIZE = "thread_queue_size";
+        String SELECTOR_COUNT = "selector_count";
+
+        String CONNECTION_TIMEOUT = "connection_timeout";
+        String HEARTBEAT_INTERVAL = "heartbeat_interval";
+
+        String PARAMS_PREFIX = "params.";
+    }
 }

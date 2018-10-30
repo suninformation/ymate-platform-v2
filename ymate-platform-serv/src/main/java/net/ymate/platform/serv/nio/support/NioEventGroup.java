@@ -18,9 +18,8 @@ package net.ymate.platform.serv.nio.support;
 import net.ymate.platform.serv.AbstractEventGroup;
 import net.ymate.platform.serv.IClientCfg;
 import net.ymate.platform.serv.IListener;
-import net.ymate.platform.serv.nio.INioClientCfg;
+import net.ymate.platform.serv.IServerCfg;
 import net.ymate.platform.serv.nio.INioCodec;
-import net.ymate.platform.serv.nio.INioServerCfg;
 import net.ymate.platform.serv.nio.INioSession;
 import org.apache.commons.lang.StringUtils;
 
@@ -45,18 +44,18 @@ public class NioEventGroup<LISTENER extends IListener<INioSession>> extends Abst
     protected NioEventProcessor[] __processors;
     protected AtomicInteger __handlerIndex = new AtomicInteger(0);
 
-    public NioEventGroup(INioServerCfg cfg, LISTENER listener, INioCodec codec) throws IOException {
+    public NioEventGroup(IServerCfg cfg, LISTENER listener, INioCodec codec) throws IOException {
         super(cfg, listener, codec);
         //
         __channel = __doChannelCreate(cfg);
         __selectorCount = cfg.getSelectorCount();
     }
 
-    public NioEventGroup(INioClientCfg cfg, LISTENER listener, INioCodec codec) throws IOException {
+    public NioEventGroup(IClientCfg cfg, LISTENER listener, INioCodec codec) throws IOException {
         super(cfg, listener, codec);
     }
 
-    protected SelectableChannel __doChannelCreate(INioServerCfg cfg) throws IOException {
+    protected SelectableChannel __doChannelCreate(IServerCfg cfg) throws IOException {
         ServerSocketChannel _channel = ServerSocketChannel.open();
         _channel.configureBlocking(false);
         _channel.socket().bind(new InetSocketAddress(cfg.getServerHost(), cfg.getPort()));

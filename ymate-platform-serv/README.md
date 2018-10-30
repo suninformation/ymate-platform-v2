@@ -24,9 +24,9 @@
 
 > 目前提供以下两种编/解码器，开发者可通过实现ICodec接口自行扩展；
 
-> - NioStringCodec：采用字节byte[4]作为消息头，用于记录消息体长度的字符串消息编/解码器；
+> - NioStringCodec：采用字节`byte[4]`作为消息头，用于记录消息体长度的字符串消息编/解码器；
 
-> - TextLineCodec：用于解析以回车换行符(\r\n)做为消息结束标志的字符串消息的编/解码器；
+> - TextLineCodec：用于解析以回车换行符(`\r\n`)做为消息结束标志的字符串消息的编/解码器；
 
 ##### 内置服务（Service）
 
@@ -46,9 +46,6 @@
 
     # 服务端配置列表，多个服务端名称间用'|'分隔，默认为default
     ymp.configs.serv.server.name_list=default
-    
-    # 服务名称, 默认为default
-    ymp.configs.serv.server.default.name=default
     
     # 绑定IP地址, 默认为0.0.0.0
     ymp.configs.serv.server.default.host=0.0.0.0
@@ -171,9 +168,6 @@
 
     # 客户端配置列表，多个客户端名称间用'|'分隔，默认为default
     ymp.configs.serv.client.name_list=default
-    
-    # 服务名称, 默认为default
-    ymp.configs.serv.client.default.name=default
     
     # 远程主机IP地址, 默认为0.0.0.0
     ymp.configs.serv.client.default.host=0.0.0.0
