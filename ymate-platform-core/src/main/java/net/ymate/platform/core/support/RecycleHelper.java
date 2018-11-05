@@ -19,7 +19,9 @@ import net.ymate.platform.core.util.RuntimeUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import java.util.Iterator;
 import java.util.Set;
+import java.util.concurrent.ExecutorService;
 
 /**
  * 对象资源回收助手
@@ -35,7 +37,7 @@ public final class RecycleHelper {
 
     private static final RecycleHelper __instance = new RecycleHelper();
 
-    private Set<IDestroyable> __destroyables = new ConcurrentHashSet<IDestroyable>();
+    private Set<IDestroyable> __destroyableSet = new ConcurrentHashSet<IDestroyable>();
 
     /**
      * @return 获取全局实例对象
@@ -59,17 +61,17 @@ public final class RecycleHelper {
      *
      * @param destroyable 资源回收对象
      */
-    public synchronized void register(IDestroyable destroyable) {
-        if (destroyable != null && !__destroyables.contains(destroyable)) {
-            __destroyables.add(destroyable);
+    public void register(IDestroyable destroyable) {
+        if (destroyable != null) {
+            __destroyableSet.add(destroyable);
         }
     }
 
-    /**
-     * 执行资源回收
-     */
-    public synchronized void recycle() {
-        for (IDestroyable _destroyable : __destroyables) {
+    private void __recycle() {
+        Iterator<IDestroyable> iterator = __destroyableSet.iterator();
+        while (iterator.hasNext()) {
+            IDestroyable _destroyable = iterator.next();
+            iterator.remove();
             try {
                 _destroyable.destroy();
             } catch (Throwable e) {
@@ -80,7 +82,32 @@ public final class RecycleHelper {
                 }
             }
         }
-        __destroyables.clear();
-        __destroyables = null;
+    }
+
+    /**
+     * 执行资源回收
+     */
+    public void recycle() {
+        recycle(false);
+    }
+
+    /**
+     * 执行资源回收
+     *
+     * @param async 是否异步
+     */
+    public void recycle(boolean async) {
+        if (async) {
+            ExecutorService _executor = DefaultThreadFactory.newSingleThreadExecutor();
+            _executor.submit(new Runnable() {
+                @Override
+                public void run() {
+                    __recycle();
+                }
+            });
+            _executor.shutdown();
+        } else {
+            __recycle();
+        }
     }
 }
