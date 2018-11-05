@@ -90,7 +90,7 @@ public abstract class AbstractEventGroup<CODEC extends ICodec, LISTENER extends 
     }
 
     @Override
-    public synchronized void start() throws IOException {
+    public void start() throws IOException {
         if (__isStarted) {
             return;
         }
@@ -100,7 +100,7 @@ public abstract class AbstractEventGroup<CODEC extends ICodec, LISTENER extends 
     }
 
     @Override
-    public synchronized void stop() throws IOException {
+    public void stop() throws IOException {
         if (!__isStarted) {
             return;
         }

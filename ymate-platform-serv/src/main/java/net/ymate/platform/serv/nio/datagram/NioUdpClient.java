@@ -65,7 +65,7 @@ public class NioUdpClient extends AbstractService implements IClient<NioUdpListe
     }
 
     @Override
-    public synchronized void connect() throws IOException {
+    public void connect() throws IOException {
         if (__eventGroup != null && __eventGroup.session() != null) {
             if (__eventGroup.session().isConnected() || __eventGroup.session().isNew()) {
                 return;
@@ -78,7 +78,7 @@ public class NioUdpClient extends AbstractService implements IClient<NioUdpListe
     }
 
     @Override
-    public synchronized void reconnect() throws IOException {
+    public void reconnect() throws IOException {
         // Don't need to reconnect
     }
 
@@ -104,7 +104,7 @@ public class NioUdpClient extends AbstractService implements IClient<NioUdpListe
     }
 
     @Override
-    public synchronized void close() throws IOException {
+    public void close() throws IOException {
         __doStopHeartbeatService();
         //
         __eventGroup.close();
@@ -147,7 +147,7 @@ public class NioUdpClient extends AbstractService implements IClient<NioUdpListe
         }
 
         @Override
-        public synchronized void start() throws IOException {
+        public void start() throws IOException {
             _LOG.info("UdpClient [" + __eventGroup.name() + "] connecting to " + __clientCfg.getRemoteHost() + ":" + __clientCfg.getPort());
             super.start();
         }

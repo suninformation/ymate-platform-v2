@@ -55,7 +55,7 @@ public class NioClient extends AbstractService implements IClient<NioClientListe
     }
 
     @Override
-    public synchronized void connect() throws IOException {
+    public void connect() throws IOException {
         if (__eventGroup != null && __eventGroup.session() != null) {
             if (__eventGroup.session().isConnected() || __eventGroup.session().isNew()) {
                 return;
@@ -72,7 +72,7 @@ public class NioClient extends AbstractService implements IClient<NioClientListe
     }
 
     @Override
-    public synchronized void reconnect() throws IOException {
+    public void reconnect() throws IOException {
         if (!isConnected()) {
             __eventGroup.close();
             __eventGroup = new NioEventGroup<NioClientListener>(__clientCfg, __listener, __codec);
@@ -105,7 +105,7 @@ public class NioClient extends AbstractService implements IClient<NioClientListe
     }
 
     @Override
-    public synchronized void close() throws IOException {
+    public void close() throws IOException {
         __doStopHeartbeatService();
         __doStopReconnectService();
         //

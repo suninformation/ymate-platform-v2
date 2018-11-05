@@ -59,32 +59,36 @@ public class DefaultReconnectService extends Thread implements IReconnectService
     }
 
     @Override
-    public synchronized void start() {
-        __flag = true;
-        setName("ReconnectService-" + __client.listener().getClass().getSimpleName());
-        if (__client.clientCfg().getConnectionTimeout() > 0) {
-            __timeout = __client.clientCfg().getConnectionTimeout();
+    public void start() {
+        if (__inited && !__flag) {
+            __flag = true;
+            setName("ReconnectService-" + __client.listener().getClass().getSimpleName());
+            if (__client.clientCfg().getConnectionTimeout() > 0) {
+                __timeout = __client.clientCfg().getConnectionTimeout();
+            }
+            super.start();
         }
-        super.start();
     }
 
     @Override
     public void run() {
-        long _millis = __timeout * DateTimeUtils.SECOND;
-        while (__flag) {
-            try {
-                if (!__client.isConnected() && __counter.getAndIncrement() > 1) {
-                    __client.reconnect();
-                    //
-                    __counter.set(0);
-                } else {
-                    sleep(_millis);
-                }
-            } catch (Exception e) {
-                if (__flag) {
-                    _LOG.error(e.getMessage(), RuntimeUtils.unwrapThrow(e));
-                } else {
-                    _LOG.debug(e.getMessage(), RuntimeUtils.unwrapThrow(e));
+        if (__inited) {
+            long _millis = __timeout * DateTimeUtils.SECOND;
+            while (__flag) {
+                try {
+                    if (!__client.isConnected() && __counter.getAndIncrement() > 1) {
+                        __client.reconnect();
+                        //
+                        __counter.set(0);
+                    } else {
+                        sleep(_millis);
+                    }
+                } catch (Exception e) {
+                    if (__flag) {
+                        _LOG.error(e.getMessage(), RuntimeUtils.unwrapThrow(e));
+                    } else {
+                        _LOG.debug(e.getMessage(), RuntimeUtils.unwrapThrow(e));
+                    }
                 }
             }
         }
@@ -92,13 +96,15 @@ public class DefaultReconnectService extends Thread implements IReconnectService
 
     @Override
     public void interrupt() {
-        try {
-            __flag = false;
-            join();
-        } catch (InterruptedException e) {
-            _LOG.debug(e.getMessage(), RuntimeUtils.unwrapThrow(e));
+        if (__inited) {
+            try {
+                __flag = false;
+                join();
+            } catch (InterruptedException e) {
+                _LOG.debug(e.getMessage(), RuntimeUtils.unwrapThrow(e));
+            }
+            super.interrupt();
         }
-        super.interrupt();
     }
 
     @Override

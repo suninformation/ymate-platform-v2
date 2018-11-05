@@ -105,7 +105,7 @@ public class NioEventGroup<LISTENER extends IListener<INioSession>> extends Abst
     }
 
     @Override
-    public synchronized void stop() throws IOException {
+    public void stop() throws IOException {
         for (NioEventProcessor _processor : __processors) {
             _processor.interrupt();
         }

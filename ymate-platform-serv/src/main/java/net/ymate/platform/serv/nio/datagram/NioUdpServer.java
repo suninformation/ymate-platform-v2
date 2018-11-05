@@ -63,7 +63,7 @@ public class NioUdpServer implements IServer<NioUdpListener, INioCodec> {
     }
 
     @Override
-    public synchronized void start() throws IOException {
+    public void start() throws IOException {
         if (!__isStarted) {
             __isStarted = true;
             __eventGroup = new NioEventGroup<NioUdpListener>(__serverCfg, __listener, __codec) {
@@ -158,7 +158,7 @@ public class NioUdpServer implements IServer<NioUdpListener, INioCodec> {
     }
 
     @Override
-    public synchronized void close() throws IOException {
+    public void close() throws IOException {
         if (__isStarted) {
             __isStarted = false;
             __eventGroup.close();

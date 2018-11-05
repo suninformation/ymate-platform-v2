@@ -54,30 +54,34 @@ public class DefaultHeartbeatService extends Thread implements IHeartbeatService
     }
 
     @Override
-    public synchronized void start() {
-        __flag = true;
-        setName("HeartbeatService-" + __client.listener().getClass().getSimpleName());
-        if (__client.clientCfg().getHeartbeatInterval() > 0) {
-            __heartbeatInterval = __client.clientCfg().getHeartbeatInterval();
+    public void start() {
+        if (__inited && !__flag) {
+            __flag = true;
+            setName("HeartbeatService-" + __client.listener().getClass().getSimpleName());
+            if (__client.clientCfg().getHeartbeatInterval() > 0) {
+                __heartbeatInterval = __client.clientCfg().getHeartbeatInterval();
+            }
+            __heartbeatMessage = StringUtils.defaultIfBlank(__client.clientCfg().getParam("heartbeat_message"), "0");
+            super.start();
         }
-        __heartbeatMessage = StringUtils.defaultIfBlank(__client.clientCfg().getParam("heartbeat_message"), "0");
-        super.start();
     }
 
     @Override
     public void run() {
-        long _millis = __heartbeatInterval * DateTimeUtils.SECOND;
-        while (__flag) {
-            try {
-                if (__client.isConnected()) {
-                    __client.send(__heartbeatMessage);
-                }
-                sleep(_millis);
-            } catch (Exception e) {
-                if (__flag) {
-                    _LOG.error(e.getMessage(), RuntimeUtils.unwrapThrow(e));
-                } else {
-                    _LOG.debug(e.getMessage(), RuntimeUtils.unwrapThrow(e));
+        if (__inited) {
+            long _millis = __heartbeatInterval * DateTimeUtils.SECOND;
+            while (__flag) {
+                try {
+                    if (__client.isConnected()) {
+                        __client.send(__heartbeatMessage);
+                    }
+                    sleep(_millis);
+                } catch (Exception e) {
+                    if (__flag) {
+                        _LOG.error(e.getMessage(), RuntimeUtils.unwrapThrow(e));
+                    } else {
+                        _LOG.debug(e.getMessage(), RuntimeUtils.unwrapThrow(e));
+                    }
                 }
             }
         }
@@ -90,13 +94,15 @@ public class DefaultHeartbeatService extends Thread implements IHeartbeatService
 
     @Override
     public void interrupt() {
-        try {
-            __flag = false;
-            join();
-        } catch (InterruptedException e) {
-            _LOG.debug(e.getMessage(), RuntimeUtils.unwrapThrow(e));
+        if (__inited && __flag) {
+            try {
+                __flag = false;
+                join();
+            } catch (InterruptedException e) {
+                _LOG.debug(e.getMessage(), RuntimeUtils.unwrapThrow(e));
+            }
+            super.interrupt();
         }
-        super.interrupt();
     }
 
     @Override
