@@ -60,11 +60,13 @@ public final class RecycleHelper {
      * 注册资源回收对象
      *
      * @param destroyable 资源回收对象
+     * @return 返回当前对象资源回收助手实例对象
      */
-    public void register(IDestroyable destroyable) {
+    public RecycleHelper register(IDestroyable destroyable) {
         if (destroyable != null) {
             __destroyableSet.add(destroyable);
         }
+        return this;
     }
 
     private void __recycle() {
