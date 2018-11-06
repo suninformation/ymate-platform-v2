@@ -16,6 +16,7 @@
 package net.ymate.platform.core;
 
 import net.ymate.platform.core.beans.intercept.InterceptSettings;
+import net.ymate.platform.core.event.IEventConfig;
 import net.ymate.platform.core.i18n.II18NEventHandler;
 import net.ymate.platform.core.support.IPasswordProcessor;
 
@@ -30,6 +31,13 @@ import java.util.Map;
  * @version 1.0
  */
 public interface IConfig {
+
+    /**
+     * 运行模式
+     */
+    enum Environment {
+        TEST, DEV, PRODUCT, UNKNOWN
+    }
 
     /**
      * @return 返回是否为开发模式
@@ -54,7 +62,7 @@ public interface IConfig {
     /**
      * @return 返回当前运行环境
      */
-    String getRunEnv();
+    Environment getRunEnv();
 
     /**
      * @return 返回框架自动扫描的包路径集合
@@ -109,9 +117,9 @@ public interface IConfig {
     Map<String, String> getModuleConfigs(String moduleName);
 
     /**
-     * @return 返回框架事件配置参数映射
+     * @return 返回框架事件配置参数
      */
-    Map<String, String> getEventConfigs();
+    IEventConfig getEventConfigs();
 
     /**
      * @return 是否开启拦截器全局规则设置, 默认为false

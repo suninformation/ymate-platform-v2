@@ -19,6 +19,7 @@ import net.ymate.platform.core.YMP;
 import net.ymate.platform.core.beans.proxy.IProxyFactory;
 
 import java.lang.annotation.Annotation;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -39,6 +40,8 @@ public interface IBeanFactory {
 
     void registerHandler(Class<? extends Annotation> annoClass);
 
+    IBeanHandler getBeanHandler(Class<? extends Annotation> annoClass);
+
     void registerInjector(Class<? extends Annotation> annoClass, IBeanInjector injector);
 
     /**
@@ -49,6 +52,11 @@ public interface IBeanFactory {
     void registerPackage(String packageName);
 
     /**
+     * @return 返回待扫描包路径名称集合
+     */
+    List<String> getPackageNames();
+
+    /**
      * 注册排除的包名称
      *
      * @param packageName 包名称
@@ -56,11 +64,23 @@ public interface IBeanFactory {
     void registerExcludedPackage(String packageName);
 
     /**
+     * @return 返回被排除的包名称集合
+     */
+    List<String> getExcludedPackageNames();
+
+    /**
      * 注册排除的接口类
      *
      * @param excludedClass 预排除接口类型
      */
     void registerExcludedClass(Class<?> excludedClass);
+
+    /**
+     * @return 返回当前被排除的jar或zip等包文件名称集合
+     */
+    List<String> getExcludedFiles();
+
+    void setExcludedFiles(List<String> excludedFiles);
 
     /**
      * @param clazz 目标类型

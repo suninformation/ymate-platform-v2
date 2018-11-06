@@ -15,18 +15,18 @@
  */
 package net.ymate.platform.core.beans.impl;
 
-import net.ymate.platform.core.beans.IBeanFilter;
-import net.ymate.platform.core.beans.IBeanLoader;
+import net.ymate.platform.core.beans.*;
+import net.ymate.platform.core.beans.annotation.Ignored;
 import net.ymate.platform.core.util.ClassUtils;
 import org.apache.commons.lang.StringUtils;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.lang.annotation.Annotation;
 import java.net.JarURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.jar.JarEntry;
@@ -44,13 +44,7 @@ public class DefaultBeanLoader implements IBeanLoader {
 
     private ClassLoader __classLoader;
 
-    private List<String> __excludedFileSet;
-
     public DefaultBeanLoader() {
-    }
-
-    public DefaultBeanLoader(List<String> excludedFiles) {
-        __excludedFileSet = excludedFiles;
     }
 
     @Override
@@ -64,22 +58,44 @@ public class DefaultBeanLoader implements IBeanLoader {
     }
 
     @Override
-    public List<String> getExcludedFiles() {
-        return __excludedFileSet == null ? Collections.<String>emptyList() : __excludedFileSet;
+    public void load(IBeanFactory beanFactory) throws Exception {
+        load(beanFactory, null);
     }
 
     @Override
-    public void setExcludedFiles(List<String> excludedFiles) {
-        __excludedFileSet = excludedFiles;
+    public void load(IBeanFactory beanFactory, IBeanFilter filter) throws Exception {
+        if (!beanFactory.getPackageNames().isEmpty()) {
+            String[] _excludedPackages = beanFactory.getExcludedPackageNames().toArray(new String[0]);
+            for (String _packageName : beanFactory.getPackageNames()) {
+                List<Class<?>> _classes = __doLoad(beanFactory, _packageName, filter);
+                for (Class<?> _class : _classes) {
+                    if (!StringUtils.startsWithAny(_class.getPackage().getName(), _excludedPackages)) {
+                        // 不扫描注解、枚举类，被声明@Ingored注解的类也将被忽略，因为需要处理package-info信息，所以放开接口限制
+                        if (!_class.isAnnotation() && !_class.isEnum() /* && !_class.isInterface() */ && !_class.isAnnotationPresent(Ignored.class)) {
+                            Annotation[] _annotations = _class.getAnnotations();
+                            if (_annotations != null && _annotations.length > 0) {
+                                for (Annotation _anno : _annotations) {
+                                    IBeanHandler _handler = beanFactory.getBeanHandler(_anno.annotationType());
+                                    if (_handler != null) {
+                                        Object _instance = _handler.handle(_class);
+                                        if (_instance != null) {
+                                            if (_instance instanceof BeanMeta) {
+                                                beanFactory.registerBean((BeanMeta) _instance);
+                                            } else {
+                                                beanFactory.registerBean(_class, _instance);
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
     }
 
-    @Override
-    public List<Class<?>> load(String packageName) throws Exception {
-        return load(packageName, null);
-    }
-
-    @Override
-    public List<Class<?>> load(String packageName, IBeanFilter filter) throws Exception {
+    private List<Class<?>> __doLoad(IBeanFactory beanFactory, String packageName, IBeanFilter filter) throws Exception {
         List<Class<?>> _returnValue = new ArrayList<Class<?>>();
         Enumeration<URL> _resources = this.getClassLoader().getResources(packageName.replaceAll("\\.", "/"));
         while (_resources.hasMoreElements()) {
@@ -88,19 +104,19 @@ public class DefaultBeanLoader implements IBeanLoader {
                 File[] _files = new File(_res.toURI()).listFiles();
                 if (_files != null && _files.length > 0) {
                     for (File _file : _files) {
-                        _returnValue.addAll(__doFindClassByClazz(packageName, _file, filter));
+                        _returnValue.addAll(__doFindClassByClazz(beanFactory, packageName, _file, filter));
                     }
                 }
             } else if ("jar".equalsIgnoreCase(_res.getProtocol()) || "wsjar".equalsIgnoreCase(_res.getProtocol())) {
-                _returnValue.addAll(__doFindClassByJar(packageName, ((JarURLConnection) _res.openConnection()).getJarFile(), filter));
+                _returnValue.addAll(__doFindClassByJar(beanFactory, packageName, ((JarURLConnection) _res.openConnection()).getJarFile(), filter));
             } else if ("zip".equalsIgnoreCase(_res.getProtocol())) {
-                _returnValue.addAll(__doFindClassByZip(_res, filter));
+                _returnValue.addAll(__doFindClassByZip(beanFactory, _res, filter));
             }
         }
         return _returnValue;
     }
 
-    private List<Class<?>> __doFindClassByClazz(String packageName, File resourceFile, IBeanFilter filter) throws Exception {
+    private List<Class<?>> __doFindClassByClazz(IBeanFactory beanFactory, String packageName, File resourceFile, IBeanFilter filter) throws Exception {
         List<Class<?>> _returnValue = new ArrayList<Class<?>>();
         String _resFileName = resourceFile.getName();
         if (resourceFile.isFile()) {
@@ -113,34 +129,33 @@ public class DefaultBeanLoader implements IBeanLoader {
             File[] _tmpFiles = resourceFile.listFiles();
             if (_tmpFiles != null && _tmpFiles.length > 0) {
                 for (File _tmpFile : _tmpFiles) {
-                    _returnValue.addAll(__doFindClassByClazz(packageName + "." + _resFileName, _tmpFile, filter));
+                    _returnValue.addAll(__doFindClassByClazz(beanFactory, packageName + "." + _resFileName, _tmpFile, filter));
                 }
             }
         }
         return _returnValue;
     }
 
-    private boolean __doCheckExculedFile(String targetFileName) {
-        if (__excludedFileSet != null && !__excludedFileSet.isEmpty() && StringUtils.isNotBlank(targetFileName)) {
-            if (__excludedFileSet.contains(targetFileName)) {
+    private boolean __doCheckExcludedFile(IBeanFactory beanFactory, String targetFileName) {
+        if (!beanFactory.getExcludedFiles().isEmpty() && StringUtils.isNotBlank(targetFileName)) {
+            if (beanFactory.getExcludedFiles().contains(targetFileName)) {
                 return true;
-            } else {
-                for (String _exculedFile : __excludedFileSet) {
-                    if (_exculedFile.indexOf('*') > 0) {
-                        _exculedFile = StringUtils.substringBefore(_exculedFile, "*");
-                    }
-                    if (targetFileName.startsWith(_exculedFile)) {
-                        return true;
-                    }
+            }
+            for (String _excludedFile : beanFactory.getExcludedFiles()) {
+                if (_excludedFile.indexOf('*') > 0) {
+                    _excludedFile = StringUtils.substringBefore(_excludedFile, "*");
+                }
+                if (targetFileName.startsWith(_excludedFile)) {
+                    return true;
                 }
             }
         }
         return false;
     }
 
-    private List<Class<?>> __doFindClassByJar(String packageName, JarFile jarFile, IBeanFilter filter) throws Exception {
+    private List<Class<?>> __doFindClassByJar(IBeanFactory beanFactory, String packageName, JarFile jarFile, IBeanFilter filter) throws Exception {
         List<Class<?>> _returnValue = new ArrayList<Class<?>>();
-        if (!__doCheckExculedFile(new File(jarFile.getName()).getName())) {
+        if (!__doCheckExcludedFile(beanFactory, new File(jarFile.getName()).getName())) {
             Enumeration<JarEntry> _entriesEnum = jarFile.entries();
             for (; _entriesEnum.hasMoreElements(); ) {
                 JarEntry _entry = _entriesEnum.nextElement();
@@ -158,7 +173,7 @@ public class DefaultBeanLoader implements IBeanLoader {
         return _returnValue;
     }
 
-    private List<Class<?>> __doFindClassByZip(URL zipUrl, IBeanFilter filter) throws Exception {
+    private List<Class<?>> __doFindClassByZip(IBeanFactory beanFactory, URL zipUrl, IBeanFilter filter) throws Exception {
         List<Class<?>> _returnValue = new ArrayList<Class<?>>();
         ZipInputStream _zipStream = null;
         try {
@@ -169,7 +184,7 @@ public class DefaultBeanLoader implements IBeanLoader {
                 _zipFilePath = StringUtils.substringAfter(zipUrl.toString(), "zip:");
             }
             File _zipFile = new File(_zipFilePath);
-            if (!__doCheckExculedFile(_zipFile.getName())) {
+            if (!__doCheckExcludedFile(beanFactory, _zipFile.getName())) {
                 _zipStream = new ZipInputStream(new FileInputStream(_zipFile));
                 ZipEntry _zipEntry = null;
                 while (null != (_zipEntry = _zipStream.getNextEntry())) {

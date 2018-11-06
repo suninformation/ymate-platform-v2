@@ -15,10 +15,7 @@
  */
 package net.ymate.platform.core;
 
-import net.ymate.platform.core.beans.BeanMeta;
-import net.ymate.platform.core.beans.IBeanFactory;
-import net.ymate.platform.core.beans.IBeanHandler;
-import net.ymate.platform.core.beans.IBeanInjector;
+import net.ymate.platform.core.beans.*;
 import net.ymate.platform.core.beans.annotation.*;
 import net.ymate.platform.core.beans.impl.DefaultBeanFactory;
 import net.ymate.platform.core.beans.impl.DefaultBeanLoader;
@@ -29,7 +26,6 @@ import net.ymate.platform.core.beans.proxy.IProxyFactory;
 import net.ymate.platform.core.event.Events;
 import net.ymate.platform.core.event.annotation.Event;
 import net.ymate.platform.core.event.annotation.EventRegister;
-import net.ymate.platform.core.event.impl.DefaultEventConfig;
 import net.ymate.platform.core.handle.*;
 import net.ymate.platform.core.i18n.I18N;
 import net.ymate.platform.core.module.IModule;
@@ -43,6 +39,7 @@ import net.ymate.platform.core.util.ClassUtils;
 import net.ymate.platform.core.util.ResourceUtils;
 import net.ymate.platform.core.util.RuntimeUtils;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang.NullArgumentException;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.time.StopWatch;
 import org.apache.commons.logging.Log;
@@ -69,7 +66,7 @@ public class YMP {
 
     private static final String __YMP_BASE_PACKAGE = "net.ymate.platform";
 
-    private static final YMP __instance = new YMP(ConfigBuilder.system().build());
+    private static volatile YMP __instance;
 
     private final IConfig __config;
 
@@ -91,6 +88,13 @@ public class YMP {
      * @return 返回默认YMP框架核心管理器对象实例，若未实例化或已销毁则重新创建对象实例
      */
     public static YMP get() {
+        if (__instance == null) {
+            synchronized (VERSION) {
+                if (__instance == null) {
+                    __instance = new YMP(ConfigBuilder.system().build());
+                }
+            }
+        }
         return __instance;
     }
 
@@ -151,6 +155,20 @@ public class YMP {
      * @throws Exception 框架初始化失败时将抛出异常
      */
     public YMP init() throws Exception {
+        return init(new DefaultBeanLoader());
+    }
+
+    /**
+     * 初始化YMP框架
+     *
+     * @param beanLoader 对象加载器接口实现类
+     * @return 返回当前YMP核心框架管理器对象
+     * @throws Exception 框架初始化失败时将抛出异常
+     */
+    public YMP init(IBeanLoader beanLoader) throws Exception {
+        if (beanLoader == null) {
+            throw new NullArgumentException("beanLoader");
+        }
         if (!__inited) {
             //
             _LOG.info(__loadBanner());
@@ -158,22 +176,24 @@ public class YMP {
             StopWatch _watch = new StopWatch();
             _watch.start();
             //
-            _LOG.info("Initializing ymate-platform-core-" + VERSION + " - debug:" + __config.isDevelopMode() + " - env:" + StringUtils.defaultIfBlank(__config.getRunEnv(), "unknown"));
+            _LOG.info("Initializing ymate-platform-core-" + VERSION + " - debug:" + __config.isDevelopMode() + " - env:" + __config.getRunEnv().name().toLowerCase());
 
             // 初始化I18N
             I18N.initialize(__config.getDefaultLocale(), __config.getI18NEventHandlerClass());
             // 初始化事件管理器，并注册框架、模块事件
-            __events = Events.create(new DefaultEventConfig(__config.getEventConfigs()));
+            __events = Events.create(__config.getEventConfigs());
             __events.registerEvent(ApplicationEvent.class);
             __events.registerEvent(ModuleEvent.class);
             // 配置根对象工厂
-            __beanFactory.setLoader(new DefaultBeanLoader(__config.getExcludedFiles()));
+            __beanFactory.setLoader(beanLoader);
+            __beanFactory.setExcludedFiles(__config.getExcludedFiles());
             __beanFactory.registerExcludedClass(IInitializable.class);
             __beanFactory.registerHandler(Bean.class);
             __beanFactory.registerHandler(Interceptor.class, new InterceptorHandler(this));
             __beanFactory.registerHandler(Packages.class, new PackagesHandler(this));
             // 配置模块对象工厂
-            __moduleFactory.setLoader(new DefaultBeanLoader(__config.getExcludedFiles()));
+            __moduleFactory.setLoader(beanLoader);
+            __beanFactory.setExcludedFiles(__config.getExcludedFiles());
             __moduleFactory.registerExcludedClass(IInitializable.class);
             __moduleFactory.registerHandler(Module.class, new ModuleHandler(this));
             __moduleFactory.registerHandler(Proxy.class, new ProxyHandler(this));

@@ -17,7 +17,10 @@ package net.ymate.platform.core.beans.impl;
 
 import net.ymate.platform.core.YMP;
 import net.ymate.platform.core.beans.*;
-import net.ymate.platform.core.beans.annotation.*;
+import net.ymate.platform.core.beans.annotation.By;
+import net.ymate.platform.core.beans.annotation.CleanProxy;
+import net.ymate.platform.core.beans.annotation.Inject;
+import net.ymate.platform.core.beans.annotation.Proxy;
 import net.ymate.platform.core.beans.proxy.IProxy;
 import net.ymate.platform.core.beans.proxy.IProxyFactory;
 import net.ymate.platform.core.beans.proxy.IProxyFilter;
@@ -49,6 +52,8 @@ public class DefaultBeanFactory implements IBeanFactory {
     private List<String> __excludedPackages;
 
     private List<Class<?>> __excludedClassSet;
+
+    private List<String> __excludedFileSet;
 
     private Map<Class<? extends Annotation>, IBeanHandler> __beanHandlerMap;
 
@@ -83,7 +88,7 @@ public class DefaultBeanFactory implements IBeanFactory {
     @Override
     public void registerHandler(Class<? extends Annotation> annoClass, IBeanHandler handler) {
         if (!__beanHandlerMap.containsKey(annoClass)) {
-            this.__beanHandlerMap.put(annoClass, handler);
+            __beanHandlerMap.put(annoClass, handler);
         } else {
             _LOG.warn("Handler class [" + annoClass.getSimpleName() + "] duplicate registration is not allowed");
         }
@@ -95,9 +100,14 @@ public class DefaultBeanFactory implements IBeanFactory {
     }
 
     @Override
+    public IBeanHandler getBeanHandler(Class<? extends Annotation> annoClass) {
+        return __beanHandlerMap.get(annoClass);
+    }
+
+    @Override
     public void registerInjector(Class<? extends Annotation> annoClass, IBeanInjector injector) {
         if (!__beanInjectorMap.containsKey(annoClass)) {
-            this.__beanInjectorMap.put(annoClass, injector);
+            __beanInjectorMap.put(annoClass, injector);
         } else {
             _LOG.warn("Injector class [" + annoClass.getSimpleName() + "] duplicate registration is not allowed");
         }
@@ -130,8 +140,18 @@ public class DefaultBeanFactory implements IBeanFactory {
     }
 
     @Override
+    public List<String> getPackageNames() {
+        return __packageNames;
+    }
+
+    @Override
     public void registerExcludedPackage(String packageName) {
         __doParsePackagePath(this.__excludedPackages, packageName);
+    }
+
+    @Override
+    public List<String> getExcludedPackageNames() {
+        return __excludedPackages;
     }
 
     @Override
@@ -139,6 +159,16 @@ public class DefaultBeanFactory implements IBeanFactory {
         if (excludedClass.isInterface()) {
             this.__excludedClassSet.add(excludedClass);
         }
+    }
+
+    @Override
+    public List<String> getExcludedFiles() {
+        return __excludedFileSet == null ? Collections.<String>emptyList() : __excludedFileSet;
+    }
+
+    @Override
+    public void setExcludedFiles(List<String> excludedFiles) {
+        __excludedFileSet = excludedFiles;
     }
 
     @Override
@@ -229,35 +259,7 @@ public class DefaultBeanFactory implements IBeanFactory {
                 this.__beanLoader = new DefaultBeanLoader();
             }
         }
-        if (!__packageNames.isEmpty()) {
-            String[] _excludedPackages = this.__excludedPackages.toArray(new String[0]);
-            for (String _packageName : __packageNames) {
-                List<Class<?>> _classes = this.__beanLoader.load(_packageName);
-                for (Class<?> _class : _classes) {
-                    if (!StringUtils.startsWithAny(_class.getPackage().getName(), _excludedPackages)) {
-                        // 不扫描注解、枚举类，被声明@Ingored注解的类也将被忽略，因为需要处理package-info信息，所以放开接口限制
-                        if (!_class.isAnnotation() && !_class.isEnum() /* && !_class.isInterface() */ && !_class.isAnnotationPresent(Ignored.class)) {
-                            Annotation[] _annotations = _class.getAnnotations();
-                            if (_annotations != null && _annotations.length > 0) {
-                                for (Annotation _anno : _annotations) {
-                                    IBeanHandler _handler = __beanHandlerMap.get(_anno.annotationType());
-                                    if (_handler != null) {
-                                        Object _instance = _handler.handle(_class);
-                                        if (_instance != null) {
-                                            if (_instance instanceof BeanMeta) {
-                                                __addClass((BeanMeta) _instance);
-                                            } else {
-                                                __addClass(BeanMeta.create(_instance, _class));
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
+        __beanLoader.load(this);
     }
 
     @Override

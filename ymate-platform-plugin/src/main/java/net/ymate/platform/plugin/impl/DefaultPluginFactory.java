@@ -92,29 +92,36 @@ public class DefaultPluginFactory implements IPluginFactory {
     }
 
     @SuppressWarnings("unchecked")
-    private List<Class<? extends IBeanHandler>> __doLoadBeanHandles() throws Exception {
-        List<Class<? extends IBeanHandler>> _returnValues = new ArrayList<Class<? extends IBeanHandler>>();
+    private void __doLoadBeanHandles() throws Exception {
+        for (String _package : __config.getAutoscanPackages()) {
+            __innerBeanFactory.registerPackage(_package);
+        }
+        __innerBeanFactory.registerHandler(Handler.class, new IBeanHandler() {
+            @Override
+            public Object handle(Class<?> targetClass) throws Exception {
+                IBeanHandler _handler;
+                try {
+                    _handler = (IBeanHandler) targetClass.getConstructor(YMP.class).newInstance(__owner);
+                } catch (NoSuchMethodException e) {
+                    _handler = (IBeanHandler) targetClass.newInstance();
+                }
+                __outerBeanFactory.registerHandler(targetClass.getAnnotation(Handler.class).value(), _handler);
+                return null;
+            }
+        });
         IBeanLoader _loader = new DefaultBeanLoader();
-        //
-        IBeanFilter _beanFilter = new IBeanFilter() {
+        _loader.load(__innerBeanFactory, new IBeanFilter() {
             @Override
             public boolean filter(Class<?> targetClass) {
                 return !(targetClass.isInterface() || targetClass.isAnnotation() || targetClass.isEnum()) && (targetClass.isAnnotationPresent(Handler.class) && ClassUtils.isInterfaceOf(targetClass, IBeanHandler.class));
             }
-        };
-        //
-        for (String _package : __config.getAutoscanPackages()) {
-            for (Class<?> _targetClass : _loader.load(_package, _beanFilter)) {
-                _returnValues.add((Class<? extends IBeanHandler>) _targetClass);
-            }
-        }
-        return _returnValues;
+        });
     }
 
     @Override
     public void init(IPluginConfig pluginConfig) throws Exception {
         if (!__inited) {
-            this.__config = pluginConfig;
+            __config = pluginConfig;
             //
             if (__owner != null) {
                 __owner.bindBeanFactory(__innerBeanFactory);
@@ -122,9 +129,7 @@ public class DefaultPluginFactory implements IPluginFactory {
                 __outerBeanFactory.registerHandler(Bean.class, new BeanHandler(this));
                 __outerBeanFactory.registerHandler(Proxy.class, new ProxyHandler(__owner));
                 //
-                for (Class<? extends IBeanHandler> _targetClass : __doLoadBeanHandles()) {
-                    __outerBeanFactory.registerHandler(_targetClass.getAnnotation(Handler.class).value(), _targetClass.getConstructor(YMP.class).newInstance(__owner));
-                }
+                __doLoadBeanHandles();
             }
             //
             __event = __config.getPluginEventListener();
@@ -133,12 +138,10 @@ public class DefaultPluginFactory implements IPluginFactory {
             }
             //
             __pluginClassLoader = __buildPluginClassLoader();
-            __outerBeanFactory.setLoader(new DefaultBeanLoader(__owner != null ? __owner.getConfig().getExcludedFiles() : null) {
-                @Override
-                public ClassLoader getClassLoader() {
-                    return __pluginClassLoader;
-                }
-            });
+            //
+            IBeanLoader _beanLoader = new DefaultBeanLoader();
+            _beanLoader.setClassLoader(__pluginClassLoader);
+            __outerBeanFactory.setLoader(_beanLoader);
             __outerBeanFactory.setParent(__innerBeanFactory);
             //
             for (String _package : __config.getAutoscanPackages()) {

@@ -17,7 +17,9 @@ package net.ymate.platform.core.support;
 
 import net.ymate.platform.core.IConfig;
 import net.ymate.platform.core.beans.intercept.InterceptSettings;
+import net.ymate.platform.core.event.IEventConfig;
 import net.ymate.platform.core.event.IEventProvider;
+import net.ymate.platform.core.event.impl.DefaultEventConfig;
 import net.ymate.platform.core.i18n.II18NEventHandler;
 import net.ymate.platform.core.lang.BlurObject;
 import net.ymate.platform.core.support.impl.DefaultPasswordProcessor;
@@ -39,7 +41,7 @@ public final class ConfigBuilder {
 
     private boolean __isDevelopMode;
 
-    private String __runMode;
+    private IConfig.Environment __runMode;
 
     private final List<String> __packageNames;
 
@@ -109,7 +111,6 @@ public final class ConfigBuilder {
         //
         ConfigBuilder _builder = ConfigBuilder.create(_processor)
                 .developMode(BlurObject.bind(properties.getProperty("ymp.dev_mode")).toBooleanValue())
-                .runMode(properties.getProperty("ymp.run_mode"))
                 .packageNames(__doParserArrayStr(properties, "ymp.autoscan_packages"))
                 .excludedPackages(__doParserArrayStr(properties, "ymp.excluded_packages"))
                 .excludedFiles(__doParserArrayStr(properties, "ymp.excluded_files"))
@@ -117,6 +118,13 @@ public final class ConfigBuilder {
                 .locale(StringUtils.trimToNull(properties.getProperty("ymp.i18n_default_locale")))
                 .i18nEventHandler(ClassUtils.impl(properties.getProperty("ymp.i18n_event_handler_class"), II18NEventHandler.class, ConfigBuilder.class))
                 .defaultPasswordProcessor(_passProcessor);
+        //
+        try {
+            IConfig.Environment _runMode = IConfig.Environment.valueOf(StringUtils.defaultIfBlank(properties.getProperty("ymp.run_mode"), "unknown").toUpperCase());
+            _builder.runMode(_runMode);
+        } catch (IllegalArgumentException e) {
+            _builder.runMode(IConfig.Environment.UNKNOWN);
+        }
         // 提取模块配置
         String _prefix = "ymp.params.";
         for (Object _key : properties.keySet()) {
@@ -264,7 +272,7 @@ public final class ConfigBuilder {
         return this;
     }
 
-    public ConfigBuilder runMode(String runMode) {
+    public ConfigBuilder runMode(IConfig.Environment runMode) {
         __runMode = runMode;
         return this;
     }
@@ -365,6 +373,7 @@ public final class ConfigBuilder {
     }
 
     public IConfig build() {
+        final IEventConfig __eventCfg = new DefaultEventConfig(__eventConfigs);
         return new IConfig() {
 
             @Override
@@ -374,21 +383,21 @@ public final class ConfigBuilder {
 
             @Override
             public boolean isTestEnv() {
-                return StringUtils.equalsIgnoreCase(__runMode, "test");
+                return Environment.TEST.equals(__runMode);
             }
 
             @Override
             public boolean isDevEnv() {
-                return StringUtils.equalsIgnoreCase(__runMode, "dev");
+                return Environment.DEV.equals(__runMode);
             }
 
             @Override
             public boolean isProductEnv() {
-                return StringUtils.equalsIgnoreCase(__runMode, "product");
+                return Environment.PRODUCT.equals(__runMode);
             }
 
             @Override
-            public String getRunEnv() {
+            public Environment getRunEnv() {
                 return __runMode;
             }
 
@@ -448,8 +457,8 @@ public final class ConfigBuilder {
             }
 
             @Override
-            public Map<String, String> getEventConfigs() {
-                return Collections.unmodifiableMap(__eventConfigs);
+            public IEventConfig getEventConfigs() {
+                return __eventCfg;
             }
 
             @Override

@@ -15,8 +15,6 @@
  */
 package net.ymate.platform.core.beans;
 
-import java.util.List;
-
 /**
  * 对象加载器接口
  *
@@ -30,27 +28,27 @@ public interface IBeanLoader {
      */
     ClassLoader getClassLoader();
 
+    /**
+     * 指定类加载器
+     *
+     * @param classLoader 类加载器
+     */
     void setClassLoader(ClassLoader classLoader);
 
     /**
-     * @return 返回当前被排除的jar或zip等包文件名称集合
-     */
-    List<String> getExcludedFiles();
-
-    void setExcludedFiles(List<String> excludedFiles);
-
-    /**
-     * @param packageName 扫描的包名称
-     * @return 返回加载的类对象集合
+     * 加载的类对象集合
+     *
+     * @param beanFactory 对象工厂
      * @throws Exception 类加载过程可能产生异常
      */
-    List<Class<?>> load(String packageName) throws Exception;
+    void load(IBeanFactory beanFactory) throws Exception;
 
     /**
-     * @param packageName 扫描的包名称
+     * 加载的类对象集合
+     *
+     * @param beanFactory 对象工厂
      * @param filter      类对象过滤器
-     * @return 返回加载的类对象集合
      * @throws Exception 类加载过程可能产生异常
      */
-    List<Class<?>> load(String packageName, IBeanFilter filter) throws Exception;
+    void load(IBeanFactory beanFactory, IBeanFilter filter) throws Exception;
 }
