@@ -16,10 +16,8 @@
 package net.ymate.platform.serv.nio.codec;
 
 import net.ymate.platform.core.util.RuntimeUtils;
-import net.ymate.platform.serv.ICodec;
-import net.ymate.platform.serv.nio.INioCodec;
+import net.ymate.platform.serv.nio.AbstractNioCodec;
 import net.ymate.platform.serv.nio.support.ByteBufferBuilder;
-import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -29,23 +27,15 @@ import java.io.UnsupportedEncodingException;
  * @author 刘镇 (suninformation@163.com) on 15/11/15 下午7:05
  * @version 1.0
  */
-public class NioStringCodec implements INioCodec {
+public class NioStringCodec extends AbstractNioCodec {
 
     private static final Log _LOG = LogFactory.getLog(NioStringCodec.class);
-
-    private String __charset;
-
-    @Override
-    public ICodec init(String charset) {
-        __charset = StringUtils.defaultIfBlank(charset, "UTF-8");
-        return this;
-    }
 
     @Override
     public ByteBufferBuilder encode(Object message) {
         if (message instanceof String) {
             try {
-                byte[] _bytes = ((String) message).getBytes(__charset);
+                byte[] _bytes = ((String) message).getBytes(getCharset());
                 return ByteBufferBuilder.allocate()
                         .append(_bytes.length)
                         .append(_bytes).flip();
@@ -70,7 +60,7 @@ public class NioStringCodec implements INioCodec {
         byte[] _bytes = new byte[_len];
         buffer.get(_bytes);
         try {
-            return new String(_bytes, __charset);
+            return new String(_bytes, getCharset());
         } catch (UnsupportedEncodingException e) {
             _LOG.warn(e.getMessage(), RuntimeUtils.unwrapThrow(e));
         }

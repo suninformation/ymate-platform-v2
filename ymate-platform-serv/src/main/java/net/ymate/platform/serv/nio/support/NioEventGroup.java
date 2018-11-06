@@ -42,7 +42,7 @@ public class NioEventGroup<LISTENER extends IListener<INioSession>> extends Abst
     protected int __selectorCount = 1;
 
     protected NioEventProcessor[] __processors;
-    protected AtomicInteger __handlerIndex = new AtomicInteger(0);
+    private AtomicInteger __handlerIndex = new AtomicInteger(0);
 
     public NioEventGroup(IServerCfg cfg, LISTENER listener, INioCodec codec) throws IOException {
         super(cfg, listener, codec);

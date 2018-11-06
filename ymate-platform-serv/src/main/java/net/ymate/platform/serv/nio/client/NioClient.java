@@ -31,13 +31,13 @@ public class NioClient extends AbstractService implements IClient<NioClientListe
 
     private static final Log _LOG = LogFactory.getLog(NioClient.class);
 
-    protected IClientCfg __clientCfg;
+    private IClientCfg __clientCfg;
 
-    protected NioEventGroup<NioClientListener> __eventGroup;
+    private NioEventGroup<NioClientListener> __eventGroup;
 
-    protected NioClientListener __listener;
+    private NioClientListener __listener;
 
-    protected INioCodec __codec;
+    private INioCodec __codec;
 
     @Override
     public void init(IClientCfg clientCfg,
@@ -50,8 +50,8 @@ public class NioClient extends AbstractService implements IClient<NioClientListe
         __codec = codec;
         __codec.init(__clientCfg.getCharset());
         //
-        __doSetReconnectService(reconnectService);
-        __doSetHeartbeatService(heartbeatService);
+        setReconnectService(reconnectService);
+        setHeartbeatService(heartbeatService);
     }
 
     @Override
@@ -67,8 +67,8 @@ public class NioClient extends AbstractService implements IClient<NioClientListe
         //
         __eventGroup.start();
         //
-        __doStartHeartbeatService();
-        __doStartReconnectService();
+        startHeartbeatService();
+        startReconnectService();
     }
 
     @Override
@@ -106,8 +106,8 @@ public class NioClient extends AbstractService implements IClient<NioClientListe
 
     @Override
     public void close() throws IOException {
-        __doStopHeartbeatService();
-        __doStopReconnectService();
+        stopHeartbeatService();
+        stopReconnectService();
         //
         if (__eventGroup != null) {
             __eventGroup.close();

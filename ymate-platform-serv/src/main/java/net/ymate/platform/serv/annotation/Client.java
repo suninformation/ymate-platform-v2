@@ -47,5 +47,5 @@ public @interface Client {
     /**
      * @return 链路维护(心跳)服务
      */
-    Class<? extends IHeartbeatService> hearbeatClass() default IHeartbeatService.NONE.class;
+    Class<? extends IHeartbeatService> heartbeatClass() default IHeartbeatService.NONE.class;
 }

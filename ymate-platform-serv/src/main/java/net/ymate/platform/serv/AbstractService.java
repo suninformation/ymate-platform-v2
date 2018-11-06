@@ -23,21 +23,25 @@ import java.io.IOException;
  */
 public abstract class AbstractService {
 
-    protected IReconnectService __reconnectService;
+    private IReconnectService __reconnectService;
 
-    protected IHeartbeatService __heartbeatService;
+    private IHeartbeatService __heartbeatService;
 
-    protected void __doSetReconnectService(IReconnectService reconnectService) {
+    protected IReconnectService getReconnectService() {
+        return __reconnectService;
+    }
+
+    protected void setReconnectService(IReconnectService reconnectService) {
         this.__reconnectService = reconnectService;
     }
 
-    protected void __doStartReconnectService() {
+    protected void startReconnectService() {
         if (__reconnectService != null && __reconnectService.isInited()) {
             __reconnectService.start();
         }
     }
 
-    protected void __doStopReconnectService() throws IOException {
+    protected void stopReconnectService() throws IOException {
         if (__reconnectService != null && __reconnectService.isStarted()) {
             __reconnectService.close();
         }
@@ -45,17 +49,21 @@ public abstract class AbstractService {
 
     //
 
-    protected void __doSetHeartbeatService(IHeartbeatService heartbeatService) {
+    protected IHeartbeatService getHeartbeatService() {
+        return __heartbeatService;
+    }
+
+    protected void setHeartbeatService(IHeartbeatService heartbeatService) {
         this.__heartbeatService = heartbeatService;
     }
 
-    protected void __doStartHeartbeatService() {
+    protected void startHeartbeatService() {
         if (__heartbeatService != null && __heartbeatService.isInited()) {
             __heartbeatService.start();
         }
     }
 
-    protected void __doStopHeartbeatService() throws IOException {
+    protected void stopHeartbeatService() throws IOException {
         if (__heartbeatService != null && __heartbeatService.isStarted()) {
             __heartbeatService.close();
         }

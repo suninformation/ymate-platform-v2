@@ -32,15 +32,15 @@ public class NioServer implements IServer<NioServerListener, INioCodec> {
 
     private static final Log _LOG = LogFactory.getLog(NioServer.class);
 
-    protected IServerCfg __serverCfg;
+    private IServerCfg __serverCfg;
 
-    protected NioEventGroup<NioServerListener> __eventGroup;
+    private NioEventGroup<NioServerListener> __eventGroup;
 
-    protected NioServerListener __listener;
+    private NioServerListener __listener;
 
-    protected INioCodec __codec;
+    private INioCodec __codec;
 
-    protected boolean __isStarted;
+    private boolean __isStarted;
 
     @Override
     public void init(IServerCfg serverCfg, NioServerListener listener, INioCodec codec) {

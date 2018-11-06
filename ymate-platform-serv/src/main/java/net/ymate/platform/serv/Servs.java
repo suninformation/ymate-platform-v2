@@ -187,7 +187,7 @@ public class Servs implements IModule, IServ {
         if (_annoClient == null) {
             throw new IllegalArgumentException("No Client annotation present on class");
         }
-        registerClient(_annoClient.name(), _annoClient.implClass(), _annoClient.codec(), listenerClass, _annoClient.reconnectClass(), _annoClient.hearbeatClass());
+        registerClient(_annoClient.name(), _annoClient.implClass(), _annoClient.codec(), listenerClass, _annoClient.reconnectClass(), _annoClient.heartbeatClass());
     }
 
     @Override

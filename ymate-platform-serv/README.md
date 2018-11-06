@@ -201,7 +201,7 @@
 |codec|设置编解码器，默认为NioStringCodec；|
 |implClass|客户端实现类，默认为NioClient；|
 |reconnectClass|短线重连服务实现类，默认为NONE；|
-|hearbeatClass|链路维护(心跳)服务实现类，默认为NONE；|
+|heartbeatClass|链路维护(心跳)服务实现类，默认为NONE；|
 
 基于TCP协议的客户端，需要继承NioClientListener监听器类，支持监听如下事件：
 
@@ -226,7 +226,7 @@
 ###### TCP客户端
 
     @Client(reconnectClass = DefaultReconnectService.class,
-            hearbeatClass = DefaultHeartbeatService.class, codec = TextLineCodec.class)
+            heartbeatClass = DefaultHeartbeatService.class, codec = TextLineCodec.class)
     public class TcpClient extends NioClientListener {
 
         @Override
@@ -245,7 +245,7 @@
 
         @Override
         public void onExceptionCaught(Throwable e, INioSession session) throws IOException {
-            System.out.println(session + "--->" + e.getMessage(), e);
+            System.out.println(session + "--->" + e);
         }
     }
 

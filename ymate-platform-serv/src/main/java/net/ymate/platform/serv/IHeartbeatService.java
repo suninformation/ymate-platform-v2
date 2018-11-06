@@ -24,7 +24,7 @@ import java.io.IOException;
  * @author 刘镇 (suninformation@163.com) on 15/11/19 下午1:28
  * @version 1.0
  */
-public interface IHeartbeatService extends Closeable {
+public interface IHeartbeatService<T> extends Closeable {
 
     final class NONE implements IHeartbeatService {
 
@@ -44,6 +44,11 @@ public interface IHeartbeatService extends Closeable {
         @Override
         public boolean isStarted() {
             return false;
+        }
+
+        @Override
+        public Object getHeartbeatPacket() {
+            return null;
         }
 
         @Override
@@ -72,4 +77,9 @@ public interface IHeartbeatService extends Closeable {
      * @return 是否已启动
      */
     boolean isStarted();
+
+    /**
+     * @return 返回心跳包对象
+     */
+    T getHeartbeatPacket();
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2017 the original author or authors.
+ * Copyright 2007-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,29 +13,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.ymate.platform.serv.impl;
+package net.ymate.platform.serv;
 
-import net.ymate.platform.serv.AbstractHeartbeatService;
 import org.apache.commons.lang.StringUtils;
 
 /**
- * @author 刘镇 (suninformation@163.com) on 15/11/19 下午3:07
+ * @author 刘镇 (suninformation@163.com) on 2018/11/6 2:36 PM
  * @version 1.0
  */
-public class DefaultHeartbeatService extends AbstractHeartbeatService<String> {
+public abstract class AbstractCodec<T> implements ICodec<T> {
 
-    private String __heartbeatMessage;
+    private String __charset;
 
     @Override
-    public void start() {
-        if (isInited() && !isStarted()) {
-            __heartbeatMessage = StringUtils.defaultIfBlank(getClient().clientCfg().getParam("heartbeat_message"), "0");
-            super.start();
-        }
+    public ICodec init(String charset) {
+        __charset = StringUtils.defaultIfBlank(charset, "UTF-8");
+        return this;
     }
 
-    @Override
-    public String getHeartbeatPacket() {
-        return __heartbeatMessage;
+    /**
+     * @return 返回字符集名称
+     */
+    public String getCharset() {
+        return __charset;
     }
 }

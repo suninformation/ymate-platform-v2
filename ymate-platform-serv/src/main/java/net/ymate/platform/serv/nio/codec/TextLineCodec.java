@@ -16,10 +16,8 @@
 package net.ymate.platform.serv.nio.codec;
 
 import net.ymate.platform.core.util.RuntimeUtils;
-import net.ymate.platform.serv.ICodec;
-import net.ymate.platform.serv.nio.INioCodec;
+import net.ymate.platform.serv.nio.AbstractNioCodec;
 import net.ymate.platform.serv.nio.support.ByteBufferBuilder;
-import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -29,25 +27,17 @@ import java.io.UnsupportedEncodingException;
  * @author 刘镇 (suninformation@163.com) on 15/11/20 下午2:52
  * @version 1.0
  */
-public class TextLineCodec implements INioCodec {
+public class TextLineCodec extends AbstractNioCodec {
 
     private static final Log _LOG = LogFactory.getLog(TextLineCodec.class);
 
     private static final String TEXT_EOF = "\r\n";
 
-    private String __charset;
-
-    @Override
-    public ICodec init(String charset) {
-        __charset = StringUtils.defaultIfBlank(charset, "UTF-8");
-        return this;
-    }
-
     @Override
     public ByteBufferBuilder encode(Object message) {
         try {
             String _msgStr = message.toString().concat(TEXT_EOF);
-            byte[] _bytes = _msgStr.getBytes(__charset);
+            byte[] _bytes = _msgStr.getBytes(getCharset());
             return ByteBufferBuilder.allocate(_bytes.length).append(_bytes).flip();
         } catch (UnsupportedEncodingException e) {
             _LOG.warn(e.getMessage(), RuntimeUtils.unwrapThrow(e));
@@ -71,7 +61,7 @@ public class TextLineCodec implements INioCodec {
                         }
                         byte[] _bytes = new byte[_counter];
                         _tmpBuffer.flip().get(_bytes);
-                        return new String(_bytes, __charset);
+                        return new String(_bytes, getCharset());
                     default:
                         _tmpBuffer.append(b);
                         _counter++;

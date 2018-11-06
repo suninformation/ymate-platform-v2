@@ -40,9 +40,9 @@ public class NioEventProcessor<LISTENER extends IListener<INioSession>> extends 
 
     private final NioEventGroup<LISTENER> __eventGroup;
 
-    protected Selector __selector;
+    Selector __selector;
 
-    protected boolean __flag;
+    private boolean __flag;
 
     private final Queue<Object[]> __eventQueues = new LinkedBlockingQueue<Object[]>();
     private final Queue<INioSession> __closeQueues = new LinkedBlockingQueue<INioSession>();

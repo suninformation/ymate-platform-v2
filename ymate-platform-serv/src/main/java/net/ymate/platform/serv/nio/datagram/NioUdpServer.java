@@ -43,15 +43,15 @@ public class NioUdpServer implements IServer<NioUdpListener, INioCodec> {
 
     private static final Log _LOG = LogFactory.getLog(NioUdpServer.class);
 
-    protected IServerCfg __serverCfg;
+    private IServerCfg __serverCfg;
 
-    protected NioEventGroup<NioUdpListener> __eventGroup;
+    private NioEventGroup<NioUdpListener> __eventGroup;
 
-    protected NioUdpListener __listener;
+    private NioUdpListener __listener;
 
-    protected INioCodec __codec;
+    private INioCodec __codec;
 
-    protected boolean __isStarted;
+    private boolean __isStarted;
 
     @Override
     public void init(IServerCfg serverCfg, NioUdpListener listener, INioCodec codec) {

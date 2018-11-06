@@ -41,13 +41,13 @@ public class NioUdpClient extends AbstractService implements IClient<NioUdpListe
 
     private static final Log _LOG = LogFactory.getLog(NioUdpClient.class);
 
-    protected IClientCfg __clientCfg;
+    private IClientCfg __clientCfg;
 
-    protected NioUdpEventGroup __eventGroup;
+    private NioUdpEventGroup __eventGroup;
 
-    protected NioUdpListener __listener;
+    private NioUdpListener __listener;
 
-    protected INioCodec __codec;
+    private INioCodec __codec;
 
     @Override
     public void init(IClientCfg clientCfg,
@@ -61,7 +61,7 @@ public class NioUdpClient extends AbstractService implements IClient<NioUdpListe
         __codec = codec;
         __codec.init(__clientCfg.getCharset());
         //
-        __doSetHeartbeatService(heartbeatService);
+        setHeartbeatService(heartbeatService);
     }
 
     @Override
@@ -74,7 +74,7 @@ public class NioUdpClient extends AbstractService implements IClient<NioUdpListe
         __eventGroup = new NioUdpEventGroup(__clientCfg, __listener, __codec);
         __eventGroup.start();
         //
-        __doStartHeartbeatService();
+        startHeartbeatService();
     }
 
     @Override
@@ -105,7 +105,7 @@ public class NioUdpClient extends AbstractService implements IClient<NioUdpListe
 
     @Override
     public void close() throws IOException {
-        __doStopHeartbeatService();
+        stopHeartbeatService();
         //
         __eventGroup.close();
     }

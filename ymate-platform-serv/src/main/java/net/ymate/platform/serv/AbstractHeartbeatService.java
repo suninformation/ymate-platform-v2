@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2017 the original author or authors.
+ * Copyright 2007-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,34 +13,34 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.ymate.platform.serv.impl;
+package net.ymate.platform.serv;
 
 import net.ymate.platform.core.util.DateTimeUtils;
 import net.ymate.platform.core.util.RuntimeUtils;
-import net.ymate.platform.serv.IClient;
-import net.ymate.platform.serv.IReconnectService;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import java.io.IOException;
-import java.util.concurrent.atomic.AtomicLong;
 
 /**
- * @author 刘镇 (suninformation@163.com) on 15/11/19 下午3:06
+ * @author 刘镇 (suninformation@163.com) on 2018/11/6 3:24 PM
  * @version 1.0
  */
-public class DefaultReconnectService extends Thread implements IReconnectService {
+public abstract class AbstractHeartbeatService<HEARTBEAT_TYPE> extends Thread implements IHeartbeatService<HEARTBEAT_TYPE> {
 
-    private static final Log _LOG = LogFactory.getLog(DefaultReconnectService.class);
-
-    private static final AtomicLong __COUNTER = new AtomicLong(0);
+    private static final Log _LOG = LogFactory.getLog(AbstractHeartbeatService.class);
 
     private IClient __client;
 
     private boolean __inited;
+
     private boolean __flag;
 
-    private int __timeout = 5;
+    private int __heartbeatInterval;
+
+    protected IClient getClient() {
+        return __client;
+    }
 
     @Override
     public void init(IClient client) {
@@ -54,17 +54,14 @@ public class DefaultReconnectService extends Thread implements IReconnectService
     }
 
     @Override
-    public boolean isStarted() {
-        return __flag;
-    }
-
-    @Override
     public void start() {
         if (__inited && !__flag) {
             __flag = true;
-            setName("ReconnectService-" + __client.listener().getClass().getSimpleName());
-            if (__client.clientCfg().getConnectionTimeout() > 0) {
-                __timeout = __client.clientCfg().getConnectionTimeout();
+            setName("HeartbeatService-" + __client.listener().getClass().getSimpleName());
+            if (__client.clientCfg().getHeartbeatInterval() > 0) {
+                __heartbeatInterval = __client.clientCfg().getHeartbeatInterval();
+            } else {
+                __heartbeatInterval = 5;
             }
             super.start();
         }
@@ -73,16 +70,13 @@ public class DefaultReconnectService extends Thread implements IReconnectService
     @Override
     public void run() {
         if (__inited) {
-            long _millis = __timeout * DateTimeUtils.SECOND;
+            long _millis = __heartbeatInterval * DateTimeUtils.SECOND;
             while (__flag) {
                 try {
-                    if (!__client.isConnected() && __COUNTER.getAndIncrement() > 1) {
-                        __client.reconnect();
-                        //
-                        __COUNTER.set(0);
-                    } else {
-                        sleep(_millis);
+                    if (__client.isConnected()) {
+                        __client.send(getHeartbeatPacket());
                     }
+                    sleep(_millis);
                 } catch (Exception e) {
                     if (__flag) {
                         _LOG.error(e.getMessage(), RuntimeUtils.unwrapThrow(e));
@@ -95,8 +89,13 @@ public class DefaultReconnectService extends Thread implements IReconnectService
     }
 
     @Override
+    public boolean isStarted() {
+        return __flag;
+    }
+
+    @Override
     public void interrupt() {
-        if (__inited) {
+        if (__inited && __flag) {
             try {
                 __flag = false;
                 join();
