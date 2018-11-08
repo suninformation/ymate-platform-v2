@@ -103,25 +103,30 @@ YMP框架的初始化默认是从加载`ymp-conf.properties`文件开始的，�
             }
         }
 
-#### 方式二：通用代码初始化
+#### 方式二：通过代码初始化
 
 - 示例代码，采用自定代理和对象加载器完成框架初始化操作：
 
         public static void main(String[] args) throws Exception {
+            // 创建YMP实例
             YMP owner = new YMP(ConfigBuilder.create()
                     .proxyFactory(new JavassistProxyFactory())
                     .beanLoader(new AbstractBeanLoader() {
                         @Override
                         public void load(IBeanFactory beanFactory, IBeanFilter filter) throws Exception {
+                            // 手动注册Bean到容器中
                             beanFactory.registerBean(DemoBean.class);
                         }
                     }).developMode(true).runEnv(IConfig.Environment.PRODUCT).build());
+            // 向容器注册模块
             owner.registerModule(new Cfgs());
             owner.registerModule(new Logs());
             owner.registerModule(new Servs());
+            // 执行框架初始化
             owner.init();
             //
             owner.getBean(DemoBean.class).say();
+            // 销毁
             owner.destroy();
         }
 
