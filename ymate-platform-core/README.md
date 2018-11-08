@@ -31,14 +31,16 @@ YMP框架主要是由核心(Core)和若干模块(Modules)组成，核心主要�
 
 #### 框架初始化
 
-YMP框架的初始化是从加载ymp-conf.properties文件开始的，该文件必须被放置在classpath的根路径下；
+#### 方式一：基于配置文件初始化
+
+YMP框架的初始化默认是从加载`ymp-conf.properties`文件开始的，该文件必须被放置在`classpath`的根路径下；
 
 - 根据程序运行环境的不同，YMP框架初始化时将根据当前操作系统优先级加载配置：
 
-    + 优先加载 ymp-conf_DEV.properties (若加载成功则强制设置ymp.dev_mode=true)
-    + Unix/Linux环境下，优先加载 ymp-conf_UNIX.properties；
-    + Windows环境下，优先加载 ymp-conf_WIN.properties；
-    + 若以上配置文件未找到，则加载默认配置 ymp-conf.properties；
+    + 优先加载`ymp-conf_DEV.properties`(若加载成功则强制设置`ymp.dev_mode=true`)
+    + Unix/Linux环境下，优先加载`ymp-conf_UNIX.properties`；
+    + Windows环境下，优先加载`ymp-conf_WIN.properties`；
+    + 若以上配置文件未找到，则加载默认配置`ymp-conf.properties`；
 
 - 同时，也可以通过JVM启动参数配置系统环境，框架将优先根据当前操作系统及运行环境加载匹配的配置文件：
 
@@ -67,6 +69,12 @@ YMP框架的初始化是从加载ymp-conf.properties文件开始的，该文件�
 		# 模块排除列表，多个模块名称或类名之间用'|'分隔，被包含的模块在加载过程中将被忽略
 		ymp.excluded_modules=
 		
+		# 框架对象加载器, 可选参数, 默认为net.ymate.platform.core.beans.impl.DefaultBeanLoader
+        ymp.bean_loader_class=
+        
+        # 框架代理工厂, 可选参数, 默认为net.ymate.platform.core.beans.proxy.impl.DefaultProxyFactory
+        ymp.proxy_factory_class=
+		
 		# 国际化资源默认语言设置，可选参数，默认采用系统环境语言
 		ymp.i18n_default_locale=zh_CN
 		
@@ -93,6 +101,28 @@ YMP框架的初始化是从加载ymp-conf.properties文件开始的，该文件�
             } finally {
                 YMP.get().destroy();
             }
+        }
+
+#### 方式二：通用代码初始化
+
+- 示例代码，采用自定代理和对象加载器完成框架初始化操作：
+
+        public static void main(String[] args) throws Exception {
+            YMP owner = new YMP(ConfigBuilder.create()
+                    .proxyFactory(new JavassistProxyFactory())
+                    .beanLoader(new AbstractBeanLoader() {
+                        @Override
+                        public void load(IBeanFactory beanFactory, IBeanFilter filter) throws Exception {
+                            beanFactory.registerBean(DemoBean.class);
+                        }
+                    }).developMode(true).runEnv(IConfig.Environment.PRODUCT).build());
+            owner.registerModule(new Cfgs());
+            owner.registerModule(new Logs());
+            owner.registerModule(new Servs());
+            owner.init();
+            //
+            owner.getBean(DemoBean.class).say();
+            owner.destroy();
         }
 
 #### Beans
