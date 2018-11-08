@@ -25,6 +25,7 @@ import net.ymate.platform.core.beans.proxy.IProxy;
 import net.ymate.platform.core.beans.proxy.IProxyFactory;
 import net.ymate.platform.core.beans.proxy.IProxyFilter;
 import net.ymate.platform.core.util.ClassUtils;
+import org.apache.commons.lang.NullArgumentException;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -239,7 +240,7 @@ public class DefaultBeanFactory implements IBeanFactory {
         __addClassInterfaces(beanMeta);
     }
 
-    protected void __addClassInterfaces(BeanMeta beanMeta) {
+    private void __addClassInterfaces(BeanMeta beanMeta) {
         if (!beanMeta.isSkipInterface()) {
             for (Class<?> _interface : beanMeta.getBeanInterfaces(__excludedClassSet)) {
                 __beanInterfacesMap.put(_interface, beanMeta.getBeanClass());
@@ -301,6 +302,9 @@ public class DefaultBeanFactory implements IBeanFactory {
 
     @Override
     public void initProxy(IProxyFactory proxyFactory) throws Exception {
+        if (proxyFactory == null) {
+            throw new NullArgumentException("proxyFactory");
+        }
         __proxyFactory = proxyFactory;
         for (Map.Entry<Class<?>, BeanMeta> _entry : this.getBeans().entrySet()) {
             if (!_entry.getKey().isInterface() && _entry.getValue().isSingleton()) {
@@ -309,7 +313,7 @@ public class DefaultBeanFactory implements IBeanFactory {
         }
     }
 
-    protected Object __wrapProxy(IProxyFactory proxyFactory, Object targetObject) {
+    private Object __wrapProxy(IProxyFactory proxyFactory, Object targetObject) {
         final Class<?> _targetClass = targetObject.getClass();
         //
         List<IProxy> _targetProxies = proxyFactory.getProxies(new IProxyFilter() {
@@ -354,7 +358,10 @@ public class DefaultBeanFactory implements IBeanFactory {
         });
         if (!_targetProxies.isEmpty()) {
             // 由于创建代理是通过接口重新实例化对象并覆盖原对象，所以需要复制原有对象成员（暂时先这样吧，还没想到好的处理办法）
-            return ClassUtils.wrapper(targetObject).duplicate(proxyFactory.createProxy(_targetClass, _targetProxies));
+            Object _proxyObject = proxyFactory.createProxy(_targetClass, _targetProxies);
+            if (_proxyObject != null) {
+                return ClassUtils.wrapper(targetObject).duplicate(_proxyObject);
+            }
         }
         return targetObject;
     }
@@ -375,7 +382,7 @@ public class DefaultBeanFactory implements IBeanFactory {
      * @param targetObject 目标类型对象实例
      * @throws Exception 可能产生的异常
      */
-    protected void __initBeanIoC(Class<?> targetClass, Object targetObject) throws Exception {
+    private void __initBeanIoC(Class<?> targetClass, Object targetObject) throws Exception {
         Field[] _fields = targetClass.getDeclaredFields();
         if (_fields != null && _fields.length > 0) {
             for (Field _field : _fields) {
@@ -400,7 +407,7 @@ public class DefaultBeanFactory implements IBeanFactory {
         }
     }
 
-    protected Object __tryInjector(Class<?> targetClass, Field field, Object originInject) {
+    private Object __tryInjector(Class<?> targetClass, Field field, Object originInject) {
         if (!__beanInjectorMap.isEmpty()) {
             for (Map.Entry<Class<? extends Annotation>, IBeanInjector> _entry : __beanInjectorMap.entrySet()) {
                 Annotation _annotation = field.getAnnotation(_entry.getKey());
