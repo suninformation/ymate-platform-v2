@@ -29,6 +29,14 @@ import java.util.List;
 public interface IProxyFactory {
 
     /**
+     * 初始化
+     *
+     * @param owner 指定所属YMP框架管理器
+     * @throws Exception 初始过程中产生的任何异常
+     */
+    void init(YMP owner) throws Exception;
+
+    /**
      * @return 返回代理工厂所属YMP框架管理器
      */
     YMP getOwner();

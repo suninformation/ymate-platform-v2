@@ -40,27 +40,7 @@ import java.util.zip.ZipInputStream;
  * @author 刘镇 (suninformation@163.com) on 15-3-6 下午1:46
  * @version 1.0
  */
-public class DefaultBeanLoader implements IBeanLoader {
-
-    private ClassLoader __classLoader;
-
-    public DefaultBeanLoader() {
-    }
-
-    @Override
-    public ClassLoader getClassLoader() {
-        return __classLoader == null ? this.getClass().getClassLoader() : __classLoader;
-    }
-
-    @Override
-    public void setClassLoader(ClassLoader classLoader) {
-        this.__classLoader = classLoader;
-    }
-
-    @Override
-    public void load(IBeanFactory beanFactory) throws Exception {
-        load(beanFactory, null);
-    }
+public class DefaultBeanLoader extends AbstractBeanLoader {
 
     @Override
     public void load(IBeanFactory beanFactory, IBeanFilter filter) throws Exception {
@@ -136,26 +116,26 @@ public class DefaultBeanLoader implements IBeanLoader {
         return _returnValue;
     }
 
-    private boolean __doCheckExcludedFile(IBeanFactory beanFactory, String targetFileName) {
+    private boolean __doCheckNonExcludedFile(IBeanFactory beanFactory, String targetFileName) {
         if (!beanFactory.getExcludedFiles().isEmpty() && StringUtils.isNotBlank(targetFileName)) {
             if (beanFactory.getExcludedFiles().contains(targetFileName)) {
-                return true;
+                return false;
             }
             for (String _excludedFile : beanFactory.getExcludedFiles()) {
                 if (_excludedFile.indexOf('*') > 0) {
                     _excludedFile = StringUtils.substringBefore(_excludedFile, "*");
                 }
                 if (targetFileName.startsWith(_excludedFile)) {
-                    return true;
+                    return false;
                 }
             }
         }
-        return false;
+        return true;
     }
 
     private List<Class<?>> __doFindClassByJar(IBeanFactory beanFactory, String packageName, JarFile jarFile, IBeanFilter filter) throws Exception {
         List<Class<?>> _returnValue = new ArrayList<Class<?>>();
-        if (!__doCheckExcludedFile(beanFactory, new File(jarFile.getName()).getName())) {
+        if (__doCheckNonExcludedFile(beanFactory, new File(jarFile.getName()).getName())) {
             Enumeration<JarEntry> _entriesEnum = jarFile.entries();
             for (; _entriesEnum.hasMoreElements(); ) {
                 JarEntry _entry = _entriesEnum.nextElement();
@@ -184,7 +164,7 @@ public class DefaultBeanLoader implements IBeanLoader {
                 _zipFilePath = StringUtils.substringAfter(zipUrl.toString(), "zip:");
             }
             File _zipFile = new File(_zipFilePath);
-            if (!__doCheckExcludedFile(beanFactory, _zipFile.getName())) {
+            if (__doCheckNonExcludedFile(beanFactory, _zipFile.getName())) {
                 _zipStream = new ZipInputStream(new FileInputStream(_zipFile));
                 ZipEntry _zipEntry = null;
                 while (null != (_zipEntry = _zipStream.getNextEntry())) {

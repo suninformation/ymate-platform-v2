@@ -16,7 +16,9 @@
 package net.ymate.platform.core.support;
 
 import net.ymate.platform.core.IConfig;
+import net.ymate.platform.core.beans.IBeanLoader;
 import net.ymate.platform.core.beans.intercept.InterceptSettings;
+import net.ymate.platform.core.beans.proxy.IProxyFactory;
 import net.ymate.platform.core.event.IEventConfig;
 import net.ymate.platform.core.event.IEventProvider;
 import net.ymate.platform.core.event.impl.DefaultEventConfig;
@@ -41,7 +43,7 @@ public final class ConfigBuilder {
 
     private boolean __isDevelopMode;
 
-    private IConfig.Environment __runMode;
+    private IConfig.Environment __runEnv;
 
     private final List<String> __packageNames;
 
@@ -52,6 +54,10 @@ public final class ConfigBuilder {
     private final List<String> __excludedModules;
 
     private Locale __locale;
+
+    private IBeanLoader __beanLoader;
+
+    private IProxyFactory __proxyFactory;
 
     private II18NEventHandler __i18nEventHandler;
 
@@ -116,14 +122,16 @@ public final class ConfigBuilder {
                 .excludedFiles(__doParserArrayStr(properties, "ymp.excluded_files"))
                 .excludedModules(__doParserArrayStr(properties, "ymp.excluded_modules"))
                 .locale(StringUtils.trimToNull(properties.getProperty("ymp.i18n_default_locale")))
+                .beanLoader(ClassUtils.impl(properties.getProperty("ymp.bean_loader_class"), IBeanLoader.class, ConfigBuilder.class))
+                .proxyFactory(ClassUtils.impl(properties.getProperty("ymp.proxy_factory_class"), IProxyFactory.class, ConfigBuilder.class))
                 .i18nEventHandler(ClassUtils.impl(properties.getProperty("ymp.i18n_event_handler_class"), II18NEventHandler.class, ConfigBuilder.class))
                 .defaultPasswordProcessor(_passProcessor);
         //
         try {
-            IConfig.Environment _runMode = IConfig.Environment.valueOf(StringUtils.defaultIfBlank(properties.getProperty("ymp.run_mode"), "unknown").toUpperCase());
-            _builder.runMode(_runMode);
+            IConfig.Environment _runEnv = IConfig.Environment.valueOf(StringUtils.defaultIfBlank(properties.getProperty("ymp.run_env"), "unknown").toUpperCase());
+            _builder.runEnv(_runEnv);
         } catch (IllegalArgumentException e) {
-            _builder.runMode(IConfig.Environment.UNKNOWN);
+            _builder.runEnv(IConfig.Environment.UNKNOWN);
         }
         // 提取模块配置
         String _prefix = "ymp.params.";
@@ -204,12 +212,12 @@ public final class ConfigBuilder {
         boolean _testFlag = false;
         InputStream _in = null;
         try {
-            String _mode = System.getProperty("ymp.run_env");
-            if (StringUtils.isNotBlank(_mode)) {
-                if (StringUtils.equalsIgnoreCase(_mode, "dev")) {
+            String _env = System.getProperty("ymp.run_env");
+            if (StringUtils.isNotBlank(_env)) {
+                if (StringUtils.equalsIgnoreCase(_env, "dev")) {
                     _in = __doLoadResourceStream("_DEV");
                     _devFlag = _in != null;
-                } else if (StringUtils.equalsIgnoreCase(_mode, "test")) {
+                } else if (StringUtils.equalsIgnoreCase(_env, "test")) {
                     _in = __doLoadResourceStream("_TEST");
                     _testFlag = _in != null;
                 }
@@ -225,11 +233,11 @@ public final class ConfigBuilder {
                 __props.load(_in);
                 if (_devFlag) {
                     __props.setProperty("ymp.dev_mode", "true");
-                    __props.setProperty("ymp.run_mode", "dev");
+                    __props.setProperty("ymp.run_env", "dev");
                 } else if (_testFlag) {
-                    __props.setProperty("ymp.run_mode", "test");
+                    __props.setProperty("ymp.run_env", "test");
                 } else {
-                    __props.setProperty("ymp.run_mode", "product");
+                    __props.setProperty("ymp.run_env", "product");
                 }
             }
             return create(__props);
@@ -272,8 +280,8 @@ public final class ConfigBuilder {
         return this;
     }
 
-    public ConfigBuilder runMode(IConfig.Environment runMode) {
-        __runMode = runMode;
+    public ConfigBuilder runEnv(IConfig.Environment runMode) {
+        __runEnv = runMode;
         return this;
     }
 
@@ -324,6 +332,16 @@ public final class ConfigBuilder {
 
     public ConfigBuilder locale(String locale) {
         __locale = LocaleUtils.toLocale(locale);
+        return this;
+    }
+
+    public ConfigBuilder beanLoader(IBeanLoader beanLoader) {
+        __beanLoader = beanLoader;
+        return this;
+    }
+
+    public ConfigBuilder proxyFactory(IProxyFactory proxyFactory) {
+        __proxyFactory = proxyFactory;
         return this;
     }
 
@@ -383,22 +401,22 @@ public final class ConfigBuilder {
 
             @Override
             public boolean isTestEnv() {
-                return Environment.TEST.equals(__runMode);
+                return Environment.TEST.equals(__runEnv);
             }
 
             @Override
             public boolean isDevEnv() {
-                return Environment.DEV.equals(__runMode);
+                return Environment.DEV.equals(__runEnv);
             }
 
             @Override
             public boolean isProductEnv() {
-                return Environment.PRODUCT.equals(__runMode);
+                return Environment.PRODUCT.equals(__runEnv);
             }
 
             @Override
             public Environment getRunEnv() {
-                return __runMode;
+                return __runEnv;
             }
 
             @Override
@@ -427,7 +445,17 @@ public final class ConfigBuilder {
             }
 
             @Override
-            public II18NEventHandler getI18NEventHandlerClass() {
+            public IBeanLoader getBeanLoader() {
+                return __beanLoader;
+            }
+
+            @Override
+            public IProxyFactory getProxyFactory() {
+                return __proxyFactory;
+            }
+
+            @Override
+            public II18NEventHandler getI18NEventHandler() {
                 return __i18nEventHandler;
             }
 

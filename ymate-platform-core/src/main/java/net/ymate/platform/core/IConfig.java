@@ -15,7 +15,9 @@
  */
 package net.ymate.platform.core;
 
+import net.ymate.platform.core.beans.IBeanLoader;
 import net.ymate.platform.core.beans.intercept.InterceptSettings;
+import net.ymate.platform.core.beans.proxy.IProxyFactory;
 import net.ymate.platform.core.event.IEventConfig;
 import net.ymate.platform.core.i18n.II18NEventHandler;
 import net.ymate.platform.core.support.IPasswordProcessor;
@@ -90,9 +92,19 @@ public interface IConfig {
     Locale getDefaultLocale();
 
     /**
+     * @return 对象加载器接口实现类
+     */
+    IBeanLoader getBeanLoader();
+
+    /**
+     * @return 代理工厂接口实现类
+     */
+    IProxyFactory getProxyFactory();
+
+    /**
      * @return 国际化资源管理器事件监听处理器，可选参数
      */
-    II18NEventHandler getI18NEventHandlerClass();
+    II18NEventHandler getI18NEventHandler();
 
     /**
      * @return 默认密码处理器，可选参数，用于对已加密参数值进行解密，默认为net.ymate.platform.core.support.impl.DefaultPasswordProcessor

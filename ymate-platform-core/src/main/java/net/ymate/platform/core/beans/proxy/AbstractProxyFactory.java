@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2017 the original author or authors.
+ * Copyright 2007-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,35 +13,30 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.ymate.platform.core.beans.impl.proxy;
+package net.ymate.platform.core.beans.proxy;
 
-import net.sf.cglib.proxy.Enhancer;
-import net.sf.cglib.proxy.MethodInterceptor;
-import net.sf.cglib.proxy.MethodProxy;
 import net.ymate.platform.core.YMP;
 import net.ymate.platform.core.beans.annotation.Proxy;
-import net.ymate.platform.core.beans.proxy.IProxy;
-import net.ymate.platform.core.beans.proxy.IProxyFactory;
-import net.ymate.platform.core.beans.proxy.IProxyFilter;
 
-import java.lang.reflect.Method;
 import java.util.*;
 
 /**
- * 默认代理工厂接口实现
- *
- * @author 刘镇 (suninformation@163.com) on 15-3-3 下午5:06
+ * @author 刘镇 (suninformation@163.com) on 2018/11/7 5:16 PM
  * @version 1.0
  */
-public class DefaultProxyFactory implements IProxyFactory {
+public abstract class AbstractProxyFactory implements IProxyFactory {
 
-    private final YMP __owner;
+    private YMP __owner;
 
     private final List<IProxy> __proxies;
 
-    public DefaultProxyFactory(YMP owner) {
-        this.__owner = owner;
+    public AbstractProxyFactory() {
         this.__proxies = new ArrayList<IProxy>();
+    }
+
+    @Override
+    public void init(YMP owner) throws Exception {
+        __owner = owner;
     }
 
     @Override
@@ -95,17 +90,5 @@ public class DefaultProxyFactory implements IProxyFactory {
     @Override
     public <T> T createProxy(Class<?> targetClass) {
         return createProxy(targetClass, __proxies);
-    }
-
-    @Override
-    @SuppressWarnings("unchecked")
-    public <T> T createProxy(final Class<?> targetClass, final List<IProxy> proxies) {
-        final IProxyFactory _owner = this;
-        return (T) Enhancer.create(targetClass, new MethodInterceptor() {
-            @Override
-            public Object intercept(Object targetObject, Method targetMethod, Object[] methodParams, MethodProxy methodProxy) throws Throwable {
-                return new DefaultProxyChain(_owner, targetClass, targetObject, targetMethod, methodProxy, methodParams, proxies).doProxyChain();
-            }
-        });
     }
 }
