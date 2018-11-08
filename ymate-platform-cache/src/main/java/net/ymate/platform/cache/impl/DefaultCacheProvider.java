@@ -17,94 +17,45 @@ package net.ymate.platform.cache.impl;
 
 import net.sf.ehcache.CacheManager;
 import net.sf.ehcache.Ehcache;
+import net.ymate.platform.cache.AbstractCacheProvider;
 import net.ymate.platform.cache.ICache;
 import net.ymate.platform.cache.ICacheEventListener;
-import net.ymate.platform.cache.ICacheProvider;
 import net.ymate.platform.cache.ICaches;
 import net.ymate.platform.cache.support.EhCacheWrapper;
-
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * @author 刘镇 (suninformation@163.com) on 14/10/17
  * @version 1.0
  */
-public class DefaultCacheProvider implements ICacheProvider {
+public class DefaultCacheProvider extends AbstractCacheProvider {
 
     private CacheManager __cacheManager;
-
-    private Map<String, ICache> __caches;
-
-    private static final Object __LOCKER = new Object();
-
-    protected ICaches __owner;
 
     @Override
     public String getName() {
         return ICache.DEFAULT;
     }
 
-    private String __safedCacheName(String name) {
-        if (ICache.DEFAULT.equalsIgnoreCase(name)) {
-            name = CacheManager.DEFAULT_NAME;
-        }
-        return name;
-    }
-
     @Override
     public void init(ICaches owner) {
-        __owner = owner;
-        __cacheManager = CacheManager.create();
-        __caches = new ConcurrentHashMap<String, ICache>();
-    }
-
-    @Override
-    public ICache createCache(String name, final ICacheEventListener listener) {
-        name = __safedCacheName(name);
+        super.init(owner);
         //
-        ICache _cache = __caches.get(name);
-        if (_cache == null) {
-            synchronized (__LOCKER) {
-                Ehcache _ehcache = __cacheManager.getEhcache(name);
-                //
-                if (_ehcache == null) {
-                    __cacheManager.addCache(name);
-                    _ehcache = __cacheManager.getCache(name);
-                }
-                _cache = new EhCacheWrapper(__owner, _ehcache, listener);
-                __caches.put(name, _cache);
-            }
+        __cacheManager = CacheManager.create();
+    }
+
+    @Override
+    protected ICache __createCache(String saferName, ICacheEventListener listener) {
+        Ehcache _ehcache = __cacheManager.getEhcache(saferName);
+        if (_ehcache == null) {
+            __cacheManager.addCache(saferName);
+            _ehcache = __cacheManager.getCache(saferName);
         }
-        return _cache;
-    }
-
-    @Override
-    public ICache getCache(String name) {
-        return getCache(name, true);
-    }
-
-    @Override
-    public ICache getCache(String name, boolean create) {
-        return getCache(name, create, __owner.getModuleCfg().getCacheEventListener());
-    }
-
-    @Override
-    public ICache getCache(String name, boolean create, ICacheEventListener listener) {
-        ICache _cache = __caches.get(__safedCacheName(name));
-        if (_cache == null && create) {
-            _cache = createCache(name, listener);
-        }
-        return _cache;
+        return new EhCacheWrapper(getOwner(), _ehcache, listener);
     }
 
     @Override
     public void destroy() {
-        for (ICache _cache : __caches.values()) {
-            _cache.destroy();
-        }
-        __caches.clear();
-        __caches = null;
+        super.destroy();
         //
         __cacheManager.shutdown();
         __cacheManager = null;

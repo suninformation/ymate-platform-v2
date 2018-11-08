@@ -22,22 +22,13 @@ import net.ymate.platform.cache.support.MultilevelCacheWrapper;
 import net.ymate.platform.persistence.redis.IRedis;
 import net.ymate.platform.persistence.redis.Redis;
 
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-
 /**
  * @author 刘镇 (suninformation@163.com) on 15/12/6 上午4:58
  * @version 1.0
  */
-public class MultilevelCacheProvider implements ICacheProvider {
+public class MultilevelCacheProvider extends AbstractCacheProvider {
 
     private CacheManager __cacheManager;
-
-    private Map<String, ICache> __caches;
-
-    private static final Object __LOCKER = new Object();
-
-    protected ICaches __owner;
 
     private IRedis __redis;
 
@@ -48,63 +39,19 @@ public class MultilevelCacheProvider implements ICacheProvider {
 
     @Override
     public void init(ICaches owner) throws CacheException {
-        __owner = owner;
+        super.init(owner);
+        //
         __cacheManager = CacheManager.create();
-        __redis = Redis.get(__owner.getOwner());
-        __caches = new ConcurrentHashMap<String, ICache>();
+        __redis = Redis.get(owner.getOwner());
     }
 
-    private String __safedCacheName(String name) {
-        if (ICache.DEFAULT.equalsIgnoreCase(name)) {
-            name = CacheManager.DEFAULT_NAME;
+    @Override
+    protected ICache __createCache(String saferName, ICacheEventListener listener) {
+        Ehcache _ehcache = __cacheManager.getEhcache(saferName);
+        if (_ehcache == null) {
+            __cacheManager.addCache(saferName);
+            _ehcache = __cacheManager.getCache(saferName);
         }
-        return name;
-    }
-
-    @Override
-    public ICache createCache(String name, ICacheEventListener listener) throws CacheException {
-        ICache _cache = __caches.get(name);
-        if (_cache == null) {
-            synchronized (__LOCKER) {
-                Ehcache _ehcache = __cacheManager.getEhcache(__safedCacheName(name));
-                //
-                if (_ehcache == null) {
-                    __cacheManager.addCache(name);
-                    _ehcache = __cacheManager.getCache(name);
-                }
-                //
-                _cache = new MultilevelCacheWrapper(__owner, name, _ehcache, __redis, listener);
-                __caches.put(name, _cache);
-            }
-        }
-        return _cache;
-    }
-
-    @Override
-    public ICache getCache(String name) {
-        return getCache(name, true);
-    }
-
-    @Override
-    public ICache getCache(String name, boolean create) {
-        return getCache(name, create, __owner.getModuleCfg().getCacheEventListener());
-    }
-
-    @Override
-    public ICache getCache(String name, boolean create, ICacheEventListener listener) {
-        ICache _cache = __caches.get(name);
-        if (_cache == null && create) {
-            _cache = createCache(name, listener);
-        }
-        return _cache;
-    }
-
-    @Override
-    public void destroy() throws CacheException {
-        for (ICache _cache : __caches.values()) {
-            _cache.destroy();
-        }
-        __caches.clear();
-        __caches = null;
+        return new MultilevelCacheWrapper(getOwner(), saferName, _ehcache, __redis, listener);
     }
 }

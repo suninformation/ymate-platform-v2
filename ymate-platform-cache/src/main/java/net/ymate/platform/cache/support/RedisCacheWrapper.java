@@ -64,18 +64,18 @@ public class RedisCacheWrapper extends JedisPubSub implements ICache {
         }
     }
 
-    protected String __doSerializeKey(Object key) throws Exception {
+    private String __doSerializeKey(Object key) {
         if (key instanceof String || key instanceof StringBuilder || key instanceof StringBuffer || key instanceof Number) {
             return key.toString();
         }
         return DigestUtils.md5Hex(("" + key).getBytes());
     }
 
-    protected String __doSerializeValue(Object value) throws Exception {
+    private String __doSerializeValue(Object value) throws Exception {
         return Base64.encodeBase64String(__owner.getModuleCfg().getSerializer().serialize(value));
     }
 
-    protected Object __doUnserializeValue(String value) throws Exception {
+    private Object __doUnserializeValue(String value) throws Exception {
         if (value == null) {
             return null;
         }
