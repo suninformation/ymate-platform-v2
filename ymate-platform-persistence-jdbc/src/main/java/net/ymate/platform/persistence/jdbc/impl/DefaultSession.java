@@ -20,10 +20,7 @@ import net.ymate.platform.core.lang.PairObject;
 import net.ymate.platform.core.util.ExpressionUtils;
 import net.ymate.platform.core.util.UUIDUtils;
 import net.ymate.platform.persistence.*;
-import net.ymate.platform.persistence.base.EntityMeta;
-import net.ymate.platform.persistence.base.IEntity;
-import net.ymate.platform.persistence.base.IEntityPK;
-import net.ymate.platform.persistence.base.ShardingList;
+import net.ymate.platform.persistence.base.*;
 import net.ymate.platform.persistence.impl.DefaultResultSet;
 import net.ymate.platform.persistence.jdbc.*;
 import net.ymate.platform.persistence.jdbc.base.*;
@@ -117,7 +114,7 @@ public class DefaultSession implements ISession {
         for (Object _param : sql.params().params()) {
             _opt.addParameter(_param);
         }
-        SessionEventContext _eventContext = new SessionEventContext(_opt, Persistence.OperationType.QUERY);
+        SessionEventContext _eventContext = new SessionEventContext(_opt, Type.OPT.QUERY);
         if (__sessionEvent != null) {
             __sessionEvent.onQueryBefore(_eventContext);
         }
@@ -150,7 +147,7 @@ public class DefaultSession implements ISession {
         for (Object _param : sql.params().params()) {
             _opt.addParameter(_param);
         }
-        SessionEventContext _eventContext = new SessionEventContext(_opt, Persistence.OperationType.QUERY);
+        SessionEventContext _eventContext = new SessionEventContext(_opt, Type.OPT.QUERY);
         if (__sessionEvent != null) {
             __sessionEvent.onQueryBefore(_eventContext);
         }
@@ -271,7 +268,7 @@ public class DefaultSession implements ISession {
                 _opt.addParameter(_param);
             }
         }
-        SessionEventContext _eventContext = new SessionEventContext(_opt, Persistence.OperationType.QUERY);
+        SessionEventContext _eventContext = new SessionEventContext(_opt, Type.OPT.QUERY);
         if (__sessionEvent != null) {
             __sessionEvent.onQueryBefore(_eventContext);
         }
@@ -311,7 +308,7 @@ public class DefaultSession implements ISession {
         } else {
             _opt.addParameter(id);
         }
-        SessionEventContext _eventContext = new SessionEventContext(_opt, Persistence.OperationType.QUERY);
+        SessionEventContext _eventContext = new SessionEventContext(_opt, Type.OPT.QUERY);
         if (__sessionEvent != null) {
             __sessionEvent.onQueryBefore(_eventContext);
         }
@@ -332,7 +329,7 @@ public class DefaultSession implements ISession {
         for (Object _param : sql.params().params()) {
             _opt.addParameter(_param);
         }
-        SessionEventContext _eventContext = new SessionEventContext(_opt, Persistence.OperationType.QUERY);
+        SessionEventContext _eventContext = new SessionEventContext(_opt, Type.OPT.QUERY);
         if (__sessionEvent != null) {
             __sessionEvent.onQueryBefore(_eventContext);
         }
@@ -379,7 +376,7 @@ public class DefaultSession implements ISession {
                 _opt.addParameter(_param);
             }
         }
-        SessionEventContext _eventContext = new SessionEventContext(_opt, Persistence.OperationType.QUERY);
+        SessionEventContext _eventContext = new SessionEventContext(_opt, Type.OPT.QUERY);
         if (__sessionEvent != null) {
             __sessionEvent.onQueryBefore(_eventContext);
         }
@@ -399,7 +396,7 @@ public class DefaultSession implements ISession {
         for (Object _param : sql.params().params()) {
             _opt.addParameter(_param);
         }
-        SessionEventContext _eventContext = new SessionEventContext(_opt, Persistence.OperationType.UPDATE);
+        SessionEventContext _eventContext = new SessionEventContext(_opt, Type.OPT.UPDATE);
         if (__sessionEvent != null) {
             __sessionEvent.onUpdateBefore(_eventContext);
         }
@@ -431,7 +428,7 @@ public class DefaultSession implements ISession {
         for (String _sql : sql.getSQLs()) {
             _opt.addBatchSQL(_sql);
         }
-        SessionEventContext _eventContext = new SessionEventContext(_opt, Persistence.OperationType.BATCH_UPDATE);
+        SessionEventContext _eventContext = new SessionEventContext(_opt, Type.OPT.BATCH_UPDATE);
         if (__sessionEvent != null) {
             __sessionEvent.onUpdateBefore(_eventContext);
         }
@@ -468,7 +465,7 @@ public class DefaultSession implements ISession {
         for (Object _param : _entity.getValue().params()) {
             _opt.addParameter(_param);
         }
-        SessionEventContext _eventContext = new SessionEventContext(_opt, Persistence.OperationType.UPDATE);
+        SessionEventContext _eventContext = new SessionEventContext(_opt, Type.OPT.UPDATE);
         if (__sessionEvent != null) {
             __sessionEvent.onUpdateBefore(_eventContext);
         }
@@ -510,7 +507,7 @@ public class DefaultSession implements ISession {
             }
             _opt.addBatchParameter(_batchParam);
         }
-        SessionEventContext _eventContext = new SessionEventContext(_opt, Persistence.OperationType.BATCH_UPDATE);
+        SessionEventContext _eventContext = new SessionEventContext(_opt, Type.OPT.BATCH_UPDATE);
         if (__sessionEvent != null) {
             __sessionEvent.onUpdateBefore(_eventContext);
         }
@@ -581,7 +578,7 @@ public class DefaultSession implements ISession {
         for (Object _param : _entity.getValue().params()) {
             _opt.addParameter(_param);
         }
-        SessionEventContext _eventContext = new SessionEventContext(_opt, Persistence.OperationType.UPDATE);
+        SessionEventContext _eventContext = new SessionEventContext(_opt, Type.OPT.UPDATE);
         if (__sessionEvent != null) {
             __sessionEvent.onInsertBefore(_eventContext);
         }
@@ -643,7 +640,7 @@ public class DefaultSession implements ISession {
             }
             _opt.addBatchParameter(_batchParam);
         }
-        SessionEventContext _eventContext = new SessionEventContext(_opt, Persistence.OperationType.BATCH_UPDATE);
+        SessionEventContext _eventContext = new SessionEventContext(_opt, Type.OPT.BATCH_UPDATE);
         if (__sessionEvent != null) {
             __sessionEvent.onInsertBefore(_eventContext);
         }
@@ -700,7 +697,7 @@ public class DefaultSession implements ISession {
         for (Object _param : _entity.getValue().params()) {
             _opt.addParameter(_param);
         }
-        SessionEventContext _eventContext = new SessionEventContext(_opt, Persistence.OperationType.UPDATE);
+        SessionEventContext _eventContext = new SessionEventContext(_opt, Type.OPT.UPDATE);
         if (__sessionEvent != null) {
             __sessionEvent.onRemoveBefore(_eventContext);
         }
@@ -732,7 +729,7 @@ public class DefaultSession implements ISession {
             }
             _opt.addBatchParameter(_batchParam);
         }
-        SessionEventContext _eventContext = new SessionEventContext(_opt, Persistence.OperationType.BATCH_UPDATE);
+        SessionEventContext _eventContext = new SessionEventContext(_opt, Type.OPT.BATCH_UPDATE);
         if (__sessionEvent != null) {
             __sessionEvent.onRemoveBefore(_eventContext);
         }
@@ -776,7 +773,7 @@ public class DefaultSession implements ISession {
             }
             _opt.addBatchParameter(_batchParam);
         }
-        SessionEventContext _eventContext = new SessionEventContext(_opt, Persistence.OperationType.BATCH_UPDATE);
+        SessionEventContext _eventContext = new SessionEventContext(_opt, Type.OPT.BATCH_UPDATE);
         if (__sessionEvent != null) {
             __sessionEvent.onRemoveBefore(_eventContext);
         }
@@ -821,7 +818,7 @@ public class DefaultSession implements ISession {
                 _opt.addParameter(_param);
             }
         }
-        SessionEventContext _eventContext = new SessionEventContext(_opt, Persistence.OperationType.QUERY);
+        SessionEventContext _eventContext = new SessionEventContext(_opt, Type.OPT.QUERY);
         if (__sessionEvent != null) {
             __sessionEvent.onQueryBefore(_eventContext);
         }
@@ -842,7 +839,7 @@ public class DefaultSession implements ISession {
         for (Object _param : sql.params().params()) {
             _opt.addParameter(_param);
         }
-        SessionEventContext _eventContext = new SessionEventContext(_opt, Persistence.OperationType.QUERY);
+        SessionEventContext _eventContext = new SessionEventContext(_opt, Type.OPT.QUERY);
         if (__sessionEvent != null) {
             __sessionEvent.onQueryBefore(_eventContext);
         }

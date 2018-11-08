@@ -34,7 +34,7 @@ public class SQLParameter {
     private Object value;
 
     public SQLParameter(Object value) {
-        this(Type.FIELD.UNKNOW, value);
+        this(Type.FIELD.UNKNOWN, value);
     }
 
     public SQLParameter(Type.FIELD type, Object value) {

@@ -15,6 +15,8 @@
  */
 package net.ymate.platform.persistence;
 
+import net.ymate.platform.persistence.base.Type;
+
 import java.util.EventObject;
 
 /**
@@ -25,18 +27,18 @@ import java.util.EventObject;
  */
 public class SessionEventContext extends EventObject {
 
-    private Persistence.OperationType operationType;
+    private Type.OPT operationType;
 
     public SessionEventContext(Object source) {
         super(source);
     }
 
-    public SessionEventContext(Object source, Persistence.OperationType operationType) {
+    public SessionEventContext(Object source, Type.OPT operationType) {
         super(source);
         this.operationType = operationType;
     }
 
-    public Persistence.OperationType getOperationType() {
+    public Type.OPT getOperationType() {
         return operationType;
     }
 }

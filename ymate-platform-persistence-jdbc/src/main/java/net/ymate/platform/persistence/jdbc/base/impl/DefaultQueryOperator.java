@@ -15,7 +15,7 @@
  */
 package net.ymate.platform.persistence.jdbc.base.impl;
 
-import net.ymate.platform.persistence.Persistence;
+import net.ymate.platform.persistence.base.Type;
 import net.ymate.platform.persistence.jdbc.IConnectionHolder;
 import net.ymate.platform.persistence.jdbc.base.*;
 import org.apache.commons.logging.Log;
@@ -74,7 +74,7 @@ public class DefaultQueryOperator<T> extends AbstractOperator implements IQueryO
             }
             __doSetParameters(_statement);
             if (this.getAccessorConfig() != null) {
-                this.getAccessorConfig().beforeStatementExecution(_context = new AccessorEventContext(_statement, Persistence.OperationType.QUERY));
+                this.getAccessorConfig().beforeStatementExecution(_context = new AccessorEventContext(_statement, Type.OPT.QUERY));
             }
             this.resultSet = this.getResultSetHandler().handle(_resultSet = _statement.executeQuery());
             return this.resultSet.size();

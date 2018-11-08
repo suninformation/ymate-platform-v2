@@ -38,7 +38,7 @@ public class RepoHandler implements IBeanHandler {
     @Override
     public Object handle(Class<?> targetClass) throws Exception {
         Repository _anno = targetClass.getAnnotation(Repository.class);
-        if (JDBC.DATABASE.UNKNOW.equals(_anno.dbType())) {
+        if (JDBC.DATABASE.UNKNOWN.equals(_anno.dbType())) {
             return targetClass.newInstance();
         } else {
             DataSourceCfgMeta _cfgMeta;

@@ -69,7 +69,7 @@ public class MySQLDialect extends AbstractDialect {
             for (EntityMeta.PropertyMeta _propMeta : _propMetas) {
                 _tmpBuilder.append("\t").append(wrapIdentifierQuote(_propMeta.getName())).append(" ");
                 String _propType = "";
-                if (!_propMeta.getType().equals(Type.FIELD.UNKNOW)) {
+                if (!_propMeta.getType().equals(Type.FIELD.UNKNOWN)) {
                     _propType = _propMeta.getType().name();
                 } else {
                     _propType = __doGetColumnType(_propMeta.getField().getType());
@@ -93,7 +93,7 @@ public class MySQLDialect extends AbstractDialect {
                 }
                 if (_propMeta.isUnsigned()) {
                     if ("NUMERIC".equals(_propType) || "LONG".equals(_propType) || "FLOAT".equals(_propType)
-                            || "DOUBLE".equals(_propType) || "SMALLINT".equals(_propType) || "TINYINT".equals(_propType)
+                            || "SMALLINT".equals(_propType) || "TINYINT".equals(_propType)
                             || "DOUBLE".equals(_propType) || "INTEGER".equals(_propType)) {
                         _tmpBuilder.append(" unsigned ");
                     }
@@ -149,8 +149,6 @@ public class MySQLDialect extends AbstractDialect {
                 if (_tmpBuilder.length() > 2) {
                     _tmpBuilder.setLength(_tmpBuilder.length() - 2);
                 }
-            } else {
-                _tmpBuilder.append("");
             }
             return _exp.set("indexes", _tmpBuilder.toString()).getResult();
         }

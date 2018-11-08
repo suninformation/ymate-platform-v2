@@ -125,7 +125,7 @@ public abstract class AbstractOperator implements IOperator {
         for (SQLParameter _param : this.getParameters()) {
             if (_param.getValue() == null) {
                 statement.setNull(_idx++, 0);
-            } else if (_param.getType() != null && !Type.FIELD.UNKNOW.equals(_param.getType())) {
+            } else if (_param.getType() != null && !Type.FIELD.UNKNOWN.equals(_param.getType())) {
                 statement.setObject(_idx++, _param.getValue(), _param.getType().getType());
             } else {
                 statement.setObject(_idx++, _param.getValue());
@@ -179,7 +179,7 @@ public abstract class AbstractOperator implements IOperator {
     @Override
     public IOperator addParameter(Object parameter) {
         if (parameter == null) {
-            this.parameters.add(new SQLParameter(Type.FIELD.UNKNOW, null));
+            this.parameters.add(new SQLParameter(Type.FIELD.UNKNOWN, null));
         } else if (parameter instanceof SQLParameter) {
             this.parameters.add((SQLParameter) parameter);
         } else {

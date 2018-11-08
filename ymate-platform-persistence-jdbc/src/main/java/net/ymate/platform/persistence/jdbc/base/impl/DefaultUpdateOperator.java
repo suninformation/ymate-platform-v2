@@ -15,7 +15,7 @@
  */
 package net.ymate.platform.persistence.jdbc.base.impl;
 
-import net.ymate.platform.persistence.Persistence;
+import net.ymate.platform.persistence.base.Type;
 import net.ymate.platform.persistence.jdbc.IConnectionHolder;
 import net.ymate.platform.persistence.jdbc.base.*;
 import org.apache.commons.logging.Log;
@@ -53,7 +53,7 @@ public class DefaultUpdateOperator extends AbstractOperator implements IUpdateOp
             _statement = _accessor.getPreparedStatement(this.getConnectionHolder().getConnection(), this.getSQL());
             __doSetParameters(_statement);
             if (this.getAccessorConfig() != null) {
-                this.getAccessorConfig().beforeStatementExecution(_context = new AccessorEventContext(_statement, Persistence.OperationType.UPDATE));
+                this.getAccessorConfig().beforeStatementExecution(_context = new AccessorEventContext(_statement, Type.OPT.UPDATE));
             }
             return effectCounts = _statement.executeUpdate();
         } catch (Exception ex) {

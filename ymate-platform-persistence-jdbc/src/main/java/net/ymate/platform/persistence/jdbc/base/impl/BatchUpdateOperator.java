@@ -15,7 +15,7 @@
  */
 package net.ymate.platform.persistence.jdbc.base.impl;
 
-import net.ymate.platform.persistence.Persistence;
+import net.ymate.platform.persistence.base.Type;
 import net.ymate.platform.persistence.jdbc.IConnectionHolder;
 import net.ymate.platform.persistence.jdbc.base.*;
 import org.apache.commons.lang.StringUtils;
@@ -100,7 +100,7 @@ public class BatchUpdateOperator extends AbstractOperator implements IBatchUpdat
             }
             //
             if (this.getAccessorConfig() != null) {
-                this.getAccessorConfig().beforeStatementExecution(_context = new AccessorEventContext(_statement, Persistence.OperationType.BATCH_UPDATE));
+                this.getAccessorConfig().beforeStatementExecution(_context = new AccessorEventContext(_statement, Type.OPT.BATCH_UPDATE));
             }
             effectCounts = _statement.executeBatch();
             // 累计受影响的总记录数

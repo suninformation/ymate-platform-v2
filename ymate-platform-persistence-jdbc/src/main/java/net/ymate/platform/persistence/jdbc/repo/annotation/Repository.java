@@ -59,5 +59,5 @@ public @interface Repository {
     /**
      * @return 指定当前存储器适用的数据库类型，默认为全部，否则将根据数据库类型进行存储器加载
      */
-    JDBC.DATABASE dbType() default JDBC.DATABASE.UNKNOW;
+    JDBC.DATABASE dbType() default JDBC.DATABASE.UNKNOWN;
 }

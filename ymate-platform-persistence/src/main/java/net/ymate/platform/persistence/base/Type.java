@@ -41,7 +41,7 @@ public class Type {
         LONG(Types.BIGINT),
         FLOAT(Types.FLOAT),
         NUMBER(Types.NUMERIC),
-        UNKNOW(Types.OTHER);
+        UNKNOWN(Types.OTHER);
 
         private int type;
 
@@ -62,6 +62,6 @@ public class Type {
      * 操作类型: 查询、更新、批量更新、存储过程
      */
     public enum OPT {
-        QUERY, UPDATE // , BATCH_UPDATE, PROC
+        QUERY, UPDATE, BATCH_UPDATE, PROCEDURE
     }
 }

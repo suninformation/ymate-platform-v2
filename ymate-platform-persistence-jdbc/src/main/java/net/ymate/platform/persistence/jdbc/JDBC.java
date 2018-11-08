@@ -218,7 +218,7 @@ public class JDBC implements IModule, IDatabase {
      * 数据库类型
      */
     public enum DATABASE {
-        MYSQL, ORACLE, SQLSERVER, DB2, SQLITE, POSTGRESQL, HSQLDB, H2, UNKNOW
+        MYSQL, ORACLE, SQLSERVER, DB2, SQLITE, POSTGRESQL, HSQLDB, H2, UNKNOWN
     }
 
     /**

@@ -16,7 +16,7 @@
 package net.ymate.platform.persistence.jdbc.base.impl;
 
 import net.ymate.platform.core.util.ExpressionUtils;
-import net.ymate.platform.persistence.Persistence;
+import net.ymate.platform.persistence.base.Type;
 import net.ymate.platform.persistence.jdbc.IConnectionHolder;
 import net.ymate.platform.persistence.jdbc.base.*;
 import org.apache.commons.lang.StringUtils;
@@ -109,7 +109,7 @@ public class DefaultProcedureOperator<T> extends AbstractOperator implements IPr
             __doSetParameters(_statement);
             __doRegisterOutParams(_statement);
             if (this.getAccessorConfig() != null) {
-                this.getAccessorConfig().beforeStatementExecution(_context = new AccessorEventContext(_statement, Persistence.OperationType.PROCEDURE));
+                this.getAccessorConfig().beforeStatementExecution(_context = new AccessorEventContext(_statement, Type.OPT.PROCEDURE));
             }
             boolean _flag = _statement.execute();
             if (_flag) {

@@ -15,7 +15,7 @@
  */
 package net.ymate.platform.persistence.jdbc.base;
 
-import net.ymate.platform.persistence.Persistence;
+import net.ymate.platform.persistence.base.Type;
 
 import java.sql.Statement;
 import java.util.EventObject;
@@ -30,9 +30,9 @@ public class AccessorEventContext extends EventObject {
 
     private final Statement statement;
 
-    private final Persistence.OperationType operationType;
+    private final Type.OPT operationType;
 
-    public AccessorEventContext(Statement statement, Persistence.OperationType operationType) {
+    public AccessorEventContext(Statement statement, Type.OPT operationType) {
         super(statement);
         this.statement = statement;
         this.operationType = operationType;
@@ -42,7 +42,7 @@ public class AccessorEventContext extends EventObject {
         return statement;
     }
 
-    public Persistence.OperationType getOperationType() {
+    public Type.OPT getOperationType() {
         return operationType;
     }
 }
