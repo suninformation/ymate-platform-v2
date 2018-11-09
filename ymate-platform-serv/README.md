@@ -298,4 +298,83 @@ YMP框架启动时将自动扫描并加载声明了`@Server`和`@Client`注解�
             _c.send("Message from Client.");
         }
 
-    **注**：YMP框架初始化过程中，若使用try...finally去执行YMP.get().destroy()销毁动作，则服务刚刚启动就被停止了。
+#### 通过代码创建并配置客户端和服务端对象
+
+上述内容主要说明如果基于框架配置文件初始化、启动和调用TCP、UDP服务端与客户端对象，下面阐述的是通过手工编码方式完成客户端或服务端的配置、启动和调用过程，此方法不需要配置文件支持：
+
+##### 示例代码
+
+假设，我们通过手工方法创建YMP实例对象，注册`Serv`模块(也可以直接通过`YMP.get()`获取实例)并完成初始化，代码如下：
+
+    YMP owner = new YMP(ConfigBuilder.create()
+            .proxyFactory(new NoOpProxyFactory())
+            .beanLoader(new AbstractBeanLoader() {
+                @Override
+                public void load(IBeanFactory beanFactory, IBeanFilter filter) throws Exception {
+                    // Nothing...
+                }
+            }).developMode(true).runEnv(IConfig.Environment.PRODUCT).build());
+     owner.registerModule(new Servs());
+     owner.init();
+
+- 服务端
+
+        NioServer server = Servs.get().buildServer(DefaultServerCfg.create().serverHost("localhost").port(8281).build(), new TextLineCodec(), new NioServerListener() {
+            @Override
+            public void onSessionAccepted(INioSession session) throws IOException {
+                super.onSessionAccepted(session);
+                //
+                System.out.println("Session accepted: " + session);
+            }
+        
+            @Override
+            public void onMessageReceived(Object message, INioSession session) throws IOException {
+                // 输出接收到的消息
+                System.out.println("Message received: " + message);
+                // 向客户端发送消息
+                session.send("Hi, guys!");
+            }
+        
+            @Override
+            public void onAfterSessionClosed(INioSession session) throws IOException {
+                System.out.println("Session closed: " + session);
+            }
+        
+            @Override
+            public void onBeforeSessionClosed(INioSession session) throws IOException {
+                System.out.println("Session closing: " + session);
+            }
+        });
+        server.start();
+
+- 客户端
+
+        IClient client = Servs.get(owner)
+                .buildClient(DefaultClientCfg.create()
+                        .remoteHost("localhost").port(8281).build(), new TextLineCodec(), new DefaultReconnectService(), new HeartbeatService(), new NioClientListener() {
+            @Override
+            public void onSessionConnected(INioSession session) throws IOException {
+                super.onSessionConnected(session);
+                //
+                session.send("Hello!");
+            }
+        
+            @Override
+            public void onMessageReceived(Object message, INioSession session) throws IOException {
+                super.onMessageReceived(message, session);
+                //
+                System.out.println(session + "--->" + message);
+            }
+        
+            @Override
+            public void onExceptionCaught(Throwable e, INioSession session) throws IOException {
+                System.out.println(session + "--->" + e);
+            }
+            
+        });
+        client.connect();
+
+> **注意**：
+>
+> - 通过手工编码方式创建的服务端或客户端实例对象将不被框架管理，需要开发者手动调用关闭方法(如：`server.close()`或`client.close()`)来释放资源。
+> - YMP框架初始化后，若使用`try...finally`执行`YMP.get().destroy()`销毁动作，则服务启动后将立即被停止。
