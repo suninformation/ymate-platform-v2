@@ -18,10 +18,12 @@ package net.ymate.platform.core.util;
 import com.thoughtworks.paranamer.AdaptiveParanamer;
 import net.ymate.platform.core.lang.BlurObject;
 import net.ymate.platform.core.lang.PairObject;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import java.io.*;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.*;
 import java.net.URL;
@@ -162,6 +164,36 @@ public class ClassUtils {
             _LOG.warn(e.toString());
         }
         return _targetClass;
+    }
+
+    public static <T> T loadClass(Class<T> clazz) {
+        InputStream _in = null;
+        BufferedReader _reader = null;
+        try {
+            _in = ResourceUtils.getResourceAsStream("META-INF/services/" + clazz.getName() + ".properties", clazz);
+            if (_in != null) {
+                try {
+                    _reader = new BufferedReader(new InputStreamReader(_in, "UTF-8"));
+                } catch (UnsupportedEncodingException e) {
+                    _reader = new BufferedReader(new InputStreamReader(_in));
+                }
+                String _lineStr;
+                do {
+                    _lineStr = _reader.readLine();
+                    if (StringUtils.isNotBlank(_lineStr)) {
+                        _lineStr = StringUtils.trim(_lineStr);
+                        if (!StringUtils.startsWith(_lineStr, "#")) {
+                            return impl(_lineStr, clazz, clazz);
+                        }
+                    }
+                } while (_lineStr != null);
+            }
+        } catch (IOException ignored) {
+        } finally {
+            IOUtils.closeQuietly(_reader);
+            IOUtils.closeQuietly(_in);
+        }
+        return null;
     }
 
     /**
