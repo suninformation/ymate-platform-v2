@@ -23,11 +23,11 @@ package net.ymate.platform.plugin;
  */
 public abstract class AbstractPlugin implements IPlugin {
 
-    protected IPluginContext __context;
+    private IPluginContext __context;
 
-    protected boolean __inited;
+    private boolean __inited;
 
-    protected boolean __started;
+    private boolean __started;
 
     @Override
     public void init(IPluginContext context) throws Exception {
@@ -52,17 +52,25 @@ public abstract class AbstractPlugin implements IPlugin {
 
     @Override
     public void startup() throws Exception {
-        this.__started = true;
+        if (__inited) {
+            this.__started = true;
+        }
     }
 
     @Override
     public void shutdown() throws Exception {
-        this.__started = false;
+        if (__started) {
+            this.__started = false;
+        }
     }
 
     @Override
     public void destroy() throws Exception {
-        this.__inited = false;
-        this.__context = null;
+        if (__inited) {
+            shutdown();
+            //
+            this.__inited = false;
+            this.__context = null;
+        }
     }
 }

@@ -69,14 +69,11 @@ public class ClassUtils {
      * @param callingClass   调用者
      * @return 如果可以得到并且限定于指定实现，那么返回实例，否则为空
      */
-    @SuppressWarnings("unchecked")
     public static <T> T impl(String className, Class<T> interfaceClass, Class<?> callingClass) {
         if (StringUtils.isNotBlank(className)) {
             try {
                 Class<?> implClass = loadClass(className, callingClass);
-                if (interfaceClass == null || interfaceClass.isAssignableFrom(implClass)) {
-                    return (T) implClass.newInstance();
-                }
+                return impl(implClass, interfaceClass);
             } catch (Exception e) {
                 _LOG.warn("", RuntimeUtils.unwrapThrow(e));
             }
@@ -92,6 +89,53 @@ public class ClassUtils {
                     return (T) implClass.newInstance();
                 } catch (Exception e) {
                     _LOG.warn("", RuntimeUtils.unwrapThrow(e));
+                }
+            }
+        }
+        return null;
+    }
+
+    /**
+     * 获得指定名称、限定接口，通过特定参数类型构造的实现类
+     *
+     * @param <T>               接口类型
+     * @param className         实现类名
+     * @param interfaceClass    限制接口名
+     * @param callingClass      调用者
+     * @param parameterTypes    构造方法参数类型集合
+     * @param initArgs          构造方法参数值集合
+     * @param allowNoSuchMethod 当发生NoSuchMethodException异常时是否输出日志
+     * @return 如果可以得到并且限定于指定实现，那么返回实例，否则为空
+     */
+    public static <T> T impl(String className, Class<T> interfaceClass, Class<?> callingClass, Class<?>[] parameterTypes, Object[] initArgs, boolean allowNoSuchMethod) {
+        if (StringUtils.isNotBlank(className)) {
+            try {
+                Class<?> implClass = loadClass(className, callingClass);
+                return impl(implClass, interfaceClass, parameterTypes, initArgs, allowNoSuchMethod);
+            } catch (Exception e) {
+                _LOG.warn("", RuntimeUtils.unwrapThrow(e));
+            }
+        }
+        return null;
+    }
+
+    @SuppressWarnings("unchecked")
+    public static <T> T impl(Class<?> implClass, Class<T> interfaceClass, Class<?>[] parameterTypes, Object[] initArgs, boolean allowNoSuchMethod) {
+        if (implClass != null) {
+            if (interfaceClass == null || interfaceClass.isAssignableFrom(implClass)) {
+                try {
+                    if (parameterTypes != null && parameterTypes.length > 0) {
+                        return (T) implClass.getConstructor(parameterTypes).newInstance(initArgs);
+                    }
+                    return (T) implClass.newInstance();
+                } catch (Exception e) {
+                    boolean _flag = true;
+                    if (e instanceof NoSuchMethodException) {
+                        _flag = allowNoSuchMethod;
+                    }
+                    if (_flag) {
+                        _LOG.warn("", RuntimeUtils.unwrapThrow(e));
+                    }
                 }
             }
         }
