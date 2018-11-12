@@ -118,6 +118,10 @@ public final class ThreadUtils {
     }
 
     public static <T> T executeOnce(Callable<T> worker, long timeout) throws InterruptedException, ExecutionException {
+        return executeOnce(worker, 0L, new DefaultFutureResultFilter<T>());
+    }
+
+    public static <T> T executeOnce(Callable<T> worker, long timeout, IFutureResultFilter<T> resultFilter) throws InterruptedException, ExecutionException {
         FutureTask<T> _future = new FutureTask<T>(worker);
         //
         ExecutorService _executorService = newSingleThreadExecutor();
@@ -125,6 +129,9 @@ public final class ThreadUtils {
         _executorService.shutdown();
         _executorService.awaitTermination(timeout > 0L ? timeout : 30L, TimeUnit.SECONDS);
         //
+        if (resultFilter != null) {
+            return resultFilter.filter(_future);
+        }
         return _future.get();
     }
 
@@ -133,6 +140,10 @@ public final class ThreadUtils {
     }
 
     public static <T> List<T> executeOnce(List<Callable<T>> workers, long timeout) throws InterruptedException, ExecutionException {
+        return executeOnce(workers, timeout, new DefaultFutureResultFilter<T>());
+    }
+
+    public static <T> List<T> executeOnce(List<Callable<T>> workers, long timeout, IFutureResultFilter<T> resultFilter) throws InterruptedException, ExecutionException {
         if (workers != null && !workers.isEmpty()) {
             ExecutorService _executorService = newFixedThreadPool(workers.size());
             //
@@ -147,12 +158,22 @@ public final class ThreadUtils {
             //
             List<T> _results = new ArrayList<T>();
             for (FutureTask<T> _future : _futures) {
-                _results.add(_future.get());
+                T _result;
+                if (resultFilter != null) {
+                    _result = resultFilter.filter(_future);
+                } else {
+                    _result = _future.get();
+                }
+                if (_result != null) {
+                    _results.add(_result);
+                }
             }
             return _results;
         }
         return Collections.emptyList();
     }
+
+    //
 
     public static ThreadFactory createFactory() {
         return new DefaultThreadFactory();
@@ -160,5 +181,34 @@ public final class ThreadUtils {
 
     public static ThreadFactory createFactory(String prefix) {
         return new DefaultThreadFactory(prefix);
+    }
+
+    /**
+     * 执行结果过滤器
+     *
+     * @param <T> 结果对象类型
+     */
+    public interface IFutureResultFilter<T> {
+
+        /**
+         * 对执行结果进行逻辑判断
+         *
+         * @param futureTask Future任务对象
+         * @return 返回值对象将被放置在最终方法执行结果集合中
+         * @throws ExecutionException   如果计算抛出异常
+         * @throws InterruptedException 如果当前的线程在等待时被中断
+         */
+        T filter(FutureTask<T> futureTask) throws ExecutionException, InterruptedException;
+    }
+
+    public final static class DefaultFutureResultFilter<T> implements IFutureResultFilter<T> {
+
+        @Override
+        public T filter(FutureTask<T> futureTask) throws ExecutionException, InterruptedException {
+            if (futureTask.isDone()) {
+                return futureTask.get();
+            }
+            return null;
+        }
     }
 }
