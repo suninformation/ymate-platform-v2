@@ -139,6 +139,7 @@ public class Speedometer implements Closeable {
         }
     }
 
+    @Override
     public void close() {
         if (__started && __executorService != null) {
             __started = false;

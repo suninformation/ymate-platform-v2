@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2017 the original author or authors.
+ * Copyright 2007-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,68 +13,60 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.ymate.platform.serv;
+package net.ymate.platform.serv.nio.support;
 
 import java.io.IOException;
 
 /**
- * 事件监听器
+ * 会话事件监听器接口
  *
- * @param <T> 会话类型
- * @author 刘镇 (suninformation@163.com) on 15/11/6 下午3:41
+ * @param <MESSAGE_TYPE> 消息类型
+ * @author 刘镇 (suninformation@163.com) on 2018/11/13 12:11 AM
  * @version 1.0
  */
-public interface IListener<T extends ISession> {
+public interface ISessionListener<SESSION_WRAPPER extends SessionWrapper, MESSAGE_TYPE> {
 
     /**
      * 会话注册成功事件处理方法
      *
-     * @param session 当前会话对象
+     * @param session 当前会话对象包装器
      * @throws IOException 可能产生的异常
      */
-    void onSessionRegistered(T session) throws IOException;
-
-    /**
-     * 会话连接事件处理方法
-     *
-     * @param session 当前会话对象
-     * @throws IOException 可能产生的异常
-     */
-    void onSessionConnected(T session) throws IOException;
+    void onSessionRegistered(SESSION_WRAPPER session) throws IOException;
 
     /**
      * 会话被接受事件处理方法
      *
-     * @param session 当前会话对象
+     * @param session 当前会话对象包装器
      * @throws IOException 可能产生的异常
      */
-    void onSessionAccepted(T session) throws IOException;
+    void onSessionAccepted(SESSION_WRAPPER session) throws IOException;
 
     /**
      * 会话关闭事件处理方法
      *
-     * @param session 当前会话对象
+     * @param session 当前会话对象包装器
      * @throws IOException 可能产生的异常
      */
-    void onBeforeSessionClosed(T session) throws IOException;
+    void onBeforeSessionClosed(SESSION_WRAPPER session) throws IOException;
 
-    void onAfterSessionClosed(T session) throws IOException;
+    void onAfterSessionClosed(SESSION_WRAPPER session) throws IOException;
 
     /**
      * 消息到达事件处理方法
      *
      * @param message 消息对象
-     * @param session 会话对象
+     * @param session 当前会话对象包装器
      * @throws IOException 可能产生的异常
      */
-    void onMessageReceived(Object message, T session) throws IOException;
+    void onMessageReceived(MESSAGE_TYPE message, SESSION_WRAPPER session) throws IOException;
 
     /**
      * 异常事件处理方法
      *
      * @param e       异常对象
-     * @param session 会话对象
+     * @param session 当前会话对象包装器
      * @throws IOException 可能产生的异常
      */
-    void onExceptionCaught(Throwable e, T session) throws IOException;
+    void onExceptionCaught(Throwable e, SESSION_WRAPPER session) throws IOException;
 }

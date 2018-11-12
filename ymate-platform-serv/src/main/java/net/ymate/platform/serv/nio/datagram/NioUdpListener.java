@@ -34,7 +34,9 @@ public abstract class NioUdpListener extends AbstractListener<INioSession> {
      * @return 预发送的消息对象, 返回null表示不发送消息
      * @throws IOException 可能产生的异常
      */
-    public abstract Object onSessionReady() throws IOException;
+    public Object onSessionReady() throws IOException {
+        return null;
+    }
 
     /**
      * 消息到达事件处理
@@ -56,7 +58,7 @@ public abstract class NioUdpListener extends AbstractListener<INioSession> {
     public abstract void onExceptionCaught(InetSocketAddress sourceAddr, Throwable e) throws IOException;
 
     @Override
-    public final void onSessionRegisted(INioSession session) throws IOException {
+    public final void onSessionRegistered(INioSession session) throws IOException {
         boolean _flag = false;
         do {
             if (session.isConnected()) {

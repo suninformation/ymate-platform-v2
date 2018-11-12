@@ -28,15 +28,12 @@ public abstract class AbstractSession implements ISession {
 
     private final String __id;
 
-    private ISession.Status __status;
-
     private long __lastTouchTime;
 
     private final ConcurrentMap<String, Object> __attributes;
 
     public AbstractSession() {
         __id = UUIDUtils.UUID();
-        __status = ISession.Status.NEW;
         __lastTouchTime = System.currentTimeMillis();
         __attributes = new ConcurrentHashMap<String, Object>();
     }
@@ -48,22 +45,12 @@ public abstract class AbstractSession implements ISession {
 
     @Override
     public boolean isNew() {
-        return __status == Status.NEW;
+        return status() == Status.NEW;
     }
 
     @Override
     public boolean isConnected() {
-        return __status == Status.CONNECTED;
-    }
-
-    @Override
-    public Status status() {
-        return __status;
-    }
-
-    @Override
-    public void status(Status status) {
-        __status = status;
+        return status() == Status.CONNECTED;
     }
 
     @Override

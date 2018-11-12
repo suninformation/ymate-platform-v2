@@ -116,7 +116,7 @@ public class NioEventProcessor<LISTENER extends IListener<INioSession>> extends 
                 session.selectionKey(key);
                 session.status(ISession.Status.CONNECTED);
                 //
-                __eventGroup.listener().onSessionRegisted(session);
+                __eventGroup.listener().onSessionRegistered(session);
             }
         } else {
             __eventQueues.offer(new Object[]{channel, ops, session});
@@ -146,7 +146,7 @@ public class NioEventProcessor<LISTENER extends IListener<INioSession>> extends 
                     _session.selectionKey(_key);
                     _session.status(ISession.Status.CONNECTED);
                     //
-                    __eventGroup.listener().onSessionRegisted(_session);
+                    __eventGroup.listener().onSessionRegistered(_session);
                 }
             } catch (IOException e) {
                 _LOG.error(e.getMessage(), RuntimeUtils.unwrapThrow(e));

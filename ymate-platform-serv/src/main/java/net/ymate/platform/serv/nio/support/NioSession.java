@@ -56,14 +56,15 @@ public class NioSession<LISTENER extends IListener<INioSession>> extends Abstrac
 
     private final CountDownLatch __connLatch = new CountDownLatch(1);
 
+    private ISession.Status __status;
+
     public NioSession(NioEventGroup<LISTENER> eventGroup) throws IOException {
-        super();
-        __eventGroup = eventGroup;
-        __writeBufferQueue = new LinkedBlockingQueue<ByteBuffer>();
+        this(eventGroup, null);
     }
 
     public NioSession(NioEventGroup<LISTENER> eventGroup, SelectableChannel channel) {
         super();
+        __status = ISession.Status.NEW;
         __eventGroup = eventGroup;
         __writeBufferQueue = new LinkedBlockingQueue<ByteBuffer>();
         //
@@ -83,6 +84,16 @@ public class NioSession<LISTENER extends IListener<INioSession>> extends Abstrac
     @Override
     public void finishConnect() {
         this.__connLatch.countDown();
+    }
+
+    @Override
+    public Status status() {
+        return __status;
+    }
+
+    @Override
+    public void status(Status status) {
+        __status = status;
     }
 
     @Override
@@ -160,7 +171,8 @@ public class NioSession<LISTENER extends IListener<INioSession>> extends Abstrac
         return ((SocketChannel) __channel).write(buffer);
     }
 
-    private InetSocketAddress __doGetChannelInetAddress() {
+    @Override
+    public InetSocketAddress remoteSocketAddress() {
         if (__channel instanceof DatagramChannel) {
             return (InetSocketAddress) ((DatagramChannel) __channel).socket().getRemoteSocketAddress();
         }
@@ -254,10 +266,11 @@ public class NioSession<LISTENER extends IListener<INioSession>> extends Abstrac
         }
     }
 
-    private String __doGetRemoteAddress() {
+    @Override
+    public String remoteAddress() {
         if (status() != ISession.Status.CLOSED && __selectionKey != null) {
             if (__channel != null) {
-                InetSocketAddress _addr = __doGetChannelInetAddress();
+                InetSocketAddress _addr = remoteSocketAddress();
                 if (_addr != null) {
                     return _addr.getHostName() + ":" + _addr.getPort();
                 }
@@ -269,7 +282,7 @@ public class NioSession<LISTENER extends IListener<INioSession>> extends Abstrac
     @Override
     public String toString() {
         return "Session [id=" + id()
-                + ", remote=" + __doGetRemoteAddress()
+                + ", remote=" + remoteAddress()
                 + ", status=" + status()
                 + "]";
     }

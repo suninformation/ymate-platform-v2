@@ -28,7 +28,7 @@ import java.nio.channels.SelectionKey;
 public class NioClientListener extends AbstractListener<INioSession> {
 
     @Override
-    public void onSessionRegisted(INioSession session) throws IOException {
+    public void onSessionRegistered(INioSession session) throws IOException {
     }
 
     @Override

@@ -17,6 +17,7 @@ package net.ymate.platform.serv;
 
 import java.io.Closeable;
 import java.io.IOException;
+import java.net.InetSocketAddress;
 
 /**
  * 会话接口
@@ -49,16 +50,19 @@ public interface ISession extends Closeable {
     boolean isConnected();
 
     /**
+     * @return 返回远程套接字地址对象
+     */
+    InetSocketAddress remoteSocketAddress();
+
+    /**
+     * @return 返回远程IP地址端口号
+     */
+    String remoteAddress();
+
+    /**
      * @return 返回当前会话状态
      */
     Status status();
-
-    /**
-     * 设置当前会话状态
-     *
-     * @param status 会话状态对象
-     */
-    void status(Status status);
 
     /**
      * 更新会话活动状态

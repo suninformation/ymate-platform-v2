@@ -42,6 +42,13 @@ public interface INioSession extends ISession {
 
     void finishConnect();
 
+    /**
+     * 设置当前会话状态
+     *
+     * @param status 会话状态对象
+     */
+    void status(Status status);
+
     void closeNow() throws IOException;
 
     void read() throws IOException;
