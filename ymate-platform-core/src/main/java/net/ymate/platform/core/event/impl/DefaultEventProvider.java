@@ -16,7 +16,7 @@
 package net.ymate.platform.core.event.impl;
 
 import net.ymate.platform.core.event.*;
-import net.ymate.platform.core.support.DefaultThreadFactory;
+import net.ymate.platform.core.util.ThreadUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -55,8 +55,8 @@ public final class DefaultEventProvider<T, E extends Enum<E>, EVENT extends Clas
     @Override
     public void init(IEventConfig eventConfig) {
         __eventConfig = eventConfig;
-        __eventExecutorService = DefaultThreadFactory.newThreadExecutor(eventConfig.getThreadPoolSize() > 0 ? eventConfig.getThreadPoolSize() : Runtime.getRuntime().availableProcessors(),
-                eventConfig.getThreadMaxPoolSize() > 0 ? eventConfig.getThreadMaxPoolSize() : 200, 0L, eventConfig.getThreadQueueSize() > 0 ? eventConfig.getThreadQueueSize() : 1024, DefaultThreadFactory.create("event-pool-"));
+        __eventExecutorService = ThreadUtils.newThreadExecutor(eventConfig.getThreadPoolSize() > 0 ? eventConfig.getThreadPoolSize() : Runtime.getRuntime().availableProcessors(),
+                eventConfig.getThreadMaxPoolSize() > 0 ? eventConfig.getThreadMaxPoolSize() : 200, 0L, eventConfig.getThreadQueueSize() > 0 ? eventConfig.getThreadQueueSize() : 1024, ThreadUtils.createFactory("event-pool-"));
     }
 
     @Override

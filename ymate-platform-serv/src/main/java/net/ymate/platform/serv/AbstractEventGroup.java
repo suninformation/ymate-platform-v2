@@ -15,7 +15,7 @@
  */
 package net.ymate.platform.serv;
 
-import net.ymate.platform.core.support.DefaultThreadFactory;
+import net.ymate.platform.core.util.ThreadUtils;
 
 import java.io.IOException;
 import java.util.concurrent.ExecutorService;
@@ -94,7 +94,7 @@ public abstract class AbstractEventGroup<CODEC extends ICodec, LISTENER extends 
         if (__isStarted) {
             return;
         }
-        __executorService = DefaultThreadFactory.newThreadExecutor(__executorCount, __threadMaxPoolSize, __keepAliveTime, __threadQueueSize, DefaultThreadFactory.create("serv-pool-"));
+        __executorService = ThreadUtils.newThreadExecutor(__executorCount, __threadMaxPoolSize, __keepAliveTime, __threadQueueSize, ThreadUtils.createFactory("serv-pool-"));
         //
         __isStarted = true;
     }

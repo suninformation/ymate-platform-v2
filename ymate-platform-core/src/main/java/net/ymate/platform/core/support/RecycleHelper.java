@@ -16,6 +16,7 @@
 package net.ymate.platform.core.support;
 
 import net.ymate.platform.core.util.RuntimeUtils;
+import net.ymate.platform.core.util.ThreadUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -100,7 +101,7 @@ public final class RecycleHelper {
      */
     public void recycle(boolean async) {
         if (async) {
-            ExecutorService _executor = DefaultThreadFactory.newSingleThreadExecutor();
+            ExecutorService _executor = ThreadUtils.newSingleThreadExecutor();
             _executor.submit(new Runnable() {
                 @Override
                 public void run() {

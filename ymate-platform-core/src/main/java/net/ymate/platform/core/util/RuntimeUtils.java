@@ -15,6 +15,7 @@
  */
 package net.ymate.platform.core.util;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.SystemUtils;
 import org.apache.commons.logging.Log;
@@ -74,16 +75,9 @@ public class RuntimeUtils {
                     }
                 }
             }
-        } catch (IOException e) {
-            _LOG.warn(RuntimeUtils.unwrapThrow(e));
+        } catch (IOException ignored) {
         } finally {
-            if (br != null) {
-                try {
-                    br.close();
-                } catch (IOException e) {
-                    _LOG.warn("", e);
-                }
-            }
+            IOUtils.closeQuietly(br);
             if (p != null) {
                 p.destroy();
             }

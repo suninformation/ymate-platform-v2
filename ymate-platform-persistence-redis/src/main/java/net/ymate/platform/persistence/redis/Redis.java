@@ -19,8 +19,8 @@ import net.ymate.platform.core.Version;
 import net.ymate.platform.core.YMP;
 import net.ymate.platform.core.module.IModule;
 import net.ymate.platform.core.module.annotation.Module;
-import net.ymate.platform.core.support.DefaultThreadFactory;
 import net.ymate.platform.core.util.RuntimeUtils;
+import net.ymate.platform.core.util.ThreadUtils;
 import net.ymate.platform.persistence.IDataSourceRouter;
 import net.ymate.platform.persistence.redis.impl.RedisCommandsHolder;
 import net.ymate.platform.persistence.redis.impl.RedisDataSourceAdapter;
@@ -105,7 +105,7 @@ public class Redis implements IModule, IRedis {
                 __dataSourceCaches.put(_meta.getName(), _adapter);
             }
             //
-            __subscribePool = DefaultThreadFactory.newCachedThreadPool(DefaultThreadFactory.create("redis-subscribe-pool"));
+            __subscribePool = ThreadUtils.newCachedThreadPool(ThreadUtils.createFactory("redis-subscribe-pool"));
             //
             __inited = true;
         }

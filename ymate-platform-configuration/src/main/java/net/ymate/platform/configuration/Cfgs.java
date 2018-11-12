@@ -26,11 +26,7 @@ import net.ymate.platform.core.Version;
 import net.ymate.platform.core.YMP;
 import net.ymate.platform.core.module.IModule;
 import net.ymate.platform.core.module.annotation.Module;
-import net.ymate.platform.core.support.DefaultThreadFactory;
-import net.ymate.platform.core.util.ClassUtils;
-import net.ymate.platform.core.util.FileUtils;
-import net.ymate.platform.core.util.ResourceUtils;
-import net.ymate.platform.core.util.RuntimeUtils;
+import net.ymate.platform.core.util.*;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -392,7 +388,7 @@ public class Cfgs implements IModule, IConfig {
         ConfigFileChecker(long timeInterval) {
             __timeInterval = timeInterval;
             if (__timeInterval > 0) {
-                __scheduledExecutorService = DefaultThreadFactory.newScheduledThreadPool(1, DefaultThreadFactory.create("ConfigFileChangedChecker"));
+                __scheduledExecutorService = ThreadUtils.newScheduledThreadPool(1, ThreadUtils.createFactory("ConfigFileChangedChecker"));
                 __inited = true;
             }
         }
