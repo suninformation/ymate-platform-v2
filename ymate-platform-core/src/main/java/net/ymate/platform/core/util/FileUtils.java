@@ -23,8 +23,13 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import java.io.*;
+import java.net.JarURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.net.URLConnection;
+import java.util.Enumeration;
+import java.util.jar.JarEntry;
+import java.util.jar.JarFile;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -159,5 +164,66 @@ public class FileUtils {
                 IOUtils.closeQuietly(_outStream);
             }
         }
+    }
+
+    /**
+     * 从JAR包中提取/META-INF/{prefixPath}目录下的资源文件并复制到{targetFile}指定的目录中
+     *
+     * @param prefixPath 资源文件目录名称
+     * @param targetFile 目标文件目录
+     * @throws IOException 可能生产的任何异常
+     */
+    public static void unpackJarFile(String prefixPath, File targetFile) throws IOException {
+        unpackJarFile(prefixPath, targetFile, FileUtils.class);
+    }
+
+    /**
+     * 从JAR包中提取/META-INF/{prefixPath}目录下的资源文件并复制到{targetFile}指定的目录中
+     *
+     * @param callingClass 调用类
+     * @param prefixPath   资源文件目录名称
+     * @param targetFile   目标文件目录
+     * @return 是否有文件被提取
+     * @throws IOException 可能生产的任何异常
+     */
+    public static boolean unpackJarFile(String prefixPath, File targetFile, Class<?> callingClass) throws IOException {
+        if (callingClass == null) {
+            throw new NullArgumentException("callingClass");
+        }
+        if (StringUtils.isBlank(prefixPath)) {
+            throw new NullArgumentException("prefixPath");
+        }
+        if (targetFile == null || !targetFile.isAbsolute() || !targetFile.isDirectory()) {
+            throw new IllegalArgumentException("The target file must be directory and absolute path.");
+        }
+        boolean _result = false;
+        String _prefixPath = new File("META-INF/", prefixPath).getPath();
+        URL _uri = callingClass.getResource("/" + _prefixPath);
+        if (_uri != null) {
+            URLConnection _conn = _uri.openConnection();
+            if (_conn instanceof JarURLConnection) {
+                JarFile _jarFile = ((JarURLConnection) _conn).getJarFile();
+                Enumeration<JarEntry> _entriesEnum = _jarFile.entries();
+                for (; _entriesEnum.hasMoreElements(); ) {
+                    JarEntry _entry = _entriesEnum.nextElement();
+                    if (StringUtils.startsWith(_entry.getName(), _prefixPath)) {
+                        if (!_entry.isDirectory()) {
+                            String _entryName = StringUtils.substringAfter(_entry.getName(), _prefixPath);
+                            File _targetFile = new File(targetFile, _entryName);
+                            File _targetFileParent = _targetFile.getParentFile();
+                            if (!_targetFileParent.exists() && !_targetFileParent.mkdirs()) {
+                                throw new IOException("Unable to create file directory '" + _targetFileParent.getPath() + "'.");
+                            }
+                            if (_LOG.isDebugEnabled()) {
+                                _LOG.info("Unpacking resource file: " + _entry.getName());
+                            }
+                            IOUtils.copyLarge(_jarFile.getInputStream(_entry), new FileOutputStream(_targetFile));
+                            _result = true;
+                        }
+                    }
+                }
+            }
+        }
+        return _result;
     }
 }
