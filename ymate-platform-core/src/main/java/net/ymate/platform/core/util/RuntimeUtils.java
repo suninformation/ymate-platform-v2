@@ -24,6 +24,7 @@ import org.apache.commons.logging.LogFactory;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.lang.management.ManagementFactory;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URL;
 import java.util.HashMap;
@@ -124,6 +125,13 @@ public class RuntimeUtils {
      */
     public static boolean isWindows() {
         return SystemUtils.IS_OS_WINDOWS;
+    }
+
+    /**
+     * @return 返回当前程序执行进程编号
+     */
+    public static String getProcessId() {
+        return StringUtils.split(ManagementFactory.getRuntimeMXBean().getName(), "@")[0];
     }
 
     /**
