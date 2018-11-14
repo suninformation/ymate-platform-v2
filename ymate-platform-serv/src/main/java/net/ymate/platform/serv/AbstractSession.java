@@ -17,6 +17,7 @@ package net.ymate.platform.serv;
 
 import net.ymate.platform.core.util.UUIDUtils;
 
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
@@ -61,6 +62,11 @@ public abstract class AbstractSession implements ISession {
     @Override
     public long lastTouchTime() {
         return __lastTouchTime;
+    }
+
+    @Override
+    public Map<String, Object> attrs() {
+        return __attributes;
     }
 
     @Override

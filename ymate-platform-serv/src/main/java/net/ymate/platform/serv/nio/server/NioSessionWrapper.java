@@ -13,11 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.ymate.platform.serv.nio.support;
+package net.ymate.platform.serv.nio.server;
 
+import net.ymate.platform.serv.AbstractSessionWrapper;
 import net.ymate.platform.serv.nio.INioSession;
 
-import java.io.Serializable;
+import java.util.Map;
 
 /**
  * 会话包装器类
@@ -25,11 +26,11 @@ import java.io.Serializable;
  * @author 刘镇 (suninformation@163.com) on 2018/11/13 12:05 AM
  * @version 1.0
  */
-public class SessionWrapper implements Serializable {
+public class NioSessionWrapper extends AbstractSessionWrapper<INioSession> {
 
     private INioSession __session;
 
-    public SessionWrapper(INioSession session) {
+    public NioSessionWrapper(INioSession session) {
         __session = session;
     }
 
@@ -41,17 +42,21 @@ public class SessionWrapper implements Serializable {
         return __session;
     }
 
+    @Override
+    public Map<String, Object> getAttributes() {
+        return __session.attrs();
+    }
+
     public <T> T getAttribute(String attrKey) {
         return __session.attr(attrKey);
     }
 
-    public SessionWrapper addAttribute(String attrKey, Object attrValue) {
+    public void addAttribute(String attrKey, Object attrValue) {
         __session.attr(attrKey, attrValue);
-        return this;
     }
 
     @Override
     public String toString() {
-        return "SessionWrapper {" + "__session=" + __session + '}';
+        return "NioSessionWrapper {" + "__session=" + __session + ", __lastHeartbeatTime=" + getLastHeartbeatTime() + '}';
     }
 }

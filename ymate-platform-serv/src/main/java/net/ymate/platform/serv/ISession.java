@@ -18,6 +18,7 @@ package net.ymate.platform.serv;
 import java.io.Closeable;
 import java.io.IOException;
 import java.net.InetSocketAddress;
+import java.util.Map;
 
 /**
  * 会话接口
@@ -73,6 +74,8 @@ public interface ISession extends Closeable {
      * @return 返回最后更新会话状态的时间(毫秒)
      */
     long lastTouchTime();
+
+    Map<String, Object> attrs();
 
     <T> T attr(String key);
 

@@ -13,7 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.ymate.platform.serv.nio.support;
+package net.ymate.platform.serv.nio;
+
+import net.ymate.platform.serv.nio.server.NioSessionWrapper;
 
 import java.io.IOException;
 
@@ -24,7 +26,7 @@ import java.io.IOException;
  * @author 刘镇 (suninformation@163.com) on 2018/11/13 12:11 AM
  * @version 1.0
  */
-public interface ISessionListener<SESSION_WRAPPER extends SessionWrapper, MESSAGE_TYPE> {
+public interface INioSessionListener<SESSION_WRAPPER extends NioSessionWrapper, MESSAGE_TYPE> {
 
     /**
      * 会话注册成功事件处理方法
