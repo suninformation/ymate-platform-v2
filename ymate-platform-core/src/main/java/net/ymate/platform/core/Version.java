@@ -24,12 +24,39 @@ package net.ymate.platform.core;
 public class Version {
 
     public enum VersionType {
-        Alphal, // α（alphal） 内部测试版
-        Beta,   // β（beta）外部测试版
-        GA,     // γ（gamma）版
-        Trial,  // trial（试用版）
-        Demo,   // demo 演示版
-        Release // release 最终释放版
+
+        @Deprecated
+        Alphal,
+
+        /**
+         * α（alpha） 内部测试版
+         */
+        Alpha,
+
+        /**
+         * β（beta）外部测试版
+         */
+        Beta,
+
+        /**
+         * γ（gamma）版
+         */
+        GA,
+
+        /**
+         * trial（试用版）
+         */
+        Trial,
+
+        /**
+         * demo 演示版
+         */
+        Demo,
+
+        /**
+         * release 最终释放版
+         */
+        Release
     }
 
     private int majorVersion;

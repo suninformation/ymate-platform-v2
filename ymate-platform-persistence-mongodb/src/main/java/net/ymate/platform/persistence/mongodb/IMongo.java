@@ -63,10 +63,13 @@ public interface IMongo {
 
     class OPT {
 
-        // 主键
+        /**
+         * 主键
+         */
         public static final String ID = "_id";
 
         // 查询条件
+
         public static final String CMP = "$cmp";
         public static final String EQ = "$eq";
         public static final String GT = "$gt";
@@ -80,6 +83,7 @@ public interface IMongo {
         public static final String SLICE = "$slice";
 
         //
+
         public static final String AND = "$and";
         public static final String OR = "$or";
         public static final String NOT = "$not";
@@ -99,6 +103,7 @@ public interface IMongo {
         public static final String SUBSTR = "$substr";
 
         //
+
         public static final String NEAR = "$near";
         public static final String NEAR_SPHERE = "$nearSphere";
 
@@ -111,11 +116,13 @@ public interface IMongo {
         public static final String CENTER_SPHERE = "$centerSphere";
 
         //
+
         public static final String ALL = "$all";
         public static final String ELEM_MATCH = "$elemMatch";
         public static final String SIZE = "$size";
 
         //
+
         public static final String SET = "$set";
         public static final String UNSET = "$unset";
         public static final String INC = "$inc";
@@ -145,6 +152,7 @@ public interface IMongo {
         public static final String ISOLATED = "$isolated";
 
         // 聚合类型
+
         public static final String PROJECT = "$project";
         public static final String MATCH = "$match";
         public static final String REDACT = "$redact";

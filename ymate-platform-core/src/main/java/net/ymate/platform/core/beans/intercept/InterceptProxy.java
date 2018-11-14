@@ -143,10 +143,10 @@ public class InterceptProxy implements IProxy {
         static InterceptMeta __DEFAULT = new InterceptMeta("default");
 
         private final String id;
-        //
+
         private List<Class<? extends IInterceptor>> beforeIntercepts;
         private List<Class<? extends IInterceptor>> afterIntercepts;
-        //
+
         private final Map<String, String> contextParams;
 
         InterceptMeta(String id) {

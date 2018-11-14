@@ -58,9 +58,9 @@ public final class FileUploadHelper {
     private File __uploadTempDir;
 
     /**
-     * 上传文件最大值
+     * 上传文件最大值, 10485760 = 10M
      */
-    private long __fileSizeMax = -1; // 10485760 = 10M
+    private long __fileSizeMax = -1;
 
     /**
      * 上传文件总量的最大值
@@ -68,9 +68,9 @@ public final class FileUploadHelper {
     private long __sizeMax = -1;
 
     /**
-     * 内存缓冲区的大小,默认值为10K,如果文件大于10K,将使用临时文件缓存上传文件
+     * 内存缓冲区的大小,默认值为10K,如果文件大于10K,将使用临时文件缓存上传文件, 4096 = 4K
      */
-    private int __sizeThreshold = 10240; // 4096 = 4K
+    private int __sizeThreshold = 10240;
 
     private String __charsetEncoding;
 

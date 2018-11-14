@@ -618,11 +618,6 @@ public class BlurObject implements Serializable, Cloneable {
     }
 
     @Override
-    protected Object clone() throws CloneNotSupportedException {
-        return super.clone();
-    }
-
-    @Override
     public String toString() {
         if (attr != null) {
             return attr.toString();

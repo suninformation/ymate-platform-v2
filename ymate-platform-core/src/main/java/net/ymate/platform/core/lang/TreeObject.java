@@ -270,7 +270,8 @@ public class TreeObject implements Serializable, Cloneable {
             return null;
         }
         JSONObject _returnJson;
-        if (tObject.isMap()) { // MAP
+        // MAP
+        if (tObject.isMap()) {
             TreeObject _itemTObject;
             Map<String, TreeObject> _nodeValue = tObject.getMap();
             if (_nodeValue != null && !_nodeValue.isEmpty()) {
@@ -308,7 +309,8 @@ public class TreeObject implements Serializable, Cloneable {
                 _itemJson.put(KEY_VALUE, new JSONObject());
                 return _itemJson;
             }
-        } else if (tObject.isList()) { // ARRAY
+        } else if (tObject.isList()) {
+            // ARRAY
             List<TreeObject> _nodeValue = tObject.getList();
             if (_nodeValue != null && !_nodeValue.isEmpty()) {
                 JSONArray _itemJson = new JSONArray();
@@ -544,29 +546,24 @@ public class TreeObject implements Serializable, Cloneable {
         //
         if (o instanceof Integer) {
             _type = TYPE_INTEGER;
-            _object = (Integer) o;
         } else if (int.class.isAssignableFrom(o.getClass())) {
             _type = TYPE_INTEGER;
         } else if (o instanceof String) {
             _type = TYPE_MIX_STRING;
         } else if (o instanceof Long) {
             _type = TYPE_LONG;
-            _object = (Long) o;
         } else if (long.class.isAssignableFrom(o.getClass())) {
             _type = TYPE_LONG;
         } else if (o instanceof Boolean) {
             _type = TYPE_BOOLEAN;
-            _object = (Boolean) o;
         } else if (boolean.class.isAssignableFrom(o.getClass())) {
             _type = TYPE_BOOLEAN;
         } else if (o instanceof Float) {
             _type = TYPE_FLOAT;
-            _object = (Float) o;
         } else if (float.class.isAssignableFrom(o.getClass())) {
             _type = TYPE_FLOAT;
         } else if (o instanceof Double) {
             _type = TYPE_DOUBLE;
-            _object = (Double) o;
         } else if (double.class.isAssignableFrom(o.getClass())) {
             _type = TYPE_DOUBLE;
         } else if (o instanceof Map) {
@@ -575,17 +572,14 @@ public class TreeObject implements Serializable, Cloneable {
             _type = TYPE_COLLECTION;
         } else if (o instanceof Byte) {
             _type = TYPE_BYTE;
-            _object = (Byte) o;
         } else if (byte.class.isAssignableFrom(o.getClass())) {
             _type = TYPE_BYTE;
         } else if (o instanceof Character) {
             _type = TYPE_CHAR;
-            _object = (Character) o;
         } else if (char.class.isAssignableFrom(o.getClass())) {
             _type = TYPE_CHAR;
         } else if (o instanceof Short) {
             _type = TYPE_SHORT;
-            _object = (Short) o;
         } else if (short.class.isAssignableFrom(o.getClass())) {
             _type = TYPE_SHORT;
         } else if (o instanceof byte[]) {
@@ -954,9 +948,7 @@ public class TreeObject implements Serializable, Cloneable {
         }
         if (StringUtils.isNotBlank(key) && isMap()) {
             Map<String, TreeObject> _map = ((Map<String, TreeObject>) _object);
-            if (_map != null && _map.size() > 0 && _map.get(key) != null) {
-                return true;
-            }
+            return _map != null && _map.size() > 0 && _map.get(key) != null;
         }
         return false;
     }
@@ -1037,14 +1029,7 @@ public class TreeObject implements Serializable, Cloneable {
      */
     public boolean toBooleanValue() {
         if (isValue()) {
-            if (_object == null) {
-                return false;
-            }
-            if (_type == TYPE_BOOLEAN && (boolean.class.isAssignableFrom(_object.getClass()) || _object instanceof Boolean)) {
-                return (Boolean) _object;
-            } else {
-                return new BlurObject(_object).toBooleanValue();
-            }
+            return new BlurObject(_object).toBooleanValue();
         }
         throw new IllegalStateException();
     }
@@ -1054,14 +1039,7 @@ public class TreeObject implements Serializable, Cloneable {
      */
     public byte toByteValue() {
         if (isValue()) {
-            if (_object == null) {
-                return 0;
-            }
-            if (_type == TYPE_BYTE && (byte.class.isAssignableFrom(_object.getClass()) || _object instanceof Byte)) {
-                return (Byte) _object;
-            } else {
-                return new BlurObject(_object).toByteValue();
-            }
+            return new BlurObject(_object).toByteValue();
         }
         throw new IllegalStateException();
     }
@@ -1071,17 +1049,7 @@ public class TreeObject implements Serializable, Cloneable {
      */
     public byte[] toBytesValue() {
         if (isValue()) {
-            if (_object == null) {
-                return null;
-            }
-            if (_type == TYPE_BYTES
-                    && (byte[].class.isAssignableFrom(_object.getClass())
-                    || _object instanceof byte[]
-                    || Byte[].class.isAssignableFrom(_object.getClass()) || _object instanceof Byte[])) {
-                return (byte[]) _object;
-            } else {
-                return new BlurObject(_object).toBytesValue();
-            }
+            return new BlurObject(_object).toBytesValue();
         }
         throw new IllegalStateException();
     }
@@ -1091,15 +1059,7 @@ public class TreeObject implements Serializable, Cloneable {
      */
     public char toCharValue() {
         if (isValue()) {
-            if (_object == null) {
-                return Character.MIN_CODE_POINT;
-            }
-            if (_type == TYPE_CHAR
-                    && (char.class.isAssignableFrom(_object.getClass()) || _object instanceof Character)) {
-                return (Character) _object;
-            } else {
-                return new BlurObject(_object).toCharValue();
-            }
+            return new BlurObject(_object).toCharValue();
         }
         throw new IllegalStateException();
     }
@@ -1109,14 +1069,7 @@ public class TreeObject implements Serializable, Cloneable {
      */
     public double toDoubleValue() {
         if (isValue()) {
-            if (_object == null) {
-                return 0d;
-            }
-            if (_type == TYPE_DOUBLE && (double.class.isAssignableFrom(_object.getClass()) || _object instanceof Double)) {
-                return (Double) _object;
-            } else {
-                return new BlurObject(_object).toDoubleValue();
-            }
+            return new BlurObject(_object).toDoubleValue();
         }
         throw new IllegalStateException();
     }
@@ -1126,14 +1079,7 @@ public class TreeObject implements Serializable, Cloneable {
      */
     public float toFloatValue() {
         if (isValue()) {
-            if (_object == null) {
-                return 0f;
-            }
-            if (_type == TYPE_FLOAT && (float.class.isAssignableFrom(_object.getClass()) || _object instanceof Float)) {
-                return (Float) _object;
-            } else {
-                return new BlurObject(_object).toFloatValue();
-            }
+            return new BlurObject(_object).toFloatValue();
         }
         throw new IllegalStateException();
     }
@@ -1143,14 +1089,7 @@ public class TreeObject implements Serializable, Cloneable {
      */
     public int toIntValue() {
         if (isValue()) {
-            if (_object == null) {
-                return 0;
-            }
-            if (_type == TYPE_INTEGER && (int.class.isAssignableFrom(_object.getClass()) || _object instanceof Integer)) {
-                return (Integer) _object;
-            } else {
-                return new BlurObject(_object).toIntValue();
-            }
+            return new BlurObject(_object).toIntValue();
         }
         throw new IllegalStateException();
     }
@@ -1160,14 +1099,7 @@ public class TreeObject implements Serializable, Cloneable {
      */
     public long toLongValue() {
         if (isValue()) {
-            if (_object == null) {
-                return 0;
-            }
-            if (_type == TYPE_LONG && (long.class.isAssignableFrom(_object.getClass()) || _object instanceof Long)) {
-                return (Long) _object;
-            } else {
-                return new BlurObject(_object).toLongValue();
-            }
+            return new BlurObject(_object).toLongValue();
         }
         throw new IllegalStateException();
     }
@@ -1177,14 +1109,7 @@ public class TreeObject implements Serializable, Cloneable {
      */
     public String toMixStringValue() {
         if (isValue()) {
-            if (_object == null) {
-                return null;
-            }
-            if ((_type == TYPE_MIX_STRING || _type == TYPE_STRING) && _object instanceof String) {
-                return (String) _object;
-            } else {
-                return new BlurObject(_object).toStringValue();
-            }
+            return new BlurObject(_object).toStringValue();
         }
         throw new IllegalStateException();
     }
@@ -1194,14 +1119,7 @@ public class TreeObject implements Serializable, Cloneable {
      */
     public short toShortValue() {
         if (isValue()) {
-            if (_object == null) {
-                return 0;
-            }
-            if (_type == TYPE_SHORT && (short.class.isAssignableFrom(_object.getClass()) || _object instanceof Short)) {
-                return (Short) _object;
-            } else {
-                return new BlurObject(_object).toShortValue();
-            }
+            return new BlurObject(_object).toShortValue();
         }
         throw new IllegalStateException();
     }
@@ -1218,15 +1136,7 @@ public class TreeObject implements Serializable, Cloneable {
      */
     public long toTimeValue() {
         if (isValue()) {
-            if (_object == null) {
-                return 0;
-            }
-            if ((_type == TYPE_TIME || _type == TYPE_LONG)
-                    && (long.class.isAssignableFrom(_object.getClass()) || _object instanceof Long)) {
-                return (Long) _object;
-            } else {
-                return new BlurObject(_object).toLongValue();
-            }
+            return new BlurObject(_object).toLongValue();
         }
         throw new IllegalStateException();
     }
@@ -1563,10 +1473,5 @@ public class TreeObject implements Serializable, Cloneable {
             return _tObj.toTimeValue();
         }
         return defaultValue;
-    }
-
-    @Override
-    protected Object clone() throws CloneNotSupportedException {
-        return super.clone();
     }
 }

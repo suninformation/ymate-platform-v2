@@ -426,7 +426,7 @@ public class ClassUtils {
             this.target = target;
             this._fields = new LinkedHashMap<String, Field>();
             //
-            for (Field _field : ClassUtils.getFields(target.getClass(), true)/*target.getClass().getDeclaredFields()*/) {
+            for (Field _field : ClassUtils.getFields(target.getClass(), true)) {
                 if (Modifier.isStatic(_field.getModifiers())) {
                     // 忽略静态成员
                     continue;

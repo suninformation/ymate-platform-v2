@@ -29,17 +29,35 @@ import java.util.*;
  */
 public final class DateTimeUtils {
 
-    public static final long SECOND = 1000;         // 1秒
+    /**
+     * 1秒
+     */
+    public static final long SECOND = 1000;
 
-    public static final long MINUTE = SECOND * 60;  // 1分钟
+    /**
+     * 1分钟
+     */
+    public static final long MINUTE = SECOND * 60;
 
-    public static final long HOUR = MINUTE * 60;    // 1小时
+    /**
+     * 1小时
+     */
+    public static final long HOUR = MINUTE * 60;
 
-    public static final long DAY = HOUR * 24;       // 1天
+    /**
+     * 1天
+     */
+    public static final long DAY = HOUR * 24;
 
-    public static final long WEEK = DAY * 7;        // 1周
+    /**
+     * 1周
+     */
+    public static final long WEEK = DAY * 7;
 
-    public static final long YEAR = DAY * 365;      // 1年（or 366 ???）
+    /**
+     * 1年（or 366 ???）
+     */
+    public static final long YEAR = DAY * 365;
 
     /**
      * 日期格式化字符串：yyyy-MM-dd HH:mm:ss.SSS

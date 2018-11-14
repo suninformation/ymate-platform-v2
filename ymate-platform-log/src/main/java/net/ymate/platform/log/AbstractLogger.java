@@ -26,13 +26,17 @@ import org.apache.commons.lang.StringUtils;
  */
 public abstract class AbstractLogger implements ILogger {
 
+    /**
+     * 打印堆栈数量，超过这个数量会省略输出
+     */
+    public static int PRINT_STACK_COUNT = 5;
+
     private boolean __allowOutputConsole;
 
-    // 堆栈深度，向上寻找堆栈长度
+    /**
+     * 堆栈深度，向上寻找堆栈长度
+     */
     private int __depth = 3;
-
-    // 打印堆栈数量，超过这个数量会省略输出
-    public static int PRINT_STACK_COUNT = 5;
 
     @Override
     public ILogger console(boolean enable) {
@@ -93,7 +97,7 @@ public abstract class AbstractLogger implements ILogger {
                 .append("\n");
         StackTraceElement[] _stacks = e.getStackTrace();
         for (StackTraceElement _stack : _stacks) {
-            _stackSB.append("\tat ") // 在堆栈行开始增加空格
+            _stackSB.append("\tat ")
                     .append(_stack)
                     .append("\n");
         }
@@ -119,7 +123,7 @@ public abstract class AbstractLogger implements ILogger {
             int _tracesSize = _traces.length;
             for (int _idx = 0; _idx < _tracesSize; _idx++) {
                 if (_idx < PRINT_STACK_COUNT) {
-                    stackSB.append("\tat ") // 在堆栈行开始增加空格
+                    stackSB.append("\tat ")
                             .append(_traces[_idx]).append("\n");
                 } else {
                     stackSB.append("\t... ")

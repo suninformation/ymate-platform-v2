@@ -475,29 +475,64 @@ public final class EntityMeta {
      * @version 1.0
      */
     public static class PropertyMeta {
-        // 属性名称
+        /**
+         * 属性名称
+         */
         private String name;
-        // 成员变量Field对象
+
+        /**
+         * 成员变量Field对象
+         */
         private Field field;
-        // 是否为自动增长
+
+        /**
+         * 是否为自动增长
+         */
         private boolean autoincrement;
-        // 序列名称
+
+        /**
+         * 序列名称
+         */
         private String sequenceName;
-        // 允许为空
+
+        /**
+         * 允许为空
+         */
         private boolean nullable;
-        // 是否为无符号
+
+        /**
+         * 是否为无符号
+         */
         private boolean unsigned;
-        // 数据长度，默认0为不限制
+
+        /**
+         * 数据长度，默认0为不限制
+         */
         private int length;
-        // 小数位数，默认0为无小数
+
+        /**
+         * 小数位数，默认0为无小数
+         */
         private int decimals;
-        // 数据类型
+
+        /**
+         * 数据类型
+         */
         private Type.FIELD type;
-        // 默认值
+
+        /**
+         * 默认值
+         */
         private String defaultValue;
-        // 属性注释
+
+        /**
+         * 属性注释
+         */
         private String comment;
-        // 是否为只读属性
+
+        /**
+         * 是否为只读属性
+         */
         private boolean readonly;
 
         public PropertyMeta(String name, Field field) {
@@ -673,11 +708,19 @@ public final class EntityMeta {
      * @version 1.0
      */
     public static class IndexMeta {
-        // 索引名称
+        /**
+         * 索引名称
+         */
         private String name;
-        // 是否唯一索引
+
+        /**
+         * 是否唯一索引
+         */
         private boolean unique;
-        // 索引字段名称集合
+
+        /**
+         * 索引字段名称集合
+         */
         private List<String> fields;
 
         public IndexMeta(String name, boolean unique, List<String> fields) {

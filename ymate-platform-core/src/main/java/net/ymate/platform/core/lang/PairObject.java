@@ -71,11 +71,6 @@ public class PairObject<K, V> implements Serializable, Cloneable {
     }
 
     @Override
-    protected Object clone() throws CloneNotSupportedException {
-        return super.clone();
-    }
-
-    @Override
     public int hashCode() {
         int result = key.hashCode();
         result = 31 * result + value.hashCode();
@@ -86,9 +81,7 @@ public class PairObject<K, V> implements Serializable, Cloneable {
     public boolean equals(Object obj) {
         if (obj instanceof PairObject) {
             PairObject<?, ?> _o = (PairObject<?, ?>) obj;
-            if (this.getKey().equals(_o.getKey()) && this.getValue().equals(_o.getValue())) {
-                return true;
-            }
+            return this.getKey().equals(_o.getKey()) && this.getValue().equals(_o.getValue());
         }
         return false;
     }

@@ -379,10 +379,10 @@ public class InterceptSettings {
         private boolean cleanAll;
         private boolean beforeCleanAll;
         private boolean afterCleanAll;
-        //
+
         private List<String> beforeCleanIntercepts;
         private List<String> afterCleanIntercepts;
-        //
+
         private List<Class<? extends IInterceptor>> beforeIntercepts;
         private List<Class<? extends IInterceptor>> afterIntercepts;
 

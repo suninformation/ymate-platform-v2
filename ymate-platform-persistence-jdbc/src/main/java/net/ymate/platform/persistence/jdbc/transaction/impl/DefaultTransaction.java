@@ -115,7 +115,9 @@ public class DefaultTransaction implements ITransaction {
      */
     private static class TransactionMeta {
 
-        // 数据库连接持有者对象
+        /**
+         * 数据库连接持有者对象
+         */
         IConnectionHolder connectionHolder;
 
         /**

@@ -85,13 +85,16 @@ public final class GridFSFileBuilder {
     public GridFSInputFile build(IGridFSSession gridFS) throws Exception {
         GridFSInputFile _inFile = null;
         switch (__type) {
-            case 1: // is File
+            case 1:
+                // is File
                 _inFile = gridFS.getGridFS().createFile((File) __targetObject);
                 break;
-            case 2: // is InputStream
+            case 2:
+                // is InputStream
                 _inFile = gridFS.getGridFS().createFile((InputStream) __targetObject);
                 break;
-            case 3: // is Array
+            case 3:
+                // is Array
                 _inFile = gridFS.getGridFS().createFile((byte[]) __targetObject);
                 break;
             default:

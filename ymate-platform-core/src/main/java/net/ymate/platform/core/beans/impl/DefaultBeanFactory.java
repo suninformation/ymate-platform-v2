@@ -60,10 +60,14 @@ public class DefaultBeanFactory implements IBeanFactory {
 
     private Map<Class<? extends Annotation>, IBeanInjector> __beanInjectorMap;
 
-    // 对象类型 -> 对象实例
+    /**
+     * 对象类型 -> 对象实例
+     */
     private Map<Class<?>, BeanMeta> __beanInstancesMap;
 
-    // 接口类型 -> 对象类型
+    /**
+     * 接口类型 -> 对象类型
+     */
     private Map<Class<?>, Class<?>> __beanInterfacesMap;
 
     private IBeanLoader __beanLoader;

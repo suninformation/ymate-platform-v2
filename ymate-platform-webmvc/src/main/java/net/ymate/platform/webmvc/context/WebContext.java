@@ -92,6 +92,8 @@ public final class WebContext {
         return WebContext.getContext().getAttribute(Type.Context.HTTP_RESPONSE);
     }
 
+    //
+
     private WebContext(Map<String, Object> contextMap) {
         __attributes = contextMap;
     }
@@ -261,5 +263,41 @@ public final class WebContext {
             return ((IMultipartRequestWrapper) getRequest()).getUploadFiles();
         }
         return Collections.emptySet();
+    }
+
+    public static abstract class AbstractEntry<K, V> implements Map.Entry<K, V> {
+
+        private K key;
+
+        private V value;
+
+        public AbstractEntry(K key, V value) {
+            this.key = key;
+            this.value = value;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (!(obj instanceof Map.Entry)) {
+                return false;
+            }
+            Map.Entry entry = (Map.Entry) obj;
+            return ((key == null) ? (entry.getKey() == null) : key.equals(entry.getKey())) && ((value == null) ? (entry.getValue() == null) : value.equals(entry.getValue()));
+        }
+
+        @Override
+        public int hashCode() {
+            return ((key == null) ? 0 : key.hashCode()) ^ ((value == null) ? 0 : value.hashCode());
+        }
+
+        @Override
+        public K getKey() {
+            return key;
+        }
+
+        @Override
+        public V getValue() {
+            return value;
+        }
     }
 }

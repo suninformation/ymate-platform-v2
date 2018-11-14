@@ -30,16 +30,13 @@ import java.util.*;
  * attributes. The {@link #entrySet()} method enumerates over all session attributes and creates a Set of entries.
  * Note, this will occur lazily - only when the entry set is asked for.
  * </p>
- *
- * @param <K> 键类型
- * @param <V> 值类型
  */
-public class SessionMap<K, V> extends AbstractMap<K, V> implements Serializable {
+public class SessionMap extends AbstractMap<String, Object> implements Serializable {
 
     private static final long serialVersionUID = 4678843241638046854L;
 
     protected HttpSession session;
-    protected Set<Entry<K, V>> entries;
+    protected Set<Entry<String, Object>> entries;
     protected HttpServletRequest request;
 
     /**
@@ -96,46 +93,22 @@ public class SessionMap<K, V> extends AbstractMap<K, V> implements Serializable 
      */
     @Override
     @SuppressWarnings("unchecked")
-    public Set<Entry<K, V>> entrySet() {
+    public Set<Entry<String, Object>> entrySet() {
         if (session == null) {
             return Collections.emptySet();
         }
         synchronized (session) {
             if (entries == null) {
-                entries = new HashSet<Entry<K, V>>();
-                Enumeration<? extends Object> enumeration = session.getAttributeNames();
+                entries = new HashSet<Entry<String, Object>>();
+                Enumeration enumeration = session.getAttributeNames();
                 while (enumeration.hasMoreElements()) {
                     final String key = enumeration.nextElement().toString();
                     final Object value = session.getAttribute(key);
-                    entries.add(new Entry<K, V>() {
+                    entries.add(new WebContext.AbstractEntry<String, Object>(key, value) {
                         @Override
-                        public boolean equals(Object obj) {
-                            if (!(obj instanceof Entry)) {
-                                return false;
-                            }
-                            Entry<K, V> entry = (Entry<K, V>) obj;
-                            return ((key == null) ? (entry.getKey() == null) : key.equals(entry.getKey())) && ((value == null) ? (entry.getValue() == null) : value.equals(entry.getValue()));
-                        }
-
-                        @Override
-                        public int hashCode() {
-                            return ((key == null) ? 0 : key.hashCode()) ^ ((value == null) ? 0 : value.hashCode());
-                        }
-
-                        @Override
-                        public K getKey() {
-                            return (K) key;
-                        }
-
-                        @Override
-                        public V getValue() {
-                            return (V) value;
-                        }
-
-                        @Override
-                        public V setValue(Object obj) {
-                            session.setAttribute(key, obj);
-                            return (V) value;
+                        public Object setValue(Object value) {
+                            session.setAttribute(key, value);
+                            return value;
                         }
                     });
                 }
@@ -152,12 +125,12 @@ public class SessionMap<K, V> extends AbstractMap<K, V> implements Serializable 
      */
     @Override
     @SuppressWarnings("unchecked")
-    public V get(Object key) {
+    public Object get(Object key) {
         if (session == null) {
             return null;
         }
         synchronized (session) {
-            return (V) session.getAttribute(key.toString());
+            return session.getAttribute(key.toString());
         }
     }
 
@@ -169,16 +142,16 @@ public class SessionMap<K, V> extends AbstractMap<K, V> implements Serializable 
      * @return the object that was just set.
      */
     @Override
-    public V put(K key, V value) {
+    public Object put(String key, Object value) {
         synchronized (this) {
             if (session == null) {
                 session = request.getSession(true);
             }
         }
         synchronized (session) {
-            V oldValue = get(key);
+            Object oldValue = get(key);
             entries = null;
-            session.setAttribute(key.toString(), value);
+            session.setAttribute(key, value);
             return oldValue;
         }
     }
@@ -190,13 +163,13 @@ public class SessionMap<K, V> extends AbstractMap<K, V> implements Serializable 
      * @return the value that was removed or <tt>null</tt> if the value was not found (and hence, not removed).
      */
     @Override
-    public V remove(Object key) {
+    public Object remove(Object key) {
         if (session == null) {
             return null;
         }
         synchronized (session) {
             entries = null;
-            V value = get(key);
+            Object value = get(key);
             session.removeAttribute(key.toString());
             return value;
         }

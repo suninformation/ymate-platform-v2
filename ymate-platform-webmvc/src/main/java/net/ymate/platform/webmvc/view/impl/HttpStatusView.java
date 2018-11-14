@@ -36,7 +36,7 @@ public class HttpStatusView extends AbstractView {
     private final int __status;
     private final String __msg;
     private final boolean __error;
-    //
+
     private String __body;
 
     /**

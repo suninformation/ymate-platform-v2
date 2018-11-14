@@ -179,6 +179,7 @@ public interface ILogger {
     void info(String info, Throwable e);
 
     //
+
     void warn(String info);
 
     void warn(Throwable e);

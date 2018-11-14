@@ -75,35 +75,10 @@ public class RequestMap extends AbstractMap implements Serializable {
             Enumeration enumeration = request.getAttributeNames();
             while (enumeration.hasMoreElements()) {
                 final String key = enumeration.nextElement().toString();
-                final Object value = request.getAttribute(key);
-                entries.add(new Entry() {
+                entries.add(new WebContext.AbstractEntry<String, Object>(key, request.getAttribute(key)) {
                     @Override
-                    public boolean equals(Object obj) {
-                        if (!(obj instanceof Entry)) {
-                            return false;
-                        }
-                        Entry entry = (Entry) obj;
-                        return ((key == null) ? (entry.getKey() == null) : key.equals(entry.getKey())) && ((value == null) ? (entry.getValue() == null) : value.equals(entry.getValue()));
-                    }
-
-                    @Override
-                    public int hashCode() {
-                        return ((key == null) ? 0 : key.hashCode()) ^ ((value == null) ? 0 : value.hashCode());
-                    }
-
-                    @Override
-                    public Object getKey() {
-                        return key;
-                    }
-
-                    @Override
-                    public Object getValue() {
-                        return value;
-                    }
-
-                    @Override
-                    public Object setValue(Object obj) {
-                        request.setAttribute(key, obj);
+                    public Object setValue(Object value) {
+                        request.setAttribute(key, value);
                         return value;
                     }
                 });

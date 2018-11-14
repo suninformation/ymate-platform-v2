@@ -62,7 +62,7 @@ public class DefaultSession implements ISession {
     private IConnectionHolder __connectionHolder;
     private IDialect __dialect;
     private String __tablePrefix;
-    //
+
     private ISessionEvent __sessionEvent;
 
     public DefaultSession(IConnectionHolder connectionHolder) {

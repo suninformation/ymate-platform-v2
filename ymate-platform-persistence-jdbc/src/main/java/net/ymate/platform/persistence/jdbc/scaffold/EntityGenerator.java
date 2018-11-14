@@ -144,9 +144,12 @@ public class EntityGenerator {
             _properties.put("modelName", _fixedName.getKey());
             _properties.put("tableName", _fixedName.getValue());
             //
-            List<Attr> _fieldList = new ArrayList<Attr>(); // 用于完整的构造方法
-            List<Attr> _fieldListForNotNullable = new ArrayList<Attr>(); // 用于非空字段的构造方法
-            List<Attr> _allFieldList = new ArrayList<Attr>(); // 用于生成字段名称常量
+            // 用于完整的构造方法
+            List<Attr> _fieldList = new ArrayList<Attr>();
+            // 用于非空字段的构造方法
+            List<Attr> _fieldListForNotNullable = new ArrayList<Attr>();
+            // 用于生成字段名称常量
+            List<Attr> _allFieldList = new ArrayList<Attr>();
             if (tableInfo.getPkSet().size() > 1) {
                 _properties.put("primaryKeyType", _fixedName.getKey() + "PK");
                 _properties.put("primaryKeyName", StringUtils.uncapitalize((String) _properties.get("primaryKeyType")));

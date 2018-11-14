@@ -51,7 +51,7 @@ public class DefaultBeanLoader extends AbstractBeanLoader {
                 for (Class<?> _class : _classes) {
                     if (!StringUtils.startsWithAny(_class.getPackage().getName(), _excludedPackages)) {
                         // 不扫描注解、枚举类，被声明@Ingored注解的类也将被忽略，因为需要处理package-info信息，所以放开接口限制
-                        if (!_class.isAnnotation() && !_class.isEnum() /* && !_class.isInterface() */ && !_class.isAnnotationPresent(Ignored.class)) {
+                        if (!_class.isAnnotation() && !_class.isEnum() && !_class.isAnnotationPresent(Ignored.class)) {
                             Annotation[] _annotations = _class.getAnnotations();
                             if (_annotations != null && _annotations.length > 0) {
                                 for (Annotation _anno : _annotations) {
