@@ -25,6 +25,7 @@ import org.apache.commons.logging.LogFactory;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
+import java.net.SocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.channels.DatagramChannel;
 import java.nio.channels.SelectableChannel;
@@ -174,7 +175,11 @@ public class NioSession<LISTENER extends IListener<INioSession>> extends Abstrac
     @Override
     public InetSocketAddress remoteSocketAddress() {
         if (__channel instanceof DatagramChannel) {
-            return (InetSocketAddress) ((DatagramChannel) __channel).socket().getRemoteSocketAddress();
+            InetSocketAddress _sourceAddr = attr(SocketAddress.class.getName());
+            if (_sourceAddr == null) {
+                _sourceAddr = (InetSocketAddress) ((DatagramChannel) __channel).socket().getRemoteSocketAddress();
+            }
+            return _sourceAddr;
         }
         return (InetSocketAddress) ((SocketChannel) __channel).socket().getRemoteSocketAddress();
     }

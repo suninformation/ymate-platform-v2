@@ -13,16 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.ymate.platform.serv.nio;
-
-import net.ymate.platform.serv.nio.server.NioSessionWrapper;
+package net.ymate.platform.serv.nio.server;
 
 import java.io.IOException;
 
 /**
- * 会话事件监听器接口
+ * TCP会话事件监听器接口
  *
- * @param <MESSAGE_TYPE> 消息类型
+ * @param <SESSION_WRAPPER> 会话包装器类型
+ * @param <MESSAGE_TYPE>    消息类型
  * @author 刘镇 (suninformation@163.com) on 2018/11/13 12:11 AM
  * @version 1.0
  */

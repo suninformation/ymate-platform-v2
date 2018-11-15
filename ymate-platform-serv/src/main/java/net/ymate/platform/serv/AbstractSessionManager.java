@@ -19,6 +19,7 @@ import net.ymate.platform.core.support.Speedometer;
 import net.ymate.platform.core.support.impl.DefaultSpeedListener;
 import net.ymate.platform.serv.nio.INioCodec;
 import net.ymate.platform.serv.nio.INioSession;
+import net.ymate.platform.serv.nio.server.NioSessionWrapper;
 import org.apache.commons.lang.NullArgumentException;
 
 import java.util.Collection;
@@ -83,15 +84,60 @@ public abstract class AbstractSessionManager<SESSION_WRAPPER extends ISessionWra
         }
     }
 
+    /**
+     * 注册客户端会话
+     *
+     * @param session 会话对象
+     */
+    protected SESSION_WRAPPER __doRegisterSession(INioSession session) {
+        SESSION_WRAPPER _wrapper = doBuildSessionWrapper(session);
+        if (doRegister(_wrapper)) {
+            putSessionWrapper(_wrapper.getId(), _wrapper);
+            return _wrapper;
+        }
+        return null;
+    }
+
+    /**
+     * 执行会话注册逻辑
+     *
+     * @param session 会话包装器对象
+     * @return 返回值为false表示不向管理器注册当前会话
+     */
+    protected boolean doRegister(SESSION_WRAPPER session) {
+        return true;
+    }
+
+    /**
+     * 将会话包装器对象放入管理器
+     *
+     * @param sessionId      会话标识符
+     * @param sessionWrapper 会话包装器对象
+     */
     protected void putSessionWrapper(String sessionId, SESSION_WRAPPER sessionWrapper) {
         __sessions.put(sessionId, sessionWrapper);
     }
 
+    /**
+     * 移除会话
+     *
+     * @param sessionId 会话标识符
+     * @return 返回被移除的会话对象, 若不存在则返回null
+     */
     protected SESSION_WRAPPER removeSessionWrapper(String sessionId) {
         return __sessions.remove(sessionId);
     }
 
-    protected abstract SESSION_WRAPPER doBuildSessionWrapper(INioSession session);
+    /**
+     * 根据会话对象构建包装器
+     *
+     * @param session 会话对象
+     * @return 返回包装器对象
+     */
+    @SuppressWarnings("unchecked")
+    protected SESSION_WRAPPER doBuildSessionWrapper(INioSession session) {
+        return (SESSION_WRAPPER) new NioSessionWrapper(session);
+    }
 
     protected abstract IServer doBuildServer(IServ owner, IServerCfg serverCfg, INioCodec codec);
 

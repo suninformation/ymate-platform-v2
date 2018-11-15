@@ -22,7 +22,6 @@ import net.ymate.platform.serv.IServer;
 import net.ymate.platform.serv.IServerCfg;
 import net.ymate.platform.serv.nio.INioCodec;
 import net.ymate.platform.serv.nio.INioSession;
-import net.ymate.platform.serv.nio.INioSessionListener;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -43,39 +42,6 @@ public class NioSessionManager<SESSION_WRAPPER extends NioSessionWrapper, MESSAG
     public NioSessionManager(IServerCfg serverCfg, INioCodec codec, INioSessionListener<SESSION_WRAPPER, MESSAGE_TYPE> listener) {
         super(serverCfg, codec);
         __listener = listener;
-    }
-
-    /**
-     * 注册客户端会话
-     *
-     * @param session 会话对象
-     */
-    private SESSION_WRAPPER __doRegisterSession(INioSession session) {
-        SESSION_WRAPPER _wrapper = doBuildSessionWrapper(session);
-        if (doRegister(_wrapper)) {
-            putSessionWrapper(_wrapper.getId(), _wrapper);
-            return _wrapper;
-        }
-        return null;
-    }
-
-    private SESSION_WRAPPER __doRemoveSession(String sessionId) {
-        return removeSessionWrapper(sessionId);
-    }
-
-    /**
-     * 执行会话注册逻辑
-     *
-     * @param session 会话包装器对象
-     * @return 返回值为false表示不向管理器注册当前会话
-     */
-    protected boolean doRegister(SESSION_WRAPPER session) {
-        return true;
-    }
-
-    @SuppressWarnings("unchecked")
-    protected SESSION_WRAPPER doBuildSessionWrapper(INioSession session) {
-        return (SESSION_WRAPPER) new NioSessionWrapper(session);
     }
 
     @Override
@@ -117,7 +83,7 @@ public class NioSessionManager<SESSION_WRAPPER extends NioSessionWrapper, MESSAG
 
             @Override
             public void onAfterSessionClosed(INioSession session) throws IOException {
-                SESSION_WRAPPER _wrapper = __doRemoveSession(session.id());
+                SESSION_WRAPPER _wrapper = removeSessionWrapper(session.id());
                 if (_wrapper != null) {
                     if (_LOG.isDebugEnabled()) {
                         _LOG.debug(_wrapper + " - After closed. Session count: " + getSessionCount());
