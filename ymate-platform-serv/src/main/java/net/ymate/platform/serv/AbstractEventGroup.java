@@ -41,7 +41,7 @@ public abstract class AbstractEventGroup<CODEC extends ICodec, LISTENER extends 
 
     private int __bufferSize = 4096;
 
-    private int __executorCount = Runtime.getRuntime().availableProcessors();
+    private int __executorCount;
 
     private long __keepAliveTime;
 
@@ -51,7 +51,7 @@ public abstract class AbstractEventGroup<CODEC extends ICodec, LISTENER extends 
 
     private int __connectionTimeout = 5000;
 
-    private boolean __isStarted = false;
+    private boolean __isStarted;
 
     private boolean __isServer;
 
@@ -61,6 +61,10 @@ public abstract class AbstractEventGroup<CODEC extends ICodec, LISTENER extends 
             __bufferSize = cfg.getBufferSize();
         }
         __executorCount = cfg.getExecutorCount();
+        if (__executorCount <= 0) {
+            __executorCount = Runtime.getRuntime().availableProcessors();
+        }
+
         __keepAliveTime = cfg.getKeepAliveTime();
         __threadMaxPoolSize = cfg.getThreadMaxPoolSize();
         __threadQueueSize = cfg.getThreadQueueSize();
@@ -133,7 +137,8 @@ public abstract class AbstractEventGroup<CODEC extends ICodec, LISTENER extends 
         return __session;
     }
 
-    protected boolean isServer() {
+    @Override
+    public boolean isServer() {
         return __isServer;
     }
 

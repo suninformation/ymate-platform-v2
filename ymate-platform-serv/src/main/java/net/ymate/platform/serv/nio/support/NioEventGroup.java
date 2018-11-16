@@ -20,6 +20,7 @@ import net.ymate.platform.serv.IClientCfg;
 import net.ymate.platform.serv.IListener;
 import net.ymate.platform.serv.IServerCfg;
 import net.ymate.platform.serv.nio.INioCodec;
+import net.ymate.platform.serv.nio.INioEventGroup;
 import net.ymate.platform.serv.nio.INioSession;
 import org.apache.commons.lang.StringUtils;
 
@@ -32,17 +33,18 @@ import java.nio.channels.SocketChannel;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
- * @param <LISTENER> 监听器类型
  * @author 刘镇 (suninformation@163.com) on 15/11/15 下午6:54
  * @version 1.0
  */
-public class NioEventGroup<LISTENER extends IListener<INioSession>> extends AbstractEventGroup<INioCodec, LISTENER, INioSession> {
+public class NioEventGroup<LISTENER extends IListener<INioSession>> extends AbstractEventGroup<INioCodec, LISTENER, INioSession> implements INioEventGroup<LISTENER> {
 
-    protected SelectableChannel __channel;
-    protected int __selectorCount = 1;
+    private SelectableChannel __channel;
 
-    protected NioEventProcessor[] __processors;
-    private AtomicInteger __handlerIndex = new AtomicInteger(0);
+    private int __selectorCount = 1;
+
+    private NioEventProcessor[] __processors;
+
+    private AtomicInteger __handlerCount = new AtomicInteger(0);
 
     public NioEventGroup(IServerCfg cfg, LISTENER listener, INioCodec codec) throws IOException {
         super(cfg, listener, codec);
@@ -77,20 +79,37 @@ public class NioEventGroup<LISTENER extends IListener<INioSession>> extends Abst
     public synchronized void start() throws IOException {
         super.start();
         //
-        __doInitProcessors();
+        __processors = __doInitProcessors();
         __doRegisterEvent();
+    }
+
+    protected SelectableChannel channel() {
+        return __channel;
+    }
+
+    protected void channel(SelectableChannel channel) {
+        __channel = channel;
+    }
+
+    protected int selectorCount() {
+        return __selectorCount;
+    }
+
+    protected NioEventProcessor[] processors() {
+        return __processors;
     }
 
     protected String __doBuildProcessorName() {
         return StringUtils.capitalize(name()).concat(isServer() ? "Server" : "Client").concat("-NioEventProcessor-");
     }
 
-    protected void __doInitProcessors() throws IOException {
-        __processors = new NioEventProcessor[__selectorCount];
+    protected NioEventProcessor[] __doInitProcessors() throws IOException {
+        NioEventProcessor[] _processors = new NioEventProcessor[__selectorCount];
         for (int _idx = 0; _idx < __selectorCount; _idx++) {
-            __processors[_idx] = new NioEventProcessor<LISTENER>(this, __doBuildProcessorName() + _idx);
-            __processors[_idx].start();
+            _processors[_idx] = new NioEventProcessor<LISTENER>(this, __doBuildProcessorName() + _idx);
+            _processors[_idx].start();
         }
+        return _processors;
     }
 
     protected void __doRegisterEvent() throws IOException {
@@ -117,7 +136,7 @@ public class NioEventGroup<LISTENER extends IListener<INioSession>> extends Abst
 
     public NioEventProcessor processor(SelectionKey key) {
         for (NioEventProcessor _processor : __processors) {
-            if (key.selector() == _processor.__selector) {
+            if (key.selector() == _processor.selector()) {
                 return _processor;
             }
         }
@@ -125,9 +144,9 @@ public class NioEventGroup<LISTENER extends IListener<INioSession>> extends Abst
     }
 
     public NioEventProcessor processor() {
-        int _nextIdx = __handlerIndex.getAndIncrement() % __selectorCount;
+        int _nextIdx = __handlerCount.getAndIncrement() % __selectorCount;
         if (_nextIdx < 0) {
-            __handlerIndex.set(0);
+            __handlerCount.set(0);
             _nextIdx = 0;
         }
         return __processors[_nextIdx];

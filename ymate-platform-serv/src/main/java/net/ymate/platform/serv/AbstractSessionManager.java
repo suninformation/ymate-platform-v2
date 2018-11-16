@@ -19,9 +19,9 @@ import net.ymate.platform.core.support.Speedometer;
 import net.ymate.platform.core.support.impl.DefaultSpeedListener;
 import net.ymate.platform.serv.nio.INioCodec;
 import net.ymate.platform.serv.nio.INioSession;
-import net.ymate.platform.serv.nio.server.NioSessionWrapper;
 import org.apache.commons.lang.NullArgumentException;
 
+import java.net.InetSocketAddress;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
@@ -87,10 +87,11 @@ public abstract class AbstractSessionManager<SESSION_WRAPPER extends ISessionWra
     /**
      * 注册客户端会话
      *
-     * @param session 会话对象
+     * @param session       会话对象
+     * @param socketAddress 目标来源套接字地址
      */
-    protected SESSION_WRAPPER __doRegisterSession(INioSession session) {
-        SESSION_WRAPPER _wrapper = doBuildSessionWrapper(session);
+    protected SESSION_WRAPPER __doRegisterSession(INioSession session, InetSocketAddress socketAddress) {
+        SESSION_WRAPPER _wrapper = doBuildSessionWrapper(session, socketAddress);
         if (doRegister(_wrapper)) {
             putSessionWrapper(_wrapper.getId(), _wrapper);
             return _wrapper;
@@ -131,13 +132,11 @@ public abstract class AbstractSessionManager<SESSION_WRAPPER extends ISessionWra
     /**
      * 根据会话对象构建包装器
      *
-     * @param session 会话对象
+     * @param session       会话对象
+     * @param socketAddress 目标来源套接字地址
      * @return 返回包装器对象
      */
-    @SuppressWarnings("unchecked")
-    protected SESSION_WRAPPER doBuildSessionWrapper(INioSession session) {
-        return (SESSION_WRAPPER) new NioSessionWrapper(session);
-    }
+    protected abstract SESSION_WRAPPER doBuildSessionWrapper(INioSession session, InetSocketAddress socketAddress);
 
     protected abstract IServer doBuildServer(IServ owner, IServerCfg serverCfg, INioCodec codec);
 

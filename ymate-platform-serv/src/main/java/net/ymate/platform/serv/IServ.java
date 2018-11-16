@@ -81,7 +81,7 @@ public interface IServ {
 
     <LISTENER extends NioClientListener, CODEC extends INioCodec> NioClient buildClient(IClientCfg clientCfg, CODEC codec, IReconnectService reconnect, IHeartbeatService heartbeat, LISTENER listener);
 
-    <LISTENER extends NioUdpListener, CODEC extends INioCodec> NioUdpClient buildUdpClient(IClientCfg clientCfg, CODEC codec, IReconnectService reconnect, IHeartbeatService heartbeat, LISTENER listener);
+    <LISTENER extends NioUdpListener, CODEC extends INioCodec> NioUdpClient buildUdpClient(IClientCfg clientCfg, CODEC codec, IHeartbeatService heartbeat, LISTENER listener);
 
     /**
      * 启动所有Server端和Client端服务

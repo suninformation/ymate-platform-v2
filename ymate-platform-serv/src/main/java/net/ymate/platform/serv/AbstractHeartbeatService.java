@@ -20,23 +20,17 @@ import net.ymate.platform.core.util.RuntimeUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import java.io.IOException;
-
 /**
  * @author 刘镇 (suninformation@163.com) on 2018/11/6 3:24 PM
  * @version 1.0
  */
-public abstract class AbstractHeartbeatService<HEARTBEAT_TYPE> extends Thread implements IHeartbeatService<HEARTBEAT_TYPE> {
+public abstract class AbstractHeartbeatService<HEARTBEAT_TYPE> extends AbstractService implements IHeartbeatService<HEARTBEAT_TYPE> {
 
     private static final Log _LOG = LogFactory.getLog(AbstractHeartbeatService.class);
 
     private IClient __client;
 
-    private boolean __inited;
-
-    private boolean __flag;
-
-    private int __heartbeatInterval;
+    private long __heartbeatInterval;
 
     protected IClient getClient() {
         return __client;
@@ -45,69 +39,31 @@ public abstract class AbstractHeartbeatService<HEARTBEAT_TYPE> extends Thread im
     @Override
     public void init(IClient client) {
         __client = client;
-        __inited = true;
+        __doInit();
     }
 
     @Override
-    public boolean isInited() {
-        return __inited;
-    }
-
-    @Override
-    public void start() {
-        if (__inited && !__flag) {
-            __flag = true;
-            setName("HeartbeatService-" + __client.listener().getClass().getSimpleName());
-            if (__client.clientCfg().getHeartbeatInterval() > 0) {
-                __heartbeatInterval = __client.clientCfg().getHeartbeatInterval();
-            } else {
-                __heartbeatInterval = 5;
-            }
-            super.start();
+    protected boolean __doStart() {
+        setName("HeartbeatService-" + __client.listener().getClass().getSimpleName());
+        if (__client.clientCfg().getHeartbeatInterval() > 0) {
+            __heartbeatInterval = __client.clientCfg().getHeartbeatInterval() * DateTimeUtils.SECOND;
+        } else {
+            __heartbeatInterval = 60000L;
         }
+        return super.__doStart();
     }
 
     @Override
-    public void run() {
-        if (__inited) {
-            long _millis = __heartbeatInterval * DateTimeUtils.SECOND;
-            while (__flag) {
-                try {
-                    if (__client.isConnected()) {
-                        __client.send(getHeartbeatPacket());
-                    }
-                    sleep(_millis);
-                } catch (Exception e) {
-                    if (__flag) {
-                        _LOG.error(e.getMessage(), RuntimeUtils.unwrapThrow(e));
-                    } else {
-                        _LOG.debug(e.getMessage(), RuntimeUtils.unwrapThrow(e));
-                    }
-                }
+    protected void __doService() {
+        try {
+            if (__client.isConnected()) {
+                __client.send(getHeartbeatPacket());
+            }
+            sleep(__heartbeatInterval);
+        } catch (Exception e) {
+            if (isStarted()) {
+                _LOG.error(e.getMessage(), RuntimeUtils.unwrapThrow(e));
             }
         }
-    }
-
-    @Override
-    public boolean isStarted() {
-        return __flag;
-    }
-
-    @Override
-    public void interrupt() {
-        if (__inited && __flag) {
-            try {
-                __flag = false;
-                join();
-            } catch (InterruptedException e) {
-                _LOG.debug(e.getMessage(), RuntimeUtils.unwrapThrow(e));
-            }
-            super.interrupt();
-        }
-    }
-
-    @Override
-    public void close() throws IOException {
-        interrupt();
     }
 }

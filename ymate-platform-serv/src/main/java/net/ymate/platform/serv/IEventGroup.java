@@ -40,6 +40,8 @@ public interface IEventGroup<CODEC extends ICodec, LISTENER extends IListener<SE
 
     boolean isStarted();
 
+    boolean isServer();
+
     String name();
 
     void name(String name);

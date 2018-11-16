@@ -15,21 +15,11 @@
  */
 package net.ymate.platform.serv;
 
+import java.io.Serializable;
+
 /**
  * @author 刘镇 (suninformation@163.com) on 2018/11/14 2:35 PM
  * @version 1.0
  */
-public abstract class AbstractSessionWrapper<SESSION_TYPE> implements ISessionWrapper<SESSION_TYPE> {
-
-    private long __lastHeartbeatTime;
-
-    @Override
-    public long getLastHeartbeatTime() {
-        return __lastHeartbeatTime;
-    }
-
-    @Override
-    public void heartbeatTouch() {
-        __lastHeartbeatTime = System.currentTimeMillis();
-    }
+public abstract class AbstractSessionWrapper<SESSION_TYPE extends Serializable> implements ISessionWrapper<SESSION_TYPE> {
 }

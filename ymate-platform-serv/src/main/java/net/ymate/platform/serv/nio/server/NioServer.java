@@ -15,12 +15,11 @@
  */
 package net.ymate.platform.serv.nio.server;
 
-import net.ymate.platform.serv.IServer;
 import net.ymate.platform.serv.IServerCfg;
+import net.ymate.platform.serv.nio.AbstractNioServer;
 import net.ymate.platform.serv.nio.INioCodec;
+import net.ymate.platform.serv.nio.INioEventGroup;
 import net.ymate.platform.serv.nio.support.NioEventGroup;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 import java.io.IOException;
 
@@ -28,61 +27,10 @@ import java.io.IOException;
  * @author 刘镇 (suninformation@163.com) on 15/11/15 下午6:22
  * @version 1.0
  */
-public class NioServer implements IServer<NioServerListener, INioCodec> {
-
-    private static final Log _LOG = LogFactory.getLog(NioServer.class);
-
-    private IServerCfg __serverCfg;
-
-    private NioEventGroup<NioServerListener> __eventGroup;
-
-    private NioServerListener __listener;
-
-    private INioCodec __codec;
-
-    private boolean __isStarted;
+public class NioServer extends AbstractNioServer<NioServerListener> {
 
     @Override
-    public void init(IServerCfg serverCfg, NioServerListener listener, INioCodec codec) {
-        __serverCfg = serverCfg;
-        //
-        __listener = listener;
-        __codec = codec;
-        __codec.init(__serverCfg.getCharset());
-    }
-
-    @Override
-    public void start() throws IOException {
-        if (!__isStarted) {
-            __isStarted = true;
-            __eventGroup = new NioEventGroup<NioServerListener>(__serverCfg, __listener, __codec);
-            __eventGroup.start();
-            //
-            _LOG.info("Server [" + __eventGroup.name() + "] started at " + __serverCfg.getServerHost() + ":" + __serverCfg.getPort());
-        }
-    }
-
-    @Override
-    public boolean isStarted() {
-        return __isStarted;
-    }
-
-    @Override
-    public IServerCfg serverCfg() {
-        return __serverCfg;
-    }
-
-    @Override
-    @SuppressWarnings("unchecked")
-    public <T extends NioServerListener> T listener() {
-        return (T) __listener;
-    }
-
-    @Override
-    public void close() throws IOException {
-        if (__isStarted) {
-            __isStarted = false;
-            __eventGroup.close();
-        }
+    protected INioEventGroup<NioServerListener> buildEventGroup(IServerCfg serverCfg, NioServerListener listener, INioCodec codec) throws IOException {
+        return new NioEventGroup<NioServerListener>(serverCfg, listener, codec);
     }
 }

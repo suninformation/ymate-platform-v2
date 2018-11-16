@@ -13,11 +13,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.ymate.platform.serv;
+package net.ymate.platform.serv.nio;
+
+import java.io.Closeable;
+import java.io.IOException;
+import java.nio.channels.SelectableChannel;
+import java.nio.channels.Selector;
 
 /**
  * @author 刘镇 (suninformation@163.com) on 15/11/15 下午6:31
  * @version 1.0
  */
-public interface IEventProcessor {
+public interface INioEventProcessor<SESSION extends INioSession> extends Closeable {
+
+    void registerEvent(SelectableChannel channel, int ops, SESSION session) throws IOException;
+
+    void unregisterEvent(SESSION session);
+
+    Selector selector();
+
+    void start();
 }

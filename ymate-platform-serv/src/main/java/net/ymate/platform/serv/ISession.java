@@ -17,6 +17,7 @@ package net.ymate.platform.serv;
 
 import java.io.Closeable;
 import java.io.IOException;
+import java.io.Serializable;
 import java.net.InetSocketAddress;
 import java.util.Map;
 
@@ -26,7 +27,7 @@ import java.util.Map;
  * @author 刘镇 (suninformation@163.com) on 15/11/9 上午9:32
  * @version 1.0
  */
-public interface ISession extends Closeable {
+public interface ISession extends Serializable, Closeable {
 
     /**
      * 会话状态枚举

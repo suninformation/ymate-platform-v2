@@ -42,6 +42,8 @@ public interface INioSession extends ISession {
 
     void finishConnect();
 
+    boolean isUdp();
+
     /**
      * 设置当前会话状态
      *

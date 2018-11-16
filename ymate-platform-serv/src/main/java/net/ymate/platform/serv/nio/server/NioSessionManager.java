@@ -22,10 +22,12 @@ import net.ymate.platform.serv.IServer;
 import net.ymate.platform.serv.IServerCfg;
 import net.ymate.platform.serv.nio.INioCodec;
 import net.ymate.platform.serv.nio.INioSession;
+import net.ymate.platform.serv.nio.INioSessionManager;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import java.io.IOException;
+import java.net.InetSocketAddress;
 
 /**
  * TCP客户端会话管理器
@@ -33,7 +35,7 @@ import java.io.IOException;
  * @author 刘镇 (suninformation@163.com) on 2018/11/12 3:40 PM
  * @version 1.0
  */
-public class NioSessionManager<SESSION_WRAPPER extends NioSessionWrapper, MESSAGE_TYPE> extends AbstractSessionManager<SESSION_WRAPPER> {
+public class NioSessionManager<SESSION_WRAPPER extends NioSessionWrapper, MESSAGE_TYPE> extends AbstractSessionManager<SESSION_WRAPPER> implements INioSessionManager<SESSION_WRAPPER, MESSAGE_TYPE> {
 
     private static final Log _LOG = LogFactory.getLog(NioSessionManager.class);
 
@@ -45,11 +47,17 @@ public class NioSessionManager<SESSION_WRAPPER extends NioSessionWrapper, MESSAG
     }
 
     @Override
+    @SuppressWarnings("unchecked")
+    protected SESSION_WRAPPER doBuildSessionWrapper(INioSession session, InetSocketAddress socketAddress) {
+        return (SESSION_WRAPPER) new NioSessionWrapper(session);
+    }
+
+    @Override
     protected IServer doBuildServer(IServ owner, IServerCfg serverCfg, INioCodec codec) {
         return owner.buildServer(serverCfg, codec, new NioServerListener() {
             @Override
             public void onSessionRegistered(INioSession session) throws IOException {
-                SESSION_WRAPPER _wrapper = __doRegisterSession(session);
+                SESSION_WRAPPER _wrapper = __doRegisterSession(session, null);
                 if (_wrapper != null) {
                     if (_LOG.isDebugEnabled()) {
                         _LOG.debug(_wrapper + " - Registered. Session count: " + getSessionCount());
@@ -101,7 +109,7 @@ public class NioSessionManager<SESSION_WRAPPER extends NioSessionWrapper, MESSAG
                         _LOG.debug(_wrapper + " - Received: " + message);
                     }
                     speedTouch();
-                    _wrapper.heartbeatTouch();
+                    _wrapper.touch();
                     __listener.onMessageReceived((MESSAGE_TYPE) message, _wrapper);
                 }
             }
@@ -117,5 +125,15 @@ public class NioSessionManager<SESSION_WRAPPER extends NioSessionWrapper, MESSAG
                 }
             }
         });
+    }
+
+    @Override
+    public boolean sendTo(String sessionId, MESSAGE_TYPE message) throws IOException {
+        SESSION_WRAPPER _wrapper = getSessionWrapper(sessionId);
+        if (_wrapper != null) {
+            _wrapper.getSession().send(message);
+            return true;
+        }
+        return false;
     }
 }

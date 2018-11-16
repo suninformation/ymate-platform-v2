@@ -27,11 +27,9 @@ public class DefaultHeartbeatService extends AbstractHeartbeatService<String> {
     private String __heartbeatMessage;
 
     @Override
-    public void start() {
-        if (isInited() && !isStarted()) {
-            __heartbeatMessage = StringUtils.defaultIfBlank(getClient().clientCfg().getParam("heartbeat_message"), "0");
-            super.start();
-        }
+    protected boolean __doStart() {
+        __heartbeatMessage = StringUtils.defaultIfBlank(getClient().clientCfg().getParam("heartbeat_message"), "0");
+        return super.__doStart();
     }
 
     @Override

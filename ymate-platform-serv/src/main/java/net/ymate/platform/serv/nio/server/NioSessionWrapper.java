@@ -56,7 +56,17 @@ public class NioSessionWrapper extends AbstractSessionWrapper<INioSession> {
     }
 
     @Override
+    public void touch() {
+        __session.touch();
+    }
+
+    @Override
+    public long getLastTouchTime() {
+        return __session.lastTouchTime();
+    }
+
+    @Override
     public String toString() {
-        return "NioSessionWrapper {" + "__session=" + __session + ", __lastHeartbeatTime=" + getLastHeartbeatTime() + '}';
+        return "NioSessionWrapper {" + "__session=" + __session + ", __lastTouchTime=" + getLastTouchTime() + '}';
     }
 }

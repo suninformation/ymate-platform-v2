@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2017 the original author or authors.
+ * Copyright 2007-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,57 +15,69 @@
  */
 package net.ymate.platform.serv;
 
+import java.io.Closeable;
 import java.io.IOException;
 
 /**
- * @author 刘镇 (suninformation@163.com) on 15/11/19 下午4:55
+ * @author 刘镇 (suninformation@163.com) on 2018/11/20 9:55 AM
  * @version 1.0
  */
-public abstract class AbstractService {
+public abstract class AbstractService extends Thread implements Closeable {
 
-    private IReconnectService __reconnectService;
+    private boolean __inited;
 
-    private IHeartbeatService __heartbeatService;
+    private boolean __started;
 
-    protected IReconnectService getReconnectService() {
-        return __reconnectService;
+    public boolean isInited() {
+        return __inited;
     }
 
-    protected void setReconnectService(IReconnectService reconnectService) {
-        this.__reconnectService = reconnectService;
+    public boolean isStarted() {
+        return __started;
     }
 
-    protected void startReconnectService() {
-        if (__reconnectService != null && __reconnectService.isInited()) {
-            __reconnectService.start();
+    protected void __doInit() {
+        __inited = true;
+    }
+
+    protected boolean __doStart() {
+        return true;
+    }
+
+    protected abstract void __doService();
+
+    @Override
+    public void start() {
+        if (__inited && !__started) {
+            if (__doStart()) {
+                __started = true;
+                super.start();
+            }
         }
     }
 
-    protected void stopReconnectService() throws IOException {
-        if (__reconnectService != null && __reconnectService.isStarted()) {
-            __reconnectService.close();
+    @Override
+    public void run() {
+        if (isInited()) {
+            while (isStarted()) {
+                __doService();
+            }
         }
     }
 
-    //
-
-    protected IHeartbeatService getHeartbeatService() {
-        return __heartbeatService;
-    }
-
-    protected void setHeartbeatService(IHeartbeatService heartbeatService) {
-        this.__heartbeatService = heartbeatService;
-    }
-
-    protected void startHeartbeatService() {
-        if (__heartbeatService != null && __heartbeatService.isInited()) {
-            __heartbeatService.start();
+    @Override
+    public void interrupt() {
+        if (__inited && __started) {
+            __started = false;
+            try {
+                join(3000L);
+            } catch (InterruptedException ignored) {
+            }
+            super.interrupt();
         }
     }
 
-    protected void stopHeartbeatService() throws IOException {
-        if (__heartbeatService != null && __heartbeatService.isStarted()) {
-            __heartbeatService.close();
-        }
+    public void close() throws IOException {
+        interrupt();
     }
 }

@@ -41,21 +41,21 @@ public abstract class NioUdpListener extends AbstractListener<INioSession> {
     /**
      * 消息到达事件处理
      *
-     * @param sourceAddr 目标来源IP地址及端口
-     * @param message    消息对象
+     * @param sourceAddress 目标来源套接字地址
+     * @param message       消息对象
      * @return 预回应的消息对象, 返回null表示不发送回应消息
      * @throws IOException 可能产生的异常
      */
-    public abstract Object onMessageReceived(InetSocketAddress sourceAddr, Object message) throws IOException;
+    public abstract Object onMessageReceived(InetSocketAddress sourceAddress, Object message) throws IOException;
 
     /**
      * 捕获异常事件处理
      *
-     * @param sourceAddr 目标来源IP地址及端口, 若为null则代表本端产生的异常
-     * @param e          异常对象
+     * @param sourceAddress 目标来源套接字地址, 若为null则代表本端产生的异常
+     * @param e             异常对象
      * @throws IOException 可能产生的异常
      */
-    public abstract void onExceptionCaught(InetSocketAddress sourceAddr, Throwable e) throws IOException;
+    public abstract void onExceptionCaught(InetSocketAddress sourceAddress, Throwable e) throws IOException;
 
     @Override
     public final void onSessionRegistered(INioSession session) throws IOException {

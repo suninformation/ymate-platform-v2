@@ -24,7 +24,7 @@ import java.util.Map;
  * @author 刘镇 (suninformation@163.com) on 2018/11/14 11:41 AM
  * @version 1.0
  */
-public interface ISessionWrapper<SESSION_TYPE> extends Serializable {
+public interface ISessionWrapper<SESSION_TYPE extends Serializable> extends Serializable {
 
     /**
      * 获取当前会话标识符
@@ -65,14 +65,14 @@ public interface ISessionWrapper<SESSION_TYPE> extends Serializable {
     void addAttribute(String attrKey, Object attrValue);
 
     /**
-     * 获取最后心跳时间(毫秒)
-     *
-     * @return 返回心跳时间值
+     * 更新会话活动状态(触发心跳, 通知会话包装器更新心跳时间))
      */
-    long getLastHeartbeatTime();
+    void touch();
 
     /**
-     * 触发心跳(通知会话包装器更新心跳时间)
+     * 获取最后心跳时间(毫秒)
+     *
+     * @return 返回最后更新会话状态的时间(毫秒)
      */
-    void heartbeatTouch();
+    long getLastTouchTime();
 }

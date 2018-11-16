@@ -197,9 +197,11 @@ public class Servs implements IModule, IServ {
             IClient _client = ClassUtils.impl(implClass, IClient.class);
             //
             IReconnectService _reconnectService = null;
-            if (!IReconnectService.NONE.class.equals(reconnectClass)) {
-                _reconnectService = ClassUtils.impl(reconnectClass, IReconnectService.class);
-                _reconnectService.init(_client);
+            if (!NioUdpListener.class.equals(listenerClass)) {
+                if (!IReconnectService.NONE.class.equals(reconnectClass)) {
+                    _reconnectService = ClassUtils.impl(reconnectClass, IReconnectService.class);
+                    _reconnectService.init(_client);
+                }
             }
             IHeartbeatService _heartbeatService = null;
             if (!IHeartbeatService.NONE.class.equals(heartbeatClass)) {
@@ -227,15 +229,12 @@ public class Servs implements IModule, IServ {
     }
 
     @Override
-    public <LISTENER extends NioUdpListener, CODEC extends INioCodec> NioUdpClient buildUdpClient(IClientCfg clientCfg, CODEC codec, IReconnectService reconnect, IHeartbeatService heartbeat, LISTENER listener) {
+    public <LISTENER extends NioUdpListener, CODEC extends INioCodec> NioUdpClient buildUdpClient(IClientCfg clientCfg, CODEC codec, IHeartbeatService heartbeat, LISTENER listener) {
         NioUdpClient _client = new NioUdpClient();
-        if (reconnect != null && !reconnect.isInited()) {
-            reconnect.init(_client);
-        }
         if (heartbeat != null && !heartbeat.isInited()) {
             heartbeat.init(_client);
         }
-        _client.init(clientCfg, listener, codec, reconnect, heartbeat);
+        _client.init(clientCfg, listener, codec, null, heartbeat);
         return _client;
     }
 

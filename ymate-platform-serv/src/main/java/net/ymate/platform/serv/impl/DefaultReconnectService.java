@@ -17,19 +17,19 @@ package net.ymate.platform.serv.impl;
 
 import net.ymate.platform.core.util.DateTimeUtils;
 import net.ymate.platform.core.util.RuntimeUtils;
+import net.ymate.platform.serv.AbstractService;
 import net.ymate.platform.serv.IClient;
 import net.ymate.platform.serv.IReconnectService;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import java.io.IOException;
 import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * @author 刘镇 (suninformation@163.com) on 15/11/19 下午3:06
  * @version 1.0
  */
-public class DefaultReconnectService extends Thread implements IReconnectService {
+public class DefaultReconnectService extends AbstractService implements IReconnectService {
 
     private static final Log _LOG = LogFactory.getLog(DefaultReconnectService.class);
 
@@ -37,78 +37,39 @@ public class DefaultReconnectService extends Thread implements IReconnectService
 
     private IClient __client;
 
-    private boolean __inited;
-    private boolean __flag;
-
-    private int __timeout = 5;
+    private long __timeout;
 
     @Override
     public void init(IClient client) {
         __client = client;
-        __inited = true;
+        __doInit();
     }
 
     @Override
-    public boolean isInited() {
-        return __inited;
-    }
-
-    @Override
-    public boolean isStarted() {
-        return __flag;
-    }
-
-    @Override
-    public void start() {
-        if (__inited && !__flag) {
-            __flag = true;
-            setName("ReconnectService-" + __client.listener().getClass().getSimpleName());
-            if (__client.clientCfg().getConnectionTimeout() > 0) {
-                __timeout = __client.clientCfg().getConnectionTimeout();
-            }
-            super.start();
+    protected boolean __doStart() {
+        setName("ReconnectService-" + __client.listener().getClass().getSimpleName());
+        if (__client.clientCfg().getConnectionTimeout() > 0) {
+            __timeout = __client.clientCfg().getConnectionTimeout() * DateTimeUtils.SECOND;
+        } else {
+            __timeout = 5000L;
         }
+        return super.__doStart();
     }
 
     @Override
-    public void run() {
-        if (__inited) {
-            long _millis = __timeout * DateTimeUtils.SECOND;
-            while (__flag) {
-                try {
-                    if (!__client.isConnected() && __COUNTER.getAndIncrement() > 1) {
-                        __client.reconnect();
-                        //
-                        __COUNTER.set(0);
-                    } else {
-                        sleep(_millis);
-                    }
-                } catch (Exception e) {
-                    if (__flag) {
-                        _LOG.error(e.getMessage(), RuntimeUtils.unwrapThrow(e));
-                    } else {
-                        _LOG.debug(e.getMessage(), RuntimeUtils.unwrapThrow(e));
-                    }
-                }
+    protected void __doService() {
+        try {
+            if (!__client.isConnected() && __COUNTER.getAndIncrement() > 0) {
+                __client.reconnect();
+                //
+                __COUNTER.set(0);
+            } else {
+                sleep(__timeout);
+            }
+        } catch (Exception e) {
+            if (isStarted()) {
+                _LOG.error(e.getMessage(), RuntimeUtils.unwrapThrow(e));
             }
         }
-    }
-
-    @Override
-    public void interrupt() {
-        if (__inited) {
-            try {
-                __flag = false;
-                join();
-            } catch (InterruptedException e) {
-                _LOG.debug(e.getMessage(), RuntimeUtils.unwrapThrow(e));
-            }
-            super.interrupt();
-        }
-    }
-
-    @Override
-    public void close() throws IOException {
-        interrupt();
     }
 }
