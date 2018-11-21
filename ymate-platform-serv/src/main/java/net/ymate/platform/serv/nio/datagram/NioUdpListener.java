@@ -87,12 +87,17 @@ public abstract class NioUdpListener extends AbstractListener<INioSession> {
     public final void onAfterSessionClosed(INioSession session) throws IOException {
     }
 
+    protected void onMessageReceived(NioUdpMessageWrapper messageWrapper, INioSession session) throws IOException {
+        Object _result = onMessageReceived(messageWrapper.getSocketAddress(), messageWrapper.getMessage());
+        if (_result != null) {
+            ((NioUdpSession) session).send(messageWrapper.getSocketAddress(), _result);
+        }
+    }
+
     @Override
     public final void onMessageReceived(Object message, INioSession session) throws IOException {
-        InetSocketAddress _sourceAddr = session.attr(SocketAddress.class.getName());
-        Object _result = onMessageReceived(_sourceAddr, message);
-        if (_result != null) {
-            session.send(_result);
+        if (message instanceof NioUdpMessageWrapper) {
+            onMessageReceived((NioUdpMessageWrapper) message, session);
         }
     }
 

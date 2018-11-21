@@ -31,9 +31,9 @@ import java.util.concurrent.ConcurrentHashMap;
  * @author 刘镇 (suninformation@163.com) on 2018/11/14 11:35 AM
  * @version 1.0
  */
-public abstract class AbstractSessionManager<SESSION_WRAPPER extends ISessionWrapper> implements ISessionManager<SESSION_WRAPPER> {
+public abstract class AbstractSessionManager<SESSION_WRAPPER extends ISessionWrapper, SESSION_ID, MESSAGE_TYPE> implements ISessionManager<SESSION_WRAPPER, SESSION_ID, MESSAGE_TYPE> {
 
-    private Map<String, SESSION_WRAPPER> __sessions;
+    private Map<SESSION_ID, SESSION_WRAPPER> __sessions;
 
     private IServer __server;
 
@@ -52,23 +52,32 @@ public abstract class AbstractSessionManager<SESSION_WRAPPER extends ISessionWra
      * @param codec     编解码器接口实现
      */
     public AbstractSessionManager(IServerCfg serverCfg, INioCodec codec) {
-        __sessions = new ConcurrentHashMap<String, SESSION_WRAPPER>();
+        __sessions = new ConcurrentHashMap<SESSION_ID, SESSION_WRAPPER>();
         __serverCfg = serverCfg;
         __codec = codec;
     }
 
-    public SESSION_WRAPPER getSessionWrapper(String sessionId) {
-        return __sessions.get(sessionId);
+    @Override
+    public SESSION_WRAPPER getSessionWrapper(SESSION_ID sessionId) {
+        return sessionId == null ? null : __sessions.get(sessionId);
     }
 
+    @Override
     public Collection<SESSION_WRAPPER> getSessionWrappers() {
         return Collections.unmodifiableCollection(__sessions.values());
     }
 
+    @Override
+    public boolean contains(SESSION_ID sessionId) {
+        return __sessions.containsKey(sessionId);
+    }
+
+    @Override
     public long getSessionCount() {
         return __sessions.size();
     }
 
+    @Override
     public void speedometer(Speedometer speedometer) {
         if (__server == null) {
             __speedometer = speedometer;
@@ -90,10 +99,11 @@ public abstract class AbstractSessionManager<SESSION_WRAPPER extends ISessionWra
      * @param session       会话对象
      * @param socketAddress 目标来源套接字地址
      */
+    @SuppressWarnings("unchecked")
     protected SESSION_WRAPPER __doRegisterSession(INioSession session, InetSocketAddress socketAddress) {
         SESSION_WRAPPER _wrapper = doBuildSessionWrapper(session, socketAddress);
         if (doRegister(_wrapper)) {
-            putSessionWrapper(_wrapper.getId(), _wrapper);
+            putSessionWrapper((SESSION_ID) _wrapper.getId(), _wrapper);
             return _wrapper;
         }
         return null;
@@ -115,7 +125,7 @@ public abstract class AbstractSessionManager<SESSION_WRAPPER extends ISessionWra
      * @param sessionId      会话标识符
      * @param sessionWrapper 会话包装器对象
      */
-    protected void putSessionWrapper(String sessionId, SESSION_WRAPPER sessionWrapper) {
+    protected void putSessionWrapper(SESSION_ID sessionId, SESSION_WRAPPER sessionWrapper) {
         __sessions.put(sessionId, sessionWrapper);
     }
 
@@ -125,7 +135,7 @@ public abstract class AbstractSessionManager<SESSION_WRAPPER extends ISessionWra
      * @param sessionId 会话标识符
      * @return 返回被移除的会话对象, 若不存在则返回null
      */
-    protected SESSION_WRAPPER removeSessionWrapper(String sessionId) {
+    protected SESSION_WRAPPER removeSessionWrapper(SESSION_ID sessionId) {
         return __sessions.remove(sessionId);
     }
 

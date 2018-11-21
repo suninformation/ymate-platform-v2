@@ -120,6 +120,7 @@ public abstract class AbstractNioEventProcessor<LISTENER extends IListener<INioS
         interrupt();
     }
 
+    @Override
     public void registerEvent(SelectableChannel channel, int ops, INioSession session) throws IOException {
         if (Thread.currentThread() == this) {
             SelectionKey key = channel.register(__selector, ops, session);
@@ -138,6 +139,7 @@ public abstract class AbstractNioEventProcessor<LISTENER extends IListener<INioS
         }
     }
 
+    @Override
     public void unregisterEvent(INioSession session) {
         if (__closedQueues.contains(session)) {
             return;

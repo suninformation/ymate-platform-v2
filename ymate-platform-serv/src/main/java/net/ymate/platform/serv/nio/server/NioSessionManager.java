@@ -22,7 +22,6 @@ import net.ymate.platform.serv.IServer;
 import net.ymate.platform.serv.IServerCfg;
 import net.ymate.platform.serv.nio.INioCodec;
 import net.ymate.platform.serv.nio.INioSession;
-import net.ymate.platform.serv.nio.INioSessionManager;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -35,7 +34,7 @@ import java.net.InetSocketAddress;
  * @author 刘镇 (suninformation@163.com) on 2018/11/12 3:40 PM
  * @version 1.0
  */
-public class NioSessionManager<SESSION_WRAPPER extends NioSessionWrapper, MESSAGE_TYPE> extends AbstractSessionManager<SESSION_WRAPPER> implements INioSessionManager<SESSION_WRAPPER, MESSAGE_TYPE> {
+public class NioSessionManager<SESSION_WRAPPER extends NioSessionWrapper, MESSAGE_TYPE> extends AbstractSessionManager<SESSION_WRAPPER, String, MESSAGE_TYPE> {
 
     private static final Log _LOG = LogFactory.getLog(NioSessionManager.class);
 

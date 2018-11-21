@@ -13,13 +13,31 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.ymate.platform.serv;
+package net.ymate.platform.serv.nio.datagram;
 
 import java.io.Serializable;
+import java.net.InetSocketAddress;
 
 /**
- * @author 刘镇 (suninformation@163.com) on 2018/11/14 2:35 PM
+ * @author 刘镇 (suninformation@163.com) on 2018/11/21 3:27 PM
  * @version 1.0
  */
-public abstract class AbstractSessionWrapper<SESSION_TYPE extends Serializable, SESSION_ID> implements ISessionWrapper<SESSION_TYPE, SESSION_ID> {
+public class NioUdpMessageWrapper<MESSAGE_TYPE> implements Serializable {
+
+    private InetSocketAddress socketAddress;
+
+    private MESSAGE_TYPE message;
+
+    public NioUdpMessageWrapper(InetSocketAddress socketAddress, MESSAGE_TYPE message) {
+        this.socketAddress = socketAddress;
+        this.message = message;
+    }
+
+    public InetSocketAddress getSocketAddress() {
+        return socketAddress;
+    }
+
+    public MESSAGE_TYPE getMessage() {
+        return message;
+    }
 }

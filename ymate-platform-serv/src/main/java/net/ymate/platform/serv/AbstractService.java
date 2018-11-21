@@ -77,6 +77,7 @@ public abstract class AbstractService extends Thread implements Closeable {
         }
     }
 
+    @Override
     public void close() throws IOException {
         interrupt();
     }

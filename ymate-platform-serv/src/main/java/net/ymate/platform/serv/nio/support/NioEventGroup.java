@@ -134,6 +134,7 @@ public class NioEventGroup<LISTENER extends IListener<INioSession>> extends Abst
         super.stop();
     }
 
+    @Override
     public NioEventProcessor processor(SelectionKey key) {
         for (NioEventProcessor _processor : __processors) {
             if (key.selector() == _processor.selector()) {
@@ -143,6 +144,7 @@ public class NioEventGroup<LISTENER extends IListener<INioSession>> extends Abst
         return null;
     }
 
+    @Override
     public NioEventProcessor processor() {
         int _nextIdx = __handlerCount.getAndIncrement() % __selectorCount;
         if (_nextIdx < 0) {

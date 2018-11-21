@@ -24,14 +24,14 @@ import java.util.Map;
  * @author 刘镇 (suninformation@163.com) on 2018/11/14 11:41 AM
  * @version 1.0
  */
-public interface ISessionWrapper<SESSION_TYPE extends Serializable> extends Serializable {
+public interface ISessionWrapper<SESSION_TYPE extends Serializable, SESSION_ID> extends Serializable {
 
     /**
      * 获取当前会话标识符
      *
      * @return 返回会话标识
      */
-    String getId();
+    SESSION_ID getId();
 
     /**
      * 获取会话对象

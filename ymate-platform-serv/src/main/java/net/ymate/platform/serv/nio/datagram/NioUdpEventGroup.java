@@ -89,16 +89,10 @@ public class NioUdpEventGroup extends NioEventGroup<NioUdpListener> {
 
     @Override
     protected NioEventProcessor[] __doInitProcessors() throws IOException {
-        NioEventProcessor[] _processors;
-        if (isServer()) {
-            _processors = new NioEventProcessor[selectorCount()];
-            for (int _idx = 0; _idx < selectorCount(); _idx++) {
-                _processors[_idx] = __doEventProcessorCreate(__doBuildProcessorName() + _idx);
-                _processors[_idx].start();
-            }
-        } else {
-            _processors = new NioEventProcessor[]{__doEventProcessorCreate(__doBuildProcessorName())};
-            _processors[0].start();
+        NioEventProcessor[] _processors = new NioEventProcessor[selectorCount()];
+        for (int _idx = 0; _idx < selectorCount(); _idx++) {
+            _processors[_idx] = __doEventProcessorCreate(__doBuildProcessorName() + _idx);
+            _processors[_idx].start();
         }
         return _processors;
     }

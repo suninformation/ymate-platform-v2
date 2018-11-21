@@ -28,7 +28,6 @@ import org.apache.commons.logging.LogFactory;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
-import java.net.SocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.channels.DatagramChannel;
 import java.nio.channels.SelectableChannel;
@@ -83,6 +82,11 @@ public abstract class AbstractNioSession<LISTENER extends IListener<INioSession>
         return __buffer;
     }
 
+    protected void buffer(ByteBufferBuilder bufferBuilder) {
+        __buffer = bufferBuilder;
+    }
+
+    @Override
     public boolean isUdp() {
         return __isUdp;
     }
@@ -97,13 +101,11 @@ public abstract class AbstractNioSession<LISTENER extends IListener<INioSession>
 
     @Override
     public String remoteAddress() {
-        if (!isUdp()) {
-            if (__status != ISession.Status.CLOSED && selectionKey() != null) {
-                if (channel() != null) {
-                    InetSocketAddress _address = remoteSocketAddress();
-                    if (_address != null) {
-                        return _address.getHostName() + ":" + _address.getPort();
-                    }
+        if (__status != ISession.Status.CLOSED && selectionKey() != null) {
+            if (channel() != null) {
+                InetSocketAddress _address = remoteSocketAddress();
+                if (_address != null) {
+                    return _address.getHostName() + ":" + _address.getPort();
                 }
             }
         }
@@ -190,7 +192,7 @@ public abstract class AbstractNioSession<LISTENER extends IListener<INioSession>
 
     //
 
-    private void __doBufferReset(ByteBufferBuilder buffer) {
+    protected void __doBufferReset(ByteBufferBuilder buffer) {
         if (buffer != null && buffer.remaining() > 0) {
             int _len = buffer.remaining();
             byte[] _bytes = new byte[_len];
@@ -201,33 +203,25 @@ public abstract class AbstractNioSession<LISTENER extends IListener<INioSession>
         }
     }
 
-    protected int __doChannelRead(ByteBuffer buffer) throws IOException {
-        if (isUdp()) {
-            SocketAddress _address = ((DatagramChannel) __channel).receive(buffer);
-            if (_address != null) {
-                attr(SocketAddress.class.getName(), _address);
-                return __buffer.remaining();
+    protected void __doPostMessageReceived(final Object message) throws IOException {
+        __eventGroup.executorService().submit(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    __eventGroup.listener().onMessageReceived(message, AbstractNioSession.this);
+                } catch (IOException e) {
+                    try {
+                        __eventGroup.listener().onExceptionCaught(e, AbstractNioSession.this);
+                    } catch (IOException ex) {
+                        try {
+                            close();
+                        } catch (IOException exx) {
+                            _LOG.error(RuntimeUtils.unwrapThrow(exx));
+                        }
+                    }
+                }
             }
-            return 0;
-        }
-        return ((SocketChannel) channel()).read(buffer);
-    }
-
-    protected int __doChannelWrite(ByteBuffer buffer) throws IOException {
-        if (isUdp()) {
-            SocketAddress _address;
-            if (__eventGroup.isServer()) {
-                _address = attr(SocketAddress.class.getName());
-            } else {
-                _address = ((DatagramChannel) __channel).socket().getRemoteSocketAddress();
-            }
-            if (_address != null) {
-                return ((DatagramChannel) __channel).send(buffer, _address);
-            }
-            buffer.reset();
-            return 0;
-        }
-        return ((SocketChannel) channel()).write(buffer);
+        });
     }
 
     @Override
@@ -237,7 +231,7 @@ public abstract class AbstractNioSession<LISTENER extends IListener<INioSession>
         }
         ByteBuffer _data = ByteBuffer.allocate(__eventGroup.bufferSize());
         int _len;
-        while ((_len = __doChannelRead(_data)) > 0) {
+        while ((_len = ((SocketChannel) channel()).read(_data)) > 0) {
             _data.flip();
             __buffer.append(_data.array(), _data.position(), _data.remaining());
             _data.clear();
@@ -260,25 +254,7 @@ public abstract class AbstractNioSession<LISTENER extends IListener<INioSession>
                 __doBufferReset(_copiedBuffer);
                 break;
             } else {
-                final Object _copiedObj = _message;
-                __eventGroup.executorService().submit(new Runnable() {
-                    @Override
-                    public void run() {
-                        try {
-                            __eventGroup.listener().onMessageReceived(_copiedObj, AbstractNioSession.this);
-                        } catch (IOException e) {
-                            try {
-                                __eventGroup.listener().onExceptionCaught(e, AbstractNioSession.this);
-                            } catch (IOException ex) {
-                                try {
-                                    close();
-                                } catch (IOException exx) {
-                                    _LOG.error(RuntimeUtils.unwrapThrow(exx));
-                                }
-                            }
-                        }
-                    }
-                });
+                __doPostMessageReceived(_message);
             }
         }
     }
@@ -292,7 +268,7 @@ public abstract class AbstractNioSession<LISTENER extends IListener<INioSession>
                     __selectionKey.interestOps(SelectionKey.OP_READ);
                     break;
                 } else {
-                    int _wLen = __doChannelWrite(_buffer);
+                    int _wLen = ((SocketChannel) channel()).write(_buffer);
                     if (_wLen == 0 && _buffer.remaining() > 0) {
                         break;
                     }

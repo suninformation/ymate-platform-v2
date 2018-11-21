@@ -26,7 +26,7 @@ import java.util.Map;
  * @author 刘镇 (suninformation@163.com) on 2018/11/13 12:05 AM
  * @version 1.0
  */
-public class NioSessionWrapper extends AbstractSessionWrapper<INioSession> {
+public class NioSessionWrapper extends AbstractSessionWrapper<INioSession, String> {
 
     private INioSession __session;
 
@@ -34,10 +34,12 @@ public class NioSessionWrapper extends AbstractSessionWrapper<INioSession> {
         __session = session;
     }
 
+    @Override
     public String getId() {
         return __session.id();
     }
 
+    @Override
     public INioSession getSession() {
         return __session;
     }
@@ -47,10 +49,12 @@ public class NioSessionWrapper extends AbstractSessionWrapper<INioSession> {
         return __session.attrs();
     }
 
+    @Override
     public <T> T getAttribute(String attrKey) {
         return __session.attr(attrKey);
     }
 
+    @Override
     public void addAttribute(String attrKey, Object attrValue) {
         __session.attr(attrKey, attrValue);
     }
