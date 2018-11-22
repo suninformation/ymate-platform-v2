@@ -16,10 +16,7 @@
 package net.ymate.platform.serv.nio.server;
 
 import net.ymate.platform.core.util.RuntimeUtils;
-import net.ymate.platform.serv.AbstractSessionManager;
-import net.ymate.platform.serv.IServ;
-import net.ymate.platform.serv.IServer;
-import net.ymate.platform.serv.IServerCfg;
+import net.ymate.platform.serv.*;
 import net.ymate.platform.serv.nio.INioCodec;
 import net.ymate.platform.serv.nio.INioSession;
 import org.apache.commons.logging.Log;
@@ -41,7 +38,11 @@ public class NioSessionManager<SESSION_WRAPPER extends NioSessionWrapper, MESSAG
     private INioSessionListener<SESSION_WRAPPER, MESSAGE_TYPE> __listener;
 
     public NioSessionManager(IServerCfg serverCfg, INioCodec codec, INioSessionListener<SESSION_WRAPPER, MESSAGE_TYPE> listener) {
-        super(serverCfg, codec);
+        this(serverCfg, codec, listener, 0L);
+    }
+
+    public NioSessionManager(IServerCfg serverCfg, INioCodec codec, INioSessionListener<SESSION_WRAPPER, MESSAGE_TYPE> listener, long idleTimeInMillis) {
+        super(serverCfg, codec, idleTimeInMillis);
         __listener = listener;
     }
 
@@ -59,7 +60,7 @@ public class NioSessionManager<SESSION_WRAPPER extends NioSessionWrapper, MESSAG
                 SESSION_WRAPPER _wrapper = __doRegisterSession(session, null);
                 if (_wrapper != null) {
                     if (_LOG.isDebugEnabled()) {
-                        _LOG.debug(_wrapper + " - Registered. Session count: " + getSessionCount());
+                        _LOG.debug(_wrapper + " - Registered. Session count: " + sessionCount());
                     }
                     __listener.onSessionRegistered(_wrapper);
                 }
@@ -68,7 +69,7 @@ public class NioSessionManager<SESSION_WRAPPER extends NioSessionWrapper, MESSAG
             @Override
             public void onSessionAccepted(INioSession session) throws IOException {
                 super.onSessionAccepted(session);
-                SESSION_WRAPPER _wrapper = getSessionWrapper(session.id());
+                SESSION_WRAPPER _wrapper = sessionWrapper(session.id());
                 if (_wrapper != null) {
                     if (_LOG.isDebugEnabled()) {
                         _LOG.debug(_wrapper + " - Accepted.");
@@ -79,7 +80,7 @@ public class NioSessionManager<SESSION_WRAPPER extends NioSessionWrapper, MESSAG
 
             @Override
             public void onBeforeSessionClosed(INioSession session) throws IOException {
-                SESSION_WRAPPER _wrapper = getSessionWrapper(session.id());
+                SESSION_WRAPPER _wrapper = sessionWrapper(session.id());
                 if (_wrapper != null) {
                     if (_LOG.isDebugEnabled()) {
                         _LOG.debug(_wrapper + " - Before closed.");
@@ -93,7 +94,7 @@ public class NioSessionManager<SESSION_WRAPPER extends NioSessionWrapper, MESSAG
                 SESSION_WRAPPER _wrapper = removeSessionWrapper(session.id());
                 if (_wrapper != null) {
                     if (_LOG.isDebugEnabled()) {
-                        _LOG.debug(_wrapper + " - After closed. Session count: " + getSessionCount());
+                        _LOG.debug(_wrapper + " - After closed. Session count: " + sessionCount());
                     }
                     __listener.onAfterSessionClosed(_wrapper);
                 }
@@ -102,7 +103,7 @@ public class NioSessionManager<SESSION_WRAPPER extends NioSessionWrapper, MESSAG
             @Override
             @SuppressWarnings("unchecked")
             public void onMessageReceived(Object message, INioSession session) throws IOException {
-                SESSION_WRAPPER _wrapper = getSessionWrapper(session.id());
+                SESSION_WRAPPER _wrapper = sessionWrapper(session.id());
                 if (_wrapper != null) {
                     if (_LOG.isDebugEnabled()) {
                         _LOG.debug(_wrapper + " - Received: " + message);
@@ -115,7 +116,7 @@ public class NioSessionManager<SESSION_WRAPPER extends NioSessionWrapper, MESSAG
 
             @Override
             public void onExceptionCaught(Throwable e, INioSession session) throws IOException {
-                SESSION_WRAPPER _wrapper = getSessionWrapper(session.id());
+                SESSION_WRAPPER _wrapper = sessionWrapper(session.id());
                 if (_wrapper != null) {
                     if (_LOG.isDebugEnabled()) {
                         _LOG.debug(_wrapper + " - Exception: ", RuntimeUtils.unwrapThrow(e));
@@ -127,8 +128,13 @@ public class NioSessionManager<SESSION_WRAPPER extends NioSessionWrapper, MESSAG
     }
 
     @Override
+    public ISessionListener<SESSION_WRAPPER> sessionListener() {
+        return __listener;
+    }
+
+    @Override
     public boolean sendTo(String sessionId, MESSAGE_TYPE message) throws IOException {
-        SESSION_WRAPPER _wrapper = getSessionWrapper(sessionId);
+        SESSION_WRAPPER _wrapper = sessionWrapper(sessionId);
         if (_wrapper != null) {
             _wrapper.getSession().send(message);
             return true;

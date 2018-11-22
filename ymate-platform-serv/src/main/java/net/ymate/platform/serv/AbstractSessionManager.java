@@ -17,6 +17,9 @@ package net.ymate.platform.serv;
 
 import net.ymate.platform.core.support.Speedometer;
 import net.ymate.platform.core.support.impl.DefaultSpeedListener;
+import net.ymate.platform.core.util.DateTimeUtils;
+import net.ymate.platform.core.util.ThreadUtils;
+import net.ymate.platform.serv.impl.DefaultSessionIdleChecker;
 import net.ymate.platform.serv.nio.INioCodec;
 import net.ymate.platform.serv.nio.INioSession;
 import org.apache.commons.lang.NullArgumentException;
@@ -26,6 +29,8 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @author 刘镇 (suninformation@163.com) on 2018/11/14 11:35 AM
@@ -41,6 +46,12 @@ public abstract class AbstractSessionManager<SESSION_WRAPPER extends ISessionWra
 
     private INioCodec __codec;
 
+    private long __idleTimeInMillis;
+
+    private ISessionIdleChecker<SESSION_WRAPPER, SESSION_ID, MESSAGE_TYPE> __idleChecker;
+
+    private ScheduledExecutorService __idleCheckExecutorService;
+
     private Speedometer __speedometer;
 
     private final Object __locker = new Object();
@@ -48,22 +59,24 @@ public abstract class AbstractSessionManager<SESSION_WRAPPER extends ISessionWra
     /**
      * 构造器
      *
-     * @param serverCfg 服务端配置接口实现
-     * @param codec     编解码器接口实现
+     * @param serverCfg        服务端配置接口实现
+     * @param codec            编解码器接口实现
+     * @param idleTimeInMillis 会话空闲时间毫秒值, 小于等于0表示不开启空闲检查
      */
-    public AbstractSessionManager(IServerCfg serverCfg, INioCodec codec) {
+    public AbstractSessionManager(IServerCfg serverCfg, INioCodec codec, long idleTimeInMillis) {
         __sessions = new ConcurrentHashMap<SESSION_ID, SESSION_WRAPPER>();
         __serverCfg = serverCfg;
         __codec = codec;
+        __idleTimeInMillis = idleTimeInMillis;
     }
 
     @Override
-    public SESSION_WRAPPER getSessionWrapper(SESSION_ID sessionId) {
+    public SESSION_WRAPPER sessionWrapper(SESSION_ID sessionId) {
         return sessionId == null ? null : __sessions.get(sessionId);
     }
 
     @Override
-    public Collection<SESSION_WRAPPER> getSessionWrappers() {
+    public Collection<SESSION_WRAPPER> sessionWrappers() {
         return Collections.unmodifiableCollection(__sessions.values());
     }
 
@@ -73,7 +86,7 @@ public abstract class AbstractSessionManager<SESSION_WRAPPER extends ISessionWra
     }
 
     @Override
-    public long getSessionCount() {
+    public long sessionCount() {
         return __sessions.size();
     }
 
@@ -81,6 +94,13 @@ public abstract class AbstractSessionManager<SESSION_WRAPPER extends ISessionWra
     public void speedometer(Speedometer speedometer) {
         if (__server == null) {
             __speedometer = speedometer;
+        }
+    }
+
+    @Override
+    public void idleChecker(ISessionIdleChecker<SESSION_WRAPPER, SESSION_ID, MESSAGE_TYPE> sessionIdleChecker) {
+        if (__server == null) {
+            __idleChecker = sessionIdleChecker;
         }
     }
 
@@ -164,6 +184,23 @@ public abstract class AbstractSessionManager<SESSION_WRAPPER extends ISessionWra
         if (__speedometer != null && !__speedometer.isStarted()) {
             __speedometer.start(new DefaultSpeedListener(__speedometer));
         }
+        //
+        if (__idleTimeInMillis > 0) {
+            if (__idleChecker == null) {
+                __idleChecker = new DefaultSessionIdleChecker<SESSION_WRAPPER, SESSION_ID, MESSAGE_TYPE>();
+            }
+            if (!__idleChecker.isInited()) {
+                __idleChecker.init(this);
+            }
+            //
+            __idleCheckExecutorService = ThreadUtils.newScheduledThreadPool(1, ThreadUtils.createFactory("SessionIdleChecker-"));
+            __idleCheckExecutorService.scheduleWithFixedDelay(new Runnable() {
+                @Override
+                public void run() {
+                    __idleChecker.processIdleSession(__sessions, __idleTimeInMillis);
+                }
+            }, DateTimeUtils.SECOND, DateTimeUtils.SECOND, TimeUnit.MILLISECONDS);
+        }
     }
 
     @Override
@@ -171,6 +208,7 @@ public abstract class AbstractSessionManager<SESSION_WRAPPER extends ISessionWra
         if (__speedometer != null && __speedometer.isStarted()) {
             __speedometer.close();
         }
+        __idleCheckExecutorService.shutdownNow();
         __server.close();
     }
 }

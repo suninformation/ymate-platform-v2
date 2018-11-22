@@ -15,6 +15,8 @@
  */
 package net.ymate.platform.serv.nio.server;
 
+import net.ymate.platform.serv.ISessionListener;
+
 import java.io.IOException;
 
 /**
@@ -25,7 +27,7 @@ import java.io.IOException;
  * @author 刘镇 (suninformation@163.com) on 2018/11/13 12:11 AM
  * @version 1.0
  */
-public interface INioSessionListener<SESSION_WRAPPER extends NioSessionWrapper, MESSAGE_TYPE> {
+public interface INioSessionListener<SESSION_WRAPPER extends NioSessionWrapper, MESSAGE_TYPE> extends ISessionListener<SESSION_WRAPPER> {
 
     /**
      * 会话注册成功事件处理方法

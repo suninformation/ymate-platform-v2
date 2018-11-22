@@ -16,10 +16,7 @@
 package net.ymate.platform.serv.nio.datagram;
 
 import net.ymate.platform.core.util.RuntimeUtils;
-import net.ymate.platform.serv.AbstractSessionManager;
-import net.ymate.platform.serv.IServ;
-import net.ymate.platform.serv.IServer;
-import net.ymate.platform.serv.IServerCfg;
+import net.ymate.platform.serv.*;
 import net.ymate.platform.serv.nio.INioCodec;
 import net.ymate.platform.serv.nio.INioSession;
 import net.ymate.platform.serv.nio.server.NioSessionManager;
@@ -44,9 +41,22 @@ public class NioUdpSessionManager<SESSION_WRAPPER extends NioUdpSessionWrapper, 
      *
      * @param serverCfg 服务端配置接口实现
      * @param codec     编解码器接口实现
+     * @param listener  会话事件监听器
      */
     public NioUdpSessionManager(IServerCfg serverCfg, INioCodec codec, INioUdpSessionListener<SESSION_WRAPPER, MESSAGE_TYPE> listener) {
-        super(serverCfg, codec);
+        this(serverCfg, codec, listener, 0L);
+    }
+
+    /**
+     * 构造器
+     *
+     * @param serverCfg        服务端配置接口实现
+     * @param codec            编解码器接口实现
+     * @param listener         会话事件监听器
+     * @param idleTimeInMillis 会话空闲时间毫秒值, 小于等于0表示不开启空闲检查
+     */
+    public NioUdpSessionManager(IServerCfg serverCfg, INioCodec codec, INioUdpSessionListener<SESSION_WRAPPER, MESSAGE_TYPE> listener, long idleTimeInMillis) {
+        super(serverCfg, codec, idleTimeInMillis);
         __listener = listener;
     }
 
@@ -62,11 +72,11 @@ public class NioUdpSessionManager<SESSION_WRAPPER extends NioUdpSessionWrapper, 
             @Override
             @SuppressWarnings("unchecked")
             protected void onMessageReceived(NioUdpMessageWrapper messageWrapper, INioSession session) throws IOException {
-                SESSION_WRAPPER _wrapper = getSessionWrapper(messageWrapper.getSocketAddress());
+                SESSION_WRAPPER _wrapper = sessionWrapper(messageWrapper.getSocketAddress());
                 if (_wrapper == null) {
                     _wrapper = __doRegisterSession(session, messageWrapper.getSocketAddress());
                     if (_LOG.isDebugEnabled()) {
-                        _LOG.debug(_wrapper + " - Registered. Session count: " + getSessionCount());
+                        _LOG.debug(_wrapper + " - Registered. Session count: " + sessionCount());
                     }
                 } else {
                     speedTouch();
@@ -91,7 +101,7 @@ public class NioUdpSessionManager<SESSION_WRAPPER extends NioUdpSessionWrapper, 
 
             @Override
             public void onExceptionCaught(InetSocketAddress sourceAddress, Throwable e) throws IOException {
-                SESSION_WRAPPER _wrapper = getSessionWrapper(sourceAddress);
+                SESSION_WRAPPER _wrapper = sessionWrapper(sourceAddress);
                 if (_wrapper != null) {
                     if (_LOG.isDebugEnabled()) {
                         _LOG.debug(_wrapper + " - Exception: ", RuntimeUtils.unwrapThrow(e));
@@ -103,8 +113,13 @@ public class NioUdpSessionManager<SESSION_WRAPPER extends NioUdpSessionWrapper, 
     }
 
     @Override
+    public ISessionListener<SESSION_WRAPPER> sessionListener() {
+        return __listener;
+    }
+
+    @Override
     public boolean sendTo(InetSocketAddress sessionId, MESSAGE_TYPE message) throws IOException {
-        NioUdpSessionWrapper _wrapper = getSessionWrapper(sessionId);
+        NioUdpSessionWrapper _wrapper = sessionWrapper(sessionId);
         if (_wrapper != null) {
             _wrapper.getSession().send(sessionId, message);
             return true;

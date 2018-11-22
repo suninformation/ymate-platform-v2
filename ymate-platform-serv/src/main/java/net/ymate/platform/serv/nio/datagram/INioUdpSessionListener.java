@@ -15,6 +15,8 @@
  */
 package net.ymate.platform.serv.nio.datagram;
 
+import net.ymate.platform.serv.ISessionListener;
+
 import java.io.IOException;
 
 /**
@@ -25,7 +27,7 @@ import java.io.IOException;
  * @author 刘镇 (suninformation@163.com) on 2018/11/14 3:58 PM
  * @version 1.0
  */
-public interface INioUdpSessionListener<SESSION_WRAPPER extends NioUdpSessionWrapper, MESSAGE_TYPE> {
+public interface INioUdpSessionListener<SESSION_WRAPPER extends NioUdpSessionWrapper, MESSAGE_TYPE> extends ISessionListener<SESSION_WRAPPER> {
 
     /**
      * 消息到达事件处理

@@ -38,14 +38,14 @@ public interface ISessionManager<SESSION_WRAPPER extends ISessionWrapper, SESSIO
      * @param sessionId 会话ID
      * @return 若不存在则返回null
      */
-    SESSION_WRAPPER getSessionWrapper(SESSION_ID sessionId);
+    SESSION_WRAPPER sessionWrapper(SESSION_ID sessionId);
 
     /**
      * 返回所有的会话包装器实例(只读)
      *
      * @return 会话包装器实例集合
      */
-    Collection<SESSION_WRAPPER> getSessionWrappers();
+    Collection<SESSION_WRAPPER> sessionWrappers();
 
     /**
      * 判断指定的sessionId是否存在
@@ -60,7 +60,14 @@ public interface ISessionManager<SESSION_WRAPPER extends ISessionWrapper, SESSIO
      *
      * @return 会话数量值
      */
-    long getSessionCount();
+    long sessionCount();
+
+    /**
+     * 获取会话事件监听器
+     *
+     * @return 会话事件监听器接口实现
+     */
+    ISessionListener<SESSION_WRAPPER> sessionListener();
 
     /**
      * 设置速度计数器(仅在服务启动前调用有效)
@@ -68,6 +75,13 @@ public interface ISessionManager<SESSION_WRAPPER extends ISessionWrapper, SESSIO
      * @param speedometer 速度计数器
      */
     void speedometer(Speedometer speedometer);
+
+    /**
+     * 设置会话空闲检查器
+     *
+     * @param sessionIdleChecker 会话空闲检查器接口实现类
+     */
+    void idleChecker(ISessionIdleChecker<SESSION_WRAPPER, SESSION_ID, MESSAGE_TYPE> sessionIdleChecker);
 
     /**
      * 向目标客户端发送消息

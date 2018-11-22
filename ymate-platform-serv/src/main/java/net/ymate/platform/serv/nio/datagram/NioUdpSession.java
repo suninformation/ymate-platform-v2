@@ -73,6 +73,11 @@ public class NioUdpSession extends AbstractNioSession<NioUdpListener> {
     }
 
     @Override
+    public void close() throws IOException {
+        super.close();
+    }
+
+    @Override
     public void read() throws IOException {
         if (buffer() == null) {
             buffer(ByteBufferBuilder.allocate(eventGroup().bufferSize()));
