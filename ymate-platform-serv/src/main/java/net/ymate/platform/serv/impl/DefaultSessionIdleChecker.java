@@ -15,36 +15,66 @@
  */
 package net.ymate.platform.serv.impl;
 
-import net.ymate.platform.core.util.RuntimeUtils;
-import net.ymate.platform.serv.AbstractSessionIdleChecker;
+import net.ymate.platform.serv.ISessionIdleChecker;
+import net.ymate.platform.serv.ISessionManager;
 import net.ymate.platform.serv.ISessionWrapper;
-import net.ymate.platform.serv.nio.INioSession;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import java.io.IOException;
+import java.util.Iterator;
+import java.util.Map;
 
 /**
  * @author 刘镇 (suninformation@163.com) on 2018/11/22 2:27 AM
  * @version 1.0
  */
-public class DefaultSessionIdleChecker<SESSION_WRAPPER extends ISessionWrapper, SESSION_ID, MESSAGE_TYPE> extends AbstractSessionIdleChecker<SESSION_WRAPPER, SESSION_ID, MESSAGE_TYPE> {
+public class DefaultSessionIdleChecker<SESSION_WRAPPER extends ISessionWrapper, SESSION_ID, MESSAGE_TYPE> implements ISessionIdleChecker<SESSION_WRAPPER, SESSION_ID, MESSAGE_TYPE> {
 
     private static final Log _LOG = LogFactory.getLog(DefaultSessionIdleChecker.class);
 
+    private ISessionManager<SESSION_WRAPPER, SESSION_ID, MESSAGE_TYPE> __sessionManager;
+
+    private boolean __inited;
+
     @Override
-    protected void __doCloseSession(SESSION_WRAPPER sessionWrapper) {
-        if (sessionWrapper.getSession() instanceof INioSession) {
-            INioSession _session = (INioSession) sessionWrapper.getSession();
-            if (!_session.isUdp()) {
-                try {
-                    _session.closeNow();
-                } catch (IOException e) {
-                    if (_LOG.isDebugEnabled()) {
-                        _LOG.debug("Session close exception: ", RuntimeUtils.unwrapThrow(e));
-                    }
+    public void init(ISessionManager<SESSION_WRAPPER, SESSION_ID, MESSAGE_TYPE> sessionManager) {
+        __sessionManager = sessionManager;
+        __inited = true;
+    }
+
+    @Override
+    public ISessionManager<SESSION_WRAPPER, SESSION_ID, MESSAGE_TYPE> getSessionManager() {
+        return __sessionManager;
+    }
+
+    @Override
+    public boolean isInited() {
+        return __inited;
+    }
+
+    @Override
+    public void processIdleSession(Map<SESSION_ID, SESSION_WRAPPER> sessions, long idleTimeInMillis) {
+        Iterator<Map.Entry<SESSION_ID, SESSION_WRAPPER>> _iterator = sessions.entrySet().iterator();
+        while (_iterator.hasNext()) {
+            Map.Entry<SESSION_ID, SESSION_WRAPPER> _entry = _iterator.next();
+            if (System.currentTimeMillis() - _entry.getValue().getLastTouchTime() > idleTimeInMillis) {
+                _iterator.remove();
+                //
+                getSessionManager().closeSessionWrapper(_entry.getValue());
+                //
+                if (_LOG.isDebugEnabled()) {
+                    _LOG.debug(_entry.getValue() + " - Session idle removed. Session count: " + this.getSessionManager().sessionCount());
                 }
+                this.getSessionManager().sessionListener().onSessionIdleRemoved(_entry.getValue());
             }
+        }
+    }
+
+    @Override
+    public void destroy() throws Exception {
+        if (__inited) {
+            __inited = false;
+            __sessionManager = null;
         }
     }
 }

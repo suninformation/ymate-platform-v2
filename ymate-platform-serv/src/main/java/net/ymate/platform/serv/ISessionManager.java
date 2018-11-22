@@ -56,6 +56,13 @@ public interface ISessionManager<SESSION_WRAPPER extends ISessionWrapper, SESSIO
     boolean contains(SESSION_ID sessionId);
 
     /**
+     * 关闭会话并从会话管理器中移除
+     *
+     * @param sessionWrapper 会话包装器实例
+     */
+    void closeSessionWrapper(SESSION_WRAPPER sessionWrapper);
+
+    /**
      * 获取会话实例数量
      *
      * @return 会话数量值
