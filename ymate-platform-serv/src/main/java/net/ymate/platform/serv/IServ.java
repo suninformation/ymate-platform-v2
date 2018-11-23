@@ -97,8 +97,14 @@ public interface IServ {
         String DEFAULT_NAME = "default";
         String DEFAULT_HOST = "0.0.0.0";
         String DEFAULT_CHARSET = "UTF-8";
-        String DEFAULT_PORT = "8281";
-        String DEFAULT_BUFFER_SIZE = "4096";
+        int DEFAULT_PORT = 8281;
+        int DEFAULT_BUFFER_SIZE = 4096;
+        int DEFAULT_THREAD_MAX_POOL_SIZE = 200;
+        int DEFAULT_THREAD_QUEUE_SIZE = 1024;
+        int DEFAULT_SELECTOR_COUNT = 1;
+        int DEFAULT_CONNECTION_TIMEOUT = 30;
+        int DEFAULT_RECONNECTION_INTERVAL = 1;
+        int DEFAULT_HEARTBEAT_INTERVAL = 60;
 
         //
 
@@ -113,8 +119,10 @@ public interface IServ {
         String SELECTOR_COUNT = "selector_count";
 
         String CONNECTION_TIMEOUT = "connection_timeout";
+        String RECONNECTION_INTERVAL = "reconnection_interval";
         String HEARTBEAT_INTERVAL = "heartbeat_interval";
 
         String PARAMS_PREFIX = "params.";
+        String PARAMS_HEARTBEAT_MESSAGE = "heartbeat_message";
     }
 }

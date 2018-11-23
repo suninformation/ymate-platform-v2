@@ -39,17 +39,17 @@ public abstract class AbstractEventGroup<CODEC extends ICodec, LISTENER extends 
 
     private SESSION __session;
 
-    private int __bufferSize = 4096;
+    private int __bufferSize = IServ.Const.DEFAULT_BUFFER_SIZE;
 
     private int __executorCount;
 
     private long __keepAliveTime;
 
-    private int __threadMaxPoolSize;
+    private int __threadMaxPoolSize = IServ.Const.DEFAULT_THREAD_MAX_POOL_SIZE;
 
     private int __threadQueueSize;
 
-    private int __connectionTimeout = 5000;
+    private int __connectionTimeout = IServ.Const.DEFAULT_CONNECTION_TIMEOUT;
 
     private boolean __isStarted;
 
@@ -66,8 +66,13 @@ public abstract class AbstractEventGroup<CODEC extends ICodec, LISTENER extends 
         }
 
         __keepAliveTime = cfg.getKeepAliveTime();
-        __threadMaxPoolSize = cfg.getThreadMaxPoolSize();
+        if (cfg.getThreadMaxPoolSize() > 0) {
+            __threadMaxPoolSize = cfg.getThreadMaxPoolSize();
+        }
         __threadQueueSize = cfg.getThreadQueueSize();
+        if (__threadQueueSize <= 0) {
+            __threadQueueSize = IServ.Const.DEFAULT_THREAD_QUEUE_SIZE;
+        }
         //
         __codec = codec;
         __listener = listener;

@@ -187,6 +187,9 @@
     # 连接超时时间(秒), 默认为30
     ymp.configs.serv.client.default.connection_timeout=30
     
+    # 断线重连检测间隔(秒), 默认为1
+    ymp.configs.serv.client.default.reconnection_interval=1
+    
     # 心跳发送时间间隔(秒), 默认为60
     ymp.configs.serv.client.default.heartbeat_interval=60
     
@@ -351,7 +354,7 @@ YMP框架启动时将自动扫描并加载声明了`@Server`和`@Client`注解�
 
         IClient client = Servs.get(owner)
                 .buildClient(DefaultClientCfg.create()
-                        .remoteHost("localhost").port(8281).build(), new TextLineCodec(), new DefaultReconnectService(), new HeartbeatService(), new NioClientListener() {
+                        .remoteHost("localhost").port(8281).build(), new TextLineCodec(), new DefaultReconnectService(), new DefaultHeartbeatService(), new NioClientListener() {
             @Override
             public void onSessionConnected(INioSession session) throws IOException {
                 super.onSessionConnected(session);
@@ -378,3 +381,7 @@ YMP框架启动时将自动扫描并加载声明了`@Server`和`@Client`注解�
 >
 > - 通过手工编码方式创建的服务端或客户端实例对象将不被框架管理，需要开发者手动调用关闭方法(如：`server.close()`或`client.close()`)来释放资源。
 > - YMP框架初始化后，若使用`try...finally`执行`YMP.get().destroy()`销毁动作，则服务启动后将立即被停止。
+
+
+#### 会话管理器
+

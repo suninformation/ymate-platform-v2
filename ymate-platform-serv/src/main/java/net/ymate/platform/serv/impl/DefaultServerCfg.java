@@ -60,9 +60,9 @@ public class DefaultServerCfg implements IServerCfg {
     public DefaultServerCfg(Map<String, String> serverCfg, String serverName) {
         __serverName = StringUtils.defaultIfBlank(serverName, IServ.Const.DEFAULT_NAME);
         __serverHost = StringUtils.defaultIfBlank(serverCfg.get(IServ.Const.HOST), IServ.Const.DEFAULT_HOST);
-        __port = BlurObject.bind(StringUtils.defaultIfBlank(serverCfg.get(IServ.Const.PORT), IServ.Const.DEFAULT_PORT)).toIntValue();
+        __port = BlurObject.bind(StringUtils.defaultIfBlank(serverCfg.get(IServ.Const.PORT), String.valueOf(IServ.Const.DEFAULT_PORT))).toIntValue();
         __charset = StringUtils.defaultIfBlank(serverCfg.get(IServ.Const.CHARSET), IServ.Const.DEFAULT_CHARSET);
-        __bufferSize = BlurObject.bind(StringUtils.defaultIfBlank(serverCfg.get(IServ.Const.BUFFER_SIZE), IServ.Const.DEFAULT_BUFFER_SIZE)).toIntValue();
+        __bufferSize = BlurObject.bind(StringUtils.defaultIfBlank(serverCfg.get(IServ.Const.BUFFER_SIZE), String.valueOf(IServ.Const.DEFAULT_BUFFER_SIZE))).toIntValue();
         __executorCount = BlurObject.bind(serverCfg.get(IServ.Const.EXECUTOR_COUNT)).toIntValue();
         if (__executorCount <= 0) {
             __executorCount = Runtime.getRuntime().availableProcessors();
@@ -72,14 +72,14 @@ public class DefaultServerCfg implements IServerCfg {
         //
         __threadMaxPoolSize = BlurObject.bind(serverCfg.get(IServ.Const.THREAD_MAX_POOL_SIZE)).toIntValue();
         if (__threadMaxPoolSize <= 0) {
-            __threadMaxPoolSize = 200;
+            __threadMaxPoolSize = IServ.Const.DEFAULT_THREAD_MAX_POOL_SIZE;
         }
         //
         __threadQueueSize = BlurObject.bind(serverCfg.get(IServ.Const.THREAD_QUEUE_SIZE)).toIntValue();
         if (__threadQueueSize <= 0) {
-            __threadQueueSize = 1024;
+            __threadQueueSize = IServ.Const.DEFAULT_THREAD_QUEUE_SIZE;
         }
-        __selectorCount = BlurObject.bind(StringUtils.defaultIfBlank(serverCfg.get(IServ.Const.SELECTOR_COUNT), "1")).toIntValue();
+        __selectorCount = BlurObject.bind(StringUtils.defaultIfBlank(serverCfg.get(IServ.Const.SELECTOR_COUNT), String.valueOf(IServ.Const.DEFAULT_SELECTOR_COUNT))).toIntValue();
         //
         __params = RuntimeUtils.keyStartsWith(serverCfg, IServ.Const.PARAMS_PREFIX);
     }
@@ -156,7 +156,7 @@ public class DefaultServerCfg implements IServerCfg {
         }
 
         public Builder port(int port) {
-            params.put(IServ.Const.PORT, port + "");
+            params.put(IServ.Const.PORT, String.valueOf(port));
             return this;
         }
 
@@ -166,32 +166,32 @@ public class DefaultServerCfg implements IServerCfg {
         }
 
         public Builder bufferSize(int bufferSize) {
-            params.put(IServ.Const.BUFFER_SIZE, bufferSize + "");
+            params.put(IServ.Const.BUFFER_SIZE, String.valueOf(bufferSize));
             return this;
         }
 
         public Builder executorCount(int executorCount) {
-            params.put(IServ.Const.EXECUTOR_COUNT, executorCount + "");
+            params.put(IServ.Const.EXECUTOR_COUNT, String.valueOf(executorCount));
             return this;
         }
 
         public Builder keepAliveTime(long keepAliveTime) {
-            params.put(IServ.Const.KEEP_ALIVE_TIME, keepAliveTime + "");
+            params.put(IServ.Const.KEEP_ALIVE_TIME, String.valueOf(keepAliveTime));
             return this;
         }
 
         public Builder threadMaxPoolSize(int threadMaxPoolSize) {
-            params.put(IServ.Const.EXECUTOR_COUNT, threadMaxPoolSize + "");
+            params.put(IServ.Const.EXECUTOR_COUNT, String.valueOf(threadMaxPoolSize));
             return this;
         }
 
         public Builder threadQueueSize(int threadQueueSize) {
-            params.put(IServ.Const.THREAD_QUEUE_SIZE, threadQueueSize + "");
+            params.put(IServ.Const.THREAD_QUEUE_SIZE, String.valueOf(threadQueueSize));
             return this;
         }
 
         public Builder selectorCount(int selectorCount) {
-            params.put(IServ.Const.SELECTOR_COUNT, selectorCount + "");
+            params.put(IServ.Const.SELECTOR_COUNT, String.valueOf(selectorCount));
             return this;
         }
 

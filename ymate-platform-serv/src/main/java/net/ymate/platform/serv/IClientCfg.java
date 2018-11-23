@@ -61,6 +61,11 @@ public interface IClientCfg {
     int getConnectionTimeout();
 
     /**
+     * @return 断线重连检测间隔(秒)
+     */
+    int getReconnectionInterval();
+
+    /**
      * @return 心跳包发送间隔(秒)
      */
     int getHeartbeatInterval();

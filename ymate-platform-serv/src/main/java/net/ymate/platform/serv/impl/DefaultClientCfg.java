@@ -49,6 +49,8 @@ public class DefaultClientCfg implements IClientCfg {
 
     private int __bufferSize;
 
+    private int __reconnectionInterval;
+
     private int __heartbeatInterval;
 
     private Map<String, String> __params;
@@ -56,15 +58,16 @@ public class DefaultClientCfg implements IClientCfg {
     public DefaultClientCfg(Map<String, String> clientCfgs, String clientName) {
         __clientName = StringUtils.defaultIfBlank(clientName, IServ.Const.DEFAULT_NAME);
         __remoteHost = StringUtils.defaultIfBlank(clientCfgs.get(IServ.Const.HOST), IServ.Const.DEFAULT_HOST);
-        __port = BlurObject.bind(StringUtils.defaultIfBlank(clientCfgs.get(IServ.Const.PORT), IServ.Const.DEFAULT_PORT)).toIntValue();
+        __port = BlurObject.bind(StringUtils.defaultIfBlank(clientCfgs.get(IServ.Const.PORT), String.valueOf(IServ.Const.DEFAULT_PORT))).toIntValue();
         __charset = StringUtils.defaultIfBlank(clientCfgs.get(IServ.Const.CHARSET), IServ.Const.DEFAULT_CHARSET);
-        __bufferSize = BlurObject.bind(StringUtils.defaultIfBlank(clientCfgs.get(IServ.Const.BUFFER_SIZE), IServ.Const.DEFAULT_BUFFER_SIZE)).toIntValue();
+        __bufferSize = BlurObject.bind(StringUtils.defaultIfBlank(clientCfgs.get(IServ.Const.BUFFER_SIZE), String.valueOf(IServ.Const.DEFAULT_BUFFER_SIZE))).toIntValue();
         __executorCount = BlurObject.bind(clientCfgs.get(IServ.Const.EXECUTOR_COUNT)).toIntValue();
         if (__executorCount <= 0) {
             __executorCount = Runtime.getRuntime().availableProcessors();
         }
-        __connectionTimeout = BlurObject.bind(clientCfgs.get(IServ.Const.CONNECTION_TIMEOUT)).toIntValue();
-        __heartbeatInterval = BlurObject.bind(clientCfgs.get(IServ.Const.HEARTBEAT_INTERVAL)).toIntValue();
+        __connectionTimeout = BlurObject.bind(StringUtils.defaultIfBlank(clientCfgs.get(IServ.Const.CONNECTION_TIMEOUT), String.valueOf(IServ.Const.DEFAULT_CONNECTION_TIMEOUT))).toIntValue();
+        __reconnectionInterval = BlurObject.bind(StringUtils.defaultIfBlank(clientCfgs.get(IServ.Const.RECONNECTION_INTERVAL), String.valueOf(IServ.Const.DEFAULT_RECONNECTION_INTERVAL))).toIntValue();
+        __heartbeatInterval = BlurObject.bind(StringUtils.defaultIfBlank(clientCfgs.get(IServ.Const.HEARTBEAT_INTERVAL), String.valueOf(IServ.Const.DEFAULT_HEARTBEAT_INTERVAL))).toIntValue();
         //
         __params = RuntimeUtils.keyStartsWith(clientCfgs, IServ.Const.PARAMS_PREFIX);
     }
@@ -105,6 +108,11 @@ public class DefaultClientCfg implements IClientCfg {
     }
 
     @Override
+    public int getReconnectionInterval() {
+        return __reconnectionInterval;
+    }
+
+    @Override
     public int getHeartbeatInterval() {
         return __heartbeatInterval;
     }
@@ -136,7 +144,7 @@ public class DefaultClientCfg implements IClientCfg {
         }
 
         public Builder port(int port) {
-            params.put(IServ.Const.PORT, port + "");
+            params.put(IServ.Const.PORT, String.valueOf(port));
             return this;
         }
 
@@ -146,22 +154,27 @@ public class DefaultClientCfg implements IClientCfg {
         }
 
         public Builder bufferSize(int bufferSize) {
-            params.put(IServ.Const.BUFFER_SIZE, bufferSize + "");
+            params.put(IServ.Const.BUFFER_SIZE, String.valueOf(bufferSize));
             return this;
         }
 
         public Builder executorCount(int executorCount) {
-            params.put(IServ.Const.EXECUTOR_COUNT, executorCount + "");
+            params.put(IServ.Const.EXECUTOR_COUNT, String.valueOf(executorCount));
             return this;
         }
 
         public Builder connectionTimeout(int connectionTime) {
-            params.put(IServ.Const.CONNECTION_TIMEOUT, connectionTime + "");
+            params.put(IServ.Const.CONNECTION_TIMEOUT, String.valueOf(connectionTime));
+            return this;
+        }
+
+        public Builder reconnectionInterval(int reconnectionInterval) {
+            params.put(IServ.Const.RECONNECTION_INTERVAL, String.valueOf(reconnectionInterval));
             return this;
         }
 
         public Builder heartbeatInterval(int heartbeatInterval) {
-            params.put(IServ.Const.HEARTBEAT_INTERVAL, heartbeatInterval + "");
+            params.put(IServ.Const.HEARTBEAT_INTERVAL, String.valueOf(heartbeatInterval));
             return this;
         }
 

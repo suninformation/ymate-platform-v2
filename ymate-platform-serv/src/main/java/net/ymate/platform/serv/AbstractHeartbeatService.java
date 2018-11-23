@@ -48,7 +48,7 @@ public abstract class AbstractHeartbeatService<HEARTBEAT_TYPE> extends AbstractS
         if (__client.clientCfg().getHeartbeatInterval() > 0) {
             __heartbeatInterval = __client.clientCfg().getHeartbeatInterval() * DateTimeUtils.SECOND;
         } else {
-            __heartbeatInterval = 60000L;
+            __heartbeatInterval = IServ.Const.DEFAULT_HEARTBEAT_INTERVAL * DateTimeUtils.SECOND;
         }
         return super.__doStart();
     }

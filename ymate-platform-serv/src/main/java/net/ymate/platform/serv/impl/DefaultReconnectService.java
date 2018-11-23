@@ -20,6 +20,7 @@ import net.ymate.platform.core.util.RuntimeUtils;
 import net.ymate.platform.serv.AbstractService;
 import net.ymate.platform.serv.IClient;
 import net.ymate.platform.serv.IReconnectService;
+import net.ymate.platform.serv.IServ;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -33,7 +34,7 @@ public class DefaultReconnectService extends AbstractService implements IReconne
 
     private static final Log _LOG = LogFactory.getLog(DefaultReconnectService.class);
 
-    private static final AtomicLong __COUNTER = new AtomicLong(0);
+    private AtomicLong __counter = new AtomicLong(0);
 
     private IClient __client;
 
@@ -48,10 +49,10 @@ public class DefaultReconnectService extends AbstractService implements IReconne
     @Override
     protected boolean __doStart() {
         setName("ReconnectService-" + __client.listener().getClass().getSimpleName());
-        if (__client.clientCfg().getConnectionTimeout() > 0) {
-            __timeout = __client.clientCfg().getConnectionTimeout() * DateTimeUtils.SECOND;
+        if (__client.clientCfg().getReconnectionInterval() > 0) {
+            __timeout = __client.clientCfg().getReconnectionInterval() * DateTimeUtils.SECOND;
         } else {
-            __timeout = 5000L;
+            __timeout = IServ.Const.DEFAULT_RECONNECTION_INTERVAL * DateTimeUtils.SECOND;
         }
         return super.__doStart();
     }
@@ -59,10 +60,11 @@ public class DefaultReconnectService extends AbstractService implements IReconne
     @Override
     protected void __doService() {
         try {
-            if (!__client.isConnected() && __COUNTER.getAndIncrement() > 0) {
+            if (!__client.isConnected() && __counter.getAndIncrement() > 0) {
+                __client.listener().onClientReconnected(__client);
                 __client.reconnect();
                 //
-                __COUNTER.set(0);
+                __counter.set(0);
             } else {
                 sleep(__timeout);
             }

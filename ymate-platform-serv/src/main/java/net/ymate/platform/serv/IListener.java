@@ -77,4 +77,12 @@ public interface IListener<T extends ISession> {
      * @throws IOException 可能产生的异常
      */
     void onExceptionCaught(Throwable e, T session) throws IOException;
+
+    /**
+     * 断线重连事件处理方法
+     *
+     * @param client 当前客户端对象
+     * @throws IOException 可能产生的异常
+     */
+    void onClientReconnected(IClient client) throws IOException;
 }

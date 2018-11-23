@@ -16,6 +16,7 @@
 package net.ymate.platform.serv.impl;
 
 import net.ymate.platform.serv.AbstractHeartbeatService;
+import net.ymate.platform.serv.IServ;
 import org.apache.commons.lang.StringUtils;
 
 /**
@@ -28,7 +29,7 @@ public class DefaultHeartbeatService extends AbstractHeartbeatService<String> {
 
     @Override
     protected boolean __doStart() {
-        __heartbeatMessage = StringUtils.defaultIfBlank(getClient().clientCfg().getParam("heartbeat_message"), "0");
+        __heartbeatMessage = StringUtils.defaultIfBlank(getClient().clientCfg().getParam(IServ.Const.PARAMS_HEARTBEAT_MESSAGE), "0");
         return super.__doStart();
     }
 

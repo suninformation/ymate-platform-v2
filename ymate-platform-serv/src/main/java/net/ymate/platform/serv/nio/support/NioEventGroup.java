@@ -15,10 +15,7 @@
  */
 package net.ymate.platform.serv.nio.support;
 
-import net.ymate.platform.serv.AbstractEventGroup;
-import net.ymate.platform.serv.IClientCfg;
-import net.ymate.platform.serv.IListener;
-import net.ymate.platform.serv.IServerCfg;
+import net.ymate.platform.serv.*;
 import net.ymate.platform.serv.nio.INioCodec;
 import net.ymate.platform.serv.nio.INioEventGroup;
 import net.ymate.platform.serv.nio.INioSession;
@@ -40,7 +37,7 @@ public class NioEventGroup<LISTENER extends IListener<INioSession>> extends Abst
 
     private SelectableChannel __channel;
 
-    private int __selectorCount = 1;
+    private int __selectorCount = IServ.Const.DEFAULT_SELECTOR_COUNT;
 
     private NioEventProcessor[] __processors;
 
@@ -50,7 +47,9 @@ public class NioEventGroup<LISTENER extends IListener<INioSession>> extends Abst
         super(cfg, listener, codec);
         //
         __channel = __doChannelCreate(cfg);
-        __selectorCount = cfg.getSelectorCount();
+        if (cfg.getSelectorCount() > 0) {
+            __selectorCount = cfg.getSelectorCount();
+        }
     }
 
     public NioEventGroup(IClientCfg cfg, LISTENER listener, INioCodec codec) throws IOException {
