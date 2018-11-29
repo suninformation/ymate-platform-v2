@@ -126,15 +126,11 @@ public class DefaultBeanFactory implements IBeanFactory {
     }
 
     private void __doParsePackagePath(List<String> targetList, String packageName) {
-        boolean _flag = false;
-        do {
-            if (targetList.contains(packageName)) {
-                break;
-            }
+        if (!targetList.contains(packageName)) {
             if (targetList.isEmpty()) {
                 targetList.add(packageName);
-                _flag = true;
             } else {
+                boolean _flag = false;
                 for (int _idx = 0; _idx < targetList.size(); _idx++) {
                     if (packageName.startsWith(targetList.get(_idx))) {
                         _flag = true;
@@ -144,8 +140,11 @@ public class DefaultBeanFactory implements IBeanFactory {
                         _flag = true;
                     }
                 }
+                if (!_flag) {
+                    targetList.add(packageName);
+                }
             }
-        } while (!_flag);
+        }
     }
 
     @Override
