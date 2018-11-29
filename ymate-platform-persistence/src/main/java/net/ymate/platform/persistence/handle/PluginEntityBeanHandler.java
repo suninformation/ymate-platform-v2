@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2017 the original author or authors.
+ * Copyright 2007-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,28 +16,27 @@
 package net.ymate.platform.persistence.handle;
 
 import net.ymate.platform.core.YMP;
-import net.ymate.platform.core.beans.IBeanHandler;
-import net.ymate.platform.core.util.ClassUtils;
-import net.ymate.platform.persistence.base.EntityMeta;
-import net.ymate.platform.persistence.base.IEntity;
+import net.ymate.platform.persistence.annotation.Entity;
+import net.ymate.platform.plugin.PluginClassLoader;
+import net.ymate.platform.plugin.annotation.Handler;
 
 /**
- * 数据实体对象处理器
+ * 插件数据实体类处理器 (from ymate-framework-addons)
  *
- * @author 刘镇 (suninformation@163.com) on 15/4/18 上午11:22
+ * @author 刘镇 (suninformation@163.com) on 15/8/16 下午5:14
  * @version 1.0
  */
-public class EntityHandler implements IBeanHandler {
+@Handler(Entity.class)
+public class PluginEntityBeanHandler extends EntityHandler {
 
-    public EntityHandler(YMP owner) {
-        owner.registerExcludedClass(IEntity.class);
+    public PluginEntityBeanHandler(YMP owner) {
+        super(owner);
     }
 
     @Override
-    @SuppressWarnings("unchecked")
     public Object handle(Class<?> targetClass) throws Exception {
-        if (ClassUtils.isInterfaceOf(targetClass, IEntity.class)) {
-            EntityMeta.createAndGet((Class<? extends IEntity>) targetClass);
+        if (targetClass.getClassLoader() instanceof PluginClassLoader) {
+            return super.handle(targetClass);
         }
         return null;
     }

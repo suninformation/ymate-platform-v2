@@ -32,6 +32,7 @@ public class PluginHandler implements IBeanHandler {
 
     public PluginHandler(IPluginFactory pluginFactory) {
         pluginFactory.addExcludedInterfaceClass(IPlugin.class);
+        pluginFactory.addExcludedInterfaceClass(IPluginBeanFactory.class);
         pluginFactory.addExcludedInterfaceClass(IPluginConfig.class);
         pluginFactory.addExcludedInterfaceClass(IPluginContext.class);
         pluginFactory.addExcludedInterfaceClass(IPluginEventListener.class);
@@ -44,14 +45,14 @@ public class PluginHandler implements IBeanHandler {
     public Object handle(Class<?> targetClass) throws Exception {
         if (ClassUtils.isInterfaceOf(targetClass, IPlugin.class)) {
             Plugin _plugin = targetClass.getAnnotation(Plugin.class);
-            PluginMeta _meta = new PluginMeta(targetClass.getClassLoader());
             //
+            PluginMeta _meta = new PluginMeta(targetClass.getClassLoader());
             _meta.setId(StringUtils.defaultIfBlank(_plugin.id(), DigestUtils.md5Hex(targetClass.getName())));
             _meta.setName(StringUtils.defaultIfBlank(_plugin.name(), targetClass.getSimpleName()));
             _meta.setAlias(_plugin.alias());
             _meta.setInitClass((Class<? extends IPlugin>) targetClass);
             _meta.setVersion(_plugin.version());
-            _meta.setAuthor(_plugin.version());
+            _meta.setAuthor(_plugin.author());
             _meta.setEmail(_plugin.email());
             _meta.setAutomatic(_plugin.automatic());
             _meta.setDescription(_plugin.description());
@@ -59,7 +60,6 @@ public class PluginHandler implements IBeanHandler {
             if (targetClass.getClassLoader() instanceof PluginClassLoader) {
                 _meta.setPath(((PluginClassLoader) targetClass.getClassLoader()).getPluginHome());
             }
-            //
             return _meta;
         }
         return null;

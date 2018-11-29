@@ -33,6 +33,7 @@ public interface IBeanHandler {
     IBeanHandler DEFAULT_HANDLER = new IBeanHandler() {
         @Override
         public Object handle(Class<?> targetClass) throws Exception {
+            boolean _singleton = false;
             Bean _bean = targetClass.getAnnotation(Bean.class);
             if (_bean != null) {
                 if (!_bean.handler().equals(IBeanHandler.class)) {
@@ -42,11 +43,11 @@ public interface IBeanHandler {
                         __beanHandlers.put(_bean.handler(), _handler);
                     }
                     return _handler.handle(targetClass);
-                } else if (_bean.singleton()) {
-                    return BeanMeta.create(targetClass.newInstance(), targetClass);
+                } else {
+                    _singleton = _bean.singleton();
                 }
             }
-            return BeanMeta.create(targetClass);
+            return BeanMeta.create(targetClass, _singleton);
         }
     };
 

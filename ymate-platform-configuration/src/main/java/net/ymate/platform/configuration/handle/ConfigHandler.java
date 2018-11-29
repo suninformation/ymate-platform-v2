@@ -17,6 +17,7 @@ package net.ymate.platform.configuration.handle;
 
 import net.ymate.platform.configuration.IConfig;
 import net.ymate.platform.configuration.IConfiguration;
+import net.ymate.platform.core.beans.BeanMeta;
 import net.ymate.platform.core.beans.IBeanHandler;
 import net.ymate.platform.core.util.ClassUtils;
 
@@ -30,7 +31,7 @@ public class ConfigHandler implements IBeanHandler {
 
     private final IConfig __owner;
 
-    public ConfigHandler(IConfig owner) throws Exception {
+    public ConfigHandler(IConfig owner) {
         __owner = owner;
         __owner.getOwner().registerExcludedClass(IConfiguration.class);
     }
@@ -38,10 +39,14 @@ public class ConfigHandler implements IBeanHandler {
     @Override
     public Object handle(Class<?> targetClass) throws Exception {
         if (ClassUtils.isInterfaceOf(targetClass, IConfiguration.class)) {
-            IConfiguration _cfg = (IConfiguration) targetClass.newInstance();
-            if (__owner.fillCfg(_cfg)) {
-                return _cfg;
-            }
+            BeanMeta _beanMeta = BeanMeta.create(targetClass, true);
+            _beanMeta.setInitializer(new BeanMeta.IInitializer() {
+                @Override
+                public void init(Object target) throws Exception {
+                    __owner.fillCfg((IConfiguration) target);
+                }
+            });
+            return _beanMeta;
         }
         return null;
     }

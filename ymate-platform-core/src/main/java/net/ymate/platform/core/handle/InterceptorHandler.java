@@ -36,9 +36,7 @@ public final class InterceptorHandler implements IBeanHandler {
         if (!targetClass.isInterface()) {
             Interceptor _bean = targetClass.getAnnotation(Interceptor.class);
             if (_bean != null) {
-                if (_bean.singleton()) {
-                    return BeanMeta.create(targetClass.newInstance(), targetClass);
-                }
+                return BeanMeta.create(targetClass, _bean.singleton());
             }
             return BeanMeta.create(targetClass);
         }

@@ -15,8 +15,6 @@
  */
 package net.ymate.platform.core.beans;
 
-import org.apache.commons.lang.NullArgumentException;
-
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
@@ -37,12 +35,19 @@ public class BeanMeta implements Serializable {
 
     private boolean __skipInterface;
 
+    private IInitializer __initializer;
+
+    @Deprecated
     public static BeanMeta create(Object beanObject, Class<?> beanClass) {
         return new BeanMeta(beanClass, true, beanObject);
     }
 
     public static BeanMeta create(Class<?> beanClass) {
-        return new BeanMeta(beanClass, false, null);
+        return new BeanMeta(beanClass, false);
+    }
+
+    public static BeanMeta create(Class<?> beanClass, boolean singleton) {
+        return new BeanMeta(beanClass, singleton);
     }
 
     /**
@@ -52,13 +57,17 @@ public class BeanMeta implements Serializable {
      * @param singleton  是否单例模式
      * @param beanObject 若为单例模式则此参数可为空
      */
+    @Deprecated
     public BeanMeta(Class<?> beanClass, boolean singleton, Object beanObject) {
         __beanClass = beanClass;
         __singleton = singleton;
-        __beanObject = beanObject;
-        if (singleton && beanObject == null) {
-            throw new NullArgumentException("beanObject");
-        }
+        //
+        setBeanObject(beanObject);
+    }
+
+    public BeanMeta(Class<?> beanClass, boolean singleton) {
+        __beanClass = beanClass;
+        __singleton = singleton;
     }
 
     public boolean isSingleton() {
@@ -75,7 +84,7 @@ public class BeanMeta implements Serializable {
 
     public void setBeanObject(Object beanObject) {
         if (!__singleton || beanObject == null) {
-            throw new NullArgumentException("Not singleton Or beanObject was null");
+            throw new IllegalArgumentException("Not singleton Or beanObject was null");
         }
         __beanObject = beanObject;
     }
@@ -92,6 +101,14 @@ public class BeanMeta implements Serializable {
         return __skipInterface;
     }
 
+    public IInitializer getInitializer() {
+        return __initializer;
+    }
+
+    public void setInitializer(IInitializer initializer) {
+        __initializer = initializer;
+    }
+
     public List<Class<?>> getBeanInterfaces(List<Class<?>> excludedClassSet) {
         List<Class<?>> _returnValues = new ArrayList<Class<?>>();
         for (Class<?> _interface : __beanClass.getInterfaces()) {
@@ -102,5 +119,15 @@ public class BeanMeta implements Serializable {
             _returnValues.add(_interface);
         }
         return _returnValues;
+    }
+
+    /**
+     * 自定义Bean初始化回调接口
+     *
+     * @since 2.0.6
+     */
+    public interface IInitializer {
+
+        void init(Object target) throws Exception;
     }
 }

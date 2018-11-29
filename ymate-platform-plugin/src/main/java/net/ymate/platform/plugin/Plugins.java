@@ -15,24 +15,22 @@
  */
 package net.ymate.platform.plugin;
 
+import net.ymate.platform.core.ApplicationEvent;
 import net.ymate.platform.core.Version;
 import net.ymate.platform.core.YMP;
+import net.ymate.platform.core.event.Events;
+import net.ymate.platform.core.event.IEventListener;
 import net.ymate.platform.core.lang.BlurObject;
 import net.ymate.platform.core.module.IModule;
 import net.ymate.platform.core.module.annotation.Module;
-import net.ymate.platform.core.util.ClassUtils;
 import net.ymate.platform.core.util.RuntimeUtils;
-import net.ymate.platform.plugin.annotation.PluginFactory;
 import net.ymate.platform.plugin.impl.DefaultPluginConfig;
-import net.ymate.platform.plugin.impl.DefaultPluginEventListener;
 import net.ymate.platform.plugin.impl.DefaultPluginFactory;
-import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import java.io.File;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Map;
 
@@ -43,7 +41,7 @@ import java.util.Map;
  * @version 1.0
  */
 @Module
-public class Plugins implements IModule, IPlugins {
+public class Plugins implements IModule, IPlugins, IPluginEventListener {
 
     public static final Version VERSION = new Version(2, 0, 6, Plugins.class.getPackage().getImplementationVersion(), Version.VersionType.Release);
 
@@ -83,45 +81,37 @@ public class Plugins implements IModule, IPlugins {
             __owner = owner;
             __owner.getEvents().registerEvent(PluginEvent.class);
             //
-            _LOG.info("Initializing ymate-platform-plugin-" + VERSION);
+            boolean _disabled = BlurObject.bind(_moduleCfgs.get("disabled")).toBooleanValue();
             //
-            DefaultPluginConfig _config = new DefaultPluginConfig();
-            _config.setPluginHome(new File(RuntimeUtils.replaceEnvVariable(StringUtils.defaultIfBlank(_moduleCfgs.get("plugin_home"), "${root}/plugins"))));
-            _config.setAutoscanPackages(new ArrayList<String>(Arrays.asList(StringUtils.split(StringUtils.trimToEmpty(_moduleCfgs.get("autoscan_packages")), "|"))));
+            _LOG.info("Initializing ymate-platform-plugin-" + VERSION + (_disabled ? " - disabled" : StringUtils.EMPTY));
             //
-            for (String _package : __owner.getConfig().getAutoscanPackages()) {
-                if (!_config.getAutoscanPackages().contains(_package)) {
-                    _config.getAutoscanPackages().add(_package);
-                }
+            if (!_disabled) {
+                IPluginConfig _config = DefaultPluginConfig.create()
+                        .pluginHome(new File(RuntimeUtils.replaceEnvVariable(StringUtils.defaultIfBlank(_moduleCfgs.get("plugin_home"), "${root}/plugins"))))
+                        .autoscanPackages(__owner.getConfig().getAutoscanPackages())
+                        .autoscanPackages(Arrays.asList(StringUtils.split(StringUtils.trimToEmpty(_moduleCfgs.get("autoscan_packages")), "|")))
+                        .automatic(BlurObject.bind(StringUtils.defaultIfBlank(_moduleCfgs.get("automatic"), "true")).toBooleanValue())
+                        .eventListener(this).build();
+                //
+                __pluginFactory = new DefaultPluginFactory(__owner, BlurObject.bind(StringUtils.defaultIfBlank(_moduleCfgs.get("included_classpath"), "true")).toBooleanValue()) {
+                    // For Constructor With includedClassPath.
+                };
+                __pluginFactory.init(_config);
+                //
+                __owner.getEvents().registerListener(Events.MODE.NORMAL, ApplicationEvent.class, new IEventListener<ApplicationEvent>() {
+                    @Override
+                    public boolean handle(ApplicationEvent context) {
+                        if (context.getEventName() == ApplicationEvent.EVENT.APPLICATION_INITED) {
+                            try {
+                                __pluginFactory.startup();
+                            } catch (Exception e) {
+                                _LOG.warn("A exception occurred while startup plugins: ", RuntimeUtils.unwrapThrow(e));
+                            }
+                        }
+                        return false;
+                    }
+                });
             }
-            //
-            _config.setAutomatic(BlurObject.bind(StringUtils.defaultIfBlank(_moduleCfgs.get("automatic"), "true")).toBooleanValue());
-            _config.setIncludedClassPath(BlurObject.bind(StringUtils.defaultIfBlank(_moduleCfgs.get("included_classpath"), "true")).toBooleanValue());
-            //
-            _config.setPluginEventListener(new IPluginEventListener() {
-                @Override
-                public void onInited(IPluginContext context, IPlugin plugin) {
-                    __owner.getEvents().fireEvent(new PluginEvent(plugin, PluginEvent.EVENT.PLUGIN_INITED));
-                }
-
-                @Override
-                public void onStarted(IPluginContext context, IPlugin plugin) {
-                    __owner.getEvents().fireEvent(new PluginEvent(plugin, PluginEvent.EVENT.PLUGIN_STARTED));
-                }
-
-                @Override
-                public void onShutdown(IPluginContext context, IPlugin plugin) {
-                    __owner.getEvents().fireEvent(new PluginEvent(plugin, PluginEvent.EVENT.PLUGIN_SHUTDOWN));
-                }
-
-                @Override
-                public void onDestroy(IPluginContext context, IPlugin plugin) {
-                    __owner.getEvents().fireEvent(new PluginEvent(plugin, PluginEvent.EVENT.PLUGIN_DESTROYED));
-                }
-            });
-            //
-            __pluginFactory = new DefaultPluginFactory(__owner);
-            __pluginFactory.init(_config);
             //
             __inited = true;
         }
@@ -142,107 +132,76 @@ public class Plugins implements IModule, IPlugins {
         if (__inited) {
             __inited = false;
             //
-            __pluginFactory.destroy();
-            __pluginFactory = null;
+            if (__pluginFactory != null) {
+                __pluginFactory.destroy();
+                __pluginFactory = null;
+            }
             //
             __owner = null;
         }
     }
 
     @Override
-    public IPluginFactory getPluginFactory() {
-        return __pluginFactory;
-    }
-
-    //---------------------=================------------------------
-
-    /**
-     * @param pluginHome   插件根路径
-     * @param autoPackages 自动扫描包路径
-     * @return 创建默认插件工厂初始化配置
-     * @throws Exception 加载配置可能产生的异常
-     */
-    private static DefaultPluginConfig loadConfig(String pluginHome, String[] autoPackages) throws Exception {
-        DefaultPluginConfig _config = new DefaultPluginConfig();
-        _config.setPluginHome(new File(pluginHome));
-        _config.setAutoscanPackages(Arrays.asList(autoPackages));
-        return _config;
-    }
-
-    /**
-     * @param clazz 插件工厂类
-     * @return 通过注解分析插件工厂初始化配置
-     * @throws Exception 加载配置可能产生的异常
-     */
-    private static DefaultPluginConfig loadConfig(Class<? extends IPluginFactory> clazz) throws Exception {
-        DefaultPluginConfig _config = null;
-        if (clazz != null && clazz.isAnnotationPresent(PluginFactory.class)) {
-            _config = new DefaultPluginConfig();
-            //
-            PluginFactory _factoryAnno = clazz.getAnnotation(PluginFactory.class);
-            if (StringUtils.isNotBlank(_factoryAnno.pluginHome())) {
-                _config.setPluginHome(new File(_factoryAnno.pluginHome()));
-            }
-            String[] _packages = _factoryAnno.autoscanPackages();
-            if (ArrayUtils.isEmpty(_packages)) {
-                _packages = new String[]{clazz.getPackage().getName()};
-            }
-            _config.setAutoscanPackages(Arrays.asList(_packages));
-            _config.setIncludedClassPath(_factoryAnno.includedClassPath());
-            _config.setAutomatic(_factoryAnno.automatic());
-            //
-            IPluginEventListener _listener = ClassUtils.impl(_factoryAnno.listenerClass(), IPluginEventListener.class);
-            if (_listener != null) {
-                _config.setPluginEventListener(_listener);
-            } else {
-                _config.setPluginEventListener(new DefaultPluginEventListener());
-            }
+    public IPluginConfig getConfig() {
+        if (__pluginFactory == null) {
+            return null;
         }
-        return _config;
+        return __pluginFactory.getPluginConfig();
     }
 
-    /**
-     * @param pluginHome   插件根路径
-     * @param autoPackages 自动扫描包路径
-     * @return 创建并返回默认插件工厂实例
-     * @throws Exception 创建插件工厂时可能产生的异常
-     */
-    public static IPluginFactory createFactory(String pluginHome, String[] autoPackages) throws Exception {
-        IPluginFactory _factory = new DefaultPluginFactory();
-        _factory.init(loadConfig(pluginHome, autoPackages));
-        return _factory;
-    }
-
-    /**
-     * @param clazz 指定的插件工厂类型
-     * @return 创建并返回由clazz指定类型的插件工厂实例
-     * @throws Exception 创建插件工厂时可能产生的异常
-     */
-    public static IPluginFactory createFactory(Class<? extends IPluginFactory> clazz) throws Exception {
-        IPluginFactory _factory = ClassUtils.impl(clazz, IPluginFactory.class);
-        if (_factory != null) {
-            if (clazz.isAnnotationPresent(PluginFactory.class)) {
-                _factory.init(loadConfig(clazz));
-            }
+    @Override
+    public IPlugin getPlugin(String id) {
+        if (__pluginFactory == null) {
+            return null;
         }
-        return _factory;
+        return __pluginFactory.getPlugin(id);
     }
 
-    /**
-     * @param clazz  指定的插件工厂类型
-     * @param config 指定的插件工厂初始化配置
-     * @return 采用指定的初始化配置创建并返回由clazz指定类型的插件工厂实例
-     * @throws Exception 创建插件工厂时可能产生的异常
-     */
-    public static IPluginFactory createFactory(Class<? extends IPluginFactory> clazz, IPluginConfig config) throws Exception {
-        IPluginFactory _factory = ClassUtils.impl(clazz, IPluginFactory.class);
-        if (_factory != null) {
-            if (config != null) {
-                _factory.init(config);
-            } else if (clazz.isAnnotationPresent(PluginFactory.class)) {
-                _factory.init(loadConfig(clazz));
-            }
+    @Override
+    public <T> T getPlugin(Class<T> clazz) {
+        if (__pluginFactory == null) {
+            return null;
         }
-        return _factory;
+        return __pluginFactory.getPlugin(clazz);
+    }
+
+    @Override
+    public void onInited(IPluginContext context, IPlugin plugin) {
+        if (__pluginFactory != null) {
+            if (__pluginFactory.getOwner().getConfig().isDevelopMode() && _LOG.isInfoEnabled()) {
+                _LOG.info("--> " + context.getPluginMeta().toString() + " initialized.");
+            }
+            __owner.getEvents().fireEvent(new PluginEvent(plugin, PluginEvent.EVENT.PLUGIN_INITED));
+        }
+    }
+
+    @Override
+    public void onStarted(IPluginContext context, IPlugin plugin) {
+        if (__pluginFactory != null) {
+            if (__pluginFactory.getOwner().getConfig().isDevelopMode() && _LOG.isInfoEnabled()) {
+                _LOG.info("--> " + context.getPluginMeta().toString() + " started.");
+            }
+            __owner.getEvents().fireEvent(new PluginEvent(plugin, PluginEvent.EVENT.PLUGIN_STARTED));
+        }
+    }
+
+    @Override
+    public void onShutdown(IPluginContext context, IPlugin plugin) {
+        if (__pluginFactory != null) {
+            if (__pluginFactory.getOwner().getConfig().isDevelopMode() && _LOG.isInfoEnabled()) {
+                _LOG.info("--> " + context.getPluginMeta().toString() + " shutdown.");
+            }
+            __owner.getEvents().fireEvent(new PluginEvent(plugin, PluginEvent.EVENT.PLUGIN_SHUTDOWN));
+        }
+    }
+
+    @Override
+    public void onDestroy(IPluginContext context, IPlugin plugin) {
+        if (__pluginFactory != null) {
+            if (__pluginFactory.getOwner().getConfig().isDevelopMode() && _LOG.isInfoEnabled()) {
+                _LOG.info("--> " + context.getPluginMeta().toString() + " destroyed.");
+            }
+            __owner.getEvents().fireEvent(new PluginEvent(plugin, PluginEvent.EVENT.PLUGIN_DESTROYED));
+        }
     }
 }

@@ -177,7 +177,7 @@ public class DefaultRequestProcessor implements IRequestProcessor {
                 _returnValue = new BlurObject(StringUtils.defaultIfBlank(paramValue, defaultValue)).toObjectValue(paramType);
             }
         } catch (Throwable e) {
-            if (owner.getOwner().getConfig().isDevelopMode()) {
+            if (owner.getOwner().getConfig().isDevelopMode() && _LOG.isWarnEnabled()) {
                 _LOG.warn("Invalid '" + paramName + "' value: " + paramValue, RuntimeUtils.unwrapThrow(e));
             }
         }

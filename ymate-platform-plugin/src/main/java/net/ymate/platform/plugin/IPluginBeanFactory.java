@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2017 the original author or authors.
+ * Copyright 2007-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,35 +15,35 @@
  */
 package net.ymate.platform.plugin;
 
+import net.ymate.platform.core.beans.IBeanFactory;
+
+import java.util.Collection;
+
 /**
- * 插件框架模块管理器接口
- *
- * @author 刘镇 (suninformation@163.com) on 15/7/9 下午2:09
+ * @author 刘镇 (suninformation@163.com) on 2018-11-28 22:35
  * @version 1.0
  */
-public interface IPlugins {
-
-    String MODULE_NAME = "plugin";
+public interface IPluginBeanFactory extends IBeanFactory {
 
     /**
-     * @return 获取插件默认工厂配置, 若插件模块被禁用则返回null
+     * @return 是否加载当前CLASSPATH内的所有包含插件配置文件的Jar包
      */
-    IPluginConfig getConfig();
+    boolean isIncludedClassPath();
 
     /**
-     * 通过ID获取默认插件工厂中的插件实例
-     *
      * @param id 插件唯一ID
-     * @return 返回插件实例
+     * @return 通过ID获取插件实例
      */
     IPlugin getPlugin(String id);
 
     /**
-     * 通过接口类型获取默认插件工厂中的插件实例
-     *
-     * @param clazz 插件接口类
-     * @param <T>   插件接口类型
-     * @return 返回插件实例
+     * @param id 插件ID
+     * @return 通过ID获取插件配置信息元数据描述
      */
-    <T> T getPlugin(Class<T> clazz);
+    PluginMeta getPluginMeta(String id);
+
+    /**
+     * @return 获取插件配置信息描述对象集合
+     */
+    Collection<PluginMeta> getPluginMetas();
 }

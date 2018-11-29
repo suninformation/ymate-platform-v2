@@ -22,7 +22,6 @@ import net.ymate.platform.core.beans.impl.DefaultBeanLoader;
 import net.ymate.platform.core.beans.intercept.InterceptProxy;
 import net.ymate.platform.core.beans.proxy.IProxy;
 import net.ymate.platform.core.beans.proxy.IProxyFactory;
-import net.ymate.platform.core.beans.proxy.impl.DefaultProxyFactory;
 import net.ymate.platform.core.event.Events;
 import net.ymate.platform.core.event.annotation.Event;
 import net.ymate.platform.core.event.annotation.EventRegister;
@@ -31,8 +30,10 @@ import net.ymate.platform.core.i18n.I18N;
 import net.ymate.platform.core.module.IModule;
 import net.ymate.platform.core.module.ModuleEvent;
 import net.ymate.platform.core.module.annotation.Module;
+import net.ymate.platform.core.serialize.ISerializer;
 import net.ymate.platform.core.serialize.annotation.Serializer;
 import net.ymate.platform.core.support.ConfigBuilder;
+import net.ymate.platform.core.support.IDestroyable;
 import net.ymate.platform.core.support.IInitializable;
 import net.ymate.platform.core.support.RecycleHelper;
 import net.ymate.platform.core.util.ClassUtils;
@@ -48,8 +49,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.lang.annotation.Annotation;
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * YMP框架核心管理器
@@ -79,7 +80,7 @@ public class YMP {
 
     private IProxyFactory __proxyFactory;
 
-    private Map<Class<? extends IModule>, IModule> __modules;
+    private Set<Class<? extends IModule>> __modules = new HashSet<Class<? extends IModule>>();
 
     private Events __events;
 
@@ -103,25 +104,19 @@ public class YMP {
      * @param config YMP框架初始化配置
      */
     public YMP(IConfig config) {
-        // 创建模块对象引用集合
-        __modules = new HashMap<Class<? extends IModule>, IModule>();
-        //
         __config = config;
-        __moduleFactory = new BeanFactory(this);
-        __beanFactory = new DefaultBeanFactory(this, __moduleFactory);
-        __proxyFactory = __config.getProxyFactory();
-        if (__proxyFactory == null) {
-            __proxyFactory = new DefaultProxyFactory();
-        }
     }
 
-    private void __registerPackages(IBeanFactory factory) {
-        factory.registerPackage(__YMP_BASE_PACKAGE);
+    private void __registerPackages() {
+        __moduleFactory.registerPackage(__YMP_BASE_PACKAGE);
+        __beanFactory.registerPackage(__YMP_BASE_PACKAGE);
         for (String _packageName : __config.getAutoscanPackages()) {
-            factory.registerPackage(_packageName);
+            __moduleFactory.registerPackage(_packageName);
+            __beanFactory.registerPackage(_packageName);
         }
         for (String _packageName : __config.getExcludedPackages()) {
-            factory.registerExcludedPackage(_packageName);
+            __moduleFactory.registerExcludedPackage(_packageName);
+            __beanFactory.registerExcludedPackage(_packageName);
         }
     }
 
@@ -169,7 +164,7 @@ public class YMP {
             // 初始化I18N
             I18N.initialize(__config.getDefaultLocale(), __config.getI18NEventHandler());
             // 初始化事件管理器，并注册框架、模块事件
-            __events = Events.create(__config.getEventConfigs());
+            __events = Events.create(this, __config.getEventConfigs());
             __events.registerEvent(ApplicationEvent.class);
             __events.registerEvent(ModuleEvent.class);
             // 检查对象加载器, 若未配置则采用默认加载器
@@ -177,30 +172,40 @@ public class YMP {
             if (_beanLoader == null) {
                 _beanLoader = new DefaultBeanLoader();
             }
-            // 配置根对象工厂
-            __beanFactory.setLoader(_beanLoader);
-            __beanFactory.setExcludedFiles(__config.getExcludedFiles());
-            __beanFactory.registerExcludedClass(IInitializable.class);
-            __beanFactory.registerHandler(Bean.class);
-            __beanFactory.registerHandler(Interceptor.class, new InterceptorHandler(this));
-            __beanFactory.registerHandler(Packages.class, new PackagesHandler(this));
+            // 创建对象工厂
+            __moduleFactory = new BeanFactory(this);
+            __beanFactory = new DefaultBeanFactory(this, __moduleFactory);
+            // 配置代理工厂
+            __proxyFactory = __config.getProxyFactory();
+            __proxyFactory.init(this);
+            __proxyFactory.registerProxy(new InterceptProxy());
             // 配置模块对象工厂
             __moduleFactory.setLoader(_beanLoader);
-            __beanFactory.setExcludedFiles(__config.getExcludedFiles());
-            __moduleFactory.registerExcludedClass(IInitializable.class);
+            __moduleFactory.setExcludedFiles(__config.getExcludedFiles());
             __moduleFactory.registerHandler(Module.class, new ModuleHandler(this));
             __moduleFactory.registerHandler(Proxy.class, new ProxyHandler(this));
             __moduleFactory.registerHandler(Event.class, new EventHandler(this));
             __moduleFactory.registerHandler(EventRegister.class, new EventRegisterHandler(this));
             __moduleFactory.registerHandler(Injector.class, new InjectorHandler(__beanFactory));
             __moduleFactory.registerHandler(Serializer.class, new SerializerHandler(this));
+            // 配置根对象工厂
+            __beanFactory.setLoader(_beanLoader);
+            __beanFactory.setExcludedFiles(__config.getExcludedFiles());
+            __beanFactory.registerExcludedClass(IInitializable.class);
+            __beanFactory.registerExcludedClass(IDestroyable.class);
+            __beanFactory.registerExcludedClass(ISerializer.class);
+            __beanFactory.registerHandler(Bean.class);
+            __beanFactory.registerHandler(Interceptor.class, new InterceptorHandler(this));
+            __beanFactory.registerHandler(Packages.class, new PackagesHandler(this));
             // 设置自动扫描应用包路径
-            __registerPackages(__moduleFactory);
-            __registerPackages(__beanFactory);
+            __registerPackages();
             // 初始化模块对象工厂
             __moduleFactory.init();
+            __moduleFactory.initProxy(null);
+            __moduleFactory.initIoC();
             //
-            for (IModule _module : __modules.values()) {
+            for (Class<? extends IModule> _moduleClass : __modules) {
+                IModule _module = getModule(_moduleClass);
                 if (!_module.isInited()) {
                     try {
                         _module.init(this);
@@ -216,9 +221,6 @@ public class YMP {
                 }
             }
             if (!__errorFlag) {
-                // 配置代理工厂
-                __proxyFactory.init(this);
-                __proxyFactory.registerProxy(new InterceptProxy());
                 // 初始化根对象工厂
                 __beanFactory.init();
                 // 初始化对象代理
@@ -253,7 +255,8 @@ public class YMP {
             //
             __inited = false;
             // 销毁所有已加载模块
-            for (IModule _module : __modules.values()) {
+            for (Class<? extends IModule> _moduleClass : __modules) {
+                IModule _module = getModule(_moduleClass);
                 if (_module.isInited()) {
                     // 触发模块销毁事件
                     __events.fireEvent(new ModuleEvent(_module, ModuleEvent.EVENT.MODULE_DESTROYED));
@@ -262,14 +265,14 @@ public class YMP {
                 }
             }
             __modules = null;
-            // 销毁代理工厂
-            __proxyFactory = null;
             // 销毁根对象工厂
             __moduleFactory.destroy();
             __moduleFactory = null;
             //
             __beanFactory.destroy();
             __beanFactory = null;
+            // 销毁代理工厂
+            __proxyFactory = null;
             // 销毁事件管理器
             __events.destroy();
         }
@@ -300,7 +303,9 @@ public class YMP {
                 || annoClass.equals(Injector.class) || annoClass.equals(Interceptor.class)
                 || annoClass.equals(Module.class) || annoClass.equals(Packages.class)
                 || annoClass.equals(Proxy.class) || annoClass.equals(Serializer.class)) {
-            _LOG.warn("Handler [" + annoClass.getSimpleName() + "] duplicate registration is not allowed");
+            if (getConfig().isDevelopMode() && _LOG.isWarnEnabled()) {
+                _LOG.warn("Handler [" + annoClass.getSimpleName() + "] duplicate registration is not allowed");
+            }
             return;
         }
         __beanFactory.registerHandler(annoClass, handler);
@@ -332,6 +337,7 @@ public class YMP {
         __beanFactory.registerBean(clazz);
     }
 
+    @Deprecated
     public void registerBean(Class<?> clazz, Object object) {
         __beanFactory.registerBean(clazz, object);
     }
@@ -365,13 +371,15 @@ public class YMP {
     /**
      * 注册模块实例(此方法仅在YMP框架核心管理器未初始化前有效)
      *
-     * @param module 目标模块
+     * @param moduleClass 目标模块类
      */
-    public void registerModule(IModule module) {
-        if (!__inited) {
-            if (module != null) {
-                __moduleFactory.registerBean(module.getClass(), module);
-                __modules.put(module.getClass(), module);
+    public void registerModule(Class<? extends IModule> moduleClass) {
+        if (!__inited && moduleClass != null) {
+            if (!__modules.contains(moduleClass)) {
+                __moduleFactory.registerBean(BeanMeta.create(moduleClass, true));
+                __modules.add(moduleClass);
+            } else if (getConfig().isDevelopMode() && _LOG.isWarnEnabled()) {
+                _LOG.warn("Module [" + moduleClass + "] duplicate registration is not allowed");
             }
         }
     }
@@ -455,6 +463,11 @@ public class YMP {
                 }
             }
             return _bean;
+        }
+
+        @Override
+        protected void __addClassInterfaces(BeanMeta beanMeta) {
+            // Do Nothing...
         }
     }
 }

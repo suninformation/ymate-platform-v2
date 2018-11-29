@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2017 the original author or authors.
+ * Copyright 2007-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,31 +13,31 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.ymate.platform.persistence.handle;
+package net.ymate.platform.webmvc.handle;
 
 import net.ymate.platform.core.YMP;
-import net.ymate.platform.core.beans.IBeanHandler;
-import net.ymate.platform.core.util.ClassUtils;
-import net.ymate.platform.persistence.base.EntityMeta;
-import net.ymate.platform.persistence.base.IEntity;
+import net.ymate.platform.plugin.PluginClassLoader;
+import net.ymate.platform.plugin.annotation.Handler;
+import net.ymate.platform.webmvc.WebMVC;
+import net.ymate.platform.webmvc.annotation.Controller;
 
 /**
- * 数据实体对象处理器
+ * 插件控制器类处理器 (from ymate-framework-addons)
  *
- * @author 刘镇 (suninformation@163.com) on 15/4/18 上午11:22
+ * @author 刘镇 (suninformation@163.com) on 15/8/15 上午9:24
  * @version 1.0
  */
-public class EntityHandler implements IBeanHandler {
+@Handler(Controller.class)
+public class PluginControllerBeanHandler extends ControllerHandler {
 
-    public EntityHandler(YMP owner) {
-        owner.registerExcludedClass(IEntity.class);
+    public PluginControllerBeanHandler(YMP owner) {
+        super(owner.getModule(WebMVC.class));
     }
 
     @Override
-    @SuppressWarnings("unchecked")
     public Object handle(Class<?> targetClass) throws Exception {
-        if (ClassUtils.isInterfaceOf(targetClass, IEntity.class)) {
-            EntityMeta.createAndGet((Class<? extends IEntity>) targetClass);
+        if (targetClass.getClassLoader() instanceof PluginClassLoader) {
+            return super.handle(targetClass);
         }
         return null;
     }

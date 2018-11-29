@@ -132,14 +132,16 @@ public class Cfgs implements IModule, IConfig {
                     //
                     __inited = true;
                     //
-                    _LOG.info("-->  CONFIG_HOME: " + __configHome);
-                    _LOG.info("-->    USER_HOME: " + __userHome);
-                    _LOG.info("-->     USER_DIR: " + __userDir);
-                    if (StringUtils.isNotBlank(__moduleCfg.getProjectName())) {
-                        _LOG.info("--> PROJECT_NAME: " + __moduleCfg.getProjectName());
-                    }
-                    if (StringUtils.isNotBlank(__moduleCfg.getModuleName())) {
-                        _LOG.info("-->  MODULE_NAME: " + __moduleCfg.getModuleName());
+                    if (_LOG.isInfoEnabled()) {
+                        _LOG.info("-->  CONFIG_HOME: " + __configHome);
+                        _LOG.info("-->    USER_HOME: " + __userHome);
+                        _LOG.info("-->     USER_DIR: " + __userDir);
+                        if (StringUtils.isNotBlank(__moduleCfg.getProjectName())) {
+                            _LOG.info("--> PROJECT_NAME: " + __moduleCfg.getProjectName());
+                        }
+                        if (StringUtils.isNotBlank(__moduleCfg.getModuleName())) {
+                            _LOG.info("-->  MODULE_NAME: " + __moduleCfg.getModuleName());
+                        }
                     }
                 }
             }
@@ -262,37 +264,10 @@ public class Cfgs implements IModule, IConfig {
         if (_result.isFile() && _result.canRead() && _result.isAbsolute() && _result.exists()) {
             return _result;
         }
-        // 到 moduleHome(模块路径)路径中去寻找 cfgFile 指定的文件
-        if (StringUtils.isNotBlank(__moduleHome)) {
-            _result = new File(__moduleHome, cfgFile);
-            if (_result.isFile() && _result.canRead() && _result.isAbsolute() && _result.exists()) {
-                return _result;
-            }
-        }
-        // 到 projectHome(项目路径)路径中去寻找 cfgFile 指定的文件
-        if (StringUtils.isNotBlank(__projectHome)) {
-            _result = new File(__projectHome, cfgFile);
-            if (_result.isFile() && _result.canRead() && _result.isAbsolute() && _result.exists()) {
-                return _result;
-            }
-        }
-        // 到 configHome(主路径)路径中去寻找 cfgFile 指定的文件
-        if (StringUtils.isNotBlank(__configHome)) {
-            _result = new File(__configHome, cfgFile);
-            if (_result.isFile() && _result.canRead() && _result.isAbsolute() && _result.exists()) {
-                return _result;
-            }
-        }
-        // 到 userDir(用户路径)路径中去寻找 cfgFile 指定的文件
-        if (StringUtils.isNotBlank(__userDir)) {
-            _result = new File(__userDir, cfgFile);
-            if (_result.isFile() && _result.canRead() && _result.isAbsolute() && _result.exists()) {
-                return _result;
-            }
-        }
-        // 到 osUserHome(系统用户路径)路径中去寻找 cfgFile 指定的文件
-        if (StringUtils.isNotBlank(__userHome)) {
-            _result = new File(__userHome, cfgFile);
+        // 按路径顺序寻找 cfgFile 指定的文件
+        String[] _paths = {__moduleHome, __projectHome, __configHome, __userDir, __userHome};
+        for (String _path : _paths) {
+            _result = new File(_path, cfgFile);
             if (_result.isFile() && _result.canRead() && _result.isAbsolute() && _result.exists()) {
                 return _result;
             }
@@ -318,7 +293,7 @@ public class Cfgs implements IModule, IConfig {
     @Override
     public boolean fillCfg(IConfiguration config, boolean search) {
         if (config != null) {
-            Configuration _configuration = config.getClass().getAnnotation(Configuration.class);
+            Configuration _configuration = ClassUtils.getAnnotation(config, Configuration.class);
             ConfigurationProvider _providerClass = config.getClass().getAnnotation(ConfigurationProvider.class);
             String _cfgFileName = _configuration == null ? null : _configuration.value();
             boolean _reload = _configuration == null || _configuration.relaod();
@@ -358,14 +333,14 @@ public class Cfgs implements IModule, IConfig {
                         //
                         return true;
                     } catch (Exception e) {
-                        _LOG.warn("An exception occurred while filling the configuration file [" + StringUtils.trimToEmpty(cfgFileName) + "]", RuntimeUtils.unwrapThrow(e));
+                        _LOG.warn("An exception occurred while filling the configuration file [" + StringUtils.trimToEmpty(cfgFileName) + "]: ", RuntimeUtils.unwrapThrow(e));
                     }
                 } else {
-                    _LOG.warn("The configuration file [" + StringUtils.trimToEmpty(cfgFileName) + "] was not found");
+                    _LOG.warn("The configuration file [" + StringUtils.trimToEmpty(cfgFileName) + "] was not found.");
                 }
             }
         } else {
-            _LOG.warn("Module configuration has not been initialized, unable to complete the configuration object filling operation");
+            _LOG.warn("Module configuration has not been initialized, unable to complete the configuration object filling operation.");
         }
         return false;
     }
@@ -432,7 +407,7 @@ public class Cfgs implements IModule, IConfig {
                             _entry.getValue().getConfiguration().reload();
                             _entry.getValue().setLastModifyTime(_file.lastModified());
                         } catch (Exception e) {
-                            _LOG.warn("", RuntimeUtils.unwrapThrow(e));
+                            _LOG.warn("An exception occurred while checking configuration file[" + _file.getPath() + "]: ", RuntimeUtils.unwrapThrow(e));
                         }
                     }
                 }

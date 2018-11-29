@@ -15,6 +15,7 @@
  */
 package net.ymate.platform.persistence.jdbc.repo;
 
+import net.ymate.platform.core.beans.BeanMeta;
 import net.ymate.platform.core.beans.IBeanHandler;
 import net.ymate.platform.persistence.jdbc.DataSourceCfgMeta;
 import net.ymate.platform.persistence.jdbc.IDatabase;
@@ -39,7 +40,7 @@ public class RepoHandler implements IBeanHandler {
     public Object handle(Class<?> targetClass) throws Exception {
         Repository _anno = targetClass.getAnnotation(Repository.class);
         if (JDBC.DATABASE.UNKNOWN.equals(_anno.dbType())) {
-            return targetClass.newInstance();
+            return BeanMeta.create(targetClass, true);
         } else {
             DataSourceCfgMeta _cfgMeta;
             if (StringUtils.isBlank(_anno.dsName())) {
@@ -48,7 +49,7 @@ public class RepoHandler implements IBeanHandler {
                 _cfgMeta = __owner.getModuleCfg().getDataSourceCfg(_anno.dsName());
             }
             if (_cfgMeta != null && _cfgMeta.getType().equals(_anno.dbType())) {
-                return targetClass.newInstance();
+                return BeanMeta.create(targetClass, true);
             }
         }
         return null;

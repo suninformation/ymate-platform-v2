@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2017 the original author or authors.
+ * Copyright 2007-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,31 +13,29 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.ymate.platform.persistence.handle;
+package net.ymate.platform.plugin.handle;
 
-import net.ymate.platform.core.YMP;
 import net.ymate.platform.core.beans.IBeanHandler;
-import net.ymate.platform.core.util.ClassUtils;
-import net.ymate.platform.persistence.base.EntityMeta;
-import net.ymate.platform.persistence.base.IEntity;
+import net.ymate.platform.core.handle.InterceptorHandler;
+import net.ymate.platform.plugin.IPluginFactory;
+import net.ymate.platform.plugin.PluginClassLoader;
 
 /**
- * 数据实体对象处理器
- *
- * @author 刘镇 (suninformation@163.com) on 15/4/18 上午11:22
+ * @author 刘镇 (suninformation@163.com) on 2018-11-29 10:28
  * @version 1.0
  */
-public class EntityHandler implements IBeanHandler {
+public class InterceptorBeanHandler implements IBeanHandler {
 
-    public EntityHandler(YMP owner) {
-        owner.registerExcludedClass(IEntity.class);
+    private final InterceptorHandler __interceptorHandler;
+
+    public InterceptorBeanHandler(IPluginFactory pluginFactory) {
+        __interceptorHandler = new InterceptorHandler(pluginFactory.getOwner());
     }
 
     @Override
-    @SuppressWarnings("unchecked")
     public Object handle(Class<?> targetClass) throws Exception {
-        if (ClassUtils.isInterfaceOf(targetClass, IEntity.class)) {
-            EntityMeta.createAndGet((Class<? extends IEntity>) targetClass);
+        if (targetClass.getClassLoader() instanceof PluginClassLoader) {
+            return __interceptorHandler.handle(targetClass);
         }
         return null;
     }

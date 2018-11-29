@@ -34,6 +34,13 @@ public interface IPluginFactory {
     void init(IPluginConfig pluginConfig) throws Exception;
 
     /**
+     * 启动插件
+     *
+     * @throws Exception 可能产生的任何异常
+     */
+    void startup() throws Exception;
+
+    /**
      * @return 返回插件工厂是否已初始化
      */
     boolean isInited();
@@ -63,6 +70,11 @@ public interface IPluginFactory {
     IPluginConfig getPluginConfig();
 
     /**
+     * @return 返回插件对象工厂接口实例
+     */
+    IPluginBeanFactory getBeanFactory();
+
+    /**
      * @param id 插件唯一ID
      * @return 通过ID获取插件实例
      */
@@ -74,16 +86,4 @@ public interface IPluginFactory {
      * @return 通过接口类型获取插件实例
      */
     <T> T getPlugin(Class<T> clazz);
-
-    /**
-     * @param id 插件ID
-     * @return 通过ID获取插件配置信息元数据描述
-     */
-    PluginMeta getPluginMeta(String id);
-
-    /**
-     * @param clazz 插件接口类
-     * @return 通过接口类型获取插件配置信息元数据描述
-     */
-    PluginMeta getPluginMeta(Class<? extends IPlugin> clazz);
 }

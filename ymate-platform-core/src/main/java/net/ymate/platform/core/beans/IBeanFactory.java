@@ -101,6 +101,7 @@ public interface IBeanFactory {
      */
     void registerBean(Class<?> clazz);
 
+    @Deprecated
     void registerBean(Class<?> clazz, Object object);
 
     void registerBean(BeanMeta beanMeta);

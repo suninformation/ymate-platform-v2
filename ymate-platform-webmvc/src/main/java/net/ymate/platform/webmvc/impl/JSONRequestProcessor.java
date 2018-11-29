@@ -49,7 +49,7 @@ public class JSONRequestProcessor extends DefaultRequestProcessor {
             } catch (Exception e) {
                 _protocol = JSON.parseObject("{}");
                 //
-                if (WebContext.getContext().getOwner().getOwner().getConfig().isDevelopMode()) {
+                if (WebContext.getContext().getOwner().getOwner().getConfig().isDevelopMode() && _LOG.isWarnEnabled()) {
                     _LOG.warn("Invalid protocol", RuntimeUtils.unwrapThrow(e));
                 }
             }

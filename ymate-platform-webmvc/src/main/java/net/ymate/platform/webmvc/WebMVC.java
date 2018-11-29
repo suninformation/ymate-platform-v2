@@ -157,14 +157,15 @@ public class WebMVC implements IModule, IWebMvc {
     @Override
     public boolean registerController(Class<?> targetClass) throws Exception {
         boolean _isValid = false;
-        if (targetClass.isAnnotationPresent(Controller.class)) {
+        Controller _annotation = targetClass.getAnnotation(Controller.class);
+        if (_annotation != null) {
             for (Method _method : targetClass.getDeclaredMethods()) {
                 if (_method.isAnnotationPresent(RequestMapping.class)) {
                     RequestMeta _meta = new RequestMeta(this, targetClass, _method);
                     __moduleCfg.getRequestMappingParser().registerRequestMeta(_meta);
                     //
-                    if (__owner.getConfig().isDevelopMode()) {
-                        _LOG.debug("--> " + _meta.getAllowMethods() + ": " + _meta.getMapping() + " : " + _meta.getTargetClass().getName() + "." + _meta.getMethod().getName());
+                    if (__owner.getConfig().isDevelopMode() && _LOG.isInfoEnabled()) {
+                        _LOG.info("--> " + _meta.getAllowMethods() + ": " + _meta.getMapping() + " : " + _meta.getTargetClass().getName() + "." + _meta.getMethod().getName());
                     }
                     //
                     _isValid = true;
@@ -172,11 +173,7 @@ public class WebMVC implements IModule, IWebMvc {
             }
             //
             if (_isValid) {
-                if (targetClass.getAnnotation(Controller.class).singleton()) {
-                    __owner.registerBean(BeanMeta.create(targetClass.newInstance(), targetClass));
-                } else {
-                    __owner.registerBean(BeanMeta.create(targetClass));
-                }
+                __owner.registerBean(BeanMeta.create(targetClass, _annotation.singleton()));
             }
         }
         return _isValid;
@@ -215,20 +212,20 @@ public class WebMVC implements IModule, IWebMvc {
         boolean _devMode = __owner.getConfig().isDevelopMode();
         RequestMeta _meta = null;
         try {
-            if (_devMode && _LOG.isDebugEnabled()) {
+            if (_devMode && _LOG.isInfoEnabled()) {
                 _threadId = Thread.currentThread().getId();
                 _consumeTime = new StopWatch();
                 _consumeTime.start();
                 //
-                _LOG.debug("--> [" + _threadId + "] Process request start: " + context.getHttpMethod() + ":" + context.getRequestMapping());
-                _LOG.debug("--- [" + _threadId + "] Parameters: " + JSON.toJSONString(request.getParameterMap()));
+                _LOG.info("--> [" + _threadId + "] Process request start: " + context.getHttpMethod() + ":" + context.getRequestMapping());
+                _LOG.info("--- [" + _threadId + "] Parameters: " + JSON.toJSONString(request.getParameterMap()));
             }
             //
             _meta = __moduleCfg.getRequestMappingParser().doParse(context);
             if (_meta != null) {
                 //
-                if (_devMode && _LOG.isDebugEnabled()) {
-                    _LOG.debug("--- [" + _threadId + "] Request mode: controller");
+                if (_devMode && _LOG.isInfoEnabled()) {
+                    _LOG.info("--- [" + _threadId + "] Request mode: controller");
                 }
                 // 先判断当前请求方式是否允许
                 if (_meta.allowHttpMethod(context.getHttpMethod())) {
@@ -238,16 +235,16 @@ public class WebMVC implements IModule, IWebMvc {
                         String _value = WebContext.getRequest().getHeader(_entry.getKey());
                         if (StringUtils.equals(_entry.getValue(), "*")) {
                             if (StringUtils.isBlank(_value)) {
-                                if (_devMode && _LOG.isDebugEnabled()) {
-                                    _LOG.debug("--- [" + _threadId + "] Check request allowed: NO");
+                                if (_devMode && _LOG.isInfoEnabled()) {
+                                    _LOG.info("--- [" + _threadId + "] Check request allowed: NO");
                                 }
                                 response.sendError(HttpServletResponse.SC_BAD_REQUEST);
                                 return;
                             }
                         } else {
                             if (_value == null || !_value.equalsIgnoreCase(_entry.getValue())) {
-                                if (_devMode && _LOG.isDebugEnabled()) {
-                                    _LOG.debug("--- [" + _threadId + "] Check request allowed: NO");
+                                if (_devMode && _LOG.isInfoEnabled()) {
+                                    _LOG.info("--- [" + _threadId + "] Check request allowed: NO");
                                 }
                                 response.sendError(HttpServletResponse.SC_BAD_REQUEST);
                                 return;
@@ -261,8 +258,8 @@ public class WebMVC implements IModule, IWebMvc {
                             if (!WebContext.getRequest().getParameterMap().containsKey(_entry.getKey())) {
                                 response.sendError(HttpServletResponse.SC_BAD_REQUEST);
                                 //
-                                if (_devMode && _LOG.isDebugEnabled()) {
-                                    _LOG.debug("--- [" + _threadId + "] Check request allowed: NO");
+                                if (_devMode && _LOG.isInfoEnabled()) {
+                                    _LOG.info("--- [" + _threadId + "] Check request allowed: NO");
                                 }
                                 return;
                             }
@@ -271,8 +268,8 @@ public class WebMVC implements IModule, IWebMvc {
                             if (_value == null || !_value.equalsIgnoreCase(_entry.getValue())) {
                                 response.sendError(HttpServletResponse.SC_BAD_REQUEST);
                                 //
-                                if (_devMode && _LOG.isDebugEnabled()) {
-                                    _LOG.debug("--- [" + _threadId + "] Check request allowed: NO");
+                                if (_devMode && _LOG.isInfoEnabled()) {
+                                    _LOG.info("--- [" + _threadId + "] Check request allowed: NO");
                                 }
                                 return;
                             }
@@ -285,8 +282,8 @@ public class WebMVC implements IModule, IWebMvc {
                             request = new MultipartRequestWrapper(this, request);
                         }
                         //
-                        if (_devMode && _LOG.isDebugEnabled()) {
-                            _LOG.debug("--- [" + _threadId + "] Include file upload: YES");
+                        if (_devMode && _LOG.isInfoEnabled()) {
+                            _LOG.info("--- [" + _threadId + "] Include file upload: YES");
                         }
                     }
                     WebContext.getContext().addAttribute(Type.Context.HTTP_REQUEST, request);
@@ -300,8 +297,8 @@ public class WebMVC implements IModule, IWebMvc {
                             // 加载成功, 则
                             _view = View.nullView();
                             //
-                            if (_devMode && _LOG.isDebugEnabled()) {
-                                _LOG.debug("--- [" + _threadId + "] Load data from the cache: YES");
+                            if (_devMode && _LOG.isInfoEnabled()) {
+                                _LOG.info("--- [" + _threadId + "] Load data from the cache: YES");
                             }
                         }
                     }
@@ -314,8 +311,8 @@ public class WebMVC implements IModule, IWebMvc {
                                     if (_cacheProcessor.processResponseCache(this, _meta.getResponseCache(), context, _view)) {
                                         _view = View.nullView();
                                         //
-                                        if (_devMode && _LOG.isDebugEnabled()) {
-                                            _LOG.debug("--- [" + _threadId + "] Results data cached: YES");
+                                        if (_devMode && _LOG.isInfoEnabled()) {
+                                            _LOG.info("--- [" + _threadId + "] Results data cached: YES");
                                         }
                                     }
                                 } catch (Exception e) {
@@ -354,8 +351,8 @@ public class WebMVC implements IModule, IWebMvc {
                 }
                 if (_isAllowConvention) {
                     //
-                    if (_devMode && _LOG.isDebugEnabled()) {
-                        _LOG.debug("--- [" + _threadId + "] Request mode: convention");
+                    if (_devMode && _LOG.isInfoEnabled()) {
+                        _LOG.info("--- [" + _threadId + "] Request mode: convention");
                     }
                     //
                     IView _view = null;
@@ -375,8 +372,8 @@ public class WebMVC implements IModule, IWebMvc {
                             // 加载成功, 则
                             _view = View.nullView();
                             //
-                            if (_devMode && _LOG.isDebugEnabled()) {
-                                _LOG.debug("--- [" + _threadId + "] Load data from the cache: YES");
+                            if (_devMode && _LOG.isInfoEnabled()) {
+                                _LOG.info("--- [" + _threadId + "] Load data from the cache: YES");
                             }
                         }
                     }
@@ -389,8 +386,8 @@ public class WebMVC implements IModule, IWebMvc {
                             List<String> _urlParams = Arrays.asList(_urlParamArr).subList(1, _urlParamArr.length);
                             WebContext.getRequest().setAttribute("UrlParams", _urlParams);
                             //
-                            if (_devMode && _LOG.isDebugEnabled()) {
-                                _LOG.debug("--- [" + _threadId + "] With parameters : " + _urlParams);
+                            if (_devMode && _LOG.isInfoEnabled()) {
+                                _LOG.info("--- [" + _threadId + "] With parameters : " + _urlParams);
                             }
                         }
                         //
@@ -427,8 +424,8 @@ public class WebMVC implements IModule, IWebMvc {
                                     }
                                 }
                             }
-                            if (_flagFileType != null && _devMode && _LOG.isDebugEnabled()) {
-                                _LOG.debug("--- [" + _threadId + "] Rendering template file : " + _requestMapping + _flagFileType);
+                            if (_flagFileType != null && _devMode && _LOG.isInfoEnabled()) {
+                                _LOG.info("--- [" + _threadId + "] Rendering template file : " + _requestMapping + _flagFileType);
                             }
                         }
                         //
@@ -437,8 +434,8 @@ public class WebMVC implements IModule, IWebMvc {
                                 if (_cacheProcessor.processResponseCache(this, _responseCache, context, _view)) {
                                     _view = View.nullView();
                                     //
-                                    if (_devMode && _LOG.isDebugEnabled()) {
-                                        _LOG.debug("--- [" + _threadId + "] Results data cached: YES");
+                                    if (_devMode && _LOG.isInfoEnabled()) {
+                                        _LOG.info("--- [" + _threadId + "] Results data cached: YES");
                                     }
                                 }
                             } catch (Exception e) {
@@ -464,7 +461,9 @@ public class WebMVC implements IModule, IWebMvc {
                 IResponseErrorProcessor _errorProcessor = ClassUtils.impl(_meta.getErrorProcessor(), IResponseErrorProcessor.class);
                 if (_errorProcessor != null) {
                     _view = _errorProcessor.processError(this, e);
-                    _LOG.debug("--- [" + _threadId + "] An exception processed with: " + _meta.getErrorProcessor().getName());
+                    if (_devMode && _LOG.isInfoEnabled()) {
+                        _LOG.info("--- [" + _threadId + "] An exception processed with: " + _meta.getErrorProcessor().getName());
+                    }
                 }
             }
             if (_view != null) {
@@ -473,10 +472,10 @@ public class WebMVC implements IModule, IWebMvc {
                 throw e;
             }
         } finally {
-            if (_consumeTime != null && _devMode && _LOG.isDebugEnabled()) {
+            if (_consumeTime != null && _devMode && _LOG.isInfoEnabled()) {
                 _consumeTime.stop();
-                _LOG.debug("--- [" + _threadId + "] Total execution time: " + _consumeTime.getTime() + "ms");
-                _LOG.debug("<-- [" + _threadId + "] Process request completed: " + context.getHttpMethod() + ":" + context.getRequestMapping() + ": " + ((GenericResponseWrapper) response).getStatus());
+                _LOG.info("--- [" + _threadId + "] Total execution time: " + _consumeTime.getTime() + "ms");
+                _LOG.info("<-- [" + _threadId + "] Process request completed: " + context.getHttpMethod() + ":" + context.getRequestMapping() + ": " + ((GenericResponseWrapper) response).getStatus());
             }
         }
     }

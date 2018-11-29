@@ -119,9 +119,9 @@ YMP框架的初始化默认是从加载`ymp-conf.properties`文件开始的，�
                         }
                     }).developMode(true).runEnv(IConfig.Environment.PRODUCT).build());
             // 向容器注册模块
-            owner.registerModule(new Cfgs());
-            owner.registerModule(new Logs());
-            owner.registerModule(new Servs());
+            owner.registerModule(Cfgs.class);
+            owner.registerModule(Logs.class);
+            owner.registerModule(Servs.class);
             // 执行框架初始化
             owner.init();
             //
@@ -174,7 +174,7 @@ YMP框架初始化时将自动扫描由`autoscan_packages`参数配置的包路�
             @Override
             public Object handle(Class<?> targetClass) throws Exception {
                 // 自定义对象处理逻辑...
-                return targetClass.newInstance();
+                return BeanMeta.create(targetClass, true);
             }
         }
 

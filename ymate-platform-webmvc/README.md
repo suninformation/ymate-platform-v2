@@ -89,7 +89,7 @@ WebMVC模块的基本初始化参数配置：
 	# 基本初始化参数
 	#-------------------------------------
 	
-	# 控制器请求映射路径分析器，可选值为已知分析器名称或自定义分析器类名称，默认为restful，目前支持已知分析器[default|restful|...]
+	# 控制器请求映射路径分析器，可选值为已知分析器名称或自定义分析器类名称，默认为default
     ymp.configs.webmvc.request_mapping_parser_class=
 	
 	# 控制器请求处理器，可选值为已知处理器名称或自定义处理器类名称，自定义类需实现net.ymate.platform.webmvc.IRequestProcessor接口，默认为default，目前支持已知处理器[default|json|xml|...]

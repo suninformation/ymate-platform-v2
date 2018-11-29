@@ -223,4 +223,9 @@ public class PluginMeta {
     public void setDescription(String description) {
         this.description = description;
     }
+
+    @Override
+    public String toString() {
+        return "Plugin [" + "id='" + id + '\'' + ", name='" + name + '\'' + ", initClass=" + initClass + ", version='" + version + '\'' + ']';
+    }
 }

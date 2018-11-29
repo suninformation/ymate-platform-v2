@@ -17,6 +17,7 @@ package net.ymate.platform.validation;
 
 import net.ymate.platform.core.Version;
 import net.ymate.platform.core.YMP;
+import net.ymate.platform.core.beans.BeanMeta;
 import net.ymate.platform.core.beans.intercept.InterceptAnnoHelper;
 import net.ymate.platform.core.module.IModule;
 import net.ymate.platform.core.module.annotation.Module;
@@ -112,7 +113,7 @@ public class Validations implements IModule, IValidation {
     @Override
     public void registerValidator(Class<? extends Annotation> annotationClass, Class<? extends IValidator> validatorClass) {
         try {
-            __owner.registerBean(validatorClass, validatorClass.newInstance());
+            __owner.registerBean(BeanMeta.create(validatorClass, true));
             __validators.put(annotationClass, validatorClass);
         } catch (Exception e) {
             _LOG.error("", RuntimeUtils.unwrapThrow(e));

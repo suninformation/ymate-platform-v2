@@ -79,32 +79,34 @@ public abstract class AbstractOperator implements IOperator {
                 _time.stop();
                 this.expenseTime = _time.getTime();
                 //
-                DataSourceCfgMeta _meta = this.connectionHolder.getDataSourceCfgMeta();
-                if (_meta.isShowSQL()) {
-                    String _logStr = ExpressionUtils.bind("[${sql}]${param}[${count}][${time}]")
-                            .set("sql", StringUtils.defaultIfBlank(this.sql, "@NULL"))
-                            .set("param", __doSerializeParameters())
-                            .set("count", _effectCounts + "")
-                            .set("time", this.expenseTime + "ms").getResult();
-                    StringBuilder _stackSB = new StringBuilder(_logStr);
-                    if (_meta.isStackTraces()) {
-                        String[] _tracePackages = StringUtils.split(_meta.getStackTracePackage(), "|");
-                        StackTraceElement[] _stacks = new Throwable().getStackTrace();
-                        if (_stacks != null && _stacks.length > 0) {
-                            int _depth = _meta.getStackTraceDepth() <= 0 ? _stacks.length : (_meta.getStackTraceDepth() > _stacks.length ? _stacks.length : _meta.getStackTraceDepth());
-                            if (_depth > 0) {
-                                for (int _idx = 0; _idx < _depth; _idx++) {
-                                    if (_tracePackages != null && _tracePackages.length > 0) {
-                                        if (StringUtils.contains(_stacks[_idx].getClassName(), "$$EnhancerByCGLIB$$") || !StringUtils.startsWithAny(_stacks[_idx].getClassName(), _tracePackages)) {
-                                            continue;
+                if (_LOG.isInfoEnabled()) {
+                    DataSourceCfgMeta _meta = this.connectionHolder.getDataSourceCfgMeta();
+                    if (_meta.isShowSQL()) {
+                        String _logStr = ExpressionUtils.bind("[${sql}]${param}[${count}][${time}]")
+                                .set("sql", StringUtils.defaultIfBlank(this.sql, "@NULL"))
+                                .set("param", __doSerializeParameters())
+                                .set("count", _effectCounts + "")
+                                .set("time", this.expenseTime + "ms").getResult();
+                        StringBuilder _stackSB = new StringBuilder(_logStr);
+                        if (_meta.isStackTraces()) {
+                            String[] _tracePackages = StringUtils.split(_meta.getStackTracePackage(), "|");
+                            StackTraceElement[] _stacks = new Throwable().getStackTrace();
+                            if (_stacks != null && _stacks.length > 0) {
+                                int _depth = _meta.getStackTraceDepth() <= 0 ? _stacks.length : (_meta.getStackTraceDepth() > _stacks.length ? _stacks.length : _meta.getStackTraceDepth());
+                                if (_depth > 0) {
+                                    for (int _idx = 0; _idx < _depth; _idx++) {
+                                        if (_tracePackages != null && _tracePackages.length > 0) {
+                                            if (StringUtils.contains(_stacks[_idx].getClassName(), "$$EnhancerByCGLIB$$") || !StringUtils.startsWithAny(_stacks[_idx].getClassName(), _tracePackages)) {
+                                                continue;
+                                            }
                                         }
+                                        _stackSB.append("\n\t--> ").append(_stacks[_idx]);
                                     }
-                                    _stackSB.append("\n\t--> ").append(_stacks[_idx]);
                                 }
                             }
                         }
+                        _LOG.info(_stackSB.toString());
                     }
-                    _LOG.info(_stackSB.toString());
                 }
             }
         }

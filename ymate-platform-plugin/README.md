@@ -26,6 +26,9 @@
 	# Plugin插件模块初始化参数
 	#-------------------------------------
 	
+	# 插件模块是否已被禁用(禁用后模块初始化时不执行初始化默认插件工厂和自动扫描), 默认值: false
+    ymp.configs.plugin.disabled=
+    
 	# 插件主目录路径，可选参数，默认值为${root}/plugins
 	ymp.configs.plugin.plugin_home=
 	
@@ -38,14 +41,9 @@
 	# 是否加载当前CLASSPATH内的所有包含插件配置文件的JAR包，默认为true
 	ymp.configs.plugin.included_classpath=
 
-禁用默认插件工厂的方法：
+通过默认插件工厂获取插件的方法：
 
-	# 在YMP框架配置文件中找到"模块排除列表"项，添加插件模块的名称，如：
-	ymp.excluded_modules=plugin
-
-调用默认插件工厂的方法：
-
-    Plugins.get().getPluginFactory();
+    Plugins.get().getPlugin(IDemoPlugin.class);
 
 默认插件工厂的事件监听方法：
 
@@ -69,7 +67,6 @@
     |pluginHome|插件存放路径，必需提供；|
     |autoscanPackages|自动扫描路径，默认为插件工厂所在包路径；|
     |automatic|插件是否自动启动，默认为true；|
-    |includedClassPath|是否加载当前CLASSPATH内的所有包含插件配置文件的JAR包，默认为false；|
     |listenerClass|插件生命周期事件监听器类对象, 可选配置；|
 
 	示例代码：
@@ -92,16 +89,15 @@
 
 	创建工厂配置对象：
 
-            DefaultPluginConfig _conf = new DefaultPluginConfig();
-            _conf.setPluginHome(new File(RuntimeUtils.replaceEnvVariable("${root}/plugins")));
-            _conf.setAutomatic(true);
-            _conf.setAutoscanPackages(Arrays.asList("com.company", "cn.company"));
-            _conf.setIncludedClassPath(false);
-            _conf.setPluginEventListener(new DefaultPluginEventListener());
+            IPluginConfig _conf = DefaultPluginConfig.create()
+                    .pluginHome(new File(RuntimeUtils.replaceEnvVariable("${root}/plugins")))
+                    .automatic(true)
+                    .autoscanPackages(Arrays.asList("com.company", "cn.company"))
+                    .eventListener(new DefaultPluginEventListener());
 
 	创建并初始化插件工厂实例对象：
 
-            IPluginFactory _factory = new DefaultPluginFactory();
+            IPluginFactory _factory = new DefaultPluginFactory(YMP.get());
             _factory.init(_conf);
 
 	自定义插件工厂的事件监听方法：
@@ -237,6 +233,7 @@
             System.out.println("shutdown.");
         }
 
+        @Override
         public void sayHi() {
             System.out.println("Hi, from Plugin.");
         }
@@ -249,13 +246,13 @@
     public static void main(String[] args) throws Exception {
         YMP.get().init();
         try {
-            DemoPlugin _plugin = (DemoPlugin) Plugins.get().getPluginFactory().getPlugin("demo_plugin");
+            DemoPlugin _plugin = (DemoPlugin) Plugins.get().getPlugin("demo_plugin");
             // 或者 
-            // _plugin = Plugins.get().getPluginFactory().getPlugin(DemoPlugin.class);
+            // _plugin = Plugins.get().getPlugin(DemoPlugin.class);
             //
             _plugin.sayHi();
             //
-            IBusiness _business = Plugins.get().getPluginFactory().getPlugin(IBusiness.class);
+            IBusiness _business = Plugins.get().getPlugin(IBusiness.class);
             _business.sayHi();
         } finally {
             YMP.get().destroy();

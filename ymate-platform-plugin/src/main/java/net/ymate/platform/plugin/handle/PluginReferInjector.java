@@ -36,10 +36,10 @@ public class PluginReferInjector implements IBeanInjector {
     public Object inject(IBeanFactory beanFactory, Annotation annotation, Class<?> targetClass, Field field, Object originInject) {
         Object _obj = null;
         if (StringUtils.isNotBlank(((PluginRefer) annotation).value())) {
-            _obj = Plugins.get().getPluginFactory().getPlugin(((PluginRefer) annotation).value());
+            _obj = Plugins.get().getPlugin(((PluginRefer) annotation).value());
         }
         if (_obj == null) {
-            _obj = Plugins.get().getPluginFactory().getPlugin(field.getType());
+            _obj = Plugins.get().getPlugin(field.getType());
         }
         return _obj;
     }

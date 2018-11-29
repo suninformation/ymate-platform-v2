@@ -42,11 +42,6 @@ public interface IPluginConfig {
     boolean isAutomatic();
 
     /**
-     * @return 是否加载当前CLASSPATH内的所有包含插件配置文件的Jar包
-     */
-    boolean isIncludedClassPath();
-
-    /**
      * @return 返回插件存放路径
      */
     File getPluginHome();

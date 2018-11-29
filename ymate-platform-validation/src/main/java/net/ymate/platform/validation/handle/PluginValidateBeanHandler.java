@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2017 the original author or authors.
+ * Copyright 2007-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,33 +13,31 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.ymate.platform.plugin.handle;
+package net.ymate.platform.validation.handle;
 
-import net.ymate.platform.core.beans.BeanMeta;
-import net.ymate.platform.core.beans.IBeanHandler;
-import net.ymate.platform.core.beans.annotation.Bean;
-import net.ymate.platform.plugin.IPluginFactory;
+import net.ymate.platform.core.YMP;
 import net.ymate.platform.plugin.PluginClassLoader;
+import net.ymate.platform.plugin.annotation.Handler;
+import net.ymate.platform.validation.Validations;
+import net.ymate.platform.validation.annotation.Validator;
 
 /**
- * @author 刘镇 (suninformation@163.com) on 15/8/11 下午6:32
+ * 插件验证器类处理器 (from ymate-framework-addons)
+ *
+ * @author 刘镇 (suninformation@163.com) on 15/8/15 上午9:31
  * @version 1.0
  */
-public class BeanHandler implements IBeanHandler {
+@Handler(Validator.class)
+public class PluginValidateBeanHandler extends ValidateHandler {
 
-    private final IPluginFactory __pluginFactory;
-
-    public BeanHandler(IPluginFactory pluginFactory) {
-        __pluginFactory = pluginFactory;
+    public PluginValidateBeanHandler(YMP owner) throws Exception {
+        super(owner.getModule(Validations.class));
     }
 
     @Override
     public Object handle(Class<?> targetClass) throws Exception {
         if (targetClass.getClassLoader() instanceof PluginClassLoader) {
-            Bean _bean = targetClass.getAnnotation(Bean.class);
-            if (_bean != null) {
-                __pluginFactory.getOwner().registerBean(BeanMeta.create(targetClass, _bean.singleton()));
-            }
+            return super.handle(targetClass);
         }
         return null;
     }

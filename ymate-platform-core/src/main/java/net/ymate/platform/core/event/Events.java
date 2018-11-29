@@ -15,6 +15,7 @@
  */
 package net.ymate.platform.core.event;
 
+import net.ymate.platform.core.YMP;
 import net.ymate.platform.core.event.impl.DefaultEventConfig;
 
 /**
@@ -40,23 +41,30 @@ public final class Events {
         ASYNC
     }
 
+    private final YMP __owner;
+
     private final IEventProvider __eventProvider;
 
-    public static Events create() {
-        return new Events();
+    public static Events create(YMP owner) {
+        return new Events(owner);
     }
 
-    public static Events create(IEventConfig eventConfig) {
-        return new Events(eventConfig);
+    public static Events create(YMP owner, IEventConfig eventConfig) {
+        return new Events(owner, eventConfig);
     }
 
-    private Events() {
-        this(new DefaultEventConfig());
+    private Events(YMP owner) {
+        this(owner, new DefaultEventConfig());
     }
 
-    private Events(IEventConfig eventConfig) {
+    private Events(YMP owner, IEventConfig eventConfig) {
+        __owner = owner;
         __eventProvider = eventConfig.getEventProvider();
         __eventProvider.init(eventConfig);
+    }
+
+    public YMP getOwner() {
+        return __owner;
     }
 
     public void destroy() {

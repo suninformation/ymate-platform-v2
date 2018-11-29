@@ -53,7 +53,7 @@ public class XMLRequestProcessor extends DefaultRequestProcessor {
             } catch (Exception e) {
                 _protocol = new XMLProtocol();
                 //
-                if (WebContext.getContext().getOwner().getOwner().getConfig().isDevelopMode()) {
+                if (WebContext.getContext().getOwner().getOwner().getConfig().isDevelopMode() && _LOG.isWarnEnabled()) {
                     _LOG.warn("Invalid protocol", RuntimeUtils.unwrapThrow(e));
                 }
             }

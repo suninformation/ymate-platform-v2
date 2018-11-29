@@ -47,11 +47,6 @@ public @interface PluginFactory {
     boolean automatic() default true;
 
     /**
-     * @return 是否加载当前CLASSPATH内的所有包含插件配置文件的Jar包
-     */
-    boolean includedClassPath() default false;
-
-    /**
      * @return 插件生命周期事件监听器类对象
      */
     Class<? extends IPluginEventListener> listenerClass() default DefaultPluginEventListener.class;

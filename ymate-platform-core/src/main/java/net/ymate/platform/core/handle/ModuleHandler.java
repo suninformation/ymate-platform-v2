@@ -36,15 +36,13 @@ public final class ModuleHandler implements IBeanHandler {
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public Object handle(Class<?> targetClass) throws Exception {
         if (!targetClass.isInterface()) {
             // 首先判断当前预加载的模块是否存在于被排除列表中，若存在则忽略它
             if (!__owner.getConfig().getExcludedModules().contains(targetClass.getName())) {
                 if (ClassUtils.isInterfaceOf(targetClass, IModule.class)) {
-                    IModule _module = (IModule) targetClass.newInstance();
-                    if (!__owner.getConfig().getExcludedModules().contains(_module.getName())) {
-                        __owner.registerModule(_module);
-                    }
+                    __owner.registerModule((Class<? extends IModule>) targetClass);
                 }
             }
         }

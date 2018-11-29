@@ -25,7 +25,6 @@ import net.ymate.platform.core.beans.proxy.IProxy;
 import net.ymate.platform.core.beans.proxy.IProxyFactory;
 import net.ymate.platform.core.beans.proxy.IProxyFilter;
 import net.ymate.platform.core.util.ClassUtils;
-import org.apache.commons.lang.NullArgumentException;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -94,8 +93,12 @@ public class DefaultBeanFactory implements IBeanFactory {
     public void registerHandler(Class<? extends Annotation> annoClass, IBeanHandler handler) {
         if (!__beanHandlerMap.containsKey(annoClass)) {
             __beanHandlerMap.put(annoClass, handler);
-        } else {
-            _LOG.warn("Handler class [" + annoClass.getSimpleName() + "] duplicate registration is not allowed");
+            //
+            if (__owner.getConfig().isDevelopMode() && _LOG.isInfoEnabled()) {
+                _LOG.info("Handler class [" + annoClass.getSimpleName() + ":" + handler.getClass().getName() + "] registered.");
+            }
+        } else if (__owner.getConfig().isDevelopMode() && _LOG.isWarnEnabled()) {
+            _LOG.warn("Handler class [" + annoClass.getSimpleName() + ":" + handler.getClass().getName() + "] duplicate registration is not allowed");
         }
     }
 
@@ -113,15 +116,25 @@ public class DefaultBeanFactory implements IBeanFactory {
     public void registerInjector(Class<? extends Annotation> annoClass, IBeanInjector injector) {
         if (!__beanInjectorMap.containsKey(annoClass)) {
             __beanInjectorMap.put(annoClass, injector);
-        } else {
-            _LOG.warn("Injector class [" + annoClass.getSimpleName() + "] duplicate registration is not allowed");
+            //
+            if (__owner.getConfig().isDevelopMode() && _LOG.isInfoEnabled()) {
+                _LOG.info("Injector class [" + annoClass.getSimpleName() + ":" + injector.getClass().getName() + "] registered.");
+            }
+        } else if (__owner.getConfig().isDevelopMode() && _LOG.isWarnEnabled()) {
+            _LOG.warn("Injector class [" + annoClass.getSimpleName() + ":" + injector.getClass().getName() + "] duplicate registration is not allowed");
         }
     }
 
     private void __doParsePackagePath(List<String> targetList, String packageName) {
         boolean _flag = false;
         do {
-            if (!targetList.contains(packageName)) {
+            if (targetList.contains(packageName)) {
+                break;
+            }
+            if (targetList.isEmpty()) {
+                targetList.add(packageName);
+                _flag = true;
+            } else {
                 for (int _idx = 0; _idx < targetList.size(); _idx++) {
                     if (packageName.startsWith(targetList.get(_idx))) {
                         _flag = true;
@@ -130,10 +143,6 @@ public class DefaultBeanFactory implements IBeanFactory {
                         targetList.add(packageName);
                         _flag = true;
                     }
-                }
-                if (!_flag) {
-                    targetList.add(packageName);
-                    _flag = true;
                 }
             }
         } while (!_flag);
@@ -191,11 +200,8 @@ public class DefaultBeanFactory implements IBeanFactory {
             if (_beanMeta != null) {
                 if (!_beanMeta.isSingleton()) {
                     try {
-                        _obj = (T) _beanMeta.getBeanClass().newInstance();
-                        if (__proxyFactory != null) {
-                            _obj = (T) __wrapProxy(__proxyFactory, _obj);
-                        }
-                        __initBeanIoC(_beanMeta.getBeanClass(), _obj);
+                        _obj = (T) __createBeanInstanceWithProxy(__proxyFactory, _beanMeta.getBeanClass(), _beanMeta.getBeanObject());
+                        __initBeanIoC(_beanMeta.getBeanClass(), _obj, _beanMeta.getInitializer());
                     } catch (Exception e) {
                         _LOG.warn("", e);
                     }
@@ -234,6 +240,7 @@ public class DefaultBeanFactory implements IBeanFactory {
     }
 
     @Override
+    @Deprecated
     public void registerBean(Class<?> clazz, Object object) {
         registerBean(BeanMeta.create(object, clazz));
     }
@@ -244,12 +251,12 @@ public class DefaultBeanFactory implements IBeanFactory {
         __addClassInterfaces(beanMeta);
     }
 
-    private void __addClassInterfaces(BeanMeta beanMeta) {
+    protected void __addClassInterfaces(BeanMeta beanMeta) {
         if (!beanMeta.isSkipInterface()) {
             for (Class<?> _interface : beanMeta.getBeanInterfaces(__excludedClassSet)) {
                 __beanInterfacesMap.put(_interface, beanMeta.getBeanClass());
             }
-        } else if (beanMeta.isSkipInterface() && beanMeta.getBeanClass().isInterface() && !__excludedClassSet.contains(beanMeta.getBeanClass())) {
+        } else if (beanMeta.getBeanClass().isInterface() && !__excludedClassSet.contains(beanMeta.getBeanClass())) {
             __beanInterfacesMap.put(beanMeta.getBeanClass(), beanMeta.getBeanClass());
         }
     }
@@ -306,27 +313,22 @@ public class DefaultBeanFactory implements IBeanFactory {
 
     @Override
     public void initProxy(IProxyFactory proxyFactory) throws Exception {
-        if (proxyFactory == null) {
-            throw new NullArgumentException("proxyFactory");
-        }
         __proxyFactory = proxyFactory;
         for (Map.Entry<Class<?>, BeanMeta> _entry : this.getBeans().entrySet()) {
             if (!_entry.getKey().isInterface() && _entry.getValue().isSingleton()) {
-                _entry.getValue().setBeanObject(__wrapProxy(proxyFactory, _entry.getValue().getBeanObject()));
+                _entry.getValue().setBeanObject(__createBeanInstanceWithProxy(proxyFactory, _entry.getValue().getBeanClass(), _entry.getValue().getBeanObject()));
             }
         }
     }
 
-    private Object __wrapProxy(IProxyFactory proxyFactory, Object targetObject) {
-        final Class<?> _targetClass = targetObject.getClass();
-        //
-        List<IProxy> _targetProxies = proxyFactory.getProxies(new IProxyFilter() {
+    private Object __createBeanInstanceWithProxy(IProxyFactory proxyFactory, final Class<?> targetClass, Object targetObject) throws IllegalAccessException, InstantiationException {
+        List<IProxy> _targetProxies = proxyFactory == null ? Collections.<IProxy>emptyList() : proxyFactory.getProxies(new IProxyFilter() {
 
             private boolean __doCheckAnnotation(Proxy targetProxyAnno) {
                 // 若设置了自定义注解类型，则判断targetClass是否匹配，否则返回true
                 if (targetProxyAnno.annotation().length > 0) {
                     for (Class<? extends Annotation> _annoClass : targetProxyAnno.annotation()) {
-                        if (_targetClass.isAnnotationPresent(_annoClass)) {
+                        if (targetClass.isAnnotationPresent(_annoClass)) {
                             return true;
                         }
                     }
@@ -337,7 +339,7 @@ public class DefaultBeanFactory implements IBeanFactory {
 
             @Override
             public boolean filter(IProxy targetProxy) {
-                CleanProxy _cleanProxy = _targetClass.getAnnotation(CleanProxy.class);
+                CleanProxy _cleanProxy = targetClass.getAnnotation(CleanProxy.class);
                 if (_cleanProxy != null) {
                     if (_cleanProxy.value().length > 0) {
                         for (Class<? extends IProxy> _proxyClass : _cleanProxy.value()) {
@@ -353,7 +355,7 @@ public class DefaultBeanFactory implements IBeanFactory {
                 // 若已设置作用包路径
                 if (StringUtils.isNotBlank(_targetProxyAnno.packageScope())) {
                     // 若当前类对象所在包路径匹配
-                    if (!StringUtils.startsWith(_targetClass.getPackage().getName(), _targetProxyAnno.packageScope())) {
+                    if (!StringUtils.startsWith(targetClass.getPackage().getName(), _targetProxyAnno.packageScope())) {
                         return false;
                     }
                 }
@@ -362,19 +364,23 @@ public class DefaultBeanFactory implements IBeanFactory {
         });
         if (!_targetProxies.isEmpty()) {
             // 由于创建代理是通过接口重新实例化对象并覆盖原对象，所以需要复制原有对象成员（暂时先这样吧，还没想到好的处理办法）
-            Object _proxyObject = proxyFactory.createProxy(_targetClass, _targetProxies);
+            Object _proxyObject = proxyFactory.createProxy(targetClass, _targetProxies);
             if (_proxyObject != null) {
-                return ClassUtils.wrapper(targetObject).duplicate(_proxyObject);
+                if (targetObject != null) {
+                    _LOG.warn("Important Warning: It is not recommended to register instance[" + targetObject.getClass().getName() + "] objects directly with BeanFactory!!!");
+                    return ClassUtils.wrapper(targetObject).duplicate(_proxyObject);
+                }
+                return _proxyObject;
             }
         }
-        return targetObject;
+        return targetObject != null ? targetObject : targetClass.newInstance();
     }
 
     @Override
     public void initIoC() throws Exception {
         for (Map.Entry<Class<?>, BeanMeta> _bean : this.getBeans().entrySet()) {
             if (!_bean.getKey().isInterface() && _bean.getValue().isSingleton()) {
-                __initBeanIoC(_bean.getKey(), _bean.getValue().getBeanObject());
+                __initBeanIoC(_bean.getKey(), _bean.getValue().getBeanObject(), _bean.getValue().getInitializer());
             }
         }
     }
@@ -384,9 +390,10 @@ public class DefaultBeanFactory implements IBeanFactory {
      *
      * @param targetClass  目标类型对象(不允许是代理对象)
      * @param targetObject 目标类型对象实例
+     * @param initializer  自定义初始化回调接口
      * @throws Exception 可能产生的异常
      */
-    private void __initBeanIoC(Class<?> targetClass, Object targetObject) throws Exception {
+    private void __initBeanIoC(Class<?> targetClass, Object targetObject, BeanMeta.IInitializer initializer) throws Exception {
         Field[] _fields = targetClass.getDeclaredFields();
         if (_fields != null && _fields.length > 0) {
             for (Field _field : _fields) {
@@ -405,6 +412,9 @@ public class DefaultBeanFactory implements IBeanFactory {
                     _field.set(targetObject, _injectObj);
                 }
             }
+        }
+        if (initializer != null) {
+            initializer.init(targetObject);
         }
         if (targetObject instanceof IBeanInitializer) {
             ((IBeanInitializer) targetObject).afterInitialized();

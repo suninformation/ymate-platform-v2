@@ -19,6 +19,7 @@ import net.ymate.platform.core.IConfig;
 import net.ymate.platform.core.beans.IBeanLoader;
 import net.ymate.platform.core.beans.intercept.InterceptSettings;
 import net.ymate.platform.core.beans.proxy.IProxyFactory;
+import net.ymate.platform.core.beans.proxy.impl.DefaultProxyFactory;
 import net.ymate.platform.core.event.IEventConfig;
 import net.ymate.platform.core.event.IEventProvider;
 import net.ymate.platform.core.event.impl.DefaultEventConfig;
@@ -451,6 +452,9 @@ public final class ConfigBuilder {
 
             @Override
             public IProxyFactory getProxyFactory() {
+                if (__proxyFactory == null) {
+                    __proxyFactory = new DefaultProxyFactory();
+                }
                 return __proxyFactory;
             }
 

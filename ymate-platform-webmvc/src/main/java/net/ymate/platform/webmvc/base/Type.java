@@ -17,11 +17,10 @@ package net.ymate.platform.webmvc.base;
 
 import net.ymate.platform.webmvc.IRequestMappingParser;
 import net.ymate.platform.webmvc.IRequestProcessor;
+import net.ymate.platform.webmvc.impl.DefaultRequestMappingParser;
 import net.ymate.platform.webmvc.impl.DefaultRequestProcessor;
 import net.ymate.platform.webmvc.impl.JSONRequestProcessor;
 import net.ymate.platform.webmvc.impl.XMLRequestProcessor;
-import net.ymate.platform.webmvc.support.RequestMappingParser;
-import net.ymate.platform.webmvc.support.RestfulRequestMappingParser;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -139,7 +138,6 @@ public class Type {
         REQUEST_PROCESSORS.put("xml", XMLRequestProcessor.class);
         //
         REQUEST_MAPPING_PARSERS = new HashMap<String, Class<? extends IRequestMappingParser>>();
-        REQUEST_MAPPING_PARSERS.put("default", RequestMappingParser.class);
-        REQUEST_MAPPING_PARSERS.put("restful", RestfulRequestMappingParser.class);
+        REQUEST_MAPPING_PARSERS.put("default", DefaultRequestMappingParser.class);
     }
 }

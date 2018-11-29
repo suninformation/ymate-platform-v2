@@ -260,6 +260,26 @@ public class ClassUtils {
     }
 
     /**
+     * @param target          目标类对象
+     * @param annotationClass 注解类对象
+     * @param <A>             注解类型
+     * @return 尝试获取目标类上声明的注解, 若目标类为代理类则尝试去除代理
+     */
+    public static <A extends Annotation> A getAnnotation(Object target, Class<A> annotationClass) {
+        A _annotation = target.getClass().getAnnotation(annotationClass);
+        if (_annotation == null && StringUtils.contains(target.getClass().getName(), "$$")) {
+            try {
+                Class<?> _clazz = loadClass(StringUtils.substringBefore(target.getClass().getName(), "$$"), target.getClass());
+                if (_clazz != null) {
+                    _annotation = _clazz.getAnnotation(annotationClass);
+                }
+            } catch (ClassNotFoundException ignored) {
+            }
+        }
+        return _annotation;
+    }
+
+    /**
      * @param clazz 类型
      * @return 返回类中实现的接口名称集合
      */
