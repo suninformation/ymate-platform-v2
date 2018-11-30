@@ -125,24 +125,30 @@ public class DefaultBeanFactory implements IBeanFactory {
         }
     }
 
+    private boolean __hasPackageParent(List<String> targetList, String packageName) {
+        boolean _flag = false;
+        do {
+            packageName = StringUtils.substringBeforeLast(packageName, ".");
+            if (targetList.contains(packageName)) {
+                _flag = true;
+            }
+        } while (!_flag && StringUtils.contains(packageName, "."));
+        //
+        return _flag;
+    }
+
     private void __doParsePackagePath(List<String> targetList, String packageName) {
         if (!targetList.contains(packageName)) {
             if (targetList.isEmpty()) {
                 targetList.add(packageName);
-            } else {
-                boolean _flag = false;
-                for (int _idx = 0; _idx < targetList.size(); _idx++) {
-                    if (packageName.startsWith(targetList.get(_idx))) {
-                        _flag = true;
-                    } else if (targetList.get(_idx).startsWith(packageName)) {
-                        targetList.remove(_idx);
-                        targetList.add(packageName);
-                        _flag = true;
+            } else if (!__hasPackageParent(targetList, packageName)) {
+                Iterator<String> _iterator = targetList.iterator();
+                while (_iterator.hasNext()) {
+                    if (StringUtils.startsWith(_iterator.next(), packageName)) {
+                        _iterator.remove();
                     }
                 }
-                if (!_flag) {
-                    targetList.add(packageName);
-                }
+                targetList.add(packageName);
             }
         }
     }
