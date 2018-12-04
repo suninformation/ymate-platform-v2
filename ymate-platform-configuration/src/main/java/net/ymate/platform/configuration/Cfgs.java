@@ -20,7 +20,7 @@ import net.ymate.platform.configuration.annotation.ConfigurationProvider;
 import net.ymate.platform.configuration.handle.ConfigHandler;
 import net.ymate.platform.configuration.impl.DefaultConfiguration;
 import net.ymate.platform.configuration.impl.DefaultConfigurationProvider;
-import net.ymate.platform.configuration.impl.DefaultModuleCfg;
+import net.ymate.platform.configuration.impl.DefaultConfigModuleCfg;
 import net.ymate.platform.configuration.impl.PropertyConfigurationProvider;
 import net.ymate.platform.core.Version;
 import net.ymate.platform.core.YMP;
@@ -103,7 +103,7 @@ public class Cfgs implements IModule, IConfig {
             _LOG.info("Initializing ymate-platform-configuration-" + VERSION);
             //
             __owner = owner;
-            __moduleCfg = new DefaultModuleCfg(__owner);
+            __moduleCfg = new DefaultConfigModuleCfg(__owner);
             //
             __owner.registerHandler(Configuration.class, new ConfigHandler(this));
             //

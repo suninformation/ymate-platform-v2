@@ -92,6 +92,10 @@ public interface IConfigReader {
 
     double getDouble(String key, double defaultValue);
 
+    <T> T getClassImpl(String key, Class<T> interfaceClass);
+
+    <T> T getClassImpl(String key, String defaultValue, Class<T> interfaceClass);
+
     /**
      * @return 获得配置对象内部加载的配置项映射
      */

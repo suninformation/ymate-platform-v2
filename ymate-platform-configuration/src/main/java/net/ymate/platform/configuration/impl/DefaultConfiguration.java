@@ -18,6 +18,7 @@ package net.ymate.platform.configuration.impl;
 import net.ymate.platform.configuration.IConfigFileParser;
 import net.ymate.platform.configuration.IConfiguration;
 import net.ymate.platform.configuration.IConfigurationProvider;
+import net.ymate.platform.core.util.ClassUtils;
 
 import java.util.List;
 import java.util.Map;
@@ -154,6 +155,16 @@ public class DefaultConfiguration implements IConfiguration {
     @Override
     public double getDouble(String key, double defaultValue) {
         return __provider.getDouble(key, defaultValue);
+    }
+
+    @Override
+    public <T> T getClassImpl(String key, Class<T> interfaceClass) {
+        return ClassUtils.impl(getString(key), interfaceClass, getClass());
+    }
+
+    @Override
+    public <T> T getClassImpl(String key, String defaultValue, Class<T> interfaceClass) {
+        return ClassUtils.impl(getString(key, defaultValue), interfaceClass, getClass());
     }
 
     @Override

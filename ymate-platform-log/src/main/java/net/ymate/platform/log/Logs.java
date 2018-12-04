@@ -21,7 +21,7 @@ import net.ymate.platform.core.module.IModule;
 import net.ymate.platform.core.module.annotation.Module;
 import net.ymate.platform.core.util.ClassUtils;
 import net.ymate.platform.log.impl.DefaultLogger;
-import net.ymate.platform.log.impl.DefaultModuleCfg;
+import net.ymate.platform.log.impl.DefaultLogModuleCfg;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -79,7 +79,7 @@ public class Logs implements IModule, ILog {
             _LOG.info("Initializing ymate-platform-log-" + VERSION);
             //
             __owner = owner;
-            __moduleCfg = new DefaultModuleCfg(__owner);
+            __moduleCfg = new DefaultLogModuleCfg(__owner);
             // 设置全局变量，便于配置文件内引用
             System.getProperties().put("LOG_OUT_DIR", __moduleCfg.getOutputDir().getPath());
             //

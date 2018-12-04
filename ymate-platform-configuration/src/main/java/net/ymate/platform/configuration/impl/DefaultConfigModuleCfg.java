@@ -19,12 +19,11 @@ import net.ymate.platform.configuration.IConfig;
 import net.ymate.platform.configuration.IConfigModuleCfg;
 import net.ymate.platform.configuration.IConfigurationProvider;
 import net.ymate.platform.core.YMP;
-import net.ymate.platform.core.lang.BlurObject;
+import net.ymate.platform.core.support.IConfigReader;
+import net.ymate.platform.core.support.impl.MapSafeConfigReader;
 import net.ymate.platform.core.util.ClassUtils;
 import net.ymate.platform.core.util.RuntimeUtils;
 import org.apache.commons.lang.StringUtils;
-
-import java.util.Map;
 
 /**
  * 默认配置体系模块配置类
@@ -32,7 +31,7 @@ import java.util.Map;
  * @author 刘镇 (suninformation@163.com) on 15/3/16 下午6:57
  * @version 1.0
  */
-public class DefaultModuleCfg implements IConfigModuleCfg {
+public class DefaultConfigModuleCfg implements IConfigModuleCfg {
 
     private String configHome;
     private String projectName;
@@ -41,25 +40,24 @@ public class DefaultModuleCfg implements IConfigModuleCfg {
     private Class<? extends IConfigurationProvider> providerClass;
 
     @SuppressWarnings("unchecked")
-    public DefaultModuleCfg(YMP owner) {
-        Map<String, String> _moduleCfgs = owner.getConfig().getModuleConfigs(IConfig.MODULE_NAME);
+    public DefaultConfigModuleCfg(YMP owner) {
+        IConfigReader _moduleCfg = MapSafeConfigReader.bind(owner.getConfig().getModuleConfigs(IConfig.MODULE_NAME));
         //
-        this.configHome = StringUtils.defaultIfBlank(System.getProperty("ymp.config_home"), _moduleCfgs.get("config_home"));
+        this.configHome = StringUtils.defaultIfBlank(System.getProperty(SYSTEM_CONFIG_HOME), _moduleCfg.getString(CONFIG_HOME));
         if (StringUtils.isBlank(this.configHome)) {
             // 尝试通过运行时变量或系统变量获取CONFIG_HOME参数
             this.configHome = StringUtils.defaultIfBlank(System.getenv(IConfig.__CONFIG_HOME), RuntimeUtils.getSystemEnv(IConfig.__CONFIG_HOME));
         }
         this.configHome = RuntimeUtils.replaceEnvVariable(StringUtils.defaultIfEmpty(this.configHome, "${root}"));
         //
-        this.projectName = _moduleCfgs.get("project_name");
-        this.moduleName = _moduleCfgs.get("module_name");
+        this.projectName = _moduleCfg.getString(PROJECT_NAME);
+        this.moduleName = _moduleCfg.getString(MODULE_NAME);
         //
-        this.configCheckTimeInterval = BlurObject.bind(_moduleCfgs.get("config_check_time_interval")).toLongValue();
+        this.configCheckTimeInterval = _moduleCfg.getLong(CONFIG_CHECK_TIME_INTERVAL);
         //
         try {
-            if (StringUtils.isNotBlank(_moduleCfgs.get("provider_class"))) {
-                this.providerClass = (Class<? extends IConfigurationProvider>) ClassUtils.loadClass(_moduleCfgs.get("provider_class"), this.getClass());
-            } else {
+            this.providerClass = (Class<? extends IConfigurationProvider>) ClassUtils.loadClass(_moduleCfg.getString(PROVIDER_CLASS, DefaultConfigurationProvider.class.getName()), this.getClass());
+            if (this.providerClass == null) {
                 this.providerClass = DefaultConfigurationProvider.class;
             }
         } catch (Exception e) {

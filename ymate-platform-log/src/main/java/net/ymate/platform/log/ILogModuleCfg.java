@@ -25,6 +25,16 @@ import java.io.File;
  */
 public interface ILogModuleCfg {
 
+    String CONFIG_FILE = "config_file";
+
+    String OUTPUT_DIR = "output_dir";
+
+    String LOGGER_NAME = "logger_name";
+
+    String LOGGER_CLASS = "logger_class";
+
+    String ALLOW_OUTPUT_CONSOLE = "allow_output_console";
+
     /**
      * @return 返回日志记录器配置文件
      */

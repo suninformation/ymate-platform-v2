@@ -24,9 +24,9 @@ import net.ymate.platform.core.beans.annotation.Order;
 import net.ymate.platform.core.beans.annotation.Proxy;
 import net.ymate.platform.core.beans.proxy.IProxy;
 import net.ymate.platform.core.beans.proxy.IProxyChain;
+import net.ymate.platform.core.support.ReentrantLockHelper;
 import org.apache.commons.lang.StringUtils;
 
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.ReentrantLock;
 
 /**
@@ -36,7 +36,7 @@ import java.util.concurrent.locks.ReentrantLock;
 @Proxy(annotation = Cacheable.class, order = @Order(-666))
 public class CacheableProxy implements IProxy {
 
-    private static final ConcurrentHashMap<String, ReentrantLock> __LOCK_MAP = new ConcurrentHashMap<String, ReentrantLock>();
+    private static final ReentrantLockHelper __LOCK = new ReentrantLockHelper();
 
     @Override
     public Object doProxy(IProxyChain proxyChain) throws Throwable {
@@ -51,16 +51,9 @@ public class CacheableProxy implements IProxy {
         if (_cacheKey == null) {
             _cacheKey = _caches.getModuleCfg().getKeyGenerator().generateKey(proxyChain.getTargetMethod(), proxyChain.getMethodParams());
         }
-        ReentrantLock _locker = __LOCK_MAP.get(_cacheKey.toString());
-        if (_locker == null) {
-            _locker = new ReentrantLock();
-            ReentrantLock _previous = __LOCK_MAP.putIfAbsent(_cacheKey.toString(), _locker);
-            if (_previous != null) {
-                _locker = _previous;
-            }
-        }
+        ReentrantLock _locker = __LOCK.getLocker(_cacheKey.toString());
         _locker.lock();
-        CacheElement _result = null;
+        CacheElement _result;
         try {
             ICacheScopeProcessor _scopeProc = _caches.getModuleCfg().getCacheScopeProcessor();
             if (!_anno.scope().equals(ICaches.Scope.DEFAULT) && _scopeProc != null) {
@@ -88,7 +81,7 @@ public class CacheableProxy implements IProxy {
                 }
             }
         } finally {
-            _locker.unlock();
+            __LOCK.unlock(_locker);
         }
         return _result != null ? _result.getObject() : null;
     }

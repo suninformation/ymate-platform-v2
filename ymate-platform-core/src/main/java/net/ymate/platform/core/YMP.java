@@ -105,6 +105,9 @@ public class YMP {
      */
     public YMP(IConfig config) {
         __config = config;
+        // 创建对象工厂
+        __moduleFactory = new BeanFactory(this);
+        __beanFactory = new DefaultBeanFactory(this, __moduleFactory);
     }
 
     private void __registerPackages() {
@@ -172,13 +175,6 @@ public class YMP {
             if (_beanLoader == null) {
                 _beanLoader = new DefaultBeanLoader();
             }
-            // 创建对象工厂
-            __moduleFactory = new BeanFactory(this);
-            __beanFactory = new DefaultBeanFactory(this, __moduleFactory);
-            // 配置代理工厂
-            __proxyFactory = __config.getProxyFactory();
-            __proxyFactory.init(this);
-            __proxyFactory.registerProxy(new InterceptProxy());
             // 配置模块对象工厂
             __moduleFactory.setLoader(_beanLoader);
             __moduleFactory.setExcludedFiles(__config.getExcludedFiles());
@@ -199,6 +195,10 @@ public class YMP {
             __beanFactory.registerHandler(Packages.class, new PackagesHandler(this));
             // 设置自动扫描应用包路径
             __registerPackages();
+            // 配置代理工厂
+            __proxyFactory = __config.getProxyFactory();
+            __proxyFactory.init(this);
+            __proxyFactory.registerProxy(new InterceptProxy());
             // 初始化模块对象工厂
             __moduleFactory.init();
             __moduleFactory.initProxy(null);
@@ -450,7 +450,7 @@ public class YMP {
             if (_bean instanceof IModule) {
                 IModule _module = (IModule) _bean;
                 if (!_module.isInited()) {
-                    if (getOwner().getConfig().getExcludedModules().contains(_module.getName())) {
+                    if (getOwner().getConfig().getExcludedModules().contains(_module.getName()) || getOwner().getConfig().getExcludedModules().contains(_module.getClass().getName())) {
                         return null;
                     }
                     try {

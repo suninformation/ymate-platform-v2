@@ -24,7 +24,7 @@ import net.ymate.platform.serv.annotation.Client;
 import net.ymate.platform.serv.annotation.Server;
 import net.ymate.platform.serv.handle.ClientHandler;
 import net.ymate.platform.serv.handle.ServerHandler;
-import net.ymate.platform.serv.impl.DefaultModuleCfg;
+import net.ymate.platform.serv.impl.DefaultServModuleCfg;
 import net.ymate.platform.serv.nio.INioCodec;
 import net.ymate.platform.serv.nio.client.NioClient;
 import net.ymate.platform.serv.nio.client.NioClientListener;
@@ -103,7 +103,7 @@ public class Servs implements IModule, IServ {
             _LOG.info("Initializing ymate-platform-serv-" + VERSION);
             //
             __owner = owner;
-            __moduleCfg = new DefaultModuleCfg(owner);
+            __moduleCfg = new DefaultServModuleCfg(owner);
             //
             __owner.registerExcludedClass(IServer.class);
             __owner.registerExcludedClass(IServerCfg.class);

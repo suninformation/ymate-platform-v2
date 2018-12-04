@@ -26,6 +26,16 @@ import java.util.List;
  */
 public interface IPluginConfig {
 
+    String DISABLED = "disabled";
+
+    String PLUGIN_HOME = "plugin_home";
+
+    String AUTOSCAN_PACKAGES = "autoscan_packages";
+
+    String AUTOMATIC = "automatic";
+
+    String INCLUDED_CLASSPATH = "included_classpath";
+
     /**
      * @return 返回插件工厂自动扫描的包路径前缀集合
      */

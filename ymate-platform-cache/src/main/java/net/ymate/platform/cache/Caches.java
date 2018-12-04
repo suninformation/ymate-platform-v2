@@ -16,7 +16,7 @@
 package net.ymate.platform.cache;
 
 import net.ymate.platform.cache.impl.DefaultCacheProvider;
-import net.ymate.platform.cache.impl.DefaultModuleCfg;
+import net.ymate.platform.cache.impl.DefaultCacheModuleCfg;
 import net.ymate.platform.cache.impl.MultilevelCacheProvider;
 import net.ymate.platform.cache.impl.RedisCacheProvider;
 import net.ymate.platform.core.Version;
@@ -89,7 +89,7 @@ public class Caches implements IModule, ICaches {
             //
             __owner = owner;
             __owner.getEvents().registerEvent(CacheEvent.class);
-            __moduleCfg = new DefaultModuleCfg(owner);
+            __moduleCfg = new DefaultCacheModuleCfg(owner);
             __moduleCfg.getCacheEventListener().init(this);
             __cacheProvider = __moduleCfg.getCacheProvider();
             __cacheProvider.init(this);

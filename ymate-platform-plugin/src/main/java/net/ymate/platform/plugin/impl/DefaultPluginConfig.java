@@ -78,8 +78,6 @@ public class DefaultPluginConfig implements IPluginConfig {
 
     private boolean __automatic;
 
-    private boolean __includedClassPath;
-
     private File __pluginHome;
 
     public DefaultPluginConfig() {

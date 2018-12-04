@@ -23,6 +23,28 @@ import java.util.Map;
  */
 public interface IMongoModuleCfg {
 
+    String DS_DEFAULT_NAME = "ds_default_name";
+
+    String DS_NAME_LIST = "ds_name_list";
+
+    String DS_OPTIONS_HANDLER_CLASS = "ds_options_handler_class";
+
+    String CONNECTION_URL = "connection_url";
+
+    String USERNAME = "username";
+
+    String PASSWORD = "password";
+
+    String PASSWORD_ENCRYPTED = "password_encrypted";
+
+    String PASSWORD_CLASS = "password_class";
+
+    String COLLECTION_PREFIX = "collection_prefix";
+
+    String DATABASE_NAME = "database_name";
+
+    String SERVERS = "servers";
+
     /**
      * @return 返回默认数据源名称，默认值：default
      */

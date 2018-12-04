@@ -24,7 +24,7 @@ import net.ymate.platform.core.util.ThreadUtils;
 import net.ymate.platform.persistence.IDataSourceRouter;
 import net.ymate.platform.persistence.redis.impl.RedisCommandsHolder;
 import net.ymate.platform.persistence.redis.impl.RedisDataSourceAdapter;
-import net.ymate.platform.persistence.redis.impl.RedisModuleCfg;
+import net.ymate.platform.persistence.redis.impl.DefaultRedisModuleCfg;
 import net.ymate.platform.persistence.redis.impl.RedisSession;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
@@ -95,7 +95,7 @@ public class Redis implements IModule, IRedis {
             _LOG.info("Initializing ymate-platform-persistence-redis-" + VERSION);
             //
             __owner = owner;
-            __moduleCfg = new RedisModuleCfg(owner);
+            __moduleCfg = new DefaultRedisModuleCfg(owner);
             //
             __dataSourceCaches = new HashMap<String, IRedisDataSourceAdapter>();
             for (RedisDataSourceCfgMeta _meta : __moduleCfg.getDataSourceCfgs().values()) {

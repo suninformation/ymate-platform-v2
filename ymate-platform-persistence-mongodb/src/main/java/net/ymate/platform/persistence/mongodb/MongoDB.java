@@ -21,7 +21,7 @@ import net.ymate.platform.core.module.IModule;
 import net.ymate.platform.core.module.annotation.Module;
 import net.ymate.platform.persistence.mongodb.impl.MongoDataSourceAdapter;
 import net.ymate.platform.persistence.mongodb.impl.MongoGridFSSession;
-import net.ymate.platform.persistence.mongodb.impl.MongoModuleCfg;
+import net.ymate.platform.persistence.mongodb.impl.DefaultMongoModuleCfg;
 import net.ymate.platform.persistence.mongodb.impl.MongoSession;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -84,7 +84,7 @@ public class MongoDB implements IModule, IMongo {
             _LOG.info("Initializing ymate-platform-persistence-mongodb-" + VERSION);
             //
             __owner = owner;
-            __moduleCfg = new MongoModuleCfg(owner);
+            __moduleCfg = new DefaultMongoModuleCfg(owner);
             //
             __dataSourceCaches = new HashMap<String, IMongoDataSourceAdapter>();
             for (MongoDataSourceCfgMeta _meta : __moduleCfg.getDataSourceCfgs().values()) {

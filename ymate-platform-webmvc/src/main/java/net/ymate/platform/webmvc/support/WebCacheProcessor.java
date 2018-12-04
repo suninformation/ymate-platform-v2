@@ -18,6 +18,7 @@ package net.ymate.platform.webmvc.support;
 import net.ymate.platform.cache.Caches;
 import net.ymate.platform.cache.ICaches;
 import net.ymate.platform.core.i18n.I18N;
+import net.ymate.platform.core.support.ReentrantLockHelper;
 import net.ymate.platform.webmvc.IRequestContext;
 import net.ymate.platform.webmvc.IWebCacheProcessor;
 import net.ymate.platform.webmvc.IWebMvc;
@@ -34,7 +35,6 @@ import org.apache.commons.logging.LogFactory;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.ByteArrayOutputStream;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.ReentrantLock;
 
 
@@ -46,7 +46,7 @@ public class WebCacheProcessor implements IWebCacheProcessor {
 
     private static final Log _LOG = LogFactory.getLog(WebCacheProcessor.class);
 
-    private static final ConcurrentHashMap<String, ReentrantLock> __LOCK_MAP = new ConcurrentHashMap<String, ReentrantLock>();
+    private static final ReentrantLockHelper __LOCK = new ReentrantLockHelper();
 
     @Override
     public boolean processResponseCache(IWebMvc owner, ResponseCache responseCache, IRequestContext requestContext, IView resultView) throws Exception {
@@ -72,7 +72,7 @@ public class WebCacheProcessor implements IWebCacheProcessor {
     }
 
     private PageMeta __doPutCacheElement(GenericResponseWrapper response, ICaches caches, ResponseCache responseCache, String cacheKey, IView resultView) throws Exception {
-        ReentrantLock _locker = __doGetCacheLocker(cacheKey);
+        ReentrantLock _locker = __LOCK.getLocker(cacheKey);
         _locker.lock();
         //
         PageMeta _element = null;
@@ -97,21 +97,9 @@ public class WebCacheProcessor implements IWebCacheProcessor {
         } catch (UnsupportedOperationException e) {
             _LOG.warn(resultView.getClass().getName() + " Unsupported Render To OutputStream Operation, Skip Cache.");
         } finally {
-            _locker.unlock();
+            __LOCK.unlock(_locker);
         }
         return _element;
-    }
-
-    private ReentrantLock __doGetCacheLocker(String cacheKey) {
-        ReentrantLock _locker = __LOCK_MAP.get(cacheKey);
-        if (_locker == null) {
-            _locker = new ReentrantLock();
-            ReentrantLock _previous = __LOCK_MAP.putIfAbsent(cacheKey, _locker);
-            if (_previous != null) {
-                _locker = _previous;
-            }
-        }
-        return _locker;
     }
 
     private String __doBuildCacheKey(HttpServletRequest request, ResponseCache responseCache) {

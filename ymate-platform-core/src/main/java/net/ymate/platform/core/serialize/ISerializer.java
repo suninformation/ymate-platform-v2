@@ -28,8 +28,6 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public interface ISerializer {
 
-    String DEFAULT_CHARSET = "UTF-8";
-
     String getContentType();
 
     byte[] serialize(Object object) throws Exception;

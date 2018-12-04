@@ -15,9 +15,11 @@
  */
 package net.ymate.platform.persistence.jdbc.impl;
 
+import net.ymate.platform.core.IConfig;
 import net.ymate.platform.core.YMP;
-import net.ymate.platform.core.lang.BlurObject;
+import net.ymate.platform.core.support.IConfigReader;
 import net.ymate.platform.core.support.IPasswordProcessor;
+import net.ymate.platform.core.support.impl.MapSafeConfigReader;
 import net.ymate.platform.core.util.ClassUtils;
 import net.ymate.platform.core.util.RuntimeUtils;
 import net.ymate.platform.persistence.jdbc.*;
@@ -34,7 +36,7 @@ import java.util.Map;
  * @author 刘镇 (suninformation@163.com) on 2012-12-29 下午2:19:18
  * @version 1.0
  */
-public class DefaultModuleCfg implements IDatabaseModuleCfg {
+public class DefaultDatabaseModuleCfg implements IDatabaseModuleCfg {
 
     private final YMP owner;
 
@@ -42,18 +44,19 @@ public class DefaultModuleCfg implements IDatabaseModuleCfg {
 
     private final Map<String, DataSourceCfgMeta> dataSourceCfgMetas;
 
-    public DefaultModuleCfg(YMP owner) throws Exception {
+    public DefaultDatabaseModuleCfg(YMP owner) throws Exception {
         this.owner = owner;
-        Map<String, String> _moduleCfgs = owner.getConfig().getModuleConfigs(IDatabase.MODULE_NAME);
         //
-        this.dataSourceDefaultName = StringUtils.defaultIfBlank(_moduleCfgs.get("ds_default_name"), "default");
+        IConfigReader _moduleCfg = MapSafeConfigReader.bind(owner.getConfig().getModuleConfigs(IDatabase.MODULE_NAME));
+        //
+        this.dataSourceDefaultName = _moduleCfg.getString(DS_DEFAULT_NAME, IConfig.DEFAULT_STR);
         //
         this.dataSourceCfgMetas = new HashMap<String, DataSourceCfgMeta>();
-        String _dsNameStr = StringUtils.defaultIfBlank(_moduleCfgs.get("ds_name_list"), "default");
+        String _dsNameStr = _moduleCfg.getString(DS_NAME_LIST, IConfig.DEFAULT_STR);
         if (StringUtils.contains(_dsNameStr, this.dataSourceDefaultName)) {
             String[] _dsNameList = StringUtils.split(_dsNameStr, "|");
             for (String _dsName : _dsNameList) {
-                DataSourceCfgMeta _meta = __doParserDataSourceCfgMeta(_dsName, _moduleCfgs);
+                DataSourceCfgMeta _meta = __doParserDataSourceCfgMeta(_dsName, _moduleCfg.getMap("ds." + _dsName + "."));
                 if (_meta != null) {
                     this.dataSourceCfgMetas.put(_dsName, _meta);
                 }
@@ -64,54 +67,55 @@ public class DefaultModuleCfg implements IDatabaseModuleCfg {
     }
 
     /**
-     * @param dsName      数据源名称
-     * @param _moduleCfgs 模块配置参数映射
+     * @param dsName         数据源名称
+     * @param dataSourceCfgs 数据源配置参数映射
      * @return 分析并封装数据源配置
      * @throws Exception 可能产生的异常
      */
     @SuppressWarnings("unchecked")
-    private DataSourceCfgMeta __doParserDataSourceCfgMeta(String dsName, Map<String, String> _moduleCfgs) throws Exception {
-        Map<String, String> _dataSourceCfgs = RuntimeUtils.keyStartsWith(_moduleCfgs, "ds." + dsName + ".");
-        if (!_dataSourceCfgs.isEmpty()) {
+    private DataSourceCfgMeta __doParserDataSourceCfgMeta(String dsName, Map<String, String> dataSourceCfgs) throws Exception {
+        if (!dataSourceCfgs.isEmpty()) {
+            IConfigReader _dataSourceCfg = MapSafeConfigReader.bind(dataSourceCfgs);
             //
             DataSourceCfgMeta _meta = new DataSourceCfgMeta();
             _meta.setName(dsName);
-            _meta.setConnectionUrl(RuntimeUtils.replaceEnvVariable(_dataSourceCfgs.get("connection_url")));
-            _meta.setUsername(_dataSourceCfgs.get("username"));
+            _meta.setConnectionUrl(RuntimeUtils.replaceEnvVariable(_dataSourceCfg.getString(CONNECTION_URL)));
+            _meta.setUsername(_dataSourceCfg.getString(USERNAME));
             // 验证必填参数
             if (StringUtils.isNotBlank(_meta.getConnectionUrl()) && StringUtils.isNotBlank(_meta.getUsername())) {
                 // 基础参数
-                _meta.setIsShowSQL(new BlurObject(_dataSourceCfgs.get("show_sql")).toBooleanValue());
-                _meta.setIsStackTraces(new BlurObject(_dataSourceCfgs.get("stack_traces")).toBooleanValue());
-                _meta.setStackTraceDepth(new BlurObject(_dataSourceCfgs.get("stack_trace_depth")).toIntValue());
-                _meta.setStackTracePackage(_dataSourceCfgs.get("stack_trace_package"));
-                _meta.setTablePrefix(_dataSourceCfgs.get("table_prefix"));
-                _meta.setIdentifierQuote(_dataSourceCfgs.get("identifier_quote"));
+                _meta.setIsShowSQL(_dataSourceCfg.getBoolean(SHOW_SQL));
+                _meta.setIsStackTraces(_dataSourceCfg.getBoolean(STACK_TRACES));
+                _meta.setStackTraceDepth(_dataSourceCfg.getInt(STACK_TRACE_DEPTH));
+                _meta.setStackTracePackage(_dataSourceCfg.getString(STACK_TRACE_PACKAGE));
+                _meta.setTablePrefix(_dataSourceCfg.getString(TABLE_PREFIX));
+                _meta.setIdentifierQuote(_dataSourceCfg.getString(IDENTIFIER_QUOTE));
                 // 数据源适配器
-                String _adapterClassName = JDBC.DS_ADAPTERS.get(StringUtils.defaultIfBlank(_dataSourceCfgs.get("adapter_class"), "default"));
+                String _adapterClassName = JDBC.DS_ADAPTERS.get(_dataSourceCfg.getString(ADAPTER_CLASS, IConfig.DEFAULT_STR));
                 _meta.setAdapterClass((Class<? extends IDataSourceAdapter>) ClassUtils.loadClass(_adapterClassName, this.getClass()));
                 //
                 // 连接和数据库类型
                 try {
-                    _meta.setType(JDBC.DATABASE.valueOf(StringUtils.defaultIfBlank(_dataSourceCfgs.get("type"), "").toUpperCase()));
+                    _meta.setType(JDBC.DATABASE.valueOf(StringUtils.trimToEmpty(_dataSourceCfg.getString(TYPE)).toUpperCase()));
                 } catch (IllegalArgumentException e) {
                     // 通过连接字符串分析数据库类型
                     String _connUrl = URI.create(_meta.getConnectionUrl()).toString();
                     String[] _type = StringUtils.split(_connUrl, ":");
                     if (_type != null && _type.length > 0) {
                         if ("microsoft".equals(_type[1])) {
-                            _type[1] = "sqlserver";
+                            _meta.setType(JDBC.DATABASE.SQLSERVER);
+                        } else {
+                            _meta.setType(JDBC.DATABASE.valueOf(_type[1].toUpperCase()));
                         }
-                        _meta.setType(JDBC.DATABASE.valueOf(_type[1].toUpperCase()));
                     }
                 }
                 //
-                _meta.setDialectClass(_dataSourceCfgs.get("dialect_class"));
-                _meta.setDriverClass(StringUtils.defaultIfBlank(_dataSourceCfgs.get("driver_class"), JDBC.DB_DRIVERS.get(_meta.getType())));
-                _meta.setPassword(_dataSourceCfgs.get("password"));
-                _meta.setIsPasswordEncrypted(new BlurObject(_dataSourceCfgs.get("password_encrypted")).toBooleanValue());
+                _meta.setDialectClass(_dataSourceCfg.getString(DIALECT_CLASS));
+                _meta.setDriverClass(_dataSourceCfg.getString(DRIVER_CLASS, JDBC.DB_DRIVERS.get(_meta.getType())));
+                _meta.setPassword(_dataSourceCfg.getString(PASSWORD));
+                _meta.setIsPasswordEncrypted(_dataSourceCfg.getBoolean(PASSWORD_ENCRYPTED));
                 //
-                String _passwordClass = _dataSourceCfgs.get("password_class");
+                String _passwordClass = _dataSourceCfg.getString(PASSWORD_CLASS);
                 if (_meta.isPasswordEncrypted()
                         && StringUtils.isNotBlank(_meta.getPassword())
                         && StringUtils.isNotBlank(_passwordClass)) {

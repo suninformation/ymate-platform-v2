@@ -23,6 +23,18 @@ package net.ymate.platform.configuration;
  */
 public interface IConfigModuleCfg {
 
+    String SYSTEM_CONFIG_HOME = "ymp.config_home";
+
+    String CONFIG_HOME = "config_home";
+
+    String PROJECT_NAME = "project_name";
+
+    String MODULE_NAME = "module_name";
+
+    String CONFIG_CHECK_TIME_INTERVAL = "config_check_time_interval";
+
+    String PROVIDER_CLASS = "provider_class";
+
     /**
      * @return 返回配置体系根路径
      */

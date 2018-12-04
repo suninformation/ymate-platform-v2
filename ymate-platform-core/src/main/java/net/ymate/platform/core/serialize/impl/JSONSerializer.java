@@ -17,6 +17,7 @@ package net.ymate.platform.core.serialize.impl;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.serializer.SerializerFeature;
+import net.ymate.platform.core.IConfig;
 import net.ymate.platform.core.serialize.ISerializer;
 
 /**
@@ -36,11 +37,11 @@ public class JSONSerializer implements ISerializer {
         _serializer.config(SerializerFeature.WriteEnumUsingToString, true);
         _serializer.config(SerializerFeature.WriteClassName, true);
         _serializer.write(object);
-        return _serializer.getWriter().toBytes(DEFAULT_CHARSET);
+        return _serializer.getWriter().toBytes(IConfig.DEFAULT_CHARSET);
     }
 
     @Override
     public <T> T deserialize(byte[] bytes, Class<T> clazz) throws Exception {
-        return JSON.parseObject(new String(bytes, DEFAULT_CHARSET), clazz);
+        return JSON.parseObject(new String(bytes, IConfig.DEFAULT_CHARSET), clazz);
     }
 }

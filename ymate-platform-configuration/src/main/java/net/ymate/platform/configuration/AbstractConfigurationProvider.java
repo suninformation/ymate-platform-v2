@@ -16,6 +16,7 @@
 package net.ymate.platform.configuration;
 
 import net.ymate.platform.core.lang.BlurObject;
+import net.ymate.platform.core.support.ReentrantLockHelper;
 import net.ymate.platform.core.util.FileUtils;
 import org.apache.commons.lang.NullArgumentException;
 import org.apache.commons.lang.StringUtils;
@@ -40,7 +41,7 @@ public abstract class AbstractConfigurationProvider implements IConfigurationPro
      */
     private static final Map<String, IConfigFileParser> __CONFIG_CACHE_MAPS = new ConcurrentHashMap<String, IConfigFileParser>();
 
-    private static final ConcurrentHashMap<String, ReentrantLock> __LOCK_CACHES = new ConcurrentHashMap<String, ReentrantLock>();
+    private static final ReentrantLockHelper __LOCK = new ReentrantLockHelper();
 
     /**
      * 配置对象
@@ -59,27 +60,13 @@ public abstract class AbstractConfigurationProvider implements IConfigurationPro
         }
         __cfgFileName = cfgFileName;
         //
-        ReentrantLock _locker = __doGetLocker();
+        ReentrantLock _locker = __LOCK.getLocker(__cfgFileName);
         try {
             _locker.lock();
             __doLoad(false);
         } finally {
-            if (_locker.isLocked()) {
-                _locker.unlock();
-            }
+            __LOCK.unlock(_locker);
         }
-    }
-
-    private ReentrantLock __doGetLocker() {
-        ReentrantLock _locker = __LOCK_CACHES.get(__cfgFileName);
-        if (_locker == null) {
-            _locker = new ReentrantLock();
-            ReentrantLock _previous = __LOCK_CACHES.putIfAbsent(__cfgFileName, _locker);
-            if (_previous != null) {
-                _locker = _previous;
-            }
-        }
-        return _locker;
     }
 
     private void __doLoad(boolean update) throws Exception {
@@ -103,15 +90,13 @@ public abstract class AbstractConfigurationProvider implements IConfigurationPro
 
     @Override
     public void reload() throws Exception {
-        ReentrantLock _locker = __doGetLocker();
+        ReentrantLock _locker = __LOCK.getLocker(__cfgFileName);
         try {
             _locker.lock();
             // 加载配置
             __doLoad(true);
         } finally {
-            if (_locker.isLocked()) {
-                _locker.unlock();
-            }
+            __LOCK.unlock(_locker);
         }
     }
 

@@ -28,6 +28,60 @@ import java.util.Set;
  */
 public interface IWebMvcModuleCfg {
 
+    String REQUEST_MAPPING_PARSER_CLASS = "request_mapping_parser_class";
+
+    String REQUEST_PROCESSOR_CLASS = "request_processor_class";
+
+    String ERROR_PROCESSOR_CLASS = "error_processor_class";
+
+    String CACHE_PROCESSOR_CLASS = "cache_processor_class";
+
+    String DEFAULT_CHARSET_ENCODING = "default_charset_encoding";
+
+    String DEFAULT_CONTENT_TYPE = "default_content_type";
+
+    String REQUEST_IGNORE_REGEX = "request_ignore_regex";
+
+    String REQUEST_METHOD_PARAM = "request_method_param";
+
+    String REQUEST_PREFIX = "request_prefix";
+
+    String PARAMETER_ESCAPE_MODE = "parameter_escape_mode";
+
+    String PARAMETER_ESCAPE_ORDER = "parameter_escape_order";
+
+    String BASE_VIEW_PATH = "base_view_path";
+
+    String COOKIE_PREFIX = "cookie_prefix";
+
+    String COOKIE_DOMAIN = "cookie_domain";
+
+    String COOKIE_PATH = "cookie_path";
+
+    String COOKIE_AUTH_KEY = "cookie_auth_key";
+
+    String DEFAULT_ENABLED_COOKIE_AUTH = "default_enabled_cookie_auth";
+
+    String DEFAULT_USE_HTTP_ONLY = "default_use_http_only";
+
+    String UPLOAD_TEMP_DIR = "upload_temp_dir";
+
+    String UPLOAD_FILE_SIZE_MAX = "upload_file_size_max";
+
+    String UPLOAD_TOTAL_SIZE_MAX = "upload_total_size_max";
+
+    String UPLOAD_SIZE_THRESHOLD = "upload_size_threshold";
+
+    String UPLOAD_FILE_LISTENER_CLASS = "upload_file_listener_class";
+
+    String CONVENTION_MODE = "convention_mode";
+
+    String CONVENTION_URLREWRITE_MODE = "convention_urlrewrite_mode";
+
+    String CONVENTION_INTERCEPTOR_MODE = "convention_interceptor_mode";
+
+    String CONVENTION_VIEW_PATHS = "convention_view_paths";
+
     /**
      * @return 控制器请求映射路径分析器，可选值为已知分析器名称或自定义分析器类名称，默认为restful，目前支持已知分析器[default|restful|...]
      */

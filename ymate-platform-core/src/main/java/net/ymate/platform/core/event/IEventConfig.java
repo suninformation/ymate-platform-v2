@@ -23,6 +23,16 @@ package net.ymate.platform.core.event;
  */
 public interface IEventConfig {
 
+    String PROVIDER_CLASS = "provider_class";
+
+    String DEFAULT_MODE = "default_mode";
+
+    String THREAD_POOL_SIZE = "thread_pool_size";
+
+    String THREAD_MAX_POOL_SIZE = "thread_max_pool_size";
+
+    String THREAD_QUEUE_SIZE = "thread_queue_size";
+
     /**
      * @return 返回事件管理提供者接口实现，默认为net.ymate.platform.core.event.impl.DefaultEventProvider
      */

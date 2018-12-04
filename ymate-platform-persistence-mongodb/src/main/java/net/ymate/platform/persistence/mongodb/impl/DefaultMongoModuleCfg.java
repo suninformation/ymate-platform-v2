@@ -16,9 +16,11 @@
 package net.ymate.platform.persistence.mongodb.impl;
 
 import com.mongodb.ServerAddress;
+import net.ymate.platform.core.IConfig;
 import net.ymate.platform.core.YMP;
-import net.ymate.platform.core.lang.BlurObject;
+import net.ymate.platform.core.support.IConfigReader;
 import net.ymate.platform.core.support.IPasswordProcessor;
+import net.ymate.platform.core.support.impl.MapSafeConfigReader;
 import net.ymate.platform.core.util.ClassUtils;
 import net.ymate.platform.persistence.mongodb.IMongo;
 import net.ymate.platform.persistence.mongodb.IMongoClientOptionsHandler;
@@ -32,7 +34,7 @@ import java.util.*;
  * @author 刘镇 (suninformation@163.com) on 15/11/22 上午12:42
  * @version 1.0
  */
-public class MongoModuleCfg implements IMongoModuleCfg {
+public class DefaultMongoModuleCfg implements IMongoModuleCfg {
 
     private String dataSourceDefaultName;
 
@@ -40,18 +42,18 @@ public class MongoModuleCfg implements IMongoModuleCfg {
 
     private Map<String, MongoDataSourceCfgMeta> dataSourceCfgMetas;
 
-    public MongoModuleCfg(YMP owner) throws Exception {
-        Map<String, String> _moduleCfgs = owner.getConfig().getModuleConfigs(IMongo.MODULE_NAME);
+    public DefaultMongoModuleCfg(YMP owner) throws Exception {
+        IConfigReader _moduleCfg = MapSafeConfigReader.bind(owner.getConfig().getModuleConfigs(IMongo.MODULE_NAME));
         //
-        this.dataSourceDefaultName = StringUtils.defaultIfBlank(_moduleCfgs.get("ds_default_name"), "default");
-        this.clientOptionsHandler = ClassUtils.impl(_moduleCfgs.get("ds_options_handler_class"), IMongoClientOptionsHandler.class, this.getClass());
+        this.dataSourceDefaultName = _moduleCfg.getString(DS_DEFAULT_NAME, IConfig.DEFAULT_STR);
+        this.clientOptionsHandler = _moduleCfg.getClassImpl(DS_OPTIONS_HANDLER_CLASS, IMongoClientOptionsHandler.class);
         //
         this.dataSourceCfgMetas = new HashMap<String, MongoDataSourceCfgMeta>();
-        String _dsNameStr = StringUtils.defaultIfBlank(_moduleCfgs.get("ds_name_list"), "default");
+        String _dsNameStr = _moduleCfg.getString(DS_NAME_LIST, IConfig.DEFAULT_STR);
         if (StringUtils.contains(_dsNameStr, this.dataSourceDefaultName)) {
             String[] _dsNameList = StringUtils.split(_dsNameStr, "|");
             for (String _dsName : _dsNameList) {
-                MongoDataSourceCfgMeta _meta = __doParserDataSourceCfgMeta(_dsName, _moduleCfgs);
+                MongoDataSourceCfgMeta _meta = __doParserDataSourceCfgMeta(_dsName, _moduleCfg.getMap("ds." + _dsName + "."));
                 if (_meta != null) {
                     this.dataSourceCfgMetas.put(_dsName, _meta);
                 }
@@ -62,29 +64,20 @@ public class MongoModuleCfg implements IMongoModuleCfg {
     }
 
     @SuppressWarnings("unchecked")
-    protected MongoDataSourceCfgMeta __doParserDataSourceCfgMeta(String dsName, Map<String, String> _moduleCfgs) throws Exception {
+    protected MongoDataSourceCfgMeta __doParserDataSourceCfgMeta(String dsName, Map<String, String> dataSourceCfgs) throws Exception {
         MongoDataSourceCfgMeta _meta = null;
-        //
-        Map<String, String> _dataSourceCfgs = new HashMap<String, String>();
-        for (Map.Entry<String, String> _cfgEntry : _moduleCfgs.entrySet()) {
-            String _key = _cfgEntry.getKey();
-            String _prefix = "ds." + dsName + ".";
-            if (StringUtils.startsWith(_key, _prefix)) {
-                String _cfgKey = StringUtils.substring(_key, _prefix.length());
-                _dataSourceCfgs.put(_cfgKey, _cfgEntry.getValue());
-            }
-        }
-        //
-        if (!_dataSourceCfgs.isEmpty()) {
-            String _connectionUrl = StringUtils.trimToNull(_dataSourceCfgs.get("connection_url"));
+        if (!dataSourceCfgs.isEmpty()) {
+            IConfigReader _dataSourceCfg = MapSafeConfigReader.bind(dataSourceCfgs);
+            //
+            String _connectionUrl = StringUtils.trimToNull(_dataSourceCfg.getString(CONNECTION_URL));
             if (_connectionUrl != null) {
                 _meta = new MongoDataSourceCfgMeta(dsName,
-                        _dataSourceCfgs.get("collection_prefix"),
+                        _dataSourceCfg.getString(COLLECTION_PREFIX),
                         _connectionUrl,
-                        _dataSourceCfgs.get("database_name"));
+                        _dataSourceCfg.getString(DATABASE_NAME));
             } else {
                 List<ServerAddress> _servers = new ArrayList<ServerAddress>();
-                String[] _serversArr = StringUtils.split(_dataSourceCfgs.get("servers"), "|");
+                String[] _serversArr = _dataSourceCfg.getArray(SERVERS);
                 if (_serversArr != null) {
                     for (String _serverStr : _serversArr) {
                         String[] _server = StringUtils.split(_serverStr, ":");
@@ -96,17 +89,17 @@ public class MongoModuleCfg implements IMongoModuleCfg {
                     }
                 }
                 //
-                boolean _isPwdEncrypted = new BlurObject(_dataSourceCfgs.get("password_encrypted")).toBooleanValue();
+                boolean _isPwdEncrypted = _dataSourceCfg.getBoolean(PASSWORD_ENCRYPTED);
                 Class<? extends IPasswordProcessor> _passwordClass = null;
                 if (_isPwdEncrypted) {
-                    _passwordClass = (Class<? extends IPasswordProcessor>) ClassUtils.loadClass(_dataSourceCfgs.get("password_class"), this.getClass());
+                    _passwordClass = (Class<? extends IPasswordProcessor>) ClassUtils.loadClass(_dataSourceCfg.getString(PASSWORD_CLASS), this.getClass());
                 }
                 _meta = new MongoDataSourceCfgMeta(dsName,
-                        _dataSourceCfgs.get("collection_prefix"),
+                        _dataSourceCfg.getString(COLLECTION_PREFIX),
                         _servers,
-                        _dataSourceCfgs.get("username"),
-                        _dataSourceCfgs.get("password"),
-                        _dataSourceCfgs.get("database_name"),
+                        _dataSourceCfg.getString(USERNAME),
+                        _dataSourceCfg.getString(PASSWORD),
+                        _dataSourceCfg.getString(DATABASE_NAME),
                         _isPwdEncrypted,
                         _passwordClass);
             }

@@ -15,17 +15,17 @@
  */
 package net.ymate.platform.log.impl;
 
+import net.ymate.platform.core.IConfig;
 import net.ymate.platform.core.YMP;
-import net.ymate.platform.core.lang.BlurObject;
+import net.ymate.platform.core.support.IConfigReader;
+import net.ymate.platform.core.support.impl.MapSafeConfigReader;
 import net.ymate.platform.core.util.ClassUtils;
 import net.ymate.platform.core.util.RuntimeUtils;
 import net.ymate.platform.log.ILog;
 import net.ymate.platform.log.ILogModuleCfg;
 import net.ymate.platform.log.ILogger;
-import org.apache.commons.lang.StringUtils;
 
 import java.io.File;
-import java.util.Map;
 
 /**
  * 默认日志记录器模块配置类
@@ -33,7 +33,7 @@ import java.util.Map;
  * @author 刘镇 (suninformation@163.com) on 2012-12-23 下午6:26:42
  * @version 1.0
  */
-public class DefaultModuleCfg implements ILogModuleCfg {
+public class DefaultLogModuleCfg implements ILogModuleCfg {
 
     private File configFile;
     private File outputDir;
@@ -42,36 +42,36 @@ public class DefaultModuleCfg implements ILogModuleCfg {
     private boolean allowOutputConsole;
 
     @SuppressWarnings("unchecked")
-    public DefaultModuleCfg(YMP owner) {
-        Map<String, String> _moduleCfgs = owner.getConfig().getModuleConfigs(ILog.MODULE_NAME);
+    public DefaultLogModuleCfg(YMP owner) {
         // 尝试加载配置体系模块，若存在则将决定配置文件加载的路径
-        if (!owner.isModuleExcluded("configuration")) {
-            owner.getModule("net.ymate.platform.configuration.Cfgs");
+        if (!owner.isModuleExcluded(IConfig.MODULE_NAME_CONFIGURATION) && !owner.isModuleExcluded(IConfig.MODULE_CLASS_NAME_CONFIGURATION)) {
+            owner.getModule(IConfig.MODULE_CLASS_NAME_CONFIGURATION);
         }
         //
-        this.configFile = new File(RuntimeUtils.replaceEnvVariable(StringUtils.defaultIfBlank(_moduleCfgs.get("config_file"), "${root}/cfgs/log4j.xml")));
+        IConfigReader _moduleCfg = MapSafeConfigReader.bind(owner.getConfig().getModuleConfigs(ILog.MODULE_NAME));
+        //
+        this.configFile = new File(RuntimeUtils.replaceEnvVariable(_moduleCfg.getString(CONFIG_FILE, "${root}/cfgs/log4j.xml")));
         if (!this.configFile.isAbsolute() || !this.configFile.exists() || this.configFile.isDirectory() || !this.configFile.canRead()) {
             throw new IllegalArgumentException("The parameter configFile is invalid or is not a file");
         }
         //
-        this.outputDir = new File(RuntimeUtils.replaceEnvVariable(StringUtils.defaultIfBlank(_moduleCfgs.get("output_dir"), "${root}/logs/")));
+        this.outputDir = new File(RuntimeUtils.replaceEnvVariable(_moduleCfg.getString(OUTPUT_DIR, "${root}/logs/")));
         if (!this.outputDir.isAbsolute() || !this.outputDir.exists() || !this.outputDir.isDirectory() || !this.outputDir.canRead()) {
             throw new IllegalArgumentException("The parameter outputDir is invalid or is not a directory");
         }
         //
-        this.loggerName = StringUtils.defaultIfBlank(_moduleCfgs.get("logger_name"), "default").trim();
+        this.loggerName = _moduleCfg.getString(LOGGER_NAME, IConfig.DEFAULT_STR);
         //
         try {
-            if (StringUtils.isNotBlank(_moduleCfgs.get("logger_class"))) {
-                this.loggerClass = (Class<? extends ILogger>) ClassUtils.loadClass(_moduleCfgs.get("logger_class"), this.getClass());
-            } else {
+            this.loggerClass = (Class<? extends ILogger>) ClassUtils.loadClass(_moduleCfg.getString(LOGGER_CLASS, DefaultLogger.class.getName()), this.getClass());
+            if (this.loggerClass == null) {
                 this.loggerClass = DefaultLogger.class;
             }
         } catch (Exception e) {
             this.loggerClass = DefaultLogger.class;
         }
         //
-        this.allowOutputConsole = new BlurObject(_moduleCfgs.get("allow_output_console")).toBooleanValue();
+        this.allowOutputConsole = _moduleCfg.getBoolean(ALLOW_OUTPUT_CONSOLE);
     }
 
     @Override

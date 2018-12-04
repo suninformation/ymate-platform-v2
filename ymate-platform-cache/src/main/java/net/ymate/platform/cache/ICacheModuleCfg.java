@@ -25,6 +25,20 @@ import net.ymate.platform.core.serialize.ISerializer;
  */
 public interface ICacheModuleCfg {
 
+    String PROVIDER_CLASS = "provider_class";
+
+    String EVENT_LISTENER_CLASS = "event_listener_class";
+
+    String SCOPE_PROCESSOR_CLASS = "scope_processor_class";
+
+    String SERIALIZER_CLASS = "serializer_class";
+
+    String KEY_GENERATOR_CLASS = "key_generator_class";
+
+    String DEFAULT_CACHE_NAME = "default_cache_name";
+
+    String DEFAULT_CACHE_TIMEOUT = "default_cache_timeout";
+
     /**
      * @return 缓存提供者，可选参数，默认值为net.ymate.platform.cache.impl.DefaultCacheProvider
      */

@@ -16,13 +16,13 @@
 package net.ymate.platform.cache.impl;
 
 import net.ymate.platform.cache.*;
+import net.ymate.platform.core.IConfig;
 import net.ymate.platform.core.YMP;
-import net.ymate.platform.core.lang.BlurObject;
 import net.ymate.platform.core.serialize.ISerializer;
+import net.ymate.platform.core.support.IConfigReader;
+import net.ymate.platform.core.support.impl.MapSafeConfigReader;
 import net.ymate.platform.core.util.ClassUtils;
 import org.apache.commons.lang.StringUtils;
-
-import java.util.Map;
 
 /**
  * 缓存模块配置类
@@ -30,7 +30,7 @@ import java.util.Map;
  * @author 刘镇 (suninformation@163.com) on 14/12/25 下午5:58
  * @version 1.0
  */
-public class DefaultModuleCfg implements ICacheModuleCfg {
+public class DefaultCacheModuleCfg implements ICacheModuleCfg {
 
     private ICacheProvider __cacheProvider;
 
@@ -46,40 +46,41 @@ public class DefaultModuleCfg implements ICacheModuleCfg {
 
     private int __defaultCacheTimeout;
 
-    public DefaultModuleCfg(YMP owner) throws Exception {
-        Map<String, String> _moduleCfgs = owner.getConfig().getModuleConfigs(ICaches.MODULE_NAME);
+    public DefaultCacheModuleCfg(YMP owner) throws Exception {
         // 尝试加载配置体系模块，若存在则将决定配置文件加载的路径
-        if (!owner.isModuleExcluded("configuration")) {
-            owner.getModule("net.ymate.platform.configuration.Cfgs");
+        if (!owner.isModuleExcluded(IConfig.MODULE_NAME_CONFIGURATION) && !owner.isModuleExcluded(IConfig.MODULE_CLASS_NAME_CONFIGURATION)) {
+            owner.getModule(IConfig.MODULE_CLASS_NAME_CONFIGURATION);
         }
         //
-        String _providerClassStr = StringUtils.defaultIfBlank(_moduleCfgs.get("provider_class"), "default");
+        IConfigReader _moduleCfg = MapSafeConfigReader.bind(owner.getConfig().getModuleConfigs(ICaches.MODULE_NAME));
+        //
+        String _providerClassStr = _moduleCfg.getString(PROVIDER_CLASS, IConfig.DEFAULT_STR);
         __cacheProvider = ClassUtils.impl(StringUtils.defaultIfBlank(Caches.PROVIDERS.get(_providerClassStr), _providerClassStr), ICacheProvider.class, this.getClass());
         if (__cacheProvider == null) {
             __cacheProvider = new DefaultCacheProvider();
         }
         //
-        __cacheEventListener = ClassUtils.impl(_moduleCfgs.get("event_listener_class"), ICacheEventListener.class, this.getClass());
+        __cacheEventListener = _moduleCfg.getClassImpl(EVENT_LISTENER_CLASS, ICacheEventListener.class);
         if (__cacheEventListener == null) {
             __cacheEventListener = new DefaultCacheEventListener();
         }
         //
-        __cacheScopeProcessor = ClassUtils.impl(_moduleCfgs.get("scope_processor_class"), ICacheScopeProcessor.class, this.getClass());
+        __cacheScopeProcessor = _moduleCfg.getClassImpl(SCOPE_PROCESSOR_CLASS, ICacheScopeProcessor.class);
         //
-        __serializer = ISerializer.SerializerManager.getSerializer(StringUtils.defaultIfBlank(_moduleCfgs.get("serializer_class"), "default"));
+        __serializer = ISerializer.SerializerManager.getSerializer(_moduleCfg.getString(SERIALIZER_CLASS, IConfig.DEFAULT_STR));
         if (__serializer == null) {
             __serializer = ISerializer.SerializerManager.getDefaultSerializer();
         }
         //
-        __keyGenerator = ClassUtils.impl(_moduleCfgs.get("key_generator_class"), IKeyGenerator.class, this.getClass());
+        __keyGenerator = _moduleCfg.getClassImpl(KEY_GENERATOR_CLASS, IKeyGenerator.class);
         if (__keyGenerator == null) {
             __keyGenerator = new DefaultKeyGenerator();
         }
         __keyGenerator.init(__serializer);
         //
-        __defaultCacheName = StringUtils.defaultIfBlank(_moduleCfgs.get("default_cache_name"), "default");
+        __defaultCacheName = _moduleCfg.getString(DEFAULT_CACHE_NAME, IConfig.DEFAULT_STR);
 
-        __defaultCacheTimeout = BlurObject.bind(StringUtils.defaultIfBlank(_moduleCfgs.get("default_cache_timeout"), "0")).toIntValue();
+        __defaultCacheTimeout = _moduleCfg.getInt(DEFAULT_CACHE_TIMEOUT, IConfig.DEFAULT_INT);
         if (__defaultCacheTimeout <= 0) {
             __defaultCacheTimeout = 300;
         }

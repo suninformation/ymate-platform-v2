@@ -20,9 +20,10 @@ import net.ymate.platform.core.Version;
 import net.ymate.platform.core.YMP;
 import net.ymate.platform.core.event.Events;
 import net.ymate.platform.core.event.IEventListener;
-import net.ymate.platform.core.lang.BlurObject;
 import net.ymate.platform.core.module.IModule;
 import net.ymate.platform.core.module.annotation.Module;
+import net.ymate.platform.core.support.IConfigReader;
+import net.ymate.platform.core.support.impl.MapSafeConfigReader;
 import net.ymate.platform.core.util.RuntimeUtils;
 import net.ymate.platform.plugin.impl.DefaultPluginConfig;
 import net.ymate.platform.plugin.impl.DefaultPluginFactory;
@@ -32,7 +33,6 @@ import org.apache.commons.logging.LogFactory;
 
 import java.io.File;
 import java.util.Arrays;
-import java.util.Map;
 
 /**
  * 插件框架模块管理器及插件工厂相关工具方法
@@ -77,23 +77,24 @@ public class Plugins implements IModule, IPlugins, IPluginEventListener {
     @Override
     public void init(YMP owner) throws Exception {
         if (!__inited) {
-            Map<String, String> _moduleCfgs = owner.getConfig().getModuleConfigs(MODULE_NAME);
             __owner = owner;
             __owner.getEvents().registerEvent(PluginEvent.class);
             //
-            boolean _disabled = BlurObject.bind(_moduleCfgs.get("disabled")).toBooleanValue();
+            IConfigReader _moduleCfg = MapSafeConfigReader.bind(owner.getConfig().getModuleConfigs(MODULE_NAME));
+            //
+            boolean _disabled = _moduleCfg.getBoolean(IPluginConfig.DISABLED);
             //
             _LOG.info("Initializing ymate-platform-plugin-" + VERSION + (_disabled ? " - disabled" : StringUtils.EMPTY));
             //
             if (!_disabled) {
                 IPluginConfig _config = DefaultPluginConfig.create()
-                        .pluginHome(new File(RuntimeUtils.replaceEnvVariable(StringUtils.defaultIfBlank(_moduleCfgs.get("plugin_home"), "${root}/plugins"))))
+                        .pluginHome(new File(RuntimeUtils.replaceEnvVariable(_moduleCfg.getString(IPluginConfig.PLUGIN_HOME, "${root}/plugins"))))
                         .autoscanPackages(__owner.getConfig().getAutoscanPackages())
-                        .autoscanPackages(Arrays.asList(StringUtils.split(StringUtils.trimToEmpty(_moduleCfgs.get("autoscan_packages")), "|")))
-                        .automatic(BlurObject.bind(StringUtils.defaultIfBlank(_moduleCfgs.get("automatic"), "true")).toBooleanValue())
+                        .autoscanPackages(Arrays.asList(_moduleCfg.getArray(IPluginConfig.AUTOSCAN_PACKAGES)))
+                        .automatic(_moduleCfg.getBoolean(IPluginConfig.AUTOMATIC, true))
                         .eventListener(this).build();
                 //
-                __pluginFactory = new DefaultPluginFactory(__owner, BlurObject.bind(StringUtils.defaultIfBlank(_moduleCfgs.get("included_classpath"), "true")).toBooleanValue()) {
+                __pluginFactory = new DefaultPluginFactory(__owner, _moduleCfg.getBoolean(IPluginConfig.INCLUDED_CLASSPATH, true)) {
                     // For Constructor With includedClassPath.
                 };
                 __pluginFactory.init(_config);

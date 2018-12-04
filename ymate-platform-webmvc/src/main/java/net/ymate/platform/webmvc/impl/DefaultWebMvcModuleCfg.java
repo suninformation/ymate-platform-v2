@@ -15,8 +15,10 @@
  */
 package net.ymate.platform.webmvc.impl;
 
+import net.ymate.platform.core.IConfig;
 import net.ymate.platform.core.YMP;
-import net.ymate.platform.core.lang.BlurObject;
+import net.ymate.platform.core.support.IConfigReader;
+import net.ymate.platform.core.support.impl.MapSafeConfigReader;
 import net.ymate.platform.core.util.ClassUtils;
 import net.ymate.platform.core.util.RuntimeUtils;
 import net.ymate.platform.webmvc.*;
@@ -27,7 +29,6 @@ import org.apache.commons.lang.StringUtils;
 import java.io.File;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Set;
 
 /**
@@ -36,7 +37,7 @@ import java.util.Set;
  * @author 刘镇 (suninformation@163.com) on 15/5/28 下午1:35
  * @version 1.0
  */
-public class DefaultModuleCfg implements IWebMvcModuleCfg {
+public class DefaultWebMvcModuleCfg implements IWebMvcModuleCfg {
 
     private static final String __IGNORE = "^.+\\.(jsp|jspx|png|gif|jpg|jpeg|js|css|swf|ico|htm|html|eot|woff|woff2|ttf|svg|map)$";
 
@@ -98,10 +99,10 @@ public class DefaultModuleCfg implements IWebMvcModuleCfg {
 
     private final Set<String> __conventionViewNotAllowPaths;
 
-    public DefaultModuleCfg(YMP owner) throws Exception {
-        Map<String, String> _moduleCfgs = owner.getConfig().getModuleConfigs(IWebMvc.MODULE_NAME);
+    public DefaultWebMvcModuleCfg(YMP owner) throws Exception {
+        IConfigReader _moduleCfg = MapSafeConfigReader.bind(owner.getConfig().getModuleConfigs(IWebMvc.MODULE_NAME));
         //
-        String _reqMappingParserClass = StringUtils.defaultIfBlank(_moduleCfgs.get("request_mapping_parser_class"), "default");
+        String _reqMappingParserClass = _moduleCfg.getString(REQUEST_MAPPING_PARSER_CLASS, IConfig.DEFAULT_STR);
         Class<? extends IRequestMappingParser> _mappingParserClass = Type.REQUEST_MAPPING_PARSERS.get(_reqMappingParserClass);
         if (_mappingParserClass == null && StringUtils.isNotBlank(_reqMappingParserClass)) {
             __mappingParser = ClassUtils.impl(_reqMappingParserClass, IRequestMappingParser.class, this.getClass());
@@ -112,7 +113,7 @@ public class DefaultModuleCfg implements IWebMvcModuleCfg {
             __mappingParser = new DefaultRequestMappingParser();
         }
         //
-        String _reqProcessorClass = StringUtils.defaultIfBlank(_moduleCfgs.get("request_processor_class"), "default");
+        String _reqProcessorClass = _moduleCfg.getString(REQUEST_PROCESSOR_CLASS, IConfig.DEFAULT_STR);
         Class<? extends IRequestProcessor> _requestProcessorClass = Type.REQUEST_PROCESSORS.get(_reqProcessorClass);
         if (_requestProcessorClass == null && StringUtils.isNotBlank(_reqProcessorClass)) {
             __requestProcessor = ClassUtils.impl(_reqProcessorClass, IRequestProcessor.class, this.getClass());
@@ -123,52 +124,52 @@ public class DefaultModuleCfg implements IWebMvcModuleCfg {
             __requestProcessor = new DefaultRequestProcessor();
         }
         //
-        String _errorProcessorClass = _moduleCfgs.get("error_processor_class");
+        String _errorProcessorClass = _moduleCfg.getString(ERROR_PROCESSOR_CLASS);
         if (StringUtils.isNotBlank(_errorProcessorClass)) {
             __errorProcessor = ClassUtils.impl(_errorProcessorClass, IWebErrorProcessor.class, this.getClass());
         }
         //
-        String _cacheProcessorClass = _moduleCfgs.get("cache_processor_class");
+        String _cacheProcessorClass = _moduleCfg.getString(CACHE_PROCESSOR_CLASS);
         if (StringUtils.isNotBlank(_cacheProcessorClass)) {
             __cacheProcessor = ClassUtils.impl(_cacheProcessorClass, IWebCacheProcessor.class, this.getClass());
         }
         //
-        __charsetEncoding = StringUtils.defaultIfBlank(_moduleCfgs.get("default_charset_encoding"), "UTF-8");
-        __contentType = StringUtils.defaultIfBlank(_moduleCfgs.get("default_content_type"), Type.ContentType.HTML.getContentType());
-        __requestIgnoreRegex = StringUtils.defaultIfBlank(_moduleCfgs.get("request_ignore_regex"), __IGNORE);
-        __requestMethodParam = StringUtils.defaultIfBlank(_moduleCfgs.get("request_method_param"), "_method");
-        __requestPrefix = StringUtils.trimToEmpty(_moduleCfgs.get("request_prefix"));
+        __charsetEncoding = _moduleCfg.getString(DEFAULT_CHARSET_ENCODING, IConfig.DEFAULT_CHARSET);
+        __contentType = _moduleCfg.getString(DEFAULT_CONTENT_TYPE, Type.ContentType.HTML.getContentType());
+        __requestIgnoreRegex = _moduleCfg.getString(REQUEST_IGNORE_REGEX, __IGNORE);
+        __requestMethodParam = _moduleCfg.getString(REQUEST_METHOD_PARAM, "_method");
+        __requestPrefix = StringUtils.trimToEmpty(_moduleCfg.getString(REQUEST_PREFIX));
         //
-        __parameterEscapeMode = BlurObject.bind(_moduleCfgs.get("parameter_escape_mode")).toBooleanValue();
-        __parameterEscapeOrder = Type.EscapeOrder.valueOf(StringUtils.defaultIfBlank(_moduleCfgs.get("parameter_escape_order"), "after").toUpperCase());
+        __parameterEscapeMode = _moduleCfg.getBoolean(PARAMETER_ESCAPE_MODE);
+        __parameterEscapeOrder = Type.EscapeOrder.valueOf(_moduleCfg.getString(PARAMETER_ESCAPE_ORDER, "after").toUpperCase());
         //
-        __baseViewPath = RuntimeUtils.replaceEnvVariable(StringUtils.defaultIfBlank(_moduleCfgs.get("base_view_path"), "/WEB-INF/templates/"));
+        __baseViewPath = RuntimeUtils.replaceEnvVariable(_moduleCfg.getString(BASE_VIEW_PATH, "/WEB-INF/templates/"));
         __abstractBaseViewPath = __baseViewPath;
         if (__abstractBaseViewPath.startsWith("/WEB-INF")) {
             __abstractBaseViewPath = new File(RuntimeUtils.getRootPath(false), __abstractBaseViewPath).getPath();
         }
         //
-        __cookiePrefix = StringUtils.trimToEmpty(_moduleCfgs.get("cookie_prefix"));
-        __cookieDomain = StringUtils.trimToEmpty(_moduleCfgs.get("cookie_domain"));
-        __cookiePath = StringUtils.defaultIfBlank(_moduleCfgs.get("cookie_path"), "/");
-        __cookieAuthKey = StringUtils.trimToEmpty(_moduleCfgs.get("cookie_auth_key"));
-        __defaultEnabledCookieAuth = BlurObject.bind(_moduleCfgs.get("default_enabled_cookie_auth")).toBooleanValue();
-        __defaultUseHttpOnly = BlurObject.bind(_moduleCfgs.get("default_use_http_only")).toBooleanValue();
+        __cookiePrefix = StringUtils.trimToEmpty(_moduleCfg.getString(COOKIE_PREFIX));
+        __cookieDomain = StringUtils.trimToEmpty(_moduleCfg.getString(COOKIE_DOMAIN));
+        __cookiePath = _moduleCfg.getString(COOKIE_PATH, "/");
+        __cookieAuthKey = StringUtils.trimToEmpty(_moduleCfg.getString(COOKIE_AUTH_KEY));
+        __defaultEnabledCookieAuth = _moduleCfg.getBoolean(DEFAULT_ENABLED_COOKIE_AUTH);
+        __defaultUseHttpOnly = _moduleCfg.getBoolean(DEFAULT_USE_HTTP_ONLY);
         //
-        __uploadTempDir = RuntimeUtils.replaceEnvVariable(StringUtils.trimToEmpty(_moduleCfgs.get("upload_temp_dir")));
-        __uploadFileSizeMax = Integer.parseInt(StringUtils.defaultIfBlank(_moduleCfgs.get("upload_file_size_max"), "10485760"));
-        __uploadTotalSizeMax = Integer.parseInt(StringUtils.defaultIfBlank(_moduleCfgs.get("upload_total_size_max"), "10485760"));
-        __uploadSizeThreshold = Integer.parseInt(StringUtils.defaultIfBlank(_moduleCfgs.get("upload_size_threshold"), "10240"));
-        __uploadFileListener = ClassUtils.impl(_moduleCfgs.get("upload_file_listener_class"), ProgressListener.class, this.getClass());
+        __uploadTempDir = RuntimeUtils.replaceEnvVariable(StringUtils.trimToEmpty(_moduleCfg.getString(UPLOAD_TEMP_DIR)));
+        __uploadFileSizeMax = _moduleCfg.getInt(UPLOAD_FILE_SIZE_MAX, 10485760);
+        __uploadTotalSizeMax = _moduleCfg.getInt(UPLOAD_TOTAL_SIZE_MAX, 10485760);
+        __uploadSizeThreshold = _moduleCfg.getInt(UPLOAD_SIZE_THRESHOLD, 10240);
+        __uploadFileListener = _moduleCfg.getClassImpl(UPLOAD_FILE_LISTENER_CLASS, ProgressListener.class);
         //
-        __conventionMode = BlurObject.bind(_moduleCfgs.get("convention_mode")).toBooleanValue();
-        __conventionUrlrewriteMode = BlurObject.bind(_moduleCfgs.get("convention_urlrewrite_mode")).toBooleanValue();
-        __conventionInterceptorMode = BlurObject.bind(_moduleCfgs.get("convention_interceptor_mode")).toBooleanValue();
+        __conventionMode = _moduleCfg.getBoolean(CONVENTION_MODE);
+        __conventionUrlrewriteMode = _moduleCfg.getBoolean(CONVENTION_URLREWRITE_MODE);
+        __conventionInterceptorMode = _moduleCfg.getBoolean(CONVENTION_INTERCEPTOR_MODE);
         //
         __conventionViewAllowPaths = new HashSet<String>();
         __conventionViewNotAllowPaths = new HashSet<String>();
         //
-        String[] _cViewPaths = StringUtils.split(StringUtils.defaultIfBlank(_moduleCfgs.get("convention_view_paths"), ""), "|");
+        String[] _cViewPaths = _moduleCfg.getArray(CONVENTION_VIEW_PATHS);
         if (_cViewPaths != null) {
             for (String _cvPath : _cViewPaths) {
                 _cvPath = StringUtils.trimToNull(_cvPath);

@@ -34,6 +34,18 @@ import java.util.Map;
  */
 public interface IConfig {
 
+    String DEFAULT_CHARSET = "UTF-8";
+
+    String MODULE_NAME_CONFIGURATION = "configuration";
+
+    String MODULE_CLASS_NAME_CONFIGURATION = "net.ymate.platform.configuration.Cfgs";
+
+    String DEFAULT_STR = "default";
+
+    int DEFAULT_INT = 0;
+
+    String SYSTEM_RUN_ENV = "ymp.run_env";
+
     /**
      * 运行模式
      */

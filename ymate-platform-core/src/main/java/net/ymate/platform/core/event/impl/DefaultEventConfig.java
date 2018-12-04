@@ -54,24 +54,24 @@ public final class DefaultEventConfig implements IEventConfig {
             __threadMaxPoolSize = 200;
             __threadQueueSize = 1024;
         } else {
-            __eventProvider = ClassUtils.impl(params.get("provider_class"), IEventProvider.class, this.getClass());
+            __eventProvider = ClassUtils.impl(params.get(PROVIDER_CLASS), IEventProvider.class, this.getClass());
             if (__eventProvider == null) {
                 __eventProvider = new DefaultEventProvider();
             }
             //
-            __defaultMode = Events.MODE.valueOf(StringUtils.defaultIfBlank(params.get("default_mode"), "ASYNC").toUpperCase());
+            __defaultMode = Events.MODE.valueOf(StringUtils.defaultIfBlank(params.get(DEFAULT_MODE), Events.MODE.ASYNC.name()).toUpperCase());
             //
-            __threadPoolSize = BlurObject.bind(params.get("thread_pool_size")).toIntValue();
+            __threadPoolSize = BlurObject.bind(params.get(THREAD_POOL_SIZE)).toIntValue();
             if (__threadPoolSize <= 0) {
                 __threadPoolSize = Runtime.getRuntime().availableProcessors();
             }
             //
-            __threadMaxPoolSize = BlurObject.bind(params.get("thread_max_pool_size")).toIntValue();
+            __threadMaxPoolSize = BlurObject.bind(params.get(THREAD_MAX_POOL_SIZE)).toIntValue();
             if (__threadMaxPoolSize <= 0) {
                 __threadMaxPoolSize = 200;
             }
             //
-            __threadQueueSize = BlurObject.bind(params.get("thread_queue_size")).toIntValue();
+            __threadQueueSize = BlurObject.bind(params.get(THREAD_QUEUE_SIZE)).toIntValue();
             if (__threadQueueSize <= 0) {
                 __threadQueueSize = 1024;
             }

@@ -17,6 +17,7 @@ package net.ymate.platform.core.support.impl;
 
 import net.ymate.platform.core.lang.BlurObject;
 import net.ymate.platform.core.support.IConfigReader;
+import net.ymate.platform.core.util.ClassUtils;
 import org.apache.commons.lang.NullArgumentException;
 import org.apache.commons.lang.StringUtils;
 
@@ -153,6 +154,16 @@ public class MapSafeConfigReader implements IConfigReader {
     @Override
     public double getDouble(String key, double defaultValue) {
         return __doGetObject(key, defaultValue).toDoubleValue();
+    }
+
+    @Override
+    public <T> T getClassImpl(String key, Class<T> interfaceClass) {
+        return ClassUtils.impl(getString(key), interfaceClass, getClass());
+    }
+
+    @Override
+    public <T> T getClassImpl(String key, String defaultValue, Class<T> interfaceClass) {
+        return ClassUtils.impl(getString(key, defaultValue), interfaceClass, getClass());
     }
 
     @Override

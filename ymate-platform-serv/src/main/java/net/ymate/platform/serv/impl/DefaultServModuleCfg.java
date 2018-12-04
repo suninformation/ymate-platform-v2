@@ -16,7 +16,8 @@
 package net.ymate.platform.serv.impl;
 
 import net.ymate.platform.core.YMP;
-import net.ymate.platform.core.util.RuntimeUtils;
+import net.ymate.platform.core.support.IConfigReader;
+import net.ymate.platform.core.support.impl.MapSafeConfigReader;
 import net.ymate.platform.serv.IClientCfg;
 import net.ymate.platform.serv.IServ;
 import net.ymate.platform.serv.IServModuleCfg;
@@ -32,25 +33,25 @@ import java.util.Map;
  * @author 刘镇 (suninformation@163.com) on 15/10/15 上午10:27
  * @version 1.0
  */
-public class DefaultModuleCfg implements IServModuleCfg {
+public class DefaultServModuleCfg implements IServModuleCfg {
 
     private final Map<String, IServerCfg> __serverCfgs;
 
     private final Map<String, IClientCfg> __clientCfgs;
 
-    public DefaultModuleCfg(YMP owner) throws Exception {
-        Map<String, String> _moduleCfgs = owner.getConfig().getModuleConfigs(IServ.MODULE_NAME);
+    public DefaultServModuleCfg(YMP owner) throws Exception {
+        IConfigReader _moduleCfg = MapSafeConfigReader.bind(owner.getConfig().getModuleConfigs(IServ.MODULE_NAME));
         //
-        String[] _serverNames = StringUtils.split(StringUtils.defaultIfBlank(_moduleCfgs.get("server.name_list"), IServ.Const.DEFAULT_NAME), "|");
+        String[] _serverNames = StringUtils.split(_moduleCfg.getString("server.name_list", IServ.Const.DEFAULT_NAME), "|");
         __serverCfgs = new HashMap<String, IServerCfg>(_serverNames.length);
         for (String _name : _serverNames) {
-            __serverCfgs.put(_name, new DefaultServerCfg(RuntimeUtils.keyStartsWith(_moduleCfgs, "server." + _name + "."), _name));
+            __serverCfgs.put(_name, new DefaultServerCfg(_moduleCfg.getMap("server." + _name + "."), _name));
         }
         //
-        String[] _clientNames = StringUtils.split(StringUtils.defaultIfBlank(_moduleCfgs.get("client.name_list"), IServ.Const.DEFAULT_NAME), "|");
+        String[] _clientNames = StringUtils.split(_moduleCfg.getString("client.name_list", IServ.Const.DEFAULT_NAME), "|");
         __clientCfgs = new HashMap<String, IClientCfg>(_clientNames.length);
         for (String _name : _clientNames) {
-            __clientCfgs.put(_name, new DefaultClientCfg(RuntimeUtils.keyStartsWith(_moduleCfgs, "client." + _name + "."), _name));
+            __clientCfgs.put(_name, new DefaultClientCfg(_moduleCfg.getMap("client." + _name + "."), _name));
         }
     }
 

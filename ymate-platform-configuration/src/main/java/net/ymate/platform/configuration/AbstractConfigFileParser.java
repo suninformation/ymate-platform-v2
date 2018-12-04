@@ -88,7 +88,7 @@ public abstract class AbstractConfigFileParser implements IConfigFileParser {
         //
         JSONObject _jsonAttrs = new JSONObject();
         for (Attribute _attr : __rootAttributes.values()) {
-            _jsonAttrs.put(_attr.getKey(), _attr.getValue());
+            _attr.appendTo(_jsonAttrs);
         }
         _jsonObject.put(TAG_NAME_ATTRIBUTES, _jsonAttrs);
         //

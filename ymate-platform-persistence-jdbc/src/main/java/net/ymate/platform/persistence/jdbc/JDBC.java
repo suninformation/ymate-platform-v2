@@ -90,7 +90,7 @@ public class JDBC implements IModule, IDatabase {
             _LOG.info("Initializing ymate-platform-persistence-jdbc-" + VERSION);
             //
             __owner = owner;
-            __moduleCfg = new DefaultModuleCfg(owner);
+            __moduleCfg = new DefaultDatabaseModuleCfg(owner);
             //
             __owner.getEvents().registerEvent(DatabaseEvent.class);
             __owner.registerHandler(Repository.class, new RepoHandler(this));

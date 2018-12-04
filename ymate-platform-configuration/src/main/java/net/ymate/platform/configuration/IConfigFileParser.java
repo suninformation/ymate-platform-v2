@@ -202,12 +202,12 @@ public interface IConfigFileParser {
             JSONObject _jsonO = new JSONObject();
             _jsonO.put("name", name);
             _jsonO.put("content", content);
-
-            JSONObject _jsonATTR = new JSONObject();
+            //
+            JSONObject _jsonAttrs = new JSONObject();
             for (Attribute _attr : attributeMap.values()) {
-                _jsonATTR.put(_attr.getKey(), _attr.getValue());
+                _attr.appendTo(_jsonAttrs);
             }
-            _jsonO.put(TAG_NAME_ATTRIBUTES, _jsonATTR);
+            _jsonO.put(TAG_NAME_ATTRIBUTES, _jsonAttrs);
             return _jsonO;
         }
     }
@@ -247,6 +247,10 @@ public interface IConfigFileParser {
             JSONObject _jsonO = new JSONObject();
             _jsonO.put(key, value);
             return _jsonO;
+        }
+
+        public void appendTo(JSONObject jsonObject) {
+            jsonObject.put(key, value);
         }
     }
 }

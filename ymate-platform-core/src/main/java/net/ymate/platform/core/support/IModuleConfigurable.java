@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2017 the original author or authors.
+ * Copyright 2007-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,23 +15,13 @@
  */
 package net.ymate.platform.core.support;
 
-import java.util.Collections;
 import java.util.Map;
 
 /**
- * 模块配置处理器接口
- *
- * @author 刘镇 (suninformation@163.com) on 15/12/18 下午11:12
+ * @author 刘镇 (suninformation@163.com) on 2018-12-04 00:45
  * @version 1.0
  */
-public interface IModuleCfgProcessor {
+public interface IModuleConfigurable {
 
-    IModuleCfgProcessor EMPTY = new IModuleCfgProcessor() {
-        @Override
-        public Map<String, String> getModuleCfg(String moduleName) {
-            return Collections.emptyMap();
-        }
-    };
-
-    Map<String, String> getModuleCfg(String moduleName);
+    Map<String, String> toMap();
 }

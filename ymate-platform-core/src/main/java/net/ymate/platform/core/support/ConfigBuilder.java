@@ -20,6 +20,7 @@ import net.ymate.platform.core.beans.IBeanLoader;
 import net.ymate.platform.core.beans.intercept.InterceptSettings;
 import net.ymate.platform.core.beans.proxy.IProxyFactory;
 import net.ymate.platform.core.beans.proxy.impl.DefaultProxyFactory;
+import net.ymate.platform.core.event.Events;
 import net.ymate.platform.core.event.IEventConfig;
 import net.ymate.platform.core.event.IEventProvider;
 import net.ymate.platform.core.event.impl.DefaultEventConfig;
@@ -66,8 +67,6 @@ public final class ConfigBuilder {
 
     private final Map<String, String> __paramsMap;
 
-    private final Map<String, Map<String, String>> __moduleCfgs;
-
     private final Map<String, String> __eventConfigs;
 
     private final IModuleCfgProcessor __processor;
@@ -87,22 +86,7 @@ public final class ConfigBuilder {
     @SuppressWarnings("unchecked")
     public static ConfigBuilder create(final Properties properties) {
         //
-        IModuleCfgProcessor _processor = new IModuleCfgProcessor() {
-            @Override
-            public Map<String, String> getModuleCfg(String moduleName) {
-                Map<String, String> _cfgsMap = new HashMap<String, String>();
-                // 提取模块配置
-                for (Object _key : properties.keySet()) {
-                    String _prefix = "ymp.configs." + moduleName + ".";
-                    if (StringUtils.startsWith((String) _key, _prefix)) {
-                        String _cfgKey = StringUtils.substring((String) _key, _prefix.length());
-                        String _cfgValue = properties.getProperty((String) _key);
-                        _cfgsMap.put(_cfgKey, _cfgValue);
-                    }
-                }
-                return _cfgsMap;
-            }
-        };
+        IModuleCfgProcessor _processor = ModuleCfgProcessBuilder.create(properties).build();
         //
         Class<? extends IPasswordProcessor> _passProcessor;
         try {
@@ -129,7 +113,7 @@ public final class ConfigBuilder {
                 .defaultPasswordProcessor(_passProcessor);
         //
         try {
-            IConfig.Environment _runEnv = IConfig.Environment.valueOf(StringUtils.defaultIfBlank(properties.getProperty("ymp.run_env"), "unknown").toUpperCase());
+            IConfig.Environment _runEnv = IConfig.Environment.valueOf(StringUtils.defaultIfBlank(properties.getProperty(IConfig.SYSTEM_RUN_ENV), IConfig.Environment.UNKNOWN.name()).toUpperCase());
             _builder.runEnv(_runEnv);
         } catch (IllegalArgumentException e) {
             _builder.runEnv(IConfig.Environment.UNKNOWN);
@@ -250,12 +234,7 @@ public final class ConfigBuilder {
     }
 
     public static ConfigBuilder create() {
-        return new ConfigBuilder(new IModuleCfgProcessor() {
-            @Override
-            public Map<String, String> getModuleCfg(String moduleName) {
-                return Collections.emptyMap();
-            }
-        });
+        return new ConfigBuilder(IModuleCfgProcessor.EMPTY);
     }
 
     public static ConfigBuilder create(IModuleCfgProcessor processor) {
@@ -268,7 +247,6 @@ public final class ConfigBuilder {
         __excludedFiles = new ArrayList<String>();
         __excludedModules = new ArrayList<String>();
         __paramsMap = new HashMap<String, String>();
-        __moduleCfgs = new HashMap<String, Map<String, String>>();
         __eventConfigs = new HashMap<String, String>();
         //
         __processor = processor;
@@ -367,32 +345,35 @@ public final class ConfigBuilder {
     }
 
     public ConfigBuilder eventMode(boolean async) {
-        __eventConfigs.put("default_mode", async ? "ASYNC" : "NORMAL");
+        __eventConfigs.put(IEventConfig.DEFAULT_MODE, async ? Events.MODE.ASYNC.name() : Events.MODE.NORMAL.name());
         return this;
     }
 
     public ConfigBuilder eventProviderClass(Class<? extends IEventProvider> providerClass) {
-        __eventConfigs.put("provider_class", providerClass.getName());
+        __eventConfigs.put(IEventConfig.PROVIDER_CLASS, providerClass.getName());
         return this;
     }
 
     public ConfigBuilder eventThreadPoolSize(int threadPoolSize) {
-        __eventConfigs.put("thread_pool_size", threadPoolSize + "");
+        __eventConfigs.put(IEventConfig.THREAD_POOL_SIZE, String.valueOf(threadPoolSize));
         return this;
     }
 
     public ConfigBuilder eventThreadMaxPoolSize(int threadMaxPoolSize) {
-        __eventConfigs.put("thread_max_pool_size", threadMaxPoolSize + "");
+        __eventConfigs.put(IEventConfig.THREAD_MAX_POOL_SIZE, String.valueOf(threadMaxPoolSize));
         return this;
     }
 
     public ConfigBuilder eventThreadWorkQueueSize(int threadWorkQueueSize) {
-        __eventConfigs.put("thread_work_queue_size", threadWorkQueueSize + "");
+        __eventConfigs.put(IEventConfig.THREAD_QUEUE_SIZE, String.valueOf(threadWorkQueueSize));
         return this;
     }
 
     public IConfig build() {
         final IEventConfig __eventCfg = new DefaultEventConfig(__eventConfigs);
+        if (__proxyFactory == null) {
+            __proxyFactory = new DefaultProxyFactory();
+        }
         return new IConfig() {
 
             @Override
@@ -452,9 +433,6 @@ public final class ConfigBuilder {
 
             @Override
             public IProxyFactory getProxyFactory() {
-                if (__proxyFactory == null) {
-                    __proxyFactory = new DefaultProxyFactory();
-                }
                 return __proxyFactory;
             }
 
@@ -480,12 +458,7 @@ public final class ConfigBuilder {
 
             @Override
             public Map<String, String> getModuleConfigs(String moduleName) {
-                Map<String, String> _cfgsMap = __moduleCfgs.get(moduleName);
-                if (_cfgsMap == null) {
-                    _cfgsMap = Collections.unmodifiableMap(__processor.getModuleCfg(moduleName));
-                    __moduleCfgs.put(moduleName, _cfgsMap);
-                }
-                return _cfgsMap;
+                return Collections.unmodifiableMap(__processor.getModuleCfg(moduleName));
             }
 
             @Override

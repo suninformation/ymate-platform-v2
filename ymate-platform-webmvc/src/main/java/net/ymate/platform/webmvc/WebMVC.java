@@ -30,7 +30,7 @@ import net.ymate.platform.webmvc.context.WebContext;
 import net.ymate.platform.webmvc.handle.ControllerHandler;
 import net.ymate.platform.webmvc.handle.InterceptorRuleHandler;
 import net.ymate.platform.webmvc.impl.DefaultInterceptorRuleProcessor;
-import net.ymate.platform.webmvc.impl.DefaultModuleCfg;
+import net.ymate.platform.webmvc.impl.DefaultWebMvcModuleCfg;
 import net.ymate.platform.webmvc.impl.NullWebCacheProcessor;
 import net.ymate.platform.webmvc.support.GenericResponseWrapper;
 import net.ymate.platform.webmvc.support.MultipartRequestWrapper;
@@ -109,7 +109,7 @@ public class WebMVC implements IModule, IWebMvc {
             _LOG.info("Initializing ymate-platform-webmvc-" + VERSION);
             //
             __owner = owner;
-            __moduleCfg = new DefaultModuleCfg(owner);
+            __moduleCfg = new DefaultWebMvcModuleCfg(owner);
             __owner.getEvents().registerEvent(WebEvent.class);
             __owner.registerHandler(Controller.class, new ControllerHandler(this));
             //
