@@ -377,11 +377,159 @@ YMP框架启动时将自动扫描并加载声明了`@Server`和`@Client`注解�
         });
         client.connect();
 
+#### 会话管理器
+
+会话管理器的作用是帮助TCP、UDP服务端管理已连接的客户端会话，目前主要功能包括：
+
+- 空闲会话检查：当会话在设定的时间内与服务器之间无任何通讯时，此会话将被关闭并从会话管理器中移除；
+
+- 流量速度统计：通过记录客户端与服务端的消息收发数量，能够计算出消息处理的实时速度、平均速度、最大及最小速度值；
+
+- 向客户端主动发送消息：通过调用会话管理器实例对象方法，可以根据业务需要主动向指定会话发送消息；
+
+- 移除客户端会话：通过调用会话管理器实例对象方法，可以将指定标识的会话关闭并将其移除；
+
+
+##### 示例程序：
+
+- TCP会话管理器示例：
+
+    ```
+    public class TcpSessionListener implements INioSessionListener<NioSessionWrapper, String> {
+    
+        private static final Log _LOG = LogFactory.getLog(DemoSessionListener.class);
+    
+        public static void main(String[] args) throws Exception {
+            // 初始化YMP框架
+            YMP.get().init();
+            // 创建服务端配置
+            IServerCfg _serverCfg = DefaultServerCfg.create()
+                    .selectorCount(10)
+                    .serverHost("localhost")
+                    .port(8281)
+                    .keepAliveTime(60000).build();
+            // 通过会话管理器创建服务 (设置会话空闲时间为30秒)
+            NioSessionManager<NioSessionWrapper, String> _manager = new NioSessionManager<NioSessionWrapper, String>(_serverCfg, new NioStringCodec(), new TcpSessionListener(), 30000L);
+            // 设置空闲会话检查服务
+            _manager.idleChecker(new DefaultSessionIdleChecker<NioSessionWrapper, String, String>());
+            // 设置流量速度计数器
+            _manager.speedometer(new Speedometer());
+            // 初始化并启动服务
+            _manager.init(Servs.get());
+    
+            // -------------------
+    
+            // 遍历会话并向其发送消息
+            for (NioSessionWrapper _session : _manager.sessionWrappers()) {
+                _manager.sendTo(_session.getId(), "Send message from server.");
+            }
+            // 当前会话总数
+            System.out.println("Current session count: " + _manager.sessionCount());
+            // 将已连接的客户端会话从管理器中移除
+            for (NioSessionWrapper _session : _manager.sessionWrappers()) {
+                _manager.closeSessionWrapper(_session);
+            }
+            // 销毁会话管理器
+            _manager.destroy();
+        }
+    
+        @Override
+        public void onSessionRegistered(NioSessionWrapper session) throws IOException {
+            _LOG.info("onSessionRegistered: " + session.getId());
+        }
+    
+        @Override
+        public void onSessionAccepted(NioSessionWrapper session) throws IOException {
+            _LOG.info("onSessionAccepted: " + session.getId());
+        }
+    
+        @Override
+        public void onBeforeSessionClosed(NioSessionWrapper session) throws IOException {
+            _LOG.info("onBeforeSessionClosed: " + session.getId());
+        }
+    
+        @Override
+        public void onAfterSessionClosed(NioSessionWrapper session) throws IOException {
+            _LOG.info("onAfterSessionClosed: " + session.getId());
+        }
+    
+        @Override
+        public void onMessageReceived(String message, NioSessionWrapper session) throws IOException {
+            _LOG.info("onMessageReceived: " + message + " from " + session.getId());
+        }
+    
+        @Override
+        public void onExceptionCaught(Throwable e, NioSessionWrapper session) throws IOException {
+            _LOG.info("onExceptionCaught: " + e.getMessage() + " -- " + session.getId());
+        }
+    
+        @Override
+        public void onSessionIdleRemoved(NioSessionWrapper sessionWrapper) {
+            _LOG.info("onSessionIdleRemoved: " + sessionWrapper.getId());
+        }
+    }
+    ```
+
+- UDP会话管理器示例：
+
+    ```
+    public class UdpSessionListener implements INioUdpSessionListener<NioUdpSessionWrapper, String> {
+    
+        private static final Log _LOG = LogFactory.getLog(UdpSessionListener.class);
+    
+        public static void main(String[] args) throws Exception {
+            // 初始化YMP框架
+            YMP.get().init();
+            // 创建服务端配置
+            IServerCfg _serverCfg = DefaultServerCfg.create()
+                    .selectorCount(10)
+                    .serverHost("localhost")
+                    .port(8281).build();
+            // 通过会话管理器创建服务 (设置会话空闲时间为30秒)
+            NioUdpSessionManager<NioUdpSessionWrapper, String> _manager = new NioUdpSessionManager<NioUdpSessionWrapper, String>(_serverCfg, new NioStringCodec(), new UdpSessionListener(), 30000L);
+            // 设置空闲会话检查服务
+            _manager.idleChecker(new DefaultSessionIdleChecker<NioUdpSessionWrapper, InetSocketAddress, String>());
+            // 设置流量速度计数器
+            _manager.speedometer(new Speedometer());
+            // 初始化并启动服务
+            _manager.init(Servs.get());
+    
+            // -------------------
+    
+            // 遍历会话并向其发送消息
+            for (NioUdpSessionWrapper _session : _manager.sessionWrappers()) {
+                _manager.sendTo(_session.getId(), "Send message from server.");
+            }
+            // 当前会话总数
+            System.out.println("Current session count: " + _manager.sessionCount());
+            // 将已连接的客户端会话从管理器中移除
+            for (NioUdpSessionWrapper _session : _manager.sessionWrappers()) {
+                _manager.closeSessionWrapper(_session);
+            }
+            // 销毁会话管理器
+            _manager.destroy();
+        }
+    
+        @Override
+        public Object onMessageReceived(NioUdpSessionWrapper sessionWrapper, String message) throws IOException {
+            _LOG.info("onMessageReceived: " + message + " from " + sessionWrapper.getId());
+            // 当收到消息后，可以直接向客户端回复消息
+            return "Hi, " + sessionWrapper.getId();
+        }
+    
+        @Override
+        public void onExceptionCaught(NioUdpSessionWrapper sessionWrapper, Throwable e) throws IOException {
+            _LOG.info("onExceptionCaught: " + e.getMessage() + " -- " + sessionWrapper.getId());
+        }
+    
+        @Override
+        public void onSessionIdleRemoved(NioUdpSessionWrapper sessionWrapper) {
+            _LOG.info("onSessionIdleRemoved: " + sessionWrapper.getId());
+        }
+    }
+    ```
+
 > **注意**：
 >
 > - 通过手工编码方式创建的服务端或客户端实例对象将不被框架管理，需要开发者手动调用关闭方法(如：`server.close()`或`client.close()`)来释放资源。
 > - YMP框架初始化后，若使用`try...finally`执行`YMP.get().destroy()`销毁动作，则服务启动后将立即被停止。
-
-
-#### 会话管理器
-
