@@ -42,6 +42,8 @@ public abstract class AbstractNioClient<LISTENER extends IListener<INioSession>>
 
     private IHeartbeatService __heartbeatService;
 
+    private boolean __closing;
+
     private void __startServices() {
         if (__reconnectService != null && __reconnectService.isInited()) {
             __reconnectService.start();
@@ -107,6 +109,11 @@ public abstract class AbstractNioClient<LISTENER extends IListener<INioSession>>
     }
 
     @Override
+    public boolean isClosing() {
+        return __closing;
+    }
+
+    @Override
     public IClientCfg clientCfg() {
         return __clientCfg;
     }
@@ -126,6 +133,7 @@ public abstract class AbstractNioClient<LISTENER extends IListener<INioSession>>
     public void close() throws IOException {
         _LOG.info(getClass().getSimpleName() + " [" + __eventGroup.name() + "] is closing....");
         //
+        __closing = true;
         __stopServices();
         //
         if (__eventGroup != null) {

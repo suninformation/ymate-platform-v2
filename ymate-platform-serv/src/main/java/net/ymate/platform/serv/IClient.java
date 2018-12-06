@@ -63,6 +63,11 @@ public interface IClient<LISTENER extends IListener, CODEC extends ICodec> exten
     boolean isConnected();
 
     /**
+     * @return 是否正在关闭
+     */
+    boolean isClosing();
+
+    /**
      * @return 客户端配置对象
      */
     IClientCfg clientCfg();

@@ -60,13 +60,15 @@ public class DefaultReconnectService extends AbstractService implements IReconne
     @Override
     protected void __doService() {
         try {
-            if (!__client.isConnected() && __counter.getAndIncrement() > 0) {
-                __client.listener().onClientReconnected(__client);
-                __client.reconnect();
-                //
-                __counter.set(0);
-            } else {
-                sleep(__timeout);
+            if (!__client.isClosing()) {
+                if (!__client.isConnected() && __counter.getAndIncrement() > 0) {
+                    __client.listener().onClientReconnected(__client);
+                    __client.reconnect();
+                    //
+                    __counter.set(0);
+                } else {
+                    sleep(__timeout);
+                }
             }
         } catch (Exception e) {
             if (isStarted()) {
