@@ -397,7 +397,7 @@ YMP框架启动时将自动扫描并加载声明了`@Server`和`@Client`注解�
     ```
     public class TcpSessionListener implements INioSessionListener<NioSessionWrapper, String> {
     
-        private static final Log _LOG = LogFactory.getLog(DemoSessionListener.class);
+        private static final Log _LOG = LogFactory.getLog(TcpSessionListener.class);
     
         public static void main(String[] args) throws Exception {
             // 初始化YMP框架
