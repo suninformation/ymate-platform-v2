@@ -143,7 +143,7 @@ public class Speedometer implements Closeable {
     public void close() {
         if (__started && __executorService != null) {
             __started = false;
-            __executorService.shutdown();
+            __executorService.shutdownNow();
         }
     }
 }
