@@ -88,7 +88,9 @@ public abstract class AbstractSessionManager<SESSION_WRAPPER extends ISessionWra
     @Override
     @SuppressWarnings("unchecked")
     public void closeSessionWrapper(SESSION_WRAPPER sessionWrapper) {
-        removeSessionWrapper((SESSION_ID) sessionWrapper.getId());
+        if (sessionWrapper != null && sessionWrapper.getId() != null) {
+            removeSessionWrapper((SESSION_ID) sessionWrapper.getId());
+        }
     }
 
     @Override

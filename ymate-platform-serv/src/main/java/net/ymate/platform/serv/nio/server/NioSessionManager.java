@@ -129,15 +129,17 @@ public class NioSessionManager<SESSION_WRAPPER extends NioSessionWrapper, MESSAG
 
     @Override
     public void closeSessionWrapper(SESSION_WRAPPER sessionWrapper) {
-        SESSION_WRAPPER _wrapper = removeSessionWrapper(sessionWrapper.getId());
-        if (_wrapper == null) {
-            _wrapper = sessionWrapper;
-        }
-        try {
-            _wrapper.getSession().closeNow();
-        } catch (IOException e) {
-            if (_LOG.isDebugEnabled()) {
-                _LOG.debug("Session close exception: ", RuntimeUtils.unwrapThrow(e));
+        if (sessionWrapper != null && sessionWrapper.getId() != null) {
+            SESSION_WRAPPER _wrapper = removeSessionWrapper(sessionWrapper.getId());
+            if (_wrapper == null) {
+                _wrapper = sessionWrapper;
+            }
+            try {
+                _wrapper.getSession().closeNow();
+            } catch (IOException e) {
+                if (_LOG.isDebugEnabled()) {
+                    _LOG.debug("Session close exception: ", RuntimeUtils.unwrapThrow(e));
+                }
             }
         }
     }
