@@ -102,7 +102,7 @@ public class Speedometer implements Closeable {
         }
         __listener = listener;
         if (!__started) {
-            __executorService = ThreadUtils.newSingleThreadExecutor(1, ThreadUtils.createFactory("speedometer-"));
+            __executorService = ThreadUtils.newSingleThreadExecutor(1, ThreadUtils.createFactory("Speedometer-"));
             __executorService.submit(new Runnable() {
                 @Override
                 public void run() {

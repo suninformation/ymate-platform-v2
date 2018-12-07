@@ -47,11 +47,6 @@ public class DefaultCacheModuleCfg implements ICacheModuleCfg {
     private int __defaultCacheTimeout;
 
     public DefaultCacheModuleCfg(YMP owner) throws Exception {
-        // 尝试加载配置体系模块，若存在则将决定配置文件加载的路径
-        if (!owner.isModuleExcluded(IConfig.MODULE_NAME_CONFIGURATION) && !owner.isModuleExcluded(IConfig.MODULE_CLASS_NAME_CONFIGURATION)) {
-            owner.getModule(IConfig.MODULE_CLASS_NAME_CONFIGURATION);
-        }
-        //
         IConfigReader _moduleCfg = MapSafeConfigReader.bind(owner.getConfig().getModuleConfigs(ICaches.MODULE_NAME));
         //
         String _providerClassStr = _moduleCfg.getString(PROVIDER_CLASS, IConfig.DEFAULT_STR);

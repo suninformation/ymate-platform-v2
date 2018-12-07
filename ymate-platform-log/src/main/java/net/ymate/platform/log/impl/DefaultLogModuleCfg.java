@@ -43,11 +43,6 @@ public class DefaultLogModuleCfg implements ILogModuleCfg {
 
     @SuppressWarnings("unchecked")
     public DefaultLogModuleCfg(YMP owner) {
-        // 尝试加载配置体系模块，若存在则将决定配置文件加载的路径
-        if (!owner.isModuleExcluded(IConfig.MODULE_NAME_CONFIGURATION) && !owner.isModuleExcluded(IConfig.MODULE_CLASS_NAME_CONFIGURATION)) {
-            owner.getModule(IConfig.MODULE_CLASS_NAME_CONFIGURATION);
-        }
-        //
         IConfigReader _moduleCfg = MapSafeConfigReader.bind(owner.getConfig().getModuleConfigs(ILog.MODULE_NAME));
         //
         this.configFile = new File(RuntimeUtils.replaceEnvVariable(_moduleCfg.getString(CONFIG_FILE, "${root}/cfgs/log4j.xml")));

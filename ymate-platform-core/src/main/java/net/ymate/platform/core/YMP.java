@@ -203,6 +203,10 @@ public class YMP {
             __moduleFactory.init();
             __moduleFactory.initProxy(null);
             __moduleFactory.initIoC();
+            // 优化尝试加载配置体系模块，若存在则将决定配置文件加载的路径
+            if (!isModuleExcluded(IConfig.MODULE_NAME_CONFIGURATION) && !isModuleExcluded(IConfig.MODULE_CLASS_NAME_CONFIGURATION)) {
+                getModule(IConfig.MODULE_CLASS_NAME_CONFIGURATION);
+            }
             //
             for (Class<? extends IModule> _moduleClass : __modules) {
                 IModule _module = getModule(_moduleClass);
