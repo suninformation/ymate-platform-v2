@@ -186,7 +186,8 @@ public final class Select extends Query<Select> {
     }
 
     public Select field(Fields fields, boolean wrapIdentifier) {
-        this.__fields.add(wrapIdentifier ? __wrapIdentifierFields(fields.toArray()) : fields);
+        Fields _field = __checkFieldExcluded(fields);
+        this.__fields.add(wrapIdentifier ? __wrapIdentifierFields(_field.toArray()) : _field);
         return this;
     }
 
@@ -195,7 +196,7 @@ public final class Select extends Query<Select> {
     }
 
     public Select field(String prefix, Fields fields, boolean wrapIdentifier) {
-        for (String _field : fields.fields()) {
+        for (String _field : __checkFieldExcluded(fields).fields()) {
             this.__fields.add(prefix, wrapIdentifier ? __wrapIdentifierField(_field) : _field);
         }
         return this;

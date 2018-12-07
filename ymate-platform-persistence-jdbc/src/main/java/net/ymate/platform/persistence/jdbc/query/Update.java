@@ -161,7 +161,8 @@ public final class Update extends Query<Update> {
     }
 
     public Update field(Fields fields, boolean wrapIdentifier) {
-        this.__fields.add(wrapIdentifier ? __wrapIdentifierFields(fields.toArray()) : fields);
+        Fields _fields = __checkFieldExcluded(fields);
+        this.__fields.add(wrapIdentifier ? __wrapIdentifierFields(_fields.toArray()) : _fields);
         return this;
     }
 
@@ -170,7 +171,7 @@ public final class Update extends Query<Update> {
     }
 
     public Update field(String prefix, Fields fields, boolean wrapIdentifier) {
-        for (String _field : fields.fields()) {
+        for (String _field : __checkFieldExcluded(fields).fields()) {
             this.__fields.add(prefix, wrapIdentifier ? __wrapIdentifierField(_field) : _field);
         }
         return this;

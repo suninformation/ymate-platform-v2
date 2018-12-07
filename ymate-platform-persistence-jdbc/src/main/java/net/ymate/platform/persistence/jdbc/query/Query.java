@@ -126,6 +126,14 @@ public class Query<T> {
 
     // ----------
 
+    protected Fields __checkFieldExcluded(Fields fields) {
+        if (fields.isExcluded()) {
+            _LOG.warn("Query fields do not support exclusion and have been cleaned up.");
+            return Fields.create();
+        }
+        return fields;
+    }
+
     protected String __buildSafeTableName(String prefix, String tableName, boolean safePrefix) {
         if (safePrefix) {
             prefix = StringUtils.defaultIfBlank(prefix, this.tablePrefix());

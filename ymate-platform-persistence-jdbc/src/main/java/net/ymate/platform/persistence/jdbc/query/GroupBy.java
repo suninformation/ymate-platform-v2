@@ -47,7 +47,7 @@ public final class GroupBy extends Query<GroupBy> {
     }
 
     private GroupBy(Fields fields) {
-        __groupByNames = Fields.create().add(fields);
+        __groupByNames = Fields.create().add(__checkFieldExcluded(fields));
     }
 
     public Fields fields() {
