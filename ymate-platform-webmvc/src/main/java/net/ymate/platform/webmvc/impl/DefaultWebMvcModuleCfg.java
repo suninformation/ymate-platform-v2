@@ -49,6 +49,12 @@ public class DefaultWebMvcModuleCfg implements IWebMvcModuleCfg {
 
     private IWebCacheProcessor __cacheProcessor;
 
+    private String __i18nResourceHome;
+
+    private String __i18nResourceName;
+
+    private String __i18nLanguageParamName;
+
     private final String __charsetEncoding;
 
     private final String __contentType;
@@ -125,14 +131,21 @@ public class DefaultWebMvcModuleCfg implements IWebMvcModuleCfg {
         }
         //
         String _errorProcessorClass = _moduleCfg.getString(ERROR_PROCESSOR_CLASS);
-        if (StringUtils.isNotBlank(_errorProcessorClass)) {
+        if (StringUtils.isNotBlank(_errorProcessorClass) && !DefaultWebErrorProcessor.class.getName().equals(_errorProcessorClass)) {
             __errorProcessor = ClassUtils.impl(_errorProcessorClass, IWebErrorProcessor.class, this.getClass());
+        }
+        if (__errorProcessor == null) {
+            __errorProcessor = new DefaultWebErrorProcessor();
         }
         //
         String _cacheProcessorClass = _moduleCfg.getString(CACHE_PROCESSOR_CLASS);
         if (StringUtils.isNotBlank(_cacheProcessorClass)) {
             __cacheProcessor = ClassUtils.impl(_cacheProcessorClass, IWebCacheProcessor.class, this.getClass());
         }
+        //
+        __i18nResourceHome = RuntimeUtils.replaceEnvVariable(_moduleCfg.getString(I18N_RESOURCES_HOME, "${root}/i18n/"));
+        __i18nResourceName = _moduleCfg.getString(I18N_RESOURCE_NAME, "messages");
+        __i18nLanguageParamName = _moduleCfg.getString(I18N_LANGUAGE_PARAM_NAME, "_lang");
         //
         __charsetEncoding = _moduleCfg.getString(DEFAULT_CHARSET_ENCODING, IConfig.DEFAULT_CHARSET);
         __contentType = _moduleCfg.getString(DEFAULT_CONTENT_TYPE, Type.ContentType.HTML.getContentType());
@@ -215,6 +228,21 @@ public class DefaultWebMvcModuleCfg implements IWebMvcModuleCfg {
     @Override
     public IWebCacheProcessor getCacheProcessor() {
         return __cacheProcessor;
+    }
+
+    @Override
+    public String getI18nResourcesHome() {
+        return __i18nResourceHome;
+    }
+
+    @Override
+    public String getI18nResourceName() {
+        return __i18nResourceName;
+    }
+
+    @Override
+    public String getI18nLanguageParamName() {
+        return __i18nLanguageParamName;
     }
 
     @Override

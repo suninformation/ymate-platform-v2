@@ -36,6 +36,12 @@ public interface IWebMvcModuleCfg {
 
     String CACHE_PROCESSOR_CLASS = "cache_processor_class";
 
+    String I18N_RESOURCES_HOME = "i18n_resources_home";
+
+    String I18N_RESOURCE_NAME = "i18n_resource_name";
+
+    String I18N_LANGUAGE_PARAM_NAME = "i18n_language_param_name";
+
     String DEFAULT_CHARSET_ENCODING = "default_charset_encoding";
 
     String DEFAULT_CONTENT_TYPE = "default_content_type";
@@ -93,7 +99,7 @@ public interface IWebMvcModuleCfg {
     IRequestProcessor getRequestProcessor();
 
     /**
-     * @return 异常错误处理器，可选参数
+     * @return 异常错误处理器，可选参数，默认值为net.ymate.platform.webmvc.impl.DefaultWebErrorProcessor
      */
     IWebErrorProcessor getErrorProcessor();
 
@@ -101,6 +107,21 @@ public interface IWebMvcModuleCfg {
      * @return 缓存处理器，可选参数
      */
     IWebCacheProcessor getCacheProcessor();
+
+    /**
+     * @return 国际化资源文件存放路径，可选参数，默认值为${root}/i18n/
+     */
+    String getI18nResourcesHome();
+
+    /**
+     * @return 国际化资源文件名称，可选参数，默认值为messages
+     */
+    String getI18nResourceName();
+
+    /**
+     * @return 国际化语言设置参数名称，可选参数，默认值为_lang
+     */
+    String getI18nLanguageParamName();
 
     /**
      * @return 默认字符编码集设置，可选参数，默认值为UTF-8

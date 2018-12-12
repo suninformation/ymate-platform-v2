@@ -16,8 +16,7 @@
 package net.ymate.platform.webmvc.support;
 
 import net.ymate.platform.core.i18n.II18NEventHandler;
-import net.ymate.platform.core.util.RuntimeUtils;
-import net.ymate.platform.webmvc.WebMVC;
+import net.ymate.platform.webmvc.IWebMvc;
 import net.ymate.platform.webmvc.context.WebContext;
 import net.ymate.platform.webmvc.util.CookieHelper;
 import org.apache.commons.lang.LocaleUtils;
@@ -35,22 +34,20 @@ import java.util.Locale;
  */
 public class I18NWebEventHandler implements II18NEventHandler {
 
-    public static final String I18N_LANG_KEY = "_lang";
-
-    private String __i18nHome;
-
     @Override
     public Locale onLocale() {
         String _langStr = null;
         // 先尝试取URL参数变量
         if (WebContext.getContext() != null) {
-            _langStr = WebContext.getRequestContext().getAttribute(I18N_LANG_KEY);
+            IWebMvc _owner = WebContext.getContext().getOwner();
+            String _i18nLangKey = _owner.getModuleCfg().getI18nLanguageParamName();
+            _langStr = WebContext.getRequestContext().getAttribute(_i18nLangKey);
             if (StringUtils.trimToNull(_langStr) == null) {
                 // 再尝试从请求参数中获取
-                _langStr = WebContext.getRequest().getParameter(I18N_LANG_KEY);
+                _langStr = WebContext.getRequest().getParameter(_i18nLangKey);
                 if (StringUtils.trimToNull(_langStr) == null) {
                     // 最后一次机会，尝试读取Cookies
-                    _langStr = CookieHelper.bind(WebContext.getContext().getOwner()).getCookie(I18N_LANG_KEY).toStringValue();
+                    _langStr = CookieHelper.bind(_owner).getCookie(_i18nLangKey).toStringValue();
                 }
             }
         }
@@ -68,17 +65,16 @@ public class I18NWebEventHandler implements II18NEventHandler {
     @Override
     public void onChanged(Locale locale) {
         if (WebContext.getContext() != null && locale != null) {
-            CookieHelper.bind(WebContext.getContext().getOwner()).setCookie(I18N_LANG_KEY, locale.toString());
+            IWebMvc _owner = WebContext.getContext().getOwner();
+            String _i18nLangKey = _owner.getModuleCfg().getI18nLanguageParamName();
+            CookieHelper.bind(_owner).setCookie(_i18nLangKey, locale.toString());
         }
     }
 
     @Override
     public InputStream onLoad(String resourceName) throws IOException {
-        if (__i18nHome == null) {
-            __i18nHome = RuntimeUtils.replaceEnvVariable(StringUtils.defaultIfBlank(WebMVC.get().getOwner().getConfig().getParam("i18n_resources_home"), "${root}/i18n/"));
-        }
-        if (StringUtils.trimToNull(resourceName) != null) {
-            File _resFile = new File(__i18nHome, resourceName);
+        if (StringUtils.trimToNull(resourceName) != null && WebContext.getContext() != null) {
+            File _resFile = new File(WebContext.getContext().getOwner().getModuleCfg().getI18nResourcesHome(), resourceName);
             if (_resFile.exists() && _resFile.isFile() && _resFile.canRead()) {
                 return new FileInputStream(_resFile);
             }

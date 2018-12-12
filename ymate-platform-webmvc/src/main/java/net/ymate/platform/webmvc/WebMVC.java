@@ -28,6 +28,7 @@ import net.ymate.platform.webmvc.annotation.*;
 import net.ymate.platform.webmvc.base.Type;
 import net.ymate.platform.webmvc.context.WebContext;
 import net.ymate.platform.webmvc.handle.ControllerHandler;
+import net.ymate.platform.webmvc.handle.ExceptionProcessorHandler;
 import net.ymate.platform.webmvc.handle.InterceptorRuleHandler;
 import net.ymate.platform.webmvc.impl.DefaultInterceptorRuleProcessor;
 import net.ymate.platform.webmvc.impl.DefaultWebMvcModuleCfg;
@@ -112,6 +113,7 @@ public class WebMVC implements IModule, IWebMvc {
             __moduleCfg = new DefaultWebMvcModuleCfg(owner);
             __owner.getEvents().registerEvent(WebEvent.class);
             __owner.registerHandler(Controller.class, new ControllerHandler(this));
+            __owner.registerHandler(ExceptionProcessor.class, new ExceptionProcessorHandler());
             //
             if (__moduleCfg.getErrorProcessor() instanceof IWebInitializable) {
                 ((IWebInitializable) __moduleCfg.getErrorProcessor()).init(this);

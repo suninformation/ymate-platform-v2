@@ -17,17 +17,12 @@ package net.ymate.platform.webmvc.view.impl;
 
 import net.ymate.platform.webmvc.IWebMvc;
 import net.ymate.platform.webmvc.context.WebContext;
+import net.ymate.platform.webmvc.util.WebUtils;
 import net.ymate.platform.webmvc.view.AbstractView;
 import org.apache.commons.lang.StringUtils;
 
-import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpServletResponseWrapper;
-import java.io.IOException;
 import java.io.OutputStream;
-import java.io.OutputStreamWriter;
-import java.io.PrintWriter;
 import java.util.Map;
 
 /**
@@ -116,34 +111,6 @@ public class JspView extends AbstractView {
     public void render(final OutputStream output) throws Exception {
         __doProcessPath();
         //
-        HttpServletRequest _request = WebContext.getRequest();
-        HttpServletResponse _response = WebContext.getResponse();
-        // 输出JSP内容到文件流(生成静态文件), 字符编码默认采用UTF-8
-        final ServletOutputStream _oStream = new ServletOutputStream() {
-            @Override
-            public void write(int b) throws IOException {
-                output.write(b);
-            }
-
-            @Override
-            public void write(byte[] b, int off, int len) throws IOException {
-                output.write(b, off, len);
-            }
-        };
-        final PrintWriter _printWriter = new PrintWriter(new OutputStreamWriter(output, _response.getCharacterEncoding()));
-        //
-        HttpServletResponse _newResponse = new HttpServletResponseWrapper(_response) {
-            @Override
-            public ServletOutputStream getOutputStream() {
-                return _oStream;
-            }
-
-            @Override
-            public PrintWriter getWriter() {
-                return _printWriter;
-            }
-        };
-        _request.getRequestDispatcher(__path).include(_request, _newResponse);
-        _printWriter.flush();
+        WebUtils.includeJSP(WebContext.getRequest(), WebContext.getResponse(), __path, WebContext.getResponse().getCharacterEncoding(), output);
     }
 }

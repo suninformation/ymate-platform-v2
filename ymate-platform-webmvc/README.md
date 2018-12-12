@@ -95,11 +95,20 @@ WebMVC模块的基本初始化参数配置：
 	# 控制器请求处理器，可选值为已知处理器名称或自定义处理器类名称，自定义类需实现net.ymate.platform.webmvc.IRequestProcessor接口，默认为default，目前支持已知处理器[default|json|xml|...]
 	ymp.configs.webmvc.request_processor_class=
 	
-	# 异常错误处理器，可选参数，此类需实现net.ymate.platform.webmvc.IWebErrorProcessor接口
+	# 异常错误处理器，可选参数，此类需实现net.ymate.platform.webmvc.IWebErrorProcessor接口，默认值为net.ymate.platform.webmvc.impl.DefaultWebErrorProcessor
 	ymp.configs.webmvc.error_processor_class=
 	
 	# 缓存处理器，可选参数，此类需实现net.ymate.platform.webmvc.IWebCacheProcessor接口
 	ymp.configs.webmvc.cache_processor_class=
+	
+	# 国际化资源文件存放路径，可选参数，默认值为${root}/i18n/
+    ymp.configs.webmvc.i18n_resources_home=
+    
+    # 国际化资源文件名称，可选参数，默认值为messages
+    ymp.configs.webmvc.i18n_resource_name=
+    
+    # 国际化语言设置参数名称，可选参数，默认值为_lang
+    ymp.configs.webmvc.i18n_language_param_name=
 	
 	# 默认字符编码集设置，可选参数，默认值为UTF-8
 	ymp.configs.webmvc.default_charset_encoding=
@@ -126,6 +135,43 @@ WebMVC模块的基本初始化参数配置：
 	ymp.configs.webmvc.base_view_path=
 
 **说明**：在服务端程序Servlet方式的请求处理中，请求忽略正则表达式`request_ignore_regex`参数无效；
+
+WebMVC模块的扩展参数配置：
+
+    #-------------------------------------
+    # WebMVC扩展配置参数
+    #-------------------------------------
+    
+    # 控制器请求URL后缀参数名称，默认值为空
+    ymp.params.webmvc.request_suffix=
+    
+    # 服务名称参数, 默认值: request.getServerName();
+    ymp.params.webmvc.server_name=
+    
+    # 系统异常分析是否关闭，默认值为false
+    ymp.params.webmvc.exception_analysis_disabled=
+    
+    # 系统错误消息是否指定ContentType响应头，默认值为false
+    ymp.params.webmvc.error_with_content_type=
+    
+    # 默认异常响应视图格式, 默认值: "", 可选范围: json|xml
+    ymp.params.webmvc.error_default_view_format=
+    
+    # 常信息视图文件名称，默认值为error.jsp
+    ymp.params.webmvc.error_view=
+    
+    # 验证结果消息模板参数名称, 默认值: "${items}"
+    ymp.params.webmvc.validation_template_element=
+    
+    # 验证结果消息项模板参数名称, 默认值: "${message}<br>"
+    ymp.params.webmvc.validation_template_item=
+    
+    # 重定向主页URL地址参数名称, 默认值: ""
+    ymp.params.webmvc.redirect_home_url=
+    
+    # 自定义重定向URL地址参数名称, 默认值: ""
+    ymp.params.webmvc.redirect_custom_url=
+
 
 #### 模块事件
 
@@ -1072,23 +1118,26 @@ WebMVC模块针对Cookies这个小甜点提供了一个名为CookieHelper的小�
 
 #### 国际化（I18N）
 
-基于YMPv2.0框架I18N支持，整合WebMVC模块并提供了默认II18NEventHandler接口实现，配置方法：
+基于YMPv2.0框架I18N支持，整合WebMVC模块并提供了默认II18NEventHandler接口实现，相关配置参数：
 
 	// 指定WebMVC模块的I18N资源管理事件监听处理器
 	ymp.i18n_event_handler_class=net.ymate.platform.webmvc.support.I18NWebEventHandler
 	
-	// 语言设置的参数名称，可选参数，默认为空
-	ymp.params._lang=_lang
-	
-	// 资源文件存放路径，可选参数，默认为${root}/i18n/
-	ymp.params.i18n_resources_home=${root}/i18n/
+	# 国际化资源文件存放路径，可选参数，默认值为${root}/i18n/
+    ymp.configs.webmvc.i18n_resources_home=
+    
+    # 国际化资源文件名称，可选参数，默认值为messages
+    ymp.configs.webmvc.i18n_resource_name=
+    
+    # 国际化语言设置参数名称，可选参数，默认值为_lang
+    ymp.configs.webmvc.i18n_language_param_name=
 
 加载当前语言设置的步骤：
 
->  1. 尝试加载请求作用域中`_lang`参数；
->  2. 尝试加载框架自定义配置`ymp.params._lang`参数；
->  3. 尝试从Cookies里加载`_lang`的参数；
->  4. 使用系统默认语言设置；
+> 1. 通过`webmvc.i18n_language_param_name`加载语言设置参数名称，默认值为：`_lang`
+> 2. 尝试加载请求作用域中`_lang`参数值；
+> 4. 尝试从Cookies中加载`_lang`参数值；
+> 5. 使用系统默认语言设置；
 
 #### 约定模式（Convention Mode）
 
@@ -1301,11 +1350,11 @@ WebMVC模块通过约定模式可以将参数融合在URL中，不再通过`?`�
 
 ##### 异常错误处理器
 
-**方式一**：WebMVC模块为开发者提供了一个IWebErrorProcessor接口，允许针对异常、验证结果和约定模式的URL解析逻辑实现自定义扩展；
+**方式一**：WebMVC模块为开发者提供了一个IWebErrorProcessor接口，允许针对异常、验证结果和约定模式的URL解析逻辑实现自定义扩展，框架提供该接口的默认实现类：`net.ymate.platform.webmvc.impl.DefaultWebErrorProcessor`，若不行任何配置则框架将默认使用它；
 
-通过下面的参数配置即可：
+通过配置`ymp.configs.webmvc.error_processor_class`参数进行自定义设置，如下所示：
 
-	ymp.configs.webmvc.error_processor_class=net.ymate.framework.webmvc.WebErrorProcessor
+	ymp.configs.webmvc.error_processor_class=net.ymate.platform.webmvc.impl.DefaultWebErrorProcessor
 
 示例代码：
 
@@ -1370,6 +1419,36 @@ WebMVC模块通过约定模式可以将参数融合在URL中，不再通过`?`�
         }
     }
 
+**方式三** 通过`@ExceptionProcessor`为指定的异常类型设置其默认的错误响应码和描述信息；
+
+通过`@ExceptionProcessor`声明的类必须是`Throwable`为的子类，框架初始化时将被自动注册，也可以通过手工方式注册，代码如下：
+
+    ExceptionProcessHelper.DEFAULT.registerProcessor(MyException.class, new IExceptionProcessor() {
+        @Override
+        public Result process(Throwable target) throws Exception {
+           return new Result(10010, "Customize exception description.");
+        }
+    });
+
+- @ExceptionProcessor注解说明：
+
+    > code：异常错误码，非0数字；
+    >
+    > msg：默认错误描述
+
+当框架使用`net.ymate.platform.webmvc.impl.DefaultWebErrorProcessor`作为异常错误处理器时，它将首先尝试加载对应异常的错误响应配置，其内部处理逻辑代码如下：
+
+    IExceptionProcessor _processor = ExceptionProcessHelper.DEFAULT.bind(e.getClass());
+    if (_processor != null) {
+        IExceptionProcessor.Result _result = _processor.process(_unwrapThrow);
+        showErrorMsg(_result.getCode(), WebUtils.errorCodeI18n(__owner, _result), null).render();
+    }
+
+如上所示，通过`WebUtils.errorCodeI18n(__owner, _result)`方法调用，实现尝试优先加载`code`响应码对应的国际化资源，国际化资源文件中的配置采用`webmvc.error_code_<CODE>`方式，如下：
+
+    webmvc.error_code_10010=自定义异常描述
+
+> **注意**：相同异常类型不允许重复注册，仅首次注册生效。
 
 ##### 控制器包配置
 
