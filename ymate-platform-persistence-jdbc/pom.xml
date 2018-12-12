@@ -84,6 +84,12 @@
         </dependency>
         <dependency>
             <groupId>net.ymate.platform</groupId>
+            <artifactId>ymate-platform-plugin</artifactId>
+            <version>${project.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>net.ymate.platform</groupId>
             <artifactId>ymate-platform-persistence</artifactId>
             <version>${project.version}</version>
         </dependency>
