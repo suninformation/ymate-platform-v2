@@ -135,6 +135,13 @@ public interface IConfig {
     String getParam(String name);
 
     /**
+     * @param name         参数名称
+     * @param defaultValue 默认值
+     * @return 返回由name指定的全局参数值，若参数值为空则返回默认值
+     */
+    String getParam(String name, String defaultValue);
+
+    /**
      * @param moduleName 模块名称
      * @return 返回模块配置参数映射
      */

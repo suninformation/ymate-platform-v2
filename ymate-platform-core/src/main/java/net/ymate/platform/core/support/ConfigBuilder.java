@@ -453,7 +453,18 @@ public final class ConfigBuilder {
 
             @Override
             public String getParam(String name) {
+                if (StringUtils.isBlank(name)) {
+                    return null;
+                }
                 return __paramsMap.get(name);
+            }
+
+            @Override
+            public String getParam(String name, String defaultValue) {
+                if (StringUtils.isBlank(name)) {
+                    return defaultValue;
+                }
+                return StringUtils.defaultIfBlank(__paramsMap.get(name), defaultValue);
             }
 
             @Override
