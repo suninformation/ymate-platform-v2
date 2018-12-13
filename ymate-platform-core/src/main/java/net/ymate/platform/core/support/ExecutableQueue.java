@@ -16,6 +16,7 @@
 package net.ymate.platform.core.support;
 
 import net.ymate.platform.core.util.RuntimeUtils;
+import net.ymate.platform.core.util.ThreadUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -23,7 +24,6 @@ import org.apache.commons.logging.LogFactory;
 import java.io.Serializable;
 import java.util.*;
 import java.util.concurrent.*;
-import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * 可执行队列服务
@@ -37,8 +37,6 @@ public class ExecutableQueue<E extends Serializable> implements IDestroyable {
 
     private static final String __THREAD_NAME_PREFIX = "ExecutableQueue";
 
-    private static final AtomicLong __THREAD_COUNTER = new AtomicLong(0L);
-
     private ExecutorService __executor;
 
     private BlockingQueue<E> __queue;
@@ -51,7 +49,7 @@ public class ExecutableQueue<E extends Serializable> implements IDestroyable {
 
     private Semaphore __semaphore;
 
-    private Thread __thread;
+    private ExecutorService __innerExecutorService;
 
     private String __prefix;
 
@@ -147,7 +145,7 @@ public class ExecutableQueue<E extends Serializable> implements IDestroyable {
      */
     protected void __onListenStarted() {
         if (_LOG.isInfoEnabled()) {
-            _LOG.info("ExecutableQueue Service [" + __thread.getName() + "] Started.");
+            _LOG.info("ExecutableQueue Service [" + __prefix + "] Listener Service Started.");
         }
     }
 
@@ -156,7 +154,7 @@ public class ExecutableQueue<E extends Serializable> implements IDestroyable {
      */
     protected void __onListenStopped() {
         if (_LOG.isInfoEnabled()) {
-            _LOG.info("ExecutableQueue Service [" + __thread.getName() + "] Stopped.");
+            _LOG.info("ExecutableQueue Service [" + __prefix + "] Listener Service Stopped.");
         }
     }
 
@@ -168,7 +166,7 @@ public class ExecutableQueue<E extends Serializable> implements IDestroyable {
      */
     protected void __onListenerAdded(String id, IListener<E> listener) {
         if (_LOG.isInfoEnabled()) {
-            _LOG.info("ExecutableQueue Service [" + __thread.getName() + "] Add Listener [" + id + "@" + listener.getClass().getName() + "].");
+            _LOG.info("ExecutableQueue Service [" + __prefix + "] Add Listener [" + id + "@" + listener.getClass().getName() + "].");
         }
     }
 
@@ -180,7 +178,7 @@ public class ExecutableQueue<E extends Serializable> implements IDestroyable {
      */
     protected void __onListenerRemoved(String id, IListener<E> listener) {
         if (_LOG.isInfoEnabled()) {
-            _LOG.info("ExecutableQueue Service [" + __thread.getName() + "] Remove Listener [" + id + "@" + (listener == null ? "unknown" : listener.getClass().getName()) + "].");
+            _LOG.info("ExecutableQueue Service [" + __prefix + "] Remove Listener [" + id + "@" + (listener == null ? "unknown" : listener.getClass().getName()) + "].");
         }
     }
 
@@ -191,7 +189,7 @@ public class ExecutableQueue<E extends Serializable> implements IDestroyable {
      */
     protected void __onElementAdded(E element) {
         if (_LOG.isInfoEnabled()) {
-            _LOG.info("ExecutableQueue Service [" + __thread.getName() + "] Add Element [" + element.toString() + "].");
+            _LOG.info("ExecutableQueue Service [" + __prefix + "] Add Element [" + element.toString() + "].");
         }
     }
 
@@ -202,7 +200,7 @@ public class ExecutableQueue<E extends Serializable> implements IDestroyable {
      */
     protected void __onElementAbandoned(E element) {
         if (_LOG.isInfoEnabled()) {
-            _LOG.info("ExecutableQueue Service [" + __thread.getName() + "] Abandon Element [" + element.toString() + "].");
+            _LOG.info("ExecutableQueue Service [" + __prefix + "] Abandon Element [" + element.toString() + "].");
         }
     }
 
@@ -210,7 +208,7 @@ public class ExecutableQueue<E extends Serializable> implements IDestroyable {
      * 启动队列监听服务线程
      */
     public synchronized void listenStart() {
-        if (__thread == null && !__destroyed) {
+        if (__innerExecutorService == null && !__destroyed) {
             if (_LOG.isInfoEnabled()) {
                 _LOG.info("Starting ExecutableQueue[" + __prefix + "] Listener Service...");
             }
@@ -218,11 +216,12 @@ public class ExecutableQueue<E extends Serializable> implements IDestroyable {
                 @Override
                 public void listen(long speed, long averageSpeed, long maxSpeed, long minSpeed) {
                     if (_LOG.isInfoEnabled()) {
-                        _LOG.info("ExecutableQueue Service [" + __thread.getName() + "] Status: { semaphore: " + (__semaphore != null ? __semaphore.availablePermits() : -1) + ", queue: " + __queue.size() + ", worker: " + __workQueue.size() + ", speed: " + speed + ", average: " + averageSpeed + ", max:" + maxSpeed + " }");
+                        _LOG.info("ExecutableQueue Service [" + __prefix + "] Status: { semaphore: " + (__semaphore != null ? __semaphore.availablePermits() : -1) + ", queue: " + __queue.size() + ", worker: " + __workQueue.size() + ", speed: " + speed + ", average: " + averageSpeed + ", max:" + maxSpeed + " }");
                     }
                 }
             });
-            __thread = new Thread(new Runnable() {
+            __innerExecutorService = ThreadUtils.newSingleThreadExecutor(1, ThreadUtils.createFactory(__prefix + "-ListenerService-"));
+            __innerExecutorService.submit(new Runnable() {
                 @Override
                 public void run() {
                     try {
@@ -265,10 +264,6 @@ public class ExecutableQueue<E extends Serializable> implements IDestroyable {
                     }
                 }
             });
-            __thread.setDaemon(true);
-            __thread.setName(__prefix + "-ListenerService-" + __THREAD_COUNTER.incrementAndGet());
-            __thread.start();
-            //
             __onListenStarted();
         }
     }
@@ -286,7 +281,7 @@ public class ExecutableQueue<E extends Serializable> implements IDestroyable {
      * @param millis 等待该线程终止的时间最长为millis毫秒, 为0意味着要一直等下去
      */
     public final synchronized void listenStop(long millis) {
-        if (__thread != null) {
+        if (__innerExecutorService != null && !__executor.isShutdown()) {
             if (!__stopped) {
                 try {
                     if (_LOG.isInfoEnabled()) {
@@ -295,18 +290,15 @@ public class ExecutableQueue<E extends Serializable> implements IDestroyable {
                     __speedometer.close();
                     //
                     __stopped = true;
-                    __thread.join(millis);
+                    __innerExecutorService.shutdown();
+                    if (millis > 0) {
+                        __innerExecutorService.awaitTermination(millis, TimeUnit.MILLISECONDS);
+                    }
                 } catch (InterruptedException e) {
                     if (_LOG.isWarnEnabled()) {
                         _LOG.warn("Interrupt exception when waiting for ExecutableQueue[" + __prefix + "] listener service to stop: ", RuntimeUtils.unwrapThrow(e));
                     }
                 }
-            }
-            if (!__thread.isInterrupted()) {
-                if (_LOG.isInfoEnabled()) {
-                    _LOG.info("Forced to interrupt ExecutableQueue[" + __prefix + "] Listener Service");
-                }
-                __thread.interrupt();
             }
             __onListenStopped();
         }
@@ -336,12 +328,16 @@ public class ExecutableQueue<E extends Serializable> implements IDestroyable {
     }
 
     public boolean checkStatus() {
-        boolean _flag = !__destroyed && (__thread == null || !__stopped);
+        boolean _flag = !__destroyed && (__innerExecutorService == null || !__stopped);
         if (_flag && _LOG.isInfoEnabled()) {
             // 输出当前队列数量
             _LOG.info("ExecutableQueue[" + __prefix + "] Queue size: " + __queue.size());
         }
         return _flag;
+    }
+
+    public void addListener(IListener<E> listener) {
+        addListener(listener.getClass().getName(), listener);
     }
 
     /**
@@ -353,6 +349,10 @@ public class ExecutableQueue<E extends Serializable> implements IDestroyable {
             __listeners.put(id, listener);
             __onListenerAdded(id, listener);
         }
+    }
+
+    public IListener<E> removeListener(Class<? extends IListener> listener) {
+        return removeListener(listener.getName());
     }
 
     /**
