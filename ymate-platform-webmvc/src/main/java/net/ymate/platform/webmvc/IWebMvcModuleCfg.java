@@ -28,6 +28,8 @@ import java.util.Set;
  */
 public interface IWebMvcModuleCfg {
 
+    String IGNORE_REGEX = "^.+\\.(jsp|jspx|png|gif|jpg|jpeg|js|css|swf|ico|htm|html|eot|woff|woff2|ttf|svg|map)$";
+
     String REQUEST_MAPPING_PARSER_CLASS = "request_mapping_parser_class";
 
     String REQUEST_PROCESSOR_CLASS = "request_processor_class";

@@ -29,7 +29,7 @@ public class RedisDataSourceCfgMeta {
 
     private String __dataSourceName;
 
-    private String __connectionType;
+    private IRedis.ConnectionType __connectionType;
 
     private String __masterServerName;
 
@@ -37,7 +37,7 @@ public class RedisDataSourceCfgMeta {
 
     private GenericObjectPoolConfig __poolConfig;
 
-    public RedisDataSourceCfgMeta(String dataSourceName, String connectionType, String masterServerName, List<IRedisModuleCfg.ServerMeta> servers, GenericObjectPoolConfig poolConfig) {
+    public RedisDataSourceCfgMeta(String dataSourceName, IRedis.ConnectionType connectionType, String masterServerName, List<IRedisModuleCfg.ServerMeta> servers, GenericObjectPoolConfig poolConfig) {
         this.__dataSourceName = dataSourceName;
         this.__connectionType = connectionType;
         this.__masterServerName = masterServerName;
@@ -52,24 +52,8 @@ public class RedisDataSourceCfgMeta {
         return __dataSourceName;
     }
 
-    public String getConnectionType() {
+    public IRedis.ConnectionType getConnectionType() {
         return __connectionType;
-    }
-
-    public boolean isDefault() {
-        return "default".equalsIgnoreCase(__connectionType);
-    }
-
-    public boolean isSentinel() {
-        return "sentinel".equalsIgnoreCase(__connectionType);
-    }
-
-    public boolean isSharded() {
-        return "shard".equalsIgnoreCase(__connectionType);
-    }
-
-    public boolean isCluster() {
-        return "cluster".equalsIgnoreCase(__connectionType);
     }
 
     public String getMasterServerName() {

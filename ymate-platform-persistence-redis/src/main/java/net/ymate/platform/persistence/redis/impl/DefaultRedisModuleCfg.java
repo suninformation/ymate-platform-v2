@@ -63,7 +63,12 @@ public class DefaultRedisModuleCfg implements IRedisModuleCfg {
     private RedisDataSourceCfgMeta __doParserDataSourceCfgMeta(String dsName, Map<String, String> dataSourceCfgs) throws Exception {
         IConfigReader _dataSourceCfg = MapSafeConfigReader.bind(dataSourceCfgs);
         //
-        String _connectionType = _dataSourceCfg.getString(CONNECTION_TYPE, IConfig.DEFAULT_STR);
+        IRedis.ConnectionType _connectionType;
+        try {
+            _connectionType = IRedis.ConnectionType.valueOf(_dataSourceCfg.getString(CONNECTION_TYPE, IConfig.DEFAULT_STR).toUpperCase());
+        } catch (IllegalArgumentException e) {
+            throw new UnsupportedOperationException("Redis connection type unsupported.");
+        }
         String _masterServerName = _dataSourceCfg.getString(MASTER_SERVER_NAME, IConfig.DEFAULT_STR);
         List<ServerMeta> _servers = new ArrayList<ServerMeta>();
         String[] _serverNames = StringUtils.split(_dataSourceCfg.getString(SERVER_NAME_LIST, IConfig.DEFAULT_STR), "|");

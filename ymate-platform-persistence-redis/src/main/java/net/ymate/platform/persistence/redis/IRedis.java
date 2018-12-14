@@ -76,4 +76,11 @@ public interface IRedis {
     void subscribe(JedisPubSub jedisPubSub, String... channels);
 
     void subscribe(String dsName, JedisPubSub jedisPubSub, String... channels);
+
+    /**
+     * 数据源连接方式
+     */
+    enum ConnectionType {
+        DEFAULT, SHARD, SENTINEL, CLUSTER
+    }
 }

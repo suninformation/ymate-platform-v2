@@ -181,7 +181,6 @@ public class Servs implements IModule, IServ {
     }
 
     @Override
-    @SuppressWarnings("unchecked")
     public void registerClient(Class<? extends IListener> listenerClass) {
         Client _annoClient = listenerClass.getAnnotation(Client.class);
         if (_annoClient == null) {

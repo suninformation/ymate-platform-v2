@@ -39,8 +39,6 @@ import java.util.Set;
  */
 public class DefaultWebMvcModuleCfg implements IWebMvcModuleCfg {
 
-    private static final String __IGNORE = "^.+\\.(jsp|jspx|png|gif|jpg|jpeg|js|css|swf|ico|htm|html|eot|woff|woff2|ttf|svg|map)$";
-
     private IRequestMappingParser __mappingParser;
 
     private IRequestProcessor __requestProcessor;
@@ -149,7 +147,7 @@ public class DefaultWebMvcModuleCfg implements IWebMvcModuleCfg {
         //
         __charsetEncoding = _moduleCfg.getString(DEFAULT_CHARSET_ENCODING, IConfig.DEFAULT_CHARSET);
         __contentType = _moduleCfg.getString(DEFAULT_CONTENT_TYPE, Type.ContentType.HTML.getContentType());
-        __requestIgnoreRegex = _moduleCfg.getString(REQUEST_IGNORE_REGEX, __IGNORE);
+        __requestIgnoreRegex = _moduleCfg.getString(REQUEST_IGNORE_REGEX, IGNORE_REGEX);
         __requestMethodParam = _moduleCfg.getString(REQUEST_METHOD_PARAM, "_method");
         __requestPrefix = StringUtils.trimToEmpty(_moduleCfg.getString(REQUEST_PREFIX));
         //

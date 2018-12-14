@@ -16,6 +16,7 @@
 package net.ymate.platform.persistence.redis.impl;
 
 import net.ymate.platform.core.util.RuntimeUtils;
+import net.ymate.platform.persistence.redis.IRedis;
 import net.ymate.platform.persistence.redis.IRedisCommandsHolder;
 import net.ymate.platform.persistence.redis.IRedisDataSourceAdapter;
 import net.ymate.platform.persistence.redis.RedisDataSourceCfgMeta;
@@ -70,7 +71,7 @@ public class RedisCommandsHolder implements IRedisCommandsHolder {
     @Override
     public void release() {
         JedisCommands _commands = __jedisCommands.get();
-        if (_commands != null && !__dataSourceAdapter.getDataSourceCfgMeta().isCluster()) {
+        if (_commands != null && !IRedis.ConnectionType.CLUSTER.equals(__dataSourceAdapter.getDataSourceCfgMeta().getConnectionType())) {
             if (_commands instanceof Closeable) {
                 try {
                     ((Closeable) _commands).close();
