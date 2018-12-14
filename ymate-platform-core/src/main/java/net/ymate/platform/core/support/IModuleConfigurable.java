@@ -20,8 +20,11 @@ import java.util.Map;
 /**
  * @author 刘镇 (suninformation@163.com) on 2018-12-04 00:45
  * @version 1.0
+ * @since 2.0.6
  */
 public interface IModuleConfigurable {
+
+    String getModuleName();
 
     Map<String, String> toMap();
 }

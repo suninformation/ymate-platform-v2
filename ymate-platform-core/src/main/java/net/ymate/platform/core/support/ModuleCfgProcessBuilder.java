@@ -24,6 +24,7 @@ import java.util.Properties;
 /**
  * @author 刘镇 (suninformation@163.com) on 2018-12-04 02:17
  * @version 1.0
+ * @since 2.0.6
  */
 public class ModuleCfgProcessBuilder {
 
@@ -46,8 +47,8 @@ public class ModuleCfgProcessBuilder {
         __properties = properties;
     }
 
-    public ModuleCfgProcessBuilder putModuleCfg(String moduleName, IModuleConfigurable moduleConfigurable) {
-        __moduleCfgCaches.put(moduleName, moduleConfigurable.toMap());
+    public ModuleCfgProcessBuilder putModuleCfg(IModuleConfigurable moduleConfigurable) {
+        __moduleCfgCaches.put(moduleConfigurable.getModuleName(), moduleConfigurable.toMap());
         return this;
     }
 
