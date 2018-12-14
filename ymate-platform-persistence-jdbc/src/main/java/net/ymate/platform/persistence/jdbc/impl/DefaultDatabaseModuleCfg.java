@@ -91,7 +91,8 @@ public class DefaultDatabaseModuleCfg implements IDatabaseModuleCfg {
                 _meta.setTablePrefix(_dataSourceCfg.getString(TABLE_PREFIX));
                 _meta.setIdentifierQuote(_dataSourceCfg.getString(IDENTIFIER_QUOTE));
                 // 数据源适配器
-                String _adapterClassName = JDBC.DS_ADAPTERS.get(_dataSourceCfg.getString(ADAPTER_CLASS, IConfig.DEFAULT_STR));
+                String _adapterClassName = _dataSourceCfg.getString(ADAPTER_CLASS, IConfig.DEFAULT_STR);
+                _adapterClassName = StringUtils.defaultIfBlank(JDBC.DS_ADAPTERS.get(_adapterClassName), _adapterClassName);
                 _meta.setAdapterClass((Class<? extends IDataSourceAdapter>) ClassUtils.loadClass(_adapterClassName, this.getClass()));
                 //
                 // 连接和数据库类型
