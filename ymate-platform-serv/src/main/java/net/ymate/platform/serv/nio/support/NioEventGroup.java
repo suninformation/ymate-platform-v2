@@ -127,8 +127,10 @@ public class NioEventGroup<LISTENER extends IListener<INioSession>> extends Abst
         for (NioEventProcessor _processor : __processors) {
             _processor.interrupt();
         }
-        __channel.close();
-        __channel = null;
+        if (__channel != null) {
+            __channel.close();
+            __channel = null;
+        }
         //
         super.stop();
     }
