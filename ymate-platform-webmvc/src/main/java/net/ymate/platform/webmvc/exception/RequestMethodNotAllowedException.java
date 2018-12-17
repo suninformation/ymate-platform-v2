@@ -16,7 +16,7 @@
 package net.ymate.platform.webmvc.exception;
 
 import net.ymate.platform.webmvc.annotation.ExceptionProcessor;
-import net.ymate.platform.webmvc.util.WebResult;
+import net.ymate.platform.webmvc.util.ErrorCode;
 
 /**
  * 请求方法不支持或不正确异常
@@ -24,7 +24,7 @@ import net.ymate.platform.webmvc.util.WebResult;
  * @author 刘镇 (suninformation@163.com) on 2017/10/18 下午3:19
  * @version 1.0
  */
-@ExceptionProcessor(code = WebResult.ErrorCode.REQUEST_METHOD_NOT_ALLOWED, msg = "The request method is unsupported or incorrect.")
+@ExceptionProcessor(code = ErrorCode.REQUEST_METHOD_NOT_ALLOWED, msg = ErrorCode.MSG_REQUEST_METHOD_NOT_ALLOWED)
 public class RequestMethodNotAllowedException extends RuntimeException {
 
     public RequestMethodNotAllowedException() {

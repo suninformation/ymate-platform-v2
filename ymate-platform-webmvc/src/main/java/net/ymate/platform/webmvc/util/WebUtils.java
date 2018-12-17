@@ -457,11 +457,32 @@ public class WebUtils {
         return buildErrorView(owner, code, msg, null, 0);
     }
 
+    public static IView buildErrorView(IWebMvc owner, ErrorCode errorCode) {
+        return buildErrorView(owner, errorCode, null, 0);
+    }
+
+    public static IView buildErrorView(IWebMvc owner, String resourceName, ErrorCode errorCode) {
+        return buildErrorView(owner, resourceName, errorCode, null, 0);
+    }
+
     public static IView buildErrorView(IWebMvc owner, int code, String msg, String redirectUrl, int timeInterval) {
         return buildErrorView(owner, code, msg, redirectUrl, timeInterval, null);
     }
 
+    public static IView buildErrorView(IWebMvc owner, ErrorCode errorCode, String redirectUrl, int timeInterval) {
+        return buildErrorView(owner, null, errorCode, redirectUrl, timeInterval);
+    }
+
+    public static IView buildErrorView(IWebMvc owner, String resourceName, ErrorCode errorCode, String redirectUrl, int timeInterval) {
+        Map<String, Object> _data = errorCode.getAttribute(Type.Const.PARAM_DATA);
+        return buildErrorView(owner, resourceName, errorCode.getCode(), errorCode.getMessage(), redirectUrl, timeInterval, _data);
+    }
+
     public static IView buildErrorView(IWebMvc owner, int code, String msg, String redirectUrl, int timeInterval, Map<String, Object> data) {
+        return buildErrorView(owner, null, code, msg, redirectUrl, timeInterval, data);
+    }
+
+    public static IView buildErrorView(IWebMvc owner, String resourceName, int code, String msg, String redirectUrl, int timeInterval, Map<String, Object> data) {
         IView _view;
         String _errorViewPath = __doGetConfigValue(owner.getOwner(), IWebMvcModuleCfg.PARAMS_ERROR_VIEW, "error.jsp");
         if (StringUtils.endsWithIgnoreCase(_errorViewPath, ".ftl")) {
@@ -472,7 +493,7 @@ public class WebUtils {
             _view = View.jspView(owner, _errorViewPath);
         }
         _view.addAttribute(Type.Const.PARAM_RET, code);
-        _view.addAttribute(Type.Const.PARAM_MSG, msg);
+        _view.addAttribute(Type.Const.PARAM_MSG, errorCodeI18n(owner, resourceName, code, msg));
         if (data != null && !data.isEmpty()) {
             _view.addAttribute(Type.Const.PARAM_DATA, data);
         }
@@ -504,24 +525,43 @@ public class WebUtils {
      * @return 返回resourceKey指定的键值
      */
     public static String i18nStr(IWebMvc owner, String resourceKey, String defaultValue) {
-        return I18N.load(owner.getModuleCfg().getI18nResourceName(), resourceKey, defaultValue);
+        return i18nStr(owner, null, resourceKey, defaultValue);
+    }
+
+    public static String i18nStr(IWebMvc owner, String resourceName, String resourceKey, String defaultValue) {
+        return I18N.load(StringUtils.defaultIfBlank(resourceName, owner.getModuleCfg().getI18nResourceName()), resourceKey, defaultValue);
     }
 
     public static String httpStatusI18n(IWebMvc owner, int code) {
+        return httpStatusI18n(owner, null, code);
+    }
+
+    public static String httpStatusI18n(IWebMvc owner, String resourceName, int code) {
         String _statusText = Type.HTTP_STATUS.get(code);
         if (StringUtils.isBlank(_statusText)) {
             code = 400;
             _statusText = Type.HTTP_STATUS.get(code);
         }
-        return i18nStr(owner, "webmvc.http_status_" + code, _statusText);
+        return i18nStr(owner, resourceName, "webmvc.http_status_" + code, _statusText);
     }
 
     public static String errorCodeI18n(IWebMvc owner, int code, String defaultValue) {
-        return i18nStr(owner, "webmvc.error_code_" + code, defaultValue);
+        return errorCodeI18n(owner, null, code, defaultValue);
+    }
+
+    public static String errorCodeI18n(IWebMvc owner, String resourceName, int code, String defaultValue) {
+        if (code == 0) {
+            return defaultValue;
+        }
+        return i18nStr(owner, resourceName, "webmvc.error_code_" + code, defaultValue);
     }
 
     public static String errorCodeI18n(IWebMvc owner, IExceptionProcessor.Result result) {
-        String _msg = WebUtils.errorCodeI18n(owner, result.getCode(), result.getMessage());
+        return errorCodeI18n(owner, null, result);
+    }
+
+    public static String errorCodeI18n(IWebMvc owner, String resourceName, IExceptionProcessor.Result result) {
+        String _msg = WebUtils.errorCodeI18n(owner, resourceName, result.getCode(), result.getMessage());
         return StringUtils.defaultIfBlank(_msg, result.getMessage());
     }
 }

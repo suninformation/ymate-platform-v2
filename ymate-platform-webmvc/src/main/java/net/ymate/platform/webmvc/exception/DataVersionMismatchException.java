@@ -16,7 +16,7 @@
 package net.ymate.platform.webmvc.exception;
 
 import net.ymate.platform.webmvc.annotation.ExceptionProcessor;
-import net.ymate.platform.webmvc.util.WebResult;
+import net.ymate.platform.webmvc.util.ErrorCode;
 
 /**
  * 数据版本不匹配异常
@@ -24,8 +24,20 @@ import net.ymate.platform.webmvc.util.WebResult;
  * @author 刘镇 (suninformation@163.com) on 2017/10/18 下午1:59
  * @version 1.0
  */
-@ExceptionProcessor(code = WebResult.ErrorCode.DATA_VERSION_NOT_MATCH, msg = "The data version does not match.")
+@ExceptionProcessor(code = ErrorCode.DATA_VERSION_NOT_MATCH, msg = ErrorCode.MSG_DATA_VERSION_NOT_MATCH)
 public class DataVersionMismatchException extends RuntimeException {
+
+    /**
+     * 版本比较，若版本数值不相等则抛出 DataVersionMismatchException 异常
+     *
+     * @param originVersion  原始版本(持有者拥有的版本)
+     * @param currentVersion 当前版本(数据最新版本)
+     */
+    public static void comparisonVersion(Long originVersion, Long currentVersion) {
+        if (currentVersion != null && originVersion != null && !originVersion.equals(currentVersion)) {
+            throw new DataVersionMismatchException("Data version mismatch. origin: " + originVersion + ", current: " + currentVersion);
+        }
+    }
 
     public DataVersionMismatchException() {
         super();

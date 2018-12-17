@@ -16,7 +16,7 @@
 package net.ymate.platform.webmvc.exception;
 
 import net.ymate.platform.webmvc.annotation.ExceptionProcessor;
-import net.ymate.platform.webmvc.util.WebResult;
+import net.ymate.platform.webmvc.util.ErrorCode;
 
 /**
  * 请求的资源未授权或无权限异常
@@ -24,7 +24,7 @@ import net.ymate.platform.webmvc.util.WebResult;
  * @author 刘镇 (suninformation@163.com) on 2017/10/18 下午3:11
  * @version 1.0
  */
-@ExceptionProcessor(code = WebResult.ErrorCode.REQUEST_RESOURCE_UNAUTHORIZED, msg = "The requested resource unauthorized.")
+@ExceptionProcessor(code = ErrorCode.REQUEST_RESOURCE_UNAUTHORIZED, msg = ErrorCode.MSG_REQUEST_RESOURCE_UNAUTHORIZED)
 public class RequestUnauthorizedException extends RuntimeException {
 
     public RequestUnauthorizedException() {

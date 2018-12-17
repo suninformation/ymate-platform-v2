@@ -25,10 +25,7 @@ import net.ymate.platform.webmvc.base.Type;
 import net.ymate.platform.webmvc.context.WebContext;
 import net.ymate.platform.webmvc.exception.ValidationResultException;
 import net.ymate.platform.webmvc.support.GenericResponseWrapper;
-import net.ymate.platform.webmvc.util.ExceptionProcessHelper;
-import net.ymate.platform.webmvc.util.IExceptionProcessor;
-import net.ymate.platform.webmvc.util.WebResult;
-import net.ymate.platform.webmvc.util.WebUtils;
+import net.ymate.platform.webmvc.util.*;
 import net.ymate.platform.webmvc.view.IView;
 import net.ymate.platform.webmvc.view.View;
 import org.apache.commons.lang.StringUtils;
@@ -96,7 +93,7 @@ public class DefaultWebErrorProcessor implements IWebErrorProcessor, IWebInitial
                     } else {
                         _LOG.error("", _unwrapThrow);
                     }
-                    showErrorMsg(WebResult.ErrorCode.INTERNAL_SYSTEM_ERROR, WebUtils.errorCodeI18n(__owner, WebResult.ErrorCode.INTERNAL_SYSTEM_ERROR, "The system is busy, try again later!"), null).render();
+                    showErrorMsg(ErrorCode.INTERNAL_SYSTEM_ERROR, WebUtils.errorCodeI18n(__owner, ErrorCode.INTERNAL_SYSTEM_ERROR, ErrorCode.MSG_INTERNAL_SYSTEM_ERROR), null).render();
                 }
             }
         } catch (Throwable e1) {
@@ -106,7 +103,7 @@ public class DefaultWebErrorProcessor implements IWebErrorProcessor, IWebInitial
 
     @Override
     public IView onValidation(IWebMvc owner, Map<String, ValidateResult> results) {
-        String _message = WebUtils.errorCodeI18n(__owner, WebResult.ErrorCode.INVALID_PARAMS_VALIDATION, "Request parameter validation is invalid.");
+        String _message = WebUtils.errorCodeI18n(__owner, ErrorCode.INVALID_PARAMS_VALIDATION, ErrorCode.MSG_INVALID_PARAMS_VALIDATION);
         Map<String, Object> _dataMap = new HashMap<String, Object>();
         for (ValidateResult _vResult : results.values()) {
             _dataMap.put(_vResult.getName(), _vResult.getMsg());
@@ -116,7 +113,7 @@ public class DefaultWebErrorProcessor implements IWebErrorProcessor, IWebInitial
             // 拼装所有的验证消息
             _message = WebUtils.messageWithTemplate(owner.getOwner(), _message, results.values());
         }
-        return showErrorMsg(WebResult.ErrorCode.INVALID_PARAMS_VALIDATION, _message, _dataMap);
+        return showErrorMsg(ErrorCode.INVALID_PARAMS_VALIDATION, _message, _dataMap);
     }
 
     @Override

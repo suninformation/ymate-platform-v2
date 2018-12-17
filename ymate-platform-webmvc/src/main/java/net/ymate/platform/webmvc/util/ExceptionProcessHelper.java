@@ -38,19 +38,19 @@ public final class ExceptionProcessHelper {
         DEFAULT.registerProcessor(FileUploadBase.FileSizeLimitExceededException.class, new IExceptionProcessor() {
             @Override
             public Result process(Throwable target) throws Exception {
-                return new Result(WebResult.ErrorCode.UPLOAD_FILE_SIZE_LIMIT_EXCEEDED, "The size of the uploaded file exceeds the limit.");
+                return new Result(ErrorCode.UPLOAD_FILE_SIZE_LIMIT_EXCEEDED, ErrorCode.MSG_UPLOAD_FILE_SIZE_LIMIT_EXCEEDED);
             }
         });
         DEFAULT.registerProcessor(FileUploadBase.SizeLimitExceededException.class, new IExceptionProcessor() {
             @Override
             public Result process(Throwable target) throws Exception {
-                return new Result(WebResult.ErrorCode.UPLOAD_SIZE_LIMIT_EXCEEDED, "The total size of uploaded files exceeds the limit.");
+                return new Result(ErrorCode.UPLOAD_SIZE_LIMIT_EXCEEDED, ErrorCode.MSG_UPLOAD_SIZE_LIMIT_EXCEEDED);
             }
         });
         DEFAULT.registerProcessor(FileUploadBase.InvalidContentTypeException.class, new IExceptionProcessor() {
             @Override
             public Result process(Throwable target) throws Exception {
-                return new Result(WebResult.ErrorCode.UPLOAD_CONTENT_TYPE_INVALID, "The upload file content type is invalid.");
+                return new Result(ErrorCode.UPLOAD_CONTENT_TYPE_INVALID, ErrorCode.MSG_UPLOAD_CONTENT_TYPE_INVALID);
             }
         });
     }

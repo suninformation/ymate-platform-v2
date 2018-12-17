@@ -16,7 +16,7 @@
 package net.ymate.platform.webmvc.exception;
 
 import net.ymate.platform.webmvc.annotation.ExceptionProcessor;
-import net.ymate.platform.webmvc.util.WebResult;
+import net.ymate.platform.webmvc.util.ErrorCode;
 
 /**
  * 访问的资源未找到或不存在异常
@@ -24,7 +24,7 @@ import net.ymate.platform.webmvc.util.WebResult;
  * @author 刘镇 (suninformation@163.com) on 2017/10/18 下午3:17
  * @version 1.0
  */
-@ExceptionProcessor(code = WebResult.ErrorCode.RESOURCE_NOT_FOUND_OR_NOT_EXIST, msg = "The resources was not found or not existed.")
+@ExceptionProcessor(code = ErrorCode.RESOURCE_NOT_FOUND_OR_NOT_EXIST, msg = ErrorCode.MSG_RESOURCE_NOT_FOUND_OR_NOT_EXIST)
 public class ResourceNotFoundException extends RuntimeException {
 
     public ResourceNotFoundException() {

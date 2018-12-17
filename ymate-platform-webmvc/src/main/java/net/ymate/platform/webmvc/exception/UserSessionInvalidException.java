@@ -16,7 +16,7 @@
 package net.ymate.platform.webmvc.exception;
 
 import net.ymate.platform.webmvc.annotation.ExceptionProcessor;
-import net.ymate.platform.webmvc.util.WebResult;
+import net.ymate.platform.webmvc.util.ErrorCode;
 
 /**
  * 用户会话无效或超时异常
@@ -24,7 +24,7 @@ import net.ymate.platform.webmvc.util.WebResult;
  * @author 刘镇 (suninformation@163.com) on 2017/10/18 下午3:28
  * @version 1.0
  */
-@ExceptionProcessor(code = WebResult.ErrorCode.USER_SESSION_INVALID_OR_TIMEOUT, msg = "User session is unauthorized or expired.")
+@ExceptionProcessor(code = ErrorCode.USER_SESSION_INVALID_OR_TIMEOUT, msg = ErrorCode.MSG_USER_SESSION_INVALID_OR_TIMEOUT)
 public class UserSessionInvalidException extends RuntimeException {
 
     public UserSessionInvalidException() {

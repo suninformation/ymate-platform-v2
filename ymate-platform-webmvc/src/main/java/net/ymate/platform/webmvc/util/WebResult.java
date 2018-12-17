@@ -18,6 +18,7 @@ package net.ymate.platform.webmvc.util;
 import com.alibaba.fastjson.JSONObject;
 import net.ymate.platform.core.lang.BlurObject;
 import net.ymate.platform.core.util.ClassUtils;
+import net.ymate.platform.webmvc.IWebMvc;
 import net.ymate.platform.webmvc.IWebMvcModuleCfg;
 import net.ymate.platform.webmvc.base.Type;
 import net.ymate.platform.webmvc.context.WebContext;
@@ -49,6 +50,25 @@ public final class WebResult {
         return new WebResult(code);
     }
 
+    public static WebResult create(IWebMvc owner, ErrorCode errorCode) {
+        return create(owner, null, errorCode);
+    }
+
+    public static WebResult create(IWebMvc owner, String resourceName, ErrorCode errorCode) {
+        String _msg = null;
+        if (StringUtils.isNotBlank(errorCode.getI18nKey())) {
+            _msg = WebUtils.i18nStr(owner, errorCode.getI18nKey());
+        }
+        if (StringUtils.isBlank(_msg)) {
+            _msg = WebUtils.errorCodeI18n(owner, errorCode.getCode(), errorCode.getMessage());
+        }
+        WebResult _result = new WebResult(errorCode.getCode()).msg(_msg);
+        if (!errorCode.getAttributes().isEmpty()) {
+            _result.attrs(errorCode.getAttributes());
+        }
+        return _result;
+    }
+
     public static WebResult succeed() {
         return new WebResult(ErrorCode.SUCCEED);
     }
@@ -57,7 +77,7 @@ public final class WebResult {
 
     private String __msg;
 
-    private Map<String, Object> __datas = new HashMap<String, Object>();
+    private Map<String, Object> __data = new HashMap<String, Object>();
 
     private Map<String, Object> __attrs = new HashMap<String, Object>();
 
@@ -117,11 +137,11 @@ public final class WebResult {
 
     @SuppressWarnings("unchecked")
     public <T> T dataAttr(String dataKey) {
-        return (T) __datas.get(dataKey);
+        return (T) __data.get(dataKey);
     }
 
     public WebResult dataAttr(String dataKey, Object dataValue) {
-        __datas.put(dataKey, dataValue);
+        __data.put(dataKey, dataValue);
         return this;
     }
 
@@ -163,7 +183,7 @@ public final class WebResult {
     private Map<String, Object> __doFilter(boolean attr, Map<String, Object> targetMap) {
         if (__dataFilter != null && targetMap != null && !targetMap.isEmpty()) {
             Map<String, Object> _filtered = new HashMap<String, Object>();
-            for (Map.Entry<String, Object> _entry : __datas.entrySet()) {
+            for (Map.Entry<String, Object> _entry : __data.entrySet()) {
                 Object _item = __dataFilter.filter(attr, _entry.getKey(), _entry.getValue());
                 if (_item != null) {
                     _filtered.put(_entry.getKey(), _entry.getValue());
@@ -175,7 +195,7 @@ public final class WebResult {
     }
 
     public WebResult doFilter() {
-        __datas = __doFilter(true, __datas);
+        __data = __doFilter(true, __data);
         __attrs = __doFilter(false, __attrs);
         return this;
     }
@@ -192,8 +212,8 @@ public final class WebResult {
         if (StringUtils.isNotBlank(__msg)) {
             _jsonObj.put(Type.Const.PARAM_MSG, __msg);
         }
-        if (__datas != null && !__datas.isEmpty()) {
-            _jsonObj.put(Type.Const.PARAM_DATA, __datas);
+        if (__data != null && !__data.isEmpty()) {
+            _jsonObj.put(Type.Const.PARAM_DATA, __data);
         }
         if (__attrs != null && !__attrs.isEmpty()) {
             _jsonObj.putAll(__attrs);
@@ -225,9 +245,9 @@ public final class WebResult {
                 _content.append("<msg>").append(__msg).append("</msg>");
             }
         }
-        if (__datas != null && !__datas.isEmpty()) {
+        if (__data != null && !__data.isEmpty()) {
             _content.append("<data>");
-            for (Map.Entry<String, Object> _entry : __datas.entrySet()) {
+            for (Map.Entry<String, Object> _entry : __data.entrySet()) {
                 __doAppendContent(_content, cdata, _entry.getKey(), _entry.getValue());
             }
             _content.append("</data>");
@@ -362,68 +382,5 @@ public final class WebResult {
          * @return 若返回null则该属性将被忽略
          */
         Object filter(boolean dataAttr, String itemName, Object itemValue);
-    }
-
-    public interface ErrorCode {
-
-        /**
-         * 请求成功
-         */
-        int SUCCEED = 0;
-
-        /**
-         * 参数验证无效
-         */
-        int INVALID_PARAMS_VALIDATION = -1;
-
-        /**
-         * 访问的资源未找到或不存在
-         */
-        int RESOURCE_NOT_FOUND_OR_NOT_EXIST = -2;
-
-        /**
-         * 请求方法不支持或不正确
-         */
-        int REQUEST_METHOD_NOT_ALLOWED = -3;
-
-        /**
-         * 请求的资源未授权或无权限
-         */
-        int REQUEST_RESOURCE_UNAUTHORIZED = -4;
-
-        /**
-         * 用户会话无效或超时
-         */
-        int USER_SESSION_INVALID_OR_TIMEOUT = -5;
-
-        /**
-         * 请求的操作被禁止
-         */
-        int REQUEST_OPERATION_FORBIDDEN = -6;
-
-        /**
-         * 上传文件大小超出限制
-         */
-        int UPLOAD_FILE_SIZE_LIMIT_EXCEEDED = -9;
-
-        /**
-         * 上传文件总大小超出限制
-         */
-        int UPLOAD_SIZE_LIMIT_EXCEEDED = -10;
-
-        /**
-         * 上传文件类型无效
-         */
-        int UPLOAD_CONTENT_TYPE_INVALID = -11;
-
-        /**
-         * 数据版本不匹配
-         */
-        int DATA_VERSION_NOT_MATCH = -20;
-
-        /**
-         * 系统内部错误
-         */
-        int INTERNAL_SYSTEM_ERROR = -50;
     }
 }

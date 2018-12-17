@@ -16,7 +16,7 @@
 package net.ymate.platform.webmvc.exception;
 
 import net.ymate.platform.webmvc.annotation.ExceptionProcessor;
-import net.ymate.platform.webmvc.util.WebResult;
+import net.ymate.platform.webmvc.util.ErrorCode;
 
 /**
  * 请求的操作被禁止异常
@@ -24,7 +24,7 @@ import net.ymate.platform.webmvc.util.WebResult;
  * @author 刘镇 (suninformation@163.com) on 2017/10/18 下午3:23
  * @version 1.0
  */
-@ExceptionProcessor(code = WebResult.ErrorCode.REQUEST_OPERATION_FORBIDDEN, msg = "The requested operation is forbidden.")
+@ExceptionProcessor(code = ErrorCode.REQUEST_OPERATION_FORBIDDEN, msg = ErrorCode.MSG_REQUEST_OPERATION_FORBIDDEN)
 public class RequestForbiddenException extends RuntimeException {
 
     public RequestForbiddenException() {

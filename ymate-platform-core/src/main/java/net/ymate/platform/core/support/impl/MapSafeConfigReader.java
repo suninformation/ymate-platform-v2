@@ -100,7 +100,7 @@ public class MapSafeConfigReader implements IConfigReader {
 
     private BlurObject __doGetObject(String key, Object defaultValue) {
         Object _value = __innerMap.get(key);
-        if (_value == null) {
+        if (StringUtils.isBlank((String) _value)) {
             _value = defaultValue;
         }
         return BlurObject.bind(_value);
