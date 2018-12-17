@@ -33,7 +33,9 @@
             <version><VERSION></version>
         </dependency>
 
-> **注**：请根据您项目的实际情况，在项目的pom.xml中添加相应配置，该模块已经默认引入核心包依赖，无需重复配置。
+> **注**：
+> - 请根据您项目的实际情况，在项目的pom.xml中添加相应配置，该模块已经默认引入核心包依赖，无需重复配置。
+> - 在使用中需要注意`log-jcl`和`log-slf4j`内部使用的YMP对象是全局实例(采用`YMP.get()`方式获取的YMP实例对象称为全局实例)。
 
 #### 模块事件
 
@@ -104,6 +106,25 @@ Log4J配置文件，内容如下：
         </Configuration>
 
     **注**：该文件应根据ymp.configs.log.config_file指定的位置，其内容请根据实际情况调整。
+
+#### 通过代码手工初始化模块示例
+
+    // 创建YMP实例
+    YMP owner = new YMP(ConfigBuilder.create(
+            // 设置日志模块配置
+            ModuleCfgProcessBuilder.create().putModuleCfg(
+                    LogModuleConfigurable.create()
+                            .configFile("${root}/cfgs/log4j.xml")
+                            .outputDir("${root}/logs/")
+                            .loggerName("default")
+                            .allowOutputConsole(true)).build())
+            .proxyFactory(new DefaultProxyFactory())
+            .developMode(true)
+            .runEnv(IConfig.Environment.PRODUCT).build());
+    // 向容器注册模块
+    owner.registerModule(Logs.class);
+    // 执行框架初始化
+    owner.init();
 
 #### 使用示例
 

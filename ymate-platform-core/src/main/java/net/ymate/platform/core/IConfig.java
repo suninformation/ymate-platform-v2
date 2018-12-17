@@ -44,6 +44,10 @@ public interface IConfig {
 
     int DEFAULT_INT = 0;
 
+    String TRUE_STR = "true";
+
+    String FALSE_STR = "false";
+
     String SYSTEM_RUN_ENV = "ymp.run_env";
 
     /**

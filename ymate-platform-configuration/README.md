@@ -82,6 +82,28 @@
 
 > **注**：配置体系根路径`config_home`配置参数，可以通过`JVM`启动参数方式进行配置，如：`java -jar -Dymp.config_home=...`，这种方式将优先于配置文件。
 
+#### 通过代码手工初始化模块示例
+
+    // 创建YMP实例
+    YMP owner = new YMP(ConfigBuilder.create(
+            // 设置配置体系模块配置
+            ModuleCfgProcessBuilder.create().putModuleCfg(
+                    ConfigModuleConfigurable.create()
+                            .configHome("${root}")
+                            .projectName("demo")
+                            .moduleName("core")
+                            .providerClass(DefaultConfigurationProvider.class)
+                            .configCheckTimeInterval(30000L)).build())
+            .proxyFactory(new DefaultProxyFactory())
+            .developMode(true)
+            .runEnv(IConfig.Environment.PRODUCT).build());
+    // 向容器注册模块
+    owner.registerModule(Cfgs.class);
+    // 执行框架初始化
+    owner.init();
+    // 销毁
+    owner.destroy();
+
 #### 示例一：解析XML配置
 
 - 基于XML文件的基础配置格式如下, 为了配合测试代码, 请将该文件命名为configuration.xml并放置在`config_home`路径下的cfgs目录里:

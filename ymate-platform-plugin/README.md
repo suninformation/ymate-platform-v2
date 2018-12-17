@@ -41,6 +41,25 @@
 	# 是否加载当前CLASSPATH内的所有包含插件配置文件的JAR包，默认为true
 	ymp.configs.plugin.included_classpath=
 
+##### 通过代码手工初始化模块示例
+
+    // 创建YMP实例
+    YMP owner = new YMP(ConfigBuilder.create(
+            // 设置插件模块配置
+            ModuleCfgProcessBuilder.create().putModuleCfg(
+                    PluginModuleConfigurable.create()
+                            .pluginHome("${root}/plugins")
+                            .autoscanPackages("net.ymate")
+                            .automatic(true)
+                            .includedClasspath(true)).build())
+            .proxyFactory(new DefaultProxyFactory())
+            .developMode(true)
+            .runEnv(IConfig.Environment.PRODUCT).build());
+    // 向容器注册模块
+    owner.registerModule(Plugins.class);
+    // 执行框架初始化
+    owner.init();
+
 通过默认插件工厂获取插件的方法：
 
     Plugins.get().getPlugin(IDemoPlugin.class);

@@ -144,6 +144,24 @@ Redis持久化模块默认支持多数据源配置，下面通过简单的配置
     ymp.configs.persistence.redis.ds.otherredis.server.default.database=1
     ymp.configs.persistence.redis.ds.otherredis.server.default.password=654321
 
+#### 通过代码手工初始化模块示例
+
+    // 创建YMP实例
+    YMP owner = new YMP(ConfigBuilder.create(
+            // 设置Redis模块配置
+            ModuleCfgProcessBuilder.create().putModuleCfg(
+                    RedisModuleConfigurable.create().addDataSource(
+                            RedisDataSourceConfigurable.create("default").addServer(
+                                    // 添加Redis服务器节点
+                                    RedisServerConfigurable.create("default").host("localhost").port(6379)))).build())
+            .proxyFactory(new DefaultProxyFactory())
+            .developMode(true)
+            .runEnv(IConfig.Environment.PRODUCT).build());
+    // 向容器注册模块
+    owner.registerModule(Redis.class);
+    // 执行框架初始化
+    owner.init();
+
 #### 示例代码
 
 - 示例一：开启会话并手动关闭

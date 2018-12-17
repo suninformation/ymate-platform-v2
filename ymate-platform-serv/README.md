@@ -36,6 +36,29 @@
 
 > - IReconnectService：内置断线重连服务，当服务的连接状态异常时将尝试重新与服务端建立连接；
 
+#### 通过代码手工初始化模块示例
+
+    // 创建YMP实例
+    YMP owner = new YMP(ConfigBuilder.create(
+            // 设置服务模块配置
+            ModuleCfgProcessBuilder.create().putModuleCfg(
+                    ServModuleConfigurable.create()
+                            // 添加服务端配置
+                            .addServer(ServServerConfigurable.create("default").serverHost("localhost").port(8281))
+                            // 添加客户端配置
+                            .addClient(ServClientConfigurable.create("default")
+                                    .remoteHost("localhost")
+                                    .port(8281)
+                                    .connectionTimeout(60)
+                                    .heartbeatInterval(30).reconnectionInterval(1))).build())
+            .proxyFactory(new DefaultProxyFactory())
+            .developMode(true)
+            .runEnv(IConfig.Environment.PRODUCT).build());
+    // 向容器注册模块
+    owner.registerModule(Servs.class);
+    // 执行框架初始化
+    owner.init();
+
 #### 服务端（Server）
 
 服务端初始化参数：

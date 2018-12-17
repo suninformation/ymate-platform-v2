@@ -90,6 +90,26 @@ public interface IWebMvcModuleCfg {
 
     String CONVENTION_VIEW_PATHS = "convention_view_paths";
 
+    String PARAMS_REQUEST_SUFFIX = "webmvc.request_suffix";
+
+    String PARAMS_SERVER_NAME = "webmvc.server_name";
+
+    String PARAMS_EXCEPTION_ANALYSIS_DISABLED = "webmvc.exception_analysis_disabled";
+
+    String PARAMS_ERROR_WITH_CONTENT_TYPE = "webmvc.error_with_content_type";
+
+    String PARAMS_ERROR_DEFAULT_VIEW_FORMAT = "webmvc.error_default_view_format";
+
+    String PARAMS_ERROR_VIEW = "webmvc.error_view";
+
+    String PARAMS_VALIDATION_TEMPLATE_ELEMENT = "webmvc.validation_template_element";
+
+    String PARAMS_VALIDATION_TEMPLATE_ITEM = "webmvc.validation_template_item";
+
+    String PARAMS_REDIRECT_HOME_URL = "webmvc.redirect_home_url";
+
+    String PARAMS_REDIRECT_CUSTOM_URL = "webmvc.redirect_custom_url";
+
     /**
      * @return 控制器请求映射路径分析器，可选值为已知分析器名称或自定义分析器类名称，默认为restful，目前支持已知分析器[default|restful|...]
      */

@@ -172,6 +172,32 @@ WebMVC模块的扩展参数配置：
     # 自定义重定向URL地址参数名称, 默认值: ""
     ymp.params.webmvc.redirect_custom_url=
 
+#### 通过代码手工初始化模块示例
+
+    // 创建YMP实例
+    YMP owner = new YMP(ConfigBuilder.create(
+            // 设置WebMVC模块配置
+            ModuleCfgProcessBuilder.create().putModuleCfg(
+                    WebMvcModuleConfigurable.create()
+                            .requestProcessorClass("json")
+                            .errorProcessorClass(DefaultWebErrorProcessor.class)
+                            .cacheProcessorClass(WebCacheProcessor.class)
+                            .conventionMode(false)
+                            .defaultCharsetEncoding("UTF-8")
+                            .i18nResourceName("messages")
+                            .i18nResourcesHome("${root}/i18n/")).build())
+            .proxyFactory(new DefaultProxyFactory())
+            .i18nEventHandler(new I18NWebEventHandler())
+            // 扩展配置
+            .param(IWebMvcModuleCfg.PARAMS_ERROR_DEFAULT_VIEW_FORMAT, "json")
+            .param(IWebMvcModuleCfg.PARAMS_ERROR_VIEW, "error.jsp")
+            .param(IWebMvcModuleCfg.PARAMS_EXCEPTION_ANALYSIS_DISABLED, "false")
+            .developMode(true)
+            .runEnv(IConfig.Environment.PRODUCT).build());
+    // 向容器注册模块
+    owner.registerModule(WebMVC.class);
+    // 执行框架初始化
+    owner.init();
 
 #### 模块事件
 

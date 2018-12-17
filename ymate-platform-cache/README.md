@@ -120,6 +120,27 @@
 |ELEMENT_REMOVED|缓存元素删除|
 |ELEMENT_REMOVED_ALL|缓存清空|
 
+#### 通过代码手工初始化模块示例
+
+    // 创建YMP实例
+    YMP owner = new YMP(ConfigBuilder.create(
+            // 设置缓存模块配置
+            ModuleCfgProcessBuilder.create().putModuleCfg(CacheModuleConfigurable.create()
+                    .defaultCacheName("default")
+                    .defaultCacheTimeout(7200)
+                    .serializerClass("default")
+                    .providerClass("default")).build())
+            .proxyFactory(new DefaultProxyFactory())
+            .developMode(true)
+            // 扩展参数配置
+            .param(ICacheModuleCfg.PARAMS_CACHE_STORAGE_WITH_SET, "false")
+            .param(ICacheModuleCfg.PARAMS_CACHE_DISABLED_SUBSCRIBE_EXPIRED, "false")
+            .runEnv(IConfig.Environment.PRODUCT).build());
+    // 向容器注册模块
+    owner.registerModule(Caches.class);
+    // 执行框架初始化
+    owner.init();
+
 #### 模块使用
 
 ##### 示例一：直接通过缓存模块操作缓存数据

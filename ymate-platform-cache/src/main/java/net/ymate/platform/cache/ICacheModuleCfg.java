@@ -39,6 +39,10 @@ public interface ICacheModuleCfg {
 
     String DEFAULT_CACHE_TIMEOUT = "default_cache_timeout";
 
+    String PARAMS_CACHE_STORAGE_WITH_SET = "cache.storage_with_set";
+
+    String PARAMS_CACHE_DISABLED_SUBSCRIBE_EXPIRED = "cache.disabled_subscribe_expired";
+
     /**
      * @return 缓存提供者，可选参数，默认值为net.ymate.platform.cache.impl.DefaultCacheProvider
      */

@@ -35,6 +35,11 @@ public class CacheModuleConfigurable implements IModuleConfigurable {
 
     private Map<String, String> __configs = new HashMap<String, String>();
 
+    public CacheModuleConfigurable providerClass(String providerClass) {
+        __configs.put(ICacheModuleCfg.PROVIDER_CLASS, providerClass);
+        return this;
+    }
+
     public CacheModuleConfigurable providerClass(Class<? extends ICacheProvider> providerClass) {
         __configs.put(ICacheModuleCfg.PROVIDER_CLASS, providerClass.getName());
         return this;

@@ -93,6 +93,30 @@ JDBC持久化模块针对关系型数据库(RDBMS)数据存取的一套简单解
 >
 >   >net.ymate.platform.core.support.impl.DefaultPasswordProcessor
 
+#### 通过代码手工初始化模块示例
+
+    // 创建YMP实例
+    YMP owner = new YMP(ConfigBuilder.create(
+            // 设置JDBC模块配置
+            ModuleCfgProcessBuilder.create().putModuleCfg(
+                    DatabaseModuleConfigurable.create().defaultDataSourceName("default").addDataSource(
+                            DataSourceConfigurable.create("default")
+                                    .connectionUrl("jdbc:mysql://localhost:3306/database_name?useUnicode=true&characterEncoding=UTF-8")
+                                    .username("root")
+                                    .password("wRI2rASW58E")
+                                    .passwordEncrypted(true)
+                                    .adapterClass("c3p0")
+                                    .tablePrefix("ym_")
+                                    .showSql(true)
+                                    .stackTraces(true))).build())
+            .proxyFactory(new DefaultProxyFactory())
+            .developMode(true)
+            .runEnv(IConfig.Environment.PRODUCT).build());
+    // 向容器注册模块
+    owner.registerModule(JDBC.class);
+    // 执行框架初始化
+    owner.init();
+
 #### 数据源（DataSource）
 
 ##### 多数据源连接
