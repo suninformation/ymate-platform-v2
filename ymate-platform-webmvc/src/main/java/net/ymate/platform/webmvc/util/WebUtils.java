@@ -25,6 +25,7 @@ import net.ymate.platform.core.util.NetworkUtils;
 import net.ymate.platform.core.util.RuntimeUtils;
 import net.ymate.platform.validation.ValidateResult;
 import net.ymate.platform.webmvc.IWebMvc;
+import net.ymate.platform.webmvc.IWebMvcModuleCfg;
 import net.ymate.platform.webmvc.WebMVC;
 import net.ymate.platform.webmvc.base.Type;
 import net.ymate.platform.webmvc.context.WebContext;
@@ -85,11 +86,11 @@ public class WebUtils {
         if (withBasePath && !"".equals(requestPath) && requestPath.charAt(0) == '/') {
             requestPath = StringUtils.substringAfter(requestPath, "/");
         }
-        return (withBasePath ? baseURL(request) + requestPath : requestPath) + __doGetConfigValue(Type.Const.REQUEST_SUFFIX, StringUtils.EMPTY);
+        return (withBasePath ? baseURL(request) + requestPath : requestPath) + __doGetConfigValue(IWebMvcModuleCfg.PARAMS_REQUEST_SUFFIX, StringUtils.EMPTY);
     }
 
     private static String __doGetSafeServerName(HttpServletRequest request) {
-        return __doGetConfigValue(Type.Const.SERVER_NAME, request.getServerName());
+        return __doGetConfigValue(IWebMvcModuleCfg.PARAMS_SERVER_NAME, request.getServerName());
     }
 
     /**
@@ -404,13 +405,13 @@ public class WebUtils {
     public static String messageWithTemplate(YMP owner, String title, Collection<ValidateResult> messages) {
         StringBuilder _messages = new StringBuilder();
         for (ValidateResult _vResult : messages) {
-            ExpressionUtils _item = ExpressionUtils.bind(__doGetConfigValue(owner, Type.Const.VALIDATION_TEMPLATE_ITEM, "${message}<br>"));
+            ExpressionUtils _item = ExpressionUtils.bind(__doGetConfigValue(owner, IWebMvcModuleCfg.PARAMS_VALIDATION_TEMPLATE_ITEM, "${message}<br>"));
             _item.set("name", _vResult.getName());
             _item.set("message", _vResult.getMsg());
             //
             _messages.append(_item.clean().getResult());
         }
-        ExpressionUtils _element = ExpressionUtils.bind(__doGetConfigValue(owner, Type.Const.VALIDATION_TEMPLATE_ELEMENT, "${title}"));
+        ExpressionUtils _element = ExpressionUtils.bind(__doGetConfigValue(owner, IWebMvcModuleCfg.PARAMS_VALIDATION_TEMPLATE_ELEMENT, "${title}"));
         if (StringUtils.isNotBlank(title)) {
             _element.set("title", title);
         }
@@ -423,7 +424,7 @@ public class WebUtils {
             _redirectUrl = StringUtils.defaultIfBlank(request.getParameter(Type.Const.REDIRECT_URL), context != null ? context.getContextParams().get(Type.Const.REDIRECT_URL) : "");
             if (StringUtils.isBlank(_redirectUrl)) {
                 if (context != null) {
-                    _redirectUrl = __doGetConfigValue(context.getOwner(), Type.Const.REDIRECT_HOME_URL, null);
+                    _redirectUrl = __doGetConfigValue(context.getOwner(), IWebMvcModuleCfg.PARAMS_REDIRECT_HOME_URL, null);
                 }
                 if (StringUtils.isBlank(_redirectUrl)) {
                     _redirectUrl = baseURL(WebContext.getRequest());
@@ -441,7 +442,7 @@ public class WebUtils {
         if (context.getContextParams().containsKey(Type.Const.CUSTOM_REDIRECT)) {
             String _value = context.getContextParams().get(Type.Const.CUSTOM_REDIRECT);
             if (StringUtils.equalsIgnoreCase(_value, Type.Const.CUSTOM_REDIRECT)) {
-                _value = Type.Const.REDIRECT_CUSTOM_URL;
+                _value = IWebMvcModuleCfg.PARAMS_REDIRECT_CUSTOM_URL;
             } else if (StringUtils.startsWithIgnoreCase(_value, "http://") || StringUtils.startsWithIgnoreCase(_value, "https://")) {
                 return _value;
             }
@@ -462,7 +463,7 @@ public class WebUtils {
 
     public static IView buildErrorView(IWebMvc owner, int code, String msg, String redirectUrl, int timeInterval, Map<String, Object> data) {
         IView _view;
-        String _errorViewPath = __doGetConfigValue(owner.getOwner(), Type.Const.ERROR_VIEW, "error.jsp");
+        String _errorViewPath = __doGetConfigValue(owner.getOwner(), IWebMvcModuleCfg.PARAMS_ERROR_VIEW, "error.jsp");
         if (StringUtils.endsWithIgnoreCase(_errorViewPath, ".ftl")) {
             _view = View.freemarkerView(owner, _errorViewPath);
         } else if (StringUtils.endsWithIgnoreCase(_errorViewPath, ".vm")) {

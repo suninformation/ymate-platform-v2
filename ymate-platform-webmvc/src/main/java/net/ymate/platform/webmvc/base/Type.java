@@ -51,64 +51,6 @@ public class Type {
         String REDIRECT_URL = "redirect_url";
 
         String CUSTOM_REDIRECT = "custom_redirect";
-
-        // ----------
-
-        /**
-         * 控制器请求URL后缀参数名称
-         */
-        String REQUEST_SUFFIX = "webmvc.request_suffix";
-
-        /**
-         * 服务名称参数, 默认值: request.getServerName();
-         */
-        String SERVER_NAME = "webmvc.server_name";
-
-        // ----------
-
-        /**
-         * 系统异常分析是否关闭参数名称
-         */
-        String SYSTEM_EXCEPTION_ANALYSIS_DISABLED = "webmvc.exception_analysis_disabled";
-
-        /**
-         * 系统错误消息是否指定ContentType响应头
-         */
-        String SYSTEM_ERROR_WITH_CONTENT_TYPE = "webmvc.error_with_content_type";
-
-        /**
-         * 默认异常响应视图格式, 默认值: "", 可选范围: json|xml
-         */
-        String ERROR_DEFAULT_VIEW_FORMAT = "webmvc.error_default_view_format";
-
-        /**
-         * 异常信息视图文件参数名称
-         */
-        String ERROR_VIEW = "webmvc.error_view";
-
-        // ----------
-
-        /**
-         * 验证结果消息模板参数名称, 默认值: "${items}"
-         */
-        String VALIDATION_TEMPLATE_ELEMENT = "webmvc.validation_template_element";
-
-        /**
-         * 验证结果消息项模板参数名称, 默认值: "${message}<br>"
-         */
-        String VALIDATION_TEMPLATE_ITEM = "webmvc.validation_template_item";
-
-        // ----------
-
-        /**
-         * 重定向主页URL地址参数名称, 默认值: ""
-         */
-        String REDIRECT_HOME_URL = "webmvc.redirect_home_url";
-
-        /**
-         * 自定义重定向URL地址参数名称
-         */
-        String REDIRECT_CUSTOM_URL = "webmvc.redirect_custom_url";
     }
 
     /**

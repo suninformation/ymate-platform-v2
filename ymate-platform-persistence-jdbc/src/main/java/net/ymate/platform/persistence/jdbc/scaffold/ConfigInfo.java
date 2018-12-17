@@ -22,6 +22,7 @@ import net.ymate.platform.core.lang.PairObject;
 import net.ymate.platform.core.util.ClassUtils;
 import net.ymate.platform.core.util.RuntimeUtils;
 import net.ymate.platform.persistence.base.EntityMeta;
+import net.ymate.platform.persistence.jdbc.IDatabaseModuleCfg;
 import org.apache.commons.lang.StringUtils;
 
 import java.util.Arrays;
@@ -66,21 +67,21 @@ public class ConfigInfo {
     public ConfigInfo(YMP owner) {
         IConfig _config = owner.getConfig();
         //
-        this.useBaseEntity = BlurObject.bind(_config.getParam("jdbc.use_base_entity")).toBooleanValue();
-        this.useClassSuffix = BlurObject.bind(_config.getParam("jdbc.use_class_suffix")).toBooleanValue();
-        this.useChainMode = BlurObject.bind(_config.getParam("jdbc.use_chain_mode")).toBooleanValue();
-        this.useStateSupport = BlurObject.bind(_config.getParam("jdbc.use_state_support")).toBooleanValue();
-        this.packageName = StringUtils.defaultIfBlank(_config.getParam("jdbc.package_name"), "packages");
-        this.outputPath = RuntimeUtils.replaceEnvVariable(StringUtils.defaultIfBlank(owner.getConfig().getParam("jdbc.output_path"), "${root}"));
-        this.dbName = _config.getParam("jdbc.db_name");
-        this.dbUserName = _config.getParam("jdbc.db_username");
-        this.tablePrefixes = Arrays.asList(StringUtils.split(StringUtils.trimToEmpty(_config.getParam("jdbc.table_prefix")), '|'));
-        this.removePrefix = new BlurObject(_config.getParam("jdbc.remove_table_prefix")).toBooleanValue();
-        this.tableExcludeList = Arrays.asList(StringUtils.split(StringUtils.trimToEmpty(_config.getParam("jdbc.table_exclude_list")).toLowerCase(), "|"));
-        this.tableList = Arrays.asList(StringUtils.split(StringUtils.trimToEmpty(_config.getParam("jdbc.table_list")), "|"));
+        this.useBaseEntity = BlurObject.bind(_config.getParam(IDatabaseModuleCfg.PARAMS_JDBC_USE_BASE_ENTITY)).toBooleanValue();
+        this.useClassSuffix = BlurObject.bind(_config.getParam(IDatabaseModuleCfg.PARAMS_JDBC_USE_CLASS_SUFFIX)).toBooleanValue();
+        this.useChainMode = BlurObject.bind(_config.getParam(IDatabaseModuleCfg.PARAMS_JDBC_USE_CHAIN_MODE)).toBooleanValue();
+        this.useStateSupport = BlurObject.bind(_config.getParam(IDatabaseModuleCfg.PARAMS_JDBC_USE_STATE_SUPPORT)).toBooleanValue();
+        this.packageName = _config.getParam(IDatabaseModuleCfg.PARAMS_JDBC_PACKAGE_NAME, "packages");
+        this.outputPath = RuntimeUtils.replaceEnvVariable(owner.getConfig().getParam(IDatabaseModuleCfg.PARAMS_JDBC_OUTPUT_PATH, "${root}"));
+        this.dbName = _config.getParam(IDatabaseModuleCfg.PARAMS_JDBC_DB_NAME);
+        this.dbUserName = _config.getParam(IDatabaseModuleCfg.PARAMS_JDBC_DB_USERNAME);
+        this.tablePrefixes = Arrays.asList(StringUtils.split(_config.getParam(IDatabaseModuleCfg.PARAMS_JDBC_TABLE_PREFIX, StringUtils.EMPTY), '|'));
+        this.removePrefix = new BlurObject(_config.getParam(IDatabaseModuleCfg.PARAMS_JDBC_REMOVE_TABLE_PREFIX)).toBooleanValue();
+        this.tableExcludeList = Arrays.asList(StringUtils.split(_config.getParam(IDatabaseModuleCfg.PARAMS_JDBC_TABLE_EXCLUDE_LIST, StringUtils.EMPTY).toLowerCase(), "|"));
+        this.tableList = Arrays.asList(StringUtils.split(_config.getParam(IDatabaseModuleCfg.PARAMS_JDBC_TABLE_LIST, StringUtils.EMPTY), "|"));
         //
-        this.namedFilter = ClassUtils.impl(_config.getParam("jdbc.named_filter_class"), IEntityNamedFilter.class, this.getClass());
-        this.readonlyFields = Arrays.asList(StringUtils.split(StringUtils.trimToEmpty(_config.getParam("jdbc.readonly_field_list")).toLowerCase(), '|'));
+        this.namedFilter = ClassUtils.impl(_config.getParam(IDatabaseModuleCfg.PARAMS_JDBC_NAMED_FILTER_CLASS), IEntityNamedFilter.class, this.getClass());
+        this.readonlyFields = Arrays.asList(StringUtils.split(_config.getParam(IDatabaseModuleCfg.PARAMS_JDBC_READONLY_FIELD_LIST, StringUtils.EMPTY).toLowerCase(), '|'));
     }
 
     public ConfigInfo(String dbName, String dbUserName, boolean removePrefix, List<String> tablePrefixes, List<String> tableList, List<String> tableExcludeList, boolean useBaseEntity, boolean useClassSuffix, boolean useChainMode, boolean useStateSupport, IEntityNamedFilter namedFilter, List<String> readonlyFields, String packageName, String outputPath) {

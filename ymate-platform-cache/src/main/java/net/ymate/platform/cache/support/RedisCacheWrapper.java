@@ -56,8 +56,8 @@ public class RedisCacheWrapper extends JedisPubSub implements ICache {
         __redis = redis;
         __cacheName = cacheName;
         __listener = listener;
-        __storageWithSet = BlurObject.bind(__owner.getOwner().getConfig().getParam("cache.storage_with_set")).toBooleanValue();
-        __disabledSubscribeExpired = BlurObject.bind(__owner.getOwner().getConfig().getParam("cache.disabled_subscribe_expired")).toBooleanValue();
+        __storageWithSet = BlurObject.bind(__owner.getOwner().getConfig().getParam(ICacheModuleCfg.PARAMS_CACHE_STORAGE_WITH_SET)).toBooleanValue();
+        __disabledSubscribeExpired = BlurObject.bind(__owner.getOwner().getConfig().getParam(ICacheModuleCfg.PARAMS_CACHE_DISABLED_SUBSCRIBE_EXPIRED)).toBooleanValue();
         //
         if (__listener != null && !__disabledSubscribeExpired) {
             __redis.subscribe(this, "__keyevent@" + __redis.getModuleCfg().getDefaultDataSourceCfg().getMasterServerMeta().getDatabase() + "__:expired");

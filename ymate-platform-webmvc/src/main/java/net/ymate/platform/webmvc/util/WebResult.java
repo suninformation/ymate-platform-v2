@@ -18,6 +18,7 @@ package net.ymate.platform.webmvc.util;
 import com.alibaba.fastjson.JSONObject;
 import net.ymate.platform.core.lang.BlurObject;
 import net.ymate.platform.core.util.ClassUtils;
+import net.ymate.platform.webmvc.IWebMvcModuleCfg;
 import net.ymate.platform.webmvc.base.Type;
 import net.ymate.platform.webmvc.context.WebContext;
 import net.ymate.platform.webmvc.view.IView;
@@ -313,7 +314,7 @@ public final class WebResult {
         IView _view = null;
         String _format = StringUtils.defaultIfBlank(WebContext.getRequest().getParameter(paramFormat), StringUtils.trimToNull(defaultFormat));
         if (_format != null && result != null) {
-            if (BlurObject.bind(WebContext.getContext().getOwner().getOwner().getConfig().getParam(Type.Const.SYSTEM_ERROR_WITH_CONTENT_TYPE)).toBooleanValue()) {
+            if (BlurObject.bind(WebContext.getContext().getOwner().getOwner().getConfig().getParam(IWebMvcModuleCfg.PARAMS_ERROR_WITH_CONTENT_TYPE)).toBooleanValue()) {
                 result.withContentType();
             }
             if (Type.Const.FORMAT_JSON.equalsIgnoreCase(_format)) {

@@ -38,7 +38,7 @@ public class MultilevelCacheWrapper implements ICache, ICacheLocker {
         __masterCache = new EhCacheWrapper(owner, ehcache, listener);
         __slaveCache = new RedisCacheWrapper(owner, redis, cacheName, null);
         //
-        __slaveCacheAutosync = BlurObject.bind(owner.getOwner().getConfig().getParam("cache.multilevel_slave_autosync")).toBooleanValue();
+        __slaveCacheAutosync = BlurObject.bind(owner.getOwner().getConfig().getParam(ICacheModuleCfg.PARAMS_CACHE_MULTILEVEL_SLAVE_AUTOSYNC)).toBooleanValue();
     }
 
     @Override

@@ -129,7 +129,7 @@
                     .defaultCacheName("default")
                     .defaultCacheTimeout(7200)
                     .serializerClass("default")
-                    .providerClass("default")).build())
+                    .providerClass(ICache.DEFAULT)).build())
             .proxyFactory(new DefaultProxyFactory())
             .developMode(true)
             // 扩展参数配置

@@ -39,9 +39,20 @@ public interface ICacheModuleCfg {
 
     String DEFAULT_CACHE_TIMEOUT = "default_cache_timeout";
 
+    /**
+     * 是否采用SET进行缓存数据存储，默认值为false
+     */
     String PARAMS_CACHE_STORAGE_WITH_SET = "cache.storage_with_set";
 
+    /**
+     * 禁用Redis订阅缓存元素过期事件，可选参数，默认值为false
+     */
     String PARAMS_CACHE_DISABLED_SUBSCRIBE_EXPIRED = "cache.disabled_subscribe_expired";
+
+    /**
+     * Multilevel模式下是否自动同步Master和Slave级缓存，可选扩展参数, 默认值为false
+     */
+    String PARAMS_CACHE_MULTILEVEL_SLAVE_AUTOSYNC = "cache.multilevel_slave_autosync";
 
     /**
      * @return 缓存提供者，可选参数，默认值为net.ymate.platform.cache.impl.DefaultCacheProvider

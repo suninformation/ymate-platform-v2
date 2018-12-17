@@ -60,6 +60,76 @@ public interface IDatabaseModuleCfg {
     String DRIVER_CLASS = "driver_class";
 
     /**
+     * 是否生成新的BaseEntity类，默认为false(即表示使用框架提供的BaseEntity类)
+     */
+    String PARAMS_JDBC_USE_BASE_ENTITY = "jdbc.use_base_entity";
+
+    /**
+     * 是否使用类名后缀，不使用和使用的区别如: User-->UserModel，默认为false
+     */
+    String PARAMS_JDBC_USE_CLASS_SUFFIX = "jdbc.use_class_suffix";
+
+    /**
+     * 是否采用链式调用模式，默认为false
+     */
+    String PARAMS_JDBC_USE_CHAIN_MODE = "jdbc.use_chain_mode";
+
+    /**
+     * 是否添加类成员属性值状态变化注解，默认为false
+     */
+    String PARAMS_JDBC_USE_STATE_SUPPORT = "jdbc.use_state_support";
+
+    /**
+     * 实体及属性命名过滤器接口实现类，默认为空
+     */
+    String PARAMS_JDBC_NAMED_FILTER_CLASS = "jdbc.named_filter_class";
+
+    /**
+     * 数据库名称(仅针对特定的数据库使用，如Oracle)，默认为空
+     */
+    String PARAMS_JDBC_DB_NAME = "jdbc.db_name";
+
+    /**
+     * 数据库用户名称(仅针对特定的数据库使用，如Oracle)，默认为空
+     */
+    String PARAMS_JDBC_DB_USERNAME = "jdbc.db_username";
+
+    /**
+     * 数据库表名称前缀，多个用'|'分隔，默认为空
+     */
+    String PARAMS_JDBC_TABLE_PREFIX = "jdbc.table_prefix";
+
+    /**
+     * 否剔除生成的实体映射表名前缀，默认为false
+     */
+    String PARAMS_JDBC_REMOVE_TABLE_PREFIX = "jdbc.remove_table_prefix";
+
+    /**
+     * 预生成实体的数据表名称列表，多个用'|'分隔，默认为空表示全部生成
+     */
+    String PARAMS_JDBC_TABLE_LIST = "jdbc.table_list";
+
+    /**
+     * 排除的数据表名称列表，在此列表内的数据表将不被生成实体，多个用'|'分隔，默认为空
+     */
+    String PARAMS_JDBC_TABLE_EXCLUDE_LIST = "jdbc.table_exclude_list";
+
+    /**
+     * 需要添加@Readonly注解声明的字段名称列表，多个用'|'分隔，默认为空
+     */
+    String PARAMS_JDBC_READONLY_FIELD_LIST = "jdbc.readonly_field_list";
+
+    /**
+     * 生成的代码文件输出路径，默认为${root}
+     */
+    String PARAMS_JDBC_OUTPUT_PATH = "jdbc.output_path";
+
+    /**
+     * 生成的代码所属包名称，默认为: packages
+     */
+    String PARAMS_JDBC_PACKAGE_NAME = "jdbc.package_name";
+
+    /**
      * @return 返回默认数据源名称，默认值：default
      */
     String getDataSourceDefaultName();

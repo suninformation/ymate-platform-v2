@@ -59,8 +59,8 @@ public class DefaultWebErrorProcessor implements IWebErrorProcessor, IWebInitial
     public void init(WebMVC owner) throws Exception {
         __owner = owner;
         //
-        __errorDefaultViewFormat = StringUtils.trimToEmpty(owner.getOwner().getConfig().getParam(Type.Const.ERROR_DEFAULT_VIEW_FORMAT)).toLowerCase();
-        __analysisDisabled = BlurObject.bind(owner.getOwner().getConfig().getParam(Type.Const.SYSTEM_EXCEPTION_ANALYSIS_DISABLED)).toBooleanValue();
+        __errorDefaultViewFormat = StringUtils.trimToEmpty(owner.getOwner().getConfig().getParam(IWebMvcModuleCfg.PARAMS_ERROR_DEFAULT_VIEW_FORMAT)).toLowerCase();
+        __analysisDisabled = BlurObject.bind(owner.getOwner().getConfig().getParam(IWebMvcModuleCfg.PARAMS_EXCEPTION_ANALYSIS_DISABLED)).toBooleanValue();
     }
 
     @Override
