@@ -157,6 +157,10 @@ public class ErrorCode implements Serializable {
         return ErrorCode.create(USER_SESSION_INVALID_OR_TIMEOUT, MSG_USER_SESSION_INVALID_OR_TIMEOUT);
     }
 
+    public static ErrorCode requestOperationForbidden() {
+        return ErrorCode.create(REQUEST_OPERATION_FORBIDDEN, MSG_REQUEST_OPERATION_FORBIDDEN);
+    }
+
     public static ErrorCode userSessionAuthorized() {
         return ErrorCode.create(USER_SESSION_AUTHORIZED, MSG_USER_SESSION_AUTHORIZED);
     }
