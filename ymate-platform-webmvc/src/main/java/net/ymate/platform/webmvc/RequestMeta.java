@@ -77,8 +77,8 @@ public class RequestMeta {
         this.allowParams = new HashMap<String, String>();
         //
         Controller _controller = targetClass.getAnnotation(Controller.class);
-        this.name = StringUtils.defaultIfBlank(_controller.name(), targetClass.getName());
-        this.singleton = _controller.singleton();
+        this.name = StringUtils.defaultIfBlank(_controller == null ? null : _controller.name(), targetClass.getName());
+        this.singleton = _controller == null || _controller.singleton();
         //
         this.responseCache = method.getAnnotation(ResponseCache.class);
         if (this.responseCache == null) {

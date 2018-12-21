@@ -159,24 +159,22 @@ public class WebMVC implements IModule, IWebMvc {
     @Override
     public boolean registerController(Class<?> targetClass) throws Exception {
         boolean _isValid = false;
-        Controller _annotation = targetClass.getAnnotation(Controller.class);
-        if (_annotation != null) {
-            for (Method _method : targetClass.getDeclaredMethods()) {
-                if (_method.isAnnotationPresent(RequestMapping.class)) {
-                    RequestMeta _meta = new RequestMeta(this, targetClass, _method);
-                    __moduleCfg.getRequestMappingParser().registerRequestMeta(_meta);
-                    //
-                    if (__owner.getConfig().isDevelopMode() && _LOG.isInfoEnabled()) {
-                        _LOG.info("--> " + _meta.getAllowMethods() + ": " + _meta.getMapping() + " : " + _meta.getTargetClass().getName() + "." + _meta.getMethod().getName());
-                    }
-                    //
-                    _isValid = true;
+        for (Method _method : targetClass.getDeclaredMethods()) {
+            if (_method.isAnnotationPresent(RequestMapping.class)) {
+                RequestMeta _meta = new RequestMeta(this, targetClass, _method);
+                __moduleCfg.getRequestMappingParser().registerRequestMeta(_meta);
+                //
+                if (__owner.getConfig().isDevelopMode() && _LOG.isInfoEnabled()) {
+                    _LOG.info("--> " + _meta.getAllowMethods() + ": " + _meta.getMapping() + " : " + _meta.getTargetClass().getName() + "." + _meta.getMethod().getName());
                 }
+                //
+                _isValid = true;
             }
-            //
-            if (_isValid) {
-                __owner.registerBean(BeanMeta.create(targetClass, _annotation.singleton()));
-            }
+        }
+        //
+        if (_isValid) {
+            Controller _annotation = targetClass.getAnnotation(Controller.class);
+            __owner.registerBean(BeanMeta.create(targetClass, _annotation == null || _annotation.singleton()));
         }
         return _isValid;
     }
