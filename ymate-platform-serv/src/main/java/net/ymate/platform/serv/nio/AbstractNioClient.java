@@ -93,7 +93,7 @@ public abstract class AbstractNioClient<LISTENER extends IListener<INioSession>>
 
     @Override
     public void reconnect() throws IOException {
-        if (!isConnected()) {
+        if (!isClosing() && !isConnected()) {
             __eventGroup.close();
             __eventGroup = buildEventGroup(__clientCfg, __listener, __codec);
             //

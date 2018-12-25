@@ -300,6 +300,7 @@ public abstract class AbstractNioSession<LISTENER extends IListener<INioSession>
         return getClass().getSimpleName() + " [id=" + id()
                 + ", remote=" + StringUtils.defaultIfBlank(remoteAddress(), "<UNKNOWN>")
                 + ", status=" + status()
+                + ", attrs=" + attrs()
                 + "]";
     }
 }
