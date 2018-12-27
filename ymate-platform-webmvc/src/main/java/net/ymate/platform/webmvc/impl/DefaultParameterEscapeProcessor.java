@@ -15,9 +15,9 @@
  */
 package net.ymate.platform.webmvc.impl;
 
+import net.ymate.platform.core.util.StringEscapeUtils;
 import net.ymate.platform.webmvc.IParameterEscapeProcessor;
 import net.ymate.platform.webmvc.base.Type;
-import net.ymate.platform.webmvc.util.StringEscapeUtils;
 
 /**
  * 默认参数字符串转义处理器接口实现

@@ -493,7 +493,7 @@ public final class FileUploadHelper {
         public String getContentType() {
             if (__isFileObj) {
                 if (__fileObj != null) {
-                    return MimeTypeUtils.getFileMimeType(FileUtils.getExtName(__fileObj.getAbsolutePath()));
+                    return net.ymate.platform.core.util.MimeTypeUtils.getFileMimeType(FileUtils.getExtName(__fileObj.getAbsolutePath()));
                 }
             } else if (__fileItemObj != null) {
                 return __fileItemObj.getContentType();
