@@ -77,25 +77,10 @@ public class DefaultRequestMappingParser implements IRequestMappingParser {
         }
     }
 
-    /**
-     * @param partStr 参数段
-     * @return 返回去掉首尾'/'字符的串
-     */
-    private String __doFixMappingPart(String partStr) {
-        partStr = StringUtils.trimToEmpty(partStr);
-        if (StringUtils.startsWith(partStr, "/")) {
-            partStr = StringUtils.substringAfter(partStr, "/");
-        }
-        if (StringUtils.endsWith(partStr, "/")) {
-            partStr = StringUtils.substringBeforeLast(partStr, "/");
-        }
-        return partStr;
-    }
-
     @Override
-    public final RequestMeta doParse(IRequestContext context) {
+    public Map<String, RequestMeta> getRequestMetas(Type.HttpMethod httpMethod) {
         Map<String, RequestMeta> _mappingMap;
-        switch (context.getHttpMethod()) {
+        switch (httpMethod) {
             case POST:
                 _mappingMap = __MAPPING_META_FOR_POST;
                 break;
@@ -117,9 +102,30 @@ public class DefaultRequestMappingParser implements IRequestMappingParser {
             default:
                 _mappingMap = __MAPPING_META_FOR_GET;
         }
+        return Collections.unmodifiableMap(_mappingMap);
+    }
+
+    /**
+     * @param partStr 参数段
+     * @return 返回去掉首尾'/'字符的串
+     */
+    private String __doFixMappingPart(String partStr) {
+        partStr = StringUtils.trimToEmpty(partStr);
+        if (StringUtils.startsWith(partStr, "/")) {
+            partStr = StringUtils.substringAfter(partStr, "/");
+        }
+        if (StringUtils.endsWith(partStr, "/")) {
+            partStr = StringUtils.substringBeforeLast(partStr, "/");
+        }
+        return partStr;
+    }
+
+    @Override
+    public final RequestMeta doParse(IRequestContext context) {
+        Map<String, RequestMeta> _mappingMap = getRequestMetas(context.getHttpMethod());
         RequestMeta _meta = _mappingMap.get(context.getRequestMapping());
         if (_meta == null) {
-            return __doParse(context, Collections.unmodifiableMap(_mappingMap));
+            return __doParse(context, _mappingMap);
         }
         return _meta;
     }

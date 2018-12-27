@@ -15,6 +15,10 @@
  */
 package net.ymate.platform.webmvc;
 
+import net.ymate.platform.webmvc.base.Type;
+
+import java.util.Map;
+
 /**
  * WebMVC请求映射路径分析器接口
  *
@@ -23,7 +27,19 @@ package net.ymate.platform.webmvc;
  */
 public interface IRequestMappingParser {
 
+    /**
+     * 注册控制器请求映射元数据描述
+     *
+     * @param requestMeta 控制器请求映射元数据描述
+     */
     void registerRequestMeta(RequestMeta requestMeta);
+
+    /**
+     * @param httpMethod HTTP请求方式
+     * @return 根据HTTP请求方式返回对应的控制器请求映射元数据描述映射
+     * @since 2.0.6
+     */
+    Map<String, RequestMeta> getRequestMetas(Type.HttpMethod httpMethod);
 
     /**
      * @param context 请求上下文对象
