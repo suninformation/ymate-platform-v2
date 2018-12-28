@@ -235,6 +235,7 @@ public class YMP {
                 __inited = true;
                 //
                 _watch.stop();
+                _LOG.info("RecycleHelper has registered the number of resources to be recycled: " + RecycleHelper.getInstance().size());
                 _LOG.info("Initialization completed, Total time: " + _watch.getTime() + "ms");
                 // 触发框架初始化完成事件
                 __events.fireEvent(new ApplicationEvent(this, ApplicationEvent.EVENT.APPLICATION_INITED));

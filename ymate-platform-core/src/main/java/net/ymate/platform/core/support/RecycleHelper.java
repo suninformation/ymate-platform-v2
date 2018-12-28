@@ -70,6 +70,13 @@ public final class RecycleHelper {
         return this;
     }
 
+    /**
+     * @return 返回待回收资源数量
+     */
+    public int size() {
+        return __destroyableSet.size();
+    }
+
     private void __recycle() {
         Iterator<IDestroyable> iterator = __destroyableSet.iterator();
         while (iterator.hasNext()) {
