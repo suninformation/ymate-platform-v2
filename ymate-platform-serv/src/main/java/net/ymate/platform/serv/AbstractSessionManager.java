@@ -126,6 +126,7 @@ public abstract class AbstractSessionManager<SESSION_WRAPPER extends ISessionWra
      *
      * @param session       会话对象
      * @param socketAddress 目标来源套接字地址
+     * @return 返回注册的客户端会话包装器对象
      */
     @SuppressWarnings("unchecked")
     protected SESSION_WRAPPER __doRegisterSession(INioSession session, InetSocketAddress socketAddress) {

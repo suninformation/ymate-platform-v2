@@ -370,6 +370,8 @@ public class ExecutableQueue<E extends Serializable> implements IDestroyable {
 
     /**
      * 移除全部监听器
+     *
+     * @return 返回被移除的监听器对象映射
      */
     public Map<String, IListener<E>> removeAllListeners() {
         if (checkStatus()) {

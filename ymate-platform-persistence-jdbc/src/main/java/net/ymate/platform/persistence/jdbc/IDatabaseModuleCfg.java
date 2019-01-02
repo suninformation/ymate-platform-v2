@@ -65,7 +65,7 @@ public interface IDatabaseModuleCfg {
     String PARAMS_JDBC_USE_BASE_ENTITY = "jdbc.use_base_entity";
 
     /**
-     * 是否使用类名后缀，不使用和使用的区别如: User-->UserModel，默认为false
+     * 是否使用类名后缀，不使用和使用的区别如: User--&gt;UserModel，默认为false
      */
     String PARAMS_JDBC_USE_CLASS_SUFFIX = "jdbc.use_class_suffix";
 
