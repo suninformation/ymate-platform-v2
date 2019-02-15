@@ -15,6 +15,7 @@
  */
 package net.ymate.platform.webmvc.impl;
 
+import net.ymate.platform.core.beans.annotation.Interceptor;
 import net.ymate.platform.core.beans.intercept.IInterceptor;
 import net.ymate.platform.core.beans.intercept.InterceptAnnoHelper;
 import net.ymate.platform.core.beans.intercept.InterceptContext;
@@ -82,6 +83,12 @@ public class DefaultInterceptorRuleProcessor implements IInterceptorRuleProcesso
             //
             for (Class<? extends IInterceptor> _interceptClass : _ruleMeta.getBeforeIntercepts()) {
                 IInterceptor _interceptor = _interceptClass.newInstance();
+                if (_interceptClass.isAnnotationPresent(Interceptor.class)) {
+                    _interceptor = owner.getOwner().getBean(_interceptClass);
+                }
+                if (_interceptor == null) {
+                    _interceptor = _interceptClass.newInstance();
+                }
                 // 执行前置拦截器，若其结果对象不为空则返回并停止执行
                 Object _result = _interceptor.intercept(_context);
                 if (_result != null) {
