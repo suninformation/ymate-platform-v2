@@ -23,10 +23,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import java.io.*;
-import java.net.JarURLConnection;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.net.URLConnection;
+import java.net.*;
 import java.util.Enumeration;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
@@ -171,10 +168,11 @@ public class FileUtils {
      *
      * @param prefixPath 资源文件目录名称
      * @param targetFile 目标文件目录
+     * @return 是否有文件被提取
      * @throws IOException 可能生产的任何异常
      */
-    public static void unpackJarFile(String prefixPath, File targetFile) throws IOException {
-        unpackJarFile(prefixPath, targetFile, FileUtils.class);
+    public static boolean unpackJarFile(String prefixPath, File targetFile) throws IOException {
+        return unpackJarFile(prefixPath, targetFile, FileUtils.class);
     }
 
     /**
@@ -197,33 +195,92 @@ public class FileUtils {
             throw new IllegalArgumentException("The target file must be directory and absolute path.");
         }
         boolean _result = false;
-        String _prefixPath = new File("META-INF/", prefixPath).getPath();
+        String _prefixPath = "META-INF/" + prefixPath;
         URL _uri = callingClass.getResource("/" + _prefixPath);
         if (_uri != null) {
             URLConnection _conn = _uri.openConnection();
-            if (_conn instanceof JarURLConnection) {
-                JarFile _jarFile = ((JarURLConnection) _conn).getJarFile();
-                Enumeration<JarEntry> _entriesEnum = _jarFile.entries();
-                for (; _entriesEnum.hasMoreElements(); ) {
-                    JarEntry _entry = _entriesEnum.nextElement();
-                    if (StringUtils.startsWith(_entry.getName(), _prefixPath)) {
-                        if (!_entry.isDirectory()) {
-                            String _entryName = StringUtils.substringAfter(_entry.getName(), _prefixPath);
-                            File _targetFile = new File(targetFile, _entryName);
-                            File _targetFileParent = _targetFile.getParentFile();
-                            if (!_targetFileParent.exists() && !_targetFileParent.mkdirs()) {
-                                throw new IOException("Unable to create file directory '" + _targetFileParent.getPath() + "'.");
+            try {
+                if (_conn instanceof JarURLConnection) {
+                    JarFile _jarFile = ((JarURLConnection) _conn).getJarFile();
+                    try {
+                        Enumeration<JarEntry> _entriesEnum = _jarFile.entries();
+                        for (; _entriesEnum.hasMoreElements(); ) {
+                            JarEntry _entry = _entriesEnum.nextElement();
+                            if (StringUtils.startsWith(_entry.getName(), _prefixPath)) {
+                                if (!_entry.isDirectory()) {
+                                    String _entryName = StringUtils.substringAfter(_entry.getName(), _prefixPath);
+                                    File _targetFile = new File(targetFile, _entryName);
+                                    File _targetFileParent = _targetFile.getParentFile();
+                                    if (!_targetFileParent.exists() && !_targetFileParent.mkdirs()) {
+                                        throw new IOException("Unable to create file directory '" + _targetFileParent.getPath() + "'.");
+                                    }
+                                    if (_LOG.isDebugEnabled()) {
+                                        _LOG.info("Unpacking resource file: " + _entry.getName());
+                                    }
+                                    InputStream _in = _jarFile.getInputStream(_entry);
+                                    OutputStream _out = new FileOutputStream(_targetFile);
+                                    try {
+                                        IOUtils.copyLarge(_in, _out);
+                                        _result = true;
+                                    } finally {
+                                        IOUtils.closeQuietly(_in);
+                                        IOUtils.closeQuietly(_out);
+                                    }
+                                }
                             }
-                            if (_LOG.isDebugEnabled()) {
-                                _LOG.info("Unpacking resource file: " + _entry.getName());
-                            }
-                            IOUtils.copyLarge(_jarFile.getInputStream(_entry), new FileOutputStream(_targetFile));
-                            _result = true;
                         }
+                    } finally {
+                        IOUtils.closeQuietly(_jarFile);
+                    }
+                } else {
+                    try {
+                        writeDirTo(new File(_uri.toURI()), targetFile);
+                        _result = true;
+                    } catch (URISyntaxException e) {
+                        throw new IOException("Unable to unpack file '" + _uri + "'.", e);
+                    }
+                }
+            } finally {
+                IOUtils.close(_conn);
+            }
+        }
+        return _result;
+    }
+
+    /**
+     * 复制目录(递归)
+     *
+     * @param sources   源目录
+     * @param targetDir 目标目录
+     * @throws IOException 可能产生的异常
+     */
+    public static void writeDirTo(File sources, File targetDir) throws IOException {
+        if (sources != null && sources.isDirectory()) {
+            File[] _files = sources.listFiles();
+            if (_files != null && _files.length > 0) {
+                for (File _file : _files) {
+                    File _targetFile = new File(targetDir, _file.getName());
+                    if (!_file.isDirectory()) {
+                        File _targetFileParent = _targetFile.getParentFile();
+                        if (!_targetFileParent.exists() && !_targetFileParent.mkdirs()) {
+                            throw new IOException("Unable to create file directory '" + _targetFileParent.getPath() + "'.");
+                        }
+                        if (_LOG.isDebugEnabled()) {
+                            _LOG.info("Unpacking resource file: " + _targetFile.getPath());
+                        }
+                        InputStream _in = new FileInputStream(_file);
+                        OutputStream _out = new FileOutputStream(_targetFile);
+                        try {
+                            IOUtils.copyLarge(_in, _out);
+                        } finally {
+                            IOUtils.closeQuietly(_in);
+                            IOUtils.closeQuietly(_out);
+                        }
+                    } else {
+                        writeDirTo(_file, _targetFile);
                     }
                 }
             }
         }
-        return _result;
     }
 }
