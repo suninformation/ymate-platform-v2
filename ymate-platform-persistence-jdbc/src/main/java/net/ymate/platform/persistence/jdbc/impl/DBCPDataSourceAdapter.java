@@ -43,7 +43,10 @@ public class DBCPDataSourceAdapter extends AbstractDataSourceAdapter {
     @Override
     protected void __doInit() throws Exception {
         Properties _props = new Properties();
-        InputStream _in = ResourceUtils.getResourceAsStream("dbcp.properties", this.getClass());
+        InputStream _in = ResourceUtils.getResourceAsStream("dbcp_" + __cfgMeta.getName() + ".properties", this.getClass());
+        if (_in == null) {
+            _in = ResourceUtils.getResourceAsStream("dbcp.properties", this.getClass());
+        }
         try {
             if (_in != null) {
                 _props.load(_in);

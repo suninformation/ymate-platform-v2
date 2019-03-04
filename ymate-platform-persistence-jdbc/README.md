@@ -154,6 +154,8 @@ JDBC持久化模块提供的数据源类型如下：
 
 针对于dbcp和c3p0连接池的配置文件及内容，请将对应的dbcp.properties或c3p0.properties文件放置在工程的classpath根路径下，配置内容请参看JDBC持久化模块开源工程中的示例文件；
 
+另外，dbcp连接池支持根据数据源名称进行单独配置(如：`dbcp_oracledb.properties`，此文件将优先于`dbcp.properties`被加载)；
+
 当然，也可以通过IDataSourceAdapter接口自行实现，框架针对IDataSourceAdapter接口提供了一个抽象封装AbstractDataSourceAdapter类，直接继承即可；
 
 ##### 数据库连接持有者（IConnectionHolder）
