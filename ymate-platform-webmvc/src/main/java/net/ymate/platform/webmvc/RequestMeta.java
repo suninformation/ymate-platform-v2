@@ -34,11 +34,7 @@ import java.util.concurrent.ConcurrentHashMap;
 @ParameterEscape
 public class RequestMeta {
 
-    private static final Map<Class<?>, Map<String, ParameterMeta>> __CLASS_PARAMETER_METAS;
-
-    static {
-        __CLASS_PARAMETER_METAS = new ConcurrentHashMap<Class<?>, Map<String, ParameterMeta>>();
-    }
+    private static final Map<Class<?>, Map<String, ParameterMeta>> __CLASS_PARAMETER_METAS = new ConcurrentHashMap<Class<?>, Map<String, ParameterMeta>>();
 
     private final List<ParameterMeta> __methodParameterMetas;
 

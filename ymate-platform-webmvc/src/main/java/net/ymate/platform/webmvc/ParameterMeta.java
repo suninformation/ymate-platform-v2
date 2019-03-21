@@ -18,7 +18,6 @@ package net.ymate.platform.webmvc;
 import net.ymate.platform.core.util.ClassUtils;
 import net.ymate.platform.webmvc.annotation.*;
 import net.ymate.platform.webmvc.impl.DefaultParameterEscapeProcessor;
-import net.ymate.platform.webmvc.impl.DefaultRequestProcessor;
 import org.apache.commons.lang.StringUtils;
 
 import java.lang.annotation.Annotation;
@@ -181,7 +180,7 @@ public class ParameterMeta {
         if (_meta.getParameterEscape() != null && _meta.getParamType().equals(String.class)) {
             // 获取参数转义处理器接口实例
             IParameterEscapeProcessor _escapeProc;
-            if (!_meta.getParameterEscape().processor().equals(DefaultRequestProcessor.class)) {
+            if (!DefaultParameterEscapeProcessor.class.equals(_meta.getParameterEscape().processor())) {
                 _escapeProc = ClassUtils.impl(_meta.getParameterEscape().processor(), IParameterEscapeProcessor.class);
             } else {
                 _escapeProc = new DefaultParameterEscapeProcessor();

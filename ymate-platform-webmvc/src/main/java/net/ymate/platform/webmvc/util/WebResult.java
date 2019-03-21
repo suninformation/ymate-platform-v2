@@ -50,17 +50,25 @@ public final class WebResult {
         return new WebResult(code);
     }
 
+    public static WebResult create(ErrorCode errorCode) {
+        return create(WebContext.getContext().getOwner(), null, errorCode);
+    }
+
     public static WebResult create(IWebMvc owner, ErrorCode errorCode) {
         return create(owner, null, errorCode);
+    }
+
+    public static WebResult create(String resourceName, ErrorCode errorCode) {
+        return create(WebContext.getContext().getOwner(), resourceName, errorCode);
     }
 
     public static WebResult create(IWebMvc owner, String resourceName, ErrorCode errorCode) {
         String _msg = null;
         if (StringUtils.isNotBlank(errorCode.getI18nKey())) {
-            _msg = WebUtils.i18nStr(owner, errorCode.getI18nKey());
+            _msg = WebUtils.i18nStr(owner, resourceName, errorCode.getI18nKey(), null);
         }
         if (StringUtils.isBlank(_msg)) {
-            _msg = WebUtils.errorCodeI18n(owner, errorCode.getCode(), errorCode.getMessage());
+            _msg = WebUtils.errorCodeI18n(owner, resourceName, errorCode.getCode(), errorCode.getMessage());
         }
         WebResult _result = new WebResult(errorCode.getCode()).msg(_msg);
         if (!errorCode.getAttributes().isEmpty()) {

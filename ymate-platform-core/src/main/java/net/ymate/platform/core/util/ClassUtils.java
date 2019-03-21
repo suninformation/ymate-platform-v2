@@ -244,17 +244,11 @@ public class ClassUtils {
      */
     public static boolean isAnnotationOf(Object target, Class<? extends Annotation> annotationClass) {
         if (target instanceof Field) {
-            if (((Field) target).isAnnotationPresent(annotationClass)) {
-                return true;
-            }
+            return ((Field) target).isAnnotationPresent(annotationClass);
         } else if (target instanceof Method) {
-            if (((Method) target).isAnnotationPresent(annotationClass)) {
-                return true;
-            }
+            return ((Method) target).isAnnotationPresent(annotationClass);
         } else if (target instanceof Class) {
-            if (((Class<?>) target).isAnnotationPresent(annotationClass)) {
-                return true;
-            }
+            return ((Class<?>) target).isAnnotationPresent(annotationClass);
         }
         return false;
     }
@@ -322,18 +316,15 @@ public class ClassUtils {
      */
     public static List<Field> getFields(Class<?> clazz, boolean parent) {
         List<Field> fieldList = new ArrayList<Field>();
-        Class<?> clazzin = clazz;
-        do {
-            if (clazzin == null) {
-                break;
-            }
-            fieldList.addAll(Arrays.asList(clazzin.getDeclaredFields()));
+        Class<?> _clazz = clazz;
+        while (_clazz != null) {
+            fieldList.addAll(Arrays.asList(_clazz.getDeclaredFields()));
             if (parent) {
-                clazzin = clazzin.getSuperclass();
+                _clazz = _clazz.getSuperclass();
             } else {
-                clazzin = null;
+                _clazz = null;
             }
-        } while (true);
+        }
         return fieldList;
     }
 
@@ -557,26 +548,7 @@ public class ClassUtils {
          * @return 拷贝当前对象的成员属性值到目标对象
          */
         public <D> D duplicate(D dist) {
-            BeanWrapper<D> _wrapDist = wrapper(dist);
-            for (String _fieldName : getFieldNames()) {
-                if (_wrapDist.getFieldNames().contains(_fieldName)) {
-                    Object _fValue = null;
-                    try {
-                        _fValue = getValue(_fieldName);
-                        _wrapDist.setValue(_fieldName, _fValue);
-                    } catch (Exception e) {
-                        // 当首次赋值发生异常时，若成员变量值不为NULL则尝试转换一下
-                        if (_fValue != null) {
-                            try {
-                                _wrapDist.setValue(_fieldName, BlurObject.bind(_fValue).toObjectValue(_wrapDist.getFieldType(_fieldName)));
-                            } catch (Exception ignored) {
-                                // 当再次赋值发生异常时，彻底忽略当前值，不中断整个拷贝过程
-                            }
-                        }
-                    }
-                }
-            }
-            return _wrapDist.getTargetObject();
+            return duplicate(dist, null);
         }
 
         /**
