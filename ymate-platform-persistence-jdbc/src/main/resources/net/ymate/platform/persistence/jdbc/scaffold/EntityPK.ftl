@@ -20,10 +20,10 @@ public class ${modelName?cap_first}PK implements IEntityPK {
 	private static final long serialVersionUID = 1L;
 
 	<#list primaryKeyList as field><#if (field.columnName!"undefined") != "undefined">
-	@Property(name = ${modelName?cap_first}<#if (useClassSuffix)>Model</#if>.FIELD.${field.columnName?upper_case}<#if (field.autoIncrement)>, autoincrement=true</#if><#if (field.nullable)>, nullable = false</#if><#if (!field.signed)>, unsigned = true</#if><#if (field.precision > 0)>, length = ${field.precision?string('#')}</#if><#if (field.scale > 0)>, decimals = ${field.scale}</#if>)<#if (field.defaultValue!"undefined") != "undefined">
+	@Property(name = ${modelName?cap_first}<#if (useClassSuffix)>Model</#if>.FIELDS.${field.columnName?upper_case}<#if (field.autoIncrement)>, autoincrement=true</#if><#if (field.nullable)>, nullable = false</#if><#if (!field.signed)>, unsigned = true</#if><#if (field.precision > 0)>, length = ${field.precision?string('#')}</#if><#if (field.scale > 0)>, decimals = ${field.scale}</#if>)<#if (field.defaultValue!"undefined") != "undefined">
 	@Default("${field.defaultValue}")</#if><#if (field.remarks!"undefined") != "undefined">
 	@Comment("${field.remarks}")</#if><#if (useStateSupport)>
-	@PropertyState(propertyName = ${modelName?cap_first}<#if (useClassSuffix)>Model</#if>.FIELD.${field.columnName?upper_case})</#if><#if (field.readonly)>
+	@PropertyState(propertyName = ${modelName?cap_first}<#if (useClassSuffix)>Model</#if>.FIELDS.${field.columnName?upper_case})</#if><#if (field.readonly)>
 	@Readonly</#if></#if>
     private ${field.varType} ${field.varName};
 
