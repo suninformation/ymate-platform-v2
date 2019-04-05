@@ -88,8 +88,10 @@ public class DefaultWebErrorProcessor implements IWebErrorProcessor, IWebInitial
                     IExceptionProcessor.Result _result = _processor.process(_unwrapThrow);
                     if (_result != null) {
                         showErrorMsg(_result.getCode(), WebUtils.errorCodeI18n(__owner, _result), null).render();
+                    } else if (!__analysisDisabled && owner.getOwner().getConfig().isDevelopMode()) {
+                        _LOG.error(exceptionAnalysis(_unwrapThrow));
                     } else {
-                        _LOG.warn("", _unwrapThrow);
+                        _LOG.error("", _unwrapThrow);
                     }
                 } else {
                     if (!__analysisDisabled && owner.getOwner().getConfig().isDevelopMode()) {
