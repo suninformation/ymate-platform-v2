@@ -123,18 +123,20 @@ public final class Where {
     }
 
     public Where groupBy(String field) {
-        groupBy(Fields.create().add(field));
-        return this;
+        return groupBy(Fields.create().add(field));
     }
 
     public Where groupBy(Fields fields) {
-        __groupBy = GroupBy.create(fields);
+        if (__groupBy != null) {
+            __groupBy.fields().add(fields);
+        } else {
+            __groupBy = GroupBy.create(fields);
+        }
         return this;
     }
 
     public Where groupBy(String prefix, String field) {
-        __groupBy = GroupBy.create(prefix, field);
-        return this;
+        return groupBy(Fields.create().add(prefix, field));
     }
 
     public Where groupBy(GroupBy groupBy) {
