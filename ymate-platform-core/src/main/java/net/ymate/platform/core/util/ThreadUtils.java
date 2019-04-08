@@ -118,7 +118,7 @@ public final class ThreadUtils {
     }
 
     public static <T> T executeOnce(Callable<T> worker, long timeout) throws InterruptedException, ExecutionException {
-        return executeOnce(worker, 0L, new DefaultFutureResultFilter<T>());
+        return executeOnce(worker, timeout, new DefaultFutureResultFilter<T>());
     }
 
     public static <T> T executeOnce(Callable<T> worker, long timeout, IFutureResultFilter<T> resultFilter) throws InterruptedException, ExecutionException {
