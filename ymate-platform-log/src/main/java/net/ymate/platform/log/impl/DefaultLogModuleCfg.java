@@ -40,6 +40,8 @@ public class DefaultLogModuleCfg implements ILogModuleCfg {
     private String loggerName;
     private Class<? extends ILogger> loggerClass;
     private boolean allowOutputConsole;
+    private boolean simplifiedPackageName;
+    private boolean formatPaddedOutput;
 
     @SuppressWarnings("unchecked")
     public DefaultLogModuleCfg(YMP owner) {
@@ -67,6 +69,8 @@ public class DefaultLogModuleCfg implements ILogModuleCfg {
         }
         //
         this.allowOutputConsole = _moduleCfg.getBoolean(ALLOW_OUTPUT_CONSOLE);
+        this.simplifiedPackageName = _moduleCfg.getBoolean(SIMPLIFIED_PACKAGE_NAME);
+        this.formatPaddedOutput = _moduleCfg.getBoolean(FORMAT_PADDED_OUTPUT);
     }
 
     @Override
@@ -92,5 +96,15 @@ public class DefaultLogModuleCfg implements ILogModuleCfg {
     @Override
     public boolean allowOutputConsole() {
         return this.allowOutputConsole;
+    }
+
+    @Override
+    public boolean simplifiedPackageName() {
+        return simplifiedPackageName;
+    }
+
+    @Override
+    public boolean formatPaddedOutput() {
+        return formatPaddedOutput;
     }
 }

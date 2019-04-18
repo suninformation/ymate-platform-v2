@@ -20,8 +20,8 @@ import net.ymate.platform.core.YMP;
 import net.ymate.platform.core.module.IModule;
 import net.ymate.platform.core.module.annotation.Module;
 import net.ymate.platform.core.util.ClassUtils;
-import net.ymate.platform.log.impl.DefaultLogger;
 import net.ymate.platform.log.impl.DefaultLogModuleCfg;
+import net.ymate.platform.log.impl.DefaultLogger;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -91,8 +91,10 @@ public class Logs implements IModule, ILog {
             }
             __LOGGER_CACHE.put(__moduleCfg.getLoggerName(), __currentLogger);
             //
-            __currentLogger.init(this, __moduleCfg.getLoggerName());
-            __currentLogger.console(__moduleCfg.allowOutputConsole());
+            __currentLogger.init(this, __moduleCfg.getLoggerName())
+                    .console(__moduleCfg.allowOutputConsole())
+                    .simplified(__moduleCfg.simplifiedPackageName())
+                    .padded(__moduleCfg.formatPaddedOutput());
             //
             __inited = true;
             // 注册日志记录器事件
@@ -140,7 +142,9 @@ public class Logs implements IModule, ILog {
         if (_logger == null) {
             _logger = __currentLogger.getLogger(loggerName);
             if (_logger != null) {
-                _logger.console(__moduleCfg.allowOutputConsole());
+                _logger.console(__moduleCfg.allowOutputConsole())
+                        .simplified(__moduleCfg.simplifiedPackageName())
+                        .padded(__moduleCfg.formatPaddedOutput());
                 __LOGGER_CACHE.put(loggerName, _logger);
             }
         }

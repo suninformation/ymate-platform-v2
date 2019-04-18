@@ -35,6 +35,10 @@ public interface ILogModuleCfg {
 
     String ALLOW_OUTPUT_CONSOLE = "allow_output_console";
 
+    String SIMPLIFIED_PACKAGE_NAME = "simplified_package_name";
+
+    String FORMAT_PADDED_OUTPUT = "format_padded_output";
+
     /**
      * @return 返回日志记录器配置文件
      */
@@ -56,7 +60,17 @@ public interface ILogModuleCfg {
     Class<? extends ILogger> getLoggerClass();
 
     /**
-     * @return 默认日志记录器是否允许控制台输出
+     * @return 日志记录器是否允许控制台输出
      */
     boolean allowOutputConsole();
+
+    /**
+     * @return 日志记录器是否采用简化包名输出
+     */
+    boolean simplifiedPackageName();
+
+    /**
+     * @return 日志记录器是否采用格式化填充输出
+     */
+    boolean formatPaddedOutput();
 }

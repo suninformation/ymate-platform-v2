@@ -62,6 +62,11 @@ public class LogModuleConfigurable implements IModuleConfigurable {
         return this;
     }
 
+    public LogModuleConfigurable simplifiedPackageName(boolean simplifiedPackageName) {
+        __configs.put(ILogModuleCfg.SIMPLIFIED_PACKAGE_NAME, String.valueOf(simplifiedPackageName));
+        return this;
+    }
+
     @Override
     public String getModuleName() {
         return ILog.MODULE_NAME;

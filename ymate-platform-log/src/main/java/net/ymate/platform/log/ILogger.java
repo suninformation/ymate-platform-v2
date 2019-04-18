@@ -30,14 +30,14 @@ public interface ILogger {
      */
     enum LogLevel {
 
-        ALL(Integer.MAX_VALUE, "all", "[ALL]"),
+        ALL(Integer.MAX_VALUE, "all", "[ALL  ]"),
         TRACE(600, "trace", "[TRACE]"),
         DEBUG(500, "debug", "[DEBUG]"),
-        INFO(400, "info", "[INFO]"),
-        WARN(300, "warn", "[WARN]"),
+        INFO(400, "info", "[INFO ]"),
+        WARN(300, "warn", "[WARN ]"),
         ERROR(200, "error", "[ERROR]"),
         FATAL(100, "fatal", "[FATAL]"),
-        OFF(0, "off", "[OFF]");
+        OFF(0, "off", "[OFF  ]");
 
         /**
          * 日志级别名称
@@ -124,6 +124,22 @@ public interface ILogger {
      * @return 返回当前日志记录器
      */
     ILogger console(boolean enable);
+
+    /**
+     * 设置是否采用简化包名输出
+     *
+     * @param enable 状态
+     * @return 返回当前日志记录器
+     */
+    ILogger simplified(boolean enable);
+
+    /**
+     * 设置是否采用格式化填充输出
+     *
+     * @param enable 状态
+     * @return 返回当前日志记录器
+     */
+    ILogger padded(boolean enable);
 
     /**
      * 设置调用者深度

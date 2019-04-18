@@ -18,6 +18,9 @@ package net.ymate.platform.log;
 import net.ymate.platform.core.util.DateTimeUtils;
 import org.apache.commons.lang.StringUtils;
 
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+
 /**
  * 抽象日志记录器接口实现
  *
@@ -26,12 +29,20 @@ import org.apache.commons.lang.StringUtils;
  */
 public abstract class AbstractLogger implements ILogger {
 
+    private static Map<String, String> __SIMPLIFIED_PACKAGE_NAMES = new ConcurrentHashMap<String, String>();
+
+    private static int __SIMPLIFIED_PACKAGE_NAME_MAX_LENGTH;
+
     /**
      * 打印堆栈数量，超过这个数量会省略输出
      */
     public static int PRINT_STACK_COUNT = 5;
 
     private boolean __allowOutputConsole;
+
+    private boolean __simplifiedPackageName;
+
+    private boolean __formatPadded;
 
     /**
      * 堆栈深度，向上寻找堆栈长度
@@ -41,6 +52,18 @@ public abstract class AbstractLogger implements ILogger {
     @Override
     public ILogger console(boolean enable) {
         __allowOutputConsole = enable;
+        return this;
+    }
+
+    @Override
+    public ILogger simplified(boolean enable) {
+        __simplifiedPackageName = enable;
+        return this;
+    }
+
+    @Override
+    public ILogger padded(boolean enable) {
+        __formatPadded = enable;
         return this;
     }
 
@@ -75,9 +98,35 @@ public abstract class AbstractLogger implements ILogger {
         // 追溯到对应的调用行，如果对应行不存在，则不给出无法确定行号的输出
         if (__depth >= 0 && _stacks.length > 1 + __depth) {
             StackTraceElement _element = _stacks[1 + __depth];
-            return _element.getClassName() + "." + _element.getMethodName() + ":" + _element.getLineNumber() + StringUtils.EMPTY;
+            String _logRow = __doSimplePackageName(_element.getClassName()) + "." + _element.getMethodName() + ":" + _element.getLineNumber();
+            if (__formatPadded && _logRow.length() > __SIMPLIFIED_PACKAGE_NAME_MAX_LENGTH) {
+                __SIMPLIFIED_PACKAGE_NAME_MAX_LENGTH = _logRow.length();
+            }
+            return __formatPadded ? StringUtils.rightPad(_logRow, __SIMPLIFIED_PACKAGE_NAME_MAX_LENGTH, ' ') : _logRow;
         }
         return "NO_STACK_TRACE:-1";
+    }
+
+    private String __doSimplePackageName(String originPackageName) {
+        if (__simplifiedPackageName) {
+            String _packageName = __SIMPLIFIED_PACKAGE_NAMES.get(originPackageName);
+            if (_packageName == null) {
+                String[] _nameParts = StringUtils.split(originPackageName, '.');
+                if (_nameParts != null && _nameParts.length > 1) {
+                    for (int _idx = 0; _idx < _nameParts.length - 1; _idx++) {
+                        String _part = _nameParts[_idx];
+                        if (_part != null && _part.length() > 1) {
+                            _nameParts[_idx] = String.valueOf(_part.charAt(0));
+                        }
+                    }
+                    _packageName = StringUtils.join(_nameParts, '.');
+                    //
+                    __SIMPLIFIED_PACKAGE_NAMES.put(originPackageName, _packageName);
+                }
+            }
+            return StringUtils.defaultIfBlank(_packageName, originPackageName);
+        }
+        return originPackageName;
     }
 
     /**

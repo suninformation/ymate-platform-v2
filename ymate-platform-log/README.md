@@ -65,8 +65,14 @@ LogEvent事件枚举对象包括以下事件类型：
 	  # 日志记录器接口实现类，默认为net.ymate.platform.log.impl.DefaultLogger
 	  ymp.configs.log.logger_class=
 	  
-	  # 默认日志记录器是否允许控制台输出，默认为false
+	  # 日志记录器是否允许控制台输出，默认为false
 	  ymp.configs.log.allow_output_console=
+	  
+	  # 日志记录器是否采用简化包名输出，默认为false
+      ymp.configs.log.simplified_package_name=
+      
+      # 日志记录器是否采用格式化填充输出，默认为false
+      ymp.configs.log.format_padded_output=
 
    > **注**：需要注意`config_file`配置的log4j.xml文件是否存在，以及`output_dir`指定的输出路径是否正确有效，这两项配置会影响YMP框架启动时异常；
    > 
