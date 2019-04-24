@@ -76,9 +76,10 @@ public abstract class AbstractLogger implements ILogger {
     protected abstract void __doLogWrite(LogLevel level, LogInfo content);
 
     protected void __doBuildEx(String info, Throwable e, ILogger.LogLevel level) {
+        long _long = Thread.currentThread().getId();
         LogInfo _info = new LogInfo(getLoggerName(),
                 level.getDispName(),
-                Thread.currentThread().getId(), __doMakeCallerInfo(), info, __doMakeStackInfo(e),
+                _long, __doMakeCallerInfo(String.valueOf(_long).length() + 1), info, __doMakeStackInfo(e),
                 DateTimeUtils.formatTime(System.currentTimeMillis(), DateTimeUtils.YYYY_MM_DD_HH_MM_SS_SSS));
         //
         __doLogWrite(level, _info);
@@ -91,16 +92,18 @@ public abstract class AbstractLogger implements ILogger {
     /**
      * 获取调用者信息
      *
+     * @param extLength 扩展长度
      * @return 找到的堆栈信息，格式为：className.methodName:lineNumber，如果找不到则返回NO_STACK_TRACE:-1
      */
-    protected String __doMakeCallerInfo() {
+    protected String __doMakeCallerInfo(int extLength) {
         StackTraceElement[] _stacks = new Throwable().getStackTrace();
         // 追溯到对应的调用行，如果对应行不存在，则不给出无法确定行号的输出
         if (__depth >= 0 && _stacks.length > 1 + __depth) {
             StackTraceElement _element = _stacks[1 + __depth];
             String _logRow = __doSimplePackageName(_element.getClassName()) + "." + _element.getMethodName() + ":" + _element.getLineNumber();
-            if (__formatPadded && _logRow.length() > __SIMPLIFIED_PACKAGE_NAME_MAX_LENGTH) {
-                __SIMPLIFIED_PACKAGE_NAME_MAX_LENGTH = _logRow.length();
+            int _currLength = _logRow.length() + extLength;
+            if (__formatPadded && _currLength > __SIMPLIFIED_PACKAGE_NAME_MAX_LENGTH) {
+                __SIMPLIFIED_PACKAGE_NAME_MAX_LENGTH = _currLength;
             }
             return __formatPadded ? StringUtils.rightPad(_logRow, __SIMPLIFIED_PACKAGE_NAME_MAX_LENGTH, ' ') : _logRow;
         }
