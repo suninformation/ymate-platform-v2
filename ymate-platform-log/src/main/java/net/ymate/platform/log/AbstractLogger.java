@@ -31,7 +31,7 @@ public abstract class AbstractLogger implements ILogger {
 
     private static Map<String, String> __SIMPLIFIED_PACKAGE_NAMES = new ConcurrentHashMap<String, String>();
 
-    private static int __SIMPLIFIED_PACKAGE_NAME_MAX_LENGTH;
+    private static volatile int __SIMPLIFIED_PACKAGE_NAME_MAX_LENGTH;
 
     /**
      * 打印堆栈数量，超过这个数量会省略输出
@@ -89,6 +89,13 @@ public abstract class AbstractLogger implements ILogger {
         }
     }
 
+    private static synchronized int __safeGetAndSetMaxLength(int currentLength) {
+        if (currentLength > __SIMPLIFIED_PACKAGE_NAME_MAX_LENGTH) {
+            __SIMPLIFIED_PACKAGE_NAME_MAX_LENGTH = currentLength;
+        }
+        return __SIMPLIFIED_PACKAGE_NAME_MAX_LENGTH;
+    }
+
     /**
      * 获取调用者信息
      *
@@ -101,11 +108,8 @@ public abstract class AbstractLogger implements ILogger {
         if (__depth >= 0 && _stacks.length > 1 + __depth) {
             StackTraceElement _element = _stacks[1 + __depth];
             String _logRow = __doSimplePackageName(_element.getClassName()) + "." + _element.getMethodName() + ":" + _element.getLineNumber();
-            int _currLength = _logRow.length() + extLength;
-            if (__formatPadded && _currLength > __SIMPLIFIED_PACKAGE_NAME_MAX_LENGTH) {
-                __SIMPLIFIED_PACKAGE_NAME_MAX_LENGTH = _currLength;
-            }
-            return __formatPadded ? StringUtils.rightPad(_logRow, __SIMPLIFIED_PACKAGE_NAME_MAX_LENGTH, ' ') : _logRow;
+            int _currLength = __safeGetAndSetMaxLength(_logRow.length() + extLength);
+            return __formatPadded ? StringUtils.rightPad(_logRow, _currLength, ' ') : _logRow;
         }
         return "NO_STACK_TRACE:-1";
     }
