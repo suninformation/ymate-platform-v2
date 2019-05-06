@@ -109,7 +109,7 @@ public abstract class AbstractLogger implements ILogger {
             StackTraceElement _element = _stacks[1 + __depth];
             String _logRow = __doSimplePackageName(_element.getClassName()) + "." + _element.getMethodName() + ":" + _element.getLineNumber();
             int _currLength = __safeGetAndSetMaxLength(_logRow.length() + extLength);
-            return __formatPadded ? StringUtils.rightPad(_logRow, _currLength, ' ') : _logRow;
+            return __formatPadded ? StringUtils.rightPad(_logRow, _currLength - extLength, ' ') : _logRow;
         }
         return "NO_STACK_TRACE:-1";
     }
