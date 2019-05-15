@@ -56,11 +56,9 @@ public abstract class AbstractHeartbeatService<HEARTBEAT_TYPE> extends AbstractS
     @Override
     protected void __doService() {
         try {
-            if (!__client.isClosing()) {
-                if (__client.isConnected()) {
-                    __client.send(getHeartbeatPacket());
-                }
-                sleep(__heartbeatInterval);
+            sleep(__heartbeatInterval);
+            if (!__client.isClosing() && __client.isConnected()) {
+                __client.send(getHeartbeatPacket());
             }
         } catch (Exception e) {
             if (isStarted()) {
