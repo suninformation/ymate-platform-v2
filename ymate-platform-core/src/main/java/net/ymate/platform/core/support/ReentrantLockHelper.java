@@ -53,8 +53,8 @@ public class ReentrantLockHelper {
 
     public static <K, V> V putIfAbsent(ConcurrentMap<K, V> target, K key, V value) {
         V _value = target.get(key);
-        if (_value != null) {
-            V _previous = target.putIfAbsent(key, _value);
+        if (_value == null) {
+            V _previous = target.putIfAbsent(key, value);
             if (_previous != null) {
                 _value = _previous;
             }
