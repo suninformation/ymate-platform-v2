@@ -15,6 +15,8 @@
  */
 package net.ymate.platform.core.support;
 
+import org.apache.commons.lang.NullArgumentException;
+
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.locks.ReentrantLock;
@@ -52,6 +54,12 @@ public class ReentrantLockHelper {
     }
 
     public static <K, V> V putIfAbsent(ConcurrentMap<K, V> target, K key, V value) {
+        if (target == null) {
+            throw new NullArgumentException("target");
+        }
+        if (key == null) {
+            throw new NullArgumentException("key");
+        }
         V _value = target.get(key);
         if (_value == null) {
             V _previous = target.putIfAbsent(key, value);
@@ -60,5 +68,52 @@ public class ReentrantLockHelper {
             }
         }
         return _value;
+    }
+
+    /**
+     * @param target      目标映射
+     * @param key         键名
+     * @param valueGetter 键值回调接口
+     * @param <K>         键名类型
+     * @param <V>         键值类型
+     * @return 返回键值对象
+     * @throws Exception 可能产生的任何异常
+     * @since 2.0.7
+     */
+    public static <K, V> V putIfAbsentAsync(ConcurrentMap<K, V> target, K key, ValueGetter<V> valueGetter) throws Exception {
+        if (target == null) {
+            throw new NullArgumentException("target");
+        }
+        if (key == null) {
+            throw new NullArgumentException("key");
+        }
+        V v = target.get(key);
+        if (v == null) {
+            v = valueGetter.getValue();
+            if (v != null) {
+                V previous = target.putIfAbsent(key, v);
+                if (previous != null) {
+                    v = previous;
+                }
+            }
+        }
+        return v;
+    }
+
+    /**
+     * 值回调接口
+     *
+     * @param <V> 值类型
+     * @since 2.0.7
+     */
+    public interface ValueGetter<V> {
+
+        /**
+         * 获取新值对象
+         *
+         * @return 返回新值对象
+         * @throws Exception 初始化时可能产生的异常
+         */
+        V getValue() throws Exception;
     }
 }

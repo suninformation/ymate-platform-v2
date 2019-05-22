@@ -18,17 +18,24 @@ package net.ymate.platform.core.util;
 import com.thoughtworks.paranamer.AdaptiveParanamer;
 import net.ymate.platform.core.lang.BlurObject;
 import net.ymate.platform.core.lang.PairObject;
+import net.ymate.platform.core.support.ReentrantLockHelper;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang.NullArgumentException;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.*;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 /**
  * 类操作相关工具
@@ -42,18 +49,7 @@ public class ClassUtils {
 
     private static final InnerClassLoader _INNER_CLASS_LOADER = new InnerClassLoader(new URL[]{}, ClassUtils.class.getClassLoader());
 
-    public static class InnerClassLoader extends URLClassLoader {
-
-        public InnerClassLoader(URL[] urls, ClassLoader parent) {
-            super(urls, parent);
-        }
-
-        @Override
-        public void addURL(URL url) {
-            super.addURL(url);
-        }
-
-    }
+    private static final ConcurrentHashMap<Class<?>, ExtensionLoader> EXTENSION_LOADERS = new ConcurrentHashMap<Class<?>, ExtensionLoader>();
 
     /**
      * @return 返回默认类加载器对象
@@ -167,33 +163,40 @@ public class ClassUtils {
     }
 
     public static <T> T loadClass(Class<T> clazz) {
-        InputStream _in = null;
-        BufferedReader _reader = null;
         try {
-            _in = ResourceUtils.getResourceAsStream("META-INF/services/" + clazz.getName() + ".properties", clazz);
-            if (_in != null) {
-                try {
-                    _reader = new BufferedReader(new InputStreamReader(_in, "UTF-8"));
-                } catch (UnsupportedEncodingException e) {
-                    _reader = new BufferedReader(new InputStreamReader(_in));
-                }
-                String _lineStr;
-                do {
-                    _lineStr = _reader.readLine();
-                    if (StringUtils.isNotBlank(_lineStr)) {
-                        _lineStr = StringUtils.trim(_lineStr);
-                        if (!StringUtils.startsWith(_lineStr, "#")) {
-                            return impl(_lineStr, clazz, clazz);
-                        }
-                    }
-                } while (_lineStr != null);
+            return getExtensionLoader(clazz).getExtension();
+        } catch (Exception e) {
+            if (_LOG.isWarnEnabled()) {
+                _LOG.warn(StringUtils.EMPTY, RuntimeUtils.unwrapThrow(e));
             }
-        } catch (IOException ignored) {
-        } finally {
-            IOUtils.closeQuietly(_reader);
-            IOUtils.closeQuietly(_in);
         }
         return null;
+    }
+
+    /**
+     * @param clazz 目标接口类
+     * @param <T>   目标类型
+     * @return 获取服务提供者加载器，若不存在则创建
+     * @throws Exception 可能产生的任何异常
+     * @since 2.0.7
+     */
+    @SuppressWarnings("unchecked")
+    public static <T> ExtensionLoader<T> getExtensionLoader(final Class<T> clazz) throws Exception {
+        return ReentrantLockHelper.putIfAbsentAsync(EXTENSION_LOADERS, clazz, new ReentrantLockHelper.ValueGetter<ExtensionLoader>() {
+            @Override
+            public ExtensionLoader<T> getValue() {
+                return new ExtensionLoader<T>(clazz);
+            }
+        });
+    }
+
+    /**
+     * @param clazz 目标类
+     * @return 验证clazz是否不为空且仅是接口或类
+     * @since 2.0.7
+     */
+    public static boolean isNormalClass(Class<?> clazz) {
+        return clazz != null && !clazz.isArray() && !clazz.isAnnotation() && !clazz.isEnum() && !clazz.isAnonymousClass();
     }
 
     /**
@@ -396,6 +399,120 @@ public class ClassUtils {
             _LOG.warn("", RuntimeUtils.unwrapThrow(e));
         }
         return null;
+    }
+
+    public static class InnerClassLoader extends URLClassLoader {
+
+        InnerClassLoader(URL[] urls, ClassLoader parent) {
+            super(urls, parent);
+        }
+
+        @Override
+        public void addURL(URL url) {
+            super.addURL(url);
+        }
+
+    }
+
+    /**
+     * 服务提供者加载器
+     *
+     * @since 2.0.7
+     */
+    public static class ExtensionLoader<T> {
+
+        private final List<Class<T>> classesCache = new ArrayList<Class<T>>();
+
+        private final Map<String, T> instancesCache = new ConcurrentHashMap<String, T>();
+
+        @SuppressWarnings("unchecked")
+        ExtensionLoader(Class<T> clazz) {
+            if (clazz == null) {
+                throw new NullArgumentException("clazz");
+            }
+            if (!clazz.isInterface()) {
+                throw new IllegalArgumentException(String.format("Class type [%s] is not a interface.", clazz.getName()));
+            }
+            try {
+                Iterator<URL> resources = ResourceUtils.getResources(String.format("META-INF/services/%s", clazz.getName()), clazz, true);
+                while (resources.hasNext()) {
+                    InputStream inputStream = null;
+                    BufferedReader reader = null;
+                    try {
+                        inputStream = resources.next().openStream();
+                        if (inputStream != null) {
+                            reader = new BufferedReader(new InputStreamReader(inputStream, "UTF-8"));
+                            String lineStr;
+                            do {
+                                lineStr = reader.readLine();
+                                if (StringUtils.isNotBlank(lineStr)) {
+                                    lineStr = StringUtils.trim(lineStr);
+                                    if (!StringUtils.startsWith(lineStr, "#")) {
+                                        try {
+                                            Class<T> loadedClass = (Class<T>) loadClass(lineStr, clazz);
+                                            if (ClassUtils.isNormalClass(loadedClass) && !classesCache.contains(loadedClass)) {
+                                                classesCache.add(loadedClass);
+                                            }
+                                        } catch (ClassNotFoundException e) {
+                                            if (_LOG.isWarnEnabled()) {
+                                                _LOG.warn(StringUtils.EMPTY, RuntimeUtils.unwrapThrow(e));
+                                            }
+                                        }
+                                    }
+                                }
+                            } while (lineStr != null);
+                        }
+                    } finally {
+                        IOUtils.closeQuietly(inputStream);
+                        IOUtils.closeQuietly(reader);
+                    }
+                }
+            } catch (IOException e) {
+                if (_LOG.isWarnEnabled()) {
+                    _LOG.warn(StringUtils.EMPTY, RuntimeUtils.unwrapThrow(e));
+                }
+            }
+        }
+
+        public Class<T> getExtensionClass() {
+            return !classesCache.isEmpty() ? classesCache.get(0) : null;
+        }
+
+        public List<Class<T>> getExtensionClasses() {
+            return Collections.unmodifiableList(classesCache);
+        }
+
+        public T getExtension() {
+            return getExtension(getExtensionClass());
+        }
+
+        private T getExtension(Class<T> clazz) {
+            try {
+                if (clazz != null) {
+                    synchronized (instancesCache) {
+                        return ReentrantLockHelper.putIfAbsent((ConcurrentMap<String, T>) instancesCache, clazz.getName(), clazz.newInstance());
+                    }
+                }
+            } catch (Exception e) {
+                if (_LOG.isWarnEnabled()) {
+                    _LOG.warn(StringUtils.EMPTY, RuntimeUtils.unwrapThrow(e));
+                }
+            }
+            return null;
+        }
+
+        public List<T> getExtensions() {
+            List<Class<T>> extClasses = getExtensionClasses();
+            if (!extClasses.isEmpty()) {
+                List<T> list = new ArrayList<T>();
+                for (Class<T> extClass : extClasses) {
+                    T extension = getExtension(extClass);
+                    list.add(extension);
+                }
+                return list;
+            }
+            return Collections.emptyList();
+        }
     }
 
     /**
