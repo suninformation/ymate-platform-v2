@@ -15,6 +15,7 @@
  */
 package net.ymate.platform.core.lang;
 
+import net.ymate.platform.core.util.ClassUtils;
 import net.ymate.platform.core.util.RuntimeUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
@@ -44,12 +45,25 @@ public class BlurObject implements Serializable, Cloneable {
 
     private static final Log _LOG = LogFactory.getLog(BlurObject.class);
 
-    /**
-     *
-     */
     private static final long serialVersionUID = 4141840934670622411L;
 
     private static final Map<Class<?>, Map<Class<?>, IConverter<?>>> __converters = new HashMap<Class<?>, Map<Class<?>, IConverter<?>>>();
+
+    static {
+        try {
+            ClassUtils.ExtensionLoader<IConverter> extensionLoader = ClassUtils.getExtensionLoader(IConverter.class);
+            for (Class<IConverter> converter : extensionLoader.getExtensionClasses()) {
+                Converter converterAnn = converter.getAnnotation(Converter.class);
+                if (converterAnn != null) {
+                    registerConverter(converterAnn.from(), converterAnn.to(), converter.newInstance());
+                }
+            }
+        } catch (Exception e) {
+            if (_LOG.isWarnEnabled()) {
+                _LOG.warn(StringUtils.EMPTY, RuntimeUtils.unwrapThrow(e));
+            }
+        }
+    }
 
     /**
      * 注册类型转换器
@@ -623,19 +637,5 @@ public class BlurObject implements Serializable, Cloneable {
             return attr.toString();
         }
         return "";
-    }
-
-    /**
-     * 类型转换器接口
-     *
-     * @param <T> 目标类型
-     */
-    public interface IConverter<T> {
-
-        /**
-         * @param target 目标对象
-         * @return 尝试类型转换
-         */
-        T convert(Object target);
     }
 }
