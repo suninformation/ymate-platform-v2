@@ -55,7 +55,12 @@ public class BlurObject implements Serializable, Cloneable {
             for (Class<IConverter> converter : extensionLoader.getExtensionClasses()) {
                 Converter converterAnn = converter.getAnnotation(Converter.class);
                 if (converterAnn != null) {
-                    registerConverter(converterAnn.from(), converterAnn.to(), converter.newInstance());
+                    IConverter converterInst = converter.newInstance();
+                    for (Class<?> from : converterAnn.from()) {
+                        if (!from.equals(converterAnn.to())) {
+                            registerConverter(from, converterAnn.to(), converterInst);
+                        }
+                    }
                 }
             }
         } catch (Exception e) {

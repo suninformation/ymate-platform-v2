@@ -31,7 +31,7 @@ public @interface Converter {
     /**
      * @return 原类型
      */
-    Class<?> from();
+    Class<?>[] from();
 
     /**
      * @return 目标类型
