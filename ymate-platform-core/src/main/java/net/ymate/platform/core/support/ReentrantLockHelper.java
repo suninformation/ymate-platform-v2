@@ -62,9 +62,12 @@ public class ReentrantLockHelper {
         }
         V _value = target.get(key);
         if (_value == null) {
-            V _previous = target.putIfAbsent(key, value);
-            if (_previous != null) {
-                _value = _previous;
+            if (value != null) {
+                _value = value;
+                V _previous = target.putIfAbsent(key, value);
+                if (_previous != null) {
+                    _value = _previous;
+                }
             }
         }
         return _value;
