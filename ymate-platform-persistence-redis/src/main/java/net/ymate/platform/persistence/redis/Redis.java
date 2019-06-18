@@ -43,7 +43,7 @@ import java.util.concurrent.ExecutorService;
 @Module
 public class Redis implements IModule, IRedis {
 
-    public static final Version VERSION = new Version(2, 0, 6, Redis.class.getPackage().getImplementationVersion(), Version.VersionType.Release);
+    public static final Version VERSION = new Version(2, 0, 7, Redis.class.getPackage().getImplementationVersion(), Version.VersionType.Release);
 
     private static final Log _LOG = LogFactory.getLog(Redis.class);
 

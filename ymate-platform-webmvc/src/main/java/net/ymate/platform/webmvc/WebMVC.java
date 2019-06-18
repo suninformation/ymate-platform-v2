@@ -62,7 +62,7 @@ import java.util.Map;
 @Module
 public class WebMVC implements IModule, IWebMvc {
 
-    public static final Version VERSION = new Version(2, 0, 6, WebMVC.class.getPackage().getImplementationVersion(), Version.VersionType.Release);
+    public static final Version VERSION = new Version(2, 0, 7, WebMVC.class.getPackage().getImplementationVersion(), Version.VersionType.Release);
 
     private static final Log _LOG = LogFactory.getLog(WebMVC.class);
 
