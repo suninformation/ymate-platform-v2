@@ -962,7 +962,7 @@ public class DefaultSession implements ISession {
      * @return 返回字段是否被过滤
      */
     private boolean __doCheckField(Fields filter, String fieldName) {
-        if (filter != null) {
+        if (filter != null && !filter.fields().isEmpty()) {
             if (filter.isExcluded()) {
                 return !filter.fields().contains(fieldName);
             } else {
