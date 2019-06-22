@@ -419,7 +419,7 @@ public class YMP {
      * @return 判断指定名称或类名的模块是否已被排除
      */
     public boolean isModuleExcluded(String moduleName) {
-        return __config.getExcludedModules().contains("moduleName");
+        return __config.getExcludedModules().contains(moduleName);
     }
 
     /**
