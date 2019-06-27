@@ -365,7 +365,7 @@ public final class Func {
     // ------ 返回值为字符串str 的长度，单位为字节。一个多字节字符算作多字节。这意味着 对于一个包含5个2字节字符的字符串， LENGTH() 的返回值为 10, 而 CHAR_LENGTH()的返回值则为5。
 
     public static IFunction LENGTH(String str) {
-        return create("LEHGTH").param(str);
+        return create("LENGTH").param(str);
     }
 
     // ------ 读取文件并将这一文件按照字符串的格式返回。 文件的位置必须在服务器上,你必须为文件制定路径全名，而且你还必须拥有FILE 特许权。文件必须可读取，文件容量必须小于 max_allowed_packet字节。
