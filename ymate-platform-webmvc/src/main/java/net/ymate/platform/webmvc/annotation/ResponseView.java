@@ -16,6 +16,7 @@
 package net.ymate.platform.webmvc.annotation;
 
 import net.ymate.platform.webmvc.base.Type;
+import org.apache.commons.lang3.StringUtils;
 
 import java.lang.annotation.*;
 
@@ -33,7 +34,7 @@ public @interface ResponseView {
     /**
      * @return 视图模板文件路径
      */
-    String value() default "";
+    String value() default StringUtils.EMPTY;
 
     /**
      * @return 视图文件类型

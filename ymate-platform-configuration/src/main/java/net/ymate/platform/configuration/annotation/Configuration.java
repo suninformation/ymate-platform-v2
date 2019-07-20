@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2017 the original author or authors.
+ * Copyright 2007-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,13 +15,15 @@
  */
 package net.ymate.platform.configuration.annotation;
 
+import net.ymate.platform.core.configuration.IConfigurationProvider;
+import org.apache.commons.lang3.StringUtils;
+
 import java.lang.annotation.*;
 
 /**
  * 配置文件加载路径注解
  *
  * @author 刘镇 (suninformation@163.com) on 2011-8-27 下午01:13:29
- * @version 1.0
  */
 @Target({ElementType.TYPE})
 @Retention(RetentionPolicy.RUNTIME)
@@ -31,10 +33,15 @@ public @interface Configuration {
     /**
      * @return 配置文件路径名称
      */
-    String value() default "";
+    String value() default StringUtils.EMPTY;
 
     /**
      * @return 是否自动重新加载
      */
-    boolean relaod() default true;
+    boolean reload() default true;
+
+    /**
+     * @return 配置文件自定义内容分析器
+     */
+    Class<? extends IConfigurationProvider> provider() default IConfigurationProvider.class;
 }

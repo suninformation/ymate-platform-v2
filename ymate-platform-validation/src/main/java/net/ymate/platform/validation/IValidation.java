@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2017 the original author or authors.
+ * Copyright 2007-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,7 +15,10 @@
  */
 package net.ymate.platform.validation;
 
-import net.ymate.platform.core.YMP;
+import net.ymate.platform.core.IApplication;
+import net.ymate.platform.core.beans.annotation.Ignored;
+import net.ymate.platform.core.support.IDestroyable;
+import net.ymate.platform.core.support.IInitialization;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
@@ -25,16 +28,18 @@ import java.util.Map;
  * 验证框架管理器接口定义
  *
  * @author 刘镇 (suninformation@163.com) on 15/5/15 上午10:01
- * @version 1.0
  */
-public interface IValidation {
+@Ignored
+public interface IValidation extends IInitialization<IApplication>, IDestroyable {
 
     String MODULE_NAME = "validation";
 
     /**
-     * @return 返回所属YMP框架管理器实例
+     * 获取所属应用容器
+     *
+     * @return 返回所属应用容器实例
      */
-    YMP getOwner();
+    IApplication getOwner();
 
     /**
      * 注册验证器
@@ -45,8 +50,10 @@ public interface IValidation {
     void registerValidator(Class<? extends Annotation> annotationClass, Class<? extends IValidator> validatorClass);
 
     /**
+     * 判断是否包含处理annotationClass注解的验证器存在
+     *
      * @param annotationClass 验证器作用的注解
-     * @return 判断是否包含处理annoClass注解的验证器存在
+     * @return 若存在则返回true
      */
     boolean containsValidator(Class<? extends Annotation> annotationClass);
 

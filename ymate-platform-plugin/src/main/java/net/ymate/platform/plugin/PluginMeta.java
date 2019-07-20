@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2017 the original author or authors.
+ * Copyright 2007-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,16 +15,17 @@
  */
 package net.ymate.platform.plugin;
 
+import java.util.List;
+
 /**
  * 插件配置信息元数据描述类
  *
  * @author 刘镇 (suninformation@163.com) on 2011-10-17 下午04:52:05
- * @version 1.0
  */
 public class PluginMeta {
 
     /**
-     * 插件唯一ID
+     * 插件唯一标识
      */
     private String id;
 
@@ -36,7 +37,7 @@ public class PluginMeta {
     /**
      * 插件别名
      */
-    private String alias;
+    private List<String> alias;
 
     /**
      * 插件初始启动类
@@ -71,7 +72,7 @@ public class PluginMeta {
     /**
      * 插件扩展对象
      */
-    private Object extendObject;
+    private Object extensionObject;
 
     /**
      * 是否加载时自动启动运行
@@ -95,13 +96,13 @@ public class PluginMeta {
     public PluginMeta(ClassLoader classLoader,
                       String id,
                       String name,
-                      String alias,
+                      List<String> alias,
                       Class<? extends IPlugin> initClass,
                       String version,
                       String path,
                       String author,
                       String email,
-                      Object extendObject,
+                      Object extensionObject,
                       boolean automatic,
                       boolean disabled,
                       String description) {
@@ -114,7 +115,7 @@ public class PluginMeta {
         this.author = author;
         this.email = email;
         this.classLoader = classLoader;
-        this.extendObject = extendObject;
+        this.extensionObject = extensionObject;
         this.automatic = automatic;
         this.disabled = disabled;
         this.description = description;
@@ -136,11 +137,11 @@ public class PluginMeta {
         this.name = name;
     }
 
-    public String getAlias() {
+    public List<String> getAlias() {
         return alias;
     }
 
-    public void setAlias(String alias) {
+    public void setAlias(List<String> alias) {
         this.alias = alias;
     }
 
@@ -192,12 +193,12 @@ public class PluginMeta {
         this.classLoader = classLoader;
     }
 
-    public Object getExtendObject() {
-        return extendObject;
+    public Object getExtensionObject() {
+        return extensionObject;
     }
 
-    public void setExtendObject(Object extendObject) {
-        this.extendObject = extendObject;
+    public void setExtensionObject(Object extensionObject) {
+        this.extensionObject = extensionObject;
     }
 
     public boolean isAutomatic() {
@@ -226,6 +227,6 @@ public class PluginMeta {
 
     @Override
     public String toString() {
-        return "Plugin [" + "id='" + id + '\'' + ", name='" + name + '\'' + ", initClass=" + initClass + ", version='" + version + '\'' + ']';
+        return String.format("Plugin [id='%s', name='%s', initClass=%s, version='%s']", id, name, initClass, version);
     }
 }

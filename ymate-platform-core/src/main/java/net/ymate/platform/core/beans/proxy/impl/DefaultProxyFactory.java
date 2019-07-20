@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2017 the original author or authors.
+ * Copyright 2007-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,19 +17,16 @@ package net.ymate.platform.core.beans.proxy.impl;
 
 import net.sf.cglib.proxy.Enhancer;
 import net.sf.cglib.proxy.MethodInterceptor;
-import net.sf.cglib.proxy.MethodProxy;
 import net.ymate.platform.core.beans.proxy.AbstractProxyChain;
 import net.ymate.platform.core.beans.proxy.AbstractProxyFactory;
 import net.ymate.platform.core.beans.proxy.IProxy;
 
-import java.lang.reflect.Method;
 import java.util.List;
 
 /**
  * 默认代理工厂接口实现
  *
  * @author 刘镇 (suninformation@163.com) on 15-3-3 下午5:06
- * @version 1.0
  */
 public class DefaultProxyFactory extends AbstractProxyFactory {
 
@@ -38,17 +35,12 @@ public class DefaultProxyFactory extends AbstractProxyFactory {
 
     @Override
     @SuppressWarnings("unchecked")
-    public <T> T createProxy(final Class<?> targetClass, final List<IProxy> proxies) {
-        return (T) Enhancer.create(targetClass, new MethodInterceptor() {
+    public <T> T createProxy(Class<?> targetClass, List<IProxy> proxies) {
+        return (T) Enhancer.create(targetClass, (MethodInterceptor) (targetObject, targetMethod, methodParams, methodProxy) -> new AbstractProxyChain(DefaultProxyFactory.this, targetClass, targetObject, targetMethod, methodParams, proxies) {
             @Override
-            public Object intercept(Object targetObject, Method targetMethod, Object[] methodParams, final MethodProxy methodProxy) throws Throwable {
-                return new AbstractProxyChain(DefaultProxyFactory.this, targetClass, targetObject, targetMethod, methodParams, proxies) {
-                    @Override
-                    protected Object doInvoke() throws Throwable {
-                        return methodProxy.invokeSuper(getTargetObject(), getMethodParams());
-                    }
-                }.doProxyChain();
+            protected Object doInvoke() throws Throwable {
+                return methodProxy.invokeSuper(getTargetObject(), getMethodParams());
             }
-        });
+        }.doProxyChain());
     }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2017 the original author or authors.
+ * Copyright 2007-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,69 +20,68 @@ import net.ymate.platform.cache.Caches;
 import net.ymate.platform.cache.ICacheScopeProcessor;
 import net.ymate.platform.cache.ICaches;
 import net.ymate.platform.cache.annotation.Cacheable;
+import net.ymate.platform.commons.ReentrantLockHelper;
 import net.ymate.platform.core.beans.annotation.Order;
-import net.ymate.platform.core.beans.annotation.Proxy;
 import net.ymate.platform.core.beans.proxy.IProxy;
 import net.ymate.platform.core.beans.proxy.IProxyChain;
-import net.ymate.platform.core.support.ReentrantLockHelper;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * @author 刘镇 (suninformation@163.com) on 15/11/3 下午6:20
- * @version 1.0
  */
-@Proxy(annotation = Cacheable.class, order = @Order(-666))
+@Order(-60000)
 public class CacheableProxy implements IProxy {
 
-    private static final ReentrantLockHelper __LOCK = new ReentrantLockHelper();
+    private static final ReentrantLockHelper LOCKER = new ReentrantLockHelper();
 
     @Override
     public Object doProxy(IProxyChain proxyChain) throws Throwable {
-        ICaches _caches = Caches.get(proxyChain.getProxyFactory().getOwner());
+        ICaches caches = proxyChain.getProxyFactory().getOwner().getModuleManager().getModule(Caches.class);
         //
-        Cacheable _anno = proxyChain.getTargetMethod().getAnnotation(Cacheable.class);
-        if (_anno == null) {
+        Cacheable cacheable = proxyChain.getTargetMethod().getAnnotation(Cacheable.class);
+        if (cacheable == null) {
             return proxyChain.doProxyChain();
         }
         //
-        Object _cacheKey = StringUtils.trimToNull(_anno.key());
-        if (_cacheKey == null) {
-            _cacheKey = _caches.getModuleCfg().getKeyGenerator().generateKey(proxyChain.getTargetMethod(), proxyChain.getMethodParams());
+        Object cacheKey = StringUtils.trimToNull(cacheable.key());
+        if (cacheKey == null) {
+            cacheKey = caches.getConfig().getKeyGenerator().generateKey(proxyChain.getTargetMethod(), proxyChain.getMethodParams());
         }
-        ReentrantLock _locker = __LOCK.getLocker(_cacheKey.toString());
-        _locker.lock();
-        CacheElement _result;
+        ReentrantLock locker = LOCKER.getLocker(cacheKey.toString());
+        locker.lock();
+        //
+        CacheElement cacheElement;
         try {
-            ICacheScopeProcessor _scopeProc = _caches.getModuleCfg().getCacheScopeProcessor();
-            if (!_anno.scope().equals(ICaches.Scope.DEFAULT) && _scopeProc != null) {
-                _result = _scopeProc.getFromCache(_caches, _anno.scope(), _anno.cacheName(), _cacheKey.toString());
+            ICacheScopeProcessor cacheScopeProcessor = caches.getConfig().getCacheScopeProcessor();
+            if (!cacheable.scope().equals(ICaches.Scope.DEFAULT) && cacheScopeProcessor != null) {
+                cacheElement = cacheScopeProcessor.getFromCache(caches, cacheable.scope(), cacheable.cacheName(), cacheKey.toString());
             } else {
-                _result = (CacheElement) _caches.get(_anno.cacheName(), _cacheKey);
+                cacheElement = (CacheElement) caches.get(cacheable.cacheName(), cacheKey);
             }
-            boolean _flag = true;
-            if (_result != null && !_result.isExpired()) {
-                _flag = false;
+            boolean flag = true;
+            if (cacheElement != null && !cacheElement.isExpired()) {
+                flag = false;
             }
-            if (_flag) {
-                Object _cacheTarget = proxyChain.doProxyChain();
-                if (_cacheTarget != null) {
-                    _result = new CacheElement(_cacheTarget);
-                    int _timeout = _anno.timeout() > 0 ? _anno.timeout() : _caches.getModuleCfg().getDefaultCacheTimeout();
-                    if (_timeout > 0) {
-                        _result.setTimeout(_timeout);
+            if (flag) {
+                Object cacheTarget = proxyChain.doProxyChain();
+                if (cacheTarget != null) {
+                    cacheElement = new CacheElement(cacheTarget);
+                    int timeout = cacheable.timeout() > 0 ? cacheable.timeout() : caches.getConfig().getDefaultCacheTimeout();
+                    if (timeout > 0) {
+                        cacheElement.setTimeout(timeout);
                     }
-                    if (!_anno.scope().equals(ICaches.Scope.DEFAULT) && _scopeProc != null) {
-                        _scopeProc.putInCache(_caches, _anno.scope(), _anno.cacheName(), _cacheKey.toString(), _result);
+                    if (!cacheable.scope().equals(ICaches.Scope.DEFAULT) && cacheScopeProcessor != null) {
+                        cacheScopeProcessor.putInCache(caches, cacheable.scope(), cacheable.cacheName(), cacheKey.toString(), cacheElement);
                     } else {
-                        _caches.put(_anno.cacheName(), _cacheKey, _result);
+                        caches.put(cacheable.cacheName(), cacheKey, cacheElement);
                     }
                 }
             }
         } finally {
-            __LOCK.unlock(_locker);
+            LOCKER.unlock(locker);
         }
-        return _result != null ? _result.getObject() : null;
+        return cacheElement != null ? cacheElement.getObject() : null;
     }
 }

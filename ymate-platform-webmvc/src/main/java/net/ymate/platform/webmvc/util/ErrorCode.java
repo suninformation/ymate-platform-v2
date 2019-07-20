@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2018 the original author or authors.
+ * Copyright 2007-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,7 +15,7 @@
  */
 package net.ymate.platform.webmvc.util;
 
-import net.ymate.platform.core.lang.BlurObject;
+import net.ymate.platform.commons.lang.BlurObject;
 
 import java.io.Serializable;
 import java.util.HashMap;
@@ -28,7 +28,6 @@ import java.util.Map;
  * ret &lt;-50: 系统内部错误
  *
  * @author 刘镇 (suninformation@163.com) on 14/7/6 下午6:53
- * @version 1.0
  * @since 2.0.6
  */
 public class ErrorCode implements Serializable {
@@ -207,7 +206,7 @@ public class ErrorCode implements Serializable {
 
     private String message;
 
-    private Map<String, Object> attributes = new HashMap<String, Object>();
+    private final Map<String, Object> attributes = new HashMap<>();
 
     public ErrorCode(int code) {
         this.code = code;

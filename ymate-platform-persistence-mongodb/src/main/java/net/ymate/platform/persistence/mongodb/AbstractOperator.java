@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2017 the original author or authors.
+ * Copyright 2007-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,55 +16,54 @@
 package net.ymate.platform.persistence.mongodb;
 
 import com.mongodb.BasicDBObject;
-import net.ymate.platform.persistence.Params;
+import com.mongodb.DBObject;
+import net.ymate.platform.core.persistence.Params;
 
 import java.util.Map;
 
 /**
  * @author 刘镇 (suninformation@163.com) on 15/11/27 下午6:04
- * @version 1.0
  */
 public abstract class AbstractOperator implements IOperator {
 
-    protected BasicDBObject __operation = new BasicDBObject();
+    private final BasicDBObject operation = new BasicDBObject();
 
-    protected void __doAddOperator(String opt, Object param) {
+    protected void addOperator(String opt, Object param) {
         if (param instanceof Params) {
-            __operation.put(opt, ((Params) param).toArray());
+            operation.put(opt, ((Params) param).toArray());
         } else {
-            __operation.put(opt, param);
+            operation.put(opt, param);
         }
     }
 
-    protected void __doPutOperator(String opt, String field, Object value) {
-        BasicDBObject _dbObj = (BasicDBObject) __operation.get(opt);
-        if (_dbObj == null) {
-            _dbObj = new BasicDBObject(field, value);
-            __doAddOperator(opt, _dbObj);
+    protected void putOperator(String opt, String field, Object value) {
+        DBObject dbObject = (DBObject) operation.get(opt);
+        if (dbObject == null) {
+            dbObject = new BasicDBObject(field, value);
+            addOperator(opt, dbObject);
         } else {
-            _dbObj.put(field, value);
+            dbObject.put(field, value);
         }
     }
 
-    protected void __doPutOperator(String opt, Map object) {
-        BasicDBObject _dbObj = (BasicDBObject) __operation.get(opt);
-        if (_dbObj == null) {
-            _dbObj = new BasicDBObject();
-            _dbObj.putAll(object);
-            __doAddOperator(opt, _dbObj);
+    protected void putOperator(String opt, Map object) {
+        DBObject dbObject = (DBObject) operation.get(opt);
+        if (dbObject == null) {
+            dbObject = new BasicDBObject();
+            dbObject.putAll(object);
+            addOperator(opt, dbObject);
         } else {
-            _dbObj.putAll(object);
+            dbObject.putAll(object);
         }
     }
 
     @Override
-    public IOperator add(IOperator operator) {
-        __operation.putAll((Map) operator.toBson());
-        return this;
+    public void add(IOperator operator) {
+        operation.putAll((Map) operator.toBson());
     }
 
     @Override
     public BasicDBObject toBson() {
-        return __operation;
+        return operation;
     }
 }

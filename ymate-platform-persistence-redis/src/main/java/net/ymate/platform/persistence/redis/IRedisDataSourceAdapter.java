@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2017 the original author or authors.
+ * Copyright 2007-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,34 +15,14 @@
  */
 package net.ymate.platform.persistence.redis;
 
-import redis.clients.jedis.JedisCommands;
+import net.ymate.platform.core.beans.annotation.Ignored;
+import net.ymate.platform.core.persistence.IDataSourceAdapter;
 
 /**
+ * Redis数据源适配器接口
+ *
  * @author 刘镇 (suninformation@163.com) on 15/12/2 上午2:28
- * @version 1.0
  */
-public interface IRedisDataSourceAdapter {
-
-    /**
-     * 数据源适配器初始化
-     *
-     * @param cfgMeta Redis数据源配置参数
-     * @throws Exception 可能产生的异常
-     */
-    void initialize(RedisDataSourceCfgMeta cfgMeta) throws Exception;
-
-    /**
-     * @return 命令接口实例对象
-     */
-    JedisCommands getCommands();
-
-    /**
-     * @return 获取数据源配置参数
-     */
-    RedisDataSourceCfgMeta getDataSourceCfgMeta();
-
-    /**
-     * 销毁数据源适配器
-     */
-    void destroy();
+@Ignored
+public interface IRedisDataSourceAdapter extends IDataSourceAdapter<IRedis, IRedisDataSourceConfig, IRedisCommander> {
 }

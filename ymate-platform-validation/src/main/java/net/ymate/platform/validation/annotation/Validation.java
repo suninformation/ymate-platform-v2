@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2017 the original author or authors.
+ * Copyright 2007-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,13 +15,14 @@
  */
 package net.ymate.platform.validation.annotation;
 
+import org.apache.commons.lang3.StringUtils;
+
 import java.lang.annotation.*;
 
 /**
  * 验证模式配置注解
  *
  * @author 刘镇 (suninformation@163.com) on 2013-4-7 下午4:45:42
- * @version 1.0
  */
 @Target({ElementType.TYPE, ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
@@ -29,12 +30,19 @@ import java.lang.annotation.*;
 public @interface Validation {
 
     /**
-     * 验证模式枚举：<br>
-     * NORMAL - 短路式验证，即出现验证未通过就返回验证结果<br>
-     * FULL   - 对目标对象属性进行全部验证后返回全部验证结果
+     * 验证模式枚举
      */
     enum MODE {
-        NORMAL, FULL
+
+        /**
+         * NORMAL - 短路式验证，即出现验证未通过就返回验证结果
+         */
+        NORMAL,
+
+        /**
+         * FULL - 对目标对象属性进行全部验证后返回全部验证结果
+         */
+        FULL
     }
 
     /**
@@ -45,5 +53,5 @@ public @interface Validation {
     /**
      * @return 自定义I18N资源文件名称
      */
-    String resourcesName() default "";
+    String resourcesName() default StringUtils.EMPTY;
 }

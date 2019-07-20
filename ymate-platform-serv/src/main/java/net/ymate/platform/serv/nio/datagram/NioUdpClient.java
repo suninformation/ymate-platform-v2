@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2017 the original author or authors.
+ * Copyright 2007-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,17 +24,16 @@ import java.io.IOException;
 
 /**
  * @author 刘镇 (suninformation@163.com) on 15/11/17 下午3:04
- * @version 1.0
  */
-public class NioUdpClient extends AbstractNioClient<NioUdpListener> {
+public class NioUdpClient extends AbstractNioClient<AbstractNioUdpListener> {
 
     @Override
-    protected INioEventGroup<NioUdpListener> buildEventGroup(IClientCfg clientCfg, NioUdpListener listener, INioCodec codec) throws IOException {
+    protected INioEventGroup<AbstractNioUdpListener> buildEventGroup(IClientCfg clientCfg, AbstractNioUdpListener listener, INioCodec codec) throws IOException {
         return new NioUdpEventGroup(clientCfg, listener, codec);
     }
 
     @Override
-    public void reconnect() throws IOException {
+    public void reconnect() {
         // Don't need to reconnect
     }
 }

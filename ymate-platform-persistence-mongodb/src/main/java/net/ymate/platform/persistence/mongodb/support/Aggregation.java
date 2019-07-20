@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2017 the original author or authors.
+ * Copyright 2007-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,7 @@
 package net.ymate.platform.persistence.mongodb.support;
 
 import com.mongodb.BasicDBObject;
-import net.ymate.platform.persistence.Fields;
+import net.ymate.platform.core.persistence.Fields;
 import net.ymate.platform.persistence.mongodb.IBsonable;
 import net.ymate.platform.persistence.mongodb.IMongo;
 import org.bson.BSONObject;
@@ -24,35 +24,32 @@ import org.bson.conversions.Bson;
 
 /**
  * @author 刘镇 (suninformation@163.com) on 15/11/23 下午5:07
- * @version 1.0
  */
 public final class Aggregation implements IBsonable {
 
-    private BasicDBObject __pipeline;
+    private final BasicDBObject pipeline;
 
     public static Aggregation create() {
         return new Aggregation();
     }
 
     private Aggregation() {
-        __pipeline = new BasicDBObject();
+        pipeline = new BasicDBObject();
     }
 
     public Aggregation project(Bson project) {
-        __pipeline.put(IMongo.OPT.PROJECT, project);
+        pipeline.put(IMongo.Opt.PROJECT, project);
         return this;
     }
 
     public Aggregation project(Fields fields) {
-        BasicDBObject _dbObj = new BasicDBObject();
-        for (String _field : fields.fields()) {
-            _dbObj.put(_field, 1);
-        }
-        return project(_dbObj);
+        BasicDBObject dbObject = new BasicDBObject();
+        fields.fields().forEach((field) -> dbObject.put(field, 1));
+        return project(dbObject);
     }
 
     public Aggregation match(Bson match) {
-        __pipeline.put(IMongo.OPT.MATCH, match);
+        pipeline.put(IMongo.Opt.MATCH, match);
         return this;
     }
 
@@ -61,17 +58,17 @@ public final class Aggregation implements IBsonable {
     }
 
     public Aggregation redact(Bson expression) {
-        __pipeline.put(IMongo.OPT.REDACT, expression);
+        pipeline.put(IMongo.Opt.REDACT, expression);
         return this;
     }
 
     public Aggregation limit(int n) {
-        __pipeline.put(IMongo.OPT.LIMIT, n);
+        pipeline.put(IMongo.Opt.LIMIT, n);
         return this;
     }
 
     public Aggregation skip(int n) {
-        __pipeline.put(IMongo.OPT.SKIP, n);
+        pipeline.put(IMongo.Opt.SKIP, n);
         return this;
     }
 
@@ -79,35 +76,35 @@ public final class Aggregation implements IBsonable {
         if (!field.startsWith("$")) {
             field = "$" + field;
         }
-        __pipeline.put(IMongo.OPT.UNWIND, field);
+        pipeline.put(IMongo.Opt.UNWIND, field);
         return this;
     }
 
     public Aggregation group(Bson expression) {
-        __pipeline.put(IMongo.OPT.GROUP, expression);
+        pipeline.put(IMongo.Opt.GROUP, expression);
         return this;
     }
 
     public Aggregation group(Operator id, Query... queries) {
-        BasicDBObject _dbObj = new BasicDBObject(IMongo.OPT.ID, id == null ? null : id.toBson());
-        for (Query _query : queries) {
-            _dbObj.putAll((BSONObject) _query.toBson());
+        BasicDBObject dbObject = new BasicDBObject(IMongo.Opt.ID, id == null ? null : id.toBson());
+        for (Query query : queries) {
+            dbObject.putAll((BSONObject) query.toBson());
         }
-        return group(_dbObj);
+        return group(dbObject);
     }
 
     public Aggregation sort(OrderBy orderBy) {
-        __pipeline.put(IMongo.OPT.SORT, orderBy.toBson());
+        pipeline.put(IMongo.Opt.SORT, orderBy.toBson());
         return this;
     }
 
     public Aggregation out(String targetCollection) {
-        __pipeline.put(IMongo.OPT.OUT, targetCollection);
+        pipeline.put(IMongo.Opt.OUT, targetCollection);
         return this;
     }
 
     @Override
     public BasicDBObject toBson() {
-        return __pipeline;
+        return pipeline;
     }
 }

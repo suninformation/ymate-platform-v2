@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2017 the original author or authors.
+ * Copyright 2007-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,7 +24,6 @@ import java.sql.*;
  * 访问器接口基础实现
  *
  * @author 刘镇 (suninformation@163.com) on 2011-9-2 下午03:17:32
- * @version 1.0
  */
 public class BaseAccessor implements IAccessor {
 
@@ -37,7 +36,7 @@ public class BaseAccessor implements IAccessor {
         this.accessorConfig = accessorConfig;
     }
 
-    protected void __doSetupStatement(Statement statement) throws SQLException {
+    protected void doSetupStatement(Statement statement) throws SQLException {
         if (statement != null && accessorConfig != null) {
             if (accessorConfig.getFetchDirection() > 0) {
                 statement.setFetchDirection(accessorConfig.getFetchDirection());
@@ -59,41 +58,41 @@ public class BaseAccessor implements IAccessor {
 
     @Override
     public Statement getStatement(Connection conn) throws Exception {
-        Statement _statement = null;
+        Statement statement = null;
         if (accessorConfig != null) {
-            _statement = accessorConfig.getStatement(conn);
+            statement = accessorConfig.getStatement(conn);
         }
-        if (_statement == null) {
-            _statement = conn.createStatement();
+        if (statement == null) {
+            statement = conn.createStatement();
         }
-        __doSetupStatement(_statement);
-        return _statement;
+        doSetupStatement(statement);
+        return statement;
     }
 
     @Override
     public PreparedStatement getPreparedStatement(Connection conn, String sql) throws Exception {
-        PreparedStatement _statement = null;
+        PreparedStatement statement = null;
         if (this.accessorConfig != null) {
-            _statement = this.accessorConfig.getPreparedStatement(conn, sql);
+            statement = this.accessorConfig.getPreparedStatement(conn, sql);
         }
-        if (_statement == null) {
-            _statement = conn.prepareStatement(sql);
+        if (statement == null) {
+            statement = conn.prepareStatement(sql);
         }
-        __doSetupStatement(_statement);
-        return _statement;
+        doSetupStatement(statement);
+        return statement;
     }
 
     @Override
     public CallableStatement getCallableStatement(Connection conn, String sql) throws Exception {
-        CallableStatement _statement = null;
+        CallableStatement statement = null;
         if (accessorConfig != null) {
-            _statement = accessorConfig.getCallableStatement(conn, sql);
+            statement = accessorConfig.getCallableStatement(conn, sql);
         }
-        if (_statement == null) {
-            _statement = conn.prepareCall(sql);
+        if (statement == null) {
+            statement = conn.prepareCall(sql);
         }
-        __doSetupStatement(_statement);
-        return _statement;
+        doSetupStatement(statement);
+        return statement;
     }
 
     @Override

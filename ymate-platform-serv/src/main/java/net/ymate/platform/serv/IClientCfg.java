@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2017 the original author or authors.
+ * Copyright 2007-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,65 +15,102 @@
  */
 package net.ymate.platform.serv;
 
+import net.ymate.platform.core.beans.annotation.Ignored;
+
 import java.util.Map;
 
 /**
  * 客户端服务配置接口
  *
  * @author 刘镇 (suninformation@163.com) on 15/11/4 下午5:36
- * @version 1.0
  */
+@Ignored
 public interface IClientCfg {
 
     /**
-     * @return 客户端名称
+     * 获取客户端名称
+     *
+     * @return 返回客户端名称
      */
     String getClientName();
 
     /**
-     * @return 远程主机名称或IP地址
+     * 获取远程主机名称或IP地址
+     *
+     * @return 返回远程主机名称或IP地址
      */
     String getRemoteHost();
 
     /**
-     * @return 远程服务监听端口
+     * 获取远程服务监听端口
+     *
+     * @return 返回远程服务监听端口
      */
     int getPort();
 
     /**
-     * @return 字符编码
+     * 获取字符编码
+     *
+     * @return 返回字符编码
      */
     String getCharset();
 
     /**
-     * @return 缓冲区大小
+     * 获取缓冲区大小
+     *
+     * @return 返回缓冲区大小
      */
     int getBufferSize();
 
     /**
-     * @return 执行线程数量
+     * 获取执行线程数量
+     *
+     * @return 返回执行线程数量
      */
     int getExecutorCount();
 
     /**
-     * @return 连接超时时间(秒)
+     * 获取连接超时时间(秒)
+     *
+     * @return 返回连接超时时间
      */
     int getConnectionTimeout();
 
     /**
-     * @return 断线重连检测间隔(秒)
+     * 获取断线重连检测间隔(秒)
+     *
+     * @return 返回断线重连检测间隔
      */
     int getReconnectionInterval();
 
     /**
-     * @return 心跳包发送间隔(秒)
+     * 获取心跳包发送间隔(秒)
+     *
+     * @return 返回心跳包发送间隔
      */
     int getHeartbeatInterval();
 
     /**
-     * @return 客户端自定义参数映射
+     * 获取客户端自定义参数映射
+     *
+     * @return 返回客户端自定义参数映射
      */
     Map<String, String> getParams();
 
+    /**
+     * 获取客户端自定义参数值
+     *
+     * @param key 参数名称
+     * @return 返回客户端自定义参数值
+     */
     String getParam(String key);
+
+    /**
+     * 获取客户端自定义参数值
+     *
+     * @param key          参数名称
+     * @param defaultValue 默认值
+     * @return 返回客户端自定义参数值
+     */
+    String getParam(String key, String defaultValue);
 }

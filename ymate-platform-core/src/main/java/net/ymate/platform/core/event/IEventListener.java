@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2017 the original author or authors.
+ * Copyright 2007-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,14 +15,16 @@
  */
 package net.ymate.platform.core.event;
 
+import net.ymate.platform.core.beans.annotation.Ignored;
+
 /**
  * 事件监听器接口，用于接收并处理一种事件类型
  *
  * @param <CONTEXT> 上下文对象类型
  * @author 刘镇 (suninformation@163.com) on 15/5/16 上午2:20
- * @version 1.0
  */
-public interface IEventListener<CONTEXT extends EventContext> {
+@Ignored
+public interface IEventListener<CONTEXT extends AbstractEventContext> {
 
     /**
      * 处理事件监听，其返回值将影响事件队列是否继续执行(仅支持同步事件，异步事件将忽略此返回值)

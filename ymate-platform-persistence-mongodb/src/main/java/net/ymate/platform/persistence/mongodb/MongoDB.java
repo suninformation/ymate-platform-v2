@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2017 the original author or authors.
+ * Copyright 2007-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,61 +15,56 @@
  */
 package net.ymate.platform.persistence.mongodb;
 
-import net.ymate.platform.core.Version;
+import com.mongodb.ClientSessionOptions;
+import com.mongodb.client.ClientSession;
+import net.ymate.platform.commons.util.RuntimeUtils;
+import net.ymate.platform.core.IApplication;
 import net.ymate.platform.core.YMP;
 import net.ymate.platform.core.module.IModule;
+import net.ymate.platform.core.module.IModuleConfigurer;
 import net.ymate.platform.core.module.annotation.Module;
-import net.ymate.platform.persistence.mongodb.impl.MongoDataSourceAdapter;
-import net.ymate.platform.persistence.mongodb.impl.MongoGridFSSession;
-import net.ymate.platform.persistence.mongodb.impl.DefaultMongoModuleCfg;
-import net.ymate.platform.persistence.mongodb.impl.MongoSession;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import net.ymate.platform.core.persistence.AbstractTrade;
+import net.ymate.platform.core.persistence.IDataSourceRouter;
+import net.ymate.platform.core.persistence.ITrade;
+import net.ymate.platform.persistence.mongodb.impl.*;
 
-import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * @author 刘镇 (suninformation@163.com) on 15/11/21 上午9:24
- * @version 1.0
  */
 @Module
 public class MongoDB implements IModule, IMongo {
 
-    public static final Version VERSION = new Version(2, 0, 7, MongoDB.class.getPackage().getImplementationVersion(), Version.VersionType.Release);
+    private static volatile IMongo instance;
 
-    private static final Log _LOG = LogFactory.getLog(MongoDB.class);
+    private IApplication owner;
 
-    private static volatile IMongo __instance;
+    private IMongoConfig config;
 
-    private YMP __owner;
+    private Map<String, IMongoDataSourceAdapter> dataSourceCaches = new ConcurrentHashMap<>();
 
-    private IMongoModuleCfg __moduleCfg;
+    private boolean initialized;
 
-    private Map<String, IMongoDataSourceAdapter> __dataSourceCaches;
-
-    private boolean __inited;
-
-    /**
-     * @return 返回默认MongoDB模块管理器实例对象
-     */
     public static IMongo get() {
-        if (__instance == null) {
-            synchronized (VERSION) {
-                if (__instance == null) {
-                    __instance = YMP.get().getModule(MongoDB.class);
+        IMongo inst = instance;
+        if (inst == null) {
+            synchronized (MongoDB.class) {
+                inst = instance;
+                if (inst == null) {
+                    instance = inst = YMP.get().getModuleManager().getModule(MongoDB.class);
                 }
             }
         }
-        return __instance;
+        return inst;
     }
 
-    /**
-     * @param owner YMP框架管理器实例
-     * @return 返回指定YMP框架管理器容器内的MongoDB模块管理器实例
-     */
-    public static IMongo get(YMP owner) {
-        return owner.getModule(MongoDB.class);
+    public MongoDB() {
+    }
+
+    public MongoDB(IMongoConfig config) {
+        this.config = config;
     }
 
     @Override
@@ -78,102 +73,236 @@ public class MongoDB implements IModule, IMongo {
     }
 
     @Override
-    public void init(YMP owner) throws Exception {
-        if (!__inited) {
+    public void initialize(IApplication owner) throws Exception {
+        if (!initialized) {
             //
-            _LOG.info("Initializing ymate-platform-persistence-mongodb-" + VERSION);
+            YMP.showModuleVersion("ymate-platform-persistence-mongodb", this);
             //
-            __owner = owner;
-            __moduleCfg = new DefaultMongoModuleCfg(owner);
+            this.owner = owner;
             //
-            __dataSourceCaches = new HashMap<String, IMongoDataSourceAdapter>();
-            for (MongoDataSourceCfgMeta _meta : __moduleCfg.getDataSourceCfgs().values()) {
-                IMongoDataSourceAdapter _adapter = new MongoDataSourceAdapter();
-                _adapter.initialize(__moduleCfg.getClientOptionsHandler(), _meta);
-                // 将数据源适配器添加到缓存
-                __dataSourceCaches.put(_meta.getName(), _adapter);
+            if (config == null) {
+                IModuleConfigurer moduleConfigurer = owner.getConfigurer().getModuleConfigurer(MODULE_NAME);
+                config = moduleConfigurer == null ? DefaultMongoConfig.defaultConfig() : DefaultMongoConfig.create(moduleConfigurer);
             }
             //
-            __inited = true;
+            if (!config.isInitialized()) {
+                config.initialize(this);
+            }
+            //
+            for (Map.Entry<String, IMongoDataSourceConfig> entry : config.getDataSourceConfigs().entrySet()) {
+                IMongoDataSourceAdapter dataSourceAdapter = new MongoDataSourceAdapter();
+                dataSourceAdapter.initialize(this, entry.getValue());
+                // 将数据源适配器放入缓存
+                dataSourceCaches.put(entry.getKey(), dataSourceAdapter);
+            }
+            //
+            initialized = true;
         }
     }
 
     @Override
-    public boolean isInited() {
-        return __inited;
+    public boolean isInitialized() {
+        return initialized;
     }
 
     @Override
-    public YMP getOwner() {
-        return __owner;
+    public IApplication getOwner() {
+        return owner;
     }
 
     @Override
-    public IMongoModuleCfg getModuleCfg() {
-        return __moduleCfg;
+    public IMongoConfig getConfig() {
+        return config;
+    }
+
+    @Override
+    public IMongoConnectionHolder getDefaultConnectionHolder() throws Exception {
+        return getConnectionHolder(config.getDefaultDataSourceName());
+    }
+
+    @Override
+    public IMongoConnectionHolder getConnectionHolder(String dataSourceName) throws Exception {
+        IMongoDataSourceAdapter dataSourceAdapter = dataSourceCaches.get(config.getDefaultDataSourceName());
+        if (dataSourceAdapter != null) {
+            return new DefaultMongoConnectionHolder(dataSourceAdapter);
+        }
+        return null;
+    }
+
+    @Override
+    public void releaseConnectionHolder(IMongoConnectionHolder connectionHolder) throws Exception {
+        if (connectionHolder != null) {
+            connectionHolder.close();
+        }
+    }
+
+    @Override
+    public IMongoSession openSession() throws Exception {
+        return openSession(config.getDefaultDataSourceName());
+    }
+
+    @Override
+    public IMongoSession openSession(String dataSourceName) throws Exception {
+        return new DefaultMongoSession(this, getConnectionHolder(dataSourceName));
+    }
+
+    @Override
+    public IMongoSession openSession(IMongoConnectionHolder connectionHolder) throws Exception {
+        return new DefaultMongoSession(this, connectionHolder);
+    }
+
+    @Override
+    public IMongoSession openSession(IDataSourceRouter dataSourceRouter) throws Exception {
+        return openSession(dataSourceRouter.getDataSourceName());
     }
 
     @Override
     public IMongoDataSourceAdapter getDefaultDataSourceAdapter() throws Exception {
-        return __dataSourceCaches.get(__moduleCfg.getDataSourceDefaultName());
+        return dataSourceCaches.get(config.getDefaultDataSourceName());
     }
 
     @Override
     public IMongoDataSourceAdapter getDataSourceAdapter(String dataSourceName) throws Exception {
-        return __dataSourceCaches.get(dataSourceName);
+        return dataSourceCaches.get(dataSourceName);
     }
 
     @Override
-    public void destroy() throws Exception {
-        if (__inited) {
-            __inited = false;
+    public void close() throws Exception {
+        if (initialized) {
+            initialized = false;
             //
-            for (IMongoDataSourceAdapter _adapter : __dataSourceCaches.values()) {
-                _adapter.destroy();
+            for (IMongoDataSourceAdapter adapter : dataSourceCaches.values()) {
+                adapter.close();
             }
-            __dataSourceCaches = null;
-            __moduleCfg = null;
-            __owner = null;
+            dataSourceCaches = null;
+            config = null;
+            owner = null;
         }
     }
 
     @Override
     public <T> T openSession(IMongoSessionExecutor<T> executor) throws Exception {
-        return openSession(getDefaultDataSourceAdapter().getDefaultDatabaseHolder(), executor);
+        return openSession(getDefaultConnectionHolder(), executor);
     }
 
     @Override
-    public <T> T openSession(IMongoDatabaseHolder databaseHolder, IMongoSessionExecutor<T> executor) throws Exception {
-        IMongoSession _session = new MongoSession(databaseHolder);
-        try {
-            return executor.execute(_session);
-        } finally {
-            _session.close();
+    public <T> T openSession(IMongoConnectionHolder databaseHolder, IMongoSessionExecutor<T> executor) throws Exception {
+        try (IMongoSession session = new DefaultMongoSession(this, databaseHolder)) {
+            return executor.execute(session);
         }
     }
 
     @Override
-    public <T> T openSession(IGridFSSessionExecutor<T> executor) throws Exception {
+    public <T> T openSession(IDataSourceRouter dataSourceRouter, IMongoSessionExecutor<T> executor) throws Exception {
+        return openSession(getConnectionHolder(dataSourceRouter.getDataSourceName()), executor);
+    }
+
+    @Override
+    public <T> T openSession(IGridFsSessionExecutor<T> executor) throws Exception {
         return openSession(getDefaultDataSourceAdapter(), null, executor);
     }
 
     @Override
-    public <T> T openSession(String bucketName, IGridFSSessionExecutor<T> executor) throws Exception {
+    public <T> T openSession(String bucketName, IGridFsSessionExecutor<T> executor) throws Exception {
         return openSession(getDefaultDataSourceAdapter(), bucketName, executor);
     }
 
     @Override
-    public <T> T openSession(IMongoDataSourceAdapter dataSourceAdapter, IGridFSSessionExecutor<T> executor) throws Exception {
+    public <T> T openSession(IMongoDataSourceAdapter dataSourceAdapter, IGridFsSessionExecutor<T> executor) throws Exception {
         return openSession(dataSourceAdapter, null, executor);
     }
 
     @Override
-    public <T> T openSession(IMongoDataSourceAdapter dataSourceAdapter, String bucketName, IGridFSSessionExecutor<T> executor) throws Exception {
-        IGridFSSession _gridFS = new MongoGridFSSession(dataSourceAdapter, bucketName);
-        try {
-            return executor.execute(_gridFS);
-        } finally {
-            _gridFS.close();
+    public <T> T openSession(IDataSourceRouter dataSourceRouter, IGridFsSessionExecutor<T> executor) throws Exception {
+        return openSession(getDataSourceAdapter(dataSourceRouter.getDataSourceName()), null, executor);
+    }
+
+    @Override
+    public <T> T openSession(IMongoDataSourceAdapter dataSourceAdapter, String bucketName, IGridFsSessionExecutor<T> executor) throws Exception {
+        try (IGridFsSession fsSession = new MongoGridFsSession(dataSourceAdapter, bucketName)) {
+            return executor.execute(fsSession);
         }
+    }
+
+    @Override
+    public <T> T openSession(IDataSourceRouter dataSourceRouter, String bucketName, IGridFsSessionExecutor<T> executor) throws Exception {
+        return openSession(getDataSourceAdapter(dataSourceRouter.getDataSourceName()), bucketName, executor);
+    }
+
+    @Override
+    public void openTransaction(ITrade trade) throws Exception {
+        openTransaction(getDefaultConnectionHolder(), trade, null);
+
+    }
+
+    @Override
+    public void openTransaction(ITrade trade, ClientSessionOptions clientSessionOptions) throws Exception {
+        openTransaction(getDefaultConnectionHolder(), trade, clientSessionOptions);
+    }
+
+    @Override
+    public void openTransaction(IMongoConnectionHolder databaseHolder, ITrade trade) throws Exception {
+        openTransaction(databaseHolder, trade, null);
+    }
+
+    @Override
+    public void openTransaction(IMongoConnectionHolder databaseHolder, ITrade trade, ClientSessionOptions clientSessionOptions) throws Exception {
+        try (ClientSession clientSession = databaseHolder.getDataSourceAdapter().getConnection().startSession(clientSessionOptions != null ? clientSessionOptions : ClientSessionOptions.builder().build())) {
+            try {
+                trade.deal();
+                clientSession.commitTransaction();
+            } catch (Throwable throwable) {
+                clientSession.abortTransaction();
+            }
+        }
+    }
+
+    @Override
+    public void openTransaction(IDataSourceRouter dataSourceRouter, ITrade trade) throws Exception {
+        openTransaction(getConnectionHolder(dataSourceRouter.getDataSourceName()), trade, null);
+    }
+
+    @Override
+    public void openTransaction(IDataSourceRouter dataSourceRouter, ITrade trade, ClientSessionOptions clientSessionOptions) throws Exception {
+        openTransaction(getConnectionHolder(dataSourceRouter.getDataSourceName()), trade, clientSessionOptions);
+    }
+
+    @Override
+    public <T> T openTransaction(AbstractTrade<T> trade) throws Exception {
+        return openTransaction(getDefaultConnectionHolder(), trade, null);
+    }
+
+    @Override
+    public <T> T openTransaction(AbstractTrade<T> trade, ClientSessionOptions clientSessionOptions) throws Exception {
+        return openTransaction(getDefaultConnectionHolder(), trade, clientSessionOptions);
+    }
+
+    @Override
+    public <T> T openTransaction(IMongoConnectionHolder databaseHolder, AbstractTrade<T> trade, ClientSessionOptions clientSessionOptions) throws Exception {
+        try (ClientSession clientSession = databaseHolder.getDataSourceAdapter().getConnection().startSession(clientSessionOptions != null ? clientSessionOptions : ClientSessionOptions.builder().build())) {
+            try {
+                trade.deal();
+                clientSession.commitTransaction();
+                return trade.getResult();
+            } catch (Throwable throwable) {
+                clientSession.abortTransaction();
+                throw new Exception(RuntimeUtils.unwrapThrow(throwable));
+            }
+        }
+    }
+
+    @Override
+    public <T> T openTransaction(IMongoConnectionHolder databaseHolder, AbstractTrade<T> trade) throws Exception {
+        return openTransaction(databaseHolder, trade, null);
+    }
+
+    @Override
+    public <T> T openTransaction(IDataSourceRouter dataSourceRouter, AbstractTrade<T> trade) throws Exception {
+        return openTransaction(getConnectionHolder(dataSourceRouter.getDataSourceName()), trade, null);
+    }
+
+    @Override
+    public <T> T openTransaction(IDataSourceRouter dataSourceRouter, AbstractTrade<T> trade, ClientSessionOptions clientSessionOptions) throws Exception {
+        return openTransaction(getConnectionHolder(dataSourceRouter.getDataSourceName()), trade, clientSessionOptions);
     }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2017 the original author or authors.
+ * Copyright 2007-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,57 +15,63 @@
  */
 package net.ymate.platform.persistence.redis;
 
-import net.ymate.platform.core.YMP;
-import net.ymate.platform.persistence.IDataSourceRouter;
+import net.ymate.platform.core.beans.annotation.Ignored;
+import net.ymate.platform.core.persistence.IDataSourceRouter;
+import net.ymate.platform.core.persistence.IPersistence;
 import redis.clients.jedis.JedisPubSub;
 
 /**
- * @author 刘镇 (suninformation@163.com) on 15/11/30 上午3:16
- * @version 1.0
+ * Redis管理器接口
+ *
+ * @author 刘镇 (suninformation@163.com) on 2019-05-22 02:26
  */
-public interface IRedis {
+@Ignored
+public interface IRedis extends IPersistence<IRedisSession, IRedisConfig, IRedisCommandHolder> {
 
     String MODULE_NAME = "persistence.redis";
 
     /**
-     * @return 返回所属YMP框架管理器实例
+     * 开启会话并执行会话执行器接口逻辑(执行完毕会话将自动关闭)
+     *
+     * @param executor 会话执行器
+     * @param <T>      执行结果对象类型
+     * @return 返回执行结果
+     * @throws Exception 可能产生的任何异常
      */
-    YMP getOwner();
-
-    /**
-     * @return 返回Redis模块配置对象
-     */
-    IRedisModuleCfg getModuleCfg();
-
-    /**
-     * @return 获取默认命令对象持有者对象
-     */
-    IRedisCommandsHolder getDefaultCommandsHolder();
-
-    /**
-     * @param dsName 数据源名称
-     * @return 获取由dsName指定的命令对象持有者对象
-     */
-    IRedisCommandsHolder getCommandsHolder(String dsName);
-
     <T> T openSession(IRedisSessionExecutor<T> executor) throws Exception;
 
-    <T> T openSession(String dsName, IRedisSessionExecutor<T> executor) throws Exception;
-
-    <T> T openSession(IRedisCommandsHolder commandsHolder, IRedisSessionExecutor<T> executor) throws Exception;
-
-    <T> T openSession(IDataSourceRouter dataSourceRouter, IRedisSessionExecutor<T> executor) throws Exception;
+    /**
+     * 开启会话并执行会话执行器接口逻辑(执行完毕会话将自动关闭)
+     *
+     * @param dataSourceName 数据源名称
+     * @param executor       会话执行器
+     * @param <T>            执行结果对象类型
+     * @return 返回执行结果
+     * @throws Exception 可能产生的任何异常
+     */
+    <T> T openSession(String dataSourceName, IRedisSessionExecutor<T> executor) throws Exception;
 
     /**
-     * @return 开启Redis连接会话(注意一定记得关闭会话)
+     * 开启会话并执行会话执行器接口逻辑(执行完毕会话将自动关闭)
+     *
+     * @param connectionHolder 数据源连接持有者对象
+     * @param executor         会话执行器
+     * @param <T>              执行结果对象类型
+     * @return 返回执行结果
+     * @throws Exception 可能产生的任何异常
      */
-    IRedisSession openSession();
+    <T> T openSession(IRedisCommandHolder connectionHolder, IRedisSessionExecutor<T> executor) throws Exception;
 
-    IRedisSession openSession(String dsName);
-
-    IRedisSession openSession(IRedisCommandsHolder commandsHolder);
-
-    IRedisSession openSession(IDataSourceRouter dataSourceRouter);
+    /**
+     * 开启会话并执行会话执行器接口逻辑(执行完毕会话将自动关闭)
+     *
+     * @param dataSourceRouter 数据源路由对象
+     * @param executor         会话执行器
+     * @param <T>              执行结果对象类型
+     * @return 返回执行结果
+     * @throws Exception 可能产生的任何异常
+     */
+    <T> T openSession(IDataSourceRouter dataSourceRouter, IRedisSessionExecutor<T> executor) throws Exception;
 
     /**
      * 订阅
@@ -75,12 +81,38 @@ public interface IRedis {
      */
     void subscribe(JedisPubSub jedisPubSub, String... channels);
 
-    void subscribe(String dsName, JedisPubSub jedisPubSub, String... channels);
+    /**
+     * 订阅
+     *
+     * @param dataSourceName 数据源名称
+     * @param jedisPubSub    发布订阅对象
+     * @param channels       频道
+     */
+    void subscribe(String dataSourceName, JedisPubSub jedisPubSub, String... channels);
 
     /**
-     * 数据源连接方式
+     * Redis连接方式
      */
     enum ConnectionType {
-        DEFAULT, SHARD, SENTINEL, CLUSTER
+
+        /**
+         * 默认
+         */
+        DEFAULT,
+
+        /**
+         *
+         */
+        SHARD,
+
+        /**
+         *
+         */
+        SENTINEL,
+
+        /**
+         *
+         */
+        CLUSTER
     }
 }

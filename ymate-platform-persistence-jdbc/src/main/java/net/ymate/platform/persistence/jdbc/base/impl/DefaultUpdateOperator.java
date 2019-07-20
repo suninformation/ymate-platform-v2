@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2017 the original author or authors.
+ * Copyright 2007-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,11 +15,9 @@
  */
 package net.ymate.platform.persistence.jdbc.base.impl;
 
-import net.ymate.platform.persistence.base.Type;
-import net.ymate.platform.persistence.jdbc.IConnectionHolder;
+import net.ymate.platform.core.persistence.base.Type;
+import net.ymate.platform.persistence.jdbc.IDatabaseConnectionHolder;
 import net.ymate.platform.persistence.jdbc.base.*;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 import java.sql.PreparedStatement;
 
@@ -27,44 +25,43 @@ import java.sql.PreparedStatement;
  * 数据库更新操作器接口实现
  *
  * @author 刘镇 (suninformation@163.com) on 2011-9-23 上午10:38:24
- * @version 1.0
  */
 public class DefaultUpdateOperator extends AbstractOperator implements IUpdateOperator {
 
-    private static final Log _LOG = LogFactory.getLog(DefaultUpdateOperator.class);
-
     private int effectCounts;
 
-    public DefaultUpdateOperator(String sql, IConnectionHolder connectionHolder) {
+    public DefaultUpdateOperator(String sql, IDatabaseConnectionHolder connectionHolder) {
         super(sql, connectionHolder);
     }
 
-    public DefaultUpdateOperator(String sql, IConnectionHolder connectionHolder, IAccessorConfig accessorConfig) {
+    public DefaultUpdateOperator(String sql, IDatabaseConnectionHolder connectionHolder, IAccessorConfig accessorConfig) {
         super(sql, connectionHolder, accessorConfig);
     }
 
     @Override
-    protected int __doExecute() throws Exception {
-        PreparedStatement _statement = null;
-        AccessorEventContext _context = null;
-        boolean _hasEx = false;
+    protected int doExecute() throws Exception {
+        PreparedStatement statement = null;
+        AccessorEventContext eventContext = null;
+        boolean hasEx = false;
         try {
-            IAccessor _accessor = new BaseAccessor(this.getAccessorConfig());
-            _statement = _accessor.getPreparedStatement(this.getConnectionHolder().getConnection(), this.getSQL());
-            __doSetParameters(_statement);
+            IAccessor accessor = new BaseAccessor(this.getAccessorConfig());
+            statement = accessor.getPreparedStatement(this.getConnectionHolder().getConnection(), this.getSQL());
+            doSetParameters(statement);
             if (this.getAccessorConfig() != null) {
-                this.getAccessorConfig().beforeStatementExecution(_context = new AccessorEventContext(_statement, Type.OPT.UPDATE));
+                eventContext = new AccessorEventContext(statement, Type.OPT.UPDATE);
+                this.getAccessorConfig().beforeStatementExecution(eventContext);
             }
-            return effectCounts = _statement.executeUpdate();
+            effectCounts = statement.executeUpdate();
+            return effectCounts;
         } catch (Exception ex) {
-            _hasEx = true;
+            hasEx = true;
             throw ex;
         } finally {
-            if (!_hasEx && this.getAccessorConfig() != null && _context != null) {
-                this.getAccessorConfig().afterStatementExecution(_context);
+            if (!hasEx && this.getAccessorConfig() != null && eventContext != null) {
+                this.getAccessorConfig().afterStatementExecution(eventContext);
             }
-            if (_statement != null) {
-                _statement.close();
+            if (statement != null) {
+                statement.close();
             }
         }
     }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2017 the original author or authors.
+ * Copyright 2007-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,20 +17,20 @@ package net.ymate.platform.cache.impl;
 
 import net.sf.ehcache.CacheManager;
 import net.sf.ehcache.Ehcache;
-import net.ymate.platform.cache.*;
+import net.ymate.platform.cache.AbstractCacheProvider;
+import net.ymate.platform.cache.ICache;
+import net.ymate.platform.cache.ICacheEventListener;
 import net.ymate.platform.cache.support.MultilevelCacheWrapper;
 import net.ymate.platform.persistence.redis.IRedis;
-import net.ymate.platform.persistence.redis.Redis;
 
 /**
  * @author 刘镇 (suninformation@163.com) on 15/12/6 上午4:58
- * @version 1.0
  */
 public class MultilevelCacheProvider extends AbstractCacheProvider {
 
-    private CacheManager __cacheManager;
+    private CacheManager cacheManager;
 
-    private IRedis __redis;
+    private IRedis redis;
 
     @Override
     public String getName() {
@@ -38,20 +38,28 @@ public class MultilevelCacheProvider extends AbstractCacheProvider {
     }
 
     @Override
-    public void init(ICaches owner) throws CacheException {
-        super.init(owner);
-        //
-        __cacheManager = CacheManager.create();
-        __redis = Redis.get(owner.getOwner());
+    protected void onInitialize() throws Exception {
+        cacheManager = CacheManager.create();
+        redis = REDIS_CREATOR.create();
+        redis.initialize(getOwner().getOwner());
     }
 
     @Override
-    protected ICache __createCache(String saferName, ICacheEventListener listener) {
-        Ehcache _ehcache = __cacheManager.getEhcache(saferName);
-        if (_ehcache == null) {
-            __cacheManager.addCache(saferName);
-            _ehcache = __cacheManager.getCache(saferName);
+    protected void onDestroy() throws Exception {
+        cacheManager.shutdown();
+        cacheManager = null;
+        //
+        redis.close();
+        redis = null;
+    }
+
+    @Override
+    protected ICache onCreateCache(String cacheName, ICacheEventListener listener) {
+        Ehcache ehcache = cacheManager.getEhcache(cacheName);
+        if (ehcache == null) {
+            cacheManager.addCache(cacheName);
+            ehcache = cacheManager.getCache(cacheName);
         }
-        return new MultilevelCacheWrapper(getOwner(), saferName, _ehcache, __redis, listener);
+        return new MultilevelCacheWrapper(getOwner(), cacheName, ehcache, redis, listener);
     }
 }

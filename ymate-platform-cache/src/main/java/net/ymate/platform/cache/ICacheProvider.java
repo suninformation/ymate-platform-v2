@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2017 the original author or authors.
+ * Copyright 2007-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,60 +15,65 @@
  */
 package net.ymate.platform.cache;
 
+import net.ymate.platform.core.beans.annotation.Ignored;
+import net.ymate.platform.core.support.IDestroyable;
+import net.ymate.platform.core.support.IInitialization;
+
 /**
  * 缓存提供者接口
  *
  * @author 刘镇 (suninformation@163.com) on 14/10/17
- * @version 1.0
  */
-public interface ICacheProvider {
+@Ignored
+public interface ICacheProvider extends IInitialization<ICaches>, IDestroyable {
 
     /**
-     * @return 缓存提供者名称
+     * 获取缓存提供者名称
+     *
+     * @return 返回当前缓存提供者名称
      */
     String getName();
 
     /**
-     * 初始化
+     * 获取所属缓存管理器
      *
-     * @param owner 所属缓存模块
-     * @throws CacheException 可能产生的异常
+     * @return 返回所属缓存管理器实例
      */
-    void init(ICaches owner) throws CacheException;
+    ICaches getOwner();
 
     /**
+     * 创建缓存对象，若已存在则直接返回
+     *
      * @param name     缓存名称
      * @param listener 缓存元素过期监听器接口实现
-     * @return 创建缓存对象，若已存在则直接返回
-     * @throws CacheException 可能产生的异常
+     * @return 返回缓存对象
      */
-    ICache createCache(String name, ICacheEventListener listener) throws CacheException;
+    ICache createCache(String name, ICacheEventListener listener);
 
     /**
+     * 获取缓存对象，若不存在则返回null
+     *
      * @param name 缓存名称
-     * @return 获取缓存对象，若不存在则返回null
+     * @return 返回缓存对象
      */
     ICache getCache(String name);
 
     /**
+     * 获取缓存对象，若不存在则根据create参数决定是否创建缓存对象或返回null
+     *
      * @param name   缓存名称
      * @param create 是否创建缓存对象
-     * @return 获取缓存对象，若不存在则根据create参数决定是否创建缓存对象或返回null
+     * @return 返回缓存对象
      */
     ICache getCache(String name, boolean create);
 
     /**
+     * 获取缓存对象，若不存在则根据create参数决定是否创建缓存对象或返回null
+     *
      * @param name     缓存名称
      * @param create   是否创建缓存对象
      * @param listener 缓存元素过期监听器接口实现
-     * @return 获取缓存对象，若不存在则根据create参数决定是否创建缓存对象或返回null
+     * @return 返回缓存对象
      */
     ICache getCache(String name, boolean create, ICacheEventListener listener);
-
-    /**
-     * 销毁
-     *
-     * @throws CacheException 可能产生的异常
-     */
-    void destroy() throws CacheException;
 }

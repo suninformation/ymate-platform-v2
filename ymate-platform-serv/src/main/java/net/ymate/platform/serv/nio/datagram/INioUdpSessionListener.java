@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2018 the original author or authors.
+ * Copyright 2007-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,6 +15,7 @@
  */
 package net.ymate.platform.serv.nio.datagram;
 
+import net.ymate.platform.core.beans.annotation.Ignored;
 import net.ymate.platform.serv.ISessionListener;
 
 import java.io.IOException;
@@ -25,8 +26,8 @@ import java.io.IOException;
  * @param <SESSION_WRAPPER> 会话包装器类型
  * @param <MESSAGE_TYPE>    消息类型
  * @author 刘镇 (suninformation@163.com) on 2018/11/14 3:58 PM
- * @version 1.0
  */
+@Ignored
 public interface INioUdpSessionListener<SESSION_WRAPPER extends NioUdpSessionWrapper, MESSAGE_TYPE> extends ISessionListener<SESSION_WRAPPER> {
 
     /**

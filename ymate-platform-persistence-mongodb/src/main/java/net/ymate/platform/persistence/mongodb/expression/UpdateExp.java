@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2017 the original author or authors.
+ * Copyright 2007-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,11 +16,12 @@
 package net.ymate.platform.persistence.mongodb.expression;
 
 import com.mongodb.BasicDBObject;
-import net.ymate.platform.persistence.Fields;
-import net.ymate.platform.persistence.Params;
+import net.ymate.platform.core.persistence.Fields;
+import net.ymate.platform.core.persistence.Params;
 import net.ymate.platform.persistence.mongodb.AbstractOperator;
 import net.ymate.platform.persistence.mongodb.IMongo;
 import net.ymate.platform.persistence.mongodb.support.Query;
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -29,159 +30,156 @@ import java.util.Map;
 
 /**
  * @author 刘镇 (suninformation@163.com) on 15/11/28 下午3:23
- * @version 1.0
  */
 public class UpdateExp extends AbstractOperator {
 
     public static UpdateExp inc(String field, Number amount) {
-        UpdateExp _exp = new UpdateExp();
-        _exp.__doPutOperator(IMongo.OPT.INC, field, amount);
-        return _exp;
+        UpdateExp updateExp = new UpdateExp();
+        updateExp.putOperator(IMongo.Opt.INC, field, amount);
+        return updateExp;
     }
 
     public static UpdateExp mul(String field, Number number) {
-        UpdateExp _exp = new UpdateExp();
-        _exp.__doPutOperator(IMongo.OPT.MUL, field, number);
-        return _exp;
+        UpdateExp updateExp = new UpdateExp();
+        updateExp.putOperator(IMongo.Opt.MUL, field, number);
+        return updateExp;
     }
 
     public static UpdateExp rename(String field, String newName) {
-        UpdateExp _exp = new UpdateExp();
-        _exp.__doPutOperator(IMongo.OPT.RENAME, field, newName);
-        return _exp;
+        UpdateExp updateExp = new UpdateExp();
+        updateExp.putOperator(IMongo.Opt.RENAME, field, newName);
+        return updateExp;
     }
 
     public static UpdateExp setOnInsert(String field, Object value) {
-        UpdateExp _exp = new UpdateExp();
-        _exp.__doPutOperator(IMongo.OPT.SET_ON_INSERT, field, value);
-        return _exp;
+        UpdateExp updateExp = new UpdateExp();
+        updateExp.putOperator(IMongo.Opt.SET_ON_INSERT, field, value);
+        return updateExp;
     }
 
     public static UpdateExp setOnInsert(Map object) {
-        UpdateExp _exp = new UpdateExp();
-        _exp.__doPutOperator(IMongo.OPT.SET_ON_INSERT, object);
-        return _exp;
+        UpdateExp updateExp = new UpdateExp();
+        updateExp.putOperator(IMongo.Opt.SET_ON_INSERT, object);
+        return updateExp;
     }
 
     public static UpdateExp set(String field, Object value) {
-        UpdateExp _exp = new UpdateExp();
-        _exp.__doPutOperator(IMongo.OPT.SET, field, value);
-        return _exp;
+        UpdateExp updateExp = new UpdateExp();
+        updateExp.putOperator(IMongo.Opt.SET, field, value);
+        return updateExp;
     }
 
     public static UpdateExp set(Map object) {
-        UpdateExp _exp = new UpdateExp();
-        _exp.__doPutOperator(IMongo.OPT.SET, object);
-        return _exp;
+        UpdateExp updateExp = new UpdateExp();
+        updateExp.putOperator(IMongo.Opt.SET, object);
+        return updateExp;
     }
 
     public static UpdateExp unset(String field) {
-        UpdateExp _exp = new UpdateExp();
-        _exp.__doPutOperator(IMongo.OPT.UNSET, field, "");
-        return _exp;
+        UpdateExp updateExp = new UpdateExp();
+        updateExp.putOperator(IMongo.Opt.UNSET, field, StringUtils.EMPTY);
+        return updateExp;
     }
 
     public static UpdateExp unset(Fields fields) {
-        UpdateExp _exp = new UpdateExp();
-        Map<String, String> _fields = new HashMap<String, String>();
-        for (String _field : fields.fields()) {
-            _fields.put(_field, "");
-        }
-        _exp.__doPutOperator(IMongo.OPT.UNSET, _fields);
-        return _exp;
+        UpdateExp updateExp = new UpdateExp();
+        Map<String, String> fieldMap = new HashMap<>(fields.fields().size());
+        fields.fields().forEach((field) -> fieldMap.put(field, StringUtils.EMPTY));
+        updateExp.putOperator(IMongo.Opt.UNSET, fieldMap);
+        return updateExp;
     }
 
     public static UpdateExp min(String field, Object value) {
-        UpdateExp _exp = new UpdateExp();
-        _exp.__doPutOperator(IMongo.OPT.MIN, field, value);
-        return _exp;
+        UpdateExp updateExp = new UpdateExp();
+        updateExp.putOperator(IMongo.Opt.MIN, field, value);
+        return updateExp;
     }
 
     public static UpdateExp min(Object value) {
-        UpdateExp _exp = new UpdateExp();
-        _exp.__doAddOperator(IMongo.OPT.MIN, value);
-        return _exp;
+        UpdateExp updateExp = new UpdateExp();
+        updateExp.addOperator(IMongo.Opt.MIN, value);
+        return updateExp;
     }
 
     public static UpdateExp max(String field, Object value) {
-        UpdateExp _exp = new UpdateExp();
-        _exp.__doPutOperator(IMongo.OPT.MAX, field, value);
-        return _exp;
+        UpdateExp updateExp = new UpdateExp();
+        updateExp.putOperator(IMongo.Opt.MAX, field, value);
+        return updateExp;
     }
 
     public static UpdateExp max(Object value) {
-        UpdateExp _exp = new UpdateExp();
-        _exp.__doAddOperator(IMongo.OPT.MAX, value);
-        return _exp;
+        UpdateExp updateExp = new UpdateExp();
+        updateExp.addOperator(IMongo.Opt.MAX, value);
+        return updateExp;
     }
 
     public static UpdateExp addToSet(String field, Object value) {
-        UpdateExp _exp = new UpdateExp();
-        _exp.__doPutOperator(IMongo.OPT.ADD_TO_SET, field, value);
-        return _exp;
+        UpdateExp updateExp = new UpdateExp();
+        updateExp.putOperator(IMongo.Opt.ADD_TO_SET, field, value);
+        return updateExp;
     }
 
     public static UpdateExp addToSet(Object value) {
-        UpdateExp _exp = new UpdateExp();
-        _exp.__doAddOperator(IMongo.OPT.ADD_TO_SET, value);
-        return _exp;
+        UpdateExp updateExp = new UpdateExp();
+        updateExp.addOperator(IMongo.Opt.ADD_TO_SET, value);
+        return updateExp;
     }
 
     public static UpdateExp each(Object value) {
-        UpdateExp _exp = new UpdateExp();
-        _exp.__doAddOperator(IMongo.OPT.EACH, value);
-        return _exp;
+        UpdateExp updateExp = new UpdateExp();
+        updateExp.addOperator(IMongo.Opt.EACH, value);
+        return updateExp;
     }
 
     public static UpdateExp sort(boolean asc) {
-        UpdateExp _exp = new UpdateExp();
-        _exp.__doAddOperator(IMongo.OPT.SORT, asc ? 1 : -1);
-        return _exp;
+        UpdateExp updateExp = new UpdateExp();
+        updateExp.addOperator(IMongo.Opt.SORT, asc ? 1 : -1);
+        return updateExp;
     }
 
     public static UpdateExp position(int position) {
-        UpdateExp _exp = new UpdateExp();
-        _exp.__doAddOperator(IMongo.OPT.POSITION, position);
-        return _exp;
+        UpdateExp updateExp = new UpdateExp();
+        updateExp.addOperator(IMongo.Opt.POSITION, position);
+        return updateExp;
     }
 
     public static UpdateExp isolated() {
-        UpdateExp _exp = new UpdateExp();
-        _exp.__doAddOperator(IMongo.OPT.ISOLATED, 1);
-        return _exp;
+        UpdateExp updateExp = new UpdateExp();
+        updateExp.addOperator(IMongo.Opt.ISOLATED, 1);
+        return updateExp;
     }
 
     public static UpdateExp push(String field, Object value) {
-        UpdateExp _exp = new UpdateExp();
-        _exp.__doPutOperator(IMongo.OPT.PUSH, field, value);
-        return _exp;
+        UpdateExp updateExp = new UpdateExp();
+        updateExp.putOperator(IMongo.Opt.PUSH, field, value);
+        return updateExp;
     }
 
     public static UpdateExp pushAll(String field, Params value) {
-        UpdateExp _exp = new UpdateExp();
-        _exp.__doPutOperator(IMongo.OPT.PUSH_ALL, field, value.toArray());
-        return _exp;
+        UpdateExp updateExp = new UpdateExp();
+        updateExp.putOperator(IMongo.Opt.PUSH_ALL, field, value.toArray());
+        return updateExp;
     }
 
     public static UpdateExp pull(String field, Query query) {
-        UpdateExp _exp = new UpdateExp();
-        _exp.__doPutOperator(IMongo.OPT.PULL, field, query.toBson());
-        return _exp;
+        UpdateExp updateExp = new UpdateExp();
+        updateExp.putOperator(IMongo.Opt.PULL, field, query.toBson());
+        return updateExp;
     }
 
     public static UpdateExp pullAll(String field, Query... queries) {
-        UpdateExp _exp = new UpdateExp();
-        List<BasicDBObject> _dbObj = new ArrayList<BasicDBObject>();
-        for (Query _query : queries) {
-            _dbObj.add(_query.toBson());
+        UpdateExp updateExp = new UpdateExp();
+        List<BasicDBObject> dbObjects = new ArrayList<>();
+        for (Query query : queries) {
+            dbObjects.add(query.toBson());
         }
-        _exp.__doPutOperator(IMongo.OPT.PULL_ALL, field, _dbObj);
-        return _exp;
+        updateExp.putOperator(IMongo.Opt.PULL_ALL, field, dbObjects);
+        return updateExp;
     }
 
     public static UpdateExp pop(String field, boolean first) {
-        UpdateExp _exp = new UpdateExp();
-        _exp.__doPutOperator(IMongo.OPT.POP, field, first ? -1 : 1);
-        return _exp;
+        UpdateExp updateExp = new UpdateExp();
+        updateExp.putOperator(IMongo.Opt.POP, field, first ? -1 : 1);
+        return updateExp;
     }
 }

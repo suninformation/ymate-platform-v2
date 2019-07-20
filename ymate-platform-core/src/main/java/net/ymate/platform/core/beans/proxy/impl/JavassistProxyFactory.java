@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2018 the original author or authors.
+ * Copyright 2007-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,44 +15,36 @@
  */
 package net.ymate.platform.core.beans.proxy.impl;
 
-import javassist.util.proxy.MethodHandler;
+import javassist.util.proxy.Proxy;
 import javassist.util.proxy.ProxyFactory;
-import javassist.util.proxy.ProxyObject;
 import net.ymate.platform.core.beans.proxy.AbstractProxyChain;
 import net.ymate.platform.core.beans.proxy.AbstractProxyFactory;
 import net.ymate.platform.core.beans.proxy.IProxy;
 
-import java.lang.reflect.Method;
 import java.util.List;
 
 /**
  * @author 刘镇 (suninformation@163.com) on 2018/11/8 3:01 AM
- * @version 1.0
  * @since 2.0.6
  */
 public class JavassistProxyFactory extends AbstractProxyFactory {
 
     @Override
     @SuppressWarnings("unchecked")
-    public <T> T createProxy(final Class<?> targetClass, final List<IProxy> proxies) {
+    public <T> T createProxy(Class<?> targetClass, List<IProxy> proxies) {
         ProxyFactory factory = new ProxyFactory();
         factory.setSuperclass(targetClass);
         Class<?> clazz = factory.createClass();
         try {
             Object targetObj = clazz.newInstance();
-            ((ProxyObject) targetObj).setHandler(new MethodHandler() {
+            ((Proxy) targetObj).setHandler((self, thisMethod, proceed, args) -> new AbstractProxyChain(JavassistProxyFactory.this, targetClass, self, thisMethod, args, proxies) {
                 @Override
-                public Object invoke(final Object self, Method thisMethod, final Method proceed, final Object[] args) throws Throwable {
-                    return new AbstractProxyChain(JavassistProxyFactory.this, targetClass, self, thisMethod, args, proxies) {
-                        @Override
-                        protected Object doInvoke() throws Throwable {
-                            return proceed.invoke(getTargetObject(), getMethodParams());
-                        }
-                    }.doProxyChain();
+                protected Object doInvoke() throws Throwable {
+                    return proceed.invoke(getTargetObject(), getMethodParams());
                 }
-            });
+            }.doProxyChain());
             return (T) targetObj;
-        } catch (Exception e) {
+        } catch (IllegalAccessException | InstantiationException e) {
             throw new Error(e);
         }
     }

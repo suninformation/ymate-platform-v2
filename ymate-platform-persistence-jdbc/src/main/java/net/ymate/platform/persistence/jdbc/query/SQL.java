@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2017 the original author or authors.
+ * Copyright 2007-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,19 +15,18 @@
  */
 package net.ymate.platform.persistence.jdbc.query;
 
-import net.ymate.platform.persistence.Params;
+import net.ymate.platform.core.persistence.Params;
 
 /**
  * SQL语句及参数对象
  *
  * @author 刘镇 (suninformation@163.com) on 15/5/7 上午8:25
- * @version 1.0
  */
 public final class SQL {
 
-    private final String __sql;
+    private final String sql;
 
-    private final Params __params;
+    private final Params params;
 
     public static SQL create(String sql) {
         return new SQL(sql);
@@ -50,30 +49,30 @@ public final class SQL {
     }
 
     private SQL(String sql) {
-        this.__params = Params.create();
-        this.__sql = sql;
+        this.params = Params.create();
+        this.sql = sql;
     }
 
     public String getSQL() {
-        return this.__sql;
+        return this.sql;
     }
 
     public SQL param(Object param) {
-        this.__params.add(param);
+        this.params.add(param);
         return this;
     }
 
     public SQL param(Params params) {
-        this.__params.add(params);
+        this.params.add(params);
         return this;
     }
 
     public Params params() {
-        return this.__params;
+        return this.params;
     }
 
     @Override
     public String toString() {
-        return this.__sql;
+        return this.sql;
     }
 }

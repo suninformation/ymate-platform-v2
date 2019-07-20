@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2017 the original author or authors.
+ * Copyright 2007-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,45 +24,44 @@ import org.bson.BSONObject;
 
 /**
  * @author 刘镇 (suninformation@163.com) on 15/11/28 下午3:08
- * @version 1.0
  */
 public class ProjectionExp extends AbstractOperator {
 
     public static ProjectionExp elemMatch(IOperator... operators) {
-        ProjectionExp _exp = new ProjectionExp();
-        BasicDBObject _dbObj = new BasicDBObject();
-        for (IOperator _opt : operators) {
-            _dbObj.putAll((BSONObject) _opt.toBson());
+        ProjectionExp projectionExp = new ProjectionExp();
+        BasicDBObject dbObject = new BasicDBObject();
+        for (IOperator operator : operators) {
+            dbObject.putAll((BSONObject) operator.toBson());
         }
-        _exp.__doAddOperator(IMongo.OPT.ELEM_MATCH, _dbObj);
-        return _exp;
+        projectionExp.addOperator(IMongo.Opt.ELEM_MATCH, dbObject);
+        return projectionExp;
     }
 
     public static ProjectionExp elemMatch(Query... queries) {
-        ProjectionExp _exp = new ProjectionExp();
-        BasicDBObject _dbObj = new BasicDBObject();
-        for (Query _query : queries) {
-            _dbObj.putAll((BSONObject) _query.toBson());
+        ProjectionExp projectionExp = new ProjectionExp();
+        BasicDBObject dbObject = new BasicDBObject();
+        for (Query query : queries) {
+            dbObject.putAll((BSONObject) query.toBson());
         }
-        _exp.__doAddOperator(IMongo.OPT.ELEM_MATCH, _dbObj);
-        return _exp;
+        projectionExp.addOperator(IMongo.Opt.ELEM_MATCH, dbObject);
+        return projectionExp;
     }
 
     public static ProjectionExp meta(String meta) {
-        ProjectionExp _exp = new ProjectionExp();
-        _exp.__doAddOperator(IMongo.OPT.META, meta);
-        return _exp;
+        ProjectionExp projectionExp = new ProjectionExp();
+        projectionExp.addOperator(IMongo.Opt.META, meta);
+        return projectionExp;
     }
 
     public static ProjectionExp slice(int slice) {
-        ProjectionExp _exp = new ProjectionExp();
-        _exp.__doAddOperator(IMongo.OPT.SLICE, slice);
-        return _exp;
+        ProjectionExp projectionExp = new ProjectionExp();
+        projectionExp.addOperator(IMongo.Opt.SLICE, slice);
+        return projectionExp;
     }
 
     public static ProjectionExp slice(int skip, int limit) {
-        ProjectionExp _exp = new ProjectionExp();
-        _exp.__doAddOperator(IMongo.OPT.SLICE, new int[]{skip, limit});
-        return _exp;
+        ProjectionExp projectionExp = new ProjectionExp();
+        projectionExp.addOperator(IMongo.Opt.SLICE, new int[]{skip, limit});
+        return projectionExp;
     }
 }

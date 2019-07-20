@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2016 the original author or authors.
+ * Copyright 2007-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,10 +16,10 @@
 package net.ymate.platform.webmvc.util;
 
 import com.alibaba.fastjson.JSONObject;
-import net.ymate.platform.core.lang.BlurObject;
-import net.ymate.platform.core.util.ClassUtils;
+import net.ymate.platform.commons.lang.BlurObject;
+import net.ymate.platform.commons.util.ClassUtils;
 import net.ymate.platform.webmvc.IWebMvc;
-import net.ymate.platform.webmvc.IWebMvcModuleCfg;
+import net.ymate.platform.webmvc.IWebMvcConfig;
 import net.ymate.platform.webmvc.base.Type;
 import net.ymate.platform.webmvc.context.WebContext;
 import net.ymate.platform.webmvc.view.IView;
@@ -28,8 +28,9 @@ import net.ymate.platform.webmvc.view.impl.HttpStatusView;
 import net.ymate.platform.webmvc.view.impl.JsonView;
 import net.ymate.platform.webmvc.view.impl.JspView;
 import net.ymate.platform.webmvc.view.impl.TextView;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.util.Collection;
 import java.util.HashMap;
@@ -37,7 +38,6 @@ import java.util.Map;
 
 /**
  * @author 刘镇 (suninformation@163.com) on 15/8/18 下午2:18
- * @version 1.0
  * @since 2.0.6
  */
 public final class WebResult {
@@ -63,236 +63,220 @@ public final class WebResult {
     }
 
     public static WebResult create(IWebMvc owner, String resourceName, ErrorCode errorCode) {
-        String _msg = null;
+        String msg = null;
         if (StringUtils.isNotBlank(errorCode.getI18nKey())) {
-            _msg = WebUtils.i18nStr(owner, resourceName, errorCode.getI18nKey(), null);
+            msg = WebUtils.i18nStr(owner, resourceName, errorCode.getI18nKey(), null);
         }
-        if (StringUtils.isBlank(_msg)) {
-            _msg = WebUtils.errorCodeI18n(owner, resourceName, errorCode.getCode(), errorCode.getMessage());
+        if (StringUtils.isBlank(msg)) {
+            msg = WebUtils.errorCodeI18n(owner, resourceName, errorCode.getCode(), errorCode.getMessage());
         }
-        WebResult _result = new WebResult(errorCode.getCode()).msg(_msg);
+        WebResult result = new WebResult(errorCode.getCode()).msg(msg);
         if (!errorCode.getAttributes().isEmpty()) {
-            _result.attrs(errorCode.getAttributes());
+            result.attrs(errorCode.getAttributes());
         }
-        return _result;
+        return result;
     }
 
     public static WebResult succeed() {
         return new WebResult(ErrorCode.SUCCEED);
     }
 
-    private Integer __code;
+    private Integer code;
 
-    private String __msg;
+    private String msg;
 
-    private Map<String, Object> __data = new HashMap<String, Object>();
+    private Map<String, Object> data = new HashMap<>();
 
-    private Map<String, Object> __attrs = new HashMap<String, Object>();
+    private Map<String, Object> attrs = new HashMap<>();
 
-    private boolean __withContentType;
+    private boolean withContentType;
 
-    private boolean __keepNullValue;
+    private boolean keepNullValue;
 
-    private boolean __quoteFieldNames;
+    private boolean quoteFieldNames;
 
-    private boolean __useSingleQuotes;
-
-    private IDateFilter __dataFilter;
+    private boolean useSingleQuotes;
 
     private WebResult() {
     }
 
     private WebResult(int code) {
-        __code = code;
+        this.code = code;
     }
 
     public int code() {
-        return __code;
+        return code;
     }
 
     public WebResult code(Integer code) {
-        __code = code;
+        this.code = code;
         return this;
     }
 
     public String msg() {
-        return StringUtils.trimToEmpty(__msg);
+        return StringUtils.trimToEmpty(msg);
     }
 
     public WebResult msg(String msg) {
-        __msg = msg;
+        this.msg = msg;
         return this;
     }
 
     public WebResult data(Object data) {
-        __attrs.put(Type.Const.PARAM_DATA, data);
+        attrs.put(Type.Const.PARAM_DATA, data);
         return this;
     }
 
     @SuppressWarnings("unchecked")
     public <T> T data() {
-        return (T) __attrs.get(Type.Const.PARAM_DATA);
+        return (T) attrs.get(Type.Const.PARAM_DATA);
     }
 
     public WebResult attrs(Map<String, Object> attrs) {
-        __attrs = attrs;
+        this.attrs = attrs;
         return this;
     }
 
     public Map<String, Object> attrs() {
-        return __attrs;
+        return attrs;
     }
 
     @SuppressWarnings("unchecked")
     public <T> T dataAttr(String dataKey) {
-        return (T) __data.get(dataKey);
+        return (T) data.get(dataKey);
     }
 
     public WebResult dataAttr(String dataKey, Object dataValue) {
-        __data.put(dataKey, dataValue);
+        data.put(dataKey, dataValue);
         return this;
     }
 
     @SuppressWarnings("unchecked")
     public <T> T attr(String attrKey) {
-        return (T) __attrs.get(attrKey);
+        return (T) attrs.get(attrKey);
     }
 
     public WebResult attr(String attrKey, Object attrValue) {
-        __attrs.put(attrKey, attrValue);
-        return this;
-    }
-
-    public WebResult dataFilter(IDateFilter dateFilter) {
-        __dataFilter = dateFilter;
+        attrs.put(attrKey, attrValue);
         return this;
     }
 
     public WebResult withContentType() {
-        __withContentType = true;
+        withContentType = true;
         return this;
     }
 
     public WebResult keepNullValue() {
-        __keepNullValue = true;
+        keepNullValue = true;
         return this;
     }
 
     public WebResult quoteFieldNames() {
-        __quoteFieldNames = true;
+        quoteFieldNames = true;
         return this;
     }
 
     public WebResult useSingleQuotes() {
-        __useSingleQuotes = true;
+        useSingleQuotes = true;
         return this;
     }
 
-    private Map<String, Object> __doFilter(boolean attr, Map<String, Object> targetMap) {
-        if (__dataFilter != null && targetMap != null && !targetMap.isEmpty()) {
-            Map<String, Object> _filtered = new HashMap<String, Object>();
-            for (Map.Entry<String, Object> _entry : __data.entrySet()) {
-                Object _item = __dataFilter.filter(attr, _entry.getKey(), _entry.getValue());
-                if (_item != null) {
-                    _filtered.put(_entry.getKey(), _entry.getValue());
+    private Map<String, Object> doFilter(IDateFilter dateFilter, boolean attr, Map<String, Object> targetMap) {
+        if (dateFilter != null && targetMap != null && !targetMap.isEmpty()) {
+            Map<String, Object> filtered = new HashMap<>(data.size());
+            data.forEach((key, value) -> {
+                Object item = dateFilter.filter(attr, key, value);
+                if (item != null) {
+                    filtered.put(key, value);
                 }
-            }
-            return _filtered;
+            });
+            return filtered;
         }
         return targetMap;
     }
 
-    public WebResult doFilter() {
-        __data = __doFilter(true, __data);
-        __attrs = __doFilter(false, __attrs);
+    public WebResult dataFilter(IDateFilter dateFilter) {
+        data = doFilter(dateFilter, true, data);
+        attrs = doFilter(dateFilter, false, attrs);
         return this;
     }
 
-    public IView toJSON() {
-        return toJSON(null);
+    public IView toJsonView() {
+        return toJsonView(null);
     }
 
-    public IView toJSON(String callback) {
-        JSONObject _jsonObj = new JSONObject();
-        if (__code != null) {
-            _jsonObj.put(Type.Const.PARAM_RET, __code);
+    public IView toJsonView(String callback) {
+        JSONObject jsonObj = new JSONObject();
+        if (code != null) {
+            jsonObj.put(Type.Const.PARAM_RET, code);
         }
-        if (StringUtils.isNotBlank(__msg)) {
-            _jsonObj.put(Type.Const.PARAM_MSG, __msg);
+        if (StringUtils.isNotBlank(msg)) {
+            jsonObj.put(Type.Const.PARAM_MSG, msg);
         }
-        if (__data != null && !__data.isEmpty()) {
-            _jsonObj.put(Type.Const.PARAM_DATA, __data);
+        if (data != null && !data.isEmpty()) {
+            jsonObj.put(Type.Const.PARAM_DATA, data);
         }
-        if (__attrs != null && !__attrs.isEmpty()) {
-            _jsonObj.putAll(__attrs);
+        if (attrs != null && !attrs.isEmpty()) {
+            jsonObj.putAll(attrs);
         }
         //
-        JsonView _view = new JsonView(_jsonObj).withJsonCallback(callback);
-        if (__quoteFieldNames) {
-            _view.quoteFieldNames();
-            if (__useSingleQuotes) {
-                _view.useSingleQuotes();
+        JsonView jsonView = new JsonView(jsonObj).withJsonCallback(callback);
+        if (quoteFieldNames) {
+            jsonView.quoteFieldNames();
+            if (useSingleQuotes) {
+                jsonView.useSingleQuotes();
             }
         }
-        if (__keepNullValue) {
-            _view.keepNullValue();
+        if (keepNullValue) {
+            jsonView.keepNullValue();
         }
-        if (__withContentType) {
-            _view.withContentType();
+        if (withContentType) {
+            jsonView.withContentType();
         }
-        return _view;
+        return jsonView;
+    }
+
+    public IView toXML() {
+        return toXML(false);
     }
 
     public IView toXML(boolean cdata) {
-        StringBuilder _content = new StringBuilder("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
-        _content.append("<xml><ret>").append(__code).append("</ret>");
-        if (StringUtils.isNotBlank(__msg)) {
+        StringBuilder content = new StringBuilder("<?xml version=\"1.0\" encoding=\"UTF-8\"?><xml>")
+                .append("<ret>").append(code).append("</ret>");
+        if (StringUtils.isNotBlank(msg)) {
             if (cdata) {
-                _content.append("<msg><![CDATA[").append(__msg).append("]]></msg>");
+                content.append("<msg><![CDATA[").append(msg).append("]]></msg>");
             } else {
-                _content.append("<msg>").append(__msg).append("</msg>");
+                content.append("<msg>").append(msg).append("</msg>");
             }
         }
-        if (__data != null && !__data.isEmpty()) {
-            _content.append("<data>");
-            for (Map.Entry<String, Object> _entry : __data.entrySet()) {
-                __doAppendContent(_content, cdata, _entry.getKey(), _entry.getValue());
-            }
-            _content.append("</data>");
+        if (data != null && !data.isEmpty()) {
+            content.append("<data>");
+            data.forEach((key, value) -> doContentAppend(content, cdata, key, value));
+            content.append("</data>");
         }
-        if (__attrs != null && !__attrs.isEmpty()) {
-            for (Map.Entry<String, Object> _entry : __attrs.entrySet()) {
-                __doAppendContent(_content, cdata, _entry.getKey(), _entry.getValue());
-            }
+        if (attrs != null && !attrs.isEmpty()) {
+            attrs.forEach((key, value) -> doContentAppend(content, cdata, key, value));
         }
-        _content.append("</xml>");
-        TextView _view = View.textView(_content.toString());
-        if (__withContentType) {
-            _view.setContentType("application/xml");
+        content.append("</xml>");
+        //
+        TextView textView = View.textView(content.toString());
+        if (withContentType) {
+            textView.setContentType("application/xml");
         }
-        return _view;
+        return textView;
     }
 
     @SuppressWarnings("unchecked")
-    private void __doAppendContent(StringBuilder content, boolean cdata, String key, Object value) {
+    private void doContentAppend(StringBuilder content, boolean cdata, String key, Object value) {
         if (value != null) {
             content.append("<").append(key).append(">");
             if (value instanceof Number || int.class.isAssignableFrom(value.getClass()) || long.class.isAssignableFrom(value.getClass()) || float.class.isAssignableFrom(value.getClass()) || double.class.isAssignableFrom(value.getClass())) {
                 content.append(value);
             } else if (value instanceof Map) {
-                Map<String, Object> _map = (Map<String, Object>) value;
-                if (!_map.isEmpty()) {
-                    for (Map.Entry<String, Object> _entry : _map.entrySet()) {
-                        __doAppendContent(content, cdata, _entry.getKey(), _entry.getValue());
-                    }
-                }
+                ((Map<String, Object>) value).forEach((key1, value1) -> doContentAppend(content, cdata, key1, value1));
             } else if (value instanceof Collection) {
-                Collection _list = (Collection) value;
-                if (!_list.isEmpty()) {
-                    for (Object _item : _list) {
-                        __doAppendContent(content, cdata, "item", _item);
-                    }
-                }
+                ((Collection) value).forEach((item) -> doContentAppend(content, cdata, "item", item));
             } else if (value instanceof Boolean || value instanceof String || boolean.class.isAssignableFrom(value.getClass())) {
                 if (cdata) {
                     content.append("<![CDATA[").append(value).append("]]>");
@@ -300,19 +284,10 @@ public final class WebResult {
                     content.append(value);
                 }
             } else {
-                Map<String, Object> _map = ClassUtils.wrapper(value).toMap();
-                if (!_map.isEmpty()) {
-                    for (Map.Entry<String, Object> _entry : _map.entrySet()) {
-                        __doAppendContent(content, cdata, _entry.getKey(), _entry.getValue());
-                    }
-                }
+                ClassUtils.wrapper(value).toMap().forEach((key1, value1) -> doContentAppend(content, cdata, key1, value1));
             }
             content.append("</").append(key).append(">");
         }
-    }
-
-    public IView toXML() {
-        return toXML(false);
     }
 
     public static IView formatView(WebResult result) {
@@ -339,43 +314,44 @@ public final class WebResult {
     }
 
     public static IView formatView(String path, String paramFormat, String defaultFormat, String paramCallback, WebResult result) {
-        IView _view = null;
-        String _format = StringUtils.defaultIfBlank(WebContext.getRequest().getParameter(paramFormat), StringUtils.trimToNull(defaultFormat));
-        if (_format != null && result != null) {
-            if (BlurObject.bind(WebContext.getContext().getOwner().getOwner().getConfig().getParam(IWebMvcModuleCfg.PARAMS_ERROR_WITH_CONTENT_TYPE)).toBooleanValue()) {
+        IView returnView = null;
+        if (result != null) {
+            boolean flag = false;
+            HttpServletRequest request = WebContext.getRequest();
+            if (WebUtils.isJsonAccepted(request, paramFormat)) {
+                returnView = result.toJsonView(StringUtils.trimToNull(WebContext.getRequest().getParameter(paramCallback)));
+                flag = true;
+            } else if (WebUtils.isXmlAccepted(request, paramFormat)) {
+                returnView = result.toXML(true);
+                flag = true;
+            }
+            if (flag || BlurObject.bind(WebUtils.getOwner().getOwner().getParam(IWebMvcConfig.PARAMS_ERROR_WITH_CONTENT_TYPE)).toBooleanValue()) {
                 result.withContentType();
             }
-            if (Type.Const.FORMAT_JSON.equalsIgnoreCase(_format)) {
-                _view = result.toJSON(StringUtils.trimToNull(WebContext.getRequest().getParameter(paramCallback)));
-            } else if (Type.Const.FORMAT_XML.equalsIgnoreCase(_format)) {
-                _view = result.toXML(true);
-            }
         }
-        if (_view == null) {
+        if (returnView == null) {
             if (StringUtils.isNotBlank(path)) {
-                _view = new JspView(path);
+                returnView = new JspView(path);
                 if (result != null) {
-                    _view.addAttribute(Type.Const.PARAM_RET, result.code());
+                    returnView.addAttribute(Type.Const.PARAM_RET, result.code());
                     //
                     if (StringUtils.isNotBlank(result.msg())) {
-                        _view.addAttribute(Type.Const.PARAM_MSG, result.msg());
+                        returnView.addAttribute(Type.Const.PARAM_MSG, result.msg());
                     }
                     if (result.data() != null) {
-                        _view.addAttribute(Type.Const.PARAM_DATA, result.data());
+                        returnView.addAttribute(Type.Const.PARAM_DATA, result.data());
                     }
-                    for (Map.Entry<String, Object> _entry : result.attrs().entrySet()) {
-                        _view.addAttribute(_entry.getKey(), _entry.getValue());
+                    for (Map.Entry<String, Object> entry : result.attrs().entrySet()) {
+                        returnView.addAttribute(entry.getKey(), entry.getValue());
                     }
                 }
+            } else if (result != null && StringUtils.isNotBlank(result.msg())) {
+                returnView = new HttpStatusView(HttpServletResponse.SC_BAD_REQUEST, result.msg());
             } else {
-                if (result != null && StringUtils.isNotBlank(result.msg())) {
-                    _view = new HttpStatusView(HttpServletResponse.SC_BAD_REQUEST, result.msg());
-                } else {
-                    _view = new HttpStatusView(HttpServletResponse.SC_BAD_REQUEST);
-                }
+                returnView = new HttpStatusView(HttpServletResponse.SC_BAD_REQUEST);
             }
         }
-        return _view;
+        return returnView;
     }
 
     /**
@@ -384,6 +360,8 @@ public final class WebResult {
     public interface IDateFilter {
 
         /**
+         * 执行数据过滤
+         *
          * @param dataAttr  当前数据是否为data属性
          * @param itemName  属性名称
          * @param itemValue 属性值对象

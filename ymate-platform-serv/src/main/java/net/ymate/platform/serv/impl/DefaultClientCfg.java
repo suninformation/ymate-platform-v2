@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2017 the original author or authors.
+ * Copyright 2007-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,11 +15,8 @@
  */
 package net.ymate.platform.serv.impl;
 
-import net.ymate.platform.core.lang.BlurObject;
-import net.ymate.platform.core.util.RuntimeUtils;
 import net.ymate.platform.serv.IClientCfg;
-import net.ymate.platform.serv.IServ;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -27,173 +24,163 @@ import java.util.Map;
 
 /**
  * @author 刘镇 (suninformation@163.com) on 15/11/6 下午6:50
- * @version 1.0
  */
-public class DefaultClientCfg implements IClientCfg {
+public final class DefaultClientCfg implements IClientCfg {
 
-    public static Builder create() {
+    public static Builder builder() {
         return new Builder();
     }
 
-    private String __clientName;
+    private String clientName;
 
-    private String __remoteHost;
+    private String remoteHost;
 
-    private int __port;
+    private int port;
 
-    private String __charset;
+    private String charset;
 
-    private int __executorCount;
+    private int executorCount;
 
-    private int __connectionTimeout;
+    private int connectionTimeout;
 
-    private int __bufferSize;
+    private int bufferSize;
 
-    private int __reconnectionInterval;
+    private int reconnectionInterval;
 
-    private int __heartbeatInterval;
+    private int heartbeatInterval;
 
-    private Map<String, String> __params;
+    private final Map<String, String> params = new HashMap<>();
 
-    public DefaultClientCfg(Map<String, String> clientCfgs, String clientName) {
-        __clientName = StringUtils.defaultIfBlank(clientName, IServ.Const.DEFAULT_NAME);
-        __remoteHost = StringUtils.defaultIfBlank(clientCfgs.get(IServ.Const.HOST), IServ.Const.DEFAULT_HOST);
-        __port = BlurObject.bind(StringUtils.defaultIfBlank(clientCfgs.get(IServ.Const.PORT), String.valueOf(IServ.Const.DEFAULT_PORT))).toIntValue();
-        __charset = StringUtils.defaultIfBlank(clientCfgs.get(IServ.Const.CHARSET), IServ.Const.DEFAULT_CHARSET);
-        __bufferSize = BlurObject.bind(StringUtils.defaultIfBlank(clientCfgs.get(IServ.Const.BUFFER_SIZE), String.valueOf(IServ.Const.DEFAULT_BUFFER_SIZE))).toIntValue();
-        __executorCount = BlurObject.bind(clientCfgs.get(IServ.Const.EXECUTOR_COUNT)).toIntValue();
-        if (__executorCount <= 0) {
-            __executorCount = Runtime.getRuntime().availableProcessors();
-        }
-        __connectionTimeout = BlurObject.bind(StringUtils.defaultIfBlank(clientCfgs.get(IServ.Const.CONNECTION_TIMEOUT), String.valueOf(IServ.Const.DEFAULT_CONNECTION_TIMEOUT))).toIntValue();
-        __reconnectionInterval = BlurObject.bind(StringUtils.defaultIfBlank(clientCfgs.get(IServ.Const.RECONNECTION_INTERVAL), String.valueOf(IServ.Const.DEFAULT_RECONNECTION_INTERVAL))).toIntValue();
-        __heartbeatInterval = BlurObject.bind(StringUtils.defaultIfBlank(clientCfgs.get(IServ.Const.HEARTBEAT_INTERVAL), String.valueOf(IServ.Const.DEFAULT_HEARTBEAT_INTERVAL))).toIntValue();
-        //
-        __params = RuntimeUtils.keyStartsWith(clientCfgs, IServ.Const.PARAMS_PREFIX);
+    private DefaultClientCfg() {
     }
 
     @Override
     public String getClientName() {
-        return __clientName;
+        return clientName;
     }
 
     @Override
     public String getRemoteHost() {
-        return __remoteHost;
+        return remoteHost;
     }
 
     @Override
     public int getPort() {
-        return __port;
+        return port;
     }
 
     @Override
     public String getCharset() {
-        return __charset;
+        return charset;
     }
 
     @Override
     public int getBufferSize() {
-        return __bufferSize;
+        return bufferSize;
     }
 
     @Override
     public int getExecutorCount() {
-        return __executorCount;
+        return executorCount;
     }
 
     @Override
     public int getConnectionTimeout() {
-        return __connectionTimeout;
+        return connectionTimeout;
     }
 
     @Override
     public int getReconnectionInterval() {
-        return __reconnectionInterval;
+        return reconnectionInterval;
     }
 
     @Override
     public int getHeartbeatInterval() {
-        return __heartbeatInterval;
+        return heartbeatInterval;
     }
 
     @Override
     public Map<String, String> getParams() {
-        return Collections.unmodifiableMap(__params);
+        return Collections.unmodifiableMap(params);
     }
 
     @Override
     public String getParam(String key) {
-        return __params.get(key);
+        if (StringUtils.isBlank(key)) {
+            return null;
+        }
+        return params.get(key);
     }
 
-    public static class Builder {
+    @Override
+    public String getParam(String key, String defaultValue) {
+        return StringUtils.defaultIfBlank(getParam(key), defaultValue);
+    }
 
-        private String clientName;
+    public static final class Builder {
 
-        Map<String, String> params = new HashMap<String, String>();
+        private final DefaultClientCfg clientCfg = new DefaultClientCfg();
+
+        private Builder() {
+        }
 
         public Builder clientName(String clientName) {
-            this.clientName = clientName;
+            clientCfg.clientName = clientName;
             return this;
         }
 
-        public Builder remoteHost(String serverHost) {
-            params.put(IServ.Const.HOST, serverHost);
+        public Builder remoteHost(String remoteHost) {
+            clientCfg.remoteHost = remoteHost;
             return this;
         }
 
         public Builder port(int port) {
-            params.put(IServ.Const.PORT, String.valueOf(port));
+            clientCfg.port = port;
             return this;
         }
 
         public Builder charset(String charset) {
-            params.put(IServ.Const.CHARSET, charset);
+            clientCfg.charset = charset;
             return this;
         }
 
         public Builder bufferSize(int bufferSize) {
-            params.put(IServ.Const.BUFFER_SIZE, String.valueOf(bufferSize));
+            clientCfg.bufferSize = bufferSize;
             return this;
         }
 
         public Builder executorCount(int executorCount) {
-            params.put(IServ.Const.EXECUTOR_COUNT, String.valueOf(executorCount));
+            clientCfg.executorCount = executorCount;
             return this;
         }
 
-        public Builder connectionTimeout(int connectionTime) {
-            params.put(IServ.Const.CONNECTION_TIMEOUT, String.valueOf(connectionTime));
+        public Builder connectionTimeout(int connectionTimeout) {
+            clientCfg.connectionTimeout = connectionTimeout;
             return this;
         }
 
         public Builder reconnectionInterval(int reconnectionInterval) {
-            params.put(IServ.Const.RECONNECTION_INTERVAL, String.valueOf(reconnectionInterval));
+            clientCfg.reconnectionInterval = reconnectionInterval;
             return this;
         }
 
         public Builder heartbeatInterval(int heartbeatInterval) {
-            params.put(IServ.Const.HEARTBEAT_INTERVAL, String.valueOf(heartbeatInterval));
+            clientCfg.heartbeatInterval = heartbeatInterval;
             return this;
         }
 
         public Builder params(String key, String value) {
-            if (StringUtils.isNotBlank(key)) {
-                params.put(IServ.Const.PARAMS_PREFIX + "." + key, value);
-            }
+            clientCfg.params.put(key, value);
             return this;
         }
 
         public Builder params(Map<String, String> params) {
-            for (Map.Entry<String, String> param : params.entrySet()) {
-                params.put(IServ.Const.PARAMS_PREFIX + "." + param.getKey(), param.getValue());
-            }
+            clientCfg.params.putAll(params);
             return this;
         }
 
         public IClientCfg build() {
-            return new DefaultClientCfg(params, clientName);
+            return clientCfg;
         }
     }
 }

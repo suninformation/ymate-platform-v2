@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2017 the original author or authors.
+ * Copyright 2007-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,7 @@
 package net.ymate.platform.persistence.mongodb.expression;
 
 import com.mongodb.BasicDBObject;
-import net.ymate.platform.persistence.Params;
+import net.ymate.platform.core.persistence.Params;
 import net.ymate.platform.persistence.mongodb.AbstractOperator;
 import net.ymate.platform.persistence.mongodb.IMongo;
 import net.ymate.platform.persistence.mongodb.IOperator;
@@ -25,45 +25,44 @@ import org.bson.BSONObject;
 
 /**
  * @author 刘镇 (suninformation@163.com) on 15/11/28 下午3:03
- * @version 1.0
  */
 public class ArrayExp extends AbstractOperator {
 
     public static ArrayExp all(Params params) {
-        ArrayExp _exp = new ArrayExp();
-        _exp.__doAddOperator(IMongo.OPT.ALL, params.toArray());
-        return _exp;
+        ArrayExp arrayExp = new ArrayExp();
+        arrayExp.addOperator(IMongo.Opt.ALL, params.toArray());
+        return arrayExp;
     }
 
     public static ArrayExp elemMatch(IOperator... operators) {
-        ArrayExp _exp = new ArrayExp();
-        BasicDBObject _dbObj = new BasicDBObject();
-        for (IOperator _opt : operators) {
-            _dbObj.putAll((BSONObject) _opt.toBson());
+        ArrayExp arrayExp = new ArrayExp();
+        BasicDBObject dbObject = new BasicDBObject();
+        for (IOperator operator : operators) {
+            dbObject.putAll((BSONObject) operator.toBson());
         }
-        _exp.__doAddOperator(IMongo.OPT.ELEM_MATCH, _dbObj);
-        return _exp;
+        arrayExp.addOperator(IMongo.Opt.ELEM_MATCH, dbObject);
+        return arrayExp;
     }
 
     public static ArrayExp elemMatch(Query... queries) {
-        ArrayExp _exp = new ArrayExp();
-        BasicDBObject _dbObj = new BasicDBObject();
-        for (Query _query : queries) {
-            _dbObj.putAll((BSONObject) _query.toBson());
+        ArrayExp arrayExp = new ArrayExp();
+        BasicDBObject dbObject = new BasicDBObject();
+        for (Query query : queries) {
+            dbObject.putAll((BSONObject) query.toBson());
         }
-        _exp.__doAddOperator(IMongo.OPT.ELEM_MATCH, _dbObj);
-        return _exp;
+        arrayExp.addOperator(IMongo.Opt.ELEM_MATCH, dbObject);
+        return arrayExp;
     }
 
     public static ArrayExp size(int size) {
-        ArrayExp _exp = new ArrayExp();
-        _exp.__doAddOperator(IMongo.OPT.SIZE, size);
-        return _exp;
+        ArrayExp arrayExp = new ArrayExp();
+        arrayExp.addOperator(IMongo.Opt.SIZE, size);
+        return arrayExp;
     }
 
     public static ArrayExp size(Object size) {
-        ArrayExp _exp = new ArrayExp();
-        _exp.__doAddOperator(IMongo.OPT.SIZE, size);
-        return _exp;
+        ArrayExp arrayExp = new ArrayExp();
+        arrayExp.addOperator(IMongo.Opt.SIZE, size);
+        return arrayExp;
     }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2017 the original author or authors.
+ * Copyright 2007-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,72 +15,102 @@
  */
 package net.ymate.platform.persistence.jdbc.query;
 
-import net.ymate.platform.persistence.Fields;
-import net.ymate.platform.persistence.IFunction;
-import net.ymate.platform.persistence.Params;
-import org.apache.commons.lang.StringUtils;
+import net.ymate.platform.core.persistence.Fields;
+import net.ymate.platform.core.persistence.IFunction;
+import net.ymate.platform.core.persistence.Params;
+import net.ymate.platform.persistence.jdbc.IDatabase;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * 条件对象
  *
  * @author 刘镇 (suninformation@163.com) on 15/5/9 下午8:12
- * @version 1.0
  */
 public final class Cond extends Query<Cond> {
 
+    /**
+     * 条件操作符枚举
+     */
     public enum OPT {
+
+        /**
+         * 等于
+         */
         EQ("="),
+
+        /**
+         * 不等于
+         */
         NOT_EQ("!="),
+
+        /**
+         * 小于
+         */
         LT("<"),
+
+        /**
+         * 大于
+         */
         GT(">"),
+
+        /**
+         * 小于等于
+         */
         LT_EQ("<="),
+
+        /**
+         * 大于等于
+         */
         GT_EQ(">="),
+
+        /**
+         * 模糊
+         */
         LIKE("LIKE");
 
-        private final String __opt;
+        private final String opt;
 
         OPT(String opt) {
-            this.__opt = opt;
+            this.opt = opt;
         }
 
         @Override
         public String toString() {
-            return __opt;
+            return opt;
         }
     }
 
-    private final StringBuilder __condSB;
+    private final StringBuilder condBuilder = new StringBuilder();
 
     /**
      * SQL参数集合
      */
-    private final Params __params;
+    private final Params params = Params.create();
 
-    public static Cond create() {
-        return new Cond();
+    public static Cond create(IDatabase owner) {
+        return new Cond(owner);
     }
 
-    private Cond() {
-        __condSB = new StringBuilder();
-        __params = Params.create();
+    private Cond(IDatabase owner) {
+        super(owner);
     }
 
     public Params params() {
-        return this.__params;
+        return this.params;
     }
 
     public Cond param(Object param) {
-        this.__params.add(param);
+        this.params.add(param);
         return this;
     }
 
     public Cond param(Params params) {
-        this.__params.add(params);
+        this.params.add(params);
         return this;
     }
 
     public Cond cond(String cond) {
-        __condSB.append(" ").append(cond).append(" ");
+        condBuilder.append(StringUtils.SPACE).append(cond).append(StringUtils.SPACE);
         return this;
     }
 
@@ -89,35 +119,35 @@ public final class Cond extends Query<Cond> {
     }
 
     public Cond cond(Cond cond) {
-        __condSB.append(cond.toString());
-        __params.add(cond.params());
+        condBuilder.append(cond.toString());
+        params.add(cond.params());
         return this;
     }
 
     public Cond opt(String prefixA, String fieldA, OPT opt, String prefixB, String fieldB) {
-        return opt(Fields.field(prefixA, __wrapIdentifierField(fieldA)), opt, Fields.field(prefixB, __wrapIdentifierField(fieldB)));
+        return opt(Fields.field(prefixA, wrapIdentifierField(fieldA)), opt, Fields.field(prefixB, wrapIdentifierField(fieldB)));
     }
 
     public Cond opt(String fieldA, OPT opt, String fieldB) {
-        __condSB.append(fieldA).append(" ").append(opt).append(" ").append(fieldB);
+        condBuilder.append(fieldA).append(StringUtils.SPACE).append(opt).append(StringUtils.SPACE).append(fieldB);
         return this;
     }
 
     public Cond optWrap(String fieldA, OPT opt, String fieldB) {
-        return opt(__wrapIdentifierField(fieldA), opt, __wrapIdentifierField(fieldB));
+        return opt(wrapIdentifierField(fieldA), opt, wrapIdentifierField(fieldB));
     }
 
     public Cond opt(String prefix, String field, OPT opt) {
-        return opt(Fields.field(prefix, __wrapIdentifierField(field)), opt);
+        return opt(Fields.field(prefix, wrapIdentifierField(field)), opt);
     }
 
     public Cond opt(String field, OPT opt) {
-        __condSB.append(field).append(" ").append(opt).append(" ?");
+        condBuilder.append(field).append(StringUtils.SPACE).append(opt).append(" ?");
         return this;
     }
 
     public Cond optWrap(String field, OPT opt) {
-        return opt(__wrapIdentifierField(field), opt);
+        return opt(wrapIdentifierField(field), opt);
     }
 
     public Cond opt(IFunction func, OPT opt) {
@@ -128,12 +158,12 @@ public final class Cond extends Query<Cond> {
      * @return 用于生成Where条件辅助表达式1=1
      */
     public Cond eqOne() {
-        __condSB.append("1 = 1");
+        condBuilder.append("1 = 1");
         return this;
     }
 
     public Cond eq(String prefix, String field) {
-        return eq(Fields.field(prefix, __wrapIdentifierField(field)));
+        return eq(Fields.field(prefix, wrapIdentifierField(field)));
     }
 
     public Cond eq(String field) {
@@ -151,7 +181,7 @@ public final class Cond extends Query<Cond> {
     // ------
 
     public Cond notEq(String prefix, String field) {
-        return notEq(Fields.field(prefix, __wrapIdentifierField(field)));
+        return notEq(Fields.field(prefix, wrapIdentifierField(field)));
     }
 
     public Cond notEq(String field) {
@@ -169,7 +199,7 @@ public final class Cond extends Query<Cond> {
     // ------
 
     public Cond gtEq(String prefix, String field) {
-        return gtEq(Fields.field(prefix, __wrapIdentifierField(field)));
+        return gtEq(Fields.field(prefix, wrapIdentifierField(field)));
     }
 
     public Cond gtEq(String field) {
@@ -187,7 +217,7 @@ public final class Cond extends Query<Cond> {
     // ------
 
     public Cond gt(String prefix, String field) {
-        return gt(Fields.field(prefix, __wrapIdentifierField(field)));
+        return gt(Fields.field(prefix, wrapIdentifierField(field)));
     }
 
     public Cond gt(String field) {
@@ -205,7 +235,7 @@ public final class Cond extends Query<Cond> {
     // ------
 
     public Cond ltEq(String prefix, String field) {
-        return ltEq(Fields.field(prefix, __wrapIdentifierField(field)));
+        return ltEq(Fields.field(prefix, wrapIdentifierField(field)));
     }
 
     public Cond ltEq(String field) {
@@ -223,7 +253,7 @@ public final class Cond extends Query<Cond> {
     // ------
 
     public Cond lt(String prefix, String field) {
-        return lt(Fields.field(prefix, __wrapIdentifierField(field)));
+        return lt(Fields.field(prefix, wrapIdentifierField(field)));
     }
 
     public Cond lt(String field) {
@@ -241,7 +271,7 @@ public final class Cond extends Query<Cond> {
     // ------
 
     public Cond like(String prefix, String field) {
-        return like(Fields.field(prefix, __wrapIdentifierField(field)));
+        return like(Fields.field(prefix, wrapIdentifierField(field)));
     }
 
     public Cond like(String field) {
@@ -259,12 +289,12 @@ public final class Cond extends Query<Cond> {
     // ------
 
     public Cond between(String prefix, String field, Object valueOne, Object valueTwo) {
-        return between(Fields.field(prefix, __wrapIdentifierField(field)), valueOne, valueTwo);
+        return between(Fields.field(prefix, wrapIdentifierField(field)), valueOne, valueTwo);
     }
 
     public Cond between(String field, Object valueOne, Object valueTwo) {
-        __condSB.append(field).append(" BETWEEN ? AND ?");
-        __params.add(valueOne).add(valueTwo);
+        condBuilder.append(field).append(" BETWEEN ? AND ?");
+        params.add(valueOne).add(valueTwo);
         return this;
     }
 
@@ -279,11 +309,11 @@ public final class Cond extends Query<Cond> {
     // ------
 
     public Cond isNull(String prefix, String field) {
-        return isNull(Fields.field(prefix, __wrapIdentifierField(field)));
+        return isNull(Fields.field(prefix, wrapIdentifierField(field)));
     }
 
     public Cond isNull(String field) {
-        __condSB.append(field).append(" IS NULL");
+        condBuilder.append(field).append(" IS NULL");
         return this;
     }
 
@@ -298,11 +328,11 @@ public final class Cond extends Query<Cond> {
     // ------
 
     public Cond isNotNull(String prefix, String field) {
-        return isNotNull(Fields.field(prefix, __wrapIdentifierField(field)));
+        return isNotNull(Fields.field(prefix, wrapIdentifierField(field)));
     }
 
     public Cond isNotNull(String field) {
-        __condSB.append(field).append(" IS NOT NULL");
+        condBuilder.append(field).append(" IS NOT NULL");
         return this;
     }
 
@@ -337,26 +367,26 @@ public final class Cond extends Query<Cond> {
     }
 
     public Cond exists(SQL subSql) {
-        __condSB.append(" EXISTS (").append(subSql.getSQL()).append(")");
-        __params.add(subSql.params());
+        condBuilder.append(" EXISTS (").append(subSql.getSQL()).append(")");
+        params.add(subSql.params());
         return this;
     }
 
     public Cond exists(Select subSql) {
-        __condSB.append(" EXISTS (").append(subSql.toString()).append(")");
-        __params.add(subSql.getParams());
+        condBuilder.append(" EXISTS (").append(subSql.toString()).append(")");
+        params.add(subSql.getParams());
         return this;
     }
 
     // ------
 
     public Cond in(String prefix, String field, SQL subSql) {
-        return in(Fields.field(prefix, __wrapIdentifierField(field)), subSql);
+        return in(Fields.field(prefix, wrapIdentifierField(field)), subSql);
     }
 
     public Cond in(String field, SQL subSql) {
-        __condSB.append(field).append(" IN (").append(subSql.getSQL()).append(")");
-        __params.add(subSql.params());
+        condBuilder.append(field).append(" IN (").append(subSql.getSQL()).append(")");
+        params.add(subSql.params());
         return this;
     }
 
@@ -365,12 +395,12 @@ public final class Cond extends Query<Cond> {
     }
 
     public Cond in(String prefix, String field, Select subSql) {
-        return in(Fields.field(prefix, __wrapIdentifierField(field)), subSql);
+        return in(Fields.field(prefix, wrapIdentifierField(field)), subSql);
     }
 
     public Cond in(String field, Select subSql) {
-        __condSB.append(field).append(" IN (").append(subSql.toString()).append(")");
-        __params.add(subSql.getParams());
+        condBuilder.append(field).append(" IN (").append(subSql.toString()).append(")");
+        params.add(subSql.getParams());
         return this;
     }
 
@@ -379,12 +409,12 @@ public final class Cond extends Query<Cond> {
     }
 
     public Cond in(String prefix, String field, Params params) {
-        return in(Fields.field(prefix, __wrapIdentifierField(field)), params);
+        return in(Fields.field(prefix, wrapIdentifierField(field)), params);
     }
 
     public Cond in(String field, Params params) {
-        __condSB.append(field).append(" IN (").append(StringUtils.repeat("?", ", ", params.params().size())).append(")");
-        __params.add(params);
+        condBuilder.append(field).append(" IN (").append(StringUtils.repeat("?", ", ", params.params().size())).append(")");
+        this.params.add(params);
         return this;
     }
 
@@ -418,14 +448,14 @@ public final class Cond extends Query<Cond> {
      */
     public Cond exprNotEmpty(Object target, Cond cond) {
         if (target != null && cond != null) {
-            boolean _flag = true;
+            boolean flag = true;
             if (target.getClass().isArray()) {
-                _flag = ((Object[]) target).length > 0;
+                flag = ((Object[]) target).length > 0;
             } else if (target instanceof String) {
-                _flag = StringUtils.isNotBlank((String) target);
+                flag = StringUtils.isNotBlank((String) target);
             }
             //
-            if (_flag) {
+            if (flag) {
                 this.cond(cond);
             }
         }
@@ -434,6 +464,6 @@ public final class Cond extends Query<Cond> {
 
     @Override
     public String toString() {
-        return __condSB.toString();
+        return condBuilder.toString();
     }
 }

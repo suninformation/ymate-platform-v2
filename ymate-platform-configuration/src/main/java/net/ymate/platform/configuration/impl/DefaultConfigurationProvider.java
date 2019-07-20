@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2017 the original author or authors.
+ * Copyright 2007-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,7 @@
 package net.ymate.platform.configuration.impl;
 
 import net.ymate.platform.configuration.AbstractConfigurationProvider;
-import net.ymate.platform.configuration.IConfigFileParser;
+import net.ymate.platform.core.configuration.IConfigFileParser;
 
 import java.net.URL;
 
@@ -24,12 +24,11 @@ import java.net.URL;
  * 默认配置提供者接口实现
  *
  * @author 刘镇 (suninformation@163.com) on 2010-4-17 下午02:34:44
- * @version 1.0
  */
 public class DefaultConfigurationProvider extends AbstractConfigurationProvider {
 
     @Override
-    protected IConfigFileParser __buildConfigFileParser(URL cfgFileName) throws Exception {
+    protected IConfigFileParser buildConfigFileParser(URL cfgFileName) throws Exception {
         return new XMLConfigFileParser(cfgFileName);
     }
 }

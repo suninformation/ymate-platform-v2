@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2017 the original author or authors.
+ * Copyright 2007-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,13 +15,14 @@
  */
 package net.ymate.platform.validation.annotation;
 
+import org.apache.commons.lang3.StringUtils;
+
 import java.lang.annotation.*;
 
 /**
  * 指定待验证的成员或方法参数名称的注解
  *
  * @author 刘镇 (suninformation@163.com) on 15/5/26 上午10:36
- * @version 1.0
  */
 @Target({ElementType.FIELD, ElementType.PARAMETER})
 @Retention(RetentionPolicy.RUNTIME)
@@ -31,10 +32,10 @@ public @interface VField {
     /**
      * @return 自定义参数名称
      */
-    String name() default "";
+    String name() default StringUtils.EMPTY;
 
     /**
      * @return 自定义参数标签名称
      */
-    String label() default "";
+    String label() default StringUtils.EMPTY;
 }

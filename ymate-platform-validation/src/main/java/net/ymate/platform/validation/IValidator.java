@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2017 the original author or authors.
+ * Copyright 2007-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,19 +15,23 @@
  */
 package net.ymate.platform.validation;
 
+import net.ymate.platform.core.beans.annotation.Ignored;
+
 /**
  * 验证器接口
  *
  * @author 刘镇 (suninformation@163.com) on 2013-4-7 下午4:46:33
- * @version 1.0
  */
+@Ignored
 public interface IValidator {
 
     String VALIDATION_I18N_RESOURCE = "validation";
 
     /**
+     * 执行并返回验证结果
+     *
      * @param context 验证器上下文对象
-     * @return 执行并返回验证结果，若无错误则返回空
+     * @return 若无错误则返回空
      */
     ValidateResult validate(ValidateContext context);
 }

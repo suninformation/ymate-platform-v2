@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2017 the original author or authors.
+ * Copyright 2007-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,13 +15,19 @@
  */
 package net.ymate.platform.persistence.jdbc.repo;
 
-import net.ymate.platform.configuration.IConfiguration;
+import net.ymate.platform.core.beans.annotation.Ignored;
+import net.ymate.platform.core.configuration.IConfiguration;
 
 /**
  * @author 刘镇 (suninformation@163.com) on 16/4/24 上午12:18
- * @version 1.0
  */
+@Ignored
 public interface IRepository {
 
+    /**
+     * 获取配置
+     *
+     * @return 返回配置接口对象
+     */
     IConfiguration getConfig();
 }

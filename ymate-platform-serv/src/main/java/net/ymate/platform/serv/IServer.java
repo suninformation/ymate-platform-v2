@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2017 the original author or authors.
+ * Copyright 2007-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,6 +15,9 @@
  */
 package net.ymate.platform.serv;
 
+import net.ymate.platform.core.beans.annotation.Ignored;
+import net.ymate.platform.serv.nio.INioCodec;
+
 import java.io.Closeable;
 import java.io.IOException;
 
@@ -24,9 +27,9 @@ import java.io.IOException;
  * @param <LISTENER> 监听器类型
  * @param <CODEC>    服务端编解码器接口类型
  * @author 刘镇 (suninformation@163.com) on 15/10/15 上午10:21
- * @version 1.0
  */
-public interface IServer<LISTENER extends IListener, CODEC extends ICodec> extends Closeable {
+@Ignored
+public interface IServer<LISTENER extends IListener, CODEC extends INioCodec> extends Closeable {
 
     /**
      * 初始化服务端
@@ -35,7 +38,7 @@ public interface IServer<LISTENER extends IListener, CODEC extends ICodec> exten
      * @param listener  事件适配器
      * @param codec     解码器
      */
-    void init(IServerCfg serverCfg, LISTENER listener, CODEC codec);
+    void initialize(IServerCfg serverCfg, LISTENER listener, CODEC codec);
 
     /**
      * 启动服务端
@@ -45,16 +48,22 @@ public interface IServer<LISTENER extends IListener, CODEC extends ICodec> exten
     void start() throws IOException;
 
     /**
-     * @return 是否已启动
+     * 判断是否已启动
+     *
+     * @return 返回true表示已启动
      */
     boolean isStarted();
 
     /**
+     * 获取服务端配置
+     *
      * @return 服务端配置对象
      */
     IServerCfg serverCfg();
 
     /**
+     * 获取监听器对象
+     *
      * @param <T> 监听器类型
      * @return 返回监听器接口实现类对象
      */

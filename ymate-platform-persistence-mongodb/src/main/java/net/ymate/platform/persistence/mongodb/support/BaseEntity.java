@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2017 the original author or authors.
+ * Copyright 2007-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,21 +15,22 @@
  */
 package net.ymate.platform.persistence.mongodb.support;
 
-import net.ymate.platform.persistence.annotation.Id;
-import net.ymate.platform.persistence.annotation.Property;
-import net.ymate.platform.persistence.base.IEntity;
-import org.apache.commons.lang.builder.ToStringBuilder;
-import org.apache.commons.lang.builder.ToStringStyle;
+import net.ymate.platform.core.persistence.annotation.Id;
+import net.ymate.platform.core.persistence.annotation.Property;
+import net.ymate.platform.core.persistence.base.IEntity;
+import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringStyle;
+
+import java.util.Objects;
 
 /**
  * @author 刘镇 (suninformation@163.com) on 15/11/22 上午3:40
- * @version 1.0
  */
 public class BaseEntity implements IEntity<String> {
 
     @Id
     @Property(name = "_id")
-    protected String id;
+    private String id;
 
     @Override
     public String getId() {
@@ -50,7 +51,7 @@ public class BaseEntity implements IEntity<String> {
             return false;
         }
         BaseEntity that = (BaseEntity) o;
-        return id != null ? id.equals(that.id) : that.id == null;
+        return Objects.equals(id, that.id);
     }
 
     @Override

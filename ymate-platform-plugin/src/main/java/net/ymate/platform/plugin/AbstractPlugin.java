@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2017 the original author or authors.
+ * Copyright 2007-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,58 +19,59 @@ package net.ymate.platform.plugin;
  * 插件启动器接口抽象实现，完成必要参数的赋值动作
  *
  * @author 刘镇 (suninformation@163.com) on 2012-4-20 下午5:30:30
- * @version 1.0
  */
 public abstract class AbstractPlugin implements IPlugin {
 
-    private IPluginContext __context;
+    private IPluginContext context;
 
-    private boolean __inited;
+    private boolean initialized;
 
-    private boolean __started;
+    private boolean started;
 
     @Override
-    public void init(IPluginContext context) throws Exception {
-        this.__context = context;
-        this.__inited = true;
+    public void initialize(IPluginContext context) {
+        if (!initialized) {
+            this.context = context;
+            initialized = true;
+        }
+    }
+
+    @Override
+    public boolean isInitialized() {
+        return initialized;
     }
 
     @Override
     public IPluginContext getPluginContext() {
-        return __context;
-    }
-
-    @Override
-    public boolean isInited() {
-        return __inited;
+        return context;
     }
 
     @Override
     public boolean isStarted() {
-        return __started;
+        return started;
     }
 
     @Override
-    public void startup() throws Exception {
-        if (__inited) {
-            this.__started = true;
+    public void startup() {
+        if (initialized) {
+            started = true;
         }
     }
 
     @Override
-    public void shutdown() throws Exception {
-        if (__started) {
-            this.__started = false;
+    public void shutdown() {
+        if (started) {
+            started = false;
         }
     }
 
     @Override
-    public void destroy() throws Exception {
-        if (__inited) {
+    public void close() {
+        if (initialized) {
             shutdown();
             //
-            this.__inited = false;
-            this.__context = null;
+            initialized = false;
+            context = null;
         }
     }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2017 the original author or authors.
+ * Copyright 2007-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,7 +15,8 @@
  */
 package net.ymate.platform.webmvc.support;
 
-import org.apache.commons.lang.StringUtils;
+import net.ymate.platform.webmvc.base.Type;
+import org.apache.commons.lang3.StringUtils;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletRequestWrapper;
@@ -24,7 +25,6 @@ import javax.servlet.http.HttpServletRequestWrapper;
  * HTTP请求Method重定义包装类，用于模拟RESTFul的请求方法
  *
  * @author 刘镇 (suninformation@163.com) on 2012-12-25 下午9:12:49
- * @version 1.0
  */
 public class RequestMethodWrapper extends HttpServletRequestWrapper {
 
@@ -32,10 +32,10 @@ public class RequestMethodWrapper extends HttpServletRequestWrapper {
 
     public RequestMethodWrapper(HttpServletRequest request, String methodParam) {
         super(request);
-        if ("POST".equals(request.getMethod())) {
-            String _methodName = request.getParameter(StringUtils.defaultIfBlank(methodParam, "_method"));
-            if (StringUtils.isNotBlank(_methodName)) {
-                method = _methodName.toUpperCase();
+        if (Type.HttpMethod.POST.name().equalsIgnoreCase(request.getMethod())) {
+            String methodName = request.getParameter(StringUtils.defaultIfBlank(methodParam, "_method"));
+            if (StringUtils.isNotBlank(methodName)) {
+                method = methodName.toUpperCase().trim();
             } else {
                 method = null;
             }

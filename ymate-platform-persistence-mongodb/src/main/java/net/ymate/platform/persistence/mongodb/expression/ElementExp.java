@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2017 the original author or authors.
+ * Copyright 2007-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,19 +21,18 @@ import org.bson.BsonType;
 
 /**
  * @author 刘镇 (suninformation@163.com) on 15/11/28 下午2:57
- * @version 1.0
  */
 public class ElementExp extends AbstractOperator {
 
     public static ElementExp exists(boolean exists) {
-        ElementExp _exp = new ElementExp();
-        _exp.__doAddOperator(IMongo.OPT.EXISTS, exists);
-        return _exp;
+        ElementExp elementExp = new ElementExp();
+        elementExp.addOperator(IMongo.Opt.EXISTS, exists);
+        return elementExp;
     }
 
     public static ElementExp type(BsonType type) {
-        ElementExp _exp = new ElementExp();
-        _exp.__doAddOperator(IMongo.OPT.TYPE, type);
-        return _exp;
+        ElementExp elementExp = new ElementExp();
+        elementExp.addOperator(IMongo.Opt.TYPE, type);
+        return elementExp;
     }
 }

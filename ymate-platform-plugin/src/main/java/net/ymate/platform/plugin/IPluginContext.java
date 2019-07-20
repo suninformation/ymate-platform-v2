@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2017 the original author or authors.
+ * Copyright 2007-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,21 +15,28 @@
  */
 package net.ymate.platform.plugin;
 
+import net.ymate.platform.core.beans.annotation.Ignored;
+import net.ymate.platform.core.support.IContext;
+
 /**
  * 插件环境上下文对象
  *
  * @author 刘镇 (suninformation@163.com) on 2011-10-18 上午10:39:03
- * @version 1.0
  */
-public interface IPluginContext {
+@Ignored
+public interface IPluginContext extends IContext {
 
     /**
-     * @return 返回当前上下文插件配置元数据描述对象
+     * 获取插件配置元数据描述对象
+     *
+     * @return 返回插件配置元数据描述对象
      */
     PluginMeta getPluginMeta();
 
     /**
-     * @return 返回当前上下文插件工厂对象
+     * 获取插件工厂对象
+     *
+     * @return 返回插件工厂对象
      */
     IPluginFactory getPluginFactory();
 }

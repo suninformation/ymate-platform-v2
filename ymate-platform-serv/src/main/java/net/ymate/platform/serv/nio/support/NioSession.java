@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2017 the original author or authors.
+ * Copyright 2007-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,10 +23,12 @@ import net.ymate.platform.serv.nio.INioSession;
 import java.nio.channels.SelectableChannel;
 
 /**
+ * @param <LISTENER> 监听器类型
  * @author 刘镇 (suninformation@163.com) on 15/11/15 下午11:47
- * @version 1.0
  */
 public class NioSession<LISTENER extends IListener<INioSession>> extends AbstractNioSession<LISTENER> {
+
+    private static final long serialVersionUID = 1L;
 
     public NioSession(INioEventGroup<LISTENER> eventGroup, SelectableChannel channel) {
         super(eventGroup, channel);

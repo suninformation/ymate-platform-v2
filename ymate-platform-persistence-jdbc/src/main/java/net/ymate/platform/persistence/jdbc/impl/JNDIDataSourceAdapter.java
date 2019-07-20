@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2017 the original author or authors.
+ * Copyright 2007-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,7 +15,7 @@
  */
 package net.ymate.platform.persistence.jdbc.impl;
 
-import net.ymate.platform.persistence.jdbc.AbstractDataSourceAdapter;
+import net.ymate.platform.persistence.jdbc.AbstractDatabaseDataSourceAdapter;
 
 import javax.naming.Context;
 import javax.naming.InitialContext;
@@ -26,22 +26,21 @@ import java.sql.Connection;
  * 基于JNDI的数据源适配器
  *
  * @author 刘镇 (suninformation@163.com) on 2013年12月19日 下午2:43:51
- * @version 1.0
  */
-public class JNDIDataSourceAdapter extends AbstractDataSourceAdapter {
+public class JNDIDataSourceAdapter extends AbstractDatabaseDataSourceAdapter {
 
-    private DataSource __dataSource;
+    private DataSource dataSource;
 
     @Override
-    protected void __doInit() throws Exception {
-        Context _initContext = new InitialContext();
-        Context _envContext = (Context) _initContext.lookup("java:/comp/env");
+    protected void doInitialize() throws Exception {
+        Context initialContext = new InitialContext();
+        Context envContext = (Context) initialContext.lookup("java:/comp/env");
         // 从JNDI获取数据库源
-        __dataSource = (DataSource) _envContext.lookup(__cfgMeta.getConnectionUrl());
+        dataSource = (DataSource) envContext.lookup(getDataSourceConfig().getConnectionUrl());
     }
 
     @Override
     public Connection getConnection() throws Exception {
-        return __dataSource.getConnection();
+        return dataSource.getConnection();
     }
 }

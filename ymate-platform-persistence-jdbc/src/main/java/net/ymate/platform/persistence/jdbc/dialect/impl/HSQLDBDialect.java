@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2017 the original author or authors.
+ * Copyright 2007-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,29 +15,28 @@
  */
 package net.ymate.platform.persistence.jdbc.dialect.impl;
 
-import net.ymate.platform.persistence.jdbc.JDBC;
+import net.ymate.platform.core.persistence.base.Type;
 import net.ymate.platform.persistence.jdbc.dialect.AbstractDialect;
 
 /**
  * HSQLDB数据库方言接口实现
  *
  * @author 刘镇 (suninformation@163.com) on 15/4/16 上午11:33
- * @version 1.0
  */
 public class HSQLDBDialect extends AbstractDialect {
 
     @Override
     public String getName() {
-        return JDBC.DATABASE.HSQLDB.name();
+        return Type.DATABASE.HSQLDB.name();
     }
 
     @Override
-    public String buildPagedQuerySQL(String originSql, int page, int pageSize) {
-        int _limit = ((page - 1) * pageSize);
+    public String buildPagedQuerySql(String originSql, int page, int pageSize) {
+        int limit = ((page - 1) * pageSize);
         if (pageSize == 0) {
-            return originSql.concat(" limit ").concat(Integer.toString(_limit));
+            return originSql.concat(" limit ").concat(String.valueOf(limit));
         } else {
-            return originSql.concat(" limit ").concat(Integer.toString(pageSize)).concat(" offset ").concat(Integer.toString(_limit));
+            return originSql.concat(" limit ").concat(String.valueOf(pageSize)).concat(" offset ").concat(String.valueOf(limit));
         }
     }
 }

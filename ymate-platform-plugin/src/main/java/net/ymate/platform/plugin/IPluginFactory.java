@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2017 the original author or authors.
+ * Copyright 2007-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,23 +15,19 @@
  */
 package net.ymate.platform.plugin;
 
-import net.ymate.platform.core.YMP;
+import net.ymate.platform.core.IApplication;
+import net.ymate.platform.core.beans.IBeanLoader;
+import net.ymate.platform.core.beans.annotation.Ignored;
+import net.ymate.platform.core.support.IDestroyable;
+import net.ymate.platform.core.support.IInitialization;
 
 /**
  * 插件工厂接口定义
  *
  * @author 刘镇 (suninformation@163.com) on 2011-10-17 下午04:49:03
- * @version 1.0
  */
-public interface IPluginFactory {
-
-    /**
-     * 插件工厂初始化
-     *
-     * @param pluginConfig 插件初始化配置
-     * @throws Exception 工厂初始化时可能产生的异常
-     */
-    void init(IPluginConfig pluginConfig) throws Exception;
+@Ignored
+public interface IPluginFactory extends IInitialization<IApplication>, IDestroyable {
 
     /**
      * 启动插件
@@ -41,49 +37,47 @@ public interface IPluginFactory {
     void startup() throws Exception;
 
     /**
-     * @return 返回插件工厂是否已初始化
-     */
-    boolean isInited();
-
-    /**
-     * 销毁插件工厂
+     * 获取所属应用容器管理器
      *
-     * @throws Exception 工厂销毁时可能产生的异常
+     * @return 返回所属应用容器管理器
      */
-    void destroy() throws Exception;
+    IApplication getOwner();
 
     /**
-     * 添加被排除的接口
+     * 获取插件工厂配置
      *
-     * @param interfaceClass 预排除的接口
-     */
-    void addExcludedInterfaceClass(Class<?> interfaceClass);
-
-    /**
-     * @return 返回所属YMP框架管理器实例
-     */
-    YMP getOwner();
-
-    /**
      * @return 返回插件工厂配置对象
      */
     IPluginConfig getPluginConfig();
 
     /**
-     * @return 返回插件对象工厂接口实例
+     * 获取对象加载器
+     *
+     * @return 返回对象加载器实例
      */
-    IPluginBeanFactory getBeanFactory();
+    IBeanLoader getBeanLoader();
 
     /**
-     * @param id 插件唯一ID
-     * @return 通过ID获取插件实例
+     * 通过插件唯一标识获取插件实例
+     *
+     * @param idOrAlias 插件唯一标识或别名
+     * @return 返回插件实例
      */
-    IPlugin getPlugin(String id);
+    IPlugin getPlugin(String idOrAlias);
 
     /**
+     * 通过接口类型获取插件实例
+     *
      * @param clazz 插件接口类
      * @param <T>   插件接口类型
-     * @return 通过接口类型获取插件实例
+     * @return 返回插件实例
      */
     <T> T getPlugin(Class<T> clazz);
+
+    /**
+     * 是否扫描当前CLASSPATH内的相关插件
+     *
+     * @return 返回true表示加载
+     */
+    boolean isIncludedClassPath();
 }

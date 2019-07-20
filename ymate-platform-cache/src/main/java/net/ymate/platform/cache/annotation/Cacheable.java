@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2017 the original author or authors.
+ * Copyright 2007-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,9 +15,9 @@
  */
 package net.ymate.platform.cache.annotation;
 
+import net.ymate.platform.cache.ICacheKeyGenerator;
 import net.ymate.platform.cache.ICaches;
-import net.ymate.platform.cache.IKeyGenerator;
-import net.ymate.platform.cache.impl.DefaultKeyGenerator;
+import org.apache.commons.lang3.StringUtils;
 
 import java.lang.annotation.*;
 
@@ -25,7 +25,6 @@ import java.lang.annotation.*;
  * 将类中方法的执行结果进行缓存的注解
  *
  * @author 刘镇 (suninformation@163.com) on 15/10/29 下午7:22
- * @version 1.0
  */
 @Target({ElementType.TYPE, ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
@@ -40,12 +39,12 @@ public @interface Cacheable {
     /**
      * @return 缓存Key, 若未设置则使用keyGenerator自动生成
      */
-    String key() default "";
+    String key() default StringUtils.EMPTY;
 
     /**
-     * @return Key生成器接口实现类
+     * @return 缓存Key生成器接口实现类
      */
-    Class<? extends IKeyGenerator> generator() default DefaultKeyGenerator.class;
+    Class<? extends ICacheKeyGenerator> generator() default ICacheKeyGenerator.class;
 
     /**
      * @return 缓存作用域
@@ -53,7 +52,7 @@ public @interface Cacheable {
     ICaches.Scope scope() default ICaches.Scope.DEFAULT;
 
     /**
-     * @return 缓存数据超时时间, 默认为0, 即缓存300秒
+     * @return 缓存数据超时时间(秒), 默认值为0表示使用缓存配置的缓存数据超时
      */
     int timeout() default 0;
 }

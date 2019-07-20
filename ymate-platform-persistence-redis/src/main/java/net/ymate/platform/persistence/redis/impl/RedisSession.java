@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2017 the original author or authors.
+ * Copyright 2007-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,55 +15,44 @@
  */
 package net.ymate.platform.persistence.redis.impl;
 
-import net.ymate.platform.core.util.UUIDUtils;
-import net.ymate.platform.persistence.ISessionEvent;
+import net.ymate.platform.core.persistence.AbstractSession;
 import net.ymate.platform.persistence.redis.IRedis;
-import net.ymate.platform.persistence.redis.IRedisCommandsHolder;
+import net.ymate.platform.persistence.redis.IRedisCommandHolder;
 import net.ymate.platform.persistence.redis.IRedisSession;
-import redis.clients.jedis.JedisCommands;
+import org.apache.commons.lang.NullArgumentException;
+import redis.clients.jedis.commands.JedisCommands;
 
 /**
  * @author 刘镇 (suninformation@163.com) on 15/11/30 下午11:54
- * @version 1.0
  */
-public class RedisSession implements IRedisSession {
+public class RedisSession extends AbstractSession<IRedisCommandHolder> implements IRedisSession {
 
-    private IRedis __owner;
+    private final IRedis owner;
 
-    private String __id;
+    private final IRedisCommandHolder commandHolder;
 
-    private IRedisCommandsHolder __commandsHolder;
-
-    private ISessionEvent __sessionEvent;
-
-    public <T extends JedisCommands> RedisSession(IRedis owner, IRedisCommandsHolder commandsHolder) {
-        this.__owner = owner;
-        this.__id = UUIDUtils.UUID();
-        this.__commandsHolder = commandsHolder;
+    public <T extends JedisCommands> RedisSession(IRedis owner, IRedisCommandHolder commandHolder) {
+        if (owner == null) {
+            throw new NullArgumentException("owner");
+        }
+        if (commandHolder == null) {
+            throw new NullArgumentException("commandHolder");
+        }
+        this.owner = owner;
+        this.commandHolder = commandHolder;
     }
 
     public IRedis getOwner() {
-        return __owner;
+        return owner;
     }
 
     @Override
-    public String getId() {
-        return __id;
+    public IRedisCommandHolder getConnectionHolder() {
+        return commandHolder;
     }
 
     @Override
-    public RedisSession setSessionEvent(ISessionEvent event) {
-        __sessionEvent = event;
-        return this;
-    }
-
-    @Override
-    public void close() {
-        __commandsHolder.release();
-    }
-
-    @Override
-    public IRedisCommandsHolder getCommandHolder() {
-        return __commandsHolder;
+    public void close() throws Exception {
+        commandHolder.close();
     }
 }

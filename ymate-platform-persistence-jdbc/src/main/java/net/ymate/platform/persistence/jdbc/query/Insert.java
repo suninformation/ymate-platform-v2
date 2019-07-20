@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2017 the original author or authors.
+ * Copyright 2007-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,72 +15,75 @@
  */
 package net.ymate.platform.persistence.jdbc.query;
 
-import net.ymate.platform.persistence.Fields;
-import net.ymate.platform.persistence.Params;
-import net.ymate.platform.persistence.base.EntityMeta;
-import net.ymate.platform.persistence.base.IEntity;
-import org.apache.commons.lang.StringUtils;
+import net.ymate.platform.core.persistence.Fields;
+import net.ymate.platform.core.persistence.Params;
+import net.ymate.platform.core.persistence.base.EntityMeta;
+import net.ymate.platform.core.persistence.base.IEntity;
+import net.ymate.platform.persistence.jdbc.IDatabase;
+import net.ymate.platform.persistence.jdbc.IDatabaseConnectionHolder;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * Insert语句对象
  *
  * @author 刘镇 (suninformation@163.com) on 15/5/12 下午6:00
- * @version 1.0
  */
 public final class Insert extends Query<Insert> {
 
-    private final String __prefix;
+    private final String prefix;
 
-    private String __tableName;
+    private String tableName;
 
-    private Class<? extends IEntity> __entityClass;
+    private Class<? extends IEntity> entityClass;
 
-    private final Fields __fields;
+    private final Fields fields;
 
-    private final Params __params;
+    private final Params params;
 
-    private Select __select;
+    private Select select;
 
-    private final boolean __safePrefix;
+    private final boolean safePrefix;
 
-    public static Insert create(String prefix, Class<? extends IEntity> entityClass) {
-        return new Insert(prefix, entityClass);
+    public static Insert create(IDatabase owner, String prefix, Class<? extends IEntity> entityClass) {
+        return new Insert(owner, prefix, entityClass);
     }
 
-    public static Insert create(IEntity<?> entity) {
-        return create(entity.getClass());
+    public static Insert create(IDatabase owner, IEntity<?> entity) {
+        return create(owner, entity.getClass());
     }
 
-    public static Insert create(Class<? extends IEntity> entityClass) {
-        return new Insert(null, entityClass);
+    public static Insert create(IDatabase owner, Class<? extends IEntity> entityClass) {
+        return new Insert(owner, null, entityClass);
     }
 
-    public static Insert create(String tableName) {
-        return new Insert(null, tableName, true);
+    public static Insert create(IDatabase owner, String tableName) {
+        return new Insert(owner, null, tableName, true);
     }
 
-    public static Insert create(String tableName, boolean safePrefix) {
-        return new Insert(null, tableName, safePrefix);
+    public static Insert create(IDatabase owner, String tableName, boolean safePrefix) {
+        return new Insert(owner, null, tableName, safePrefix);
     }
 
-    private Insert(String prefix, Class<? extends IEntity> entityClass) {
-        this.__prefix = prefix;
-        this.__entityClass = entityClass;
-        this.__safePrefix = true;
-        this.__fields = Fields.create();
-        this.__params = Params.create();
+    private Insert(IDatabase owner, String prefix, Class<? extends IEntity> entityClass) {
+        super(owner);
+        this.prefix = prefix;
+        this.entityClass = entityClass;
+        this.safePrefix = true;
+        this.fields = Fields.create();
+        this.params = Params.create();
     }
 
-    private Insert(String prefix, String tableName, boolean safePrefix) {
-        this.__prefix = prefix;
-        this.__tableName = tableName;
-        this.__safePrefix = safePrefix;
-        this.__fields = Fields.create();
-        this.__params = Params.create();
+    private Insert(IDatabase owner, String prefix, String tableName, boolean safePrefix) {
+        super(owner);
+        this.prefix = prefix;
+        this.tableName = tableName;
+        this.safePrefix = safePrefix;
+        this.fields = Fields.create();
+        this.params = Params.create();
     }
 
     public Fields fields() {
-        return this.__fields;
+        return this.fields;
     }
 
     public Insert field(String prefix, String field, String alias) {
@@ -88,7 +91,7 @@ public final class Insert extends Query<Insert> {
     }
 
     public Insert field(String prefix, String field, String alias, boolean wrapIdentifier) {
-        this.__fields.add(prefix, wrapIdentifier ? __wrapIdentifierField(field) : field, alias);
+        this.fields.add(prefix, wrapIdentifier ? wrapIdentifierField(field) : field, alias);
         return this;
     }
 
@@ -97,7 +100,7 @@ public final class Insert extends Query<Insert> {
     }
 
     public Insert field(String prefix, String field, boolean wrapIdentifier) {
-        this.__fields.add(prefix, wrapIdentifier ? __wrapIdentifierField(field) : field);
+        this.fields.add(prefix, wrapIdentifier ? wrapIdentifierField(field) : field);
         return this;
     }
 
@@ -106,7 +109,7 @@ public final class Insert extends Query<Insert> {
     }
 
     public Insert field(String field, boolean wrapIdentifier) {
-        this.__fields.add(wrapIdentifier ? __wrapIdentifierField(field) : field);
+        this.fields.add(wrapIdentifier ? wrapIdentifierField(field) : field);
         return this;
     }
 
@@ -115,8 +118,8 @@ public final class Insert extends Query<Insert> {
     }
 
     public Insert field(Fields fields, boolean wrapIdentifier) {
-        Fields _field = __checkFieldExcluded(fields);
-        this.__fields.add(wrapIdentifier ? __wrapIdentifierFields(_field.toArray()) : _field);
+        Fields newFields = checkFieldExcluded(fields);
+        this.fields.add(wrapIdentifier ? wrapIdentifierFields(newFields.toArray()) : newFields);
         return this;
     }
 
@@ -125,42 +128,52 @@ public final class Insert extends Query<Insert> {
     }
 
     public Insert field(String prefix, Fields fields, boolean wrapIdentifier) {
-        for (String _field : __checkFieldExcluded(fields).fields()) {
-            this.__fields.add(prefix, wrapIdentifier ? __wrapIdentifierField(_field) : _field);
-        }
+        checkFieldExcluded(fields).fields().forEach((field) -> this.fields.add(prefix, wrapIdentifier ? wrapIdentifierField(field) : field));
         return this;
     }
 
     public Params params() {
-        return this.__params;
+        return this.params;
     }
 
     public Insert param(Object param) {
-        this.__params.add(param);
+        this.params.add(param);
         return this;
     }
 
     public Insert param(Params params) {
-        this.__params.add(params);
+        this.params.add(params);
         return this;
     }
 
     public Insert select(Select select) {
-        this.__select = select;
+        this.select = select;
         return this;
     }
 
     @Override
     public String toString() {
-        String _sqlStr = "INSERT INTO ".concat(__safePrefix ? (__entityClass != null ? __buildSafeTableName(__prefix, EntityMeta.createAndGet(__entityClass), __safePrefix) : __buildSafeTableName(__prefix, __tableName, true)) : __tableName)
-                .concat(" (").concat(StringUtils.join(__fields.fields(), ", "));
-        if (__select != null) {
-            return _sqlStr.concat(") ").concat(__select.toString());
+        String sqlStr = "INSERT INTO ".concat(safePrefix ? (entityClass != null ? buildSafeTableName(prefix, EntityMeta.createAndGet(entityClass), safePrefix) : buildSafeTableName(prefix, tableName, true)) : tableName)
+                .concat(" (").concat(StringUtils.join(fields.fields(), ", "));
+        if (select != null) {
+            return sqlStr.concat(") ").concat(select.toString());
         }
-        return _sqlStr.concat(") VALUES (").concat(StringUtils.repeat("?", ", ", __params.params().size())).concat(")");
+        return sqlStr.concat(") VALUES (").concat(StringUtils.repeat("?", ", ", params.params().size())).concat(")");
     }
 
     public SQL toSQL() {
         return SQL.create(this);
+    }
+
+    public int execute() throws Exception {
+        return owner().openSession(session -> session.executeForUpdate(toSQL()));
+    }
+
+    public int execute(String dataSourceName) throws Exception {
+        return owner().openSession(dataSourceName, session -> session.executeForUpdate(toSQL()));
+    }
+
+    public int execute(IDatabaseConnectionHolder connectionHolder) throws Exception {
+        return owner().openSession(connectionHolder, session -> session.executeForUpdate(toSQL()));
     }
 }

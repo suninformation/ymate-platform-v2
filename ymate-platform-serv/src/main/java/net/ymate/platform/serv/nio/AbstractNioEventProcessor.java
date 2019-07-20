@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2018 the original author or authors.
+ * Copyright 2007-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,9 +15,9 @@
  */
 package net.ymate.platform.serv.nio;
 
-import net.ymate.platform.core.util.RuntimeUtils;
+import net.ymate.platform.commons.util.RuntimeUtils;
 import net.ymate.platform.serv.IListener;
-import net.ymate.platform.serv.ISession;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -28,77 +28,80 @@ import java.util.Queue;
 import java.util.concurrent.LinkedBlockingQueue;
 
 /**
+ * @param <LISTENER> 监听器类型
  * @author 刘镇 (suninformation@163.com) on 2018/11/15 11:33 PM
- * @version 1.0
  */
 public abstract class AbstractNioEventProcessor<LISTENER extends IListener<INioSession>> extends Thread implements INioEventProcessor<INioSession> {
 
-    private static final Log _LOG = LogFactory.getLog(AbstractNioEventProcessor.class);
+    private static final Log LOG = LogFactory.getLog(AbstractNioEventProcessor.class);
 
-    private final Queue<Object[]> __registeredQueues = new LinkedBlockingQueue<Object[]>();
-    private final Queue<INioSession> __closedQueues = new LinkedBlockingQueue<INioSession>();
+    private final Queue<Object[]> registeredQueues = new LinkedBlockingQueue<>();
 
-    private final INioEventGroup<LISTENER> __eventGroup;
+    private final Queue<INioSession> closedQueues = new LinkedBlockingQueue<>();
 
-    private Selector __selector;
+    private final INioEventGroup<LISTENER> eventGroup;
 
-    private long __selectTimeout;
+    private final Selector selector;
 
-    private boolean __running;
+    private final long selectTimeout;
+
+    private boolean running;
 
     public AbstractNioEventProcessor(String name, INioEventGroup<LISTENER> eventGroup, long selectTimeout) throws IOException {
         super(name);
-        __eventGroup = eventGroup;
-        __selector = Selector.open();
-        __selectTimeout = selectTimeout <= 0 ? 500L : selectTimeout;
+        this.eventGroup = eventGroup;
+        selector = Selector.open();
+        this.selectTimeout = selectTimeout <= 0 ? 500L : selectTimeout;
     }
 
     @Override
     public void start() {
-        if (__running) {
+        if (running) {
             return;
         }
-        __running = true;
+        running = true;
         super.start();
     }
 
     @Override
     public void run() {
         try {
-            while (__running) {
-                __selector.select(__selectTimeout);
-                __processRegisteredQueues();
-                Iterator<SelectionKey> _keyIterator = __selector.selectedKeys().iterator();
-                while (_keyIterator.hasNext()) {
-                    SelectionKey _selectionKey = _keyIterator.next();
-                    _keyIterator.remove();
-                    if (_selectionKey.isValid()) {
-                        Object _attachment = _selectionKey.attachment();
-                        if (_attachment instanceof INioSession) {
-                            ((INioSession) _attachment).touch();
+            while (running) {
+                selector.select(selectTimeout);
+                processRegisteredQueues();
+                Iterator<SelectionKey> keyIterator = selector.selectedKeys().iterator();
+                while (keyIterator.hasNext()) {
+                    SelectionKey selectionKey = keyIterator.next();
+                    keyIterator.remove();
+                    if (selectionKey.isValid()) {
+                        Object attachment = selectionKey.attachment();
+                        if (attachment instanceof INioSession) {
+                            ((INioSession) attachment).touch();
                         }
                         try {
-                            if (_selectionKey.isAcceptable()) {
-                                onAcceptedEvent(_selectionKey);
-                            } else if (_selectionKey.isConnectable()) {
-                                onConnectedEvent(_selectionKey);
-                            } else if (_selectionKey.isReadable()) {
-                                onReadEvent(_selectionKey);
-                            } else if (_selectionKey.isWritable()) {
-                                onWriteEvent(_selectionKey);
+                            if (selectionKey.isAcceptable()) {
+                                onAcceptedEvent(selectionKey);
+                            } else if (selectionKey.isConnectable()) {
+                                onConnectedEvent(selectionKey);
+                            } else if (selectionKey.isReadable()) {
+                                onReadEvent(selectionKey);
+                            } else if (selectionKey.isWritable()) {
+                                onWriteEvent(selectionKey);
                             }
                         } catch (IOException e) {
-                            onExceptionEvent(_selectionKey, e);
+                            onExceptionEvent(selectionKey, e);
                         }
                     }
                 }
-                __processClosedQueues();
+                processClosedQueues();
             }
         } catch (IOException e) {
-            if (__running) {
-                _LOG.error(RuntimeUtils.unwrapThrow(e));
-            } else {
-                _LOG.warn(RuntimeUtils.unwrapThrow(e));
+            if (running) {
+                if (LOG.isErrorEnabled()) {
+                    LOG.error(StringUtils.EMPTY, RuntimeUtils.unwrapThrow(e));
+                }
+            } else if (LOG.isWarnEnabled()) {
+                LOG.warn(StringUtils.EMPTY, RuntimeUtils.unwrapThrow(e));
             }
         }
     }
@@ -106,11 +109,13 @@ public abstract class AbstractNioEventProcessor<LISTENER extends IListener<INioS
     @Override
     public void interrupt() {
         try {
-            __running = false;
+            running = false;
             join();
-            __selector.close();
-        } catch (Exception e) {
-            _LOG.error(RuntimeUtils.unwrapThrow(e));
+            selector.close();
+        } catch (IOException | InterruptedException e) {
+            if (LOG.isErrorEnabled()) {
+                LOG.error(StringUtils.EMPTY, RuntimeUtils.unwrapThrow(e));
+            }
         }
         super.interrupt();
     }
@@ -123,65 +128,69 @@ public abstract class AbstractNioEventProcessor<LISTENER extends IListener<INioS
     @Override
     public void registerEvent(SelectableChannel channel, int ops, INioSession session) throws IOException {
         if (Thread.currentThread() == this) {
-            SelectionKey key = channel.register(__selector, ops, session);
+            SelectionKey key = channel.register(selector, ops, session);
             if (session != null) {
                 session.selectionKey(key);
-                session.status(ISession.Status.CONNECTED);
+                session.status(INioSession.Status.CONNECTED);
                 //
-                if (__eventGroup.isServer() && session.isUdp()) {
+                if (eventGroup.isServer() && session.isUdp()) {
                     return;
                 }
-                __eventGroup.listener().onSessionRegistered(session);
+                eventGroup.listener().onSessionRegistered(session);
             }
         } else {
-            __registeredQueues.offer(new Object[]{channel, ops, session});
-            __selector.wakeup();
+            registeredQueues.offer(new Object[]{channel, ops, session});
+            selector.wakeup();
         }
     }
 
     @Override
     public void unregisterEvent(INioSession session) {
-        if (__closedQueues.contains(session)) {
+        if (closedQueues.contains(session)) {
             return;
         }
-        __closedQueues.add(session);
-        __selector.wakeup();
+        closedQueues.add(session);
+        selector.wakeup();
     }
 
     @Override
     public Selector selector() {
-        return __selector;
+        return selector;
     }
 
-    private void __processRegisteredQueues() {
-        Object[] _event;
-        while ((_event = __registeredQueues.poll()) != null) {
+    private void processRegisteredQueues() {
+        Object[] element;
+        while ((element = registeredQueues.poll()) != null) {
             try {
-                SelectableChannel _channel = (SelectableChannel) _event[0];
-                if (!_channel.isOpen()) {
+                SelectableChannel channel = (SelectableChannel) element[0];
+                if (!channel.isOpen()) {
                     continue;
                 }
-                INioSession _session = (INioSession) _event[2];
-                SelectionKey _key = _channel.register(__selector, (Integer) _event[1], _session);
-                if (_session != null) {
-                    _session.selectionKey(_key);
-                    _session.status(ISession.Status.CONNECTED);
+                INioSession session = (INioSession) element[2];
+                SelectionKey selectionKey = channel.register(selector, (Integer) element[1], session);
+                if (session != null) {
+                    session.selectionKey(selectionKey);
+                    session.status(INioSession.Status.CONNECTED);
                     //
-                    __eventGroup.listener().onSessionRegistered(_session);
+                    eventGroup.listener().onSessionRegistered(session);
                 }
             } catch (IOException e) {
-                _LOG.error(RuntimeUtils.unwrapThrow(e));
+                if (LOG.isErrorEnabled()) {
+                    LOG.error(StringUtils.EMPTY, RuntimeUtils.unwrapThrow(e));
+                }
             }
         }
     }
 
-    private void __processClosedQueues() {
-        INioSession _session;
-        while ((_session = __closedQueues.poll()) != null) {
+    private void processClosedQueues() {
+        INioSession session;
+        while ((session = closedQueues.poll()) != null) {
             try {
-                _session.closeNow();
+                session.closeNow();
             } catch (IOException e) {
-                _LOG.error(RuntimeUtils.unwrapThrow(e));
+                if (LOG.isErrorEnabled()) {
+                    LOG.error(StringUtils.EMPTY, RuntimeUtils.unwrapThrow(e));
+                }
             }
         }
     }
@@ -189,61 +198,83 @@ public abstract class AbstractNioEventProcessor<LISTENER extends IListener<INioS
     //
 
     protected void onExceptionEvent(final SelectionKey key, final Throwable e) {
-        final INioSession _session = (INioSession) key.attachment();
-        if (_session == null) {
+        INioSession session = (INioSession) key.attachment();
+        if (session == null) {
             try {
                 key.channel().close();
                 key.cancel();
             } catch (IOException ex) {
-                _LOG.error(RuntimeUtils.unwrapThrow(ex));
+                if (LOG.isErrorEnabled()) {
+                    LOG.error(StringUtils.EMPTY, RuntimeUtils.unwrapThrow(ex));
+                }
             }
         } else {
-            _session.status(ISession.Status.ERROR);
+            session.status(INioSession.Status.ERROR);
         }
-        __eventGroup.executorService().submit(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    __eventGroup.listener().onExceptionCaught(e, _session);
-                } catch (IOException ex) {
-                    _LOG.error(RuntimeUtils.unwrapThrow(ex));
+        eventGroup.executorService().submit(() -> {
+            try {
+                eventGroup.listener().onExceptionCaught(e, session);
+            } catch (IOException ex) {
+                if (LOG.isErrorEnabled()) {
+                    LOG.error(StringUtils.EMPTY, RuntimeUtils.unwrapThrow(ex));
                 }
             }
         });
-        if (_session != null) {
+        if (session != null) {
             try {
-                _session.close();
+                session.close();
             } catch (IOException ex) {
-                _LOG.error(RuntimeUtils.unwrapThrow(ex));
+                if (LOG.isErrorEnabled()) {
+                    LOG.error(StringUtils.EMPTY, RuntimeUtils.unwrapThrow(ex));
+                }
             }
         }
     }
 
+    /**
+     * 由子类实现创建会话的具体逻辑
+     *
+     * @param eventGroup 多路复用通道事件处理器
+     * @param channel    通道
+     * @return 返回会话对象
+     */
     protected abstract INioSession buildNioSession(INioEventGroup<LISTENER> eventGroup, SelectableChannel channel);
 
-    protected void onAcceptedEvent(SelectionKey key) throws IOException {
-        SocketChannel _channel = ((ServerSocketChannel) key.channel()).accept();
-        _channel.configureBlocking(false);
-        INioSession _session = buildNioSession(__eventGroup, _channel);
-        _session.selectionKey(key);
-        _session.status(ISession.Status.CONNECTED);
-        __eventGroup.listener().onSessionAccepted(_session);
+    private void onAcceptedEvent(SelectionKey key) throws IOException {
+        SocketChannel channel = ((ServerSocketChannel) key.channel()).accept();
+        channel.configureBlocking(false);
+        INioSession session = buildNioSession(eventGroup, channel);
+        session.selectionKey(key);
+        session.status(INioSession.Status.CONNECTED);
+        eventGroup.listener().onSessionAccepted(session);
     }
 
-    protected void onConnectedEvent(SelectionKey key) throws IOException {
-        INioSession _session = (INioSession) key.attachment();
-        if (_session != null) {
-            SocketChannel _channel = (SocketChannel) key.interestOps(0).channel();
-            if (_channel.finishConnect()) {
-                _session.finishConnect();
+    private void onConnectedEvent(SelectionKey key) throws IOException {
+        INioSession session = (INioSession) key.attachment();
+        if (session != null) {
+            SocketChannel channel = (SocketChannel) key.interestOps(0).channel();
+            if (channel.finishConnect()) {
+                session.finishConnect();
             }
-            _session.selectionKey(key);
-            _session.status(ISession.Status.CONNECTED);
-            __eventGroup.listener().onSessionConnected(_session);
+            session.selectionKey(key);
+            session.status(INioSession.Status.CONNECTED);
+            eventGroup.listener().onSessionConnected(session);
         }
     }
 
+    /**
+     * 由子类实现通道读逻辑
+     *
+     * @param key 选择键
+     * @throws IOException 可能产生的I/O异常
+     */
     protected abstract void onReadEvent(SelectionKey key) throws IOException;
 
+    /**
+     * 由子类实现通道写逻辑
+     *
+     * @param key 选择键
+     * @throws IOException 可能产生的I/O异常
+     */
     protected abstract void onWriteEvent(SelectionKey key) throws IOException;
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2017 the original author or authors.
+ * Copyright 2007-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,71 +15,63 @@
  */
 package net.ymate.platform.persistence.jdbc.query;
 
-import net.ymate.platform.core.util.RuntimeUtils;
-import net.ymate.platform.persistence.Fields;
-import net.ymate.platform.persistence.IShardingable;
-import net.ymate.platform.persistence.base.EntityMeta;
-import net.ymate.platform.persistence.jdbc.IConnectionHolder;
-import net.ymate.platform.persistence.jdbc.ISession;
-import net.ymate.platform.persistence.jdbc.JDBC;
+import net.ymate.platform.commons.util.RuntimeUtils;
+import net.ymate.platform.core.persistence.Fields;
+import net.ymate.platform.core.persistence.IShardingable;
+import net.ymate.platform.core.persistence.base.EntityMeta;
+import net.ymate.platform.persistence.jdbc.IDatabase;
+import net.ymate.platform.persistence.jdbc.IDatabaseConnectionHolder;
+import net.ymate.platform.persistence.jdbc.IDatabaseSession;
 import net.ymate.platform.persistence.jdbc.dialect.IDialect;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 /**
  * @param <T> 当前实现类类型
  * @author 刘镇 (suninformation@163.com) on 2017/12/14 下午11:43
- * @version 1.0
  */
 public class Query<T> {
 
-    private static final Log _LOG = LogFactory.getLog(Query.class);
+    private static final Log LOG = LogFactory.getLog(Query.class);
 
-    private String __tablePrefix;
+    private final IDatabase owner;
 
-    private IDialect __dialect;
+    private String tablePrefix;
 
-    private IShardingable __shardingable;
+    private IDialect dialect;
 
-    @SuppressWarnings("unchecked")
-    public T set(ISession session) {
-        return set(session.getConnectionHolder());
+    private IShardingable shardingable;
+
+    public Query(IDatabase owner) {
+        this.owner = owner;
     }
 
-    @SuppressWarnings("unchecked")
-    public T set(IConnectionHolder connectionHolder) {
-        __tablePrefix = connectionHolder.getDataSourceCfgMeta().getTablePrefix();
-        __dialect = connectionHolder.getDialect();
-        //
-        return (T) this;
+    public IDatabase owner() {
+        return owner;
     }
 
     /**
      * @return 返回表前缀，若未设置则返回默认数据源配置的表前缀
      */
     public String tablePrefix() {
-        if (StringUtils.isBlank(__tablePrefix)) {
-            ISession _session = null;
-            try {
-                _session = JDBC.get().openSession();
-                if (_session != null) {
-                    __tablePrefix = _session.getConnectionHolder().getDataSourceCfgMeta().getTablePrefix();
+        if (StringUtils.isBlank(tablePrefix)) {
+            try (IDatabaseSession session = owner.openSession()) {
+                if (session != null) {
+                    tablePrefix = session.getConnectionHolder().getDataSourceConfig().getTablePrefix();
                 }
             } catch (Exception e) {
-                _LOG.warn("", RuntimeUtils.unwrapThrow(e));
-            } finally {
-                if (_session != null) {
-                    _session.close();
+                if (LOG.isWarnEnabled()) {
+                    LOG.warn(StringUtils.EMPTY, RuntimeUtils.unwrapThrow(e));
                 }
             }
         }
-        return __tablePrefix;
+        return tablePrefix;
     }
 
     @SuppressWarnings("unchecked")
     public T tablePrefix(String tablePrefix) {
-        __tablePrefix = tablePrefix;
+        this.tablePrefix = tablePrefix;
         //
         return (T) this;
     }
@@ -88,53 +80,51 @@ public class Query<T> {
      * @return 返回当前数据库方言，若未设置则返回默认数据源配置的方言
      */
     public IDialect dialect() {
-        if (__dialect == null) {
-            ISession _session = null;
-            try {
-                _session = JDBC.get().openSession();
-                if (_session != null) {
-                    __dialect = _session.getConnectionHolder().getDialect();
+        if (dialect == null) {
+            try (IDatabaseSession session = owner.openSession()) {
+                if (session != null) {
+                    dialect = session.getConnectionHolder().getDialect();
                 }
             } catch (Exception e) {
-                _LOG.warn("", RuntimeUtils.unwrapThrow(e));
-            } finally {
-                if (_session != null) {
-                    _session.close();
+                if (LOG.isWarnEnabled()) {
+                    LOG.warn(StringUtils.EMPTY, RuntimeUtils.unwrapThrow(e));
                 }
             }
         }
-        return __dialect;
+        return dialect;
     }
 
     @SuppressWarnings("unchecked")
     public T dialect(IDialect dialect) {
-        __dialect = dialect;
+        this.dialect = dialect;
         //
         return (T) this;
     }
 
     public IShardingable shardingable() {
-        return __shardingable;
+        return shardingable;
     }
 
     @SuppressWarnings("unchecked")
     public T shardingable(IShardingable shardingable) {
-        __shardingable = shardingable;
+        this.shardingable = shardingable;
         //
         return (T) this;
     }
 
     // ----------
 
-    protected Fields __checkFieldExcluded(Fields fields) {
+    protected Fields checkFieldExcluded(Fields fields) {
         if (fields.isExcluded()) {
-            _LOG.warn("Query fields do not support exclusion and have been cleaned up.");
+            if (LOG.isWarnEnabled()) {
+                LOG.warn("Query fields do not support exclusion and have been cleaned up.");
+            }
             return Fields.create();
         }
         return fields;
     }
 
-    protected String __buildSafeTableName(String prefix, String tableName, boolean safePrefix) {
+    protected String buildSafeTableName(String prefix, String tableName, boolean safePrefix) {
         if (safePrefix) {
             prefix = StringUtils.defaultIfBlank(prefix, this.tablePrefix());
             return this.dialect().wrapIdentifierQuote(StringUtils.trimToEmpty(prefix).concat(tableName));
@@ -142,7 +132,7 @@ public class Query<T> {
         return StringUtils.trimToEmpty(prefix).concat(tableName);
     }
 
-    protected String __buildSafeTableName(String prefix, EntityMeta entityMeta, boolean safePrefix) {
+    protected String buildSafeTableName(String prefix, EntityMeta entityMeta, boolean safePrefix) {
         if (safePrefix) {
             prefix = StringUtils.defaultIfBlank(prefix, this.tablePrefix());
             return this.dialect().buildTableName(prefix, entityMeta, this.shardingable());
@@ -150,36 +140,36 @@ public class Query<T> {
         return StringUtils.trimToEmpty(prefix).concat(entityMeta.getEntityName());
     }
 
-    protected Fields __wrapIdentifierFields(String... fields) {
-        Fields _returnValue = Fields.create();
+    protected Fields wrapIdentifierFields(String... fields) {
+        Fields returnValue = Fields.create();
         if (fields != null) {
-            for (String _field : fields) {
-                _returnValue.add(__wrapIdentifierField(_field));
+            for (String field : fields) {
+                returnValue.add(wrapIdentifierField(field));
             }
         }
-        return _returnValue;
+        return returnValue;
     }
 
-    protected String __wrapIdentifierField(String field) {
-        String[] _split = StringUtils.split(field, ".");
-        if (_split != null && _split.length == 2) {
-            String[] _alias = StringUtils.split(_split[1]);
-            if (_alias != null && _alias.length == 2) {
-                return _split[0] + "." + this.dialect().wrapIdentifierQuote(_alias[0]) + " " + _alias[1];
+    protected String wrapIdentifierField(String field) {
+        String[] splits = StringUtils.split(field, ".");
+        if (splits != null && splits.length == 2) {
+            String[] alias = StringUtils.split(splits[1]);
+            if (alias != null && alias.length == 2) {
+                return splits[0] + "." + this.dialect().wrapIdentifierQuote(alias[0]) + " " + alias[1];
             }
-            return _split[0] + "." + this.dialect().wrapIdentifierQuote(_split[1]);
+            return splits[0] + "." + this.dialect().wrapIdentifierQuote(splits[1]);
         }
         return this.dialect().wrapIdentifierQuote(field);
     }
 
-    public static String wrapIdentifierField(IConnectionHolder connectionHolder, String field) {
-        String[] _split = StringUtils.split(field, ".");
-        if (_split != null && _split.length == 2) {
-            String[] _alias = StringUtils.split(_split[1]);
-            if (_alias != null && _alias.length == 2) {
-                return _split[0] + "." + connectionHolder.getDialect().wrapIdentifierQuote(_alias[0]) + " " + _alias[1];
+    public static String wrapIdentifierField(IDatabaseConnectionHolder connectionHolder, String field) {
+        String[] splits = StringUtils.split(field, ".");
+        if (splits != null && splits.length == 2) {
+            String[] alias = StringUtils.split(splits[1]);
+            if (alias != null && alias.length == 2) {
+                return splits[0] + "." + connectionHolder.getDialect().wrapIdentifierQuote(alias[0]) + " " + alias[1];
             }
-            return _split[0] + "." + connectionHolder.getDialect().wrapIdentifierQuote(_split[1]);
+            return splits[0] + "." + connectionHolder.getDialect().wrapIdentifierQuote(splits[1]);
         }
         return connectionHolder.getDialect().wrapIdentifierQuote(field);
     }

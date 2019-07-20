@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2017 the original author or authors.
+ * Copyright 2007-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,32 +15,29 @@
  */
 package net.ymate.platform.core.beans;
 
+import net.ymate.platform.core.beans.annotation.Ignored;
+
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
- * Ioc受控类描述对象
+ * IoC受控类描述对象
  *
  * @author 刘镇 (suninformation@163.com) on 15/5/21 上午10:50
- * @version 1.0
  */
 public class BeanMeta implements Serializable {
 
-    private final Class<?> __beanClass;
+    private final Class<?> beanClass;
 
-    private Object __beanObject;
+    private Object beanObject;
 
-    private final boolean __singleton;
+    private final boolean singleton;
 
-    private boolean __skipInterface;
+    private boolean interfaceIgnored;
 
-    private IInitializer __initializer;
-
-    @Deprecated
-    public static BeanMeta create(Object beanObject, Class<?> beanClass) {
-        return new BeanMeta(beanClass, true, beanObject);
-    }
+    private IInitializer initializer;
 
     public static BeanMeta create(Class<?> beanClass) {
         return new BeanMeta(beanClass, false);
@@ -50,75 +47,78 @@ public class BeanMeta implements Serializable {
         return new BeanMeta(beanClass, singleton);
     }
 
-    /**
-     * 构造方法
-     *
-     * @param beanClass  受控Bean类型
-     * @param singleton  是否单例模式
-     * @param beanObject 若为单例模式则此参数可为空
-     */
-    @Deprecated
-    public BeanMeta(Class<?> beanClass, boolean singleton, Object beanObject) {
-        __beanClass = beanClass;
-        __singleton = singleton;
-        //
-        setBeanObject(beanObject);
+    public static BeanMeta create(Class<?> beanClass, boolean singleton, IInitializer initializer) {
+        return new BeanMeta(beanClass, singleton, initializer);
     }
 
     public BeanMeta(Class<?> beanClass, boolean singleton) {
-        __beanClass = beanClass;
-        __singleton = singleton;
+        this(beanClass, singleton, null);
+    }
+
+    public BeanMeta(Class<?> beanClass, boolean singleton, IInitializer initializer) {
+        this.beanClass = beanClass;
+        this.singleton = singleton;
+        //
+        this.initializer = initializer;
     }
 
     public boolean isSingleton() {
-        return __singleton;
+        return singleton;
     }
 
     public Class<?> getBeanClass() {
-        return __beanClass;
+        return beanClass;
     }
 
     public Object getBeanObject() {
-        return __beanObject;
-    }
-
-    public void setBeanObject(Object beanObject) {
-        if (!__singleton || beanObject == null) {
-            throw new IllegalArgumentException("Not singleton Or beanObject was null");
-        }
-        __beanObject = beanObject;
-    }
-
-    public BeanMeta setSkipInterface(boolean skipInterface) {
-        __skipInterface = skipInterface;
-        return this;
+        return beanObject;
     }
 
     /**
-     * @return 是否忽略接口分析
+     * 设置对象实例（此方法仅用于框架内部使用, 不建议直接设置实例对象, 应该通过Class类型进行注册）
+     *
+     * @param beanObject 类实例对象
      */
-    public boolean isSkipInterface() {
-        return __skipInterface;
+    public void setBeanObject(Object beanObject) {
+        if (!singleton) {
+            throw new IllegalArgumentException("Non-singleton object.");
+        }
+        this.beanObject = beanObject;
+    }
+
+    /**
+     * 是否忽略接口分析
+     *
+     * @return 返回true表示忽略
+     */
+    public boolean isInterfaceIgnored() {
+        return interfaceIgnored;
+    }
+
+    public void setInterfaceIgnored(boolean interfaceIgnored) {
+        this.interfaceIgnored = interfaceIgnored;
     }
 
     public IInitializer getInitializer() {
-        return __initializer;
+        return initializer;
     }
 
     public void setInitializer(IInitializer initializer) {
-        __initializer = initializer;
+        this.initializer = initializer;
     }
 
-    public List<Class<?>> getBeanInterfaces(List<Class<?>> excludedClassSet) {
-        List<Class<?>> _returnValues = new ArrayList<Class<?>>();
-        for (Class<?> _interface : __beanClass.getInterfaces()) {
-            // 排除自定义接口
-            if (excludedClassSet != null && excludedClassSet.contains(_interface)) {
-                continue;
+    public Set<Class<?>> getInterfaces(Collection<Class<?>> excludedClassSet) {
+        Set<Class<?>> returnValues = new HashSet<>();
+        for (Class<?> interfaceClass : beanClass.getInterfaces()) {
+            if (!interfaceClass.isAnnotationPresent(Ignored.class)) {
+                // 排除自定义接口
+                if (excludedClassSet != null && excludedClassSet.contains(interfaceClass)) {
+                    continue;
+                }
+                returnValues.add(interfaceClass);
             }
-            _returnValues.add(_interface);
         }
-        return _returnValues;
+        return returnValues;
     }
 
     /**
@@ -128,6 +128,12 @@ public class BeanMeta implements Serializable {
      */
     public interface IInitializer {
 
-        void init(Object target) throws Exception;
+        /**
+         * 初始化
+         *
+         * @param target 目标对象
+         * @throws Exception 可能产生任何异常
+         */
+        void initialize(Object target) throws Exception;
     }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2017 the original author or authors.
+ * Copyright 2007-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,54 +15,106 @@
  */
 package net.ymate.platform.webmvc;
 
-import net.ymate.platform.core.event.EventContext;
+import net.ymate.platform.core.event.AbstractEventContext;
 import net.ymate.platform.core.event.IEvent;
 
 /**
  * WEB事件对象
  *
  * @author 刘镇 (suninformation@163.com) on 15/5/19 下午11:45
- * @version 1.0
  */
-public class WebEvent extends EventContext<IWebMvc, WebEvent.EVENT> implements IEvent {
+public class WebEvent extends AbstractEventContext<IWebMvc, WebEvent.EVENT> implements IEvent {
+
+    private static final long serialVersionUID = 1L;
 
     /**
-     * WEB事件枚举：<br>
-     * SERVLET_CONTEXT_INITED       - 容器初始化事件<br>
-     * SERVLET_CONTEXT_DESTROYED    - 容器销毁事件<br>
-     * SERVLET_CONTEXT_ATTR_ADDED
-     * SERVLET_CONTEXT_ATTR_REMOVEED
-     * SERVLET_CONTEXT_ATTR_REPLACED
-     * SESSION_CREATED              - 会话创建事件<br>
-     * SESSION_DESTROYED            - 会话销毁事件<br>
-     * SESSION_ATTR_ADDED
-     * SESSION_ATTR_REMOVEED
-     * SESSION_ATTR_REPLACED
-     * REQUEST_INITED               - 请求初始化事件<br>
-     * REQUEST_DESTROYED            - 请求销毁事件<br>
-     * REQUEST_ATTR_ADDED
-     * REQUEST_ATTR_REMOVEED
-     * REQUEST_ATTR_REPLACED
-     * REQUEST_RECEIVED             - 接收控制器方法请求事件<br>
-     * REQUEST_COMPLETED            - 完成控制器方法请求事件<br>
+     * WEB事件枚举
      */
     public enum EVENT {
-        SERVLET_CONTEXT_INITED,
+
+        /**
+         * 容器初始化事件
+         */
+        SERVLET_CONTEXT_INITIALIZED,
+
+        /**
+         * 容器销毁事件
+         */
         SERVLET_CONTEXT_DESTROYED,
+
+        /**
+         * 容器属性添加
+         */
         SERVLET_CONTEXT_ATTR_ADDED,
-        SERVLET_CONTEXT_ATTR_REMOVEED,
+
+        /**
+         * 容器属性移除
+         */
+        SERVLET_CONTEXT_ATTR_REMOVED,
+
+        /**
+         * 容器属性替换
+         */
         SERVLET_CONTEXT_ATTR_REPLACED,
+
+        /**
+         * 会话创建事件
+         */
         SESSION_CREATED,
+
+        /**
+         * 会话销毁事件
+         */
         SESSION_DESTROYED,
+
+        /**
+         * 会话属性添加
+         */
         SESSION_ATTR_ADDED,
-        SESSION_ATTR_REMOVEED,
+
+        /**
+         * 会话属性移除
+         */
+        SESSION_ATTR_REMOVED,
+
+        /**
+         * 会话属性替换
+         */
         SESSION_ATTR_REPLACED,
-        REQUEST_INITED,
+
+        /**
+         * 请求初始化事件
+         */
+        REQUEST_INITIALIZED,
+
+        /**
+         * 请求销毁事件
+         */
         REQUEST_DESTROYED,
+
+        /**
+         * 请求属性添加
+         */
         REQUEST_ATTR_ADDED,
-        REQUEST_ATTR_REMOVEED,
+
+        /**
+         * 请求属性移除
+         */
+        REQUEST_ATTR_REMOVED,
+
+        /**
+         * 请求属性替换
+         */
         REQUEST_ATTR_REPLACED,
+
+        /**
+         * 接收控制器方法请求事件
+         */
         REQUEST_RECEIVED,
+
+        /**
+         * 完成控制器方法请求事件
+         */
         REQUEST_COMPLETED
     }
 

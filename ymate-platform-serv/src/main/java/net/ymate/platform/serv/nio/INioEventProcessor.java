@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2017 the original author or authors.
+ * Copyright 2007-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,22 +15,47 @@
  */
 package net.ymate.platform.serv.nio;
 
-import java.io.Closeable;
+import net.ymate.platform.core.beans.annotation.Ignored;
+import net.ymate.platform.core.support.IDestroyable;
+
 import java.io.IOException;
 import java.nio.channels.SelectableChannel;
 import java.nio.channels.Selector;
 
 /**
+ * 事件处理器
+ *
  * @author 刘镇 (suninformation@163.com) on 15/11/15 下午6:31
- * @version 1.0
  */
-public interface INioEventProcessor<SESSION extends INioSession> extends Closeable {
+@Ignored
+public interface INioEventProcessor<SESSION extends INioSession> extends IDestroyable {
 
+    /**
+     * 注册事件
+     *
+     * @param channel 多路复用频道
+     * @param ops     操作标识
+     * @param session 会话对象
+     * @throws IOException 可能产生的IO异常
+     */
     void registerEvent(SelectableChannel channel, int ops, SESSION session) throws IOException;
 
+    /**
+     * 解注册事件
+     *
+     * @param session 会话对象
+     */
     void unregisterEvent(SESSION session);
 
+    /**
+     * 获取选择器
+     *
+     * @return 返回选择器对象
+     */
     Selector selector();
 
+    /**
+     * 启动
+     */
     void start();
 }

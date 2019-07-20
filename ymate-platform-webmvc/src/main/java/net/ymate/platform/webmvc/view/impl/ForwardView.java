@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2017 the original author or authors.
+ * Copyright 2007-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,6 +15,7 @@
  */
 package net.ymate.platform.webmvc.view.impl;
 
+import net.ymate.platform.webmvc.base.Type;
 import net.ymate.platform.webmvc.context.WebContext;
 import net.ymate.platform.webmvc.view.AbstractView;
 
@@ -24,14 +25,13 @@ import javax.servlet.http.HttpServletRequest;
  * 内部重定向（请求转发）视图
  *
  * @author 刘镇 (suninformation@163.com) on 2011-10-28 下午05:15:10
- * @version 1.0
  */
 public class ForwardView extends AbstractView {
 
     /**
      * 重定向URL
      */
-    protected String path;
+    private String path;
 
     public static ForwardView bind(String path) {
         return new ForwardView(path);
@@ -47,14 +47,14 @@ public class ForwardView extends AbstractView {
     }
 
     @Override
-    protected void __doRenderView() throws Exception {
+    protected void doRenderView() throws Exception {
         // 绝对路径 : 以 '/' 开头的路径不增加 '/WEB-INF'
-        if (path.charAt(0) != '/') {
+        if (path.charAt(0) != Type.Const.PATH_SEPARATOR_CHAR) {
             // 包名形式的路径
-            path = "/WEB-INF/" + path;
+            path = Type.Const.WEB_INF + path;
         }
         // 执行 Forward
-        HttpServletRequest _request = WebContext.getRequest();
-        _request.getRequestDispatcher(__doBuildURL(path)).forward(_request, WebContext.getResponse());
+        HttpServletRequest httpServletRequest = WebContext.getRequest();
+        httpServletRequest.getRequestDispatcher(buildUrl(path)).forward(httpServletRequest, WebContext.getResponse());
     }
 }

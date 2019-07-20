@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2018 the original author or authors.
+ * Copyright 2007-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,13 +15,13 @@
  */
 package net.ymate.platform.webmvc.view.impl;
 
-import net.ymate.platform.core.support.IDestroyable;
+import net.ymate.platform.commons.util.RuntimeUtils;
 import net.ymate.platform.core.support.RecycleHelper;
-import net.ymate.platform.core.util.RuntimeUtils;
 import net.ymate.platform.webmvc.IWebMvc;
+import net.ymate.platform.webmvc.base.Type;
 import net.ymate.platform.webmvc.context.WebContext;
 import net.ymate.platform.webmvc.view.AbstractView;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.beetl.core.Configuration;
 import org.beetl.core.GroupTemplate;
 import org.beetl.core.Template;
@@ -33,13 +33,14 @@ import java.io.OutputStream;
 
 /**
  * @author 刘镇 (suninformation@163.com) on 2018/4/3 上午4:06
- * @version 1.0
  */
 public class BeetlView extends AbstractView {
 
-    static GroupTemplate __groupTemplate;
+    public static final String FILE_SUFFIX = ".btl";
 
-    String __path;
+    private static GroupTemplate groupTemplate;
+
+    private String path;
 
     public static BeetlView bind() {
         return new BeetlView();
@@ -60,12 +61,12 @@ public class BeetlView extends AbstractView {
      * @param path  模板文件路径
      */
     public BeetlView(IWebMvc owner, String path) {
-        __doViewInit(owner);
-        __path = path;
+        doViewInit(owner);
+        this.path = path;
     }
 
     public BeetlView() {
-        __doViewInit(WebContext.getContext().getOwner());
+        doViewInit(WebContext.getContext().getOwner());
     }
 
     public BeetlView(String path) {
@@ -76,32 +77,27 @@ public class BeetlView extends AbstractView {
      * @return 返回当前模板引擎配置对象
      */
     public Configuration getEngineConfig() {
-        return __groupTemplate.getConf();
+        return groupTemplate.getConf();
     }
 
     @Override
-    protected synchronized void __doViewInit(IWebMvc owner) {
-        super.__doViewInit(owner);
-        // 初始化Beelt模板引擎配置
-        if (__groupTemplate == null) {
+    protected synchronized void doViewInit(IWebMvc owner) {
+        super.doViewInit(owner);
+        if (groupTemplate == null) {
             try {
-                String _viewRoot;
-                if (__baseViewPath.startsWith("/WEB-INF")) {
-                    _viewRoot = new File(RuntimeUtils.getRootPath(), StringUtils.substringAfter(__baseViewPath, "/WEB-INF/")).getPath();
+                String viewRoot;
+                if (baseViewPath.startsWith(Type.Const.WEB_INF)) {
+                    viewRoot = new File(RuntimeUtils.getRootPath(), StringUtils.substringAfter(baseViewPath, Type.Const.WEB_INF)).getPath();
                 } else {
-                    _viewRoot = new File(__baseViewPath).getPath();
+                    viewRoot = new File(baseViewPath).getPath();
                 }
-                FileResourceLoader resourceLoader = new FileResourceLoader(_viewRoot, DEFAULT_CHARSET);
-                Configuration cfg = Configuration.defaultConfiguration();
-                __groupTemplate = new GroupTemplate(resourceLoader, cfg);
+                FileResourceLoader resourceLoader = new FileResourceLoader(viewRoot, DEFAULT_CHARSET);
+                groupTemplate = new GroupTemplate(resourceLoader, Configuration.defaultConfiguration());
                 //
-                RecycleHelper.getInstance().register(new IDestroyable() {
-                    @Override
-                    public void destroy() throws Exception {
-                        if (__groupTemplate != null) {
-                            __groupTemplate.close();
-                            __groupTemplate = null;
-                        }
+                RecycleHelper.getInstance().register(() -> {
+                    if (groupTemplate != null) {
+                        groupTemplate.close();
+                        groupTemplate = null;
                     }
                 });
             } catch (IOException e) {
@@ -110,41 +106,25 @@ public class BeetlView extends AbstractView {
         }
     }
 
-    protected void __doProcessPath() {
-        if (StringUtils.isNotBlank(__contentType)) {
-            WebContext.getResponse().setContentType(__contentType);
-        }
-        if (StringUtils.isBlank(__path)) {
-            String _mapping = WebContext.getRequestContext().getRequestMapping();
-            if (_mapping.endsWith("/")) {
-                _mapping = _mapping.substring(0, _mapping.length() - 1);
-            }
-            __path = _mapping + ".btl";
-        } else {
-            if (__path.startsWith(__baseViewPath)) {
-                __path = StringUtils.substringAfter(__path, __baseViewPath);
-            }
-            if (!__path.endsWith(".")) {
-                __path += ".btl";
-            }
-        }
+    private void doProcessPath() {
+        path = doProcessPath(path, FILE_SUFFIX, false);
     }
 
-    private void __doRender(OutputStream outputStream) {
-        Template _tmpl = __groupTemplate.getTemplate(__path);
-        _tmpl.binding(__attributes);
-        _tmpl.renderTo(outputStream);
+    private void doRender(OutputStream outputStream) {
+        Template template = groupTemplate.getTemplate(path);
+        template.binding(attributes);
+        template.renderTo(outputStream);
     }
 
     @Override
-    protected void __doRenderView() throws Exception {
-        __doProcessPath();
-        __doRender(WebContext.getResponse().getOutputStream());
+    protected void doRenderView() throws Exception {
+        doProcessPath();
+        doRender(WebContext.getResponse().getOutputStream());
     }
 
     @Override
     public void render(OutputStream output) throws Exception {
-        __doProcessPath();
-        __doRender(output);
+        doProcessPath();
+        doRender(output);
     }
 }

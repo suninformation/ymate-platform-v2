@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2017 the original author or authors.
+ * Copyright 2007-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,44 +22,41 @@ import org.bson.conversions.Bson;
 
 /**
  * @author 刘镇 (suninformation@163.com) on 15/11/23 下午3:45
- * @version 1.0
  */
 public final class Query implements IBsonable {
 
-    private BasicDBObject __condition = new BasicDBObject();
+    private final BasicDBObject condition = new BasicDBObject();
 
     public static Query create() {
         return new Query();
     }
 
     public static Query create(String key, IOperator operator) {
-        Query _query = new Query();
-        _query.cond(key, operator);
-        return _query;
+        Query query = new Query();
+        return query.cond(key, operator);
     }
 
     public static Query create(String key, Bson operator) {
-        Query _query = new Query();
-        _query.cond(key, operator);
-        return _query;
+        Query query = new Query();
+        return query.cond(key, operator);
     }
 
     private Query() {
     }
 
     public Query cond(String key, IOperator operator) {
-        __condition.put(key, operator.toBson());
+        condition.put(key, operator.toBson());
         return this;
     }
 
     public Query cond(String key, Bson operator) {
-        __condition.put(key, operator);
+        condition.put(key, operator);
         return this;
     }
 
     @Override
     public BasicDBObject toBson() {
-        return __condition;
+        return condition;
     }
 
 }

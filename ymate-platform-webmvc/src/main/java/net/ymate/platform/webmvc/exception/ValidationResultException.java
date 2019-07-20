@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2018 the original author or authors.
+ * Copyright 2007-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,7 +21,6 @@ import net.ymate.platform.webmvc.view.IView;
  * 用于在验证器中设置控制器响应
  *
  * @author 刘镇 (suninformation@163.com) on 2018/8/12 下午3:56
- * @version 1.0
  * @since 2.0.6
  */
 public class ValidationResultException extends RuntimeException {

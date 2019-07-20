@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2018 the original author or authors.
+ * Copyright 2007-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,18 +15,13 @@
  */
 package net.ymate.platform.core.support;
 
+import net.ymate.platform.core.beans.annotation.Ignored;
+
 /**
  * 指定对象具备销毁能力
  *
  * @author 刘镇 (suninformation@163.com) on 2018/4/4 上午11:37
- * @version 1.0
  */
-public interface IDestroyable {
-
-    /**
-     * 销毁
-     *
-     * @throws Exception 销毁过程中产生的任何异常
-     */
-    void destroy() throws Exception;
+@Ignored
+public interface IDestroyable extends AutoCloseable {
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2017 the original author or authors.
+ * Copyright 2007-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,34 +23,33 @@ import net.ymate.platform.webmvc.context.WebContext;
 
 /**
  * @author 刘镇 (suninformation@163.com) on 16/1/17 下午6:10
- * @version 1.0
  */
 public class WebCacheScopeProcessor implements ICacheScopeProcessor {
 
-    private String __doBuildSessionCacheKey(String cacheKey) {
-        String _sessionId = WebContext.getRequest().getSession().getId();
-        return _sessionId + "|" + cacheKey;
+    private String buildSessionCacheKey(String cacheKey) {
+        String sessionId = WebContext.getRequest().getSession().getId();
+        return sessionId + "|" + cacheKey;
     }
 
     @Override
     public CacheElement getFromCache(ICaches caches, ICaches.Scope scope, String cacheName, String cacheKey) throws CacheException {
-        CacheElement _returnValue;
+        CacheElement cacheElement;
         switch (scope) {
             case SESSION:
-                _returnValue = (CacheElement) caches.get(scope.name(), __doBuildSessionCacheKey(cacheKey));
+                cacheElement = (CacheElement) caches.get(scope.name(), buildSessionCacheKey(cacheKey));
                 break;
             case APPLICATION:
             default:
-                _returnValue = (CacheElement) caches.get(ICaches.Scope.APPLICATION.name(), cacheKey);
+                cacheElement = (CacheElement) caches.get(ICaches.Scope.APPLICATION.name(), cacheKey);
         }
-        return _returnValue;
+        return cacheElement;
     }
 
     @Override
     public void putInCache(ICaches caches, ICaches.Scope scope, String cacheName, String cacheKey, CacheElement cacheElement) throws CacheException {
         switch (scope) {
             case SESSION:
-                caches.put(scope.name(), __doBuildSessionCacheKey(cacheKey), cacheElement);
+                caches.put(scope.name(), buildSessionCacheKey(cacheKey), cacheElement);
                 break;
             case APPLICATION:
             default:

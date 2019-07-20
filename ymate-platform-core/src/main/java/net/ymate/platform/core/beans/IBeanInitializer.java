@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2018 the original author or authors.
+ * Copyright 2007-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,9 +17,13 @@ package net.ymate.platform.core.beans;
 
 /**
  * @author 刘镇 (suninformation@163.com) on 2018/3/9 上午12:24
- * @version 1.0
  */
 public interface IBeanInitializer {
 
+    /**
+     * 执行类初始化方法
+     *
+     * @throws Exception 可能产生的任何异常
+     */
     void afterInitialized() throws Exception;
 }

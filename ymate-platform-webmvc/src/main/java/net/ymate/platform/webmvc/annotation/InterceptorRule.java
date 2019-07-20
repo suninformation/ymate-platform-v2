@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2017 the original author or authors.
+ * Copyright 2007-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,13 +15,14 @@
  */
 package net.ymate.platform.webmvc.annotation;
 
+import org.apache.commons.lang3.StringUtils;
+
 import java.lang.annotation.*;
 
 /**
  * 拦截器规则注解
  *
  * @author 刘镇 (suninformation@163.com) on 16/1/8 下午2:23
- * @version 1.0
  */
 @Target({ElementType.TYPE, ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
@@ -31,5 +32,5 @@ public @interface InterceptorRule {
     /**
      * @return 规则名称
      */
-    String value() default "";
+    String value() default StringUtils.EMPTY;
 }

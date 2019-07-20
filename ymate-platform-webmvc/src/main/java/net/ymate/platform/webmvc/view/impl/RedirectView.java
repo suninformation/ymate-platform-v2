@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2017 the original author or authors.
+ * Copyright 2007-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,7 +15,8 @@
  */
 package net.ymate.platform.webmvc.view.impl;
 
-import net.ymate.platform.core.util.RuntimeUtils;
+import net.ymate.platform.commons.util.RuntimeUtils;
+import net.ymate.platform.webmvc.base.Type;
 import net.ymate.platform.webmvc.context.WebContext;
 import net.ymate.platform.webmvc.view.AbstractView;
 
@@ -23,14 +24,13 @@ import net.ymate.platform.webmvc.view.AbstractView;
  * 重定向视图
  *
  * @author 刘镇 (suninformation@163.com) on 2011-10-28 下午03:49:52
- * @version 1.0
  */
 public class RedirectView extends AbstractView {
 
     /**
      * 重定向URL
      */
-    protected String __path;
+    private String path;
 
     public static RedirectView bind(String path) {
         return new RedirectView(path);
@@ -42,22 +42,22 @@ public class RedirectView extends AbstractView {
      * @param path 重定向URL
      */
     public RedirectView(String path) {
-        this.__path = path;
+        this.path = path;
     }
 
     @Override
-    protected void __doRenderView() throws Exception {
+    protected void doRenderView() throws Exception {
         // 重定向到其它站点
-        if (!__path.startsWith("http://") && !__path.startsWith("https://")) {
+        if (!path.startsWith(Type.Const.HTTP_PREFIX) && !path.startsWith(Type.Const.HTTPS_PREFIX)) {
             // 重定向决对路径
-            if (__path.length() > 0 && __path.charAt(0) == '/') {
-                __path = WebContext.getRequest().getContextPath() + __path;
+            if (path.length() > 0 && path.charAt(0) == Type.Const.PATH_SEPARATOR_CHAR) {
+                path = WebContext.getRequest().getContextPath() + path;
             }
             // 重定向相对路径
             else {
-                __path = RuntimeUtils.getRootPath() + "/" + __path;
+                path = RuntimeUtils.getRootPath() + Type.Const.PATH_SEPARATOR_CHAR + path;
             }
         }
-        WebContext.getResponse().sendRedirect(__doBuildURL(__path));
+        WebContext.getResponse().sendRedirect(buildUrl(path));
     }
 }

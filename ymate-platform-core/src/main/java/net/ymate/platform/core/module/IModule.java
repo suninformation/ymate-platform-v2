@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2017 the original author or authors.
+ * Copyright 2007-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,29 +15,23 @@
  */
 package net.ymate.platform.core.module;
 
-import net.ymate.platform.core.YMP;
-import net.ymate.platform.core.support.IInitializable;
+import net.ymate.platform.core.IApplication;
+import net.ymate.platform.core.beans.annotation.Ignored;
+import net.ymate.platform.core.support.IDestroyable;
+import net.ymate.platform.core.support.IInitialization;
 
 /**
  * 模块接口定义
  *
  * @author 刘镇 (suninformation@163.com) on 2012-11-24 下午6:13:22
- * @version 1.0
  */
-public interface IModule extends IInitializable<YMP> {
+@Ignored
+public interface IModule extends IInitialization<IApplication>, IDestroyable {
 
     /**
+     * 获取模块名称
+     *
      * @return 返回模块名称
      */
     String getName();
-
-    /**
-     * @return 返回模块是否已初始化
-     */
-    boolean isInited();
-
-    /**
-     * @return 返回所属YMP框架管理器实例
-     */
-    YMP getOwner();
 }

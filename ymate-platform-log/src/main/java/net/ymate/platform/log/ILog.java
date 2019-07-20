@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2017 the original author or authors.
+ * Copyright 2007-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,33 +15,64 @@
  */
 package net.ymate.platform.log;
 
-import net.ymate.platform.core.YMP;
+import net.ymate.platform.core.beans.annotation.Ignored;
+import net.ymate.platform.core.support.IDestroyable;
 
 /**
- * 日志记录器模块管理器接口定义
+ * 日志管理器接口定义
  *
  * @author 刘镇 (suninformation@163.com) on 15/3/17 下午2:40
- * @version 1.0
  */
-public interface ILog {
+@Ignored
+public interface ILog extends IDestroyable {
 
     String MODULE_NAME = "log";
 
-    /**
-     * @return 返回所属YMP框架管理器实例
-     */
-    YMP getOwner();
+    String LOG_OUT_DIR = "LOG_OUT_DIR";
 
     /**
-     * @return 返回日志记录器模块配置对象
+     * 初始化
+     *
+     * @throws Exception 初始过程中产生的任何异常
      */
-    ILogModuleCfg getModuleCfg();
+    void initialize() throws Exception;
 
-    boolean isInited();
+    /**
+     * 是否已初始化
+     *
+     * @return 返回true表示已初始化
+     */
+    boolean isInitialized();
 
+    /**
+     * 获取日志记录器配置
+     *
+     * @return 返回日志记录器配置对象
+     */
+    ILogConfig getConfig();
+
+    /**
+     * 获取默认日志记录器
+     *
+     * @return 返回日志记录器对象
+     */
     ILogger getLogger();
 
+    /**
+     * 获取指定名称的日志记录器
+     *
+     * @param loggerName 日志记录器名称
+     * @return 返回日志记录器对象
+     * @throws Exception 可能产生的任何异常
+     */
     ILogger getLogger(String loggerName) throws Exception;
 
+    /**
+     * 获取指定类名称的日志记录器
+     *
+     * @param clazz 类型
+     * @return 返回日志记录器对象
+     * @throws Exception 可能产生的任何异常
+     */
     ILogger getLogger(Class<?> clazz) throws Exception;
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2018 the original author or authors.
+ * Copyright 2007-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,14 +19,16 @@ import java.io.Serializable;
 import java.net.InetSocketAddress;
 
 /**
+ * @param <MESSAGE_TYPE> 消息类型
  * @author 刘镇 (suninformation@163.com) on 2018/11/21 3:27 PM
- * @version 1.0
  */
 public class NioUdpMessageWrapper<MESSAGE_TYPE> implements Serializable {
 
-    private InetSocketAddress socketAddress;
+    private static final long serialVersionUID = 1L;
 
-    private MESSAGE_TYPE message;
+    private final InetSocketAddress socketAddress;
+
+    private final MESSAGE_TYPE message;
 
     public NioUdpMessageWrapper(InetSocketAddress socketAddress, MESSAGE_TYPE message) {
         this.socketAddress = socketAddress;

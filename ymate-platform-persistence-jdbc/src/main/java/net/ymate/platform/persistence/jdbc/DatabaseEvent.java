@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2017 the original author or authors.
+ * Copyright 2007-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,22 +15,37 @@
  */
 package net.ymate.platform.persistence.jdbc;
 
-import net.ymate.platform.core.event.EventContext;
+import net.ymate.platform.core.event.AbstractEventContext;
 import net.ymate.platform.core.event.IEvent;
 
 /**
  * @author 刘镇 (suninformation@163.com) on 2017/12/13 上午11:50
- * @version 1.0
  */
-public class DatabaseEvent extends EventContext<IDatabase, DatabaseEvent.EVENT> implements IEvent {
+public class DatabaseEvent extends AbstractEventContext<IDatabase, DatabaseEvent.EVENT> implements IEvent {
 
     /**
      * Database事件枚举
      */
     public enum EVENT {
+
+        /**
+         * 执行查询操作后
+         */
         QUERY_AFTER,
+
+        /**
+         * 执行插入操作后
+         */
         INSERT_AFTER,
+
+        /**
+         * 执行更新操作后
+         */
         UPDATE_AFTER,
+
+        /**
+         * 执行删除操作后
+         */
         REMOVE_AFTER
     }
 

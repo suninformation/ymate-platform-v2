@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2018 the original author or authors.
+ * Copyright 2007-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,6 +15,7 @@
  */
 package net.ymate.platform.serv;
 
+import net.ymate.platform.core.beans.annotation.Ignored;
 import net.ymate.platform.core.support.IDestroyable;
 
 import java.util.Map;
@@ -23,8 +24,8 @@ import java.util.Map;
  * 会话空闲检查器接口
  *
  * @author 刘镇 (suninformation@163.com) on 2018/11/21 7:26 PM
- * @version 1.0
  */
+@Ignored
 public interface ISessionIdleChecker<SESSION_WRAPPER extends ISessionWrapper, SESSION_ID, MESSAGE_TYPE> extends IDestroyable {
 
     /**
@@ -32,7 +33,7 @@ public interface ISessionIdleChecker<SESSION_WRAPPER extends ISessionWrapper, SE
      *
      * @param sessionManager 会话管理器接口实现
      */
-    void init(ISessionManager<SESSION_WRAPPER, SESSION_ID, MESSAGE_TYPE> sessionManager);
+    void initialize(ISessionManager<SESSION_WRAPPER, SESSION_ID, MESSAGE_TYPE> sessionManager);
 
     /**
      * 获取会话管理器
@@ -42,9 +43,11 @@ public interface ISessionIdleChecker<SESSION_WRAPPER extends ISessionWrapper, SE
     ISessionManager<SESSION_WRAPPER, SESSION_ID, MESSAGE_TYPE> getSessionManager();
 
     /**
-     * @return 是否已初始化
+     * 判断是否已初始化
+     *
+     * @return 返回true表示已初始化
      */
-    boolean isInited();
+    boolean isInitialized();
 
     /**
      * 执行空闲会话检查

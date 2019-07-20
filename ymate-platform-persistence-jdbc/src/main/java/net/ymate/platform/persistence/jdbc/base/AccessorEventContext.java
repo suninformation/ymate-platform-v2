@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2017 the original author or authors.
+ * Copyright 2007-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,7 +15,7 @@
  */
 package net.ymate.platform.persistence.jdbc.base;
 
-import net.ymate.platform.persistence.base.Type;
+import net.ymate.platform.core.persistence.base.Type;
 
 import java.sql.Statement;
 import java.util.EventObject;
@@ -24,9 +24,10 @@ import java.util.EventObject;
  * 访问器配置事件处理上下文
  *
  * @author 刘镇 (suninformation@163.com) on 2011-8-30 上午10:05:44
- * @version 1.0
  */
 public class AccessorEventContext extends EventObject {
+
+    private static final long serialVersionUID = 1L;
 
     private final Statement statement;
 

@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2017 the original author or authors.
+ * Copyright 2007-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,12 +16,13 @@
 package net.ymate.platform.webmvc.view.impl;
 
 import freemarker.template.Configuration;
-import net.ymate.platform.core.support.FreemarkerConfigBuilder;
-import net.ymate.platform.core.util.RuntimeUtils;
+import net.ymate.platform.commons.FreemarkerConfigBuilder;
+import net.ymate.platform.commons.util.RuntimeUtils;
 import net.ymate.platform.webmvc.IWebMvc;
+import net.ymate.platform.webmvc.base.Type;
 import net.ymate.platform.webmvc.context.WebContext;
 import net.ymate.platform.webmvc.view.AbstractView;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import java.io.*;
 
@@ -29,13 +30,14 @@ import java.io.*;
  * Freemarker视图
  *
  * @author 刘镇 (suninformation@163.com) on 2011-10-31 下午08:45:22
- * @version 1.0
  */
 public class FreemarkerView extends AbstractView {
 
-    static Configuration __freemarkerConfig;
+    public static final String FILE_SUFFIX = ".ftl";
 
-    String __path;
+    private static Configuration freemarkerConfig;
+
+    private String path;
 
     public static FreemarkerView bind() {
         return new FreemarkerView();
@@ -56,12 +58,12 @@ public class FreemarkerView extends AbstractView {
      * @param path  FTL文件路径
      */
     public FreemarkerView(IWebMvc owner, String path) {
-        __doViewInit(owner);
-        __path = path;
+        doViewInit(owner);
+        this.path = path;
     }
 
     public FreemarkerView() {
-        __doViewInit(WebContext.getContext().getOwner());
+        doViewInit(WebContext.getContext().getOwner());
     }
 
     public FreemarkerView(String path) {
@@ -72,20 +74,19 @@ public class FreemarkerView extends AbstractView {
      * @return 返回当前模板引擎配置对象
      */
     public Configuration getEngineConfig() {
-        return __freemarkerConfig;
+        return freemarkerConfig;
     }
 
     @Override
-    protected synchronized void __doViewInit(IWebMvc owner) {
-        super.__doViewInit(owner);
-        // 初始化Freemarker模板引擎配置
-        if (__freemarkerConfig == null) {
+    protected synchronized void doViewInit(IWebMvc owner) {
+        super.doViewInit(owner);
+        if (freemarkerConfig == null) {
             try {
-                FreemarkerConfigBuilder _builder = FreemarkerConfigBuilder.create();
-                if (__baseViewPath.startsWith("/WEB-INF")) {
-                    __freemarkerConfig = _builder.addTemplateFileDir(new File(RuntimeUtils.getRootPath(), StringUtils.substringAfter(__baseViewPath, "/WEB-INF/"))).build();
+                FreemarkerConfigBuilder configBuilder = FreemarkerConfigBuilder.create();
+                if (baseViewPath.startsWith(Type.Const.WEB_INF)) {
+                    freemarkerConfig = configBuilder.addTemplateFileDir(new File(RuntimeUtils.getRootPath(), StringUtils.substringAfter(baseViewPath, Type.Const.WEB_INF))).build();
                 } else {
-                    __freemarkerConfig = _builder.addTemplateFileDir(new File(__baseViewPath)).build();
+                    freemarkerConfig = configBuilder.addTemplateFileDir(new File(baseViewPath)).build();
                 }
             } catch (IOException e) {
                 throw new Error(RuntimeUtils.unwrapThrow(e));
@@ -93,35 +94,19 @@ public class FreemarkerView extends AbstractView {
         }
     }
 
-    protected void __doProcessPath() {
-        if (StringUtils.isNotBlank(__contentType)) {
-            WebContext.getResponse().setContentType(__contentType);
-        }
-        if (StringUtils.isBlank(__path)) {
-            String _mapping = WebContext.getRequestContext().getRequestMapping();
-            if (_mapping.endsWith("/")) {
-                _mapping = _mapping.substring(0, _mapping.length() - 1);
-            }
-            __path = _mapping + ".ftl";
-        } else {
-            if (__path.startsWith(__baseViewPath)) {
-                __path = StringUtils.substringAfter(__path, __baseViewPath);
-            }
-            if (!__path.endsWith(".ftl")) {
-                __path += ".ftl";
-            }
-        }
+    private void doProcessPath() {
+        path = doProcessPath(path, FILE_SUFFIX, false);
     }
 
     @Override
-    protected void __doRenderView() throws Exception {
-        __doProcessPath();
-        __freemarkerConfig.getTemplate(__path, WebContext.getContext().getLocale()).process(__attributes, WebContext.getResponse().getWriter());
+    protected void doRenderView() throws Exception {
+        doProcessPath();
+        freemarkerConfig.getTemplate(path, WebContext.getContext().getLocale()).process(attributes, WebContext.getResponse().getWriter());
     }
 
     @Override
     public void render(OutputStream output) throws Exception {
-        __doProcessPath();
-        __freemarkerConfig.getTemplate(__path, WebContext.getContext().getLocale()).process(__attributes, new BufferedWriter(new OutputStreamWriter(output)));
+        doProcessPath();
+        freemarkerConfig.getTemplate(path, WebContext.getContext().getLocale()).process(attributes, new BufferedWriter(new OutputStreamWriter(output)));
     }
 }

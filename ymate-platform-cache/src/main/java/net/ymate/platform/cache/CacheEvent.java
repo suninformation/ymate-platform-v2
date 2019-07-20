@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2017 the original author or authors.
+ * Copyright 2007-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,24 +15,49 @@
  */
 package net.ymate.platform.cache;
 
-import net.ymate.platform.core.event.EventContext;
+import net.ymate.platform.core.event.AbstractEventContext;
 import net.ymate.platform.core.event.IEvent;
 
 /**
  * @author 刘镇 (suninformation@163.com) on 2017/11/20 上午4:51
- * @version 1.0
  */
-public class CacheEvent extends EventContext<ICaches, CacheEvent.EVENT> implements IEvent {
+public class CacheEvent extends AbstractEventContext<ICaches, CacheEvent.EVENT> implements IEvent {
+
+    private static final long serialVersionUID = 1L;
 
     /**
      * Cache事件枚举
      */
     public enum EVENT {
+
+        /**
+         * 缓存元素添加
+         */
         ELEMENT_PUT,
+
+        /**
+         * 缓存元素更新
+         */
         ELEMENT_UPDATED,
+
+        /**
+         * 缓存元素过期
+         */
         ELEMENT_EXPIRED,
+
+        /**
+         * 缓存元素被驱逐
+         */
         ELEMENT_EVICTED,
+
+        /**
+         * 缓存元素移除
+         */
         ELEMENT_REMOVED,
+
+        /**
+         * 缓存元素被清空
+         */
         ELEMENT_REMOVED_ALL
     }
 

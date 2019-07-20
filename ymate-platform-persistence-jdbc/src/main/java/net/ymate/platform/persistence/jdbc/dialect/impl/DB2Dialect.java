@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2017 the original author or authors.
+ * Copyright 2007-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,29 +15,28 @@
  */
 package net.ymate.platform.persistence.jdbc.dialect.impl;
 
-import net.ymate.platform.core.util.ExpressionUtils;
-import net.ymate.platform.persistence.jdbc.JDBC;
+import net.ymate.platform.commons.util.ExpressionUtils;
+import net.ymate.platform.core.persistence.base.Type;
 import net.ymate.platform.persistence.jdbc.dialect.AbstractDialect;
 
 /**
  * DB2数据库方言接口实现
  *
  * @author 刘镇 (suninformation@163.com) on 15/4/16 上午11:26
- * @version 1.0
  */
 public class DB2Dialect extends AbstractDialect {
 
     @Override
     public String getName() {
-        return JDBC.DATABASE.DB2.name();
+        return Type.DATABASE.DB2.name();
     }
 
     @Override
-    public String buildPagedQuerySQL(String originSql, int page, int pageSize) {
-        int _limit = ((page - 1) * pageSize);
+    public String buildPagedQuerySql(String originSql, int page, int pageSize) {
+        int limit = ((page - 1) * pageSize);
         return ExpressionUtils.bind("SELECT * FROM (SELECT ROW_NUMBER() OVER() AS __rn__, __row__.* FROM (${_sql}) AS __row__) WHERE __rn__ BETWEEN ${_limit} AND ${_offset}")
-                .set("_limit", _limit + pageSize + "")
+                .set("_limit", String.valueOf(limit + pageSize))
                 .set("_sql", originSql)
-                .set("_offset", _limit + "").getResult();
+                .set("_offset", String.valueOf(limit)).getResult();
     }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2017 the original author or authors.
+ * Copyright 2007-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,25 +15,26 @@
  */
 package net.ymate.platform.core.handle;
 
-import net.ymate.platform.core.YMP;
+import net.ymate.platform.core.IApplication;
 import net.ymate.platform.core.beans.IBeanHandler;
 
 /**
  * @author 刘镇 (suninformation@163.com) on 2017/8/3 下午6:45
- * @version 1.0
  */
 public final class PackagesHandler implements IBeanHandler {
 
-    private final YMP __owner;
+    private static final String PACKAGE_INFO = "package-info";
 
-    public PackagesHandler(YMP owner) {
-        __owner = owner;
+    private final IApplication owner;
+
+    public PackagesHandler(IApplication owner) {
+        this.owner = owner;
     }
 
     @Override
-    public Object handle(Class<?> targetClass) throws Exception {
-        if (targetClass.isInterface() && "package-info".equalsIgnoreCase(targetClass.getSimpleName())) {
-            __owner.getConfig().getInterceptSettings().registerInterceptPackage(targetClass);
+    public Object handle(Class<?> targetClass) {
+        if (targetClass.isInterface() && PACKAGE_INFO.equalsIgnoreCase(targetClass.getSimpleName())) {
+            owner.getInterceptSettings().registerInterceptPackage(targetClass);
         }
         return null;
     }

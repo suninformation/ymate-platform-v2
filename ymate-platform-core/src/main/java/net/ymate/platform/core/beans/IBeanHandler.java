@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2017 the original author or authors.
+ * Copyright 2007-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,6 +15,8 @@
  */
 package net.ymate.platform.core.beans;
 
+import net.ymate.platform.commons.ReentrantLockHelper;
+import net.ymate.platform.commons.util.ClassUtils;
 import net.ymate.platform.core.beans.annotation.Bean;
 
 import java.util.Map;
@@ -24,31 +26,25 @@ import java.util.concurrent.ConcurrentHashMap;
  * 对象处理器
  *
  * @author 刘镇 (suninformation@163.com) on 15-3-5 下午1:43
- * @version 1.0
  */
 public interface IBeanHandler {
 
-    Map<Class<? extends IBeanHandler>, IBeanHandler> __beanHandlers = new ConcurrentHashMap<Class<? extends IBeanHandler>, IBeanHandler>();
+    Map<Class<? extends IBeanHandler>, IBeanHandler> BEAN_HANDLERS = new ConcurrentHashMap<>();
 
-    IBeanHandler DEFAULT_HANDLER = new IBeanHandler() {
-        @Override
-        public Object handle(Class<?> targetClass) throws Exception {
-            boolean _singleton = false;
-            Bean _bean = targetClass.getAnnotation(Bean.class);
-            if (_bean != null) {
-                if (!_bean.handler().equals(IBeanHandler.class)) {
-                    IBeanHandler _handler = __beanHandlers.get(_bean.handler());
-                    if (_handler == null) {
-                        _handler = _bean.handler().newInstance();
-                        __beanHandlers.put(_bean.handler(), _handler);
-                    }
-                    return _handler.handle(targetClass);
+    IBeanHandler DEFAULT_HANDLER = targetClass -> {
+        if (ClassUtils.isNormalClass(targetClass) && !targetClass.isInterface()) {
+            boolean singleton = false;
+            Bean bean = targetClass.getAnnotation(Bean.class);
+            if (bean != null) {
+                if (!bean.handler().equals(IBeanHandler.class)) {
+                    return ReentrantLockHelper.putIfAbsentAsync(BEAN_HANDLERS, bean.handler(), () -> bean.handler().newInstance()).handle(targetClass);
                 } else {
-                    _singleton = _bean.singleton();
+                    singleton = bean.singleton();
                 }
             }
-            return BeanMeta.create(targetClass, _singleton);
+            return BeanMeta.create(targetClass, singleton);
         }
+        return null;
     };
 
     /**

@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2017 the original author or authors.
+ * Copyright 2007-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,12 +16,21 @@
 package net.ymate.platform.persistence.mongodb;
 
 import com.mongodb.MongoClientOptions;
+import net.ymate.platform.core.beans.annotation.Ignored;
 
 /**
+ * 自定义MongoDB客户端初始化参数配置处理器
+ *
  * @author 刘镇 (suninformation@163.com) on 15/11/22 上午3:08
- * @version 1.0
  */
+@Ignored
 public interface IMongoClientOptionsHandler {
 
+    /**
+     * 初始化MongoDB客户端参数配置
+     *
+     * @param dataSourceName 数据源名称
+     * @return 返回客户端参数配置构建器对象
+     */
     MongoClientOptions.Builder handler(String dataSourceName);
 }

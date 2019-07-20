@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2017 the original author or authors.
+ * Copyright 2007-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,62 +21,79 @@ import net.ymate.platform.cache.ICaches;
 
 /**
  * @author 刘镇 (suninformation@163.com) on 2017/11/20 上午2:12
- * @version 1.0
  */
 public class DefaultCacheEventListener implements ICacheEventListener {
 
-    private ICaches __owner;
+    private ICaches owner;
+
+    private boolean initialized;
 
     @Override
-    public void init(ICaches owner) throws Exception {
-        __owner = owner;
+    public void initialize(ICaches owner) {
+        if (!initialized) {
+            this.owner = owner;
+            this.initialized = true;
+        }
     }
 
     @Override
-    public void destroy() throws Exception {
-        __owner = null;
+    public boolean isInitialized() {
+        return initialized;
+    }
+
+    @Override
+    public void close() throws Exception {
+        if (initialized) {
+            initialized = false;
+            owner = null;
+        }
+    }
+
+    @Override
+    public ICaches getOwner() {
+        return owner;
     }
 
     @Override
     public void notifyElementRemoved(String cacheName, Object key) {
-        __owner.getOwner().getEvents().fireEvent(new CacheEvent(__owner, CacheEvent.EVENT.ELEMENT_REMOVED)
-                .addParamExtend("cacheName", cacheName)
-                .addParamExtend("key", key));
+        owner.getOwner().getEvents().fireEvent(new CacheEvent(owner, CacheEvent.EVENT.ELEMENT_REMOVED)
+                .addParamExtend(CACHE_NAME, cacheName)
+                .addParamExtend(CACHE_KEY, key));
     }
 
     @Override
     public void notifyElementPut(String cacheName, Object key, Object value) {
-        __owner.getOwner().getEvents().fireEvent(new CacheEvent(__owner, CacheEvent.EVENT.ELEMENT_PUT)
-                .addParamExtend("cacheName", cacheName)
-                .addParamExtend("key", key)
-                .addParamExtend("value", value));
+        owner.getOwner().getEvents().fireEvent(new CacheEvent(owner, CacheEvent.EVENT.ELEMENT_PUT)
+                .addParamExtend(CACHE_NAME, cacheName)
+                .addParamExtend(CACHE_KEY, key)
+                .addParamExtend(CACHE_VALUE, value));
     }
 
     @Override
     public void notifyElementUpdated(String cacheName, Object key, Object value) {
-        __owner.getOwner().getEvents().fireEvent(new CacheEvent(__owner, CacheEvent.EVENT.ELEMENT_UPDATED)
-                .addParamExtend("cacheName", cacheName)
-                .addParamExtend("key", key)
-                .addParamExtend("value", value));
+        owner.getOwner().getEvents().fireEvent(new CacheEvent(owner, CacheEvent.EVENT.ELEMENT_UPDATED)
+                .addParamExtend(CACHE_NAME, cacheName)
+                .addParamExtend(CACHE_KEY, key)
+                .addParamExtend(CACHE_VALUE, value));
     }
 
     @Override
     public void notifyElementExpired(String cacheName, Object key) {
-        __owner.getOwner().getEvents().fireEvent(new CacheEvent(__owner, CacheEvent.EVENT.ELEMENT_EXPIRED)
-                .addParamExtend("cacheName", cacheName)
-                .addParamExtend("key", key));
+        owner.getOwner().getEvents().fireEvent(new CacheEvent(owner, CacheEvent.EVENT.ELEMENT_EXPIRED)
+                .addParamExtend(CACHE_NAME, cacheName)
+                .addParamExtend(CACHE_KEY, key));
     }
 
     @Override
     public void notifyElementEvicted(String cacheName, Object key) {
-        __owner.getOwner().getEvents().fireEvent(new CacheEvent(__owner, CacheEvent.EVENT.ELEMENT_EVICTED)
-                .addParamExtend("cacheName", cacheName)
-                .addParamExtend("key", key));
+        owner.getOwner().getEvents().fireEvent(new CacheEvent(owner, CacheEvent.EVENT.ELEMENT_EVICTED)
+                .addParamExtend(CACHE_NAME, cacheName)
+                .addParamExtend(CACHE_KEY, key));
     }
 
     @Override
     public void notifyRemoveAll(String cacheName) {
-        __owner.getOwner().getEvents().fireEvent(new CacheEvent(__owner, CacheEvent.EVENT.ELEMENT_REMOVED_ALL)
-                .addParamExtend("cacheName", cacheName));
+        owner.getOwner().getEvents().fireEvent(new CacheEvent(owner, CacheEvent.EVENT.ELEMENT_REMOVED_ALL)
+                .addParamExtend(CACHE_NAME, cacheName));
     }
 }

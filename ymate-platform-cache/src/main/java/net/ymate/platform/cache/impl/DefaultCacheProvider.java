@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2017 the original author or authors.
+ * Copyright 2007-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,16 +20,14 @@ import net.sf.ehcache.Ehcache;
 import net.ymate.platform.cache.AbstractCacheProvider;
 import net.ymate.platform.cache.ICache;
 import net.ymate.platform.cache.ICacheEventListener;
-import net.ymate.platform.cache.ICaches;
 import net.ymate.platform.cache.support.EhCacheWrapper;
 
 /**
  * @author 刘镇 (suninformation@163.com) on 14/10/17
- * @version 1.0
  */
 public class DefaultCacheProvider extends AbstractCacheProvider {
 
-    private CacheManager __cacheManager;
+    private CacheManager cacheManager;
 
     @Override
     public String getName() {
@@ -37,27 +35,23 @@ public class DefaultCacheProvider extends AbstractCacheProvider {
     }
 
     @Override
-    public void init(ICaches owner) {
-        super.init(owner);
-        //
-        __cacheManager = CacheManager.create();
-    }
-
-    @Override
-    protected ICache __createCache(String saferName, ICacheEventListener listener) {
-        Ehcache _ehcache = __cacheManager.getEhcache(saferName);
-        if (_ehcache == null) {
-            __cacheManager.addCache(saferName);
-            _ehcache = __cacheManager.getCache(saferName);
+    protected ICache onCreateCache(String cacheName, ICacheEventListener listener) {
+        Ehcache ehcache = cacheManager.getEhcache(cacheName);
+        if (ehcache == null) {
+            cacheManager.addCache(cacheName);
+            ehcache = cacheManager.getCache(cacheName);
         }
-        return new EhCacheWrapper(getOwner(), _ehcache, listener);
+        return new EhCacheWrapper(getOwner(), ehcache, listener);
     }
 
     @Override
-    public void destroy() {
-        super.destroy();
-        //
-        __cacheManager.shutdown();
-        __cacheManager = null;
+    protected void onInitialize() {
+        cacheManager = CacheManager.create();
+    }
+
+    @Override
+    protected void onDestroy() {
+        cacheManager.shutdown();
+        cacheManager = null;
     }
 }

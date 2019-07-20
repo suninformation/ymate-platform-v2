@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2017 the original author or authors.
+ * Copyright 2007-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,16 +15,11 @@
  */
 package net.ymate.platform.webmvc.exception;
 
-import net.ymate.platform.webmvc.annotation.ExceptionProcessor;
-import net.ymate.platform.webmvc.util.ErrorCode;
-
 /**
  * 访问的资源未找到或不存在异常
  *
  * @author 刘镇 (suninformation@163.com) on 2017/10/18 下午3:17
- * @version 1.0
  */
-@ExceptionProcessor(code = ErrorCode.RESOURCE_NOT_FOUND_OR_NOT_EXIST, msg = ErrorCode.MSG_RESOURCE_NOT_FOUND_OR_NOT_EXIST)
 public class ResourceNotFoundException extends RuntimeException {
 
     public ResourceNotFoundException() {

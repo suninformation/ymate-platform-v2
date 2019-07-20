@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2017 the original author or authors.
+ * Copyright 2007-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,53 +15,283 @@
  */
 package net.ymate.platform.persistence.mongodb;
 
-import net.ymate.platform.core.YMP;
+import com.mongodb.ClientSessionOptions;
+import net.ymate.platform.core.beans.annotation.Ignored;
+import net.ymate.platform.core.persistence.AbstractTrade;
+import net.ymate.platform.core.persistence.IDataSourceRouter;
+import net.ymate.platform.core.persistence.IPersistence;
+import net.ymate.platform.core.persistence.ITrade;
 
 /**
  * @author 刘镇 (suninformation@163.com) on 15/11/21 上午9:24
- * @version 1.0
  */
-public interface IMongo {
+@Ignored
+public interface IMongo extends IPersistence<IMongoSession, IMongoConfig, IMongoConnectionHolder> {
 
     String MODULE_NAME = "persistence.mongodb";
 
     /**
-     * @return 返回所属YMP框架管理器实例
+     * 获取默认数据源适配器
+     *
+     * @return 返回数据源适配器对象
+     * @throws Exception 可能产生的任何异常
      */
-    YMP getOwner();
-
-    /**
-     * @return 返回MongoDB模块配置对象
-     */
-    IMongoModuleCfg getModuleCfg();
-
     IMongoDataSourceAdapter getDefaultDataSourceAdapter() throws Exception;
 
+    /**
+     * 获取指定源数据源适配器
+     *
+     * @param dataSourceName 数据源名称
+     * @return 返回数据源适配器对象
+     * @throws Exception 可能产生的任何异常
+     */
     IMongoDataSourceAdapter getDataSourceAdapter(String dataSourceName) throws Exception;
 
+    /**
+     * 开启会话并执行会话执行器接口逻辑(执行完毕会话将自动关闭)
+     *
+     * @param executor 会话执行器
+     * @param <T>      执行结果对象类型
+     * @return 返回执行结果
+     * @throws Exception 可能产生的任何异常
+     */
     <T> T openSession(IMongoSessionExecutor<T> executor) throws Exception;
 
-    <T> T openSession(IMongoDatabaseHolder databaseHolder, IMongoSessionExecutor<T> executor) throws Exception;
+    /**
+     * 开启会话并执行会话执行器接口逻辑(执行完毕会话将自动关闭)
+     *
+     * @param databaseHolder 连接对象持有者
+     * @param executor       会话执行器
+     * @param <T>            执行结果对象类型
+     * @return 返回执行结果
+     * @throws Exception 可能产生的任何异常
+     */
+    <T> T openSession(IMongoConnectionHolder databaseHolder, IMongoSessionExecutor<T> executor) throws Exception;
 
-    <T> T openSession(IGridFSSessionExecutor<T> executor) throws Exception;
+    /**
+     * 开启会话并执行会话执行器接口逻辑(执行完毕会话将自动关闭)
+     *
+     * @param dataSourceRouter 数据源路由对象
+     * @param executor         会话执行器
+     * @param <T>              执行结果对象类型
+     * @return 返回执行结果
+     * @throws Exception 可能产生的任何异常
+     */
+    <T> T openSession(IDataSourceRouter dataSourceRouter, IMongoSessionExecutor<T> executor) throws Exception;
 
-    <T> T openSession(String bucketName, IGridFSSessionExecutor<T> executor) throws Exception;
+    /**
+     * 开启会话并执行会话执行器接口逻辑(执行完毕会话将自动关闭)
+     *
+     * @param executor 会话执行器
+     * @param <T>      执行结果对象类型
+     * @return 返回执行结果
+     * @throws Exception 可能产生的任何异常
+     */
+    <T> T openSession(IGridFsSessionExecutor<T> executor) throws Exception;
 
-    <T> T openSession(IMongoDataSourceAdapter dataSourceAdapter, IGridFSSessionExecutor<T> executor) throws Exception;
+    /**
+     * 开启会话并执行会话执行器接口逻辑(执行完毕会话将自动关闭)
+     *
+     * @param bucketName 桶名称
+     * @param executor   会话执行器
+     * @param <T>        执行结果对象类型
+     * @return 返回执行结果
+     * @throws Exception 可能产生的任何异常
+     */
+    <T> T openSession(String bucketName, IGridFsSessionExecutor<T> executor) throws Exception;
 
-    <T> T openSession(IMongoDataSourceAdapter dataSourceAdapter, String bucketName, IGridFSSessionExecutor<T> executor) throws Exception;
+    /**
+     * 开启会话并执行会话执行器接口逻辑(执行完毕会话将自动关闭)
+     *
+     * @param dataSourceAdapter 数据源适配器
+     * @param executor          会话执行器
+     * @param <T>               执行结果对象类型
+     * @return 返回执行结果
+     * @throws Exception 可能产生的任何异常
+     */
+    <T> T openSession(IMongoDataSourceAdapter dataSourceAdapter, IGridFsSessionExecutor<T> executor) throws Exception;
 
-    class GridFS {
+    /**
+     * 开启会话并执行会话执行器接口逻辑(执行完毕会话将自动关闭)
+     *
+     * @param dataSourceRouter 数据源路由对象
+     * @param executor         会话执行器
+     * @param <T>              执行结果对象类型
+     * @return 返回执行结果
+     * @throws Exception 可能产生的任何异常
+     */
+    <T> T openSession(IDataSourceRouter dataSourceRouter, IGridFsSessionExecutor<T> executor) throws Exception;
+
+    /**
+     * 开启会话并执行会话执行器接口逻辑(执行完毕会话将自动关闭)
+     *
+     * @param dataSourceAdapter 数据源适配器
+     * @param bucketName        桶名称
+     * @param executor          会话执行器
+     * @param <T>               执行结果对象类型
+     * @return 返回执行结果
+     * @throws Exception 可能产生的任何异常
+     */
+    <T> T openSession(IMongoDataSourceAdapter dataSourceAdapter, String bucketName, IGridFsSessionExecutor<T> executor) throws Exception;
+
+    /**
+     * 开启会话并执行会话执行器接口逻辑(执行完毕会话将自动关闭)
+     *
+     * @param dataSourceRouter 数据源路由对象
+     * @param bucketName       桶名称
+     * @param executor         会话执行器
+     * @param <T>              执行结果对象类型
+     * @return 返回执行结果
+     * @throws Exception 可能产生的任何异常
+     */
+    <T> T openSession(IDataSourceRouter dataSourceRouter, String bucketName, IGridFsSessionExecutor<T> executor) throws Exception;
+
+    /**
+     * 开启事务(执行完毕事务将自动关闭, 任何异常将导致事务回滚)
+     *
+     * @param trade 事务业务操作对象
+     * @throws Exception 可能产生的任何异常
+     */
+    void openTransaction(ITrade trade) throws Exception;
+
+    /**
+     * 开启事务(执行完毕事务将自动关闭, 任何异常将导致事务回滚)
+     *
+     * @param trade                事务业务操作对象
+     * @param clientSessionOptions 事务配置对象
+     * @throws Exception 可能产生的任何异常
+     */
+    void openTransaction(ITrade trade, ClientSessionOptions clientSessionOptions) throws Exception;
+
+    /**
+     * 开启事务(执行完毕事务将自动关闭, 任何异常将导致事务回滚)
+     *
+     * @param databaseHolder 连接对象持有者
+     * @param trade          事务业务操作对象
+     * @throws Exception 可能产生的任何异常
+     */
+    void openTransaction(IMongoConnectionHolder databaseHolder, ITrade trade) throws Exception;
+
+    /**
+     * 开启事务(执行完毕事务将自动关闭, 任何异常将导致事务回滚)
+     *
+     * @param databaseHolder       连接对象持有者
+     * @param trade                事务业务操作对象
+     * @param clientSessionOptions 事务配置对象
+     * @throws Exception 可能产生的任何异常
+     */
+    void openTransaction(IMongoConnectionHolder databaseHolder, ITrade trade, ClientSessionOptions clientSessionOptions) throws Exception;
+
+    /**
+     * 开启事务(执行完毕事务将自动关闭, 任何异常将导致事务回滚)
+     *
+     * @param dataSourceRouter 数据源路由对象
+     * @param trade            事务业务操作对象
+     * @throws Exception 可能产生的任何异常
+     */
+    void openTransaction(IDataSourceRouter dataSourceRouter, ITrade trade) throws Exception;
+
+    /**
+     * 开启事务(执行完毕事务将自动关闭, 任何异常将导致事务回滚)
+     *
+     * @param dataSourceRouter     数据源路由对象
+     * @param trade                事务业务操作对象
+     * @param clientSessionOptions 事务配置对象
+     * @throws Exception 可能产生的任何异常
+     */
+    void openTransaction(IDataSourceRouter dataSourceRouter, ITrade trade, ClientSessionOptions clientSessionOptions) throws Exception;
+
+    /**
+     * 开启事务(执行完毕事务将自动关闭, 任何异常将导致事务回滚)
+     *
+     * @param trade 事务业务操作对象
+     * @param <T>   执行结果对象类型
+     * @return 返回执行结果
+     * @throws Exception 可能产生的任何异常
+     */
+    <T> T openTransaction(AbstractTrade<T> trade) throws Exception;
+
+    /**
+     * 开启事务(执行完毕事务将自动关闭, 任何异常将导致事务回滚)
+     *
+     * @param trade                事务业务操作对象
+     * @param clientSessionOptions 事务配置对象
+     * @param <T>                  执行结果对象类型
+     * @return 返回执行结果
+     * @throws Exception 可能产生的任何异常
+     */
+    <T> T openTransaction(AbstractTrade<T> trade, ClientSessionOptions clientSessionOptions) throws Exception;
+
+    /**
+     * 开启事务(执行完毕事务将自动关闭, 任何异常将导致事务回滚)
+     *
+     * @param databaseHolder       连接对象持有者
+     * @param trade                事务业务操作对象
+     * @param clientSessionOptions 事务配置对象
+     * @param <T>                  执行结果对象类型
+     * @return 返回执行结果
+     * @throws Exception 可能产生的任何异常
+     */
+    <T> T openTransaction(IMongoConnectionHolder databaseHolder, AbstractTrade<T> trade, ClientSessionOptions clientSessionOptions) throws Exception;
+
+    /**
+     * 开启事务(执行完毕事务将自动关闭, 任何异常将导致事务回滚)
+     *
+     * @param databaseHolder 连接对象持有者
+     * @param trade          事务业务操作对象
+     * @param <T>            执行结果对象类型
+     * @return 返回执行结果
+     * @throws Exception 可能产生的任何异常
+     */
+    <T> T openTransaction(IMongoConnectionHolder databaseHolder, AbstractTrade<T> trade) throws Exception;
+
+    /**
+     * 开启事务(执行完毕事务将自动关闭, 任何异常将导致事务回滚)
+     *
+     * @param dataSourceRouter 数据源路由对象
+     * @param trade            事务业务操作对象
+     * @param <T>              执行结果对象类型
+     * @return 返回执行结果
+     * @throws Exception 可能产生的任何异常
+     */
+    <T> T openTransaction(IDataSourceRouter dataSourceRouter, AbstractTrade<T> trade) throws Exception;
+
+    /**
+     * 开启事务(执行完毕事务将自动关闭, 任何异常将导致事务回滚)
+     *
+     * @param dataSourceRouter     数据源路由对象
+     * @param trade                事务业务操作对象
+     * @param clientSessionOptions 事务配置对象
+     * @param <T>                  执行结果对象类型
+     * @return 返回执行结果
+     * @throws Exception 可能产生的任何异常
+     */
+    <T> T openTransaction(IDataSourceRouter dataSourceRouter, AbstractTrade<T> trade, ClientSessionOptions clientSessionOptions) throws Exception;
+
+    /**
+     * GridFS常量
+     */
+    class GridFs {
+
         public static final String FILE_NAME = "filename";
+
         public static final String ALIASES = "aliases";
+
         public static final String CHUNK_SIZE = "chunkSize";
+
         public static final String UPLOAD_DATE = "uploadDate";
+
         public static final String LENGTH = "length";
+
         public static final String CONTENT_TYPE = "contentType";
+
         public static final String MD5 = "md5";
     }
 
-    class OPT {
+    /**
+     * 操作符常量
+     */
+    class Opt {
 
         /**
          * 主键

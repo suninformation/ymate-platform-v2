@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2017 the original author or authors.
+ * Copyright 2007-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,68 +15,109 @@
  */
 package net.ymate.platform.serv;
 
+import net.ymate.platform.core.beans.annotation.Ignored;
+
 import java.util.Map;
 
 /**
  * 服务端配置接口
  *
  * @author 刘镇 (suninformation@163.com) on 15/11/4 下午5:35
- * @version 1.0
  */
+@Ignored
 public interface IServerCfg {
 
     /**
-     * @return 服务名称
+     * 获取服务名称
+     *
+     * @return 返回服务名称
      */
     String getServerName();
 
     /**
-     * @return 主机名称或IP地址
+     * 获取主机名称或IP地址
+     *
+     * @return 返回主机名称或IP地址
      */
     String getServerHost();
 
     /**
-     * @return 服务监听端口
+     * 获取服务监听端口
+     *
+     * @return 返回服务监听端口
      */
     int getPort();
 
     /**
-     * @return 字符编码
+     * 获取字符编码
+     *
+     * @return 返回字符编码
      */
     String getCharset();
 
     /**
-     * @return 缓冲区大小
+     * 获取缓冲区大小
+     *
+     * @return 返回缓冲区大小
      */
     int getBufferSize();
 
     /**
-     * @return 执行线程数量，默认为 Runtime.getRuntime().availableProcessors()
+     * 获取执行线程数量，默认为 Runtime.getRuntime().availableProcessors()
+     *
+     * @return 返回执行线程数量
      */
     int getExecutorCount();
 
     /**
-     * @return 空闲线程等待新任务的最长时间, 默认为 0
+     * 获取空闲线程等待新任务的最长时间, 默认为 0
+     *
+     * @return 返回空闲线程等待新任务的最长时间
      */
     long getKeepAliveTime();
 
     /**
-     * @return 返回最大线程池大小，默认为 200
+     * 获取最大线程池大小，默认为 200
+     *
+     * @return 返回最大线程池大小
      */
     int getThreadMaxPoolSize();
 
     /**
-     * @return 返回线程队列大小，默认为 1024
+     * 获取线程队列大小，默认为 1024
+     *
+     * @return 返回线程队列大小
      */
     int getThreadQueueSize();
 
     /**
-     * @return 选择器数量
+     * 获取选择器数量
+     *
+     * @return 返回选择器数量
      */
     int getSelectorCount();
 
     /**
-     * @return 服务端自定义参数映射
+     * 获取 服务端自定义参数映射
+     *
+     * @return 返回服务端自定义参数映射
      */
     Map<String, String> getParams();
+
+    /**
+     * 获取服务端自定义参数值
+     *
+     * @param key 参数名称
+     * @return 返回服务端自定义参数值
+     */
+    String getParam(String key);
+
+    /**
+     * 获取服务端自定义参数值
+     *
+     * @param key          参数名称
+     * @param defaultValue 默认值
+     * @return 返回服务端自定义参数值
+     */
+    String getParam(String key, String defaultValue);
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2017 the original author or authors.
+ * Copyright 2007-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,8 +15,8 @@
  */
 package net.ymate.platform.persistence.jdbc.query;
 
-import net.ymate.platform.persistence.Params;
-import org.apache.commons.lang.StringUtils;
+import net.ymate.platform.core.persistence.Params;
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -25,53 +25,50 @@ import java.util.List;
  * 批量更新SQL语句及参数对象
  *
  * @author 刘镇 (suninformation@163.com) on 15/5/11 下午2:25
- * @version 1.0
  */
 public final class BatchSQL {
 
-    private final String __batchSQL;
+    private final String batchSql;
 
-    private final List<Params> __params;
+    private final List<Params> params = new ArrayList<>();
 
-    private final List<String> __sqls;
+    private final List<String> sqls = new ArrayList<>();
 
-    public static BatchSQL create(String batchSQL) {
-        return new BatchSQL(batchSQL);
+    public static BatchSQL create(String batchSql) {
+        return new BatchSQL(batchSql);
     }
 
     public static BatchSQL create() {
         return new BatchSQL(null);
     }
 
-    private BatchSQL(String batchSQL) {
-        this.__sqls = new ArrayList<String>();
-        this.__params = new ArrayList<Params>();
-        this.__batchSQL = batchSQL;
+    private BatchSQL(String batchSql) {
+        this.batchSql = batchSql;
     }
 
     public List<Params> params() {
-        return this.__params;
+        return this.params;
     }
 
     public String getSQL() {
-        return this.__batchSQL;
+        return this.batchSql;
     }
 
     public List<String> getSQLs() {
-        return this.__sqls;
+        return this.sqls;
     }
 
     public BatchSQL addParameter(Params param) {
-        if (StringUtils.isBlank(__batchSQL)) {
+        if (StringUtils.isBlank(batchSql)) {
             // 构造未设置SQL时将不支持添加批量参数
             throw new UnsupportedOperationException();
         }
-        __params.add(param);
+        params.add(param);
         return this;
     }
 
     public BatchSQL addSQL(String sql) {
-        this.__sqls.add(sql);
+        this.sqls.add(sql);
         return this;
     }
 }

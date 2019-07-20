@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2017 the original author or authors.
+ * Copyright 2007-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,7 +15,7 @@
  */
 package net.ymate.platform.persistence.jdbc.impl;
 
-import net.ymate.platform.persistence.jdbc.AbstractDataSourceAdapter;
+import net.ymate.platform.persistence.jdbc.AbstractDatabaseDataSourceAdapter;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -24,30 +24,20 @@ import java.sql.DriverManager;
  * 默认数据源适配器
  *
  * @author 刘镇 (suninformation@163.com) on 2012-12-29 下午4:12:05
- * @version 1.0
  */
-public class DefaultDataSourceAdapter extends AbstractDataSourceAdapter {
+public class DefaultDataSourceAdapter extends AbstractDatabaseDataSourceAdapter {
 
-    private String __password;
+    private String password;
 
     @Override
-    protected void __doInit() throws Exception {
+    protected void doInitialize() throws Exception {
+        Class.forName(getDataSourceConfig().getDriverClass());
         //
-        Class.forName(__cfgMeta.getDriverClass());
-        //
-        __password = __doGetPasswordDecryptIfNeed();
+        password = decryptPasswordIfNeed();
     }
 
     @Override
     public Connection getConnection() throws Exception {
-        return DriverManager.getConnection(__cfgMeta.getConnectionUrl(), __cfgMeta.getUsername(), __password);
-    }
-
-    @Override
-    public void destroy() {
-        if (__inited) {
-            __password = null;
-            super.destroy();
-        }
+        return DriverManager.getConnection(getDataSourceConfig().getConnectionUrl(), getDataSourceConfig().getUsername(), password);
     }
 }

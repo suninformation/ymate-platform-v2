@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2018 the original author or authors.
+ * Copyright 2007-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,6 @@
 package net.ymate.platform.webmvc.annotation;
 
 import net.ymate.platform.webmvc.IResponseBodyProcessor;
-import net.ymate.platform.webmvc.impl.DefaultResponseBodyProcessor;
 
 import java.lang.annotation.*;
 
@@ -24,7 +23,6 @@ import java.lang.annotation.*;
  * 控制器方法返回结果对象自定义输出
  *
  * @author 刘镇 (suninformation@163.com) on 2018/1/10 上午12:38
- * @version 1.0
  */
 @Target({ElementType.PACKAGE, ElementType.TYPE, ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
@@ -49,5 +47,5 @@ public @interface ResponseBody {
     /**
      * @return 自定义对象输出处理器, 默认为JSON格式输出
      */
-    Class<? extends IResponseBodyProcessor> value() default DefaultResponseBodyProcessor.class;
+    Class<? extends IResponseBodyProcessor> value() default IResponseBodyProcessor.class;
 }

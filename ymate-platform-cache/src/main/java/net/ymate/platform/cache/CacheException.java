@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2017 the original author or authors.
+ * Copyright 2007-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,10 +16,13 @@
 package net.ymate.platform.cache;
 
 /**
+ * 缓存异常
+ *
  * @author 刘镇 (suninformation@163.com) on 14/10/25
- * @version 1.0
  */
 public class CacheException extends RuntimeException {
+
+    private static final long serialVersionUID = 1L;
 
     public CacheException() {
         super();
@@ -36,5 +39,4 @@ public class CacheException extends RuntimeException {
     public CacheException(Throwable cause) {
         super(cause);
     }
-
 }

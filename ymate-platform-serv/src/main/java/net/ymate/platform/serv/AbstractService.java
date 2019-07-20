@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2018 the original author or authors.
+ * Copyright 2007-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,37 +20,39 @@ import java.io.IOException;
 
 /**
  * @author 刘镇 (suninformation@163.com) on 2018/11/20 9:55 AM
- * @version 1.0
  */
 public abstract class AbstractService extends Thread implements Closeable {
 
-    private boolean __inited;
+    private boolean initialized;
 
-    private boolean __started;
+    private boolean started;
 
-    public boolean isInited() {
-        return __inited;
+    public boolean isInitialized() {
+        return initialized;
     }
 
     public boolean isStarted() {
-        return __started;
+        return started;
     }
 
-    protected void __doInit() {
-        __inited = true;
+    protected void doInit() {
+        initialized = true;
     }
 
-    protected boolean __doStart() {
+    protected boolean doStart() {
         return true;
     }
 
-    protected abstract void __doService();
+    /**
+     * 由子类实现具体服务处理逻辑
+     */
+    protected abstract void doService();
 
     @Override
     public void start() {
-        if (__inited && !__started) {
-            if (__doStart()) {
-                __started = true;
+        if (initialized && !started) {
+            if (doStart()) {
+                started = true;
                 super.start();
             }
         }
@@ -58,17 +60,17 @@ public abstract class AbstractService extends Thread implements Closeable {
 
     @Override
     public void run() {
-        if (isInited()) {
+        if (isInitialized()) {
             while (isStarted()) {
-                __doService();
+                doService();
             }
         }
     }
 
     @Override
     public void interrupt() {
-        if (__inited && __started) {
-            __started = false;
+        if (initialized && started) {
+            started = false;
             try {
                 join(3000L);
             } catch (InterruptedException ignored) {

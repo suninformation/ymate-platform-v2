@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2018 the original author or authors.
+ * Copyright 2007-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,67 +24,80 @@ import org.apache.commons.logging.LogFactory;
 import java.io.IOException;
 
 /**
+ * @param <LISTENER> 监听器类型
  * @author 刘镇 (suninformation@163.com) on 2018/11/15 4:49 PM
- * @version 1.0
  */
 public abstract class AbstractNioServer<LISTENER extends IListener<INioSession>> implements IServer<LISTENER, INioCodec> {
 
-    private static final Log _LOG = LogFactory.getLog(AbstractNioServer.class);
+    private static final Log LOG = LogFactory.getLog(AbstractNioServer.class);
 
-    private IServerCfg __serverCfg;
+    private IServerCfg serverCfg;
 
-    private INioEventGroup<LISTENER> __eventGroup;
+    private INioEventGroup<LISTENER> eventGroup;
 
-    private LISTENER __listener;
+    private LISTENER listener;
 
-    private INioCodec __codec;
+    private INioCodec codec;
 
-    private boolean __isStarted;
+    private boolean started;
 
+    /**
+     * 由子类实现创建多路复用通道事件处理器逻辑
+     *
+     * @param serverCfg 服务端配置对象
+     * @param listener  事件监听器
+     * @param codec     编解码器
+     * @return 返回多路复用通道事件处理器
+     * @throws IOException 可能产生的I/O异常
+     */
     protected abstract INioEventGroup<LISTENER> buildEventGroup(IServerCfg serverCfg, LISTENER listener, INioCodec codec) throws IOException;
 
     @Override
-    public void init(IServerCfg serverCfg, LISTENER listener, INioCodec codec) {
-        __serverCfg = serverCfg;
+    public void initialize(IServerCfg serverCfg, LISTENER listener, INioCodec codec) {
+        this.serverCfg = serverCfg;
         //
-        __listener = listener;
-        __codec = codec;
-        __codec.init(__serverCfg.getCharset());
+        this.listener = listener;
+        this.codec = codec;
+        this.codec.initialize(this.serverCfg.getCharset());
     }
 
     @Override
     public void start() throws IOException {
-        if (!__isStarted) {
-            __isStarted = true;
-            __eventGroup = buildEventGroup(__serverCfg, __listener, __codec);
-            __eventGroup.start();
+        if (!started) {
+            started = true;
+            eventGroup = buildEventGroup(serverCfg, listener, codec);
+            eventGroup.start();
             //
-            _LOG.info(getClass().getSimpleName() + " [" + __eventGroup.name() + "] started at " + __serverCfg.getServerHost() + ":" + __serverCfg.getPort());
+            if (LOG.isInfoEnabled()) {
+                LOG.info(String.format("%s [%s] started at %s:%d", getClass().getSimpleName(), eventGroup.name(), serverCfg.getServerHost(), serverCfg.getPort()));
+            }
         }
     }
 
     @Override
     public boolean isStarted() {
-        return __isStarted;
+        return started;
     }
 
     @Override
     public IServerCfg serverCfg() {
-        return __serverCfg;
+        return serverCfg;
     }
 
     @Override
     @SuppressWarnings("unchecked")
     public <T extends LISTENER> T listener() {
-        return (T) __listener;
+        return (T) listener;
     }
 
     @Override
     public void close() throws IOException {
-        if (__isStarted) {
-            _LOG.info(getClass().getSimpleName() + " [" + __eventGroup.name() + "] is closing....");
-            __isStarted = false;
-            __eventGroup.close();
+        if (started) {
+            if (LOG.isInfoEnabled()) {
+                LOG.info(String.format("%s [%s] closing....", getClass().getSimpleName(), eventGroup.name()));
+            }
+            started = false;
+            eventGroup.close();
         }
     }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2017 the original author or authors.
+ * Copyright 2007-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,67 +15,60 @@
  */
 package net.ymate.platform.persistence.jdbc;
 
-import net.ymate.platform.core.YMP;
-import net.ymate.platform.persistence.IDataSourceRouter;
+import net.ymate.platform.core.beans.annotation.Ignored;
+import net.ymate.platform.core.persistence.IDataSourceRouter;
+import net.ymate.platform.core.persistence.IPersistence;
 
 /**
- * JDBC数据库模块管理器接口
+ * JDBC数据库管理器接口
  *
  * @author 刘镇 (suninformation@163.com) on 15/3/29 下午7:06
- * @version 1.0
  */
-public interface IDatabase {
+@Ignored
+public interface IDatabase extends IPersistence<IDatabaseSession, IDatabaseConfig, IDatabaseConnectionHolder> {
 
     String MODULE_NAME = "persistence.jdbc";
 
     /**
-     * @return 返回所属YMP框架管理器实例
-     */
-    YMP getOwner();
-
-    /**
-     * @return 返回JDBC数据库模块配置对象
-     */
-    IDatabaseModuleCfg getModuleCfg();
-
-    /**
-     * @return 获取默认数据源连接持有者对象
-     * @throws Exception 可能产生的异常
-     */
-    IConnectionHolder getDefaultConnectionHolder() throws Exception;
-
-    /**
-     * @param dsName 数据源名称
-     * @return 获取由dsName指定的数据源连接持有者对象
-     * @throws Exception 可能产生的异常
-     */
-    IConnectionHolder getConnectionHolder(String dsName) throws Exception;
-
-    /**
-     * 安全关闭数据源的连接持有者(确保非事务状态下执行关闭)
+     * 开启会话并执行会话执行器接口逻辑(执行完毕会话将自动关闭)
      *
-     * @param connectionHolder 数据源的连接持有者对象
-     * @throws Exception 可能产生的异常
+     * @param executor 会话执行器
+     * @param <T>      执行结果对象类型
+     * @return 返回执行结果
+     * @throws Exception 可能产生的任何异常
      */
-    void releaseConnectionHolder(IConnectionHolder connectionHolder) throws Exception;
-
-    <T> T openSession(ISessionExecutor<T> executor) throws Exception;
-
-    <T> T openSession(String dsName, ISessionExecutor<T> executor) throws Exception;
-
-    <T> T openSession(IConnectionHolder connectionHolder, ISessionExecutor<T> executor) throws Exception;
-
-    <T> T openSession(IDataSourceRouter dataSourceRouter, ISessionExecutor<T> executor) throws Exception;
+    <T> T openSession(IDatabaseSessionExecutor<T> executor) throws Exception;
 
     /**
-     * @return 开启数据库连接会话(注意一定记得关闭会话)
-     * @throws Exception 可能产生的异常
+     * 开启会话并执行会话执行器接口逻辑(执行完毕会话将自动关闭)
+     *
+     * @param dataSourceName 数据源名称
+     * @param executor       会话执行器
+     * @param <T>            执行结果对象类型
+     * @return 返回执行结果
+     * @throws Exception 可能产生的任何异常
      */
-    ISession openSession() throws Exception;
+    <T> T openSession(String dataSourceName, IDatabaseSessionExecutor<T> executor) throws Exception;
 
-    ISession openSession(String dsName) throws Exception;
+    /**
+     * 开启会话并执行会话执行器接口逻辑(执行完毕会话将自动关闭)
+     *
+     * @param connectionHolder 数据源连接持有者对象
+     * @param executor         会话执行器
+     * @param <T>              执行结果对象类型
+     * @return 返回执行结果
+     * @throws Exception 可能产生的任何异常
+     */
+    <T> T openSession(IDatabaseConnectionHolder connectionHolder, IDatabaseSessionExecutor<T> executor) throws Exception;
 
-    ISession openSession(IConnectionHolder connectionHolder) throws Exception;
-
-    ISession openSession(IDataSourceRouter dataSourceRouter) throws Exception;
+    /**
+     * 开启会话并执行会话执行器接口逻辑(执行完毕会话将自动关闭)
+     *
+     * @param dataSourceRouter 数据源路由对象
+     * @param executor         会话执行器
+     * @param <T>              执行结果对象类型
+     * @return 返回执行结果
+     * @throws Exception 可能产生的任何异常
+     */
+    <T> T openSession(IDataSourceRouter dataSourceRouter, IDatabaseSessionExecutor<T> executor) throws Exception;
 }

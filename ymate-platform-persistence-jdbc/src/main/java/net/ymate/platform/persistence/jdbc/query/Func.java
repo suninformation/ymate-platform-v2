@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2017 the original author or authors.
+ * Copyright 2007-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,14 +15,13 @@
  */
 package net.ymate.platform.persistence.jdbc.query;
 
-import net.ymate.platform.persistence.IFunction;
-import net.ymate.platform.persistence.impl.DefaultFunction;
+import net.ymate.platform.core.persistence.IFunction;
+import net.ymate.platform.core.persistence.impl.DefaultFunction;
 
 /**
  * 数据库函数库(尝试!!! 暂未考虑不同数据库间的兼容问题)
  *
  * @author 刘镇 (suninformation@163.com) on 17/6/22 上午10:50
- * @version 1.0
  */
 public final class Func {
 

@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2017 the original author or authors.
+ * Copyright 2007-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,11 +15,8 @@
  */
 package net.ymate.platform.serv.impl;
 
-import net.ymate.platform.core.lang.BlurObject;
-import net.ymate.platform.core.util.RuntimeUtils;
-import net.ymate.platform.serv.IServ;
 import net.ymate.platform.serv.IServerCfg;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -27,190 +24,175 @@ import java.util.Map;
 
 /**
  * @author 刘镇 (suninformation@163.com) on 15/11/6 下午6:44
- * @version 1.0
  */
-public class DefaultServerCfg implements IServerCfg {
+public final class DefaultServerCfg implements IServerCfg {
 
-    public static Builder create() {
+    public static Builder builder() {
         return new Builder();
     }
 
-    private String __serverName;
+    private String serverName;
 
-    private String __serverHost;
+    private String serverHost;
 
-    private int __port;
+    private int port;
 
-    private String __charset;
+    private String charset;
 
-    private int __bufferSize;
+    private int bufferSize;
 
-    private int __executorCount;
+    private int executorCount;
 
-    private long __keepAliveTime;
+    private long keepAliveTime;
 
-    private int __threadMaxPoolSize;
+    private int threadMaxPoolSize;
 
-    private int __threadQueueSize;
+    private int threadQueueSize;
 
-    private int __selectorCount;
+    private int selectorCount;
 
-    private Map<String, String> __params;
+    private final Map<String, String> params = new HashMap<>();
 
-    public DefaultServerCfg(Map<String, String> serverCfg, String serverName) {
-        __serverName = StringUtils.defaultIfBlank(serverName, IServ.Const.DEFAULT_NAME);
-        __serverHost = StringUtils.defaultIfBlank(serverCfg.get(IServ.Const.HOST), IServ.Const.DEFAULT_HOST);
-        __port = BlurObject.bind(StringUtils.defaultIfBlank(serverCfg.get(IServ.Const.PORT), String.valueOf(IServ.Const.DEFAULT_PORT))).toIntValue();
-        __charset = StringUtils.defaultIfBlank(serverCfg.get(IServ.Const.CHARSET), IServ.Const.DEFAULT_CHARSET);
-        __bufferSize = BlurObject.bind(StringUtils.defaultIfBlank(serverCfg.get(IServ.Const.BUFFER_SIZE), String.valueOf(IServ.Const.DEFAULT_BUFFER_SIZE))).toIntValue();
-        __executorCount = BlurObject.bind(serverCfg.get(IServ.Const.EXECUTOR_COUNT)).toIntValue();
-        if (__executorCount <= 0) {
-            __executorCount = Runtime.getRuntime().availableProcessors();
-        }
-        //
-        __keepAliveTime = BlurObject.bind(serverCfg.get(IServ.Const.KEEP_ALIVE_TIME)).toLongValue();
-        //
-        __threadMaxPoolSize = BlurObject.bind(serverCfg.get(IServ.Const.THREAD_MAX_POOL_SIZE)).toIntValue();
-        if (__threadMaxPoolSize <= 0) {
-            __threadMaxPoolSize = IServ.Const.DEFAULT_THREAD_MAX_POOL_SIZE;
-        }
-        //
-        __threadQueueSize = BlurObject.bind(serverCfg.get(IServ.Const.THREAD_QUEUE_SIZE)).toIntValue();
-        if (__threadQueueSize <= 0) {
-            __threadQueueSize = IServ.Const.DEFAULT_THREAD_QUEUE_SIZE;
-        }
-        __selectorCount = BlurObject.bind(StringUtils.defaultIfBlank(serverCfg.get(IServ.Const.SELECTOR_COUNT), String.valueOf(IServ.Const.DEFAULT_SELECTOR_COUNT))).toIntValue();
-        //
-        __params = RuntimeUtils.keyStartsWith(serverCfg, IServ.Const.PARAMS_PREFIX);
+    private DefaultServerCfg() {
     }
 
     @Override
     public String getServerName() {
-        return __serverName;
+        return serverName;
     }
 
     @Override
     public String getServerHost() {
-        return __serverHost;
+        return serverHost;
     }
 
     @Override
     public int getPort() {
-        return __port;
+        return port;
     }
 
     @Override
     public String getCharset() {
-        return __charset;
+        return charset;
     }
 
     @Override
     public int getBufferSize() {
-        return __bufferSize;
+        return bufferSize;
     }
 
     @Override
     public int getExecutorCount() {
-        return __executorCount;
+        return executorCount;
     }
 
     @Override
     public long getKeepAliveTime() {
-        return __keepAliveTime;
+        return keepAliveTime;
     }
 
     @Override
     public int getThreadMaxPoolSize() {
-        return __threadMaxPoolSize;
+        return threadMaxPoolSize;
     }
 
     @Override
     public int getThreadQueueSize() {
-        return __threadQueueSize;
+        return threadQueueSize;
     }
 
     @Override
     public int getSelectorCount() {
-        return __selectorCount;
+        return selectorCount;
     }
 
     @Override
     public Map<String, String> getParams() {
-        return Collections.unmodifiableMap(__params);
+        return Collections.unmodifiableMap(params);
     }
 
-    public static class Builder {
+    @Override
+    public String getParam(String key) {
+        if (StringUtils.isBlank(key)) {
+            return null;
+        }
+        return params.get(key);
+    }
 
-        private String serverName;
+    @Override
+    public String getParam(String key, String defaultValue) {
+        return StringUtils.defaultIfBlank(getParam(key), defaultValue);
+    }
 
-        Map<String, String> params = new HashMap<String, String>();
+    public static final class Builder {
+
+        private final DefaultServerCfg serverCfg = new DefaultServerCfg();
+
+        private Builder() {
+        }
 
         public Builder serverName(String serverName) {
-            this.serverName = serverName;
+            serverCfg.serverName = serverName;
             return this;
         }
 
         public Builder serverHost(String serverHost) {
-            params.put(IServ.Const.HOST, serverHost);
+            serverCfg.serverHost = serverHost;
             return this;
         }
 
         public Builder port(int port) {
-            params.put(IServ.Const.PORT, String.valueOf(port));
+            serverCfg.port = port;
             return this;
         }
 
         public Builder charset(String charset) {
-            params.put(IServ.Const.CHARSET, charset);
+            serverCfg.charset = charset;
             return this;
         }
 
         public Builder bufferSize(int bufferSize) {
-            params.put(IServ.Const.BUFFER_SIZE, String.valueOf(bufferSize));
+            serverCfg.bufferSize = bufferSize;
             return this;
         }
 
         public Builder executorCount(int executorCount) {
-            params.put(IServ.Const.EXECUTOR_COUNT, String.valueOf(executorCount));
+            serverCfg.executorCount = executorCount;
             return this;
         }
 
         public Builder keepAliveTime(long keepAliveTime) {
-            params.put(IServ.Const.KEEP_ALIVE_TIME, String.valueOf(keepAliveTime));
+            serverCfg.keepAliveTime = keepAliveTime;
             return this;
         }
 
         public Builder threadMaxPoolSize(int threadMaxPoolSize) {
-            params.put(IServ.Const.EXECUTOR_COUNT, String.valueOf(threadMaxPoolSize));
+            serverCfg.threadMaxPoolSize = threadMaxPoolSize;
             return this;
         }
 
         public Builder threadQueueSize(int threadQueueSize) {
-            params.put(IServ.Const.THREAD_QUEUE_SIZE, String.valueOf(threadQueueSize));
+            serverCfg.threadQueueSize = threadQueueSize;
             return this;
         }
 
         public Builder selectorCount(int selectorCount) {
-            params.put(IServ.Const.SELECTOR_COUNT, String.valueOf(selectorCount));
+            serverCfg.selectorCount = selectorCount;
             return this;
         }
 
         public Builder params(String key, String value) {
-            if (StringUtils.isNotBlank(key)) {
-                params.put(IServ.Const.PARAMS_PREFIX + "." + key, value);
-            }
+            serverCfg.params.put(key, value);
             return this;
         }
 
         public Builder params(Map<String, String> params) {
-            for (Map.Entry<String, String> param : params.entrySet()) {
-                params.put(IServ.Const.PARAMS_PREFIX + "." + param.getKey(), param.getValue());
-            }
+            serverCfg.params.putAll(params);
             return this;
         }
 
         public IServerCfg build() {
-            return new DefaultServerCfg(params, serverName);
+            return serverCfg;
         }
     }
 }

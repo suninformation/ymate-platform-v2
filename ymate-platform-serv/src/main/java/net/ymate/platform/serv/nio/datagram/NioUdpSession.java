@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2018 the original author or authors.
+ * Copyright 2007-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,33 +30,34 @@ import java.util.concurrent.LinkedBlockingQueue;
 
 /**
  * @author 刘镇 (suninformation@163.com) on 2018/11/15 2:44 AM
- * @version 1.0
  */
-public class NioUdpSession extends AbstractNioSession<NioUdpListener> {
+public class NioUdpSession extends AbstractNioSession<AbstractNioUdpListener> {
 
-    private final Queue<NioUdpMessageWrapper<ByteBuffer>> __writeQueue = new LinkedBlockingQueue<NioUdpMessageWrapper<ByteBuffer>>();
+    private static final long serialVersionUID = 1L;
 
-    private InetSocketAddress __socketAddress;
+    private final Queue<NioUdpMessageWrapper<ByteBuffer>> writeQueue = new LinkedBlockingQueue<>();
 
-    public NioUdpSession(NioEventGroup<NioUdpListener> eventGroup, DatagramChannel channel) {
+    private InetSocketAddress socketAddress;
+
+    public NioUdpSession(NioEventGroup<AbstractNioUdpListener> eventGroup, DatagramChannel channel) {
         super(eventGroup, channel);
     }
 
-    public NioUdpSession(NioEventGroup<NioUdpListener> eventGroup, DatagramChannel channel, InetSocketAddress socketAddress) {
+    public NioUdpSession(NioEventGroup<AbstractNioUdpListener> eventGroup, DatagramChannel channel, InetSocketAddress socketAddress) {
         super(eventGroup, channel);
-        __socketAddress = socketAddress;
+        this.socketAddress = socketAddress;
     }
 
-    private int __doChannelRead(ByteBuffer buffer) throws IOException {
-        SocketAddress _address = ((DatagramChannel) channel()).receive(buffer);
-        if (_address != null) {
-            attr(SocketAddress.class.getName(), _address);
+    private int channelRead(ByteBuffer buffer) throws IOException {
+        SocketAddress address = ((DatagramChannel) channel()).receive(buffer);
+        if (address != null) {
+            attr(SocketAddress.class.getName(), address);
             return buffer().remaining();
         }
         return 0;
     }
 
-    private int __doChannelWrite(DatagramChannel channel, ByteBuffer buffer) throws IOException {
+    private int channelWrite(DatagramChannel channel, ByteBuffer buffer) throws IOException {
         if (channel != null) {
             return channel.write(buffer);
         }
@@ -66,10 +67,10 @@ public class NioUdpSession extends AbstractNioSession<NioUdpListener> {
 
     @Override
     public InetSocketAddress remoteSocketAddress() {
-        if (__socketAddress == null) {
+        if (socketAddress == null) {
             return (InetSocketAddress) ((DatagramChannel) channel()).socket().getRemoteSocketAddress();
         }
-        return __socketAddress;
+        return socketAddress;
     }
 
     @Override
@@ -82,65 +83,65 @@ public class NioUdpSession extends AbstractNioSession<NioUdpListener> {
         if (buffer() == null) {
             buffer(ByteBufferBuilder.allocate(eventGroup().bufferSize()));
         }
-        ByteBuffer _data = ByteBuffer.allocate(eventGroup().bufferSize());
+        ByteBuffer dataByteBuffer = ByteBuffer.allocate(eventGroup().bufferSize());
         //
-        int _length;
-        while ((_length = __doChannelRead(_data)) > 0) {
-            _data.flip();
-            buffer().append(_data.array(), _data.position(), _data.remaining());
-            _data.clear();
+        int length;
+        while ((length = channelRead(dataByteBuffer)) > 0) {
+            dataByteBuffer.flip();
+            buffer().append(dataByteBuffer.array(), dataByteBuffer.position(), dataByteBuffer.remaining());
+            dataByteBuffer.clear();
         }
-        if (_length < 0) {
+        if (length < 0) {
             close();
             return;
         }
-        ByteBufferBuilder _copiedBuffer = buffer().duplicate().flip();
+        ByteBufferBuilder copiedBuffer = buffer().duplicate().flip();
         while (true) {
-            _copiedBuffer.mark();
-            NioUdpMessageWrapper _message;
-            InetSocketAddress _socketAddress = attr(SocketAddress.class.getName());
-            if (_socketAddress != null && _copiedBuffer.remaining() > 0) {
-                _message = new NioUdpMessageWrapper<Object>(_socketAddress, eventGroup().codec().decode(_copiedBuffer));
+            copiedBuffer.mark();
+            NioUdpMessageWrapper message;
+            InetSocketAddress address = attr(SocketAddress.class.getName());
+            if (address != null && copiedBuffer.remaining() > 0) {
+                message = new NioUdpMessageWrapper<>(address, eventGroup().codec().decode(copiedBuffer));
             } else {
-                _message = null;
+                message = null;
             }
-            if (_message == null) {
-                _copiedBuffer.reset();
-                __doBufferReset(_copiedBuffer);
+            if (message == null) {
+                copiedBuffer.reset();
+                bufferReset(copiedBuffer);
                 break;
             } else {
-                __doPostMessageReceived(_message);
+                postMessageReceived(message);
             }
         }
     }
 
     @Override
     public void write() throws IOException {
-        synchronized (__writeQueue) {
+        synchronized (writeQueue) {
             while (true) {
-                NioUdpMessageWrapper<ByteBuffer> _msgWrapper = __writeQueue.peek();
-                if (_msgWrapper == null) {
+                NioUdpMessageWrapper<ByteBuffer> messageWrapper = writeQueue.peek();
+                if (messageWrapper == null) {
                     selectionKey().interestOps(SelectionKey.OP_READ);
                     break;
                 } else {
-                    DatagramChannel _channel = null;
+                    DatagramChannel channel = null;
                     try {
-                        _channel = (DatagramChannel) channel();
-                        if (!_channel.isConnected()) {
-                            _channel = _channel.connect(_msgWrapper.getSocketAddress());
+                        channel = (DatagramChannel) channel();
+                        if (!channel.isConnected()) {
+                            channel = channel.connect(messageWrapper.getSocketAddress());
                         }
-                        int _wLen = __doChannelWrite(_channel, _msgWrapper.getMessage());
-                        if (_wLen == 0 && _msgWrapper.getMessage().remaining() > 0) {
+                        int writeLen = channelWrite(channel, messageWrapper.getMessage());
+                        if (writeLen == 0 && messageWrapper.getMessage().remaining() > 0) {
                             break;
                         }
-                        if (_msgWrapper.getMessage().remaining() == 0) {
-                            __writeQueue.remove();
+                        if (messageWrapper.getMessage().remaining() == 0) {
+                            writeQueue.remove();
                         } else {
                             break;
                         }
                     } finally {
-                        if (_channel != null) {
-                            _channel.disconnect();
+                        if (channel != null) {
+                            channel.disconnect();
                         }
                     }
                 }
@@ -155,9 +156,9 @@ public class NioUdpSession extends AbstractNioSession<NioUdpListener> {
 
     public void send(InetSocketAddress socketAddress, Object message) {
         if (socketAddress != null) {
-            ByteBufferBuilder _msgBuffer = eventGroup().codec().encode(message);
-            if (_msgBuffer != null) {
-                if (__writeQueue.offer(new NioUdpMessageWrapper<ByteBuffer>(socketAddress, _msgBuffer.buffer()))) {
+            ByteBufferBuilder messageBuffer = eventGroup().codec().encode(message);
+            if (messageBuffer != null) {
+                if (writeQueue.offer(new NioUdpMessageWrapper<>(socketAddress, messageBuffer.buffer()))) {
                     selectionKey().interestOps(selectionKey().interestOps() | SelectionKey.OP_WRITE);
                     selectionKey().selector().wakeup();
                 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2017 the original author or authors.
+ * Copyright 2007-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,6 +15,8 @@
  */
 package net.ymate.platform.core.event;
 
+import net.ymate.platform.core.beans.annotation.Ignored;
+
 /**
  * 事件管理提供者接口
  *
@@ -23,18 +25,27 @@ package net.ymate.platform.core.event;
  * @param <EVENT>   事件对象类型
  * @param <CONTEXT> 事件监听器上下文对象类型
  * @author 刘镇 (suninformation@163.com) on 15/5/16 上午2:15
- * @version 1.0
  */
-public interface IEventProvider<T, E extends Enum<E>, EVENT extends Class<? extends IEvent>, CONTEXT extends EventContext<T, E>> {
+@Ignored
+public interface IEventProvider<T, E extends Enum<E>, EVENT extends Class<? extends IEvent>, CONTEXT extends AbstractEventContext<T, E>> {
 
     /**
      * 初始化事件管理提供者对象
      *
      * @param eventConfig 事件配置接口实例
      */
-    void init(IEventConfig eventConfig);
+    void initialize(IEventConfig eventConfig);
 
     /**
+     * 是否已初始化
+     *
+     * @return 返回true表示已初始化
+     */
+    boolean isInitialized();
+
+    /**
+     * 获取事件配置
+     *
      * @return 返回事件配置
      */
     IEventConfig getEventConfig();

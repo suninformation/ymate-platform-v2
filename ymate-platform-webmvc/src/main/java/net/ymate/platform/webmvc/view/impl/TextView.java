@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2017 the original author or authors.
+ * Copyright 2007-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,14 +27,13 @@ import java.io.OutputStream;
  * 文本视图
  *
  * @author 刘镇 (suninformation@163.com) on 2011-10-23 上午11:15:43
- * @version 1.0
  */
 public class TextView extends AbstractView {
 
     /**
      * 文本内容
      */
-    protected String __content;
+    private String content;
 
     public static TextView bind(String content) {
         return new TextView(content);
@@ -56,18 +55,18 @@ public class TextView extends AbstractView {
      * @param contentType 内容类型
      */
     public TextView(String content, String contentType) {
-        __content = content;
-        __contentType = contentType;
+        this.content = content;
+        this.contentType = contentType;
     }
 
     @Override
-    protected void __doRenderView() throws Exception {
-        HttpServletResponse _response = WebContext.getResponse();
-        IOUtils.write(__content, _response.getOutputStream(), _response.getCharacterEncoding());
+    protected void doRenderView() throws Exception {
+        HttpServletResponse httpServletResponse = WebContext.getResponse();
+        IOUtils.write(content, httpServletResponse.getOutputStream(), httpServletResponse.getCharacterEncoding());
     }
 
     @Override
     public void render(OutputStream output) throws Exception {
-        IOUtils.write(__content, output, WebContext.getResponse().getCharacterEncoding());
+        IOUtils.write(content, output, WebContext.getResponse().getCharacterEncoding());
     }
 }

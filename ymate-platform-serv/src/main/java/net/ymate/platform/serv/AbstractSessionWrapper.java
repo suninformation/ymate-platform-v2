@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2018 the original author or authors.
+ * Copyright 2007-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,8 +18,11 @@ package net.ymate.platform.serv;
 import java.io.Serializable;
 
 /**
+ * @param <SESSION_TYPE> 会话类型
+ * @param <SESSION_ID>   会话标识类型
  * @author 刘镇 (suninformation@163.com) on 2018/11/14 2:35 PM
- * @version 1.0
  */
 public abstract class AbstractSessionWrapper<SESSION_TYPE extends Serializable, SESSION_ID> implements ISessionWrapper<SESSION_TYPE, SESSION_ID> {
+
+    private static final long serialVersionUID = 1L;
 }

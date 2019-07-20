@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2017 the original author or authors.
+ * Copyright 2007-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,6 +15,9 @@
  */
 package net.ymate.platform.cache;
 
+import net.ymate.platform.core.beans.annotation.Ignored;
+import net.ymate.platform.core.support.IDestroyable;
+
 import java.util.Collection;
 import java.util.List;
 
@@ -22,9 +25,9 @@ import java.util.List;
  * 缓存接口定义
  *
  * @author 刘镇 (suninformation@163.com) on 14/10/17
- * @version 1.0
  */
-public interface ICache {
+@Ignored
+public interface ICache extends IDestroyable {
 
     String DEFAULT = "default";
 
@@ -60,6 +63,8 @@ public interface ICache {
     void update(Object key, Object value) throws CacheException;
 
     /**
+     * 获取当前所有缓存对象key的集合
+     *
      * @return 返回当前所有缓存对象key的集合
      * @throws CacheException 可能产生的异常
      */
@@ -89,14 +94,9 @@ public interface ICache {
     void clear() throws CacheException;
 
     /**
-     * 销毁缓存
+     * 获取缓存锁对象，若缓存实例不支持则返回null
      *
-     * @throws CacheException 可能产生的异常
-     */
-    void destroy() throws CacheException;
-
-    /**
-     * @return 返回缓存锁对象，若缓存实例不支持锁则返回null
+     * @return 返回缓存锁对象
      */
     ICacheLocker acquireCacheLocker();
 }

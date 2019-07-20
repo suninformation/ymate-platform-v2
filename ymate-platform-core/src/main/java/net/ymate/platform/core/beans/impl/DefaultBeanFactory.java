@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2017 the original author or authors.
+ * Copyright 2007-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,17 +15,20 @@
  */
 package net.ymate.platform.core.beans.impl;
 
-import net.ymate.platform.core.YMP;
-import net.ymate.platform.core.beans.*;
-import net.ymate.platform.core.beans.annotation.By;
-import net.ymate.platform.core.beans.annotation.CleanProxy;
-import net.ymate.platform.core.beans.annotation.Inject;
-import net.ymate.platform.core.beans.annotation.Proxy;
+import net.ymate.platform.commons.util.ClassUtils;
+import net.ymate.platform.commons.util.RuntimeUtils;
+import net.ymate.platform.core.IApplication;
+import net.ymate.platform.core.beans.BeanMeta;
+import net.ymate.platform.core.beans.IBeanFactory;
+import net.ymate.platform.core.beans.IBeanInitializer;
+import net.ymate.platform.core.beans.IBeanInjector;
+import net.ymate.platform.core.beans.annotation.*;
 import net.ymate.platform.core.beans.proxy.IProxy;
 import net.ymate.platform.core.beans.proxy.IProxyFactory;
 import net.ymate.platform.core.beans.proxy.IProxyFilter;
-import net.ymate.platform.core.util.ClassUtils;
-import org.apache.commons.lang.StringUtils;
+import net.ymate.platform.core.support.IDestroyable;
+import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -37,205 +40,202 @@ import java.util.*;
  * 默认对象工厂接口实现
  *
  * @author 刘镇 (suninformation@163.com) on 15-3-5 下午2:56
- * @version 1.0
  */
 public class DefaultBeanFactory implements IBeanFactory {
 
-    private static final Log _LOG = LogFactory.getLog(DefaultBeanFactory.class);
+    private static final Log LOG = LogFactory.getLog(DefaultBeanFactory.class);
 
-    private final YMP __owner;
+    private IApplication owner;
 
-    private IBeanFactory __parentFactory;
+    private boolean initialized;
 
-    private List<String> __packageNames;
+    private boolean useProxy;
 
-    private List<String> __excludedPackages;
+    private IBeanFactory parentFactory;
 
-    private List<Class<?>> __excludedClassSet;
+    private IProxyFactory proxyFactory;
 
-    private List<String> __excludedFileSet;
-
-    private Map<Class<? extends Annotation>, IBeanHandler> __beanHandlerMap;
-
-    private Map<Class<? extends Annotation>, IBeanInjector> __beanInjectorMap;
+    private final Map<Class<? extends Annotation>, IBeanInjector> beanInjectorMap = new HashMap<>();
 
     /**
      * 对象类型 -> 对象实例
      */
-    private Map<Class<?>, BeanMeta> __beanInstancesMap;
+    private final Map<Class<?>, BeanMeta> beanInstancesMap = new HashMap<>();
 
     /**
      * 接口类型 -> 对象类型
      */
-    private Map<Class<?>, Class<?>> __beanInterfacesMap;
+    private final Map<Class<?>, Class<?>> beanInterfacesMap = new HashMap<>();
 
-    private IBeanLoader __beanLoader;
+    private final Set<Class<?>> excludedInterfaceClasses = new HashSet<>();
 
-    private IProxyFactory __proxyFactory;
-
-    public DefaultBeanFactory(YMP owner) {
-        this.__owner = owner;
-        this.__packageNames = new ArrayList<String>();
-        this.__excludedPackages = new ArrayList<String>();
-        this.__excludedClassSet = new ArrayList<Class<?>>();
-        this.__beanHandlerMap = new HashMap<Class<? extends Annotation>, IBeanHandler>();
-        this.__beanInjectorMap = new HashMap<Class<? extends Annotation>, IBeanInjector>();
-        this.__beanInstancesMap = new HashMap<Class<?>, BeanMeta>();
-        this.__beanInterfacesMap = new HashMap<Class<?>, Class<?>>();
+    public DefaultBeanFactory() {
     }
 
-    public DefaultBeanFactory(YMP owner, IBeanFactory parent) {
-        this(owner);
-        this.__parentFactory = parent;
+    public DefaultBeanFactory(IProxyFactory proxyFactory) {
+        this.proxyFactory = proxyFactory;
+    }
+
+    public DefaultBeanFactory(IBeanFactory parentFactory) {
+        this.parentFactory = parentFactory;
+    }
+
+    public DefaultBeanFactory(IBeanFactory parentFactory, IProxyFactory proxyFactory) {
+        this.parentFactory = parentFactory;
+        this.proxyFactory = proxyFactory;
     }
 
     @Override
-    public void registerHandler(Class<? extends Annotation> annoClass, IBeanHandler handler) {
-        if (!__beanHandlerMap.containsKey(annoClass)) {
-            __beanHandlerMap.put(annoClass, handler);
+    public void initialize(IApplication owner) throws Exception {
+        if (!initialized) {
+            this.owner = owner;
             //
-            if (__owner.getConfig().isDevelopMode() && _LOG.isInfoEnabled()) {
-                _LOG.info("Handler class [" + annoClass.getSimpleName() + ":" + handler.getClass().getName() + "] registered.");
+            useProxy = proxyFactory != null;
+            if (useProxy && !proxyFactory.isInitialized()) {
+                proxyFactory.initialize(owner);
             }
-        } else if (__owner.getConfig().isDevelopMode() && _LOG.isWarnEnabled()) {
-            _LOG.warn("Handler class [" + annoClass.getSimpleName() + ":" + handler.getClass().getName() + "] duplicate registration is not allowed");
+            //
+            for (Map.Entry<Class<?>, BeanMeta> entry : this.getBeans().entrySet()) {
+                if (!entry.getKey().isInterface() && entry.getValue().isSingleton()) {
+                    Object beanProxyObj = buildBeanProxyIfNeed(entry.getValue().getBeanClass(), entry.getValue().getBeanObject());
+                    entry.getValue().setBeanObject(beanProxyObj);
+                }
+            }
+            //
+            for (Map.Entry<Class<?>, BeanMeta> entry : this.getBeans().entrySet()) {
+                if (!entry.getKey().isInterface() && entry.getValue().isSingleton()) {
+                    initBeanIoC(entry.getKey(), entry.getValue().getBeanObject(), entry.getValue().getInitializer());
+                }
+            }
+            //
+            initialized = true;
         }
     }
 
     @Override
-    public void registerHandler(Class<? extends Annotation> annoClass) {
-        registerHandler(annoClass, IBeanHandler.DEFAULT_HANDLER);
+    public boolean isInitialized() {
+        return initialized;
     }
 
     @Override
-    public IBeanHandler getBeanHandler(Class<? extends Annotation> annoClass) {
-        return __beanHandlerMap.get(annoClass);
+    public IApplication getOwner() {
+        return owner;
     }
 
     @Override
-    public void registerInjector(Class<? extends Annotation> annoClass, IBeanInjector injector) {
-        if (!__beanInjectorMap.containsKey(annoClass)) {
-            __beanInjectorMap.put(annoClass, injector);
+    public void close() throws Exception {
+        if (initialized) {
+            initialized = false;
             //
-            if (__owner.getConfig().isDevelopMode() && _LOG.isInfoEnabled()) {
-                _LOG.info("Injector class [" + annoClass.getSimpleName() + ":" + injector.getClass().getName() + "] registered.");
-            }
-        } else if (__owner.getConfig().isDevelopMode() && _LOG.isWarnEnabled()) {
-            _LOG.warn("Injector class [" + annoClass.getSimpleName() + ":" + injector.getClass().getName() + "] duplicate registration is not allowed");
-        }
-    }
-
-    private boolean __hasPackageParent(List<String> targetList, String packageName) {
-        boolean _flag = false;
-        do {
-            packageName = StringUtils.substringBeforeLast(packageName, ".");
-            if (targetList.contains(packageName)) {
-                _flag = true;
-            }
-        } while (!_flag && StringUtils.contains(packageName, "."));
-        //
-        return _flag;
-    }
-
-    private void __doParsePackagePath(List<String> targetList, String packageName) {
-        if (!targetList.contains(packageName)) {
-            if (targetList.isEmpty()) {
-                targetList.add(packageName);
-            } else if (!__hasPackageParent(targetList, packageName)) {
-                Iterator<String> _iterator = targetList.iterator();
-                while (_iterator.hasNext()) {
-                    if (StringUtils.startsWith(_iterator.next(), packageName)) {
-                        _iterator.remove();
+            parentFactory = null;
+            proxyFactory = null;
+            //
+            beanInjectorMap.clear();
+            beanInterfacesMap.clear();
+            excludedInterfaceClasses.clear();
+            //
+            Iterator<Map.Entry<Class<?>, BeanMeta>> entryIterator = beanInstancesMap.entrySet().iterator();
+            while (entryIterator.hasNext()) {
+                Map.Entry<Class<?>, BeanMeta> entry = entryIterator.next();
+                entryIterator.remove();
+                if (entry.getValue().isSingleton() && entry.getValue().getBeanObject() != null) {
+                    if (entry.getValue().getBeanObject() instanceof IDestroyable) {
+                        try {
+                            ((IDestroyable) entry.getValue().getBeanObject()).close();
+                        } catch (Exception e) {
+                            if (LOG.isWarnEnabled()) {
+                                LOG.warn(String.format("An exception occurred while destroying object [%s].", entry.getKey().getName()), RuntimeUtils.unwrapThrow(e));
+                            }
+                        }
                     }
                 }
-                targetList.add(packageName);
             }
         }
     }
 
     @Override
-    public void registerPackage(String packageName) {
-        __doParsePackagePath(this.__packageNames, packageName);
-    }
-
-    @Override
-    public List<String> getPackageNames() {
-        return __packageNames;
-    }
-
-    @Override
-    public void registerExcludedPackage(String packageName) {
-        __doParsePackagePath(this.__excludedPackages, packageName);
-    }
-
-    @Override
-    public List<String> getExcludedPackageNames() {
-        return __excludedPackages;
-    }
-
-    @Override
-    public void registerExcludedClass(Class<?> excludedClass) {
-        if (excludedClass.isInterface()) {
-            this.__excludedClassSet.add(excludedClass);
+    public void registerInjector(Class<? extends Annotation> annClass, IBeanInjector injector) {
+        if (!beanInjectorMap.containsKey(annClass)) {
+            beanInjectorMap.put(annClass, injector);
+            //
+            if (owner.isDevEnv() && LOG.isInfoEnabled()) {
+                LOG.info(String.format("Injector class [%s:%s] registered.", annClass.getSimpleName(), injector.getClass().getName()));
+            }
+        } else if (owner.isDevEnv() && LOG.isWarnEnabled()) {
+            LOG.warn(String.format("Injector class [%s:%s] duplicate registration is not allowed.", annClass.getSimpleName(), injector.getClass().getName()));
         }
     }
 
     @Override
-    public List<String> getExcludedFiles() {
-        return __excludedFileSet == null ? Collections.<String>emptyList() : __excludedFileSet;
+    public void registerExcludedInterfaceClass(Class<?> excludedInterfaceClass) {
+        if (excludedInterfaceClass.isInterface()) {
+            excludedInterfaceClasses.add(excludedInterfaceClass);
+        } else if (owner.isDevEnv() && LOG.isInfoEnabled()) {
+            LOG.info(String.format("Class [%s] is not an interface class, ignored.", excludedInterfaceClass.getName()));
+        }
     }
 
     @Override
-    public void setExcludedFiles(List<String> excludedFiles) {
-        __excludedFileSet = excludedFiles;
+    public boolean isExcludedInterfaceClass(Class<?> excludedInterfaceClass) {
+        if (excludedInterfaceClass.isInterface()) {
+            boolean result = excludedInterfaceClass.isAnnotationPresent(Ignored.class) || excludedInterfaceClasses.contains(excludedInterfaceClass);
+            return result && (parentFactory != null && parentFactory.isExcludedInterfaceClass(excludedInterfaceClass));
+        }
+        return false;
     }
 
     @Override
     @SuppressWarnings("unchecked")
     public <T> T getBean(Class<T> clazz) {
-        T _obj = null;
-        if (clazz != null && !clazz.isAnnotation()) {
-            BeanMeta _beanMeta;
+        T obj = null;
+        if (ClassUtils.isNormalClass(clazz)) {
+            BeanMeta beanMeta = null;
             if (clazz.isInterface()) {
-                Class<?> _targetClass = this.__beanInterfacesMap.get(clazz);
-                _beanMeta = this.__beanInstancesMap.get(_targetClass);
+                Class<?> targetClass = beanInterfacesMap.get(clazz);
+                if (targetClass != null) {
+                    beanMeta = beanInstancesMap.get(targetClass);
+                }
             } else {
-                _beanMeta = this.__beanInstancesMap.get(clazz);
+                beanMeta = beanInstancesMap.get(clazz);
             }
-            if (_beanMeta != null) {
-                if (!_beanMeta.isSingleton()) {
+            if (beanMeta != null) {
+                if (!beanMeta.isSingleton()) {
                     try {
-                        _obj = (T) __createBeanInstanceWithProxy(__proxyFactory, _beanMeta.getBeanClass(), _beanMeta.getBeanObject());
-                        __initBeanIoC(_beanMeta.getBeanClass(), _obj, _beanMeta.getInitializer());
+                        obj = (T) buildBeanProxyIfNeed(beanMeta.getBeanClass(), beanMeta.getBeanObject());
+                        initBeanIoC(beanMeta.getBeanClass(), obj, beanMeta.getInitializer());
                     } catch (Exception e) {
-                        _LOG.warn("", e);
+                        LOG.warn(StringUtils.EMPTY, e);
                     }
                 } else {
-                    _obj = (T) _beanMeta.getBeanObject();
+                    obj = (T) beanMeta.getBeanObject();
                 }
             }
-            if (_obj == null && this.__parentFactory != null) {
-                _obj = this.__parentFactory.getBean(clazz);
+            if (obj == null && parentFactory != null) {
+                obj = parentFactory.getBean(clazz);
             }
         }
-        return _obj;
+        return obj;
     }
 
     @Override
     public Map<Class<?>, BeanMeta> getBeans() {
-        return Collections.unmodifiableMap(this.__beanInstancesMap);
+        return Collections.unmodifiableMap(beanInstancesMap);
     }
 
     @Override
     public void registerBean(BeanMeta beanMeta) {
-        // 注解、枚举和接口类型采用不同方式处理
-        if (beanMeta.getBeanClass().isInterface()) {
-            if (beanMeta.getBeanObject() != null) {
-                __beanInstancesMap.put(beanMeta.getBeanClass(), beanMeta);
-                __addClassInterfaces(beanMeta);
+        if (beanMeta != null && ClassUtils.isNormalClass(beanMeta.getBeanClass())) {
+            // 注解、枚举和接口类型采用不同方式处理
+            if (beanMeta.getBeanClass().isInterface()) {
+                if (beanMeta.getBeanObject() != null) {
+                    beanInstancesMap.put(beanMeta.getBeanClass(), beanMeta);
+                    parseInterfaces(beanMeta);
+                } else if (owner.isDevEnv() && LOG.isWarnEnabled()) {
+                    LOG.warn(String.format("BeanMeta interface [%s] instance object not provided, ignored.", beanMeta.getBeanClass().getName()));
+                }
+            } else {
+                parseClass(beanMeta);
             }
-        } else if (!beanMeta.getBeanClass().isAnnotation() && !beanMeta.getBeanClass().isEnum()) {
-            __addClass(beanMeta);
         }
     }
 
@@ -244,150 +244,89 @@ public class DefaultBeanFactory implements IBeanFactory {
         registerBean(BeanMeta.create(clazz));
     }
 
-    @Override
-    @Deprecated
-    public void registerBean(Class<?> clazz, Object object) {
-        registerBean(BeanMeta.create(object, clazz));
-    }
-
-    protected void __addClass(BeanMeta beanMeta) {
-        __beanInstancesMap.put(beanMeta.getBeanClass(), beanMeta);
+    protected void parseClass(BeanMeta beanMeta) {
+        beanInstancesMap.put(beanMeta.getBeanClass(), beanMeta);
         //
-        __addClassInterfaces(beanMeta);
+        parseInterfaces(beanMeta);
     }
 
-    protected void __addClassInterfaces(BeanMeta beanMeta) {
-        if (!beanMeta.isSkipInterface()) {
-            for (Class<?> _interface : beanMeta.getBeanInterfaces(__excludedClassSet)) {
-                __beanInterfacesMap.put(_interface, beanMeta.getBeanClass());
-            }
-        } else if (beanMeta.getBeanClass().isInterface() && !__excludedClassSet.contains(beanMeta.getBeanClass())) {
-            __beanInterfacesMap.put(beanMeta.getBeanClass(), beanMeta.getBeanClass());
+    protected void parseInterfaces(BeanMeta beanMeta) {
+        if (!beanMeta.isInterfaceIgnored()) {
+            beanMeta.getInterfaces(excludedInterfaceClasses).forEach((interfaceClass) -> {
+                beanInterfacesMap.put(interfaceClass, beanMeta.getBeanClass());
+            });
+        } else if (isExcludedInterfaceClass(beanMeta.getBeanClass())) {
+            beanInterfacesMap.put(beanMeta.getBeanClass(), beanMeta.getBeanClass());
         }
-    }
-
-    @Override
-    public void init() throws Exception {
-        if (this.__beanLoader == null) {
-            if (this.__parentFactory != null) {
-                this.__beanLoader = this.__parentFactory.getLoader();
-            }
-            if (this.__beanLoader == null) {
-                this.__beanLoader = new DefaultBeanLoader();
-            }
-        }
-        __beanLoader.load(this);
-    }
-
-    @Override
-    public YMP getOwner() {
-        return __owner;
-    }
-
-    @Override
-    public void destroy() throws Exception {
-        this.__parentFactory = null;
-        this.__packageNames = null;
-        this.__excludedPackages = null;
-        this.__excludedClassSet = null;
-        this.__beanHandlerMap = null;
-        this.__beanInstancesMap = null;
-        this.__beanInterfacesMap = null;
-        this.__beanLoader = null;
     }
 
     @Override
     public IBeanFactory getParent() {
-        return __parentFactory;
+        return parentFactory;
     }
 
     @Override
-    public void setParent(IBeanFactory parent) {
-        this.__parentFactory = parent;
+    public IProxyFactory getProxyFactory() {
+        return proxyFactory;
     }
 
-    @Override
-    public IBeanLoader getLoader() {
-        return this.__beanLoader;
-    }
+    private Object buildBeanProxyIfNeed(Class<?> targetClass, Object targetObject) throws IllegalAccessException, InstantiationException {
+        if (useProxy) {
+            List<IProxy> proxies = proxyFactory.getProxies(new IProxyFilter() {
 
-    @Override
-    public void setLoader(IBeanLoader loader) {
-        this.__beanLoader = loader;
-    }
-
-    @Override
-    public void initProxy(IProxyFactory proxyFactory) throws Exception {
-        __proxyFactory = proxyFactory;
-        for (Map.Entry<Class<?>, BeanMeta> _entry : this.getBeans().entrySet()) {
-            if (!_entry.getKey().isInterface() && _entry.getValue().isSingleton()) {
-                _entry.getValue().setBeanObject(__createBeanInstanceWithProxy(proxyFactory, _entry.getValue().getBeanClass(), _entry.getValue().getBeanObject()));
-            }
-        }
-    }
-
-    private Object __createBeanInstanceWithProxy(IProxyFactory proxyFactory, final Class<?> targetClass, Object targetObject) throws IllegalAccessException, InstantiationException {
-        List<IProxy> _targetProxies = proxyFactory == null ? Collections.<IProxy>emptyList() : proxyFactory.getProxies(new IProxyFilter() {
-
-            private boolean __doCheckAnnotation(Proxy targetProxyAnno) {
-                // 若设置了自定义注解类型，则判断targetClass是否匹配，否则返回true
-                if (targetProxyAnno.annotation().length > 0) {
-                    for (Class<? extends Annotation> _annoClass : targetProxyAnno.annotation()) {
-                        if (targetClass.isAnnotationPresent(_annoClass)) {
-                            return true;
-                        }
-                    }
-                    return false;
-                }
-                return true;
-            }
-
-            @Override
-            public boolean filter(IProxy targetProxy) {
-                CleanProxy _cleanProxy = targetClass.getAnnotation(CleanProxy.class);
-                if (_cleanProxy != null) {
-                    if (_cleanProxy.value().length > 0) {
-                        for (Class<? extends IProxy> _proxyClass : _cleanProxy.value()) {
-                            if (_proxyClass.equals(targetProxy.getClass())) {
-                                return false;
+                private boolean checkAnnotation(Proxy targetProxyAnn) {
+                    // 若设置了自定义注解类型，则判断targetClass是否匹配，否则返回true
+                    if (targetProxyAnn != null && targetProxyAnn.annotation().length > 0) {
+                        for (Class<? extends Annotation> annClass : targetProxyAnn.annotation()) {
+                            if (targetClass.isAnnotationPresent(annClass)) {
+                                return true;
                             }
                         }
-                    } else {
                         return false;
                     }
+                    return true;
                 }
-                Proxy _targetProxyAnno = targetProxy.getClass().getAnnotation(Proxy.class);
-                // 若已设置作用包路径
-                if (StringUtils.isNotBlank(_targetProxyAnno.packageScope())) {
-                    // 若当前类对象所在包路径匹配
-                    if (!StringUtils.startsWith(targetClass.getPackage().getName(), _targetProxyAnno.packageScope())) {
-                        return false;
+
+                @Override
+                public boolean filter(IProxy targetProxy) {
+                    CleanProxy cleanProxy = targetClass.getAnnotation(CleanProxy.class);
+                    if (cleanProxy != null) {
+                        if (cleanProxy.value().length > 0) {
+                            for (Class<? extends IProxy> proxyClass : cleanProxy.value()) {
+                                if (proxyClass.equals(targetProxy.getClass())) {
+                                    return false;
+                                }
+                            }
+                        } else {
+                            return false;
+                        }
                     }
+                    Proxy proxyAnn = targetProxy.getClass().getAnnotation(Proxy.class);
+                    // 若已设置作用包路径
+                    if (proxyAnn != null && StringUtils.isNotBlank(proxyAnn.packageScope())) {
+                        // 若当前类对象所在包路径匹配
+                        if (!StringUtils.startsWith(targetClass.getPackage().getName(), proxyAnn.packageScope())) {
+                            return false;
+                        }
+                    }
+                    return checkAnnotation(proxyAnn);
                 }
-                return __doCheckAnnotation(_targetProxyAnno);
-            }
-        });
-        if (!_targetProxies.isEmpty()) {
-            // 由于创建代理是通过接口重新实例化对象并覆盖原对象，所以需要复制原有对象成员（暂时先这样吧，还没想到好的处理办法）
-            Object _proxyObject = proxyFactory.createProxy(targetClass, _targetProxies);
-            if (_proxyObject != null) {
-                if (targetObject != null) {
-                    _LOG.warn("Important Warning: It is not recommended to register instance[" + targetObject.getClass().getName() + "] objects directly with BeanFactory!!!");
-                    return ClassUtils.wrapper(targetObject).duplicate(_proxyObject);
+            });
+            if (!proxies.isEmpty()) {
+                // 由于创建代理是通过接口重新实例化对象并覆盖原对象，所以需要复制原有对象成员（暂时先这样吧，还没想到好的处理办法）
+                Object proxyObject = proxyFactory.createProxy(targetClass, proxies);
+                if (proxyObject != null) {
+                    if (targetObject != null) {
+                        if (LOG.isWarnEnabled()) {
+                            LOG.warn(String.format("Important Warning: It is not recommended to register instance[%s] objects directly with BeanFactory!!!", targetObject.getClass().getName()));
+                        }
+                        return ClassUtils.wrapper(targetObject).duplicate(proxyObject);
+                    }
+                    return proxyObject;
                 }
-                return _proxyObject;
             }
         }
         return targetObject != null ? targetObject : targetClass.newInstance();
-    }
-
-    @Override
-    public void initIoC() throws Exception {
-        for (Map.Entry<Class<?>, BeanMeta> _bean : this.getBeans().entrySet()) {
-            if (!_bean.getKey().isInterface() && _bean.getValue().isSingleton()) {
-                __initBeanIoC(_bean.getKey(), _bean.getValue().getBeanObject(), _bean.getValue().getInitializer());
-            }
-        }
     }
 
     /**
@@ -398,40 +337,40 @@ public class DefaultBeanFactory implements IBeanFactory {
      * @param initializer  自定义初始化回调接口
      * @throws Exception 可能产生的异常
      */
-    private void __initBeanIoC(Class<?> targetClass, Object targetObject, BeanMeta.IInitializer initializer) throws Exception {
-        Field[] _fields = targetClass.getDeclaredFields();
-        if (_fields != null && _fields.length > 0) {
-            for (Field _field : _fields) {
-                Object _injectObj = null;
-                if (_field.isAnnotationPresent(Inject.class)) {
-                    if (_field.isAnnotationPresent(By.class)) {
-                        By _injectBy = _field.getAnnotation(By.class);
-                        _injectObj = this.getBean(_injectBy.value());
+    private void initBeanIoC(Class<?> targetClass, Object targetObject, BeanMeta.IInitializer initializer) throws Exception {
+        Field[] fields = targetClass.getDeclaredFields();
+        if (ArrayUtils.isNotEmpty(fields)) {
+            for (Field field : fields) {
+                Object injectObj = null;
+                if (field.isAnnotationPresent(Inject.class)) {
+                    if (field.isAnnotationPresent(By.class)) {
+                        By injectBy = field.getAnnotation(By.class);
+                        injectObj = this.getBean(injectBy.value());
                     } else {
-                        _injectObj = this.getBean(_field.getType());
+                        injectObj = this.getBean(field.getType());
                     }
                 }
-                _injectObj = __tryInjector(targetClass, _field, _injectObj);
-                if (_injectObj != null) {
-                    _field.setAccessible(true);
-                    _field.set(targetObject, _injectObj);
+                injectObj = tryBeanInjector(targetClass, field, injectObj);
+                if (injectObj != null) {
+                    field.setAccessible(true);
+                    field.set(targetObject, injectObj);
                 }
             }
         }
         if (initializer != null) {
-            initializer.init(targetObject);
+            initializer.initialize(targetObject);
         }
         if (targetObject instanceof IBeanInitializer) {
             ((IBeanInitializer) targetObject).afterInitialized();
         }
     }
 
-    private Object __tryInjector(Class<?> targetClass, Field field, Object originInject) {
-        if (!__beanInjectorMap.isEmpty()) {
-            for (Map.Entry<Class<? extends Annotation>, IBeanInjector> _entry : __beanInjectorMap.entrySet()) {
-                Annotation _annotation = field.getAnnotation(_entry.getKey());
-                if (_annotation != null) {
-                    return _entry.getValue().inject(this, _annotation, targetClass, field, originInject);
+    private Object tryBeanInjector(Class<?> targetClass, Field field, Object originInject) {
+        if (!beanInjectorMap.isEmpty()) {
+            for (Map.Entry<Class<? extends Annotation>, IBeanInjector> entry : beanInjectorMap.entrySet()) {
+                Annotation annotation = field.getAnnotation(entry.getKey());
+                if (annotation != null) {
+                    return entry.getValue().inject(this, annotation, targetClass, field, originInject);
                 }
             }
         }

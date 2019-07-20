@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2017 the original author or authors.
+ * Copyright 2007-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,7 @@ package net.ymate.platform.webmvc.impl;
 
 import net.ymate.platform.webmvc.IRequestContext;
 import net.ymate.platform.webmvc.base.Type;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.HashMap;
@@ -27,7 +27,6 @@ import java.util.Map;
  * 默认WebMVC请求上下文接口实现
  *
  * @author 刘镇 (suninformation@163.com) on 2012-12-22 上午2:17:10
- * @version 1.0
  */
 public class DefaultRequestContext implements IRequestContext {
 
@@ -51,35 +50,33 @@ public class DefaultRequestContext implements IRequestContext {
      */
     private final String suffix;
 
-    private final Type.HttpMethod __httpMethod;
+    private final Type.HttpMethod httpMethod;
 
-    private final Map<String, Object> __attributes;
+    private final Map<String, Object> attributes = new HashMap<>(16);
 
     public DefaultRequestContext(HttpServletRequest request, String prefix) {
-        this.requestMapping = this.originalUrl = StringUtils.defaultIfBlank(request.getPathInfo(), request.getServletPath());
+        httpMethod = Type.HttpMethod.valueOf(request.getMethod());
+        requestMapping = originalUrl = StringUtils.defaultIfBlank(request.getPathInfo(), request.getServletPath());
         if (StringUtils.isNotBlank(prefix)) {
-            this.requestMapping = StringUtils.substringAfter(this.requestMapping, prefix);
+            requestMapping = StringUtils.substringAfter(requestMapping, prefix);
             this.prefix = prefix;
         }
-        int _pos = 0;
-        if (!this.requestMapping.endsWith("/")) {
-            _pos = this.requestMapping.lastIndexOf('.');
-            if (_pos < this.requestMapping.lastIndexOf('/')) {
-                _pos = -1;
+        int position = 0;
+        if (!requestMapping.endsWith(Type.Const.PATH_SEPARATOR)) {
+            position = requestMapping.lastIndexOf('.');
+            if (position < requestMapping.lastIndexOf(Type.Const.PATH_SEPARATOR_CHAR)) {
+                position = -1;
             }
         } else {
             // 请求映射字符串(注:必须以字符'/'开始且不以'/'结束)
-            this.requestMapping = this.requestMapping.substring(0, this.requestMapping.length() - 1);
+            requestMapping = requestMapping.substring(0, requestMapping.length() - 1);
         }
-        if (_pos > 0) {
-            this.suffix = this.requestMapping.substring(_pos + 1);
-            this.requestMapping = this.requestMapping.substring(0, _pos);
+        if (position > 0) {
+            this.suffix = requestMapping.substring(position + 1);
+            requestMapping = requestMapping.substring(0, position);
         } else {
-            this.suffix = "";
+            this.suffix = StringUtils.EMPTY;
         }
-        __httpMethod = Type.HttpMethod.valueOf(request.getMethod());
-        //
-        __attributes = new HashMap<String, Object>();
     }
 
     @Override
@@ -104,7 +101,7 @@ public class DefaultRequestContext implements IRequestContext {
 
     @Override
     public Type.HttpMethod getHttpMethod() {
-        return __httpMethod;
+        return httpMethod;
     }
 
     ////
@@ -112,17 +109,17 @@ public class DefaultRequestContext implements IRequestContext {
     @Override
     @SuppressWarnings("unchecked")
     public <T> T getAttribute(String name) {
-        return (T) __attributes.get(name);
+        return (T) attributes.get(name);
     }
 
     @Override
     public IRequestContext addAttribute(String name, Object value) {
-        __attributes.put(name, value);
+        attributes.put(name, value);
         return this;
     }
 
     @Override
     public Map<String, Object> getAttributes() {
-        return __attributes;
+        return attributes;
     }
 }

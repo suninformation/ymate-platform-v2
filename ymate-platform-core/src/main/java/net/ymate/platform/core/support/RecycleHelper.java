@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2018 the original author or authors.
+ * Copyright 2007-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,8 +15,9 @@
  */
 package net.ymate.platform.core.support;
 
-import net.ymate.platform.core.util.RuntimeUtils;
-import net.ymate.platform.core.util.ThreadUtils;
+import net.ymate.platform.commons.ConcurrentHashSet;
+import net.ymate.platform.commons.util.RuntimeUtils;
+import net.ymate.platform.commons.util.ThreadUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -30,21 +31,20 @@ import java.util.concurrent.ExecutorService;
  * 主要是开辟一块空地，让涉及到需要进行资源销毁的对象主动的将其销毁方法和手段注册进来，从而达到通过此对象一次性全部回收处理；
  *
  * @author 刘镇 (suninformation@163.com) on 2018/4/4 下午2:15
- * @version 1.0
  */
 public final class RecycleHelper {
 
-    private static final Log _LOG = LogFactory.getLog(RecycleHelper.class);
+    private static final Log LOG = LogFactory.getLog(RecycleHelper.class);
 
-    private static final RecycleHelper __instance = new RecycleHelper();
+    private static final RecycleHelper INSTANCE = new RecycleHelper();
 
-    private Set<IDestroyable> __destroyableSet = new ConcurrentHashSet<IDestroyable>();
+    private final Set<IDestroyable> destroyableSet = new ConcurrentHashSet<>();
 
     /**
      * @return 获取全局实例对象
      */
     public static RecycleHelper getInstance() {
-        return __instance;
+        return INSTANCE;
     }
 
     /**
@@ -65,7 +65,7 @@ public final class RecycleHelper {
      */
     public RecycleHelper register(IDestroyable destroyable) {
         if (destroyable != null) {
-            __destroyableSet.add(destroyable);
+            destroyableSet.add(destroyable);
         }
         return this;
     }
@@ -74,31 +74,26 @@ public final class RecycleHelper {
      * @return 返回待回收资源数量
      */
     public int size() {
-        return __destroyableSet.size();
-    }
-
-    private void __recycle() {
-        Iterator<IDestroyable> iterator = __destroyableSet.iterator();
-        while (iterator.hasNext()) {
-            IDestroyable _destroyable = iterator.next();
-            iterator.remove();
-            try {
-                _destroyable.destroy();
-            } catch (Throwable e) {
-                if (_LOG.isWarnEnabled()) {
-                    _LOG.warn("An exception occurs when the object is destroyed: ", RuntimeUtils.unwrapThrow(e));
-                } else {
-                    RuntimeUtils.unwrapThrow(e).printStackTrace();
-                }
-            }
-        }
+        return destroyableSet.size();
     }
 
     /**
      * 执行资源回收
      */
     public void recycle() {
-        recycle(false);
+        Iterator<IDestroyable> iterator = destroyableSet.iterator();
+        while (iterator.hasNext()) {
+            IDestroyable destroyable = iterator.next();
+            try {
+                destroyable.close();
+            } catch (Exception e) {
+                if (LOG.isWarnEnabled()) {
+                    LOG.warn(String.format("An exception occurred while destroying object [%s].", destroyable.getClass().getName()), RuntimeUtils.unwrapThrow(e));
+                }
+            } finally {
+                iterator.remove();
+            }
+        }
     }
 
     /**
@@ -108,16 +103,11 @@ public final class RecycleHelper {
      */
     public void recycle(boolean async) {
         if (async) {
-            ExecutorService _executor = ThreadUtils.newSingleThreadExecutor();
-            _executor.submit(new Runnable() {
-                @Override
-                public void run() {
-                    __recycle();
-                }
-            });
-            _executor.shutdown();
+            ExecutorService executorService = ThreadUtils.newSingleThreadExecutor();
+            executorService.submit((Runnable) this::recycle);
+            executorService.shutdown();
         } else {
-            __recycle();
+            recycle();
         }
     }
 }

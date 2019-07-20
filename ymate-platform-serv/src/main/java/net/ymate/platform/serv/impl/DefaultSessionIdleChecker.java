@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2018 the original author or authors.
+ * Copyright 2007-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,56 +25,58 @@ import java.util.Iterator;
 import java.util.Map;
 
 /**
+ * @param <SESSION_WRAPPER> 会话包装类型
+ * @param <SESSION_ID>      会话标识类型
+ * @param <MESSAGE_TYPE>    消息类型
  * @author 刘镇 (suninformation@163.com) on 2018/11/22 2:27 AM
- * @version 1.0
  */
 public class DefaultSessionIdleChecker<SESSION_WRAPPER extends ISessionWrapper, SESSION_ID, MESSAGE_TYPE> implements ISessionIdleChecker<SESSION_WRAPPER, SESSION_ID, MESSAGE_TYPE> {
 
-    private static final Log _LOG = LogFactory.getLog(DefaultSessionIdleChecker.class);
+    private static final Log LOG = LogFactory.getLog(DefaultSessionIdleChecker.class);
 
-    private ISessionManager<SESSION_WRAPPER, SESSION_ID, MESSAGE_TYPE> __sessionManager;
+    private ISessionManager<SESSION_WRAPPER, SESSION_ID, MESSAGE_TYPE> sessionManager;
 
-    private boolean __inited;
+    private boolean initialized;
 
     @Override
-    public void init(ISessionManager<SESSION_WRAPPER, SESSION_ID, MESSAGE_TYPE> sessionManager) {
-        __sessionManager = sessionManager;
-        __inited = true;
+    public void initialize(ISessionManager<SESSION_WRAPPER, SESSION_ID, MESSAGE_TYPE> sessionManager) {
+        this.sessionManager = sessionManager;
+        initialized = true;
     }
 
     @Override
     public ISessionManager<SESSION_WRAPPER, SESSION_ID, MESSAGE_TYPE> getSessionManager() {
-        return __sessionManager;
+        return sessionManager;
     }
 
     @Override
-    public boolean isInited() {
-        return __inited;
+    public boolean isInitialized() {
+        return initialized;
     }
 
     @Override
     public void processIdleSession(Map<SESSION_ID, SESSION_WRAPPER> sessions, long idleTimeInMillis) {
-        Iterator<Map.Entry<SESSION_ID, SESSION_WRAPPER>> _iterator = sessions.entrySet().iterator();
-        while (_iterator.hasNext()) {
-            Map.Entry<SESSION_ID, SESSION_WRAPPER> _entry = _iterator.next();
-            if (System.currentTimeMillis() - _entry.getValue().getLastTouchTime() > idleTimeInMillis) {
-                _iterator.remove();
+        Iterator<Map.Entry<SESSION_ID, SESSION_WRAPPER>> iterator = sessions.entrySet().iterator();
+        while (iterator.hasNext()) {
+            Map.Entry<SESSION_ID, SESSION_WRAPPER> entry = iterator.next();
+            if (System.currentTimeMillis() - entry.getValue().getLastTouchTime() > idleTimeInMillis) {
+                iterator.remove();
                 //
-                getSessionManager().closeSessionWrapper(_entry.getValue());
+                getSessionManager().closeSessionWrapper(entry.getValue());
                 //
-                if (_LOG.isDebugEnabled()) {
-                    _LOG.debug(_entry.getValue() + " - Session idle removed. Session count: " + this.getSessionManager().sessionCount());
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug(String.format("%s - Session idle removed. Session count: %d", entry.getValue(), this.getSessionManager().sessionCount()));
                 }
-                this.getSessionManager().sessionListener().onSessionIdleRemoved(_entry.getValue());
+                getSessionManager().sessionListener().onSessionIdleRemoved(entry.getValue());
             }
         }
     }
 
     @Override
-    public void destroy() throws Exception {
-        if (__inited) {
-            __inited = false;
-            __sessionManager = null;
+    public void close() throws Exception {
+        if (initialized) {
+            initialized = false;
+            sessionManager = null;
         }
     }
 }

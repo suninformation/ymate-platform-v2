@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2017 the original author or authors.
+ * Copyright 2007-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,43 +15,57 @@
  */
 package net.ymate.platform.core.beans.proxy;
 
+import net.ymate.platform.core.beans.annotation.Ignored;
+
 import java.lang.reflect.Method;
 
 /**
  * 代理链接口定义
  *
  * @author 刘镇 (suninformation@163.com) on 15-3-3 下午4:05
- * @version 1.0
  */
+@Ignored
 public interface IProxyChain {
 
     /**
-     * @return 获取所属代理工厂对象
+     * 获取所属代理工厂
+     *
+     * @return 返回代理工厂对象
      */
     IProxyFactory getProxyFactory();
 
     /**
-     * @return 获取方法参数集合
+     * 获取方法参数集合
+     *
+     * @return 返回参数集合
      */
     Object[] getMethodParams();
 
     /**
-     * @return 获取被代理目标类型
+     * 获取被代理目标类型
+     *
+     * @return 返回目标类型
      */
     Class<?> getTargetClass();
 
     /**
-     * @return 获取代理目标对象
+     * 获取代理目标对象
+     *
+     * @return 获取目标实例对象
      */
     Object getTargetObject();
 
     /**
-     * @return 获取被代理目标方法对象
+     * 获取被代理目标方法对象
+     *
+     * @return 获取目标方法对象
      */
     Method getTargetMethod();
 
     /**
-     * @return 执行代理链
+     * 执行代理链
+     *
+     * @return 返回执行结果
      * @throws Throwable 执行过程中可能产生的异常
      */
     Object doProxyChain() throws Throwable;

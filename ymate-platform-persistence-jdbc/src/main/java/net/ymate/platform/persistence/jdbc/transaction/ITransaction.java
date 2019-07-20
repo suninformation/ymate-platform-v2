@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2017 the original author or authors.
+ * Copyright 2007-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,8 +15,9 @@
  */
 package net.ymate.platform.persistence.jdbc.transaction;
 
-import net.ymate.platform.persistence.jdbc.IConnectionHolder;
-import net.ymate.platform.persistence.jdbc.JDBC;
+import net.ymate.platform.core.beans.annotation.Ignored;
+import net.ymate.platform.core.persistence.base.Type;
+import net.ymate.platform.persistence.jdbc.IDatabaseConnectionHolder;
 
 import java.sql.SQLException;
 
@@ -24,24 +25,28 @@ import java.sql.SQLException;
  * 事务处理接口定义
  *
  * @author 刘镇 (suninformation@163.com) on 2011-9-6 下午03:59:38
- * @version 1.0
  */
+@Ignored
 public interface ITransaction {
 
     /**
-     * @return 获取事务级别
+     * 获取事务级别
+     *
+     * @return 返回当前事务级别
      */
-    JDBC.TRANSACTION getLevel();
+    Type.TRANSACTION getLevel();
 
     /**
      * 设置事务级别
      *
      * @param level 事务级别
      */
-    void setLevel(JDBC.TRANSACTION level);
+    void setLevel(Type.TRANSACTION level);
 
     /**
-     * @return 获取事务Id
+     * 获取事务唯一标识
+     *
+     * @return 返回事务唯一标识
      */
     String getId();
 
@@ -67,10 +72,12 @@ public interface ITransaction {
     void close() throws SQLException;
 
     /**
+     * 获取数据库连接持有者对象
+     *
      * @param dsName 数据源名称
-     * @return 获取数据库连接持有者对象
+     * @return 返回数据库连接持有者对象
      */
-    IConnectionHolder getConnectionHolder(String dsName);
+    IDatabaseConnectionHolder getConnectionHolder(String dsName);
 
     /**
      * 注册一个ConnectionHolder对象由事务管理(相同数据源仅允许注册一次)
@@ -78,5 +85,5 @@ public interface ITransaction {
      * @param connectionHolder 数据库连接持有者对象
      * @throws SQLException 可能产生的异常
      */
-    void registerConnectionHolder(IConnectionHolder connectionHolder) throws SQLException;
+    void registerConnectionHolder(IDatabaseConnectionHolder connectionHolder) throws SQLException;
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2017 the original author or authors.
+ * Copyright 2007-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,21 +25,13 @@ import java.util.Set;
 
 
 /**
- * A Map that holds 4 levels of scope.<br>
- * The scopes are the ones known in the web world.:
- * <ul>
- * <li>Page scope</li>
- * <li>Request scope</li>
- * <li>Session scope</li>
- * <li>Application scope</li>
- * </ul>
- * A object is searched in the order above, starting from page and ending at application scope.
+ * @author 刘镇 (suninformation@163.com) on 2011-7-24 下午10:31:48
  */
 public class AttributeMap implements Map {
 
-    protected static final String UNSUPPORTED = "method makes no sense for a simplified map";
+    private static final String UNSUPPORTED = "method makes no sense for a simplified map";
 
-    Map context;
+    private final Map context;
 
     public AttributeMap(Map context) {
         this.context = context;

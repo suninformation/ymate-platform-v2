@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2017 the original author or authors.
+ * Copyright 2007-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,21 +15,41 @@
  */
 package net.ymate.platform.plugin;
 
-import net.ymate.platform.core.event.EventContext;
+import net.ymate.platform.core.event.AbstractEventContext;
 import net.ymate.platform.core.event.IEvent;
 
 /**
  * 插件生命周期事件
  *
  * @author 刘镇 (suninformation@163.com) on 15/6/15 上午3:36
- * @version 1.0
  */
-public class PluginEvent extends EventContext<IPlugin, PluginEvent.EVENT> implements IEvent {
+public class PluginEvent extends AbstractEventContext<IPlugin, PluginEvent.EVENT> implements IEvent {
 
+    private static final long serialVersionUID = 1L;
+
+    /**
+     * 插件事件枚举
+     */
     public enum EVENT {
-        PLUGIN_INITED,
+
+        /**
+         * 插件初始化事件
+         */
+        PLUGIN_INITIALIZED,
+
+        /**
+         * 插件启动事件
+         */
         PLUGIN_STARTED,
+
+        /**
+         * 插件停止事件
+         */
         PLUGIN_SHUTDOWN,
+
+        /**
+         * 插件销毁事件
+         */
         PLUGIN_DESTROYED
     }
 

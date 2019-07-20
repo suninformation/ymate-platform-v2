@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2017 the original author or authors.
+ * Copyright 2007-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,69 +15,50 @@
  */
 package net.ymate.platform.persistence.jdbc.impl;
 
-import net.ymate.platform.core.util.ResourceUtils;
-import net.ymate.platform.persistence.jdbc.AbstractDataSourceAdapter;
-import org.apache.commons.dbcp.BasicDataSource;
-import org.apache.commons.dbcp.BasicDataSourceFactory;
-import org.apache.commons.io.IOUtils;
+import net.ymate.platform.commons.util.RuntimeUtils;
+import net.ymate.platform.persistence.jdbc.AbstractDatabaseDataSourceAdapter;
+import org.apache.commons.dbcp2.BasicDataSource;
+import org.apache.commons.dbcp2.BasicDataSourceFactory;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import java.io.InputStream;
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.util.Properties;
 
 /**
  * 基于DBCP连接池的数据源适配器接口实现
  *
  * @author 刘镇 (suninformation@163.com) on 2013年12月19日 下午2:47:10
- * @version 1.0
  */
-public class DBCPDataSourceAdapter extends AbstractDataSourceAdapter {
+public class DBCPDataSourceAdapter extends AbstractDatabaseDataSourceAdapter {
 
-    private static final Log _LOG = LogFactory.getLog(DBCPDataSourceAdapter.class);
+    private static final Log LOG = LogFactory.getLog(DBCPDataSourceAdapter.class);
 
-    private BasicDataSource __ds;
+    private BasicDataSource dataSource;
 
     @Override
-    protected void __doInit() throws Exception {
-        Properties _props = new Properties();
-        InputStream _in = ResourceUtils.getResourceAsStream("dbcp_" + __cfgMeta.getName() + ".properties", this.getClass());
-        if (_in == null) {
-            _in = ResourceUtils.getResourceAsStream("dbcp.properties", this.getClass());
-        }
-        try {
-            if (_in != null) {
-                _props.load(_in);
-            }
-            //
-            _props.put("driverClassName", __cfgMeta.getDriverClass());
-            _props.put("url", __cfgMeta.getConnectionUrl());
-            _props.put("username", __cfgMeta.getUsername());
-            _props.put("password", __doGetPasswordDecryptIfNeed());
-            //
-            __ds = (BasicDataSource) BasicDataSourceFactory.createDataSource(_props);
-        } finally {
-            IOUtils.closeQuietly(_in);
+    protected void doInitialize() throws Exception {
+        try (InputStream inputStream = getDataSourceConfigFileAsStream("dbcp", getDataSourceConfig().getName())) {
+            dataSource = BasicDataSourceFactory.createDataSource(doCreateConfigProperties(inputStream, false));
         }
     }
 
     @Override
-    public void destroy() {
-        if (__ds != null) {
+    public void doClose() throws Exception {
+        if (dataSource != null) {
             try {
-                __ds.close();
+                dataSource.close();
             } catch (SQLException e) {
-                _LOG.warn("", e);
+                LOG.warn(StringUtils.EMPTY, RuntimeUtils.unwrapThrow(e));
             }
         }
-        //
-        super.destroy();
+        super.doClose();
     }
 
     @Override
     public Connection getConnection() throws Exception {
-        return __ds.getConnection();
+        return dataSource.getConnection();
     }
 }

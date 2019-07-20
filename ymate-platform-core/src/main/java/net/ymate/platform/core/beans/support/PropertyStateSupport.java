@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2017 the original author or authors.
+ * Copyright 2007-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,42 +17,40 @@ package net.ymate.platform.core.beans.support;
 
 import net.sf.cglib.proxy.Enhancer;
 import net.sf.cglib.proxy.MethodInterceptor;
-import net.sf.cglib.proxy.MethodProxy;
+import net.ymate.platform.commons.util.ClassUtils;
 import net.ymate.platform.core.beans.annotation.PropertyState;
-import net.ymate.platform.core.util.ClassUtils;
-import org.apache.commons.lang.ArrayUtils;
-import org.apache.commons.lang.ObjectUtils;
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.builder.EqualsBuilder;
-import org.apache.commons.lang.builder.HashCodeBuilder;
-import org.apache.commons.lang.builder.ToStringBuilder;
+import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.*;
 
 /**
  * @param <T> 元素类型
  * @author 刘镇 (suninformation@163.com) on 16/7/3 上午2:05
- * @version 1.0
  */
 public class PropertyStateSupport<T> {
 
-    private final T __source;
-    private T __bound;
-    private final Class<?> __targetClass;
+    private final T source;
 
-    private final boolean __ignoreNull;
+    private T bound;
 
-    private final List<PropertyStateMeta> __stateMetas;
-    private final Map<String, PropertyStateMeta> __propertyStates;
+    private final Class<?> targetClass;
+
+    private final boolean ignoreNull;
+
+    private final List<PropertyStateMeta> stateMetas = new ArrayList<>();
+
+    private final Map<String, PropertyStateMeta> propertyStates = new HashMap<>();
 
     public static <T> PropertyStateSupport<T> create(T source) throws Exception {
-        return new PropertyStateSupport<T>(source);
+        return new PropertyStateSupport<>(source);
     }
 
     public static <T> PropertyStateSupport<T> create(T source, boolean ignoreNull) throws Exception {
-        return new PropertyStateSupport<T>(source, ignoreNull);
+        return new PropertyStateSupport<>(source, ignoreNull);
     }
 
     public PropertyStateSupport(T source) throws Exception {
@@ -60,21 +58,19 @@ public class PropertyStateSupport<T> {
     }
 
     public PropertyStateSupport(T source, boolean ignoreNull) throws Exception {
-        __source = source;
-        __targetClass = source.getClass();
-        __ignoreNull = ignoreNull;
-        __stateMetas = new ArrayList<PropertyStateMeta>();
-        __propertyStates = new HashMap<String, PropertyStateMeta>();
+        this.source = source;
+        targetClass = source.getClass();
+        this.ignoreNull = ignoreNull;
         //
-        ClassUtils.BeanWrapper<T> _wrapper = ClassUtils.wrapper(source);
-        for (String _fieldName : _wrapper.getFieldNames()) {
-            PropertyState _state = _wrapper.getField(_fieldName).getAnnotation(PropertyState.class);
-            if (_state != null) {
-                PropertyStateMeta _stateMeta = new PropertyStateMeta(StringUtils.defaultIfBlank(_state.propertyName(), _fieldName), _state.aliasName(), _wrapper.getValue(_fieldName));
-                __stateMetas.add(_stateMeta);
-                __propertyStates.put("set" + StringUtils.capitalize(_fieldName), _stateMeta);
-                if (StringUtils.isNotBlank(_state.setterName())) {
-                    __propertyStates.put(_state.setterName(), _stateMeta);
+        ClassUtils.BeanWrapper<T> wrapper = ClassUtils.wrapper(source);
+        for (Map.Entry<String, Field> entry : wrapper.getFieldMap().entrySet()) {
+            PropertyState state = entry.getValue().getAnnotation(PropertyState.class);
+            if (state != null) {
+                PropertyStateMeta stateMeta = new PropertyStateMeta(StringUtils.defaultIfBlank(state.propertyName(), entry.getKey()), state.aliasName(), wrapper.getValue(entry.getValue()));
+                stateMetas.add(stateMeta);
+                propertyStates.put("set" + StringUtils.capitalize(entry.getKey()), stateMeta);
+                if (StringUtils.isNotBlank(state.setterName())) {
+                    propertyStates.put(state.setterName(), stateMeta);
                 }
             }
         }
@@ -82,26 +78,23 @@ public class PropertyStateSupport<T> {
 
     @SuppressWarnings("unchecked")
     public T bind() {
-        if (__bound == null) {
-            __bound = (T) ClassUtils.wrapper(__source).duplicate(Enhancer.create(__targetClass, new MethodInterceptor() {
-                @Override
-                public Object intercept(Object targetObject, Method targetMethod, Object[] methodParams, MethodProxy methodProxy) throws Throwable {
-                    PropertyStateMeta _meta = __propertyStates.get(targetMethod.getName());
-                    if (_meta != null && ArrayUtils.isNotEmpty(methodParams) && !ObjectUtils.equals(_meta.getOriginalValue(), methodParams[0])) {
-                        if (__ignoreNull && methodParams[0] == null) {
-                            methodParams[0] = _meta.getOriginalValue();
-                        }
-                        _meta.setNewValue(methodParams[0]);
+        if (bound == null) {
+            bound = (T) ClassUtils.wrapper(source).duplicate(Enhancer.create(targetClass, (MethodInterceptor) (targetObject, targetMethod, methodParams, methodProxy) -> {
+                PropertyStateMeta stateMeta = propertyStates.get(targetMethod.getName());
+                if (stateMeta != null && ArrayUtils.isNotEmpty(methodParams) && !Objects.equals(stateMeta.getOriginalValue(), methodParams[0])) {
+                    if (ignoreNull && methodParams[0] == null) {
+                        methodParams[0] = stateMeta.getOriginalValue();
                     }
-                    return methodProxy.invokeSuper(targetObject, methodParams);
+                    stateMeta.setNewValue(methodParams[0]);
                 }
+                return methodProxy.invokeSuper(targetObject, methodParams);
             }));
         }
-        return __bound;
+        return bound;
     }
 
     public T unbind() {
-        return ClassUtils.wrapper(__bound).duplicate(__source);
+        return ClassUtils.wrapper(bound).duplicate(source);
     }
 
     public T duplicate(Object source) {
@@ -109,120 +102,28 @@ public class PropertyStateSupport<T> {
     }
 
     public T duplicate(Object source, boolean ignoreNull) {
-        ClassUtils.BeanWrapper<Object> _wrapperSource = ClassUtils.wrapper(source);
-        for (String _fieldName : _wrapperSource.getFieldNames()) {
-            Field _field = _wrapperSource.getField(_fieldName);
+        ClassUtils.BeanWrapper<Object> wrapperSource = ClassUtils.wrapper(source);
+        wrapperSource.getFieldMap().forEach((key, field) -> {
             try {
-                Object _obj = _field.get(source);
-                if (ignoreNull && _obj == null) {
-                    continue;
+                Object value = wrapperSource.getValue(field);
+                if (ignoreNull && value == null) {
+                    return;
                 }
-                Method _method = __bound.getClass().getMethod("set" + StringUtils.capitalize(_fieldName), _field.getType());
-                _method.invoke(__bound, _field.get(source));
-            } catch (Exception e) {
-                // Nothing...
+                Method method = bound.getClass().getMethod("set" + StringUtils.capitalize(key), field.getType());
+                method.invoke(bound, value);
+            } catch (IllegalAccessException | IllegalArgumentException | NoSuchMethodException | SecurityException | InvocationTargetException ignored) {
             }
-        }
-        return __bound;
+        });
+        return bound;
     }
 
     public String[] getChangedPropertyNames() {
-        Set<String> _states = new HashSet<String>();
-        for (PropertyStateMeta _meta : __stateMetas) {
-            if (_meta.isChanged()) {
-                _states.add(_meta.getPropertyName());
-            }
-        }
-        return _states.toArray(new String[0]);
+        return stateMetas.stream().filter(PropertyStateMeta::isChanged).map(PropertyStateMeta::getPropertyName).distinct().toArray(String[]::new);
     }
 
     public Set<PropertyStateMeta> getChangedProperties() {
-        Set<PropertyStateMeta> _states = new HashSet<PropertyStateMeta>();
-        for (PropertyStateMeta _meta : __stateMetas) {
-            if (_meta.isChanged()) {
-                _states.add(_meta);
-            }
-        }
-        return _states;
-    }
-
-    public static class PropertyStateMeta {
-        private final String propertyName;
-        private final String aliasName;
-        private final Object originalValue;
-        private Object newValue;
-
-        private boolean changed;
-
-        public PropertyStateMeta(String propertyName, String aliasName, Object originalValue) {
-            this.propertyName = propertyName;
-            this.aliasName = aliasName;
-            this.originalValue = originalValue;
-        }
-
-        public String getPropertyName() {
-            return propertyName;
-        }
-
-        public String getAliasName() {
-            return aliasName;
-        }
-
-        public Object getOriginalValue() {
-            return originalValue;
-        }
-
-        public Object getNewValue() {
-            return newValue;
-        }
-
-        public void setNewValue(Object newValue) {
-            this.newValue = newValue;
-            this.changed = !ObjectUtils.equals(this.originalValue, newValue);
-        }
-
-        public boolean isChanged() {
-            return changed;
-        }
-
-        @Override
-        public boolean equals(Object o) {
-            if (this == o) {
-                return true;
-            }
-            if (o == null || getClass() != o.getClass()) {
-                return false;
-            }
-            PropertyStateMeta that = (PropertyStateMeta) o;
-            return new EqualsBuilder()
-                    .append(changed, that.changed)
-                    .append(propertyName, that.propertyName)
-                    .append(aliasName, that.aliasName)
-                    .append(originalValue, that.originalValue)
-                    .append(newValue, that.newValue)
-                    .isEquals();
-        }
-
-        @Override
-        public int hashCode() {
-            return new HashCodeBuilder(17, 37)
-                    .append(propertyName)
-                    .append(aliasName)
-                    .append(originalValue)
-                    .append(newValue)
-                    .append(changed)
-                    .toHashCode();
-        }
-
-        @Override
-        public String toString() {
-            return new ToStringBuilder(this)
-                    .append("propertyName", propertyName)
-                    .append("aliasName", aliasName)
-                    .append("originalValue", originalValue)
-                    .append("newValue", newValue)
-                    .append("changed", changed)
-                    .toString();
-        }
+        Set<PropertyStateMeta> states = new HashSet<>();
+        stateMetas.stream().filter(PropertyStateMeta::isChanged).forEachOrdered(states::add);
+        return states;
     }
 }

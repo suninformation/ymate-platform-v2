@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2017 the original author or authors.
+ * Copyright 2007-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,6 +15,7 @@
  */
 package net.ymate.platform.webmvc.handle;
 
+import net.ymate.platform.commons.util.ClassUtils;
 import net.ymate.platform.core.beans.IBeanHandler;
 import net.ymate.platform.webmvc.IWebMvc;
 
@@ -26,16 +27,16 @@ import net.ymate.platform.webmvc.IWebMvc;
  */
 public class ControllerHandler implements IBeanHandler {
 
-    private final IWebMvc __owner;
+    private final IWebMvc owner;
 
     public ControllerHandler(IWebMvc owner) {
-        __owner = owner;
+        this.owner = owner;
     }
 
     @Override
     public Object handle(Class<?> targetClass) throws Exception {
-        if (!targetClass.isInterface() && !targetClass.isAnnotation()) {
-            __owner.registerController(targetClass);
+        if (ClassUtils.isNormalClass(targetClass) && !targetClass.isInterface()) {
+            owner.registerController(targetClass);
         }
         return null;
     }

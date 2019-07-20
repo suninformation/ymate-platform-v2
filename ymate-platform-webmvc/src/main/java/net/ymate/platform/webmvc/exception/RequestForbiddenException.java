@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2017 the original author or authors.
+ * Copyright 2007-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,16 +15,11 @@
  */
 package net.ymate.platform.webmvc.exception;
 
-import net.ymate.platform.webmvc.annotation.ExceptionProcessor;
-import net.ymate.platform.webmvc.util.ErrorCode;
-
 /**
  * 请求的操作被禁止异常
  *
  * @author 刘镇 (suninformation@163.com) on 2017/10/18 下午3:23
- * @version 1.0
  */
-@ExceptionProcessor(code = ErrorCode.REQUEST_OPERATION_FORBIDDEN, msg = ErrorCode.MSG_REQUEST_OPERATION_FORBIDDEN)
 public class RequestForbiddenException extends RuntimeException {
 
     public RequestForbiddenException() {

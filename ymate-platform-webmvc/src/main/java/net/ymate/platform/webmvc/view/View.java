@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2017 the original author or authors.
+ * Copyright 2007-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,6 +15,7 @@
  */
 package net.ymate.platform.webmvc.view;
 
+import net.ymate.platform.commons.lang.PairObject;
 import net.ymate.platform.webmvc.IWebMvc;
 import net.ymate.platform.webmvc.view.impl.*;
 
@@ -22,7 +23,6 @@ import java.io.File;
 
 /**
  * @author 刘镇 (suninformation@163.com) on 15/5/28 下午5:44
- * @version 1.0
  */
 public class View {
 
@@ -120,5 +120,41 @@ public class View {
 
     public static TextView textView(String content) {
         return TextView.bind(content);
+    }
+
+    public static PairObject<IView, String> mappingToView(IWebMvc owner, String requestMapping) throws Exception {
+        // 采用系统默认方式处理约定优于配置的URL请求映射
+        String[] fileTypes = {HtmlView.FILE_SUFFIX, JspView.FILE_SUFFIX, FreemarkerView.FILE_SUFFIX, VelocityView.FILE_SUFFIX, BeetlView.FILE_SUFFIX};
+        IView view = null;
+        String fileType = null;
+        for (String type : fileTypes) {
+            File targetFile = new File(owner.getConfig().getAbstractBaseViewPath(), requestMapping + fileType);
+            if (targetFile.exists()) {
+                switch (type) {
+                    case HtmlView.FILE_SUFFIX:
+                        view = HtmlView.bind(owner, requestMapping);
+                        fileType = type;
+                        break;
+                    case JspView.FILE_SUFFIX:
+                        view = JspView.bind(owner, requestMapping);
+                        fileType = type;
+                        break;
+                    case FreemarkerView.FILE_SUFFIX:
+                        view = FreemarkerView.bind(owner, requestMapping);
+                        fileType = type;
+                        break;
+                    case VelocityView.FILE_SUFFIX:
+                        view = VelocityView.bind(owner, requestMapping);
+                        fileType = type;
+                        break;
+                    case BeetlView.FILE_SUFFIX:
+                        view = BeetlView.bind(owner, requestMapping);
+                        fileType = type;
+                        break;
+                    default:
+                }
+            }
+        }
+        return PairObject.bind(view, fileType);
     }
 }

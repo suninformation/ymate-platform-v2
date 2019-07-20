@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2017 the original author or authors.
+ * Copyright 2007-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,7 @@ package net.ymate.platform.webmvc.annotation;
 
 import net.ymate.platform.cache.ICaches;
 import net.ymate.platform.webmvc.IWebCacheProcessor;
-import net.ymate.platform.webmvc.impl.NullWebCacheProcessor;
+import org.apache.commons.lang3.StringUtils;
 
 import java.lang.annotation.*;
 
@@ -25,7 +25,6 @@ import java.lang.annotation.*;
  * 声明控制器方法返回视图对象的执行结果将被缓存
  *
  * @author 刘镇 (suninformation@163.com) on 16/1/31 下午10:51
- * @version 1.0
  */
 @Target({ElementType.PACKAGE, ElementType.TYPE, ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
@@ -40,7 +39,7 @@ public @interface ResponseCache {
     /**
      * @return 缓存Key, 若未设置则自动生成
      */
-    String key() default "";
+    String key() default StringUtils.EMPTY;
 
     /**
      * @return 缓存作用域
@@ -50,10 +49,10 @@ public @interface ResponseCache {
     /**
      * @return 自定义视图缓存处理器
      */
-    Class<? extends IWebCacheProcessor> processorClass() default NullWebCacheProcessor.class;
+    Class<? extends IWebCacheProcessor> processorClass() default IWebCacheProcessor.class;
 
     /**
-     * @return 缓存数据超时时间, 默认为0, 即缓存300秒
+     * @return 缓存数据超时时间, 默认为0, 即使用默认缓存数据超时时间
      */
     int timeout() default 0;
 

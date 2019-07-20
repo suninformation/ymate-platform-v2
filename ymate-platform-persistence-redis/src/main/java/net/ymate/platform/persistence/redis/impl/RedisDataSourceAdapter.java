@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2017 the original author or authors.
+ * Copyright 2007-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,98 +15,118 @@
  */
 package net.ymate.platform.persistence.redis.impl;
 
-import net.ymate.platform.core.IConfig;
-import net.ymate.platform.persistence.redis.IRedisDataSourceAdapter;
-import net.ymate.platform.persistence.redis.IRedisModuleCfg;
-import net.ymate.platform.persistence.redis.RedisDataSourceCfgMeta;
+import net.ymate.platform.commons.util.RuntimeUtils;
+import net.ymate.platform.core.persistence.AbstractDataSourceAdapter;
+import net.ymate.platform.persistence.redis.*;
+import net.ymate.platform.persistence.redis.support.JedisCommandsWrapper;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import redis.clients.jedis.*;
-import redis.clients.util.Pool;
+import redis.clients.jedis.util.Pool;
 
-import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * @author 刘镇 (suninformation@163.com) on 15/12/2 上午2:31
- * @version 1.0
  */
-public class RedisDataSourceAdapter implements IRedisDataSourceAdapter {
+public class RedisDataSourceAdapter extends AbstractDataSourceAdapter<IRedis, IRedisDataSourceConfig, IRedisCommander> implements IRedisDataSourceAdapter {
 
-    private RedisDataSourceCfgMeta __cfgMeta;
+    private static final Log LOG = LogFactory.getLog(RedisDataSourceAdapter.class);
 
-    private Pool __pool;
+    private Pool<?> pool;
 
-    private JedisCluster __cluster;
+    private JedisCluster jedisCluster;
 
-    private boolean __isCluster;
+    private boolean isCluster;
 
     @Override
-    public void initialize(RedisDataSourceCfgMeta cfgMeta) throws Exception {
-        __cfgMeta = cfgMeta;
-        //
-        switch (cfgMeta.getConnectionType()) {
+    public void doInitialize(IRedis owner, IRedisDataSourceConfig dataSourceConfig) throws Exception {
+        switch (dataSourceConfig.getConnectionType()) {
             case SHARD:
-                if (!cfgMeta.getServers().isEmpty()) {
-                    List<JedisShardInfo> _shards = new ArrayList<JedisShardInfo>();
-                    for (IRedisModuleCfg.ServerMeta _server : cfgMeta.getServers().values()) {
-                        _shards.add(new JedisShardInfo(_server.getHost(), _server.getName(), _server.getPort(), _server.getTimeout(), _server.getWeight()));
-                    }
-                    __pool = new ShardedJedisPool(cfgMeta.getPoolConfig(), _shards);
+                if (!dataSourceConfig.getServerMetas().isEmpty()) {
+                    List<JedisShardInfo> shardInfos = dataSourceConfig.getServerMetas().values().stream()
+                            .map(serverMeta -> {
+                                JedisShardInfo shardInfo = new JedisShardInfo(serverMeta.getHost(),
+                                        serverMeta.getName(),
+                                        serverMeta.getPort(),
+                                        serverMeta.getTimeout(),
+                                        serverMeta.getWeight());
+                                try {
+                                    shardInfo.setPassword(decryptPasswordIfNeed(serverMeta.getPassword()));
+                                } catch (Exception e) {
+                                    if (LOG.isWarnEnabled()) {
+                                        LOG.warn(String.format("%s initialization failed...", serverMeta), RuntimeUtils.unwrapThrow(e));
+                                    }
+                                }
+                                return shardInfo;
+                            })
+                            .collect(Collectors.toList());
+                    pool = new ShardedJedisPool(dataSourceConfig.getObjectPoolConfig(), shardInfos);
                 }
                 break;
             case SENTINEL:
-                if (!cfgMeta.getServers().isEmpty()) {
-                    Set<String> _sentinel = new HashSet<String>();
-                    for (IRedisModuleCfg.ServerMeta _server : cfgMeta.getServers().values()) {
-                        _sentinel.add(_server.getHost() + ":" + _server.getPort());
-                    }
-                    IRedisModuleCfg.ServerMeta _server = cfgMeta.getMasterServerMeta();
-                    __pool = new JedisSentinelPool(_server.getName(),
-                            _sentinel, cfgMeta.getPoolConfig(),
-                            _server.getTimeout(), _server.getPassword(), _server.getDatabase(), _server.getClientName());
+                if (!dataSourceConfig.getServerMetas().isEmpty()) {
+                    Set<String> sentinels = dataSourceConfig.getServerMetas().values().stream()
+                            .map(serverMeta -> serverMeta.getHost() + ":" + serverMeta.getPort()).collect(Collectors.toSet());
+                    RedisServerMeta masterServerMeta = dataSourceConfig.getMasterServerMeta();
+                    pool = new JedisSentinelPool(masterServerMeta.getName(), sentinels,
+                            dataSourceConfig.getObjectPoolConfig(),
+                            masterServerMeta.getTimeout(),
+                            decryptPasswordIfNeed(masterServerMeta.getPassword()),
+                            masterServerMeta.getDatabase(),
+                            masterServerMeta.getClientName());
                 }
                 break;
             case CLUSTER:
-                Set<HostAndPort> _cluster = new HashSet<HostAndPort>();
-                for (IRedisModuleCfg.ServerMeta _server : cfgMeta.getServers().values()) {
-                    _cluster.add(new HostAndPort(_server.getHost(), _server.getPort()));
+                if (!dataSourceConfig.getServerMetas().isEmpty()) {
+                    Set<HostAndPort> hostAndPorts = dataSourceConfig.getServerMetas().values().stream()
+                            .map(serverMeta -> new HostAndPort(serverMeta.getHost(), serverMeta.getPort()))
+                            .collect(Collectors.toSet());
+                    RedisServerMeta masterServerMeta = dataSourceConfig.getMasterServerMeta();
+                    jedisCluster = new JedisCluster(hostAndPorts,
+                            masterServerMeta.getTimeout(),
+                            masterServerMeta.getSocketTimeout(),
+                            masterServerMeta.getMaxAttempts(),
+                            decryptPasswordIfNeed(masterServerMeta.getPassword()),
+                            dataSourceConfig.getObjectPoolConfig());
+                    isCluster = true;
                 }
-                IRedisModuleCfg.ServerMeta _server = cfgMeta.getMasterServerMeta();
-                __cluster = new JedisCluster(_cluster, _server.getTimeout(), _server.getSocketTimeout(), _server.getMaxAttempts(), _server.getPassword(), cfgMeta.getPoolConfig());
-                __isCluster = true;
                 break;
             default:
-                if (cfgMeta.getServers().isEmpty()) {
-                    __pool = new JedisPool(cfgMeta.getPoolConfig(), "localhost");
+                if (dataSourceConfig.getServerMetas().isEmpty()) {
+                    pool = new JedisPool(dataSourceConfig.getObjectPoolConfig(), "localhost");
                 } else {
-                    IRedisModuleCfg.ServerMeta _defaultServer = cfgMeta.getServers().get(IConfig.DEFAULT_STR);
-                    __pool = new JedisPool(cfgMeta.getPoolConfig(),
-                            _defaultServer.getHost(),
-                            _defaultServer.getPort(),
-                            _defaultServer.getTimeout(),
-                            _defaultServer.getPassword(),
-                            _defaultServer.getDatabase(),
-                            _defaultServer.getClientName());
+                    RedisServerMeta defaultServerMeta = dataSourceConfig.getServerMetas().get(owner.getConfig().getDefaultDataSourceName());
+                    pool = new JedisPool(dataSourceConfig.getObjectPoolConfig(),
+                            defaultServerMeta.getHost(),
+                            defaultServerMeta.getPort(),
+                            defaultServerMeta.getTimeout(),
+                            decryptPasswordIfNeed(defaultServerMeta.getPassword()),
+                            defaultServerMeta.getDatabase(),
+                            defaultServerMeta.getClientName());
                 }
         }
     }
 
     @Override
-    public JedisCommands getCommands() {
-        if (__isCluster) {
-            return __cluster;
+    public boolean initializeIfNeed() throws Exception {
+        return isInitialized();
+    }
+
+    @Override
+    public IRedisCommander getConnection() throws Exception {
+        if (isCluster) {
+            return JedisCommandsWrapper.bind(jedisCluster);
         }
-        return (JedisCommands) __pool.getResource();
+        return JedisCommandsWrapper.bind((Jedis) pool.getResource());
     }
 
     @Override
-    public RedisDataSourceCfgMeta getDataSourceCfgMeta() {
-        return __cfgMeta;
-    }
-
-    @Override
-    public void destroy() {
-        __pool.destroy();
+    public void doClose() throws Exception {
+        if (pool != null) {
+            pool.destroy();
+        }
     }
 }

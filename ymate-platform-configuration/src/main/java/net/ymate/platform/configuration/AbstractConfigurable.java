@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2018 the original author or authors.
+ * Copyright 2007-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,22 +15,25 @@
  */
 package net.ymate.platform.configuration;
 
+import net.ymate.platform.core.configuration.IConfigurable;
+import net.ymate.platform.core.configuration.IConfiguration;
+
 /**
+ * @param <T> 配置类型
  * @author 刘镇 (suninformation@163.com) on 2018/2/24 下午3:39
- * @version 1.0
  */
 public abstract class AbstractConfigurable<T extends IConfiguration> implements IConfigurable {
 
-    private T __config;
+    private T config;
 
     @Override
     public T getConfig() {
-        return __config;
+        return config;
     }
 
     @Override
     @SuppressWarnings("unchecked")
     public void setConfig(IConfiguration config) {
-        __config = (T) config;
+        this.config = (T) config;
     }
 }

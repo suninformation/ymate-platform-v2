@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2017 the original author or authors.
+ * Copyright 2007-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,6 +15,9 @@
  */
 package net.ymate.platform.serv;
 
+import net.ymate.platform.core.beans.annotation.Ignored;
+import net.ymate.platform.serv.nio.INioSession;
+
 import java.io.IOException;
 
 /**
@@ -22,9 +25,9 @@ import java.io.IOException;
  *
  * @param <T> 会话类型
  * @author 刘镇 (suninformation@163.com) on 15/11/6 下午3:41
- * @version 1.0
  */
-public interface IListener<T extends ISession> {
+@Ignored
+public interface IListener<T extends INioSession> {
 
     /**
      * 会话注册成功事件处理方法
@@ -51,13 +54,19 @@ public interface IListener<T extends ISession> {
     void onSessionAccepted(T session) throws IOException;
 
     /**
-     * 会话关闭事件处理方法
+     * 会话关闭前事件处理方法
      *
      * @param session 当前会话对象
      * @throws IOException 可能产生的异常
      */
     void onBeforeSessionClosed(T session) throws IOException;
 
+    /**
+     * 会话关闭后事件处理方法
+     *
+     * @param session 当前会话对象
+     * @throws IOException 可能产生的异常
+     */
     void onAfterSessionClosed(T session) throws IOException;
 
     /**

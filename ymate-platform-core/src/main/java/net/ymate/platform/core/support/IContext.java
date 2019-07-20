@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2018 the original author or authors.
+ * Copyright 2007-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,25 +15,31 @@
  */
 package net.ymate.platform.core.support;
 
-import net.ymate.platform.core.YMP;
+import net.ymate.platform.core.IApplication;
+import net.ymate.platform.core.beans.annotation.Ignored;
 
+import java.io.Serializable;
 import java.util.Map;
 
 /**
  * 环境上下文接口
  *
  * @author 刘镇 (suninformation@163.com) on 2018/8/30 上午11:44
- * @version 1.0
  * @since 2.0.6
  */
-public interface IContext {
+@Ignored
+public interface IContext extends Serializable {
 
     /**
-     * @return 返回所属YMP框架管理器实例
+     * 获取所属应用管理器
+     *
+     * @return 返回所属应用管理器实例
      */
-    YMP getOwner();
+    IApplication getOwner();
 
     /**
+     * 获取上下文参数映射
+     *
      * @return 返回上下文参数映射
      */
     Map<String, String> getContextParams();

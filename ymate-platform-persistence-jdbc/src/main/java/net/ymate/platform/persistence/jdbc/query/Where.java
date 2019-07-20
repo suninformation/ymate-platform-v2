@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2017 the original author or authors.
+ * Copyright 2007-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,110 +15,114 @@
  */
 package net.ymate.platform.persistence.jdbc.query;
 
-import net.ymate.platform.persistence.Fields;
-import net.ymate.platform.persistence.Params;
-import org.apache.commons.lang.StringUtils;
+import net.ymate.platform.core.persistence.Fields;
+import net.ymate.platform.core.persistence.Params;
+import net.ymate.platform.persistence.jdbc.IDatabase;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * Where条件及参数对象
  *
  * @author 刘镇 (suninformation@163.com) on 15/5/7 下午1:19
- * @version 1.0
  */
 public final class Where {
+
+    private final IDatabase owner;
 
     /**
      * SQL条件对象
      */
-    private Cond __cond;
+    private Cond cond;
 
-    private GroupBy __groupBy;
+    private GroupBy groupBy;
 
-    private OrderBy __orderBy;
+    private OrderBy orderBy;
 
-    public static Where create() {
-        return new Where();
+    public static Where create(IDatabase owner) {
+        return new Where(owner);
     }
 
-    public static Where create(String whereCond) {
-        return new Where(whereCond);
+    public static Where create(IDatabase owner, String whereCond) {
+        return new Where(owner, whereCond);
     }
 
     public static Where create(Cond cond) {
         return new Where(cond);
     }
 
-    private Where() {
-        __orderBy = OrderBy.create();
-        __cond = Cond.create();
+    private Where(IDatabase owner) {
+        this.owner = owner;
+        orderBy = OrderBy.create(owner);
+        cond = Cond.create(owner);
     }
 
-    private Where(String whereCond) {
-        this();
-        __cond.cond(whereCond);
+    private Where(IDatabase owner, String whereCond) {
+        this(owner);
+        cond.cond(whereCond);
     }
 
     private Where(Cond cond) {
-        __orderBy = OrderBy.create();
-        __cond = cond;
+        owner = cond.owner();
+        orderBy = OrderBy.create(cond.owner());
+        this.cond = cond;
     }
 
     public Where where(Where where) {
-        __cond.cond(where.cond());
-        __orderBy.orderBy(where.orderBy());
+        cond.cond(where.cond());
+        orderBy.orderBy(where.orderBy());
         //
         if (where.groupBy() != null) {
-            if (__groupBy != null) {
-                __groupBy.fields().add(where.groupBy().fields());
-                __groupBy.having().cond(where.groupBy().having());
+            if (groupBy != null) {
+                groupBy.fields().add(where.groupBy().fields());
+                groupBy.having().cond(where.groupBy().having());
             } else {
-                __groupBy = where.groupBy();
+                groupBy = where.groupBy();
             }
         }
         return this;
     }
 
     public Cond cond() {
-        return __cond;
+        return cond;
     }
 
     public GroupBy groupBy() {
-        return __groupBy;
+        return groupBy;
     }
 
     public OrderBy orderBy() {
-        return __orderBy;
+        return orderBy;
     }
 
     /**
      * @return 此方法仅返回只读参数集合, 若要维护参数请调用where().param(...)相关方法
      */
     public Params getParams() {
-        Params _p = Params.create().add(__cond.params());
-        if (__groupBy != null && __groupBy.having() != null) {
-            _p.add(__groupBy.having().params());
+        Params params = Params.create().add(cond.params());
+        if (groupBy != null && groupBy.having() != null) {
+            params.add(groupBy.having().params());
         }
-        return _p;
+        return params;
     }
 
     public String toSQL() {
-        StringBuilder _whereSB = new StringBuilder("");
-        if (__cond != null && StringUtils.isNotBlank(__cond.toString())) {
-            _whereSB.append("WHERE ").append(__cond.toString());
+        StringBuilder whereBuilder = new StringBuilder();
+        if (cond != null && StringUtils.isNotBlank(cond.toString())) {
+            whereBuilder.append("WHERE ").append(cond.toString());
         }
-        if (__groupBy != null) {
-            _whereSB.append(" ").append(__groupBy);
+        if (groupBy != null) {
+            whereBuilder.append(StringUtils.SPACE).append(groupBy);
         }
-        return _whereSB.toString();
+        return whereBuilder.toString();
     }
 
     public Where param(Object param) {
-        __cond.param(param);
+        cond.param(param);
         return this;
     }
 
     public Where param(Params params) {
-        __cond.param(params);
+        cond.param(params);
         return this;
     }
 
@@ -127,10 +131,10 @@ public final class Where {
     }
 
     public Where groupBy(Fields fields) {
-        if (__groupBy != null) {
-            __groupBy.fields().add(fields);
+        if (groupBy != null) {
+            groupBy.fields().add(fields);
         } else {
-            __groupBy = GroupBy.create(fields);
+            groupBy = GroupBy.create(owner, fields);
         }
         return this;
     }
@@ -140,37 +144,37 @@ public final class Where {
     }
 
     public Where groupBy(GroupBy groupBy) {
-        __groupBy = groupBy;
+        this.groupBy = groupBy;
         return this;
     }
 
     public Where having(Cond cond) {
-        __groupBy.having(cond);
+        groupBy.having(cond);
         return this;
     }
 
     public Where orderAsc(String field) {
-        __orderBy.asc(field);
+        orderBy.asc(field);
         return this;
     }
 
     public Where orderAsc(String prefix, String field) {
-        __orderBy.asc(prefix, field);
+        orderBy.asc(prefix, field);
         return this;
     }
 
     public Where orderDesc(String field) {
-        __orderBy.desc(field);
+        orderBy.desc(field);
         return this;
     }
 
     public Where orderDesc(String prefix, String field) {
-        __orderBy.desc(prefix, field);
+        orderBy.desc(prefix, field);
         return this;
     }
 
     @Override
     public String toString() {
-        return toSQL() + " " + __orderBy;
+        return String.format("%s %s", toSQL(), orderBy);
     }
 }

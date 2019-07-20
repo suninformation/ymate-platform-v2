@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2017 the original author or authors.
+ * Copyright 2007-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,46 +16,66 @@
 package net.ymate.platform.webmvc.view;
 
 import net.ymate.platform.webmvc.IWebMvc;
+import net.ymate.platform.webmvc.base.Type;
 import net.ymate.platform.webmvc.context.WebContext;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
 /**
- * 抽象MVC视图接口
+ * 抽象视图
  *
  * @author 刘镇 (suninformation@163.com) on 2012-12-20 下午6:56:56
- * @version 1.0
  */
 public abstract class AbstractView implements IView {
 
-    protected static String __baseViewPath;
+    private static final long serialVersionUID = 1L;
 
-    ////
+    protected static volatile String baseViewPath;
 
-    protected Map<String, Object> __attributes;
+    protected HttpServletResponse response = WebContext.getResponse();
 
-    protected String __contentType;
+    protected Map<String, Object> attributes = new HashMap<>();
+
+    protected String contentType;
+
+    public static String getBaseViewPath(IWebMvc owner) {
+        String viewPath = baseViewPath;
+        if (viewPath == null) {
+            synchronized (AbstractView.class) {
+                viewPath = baseViewPath;
+                if (viewPath == null) {
+                    String path = StringUtils.trimToEmpty(owner.getConfig().getBaseViewPath());
+                    // 模板基准路径并以'/WEB-INF'开始，以'/'结束
+                    if (!path.endsWith(Type.Const.PATH_SEPARATOR)) {
+                        path += Type.Const.PATH_SEPARATOR;
+                    }
+                    baseViewPath = viewPath = path;
+                }
+            }
+        }
+        return viewPath;
+    }
 
     public AbstractView() {
-        __attributes = new HashMap<String, Object>();
     }
 
     @Override
     public IView addAttribute(String name, Object value) {
-        __attributes.put(name, value);
+        attributes.put(name, value);
         return this;
     }
 
     @Override
     public IView addAttributes(Map<String, Object> attributes) {
         if (attributes != null && !attributes.isEmpty()) {
-            __attributes.putAll(attributes);
+            this.attributes.putAll(attributes);
         }
         return this;
     }
@@ -63,68 +83,73 @@ public abstract class AbstractView implements IView {
     @Override
     @SuppressWarnings("unchecked")
     public <T> T getAttribute(String name) {
-        return (T) __attributes.get(name);
+        return (T) attributes.get(name);
     }
 
     @Override
     public Map<String, Object> getAttributes() {
-        return __attributes;
+        return Collections.unmodifiableMap(attributes);
     }
 
     @Override
     public String getContentType() {
-        return __contentType;
+        return contentType;
     }
 
     @Override
     public IView setContentType(String contentType) {
-        __contentType = contentType;
+        this.contentType = contentType;
         return this;
     }
 
     @Override
     public IView addDateHeader(String name, long date) {
-        HttpServletResponse _response = WebContext.getResponse();
-        if (_response.containsHeader(name)) {
-            _response.addDateHeader(name, date);
+        if (response.containsHeader(name)) {
+            response.addDateHeader(name, date);
         } else {
-            _response.setDateHeader(name, date);
+            response.setDateHeader(name, date);
         }
         return this;
     }
 
     @Override
     public IView addHeader(String name, String value) {
-        HttpServletResponse _response = WebContext.getResponse();
-        if (_response.containsHeader(name)) {
-            _response.addHeader(name, value);
+        if (response.containsHeader(name)) {
+            response.addHeader(name, value);
         } else {
-            _response.setHeader(name, value);
+            response.setHeader(name, value);
         }
         return this;
     }
 
     @Override
     public IView addIntHeader(String name, int value) {
-        HttpServletResponse _response = WebContext.getResponse();
-        if (_response.containsHeader(name)) {
-            _response.addIntHeader(name, value);
+        if (response.containsHeader(name)) {
+            response.addIntHeader(name, value);
         } else {
-            _response.setIntHeader(name, value);
+            response.setIntHeader(name, value);
         }
         return this;
     }
 
     @Override
     public void render() throws Exception {
-        HttpServletResponse _response = WebContext.getResponse();
-        if (_response.isCommitted()) {
+        if (response.isCommitted()) {
             return;
         }
-        if (StringUtils.isNotBlank(__contentType)) {
-            _response.setContentType(__contentType);
+        if (StringUtils.isNotBlank(contentType)) {
+            response.setContentType(contentType);
         }
-        __doRenderView();
+        doRenderView();
+    }
+
+    /**
+     * 初始化配置参数(全局)
+     *
+     * @param owner 所属WebMVC框架管理器
+     */
+    protected void doViewInit(IWebMvc owner) {
+        getBaseViewPath(owner);
     }
 
     /**
@@ -132,11 +157,42 @@ public abstract class AbstractView implements IView {
      *
      * @throws Exception 抛出任何可能异常
      */
-    protected abstract void __doRenderView() throws Exception;
+    protected abstract void doRenderView() throws Exception;
 
     @Override
     public void render(OutputStream output) throws Exception {
         throw new UnsupportedOperationException();
+    }
+
+    protected String doProcessPath(String path, String suffix, boolean isJspView) {
+        if (StringUtils.isNotBlank(contentType)) {
+            WebContext.getResponse().setContentType(contentType);
+        }
+        if (StringUtils.isBlank(path)) {
+            String requestMapping = WebContext.getRequestContext().getRequestMapping();
+            if (requestMapping.endsWith(Type.Const.PATH_SEPARATOR)) {
+                requestMapping = requestMapping.substring(0, requestMapping.length() - 1);
+            }
+            path = (isJspView ? baseViewPath : StringUtils.EMPTY) + requestMapping + StringUtils.trimToEmpty(suffix);
+        } else {
+            if (path.charAt(0) != Type.Const.PATH_SEPARATOR_CHAR) {
+                path = Type.Const.PATH_SEPARATOR_CHAR + path;
+            }
+            if (isJspView) {
+                if (!path.startsWith(baseViewPath)) {
+                    path = baseViewPath + path.substring(1);
+                }
+                if (!path.contains("?") && !path.endsWith(suffix)) {
+                    path += suffix;
+                }
+            } else if (path.startsWith(baseViewPath)) {
+                path = StringUtils.substringAfter(path, baseViewPath);
+                if (StringUtils.isNotBlank(suffix) && !path.endsWith(suffix)) {
+                    path += suffix;
+                }
+            }
+        }
+        return path;
     }
 
     /**
@@ -144,45 +200,29 @@ public abstract class AbstractView implements IView {
      * @return 将参数与URL地址进行绑定
      * @throws UnsupportedEncodingException URL编码异常
      */
-    protected String __doBuildURL(String url) throws UnsupportedEncodingException {
-        if (__attributes.isEmpty()) {
+    protected String buildUrl(String url) throws UnsupportedEncodingException {
+        if (attributes.isEmpty()) {
             return url;
         }
-        StringBuilder _paramSB = new StringBuilder(url);
+        StringBuilder stringBuilder = new StringBuilder(url);
         if (!url.contains("?")) {
-            _paramSB.append("?");
+            stringBuilder.append("?");
         } else {
-            _paramSB.append("&");
+            stringBuilder.append("&");
         }
-        boolean _flag = true;
-        for (Map.Entry<String, Object> _entry : __attributes.entrySet()) {
-            if (_flag) {
-                _flag = false;
+        String characterEncoding = WebContext.getRequest().getCharacterEncoding();
+        boolean flag = true;
+        for (Map.Entry<String, Object> attrEntry : attributes.entrySet()) {
+            if (flag) {
+                flag = false;
             } else {
-                _paramSB.append("&");
+                stringBuilder.append("&");
             }
-            _paramSB.append(_entry.getKey()).append("=");
-            if (_entry.getValue() != null && StringUtils.isNotEmpty(_entry.getValue().toString())) {
-                _paramSB.append(URLEncoder.encode(_entry.getValue().toString(), WebContext.getRequest().getCharacterEncoding()));
+            stringBuilder.append(attrEntry.getKey()).append("=");
+            if (attrEntry.getValue() != null && StringUtils.isNotBlank(attrEntry.getValue().toString())) {
+                stringBuilder.append(URLEncoder.encode(attrEntry.getValue().toString(), characterEncoding));
             }
         }
-        return _paramSB.toString();
+        return stringBuilder.toString();
     }
-
-    /**
-     * 初始化配置参数(全局唯一)
-     *
-     * @param owner 所属WebMVC框架管理器
-     */
-    protected synchronized void __doViewInit(IWebMvc owner) {
-        // 模板基准路径并以'/WEB-INF'开始，以'/'结束
-        if (__baseViewPath == null) {
-            String _vPath = StringUtils.trimToNull(owner.getModuleCfg().getBaseViewPath());
-            if (!_vPath.endsWith("/")) {
-                _vPath += "/";
-            }
-            __baseViewPath = _vPath;
-        }
-    }
-
 }

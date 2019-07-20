@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2017 the original author or authors.
+ * Copyright 2007-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,23 +15,35 @@
  */
 package net.ymate.platform.validation;
 
-import net.ymate.platform.core.i18n.I18N;
-import org.apache.commons.lang.StringUtils;
+import net.ymate.platform.commons.lang.BlurObject;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * @author 刘镇 (suninformation@163.com) on 17/1/10 上午4:35
- * @version 1.0
  */
 public abstract class AbstractValidator implements IValidator {
 
-    protected String __doGetI18nFormatMessage(ValidateContext context, String key, String defaultValue, Object... args) {
-        String _message = null;
-        if (StringUtils.isNotBlank(context.getResourceName())) {
-            _message = I18N.formatMessage(context.getResourceName(), key, "", args);
+    /**
+     * 获取参数值，若参数为数组则提取第0个元素值
+     *
+     * @param paramValue 参数值对象
+     * @param trim       是否去除首尾空格
+     * @return 返回参数值，若不存在则可能为null
+     * @since 2.1.0
+     */
+    protected String getParamValue(Object paramValue, boolean trim) {
+        String pValue = null;
+        if (paramValue.getClass().isArray()) {
+            Object[] values = (Object[]) paramValue;
+            if (values.length > 0) {
+                pValue = BlurObject.bind(values[0]).toStringValue();
+            }
+        } else {
+            pValue = BlurObject.bind(paramValue).toStringValue();
         }
-        if (StringUtils.isBlank(_message)) {
-            _message = I18N.formatMessage(VALIDATION_I18N_RESOURCE, key, defaultValue, args);
+        if (trim) {
+            return StringUtils.trimToEmpty(pValue);
         }
-        return _message;
+        return pValue;
     }
 }

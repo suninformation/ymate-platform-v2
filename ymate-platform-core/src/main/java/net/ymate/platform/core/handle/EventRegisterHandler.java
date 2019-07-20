@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2017 the original author or authors.
+ * Copyright 2007-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,30 +15,28 @@
  */
 package net.ymate.platform.core.handle;
 
-import net.ymate.platform.core.YMP;
+import net.ymate.platform.commons.util.ClassUtils;
+import net.ymate.platform.core.IApplication;
 import net.ymate.platform.core.beans.IBeanHandler;
 import net.ymate.platform.core.event.IEventRegister;
-import net.ymate.platform.core.util.ClassUtils;
 
 /**
  * 事件注册器对象处理器
  *
  * @author 刘镇 (suninformation@163.com) on 15/5/20 上午12:11
- * @version 1.0
  */
 public final class EventRegisterHandler implements IBeanHandler {
 
-    private final YMP __owner;
+    private final IApplication owner;
 
-    public EventRegisterHandler(YMP owner) {
-        __owner = owner;
-        __owner.registerExcludedClass(IEventRegister.class);
+    public EventRegisterHandler(IApplication owner) {
+        this.owner = owner;
     }
 
     @Override
     public Object handle(Class<?> targetClass) throws Exception {
-        if (!targetClass.isInterface() && ClassUtils.isInterfaceOf(targetClass, IEventRegister.class)) {
-            ((IEventRegister) targetClass.newInstance()).register(__owner.getEvents());
+        if (ClassUtils.isNormalClass(targetClass) && !targetClass.isInterface() && ClassUtils.isInterfaceOf(targetClass, IEventRegister.class)) {
+            ((IEventRegister) targetClass.newInstance()).register(owner.getEvents());
         }
         return null;
     }

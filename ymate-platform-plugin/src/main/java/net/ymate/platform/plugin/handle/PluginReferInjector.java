@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2018 the original author or authors.
+ * Copyright 2007-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,30 +17,33 @@ package net.ymate.platform.plugin.handle;
 
 import net.ymate.platform.core.beans.IBeanFactory;
 import net.ymate.platform.core.beans.IBeanInjector;
-import net.ymate.platform.core.beans.annotation.Injector;
-import net.ymate.platform.plugin.Plugins;
+import net.ymate.platform.plugin.IPluginFactory;
 import net.ymate.platform.plugin.annotation.PluginRefer;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 
 /**
  * @author 刘镇 (suninformation@163.com) on 2018/1/7 上午1:38
- * @version 1.0
  */
-@Injector(PluginRefer.class)
 public class PluginReferInjector implements IBeanInjector {
+
+    private final IPluginFactory owner;
+
+    public PluginReferInjector(IPluginFactory owner) {
+        this.owner = owner;
+    }
 
     @Override
     public Object inject(IBeanFactory beanFactory, Annotation annotation, Class<?> targetClass, Field field, Object originInject) {
-        Object _obj = null;
+        Object pluginObj = null;
         if (StringUtils.isNotBlank(((PluginRefer) annotation).value())) {
-            _obj = Plugins.get().getPlugin(((PluginRefer) annotation).value());
+            pluginObj = owner.getPlugin(((PluginRefer) annotation).value());
         }
-        if (_obj == null) {
-            _obj = Plugins.get().getPlugin(field.getType());
+        if (pluginObj == null) {
+            pluginObj = owner.getPlugin(field.getType());
         }
-        return _obj;
+        return pluginObj;
     }
 }

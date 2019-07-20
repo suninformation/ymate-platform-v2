@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2017 the original author or authors.
+ * Copyright 2007-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,81 +15,33 @@
  */
 package net.ymate.platform.core.beans;
 
-import net.ymate.platform.core.YMP;
+import net.ymate.platform.core.IApplication;
 import net.ymate.platform.core.beans.proxy.IProxyFactory;
+import net.ymate.platform.core.support.IDestroyable;
+import net.ymate.platform.core.support.IInitialization;
 
 import java.lang.annotation.Annotation;
-import java.util.List;
 import java.util.Map;
 
 /**
  * 对象工厂接口
  *
  * @author 刘镇 (suninformation@163.com) on 15-3-5 下午1:18
- * @version 1.0
  */
-public interface IBeanFactory {
+public interface IBeanFactory extends IInitialization<IApplication>, IDestroyable {
 
     /**
-     * 注册自定义注解类处理器
+     * 获取类型为clazz的对象实例，可能返回null
      *
-     * @param annoClass 注解类型
-     * @param handler   注解处理器
-     */
-    void registerHandler(Class<? extends Annotation> annoClass, IBeanHandler handler);
-
-    void registerHandler(Class<? extends Annotation> annoClass);
-
-    IBeanHandler getBeanHandler(Class<? extends Annotation> annoClass);
-
-    void registerInjector(Class<? extends Annotation> annoClass, IBeanInjector injector);
-
-    /**
-     * 注册扫描包路径(仅在工厂对象执行初始化前有效)
-     *
-     * @param packageName 包名称
-     */
-    void registerPackage(String packageName);
-
-    /**
-     * @return 返回待扫描包路径名称集合
-     */
-    List<String> getPackageNames();
-
-    /**
-     * 注册排除的包名称
-     *
-     * @param packageName 包名称
-     */
-    void registerExcludedPackage(String packageName);
-
-    /**
-     * @return 返回被排除的包名称集合
-     */
-    List<String> getExcludedPackageNames();
-
-    /**
-     * 注册排除的接口类
-     *
-     * @param excludedClass 预排除接口类型
-     */
-    void registerExcludedClass(Class<?> excludedClass);
-
-    /**
-     * @return 返回当前被排除的jar或zip等包文件名称集合
-     */
-    List<String> getExcludedFiles();
-
-    void setExcludedFiles(List<String> excludedFiles);
-
-    /**
      * @param clazz 目标类型
      * @param <T>   类型
-     * @return 提取类型为clazz的对象实例，可能返回null
+     * @return 返回对象实例
      */
     <T> T getBean(Class<T> clazz);
 
     /**
+     * 获取当前工厂管理的所有类对象映射
+     *
      * @return 返回当前工厂管理的所有类对象映射
      */
     Map<Class<?>, BeanMeta> getBeans();
@@ -101,66 +53,54 @@ public interface IBeanFactory {
      */
     void registerBean(Class<?> clazz);
 
-    @Deprecated
-    void registerBean(Class<?> clazz, Object object);
-
+    /**
+     * 注册一个类定义到工厂
+     *
+     * @param beanMeta 预注册类描述对象
+     */
     void registerBean(BeanMeta beanMeta);
 
     /**
-     * 初始化对象工厂
+     * 注册自定义依赖注入注解的逻辑处理器
      *
-     * @throws Exception 工厂初始化时可能产生的异常
+     * @param annClass 目标注解类型
+     * @param injector 目标依赖注入注解逻辑处理器
      */
-    void init() throws Exception;
+    void registerInjector(Class<? extends Annotation> annClass, IBeanInjector injector);
 
     /**
-     * @return 返回类工厂所属YMP框架管理器
-     */
-    YMP getOwner();
-
-    /**
-     * 销毁对象工厂
+     * 注册排除的接口类
      *
-     * @throws Exception 工厂销毁时可能产生的异常
+     * @param excludedInterfaceClass 预排除接口类型
      */
-    void destroy() throws Exception;
+    void registerExcludedInterfaceClass(Class<?> excludedInterfaceClass);
 
     /**
-     * @return 返回Parent对象工厂
+     * 判断是否为排除的接口类
+     *
+     * @param excludedInterfaceClass 目标接口类型
+     * @return 若目标接口被排除则返回true
+     */
+    boolean isExcludedInterfaceClass(Class<?> excludedInterfaceClass);
+
+    /**
+     * 获取所属应用容器管理器
+     *
+     * @return 返回所属应用容器管理器
+     */
+    IApplication getOwner();
+
+    /**
+     * 获取父对象工厂
+     *
+     * @return 返回父对象工厂
      */
     IBeanFactory getParent();
 
     /**
-     * 设置Parent对象工厂
+     * 获取代理工厂
      *
-     * @param parent 父类工厂对象
+     * @return 返回代理工厂对象
      */
-    void setParent(IBeanFactory parent);
-
-    /**
-     * @return 返回当前工厂使用的对象加载器
-     */
-    IBeanLoader getLoader();
-
-    /**
-     * 设置自定义对象加载器
-     *
-     * @param loader 自定义对象加载器
-     */
-    void setLoader(IBeanLoader loader);
-
-    /**
-     * 初始化代理工厂
-     *
-     * @param proxyFactory 目标代码工厂对象
-     * @throws Exception 初始化时可能产生的异常
-     */
-    void initProxy(IProxyFactory proxyFactory) throws Exception;
-
-    /**
-     * 初始化依赖注入
-     *
-     * @throws Exception 初始化IoC时可能产生的异常
-     */
-    void initIoC() throws Exception;
+    IProxyFactory getProxyFactory();
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2017 the original author or authors.
+ * Copyright 2007-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,10 +18,9 @@ package net.ymate.platform.webmvc.annotation;
 import java.lang.annotation.*;
 
 /**
- * 设置控制器方法返回结果时增加回应头参数的注解
+ * 设置控制器方法返回结果时增加响应头参数的注解
  *
  * @author 刘镇 (suninformation@163.com) on 15/10/29 下午7:25
- * @version 1.0
  */
 @Target({ElementType.PACKAGE, ElementType.TYPE, ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
@@ -29,7 +28,7 @@ import java.lang.annotation.*;
 public @interface ResponseHeader {
 
     /**
-     * @return 回应头Header参数集合
+     * @return 响应头Header参数集合
      */
     Header[] value();
 }

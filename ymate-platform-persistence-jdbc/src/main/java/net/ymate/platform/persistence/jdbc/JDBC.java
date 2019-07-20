@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2017 the original author or authors.
+ * Copyright 2007-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,307 +15,258 @@
  */
 package net.ymate.platform.persistence.jdbc;
 
-import net.ymate.platform.core.Version;
+import net.ymate.platform.core.IApplication;
 import net.ymate.platform.core.YMP;
+import net.ymate.platform.core.beans.IBeanLoadFactory;
+import net.ymate.platform.core.beans.proxy.IProxyFactory;
 import net.ymate.platform.core.module.IModule;
+import net.ymate.platform.core.module.IModuleConfigurer;
 import net.ymate.platform.core.module.annotation.Module;
-import net.ymate.platform.persistence.IDataSourceRouter;
+import net.ymate.platform.core.persistence.IDataSourceRouter;
+import net.ymate.platform.core.persistence.base.Type;
 import net.ymate.platform.persistence.jdbc.dialect.IDialect;
 import net.ymate.platform.persistence.jdbc.dialect.impl.*;
-import net.ymate.platform.persistence.jdbc.impl.*;
-import net.ymate.platform.persistence.jdbc.repo.RepoHandler;
+import net.ymate.platform.persistence.jdbc.impl.DefaultDatabaseConfig;
+import net.ymate.platform.persistence.jdbc.impl.DefaultDatabaseConnectionHolder;
+import net.ymate.platform.persistence.jdbc.impl.DefaultDatabaseSession;
+import net.ymate.platform.persistence.jdbc.repo.RepositoryProxy;
 import net.ymate.platform.persistence.jdbc.repo.annotation.Repository;
+import net.ymate.platform.persistence.jdbc.repo.handle.RepositoryHandler;
+import net.ymate.platform.persistence.jdbc.transaction.ITransaction;
+import net.ymate.platform.persistence.jdbc.transaction.TransactionProxy;
 import net.ymate.platform.persistence.jdbc.transaction.Transactions;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
-import java.sql.Connection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
 /**
- * 数据库模块管理器
- *
  * @author 刘镇 (suninformation@163.com) on 2011-9-10 下午11:45:25
- * @version 1.0
  */
 @Module
-public class JDBC implements IModule, IDatabase {
+public final class JDBC implements IModule, IDatabase {
 
-    public static final Version VERSION = new Version(2, 0, 7, JDBC.class.getPackage().getImplementationVersion(), Version.VersionType.Release);
-
-    private static final Log _LOG = LogFactory.getLog(JDBC.class);
-
-    private static volatile IDatabase __instance;
-
-    private YMP __owner;
-
-    private IDatabaseModuleCfg __moduleCfg;
-
-    private Map<String, IDataSourceAdapter> __dsCaches;
-
-    private boolean __inited;
-
-    /**
-     * @return 返回默认数据库模块管理器实例对象
-     */
-    public static IDatabase get() {
-        if (__instance == null) {
-            synchronized (VERSION) {
-                if (__instance == null) {
-                    __instance = YMP.get().getModule(JDBC.class);
-                }
-            }
-        }
-        return __instance;
-    }
-
-    /**
-     * @param owner YMP框架管理器实例
-     * @return 返回指定YMP框架管理器容器内的数据库模块管理器实例
-     */
-    public static IDatabase get(YMP owner) {
-        return owner.getModule(JDBC.class);
-    }
-
-    @Override
-    public String getName() {
-        return IDatabase.MODULE_NAME;
-    }
-
-    @Override
-    public void init(YMP owner) throws Exception {
-        if (!__inited) {
-            //
-            _LOG.info("Initializing ymate-platform-persistence-jdbc-" + VERSION);
-            //
-            __owner = owner;
-            __moduleCfg = new DefaultDatabaseModuleCfg(owner);
-            //
-            __owner.getEvents().registerEvent(DatabaseEvent.class);
-            __owner.registerHandler(Repository.class, new RepoHandler(this));
-            //
-            __dsCaches = new HashMap<String, IDataSourceAdapter>();
-            for (DataSourceCfgMeta _meta : __moduleCfg.getDataSourceCfgs().values()) {
-                IDataSourceAdapter _adapter = _meta.getAdapterClass().newInstance();
-                _adapter.initialize(this, _meta);
-                // 将数据源适配器添加到缓存
-                __dsCaches.put(_meta.getName(), _adapter);
-            }
-            //
-            __inited = true;
-        }
-    }
-
-    @Override
-    public boolean isInited() {
-        return __inited;
-    }
-
-    @Override
-    public void destroy() throws Exception {
-        if (__inited) {
-            __inited = false;
-            //
-            for (IDataSourceAdapter _adapter : __dsCaches.values()) {
-                _adapter.destroy();
-            }
-            __dsCaches = null;
-            __moduleCfg = null;
-            __owner = null;
-        }
-    }
-
-    @Override
-    public YMP getOwner() {
-        return __owner;
-    }
-
-    @Override
-    public IDatabaseModuleCfg getModuleCfg() {
-        return __moduleCfg;
-    }
-
-    @Override
-    public IConnectionHolder getDefaultConnectionHolder() throws Exception {
-        String _defaultDSName = __moduleCfg.getDataSourceDefaultName();
-        return getConnectionHolder(_defaultDSName);
-    }
-
-    @Override
-    public IConnectionHolder getConnectionHolder(String dsName) throws Exception {
-        IConnectionHolder _returnValue;
-        if (Transactions.get() != null) {
-            _returnValue = Transactions.get().getConnectionHolder(dsName);
-            if (_returnValue == null) {
-                _returnValue = new DefaultConnectionHolder(__dsCaches.get(dsName));
-                Transactions.get().registerConnectionHolder(_returnValue);
-            }
-        } else {
-            _returnValue = new DefaultConnectionHolder(__dsCaches.get(dsName));
-        }
-        return _returnValue;
-    }
-
-    @Override
-    public void releaseConnectionHolder(IConnectionHolder connectionHolder) throws Exception {
-        // 需要判断当前连接是否参与事务，若存在事务则不进行关闭操作
-        if (Transactions.get() == null) {
-            if (connectionHolder != null) {
-                connectionHolder.release();
-            }
-        }
-    }
-
-    @Override
-    public <T> T openSession(ISessionExecutor<T> executor) throws Exception {
-        return openSession(getDefaultConnectionHolder(), executor);
-    }
-
-    @Override
-    public <T> T openSession(String dsName, ISessionExecutor<T> executor) throws Exception {
-        return openSession(getConnectionHolder(dsName), executor);
-    }
-
-    @Override
-    public <T> T openSession(IConnectionHolder connectionHolder, ISessionExecutor<T> executor) throws Exception {
-        ISession _session = new DefaultSession(this, connectionHolder);
-        try {
-            return executor.execute(_session);
-        } finally {
-            _session.close();
-        }
-    }
-
-    @Override
-    public <T> T openSession(IDataSourceRouter dataSourceRouter, ISessionExecutor<T> executor) throws Exception {
-        return openSession(getConnectionHolder(dataSourceRouter.getDataSourceName()), executor);
-    }
-
-    @Override
-    public ISession openSession() throws Exception {
-        return new DefaultSession(this, getDefaultConnectionHolder());
-    }
-
-    @Override
-    public ISession openSession(String dsName) throws Exception {
-        return new DefaultSession(this, getConnectionHolder(dsName));
-    }
-
-    @Override
-    public ISession openSession(IConnectionHolder connectionHolder) throws Exception {
-        return new DefaultSession(this, connectionHolder);
-    }
-
-    @Override
-    public ISession openSession(IDataSourceRouter dataSourceRouter) throws Exception {
-        return new DefaultSession(this, getConnectionHolder(dataSourceRouter.getDataSourceName()));
-    }
-
-    /////
-
-    /**
-     * 数据库类型
-     */
-    public enum DATABASE {
-        MYSQL, ORACLE, SQLSERVER, DB2, SQLITE, POSTGRESQL, HSQLDB, H2, UNKNOWN
-    }
-
-    /**
-     * 数据库事务类型
-     */
-    public enum TRANSACTION {
-        /**
-         * 不（使用）支持事务
-         */
-        NONE(Connection.TRANSACTION_NONE),
-
-        /**
-         * 在一个事务中进行查询时，允许读取提交前的数据，数据提交后，当前查询就可以读取到数据，update数据时候并不锁住表
-         */
-        READ_COMMITTED(Connection.TRANSACTION_READ_COMMITTED),
-
-        /**
-         * 俗称“脏读”（dirty read），在没有提交数据时能够读到已经更新的数据
-         */
-        READ_UNCOMMITTED(Connection.TRANSACTION_READ_UNCOMMITTED),
-        /**
-         * 在一个事务中进行查询时，不允许读取其他事务update的数据，允许读取到其他事务提交的新增数据
-         */
-        REPEATABLE_READ(Connection.TRANSACTION_REPEATABLE_READ),
-
-        /**
-         * 在一个事务中进行查询时，不允许任何对这个查询表的数据修改
-         */
-        SERIALIZABLE(Connection.TRANSACTION_SERIALIZABLE);
-
-        private int _level;
-
-        /**
-         * 构造器
-         *
-         * @param level 事务级别
-         */
-        TRANSACTION(int level) {
-            this._level = level;
-        }
-
-        /**
-         * @return the level
-         */
-        public int getLevel() {
-            return _level;
-        }
-
-        /**
-         * @param level the level to set
-         */
-        public void setLevel(int level) {
-            this._level = level;
-        }
-    }
+    private static volatile IDatabase instance;
 
     /**
      * 框架提供的已知数据源适配器名称映射
      */
-    public static Map<String, String> DS_ADAPTERS;
+    public static final Map<String, String> DS_ADAPTERS;
 
     /**
      * 框架提供的已知数据库连接驱动
      */
-    public static Map<DATABASE, String> DB_DRIVERS;
+    public static final Map<Type.DATABASE, String> DB_DRIVERS;
 
     /**
-     * 框架提供的已知数据库方言
+     * 提供的已知数据库方言
      */
-    public static Map<DATABASE, Class<? extends IDialect>> DB_DIALECTS;
+    public static final Map<Type.DATABASE, Class<? extends IDialect>> DB_DIALECTS;
 
     static {
+        Map<String, String> adapters = new HashMap<>(4);
+        adapters.put("default", "net.ymate.platform.persistence.jdbc.impl.DefaultDataSourceAdapter");
+        adapters.put("jndi", "net.ymate.platform.persistence.jdbc.impl.JNDIDataSourceAdapter");
+        adapters.put("c3p0", "net.ymate.platform.persistence.jdbc.impl.C3P0DataSourceAdapter");
+        adapters.put("dbcp", "net.ymate.platform.persistence.jdbc.impl.DBCPDataSourceAdapter");
+        adapters.put("druid", "net.ymate.platform.persistence.jdbc.impl.DruidDataSourceAdapter");
+        adapters.put("hikaricp", "net.ymate.platform.persistence.jdbc.impl.HikariCPDataSourceAdapter");
+        DS_ADAPTERS = Collections.unmodifiableMap(adapters);
         //
-        DS_ADAPTERS = new HashMap<String, String>();
-        DS_ADAPTERS.put("default", DefaultDataSourceAdapter.class.getName());
-        DS_ADAPTERS.put("jndi", JNDIDataSourceAdapter.class.getName());
-        DS_ADAPTERS.put("c3p0", C3P0DataSourceAdapter.class.getName());
-        DS_ADAPTERS.put("dbcp", DBCPDataSourceAdapter.class.getName());
+        Map<Type.DATABASE, String> drivers = new HashMap<>(8);
+        drivers.put(Type.DATABASE.MYSQL, "com.mysql.jdbc.Driver");
+        drivers.put(Type.DATABASE.ORACLE, "oracle.jdbc.OracleDriver");
+        drivers.put(Type.DATABASE.SQLSERVER, "com.microsoft.sqlserver.jdbc.SQLServerDriver");
+        drivers.put(Type.DATABASE.DB2, "com.ibm.db2.jcc.DB2Driver");
+        drivers.put(Type.DATABASE.SQLITE, "org.sqlite.JDBC");
+        drivers.put(Type.DATABASE.POSTGRESQL, "org.postgresql.Driver");
+        drivers.put(Type.DATABASE.HSQLDB, "org.hsqldb.jdbcDriver");
+        drivers.put(Type.DATABASE.H2, "org.h2.Driver");
+        DB_DRIVERS = Collections.unmodifiableMap(drivers);
         //
-        DB_DRIVERS = new HashMap<DATABASE, String>();
-        DB_DRIVERS.put(DATABASE.MYSQL, "com.mysql.jdbc.Driver");
-        DB_DRIVERS.put(DATABASE.ORACLE, "oracle.jdbc.OracleDriver");
-        DB_DRIVERS.put(DATABASE.SQLSERVER, "com.microsoft.sqlserver.jdbc.SQLServerDriver");
-        DB_DRIVERS.put(DATABASE.DB2, "com.ibm.db2.jcc.DB2Driver");
-        DB_DRIVERS.put(DATABASE.SQLITE, "org.sqlite.JDBC");
-        DB_DRIVERS.put(DATABASE.POSTGRESQL, "org.postgresql.Driver");
-        DB_DRIVERS.put(DATABASE.HSQLDB, "org.hsqldb.jdbcDriver");
-        DB_DRIVERS.put(DATABASE.H2, "org.h2.Driver");
-        //
-        DB_DIALECTS = new HashMap<DATABASE, Class<? extends IDialect>>();
-        DB_DIALECTS.put(DATABASE.MYSQL, MySQLDialect.class);
-        DB_DIALECTS.put(DATABASE.ORACLE, OracleDialect.class);
-        DB_DIALECTS.put(DATABASE.SQLSERVER, SQLServerDialect.class);
-        DB_DIALECTS.put(DATABASE.DB2, DB2Dialect.class);
-        DB_DIALECTS.put(DATABASE.SQLITE, SQLiteDialect.class);
-        DB_DIALECTS.put(DATABASE.POSTGRESQL, PostgreSQLDialect.class);
-        DB_DIALECTS.put(DATABASE.HSQLDB, HSQLDBDialect.class);
-        DB_DIALECTS.put(DATABASE.H2, H2Dialect.class);
+        Map<Type.DATABASE, Class<? extends IDialect>> dialects = new HashMap<>(8);
+        dialects.put(Type.DATABASE.MYSQL, MySQLDialect.class);
+        dialects.put(Type.DATABASE.ORACLE, OracleDialect.class);
+        dialects.put(Type.DATABASE.SQLSERVER, SQLServerDialect.class);
+        dialects.put(Type.DATABASE.DB2, DB2Dialect.class);
+        dialects.put(Type.DATABASE.SQLITE, SQLiteDialect.class);
+        dialects.put(Type.DATABASE.POSTGRESQL, PostgreSQLDialect.class);
+        dialects.put(Type.DATABASE.HSQLDB, HSQLDBDialect.class);
+        dialects.put(Type.DATABASE.H2, H2Dialect.class);
+        DB_DIALECTS = Collections.unmodifiableMap(dialects);
+    }
+
+    public static IDatabase get() {
+        IDatabase inst = instance;
+        if (inst == null) {
+            synchronized (JDBC.class) {
+                inst = instance;
+                if (inst == null) {
+                    instance = inst = YMP.get().getModuleManager().getModule(JDBC.class);
+                }
+            }
+        }
+        return inst;
+    }
+
+    private IApplication owner;
+
+    private IDatabaseConfig config;
+
+    private Map<String, IDatabaseDataSourceAdapter> dataSourceCaches;
+
+    private boolean initialized;
+
+    public JDBC() {
+    }
+
+    public JDBC(IDatabaseConfig config) {
+        this.config = config;
+    }
+
+    @Override
+    public String getName() {
+        return MODULE_NAME;
+    }
+
+    @Override
+    public void initialize(IApplication owner) throws Exception {
+        if (!initialized) {
+            //
+            YMP.showModuleVersion("ymate-platform-persistence-jdbc", this);
+            //
+            this.owner = owner;
+            this.owner.getEvents().registerEvent(DatabaseEvent.class);
+            //
+            if (config == null) {
+                IModuleConfigurer moduleConfigurer = owner.getConfigurer().getModuleConfigurer(MODULE_NAME);
+                config = moduleConfigurer == null ? DefaultDatabaseConfig.defaultConfig() : DefaultDatabaseConfig.create(moduleConfigurer);
+            }
+            //
+            if (!config.isInitialized()) {
+                config.initialize(this);
+            }
+            //
+            IBeanLoadFactory beanLoaderFactory = YMP.getBeanLoadFactory();
+            if (beanLoaderFactory != null && beanLoaderFactory.getBeanLoader() != null) {
+                beanLoaderFactory.getBeanLoader().registerHandler(Repository.class, new RepositoryHandler(this));
+            }
+            //
+            IProxyFactory proxyFactory = owner.getBeanFactory().getProxyFactory();
+            if (proxyFactory != null) {
+                proxyFactory.registerProxy(new TransactionProxy());
+                proxyFactory.registerProxy(new RepositoryProxy(this));
+            }
+            //
+            for (Map.Entry<String, IDatabaseDataSourceConfig> entry : config.getDataSourceConfigs().entrySet()) {
+                IDatabaseDataSourceAdapter dataSourceAdapter = entry.getValue().getAdapterClass().newInstance();
+                dataSourceAdapter.initialize(this, entry.getValue());
+                // 将数据源适配器放入缓存
+                dataSourceCaches.put(entry.getKey(), dataSourceAdapter);
+            }
+            initialized = true;
+        }
+    }
+
+    @Override
+    public boolean isInitialized() {
+        return initialized;
+    }
+
+    @Override
+    public void close() throws Exception {
+        if (initialized) {
+            initialized = false;
+            //
+            for (IDatabaseDataSourceAdapter adapter : dataSourceCaches.values()) {
+                adapter.close();
+            }
+            dataSourceCaches = null;
+            config = null;
+            owner = null;
+        }
+    }
+
+    @Override
+    public IApplication getOwner() {
+        return owner;
+    }
+
+    @Override
+    public IDatabaseConfig getConfig() {
+        return config;
+    }
+
+    @Override
+    public IDatabaseConnectionHolder getDefaultConnectionHolder() throws Exception {
+        return getConnectionHolder(config.getDefaultDataSourceName());
+    }
+
+    @Override
+    public IDatabaseConnectionHolder getConnectionHolder(String dataSourceName) throws Exception {
+        IDatabaseConnectionHolder connectionHolder;
+        ITransaction transaction = Transactions.get();
+        if (transaction != null) {
+            connectionHolder = transaction.getConnectionHolder(dataSourceName);
+            if (connectionHolder == null) {
+                connectionHolder = new DefaultDatabaseConnectionHolder(dataSourceCaches.get(dataSourceName));
+                transaction.registerConnectionHolder(connectionHolder);
+            }
+        } else {
+            connectionHolder = new DefaultDatabaseConnectionHolder(dataSourceCaches.get(dataSourceName));
+        }
+        return connectionHolder;
+    }
+
+    @Override
+    public void releaseConnectionHolder(IDatabaseConnectionHolder connectionHolder) throws Exception {
+        // 需要判断当前连接是否参与事务，若存在事务则不进行关闭操作
+        if (Transactions.get() == null) {
+            if (connectionHolder != null) {
+                connectionHolder.close();
+            }
+        }
+    }
+
+    @Override
+    public <T> T openSession(IDatabaseSessionExecutor<T> executor) throws Exception {
+        return openSession(getDefaultConnectionHolder(), executor);
+    }
+
+    @Override
+    public <T> T openSession(String dataSourceName, IDatabaseSessionExecutor<T> executor) throws Exception {
+        return openSession(getConnectionHolder(dataSourceName), executor);
+    }
+
+    @Override
+    public <T> T openSession(IDatabaseConnectionHolder connectionHolder, IDatabaseSessionExecutor<T> executor) throws Exception {
+        try (IDatabaseSession session = new DefaultDatabaseSession(this, connectionHolder)) {
+            return executor.execute(session);
+        }
+    }
+
+    @Override
+    public <T> T openSession(IDataSourceRouter dataSourceRouter, IDatabaseSessionExecutor<T> executor) throws Exception {
+        return openSession(getConnectionHolder(dataSourceRouter.getDataSourceName()), executor);
+    }
+
+    @Override
+    public IDatabaseSession openSession() throws Exception {
+        return new DefaultDatabaseSession(this, getDefaultConnectionHolder());
+    }
+
+    @Override
+    public IDatabaseSession openSession(String dataSourceName) throws Exception {
+        return new DefaultDatabaseSession(this, getConnectionHolder(dataSourceName));
+    }
+
+    @Override
+    public IDatabaseSession openSession(IDatabaseConnectionHolder connectionHolder) throws Exception {
+        return new DefaultDatabaseSession(this, connectionHolder);
+    }
+
+    @Override
+    public IDatabaseSession openSession(IDataSourceRouter dataSourceRouter) throws Exception {
+        return new DefaultDatabaseSession(this, getConnectionHolder(dataSourceRouter.getDataSourceName()));
     }
 }

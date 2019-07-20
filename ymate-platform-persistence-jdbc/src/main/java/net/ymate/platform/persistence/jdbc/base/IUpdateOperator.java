@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2017 the original author or authors.
+ * Copyright 2007-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,12 +15,14 @@
  */
 package net.ymate.platform.persistence.jdbc.base;
 
+import net.ymate.platform.core.beans.annotation.Ignored;
+
 /**
  * 数据库更新操作器接口定义
  *
  * @author 刘镇 (suninformation@163.com) on 2010-12-25 下午02:39:48
- * @version 1.0
  */
+@Ignored
 public interface IUpdateOperator extends IOperator {
 
     /**

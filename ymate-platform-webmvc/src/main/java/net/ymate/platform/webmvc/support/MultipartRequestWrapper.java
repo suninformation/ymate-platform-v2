@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2017 the original author or authors.
+ * Copyright 2007-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,8 +20,8 @@ import net.ymate.platform.webmvc.IUploadFileWrapper;
 import net.ymate.platform.webmvc.IWebMvc;
 import net.ymate.platform.webmvc.util.FileUploadHelper;
 import org.apache.commons.fileupload.FileUploadException;
-import org.apache.commons.lang.ArrayUtils;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletRequestWrapper;
@@ -33,54 +33,53 @@ import java.util.*;
  * 表单类型为"multipart/form-data"请求包装类
  *
  * @author 刘镇 (suninformation@163.com) on 2011-8-5 上午10:19:47
- * @version 1.0
  */
 public class MultipartRequestWrapper extends HttpServletRequestWrapper implements IMultipartRequestWrapper {
 
-    private final FileUploadHelper.UploadFormWrapper __formWarpper;
+    private final FileUploadHelper.UploadFormWrapper formWrapper;
 
     public MultipartRequestWrapper(IWebMvc owner, HttpServletRequest request) throws IOException, FileUploadException {
         super(request);
         // 绑定并初始化文件上传帮助类
-        __formWarpper = FileUploadHelper.bind(owner, request)
-                .setUploadTempDir(new File(StringUtils.defaultIfBlank(owner.getModuleCfg().getUploadTempDir(), System.getProperty("java.io.tmpdir"))))
-                .setFileSizeMax(owner.getModuleCfg().getUploadTotalSizeMax())
-                .setSizeMax(owner.getModuleCfg().getUploadFileSizeMax())
-                .setSizeThreshold(owner.getModuleCfg().getUploadSizeThreshold())
-                .setFileUploadListener(owner.getModuleCfg().getUploadFileListener())
+        formWrapper = FileUploadHelper.bind(owner, request)
+                .setUploadTempDir(new File(StringUtils.defaultIfBlank(owner.getConfig().getUploadTempDir(), System.getProperty("java.io.tmpdir"))))
+                .setFileSizeMax(owner.getConfig().getUploadTotalSizeMax())
+                .setSizeMax(owner.getConfig().getUploadFileSizeMax())
+                .setSizeThreshold(owner.getConfig().getUploadSizeThreshold())
+                .setFileUploadListener(owner.getConfig().getUploadListener())
                 .processUpload();
     }
 
     @Override
     public String getParameter(String name) {
-        String _returnStr = super.getParameter(name);
-        if (StringUtils.isBlank(_returnStr)) {
-            String[] params = __formWarpper.getFieldMap().get(name);
-            _returnStr = (params == null ? null : params[0]);
+        String returnStr = super.getParameter(name);
+        if (StringUtils.isBlank(returnStr)) {
+            String[] params = formWrapper.getFieldMap().get(name);
+            returnStr = (params == null ? null : params[0]);
         }
-        return _returnStr;
+        return returnStr;
     }
 
     @Override
     public String[] getParameterValues(String name) {
-        String[] _returnStr = super.getParameterValues(name);
-        if (_returnStr == null || _returnStr.length == 0) {
-            _returnStr = __formWarpper.getFieldMap().get(name);
+        String[] returnStr = super.getParameterValues(name);
+        if (returnStr == null || returnStr.length == 0) {
+            returnStr = formWrapper.getFieldMap().get(name);
         }
-        return _returnStr;
+        return returnStr;
     }
 
     @Override
-    @SuppressWarnings("unchecked")
     public Map<String, String[]> getParameterMap() {
-        Map<String, String[]> _returnMap = new HashMap<String, String[]>(super.getParameterMap());
-        _returnMap.putAll(__formWarpper.getFieldMap());
-        return Collections.unmodifiableMap(_returnMap);
+        Map<String, String[]> returnMap = new HashMap<>(super.getParameterMap());
+        returnMap.putAll(formWrapper.getFieldMap());
+        return Collections.unmodifiableMap(returnMap);
     }
 
     @Override
     public Enumeration<String> getParameterNames() {
         return new Enumeration<String>() {
+
             private final Iterator<String> it = getParameterMap().keySet().iterator();
 
             @Override
@@ -101,7 +100,7 @@ public class MultipartRequestWrapper extends HttpServletRequestWrapper implement
      */
     @Override
     public IUploadFileWrapper getUploadFile(String name) {
-        IUploadFileWrapper[] files = __formWarpper.getFileMap().get(name);
+        IUploadFileWrapper[] files = formWrapper.getFileMap().get(name);
         return files == null ? null : files[0];
     }
 
@@ -111,7 +110,7 @@ public class MultipartRequestWrapper extends HttpServletRequestWrapper implement
      */
     @Override
     public IUploadFileWrapper[] getUploadFiles(String name) {
-        return __formWarpper.getFileMap().get(name);
+        return formWrapper.getFileMap().get(name);
     }
 
     /**
@@ -119,12 +118,10 @@ public class MultipartRequestWrapper extends HttpServletRequestWrapper implement
      */
     @Override
     public Set<IUploadFileWrapper> getUploadFiles() {
-        Set<IUploadFileWrapper> _returnValues = new HashSet<IUploadFileWrapper>();
-        for (IUploadFileWrapper[] _fileWraps : __formWarpper.getFileMap().values()) {
-            if (ArrayUtils.isNotEmpty(_fileWraps)) {
-                Collections.addAll(_returnValues, _fileWraps);
-            }
-        }
-        return _returnValues;
+        Set<IUploadFileWrapper> returnValues = new HashSet<>();
+        formWrapper.getFileMap().values().stream().filter((fileWrappers) -> (ArrayUtils.isNotEmpty(fileWrappers))).forEachOrdered((fileWrappers) -> {
+            Collections.addAll(returnValues, fileWrappers);
+        });
+        return returnValues;
     }
 }

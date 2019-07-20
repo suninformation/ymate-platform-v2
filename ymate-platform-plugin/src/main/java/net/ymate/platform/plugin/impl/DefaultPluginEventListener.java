@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2017 the original author or authors.
+ * Copyright 2007-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,12 +23,11 @@ import net.ymate.platform.plugin.IPluginEventListener;
  * 默认插件生命周期事件监听器接口实现
  *
  * @author 刘镇 (suninformation@163.com) on 15/3/22 下午4:56
- * @version 1.0
  */
 public class DefaultPluginEventListener implements IPluginEventListener {
 
     @Override
-    public void onInited(IPluginContext context, IPlugin plugin) {
+    public void onInitialized(IPluginContext context, IPlugin plugin) {
     }
 
     @Override

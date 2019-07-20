@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2017 the original author or authors.
+ * Copyright 2007-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,11 +15,12 @@
  */
 package net.ymate.platform.core.serialize.annotation;
 
+import org.apache.commons.lang3.StringUtils;
+
 import java.lang.annotation.*;
 
 /**
  * @author 刘镇 (suninformation@163.com) on 2017/10/10 上午11:15
- * @version 1.0
  */
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
@@ -29,5 +30,5 @@ public @interface Serializer {
     /**
      * @return 序列化处理器名称, 默认为处理器实现类名称
      */
-    String value() default "";
+    String value() default StringUtils.EMPTY;
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2018 the original author or authors.
+ * Copyright 2007-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,68 +24,66 @@ import java.util.concurrent.ConcurrentMap;
 
 /**
  * @author 刘镇 (suninformation@163.com) on 2018/11/15 1:47 AM
- * @version 1.0
  */
 public class NioUdpSessionWrapper extends AbstractSessionWrapper<NioUdpSession, InetSocketAddress> {
 
-    private InetSocketAddress __id;
+    private static final long serialVersionUID = 1L;
 
-    private NioUdpSession __session;
+    private final InetSocketAddress id;
 
-    private InetSocketAddress __socketAddress;
+    private final NioUdpSession session;
 
-    private long __lastTouchTime;
+    private final InetSocketAddress socketAddress;
 
-    private final ConcurrentMap<String, Object> __attributes;
+    private long lastTouchTime;
+
+    private final ConcurrentMap<String, Object> attributes = new ConcurrentHashMap<>();
 
     public NioUdpSessionWrapper(NioUdpSession session, InetSocketAddress socketAddress) {
-        __id = socketAddress;
-        __socketAddress = socketAddress;
-        __session = session;
-        __lastTouchTime = System.currentTimeMillis();
-        __attributes = new ConcurrentHashMap<String, Object>();
+        id = socketAddress;
+        this.socketAddress = socketAddress;
+        this.session = session;
+        lastTouchTime = System.currentTimeMillis();
     }
 
     @Override
     public InetSocketAddress getId() {
-        return __id;
+        return id;
     }
 
     @Override
     public NioUdpSession getSession() {
-        return __session;
+        return session;
     }
 
     @Override
     public Map<String, Object> getAttributes() {
-        return __attributes;
+        return attributes;
     }
 
     @Override
     @SuppressWarnings("unchecked")
     public <T> T getAttribute(String attrKey) {
-        return (T) __attributes.get(attrKey);
+        return (T) attributes.get(attrKey);
     }
 
     @Override
     public void addAttribute(String attrKey, Object attrValue) {
-        __attributes.put(attrKey, attrValue);
+        attributes.put(attrKey, attrValue);
     }
 
     @Override
     public void touch() {
-        __lastTouchTime = System.currentTimeMillis();
+        lastTouchTime = System.currentTimeMillis();
     }
 
     @Override
     public long getLastTouchTime() {
-        return __lastTouchTime;
+        return lastTouchTime;
     }
 
     @Override
     public String toString() {
-        return "NioSessionWrapper {"
-                + "__session=" + " [id=" + __id + ", remote=" + (__socketAddress.getHostName() + ":" + __socketAddress.getPort()) + ", attrs=" + __attributes + "]"
-                + ", __lastTouchTime=" + getLastTouchTime() + '}';
+        return String.format("NioSessionWrapper {session= [id=%s, remote=%s, attrs=%s], lastTouchTime=%d}", id, socketAddress.getHostName() + ":" + socketAddress.getPort(), attributes, getLastTouchTime());
     }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2017 the original author or authors.
+ * Copyright 2007-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,109 +15,106 @@
  */
 package net.ymate.platform.persistence.jdbc.base.impl;
 
-import net.ymate.platform.persistence.base.Type;
-import net.ymate.platform.persistence.jdbc.IConnectionHolder;
+import net.ymate.platform.core.persistence.base.Type;
+import net.ymate.platform.persistence.jdbc.IDatabaseConnectionHolder;
 import net.ymate.platform.persistence.jdbc.base.*;
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.apache.commons.lang3.StringUtils;
 
 import java.sql.PreparedStatement;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
  * 数据库批量更新操作器实现
  *
  * @author 刘镇 (suninformation@163.com) on 2011-9-23 下午01:15:43
- * @version 1.0
  */
 public class BatchUpdateOperator extends AbstractOperator implements IBatchUpdateOperator {
-
-    private static final Log _LOG = LogFactory.getLog(BatchUpdateOperator.class);
 
     private int[] effectCounts;
 
     private int effectCountsTotal;
 
-    private List<String> __batchSQL;
+    private List<String> batchSQL;
 
-    private List<SQLBatchParameter> __batchParameters;
+    private List<SQLBatchParameter> batchParameters;
 
-    public BatchUpdateOperator(IConnectionHolder connectionHolder) {
+    public BatchUpdateOperator(IDatabaseConnectionHolder connectionHolder) {
         this(null, connectionHolder, null);
     }
 
-    public BatchUpdateOperator(IConnectionHolder connectionHolder, IAccessorConfig accessorConfig) {
+    public BatchUpdateOperator(IDatabaseConnectionHolder connectionHolder, IAccessorConfig accessorConfig) {
         this(null, connectionHolder, accessorConfig);
     }
 
-    public BatchUpdateOperator(String sql, IConnectionHolder connectionHolder) {
+    public BatchUpdateOperator(String sql, IDatabaseConnectionHolder connectionHolder) {
         this(sql, connectionHolder, null);
     }
 
-    public BatchUpdateOperator(String sql, IConnectionHolder connectionHolder, IAccessorConfig accessorConfig) {
+    public BatchUpdateOperator(String sql, IDatabaseConnectionHolder connectionHolder, IAccessorConfig accessorConfig) {
         super(sql, connectionHolder, accessorConfig);
-        this.__batchSQL = new ArrayList<String>();
-        this.__batchParameters = new ArrayList<SQLBatchParameter>();
+        this.batchSQL = new ArrayList<>();
+        this.batchParameters = new ArrayList<>();
     }
 
     @Override
-    protected String __doSerializeParameters() {
-        List<Object> _params = new ArrayList<Object>(__batchParameters);
-        _params.addAll(__batchSQL);
-        return _params.toString();
+    protected String serializeParameters() {
+        List<Object> params = new ArrayList<>(batchParameters);
+        params.addAll(batchSQL);
+        return params.toString();
     }
 
     @Override
-    protected int __doExecute() throws Exception {
-        Statement _statement = null;
-        AccessorEventContext _context = null;
-        boolean _hasEx = false;
+    protected int doExecute() throws Exception {
+        Statement statement = null;
+        AccessorEventContext eventContext = null;
+        boolean hasEx = false;
         try {
-            IAccessor _accessor = new BaseAccessor(this.getAccessorConfig());
+            IAccessor accessor = new BaseAccessor(this.getAccessorConfig());
             if (StringUtils.isNotBlank(this.getSQL())) {
-                _statement = _accessor.getPreparedStatement(this.getConnectionHolder().getConnection(), this.getSQL());
+                statement = accessor.getPreparedStatement(this.getConnectionHolder().getConnection(), this.getSQL());
                 //
-                for (SQLBatchParameter _batchParam : this.__batchParameters) {
-                    for (int i = 0; i < _batchParam.getParameters().size(); i++) {
-                        SQLParameter _param = _batchParam.getParameters().get(i);
-                        if (_param.getValue() == null) {
-                            ((PreparedStatement) _statement).setNull(i + 1, 0);
+                for (SQLBatchParameter batchParam : this.batchParameters) {
+                    for (int i = 0; i < batchParam.getParameters().size(); i++) {
+                        SQLParameter param = batchParam.getParameters().get(i);
+                        if (param.getValue() == null) {
+                            ((PreparedStatement) statement).setNull(i + 1, 0);
                         } else {
-                            ((PreparedStatement) _statement).setObject(i + 1, _param.getValue());
+                            ((PreparedStatement) statement).setObject(i + 1, param.getValue());
                         }
                     }
-                    ((PreparedStatement) _statement).addBatch();
+                    ((PreparedStatement) statement).addBatch();
                 }
             } else {
-                _statement = _accessor.getStatement(this.getConnectionHolder().getConnection());
+                statement = accessor.getStatement(this.getConnectionHolder().getConnection());
             }
             //
-            for (String _batchSQL : this.__batchSQL) {
-                _statement.addBatch(_batchSQL);
+            for (String item : this.batchSQL) {
+                statement.addBatch(item);
             }
             //
             if (this.getAccessorConfig() != null) {
-                this.getAccessorConfig().beforeStatementExecution(_context = new AccessorEventContext(_statement, Type.OPT.BATCH_UPDATE));
+                eventContext = new AccessorEventContext(statement, Type.OPT.BATCH_UPDATE);
+                this.getAccessorConfig().beforeStatementExecution(eventContext);
             }
-            effectCounts = _statement.executeBatch();
+            effectCounts = statement.executeBatch();
             // 累计受影响的总记录数
-            for (int _c : effectCounts) {
-                effectCountsTotal += _c;
+            for (int c : effectCounts) {
+                effectCountsTotal += c;
             }
             return effectCountsTotal;
         } catch (Exception ex) {
-            _hasEx = true;
+            hasEx = true;
             throw ex;
         } finally {
-            if (!_hasEx && this.getAccessorConfig() != null && _context != null) {
-                this.getAccessorConfig().afterStatementExecution(_context);
+            if (!hasEx && this.getAccessorConfig() != null && eventContext != null) {
+                this.getAccessorConfig().afterStatementExecution(eventContext);
             }
-            if (_statement != null) {
-                _statement.clearBatch();
-                _statement.close();
+            if (statement != null) {
+                statement.clearBatch();
+                statement.close();
             }
         }
     }
@@ -134,7 +131,7 @@ public class BatchUpdateOperator extends AbstractOperator implements IBatchUpdat
 
     @Override
     public IBatchUpdateOperator addBatchSQL(String sql) {
-        this.__batchSQL.add(sql);
+        this.batchSQL.add(sql);
         return this;
     }
 
@@ -145,14 +142,14 @@ public class BatchUpdateOperator extends AbstractOperator implements IBatchUpdat
             throw new UnsupportedOperationException();
         }
         if (parameter != null) {
-            this.__batchParameters.add(parameter);
+            this.batchParameters.add(parameter);
         }
         return this;
     }
 
     @Override
     public List<SQLBatchParameter> getBatchParameters() {
-        return __batchParameters;
+        return Collections.unmodifiableList(batchParameters);
     }
 
     @Override

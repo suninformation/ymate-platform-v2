@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2017 the original author or authors.
+ * Copyright 2007-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,11 +15,18 @@
  */
 package net.ymate.platform.persistence.mongodb;
 
+import net.ymate.platform.core.beans.annotation.Ignored;
+
 /**
  * @author 刘镇 (suninformation@163.com) on 15/11/27 下午5:59
- * @version 1.0
  */
+@Ignored
 public interface IOperator extends IBsonable {
 
-    IOperator add(IOperator operator);
+    /**
+     * 添加操作器
+     *
+     * @param operator 操作器对象
+     */
+    void add(IOperator operator);
 }

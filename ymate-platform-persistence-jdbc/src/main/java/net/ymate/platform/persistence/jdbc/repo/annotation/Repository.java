@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2017 the original author or authors.
+ * Copyright 2007-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,8 +15,9 @@
  */
 package net.ymate.platform.persistence.jdbc.repo.annotation;
 
-import net.ymate.platform.persistence.base.Type;
-import net.ymate.platform.persistence.jdbc.JDBC;
+import net.ymate.platform.core.beans.annotation.Ignored;
+import net.ymate.platform.core.persistence.base.Type;
+import org.apache.commons.lang3.StringUtils;
 
 import java.lang.annotation.*;
 
@@ -24,40 +25,45 @@ import java.lang.annotation.*;
  * 声明一个类为存储器对象, 声明一个类方法开启存储器操作
  *
  * @author 刘镇 (suninformation@163.com) on 16/4/22 下午1:49
- * @version 1.0
  */
 @Target({ElementType.TYPE, ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
+@Ignored
 public @interface Repository {
 
     /**
      * @return 数据源名称, 默认为空
      */
-    String dsName() default "";
+    String dsName() default StringUtils.EMPTY;
 
     /**
      * @return 从资源文件中加载item指定的配置项, 默认为空
      */
-    String item() default "";
+    String item() default StringUtils.EMPTY;
 
     /**
      * @return 自定义SQL配置
      */
-    String value() default "";
+    String value() default StringUtils.EMPTY;
 
     /**
-     * @return 操作类型, 默认为查询
+     * @return 是否为更新操作, 默认为false
      */
-    Type.OPT type() default Type.OPT.QUERY;
+    boolean update() default false;
 
     /**
-     * @return 是否调用方法过滤, 默认为true
+     * @return 是否分页查询, 默认为false
      */
-    boolean useFilter() default true;
+    boolean page() default false;
+
+    /**
+     * @return 是否调用方法过滤, 默认为false
+     */
+    boolean useFilter() default false;
 
     /**
      * @return 指定当前存储器适用的数据库类型，默认为全部，否则将根据数据库类型进行存储器加载
      */
-    JDBC.DATABASE dbType() default JDBC.DATABASE.UNKNOWN;
+    Type.DATABASE dbType() default Type.DATABASE.UNKNOWN;
 }

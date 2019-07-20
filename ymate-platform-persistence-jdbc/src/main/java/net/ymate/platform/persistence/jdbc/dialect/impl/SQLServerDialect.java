@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2017 the original author or authors.
+ * Copyright 2007-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,15 +15,14 @@
  */
 package net.ymate.platform.persistence.jdbc.dialect.impl;
 
-import net.ymate.platform.core.util.ExpressionUtils;
-import net.ymate.platform.persistence.jdbc.JDBC;
+import net.ymate.platform.commons.util.ExpressionUtils;
+import net.ymate.platform.core.persistence.base.Type;
 import net.ymate.platform.persistence.jdbc.dialect.AbstractDialect;
 
 /**
  * SQLServer2005及以上数据库方言接口实现
  *
  * @author 刘镇 (suninformation@163.com) on 2012-4-19 下午3:38:40
- * @version 1.0
  */
 public class SQLServerDialect extends AbstractDialect {
 
@@ -33,17 +32,17 @@ public class SQLServerDialect extends AbstractDialect {
 
     @Override
     public String getName() {
-        return JDBC.DATABASE.SQLSERVER.name();
+        return Type.DATABASE.SQLSERVER.name();
     }
 
     @Override
-    public String buildPagedQuerySQL(String originSql, int page, int pageSize) {
-        int _limit = ((page - 1) * pageSize);
-        boolean _position = originSql.toUpperCase().indexOf("SELECT") == originSql.toUpperCase().indexOf("SELECT DISTINCT");
-        String _tmpSQL = originSql.substring((_position ? 15 : 6));
+    public String buildPagedQuerySql(String originSql, int page, int pageSize) {
+        int limit = (page - 1) * pageSize;
+        boolean position = originSql.toUpperCase().indexOf("SELECT") == originSql.toUpperCase().indexOf("SELECT DISTINCT");
+        String tmpSqlStr = originSql.substring((position ? 15 : 6));
         return ExpressionUtils.bind("SELECT * FROM (SELECT ROW_NUMBER() OVER(ORDER BY __tc__) __rn__, * FROM (SELECT TOP ${_limit} 0 __tc__, ${_sql}) t) tt WHERE __rn__ > ${_offset}")
-                .set("_limit", _limit + pageSize + "")
-                .set("_sql", _tmpSQL)
-                .set("_offset", _limit + "").getResult();
+                .set("_limit", String.valueOf(limit + pageSize))
+                .set("_sql", tmpSqlStr)
+                .set("_offset", String.valueOf(limit)).getResult();
     }
 }

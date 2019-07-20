@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2017 the original author or authors.
+ * Copyright 2007-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,12 +25,11 @@ import java.io.IOException;
 
 /**
  * @author 刘镇 (suninformation@163.com) on 15/11/15 下午6:56
- * @version 1.0
  */
 public class NioClient extends AbstractNioClient<NioClientListener> {
 
     @Override
     protected INioEventGroup<NioClientListener> buildEventGroup(IClientCfg clientCfg, NioClientListener listener, INioCodec codec) throws IOException {
-        return new NioEventGroup<NioClientListener>(clientCfg, listener, codec);
+        return new NioEventGroup<>(clientCfg, listener, codec);
     }
 }

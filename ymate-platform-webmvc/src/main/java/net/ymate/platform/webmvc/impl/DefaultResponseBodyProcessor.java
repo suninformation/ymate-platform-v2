@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2018 the original author or authors.
+ * Copyright 2007-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,22 +22,21 @@ import net.ymate.platform.webmvc.view.impl.JsonView;
 
 /**
  * @author 刘镇 (suninformation@163.com) on 2018/1/10 上午3:19
- * @version 1.0
  */
 public class DefaultResponseBodyProcessor implements IResponseBodyProcessor {
 
     @Override
     public IView processBody(IWebMvc owner, Object result, boolean contentType, boolean keepNull, boolean quoteField) throws Exception {
-        JsonView _view = new JsonView(result);
+        JsonView view = new JsonView(result);
         if (keepNull) {
-            _view.keepNullValue();
+            view.keepNullValue();
         }
         if (quoteField) {
-            _view.quoteFieldNames();
+            view.quoteFieldNames();
         }
         if (contentType) {
-            _view.withContentType();
+            view.withContentType();
         }
-        return _view;
+        return view;
     }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2017 the original author or authors.
+ * Copyright 2007-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,33 +17,32 @@ package net.ymate.platform.persistence.jdbc.query;
 
 /**
  * @author 刘镇 (suninformation@163.com) on 15/9/25 13:23
- * @version 1.0
  */
 public final class Union {
 
-    private final Select __select;
+    private final Select select;
 
-    private boolean __all;
+    private boolean all;
 
     public static Union create(Select select) {
         return new Union(select);
     }
 
     private Union(Select select) {
-        __select = select;
+        this.select = select;
     }
 
     public Union all() {
-        __all = true;
+        all = true;
         return this;
     }
 
     public boolean isAll() {
-        return __all;
+        return all;
     }
 
     public Select select() {
-        return __select;
+        return select;
     }
 
 }

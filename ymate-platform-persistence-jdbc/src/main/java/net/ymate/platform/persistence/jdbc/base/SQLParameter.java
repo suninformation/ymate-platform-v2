@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2017 the original author or authors.
+ * Copyright 2007-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,19 +15,29 @@
  */
 package net.ymate.platform.persistence.jdbc.base;
 
-import net.ymate.platform.persistence.base.Type;
+import net.ymate.platform.core.persistence.base.Type;
 import org.apache.commons.codec.binary.Base64;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
-import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
+import java.util.List;
 
 /**
  * SQL参数对象
  *
  * @author 刘镇 (suninformation@163.com) on 2011-8-28 上午01:51:52
- * @version 1.0
  */
-public class SQLParameter {
+public final class SQLParameter {
+
+    public static void addParameter(List<SQLParameter> parameters, Object parameter) {
+        if (parameter == null) {
+            parameters.add(new SQLParameter(Type.FIELD.UNKNOWN, null));
+        } else if (parameter instanceof SQLParameter) {
+            parameters.add((SQLParameter) parameter);
+        } else {
+            parameters.add(new SQLParameter(parameter));
+        }
+    }
 
     private Type.FIELD type;
 
@@ -50,21 +60,15 @@ public class SQLParameter {
         return this.value;
     }
 
-    private String __tryBase64Str(String str) {
-        String _base64Str;
-        try {
-            _base64Str = "BASE64@" + Base64.encodeBase64String(((String) value).getBytes("UTF-8"));
-        } catch (UnsupportedEncodingException e) {
-            _base64Str = str;
-        }
-        return _base64Str;
+    private String tryBase64Str() {
+        return "BASE64@" + Base64.encodeBase64String(((String) value).getBytes(StandardCharsets.UTF_8));
     }
 
     @Override
     public String toString() {
         if (value instanceof String) {
-            if (StringUtils.containsAny((String) value, new char[]{'\r', '\n'})) {
-                return "\"".concat(__tryBase64Str((String) value)).concat("\"");
+            if (StringUtils.containsAny((CharSequence) value, '\r', '\n')) {
+                return "\"".concat(tryBase64Str()).concat("\"");
             } else {
                 return "\"".concat(value.toString()).concat("\"");
             }

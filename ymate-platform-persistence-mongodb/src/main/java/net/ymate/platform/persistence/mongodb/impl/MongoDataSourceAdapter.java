@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2017 the original author or authors.
+ * Copyright 2007-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,75 +19,60 @@ import com.mongodb.MongoClient;
 import com.mongodb.MongoClientOptions;
 import com.mongodb.MongoClientURI;
 import com.mongodb.MongoCredential;
+import net.ymate.platform.commons.util.ClassUtils;
+import net.ymate.platform.core.persistence.AbstractDataSourceAdapter;
+import net.ymate.platform.persistence.mongodb.IMongo;
 import net.ymate.platform.persistence.mongodb.IMongoClientOptionsHandler;
 import net.ymate.platform.persistence.mongodb.IMongoDataSourceAdapter;
-import net.ymate.platform.persistence.mongodb.IMongoDatabaseHolder;
-import net.ymate.platform.persistence.mongodb.MongoDataSourceCfgMeta;
-import org.apache.commons.lang.StringUtils;
+import net.ymate.platform.persistence.mongodb.IMongoDataSourceConfig;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * @author 刘镇 (suninformation@163.com) on 15/11/22 上午12:00
- * @version 1.0
  */
-public class MongoDataSourceAdapter implements IMongoDataSourceAdapter {
+public class MongoDataSourceAdapter extends AbstractDataSourceAdapter<IMongo, IMongoDataSourceConfig, MongoClient> implements IMongoDataSourceAdapter {
 
-    private MongoClient __mongoClient;
-
-    private MongoDataSourceCfgMeta __cfgMeta;
+    private MongoClient mongoClient;
 
     @Override
-    public void initialize(IMongoClientOptionsHandler optionsHandler, MongoDataSourceCfgMeta cfgMeta) throws Exception {
-        __cfgMeta = cfgMeta;
-        MongoClientOptions.Builder _builder = null;
-        if (optionsHandler != null) {
-            _builder = optionsHandler.handler(cfgMeta.getName());
+    protected void doInitialize(IMongo iMongo, IMongoDataSourceConfig dataSourceConfig) throws Exception {
+        MongoClientOptions.Builder clientOptionsBuilder = null;
+        if (dataSourceConfig.getClientOptionsHandlerClass() != null) {
+            clientOptionsBuilder = ClassUtils.impl(dataSourceConfig.getClientOptionsHandlerClass(), IMongoClientOptionsHandler.class).handler(dataSourceConfig.getName());
         }
-        if (_builder == null) {
-            _builder = MongoClientOptions.builder();
+        if (clientOptionsBuilder == null) {
+            clientOptionsBuilder = MongoClientOptions.builder();
         }
-        if (StringUtils.isNotBlank(cfgMeta.getConnectionUrl())) {
-            __mongoClient = new MongoClient(new MongoClientURI(cfgMeta.getConnectionUrl(), _builder));
+        if (StringUtils.isNotBlank(dataSourceConfig.getConnectionUrl())) {
+            mongoClient = new MongoClient(new MongoClientURI(dataSourceConfig.getConnectionUrl(), clientOptionsBuilder));
         } else {
-            String _username = StringUtils.trimToNull(cfgMeta.getUserName());
-            String _password = StringUtils.trimToNull(cfgMeta.getPassword());
-            if (_username != null && _password != null) {
-                if (__cfgMeta.isPasswordEncrypted() && __cfgMeta.getPasswordClass() != null) {
-                    _password = __cfgMeta.getPasswordClass().newInstance().decrypt(_password);
-                }
-                MongoCredential _credential = MongoCredential.createCredential(cfgMeta.getUserName(), cfgMeta.getDatabaseName(), _password == null ? null : _password.toCharArray());
-                __mongoClient = new MongoClient(cfgMeta.getServers(), _credential, _builder.build());
+            String username = StringUtils.trimToNull(dataSourceConfig.getUsername());
+            if (username != null) {
+                String password = StringUtils.trimToNull(decryptPasswordIfNeed());
+                //
+                MongoCredential credential = MongoCredential.createCredential(username, dataSourceConfig.getDatabaseName(), password == null ? null : password.toCharArray());
+                mongoClient = new MongoClient(dataSourceConfig.getServerAddresses(), credential, clientOptionsBuilder.build());
             } else {
-                __mongoClient = new MongoClient(cfgMeta.getServers(), _builder.build());
+                mongoClient = new MongoClient(dataSourceConfig.getServerAddresses(), clientOptionsBuilder.build());
             }
         }
     }
 
     @Override
-    public MongoDataSourceCfgMeta getDataSourceCfgMeta() {
-        return __cfgMeta;
+    public boolean initializeIfNeed() throws Exception {
+        return isInitialized();
     }
 
     @Override
-    public MongoClient getMongoClient() {
-        return __mongoClient;
+    public MongoClient getConnection() throws Exception {
+        return mongoClient;
     }
 
     @Override
-    public IMongoDatabaseHolder getDefaultDatabaseHolder() {
-        return new MongoDatabaseHolder(__cfgMeta, __mongoClient.getDatabase(__cfgMeta.getDatabaseName()));
-    }
-
-    @Override
-    public IMongoDatabaseHolder getDatabaseHolder(String databaseName) {
-        return new MongoDatabaseHolder(__cfgMeta, __mongoClient.getDatabase(databaseName));
-    }
-
-    @Override
-    public void destroy() {
-        if (__mongoClient != null) {
-            __mongoClient.close();
-            __mongoClient = null;
+    public void doClose() throws Exception {
+        if (mongoClient != null) {
+            mongoClient.close();
+            mongoClient = null;
         }
-        __cfgMeta = null;
     }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2017 the original author or authors.
+ * Copyright 2007-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,16 +15,14 @@
  */
 package net.ymate.platform.persistence.redis;
 
-/**
- * @author 刘镇 (suninformation@163.com) on 15/12/4 上午12:45
- * @version 1.0
- */
-public interface IRedisSessionExecutor<T> {
+import net.ymate.platform.core.beans.annotation.Ignored;
+import net.ymate.platform.core.persistence.ISessionExecutor;
 
-    /**
-     * @param session 会话对象
-     * @return 执行会话处理过程，返回执行结果
-     * @throws Exception 可能产生的异常
-     */
-    T execute(IRedisSession session) throws Exception;
+/**
+ * Redis会话执行器接口
+ *
+ * @author 刘镇 (suninformation@163.com) on 15/12/4 上午12:45
+ */
+@Ignored
+public interface IRedisSessionExecutor<T> extends ISessionExecutor<T, IRedisSession> {
 }

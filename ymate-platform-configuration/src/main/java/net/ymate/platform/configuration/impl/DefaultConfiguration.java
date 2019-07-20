@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2017 the original author or authors.
+ * Copyright 2007-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,10 +15,10 @@
  */
 package net.ymate.platform.configuration.impl;
 
-import net.ymate.platform.configuration.IConfigFileParser;
-import net.ymate.platform.configuration.IConfiguration;
-import net.ymate.platform.configuration.IConfigurationProvider;
-import net.ymate.platform.core.util.ClassUtils;
+import net.ymate.platform.commons.util.ClassUtils;
+import net.ymate.platform.core.configuration.IConfigFileParser;
+import net.ymate.platform.core.configuration.IConfiguration;
+import net.ymate.platform.core.configuration.IConfigurationProvider;
 
 import java.util.List;
 import java.util.Map;
@@ -27,134 +27,133 @@ import java.util.Map;
  * 默认配置对象接口实现, 方便扩展实现
  *
  * @author 刘镇 (suninformation@163.com) on 2011-8-27 上午01:57:05
- * @version 1.0
  */
 public class DefaultConfiguration implements IConfiguration {
 
-    private IConfigurationProvider __provider;
+    private IConfigurationProvider provider;
 
     @Override
     public IConfigFileParser.Property getProperty(String category, String key) {
-        IConfigFileParser.Category _category = __provider.getConfigFileParser().getDefaultCategory();
-        if (_category == null) {
+        IConfigFileParser.Category categoryObj = provider.getConfigFileParser().getDefaultCategory();
+        if (categoryObj == null) {
             return null;
         }
-        return _category.getProperty(key);
+        return categoryObj.getProperty(key);
     }
 
     @Override
     public IConfigFileParser.Property getProperty(String key) {
-        return __provider.getConfigFileParser().getDefaultCategory().getProperty(key);
+        return provider.getConfigFileParser().getDefaultCategory().getProperty(key);
     }
 
     @Override
     public String getString(String key) {
-        return __provider.getString(key);
+        return provider.getString(key);
     }
 
     @Override
     public String getString(String key, String defaultValue) {
-        return __provider.getString(key, defaultValue);
+        return provider.getString(key, defaultValue);
     }
 
     @Override
     public String getString(String category, String key, String defaultValue) {
-        return __provider.getString(category, key, defaultValue);
+        return provider.getString(category, key, defaultValue);
     }
 
     @Override
     public List<String> getList(String key) {
-        return __provider.getList(key);
+        return provider.getList(key);
     }
 
     @Override
     public List<String> getList(String category, String key) {
-        return __provider.getList(category, key);
+        return provider.getList(category, key);
     }
 
     @Override
     public Map<String, String> getMap(String keyHead) {
-        return __provider.getMap(keyHead);
+        return provider.getMap(keyHead);
     }
 
     @Override
     public Map<String, String> getMap(String category, String keyHead) {
-        return __provider.getMap(category, keyHead);
+        return provider.getMap(category, keyHead);
     }
 
     @Override
     public String[] getArray(String key) {
-        return __provider.getArray(key);
+        return provider.getArray(key);
     }
 
     @Override
     public String[] getArray(String key, boolean zeroSize) {
-        return __provider.getArray(key, zeroSize);
+        return provider.getArray(key, zeroSize);
     }
 
     @Override
     public String[] getArray(String category, String key, boolean zeroSize) {
-        return __provider.getArray(category, key, zeroSize);
+        return provider.getArray(category, key, zeroSize);
     }
 
     @Override
     public int getInt(String key) {
-        return __provider.getInt(key);
+        return provider.getInt(key);
     }
 
     @Override
     public int getInt(String key, int defaultValue) {
-        return __provider.getInt(key, defaultValue);
+        return provider.getInt(key, defaultValue);
     }
 
     @Override
     public int getInt(String category, String key, int defaultValue) {
-        return __provider.getInt(category, key, defaultValue);
+        return provider.getInt(category, key, defaultValue);
     }
 
     @Override
     public boolean getBoolean(String key) {
-        return __provider.getBoolean(key);
+        return provider.getBoolean(key);
     }
 
     @Override
     public boolean getBoolean(String key, boolean defaultValue) {
-        return __provider.getBoolean(key, defaultValue);
+        return provider.getBoolean(key, defaultValue);
     }
 
     @Override
     public boolean getBoolean(String category, String key, boolean defaultValue) {
-        return __provider.getBoolean(category, key, defaultValue);
+        return provider.getBoolean(category, key, defaultValue);
     }
 
     @Override
     public long getLong(String key) {
-        return __provider.getLong(key);
+        return provider.getLong(key);
     }
 
     @Override
     public long getLong(String key, long defaultValue) {
-        return __provider.getLong(key, defaultValue);
+        return provider.getLong(key, defaultValue);
     }
 
     @Override
     public float getFloat(String key) {
-        return __provider.getFloat(key);
+        return provider.getFloat(key);
     }
 
     @Override
     public float getFloat(String key, float defaultValue) {
-        return __provider.getFloat(key, defaultValue);
+        return provider.getFloat(key, defaultValue);
     }
 
     @Override
     public double getDouble(String key) {
-        return __provider.getDouble(key);
+        return provider.getDouble(key);
     }
 
     @Override
     public double getDouble(String key, double defaultValue) {
-        return __provider.getDouble(key, defaultValue);
+        return provider.getDouble(key, defaultValue);
     }
 
     @Override
@@ -169,27 +168,27 @@ public class DefaultConfiguration implements IConfiguration {
 
     @Override
     public Map<String, String> toMap() {
-        return __provider.toMap();
+        return provider.toMap();
     }
 
     @Override
     public Map<String, String> toMap(String category) {
-        return __provider.toMap(category);
+        return provider.toMap(category);
     }
 
     @Override
     public List<String> getCategoryNames() {
-        return __provider.getCategoryNames();
+        return provider.getCategoryNames();
     }
 
     @Override
     public void initialize(IConfigurationProvider provider) {
-        this.__provider = provider;
+        this.provider = provider;
     }
 
     @Override
     public void reload() throws Exception {
-        this.__provider.reload();
+        this.provider.reload();
     }
 
     @Override
@@ -199,12 +198,12 @@ public class DefaultConfiguration implements IConfiguration {
 
     @Override
     public boolean contains(String key) {
-        return __provider.contains(key);
+        return provider.contains(key);
     }
 
     @Override
     public boolean contains(String category, String key) {
-        return __provider.contains(category, key);
+        return provider.contains(category, key);
     }
 
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2017 the original author or authors.
+ * Copyright 2007-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,10 +15,10 @@
  */
 package net.ymate.platform.webmvc.support;
 
+import net.ymate.platform.commons.lang.BlurObject;
+import net.ymate.platform.commons.util.ClassUtils;
+import net.ymate.platform.commons.util.RuntimeUtils;
 import net.ymate.platform.core.beans.intercept.InterceptException;
-import net.ymate.platform.core.lang.BlurObject;
-import net.ymate.platform.core.util.ClassUtils;
-import net.ymate.platform.core.util.RuntimeUtils;
 import net.ymate.platform.webmvc.IRequestProcessor;
 import net.ymate.platform.webmvc.IResponseBodyProcessor;
 import net.ymate.platform.webmvc.IWebMvc;
@@ -28,13 +28,13 @@ import net.ymate.platform.webmvc.annotation.ResponseBody;
 import net.ymate.platform.webmvc.annotation.ResponseView;
 import net.ymate.platform.webmvc.base.Type;
 import net.ymate.platform.webmvc.context.WebContext;
-import net.ymate.platform.webmvc.impl.DefaultResponseBodyProcessor;
 import net.ymate.platform.webmvc.view.IView;
 import net.ymate.platform.webmvc.view.impl.*;
-import org.apache.commons.lang.ArrayUtils;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import java.io.File;
+import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 import java.util.Map;
 
@@ -42,195 +42,163 @@ import java.util.Map;
  * WebMVC请求执行器
  *
  * @author 刘镇 (suninformation@163.com) on 2012-12-14 下午4:30:27
- * @version 1.0
  */
 public final class RequestExecutor {
 
-    private final IWebMvc __owner;
+    private final IWebMvc owner;
 
-    private final RequestMeta __requestMeta;
+    private final RequestMeta requestMeta;
 
-    private IRequestProcessor __requestProcessor;
+    private IRequestProcessor requestProcessor;
 
     public static RequestExecutor bind(IWebMvc owner, RequestMeta requestMeta) {
         return new RequestExecutor(owner, requestMeta);
     }
 
     private RequestExecutor(IWebMvc owner, RequestMeta requestMeta) {
-        __owner = owner;
-        __requestMeta = requestMeta;
+        this.owner = owner;
+        this.requestMeta = requestMeta;
         if (requestMeta.getProcessor() != null) {
-            __requestProcessor = ClassUtils.impl(requestMeta.getProcessor(), IRequestProcessor.class);
+            requestProcessor = ClassUtils.impl(requestMeta.getProcessor(), IRequestProcessor.class);
         }
-        if (__requestProcessor == null) {
-            __requestProcessor = __owner.getModuleCfg().getRequestProcessor();
+        if (requestProcessor == null) {
+            requestProcessor = this.owner.getConfig().getRequestProcessor();
         }
     }
 
     public IView execute() throws Exception {
         // 将当前RequestMeta对象放入WebContext中, 便于其它环节中获取并使用
-        WebContext.getContext().addAttribute(RequestMeta.class.getName(), __requestMeta);
+        WebContext.getContext().addAttribute(RequestMeta.class.getName(), requestMeta);
         // 取得当前控制器方法参数的名称集合
-        List<String> _methodParamNames = __requestMeta.getMethodParamNames();
+        List<String> methodParamNames = requestMeta.getMethodParamNames();
         // 根据参数名称, 从请求中提取对应的参数值
-        Map<String, Object> _paramValues = __requestProcessor.processRequestParams(__owner, __requestMeta);
-        WebContext.getContext().addAttribute(RequestParametersProxy.class.getName(), _paramValues);
+        Map<String, Object> paramValues = requestProcessor.processRequestParams(owner, requestMeta);
+        WebContext.getContext().addAttribute(RequestParametersProxy.class.getName(), paramValues);
         // 提取控制器类实例
-        Object _targetObj = __owner.getOwner().getBean(__requestMeta.getTargetClass());
-        Object _resultObj;
+        Object targetObj = owner.getOwner().getBeanFactory().getBean(requestMeta.getTargetClass());
+        Object resultObj;
         try {
-            if (!_methodParamNames.isEmpty()) {
+            if (!methodParamNames.isEmpty()) {
                 // 组装方法所需参数
-                Object[] _mParamValues = new Object[_methodParamNames.size()];
-                for (int _idx = 0; _idx < _methodParamNames.size(); _idx++) {
-                    _mParamValues[_idx] = _paramValues.get(_methodParamNames.get(_idx));
-                }
-                _resultObj = __requestMeta.getMethod().invoke(_targetObj, _mParamValues);
+                Object[] methodParamValues = methodParamNames.stream().map(paramValues::get).toArray();
+                resultObj = requestMeta.getMethod().invoke(targetObj, methodParamValues);
             } else {
-                _resultObj = __requestMeta.getMethod().invoke(_targetObj);
+                resultObj = requestMeta.getMethod().invoke(targetObj);
             }
-        } catch (Exception e) {
-            Throwable _e = RuntimeUtils.unwrapThrow(e);
-            if (_e instanceof InterceptException) {
-                _resultObj = ((InterceptException) _e).getReturnValue();
+        } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
+            Throwable unwrapThrow = RuntimeUtils.unwrapThrow(e);
+            if (unwrapThrow instanceof InterceptException) {
+                resultObj = ((InterceptException) unwrapThrow).getReturnValue();
             } else {
                 throw e;
             }
         }
         //
-        IView _resultView = null;
-        ResponseBody _respBody = __requestMeta.getResponseBody();
-        if (_respBody != null) {
-            if (_resultObj instanceof IView || _resultObj instanceof String) {
-                _resultView = __doProcessResultToView(_resultObj);
+        IView resultView = null;
+        ResponseBody responseBody = requestMeta.getResponseBody();
+        if (responseBody != null) {
+            if (resultObj instanceof IView || resultObj instanceof String) {
+                resultView = doProcessResultToView(resultObj);
             } else {
-                IResponseBodyProcessor _bodyProcessor;
-                if (DefaultResponseBodyProcessor.class.equals(_respBody.value())) {
-                    _bodyProcessor = IResponseBodyProcessor.DEFAULT;
+                IResponseBodyProcessor responseBodyProcessor;
+                if (IResponseBodyProcessor.class.equals(responseBody.value())) {
+                    responseBodyProcessor = IResponseBodyProcessor.DEFAULT;
                 } else {
-                    _bodyProcessor = ClassUtils.impl(_respBody.value(), IResponseBodyProcessor.class);
+                    responseBodyProcessor = ClassUtils.impl(responseBody.value(), IResponseBodyProcessor.class);
                 }
-                if (_bodyProcessor != null) {
-                    _resultView = _bodyProcessor.processBody(__owner, _resultObj, _respBody.contentType(), _respBody.keepNull(), _respBody.quoteField());
+                if (responseBodyProcessor != null) {
+                    resultView = responseBodyProcessor.processBody(owner, resultObj, responseBody.contentType(), responseBody.keepNull(), responseBody.quoteField());
                 }
             }
         } else {
-            _resultView = __doProcessResultToView(_resultObj);
+            resultView = doProcessResultToView(resultObj);
         }
-        if (_resultView != null) {
-            for (Header _header : __requestMeta.getResponseHeaders()) {
-                switch (_header.type()) {
+        if (resultView != null) {
+            for (Header header : requestMeta.getResponseHeaders()) {
+                switch (header.type()) {
                     case DATE:
-                        _resultView.addDateHeader(_header.name(), BlurObject.bind(_header.value()).toLongValue());
+                        resultView.addDateHeader(header.name(), BlurObject.bind(header.value()).toLongValue());
                         break;
                     case INT:
-                        _resultView.addIntHeader(_header.name(), BlurObject.bind(_header.value()).toIntValue());
+                        resultView.addIntHeader(header.name(), BlurObject.bind(header.value()).toIntValue());
                         break;
                     default:
-                        _resultView.addHeader(_header.name(), _header.value());
+                        resultView.addHeader(header.name(), header.value());
                 }
             }
         }
-        return _resultView;
+        return resultView;
     }
 
-    private IView __doProcessResultToView(Object result) throws Exception {
-        IView _view = null;
-        if (result == null) {
-            if (__requestMeta.getResponseView() != null) {
-                ResponseView _respView = __requestMeta.getResponseView();
-                String[] _viewParts = StringUtils.split(_respView.value(), ":");
-                switch (_respView.type()) {
-                    case BINARY:
-                        _view = BinaryView.bind(new File(_viewParts[0])).useAttachment(_viewParts.length > 1 ? _viewParts[1] : null);
-                        break;
-                    case FORWARD:
-                        _view = ForwardView.bind(_respView.value());
-                        break;
-                    case FREEMARKER:
-                        _view = FreemarkerView.bind(__owner, _respView.value());
-                        break;
-                    case VELOCITY:
-                        _view = VelocityView.bind(__owner, _respView.value());
-                        break;
-                    case HTML:
-                        _view = HtmlView.bind(__owner, _respView.value());
-                        break;
-                    case HTTP_STATES:
-                        _view = HttpStatusView.bind(Integer.parseInt(_viewParts[0]), _viewParts.length > 1 ? _viewParts[1] : null);
-                        break;
-                    case JSON:
-                        _view = JsonView.bind(_viewParts[0]);
-                        break;
-                    case JSP:
-                        _view = JspView.bind(__owner, _viewParts[0]);
-                        break;
-                    case REDIRECT:
-                        _view = RedirectView.bind(_viewParts[0]);
-                        break;
-                    case TEXT:
-                        _view = TextView.bind(_viewParts[0]);
-                        break;
-                    case BEETL:
-                        _view = BeetlView.bind(_viewParts[0]);
-                        break;
-                    default:
-                        _view = NullView.bind();
+    private IView doSwitchView(Type.View viewType, String[] viewParts) throws Exception {
+        IView view;
+        switch (viewType) {
+            case BINARY:
+                BinaryView binaryView = BinaryView.bind(new File(viewParts[0]));
+                if (binaryView != null) {
+                    view = binaryView.useAttachment(viewParts.length > 1 ? viewParts[1] : null);
+                } else {
+                    view = HttpStatusView.NOT_FOUND;
                 }
+                break;
+            case FORWARD:
+                view = ForwardView.bind(viewParts[0]);
+                break;
+            case FREEMARKER:
+                view = FreemarkerView.bind(owner, viewParts[0]);
+                break;
+            case VELOCITY:
+                view = VelocityView.bind(owner, viewParts[0]);
+                break;
+            case HTML:
+                view = HtmlView.bind(owner, viewParts[0]);
+                break;
+            case HTTP_STATES:
+                view = HttpStatusView.bind(Integer.parseInt(viewParts[0]), viewParts.length > 1 ? viewParts[1] : null);
+                break;
+            case JSON:
+                view = JsonView.bind(viewParts[0]);
+                break;
+            case JSP:
+                view = JspView.bind(owner, viewParts[0]);
+                break;
+            case REDIRECT:
+                view = RedirectView.bind(viewParts[0]);
+                break;
+            case TEXT:
+                view = TextView.bind(viewParts[0]);
+                break;
+            case BEETL:
+                view = BeetlView.bind(viewParts[0]);
+                break;
+            default:
+                view = NullView.bind();
+        }
+        return view;
+    }
+
+    private IView doProcessResultToView(Object result) throws Exception {
+        IView view;
+        if (result == null) {
+            if (requestMeta.getResponseView() != null) {
+                ResponseView responseView = requestMeta.getResponseView();
+                String[] viewParts = StringUtils.split(responseView.value(), ":");
+                view = doSwitchView(responseView.type(), viewParts);
             } else {
-                //
-                _view = JspView.bind(__owner);
+                view = JspView.bind(owner);
             }
         } else if (result instanceof IView) {
-            _view = (IView) result;
+            view = (IView) result;
         } else if (result instanceof String) {
-            String[] _parts = StringUtils.split((String) result, ":");
-            if (ArrayUtils.isNotEmpty(_parts) && _parts.length > 1) {
-                switch (Type.View.valueOf(_parts[0].toUpperCase())) {
-                    case BINARY:
-                        _view = BinaryView.bind(new File(_parts[1])).useAttachment(_parts.length >= 3 ? _parts[2] : null);
-                        break;
-                    case FORWARD:
-                        _view = ForwardView.bind(_parts[1]);
-                        break;
-                    case FREEMARKER:
-                        _view = FreemarkerView.bind(__owner, _parts[1]);
-                        break;
-                    case VELOCITY:
-                        _view = VelocityView.bind(__owner, _parts[1]);
-                        break;
-                    case HTML:
-                        _view = HtmlView.bind(__owner, _parts[1]);
-                        break;
-                    case HTTP_STATES:
-                        _view = HttpStatusView.bind(Integer.parseInt(_parts[1]), _parts.length >= 3 ? _parts[2] : null);
-                        break;
-                    case JSON:
-                        _view = JsonView.bind(_parts[1]);
-                        break;
-                    case JSP:
-                        _view = JspView.bind(__owner, _parts[1]);
-                        break;
-                    case NULL:
-                        _view = NullView.bind();
-                        break;
-                    case REDIRECT:
-                        _view = RedirectView.bind(_parts[1]);
-                        break;
-                    case TEXT:
-                        _view = TextView.bind(_parts[1]);
-                        break;
-                    case BEETL:
-                        _view = BeetlView.bind(_parts[1]);
-                        break;
-                    default:
-                }
+            String[] parts = StringUtils.split((String) result, ":");
+            if (ArrayUtils.isNotEmpty(parts) && parts.length > 1) {
+                view = doSwitchView(Type.View.valueOf(parts[0].toUpperCase()), parts);
             } else {
-                _view = HtmlView.bind((String) result);
+                view = HtmlView.bind((String) result);
             }
         } else {
-            _view = IResponseBodyProcessor.DEFAULT.processBody(__owner, result, true, true, true);
+            view = IResponseBodyProcessor.DEFAULT.processBody(owner, result, true, true, true);
         }
-        return _view;
+        return view;
     }
 }

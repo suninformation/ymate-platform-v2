@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2017 the original author or authors.
+ * Copyright 2007-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,8 +15,11 @@
  */
 package net.ymate.platform.persistence.jdbc.transaction;
 
-import net.ymate.platform.core.util.RuntimeUtils;
-import net.ymate.platform.persistence.jdbc.JDBC;
+import net.ymate.platform.commons.lang.BlurObject;
+import net.ymate.platform.commons.util.RuntimeUtils;
+import net.ymate.platform.core.persistence.AbstractTrade;
+import net.ymate.platform.core.persistence.ITrade;
+import net.ymate.platform.core.persistence.base.Type;
 import net.ymate.platform.persistence.jdbc.transaction.impl.DefaultTransaction;
 
 /**
@@ -27,19 +30,18 @@ import net.ymate.platform.persistence.jdbc.transaction.impl.DefaultTransaction;
  * 这一点由ITransaction接口实现类来保证，其setLevel当被设置了一个大于0的整数以后，将不再接受任何其他的值。
  *
  * @author 刘镇 (suninformation@163.com) on 2011-9-6 下午04:36:53
- * @version 1.0
  */
 public class Transactions {
 
-    private static final ThreadLocal<ITransaction> __TRANS_LOCAL = new ThreadLocal<ITransaction>();
+    private static final ThreadLocal<ITransaction> TRANS_LOCAL = new ThreadLocal<>();
 
-    private static final ThreadLocal<Integer> __COUNT = new ThreadLocal<Integer>();
+    private static final ThreadLocal<Integer> COUNT = new ThreadLocal<>();
 
     /**
      * @return 返回当前线程的事务对象，如果不存在事务则返回null
      */
     public static ITransaction get() {
-        return __TRANS_LOCAL.get();
+        return TRANS_LOCAL.get();
     }
 
     /**
@@ -48,12 +50,12 @@ public class Transactions {
      * @param level 事务级别
      * @throws Exception 可能产生的异常
      */
-    static void __begin(JDBC.TRANSACTION level) throws Exception {
-        if (__TRANS_LOCAL.get() == null) {
-            __TRANS_LOCAL.set(new DefaultTransaction(level));
-            __COUNT.set(0);
+    private static void begin(Type.TRANSACTION level) throws Exception {
+        if (TRANS_LOCAL.get() == null) {
+            TRANS_LOCAL.set(new DefaultTransaction(level));
+            COUNT.set(0);
         }
-        __COUNT.set(__COUNT.get() + 1);
+        COUNT.set(COUNT.get() + 1);
     }
 
     /**
@@ -61,12 +63,12 @@ public class Transactions {
      *
      * @throws Exception 可能产生的异常
      */
-    static void __commit() throws Exception {
-        if (__COUNT.get() > 0) {
-            __COUNT.set(__COUNT.get() - 1);
+    private static void commit() throws Exception {
+        if (COUNT.get() > 0) {
+            COUNT.set(COUNT.get() - 1);
         }
-        if (__COUNT.get() == 0) {
-            __TRANS_LOCAL.get().commit();
+        if (COUNT.get() == 0) {
+            TRANS_LOCAL.get().commit();
         }
     }
 
@@ -76,12 +78,12 @@ public class Transactions {
      * @param number 事务层级计数
      * @throws Exception 可能产生的异常
      */
-    static void __rollback(int number) throws Exception {
-        __COUNT.set(number);
-        if (__COUNT.get() == 0) {
-            __TRANS_LOCAL.get().rollback();
+    private static void rollback(int number) throws Exception {
+        COUNT.set(number);
+        if (COUNT.get() == 0) {
+            TRANS_LOCAL.get().rollback();
         } else {
-            __COUNT.set(__COUNT.get() - 1);
+            COUNT.set(COUNT.get() - 1);
         }
     }
 
@@ -90,13 +92,13 @@ public class Transactions {
      *
      * @throws Exception 可能产生的异常
      */
-    static void __close() throws Exception {
-        if (__COUNT.get() != null && __COUNT.get() == 0) {
+    private static void close() throws Exception {
+        if (COUNT.get() != null && COUNT.get() == 0) {
             try {
-                __TRANS_LOCAL.get().close();
+                TRANS_LOCAL.get().close();
             } finally {
-                __TRANS_LOCAL.remove();
-                __COUNT.remove();
+                TRANS_LOCAL.remove();
+                COUNT.remove();
             }
         }
     }
@@ -108,7 +110,7 @@ public class Transactions {
      * @throws Exception 可能产生的异常
      */
     public static void execute(ITrade... trades) throws Exception {
-        execute(JDBC.TRANSACTION.READ_COMMITTED, trades);
+        execute(Type.TRANSACTION.READ_COMMITTED, trades);
     }
 
     /**
@@ -118,23 +120,23 @@ public class Transactions {
      * @param trades 事务业务操作对象集合
      * @throws Exception 可能产生的异常
      */
-    public static void execute(JDBC.TRANSACTION level, ITrade... trades) throws Exception {
-        int _number = __COUNT.get() == null ? 0 : __COUNT.get();
+    public static void execute(Type.TRANSACTION level, ITrade... trades) throws Exception {
+        int number = BlurObject.bind(COUNT.get()).toIntValue();
         try {
-            __begin(level);
+            begin(level);
             for (ITrade trade : trades) {
                 trade.deal();
             }
-            __commit();
+            commit();
         } catch (Throwable e) {
             try {
-                __rollback(_number);
+                rollback(number);
             } catch (Exception ignored) {
             }
             throw new Exception(RuntimeUtils.unwrapThrow(e));
         } finally {
             try {
-                __close();
+                close();
             } catch (Exception ignored) {
             }
         }
@@ -146,8 +148,8 @@ public class Transactions {
      * @return 执行一个有返回值的事务操作，事务级别默认采用ITransaction.Level.READ_COMMITTED
      * @throws Exception 可能产生的异常
      */
-    public static <T> T execute(Trade<T> trade) throws Exception {
-        return execute(JDBC.TRANSACTION.READ_COMMITTED, trade);
+    public static <T> T execute(AbstractTrade<T> trade) throws Exception {
+        return execute(Type.TRANSACTION.READ_COMMITTED, trade);
     }
 
     /**
@@ -157,22 +159,22 @@ public class Transactions {
      * @return 执行一个由level参数指定事务级别的有返回值的事务操作
      * @throws Exception 可能产生的异常
      */
-    public static <T> T execute(JDBC.TRANSACTION level, Trade<T> trade) throws Exception {
-        int _number = __COUNT.get() == null ? 0 : __COUNT.get();
+    public static <T> T execute(Type.TRANSACTION level, AbstractTrade<T> trade) throws Exception {
+        int number = BlurObject.bind(COUNT.get()).toIntValue();
         try {
-            __begin(level);
+            begin(level);
             trade.deal();
-            __commit();
-            return trade.getReturns();
+            commit();
+            return trade.getResult();
         } catch (Throwable e) {
             try {
-                __rollback(_number);
+                rollback(number);
             } catch (Exception ignored) {
             }
             throw new Exception(RuntimeUtils.unwrapThrow(e));
         } finally {
             try {
-                __close();
+                close();
             } catch (Exception ignored) {
             }
         }

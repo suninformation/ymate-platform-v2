@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2017 the original author or authors.
+ * Copyright 2007-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,60 +15,61 @@
  */
 package net.ymate.platform.cache;
 
+import net.ymate.platform.commons.util.DateTimeUtils;
+
 import java.io.Serializable;
 
 /**
  * @author 刘镇 (suninformation@163.com) on 15/11/3 下午2:42
- * @version 1.0
  */
 public class CacheElement implements Serializable {
 
-    private Object __object;
+    private static final long serialVersionUID = 1L;
 
-    private long __lastUpdateTime;
+    private Object object;
 
-    private int __timeout;
+    private long lastUpdateTime = System.currentTimeMillis();
+
+    private int timeout;
 
     public CacheElement() {
-        __lastUpdateTime = System.currentTimeMillis();
     }
 
     public CacheElement(final Object object) {
-        __object = object;
-        __lastUpdateTime = System.currentTimeMillis();
+        this.object = object;
     }
 
     public CacheElement(final Object object, final int timeout) {
         this(object);
-        __timeout = timeout;
+        this.timeout = timeout;
     }
 
     public Object getObject() {
-        return __object;
+        return object;
     }
 
     public void setObject(Object object) {
-        __object = object;
+        this.object = object;
     }
 
     public long getLastUpdateTime() {
-        return __lastUpdateTime;
+        return lastUpdateTime;
     }
 
     public int getTimeout() {
-        return __timeout;
+        return timeout;
     }
 
     public void setTimeout(int timeout) {
-        this.__timeout = timeout;
+        this.timeout = timeout;
     }
 
     public CacheElement touch() {
-        __lastUpdateTime = System.currentTimeMillis();
+        lastUpdateTime = System.currentTimeMillis();
         return this;
     }
 
     public boolean isExpired() {
-        return ((System.currentTimeMillis() - __lastUpdateTime) >= __timeout * 1000);
+        return ((System.currentTimeMillis() - lastUpdateTime) >= timeout * DateTimeUtils.SECOND);
     }
 }

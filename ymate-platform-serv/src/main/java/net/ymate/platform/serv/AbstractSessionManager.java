@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2018 the original author or authors.
+ * Copyright 2007-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,10 +15,11 @@
  */
 package net.ymate.platform.serv;
 
-import net.ymate.platform.core.support.Speedometer;
-import net.ymate.platform.core.support.impl.DefaultSpeedListener;
-import net.ymate.platform.core.util.DateTimeUtils;
-import net.ymate.platform.core.util.ThreadUtils;
+import net.ymate.platform.commons.Speedometer;
+import net.ymate.platform.commons.impl.DefaultSpeedListener;
+import net.ymate.platform.commons.impl.DefaultThreadFactory;
+import net.ymate.platform.commons.util.DateTimeUtils;
+import net.ymate.platform.commons.util.ThreadUtils;
 import net.ymate.platform.serv.impl.DefaultSessionIdleChecker;
 import net.ymate.platform.serv.nio.INioCodec;
 import net.ymate.platform.serv.nio.INioSession;
@@ -33,28 +34,30 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 /**
+ * @param <SESSION_WRAPPER> 会话包装类型
+ * @param <SESSION_ID>      会话标识类型
+ * @param <MESSAGE_TYPE>    消息类型
  * @author 刘镇 (suninformation@163.com) on 2018/11/14 11:35 AM
- * @version 1.0
  */
 public abstract class AbstractSessionManager<SESSION_WRAPPER extends ISessionWrapper, SESSION_ID, MESSAGE_TYPE> implements ISessionManager<SESSION_WRAPPER, SESSION_ID, MESSAGE_TYPE> {
 
-    private Map<SESSION_ID, SESSION_WRAPPER> __sessions;
+    private final Map<SESSION_ID, SESSION_WRAPPER> sessionWrappers = new ConcurrentHashMap<>();
 
-    private IServer __server;
+    private IServer server;
 
-    private IServerCfg __serverCfg;
+    private final IServerCfg serverCfg;
 
-    private INioCodec __codec;
+    private final INioCodec codec;
 
-    private long __idleTimeInMillis;
+    private final long idleTimeInMillis;
 
-    private ISessionIdleChecker<SESSION_WRAPPER, SESSION_ID, MESSAGE_TYPE> __idleChecker;
+    private ISessionIdleChecker<SESSION_WRAPPER, SESSION_ID, MESSAGE_TYPE> idleChecker;
 
-    private ScheduledExecutorService __idleCheckExecutorService;
+    private ScheduledExecutorService idleCheckExecutorService;
 
-    private Speedometer __speedometer;
+    private Speedometer speedometer;
 
-    private final Object __locker = new Object();
+    private final Object locker = new Object();
 
     /**
      * 构造器
@@ -64,25 +67,24 @@ public abstract class AbstractSessionManager<SESSION_WRAPPER extends ISessionWra
      * @param idleTimeInMillis 会话空闲时间毫秒值, 小于等于0表示不开启空闲检查
      */
     public AbstractSessionManager(IServerCfg serverCfg, INioCodec codec, long idleTimeInMillis) {
-        __sessions = new ConcurrentHashMap<SESSION_ID, SESSION_WRAPPER>();
-        __serverCfg = serverCfg;
-        __codec = codec;
-        __idleTimeInMillis = idleTimeInMillis;
+        this.serverCfg = serverCfg;
+        this.codec = codec;
+        this.idleTimeInMillis = idleTimeInMillis;
     }
 
     @Override
     public SESSION_WRAPPER sessionWrapper(SESSION_ID sessionId) {
-        return sessionId == null ? null : __sessions.get(sessionId);
+        return sessionId == null ? null : sessionWrappers.get(sessionId);
     }
 
     @Override
     public Collection<SESSION_WRAPPER> sessionWrappers() {
-        return Collections.unmodifiableCollection(__sessions.values());
+        return Collections.unmodifiableCollection(sessionWrappers.values());
     }
 
     @Override
     public boolean contains(SESSION_ID sessionId) {
-        return __sessions.containsKey(sessionId);
+        return sessionWrappers.containsKey(sessionId);
     }
 
     @Override
@@ -95,20 +97,20 @@ public abstract class AbstractSessionManager<SESSION_WRAPPER extends ISessionWra
 
     @Override
     public long sessionCount() {
-        return __sessions.size();
+        return sessionWrappers.size();
     }
 
     @Override
     public void speedometer(Speedometer speedometer) {
-        if (__server == null) {
-            __speedometer = speedometer;
+        if (server == null) {
+            this.speedometer = speedometer;
         }
     }
 
     @Override
     public void idleChecker(ISessionIdleChecker<SESSION_WRAPPER, SESSION_ID, MESSAGE_TYPE> sessionIdleChecker) {
-        if (__server == null) {
-            __idleChecker = sessionIdleChecker;
+        if (server == null) {
+            idleChecker = sessionIdleChecker;
         }
     }
 
@@ -116,8 +118,8 @@ public abstract class AbstractSessionManager<SESSION_WRAPPER extends ISessionWra
      * 触发速度计数
      */
     public void speedTouch() {
-        if (__speedometer != null) {
-            __speedometer.touch();
+        if (speedometer != null) {
+            speedometer.touch();
         }
     }
 
@@ -129,11 +131,11 @@ public abstract class AbstractSessionManager<SESSION_WRAPPER extends ISessionWra
      * @return 返回注册的客户端会话包装器对象
      */
     @SuppressWarnings("unchecked")
-    protected SESSION_WRAPPER __doRegisterSession(INioSession session, InetSocketAddress socketAddress) {
-        SESSION_WRAPPER _wrapper = doBuildSessionWrapper(session, socketAddress);
-        if (doRegister(_wrapper)) {
-            putSessionWrapper((SESSION_ID) _wrapper.getId(), _wrapper);
-            return _wrapper;
+    protected SESSION_WRAPPER registerSession(INioSession session, InetSocketAddress socketAddress) {
+        SESSION_WRAPPER sessionWrapper = buildSessionWrapper(session, socketAddress);
+        if (register(sessionWrapper)) {
+            putSessionWrapper((SESSION_ID) sessionWrapper.getId(), sessionWrapper);
+            return sessionWrapper;
         }
         return null;
     }
@@ -144,7 +146,7 @@ public abstract class AbstractSessionManager<SESSION_WRAPPER extends ISessionWra
      * @param session 会话包装器对象
      * @return 返回值为false表示不向管理器注册当前会话
      */
-    protected boolean doRegister(SESSION_WRAPPER session) {
+    protected boolean register(SESSION_WRAPPER session) {
         return true;
     }
 
@@ -155,7 +157,7 @@ public abstract class AbstractSessionManager<SESSION_WRAPPER extends ISessionWra
      * @param sessionWrapper 会话包装器对象
      */
     protected void putSessionWrapper(SESSION_ID sessionId, SESSION_WRAPPER sessionWrapper) {
-        __sessions.put(sessionId, sessionWrapper);
+        sessionWrappers.put(sessionId, sessionWrapper);
     }
 
     /**
@@ -165,7 +167,7 @@ public abstract class AbstractSessionManager<SESSION_WRAPPER extends ISessionWra
      * @return 返回被移除的会话对象, 若不存在则返回null
      */
     protected SESSION_WRAPPER removeSessionWrapper(SESSION_ID sessionId) {
-        return __sessions.remove(sessionId);
+        return sessionWrappers.remove(sessionId);
     }
 
     /**
@@ -175,49 +177,51 @@ public abstract class AbstractSessionManager<SESSION_WRAPPER extends ISessionWra
      * @param socketAddress 目标来源套接字地址
      * @return 返回包装器对象
      */
-    protected abstract SESSION_WRAPPER doBuildSessionWrapper(INioSession session, InetSocketAddress socketAddress);
+    protected abstract SESSION_WRAPPER buildSessionWrapper(INioSession session, InetSocketAddress socketAddress);
 
-    protected abstract IServer doBuildServer(IServ owner, IServerCfg serverCfg, INioCodec codec);
+    /**
+     * 根据服务端配置构建服务端实例
+     *
+     * @param serverCfg 服务端配置
+     * @param codec     编解码器
+     * @return 返回构建后的服务端接口实例对象
+     */
+    protected abstract IServer buildServer(IServerCfg serverCfg, INioCodec codec);
 
     @Override
-    public void init(IServ owner) throws Exception {
-        synchronized (__locker) {
-            if (__server == null) {
-                __server = doBuildServer(owner, __serverCfg, __codec);
-                if (__server == null) {
+    public void initialize() throws Exception {
+        synchronized (locker) {
+            if (server == null) {
+                server = buildServer(serverCfg, codec);
+                if (server == null) {
                     throw new NullArgumentException("server");
                 }
             }
         }
-        __server.start();
-        if (__speedometer != null && !__speedometer.isStarted()) {
-            __speedometer.start(new DefaultSpeedListener(__speedometer));
+        server.start();
+        if (speedometer != null && !speedometer.isStarted()) {
+            speedometer.start(new DefaultSpeedListener(speedometer));
         }
         //
-        if (__idleTimeInMillis > 0) {
-            if (__idleChecker == null) {
-                __idleChecker = new DefaultSessionIdleChecker<SESSION_WRAPPER, SESSION_ID, MESSAGE_TYPE>();
+        if (idleTimeInMillis > 0) {
+            if (idleChecker == null) {
+                idleChecker = new DefaultSessionIdleChecker<>();
             }
-            if (!__idleChecker.isInited()) {
-                __idleChecker.init(this);
+            if (!idleChecker.isInitialized()) {
+                idleChecker.initialize(this);
             }
             //
-            __idleCheckExecutorService = ThreadUtils.newScheduledThreadPool(1, ThreadUtils.createFactory("SessionIdleChecker-"));
-            __idleCheckExecutorService.scheduleWithFixedDelay(new Runnable() {
-                @Override
-                public void run() {
-                    __idleChecker.processIdleSession(__sessions, __idleTimeInMillis);
-                }
-            }, DateTimeUtils.SECOND, DateTimeUtils.SECOND, TimeUnit.MILLISECONDS);
+            idleCheckExecutorService = ThreadUtils.newScheduledThreadPool(1, DefaultThreadFactory.create("SessionIdleChecker-"));
+            idleCheckExecutorService.scheduleWithFixedDelay(() -> idleChecker.processIdleSession(sessionWrappers, idleTimeInMillis), DateTimeUtils.SECOND, DateTimeUtils.SECOND, TimeUnit.MILLISECONDS);
         }
     }
 
     @Override
-    public void destroy() throws Exception {
-        if (__speedometer != null && __speedometer.isStarted()) {
-            __speedometer.close();
+    public void close() throws Exception {
+        if (speedometer != null && speedometer.isStarted()) {
+            speedometer.close();
         }
-        __idleCheckExecutorService.shutdownNow();
-        __server.close();
+        idleCheckExecutorService.shutdownNow();
+        server.close();
     }
 }

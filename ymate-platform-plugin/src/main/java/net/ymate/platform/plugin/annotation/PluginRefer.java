@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2018 the original author or authors.
+ * Copyright 2007-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,19 +15,20 @@
  */
 package net.ymate.platform.plugin.annotation;
 
+import org.apache.commons.lang3.StringUtils;
+
 import java.lang.annotation.*;
 
 /**
  * @author 刘镇 (suninformation@163.com) on 2018/1/7 上午1:22
- * @version 1.0
  */
-@Target({ElementType.FIELD})
+@Target(ElementType.FIELD)
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
 public @interface PluginRefer {
 
     /**
-     * @return 插件唯一ID
+     * @return 插件唯一标识或别名
      */
-    String value() default "";
+    String value() default StringUtils.EMPTY;
 }

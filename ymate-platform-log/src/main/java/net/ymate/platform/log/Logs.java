@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2017 the original author or authors.
+ * Copyright 2007-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,13 +15,15 @@
  */
 package net.ymate.platform.log;
 
-import net.ymate.platform.core.Version;
+import net.ymate.platform.commons.ReentrantLockHelper;
+import net.ymate.platform.commons.util.ClassUtils;
+import net.ymate.platform.commons.util.RuntimeUtils;
+import net.ymate.platform.configuration.Cfgs;
+import net.ymate.platform.core.IApplicationConfigureFactory;
 import net.ymate.platform.core.YMP;
-import net.ymate.platform.core.module.IModule;
-import net.ymate.platform.core.module.annotation.Module;
-import net.ymate.platform.core.util.ClassUtils;
-import net.ymate.platform.log.impl.DefaultLogModuleCfg;
-import net.ymate.platform.log.impl.DefaultLogger;
+import net.ymate.platform.core.module.IModuleConfigurer;
+import net.ymate.platform.log.impl.DefaultLogConfig;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -29,126 +31,112 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * 日志记录器模块管理器
+ * 日志管理器
  *
  * @author 刘镇 (suninformation@163.com) on 2011-8-27 下午03:56:24
- * @version 1.0
  */
-@Module
-public class Logs implements IModule, ILog {
+public final class Logs implements ILog {
 
-    public static final Version VERSION = new Version(2, 0, 7, Logs.class.getPackage().getImplementationVersion(), Version.VersionType.Release);
+    private static final Log LOG = LogFactory.getLog(Logs.class);
 
-    private static final Log _LOG = LogFactory.getLog(Logs.class);
+    private static final Map<String, ILogger> LOGGER_CACHE = new ConcurrentHashMap<>();
 
-    private static final Map<String, ILogger> __LOGGER_CACHE = new ConcurrentHashMap<String, ILogger>();
+    private static volatile ILog INSTANCE;
 
-    private static volatile ILog __instance;
+    static {
+        try {
+            // 尝试优先初始化配置体系
+            Class.forName(Cfgs.class.getName());
+        } catch (ClassNotFoundException ignored) {
+        }
+        //
+        IApplicationConfigureFactory configureFactory = YMP.getConfigureFactory();
+        ILog logInst;
+        IModuleConfigurer moduleConfigurer;
+        if (configureFactory == null || configureFactory.getConfigurer() == null || (moduleConfigurer = configureFactory.getConfigurer().getModuleConfigurer(MODULE_NAME)) == null) {
+            logInst = new Logs(DefaultLogConfig.defaultConfig());
+        } else {
+            logInst = new Logs(DefaultLogConfig.create(moduleConfigurer));
+        }
+        try {
+            logInst.initialize();
+        } catch (Exception e) {
+            if (LOG.isErrorEnabled()) {
+                LOG.error(StringUtils.EMPTY, RuntimeUtils.unwrapThrow(e));
+            }
+        }
+        INSTANCE = logInst;
+    }
 
-    private YMP __owner;
+    private ILogConfig config;
 
-    private ILogModuleCfg __moduleCfg;
+    private boolean initialized;
 
-    private boolean __inited;
+    private ILogger logger;
 
-    private ILogger __currentLogger;
-
-    /**
-     * @return 返回默认日志记录器模块管理器实例对象
-     */
     public static ILog get() {
-        if (__instance == null) {
-            synchronized (VERSION) {
-                if (__instance == null) {
-                    __instance = YMP.get().getModule(Logs.class);
-                }
-            }
-        }
-        return __instance;
+        return INSTANCE;
+    }
+
+    private Logs(ILogConfig config) {
+        this.config = config;
     }
 
     @Override
-    public String getName() {
-        return ILog.MODULE_NAME;
-    }
-
-    @Override
-    public void init(YMP owner) throws Exception {
-        if (!__inited) {
+    public void initialize() throws Exception {
+        if (!initialized) {
             //
-            _LOG.info("Initializing ymate-platform-log-" + VERSION);
-            //
-            __owner = owner;
-            __moduleCfg = new DefaultLogModuleCfg(__owner);
-            // 设置全局变量，便于配置文件内引用
-            System.getProperties().put("LOG_OUT_DIR", __moduleCfg.getOutputDir().getPath());
-            //
-            if (__moduleCfg.getLoggerClass() != null) {
-                __currentLogger = ClassUtils.impl(__moduleCfg.getLoggerClass(), ILogger.class);
+            if (!config.isInitialized()) {
+                config.initialize(this);
             }
-            if (__currentLogger == null) {
-                __currentLogger = new DefaultLogger();
+            //
+            System.setProperty(LOG_OUT_DIR, config.getOutputDir().getPath());
+            //
+            logger = ReentrantLockHelper.putIfAbsentAsync(LOGGER_CACHE, config.getDefaultLoggerName(), () -> ClassUtils.impl(config.getLoggerClass(), ILogger.class).initialize(config.getDefaultLoggerName(), config));
+            //
+            if (LOG.isInfoEnabled()) {
+                LOG.info(String.format("-->         LOG_CONFIG_FILE: %s", config.getConfigFile().getPath()));
+                LOG.info(String.format("-->          LOG_OUTPUT_DIR: %s", config.getOutputDir().getPath()));
+                LOG.info(String.format("-->            LOGGER_CLASS: %s", config.getLoggerClass().getName()));
+                LOG.info(String.format("-->        DEFAULT_LOG_NAME: %s", config.getDefaultLoggerName()));
+                LOG.info(String.format("-->    ALLOW_CONSOLE_OUTPUT: %s", config.isAllowConsoleOutput()));
+                LOG.info(String.format("-->    FORMAT_PADDED_OUTPUT: %s", config.isFormatPaddedOutput()));
+                LOG.info(String.format("--> SIMPLIFIED_PACKAGE_NAME: %s", config.isSimplifiedPackageName()));
             }
-            __LOGGER_CACHE.put(__moduleCfg.getLoggerName(), __currentLogger);
-            //
-            __currentLogger.init(this, __moduleCfg.getLoggerName())
-                    .console(__moduleCfg.allowOutputConsole())
-                    .simplified(__moduleCfg.simplifiedPackageName())
-                    .padded(__moduleCfg.formatPaddedOutput());
-            //
-            __inited = true;
-            // 注册日志记录器事件
-            __owner.getEvents().registerEvent(LogEvent.class);
+            initialized = config.isInitialized();
         }
     }
 
     @Override
-    public boolean isInited() {
-        return __inited;
+    public boolean isInitialized() {
+        return initialized;
     }
 
     @Override
-    public void destroy() throws Exception {
-        if (__inited) {
-            __inited = false;
+    public void close() {
+        if (initialized) {
+            initialized = false;
             //
-            for (ILogger _logger : __LOGGER_CACHE.values()) {
-                _logger.destroy();
-            }
-            __currentLogger = null;
-            __moduleCfg = null;
-            __owner = null;
+            LOGGER_CACHE.values().forEach(ILogger::destroy);
+            //
+            logger = null;
+            config = null;
         }
     }
 
     @Override
-    public YMP getOwner() {
-        return __owner;
-    }
-
-    @Override
-    public ILogModuleCfg getModuleCfg() {
-        return __moduleCfg;
+    public ILogConfig getConfig() {
+        return config;
     }
 
     @Override
     public ILogger getLogger() {
-        return __currentLogger;
+        return logger;
     }
 
     @Override
-    public ILogger getLogger(String loggerName) throws Exception {
-        ILogger _logger = __LOGGER_CACHE.get(loggerName);
-        if (_logger == null) {
-            _logger = __currentLogger.getLogger(loggerName);
-            if (_logger != null) {
-                _logger.console(__moduleCfg.allowOutputConsole())
-                        .simplified(__moduleCfg.simplifiedPackageName())
-                        .padded(__moduleCfg.formatPaddedOutput());
-                __LOGGER_CACHE.put(loggerName, _logger);
-            }
-        }
-        return _logger;
+    public synchronized ILogger getLogger(String loggerName) throws Exception {
+        return ReentrantLockHelper.putIfAbsentAsync(LOGGER_CACHE, loggerName, () -> getLogger().getLogger(loggerName, config));
     }
 
     @Override

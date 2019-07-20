@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2017 the original author or authors.
+ * Copyright 2007-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,61 +15,16 @@
  */
 package net.ymate.platform.serv;
 
-import java.io.Closeable;
-import java.io.IOException;
+import net.ymate.platform.core.beans.annotation.Ignored;
+import net.ymate.platform.serv.impl.DefaultReconnectServiceImpl;
 
 /**
  * 断线重连服务接口
  *
  * @author 刘镇 (suninformation@163.com) on 15/11/19 下午1:24
- * @version 1.0
  */
-public interface IReconnectService extends Closeable {
+@Ignored
+public interface IReconnectService extends IService {
 
-    final class NONE implements IReconnectService {
-
-        @Override
-        public void init(IClient client) {
-        }
-
-        @Override
-        public boolean isInited() {
-            return false;
-        }
-
-        @Override
-        public void start() {
-        }
-
-        @Override
-        public boolean isStarted() {
-            return false;
-        }
-
-        @Override
-        public void close() throws IOException {
-        }
-    }
-
-    /**
-     * 服务初始化
-     *
-     * @param client 客户端接口对象
-     */
-    void init(IClient client);
-
-    /**
-     * @return 是否已初始化
-     */
-    boolean isInited();
-
-    /**
-     * 启动服务
-     */
-    void start();
-
-    /**
-     * @return 是否已启动
-     */
-    boolean isStarted();
+    IReconnectService DEFAULT = new DefaultReconnectServiceImpl();
 }

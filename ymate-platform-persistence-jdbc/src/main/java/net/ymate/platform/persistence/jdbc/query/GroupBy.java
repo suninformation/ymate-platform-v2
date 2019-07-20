@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2017 the original author or authors.
+ * Copyright 2007-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,60 +15,61 @@
  */
 package net.ymate.platform.persistence.jdbc.query;
 
-import net.ymate.platform.persistence.Fields;
-import org.apache.commons.lang.StringUtils;
+import net.ymate.platform.core.persistence.Fields;
+import net.ymate.platform.persistence.jdbc.IDatabase;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * 分组对象
  *
  * @author 刘镇 (suninformation@163.com) on 15/5/12 下午4:10
- * @version 1.0
  */
 public final class GroupBy extends Query<GroupBy> {
 
-    private final Fields __groupByNames;
+    private final Fields groupByNames;
 
-    private Cond __having;
+    private Cond having;
 
-    public static GroupBy create(String prefix, String field, String alias) {
-        return new GroupBy(Fields.create().add(prefix, field, alias));
+    public static GroupBy create(IDatabase owner, String prefix, String field, String alias) {
+        return new GroupBy(owner, Fields.create().add(prefix, field, alias));
     }
 
-    public static GroupBy create(String prefix, String field) {
-        return new GroupBy(Fields.create().add(prefix, field));
+    public static GroupBy create(IDatabase owner, String prefix, String field) {
+        return new GroupBy(owner, Fields.create().add(prefix, field));
     }
 
-    public static GroupBy create(String field) {
-        return new GroupBy(Fields.create().add(field));
+    public static GroupBy create(IDatabase owner, String field) {
+        return new GroupBy(owner, Fields.create().add(field));
     }
 
-    public static GroupBy create(Fields fields) {
-        return new GroupBy(fields);
+    public static GroupBy create(IDatabase owner, Fields fields) {
+        return new GroupBy(owner, fields);
     }
 
-    private GroupBy(Fields fields) {
-        __groupByNames = Fields.create().add(__checkFieldExcluded(fields));
+    private GroupBy(IDatabase owner, Fields fields) {
+        super(owner);
+        groupByNames = Fields.create().add(checkFieldExcluded(fields));
     }
 
     public Fields fields() {
-        return __groupByNames;
+        return groupByNames;
     }
 
     public Cond having() {
-        return __having;
+        return having;
     }
 
     public GroupBy having(Cond cond) {
-        __having = cond;
+        having = cond;
         return this;
     }
 
     @Override
     public String toString() {
-        StringBuilder _groupBySB = new StringBuilder("GROUP BY ").append(StringUtils.join(__wrapIdentifierFields(__groupByNames.toArray()).fields(), ", "));
-        if (__having != null) {
-            _groupBySB.append(" HAVING ").append(__having);
+        StringBuilder groupByBuilder = new StringBuilder("GROUP BY ").append(StringUtils.join(wrapIdentifierFields(groupByNames.toArray()).fields(), ", "));
+        if (having != null) {
+            groupByBuilder.append(" HAVING ").append(having);
         }
-        return _groupBySB.toString();
+        return groupByBuilder.toString();
     }
 }

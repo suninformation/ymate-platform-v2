@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2018 the original author or authors.
+ * Copyright 2007-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,13 +15,14 @@
  */
 package net.ymate.platform.webmvc;
 
+import net.ymate.platform.core.beans.annotation.Ignored;
 import net.ymate.platform.webmvc.impl.DefaultResponseBodyProcessor;
 import net.ymate.platform.webmvc.view.IView;
 
 /**
  * @author 刘镇 (suninformation@163.com) on 2018/1/10 上午3:15
- * @version 1.0
  */
+@Ignored
 public interface IResponseBodyProcessor {
 
     IResponseBodyProcessor DEFAULT = new DefaultResponseBodyProcessor();

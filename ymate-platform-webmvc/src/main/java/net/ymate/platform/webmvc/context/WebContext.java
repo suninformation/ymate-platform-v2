@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2017 the original author or authors.
+ * Copyright 2007-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,7 +15,7 @@
  */
 package net.ymate.platform.webmvc.context;
 
-import net.ymate.platform.core.lang.BlurObject;
+import net.ymate.platform.commons.lang.BlurObject;
 import net.ymate.platform.webmvc.IMultipartRequestWrapper;
 import net.ymate.platform.webmvc.IRequestContext;
 import net.ymate.platform.webmvc.IUploadFileWrapper;
@@ -32,20 +32,19 @@ import java.util.*;
  * Web环境上下文封装类，为了能够方便代码移植并脱离Web环境依赖进行开发测试(功能参考Struts2)
  *
  * @author 刘镇 (suninformation@163.com) on 2011-7-24 下午10:31:48
- * @version 1.0
  */
 public final class WebContext {
 
-    private static final ThreadLocal<WebContext> __LOCAL_CONTEXT = new ThreadLocal<WebContext>();
+    private static final ThreadLocal<WebContext> LOCAL_CONTEXT = new ThreadLocal<>();
 
-    private final Map<String, Object> __attributes;
+    private final Map<String, Object> attributes;
 
     public static WebContext getContext() {
-        return __LOCAL_CONTEXT.get();
+        return LOCAL_CONTEXT.get();
     }
 
     public static void destroy() {
-        __LOCAL_CONTEXT.remove();
+        LOCAL_CONTEXT.remove();
     }
 
     public static WebContext create(IWebMvc webMvc,
@@ -54,22 +53,23 @@ public final class WebContext {
                                     HttpServletRequest request,
                                     HttpServletResponse response) {
 
-        HashMap<String, Object> _contextMap = new HashMap<String, Object>();
-        _contextMap.put(Type.Context.WEB_REQUEST_CONTEXT, requestContext);
-        _contextMap.put(Type.Context.PARAMETERS, request.getParameterMap());
-        _contextMap.put(Type.Context.REQUEST, new RequestMap(request));
-        _contextMap.put(Type.Context.SESSION, new SessionMap(request));
-        _contextMap.put(Type.Context.APPLICATION, new ApplicationMap(servletContext));
-        _contextMap.put(Type.Context.LOCALE, webMvc.getOwner().getConfig().getDefaultLocale());
-        _contextMap.put(Type.Context.HTTP_REQUEST, request);
-        _contextMap.put(Type.Context.HTTP_RESPONSE, response);
-        _contextMap.put(Type.Context.SERVLET_CONTEXT, servletContext);
-        _contextMap.put(Type.Context.WEB_CONTEXT_OWNER, webMvc);
+        HashMap<String, Object> contextMap = new HashMap<>(16);
         //
-        WebContext _context = new WebContext(_contextMap);
-        __LOCAL_CONTEXT.set(_context);
+        contextMap.put(Type.Context.WEB_REQUEST_CONTEXT, requestContext);
+        contextMap.put(Type.Context.PARAMETERS, request.getParameterMap());
+        contextMap.put(Type.Context.REQUEST, new RequestMap(request));
+        contextMap.put(Type.Context.SESSION, new SessionMap(request));
+        contextMap.put(Type.Context.APPLICATION, new ApplicationMap(servletContext));
+        contextMap.put(Type.Context.LOCALE, webMvc.getOwner().getI18n().getDefaultLocale());
+        contextMap.put(Type.Context.HTTP_REQUEST, request);
+        contextMap.put(Type.Context.HTTP_RESPONSE, response);
+        contextMap.put(Type.Context.SERVLET_CONTEXT, servletContext);
+        contextMap.put(Type.Context.WEB_CONTEXT_OWNER, webMvc);
         //
-        return _context;
+        WebContext context = new WebContext(contextMap);
+        LOCAL_CONTEXT.set(context);
+        //
+        return context;
     }
 
     public static ServletContext getServletContext() {
@@ -95,29 +95,29 @@ public final class WebContext {
     //
 
     private WebContext(Map<String, Object> contextMap) {
-        __attributes = contextMap;
+        attributes = contextMap;
     }
 
     @SuppressWarnings("unchecked")
     public <T> T getAttribute(String name) {
-        return (T) __attributes.get(name);
+        return (T) attributes.get(name);
     }
 
     public WebContext addAttribute(String name, Object value) {
-        __attributes.put(name, value);
+        attributes.put(name, value);
         return this;
     }
 
     public Map<String, Object> getAttributes() {
-        return __attributes;
+        return attributes;
     }
 
     public Locale getLocale() {
-        Locale _locale = getAttribute(Type.Context.LOCALE);
-        if (_locale == null) {
-            _locale = Locale.getDefault();
+        Locale locale = getAttribute(Type.Context.LOCALE);
+        if (locale == null) {
+            locale = Locale.getDefault();
         }
-        return _locale;
+        return locale;
     }
 
     public Map<String, Object> getApplication() {
@@ -223,9 +223,9 @@ public final class WebContext {
     // -----------------
 
     public String getParameterToString(String name) {
-        String[] _values = (String[]) getParameters().get(name);
-        if (_values != null && _values.length > 0) {
-            return _values[0];
+        String[] values = (String[]) getParameters().get(name);
+        if (values != null && values.length > 0) {
+            return values[0];
         }
         return null;
     }
@@ -265,39 +265,4 @@ public final class WebContext {
         return Collections.emptySet();
     }
 
-    public static abstract class AbstractEntry<K, V> implements Map.Entry<K, V> {
-
-        private K key;
-
-        private V value;
-
-        public AbstractEntry(K key, V value) {
-            this.key = key;
-            this.value = value;
-        }
-
-        @Override
-        public boolean equals(Object obj) {
-            if (!(obj instanceof Map.Entry)) {
-                return false;
-            }
-            Map.Entry entry = (Map.Entry) obj;
-            return ((key == null) ? (entry.getKey() == null) : key.equals(entry.getKey())) && ((value == null) ? (entry.getValue() == null) : value.equals(entry.getValue()));
-        }
-
-        @Override
-        public int hashCode() {
-            return ((key == null) ? 0 : key.hashCode()) ^ ((value == null) ? 0 : value.hashCode());
-        }
-
-        @Override
-        public K getKey() {
-            return key;
-        }
-
-        @Override
-        public V getValue() {
-            return value;
-        }
-    }
 }

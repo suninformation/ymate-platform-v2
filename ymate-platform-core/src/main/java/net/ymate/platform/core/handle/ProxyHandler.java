@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2017 the original author or authors.
+ * Copyright 2007-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,33 +15,33 @@
  */
 package net.ymate.platform.core.handle;
 
-import net.ymate.platform.core.YMP;
+import net.ymate.platform.commons.util.ClassUtils;
+import net.ymate.platform.core.IApplication;
 import net.ymate.platform.core.beans.IBeanHandler;
 import net.ymate.platform.core.beans.intercept.InterceptProxy;
 import net.ymate.platform.core.beans.proxy.IProxy;
-import net.ymate.platform.core.util.ClassUtils;
+import net.ymate.platform.core.beans.proxy.IProxyFactory;
 
 /**
  * 代理对象处理器
  *
  * @author 刘镇 (suninformation@163.com) on 15/3/12 下午5:10
- * @version 1.0
  */
 public final class ProxyHandler implements IBeanHandler {
 
-    private final YMP __owner;
+    private final IApplication owner;
 
-    public ProxyHandler(YMP owner) {
-        __owner = owner;
-        __owner.registerExcludedClass(IProxy.class);
+    public ProxyHandler(IApplication owner) {
+        this.owner = owner;
     }
 
     @Override
     public Object handle(Class<?> targetClass) throws Exception {
-        if (!targetClass.isInterface() && ClassUtils.isInterfaceOf(targetClass, IProxy.class)) {
-            // 排除框架内部拦截器代理类，因为YMP框架已经注册了它
+        IProxyFactory proxyFactory = owner.getBeanFactory().getProxyFactory();
+        if (proxyFactory != null && ClassUtils.isNormalClass(targetClass) && !targetClass.isInterface() && ClassUtils.isInterfaceOf(targetClass, IProxy.class)) {
+            // 排除框架内部拦截器代理类，因为框架已经注册了它
             if (!targetClass.equals(InterceptProxy.class)) {
-                __owner.registerProxy((IProxy) targetClass.newInstance());
+                proxyFactory.registerProxy((IProxy) targetClass.newInstance());
             }
         }
         return null;

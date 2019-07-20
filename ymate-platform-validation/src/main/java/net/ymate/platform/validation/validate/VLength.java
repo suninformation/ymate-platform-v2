@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2017 the original author or authors.
+ * Copyright 2007-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,13 +15,14 @@
  */
 package net.ymate.platform.validation.validate;
 
+import org.apache.commons.lang3.StringUtils;
+
 import java.lang.annotation.*;
 
 /**
  * 字符串长度验证注解
  *
  * @author 刘镇 (suninformation@163.com) on 15/5/25 下午1:07
- * @version 1.0
  */
 @Target({ElementType.FIELD, ElementType.PARAMETER})
 @Retention(RetentionPolicy.RUNTIME)
@@ -39,7 +40,12 @@ public @interface VLength {
     int max() default 0;
 
     /**
+     * @return 设置固定长度值，0为不限制
+     */
+    int eq() default 0;
+
+    /**
      * @return 自定义验证消息
      */
-    String msg() default "";
+    String msg() default StringUtils.EMPTY;
 }

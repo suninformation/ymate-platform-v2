@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2017 the original author or authors.
+ * Copyright 2007-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,63 +15,63 @@
  */
 package net.ymate.platform.persistence.jdbc.query;
 
-import net.ymate.platform.persistence.Fields;
-import net.ymate.platform.persistence.base.IEntity;
+import net.ymate.platform.core.persistence.Fields;
+import net.ymate.platform.core.persistence.base.IEntity;
+import net.ymate.platform.persistence.jdbc.IDBLocker;
 
 /**
  * 实体SQL及参数对象
  *
  * @param <T> 实体类型
  * @author 刘镇 (suninformation@163.com) on 15/5/9 下午1:14
- * @version 1.0
  */
 public final class EntitySQL<T extends IEntity> {
 
     /**
      * 实体对象
      */
-    private final Class<T> __entityClass;
+    private final Class<T> entityClass;
 
     /**
      * 显示字段过滤集合
      */
-    private final Fields __fields;
+    private final Fields fields;
 
-    private IDBLocker __dbLocker;
+    private IDBLocker dbLocker;
 
     public static <T extends IEntity> EntitySQL<T> create(Class<T> entityClass) {
-        return new EntitySQL<T>(entityClass);
+        return new EntitySQL<>(entityClass);
     }
 
     private EntitySQL(Class<T> entityClass) {
-        this.__entityClass = entityClass;
-        this.__fields = Fields.create();
+        this.entityClass = entityClass;
+        this.fields = Fields.create();
     }
 
     public Class<T> getEntityClass() {
-        return this.__entityClass;
+        return this.entityClass;
     }
 
     public EntitySQL<T> field(String field) {
-        this.__fields.add(field);
+        this.fields.add(field);
         return this;
     }
 
     public EntitySQL<T> field(Fields fields) {
-        this.__fields.add(fields);
+        this.fields.add(fields);
         return this;
     }
 
     public Fields fields() {
-        return this.__fields;
+        return this.fields;
     }
 
     public EntitySQL<T> forUpdate(IDBLocker dbLocker) {
-        __dbLocker = dbLocker;
+        this.dbLocker = dbLocker;
         return this;
     }
 
     public IDBLocker forUpdate() {
-        return __dbLocker;
+        return dbLocker;
     }
 }

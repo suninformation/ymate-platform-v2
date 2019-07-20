@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2015 the original author or authors.
+ * Copyright 2007-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,35 +17,35 @@ package net.ymate.platform.persistence.mongodb.support;
 
 import com.mongodb.BasicDBObject;
 import net.ymate.platform.persistence.mongodb.IBsonable;
+import org.bson.BsonInt32;
 
 /**
  * @author 刘镇 (suninformation@163.com) on 15/11/22 下午8:46
- * @version 1.0
  */
 public final class OrderBy implements IBsonable {
-
-    private BasicDBObject __orderBy;
-
-    private OrderBy() {
-        this.__orderBy = new BasicDBObject();
-    }
 
     public static OrderBy create() {
         return new OrderBy();
     }
 
+    private final BasicDBObject orderBy;
+
+    private OrderBy() {
+        this.orderBy = new BasicDBObject();
+    }
+
     public OrderBy desc(String key) {
-        this.__orderBy.put(key, com.mongodb.operation.OrderBy.DESC);
+        this.orderBy.put(key, new BsonInt32(1));
         return this;
     }
 
     public OrderBy asc(String key) {
-        this.__orderBy.put(key, com.mongodb.operation.OrderBy.ASC);
+        this.orderBy.put(key, new BsonInt32(-1));
         return this;
     }
 
     @Override
     public BasicDBObject toBson() {
-        return this.__orderBy;
+        return this.orderBy;
     }
 }

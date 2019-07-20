@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2017 the original author or authors.
+ * Copyright 2007-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,7 +15,7 @@
  */
 package net.ymate.platform.serv.nio.codec;
 
-import net.ymate.platform.core.util.RuntimeUtils;
+import net.ymate.platform.commons.util.RuntimeUtils;
 import net.ymate.platform.serv.nio.AbstractNioCodec;
 import net.ymate.platform.serv.nio.support.ByteBufferBuilder;
 import org.apache.commons.logging.Log;
@@ -25,50 +25,57 @@ import java.io.UnsupportedEncodingException;
 
 /**
  * @author 刘镇 (suninformation@163.com) on 15/11/20 下午2:52
- * @version 1.0
  */
 public class TextLineCodec extends AbstractNioCodec {
 
-    private static final Log _LOG = LogFactory.getLog(TextLineCodec.class);
+    private static final Log LOG = LogFactory.getLog(TextLineCodec.class);
 
     private static final String TEXT_EOF = "\r\n";
 
     @Override
     public ByteBufferBuilder encode(Object message) {
-        try {
-            String _msgStr = message.toString().concat(TEXT_EOF);
-            byte[] _bytes = _msgStr.getBytes(getCharset());
-            return ByteBufferBuilder.allocate(_bytes.length).append(_bytes).flip();
-        } catch (UnsupportedEncodingException e) {
-            _LOG.warn(e.getMessage(), RuntimeUtils.unwrapThrow(e));
+        if (message != null) {
+            try {
+                String msgStr = message.toString().concat(TEXT_EOF);
+                byte[] bytes = msgStr.getBytes(getCharset());
+                return ByteBufferBuilder.allocate(bytes.length).append(bytes).flip();
+            } catch (UnsupportedEncodingException e) {
+                if (LOG.isWarnEnabled()) {
+                    LOG.warn(e.getMessage(), RuntimeUtils.unwrapThrow(e));
+                }
+            }
         }
         return null;
     }
 
     @Override
     public Object decode(ByteBufferBuilder buffer) {
-        try {
-            int _counter = 0;
-            ByteBufferBuilder _tmpBuffer = ByteBufferBuilder.allocate();
-            do {
-                byte b = buffer.get();
-                switch (b) {
-                    case '\r':
-                        break;
-                    case '\n':
-                        if (_tmpBuffer.buffer() == null) {
+        if (buffer != null) {
+            try {
+                int counter = 0;
+                ByteBufferBuilder tmpBuffer = ByteBufferBuilder.allocate();
+                do {
+                    byte b = buffer.get();
+                    switch (b) {
+                        case '\r':
                             break;
-                        }
-                        byte[] _bytes = new byte[_counter];
-                        _tmpBuffer.flip().get(_bytes);
-                        return new String(_bytes, getCharset());
-                    default:
-                        _tmpBuffer.append(b);
-                        _counter++;
+                        case '\n':
+                            if (tmpBuffer.buffer() == null) {
+                                break;
+                            }
+                            byte[] bytes = new byte[counter];
+                            tmpBuffer.flip().get(bytes);
+                            return new String(bytes, getCharset());
+                        default:
+                            tmpBuffer.append(b);
+                            counter++;
+                    }
+                } while (buffer.buffer().hasRemaining());
+            } catch (UnsupportedEncodingException e) {
+                if (LOG.isWarnEnabled()) {
+                    LOG.warn(e.getMessage(), RuntimeUtils.unwrapThrow(e));
                 }
-            } while (buffer.buffer().hasRemaining());
-        } catch (UnsupportedEncodingException e) {
-            _LOG.warn(e.getMessage(), RuntimeUtils.unwrapThrow(e));
+            }
         }
         return null;
     }

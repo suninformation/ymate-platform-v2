@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2017 the original author or authors.
+ * Copyright 2007-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,7 +21,6 @@ import java.lang.annotation.*;
  * 声明一个类为模块启动器的注解
  *
  * @author 刘镇 (suninformation@163.com) on 15-3-3 下午7:37
- * @version 1.0
  */
 @Target({ElementType.TYPE})
 @Retention(RetentionPolicy.RUNTIME)

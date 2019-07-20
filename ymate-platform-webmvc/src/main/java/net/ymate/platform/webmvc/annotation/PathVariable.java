@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2017 the original author or authors.
+ * Copyright 2007-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,13 +15,14 @@
  */
 package net.ymate.platform.webmvc.annotation;
 
+import org.apache.commons.lang3.StringUtils;
+
 import java.lang.annotation.*;
 
 /**
  * 绑定请求映射中的路径参数变量
  *
  * @author 刘镇 (suninformation@163.com) on 2012-12-19 下午8:12:35
- * @version 1.0
  */
 @Target({ElementType.PARAMETER, ElementType.FIELD})
 @Retention(RetentionPolicy.RUNTIME)
@@ -31,5 +32,5 @@ public @interface PathVariable {
     /**
      * @return 绑定的参数名称
      */
-    String value() default "";
+    String value() default StringUtils.EMPTY;
 }

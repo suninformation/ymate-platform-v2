@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2018 the original author or authors.
+ * Copyright 2007-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,26 +20,20 @@ import java.util.List;
 
 /**
  * @author 刘镇 (suninformation@163.com) on 2018/11/7 6:00 PM
- * @version 1.0
  */
 public abstract class AbstractProxyChain implements IProxyChain {
 
-    private final IProxyFactory __owner;
+    private final IProxyFactory owner;
     private final Class<?> targetClass;
     private final Object targetObject;
     private final Method targetMethod;
     private final Object[] methodParams;
 
     private final List<IProxy> proxies;
-    private int __index = 0;
+    private int index = 0;
 
-    public AbstractProxyChain(IProxyFactory owner,
-                              Class<?> targetClass,
-                              Object targetObject,
-                              Method targetMethod,
-                              Object[] methodParams,
-                              List<IProxy> proxies) {
-        this.__owner = owner;
+    public AbstractProxyChain(IProxyFactory owner, Class<?> targetClass, Object targetObject, Method targetMethod, Object[] methodParams, List<IProxy> proxies) {
+        this.owner = owner;
         this.targetClass = targetClass;
         this.targetObject = targetObject;
         this.targetMethod = targetMethod;
@@ -49,39 +43,45 @@ public abstract class AbstractProxyChain implements IProxyChain {
 
     @Override
     public IProxyFactory getProxyFactory() {
-        return __owner;
+        return owner;
     }
 
     @Override
     public Object[] getMethodParams() {
-        return this.methodParams;
+        return methodParams;
     }
 
     @Override
     public Class<?> getTargetClass() {
-        return this.targetClass;
+        return targetClass;
     }
 
     @Override
     public Object getTargetObject() {
-        return this.targetObject;
+        return targetObject;
     }
 
     @Override
     public Method getTargetMethod() {
-        return this.targetMethod;
+        return targetMethod;
     }
 
     @Override
     public Object doProxyChain() throws Throwable {
-        Object _result;
-        if (__index < proxies.size()) {
-            _result = proxies.get(__index++).doProxy(this);
+        Object result;
+        if (index < proxies.size()) {
+            result = proxies.get(index++).doProxy(this);
         } else {
-            _result = doInvoke();
+            result = doInvoke();
         }
-        return _result;
+        return result;
     }
 
+    /**
+     * 执行方法调用
+     *
+     * @return 返回方法执行结果
+     * @throws Throwable 可能产生任何异常
+     */
     protected abstract Object doInvoke() throws Throwable;
 }

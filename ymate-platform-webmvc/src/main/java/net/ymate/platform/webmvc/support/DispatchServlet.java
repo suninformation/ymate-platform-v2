@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2017 the original author or authors.
+ * Copyright 2007-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,7 @@
 package net.ymate.platform.webmvc.support;
 
 import net.ymate.platform.webmvc.IRequestContext;
-import net.ymate.platform.webmvc.IWebMvcModuleCfg;
+import net.ymate.platform.webmvc.IWebMvcConfig;
 import net.ymate.platform.webmvc.WebMVC;
 import net.ymate.platform.webmvc.impl.DefaultRequestContext;
 
@@ -32,28 +32,27 @@ import java.io.IOException;
  * 基于HttpServlet实现的WebMVC请求分发器
  *
  * @author 刘镇 (suninformation@163.com) on 2013年8月18日 下午7:04:30
- * @version 1.0
  */
 public class DispatchServlet extends HttpServlet {
 
-    private ServletContext __servletContext;
+    private ServletContext servletContext;
 
-    private Dispatcher __dispatcher;
+    private Dispatcher dispatcher;
 
-    private String __requestPrefix;
+    private String requestPrefix;
 
     @Override
-    public void init(ServletConfig config) throws ServletException {
-        __servletContext = config.getServletContext();
+    public void init(ServletConfig config) {
+        servletContext = config.getServletContext();
         //
-        IWebMvcModuleCfg _moduleCfg = WebMVC.get().getModuleCfg();
-        __dispatcher = new Dispatcher(_moduleCfg.getDefaultCharsetEncoding(), _moduleCfg.getDefaultContentType(), _moduleCfg.getRequestMethodParam());
-        __requestPrefix = _moduleCfg.getRequestPrefix();
+        IWebMvcConfig mvcConfig = WebMVC.get().getConfig();
+        dispatcher = new Dispatcher(mvcConfig.getDefaultCharsetEncoding(), mvcConfig.getDefaultContentType(), mvcConfig.getRequestMethodParam());
+        requestPrefix = mvcConfig.getRequestPrefix();
     }
 
     @Override
     protected void service(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        IRequestContext _requestContext = new DefaultRequestContext(request, __requestPrefix);
-        __dispatcher.dispatch(_requestContext, __servletContext, request, response);
+        IRequestContext requestContext = new DefaultRequestContext(request, requestPrefix);
+        dispatcher.dispatch(requestContext, servletContext, request, response);
     }
 }

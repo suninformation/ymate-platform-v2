@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2017 the original author or authors.
+ * Copyright 2007-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,11 +19,10 @@ import java.nio.ByteBuffer;
 
 /**
  * @author 刘镇 (suninformation@163.com) on 15/11/13 下午3:29
- * @version 1.0
  */
 public final class ByteBufferBuilder {
 
-    private ByteBuffer __buffer;
+    private ByteBuffer byteBuffer;
 
     public static ByteBufferBuilder allocate() {
         return new ByteBufferBuilder(0);
@@ -43,40 +42,40 @@ public final class ByteBufferBuilder {
 
     private ByteBufferBuilder(int capacity) {
         if (capacity > 0) {
-            __buffer = ByteBuffer.allocate(capacity);
+            byteBuffer = ByteBuffer.allocate(capacity);
         }
     }
 
     private ByteBufferBuilder(ByteBuffer buffer) {
-        __buffer = buffer;
+        byteBuffer = buffer;
     }
 
-    private void __bufferSafety(int length) {
-        if (__buffer == null) {
-            __buffer = ByteBuffer.allocate(length * 2);
+    private void bufferSafety(int length) {
+        if (byteBuffer == null) {
+            byteBuffer = ByteBuffer.allocate(length * 2);
         } else {
-            int _currentSize = __buffer.capacity();
-            int _newSize = __buffer.position() + length;
-            while (_newSize > _currentSize) {
-                _currentSize = _currentSize * 2;
+            int currentSize = byteBuffer.capacity();
+            int newSize = byteBuffer.position() + length;
+            while (newSize > currentSize) {
+                currentSize *= 2;
             }
-            if (_currentSize != __buffer.capacity()) {
-                ByteBuffer _newBuffer;
-                if (__buffer.isDirect()) {
-                    _newBuffer = ByteBuffer.allocateDirect(_currentSize);
+            if (currentSize != byteBuffer.capacity()) {
+                ByteBuffer newBuffer;
+                if (byteBuffer.isDirect()) {
+                    newBuffer = ByteBuffer.allocateDirect(currentSize);
                 } else {
-                    _newBuffer = ByteBuffer.allocate(_currentSize);
+                    newBuffer = ByteBuffer.allocate(currentSize);
                 }
-                _newBuffer.put(__buffer.array());
-                _newBuffer.position(__buffer.position());
-                __buffer = _newBuffer;
+                newBuffer.put(byteBuffer.array());
+                newBuffer.position(byteBuffer.position());
+                byteBuffer = newBuffer;
             }
         }
     }
 
     public ByteBufferBuilder append(byte[] src, int offset, int length) {
-        __bufferSafety(length);
-        __buffer.put(src, offset, length);
+        bufferSafety(length);
+        byteBuffer.put(src, offset, length);
         return this;
     }
 
@@ -89,26 +88,26 @@ public final class ByteBufferBuilder {
     }
 
     public ByteBufferBuilder append(char c) {
-        __bufferSafety(2);
-        __buffer.putChar(c);
+        bufferSafety(2);
+        byteBuffer.putChar(c);
         return this;
     }
 
     public ByteBufferBuilder append(short value) {
-        __bufferSafety(2);
-        __buffer.putShort(value);
+        bufferSafety(2);
+        byteBuffer.putShort(value);
         return this;
     }
 
     public ByteBufferBuilder append(long value) {
-        __bufferSafety(8);
-        __buffer.putLong(value);
+        bufferSafety(8);
+        byteBuffer.putLong(value);
         return this;
     }
 
     public ByteBufferBuilder append(int value) {
-        __bufferSafety(4);
-        __buffer.putInt(value);
+        bufferSafety(4);
+        byteBuffer.putInt(value);
         return this;
     }
 
@@ -118,98 +117,98 @@ public final class ByteBufferBuilder {
     }
 
     public ByteBufferBuilder append(ByteBuffer buffer) {
-        __bufferSafety(buffer.capacity());
-        __buffer.put(buffer);
+        bufferSafety(buffer.capacity());
+        byteBuffer.put(buffer);
         return this;
     }
 
     public byte get() {
-        return __buffer.get();
+        return byteBuffer.get();
     }
 
     public ByteBufferBuilder get(byte[] dst) {
-        __buffer.get(dst);
+        byteBuffer.get(dst);
         return this;
     }
 
     public ByteBufferBuilder get(byte[] dst, int offset, int length) {
-        __buffer.get(dst, offset, length);
+        byteBuffer.get(dst, offset, length);
         return this;
     }
 
     public short getShort() {
-        return __buffer.getShort();
+        return byteBuffer.getShort();
     }
 
     public int getInt() {
-        return __buffer.getInt();
+        return byteBuffer.getInt();
     }
 
     public long getLong() {
-        return __buffer.getLong();
+        return byteBuffer.getLong();
     }
 
     public final ByteBufferBuilder clear() {
-        __buffer.clear();
+        byteBuffer.clear();
         return this;
     }
 
     public final ByteBufferBuilder flip() {
-        __buffer.flip();
+        byteBuffer.flip();
         return this;
     }
 
     public final ByteBufferBuilder mark() {
-        __buffer.mark();
+        byteBuffer.mark();
         return this;
     }
 
     public final ByteBufferBuilder reset() {
-        __buffer.reset();
+        byteBuffer.reset();
         return this;
     }
 
     public final int remaining() {
-        return __buffer.remaining();
+        return byteBuffer.remaining();
     }
 
     public final ByteBufferBuilder rewind() {
-        __buffer.rewind();
+        byteBuffer.rewind();
         return this;
     }
 
     public final int position() {
-        return __buffer.position();
+        return byteBuffer.position();
     }
 
     public final ByteBufferBuilder position(int newPosition) {
-        __buffer.position(newPosition);
+        byteBuffer.position(newPosition);
         return this;
     }
 
     public final int limit() {
-        return __buffer.limit();
+        return byteBuffer.limit();
     }
 
     public final ByteBufferBuilder limit(int newLimit) {
-        __buffer.limit(newLimit);
+        byteBuffer.limit(newLimit);
         return this;
     }
 
     public ByteBufferBuilder compact() {
-        __buffer.compact();
+        byteBuffer.compact();
         return this;
     }
 
     public ByteBufferBuilder duplicate() {
-        return ByteBufferBuilder.wrap(__buffer.duplicate());
+        return ByteBufferBuilder.wrap(byteBuffer.duplicate());
     }
 
     public final byte[] array() {
-        return __buffer.array();
+        return byteBuffer.array();
     }
 
     public ByteBuffer buffer() {
-        return __buffer;
+        return byteBuffer;
     }
 }

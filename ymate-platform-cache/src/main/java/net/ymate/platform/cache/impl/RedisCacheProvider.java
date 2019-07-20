@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2017 the original author or authors.
+ * Copyright 2007-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,18 +15,18 @@
  */
 package net.ymate.platform.cache.impl;
 
-import net.ymate.platform.cache.*;
+import net.ymate.platform.cache.AbstractCacheProvider;
+import net.ymate.platform.cache.ICache;
+import net.ymate.platform.cache.ICacheEventListener;
 import net.ymate.platform.cache.support.RedisCacheWrapper;
 import net.ymate.platform.persistence.redis.IRedis;
-import net.ymate.platform.persistence.redis.Redis;
 
 /**
  * @author 刘镇 (suninformation@163.com) on 15/12/6 上午4:20
- * @version 1.0
  */
 public class RedisCacheProvider extends AbstractCacheProvider {
 
-    private IRedis __redis;
+    private IRedis redis;
 
     @Override
     public String getName() {
@@ -34,14 +34,19 @@ public class RedisCacheProvider extends AbstractCacheProvider {
     }
 
     @Override
-    public void init(ICaches owner) throws CacheException {
-        super.init(owner);
-        //
-        __redis = Redis.get(owner.getOwner());
+    protected void onInitialize() throws Exception {
+        redis = REDIS_CREATOR.create();
+        redis.initialize(getOwner().getOwner());
     }
 
     @Override
-    protected ICache __createCache(String saferName, ICacheEventListener listener) {
-        return new RedisCacheWrapper(getOwner(), __redis, saferName, listener);
+    protected void onDestroy() throws Exception {
+        redis.close();
+        redis = null;
+    }
+
+    @Override
+    protected ICache onCreateCache(String cacheName, ICacheEventListener listener) {
+        return new RedisCacheWrapper(getOwner(), redis, cacheName, listener);
     }
 }

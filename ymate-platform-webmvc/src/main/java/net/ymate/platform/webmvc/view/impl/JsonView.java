@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2017 the original author or authors.
+ * Copyright 2007-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,7 +23,7 @@ import net.ymate.platform.webmvc.base.Type;
 import net.ymate.platform.webmvc.context.WebContext;
 import net.ymate.platform.webmvc.view.AbstractView;
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.OutputStream;
@@ -36,16 +36,20 @@ import java.util.List;
  * JSON视图
  *
  * @author 刘镇 (suninformation@163.com) on 2011-10-23 上午11:27:16
- * @version 1.0
  */
 public class JsonView extends AbstractView {
 
-    protected Object __jsonObj;
-    protected boolean __withContentType;
-    protected String __jsonCallback;
-    protected boolean __keepNullValue;
-    protected boolean __quoteFieldNames;
-    protected boolean __useSingleQuotes;
+    private final Object jsonObj;
+
+    private boolean withContentType;
+
+    private String jsonCallback;
+
+    private boolean keepNullValue;
+
+    private boolean quoteFieldNames;
+
+    private boolean useSingleQuotes;
 
     public static JsonView bind(Object obj) {
         if (obj instanceof String) {
@@ -58,10 +62,10 @@ public class JsonView extends AbstractView {
     /**
      * 构造器
      *
-     * @param obj Java对象
+     * @param obj 任意对象
      */
     public JsonView(Object obj) {
-        __jsonObj = JSON.toJSON(obj);
+        jsonObj = JSON.toJSON(obj);
     }
 
     /**
@@ -70,7 +74,7 @@ public class JsonView extends AbstractView {
      * @param jsonStr JSON字符串
      */
     public JsonView(String jsonStr) {
-        __jsonObj = JSON.parseObject(jsonStr, new TypeReference<LinkedHashMap<String, Object>>() {
+        jsonObj = JSON.parseObject(jsonStr, new TypeReference<LinkedHashMap<String, Object>>() {
         }, Feature.OrderedField);
     }
 
@@ -78,7 +82,7 @@ public class JsonView extends AbstractView {
      * @return 设置ContentType为"application/json"或"text/javascript"，默认为空
      */
     public JsonView withContentType() {
-        __withContentType = true;
+        withContentType = true;
         return this;
     }
 
@@ -87,7 +91,7 @@ public class JsonView extends AbstractView {
      * @return 设置并采用JSONP方式输出，回调方法名称由参数callback指定，若callback参数无效则不启用
      */
     public JsonView withJsonCallback(String callback) {
-        __jsonCallback = StringUtils.defaultIfEmpty(callback, null);
+        jsonCallback = StringUtils.trimToNull(callback);
         return this;
     }
 
@@ -95,7 +99,7 @@ public class JsonView extends AbstractView {
      * @return 设置是否保留空值属性
      */
     public JsonView keepNullValue() {
-        __keepNullValue = true;
+        keepNullValue = true;
         return this;
     }
 
@@ -103,7 +107,7 @@ public class JsonView extends AbstractView {
      * @return 设置JSON属性KEY使用引号
      */
     public JsonView quoteFieldNames() {
-        __quoteFieldNames = true;
+        quoteFieldNames = true;
         return this;
     }
 
@@ -111,23 +115,23 @@ public class JsonView extends AbstractView {
      * @return 设置JSON属性KEY使用单引号
      */
     public JsonView useSingleQuotes() {
-        __useSingleQuotes = true;
+        useSingleQuotes = true;
         return this;
     }
 
     /**
      * @return 将视图数据对象转换为JSON字符串
      */
-    protected String __doObjectToJsonString() {
-        List<SerializerFeature> _features = new ArrayList<SerializerFeature>();
-        if (__quoteFieldNames) {
-            _features.add(SerializerFeature.QuoteFieldNames);
-            if (__useSingleQuotes) {
-                _features.add(SerializerFeature.UseSingleQuotes);
+    private String doObjectToJsonString() {
+        List<SerializerFeature> serializerFeatures = new ArrayList<>();
+        if (quoteFieldNames) {
+            serializerFeatures.add(SerializerFeature.QuoteFieldNames);
+            if (useSingleQuotes) {
+                serializerFeatures.add(SerializerFeature.UseSingleQuotes);
             }
         }
-        if (__keepNullValue) {
-            _features.addAll(Arrays.asList(
+        if (keepNullValue) {
+            serializerFeatures.addAll(Arrays.asList(
                     SerializerFeature.WriteMapNullValue,
                     SerializerFeature.WriteNullBooleanAsFalse,
                     SerializerFeature.WriteNullListAsEmpty,
@@ -135,34 +139,34 @@ public class JsonView extends AbstractView {
                     SerializerFeature.WriteNullStringAsEmpty,
                     SerializerFeature.WriteNullNumberAsZero));
         }
-        return JSON.toJSONString(__jsonObj, _features.toArray(new SerializerFeature[0]));
+        return JSON.toJSONString(jsonObj, serializerFeatures.toArray(new SerializerFeature[0]));
     }
 
     @Override
-    protected void __doRenderView() throws Exception {
-        HttpServletResponse _response = WebContext.getResponse();
+    protected void doRenderView() throws Exception {
+        HttpServletResponse httpServletResponse = WebContext.getResponse();
         if (StringUtils.isNotBlank(getContentType())) {
-            _response.setContentType(getContentType());
-        } else if (this.__withContentType) {
-            if (__jsonCallback == null) {
-                _response.setContentType(Type.ContentType.JSON.getContentType());
+            httpServletResponse.setContentType(getContentType());
+        } else if (this.withContentType) {
+            if (jsonCallback == null) {
+                httpServletResponse.setContentType(Type.ContentType.JSON.getContentType());
             } else {
-                _response.setContentType(Type.ContentType.JAVASCRIPT.getContentType());
+                httpServletResponse.setContentType(Type.ContentType.JAVASCRIPT.getContentType());
             }
         }
-        StringBuilder _jsonStr = new StringBuilder(__doObjectToJsonString());
-        if (__jsonCallback != null) {
-            _jsonStr.insert(0, __jsonCallback + "(").append(");");
+        StringBuilder jsonStringBuilder = new StringBuilder(doObjectToJsonString());
+        if (jsonCallback != null) {
+            jsonStringBuilder.insert(0, jsonCallback + "(").append(");");
         }
-        IOUtils.write(_jsonStr.toString(), _response.getOutputStream(), _response.getCharacterEncoding());
+        IOUtils.write(jsonStringBuilder.toString(), httpServletResponse.getOutputStream(), httpServletResponse.getCharacterEncoding());
     }
 
     @Override
     public void render(OutputStream output) throws Exception {
-        StringBuilder _jsonStr = new StringBuilder(__doObjectToJsonString());
-        if (__jsonCallback != null) {
-            _jsonStr.insert(0, __jsonCallback + "(").append(");");
+        StringBuilder jsonStringBuilder = new StringBuilder(doObjectToJsonString());
+        if (jsonCallback != null) {
+            jsonStringBuilder.insert(0, jsonCallback + "(").append(");");
         }
-        IOUtils.write(_jsonStr, output, WebContext.getResponse().getCharacterEncoding());
+        IOUtils.write(jsonStringBuilder, output, WebContext.getResponse().getCharacterEncoding());
     }
 }

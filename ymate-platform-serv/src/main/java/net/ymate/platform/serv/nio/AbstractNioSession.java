@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2018 the original author or authors.
+ * Copyright 2007-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,14 +15,13 @@
  */
 package net.ymate.platform.serv.nio;
 
-import net.ymate.platform.core.util.RuntimeUtils;
-import net.ymate.platform.serv.AbstractSession;
+import net.ymate.platform.commons.util.RuntimeUtils;
+import net.ymate.platform.commons.util.UUIDUtils;
 import net.ymate.platform.serv.IListener;
-import net.ymate.platform.serv.ISession;
 import net.ymate.platform.serv.nio.support.ByteBufferBuilder;
 import net.ymate.platform.serv.nio.support.NioEventProcessor;
 import net.ymate.platform.serv.nio.support.NioSession;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -33,62 +32,110 @@ import java.nio.channels.DatagramChannel;
 import java.nio.channels.SelectableChannel;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.SocketChannel;
+import java.util.Map;
 import java.util.Queue;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 
 /**
+ * @param <LISTENER> 监听器类型
  * @author 刘镇 (suninformation@163.com) on 2018/11/15 11:00 PM
- * @version 1.0
  */
-public abstract class AbstractNioSession<LISTENER extends IListener<INioSession>> extends AbstractSession implements INioSession {
+public abstract class AbstractNioSession<LISTENER extends IListener<INioSession>> implements INioSession {
 
-    private static final Log _LOG = LogFactory.getLog(NioSession.class);
+    private static final long serialVersionUID = 1L;
 
-    private final Queue<ByteBuffer> __writeBufferQueue = new LinkedBlockingQueue<ByteBuffer>();
+    private static final Log LOG = LogFactory.getLog(NioSession.class);
 
-    private final CountDownLatch __connLatch = new CountDownLatch(1);
+    private final String id = UUIDUtils.UUID();
 
-    private final INioEventGroup<LISTENER> __eventGroup;
+    private long lastTouchTime = System.currentTimeMillis();
 
-    private final SelectableChannel __channel;
+    private final ConcurrentMap<String, Object> attributes = new ConcurrentHashMap<>();
 
-    private SelectionKey __selectionKey;
+    private final Queue<ByteBuffer> byteBufferQueue = new LinkedBlockingQueue<>();
 
-    private ByteBufferBuilder __buffer;
+    private final CountDownLatch countDownLatch = new CountDownLatch(1);
 
-    private ISession.Status __status;
+    private final INioEventGroup<LISTENER> eventGroup;
 
-    private boolean __isUdp;
+    private final SelectableChannel channel;
+
+    private SelectionKey selectionKey;
+
+    private ByteBufferBuilder bufferBuilder;
+
+    private Status status;
+
+    private final boolean udp;
 
     public AbstractNioSession(INioEventGroup<LISTENER> eventGroup, SelectableChannel channel) {
-        __eventGroup = eventGroup;
-        __channel = channel;
+        this.eventGroup = eventGroup;
+        this.channel = channel;
         //
-        __status = ISession.Status.NEW;
-        __isUdp = channel instanceof DatagramChannel;
+        status = Status.NEW;
+        udp = channel instanceof DatagramChannel;
+    }
+
+    @Override
+    public String id() {
+        return id;
+    }
+
+    @Override
+    public boolean isNew() {
+        return status() == Status.NEW;
+    }
+
+    @Override
+    public boolean isConnected() {
+        return status() == Status.CONNECTED;
+    }
+
+    @Override
+    public void touch() {
+        lastTouchTime = System.currentTimeMillis();
+    }
+
+    @Override
+    public long lastTouchTime() {
+        return lastTouchTime;
+    }
+
+    @Override
+    public Map<String, Object> attrs() {
+        return attributes;
+    }
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public <T> T attr(String key) {
+        return (T) attributes.get(key);
+    }
+
+    @Override
+    public void attr(String key, Object value) {
+        attributes.put(key, value);
     }
 
     protected INioEventGroup<LISTENER> eventGroup() {
-        return __eventGroup;
+        return eventGroup;
     }
 
     protected SelectableChannel channel() {
-        return __channel;
+        return channel;
     }
 
     protected ByteBufferBuilder buffer() {
-        return __buffer;
+        return bufferBuilder;
     }
 
     protected void buffer(ByteBufferBuilder bufferBuilder) {
-        __buffer = bufferBuilder;
+        this.bufferBuilder = bufferBuilder;
     }
 
     @Override
     public boolean isUdp() {
-        return __isUdp;
+        return udp;
     }
 
     @Override
@@ -96,16 +143,16 @@ public abstract class AbstractNioSession<LISTENER extends IListener<INioSession>
         if (isUdp()) {
             return null;
         }
-        return (InetSocketAddress) ((SocketChannel) __channel).socket().getRemoteSocketAddress();
+        return (InetSocketAddress) ((SocketChannel) channel).socket().getRemoteSocketAddress();
     }
 
     @Override
     public String remoteAddress() {
-        if (__status != ISession.Status.CLOSED && selectionKey() != null) {
+        if (status != Status.CLOSED && selectionKey() != null) {
             if (channel() != null) {
-                InetSocketAddress _address = remoteSocketAddress();
-                if (_address != null) {
-                    return _address.getHostName() + ":" + _address.getPort();
+                InetSocketAddress socketAddress = remoteSocketAddress();
+                if (socketAddress != null) {
+                    return socketAddress.getHostName() + ":" + socketAddress.getPort();
                 }
             }
         }
@@ -114,110 +161,104 @@ public abstract class AbstractNioSession<LISTENER extends IListener<INioSession>
 
     @Override
     public Status status() {
-        return __status;
+        return status;
     }
 
     @Override
     public void status(Status status) {
-        __status = status;
+        this.status = status;
     }
 
     @Override
     public void close() throws IOException {
-        if (__selectionKey == null) {
+        if (selectionKey == null) {
             return;
         }
-        NioEventProcessor _processor = __eventGroup.processor(__selectionKey);
-        if (_processor != null) {
-            __eventGroup.listener().onBeforeSessionClosed(this);
-            _processor.unregisterEvent(this);
-            __selectionKey.selector().wakeup();
+        NioEventProcessor eventProcessor = eventGroup.processor(selectionKey);
+        if (eventProcessor != null) {
+            eventGroup.listener().onBeforeSessionClosed(this);
+            eventProcessor.unregisterEvent(this);
+            selectionKey.selector().wakeup();
         }
     }
 
     @Override
     public void closeNow() throws IOException {
-        if (status() == ISession.Status.CLOSED) {
+        if (status() == Status.CLOSED) {
             return;
         }
-        status(ISession.Status.CLOSED);
-        if (__selectionKey != null) {
-            __selectionKey.cancel();
-            __selectionKey = null;
+        status(Status.CLOSED);
+        if (selectionKey != null) {
+            selectionKey.cancel();
+            selectionKey = null;
         }
-        if (__channel != null) {
-            __channel.close();
+        if (channel != null) {
+            channel.close();
         }
-        __eventGroup.executorService().submit(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    __eventGroup.listener().onAfterSessionClosed(AbstractNioSession.this);
-                } catch (IOException ex) {
-                    _LOG.error(RuntimeUtils.unwrapThrow(ex));
-                }
+        eventGroup.executorService().submit(() -> {
+            try {
+                eventGroup.listener().onAfterSessionClosed(AbstractNioSession.this);
+            } catch (IOException ex) {
+                LOG.error(StringUtils.EMPTY, RuntimeUtils.unwrapThrow(ex));
             }
         });
     }
 
     @Override
     public void registerEvent(int ops) throws IOException {
-        __eventGroup.processor().registerEvent(__channel, ops, this);
+        eventGroup.processor().registerEvent(channel, ops, this);
     }
 
     @Override
     public void selectionKey(SelectionKey key) {
-        __selectionKey = key;
+        selectionKey = key;
     }
 
     @Override
     public SelectionKey selectionKey() {
-        return __selectionKey;
+        return selectionKey;
     }
 
     @Override
     public boolean connectSync(long time) {
         try {
-            return __connLatch.await(time, TimeUnit.MILLISECONDS);
+            return countDownLatch.await(time, TimeUnit.MILLISECONDS);
         } catch (InterruptedException e) {
-            _LOG.error(RuntimeUtils.unwrapThrow(e));
+            LOG.error(StringUtils.EMPTY, RuntimeUtils.unwrapThrow(e));
         }
         return false;
     }
 
     @Override
     public void finishConnect() {
-        __connLatch.countDown();
+        countDownLatch.countDown();
     }
 
     //
 
-    protected void __doBufferReset(ByteBufferBuilder buffer) {
+    protected void bufferReset(ByteBufferBuilder buffer) {
         if (buffer != null && buffer.remaining() > 0) {
-            int _len = buffer.remaining();
-            byte[] _bytes = new byte[_len];
-            buffer.get(_bytes);
-            __buffer = ByteBufferBuilder.wrap(ByteBuffer.wrap(_bytes)).position(_len);
+            int len = buffer.remaining();
+            byte[] bytes = new byte[len];
+            buffer.get(bytes);
+            bufferBuilder = ByteBufferBuilder.wrap(ByteBuffer.wrap(bytes)).position(len);
         } else {
-            __buffer = null;
+            bufferBuilder = null;
         }
     }
 
-    protected void __doPostMessageReceived(final Object message) throws IOException {
-        __eventGroup.executorService().submit(new Runnable() {
-            @Override
-            public void run() {
+    protected void postMessageReceived(final Object message) {
+        eventGroup.executorService().submit(() -> {
+            try {
+                eventGroup.listener().onMessageReceived(message, AbstractNioSession.this);
+            } catch (IOException e) {
                 try {
-                    __eventGroup.listener().onMessageReceived(message, AbstractNioSession.this);
-                } catch (IOException e) {
+                    eventGroup.listener().onExceptionCaught(e, AbstractNioSession.this);
+                } catch (IOException ex) {
                     try {
-                        __eventGroup.listener().onExceptionCaught(e, AbstractNioSession.this);
-                    } catch (IOException ex) {
-                        try {
-                            close();
-                        } catch (IOException exx) {
-                            _LOG.error(RuntimeUtils.unwrapThrow(exx));
-                        }
+                        close();
+                    } catch (IOException exx) {
+                        LOG.error(StringUtils.EMPTY, RuntimeUtils.unwrapThrow(exx));
                     }
                 }
             }
@@ -226,54 +267,54 @@ public abstract class AbstractNioSession<LISTENER extends IListener<INioSession>
 
     @Override
     public void read() throws IOException {
-        if (__buffer == null) {
-            __buffer = ByteBufferBuilder.allocate(__eventGroup.bufferSize());
+        if (bufferBuilder == null) {
+            bufferBuilder = ByteBufferBuilder.allocate(eventGroup.bufferSize());
         }
-        ByteBuffer _data = ByteBuffer.allocate(__eventGroup.bufferSize());
-        int _len;
-        while ((_len = ((SocketChannel) channel()).read(_data)) > 0) {
-            _data.flip();
-            __buffer.append(_data.array(), _data.position(), _data.remaining());
-            _data.clear();
+        ByteBuffer buffer = ByteBuffer.allocate(eventGroup.bufferSize());
+        int len;
+        while ((len = ((SocketChannel) channel()).read(buffer)) > 0) {
+            buffer.flip();
+            bufferBuilder.append(buffer.array(), buffer.position(), buffer.remaining());
+            buffer.clear();
         }
-        if (_len < 0) {
+        if (len < 0) {
             close();
             return;
         }
-        ByteBufferBuilder _copiedBuffer = __buffer.duplicate().flip();
+        ByteBufferBuilder copiedBuffer = bufferBuilder.duplicate().flip();
         while (true) {
-            _copiedBuffer.mark();
-            Object _message;
-            if (_copiedBuffer.remaining() > 0) {
-                _message = __eventGroup.codec().decode(_copiedBuffer);
+            copiedBuffer.mark();
+            Object message;
+            if (copiedBuffer.remaining() > 0) {
+                message = eventGroup.codec().decode(copiedBuffer);
             } else {
-                _message = null;
+                message = null;
             }
-            if (_message == null) {
-                _copiedBuffer.reset();
-                __doBufferReset(_copiedBuffer);
+            if (message == null) {
+                copiedBuffer.reset();
+                bufferReset(copiedBuffer);
                 break;
             } else {
-                __doPostMessageReceived(_message);
+                postMessageReceived(message);
             }
         }
     }
 
     @Override
     public void write() throws IOException {
-        synchronized (__writeBufferQueue) {
+        synchronized (byteBufferQueue) {
             while (true) {
-                ByteBuffer _buffer = __writeBufferQueue.peek();
-                if (_buffer == null) {
-                    __selectionKey.interestOps(SelectionKey.OP_READ);
+                ByteBuffer buffer = byteBufferQueue.peek();
+                if (buffer == null) {
+                    selectionKey.interestOps(SelectionKey.OP_READ);
                     break;
                 } else {
-                    int _wLen = ((SocketChannel) channel()).write(_buffer);
-                    if (_wLen == 0 && _buffer.remaining() > 0) {
+                    int len = ((SocketChannel) channel()).write(buffer);
+                    if (len == 0 && buffer.remaining() > 0) {
                         break;
                     }
-                    if (_buffer.remaining() == 0) {
-                        __writeBufferQueue.remove();
+                    if (buffer.remaining() == 0) {
+                        byteBufferQueue.remove();
                     } else {
                         break;
                     }
@@ -285,22 +326,35 @@ public abstract class AbstractNioSession<LISTENER extends IListener<INioSession>
     @Override
     public void send(Object message) {
         if (selectionKey() != null) {
-            ByteBufferBuilder _msgBuffer = __eventGroup.codec().encode(message);
-            if (_msgBuffer != null) {
-                if (__writeBufferQueue.offer(_msgBuffer.buffer())) {
-                    __selectionKey.interestOps(__selectionKey.interestOps() | SelectionKey.OP_WRITE);
-                    __selectionKey.selector().wakeup();
+            ByteBufferBuilder msgBuffer = eventGroup.codec().encode(message);
+            if (msgBuffer != null) {
+                if (byteBufferQueue.offer(msgBuffer.buffer())) {
+                    selectionKey.interestOps(selectionKey.interestOps() | SelectionKey.OP_WRITE);
+                    selectionKey.selector().wakeup();
                 }
             }
         }
     }
 
     @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        AbstractNioSession session = (AbstractNioSession) o;
+        return id.equals(session.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return id.hashCode();
+    }
+
+    @Override
     public String toString() {
-        return getClass().getSimpleName() + " [id=" + id()
-                + ", remote=" + StringUtils.defaultIfBlank(remoteAddress(), "<UNKNOWN>")
-                + ", status=" + status()
-                + ", attrs=" + attrs()
-                + "]";
+        return String.format("%s [id=%s, remote=%s, status=%s, attrs=%s]", getClass().getSimpleName(), id(), StringUtils.defaultIfBlank(remoteAddress(), "<UNKNOWN>"), status(), attrs());
     }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2017 the original author or authors.
+ * Copyright 2007-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,13 +16,19 @@
 package net.ymate.platform.webmvc.annotation;
 
 import net.ymate.platform.webmvc.base.Type;
+import org.apache.commons.lang3.StringUtils;
+
+import java.lang.annotation.*;
 
 /**
  * 声明一个请求/回应Header键值对
  *
  * @author 刘镇 (suninformation@163.com) on 15/10/29 下午8:19
- * @version 1.0
  */
+@Target({ElementType.PACKAGE, ElementType.TYPE, ElementType.METHOD})
+@Retention(RetentionPolicy.RUNTIME)
+@Repeatable(ResponseHeader.class)
+@Documented
 public @interface Header {
 
     /**
@@ -33,7 +39,7 @@ public @interface Header {
     /**
      * @return Header值
      */
-    String value() default "";
+    String value() default StringUtils.EMPTY;
 
     /**
      * @return Header类型

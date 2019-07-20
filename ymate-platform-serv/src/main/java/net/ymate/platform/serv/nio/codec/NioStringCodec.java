@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2017 the original author or authors.
+ * Copyright 2007-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,7 +15,7 @@
  */
 package net.ymate.platform.serv.nio.codec;
 
-import net.ymate.platform.core.util.RuntimeUtils;
+import net.ymate.platform.commons.util.RuntimeUtils;
 import net.ymate.platform.serv.nio.AbstractNioCodec;
 import net.ymate.platform.serv.nio.support.ByteBufferBuilder;
 import org.apache.commons.logging.Log;
@@ -25,22 +25,23 @@ import java.io.UnsupportedEncodingException;
 
 /**
  * @author 刘镇 (suninformation@163.com) on 15/11/15 下午7:05
- * @version 1.0
  */
 public class NioStringCodec extends AbstractNioCodec {
 
-    private static final Log _LOG = LogFactory.getLog(NioStringCodec.class);
+    private static final Log LOG = LogFactory.getLog(NioStringCodec.class);
 
     @Override
     public ByteBufferBuilder encode(Object message) {
         if (message instanceof String) {
             try {
-                byte[] _bytes = ((String) message).getBytes(getCharset());
+                byte[] bytes = ((String) message).getBytes(getCharset());
                 return ByteBufferBuilder.allocate()
-                        .append(_bytes.length)
-                        .append(_bytes).flip();
+                        .append(bytes.length)
+                        .append(bytes).flip();
             } catch (UnsupportedEncodingException e) {
-                _LOG.warn(e.getMessage(), RuntimeUtils.unwrapThrow(e));
+                if (LOG.isWarnEnabled()) {
+                    LOG.warn(e.getMessage(), RuntimeUtils.unwrapThrow(e));
+                }
             }
         }
         return null;
@@ -52,17 +53,19 @@ public class NioStringCodec extends AbstractNioCodec {
             return null;
         }
         buffer.mark();
-        int _len = buffer.getInt();
-        if (buffer.remaining() < _len) {
+        int len = buffer.getInt();
+        if (buffer.remaining() < len) {
             buffer.reset();
             return null;
         }
-        byte[] _bytes = new byte[_len];
-        buffer.get(_bytes);
+        byte[] bytes = new byte[len];
+        buffer.get(bytes);
         try {
-            return new String(_bytes, getCharset());
+            return new String(bytes, getCharset());
         } catch (UnsupportedEncodingException e) {
-            _LOG.warn(e.getMessage(), RuntimeUtils.unwrapThrow(e));
+            if (LOG.isWarnEnabled()) {
+                LOG.warn(e.getMessage(), RuntimeUtils.unwrapThrow(e));
+            }
         }
         return null;
     }

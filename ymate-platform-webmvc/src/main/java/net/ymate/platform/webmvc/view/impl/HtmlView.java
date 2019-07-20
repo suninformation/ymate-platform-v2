@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2017 the original author or authors.
+ * Copyright 2007-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,7 +20,7 @@ import net.ymate.platform.webmvc.base.Type;
 import net.ymate.platform.webmvc.context.WebContext;
 import net.ymate.platform.webmvc.view.AbstractView;
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.File;
@@ -31,24 +31,29 @@ import java.io.OutputStream;
  * HTML文件内容视图
  *
  * @author 刘镇 (suninformation@163.com) on 15/5/28 下午5:49
- * @version 1.0
  */
 public class HtmlView extends AbstractView {
+
+    public static final String FILE_SUFFIX = ".html";
 
     /**
      * HTML内容
      */
-    protected String __content;
+    private final String content;
 
     public static HtmlView bind(IWebMvc owner, String htmlFile) throws Exception {
         if (StringUtils.isNotBlank(htmlFile)) {
-            if (htmlFile.charAt(0) == '/') {
-                htmlFile = htmlFile.substring(1);
+            if (htmlFile.charAt(0) != Type.Const.PATH_SEPARATOR_CHAR) {
+                htmlFile = Type.Const.PATH_SEPARATOR_CHAR + htmlFile;
             }
-            if (!htmlFile.endsWith(".html")) {
-                htmlFile += ".html";
+            String viewPath = getBaseViewPath(owner);
+            if (htmlFile.startsWith(viewPath)) {
+                htmlFile = StringUtils.substringAfter(viewPath, viewPath);
             }
-            return bind(new File(owner.getModuleCfg().getAbstractBaseViewPath(), htmlFile));
+            if (!htmlFile.endsWith(FILE_SUFFIX)) {
+                htmlFile += FILE_SUFFIX;
+            }
+            return bind(new File(owner.getConfig().getAbstractBaseViewPath(), htmlFile));
         }
         return null;
     }
@@ -60,7 +65,7 @@ public class HtmlView extends AbstractView {
         return null;
     }
 
-    public static HtmlView bind(String content) throws Exception {
+    public static HtmlView bind(String content) {
         return new HtmlView(content);
     }
 
@@ -70,18 +75,18 @@ public class HtmlView extends AbstractView {
      * @param content 输出HTML内容
      */
     public HtmlView(String content) {
-        __content = content;
-        __contentType = Type.ContentType.HTML.getContentType();
+        this.content = content;
+        contentType = Type.ContentType.HTML.getContentType();
     }
 
     @Override
-    protected void __doRenderView() throws Exception {
-        HttpServletResponse _response = WebContext.getResponse();
-        IOUtils.write(__content, _response.getOutputStream(), _response.getCharacterEncoding());
+    protected void doRenderView() throws Exception {
+        HttpServletResponse httpServletResponse = WebContext.getResponse();
+        IOUtils.write(content, httpServletResponse.getOutputStream(), httpServletResponse.getCharacterEncoding());
     }
 
     @Override
     public void render(OutputStream output) throws Exception {
-        IOUtils.write(__content, output, WebContext.getResponse().getCharacterEncoding());
+        IOUtils.write(content, output, WebContext.getResponse().getCharacterEncoding());
     }
 }

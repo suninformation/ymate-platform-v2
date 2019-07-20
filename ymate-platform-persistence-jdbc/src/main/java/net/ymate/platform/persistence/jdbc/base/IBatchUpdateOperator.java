@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2017 the original author or authors.
+ * Copyright 2007-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,14 +15,16 @@
  */
 package net.ymate.platform.persistence.jdbc.base;
 
+import net.ymate.platform.core.beans.annotation.Ignored;
+
 import java.util.List;
 
 /**
  * 数据库批量更新操作者接口定义
  *
  * @author 刘镇 (suninformation@163.com) on 2010-12-27 下午12:02:56
- * @version 1.0
  */
+@Ignored
 public interface IBatchUpdateOperator extends IOperator {
 
     /**
@@ -33,25 +35,32 @@ public interface IBatchUpdateOperator extends IOperator {
     int[] getEffectCounts();
 
     /**
-     * @return 累计受影响的总记录数
+     * 获取累计受影响的总记录数
+     *
+     * @return 返回累计受影响的总记录数
      */
     int getEffectCountsTotal();
 
     /**
+     * 添加SQL语句
+     *
      * @param sql SQL语句
-     * @return 添加SQL语句
+     * @return 返回当前批量操作器
      */
     IBatchUpdateOperator addBatchSQL(String sql);
 
     /**
+     * 添加批量SQL参数
+     *
      * @param parameter 批量SQL参数对象
-     * @return 添加批量SQL参数
+     * @return 返回当前批量操作器
      */
     IBatchUpdateOperator addBatchParameter(SQLBatchParameter parameter);
 
     /**
+     * 获取批量SQL参数集合
+     *
      * @return 返回批量SQL参数集合
      */
     List<SQLBatchParameter> getBatchParameters();
-
 }

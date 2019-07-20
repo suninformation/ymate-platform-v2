@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2017 the original author or authors.
+ * Copyright 2007-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,17 +25,16 @@ import java.util.Map;
  * 采用Map存储数据的结果集数据处理接口实现
  *
  * @author 刘镇 (suninformation@163.com) on 2011-10-25下午11:51:38
- * @version 1.0
  */
 public class MapResultSetHandler extends AbstractResultSetHandler<Map<String, Object>> {
 
     @Override
-    protected Map<String, Object> __doProcessResultRow(ResultSet resultSet) throws Exception {
+    protected Map<String, Object> processResultRow(ResultSet resultSet) throws Exception {
         // 要保持字段的顺序!!
-        Map<String, Object> _result = new LinkedHashMap<String, Object>(__doGetColumnCount());
-        for (int _idx = 0; _idx < __doGetColumnCount(); _idx++) {
-            _result.put(_doGetColumnMeta(_idx).getName(), resultSet.getObject(_idx + 1));
+        Map<String, Object> result = new LinkedHashMap<>(getColumnCount());
+        for (int idx = 0; idx < getColumnCount(); idx++) {
+            result.put(getColumnMeta(idx).getName(), resultSet.getObject(idx + 1));
         }
-        return _result;
+        return result;
     }
 }

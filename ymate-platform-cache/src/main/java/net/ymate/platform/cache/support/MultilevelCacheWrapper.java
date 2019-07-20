@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2017 the original author or authors.
+ * Copyright 2007-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,135 +17,196 @@ package net.ymate.platform.cache.support;
 
 import net.sf.ehcache.Ehcache;
 import net.ymate.platform.cache.*;
-import net.ymate.platform.core.lang.BlurObject;
+import net.ymate.platform.commons.util.RuntimeUtils;
 import net.ymate.platform.persistence.redis.IRedis;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import java.util.Collection;
 import java.util.List;
 
 /**
  * @author 刘镇 (suninformation@163.com) on 15/12/7 上午2:23
- * @version 1.0
  */
 public class MultilevelCacheWrapper implements ICache, ICacheLocker {
 
-    private final ICache __masterCache;
-    private final ICache __slaveCache;
+    private static final Log LOG = LogFactory.getLog(MultilevelCacheWrapper.class);
 
-    private final boolean __slaveCacheAutosync;
+    private final ICache masterCache;
+
+    private final ICache slaveCache;
+
+    private final boolean slaveCacheAutoSync;
 
     public MultilevelCacheWrapper(ICaches owner, String cacheName, Ehcache ehcache, IRedis redis, ICacheEventListener listener) {
-        __masterCache = new EhCacheWrapper(owner, ehcache, listener);
-        __slaveCache = new RedisCacheWrapper(owner, redis, cacheName, null);
+        slaveCacheAutoSync = owner.getConfig().isMultilevelSlavesAutoSync();
         //
-        __slaveCacheAutosync = BlurObject.bind(owner.getOwner().getConfig().getParam(ICacheModuleCfg.PARAMS_CACHE_MULTILEVEL_SLAVE_AUTOSYNC)).toBooleanValue();
+        masterCache = new EhCacheWrapper(owner, ehcache, listener);
+        //
+        ICacheEventListener slaveCacheListener = null;
+        if (slaveCacheAutoSync) {
+            slaveCacheListener = new ICacheEventListener() {
+
+                @Override
+                public ICaches getOwner() {
+                    return owner;
+                }
+
+                @Override
+                public void notifyElementRemoved(String cacheName, Object key) {
+                }
+
+                @Override
+                public void notifyElementPut(String cacheName, Object key, Object value) {
+                }
+
+                @Override
+                public void notifyElementUpdated(String cacheName, Object key, Object value) {
+                }
+
+                @Override
+                public void notifyElementExpired(String cacheName, Object key) {
+                    try {
+                        // 从缓存元素过期时将与主缓存同步
+                        masterCache.remove(key);
+                    } catch (CacheException e) {
+                        if (LOG.isWarnEnabled()) {
+                            LOG.warn(String.format("An exception occurred while synchronously removing the expired element [%s]", key), RuntimeUtils.unwrapThrow(e));
+                        }
+                    }
+                }
+
+                @Override
+                public void notifyElementEvicted(String cacheName, Object key) {
+                }
+
+                @Override
+                public void notifyRemoveAll(String cacheName) {
+                }
+
+                @Override
+                public void close() {
+                }
+
+                @Override
+                public void initialize(ICaches owner) {
+                }
+
+                @Override
+                public boolean isInitialized() {
+                    return true;
+                }
+            };
+        }
+        slaveCache = new RedisCacheWrapper(owner, redis, cacheName, slaveCacheListener);
     }
 
     @Override
     public Object get(Object key) throws CacheException {
-        MultilevelKey _key = MultilevelKey.bind(key);
-        if (_key.isMaster()) {
-            Object _obj = __masterCache.get(_key.getKey());
-            if (__slaveCacheAutosync) {
-                if (_obj == null) {
-                    _obj = __slaveCache.get(_key.getKey());
-                    if (_obj != null) {
-                        __masterCache.put(_key.getKey(), _obj);
+        MultilevelKey multilevelKey = MultilevelKey.bind(key);
+        if (multilevelKey.isMaster()) {
+            Object value = masterCache.get(multilevelKey.getKey());
+            if (slaveCacheAutoSync) {
+                if (value == null) {
+                    value = slaveCache.get(multilevelKey.getKey());
+                    if (value != null) {
+                        masterCache.put(multilevelKey.getKey(), value);
                     }
                 }
             }
-            return _obj;
+            return value;
         }
-        return __slaveCache.get(_key.getKey());
+        return slaveCache.get(multilevelKey.getKey());
     }
 
     @Override
     public void put(Object key, Object value) throws CacheException {
-        MultilevelKey _key = MultilevelKey.bind(key);
-        if (_key.isMaster()) {
-            __masterCache.put(_key.getKey(), value);
-            if (__slaveCacheAutosync) {
-                __slaveCache.put(_key.getKey(), value);
+        MultilevelKey multilevelKey = MultilevelKey.bind(key);
+        if (multilevelKey.isMaster()) {
+            masterCache.put(multilevelKey.getKey(), value);
+            if (slaveCacheAutoSync) {
+                slaveCache.put(multilevelKey.getKey(), value);
             }
         } else {
-            __slaveCache.put(_key.getKey(), value);
+            slaveCache.put(multilevelKey.getKey(), value);
         }
     }
 
     @Override
     public void update(Object key, Object value) throws CacheException {
-        MultilevelKey _key = MultilevelKey.bind(key);
-        if (_key.isMaster()) {
-            __masterCache.update(_key.getKey(), value);
-            if (__slaveCacheAutosync) {
-                __slaveCache.update(_key.getKey(), value);
+        MultilevelKey multilevelKey = MultilevelKey.bind(key);
+        if (multilevelKey.isMaster()) {
+            masterCache.update(multilevelKey.getKey(), value);
+            if (slaveCacheAutoSync) {
+                slaveCache.update(multilevelKey.getKey(), value);
             }
         } else {
-            __slaveCache.update(_key.getKey(), value);
+            slaveCache.update(multilevelKey.getKey(), value);
         }
     }
 
     @Override
-    public List keys() throws CacheException {
-        return __masterCache.keys();
+    public List<?> keys() throws CacheException {
+        return keys(true);
     }
 
-    public List keys(boolean master) throws CacheException {
+    public List<?> keys(boolean master) throws CacheException {
         if (master) {
-            return __masterCache.keys();
+            return masterCache.keys();
         }
-        return __slaveCache.keys();
+        return slaveCache.keys();
     }
 
     @Override
     public void remove(Object key) throws CacheException {
-        MultilevelKey _key = MultilevelKey.bind(key);
-        if (_key.isMaster()) {
-            __masterCache.remove(_key.getKey());
-            if (__slaveCacheAutosync) {
-                __slaveCache.remove(_key.getKey());
+        MultilevelKey multilevelKey = MultilevelKey.bind(key);
+        if (multilevelKey.isMaster()) {
+            masterCache.remove(multilevelKey.getKey());
+            if (slaveCacheAutoSync) {
+                slaveCache.remove(multilevelKey.getKey());
             }
         } else {
-            __slaveCache.remove(_key.getKey());
+            slaveCache.remove(multilevelKey.getKey());
         }
     }
 
     @Override
     public void removeAll(Collection<?> keys) throws CacheException {
-        __masterCache.removeAll(keys);
+        removeAll(true, keys);
     }
 
     public void removeAll(boolean master, Collection<?> keys) throws CacheException {
         if (master) {
-            __masterCache.removeAll(keys);
-            if (__slaveCacheAutosync) {
-                __slaveCache.removeAll(keys);
+            masterCache.removeAll(keys);
+            if (slaveCacheAutoSync) {
+                slaveCache.removeAll(keys);
             }
         } else {
-            __slaveCache.removeAll(keys);
+            slaveCache.removeAll(keys);
         }
     }
 
     @Override
     public void clear() throws CacheException {
-        __masterCache.clear();
+        masterCache.clear();
     }
 
     public void clear(boolean master) throws CacheException {
         if (master) {
-            __masterCache.clear();
-            if (__slaveCacheAutosync) {
-                __slaveCache.clear();
+            masterCache.clear();
+            if (slaveCacheAutoSync) {
+                slaveCache.clear();
             }
         } else {
-            __slaveCache.clear();
+            slaveCache.clear();
         }
     }
 
     @Override
-    public void destroy() throws CacheException {
-        __slaveCache.destroy();
-        __masterCache.destroy();
+    public void close() throws Exception {
+        slaveCache.close();
+        masterCache.close();
     }
 
     @Override
@@ -155,37 +216,37 @@ public class MultilevelCacheWrapper implements ICache, ICacheLocker {
 
     @Override
     public void readLock(Object key) {
-        MultilevelKey _key = MultilevelKey.bind(key);
-        __masterCache.acquireCacheLocker().readLock(_key.getKey());
+        MultilevelKey multilevelKey = MultilevelKey.bind(key);
+        masterCache.acquireCacheLocker().readLock(multilevelKey.getKey());
     }
 
     @Override
     public void writeLock(Object key) {
-        MultilevelKey _key = MultilevelKey.bind(key);
-        __masterCache.acquireCacheLocker().writeLock(_key.getKey());
+        MultilevelKey multilevelKey = MultilevelKey.bind(key);
+        masterCache.acquireCacheLocker().writeLock(multilevelKey.getKey());
     }
 
     @Override
     public boolean tryReadLock(Object key, long timeout) throws CacheException {
-        MultilevelKey _key = MultilevelKey.bind(key);
-        return __masterCache.acquireCacheLocker().tryReadLock(_key.getKey(), timeout);
+        MultilevelKey multilevelKey = MultilevelKey.bind(key);
+        return masterCache.acquireCacheLocker().tryReadLock(multilevelKey.getKey(), timeout);
     }
 
     @Override
     public boolean tryWriteLock(Object key, long timeout) throws CacheException {
-        MultilevelKey _key = MultilevelKey.bind(key);
-        return __masterCache.acquireCacheLocker().tryWriteLock(_key.getKey(), timeout);
+        MultilevelKey multilevelKey = MultilevelKey.bind(key);
+        return masterCache.acquireCacheLocker().tryWriteLock(multilevelKey.getKey(), timeout);
     }
 
     @Override
     public void releaseReadLock(Object key) {
-        MultilevelKey _key = MultilevelKey.bind(key);
-        __masterCache.acquireCacheLocker().releaseReadLock(_key.getKey());
+        MultilevelKey multilevelKey = MultilevelKey.bind(key);
+        masterCache.acquireCacheLocker().releaseReadLock(multilevelKey.getKey());
     }
 
     @Override
     public void releaseWriteLock(Object key) {
-        MultilevelKey _key = MultilevelKey.bind(key);
-        __masterCache.acquireCacheLocker().releaseWriteLock(_key.getKey());
+        MultilevelKey multilevelKey = MultilevelKey.bind(key);
+        masterCache.acquireCacheLocker().releaseWriteLock(multilevelKey.getKey());
     }
 }

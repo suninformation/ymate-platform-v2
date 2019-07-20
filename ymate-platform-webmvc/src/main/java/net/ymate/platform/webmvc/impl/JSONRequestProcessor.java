@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2017 the original author or authors.
+ * Copyright 2007-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,88 +18,89 @@ package net.ymate.platform.webmvc.impl;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
-import net.ymate.platform.core.lang.BlurObject;
-import net.ymate.platform.core.util.ClassUtils;
-import net.ymate.platform.core.util.RuntimeUtils;
+import net.ymate.platform.commons.lang.BlurObject;
+import net.ymate.platform.commons.util.ClassUtils;
+import net.ymate.platform.commons.util.RuntimeUtils;
+import net.ymate.platform.webmvc.IRequestContext;
 import net.ymate.platform.webmvc.IUploadFileWrapper;
 import net.ymate.platform.webmvc.IWebMvc;
 import net.ymate.platform.webmvc.context.WebContext;
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import java.io.IOException;
 import java.lang.reflect.Array;
 
 /**
  * 基于JSON作为协议格式的控制器请求处理器接口实现
  *
  * @author 刘镇 (suninformation@163.com) on 15/5/28 上午11:51
- * @version 1.0
  */
 public class JSONRequestProcessor extends DefaultRequestProcessor {
 
-    private static final Log _LOG = LogFactory.getLog(JSONRequestProcessor.class);
+    private static final Log LOG = LogFactory.getLog(JSONRequestProcessor.class);
 
-    private JSONObject __doGetProtocol(IWebMvc owner) {
-        JSONObject _protocol = WebContext.getRequestContext().getAttribute(JSONRequestProcessor.class.getName());
-        if (_protocol == null) {
+    private JSONObject doGetProtocol(IWebMvc owner) {
+        IRequestContext requestContext = WebContext.getRequestContext();
+        JSONObject protocol = requestContext.getAttribute(JSONRequestProcessor.class.getName());
+        if (protocol == null) {
             try {
-                _protocol = JSON.parseObject(StringUtils.defaultIfBlank(IOUtils.toString(WebContext.getRequest().getInputStream(), owner.getModuleCfg().getDefaultCharsetEncoding()), "{}"));
-            } catch (Exception e) {
-                _protocol = JSON.parseObject("{}");
+                protocol = JSON.parseObject(StringUtils.defaultIfBlank(IOUtils.toString(WebContext.getRequest().getInputStream(), owner.getConfig().getDefaultCharsetEncoding()), "{}"));
+            } catch (IOException e) {
+                protocol = JSON.parseObject("{}");
                 //
-                if (WebContext.getContext().getOwner().getOwner().getConfig().isDevelopMode() && _LOG.isWarnEnabled()) {
-                    _LOG.warn("Invalid protocol", RuntimeUtils.unwrapThrow(e));
+                if (owner.getOwner().isDevEnv() && LOG.isWarnEnabled()) {
+                    LOG.warn("Invalid protocol.", RuntimeUtils.unwrapThrow(e));
                 }
             }
-            WebContext.getRequestContext().addAttribute(JSONRequestProcessor.class.getName(), _protocol);
+            requestContext.addAttribute(JSONRequestProcessor.class.getName(), protocol);
         }
-        return _protocol;
+        return protocol;
     }
 
     @Override
-    protected Object __doParseRequestParam(IWebMvc owner, String paramName, String defaultValue, Class<?> paramType, boolean fullScope) {
-        Object _returnValue = null;
-        JSONObject _protocol = __doGetProtocol(owner);
-        String[] _paramNameArr = StringUtils.split(paramName, ".");
+    protected Object doParseRequestParam(IWebMvc owner, String paramName, String defaultValue, Class<?> paramType, boolean fullScope) {
+        Object returnValue = null;
+        JSONObject protocol = doGetProtocol(owner);
+        String[] paramNameArr = StringUtils.split(paramName, ".");
         if (paramType.isArray()) {
             if (!paramType.equals(IUploadFileWrapper[].class)) {
-                Object[] _values = null;
-                if (_paramNameArr.length > 1) {
-                    JSONObject _jsonObj = _protocol.getJSONObject(_paramNameArr[0]);
-                    if (_jsonObj != null) {
-                        JSONArray _jsonArr = _jsonObj.getJSONArray(_paramNameArr[1]);
-                        if (_jsonArr != null) {
-                            _values = _jsonArr.toArray();
+                Object[] values = null;
+                if (paramNameArr.length > 1) {
+                    JSONObject jsonObj = protocol.getJSONObject(paramNameArr[0]);
+                    if (jsonObj != null) {
+                        JSONArray jsonArr = jsonObj.getJSONArray(paramNameArr[1]);
+                        if (jsonArr != null) {
+                            values = jsonArr.toArray();
                         }
                     }
                 } else {
-                    JSONArray _jsonArr = _protocol.getJSONArray(paramName);
-                    if (_jsonArr != null) {
-                        _values = _jsonArr.toArray();
+                    JSONArray jsonArr = protocol.getJSONArray(paramName);
+                    if (jsonArr != null) {
+                        values = jsonArr.toArray();
                     }
                 }
-                if (_values != null && _values.length > 0) {
-                    Class<?> _arrayClassType = ClassUtils.getArrayClassType(paramType);
-                    Object[] _tempParams = (Object[]) Array.newInstance(_arrayClassType, _values.length);
-                    for (int _tempIdx = 0; _tempIdx < _values.length; _tempIdx++) {
-                        String _value = BlurObject.bind(_values[_tempIdx]).toStringValue();
-                        _tempParams[_tempIdx] = __doSafeGetParamValue(owner, paramName, _arrayClassType, _value, null, false);
+                if (values != null && values.length > 0) {
+                    Class<?> arrayClassType = ClassUtils.getArrayClassType(paramType);
+                    Object[] newArray = (Object[]) Array.newInstance(arrayClassType, values.length);
+                    for (int arrayIdx = 0; arrayIdx < values.length; arrayIdx++) {
+                        newArray[arrayIdx] = doSafeGetParamValue(owner, paramName, arrayClassType, BlurObject.bind(values[arrayIdx]).toStringValue(), null, false);
                     }
-                    _returnValue = _tempParams;
+                    returnValue = newArray;
                 }
             }
         } else if (!paramType.equals(IUploadFileWrapper.class)) {
-            if (_paramNameArr.length > 1) {
-                JSONObject _jsonObj = _protocol.getJSONObject(_paramNameArr[0]);
-                if (_jsonObj != null) {
-                    _returnValue = __doSafeGetParamValue(owner, paramName, paramType, _jsonObj.getString(_paramNameArr[1]), defaultValue, fullScope);
+            if (paramNameArr.length > 1) {
+                JSONObject jsonObj = protocol.getJSONObject(paramNameArr[0]);
+                if (jsonObj != null) {
+                    returnValue = doSafeGetParamValue(owner, paramName, paramType, jsonObj.getString(paramNameArr[1]), defaultValue, fullScope);
                 }
             } else {
-                _returnValue = __doSafeGetParamValue(owner, paramName, paramType, _protocol.getString(paramName), defaultValue, fullScope);
+                returnValue = doSafeGetParamValue(owner, paramName, paramType, protocol.getString(paramName), defaultValue, fullScope);
             }
         }
-        return _returnValue;
+        return returnValue;
     }
 }

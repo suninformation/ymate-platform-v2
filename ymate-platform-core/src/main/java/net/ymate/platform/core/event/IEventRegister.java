@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2017 the original author or authors.
+ * Copyright 2007-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,12 +15,14 @@
  */
 package net.ymate.platform.core.event;
 
+import net.ymate.platform.core.beans.annotation.Ignored;
+
 /**
  * 事件注册器接口，框架自动扫描后并执行，提供向事件管理器注册自定义事件监听的扩展支持
  *
  * @author 刘镇 (suninformation@163.com) on 15/5/20 上午12:05
- * @version 1.0
  */
+@Ignored
 public interface IEventRegister {
 
     /**

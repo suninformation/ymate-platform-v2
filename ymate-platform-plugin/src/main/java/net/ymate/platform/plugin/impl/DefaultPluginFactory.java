@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2017 the original author or authors.
+ * Copyright 2007-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,21 +15,25 @@
  */
 package net.ymate.platform.plugin.impl;
 
-import net.ymate.platform.core.YMP;
+import net.ymate.platform.commons.util.ClassUtils;
+import net.ymate.platform.commons.util.RuntimeUtils;
+import net.ymate.platform.core.IApplication;
 import net.ymate.platform.core.beans.IBeanHandler;
 import net.ymate.platform.core.beans.IBeanLoader;
 import net.ymate.platform.core.beans.annotation.Bean;
 import net.ymate.platform.core.beans.annotation.Interceptor;
-import net.ymate.platform.core.beans.impl.DefaultBeanLoader;
-import net.ymate.platform.core.util.ClassUtils;
-import net.ymate.platform.core.util.RuntimeUtils;
+import net.ymate.platform.core.configuration.IConfigReader;
+import net.ymate.platform.core.module.IModuleConfigurer;
 import net.ymate.platform.plugin.*;
 import net.ymate.platform.plugin.annotation.Handler;
 import net.ymate.platform.plugin.annotation.Plugin;
 import net.ymate.platform.plugin.annotation.PluginFactory;
-import net.ymate.platform.plugin.handle.BeanHandler;
-import net.ymate.platform.plugin.handle.InterceptorBeanHandler;
+import net.ymate.platform.plugin.annotation.PluginRefer;
+import net.ymate.platform.plugin.handle.PluginBeanHandler;
 import net.ymate.platform.plugin.handle.PluginHandler;
+import net.ymate.platform.plugin.handle.PluginInterceptorHandler;
+import net.ymate.platform.plugin.handle.PluginReferInjector;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -43,298 +47,310 @@ import java.util.List;
  * 默认插件工厂接口实现
  *
  * @author 刘镇 (suninformation@163.com) on 2012-12-2 下午3:22:17
- * @version 1.0
  */
-public class DefaultPluginFactory implements IPluginFactory, IBeanHandler {
+public class DefaultPluginFactory implements IPluginFactory {
 
-    private static final Log _LOG = LogFactory.getLog(DefaultPluginFactory.class);
+    private static final Log LOG = LogFactory.getLog(DefaultPluginFactory.class);
 
-    private IPluginBeanFactory __beanFactory;
+    private IApplication owner;
 
-    private IPluginConfig __config;
+    private IPluginBeanFactory pluginBeanFactory;
 
-    private IPluginEventListener __event;
+    private IPluginConfig pluginConfig;
 
-    private PluginClassLoader __pluginClassLoader;
+    private IBeanLoader beanLoader;
 
-    private YMP __owner;
+    private PluginClassLoader pluginClassLoader;
 
-    private boolean __includedClassPath;
+    private final IPluginEventListener eventListener;
 
-    private boolean __inited;
+    private final boolean includedClassPath;
 
-    private boolean __startup;
+    private boolean initialized;
+
+    private boolean started;
 
     /**
-     * @param owner        所属YMP框架管理器实例
+     * @param owner        指定所属容器参数对象
      * @param pluginHome   插件根路径
-     * @param autoPackages 自动扫描包路径
+     * @param packageNames 自动扫描包路径
      * @return 创建并返回默认插件工厂实例
      * @throws Exception 创建插件工厂时可能产生的异常
      */
-    public static IPluginFactory create(YMP owner, String pluginHome, String[] autoPackages) throws Exception {
-        IPluginFactory _factory = new DefaultPluginFactory(owner);
-        _factory.init(DefaultPluginConfig.load(pluginHome, autoPackages));
-        return _factory;
+    public static IPluginFactory create(IApplication owner, String pluginHome, String[] packageNames) throws Exception {
+        IPluginFactory pluginFactory = new DefaultPluginFactory(DefaultPluginConfig.load(pluginHome, packageNames), false);
+        pluginFactory.initialize(owner);
+        //
+        return pluginFactory;
     }
 
     /**
-     * @param owner 所属YMP框架管理器实例
+     * @param owner 指定所属容器参数对象
      * @param clazz 指定的插件工厂类型
      * @return 创建并返回由clazz指定类型的插件工厂实例
      * @throws Exception 创建插件工厂时可能产生的异常
      */
-    public static IPluginFactory create(YMP owner, Class<? extends IPluginFactory> clazz) throws Exception {
+    public static IPluginFactory create(IApplication owner, Class<? extends IPluginFactory> clazz) throws Exception {
         return create(owner, clazz, null);
     }
 
     /**
-     * @param owner  所属YMP框架管理器实例
-     * @param clazz  指定的插件工厂类型
-     * @param config 指定的插件工厂初始化配置
+     * @param owner        指定所属容器参数对象
+     * @param clazz        指定的插件工厂类型
+     * @param pluginConfig 指定的插件工厂初始化配置
      * @return 采用指定的初始化配置创建并返回由clazz指定类型的插件工厂实例
      * @throws Exception 创建插件工厂时可能产生的异常
      */
-    public static IPluginFactory create(YMP owner, Class<? extends IPluginFactory> clazz, IPluginConfig config) throws Exception {
-        IPluginFactory _factory = ClassUtils.impl(clazz, IPluginFactory.class, new Class<?>[]{YMP.class}, new Object[]{owner}, false);
-        if (_factory != null) {
-            if (config != null) {
-                _factory.init(config);
-            } else if (clazz.isAnnotationPresent(PluginFactory.class)) {
-                _factory.init(DefaultPluginConfig.load(clazz));
-            }
+    public static IPluginFactory create(IApplication owner, Class<? extends IPluginFactory> clazz, IPluginConfig pluginConfig) throws Exception {
+        IPluginFactory pluginFactory = ClassUtils.impl(clazz, IPluginFactory.class, new Class<?>[]{IPluginConfig.class}, new Object[]{pluginConfig == null && clazz.isAnnotationPresent(PluginFactory.class) ? DefaultPluginConfig.load(clazz) : pluginConfig}, false);
+        if (pluginFactory != null) {
+            pluginFactory.initialize(owner);
         }
-        return _factory;
+        return pluginFactory;
     }
 
-    /**
-     * 构造器
-     *
-     * @param owner 所属YMP框架管理器实例
-     */
-    public DefaultPluginFactory(YMP owner) {
-        this(owner, false);
+    public static IPluginFactory create(IModuleConfigurer moduleConfigurer) {
+        IConfigReader configReader = moduleConfigurer.getConfigReader();
+        //
+        boolean included = configReader.getBoolean(IPluginConfig.INCLUDED_CLASSPATH);
+        //
+        IPluginConfig pluginConfig = DefaultPluginConfig.builder()
+                .pluginHome(new File(RuntimeUtils.replaceEnvVariable(configReader.getString(IPluginConfig.PLUGIN_HOME, "${root}/plugins"))))
+                .packageNames(configReader.getList(IPluginConfig.PACKAGE_NAMES))
+                .enabled(configReader.getBoolean(IPluginConfig.ENABLED, true))
+                .automatic(configReader.getBoolean(IPluginConfig.AUTOMATIC, true))
+                .eventListener(new IPluginEventListener() {
+
+                    private boolean doCheckContext(IPluginContext context, PluginEvent.EVENT event) {
+                        if (context.getPluginFactory() != null) {
+                            if (context.getPluginFactory().getOwner().isDevEnv() && LOG.isInfoEnabled()) {
+                                LOG.info(String.format("%s %s.", context.getPluginMeta().toString(), StringUtils.substringAfter(event.name(), "_").toLowerCase()));
+                            }
+                            return true;
+                        }
+                        return false;
+                    }
+
+                    @Override
+                    public void onInitialized(IPluginContext context, IPlugin plugin) {
+                        if (doCheckContext(context, PluginEvent.EVENT.PLUGIN_INITIALIZED)) {
+                            context.getPluginFactory().getOwner().getEvents().fireEvent(new PluginEvent(plugin, PluginEvent.EVENT.PLUGIN_INITIALIZED));
+                        }
+                    }
+
+                    @Override
+                    public void onStarted(IPluginContext context, IPlugin plugin) {
+                        if (doCheckContext(context, PluginEvent.EVENT.PLUGIN_STARTED)) {
+                            context.getPluginFactory().getOwner().getEvents().fireEvent(new PluginEvent(plugin, PluginEvent.EVENT.PLUGIN_STARTED));
+                        }
+                    }
+
+                    @Override
+                    public void onShutdown(IPluginContext context, IPlugin plugin) {
+                        if (doCheckContext(context, PluginEvent.EVENT.PLUGIN_SHUTDOWN)) {
+                            context.getPluginFactory().getOwner().getEvents().fireEvent(new PluginEvent(plugin, PluginEvent.EVENT.PLUGIN_SHUTDOWN));
+                        }
+                    }
+
+                    @Override
+                    public void onDestroy(IPluginContext context, IPlugin plugin) {
+                        if (doCheckContext(context, PluginEvent.EVENT.PLUGIN_DESTROYED)) {
+                            context.getPluginFactory().getOwner().getEvents().fireEvent(new PluginEvent(plugin, PluginEvent.EVENT.PLUGIN_DESTROYED));
+                        }
+                    }
+                }).build();
+        return new DefaultPluginFactory(pluginConfig, included);
     }
 
     /**
      * 构造器(仅限内部使用)
      *
-     * @param owner             所属YMP框架管理器实例
-     * @param includedClassPath 是否加载当前CLASSPATH内的所有包含插件配置文件的Jar包
+     * @param pluginConfig      指定的插件工厂初始化配置
+     * @param includedClassPath 是否扫描当前CLASSPATH内的相关插件
      */
-    protected DefaultPluginFactory(YMP owner, boolean includedClassPath) {
-        __owner = owner;
-        __includedClassPath = includedClassPath;
+    private DefaultPluginFactory(IPluginConfig pluginConfig, boolean includedClassPath) {
+        this.pluginConfig = pluginConfig;
+        this.includedClassPath = includedClassPath;
+        this.eventListener = pluginConfig.getPluginEventListener() != null ? pluginConfig.getPluginEventListener() : new DefaultPluginEventListener();
+        this.beanLoader = (pluginConfig.getPluginBeanLoaderFactory() != null ? pluginConfig.getPluginBeanLoaderFactory() : new DefaultPluginBeanLoaderFactory()).getPluginBeanLoader();
+        if (pluginConfig.isEnabled()) {
+            this.beanLoader.registerPackageNames(pluginConfig.getPackageNames());
+            this.beanLoader.registerHandler(Bean.class, new PluginBeanHandler(this));
+            this.beanLoader.registerHandler(Interceptor.class, new PluginInterceptorHandler(this));
+            this.beanLoader.registerHandler(Plugin.class, new PluginHandler());
+            this.beanLoader.registerHandler(Handler.class, targetClass -> {
+                if (ClassUtils.isNormalClass(targetClass) && !targetClass.isInterface() && targetClass.isAnnotationPresent(Handler.class) && ClassUtils.isInterfaceOf(targetClass, IBeanHandler.class)) {
+                    IBeanHandler beanHandler;
+                    try {
+                        beanHandler = (IBeanHandler) targetClass.getConstructor(IApplication.class).newInstance(owner);
+                    } catch (NoSuchMethodException e) {
+                        try {
+                            beanHandler = (IBeanHandler) targetClass.getConstructor(IPluginFactory.class).newInstance(this);
+                        } catch (NoSuchMethodException ex) {
+                            beanHandler = (IBeanHandler) targetClass.newInstance();
+                        }
+                    }
+                    this.beanLoader.registerHandler(targetClass.getAnnotation(Handler.class).value(), beanHandler);
+                }
+                return null;
+            });
+        }
     }
 
     @Override
-    public void init(IPluginConfig pluginConfig) throws Exception {
-        if (!__inited) {
-            __config = pluginConfig;
+    public void initialize(IApplication owner) throws Exception {
+        if (!initialized && pluginConfig.isEnabled()) {
+            this.owner = owner;
+            this.owner.getBeanFactory().registerInjector(PluginRefer.class, new PluginReferInjector(this));
             //
-            __beanFactory = new DefaultPluginBeanFactory(this, __includedClassPath);
-            __beanFactory.registerHandler(Bean.class, new BeanHandler(this));
-            __beanFactory.registerHandler(Interceptor.class, new InterceptorBeanHandler(this));
-            __beanFactory.registerHandler(Handler.class, this);
-            __beanFactory.registerHandler(Plugin.class, new PluginHandler(this));
+            pluginBeanFactory = new DefaultPluginBeanFactory(this, includedClassPath);
+            pluginClassLoader = buildPluginClassLoader();
             //
-            if (__owner != null) {
-                __owner.bindBeanFactory(__beanFactory);
-            }
+            beanLoader.setClassLoader(pluginClassLoader);
+            beanLoader.load(pluginBeanFactory);
             //
-            __event = __config.getPluginEventListener();
-            if (__event == null) {
-                __event = new DefaultPluginEventListener();
-            }
+            pluginBeanFactory.initialize(owner);
             //
-            __pluginClassLoader = __buildPluginClassLoader();
-            //
-            IBeanLoader _beanLoader = new DefaultBeanLoader();
-            _beanLoader.setClassLoader(__pluginClassLoader);
-            __beanFactory.setLoader(_beanLoader);
-            //
-            for (String _package : __config.getAutoscanPackages()) {
-                __beanFactory.registerPackage(_package);
-            }
-            __beanFactory.init();
-            //
-            __inited = true;
+            initialized = true;
         }
     }
 
     @Override
     public void startup() throws Exception {
-        if (!__startup) {
-            __beanFactory.initProxy(__owner.getConfig().getProxyFactory());
-            __beanFactory.initIoC();
-            //
-            for (PluginMeta _meta : __beanFactory.getPluginMetas()) {
-                IPlugin _plugin = __beanFactory.getBean(_meta.getInitClass());
-                _plugin.init(new DefaultPluginContext(this, _meta));
-                //
-                __event.onInited(_plugin.getPluginContext(), _plugin);
-                //
-                if (__config.isAutomatic() && _meta.isAutomatic()) {
-                    _plugin.startup();
-                    //
-                    __event.onStarted(_plugin.getPluginContext(), _plugin);
-                }
-            }
-            //
-            __startup = true;
-        }
-    }
-
-    private synchronized PluginClassLoader __buildPluginClassLoader() throws Exception {
-        if (__pluginClassLoader == null) {
-            if (__config.getPluginHome() != null && __config.getPluginHome().exists() && __config.getPluginHome().isDirectory()) {
-                List<URL> _libs = new ArrayList<URL>();
-                // 扫描并分析插件通用类路径
-                File _commonFile = new File(__config.getPluginHome(), ".plugin");
-                if (_commonFile.exists() && _commonFile.isDirectory()) {
-                    try {
-                        // 设置通用JAR包路径
-                        File _tempFile = new File(_commonFile, "lib");
-                        if (_tempFile.exists() && _tempFile.isDirectory()) {
-                            File[] _libFiles = _tempFile.listFiles();
-                            for (File _libFile : _libFiles != null ? _libFiles : new File[0]) {
-                                if (_libFile.getPath().endsWith("jar")) {
-                                    _libs.add(_libFile.toURI().toURL());
-                                }
-                            }
-                        }
-                        // 设置通用类文件路径
-                        _tempFile = new File(_commonFile, "classes");
-                        if (_tempFile.exists() && _tempFile.isDirectory()) {
-                            _libs.add(_tempFile.toURI().toURL());
-                        }
-                    } catch (MalformedURLException e) {
-                        _LOG.warn("", e);
+        if (!started) {
+            for (PluginMeta pluginMeta : pluginBeanFactory.getPluginMetas()) {
+                IPlugin plugin = pluginBeanFactory.getBean(pluginMeta.getInitClass());
+                if (plugin != null && !plugin.isInitialized()) {
+                    plugin.initialize(new DefaultPluginContext(this, pluginMeta));
+                    eventListener.onInitialized(plugin.getPluginContext(), plugin);
+                    if (pluginConfig.isAutomatic() && pluginMeta.isAutomatic()) {
+                        plugin.startup();
+                        eventListener.onStarted(plugin.getPluginContext(), plugin);
                     }
                 }
-                // 扫描所有正式插件目录(即目录名称不以'.'开头的)
-                File[] _pluginDirs = __config.getPluginHome().listFiles();
-                if (_pluginDirs != null) {
-                    for (File _pluginDir : _pluginDirs) {
-                        if (_pluginDir.isDirectory() && _pluginDir.getName().charAt(0) != '.') {
-                            // 设置JAR包路径
-                            File _pluginLibDir = new File(_pluginDir, "lib");
-                            if (_pluginLibDir.exists() && _pluginLibDir.isDirectory()) {
-                                File[] _libFiles = _pluginLibDir.listFiles();
-                                if (_libFiles != null) {
-                                    for (File _libFile : _libFiles) {
-                                        if (_libFile.isFile() && _libFile.getAbsolutePath().endsWith("jar")) {
-                                            _libs.add(_libFile.toURI().toURL());
-                                        }
-                                    }
-                                }
-                            }
-                            // 设置类文件路径
-                            _pluginLibDir = new File(_pluginDir, "classes");
-                            if (_pluginLibDir.exists() && _pluginLibDir.isDirectory()) {
-                                _libs.add(_pluginLibDir.toURI().toURL());
-                            }
-                        }
-                    }
-                }
-                //
-                __pluginClassLoader = new PluginClassLoader(__config.getPluginHome().getPath(), _libs.toArray(new URL[0]), this.getClass().getClassLoader());
-            } else {
-                throw new IllegalArgumentException("The pluginHome parameter is invalid");
-            }
-        }
-        return __pluginClassLoader;
-    }
-
-    @Override
-    public boolean isInited() {
-        return __inited;
-    }
-
-    @Override
-    public void destroy() throws Exception {
-        if (__inited) {
-            __inited = false;
-            __startup = false;
-            //
-            for (PluginMeta _meta : __beanFactory.getPluginMetas()) {
-                IPlugin _plugin = __beanFactory.getBean(_meta.getInitClass());
-                if (_plugin != null) {
-                    _plugin.shutdown();
-                    __event.onShutdown(_plugin.getPluginContext(), _plugin);
-                    __event.onDestroy(_plugin.getPluginContext(), _plugin);
-                    _plugin.destroy();
-                }
             }
             //
-            __beanFactory.destroy();
-            __beanFactory = null;
-            //
-            __config = null;
-            __pluginClassLoader = null;
+            started = true;
         }
     }
 
     @Override
-    public void addExcludedInterfaceClass(Class<?> interfaceClass) {
-        __beanFactory.registerExcludedClass(interfaceClass);
+    public boolean isInitialized() {
+        return initialized;
     }
 
     @Override
-    public YMP getOwner() {
-        return __owner;
+    public void close() throws Exception {
+        if (initialized) {
+            initialized = false;
+            started = false;
+            //
+            for (PluginMeta pluginMeta : pluginBeanFactory.getPluginMetas()) {
+                IPlugin plugin = pluginBeanFactory.getBean(pluginMeta.getInitClass());
+                if (plugin != null) {
+                    plugin.shutdown();
+                    eventListener.onShutdown(plugin.getPluginContext(), plugin);
+                    eventListener.onDestroy(plugin.getPluginContext(), plugin);
+                    plugin.close();
+                }
+            }
+            //
+            pluginBeanFactory.close();
+            pluginBeanFactory = null;
+            //
+            pluginConfig = null;
+            pluginClassLoader = null;
+            beanLoader = null;
+        }
+    }
+
+    @Override
+    public IApplication getOwner() {
+        return owner;
     }
 
     @Override
     public IPluginConfig getPluginConfig() {
-        return __config;
+        return pluginConfig;
     }
 
     @Override
-    public IPluginBeanFactory getBeanFactory() {
-        return __beanFactory;
+    public IBeanLoader getBeanLoader() {
+        return beanLoader;
     }
 
-    private void __checkPluginStatus(IPlugin plugin) {
-        if (plugin != null && plugin.isInited() && !plugin.isStarted()) {
-            try {
-                plugin.startup();
-                __event.onStarted(plugin.getPluginContext(), plugin);
-            } catch (Exception e) {
-                _LOG.warn("A exception occurred while starting plugin [" + plugin.getPluginContext().getPluginMeta().getName() + "]: ", RuntimeUtils.unwrapThrow(e));
+    private synchronized PluginClassLoader buildPluginClassLoader() throws Exception {
+        if (pluginClassLoader == null) {
+            if (pluginConfig.getPluginHome() != null && pluginConfig.getPluginHome().exists() && pluginConfig.getPluginHome().isDirectory()) {
+                List<URL> libs = new ArrayList<>();
+                findLibFiles(new File(pluginConfig.getPluginHome(), ".plugin"), libs);
+                findLibFiles(pluginConfig.getPluginHome(), libs);
+                //
+                pluginClassLoader = new PluginClassLoader(pluginConfig.getPluginHome().getPath(), libs.toArray(new URL[0]), this.getClass().getClassLoader());
+            } else {
+                throw new IllegalArgumentException(String.format("Invalid plugin home path [%s].", pluginConfig.getPluginHome()));
+            }
+        }
+        return pluginClassLoader;
+    }
+
+    private void findLibFiles(File targetDir, List<URL> results) throws MalformedURLException {
+        if (targetDir != null && targetDir.exists() && targetDir.isDirectory()) {
+            File[] files = targetDir.listFiles();
+            if (files != null && files.length > 0) {
+                for (File file : files) {
+                    // 扫描所有正式插件目录(即目录名称不以'.'开头的)
+                    if (file.getName().charAt(0) != '.') {
+                        if (file.isDirectory()) {
+                            // 设置并扫描lib目录中jar文件
+                            findLibFiles(new File(file, "lib"), results);
+                            // 设置类文件路径
+                            File classesFile = new File(file, "classes");
+                            if (classesFile.exists() && classesFile.isDirectory()) {
+                                results.add(classesFile.toURI().toURL());
+                            }
+                        }
+                    } else if (file.isFile() && file.getAbsolutePath().endsWith("jar")) {
+                        results.add(file.toURI().toURL());
+                    }
+                }
             }
         }
     }
 
+    private boolean checkPluginStatus(IPlugin plugin) {
+        if (plugin != null && plugin.isInitialized() && !plugin.isStarted()) {
+            try {
+                plugin.startup();
+                eventListener.onStarted(plugin.getPluginContext(), plugin);
+                return true;
+            } catch (Exception e) {
+                LOG.warn(String.format("A exception occurred while starting [%s]: ", plugin.getPluginContext().getPluginMeta().toString()), RuntimeUtils.unwrapThrow(e));
+            }
+        }
+        return false;
+    }
+
     @Override
-    public IPlugin getPlugin(String id) {
-        IPlugin _plugin = __beanFactory.getPlugin(id);
-        __checkPluginStatus(_plugin);
-        return _plugin;
+    public IPlugin getPlugin(String idOrAlias) {
+        IPlugin plugin = pluginBeanFactory.getPlugin(idOrAlias);
+        if (checkPluginStatus(plugin)) {
+            return plugin;
+        }
+        return null;
     }
 
     @Override
     public <T> T getPlugin(Class<T> clazz) {
-        T _target = __beanFactory.getBean(clazz);
-        __checkPluginStatus((IPlugin) _target);
-        return _target;
+        T plugin = pluginBeanFactory.getBean(clazz);
+        if (checkPluginStatus((IPlugin) plugin)) {
+            return plugin;
+        }
+        return null;
     }
 
     @Override
-    public Object handle(Class<?> targetClass) throws Exception {
-        if (!(targetClass.isInterface() || targetClass.isAnnotation() || targetClass.isEnum()) && (targetClass.isAnnotationPresent(Handler.class) && ClassUtils.isInterfaceOf(targetClass, IBeanHandler.class))) {
-            IBeanHandler _handler;
-            try {
-                _handler = (IBeanHandler) targetClass.getConstructor(YMP.class).newInstance(__owner);
-            } catch (NoSuchMethodException e) {
-                try {
-                    _handler = (IBeanHandler) targetClass.getConstructor(IPluginFactory.class).newInstance(this);
-                } catch (NoSuchMethodException ex) {
-                    _handler = (IBeanHandler) targetClass.newInstance();
-                }
-            }
-            __beanFactory.registerHandler(targetClass.getAnnotation(Handler.class).value(), _handler);
-        }
-        return null;
+    public boolean isIncludedClassPath() {
+        return includedClassPath;
     }
 }

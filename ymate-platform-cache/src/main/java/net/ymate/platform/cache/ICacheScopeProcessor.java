@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2017 the original author or authors.
+ * Copyright 2007-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,20 +15,24 @@
  */
 package net.ymate.platform.cache;
 
+import net.ymate.platform.core.beans.annotation.Ignored;
+
 /**
  * 缓存作用域处理器接口
  *
  * @author 刘镇 (suninformation@163.com) on 16/1/17 下午4:20
- * @version 1.0
  */
+@Ignored
 public interface ICacheScopeProcessor {
 
     /**
+     * 从缓存中获取由cacheName指定的缓存对象
+     *
      * @param caches    缓存
      * @param scope     缓存作用域
      * @param cacheName 缓存名称
      * @param cacheKey  缓存KEY
-     * @return 从缓存中获取由cacheName指定的缓存对象
+     * @return 返回缓存对象
      * @throws CacheException 可能产生的异常
      */
     CacheElement getFromCache(ICaches caches, ICaches.Scope scope, String cacheName, String cacheKey) throws CacheException;

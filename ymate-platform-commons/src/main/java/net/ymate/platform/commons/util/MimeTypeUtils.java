@@ -1,0 +1,71 @@
+/*
+ * Copyright 2007-2019 the original author or authors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package net.ymate.platform.commons.util;
+
+import org.apache.commons.lang3.StringUtils;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Properties;
+
+/**
+ * @author 刘镇 (suninformation@163.com) on 15/5/10 上午2:45
+ */
+public class MimeTypeUtils {
+
+    private static final Map<String, String> MIME_TYPE_MAPS = new HashMap<>();
+
+    static {
+        Properties configs = new Properties();
+        InputStream inputStream = MimeTypeUtils.class.getClassLoader().getResourceAsStream("mimetypes-conf.properties");
+        if (inputStream == null) {
+            inputStream = MimeTypeUtils.class.getClassLoader().getResourceAsStream("META-INF/mimetypes-default-conf.properties");
+        }
+        if (inputStream != null) {
+            try {
+                configs.load(inputStream);
+                configs.keySet().forEach((key) -> {
+                    String[] values = StringUtils.split(configs.getProperty((String) key, StringUtils.EMPTY), "|");
+                    for (String value : values) {
+                        MIME_TYPE_MAPS.put(value, (String) key);
+                    }
+                });
+            } catch (IOException ignored) {
+            } finally {
+                try {
+                    inputStream.close();
+                } catch (IOException ignored) {
+                }
+            }
+        }
+    }
+
+    /**
+     * @param extName 文件扩展名
+     * @return 根据文件扩展名获取对应的MIME_TYPE类型
+     */
+    public static String getFileMimeType(String extName) {
+        if (StringUtils.isBlank(extName)) {
+            return null;
+        }
+        if (extName.charAt(0) == '.') {
+            extName = extName.substring(1);
+        }
+        return MIME_TYPE_MAPS.get(extName);
+    }
+}

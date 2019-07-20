@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2017 the original author or authors.
+ * Copyright 2007-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,152 +15,80 @@
  */
 package net.ymate.platform.webmvc.impl;
 
-import net.ymate.platform.core.beans.annotation.Interceptor;
+import net.ymate.platform.commons.lang.PairObject;
 import net.ymate.platform.core.beans.intercept.IInterceptor;
-import net.ymate.platform.core.beans.intercept.InterceptAnnoHelper;
 import net.ymate.platform.core.beans.intercept.InterceptContext;
-import net.ymate.platform.core.lang.PairObject;
-import net.ymate.platform.webmvc.IInterceptorRule;
-import net.ymate.platform.webmvc.IInterceptorRuleProcessor;
-import net.ymate.platform.webmvc.IRequestContext;
-import net.ymate.platform.webmvc.IWebMvc;
-import net.ymate.platform.webmvc.annotation.InterceptorRule;
+import net.ymate.platform.webmvc.*;
 import net.ymate.platform.webmvc.annotation.ResponseCache;
+import net.ymate.platform.webmvc.base.Type;
 import net.ymate.platform.webmvc.view.IView;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
-import java.lang.reflect.Method;
+import java.util.Arrays;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 /**
  * 默认请求拦截规则处理器接口实现
  *
  * @author 刘镇 (suninformation@163.com) on 16/1/8 下午11:27
- * @version 1.0
  */
 public class DefaultInterceptorRuleProcessor implements IInterceptorRuleProcessor {
 
-    private IWebMvc __owner;
+    private IWebMvc owner;
 
-    private final Map<String, InterceptorRuleMeta> __interceptorRules = new HashMap<String, InterceptorRuleMeta>();
+    private boolean initialized;
+
+    private final Map<String, InterceptorRuleMeta> interceptorRules = new HashMap<>();
 
     @Override
-    public void init(IWebMvc owner) throws Exception {
-        __owner = owner;
+    public void initialize(IWebMvc owner) throws Exception {
+        this.owner = owner;
+        this.initialized = true;
+    }
+
+    @Override
+    public boolean isInitialized() {
+        return initialized;
     }
 
     @Override
     public void registerInterceptorRule(Class<? extends IInterceptorRule> targetClass) throws Exception {
-        Method[] _methods = targetClass.getMethods();
-        for (Method _method : _methods) {
-            InterceptorRuleMeta _meta = new InterceptorRuleMeta(__owner, targetClass, _method);
-            if (StringUtils.isNotBlank(_meta.getMapping())) {
-                __interceptorRules.put(_meta.getMapping(), _meta);
-            }
-        }
+        Arrays.stream(targetClass.getMethods()).map(method -> new InterceptorRuleMeta(owner, targetClass, method)).filter(ruleMeta -> StringUtils.isNotBlank(ruleMeta.getMapping())).forEachOrdered(ruleMeta -> interceptorRules.put(ruleMeta.getMapping(), ruleMeta));
     }
 
     @Override
     public PairObject<IView, ResponseCache> processRequest(IWebMvc owner, IRequestContext requestContext) throws Exception {
-        String _mapping = requestContext.getRequestMapping();
-        InterceptorRuleMeta _ruleMeta = __interceptorRules.get(_mapping);
-        IView _view = null;
-        if (_ruleMeta == null) {
-            while (StringUtils.countMatches(_mapping, "/") > 1) {
-                _mapping = StringUtils.substringBeforeLast(_mapping, "/");
-                _ruleMeta = __interceptorRules.get(_mapping);
-                if (_ruleMeta != null && _ruleMeta.isMatchAll()) {
+        String requestMapping = requestContext.getRequestMapping();
+        InterceptorRuleMeta ruleMeta = interceptorRules.get(requestMapping);
+        if (ruleMeta == null) {
+            while (StringUtils.countMatches(requestMapping, Type.Const.PATH_SEPARATOR) > 1) {
+                requestMapping = StringUtils.substringBeforeLast(requestMapping, Type.Const.PATH_SEPARATOR);
+                ruleMeta = interceptorRules.get(requestMapping);
+                if (ruleMeta != null && ruleMeta.isMatchAll()) {
                     break;
                 }
             }
         }
-        ResponseCache _responseCache = null;
-        if (_ruleMeta != null) {
-            _responseCache = _ruleMeta.getResponseCache();
-            InterceptContext _context = new InterceptContext(IInterceptor.Direction.BEFORE, owner.getOwner(), null, null, null, _ruleMeta.getContextParams());
+        IView view = null;
+        ResponseCache responseCacheAnn = null;
+        if (ruleMeta != null) {
+            responseCacheAnn = ruleMeta.getResponseCache();
+            InterceptContext interceptContext = new InterceptContext(IInterceptor.Direction.BEFORE, owner.getOwner(), null, null, null, ruleMeta.getContextParams());
             //
-            for (Class<? extends IInterceptor> _interceptClass : _ruleMeta.getBeforeIntercepts()) {
-                IInterceptor _interceptor = _interceptClass.newInstance();
-                if (_interceptClass.isAnnotationPresent(Interceptor.class)) {
-                    _interceptor = owner.getOwner().getBean(_interceptClass);
-                }
-                if (_interceptor == null) {
-                    _interceptor = _interceptClass.newInstance();
+            for (Class<? extends IInterceptor> interceptClass : ruleMeta.getBeforeIntercepts()) {
+                IInterceptor interceptor = owner.getOwner().getBeanFactory().getBean(interceptClass);
+                if (interceptor == null) {
+                    interceptor = interceptClass.newInstance();
                 }
                 // 执行前置拦截器，若其结果对象不为空则返回并停止执行
-                Object _result = _interceptor.intercept(_context);
-                if (_result != null) {
-                    _view = (IView) _result;
+                Object result = interceptor.intercept(interceptContext);
+                if (result != null) {
+                    view = (IView) result;
                     break;
                 }
             }
         }
-        return new PairObject<IView, ResponseCache>(_view, _responseCache);
-    }
-
-    static class InterceptorRuleMeta {
-        private String mapping;
-        private List<Class<? extends IInterceptor>> beforeIntercepts;
-        private Map<String, String> contextParams;
-        private boolean matchAll;
-
-        private ResponseCache responseCache;
-
-        public InterceptorRuleMeta(IWebMvc owner, Class<? extends IInterceptorRule> targetClass, Method targetMethod) {
-            InterceptorRule _ruleAnno = targetMethod.getAnnotation(InterceptorRule.class);
-            if (_ruleAnno != null && StringUtils.trimToNull(_ruleAnno.value()) != null) {
-                String _mapping = _ruleAnno.value();
-                if (!StringUtils.startsWith(_mapping, "/")) {
-                    _mapping += "/";
-                }
-                //
-                _ruleAnno = targetClass.getAnnotation(InterceptorRule.class);
-                if (_ruleAnno != null) {
-                    mapping = StringUtils.trimToEmpty(_ruleAnno.value());
-                    if (StringUtils.endsWith(mapping, "/")) {
-                        mapping = StringUtils.substringBeforeLast(mapping, "/");
-                    }
-                }
-                mapping += _mapping;
-                //
-                if (!StringUtils.startsWith(mapping, "/")) {
-                    mapping += "/";
-                }
-                if (StringUtils.endsWith(mapping, "/*")) {
-                    matchAll = true;
-                    mapping = StringUtils.substringBeforeLast(mapping, "/*");
-                }
-                //
-                beforeIntercepts = InterceptAnnoHelper.getBeforeIntercepts(targetClass, targetMethod);
-                contextParams = InterceptAnnoHelper.getContextParams(owner.getOwner(), targetClass, targetMethod);
-                //
-                this.responseCache = targetMethod.getAnnotation(ResponseCache.class);
-                if (this.responseCache == null) {
-                    this.responseCache = targetClass.getAnnotation(ResponseCache.class);
-                }
-            }
-        }
-
-        public String getMapping() {
-            return mapping;
-        }
-
-        public List<Class<? extends IInterceptor>> getBeforeIntercepts() {
-            return beforeIntercepts;
-        }
-
-        public Map<String, String> getContextParams() {
-            return contextParams;
-        }
-
-        public boolean isMatchAll() {
-            return matchAll;
-        }
-
-        public ResponseCache getResponseCache() {
-            return responseCache;
-        }
+        return new PairObject<>(view, responseCacheAnn);
     }
 }

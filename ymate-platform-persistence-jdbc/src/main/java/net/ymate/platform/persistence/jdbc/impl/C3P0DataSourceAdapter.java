@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2017 the original author or authors.
+ * Copyright 2007-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,7 @@
 package net.ymate.platform.persistence.jdbc.impl;
 
 import com.mchange.v2.c3p0.ComboPooledDataSource;
-import net.ymate.platform.persistence.jdbc.AbstractDataSourceAdapter;
+import net.ymate.platform.persistence.jdbc.AbstractDatabaseDataSourceAdapter;
 
 import java.sql.Connection;
 
@@ -24,32 +24,30 @@ import java.sql.Connection;
  * 基于C3P0连接池的数据源适配器接口实现
  *
  * @author 刘镇 (suninformation@163.com) on 2013-6-5 下午4:27:09
- * @version 1.0
  */
-public class C3P0DataSourceAdapter extends AbstractDataSourceAdapter {
+public class C3P0DataSourceAdapter extends AbstractDatabaseDataSourceAdapter {
 
-    private ComboPooledDataSource __ds;
+    private ComboPooledDataSource dataSource;
 
     @Override
-    protected void __doInit() throws Exception {
-        __ds = new ComboPooledDataSource();
-        __ds.setDriverClass(__cfgMeta.getDriverClass());
-        __ds.setJdbcUrl(__cfgMeta.getConnectionUrl());
-        __ds.setUser(__cfgMeta.getUsername());
-        __ds.setPassword(__doGetPasswordDecryptIfNeed());
+    protected void doInitialize() throws Exception {
+        dataSource = new ComboPooledDataSource();
+        dataSource.setDriverClass(getDataSourceConfig().getDriverClass());
+        dataSource.setJdbcUrl(getDataSourceConfig().getConnectionUrl());
+        dataSource.setUser(getDataSourceConfig().getUsername());
+        dataSource.setPassword(decryptPasswordIfNeed());
     }
 
     @Override
-    public void destroy() {
-        if (__ds != null) {
-            __ds.close();
+    public void doClose() throws Exception {
+        if (dataSource != null) {
+            dataSource.close();
         }
-        //
-        super.destroy();
+        super.doClose();
     }
 
     @Override
     public Connection getConnection() throws Exception {
-        return __ds.getConnection();
+        return dataSource.getConnection();
     }
 }

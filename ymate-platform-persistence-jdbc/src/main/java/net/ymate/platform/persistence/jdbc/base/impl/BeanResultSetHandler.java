@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2017 the original author or authors.
+ * Copyright 2007-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,11 +15,11 @@
  */
 package net.ymate.platform.persistence.jdbc.base.impl;
 
-import net.ymate.platform.core.lang.BlurObject;
-import net.ymate.platform.core.util.ClassUtils;
-import net.ymate.platform.persistence.base.EntityMeta;
+import net.ymate.platform.commons.lang.BlurObject;
+import net.ymate.platform.commons.util.ClassUtils;
+import net.ymate.platform.core.persistence.base.EntityMeta;
 import net.ymate.platform.persistence.jdbc.base.AbstractResultSetHandler;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import java.lang.reflect.Field;
 import java.sql.ResultSet;
@@ -29,30 +29,29 @@ import java.sql.ResultSet;
  *
  * @param <T> 元素类型
  * @author 刘镇 (suninformation@163.com) on 17/1/7 下午10:20
- * @version 1.0
  */
 public class BeanResultSetHandler<T> extends AbstractResultSetHandler<T> {
 
-    private final Class<T> __beanClass;
+    private final Class<T> beanClass;
 
     @SuppressWarnings("unchecked")
     public BeanResultSetHandler() {
-        __beanClass = (Class<T>) ClassUtils.getParameterizedTypes(getClass()).get(0);
+        beanClass = (Class<T>) ClassUtils.getParameterizedTypes(getClass()).get(0);
     }
 
     public BeanResultSetHandler(Class<T> beanClass) {
-        __beanClass = beanClass;
+        this.beanClass = beanClass;
     }
 
     @Override
-    protected T __doProcessResultRow(ResultSet resultSet) throws Exception {
-        ClassUtils.BeanWrapper<T> _targetWrapper = ClassUtils.wrapper(__beanClass.newInstance());
-        for (int _idx = 0; _idx < __doGetColumnCount(); _idx++) {
-            Field _field = _targetWrapper.getField(StringUtils.uncapitalize(EntityMeta.propertyNameToFieldName(_doGetColumnMeta(_idx).getName())));
-            if (_field != null) {
-                _field.set(_targetWrapper.getTargetObject(), BlurObject.bind(resultSet.getObject(_idx + 1)).toObjectValue(_field.getType()));
+    protected T processResultRow(ResultSet resultSet) throws Exception {
+        ClassUtils.BeanWrapper<T> targetWrapper = ClassUtils.wrapper(beanClass.newInstance());
+        for (int idx = 0; idx < getColumnCount(); idx++) {
+            Field field = targetWrapper.getField(StringUtils.uncapitalize(EntityMeta.propertyNameToFieldName(getColumnMeta(idx).getName())));
+            if (field != null) {
+                field.set(targetWrapper.getTargetObject(), BlurObject.bind(resultSet.getObject(idx + 1)).toObjectValue(field.getType()));
             }
         }
-        return _targetWrapper.getTargetObject();
+        return targetWrapper.getTargetObject();
     }
 }

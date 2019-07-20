@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2017 the original author or authors.
+ * Copyright 2007-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,43 +15,44 @@
  */
 package net.ymate.platform.plugin.annotation;
 
+import org.apache.commons.lang3.StringUtils;
+
 import java.lang.annotation.*;
 
 /**
  * 声明一个类作为插件启动类的注解
  *
  * @author 刘镇 (suninformation@163.com) on 15/3/19 下午6:41
- * @version 1.0
  */
-@Target({ElementType.TYPE})
+@Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
 public @interface Plugin {
 
     /**
-     * @return 插件唯一ID，若未填写则使用初始化类名称进行MD5加密后的值做为ID
+     * @return 插件唯一标识，若未填写则使用初始化类名称
      */
-    String id() default "";
+    String id() default StringUtils.EMPTY;
 
     /**
      * @return 插件名称
      */
-    String name() default "";
+    String name() default StringUtils.EMPTY;
 
     /**
      * @return 插件别名
      */
-    String alias() default "";
+    String[] alias() default {};
 
     /**
      * @return 插件作者
      */
-    String author() default "";
+    String author() default StringUtils.EMPTY;
 
     /**
      * @return 联系邮箱
      */
-    String email() default "";
+    String email() default StringUtils.EMPTY;
 
     /**
      * @return 插件版本
@@ -68,5 +69,5 @@ public @interface Plugin {
     /**
      * @return 插件描述
      */
-    String description() default "";
+    String description() default StringUtils.EMPTY;
 }

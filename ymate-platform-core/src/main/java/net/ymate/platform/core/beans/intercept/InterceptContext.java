@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2017 the original author or authors.
+ * Copyright 2007-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,8 +15,8 @@
  */
 package net.ymate.platform.core.beans.intercept;
 
-import net.ymate.platform.core.YMP;
-import net.ymate.platform.core.support.IContext;
+import net.ymate.platform.core.IApplication;
+import net.ymate.platform.core.support.AbstractContext;
 
 import java.lang.reflect.Method;
 import java.util.Map;
@@ -25,89 +25,72 @@ import java.util.Map;
  * 拦截器环境上下文对象
  *
  * @author 刘镇 (suninformation@163.com) on 15/5/19 下午3:26
- * @version 1.0
  */
-public class InterceptContext implements IContext {
+public class InterceptContext extends AbstractContext {
 
-    private final IInterceptor.Direction __direction;
+    private IInterceptor.Direction direction;
 
-    private final YMP __owner;
+    private final Object targetObject;
 
-    private final Object __targetObject;
+    private final Method targetMethod;
 
-    private final Method __targetMethod;
+    private final Object[] methodParams;
 
-    private final Object[] __methodParams;
+    private Object resultObject;
 
-    private final Map<String, String> __contextParams;
-
-    private Object __resultObject;
-
-    public InterceptContext(IInterceptor.Direction direction, YMP owner, Object targetObject, Method targetMethod, Object[] methodParams, Map<String, String> contextParams) {
-        __direction = direction;
-        __owner = owner;
-        __targetObject = targetObject;
-        __targetMethod = targetMethod;
-        __methodParams = methodParams;
-        __contextParams = contextParams;
+    public InterceptContext(IInterceptor.Direction direction, IApplication owner, Object targetObject, Method targetMethod, Object[] methodParams, Map<String, String> contextParams) {
+        super(owner, contextParams);
+        //
+        this.direction = direction;
+        this.targetObject = targetObject;
+        this.targetMethod = targetMethod;
+        this.methodParams = methodParams;
     }
 
     /**
      * @return 获取当前拦截器执行方式，Before或After
      */
     public IInterceptor.Direction getDirection() {
-        return __direction;
+        return direction;
     }
 
-    /**
-     * @return 获取所属YMP框架管理器
-     */
-    @Override
-    public YMP getOwner() {
-        return __owner;
+    void setDirection(IInterceptor.Direction direction) {
+        this.direction = direction;
     }
 
     /**
      * @return 获取被拦截的目标类型
      */
     public Class<?> getTargetClass() {
-        return __targetObject.getClass();
+        return targetObject.getClass();
     }
 
     /**
      * @return 获取被拦截的目标对象
      */
     public Object getTargetObject() {
-        return __targetObject;
+        return targetObject;
     }
 
     /**
      * @return 获取被代理目标方法对象
      */
     public Method getTargetMethod() {
-        return __targetMethod;
+        return targetMethod;
     }
 
     /**
      * @return 获取方法参数集合
      */
     public Object[] getMethodParams() {
-        return __methodParams;
-    }
-
-    /**
-     * @return 返回上下文参数映射
-     */
-    @Override
-    public Map<String, String> getContextParams() {
-        return __contextParams;
+        return methodParams;
     }
 
     /**
      * @return 获取返回值对象（一般用于后置拦截器获取当前方法的执行结果）
      */
     public Object getResultObject() {
-        return __resultObject;
+        return resultObject;
     }
 
     /**
@@ -115,7 +98,7 @@ public class InterceptContext implements IContext {
      *
      * @param resultObject 方法结果对象
      */
-    public void setResultObject(Object resultObject) {
-        __resultObject = resultObject;
+    void setResultObject(Object resultObject) {
+        this.resultObject = resultObject;
     }
 }

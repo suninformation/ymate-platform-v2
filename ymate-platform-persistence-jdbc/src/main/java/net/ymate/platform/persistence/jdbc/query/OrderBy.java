@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2017 the original author or authors.
+ * Copyright 2007-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,33 +15,34 @@
  */
 package net.ymate.platform.persistence.jdbc.query;
 
-import org.apache.commons.lang.StringUtils;
+import net.ymate.platform.persistence.jdbc.IDatabase;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * 排序对象
  *
  * @author 刘镇 (suninformation@163.com) on 15/5/7 上午10:55
- * @version 1.0
  */
 public final class OrderBy extends Query<OrderBy> {
 
-    private final StringBuilder __orderBySB;
+    private final StringBuilder orderByBuilder;
 
-    public static OrderBy create() {
-        return new OrderBy();
+    public static OrderBy create(IDatabase owner) {
+        return new OrderBy(owner);
     }
 
-    private OrderBy() {
-        __orderBySB = new StringBuilder();
+    private OrderBy(IDatabase owner) {
+        super(owner);
+        orderByBuilder = new StringBuilder();
     }
 
     public OrderBy orderBy(OrderBy orderBy) {
-        String _orderBy = StringUtils.substringAfter(orderBy.toSQL(), "ORDER BY ");
-        if (StringUtils.isNotBlank(_orderBy)) {
-            if (__orderBySB.length() > 0) {
-                __orderBySB.append(", ");
+        String newOrderBy = StringUtils.substringAfter(orderBy.toSQL(), "ORDER BY ");
+        if (StringUtils.isNotBlank(newOrderBy)) {
+            if (orderByBuilder.length() > 0) {
+                orderByBuilder.append(", ");
             }
-            __orderBySB.append(_orderBy);
+            orderByBuilder.append(newOrderBy);
         }
         return this;
     }
@@ -51,13 +52,13 @@ public final class OrderBy extends Query<OrderBy> {
     }
 
     public OrderBy asc(String prefix, String field) {
-        if (__orderBySB.length() > 0) {
-            __orderBySB.append(", ");
+        if (orderByBuilder.length() > 0) {
+            orderByBuilder.append(", ");
         }
         if (StringUtils.isNotBlank(prefix)) {
-            __orderBySB.append(prefix).append(".");
+            orderByBuilder.append(prefix).append(".");
         }
-        __orderBySB.append(__wrapIdentifierField(field));
+        orderByBuilder.append(wrapIdentifierField(field));
         return this;
     }
 
@@ -66,22 +67,22 @@ public final class OrderBy extends Query<OrderBy> {
     }
 
     public OrderBy desc(String prefix, String field) {
-        if (__orderBySB.length() > 0) {
-            __orderBySB.append(", ");
+        if (orderByBuilder.length() > 0) {
+            orderByBuilder.append(", ");
         }
         if (StringUtils.isNotBlank(prefix)) {
-            __orderBySB.append(prefix).append(".");
+            orderByBuilder.append(prefix).append(".");
         }
-        __orderBySB.append(__wrapIdentifierField(field)).append(" DESC");
+        orderByBuilder.append(wrapIdentifierField(field)).append(" DESC");
         return this;
     }
 
     public String toSQL() {
-        StringBuilder _returnSB = new StringBuilder();
-        if (__orderBySB.length() > 0) {
-            _returnSB.append("ORDER BY ").append(__orderBySB);
+        StringBuilder stringBuilder = new StringBuilder();
+        if (orderByBuilder.length() > 0) {
+            stringBuilder.append("ORDER BY ").append(orderByBuilder);
         }
-        return _returnSB.toString();
+        return stringBuilder.toString();
     }
 
     @Override

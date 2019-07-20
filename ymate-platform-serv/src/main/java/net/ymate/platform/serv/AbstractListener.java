@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2017 the original author or authors.
+ * Copyright 2007-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,28 +15,27 @@
  */
 package net.ymate.platform.serv;
 
-import net.ymate.platform.core.util.RuntimeUtils;
+import net.ymate.platform.commons.util.RuntimeUtils;
+import net.ymate.platform.serv.nio.INioSession;
 
 import java.io.IOException;
 
 /**
  * @param <T> 会话类型
  * @author 刘镇 (suninformation@163.com) on 15/11/15 下午6:01
- * @version 1.0
  */
-public abstract class AbstractListener<T extends ISession> implements IListener<T> {
+public abstract class AbstractListener<T extends INioSession> implements IListener<T> {
 
     @Override
-    public void onClientReconnected(IClient client) throws IOException {
+    public void onClientReconnected(IClient client) {
     }
 
     @Override
     public void onExceptionCaught(Throwable e, T session) throws IOException {
         if (e instanceof IOException) {
             throw (IOException) e;
-        } else if (e instanceof RuntimeException) {
-            throw (RuntimeException) e;
+        } else {
+            throw RuntimeUtils.wrapRuntimeThrow(e);
         }
-        throw RuntimeUtils.wrapRuntimeThrow(e);
     }
 }

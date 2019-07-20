@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2017 the original author or authors.
+ * Copyright 2007-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,6 +15,8 @@
  */
 package net.ymate.platform.plugin;
 
+import net.ymate.platform.core.beans.annotation.Ignored;
+
 import java.io.File;
 import java.util.List;
 
@@ -22,36 +24,58 @@ import java.util.List;
  * 插件初始化配置接口
  *
  * @author 刘镇 (suninformation@163.com) on 2012-11-30 下午6:35:14
- * @version 1.0
  */
+@Ignored
 public interface IPluginConfig {
 
-    String DISABLED = "disabled";
+    String ENABLED = "enabled";
 
     String PLUGIN_HOME = "plugin_home";
 
-    String AUTOSCAN_PACKAGES = "autoscan_packages";
+    String PACKAGE_NAMES = "package_names";
 
     String AUTOMATIC = "automatic";
 
     String INCLUDED_CLASSPATH = "included_classpath";
 
     /**
-     * @return 返回插件工厂自动扫描的包路径前缀集合
+     * 插件工厂自动扫描的包名前缀集合
+     *
+     * @return 返回插件工厂自动扫描的包名前缀集合
      */
-    List<String> getAutoscanPackages();
+    List<String> getPackageNames();
 
     /**
+     * 插件生命周期事件监听器
+     *
      * @return 返回插件生命周期事件监听器接口实例
      */
     IPluginEventListener getPluginEventListener();
 
     /**
-     * @return 是否允许插件自动启动
+     * 插件对象加载器工厂对象
+     *
+     * @return 返回插件对象加载器工厂实例
+     */
+    IPluginBeanLoaderFactory getPluginBeanLoaderFactory();
+
+    /**
+     * 是否允许插件自动启动
+     *
+     * @return 返回true表示允许插件自动启动
      */
     boolean isAutomatic();
 
     /**
+     * 是否启用插件模块, 默认为true
+     *
+     * @return 返回true表示开启
+     */
+    boolean isEnabled();
+
+    /**
+     * 插件存放路径
+     *
      * @return 返回插件存放路径
      */
     File getPluginHome();

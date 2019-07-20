@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2017 the original author or authors.
+ * Copyright 2007-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,14 +15,14 @@
  */
 package net.ymate.platform.persistence.jdbc.dialect;
 
-import net.ymate.platform.core.util.ClassUtils;
-import net.ymate.platform.core.util.ExpressionUtils;
-import net.ymate.platform.persistence.Fields;
-import net.ymate.platform.persistence.IShardingRule;
-import net.ymate.platform.persistence.IShardingable;
-import net.ymate.platform.persistence.base.EntityMeta;
-import net.ymate.platform.persistence.base.IEntity;
-import org.apache.commons.lang.StringUtils;
+import net.ymate.platform.commons.util.ClassUtils;
+import net.ymate.platform.commons.util.ExpressionUtils;
+import net.ymate.platform.core.persistence.Fields;
+import net.ymate.platform.core.persistence.IShardingRule;
+import net.ymate.platform.core.persistence.IShardingable;
+import net.ymate.platform.core.persistence.base.EntityMeta;
+import net.ymate.platform.core.persistence.base.IEntity;
+import org.apache.commons.lang3.StringUtils;
 
 import java.math.BigDecimal;
 import java.sql.ResultSet;
@@ -37,21 +37,20 @@ import java.util.Map;
  * 数据库方言接口抽象实现
  *
  * @author 刘镇 (suninformation@163.com) on 2011-8-30 下午01:55:13
- * @version 1.0
  */
 public abstract class AbstractDialect implements IDialect {
 
-    protected static final String __LINE_END_FLAG = ",\n";
+    protected static final String LINE_END_FLAG = ",\n";
 
     /**
      * 引用标识符-开始
      */
-    private String identifierQuoteBegin = "";
+    private String identifierQuoteBegin = StringUtils.EMPTY;
 
     /**
      * 引用标识符-结束
      */
-    private String identifierQuoteEnd = "";
+    private String identifierQuoteEnd = StringUtils.EMPTY;
 
     public AbstractDialect() {
     }
@@ -84,24 +83,21 @@ public abstract class AbstractDialect implements IDialect {
     @Override
     public Map<String, Object> getGeneratedKey(Statement statement, List<String> autoincrementKeys) throws SQLException {
         // 检索由于执行此 Statement 对象而创建的所有自动生成的键
-        Map<String, Object> _ids = new HashMap<String, Object>();
-        ResultSet _keyRSet = statement.getGeneratedKeys();
-        try {
-            for (String _autoKey : autoincrementKeys) {
-                while (_keyRSet.next()) {
-                    Object _keyValue;
+        Map<String, Object> ids = new HashMap<>(autoincrementKeys.size());
+        try (ResultSet keySet = statement.getGeneratedKeys()) {
+            for (String autoKey : autoincrementKeys) {
+                while (keySet.next()) {
+                    Object keyValue;
                     try {
-                        _keyValue = _keyRSet.getObject(_autoKey);
+                        keyValue = keySet.getObject(autoKey);
                     } catch (SQLException e) {
-                        _keyValue = _keyRSet.getObject(1);
+                        keyValue = keySet.getObject(1);
                     }
-                    _ids.put(_autoKey, _keyValue);
+                    ids.put(autoKey, keyValue);
                 }
             }
-        } finally {
-            _keyRSet.close();
         }
-        return _ids;
+        return ids;
     }
 
     @Override
@@ -110,57 +106,57 @@ public abstract class AbstractDialect implements IDialect {
     }
 
     @Override
-    public String buildPagedQuerySQL(String originSql, int page, int pageSize) {
-        int _limit = ((page - 1) * pageSize);
+    public String buildPagedQuerySql(String originSql, int page, int pageSize) {
+        int limit = (page - 1) * pageSize;
         if (pageSize == 0) {
-            return originSql.concat(" limit ").concat(Integer.toString(_limit));
+            return originSql.concat(" limit ").concat(Integer.toString(limit));
         } else {
-            return originSql.concat(" limit ").concat(Integer.toString(_limit)).concat(", ").concat(Integer.toString(pageSize));
+            return originSql.concat(" limit ").concat(Integer.toString(limit)).concat(", ").concat(Integer.toString(pageSize));
         }
     }
 
     @Override
-    public String buildCreateSQL(Class<? extends IEntity> entityClass, String prefix, IShardingable shardingable) {
+    public String buildCreateSql(Class<? extends IEntity> entityClass, String prefix, IShardingable shardingable) {
         throw new UnsupportedOperationException();
     }
 
     @Override
-    public String buildDropSQL(Class<? extends IEntity> entityClass, String prefix, IShardingable shardingable) {
+    public String buildDropSql(Class<? extends IEntity> entityClass, String prefix, IShardingable shardingable) {
         throw new UnsupportedOperationException();
     }
 
-    protected String __doGetColumnType(Class<?> clazz) {
-        String _columnType = "VARCHAR";
+    protected String doGetColumnType(Class<?> clazz) {
+        String columnType = "VARCHAR";
         if (BigDecimal.class.equals(clazz)) {
-            _columnType = "NUMERIC";
+            columnType = "NUMERIC";
         } else if (Boolean.class.equals(clazz) || boolean.class.equals(clazz)) {
-            _columnType = "BIT";
+            columnType = "BIT";
         } else if (Byte.class.equals(clazz) || byte.class.equals(clazz)) {
-            _columnType = "TINYINT";
+            columnType = "TINYINT";
         } else if (Short.class.equals(clazz) || short.class.equals(clazz)) {
-            _columnType = "SMALLINT";
+            columnType = "SMALLINT";
         } else if (Integer.class.equals(clazz) || int.class.equals(clazz)) {
-            _columnType = "INTEGER";
+            columnType = "INTEGER";
         } else if (Long.class.equals(clazz) || long.class.equals(clazz)) {
-            _columnType = "BIGINT";
+            columnType = "BIGINT";
         } else if (Float.class.equals(clazz) || float.class.equals(clazz)) {
-            _columnType = "FLOAT";
+            columnType = "FLOAT";
         } else if (Double.class.equals(clazz) || double.class.equals(clazz)) {
-            _columnType = "DOUBLE";
+            columnType = "DOUBLE";
         } else if (byte[].class.equals(clazz) || Byte[].class.equals(clazz)) {
-            _columnType = "BINARY";
+            columnType = "BINARY";
         } else if (java.sql.Date.class.equals(clazz) || java.util.Date.class.equals(clazz)) {
-            _columnType = "DATE";
+            columnType = "DATE";
         } else if (java.sql.Time.class.equals(clazz)) {
-            _columnType = "TIME";
+            columnType = "TIME";
         } else if (java.sql.Timestamp.class.equals(clazz)) {
-            _columnType = "TIMESTAMP";
+            columnType = "TIMESTAMP";
         } else if (java.sql.Blob.class.equals(clazz)) {
-            _columnType = "BLOB";
+            columnType = "BLOB";
         } else if (java.sql.Clob.class.equals(clazz)) {
-            _columnType = "CLOB";
+            columnType = "CLOB";
         }
-        return _columnType;
+        return columnType;
     }
 
     /**
@@ -169,30 +165,30 @@ public abstract class AbstractDialect implements IDialect {
      * @param separator 分隔符，可选，默认“, ”
      * @return 将字段名称集合转换成为采用separator分隔的字符串
      */
-    protected String __doGenerateFieldsFormatStr(Fields fields, String suffix, String separator) {
-        StringBuilder _fieldsSB = new StringBuilder();
-        Iterator<String> _fieldsIt = fields.fields().iterator();
-        suffix = StringUtils.defaultIfBlank(suffix, "");
+    protected String doGenerateFieldsFormatStr(Fields fields, String suffix, String separator) {
+        StringBuilder fieldsBuilder = new StringBuilder();
+        Iterator<String> fieldsIt = fields.fields().iterator();
+        suffix = StringUtils.trimToEmpty(suffix);
         separator = StringUtils.defaultIfBlank(separator, ", ");
-        while (_fieldsIt.hasNext()) {
-            _fieldsSB.append(this.wrapIdentifierQuote(_fieldsIt.next())).append(suffix);
-            if (_fieldsIt.hasNext()) {
-                _fieldsSB.append(separator);
+        while (fieldsIt.hasNext()) {
+            fieldsBuilder.append(this.wrapIdentifierQuote(fieldsIt.next())).append(suffix);
+            if (fieldsIt.hasNext()) {
+                fieldsBuilder.append(separator);
             }
         }
-        return _fieldsSB.toString();
+        return fieldsBuilder.toString();
     }
 
     @Override
     public String buildTableName(String prefix, EntityMeta entityMeta, IShardingable shardingable) {
-        String _entityName = entityMeta.getEntityName();
+        String entityName = entityMeta.getEntityName();
         if (shardingable != null && entityMeta.getShardingRule() != null) {
-            IShardingRule _rule = ClassUtils.impl(entityMeta.getShardingRule().value(), IShardingRule.class);
-            if (_rule != null) {
-                _entityName = _rule.getShardName(entityMeta.getEntityName(), shardingable.getShardingParam());
+            IShardingRule rule = ClassUtils.impl(entityMeta.getShardingRule(), IShardingRule.class);
+            if (rule != null) {
+                entityName = rule.getShardName(entityMeta.getEntityName(), shardingable.getShardingParam());
             }
         }
-        return this.wrapIdentifierQuote(StringUtils.defaultIfBlank(prefix, "").concat(_entityName));
+        return this.wrapIdentifierQuote(StringUtils.trimToEmpty(prefix).concat(entityName));
     }
 
     /**
@@ -202,115 +198,111 @@ public abstract class AbstractDialect implements IDialect {
      * @param fields        字段名称集合
      * @param isPrimaryKeys fields中存放的是否为主键
      */
-    protected void __doValidProperty(EntityMeta entityMeta, Fields fields, boolean isPrimaryKeys) {
+    protected void doValidProperty(EntityMeta entityMeta, Fields fields, boolean isPrimaryKeys) {
         if (isPrimaryKeys) {
-            for (String _pkField : fields.fields()) {
-                if (!entityMeta.isPrimaryKey(_pkField)) {
-                    throw new IllegalArgumentException("'".concat(_pkField).concat("' isn't primary key field"));
-                }
-            }
+            fields.fields().stream().filter((pkField) -> (!entityMeta.isPrimaryKey(pkField))).forEachOrdered((pkField) -> {
+                throw new IllegalArgumentException("'".concat(pkField).concat("' isn't primary key field."));
+            });
         } else {
-            for (String _field : fields.fields()) {
-                if (!entityMeta.containsProperty(_field)) {
-                    throw new IllegalArgumentException("'".concat(_field).concat("' isn't table field"));
-                }
-            }
+            fields.fields().stream().filter((field) -> (!entityMeta.containsProperty(field))).forEachOrdered((field) -> {
+                throw new IllegalArgumentException("'".concat(field).concat("' isn't table field."));
+            });
         }
     }
 
     @Override
-    public String buildInsertSQL(Class<? extends IEntity> entityClass, String prefix, IShardingable shardingable, Fields fields) {
-        EntityMeta _meta = EntityMeta.createAndGet(entityClass);
-        ExpressionUtils _exp = ExpressionUtils.bind("INSERT INTO ${table_name} (${fields}) VALUES (${values})")
-                .set("table_name", buildTableName(prefix, _meta, shardingable));
+    public String buildInsertSql(Class<? extends IEntity> entityClass, String prefix, IShardingable shardingable, Fields fields) {
+        EntityMeta entityMeta = EntityMeta.load(entityClass);
+        ExpressionUtils exp = ExpressionUtils.bind("INSERT INTO ${table_name} (${fields}) VALUES (${values})")
+                .set("table_name", buildTableName(prefix, entityMeta, shardingable));
         //
-        Fields _fields = Fields.create();
+        Fields newFields = Fields.create();
         if (fields == null || fields.fields().isEmpty()) {
-            _fields.add(_meta.getPropertyNames());
+            newFields.add(entityMeta.getPropertyNames());
         } else {
-            _fields.add(fields);
-            __doValidProperty(_meta, _fields, false);
+            newFields.add(fields);
+            doValidProperty(entityMeta, newFields, false);
         }
-        return _exp.set("fields", __doGenerateFieldsFormatStr(_fields, null, null)).set("values", StringUtils.repeat("?", ", ", _fields.fields().size())).getResult();
+        return exp.set("fields", doGenerateFieldsFormatStr(newFields, null, null)).set("values", StringUtils.repeat("?", ", ", newFields.fields().size())).getResult();
     }
 
     @Override
-    public String buildDeleteByPkSQL(Class<? extends IEntity> entityClass, String prefix, IShardingable shardingable, Fields pkFields) {
-        EntityMeta _meta = EntityMeta.createAndGet(entityClass);
-        ExpressionUtils _exp = ExpressionUtils.bind("DELETE FROM ${table_name} WHERE ${pk}")
-                .set("table_name", buildTableName(prefix, _meta, shardingable));
+    public String buildDeleteByPkSql(Class<? extends IEntity> entityClass, String prefix, IShardingable shardingable, Fields pkFields) {
+        EntityMeta entityMeta = EntityMeta.load(entityClass);
+        ExpressionUtils exp = ExpressionUtils.bind("DELETE FROM ${table_name} WHERE ${pk}")
+                .set("table_name", buildTableName(prefix, entityMeta, shardingable));
         //
-        Fields _fields = Fields.create();
+        Fields fields = Fields.create();
         if (pkFields == null || pkFields.fields().isEmpty()) {
-            _fields.add(_meta.getPrimaryKeys());
+            fields.add(entityMeta.getPrimaryKeys());
         } else {
-            _fields.add(pkFields);
-            __doValidProperty(_meta, _fields, true);
+            fields.add(pkFields);
+            doValidProperty(entityMeta, fields, true);
         }
-        return _exp.set("pk", __doGenerateFieldsFormatStr(_fields, " = ?", " and ")).getResult();
+        return exp.set("pk", doGenerateFieldsFormatStr(fields, " = ?", " and ")).getResult();
     }
 
     @Override
-    public String buildUpdateByPkSQL(Class<? extends IEntity> entityClass, String prefix, IShardingable shardingable, Fields pkFields, Fields fields) {
-        EntityMeta _meta = EntityMeta.createAndGet(entityClass);
-        ExpressionUtils _exp = ExpressionUtils.bind("UPDATE ${table_name} SET ${fields} WHERE ${pk}")
-                .set("table_name", buildTableName(prefix, _meta, shardingable));
+    public String buildUpdateByPkSql(Class<? extends IEntity> entityClass, String prefix, IShardingable shardingable, Fields pkFields, Fields fields) {
+        EntityMeta entityMeta = EntityMeta.load(entityClass);
+        ExpressionUtils exp = ExpressionUtils.bind("UPDATE ${table_name} SET ${fields} WHERE ${pk}")
+                .set("table_name", buildTableName(prefix, entityMeta, shardingable));
         //
-        Fields _fields = Fields.create();
-        for (String _field : (fields == null || fields.fields().isEmpty()) ? _meta.getPropertyNames() : fields.fields()) {
-            if (_meta.containsProperty(_field)) {
-                if (_meta.isPrimaryKey(_field)) {
+        Fields newFields = Fields.create();
+        for (String field : (fields == null || fields.fields().isEmpty()) ? entityMeta.getPropertyNames() : fields.fields()) {
+            if (entityMeta.containsProperty(field)) {
+                if (entityMeta.isPrimaryKey(field)) {
                     // 排除主键
                     continue;
                 }
-                _fields.add(_field);
+                newFields.add(field);
             } else {
-                throw new IllegalArgumentException("'".concat(_field).concat("' isn't table field"));
+                throw new IllegalArgumentException("'".concat(field).concat("' isn't table field"));
             }
         }
-        _exp.set("fields", __doGenerateFieldsFormatStr(_fields, " = ?", null));
+        exp.set("fields", doGenerateFieldsFormatStr(newFields, " = ?", null));
         //
         if (pkFields != null && !pkFields.fields().isEmpty()) {
-            _fields = pkFields;
-            __doValidProperty(_meta, _fields, true);
+            newFields = pkFields;
+            doValidProperty(entityMeta, newFields, true);
         } else {
-            _fields = Fields.create().add(_meta.getPrimaryKeys());
+            newFields = Fields.create().add(entityMeta.getPrimaryKeys());
         }
-        return _exp.set("pk", __doGenerateFieldsFormatStr(_fields, " = ?", " and ")).getResult();
+        return exp.set("pk", doGenerateFieldsFormatStr(newFields, " = ?", " and ")).getResult();
     }
 
     @Override
-    public String buildSelectByPkSQL(Class<? extends IEntity> entityClass, String prefix, IShardingable shardingable, Fields pkFields, Fields fields) {
-        EntityMeta _meta = EntityMeta.createAndGet(entityClass);
-        ExpressionUtils _exp = ExpressionUtils.bind("SELECT ${fields} FROM ${table_name} WHERE ${pk}")
-                .set("table_name", buildTableName(prefix, _meta, shardingable));
+    public String buildSelectByPkSql(Class<? extends IEntity> entityClass, String prefix, IShardingable shardingable, Fields pkFields, Fields fields) {
+        EntityMeta entityMeta = EntityMeta.load(entityClass);
+        ExpressionUtils exp = ExpressionUtils.bind("SELECT ${fields} FROM ${table_name} WHERE ${pk}")
+                .set("table_name", buildTableName(prefix, entityMeta, shardingable));
         //
         if (fields == null || fields.fields().isEmpty()) {
-            fields = Fields.create().add(_meta.getPropertyNames());
+            fields = Fields.create().add(entityMeta.getPropertyNames());
         } else {
-            __doValidProperty(_meta, fields, false);
+            doValidProperty(entityMeta, fields, false);
         }
-        _exp.set("fields", __doGenerateFieldsFormatStr(fields, null, null));
+        exp.set("fields", doGenerateFieldsFormatStr(fields, null, null));
         //
         if (pkFields != null && !pkFields.fields().isEmpty()) {
-            __doValidProperty(_meta, pkFields, true);
+            doValidProperty(entityMeta, pkFields, true);
         } else {
-            pkFields = Fields.create().add(_meta.getPrimaryKeys());
+            pkFields = Fields.create().add(entityMeta.getPrimaryKeys());
         }
-        return _exp.set("pk", __doGenerateFieldsFormatStr(pkFields, " = ?", " and ")).getResult();
+        return exp.set("pk", doGenerateFieldsFormatStr(pkFields, " = ?", " and ")).getResult();
     }
 
     @Override
-    public String buildSelectSQL(Class<? extends IEntity> entityClass, String prefix, IShardingable shardingable, Fields fields) {
-        EntityMeta _meta = EntityMeta.createAndGet(entityClass);
-        ExpressionUtils _exp = ExpressionUtils.bind("SELECT ${fields} FROM ${table_name}")
-                .set("table_name", buildTableName(prefix, _meta, shardingable));
+    public String buildSelectSql(Class<? extends IEntity> entityClass, String prefix, IShardingable shardingable, Fields fields) {
+        EntityMeta entityMeta = EntityMeta.load(entityClass);
+        ExpressionUtils exp = ExpressionUtils.bind("SELECT ${fields} FROM ${table_name}")
+                .set("table_name", buildTableName(prefix, entityMeta, shardingable));
         //
         if (fields == null || fields.fields().isEmpty()) {
-            fields = Fields.create().add(_meta.getPropertyNames());
+            fields = Fields.create().add(entityMeta.getPropertyNames());
         } else {
-            __doValidProperty(_meta, fields, false);
+            doValidProperty(entityMeta, fields, false);
         }
-        return _exp.set("fields", __doGenerateFieldsFormatStr(fields, null, null)).getResult();
+        return exp.set("fields", doGenerateFieldsFormatStr(fields, null, null)).getResult();
     }
 }

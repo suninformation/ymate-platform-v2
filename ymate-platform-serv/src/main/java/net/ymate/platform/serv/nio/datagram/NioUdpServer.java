@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2017 the original author or authors.
+ * Copyright 2007-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,12 +24,11 @@ import java.io.IOException;
 
 /**
  * @author 刘镇 (suninformation@163.com) on 15/11/17 下午2:23
- * @version 1.0
  */
-public class NioUdpServer extends AbstractNioServer<NioUdpListener> {
+public class NioUdpServer extends AbstractNioServer<AbstractNioUdpListener> {
 
     @Override
-    protected INioEventGroup<NioUdpListener> buildEventGroup(IServerCfg serverCfg, NioUdpListener listener, INioCodec codec) throws IOException {
+    protected INioEventGroup<AbstractNioUdpListener> buildEventGroup(IServerCfg serverCfg, AbstractNioUdpListener listener, INioCodec codec) throws IOException {
         return new NioUdpEventGroup(serverCfg, listener, codec);
     }
 }

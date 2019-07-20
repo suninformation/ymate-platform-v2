@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2017 the original author or authors.
+ * Copyright 2007-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,13 +15,22 @@
  */
 package net.ymate.platform.core.beans.proxy;
 
+import net.ymate.platform.core.beans.annotation.Ignored;
+
 /**
  * 代理接口定义
  *
  * @author 刘镇 (suninformation@163.com) on 15-3-3 下午3:36
- * @version 1.0
  */
+@Ignored
 public interface IProxy {
 
+    /**
+     * 执行代理逻辑
+     *
+     * @param proxyChain 代理链
+     * @return 返回执行结果
+     * @throws Throwable 可能产生的任何异常
+     */
     Object doProxy(IProxyChain proxyChain) throws Throwable;
 }

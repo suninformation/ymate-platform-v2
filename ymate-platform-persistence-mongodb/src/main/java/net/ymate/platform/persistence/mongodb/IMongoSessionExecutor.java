@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2017 the original author or authors.
+ * Copyright 2007-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,15 +15,19 @@
  */
 package net.ymate.platform.persistence.mongodb;
 
+import net.ymate.platform.core.beans.annotation.Ignored;
+
 /**
  * @author 刘镇 (suninformation@163.com) on 15/11/23 上午3:17
- * @version 1.0
  */
+@Ignored
 public interface IMongoSessionExecutor<T> {
 
     /**
+     * 执行会话处理过程
+     *
      * @param session 会话对象
-     * @return 执行会话处理过程，返回执行结果
+     * @return 返回执行结果
      * @throws Exception 可能产生的异常
      */
     T execute(IMongoSession session) throws Exception;

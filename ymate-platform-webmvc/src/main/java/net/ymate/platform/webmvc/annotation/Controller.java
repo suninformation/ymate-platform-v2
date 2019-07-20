@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2017 the original author or authors.
+ * Copyright 2007-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,13 +15,14 @@
  */
 package net.ymate.platform.webmvc.annotation;
 
+import org.apache.commons.lang3.StringUtils;
+
 import java.lang.annotation.*;
 
 /**
  * 声明一个类为控制器
  *
  * @author 刘镇 (suninformation@163.com) on 2011-8-1 上午12:22:52
- * @version 1.0
  */
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
@@ -31,7 +32,7 @@ public @interface Controller {
     /**
      * @return 控制器名称
      */
-    String name() default "";
+    String name() default StringUtils.EMPTY;
 
     /**
      * @return 是否为单例控制器，默认为true

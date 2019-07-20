@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2017 the original author or authors.
+ * Copyright 2007-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,27 +30,220 @@ import java.util.Map;
  * 数据常量/枚举类型
  *
  * @author 刘镇 (suninformation@163.com) on 15/5/19 上午1:56
- * @version 1.0
  */
 public class Type {
+
+    public final static Map<String, Class<? extends IRequestProcessor>> REQUEST_PROCESSORS;
+
+    public final static Map<String, Class<? extends IRequestMappingParser>> REQUEST_MAPPING_PARSERS;
+
+    public final static Map<Integer, String> HTTP_STATUS;
+
+    static {
+        Map<String, Class<? extends IRequestProcessor>> processorMap = new HashMap<>();
+        //
+        processorMap.put("default", DefaultRequestProcessor.class);
+        processorMap.put("json", JSONRequestProcessor.class);
+        processorMap.put("xml", XMLRequestProcessor.class);
+        //
+        REQUEST_PROCESSORS = Collections.unmodifiableMap(processorMap);
+        //
+        Map<String, Class<? extends IRequestMappingParser>> parserMap = new HashMap<>();
+        parserMap.put("default", DefaultRequestMappingParser.class);
+        //
+        REQUEST_MAPPING_PARSERS = Collections.unmodifiableMap(parserMap);
+        //
+        Map<Integer, String> httpStatusMap = new HashMap<>();
+        //
+        httpStatusMap.put(400, "Bad Request");
+        httpStatusMap.put(401, "Unauthorized");
+        httpStatusMap.put(402, "Payment Required");
+        httpStatusMap.put(403, "Forbidden");
+        httpStatusMap.put(404, "Not Found");
+        httpStatusMap.put(405, "Method Not Allowed");
+        httpStatusMap.put(406, "Not Acceptable");
+        httpStatusMap.put(407, "Proxy Authentication Required");
+        httpStatusMap.put(408, "Request Timeout");
+        httpStatusMap.put(409, "Conflict");
+        httpStatusMap.put(410, "Gone");
+        httpStatusMap.put(411, "Length Required");
+        httpStatusMap.put(412, "Precondition Failed");
+        httpStatusMap.put(413, "Request Entity Too Large");
+        httpStatusMap.put(414, "Request URI Too Long");
+        httpStatusMap.put(415, "Unsupported Media Type");
+        httpStatusMap.put(416, "Requested Range Not Satisfiable");
+        httpStatusMap.put(417, "Expectation Failed");
+        httpStatusMap.put(421, "Too Many Connections");
+        httpStatusMap.put(422, "Unprocessable Entity");
+        httpStatusMap.put(423, "Locked");
+        httpStatusMap.put(424, "Failed Dependency");
+        httpStatusMap.put(425, "Unordered Collection");
+        httpStatusMap.put(426, "Ungrade Required");
+        httpStatusMap.put(449, "Retry With");
+        httpStatusMap.put(451, "Unavailable For Legal Reasons");
+        //
+        httpStatusMap.put(500, "Internal Server Error");
+        httpStatusMap.put(501, "Not Implemented");
+        httpStatusMap.put(502, "Bad Gateway");
+        httpStatusMap.put(503, "Service Unavailable");
+        httpStatusMap.put(504, "Gateway Timeout");
+        httpStatusMap.put(505, "HTTP Version Not Supported");
+        httpStatusMap.put(506, "Variant Also Negotiates");
+        httpStatusMap.put(507, "Insufficient Storage");
+        httpStatusMap.put(509, "Bandwidth Limit Exceeded");
+        httpStatusMap.put(510, "Not Extended");
+        //
+        HTTP_STATUS = Collections.unmodifiableMap(httpStatusMap);
+    }
 
     /**
      * 常量
      */
     public interface Const {
 
+        String HTTP_PREFIX = "http://";
+
+        String HTTPS_PREFIX = "https://";
+
+        int HTTP_PORT = 80;
+
+        int HTTPS_PORT = 443;
+
+        char PATH_SEPARATOR_CHAR = '/';
+
+        String PATH_SEPARATOR = "/";
+
+        String PATH_SEPARATOR_ALL = "/*";
+
+        String WEB_INF_PREFIX = "/WEB-INF";
+
+        String WEB_INF = WEB_INF_PREFIX + PATH_SEPARATOR;
+
         String FORMAT_JSON = "json";
+
         String FORMAT_XML = "xml";
 
         String PARAM_FORMAT = "format";
+
         String PARAM_CALLBACK = "callback";
+
         String PARAM_RET = "ret";
+
         String PARAM_MSG = "msg";
+
         String PARAM_DATA = "data";
 
         String REDIRECT_URL = "redirect_url";
 
         String CUSTOM_REDIRECT = "custom_redirect";
+
+        // Http headers
+
+        String HTTP_HEADER_CONNECTION = "Connection";
+
+        String HTTP_HEADER_UPGRADE = "Upgrade";
+
+        String HTTP_HEADER_USER_AGENT = "User-Agent";
+
+        String HTTP_HEADER_REFRESH = "REFRESH";
+
+        String HTTP_HEADER_LOCATION = "Location";
+    }
+
+    /**
+     * 可选参数常量定义
+     */
+    public interface Optional {
+
+        /**
+         * 保持静默
+         */
+        String OBSERVE_SILENCE = "observe_silence";
+
+        /**
+         * 会话处理器类
+         */
+        String SYSTEM_USER_SESSION_HANDLER_CLASS = "webmvc.user_session_handler_class";
+
+        /**
+         * 会话数据存储适配器类
+         */
+        String SYSTEM_USER_SESSION_STORAGE_ADAPTER_CLASS = "webmvc.user_session_storage_adapter_class";
+
+        /**
+         * 会话安全确认处理器类
+         */
+        String SYSTEM_USER_SESSION_CONFIRM_HANDLER_CLASS = "webmvc.user_session_confirm_handler_class";
+
+        /**
+         * 会话安全确认重定向URL地址, 默认值: "confirm?redirect_url=${redirect_url}"
+         */
+        String CONFIRM_REDIRECT_URL = "webmvc.confirm_redirect_url";
+
+        /**
+         * 会话安全确认超时时间(分钟), 默认值: 30
+         */
+        String CONFIRM_TIMEOUT = "webmvc.confirm_timeout";
+
+        /**
+         * 请求令牌参数名称, 默认值: Request-Token
+         */
+        String REQUEST_TOKEN_NAME = "webmvc.request_token_name";
+
+        /**
+         * 重定向登录URL地址参数名称, 默认值: "login?redirect_url=${redirect_url}"
+         */
+        String REDIRECT_LOGIN_URL = "webmvc.redirect_login_url";
+
+        /**
+         * 重定向自动跳转时间间隔参数名称
+         */
+        String REDIRECT_TIME_INTERVAL = "webmvc.redirect_time_interval";
+
+        /**
+         * 签名验证时间间隔(毫秒), 即当前时间与签名时间戳差值在此值范围内视为有效, 默认值: 0 表示不开始时间间隔验证
+         */
+        String SIGNATURE_TIMESTAMP_INTERVAL = "webmvc.signature_timestamp_interval";
+
+        /**
+         * 允许访问和重定向的主机名称, 多个主机名称用'|'分隔, 默认值: 空(表示不限制)
+         */
+        String ALLOW_ACCESS_HOSTS = "webmvc.allow_access_hosts";
+
+        /**
+         * 允许上传的文件类型验证参数名称
+         */
+        String VALIDATION_ALLOW_UPLOAD_CONTENT_TYPES = "webmvc.validation_allow_upload_content_types";
+
+        /**
+         * 是否开启跨域拦截
+         */
+        String ALLOW_CROSS_DOMAIN = "webmvc.allow_cross_domain";
+
+        /**
+         * 针对OPTIONS请求是否自动回复, 默认: true
+         */
+        String ALLOW_OPTIONS_AUTO_REPLY = "webmvc.allow_options_auto_reply";
+
+        /**
+         * 允许跨域的原始主机
+         */
+        String ALLOW_ORIGIN_HOSTS = "webmvc.allow_origin_hosts";
+
+        /**
+         * 允许跨域请求的方法
+         */
+        String ALLOW_CROSS_METHODS = "webmvc.allow_cross_methods";
+
+        /**
+         * 允许跨域请求携带的请求头
+         */
+        String ALLOW_CROSS_HEADERS = "webmvc.allow_cross_headers";
+
+        /**
+         * 是否允许跨域请求带有验证信息
+         */
+        String NOT_ALLOW_CREDENTIALS = "not_allow_credentials";
     }
 
     /**
@@ -60,28 +253,62 @@ public class Type {
      * </p>
      */
     public enum HttpMethod {
-        GET, HEAD, POST, PUT, DELETE, OPTIONS, TRACE
+
+        /**
+         * GET
+         */
+        GET,
+
+        /**
+         * HEAD
+         */
+        HEAD,
+
+        /**
+         * POST
+         */
+        POST,
+
+        /**
+         * PUT
+         */
+        PUT,
+
+        /**
+         * DELETE
+         */
+        DELETE,
+
+        /**
+         * OPTIONS
+         */
+        OPTIONS,
+
+        /**
+         * TRACE
+         */
+        TRACE
     }
 
     /**
      * HTTP请求头数据类型
      */
     public enum HeaderType {
-        STRING, INT, DATE
-    }
 
-    /**
-     * 字符串参数转义范围
-     */
-    public enum EscapeScope {
-        JAVA, JS, HTML, XML, SQL, CSV, DEFAULT
-    }
+        /**
+         * 字符型
+         */
+        STRING,
 
-    /**
-     * 执行字符串参数转义顺序
-     */
-    public enum EscapeOrder {
-        BEFORE, AFTER
+        /**
+         * 数值型
+         */
+        INT,
+
+        /**
+         * 日期型
+         */
+        DATE
     }
 
     /**
@@ -91,14 +318,88 @@ public class Type {
      * </p>
      */
     public enum View {
-        BINARY, FORWARD, FREEMARKER, VELOCITY, HTML, HTTP_STATES, JSON, JSP, NULL, REDIRECT, TEXT, BEETL
+
+        /**
+         * 二进制流
+         */
+        BINARY,
+
+        /**
+         * 重定向
+         */
+        FORWARD,
+
+        /**
+         * Freemarker
+         */
+        FREEMARKER,
+
+        /**
+         * Velocity
+         */
+        VELOCITY,
+
+        /**
+         * HTML
+         */
+        HTML,
+
+        /**
+         * HTTP状态响应
+         */
+        HTTP_STATES,
+
+        /**
+         * JSON
+         */
+        JSON,
+
+        /**
+         * JSP
+         */
+        JSP,
+
+        /**
+         * 空视图
+         */
+        NULL,
+
+        /**
+         * 浏览器重定向
+         */
+        REDIRECT,
+
+        /**
+         * 文本
+         */
+        TEXT,
+
+        /**
+         * BEETL
+         */
+        BEETL
     }
 
     public enum ContentType {
 
+        /**
+         * 文本
+         */
         TEXT("text/plain"),
+
+        /**
+         * HTML
+         */
         HTML("text/html"),
+
+        /**
+         * JSON
+         */
         JSON("application/json"),
+
+        /**
+         * JS
+         */
         JAVASCRIPT("text/javascript"),
 
         /**
@@ -106,19 +407,19 @@ public class Type {
          */
         OCTET_STREAM("application/octet-stream");
 
-        private final String __contentType;
+        private final String contentType;
 
         ContentType(String contentType) {
-            __contentType = contentType;
+            this.contentType = contentType;
         }
 
         public String getContentType() {
-            return __contentType;
+            return contentType;
         }
 
         @Override
         public String toString() {
-            return __contentType;
+            return contentType;
         }
     }
 
@@ -145,63 +446,5 @@ public class Type {
         String WEB_REQUEST_CONTEXT = "net.ymate.platform.webmvc.context.WEB_REQUEST_CONTEXT";
 
         String WEB_CONTEXT_OWNER = "net.ymate.platform.webmvc.context.WEB_CONTEXT_OWNER";
-    }
-
-    public final static Map<String, Class<? extends IRequestProcessor>> REQUEST_PROCESSORS;
-
-    public final static Map<String, Class<? extends IRequestMappingParser>> REQUEST_MAPPING_PARSERS;
-
-    public final static Map<Integer, String> HTTP_STATUS;
-
-    static {
-        REQUEST_PROCESSORS = new HashMap<String, Class<? extends IRequestProcessor>>();
-        REQUEST_PROCESSORS.put("default", DefaultRequestProcessor.class);
-        REQUEST_PROCESSORS.put("json", JSONRequestProcessor.class);
-        REQUEST_PROCESSORS.put("xml", XMLRequestProcessor.class);
-        //
-        REQUEST_MAPPING_PARSERS = new HashMap<String, Class<? extends IRequestMappingParser>>();
-        REQUEST_MAPPING_PARSERS.put("default", DefaultRequestMappingParser.class);
-        //
-        Map<Integer, String> _httpStatus = new HashMap<Integer, String>();
-        //
-        _httpStatus.put(400, "Bad Request");
-        _httpStatus.put(401, "Unauthorized");
-        _httpStatus.put(402, "Payment Required");
-        _httpStatus.put(403, "Forbidden");
-        _httpStatus.put(404, "Not Found");
-        _httpStatus.put(405, "Method Not Allowed");
-        _httpStatus.put(406, "Not Acceptable");
-        _httpStatus.put(407, "Proxy Authentication Required");
-        _httpStatus.put(408, "Request Timeout");
-        _httpStatus.put(409, "Conflict");
-        _httpStatus.put(410, "Gone");
-        _httpStatus.put(411, "Length Required");
-        _httpStatus.put(412, "Precondition Failed");
-        _httpStatus.put(413, "Request Entity Too Large");
-        _httpStatus.put(414, "Request URI Too Long");
-        _httpStatus.put(415, "Unsupported Media Type");
-        _httpStatus.put(416, "Requested Range Not Satisfiable");
-        _httpStatus.put(417, "Expectation Failed");
-        _httpStatus.put(421, "Too Many Connections");
-        _httpStatus.put(422, "Unprocessable Entity");
-        _httpStatus.put(423, "Locked");
-        _httpStatus.put(424, "Failed Dependency");
-        _httpStatus.put(425, "Unordered Collection");
-        _httpStatus.put(426, "Ungrade Required");
-        _httpStatus.put(449, "Retry With");
-        _httpStatus.put(451, "Unavailable For Legal Reasons");
-        //
-        _httpStatus.put(500, "Internal Server Error");
-        _httpStatus.put(501, "Not Implemented");
-        _httpStatus.put(502, "Bad Gateway");
-        _httpStatus.put(503, "Service Unavailable");
-        _httpStatus.put(504, "Gateway Timeout");
-        _httpStatus.put(505, "HTTP Version Not Supported");
-        _httpStatus.put(506, "Variant Also Negotiates");
-        _httpStatus.put(507, "Insufficient Storage");
-        _httpStatus.put(509, "Bandwidth Limit Exceeded");
-        _httpStatus.put(510, "Not Extended");
-        //
-        HTTP_STATUS = Collections.unmodifiableMap(_httpStatus);
     }
 }

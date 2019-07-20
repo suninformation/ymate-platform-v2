@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2017 the original author or authors.
+ * Copyright 2007-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,11 +15,12 @@
  */
 package net.ymate.platform.webmvc.view.impl;
 
-import net.ymate.platform.core.util.RuntimeUtils;
+import net.ymate.platform.commons.util.RuntimeUtils;
 import net.ymate.platform.webmvc.IWebMvc;
+import net.ymate.platform.webmvc.base.Type;
 import net.ymate.platform.webmvc.context.WebContext;
 import net.ymate.platform.webmvc.view.AbstractView;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.velocity.VelocityContext;
 import org.apache.velocity.app.Velocity;
 
@@ -27,24 +28,24 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
-import java.util.Map;
 import java.util.Properties;
 
 /**
  * Velocity视图
  *
  * @author 刘镇 (suninformation@163.com) on 15/10/28 下午8:20
- * @version 1.0
  */
 public class VelocityView extends AbstractView {
 
-    protected static Properties __velocityConfig = new Properties();
+    public static final String FILE_SUFFIX = ".vm";
 
-    protected VelocityContext __velocityContext;
+    private static Properties velocityConfig = new Properties();
 
-    private boolean __inited;
+    private VelocityContext velocityContext;
 
-    protected String __path;
+    private boolean initialized;
+
+    private String path;
 
     public static VelocityView bind() {
         return new VelocityView();
@@ -62,75 +63,55 @@ public class VelocityView extends AbstractView {
      * 构造器
      *
      * @param owner 所属MVC框架管理器
-     * @param path  FTL文件路径
+     * @param path  VM文件路径
      */
     public VelocityView(IWebMvc owner, String path) {
-        __doViewInit(owner);
-        __path = path;
+        doViewInit(owner);
+        this.path = path;
     }
 
     public VelocityView() {
-        __doViewInit(WebContext.getContext().getOwner());
+        doViewInit(WebContext.getContext().getOwner());
     }
 
     @Override
-    protected synchronized void __doViewInit(IWebMvc owner) {
-        super.__doViewInit(owner);
-        // 初始化Velocity模板引擎配置
-        if (!__inited) {
-            __velocityConfig.setProperty(Velocity.INPUT_ENCODING, DEFAULT_CHARSET);
-            __velocityConfig.setProperty(Velocity.OUTPUT_ENCODING, DEFAULT_CHARSET);
+    protected synchronized void doViewInit(IWebMvc owner) {
+        super.doViewInit(owner);
+        if (!initialized) {
+            velocityConfig.setProperty(Velocity.INPUT_ENCODING, DEFAULT_CHARSET);
+            velocityConfig.setProperty(Velocity.OUTPUT_ENCODING, DEFAULT_CHARSET);
             //
-            if (__baseViewPath.startsWith("/WEB-INF")) {
-                __velocityConfig.setProperty(Velocity.FILE_RESOURCE_LOADER_PATH, new File(RuntimeUtils.getRootPath(), StringUtils.substringAfter(__baseViewPath, "/WEB-INF/")).getPath());
+            if (baseViewPath.startsWith(Type.Const.WEB_INF)) {
+                velocityConfig.setProperty(Velocity.FILE_RESOURCE_LOADER_PATH, new File(RuntimeUtils.getRootPath(), StringUtils.substringAfter(baseViewPath, Type.Const.WEB_INF)).getPath());
             } else {
-                __velocityConfig.setProperty(Velocity.FILE_RESOURCE_LOADER_PATH, __baseViewPath);
+                velocityConfig.setProperty(Velocity.FILE_RESOURCE_LOADER_PATH, baseViewPath);
             }
+            Velocity.init(velocityConfig);
             //
-            Velocity.init(__velocityConfig);
-            //
-            __inited = true;
+            initialized = true;
         }
     }
 
     public static void properties(String key, String value) {
-        __velocityConfig.setProperty(key, value);
+        velocityConfig.setProperty(key, value);
     }
 
-    protected void __doProcessPath() {
-        if (StringUtils.isNotBlank(__contentType)) {
-            WebContext.getResponse().setContentType(__contentType);
-        }
-        __velocityContext = new VelocityContext();
-        for (Map.Entry<String, Object> _entry : __attributes.entrySet()) {
-            __velocityContext.put(_entry.getKey(), _entry.getValue());
-        }
-        if (StringUtils.isBlank(__path)) {
-            String _mapping = WebContext.getRequestContext().getRequestMapping();
-            if (_mapping.endsWith("/")) {
-                _mapping = _mapping.substring(0, _mapping.length() - 1);
-            }
-            __path = _mapping + ".vm";
-        } else {
-            if (__path.startsWith(__baseViewPath)) {
-                __path = StringUtils.substringAfter(__path, __baseViewPath);
-            }
-            if (!__path.endsWith(".vm")) {
-                __path += ".vm";
-            }
-        }
+    private void doProcessPath() {
+        path = doProcessPath(path, FILE_SUFFIX, false);
+        velocityContext = new VelocityContext();
+        attributes.forEach((key, value) -> velocityContext.put(key, value));
     }
 
     @Override
-    protected void __doRenderView() throws Exception {
-        __doProcessPath();
-        Velocity.getTemplate(__path).merge(__velocityContext, WebContext.getResponse().getWriter());
+    protected void doRenderView() throws Exception {
+        doProcessPath();
+        Velocity.getTemplate(path).merge(velocityContext, WebContext.getResponse().getWriter());
     }
 
     @Override
     public void render(OutputStream output) throws Exception {
-        __doProcessPath();
-        Velocity.getTemplate(__path).merge(__velocityContext, new BufferedWriter(new OutputStreamWriter(output)));
+        doProcessPath();
+        Velocity.getTemplate(path).merge(velocityContext, new BufferedWriter(new OutputStreamWriter(output)));
     }
 
 }

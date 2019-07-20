@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2017 the original author or authors.
+ * Copyright 2007-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,14 +15,15 @@
  */
 package net.ymate.platform.webmvc;
 
+import net.ymate.platform.core.beans.annotation.Ignored;
 import net.ymate.platform.webmvc.view.IView;
 
 /**
  * 控制器异常自定义处理过程
  *
  * @author 刘镇 (suninformation@163.com) on 2017/12/11 下午1:11
- * @version 1.0
  */
+@Ignored
 public interface IResponseErrorProcessor {
 
     /**

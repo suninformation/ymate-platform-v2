@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2017 the original author or authors.
+ * Copyright 2007-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,9 +15,9 @@
  */
 package net.ymate.platform.persistence.jdbc.transaction.impl;
 
-import net.ymate.platform.core.util.UUIDUtils;
-import net.ymate.platform.persistence.jdbc.IConnectionHolder;
-import net.ymate.platform.persistence.jdbc.JDBC;
+import net.ymate.platform.commons.util.UUIDUtils;
+import net.ymate.platform.core.persistence.base.Type;
+import net.ymate.platform.persistence.jdbc.IDatabaseConnectionHolder;
 import net.ymate.platform.persistence.jdbc.transaction.ITransaction;
 
 import java.sql.SQLException;
@@ -28,82 +28,79 @@ import java.util.Map;
  * 默认JDBC事务处理接口实现
  *
  * @author 刘镇 (suninformation@163.com) on 2011-9-6 下午04:43:45
- * @version 1.0
  */
-public class DefaultTransaction implements ITransaction {
+public final class DefaultTransaction implements ITransaction {
 
-    private String __id;
+    private final String id = UUIDUtils.UUID();
 
-    private JDBC.TRANSACTION __level;
+    private Type.TRANSACTION level;
 
-    private Map<String, TransactionMeta> __transMetas;
+    private Map<String, TransactionMeta> transMetas = new HashMap<>(16);
 
     public DefaultTransaction() {
-        this.__id = UUIDUtils.UUID();
-        this.__transMetas = new HashMap<String, TransactionMeta>();
     }
 
-    public DefaultTransaction(JDBC.TRANSACTION level) {
-        this();
+    public DefaultTransaction(Type.TRANSACTION level) {
         this.setLevel(level);
     }
 
     @Override
-    public JDBC.TRANSACTION getLevel() {
-        return __level;
+    public Type.TRANSACTION getLevel() {
+        return level;
     }
 
     @Override
-    public void setLevel(JDBC.TRANSACTION level) {
-        if (level == null || (this.__level != null && this.__level.getLevel() > 0)) {
-            return;
+    public void setLevel(Type.TRANSACTION level) {
+        if (level != null) {
+            if (this.level == null || this.level.getLevel() <= 0) {
+                this.level = level;
+            }
         }
-        this.__level = level;
     }
 
     @Override
     public String getId() {
-        return __id;
+        return id;
     }
 
     @Override
     public void commit() throws SQLException {
-        for (TransactionMeta _meta : this.__transMetas.values()) {
-            _meta.connectionHolder.getConnection().commit();
+        for (TransactionMeta meta : this.transMetas.values()) {
+            meta.connectionHolder.getConnection().commit();
         }
     }
 
     @Override
     public void rollback() throws SQLException {
-        for (TransactionMeta _meta : this.__transMetas.values()) {
-            _meta.connectionHolder.getConnection().rollback();
+        for (TransactionMeta meta : this.transMetas.values()) {
+            meta.connectionHolder.getConnection().rollback();
         }
     }
 
     @Override
     public void close() throws SQLException {
         try {
-            for (TransactionMeta _meta : this.__transMetas.values()) {
-                _meta.release();
+            for (TransactionMeta meta : this.transMetas.values()) {
+                meta.release();
             }
         } finally {
-            this.__transMetas = null;
+            this.transMetas = null;
         }
     }
 
     @Override
-    public IConnectionHolder getConnectionHolder(String dsName) {
-        if (this.__transMetas.containsKey(dsName)) {
-            return this.__transMetas.get(dsName).connectionHolder;
+    public IDatabaseConnectionHolder getConnectionHolder(String dsName) {
+        if (this.transMetas.containsKey(dsName)) {
+            return this.transMetas.get(dsName).connectionHolder;
         }
         return null;
     }
 
     @Override
-    public void registerConnectionHolder(IConnectionHolder connectionHolder) throws SQLException {
-        String _dsName = connectionHolder.getDataSourceCfgMeta().getName();
-        if (!this.__transMetas.containsKey(_dsName)) {
-            this.__transMetas.put(_dsName, new TransactionMeta(connectionHolder, getLevel()));
+    public void registerConnectionHolder(IDatabaseConnectionHolder connectionHolder) throws SQLException {
+        String dsName = connectionHolder.getDataSourceConfig().getName();
+        if (!this.transMetas.containsKey(dsName)) {
+            this.transMetas.put(dsName, new TransactionMeta(connectionHolder, getLevel()));
         }
     }
 
@@ -111,14 +108,13 @@ public class DefaultTransaction implements ITransaction {
      * 事务信息描述对象
      *
      * @author 刘镇 (suninformation@163.com) on 2010-10-16 下午03:50:01
-     * @version 1.0
      */
     private static class TransactionMeta {
 
         /**
          * 数据库连接持有者对象
          */
-        IConnectionHolder connectionHolder;
+        IDatabaseConnectionHolder connectionHolder;
 
         /**
          * 构造器
@@ -127,7 +123,7 @@ public class DefaultTransaction implements ITransaction {
          * @param initLevel        初始事务级别
          * @throws SQLException 可能产生的异常
          */
-        TransactionMeta(IConnectionHolder connectionHolder, JDBC.TRANSACTION initLevel) throws SQLException {
+        TransactionMeta(IDatabaseConnectionHolder connectionHolder, Type.TRANSACTION initLevel) throws SQLException {
             this.connectionHolder = connectionHolder;
             if (this.connectionHolder.getConnection().getAutoCommit()) {
                 this.connectionHolder.getConnection().setAutoCommit(false);
@@ -145,7 +141,15 @@ public class DefaultTransaction implements ITransaction {
         void release() throws SQLException {
             try {
                 if (this.connectionHolder != null) {
-                    this.connectionHolder.release();
+                    try {
+                        this.connectionHolder.close();
+                    } catch (Exception e) {
+                        if (e instanceof SQLException) {
+                            throw (SQLException) e;
+                        } else {
+                            throw new SQLException(e.getMessage(), e);
+                        }
+                    }
                 }
             } finally {
                 this.connectionHolder = null;

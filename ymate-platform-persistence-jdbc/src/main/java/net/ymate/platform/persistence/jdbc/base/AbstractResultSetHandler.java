@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2017 the original author or authors.
+ * Copyright 2007-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,54 +25,57 @@ import java.util.List;
  *
  * @param <T> 元素类型
  * @author 刘镇 (suninformation@163.com) on 2011-9-22 下午04:14:15
- * @version 1.0
  */
 public abstract class AbstractResultSetHandler<T> implements IResultSetHandler<T> {
 
-    private int __columnCount;
+    private int columnCount;
 
-    private ColumnMeta[] __columnMetas;
+    private ColumnMeta[] columnMetas;
 
     @Override
     public List<T> handle(ResultSet resultSet) throws Exception {
         // 分析结果集字段信息
-        ResultSetMetaData _metaData = resultSet.getMetaData();
-        __columnCount = _metaData.getColumnCount();
-        __columnMetas = new ColumnMeta[__columnCount];
-        for (int _idx = 0; _idx < __columnCount; _idx++) {
-            __columnMetas[_idx] = new ColumnMeta(_metaData.getColumnLabel(_idx + 1), _metaData.getColumnType(_idx + 1));
+        ResultSetMetaData metaData = resultSet.getMetaData();
+        columnCount = metaData.getColumnCount();
+        columnMetas = new ColumnMeta[columnCount];
+        for (int idx = 0; idx < columnCount; idx++) {
+            columnMetas[idx] = new ColumnMeta(metaData.getColumnLabel(idx + 1), metaData.getColumnType(idx + 1));
         }
         //
-        List<T> _results = new ArrayList<T>();
+        List<T> results = new ArrayList<>();
         while (resultSet.next()) {
-            _results.add(this.__doProcessResultRow(resultSet));
+            results.add(this.processResultRow(resultSet));
         }
-        return _results;
+        return results;
     }
 
     /**
+     * 处理当前行结果集数据
+     *
      * @param resultSet 数据结果集对象，切勿对其进行游标移动等操作，仅约定用于提取当前行字段数据
-     * @return 处理当前行结果集数据并返回指定的T类型对象
+     * @return 返回指定的T类型对象
      * @throws Exception 可能产生的异常
      */
-    protected abstract T __doProcessResultRow(ResultSet resultSet) throws Exception;
+    protected abstract T processResultRow(ResultSet resultSet) throws Exception;
 
-    protected int __doGetColumnCount() {
-        return __columnCount;
+    protected int getColumnCount() {
+        return columnCount;
     }
 
-    protected ColumnMeta _doGetColumnMeta(int idx) {
-        return __columnMetas[idx];
+    protected ColumnMeta getColumnMeta(int idx) {
+        return columnMetas[idx];
     }
 
     /**
      * 字段描述对象
      */
     public static class ColumnMeta {
+
         private final String name;
+
         private final int type;
 
-        public ColumnMeta(String name, int type) {
+        ColumnMeta(String name, int type) {
             this.name = name;
             this.type = type;
         }

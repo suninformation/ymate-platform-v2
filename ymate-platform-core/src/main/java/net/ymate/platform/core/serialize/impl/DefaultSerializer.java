@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2017 the original author or authors.
+ * Copyright 2007-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,6 @@
 package net.ymate.platform.core.serialize.impl;
 
 import net.ymate.platform.core.serialize.ISerializer;
-import org.apache.commons.io.IOUtils;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -25,9 +24,10 @@ import java.io.ObjectOutputStream;
 
 /**
  * @author 刘镇 (suninformation@163.com) on 2017/10/10 上午11:13
- * @version 1.0
  */
 public class DefaultSerializer implements ISerializer {
+
+    public final static String NAME = "default";
 
     @Override
     public String getContentType() {
@@ -36,26 +36,18 @@ public class DefaultSerializer implements ISerializer {
 
     @Override
     public byte[] serialize(Object object) throws Exception {
-        ObjectOutputStream _output = null;
-        try {
-            ByteArrayOutputStream _stream = new ByteArrayOutputStream();
-            _output = new ObjectOutputStream(_stream);
-            _output.writeObject(object);
-            return _stream.toByteArray();
-        } finally {
-            IOUtils.closeQuietly(_output);
+        try (ByteArrayOutputStream stream = new ByteArrayOutputStream();
+             ObjectOutputStream output = new ObjectOutputStream(stream)) {
+            output.writeObject(object);
+            return stream.toByteArray();
         }
     }
 
     @Override
     @SuppressWarnings("unchecked")
     public <T> T deserialize(byte[] bytes, Class<T> clazz) throws Exception {
-        ObjectInputStream _input = null;
-        try {
-            _input = new ObjectInputStream(new ByteArrayInputStream(bytes));
-            return (T) _input.readObject();
-        } finally {
-            IOUtils.closeQuietly(_input);
+        try (ObjectInputStream input = new ObjectInputStream(new ByteArrayInputStream(bytes))) {
+            return (T) input.readObject();
         }
     }
 }

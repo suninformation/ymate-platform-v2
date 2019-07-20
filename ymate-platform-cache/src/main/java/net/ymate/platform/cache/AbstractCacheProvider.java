@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2018 the original author or authors.
+ * Copyright 2007-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,64 +16,128 @@
 package net.ymate.platform.cache;
 
 import net.sf.ehcache.CacheManager;
+import net.ymate.platform.commons.ReentrantLockHelper;
+import net.ymate.platform.commons.util.ClassUtils;
+import net.ymate.platform.commons.util.RuntimeUtils;
+import net.ymate.platform.persistence.redis.Redis;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
+import java.util.Iterator;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * @author 刘镇 (suninformation@163.com) on 2018/11/8 11:43 PM
- * @version 1.0
  */
 public abstract class AbstractCacheProvider implements ICacheProvider {
 
-    private static final Object __LOCKER = new Object();
+    private static final Log LOG = LogFactory.getLog(AbstractCacheProvider.class);
 
-    private ICaches __owner;
+    protected static final IRedisCreator REDIS_CREATOR;
 
-    private Map<String, ICache> __caches;
-
-    @Override
-    public void init(ICaches owner) {
-        __owner = owner;
-        __caches = new ConcurrentHashMap<String, ICache>();
+    static {
+        IRedisCreator redisCreator = null;
+        try {
+            redisCreator = ClassUtils.getExtensionLoader(IRedisCreator.class).getExtension();
+            if (redisCreator == null) {
+                redisCreator = Redis::get;
+            }
+        } catch (NoClassDefFoundError ignored) {
+        } catch (Exception e) {
+            if (LOG.isErrorEnabled()) {
+                LOG.error(StringUtils.EMPTY, RuntimeUtils.unwrapThrow(e));
+            }
+        }
+        REDIS_CREATOR = redisCreator;
     }
 
-    private String __saferCacheName(String name) {
+    private ICaches owner;
+
+    private boolean initialized;
+
+    private final Map<String, ICache> caches = new ConcurrentHashMap<>();
+
+    private String cacheNameSafety(String name) {
         if (ICache.DEFAULT.equalsIgnoreCase(name)) {
-            name = CacheManager.DEFAULT_NAME;
+            return CacheManager.DEFAULT_NAME;
         }
         return name;
     }
 
-    private ICache __fromCache(String name) {
-        return __caches.get(name);
+    /**
+     * 初始化
+     *
+     * @throws Exception 可能产生的任何异常
+     */
+    protected abstract void onInitialize() throws Exception;
+
+    /**
+     * 销毁
+     *
+     * @throws Exception 可能产生的任何异常
+     */
+    protected abstract void onDestroy() throws Exception;
+
+    @Override
+    public void initialize(ICaches owner) throws Exception {
+        if (!initialized) {
+            this.owner = owner;
+            //
+            onInitialize();
+            //
+            initialized = true;
+        }
     }
 
-    private void __putCache(String name, ICache cache) {
-        __caches.put(name, cache);
+    @Override
+    public boolean isInitialized() {
+        return initialized;
     }
 
+    @Override
+    public void close() throws Exception {
+        if (initialized) {
+            initialized = false;
+            //
+            onDestroy();
+            //
+            Iterator<Map.Entry<String, ICache>> cacheIt = caches.entrySet().iterator();
+            while (cacheIt.hasNext()) {
+                ICache cache = cacheIt.next().getValue();
+                cache.close();
+                cacheIt.remove();
+            }
+        }
+    }
+
+    @Override
     public ICaches getOwner() {
-        return __owner;
+        return owner;
     }
 
     @Override
     public ICache createCache(String name, final ICacheEventListener listener) {
-        name = __saferCacheName(name);
-        //
-        ICache _cache = __fromCache(name);
-        if (_cache == null) {
-            synchronized (__LOCKER) {
-                _cache = __createCache(name, listener);
-                if (_cache != null) {
-                    __putCache(name, _cache);
-                }
+        try {
+            final String cacheName = cacheNameSafety(name);
+            return ReentrantLockHelper.putIfAbsentAsync(caches, cacheName, () -> onCreateCache(cacheName, listener));
+        } catch (Exception e) {
+            if (LOG.isWarnEnabled()) {
+                LOG.warn(StringUtils.EMPTY, RuntimeUtils.unwrapThrow(e));
             }
         }
-        return _cache;
+        return null;
     }
 
-    protected abstract ICache __createCache(String saferName, ICacheEventListener listener);
+    /**
+     * 创建缓存对象，若已存在则直接返回
+     *
+     * @param cacheName 缓存名称
+     * @param listener  缓存元素过期监听器接口实现
+     * @return 返回缓存对象
+     */
+    protected abstract ICache onCreateCache(String cacheName, ICacheEventListener listener);
 
     @Override
     public ICache getCache(String name) {
@@ -82,24 +146,19 @@ public abstract class AbstractCacheProvider implements ICacheProvider {
 
     @Override
     public ICache getCache(String name, boolean create) {
-        return getCache(name, create, getOwner().getModuleCfg().getCacheEventListener());
+        return getCache(name, create, getOwner().getConfig().getCacheEventListener());
     }
 
     @Override
     public ICache getCache(String name, boolean create, ICacheEventListener listener) {
-        ICache _cache = __fromCache(__saferCacheName(name));
-        if (_cache == null && create) {
-            _cache = createCache(name, listener);
+        try {
+            final String cacheName = cacheNameSafety(name);
+            return ReentrantLockHelper.putIfAbsentAsync(caches, cacheName, () -> create ? onCreateCache(cacheName, listener) : null);
+        } catch (Exception e) {
+            if (LOG.isWarnEnabled()) {
+                LOG.warn(StringUtils.EMPTY, RuntimeUtils.unwrapThrow(e));
+            }
         }
-        return _cache;
-    }
-
-    @Override
-    public void destroy() throws CacheException {
-        for (ICache _cache : __caches.values()) {
-            _cache.destroy();
-        }
-        __caches.clear();
-        __caches = null;
+        return null;
     }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2017 the original author or authors.
+ * Copyright 2007-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,7 +21,6 @@ import net.ymate.platform.webmvc.view.AbstractView;
  * 空视图，用于防止控制器返回值为NULL时受Convention模式影响
  *
  * @author 刘镇 (suninformation@163.com) on 14/10/21 下午5:48
- * @version 1.0
  */
 public class NullView extends AbstractView {
 
@@ -30,10 +29,10 @@ public class NullView extends AbstractView {
     }
 
     @Override
-    public void render() throws Exception {
+    public void render() {
     }
 
     @Override
-    protected void __doRenderView() throws Exception {
+    protected void doRenderView() {
     }
 }

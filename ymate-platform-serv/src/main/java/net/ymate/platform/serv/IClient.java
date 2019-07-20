@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2017 the original author or authors.
+ * Copyright 2007-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,6 +15,9 @@
  */
 package net.ymate.platform.serv;
 
+import net.ymate.platform.core.beans.annotation.Ignored;
+import net.ymate.platform.serv.nio.INioCodec;
+
 import java.io.Closeable;
 import java.io.IOException;
 
@@ -24,9 +27,9 @@ import java.io.IOException;
  * @param <LISTENER> 监听器类型
  * @param <CODEC>    客户端编解码器接口类型
  * @author 刘镇 (suninformation@163.com) on 15/10/15 上午10:21
- * @version 1.0
  */
-public interface IClient<LISTENER extends IListener, CODEC extends ICodec> extends Closeable {
+@Ignored
+public interface IClient<LISTENER extends IListener, CODEC extends INioCodec> extends Closeable {
 
     /**
      * 初始化客户端服务
@@ -37,11 +40,11 @@ public interface IClient<LISTENER extends IListener, CODEC extends ICodec> exten
      * @param reconnectService 断线重连服务
      * @param heartbeatService 链路维护(心跳)服务
      */
-    void init(IClientCfg clientCfg,
-              LISTENER listener,
-              CODEC codec,
-              IReconnectService reconnectService,
-              IHeartbeatService heartbeatService);
+    void initialize(IClientCfg clientCfg,
+                    LISTENER listener,
+                    CODEC codec,
+                    IReconnectService reconnectService,
+                    IHeartbeatService<?> heartbeatService);
 
     /**
      * 连接远程服务端
@@ -58,21 +61,29 @@ public interface IClient<LISTENER extends IListener, CODEC extends ICodec> exten
     void reconnect() throws IOException;
 
     /**
-     * @return 是否已连接
+     * 是否已连接
+     *
+     * @return 返回true表示已连接
      */
     boolean isConnected();
 
     /**
-     * @return 是否正在关闭
+     * 是否正在关闭
+     *
+     * @return 返回true表示正在关闭
      */
     boolean isClosing();
 
     /**
-     * @return 客户端配置对象
+     * 获取客户端配置对象
+     *
+     * @return 返回客户端配置对象
      */
     IClientCfg clientCfg();
 
     /**
+     * 获取监听器
+     *
      * @param <T> 监听器类型
      * @return 返回监听器接口实现类对象
      */
@@ -85,4 +96,16 @@ public interface IClient<LISTENER extends IListener, CODEC extends ICodec> exten
      * @throws IOException 可能产生的异常
      */
     void send(Object message) throws IOException;
+
+    /**
+     * 更新会话活动状态
+     */
+    void touch();
+
+    /**
+     * 获取最后更新会话状态的时间(毫秒)
+     *
+     * @return 返回最后更新会话状态的时间(毫秒)
+     */
+    long lastTouchTime();
 }

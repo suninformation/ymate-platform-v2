@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2017 the original author or authors.
+ * Copyright 2007-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,6 +15,7 @@
  */
 package net.ymate.platform.persistence.jdbc.base;
 
+import net.ymate.platform.core.beans.annotation.Ignored;
 import net.ymate.platform.persistence.jdbc.base.impl.ArrayResultSetHandler;
 import net.ymate.platform.persistence.jdbc.base.impl.MapResultSetHandler;
 
@@ -27,8 +28,8 @@ import java.util.Map;
  *
  * @param <T> 元素类型
  * @author 刘镇 (suninformation@163.com) on 2010-6-2 下午02:16:09
- * @version 1.0
  */
+@Ignored
 public interface IResultSetHandler<T> {
 
     IResultSetHandler<Object[]> ARRAY = new ArrayResultSetHandler();
@@ -36,8 +37,10 @@ public interface IResultSetHandler<T> {
     IResultSetHandler<Map<String, Object>> MAP = new MapResultSetHandler();
 
     /**
+     * 执行结果集处理过程
+     *
      * @param resultSet 查询结果集
-     * @return 执行结果集处理过程，并返回查询结果，决不为NULL
+     * @return 返回查询结果，决不为NULL
      * @throws Exception 可能产生的异常
      */
     List<T> handle(ResultSet resultSet) throws Exception;

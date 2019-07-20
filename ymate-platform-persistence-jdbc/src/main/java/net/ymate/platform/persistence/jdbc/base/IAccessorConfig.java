@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2017 the original author or authors.
+ * Copyright 2007-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,6 +15,8 @@
  */
 package net.ymate.platform.persistence.jdbc.base;
 
+import net.ymate.platform.core.beans.annotation.Ignored;
+
 import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -24,29 +26,35 @@ import java.sql.Statement;
  * 访问器配置接口，方便对访问器的功能扩展
  *
  * @author 刘镇 (suninformation@163.com) on 2011-8-30上午09:51:01
- * @version 1.0
  */
+@Ignored
 public interface IAccessorConfig {
 
     /**
+     * 创建自定义Statement对象，默认null
+     *
      * @param conn 连接对象
-     * @return 创建自定义Statement对象，默认null
+     * @return 返回Statement对象
      * @throws Exception 可能产生的异常
      */
     Statement getStatement(Connection conn) throws Exception;
 
     /**
+     * 创建自定义CallableStatement对象，默认null
+     *
      * @param conn 连接对象
      * @param sql  SQL语句
-     * @return 创建自定义 CallableStatement对象，默认null
+     * @return 返回CallableStatement对象
      * @throws Exception 可能产生的异常
      */
     CallableStatement getCallableStatement(Connection conn, String sql) throws Exception;
 
     /**
+     * 创建自定义PreparedStatement对象，默认null
+     *
      * @param conn 连接对象
      * @param sql  SQL语句
-     * @return 创建自定义PerparedStatement对象，默认null
+     * @return 返回PreparedStatement对象
      * @throws Exception 可能产生的异常
      */
     PreparedStatement getPreparedStatement(Connection conn, String sql) throws Exception;

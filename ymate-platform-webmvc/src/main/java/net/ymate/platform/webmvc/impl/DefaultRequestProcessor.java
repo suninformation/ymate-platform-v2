@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2017 the original author or authors.
+ * Copyright 2007-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,18 +15,18 @@
  */
 package net.ymate.platform.webmvc.impl;
 
-import net.ymate.platform.core.lang.BlurObject;
-import net.ymate.platform.core.util.ClassUtils;
-import net.ymate.platform.core.util.RuntimeUtils;
+import net.ymate.platform.commons.lang.BlurObject;
+import net.ymate.platform.commons.util.ClassUtils;
+import net.ymate.platform.commons.util.RuntimeUtils;
 import net.ymate.platform.webmvc.*;
 import net.ymate.platform.webmvc.annotation.*;
-import net.ymate.platform.webmvc.base.Type;
 import net.ymate.platform.webmvc.context.WebContext;
 import net.ymate.platform.webmvc.util.CookieHelper;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import javax.servlet.http.HttpServletRequest;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Array;
 import java.util.Collection;
@@ -38,61 +38,36 @@ import java.util.Map;
  * 默认(基于标准WEB)控制器请求处理器接口实现
  *
  * @author 刘镇 (suninformation@163.com) on 15/5/27 下午5:42
- * @version 1.0
  */
 public class DefaultRequestProcessor implements IRequestProcessor {
 
-    private static final Log _LOG = LogFactory.getLog(DefaultRequestProcessor.class);
+    private static final Log LOG = LogFactory.getLog(DefaultRequestProcessor.class);
 
     @Override
     public Map<String, Object> processRequestParams(IWebMvc owner, RequestMeta requestMeta) throws Exception {
-        Map<String, Object> _returnValues = new LinkedHashMap<String, Object>();
+        Map<String, Object> returnValues = new LinkedHashMap<>();
         // 非单例控制器类将不执行类成员的参数处理
         if (!requestMeta.isSingleton()) {
-            _returnValues.putAll(__doGetParamValueFromParameterMetas(owner, requestMeta, requestMeta.getClassParameterMetas()));
+            returnValues.putAll(doGetParamValueFromParameterMetas(owner, requestMeta, requestMeta.getClassParameterMetas()));
         }
         // 处理控制器方法参数
-        _returnValues.putAll(__doGetParamValueFromParameterMetas(owner, requestMeta, requestMeta.getMethodParameterMetas()));
+        returnValues.putAll(doGetParamValueFromParameterMetas(owner, requestMeta, requestMeta.getMethodParameterMetas()));
         //
-        return _returnValues;
+        return returnValues;
     }
 
-    private Map<String, Object> __doGetParamValueFromParameterMetas(IWebMvc owner, RequestMeta requestMeta, Collection<ParameterMeta> metas) throws Exception {
-        Map<String, Object> _resultMap = new HashMap<String, Object>();
-        Map<String, Object> _resultEscapedMap = new HashMap<String, Object>();
-        boolean _escapeBeforeFlag = Type.EscapeOrder.BEFORE.equals(owner.getModuleCfg().getParameterEscapeOrder());
-        if (owner.getModuleCfg().isParameterEscapeMode() && !_escapeBeforeFlag) {
-            // 将转义预处理的参数暂存至WebContext中
-            WebContext.getContext().addAttribute(Type.EscapeOrder.class.getName(), _resultEscapedMap);
-        }
-        for (ParameterMeta _meta : metas) {
-            Object _result = __doGetParamValue(owner, requestMeta, _meta, _meta.getParamName(), _meta.getParamType(), _meta.getParamAnno());
-            if (_result != null) {
-                if (owner.getModuleCfg().isParameterEscapeMode()) {
-                    // 若执行转义顺序为before时, 直接处理
-                    if (_escapeBeforeFlag) {
-                        _result = _meta.doParamEscape(_meta, _result);
-                    } else {
-                        // 排除掉@ModelBind参数, 因为内部已特殊处理
-                        if (!_meta.isModelBind()) {
-                            // 否则, 进行参数转义预处理
-                            Object _resultEscaped = _meta.doParamEscape(_meta, _result);
-                            //
-                            _resultEscapedMap.put(_meta.getFieldName(), _resultEscaped);
-                            if (StringUtils.isNotBlank(_meta.getParamName())) {
-                                _resultEscapedMap.put(_meta.getParamName(), _resultEscaped);
-                            }
-                        }
-                    }
-                }
-                //
-                _resultMap.put(_meta.getFieldName(), _result);
-                if (StringUtils.isNotBlank(_meta.getParamName())) {
-                    _resultMap.put(_meta.getParamName(), _result);
+    private Map<String, Object> doGetParamValueFromParameterMetas(IWebMvc owner, RequestMeta requestMeta, Collection<ParameterMeta> metas) throws Exception {
+        Map<String, Object> resultMap = new HashMap<>(metas.size());
+        for (ParameterMeta parameterMeta : metas) {
+            Object paramValue = doGetParamValue(owner, requestMeta, parameterMeta, parameterMeta.getParamName(), parameterMeta.getParamType(), parameterMeta.getParamAnnotation());
+            if (paramValue != null) {
+                resultMap.put(parameterMeta.getFieldName(), paramValue);
+                if (StringUtils.isNotBlank(parameterMeta.getParamName())) {
+                    resultMap.put(parameterMeta.getParamName(), paramValue);
                 }
             }
         }
-        return _resultMap;
+        return resultMap;
     }
 
     /**
@@ -103,199 +78,186 @@ public class DefaultRequestProcessor implements IRequestProcessor {
      * @param paramMeta   参数元描述对象
      * @param paramName   参数名称
      * @param paramType   参数类型
-     * @param _annotation 参数上声明的参数绑定注解
+     * @param annotation  参数上声明的参数绑定注解
      * @return 返回参数名称与值对象
      * @throws Exception 可能产生的异常
      */
-    private Object __doGetParamValue(IWebMvc owner, RequestMeta requestMeta, ParameterMeta paramMeta, String paramName, Class<?> paramType, Annotation _annotation) throws Exception {
-        Object _pValue = null;
-        if (_annotation instanceof CookieVariable) {
-            CookieVariable _anno = (CookieVariable) _annotation;
-            String _v = CookieHelper.bind(owner).getCookie(paramName).toStringValue();
-            _pValue = __doSafeGetParamValue(owner, paramName, paramType, _v, StringUtils.trimToNull(_anno.defaultValue()), _anno.fullScope());
-        } else if (_annotation instanceof PathVariable) {
-            String _v = WebContext.getRequestContext().getAttribute(paramName);
-            _pValue = __doSafeGetParamValue(owner, paramName, paramType, _v, null, false);
-        } else if (_annotation instanceof RequestHeader) {
-            RequestHeader _anno = (RequestHeader) _annotation;
-            String _v = WebContext.getRequest().getHeader(paramName);
-            _pValue = __doSafeGetParamValue(owner, paramName, paramType, _v, StringUtils.trimToNull(_anno.defaultValue()), _anno.fullScope());
-        } else if (_annotation instanceof RequestParam) {
-            RequestParam _anno = (RequestParam) _annotation;
-            _pValue = this.__doParseRequestParam(owner, paramName, StringUtils.trimToNull(_anno.defaultValue()), paramType, _anno.fullScope());
-        } else if (_annotation instanceof ModelBind) {
-            _pValue = __doParseModelBind(owner, requestMeta, paramMeta, paramType);
+    private Object doGetParamValue(IWebMvc owner, RequestMeta requestMeta, ParameterMeta paramMeta, String paramName, Class<?> paramType, Annotation annotation) throws Exception {
+        Object paramValue = null;
+        if (annotation instanceof CookieVariable) {
+            CookieVariable ann = (CookieVariable) annotation;
+            String value = CookieHelper.bind(owner).getCookie(paramName).toStringValue();
+            paramValue = doSafeGetParamValue(owner, paramName, paramType, value, StringUtils.trimToNull(ann.defaultValue()), ann.fullScope());
+        } else if (annotation instanceof PathVariable) {
+            String value = WebContext.getRequestContext().getAttribute(paramName);
+            paramValue = doSafeGetParamValue(owner, paramName, paramType, value, null, false);
+        } else if (annotation instanceof RequestHeader) {
+            RequestHeader ann = (RequestHeader) annotation;
+            String value = WebContext.getRequest().getHeader(paramName);
+            paramValue = doSafeGetParamValue(owner, paramName, paramType, value, StringUtils.trimToNull(ann.defaultValue()), ann.fullScope());
+        } else if (annotation instanceof RequestParam) {
+            RequestParam ann = (RequestParam) annotation;
+            paramValue = this.doParseRequestParam(owner, paramName, StringUtils.trimToNull(ann.defaultValue()), paramType, ann.fullScope());
+        } else if (annotation instanceof ModelBind) {
+            paramValue = doParseModelBind(owner, requestMeta, paramMeta, paramType);
         }
-        return _pValue;
+        return paramValue;
     }
 
-    protected Object __doParseRequestParam(IWebMvc owner, String paramName, String defaultValue, Class<?> paramType, boolean fullScope) {
+    protected Object doParseRequestParam(IWebMvc owner, String paramName, String defaultValue, Class<?> paramType, boolean fullScope) {
+        HttpServletRequest httpServletRequest = WebContext.getRequest();
         if (paramType.isArray()) {
             if (paramType.equals(IUploadFileWrapper[].class)) {
-                if (WebContext.getRequest() instanceof IMultipartRequestWrapper) {
-                    return ((IMultipartRequestWrapper) WebContext.getRequest()).getUploadFiles(paramName);
+                if (httpServletRequest instanceof IMultipartRequestWrapper) {
+                    return ((IMultipartRequestWrapper) httpServletRequest).getUploadFiles(paramName);
                 }
                 return null;
             }
-            String[] _values = (String[]) WebContext.getRequest().getParameterMap().get(paramName);
-            if (_values == null || _values.length == 0) {
-                _values = StringUtils.split(defaultValue, ",");
+            String[] values = httpServletRequest.getParameterMap().get(paramName);
+            if (values == null || values.length == 0) {
+                values = StringUtils.split(defaultValue, ",");
             }
-            if (_values != null && _values.length > 0) {
-                Class<?> _arrayClassType = ClassUtils.getArrayClassType(paramType);
-                Object[] _tempParams = (Object[]) Array.newInstance(_arrayClassType, _values.length);
-                for (int _tempIdx = 0; _tempIdx < _values.length; _tempIdx++) {
-                    _tempParams[_tempIdx] = __doSafeGetParamValue(owner, paramName, _arrayClassType, _values[_tempIdx], null, false);
-                }
-                return _tempParams;
+            if (values != null && values.length > 0) {
+                return doSafeGetParamValueArray(owner, paramName, ClassUtils.getArrayClassType(paramType), values);
             }
             return null;
         } else if (paramType.equals(IUploadFileWrapper.class)) {
-            if (WebContext.getRequest() instanceof IMultipartRequestWrapper) {
-                return ((IMultipartRequestWrapper) WebContext.getRequest()).getUploadFile(paramName);
+            if (httpServletRequest instanceof IMultipartRequestWrapper) {
+                return ((IMultipartRequestWrapper) httpServletRequest).getUploadFile(paramName);
             }
             return null;
         }
-        return __doSafeGetParamValue(owner, paramName, paramType, WebContext.getRequest().getParameter(paramName), defaultValue, fullScope);
+        return doSafeGetParamValue(owner, paramName, paramType, httpServletRequest.getParameter(paramName), defaultValue, fullScope);
     }
 
-    protected Object __doSafeGetParamValue(IWebMvc owner, String paramName, Class<?> paramType, String paramValue, String defaultValue, boolean fullScope) {
-        Object _returnValue = null;
+    Object[] doSafeGetParamValueArray(IWebMvc owner, String paramName, Class<?> arrayClassType, String[] values) {
+        Object[] newArray = (Object[]) Array.newInstance(arrayClassType, values.length);
+        for (int arrayIdx = 0; arrayIdx < values.length; arrayIdx++) {
+            newArray[arrayIdx] = doSafeGetParamValue(owner, paramName, arrayClassType, values[arrayIdx], null, false);
+        }
+        return newArray;
+    }
+
+    Object doSafeGetParamValue(IWebMvc owner, String paramName, Class<?> paramType, String paramValue, String defaultValue, boolean fullScope) {
+        Object returnValue = null;
         try {
             if (paramValue == null) {
                 if (fullScope) {
-                    _returnValue = new BlurObject(WebContext.getRequest().getParameter(paramName)).toObjectValue(paramType);
-                    if (_returnValue == null) {
-                        _returnValue = new BlurObject(WebContext.getContext().getSession().get(paramName)).toObjectValue(paramType);
-                        if (_returnValue == null) {
-                            _returnValue = new BlurObject(WebContext.getContext().getApplication().get(paramName)).toObjectValue(paramType);
+                    returnValue = new BlurObject(WebContext.getRequest().getParameter(paramName)).toObjectValue(paramType);
+                    if (returnValue == null) {
+                        returnValue = new BlurObject(WebContext.getContext().getSession().get(paramName)).toObjectValue(paramType);
+                        if (returnValue == null) {
+                            returnValue = new BlurObject(WebContext.getContext().getApplication().get(paramName)).toObjectValue(paramType);
                         }
                     }
                 }
             }
-            if (_returnValue == null) {
-                _returnValue = new BlurObject(StringUtils.defaultIfBlank(paramValue, defaultValue)).toObjectValue(paramType);
+            if (returnValue == null) {
+                returnValue = new BlurObject(StringUtils.defaultIfBlank(paramValue, defaultValue)).toObjectValue(paramType);
             }
         } catch (Throwable e) {
-            if (owner.getOwner().getConfig().isDevelopMode() && _LOG.isWarnEnabled()) {
-                _LOG.warn("Invalid '" + paramName + "' value: " + paramValue, RuntimeUtils.unwrapThrow(e));
+            if (owner.getOwner().isDevEnv() && LOG.isWarnEnabled()) {
+                LOG.warn(String.format("Invalid '%s' value: %s", paramName, paramValue), RuntimeUtils.unwrapThrow(e));
             }
         }
-        return _returnValue;
+        return returnValue;
     }
 
-    private Object __doParseModelBindSingleton(IWebMvc owner, RequestMeta requestMeta, ParameterMeta paramMeta, Class<?> paramType) throws Exception {
-        ClassUtils.BeanWrapper<?> _wrapper = ClassUtils.wrapper(paramType);
-        //
-        ClassUtils.BeanWrapper<?> _wrapperEscaped = null;
-        boolean _escapeBeforeFlag = Type.EscapeOrder.BEFORE.equals(owner.getModuleCfg().getParameterEscapeOrder());
-        if (!_escapeBeforeFlag) {
-            _wrapperEscaped = ClassUtils.wrapper(paramType);
-        }
-        if (_wrapper != null) {
-            for (String _fName : _wrapper.getFieldNames()) {
-                ParameterMeta _meta = new ParameterMeta(requestMeta, _wrapper.getField(_fName));
-                if (_meta.isParamField()) {
-                    Object _result = __doGetParamValue(owner, requestMeta, _meta, _meta.doBuildParamName(paramMeta.getPrefix(), _meta.getParamName(), _fName), _meta.getParamType(), _meta.getParamAnno());
-                    if (_result != null) {
-                        if (owner.getModuleCfg().isParameterEscapeMode()) {
-                            if (_escapeBeforeFlag) {
-                                _result = _meta.doParamEscape(_meta, _result);
-                            } else {
-                                Object _resultEscaped = _meta.doParamEscape(_meta, _result);
-                                if (_wrapperEscaped != null) {
-                                    _wrapperEscaped.setValue(_fName, _resultEscaped);
-                                }
-                            }
-                        }
-                        _wrapper.setValue(_fName, _result);
+    private Object doParseModelBindSingleton(IWebMvc owner, RequestMeta requestMeta, ParameterMeta paramMeta, Class<?> paramType) throws Exception {
+        ClassUtils.BeanWrapper<?> beanWrapper = ClassUtils.wrapper(paramType);
+        if (beanWrapper != null) {
+            for (String fieldName : beanWrapper.getFieldNames()) {
+                ParameterMeta parameterMeta = new ParameterMeta(beanWrapper.getField(fieldName));
+                if (parameterMeta.isParamField()) {
+                    Object paramValue = doGetParamValue(owner, requestMeta, parameterMeta, parameterMeta.doBuildParamName(paramMeta.getPrefix(), parameterMeta.getParamName(), fieldName), parameterMeta.getParamType(), parameterMeta.getParamAnnotation());
+                    if (paramValue != null) {
+                        beanWrapper.setValue(fieldName, paramValue);
                     }
                 }
             }
-            if (owner.getModuleCfg().isParameterEscapeMode() && !_escapeBeforeFlag) {
-                Map<String, Object> _resultEscapedMap = WebContext.getContext().getAttribute(Type.EscapeOrder.class.getName());
-                if (_wrapperEscaped != null) {
-                    _resultEscapedMap.put(paramMeta.getFieldName(), _wrapperEscaped.getTargetObject());
-                }
-            }
-            return _wrapper.getTargetObject();
+            return beanWrapper.getTargetObject();
         }
         return null;
     }
 
-    private Object __doParseModelBind(IWebMvc owner, RequestMeta requestMeta, ParameterMeta paramMeta, Class<?> paramType) throws Exception {
+    private Object doParseModelBind(IWebMvc owner, RequestMeta requestMeta, ParameterMeta paramMeta, Class<?> paramType) throws Exception {
         if (paramType.isArray()) {
-            Map<String, ParameterMeta> _metas = new HashMap<String, ParameterMeta>();
-            Object[] _returnValue = null;
+            HttpServletRequest httpServletRequest = WebContext.getRequest();
+            Map<String, ParameterMeta> parameterMetaMap = new HashMap<>(16);
+            Object[] returnValue = null;
             //
-            Class<?> _arrayClassType = ClassUtils.getArrayClassType(paramType);
-            ClassUtils.BeanWrapper<?> _wrapperTmp = ClassUtils.wrapper(_arrayClassType);
-            if (_wrapperTmp != null) {
-                int _maxLength = 0;
-                for (String _fName : _wrapperTmp.getFieldNames()) {
-                    // 当控制器参数为@ModelBind数组时，仅支持通过@RequestParam注解获取参数
-                    ParameterMeta _meta = new ParameterMeta(requestMeta, _wrapperTmp.getField(_fName));
-                    if (_meta.getParamAnno() instanceof RequestParam) {
-                        _metas.put(_fName, _meta);
-                        // 尝试计算数组长度并创建数组对象实例
-                        String[] _param = ((String[]) WebContext.getRequest().getParameterMap().get(_meta.doBuildParamName(paramMeta.getPrefix(), _meta.getParamName(), _fName)));
-                        if (_param != null) {
-                            if (_param.length > _maxLength) {
-                                _maxLength = _param.length;
+            Class<?> arrayClassType = ClassUtils.getArrayClassType(paramType);
+            if (arrayClassType != null) {
+                ClassUtils.BeanWrapper<?> beanWrapper = ClassUtils.wrapper(arrayClassType);
+                if (beanWrapper != null) {
+                    int maxLength = 0;
+                    for (String fieldName : beanWrapper.getFieldNames()) {
+                        // 当控制器参数为@ModelBind数组时，仅支持通过@RequestParam注解获取参数
+                        ParameterMeta parameterMeta = new ParameterMeta(beanWrapper.getField(fieldName));
+                        if (parameterMeta.getParamAnnotation() instanceof RequestParam) {
+                            parameterMetaMap.put(fieldName, parameterMeta);
+                            // 尝试计算数组长度并创建数组对象实例
+                            String[] param = httpServletRequest.getParameterMap().get(parameterMeta.doBuildParamName(paramMeta.getPrefix(), parameterMeta.getParamName(), fieldName));
+                            if (param != null) {
+                                if (param.length > maxLength) {
+                                    maxLength = param.length;
+                                }
                             }
                         }
                     }
+                    returnValue = (Object[]) Array.newInstance(arrayClassType, maxLength);
                 }
-                _returnValue = (Object[]) Array.newInstance(_arrayClassType, _maxLength);
             }
             //
-            if (_returnValue != null && !_metas.isEmpty()) {
-                for (int _idx = 0; _idx < _returnValue.length; _idx++) {
-                    ClassUtils.BeanWrapper<?> _wrapperItem = ClassUtils.wrapper(_arrayClassType);
-                    if (_wrapperItem != null) {
-                        for (Map.Entry<String, ParameterMeta> _entry : _metas.entrySet()) {
-                            String _pName = _entry.getValue().doBuildParamName(paramMeta.getPrefix(), _entry.getValue().getParamName(), _entry.getKey());
-                            Object _pValue = null;
-                            if (_entry.getValue().getParamAnno() instanceof RequestParam) {
-                                RequestParam _anno = (RequestParam) _entry.getValue().getParamAnno();
-                                if (_entry.getValue().isArray()) {
-                                    if (_entry.getValue().getParamType().equals(IUploadFileWrapper[].class)) {
-                                        if (WebContext.getRequest() instanceof IMultipartRequestWrapper) {
-                                            return ((IMultipartRequestWrapper) WebContext.getRequest()).getUploadFiles(_pName);
+            if (returnValue != null && !parameterMetaMap.isEmpty()) {
+                for (int idx = 0; idx < returnValue.length; idx++) {
+                    ClassUtils.BeanWrapper<?> beanWrapper = ClassUtils.wrapper(arrayClassType);
+                    if (beanWrapper != null) {
+                        for (Map.Entry<String, ParameterMeta> parameterMetaEntry : parameterMetaMap.entrySet()) {
+                            String paramName = parameterMetaEntry.getValue().doBuildParamName(paramMeta.getPrefix(), parameterMetaEntry.getValue().getParamName(), parameterMetaEntry.getKey());
+                            Object paramValue = null;
+                            if (parameterMetaEntry.getValue().getParamAnnotation() instanceof RequestParam) {
+                                RequestParam ann = (RequestParam) parameterMetaEntry.getValue().getParamAnnotation();
+                                if (parameterMetaEntry.getValue().isArray()) {
+                                    if (parameterMetaEntry.getValue().getParamType().equals(IUploadFileWrapper[].class)) {
+                                        if (httpServletRequest instanceof IMultipartRequestWrapper) {
+                                            return ((IMultipartRequestWrapper) httpServletRequest).getUploadFiles(paramName);
                                         }
                                         return null;
                                     }
-                                    String[] _values = (String[]) WebContext.getRequest().getParameterMap().get(_pName);
-                                    if (_values == null || _values.length == 0) {
-                                        _values = StringUtils.split(_anno.defaultValue(), ",");
+                                    String[] values = httpServletRequest.getParameterMap().get(paramName);
+                                    if (values == null || values.length == 0) {
+                                        values = StringUtils.split(ann.defaultValue(), ",");
                                     }
-                                    if (_values != null && _values.length > 0) {
-                                        Class<?> __pArrayClassType = ClassUtils.getArrayClassType(_entry.getValue().getParamType());
-                                        Object[] _tempParams = (Object[]) Array.newInstance(__pArrayClassType, _values.length);
-                                        for (int _tempIdx = 0; _tempIdx < _values.length; _tempIdx++) {
-                                            _tempParams[_tempIdx] = new BlurObject(_values[_tempIdx]).toObjectValue(__pArrayClassType);
+                                    if (values != null && values.length > 0) {
+                                        Class<?> paramArrayClassType = ClassUtils.getArrayClassType(parameterMetaEntry.getValue().getParamType());
+                                        if (paramArrayClassType != null) {
+                                            Object[] newParamArray = (Object[]) Array.newInstance(paramArrayClassType, values.length);
+                                            for (int pArrayIdx = 0; pArrayIdx < values.length; pArrayIdx++) {
+                                                newParamArray[pArrayIdx] = new BlurObject(values[pArrayIdx]).toObjectValue(paramArrayClassType);
+                                            }
+                                            paramValue = newParamArray;
                                         }
-                                        _pValue = _tempParams;
                                     }
-                                } else if (_entry.getValue().getParamType().equals(IUploadFileWrapper.class)) {
-                                    if (WebContext.getRequest() instanceof IMultipartRequestWrapper) {
-                                        return ((IMultipartRequestWrapper) WebContext.getRequest()).getUploadFile(_pName);
+                                } else if (parameterMetaEntry.getValue().getParamType().equals(IUploadFileWrapper.class)) {
+                                    if (httpServletRequest instanceof IMultipartRequestWrapper) {
+                                        return ((IMultipartRequestWrapper) httpServletRequest).getUploadFile(paramName);
                                     }
                                 } else {
-                                    String[] _values = (String[]) WebContext.getRequest().getParameterMap().get(_pName);
-                                    if (_values != null && _values.length >= _idx) {
-                                        _pValue = new BlurObject(StringUtils.defaultIfBlank(_values[_idx], _anno.defaultValue())).toObjectValue(_entry.getValue().getParamType());
+                                    String[] values = httpServletRequest.getParameterMap().get(paramName);
+                                    if (values != null && values.length >= idx) {
+                                        paramValue = new BlurObject(StringUtils.defaultIfBlank(values[idx], ann.defaultValue())).toObjectValue(parameterMetaEntry.getValue().getParamType());
                                     }
                                 }
                             }
-                            _wrapperItem.setValue(_entry.getKey(), _pValue);
+                            beanWrapper.setValue(parameterMetaEntry.getKey(), paramValue);
                         }
-                        _returnValue[_idx] = _wrapperItem.getTargetObject();
+                        returnValue[idx] = beanWrapper.getTargetObject();
                     }
                 }
             }
-            return _returnValue;
+            return returnValue;
         }
-        return __doParseModelBindSingleton(owner, requestMeta, paramMeta, paramType);
+        return doParseModelBindSingleton(owner, requestMeta, paramMeta, paramType);
     }
 }

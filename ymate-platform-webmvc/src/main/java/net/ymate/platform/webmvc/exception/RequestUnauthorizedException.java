@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2017 the original author or authors.
+ * Copyright 2007-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,16 +15,11 @@
  */
 package net.ymate.platform.webmvc.exception;
 
-import net.ymate.platform.webmvc.annotation.ExceptionProcessor;
-import net.ymate.platform.webmvc.util.ErrorCode;
-
 /**
  * 请求的资源未授权或无权限异常
  *
  * @author 刘镇 (suninformation@163.com) on 2017/10/18 下午3:11
- * @version 1.0
  */
-@ExceptionProcessor(code = ErrorCode.REQUEST_RESOURCE_UNAUTHORIZED, msg = ErrorCode.MSG_REQUEST_RESOURCE_UNAUTHORIZED)
 public class RequestUnauthorizedException extends RuntimeException {
 
     public RequestUnauthorizedException() {

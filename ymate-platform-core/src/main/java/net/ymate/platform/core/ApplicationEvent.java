@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2017 the original author or authors.
+ * Copyright 2007-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,34 +15,40 @@
  */
 package net.ymate.platform.core;
 
-import net.ymate.platform.core.event.EventContext;
+import net.ymate.platform.core.event.AbstractEventContext;
 import net.ymate.platform.core.event.IEvent;
 
 /**
- * 框架事件对象
+ * 应用容器事件对象
  *
  * @author 刘镇 (suninformation@163.com) on 15/5/17 下午6:35
- * @version 1.0
  */
-public final class ApplicationEvent extends EventContext<YMP, ApplicationEvent.EVENT> implements IEvent {
+public final class ApplicationEvent extends AbstractEventContext<IApplication, ApplicationEvent.EVENT> implements IEvent {
+
+    private static final long serialVersionUID = 1L;
 
     /**
-     * 框架事件枚举
+     * 应用容器事件枚举
      */
     public enum EVENT {
 
         /**
-         * APPLICATION_INITED - 框架初始化事件
+         * 应用容器启动事件
          */
-        APPLICATION_INITED,
+        APPLICATION_STARTUP,
 
         /**
-         * APPLICATION_DESTROYED - 框架销毁事件
+         * 应用容器初始化事件
+         */
+        APPLICATION_INITIALIZED,
+
+        /**
+         * 应用容器销毁事件
          */
         APPLICATION_DESTROYED
     }
 
-    public ApplicationEvent(YMP owner, EVENT eventName) {
+    public ApplicationEvent(IApplication owner, EVENT eventName) {
         super(owner, ApplicationEvent.class, eventName);
     }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2017 the original author or authors.
+ * Copyright 2007-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,10 +16,8 @@
 package net.ymate.platform.configuration.impl;
 
 import net.ymate.platform.configuration.AbstractConfigFileParser;
-import org.apache.commons.lang.StringUtils;
-import org.xml.sax.SAXException;
+import org.apache.commons.lang3.StringUtils;
 
-import javax.xml.parsers.ParserConfigurationException;
 import java.io.*;
 import java.net.URL;
 import java.util.Enumeration;
@@ -29,81 +27,74 @@ import java.util.Properties;
  * 基于Properties解析工具处理properties配置文件的读写操作
  *
  * @author 刘镇 (suninformation@163.com) on 2010-9-5 下午06:37:36
- * @version 1.0
  */
 public class PropertyConfigFileParser extends AbstractConfigFileParser {
 
-    private final Properties __rootProps = new Properties();
+    private final Properties properties = new Properties();
 
     public PropertyConfigFileParser(File file) throws IOException {
-        FileReader _reader = new FileReader(file);
-        try {
-            __rootProps.load(_reader);
-        } finally {
-            _reader.close();
+        try (FileReader reader = new FileReader(file)) {
+            properties.load(reader);
         }
     }
 
     public PropertyConfigFileParser(InputStream inputStream) throws IOException {
-        __rootProps.load(inputStream);
+        properties.load(inputStream);
     }
 
-    public PropertyConfigFileParser(URL url) throws ParserConfigurationException, IOException, SAXException {
-        InputStream _in = url.openStream();
-        try {
-            __rootProps.load(_in);
-        } finally {
-            _in.close();
+    public PropertyConfigFileParser(URL url) throws IOException {
+        try (InputStream in = url.openStream()) {
+            properties.load(in);
         }
     }
 
     @Override
     @SuppressWarnings("unchecked")
-    protected void __doLoad() {
-        Enumeration<String> _propNames = (Enumeration<String>) __rootProps.propertyNames();
-        while (_propNames.hasMoreElements()) {
-            String _propName = _propNames.nextElement();
-            if (StringUtils.startsWith(_propName, TAG_NAME_ROOT)) {
-                String _newPropName = StringUtils.substringAfter(_propName, TAG_NAME_ROOT.concat("."));
+    protected void onLoad() {
+        Enumeration<String> propNames = (Enumeration<String>) properties.propertyNames();
+        while (propNames.hasMoreElements()) {
+            String propName = propNames.nextElement();
+            if (StringUtils.startsWith(propName, TAG_NAME_ROOT)) {
+                String newPropName = StringUtils.substringAfter(propName, TAG_NAME_ROOT.concat("."));
                 // _propArr[0] = categoryName
                 // _propArr[1] = propertyName
                 // _propArr[2] = attributes关键字
                 // _propArr[3] = attrName
-                String[] _propArr = StringUtils.split(_newPropName, ".");
-                if (_propArr.length > 1) {
+                String[] propArr = StringUtils.split(newPropName, ".");
+                if (propArr.length > 1) {
                     // 若为根属性
-                    if (_propArr[0].equalsIgnoreCase(TAG_NAME_ATTRIBUTES)) {
-                        __rootAttributes.put(_propArr[1], new Attribute(_propArr[1], __rootProps.getProperty(_propName)));
+                    if (propArr[0].equalsIgnoreCase(TAG_NAME_ATTRIBUTES)) {
+                        getAttributes().put(propArr[1], new Attribute(propArr[1], properties.getProperty(propName)));
                         continue;
                     }
                     // 若为正常的category, 若category对象不存在, 则创建它
-                    Category _category = __categories.get(_propArr[0]);
-                    if (_category == null) {
-                        _category = new Category(_propArr[0], null, null, __sorted);
-                        __categories.put(_propArr[0], _category);
+                    Category category = getCategories().get(propArr[0]);
+                    if (category == null) {
+                        category = new Category(propArr[0], null, null, isSorted());
+                        getCategories().put(propArr[0], category);
                     }
                     //
-                    switch (_propArr.length) {
+                    switch (propArr.length) {
                         case 4:
-                            if (_propArr[2].equalsIgnoreCase(TAG_NAME_ATTRIBUTES)) {
-                                Property _prop = __safeGetProperty(_category, _propName, _propArr[1]);
-                                if (_prop != null) {
-                                    __fixedSetAttribute(_prop, _propName, _propArr[3]);
+                            if (propArr[2].equalsIgnoreCase(TAG_NAME_ATTRIBUTES)) {
+                                Property prop = safeGetProperty(category, propArr[1]);
+                                if (prop != null) {
+                                    fixedSetAttribute(prop, propName, propArr[3]);
                                 }
                             } else {
-                                _category.getPropertyMap().put(_propArr[3], new Property(_propArr[3], __rootProps.getProperty(_propName), null));
+                                category.getPropertyMap().put(propArr[3], new Property(propArr[3], properties.getProperty(propName), null));
                             }
                             break;
                         case 2:
-                            __fixedSetProperty(_category, _propName, _propArr[1]);
+                            fixedSetProperty(category, propName, propArr[1]);
                             break;
                         default:
-                            if (_propArr[1].equalsIgnoreCase(TAG_NAME_ATTRIBUTES)) {
-                                _category.getAttributeMap().put(_propArr[2], new Attribute(_propArr[2], __rootProps.getProperty(_propName)));
+                            if (propArr[1].equalsIgnoreCase(TAG_NAME_ATTRIBUTES)) {
+                                category.getAttributeMap().put(propArr[2], new Attribute(propArr[2], properties.getProperty(propName)));
                             } else {
-                                Property _prop = __safeGetProperty(_category, _propName, _propArr[1]);
-                                if (_prop != null) {
-                                    __fixedSetAttribute(_prop, _propName, _propArr[2]);
+                                Property prop = safeGetProperty(category, propArr[1]);
+                                if (prop != null) {
+                                    fixedSetAttribute(prop, propName, propArr[2]);
                                 }
                             }
                             break;
@@ -112,41 +103,41 @@ public class PropertyConfigFileParser extends AbstractConfigFileParser {
             }
         }
         // 必须保证DEFAULT_CATEGORY_NAME配置集合存在
-        if (!__categories.containsKey(DEFAULT_CATEGORY_NAME)) {
-            __categories.put(DEFAULT_CATEGORY_NAME, new Category(DEFAULT_CATEGORY_NAME, null, null, __sorted));
+        if (!getCategories().containsKey(DEFAULT_CATEGORY_NAME)) {
+            getCategories().put(DEFAULT_CATEGORY_NAME, new Category(DEFAULT_CATEGORY_NAME, null, null, isSorted()));
         }
     }
 
-    private Property __safeGetProperty(Category category, String propName, String newPropName) {
-        Property _property = category.getProperty(newPropName);
-        if (_property == null) {
-            _property = new Property(newPropName, null, null);
-            category.getPropertyMap().put(newPropName, _property);
+    private Property safeGetProperty(Category category, String newPropName) {
+        Property property = category.getProperty(newPropName);
+        if (property == null) {
+            property = new Property(newPropName, null, null);
+            category.getPropertyMap().put(newPropName, property);
         }
-        return _property;
+        return property;
     }
 
-    private void __fixedSetAttribute(Property property, String propName, String newPropName) {
-        Attribute _attr = property.getAttribute(newPropName);
-        String _attrValue = __rootProps.getProperty(propName);
-        if (_attr == null) {
-            _attr = new Attribute(newPropName, _attrValue);
-            property.getAttributeMap().put(newPropName, _attr);
+    private void fixedSetAttribute(Property property, String propName, String newPropName) {
+        Attribute attr = property.getAttribute(newPropName);
+        String attrValue = properties.getProperty(propName);
+        if (attr == null) {
+            attr = new Attribute(newPropName, attrValue);
+            property.getAttributeMap().put(newPropName, attr);
         } else {
-            _attr.setKey(newPropName);
-            _attr.setValue(_attrValue);
+            attr.setKey(newPropName);
+            attr.setValue(attrValue);
         }
     }
 
-    private void __fixedSetProperty(Category category, String propName, String newPropName) {
-        Property _prop = category.getProperty(newPropName);
-        String _propContent = __rootProps.getProperty(propName);
-        if (_prop == null) {
-            _prop = new Property(newPropName, _propContent, null);
-            category.getPropertyMap().put(newPropName, _prop);
+    private void fixedSetProperty(Category category, String propName, String newPropName) {
+        Property prop = category.getProperty(newPropName);
+        String propContent = properties.getProperty(propName);
+        if (prop == null) {
+            prop = new Property(newPropName, propContent, null);
+            category.getPropertyMap().put(newPropName, prop);
         } else {
-            _prop.setName(newPropName);
-            _prop.setContent(_propContent);
+            prop.setName(newPropName);
+            prop.setContent(propContent);
         }
     }
 

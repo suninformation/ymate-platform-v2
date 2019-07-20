@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2017 the original author or authors.
+ * Copyright 2007-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,8 +15,7 @@
  */
 package net.ymate.platform.webmvc.support;
 
-import net.ymate.platform.core.i18n.I18N;
-import net.ymate.platform.core.util.RuntimeUtils;
+import net.ymate.platform.commons.util.RuntimeUtils;
 import net.ymate.platform.webmvc.IRequestContext;
 import net.ymate.platform.webmvc.IWebErrorProcessor;
 import net.ymate.platform.webmvc.IWebMvc;
@@ -27,54 +26,51 @@ import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
 
 /**
  * 通用请求分发器助手
  *
  * @author 刘镇 (suninformation@163.com) on 2013年8月18日 下午7:11:29
- * @version 1.0
  */
 public final class GenericDispatcher {
 
-    private final IWebMvc __owner;
+    private final IWebMvc owner;
 
-    private final IWebErrorProcessor __errorProcessor;
+    private final IWebErrorProcessor errorProcessor;
 
-    public static GenericDispatcher create(IWebMvc webMvc) {
-        return new GenericDispatcher(webMvc);
+    public static GenericDispatcher create(IWebMvc owner) {
+        return new GenericDispatcher(owner);
     }
 
-    private GenericDispatcher(IWebMvc webMvc) {
-        __owner = webMvc;
-        __errorProcessor = __owner.getModuleCfg().getErrorProcessor();
+    private GenericDispatcher(IWebMvc owner) {
+        this.owner = owner;
+        errorProcessor = owner.getConfig().getErrorProcessor();
     }
 
-    private void __doFireEvent(WebEvent.EVENT event, Object eventSource) {
-        __owner.getOwner().getEvents().fireEvent(new WebEvent(__owner, event).addParamExtend(WebEvent.EVENT_SOURCE, eventSource));
+    private void doFireEvent(WebEvent.EVENT event, Object eventSource) {
+        owner.getOwner().getEvents().fireEvent(new WebEvent(owner, event).addParamExtend(WebEvent.EVENT_SOURCE, eventSource));
     }
 
     public void execute(IRequestContext requestContext,
                         ServletContext servletContext,
                         HttpServletRequest request,
-                        HttpServletResponse response) throws IOException, ServletException {
+                        HttpServletResponse response) throws ServletException {
         try {
             //
-            WebContext.create(__owner, requestContext, servletContext, request, response);
+            WebContext.create(owner, requestContext, servletContext, request, response);
             //
-            __doFireEvent(WebEvent.EVENT.REQUEST_RECEIVED, requestContext);
+            doFireEvent(WebEvent.EVENT.REQUEST_RECEIVED, requestContext);
             //
-            __owner.processRequest(requestContext, servletContext, request, response);
-        } catch (Throwable e) {
-            if (__errorProcessor != null) {
-                __errorProcessor.onError(__owner, e);
+            owner.processRequest(requestContext, servletContext, request, response);
+        } catch (Exception e) {
+            if (errorProcessor != null) {
+                errorProcessor.onError(owner, e);
             } else {
                 throw new ServletException(RuntimeUtils.unwrapThrow(e));
             }
         } finally {
-            __doFireEvent(WebEvent.EVENT.REQUEST_COMPLETED, requestContext);
+            doFireEvent(WebEvent.EVENT.REQUEST_COMPLETED, requestContext);
             WebContext.destroy();
-            I18N.cleanCurrent();
         }
     }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2017 the original author or authors.
+ * Copyright 2007-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,16 +15,14 @@
  */
 package net.ymate.platform.persistence.redis;
 
-import net.ymate.platform.persistence.ISessionBase;
+import net.ymate.platform.core.beans.annotation.Ignored;
+import net.ymate.platform.core.persistence.ISession;
 
 /**
+ * Redis会话接口
+ *
  * @author 刘镇 (suninformation@163.com) on 15/11/30 下午11:53
- * @version 1.0
  */
-public interface IRedisSession extends ISessionBase {
-
-    /**
-     * @return 命令对象持有者实例
-     */
-    IRedisCommandsHolder getCommandHolder();
+@Ignored
+public interface IRedisSession extends ISession<IRedisCommandHolder> {
 }

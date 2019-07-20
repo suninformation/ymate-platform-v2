@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2017 the original author or authors.
+ * Copyright 2007-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,6 +15,7 @@
  */
 package net.ymate.platform.webmvc;
 
+import net.ymate.platform.core.beans.annotation.Ignored;
 import net.ymate.platform.webmvc.annotation.ResponseCache;
 import net.ymate.platform.webmvc.view.IView;
 
@@ -22,8 +23,8 @@ import net.ymate.platform.webmvc.view.IView;
  * 控制器视图缓存处理器接口
  *
  * @author 刘镇 (suninformation@163.com) on 16/2/1 上午12:00
- * @version 1.0
  */
+@Ignored
 public interface IWebCacheProcessor {
 
     /**

@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2018 the original author or authors.
+ * Copyright 2007-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,12 +15,24 @@
  */
 package net.ymate.platform.serv.nio;
 
-import net.ymate.platform.serv.AbstractCodec;
-import net.ymate.platform.serv.nio.support.ByteBufferBuilder;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * @author 刘镇 (suninformation@163.com) on 2018/11/6 2:42 PM
- * @version 1.0
  */
-public abstract class AbstractNioCodec extends AbstractCodec<ByteBufferBuilder> implements INioCodec {
+public abstract class AbstractNioCodec implements INioCodec {
+
+    private String charset;
+
+    @Override
+    public void initialize(String charset) {
+        this.charset = StringUtils.defaultIfBlank(charset, "UTF-8");
+    }
+
+    /**
+     * @return 返回字符集名称
+     */
+    public String getCharset() {
+        return charset;
+    }
 }

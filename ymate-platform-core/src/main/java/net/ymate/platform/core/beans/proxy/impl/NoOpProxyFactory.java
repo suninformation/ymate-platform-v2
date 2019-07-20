@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2018 the original author or authors.
+ * Copyright 2007-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,7 +15,7 @@
  */
 package net.ymate.platform.core.beans.proxy.impl;
 
-import net.ymate.platform.core.YMP;
+import net.ymate.platform.core.IApplication;
 import net.ymate.platform.core.beans.proxy.IProxy;
 import net.ymate.platform.core.beans.proxy.IProxyFactory;
 import net.ymate.platform.core.beans.proxy.IProxyFilter;
@@ -28,21 +28,38 @@ import java.util.List;
  * 空操作代理工厂（使用它表示需要禁用框架的AOP特性, 主要用于Android应用）
  *
  * @author 刘镇 (suninformation@163.com) on 2018/11/8 4:26 PM
- * @version 1.0
  * @since 2.0.6
  */
 public class NoOpProxyFactory implements IProxyFactory {
 
-    private YMP __owner;
+    private IApplication owner;
+
+    private boolean initialized;
 
     @Override
-    public void init(YMP owner) throws Exception {
-        __owner = owner;
+    public void initialize(IApplication owner) {
+        if (!initialized) {
+            this.owner = owner;
+            initialized = true;
+        }
     }
 
     @Override
-    public YMP getOwner() {
-        return __owner;
+    public boolean isInitialized() {
+        return initialized;
+    }
+
+    @Override
+    public IApplication getOwner() {
+        return owner;
+    }
+
+    @Override
+    public void close() throws Exception {
+        if (initialized) {
+            initialized = false;
+            owner = null;
+        }
     }
 
     @Override

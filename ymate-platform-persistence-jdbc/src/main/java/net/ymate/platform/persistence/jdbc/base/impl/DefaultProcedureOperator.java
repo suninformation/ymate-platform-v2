@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2017 the original author or authors.
+ * Copyright 2007-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,12 +15,13 @@
  */
 package net.ymate.platform.persistence.jdbc.base.impl;
 
-import net.ymate.platform.core.util.ExpressionUtils;
-import net.ymate.platform.persistence.base.Type;
-import net.ymate.platform.persistence.jdbc.IConnectionHolder;
+import net.ymate.platform.commons.util.ExpressionUtils;
+import net.ymate.platform.core.persistence.base.Type;
+import net.ymate.platform.persistence.jdbc.IDatabaseConnectionHolder;
+import net.ymate.platform.persistence.jdbc.IDatabaseDataSourceConfig;
 import net.ymate.platform.persistence.jdbc.base.*;
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.time.StopWatch;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.time.StopWatch;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -28,6 +29,7 @@ import java.sql.CallableStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -35,50 +37,59 @@ import java.util.List;
  *
  * @param <T> 元素类型
  * @author 刘镇 (suninformation@163.com) on 16/12/8 上午1:04
- * @version 1.0
  */
 public class DefaultProcedureOperator<T> extends AbstractOperator implements IProcedureOperator<T> {
 
-    private static final Log _LOG = LogFactory.getLog(DefaultProcedureOperator.class);
+    private static final Log LOG = LogFactory.getLog(DefaultProcedureOperator.class);
 
     /**
      * 存储过程OUT参数类型集合
      */
-    private final List<Integer> __outParams = new ArrayList<Integer>();
+    private final List<Integer> outParams = new ArrayList<>();
 
-    private IOutResultProcessor __resultProcessor;
+    private IOutResultProcessor resultProcessor;
 
-    private IResultSetHandler<T> __resultSetHandler;
+    private IResultSetHandler<T> resultSetHandler;
 
-    private final List<List<T>> __resultSets = new ArrayList<List<T>>();
+    private final List<List<T>> resultSets = new ArrayList<>();
 
-    public DefaultProcedureOperator(String sql, IConnectionHolder connectionHolder) {
+    public DefaultProcedureOperator(String sql, IDatabaseConnectionHolder connectionHolder) {
         super(sql, connectionHolder);
     }
 
-    public DefaultProcedureOperator(String sql, IConnectionHolder connectionHolder, IAccessorConfig accessorConfig) {
+    public DefaultProcedureOperator(String sql, IDatabaseConnectionHolder connectionHolder, IAccessorConfig accessorConfig) {
         super(sql, connectionHolder, accessorConfig);
     }
 
     @Override
     public void execute() throws Exception {
         if (!this.executed) {
-            StopWatch _time = new StopWatch();
-            _time.start();
+            StopWatch time = new StopWatch();
+            time.start();
             try {
-                __doExecute();
+                doExecute();
                 // 执行过程未发生异常将标记已执行，避免重复执行
                 this.executed = true;
             } finally {
-                _time.stop();
-                this.expenseTime = _time.getTime();
+                time.stop();
+                this.expenseTime = time.getTime();
                 //
-                if (this.getConnectionHolder().getDataSourceCfgMeta().isShowSQL()) {
-                    _LOG.info(ExpressionUtils.bind("[${sql}]${param}[${count}][${time}]")
-                            .set("sql", StringUtils.defaultIfBlank(this.sql, "@NULL"))
-                            .set("param", __doSerializeParameters())
-                            .set("count", "N/A")
-                            .set("time", this.expenseTime + "ms").getResult());
+                if (LOG.isInfoEnabled()) {
+                    IDatabaseDataSourceConfig dataSourceConfig = this.getConnectionHolder().getDataSourceConfig();
+                    if (dataSourceConfig.isShowSql()) {
+                        String logStr = ExpressionUtils.bind("[${sql}]${param}[${count}][${time}]")
+                                .set("sql", StringUtils.defaultIfBlank(this.sql, "@NULL"))
+                                .set("param", serializeParameters())
+                                .set("count", "N/A")
+                                .set("time", this.expenseTime + "ms").getResult();
+                        if (dataSourceConfig.isStackTraces()) {
+                            StringBuilder stackBuilder = new StringBuilder(logStr);
+                            doAppendStackTraces(dataSourceConfig, stackBuilder);
+                            LOG.info(stackBuilder.toString());
+                        } else {
+                            LOG.info(logStr);
+                        }
+                    }
                 }
             }
         }
@@ -86,70 +97,73 @@ public class DefaultProcedureOperator<T> extends AbstractOperator implements IPr
 
     @Override
     public IProcedureOperator<T> execute(IResultSetHandler<T> resultSetHandler) throws Exception {
-        __resultSetHandler = resultSetHandler;
+        this.resultSetHandler = resultSetHandler;
         this.execute();
         return this;
     }
 
     @Override
     public IProcedureOperator<T> execute(IOutResultProcessor resultProcessor) throws Exception {
-        __resultProcessor = resultProcessor;
+        this.resultProcessor = resultProcessor;
         this.execute();
         return this;
     }
 
     @Override
-    protected int __doExecute() throws Exception {
-        CallableStatement _statement = null;
-        AccessorEventContext _context = null;
-        boolean _hasEx = false;
+    protected int doExecute() throws Exception {
+        CallableStatement statement = null;
+        AccessorEventContext eventContext = null;
+        boolean hasEx = false;
         try {
-            IAccessor _accessor = new BaseAccessor(this.getAccessorConfig());
-            _statement = _accessor.getCallableStatement(this.getConnectionHolder().getConnection(), __doBuildCallSQL());
-            __doSetParameters(_statement);
-            __doRegisterOutParams(_statement);
+            IAccessor accessor = new BaseAccessor(this.getAccessorConfig());
+            statement = accessor.getCallableStatement(this.getConnectionHolder().getConnection(), doBuildCallSql());
+            doSetParameters(statement);
+            doRegisterOutParams(statement);
             if (this.getAccessorConfig() != null) {
-                this.getAccessorConfig().beforeStatementExecution(_context = new AccessorEventContext(_statement, Type.OPT.PROCEDURE));
+                eventContext = new AccessorEventContext(statement, Type.OPT.PROCEDURE);
+                this.getAccessorConfig().beforeStatementExecution(eventContext);
             }
-            boolean _flag = _statement.execute();
-            if (_flag) {
+            boolean flag = statement.execute();
+            if (flag) {
                 do {
-                    ResultSet _result = _statement.getResultSet();
-                    if (_result != null) {
-                        __resultSets.add(__resultSetHandler.handle(_result));
-                        _result.close();
+                    ResultSet resultSet = statement.getResultSet();
+                    if (resultSet != null) {
+                        resultSets.add(resultSetHandler.handle(resultSet));
+                        resultSet.close();
                     }
-                } while (_statement.getMoreResults());
+                } while (statement.getMoreResults());
             } else {
-                int _idx = this.getParameters().size() + 1;
-                for (Integer _paramType : __outParams) {
-                    __resultProcessor.process(_idx, _paramType, _statement.getObject((_idx)));
-                    _idx++;
+                int idx = this.getParameters().size() + 1;
+                for (Integer paramType : outParams) {
+                    resultProcessor.process(idx, paramType, statement.getObject((idx)));
+                    idx++;
                 }
             }
             return -1;
         } catch (Exception ex) {
-            _hasEx = true;
+            hasEx = true;
             throw ex;
         } finally {
-            if (!_hasEx && this.getAccessorConfig() != null && _context != null) {
-                this.getAccessorConfig().afterStatementExecution(_context);
+            if (!hasEx && this.getAccessorConfig() != null && eventContext != null) {
+                this.getAccessorConfig().afterStatementExecution(eventContext);
             }
-            if (_statement != null) {
-                _statement.close();
+            if (statement != null) {
+                statement.close();
             }
         }
     }
 
     /**
-     * @return 构建存储过程CALL语句(根据不同的数据库, 可由子类重新实现)
+     * 构建存储过程CALL语句(根据不同的数据库, 可由子类重新实现)
+     *
+     * @return 返回CALL语句
      */
-    protected String __doBuildCallSQL() {
-        List<String> _params = new ArrayList<String>();
-        for (int i = 0; i < this.getParameters().size() + this.__outParams.size(); i++) {
-            _params.add("?");
+    protected String doBuildCallSql() {
+        List<String> params = new ArrayList<>();
+        for (int i = 0; i < this.getParameters().size() + this.outParams.size(); i++) {
+            params.add("?");
         }
-        this.sql = "{CALL " + this.getSQL() + (_params.isEmpty() ? "()" : "(" + StringUtils.join(_params, ',') + ")") + "}";
+        this.sql = String.format("{CALL %s%s}", this.getSQL(), params.isEmpty() ? "()" : String.format("(%s)", StringUtils.join(params, ',')));
         return this.sql;
     }
 
@@ -159,10 +173,10 @@ public class DefaultProcedureOperator<T> extends AbstractOperator implements IPr
      * @param statement CallableStatement
      * @throws SQLException 可能产生的任何异常
      */
-    protected void __doRegisterOutParams(CallableStatement statement) throws SQLException {
-        int _idx = this.getParameters().size() + 1;
-        for (Integer _type : __outParams) {
-            statement.registerOutParameter(_idx++, _type);
+    protected void doRegisterOutParams(CallableStatement statement) throws SQLException {
+        int idx = this.getParameters().size() + 1;
+        for (Integer type : outParams) {
+            statement.registerOutParameter(idx++, type);
         }
     }
 
@@ -180,24 +194,24 @@ public class DefaultProcedureOperator<T> extends AbstractOperator implements IPr
 
     @Override
     public IProcedureOperator<T> addOutParameter(Integer sqlParamType) {
-        this.__outParams.add(sqlParamType);
+        this.outParams.add(sqlParamType);
         return this;
     }
 
     @Override
     public IProcedureOperator<T> setOutResultProcessor(IOutResultProcessor outResultProcessor) {
-        __resultProcessor = outResultProcessor;
+        resultProcessor = outResultProcessor;
         return this;
     }
 
     @Override
     public IProcedureOperator<T> setResultSetHandler(IResultSetHandler<T> resultSetHandler) {
-        __resultSetHandler = resultSetHandler;
+        this.resultSetHandler = resultSetHandler;
         return this;
     }
 
     @Override
     public List<List<T>> getResultSets() {
-        return __resultSets;
+        return Collections.unmodifiableList(resultSets);
     }
 }

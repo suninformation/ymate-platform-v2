@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2017 the original author or authors.
+ * Copyright 2007-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,13 +19,14 @@ import java.io.Serializable;
 
 /**
  * @author 刘镇 (suninformation@163.com) on 15/12/7 上午9:15
- * @version 1.0
  */
 public class MultilevelKey implements Serializable {
 
-    private Object __key;
+    private static final long serialVersionUID = 1L;
 
-    private boolean __master;
+    private Object key;
+
+    private boolean master;
 
     public static MultilevelKey bind(Object keyObj) {
         if (keyObj instanceof MultilevelKey) {
@@ -35,8 +36,8 @@ public class MultilevelKey implements Serializable {
     }
 
     public MultilevelKey(Object key, boolean master) {
-        __key = key;
-        __master = master;
+        this.key = key;
+        this.master = master;
     }
 
     public MultilevelKey(Object key) {
@@ -44,18 +45,15 @@ public class MultilevelKey implements Serializable {
     }
 
     public Object getKey() {
-        return __key;
+        return key;
     }
 
     public boolean isMaster() {
-        return __master;
+        return master;
     }
 
     @Override
     public String toString() {
-        if (__key instanceof String || __key instanceof StringBuilder || __key instanceof StringBuffer || __key instanceof Number) {
-            return __key.toString();
-        }
-        return __key + "";
+        return String.valueOf(key);
     }
 }

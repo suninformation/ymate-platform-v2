@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2018 the original author or authors.
+ * Copyright 2007-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,80 +15,95 @@
  */
 package net.ymate.platform.core.beans.proxy;
 
-import net.ymate.platform.core.YMP;
-import net.ymate.platform.core.beans.annotation.Proxy;
+import net.ymate.platform.core.IApplication;
+import net.ymate.platform.core.beans.annotation.Order;
+import net.ymate.platform.core.beans.intercept.InterceptProxy;
 
 import java.util.*;
 
 /**
  * @author 刘镇 (suninformation@163.com) on 2018/11/7 5:16 PM
- * @version 1.0
  */
 public abstract class AbstractProxyFactory implements IProxyFactory {
 
-    private YMP __owner;
+    private IApplication owner;
 
-    private final List<IProxy> __proxies;
+    private boolean initialized;
+
+    private final List<IProxy> proxies = new ArrayList<>();
 
     public AbstractProxyFactory() {
-        this.__proxies = new ArrayList<IProxy>();
+    }
+
+    /**
+     * 执行顺序, 数值小的最先执行
+     */
+    private void proxiesSort() {
+        if (proxies.size() > 1) {
+            proxies.sort(Comparator.comparingInt(o -> {
+                Order orderAnn = o.getClass().getAnnotation(Order.class);
+                return orderAnn != null ? orderAnn.value() : 0;
+            }));
+        }
     }
 
     @Override
-    public void init(YMP owner) throws Exception {
-        __owner = owner;
+    public void initialize(IApplication owner) {
+        if (!initialized) {
+            this.owner = owner;
+            registerProxy(new InterceptProxy());
+            initialized = true;
+        }
     }
 
     @Override
-    public YMP getOwner() {
-        return __owner;
+    public boolean isInitialized() {
+        return initialized;
     }
 
-    private void __doSort() {
-        if (__proxies.size() > 1) {
-            Collections.sort(__proxies, new Comparator<IProxy>() {
-                @Override
-                public int compare(IProxy o1, IProxy o2) {
-                    Proxy _o1 = o1.getClass().getAnnotation(Proxy.class);
-                    Proxy _o2 = o2.getClass().getAnnotation(Proxy.class);
-                    return _o1.order().value() - _o2.order().value();
-                }
-            });
+    @Override
+    public IApplication getOwner() {
+        return owner;
+    }
+
+    @Override
+    public void close() throws Exception {
+        if (initialized) {
+            initialized = false;
+            //
+            proxies.clear();
+            owner = null;
         }
     }
 
     @Override
     public IProxyFactory registerProxy(IProxy proxy) {
-        this.__proxies.add(proxy);
-        __doSort();
+        this.proxies.add(proxy);
+        proxiesSort();
         return this;
     }
 
     @Override
     public IProxyFactory registerProxy(Collection<? extends IProxy> proxies) {
-        this.__proxies.addAll(proxies);
-        __doSort();
+        this.proxies.addAll(proxies);
+        proxiesSort();
         return this;
     }
 
     @Override
     public List<IProxy> getProxies() {
-        return Collections.unmodifiableList(this.__proxies);
+        return Collections.unmodifiableList(this.proxies);
     }
 
     @Override
     public List<IProxy> getProxies(IProxyFilter filter) {
-        List<IProxy> _returnValue = new ArrayList<IProxy>();
-        for (IProxy _proxy : __proxies) {
-            if (filter.filter(_proxy)) {
-                _returnValue.add(_proxy);
-            }
-        }
-        return _returnValue;
+        List<IProxy> returnValue = new ArrayList<>();
+        proxies.stream().filter(filter::filter).forEachOrdered(returnValue::add);
+        return returnValue;
     }
 
     @Override
     public <T> T createProxy(Class<?> targetClass) {
-        return createProxy(targetClass, __proxies);
+        return createProxy(targetClass, proxies);
     }
 }

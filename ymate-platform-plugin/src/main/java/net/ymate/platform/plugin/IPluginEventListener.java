@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2017 the original author or authors.
+ * Copyright 2007-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,12 +15,14 @@
  */
 package net.ymate.platform.plugin;
 
+import net.ymate.platform.core.beans.annotation.Ignored;
+
 /**
  * 插件生命周期事件监听器接口
  *
  * @author 刘镇 (suninformation@163.com) on 15/3/21 上午10:44
- * @version 1.0
  */
+@Ignored
 public interface IPluginEventListener {
 
     /**
@@ -29,7 +31,7 @@ public interface IPluginEventListener {
      * @param context 插件上下文对象
      * @param plugin  插件实例
      */
-    void onInited(IPluginContext context, IPlugin plugin);
+    void onInitialized(IPluginContext context, IPlugin plugin);
 
     /**
      * 插件启动完毕后将调用此方法

@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2017 the original author or authors.
+ * Copyright 2007-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,13 +15,14 @@
  */
 package net.ymate.platform.webmvc;
 
-import net.ymate.platform.core.util.ClassUtils;
+import net.ymate.platform.commons.ReentrantLockHelper;
+import net.ymate.platform.commons.util.ClassUtils;
 import net.ymate.platform.webmvc.annotation.*;
 import net.ymate.platform.webmvc.base.Type;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
-import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
+import java.lang.reflect.Parameter;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -29,20 +30,23 @@ import java.util.concurrent.ConcurrentHashMap;
  * 控制器请求映射元数据描述
  *
  * @author 刘镇 (suninformation@163.com) on 2012-12-10 下午10:59:14
- * @version 1.0
  */
-@ParameterEscape
 public class RequestMeta {
 
-    private static final Map<Class<?>, Map<String, ParameterMeta>> __CLASS_PARAMETER_METAS = new ConcurrentHashMap<Class<?>, Map<String, ParameterMeta>>();
+    private static final Map<Class<?>, Map<String, ParameterMeta>> CLASS_PARAMETER_METAS = new ConcurrentHashMap<>();
 
-    private final List<ParameterMeta> __methodParameterMetas;
+    private final List<ParameterMeta> methodParameterMetas;
 
     private final Class<?> targetClass;
+
     private final String name;
+
     private final String mapping;
+
     private Class<? extends IRequestProcessor> processor;
+
     private Class<? extends IResponseErrorProcessor> errorProcessor;
+
     private final Method method;
 
     private final List<String> methodParamNames;
@@ -51,30 +55,29 @@ public class RequestMeta {
 
     private ResponseCache responseCache;
 
-    /**
-     * 参数转义注解, 若未设置则该值为null
-     */
-    private ParameterEscape parameterEscape;
-
     private ResponseView responseView;
+
     private ResponseBody responseBody;
+
     private final Set<Header> responseHeaders;
 
     private final Set<Type.HttpMethod> allowMethods;
+
     private final Map<String, String> allowHeaders;
+
     private final Map<String, String> allowParams;
 
     public RequestMeta(IWebMvc owner, Class<?> targetClass, Method method) throws Exception {
         this.targetClass = targetClass;
         this.method = method;
         //
-        this.allowMethods = new HashSet<Type.HttpMethod>();
-        this.allowHeaders = new HashMap<String, String>();
-        this.allowParams = new HashMap<String, String>();
+        this.allowMethods = new HashSet<>();
+        this.allowHeaders = new HashMap<>();
+        this.allowParams = new HashMap<>();
         //
-        Controller _controller = targetClass.getAnnotation(Controller.class);
-        this.name = StringUtils.defaultIfBlank(_controller == null ? null : _controller.name(), targetClass.getName());
-        this.singleton = _controller == null || _controller.singleton();
+        Controller controller = targetClass.getAnnotation(Controller.class);
+        this.name = StringUtils.defaultIfBlank(controller == null ? null : controller.name(), targetClass.getName());
+        this.singleton = controller == null || controller.singleton();
         //
         this.responseCache = method.getAnnotation(ResponseCache.class);
         if (this.responseCache == null) {
@@ -82,20 +85,6 @@ public class RequestMeta {
             if (this.responseCache == null) {
                 this.responseCache = targetClass.getPackage().getAnnotation(ResponseCache.class);
             }
-        }
-        //
-        this.parameterEscape = method.getAnnotation(ParameterEscape.class);
-        if (this.parameterEscape == null) {
-            this.parameterEscape = targetClass.getAnnotation(ParameterEscape.class);
-            if (this.parameterEscape == null) {
-                this.parameterEscape = targetClass.getPackage().getAnnotation(ParameterEscape.class);
-                if (this.parameterEscape == null && owner.getModuleCfg().isParameterEscapeMode()) {
-                    this.parameterEscape = this.getClass().getAnnotation(ParameterEscape.class);
-                }
-            }
-        }
-        if (this.parameterEscape != null && this.parameterEscape.skiped()) {
-            this.parameterEscape = null;
         }
         //
         this.responseView = method.getAnnotation(ResponseView.class);
@@ -114,132 +103,128 @@ public class RequestMeta {
             }
         }
         //
-        this.responseHeaders = new HashSet<Header>();
-        ResponseHeader _respHeader = targetClass.getPackage().getAnnotation(ResponseHeader.class);
-        if (_respHeader != null) {
-            Collections.addAll(this.responseHeaders, _respHeader.value());
+        this.responseHeaders = new HashSet<>();
+        ResponseHeader respHeader = targetClass.getPackage().getAnnotation(ResponseHeader.class);
+        if (respHeader != null) {
+            Collections.addAll(this.responseHeaders, respHeader.value());
         }
-        _respHeader = targetClass.getAnnotation(ResponseHeader.class);
-        if (_respHeader != null) {
-            Collections.addAll(this.responseHeaders, _respHeader.value());
+        respHeader = targetClass.getAnnotation(ResponseHeader.class);
+        if (respHeader != null) {
+            Collections.addAll(this.responseHeaders, respHeader.value());
         }
-        _respHeader = method.getAnnotation(ResponseHeader.class);
-        if (_respHeader != null) {
-            Collections.addAll(this.responseHeaders, _respHeader.value());
+        respHeader = method.getAnnotation(ResponseHeader.class);
+        if (respHeader != null) {
+            Collections.addAll(this.responseHeaders, respHeader.value());
         }
         //
-        RequestMapping _reqMapping = targetClass.getPackage().getAnnotation(RequestMapping.class);
-        String _root = null;
-        if (_reqMapping != null) {
-            _root = _reqMapping.value();
-            __doSetAllowValues(_reqMapping);
+        RequestMapping requestMapping = targetClass.getPackage().getAnnotation(RequestMapping.class);
+        String root = null;
+        if (requestMapping != null) {
+            root = requestMapping.value();
+            doSetAllowValues(requestMapping);
         }
-        _reqMapping = targetClass.getAnnotation(RequestMapping.class);
-        if (_reqMapping != null) {
-            _root = __doBuildRequestMapping(_root, _reqMapping);
-            __doSetAllowValues(_reqMapping);
+        requestMapping = targetClass.getAnnotation(RequestMapping.class);
+        if (requestMapping != null) {
+            root = doBuildRequestMapping(root, requestMapping);
+            doSetAllowValues(requestMapping);
         }
-        _reqMapping = method.getAnnotation(RequestMapping.class);
-        __doSetAllowValues(_reqMapping);
+        requestMapping = method.getAnnotation(RequestMapping.class);
+        doSetAllowValues(requestMapping);
         //
         if (this.allowMethods.isEmpty()) {
             this.allowMethods.add(Type.HttpMethod.GET);
         }
         //
-        this.mapping = __doBuildRequestMapping(_root, _reqMapping);
+        this.mapping = doBuildRequestMapping(root, requestMapping);
         //
-        RequestProcessor _reqProcessor = method.getAnnotation(RequestProcessor.class);
-        if (_reqProcessor == null) {
-            _reqProcessor = targetClass.getAnnotation(RequestProcessor.class);
-            if (_reqProcessor == null) {
-                _reqProcessor = targetClass.getPackage().getAnnotation(RequestProcessor.class);
+        RequestProcessor requestProcessor = method.getAnnotation(RequestProcessor.class);
+        if (requestProcessor == null) {
+            requestProcessor = targetClass.getAnnotation(RequestProcessor.class);
+            if (requestProcessor == null) {
+                requestProcessor = targetClass.getPackage().getAnnotation(RequestProcessor.class);
             }
         }
-        if (_reqProcessor != null) {
-            this.processor = _reqProcessor.value();
+        if (requestProcessor != null) {
+            this.processor = requestProcessor.value();
         }
         //
-        ResponseErrorProcessor _errorProcessor = method.getAnnotation(ResponseErrorProcessor.class);
-        if (_errorProcessor == null) {
-            _errorProcessor = targetClass.getAnnotation(ResponseErrorProcessor.class);
-            if (_errorProcessor == null) {
-                _errorProcessor = targetClass.getPackage().getAnnotation(ResponseErrorProcessor.class);
+        ResponseErrorProcessor responseErrorProcessor = method.getAnnotation(ResponseErrorProcessor.class);
+        if (responseErrorProcessor == null) {
+            responseErrorProcessor = targetClass.getAnnotation(ResponseErrorProcessor.class);
+            if (responseErrorProcessor == null) {
+                responseErrorProcessor = targetClass.getPackage().getAnnotation(ResponseErrorProcessor.class);
             }
         }
-        if (_errorProcessor != null) {
-            this.errorProcessor = _errorProcessor.value();
+        if (responseErrorProcessor != null) {
+            this.errorProcessor = responseErrorProcessor.value();
         }
         //
-        Map<String, ParameterMeta> _targetClassParameterMetas = __CLASS_PARAMETER_METAS.get(targetClass);
-        if (_targetClassParameterMetas == null) {
-            ClassUtils.BeanWrapper<?> _wrapper = ClassUtils.wrapper(targetClass);
-            if (_wrapper != null) {
-                _targetClassParameterMetas = new HashMap<String, ParameterMeta>();
+        ReentrantLockHelper.putIfAbsentAsync(CLASS_PARAMETER_METAS, targetClass, () -> {
+            ClassUtils.BeanWrapper<?> beanWrapper = ClassUtils.wrapper(targetClass);
+            if (beanWrapper != null) {
+                Map<String, ParameterMeta> parameterMetas = new HashMap<>();
                 //
-                for (String _fieldName : _wrapper.getFieldNames()) {
-                    if (!_targetClassParameterMetas.containsKey(_fieldName)) {
-                        ParameterMeta _meta = new ParameterMeta(this, _wrapper.getField(_fieldName));
-                        if (_meta.isParamField()) {
-                            _targetClassParameterMetas.put(_fieldName, _meta);
-                        }
+                beanWrapper.getFieldNames().stream().filter((fieldName) -> (!parameterMetas.containsKey(fieldName))).forEachOrdered((fieldName) -> {
+                    ParameterMeta parameterMeta = new ParameterMeta(beanWrapper.getField(fieldName));
+                    if (parameterMeta.isParamField()) {
+                        parameterMetas.put(fieldName, parameterMeta);
                     }
-                }
-                __CLASS_PARAMETER_METAS.put(targetClass, _targetClassParameterMetas);
+                });
+                return parameterMetas;
             }
-        }
+            return null;
+        });
         //
-        this.__methodParameterMetas = new ArrayList<ParameterMeta>();
+        this.methodParameterMetas = new ArrayList<>();
         this.methodParamNames = Arrays.asList(ClassUtils.getMethodParamNames(method));
         if (!this.methodParamNames.isEmpty()) {
-            Class<?>[] _paramTypes = method.getParameterTypes();
-            Annotation[][] _paramAnnotations = method.getParameterAnnotations();
-            for (int _idx = 0; _idx < this.methodParamNames.size(); _idx++) {
-                ParameterMeta _meta = new ParameterMeta(this, _paramTypes[_idx], this.methodParamNames.get(_idx), _paramAnnotations[_idx]);
-                if (_meta.isParamField()) {
-                    this.__methodParameterMetas.add(_meta);
+            for (Parameter parameter : method.getParameters()) {
+                ParameterMeta parameterMeta = new ParameterMeta(parameter.getType(), parameter.getName(), parameter.getAnnotations());
+                if (parameterMeta.isParamField()) {
+                    this.methodParameterMetas.add(parameterMeta);
                 }
             }
         }
     }
 
-    private void __doSetAllowValues(RequestMapping requestMapping) {
+    private void doSetAllowValues(RequestMapping requestMapping) {
         this.allowMethods.addAll(Arrays.asList(requestMapping.method()));
-        for (String _header : requestMapping.header()) {
-            String[] _headerParts = StringUtils.split(StringUtils.trimToEmpty(_header), "=");
-            if (_headerParts.length == 2) {
-                this.allowHeaders.put(_headerParts[0].trim(), _headerParts[1].trim());
+        for (String header : requestMapping.header()) {
+            String[] headerParts = StringUtils.split(StringUtils.trimToEmpty(header), "=");
+            if (headerParts.length == 2) {
+                this.allowHeaders.put(headerParts[0].trim(), headerParts[1].trim());
             }
         }
-        for (String _param : requestMapping.param()) {
-            String[] _paramParts = StringUtils.split(StringUtils.trimToEmpty(_param), "=");
-            if (_paramParts.length == 2) {
-                this.allowParams.put(_paramParts[0].trim(), _paramParts[1].trim());
+        for (String param : requestMapping.param()) {
+            String[] paramParts = StringUtils.split(StringUtils.trimToEmpty(param), "=");
+            if (paramParts.length == 2) {
+                this.allowParams.put(paramParts[0].trim(), paramParts[1].trim());
             }
         }
     }
 
-    private String __doBuildRequestMapping(String root, RequestMapping requestMapping) {
-        StringBuilder _mappingSB = new StringBuilder(__doCheckMappingSeparator(root));
-        String _mapping = requestMapping.value();
-        if (StringUtils.isBlank(_mapping)) {
-            _mappingSB.append("/").append(method.getName());
+    private String doBuildRequestMapping(String root, RequestMapping requestMapping) {
+        StringBuilder mappingBuilder = new StringBuilder(doCheckMappingSeparator(root));
+        String mappingStr = requestMapping.value();
+        if (StringUtils.isBlank(mappingStr)) {
+            mappingBuilder.append(Type.Const.PATH_SEPARATOR).append(method.getName());
         } else {
-            _mappingSB.append(__doCheckMappingSeparator(_mapping));
+            mappingBuilder.append(doCheckMappingSeparator(mappingStr));
         }
-        return _mappingSB.toString();
+        return mappingBuilder.toString();
     }
 
-    private String __doCheckMappingSeparator(String mapping) {
-        if (StringUtils.isBlank(mapping)) {
-            return "";
+    private String doCheckMappingSeparator(String requestMapping) {
+        if (StringUtils.isBlank(requestMapping)) {
+            return StringUtils.EMPTY;
         }
-        if (!mapping.startsWith("/")) {
-            mapping = "/".concat(mapping);
+        if (!requestMapping.startsWith(Type.Const.PATH_SEPARATOR)) {
+            requestMapping = Type.Const.PATH_SEPARATOR.concat(requestMapping);
         }
-        if (mapping.endsWith("/")) {
-            mapping = mapping.substring(0, mapping.length() - 1);
+        if (requestMapping.endsWith(Type.Const.PATH_SEPARATOR)) {
+            requestMapping = requestMapping.substring(0, requestMapping.length() - 1);
         }
-        return mapping;
+        return requestMapping;
     }
 
     public Class<?> getTargetClass() {
@@ -278,10 +263,6 @@ public class RequestMeta {
         return responseCache;
     }
 
-    public ParameterEscape getParameterEscape() {
-        return parameterEscape;
-    }
-
     public ResponseView getResponseView() {
         return responseView;
     }
@@ -316,10 +297,10 @@ public class RequestMeta {
     }
 
     public Collection<ParameterMeta> getClassParameterMetas() {
-        return Collections.unmodifiableCollection(__CLASS_PARAMETER_METAS.get(targetClass).values());
+        return Collections.unmodifiableCollection(CLASS_PARAMETER_METAS.get(targetClass).values());
     }
 
     public List<ParameterMeta> getMethodParameterMetas() {
-        return Collections.unmodifiableList(__methodParameterMetas);
+        return Collections.unmodifiableList(methodParameterMetas);
     }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2017 the original author or authors.
+ * Copyright 2007-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,35 +15,31 @@
  */
 package net.ymate.platform.core.handle;
 
-import net.ymate.platform.core.YMP;
+import net.ymate.platform.commons.util.ClassUtils;
+import net.ymate.platform.core.IApplication;
 import net.ymate.platform.core.beans.IBeanHandler;
 import net.ymate.platform.core.module.IModule;
-import net.ymate.platform.core.util.ClassUtils;
 
 /**
  * 模块对象处理器
  *
  * @author 刘镇 (suninformation@163.com) on 15/3/12 上午11:59
- * @version 1.0
  */
 public final class ModuleHandler implements IBeanHandler {
 
-    private final YMP __owner;
+    private final IApplication owner;
 
-    public ModuleHandler(YMP owner) {
-        __owner = owner;
-        __owner.registerExcludedClass(IModule.class);
+    public ModuleHandler(IApplication owner) {
+        this.owner = owner;
     }
 
     @Override
     @SuppressWarnings("unchecked")
     public Object handle(Class<?> targetClass) throws Exception {
-        if (!targetClass.isInterface()) {
+        if (ClassUtils.isNormalClass(targetClass) && !targetClass.isInterface() && ClassUtils.isInterfaceOf(targetClass, IModule.class)) {
             // 首先判断当前预加载的模块是否存在于被排除列表中，若存在则忽略它
-            if (!__owner.getConfig().getExcludedModules().contains(targetClass.getName())) {
-                if (ClassUtils.isInterfaceOf(targetClass, IModule.class)) {
-                    __owner.registerModule((Class<? extends IModule>) targetClass);
-                }
+            if (!owner.getModuleManager().isModuleExcluded(targetClass.getName())) {
+                owner.getModuleManager().registerModule((Class<? extends IModule>) targetClass);
             }
         }
         return null;

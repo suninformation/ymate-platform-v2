@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2017 the original author or authors.
+ * Copyright 2007-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,34 +15,29 @@
  */
 package net.ymate.platform.plugin;
 
+import net.ymate.platform.core.beans.annotation.Ignored;
+import net.ymate.platform.core.support.IDestroyable;
+import net.ymate.platform.core.support.IInitialization;
+
 /**
  * 插件启动器接口类，任何插件的启动器类都必须实现该接口
  *
  * @author 刘镇 (suninformation@163.com) on 2011-10-17 下午04:44:06
- * @version 1.0
  */
-public interface IPlugin {
+@Ignored
+public interface IPlugin extends IInitialization<IPluginContext>, IDestroyable {
 
     /**
-     * 插件初始化
+     * 获取插件环境上下文
      *
-     * @param context 插件上下文对象
-     * @throws Exception 初始化插件时可能产生的异常
-     */
-    void init(IPluginContext context) throws Exception;
-
-    /**
      * @return 返回插件环境上下文对象
      */
     IPluginContext getPluginContext();
 
     /**
-     * @return 返回插件是否已初始化
-     */
-    boolean isInited();
-
-    /**
-     * @return 返回插件是否已启动
+     * 插件是否已启动
+     *
+     * @return 返回true表示已启动
      */
     boolean isStarted();
 
@@ -59,11 +54,4 @@ public interface IPlugin {
      * @throws Exception 停止插件时可能产生的异常
      */
     void shutdown() throws Exception;
-
-    /**
-     * 销毁插件对象
-     *
-     * @throws Exception 销毁插件时可能产生的异常
-     */
-    void destroy() throws Exception;
 }

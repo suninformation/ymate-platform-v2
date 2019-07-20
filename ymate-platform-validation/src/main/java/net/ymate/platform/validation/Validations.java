@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2017 the original author or authors.
+ * Copyright 2007-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,189 +15,189 @@
  */
 package net.ymate.platform.validation;
 
-import net.ymate.platform.core.Version;
+import net.ymate.platform.commons.ReentrantLockHelper;
+import net.ymate.platform.commons.util.RuntimeUtils;
+import net.ymate.platform.core.IApplication;
 import net.ymate.platform.core.YMP;
 import net.ymate.platform.core.beans.BeanMeta;
-import net.ymate.platform.core.beans.intercept.InterceptAnnoHelper;
+import net.ymate.platform.core.beans.intercept.InterceptAnnHelper;
 import net.ymate.platform.core.module.IModule;
-import net.ymate.platform.core.module.annotation.Module;
-import net.ymate.platform.core.util.RuntimeUtils;
 import net.ymate.platform.validation.annotation.Validation;
-import net.ymate.platform.validation.annotation.Validator;
-import net.ymate.platform.validation.handle.ValidateHandler;
-import org.apache.commons.lang.StringUtils;
+import net.ymate.platform.validation.validate.*;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * 验证框架模块管理器
  *
  * @author 刘镇 (suninformation@163.com) on 2013-4-7 下午4:43:48
- * @version 1.0
  */
-@Module
-public class Validations implements IModule, IValidation {
+public final class Validations implements IModule, IValidation {
 
-    public static final Version VERSION = new Version(2, 0, 7, Validations.class.getPackage().getImplementationVersion(), Version.VersionType.Release);
+    private static final Log LOG = LogFactory.getLog(Validations.class);
 
-    private static final Log _LOG = LogFactory.getLog(Validations.class);
+    private static volatile IValidation instance;
 
-    private static volatile IValidation __instance;
+    private IApplication owner;
 
-    private YMP __owner;
+    private boolean initialized;
 
-    private boolean __inited;
+    private final Map<Class<? extends Annotation>, Class<? extends IValidator>> validators = new ConcurrentHashMap<>();
 
-    private Map<Class<? extends Annotation>, Class<? extends IValidator>> __validators;
+    private final Map<Class<?>, ValidationMeta> validationMetaMap = new ConcurrentHashMap<>();
 
-    private Map<Class<?>, ValidationMeta> __VALIDATION_META_CACHES;
-
-    /**
-     * @return 返回默认验证框架管理器实例对象
-     */
     public static IValidation get() {
-        if (__instance == null) {
-            synchronized (VERSION) {
-                if (__instance == null) {
-                    __instance = YMP.get().getModule(Validations.class);
+        IValidation inst = instance;
+        if (inst == null) {
+            synchronized (Validations.class) {
+                inst = instance;
+                if (inst == null) {
+                    instance = inst = YMP.get().getModuleManager().getModule(Validations.class);
                 }
             }
         }
-        return __instance;
-    }
-
-    /**
-     * @param owner YMP框架管理器实例
-     * @return 返回指定YMP框架管理器容器内的验证框架管理器实例
-     */
-    public static IValidation get(YMP owner) {
-        return owner.getModule(Validations.class);
+        return inst;
     }
 
     @Override
     public String getName() {
-        return IValidation.MODULE_NAME;
+        return MODULE_NAME;
     }
 
     @Override
-    public void init(YMP owner) throws Exception {
-        if (!__inited) {
+    public IApplication getOwner() {
+        return owner;
+    }
+
+    @Override
+    public void initialize(IApplication owner) {
+        if (!initialized) {
             //
-            _LOG.info("Initializing ymate-platform-validation-" + VERSION);
+            YMP.showModuleVersion("ymate-platform-validation", this);
             //
-            __owner = owner;
-            __validators = new HashMap<Class<? extends Annotation>, Class<? extends IValidator>>();
-            __VALIDATION_META_CACHES = new HashMap<Class<?>, ValidationMeta>();
-            __owner.registerHandler(Validator.class, new ValidateHandler(this));
+            this.owner = owner;
+            initialized = true;
             //
-            __inited = true;
+            registerValidator(VRequired.class, RequiredValidator.class);
+            registerValidator(VRegex.class, RegexValidator.class);
+            registerValidator(VNumeric.class, NumericValidator.class);
+            registerValidator(VMobile.class, MobileValidator.class);
+            registerValidator(VLength.class, LengthValidator.class);
+            registerValidator(VEmail.class, EmailValidator.class);
+            registerValidator(VDateTime.class, DateTimeValidator.class);
+            registerValidator(VDataRange.class, DataRangeValidator.class);
+            registerValidator(VCompare.class, CompareValidator.class);
+            registerValidator(VRSAData.class, RSADataValidator.class);
         }
     }
 
     @Override
-    public boolean isInited() {
-        return __inited;
+    public boolean isInitialized() {
+        return initialized;
     }
 
     @Override
-    public YMP getOwner() {
-        return __owner;
+    public void close() {
+        if (initialized) {
+            initialized = false;
+            //
+            validationMetaMap.clear();
+            validators.clear();
+            owner = null;
+        }
     }
 
     @Override
     public void registerValidator(Class<? extends Annotation> annotationClass, Class<? extends IValidator> validatorClass) {
-        try {
-            __owner.registerBean(BeanMeta.create(validatorClass, true));
-            __validators.put(annotationClass, validatorClass);
-        } catch (Exception e) {
-            _LOG.error("", RuntimeUtils.unwrapThrow(e));
+        if (initialized) {
+            validators.put(annotationClass, validatorClass);
+            owner.getBeanFactory().registerBean(BeanMeta.create(validatorClass, true));
         }
     }
 
     @Override
     public boolean containsValidator(Class<? extends Annotation> annotationClass) {
-        return __validators.containsKey(annotationClass);
+        return validators.containsKey(annotationClass);
     }
 
     @Override
     public Map<String, ValidateResult> validate(Class<?> targetClass, Map<String, Object> paramValues) {
-        Map<String, ValidateResult> _returnValues = new LinkedHashMap<String, ValidateResult>();
-        ValidationMeta _meta = __doGetCachedMeta(targetClass);
-        Map<String, String> _contextParams = InterceptAnnoHelper.getContextParams(__owner, targetClass, null);
-        for (String _fieldName : _meta.getFieldNames()) {
-            ValidateResult _result = __doValidate(_meta.getFieldAnnotations(_fieldName), _fieldName, _meta.getFieldLabel(_fieldName), paramValues, _contextParams, _meta.getResourcesName());
-            if (_result != null) {
-                _returnValues.put(_fieldName, _result);
-                if (_meta.getMode() == Validation.MODE.NORMAL) {
-                    break;
+        Map<String, ValidateResult> returnValues = new LinkedHashMap<>();
+        if (initialized) {
+            ValidationMeta validationMeta = bindValidationMeta(targetClass);
+            if (validationMeta != null) {
+                Map<String, String> contextParams = InterceptAnnHelper.getContextParams(owner, targetClass);
+                for (String fieldName : validationMeta.getFieldNames()) {
+                    ValidateResult validateResult = doValidate(validationMeta.getFieldAnnotations(fieldName), fieldName, validationMeta.getFieldLabel(fieldName), validationMeta.getFieldMessage(fieldName), paramValues, contextParams, validationMeta.getResourcesName());
+                    if (validateResult != null && validateResult.isMatched()) {
+                        returnValues.put(fieldName, validateResult);
+                        if (validationMeta.getMode() == Validation.MODE.NORMAL) {
+                            break;
+                        }
+                    }
                 }
             }
         }
-        return _returnValues;
+        return returnValues;
     }
 
     @Override
     public Map<String, ValidateResult> validate(Class<?> targetClass, Method targetMethod, Map<String, Object> paramValues) {
-        Map<String, ValidateResult> _returnValues = new LinkedHashMap<String, ValidateResult>();
-        ValidationMeta _meta = __doGetCachedMeta(targetClass);
-        Validation _validation = _meta.getMethodValidation(targetMethod);
-        Validation.MODE _mode = _validation == null ? _meta.getMode() : _validation.mode();
-        String _resourceName = _validation == null ? _meta.getResourcesName() : (StringUtils.defaultIfBlank(_validation.resourcesName(), _meta.getResourcesName()));
-        //
-        Map<String, Annotation[]> _paramAnnoMap = _meta.getMethodParamAnnotations(targetMethod);
-        Map<String, String> _contextParams = InterceptAnnoHelper.getContextParams(__owner, targetClass, targetMethod);
-        for (Map.Entry<String, Annotation[]> _entry : _paramAnnoMap.entrySet()) {
-            ValidateResult _result = __doValidate(_entry.getValue(), _entry.getKey(), _meta.getFieldLabel(targetMethod, _entry.getKey()), paramValues, _contextParams, _resourceName);
-            if (_result != null) {
-                _returnValues.put(_entry.getKey(), _result);
+        Map<String, ValidateResult> returnValues = new LinkedHashMap<>();
+        if (initialized) {
+            ValidationMeta validationMeta = bindValidationMeta(targetMethod.getDeclaringClass());
+            if (validationMeta != null) {
+                Validation validation = validationMeta.getMethodValidation(targetMethod);
+                Validation.MODE mode = validation == null ? validationMeta.getMode() : validation.mode();
+                String resourceName = validation == null ? validationMeta.getResourcesName() : StringUtils.defaultIfBlank(validation.resourcesName(), validationMeta.getResourcesName());
                 //
-                if (_mode == Validation.MODE.NORMAL) {
-                    break;
+                Map<String, Annotation[]> paramAnnMap = validationMeta.getMethodParamAnnotations(targetMethod);
+                Map<String, String> contextParams = InterceptAnnHelper.getContextParams(owner, (targetClass != null ? targetClass : targetMethod.getDeclaringClass()), targetMethod);
+                for (Map.Entry<String, Annotation[]> entry : paramAnnMap.entrySet()) {
+                    ValidateResult validateResult = doValidate(entry.getValue(), entry.getKey(), validationMeta.getFieldLabel(targetMethod, entry.getKey()), validationMeta.getFieldMessage(targetMethod, entry.getKey()), paramValues, contextParams, resourceName);
+                    if (validateResult != null && validateResult.isMatched()) {
+                        returnValues.put(entry.getKey(), validateResult);
+                        if (Validation.MODE.NORMAL.equals(mode)) {
+                            break;
+                        }
+                    }
                 }
             }
         }
-        return _returnValues;
+        return returnValues;
     }
 
     /**
      * @param targetClass 目标类型
      * @return 缓存中获取目标类型验证配置描述，若不存在则尝试创建它并加入缓存中
      */
-    private ValidationMeta __doGetCachedMeta(Class<?> targetClass) {
-        ValidationMeta _meta = __VALIDATION_META_CACHES.get(targetClass);
-        if (_meta == null) {
-            _meta = new ValidationMeta(this, targetClass);
-            __VALIDATION_META_CACHES.put(targetClass, _meta);
+    private ValidationMeta bindValidationMeta(Class<?> targetClass) {
+        try {
+            return ReentrantLockHelper.putIfAbsentAsync(validationMetaMap, targetClass, () -> new ValidationMeta(this, targetClass));
+        } catch (Exception e) {
+            if (LOG.isWarnEnabled()) {
+                LOG.warn(StringUtils.EMPTY, RuntimeUtils.unwrapThrow(e));
+            }
         }
-        return _meta;
+        return null;
     }
 
-    private ValidateResult __doValidate(Annotation[] annotations, String paramName, String paramLabel, Map<String, Object> paramValues, Map<String, String> contextParams, String resourceName) {
-        ValidateResult _result = null;
-        for (Annotation _ann : annotations) {
-            IValidator _validator = __owner.getBean(__validators.get(_ann.annotationType()));
-            _result = _validator.validate(new ValidateContext(__owner, _ann, paramName, paramLabel, paramValues, contextParams, resourceName));
-            if (_result != null) {
+    private ValidateResult doValidate(Annotation[] annotations, String paramName, String paramLabel, String paramMessage, Map<String, Object> paramValues, Map<String, String> contextParams, String resourceName) {
+        ValidateResult validateResult = null;
+        for (Annotation ann : annotations) {
+            IValidator validator = owner.getBeanFactory().getBean(validators.get(ann.annotationType()));
+            validateResult = validator.validate(new ValidateContext(owner, ann, paramName, paramLabel, paramMessage, paramValues, contextParams, resourceName));
+            if (validateResult != null && validateResult.isMatched()) {
                 break;
             }
         }
-        return _result;
-    }
-
-    @Override
-    public void destroy() throws Exception {
-        if (__inited) {
-            __inited = false;
-            //
-            __VALIDATION_META_CACHES = null;
-            __validators = null;
-            __owner = null;
-        }
+        return validateResult;
     }
 }

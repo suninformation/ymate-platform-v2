@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2017 the original author or authors.
+ * Copyright 2007-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,12 +15,14 @@
  */
 package net.ymate.platform.core.event;
 
+import net.ymate.platform.core.beans.annotation.Ignored;
+
 /**
  * 事件接口，用于注册一种事件类型
  *
  * @author 刘镇 (suninformation@163.com) on 15/5/16 上午2:21
- * @version 1.0
  */
+@Ignored
 public interface IEvent {
 
     String EVENT_SOURCE = "__EventObject__";

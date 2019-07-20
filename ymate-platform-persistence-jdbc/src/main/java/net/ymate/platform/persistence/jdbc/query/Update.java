@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2017 the original author or authors.
+ * Copyright 2007-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,11 +15,13 @@
  */
 package net.ymate.platform.persistence.jdbc.query;
 
-import net.ymate.platform.persistence.Fields;
-import net.ymate.platform.persistence.Params;
-import net.ymate.platform.persistence.base.EntityMeta;
-import net.ymate.platform.persistence.base.IEntity;
-import org.apache.commons.lang.StringUtils;
+import net.ymate.platform.core.persistence.Fields;
+import net.ymate.platform.core.persistence.Params;
+import net.ymate.platform.core.persistence.base.EntityMeta;
+import net.ymate.platform.core.persistence.base.IEntity;
+import net.ymate.platform.persistence.jdbc.IDatabase;
+import net.ymate.platform.persistence.jdbc.IDatabaseConnectionHolder;
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -28,80 +30,77 @@ import java.util.List;
  * Update语句对象
  *
  * @author 刘镇 (suninformation@163.com) on 15/5/12 下午6:02
- * @version 1.0
  */
 public final class Update extends Query<Update> {
 
-    private List<String> __tables;
+    private final List<String> tables = new ArrayList<>();
 
-    private Fields __fields;
+    private final Fields fields = Fields.create();
 
-    private List<Join> __joins;
+    private final List<Join> joins = new ArrayList<>();
 
-    private Where __where;
+    private Where where;
 
-    public static Update create() {
-        return new Update();
+    public static Update create(IDatabase owner) {
+        return new Update(owner);
     }
 
-    public static Update create(String prefix, Class<? extends IEntity> entityClass, String alias) {
-        return new Update().table(prefix, entityClass, alias);
+    public static Update create(IDatabase owner, String prefix, Class<? extends IEntity> entityClass, String alias) {
+        return new Update(owner).table(prefix, entityClass, alias);
     }
 
-    public static Update create(String prefix, Class<? extends IEntity> entityClass) {
-        return new Update().table(prefix, entityClass, null);
+    public static Update create(IDatabase owner, String prefix, Class<? extends IEntity> entityClass) {
+        return new Update(owner).table(prefix, entityClass, null);
     }
 
-    public static Update create(Class<? extends IEntity> entityClass) {
-        return new Update().table(entityClass, null);
+    public static Update create(IDatabase owner, Class<? extends IEntity> entityClass) {
+        return new Update(owner).table(entityClass, null);
     }
 
-    public static Update create(String prefix, String tableName, String alias) {
-        return new Update(prefix, tableName, alias, true);
+    public static Update create(IDatabase owner, String prefix, String tableName, String alias) {
+        return new Update(owner, prefix, tableName, alias, true);
     }
 
-    public static Update create(String prefix, String tableName, String alias, boolean safePrefix) {
-        return new Update(prefix, tableName, alias, safePrefix);
+    public static Update create(IDatabase owner, String prefix, String tableName, String alias, boolean safePrefix) {
+        return new Update(owner, prefix, tableName, alias, safePrefix);
     }
 
-    public static Update create(String tableName, String alias) {
-        return new Update(null, tableName, alias, true);
+    public static Update create(IDatabase owner, String tableName, String alias) {
+        return new Update(owner, null, tableName, alias, true);
     }
 
-    public static Update create(String tableName, String alias, boolean safePrefix) {
-        return new Update(null, tableName, alias, safePrefix);
+    public static Update create(IDatabase owner, String tableName, String alias, boolean safePrefix) {
+        return new Update(owner, null, tableName, alias, safePrefix);
     }
 
-    public static Update create(String tableName) {
-        return new Update(null, tableName, null, true);
+    public static Update create(IDatabase owner, String tableName) {
+        return new Update(owner, null, tableName, null, true);
     }
 
-    public static Update create(String tableName, boolean safePrefix) {
-        return new Update(null, tableName, null, safePrefix);
+    public static Update create(IDatabase owner, String tableName, boolean safePrefix) {
+        return new Update(owner, null, tableName, null, safePrefix);
     }
 
-    private Update() {
-        this.__tables = new ArrayList<String>();
-        this.__fields = Fields.create();
-        this.__joins = new ArrayList<Join>();
+    private Update(IDatabase owner) {
+        super(owner);
     }
 
-    private Update(String prefix, String tableName, String alias, boolean safePrefix) {
-        this();
+    private Update(IDatabase owner, String prefix, String tableName, String alias, boolean safePrefix) {
+        super(owner);
         //
         table(prefix, tableName, alias, safePrefix);
     }
 
     public Update table(Class<? extends IEntity> entityClass) {
-        return table(null, __buildSafeTableName(null, EntityMeta.createAndGet(entityClass), true), null, false);
+        return table(null, buildSafeTableName(null, EntityMeta.createAndGet(entityClass), true), null, false);
     }
 
     public Update table(Class<? extends IEntity> entityClass, String alias) {
-        return table(null, __buildSafeTableName(null, EntityMeta.createAndGet(entityClass), true), alias, false);
+        return table(null, buildSafeTableName(null, EntityMeta.createAndGet(entityClass), true), alias, false);
     }
 
     public Update table(String prefix, Class<? extends IEntity> entityClass, String alias) {
-        return table(null, __buildSafeTableName(prefix, EntityMeta.createAndGet(entityClass), true), alias, false);
+        return table(null, buildSafeTableName(prefix, EntityMeta.createAndGet(entityClass), true), alias, false);
     }
 
     public Update table(String tableName, String alias) {
@@ -117,16 +116,16 @@ public final class Update extends Query<Update> {
     }
 
     public Update table(String prefix, String from, String alias, boolean safePrefix) {
-        from = __buildSafeTableName(prefix, from, safePrefix);
+        from = buildSafeTableName(prefix, from, safePrefix);
         if (StringUtils.isNotBlank(alias)) {
-            from = from.concat(" ").concat(alias);
+            from = from.concat(StringUtils.SPACE).concat(alias);
         }
-        this.__tables.add(from);
+        this.tables.add(from);
         return this;
     }
 
     public Fields fields() {
-        return this.__fields;
+        return this.fields;
     }
 
     public Update field(String field) {
@@ -134,7 +133,7 @@ public final class Update extends Query<Update> {
     }
 
     public Update field(String field, boolean wrapIdentifier) {
-        this.__fields.add(wrapIdentifier ? __wrapIdentifierField(field) : field);
+        this.fields.add(wrapIdentifier ? wrapIdentifierField(field) : field);
         return this;
     }
 
@@ -143,7 +142,7 @@ public final class Update extends Query<Update> {
     }
 
     public Update field(String prefix, String field, boolean wrapIdentifier) {
-        this.__fields.add(prefix, wrapIdentifier ? __wrapIdentifierField(field) : field);
+        this.fields.add(prefix, wrapIdentifier ? wrapIdentifierField(field) : field);
         return this;
     }
 
@@ -152,7 +151,7 @@ public final class Update extends Query<Update> {
     }
 
     public Update field(String prefix, String field, String alias, boolean wrapIdentifier) {
-        this.__fields.add(prefix, wrapIdentifier ? __wrapIdentifierField(field) : field, alias);
+        this.fields.add(prefix, wrapIdentifier ? wrapIdentifierField(field) : field, alias);
         return this;
     }
 
@@ -161,8 +160,8 @@ public final class Update extends Query<Update> {
     }
 
     public Update field(Fields fields, boolean wrapIdentifier) {
-        Fields _fields = __checkFieldExcluded(fields);
-        this.__fields.add(wrapIdentifier ? __wrapIdentifierFields(_fields.toArray()) : _fields);
+        Fields newFields = checkFieldExcluded(fields);
+        this.fields.add(wrapIdentifier ? wrapIdentifierFields(newFields.toArray()) : newFields);
         return this;
     }
 
@@ -171,14 +170,12 @@ public final class Update extends Query<Update> {
     }
 
     public Update field(String prefix, Fields fields, boolean wrapIdentifier) {
-        for (String _field : __checkFieldExcluded(fields).fields()) {
-            this.__fields.add(prefix, wrapIdentifier ? __wrapIdentifierField(_field) : _field);
-        }
+        checkFieldExcluded(fields).fields().forEach((field) -> this.fields.add(prefix, wrapIdentifier ? wrapIdentifierField(field) : field));
         return this;
     }
 
     public Update join(Join join) {
-        __joins.add(join);
+        joins.add(join);
         where().param(join.params());
         return this;
     }
@@ -203,44 +200,54 @@ public final class Update extends Query<Update> {
     }
 
     public Where where() {
-        if (this.__where == null) {
-            this.__where = Where.create();
+        if (this.where == null) {
+            this.where = Where.create(owner());
         }
-        return __where;
+        return where;
     }
 
     @Override
     public String toString() {
-        StringBuilder __updateSB = new StringBuilder("UPDATE ")
-                .append(StringUtils.join(__tables, ", "));
+        StringBuilder stringBuilder = new StringBuilder("UPDATE ")
+                .append(StringUtils.join(tables, ", "));
         //
-        for (Join _join : __joins) {
-            __updateSB.append(" ").append(_join);
-        }
+        joins.forEach((join) -> stringBuilder.append(StringUtils.SPACE).append(join));
         //
-        __updateSB.append(" SET ");
-        boolean _flag = false;
-        for (String _field : __fields.fields()) {
-            if (_flag) {
-                __updateSB.append(", ");
+        stringBuilder.append(" SET ");
+        boolean flag = false;
+        for (String field : fields.fields()) {
+            if (flag) {
+                stringBuilder.append(", ");
             }
             //
-            __updateSB.append(_field);
+            stringBuilder.append(field);
             //
-            if (!_field.contains("=")) {
-                __updateSB.append(" = ?");
+            if (!field.contains("=")) {
+                stringBuilder.append(" = ?");
             }
             //
-            _flag = true;
+            flag = true;
         }
         //
-        if (__where != null) {
-            __updateSB.append(" ").append(__where);
+        if (where != null) {
+            stringBuilder.append(StringUtils.SPACE).append(where);
         }
-        return __updateSB.toString();
+        return stringBuilder.toString();
     }
 
     public SQL toSQL() {
         return SQL.create(this);
+    }
+
+    public int execute() throws Exception {
+        return owner().openSession(session -> session.executeForUpdate(toSQL()));
+    }
+
+    public int execute(String dataSourceName) throws Exception {
+        return owner().openSession(dataSourceName, session -> session.executeForUpdate(toSQL()));
+    }
+
+    public int execute(IDatabaseConnectionHolder connectionHolder) throws Exception {
+        return owner().openSession(connectionHolder, session -> session.executeForUpdate(toSQL()));
     }
 }

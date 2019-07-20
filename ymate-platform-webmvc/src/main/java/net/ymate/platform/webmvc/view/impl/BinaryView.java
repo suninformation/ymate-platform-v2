@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2017 the original author or authors.
+ * Copyright 2007-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,14 +15,14 @@
  */
 package net.ymate.platform.webmvc.view.impl;
 
-import net.ymate.platform.core.lang.BlurObject;
-import net.ymate.platform.core.lang.PairObject;
-import net.ymate.platform.core.util.FileUtils;
-import net.ymate.platform.core.util.MimeTypeUtils;
+import net.ymate.platform.commons.lang.BlurObject;
+import net.ymate.platform.commons.lang.PairObject;
+import net.ymate.platform.commons.util.FileUtils;
+import net.ymate.platform.commons.util.MimeTypeUtils;
 import net.ymate.platform.webmvc.context.WebContext;
 import net.ymate.platform.webmvc.view.AbstractView;
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -31,30 +31,30 @@ import java.io.FileInputStream;
 import java.io.InputStream;
 import java.io.Reader;
 import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 
 /**
  * 二进制数据流视图
  *
  * @author 刘镇 (suninformation@163.com) on 2011-10-23 上午11:32:55
- * @version 1.0
  */
 public class BinaryView extends AbstractView {
 
-    protected String __fileName;
-    protected Object __data;
+    private String fileName;
 
-    private long __length = -1;
+    private final Object data;
+
+    private long length = -1;
 
     /**
      * @param targetFile 目标文件
      * @return 加载文件并转换成二进制视图类对象，若目标文件不存在或无较则返回NULL
-     * @throws Exception 任何可能发生的异常
      */
-    public static BinaryView bind(File targetFile) throws Exception {
+    public static BinaryView bind(File targetFile) {
         if (targetFile != null && targetFile.exists() && targetFile.isFile() && targetFile.canRead()) {
-            BinaryView _binaryView = new BinaryView(targetFile);
-            _binaryView.setContentType(MimeTypeUtils.getFileMimeType(FileUtils.getExtName(targetFile.getPath())));
-            return _binaryView;
+            BinaryView binaryView = new BinaryView(targetFile);
+            binaryView.setContentType(MimeTypeUtils.getFileMimeType(FileUtils.getExtName(targetFile.getPath())));
+            return binaryView;
         }
         return null;
     }
@@ -65,7 +65,7 @@ public class BinaryView extends AbstractView {
      * @param data 数据对象
      */
     public BinaryView(Object data) {
-        __data = data;
+        this.data = data;
     }
 
     /**
@@ -75,91 +75,91 @@ public class BinaryView extends AbstractView {
      * @param length      输入流数据长度
      */
     public BinaryView(InputStream inputStream, long length) {
-        __data = inputStream;
+        data = inputStream;
         if (length > 0) {
-            __length = length;
+            this.length = length;
         }
     }
 
     @Override
-    protected void __doRenderView() throws Exception {
-        HttpServletRequest _request = WebContext.getRequest();
-        HttpServletResponse _response = WebContext.getResponse();
+    protected void doRenderView() throws Exception {
+        HttpServletRequest httpServletRequest = WebContext.getRequest();
+        HttpServletResponse httpServletResponse = WebContext.getResponse();
         //
-        if (StringUtils.isNotBlank(__fileName)) {
-            StringBuilder _dispositionSB = new StringBuilder("attachment;filename=");
-            if (_request.getHeader("User-Agent").toLowerCase().contains("firefox")) {
-                _dispositionSB.append(new String(__fileName.getBytes("UTF-8"), "ISO8859-1"));
+        if (StringUtils.isNotBlank(fileName)) {
+            StringBuilder dispositionBuilder = new StringBuilder("attachment;filename=");
+            if (httpServletRequest.getHeader("User-Agent").toLowerCase().contains("firefox")) {
+                dispositionBuilder.append(new String(fileName.getBytes(StandardCharsets.UTF_8), "ISO8859-1"));
             } else {
-                _dispositionSB.append(URLEncoder.encode(__fileName, "UTF-8"));
+                dispositionBuilder.append(URLEncoder.encode(fileName, "UTF-8"));
             }
-            _response.setHeader("Content-Disposition", _dispositionSB.toString());
+            httpServletResponse.setHeader("Content-Disposition", dispositionBuilder.toString());
         }
         //
-        if (__data == null) {
+        if (data == null) {
             return;
         }
         // 文件
-        if (__data instanceof File) {
+        if (data instanceof File) {
             // 读取文件数据长度
-            __length = ((File) __data).length();
+            length = ((File) data).length();
             // 尝试计算Range以配合断点续传
-            PairObject<Long, Long> _rangePO = __doParseRange(__length);
+            PairObject<Long, Long> rangePairObj = doParseRange(length);
             // 若为断点续传
-            if (_rangePO != null) {
-                __doSetRangeHeader(_response, _rangePO);
+            if (rangePairObj != null) {
+                doSetRangeHeader(httpServletResponse, rangePairObj);
                 // 开始续传文件流
-                IOUtils.copyLarge(new FileInputStream((File) __data), _response.getOutputStream(), _rangePO.getKey(), _rangePO.getValue());
+                IOUtils.copyLarge(new FileInputStream((File) data), httpServletResponse.getOutputStream(), rangePairObj.getKey(), rangePairObj.getValue());
             } else {
                 // 正常下载
-                _response.setContentLength(BlurObject.bind(__length).toIntValue());
-                IOUtils.copyLarge(new FileInputStream((File) __data), _response.getOutputStream());
+                httpServletResponse.setContentLength(BlurObject.bind(length).toIntValue());
+                IOUtils.copyLarge(new FileInputStream((File) data), httpServletResponse.getOutputStream());
             }
         }
         // 字节数组
-        else if (__data instanceof byte[]) {
-            byte[] _datas = (byte[]) __data;
-            _response.setContentLength(_datas.length);
-            IOUtils.write(_datas, _response.getOutputStream());
+        else if (data instanceof byte[]) {
+            byte[] bytes = (byte[]) data;
+            httpServletResponse.setContentLength(bytes.length);
+            IOUtils.write(bytes, httpServletResponse.getOutputStream());
         }
         // 字符数组
-        else if (__data instanceof char[]) {
-            char[] _datas = (char[]) __data;
-            _response.setContentLength(_datas.length);
-            IOUtils.write(_datas, _response.getOutputStream(), _request.getCharacterEncoding());
+        else if (data instanceof char[]) {
+            char[] chars = (char[]) data;
+            httpServletResponse.setContentLength(chars.length);
+            IOUtils.write(chars, httpServletResponse.getOutputStream(), httpServletRequest.getCharacterEncoding());
         }
         // 文本流
-        else if (__data instanceof Reader) {
-            Reader r = (Reader) __data;
-            IOUtils.copy(r, _response.getOutputStream(), _request.getCharacterEncoding());
+        else if (data instanceof Reader) {
+            Reader r = (Reader) data;
+            IOUtils.copy(r, httpServletResponse.getOutputStream(), httpServletRequest.getCharacterEncoding());
         }
         // 二进制流
-        else if (__data instanceof InputStream) {
-            PairObject<Long, Long> _rangePO = __doParseRange(__length);
-            if (_rangePO != null) {
-                __doSetRangeHeader(_response, _rangePO);
-                IOUtils.copyLarge((InputStream) __data, _response.getOutputStream(), _rangePO.getKey(), _rangePO.getValue());
+        else if (data instanceof InputStream) {
+            PairObject<Long, Long> rangePairObj = doParseRange(length);
+            if (rangePairObj != null) {
+                doSetRangeHeader(httpServletResponse, rangePairObj);
+                IOUtils.copyLarge((InputStream) data, httpServletResponse.getOutputStream(), rangePairObj.getKey(), rangePairObj.getValue());
             } else {
-                _response.setContentLength(BlurObject.bind(__length).toIntValue());
-                IOUtils.copyLarge((InputStream) __data, _response.getOutputStream());
+                httpServletResponse.setContentLength(BlurObject.bind(length).toIntValue());
+                IOUtils.copyLarge((InputStream) data, httpServletResponse.getOutputStream());
             }
         }
         // 普通对象
         else {
-            byte[] _content = StringUtils.trimToEmpty(BlurObject.bind(__data).toStringValue()).getBytes(_request.getCharacterEncoding());
-            _response.setContentLength(_content.length);
-            IOUtils.write(_content, _response.getOutputStream());
+            byte[] content = StringUtils.trimToEmpty(BlurObject.bind(data).toStringValue()).getBytes(httpServletRequest.getCharacterEncoding());
+            httpServletResponse.setContentLength(content.length);
+            IOUtils.write(content, httpServletResponse.getOutputStream());
         }
     }
 
-    private void __doSetRangeHeader(HttpServletResponse response, PairObject<Long, Long> range) {
+    private void doSetRangeHeader(HttpServletResponse response, PairObject<Long, Long> range) {
         // 表示使用了断点续传（默认是“none”，可以不指定）
         addHeader("Accept-Ranges", "bytes");
         // Content-Length: [文件的总大小] - [客户端请求的下载的文件块的开始字节]
-        long _totalLength = range.getValue() - range.getKey();
-        addHeader("Content-Length", _totalLength + "");
+        long totalLength = range.getValue() - range.getKey();
+        addHeader("Content-Length", totalLength + "");
         // Content-Range: bytes [文件块的开始字节]-[文件的总大小 - 1]/[文件的总大小]
-        addHeader("Content-Range", "bytes " + range.getKey() + "-" + (range.getValue() - 1) + "/" + __length);
+        addHeader("Content-Range", "bytes " + range.getKey() + "-" + (range.getValue() - 1) + "/" + length);
         // response.setHeader("Connection", "Close"); //此语句将不能用IE直接下载
         // Status: 206
         response.setStatus(HttpServletResponse.SC_PARTIAL_CONTENT);
@@ -171,50 +171,50 @@ public class BinaryView extends AbstractView {
      * @param length 数据大小
      * @return 若非断点续传则返回null
      */
-    private PairObject<Long, Long> __doParseRange(long length) {
-        PairObject<Long, Long> _returnValue = null;
+    private PairObject<Long, Long> doParseRange(long length) {
+        PairObject<Long, Long> returnValue = null;
         // 通过请求头Range参数判断是否采用断点续传
-        String _rangeStr = WebContext.getRequest().getHeader("Range");
-        if (_rangeStr != null && _rangeStr.startsWith("bytes=") && _rangeStr.length() >= 7) {
-            _rangeStr = StringUtils.substringAfter(_rangeStr, "bytes=");
-            String[] _ranges = StringUtils.split(_rangeStr, ",");
+        String rangeStr = WebContext.getRequest().getHeader("Range");
+        if (rangeStr != null && rangeStr.startsWith("bytes=") && rangeStr.length() >= 7) {
+            rangeStr = StringUtils.substringAfter(rangeStr, "bytes=");
+            String[] ranges = StringUtils.split(rangeStr, ",");
             // 可能存在多个Range，目前仅处理第一个...
-            for (String _range : _ranges) {
-                if (StringUtils.isBlank(_range)) {
+            for (String range : ranges) {
+                if (StringUtils.isBlank(range)) {
                     return null;
                 }
                 // bytes=-100
-                if (_range.startsWith("-")) {
-                    long _end = Long.parseLong(_range);
-                    long _start = length + _end;
-                    if (_start < 0) {
+                if (range.startsWith("-")) {
+                    long end = Long.parseLong(range);
+                    long start = length + end;
+                    if (start < 0) {
                         return null;
                     }
-                    _returnValue = new PairObject<Long, Long>(_start, length);
+                    returnValue = new PairObject<>(start, length);
                     break;
                 }
                 // bytes=1024-
-                if (_range.endsWith("-")) {
-                    long _start = Long.parseLong(StringUtils.substringBefore(_range, "-"));
-                    if (_start < 0) {
+                if (range.endsWith("-")) {
+                    long start = Long.parseLong(StringUtils.substringBefore(range, "-"));
+                    if (start < 0) {
                         return null;
                     }
-                    _returnValue = new PairObject<Long, Long>(_start, length);
+                    returnValue = new PairObject<>(start, length);
                     break;
                 }
                 // bytes=10-1024
-                if (_range.contains("-")) {
-                    String[] _tmp = _range.split("-");
-                    long _start = Long.parseLong(_tmp[0]);
-                    long _end = Long.parseLong(_tmp[1]);
-                    if (_start > _end) {
+                if (range.contains("-")) {
+                    String[] tmp = range.split("-");
+                    long start = Long.parseLong(tmp[0]);
+                    long end = Long.parseLong(tmp[1]);
+                    if (start > end) {
                         return null;
                     }
-                    _returnValue = new PairObject<Long, Long>(_start, _end + 1);
+                    returnValue = new PairObject<>(start, end + 1);
                 }
             }
         }
-        return _returnValue;
+        return returnValue;
     }
 
     /**
@@ -222,7 +222,7 @@ public class BinaryView extends AbstractView {
      * @return 设置采用档案下载的方式
      */
     public BinaryView useAttachment(String dispFileName) {
-        __fileName = dispFileName;
+        fileName = dispFileName;
         return this;
     }
 }

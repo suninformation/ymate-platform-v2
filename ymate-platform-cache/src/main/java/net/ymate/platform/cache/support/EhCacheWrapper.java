@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2017 the original author or authors.
+ * Copyright 2007-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +19,6 @@ import net.sf.ehcache.Ehcache;
 import net.sf.ehcache.Element;
 import net.sf.ehcache.event.CacheEventListener;
 import net.ymate.platform.cache.*;
-import net.ymate.platform.core.util.RuntimeUtils;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -27,20 +26,18 @@ import java.util.List;
 
 /**
  * @author 刘镇 (suninformation@163.com) on 15/12/7 上午12:16
- * @version 1.0
  */
 public class EhCacheWrapper implements ICache, ICacheLocker {
 
-    private final ICaches __owner;
+    private final ICaches owner;
 
-    private final Ehcache __ehcache;
+    private final Ehcache ehcache;
 
     public EhCacheWrapper(ICaches owner, Ehcache ehcache, final ICacheEventListener listener) {
-        __owner = owner;
-        __ehcache = ehcache;
+        this.owner = owner;
+        this.ehcache = ehcache;
         if (listener != null) {
-            __ehcache.getCacheEventNotificationService().registerListener(new CacheEventListener() {
-
+            this.ehcache.getCacheEventNotificationService().registerListener(new CacheEventListener() {
                 @Override
                 public void notifyElementRemoved(Ehcache ehcache, Element element) throws net.sf.ehcache.CacheException {
                     listener.notifyElementRemoved(ehcache.getName(), element.getObjectKey());
@@ -77,7 +74,7 @@ public class EhCacheWrapper implements ICache, ICacheLocker {
 
                 @Override
                 public Object clone() throws CloneNotSupportedException {
-                    throw new CloneNotSupportedException();
+                    return super.clone();
                 }
             });
         }
@@ -87,12 +84,12 @@ public class EhCacheWrapper implements ICache, ICacheLocker {
     public Object get(Object key) throws CacheException {
         if (key != null) {
             try {
-                Element _element = __ehcache.get(key);
-                if (_element != null) {
-                    return _element.getObjectValue();
+                Element element = ehcache.get(key);
+                if (element != null) {
+                    return element.getObjectValue();
                 }
             } catch (net.sf.ehcache.CacheException e) {
-                throw new CacheException(RuntimeUtils.unwrapThrow(e));
+                throw new CacheException(e);
             }
         }
         return null;
@@ -101,20 +98,20 @@ public class EhCacheWrapper implements ICache, ICacheLocker {
     @Override
     public void put(Object key, Object value) throws CacheException {
         try {
-            Element _element = new Element(key, value);
-            int _timeout = 0;
+            Element element = new Element(key, value);
+            int timeout = 0;
             if (value instanceof CacheElement) {
-                _timeout = ((CacheElement) value).getTimeout();
+                timeout = ((CacheElement) value).getTimeout();
             }
-            if (_timeout <= 0) {
-                _timeout = __owner.getModuleCfg().getDefaultCacheTimeout();
+            if (timeout <= 0) {
+                timeout = owner.getConfig().getDefaultCacheTimeout();
             }
-            if (_timeout > 0) {
-                _element.setTimeToLive(_timeout);
+            if (timeout > 0) {
+                element.setTimeToLive(timeout);
             }
-            __ehcache.put(_element);
-        } catch (Exception e) {
-            throw new CacheException(RuntimeUtils.unwrapThrow(e));
+            ehcache.put(element);
+        } catch (IllegalArgumentException | IllegalStateException | net.sf.ehcache.CacheException e) {
+            throw new CacheException(e);
         }
     }
 
@@ -125,36 +122,32 @@ public class EhCacheWrapper implements ICache, ICacheLocker {
 
     @Override
     @SuppressWarnings("unchecked")
-    public List keys() throws CacheException {
-        return new ArrayList(__ehcache.getKeys());
+    public List<?> keys() throws CacheException {
+        return new ArrayList(ehcache.getKeys());
     }
 
     @Override
     public void remove(Object key) throws CacheException {
         try {
-            __ehcache.remove(key);
+            ehcache.remove(key);
         } catch (IllegalStateException e) {
-            throw new CacheException(RuntimeUtils.unwrapThrow(e));
+            throw new CacheException(e);
         }
     }
 
     @Override
     public void removeAll(Collection<?> keys) throws CacheException {
-        __ehcache.removeAll(keys);
+        ehcache.removeAll(keys);
     }
 
     @Override
     public void clear() throws CacheException {
-        __ehcache.removeAll();
+        ehcache.removeAll();
     }
 
     @Override
-    public void destroy() throws CacheException {
-        try {
-            __ehcache.getCacheManager().removeCache(__ehcache.getName());
-        } catch (IllegalStateException e) {
-            throw new CacheException(RuntimeUtils.unwrapThrow(e));
-        }
+    public void close() throws Exception {
+        // 不要移除缓存, 否则后果将抛出异常: java.lang.IllegalStateException: The CacheManager has been shut down. It can no longer be used.
     }
 
     @Override
@@ -164,39 +157,39 @@ public class EhCacheWrapper implements ICache, ICacheLocker {
 
     @Override
     public void readLock(Object key) {
-        __ehcache.acquireReadLockOnKey(key);
+        ehcache.acquireReadLockOnKey(key);
     }
 
     @Override
     public void writeLock(Object key) {
-        __ehcache.acquireWriteLockOnKey(key);
+        ehcache.acquireWriteLockOnKey(key);
     }
 
     @Override
     public boolean tryReadLock(Object key, long timeout) throws CacheException {
         try {
-            return __ehcache.tryReadLockOnKey(key, timeout);
+            return ehcache.tryReadLockOnKey(key, timeout);
         } catch (InterruptedException e) {
-            throw new CacheException(e.getMessage(), RuntimeUtils.unwrapThrow(e));
+            throw new CacheException(e);
         }
     }
 
     @Override
     public boolean tryWriteLock(Object key, long timeout) throws CacheException {
         try {
-            return __ehcache.tryWriteLockOnKey(key, timeout);
+            return ehcache.tryWriteLockOnKey(key, timeout);
         } catch (InterruptedException e) {
-            throw new CacheException(e.getMessage(), RuntimeUtils.unwrapThrow(e));
+            throw new CacheException(e);
         }
     }
 
     @Override
     public void releaseReadLock(Object key) {
-        __ehcache.releaseReadLockOnKey(key);
+        ehcache.releaseReadLockOnKey(key);
     }
 
     @Override
     public void releaseWriteLock(Object key) {
-        __ehcache.releaseWriteLockOnKey(key);
+        ehcache.releaseWriteLockOnKey(key);
     }
 }

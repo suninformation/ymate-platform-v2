@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2018 the original author or authors.
+ * Copyright 2007-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,8 +15,9 @@
  */
 package net.ymate.platform.serv;
 
-import net.ymate.platform.core.support.IInitializable;
-import net.ymate.platform.core.support.Speedometer;
+import net.ymate.platform.commons.Speedometer;
+import net.ymate.platform.core.beans.annotation.Ignored;
+import net.ymate.platform.core.support.IDestroyable;
 
 import java.io.IOException;
 import java.util.Collection;
@@ -28,9 +29,16 @@ import java.util.Collection;
  * @param <SESSION_ID>      会话标识类型
  * @param <MESSAGE_TYPE>    消息类型
  * @author 刘镇 (suninformation@163.com) on 2018/11/14 11:10 AM
- * @version 1.0
  */
-public interface ISessionManager<SESSION_WRAPPER extends ISessionWrapper, SESSION_ID, MESSAGE_TYPE> extends IInitializable<IServ> {
+@Ignored
+public interface ISessionManager<SESSION_WRAPPER extends ISessionWrapper, SESSION_ID, MESSAGE_TYPE> extends IDestroyable {
+
+    /**
+     * 初始化
+     *
+     * @throws Exception 初始过程中产生的任何异常
+     */
+    void initialize() throws Exception;
 
     /**
      * 获取指定sessionId的会话包装器实例

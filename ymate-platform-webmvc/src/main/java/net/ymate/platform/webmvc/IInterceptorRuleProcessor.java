@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2017 the original author or authors.
+ * Copyright 2007-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,7 +15,9 @@
  */
 package net.ymate.platform.webmvc;
 
-import net.ymate.platform.core.lang.PairObject;
+import net.ymate.platform.commons.lang.PairObject;
+import net.ymate.platform.core.beans.annotation.Ignored;
+import net.ymate.platform.core.support.IInitialization;
 import net.ymate.platform.webmvc.annotation.ResponseCache;
 import net.ymate.platform.webmvc.view.IView;
 
@@ -23,17 +25,9 @@ import net.ymate.platform.webmvc.view.IView;
  * 请求拦截规则处理器接口
  *
  * @author 刘镇 (suninformation@163.com) on 16/1/8 下午10:47
- * @version 1.0
  */
-public interface IInterceptorRuleProcessor {
-
-    /**
-     * 初始化
-     *
-     * @param owner 所属模块管理器对象
-     * @throws Exception 可能产生的异常
-     */
-    void init(IWebMvc owner) throws Exception;
+@Ignored
+public interface IInterceptorRuleProcessor extends IInitialization<IWebMvc> {
 
     /**
      * 注册拦截器规则配置

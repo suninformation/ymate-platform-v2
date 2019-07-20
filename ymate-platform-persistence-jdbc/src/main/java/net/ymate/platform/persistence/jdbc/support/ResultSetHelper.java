@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2017 the original author or authors.
+ * Copyright 2007-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,11 +15,12 @@
  */
 package net.ymate.platform.persistence.jdbc.support;
 
-import net.ymate.platform.core.lang.BlurObject;
-import net.ymate.platform.core.util.ClassUtils;
-import net.ymate.platform.persistence.IResultSet;
-import net.ymate.platform.persistence.base.EntityMeta;
-import net.ymate.platform.persistence.base.IEntity;
+import net.ymate.platform.commons.lang.BlurObject;
+import net.ymate.platform.commons.util.ClassUtils;
+import net.ymate.platform.core.persistence.IResultSet;
+import net.ymate.platform.core.persistence.base.EntityMeta;
+import net.ymate.platform.core.persistence.base.IEntity;
+import net.ymate.platform.core.persistence.base.PropertyMeta;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
@@ -36,35 +37,34 @@ import java.util.Map;
  * 注：此类仅支持结果集由 ArrayResultSetHandler 和 MapResultSetHandler 产生的数据<br>
  *
  * @author 刘镇 (suninformation@163.com) on 2010-10-10 上午10:59:40
- * @version 1.0
  */
 public final class ResultSetHelper {
 
     /**
      * 数据结果集
      */
-    private List<?> __dataSet;
+    private List<?> dataSet;
 
-    private final boolean __isArray;
+    private final boolean isArray;
 
-    private int __rowCount;
+    private int rowCount;
 
-    private int __columnCount;
+    private int columnCount;
 
-    private boolean __clearFlag;
+    private boolean clearFlag;
 
-    private String[] __columnNames;
+    private String[] columnNames;
 
     public static ResultSetHelper bind(Object[] data) {
-        List<Object[]> _data = new ArrayList<Object[]>();
-        _data.add(data);
-        return bind(_data);
+        List<Object[]> arrayList = new ArrayList<>();
+        arrayList.add(data);
+        return bind(arrayList);
     }
 
     public static ResultSetHelper bind(Map<String, Object> data) {
-        List<Map<String, Object>> _data = new ArrayList<Map<String, Object>>();
-        _data.add(data);
-        return bind(_data);
+        List<Map<String, Object>> mapList = new ArrayList<>();
+        mapList.add(data);
+        return bind(mapList);
     }
 
     public static ResultSetHelper bind(IResultSet<?> resultSet) {
@@ -77,10 +77,10 @@ public final class ResultSetHelper {
      */
     public static ResultSetHelper bind(List<?> dataSet) {
         if (dataSet != null && !dataSet.isEmpty()) {
-            Object _value = dataSet.get(0);
-            if (_value instanceof Map) {
+            Object value = dataSet.get(0);
+            if (value instanceof Map) {
                 return new ResultSetHelper(dataSet, false);
-            } else if (_value instanceof Object[]) {
+            } else if (value instanceof Object[]) {
                 return new ResultSetHelper(dataSet, true);
             }
         }
@@ -96,33 +96,33 @@ public final class ResultSetHelper {
      */
     @SuppressWarnings("unchecked")
     private ResultSetHelper(List<?> resultSet, boolean isArray) {
-        this.__dataSet = resultSet;
-        this.__isArray = isArray;
-        if (this.__dataSet != null) {
-            this.__rowCount = this.__dataSet.size();
-            if (this.__rowCount > 0) {
+        this.dataSet = resultSet;
+        this.isArray = isArray;
+        if (this.dataSet != null) {
+            this.rowCount = this.dataSet.size();
+            if (this.rowCount > 0) {
                 // 计算字段数量
-                if (this.__isArray) {
-                    this.__columnCount = ((Object[]) this.__dataSet.get(0)).length;
+                if (this.isArray) {
+                    this.columnCount = ((Object[]) this.dataSet.get(0)).length;
                 } else {
-                    this.__columnCount = ((Map<?, ?>) this.__dataSet.get(0)).size();
+                    this.columnCount = ((Map<?, ?>) this.dataSet.get(0)).size();
                 }
                 // 处理字段名称集合
-                if (this.__isArray) {
-                    Object[] _obj = (Object[]) this.__dataSet.get(0);
-                    this.__columnNames = new String[_obj.length];
-                    for (int i = 0; i < _obj.length; i++) {
-                        Object[] _columnObj = (Object[]) _obj[i];
-                        this.__columnNames[i] = (String) _columnObj[0];
+                if (this.isArray) {
+                    Object[] obj = (Object[]) this.dataSet.get(0);
+                    this.columnNames = new String[obj.length];
+                    for (int i = 0; i < obj.length; i++) {
+                        Object[] columnObj = (Object[]) obj[i];
+                        this.columnNames[i] = (String) columnObj[0];
                     }
                 } else {
-                    Map<String, Object> _map = (Map<String, Object>) this.__dataSet.get(0);
-                    Iterator<String> _itemIt = _map.keySet().iterator();
-                    this.__columnNames = new String[_map.keySet().size()];
-                    int _idx = 0;
-                    while (_itemIt.hasNext()) {
-                        this.__columnNames[_idx] = _itemIt.next();
-                        _idx++;
+                    Map<String, Object> map = (Map<String, Object>) this.dataSet.get(0);
+                    Iterator<String> itemIt = map.keySet().iterator();
+                    this.columnNames = new String[map.keySet().size()];
+                    int idx = 0;
+                    while (itemIt.hasNext()) {
+                        this.columnNames[idx] = itemIt.next();
+                        idx++;
                     }
                 }
             }
@@ -135,24 +135,24 @@ public final class ResultSetHelper {
      * @return String[] 字段名称集合
      */
     public String[] getColumnNames() {
-        return this.__columnNames;
+        return this.columnNames;
     }
 
     /**
      * 清除结果集 本方法为可选方法
      */
     public void clearAll() {
-        if (this.__dataSet != null) {
-            this.__dataSet.clear();
-            this.__dataSet = null;
+        if (this.dataSet != null) {
+            this.dataSet.clear();
+            this.dataSet = null;
         }
-        this.__columnNames = null;
-        this.__clearFlag = true;
+        this.columnNames = null;
+        this.clearFlag = true;
     }
 
     @Override
     protected void finalize() throws Throwable {
-        if (!this.__clearFlag) {
+        if (!this.clearFlag) {
             clearAll();
         }
         super.finalize();
@@ -176,9 +176,9 @@ public final class ResultSetHelper {
      * @throws Exception 可能产生的异常
      */
     public void forEach(int step, ItemHandler handler) throws Exception {
-        step = (step > 0 ? step : 1);
-        for (int _idx = step - 1; _idx < __rowCount; _idx += step) {
-            if (!handler.handle(new ItemWrapper(__dataSet.get(_idx), __isArray), _idx)) {
+        step = step > 0 ? step : 1;
+        for (int idx = step - 1; idx < rowCount; idx += step) {
+            if (!handler.handle(new ItemWrapper(dataSet.get(idx), isArray), idx)) {
                 break;
             }
         }
@@ -188,7 +188,7 @@ public final class ResultSetHelper {
      * @return 返回结果集中第一个元素的包装对象
      */
     public ItemWrapper firstItemWrapper() {
-        return new ItemWrapper(__dataSet.get(0), __isArray);
+        return new ItemWrapper(dataSet.get(0), isArray);
     }
 
     /**
@@ -197,6 +197,8 @@ public final class ResultSetHelper {
     public interface ItemHandler {
 
         /**
+         * 处理结果集行数据
+         *
          * @param wrapper 元素包装对象，提供多种数据提取方法
          * @param row     结果集当前所在行数
          * @return 返回值将决定此次遍历是否继续执行，true或false
@@ -210,21 +212,21 @@ public final class ResultSetHelper {
      */
     public class ItemWrapper {
 
-        private final Object __item;
+        private final Object item;
 
-        private final boolean __isArray;
+        private final boolean isArray;
 
         public ItemWrapper(Object item, boolean isArray) {
-            __item = item;
-            __isArray = isArray;
+            this.item = item;
+            this.isArray = isArray;
         }
 
         public int getColumnCount() {
-            return __columnCount;
+            return columnCount;
         }
 
         public String[] getColumnNames() {
-            return __columnNames;
+            return columnNames;
         }
 
         /**
@@ -232,34 +234,34 @@ public final class ResultSetHelper {
          * @return 按照字段名获取字段值
          */
         public Object getObject(String columnName) {
-            return this.__doGetObject(columnName);
+            return this.doGetObject(columnName);
         }
 
         @SuppressWarnings("unchecked")
-        private Object __doGetObject(String columnName) {
-            Object _returnValue = null;
-            if (this.__isArray) {
-                Object[] _obj = (Object[]) __item;
-                for (int i = 0; i < __columnNames.length; i++) {
-                    if (__columnNames[i].equalsIgnoreCase(columnName)) {
-                        Object[] _object = (Object[]) _obj[i];
-                        _returnValue = _object[1];
+        private Object doGetObject(String columnName) {
+            Object returnValue = null;
+            if (this.isArray) {
+                Object[] obj = (Object[]) item;
+                for (int i = 0; i < columnNames.length; i++) {
+                    if (columnNames[i].equalsIgnoreCase(columnName)) {
+                        Object[] object = (Object[]) obj[i];
+                        returnValue = object[1];
                         break;
                     }
                 }
             } else {
-                Map<String, Object> _map = (Map<String, Object>) __item;
-                _returnValue = _map.get(columnName);
-                if (_returnValue == null) {
-                    for (String __columnName : __columnNames) {
-                        if (__columnName.equalsIgnoreCase(columnName)) {
-                            _returnValue = _map.get(__columnName);
+                Map<String, Object> map = (Map<String, Object>) item;
+                returnValue = map.get(columnName);
+                if (returnValue == null) {
+                    for (String column : columnNames) {
+                        if (column.equalsIgnoreCase(columnName)) {
+                            returnValue = map.get(column);
                             break;
                         }
                     }
                 }
             }
-            return _returnValue;
+            return returnValue;
         }
 
         /**
@@ -267,33 +269,33 @@ public final class ResultSetHelper {
          * @return 按列名顺序获取字段值
          */
         public Object getObject(int index) {
-            return this.__doGetObject(index);
+            return this.doGetObject(index);
         }
 
         @SuppressWarnings("unchecked")
-        private Object __doGetObject(int index) {
-            Object _returnValue = null;
-            if (index >= 0 && index < __columnCount) {
-                if (this.__isArray) {
-                    Object[] _obj = (Object[]) __item;
-                    Object[] _object = (Object[]) _obj[index];
-                    _returnValue = _object[1];
+        private Object doGetObject(int index) {
+            Object returnValue = null;
+            if (index >= 0 && index < columnCount) {
+                if (this.isArray) {
+                    Object[] obj = (Object[]) item;
+                    Object[] object = (Object[]) obj[index];
+                    returnValue = object[1];
                 } else {
-                    Map<String, Object> _map = (Map<String, Object>) __item;
-                    Iterator<Object> _itemIt = _map.values().iterator();
+                    Map<String, Object> map = (Map<String, Object>) item;
+                    Iterator<Object> itemIt = map.values().iterator();
                     int i = 0;
-                    while (_itemIt.hasNext()) {
-                        _returnValue = _itemIt.next();
+                    while (itemIt.hasNext()) {
+                        returnValue = itemIt.next();
                         if (index == i) {
                             break;
                         } else {
-                            _returnValue = null;
+                            returnValue = null;
                         }
                         i++;
                     }
                 }
             }
-            return _returnValue;
+            return returnValue;
         }
 
         public Time getAsTime(int i) {
@@ -395,8 +397,7 @@ public final class ResultSetHelper {
             return BlurObject.bind(o).toDoubleValue();
         }
 
-        public Byte getAsByte(int i) {
-            Object o = getObject(i);
+        private Byte objectToByte(Object o) {
             if (o == null) {
                 return null;
             }
@@ -409,46 +410,33 @@ public final class ResultSetHelper {
             }
         }
 
+        public Byte getAsByte(int i) {
+            return objectToByte(getObject(i));
+        }
+
         public Byte getAsByte(String columnName) {
-            Object o = getObject(columnName);
+            return objectToByte(getObject(columnName));
+        }
+
+        private Short objectToShort(Object o) {
             if (o == null) {
                 return null;
             }
-            if (o instanceof Byte) {
-                return (Byte) o;
+            if (o instanceof Short) {
+                return (Short) o;
             } else if (o instanceof Integer) {
-                return ((Integer) o).byteValue();
+                return ((Integer) o).shortValue();
             } else {
-                return ((BigDecimal) o).byteValue();
+                return ((BigDecimal) o).shortValue();
             }
         }
 
         public Short getAsShort(int i) {
-            Object o = getObject(i);
-            if (o == null) {
-                return null;
-            }
-            if (o instanceof Short) {
-                return (Short) o;
-            } else if (o instanceof Integer) {
-                return ((Integer) o).shortValue();
-            } else {
-                return ((BigDecimal) o).shortValue();
-            }
+            return objectToShort(getObject(i));
         }
 
         public Short getAsShort(String columnName) {
-            Object o = getObject(columnName);
-            if (o == null) {
-                return null;
-            }
-            if (o instanceof Short) {
-                return (Short) o;
-            } else if (o instanceof Integer) {
-                return ((Integer) o).shortValue();
-            } else {
-                return ((BigDecimal) o).shortValue();
-            }
+            return objectToShort(getObject(columnName));
         }
 
         public Long getAsLong(int i) {
@@ -543,20 +531,22 @@ public final class ResultSetHelper {
 
         @SuppressWarnings("unchecked")
         public <T extends IEntity> T toEntity(T entityObject) throws Exception {
-            EntityMeta _entityMeta = EntityMeta.createAndGet(entityObject.getClass());
-            Object _primaryKeyObject = null;
-            if (_entityMeta.isMultiplePrimaryKey()) {
-                _primaryKeyObject = _entityMeta.getPrimaryKeyClass().newInstance();
-                //
-                entityObject.setId((Serializable) _primaryKeyObject);
-            }
-            for (EntityMeta.PropertyMeta _meta : _entityMeta.getProperties()) {
-                Object _fValue = getObject(_meta.getName());
-                if (_fValue != null) {
-                    if (_entityMeta.isPrimaryKey(_meta.getName()) && _entityMeta.isMultiplePrimaryKey()) {
-                        _meta.getField().set(_primaryKeyObject, _fValue);
-                    } else {
-                        _meta.getField().set(entityObject, _fValue);
+            EntityMeta entityMeta = EntityMeta.createAndGet(entityObject.getClass());
+            if (entityMeta != null) {
+                Object primaryKeyObject = null;
+                if (entityMeta.isMultiplePrimaryKey()) {
+                    primaryKeyObject = entityMeta.getPrimaryKeyClass().newInstance();
+                    //
+                    entityObject.setId((Serializable) primaryKeyObject);
+                }
+                for (PropertyMeta propertyMeta : entityMeta.getProperties()) {
+                    Object fieldValue = getObject(propertyMeta.getName());
+                    if (fieldValue != null) {
+                        if (entityMeta.isPrimaryKey(propertyMeta.getName()) && entityMeta.isMultiplePrimaryKey()) {
+                            propertyMeta.getField().set(primaryKeyObject, fieldValue);
+                        } else {
+                            propertyMeta.getField().set(entityObject, fieldValue);
+                        }
                     }
                 }
             }
@@ -564,14 +554,14 @@ public final class ResultSetHelper {
         }
 
         public <T> T toObject(T valueObject) throws Exception {
-            ClassUtils.BeanWrapper<?> _wrapper = ClassUtils.wrapper(valueObject);
-            for (String _fieldName : _wrapper.getFieldNames()) {
-                String _columnName = EntityMeta.fieldNameToPropertyName(_fieldName, 0);
-                Object _value = this.getObject(_columnName);
-                if (_value == null) {
+            ClassUtils.BeanWrapper<?> wrapper = ClassUtils.wrapper(valueObject);
+            for (String fieldName : wrapper.getFieldNames()) {
+                String columnName = EntityMeta.fieldNameToPropertyName(fieldName, 0);
+                Object value = this.getObject(columnName);
+                if (value == null) {
                     continue;
                 }
-                _wrapper.setValue(_fieldName, BlurObject.bind(_value).toObjectValue(_wrapper.getFieldType(_fieldName)));
+                wrapper.setValue(fieldName, BlurObject.bind(value).toObjectValue(wrapper.getFieldType(fieldName)));
             }
             return valueObject;
         }

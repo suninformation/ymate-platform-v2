@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2017 the original author or authors.
+ * Copyright 2007-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,8 +15,8 @@
  */
 package net.ymate.platform.webmvc.util;
 
-import net.ymate.platform.core.util.FileUtils;
-import net.ymate.platform.core.util.RuntimeUtils;
+import net.ymate.platform.commons.util.FileUtils;
+import net.ymate.platform.commons.util.MimeTypeUtils;
 import net.ymate.platform.webmvc.IUploadFileWrapper;
 import net.ymate.platform.webmvc.IWebMvc;
 import org.apache.commons.fileupload.*;
@@ -24,80 +24,72 @@ import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import org.apache.commons.fileupload.util.Streams;
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.apache.commons.lang3.StringUtils;
 
 import javax.servlet.http.HttpServletRequest;
 import java.io.*;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * 文件上传处理助手类；注：文件上传页面Form表单必须采用POST方式提交并设置属性：enctype="multipart/form-data"，否则将无法处理
  *
  * @author 刘镇 (suninformation@163.com) on 2011-6-5 下午02:50:07
- * @version 1.0
  */
 public final class FileUploadHelper {
 
-    private static final Log __LOG = LogFactory.getLog(FileUploadHelper.class);
-
-    private HttpServletRequest __request;
+    private HttpServletRequest request;
 
     /**
      * 监听器
      */
-    private ProgressListener __listener;
+    private ProgressListener listener;
 
     /**
      * 上传文件临时目录（不支持自定义文件流处理）
      */
-    private File __uploadTempDir;
+    private File uploadTempDir;
 
     /**
      * 上传文件最大值, 10485760 = 10M
      */
-    private long __fileSizeMax = -1;
+    private long fileSizeMax = -1;
 
     /**
      * 上传文件总量的最大值
      */
-    private long __sizeMax = -1;
+    private long sizeMax = -1;
 
     /**
      * 内存缓冲区的大小,默认值为10K,如果文件大于10K,将使用临时文件缓存上传文件, 4096 = 4K
      */
-    private int __sizeThreshold = 10240;
+    private int sizeThreshold = 10240;
 
-    private String __charsetEncoding;
+    private String charsetEncoding;
 
     public static FileUploadHelper bind(IWebMvc owner, HttpServletRequest request) {
         return new FileUploadHelper(owner, request);
     }
 
     private FileUploadHelper(IWebMvc owner, HttpServletRequest request) {
-        __request = request;
-        if (StringUtils.isBlank(__charsetEncoding = owner.getModuleCfg().getDefaultCharsetEncoding())) {
-            __charsetEncoding = __request.getCharacterEncoding();
+        this.request = request;
+        if (StringUtils.isBlank(charsetEncoding = owner.getConfig().getDefaultCharsetEncoding())) {
+            charsetEncoding = this.request.getCharacterEncoding();
         }
     }
 
     /**
-     * @param processer 文件上传处理器
+     * @param processor 文件上传处理器
      * @return 处理表单提交，使用提供的文件上传处理器处理文件流
      * @throws FileUploadException 文件上传时可能产生的异常
      * @throws IOException         文件读写可能产生的异常
      */
-    public UploadFormWrapper processUpload(IUploadFileItemProcesser processer) throws FileUploadException, IOException {
-        boolean _isMultipart = ServletFileUpload.isMultipartContent(__request);
-        if (_isMultipart) {
-            if (null != processer) {
-                return __doUploadFileAsStream(processer);
+    public UploadFormWrapper processUpload(IUploadFileItemProcessor processor) throws FileUploadException, IOException {
+        boolean isMultipart = ServletFileUpload.isMultipartContent(request);
+        if (isMultipart) {
+            if (null != processor) {
+                return doUploadFileAsStream(processor);
             } else {
-                return UploadFileAsDiskBased();
+                return doUploadFileAsDiskBased();
             }
         }
         return new UploadFormWrapper();
@@ -109,114 +101,75 @@ public final class FileUploadHelper {
      * @throws IOException         文件读写可能产生的异常
      */
     public UploadFormWrapper processUpload() throws FileUploadException, IOException {
-        return this.processUpload(null);
+        return processUpload(null);
+    }
+
+    private ServletFileUpload doBuildServletFileUpload(FileItemFactory fileItemFactory) {
+        ServletFileUpload servletFileUpload = new ServletFileUpload(fileItemFactory);
+        servletFileUpload.setFileSizeMax(fileSizeMax);
+        servletFileUpload.setSizeMax(sizeMax);
+        if (listener != null) {
+            servletFileUpload.setProgressListener(listener);
+        }
+        return servletFileUpload;
     }
 
     /**
      * 采用文件流的方式处理上传文件（即将上传文件流对象交给用户做进一步处理）
      *
-     * @param processer 文件上传处理器
+     * @param processor 文件上传处理器
      * @throws FileUploadException 文件上传时可能产生的异常
      * @throws IOException         文件读写可能产生的异常
      */
-    private UploadFormWrapper __doUploadFileAsStream(IUploadFileItemProcesser processer) throws FileUploadException, IOException {
-        ServletFileUpload _upload = new ServletFileUpload();
-        _upload.setFileSizeMax(__fileSizeMax);
-        _upload.setSizeMax(__sizeMax);
-        if (__listener != null) {
-            _upload.setProgressListener(__listener);
-        }
-        Map<String, List<String>> tmpParams = new HashMap<String, List<String>>();
-        Map<String, List<UploadFileWrapper>> tmpFiles = new HashMap<String, List<UploadFileWrapper>>();
+    private UploadFormWrapper doUploadFileAsStream(IUploadFileItemProcessor processor) throws FileUploadException, IOException {
+        ServletFileUpload servletFileUpload = doBuildServletFileUpload(null);
+        Map<String, List<String>> fields = new HashMap<>(16);
+        Map<String, List<UploadFileWrapper>> files = new HashMap<>(16);
         //
-        FileItemIterator _fileItemIT = _upload.getItemIterator(__request);
-        while (_fileItemIT.hasNext()) {
-            FileItemStream _item = _fileItemIT.next();
-            if (_item.isFormField()) {
-                List<String> _valueList = tmpParams.get(_item.getFieldName());
-                if (_valueList == null) {
-                    _valueList = new ArrayList<String>();
-                    tmpParams.put(_item.getFieldName(), _valueList);
-                }
-                _valueList.add(Streams.asString(_item.openStream(), __charsetEncoding));
+        FileItemIterator fileItemIt = servletFileUpload.getItemIterator(request);
+        while (fileItemIt.hasNext()) {
+            FileItemStream item = fileItemIt.next();
+            if (item.isFormField()) {
+                fields.computeIfAbsent(item.getFieldName(), k -> new ArrayList<>()).add(Streams.asString(item.openStream(), charsetEncoding));
             } else {
-                List<UploadFileWrapper> _valueList = tmpFiles.get(_item.getFieldName());
-                if (_valueList == null) {
-                    _valueList = new ArrayList<UploadFileWrapper>();
-                    tmpFiles.put(_item.getFieldName(), _valueList);
-                }
-                // 交给用户接口处理
-                _valueList.add(processer.process(_item));
+                files.computeIfAbsent(item.getFieldName(), k -> new ArrayList<>()).add(processor.process(item));
             }
         }
-        //
-        UploadFormWrapper _form = new UploadFormWrapper();
-        for (Map.Entry<String, List<String>> entry : tmpParams.entrySet()) {
-            _form.getFieldMap().put(entry.getKey(), entry.getValue().toArray(new String[0]));
-        }
-        for (Map.Entry<String, List<UploadFileWrapper>> entry : tmpFiles.entrySet()) {
-            _form.getFileMap().put(entry.getKey(), entry.getValue().toArray(new UploadFileWrapper[0]));
-        }
-        return _form;
+        return new UploadFormWrapper(fields, files);
     }
 
     /**
      * 采用文件方式处理上传文件（即先将文件上传后，再交给用户已上传文件对象集合）
      *
      * @throws FileUploadException 文件上传时可能产生的异常
+     * @throws IOException         文件读写可能产生的异常
      */
-    private UploadFormWrapper UploadFileAsDiskBased() throws FileUploadException {
-        DiskFileItemFactory _factory = new DiskFileItemFactory();
-        _factory.setRepository(__uploadTempDir);
-        _factory.setSizeThreshold(__sizeThreshold);
+    private UploadFormWrapper doUploadFileAsDiskBased() throws FileUploadException, IOException {
+        DiskFileItemFactory fileItemFactory = new DiskFileItemFactory();
+        fileItemFactory.setRepository(uploadTempDir);
+        fileItemFactory.setSizeThreshold(sizeThreshold);
         //
-        ServletFileUpload _upload = new ServletFileUpload(_factory);
-        _upload.setFileSizeMax(__fileSizeMax);
-        _upload.setSizeMax(__sizeMax);
-        if (__listener != null) {
-            _upload.setProgressListener(__listener);
-        }
-        UploadFormWrapper _form = new UploadFormWrapper();
-        Map<String, List<String>> tmpParams = new HashMap<String, List<String>>();
-        Map<String, List<UploadFileWrapper>> tmpFiles = new HashMap<String, List<UploadFileWrapper>>();
+        ServletFileUpload servletFileUpload = doBuildServletFileUpload(fileItemFactory);
+        List<FileItem> fileItems = servletFileUpload.parseRequest(request);
         //
-        List<FileItem> _items = _upload.parseRequest(__request);
-        for (FileItem _item : _items) {
-            if (_item.isFormField()) {
-                List<String> _valueList = tmpParams.get(_item.getFieldName());
-                if (_valueList == null) {
-                    _valueList = new ArrayList<String>();
-                    tmpParams.put(_item.getFieldName(), _valueList);
-                }
-                try {
-                    _valueList.add(_item.getString(__charsetEncoding));
-                } catch (UnsupportedEncodingException e) {
-                    __LOG.warn("", RuntimeUtils.unwrapThrow(e));
-                }
+        Map<String, List<String>> fields = new HashMap<>(fileItems.size());
+        Map<String, List<UploadFileWrapper>> files = new HashMap<>(fileItems.size());
+        //
+        for (FileItem item : fileItems) {
+            if (item.isFormField()) {
+                fields.computeIfAbsent(item.getFieldName(), k -> new ArrayList<>()).add(item.getString(charsetEncoding));
             } else {
-                List<UploadFileWrapper> _valueList = tmpFiles.get(_item.getFieldName());
-                if (_valueList == null) {
-                    _valueList = new ArrayList<UploadFileWrapper>();
-                    tmpFiles.put(_item.getFieldName(), _valueList);
-                }
-                _valueList.add(new UploadFileWrapper(_item));
+                files.computeIfAbsent(item.getFieldName(), k -> new ArrayList<>()).add(new UploadFileWrapper(item));
             }
         }
-        //
-        for (Map.Entry<String, List<String>> entry : tmpParams.entrySet()) {
-            _form.getFieldMap().put(entry.getKey(), entry.getValue().toArray(new String[0]));
-        }
-        for (Map.Entry<String, List<UploadFileWrapper>> entry : tmpFiles.entrySet()) {
-            _form.getFileMap().put(entry.getKey(), entry.getValue().toArray(new UploadFileWrapper[0]));
-        }
-        return _form;
+        return new UploadFormWrapper(fields, files);
     }
 
     /**
      * @return 监听器
      */
     public ProgressListener getFileUploadListener() {
-        return __listener;
+        return listener;
     }
 
     /**
@@ -224,7 +177,7 @@ public final class FileUploadHelper {
      * @return 设置监听器
      */
     public FileUploadHelper setFileUploadListener(ProgressListener listener) {
-        this.__listener = listener;
+        this.listener = listener;
         return this;
     }
 
@@ -232,7 +185,7 @@ public final class FileUploadHelper {
      * @return 上传文件临时目录（不支持自定义文件流处理）
      */
     public File getUploadTempDir() {
-        return __uploadTempDir;
+        return uploadTempDir;
     }
 
     /**
@@ -240,7 +193,7 @@ public final class FileUploadHelper {
      * @return 上传文件临时目录（不支持自定义文件流处理），默认使用：System.getProperty("java.io.tmpdir")
      */
     public FileUploadHelper setUploadTempDir(File uploadDir) {
-        __uploadTempDir = uploadDir;
+        uploadTempDir = uploadDir;
         return this;
     }
 
@@ -248,7 +201,7 @@ public final class FileUploadHelper {
      * @return 上传文件最大值
      */
     public long getFileSizeMax() {
-        return __fileSizeMax;
+        return fileSizeMax;
     }
 
     /**
@@ -256,7 +209,7 @@ public final class FileUploadHelper {
      * @return 设置上传文件最大值
      */
     public FileUploadHelper setFileSizeMax(long fileSize) {
-        __fileSizeMax = fileSize;
+        fileSizeMax = fileSize;
         return this;
     }
 
@@ -264,7 +217,7 @@ public final class FileUploadHelper {
      * @return 内存缓冲区的大小, 默认值为10K, 如果文件大于10K, 将使用临时文件缓存上传文件
      */
     public int getSizeThreshold() {
-        return __sizeThreshold;
+        return sizeThreshold;
     }
 
     /**
@@ -272,7 +225,7 @@ public final class FileUploadHelper {
      * @return 内存缓冲区的大小, 默认值为10K, 如果文件大于10K, 将使用临时文件缓存上传文件
      */
     public FileUploadHelper setSizeThreshold(int threshold) {
-        __sizeThreshold = threshold;
+        sizeThreshold = threshold;
         return this;
     }
 
@@ -280,7 +233,7 @@ public final class FileUploadHelper {
      * @return 上传文件总量的最大值
      */
     public long getSizeMax() {
-        return __sizeMax;
+        return sizeMax;
     }
 
     /**
@@ -288,7 +241,7 @@ public final class FileUploadHelper {
      * @return 设置上传文件总量的最大值
      */
     public FileUploadHelper setSizeMax(long size) {
-        __sizeMax = size;
+        sizeMax = size;
         return this;
     }
 
@@ -296,9 +249,8 @@ public final class FileUploadHelper {
      * 文件上传处理回调接口定义，用于将每个文件交给开发者自行处理
      *
      * @author 刘镇 (suninformation@163.com) on 2011-6-5 下午03:47:49
-     * @version 1.0
      */
-    public interface IUploadFileItemProcesser {
+    public interface IUploadFileItemProcessor {
 
         /**
          * 处理文件或文件流
@@ -316,89 +268,84 @@ public final class FileUploadHelper {
      * 文件上传表单包装器；
      *
      * @author 刘镇 (suninformation@163.com) on 2011-6-7 上午09:50:56
-     * @version 1.0
      */
     public static class UploadFormWrapper {
 
-        private Map<String, String[]> __fieldMap = new HashMap<String, String[]>();
+        private Map<String, String[]> fieldMap = new HashMap<>();
 
-        private Map<String, IUploadFileWrapper[]> __fileMap = new HashMap<String, IUploadFileWrapper[]>();
+        private Map<String, IUploadFileWrapper[]> fileMap = new HashMap<>();
 
-        public UploadFormWrapper() {
+        UploadFormWrapper() {
         }
 
-        public UploadFormWrapper(Map<String, String[]> fieldMap, Map<String, UploadFileWrapper[]> fileMap) {
-            __fieldMap.putAll(fieldMap);
-            __fileMap.putAll(fileMap);
+        UploadFormWrapper(Map<String, List<String>> fields, Map<String, List<UploadFileWrapper>> files) {
+            fields.forEach((key, value) -> fieldMap.put(key, value.toArray(new String[0])));
+            files.forEach((key, value) -> fileMap.put(key, value.toArray(new UploadFileWrapper[0])));
         }
 
         public Map<String, String[]> getFieldMap() {
-            return __fieldMap;
+            return Collections.unmodifiableMap(fieldMap);
         }
 
         public Map<String, IUploadFileWrapper[]> getFileMap() {
-            return __fileMap;
+            return Collections.unmodifiableMap(fileMap);
         }
 
         public String[] getField(String fieldName) {
-            return __fieldMap.get(fieldName);
+            return fieldMap.get(fieldName);
         }
 
         public IUploadFileWrapper[] getFile(String fieldName) {
-            return __fileMap.get(fieldName);
+            return fileMap.get(fieldName);
         }
-
     }
 
     /**
      * 上传文件对象包装器
      *
      * @author 刘镇 (suninformation@163.com) on 2011-6-6 上午01:16:45
-     * @version 1.0
      */
     public static class UploadFileWrapper implements IUploadFileWrapper {
 
-        private FileItem __fileItemObj;
-        private File __fileObj;
-        private boolean __isFileObj;
+        private FileItem fileItem;
+
+        private File file;
+
+        private boolean fileObj;
 
         public UploadFileWrapper(FileItem fileItem) {
-            __fileItemObj = fileItem;
+            this.fileItem = fileItem;
         }
 
         public UploadFileWrapper(File file) {
-            __fileObj = file;
-            __isFileObj = true;
+            this.file = file;
+            fileObj = true;
         }
 
         @Override
         public String getPath() {
-            if (__isFileObj) {
-                if (__fileObj == null) {
-                    return "";
-                } else {
-                    return __fileObj.getAbsolutePath();
-                }
+            if (fileObj) {
+                return file == null ? StringUtils.EMPTY : file.getAbsolutePath();
             }
-            return __fileItemObj.getName();
+            return fileItem.getName();
         }
 
         @Override
         public String getName() {
-            String _filePath;
-            if (__isFileObj) {
-                _filePath = __fileObj == null ? "" : __fileObj.getAbsolutePath();
+            String filePath;
+            if (fileObj) {
+                filePath = file == null ? StringUtils.EMPTY : file.getAbsolutePath();
             } else {
-                _filePath = __fileItemObj.getName();
+                filePath = fileItem.getName();
             }
-            if (_filePath != null) {
-                int _pos = _filePath.lastIndexOf('\\');
-                if (_pos == -1) {
-                    _pos = _filePath.lastIndexOf('/');
+            if (filePath != null) {
+                int pos = filePath.lastIndexOf('\\');
+                if (pos == -1) {
+                    pos = filePath.lastIndexOf('/');
                 }
-                _filePath = _filePath.substring(_pos + 1);
+                filePath = filePath.substring(pos + 1);
             }
-            return _filePath;
+            return filePath;
         }
 
         /**
@@ -407,33 +354,29 @@ public final class FileUploadHelper {
          * @return byte[]
          */
         public byte[] get() {
-            if (__isFileObj) {
-                if (__fileObj == null) {
+            if (fileObj) {
+                if (file == null) {
                     return null;
                 }
-                byte[] _fileData = new byte[(int) __fileObj.length()];
-                FileInputStream _fis = null;
-                try {
-                    _fis = new FileInputStream(__fileObj);
-                    IOUtils.readFully(_fis, _fileData);
+                byte[] fileData = new byte[(int) file.length()];
+                try (FileInputStream fileInputStream = new FileInputStream(file)) {
+                    IOUtils.readFully(fileInputStream, fileData);
                 } catch (IOException e) {
-                    _fileData = null;
-                } finally {
-                    IOUtils.closeQuietly(_fis);
+                    fileData = null;
                 }
-                return _fileData;
+                return fileData;
             }
-            return __fileItemObj.get();
+            return fileItem.get();
         }
 
         @Override
         public void delete() {
-            if (__isFileObj) {
-                if (__fileObj != null && __fileObj.exists()) {
-                    __fileObj.delete();
+            if (fileObj) {
+                if (file != null && file.exists()) {
+                    file.delete();
                 }
             } else {
-                this.__fileItemObj.delete();
+                fileItem.delete();
             }
         }
 
@@ -444,59 +387,55 @@ public final class FileUploadHelper {
 
         @Override
         public void writeTo(File file) throws Exception {
-            if (__isFileObj) {
-                FileUtils.writeTo(__fileObj, file);
+            if (fileObj) {
+                FileUtils.writeTo(this.file, file);
             } else {
-                __fileItemObj.write(file);
+                fileItem.write(file);
             }
         }
 
         @Override
         public InputStream getInputStream() throws IOException {
-            if (__isFileObj) {
-                return new FileInputStream(__fileObj);
+            if (fileObj) {
+                return new FileInputStream(file);
             }
-            return this.__fileItemObj.getInputStream();
+            return fileItem.getInputStream();
         }
 
         @Override
         public long getSize() {
-            if (__isFileObj) {
-                if (__fileObj == null) {
-                    return 0;
-                } else {
-                    return __fileObj.length();
-                }
+            if (fileObj) {
+                return file == null ? 0 : file.length();
             }
-            return __fileItemObj.getSize();
+            return fileItem.getSize();
         }
 
         @Override
         public File getFile() throws Exception {
-            if (this.__isFileObj) {
-                return __fileObj;
+            if (fileObj) {
+                return file;
             }
-            File _tmpFile = File.createTempFile("upload_", getName());
-            __fileItemObj.write(_tmpFile);
-            return _tmpFile;
+            File tempFile = File.createTempFile("upload_", getName());
+            fileItem.write(tempFile);
+            return tempFile;
         }
 
         @Override
         public OutputStream getOutputStream() throws IOException {
-            if (this.__isFileObj) {
-                return new FileOutputStream(__fileObj);
+            if (fileObj) {
+                return new FileOutputStream(file);
             }
-            return __fileItemObj.getOutputStream();
+            return fileItem.getOutputStream();
         }
 
         @Override
         public String getContentType() {
-            if (__isFileObj) {
-                if (__fileObj != null) {
-                    return net.ymate.platform.core.util.MimeTypeUtils.getFileMimeType(FileUtils.getExtName(__fileObj.getAbsolutePath()));
+            if (fileObj) {
+                if (file != null && file.exists()) {
+                    return MimeTypeUtils.getFileMimeType(FileUtils.getExtName(file.getAbsolutePath()));
                 }
-            } else if (__fileItemObj != null) {
-                return __fileItemObj.getContentType();
+            } else if (fileItem != null) {
+                return fileItem.getContentType();
             }
             return null;
         }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2017 the original author or authors.
+ * Copyright 2007-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,14 +16,13 @@
 package net.ymate.platform.cache.support;
 
 import net.ymate.platform.cache.*;
-import net.ymate.platform.core.lang.BlurObject;
-import net.ymate.platform.core.util.RuntimeUtils;
 import net.ymate.platform.persistence.redis.IRedis;
-import net.ymate.platform.persistence.redis.IRedisCommandsHolder;
+import net.ymate.platform.persistence.redis.IRedisCommandHolder;
+import net.ymate.platform.persistence.redis.IRedisCommander;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.codec.digest.DigestUtils;
-import org.apache.commons.lang.ArrayUtils;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.StringUtils;
 import redis.clients.jedis.JedisPubSub;
 
 import java.util.ArrayList;
@@ -33,273 +32,256 @@ import java.util.Set;
 
 /**
  * @author 刘镇 (suninformation@163.com) on 15/12/7 上午12:16
- * @version 1.0
  */
-public class RedisCacheWrapper extends JedisPubSub implements ICache {
+public class RedisCacheWrapper implements ICache {
 
-    private static final String __separator = ":";
+    private static final String SEPARATOR = ":";
 
-    private String __cacheName;
+    private static final int KEY_LENGTH = 2;
 
-    private IRedis __redis;
+    private final String cacheName;
 
-    private ICaches __owner;
+    private IRedis redis;
 
-    private ICacheEventListener __listener;
+    private final ICaches owner;
 
-    private boolean __storageWithSet;
+    private final ICacheEventListener cacheEventListener;
 
-    private boolean __disabledSubscribeExpired;
-
-    public RedisCacheWrapper(ICaches owner, IRedis redis, String cacheName, final ICacheEventListener listener) {
-        __owner = owner;
-        __redis = redis;
-        __cacheName = cacheName;
-        __listener = listener;
-        __storageWithSet = BlurObject.bind(__owner.getOwner().getConfig().getParam(ICacheModuleCfg.PARAMS_CACHE_STORAGE_WITH_SET)).toBooleanValue();
-        __disabledSubscribeExpired = BlurObject.bind(__owner.getOwner().getConfig().getParam(ICacheModuleCfg.PARAMS_CACHE_DISABLED_SUBSCRIBE_EXPIRED)).toBooleanValue();
+    public RedisCacheWrapper(ICaches owner, IRedis redis, String cacheName, final ICacheEventListener cacheEventListener) {
+        this.owner = owner;
+        this.redis = redis;
+        this.cacheName = cacheName;
+        this.cacheEventListener = cacheEventListener;
         //
-        if (__listener != null && !__disabledSubscribeExpired) {
-            __redis.subscribe(this, "__keyevent@" + __redis.getModuleCfg().getDefaultDataSourceCfg().getMasterServerMeta().getDatabase() + "__:expired");
+        if (cacheEventListener != null && owner.getConfig().isEnabledSubscribeExpired()) {
+            redis.subscribe(new JedisPubSub() {
+                @Override
+                public void onMessage(String channel, String message) {
+                    if (StringUtils.isNotBlank(message)) {
+                        String[] keyStr = StringUtils.split(message, SEPARATOR);
+                        if (ArrayUtils.isNotEmpty(keyStr) && keyStr.length == KEY_LENGTH && StringUtils.equals(cacheName, keyStr[0])) {
+                            if (owner.getConfig().isStorageWithSet()) {
+                                remove(keyStr[1]);
+                            }
+                            cacheEventListener.notifyElementExpired(cacheName, keyStr[1]);
+                        }
+                    }
+                }
+            }, String.format("__keyevent@%d__:expired", redis.getConfig().getDefaultDataSourceConfig().getMasterServerMeta().getDatabase()));
         }
     }
 
-    private String __doSerializeKey(Object key) {
+    private String serializeKey(Object key) {
         if (key instanceof String || key instanceof StringBuilder || key instanceof StringBuffer || key instanceof Number) {
             return key.toString();
         }
-        return DigestUtils.md5Hex(("" + key).getBytes());
+        return DigestUtils.md5Hex((StringUtils.EMPTY + key).getBytes());
     }
 
-    private String __doSerializeValue(Object value) throws Exception {
-        return Base64.encodeBase64String(__owner.getModuleCfg().getSerializer().serialize(value));
+    private String serializeValue(Object value) throws Exception {
+        return Base64.encodeBase64String(owner.getConfig().getSerializer().serialize(value));
     }
 
-    private Object __doUnserializeValue(String value) throws Exception {
+    private Object deserializeValue(String value) throws Exception {
         if (value == null) {
             return null;
         }
-        byte[] _bytes = Base64.decodeBase64(value);
-        return __owner.getModuleCfg().getSerializer().deserialize(_bytes, Object.class);
+        byte[] bytes = Base64.decodeBase64(value);
+        return owner.getConfig().getSerializer().deserialize(bytes, Object.class);
     }
 
     @Override
     public Object get(Object key) throws CacheException {
-        IRedisCommandsHolder _holder = null;
-        try {
-            _holder = __redis.getDefaultCommandsHolder();
-            String _cacheKey = __doSerializeKey(key);
-            Object _cacheValue;
-            if (__storageWithSet) {
-                _cacheValue = __doUnserializeValue(_holder.getCommands().hget(__cacheName, _cacheKey));
-                if (!__disabledSubscribeExpired && _cacheValue != null && !_holder.getCommands().exists(__cacheName.concat(__separator).concat(_cacheKey))) {
+        try (IRedisCommandHolder holder = redis.getDefaultConnectionHolder()) {
+            IRedisCommander commander = holder.getConnection();
+            String cacheKey = serializeKey(key);
+            Object cacheValue;
+            if (owner.getConfig().isStorageWithSet()) {
+                cacheValue = deserializeValue(commander.hget(cacheName, cacheKey));
+                if (owner.getConfig().isEnabledSubscribeExpired() && cacheValue != null && !commander.exists(cacheName.concat(SEPARATOR).concat(cacheKey))) {
                     remove(key);
                 }
             } else {
-                _cacheValue = __doUnserializeValue(_holder.getCommands().get(__cacheName.concat(__separator).concat(_cacheKey)));
+                cacheValue = deserializeValue(commander.get(cacheName.concat(SEPARATOR).concat(cacheKey)));
             }
-            return _cacheValue;
+            return cacheValue;
         } catch (Exception e) {
-            throw new CacheException(RuntimeUtils.unwrapThrow(e));
-        } finally {
-            if (_holder != null) {
-                _holder.release();
+            if (e instanceof CacheException) {
+                throw (CacheException) e;
             }
+            throw new CacheException(e);
         }
     }
 
-    private void __doPut(Object key, Object value, boolean update) throws CacheException {
-        IRedisCommandsHolder _holder = null;
-        try {
-            String _cacheKey = __doSerializeKey(key);
-            String _cacheValue = __doSerializeValue(value);
-            int _timeout = 0;
+    private void put(Object key, Object value, boolean update) throws CacheException {
+        try (IRedisCommandHolder holder = redis.getDefaultConnectionHolder()) {
+            IRedisCommander commander = holder.getConnection();
+            String cacheKey = serializeKey(key);
+            String cacheValue = serializeValue(value);
+            int timeout = 0;
             if (value instanceof CacheElement) {
-                _timeout = ((CacheElement) value).getTimeout();
+                timeout = ((CacheElement) value).getTimeout();
             }
-            if (_timeout <= 0) {
-                _timeout = __owner.getModuleCfg().getDefaultCacheTimeout();
+            if (timeout <= 0) {
+                timeout = owner.getConfig().getDefaultCacheTimeout();
             }
             //
-            _holder = __redis.getDefaultCommandsHolder();
-            if (__storageWithSet) {
-                _holder.getCommands().hset(__cacheName, _cacheKey, _cacheValue);
+            if (owner.getConfig().isStorageWithSet()) {
+                commander.hset(cacheName, cacheKey, cacheValue);
                 //
-                if (!__disabledSubscribeExpired) {
-                    _holder.getCommands().setex(__cacheName.concat(__separator).concat(_cacheKey), _timeout, StringUtils.EMPTY);
+                if (owner.getConfig().isEnabledSubscribeExpired()) {
+                    commander.setex(cacheName.concat(SEPARATOR).concat(cacheKey), timeout, StringUtils.EMPTY);
                 }
             } else {
-                _holder.getCommands().setex(__cacheName.concat(__separator).concat(_cacheKey), _timeout, _cacheValue);
+                commander.setex(cacheName.concat(SEPARATOR).concat(cacheKey), timeout, cacheValue);
             }
             //
-            if (__listener != null) {
+            if (cacheEventListener != null) {
                 if (update) {
-                    __listener.notifyElementUpdated(__cacheName, _cacheKey, _cacheValue);
+                    cacheEventListener.notifyElementUpdated(cacheName, cacheKey, cacheValue);
                 } else {
-                    __listener.notifyElementPut(__cacheName, _cacheKey, _cacheValue);
+                    cacheEventListener.notifyElementPut(cacheName, cacheKey, cacheValue);
                 }
             }
         } catch (Exception e) {
-            throw new CacheException(RuntimeUtils.unwrapThrow(e));
-        } finally {
-            if (_holder != null) {
-                _holder.release();
+            if (e instanceof CacheException) {
+                throw (CacheException) e;
             }
+            throw new CacheException(e);
         }
     }
 
     @Override
     public void put(Object key, Object value) throws CacheException {
-        __doPut(key, value, false);
+        put(key, value, false);
     }
 
     @Override
     public void update(Object key, Object value) throws CacheException {
-        __doPut(key, value, true);
+        put(key, value, true);
     }
 
     @Override
     public List<String> keys() throws CacheException {
-        IRedisCommandsHolder _holder = null;
-        try {
-            _holder = __redis.getDefaultCommandsHolder();
-            if (__storageWithSet) {
-                return new ArrayList<String>(_holder.getCommands().hkeys(__cacheName));
-            } else {
-                List<String> _returnValue = new ArrayList<String>();
-                String _keyPrefx = __cacheName.concat(__separator);
-                Set<String> _keys = _holder.getJedis().keys(_keyPrefx.concat("*"));
-                for (String _key : _keys) {
-                    _returnValue.add(StringUtils.substringAfterLast(_key, _keyPrefx));
+        List<String> returnValue = new ArrayList<>();
+        try (IRedisCommandHolder holder = redis.getDefaultConnectionHolder()) {
+            IRedisCommander commander = holder.getConnection();
+            if (owner.getConfig().isStorageWithSet()) {
+                Set<String> keys = commander.hkeys(cacheName);
+                if (keys != null && !keys.isEmpty()) {
+                    returnValue.addAll(keys);
                 }
-                return _returnValue;
+            } else {
+                String keyPrefix = cacheName.concat(SEPARATOR);
+                Set<String> keys = commander.keys(keyPrefix.concat("*"));
+                keys.forEach((key) -> {
+                    returnValue.add(StringUtils.substringAfterLast(key, keyPrefix));
+                });
             }
         } catch (Exception e) {
-            throw new CacheException(RuntimeUtils.unwrapThrow(e));
-        } finally {
-            if (_holder != null) {
-                _holder.release();
+            if (e instanceof CacheException) {
+                throw (CacheException) e;
             }
+            throw new CacheException(e);
         }
+        return returnValue;
     }
 
     @Override
     public void remove(Object key) throws CacheException {
-        IRedisCommandsHolder _holder = null;
-        try {
-            String _cacheKey = __doSerializeKey(key);
-            //
-            _holder = __redis.getDefaultCommandsHolder();
-            if (__storageWithSet) {
-                _holder.getCommands().hdel(__cacheName, _cacheKey);
+        try (IRedisCommandHolder holder = redis.getDefaultConnectionHolder()) {
+            IRedisCommander commander = holder.getConnection();
+            String cacheKey = serializeKey(key);
+            if (owner.getConfig().isStorageWithSet()) {
+                commander.hdel(cacheName, cacheKey);
                 //
-                if (!__disabledSubscribeExpired) {
-                    _holder.getCommands().del(__cacheName.concat(__separator).concat(_cacheKey));
+                if (owner.getConfig().isEnabledSubscribeExpired()) {
+                    commander.del(cacheName.concat(SEPARATOR).concat(cacheKey));
                 }
             } else {
-                _holder.getCommands().del(__cacheName.concat(__separator).concat(_cacheKey));
+                commander.del(cacheName.concat(SEPARATOR).concat(cacheKey));
             }
             //
-            if (__listener != null) {
-                __listener.notifyElementRemoved(__cacheName, _cacheKey);
+            if (cacheEventListener != null) {
+                cacheEventListener.notifyElementRemoved(cacheName, cacheKey);
             }
         } catch (Exception e) {
-            throw new CacheException(RuntimeUtils.unwrapThrow(e));
-        } finally {
-            if (_holder != null) {
-                _holder.release();
+            if (e instanceof CacheException) {
+                throw (CacheException) e;
             }
+            throw new CacheException(e);
         }
     }
 
     @Override
     public void removeAll(Collection<?> keys) throws CacheException {
-        IRedisCommandsHolder _holder = null;
-        try {
-            _holder = __redis.getDefaultCommandsHolder();
-            List<String> _keys = new ArrayList<String>(keys.size());
-            for (Object _key : keys) {
-                _keys.add(__doSerializeKey(_key));
-            }
-            if (__storageWithSet) {
-                _holder.getCommands().hdel(__cacheName, _keys.toArray(new String[0]));
-                if (!__disabledSubscribeExpired) {
-                    for (String _key : _keys) {
-                        _holder.getCommands().del(__cacheName.concat(__separator).concat(_key));
-                        if (__listener != null) {
-                            __listener.notifyElementRemoved(__cacheName, _key);
+        try (IRedisCommandHolder holder = redis.getDefaultConnectionHolder()) {
+            IRedisCommander commander = holder.getConnection();
+            List<String> serializeKeys = new ArrayList<>(keys.size());
+            keys.forEach((key) -> {
+                serializeKeys.add(serializeKey(key));
+            });
+            if (owner.getConfig().isStorageWithSet()) {
+                commander.hdel(cacheName, serializeKeys.toArray(new String[0]));
+                if (owner.getConfig().isEnabledSubscribeExpired()) {
+                    serializeKeys.forEach(key -> {
+                        commander.del(cacheName.concat(SEPARATOR).concat(key));
+                        if (cacheEventListener != null) {
+                            cacheEventListener.notifyElementRemoved(cacheName, key);
                         }
-                    }
+                    });
                 }
             } else {
-                for (String _key : _keys) {
-                    _holder.getCommands().del(__cacheName.concat(__separator).concat(_key));
-                    if (__listener != null) {
-                        __listener.notifyElementRemoved(__cacheName, _key);
+                serializeKeys.forEach(key -> {
+                    holder.getConnection().del(cacheName.concat(SEPARATOR).concat(key));
+                    if (cacheEventListener != null) {
+                        cacheEventListener.notifyElementRemoved(cacheName, key);
                     }
-                }
+                });
             }
         } catch (Exception e) {
-            throw new CacheException(RuntimeUtils.unwrapThrow(e));
-        } finally {
-            if (_holder != null) {
-                _holder.release();
+            if (e instanceof CacheException) {
+                throw (CacheException) e;
             }
+            throw new CacheException(e);
         }
     }
 
     @Override
     public void clear() throws CacheException {
-        IRedisCommandsHolder _holder = null;
-        try {
-            _holder = __redis.getDefaultCommandsHolder();
-            if (__storageWithSet) {
-                if (!__disabledSubscribeExpired) {
-                    Set<String> _keys = _holder.getCommands().hkeys(__cacheName);
-                    for (String _key : _keys) {
-                        _holder.getCommands().del(__cacheName.concat(__separator).concat(_key));
-                    }
+        try (IRedisCommandHolder holder = redis.getDefaultConnectionHolder()) {
+            IRedisCommander commander = holder.getConnection();
+            if (owner.getConfig().isStorageWithSet()) {
+                if (owner.getConfig().isEnabledSubscribeExpired()) {
+                    Set<String> keys = commander.hkeys(cacheName);
+                    keys.forEach((key) -> {
+                        commander.del(cacheName.concat(SEPARATOR).concat(key));
+                    });
                 }
-                _holder.getCommands().del(__cacheName);
+                commander.del(cacheName);
             } else {
-                Set<String> _keys = _holder.getJedis().keys(__cacheName.concat(__separator).concat("*"));
-                for (String _key : _keys) {
-                    _holder.getCommands().del(_key);
-                }
+                Set<String> keys = commander.keys(cacheName.concat(SEPARATOR).concat("*"));
+                keys.forEach(commander::del);
             }
-            //
-            if (__listener != null) {
-                __listener.notifyRemoveAll(__cacheName);
+            if (cacheEventListener != null) {
+                cacheEventListener.notifyRemoveAll(cacheName);
             }
         } catch (Exception e) {
-            throw new CacheException(RuntimeUtils.unwrapThrow(e));
-        } finally {
-            if (_holder != null) {
-                _holder.release();
+            if (e instanceof CacheException) {
+                throw (CacheException) e;
             }
+            throw new CacheException(e);
         }
     }
 
     @Override
-    public void destroy() throws CacheException {
-        __redis = null;
+    public void close() throws Exception {
+        redis = null;
     }
 
     @Override
     public ICacheLocker acquireCacheLocker() {
+        // TODO 基于Redis的锁实现
         return null;
-    }
-
-    @Override
-    public void onMessage(String channel, String message) {
-        if (StringUtils.isNotBlank(message)) {
-            String[] _keyStr = StringUtils.split(message, __separator);
-            if (ArrayUtils.isNotEmpty(_keyStr) && _keyStr.length == 2 && StringUtils.equals(__cacheName, _keyStr[0])) {
-                if (__storageWithSet) {
-                    remove(_keyStr[1]);
-                }
-                __listener.notifyElementExpired(__cacheName, _keyStr[1]);
-            }
-        }
     }
 }

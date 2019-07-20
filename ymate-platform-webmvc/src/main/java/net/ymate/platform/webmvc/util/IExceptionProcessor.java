@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2017 the original author or authors.
+ * Copyright 2007-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,16 +15,20 @@
  */
 package net.ymate.platform.webmvc.util;
 
+import net.ymate.platform.core.beans.annotation.Ignored;
+
 /**
  * 异常处理器接口
  *
  * @author 刘镇 (suninformation@163.com) on 2017/10/18 下午10:40
- * @version 1.0
  * @since 2.0.6
  */
+@Ignored
 public interface IExceptionProcessor {
 
     /**
+     * 获取异常处理结果
+     *
      * @param target 目标异常对象
      * @return 返回错误码和错误信息
      * @throws Exception 可能产生的任何异常
@@ -36,9 +40,9 @@ public interface IExceptionProcessor {
      */
     class Result {
 
-        private int code;
+        private final int code;
 
-        private String message;
+        private final String message;
 
         public Result(int code, String message) {
             this.code = code;

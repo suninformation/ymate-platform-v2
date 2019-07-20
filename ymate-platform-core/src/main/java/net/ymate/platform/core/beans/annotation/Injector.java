@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2017 the original author or authors.
+ * Copyright 2007-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,7 +21,6 @@ import java.lang.annotation.*;
  * 指定一个类为自定义依赖注入注解的逻辑处理器
  *
  * @author 刘镇 (suninformation@163.com) on 2017/9/19 下午1:22
- * @version 1.0
  */
 @Target({ElementType.TYPE})
 @Retention(RetentionPolicy.RUNTIME)

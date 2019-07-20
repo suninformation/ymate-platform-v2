@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2018 the original author or authors.
+ * Copyright 2007-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,7 +21,6 @@ import java.lang.annotation.*;
  * 指定一个类为自定义拦截器
  *
  * @author 刘镇 (suninformation@163.com) on 2018/7/30 下午9:36
- * @version 1.0
  * @since 2.0.6
  */
 @Target({ElementType.TYPE})
@@ -33,4 +32,10 @@ public @interface Interceptor {
      * @return 是否为单例，默认为true
      */
     boolean singleton() default true;
+
+    /**
+     * @return 自定义注解类型(用于通过注解替代原始拦截器配置)
+     * @since 2.1.0
+     */
+    Class<? extends Annotation> value() default Annotation.class;
 }

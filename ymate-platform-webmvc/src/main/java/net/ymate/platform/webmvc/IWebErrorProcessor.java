@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2017 the original author or authors.
+ * Copyright 2007-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,6 +15,7 @@
  */
 package net.ymate.platform.webmvc;
 
+import net.ymate.platform.core.beans.annotation.Ignored;
 import net.ymate.platform.validation.ValidateResult;
 import net.ymate.platform.webmvc.view.IView;
 
@@ -24,8 +25,8 @@ import java.util.Map;
  * 基于Web应用的MVC框架异常错误处理器接口
  *
  * @author 刘镇 (suninformation@163.com) on 2012-12-9 下午3:27:11
- * @version 1.0
  */
+@Ignored
 public interface IWebErrorProcessor {
 
     /**
@@ -37,9 +38,11 @@ public interface IWebErrorProcessor {
     void onError(IWebMvc owner, Throwable e);
 
     /**
+     * 处理验证结果数据
+     *
      * @param owner   所属YMP框架管理器实例
      * @param results 验证器执行结果集合
-     * @return 处理结果数据并返回视图对象，若返回null则由框架默认处理
+     * @return 返回视图对象，若返回null则由框架默认处理
      */
     IView onValidation(IWebMvc owner, Map<String, ValidateResult> results);
 

@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2018 the original author or authors.
+ * Copyright 2007-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,15 +15,14 @@
  */
 package net.ymate.platform.webmvc.handle;
 
+import net.ymate.platform.commons.util.ClassUtils;
 import net.ymate.platform.core.beans.IBeanHandler;
-import net.ymate.platform.core.util.ClassUtils;
 import net.ymate.platform.webmvc.annotation.ExceptionProcessor;
 import net.ymate.platform.webmvc.util.ExceptionProcessHelper;
 import net.ymate.platform.webmvc.util.IExceptionProcessor;
 
 /**
  * @author 刘镇 (suninformation@163.com) on 2018-12-13 00:20
- * @version 1.0
  * @since 2.0.6
  */
 public class ExceptionProcessorHandler implements IBeanHandler {
@@ -31,14 +30,11 @@ public class ExceptionProcessorHandler implements IBeanHandler {
     @Override
     @SuppressWarnings("unchecked")
     public Object handle(Class<?> targetClass) throws Exception {
-        if (ClassUtils.isSubclassOf(targetClass, Throwable.class)) {
-            final ExceptionProcessor _processorAnn = targetClass.getAnnotation(ExceptionProcessor.class);
-            ExceptionProcessHelper.DEFAULT.registerProcessor((Class<? extends Throwable>) targetClass, new IExceptionProcessor() {
-                @Override
-                public Result process(Throwable target) throws Exception {
-                    return new Result(_processorAnn.code(), _processorAnn.msg());
-                }
-            });
+        if (ClassUtils.isNormalClass(targetClass) && ClassUtils.isSubclassOf(targetClass, Throwable.class)) {
+            final ExceptionProcessor processorAnn = targetClass.getAnnotation(ExceptionProcessor.class);
+            if (processorAnn != null) {
+                ExceptionProcessHelper.DEFAULT.registerProcessor((Class<? extends Throwable>) targetClass, target -> new IExceptionProcessor.Result(processorAnn.code(), processorAnn.msg()));
+            }
         }
         return null;
     }

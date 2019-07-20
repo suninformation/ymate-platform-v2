@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2017 the original author or authors.
+ * Copyright 2007-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,12 +18,13 @@ package net.ymate.platform.core.beans.annotation;
 import java.lang.annotation.*;
 
 /**
- * 若在方法上声明则该方法将忽略一切拦截器配置, 若在包或类上声明则该类将被自动扫描忽略
+ * 若在方法上声明则该方法将忽略一切拦截器配置;
+ * 若在包或类上声明则该类将被自动扫描忽略;
+ * 若声明在接口上则表示对象管理器不会使用该接口与实现类绑定映射关系;
  *
  * @author 刘镇 (suninformation@163.com) on 16/4/19 上午10:49
- * @version 1.0
  */
-@Target({ElementType.PACKAGE, ElementType.TYPE, ElementType.METHOD})
+@Target({ElementType.PACKAGE, ElementType.TYPE, ElementType.METHOD, ElementType.ANNOTATION_TYPE})
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
 public @interface Ignored {

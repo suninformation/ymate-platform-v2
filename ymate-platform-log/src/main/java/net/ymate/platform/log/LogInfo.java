@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2017 the original author or authors.
+ * Copyright 2007-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,21 +15,56 @@
  */
 package net.ymate.platform.log;
 
-import org.apache.commons.lang.StringUtils;
+import net.ymate.platform.commons.util.ExpressionUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import java.io.Serializable;
 
 /**
  * @author 刘镇 (suninformation@163.com) on 16/6/12 上午1:27
- * @version 1.0
  */
 public class LogInfo implements Serializable {
 
+    private static final long serialVersionUID = 1L;
+
+    public static final String DEFAULT_LOG_FORMAT = "${dateTime} ${level} [${hostName}] [${threadName}] [${threadId}:${callerInfo}] ${logContent}";
+
+    private static volatile int SIMPLIFIED_PACKAGE_NAME_MAX_LENGTH;
+
+    private static volatile int SIMPLIFIED_THREAD_NAME_MAX_LENGTH;
+
+    private static volatile int SIMPLIFIED_THREAD_ID_MAX_LENGTH;
+
+    private static synchronized int safeGetAndSetPackageNameMaxLength(int currentLength) {
+        if (currentLength > SIMPLIFIED_PACKAGE_NAME_MAX_LENGTH) {
+            SIMPLIFIED_PACKAGE_NAME_MAX_LENGTH = currentLength;
+        }
+        return SIMPLIFIED_PACKAGE_NAME_MAX_LENGTH;
+    }
+
+    private static synchronized int safeGetAndSetThreadNameMaxLength(int currentLength) {
+        if (currentLength > SIMPLIFIED_THREAD_NAME_MAX_LENGTH) {
+            SIMPLIFIED_THREAD_NAME_MAX_LENGTH = currentLength;
+        }
+        return SIMPLIFIED_THREAD_NAME_MAX_LENGTH;
+    }
+
+    private static synchronized int safeGetAndSetThreadIdMaxLength(int currentLength) {
+        if (currentLength > SIMPLIFIED_THREAD_ID_MAX_LENGTH) {
+            SIMPLIFIED_THREAD_ID_MAX_LENGTH = currentLength;
+        }
+        return SIMPLIFIED_THREAD_ID_MAX_LENGTH;
+    }
+
     private String logName;
 
-    private String levelName;
+    private LogLevel level;
 
-    private long threadId;
+    private String hostName;
+
+    private String threadName;
+
+    private String threadId;
 
     private String callerInfo;
 
@@ -39,15 +74,11 @@ public class LogInfo implements Serializable {
 
     private String createTime;
 
-    public LogInfo(String logName,
-                   String levelName,
-                   long threadId,
-                   String callerInfo,
-                   String logContent,
-                   String stackInfo,
-                   String createTime) {
+    public LogInfo(String logName, LogLevel level, String hostName, String threadName, String threadId, String callerInfo, String logContent, String stackInfo, String createTime) {
         this.logName = logName;
-        this.levelName = levelName;
+        this.level = level;
+        this.hostName = hostName;
+        this.threadName = threadName;
         this.threadId = threadId;
         this.callerInfo = callerInfo;
         this.logContent = logContent;
@@ -63,19 +94,35 @@ public class LogInfo implements Serializable {
         this.logName = logName;
     }
 
-    public String getLevelName() {
-        return levelName;
+    public LogLevel getLevel() {
+        return level;
     }
 
-    public void setLevelName(String levelName) {
-        this.levelName = levelName;
+    public void setLevel(LogLevel level) {
+        this.level = level;
     }
 
-    public long getThreadId() {
+    public String getHostName() {
+        return hostName;
+    }
+
+    public void setHostName(String hostName) {
+        this.hostName = hostName;
+    }
+
+    public String getThreadName() {
+        return threadName;
+    }
+
+    public void setThreadName(String threadName) {
+        this.threadName = threadName;
+    }
+
+    public String getThreadId() {
         return threadId;
     }
 
-    public void setThreadId(long threadId) {
+    public void setThreadId(String threadId) {
         this.threadId = threadId;
     }
 
@@ -113,18 +160,30 @@ public class LogInfo implements Serializable {
 
     @Override
     public String toString() {
-        StringBuilder _exSB = new StringBuilder(createTime)
-                .append(levelName)
-                .append('[')
-                .append(threadId)
-                .append(':')
-                .append(callerInfo)
-                .append(']')
-                .append(' ').append(StringUtils.trimToEmpty(logContent));
+        return toString(null, false);
+    }
+
+    /**
+     * 日志输出
+     *
+     * @param logFormat 格式模板
+     * @param padded    否采用格式化填充
+     * @return 返回格式化日志内容
+     */
+    public String toString(String logFormat, boolean padded) {
+        String logStr = ExpressionUtils.bind(StringUtils.defaultIfBlank(logFormat, DEFAULT_LOG_FORMAT))
+                .set("dateTime", createTime)
+                .set("level", level.getDisplayName())
+                .set("hostName", hostName)
+                .set("threadName", padded ? StringUtils.rightPad(threadName, safeGetAndSetThreadNameMaxLength(threadName.length()), StringUtils.SPACE) : threadName)
+                .set("threadId", padded ? StringUtils.rightPad(threadId, safeGetAndSetThreadIdMaxLength(threadId.length()), StringUtils.SPACE) : threadId)
+                .set("callerInfo", padded ? StringUtils.rightPad(callerInfo, safeGetAndSetPackageNameMaxLength(callerInfo.length()), StringUtils.SPACE) : callerInfo)
+                .set("logContent", logContent).clean().getResult();
+        StringBuilder stringBuilder = new StringBuilder(StringUtils.trimToEmpty(logStr));
         if (StringUtils.isNotBlank(stackInfo)) {
-            _exSB.append("- ").append(stackInfo);
+            stringBuilder.append(" - ").append(stackInfo);
         }
         //
-        return _exSB.toString();
+        return StringUtils.trim(stringBuilder.toString());
     }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2017 the original author or authors.
+ * Copyright 2007-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,55 +26,54 @@ import java.util.List;
 
 /**
  * @author 刘镇 (suninformation@163.com) on 15/11/28 下午2:40
- * @version 1.0
  */
 public class LogicalExp extends AbstractOperator {
 
     @SuppressWarnings("unchecked")
     public static LogicalExp or(Query... queries) {
-        LogicalExp _exp = new LogicalExp();
-        List<Bson> _queries = (List<Bson>) _exp.__operation.get(IMongo.OPT.OR);
-        if (_queries == null) {
-            _queries = new ArrayList<Bson>();
-            _exp.__doAddOperator(IMongo.OPT.OR, _queries);
+        LogicalExp logicalExp = new LogicalExp();
+        List<Bson> bsons = (List<Bson>) logicalExp.toBson().get(IMongo.Opt.OR);
+        if (bsons == null) {
+            bsons = new ArrayList<>();
+            logicalExp.addOperator(IMongo.Opt.OR, bsons);
         }
-        for (Query _query : queries) {
-            _queries.add(_query.toBson());
+        for (Query query : queries) {
+            bsons.add(query.toBson());
         }
-        return _exp;
+        return logicalExp;
     }
 
     @SuppressWarnings("unchecked")
     public static LogicalExp and(Query... queries) {
-        LogicalExp _exp = new LogicalExp();
-        List<Bson> _queries = (List<Bson>) _exp.__operation.get(IMongo.OPT.AND);
-        if (_queries == null) {
-            _queries = new ArrayList<Bson>();
-            _exp.__doAddOperator(IMongo.OPT.AND, _queries);
+        LogicalExp logicalExp = new LogicalExp();
+        List<Bson> bsons = (List<Bson>) logicalExp.toBson().get(IMongo.Opt.AND);
+        if (bsons == null) {
+            bsons = new ArrayList<>();
+            logicalExp.addOperator(IMongo.Opt.AND, bsons);
         }
-        for (Query _query : queries) {
-            _queries.add(_query.toBson());
+        for (Query query : queries) {
+            bsons.add(query.toBson());
         }
-        return _exp;
+        return logicalExp;
     }
 
     public static LogicalExp not(IOperator operator) {
-        LogicalExp _exp = new LogicalExp();
-        _exp.__doAddOperator(IMongo.OPT.NOT, operator.toBson());
-        return _exp;
+        LogicalExp logicalExp = new LogicalExp();
+        logicalExp.addOperator(IMongo.Opt.NOT, operator.toBson());
+        return logicalExp;
     }
 
     @SuppressWarnings("unchecked")
     public static LogicalExp nor(Query... queries) {
-        LogicalExp _exp = new LogicalExp();
-        List<Bson> _queries = (List<Bson>) _exp.__operation.get(IMongo.OPT.NOR);
-        if (_queries == null) {
-            _queries = new ArrayList<Bson>();
-            _exp.__doAddOperator(IMongo.OPT.NOR, _queries);
+        LogicalExp logicalExp = new LogicalExp();
+        List<Bson> bsons = (List<Bson>) logicalExp.toBson().get(IMongo.Opt.NOR);
+        if (bsons == null) {
+            bsons = new ArrayList<>();
+            logicalExp.addOperator(IMongo.Opt.NOR, bsons);
         }
-        for (Query _query : queries) {
-            _queries.add(_query.toBson());
+        for (Query query : queries) {
+            bsons.add(query.toBson());
         }
-        return _exp;
+        return logicalExp;
     }
 }

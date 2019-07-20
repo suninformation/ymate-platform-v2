@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2017 the original author or authors.
+ * Copyright 2007-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,10 +15,11 @@
  */
 package net.ymate.platform.persistence.jdbc.base.impl;
 
-import net.ymate.platform.core.lang.BlurObject;
-import net.ymate.platform.core.util.ClassUtils;
-import net.ymate.platform.persistence.base.EntityMeta;
-import net.ymate.platform.persistence.base.IEntity;
+import net.ymate.platform.commons.lang.BlurObject;
+import net.ymate.platform.commons.util.ClassUtils;
+import net.ymate.platform.core.persistence.base.EntityMeta;
+import net.ymate.platform.core.persistence.base.IEntity;
+import net.ymate.platform.core.persistence.base.PropertyMeta;
 import net.ymate.platform.persistence.jdbc.base.AbstractResultSetHandler;
 
 import java.io.Serializable;
@@ -29,45 +30,45 @@ import java.sql.ResultSet;
  *
  * @param <T> 实体类型
  * @author 刘镇 (suninformation@163.com) on 15/5/8 下午3:58
- * @version 1.0
  */
 public class EntityResultSetHandler<T extends IEntity> extends AbstractResultSetHandler<T> {
 
-    private final Class<T> __entityClass;
-    private final EntityMeta __entityMeta;
+    private final Class<T> entityClass;
+
+    private final EntityMeta entityMeta;
 
     @SuppressWarnings("unchecked")
     public EntityResultSetHandler() {
-        this.__entityClass = (Class<T>) ClassUtils.getParameterizedTypes(getClass()).get(0);
-        this.__entityMeta = EntityMeta.createAndGet(this.__entityClass);
+        this.entityClass = (Class<T>) ClassUtils.getParameterizedTypes(getClass()).get(0);
+        this.entityMeta = EntityMeta.createAndGet(this.entityClass);
     }
 
     public EntityResultSetHandler(Class<T> entityClass) {
-        this.__entityClass = entityClass;
-        this.__entityMeta = EntityMeta.createAndGet(entityClass);
+        this.entityClass = entityClass;
+        this.entityMeta = EntityMeta.createAndGet(entityClass);
     }
 
     @Override
     @SuppressWarnings("unchecked")
-    protected T __doProcessResultRow(ResultSet resultSet) throws Exception {
-        T _returnValue = __entityClass.newInstance();
-        Object _primaryKeyObject = null;
-        if (__entityMeta.isMultiplePrimaryKey()) {
-            _primaryKeyObject = __entityMeta.getPrimaryKeyClass().newInstance();
+    protected T processResultRow(ResultSet resultSet) throws Exception {
+        T returnValue = entityClass.newInstance();
+        Object primaryKeyObject = null;
+        if (entityMeta.isMultiplePrimaryKey()) {
+            primaryKeyObject = entityMeta.getPrimaryKeyClass().newInstance();
             //
-            _returnValue.setId((Serializable) _primaryKeyObject);
+            returnValue.setId((Serializable) primaryKeyObject);
         }
-        for (int _idx = 0; _idx < __doGetColumnCount(); _idx++) {
-            EntityMeta.PropertyMeta _meta = __entityMeta.getPropertyByName(_doGetColumnMeta(_idx).getName().toLowerCase());
-            if (_meta != null) {
-                Object _fValue = BlurObject.bind(resultSet.getObject(_idx + 1)).toObjectValue(_meta.getField().getType());
-                if (__entityMeta.isPrimaryKey(_meta.getName()) && __entityMeta.isMultiplePrimaryKey()) {
-                    _meta.getField().set(_primaryKeyObject, _fValue);
+        for (int idx = 0; idx < getColumnCount(); idx++) {
+            PropertyMeta propertyMeta = entityMeta.getPropertyByName(getColumnMeta(idx).getName().toLowerCase());
+            if (propertyMeta != null) {
+                Object fieldValue = BlurObject.bind(resultSet.getObject(idx + 1)).toObjectValue(propertyMeta.getField().getType());
+                if (entityMeta.isPrimaryKey(propertyMeta.getName()) && entityMeta.isMultiplePrimaryKey()) {
+                    propertyMeta.getField().set(primaryKeyObject, fieldValue);
                 } else {
-                    _meta.getField().set(_returnValue, _fValue);
+                    propertyMeta.getField().set(returnValue, fieldValue);
                 }
             }
         }
-        return _returnValue;
+        return returnValue;
     }
 }

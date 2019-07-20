@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2017 the original author or authors.
+ * Copyright 2007-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,11 +15,14 @@
  */
 package net.ymate.platform.serv.nio.support;
 
-import net.ymate.platform.serv.*;
+import net.ymate.platform.serv.IClientCfg;
+import net.ymate.platform.serv.IListener;
+import net.ymate.platform.serv.IServerCfg;
+import net.ymate.platform.serv.nio.AbstractNioEventGroup;
 import net.ymate.platform.serv.nio.INioCodec;
 import net.ymate.platform.serv.nio.INioEventGroup;
 import net.ymate.platform.serv.nio.INioSession;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -30,25 +33,25 @@ import java.nio.channels.SocketChannel;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
+ * @param <LISTENER> 监听器类型
  * @author 刘镇 (suninformation@163.com) on 15/11/15 下午6:54
- * @version 1.0
  */
-public class NioEventGroup<LISTENER extends IListener<INioSession>> extends AbstractEventGroup<INioCodec, LISTENER, INioSession> implements INioEventGroup<LISTENER> {
+public class NioEventGroup<LISTENER extends IListener<INioSession>> extends AbstractNioEventGroup<INioCodec, LISTENER, INioSession> implements INioEventGroup<LISTENER> {
 
-    private SelectableChannel __channel;
+    private SelectableChannel selectableChannel;
 
-    private int __selectorCount = IServ.Const.DEFAULT_SELECTOR_COUNT;
+    private int selectorCount = 1;
 
-    private NioEventProcessor[] __processors;
+    private NioEventProcessor[] eventProcessors;
 
-    private AtomicInteger __handlerCount = new AtomicInteger(0);
+    private final AtomicInteger handlerCount = new AtomicInteger(0);
 
     public NioEventGroup(IServerCfg cfg, LISTENER listener, INioCodec codec) throws IOException {
         super(cfg, listener, codec);
         //
-        __channel = __doChannelCreate(cfg);
+        selectableChannel = channelCreate(cfg);
         if (cfg.getSelectorCount() > 0) {
-            __selectorCount = cfg.getSelectorCount();
+            selectorCount = cfg.getSelectorCount();
         }
     }
 
@@ -56,66 +59,66 @@ public class NioEventGroup<LISTENER extends IListener<INioSession>> extends Abst
         super(cfg, listener, codec);
     }
 
-    protected SelectableChannel __doChannelCreate(IServerCfg cfg) throws IOException {
-        ServerSocketChannel _channel = ServerSocketChannel.open();
-        _channel.configureBlocking(false);
-        _channel.socket().bind(new InetSocketAddress(cfg.getServerHost(), cfg.getPort()));
-        return _channel;
+    protected SelectableChannel channelCreate(IServerCfg cfg) throws IOException {
+        ServerSocketChannel socketChannel = ServerSocketChannel.open();
+        socketChannel.configureBlocking(false);
+        socketChannel.socket().bind(new InetSocketAddress(cfg.getServerHost(), cfg.getPort()));
+        return socketChannel;
     }
 
     @Override
     @SuppressWarnings("unchecked")
-    protected INioSession __doSessionCreate(IClientCfg cfg) throws IOException {
-        SocketChannel _channel = SocketChannel.open();
-        _channel.configureBlocking(false);
-        _channel.socket().setReuseAddress(true);
-        _channel.connect(new InetSocketAddress(cfg.getRemoteHost(), cfg.getPort()));
-        __channel = _channel;
-        return new NioSession(this, _channel);
+    protected INioSession sessionCreate(IClientCfg cfg) throws IOException {
+        SocketChannel socketChannel = SocketChannel.open();
+        socketChannel.configureBlocking(false);
+        socketChannel.socket().setReuseAddress(true);
+        socketChannel.connect(new InetSocketAddress(cfg.getRemoteHost(), cfg.getPort()));
+        selectableChannel = socketChannel;
+        return new NioSession(this, socketChannel);
     }
 
     @Override
     public synchronized void start() throws IOException {
         super.start();
         //
-        __processors = __doInitProcessors();
-        __doRegisterEvent();
+        eventProcessors = initProcessors();
+        registerEvent();
     }
 
     protected SelectableChannel channel() {
-        return __channel;
+        return selectableChannel;
     }
 
     protected void channel(SelectableChannel channel) {
-        __channel = channel;
+        selectableChannel = channel;
     }
 
     protected int selectorCount() {
-        return __selectorCount;
+        return selectorCount;
     }
 
     protected NioEventProcessor[] processors() {
-        return __processors;
+        return eventProcessors;
     }
 
-    protected String __doBuildProcessorName() {
+    protected String buildProcessorName() {
         return StringUtils.capitalize(name()).concat(isServer() ? "Server" : "Client").concat("-NioEventProcessor-");
     }
 
-    protected NioEventProcessor[] __doInitProcessors() throws IOException {
-        NioEventProcessor[] _processors = new NioEventProcessor[__selectorCount];
-        for (int _idx = 0; _idx < __selectorCount; _idx++) {
-            _processors[_idx] = new NioEventProcessor<LISTENER>(this, __doBuildProcessorName() + _idx);
-            _processors[_idx].start();
+    protected NioEventProcessor[] initProcessors() throws IOException {
+        NioEventProcessor[] newEventProcessors = new NioEventProcessor[selectorCount];
+        for (int idx = 0; idx < selectorCount; idx++) {
+            newEventProcessors[idx] = new NioEventProcessor<>(this, buildProcessorName() + idx);
+            newEventProcessors[idx].start();
         }
-        return _processors;
+        return newEventProcessors;
     }
 
-    protected void __doRegisterEvent() throws IOException {
+    protected void registerEvent() throws IOException {
         if (isServer()) {
-            processor().registerEvent(__channel, SelectionKey.OP_ACCEPT, null);
+            processor().registerEvent(selectableChannel, SelectionKey.OP_ACCEPT, null);
         } else {
-            processor().registerEvent(__channel, SelectionKey.OP_CONNECT, session());
+            processor().registerEvent(selectableChannel, SelectionKey.OP_CONNECT, session());
             if (connectionTimeout() > 0) {
                 session().connectSync(connectionTimeout());
             }
@@ -124,12 +127,12 @@ public class NioEventGroup<LISTENER extends IListener<INioSession>> extends Abst
 
     @Override
     public void stop() throws IOException {
-        for (NioEventProcessor _processor : __processors) {
-            _processor.interrupt();
+        for (NioEventProcessor processor : eventProcessors) {
+            processor.interrupt();
         }
-        if (__channel != null) {
-            __channel.close();
-            __channel = null;
+        if (selectableChannel != null) {
+            selectableChannel.close();
+            selectableChannel = null;
         }
         //
         super.stop();
@@ -137,9 +140,9 @@ public class NioEventGroup<LISTENER extends IListener<INioSession>> extends Abst
 
     @Override
     public NioEventProcessor processor(SelectionKey key) {
-        for (NioEventProcessor _processor : __processors) {
-            if (key.selector() == _processor.selector()) {
-                return _processor;
+        for (NioEventProcessor processor : eventProcessors) {
+            if (key.selector() == processor.selector()) {
+                return processor;
             }
         }
         return null;
@@ -147,11 +150,11 @@ public class NioEventGroup<LISTENER extends IListener<INioSession>> extends Abst
 
     @Override
     public NioEventProcessor processor() {
-        int _nextIdx = __handlerCount.getAndIncrement() % __selectorCount;
-        if (_nextIdx < 0) {
-            __handlerCount.set(0);
-            _nextIdx = 0;
+        int nextIdx = handlerCount.getAndIncrement() % selectorCount;
+        if (nextIdx < 0) {
+            handlerCount.set(0);
+            nextIdx = 0;
         }
-        return __processors[_nextIdx];
+        return eventProcessors[nextIdx];
     }
 }

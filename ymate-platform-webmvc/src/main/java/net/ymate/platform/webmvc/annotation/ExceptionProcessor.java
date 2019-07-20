@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2018 the original author or authors.
+ * Copyright 2007-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,10 +18,9 @@ package net.ymate.platform.webmvc.annotation;
 import java.lang.annotation.*;
 
 /**
- * 向模块注册异常类型的错误码及描述
+ * 注册异常类型的错误码及描述
  *
  * @author 刘镇 (suninformation@163.com) on 2018-12-12 22:10
- * @version 1.0
  * @since 2.0.6
  */
 @Target(ElementType.TYPE)

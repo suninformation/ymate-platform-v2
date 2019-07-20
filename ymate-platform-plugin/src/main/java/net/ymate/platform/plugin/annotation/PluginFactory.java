@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2017 the original author or authors.
+ * Copyright 2007-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,7 +15,9 @@
  */
 package net.ymate.platform.plugin.annotation;
 
+import net.ymate.platform.plugin.IPluginBeanLoaderFactory;
 import net.ymate.platform.plugin.IPluginEventListener;
+import net.ymate.platform.plugin.impl.DefaultPluginBeanLoaderFactory;
 import net.ymate.platform.plugin.impl.DefaultPluginEventListener;
 
 import java.lang.annotation.*;
@@ -24,9 +26,8 @@ import java.lang.annotation.*;
  * 声明一个类作为插件工厂的注解
  *
  * @author 刘镇 (suninformation@163.com) on 15/3/19 下午7:41
- * @version 1.0
  */
-@Target({ElementType.TYPE})
+@Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
 public @interface PluginFactory {
@@ -37,9 +38,9 @@ public @interface PluginFactory {
     String pluginHome();
 
     /**
-     * @return 自动扫描路径，默认为插件工厂所在包路径
+     * @return 自动扫描包名，默认为插件工厂所在包路径
      */
-    String[] autoscanPackages() default {};
+    String[] packageNames() default {};
 
     /**
      * @return 插件是否自动启动
@@ -50,4 +51,9 @@ public @interface PluginFactory {
      * @return 插件生命周期事件监听器类对象
      */
     Class<? extends IPluginEventListener> listenerClass() default DefaultPluginEventListener.class;
+
+    /**
+     * @return 插件对象加载器工厂类
+     */
+    Class<? extends IPluginBeanLoaderFactory> loaderFactoryClass() default DefaultPluginBeanLoaderFactory.class;
 }

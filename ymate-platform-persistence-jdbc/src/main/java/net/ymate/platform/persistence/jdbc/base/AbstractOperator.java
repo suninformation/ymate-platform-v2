@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2017 the original author or authors.
+ * Copyright 2007-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,33 +15,33 @@
  */
 package net.ymate.platform.persistence.jdbc.base;
 
-import net.ymate.platform.core.util.ExpressionUtils;
-import net.ymate.platform.persistence.base.Type;
-import net.ymate.platform.persistence.jdbc.DataSourceCfgMeta;
-import net.ymate.platform.persistence.jdbc.IConnectionHolder;
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.time.StopWatch;
+import net.ymate.platform.commons.util.ExpressionUtils;
+import net.ymate.platform.core.persistence.base.Type;
+import net.ymate.platform.persistence.jdbc.IDatabaseConnectionHolder;
+import net.ymate.platform.persistence.jdbc.IDatabaseDataSourceConfig;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.time.StopWatch;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
  * 数据库操作器接口抽象实现
  *
  * @author 刘镇 (suninformation@163.com) on 2011-9-22 下午10:19:53
- * @version 1.0
  */
 public abstract class AbstractOperator implements IOperator {
 
-    private static final Log _LOG = LogFactory.getLog(AbstractOperator.class);
+    private static final Log LOG = LogFactory.getLog(AbstractOperator.class);
 
     protected String sql;
 
-    private IConnectionHolder connectionHolder;
+    private IDatabaseConnectionHolder connectionHolder;
 
     private IAccessorConfig accessorConfig;
 
@@ -54,84 +54,93 @@ public abstract class AbstractOperator implements IOperator {
      */
     protected boolean executed;
 
-    public AbstractOperator(String sql, IConnectionHolder connectionHolder) {
+    public AbstractOperator(String sql, IDatabaseConnectionHolder connectionHolder) {
         this(sql, connectionHolder, null);
     }
 
-    public AbstractOperator(String sql, IConnectionHolder connectionHolder, IAccessorConfig accessorConfig) {
+    public AbstractOperator(String sql, IDatabaseConnectionHolder connectionHolder, IAccessorConfig accessorConfig) {
         this.sql = sql;
         this.connectionHolder = connectionHolder;
         this.accessorConfig = accessorConfig;
-        this.parameters = new ArrayList<SQLParameter>();
+        this.parameters = new ArrayList<>();
     }
 
     @Override
     public void execute() throws Exception {
         if (!this.executed) {
-            StopWatch _time = new StopWatch();
-            _time.start();
-            int _effectCounts = 0;
+            StopWatch time = new StopWatch();
+            time.start();
+            int effectCounts = 0;
             try {
-                _effectCounts = __doExecute();
+                effectCounts = doExecute();
                 // 执行过程未发生异常将标记已执行，避免重复执行
                 this.executed = true;
             } finally {
-                _time.stop();
-                this.expenseTime = _time.getTime();
+                time.stop();
+                this.expenseTime = time.getTime();
                 //
-                if (_LOG.isInfoEnabled()) {
-                    DataSourceCfgMeta _meta = this.connectionHolder.getDataSourceCfgMeta();
-                    if (_meta.isShowSQL()) {
-                        String _logStr = ExpressionUtils.bind("[${sql}]${param}[${count}][${time}]")
+                if (LOG.isInfoEnabled()) {
+                    IDatabaseDataSourceConfig dataSourceConfig = this.connectionHolder.getDataSourceConfig();
+                    if (dataSourceConfig.isShowSql()) {
+                        String logStr = ExpressionUtils.bind("[${sql}]${param}[${count}][${time}]")
                                 .set("sql", StringUtils.defaultIfBlank(this.sql, "@NULL"))
-                                .set("param", __doSerializeParameters())
-                                .set("count", _effectCounts + "")
+                                .set("param", serializeParameters())
+                                .set("count", effectCounts + "")
                                 .set("time", this.expenseTime + "ms").getResult();
-                        StringBuilder _stackSB = new StringBuilder(_logStr);
-                        if (_meta.isStackTraces()) {
-                            String[] _tracePackages = StringUtils.split(_meta.getStackTracePackage(), "|");
-                            StackTraceElement[] _stacks = new Throwable().getStackTrace();
-                            if (_stacks != null && _stacks.length > 0) {
-                                int _depth = _meta.getStackTraceDepth() <= 0 ? _stacks.length : (_meta.getStackTraceDepth() > _stacks.length ? _stacks.length : _meta.getStackTraceDepth());
-                                if (_depth > 0) {
-                                    for (int _idx = 0; _idx < _depth; _idx++) {
-                                        if (_tracePackages != null && _tracePackages.length > 0) {
-                                            if (StringUtils.contains(_stacks[_idx].getClassName(), "$$EnhancerByCGLIB$$") || !StringUtils.startsWithAny(_stacks[_idx].getClassName(), _tracePackages)) {
-                                                continue;
-                                            }
-                                        }
-                                        _stackSB.append("\n\t--> ").append(_stacks[_idx]);
-                                    }
-                                }
-                            }
+                        if (dataSourceConfig.isStackTraces()) {
+                            StringBuilder stackBuilder = new StringBuilder(logStr);
+                            doAppendStackTraces(dataSourceConfig, stackBuilder);
+                            LOG.info(stackBuilder.toString());
+                        } else {
+                            LOG.info(logStr);
                         }
-                        _LOG.info(_stackSB.toString());
                     }
                 }
             }
         }
     }
 
-    protected String __doSerializeParameters() {
+    protected void doAppendStackTraces(IDatabaseDataSourceConfig dataSourceConfig, StringBuilder stackBuilder) {
+        String[] tracePackages = StringUtils.split(dataSourceConfig.getStackTracePackage(), "|");
+        StackTraceElement[] stacks = new Throwable().getStackTrace();
+        if (stacks != null && stacks.length > 0) {
+            int depth = dataSourceConfig.getStackTraceDepth() <= 0 ? stacks.length : (dataSourceConfig.getStackTraceDepth() > stacks.length ? stacks.length : dataSourceConfig.getStackTraceDepth());
+            if (depth > 0) {
+                for (int idx = 0; idx < depth; idx++) {
+                    if (tracePackages != null && tracePackages.length > 0) {
+                        if (StringUtils.containsAny(stacks[idx].getClassName(), "$$EnhancerByCGLIB$$", "_$$_") || !StringUtils.startsWithAny(stacks[idx].getClassName(), tracePackages)) {
+                            continue;
+                        }
+                    }
+                    stackBuilder.append("\n\t--> ").append(stacks[idx]);
+                }
+            }
+        }
+    }
+
+    protected String serializeParameters() {
         return this.parameters.toString();
     }
 
     /**
-     * @return 执行具体的操作过程，并返回影响行数
+     * 执行具体的操作过程
+     *
+     * @return 返回影响行数
      * @throws Exception 执行过程中产生的异常
      */
-    protected abstract int __doExecute() throws Exception;
+    protected abstract int doExecute() throws Exception;
 
-    protected void __doSetParameters(PreparedStatement statement) throws SQLException {
-        int _idx = 1;
-        for (SQLParameter _param : this.getParameters()) {
-            if (_param.getValue() == null) {
-                statement.setNull(_idx++, 0);
-            } else if (_param.getType() != null && !Type.FIELD.UNKNOWN.equals(_param.getType())) {
-                statement.setObject(_idx++, _param.getValue(), _param.getType().getType());
+    protected void doSetParameters(PreparedStatement statement) throws SQLException {
+        int idx = 1;
+        for (SQLParameter parameter : this.getParameters()) {
+            if (parameter.getValue() == null) {
+                statement.setNull(idx, 0);
+            } else if (parameter.getType() != null && !Type.FIELD.UNKNOWN.equals(parameter.getType())) {
+                statement.setObject(idx, parameter.getValue(), parameter.getType().getType());
             } else {
-                statement.setObject(_idx++, _param.getValue());
+                statement.setObject(idx, parameter.getValue());
             }
+            idx++;
         }
     }
 
@@ -156,7 +165,7 @@ public abstract class AbstractOperator implements IOperator {
     }
 
     @Override
-    public IConnectionHolder getConnectionHolder() {
+    public IDatabaseConnectionHolder getConnectionHolder() {
         return connectionHolder;
     }
 
@@ -167,7 +176,7 @@ public abstract class AbstractOperator implements IOperator {
 
     @Override
     public List<SQLParameter> getParameters() {
-        return this.parameters;
+        return Collections.unmodifiableList(this.parameters);
     }
 
     @Override
@@ -180,13 +189,7 @@ public abstract class AbstractOperator implements IOperator {
 
     @Override
     public IOperator addParameter(Object parameter) {
-        if (parameter == null) {
-            this.parameters.add(new SQLParameter(Type.FIELD.UNKNOWN, null));
-        } else if (parameter instanceof SQLParameter) {
-            this.parameters.add((SQLParameter) parameter);
-        } else {
-            this.parameters.add(new SQLParameter(parameter));
-        }
+        SQLParameter.addParameter(this.parameters, parameter);
         return this;
     }
 }

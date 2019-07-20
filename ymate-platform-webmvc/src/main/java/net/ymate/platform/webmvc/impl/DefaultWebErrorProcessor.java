@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2018 the original author or authors.
+ * Copyright 2007-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,9 +16,9 @@
 package net.ymate.platform.webmvc.impl;
 
 import com.alibaba.fastjson.JSON;
-import net.ymate.platform.core.lang.BlurObject;
-import net.ymate.platform.core.util.DateTimeUtils;
-import net.ymate.platform.core.util.RuntimeUtils;
+import net.ymate.platform.commons.lang.BlurObject;
+import net.ymate.platform.commons.util.DateTimeUtils;
+import net.ymate.platform.commons.util.RuntimeUtils;
 import net.ymate.platform.validation.ValidateResult;
 import net.ymate.platform.webmvc.*;
 import net.ymate.platform.webmvc.base.Type;
@@ -28,98 +28,115 @@ import net.ymate.platform.webmvc.support.GenericResponseWrapper;
 import net.ymate.platform.webmvc.util.*;
 import net.ymate.platform.webmvc.view.IView;
 import net.ymate.platform.webmvc.view.View;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import javax.servlet.http.Cookie;
+import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
 
 /**
  * @author 刘镇 (suninformation@163.com) on 2018-12-10 13:54
- * @version 1.0
  * @since 2.0.6
  */
-public class DefaultWebErrorProcessor implements IWebErrorProcessor, IWebInitializable {
+public class DefaultWebErrorProcessor implements IWebErrorProcessor, IWebInitialization {
 
-    private static final Log _LOG = LogFactory.getLog(DefaultWebErrorProcessor.class);
+    private static final Log LOG = LogFactory.getLog(DefaultWebErrorProcessor.class);
 
-    private IWebMvc __owner;
+    private IWebMvc owner;
 
-    private String __errorDefaultViewFormat;
+    private String errorDefaultViewFormat;
 
-    private boolean __analysisDisabled;
+    private boolean analysisDisabled;
+
+    private boolean initialized;
 
     @Override
-    public void init(WebMVC owner) throws Exception {
-        __owner = owner;
+    public void initialize(WebMVC owner) throws Exception {
+        this.owner = owner;
         //
-        __errorDefaultViewFormat = StringUtils.trimToEmpty(owner.getOwner().getConfig().getParam(IWebMvcModuleCfg.PARAMS_ERROR_DEFAULT_VIEW_FORMAT)).toLowerCase();
-        __analysisDisabled = BlurObject.bind(owner.getOwner().getConfig().getParam(IWebMvcModuleCfg.PARAMS_EXCEPTION_ANALYSIS_DISABLED)).toBooleanValue();
+        errorDefaultViewFormat = StringUtils.trimToEmpty(owner.getOwner().getParam(IWebMvcConfig.PARAMS_ERROR_DEFAULT_VIEW_FORMAT)).toLowerCase();
+        analysisDisabled = BlurObject.bind(owner.getOwner().getParam(IWebMvcConfig.PARAMS_EXCEPTION_ANALYSIS_DISABLED)).toBooleanValue();
+        //
+        initialized = true;
     }
 
     @Override
-    public void destroy() throws Exception {
+    public boolean isInitialized() {
+        return initialized;
+    }
+
+    @Override
+    public void close() throws Exception {
     }
 
     public IView showErrorMsg(int code, String msg, Map<String, Object> dataMap) {
         if (WebUtils.isAjax(WebContext.getRequest(), true, true) || Type.Const.FORMAT_JSON.equals(getErrorDefaultViewFormat())) {
             return WebResult.formatView(WebResult.create(code).msg(msg).data(dataMap), Type.Const.FORMAT_JSON);
         }
-        return WebUtils.buildErrorView(__owner, code, msg).addAttribute(Type.Const.PARAM_DATA, dataMap);
+        return WebUtils.buildErrorView(owner, code, msg).addAttribute(Type.Const.PARAM_DATA, dataMap);
     }
 
     @Override
     public void onError(IWebMvc owner, Throwable e) {
         try {
-            Throwable _unwrapThrow = RuntimeUtils.unwrapThrow(e);
-            if (_unwrapThrow instanceof ValidationResultException) {
-                ValidationResultException _exception = (ValidationResultException) _unwrapThrow;
-                if (_exception.getResultView() != null) {
-                    _exception.getResultView().render();
-                } else {
-                    View.httpStatusView(_exception.getHttpStatus(), _exception.getMessage()).render();
-                }
-            } else {
-                IExceptionProcessor _processor = ExceptionProcessHelper.DEFAULT.bind(_unwrapThrow.getClass());
-                if (_processor != null) {
-                    IExceptionProcessor.Result _result = _processor.process(_unwrapThrow);
-                    if (_result != null) {
-                        showErrorMsg(_result.getCode(), WebUtils.errorCodeI18n(__owner, _result), null).render();
-                    } else if (!__analysisDisabled && owner.getOwner().getConfig().isDevelopMode()) {
-                        _LOG.error(exceptionAnalysis(_unwrapThrow));
+            Throwable unwrapThrow = RuntimeUtils.unwrapThrow(e);
+            if (unwrapThrow != null) {
+                if (unwrapThrow instanceof ValidationResultException) {
+                    ValidationResultException exception = (ValidationResultException) unwrapThrow;
+                    if (exception.getResultView() != null) {
+                        exception.getResultView().render();
                     } else {
-                        _LOG.error("", _unwrapThrow);
+                        View.httpStatusView(exception.getHttpStatus(), exception.getMessage()).render();
                     }
                 } else {
-                    if (!__analysisDisabled && owner.getOwner().getConfig().isDevelopMode()) {
-                        _LOG.error(exceptionAnalysis(_unwrapThrow));
+                    IExceptionProcessor exceptionProcessor = ExceptionProcessHelper.DEFAULT.bind(unwrapThrow.getClass());
+                    if (exceptionProcessor != null) {
+                        IExceptionProcessor.Result result = exceptionProcessor.process(unwrapThrow);
+                        if (result != null) {
+                            showErrorMsg(result.getCode(), WebUtils.errorCodeI18n(this.owner, result), null).render();
+                        } else if (LOG.isErrorEnabled()) {
+                            if (!analysisDisabled && owner.getOwner().isDevEnv()) {
+                                LOG.error(exceptionAnalysis(unwrapThrow));
+                            } else {
+                                LOG.error(StringUtils.EMPTY, unwrapThrow);
+                            }
+                        }
                     } else {
-                        _LOG.error("", _unwrapThrow);
+                        if (LOG.isErrorEnabled()) {
+                            if (!analysisDisabled && owner.getOwner().isDevEnv()) {
+                                LOG.error(exceptionAnalysis(unwrapThrow));
+                            } else {
+                                LOG.error(StringUtils.EMPTY, unwrapThrow);
+                            }
+                        }
+                        showErrorMsg(ErrorCode.INTERNAL_SYSTEM_ERROR, WebUtils.errorCodeI18n(this.owner, ErrorCode.INTERNAL_SYSTEM_ERROR, ErrorCode.MSG_INTERNAL_SYSTEM_ERROR), null).render();
                     }
-                    showErrorMsg(ErrorCode.INTERNAL_SYSTEM_ERROR, WebUtils.errorCodeI18n(__owner, ErrorCode.INTERNAL_SYSTEM_ERROR, ErrorCode.MSG_INTERNAL_SYSTEM_ERROR), null).render();
                 }
             }
-        } catch (Throwable e1) {
-            _LOG.warn("", RuntimeUtils.unwrapThrow(e1));
+        } catch (Exception e1) {
+            if (LOG.isWarnEnabled()) {
+                LOG.warn(StringUtils.EMPTY, RuntimeUtils.unwrapThrow(e1));
+            }
         }
     }
 
     @Override
     public IView onValidation(IWebMvc owner, Map<String, ValidateResult> results) {
-        String _message = WebUtils.errorCodeI18n(__owner, ErrorCode.INVALID_PARAMS_VALIDATION, ErrorCode.MSG_INVALID_PARAMS_VALIDATION);
-        Map<String, Object> _dataMap = new HashMap<String, Object>();
-        for (ValidateResult _vResult : results.values()) {
-            _dataMap.put(_vResult.getName(), _vResult.getMsg());
-        }
+        String message = WebUtils.errorCodeI18n(this.owner, ErrorCode.INVALID_PARAMS_VALIDATION, ErrorCode.MSG_INVALID_PARAMS_VALIDATION);
+        Map<String, Object> dataMap = new HashMap<>(results.size());
+        results.values().forEach((result) -> {
+            dataMap.put(result.getName(), result.getMsg());
+        });
         //
         if (!WebUtils.isAjax(WebContext.getRequest(), true, true) && !Type.Const.FORMAT_JSON.equals(getErrorDefaultViewFormat())) {
             // 拼装所有的验证消息
-            _message = WebUtils.messageWithTemplate(owner.getOwner(), _message, results.values());
+            message = WebUtils.messageWithTemplate(owner.getOwner(), message, results.values());
         }
-        return showErrorMsg(ErrorCode.INVALID_PARAMS_VALIDATION, _message, _dataMap);
+        return showErrorMsg(ErrorCode.INVALID_PARAMS_VALIDATION, message, dataMap);
     }
 
     @Override
@@ -130,70 +147,69 @@ public class DefaultWebErrorProcessor implements IWebErrorProcessor, IWebInitial
     // ----------
 
     public final IWebMvc getOwner() {
-        return __owner;
+        return owner;
     }
 
     public final String getErrorDefaultViewFormat() {
-        return __errorDefaultViewFormat;
+        return errorDefaultViewFormat;
     }
 
     public final boolean isAnalysisDisabled() {
-        return __analysisDisabled;
+        return analysisDisabled;
     }
 
     // ----------
 
     public final String exceptionAnalysis(Throwable e) {
-        StringBuilder _errSB = new StringBuilder("An exception occurred at ").append(DateTimeUtils.formatTime(System.currentTimeMillis(), DateTimeUtils.YYYY_MM_DD_HH_MM_SS_SSS)).append(":\n");
-        _errSB.append("-------------------------------------------------\n");
-        _errSB.append("-- ThreadId: ").append(Thread.currentThread().getId()).append("\n");
-        _errSB.append("-- RequestMapping: ").append(WebContext.getRequestContext().getRequestMapping()).append("\n");
-        _errSB.append("-- ResponseStatus: ").append(((GenericResponseWrapper) WebContext.getResponse()).getStatus()).append("\n");
-        _errSB.append("-- Method: ").append(WebContext.getRequestContext().getHttpMethod().name()).append("\n");
-        _errSB.append("-- RemoteAddrs: ").append(JSON.toJSONString(WebUtils.getRemoteAddrs(WebContext.getRequest()))).append("\n");
-        RequestMeta _meta = WebContext.getContext().getAttribute(RequestMeta.class.getName());
-        if (_meta != null) {
-            _errSB.append("-- Controller: ").append(_meta.getTargetClass().getName()).append(":").append(_meta.getMethod().getName()).append("\n");
+        StringBuilder stringBuilder = new StringBuilder("An exception occurred at ").append(DateTimeUtils.formatTime(System.currentTimeMillis(), DateTimeUtils.YYYY_MM_DD_HH_MM_SS_SSS)).append(":\n");
+        stringBuilder.append("-------------------------------------------------\n");
+        stringBuilder.append("-- ThreadId: ").append(Thread.currentThread().getId()).append("\n");
+        stringBuilder.append("-- RequestMapping: ").append(WebContext.getRequestContext().getRequestMapping()).append("\n");
+        stringBuilder.append("-- ResponseStatus: ").append(((GenericResponseWrapper) WebContext.getResponse()).getStatus()).append("\n");
+        stringBuilder.append("-- Method: ").append(WebContext.getRequestContext().getHttpMethod().name()).append("\n");
+        stringBuilder.append("-- RemoteAddress: ").append(JSON.toJSONString(WebUtils.getRemoteAddresses(WebContext.getRequest()))).append("\n");
+        //
+        RequestMeta requestMeta = WebContext.getContext().getAttribute(RequestMeta.class.getName());
+        if (requestMeta != null) {
+            stringBuilder.append("-- Controller: ").append(requestMeta.getTargetClass().getName()).append(":").append(requestMeta.getMethod().getName()).append("\n");
         }
-        _errSB.append("-- ContextAttributes:").append("\n");
-        for (Map.Entry<String, Object> _entry : WebContext.getContext().getAttributes().entrySet()) {
-            if (!StringUtils.startsWith(_entry.getKey(), WebMVC.class.getPackage().getName())) {
-                _errSB.append("\t  ").append(_entry.getKey()).append(": ").append(JSON.toJSONString(_entry.getValue())).append("\n");
-            }
+        //
+        stringBuilder.append("-- ContextAttributes:").append("\n");
+        WebContext.getContext().getAttributes().entrySet().stream()
+                .filter(entry -> !StringUtils.startsWith(entry.getKey(), WebMVC.class.getPackage().getName()))
+                .forEachOrdered(entry -> stringBuilder.append("\t  ").append(entry.getKey()).append(": ").append(JSON.toJSONString(entry.getValue())).append("\n"));
+        //
+        stringBuilder.append("-- Parameters:").append("\n");
+        WebContext.getContext().getParameters().forEach((key, value) -> stringBuilder.append("\t  ").append(key).append(": ").append(JSON.toJSONString(value)).append("\n"));
+        //
+        stringBuilder.append("-- Attributes:").append("\n");
+        Enumeration enumeration = WebContext.getRequest().getAttributeNames();
+        while (enumeration.hasMoreElements()) {
+            String attrName = (String) enumeration.nextElement();
+            stringBuilder.append("\t  ").append(attrName).append(": ").append(JSON.toJSONString(WebContext.getRequest().getAttribute(attrName))).append("\n");
         }
-        _errSB.append("-- Parameters:").append("\n");
-        for (Map.Entry<String, Object> _entry : WebContext.getContext().getParameters().entrySet()) {
-            _errSB.append("\t  ").append(_entry.getKey()).append(": ").append(JSON.toJSONString(_entry.getValue())).append("\n");
-        }
-        _errSB.append("-- Attributes:").append("\n");
-        Enumeration _enum = WebContext.getRequest().getAttributeNames();
-        while (_enum.hasMoreElements()) {
-            String _attrName = (String) _enum.nextElement();
-            _errSB.append("\t  ").append(_attrName).append(": ").append(JSON.toJSONString(WebContext.getRequest().getAttribute(_attrName))).append("\n");
-        }
-        _errSB.append("-- Headers:").append("\n");
-        _enum = WebContext.getRequest().getHeaderNames();
-        while (_enum.hasMoreElements()) {
-            String _headName = (String) _enum.nextElement();
-            if ("cookie".equalsIgnoreCase(_headName)) {
+        //
+        stringBuilder.append("-- Headers:").append("\n");
+        enumeration = WebContext.getRequest().getHeaderNames();
+        while (enumeration.hasMoreElements()) {
+            String headName = (String) enumeration.nextElement();
+            if ("cookie".equalsIgnoreCase(headName)) {
                 continue;
             }
-            _errSB.append("\t  ").append(_headName).append(": ").append(JSON.toJSONString(WebContext.getRequest().getHeader(_headName))).append("\n");
+            stringBuilder.append("\t  ").append(headName).append(": ").append(JSON.toJSONString(WebContext.getRequest().getHeader(headName))).append("\n");
         }
-        _errSB.append("-- Cookies:").append("\n");
-        Cookie[] _cookies = WebContext.getRequest().getCookies();
-        if (_cookies != null) {
-            for (Cookie _cookie : _cookies) {
-                _errSB.append("\t  ").append(_cookie.getName()).append(": ").append(JSON.toJSONString(_cookie.getValue())).append("\n");
-            }
-        }
-        _errSB.append("-- Session:").append("\n");
-        for (Map.Entry<String, Object> _entry : WebContext.getContext().getSession().entrySet()) {
-            _errSB.append("\t  ").append(_entry.getKey()).append(": ").append(JSON.toJSONString(_entry.getValue())).append("\n");
-        }
-        _errSB.append(ExceptionProcessHelper.exceptionToString(e));
-        _errSB.append("-------------------------------------------------\n");
         //
-        return _errSB.toString();
+        stringBuilder.append("-- Cookies:").append("\n");
+        Cookie[] cookies = WebContext.getRequest().getCookies();
+        if (cookies != null) {
+            Arrays.stream(cookies).forEach(cookie -> stringBuilder.append("\t  ").append(cookie.getName()).append(": ").append(JSON.toJSONString(cookie.getValue())).append("\n"));
+        }
+        //
+        stringBuilder.append("-- Session:").append("\n");
+        WebContext.getContext().getSession().forEach((key, value) -> stringBuilder.append("\t  ").append(key).append(": ").append(JSON.toJSONString(value)).append("\n"));
+        //
+        stringBuilder.append(ExceptionProcessHelper.exceptionToString(e)).append("-------------------------------------------------\n");
+        //
+        return stringBuilder.toString();
     }
 }

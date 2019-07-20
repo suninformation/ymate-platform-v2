@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2018 the original author or authors.
+ * Copyright 2007-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,15 +26,14 @@ import java.io.IOException;
 
 /**
  * @author 刘镇 (suninformation@163.com) on 2018-12-04 17:27
- * @version 1.0
  */
 public class Dispatcher {
 
-    private String charsetEncoding;
+    private final String charsetEncoding;
 
-    private String contentType;
+    private final String contentType;
 
-    private String requestMethodParam;
+    private final String requestMethodParam;
 
     public Dispatcher(String charsetEncoding, String contentType, String requestMethodParam) {
         this.charsetEncoding = charsetEncoding;
@@ -42,11 +41,11 @@ public class Dispatcher {
         this.requestMethodParam = requestMethodParam;
     }
 
-    public void dispatch(IRequestContext _requestContext, ServletContext servletContext, HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+    public void dispatch(IRequestContext requestContext, ServletContext servletContext, HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         request.setCharacterEncoding(charsetEncoding);
         response.setCharacterEncoding(charsetEncoding);
         response.setContentType(contentType.concat("; charset=").concat(charsetEncoding));
         //
-        GenericDispatcher.create(WebMVC.get()).execute(_requestContext, servletContext, new RequestMethodWrapper(request, requestMethodParam), new GenericResponseWrapper(response));
+        GenericDispatcher.create(WebMVC.get()).execute(requestContext, servletContext, new RequestMethodWrapper(request, requestMethodParam), new GenericResponseWrapper(response));
     }
 }

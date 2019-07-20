@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2018 the original author or authors.
+ * Copyright 2007-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,28 +15,30 @@
  */
 package net.ymate.platform.core.handle;
 
-import net.ymate.platform.core.YMP;
+import net.ymate.platform.commons.util.ClassUtils;
 import net.ymate.platform.core.beans.BeanMeta;
 import net.ymate.platform.core.beans.IBeanHandler;
 import net.ymate.platform.core.beans.annotation.Interceptor;
 import net.ymate.platform.core.beans.intercept.IInterceptor;
+import net.ymate.platform.core.beans.intercept.InterceptAnnHelper;
+
+import java.lang.annotation.Annotation;
 
 /**
  * @author 刘镇 (suninformation@163.com) on 2018/7/30 下午10:02
- * @version 1.0
  */
 public final class InterceptorHandler implements IBeanHandler {
 
-    public InterceptorHandler(YMP owner) {
-        owner.registerExcludedClass(IInterceptor.class);
-    }
-
     @Override
-    public Object handle(Class<?> targetClass) throws Exception {
-        if (!targetClass.isInterface()) {
-            Interceptor _bean = targetClass.getAnnotation(Interceptor.class);
-            if (_bean != null) {
-                return BeanMeta.create(targetClass, _bean.singleton());
+    @SuppressWarnings("unchecked")
+    public Object handle(Class<?> targetClass) {
+        if (ClassUtils.isNormalClass(targetClass) && !targetClass.isInterface() && ClassUtils.isInterfaceOf(targetClass, IInterceptor.class)) {
+            Interceptor interceptorAnn = targetClass.getAnnotation(Interceptor.class);
+            if (interceptorAnn != null) {
+                if (!Annotation.class.equals(interceptorAnn.value())) {
+                    InterceptAnnHelper.registerInterceptAnnotation(interceptorAnn.value(), (Class<? extends IInterceptor>) targetClass);
+                }
+                return BeanMeta.create(targetClass, interceptorAnn.singleton());
             }
             return BeanMeta.create(targetClass);
         }

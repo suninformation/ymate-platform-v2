@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2017 the original author or authors.
+ * Copyright 2007-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,7 +18,7 @@ package net.ymate.platform.webmvc.view.impl;
 import net.ymate.platform.webmvc.context.WebContext;
 import net.ymate.platform.webmvc.view.AbstractView;
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import javax.servlet.http.HttpServletResponse;
 
@@ -26,18 +26,19 @@ import javax.servlet.http.HttpServletResponse;
  * HTTP返回码视图
  *
  * @author 刘镇 (suninformation@163.com) on 2011-10-29 上午02:26:25
- * @version 1.0
  */
 public class HttpStatusView extends AbstractView {
 
     /**
      * HTTP返回码
      */
-    private final int __status;
-    private final String __msg;
-    private final boolean __error;
+    private final int status;
 
-    private String __body;
+    private final String msg;
+
+    private final boolean error;
+
+    private String body;
 
     /**
      * STATUS: 405
@@ -68,9 +69,9 @@ public class HttpStatusView extends AbstractView {
      * @param status HTTP返回码
      */
     public HttpStatusView(int status) {
-        __status = status;
-        __msg = null;
-        __error = true;
+        this.status = status;
+        msg = null;
+        error = true;
     }
 
     /**
@@ -80,9 +81,9 @@ public class HttpStatusView extends AbstractView {
      * @param useError 是否使用sendError方法
      */
     public HttpStatusView(int status, boolean useError) {
-        __status = status;
-        __error = useError;
-        __msg = null;
+        this.status = status;
+        error = useError;
+        msg = null;
     }
 
     /**
@@ -92,9 +93,9 @@ public class HttpStatusView extends AbstractView {
      * @param msg    错误提示信息
      */
     public HttpStatusView(int status, String msg) {
-        __status = status;
-        __msg = msg;
-        __error = false;
+        this.status = status;
+        this.msg = msg;
+        error = false;
     }
 
     /**
@@ -104,23 +105,23 @@ public class HttpStatusView extends AbstractView {
      * @return 当前视图对象
      */
     public HttpStatusView writeBody(String bodyStr) {
-        __body = bodyStr;
+        body = bodyStr;
         return this;
     }
 
     @Override
-    protected void __doRenderView() throws Exception {
-        HttpServletResponse _response = WebContext.getResponse();
-        if (StringUtils.isNotBlank(__body)) {
-            IOUtils.write(__body, _response.getOutputStream(), _response.getCharacterEncoding());
+    protected void doRenderView() throws Exception {
+        HttpServletResponse httpServletResponse = WebContext.getResponse();
+        if (StringUtils.isNotBlank(body)) {
+            IOUtils.write(body, httpServletResponse.getOutputStream(), httpServletResponse.getCharacterEncoding());
         }
-        if (StringUtils.isNotBlank(__msg)) {
-            _response.sendError(__status, __msg);
+        if (StringUtils.isNotBlank(msg)) {
+            httpServletResponse.sendError(status, msg);
         } else {
-            if (__error) {
-                _response.sendError(__status);
+            if (error) {
+                httpServletResponse.sendError(status);
             } else {
-                _response.setStatus(__status);
+                httpServletResponse.setStatus(status);
             }
         }
     }

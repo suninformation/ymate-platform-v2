@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2017 the original author or authors.
+ * Copyright 2007-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,11 +15,11 @@
  */
 package net.ymate.platform.webmvc.support;
 
-import net.ymate.platform.core.YMP;
-import net.ymate.platform.core.module.IModule;
-import net.ymate.platform.core.util.RuntimeUtils;
+import net.ymate.platform.commons.util.RuntimeUtils;
+import net.ymate.platform.webmvc.IWebMvc;
 import net.ymate.platform.webmvc.WebEvent;
 import net.ymate.platform.webmvc.WebMVC;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -33,28 +33,25 @@ import javax.servlet.http.HttpSessionListener;
  * WebMVC框架初始化及上下文事件监听器(初始化YMP框架)
  *
  * @author 刘镇 (suninformation@163.com) on 2012-12-7 下午8:33:43
- * @version 1.0
  */
 public class WebAppEventListener implements ServletContextListener, ServletContextAttributeListener,
         HttpSessionListener, HttpSessionAttributeListener,
         ServletRequestListener, ServletRequestAttributeListener {
 
-    private static final Log _LOG = LogFactory.getLog(WebAppEventListener.class);
+    private static final Log LOG = LogFactory.getLog(WebAppEventListener.class);
 
-    private static boolean __isInited;
+    private static final IWebMvc OWNER;
+
+    private static final boolean INITIALIZED;
 
     static {
-        try {
-            YMP.get().init();
-            __isInited = YMP.get().isInited() && WebMVC.get() != null && ((IModule) WebMVC.get()).isInited();
-        } catch (Exception ex) {
-            _LOG.error("", RuntimeUtils.unwrapThrow(ex));
-        }
+        OWNER = WebMVC.get();
+        INITIALIZED = OWNER != null && OWNER.isInitialized();
     }
 
-    private void __doFireEvent(WebEvent.EVENT event, Object eventSource) {
-        if (__isInited) {
-            YMP.get().getEvents().fireEvent(new WebEvent(WebMVC.get(), event).addParamExtend(WebEvent.EVENT_SOURCE, eventSource));
+    private void doFireEvent(WebEvent.EVENT event, Object eventSource) {
+        if (INITIALIZED) {
+            OWNER.getOwner().getEvents().fireEvent(new WebEvent(WebMVC.get(), event).addParamExtend(WebEvent.EVENT_SOURCE, eventSource));
         }
     }
 
@@ -62,16 +59,20 @@ public class WebAppEventListener implements ServletContextListener, ServletConte
 
     @Override
     public void contextInitialized(ServletContextEvent sce) {
-        __doFireEvent(WebEvent.EVENT.SERVLET_CONTEXT_INITED, sce);
+        doFireEvent(WebEvent.EVENT.SERVLET_CONTEXT_INITIALIZED, sce);
     }
 
     @Override
     public void contextDestroyed(ServletContextEvent sce) {
-        __doFireEvent(WebEvent.EVENT.SERVLET_CONTEXT_DESTROYED, sce);
-        try {
-            YMP.get().destroy();
-        } catch (Exception ex) {
-            throw new RuntimeException(RuntimeUtils.unwrapThrow(ex));
+        doFireEvent(WebEvent.EVENT.SERVLET_CONTEXT_DESTROYED, sce);
+        if (INITIALIZED) {
+            try {
+                OWNER.getOwner().close();
+            } catch (Exception e) {
+                if (LOG.isWarnEnabled()) {
+                    LOG.warn(StringUtils.EMPTY, RuntimeUtils.unwrapThrow(e));
+                }
+            }
         }
     }
 
@@ -79,74 +80,74 @@ public class WebAppEventListener implements ServletContextListener, ServletConte
 
     @Override
     public void attributeAdded(ServletContextAttributeEvent scab) {
-        __doFireEvent(WebEvent.EVENT.SERVLET_CONTEXT_ATTR_ADDED, scab);
+        doFireEvent(WebEvent.EVENT.SERVLET_CONTEXT_ATTR_ADDED, scab);
     }
 
     @Override
     public void attributeRemoved(ServletContextAttributeEvent scab) {
-        __doFireEvent(WebEvent.EVENT.SERVLET_CONTEXT_ATTR_REMOVEED, scab);
+        doFireEvent(WebEvent.EVENT.SERVLET_CONTEXT_ATTR_REMOVED, scab);
     }
 
     @Override
     public void attributeReplaced(ServletContextAttributeEvent scab) {
-        __doFireEvent(WebEvent.EVENT.SERVLET_CONTEXT_ATTR_REPLACED, scab);
+        doFireEvent(WebEvent.EVENT.SERVLET_CONTEXT_ATTR_REPLACED, scab);
     }
 
     //// HttpSessionListener
 
     @Override
     public void sessionCreated(HttpSessionEvent se) {
-        __doFireEvent(WebEvent.EVENT.SESSION_CREATED, se);
+        doFireEvent(WebEvent.EVENT.SESSION_CREATED, se);
     }
 
     @Override
     public void sessionDestroyed(HttpSessionEvent se) {
-        __doFireEvent(WebEvent.EVENT.SESSION_DESTROYED, se);
+        doFireEvent(WebEvent.EVENT.SESSION_DESTROYED, se);
     }
 
     //// HttpSessionAttributeListener
 
     @Override
     public void attributeAdded(HttpSessionBindingEvent se) {
-        __doFireEvent(WebEvent.EVENT.SESSION_ATTR_ADDED, se);
+        doFireEvent(WebEvent.EVENT.SESSION_ATTR_ADDED, se);
     }
 
     @Override
     public void attributeRemoved(HttpSessionBindingEvent se) {
-        __doFireEvent(WebEvent.EVENT.SESSION_ATTR_REMOVEED, se);
+        doFireEvent(WebEvent.EVENT.SESSION_ATTR_REMOVED, se);
     }
 
     @Override
     public void attributeReplaced(HttpSessionBindingEvent se) {
-        __doFireEvent(WebEvent.EVENT.SESSION_ATTR_REPLACED, se);
+        doFireEvent(WebEvent.EVENT.SESSION_ATTR_REPLACED, se);
     }
 
     //// ServletRequestListener
 
     @Override
     public void requestInitialized(ServletRequestEvent sre) {
-        __doFireEvent(WebEvent.EVENT.REQUEST_INITED, sre);
+        doFireEvent(WebEvent.EVENT.REQUEST_INITIALIZED, sre);
     }
 
     @Override
     public void requestDestroyed(ServletRequestEvent sre) {
-        __doFireEvent(WebEvent.EVENT.REQUEST_DESTROYED, sre);
+        doFireEvent(WebEvent.EVENT.REQUEST_DESTROYED, sre);
     }
 
     //// ServletRequestAttributeListener
 
     @Override
     public void attributeAdded(ServletRequestAttributeEvent srae) {
-        __doFireEvent(WebEvent.EVENT.REQUEST_ATTR_ADDED, srae);
+        doFireEvent(WebEvent.EVENT.REQUEST_ATTR_ADDED, srae);
     }
 
     @Override
     public void attributeRemoved(ServletRequestAttributeEvent srae) {
-        __doFireEvent(WebEvent.EVENT.REQUEST_ATTR_REMOVEED, srae);
+        doFireEvent(WebEvent.EVENT.REQUEST_ATTR_REMOVED, srae);
     }
 
     @Override
     public void attributeReplaced(ServletRequestAttributeEvent srae) {
-        __doFireEvent(WebEvent.EVENT.REQUEST_ATTR_REPLACED, srae);
+        doFireEvent(WebEvent.EVENT.REQUEST_ATTR_REPLACED, srae);
     }
 }

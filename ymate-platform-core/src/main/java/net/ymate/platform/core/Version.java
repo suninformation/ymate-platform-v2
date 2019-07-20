@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2017 the original author or authors.
+ * Copyright 2007-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,14 +19,10 @@ package net.ymate.platform.core;
  * 版本信息描述类
  *
  * @author 刘镇 (suninformation@163.com) on 15/3/12 下午11:31
- * @version 1.0
  */
 public class Version {
 
     public enum VersionType {
-
-        @Deprecated
-        Alphal,
 
         /**
          * α（alpha） 内部测试版
@@ -81,11 +77,12 @@ public class Version {
         this.majorVersion = majorVersion;
         this.minorVersion = minorVersion;
         this.revisionNumber = revisionNumber;
-        if (buildNumber == null) {
-            buildNumber = Version.class.getPackage().getImplementationVersion();
-        }
-        this.buildNumber = buildNumber;
+        this.buildNumber = buildNumber != null ? buildNumber : Version.class.getPackage().getImplementationVersion();
         this.versionType = versionType;
+    }
+
+    public Version(Version parent, Class<?> targetClass) {
+        this(parent.getMajorVersion(), parent.getMinorVersion(), parent.getRevisionNumber(), (targetClass != null ? targetClass.getPackage().getImplementationVersion() : parent.getBuildNumber()), parent.getVersionType());
     }
 
     /**
@@ -122,16 +119,16 @@ public class Version {
 
     @Override
     public String toString() {
-        StringBuilder _versionSB = new StringBuilder()
+        StringBuilder stringBuilder = new StringBuilder()
                 .append(majorVersion).append(".")
                 .append(minorVersion).append(".")
                 .append(revisionNumber);
         if (versionType != null) {
-            _versionSB.append("-").append(versionType);
+            stringBuilder.append("-").append(versionType);
         }
         if (buildNumber != null) {
-            _versionSB.append(" build-").append(buildNumber);
+            stringBuilder.append(" build-").append(buildNumber);
         }
-        return _versionSB.toString();
+        return stringBuilder.toString();
     }
 }

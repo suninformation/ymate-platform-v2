@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2017 the original author or authors.
+ * Copyright 2007-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,91 +15,170 @@
  */
 package net.ymate.platform.core.event.impl;
 
+import net.ymate.platform.core.configuration.IConfigReader;
 import net.ymate.platform.core.event.Events;
 import net.ymate.platform.core.event.IEventConfig;
 import net.ymate.platform.core.event.IEventProvider;
-import net.ymate.platform.core.lang.BlurObject;
-import net.ymate.platform.core.util.ClassUtils;
-import org.apache.commons.lang.StringUtils;
-
-import java.util.Map;
+import net.ymate.platform.core.module.IModuleConfigurer;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * 默认事件配置
  *
  * @author 刘镇 (suninformation@163.com) on 15/5/17 下午4:06
- * @version 1.0
  */
 public final class DefaultEventConfig implements IEventConfig {
 
-    private IEventProvider __eventProvider;
+    private IEventProvider eventProvider;
 
-    private Events.MODE __defaultMode;
+    private Events.MODE defaultMode;
 
-    private int __threadPoolSize;
+    private int threadPoolSize;
 
-    private int __threadMaxPoolSize;
+    private int threadMaxPoolSize;
 
-    private int __threadQueueSize;
+    private int threadQueueSize;
 
-    public DefaultEventConfig() {
-        this(null);
+    private boolean initialized;
+
+    public static IEventConfig defaultConfig() {
+        return new DefaultEventConfig();
     }
 
-    public DefaultEventConfig(Map<String, String> params) {
-        if (params == null || params.isEmpty()) {
-            __eventProvider = new DefaultEventProvider();
-            __defaultMode = Events.MODE.ASYNC;
-            __threadPoolSize = Runtime.getRuntime().availableProcessors();
-            __threadMaxPoolSize = 200;
-            __threadQueueSize = 1024;
-        } else {
-            __eventProvider = ClassUtils.impl(params.get(PROVIDER_CLASS), IEventProvider.class, this.getClass());
-            if (__eventProvider == null) {
-                __eventProvider = new DefaultEventProvider();
-            }
-            //
-            __defaultMode = Events.MODE.valueOf(StringUtils.defaultIfBlank(params.get(DEFAULT_MODE), Events.MODE.ASYNC.name()).toUpperCase());
-            //
-            __threadPoolSize = BlurObject.bind(params.get(THREAD_POOL_SIZE)).toIntValue();
-            if (__threadPoolSize <= 0) {
-                __threadPoolSize = Runtime.getRuntime().availableProcessors();
-            }
-            //
-            __threadMaxPoolSize = BlurObject.bind(params.get(THREAD_MAX_POOL_SIZE)).toIntValue();
-            if (__threadMaxPoolSize <= 0) {
-                __threadMaxPoolSize = 200;
-            }
-            //
-            __threadQueueSize = BlurObject.bind(params.get(THREAD_QUEUE_SIZE)).toIntValue();
-            if (__threadQueueSize <= 0) {
-                __threadQueueSize = 1024;
+    public static IEventConfig create(IModuleConfigurer moduleConfigurer) {
+        return new DefaultEventConfig(moduleConfigurer);
+    }
+
+    public static Builder builder() {
+        return new Builder();
+    }
+
+    private DefaultEventConfig() {
+    }
+
+    private DefaultEventConfig(IModuleConfigurer moduleConfigurer) {
+        if (moduleConfigurer != null) {
+            IConfigReader configReader = moduleConfigurer.getConfigReader();
+            if (configReader != null && !configReader.toMap().isEmpty()) {
+                this.eventProvider = configReader.getClassImpl(PROVIDER_CLASS, IEventProvider.class);
+                String defaultModeStr = configReader.getString(DEFAULT_MODE);
+                if (StringUtils.isNotBlank(defaultModeStr)) {
+                    this.defaultMode = Events.MODE.valueOf(defaultModeStr.toUpperCase());
+                }
+                this.threadPoolSize = configReader.getInt(THREAD_POOL_SIZE);
+                this.threadMaxPoolSize = configReader.getInt(THREAD_MAX_POOL_SIZE);
+                this.threadQueueSize = configReader.getInt(THREAD_QUEUE_SIZE);
             }
         }
     }
 
     @Override
+    public void initialize() {
+        if (!initialized) {
+            this.eventProvider = eventProvider != null ? eventProvider : new DefaultEventProvider();
+            this.defaultMode = defaultMode != null ? defaultMode : Events.MODE.ASYNC;
+            this.threadPoolSize = threadPoolSize > 0 ? threadPoolSize : Runtime.getRuntime().availableProcessors();
+            this.threadMaxPoolSize = threadMaxPoolSize > 0 ? threadMaxPoolSize : 200;
+            this.threadQueueSize = threadQueueSize > 0 ? threadQueueSize : 1024;
+            //
+            initialized = true;
+        }
+    }
+
+    @Override
+    public boolean isInitialized() {
+        return initialized;
+    }
+
+    @Override
     public IEventProvider getEventProvider() {
-        return __eventProvider;
+        return eventProvider;
+    }
+
+    public void setEventProvider(IEventProvider eventProvider) {
+        if (!initialized) {
+            this.eventProvider = eventProvider;
+        }
     }
 
     @Override
     public Events.MODE getDefaultMode() {
-        return __defaultMode;
+        return defaultMode;
+    }
+
+    public void setDefaultMode(Events.MODE defaultMode) {
+        if (!initialized) {
+            this.defaultMode = defaultMode;
+        }
     }
 
     @Override
     public int getThreadPoolSize() {
-        return __threadPoolSize;
+        return threadPoolSize;
+    }
+
+    public void setThreadPoolSize(int threadPoolSize) {
+        if (!initialized) {
+            this.threadPoolSize = threadPoolSize;
+        }
     }
 
     @Override
     public int getThreadMaxPoolSize() {
-        return __threadMaxPoolSize;
+        return threadMaxPoolSize;
+    }
+
+    public void setThreadMaxPoolSize(int threadMaxPoolSize) {
+        if (!initialized) {
+            this.threadMaxPoolSize = threadMaxPoolSize;
+        }
     }
 
     @Override
     public int getThreadQueueSize() {
-        return __threadQueueSize;
+        return threadQueueSize;
+    }
+
+    public void setThreadQueueSize(int threadQueueSize) {
+        if (!initialized) {
+            this.threadQueueSize = threadQueueSize;
+        }
+    }
+
+    public static final class Builder {
+
+        private final DefaultEventConfig config = new DefaultEventConfig();
+
+        private Builder() {
+        }
+
+        public Builder eventProvider(IEventProvider eventProvider) {
+            config.setEventProvider(eventProvider);
+            return this;
+        }
+
+        public Builder defaultMode(Events.MODE defaultMode) {
+            config.setDefaultMode(defaultMode);
+            return this;
+        }
+
+        public Builder threadPoolSize(int threadPoolSize) {
+            config.setThreadPoolSize(threadPoolSize);
+            return this;
+        }
+
+        public Builder threadMaxPoolSize(int threadMaxPoolSize) {
+            config.setThreadMaxPoolSize(threadMaxPoolSize);
+            return this;
+        }
+
+        public Builder threadQueueSize(int threadQueueSize) {
+            config.setThreadQueueSize(threadQueueSize);
+            return this;
+        }
+
+        public IEventConfig build() {
+            return config;
+        }
     }
 }

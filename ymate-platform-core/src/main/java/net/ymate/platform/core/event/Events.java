@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2017 the original author or authors.
+ * Copyright 2007-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,16 +15,18 @@
  */
 package net.ymate.platform.core.event;
 
-import net.ymate.platform.core.YMP;
+import net.ymate.platform.core.IApplication;
+import net.ymate.platform.core.IApplicationConfigurer;
 import net.ymate.platform.core.event.impl.DefaultEventConfig;
 
 /**
  * 事件管理器
  *
  * @author 刘镇 (suninformation@163.com) on 15/5/16 上午2:15
- * @version 1.0
  */
 public final class Events {
+
+    public static final String MODULE_NAME = "event";
 
     /**
      * 事件触发模式枚举
@@ -41,67 +43,61 @@ public final class Events {
         ASYNC
     }
 
-    private final YMP __owner;
+    private final IEventConfig eventConfig;
 
-    private final IEventProvider __eventProvider;
-
-    public static Events create(YMP owner) {
-        return new Events(owner);
+    public Events(IApplication owner) {
+        IApplicationConfigurer configurer = owner.getConfigurer();
+        this.eventConfig = configurer != null ? DefaultEventConfig.create(configurer.getModuleConfigurer(Events.MODULE_NAME)) : DefaultEventConfig.defaultConfig();
     }
 
-    public static Events create(YMP owner, IEventConfig eventConfig) {
-        return new Events(owner, eventConfig);
+    public void initialize() {
+        if (!eventConfig.isInitialized()) {
+            eventConfig.initialize();
+        }
+        if (!eventConfig.getEventProvider().isInitialized()) {
+            this.eventConfig.getEventProvider().initialize(eventConfig);
+        }
     }
 
-    private Events(YMP owner) {
-        this(owner, new DefaultEventConfig());
-    }
-
-    private Events(YMP owner, IEventConfig eventConfig) {
-        __owner = owner;
-        __eventProvider = eventConfig.getEventProvider();
-        __eventProvider.init(eventConfig);
-    }
-
-    public YMP getOwner() {
-        return __owner;
+    public boolean isInitialized() {
+        return eventConfig.isInitialized();
     }
 
     public void destroy() {
-        __eventProvider.destroy();
+        this.eventConfig.getEventProvider().destroy();
     }
 
     @SuppressWarnings("unchecked")
     public Events registerEvent(Class<? extends IEvent> eventClass) {
-        __eventProvider.registerEvent(eventClass);
+        this.eventConfig.getEventProvider().registerEvent(eventClass);
         return this;
     }
 
     @SuppressWarnings("unchecked")
     public boolean unregisterEvent(Class<? extends IEvent> eventClass) {
-        return __eventProvider.unregisterEvent(eventClass);
+        return this.eventConfig.getEventProvider().unregisterEvent(eventClass);
     }
 
     @SuppressWarnings("unchecked")
-    public <CONTEXT extends EventContext> Events registerListener(Class<? extends IEvent> eventClass, IEventListener<CONTEXT> eventListener) {
-        __eventProvider.registerListener(eventClass, eventListener);
+    public <CONTEXT extends AbstractEventContext> Events registerListener(Class<? extends IEvent> eventClass, IEventListener<CONTEXT> eventListener) {
+        this.eventConfig.getEventProvider().registerListener(eventClass, eventListener);
         return this;
     }
 
     @SuppressWarnings("unchecked")
-    public <CONTEXT extends EventContext> Events registerListener(Events.MODE mode, Class<? extends IEvent> eventClass, IEventListener<CONTEXT> eventListener) {
-        __eventProvider.registerListener(mode, eventClass, eventListener);
+    public <CONTEXT extends AbstractEventContext> Events registerListener(MODE mode, Class<? extends IEvent> eventClass, IEventListener<CONTEXT> eventListener) {
+        this.eventConfig.getEventProvider().registerListener(mode, eventClass, eventListener);
         return this;
     }
 
     @SuppressWarnings("unchecked")
     public boolean unregisterListener(Class<? extends IEvent> eventClass, Class<? extends IEventListener> listenerClass) {
-        return __eventProvider.unregisterListener(eventClass, listenerClass);
+        return this.eventConfig.getEventProvider().unregisterListener(eventClass, listenerClass);
     }
 
     @SuppressWarnings("unchecked")
-    public <CONTEXT extends EventContext> Events fireEvent(CONTEXT context) {
-        __eventProvider.fireEvent(context);
+    public <CONTEXT extends AbstractEventContext> Events fireEvent(CONTEXT context) {
+        this.eventConfig.getEventProvider().fireEvent(context);
         return this;
     }
 }

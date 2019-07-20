@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2017 the original author or authors.
+ * Copyright 2007-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,7 +15,8 @@
  */
 package net.ymate.platform.plugin.impl;
 
-import net.ymate.platform.core.util.ClassUtils;
+import net.ymate.platform.commons.util.ClassUtils;
+import net.ymate.platform.plugin.IPluginBeanLoaderFactory;
 import net.ymate.platform.plugin.IPluginConfig;
 import net.ymate.platform.plugin.IPluginEventListener;
 import net.ymate.platform.plugin.IPluginFactory;
@@ -24,131 +25,165 @@ import net.ymate.platform.plugin.annotation.PluginFactory;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 /**
  * 默认插件初始化配置接口实现
  *
  * @author 刘镇 (suninformation@163.com) on 15/3/22 下午5:02
- * @version 1.0
  */
-public class DefaultPluginConfig implements IPluginConfig {
-
-    public static Builder create() {
-        return new Builder();
-    }
+public final class DefaultPluginConfig implements IPluginConfig {
 
     /**
      * @param pluginHome   插件根路径
-     * @param autoPackages 自动扫描包路径
+     * @param packageNames 自动扫描包路径
      * @return 创建默认插件工厂初始化配置
-     * @throws Exception 加载配置可能产生的异常
      */
-    public static IPluginConfig load(String pluginHome, String[] autoPackages) throws Exception {
-        return create().pluginHome(new File(pluginHome))
-                .autoscanPackages(Arrays.asList(autoPackages)).build();
+    public static IPluginConfig load(String pluginHome, String[] packageNames) {
+        return builder().pluginHome(new File(pluginHome)).packageNames(Arrays.asList(packageNames)).build();
     }
 
     /**
      * @param clazz 插件工厂类
      * @return 通过注解分析插件工厂初始化配置
-     * @throws Exception 加载配置可能产生的异常
      */
-    public static IPluginConfig load(Class<? extends IPluginFactory> clazz) throws Exception {
+    public static IPluginConfig load(Class<? extends IPluginFactory> clazz) {
         if (clazz != null && clazz.isAnnotationPresent(PluginFactory.class)) {
-            PluginFactory _factoryAnno = clazz.getAnnotation(PluginFactory.class);
-            //
-            Builder _builder = create().pluginHome(new File(_factoryAnno.pluginHome()))
-                    .autoscanPackages(Arrays.asList(_factoryAnno.autoscanPackages()))
-                    .automatic(_factoryAnno.automatic());
-            IPluginEventListener _listener = ClassUtils.impl(_factoryAnno.listenerClass(), IPluginEventListener.class);
-            if (_listener != null) {
-                _builder.eventListener(_listener);
+            PluginFactory factoryAnn = clazz.getAnnotation(PluginFactory.class);
+            Builder builder = builder()
+                    .pluginHome(new File(factoryAnn.pluginHome()))
+                    .packageNames(Arrays.asList(factoryAnn.packageNames()))
+                    .automatic(factoryAnn.automatic());
+            IPluginEventListener pluginEventListener = ClassUtils.impl(factoryAnn.listenerClass(), IPluginEventListener.class);
+            if (pluginEventListener != null) {
+                builder.eventListener(pluginEventListener);
             } else {
-                _builder.eventListener(new DefaultPluginEventListener());
+                builder.eventListener(new DefaultPluginEventListener());
             }
-            return _builder.build();
+            IPluginBeanLoaderFactory loaderFactory = ClassUtils.impl(factoryAnn.loaderFactoryClass(), IPluginBeanLoaderFactory.class);
+            if (loaderFactory != null) {
+                builder.beanLoaderFactory(loaderFactory);
+            } else {
+                builder.beanLoaderFactory(new DefaultPluginBeanLoaderFactory());
+            }
+            return builder.build();
         }
         return null;
     }
 
-    private List<String> __packageNames = new ArrayList<String>();
+    public static Builder builder() {
+        return new Builder();
+    }
 
-    private IPluginEventListener __pluginEventListener;
+    private final List<String> packageNames = new ArrayList<>();
 
-    private boolean __automatic;
+    private IPluginEventListener pluginEventListener;
 
-    private File __pluginHome;
+    private IPluginBeanLoaderFactory pluginBeanLoaderFactory;
 
-    public DefaultPluginConfig() {
+    private boolean automatic;
+
+    private boolean enabled = true;
+
+    private File pluginHome;
+
+    private DefaultPluginConfig() {
     }
 
     @Override
-    public List<String> getAutoscanPackages() {
-        return __packageNames;
+    public List<String> getPackageNames() {
+        return Collections.unmodifiableList(packageNames);
     }
 
-    public void addAutoscanPackages(List<String> autoscanPackages) {
-        for (String _package : autoscanPackages) {
-            if (!__packageNames.contains(_package)) {
-                __packageNames.add(_package);
-            }
-        }
+    public void addPackageNames(List<String> packageNames) {
+        packageNames.stream().filter(packageName -> !this.packageNames.contains(packageName)).forEach(this.packageNames::add);
     }
 
     @Override
     public IPluginEventListener getPluginEventListener() {
-        return __pluginEventListener;
+        return pluginEventListener;
     }
 
     public void setPluginEventListener(IPluginEventListener pluginEventListener) {
-        this.__pluginEventListener = pluginEventListener;
+        this.pluginEventListener = pluginEventListener;
+    }
+
+    @Override
+    public IPluginBeanLoaderFactory getPluginBeanLoaderFactory() {
+        return pluginBeanLoaderFactory;
+    }
+
+    public void setPluginBeanLoaderFactory(IPluginBeanLoaderFactory pluginBeanLoaderFactory) {
+        this.pluginBeanLoaderFactory = pluginBeanLoaderFactory;
     }
 
     @Override
     public boolean isAutomatic() {
-        return __automatic;
+        return automatic;
     }
 
     public void setAutomatic(boolean automatic) {
-        this.__automatic = automatic;
+        this.automatic = automatic;
+    }
+
+    @Override
+    public boolean isEnabled() {
+        return enabled;
+    }
+
+    public void setEnabled(boolean enabled) {
+        this.enabled = enabled;
     }
 
     @Override
     public File getPluginHome() {
-        return __pluginHome;
+        return pluginHome;
     }
 
     public void setPluginHome(File pluginHome) {
-        this.__pluginHome = pluginHome;
+        this.pluginHome = pluginHome;
     }
 
-    public static class Builder {
+    public static final class Builder {
 
-        private DefaultPluginConfig __config = new DefaultPluginConfig();
+        private final DefaultPluginConfig pluginConfig = new DefaultPluginConfig();
 
-        public Builder autoscanPackages(List<String> autoscanPackages) {
-            __config.addAutoscanPackages(autoscanPackages);
+        private Builder() {
+        }
+
+        public Builder packageNames(List<String> packageNames) {
+            pluginConfig.addPackageNames(packageNames);
             return this;
         }
 
         public Builder eventListener(IPluginEventListener eventListener) {
-            __config.setPluginEventListener(eventListener);
+            pluginConfig.setPluginEventListener(eventListener);
+            return this;
+        }
+
+        public Builder beanLoaderFactory(IPluginBeanLoaderFactory beanLoaderFactory) {
+            pluginConfig.setPluginBeanLoaderFactory(beanLoaderFactory);
             return this;
         }
 
         public Builder automatic(boolean automatic) {
-            __config.setAutomatic(automatic);
+            pluginConfig.setAutomatic(automatic);
+            return this;
+        }
+
+        public Builder enabled(boolean enabled) {
+            pluginConfig.setEnabled(enabled);
             return this;
         }
 
         public Builder pluginHome(File pluginHome) {
-            __config.setPluginHome(pluginHome);
+            pluginConfig.setPluginHome(pluginHome);
             return this;
         }
 
         public IPluginConfig build() {
-            return __config;
+            return pluginConfig;
         }
     }
 }

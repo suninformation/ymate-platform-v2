@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2017 the original author or authors.
+ * Copyright 2007-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,54 +15,38 @@
  */
 package net.ymate.platform.core.serialize;
 
-import net.ymate.platform.core.serialize.impl.DefaultSerializer;
-import net.ymate.platform.core.serialize.impl.JSONSerializer;
-import org.apache.commons.lang.StringUtils;
-
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
+import net.ymate.platform.core.beans.annotation.Ignored;
 
 /**
  * @author 刘镇 (suninformation@163.com) on 2017/10/3 下午3:52
- * @version 1.0
  */
+@Ignored
 public interface ISerializer {
 
+    /**
+     * 获取序列化后的ContentType类型
+     *
+     * @return 返回ContentType类型字符串
+     */
     String getContentType();
 
+    /**
+     * 序列号对象
+     *
+     * @param object 待序列化对象
+     * @return 返回序列化后的字节数组
+     * @throws Exception 可能产生的任何异常
+     */
     byte[] serialize(Object object) throws Exception;
 
+    /**
+     * 反序列化对象
+     *
+     * @param bytes 待反序列化字节数组
+     * @param clazz 序列化目标类型
+     * @param <T>   类泛型
+     * @return 返回反序列化后的类对象
+     * @throws Exception 可能产生的任何异常
+     */
     <T> T deserialize(byte[] bytes, Class<T> clazz) throws Exception;
-
-    class SerializerManager {
-
-        private static final Map<String, ISerializer> __serializers = new ConcurrentHashMap<String, ISerializer>();
-
-        static {
-            __serializers.put("default", new DefaultSerializer());
-            __serializers.put("json", new JSONSerializer());
-        }
-
-        public static void registerSerializer(String name, Class<? extends ISerializer> targetClass) throws Exception {
-            String _key = StringUtils.defaultIfBlank(name, targetClass.getName()).toLowerCase();
-            if (!__serializers.containsKey(_key)) {
-                __serializers.put(_key, targetClass.newInstance());
-            }
-        }
-
-        public static ISerializer getDefaultSerializer() {
-            return getSerializer("default");
-        }
-
-        public static ISerializer getJSONSerializer() {
-            return getSerializer("json");
-        }
-
-        public static ISerializer getSerializer(String name) {
-            if (StringUtils.isBlank(name)) {
-                return null;
-            }
-            return __serializers.get(name.toLowerCase());
-        }
-    }
 }

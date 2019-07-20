@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2018 the original author or authors.
+ * Copyright 2007-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,53 +24,54 @@ import java.util.Map;
  * 会话包装器类
  *
  * @author 刘镇 (suninformation@163.com) on 2018/11/13 12:05 AM
- * @version 1.0
  */
 public class NioSessionWrapper extends AbstractSessionWrapper<INioSession, String> {
 
-    private INioSession __session;
+    private static final long serialVersionUID = 1L;
+
+    private final INioSession session;
 
     public NioSessionWrapper(INioSession session) {
-        __session = session;
+        this.session = session;
     }
 
     @Override
     public String getId() {
-        return __session.id();
+        return session.id();
     }
 
     @Override
     public INioSession getSession() {
-        return __session;
+        return session;
     }
 
     @Override
     public Map<String, Object> getAttributes() {
-        return __session.attrs();
+        return session.attrs();
     }
 
     @Override
     public <T> T getAttribute(String attrKey) {
-        return __session.attr(attrKey);
+        return session.attr(attrKey);
     }
 
     @Override
     public void addAttribute(String attrKey, Object attrValue) {
-        __session.attr(attrKey, attrValue);
+        session.attr(attrKey, attrValue);
     }
 
     @Override
     public void touch() {
-        __session.touch();
+        session.touch();
     }
 
     @Override
     public long getLastTouchTime() {
-        return __session.lastTouchTime();
+        return session.lastTouchTime();
     }
 
     @Override
     public String toString() {
-        return "NioSessionWrapper {" + "__session=" + __session + ", __lastTouchTime=" + getLastTouchTime() + '}';
+        return String.format("NioSessionWrapper {session=%s, lastTouchTime=%d}", session, getLastTouchTime());
     }
 }

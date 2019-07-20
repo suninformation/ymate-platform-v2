@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2017 the original author or authors.
+ * Copyright 2007-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,13 +15,14 @@
  */
 package net.ymate.platform.core.beans.intercept;
 
+import net.ymate.platform.commons.util.ClassUtils;
 import net.ymate.platform.core.beans.annotation.After;
 import net.ymate.platform.core.beans.annotation.Around;
 import net.ymate.platform.core.beans.annotation.Before;
 import net.ymate.platform.core.beans.annotation.ContextParam;
-import net.ymate.platform.core.util.ClassUtils;
-import net.ymate.platform.core.util.RuntimeUtils;
-import org.apache.commons.lang.StringUtils;
+import net.ymate.platform.core.configuration.IConfigReader;
+import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -32,87 +33,129 @@ import java.util.*;
  * 拦截器全局规则设置
  *
  * @author 刘镇 (suninformation@163.com) on 17/4/9 上午12:18
- * @version 1.0
  */
-public class InterceptSettings {
+public final class InterceptSettings {
 
-    private static final Log _LOG = LogFactory.getLog(InterceptSettings.class);
+    private static final Log LOG = LogFactory.getLog(InterceptSettings.class);
 
-    private final Map<String, InterceptPackageMeta> __packages;
+    private static final String SETTINGS_ENABLED = "settings_enabled";
 
-    private final List<Class<? extends IInterceptor>> __globals;
+    private static final String PACKAGES_PREFIX = "packages.";
 
-    private final Map<String, InterceptSettingMeta> __settings;
+    private static final String GLOBALS_PREFIX = "globals.";
 
-    public InterceptSettings() {
-        __packages = new HashMap<String, InterceptPackageMeta>();
-        __globals = new ArrayList<Class<? extends IInterceptor>>();
-        __settings = new HashMap<String, InterceptSettingMeta>();
+    private static final String SETTINGS_PREFIX = "settings.";
+
+    private boolean enabled;
+
+    private final Set<Class<? extends IInterceptor>> globals = new HashSet<>();
+
+    private final Map<String, InterceptPackageMeta> packageMetaMap = new HashMap<>();
+
+    private final Map<String, InterceptSettingMeta> settingMetaMap = new HashMap<>();
+
+    public static InterceptSettings create() {
+        return new InterceptSettings();
+    }
+
+    public static InterceptSettings create(IConfigReader configReader) {
+        InterceptSettings interceptSettings = new InterceptSettings();
+        if (configReader != null && !configReader.toMap().isEmpty()) {
+            interceptSettings.setEnabled(configReader.getBoolean(SETTINGS_ENABLED));
+            if (interceptSettings.isEnabled()) {
+                configReader.getMap(PACKAGES_PREFIX).forEach((key, value) -> interceptSettings.registerInterceptPackage(key, InterceptSetting.create(StringUtils.split(value, "|"))));
+                configReader.getMap(SETTINGS_PREFIX).forEach((key, value) -> interceptSettings.registerInterceptSettings(key, InterceptSetting.create(StringUtils.split(value, "|"))));
+                configReader.getMap(GLOBALS_PREFIX).forEach((key, value) -> {
+                    if (StringUtils.equalsIgnoreCase(value, "disabled")) {
+                        interceptSettings.registerInterceptGlobal(StringUtils.substringBefore(key, "#"));
+                    }
+                });
+            }
+        }
+        return interceptSettings;
+    }
+
+    @SuppressWarnings("unchecked")
+    public static Class<? extends IInterceptor> loadInterceptorClass(String className) {
+        try {
+            Class<?> clazz = ClassUtils.loadClass(className, InterceptSettings.class);
+            if (ClassUtils.isInterfaceOf(clazz, IInterceptor.class)) {
+                return (Class<? extends IInterceptor>) clazz;
+            }
+        } catch (ClassNotFoundException e) {
+            if (LOG.isWarnEnabled()) {
+                LOG.warn(String.format("Interceptor class not found: %s", className));
+            }
+        }
+        return null;
+    }
+
+    private InterceptSettings() {
+    }
+
+    public boolean isEnabled() {
+        return enabled;
+    }
+
+    public void setEnabled(boolean enabled) {
+        this.enabled = enabled;
     }
 
     public void registerInterceptPackage(Class<?> targetClass) {
         if (targetClass != null) {
-            Package _package = targetClass.getPackage();
-            if (_package != null) {
-                Around _around = _package.getAnnotation(Around.class);
-                Before _before = _package.getAnnotation(Before.class);
-                After _after = _package.getAnnotation(After.class);
-                if (_around != null || _before != null || _after != null) {
-                    InterceptPackageMeta _meta = __packages.get(_package.getName());
-                    if (_meta == null) {
-                        _meta = new InterceptPackageMeta(_package.getName());
-                        __packages.put(_package.getName(), _meta);
+            Package classPackage = targetClass.getPackage();
+            if (classPackage != null) {
+                Around aroundAnn = classPackage.getAnnotation(Around.class);
+                Before beforeAnn = classPackage.getAnnotation(Before.class);
+                After afterAnn = classPackage.getAnnotation(After.class);
+                if (aroundAnn != null || beforeAnn != null || afterAnn != null) {
+                    InterceptPackageMeta packageMeta = packageMetaMap.get(classPackage.getName());
+                    if (packageMeta == null) {
+                        packageMeta = new InterceptPackageMeta(classPackage.getName());
+                        packageMetaMap.put(classPackage.getName(), packageMeta);
                     }
-                    if (_around != null && _around.value().length > 0) {
-                        List<Class<? extends IInterceptor>> _intercepts = Arrays.asList(_around.value());
-                        _meta.beforeIntercepts.addAll(_intercepts);
-                        _meta.afterIntercepts.addAll(_intercepts);
+                    if (aroundAnn != null && aroundAnn.value().length > 0) {
+                        List<Class<? extends IInterceptor>> intercepts = Arrays.asList(aroundAnn.value());
+                        packageMeta.beforeIntercepts.addAll(intercepts);
+                        packageMeta.afterIntercepts.addAll(intercepts);
                     }
-                    if (_before != null && _before.value().length > 0) {
-                        _meta.beforeIntercepts.addAll(Arrays.asList(_before.value()));
+                    if (beforeAnn != null && beforeAnn.value().length > 0) {
+                        packageMeta.beforeIntercepts.addAll(Arrays.asList(beforeAnn.value()));
                     }
-                    if (_after != null && _after.value().length > 0) {
-                        _meta.afterIntercepts.addAll(Arrays.asList(_after.value()));
+                    if (afterAnn != null && afterAnn.value().length > 0) {
+                        packageMeta.afterIntercepts.addAll(Arrays.asList(afterAnn.value()));
                     }
                     //
-                    ContextParam _ctxParam = _package.getAnnotation(ContextParam.class);
-                    if (_ctxParam != null) {
-                        _meta.getContextParams().add(_ctxParam);
+                    ContextParam contextParamAnn = classPackage.getAnnotation(ContextParam.class);
+                    if (contextParamAnn != null) {
+                        packageMeta.contextParams.add(contextParamAnn);
                     }
                 }
             }
         }
     }
 
-    public void registerInterceptPackage(String name, String setting) {
-        if (StringUtils.isNotBlank(name) && StringUtils.isNotBlank(setting)) {
-            InterceptPackageMeta _meta = __packages.get(name);
-            if (_meta == null) {
-                _meta = new InterceptPackageMeta(name);
-                __packages.put(name, _meta);
+    public void registerInterceptPackage(String packageName, InterceptSetting... settings) {
+        if (StringUtils.isNotBlank(packageName) && ArrayUtils.isNotEmpty(settings)) {
+            InterceptPackageMeta packageMeta = packageMetaMap.get(packageName);
+            if (packageMeta == null) {
+                packageMeta = new InterceptPackageMeta(packageName);
+                packageMetaMap.put(packageName, packageMeta);
             }
-            String[] _settingArr = StringUtils.split(setting, "|");
-            if (_settingArr != null) {
-                for (String _item : _settingArr) {
-                    String[] _itemArr = StringUtils.split(_item, ":");
-                    if (_itemArr != null) {
-                        if (_itemArr.length == 1) {
-                            Class<? extends IInterceptor> _class = __doGetInterceptorClass(_itemArr[0]);
-                            if (_class != null) {
-                                _meta.beforeIntercepts.add(_class);
-                                _meta.afterIntercepts.add(_class);
-                            }
-                        } else if (StringUtils.equalsIgnoreCase(_itemArr[0], "before")) {
-                            Class<? extends IInterceptor> _class = __doGetInterceptorClass(_itemArr[1]);
-                            if (_class != null) {
-                                _meta.beforeIntercepts.add(_class);
-                            }
-                        } else if (StringUtils.equalsIgnoreCase(_itemArr[0], "after")) {
-                            Class<? extends IInterceptor> _class = __doGetInterceptorClass(_itemArr[1]);
-                            if (_class != null) {
-                                _meta.afterIntercepts.add(_class);
-                            }
-                        }
+            for (InterceptSetting setting : settings) {
+                if (setting.isValid()) {
+                    switch (setting.getType()) {
+                        case ADD_ALL:
+                            packageMeta.beforeIntercepts.add(setting.getInterceptorClass());
+                            packageMeta.afterIntercepts.add(setting.getInterceptorClass());
+                            break;
+                        case ADD_BEFORE:
+                            packageMeta.beforeIntercepts.add(setting.getInterceptorClass());
+                            break;
+                        case ADD_AFTER:
+                            packageMeta.afterIntercepts.add(setting.getInterceptorClass());
+                            break;
+                        default:
                     }
                 }
             }
@@ -120,139 +163,93 @@ public class InterceptSettings {
     }
 
     public void registerInterceptGlobal(String className) {
-        Class<? extends IInterceptor> _interceptor = __doGetInterceptorClass(className);
-        if (_interceptor != null) {
-            __globals.add(_interceptor);
+        Class<? extends IInterceptor> clazz = loadInterceptorClass(className);
+        if (clazz != null) {
+            globals.add(clazz);
         }
     }
 
-    public void registerInterceptSetting(String name, String setting) {
-        String[] _nameArr = StringUtils.split(name, "#");
-        if (_nameArr != null) {
-            InterceptSettingMeta _meta = new InterceptSettingMeta();
-            _meta.className = _nameArr[0];
-            if (_nameArr.length > 1) {
-                _meta.methodName = _nameArr[1];
+    public void registerInterceptSettings(String name, InterceptSetting... settings) {
+        String[] nameArr = StringUtils.split(name, "#");
+        if (nameArr != null && ArrayUtils.isNotEmpty(settings)) {
+            InterceptSettingMeta settingMeta = new InterceptSettingMeta();
+            settingMeta.className = nameArr[0];
+            if (nameArr.length > 1) {
+                settingMeta.methodName = nameArr[1];
             }
-            //
-            String[] _settingArr = StringUtils.split(setting, "|");
-            if (_settingArr != null) {
-                for (String _item : _settingArr) {
-                    String[] _itemArr = StringUtils.split(_item, ":");
-                    if (_itemArr != null) {
-                        if (_itemArr.length == 1) {
-                            if (StringUtils.equals(_itemArr[0], "*")) {
-                                // 表示当前类或方法上的所有拦截器禁用, 则后续规则中只处理增加拦截器逻辑
-                                _meta.cleanAll = true;
-                                //
-                                _meta.beforeCleanIntercepts.clear();
-                                _meta.afterCleanIntercepts.clear();
-                            } else if (StringUtils.endsWith(_itemArr[0], "+")) {
-                                Class<? extends IInterceptor> _class = __doGetInterceptorClass(StringUtils.substringBefore(_itemArr[0], "+"));
-                                if (_class != null) {
-                                    // 增加新的前置和后置拦截器
-                                    _meta.beforeIntercepts.add(_class);
-                                    _meta.afterIntercepts.add(_class);
-                                }
-                            } else if (!_meta.cleanAll && StringUtils.endsWith(_itemArr[0], "-")) {
-                                Class<? extends IInterceptor> _class = __doGetInterceptorClass(StringUtils.substringBefore(_itemArr[0], "-"));
-                                if (_class != null) {
-                                    // 禁止前置和后置拦截器
-                                    _meta.beforeCleanIntercepts.add(_class.getName());
-                                    _meta.afterCleanIntercepts.add(_class.getName());
-                                }
-                            } else {
-                                Class<? extends IInterceptor> _class = __doGetInterceptorClass(_itemArr[0]);
-                                if (_class != null) {
-                                    // 增加新的前置和后置拦截器
-                                    _meta.beforeIntercepts.add(_class);
-                                    _meta.afterIntercepts.add(_class);
-                                }
-                            }
-                        } else if (StringUtils.equalsIgnoreCase(_itemArr[0], "before")) {
-                            if (StringUtils.equals(_itemArr[1], "*")) {
-                                _meta.beforeCleanAll = true;
-                                //
-                                _meta.beforeCleanIntercepts.clear();
-                            } else if (!_meta.beforeCleanAll) {
-                                if (StringUtils.endsWith(_itemArr[1], "+")) {
-                                    Class<? extends IInterceptor> _class = __doGetInterceptorClass(StringUtils.substringBefore(_itemArr[1], "+"));
-                                    if (_class != null) {
-                                        // 增加新的前置拦截器
-                                        _meta.beforeIntercepts.add(_class);
-                                    }
-                                } else if (!_meta.cleanAll && !_meta.beforeCleanAll && StringUtils.endsWith(_itemArr[1], "-")) {
-                                    Class<? extends IInterceptor> _class = __doGetInterceptorClass(StringUtils.substringBefore(_itemArr[1], "-"));
-                                    if (_class != null) {
-                                        // 禁止前置拦截器
-                                        _meta.beforeCleanIntercepts.add(_class.getName());
-                                    }
-                                } else {
-                                    Class<? extends IInterceptor> _class = __doGetInterceptorClass(_itemArr[1]);
-                                    if (_class != null) {
-                                        // 增加新的前置拦截器
-                                        _meta.beforeIntercepts.add(_class);
-                                    }
-                                }
-                            }
-                        } else if (StringUtils.equalsIgnoreCase(_itemArr[0], "after")) {
-                            if (StringUtils.equals(_itemArr[1], "*")) {
-                                _meta.afterCleanAll = true;
-                                //
-                                _meta.afterCleanIntercepts.clear();
-                            } else if (!_meta.afterCleanAll) {
-                                if (StringUtils.endsWith(_itemArr[1], "+")) {
-                                    Class<? extends IInterceptor> _class = __doGetInterceptorClass(StringUtils.substringBefore(_itemArr[1], "+"));
-                                    if (_class != null) {
-                                        // 增加新的后置拦截器
-                                        _meta.afterIntercepts.add(_class);
-                                    }
-                                } else if (!_meta.cleanAll && !_meta.afterCleanAll && StringUtils.endsWith(_itemArr[1], "-")) {
-                                    Class<? extends IInterceptor> _class = __doGetInterceptorClass(StringUtils.substringBefore(_itemArr[1], "-"));
-                                    if (_class != null) {
-                                        // 禁止后置拦截器
-                                        _meta.afterCleanIntercepts.add(_class.getName());
-                                    }
-                                } else {
-                                    Class<? extends IInterceptor> _class = __doGetInterceptorClass(_itemArr[1]);
-                                    if (_class != null) {
-                                        // 增加新的后置拦截器
-                                        _meta.afterIntercepts.add(_class);
-                                    }
-                                }
-                            }
-                        }
+            for (InterceptSetting setting : settings) {
+                if (setting.isValid()) {
+                    switch (setting.getType()) {
+                        case CLEAN_ALL:
+                            // 表示当前类或方法上的所有拦截器禁用, 则后续规则中只处理增加拦截器逻辑
+                            settingMeta.cleanAll = true;
+                            settingMeta.beforeCleanIntercepts.clear();
+                            settingMeta.afterCleanIntercepts.clear();
+                            break;
+                        case CLEAN_BEFORE:
+                            settingMeta.beforeCleanAll = true;
+                            settingMeta.beforeCleanIntercepts.clear();
+                            break;
+                        case CLEAN_AFTER:
+                            settingMeta.afterCleanAll = true;
+                            settingMeta.afterCleanIntercepts.clear();
+                            break;
+                        case ADD_ALL:
+                            // 增加新的前置和后置拦截器
+                            settingMeta.beforeIntercepts.add(setting.getInterceptorClass());
+                            settingMeta.afterIntercepts.add(setting.getInterceptorClass());
+                            break;
+                        case ADD_BEFORE:
+                            // 增加新的前置拦截器
+                            settingMeta.beforeIntercepts.add(setting.getInterceptorClass());
+                            break;
+                        case ADD_AFTER:
+                            // 增加新的后置拦截器
+                            settingMeta.afterIntercepts.add(setting.getInterceptorClass());
+                            break;
+                        case REMOVE_ALL:
+                            // 禁止前置和后置拦截器
+                            settingMeta.beforeCleanIntercepts.add(setting.getInterceptorClass().getName());
+                            settingMeta.afterCleanIntercepts.add(setting.getInterceptorClass().getName());
+                            break;
+                        case REMOVE_BEFORE:
+                            // 禁止前置拦截器
+                            settingMeta.beforeCleanIntercepts.add(setting.getInterceptorClass().getName());
+                            break;
+                        case REMOVE_AFTER:
+                            settingMeta.afterCleanIntercepts.add(setting.getInterceptorClass().getName());
+                            break;
+                        default:
                     }
                 }
-                //
-                __settings.put(_meta.toString(), _meta);
             }
+            settingMetaMap.put(settingMeta.toString(), settingMeta);
         }
     }
 
     public List<InterceptPackageMeta> getInterceptPackages(Class<?> targetClass) {
-        List<InterceptPackageMeta> _returnValue = new ArrayList<InterceptPackageMeta>();
-        String _packageName = targetClass.getPackage().getName();
-        if (__packages.containsKey(_packageName)) {
-            _returnValue.add(0, __packages.get(_packageName));
+        List<InterceptPackageMeta> interceptPackageMetas = new ArrayList<>();
+        String packageName = targetClass.getPackage().getName();
+        if (packageMetaMap.containsKey(packageName)) {
+            interceptPackageMetas.add(0, packageMetaMap.get(packageName));
         }
-        while (StringUtils.contains(_packageName, '.')) {
-            _packageName = StringUtils.substringBeforeLast(_packageName, ".");
-            if (__packages.containsKey(_packageName)) {
-                _returnValue.add(0, __packages.get(_packageName));
+        while (StringUtils.contains(packageName, ".")) {
+            packageName = StringUtils.substringBeforeLast(packageName, ".");
+            if (packageMetaMap.containsKey(packageName)) {
+                interceptPackageMetas.add(0, packageMetaMap.get(packageName));
             }
         }
-        return _returnValue;
+        return interceptPackageMetas;
     }
 
     public boolean hasInterceptPackages(Class<?> targetClass) {
-        String _packageName = targetClass.getPackage().getName();
-        if (__packages.containsKey(_packageName)) {
+        String packageName = targetClass.getPackage().getName();
+        if (packageMetaMap.containsKey(packageName)) {
             return true;
         }
-        while (StringUtils.contains(_packageName, '.')) {
-            _packageName = StringUtils.substringBeforeLast(_packageName, ".");
-            if (__packages.containsKey(_packageName)) {
+        while (StringUtils.contains(packageName, ".")) {
+            packageName = StringUtils.substringBeforeLast(packageName, ".");
+            if (packageMetaMap.containsKey(packageName)) {
                 return true;
             }
         }
@@ -260,100 +257,68 @@ public class InterceptSettings {
     }
 
     public boolean hasInterceptSettings(Class<?> targetClass, Method targetMethod) {
-        String _className = targetClass.getName().concat("#");
-        String _methodName = _className.concat(targetMethod.getName());
-        return __settings.containsKey(_className) || __settings.containsKey(_methodName);
+        String className = targetClass.getName().concat("#");
+        String methodName = className.concat(targetMethod.getName());
+        return settingMetaMap.containsKey(className) || settingMetaMap.containsKey(methodName);
     }
 
-    @SuppressWarnings("unchecked")
-    private Class<? extends IInterceptor> __doGetInterceptorClass(String className) {
-        try {
-            Class<?> _class = ClassUtils.loadClass(className, this.getClass());
-            if (ClassUtils.isInterfaceOf(_class, IInterceptor.class)) {
-                return (Class<? extends IInterceptor>) _class;
-            }
-        } catch (ClassNotFoundException e) {
-            _LOG.warn("", RuntimeUtils.unwrapThrow(e));
-        }
-        return null;
-    }
-
-    public List<Class<? extends IInterceptor>> doBeforeSet(List<Class<? extends IInterceptor>> classes, Class<?> targetClass, Method targetMethod) {
-        List<Class<? extends IInterceptor>> _results = new ArrayList<Class<? extends IInterceptor>>();
-        boolean _flag = false;
-        //
-        String _className = targetClass.getName().concat("#");
-        String _methodName = _className.concat(targetMethod.getName());
-        //
-        InterceptSettingMeta _classMeta = __settings.get(_className);
-        if (_classMeta != null) {
-            _flag = true;
-            __doInterceptSettingFilter(true, _classMeta, classes, _results);
-        }
-        InterceptSettingMeta _methodMeta = __settings.get(_methodName);
-        if (_methodMeta != null) {
-            _flag = true;
-            __doInterceptSettingFilter(true, _methodMeta, classes, _results);
-        }
-        //
-        return _flag ? _results : classes;
-    }
-
-    private void __doInterceptSettingFilter(boolean before, InterceptSettingMeta settingMeta, List<Class<? extends IInterceptor>> interceptors, List<Class<? extends IInterceptor>> results) {
+    private void interceptSettingFilter(boolean before, InterceptSettingMeta settingMeta, List<Class<? extends IInterceptor>> interceptors, List<Class<? extends IInterceptor>> results) {
         // 若有新增的前置拦截器先添加到集合中
-        List<Class<? extends IInterceptor>> _target = before ? settingMeta.getBeforeIntercepts() : settingMeta.getAfterIntercepts();
-        if (!_target.isEmpty()) {
-            for (Class<? extends IInterceptor> _interceptor : (before ? settingMeta.getBeforeIntercepts() : settingMeta.getAfterIntercepts())) {
-                if (!__globals.contains(_interceptor) && !results.contains(_interceptor) && !settingMeta.beforeCleanIntercepts.contains(_interceptor.getName())) {
-                    results.add(_interceptor);
-                }
-            }
+        List<Class<? extends IInterceptor>> targetInterceptors = before ? settingMeta.getBeforeIntercepts() : settingMeta.getAfterIntercepts();
+        if (!targetInterceptors.isEmpty()) {
+            (before ? settingMeta.getBeforeIntercepts() : settingMeta.getAfterIntercepts()).stream().filter((interceptorClass) -> (!globals.contains(interceptorClass) && !results.contains(interceptorClass) && !settingMeta.beforeCleanIntercepts.contains(interceptorClass.getName()))).forEachOrdered(results::add);
         }
         // 判断并尝试过滤前置拦截器
         if (!settingMeta.isCleanAll() && (before ? !settingMeta.isBeforeCleanAll() : !settingMeta.isAfterCleanAll())) {
-            for (Class<? extends IInterceptor> _interceptor : interceptors) {
-                boolean _flag = before ? !settingMeta.beforeCleanIntercepts.contains(_interceptor.getName()) : !settingMeta.afterCleanIntercepts.contains(_interceptor.getName());
-                if (!__globals.contains(_interceptor) && !results.contains(_interceptor) && _flag) {
-                    results.add(_interceptor);
+            interceptors.forEach((interceptorClass) -> {
+                boolean flag = before ? !settingMeta.beforeCleanIntercepts.contains(interceptorClass.getName()) : !settingMeta.afterCleanIntercepts.contains(interceptorClass.getName());
+                if (!globals.contains(interceptorClass) && !results.contains(interceptorClass) && flag) {
+                    results.add(interceptorClass);
                 }
-            }
+            });
         }
     }
 
-    public List<Class<? extends IInterceptor>> doAfterSet(List<Class<? extends IInterceptor>> classes, Class<?> targetClass, Method targetMethod) {
-        List<Class<? extends IInterceptor>> _results = new ArrayList<Class<? extends IInterceptor>>();
-        boolean _flag = false;
+    private List<Class<? extends IInterceptor>> getInterceptors(boolean before, List<Class<? extends IInterceptor>> classes, Class<?> targetClass, Method targetMethod) {
+        List<Class<? extends IInterceptor>> interceptorClasses = new ArrayList<>();
+        boolean flag = false;
         //
-        String _className = targetClass.getName().concat("#");
-        String _methodName = _className.concat(targetMethod.getName());
+        String className = targetClass.getName().concat("#");
+        String methodName = className.concat(targetMethod.getName());
         //
-        InterceptSettingMeta _classMeta = __settings.get(_className);
-        if (_classMeta != null) {
-            _flag = true;
-            __doInterceptSettingFilter(false, _classMeta, classes, _results);
+        InterceptSettingMeta settingMeta = settingMetaMap.get(className);
+        if (settingMeta != null) {
+            flag = true;
+            interceptSettingFilter(before, settingMeta, classes, interceptorClasses);
         }
-        InterceptSettingMeta _methodMeta = __settings.get(_methodName);
-        if (_methodMeta != null) {
-            _flag = true;
-            __doInterceptSettingFilter(false, _methodMeta, classes, _results);
+        settingMeta = settingMetaMap.get(methodName);
+        if (settingMeta != null) {
+            flag = true;
+            interceptSettingFilter(before, settingMeta, classes, interceptorClasses);
         }
-        //
-        return _flag ? _results : classes;
+        return flag ? interceptorClasses : classes;
     }
 
-    public static class InterceptPackageMeta {
+    public List<Class<? extends IInterceptor>> getBeforeInterceptors(List<Class<? extends IInterceptor>> classes, Class<?> targetClass, Method targetMethod) {
+        return getInterceptors(true, classes, targetClass, targetMethod);
+    }
+
+    public List<Class<? extends IInterceptor>> getAfterInterceptors(List<Class<? extends IInterceptor>> classes, Class<?> targetClass, Method targetMethod) {
+        return getInterceptors(false, classes, targetClass, targetMethod);
+    }
+
+    public static final class InterceptPackageMeta {
+
         private final String packageName;
-        private List<Class<? extends IInterceptor>> beforeIntercepts;
-        private List<Class<? extends IInterceptor>> afterIntercepts;
 
-        private final List<ContextParam> contextParams;
+        private List<Class<? extends IInterceptor>> beforeIntercepts = new ArrayList<>();
+
+        private List<Class<? extends IInterceptor>> afterIntercepts = new ArrayList<>();
+
+        private final List<ContextParam> contextParams = new ArrayList<>();
 
         public InterceptPackageMeta(String packageName) {
             this.packageName = packageName;
-            beforeIntercepts = new ArrayList<Class<? extends IInterceptor>>();
-            afterIntercepts = new ArrayList<Class<? extends IInterceptor>>();
-            //
-            contextParams = new ArrayList<ContextParam>();
         }
 
         public String getPackageName() {
@@ -361,37 +326,39 @@ public class InterceptSettings {
         }
 
         public List<Class<? extends IInterceptor>> getBeforeIntercepts() {
-            return beforeIntercepts;
+            return Collections.unmodifiableList(beforeIntercepts);
         }
 
         public List<Class<? extends IInterceptor>> getAfterIntercepts() {
-            return afterIntercepts;
+            return Collections.unmodifiableList(afterIntercepts);
         }
 
         public List<ContextParam> getContextParams() {
-            return contextParams;
+            return Collections.unmodifiableList(contextParams);
         }
     }
 
-    public static class InterceptSettingMeta {
+    public static final class InterceptSettingMeta {
+
         private String className;
+
         private String methodName;
+
         private boolean cleanAll;
+
         private boolean beforeCleanAll;
+
         private boolean afterCleanAll;
 
-        private List<String> beforeCleanIntercepts;
-        private List<String> afterCleanIntercepts;
+        private List<String> beforeCleanIntercepts = new ArrayList<>();
 
-        private List<Class<? extends IInterceptor>> beforeIntercepts;
-        private List<Class<? extends IInterceptor>> afterIntercepts;
+        private List<String> afterCleanIntercepts = new ArrayList<>();
+
+        private List<Class<? extends IInterceptor>> beforeIntercepts = new ArrayList<>();
+
+        private List<Class<? extends IInterceptor>> afterIntercepts = new ArrayList<>();
 
         public InterceptSettingMeta() {
-            beforeCleanIntercepts = new ArrayList<String>();
-            afterCleanIntercepts = new ArrayList<String>();
-            //
-            beforeIntercepts = new ArrayList<Class<? extends IInterceptor>>();
-            afterIntercepts = new ArrayList<Class<? extends IInterceptor>>();
         }
 
         public String getClassName() {
@@ -415,19 +382,19 @@ public class InterceptSettings {
         }
 
         public List<String> getBeforeCleanIntercepts() {
-            return beforeCleanIntercepts;
+            return Collections.unmodifiableList(beforeCleanIntercepts);
         }
 
         public List<String> getAfterCleanIntercepts() {
-            return afterCleanIntercepts;
+            return Collections.unmodifiableList(afterCleanIntercepts);
         }
 
         public List<Class<? extends IInterceptor>> getBeforeIntercepts() {
-            return beforeIntercepts;
+            return Collections.unmodifiableList(beforeIntercepts);
         }
 
         public List<Class<? extends IInterceptor>> getAfterIntercepts() {
-            return afterIntercepts;
+            return Collections.unmodifiableList(afterIntercepts);
         }
 
         @Override

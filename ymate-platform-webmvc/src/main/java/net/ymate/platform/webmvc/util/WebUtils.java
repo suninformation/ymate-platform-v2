@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2016 the original author or authors.
+ * Copyright 2007-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,25 +15,26 @@
  */
 package net.ymate.platform.webmvc.util;
 
-import net.ymate.platform.core.IConfig;
-import net.ymate.platform.core.YMP;
-import net.ymate.platform.core.i18n.I18N;
+import net.ymate.platform.commons.util.CodecUtils;
+import net.ymate.platform.commons.util.ExpressionUtils;
+import net.ymate.platform.commons.util.NetworkUtils;
+import net.ymate.platform.commons.util.RuntimeUtils;
+import net.ymate.platform.core.IApplication;
 import net.ymate.platform.core.support.IContext;
-import net.ymate.platform.core.util.CodecUtils;
-import net.ymate.platform.core.util.ExpressionUtils;
-import net.ymate.platform.core.util.NetworkUtils;
-import net.ymate.platform.core.util.RuntimeUtils;
 import net.ymate.platform.validation.ValidateResult;
 import net.ymate.platform.webmvc.IWebMvc;
-import net.ymate.platform.webmvc.IWebMvcModuleCfg;
+import net.ymate.platform.webmvc.IWebMvcConfig;
 import net.ymate.platform.webmvc.WebMVC;
 import net.ymate.platform.webmvc.base.Type;
 import net.ymate.platform.webmvc.context.WebContext;
 import net.ymate.platform.webmvc.view.IView;
 import net.ymate.platform.webmvc.view.View;
+import net.ymate.platform.webmvc.view.impl.FreemarkerView;
+import net.ymate.platform.webmvc.view.impl.VelocityView;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.codec.digest.DigestUtils;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.NullArgumentException;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -53,19 +54,22 @@ import java.util.Map;
  * Web通用工具类
  *
  * @author 刘镇 (suninformation@163.com) on 14-7-6
- * @version 1.0
  * @since 2.0.6
  */
 public class WebUtils {
 
-    private static final Log _LOG = LogFactory.getLog(WebUtils.class);
+    private static final Log LOG = LogFactory.getLog(WebUtils.class);
 
-    private static String __doGetConfigValue(String confName, String defaultName) {
-        return getOwner().getOwner().getConfig().getParam(confName, defaultName);
+    private static String doGetConfigValue(String confName, String defaultName) {
+        return getOwner().getOwner().getParam(confName, defaultName);
     }
 
-    private static String __doGetConfigValue(YMP owner, String confName, String defaultName) {
-        return owner.getConfig().getParam(confName, defaultName);
+    private static String doGetConfigValue(IApplication owner, String confName, String defaultName) {
+        return owner.getParam(confName, defaultName);
+    }
+
+    private static String doGetSafeServerName(HttpServletRequest request) {
+        return doGetConfigValue(IWebMvcConfig.PARAMS_SERVER_NAME, request.getServerName());
     }
 
     public static IWebMvc getOwner() {
@@ -81,38 +85,34 @@ public class WebUtils {
      * @param withBasePath 是否采用完整路径（即非相对路径）
      * @return 构建控制器URL访问路径
      */
-    public static String buildURL(HttpServletRequest request, String requestPath, boolean withBasePath) {
+    public static String buildUrl(HttpServletRequest request, String requestPath, boolean withBasePath) {
         requestPath = StringUtils.trimToEmpty(requestPath);
-        if (withBasePath && !"".equals(requestPath) && requestPath.charAt(0) == '/') {
-            requestPath = StringUtils.substringAfter(requestPath, "/");
+        if (withBasePath && StringUtils.isNotBlank(requestPath) && requestPath.charAt(0) == Type.Const.PATH_SEPARATOR_CHAR) {
+            requestPath = StringUtils.substringAfter(requestPath, Type.Const.PATH_SEPARATOR);
         }
-        return (withBasePath ? baseURL(request) + requestPath : requestPath) + __doGetConfigValue(IWebMvcModuleCfg.PARAMS_REQUEST_SUFFIX, StringUtils.EMPTY);
-    }
-
-    private static String __doGetSafeServerName(HttpServletRequest request) {
-        return __doGetConfigValue(IWebMvcModuleCfg.PARAMS_SERVER_NAME, request.getServerName());
+        return (withBasePath ? baseUrl(request) + requestPath : requestPath) + doGetConfigValue(IWebMvcConfig.PARAMS_REQUEST_SUFFIX, StringUtils.EMPTY);
     }
 
     /**
      * @param request HttpServletRequest对象
      * @return 获取当前站点基准URL
      */
-    public static String baseURL(HttpServletRequest request) {
+    public static String baseUrl(HttpServletRequest request) {
         StringBuilder basePath = new StringBuilder();
-        String _serverName = __doGetSafeServerName(request);
-        if (!StringUtils.startsWithAny(StringUtils.lowerCase(_serverName), new String[]{"http://", "https://"})) {
-            basePath.append(request.getScheme()).append("://").append(_serverName);
-            if (request.getServerPort() != 80 && request.getServerPort() != 443) {
+        String serverName = doGetSafeServerName(request);
+        if (!StringUtils.startsWithAny(StringUtils.lowerCase(serverName), new String[]{Type.Const.HTTP_PREFIX, Type.Const.HTTPS_PREFIX})) {
+            basePath.append(request.getScheme()).append("://").append(serverName);
+            if (request.getServerPort() != Type.Const.HTTP_PORT && request.getServerPort() != Type.Const.HTTPS_PORT) {
                 basePath.append(":").append(request.getServerPort());
             }
             if (StringUtils.isNotBlank(request.getContextPath())) {
                 basePath.append(request.getContextPath());
             }
         } else {
-            basePath.append(_serverName);
+            basePath.append(serverName);
         }
-        if (basePath.charAt(basePath.length() - 1) != '/') {
-            basePath.append("/");
+        if (basePath.charAt(basePath.length() - 1) != Type.Const.PATH_SEPARATOR_CHAR) {
+            basePath.append(Type.Const.PATH_SEPARATOR);
         }
         return basePath.toString();
     }
@@ -123,31 +123,35 @@ public class WebUtils {
      * @return 拼装当前URL请求地址(含QueryString串)
      */
     public static String appendQueryStr(HttpServletRequest request, boolean encode) {
-        StringBuffer _returnUrlBuffer = request.getRequestURL();
-        String _queryStr = request.getQueryString();
-        if (StringUtils.isNotBlank(_queryStr)) {
-            _returnUrlBuffer.append("?").append(_queryStr);
+        StringBuffer queryStrBuilder = request.getRequestURL();
+        String queryString = request.getQueryString();
+        if (StringUtils.isNotBlank(queryString)) {
+            queryStrBuilder.append("?").append(queryString);
         }
         if (encode) {
-            return encodeURL(_returnUrlBuffer.toString());
+            return encodeUrl(queryStrBuilder.toString());
         }
-        return _returnUrlBuffer.toString();
+        return queryStrBuilder.toString();
     }
 
-    public static String encodeURL(String url) {
+    public static String encodeUrl(String url) {
         try {
-            return URLEncoder.encode(url, IConfig.DEFAULT_CHARSET);
+            return URLEncoder.encode(url, getOwner().getConfig().getDefaultCharsetEncoding());
         } catch (UnsupportedEncodingException e) {
-            _LOG.warn("", RuntimeUtils.unwrapThrow(e));
+            if (LOG.isWarnEnabled()) {
+                LOG.warn(StringUtils.EMPTY, RuntimeUtils.unwrapThrow(e));
+            }
         }
         return url;
     }
 
-    public static String decodeURL(String url) {
+    public static String decodeUrl(String url) {
         try {
-            return URLDecoder.decode(url, IConfig.DEFAULT_CHARSET);
+            return URLDecoder.decode(url, getOwner().getConfig().getDefaultCharsetEncoding());
         } catch (UnsupportedEncodingException e) {
-            _LOG.warn("", RuntimeUtils.unwrapThrow(e));
+            if (LOG.isWarnEnabled()) {
+                LOG.warn(StringUtils.EMPTY, RuntimeUtils.unwrapThrow(e));
+            }
         }
         return url;
     }
@@ -158,22 +162,22 @@ public class WebUtils {
      * @param needEndWith   是否以'/'结束
      * @return 返回修正后的URL地址
      */
-    public static String fixURL(String url, boolean needStartWith, boolean needEndWith) {
+    public static String fixUrl(String url, boolean needStartWith, boolean needEndWith) {
         url = StringUtils.trimToNull(url);
         if (url != null) {
-            if (needStartWith && !StringUtils.startsWith(url, "/")) {
-                url = '/' + url;
-            } else if (!needStartWith && StringUtils.startsWith(url, "/")) {
-                url = StringUtils.substringAfter(url, "/");
+            if (needStartWith && !StringUtils.startsWith(url, Type.Const.PATH_SEPARATOR)) {
+                url = Type.Const.PATH_SEPARATOR + url;
+            } else if (!needStartWith && StringUtils.startsWith(url, Type.Const.PATH_SEPARATOR)) {
+                url = StringUtils.substringAfter(url, Type.Const.PATH_SEPARATOR);
             }
-            if (needEndWith && !StringUtils.endsWith(url, "/")) {
-                url = url + '/';
-            } else if (!needEndWith && StringUtils.endsWith(url, "/")) {
-                url = StringUtils.substringBeforeLast(url, "/");
+            if (needEndWith && !StringUtils.endsWith(url, Type.Const.PATH_SEPARATOR)) {
+                url = url + Type.Const.PATH_SEPARATOR;
+            } else if (!needEndWith && StringUtils.endsWith(url, Type.Const.PATH_SEPARATOR)) {
+                url = StringUtils.substringBeforeLast(url, Type.Const.PATH_SEPARATOR);
             }
             return url;
         }
-        return "";
+        return StringUtils.EMPTY;
     }
 
     /**
@@ -182,22 +186,41 @@ public class WebUtils {
      */
     public static boolean isAjax(HttpServletRequest request) {
         // 判断条件: (x-requested-with = XMLHttpRequest)
-        String _httpx = request.getHeader("x-requested-with");
-        return StringUtils.isNotBlank(_httpx) && "XMLHttpRequest".equalsIgnoreCase(_httpx);
+        String requestHeader = request.getHeader("x-requested-with");
+        return StringUtils.isNotBlank(requestHeader) && "XMLHttpRequest".equalsIgnoreCase(requestHeader);
     }
 
     public static boolean isAjax(HttpServletRequest request, boolean ifJson, boolean ifXml) {
+        return isAjax(request, ifJson, ifXml, null);
+    }
+
+    public static boolean isAjax(HttpServletRequest request, boolean ifJson, boolean ifXml, String paramFormat) {
         if (isAjax(request)) {
             return true;
         }
         if (ifJson || ifXml) {
-            String _format = StringUtils.trimToNull(request.getParameter(Type.Const.PARAM_FORMAT));
-            if (ifJson && StringUtils.equalsIgnoreCase(_format, Type.Const.FORMAT_JSON)) {
+            if (ifJson && isJsonAccepted(request, paramFormat)) {
                 return true;
             }
-            return ifXml && StringUtils.equalsIgnoreCase(_format, Type.Const.FORMAT_XML);
+            return ifXml && isXmlAccepted(request, paramFormat);
         }
         return false;
+    }
+
+    public static boolean isJsonAccepted(HttpServletRequest request) {
+        return isJsonAccepted(request, null);
+    }
+
+    public static boolean isJsonAccepted(HttpServletRequest request, String paramFormat) {
+        return StringUtils.containsIgnoreCase(request.getHeader("Accept"), "application/json") || StringUtils.equalsIgnoreCase(request.getParameter(StringUtils.defaultIfBlank(paramFormat, Type.Const.PARAM_FORMAT)), Type.Const.FORMAT_JSON);
+    }
+
+    public static boolean isXmlAccepted(HttpServletRequest request) {
+        return isXmlAccepted(request, null);
+    }
+
+    public static boolean isXmlAccepted(HttpServletRequest request, String paramFormat) {
+        return StringUtils.containsIgnoreCase(request.getHeader("Accept"), "application/xml") || StringUtils.equalsIgnoreCase(request.getParameter(StringUtils.defaultIfBlank(paramFormat, Type.Const.PARAM_FORMAT)), Type.Const.FORMAT_XML);
     }
 
     /**
@@ -205,14 +228,14 @@ public class WebUtils {
      * @return 判断当前请求是否采用POST方式提交
      */
     public static boolean isPost(HttpServletRequest request) {
-        return "POST".equalsIgnoreCase(request.getMethod());
+        return Type.HttpMethod.POST.name().equalsIgnoreCase(request.getMethod());
     }
 
     /**
      * @param url 目标URL地址
      * @return 执行JS方式的页面跳转
      */
-    public static String doRedirectJavaScript(String url) {
+    public static String redirectJavaScript(String url) {
         return "<script type=\"text/javascript\">window.location.href=\"" + url + "\"</script>";
     }
 
@@ -221,8 +244,8 @@ public class WebUtils {
      * @param url      目标URL地址
      * @return 通过设置Header的Location属性执行页面跳转
      */
-    public static String doRedirectHeaderLocation(HttpServletResponse response, String url) {
-        response.setHeader("Location", url);
+    public static String redirectHeaderLocation(HttpServletResponse response, String url) {
+        response.setHeader(Type.Const.HTTP_HEADER_LOCATION, url);
         return "http:" + HttpServletResponse.SC_MOVED_PERMANENTLY;
     }
 
@@ -233,12 +256,11 @@ public class WebUtils {
      * @param url         页面URL地址，空为当前页面
      * @return 通过设置Header的Refresh属性执行页面刷新或跳转，若url参数为空，则仅向Header添加time时间后自动刷新当前页面
      */
-    public static String doRedirectHeaderRefresh(HttpServletResponse response, String templateUrl, int time, String url) {
+    public static String redirectHeaderRefresh(HttpServletResponse response, String templateUrl, int time, String url) {
         if (StringUtils.isBlank(url)) {
-            response.setIntHeader("REFRESH", time);
+            response.setIntHeader(Type.Const.HTTP_HEADER_REFRESH, time);
         } else {
-            String _content = time + ";URL=" + url;
-            response.setHeader("REFRESH", _content);
+            response.setHeader(Type.Const.HTTP_HEADER_REFRESH, time + ";URL=" + url);
         }
         return templateUrl;
     }
@@ -247,10 +269,10 @@ public class WebUtils {
      * @param request HttpServletRequest对象
      * @return 获取用户IP地址(当存在多个IP地址时仅返回第一个)
      */
-    public static String getRemoteAddr(HttpServletRequest request) {
-        String[] _ips = getRemoteAddrs(request);
-        if (_ips != null && _ips.length > 0) {
-            return _ips[0];
+    public static String getRemoteAddress(HttpServletRequest request) {
+        String[] remoteAddresses = getRemoteAddresses(request);
+        if (remoteAddresses != null && remoteAddresses.length > 0) {
+            return remoteAddresses[0];
         }
         return null;
     }
@@ -259,21 +281,21 @@ public class WebUtils {
      * @param request HttpServletRequest对象
      * @return 获取用户IP地址(以数组的形式返回所有IP)
      */
-    public static String[] getRemoteAddrs(HttpServletRequest request) {
-        String _ip = request.getHeader("x-forwarded-for");
-        if (StringUtils.isBlank(_ip) || "unknown".equalsIgnoreCase(_ip)) {
-            _ip = request.getHeader("Proxy-Client-IP");
+    public static String[] getRemoteAddresses(HttpServletRequest request) {
+        String ip = request.getHeader("x-forwarded-for");
+        if (StringUtils.isBlank(ip) || "unknown".equalsIgnoreCase(ip)) {
+            ip = request.getHeader("Proxy-Client-IP");
         }
-        if (StringUtils.isBlank(_ip) || "unknown".equalsIgnoreCase(_ip)) {
-            _ip = request.getHeader("WL-Proxy-Client-IP");
+        if (StringUtils.isBlank(ip) || "unknown".equalsIgnoreCase(ip)) {
+            ip = request.getHeader("WL-Proxy-Client-IP");
         }
-        if (StringUtils.isBlank(_ip) || "unknown".equalsIgnoreCase(_ip)) {
-            _ip = request.getRemoteAddr();
-            if (StringUtils.equals(_ip, "127.0.0.1") || StringUtils.equals(_ip, "0:0:0:0:0:0:0:1")) {
-                _ip = StringUtils.join(NetworkUtils.IP.getHostIPAddrs(), ",");
+        if (StringUtils.isBlank(ip) || "unknown".equalsIgnoreCase(ip)) {
+            ip = request.getRemoteAddr();
+            if (StringUtils.equals(ip, "127.0.0.1") || StringUtils.equals(ip, "0:0:0:0:0:0:0:1")) {
+                ip = StringUtils.join(NetworkUtils.IP.getHostIPAddresses(), ",");
             }
         }
-        return StringUtils.split(_ip, ',');
+        return StringUtils.split(ip, ',');
     }
 
     /**
@@ -283,12 +305,17 @@ public class WebUtils {
      * @return 占位符替换
      */
     public static String replaceRegText(String source, String key, String value) {
-        String _regex = "@\\{" + key + "}";
-        return source.replaceAll(_regex, value);
+        if (StringUtils.isBlank(source)) {
+            throw new NullArgumentException("source");
+        }
+        if (StringUtils.isBlank(key)) {
+            throw new NullArgumentException("key");
+        }
+        return source.replaceAll("@\\{" + key + "}", value);
     }
 
     public static String replaceRegClear(String source) {
-        return replaceRegText(source, "(.+?)", "");
+        return replaceRegText(source, "(.+?)", StringUtils.EMPTY);
     }
 
     /**
@@ -300,15 +327,15 @@ public class WebUtils {
      * @throws ServletException 可能产生的异常
      * @throws IOException      可能产生的异常
      */
-    public static String includeJSP(HttpServletRequest request, HttpServletResponse response, String jspFile, String charsetEncoding) throws ServletException, IOException {
-        final OutputStream _output = new ByteArrayOutputStream();
-        includeJSP(request, response, jspFile, charsetEncoding, _output);
-        return _output.toString();
+    public static String includeJsp(HttpServletRequest request, HttpServletResponse response, String jspFile, String charsetEncoding) throws ServletException, IOException {
+        final OutputStream outputStream = new ByteArrayOutputStream();
+        includeJsp(request, response, jspFile, charsetEncoding, outputStream);
+        return outputStream.toString();
     }
 
-    public static void includeJSP(HttpServletRequest request, HttpServletResponse response, String jspFile, String charsetEncoding, final OutputStream outputStream) throws ServletException, IOException {
-        final PrintWriter _writer = new PrintWriter(new OutputStreamWriter(outputStream, StringUtils.defaultIfBlank(charsetEncoding, response.getCharacterEncoding())));
-        final ServletOutputStream _servletOutput = new ServletOutputStream() {
+    public static void includeJsp(HttpServletRequest request, HttpServletResponse response, String jspFile, String charsetEncoding, final OutputStream outputStream) throws ServletException, IOException {
+        final PrintWriter printWriter = new PrintWriter(new OutputStreamWriter(outputStream, StringUtils.defaultIfBlank(charsetEncoding, response.getCharacterEncoding())));
+        final ServletOutputStream servletOutputStream = new ServletOutputStream() {
             @Override
             public void write(int b) throws IOException {
                 outputStream.write(b);
@@ -319,19 +346,19 @@ public class WebUtils {
                 outputStream.write(b, off, len);
             }
         };
-        HttpServletResponse _response = new HttpServletResponseWrapper(response) {
+        HttpServletResponse responseWrapper = new HttpServletResponseWrapper(response) {
             @Override
             public ServletOutputStream getOutputStream() {
-                return _servletOutput;
+                return servletOutputStream;
             }
 
             @Override
             public PrintWriter getWriter() {
-                return _writer;
+                return printWriter;
             }
         };
-        request.getRequestDispatcher(jspFile).include(request, _response);
-        _writer.flush();
+        request.getRequestDispatcher(jspFile).include(request, responseWrapper);
+        printWriter.flush();
     }
 
     /**
@@ -343,11 +370,11 @@ public class WebUtils {
      * @throws Exception 可能产生的异常
      */
     public static String encryptStr(HttpServletRequest request, String dataStr) throws Exception {
-        return Base64.encodeBase64URLSafeString(CodecUtils.DES.encrypt(dataStr.getBytes(), DigestUtils.md5(request.getRemoteAddr() + request.getHeader("User-Agent"))));
+        return Base64.encodeBase64URLSafeString(CodecUtils.DES.encrypt(dataStr.getBytes(), DigestUtils.md5(request.getRemoteAddr() + request.getHeader(Type.Const.HTTP_HEADER_USER_AGENT))));
     }
 
     public static String encryptStr(HttpServletRequest request, byte[] bytes) throws Exception {
-        return Base64.encodeBase64URLSafeString(CodecUtils.DES.encrypt(bytes, DigestUtils.md5(request.getRemoteAddr() + request.getHeader("User-Agent"))));
+        return Base64.encodeBase64URLSafeString(CodecUtils.DES.encrypt(bytes, DigestUtils.md5(request.getRemoteAddr() + request.getHeader(Type.Const.HTTP_HEADER_USER_AGENT))));
     }
 
     /**
@@ -371,11 +398,11 @@ public class WebUtils {
      * @throws Exception 可能产生的异常
      */
     public static String decryptStr(HttpServletRequest request, String dataStr) throws Exception {
-        return new String(CodecUtils.DES.decrypt(Base64.decodeBase64(dataStr), DigestUtils.md5(request.getRemoteAddr() + request.getHeader("User-Agent"))));
+        return new String(CodecUtils.DES.decrypt(Base64.decodeBase64(dataStr), DigestUtils.md5(request.getRemoteAddr() + request.getHeader(Type.Const.HTTP_HEADER_USER_AGENT))));
     }
 
     public static byte[] decryptStr(HttpServletRequest request, byte[] bytes) throws Exception {
-        return CodecUtils.DES.decrypt(Base64.decodeBase64(bytes), DigestUtils.md5(request.getRemoteAddr() + request.getHeader("User-Agent")));
+        return CodecUtils.DES.decrypt(Base64.decodeBase64(bytes), DigestUtils.md5(request.getRemoteAddr() + request.getHeader(Type.Const.HTTP_HEADER_USER_AGENT)));
     }
 
     /**
@@ -390,67 +417,68 @@ public class WebUtils {
         return new String(CodecUtils.DES.decrypt(Base64.decodeBase64(dataStr), DigestUtils.md5(key)));
     }
 
-    public static String messageWithTemplate(YMP owner, String message) {
+    public static String messageWithTemplate(IApplication owner, String message) {
         return messageWithTemplate(owner, null, message);
     }
 
-    public static String messageWithTemplate(YMP owner, String name, String message) {
+    public static String messageWithTemplate(IApplication owner, String name, String message) {
         return messageWithTemplate(owner, null, Collections.singletonList(new ValidateResult(name, message)));
     }
 
-    public static String messageWithTemplate(YMP owner, Collection<ValidateResult> messages) {
+    public static String messageWithTemplate(IApplication owner, Collection<ValidateResult> messages) {
         return messageWithTemplate(owner, null, messages);
     }
 
-    public static String messageWithTemplate(YMP owner, String title, Collection<ValidateResult> messages) {
-        StringBuilder _messages = new StringBuilder();
-        for (ValidateResult _vResult : messages) {
-            ExpressionUtils _item = ExpressionUtils.bind(__doGetConfigValue(owner, IWebMvcModuleCfg.PARAMS_VALIDATION_TEMPLATE_ITEM, "${message}<br>"));
-            _item.set("name", _vResult.getName());
-            _item.set("message", _vResult.getMsg());
-            //
-            _messages.append(_item.clean().getResult());
-        }
-        ExpressionUtils _element = ExpressionUtils.bind(__doGetConfigValue(owner, IWebMvcModuleCfg.PARAMS_VALIDATION_TEMPLATE_ELEMENT, "${title}"));
+    public static String messageWithTemplate(IApplication owner, String title, Collection<ValidateResult> messages) {
+        StringBuilder messagesBuilder = new StringBuilder();
+        messages.stream().map((validateResult) -> {
+            ExpressionUtils item = ExpressionUtils.bind(doGetConfigValue(owner, IWebMvcConfig.PARAMS_VALIDATION_TEMPLATE_ITEM, "${message}<br>"));
+            item.set("name", validateResult.getName());
+            item.set("message", validateResult.getMsg());
+            return item;
+        }).forEachOrdered((item) -> {
+            messagesBuilder.append(item.clean().getResult());
+        });
+        ExpressionUtils element = ExpressionUtils.bind(doGetConfigValue(owner, IWebMvcConfig.PARAMS_VALIDATION_TEMPLATE_ELEMENT, "${title}"));
         if (StringUtils.isNotBlank(title)) {
-            _element.set("title", title);
+            element.set("title", title);
         }
-        return StringUtils.trimToEmpty(_element.set("items", _messages.toString()).clean().getResult());
+        return StringUtils.trimToEmpty(element.set("items", messagesBuilder.toString()).clean().getResult());
     }
 
-    public static String buildRedirectURL(IContext context, HttpServletRequest request, String redirectUrl, boolean needPrefix) {
-        String _redirectUrl = StringUtils.trimToNull(redirectUrl);
-        if (_redirectUrl == null) {
-            _redirectUrl = StringUtils.defaultIfBlank(request.getParameter(Type.Const.REDIRECT_URL), context != null ? context.getContextParams().get(Type.Const.REDIRECT_URL) : "");
-            if (StringUtils.isBlank(_redirectUrl)) {
+    public static String buildRedirectUrl(IContext context, HttpServletRequest request, String redirectUrl, boolean needPrefix) {
+        String fixedRedirectUrl = StringUtils.trimToNull(redirectUrl);
+        if (fixedRedirectUrl == null) {
+            fixedRedirectUrl = StringUtils.defaultIfBlank(request.getParameter(Type.Const.REDIRECT_URL), context != null ? context.getContextParams().get(Type.Const.REDIRECT_URL) : StringUtils.EMPTY);
+            if (StringUtils.isBlank(fixedRedirectUrl)) {
                 if (context != null) {
-                    _redirectUrl = __doGetConfigValue(context.getOwner(), IWebMvcModuleCfg.PARAMS_REDIRECT_HOME_URL, null);
+                    fixedRedirectUrl = doGetConfigValue(context.getOwner(), IWebMvcConfig.PARAMS_REDIRECT_HOME_URL, null);
                 }
-                if (StringUtils.isBlank(_redirectUrl)) {
-                    _redirectUrl = baseURL(WebContext.getRequest());
+                if (StringUtils.isBlank(fixedRedirectUrl)) {
+                    fixedRedirectUrl = baseUrl(request);
                 }
             }
         }
-        if (needPrefix && !StringUtils.startsWithIgnoreCase(_redirectUrl, "http://") && !StringUtils.startsWithIgnoreCase(_redirectUrl, "https://")) {
-            _redirectUrl = WebUtils.buildURL(request, _redirectUrl, true);
+        if (needPrefix && !StringUtils.startsWithIgnoreCase(fixedRedirectUrl, Type.Const.HTTP_PREFIX) && !StringUtils.startsWithIgnoreCase(fixedRedirectUrl, Type.Const.HTTPS_PREFIX)) {
+            fixedRedirectUrl = WebUtils.buildUrl(request, fixedRedirectUrl, true);
         }
-        return _redirectUrl;
+        return fixedRedirectUrl;
     }
 
-    public static String buildRedirectURL(IContext context, String defaultValue) {
-        String _returnValue = null;
+    public static String buildRedirectUrl(IContext context, String defaultValue) {
+        String returnValue = null;
         if (context.getContextParams().containsKey(Type.Const.CUSTOM_REDIRECT)) {
-            String _value = context.getContextParams().get(Type.Const.CUSTOM_REDIRECT);
-            if (StringUtils.equalsIgnoreCase(_value, Type.Const.CUSTOM_REDIRECT)) {
-                _value = IWebMvcModuleCfg.PARAMS_REDIRECT_CUSTOM_URL;
-            } else if (StringUtils.startsWithIgnoreCase(_value, "http://") || StringUtils.startsWithIgnoreCase(_value, "https://")) {
-                return _value;
+            String value = context.getContextParams().get(Type.Const.CUSTOM_REDIRECT);
+            if (StringUtils.equalsIgnoreCase(value, Type.Const.CUSTOM_REDIRECT)) {
+                value = IWebMvcConfig.PARAMS_REDIRECT_CUSTOM_URL;
+            } else if (StringUtils.startsWithIgnoreCase(value, Type.Const.HTTP_PREFIX) || StringUtils.startsWithIgnoreCase(value, Type.Const.HTTPS_PREFIX)) {
+                return value;
             }
-            if (StringUtils.isNotBlank(_value)) {
-                _returnValue = __doGetConfigValue(context.getOwner(), _value, null);
+            if (StringUtils.isNotBlank(value)) {
+                returnValue = doGetConfigValue(context.getOwner(), value, null);
             }
         }
-        return StringUtils.trimToEmpty(StringUtils.defaultIfBlank(_returnValue, defaultValue));
+        return StringUtils.trimToEmpty(StringUtils.defaultIfBlank(returnValue, defaultValue));
     }
 
     public static IView buildErrorView(IWebMvc owner, int code, String msg) {
@@ -474,8 +502,8 @@ public class WebUtils {
     }
 
     public static IView buildErrorView(IWebMvc owner, String resourceName, ErrorCode errorCode, String redirectUrl, int timeInterval) {
-        Map<String, Object> _data = errorCode.getAttribute(Type.Const.PARAM_DATA);
-        return buildErrorView(owner, resourceName, errorCode.getCode(), errorCode.getMessage(), redirectUrl, timeInterval, _data);
+        Map<String, Object> data = errorCode.getAttribute(Type.Const.PARAM_DATA);
+        return buildErrorView(owner, resourceName, errorCode.getCode(), errorCode.getMessage(), redirectUrl, timeInterval, data);
     }
 
     public static IView buildErrorView(IWebMvc owner, int code, String msg, String redirectUrl, int timeInterval, Map<String, Object> data) {
@@ -483,26 +511,26 @@ public class WebUtils {
     }
 
     public static IView buildErrorView(IWebMvc owner, String resourceName, int code, String msg, String redirectUrl, int timeInterval, Map<String, Object> data) {
-        IView _view;
-        String _errorViewPath = __doGetConfigValue(owner.getOwner(), IWebMvcModuleCfg.PARAMS_ERROR_VIEW, "error.jsp");
-        if (StringUtils.endsWithIgnoreCase(_errorViewPath, ".ftl")) {
-            _view = View.freemarkerView(owner, _errorViewPath);
-        } else if (StringUtils.endsWithIgnoreCase(_errorViewPath, ".vm")) {
-            _view = View.velocityView(owner, _errorViewPath);
+        IView returnView;
+        String errorViewPath = doGetConfigValue(owner.getOwner(), IWebMvcConfig.PARAMS_ERROR_VIEW, "error.jsp");
+        if (StringUtils.endsWithIgnoreCase(errorViewPath, FreemarkerView.FILE_SUFFIX)) {
+            returnView = View.freemarkerView(owner, errorViewPath);
+        } else if (StringUtils.endsWithIgnoreCase(errorViewPath, VelocityView.FILE_SUFFIX)) {
+            returnView = View.velocityView(owner, errorViewPath);
         } else {
-            _view = View.jspView(owner, _errorViewPath);
+            returnView = View.jspView(owner, errorViewPath);
         }
-        _view.addAttribute(Type.Const.PARAM_RET, code);
-        _view.addAttribute(Type.Const.PARAM_MSG, errorCodeI18n(owner, resourceName, code, msg));
+        returnView.addAttribute(Type.Const.PARAM_RET, code);
+        returnView.addAttribute(Type.Const.PARAM_MSG, errorCodeI18n(owner, resourceName, code, msg));
         if (data != null && !data.isEmpty()) {
-            _view.addAttribute(Type.Const.PARAM_DATA, data);
+            returnView.addAttribute(Type.Const.PARAM_DATA, data);
         }
         //
         if (StringUtils.isNotBlank(redirectUrl) && timeInterval > 0) {
-            _view.addHeader("REFRESH", timeInterval + ";URL=" + redirectUrl);
+            returnView.addHeader(Type.Const.HTTP_HEADER_REFRESH, timeInterval + ";URL=" + redirectUrl);
         }
         //
-        return _view;
+        return returnView;
     }
 
     /**
@@ -513,7 +541,7 @@ public class WebUtils {
      * @return 返回resourceKey指定的键值
      */
     public static String i18nStr(IWebMvc owner, String resourceKey) {
-        return I18N.load(owner.getModuleCfg().getI18nResourceName(), resourceKey);
+        return owner.getOwner().getI18n().load(owner.getConfig().getResourceName(), resourceKey);
     }
 
     /**
@@ -529,7 +557,7 @@ public class WebUtils {
     }
 
     public static String i18nStr(IWebMvc owner, String resourceName, String resourceKey, String defaultValue) {
-        return I18N.load(StringUtils.defaultIfBlank(resourceName, owner.getModuleCfg().getI18nResourceName()), resourceKey, defaultValue);
+        return owner.getOwner().getI18n().load(StringUtils.defaultIfBlank(resourceName, owner.getConfig().getResourceName()), resourceKey, defaultValue);
     }
 
     public static String httpStatusI18n(IWebMvc owner, int code) {
@@ -537,12 +565,12 @@ public class WebUtils {
     }
 
     public static String httpStatusI18n(IWebMvc owner, String resourceName, int code) {
-        String _statusText = Type.HTTP_STATUS.get(code);
-        if (StringUtils.isBlank(_statusText)) {
+        String statusText = Type.HTTP_STATUS.get(code);
+        if (StringUtils.isBlank(statusText)) {
             code = 400;
-            _statusText = Type.HTTP_STATUS.get(code);
+            statusText = Type.HTTP_STATUS.get(code);
         }
-        return i18nStr(owner, resourceName, "webmvc.http_status_" + code, _statusText);
+        return i18nStr(owner, resourceName, "webmvc.http_status_" + code, statusText);
     }
 
     public static String errorCodeI18n(IWebMvc owner, int code, String defaultValue) {
@@ -561,7 +589,7 @@ public class WebUtils {
     }
 
     public static String errorCodeI18n(IWebMvc owner, String resourceName, IExceptionProcessor.Result result) {
-        String _msg = WebUtils.errorCodeI18n(owner, resourceName, result.getCode(), result.getMessage());
-        return StringUtils.defaultIfBlank(_msg, result.getMessage());
+        String msg = WebUtils.errorCodeI18n(owner, resourceName, result.getCode(), result.getMessage());
+        return StringUtils.defaultIfBlank(msg, result.getMessage());
     }
 }

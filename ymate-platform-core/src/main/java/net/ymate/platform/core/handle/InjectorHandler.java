@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2017 the original author or authors.
+ * Copyright 2007-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,29 +15,27 @@
  */
 package net.ymate.platform.core.handle;
 
-import net.ymate.platform.core.beans.IBeanFactory;
+import net.ymate.platform.commons.util.ClassUtils;
+import net.ymate.platform.core.IApplication;
 import net.ymate.platform.core.beans.IBeanHandler;
 import net.ymate.platform.core.beans.IBeanInjector;
 import net.ymate.platform.core.beans.annotation.Injector;
-import net.ymate.platform.core.util.ClassUtils;
 
 /**
  * @author 刘镇 (suninformation@163.com) on 2017/9/19 下午1:41
- * @version 1.0
  */
 public final class InjectorHandler implements IBeanHandler {
 
-    private final IBeanFactory __beanFactory;
+    private final IApplication owner;
 
-    public InjectorHandler(IBeanFactory beanFactory) {
-        __beanFactory = beanFactory;
-        __beanFactory.registerExcludedClass(IBeanInjector.class);
+    public InjectorHandler(IApplication owner) {
+        this.owner = owner;
     }
 
     @Override
     public Object handle(Class<?> targetClass) throws Exception {
-        if (!targetClass.isInterface() && ClassUtils.isInterfaceOf(targetClass, IBeanInjector.class)) {
-            __beanFactory.registerInjector(targetClass.getAnnotation(Injector.class).value(), (IBeanInjector) targetClass.newInstance());
+        if (ClassUtils.isNormalClass(targetClass) && !targetClass.isInterface() && ClassUtils.isInterfaceOf(targetClass, IBeanInjector.class)) {
+            owner.getBeanFactory().registerInjector(targetClass.getAnnotation(Injector.class).value(), (IBeanInjector) targetClass.newInstance());
         }
         return null;
     }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2017 the original author or authors.
+ * Copyright 2007-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,14 +17,16 @@ package net.ymate.platform.core.serialize.impl;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.serializer.SerializerFeature;
-import net.ymate.platform.core.IConfig;
 import net.ymate.platform.core.serialize.ISerializer;
+
+import java.nio.charset.StandardCharsets;
 
 /**
  * @author 刘镇 (suninformation@163.com) on 2017/10/10 上午11:14
- * @version 1.0
  */
 public class JSONSerializer implements ISerializer {
+
+    public final static String NAME = "json";
 
     @Override
     public String getContentType() {
@@ -33,15 +35,15 @@ public class JSONSerializer implements ISerializer {
 
     @Override
     public byte[] serialize(Object object) throws Exception {
-        com.alibaba.fastjson.serializer.JSONSerializer _serializer = new com.alibaba.fastjson.serializer.JSONSerializer();
-        _serializer.config(SerializerFeature.WriteEnumUsingToString, true);
-        _serializer.config(SerializerFeature.WriteClassName, true);
-        _serializer.write(object);
-        return _serializer.getWriter().toBytes(IConfig.DEFAULT_CHARSET);
+        com.alibaba.fastjson.serializer.JSONSerializer serializer = new com.alibaba.fastjson.serializer.JSONSerializer();
+        serializer.config(SerializerFeature.WriteEnumUsingToString, true);
+        serializer.config(SerializerFeature.WriteClassName, true);
+        serializer.write(object);
+        return serializer.getWriter().toBytes(StandardCharsets.UTF_8);
     }
 
     @Override
-    public <T> T deserialize(byte[] bytes, Class<T> clazz) throws Exception {
-        return JSON.parseObject(new String(bytes, IConfig.DEFAULT_CHARSET), clazz);
+    public <T> T deserialize(byte[] bytes, Class<T> clazz) {
+        return JSON.parseObject(new String(bytes, StandardCharsets.UTF_8), clazz);
     }
 }

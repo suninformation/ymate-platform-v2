@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2018 the original author or authors.
+ * Copyright 2007-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,10 +15,12 @@
  */
 package net.ymate.platform.serv;
 
+import net.ymate.platform.core.beans.annotation.Ignored;
+
 /**
  * @author 刘镇 (suninformation@163.com) on 2018/11/21 9:20 PM
- * @version 1.0
  */
+@Ignored
 public interface ISessionListener<SESSION_WRAPPER extends ISessionWrapper> {
 
     /**

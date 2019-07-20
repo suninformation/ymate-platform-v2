@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2017 the original author or authors.
+ * Copyright 2007-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@ package net.ymate.platform.configuration;
 
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import net.ymate.platform.core.configuration.IConfigFileParser;
 
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -24,79 +25,85 @@ import java.util.Map;
 
 /**
  * @author 刘镇 (suninformation@163.com) on 2017/7/31 上午12:11
- * @version 1.0
  */
 public abstract class AbstractConfigFileParser implements IConfigFileParser {
 
-    protected Map<String, Attribute> __rootAttributes;
+    private Map<String, Attribute> attributes;
 
-    protected Map<String, Category> __categories;
+    private Map<String, Category> categories;
 
-    private boolean __loaded;
+    private boolean loaded;
 
-    protected boolean __sorted;
+    private boolean sorted;
 
     @Override
     public IConfigFileParser load(boolean sorted) {
-        if (!__loaded) {
+        if (!loaded) {
             // 判断是否保证顺序
             if (sorted) {
-                __sorted = true;
-                __categories = new LinkedHashMap<String, Category>();
-                __rootAttributes = new LinkedHashMap<String, Attribute>();
+                this.sorted = true;
+                categories = new LinkedHashMap<>(16);
+                attributes = new LinkedHashMap<>(16);
             } else {
-                __categories = new HashMap<String, Category>();
-                __rootAttributes = new HashMap<String, Attribute>();
+                categories = new HashMap<>(16);
+                attributes = new HashMap<>(16);
             }
-            __doLoad();
+            onLoad();
             //
-            __loaded = true;
+            loaded = true;
         }
         return this;
     }
 
-    protected abstract void __doLoad();
+    /**
+     * 配置文件分析过程
+     */
+    protected abstract void onLoad();
+
+    public boolean isSorted() {
+        return sorted;
+    }
 
     @Override
     public Attribute getAttribute(String key) {
-        return this.__rootAttributes.get(key);
+        return this.attributes.get(key);
     }
 
     @Override
     public Map<String, Attribute> getAttributes() {
-        return __rootAttributes;
+        return attributes;
     }
 
     @Override
     public Category getDefaultCategory() {
-        return this.__categories.get(DEFAULT_CATEGORY_NAME);
+        return this.categories.get(DEFAULT_CATEGORY_NAME);
     }
 
     @Override
     public Category getCategory(String name) {
-        return this.__categories.get(name);
+        return this.categories.get(name);
     }
 
     @Override
     public Map<String, Category> getCategories() {
-        return __categories;
+        return categories;
     }
 
     @Override
     public JSONObject toJSON() {
-        JSONObject _jsonObject = new JSONObject(__sorted);
+        JSONObject jsonObject = new JSONObject(sorted);
         //
-        JSONObject _jsonAttrs = new JSONObject();
-        for (Attribute _attr : __rootAttributes.values()) {
-            _attr.appendTo(_jsonAttrs);
-        }
-        _jsonObject.put(TAG_NAME_ATTRIBUTES, _jsonAttrs);
+        JSONObject jsonAttrs = new JSONObject();
+        attributes.values().forEach((attr) -> {
+            attr.appendTo(jsonAttrs);
+        });
+        jsonObject.put(TAG_NAME_ATTRIBUTES, jsonAttrs);
         //
-        JSONArray _jsonCategories = new JSONArray();
-        for (Category _category : __categories.values()) {
-            _jsonCategories.add(_category.toJSON());
-        }
-        _jsonObject.put(TAG_NAME_CATEGORIES, _jsonCategories);
-        return _jsonObject;
+        JSONArray jsonCategories = new JSONArray();
+        categories.values().forEach((category) -> {
+            jsonCategories.add(category.toJSON());
+        });
+        jsonObject.put(TAG_NAME_CATEGORIES, jsonCategories);
+        return jsonObject;
     }
 }

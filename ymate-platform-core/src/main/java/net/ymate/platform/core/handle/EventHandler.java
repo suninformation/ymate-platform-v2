@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2017 the original author or authors.
+ * Copyright 2007-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,29 +15,27 @@
  */
 package net.ymate.platform.core.handle;
 
-import net.ymate.platform.core.YMP;
+import net.ymate.platform.commons.util.ClassUtils;
+import net.ymate.platform.core.IApplication;
 import net.ymate.platform.core.beans.IBeanHandler;
 import net.ymate.platform.core.event.IEvent;
-import net.ymate.platform.core.util.ClassUtils;
 
 /**
  * @author 刘镇 (suninformation@163.com) on 2017/11/14 上午2:17
- * @version 1.0
  */
 public final class EventHandler implements IBeanHandler {
 
-    private final YMP __owner;
+    private final IApplication owner;
 
-    public EventHandler(YMP owner) {
-        __owner = owner;
-        __owner.registerExcludedClass(IEvent.class);
+    public EventHandler(IApplication owner) {
+        this.owner = owner;
     }
 
     @Override
     @SuppressWarnings("unchecked")
-    public Object handle(Class<?> targetClass) throws Exception {
-        if (!targetClass.isInterface() && ClassUtils.isInterfaceOf(targetClass, IEvent.class)) {
-            __owner.getEvents().registerEvent((Class<? extends IEvent>) targetClass);
+    public Object handle(Class<?> targetClass) {
+        if (ClassUtils.isNormalClass(targetClass) && !targetClass.isInterface() && ClassUtils.isInterfaceOf(targetClass, IEvent.class)) {
+            owner.getEvents().registerEvent((Class<? extends IEvent>) targetClass);
         }
         return null;
     }

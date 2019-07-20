@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2017 the original author or authors.
+ * Copyright 2007-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,12 +15,14 @@
  */
 package net.ymate.platform.webmvc.impl;
 
-import net.ymate.platform.core.util.ClassUtils;
-import net.ymate.platform.core.util.RuntimeUtils;
+import net.ymate.platform.commons.XPathHelper;
+import net.ymate.platform.commons.util.ClassUtils;
+import net.ymate.platform.commons.util.RuntimeUtils;
+import net.ymate.platform.webmvc.IRequestContext;
 import net.ymate.platform.webmvc.IUploadFileWrapper;
 import net.ymate.platform.webmvc.IWebMvc;
 import net.ymate.platform.webmvc.context.WebContext;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.w3c.dom.Element;
@@ -28,92 +30,88 @@ import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
-import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.lang.reflect.Array;
 
 /**
  * 基于XML作为协议格式控制器请求处理器接口实现
  *
  * @author 刘镇 (suninformation@163.com) on 15/5/28 上午11:52
- * @version 1.0
  */
 public class XMLRequestProcessor extends DefaultRequestProcessor {
 
-    private static final Log _LOG = LogFactory.getLog(XMLRequestProcessor.class);
+    private static final Log LOG = LogFactory.getLog(XMLRequestProcessor.class);
 
-    private XMLProtocol __doGetProtocol(IWebMvc owner) {
-        XMLProtocol _protocol = WebContext.getRequestContext().getAttribute(XMLRequestProcessor.class.getName());
-        if (_protocol == null) {
+    private XMLProtocol doGetProtocol(IWebMvc owner) {
+        IRequestContext requestContext = WebContext.getRequestContext();
+        XMLProtocol protocol = requestContext.getAttribute(XMLRequestProcessor.class.getName());
+        if (protocol == null) {
             try {
-                _protocol = new XMLProtocol(WebContext.getRequest().getInputStream(), owner.getModuleCfg().getDefaultCharsetEncoding());
-            } catch (Exception e) {
-                _protocol = new XMLProtocol();
+                protocol = new XMLProtocol(WebContext.getRequest().getInputStream(), owner.getConfig().getDefaultCharsetEncoding());
+            } catch (IOException | ParserConfigurationException | SAXException e) {
+                protocol = new XMLProtocol();
                 //
-                if (WebContext.getContext().getOwner().getOwner().getConfig().isDevelopMode() && _LOG.isWarnEnabled()) {
-                    _LOG.warn("Invalid protocol", RuntimeUtils.unwrapThrow(e));
+                if (owner.getOwner().isDevEnv() && LOG.isWarnEnabled()) {
+                    LOG.warn("Invalid protocol.", RuntimeUtils.unwrapThrow(e));
                 }
             }
-            WebContext.getRequestContext().addAttribute(XMLRequestProcessor.class.getName(), _protocol);
+            requestContext.addAttribute(XMLRequestProcessor.class.getName(), protocol);
         }
-        return _protocol;
+        return protocol;
     }
 
     @Override
-    protected Object __doParseRequestParam(IWebMvc owner, String paramName, String defaultValue, Class<?> paramType, boolean fullScope) {
-        Object _returnValue = null;
-        XMLProtocol _protocol = __doGetProtocol(owner);
-        String[] _paramNameArr = StringUtils.split(paramName, ".");
+    protected Object doParseRequestParam(IWebMvc owner, String paramName, String defaultValue, Class<?> paramType, boolean fullScope) {
+        Object returnValue = null;
+        XMLProtocol protocol = doGetProtocol(owner);
+        String[] paramNameArr = StringUtils.split(paramName, ".");
         if (paramType.isArray()) {
             if (!paramType.equals(IUploadFileWrapper[].class)) {
-                String[] _values;
-                if (_paramNameArr.length > 1) {
-                    String _valueStr = _protocol.getSubProperty(_paramNameArr[0], _paramNameArr[1], defaultValue);
-                    _values = StringUtils.split(_valueStr, "|");
+                String[] values;
+                if (paramNameArr.length > 1) {
+                    String valueStr = protocol.getSubProperty(paramNameArr[0], paramNameArr[1], defaultValue);
+                    values = StringUtils.split(valueStr, "|");
                 } else {
-                    String _valueStr = _protocol.getProperty(paramName, defaultValue);
-                    _values = StringUtils.split(_valueStr, "|");
+                    String valueStr = protocol.getProperty(paramName, defaultValue);
+                    values = StringUtils.split(valueStr, "|");
                 }
-                if (_values != null && _values.length > 0) {
-                    Class<?> _arrayClassType = ClassUtils.getArrayClassType(paramType);
-                    Object[] _tempParams = (Object[]) Array.newInstance(_arrayClassType, _values.length);
-                    for (int _tempIdx = 0; _tempIdx < _values.length; _tempIdx++) {
-                        _tempParams[_tempIdx] = __doSafeGetParamValue(owner, paramName, _arrayClassType, _values[_tempIdx], null, false);
-                    }
-                    _returnValue = _tempParams;
+                if (values != null && values.length > 0) {
+                    returnValue = doSafeGetParamValueArray(owner, paramName, ClassUtils.getArrayClassType(paramType), values);
                 }
             }
         } else if (!paramType.equals(IUploadFileWrapper.class)) {
-            if (_paramNameArr.length > 1) {
-                _returnValue = __doSafeGetParamValue(owner, paramName, paramType, _protocol.getSubProperty(_paramNameArr[0], _paramNameArr[1], defaultValue), defaultValue, fullScope);
+            if (paramNameArr.length > 1) {
+                returnValue = doSafeGetParamValue(owner, paramName, paramType, protocol.getSubProperty(paramNameArr[0], paramNameArr[1], defaultValue), defaultValue, fullScope);
             } else {
-                _returnValue = __doSafeGetParamValue(owner, paramName, paramType, _protocol.getProperty(paramName, defaultValue), defaultValue, fullScope);
+                returnValue = doSafeGetParamValue(owner, paramName, paramType, protocol.getProperty(paramName, defaultValue), defaultValue, fullScope);
             }
         }
-        return _returnValue;
+        return returnValue;
     }
 
     /**
      * 简单XML协议处理类
      *
      * @author 刘镇 (suninformation@163.com) on 15/7/25 下午6:16
-     * @version 1.0
      */
     private static class XMLProtocol {
-        private Element __rootElement;
 
-        private boolean __inited;
+        private Element rootElement;
 
-        public XMLProtocol() {
+        private boolean initialized;
+
+        XMLProtocol() {
         }
 
-        public XMLProtocol(InputStream inputStream, String charsetName) throws ParserConfigurationException, IOException, SAXException {
-            InputSource _source = new InputSource(new InputStreamReader(inputStream, charsetName));
-            __rootElement = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(_source).getDocumentElement();
-            __inited = true;
+        XMLProtocol(InputStream inputStream, String charsetName) throws ParserConfigurationException, IOException, SAXException {
+            DocumentBuilder builder = XPathHelper.DOCUMENT_BUILDER_FACTORY.newDocumentBuilder();
+            builder.setEntityResolver(XPathHelper.IGNORE_DTD_ENTITY_RESOLVER);
+            //
+            rootElement = builder.parse(new InputSource(new InputStreamReader(inputStream, charsetName))).getDocumentElement();
+            initialized = true;
         }
 
         public String getProperty(String tagName) {
@@ -121,15 +119,15 @@ public class XMLRequestProcessor extends DefaultRequestProcessor {
         }
 
         public String getProperty(String tagName, String defaultValue) {
-            String _returnValue = null;
-            if (__inited) {
-                NodeList _nodes = __rootElement.getElementsByTagName(tagName);
-                if (_nodes.getLength() > 0) {
-                    Element _node = (Element) _nodes.item(0);
-                    _returnValue = _node.getTextContent();
+            String returnValue = null;
+            if (initialized) {
+                NodeList nodeList = rootElement.getElementsByTagName(tagName);
+                if (nodeList.getLength() > 0) {
+                    Element node = (Element) nodeList.item(0);
+                    returnValue = node.getTextContent();
                 }
             }
-            return StringUtils.defaultIfBlank(_returnValue, defaultValue);
+            return StringUtils.defaultIfBlank(returnValue, defaultValue);
         }
 
         public String getSubProperty(String subTagName, String tagName) {
@@ -137,20 +135,20 @@ public class XMLRequestProcessor extends DefaultRequestProcessor {
         }
 
         public String getSubProperty(String subTagName, String tagName, String defaultValue) {
-            String _returnValue = null;
-            if (__inited) {
-                NodeList _nodes = __rootElement.getElementsByTagName(subTagName);
-                if (_nodes.getLength() > 0) {
-                    Element _node = (Element) _nodes.item(0);
+            String returnValue = null;
+            if (initialized) {
+                NodeList nodeList = rootElement.getElementsByTagName(subTagName);
+                if (nodeList.getLength() > 0) {
+                    Element node = (Element) nodeList.item(0);
                     //
-                    NodeList _subNodes = _node.getElementsByTagName(tagName);
-                    if (_subNodes.getLength() > 0) {
-                        Element _subNode = (Element) _subNodes.item(0);
-                        _returnValue = _subNode.getTextContent();
+                    NodeList subNodeList = node.getElementsByTagName(tagName);
+                    if (subNodeList.getLength() > 0) {
+                        Element subNode = (Element) subNodeList.item(0);
+                        returnValue = subNode.getTextContent();
                     }
                 }
             }
-            return StringUtils.defaultIfBlank(_returnValue, defaultValue);
+            return StringUtils.defaultIfBlank(returnValue, defaultValue);
         }
     }
 }

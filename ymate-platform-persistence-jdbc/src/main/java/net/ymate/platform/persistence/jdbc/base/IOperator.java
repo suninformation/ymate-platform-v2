@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2017 the original author or authors.
+ * Copyright 2007-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,7 +15,8 @@
  */
 package net.ymate.platform.persistence.jdbc.base;
 
-import net.ymate.platform.persistence.jdbc.IConnectionHolder;
+import net.ymate.platform.core.beans.annotation.Ignored;
+import net.ymate.platform.persistence.jdbc.IDatabaseConnectionHolder;
 
 import java.util.List;
 
@@ -23,8 +24,8 @@ import java.util.List;
  * 数据库操作器接口定义
  *
  * @author 刘镇 (suninformation@163.com) on 2011-9-22 下午03:46:12
- * @version 1.0
  */
+@Ignored
 public interface IOperator {
 
     /**
@@ -35,17 +36,23 @@ public interface IOperator {
     void execute() throws Exception;
 
     /**
-     * @return 返回当前操作器是否已执行
+     * 判断当前操作器是否已执行
+     *
+     * @return 返回true表示已执行
      */
     boolean isExecuted();
 
     /**
-     * @return 获取预执行SQL字符串
+     * 获取预执行SQL字符串
+     *
+     * @return 返回SQL字符串
      */
     String getSQL();
 
     /**
-     * @return 获取访问器配置
+     * 获取访问器配置
+     *
+     * @return 返回访问器配置
      */
     IAccessorConfig getAccessorConfig();
 
@@ -57,29 +64,39 @@ public interface IOperator {
     void setAccessorConfig(IAccessorConfig accessorConfig);
 
     /**
-     * @return 获取当前使用的数据库连接对象
+     * 获取当前使用的数据库连接对象
+     *
+     * @return 返回数据库连接对象
      */
-    IConnectionHolder getConnectionHolder();
+    IDatabaseConnectionHolder getConnectionHolder();
 
     /**
-     * @return 获取本次操作所消耗的时间（单位：毫秒值）
+     * 获取本次操作所消耗的时间（单位：毫秒值）
+     *
+     * @return 返回时间毫秒值
      */
     long getExpenseTime();
 
     /**
+     * 获取SQL参数集合
+     *
      * @return 返回SQL参数集合
      */
     List<SQLParameter> getParameters();
 
     /**
+     * 添加SQL参数，若参数为NULL则忽略
+     *
      * @param parameter SQL参数对象
-     * @return 添加SQL参数，若参数为NULL则忽略
+     * @return 返回当前操作器对象
      */
     IOperator addParameter(SQLParameter parameter);
 
     /**
+     * 添加SQL参数，若参数为NULL则将默认向SQL传递NULL值对象
+     *
      * @param parameter SQL参数值
-     * @return 添加SQL参数，若参数为NULL则将默认向SQL传递NULL值对象
+     * @return 返回当前操作器对象
      */
     IOperator addParameter(Object parameter);
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2017 the original author or authors.
+ * Copyright 2007-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,6 +15,8 @@
  */
 package net.ymate.platform.webmvc;
 
+import net.ymate.platform.core.beans.annotation.Ignored;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -24,34 +26,44 @@ import java.io.OutputStream;
  * 上传文件包装器
  *
  * @author 刘镇 (suninformation@163.com) on 2012-12-26 下午1:24:51
- * @version 1.0
  */
+@Ignored
 public interface IUploadFileWrapper {
 
     /**
-     * @return 获取完整的文件名及路径
+     * 获取完整的文件名及路径
+     *
+     * @return 返回文件名及路径
      */
     String getPath();
 
     /**
-     * @return 获取文件名称
+     * 获取文件名称
+     *
+     * @return 返回文件名称
      */
     String getName();
 
     /**
-     * @return 获取文件大小
+     * 获取文件大小
+     *
+     * @return 返回文件大小
      */
     long getSize();
 
     /**
-     * @return 获取临时文件对象
+     * 获取临时文件对象
+     *
+     * @return 返回临时文件对象
      * @throws Exception 可能产生的异常
      * @since 2.0.6
      */
     File getFile() throws Exception;
 
     /**
-     * @return 获取文件Content-Type
+     * 获取文件Content-Type
+     *
+     * @return 返回文件Content-Type
      */
     String getContentType();
 
@@ -77,13 +89,17 @@ public interface IUploadFileWrapper {
     void delete();
 
     /**
-     * @return 获取文件输入流对象
+     * 获取文件输入流对象
+     *
+     * @return 返回文件输入流对象
      * @throws IOException 可能产生的异常
      */
     InputStream getInputStream() throws IOException;
 
     /**
-     * @return 获取文件输出流对象
+     * 获取文件输出流对象
+     *
+     * @return 返回文件输出流对象
      * @throws IOException 可能产生的异常
      */
     OutputStream getOutputStream() throws IOException;

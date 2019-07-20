@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2018 the original author or authors.
+ * Copyright 2007-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,7 +18,7 @@ package net.ymate.platform.plugin.impl;
 import net.ymate.platform.core.beans.BeanMeta;
 import net.ymate.platform.core.beans.impl.DefaultBeanFactory;
 import net.ymate.platform.plugin.*;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -29,91 +29,104 @@ import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * @author 刘镇 (suninformation@163.com) on 2018-11-28 19:55
- * @version 1.0
  */
 public class DefaultPluginBeanFactory extends DefaultBeanFactory implements IPluginBeanFactory {
 
-    private static final Log _LOG = LogFactory.getLog(DefaultPluginBeanFactory.class);
+    private static final Log LOG = LogFactory.getLog(DefaultPluginBeanFactory.class);
 
     /**
      * PluginID -- PluginMeta
      */
-    private Map<String, PluginMeta> __pluginMetaIds = new ConcurrentHashMap<String, PluginMeta>();
+    private final Map<String, PluginMeta> pluginMetaMap = new ConcurrentHashMap<>();
 
-    private IPluginFactory __pluginFactory;
+    /**
+     * 插件别名与插件唯一标识对应关系
+     */
+    private final Map<String, String> pluginAliasMap = new ConcurrentHashMap<>();
 
-    private boolean __includedClassPath;
+    private IPluginFactory pluginFactory;
 
-    public DefaultPluginBeanFactory(IPluginFactory factory) {
-        this(factory, false);
+    private boolean includedClassPath;
+
+    public DefaultPluginBeanFactory(IPluginFactory pluginFactory) {
+        this(pluginFactory, false);
     }
 
-    DefaultPluginBeanFactory(IPluginFactory factory, boolean includedClassPath) {
-        super(factory.getOwner());
+    DefaultPluginBeanFactory(IPluginFactory pluginFactory, boolean includedClassPath) {
+        super(pluginFactory.getOwner().getBeanFactory());
         //
-        __pluginFactory = factory;
-        __includedClassPath = includedClassPath;
+        this.pluginFactory = pluginFactory;
+        this.includedClassPath = includedClassPath;
     }
 
     @Override
     public boolean isIncludedClassPath() {
-        return __includedClassPath;
+        return includedClassPath;
     }
 
     @Override
-    protected void __addClass(BeanMeta beanMeta) {
+    protected void parseClass(BeanMeta beanMeta) {
         if (beanMeta.getBeanObject() instanceof PluginMeta) {
-            final PluginMeta _meta = (PluginMeta) beanMeta.getBeanObject();
+            final PluginMeta pluginMeta = (PluginMeta) beanMeta.getBeanObject();
             //
-            if (!__includedClassPath && StringUtils.isBlank(_meta.getPath())) {
+            if (!includedClassPath && StringUtils.isBlank(pluginMeta.getPath())) {
                 return;
             }
             //
-            BeanMeta _beanMeta = BeanMeta.create(beanMeta.getBeanClass(), true);
-            _beanMeta.setInitializer(new BeanMeta.IInitializer() {
-                @Override
-                public void init(Object target) throws Exception {
-                    // 尝试通过IPluginExtend接口方式获取扩展对象
-                    if (_meta.getExtendObject() == null && target instanceof IPluginExtend) {
-                        _meta.setExtendObject(((IPluginExtend<?>) target).getExtendObject(new DefaultPluginContext(__pluginFactory, _meta)));
-                    }
+            BeanMeta pluginBeanMeta = BeanMeta.create(beanMeta.getBeanClass(), true);
+            pluginBeanMeta.setInitializer(target -> {
+                // 尝试通过IPluginExtend接口方式获取扩展对象
+                if (pluginMeta.getExtensionObject() == null && target instanceof IPluginExtension) {
+                    pluginMeta.setExtensionObject(((IPluginExtension<?>) target).getExtensionObject(new DefaultPluginContext(pluginFactory, pluginMeta)));
                 }
             });
-            super.__addClass(_beanMeta);
+            super.parseClass(pluginBeanMeta);
             //
-            if (__pluginFactory.getOwner().getConfig().isDevelopMode() && _LOG.isInfoEnabled()) {
-                _LOG.info("--> " + _meta.toString() + " registered.");
+            pluginMetaMap.put(pluginMeta.getId(), pluginMeta);
+            pluginMeta.getAlias().forEach(alias -> pluginAliasMap.put(alias, pluginMeta.getId()));
+            //
+            if (getOwner().isDevEnv() && LOG.isInfoEnabled()) {
+                LOG.info(String.format("%s registered.", pluginMeta.toString()));
             }
-            //
-            __pluginMetaIds.put(_meta.getId(), _meta);
         } else {
-            __pluginFactory.getOwner().registerBean(beanMeta);
+            registerBean(beanMeta);
         }
     }
 
     @Override
-    public IPlugin getPlugin(String id) {
-        IPlugin _plugin = null;
-        if (__pluginMetaIds.containsKey(id)) {
-            _plugin = getBean(__pluginMetaIds.get(id).getInitClass());
+    public IPlugin getPlugin(String idOrAlias) {
+        if (pluginMetaMap.containsKey(idOrAlias)) {
+            return getBean(pluginMetaMap.get(idOrAlias).getInitClass());
+        } else {
+            String aliasId = pluginAliasMap.get(idOrAlias);
+            if (aliasId != null) {
+                return getBean(pluginMetaMap.get(aliasId).getInitClass());
+            }
         }
-        return _plugin;
+        return null;
     }
 
     @Override
-    public PluginMeta getPluginMeta(String id) {
-        return __pluginMetaIds.get(id);
+    public PluginMeta getPluginMeta(String idOrAlias) {
+        PluginMeta pluginMeta = pluginMetaMap.get(idOrAlias);
+        if (pluginMeta == null) {
+            String aliasId = pluginAliasMap.get(idOrAlias);
+            if (aliasId != null) {
+                pluginMeta = pluginMetaMap.get(aliasId);
+            }
+        }
+        return pluginMeta;
     }
 
     @Override
     public Collection<PluginMeta> getPluginMetas() {
-        return Collections.unmodifiableCollection(__pluginMetaIds.values());
+        return Collections.unmodifiableCollection(pluginMetaMap.values());
     }
 
     @Override
-    public void destroy() throws Exception {
-        __pluginMetaIds = null;
-        //
-        super.destroy();
+    public void close() throws Exception {
+        super.close();
+        pluginMetaMap.clear();
+        pluginAliasMap.clear();
     }
 }

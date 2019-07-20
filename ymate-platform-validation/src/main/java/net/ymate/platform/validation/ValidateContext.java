@@ -15,25 +15,30 @@
  */
 package net.ymate.platform.validation;
 
-import net.ymate.platform.core.YMP;
-import net.ymate.platform.core.support.IContext;
-import net.ymate.platform.core.util.ClassUtils;
-import org.apache.commons.lang.StringUtils;
+import net.ymate.platform.commons.util.ClassUtils;
+import net.ymate.platform.core.IApplication;
+import net.ymate.platform.core.support.AbstractContext;
+import org.apache.commons.lang3.StringUtils;
 
 import java.lang.annotation.Annotation;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 
 /**
  * 验证器上下文环境
  *
  * @author 刘镇 (suninformation@163.com) on 2013-4-13 上午11:28:22
- * @version 1.0
  */
-public class ValidateContext implements IContext {
+public class ValidateContext extends AbstractContext {
 
-    private final YMP __owner;
+    private static final ThreadLocal<Map<String, Object>> ATTRIBUTES = ThreadLocal.withInitial(() -> new HashMap<>(16));
 
-    private final String __resourceName;
+    public static Map<String, Object> getLocalAttributes() {
+        return ATTRIBUTES.get();
+    }
+
+    private final String resourceName;
 
     private final Annotation annotation;
 
@@ -41,30 +46,24 @@ public class ValidateContext implements IContext {
 
     private final String paramLabel;
 
+    private final String paramMessage;
+
     private final Map<String, Object> paramValues;
 
-    private final Map<String, String> contextParams;
-
-    public ValidateContext(YMP owner, Annotation annotation, String paramName, String paramLabel, Map<String, Object> paramValues, Map<String, String> contextParams, String resourceName) {
-        this.__owner = owner;
+    public ValidateContext(IApplication owner, Annotation annotation, String paramName, String paramLabel, String paramMessage, Map<String, Object> paramValues, Map<String, String> contextParams, String resourceName) {
+        super(owner, contextParams);
         //
         this.annotation = annotation;
         this.paramName = paramName;
         this.paramLabel = paramLabel;
+        this.paramMessage = paramMessage;
         this.paramValues = paramValues;
         //
-        this.contextParams = contextParams;
-        //
-        this.__resourceName = resourceName;
-    }
-
-    @Override
-    public YMP getOwner() {
-        return __owner;
+        this.resourceName = resourceName;
     }
 
     public String getResourceName() {
-        return __resourceName;
+        return resourceName;
     }
 
     public Annotation getAnnotation() {
@@ -79,46 +78,42 @@ public class ValidateContext implements IContext {
         return paramLabel;
     }
 
+    public String getParamMessage() {
+        return paramMessage;
+    }
+
     public Object getParamValue() {
         return getParamValue(this.paramName);
     }
 
     public Object getParamValue(String paramName) {
-        Object _targetValue = this.paramValues.get(paramName);
-        if (_targetValue == null) {
+        Object targetValue = this.paramValues.get(paramName);
+        if (targetValue == null) {
             // 修正对JavaBean对象验证时无法正确获取属性参数值的问题:
             // 先以'.'拆分参数名称并按层级关系尝试获取参数值
-            String[] _pNames = StringUtils.split(paramName, '.');
-            if (_pNames.length > 1) {
+            String[] pNames = StringUtils.split(paramName, '.');
+            if (pNames.length > 1) {
                 try {
-                    for (String _pName : _pNames) {
-                        if (_targetValue == null) {
-                            _targetValue = this.paramValues.get(_pName);
+                    for (String pName : pNames) {
+                        if (targetValue == null) {
+                            targetValue = this.paramValues.get(pName);
                         } else {
-                            _targetValue = ClassUtils.wrapper(_targetValue).getValue(_pName);
+                            targetValue = ClassUtils.wrapper(targetValue).getValue(pName);
                         }
                     }
-                } catch (Exception e) {
+                } catch (IllegalAccessException e) {
                     // 出现任何异常都将返回null
-                    _targetValue = null;
+                    targetValue = null;
                 } finally {
                     // 上述过程无论取值是否为空都将被缓存, 防止多次执行
-                    this.paramValues.put(this.paramName, _targetValue);
+                    this.paramValues.put(this.paramName, targetValue);
                 }
             }
         }
-        return _targetValue;
+        return targetValue;
     }
 
     public Map<String, Object> getParamValues() {
-        return paramValues;
-    }
-
-    /**
-     * @return 返回上下文参数映射
-     */
-    @Override
-    public Map<String, String> getContextParams() {
-        return contextParams;
+        return Collections.unmodifiableMap(paramValues);
     }
 }

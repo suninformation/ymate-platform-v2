@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2017 the original author or authors.
+ * Copyright 2007-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,54 +16,59 @@
 package net.ymate.platform.webmvc.support;
 
 import net.ymate.platform.webmvc.IRequestContext;
-import net.ymate.platform.webmvc.IWebMvcModuleCfg;
+import net.ymate.platform.webmvc.IWebMvcConfig;
 import net.ymate.platform.webmvc.WebMVC;
+import net.ymate.platform.webmvc.base.Type;
 import net.ymate.platform.webmvc.impl.DefaultRequestContext;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import javax.servlet.*;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.Set;
 import java.util.regex.Pattern;
 
 /**
  * 基于Filter实现的WebMVC请求分发器
  *
  * @author 刘镇 (suninformation@163.com) on 2012-12-23 下午11:19:39
- * @version 1.0
  */
 public class DispatchFilter implements Filter {
 
-    private FilterConfig __filterConfig;
+    private FilterConfig filterConfig;
 
-    private Pattern __ignorePattern;
+    private Pattern ignorePattern;
 
-    private Dispatcher __dispatcher;
+    private Dispatcher dispatcher;
 
-    private String __requestPrefix;
+    private String requestPrefix;
 
     @Override
-    public void init(FilterConfig filterConfig) throws ServletException {
-        __filterConfig = filterConfig;
-        String _regex = WebMVC.get().getModuleCfg().getRequestIgnoreRegex();
-        if (!"false".equalsIgnoreCase(_regex)) {
-            __ignorePattern = Pattern.compile(_regex, Pattern.CASE_INSENSITIVE);
+    public void init(FilterConfig filterConfig) {
+        this.filterConfig = filterConfig;
+        IWebMvcConfig config = WebMVC.get().getConfig();
+        Set<String> ignoreSuffixes = config.getRequestIgnoreSuffixes();
+        String ignoreRegex;
+        if (ignoreSuffixes != null && !ignoreSuffixes.isEmpty()) {
+            ignoreRegex = IWebMvcConfig.IGNORE_REGEX_PREFIX + StringUtils.join(ignoreSuffixes, "|") + IWebMvcConfig.IGNORE_REGEX_SUFFIX;
+        } else {
+            ignoreRegex = IWebMvcConfig.IGNORE_REGEX;
         }
-        IWebMvcModuleCfg _moduleCfg = WebMVC.get().getModuleCfg();
-        __dispatcher = new Dispatcher(_moduleCfg.getDefaultCharsetEncoding(), _moduleCfg.getDefaultContentType(), _moduleCfg.getRequestMethodParam());
-        __requestPrefix = _moduleCfg.getRequestPrefix();
+        ignorePattern = Pattern.compile(ignoreRegex, Pattern.CASE_INSENSITIVE);
+        dispatcher = new Dispatcher(config.getDefaultCharsetEncoding(), config.getDefaultContentType(), config.getRequestMethodParam());
+        requestPrefix = config.getRequestPrefix();
     }
 
     @Override
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
-        if (StringUtils.equalsIgnoreCase(((HttpServletRequest) request).getHeader("Connection"), "Upgrade")
-                && StringUtils.equalsIgnoreCase(((HttpServletRequest) request).getHeader("Upgrade"), "websocket")) {
+        if (StringUtils.equalsIgnoreCase(((HttpServletRequest) request).getHeader(Type.Const.HTTP_HEADER_CONNECTION), Type.Const.HTTP_HEADER_UPGRADE)
+                && StringUtils.equalsIgnoreCase(((HttpServletRequest) request).getHeader(Type.Const.HTTP_HEADER_UPGRADE), "websocket")) {
             chain.doFilter(request, response);
         } else {
-            IRequestContext _requestContext = new DefaultRequestContext((HttpServletRequest) request, __requestPrefix);
-            if (null == __ignorePattern || !__ignorePattern.matcher(_requestContext.getOriginalUrl()).find()) {
-                __dispatcher.dispatch(_requestContext, __filterConfig.getServletContext(), (HttpServletRequest) request, (HttpServletResponse) response);
+            IRequestContext requestContext = new DefaultRequestContext((HttpServletRequest) request, requestPrefix);
+            if (!ignorePattern.matcher(requestContext.getOriginalUrl()).find()) {
+                dispatcher.dispatch(requestContext, filterConfig.getServletContext(), (HttpServletRequest) request, (HttpServletResponse) response);
             } else {
                 chain.doFilter(request, response);
             }
