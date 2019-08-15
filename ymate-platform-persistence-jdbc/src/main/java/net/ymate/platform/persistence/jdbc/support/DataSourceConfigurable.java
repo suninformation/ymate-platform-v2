@@ -71,7 +71,7 @@ public class DataSourceConfigurable {
     }
 
     public DataSourceConfigurable passwordEncrypted(boolean passwordEncrypted) {
-        __putItem(IDatabaseModuleCfg.PASSWORD, String.valueOf(passwordEncrypted));
+        __putItem(IDatabaseModuleCfg.PASSWORD_ENCRYPTED, String.valueOf(passwordEncrypted));
         return this;
     }
 
