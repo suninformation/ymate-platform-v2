@@ -22,12 +22,11 @@ import java.io.Closeable;
 
 /**
  * @author 刘镇 (suninformation@163.com) on 2019-05-23 02:48
+ * @since 2.1.0
  */
 @Ignored
-public interface IRedisCommander extends
-        JedisClusterCommands, MultiKeyJedisClusterCommands, JedisClusterScriptingCommands, BinaryJedisClusterCommands, MultiKeyBinaryJedisClusterCommands, JedisClusterBinaryScriptingCommands,
-        JedisCommands, MultiKeyCommands, AdvancedJedisCommands, ScriptingCommands, ClusterCommands, SentinelCommands, ModuleCommands,
-        BasicCommands, BinaryJedisCommands, MultiKeyBinaryCommands, AdvancedBinaryJedisCommands, BinaryScriptingCommands, Closeable {
+public interface IRedisCommander extends BinaryJedisClusterCommands, MultiKeyBinaryJedisClusterCommands, JedisClusterBinaryScriptingCommands, MultiKeyJedisClusterCommands, JedisClusterScriptingCommands,
+        BinaryJedisCommands, MultiKeyBinaryCommands, AdvancedBinaryJedisCommands, BinaryScriptingCommands, JedisCommands, MultiKeyCommands, AdvancedJedisCommands, ScriptingCommands, BasicCommands, ClusterCommands, SentinelCommands, ModuleCommands, Closeable {
 
     /**
      * 判断当前是否为集群模式

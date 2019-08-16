@@ -112,6 +112,11 @@ public class JedisClusterCommander implements IRedisCommander {
     }
 
     @Override
+    public byte[] memoryDoctorBinary() {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
     public List<String> configGet(String pattern) {
         throw new UnsupportedOperationException();
     }
@@ -193,6 +198,11 @@ public class JedisClusterCommander implements IRedisCommander {
 
     @Override
     public String clientSetname(String name) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public String memoryDoctor() {
         throw new UnsupportedOperationException();
     }
 
@@ -1019,6 +1029,71 @@ public class JedisClusterCommander implements IRedisCommander {
     @Override
     public Long hstrlen(byte[] key, byte[] field) {
         return jedisCluster.hstrlen(key, field);
+    }
+
+    @Override
+    public byte[] xadd(byte[] key, byte[] id, Map<byte[], byte[]> hash, long maxLen, boolean approximateLength) {
+        return jedisCluster.xadd(key, id, hash, maxLen, approximateLength);
+    }
+
+    @Override
+    public Long xlen(byte[] key) {
+        return jedisCluster.xlen(key);
+    }
+
+    @Override
+    public List<byte[]> xrange(byte[] key, byte[] start, byte[] end, long count) {
+        return jedisCluster.xrange(key, start, end, count);
+    }
+
+    @Override
+    public List<byte[]> xrevrange(byte[] key, byte[] end, byte[] start, int count) {
+        return jedisCluster.xrevrange(key, end, start, count);
+    }
+
+    @Override
+    public Long xack(byte[] key, byte[] group, byte[]... ids) {
+        return jedisCluster.xack(key, group, ids);
+    }
+
+    @Override
+    public String xgroupCreate(byte[] key, byte[] consumer, byte[] id, boolean makeStream) {
+        return jedisCluster.xgroupCreate(key, consumer, id, makeStream);
+    }
+
+    @Override
+    public String xgroupSetID(byte[] key, byte[] consumer, byte[] id) {
+        return jedisCluster.xgroupSetID(key, consumer, id);
+    }
+
+    @Override
+    public Long xgroupDestroy(byte[] key, byte[] consumer) {
+        return jedisCluster.xgroupDestroy(key, consumer);
+    }
+
+    @Override
+    public String xgroupDelConsumer(byte[] key, byte[] consumer, byte[] consumerName) {
+        return jedisCluster.xgroupDelConsumer(key, consumer, consumerName);
+    }
+
+    @Override
+    public Long xdel(byte[] key, byte[]... ids) {
+        return jedisCluster.xdel(key, ids);
+    }
+
+    @Override
+    public Long xtrim(byte[] key, long maxLen, boolean approximateLength) {
+        return jedisCluster.xtrim(key, maxLen, approximateLength);
+    }
+
+    @Override
+    public List<byte[]> xpending(byte[] key, byte[] groupname, byte[] start, byte[] end, int count, byte[] consumername) {
+        return jedisCluster.xpending(key, groupname, start, end, count, consumername);
+    }
+
+    @Override
+    public List<byte[]> xclaim(byte[] key, byte[] groupname, byte[] consumername, long minIdleTime, long newIdleTime, int retries, boolean force, byte[][] ids) {
+        return jedisCluster.xclaim(key, groupname, consumername, minIdleTime, newIdleTime, retries, force, ids);
     }
 
     @Override
@@ -1952,8 +2027,73 @@ public class JedisClusterCommander implements IRedisCommander {
     }
 
     @Override
-    public Long waitReplicas(String key, int replicas, long timeout) {
-        throw new UnsupportedOperationException();
+    public StreamEntryID xadd(String key, StreamEntryID id, Map<String, String> hash) {
+        return jedisCluster.xadd(key, id, hash);
+    }
+
+    @Override
+    public StreamEntryID xadd(String key, StreamEntryID id, Map<String, String> hash, long maxLen, boolean approximateLength) {
+        return jedisCluster.xadd(key, id, hash, maxLen, approximateLength);
+    }
+
+    @Override
+    public Long xlen(String key) {
+        return jedisCluster.xlen(key);
+    }
+
+    @Override
+    public List<StreamEntry> xrange(String key, StreamEntryID start, StreamEntryID end, int count) {
+        return jedisCluster.xrange(key, start, end, count);
+    }
+
+    @Override
+    public List<StreamEntry> xrevrange(String key, StreamEntryID end, StreamEntryID start, int count) {
+        return jedisCluster.xrevrange(key, end, start, count);
+    }
+
+    @Override
+    public long xack(String key, String group, StreamEntryID... ids) {
+        return jedisCluster.xack(key, group, ids);
+    }
+
+    @Override
+    public String xgroupCreate(String key, String groupname, StreamEntryID id, boolean makeStream) {
+        return jedisCluster.xgroupCreate(key, groupname, id, makeStream);
+    }
+
+    @Override
+    public String xgroupSetID(String key, String groupname, StreamEntryID id) {
+        return jedisCluster.xgroupSetID(key, groupname, id);
+    }
+
+    @Override
+    public long xgroupDestroy(String key, String groupname) {
+        return jedisCluster.xgroupDestroy(key, groupname);
+    }
+
+    @Override
+    public String xgroupDelConsumer(String key, String groupname, String consumername) {
+        return jedisCluster.xgroupDelConsumer(key, groupname, consumername);
+    }
+
+    @Override
+    public List<StreamPendingEntry> xpending(String key, String groupname, StreamEntryID start, StreamEntryID end, int count, String consumername) {
+        return jedisCluster.xpending(key, groupname, start, end, count, consumername);
+    }
+
+    @Override
+    public long xdel(String key, StreamEntryID... ids) {
+        return jedisCluster.xdel(key, ids);
+    }
+
+    @Override
+    public long xtrim(String key, long maxLen, boolean approximate) {
+        return jedisCluster.xtrim(key, maxLen, approximate);
+    }
+
+    @Override
+    public List<StreamEntry> xclaim(String key, String group, String consumername, long minIdleTime, long newIdleTime, int retries, boolean force, StreamEntryID... ids) {
+        return jedisCluster.xclaim(key, group, consumername, minIdleTime, newIdleTime, retries, force, ids);
     }
 
     @Override
@@ -2242,6 +2382,16 @@ public class JedisClusterCommander implements IRedisCommander {
     }
 
     @Override
+    public List<byte[]> xread(int count, long block, Map<byte[], byte[]> streams) {
+        return jedisCluster.xread(count, block, streams);
+    }
+
+    @Override
+    public List<byte[]> xreadGroup(byte[] groupname, byte[] consumer, int count, long block, boolean noAck, Map<byte[], byte[]> streams) {
+        return jedisCluster.xreadGroup(groupname, consumer, count, block, noAck, streams);
+    }
+
+    @Override
     public List<String> blpop(String... args) {
         throw new UnsupportedOperationException();
     }
@@ -2429,6 +2579,18 @@ public class JedisClusterCommander implements IRedisCommander {
     @Override
     public Long touch(String... keys) {
         return jedisCluster.touch(keys);
+    }
+
+    @SafeVarargs
+    @Override
+    public final List<Map.Entry<String, List<StreamEntry>>> xread(int count, long block, Map.Entry<String, StreamEntryID>... streams) {
+        return jedisCluster.xread(count, block, streams);
+    }
+
+    @SafeVarargs
+    @Override
+    public final List<Map.Entry<String, List<StreamEntry>>> xreadGroup(String groupname, String consumer, int count, long block, boolean noAck, Map.Entry<String, StreamEntryID>... streams) {
+        return jedisCluster.xreadGroup(groupname, consumer, count, block, noAck, streams);
     }
 
     @Override
