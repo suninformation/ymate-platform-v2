@@ -270,14 +270,33 @@ public class ClassUtils {
      * @return 尝试获取目标类上声明的注解, 若目标类为代理类则尝试去除代理
      */
     public static <A extends Annotation> A getAnnotation(Object target, Class<A> annotationClass) {
-        A annotation = target.getClass().getAnnotation(annotationClass);
-        if (annotation == null && StringUtils.contains(target.getClass().getName(), ANONYMOUS_CLASS_FLAG)) {
+        return getAnnotation(target.getClass(), annotationClass);
+    }
+
+    public static <A extends Annotation> A getAnnotation(Class<?> targetClass, Class<A> annotationClass) {
+        A annotation = targetClass.getAnnotation(annotationClass);
+        if (annotation == null && StringUtils.contains(targetClass.getName(), ANONYMOUS_CLASS_FLAG)) {
             try {
-                Class<?> clazz = loadClass(StringUtils.substringBefore(target.getClass().getName(), ANONYMOUS_CLASS_FLAG), target.getClass());
+                Class<?> clazz = loadClass(StringUtils.substringBefore(targetClass.getName(), ANONYMOUS_CLASS_FLAG), targetClass);
                 if (clazz != null) {
                     annotation = clazz.getAnnotation(annotationClass);
                 }
             } catch (ClassNotFoundException ignored) {
+            }
+        }
+        return annotation;
+    }
+
+    public static <A extends Annotation> A getAnnotation(Package targetPackage, Class<A> annotationClass) {
+        A annotation = targetPackage.getAnnotation(annotationClass);
+        if (annotation == null) {
+            String packageName = targetPackage.getName();
+            while (StringUtils.contains(packageName, ".")) {
+                packageName = StringUtils.substringBeforeLast(packageName, ".");
+                targetPackage = Package.getPackage(packageName);
+                if (targetPackage == null || (annotation = targetPackage.getAnnotation(annotationClass)) != null) {
+                    break;
+                }
             }
         }
         return annotation;

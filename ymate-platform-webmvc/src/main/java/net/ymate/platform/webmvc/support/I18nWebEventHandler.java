@@ -73,7 +73,7 @@ public class I18nWebEventHandler implements II18nEventHandler {
     @Override
     public InputStream onLoad(String resourceName) throws IOException {
         if (StringUtils.isNotBlank(resourceName) && WebContext.getContext() != null) {
-            File resourceFile = new File(WebContext.getContext().getOwner().getConfig().getResourcesHome(), resourceName);
+            File resourceFile = new File(WebContext.getContext().getOwner().getConfig().getResourceHome(), resourceName);
             if (resourceFile.exists() && resourceFile.isFile() && resourceFile.canRead()) {
                 return new FileInputStream(resourceFile);
             }

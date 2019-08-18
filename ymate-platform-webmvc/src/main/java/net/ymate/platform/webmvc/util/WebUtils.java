@@ -186,8 +186,8 @@ public class WebUtils {
      */
     public static boolean isAjax(HttpServletRequest request) {
         // 判断条件: (x-requested-with = XMLHttpRequest)
-        String requestHeader = request.getHeader("x-requested-with");
-        return StringUtils.isNotBlank(requestHeader) && "XMLHttpRequest".equalsIgnoreCase(requestHeader);
+        String requestHeader = request.getHeader(Type.HttpHead.X_REQUESTED_WITH);
+        return StringUtils.isNotBlank(requestHeader) && Type.HttpHead.XML_HTTP_REQUEST.equalsIgnoreCase(requestHeader);
     }
 
     public static boolean isAjax(HttpServletRequest request, boolean ifJson, boolean ifXml) {
@@ -207,12 +207,25 @@ public class WebUtils {
         return false;
     }
 
+    public static boolean isWebSocket(HttpServletRequest request) {
+        return StringUtils.equalsIgnoreCase(request.getHeader(Type.HttpHead.CONNECTION), Type.HttpHead.UPGRADE)
+                && StringUtils.equalsIgnoreCase(request.getHeader(Type.HttpHead.UPGRADE), Type.HttpHead.WEBSOCKET);
+    }
+
+    public static boolean isCorsRequest(HttpServletRequest request) {
+        return request.getHeader(Type.HttpHead.ORIGIN) != null;
+    }
+
+    public static boolean isCorsOptionsRequest(HttpServletRequest request) {
+        return isCorsRequest(request) && Type.HttpMethod.OPTIONS.name().equals(request.getMethod()) && request.getHeader(Type.HttpHead.ACCESS_CONTROL_REQUEST_METHOD) != null;
+    }
+
     public static boolean isJsonAccepted(HttpServletRequest request) {
         return isJsonAccepted(request, null);
     }
 
     public static boolean isJsonAccepted(HttpServletRequest request, String paramFormat) {
-        return StringUtils.containsIgnoreCase(request.getHeader("Accept"), "application/json") || StringUtils.equalsIgnoreCase(request.getParameter(StringUtils.defaultIfBlank(paramFormat, Type.Const.PARAM_FORMAT)), Type.Const.FORMAT_JSON);
+        return StringUtils.containsIgnoreCase(request.getHeader(Type.HttpHead.ACCEPT), Type.ContentType.JSON.getContentType()) || StringUtils.equalsIgnoreCase(request.getParameter(StringUtils.defaultIfBlank(paramFormat, Type.Const.PARAM_FORMAT)), Type.Const.FORMAT_JSON);
     }
 
     public static boolean isXmlAccepted(HttpServletRequest request) {
@@ -220,7 +233,7 @@ public class WebUtils {
     }
 
     public static boolean isXmlAccepted(HttpServletRequest request, String paramFormat) {
-        return StringUtils.containsIgnoreCase(request.getHeader("Accept"), "application/xml") || StringUtils.equalsIgnoreCase(request.getParameter(StringUtils.defaultIfBlank(paramFormat, Type.Const.PARAM_FORMAT)), Type.Const.FORMAT_XML);
+        return StringUtils.containsIgnoreCase(request.getHeader(Type.HttpHead.ACCEPT), Type.ContentType.XML.getContentType()) || StringUtils.equalsIgnoreCase(request.getParameter(StringUtils.defaultIfBlank(paramFormat, Type.Const.PARAM_FORMAT)), Type.Const.FORMAT_XML);
     }
 
     /**
@@ -245,7 +258,7 @@ public class WebUtils {
      * @return 通过设置Header的Location属性执行页面跳转
      */
     public static String redirectHeaderLocation(HttpServletResponse response, String url) {
-        response.setHeader(Type.Const.HTTP_HEADER_LOCATION, url);
+        response.setHeader(Type.HttpHead.LOCATION, url);
         return "http:" + HttpServletResponse.SC_MOVED_PERMANENTLY;
     }
 
@@ -258,9 +271,9 @@ public class WebUtils {
      */
     public static String redirectHeaderRefresh(HttpServletResponse response, String templateUrl, int time, String url) {
         if (StringUtils.isBlank(url)) {
-            response.setIntHeader(Type.Const.HTTP_HEADER_REFRESH, time);
+            response.setIntHeader(Type.HttpHead.REFRESH, time);
         } else {
-            response.setHeader(Type.Const.HTTP_HEADER_REFRESH, time + ";URL=" + url);
+            response.setHeader(Type.HttpHead.REFRESH, time + ";URL=" + url);
         }
         return templateUrl;
     }
@@ -282,16 +295,16 @@ public class WebUtils {
      * @return 获取用户IP地址(以数组的形式返回所有IP)
      */
     public static String[] getRemoteAddresses(HttpServletRequest request) {
-        String ip = request.getHeader("x-forwarded-for");
-        if (StringUtils.isBlank(ip) || "unknown".equalsIgnoreCase(ip)) {
-            ip = request.getHeader("Proxy-Client-IP");
+        String ip = request.getHeader(Type.HttpHead.X_FORWARDED_FOR);
+        if (StringUtils.isBlank(ip) || Type.Const.UNKNOWN.equalsIgnoreCase(ip)) {
+            ip = request.getHeader(Type.HttpHead.PROXY_CLIENT_IP);
         }
-        if (StringUtils.isBlank(ip) || "unknown".equalsIgnoreCase(ip)) {
-            ip = request.getHeader("WL-Proxy-Client-IP");
+        if (StringUtils.isBlank(ip) || Type.Const.UNKNOWN.equalsIgnoreCase(ip)) {
+            ip = request.getHeader(Type.HttpHead.WL_PROXY_CLIENT_IP);
         }
-        if (StringUtils.isBlank(ip) || "unknown".equalsIgnoreCase(ip)) {
+        if (StringUtils.isBlank(ip) || Type.Const.UNKNOWN.equalsIgnoreCase(ip)) {
             ip = request.getRemoteAddr();
-            if (StringUtils.equals(ip, "127.0.0.1") || StringUtils.equals(ip, "0:0:0:0:0:0:0:1")) {
+            if (NetworkUtils.IP.isLocalIPAddr(ip)) {
                 ip = StringUtils.join(NetworkUtils.IP.getHostIPAddresses(), ",");
             }
         }
@@ -370,11 +383,11 @@ public class WebUtils {
      * @throws Exception 可能产生的异常
      */
     public static String encryptStr(HttpServletRequest request, String dataStr) throws Exception {
-        return Base64.encodeBase64URLSafeString(CodecUtils.DES.encrypt(dataStr.getBytes(), DigestUtils.md5(request.getRemoteAddr() + request.getHeader(Type.Const.HTTP_HEADER_USER_AGENT))));
+        return Base64.encodeBase64URLSafeString(CodecUtils.DES.encrypt(dataStr.getBytes(), DigestUtils.md5(request.getRemoteAddr() + request.getHeader(Type.HttpHead.USER_AGENT))));
     }
 
     public static String encryptStr(HttpServletRequest request, byte[] bytes) throws Exception {
-        return Base64.encodeBase64URLSafeString(CodecUtils.DES.encrypt(bytes, DigestUtils.md5(request.getRemoteAddr() + request.getHeader(Type.Const.HTTP_HEADER_USER_AGENT))));
+        return Base64.encodeBase64URLSafeString(CodecUtils.DES.encrypt(bytes, DigestUtils.md5(request.getRemoteAddr() + request.getHeader(Type.HttpHead.USER_AGENT))));
     }
 
     /**
@@ -398,11 +411,11 @@ public class WebUtils {
      * @throws Exception 可能产生的异常
      */
     public static String decryptStr(HttpServletRequest request, String dataStr) throws Exception {
-        return new String(CodecUtils.DES.decrypt(Base64.decodeBase64(dataStr), DigestUtils.md5(request.getRemoteAddr() + request.getHeader(Type.Const.HTTP_HEADER_USER_AGENT))));
+        return new String(CodecUtils.DES.decrypt(Base64.decodeBase64(dataStr), DigestUtils.md5(request.getRemoteAddr() + request.getHeader(Type.HttpHead.USER_AGENT))));
     }
 
     public static byte[] decryptStr(HttpServletRequest request, byte[] bytes) throws Exception {
-        return CodecUtils.DES.decrypt(Base64.decodeBase64(bytes), DigestUtils.md5(request.getRemoteAddr() + request.getHeader(Type.Const.HTTP_HEADER_USER_AGENT)));
+        return CodecUtils.DES.decrypt(Base64.decodeBase64(bytes), DigestUtils.md5(request.getRemoteAddr() + request.getHeader(Type.HttpHead.USER_AGENT)));
     }
 
     /**
@@ -527,7 +540,7 @@ public class WebUtils {
         }
         //
         if (StringUtils.isNotBlank(redirectUrl) && timeInterval > 0) {
-            returnView.addHeader(Type.Const.HTTP_HEADER_REFRESH, timeInterval + ";URL=" + redirectUrl);
+            returnView.addHeader(Type.HttpHead.REFRESH, timeInterval + ";URL=" + redirectUrl);
         }
         //
         return returnView;

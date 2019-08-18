@@ -121,7 +121,7 @@ public class InterceptProxy implements IProxy {
         }
         if (targetClass.isAnnotationPresent(Before.class) || targetClass.isAnnotationPresent(After.class) || targetClass.isAnnotationPresent(Around.class)
                 || targetMethod.isAnnotationPresent(Before.class) || targetMethod.isAnnotationPresent(After.class) || targetMethod.isAnnotationPresent(Around.class)
-                || owner.getInterceptSettings().hasInterceptPackages(targetClass) || InterceptAnnHelper.hasInterceptAnnotationAny(targetMethod)) {
+                || owner.getInterceptSettings().hasInterceptPackages(targetClass) || owner.getInterceptSettings().getInterceptAnnHelper().hasInterceptAnnotationAny(targetMethod)) {
             synchronized (CACHE_LOCKER) {
                 return interceptMetaMap.computeIfAbsent(id, i -> new InterceptMeta(owner, i, targetClass, targetMethod));
             }
@@ -150,8 +150,8 @@ public class InterceptProxy implements IProxy {
         InterceptMeta(IApplication owner, String id, Class<?> targetClass, Method targetMethod) {
             this.id = id;
             this.contextParams = new HashMap<>();
-            this.beforeIntercepts = InterceptAnnHelper.getBeforeInterceptors(targetClass, targetMethod);
-            this.afterIntercepts = InterceptAnnHelper.getAfterInterceptors(targetClass, targetMethod);
+            this.beforeIntercepts = owner.getInterceptSettings().getInterceptAnnHelper().getBeforeInterceptors(targetClass, targetMethod);
+            this.afterIntercepts = owner.getInterceptSettings().getInterceptAnnHelper().getAfterInterceptors(targetClass, targetMethod);
             //
             owner.getInterceptSettings().getInterceptPackages(targetClass).stream().peek((packageMeta) -> {
                 if (!packageMeta.getBeforeIntercepts().isEmpty()) {

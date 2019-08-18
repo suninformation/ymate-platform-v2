@@ -123,7 +123,7 @@ public final class Application implements IApplication {
                     beanLoader.registerExcludedFiles(configurer.getExcludedFiles());
                     //
                     beanLoader.registerHandler(Bean.class);
-                    beanLoader.registerHandler(Interceptor.class, new InterceptorHandler());
+                    beanLoader.registerHandler(Interceptor.class, new InterceptorHandler(this));
                     beanLoader.registerHandler(Packages.class, new PackagesHandler(this));
                     //
                     beanLoader.registerHandler(Injector.class, new InjectorHandler(this));

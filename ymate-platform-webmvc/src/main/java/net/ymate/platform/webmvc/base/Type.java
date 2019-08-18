@@ -101,6 +101,8 @@ public class Type {
      */
     public interface Const {
 
+        String UNKNOWN = "unknown";
+
         String HTTP_PREFIX = "http://";
 
         String HTTPS_PREFIX = "https://";
@@ -136,114 +138,147 @@ public class Type {
         String REDIRECT_URL = "redirect_url";
 
         String CUSTOM_REDIRECT = "custom_redirect";
-
-        // Http headers
-
-        String HTTP_HEADER_CONNECTION = "Connection";
-
-        String HTTP_HEADER_UPGRADE = "Upgrade";
-
-        String HTTP_HEADER_USER_AGENT = "User-Agent";
-
-        String HTTP_HEADER_REFRESH = "REFRESH";
-
-        String HTTP_HEADER_LOCATION = "Location";
     }
 
-    /**
-     * 可选参数常量定义
-     */
-    public interface Optional {
+    public interface HttpHead {
 
-        /**
-         * 保持静默
-         */
-        String OBSERVE_SILENCE = "observe_silence";
+        String CONNECTION = "Connection";
 
-        /**
-         * 会话处理器类
-         */
-        String SYSTEM_USER_SESSION_HANDLER_CLASS = "webmvc.user_session_handler_class";
+        String UPGRADE = "Upgrade";
 
-        /**
-         * 会话数据存储适配器类
-         */
-        String SYSTEM_USER_SESSION_STORAGE_ADAPTER_CLASS = "webmvc.user_session_storage_adapter_class";
+        String WEBSOCKET = "websocket";
 
-        /**
-         * 会话安全确认处理器类
-         */
-        String SYSTEM_USER_SESSION_CONFIRM_HANDLER_CLASS = "webmvc.user_session_confirm_handler_class";
+        String USER_AGENT = "User-Agent";
 
-        /**
-         * 会话安全确认重定向URL地址, 默认值: "confirm?redirect_url=${redirect_url}"
-         */
-        String CONFIRM_REDIRECT_URL = "webmvc.confirm_redirect_url";
+        String REFRESH = "Refresh";
 
-        /**
-         * 会话安全确认超时时间(分钟), 默认值: 30
-         */
-        String CONFIRM_TIMEOUT = "webmvc.confirm_timeout";
+        String LOCATION = "Location";
 
-        /**
-         * 请求令牌参数名称, 默认值: Request-Token
-         */
-        String REQUEST_TOKEN_NAME = "webmvc.request_token_name";
+        String ACCEPT = "Accept";
 
-        /**
-         * 重定向登录URL地址参数名称, 默认值: "login?redirect_url=${redirect_url}"
-         */
-        String REDIRECT_LOGIN_URL = "webmvc.redirect_login_url";
+        String ACCEPT_CHARSET = "Accept-Charset";
 
-        /**
-         * 重定向自动跳转时间间隔参数名称
-         */
-        String REDIRECT_TIME_INTERVAL = "webmvc.redirect_time_interval";
+        String ACCEPT_ENCODING = "Accept-Encoding";
 
-        /**
-         * 签名验证时间间隔(毫秒), 即当前时间与签名时间戳差值在此值范围内视为有效, 默认值: 0 表示不开始时间间隔验证
-         */
-        String SIGNATURE_TIMESTAMP_INTERVAL = "webmvc.signature_timestamp_interval";
+        String ACCEPT_LANGUAGE = "Accept-Language";
 
-        /**
-         * 允许访问和重定向的主机名称, 多个主机名称用'|'分隔, 默认值: 空(表示不限制)
-         */
-        String ALLOW_ACCESS_HOSTS = "webmvc.allow_access_hosts";
+        String ACCEPT_RANGES = "Accept-Ranges";
 
-        /**
-         * 允许上传的文件类型验证参数名称
-         */
-        String VALIDATION_ALLOW_UPLOAD_CONTENT_TYPES = "webmvc.validation_allow_upload_content_types";
+        String ACCESS_CONTROL_ALLOW_CREDENTIALS = "Access-Control-Allow-Credentials";
 
-        /**
-         * 是否开启跨域拦截
-         */
-        String ALLOW_CROSS_DOMAIN = "webmvc.allow_cross_domain";
+        String ACCESS_CONTROL_ALLOW_HEADERS = "Access-Control-Allow-Headers";
 
-        /**
-         * 针对OPTIONS请求是否自动回复, 默认: true
-         */
-        String ALLOW_OPTIONS_AUTO_REPLY = "webmvc.allow_options_auto_reply";
+        String ACCESS_CONTROL_ALLOW_METHODS = "Access-Control-Allow-Methods";
 
-        /**
-         * 允许跨域的原始主机
-         */
-        String ALLOW_ORIGIN_HOSTS = "webmvc.allow_origin_hosts";
+        String ACCESS_CONTROL_ALLOW_ORIGIN = "Access-Control-Allow-Origin";
 
-        /**
-         * 允许跨域请求的方法
-         */
-        String ALLOW_CROSS_METHODS = "webmvc.allow_cross_methods";
+        String ACCESS_CONTROL_EXPOSE_HEADERS = "Access-Control-Expose-Headers";
 
-        /**
-         * 允许跨域请求携带的请求头
-         */
-        String ALLOW_CROSS_HEADERS = "webmvc.allow_cross_headers";
+        String ACCESS_CONTROL_MAX_AGE = "Access-Control-Max-Age";
 
-        /**
-         * 是否允许跨域请求带有验证信息
-         */
-        String NOT_ALLOW_CREDENTIALS = "not_allow_credentials";
+        String ACCESS_CONTROL_REQUEST_HEADERS = "Access-Control-Request-Headers";
+
+        String ACCESS_CONTROL_REQUEST_METHOD = "Access-Control-Request-Method";
+
+        String AGE = "Age";
+
+        String MAX_AGE = "Max-Age";
+
+        String ALLOW = "Allow";
+
+        String AUTHORIZATION = "Authorization";
+
+        String CACHE_CONTROL = "Cache-Control";
+
+        String CONTENT_ENCODING = "Content-Encoding";
+
+        String CONTENT_DISPOSITION = "Content-Disposition";
+
+        String CONTENT_LANGUAGE = "Content-Language";
+
+        String CONTENT_LENGTH = "Content-Length";
+
+        String CONTENT_LOCATION = "Content-Location";
+
+        String CONTENT_RANGE = "Content-Range";
+
+        String CONTENT_TYPE = "Content-Type";
+
+        String COOKIE = "Cookie";
+
+        String DATE = "Date";
+
+        String ETAG = "ETag";
+
+        String EXPECT = "Expect";
+
+        String EXPIRES = "Expires";
+
+        String GZIP = "gzip";
+
+        String FROM = "From";
+
+        String HOST = "Host";
+
+        String IF_MATCH = "If-Match";
+
+        String IF_MODIFIED_SINCE = "If-Modified-Since";
+
+        String IF_NONE_MATCH = "If-None-Match";
+
+        String IF_RANGE = "If-Range";
+
+        String IF_UNMODIFIED_SINCE = "If-Unmodified-Since";
+
+        String LAST_MODIFIED = "Last-Modified";
+
+        String LINK = "Link";
+
+        String MAX_FORWARDS = "Max-Forwards";
+
+        String ORIGIN = "Origin";
+
+        String PRAGMA = "Pragma";
+
+        String PROXY_AUTHENTICATE = "Proxy-Authenticate";
+
+        String PROXY_AUTHORIZATION = "Proxy-Authorization";
+
+        String RANGE = "Range";
+
+        String REFERER = "Referer";
+
+        String RETRY_AFTER = "Retry-After";
+
+        String SERVER = "Server";
+
+        String SET_COOKIE = "Set-Cookie";
+
+        String SET_COOKIE2 = "Set-Cookie2";
+
+        String TE = "TE";
+
+        String TRAILER = "Trailer";
+
+        String TRANSFER_ENCODING = "Transfer-Encoding";
+
+        String VARY = "Vary";
+
+        String VIA = "Via";
+
+        String WARNING = "Warning";
+
+        String WWW_AUTHENTICATE = "WWW-Authenticate";
+
+        String X_REQUESTED_WITH = "X-Requested-With";
+
+        String XML_HTTP_REQUEST = "XMLHttpRequest";
+
+        String X_FORWARDED_FOR = "X-Forwarded-For";
+
+        String PROXY_CLIENT_IP = "Proxy-Client-IP";
+
+        String WL_PROXY_CLIENT_IP = "WL-Proxy-Client-IP";
     }
 
     /**
@@ -273,6 +308,11 @@ public class Type {
          * PUT
          */
         PUT,
+
+        /**
+         * PATCH
+         */
+        PATCH,
 
         /**
          * DELETE
@@ -391,6 +431,11 @@ public class Type {
          * HTML
          */
         HTML("text/html"),
+
+        /**
+         * XML
+         */
+        XML("application/xml"),
 
         /**
          * JSON

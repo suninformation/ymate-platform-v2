@@ -16,11 +16,11 @@
 package net.ymate.platform.core.handle;
 
 import net.ymate.platform.commons.util.ClassUtils;
+import net.ymate.platform.core.IApplication;
 import net.ymate.platform.core.beans.BeanMeta;
 import net.ymate.platform.core.beans.IBeanHandler;
 import net.ymate.platform.core.beans.annotation.Interceptor;
 import net.ymate.platform.core.beans.intercept.IInterceptor;
-import net.ymate.platform.core.beans.intercept.InterceptAnnHelper;
 
 import java.lang.annotation.Annotation;
 
@@ -29,6 +29,12 @@ import java.lang.annotation.Annotation;
  */
 public final class InterceptorHandler implements IBeanHandler {
 
+    private final IApplication owner;
+
+    public InterceptorHandler(IApplication owner) {
+        this.owner = owner;
+    }
+
     @Override
     @SuppressWarnings("unchecked")
     public Object handle(Class<?> targetClass) {
@@ -36,7 +42,7 @@ public final class InterceptorHandler implements IBeanHandler {
             Interceptor interceptorAnn = targetClass.getAnnotation(Interceptor.class);
             if (interceptorAnn != null) {
                 if (!Annotation.class.equals(interceptorAnn.value())) {
-                    InterceptAnnHelper.registerInterceptAnnotation(interceptorAnn.value(), (Class<? extends IInterceptor>) targetClass);
+                    owner.getInterceptSettings().getInterceptAnnHelper().registerInterceptAnnotation(interceptorAnn.value(), (Class<? extends IInterceptor>) targetClass);
                 }
                 return BeanMeta.create(targetClass, interceptorAnn.singleton());
             }

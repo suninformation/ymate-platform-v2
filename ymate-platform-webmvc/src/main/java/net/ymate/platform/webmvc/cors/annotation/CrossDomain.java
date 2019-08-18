@@ -13,21 +13,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.ymate.platform.core.beans.impl;
+package net.ymate.platform.webmvc.cors.annotation;
 
-import net.ymate.platform.core.beans.IBeanLoadFactory;
-import net.ymate.platform.core.beans.IBeanLoader;
+import net.ymate.platform.core.beans.annotation.InterceptAnnotation;
+
+import java.lang.annotation.*;
 
 /**
- * @author 刘镇 (suninformation@163.com) on 2019-08-06 18:36
+ * 声明开启跨域处理
+ *
+ * @author 刘镇 (suninformation@163.com) on 2019-08-17 14:19
  * @since 2.1.0
  */
-public class DefaultBeanLoadFactory implements IBeanLoadFactory {
-
-    private final IBeanLoader beanLoader = new DefaultBeanLoader();
-
-    @Override
-    public IBeanLoader getBeanLoader() {
-        return beanLoader;
-    }
+@Target({ElementType.PACKAGE, ElementType.TYPE, ElementType.METHOD})
+@Retention(RetentionPolicy.RUNTIME)
+@Documented
+@InterceptAnnotation
+public @interface CrossDomain {
 }

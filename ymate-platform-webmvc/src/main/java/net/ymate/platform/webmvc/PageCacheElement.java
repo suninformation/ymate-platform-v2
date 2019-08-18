@@ -77,19 +77,19 @@ public class PageCacheElement extends CacheElement {
         }
     }
 
-    private byte[] gzip(byte[] ungzipped) throws IOException {
-        if (!isGzipped(ungzipped)) {
+    private byte[] gzip(byte[] unzipped) throws IOException {
+        if (!isGzipped(unzipped)) {
             ByteArrayOutputStream bytes = new ByteArrayOutputStream();
             try (GZIPOutputStream gzipOutputStream = new GZIPOutputStream(bytes)) {
-                gzipOutputStream.write(ungzipped);
+                gzipOutputStream.write(unzipped);
             }
             return bytes.toByteArray();
         }
-        return ungzipped;
+        return unzipped;
     }
 
     private boolean isBodyParameterGzipped() {
-        return this.responseHeaders.containsKey("gzip");
+        return this.responseHeaders.containsKey(Type.HttpHead.GZIP);
     }
 
     private static boolean isGzipped(byte[] candidate) {

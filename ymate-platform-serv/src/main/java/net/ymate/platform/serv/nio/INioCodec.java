@@ -22,7 +22,6 @@ import net.ymate.platform.serv.nio.support.ByteBufferBuilder;
  * 编解码器接口
  *
  * @author 刘镇 (suninformation@163.com) on 15/11/15 下午8:44
- * @version 1.0
  */
 @Ignored
 public interface INioCodec {

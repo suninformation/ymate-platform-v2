@@ -23,7 +23,6 @@ import net.ymate.platform.webmvc.IWebMvc;
  * 控制器类处理器
  *
  * @author 刘镇 (suninformation@163.com) on 15/5/27 上午2:20
- * @version 1.0
  */
 public class ControllerHandler implements IBeanHandler {
 

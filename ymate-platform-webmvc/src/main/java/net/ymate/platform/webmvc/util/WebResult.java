@@ -262,7 +262,7 @@ public final class WebResult {
         //
         TextView textView = View.textView(content.toString());
         if (withContentType) {
-            textView.setContentType("application/xml");
+            textView.setContentType(Type.ContentType.XML.getContentType());
         }
         return textView;
     }

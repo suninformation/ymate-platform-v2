@@ -32,112 +32,7 @@ import java.util.stream.Collectors;
  */
 public final class InterceptAnnHelper {
 
-    private static final Map<Class<?>, Class<? extends IInterceptor>> INTERCEPT_ANNOTATIONS = new ConcurrentHashMap<>();
-
-    public static void registerInterceptAnnotation(Class<? extends Annotation> annotationClass, Class<? extends IInterceptor> interceptClass) {
-        if (!annotationClass.equals(Annotation.class) && !annotationClass.equals(InterceptAnnotation.class) && annotationClass.isAnnotationPresent(InterceptAnnotation.class)) {
-            ReentrantLockHelper.putIfAbsent(INTERCEPT_ANNOTATIONS, annotationClass, interceptClass);
-        }
-    }
-
-    private static List<Class<? extends IInterceptor>> getAnnotationInterceptorClasses(Class<?>... annotationClasses) {
-        List<Class<? extends IInterceptor>> results = new ArrayList<>();
-        if (annotationClasses != null && annotationClasses.length > 0) {
-            results = Arrays.stream(annotationClasses)
-                    .filter(annotationClass -> annotationClass.isAnnotation() && !annotationClass.equals(InterceptAnnotation.class) && annotationClass.isAnnotationPresent(InterceptAnnotation.class))
-                    .map(INTERCEPT_ANNOTATIONS::get)
-                    .filter(Objects::nonNull)
-                    .collect(Collectors.toList());
-        }
-        return results;
-    }
-
-    public static List<Class<? extends IInterceptor>> getAnnotationInterceptorClasses(Method targetMethod) {
-        List<Class<?>> classes = Arrays.stream(targetMethod.getDeclaringClass().getAnnotations())
-                .map(Annotation::annotationType).collect(Collectors.toList());
-        Arrays.stream(targetMethod.getAnnotations())
-                .map(Annotation::annotationType).forEachOrdered(classes::add);
-        return getAnnotationInterceptorClasses(classes.toArray(new Class<?>[0]));
-    }
-
-    public static boolean hasInterceptAnnotationAny(Class<?>... annotationClasses) {
-        if (annotationClasses != null && annotationClasses.length > 0) {
-            return Arrays.stream(annotationClasses)
-                    .filter(annotationClass -> annotationClass.isAnnotation() && !annotationClass.equals(InterceptAnnotation.class) && annotationClass.isAnnotationPresent(InterceptAnnotation.class))
-                    .anyMatch(INTERCEPT_ANNOTATIONS::containsKey);
-        }
-        return false;
-    }
-
-    public static boolean hasInterceptAnnotationAny(Method targetMethod) {
-        boolean flag = hasInterceptAnnotationAny(Arrays.stream(targetMethod.getAnnotations()).map(Annotation::annotationType).distinct().toArray(Class<?>[]::new));
-        if (!flag) {
-            flag = hasInterceptAnnotationAny(Arrays.stream(targetMethod.getDeclaringClass().getAnnotations()).map(Annotation::annotationType).distinct().toArray(Class<?>[]::new));
-        }
-        return flag;
-    }
-
-    public static List<Class<? extends IInterceptor>> getBeforeInterceptors(Class<?> targetClass, Method targetMethod) {
-        List<Class<? extends IInterceptor>> interceptorClasses = getAnnotationInterceptorClasses(targetMethod)
-                .stream().filter(interceptorClass -> !isInterceptorCleaned(targetMethod, IInterceptor.CleanType.BEFORE, interceptorClass)).collect(Collectors.toList());
-        if (targetClass.isAnnotationPresent(Around.class)) {
-            parseIntercept(targetMethod, IInterceptor.CleanType.BEFORE, targetClass.getAnnotation(Around.class).value(), interceptorClasses);
-        }
-        if (targetClass.isAnnotationPresent(Before.class)) {
-            parseIntercept(targetMethod, IInterceptor.CleanType.BEFORE, targetClass.getAnnotation(Before.class).value(), interceptorClasses);
-        }
-        if (targetMethod.isAnnotationPresent(Around.class)) {
-            Collections.addAll(interceptorClasses, targetMethod.getAnnotation(Around.class).value());
-        }
-        if (targetMethod.isAnnotationPresent(Before.class)) {
-            Collections.addAll(interceptorClasses, targetMethod.getAnnotation(Before.class).value());
-        }
-        return interceptorClasses;
-    }
-
-    public static List<Class<? extends IInterceptor>> getAfterInterceptors(Class<?> targetClass, Method targetMethod) {
-        List<Class<? extends IInterceptor>> interceptorClasses = getAnnotationInterceptorClasses(targetMethod)
-                .stream().filter(interceptorClass -> !isInterceptorCleaned(targetMethod, IInterceptor.CleanType.AFTER, interceptorClass)).collect(Collectors.toList());
-        if (targetClass.isAnnotationPresent(Around.class)) {
-            parseIntercept(targetMethod, IInterceptor.CleanType.AFTER, targetClass.getAnnotation(Around.class).value(), interceptorClasses);
-        }
-        if (targetClass.isAnnotationPresent(After.class)) {
-            parseIntercept(targetMethod, IInterceptor.CleanType.AFTER, targetClass.getAnnotation(After.class).value(), interceptorClasses);
-        }
-        if (targetMethod.isAnnotationPresent(Around.class)) {
-            Collections.addAll(interceptorClasses, targetMethod.getAnnotation(Around.class).value());
-        }
-        if (targetMethod.isAnnotationPresent(After.class)) {
-            Collections.addAll(interceptorClasses, targetMethod.getAnnotation(After.class).value());
-        }
-        return interceptorClasses;
-    }
-
-    public static Clean getInterceptorClean(Method targetMethod) {
-        if (targetMethod.isAnnotationPresent(Clean.class)) {
-            return targetMethod.getAnnotation(Clean.class);
-        }
-        return null;
-    }
-
-    private static boolean isInterceptorCleaned(Method targetMethod, IInterceptor.CleanType cleanType, Class<? extends IInterceptor> interceptorClass) {
-        Clean cleanAnn = getInterceptorClean(targetMethod);
-        if (cleanAnn != null &&
-                (cleanAnn.type().equals(IInterceptor.CleanType.ALL) || cleanAnn.type().equals(cleanType))) {
-            if (cleanAnn.value().length > 0) {
-                return ArrayUtils.contains(cleanAnn.value(), interceptorClass);
-            }
-        }
-        return false;
-    }
-
-    private static void parseIntercept(Method targetMethod, IInterceptor.CleanType cleanType, Class<? extends IInterceptor>[] interceptors, List<Class<? extends IInterceptor>> results) {
-        for (Class<? extends IInterceptor> interceptorClass : interceptors) {
-            if (!isInterceptorCleaned(targetMethod, cleanType, interceptorClass)) {
-                results.add(interceptorClass);
-            }
-        }
-    }
+    private final Map<Class<?>, Class<? extends IInterceptor>> interceptAnnotations = new ConcurrentHashMap<>();
 
     public static void parseContextParamValue(IApplication owner, ContextParam contextParam, Map<String, String> paramsMap) {
         if (contextParam != null) {
@@ -175,6 +70,111 @@ public final class InterceptAnnHelper {
         return contextParams;
     }
 
-    private InterceptAnnHelper() {
+    public InterceptAnnHelper() {
+    }
+
+    public void registerInterceptAnnotation(Class<? extends Annotation> annotationClass, Class<? extends IInterceptor> interceptClass) {
+        if (!annotationClass.equals(Annotation.class) && !annotationClass.equals(InterceptAnnotation.class) && annotationClass.isAnnotationPresent(InterceptAnnotation.class)) {
+            ReentrantLockHelper.putIfAbsent(interceptAnnotations, annotationClass, interceptClass);
+        }
+    }
+
+    private List<Class<? extends IInterceptor>> getAnnotationInterceptorClasses(Class<?>... annotationClasses) {
+        List<Class<? extends IInterceptor>> results = new ArrayList<>();
+        if (annotationClasses != null && annotationClasses.length > 0) {
+            results = Arrays.stream(annotationClasses)
+                    .filter(annotationClass -> annotationClass.isAnnotation() && !annotationClass.equals(InterceptAnnotation.class) && annotationClass.isAnnotationPresent(InterceptAnnotation.class))
+                    .map(interceptAnnotations::get)
+                    .filter(Objects::nonNull)
+                    .collect(Collectors.toList());
+        }
+        return results;
+    }
+
+    public List<Class<? extends IInterceptor>> getAnnotationInterceptorClasses(Method targetMethod) {
+        List<Class<?>> classes = Arrays.stream(targetMethod.getDeclaringClass().getAnnotations())
+                .map(Annotation::annotationType).collect(Collectors.toList());
+        Arrays.stream(targetMethod.getAnnotations())
+                .map(Annotation::annotationType).forEachOrdered(classes::add);
+        return getAnnotationInterceptorClasses(classes.toArray(new Class<?>[0]));
+    }
+
+    public boolean hasInterceptAnnotationAny(Class<?>... annotationClasses) {
+        if (annotationClasses != null && annotationClasses.length > 0) {
+            return Arrays.stream(annotationClasses)
+                    .filter(annotationClass -> annotationClass.isAnnotation() && !annotationClass.equals(InterceptAnnotation.class) && annotationClass.isAnnotationPresent(InterceptAnnotation.class))
+                    .anyMatch(interceptAnnotations::containsKey);
+        }
+        return false;
+    }
+
+    public boolean hasInterceptAnnotationAny(Method targetMethod) {
+        boolean flag = hasInterceptAnnotationAny(Arrays.stream(targetMethod.getAnnotations()).map(Annotation::annotationType).distinct().toArray(Class<?>[]::new));
+        if (!flag) {
+            flag = hasInterceptAnnotationAny(Arrays.stream(targetMethod.getDeclaringClass().getAnnotations()).map(Annotation::annotationType).distinct().toArray(Class<?>[]::new));
+        }
+        return flag;
+    }
+
+    public List<Class<? extends IInterceptor>> getBeforeInterceptors(Class<?> targetClass, Method targetMethod) {
+        List<Class<? extends IInterceptor>> interceptorClasses = getAnnotationInterceptorClasses(targetMethod)
+                .stream().filter(interceptorClass -> !isInterceptorCleaned(targetMethod, IInterceptor.CleanType.BEFORE, interceptorClass)).collect(Collectors.toList());
+        if (targetClass.isAnnotationPresent(Around.class)) {
+            parseIntercept(targetMethod, IInterceptor.CleanType.BEFORE, targetClass.getAnnotation(Around.class).value(), interceptorClasses);
+        }
+        if (targetClass.isAnnotationPresent(Before.class)) {
+            parseIntercept(targetMethod, IInterceptor.CleanType.BEFORE, targetClass.getAnnotation(Before.class).value(), interceptorClasses);
+        }
+        if (targetMethod.isAnnotationPresent(Around.class)) {
+            Collections.addAll(interceptorClasses, targetMethod.getAnnotation(Around.class).value());
+        }
+        if (targetMethod.isAnnotationPresent(Before.class)) {
+            Collections.addAll(interceptorClasses, targetMethod.getAnnotation(Before.class).value());
+        }
+        return interceptorClasses;
+    }
+
+    public List<Class<? extends IInterceptor>> getAfterInterceptors(Class<?> targetClass, Method targetMethod) {
+        List<Class<? extends IInterceptor>> interceptorClasses = getAnnotationInterceptorClasses(targetMethod)
+                .stream().filter(interceptorClass -> !isInterceptorCleaned(targetMethod, IInterceptor.CleanType.AFTER, interceptorClass)).collect(Collectors.toList());
+        if (targetClass.isAnnotationPresent(Around.class)) {
+            parseIntercept(targetMethod, IInterceptor.CleanType.AFTER, targetClass.getAnnotation(Around.class).value(), interceptorClasses);
+        }
+        if (targetClass.isAnnotationPresent(After.class)) {
+            parseIntercept(targetMethod, IInterceptor.CleanType.AFTER, targetClass.getAnnotation(After.class).value(), interceptorClasses);
+        }
+        if (targetMethod.isAnnotationPresent(Around.class)) {
+            Collections.addAll(interceptorClasses, targetMethod.getAnnotation(Around.class).value());
+        }
+        if (targetMethod.isAnnotationPresent(After.class)) {
+            Collections.addAll(interceptorClasses, targetMethod.getAnnotation(After.class).value());
+        }
+        return interceptorClasses;
+    }
+
+    public Clean getInterceptorClean(Method targetMethod) {
+        if (targetMethod.isAnnotationPresent(Clean.class)) {
+            return targetMethod.getAnnotation(Clean.class);
+        }
+        return null;
+    }
+
+    private boolean isInterceptorCleaned(Method targetMethod, IInterceptor.CleanType cleanType, Class<? extends IInterceptor> interceptorClass) {
+        Clean cleanAnn = getInterceptorClean(targetMethod);
+        if (cleanAnn != null &&
+                (cleanAnn.type().equals(IInterceptor.CleanType.ALL) || cleanAnn.type().equals(cleanType))) {
+            if (cleanAnn.value().length > 0) {
+                return ArrayUtils.contains(cleanAnn.value(), interceptorClass);
+            }
+        }
+        return false;
+    }
+
+    private void parseIntercept(Method targetMethod, IInterceptor.CleanType cleanType, Class<? extends IInterceptor>[] interceptors, List<Class<? extends IInterceptor>> results) {
+        for (Class<? extends IInterceptor> interceptorClass : interceptors) {
+            if (!isInterceptorCleaned(targetMethod, cleanType, interceptorClass)) {
+                results.add(interceptorClass);
+            }
+        }
     }
 }

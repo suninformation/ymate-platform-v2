@@ -17,7 +17,10 @@ package net.ymate.platform.persistence.jdbc.dialect.impl;
 
 import net.ymate.platform.commons.util.ExpressionUtils;
 import net.ymate.platform.core.persistence.IShardingable;
-import net.ymate.platform.core.persistence.base.*;
+import net.ymate.platform.core.persistence.base.EntityMeta;
+import net.ymate.platform.core.persistence.base.IEntity;
+import net.ymate.platform.core.persistence.base.PropertyMeta;
+import net.ymate.platform.core.persistence.base.Type;
 import net.ymate.platform.persistence.jdbc.dialect.AbstractDialect;
 import org.apache.commons.lang3.StringUtils;
 

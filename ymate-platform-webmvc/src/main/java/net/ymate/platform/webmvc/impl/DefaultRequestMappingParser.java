@@ -45,6 +45,8 @@ public class DefaultRequestMappingParser implements IRequestMappingParser {
 
     private final Map<String, RequestMeta> MAPPING_META_FOR_TRACE = new HashMap<>();
 
+    private final Map<String, RequestMeta> MAPPING_META_FOR_PATCH = new HashMap<>();
+
     public DefaultRequestMappingParser() {
     }
 
@@ -69,6 +71,9 @@ public class DefaultRequestMappingParser implements IRequestMappingParser {
                     break;
                 case TRACE:
                     MAPPING_META_FOR_TRACE.put(requestMeta.getMapping(), requestMeta);
+                    break;
+                case PATCH:
+                    MAPPING_META_FOR_PATCH.put(requestMeta.getMapping(), requestMeta);
                     break;
                 default:
                     MAPPING_META_FOR_GET.put(requestMeta.getMapping(), requestMeta);
@@ -97,6 +102,9 @@ public class DefaultRequestMappingParser implements IRequestMappingParser {
                 break;
             case TRACE:
                 mappingMetas = MAPPING_META_FOR_TRACE;
+                break;
+            case PATCH:
+                mappingMetas = MAPPING_META_FOR_PATCH;
                 break;
             default:
                 mappingMetas = MAPPING_META_FOR_GET;

@@ -21,7 +21,7 @@ import net.ymate.platform.validation.AbstractValidator;
 import net.ymate.platform.validation.ValidateContext;
 import net.ymate.platform.validation.ValidateResult;
 import net.ymate.platform.webmvc.IUploadFileWrapper;
-import net.ymate.platform.webmvc.base.Type;
+import net.ymate.platform.webmvc.IWebMvcConfig;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang3.ArrayUtils;
 
@@ -135,11 +135,11 @@ public class UploadFileValidator extends AbstractValidator {
         if (ArrayUtils.isNotEmpty(allowContentTypes)) {
             contentTypes.addAll(Arrays.asList(allowContentTypes));
         }
-        String[] types = StringUtils.split(StringUtils.trimToEmpty(context.getContextParams().get(Type.Optional.VALIDATION_ALLOW_UPLOAD_CONTENT_TYPES)), "|");
+        String[] types = StringUtils.split(StringUtils.trimToEmpty(context.getContextParams().get(IWebMvcConfig.PARAMS_ALLOWED_UPLOAD_CONTENT_TYPES)), "|");
         if (ArrayUtils.isNotEmpty(types)) {
             contentTypes.addAll(Arrays.asList(types));
         }
-        types = StringUtils.split(StringUtils.trimToEmpty(context.getOwner().getParam(Type.Optional.VALIDATION_ALLOW_UPLOAD_CONTENT_TYPES)), "|");
+        types = StringUtils.split(StringUtils.trimToEmpty(context.getOwner().getParam(IWebMvcConfig.PARAMS_ALLOWED_UPLOAD_CONTENT_TYPES)), "|");
         if (ArrayUtils.isNotEmpty(types)) {
             contentTypes.addAll(Arrays.asList(types));
         }

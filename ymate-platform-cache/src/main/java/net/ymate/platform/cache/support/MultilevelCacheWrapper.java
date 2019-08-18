@@ -19,7 +19,6 @@ import net.sf.ehcache.Ehcache;
 import net.ymate.platform.cache.*;
 import net.ymate.platform.commons.util.RuntimeUtils;
 import net.ymate.platform.persistence.redis.IRedis;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 

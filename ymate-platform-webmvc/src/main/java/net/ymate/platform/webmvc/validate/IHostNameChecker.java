@@ -16,7 +16,7 @@
 package net.ymate.platform.webmvc.validate;
 
 import net.ymate.platform.core.support.IContext;
-import net.ymate.platform.webmvc.base.Type;
+import net.ymate.platform.webmvc.IWebMvcConfig;
 import org.apache.commons.lang.StringUtils;
 
 import java.net.URL;
@@ -28,7 +28,7 @@ import java.net.URL;
 public interface IHostNameChecker {
 
     IHostNameChecker DEFAULT = (context, url) -> {
-        String hosts = context.getOwner().getParam(Type.Optional.ALLOW_ACCESS_HOSTS);
+        String hosts = context.getOwner().getParam(IWebMvcConfig.PARAMS_ALLOWED_ACCESS_HOSTS);
         if (StringUtils.isNotBlank(hosts)) {
             return StringUtils.containsIgnoreCase(hosts, new URL(url).getHost());
         }

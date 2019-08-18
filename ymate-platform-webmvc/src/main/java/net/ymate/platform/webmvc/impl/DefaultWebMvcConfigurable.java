@@ -187,6 +187,41 @@ public final class DefaultWebMvcConfigurable extends DefaultModuleConfigurable {
             return this;
         }
 
+        public Builder crossDomainSettingsEnabled(boolean crossDomainSettingsEnabled) {
+            configurable.addConfig(IWebMvcConfig.CROSS_DOMAIN_SETTINGS_ENABLED, String.valueOf(crossDomainSettingsEnabled));
+            return this;
+        }
+
+        public Builder crossDomainOptionsAutoReply(boolean crossDomainOptionsAutoReply) {
+            configurable.addConfig(IWebMvcConfig.CROSS_DOMAIN_OPTIONS_AUTO_REPLY, String.valueOf(crossDomainOptionsAutoReply));
+            return this;
+        }
+
+        public Builder crossDomainAllowedCredentials(boolean crossDomainAllowedCredentials) {
+            configurable.addConfig(IWebMvcConfig.CROSS_DOMAIN_ALLOWED_CREDENTIALS, String.valueOf(crossDomainAllowedCredentials));
+            return this;
+        }
+
+        public Builder crossDomainAllowedOrigins(String crossDomainAllowedOrigins) {
+            configurable.addConfig(IWebMvcConfig.CROSS_DOMAIN_ALLOWED_ORIGINS, StringUtils.trimToEmpty(crossDomainAllowedOrigins));
+            return this;
+        }
+
+        public Builder crossDomainAllowedMethods(String crossDomainAllowedMethods) {
+            configurable.addConfig(IWebMvcConfig.CROSS_DOMAIN_ALLOWED_METHODS, StringUtils.trimToEmpty(crossDomainAllowedMethods));
+            return this;
+        }
+
+        public Builder crossDomainAllowedHeaders(String crossDomainAllowedHeaders) {
+            configurable.addConfig(IWebMvcConfig.CROSS_DOMAIN_ALLOWED_HEADERS, StringUtils.trimToEmpty(crossDomainAllowedHeaders));
+            return this;
+        }
+
+        public Builder crossDomainMaxAge(long crossDomainMaxAge) {
+            configurable.addConfig(IWebMvcConfig.CROSS_DOMAIN_MAX_AGE, String.valueOf(crossDomainMaxAge));
+            return this;
+        }
+
         public IModuleConfigurer build() {
             return configurable.toModuleConfigurer();
         }

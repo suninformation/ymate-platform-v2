@@ -28,6 +28,7 @@ import javax.servlet.http.HttpServletRequestWrapper;
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * 表单类型为"multipart/form-data"请求包装类
@@ -118,10 +119,6 @@ public class MultipartRequestWrapper extends HttpServletRequestWrapper implement
      */
     @Override
     public Set<IUploadFileWrapper> getUploadFiles() {
-        Set<IUploadFileWrapper> returnValues = new HashSet<>();
-        formWrapper.getFileMap().values().stream().filter((fileWrappers) -> (ArrayUtils.isNotEmpty(fileWrappers))).forEachOrdered((fileWrappers) -> {
-            Collections.addAll(returnValues, fileWrappers);
-        });
-        return returnValues;
+        return formWrapper.getFileMap().values().stream().filter(ArrayUtils::isNotEmpty).flatMap(Arrays::stream).collect(Collectors.toSet());
     }
 }

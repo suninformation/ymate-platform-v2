@@ -15,6 +15,8 @@
  */
 package net.ymate.platform.commons.util;
 
+import org.apache.commons.lang3.StringUtils;
+
 import java.io.IOException;
 import java.net.Inet6Address;
 import java.net.InetAddress;
@@ -143,6 +145,10 @@ public class NetworkUtils {
                 ipAddr = ipAddr.substring(0, index);
             }
             return ipAddr;
+        }
+
+        public static boolean isLocalIPAddr(String ipAddr) {
+            return StringUtils.equalsAny(ipAddr, "127.0.0.1", "0:0:0:0:0:0:0:1");
         }
 
         /**

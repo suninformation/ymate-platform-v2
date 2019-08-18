@@ -24,7 +24,6 @@ import java.lang.annotation.*;
  * 声明控制器方法默认返回视图对象, 仅在方法无返回值或返回值无效时使用
  *
  * @author 刘镇 (suninformation@163.com) on 15/10/30 下午1:14
- * @version 1.0
  */
 @Target({ElementType.PACKAGE, ElementType.TYPE, ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)

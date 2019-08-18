@@ -33,6 +33,8 @@ import net.ymate.platform.webmvc.annotation.RequestMapping;
 import net.ymate.platform.webmvc.annotation.ResponseCache;
 import net.ymate.platform.webmvc.base.Type;
 import net.ymate.platform.webmvc.context.WebContext;
+import net.ymate.platform.webmvc.cors.CrossDomainAnnotationInterceptor;
+import net.ymate.platform.webmvc.cors.annotation.CrossDomain;
 import net.ymate.platform.webmvc.impl.DefaultInterceptorRuleProcessor;
 import net.ymate.platform.webmvc.impl.DefaultWebMvcConfig;
 import net.ymate.platform.webmvc.support.MultipartRequestWrapper;
@@ -127,6 +129,10 @@ public final class WebMVC implements IModule, IWebMvc {
                 interceptorRuleProcessor.initialize(this);
             }
             //
+            if (config.getCrossDomainSettings().isEnabled()) {
+                owner.getInterceptSettings().getInterceptAnnHelper().registerInterceptAnnotation(CrossDomain.class, CrossDomainAnnotationInterceptor.class);
+            }
+            //
             IProxyFactory proxyFactory = owner.getBeanFactory().getProxyFactory();
             if (proxyFactory != null) {
                 proxyFactory.registerProxy(new RequestParametersProxy());
@@ -214,7 +220,7 @@ public final class WebMVC implements IModule, IWebMvc {
         return cacheProcessor;
     }
 
-    private void processRequestMeta(IRequestContext context, HttpServletRequest request, HttpServletResponse response, RequestMeta requestMeta, boolean devEnv) throws Exception {
+    private void processRequestMeta(IRequestContext context, HttpServletRequest request, RequestMeta requestMeta, boolean devEnv) throws Exception {
         if (devEnv && LOG.isInfoEnabled()) {
             LOG.info("Request mode: controller");
         }
@@ -272,7 +278,7 @@ public final class WebMVC implements IModule, IWebMvc {
         }
     }
 
-    private void processRequestConvention(IRequestContext context, HttpServletResponse response, boolean devEnv) throws Exception {
+    private void processRequestConvention(IRequestContext context, boolean devEnv) throws Exception {
         if (devEnv && LOG.isInfoEnabled()) {
             LOG.info("Request mode: convention");
         }
@@ -443,12 +449,12 @@ public final class WebMVC implements IModule, IWebMvc {
             requestMeta = config.getRequestMappingParser().parse(context);
             if (requestMeta != null) {
                 if (isAllowRequest(context, response, requestMeta, owner.isDevEnv())) {
-                    processRequestMeta(context, request, response, requestMeta, owner.isDevEnv());
+                    processRequestMeta(context, request, requestMeta, owner.isDevEnv());
                 } else {
                     response.sendError(HttpServletResponse.SC_METHOD_NOT_ALLOWED);
                 }
             } else if (config.isConventionMode() && isAllowConvention(context)) {
-                processRequestConvention(context, response, owner.isDevEnv());
+                processRequestConvention(context, owner.isDevEnv());
             } else {
                 response.sendError(HttpServletResponse.SC_NOT_FOUND);
             }

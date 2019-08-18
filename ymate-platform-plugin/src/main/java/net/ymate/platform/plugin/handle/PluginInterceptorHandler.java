@@ -26,12 +26,13 @@ import net.ymate.platform.plugin.PluginClassLoader;
  */
 public class PluginInterceptorHandler implements IBeanHandler {
 
-    private final InterceptorHandler interceptorHandler = new InterceptorHandler();
+    private final InterceptorHandler interceptorHandler;
 
     private final IPluginFactory pluginFactory;
 
     public PluginInterceptorHandler(IPluginFactory pluginFactory) {
         this.pluginFactory = pluginFactory;
+        this.interceptorHandler = new InterceptorHandler(pluginFactory.getOwner());
     }
 
     @Override

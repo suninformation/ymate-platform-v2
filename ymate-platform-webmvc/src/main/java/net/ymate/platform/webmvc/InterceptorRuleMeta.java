@@ -66,7 +66,7 @@ public class InterceptorRuleMeta {
                 this.mapping = StringUtils.substringBeforeLast(this.mapping, Type.Const.PATH_SEPARATOR_ALL);
             }
             //
-            beforeIntercepts = InterceptAnnHelper.getBeforeInterceptors(targetClass, targetMethod);
+            beforeIntercepts = owner.getOwner().getInterceptSettings().getInterceptAnnHelper().getBeforeInterceptors(targetClass, targetMethod);
             contextParams = InterceptAnnHelper.getContextParams(owner.getOwner(), targetClass, targetMethod);
             //
             this.responseCache = targetMethod.getAnnotation(ResponseCache.class);

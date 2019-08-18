@@ -21,8 +21,11 @@ import net.ymate.platform.core.configuration.IConfigReader;
 import net.ymate.platform.core.module.IModuleConfigurer;
 import net.ymate.platform.webmvc.*;
 import net.ymate.platform.webmvc.base.Type;
+import net.ymate.platform.webmvc.cors.CrossDomainSettings;
+import net.ymate.platform.webmvc.cors.impl.DefaultCrossDomainSetting;
 import org.apache.commons.fileupload.ProgressListener;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.File;
@@ -38,7 +41,7 @@ import java.util.Set;
  */
 public final class DefaultWebMvcConfig implements IWebMvcConfig {
 
-    private IRequestMappingParser mappingParser;
+    private IRequestMappingParser requestMappingParser;
 
     private IRequestProcessor requestProcessor;
 
@@ -98,6 +101,8 @@ public final class DefaultWebMvcConfig implements IWebMvcConfig {
 
     private final Set<String> conventionViewNotAllowPaths = new HashSet<>();
 
+    private final CrossDomainSettings crossDomainSettings = new CrossDomainSettings();
+
     private boolean initialized;
 
     public static IWebMvcConfig defaultConfig() {
@@ -121,9 +126,9 @@ public final class DefaultWebMvcConfig implements IWebMvcConfig {
         String mappingParserClassName = configReader.getString(REQUEST_MAPPING_PARSER_CLASS, DEFAULT_STR);
         Class<? extends IRequestMappingParser> mappingParserClass = Type.REQUEST_MAPPING_PARSERS.get(mappingParserClassName);
         if (mappingParserClass == null && StringUtils.isNotBlank(mappingParserClassName)) {
-            mappingParser = ClassUtils.impl(mappingParserClassName, IRequestMappingParser.class, this.getClass());
+            requestMappingParser = ClassUtils.impl(mappingParserClassName, IRequestMappingParser.class, this.getClass());
         } else if (mappingParserClass != null) {
-            mappingParser = ClassUtils.impl(mappingParserClass, IRequestMappingParser.class);
+            requestMappingParser = ClassUtils.impl(mappingParserClass, IRequestMappingParser.class);
         }
         //
         String requestProcessorClassName = configReader.getString(REQUEST_PROCESSOR_CLASS, DEFAULT_STR);
@@ -164,10 +169,27 @@ public final class DefaultWebMvcConfig implements IWebMvcConfig {
         uploadListener = configReader.getClassImpl(UPLOAD_LISTENER_CLASS, ProgressListener.class);
         //
         conventionMode = configReader.getBoolean(CONVENTION_MODE);
-        conventionUrlRewriteMode = configReader.getBoolean(CONVENTION_URL_REWRITE_MODE);
-        conventionInterceptorMode = configReader.getBoolean(CONVENTION_INTERCEPTOR_MODE);
+        if (conventionMode) {
+            conventionUrlRewriteMode = configReader.getBoolean(CONVENTION_URL_REWRITE_MODE);
+            conventionInterceptorMode = configReader.getBoolean(CONVENTION_INTERCEPTOR_MODE);
+            //
+            parseConventionViewPaths(configReader.getArray(CONVENTION_VIEW_PATHS));
+        }
         //
-        String[] conventionViewPaths = configReader.getArray(CONVENTION_VIEW_PATHS);
+        crossDomainSettings.setEnabled(configReader.getBoolean(CROSS_DOMAIN_SETTINGS_ENABLED));
+        if (crossDomainSettings.isEnabled()) {
+            DefaultCrossDomainSetting defaultSetting = crossDomainSettings.getDefaultSetting();
+            defaultSetting.setOptionsAutoReply(configReader.getBoolean(CROSS_DOMAIN_OPTIONS_AUTO_REPLY));
+            defaultSetting.setAllowedCredentials(configReader.getBoolean(CROSS_DOMAIN_ALLOWED_CREDENTIALS));
+            defaultSetting.setMaxAge(configReader.getLong(CROSS_DOMAIN_MAX_AGE));
+            //
+            defaultSetting.addAllowedOrigin(configReader.getArray(CROSS_DOMAIN_ALLOWED_ORIGINS));
+            defaultSetting.addAllowedMethod(configReader.getArray(CROSS_DOMAIN_ALLOWED_METHODS));
+            defaultSetting.addAllowedHeader(configReader.getArray(CROSS_DOMAIN_ALLOWED_HEADERS));
+        }
+    }
+
+    private void parseConventionViewPaths(String[] conventionViewPaths) {
         if (conventionViewPaths != null) {
             for (String viewPath : conventionViewPaths) {
                 viewPath = StringUtils.trimToNull(viewPath);
@@ -199,8 +221,8 @@ public final class DefaultWebMvcConfig implements IWebMvcConfig {
     @Override
     public void initialize(IWebMvc owner) throws Exception {
         if (!initialized) {
-            if (mappingParser == null) {
-                mappingParser = new DefaultRequestMappingParser();
+            if (requestMappingParser == null) {
+                requestMappingParser = new DefaultRequestMappingParser();
             }
             if (requestProcessor == null) {
                 requestProcessor = new DefaultRequestProcessor();
@@ -233,6 +255,10 @@ public final class DefaultWebMvcConfig implements IWebMvcConfig {
             uploadTotalSizeMax = uploadTotalSizeMax > 0 ? uploadTotalSizeMax : 10485760;
             uploadSizeThreshold = uploadSizeThreshold > 0 ? uploadSizeThreshold : DiskFileItemFactory.DEFAULT_SIZE_THRESHOLD;
             //
+            if (!crossDomainSettings.isInitialized()) {
+                crossDomainSettings.initialize(owner);
+            }
+            //
             initialized = true;
         }
     }
@@ -244,12 +270,12 @@ public final class DefaultWebMvcConfig implements IWebMvcConfig {
 
     @Override
     public IRequestMappingParser getRequestMappingParser() {
-        return mappingParser;
+        return requestMappingParser;
     }
 
-    public void setMappingParser(IRequestMappingParser mappingParser) {
+    public void setRequestMappingParser(IRequestMappingParser mappingParser) {
         if (!initialized) {
-            this.mappingParser = mappingParser;
+            this.requestMappingParser = mappingParser;
         }
     }
 
@@ -287,7 +313,7 @@ public final class DefaultWebMvcConfig implements IWebMvcConfig {
     }
 
     @Override
-    public String getResourcesHome() {
+    public String getResourceHome() {
         return resourceHome;
     }
 
@@ -561,14 +587,61 @@ public final class DefaultWebMvcConfig implements IWebMvcConfig {
     }
 
     public void addConventionViewAllowPath(String conventionViewAllowPath) {
-        if (!initialized) {
+        if (!initialized && StringUtils.isNotBlank(conventionViewAllowPath)) {
             conventionViewAllowPaths.add(conventionViewAllowPath);
         }
     }
 
     public void addConventionViewNotAllowPath(String conventionViewNotAllowPath) {
-        if (!initialized) {
+        if (!initialized && StringUtils.isNotBlank(conventionViewNotAllowPath)) {
             conventionViewNotAllowPaths.add(conventionViewNotAllowPath);
+        }
+    }
+
+    @Override
+    public CrossDomainSettings getCrossDomainSettings() {
+        return crossDomainSettings;
+    }
+
+    public void setCrossDomainSettingsEnabled(boolean crossDomainSettingsEnabled) {
+        if (!initialized) {
+            crossDomainSettings.setEnabled(crossDomainSettingsEnabled);
+        }
+    }
+
+    public void setCrossDomainOptionsAutoReply(boolean crossDomainOptionsAutoReply) {
+        if (!initialized) {
+            crossDomainSettings.getDefaultSetting().setOptionsAutoReply(crossDomainOptionsAutoReply);
+        }
+    }
+
+    public void setCrossDomainAllowedCredentials(boolean crossDomainAllowedCredentials) {
+        if (!initialized) {
+            crossDomainSettings.getDefaultSetting().setAllowedCredentials(crossDomainAllowedCredentials);
+        }
+    }
+
+    public void addCrossDomainAllowedOrigin(String crossDomainAllowedOrigin) {
+        if (!initialized && StringUtils.isNotBlank(crossDomainAllowedOrigin)) {
+            crossDomainSettings.getDefaultSetting().addAllowedOrigin(crossDomainAllowedOrigin);
+        }
+    }
+
+    public void addCrossDomainAllowedMethod(String crossDomainAllowedMethod) {
+        if (!initialized && StringUtils.isNotBlank(crossDomainAllowedMethod)) {
+            crossDomainSettings.getDefaultSetting().addAllowedMethod(crossDomainAllowedMethod);
+        }
+    }
+
+    public void addCrossDomainAllowedHeader(String crossDomainAllowedHeader) {
+        if (!initialized && StringUtils.isNotBlank(crossDomainAllowedHeader)) {
+            crossDomainSettings.getDefaultSetting().addAllowedHeader(crossDomainAllowedHeader);
+        }
+    }
+
+    public void setCrossDomainMaxAge(long crossDomainMaxAge) {
+        if (!initialized) {
+            crossDomainSettings.getDefaultSetting().setMaxAge(crossDomainMaxAge);
         }
     }
 
@@ -579,159 +652,200 @@ public final class DefaultWebMvcConfig implements IWebMvcConfig {
         private Builder() {
         }
 
-        private Builder mappingParser(IRequestMappingParser mappingParser) {
-            config.setMappingParser(mappingParser);
+        public Builder requestMappingParser(IRequestMappingParser requestMappingParser) {
+            config.setRequestMappingParser(requestMappingParser);
             return this;
         }
 
-        private Builder requestProcessor(IRequestProcessor requestProcessor) {
+        public Builder requestProcessor(IRequestProcessor requestProcessor) {
             config.setRequestProcessor(requestProcessor);
             return this;
         }
 
-        private Builder errorProcessor(IWebErrorProcessor errorProcessor) {
+        public Builder errorProcessor(IWebErrorProcessor errorProcessor) {
             config.setErrorProcessor(errorProcessor);
             return this;
         }
 
-        private Builder cacheProcessor(IWebCacheProcessor cacheProcessor) {
+        public Builder cacheProcessor(IWebCacheProcessor cacheProcessor) {
             config.setCacheProcessor(cacheProcessor);
             return this;
         }
 
-        private Builder resourceHome(String resourceHome) {
+        public Builder resourceHome(String resourceHome) {
             config.setResourceHome(resourceHome);
             return this;
         }
 
-        private Builder resourceName(String resourceName) {
+        public Builder resourceName(String resourceName) {
             config.setResourceName(resourceName);
             return this;
         }
 
-        private Builder languageParamName(String languageParamName) {
+        public Builder languageParamName(String languageParamName) {
             config.setLanguageParamName(languageParamName);
             return this;
         }
 
-        private Builder defaultCharsetEncoding(String defaultCharsetEncoding) {
+        public Builder defaultCharsetEncoding(String defaultCharsetEncoding) {
             config.setDefaultCharsetEncoding(defaultCharsetEncoding);
             return this;
         }
 
-        private Builder defaultContentType(String defaultContentType) {
+        public Builder defaultContentType(String defaultContentType) {
             config.setDefaultContentType(defaultContentType);
             return this;
         }
 
-        private Builder addRequestIgnoreSuffix(String... requestIgnoreSuffixes) {
+        public Builder addRequestIgnoreSuffix(String... requestIgnoreSuffixes) {
             if (requestIgnoreSuffixes != null && requestIgnoreSuffixes.length > 0) {
                 Arrays.stream(requestIgnoreSuffixes).forEach(config::addRequestIgnoreSuffix);
             }
             return this;
         }
 
-        private Builder requestMethodParam(String requestMethodParam) {
+        public Builder requestMethodParam(String requestMethodParam) {
             config.setRequestMethodParam(requestMethodParam);
             return this;
         }
 
-        private Builder requestPrefix(String requestPrefix) {
+        public Builder requestPrefix(String requestPrefix) {
             config.setRequestPrefix(requestPrefix);
             return this;
         }
 
-        private Builder baseViewPath(String baseViewPath) {
+        public Builder baseViewPath(String baseViewPath) {
             config.setBaseViewPath(baseViewPath);
             return this;
         }
 
-        private Builder abstractBaseViewPath(String abstractBaseViewPath) {
+        public Builder abstractBaseViewPath(String abstractBaseViewPath) {
             config.setAbstractBaseViewPath(abstractBaseViewPath);
             return this;
         }
 
-        private Builder cookiePrefix(String cookiePrefix) {
+        public Builder cookiePrefix(String cookiePrefix) {
             config.setCookiePrefix(cookiePrefix);
             return this;
         }
 
-        private Builder cookieDomain(String cookieDomain) {
+        public Builder cookieDomain(String cookieDomain) {
             config.setCookieDomain(cookieDomain);
             return this;
         }
 
-        private Builder cookiePath(String cookiePath) {
+        public Builder cookiePath(String cookiePath) {
             config.setCookiePath(cookiePath);
             return this;
         }
 
-        private Builder cookieAuthKey(String cookieAuthKey) {
+        public Builder cookieAuthKey(String cookieAuthKey) {
             config.setCookieAuthKey(cookieAuthKey);
             return this;
         }
 
-        private Builder cookieAuthEnabled(boolean cookieAuthEnabled) {
+        public Builder cookieAuthEnabled(boolean cookieAuthEnabled) {
             config.setCookieAuthEnabled(cookieAuthEnabled);
             return this;
         }
 
-        private Builder cookieUseHttpOnly(boolean cookieUseHttpOnly) {
+        public Builder cookieUseHttpOnly(boolean cookieUseHttpOnly) {
             config.setCookieUseHttpOnly(cookieUseHttpOnly);
             return this;
         }
 
-        private Builder uploadTempDir(String uploadTempDir) {
+        public Builder uploadTempDir(String uploadTempDir) {
             config.setUploadTempDir(uploadTempDir);
             return this;
         }
 
-        private Builder uploadFileSizeMax(int uploadFileSizeMax) {
+        public Builder uploadFileSizeMax(int uploadFileSizeMax) {
             config.setUploadFileSizeMax(uploadFileSizeMax);
             return this;
         }
 
-        private Builder uploadTotalSizeMax(int uploadTotalSizeMax) {
+        public Builder uploadTotalSizeMax(int uploadTotalSizeMax) {
             config.setUploadTotalSizeMax(uploadTotalSizeMax);
             return this;
         }
 
-        private Builder uploadSizeThreshold(int uploadSizeThreshold) {
+        public Builder uploadSizeThreshold(int uploadSizeThreshold) {
             config.setUploadSizeThreshold(uploadSizeThreshold);
             return this;
         }
 
-        private Builder uploadListener(ProgressListener uploadListener) {
+        public Builder uploadListener(ProgressListener uploadListener) {
             config.setUploadListener(uploadListener);
             return this;
         }
 
-        private Builder conventionMode(boolean conventionMode) {
+        public Builder conventionMode(boolean conventionMode) {
             config.setConventionMode(conventionMode);
             return this;
         }
 
-        private Builder conventionUrlRewriteMode(boolean conventionUrlRewriteMode) {
+        public Builder conventionUrlRewriteMode(boolean conventionUrlRewriteMode) {
             config.setConventionUrlRewriteMode(conventionUrlRewriteMode);
             return this;
         }
 
-        private Builder conventionInterceptorMode(boolean conventionInterceptorMode) {
+        public Builder conventionInterceptorMode(boolean conventionInterceptorMode) {
             config.setConventionInterceptorMode(conventionInterceptorMode);
             return this;
         }
 
         public Builder addConventionViewAllowPath(String... conventionViewAllowPaths) {
-            if (conventionViewAllowPaths != null && conventionViewAllowPaths.length > 0) {
+            if (ArrayUtils.isNotEmpty(conventionViewAllowPaths)) {
                 Arrays.stream(conventionViewAllowPaths).forEach(config::addConventionViewAllowPath);
             }
             return this;
         }
 
         public Builder addConventionViewNotAllowPath(String... conventionViewNotAllowPaths) {
-            if (conventionViewNotAllowPaths != null && conventionViewNotAllowPaths.length > 0) {
+            if (ArrayUtils.isNotEmpty(conventionViewNotAllowPaths)) {
                 Arrays.stream(conventionViewNotAllowPaths).forEach(config::addConventionViewNotAllowPath);
             }
+            return this;
+        }
+
+        public Builder crossDomainSettingsEnabled(boolean crossDomainSettingsEnabled) {
+            config.setCrossDomainSettingsEnabled(crossDomainSettingsEnabled);
+            return this;
+        }
+
+        public Builder crossDomainOptionsAutoReply(boolean crossDomainOptionsAutoReply) {
+            config.setCrossDomainOptionsAutoReply(crossDomainOptionsAutoReply);
+            return this;
+        }
+
+        public Builder crossDomainAllowedCredentials(boolean crossDomainAllowedCredentials) {
+            config.setCrossDomainAllowedCredentials(crossDomainAllowedCredentials);
+            return this;
+        }
+
+        public Builder addCrossDomainAllowedOrigin(String... crossDomainAllowedOrigins) {
+            if (ArrayUtils.isNotEmpty(crossDomainAllowedOrigins)) {
+                Arrays.stream(crossDomainAllowedOrigins).forEach(config::addCrossDomainAllowedOrigin);
+            }
+            return this;
+        }
+
+        public Builder addCrossDomainAllowedMethod(String... crossDomainAllowedMethods) {
+            if (ArrayUtils.isNotEmpty(crossDomainAllowedMethods)) {
+                Arrays.stream(crossDomainAllowedMethods).forEach(config::addCrossDomainAllowedMethod);
+            }
+            return this;
+        }
+
+        public Builder addCrossDomainAllowedHeader(String... crossDomainAllowedHeaders) {
+            if (ArrayUtils.isNotEmpty(crossDomainAllowedHeaders)) {
+                Arrays.stream(crossDomainAllowedHeaders).forEach(config::addCrossDomainAllowedHeader);
+            }
+            return this;
+        }
+
+        public Builder crossDomainMaxAge(long crossDomainMaxAge) {
+            config.setCrossDomainMaxAge(crossDomainMaxAge);
             return this;
         }
 

@@ -17,6 +17,7 @@ package net.ymate.platform.webmvc;
 
 import net.ymate.platform.core.beans.annotation.Ignored;
 import net.ymate.platform.core.support.IInitialization;
+import net.ymate.platform.webmvc.cors.CrossDomainSettings;
 import org.apache.commons.fileupload.ProgressListener;
 
 import java.util.Set;
@@ -93,6 +94,20 @@ public interface IWebMvcConfig extends IInitialization<IWebMvc> {
 
     String CONVENTION_VIEW_PATHS = "convention_view_paths";
 
+    String CROSS_DOMAIN_SETTINGS_ENABLED = "cross_domain_settings_enabled";
+
+    String CROSS_DOMAIN_OPTIONS_AUTO_REPLY = "cross_domain_options_auto_reply";
+
+    String CROSS_DOMAIN_ALLOWED_ORIGINS = "cross_domain_allowed_origins";
+
+    String CROSS_DOMAIN_ALLOWED_METHODS = "cross_domain_allowed_methods";
+
+    String CROSS_DOMAIN_ALLOWED_HEADERS = "cross_domain_allowed_headers";
+
+    String CROSS_DOMAIN_ALLOWED_CREDENTIALS = "cross_domain_allowed_credentials";
+
+    String CROSS_DOMAIN_MAX_AGE = "cross_domain_max_age";
+
     /**
      * 控制器请求URL后缀参数名称
      */
@@ -144,6 +159,16 @@ public interface IWebMvcConfig extends IInitialization<IWebMvc> {
     String PARAMS_REDIRECT_CUSTOM_URL = "webmvc.redirect_custom_url";
 
     /**
+     * 允许访问和重定向的主机名称, 多个主机名称用'|'分隔, 默认值: 空(表示不限制)
+     */
+    String PARAMS_ALLOWED_ACCESS_HOSTS = "webmvc.allowed_access_hosts";
+
+    /**
+     * 允许上传的文件类型验证参数名称
+     */
+    String PARAMS_ALLOWED_UPLOAD_CONTENT_TYPES = "webmvc.allowed_upload_content_types";
+
+    /**
      * 控制器请求映射路径分析器，可选值为已知分析器名称或自定义分析器类名称，默认为restful，目前支持已知分析器[default|restful|...]
      *
      * @return 返回控制器请求映射路径分析器
@@ -176,7 +201,7 @@ public interface IWebMvcConfig extends IInitialization<IWebMvc> {
      *
      * @return 返回国际化资源文件存放路径
      */
-    String getResourcesHome();
+    String getResourceHome();
 
     /**
      * 国际化资源文件名称，可选参数，默认值为messages
@@ -352,4 +377,11 @@ public interface IWebMvcConfig extends IInitialization<IWebMvc> {
      * @return 返回禁止访问的视图文件路径集合
      */
     Set<String> getConventionViewNotAllowPaths();
+
+    /**
+     * 获取跨域设置
+     *
+     * @return 返回跨域设置
+     */
+    CrossDomainSettings getCrossDomainSettings();
 }

@@ -51,14 +51,14 @@ public class WebCacheHelper {
         this.scope = scope;
         //
         if (ICaches.Scope.DEFAULT.equals(this.scope)) {
-            this.pageCacheElement.getHeaders().entrySet().removeIf(header -> "Last-Modified".equalsIgnoreCase(header.getKey()) || "Expires".equalsIgnoreCase(header.getKey()) || "Cache-Control".equalsIgnoreCase(header.getKey()) || "ETag".equalsIgnoreCase(header.getKey()));
+            this.pageCacheElement.getHeaders().entrySet().removeIf(header -> StringUtils.equalsAnyIgnoreCase(header.getKey(), Type.HttpHead.LAST_MODIFIED, Type.HttpHead.EXPIRES, Type.HttpHead.CACHE_CONTROL, Type.HttpHead.ETAG));
             //
             long expiresTime = System.currentTimeMillis() + this.pageCacheElement.getTimeout() * DateTimeUtils.SECOND;
             //
-            this.pageCacheElement.getHeaders().put("Last-Modified", PairObject.bind(Type.HeaderType.DATE, this.pageCacheElement.getLastUpdateTime()));
-            this.pageCacheElement.getHeaders().put("Expires", PairObject.bind(Type.HeaderType.DATE, expiresTime));
-            this.pageCacheElement.getHeaders().put("Cache-Control", PairObject.bind(Type.HeaderType.STRING, "max-age=" + this.pageCacheElement.getTimeout()));
-            this.pageCacheElement.getHeaders().put("ETag", PairObject.bind(Type.HeaderType.STRING, String.format("\"%d\"", expiresTime)));
+            this.pageCacheElement.getHeaders().put(Type.HttpHead.LAST_MODIFIED, PairObject.bind(Type.HeaderType.DATE, this.pageCacheElement.getLastUpdateTime()));
+            this.pageCacheElement.getHeaders().put(Type.HttpHead.EXPIRES, PairObject.bind(Type.HeaderType.DATE, expiresTime));
+            this.pageCacheElement.getHeaders().put(Type.HttpHead.CACHE_CONTROL, PairObject.bind(Type.HeaderType.STRING, String.format("%s=%d", Type.HttpHead.MAX_AGE, this.pageCacheElement.getTimeout())));
+            this.pageCacheElement.getHeaders().put(Type.HttpHead.ETAG, PairObject.bind(Type.HeaderType.STRING, String.format("\"%d\"", expiresTime)));
         }
     }
 
@@ -69,16 +69,16 @@ public class WebCacheHelper {
     public void writeResponse() throws Exception {
         if (ICaches.Scope.DEFAULT.equals(scope)) {
             for (final Map.Entry<String, PairObject<Type.HeaderType, Object>> headerEntry : pageCacheElement.getHeaders().entrySet()) {
-                if ("ETag".equals(headerEntry.getKey())) {
-                    String ifNoneMatch = request.getHeader("If-None-Match");
+                if (Type.HttpHead.ETAG.equals(headerEntry.getKey())) {
+                    String ifNoneMatch = request.getHeader(Type.HttpHead.IF_NONE_MATCH);
                     if (headerEntry.getValue() != null && headerEntry.getValue().getValue().equals(ifNoneMatch)) {
                         response.sendError(HttpServletResponse.SC_NOT_MODIFIED);
                         return;
                     }
                     break;
                 }
-                if (headerEntry.getValue().getValue() != null && "Last-Modified".equals(headerEntry.getKey())) {
-                    long ifModifiedSince = request.getDateHeader("If-Modified-Since");
+                if (headerEntry.getValue().getValue() != null && Type.HttpHead.LAST_MODIFIED.equals(headerEntry.getKey())) {
+                    long ifModifiedSince = request.getDateHeader(Type.HttpHead.IF_MODIFIED_SINCE);
                     if (ifModifiedSince != -1) {
                         final Date requestDate = new Date(ifModifiedSince);
                         final Date pageDate;
@@ -94,7 +94,7 @@ public class WebCacheHelper {
                         }
                         if (!requestDate.before(pageDate)) {
                             response.sendError(HttpServletResponse.SC_NOT_MODIFIED);
-                            response.setHeader("Last-Modified", request.getHeader("If-Modified-Since"));
+                            response.setHeader(Type.HttpHead.LAST_MODIFIED, request.getHeader(Type.HttpHead.IF_MODIFIED_SINCE));
                             return;
                         }
                     }
@@ -105,12 +105,12 @@ public class WebCacheHelper {
         doSetHeaders();
         //
         byte[] body;
-        if (pageCacheElement.isStoreGzipped() && StringUtils.contains(request.getHeader("Accept-Encoding"), "gzip")) {
+        if (pageCacheElement.isStoreGzipped() && StringUtils.contains(request.getHeader(Type.HttpHead.ACCEPT_ENCODING), Type.HttpHead.GZIP)) {
             body = pageCacheElement.getGzippedBody();
             if (body.length == EMPTY_GZIPPED_CONTENT_SIZE) {
                 body = new byte[0];
             } else {
-                response.setHeader("Content-Encoding", "gzip");
+                response.setHeader(Type.HttpHead.CONTENT_ENCODING, Type.HttpHead.GZIP);
             }
         } else {
             body = pageCacheElement.getUnGzippedBody();

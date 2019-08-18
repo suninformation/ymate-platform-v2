@@ -18,8 +18,8 @@ package net.ymate.platform.webmvc.support;
 import net.ymate.platform.webmvc.IRequestContext;
 import net.ymate.platform.webmvc.IWebMvcConfig;
 import net.ymate.platform.webmvc.WebMVC;
-import net.ymate.platform.webmvc.base.Type;
 import net.ymate.platform.webmvc.impl.DefaultRequestContext;
+import net.ymate.platform.webmvc.util.WebUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.servlet.*;
@@ -62,8 +62,7 @@ public class DispatchFilter implements Filter {
 
     @Override
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
-        if (StringUtils.equalsIgnoreCase(((HttpServletRequest) request).getHeader(Type.Const.HTTP_HEADER_CONNECTION), Type.Const.HTTP_HEADER_UPGRADE)
-                && StringUtils.equalsIgnoreCase(((HttpServletRequest) request).getHeader(Type.Const.HTTP_HEADER_UPGRADE), "websocket")) {
+        if (WebUtils.isWebSocket((HttpServletRequest) request)) {
             chain.doFilter(request, response);
         } else {
             IRequestContext requestContext = new DefaultRequestContext((HttpServletRequest) request, requestPrefix);

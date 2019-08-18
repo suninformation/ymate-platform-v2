@@ -54,6 +54,8 @@ public final class InterceptSettings {
 
     private final Map<String, InterceptSettingMeta> settingMetaMap = new HashMap<>();
 
+    private final InterceptAnnHelper interceptAnnHelper = new InterceptAnnHelper();
+
     public static InterceptSettings create() {
         return new InterceptSettings();
     }
@@ -91,6 +93,10 @@ public final class InterceptSettings {
     }
 
     private InterceptSettings() {
+    }
+
+    public InterceptAnnHelper getInterceptAnnHelper() {
+        return interceptAnnHelper;
     }
 
     public boolean isEnabled() {

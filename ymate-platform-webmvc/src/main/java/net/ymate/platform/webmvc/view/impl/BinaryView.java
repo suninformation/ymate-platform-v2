@@ -19,6 +19,7 @@ import net.ymate.platform.commons.lang.BlurObject;
 import net.ymate.platform.commons.lang.PairObject;
 import net.ymate.platform.commons.util.FileUtils;
 import net.ymate.platform.commons.util.MimeTypeUtils;
+import net.ymate.platform.webmvc.base.Type;
 import net.ymate.platform.webmvc.context.WebContext;
 import net.ymate.platform.webmvc.view.AbstractView;
 import org.apache.commons.io.IOUtils;
@@ -88,12 +89,12 @@ public class BinaryView extends AbstractView {
         //
         if (StringUtils.isNotBlank(fileName)) {
             StringBuilder dispositionBuilder = new StringBuilder("attachment;filename=");
-            if (httpServletRequest.getHeader("User-Agent").toLowerCase().contains("firefox")) {
+            if (StringUtils.containsIgnoreCase(httpServletRequest.getHeader(Type.HttpHead.USER_AGENT), "firefox")) {
                 dispositionBuilder.append(new String(fileName.getBytes(StandardCharsets.UTF_8), "ISO8859-1"));
             } else {
-                dispositionBuilder.append(URLEncoder.encode(fileName, "UTF-8"));
+                dispositionBuilder.append(URLEncoder.encode(fileName, DEFAULT_CHARSET));
             }
-            httpServletResponse.setHeader("Content-Disposition", dispositionBuilder.toString());
+            httpServletResponse.setHeader(Type.HttpHead.CONTENT_DISPOSITION, dispositionBuilder.toString());
         }
         //
         if (data == null) {
@@ -154,12 +155,12 @@ public class BinaryView extends AbstractView {
 
     private void doSetRangeHeader(HttpServletResponse response, PairObject<Long, Long> range) {
         // 表示使用了断点续传（默认是“none”，可以不指定）
-        addHeader("Accept-Ranges", "bytes");
+        addHeader(Type.HttpHead.ACCEPT_RANGES, "bytes");
         // Content-Length: [文件的总大小] - [客户端请求的下载的文件块的开始字节]
         long totalLength = range.getValue() - range.getKey();
-        addHeader("Content-Length", totalLength + "");
+        addHeader(Type.HttpHead.CONTENT_LENGTH, totalLength + "");
         // Content-Range: bytes [文件块的开始字节]-[文件的总大小 - 1]/[文件的总大小]
-        addHeader("Content-Range", "bytes " + range.getKey() + "-" + (range.getValue() - 1) + "/" + length);
+        addHeader(Type.HttpHead.CONTENT_RANGE, String.format("bytes %d-%d/%d", range.getKey(), range.getValue() - 1, length));
         // response.setHeader("Connection", "Close"); //此语句将不能用IE直接下载
         // Status: 206
         response.setStatus(HttpServletResponse.SC_PARTIAL_CONTENT);
@@ -174,9 +175,10 @@ public class BinaryView extends AbstractView {
     private PairObject<Long, Long> doParseRange(long length) {
         PairObject<Long, Long> returnValue = null;
         // 通过请求头Range参数判断是否采用断点续传
-        String rangeStr = WebContext.getRequest().getHeader("Range");
-        if (rangeStr != null && rangeStr.startsWith("bytes=") && rangeStr.length() >= 7) {
-            rangeStr = StringUtils.substringAfter(rangeStr, "bytes=");
+        String separatorStr = "bytes=";
+        String rangeStr = WebContext.getRequest().getHeader(Type.HttpHead.RANGE);
+        if (rangeStr != null && rangeStr.startsWith(separatorStr) && rangeStr.length() >= 7) {
+            rangeStr = StringUtils.substringAfter(rangeStr, separatorStr);
             String[] ranges = StringUtils.split(rangeStr, ",");
             // 可能存在多个Range，目前仅处理第一个...
             for (String range : ranges) {
