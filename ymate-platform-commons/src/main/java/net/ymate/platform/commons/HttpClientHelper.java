@@ -28,6 +28,8 @@ import org.apache.http.conn.ssl.DefaultHostnameVerifier;
 import org.apache.http.conn.ssl.NoopHostnameVerifier;
 import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
 import org.apache.http.entity.ContentType;
+import org.apache.http.entity.mime.FormBodyPart;
+import org.apache.http.entity.mime.FormBodyPartBuilder;
 import org.apache.http.entity.mime.MultipartEntityBuilder;
 import org.apache.http.entity.mime.content.ContentBody;
 import org.apache.http.entity.mime.content.FileBody;
@@ -332,16 +334,22 @@ public class HttpClientHelper {
         return nameValuePair;
     }
 
-    public IHttpResponse upload(String url, String fieldName, ContentBody uploadFile, Header[] headers) throws Exception {
-        return upload(url, fieldName, uploadFile, headers, null);
+    public IHttpResponse upload(String url, String fieldName, ContentBody contentBody, Header[] headers) throws Exception {
+        return upload(url, fieldName, contentBody, headers, null);
     }
 
-    public IHttpResponse upload(String url, String fieldName, ContentBody uploadFile, Header[] headers, final String defaultResponseCharset) throws Exception {
+    public IHttpResponse upload(String url, String fieldName, ContentBody contentBody, Header[] headers, String defaultResponseCharset) throws Exception {
+        return upload(url, new FormBodyPart[]{FormBodyPartBuilder.create(fieldName, contentBody).build()}, headers, defaultResponseCharset);
+    }
+
+    public IHttpResponse upload(String url, FormBodyPart[] formBodyParts, Header[] headers, String defaultResponseCharset) throws Exception {
+        MultipartEntityBuilder multipartEntityBuilder = MultipartEntityBuilder.create();
+        for (FormBodyPart formBodyPart : formBodyParts) {
+            multipartEntityBuilder.addPart(formBodyPart);
+        }
         RequestBuilder requestBuilder = RequestBuilder.post()
                 .setUri(url)
-                .setEntity(MultipartEntityBuilder.create()
-                        .addPart(fieldName, uploadFile)
-                        .build());
+                .setEntity(multipartEntityBuilder.build());
         requestBuilder = processRequestHeaders(requestBuilder, headers, null);
         return execute(requestBuilder, defaultResponseCharset);
     }
