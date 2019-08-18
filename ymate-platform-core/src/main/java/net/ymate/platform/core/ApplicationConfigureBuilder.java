@@ -15,6 +15,7 @@
  */
 package net.ymate.platform.core;
 
+import net.ymate.platform.commons.IPasswordProcessor;
 import net.ymate.platform.core.beans.IBeanLoadFactory;
 import net.ymate.platform.core.beans.proxy.IProxyFactory;
 import net.ymate.platform.core.i18n.II18nEventHandler;
@@ -92,6 +93,11 @@ public class ApplicationConfigureBuilder {
         if (excludedModules != null && excludedModules.length > 0) {
             configurer.addExcludedModules(Arrays.asList(excludedModules));
         }
+        return this;
+    }
+
+    public ApplicationConfigureBuilder passwordProcess(IPasswordProcessor passwordProcessor) {
+        configurer.setPasswordProcessor(passwordProcessor);
         return this;
     }
 

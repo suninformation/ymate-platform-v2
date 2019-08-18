@@ -15,6 +15,7 @@
  */
 package net.ymate.platform.starter.impl;
 
+import net.ymate.platform.commons.IPasswordProcessor;
 import net.ymate.platform.core.AbstractApplicationConfigurer;
 import net.ymate.platform.core.IApplication;
 import net.ymate.platform.core.IApplicationConfigureParser;
@@ -48,6 +49,8 @@ public class DefaultApplicationConfigurer extends AbstractApplicationConfigurer 
 
     private static final String CONFIG_DEFAULT_LOCALE = "ymp.default_locale";
 
+    private static final String CONFIG_DEFAULT_PASSWORD_PROCESS_CLASS = "ymp.default_password_process_class";
+
     private static final String CONFIG_I18N_EVENT_HANDLER_CLASS = "ymp.i18n_event_handler_class";
 
     private static final String CONFIG_INTERCEPT_PREFIX = "ymp.intercept.";
@@ -63,6 +66,7 @@ public class DefaultApplicationConfigurer extends AbstractApplicationConfigurer 
             //
             setProxyFactory(YMP.getProxyFactory());
             setBeanLoadFactory(YMP.getBeanLoadFactory());
+            setPasswordProcessor(configureParser.getConfigReader().getClassImpl(CONFIG_DEFAULT_PASSWORD_PROCESS_CLASS, IPasswordProcessor.class));
             //
             addPackageNames(parseArrayValue(IApplication.SYSTEM_PACKAGES, IApplication.SYSTEM_PACKAGES));
             addExcludedPackageNames(parseArrayValue(CONFIG_EXCLUDED_PACKAGES));

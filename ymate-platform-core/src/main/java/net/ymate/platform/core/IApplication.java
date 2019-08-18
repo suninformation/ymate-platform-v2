@@ -15,7 +15,6 @@
  */
 package net.ymate.platform.core;
 
-import net.ymate.platform.commons.IPasswordProcessor;
 import net.ymate.platform.core.beans.IBeanFactory;
 import net.ymate.platform.core.beans.annotation.Ignored;
 import net.ymate.platform.core.beans.intercept.InterceptSettings;
@@ -136,20 +135,6 @@ public interface IApplication extends IDestroyable {
      * @return 返回拦截器配置
      */
     InterceptSettings getInterceptSettings();
-
-    /**
-     * 获取默认密码处理器类型
-     *
-     * @return 返回密码处理器类型
-     */
-    Class<? extends IPasswordProcessor> getPasswordProcessorClass();
-
-    /**
-     * 设置默认密码处理器类型(未初始化前有效)
-     *
-     * @param passwordProcessorClass 密码处理器类型
-     */
-    void setPasswordProcessorClass(Class<? extends IPasswordProcessor> passwordProcessorClass);
 
     /**
      * 获取框架全局参数映射

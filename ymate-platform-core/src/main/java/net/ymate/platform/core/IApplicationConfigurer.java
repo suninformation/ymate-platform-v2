@@ -15,6 +15,7 @@
  */
 package net.ymate.platform.core;
 
+import net.ymate.platform.commons.IPasswordProcessor;
 import net.ymate.platform.core.beans.IBeanLoadFactory;
 import net.ymate.platform.core.beans.annotation.Ignored;
 import net.ymate.platform.core.beans.intercept.InterceptSettings;
@@ -62,6 +63,13 @@ public interface IApplicationConfigurer {
      * @return 返回应用容器配置分析器
      */
     IApplicationConfigureParser getConfigureParser();
+
+    /**
+     * 获取默认密码处理器类型
+     *
+     * @return 返回密码处理器类型
+     */
+    IPasswordProcessor getPasswordProcessor();
 
     /**
      * 获取自动扫描的包名称集合

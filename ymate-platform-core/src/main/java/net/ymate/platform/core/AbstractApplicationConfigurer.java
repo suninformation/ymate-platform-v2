@@ -15,6 +15,7 @@
  */
 package net.ymate.platform.core;
 
+import net.ymate.platform.commons.IPasswordProcessor;
 import net.ymate.platform.core.beans.IBeanLoadFactory;
 import net.ymate.platform.core.beans.intercept.InterceptSettings;
 import net.ymate.platform.core.beans.proxy.IProxyFactory;
@@ -35,6 +36,8 @@ public abstract class AbstractApplicationConfigurer implements IApplicationConfi
     private IBeanLoadFactory beanLoadFactory;
 
     private final IApplicationConfigureParser configureParser;
+
+    private IPasswordProcessor passwordProcessor;
 
     private Locale defaultLocale;
 
@@ -79,13 +82,22 @@ public abstract class AbstractApplicationConfigurer implements IApplicationConfi
         return beanLoadFactory;
     }
 
+    public void setBeanLoadFactory(IBeanLoadFactory beanLoadFactory) {
+        this.beanLoadFactory = beanLoadFactory;
+    }
+
     @Override
     public IApplicationConfigureParser getConfigureParser() {
         return configureParser;
     }
 
-    public void setBeanLoadFactory(IBeanLoadFactory beanLoadFactory) {
-        this.beanLoadFactory = beanLoadFactory;
+    @Override
+    public IPasswordProcessor getPasswordProcessor() {
+        return passwordProcessor;
+    }
+
+    public void setPasswordProcessor(IPasswordProcessor passwordProcessor) {
+        this.passwordProcessor = passwordProcessor;
     }
 
     @Override

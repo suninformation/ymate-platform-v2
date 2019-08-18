@@ -16,7 +16,6 @@
 package net.ymate.platform.core;
 
 import net.ymate.platform.commons.IPasswordProcessor;
-import net.ymate.platform.commons.impl.DefaultPasswordProcessor;
 import net.ymate.platform.commons.util.RuntimeUtils;
 import net.ymate.platform.core.beans.IBeanFactory;
 import net.ymate.platform.core.beans.IBeanLoadFactory;
@@ -239,18 +238,6 @@ public final class Application implements IApplication {
     @Override
     public InterceptSettings getInterceptSettings() {
         return interceptSettings;
-    }
-
-    @Override
-    public Class<? extends IPasswordProcessor> getPasswordProcessorClass() {
-        return passwordProcessorClass == null ? DefaultPasswordProcessor.class : passwordProcessorClass;
-    }
-
-    @Override
-    public void setPasswordProcessorClass(Class<? extends IPasswordProcessor> passwordProcessorClass) {
-        if (!initialized) {
-            this.passwordProcessorClass = passwordProcessorClass;
-        }
     }
 
     @Override
