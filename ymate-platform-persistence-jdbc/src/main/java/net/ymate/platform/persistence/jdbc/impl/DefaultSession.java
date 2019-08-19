@@ -1053,7 +1053,7 @@ public class DefaultSession implements ISession {
                 if (!_keyValues.isEmpty()) {
                     for (IEntity<?> _entity : this.__entities) {
                         for (Map.Entry<String, Object> _autoField : _keyValues.entrySet()) {
-                            Field _field = __entityMeta.getPropertyByField(_autoField.getKey()).getField();
+                            Field _field = __entityMeta.getPropertyByName(_autoField.getKey()).getField();
                             // 为自生成主键赋值, 自动填充
                             if (_autoField.getValue() != null) {
                                 if (__entityMeta.isMultiplePrimaryKey()) {
