@@ -816,13 +816,16 @@ public class DefaultDatabaseSession extends AbstractSession<IDatabaseConnectionH
                 if (!keyValues.isEmpty()) {
                     for (IEntity<?> entity : this.accessorEntities) {
                         for (Map.Entry<String, Object> autoField : keyValues.entrySet()) {
-                            Field field = accessorEntityMeta.getPropertyByField(autoField.getKey()).getField();
-                            // 为自生成主键赋值, 自动填充
-                            if (autoField.getValue() != null) {
-                                if (accessorEntityMeta.isMultiplePrimaryKey()) {
-                                    field.set(entity.getId(), BlurObject.bind(autoField.getValue()).toObjectValue(field.getType()));
-                                } else {
-                                    field.set(entity, BlurObject.bind(autoField.getValue()).toObjectValue(field.getType()));
+                            PropertyMeta propertyMeta = accessorEntityMeta.getPropertyByName(autoField.getKey());
+                            if (propertyMeta != null) {
+                                Field field = propertyMeta.getField();
+                                // 为自生成主键赋值, 自动填充
+                                if (autoField.getValue() != null) {
+                                    if (accessorEntityMeta.isMultiplePrimaryKey()) {
+                                        field.set(entity.getId(), BlurObject.bind(autoField.getValue()).toObjectValue(field.getType()));
+                                    } else {
+                                        field.set(entity, BlurObject.bind(autoField.getValue()).toObjectValue(field.getType()));
+                                    }
                                 }
                             }
                         }
