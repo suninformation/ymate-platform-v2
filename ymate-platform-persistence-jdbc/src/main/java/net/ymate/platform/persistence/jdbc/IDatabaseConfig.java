@@ -46,6 +46,8 @@ public interface IDatabaseConfig extends IPersistenceConfig<IDatabase, IDatabase
 
     String DIALECT_CLASS = "dialect_class";
 
+    String CONFIG_FILE = "config_file";
+
     String DRIVER_CLASS = "driver_class";
 
     String PARAMS_JDBC_USE_BASE_ENTITY = "jdbc.use_base_entity";

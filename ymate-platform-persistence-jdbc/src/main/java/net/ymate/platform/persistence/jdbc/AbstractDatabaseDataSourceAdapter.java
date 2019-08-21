@@ -21,9 +21,11 @@ import net.ymate.platform.core.persistence.AbstractDataSourceAdapter;
 import net.ymate.platform.persistence.jdbc.dialect.IDialect;
 import org.apache.commons.lang.NullArgumentException;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
+import java.net.URL;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
@@ -36,15 +38,39 @@ import java.util.Properties;
  */
 public abstract class AbstractDatabaseDataSourceAdapter extends AbstractDataSourceAdapter<IDatabase, IDatabaseDataSourceConfig, Connection> implements IDatabaseDataSourceAdapter {
 
+    private static final Log LOG = LogFactory.getLog(AbstractDatabaseDataSourceAdapter.class);
+
     private IDialect dialect;
 
     protected InputStream getDataSourceConfigFileAsStream(String fileName, String dataSourceName) throws IOException {
-        if (fileName == null) {
-            throw new NullArgumentException("fileName");
+        if (StringUtils.isBlank(dataSourceName)) {
+            throw new NullArgumentException("dataSourceName");
         }
-        InputStream inputStream = ResourceUtils.getResourceAsStream(String.format("%s_%s.properties", fileName, dataSourceName), this.getClass());
+        InputStream inputStream = null;
+        File configFile = getDataSourceConfig().getConfigFile();
+        if (configFile != null) {
+            try {
+                inputStream = new FileInputStream(configFile);
+                if (LOG.isInfoEnabled()) {
+                    LOG.info(String.format("Found and load the data source [%s] config file from %s.", dataSourceName, configFile.toURI().toURL()));
+                }
+            } catch (FileNotFoundException ignored) {
+            }
+        }
         if (inputStream == null) {
-            inputStream = ResourceUtils.getResourceAsStream(String.format("%s.properties", fileName), this.getClass());
+            if (StringUtils.isBlank(fileName)) {
+                throw new NullArgumentException("fileName");
+            }
+            URL url = ResourceUtils.getResource(String.format("%s_%s.properties", fileName, dataSourceName), this.getClass());
+            if (url == null) {
+                url = ResourceUtils.getResource(String.format("%s.properties", fileName), this.getClass());
+            }
+            if (url != null) {
+                inputStream = url.openStream();
+                if (LOG.isInfoEnabled()) {
+                    LOG.info(String.format("Found and load the data source [%s] config file from %s.", dataSourceName, url));
+                }
+            }
         }
         return inputStream;
     }

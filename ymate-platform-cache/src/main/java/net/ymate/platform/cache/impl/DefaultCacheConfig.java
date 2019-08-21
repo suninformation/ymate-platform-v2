@@ -16,13 +16,15 @@
 package net.ymate.platform.cache.impl;
 
 import net.ymate.platform.cache.*;
-import net.ymate.platform.commons.lang.BlurObject;
 import net.ymate.platform.commons.util.ClassUtils;
+import net.ymate.platform.commons.util.RuntimeUtils;
 import net.ymate.platform.core.configuration.IConfigReader;
 import net.ymate.platform.core.module.IModuleConfigurer;
 import net.ymate.platform.core.serialize.ISerializer;
 import net.ymate.platform.core.serialize.SerializerManager;
 import org.apache.commons.lang3.StringUtils;
+
+import java.io.File;
 
 /**
  * 缓存模块配置类
@@ -44,6 +46,8 @@ public final class DefaultCacheConfig implements ICacheConfig {
     private String defaultCacheName;
 
     private int defaultCacheTimeout;
+
+    private File configFile;
 
     private boolean storageWithSet;
 
@@ -92,6 +96,11 @@ public final class DefaultCacheConfig implements ICacheConfig {
         keyGenerator = configReader.getClassImpl(KEY_GENERATOR_CLASS, ICacheKeyGenerator.class);
         defaultCacheName = configReader.getString(DEFAULT_CACHE_NAME);
         defaultCacheTimeout = configReader.getInt(DEFAULT_CACHE_TIMEOUT);
+        //
+        configFile = new File(RuntimeUtils.replaceEnvVariable(configReader.getString(CONFIG_FILE, DEFAULT_CONFIG_FILE)));
+        storageWithSet = configReader.getBoolean(ICacheConfig.STORAGE_WITH_SET);
+        enabledSubscribeExpired = configReader.getBoolean(ICacheConfig.ENABLED_SUBSCRIBE_EXPIRED);
+        multilevelSlavesAutoSync = configReader.getBoolean(ICacheConfig.MULTILEVEL_SLAVE_AUTO_SYNC);
     }
 
     @Override
@@ -115,10 +124,9 @@ public final class DefaultCacheConfig implements ICacheConfig {
             if (defaultCacheTimeout < 0) {
                 defaultCacheTimeout = 0;
             }
-            //
-            storageWithSet = BlurObject.bind(owner.getOwner().getParam(ICacheConfig.PARAMS_CACHE_STORAGE_WITH_SET)).toBooleanValue();
-            enabledSubscribeExpired = BlurObject.bind(owner.getOwner().getParam(ICacheConfig.PARAMS_CACHE_ENABLED_SUBSCRIBE_EXPIRED)).toBooleanValue();
-            multilevelSlavesAutoSync = BlurObject.bind(owner.getOwner().getParam(ICacheConfig.PARAMS_CACHE_MULTILEVEL_SLAVE_AUTO_SYNC)).toBooleanValue();
+            if (configFile == null || !configFile.isAbsolute() || !configFile.canRead() || !configFile.exists() || configFile.isDirectory()) {
+                configFile = null;
+            }
             //
             initialized = true;
         }
@@ -200,6 +208,15 @@ public final class DefaultCacheConfig implements ICacheConfig {
         return defaultCacheTimeout;
     }
 
+    @Override
+    public File getConfigFile() {
+        return configFile;
+    }
+
+    public void setConfigFile(File configFile) {
+        this.configFile = configFile;
+    }
+
     public void setDefaultCacheTimeout(int defaultCacheTimeout) {
         if (!initialized) {
             this.defaultCacheTimeout = defaultCacheTimeout;
@@ -278,6 +295,11 @@ public final class DefaultCacheConfig implements ICacheConfig {
 
         public Builder defaultCacheTimeout(int defaultCacheTimeout) {
             config.setDefaultCacheTimeout(defaultCacheTimeout);
+            return this;
+        }
+
+        public Builder configFile(File configFile) {
+            config.setConfigFile(configFile);
             return this;
         }
 

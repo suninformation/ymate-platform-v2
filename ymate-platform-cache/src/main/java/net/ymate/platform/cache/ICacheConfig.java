@@ -19,6 +19,8 @@ import net.ymate.platform.core.beans.annotation.Ignored;
 import net.ymate.platform.core.serialize.ISerializer;
 import net.ymate.platform.core.support.IInitialization;
 
+import java.io.File;
+
 /**
  * 缓存配置接口
  *
@@ -43,11 +45,15 @@ public interface ICacheConfig extends IInitialization<ICaches> {
 
     String DEFAULT_CACHE_TIMEOUT = "default_cache_timeout";
 
-    String PARAMS_CACHE_STORAGE_WITH_SET = "cache.storage_with_set";
+    String DEFAULT_CONFIG_FILE = "${root}/cfgs/ehcache.xml";
 
-    String PARAMS_CACHE_ENABLED_SUBSCRIBE_EXPIRED = "cache.enabled_subscribe_expired";
+    String CONFIG_FILE = "config_file";
 
-    String PARAMS_CACHE_MULTILEVEL_SLAVE_AUTO_SYNC = "cache.multilevel_slave_auto_sync";
+    String STORAGE_WITH_SET = "storage_with_set";
+
+    String ENABLED_SUBSCRIBE_EXPIRED = "enabled_subscribe_expired";
+
+    String MULTILEVEL_SLAVE_AUTO_SYNC = "multilevel_slave_auto_sync";
 
     /**
      * 缓存提供者，可选参数，默认值为 net.ymate.platform.cache.impl.DefaultCacheProvider
@@ -97,6 +103,13 @@ public interface ICacheConfig extends IInitialization<ICaches> {
      * @return 返回默认缓存数据超时时间(秒)
      */
     int getDefaultCacheTimeout();
+
+    /**
+     * 获取Ehcache配置文件，可选参数，若未设置或设置的文件路径无效将被忽略，默认值为空
+     *
+     * @return 返回Ehcache配置文件
+     */
+    File getConfigFile();
 
     /**
      * 是否采用Set存储缓存键名

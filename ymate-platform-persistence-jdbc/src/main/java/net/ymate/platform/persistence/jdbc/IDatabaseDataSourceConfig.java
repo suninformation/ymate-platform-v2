@@ -19,6 +19,8 @@ import net.ymate.platform.core.beans.annotation.Ignored;
 import net.ymate.platform.core.persistence.IDataSourceConfig;
 import net.ymate.platform.core.persistence.base.Type;
 
+import java.io.File;
+
 /**
  * @author 刘镇 (suninformation@163.com) on 2019-05-16 01:56
  * @since 2.1.0
@@ -74,6 +76,13 @@ public interface IDatabaseDataSourceConfig extends IDataSourceConfig<IDatabase> 
      * @return 返回数据源适配器类型
      */
     Class<? extends IDatabaseDataSourceAdapter> getAdapterClass();
+
+    /**
+     * 获取数据源适配器配置文件，可选参数，若未设置或设置的文件路径无效将被忽略，默认值为空
+     *
+     * @return 返回数据源适配器配置文件
+     */
+    File getConfigFile();
 
     /**
      * 数据库类型，可选参数，默认值将通过连接字符串分析获得

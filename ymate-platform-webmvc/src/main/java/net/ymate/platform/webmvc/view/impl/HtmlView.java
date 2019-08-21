@@ -59,7 +59,7 @@ public class HtmlView extends AbstractView {
     }
 
     public static HtmlView bind(File htmlFile) throws Exception {
-        if (htmlFile != null && htmlFile.exists() && htmlFile.isFile() && htmlFile.canRead()) {
+        if (htmlFile != null && htmlFile.canRead() && htmlFile.exists() && htmlFile.isFile()) {
             return new HtmlView(IOUtils.toString(new FileInputStream(htmlFile), WebContext.getResponse().getCharacterEncoding()));
         }
         return null;

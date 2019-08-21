@@ -111,6 +111,11 @@ public final class DefaultDatabaseDataSourceConfigurable extends AbstractDataSou
             return this;
         }
 
+        public Builder configFile(String configFile) {
+            configurable.addConfig(IDatabaseConfig.CONFIG_FILE, configFile);
+            return this;
+        }
+
         public Builder type(Type.DATABASE type) {
             configurable.addConfig(IDatabaseConfig.TYPE, type.name());
             return this;

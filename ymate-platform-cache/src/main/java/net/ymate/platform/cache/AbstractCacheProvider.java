@@ -24,6 +24,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import java.io.File;
+import java.net.MalformedURLException;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -79,6 +81,26 @@ public abstract class AbstractCacheProvider implements ICacheProvider {
      * @throws Exception 可能产生的任何异常
      */
     protected abstract void onDestroy() throws Exception;
+
+    protected CacheManager doCreateCacheManager() {
+        CacheManager cacheManager = null;
+        //
+        File configFile = owner.getConfig().getConfigFile();
+        if (configFile != null) {
+            try {
+                cacheManager = CacheManager.create(configFile.toURI().toURL());
+            } catch (MalformedURLException e) {
+                if (LOG.isWarnEnabled()) {
+                    LOG.warn(StringUtils.EMPTY, RuntimeUtils.unwrapThrow(e));
+                }
+            }
+        }
+        //
+        if (cacheManager == null) {
+            cacheManager = CacheManager.create();
+        }
+        return cacheManager;
+    }
 
     @Override
     public void initialize(ICaches owner) throws Exception {

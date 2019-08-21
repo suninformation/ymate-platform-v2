@@ -46,7 +46,7 @@ public class DefaultCacheProvider extends AbstractCacheProvider {
 
     @Override
     protected void onInitialize() {
-        cacheManager = CacheManager.create();
+        cacheManager = doCreateCacheManager();
     }
 
     @Override

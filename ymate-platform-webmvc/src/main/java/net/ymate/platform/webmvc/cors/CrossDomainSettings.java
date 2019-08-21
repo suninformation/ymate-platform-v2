@@ -43,7 +43,7 @@ public final class CrossDomainSettings implements IInitialization<IWebMvc> {
 
     private final Map<String, ICrossDomainSetting> settings = new ConcurrentHashMap<>();
 
-    private DefaultCrossDomainSetting defaultSetting = new DefaultCrossDomainSetting();
+    private final DefaultCrossDomainSetting defaultSetting = new DefaultCrossDomainSetting();
 
     private boolean enabled;
 
@@ -97,32 +97,35 @@ public final class CrossDomainSettings implements IInitialization<IWebMvc> {
     }
 
     public ICrossDomainSetting bind(InterceptContext interceptContext, IRequestContext requestContext) throws Exception {
-        return ReentrantLockHelper.putIfAbsentAsync(resolvedSettings, interceptContext.getTargetMethod().toString(), () -> {
-            String requestMapping = requestContext.getRequestMapping();
-            ICrossDomainSetting crossDomainSetting = null;
-            for (Map.Entry<String, ICrossDomainSetting> entry : settings.entrySet()) {
-                if (StringUtils.endsWith(entry.getKey(), "/*")) {
-                    String key = StringUtils.defaultIfBlank(StringUtils.substringBefore(entry.getKey(), "/*"), "/");
-                    if (StringUtils.startsWith(requestMapping, key)) {
+        if (initialized) {
+            return ReentrantLockHelper.putIfAbsentAsync(resolvedSettings, interceptContext.getTargetMethod().toString(), () -> {
+                String requestMapping = requestContext.getRequestMapping();
+                ICrossDomainSetting crossDomainSetting = null;
+                for (Map.Entry<String, ICrossDomainSetting> entry : settings.entrySet()) {
+                    if (StringUtils.endsWith(entry.getKey(), "/*")) {
+                        String key = StringUtils.defaultIfBlank(StringUtils.substringBefore(entry.getKey(), "/*"), "/");
+                        if (StringUtils.startsWith(requestMapping, key)) {
+                            crossDomainSetting = entry.getValue();
+                            break;
+                        }
+                    } else if (StringUtils.equals(requestMapping, entry.getKey())) {
                         crossDomainSetting = entry.getValue();
                         break;
                     }
-                } else if (StringUtils.equals(requestMapping, entry.getKey())) {
-                    crossDomainSetting = entry.getValue();
-                    break;
                 }
-            }
-            if (crossDomainSetting == null) {
-                // 遍历方法、类及上层包寻找跨域配置注解，直至找不到
-                CrossDomainSetting settingAnn = interceptContext.getTargetMethod().getAnnotation(CrossDomainSetting.class);
-                if (settingAnn == null && (settingAnn = interceptContext.getTargetClass().getAnnotation(CrossDomainSetting.class)) == null) {
-                    settingAnn = ClassUtils.getAnnotation(interceptContext.getTargetClass().getPackage(), CrossDomainSetting.class);
+                if (crossDomainSetting == null) {
+                    // 遍历方法、类及上层包寻找跨域配置注解，直至找不到
+                    CrossDomainSetting settingAnn = interceptContext.getTargetMethod().getAnnotation(CrossDomainSetting.class);
+                    if (settingAnn == null && (settingAnn = interceptContext.getTargetClass().getAnnotation(CrossDomainSetting.class)) == null) {
+                        settingAnn = ClassUtils.getAnnotation(interceptContext.getTargetClass().getPackage(), CrossDomainSetting.class);
+                    }
+                    if (settingAnn != null) {
+                        crossDomainSetting = DefaultCrossDomainSetting.valueOf(settingAnn);
+                    }
                 }
-                if (settingAnn != null) {
-                    crossDomainSetting = DefaultCrossDomainSetting.valueOf(settingAnn);
-                }
-            }
-            return crossDomainSetting != null ? crossDomainSetting : defaultSetting;
-        });
+                return crossDomainSetting != null ? crossDomainSetting : defaultSetting;
+            });
+        }
+        return defaultSetting;
     }
 }

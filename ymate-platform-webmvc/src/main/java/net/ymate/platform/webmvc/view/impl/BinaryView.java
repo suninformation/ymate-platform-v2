@@ -52,7 +52,7 @@ public class BinaryView extends AbstractView {
      * @return 加载文件并转换成二进制视图类对象，若目标文件不存在或无较则返回NULL
      */
     public static BinaryView bind(File targetFile) {
-        if (targetFile != null && targetFile.exists() && targetFile.isFile() && targetFile.canRead()) {
+        if (targetFile != null && targetFile.canRead() && targetFile.exists() && targetFile.isFile()) {
             BinaryView binaryView = new BinaryView(targetFile);
             binaryView.setContentType(MimeTypeUtils.getFileMimeType(FileUtils.getExtName(targetFile.getPath())));
             return binaryView;

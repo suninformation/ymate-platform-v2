@@ -101,11 +101,11 @@ public final class DefaultLogConfig implements ILogConfig {
     @Override
     public void initialize(ILog owner) throws Exception {
         if (!initialized) {
-            if (configFile == null || !configFile.isAbsolute() || !configFile.exists() || configFile.isDirectory() || !configFile.canRead()) {
+            if (configFile == null || !configFile.isAbsolute() || !configFile.canRead() || !configFile.exists() || configFile.isDirectory()) {
                 throw new IllegalArgumentException("ConfigFile is not a valid file.");
             }
             //
-            if (outputDir == null || !outputDir.isAbsolute() || !outputDir.exists() || !outputDir.isDirectory() || !outputDir.canWrite()) {
+            if (outputDir == null || !outputDir.isAbsolute() || !outputDir.canRead() || !outputDir.canWrite() || !outputDir.exists() || !outputDir.isDirectory()) {
                 throw new IllegalArgumentException("OutputDir is not a valid directory.");
             }
             if (StringUtils.isBlank(defaultLoggerName)) {

@@ -190,14 +190,14 @@ public final class Cfgs implements IConfig {
         if (initialized) {
             // 若指定的 cfgFile 为文件绝对路径名，则直接返回
             File result = new File(cfgFile);
-            if (result.isFile() && result.canRead() && result.isAbsolute() && result.exists()) {
+            if (result.isAbsolute() && result.canRead() && result.isFile() && result.exists()) {
                 return result;
             }
             // 按路径顺序寻找 cfgFile 指定的文件
             String[] paths = {moduleHome, projectHome, config.getConfigHome(), userDir, userHome};
             for (String path : paths) {
                 result = new File(path, cfgFile);
-                if (result.isFile() && result.canRead() && result.isAbsolute() && result.exists()) {
+                if (result.isAbsolute() && result.canRead() && result.isFile() && result.exists()) {
                     return result;
                 }
             }

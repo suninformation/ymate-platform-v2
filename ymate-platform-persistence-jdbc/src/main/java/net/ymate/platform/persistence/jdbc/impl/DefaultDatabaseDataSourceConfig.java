@@ -25,6 +25,8 @@ import net.ymate.platform.persistence.jdbc.*;
 import org.apache.commons.lang.NullArgumentException;
 import org.apache.commons.lang3.StringUtils;
 
+import java.io.File;
+
 /**
  * @author 刘镇 (suninformation@163.com) on 2019-07-26 12:08
  * @since 2.1.0
@@ -36,6 +38,8 @@ public final class DefaultDatabaseDataSourceConfig extends AbstractDataSourceCon
     private String identifierQuote;
 
     private Class<? extends IDatabaseDataSourceAdapter> adapterClass;
+
+    private File configFile;
 
     private Type.DATABASE type;
 
@@ -89,6 +93,10 @@ public final class DefaultDatabaseDataSourceConfig extends AbstractDataSourceCon
                 } catch (IllegalArgumentException ignored) {
                 }
                 //
+                String filePath = RuntimeUtils.replaceEnvVariable(configReader.getString(IDatabaseConfig.CONFIG_FILE));
+                if (StringUtils.isNotBlank(filePath)) {
+                    this.configFile = new File(filePath);
+                }
                 this.dialectClass = configReader.getString(IDatabaseConfig.DIALECT_CLASS);
                 this.driverClass = configReader.getString(IDatabaseConfig.DRIVER_CLASS);
             }
@@ -120,6 +128,9 @@ public final class DefaultDatabaseDataSourceConfig extends AbstractDataSourceCon
             parseDatabaseType();
         }
         driverClass = StringUtils.defaultIfBlank(driverClass, JDBC.DB_DRIVERS.get(this.type));
+        if (configFile == null || !configFile.isAbsolute() || !configFile.canRead() || !configFile.exists() || configFile.isDirectory()) {
+            configFile = null;
+        }
     }
 
     @Override
@@ -153,6 +164,15 @@ public final class DefaultDatabaseDataSourceConfig extends AbstractDataSourceCon
         if (!isInitialized()) {
             this.adapterClass = adapterClass;
         }
+    }
+
+    @Override
+    public File getConfigFile() {
+        return configFile;
+    }
+
+    public void setConfigFile(File configFile) {
+        this.configFile = configFile;
     }
 
     @Override
@@ -263,6 +283,11 @@ public final class DefaultDatabaseDataSourceConfig extends AbstractDataSourceCon
 
         public Builder adapterClass(Class<? extends IDatabaseDataSourceAdapter> adapterClass) {
             config.setAdapterClass(adapterClass);
+            return this;
+        }
+
+        public Builder configFile(File configFile) {
+            config.setConfigFile(configFile);
             return this;
         }
 

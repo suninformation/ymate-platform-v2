@@ -39,7 +39,7 @@ public class MultilevelCacheProvider extends AbstractCacheProvider {
 
     @Override
     protected void onInitialize() throws Exception {
-        cacheManager = CacheManager.create();
+        cacheManager = doCreateCacheManager();
         redis = REDIS_CREATOR.create();
         redis.initialize(getOwner().getOwner());
     }

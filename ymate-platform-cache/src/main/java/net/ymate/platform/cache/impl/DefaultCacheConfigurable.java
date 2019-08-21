@@ -76,18 +76,23 @@ public final class DefaultCacheConfigurable extends DefaultModuleConfigurable {
             return this;
         }
 
+        public Builder configFile(String configFile) {
+            configurable.addConfig(ICacheConfig.CONFIG_FILE, configFile);
+            return this;
+        }
+
         public Builder storageWithSet(boolean storageWithSet) {
-            configurable.addConfig(ICacheConfig.PARAMS_CACHE_STORAGE_WITH_SET, String.valueOf(storageWithSet));
+            configurable.addConfig(ICacheConfig.STORAGE_WITH_SET, String.valueOf(storageWithSet));
             return this;
         }
 
         public Builder enabledSubscribeExpired(boolean enabledSubscribeExpired) {
-            configurable.addConfig(ICacheConfig.PARAMS_CACHE_ENABLED_SUBSCRIBE_EXPIRED, String.valueOf(enabledSubscribeExpired));
+            configurable.addConfig(ICacheConfig.ENABLED_SUBSCRIBE_EXPIRED, String.valueOf(enabledSubscribeExpired));
             return this;
         }
 
         public Builder multilevelSlavesAutoSync(boolean multilevelSlavesAutoSync) {
-            configurable.addConfig(ICacheConfig.PARAMS_CACHE_MULTILEVEL_SLAVE_AUTO_SYNC, String.valueOf(multilevelSlavesAutoSync));
+            configurable.addConfig(ICacheConfig.MULTILEVEL_SLAVE_AUTO_SYNC, String.valueOf(multilevelSlavesAutoSync));
             return this;
         }
 

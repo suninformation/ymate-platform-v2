@@ -50,7 +50,7 @@ public final class FreemarkerConfigBuilder {
     }
 
     public Version getVersion() {
-        return version != null ? version : Configuration.VERSION_2_3_28;
+        return version != null ? version : Configuration.VERSION_2_3_29;
     }
 
     public FreemarkerConfigBuilder setVersion(Version version) {

@@ -47,7 +47,7 @@ public final class Logs implements ILog {
         try {
             // 尝试优先初始化配置体系
             Class.forName(Cfgs.class.getName());
-        } catch (ClassNotFoundException ignored) {
+        } catch (NoClassDefFoundError | ClassNotFoundException ignored) {
         }
         //
         IApplicationConfigureFactory configureFactory = YMP.getConfigureFactory();
