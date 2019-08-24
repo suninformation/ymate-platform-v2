@@ -26,6 +26,7 @@ import net.ymate.platform.configuration.impl.DefaultConfigurationProvider;
 import net.ymate.platform.configuration.impl.PropertyConfigurationProvider;
 import net.ymate.platform.configuration.support.ConfigFileChecker;
 import net.ymate.platform.core.IApplicationConfigureFactory;
+import net.ymate.platform.core.Version;
 import net.ymate.platform.core.YMP;
 import net.ymate.platform.core.configuration.IConfig;
 import net.ymate.platform.core.configuration.IConfiguration;
@@ -101,6 +102,9 @@ public final class Cfgs implements IConfig {
     @Override
     public void initialize() throws Exception {
         if (!initialized) {
+            if (LOG.isInfoEnabled()) {
+                LOG.info(String.format("Initializing ymate-platform-configuration-%s", new Version(YMP.VERSION, this.getClass())));
+            }
             //
             if (!config.isInitialized()) {
                 config.initialize(this);
@@ -125,14 +129,14 @@ public final class Cfgs implements IConfig {
             }
             //
             if (LOG.isInfoEnabled()) {
-                LOG.info(String.format("-->  CONFIG_HOME: %s", config.getConfigHome()));
-                LOG.info(String.format("-->    USER_HOME: %s", userHome));
-                LOG.info(String.format("-->     USER_DIR: %s", userDir));
+                LOG.info(String.format("-- CONFIG_HOME: %s", config.getConfigHome()));
+                LOG.info(String.format("-- USER_HOME: %s", userHome));
+                LOG.info(String.format("-- USER_DIR: %s", userDir));
                 if (StringUtils.isNotBlank(config.getProjectName())) {
-                    LOG.info(String.format("--> PROJECT_NAME: %s", config.getProjectName()));
+                    LOG.info(String.format("-- PROJECT_NAME: %s", config.getProjectName()));
                 }
                 if (StringUtils.isNotBlank(config.getModuleName())) {
-                    LOG.info(String.format("-->  MODULE_NAME: %s", config.getModuleName()));
+                    LOG.info(String.format("-- MODULE_NAME: %s", config.getModuleName()));
                 }
             }
             initialized = config.isInitialized();
@@ -143,7 +147,6 @@ public final class Cfgs implements IConfig {
     public boolean isInitialized() {
         return initialized;
     }
-
 
     @Override
     public void close() {

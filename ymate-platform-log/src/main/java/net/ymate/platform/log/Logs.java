@@ -20,6 +20,7 @@ import net.ymate.platform.commons.util.ClassUtils;
 import net.ymate.platform.commons.util.RuntimeUtils;
 import net.ymate.platform.configuration.Cfgs;
 import net.ymate.platform.core.IApplicationConfigureFactory;
+import net.ymate.platform.core.Version;
 import net.ymate.platform.core.YMP;
 import net.ymate.platform.core.module.IModuleConfigurer;
 import net.ymate.platform.log.impl.DefaultLogConfig;
@@ -85,6 +86,9 @@ public final class Logs implements ILog {
     @Override
     public void initialize() throws Exception {
         if (!initialized) {
+            if (LOG.isInfoEnabled()) {
+                LOG.info(String.format("Initializing ymate-platform-log-%s", new Version(YMP.VERSION, this.getClass())));
+            }
             //
             if (!config.isInitialized()) {
                 config.initialize(this);
@@ -95,13 +99,13 @@ public final class Logs implements ILog {
             logger = ReentrantLockHelper.putIfAbsentAsync(LOGGER_CACHE, config.getDefaultLoggerName(), () -> ClassUtils.impl(config.getLoggerClass(), ILogger.class).initialize(config.getDefaultLoggerName(), config));
             //
             if (LOG.isInfoEnabled()) {
-                LOG.info(String.format("-->         LOG_CONFIG_FILE: %s", config.getConfigFile().getPath()));
-                LOG.info(String.format("-->          LOG_OUTPUT_DIR: %s", config.getOutputDir().getPath()));
-                LOG.info(String.format("-->            LOGGER_CLASS: %s", config.getLoggerClass().getName()));
-                LOG.info(String.format("-->        DEFAULT_LOG_NAME: %s", config.getDefaultLoggerName()));
-                LOG.info(String.format("-->    ALLOW_CONSOLE_OUTPUT: %s", config.isAllowConsoleOutput()));
-                LOG.info(String.format("-->    FORMAT_PADDED_OUTPUT: %s", config.isFormatPaddedOutput()));
-                LOG.info(String.format("--> SIMPLIFIED_PACKAGE_NAME: %s", config.isSimplifiedPackageName()));
+                LOG.info(String.format("-- LOG_CONFIG_FILE: %s", config.getConfigFile().getPath()));
+                LOG.info(String.format("-- LOG_OUTPUT_DIR: %s", config.getOutputDir().getPath()));
+                LOG.info(String.format("-- LOGGER_CLASS: %s", config.getLoggerClass().getName()));
+                LOG.info(String.format("-- DEFAULT_LOG_NAME: %s", config.getDefaultLoggerName()));
+                LOG.info(String.format("-- ALLOW_CONSOLE_OUTPUT: %s", config.isAllowConsoleOutput()));
+                LOG.info(String.format("-- FORMAT_PADDED_OUTPUT: %s", config.isFormatPaddedOutput()));
+                LOG.info(String.format("-- SIMPLIFIED_PACKAGE_NAME: %s", config.isSimplifiedPackageName()));
             }
             initialized = config.isInitialized();
         }
