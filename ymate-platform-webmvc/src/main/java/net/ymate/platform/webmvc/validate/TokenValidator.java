@@ -22,7 +22,7 @@ import net.ymate.platform.validation.ValidateContext;
 import net.ymate.platform.validation.ValidateResult;
 import net.ymate.platform.webmvc.context.WebContext;
 import net.ymate.platform.webmvc.util.TokenProcessHelper;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * @author 刘镇 (suninformation@163.com) on 16/11/27 下午12:17

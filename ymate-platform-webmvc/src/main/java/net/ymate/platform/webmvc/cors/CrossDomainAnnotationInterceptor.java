@@ -22,7 +22,6 @@ import net.ymate.platform.webmvc.base.Type;
 import net.ymate.platform.webmvc.context.WebContext;
 import net.ymate.platform.webmvc.util.WebUtils;
 import net.ymate.platform.webmvc.view.View;
-import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.servlet.http.HttpServletRequest;
@@ -48,13 +47,13 @@ public final class CrossDomainAnnotationInterceptor extends AbstractInterceptor 
                     HttpServletResponse response = WebContext.getResponse();
                     //
                     response.addHeader(Type.HttpHead.ACCESS_CONTROL_ALLOW_ORIGIN, StringUtils.defaultIfBlank(StringUtils.join(domainSetting.getAllowedOrigins(), ", "), "*"));
-                    if (CollectionUtils.isNotEmpty(domainSetting.getAllowedMethods())) {
+                    if (!domainSetting.getAllowedMethods().isEmpty()) {
                         response.addHeader(Type.HttpHead.ACCESS_CONTROL_ALLOW_METHODS, StringUtils.upperCase(StringUtils.join(domainSetting.getAllowedMethods(), ", ")));
                     }
-                    if (CollectionUtils.isNotEmpty(domainSetting.getAllowedHeaders())) {
+                    if (!domainSetting.getAllowedHeaders().isEmpty()) {
                         response.addHeader(Type.HttpHead.ACCESS_CONTROL_ALLOW_HEADERS, StringUtils.upperCase(StringUtils.join(domainSetting.getAllowedHeaders(), ", ")));
                     }
-                    if (CollectionUtils.isNotEmpty(domainSetting.getExposedHeaders())) {
+                    if (!domainSetting.getExposedHeaders().isEmpty()) {
                         response.addHeader(Type.HttpHead.ACCESS_CONTROL_EXPOSE_HEADERS, StringUtils.upperCase(StringUtils.join(domainSetting.getExposedHeaders(), ", ")));
                     }
                     if (domainSetting.isAllowedCredentials()) {

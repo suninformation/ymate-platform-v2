@@ -25,6 +25,7 @@ import net.ymate.platform.validation.annotation.Validator;
  * 插件验证器类处理器 (from ymate-framework-addons)
  *
  * @author 刘镇 (suninformation@163.com) on 15/8/15 上午9:31
+ * @since 2.1.0
  */
 @Handler(Validator.class)
 public class PluginValidateHandler extends ValidateHandler {

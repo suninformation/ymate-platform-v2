@@ -29,6 +29,7 @@ import net.ymate.platform.plugin.annotation.Handler;
  * 插件配置文件加载路径注解 (from ymate-framework-addons)
  *
  * @author 刘镇 (suninformation@163.com) on 15/8/15 上午10:27
+ * @since 2.1.0
  */
 @Handler(Configuration.class)
 public class PluginConfigBeanHandler implements IBeanHandler {

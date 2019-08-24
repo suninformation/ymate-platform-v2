@@ -17,7 +17,7 @@ package net.ymate.platform.webmvc.validate;
 
 import net.ymate.platform.core.support.IContext;
 import net.ymate.platform.webmvc.IWebMvcConfig;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import java.net.URL;
 

@@ -27,7 +27,7 @@ import net.ymate.platform.webmvc.IRequestContext;
 import net.ymate.platform.webmvc.base.Type;
 import net.ymate.platform.webmvc.context.WebContext;
 import net.ymate.platform.webmvc.exception.ValidationResultException;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * @author 刘镇 (suninformation@163.com) on 2018/8/12 上午 02:01
