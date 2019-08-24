@@ -96,7 +96,7 @@ public final class Application implements IApplication {
     public void initialize() {
         if (!initialized) {
             //
-            YMP.showVersion(String.format("Initializing ymate-platform-core-${version} - debug:%s - env:%s", isDevEnv(), runEnv.name().toLowerCase()), YMP.VERSION);
+            YMP.showVersion(String.format("Initializing ymate-platform-core-${version} - debug:%s - env:%s", isDevEnv(), runEnv != null ? runEnv.name().toLowerCase() : Environment.UNKNOWN), YMP.VERSION);
             //
             StopWatch stopWatch = new StopWatch();
             stopWatch.start();
