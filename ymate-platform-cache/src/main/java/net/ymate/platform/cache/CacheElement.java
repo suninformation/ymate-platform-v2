@@ -70,6 +70,6 @@ public class CacheElement implements Serializable {
     }
 
     public boolean isExpired() {
-        return ((System.currentTimeMillis() - lastUpdateTime) >= timeout * DateTimeUtils.SECOND);
+        return timeout > 0 && ((System.currentTimeMillis() - lastUpdateTime) >= timeout * DateTimeUtils.SECOND);
     }
 }
