@@ -15,13 +15,11 @@
  */
 package net.ymate.platform.persistence.jdbc.base.impl;
 
-import net.ymate.platform.commons.lang.BlurObject;
 import net.ymate.platform.commons.util.ClassUtils;
 import net.ymate.platform.core.persistence.base.EntityMeta;
 import net.ymate.platform.persistence.jdbc.base.AbstractResultSetHandler;
 import org.apache.commons.lang3.StringUtils;
 
-import java.lang.reflect.Field;
 import java.sql.ResultSet;
 
 /**
@@ -47,9 +45,9 @@ public class BeanResultSetHandler<T> extends AbstractResultSetHandler<T> {
     protected T processResultRow(ResultSet resultSet) throws Exception {
         ClassUtils.BeanWrapper<T> targetWrapper = ClassUtils.wrapper(beanClass.newInstance());
         for (int idx = 0; idx < getColumnCount(); idx++) {
-            Field field = targetWrapper.getField(StringUtils.uncapitalize(EntityMeta.propertyNameToFieldName(getColumnMeta(idx).getName())));
-            if (field != null) {
-                field.set(targetWrapper.getTargetObject(), BlurObject.bind(resultSet.getObject(idx + 1)).toObjectValue(field.getType()));
+            Object value = resultSet.getObject(idx + 1);
+            if (value != null) {
+                targetWrapper.setValue(StringUtils.uncapitalize(EntityMeta.propertyNameToFieldName(getColumnMeta(idx).getName())), value);
             }
         }
         return targetWrapper.getTargetObject();

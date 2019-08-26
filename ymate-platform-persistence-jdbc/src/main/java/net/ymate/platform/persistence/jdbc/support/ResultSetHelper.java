@@ -561,7 +561,7 @@ public final class ResultSetHelper {
                 if (value == null) {
                     continue;
                 }
-                wrapper.setValue(fieldName, BlurObject.bind(value).toObjectValue(wrapper.getFieldType(fieldName)));
+                wrapper.setValue(fieldName, value);
             }
             return valueObject;
         }

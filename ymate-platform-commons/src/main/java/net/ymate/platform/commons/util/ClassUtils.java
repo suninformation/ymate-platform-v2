@@ -357,6 +357,27 @@ public class ClassUtils {
     }
 
     /**
+     * 获取clazz指定的类对象所有的Method对象（若包含其父类对象，直至其父类为空）
+     *
+     * @param clazz  目标类
+     * @param parent 是否包含其父类对象
+     * @return Method对象集合
+     * @since 2.1.0
+     */
+    public static List<Method> getMethods(Class<?> clazz, boolean parent) {
+        List<Method> fieldList = new ArrayList<>();
+        while (clazz != null) {
+            fieldList.addAll(Arrays.asList(clazz.getDeclaredMethods()));
+            if (parent) {
+                clazz = clazz.getSuperclass();
+            } else {
+                clazz = null;
+            }
+        }
+        return fieldList;
+    }
+
+    /**
      * @param <A>             注解类型
      * @param clazz           目标类
      * @param annotationClazz 目标注解类
@@ -584,6 +605,8 @@ public class ClassUtils {
 
         private final T target;
 
+        private Map<String, Method> methodMap = new LinkedHashMap<>();
+
         private Map<String, Field> fieldMap = new LinkedHashMap<>();
 
         BeanWrapper(T target) {
@@ -595,6 +618,10 @@ public class ClassUtils {
             }).forEachOrdered((field) -> {
                 this.fieldMap.put(field.getName(), field);
             });
+            // 提取get/set/is方法
+            ClassUtils.getMethods(target.getClass(), true).stream()
+                    .filter(method -> !Modifier.isStatic(method.getModifiers()) && Modifier.isPublic(method.getModifiers()) && StringUtils.startsWithAny(method.getName(), "get", "set", "is"))
+                    .forEachOrdered(method -> this.methodMap.put(method.getName(), method));
         }
 
         public T getTargetObject() {
@@ -625,8 +652,25 @@ public class ClassUtils {
             return fieldMap.get(fieldName).getType();
         }
 
-        public BeanWrapper<T> setValue(String fieldName, Object value) throws IllegalAccessException {
-            fieldMap.get(fieldName).set(target, value);
+        public Collection<Method> getMethods() {
+            return methodMap.values();
+        }
+
+        public Method getMethod(String methodName) {
+            return methodMap.get(methodName);
+        }
+
+        public BeanWrapper<T> setValue(String fieldName, Object value) throws IllegalAccessException, InvocationTargetException {
+            Field field = fieldMap.get(fieldName);
+            if (field != null) {
+                field.set(target, BlurObject.bind(value).toObjectValue(field.getType()));
+            } else {
+                // 尝试通过set方法进行赋值
+                Method method = methodMap.get(String.format("set%s", StringUtils.capitalize(fieldName)));
+                if (method != null && method.getParameterCount() == 1) {
+                    method.invoke(target, BlurObject.bind(value).toObjectValue(method.getParameters()[0].getType()));
+                }
+            }
             return this;
         }
 
@@ -635,8 +679,21 @@ public class ClassUtils {
             return this;
         }
 
-        public Object getValue(String fieldName) throws IllegalAccessException {
-            return fieldMap.get(fieldName).get(target);
+        public Object getValue(String fieldName) throws IllegalAccessException, InvocationTargetException {
+            Field field = fieldMap.get(fieldName);
+            if (field != null) {
+                return field.get(target);
+            }
+            // 尝试通过get或is方法取值
+            String capFieldName = StringUtils.capitalize(fieldName);
+            Method method = methodMap.get(String.format("get%s", capFieldName));
+            if (method == null) {
+                method = methodMap.get(String.format("is%s", capFieldName));
+            }
+            if (method != null && method.getParameterCount() == 0) {
+                return method.invoke(target);
+            }
+            return null;
         }
 
         public Object getValue(Field field) throws IllegalAccessException {
@@ -654,7 +711,7 @@ public class ClassUtils {
                         return;
                     }
                     setValue(key, value);
-                } catch (IllegalAccessException ignored) {
+                } catch (IllegalAccessException | InvocationTargetException ignored) {
                     // 当赋值发生异常时，忽略当前值
                 }
             });
@@ -674,7 +731,7 @@ public class ClassUtils {
                         return;
                     }
                     returnValues.put(field.getName(), fValue);
-                } catch (IllegalAccessException ignored) {
+                } catch (IllegalAccessException | InvocationTargetException ignored) {
                     // 当赋值发生异常时，忽略当前值
                 }
             });
@@ -706,12 +763,12 @@ public class ClassUtils {
                         return;
                     }
                     wrapDist.setValue(fieldName, fValue);
-                } catch (IllegalAccessException e) {
+                } catch (IllegalAccessException | InvocationTargetException e) {
                     // 当首次赋值发生异常时，若成员变量值不为NULL则尝试转换一下
                     if (fValue != null) {
                         try {
                             wrapDist.setValue(fieldName, BlurObject.bind(fValue).toObjectValue(wrapDist.getFieldType(fieldName)));
-                        } catch (IllegalAccessException ignored) {
+                        } catch (IllegalAccessException | InvocationTargetException ignored) {
                             // 当再次赋值发生异常时，彻底忽略当前值，不中断整个拷贝过程
                         }
                     }
