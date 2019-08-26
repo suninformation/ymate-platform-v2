@@ -15,25 +15,49 @@
  */
 package net.ymate.platform.starter.impl;
 
-import net.ymate.platform.core.Application;
-import net.ymate.platform.core.IApplication;
-import net.ymate.platform.core.IApplicationCreator;
-import net.ymate.platform.core.YMP;
+import net.ymate.platform.configuration.Cfgs;
+import net.ymate.platform.configuration.annotation.ConfigValue;
+import net.ymate.platform.configuration.annotation.Configuration;
+import net.ymate.platform.configuration.handle.ConfigHandler;
+import net.ymate.platform.configuration.support.ConfigValueInjector;
+import net.ymate.platform.core.*;
+import net.ymate.platform.core.beans.IBeanFactory;
+import net.ymate.platform.core.beans.IBeanLoader;
+import net.ymate.platform.core.event.Events;
+import net.ymate.platform.core.module.ModuleManager;
 
 /**
  * @author 刘镇 (suninformation@163.com) on 2019-08-06 19:10
  * @since 2.1.0
  */
-public class DefaultApplicationCreator implements IApplicationCreator {
+public class DefaultApplicationCreator implements IApplicationCreator, IApplicationInitializer {
 
     private final IApplication application;
 
     public DefaultApplicationCreator() {
-        application = new Application(YMP.getConfigureFactory().getConfigurer());
+        application = new Application(YMP.getConfigureFactory(), this);
     }
 
     @Override
     public IApplication create() {
         return application;
+    }
+
+    @Override
+    public void afterEventInit(IApplication application, Events events) {
+    }
+
+    @Override
+    public void beforeBeanLoad(IApplication application, IBeanLoader beanLoader) {
+        beanLoader.registerHandler(Configuration.class, new ConfigHandler(Cfgs.get()));
+    }
+
+    @Override
+    public void beforeModuleManagerInit(IApplication application, ModuleManager moduleManager) {
+    }
+
+    @Override
+    public void beforeBeanFactoryInit(IApplication application, IBeanFactory beanFactory) {
+        beanFactory.registerInjector(ConfigValue.class, new ConfigValueInjector());
     }
 }
