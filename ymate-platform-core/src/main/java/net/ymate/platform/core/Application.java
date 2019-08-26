@@ -53,6 +53,8 @@ public final class Application implements IApplication {
 
     private final IApplicationConfigurer configurer;
 
+    private final IApplicationInitializer initializer;
+
     private ModuleManager moduleManager;
 
     private IBeanFactory beanFactory;
@@ -77,8 +79,17 @@ public final class Application implements IApplication {
         this(factory.getConfigurer());
     }
 
+    public Application(IApplicationConfigureFactory factory, IApplicationInitializer initializer) {
+        this(factory.getConfigurer(), initializer);
+    }
+
     public Application(IApplicationConfigurer configurer) {
+        this(configurer, null);
+    }
+
+    public Application(IApplicationConfigurer configurer, IApplicationInitializer initializer) {
         this.configurer = configurer;
+        this.initializer = initializer;
         //
         this.moduleManager = new ModuleManager();
         this.beanFactory = new DefaultBeanFactory(configurer.getProxyFactory());
@@ -110,6 +121,10 @@ public final class Application implements IApplication {
             }
             events.registerEvent(ApplicationEvent.class);
             //
+            if (initializer != null) {
+                initializer.afterEventInit(this, events);
+            }
+            //
             try {
                 moduleManager.addExcludedModules(configurer.getExcludedModules());
                 // 尝试使用自定义加载器加载模块
@@ -133,12 +148,22 @@ public final class Application implements IApplication {
                     beanLoader.registerHandler(Proxy.class, new ProxyHandler(this));
                     beanLoader.registerHandler(Serializer.class, new SerializerHandler());
                     //
+                    if (initializer != null) {
+                        initializer.beforeBeanLoad(this, beanLoader);
+                    }
                     beanLoader.load(beanFactory);
                 }
                 // 触发容器启动事件
                 events.fireEvent(new ApplicationEvent(this, ApplicationEvent.EVENT.APPLICATION_STARTUP));
                 //
+                if (initializer != null) {
+                    initializer.beforeModuleManagerInit(this, moduleManager);
+                }
                 moduleManager.initialize(this);
+                //
+                if (initializer != null) {
+                    initializer.beforeBeanFactoryInit(this, beanFactory);
+                }
                 beanFactory.initialize(this);
             } catch (Exception e) {
                 if (LOG.isErrorEnabled()) {
