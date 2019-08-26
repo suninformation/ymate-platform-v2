@@ -153,13 +153,17 @@ public class DefaultBeanFactory implements IBeanFactory {
         }
     }
 
+    private boolean isOwnerDev() {
+        return owner == null || owner.isDevEnv();
+    }
+
     @Override
     public void registerInjector(Class<? extends Annotation> annClass, IBeanInjector injector) {
         if (!beanInjectorMap.containsKey(annClass)) {
             beanInjectorMap.put(annClass, injector);
             //
-            if (owner.isDevEnv() && LOG.isInfoEnabled()) {
-                LOG.info(String.format("Injector class [%s:%s] registered.", annClass.getSimpleName(), injector.getClass().getName()));
+            if (isOwnerDev() && LOG.isDebugEnabled()) {
+                LOG.debug(String.format("Injector class [%s:%s] registered.", annClass.getSimpleName(), injector.getClass().getName()));
             }
         } else if (owner.isDevEnv() && LOG.isWarnEnabled()) {
             LOG.warn(String.format("Injector class [%s:%s] duplicate registration is not allowed.", annClass.getSimpleName(), injector.getClass().getName()));
@@ -170,8 +174,8 @@ public class DefaultBeanFactory implements IBeanFactory {
     public void registerExcludedInterfaceClass(Class<?> excludedInterfaceClass) {
         if (excludedInterfaceClass.isInterface()) {
             excludedInterfaceClasses.add(excludedInterfaceClass);
-        } else if (owner.isDevEnv() && LOG.isInfoEnabled()) {
-            LOG.info(String.format("Class [%s] is not an interface class, ignored.", excludedInterfaceClass.getName()));
+        } else if (isOwnerDev() && LOG.isWarnEnabled()) {
+            LOG.warn(String.format("Class [%s] is not an interface class, ignored.", excludedInterfaceClass.getName()));
         }
     }
 
@@ -230,7 +234,7 @@ public class DefaultBeanFactory implements IBeanFactory {
                 if (beanMeta.getBeanObject() != null) {
                     beanInstancesMap.put(beanMeta.getBeanClass(), beanMeta);
                     parseInterfaces(beanMeta);
-                } else if (owner.isDevEnv() && LOG.isWarnEnabled()) {
+                } else if (isOwnerDev() && LOG.isWarnEnabled()) {
                     LOG.warn(String.format("BeanMeta interface [%s] instance object not provided, ignored.", beanMeta.getBeanClass().getName()));
                 }
             } else {
