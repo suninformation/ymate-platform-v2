@@ -15,49 +15,47 @@
  */
 package net.ymate.platform.starter.impl;
 
-import net.ymate.platform.configuration.Cfgs;
-import net.ymate.platform.configuration.annotation.ConfigValue;
-import net.ymate.platform.configuration.annotation.Configuration;
-import net.ymate.platform.configuration.handle.ConfigHandler;
-import net.ymate.platform.configuration.support.ConfigValueInjector;
+import net.ymate.platform.commons.util.ClassUtils;
+import net.ymate.platform.commons.util.RuntimeUtils;
+import net.ymate.platform.configuration.support.ConfigurationApplicationInitializer;
 import net.ymate.platform.core.*;
-import net.ymate.platform.core.beans.IBeanFactory;
-import net.ymate.platform.core.beans.IBeanLoader;
-import net.ymate.platform.core.event.Events;
-import net.ymate.platform.core.module.ModuleManager;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @author 刘镇 (suninformation@163.com) on 2019-08-06 19:10
  * @since 2.1.0
  */
-public class DefaultApplicationCreator implements IApplicationCreator, IApplicationInitializer {
+public class DefaultApplicationCreator implements IApplicationCreator {
+
+    private static final Log LOG = LogFactory.getLog(DefaultApplicationCreator.class);
+
+    private static final List<IApplicationInitializer> INITIALIZERS = new ArrayList<>();
 
     private final IApplication application;
 
+    static {
+        try {
+            for (Class<IApplicationInitializer> converter : ClassUtils.getExtensionLoader(IApplicationInitializer.class).getExtensionClasses()) {
+                INITIALIZERS.add(converter.newInstance());
+            }
+        } catch (Exception e) {
+            if (LOG.isWarnEnabled()) {
+                LOG.warn(StringUtils.EMPTY, RuntimeUtils.unwrapThrow(e));
+            }
+        }
+    }
+
     public DefaultApplicationCreator() {
-        application = new Application(YMP.getConfigureFactory(), this);
+        application = new Application(YMP.getConfigureFactory(), new ApplicationInitializer(new ConfigurationApplicationInitializer()).addInitializer(INITIALIZERS));
     }
 
     @Override
     public IApplication create() {
         return application;
-    }
-
-    @Override
-    public void afterEventInit(IApplication application, Events events) {
-    }
-
-    @Override
-    public void beforeBeanLoad(IApplication application, IBeanLoader beanLoader) {
-        beanLoader.registerHandler(Configuration.class, new ConfigHandler(Cfgs.get()));
-    }
-
-    @Override
-    public void beforeModuleManagerInit(IApplication application, ModuleManager moduleManager) {
-    }
-
-    @Override
-    public void beforeBeanFactoryInit(IApplication application, IBeanFactory beanFactory) {
-        beanFactory.registerInjector(ConfigValue.class, new ConfigValueInjector());
     }
 }

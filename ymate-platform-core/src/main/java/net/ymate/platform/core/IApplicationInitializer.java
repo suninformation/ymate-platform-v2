@@ -34,7 +34,8 @@ public interface IApplicationInitializer {
      * @param application 应用容器
      * @param events      事件管理器
      */
-    void afterEventInit(IApplication application, Events events);
+    default void afterEventInit(IApplication application, Events events) {
+    }
 
     /**
      * 当对象加载器开始执行加载动作前将调用此方法
@@ -42,7 +43,8 @@ public interface IApplicationInitializer {
      * @param application 应用容器
      * @param beanLoader  对象加载器
      */
-    void beforeBeanLoad(IApplication application, IBeanLoader beanLoader);
+    default void beforeBeanLoad(IApplication application, IBeanLoader beanLoader) {
+    }
 
     /**
      * 当模块管理器执行初始化动作前将调用此方法
@@ -50,7 +52,8 @@ public interface IApplicationInitializer {
      * @param application   应用容器
      * @param moduleManager 模块管理器
      */
-    void beforeModuleManagerInit(IApplication application, ModuleManager moduleManager);
+    default void beforeModuleManagerInit(IApplication application, ModuleManager moduleManager) {
+    }
 
     /**
      * 当对象工厂执行初始化动作前将调用此方法
@@ -58,5 +61,6 @@ public interface IApplicationInitializer {
      * @param application 应用容器
      * @param beanFactory 对象工厂
      */
-    void beforeBeanFactoryInit(IApplication application, IBeanFactory beanFactory);
+    default void beforeBeanFactoryInit(IApplication application, IBeanFactory beanFactory) {
+    }
 }
