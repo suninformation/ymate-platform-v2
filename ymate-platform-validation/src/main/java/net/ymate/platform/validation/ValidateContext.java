@@ -21,6 +21,7 @@ import net.ymate.platform.core.support.AbstractContext;
 import org.apache.commons.lang3.StringUtils;
 
 import java.lang.annotation.Annotation;
+import java.lang.reflect.InvocationTargetException;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -101,7 +102,7 @@ public class ValidateContext extends AbstractContext {
                             targetValue = ClassUtils.wrapper(targetValue).getValue(pName);
                         }
                     }
-                } catch (IllegalAccessException e) {
+                } catch (IllegalAccessException | InvocationTargetException e) {
                     // 出现任何异常都将返回null
                     targetValue = null;
                 } finally {
