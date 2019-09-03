@@ -361,6 +361,7 @@ public final class FileUploadHelper {
         private FileItem __fileItemObj;
         private File __fileObj;
         private boolean __isFileObj;
+        private File tempFile;
 
         public UploadFileWrapper(FileItem fileItem) {
             __fileItemObj = fileItem;
@@ -476,9 +477,11 @@ public final class FileUploadHelper {
             if (this.__isFileObj) {
                 return __fileObj;
             }
-            File _tmpFile = File.createTempFile("upload_", getName());
-            __fileItemObj.write(_tmpFile);
-            return _tmpFile;
+            if (tempFile == null) {
+                tempFile = File.createTempFile("upload_", getName());
+                __fileItemObj.write(tempFile);
+            }
+            return tempFile;
         }
 
         @Override
