@@ -135,7 +135,7 @@ public final class Validations implements IModule, IValidation {
             if (validationMeta != null) {
                 Map<String, String> contextParams = InterceptAnnHelper.getContextParams(owner, targetClass);
                 for (String fieldName : validationMeta.getFieldNames()) {
-                    ValidateResult validateResult = doValidate(validationMeta.getFieldAnnotations(fieldName), fieldName, validationMeta.getFieldLabel(fieldName), validationMeta.getFieldMessage(fieldName), paramValues, contextParams, validationMeta.getResourcesName());
+                    ValidateResult validateResult = doValidate(validationMeta.getFieldAnnotations(fieldName), validationMeta.getFieldLabel(fieldName), validationMeta.getFieldMessage(fieldName), paramValues, contextParams, validationMeta.getResourcesName());
                     if (validateResult != null && validateResult.isMatched()) {
                         returnValues.put(fieldName, validateResult);
                         if (validationMeta.getMode() == Validation.MODE.NORMAL) {
@@ -158,10 +158,10 @@ public final class Validations implements IModule, IValidation {
                 Validation.MODE mode = validation == null ? validationMeta.getMode() : validation.mode();
                 String resourceName = validation == null ? validationMeta.getResourcesName() : StringUtils.defaultIfBlank(validation.resourcesName(), validationMeta.getResourcesName());
                 //
-                Map<String, Annotation[]> paramAnnMap = validationMeta.getMethodParamAnnotations(targetMethod);
+                Map<String, ValidationMeta.ParamInfo> paramAnnMap = validationMeta.getMethodParamAnnotations(targetMethod);
                 Map<String, String> contextParams = InterceptAnnHelper.getContextParams(owner, (targetClass != null ? targetClass : targetMethod.getDeclaringClass()), targetMethod);
-                for (Map.Entry<String, Annotation[]> entry : paramAnnMap.entrySet()) {
-                    ValidateResult validateResult = doValidate(entry.getValue(), entry.getKey(), validationMeta.getFieldLabel(targetMethod, entry.getKey()), validationMeta.getFieldMessage(targetMethod, entry.getKey()), paramValues, contextParams, resourceName);
+                for (Map.Entry<String, ValidationMeta.ParamInfo> entry : paramAnnMap.entrySet()) {
+                    ValidateResult validateResult = doValidate(entry.getValue(), validationMeta.getFieldLabel(targetMethod, entry.getKey()), validationMeta.getFieldMessage(targetMethod, entry.getKey()), paramValues, contextParams, resourceName);
                     if (validateResult != null && validateResult.isMatched()) {
                         returnValues.put(entry.getKey(), validateResult);
                         if (Validation.MODE.NORMAL.equals(mode)) {
@@ -189,11 +189,11 @@ public final class Validations implements IModule, IValidation {
         return null;
     }
 
-    private ValidateResult doValidate(Annotation[] annotations, String paramName, String paramLabel, String paramMessage, Map<String, Object> paramValues, Map<String, String> contextParams, String resourceName) {
+    private ValidateResult doValidate(ValidationMeta.ParamInfo paramInfo, String paramLabel, String paramMessage, Map<String, Object> paramValues, Map<String, String> contextParams, String resourceName) {
         ValidateResult validateResult = null;
-        for (Annotation ann : annotations) {
+        for (Annotation ann : paramInfo.getAnnotations()) {
             IValidator validator = owner.getBeanFactory().getBean(validators.get(ann.annotationType()));
-            validateResult = validator.validate(new ValidateContext(owner, ann, paramName, paramLabel, paramMessage, paramValues, contextParams, resourceName));
+            validateResult = validator.validate(new ValidateContext(owner, ann, paramInfo.getName(), paramInfo.getType(), paramLabel, paramMessage, paramValues, contextParams, resourceName));
             if (validateResult != null && validateResult.isMatched()) {
                 break;
             }

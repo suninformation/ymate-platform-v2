@@ -38,13 +38,11 @@ public class CacheableProxy implements IProxy {
 
     @Override
     public Object doProxy(IProxyChain proxyChain) throws Throwable {
-        ICaches caches = proxyChain.getProxyFactory().getOwner().getModuleManager().getModule(Caches.class);
-        //
         Cacheable cacheable = proxyChain.getTargetMethod().getAnnotation(Cacheable.class);
         if (cacheable == null || proxyChain.getTargetMethod().getReturnType().equals(void.class)) {
             return proxyChain.doProxyChain();
         }
-        //
+        ICaches caches = proxyChain.getProxyFactory().getOwner().getModuleManager().getModule(Caches.class);
         Object cacheKey = StringUtils.trimToNull(cacheable.key());
         if (cacheKey == null) {
             cacheKey = caches.getConfig().getKeyGenerator().generateKey(proxyChain.getTargetMethod(), proxyChain.getMethodParams());

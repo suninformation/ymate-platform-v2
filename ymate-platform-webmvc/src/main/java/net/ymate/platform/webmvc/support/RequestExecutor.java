@@ -67,13 +67,14 @@ public final class RequestExecutor {
     }
 
     public IView execute() throws Exception {
-        // 将当前RequestMeta对象放入WebContext中, 便于其它环节中获取并使用
-        WebContext.getContext().addAttribute(RequestMeta.class.getName(), requestMeta);
         // 取得当前控制器方法参数的名称集合
         List<String> methodParamNames = requestMeta.getMethodParamNames();
         // 根据参数名称, 从请求中提取对应的参数值
         Map<String, Object> paramValues = requestProcessor.processRequestParams(owner, requestMeta);
-        WebContext.getContext().addAttribute(RequestParametersProxy.class.getName(), paramValues);
+        // 将当前RequestMeta对象和参数映射放入WebContext中, 便于其它环节中获取并使用
+        WebContext context = WebContext.getContext();
+        context.addAttribute(RequestMeta.class.getName(), requestMeta);
+        context.addAttribute(RequestParametersProxy.class.getName(), paramValues);
         // 提取控制器类实例
         Object targetObj = owner.getOwner().getBeanFactory().getBean(requestMeta.getTargetClass());
         Object resultObj;

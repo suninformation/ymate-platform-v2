@@ -160,10 +160,11 @@ public class BlurObject implements Serializable, Cloneable {
 
     /**
      * @return 输出布尔值，如果当前类型非布尔值，那么尝试转换
+     * @since 2.1.0
      */
-    public boolean toBooleanValue() {
+    public Boolean toBoolean() {
         if (attr == null) {
-            return false;
+            return null;
         }
         if (attr instanceof String) {
             return "true".equalsIgnoreCase(this.attr.toString()) || "on".equalsIgnoreCase(this.attr.toString()) || "1".equalsIgnoreCase(this.attr.toString());
@@ -195,59 +196,62 @@ public class BlurObject implements Serializable, Cloneable {
         if (attr instanceof Map) {
             return ((Map) attr).size() > 0;
         }
-        return attr instanceof BlurObject && ((BlurObject) this.attr).toBooleanValue();
+        return attr instanceof BlurObject && ((BlurObject) this.attr).toBoolean();
+    }
+
+    public boolean toBooleanValue() {
+        return Optional.ofNullable(toBoolean()).orElse(false);
     }
 
     /**
      * @return 输出整数
+     * @since 2.1.0
      */
-    public int toIntValue() {
-        if (attr == null) {
-            return 0;
-        }
-        if (int.class.isAssignableFrom(attr.getClass())) {
-            return (Integer) attr;
-        }
-        if (long.class.isAssignableFrom(attr.getClass())) {
-            return ((Number) attr).intValue();
-        }
-        if (float.class.isAssignableFrom(attr.getClass())) {
-            return ((Number) attr).intValue();
-        }
-        if (double.class.isAssignableFrom(attr.getClass())) {
-            return ((Number) attr).intValue();
-        }
-        if (short.class.isAssignableFrom(attr.getClass())) {
-            return ((Number) attr).intValue();
-        }
-        if (attr instanceof Number) {
-            return ((Number) attr).intValue();
-        }
-        if (attr instanceof String) {
-            if (StringUtils.isNotBlank((CharSequence) attr)) {
+    public Integer toInteger() {
+        if (attr != null) {
+            if (int.class.isAssignableFrom(attr.getClass())) {
+                return (Integer) attr;
+            }
+            if (long.class.isAssignableFrom(attr.getClass())) {
+                return ((Number) attr).intValue();
+            }
+            if (float.class.isAssignableFrom(attr.getClass())) {
+                return ((Number) attr).intValue();
+            }
+            if (double.class.isAssignableFrom(attr.getClass())) {
+                return ((Number) attr).intValue();
+            }
+            if (short.class.isAssignableFrom(attr.getClass())) {
+                return ((Number) attr).intValue();
+            }
+            if (attr instanceof Number) {
+                return ((Number) attr).intValue();
+            }
+            if (attr instanceof String) {
                 try {
                     return NumberFormat.getInstance().parse((String) attr).intValue();
-                } catch (ParseException e) {
-                    if (LOG.isWarnEnabled()) {
-                        LOG.warn(StringUtils.EMPTY, RuntimeUtils.unwrapThrow(e));
-                    }
+                } catch (ParseException ignored) {
                 }
+                return null;
             }
-            return 0;
+            int value = toInt();
+            if (value != -1) {
+                return value;
+            }
+            if (attr instanceof BlurObject) {
+                return ((BlurObject) this.attr).toInteger();
+            }
         }
-        int value = toInt();
-        if (value != -1) {
-            return value;
-        }
-        if (attr instanceof BlurObject) {
-            return ((BlurObject) this.attr).toIntValue();
-        }
-        return 0;
+        return null;
+    }
+
+    public int toIntValue() {
+        return Optional.ofNullable(toInteger()).orElse(0);
     }
 
     private int toInt() {
         if (boolean.class.isAssignableFrom(attr.getClass())) {
-            return (Boolean) attr ? 1 : 0;
+            return (boolean) attr ? 1 : 0;
         }
         if (attr instanceof Boolean) {
             return (Boolean) attr ? 1 : 0;
@@ -277,10 +281,7 @@ public class BlurObject implements Serializable, Cloneable {
                 if (clob.length() > 0 && reader != null) {
                     return IOUtils.toString(reader);
                 }
-            } catch (IOException | SQLException e) {
-                if (LOG.isWarnEnabled()) {
-                    LOG.warn(StringUtils.EMPTY, RuntimeUtils.unwrapThrow(e));
-                }
+            } catch (IOException | SQLException ignored) {
             }
         }
         if (attr instanceof BlurObject) {
@@ -291,172 +292,177 @@ public class BlurObject implements Serializable, Cloneable {
 
     /**
      * @return 输出浮点数
+     * @since 2.1.0
      */
-    public float toFloatValue() {
-        if (attr == null) {
-            return 0f;
-        }
-        if (float.class.isAssignableFrom(attr.getClass())) {
-            return (Float) attr;
-        }
-        if (int.class.isAssignableFrom(attr.getClass())) {
-            return ((Number) attr).floatValue();
-        }
-        if (long.class.isAssignableFrom(attr.getClass())) {
-            return ((Number) attr).floatValue();
-        }
-        if (double.class.isAssignableFrom(attr.getClass())) {
-            return ((Number) attr).floatValue();
-        }
-        if (short.class.isAssignableFrom(attr.getClass())) {
-            return ((Number) attr).floatValue();
-        }
-        if (attr instanceof Number) {
-            return ((Number) attr).floatValue();
-        }
-        if (attr instanceof String) {
-            if (StringUtils.isNotBlank((CharSequence) attr)) {
+    public Float toFloat() {
+        if (attr != null) {
+            if (float.class.isAssignableFrom(attr.getClass())) {
+                return (Float) attr;
+            }
+            if (int.class.isAssignableFrom(attr.getClass())) {
+                return ((Number) attr).floatValue();
+            }
+            if (long.class.isAssignableFrom(attr.getClass())) {
+                return ((Number) attr).floatValue();
+            }
+            if (double.class.isAssignableFrom(attr.getClass())) {
+                return ((Number) attr).floatValue();
+            }
+            if (short.class.isAssignableFrom(attr.getClass())) {
+                return ((Number) attr).floatValue();
+            }
+            if (attr instanceof Number) {
+                return ((Number) attr).floatValue();
+            }
+            if (attr instanceof String) {
                 try {
                     return NumberFormat.getInstance().parse((String) attr).floatValue();
-                } catch (ParseException e) {
-                    if (LOG.isWarnEnabled()) {
-                        LOG.warn(StringUtils.EMPTY, RuntimeUtils.unwrapThrow(e));
-                    }
+                } catch (ParseException ignored) {
                 }
+                return null;
             }
-            return 0f;
+            if (boolean.class.isAssignableFrom(attr.getClass())) {
+                return (boolean) attr ? 1f : 0f;
+            }
+            if (attr instanceof Boolean) {
+                return (Boolean) attr ? 1f : 0f;
+            }
+            if (attr instanceof Map) {
+                return (float) ((Map) attr).size();
+            }
+            if (attr instanceof List) {
+                return (float) ((Collection) attr).size();
+            }
+            if (attr instanceof BlurObject) {
+                return ((BlurObject) this.attr).toFloatValue();
+            }
         }
-        if (boolean.class.isAssignableFrom(attr.getClass())) {
-            return (Boolean) attr ? 1f : 0f;
-        }
-        if (attr instanceof Boolean) {
-            return (Boolean) attr ? 1f : 0f;
-        }
-        if (attr instanceof Map) {
-            return ((Map) attr).size();
-        }
-        if (attr instanceof List) {
-            return ((Collection) attr).size();
-        }
-        if (attr instanceof BlurObject) {
-            return ((BlurObject) this.attr).toFloatValue();
-        }
-        return 0f;
+        return null;
+    }
+
+    public float toFloatValue() {
+        return Optional.ofNullable(toFloat()).orElse(0f);
     }
 
     /**
      * @return 输出双精度
+     * @since 2.1.0
      */
-    public double toDoubleValue() {
-        if (attr == null) {
-            return 0d;
-        }
-        if (double.class.isAssignableFrom(attr.getClass())) {
-            return (Double) attr;
-        }
-        if (int.class.isAssignableFrom(attr.getClass())) {
-            return ((Number) attr).doubleValue();
-        }
-        if (long.class.isAssignableFrom(attr.getClass())) {
-            return ((Number) attr).doubleValue();
-        }
-        if (float.class.isAssignableFrom(attr.getClass())) {
-            return ((Number) attr).doubleValue();
-        }
-        if (short.class.isAssignableFrom(attr.getClass())) {
-            return ((Number) attr).doubleValue();
-        }
-        if (attr instanceof Number) {
-            return ((Number) attr).doubleValue();
-        }
-        if (attr instanceof String) {
-            if (StringUtils.isNotBlank((CharSequence) attr)) {
+    public Double toDouble() {
+        if (attr != null) {
+            if (double.class.isAssignableFrom(attr.getClass())) {
+                return (Double) attr;
+            }
+            if (int.class.isAssignableFrom(attr.getClass())) {
+                return ((Number) attr).doubleValue();
+            }
+            if (long.class.isAssignableFrom(attr.getClass())) {
+                return ((Number) attr).doubleValue();
+            }
+            if (float.class.isAssignableFrom(attr.getClass())) {
+                return ((Number) attr).doubleValue();
+            }
+            if (short.class.isAssignableFrom(attr.getClass())) {
+                return ((Number) attr).doubleValue();
+            }
+            if (attr instanceof Number) {
+                return ((Number) attr).doubleValue();
+            }
+            if (attr instanceof String) {
                 try {
                     return NumberFormat.getInstance().parse((String) attr).doubleValue();
-                } catch (ParseException e) {
-                    if (LOG.isWarnEnabled()) {
-                        LOG.warn(StringUtils.EMPTY, RuntimeUtils.unwrapThrow(e));
-                    }
+                } catch (ParseException ignored) {
                 }
+                return null;
             }
-            return 0d;
+            if (boolean.class.isAssignableFrom(attr.getClass())) {
+                return (boolean) attr ? 1d : 0d;
+            }
+            if (attr instanceof Boolean) {
+                return (Boolean) attr ? 1d : 0d;
+            }
+            if (attr instanceof Map) {
+                return (double) ((Map) attr).size();
+            }
+            if (attr instanceof List) {
+                return (double) ((Collection) attr).size();
+            }
+            if (attr instanceof BlurObject) {
+                return ((BlurObject) this.attr).toDouble();
+            }
         }
-        if (boolean.class.isAssignableFrom(attr.getClass())) {
-            return (Boolean) attr ? 1d : 0d;
-        }
-        if (attr instanceof Boolean) {
-            return (Boolean) attr ? 1d : 0d;
-        }
-        if (attr instanceof Map) {
-            return ((Map) attr).size();
-        }
-        if (attr instanceof List) {
-            return ((Collection) attr).size();
-        }
-        if (attr instanceof BlurObject) {
-            return ((BlurObject) this.attr).toDoubleValue();
-        }
-        return 0d;
+        return null;
+    }
+
+    public double toDoubleValue() {
+        return Optional.ofNullable(toDouble()).orElse(0d);
     }
 
     /**
      * @return 输出长整形
+     * @since 2.1.0
      */
-    public long toLongValue() {
-        if (attr == null) {
-            return 0;
-        }
-        if (long.class.isAssignableFrom(attr.getClass())) {
-            return (Long) attr;
-        }
-        if (int.class.isAssignableFrom(attr.getClass())) {
-            return ((Number) attr).longValue();
-        }
-        if (float.class.isAssignableFrom(attr.getClass())) {
-            return ((Number) attr).longValue();
-        }
-        if (double.class.isAssignableFrom(attr.getClass())) {
-            return ((Number) attr).longValue();
-        }
-        if (short.class.isAssignableFrom(attr.getClass())) {
-            return ((Number) attr).longValue();
-        }
-        if (attr instanceof Number) {
-            return ((Number) attr).longValue();
-        }
-        if (attr instanceof String) {
-            if (StringUtils.isNotBlank((CharSequence) attr)) {
+    public Long toLong() {
+        if (attr != null) {
+            if (long.class.isAssignableFrom(attr.getClass())) {
+                return (Long) attr;
+            }
+            if (int.class.isAssignableFrom(attr.getClass())) {
+                return ((Number) attr).longValue();
+            }
+            if (float.class.isAssignableFrom(attr.getClass())) {
+                return ((Number) attr).longValue();
+            }
+            if (double.class.isAssignableFrom(attr.getClass())) {
+                return ((Number) attr).longValue();
+            }
+            if (short.class.isAssignableFrom(attr.getClass())) {
+                return ((Number) attr).longValue();
+            }
+            if (attr instanceof Number) {
+                return ((Number) attr).longValue();
+            }
+            if (attr instanceof String) {
                 try {
                     return NumberFormat.getInstance().parse((String) attr).longValue();
-                } catch (ParseException e) {
-                    if (LOG.isWarnEnabled()) {
-                        LOG.warn(StringUtils.EMPTY, RuntimeUtils.unwrapThrow(e));
-                    }
+                } catch (ParseException ignored) {
                 }
+                return null;
             }
-            return 0;
+            int value = toInt();
+            if (value != -1) {
+                return (long) value;
+            }
+            if (attr instanceof BlurObject) {
+                return ((BlurObject) this.attr).toLong();
+            }
         }
-        int value = toInt();
-        if (value != -1) {
-            return value;
+        return null;
+    }
+
+    public long toLongValue() {
+        return Optional.ofNullable(toLong()).orElse(0L);
+    }
+
+    /**
+     * @return 输出字节
+     * @since 2.1.0
+     */
+    public Byte toByte() {
+        if (attr != null) {
+            if (attr instanceof Byte) {
+                return (Byte) attr;
+            }
+            if (attr instanceof BlurObject) {
+                return ((BlurObject) this.attr).toByte();
+            }
+            return Byte.valueOf(toStringValue());
         }
-        if (attr instanceof BlurObject) {
-            return ((BlurObject) this.attr).toLongValue();
-        }
-        return 0;
+        return null;
     }
 
     public byte toByteValue() {
-        if (attr == null) {
-            return 0;
-        }
-        if (attr instanceof Byte) {
-            return (Byte) attr;
-        }
-        if (attr instanceof BlurObject) {
-            return ((BlurObject) this.attr).toByteValue();
-        }
-        return Byte.parseByte(toStringValue());
+        return Optional.ofNullable(toByte()).orElse((byte) 0);
     }
 
     public byte[] toBytesValue() {
@@ -480,13 +486,18 @@ public class BlurObject implements Serializable, Cloneable {
                         return bArr;
                     }
                 }
-            } catch (IOException | SQLException e) {
-                if (LOG.isWarnEnabled()) {
-                    LOG.warn(StringUtils.EMPTY, RuntimeUtils.unwrapThrow(e));
-                }
+            } catch (IOException | SQLException ignored) {
             }
         }
         return null;
+    }
+
+    /**
+     * @return 输出短整型
+     * @since 2.1.0
+     */
+    public Short toShort() {
+        return Optional.ofNullable(toInteger()).map(Integer::shortValue).orElse(null);
     }
 
     public short toShortValue() {
@@ -509,29 +520,35 @@ public class BlurObject implements Serializable, Cloneable {
     /**
      * 输出指定类的对象
      *
-     * @param clazz 指定类
+     * @param clazz    指定类
+     * @param nullable 若值为null时是否创建默认实例
      * @return 如果对象不能转换成指定类返回null，指定类是null，返回null。
+     * @since 2.1.0
      */
-    public Object toObjectValue(Class<?> clazz) {
+    public Object toObjectValue(Class<?> clazz, boolean nullable) {
         Object object = null;
         if (clazz.equals(String.class)) {
-            object = attr == null ? null : this.toStringValue();
+            object = toStringValue();
         } else if (clazz.equals(Double.class)) {
-            object = attr == null ? null : this.toDoubleValue();
+            object = nullable ? toDoubleValue() : toDouble();
         } else if (clazz.equals(double.class)) {
-            object = this.toDoubleValue();
+            object = toDoubleValue();
         } else if (clazz.equals(Float.class)) {
-            object = attr == null ? null : this.toFloatValue();
+            object = nullable ? toFloatValue() : toFloat();
         } else if (clazz.equals(float.class)) {
-            object = this.toFloatValue();
+            object = toFloatValue();
         } else if (clazz.equals(Integer.class)) {
-            object = attr == null ? null : this.toIntValue();
+            object = nullable ? toIntValue() : toInteger();
         } else if (clazz.equals(int.class)) {
-            object = this.toIntValue();
+            object = toIntValue();
+        } else if (clazz.equals(Short.class)) {
+            object = nullable ? toShortValue() : toShort();
+        } else if (clazz.equals(short.class)) {
+            object = toShortValue();
         } else if (clazz.equals(Long.class)) {
-            object = attr == null ? null : this.toLongValue();
+            object = nullable ? toLongValue() : toLong();
         } else if (clazz.equals(long.class)) {
-            object = this.toLongValue();
+            object = toLongValue();
         } else if (clazz.equals(BigInteger.class)) {
             String value = StringUtils.trimToNull(toStringValue());
             if (value != null) {
@@ -543,27 +560,23 @@ public class BlurObject implements Serializable, Cloneable {
                 object = new BigDecimal(value);
             }
         } else if (clazz.equals(Boolean.class)) {
-            object = attr == null ? null : this.toBooleanValue();
+            object = nullable ? toBooleanValue() : toBoolean();
         } else if (clazz.equals(boolean.class)) {
-            object = this.toBooleanValue();
+            object = toBooleanValue();
         } else if (clazz.equals(Byte.class)) {
-            object = attr == null ? null : this.toByteValue();
+            object = nullable ? toByteValue() : toByte();
         } else if (clazz.equals(byte.class)) {
-            object = this.toByteValue();
-        } else if (clazz.equals(Byte[].class)) {
-            object = attr == null ? null : this.toBytesValue();
-        } else if (clazz.equals(byte[].class)) {
-            object = this.toBytesValue();
-        } else if (clazz.equals(Character.class)) {
-            object = attr == null ? null : this.toCharValue();
-        } else if (clazz.equals(char.class)) {
-            object = this.toCharValue();
+            object = toByteValue();
+        } else if (clazz.equals(Byte[].class) || clazz.equals(byte[].class)) {
+            object = toBytesValue();
+        } else if (clazz.equals(Character.class) || clazz.equals(char.class)) {
+            object = toCharValue();
         } else if (clazz.equals(List.class)) {
-            object = this.toListValue();
+            object = toListValue();
         } else if (clazz.equals(Map.class)) {
-            object = this.toMapValue();
+            object = toMapValue();
         } else if (clazz.equals(Set.class)) {
-            object = this.toSetValue();
+            object = toSetValue();
         }
         if (object == null && attr != null && !CONVERTERS.isEmpty()) {
             Map<Class<?>, IConverter<?>> map = CONVERTERS.get(clazz);
@@ -577,13 +590,14 @@ public class BlurObject implements Serializable, Cloneable {
         if (object == null) {
             try {
                 object = clazz.cast(attr);
-            } catch (ClassCastException e) {
-                if (LOG.isWarnEnabled()) {
-                    LOG.warn(StringUtils.EMPTY, RuntimeUtils.unwrapThrow(e));
-                }
+            } catch (ClassCastException ignored) {
             }
         }
         return object;
+    }
+
+    public Object toObjectValue(Class<?> clazz) {
+        return toObjectValue(clazz, false);
     }
 
     /**
@@ -639,9 +653,6 @@ public class BlurObject implements Serializable, Cloneable {
 
     @Override
     public String toString() {
-        if (attr != null) {
-            return attr.toString();
-        }
-        return StringUtils.EMPTY;
+        return toStringValue();
     }
 }

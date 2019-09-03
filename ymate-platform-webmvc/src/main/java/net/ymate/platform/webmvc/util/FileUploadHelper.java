@@ -311,6 +311,8 @@ public final class FileUploadHelper {
 
         private File file;
 
+        private File tempFile;
+
         private boolean fileObj;
 
         public UploadFileWrapper(FileItem fileItem) {
@@ -415,8 +417,10 @@ public final class FileUploadHelper {
             if (fileObj) {
                 return file;
             }
-            File tempFile = File.createTempFile("upload_", getName());
-            fileItem.write(tempFile);
+            if (tempFile == null) {
+                tempFile = File.createTempFile("upload_", getName());
+                fileItem.write(tempFile);
+            }
             return tempFile;
         }
 

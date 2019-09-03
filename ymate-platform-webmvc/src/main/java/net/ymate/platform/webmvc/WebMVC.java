@@ -53,6 +53,7 @@ import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -179,8 +180,8 @@ public final class WebMVC implements IModule, IWebMvc {
     public boolean registerController(Class<?> targetClass) throws Exception {
         boolean isValid = false;
         for (Method method : targetClass.getDeclaredMethods()) {
-            if (method.isAnnotationPresent(RequestMapping.class)) {
-                RequestMeta requestMeta = new RequestMeta(this, targetClass, method);
+            if (method.isAnnotationPresent(RequestMapping.class) && method.getModifiers() == Modifier.PUBLIC) {
+                RequestMeta requestMeta = new RequestMeta(targetClass, method);
                 config.getRequestMappingParser().registerRequestMeta(requestMeta);
                 //
                 if (owner.isDevEnv() && LOG.isDebugEnabled()) {

@@ -29,6 +29,7 @@ import net.ymate.platform.webmvc.annotation.RequestMapping;
 import net.ymate.platform.webmvc.context.WebContext;
 import net.ymate.platform.webmvc.view.IView;
 
+import java.lang.reflect.Modifier;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -43,12 +44,13 @@ public class RequestParametersProxy implements IProxy {
     @Override
     public Object doProxy(IProxyChain proxyChain) throws Throwable {
         // 该代理仅处理控制器中声明@RequestMapping的方法
-        if (proxyChain.getTargetMethod().getAnnotation(RequestMapping.class) != null) {
-            IWebMvc owner = WebContext.getContext().getOwner();
-            RequestMeta requestMeta = WebContext.getContext().getAttribute(RequestMeta.class.getName());
-            Map<String, Object> paramValues = WebContext.getContext().getAttribute(RequestParametersProxy.class.getName());
+        if (proxyChain.getTargetMethod().isAnnotationPresent(RequestMapping.class) && proxyChain.getTargetMethod().getModifiers() == Modifier.PUBLIC) {
+            WebContext context = WebContext.getContext();
+            IWebMvc owner = context.getOwner();
+            RequestMeta requestMeta = context.getAttribute(RequestMeta.class.getName());
+            Map<String, Object> paramValues = context.getAttribute(RequestParametersProxy.class.getName());
             //
-            IValidation validation = Validations.get();
+            IValidation validation = owner.getOwner().getModuleManager().getModule(Validations.class);
             Map<String, ValidateResult> validateResultMap = new HashMap<>(16);
             if (!requestMeta.isSingleton()) {
                 validateResultMap = validation.validate(requestMeta.getTargetClass(), paramValues);

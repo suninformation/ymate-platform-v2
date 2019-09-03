@@ -43,7 +43,7 @@ public final class ValidationMeta implements Serializable {
 
     private final Class<?> targetClass;
 
-    private final Map<String, Annotation[]> fields = new LinkedHashMap<>();
+    private final Map<String, ParamInfo> fields = new LinkedHashMap<>();
 
     private final Map<String, String> labels = new LinkedHashMap<>();
 
@@ -55,7 +55,7 @@ public final class ValidationMeta implements Serializable {
 
     private final Map<Method, Validation> methods = new LinkedHashMap<>();
 
-    private final Map<Method, Map<String, Annotation[]>> methodParams = new LinkedHashMap<>();
+    private final Map<Method, Map<String, ParamInfo>> methodParams = new LinkedHashMap<>();
 
     public ValidationMeta(IValidation validation, Class<?> targetClass) {
         this.validation = validation;
@@ -82,7 +82,7 @@ public final class ValidationMeta implements Serializable {
                 methods.put(method, methodValidation);
             }
             // 处理每个方法参数上有关验证的注解
-            Map<String, Annotation[]> paramAnnotations = new LinkedHashMap<>();
+            Map<String, ParamInfo> paramAnnotations = new LinkedHashMap<>();
             for (Parameter parameter : method.getParameters()) {
                 List<Annotation> tmpAnnList = new ArrayList<>();
                 String paramName = parameter.getName();
@@ -105,7 +105,7 @@ public final class ValidationMeta implements Serializable {
                     }
                 }
                 if (!tmpAnnList.isEmpty()) {
-                    paramAnnotations.put(paramName, tmpAnnList.toArray(new Annotation[0]));
+                    paramAnnotations.put(paramName, new ParamInfo(paramName, parameter.getType(), tmpAnnList.toArray(new Annotation[0])));
                 }
             }
             if (!paramAnnotations.isEmpty()) {
@@ -121,8 +121,8 @@ public final class ValidationMeta implements Serializable {
      * @param paramMessages   自定义验证消息映射
      * @return 处理targetClass所有Field成员属性
      */
-    public final Map<String, Annotation[]> parseClassFields(String parentFieldName, Class<?> targetClass, Map<String, String> paramLabels, Map<String, String> paramMessages) {
-        Map<String, Annotation[]> returnValues = new LinkedHashMap<>();
+    public final Map<String, ParamInfo> parseClassFields(String parentFieldName, Class<?> targetClass, Map<String, String> paramLabels, Map<String, String> paramMessages) {
+        Map<String, ParamInfo> returnValues = new LinkedHashMap<>();
         ClassUtils.BeanWrapper<?> wrapper = ClassUtils.wrapper(targetClass);
         if (wrapper != null) {
             wrapper.getFields().forEach((field) -> {
@@ -161,7 +161,7 @@ public final class ValidationMeta implements Serializable {
                 if (!annotations.isEmpty()) {
                     // 拼装带层级关系的Field名称
                     String fieldNamePr = buildFieldName(parentFieldName, fieldName);
-                    returnValues.put(fieldNamePr, annotations.toArray(new Annotation[0]));
+                    returnValues.put(fieldNamePr, new ParamInfo(fieldNamePr, field.getType(), annotations.toArray(new Annotation[0])));
                 }
             });
         }
@@ -226,7 +226,7 @@ public final class ValidationMeta implements Serializable {
         return methodMessages.get(method).get(fieldName);
     }
 
-    public Annotation[] getFieldAnnotations(String fieldName) {
+    public ParamInfo getFieldAnnotations(String fieldName) {
         return fields.get(fieldName);
     }
 
@@ -234,10 +234,37 @@ public final class ValidationMeta implements Serializable {
         return methods.get(method);
     }
 
-    public Map<String, Annotation[]> getMethodParamAnnotations(Method method) {
+    public Map<String, ParamInfo> getMethodParamAnnotations(Method method) {
         if (methodParams.containsKey(method)) {
             return Collections.unmodifiableMap(methodParams.get(method));
         }
         return Collections.emptyMap();
+    }
+
+    public final class ParamInfo {
+
+        private final String name;
+
+        private final Class<?> type;
+
+        private final Annotation[] annotations;
+
+        ParamInfo(String name, Class<?> type, Annotation[] annotations) {
+            this.name = name;
+            this.type = type;
+            this.annotations = annotations;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public Class<?> getType() {
+            return type;
+        }
+
+        public Annotation[] getAnnotations() {
+            return annotations;
+        }
     }
 }

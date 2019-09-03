@@ -67,7 +67,7 @@ public class RequestMeta {
 
     private final Map<String, String> allowParams;
 
-    public RequestMeta(IWebMvc owner, Class<?> targetClass, Method method) throws Exception {
+    public RequestMeta(Class<?> targetClass, Method method) throws Exception {
         this.targetClass = targetClass;
         this.method = method;
         //

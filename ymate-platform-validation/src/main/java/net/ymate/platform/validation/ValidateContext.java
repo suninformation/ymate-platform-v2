@@ -45,17 +45,20 @@ public class ValidateContext extends AbstractContext {
 
     private final String paramName;
 
+    private final Class<?> paramType;
+
     private final String paramLabel;
 
     private final String paramMessage;
 
     private final Map<String, Object> paramValues;
 
-    public ValidateContext(IApplication owner, Annotation annotation, String paramName, String paramLabel, String paramMessage, Map<String, Object> paramValues, Map<String, String> contextParams, String resourceName) {
+    public ValidateContext(IApplication owner, Annotation annotation, String paramName, Class<?> paramType, String paramLabel, String paramMessage, Map<String, Object> paramValues, Map<String, String> contextParams, String resourceName) {
         super(owner, contextParams);
         //
         this.annotation = annotation;
         this.paramName = paramName;
+        this.paramType = paramType;
         this.paramLabel = paramLabel;
         this.paramMessage = paramMessage;
         this.paramValues = paramValues;
@@ -73,6 +76,10 @@ public class ValidateContext extends AbstractContext {
 
     public String getParamName() {
         return paramName;
+    }
+
+    public Class<?> getParamType() {
+        return paramType;
     }
 
     public String getParamLabel() {
