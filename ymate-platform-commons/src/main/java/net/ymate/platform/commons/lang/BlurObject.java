@@ -85,6 +85,27 @@ public class BlurObject implements Serializable, Cloneable {
         map.put(fromClass, converter);
     }
 
+    @SuppressWarnings("unchecked")
+    public static <T> T convertTo(Object attr, Class<T> targetType) {
+        T object = null;
+        if (attr != null && !CONVERTERS.isEmpty()) {
+            Map<Class<?>, IConverter<?>> map = CONVERTERS.get(targetType);
+            if (map != null && !map.isEmpty()) {
+                IConverter<?> converter = map.get(attr.getClass());
+                if (converter != null) {
+                    object = (T) converter.convert(attr);
+                }
+            }
+        }
+        if (object == null) {
+            try {
+                object = targetType.cast(attr);
+            } catch (ClassCastException ignored) {
+            }
+        }
+        return object;
+    }
+
     /**
      * 当前存储对象值
      */
@@ -578,20 +599,8 @@ public class BlurObject implements Serializable, Cloneable {
         } else if (clazz.equals(Set.class)) {
             object = toSetValue();
         }
-        if (object == null && attr != null && !CONVERTERS.isEmpty()) {
-            Map<Class<?>, IConverter<?>> map = CONVERTERS.get(clazz);
-            if (map != null && !map.isEmpty()) {
-                IConverter<?> converter = map.get(attr.getClass());
-                if (converter != null) {
-                    object = converter.convert(attr);
-                }
-            }
-        }
         if (object == null) {
-            try {
-                object = clazz.cast(attr);
-            } catch (ClassCastException ignored) {
-            }
+            object = convertTo(attr, clazz);
         }
         return object;
     }
