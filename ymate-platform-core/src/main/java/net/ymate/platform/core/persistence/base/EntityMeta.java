@@ -234,6 +234,9 @@ public final class EntityMeta implements Serializable {
             if (ClassUtils.isAnnotationOf(field, Comment.class)) {
                 propertyMeta.setComment(field.getAnnotation(Comment.class).value());
             }
+            if (ClassUtils.isAnnotationOf(field, Conversion.class)) {
+                propertyMeta.setConversionType(field.getAnnotation(Conversion.class).to());
+            }
             if (ClassUtils.isAnnotationOf(field, Readonly.class)) {
                 propertyMeta.setReadonly(true);
                 targetMeta.readonlyProps.add(propertyMeta.getName());

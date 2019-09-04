@@ -722,7 +722,12 @@ public class DefaultDatabaseSession extends AbstractSession<IDatabaseConnectionH
                     }
                     // 若value不为空则添加至返回对象中
                     fields.add(fieldName);
-                    values.add(value);
+                    // 若字段成员声明了@Conversion注解则执行类型转换
+                    if (value != null && propertyMeta.getConversionType() != null) {
+                        values.add(BlurObject.bind(value).toObjectValue(propertyMeta.getConversionType()));
+                    } else {
+                        values.add(value);
+                    }
                 }
             }
         }

@@ -73,6 +73,11 @@ public class PropertyMeta {
      */
     private boolean readonly;
 
+    /**
+     * 转换目标类型
+     */
+    private Class<?> conversionType;
+
     public PropertyMeta(String name, Field field) {
         this.name = name;
         this.field = field;
@@ -194,9 +199,17 @@ public class PropertyMeta {
         this.readonly = readonly;
     }
 
+    public Class<?> getConversionType() {
+        return conversionType;
+    }
+
+    public void setConversionType(Class<?> conversionType) {
+        this.conversionType = conversionType;
+    }
+
     @Override
     public String toString() {
-        return String.format("PropertyMeta [name='%s', field=%s, autoincrement=%s, sequenceName='%s', nullable=%s, unsigned=%s, length=%d, decimals=%d, type=%s, defaultValue='%s', comment='%s', readonly=%s]", name, field, autoincrement, sequenceName, nullable, unsigned, length, decimals, type, defaultValue, comment, readonly);
+        return String.format("PropertyMeta [name='%s', field=%s, autoincrement=%s, sequenceName='%s', nullable=%s, unsigned=%s, length=%d, decimals=%d, type=%s, defaultValue='%s', comment='%s', readonly=%s, conversionType=%s]", name, field, autoincrement, sequenceName, nullable, unsigned, length, decimals, type, defaultValue, comment, readonly, conversionType);
     }
 
 }

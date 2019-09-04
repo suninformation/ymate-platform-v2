@@ -18,9 +18,10 @@ package net.ymate.platform.core.persistence.annotation;
 import java.lang.annotation.*;
 
 /**
- * 成员变量值类型转换(作用于实体类成员类型与数据库表字段值类型之间的相互转换)
+ * 成员变量值类型转换(作用于实体类成员类型向数据库表字段值类型的转换)
  *
  * @author 刘镇 (suninformation@163.com) on 2019-06-20 18:45
+ * @since 2.1.0
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.FIELD})
