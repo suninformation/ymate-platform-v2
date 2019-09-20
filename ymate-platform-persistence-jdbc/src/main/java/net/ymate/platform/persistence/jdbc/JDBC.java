@@ -42,7 +42,7 @@ import java.util.Map;
 @Module
 public class JDBC implements IModule, IDatabase {
 
-    public static final Version VERSION = new Version(2, 0, 7, JDBC.class.getPackage().getImplementationVersion(), Version.VersionType.Release);
+    public static final Version VERSION = new Version(2, 0, 8, JDBC.class.getPackage().getImplementationVersion(), Version.VersionType.Release);
 
     private static final Log _LOG = LogFactory.getLog(JDBC.class);
 

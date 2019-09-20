@@ -36,7 +36,7 @@ import java.util.Map;
 @Module
 public class MongoDB implements IModule, IMongo {
 
-    public static final Version VERSION = new Version(2, 0, 7, MongoDB.class.getPackage().getImplementationVersion(), Version.VersionType.Release);
+    public static final Version VERSION = new Version(2, 0, 8, MongoDB.class.getPackage().getImplementationVersion(), Version.VersionType.Release);
 
     private static final Log _LOG = LogFactory.getLog(MongoDB.class);
 
