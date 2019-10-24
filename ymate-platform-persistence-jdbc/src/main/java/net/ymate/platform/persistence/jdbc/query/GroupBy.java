@@ -17,6 +17,7 @@ package net.ymate.platform.persistence.jdbc.query;
 
 import net.ymate.platform.core.persistence.Fields;
 import net.ymate.platform.persistence.jdbc.IDatabase;
+import net.ymate.platform.persistence.jdbc.JDBC;
 import org.apache.commons.lang3.StringUtils;
 
 /**
@@ -29,6 +30,22 @@ public final class GroupBy extends Query<GroupBy> {
     private final Fields groupByNames;
 
     private Cond having;
+
+    public static GroupBy create(String prefix, String field, String alias) {
+        return new GroupBy(JDBC.get(), Fields.create().add(prefix, field, alias));
+    }
+
+    public static GroupBy create(String prefix, String field) {
+        return new GroupBy(JDBC.get(), Fields.create().add(prefix, field));
+    }
+
+    public static GroupBy create(String field) {
+        return new GroupBy(JDBC.get(), Fields.create().add(field));
+    }
+
+    public static GroupBy create(Fields fields) {
+        return new GroupBy(JDBC.get(), fields);
+    }
 
     public static GroupBy create(IDatabase owner, String prefix, String field, String alias) {
         return new GroupBy(owner, Fields.create().add(prefix, field, alias));

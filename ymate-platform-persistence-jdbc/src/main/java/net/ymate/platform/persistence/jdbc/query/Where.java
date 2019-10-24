@@ -18,6 +18,7 @@ package net.ymate.platform.persistence.jdbc.query;
 import net.ymate.platform.core.persistence.Fields;
 import net.ymate.platform.core.persistence.Params;
 import net.ymate.platform.persistence.jdbc.IDatabase;
+import net.ymate.platform.persistence.jdbc.JDBC;
 import org.apache.commons.lang3.StringUtils;
 
 /**
@@ -37,6 +38,14 @@ public final class Where {
     private GroupBy groupBy;
 
     private OrderBy orderBy;
+
+    public static Where create() {
+        return new Where(JDBC.get());
+    }
+
+    public static Where create(String whereCond) {
+        return new Where(JDBC.get(), whereCond);
+    }
 
     public static Where create(IDatabase owner) {
         return new Where(owner);

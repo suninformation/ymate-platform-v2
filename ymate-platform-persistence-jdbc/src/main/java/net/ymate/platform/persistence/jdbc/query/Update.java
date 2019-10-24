@@ -21,6 +21,7 @@ import net.ymate.platform.core.persistence.base.EntityMeta;
 import net.ymate.platform.core.persistence.base.IEntity;
 import net.ymate.platform.persistence.jdbc.IDatabase;
 import net.ymate.platform.persistence.jdbc.IDatabaseConnectionHolder;
+import net.ymate.platform.persistence.jdbc.JDBC;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.ArrayList;
@@ -40,6 +41,46 @@ public final class Update extends Query<Update> {
     private final List<Join> joins = new ArrayList<>();
 
     private Where where;
+
+    public static Update create() {
+        return new Update(JDBC.get());
+    }
+
+    public static Update create(String prefix, Class<? extends IEntity> entityClass, String alias) {
+        return new Update(JDBC.get()).table(prefix, entityClass, alias);
+    }
+
+    public static Update create(String prefix, Class<? extends IEntity> entityClass) {
+        return new Update(JDBC.get()).table(prefix, entityClass, null);
+    }
+
+    public static Update create(Class<? extends IEntity> entityClass) {
+        return new Update(JDBC.get()).table(entityClass, null);
+    }
+
+    public static Update create(String prefix, String tableName, String alias) {
+        return new Update(JDBC.get(), prefix, tableName, alias, true);
+    }
+
+    public static Update create(String prefix, String tableName, String alias, boolean safePrefix) {
+        return new Update(JDBC.get(), prefix, tableName, alias, safePrefix);
+    }
+
+    public static Update create(String tableName, String alias) {
+        return new Update(JDBC.get(), null, tableName, alias, true);
+    }
+
+    public static Update create(String tableName, String alias, boolean safePrefix) {
+        return new Update(JDBC.get(), null, tableName, alias, safePrefix);
+    }
+
+    public static Update create(String tableName) {
+        return new Update(JDBC.get(), null, tableName, null, true);
+    }
+
+    public static Update create(String tableName, boolean safePrefix) {
+        return new Update(JDBC.get(), null, tableName, null, safePrefix);
+    }
 
     public static Update create(IDatabase owner) {
         return new Update(owner);

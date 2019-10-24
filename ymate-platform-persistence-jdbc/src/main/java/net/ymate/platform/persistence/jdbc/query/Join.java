@@ -17,6 +17,7 @@ package net.ymate.platform.persistence.jdbc.query;
 
 import net.ymate.platform.core.persistence.Params;
 import net.ymate.platform.persistence.jdbc.IDatabase;
+import net.ymate.platform.persistence.jdbc.JDBC;
 import org.apache.commons.lang3.StringUtils;
 
 /**
@@ -31,6 +32,54 @@ public final class Join extends Query<Join> {
     private String alias;
 
     private final Cond on;
+
+    public static Join inner(String from) {
+        return inner(JDBC.get(), from, true);
+    }
+
+    public static Join inner(String from, boolean safePrefix) {
+        return inner(JDBC.get(), null, from, safePrefix);
+    }
+
+    public static Join inner(String prefix, String from) {
+        return inner(JDBC.get(), prefix, from, true);
+    }
+
+    public static Join inner(String prefix, String from, boolean safePrefix) {
+        return new Join(JDBC.get(), "INNER JOIN", prefix, from, safePrefix);
+    }
+
+    public static Join left(String from) {
+        return left(JDBC.get(), from, true);
+    }
+
+    public static Join left(String from, boolean safePrefix) {
+        return left(JDBC.get(), null, from, safePrefix);
+    }
+
+    public static Join left(String prefix, String from) {
+        return left(JDBC.get(), prefix, from, true);
+    }
+
+    public static Join left(String prefix, String from, boolean safePrefix) {
+        return new Join(JDBC.get(), "LEFT JOIN", prefix, from, safePrefix);
+    }
+
+    public static Join right(String from) {
+        return right(JDBC.get(), from, true);
+    }
+
+    public static Join right(String from, boolean safePrefix) {
+        return right(JDBC.get(), null, from, safePrefix);
+    }
+
+    public static Join right(String prefix, String from) {
+        return right(JDBC.get(), prefix, from, true);
+    }
+
+    public static Join right(String prefix, String from, boolean safePrefix) {
+        return new Join(JDBC.get(), "RIGHT JOIN", prefix, from, safePrefix);
+    }
 
     public static Join inner(IDatabase owner, String from) {
         return inner(owner, from, true);

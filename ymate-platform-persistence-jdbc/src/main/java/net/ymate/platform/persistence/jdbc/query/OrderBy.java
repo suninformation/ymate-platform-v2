@@ -16,6 +16,7 @@
 package net.ymate.platform.persistence.jdbc.query;
 
 import net.ymate.platform.persistence.jdbc.IDatabase;
+import net.ymate.platform.persistence.jdbc.JDBC;
 import org.apache.commons.lang3.StringUtils;
 
 /**
@@ -26,6 +27,10 @@ import org.apache.commons.lang3.StringUtils;
 public final class OrderBy extends Query<OrderBy> {
 
     private final StringBuilder orderByBuilder;
+
+    public static OrderBy create() {
+        return new OrderBy(JDBC.get());
+    }
 
     public static OrderBy create(IDatabase owner) {
         return new OrderBy(owner);

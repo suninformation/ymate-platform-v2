@@ -21,6 +21,7 @@ import net.ymate.platform.core.persistence.base.EntityMeta;
 import net.ymate.platform.core.persistence.base.IEntity;
 import net.ymate.platform.persistence.jdbc.IDatabase;
 import net.ymate.platform.persistence.jdbc.IDatabaseConnectionHolder;
+import net.ymate.platform.persistence.jdbc.JDBC;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.ArrayList;
@@ -40,6 +41,46 @@ public final class Delete extends Query<Delete> {
     private final List<Join> joins = new ArrayList<>();
 
     private Where where;
+
+    public static Delete create() {
+        return new Delete(JDBC.get());
+    }
+
+    public static Delete create(Class<? extends IEntity> entityClass) {
+        return new Delete(JDBC.get()).from(entityClass);
+    }
+
+    public static Delete create(String prefix, Class<? extends IEntity> entityClass) {
+        return new Delete(JDBC.get()).from(prefix, entityClass, null);
+    }
+
+    public static Delete create(Class<? extends IEntity> entityClass, String alias) {
+        return new Delete(JDBC.get()).from(null, entityClass, alias);
+    }
+
+    public static Delete create(String prefix, Class<? extends IEntity> entityClass, String alias) {
+        return new Delete(JDBC.get()).from(prefix, entityClass, alias);
+    }
+
+    public static Delete create(String prefix, String tableName, String alias) {
+        return new Delete(JDBC.get(), prefix, tableName, alias, true);
+    }
+
+    public static Delete create(String tableName, String alias) {
+        return new Delete(JDBC.get(), null, tableName, alias, true);
+    }
+
+    public static Delete create(String tableName, String alias, boolean safePrefix) {
+        return new Delete(JDBC.get(), null, tableName, alias, safePrefix);
+    }
+
+    public static Delete create(String tableName) {
+        return new Delete(JDBC.get(), null, tableName, null, true);
+    }
+
+    public static Delete create(String tableName, boolean safePrefix) {
+        return new Delete(JDBC.get(), null, tableName, null, safePrefix);
+    }
 
     public static Delete create(IDatabase owner) {
         return new Delete(owner);

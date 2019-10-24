@@ -21,6 +21,7 @@ import net.ymate.platform.core.persistence.base.IEntity;
 import net.ymate.platform.persistence.jdbc.IDBLocker;
 import net.ymate.platform.persistence.jdbc.IDatabase;
 import net.ymate.platform.persistence.jdbc.IDatabaseConnectionHolder;
+import net.ymate.platform.persistence.jdbc.JDBC;
 import net.ymate.platform.persistence.jdbc.base.IResultSetHandler;
 import net.ymate.platform.persistence.jdbc.dialect.IDialect;
 import org.apache.commons.lang3.StringUtils;
@@ -52,6 +53,46 @@ public final class Select extends Query<Select> {
     private IDBLocker dbLocker;
 
     private Page page;
+
+    public static Select create() {
+        return new Select(JDBC.get());
+    }
+
+    public static Select create(Class<? extends IEntity> entityClass) {
+        return new Select(JDBC.get()).from(null, entityClass, null);
+    }
+
+    public static Select create(String prefix, Class<? extends IEntity> entityClass) {
+        return new Select(JDBC.get()).from(prefix, entityClass, null);
+    }
+
+    public static Select create(Class<? extends IEntity> entityClass, String alias) {
+        return new Select(JDBC.get()).from(null, entityClass, alias);
+    }
+
+    public static Select create(String prefix, Class<? extends IEntity> entityClass, String alias) {
+        return new Select(JDBC.get()).from(prefix, entityClass, alias);
+    }
+
+    public static Select create(String prefix, String from, String alias) {
+        return new Select(JDBC.get(), prefix, from, alias, true);
+    }
+
+    public static Select create(String from, String alias) {
+        return new Select(JDBC.get(), null, from, alias, true);
+    }
+
+    public static Select create(String from, String alias, boolean safePrefix) {
+        return new Select(JDBC.get(), null, from, alias, safePrefix);
+    }
+
+    public static Select create(String from) {
+        return new Select(JDBC.get(), null, from, null, true);
+    }
+
+    public static Select create(String from, boolean safePrefix) {
+        return new Select(JDBC.get(), null, from, null, safePrefix);
+    }
 
     public static Select create(IDatabase owner) {
         return new Select(owner);

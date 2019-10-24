@@ -21,6 +21,7 @@ import net.ymate.platform.core.persistence.base.EntityMeta;
 import net.ymate.platform.core.persistence.base.IEntity;
 import net.ymate.platform.persistence.jdbc.IDatabase;
 import net.ymate.platform.persistence.jdbc.IDatabaseConnectionHolder;
+import net.ymate.platform.persistence.jdbc.JDBC;
 import org.apache.commons.lang3.StringUtils;
 
 /**
@@ -43,6 +44,26 @@ public final class Insert extends Query<Insert> {
     private Select select;
 
     private final boolean safePrefix;
+
+    public static Insert create(String prefix, Class<? extends IEntity> entityClass) {
+        return new Insert(JDBC.get(), prefix, entityClass);
+    }
+
+    public static Insert create(IEntity<?> entity) {
+        return create(JDBC.get(), entity.getClass());
+    }
+
+    public static Insert create(Class<? extends IEntity> entityClass) {
+        return new Insert(JDBC.get(), null, entityClass);
+    }
+
+    public static Insert create(String tableName) {
+        return new Insert(JDBC.get(), null, tableName, true);
+    }
+
+    public static Insert create(String tableName, boolean safePrefix) {
+        return new Insert(JDBC.get(), null, tableName, safePrefix);
+    }
 
     public static Insert create(IDatabase owner, String prefix, Class<? extends IEntity> entityClass) {
         return new Insert(owner, prefix, entityClass);

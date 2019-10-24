@@ -19,6 +19,7 @@ import net.ymate.platform.core.persistence.Fields;
 import net.ymate.platform.core.persistence.IFunction;
 import net.ymate.platform.core.persistence.Params;
 import net.ymate.platform.persistence.jdbc.IDatabase;
+import net.ymate.platform.persistence.jdbc.JDBC;
 import org.apache.commons.lang3.StringUtils;
 
 /**
@@ -86,6 +87,10 @@ public final class Cond extends Query<Cond> {
      * SQL参数集合
      */
     private final Params params = Params.create();
+
+    public static Cond create() {
+        return new Cond(JDBC.get());
+    }
 
     public static Cond create(IDatabase owner) {
         return new Cond(owner);
@@ -460,6 +465,16 @@ public final class Cond extends Query<Cond> {
             }
         }
         return this;
+    }
+
+    /**
+     * 通过当前条件对象创建Where对象实例
+     *
+     * @return 返回Where对象实例
+     * @since 2.1.0
+     */
+    public Where toWhere() {
+        return Where.create(this);
     }
 
     @Override
