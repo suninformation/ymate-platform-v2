@@ -46,19 +46,19 @@ public final class Page {
         return new Page(1);
     }
 
-    public static Page create(int page) {
+    public static Page create(Integer page) {
         return new Page(page);
     }
 
-    public static Page createIfNeed(int page, int pageSize) {
-        if (page > 0 && pageSize > 0) {
+    public static Page createIfNeed(Integer page, Integer pageSize) {
+        if (page != null && page > 0 && pageSize != null && pageSize > 0) {
             return new Page(page).pageSize(pageSize);
         }
         return null;
     }
 
-    private Page(int page) {
-        this.page = page > 0 ? page : 1;
+    private Page(Integer page) {
+        this.page = page != null && page > 0 ? page : 1;
         this.count = true;
     }
 
@@ -66,8 +66,8 @@ public final class Page {
         return pageSize > 0 ? pageSize : DEFAULT_PAGE_SIZE;
     }
 
-    public Page pageSize(int pageSize) {
-        this.pageSize = pageSize > 0 ? pageSize : DEFAULT_PAGE_SIZE;
+    public Page pageSize(Integer pageSize) {
+        this.pageSize = pageSize != null && pageSize > 0 ? pageSize : DEFAULT_PAGE_SIZE;
         return this;
     }
 
