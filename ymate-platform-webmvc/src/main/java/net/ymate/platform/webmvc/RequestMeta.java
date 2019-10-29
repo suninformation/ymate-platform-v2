@@ -67,7 +67,7 @@ public class RequestMeta {
 
     private final Map<String, String> allowParams;
 
-    public RequestMeta(Class<?> targetClass, Method method) throws Exception {
+    public RequestMeta(String requestMappingPrefix, Class<?> targetClass, Method method) throws Exception {
         this.targetClass = targetClass;
         this.method = method;
         //
@@ -116,12 +116,14 @@ public class RequestMeta {
         if (respHeader != null) {
             Collections.addAll(this.responseHeaders, respHeader.value());
         }
-        //
+        // 优化自定义请求映射前缀逻辑, 包级请求映射前缀优先处理
         RequestMapping requestMapping = targetClass.getPackage().getAnnotation(RequestMapping.class);
-        String root = null;
+        String root;
         if (requestMapping != null) {
-            root = requestMapping.value();
+            root = doBuildRequestMapping(requestMappingPrefix, requestMapping);
             doSetAllowValues(requestMapping);
+        } else {
+            root = doCheckMappingSeparator(requestMappingPrefix);
         }
         requestMapping = targetClass.getAnnotation(RequestMapping.class);
         if (requestMapping != null) {

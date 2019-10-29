@@ -178,10 +178,15 @@ public final class WebMVC implements IModule, IWebMvc {
 
     @Override
     public boolean registerController(Class<?> targetClass) throws Exception {
+        return registerController(null, targetClass);
+    }
+
+    @Override
+    public boolean registerController(String requestMappingPrefix, Class<?> targetClass) throws Exception {
         boolean isValid = false;
         for (Method method : targetClass.getDeclaredMethods()) {
             if (method.isAnnotationPresent(RequestMapping.class) && method.getModifiers() == Modifier.PUBLIC) {
-                RequestMeta requestMeta = new RequestMeta(targetClass, method);
+                RequestMeta requestMeta = new RequestMeta(requestMappingPrefix, targetClass, method);
                 config.getRequestMappingParser().registerRequestMeta(requestMeta);
                 //
                 if (owner.isDevEnv() && LOG.isDebugEnabled()) {

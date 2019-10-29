@@ -51,6 +51,16 @@ public interface IWebMvc extends IInitialization<IApplication>, IDestroyable {
     /**
      * 注册并分析控制器
      *
+     * @param requestMappingPrefix 请求路径映射前缀
+     * @param targetClass          目标类型
+     * @return 返回是否有效注册
+     * @throws Exception 可能产生的异常
+     */
+    boolean registerController(String requestMappingPrefix, Class<?> targetClass) throws Exception;
+
+    /**
+     * 注册并分析控制器
+     *
      * @param targetClass 目标类型
      * @return 返回是否有效注册
      * @throws Exception 可能产生的异常
