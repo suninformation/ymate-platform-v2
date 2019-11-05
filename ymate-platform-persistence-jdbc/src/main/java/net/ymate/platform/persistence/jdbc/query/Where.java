@@ -116,8 +116,11 @@ public final class Where {
 
     public String toSQL() {
         StringBuilder whereBuilder = new StringBuilder();
-        if (cond != null && StringUtils.isNotBlank(cond.toString())) {
-            whereBuilder.append("WHERE ").append(cond.toString());
+        if (cond != null) {
+            String condStr = cond.toString();
+            if (StringUtils.isNotBlank(condStr)) {
+                whereBuilder.append("WHERE ").append(condStr);
+            }
         }
         if (groupBy != null) {
             whereBuilder.append(StringUtils.SPACE).append(groupBy);
