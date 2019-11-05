@@ -26,6 +26,7 @@ import net.ymate.platform.core.beans.annotation.*;
 import net.ymate.platform.core.beans.proxy.IProxy;
 import net.ymate.platform.core.beans.proxy.IProxyFactory;
 import net.ymate.platform.core.beans.proxy.IProxyFilter;
+import net.ymate.platform.core.module.IModule;
 import net.ymate.platform.core.support.IDestroyable;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -347,11 +348,19 @@ public class DefaultBeanFactory implements IBeanFactory {
             for (Field field : fields) {
                 Object injectObj = null;
                 if (field.isAnnotationPresent(Inject.class)) {
-                    if (field.isAnnotationPresent(By.class)) {
-                        By injectBy = field.getAnnotation(By.class);
-                        injectObj = this.getBean(injectBy.value());
+                    if (!field.getType().isInterface() && ClassUtils.isInterfaceOf(field.getType(), IModule.class)) {
+                        injectObj = owner.getModuleManager().getModule(field.getType().getName());
                     } else {
-                        injectObj = this.getBean(field.getType());
+                        if (field.isAnnotationPresent(By.class)) {
+                            By injectBy = field.getAnnotation(By.class);
+                            if (!injectBy.value().isInterface() && ClassUtils.isInterfaceOf(injectBy.value(), IModule.class)) {
+                                injectObj = owner.getModuleManager().getModule(injectBy.value().getName());
+                            } else {
+                                injectObj = this.getBean(injectBy.value());
+                            }
+                        } else {
+                            injectObj = this.getBean(field.getType());
+                        }
                     }
                 }
                 injectObj = tryBeanInjector(targetClass, field, injectObj);
