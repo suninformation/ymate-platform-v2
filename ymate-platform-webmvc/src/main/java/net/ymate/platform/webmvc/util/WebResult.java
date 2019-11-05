@@ -201,11 +201,11 @@ public final class WebResult {
         return this;
     }
 
-    public IView toJsonView() {
-        return toJsonView(null);
+    public IView toJSON() {
+        return toJSON(null);
     }
 
-    public IView toJsonView(String callback) {
+    public IView toJSON(String callback) {
         JSONObject jsonObj = new JSONObject();
         if (code != null) {
             jsonObj.put(Type.Const.PARAM_RET, code);
@@ -319,7 +319,7 @@ public final class WebResult {
             boolean flag = false;
             HttpServletRequest request = WebContext.getRequest();
             if (WebUtils.isJsonAccepted(request, paramFormat)) {
-                returnView = result.toJsonView(StringUtils.trimToNull(WebContext.getRequest().getParameter(paramCallback)));
+                returnView = result.toJSON(StringUtils.trimToNull(WebContext.getRequest().getParameter(paramCallback)));
                 flag = true;
             } else if (WebUtils.isXmlAccepted(request, paramFormat)) {
                 returnView = result.toXML(true);
