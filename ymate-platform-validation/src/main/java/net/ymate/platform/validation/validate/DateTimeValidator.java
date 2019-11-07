@@ -68,6 +68,9 @@ public final class DateTimeValidator implements IValidator {
      */
     public static Date parseDate(String paramValue, String pattern) {
         try {
+            if (StringUtils.isNumeric(paramValue)) {
+                return new Date(Long.valueOf(paramValue));
+            }
             return DateTimeUtils.parseDateTime(paramValue, StringUtils.defaultIfBlank(pattern, DateTimeUtils.YYYY_MM_DD_HH_MM_SS));
         } catch (ParseException e) {
             return null;
@@ -83,7 +86,7 @@ public final class DateTimeValidator implements IValidator {
      * @param single     仅接收单日期(即所选日期的00点00分00秒0毫秒到所选日期的23点59分59秒0毫秒)
      * @return 返回结果为0表示合法，为1表示日期字符串格式无效，为2表示时间段差值超过限定天数，为3表示开始日期时间大于结束日期时间
      */
-    private int validate(String paramName, String paramValue, String pattern, String separator, int maxDays, boolean single) {
+    public static int validate(String paramName, String paramValue, String pattern, String separator, int maxDays, boolean single) {
         int result = 0;
         pattern = StringUtils.defaultIfBlank(pattern, DateTimeUtils.YYYY_MM_DD_HH_MM_SS);
         if (single) {
@@ -136,7 +139,7 @@ public final class DateTimeValidator implements IValidator {
         if (paramValue != null) {
             VDateTime vDateTime = (VDateTime) context.getAnnotation();
             int result = 0;
-            String paramName = StringUtils.defaultIfBlank(vDateTime.value(), context.getParamName());
+            String paramName = StringUtils.defaultIfBlank(vDateTime.value(), context.getParamInfo().getName());
             if (context.getParamValue().getClass().isArray()) {
                 Object[] values = (Object[]) paramValue;
                 for (Object pValue : values) {
@@ -158,10 +161,10 @@ public final class DateTimeValidator implements IValidator {
                 switch (result) {
                     case 2:
                     case 3:
-                        builder.msg(I18N_MESSAGE_MAX_DAYS_KEY, I18N_MESSAGE_MAX_DAYS_DEFAULT_VALUE, builder.name());
+                        builder.msg(I18N_MESSAGE_MAX_DAYS_KEY, I18N_MESSAGE_MAX_DAYS_DEFAULT_VALUE, context.getParamInfo().getSafeLabelName());
                         break;
                     default:
-                        builder.msg(I18N_MESSAGE_KEY, I18N_MESSAGE_DEFAULT_VALUE, builder.name());
+                        builder.msg(I18N_MESSAGE_KEY, I18N_MESSAGE_DEFAULT_VALUE, context.getParamInfo().getSafeLabelName());
                 }
                 return builder.build();
             }

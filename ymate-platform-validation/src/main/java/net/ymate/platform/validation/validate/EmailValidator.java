@@ -62,12 +62,8 @@ public final class EmailValidator implements IValidator {
                 matched = !validate(BlurObject.bind(paramValue).toStringValue());
             }
             if (matched) {
-                ValidateResult.Builder builder = ValidateResult.builder(context).matched(true);
                 VEmail ann = (VEmail) context.getAnnotation();
-                if (StringUtils.isNotBlank(ann.msg())) {
-                    return builder.msg(ann.msg()).build();
-                }
-                return builder.msg(I18N_MESSAGE_KEY, I18N_MESSAGE_DEFAULT_VALUE, builder.name()).build();
+                return ValidateResult.builder(context, ann.msg(), I18N_MESSAGE_KEY, I18N_MESSAGE_DEFAULT_VALUE).matched(true).build();
             }
         }
         return null;

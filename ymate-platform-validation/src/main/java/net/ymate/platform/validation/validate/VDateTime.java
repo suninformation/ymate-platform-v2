@@ -21,7 +21,7 @@ import org.apache.commons.lang3.StringUtils;
 import java.lang.annotation.*;
 
 /**
- * 日期参数验证注解
+ * 日期字符串参数验证注解
  *
  * @author 刘镇 (suninformation@163.com) on 15/5/25 下午1:10
  */

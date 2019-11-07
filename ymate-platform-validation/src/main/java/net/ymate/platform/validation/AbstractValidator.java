@@ -33,16 +33,18 @@ public abstract class AbstractValidator implements IValidator {
      */
     protected String getParamValue(Object paramValue, boolean trim) {
         String pValue = null;
-        if (paramValue.getClass().isArray()) {
-            Object[] values = (Object[]) paramValue;
-            if (values.length > 0) {
-                pValue = BlurObject.bind(values[0]).toStringValue();
+        if (paramValue != null) {
+            if (paramValue.getClass().isArray()) {
+                Object[] values = (Object[]) paramValue;
+                if (values.length > 0) {
+                    pValue = BlurObject.bind(values[0]).toStringValue();
+                }
+            } else {
+                pValue = BlurObject.bind(paramValue).toStringValue();
             }
-        } else {
-            pValue = BlurObject.bind(paramValue).toStringValue();
-        }
-        if (trim) {
-            return StringUtils.trimToEmpty(pValue);
+            if (trim) {
+                return StringUtils.trimToEmpty(pValue);
+            }
         }
         return pValue;
     }

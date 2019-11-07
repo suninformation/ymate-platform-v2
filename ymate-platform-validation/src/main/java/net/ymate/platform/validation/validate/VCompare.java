@@ -15,6 +15,7 @@
  */
 package net.ymate.platform.validation.validate;
 
+import net.ymate.platform.validation.annotation.VField;
 import org.apache.commons.lang3.StringUtils;
 
 import java.lang.annotation.*;
@@ -75,9 +76,10 @@ public @interface VCompare {
     String with();
 
     /**
-     * @return 与之比较的参数标签名称
+     * @return 与之比较的参数及标签名称
+     * @since 2.1.0 调整方法数据为VField注解类型
      */
-    String withLabel() default StringUtils.EMPTY;
+    VField withLabel() default @VField;
 
     /**
      * @return 自定义验证消息

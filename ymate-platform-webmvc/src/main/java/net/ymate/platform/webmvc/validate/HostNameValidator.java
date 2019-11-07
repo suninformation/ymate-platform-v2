@@ -77,12 +77,7 @@ public class HostNameValidator implements IValidator {
                 throw new Error(RuntimeUtils.unwrapThrow(e));
             }
             if (matched) {
-                ValidateResult.Builder builder = ValidateResult.builder(context).matched(true);
-                if (StringUtils.isNotBlank(hostNameAnn.msg())) {
-                    builder.msg(hostNameAnn.msg());
-                } else {
-                    builder.msg(I18N_MESSAGE_KEY, I18N_MESSAGE_DEFAULT_VALUE, builder.name());
-                }
+                ValidateResult.Builder builder = ValidateResult.builder(context, hostNameAnn.msg(), I18N_MESSAGE_KEY, I18N_MESSAGE_DEFAULT_VALUE).matched(true);
                 if (hostNameAnn.httpStatus() > 0) {
                     throw new ValidationResultException(builder.build().getMsg(), hostNameAnn.httpStatus());
                 }

@@ -93,7 +93,7 @@ public final class RSADataValidator extends AbstractValidator {
                 }
                 try {
                     String originalValue = decryptStr(keyProvider, value);
-                    ValidateContext.getLocalAttributes().put("original_" + StringUtils.defaultIfBlank(ann.value(), context.getParamName()), originalValue);
+                    ValidateContext.getLocalAttributes().put("original_" + StringUtils.defaultIfBlank(ann.value(), context.getParamInfo().getName()), originalValue);
                 } catch (Exception e) {
                     matched = true;
                 }
@@ -101,11 +101,7 @@ public final class RSADataValidator extends AbstractValidator {
                 matched = true;
             }
             if (matched) {
-                ValidateResult.Builder builder = ValidateResult.builder(context).matched(true);
-                if (StringUtils.isNotBlank(ann.msg())) {
-                    return builder.msg(ann.msg()).build();
-                }
-                return builder.msg(I18N_MESSAGE_KEY, I18N_MESSAGE_DEFAULT_VALUE, builder.name()).build();
+                return ValidateResult.builder(context, ann.msg(), I18N_MESSAGE_KEY, I18N_MESSAGE_DEFAULT_VALUE).matched(true).build();
             }
         }
         return null;

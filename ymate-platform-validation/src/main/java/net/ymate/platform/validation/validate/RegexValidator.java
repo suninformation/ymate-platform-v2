@@ -67,11 +67,7 @@ public final class RegexValidator implements IValidator {
             VRegex ann = (VRegex) context.getAnnotation();
             boolean matched = validate(ann.regex(), paramValue);
             if (matched) {
-                ValidateResult.Builder builder = ValidateResult.builder(context).matched(true);
-                if (StringUtils.isNotBlank(ann.msg())) {
-                    return builder.msg(ann.msg()).build();
-                }
-                return builder.msg(I18N_MESSAGE_KEY, I18N_MESSAGE_DEFAULT_VALUE, builder.name()).build();
+                return ValidateResult.builder(context, ann.msg(), I18N_MESSAGE_KEY, I18N_MESSAGE_DEFAULT_VALUE).matched(true).build();
             }
         }
         return null;

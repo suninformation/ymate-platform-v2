@@ -22,7 +22,6 @@ import net.ymate.platform.validation.ValidateContext;
 import net.ymate.platform.validation.ValidateResult;
 import net.ymate.platform.webmvc.context.WebContext;
 import net.ymate.platform.webmvc.util.TokenProcessHelper;
-import org.apache.commons.lang3.StringUtils;
 
 /**
  * @author 刘镇 (suninformation@163.com) on 16/11/27 下午12:17
@@ -52,12 +51,7 @@ public class TokenValidator extends AbstractValidator {
             matched = validate(tokenAnn.name(), tokenValue, tokenAnn.reset());
         }
         if (matched) {
-            ValidateResult.Builder builder = ValidateResult.builder(context).matched(true);
-            if (StringUtils.isNotBlank(tokenAnn.msg())) {
-                return builder.msg(tokenAnn.msg()).build();
-            } else {
-                return builder.msg(I18N_MESSAGE_KEY, I18N_MESSAGE_DEFAULT_VALUE, builder.name()).build();
-            }
+            return ValidateResult.builder(context, tokenAnn.msg(), I18N_MESSAGE_KEY, I18N_MESSAGE_DEFAULT_VALUE).matched(true).build();
         }
         return null;
     }

@@ -46,8 +46,8 @@ public final class RequiredValidator implements IValidator {
         boolean result;
         if (paramValue == null) {
             result = true;
-        } else if (!paramValue.getClass().isArray() && StringUtils.isBlank(BlurObject.bind(paramValue).toStringValue())) {
-            result = true;
+        } else if (!paramValue.getClass().isArray()) {
+            result = StringUtils.isBlank(BlurObject.bind(paramValue).toStringValue());
         } else {
             result = ArrayUtils.isEmpty((Object[]) paramValue);
         }
@@ -58,12 +58,8 @@ public final class RequiredValidator implements IValidator {
     public ValidateResult validate(ValidateContext context) {
         boolean matched = validate(context.getParamValue());
         if (matched) {
-            ValidateResult.Builder builder = ValidateResult.builder(context).matched(true);
             VRequired ann = (VRequired) context.getAnnotation();
-            if (StringUtils.isNotBlank(ann.msg())) {
-                return builder.msg(ann.msg()).build();
-            }
-            return builder.msg(I18N_MESSAGE_KEY, I18N_MESSAGE_DEFAULT_VALUE, builder.name()).build();
+            return ValidateResult.builder(context, ann.msg(), I18N_MESSAGE_KEY, I18N_MESSAGE_DEFAULT_VALUE).matched(true).build();
         }
         return null;
     }

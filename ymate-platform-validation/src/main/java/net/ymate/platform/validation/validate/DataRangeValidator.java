@@ -87,11 +87,7 @@ public final class DataRangeValidator implements IValidator {
                 }
             }
             if (matched) {
-                ValidateResult.Builder builder = ValidateResult.builder(context).matched(true);
-                if (StringUtils.isNotBlank(vDataRange.msg())) {
-                    return builder.msg(vDataRange.msg()).build();
-                }
-                return builder.msg(I18N_MESSAGE_KEY, I18N_MESSAGE_DEFAULT_VALUE, builder.name()).build();
+                return ValidateResult.builder(context, vDataRange.msg(), I18N_MESSAGE_KEY, I18N_MESSAGE_DEFAULT_VALUE).matched(true).build();
             }
         }
         return null;

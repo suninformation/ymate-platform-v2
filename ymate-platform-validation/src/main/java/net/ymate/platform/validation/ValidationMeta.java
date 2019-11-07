@@ -43,19 +43,15 @@ public final class ValidationMeta implements Serializable {
 
     private final Class<?> targetClass;
 
+    /**
+     * 类成员参数描述
+     */
     private final Map<String, ParamInfo> fields = new LinkedHashMap<>();
 
-    private final Map<String, String> labels = new LinkedHashMap<>();
-
-    private final Map<Method, Map<String, String>> methodLabels = new LinkedHashMap<>();
-
-    private final Map<String, String> messages = new LinkedHashMap<>();
-
-    private final Map<Method, Map<String, String>> methodMessages = new LinkedHashMap<>();
-
-    private final Map<Method, Validation> methods = new LinkedHashMap<>();
-
-    private final Map<Method, Map<String, ParamInfo>> methodParams = new LinkedHashMap<>();
+    /**
+     * 方法参数描述
+     */
+    private final Map<Method, MethodInfo> methods = new LinkedHashMap<>();
 
     public ValidationMeta(IValidation validation, Class<?> targetClass) {
         this.validation = validation;
@@ -69,47 +65,38 @@ public final class ValidationMeta implements Serializable {
         }
         this.targetClass = targetClass;
         // 处理targetClass所有Field成员属性
-        fields.putAll(parseClassFields(null, targetClass, labels, messages));
+        fields.putAll(parseClassFields(null, targetClass));
         // 处理targetClass所有Method方法
         for (Method method : targetClass.getDeclaredMethods()) {
-            Map<String, String> paramLabels = new LinkedHashMap<>();
-            methodLabels.put(method, paramLabels);
-            Map<String, String> paramMessages = new LinkedHashMap<>();
-            methodMessages.put(method, paramMessages);
+            MethodInfo methodInfo = new MethodInfo();
             // 处理每个方法上有@Validation的注解
-            Validation methodValidation = method.getAnnotation(Validation.class);
-            if (methodValidation != null) {
-                methods.put(method, methodValidation);
-            }
+            methodInfo.setValidation(method.getAnnotation(Validation.class));
             // 处理每个方法参数上有关验证的注解
-            Map<String, ParamInfo> paramAnnotations = new LinkedHashMap<>();
             for (Parameter parameter : method.getParameters()) {
+                ParamInfo paramInfo = new ParamInfo();
+                paramInfo.setName(parameter.getName());
                 List<Annotation> tmpAnnList = new ArrayList<>();
-                String paramName = parameter.getName();
                 // 尝试获取自定义的参数别名
                 VField vField = parameter.getAnnotation(VField.class);
                 if (vField != null) {
-                    if (StringUtils.isNotBlank(vField.name())) {
-                        paramName = vField.name();
-                    }
-                    if (StringUtils.isNotBlank(vField.label())) {
-                        paramLabels.put(paramName, vField.label());
-                    }
+                    paramInfo.setFieldName(StringUtils.trimToNull(vField.name()));
+                    paramInfo.setLabel(StringUtils.trimToNull(vField.label()));
                 }
                 if (parameter.isAnnotationPresent(VModel.class)) {
                     // 递归处理@VModel
-                    paramAnnotations.putAll(parseClassFields(paramName, parameter.getType(), paramLabels, paramMessages));
+                    methodInfo.getParams().putAll(parseClassFields(paramInfo.getName(), parameter.getType()));
                 } else {
                     for (Annotation annotation : parameter.getAnnotations()) {
                         parseAnnotation(annotation, tmpAnnList);
                     }
                 }
                 if (!tmpAnnList.isEmpty()) {
-                    paramAnnotations.put(paramName, new ParamInfo(paramName, parameter.getType(), tmpAnnList.toArray(new Annotation[0])));
+                    paramInfo.setAnnotations(tmpAnnList.toArray(new Annotation[0]));
+                    methodInfo.getParams().put(paramInfo.getName(), paramInfo);
                 }
             }
-            if (!paramAnnotations.isEmpty()) {
-                methodParams.put(method, paramAnnotations);
+            if (!methodInfo.getParams().isEmpty()) {
+                methods.put(method, methodInfo);
             }
         }
     }
@@ -117,51 +104,42 @@ public final class ValidationMeta implements Serializable {
     /**
      * @param parentFieldName 父类属性名称(用于递归)
      * @param targetClass     目标类
-     * @param paramLabels     自定义参数标签名称映射
-     * @param paramMessages   自定义验证消息映射
      * @return 处理targetClass所有Field成员属性
      */
-    public final Map<String, ParamInfo> parseClassFields(String parentFieldName, Class<?> targetClass, Map<String, String> paramLabels, Map<String, String> paramMessages) {
+    public final Map<String, ParamInfo> parseClassFields(String parentFieldName, Class<?> targetClass) {
         Map<String, ParamInfo> returnValues = new LinkedHashMap<>();
         ClassUtils.BeanWrapper<?> wrapper = ClassUtils.wrapper(targetClass);
         if (wrapper != null) {
             wrapper.getFields().forEach((field) -> {
-                String fieldName = field.getName();
+                ParamInfo paramInfo = new ParamInfo();
+                paramInfo.setName(buildFieldName(parentFieldName, field.getName()));
                 // 尝试获取自定义的参数别名
                 VField vField = field.getAnnotation(VField.class);
                 if (vField != null) {
                     if (StringUtils.isNotBlank(vField.name())) {
-                        fieldName = vField.name();
+                        paramInfo.setFieldName(vField.name());
                     }
                     if (StringUtils.isNotBlank(vField.label())) {
-                        labels.put(fieldName, vField.label());
-                        paramLabels.put(buildFieldName(parentFieldName, fieldName), vField.label());
+                        paramInfo.setLabel(vField.label());
                     }
                 }
                 List<Annotation> annotations = new ArrayList<>();
                 if (field.isAnnotationPresent(VModel.class)) {
-                    // 拼装带层级关系的Field名称
-                    String fieldNamePr = buildFieldName(parentFieldName, fieldName);
-                    if (vField != null && StringUtils.isNotBlank(vField.label())) {
-                        paramLabels.put(fieldNamePr, vField.label());
-                    }
                     // 递归处理@VModel
-                    returnValues.putAll(parseClassFields(fieldNamePr, field.getType(), paramLabels, paramMessages));
+                    returnValues.putAll(parseClassFields(paramInfo.getName(), field.getType()));
                 } else {
                     // 尝试获取自定义消息内容
                     VMsg vMsg = field.getAnnotation(VMsg.class);
                     if (vMsg != null && StringUtils.isNotBlank(vMsg.value())) {
-                        messages.put(fieldName, vMsg.value());
-                        paramMessages.put(buildFieldName(parentFieldName, fieldName), vMsg.value());
+                        paramInfo.setMessage(vMsg.value());
                     }
                     for (Annotation annotation : field.getAnnotations()) {
                         parseAnnotation(annotation, annotations);
                     }
                 }
                 if (!annotations.isEmpty()) {
-                    // 拼装带层级关系的Field名称
-                    String fieldNamePr = buildFieldName(parentFieldName, fieldName);
-                    returnValues.put(fieldNamePr, new ParamInfo(fieldNamePr, field.getType(), annotations.toArray(new Annotation[0])));
+                    paramInfo.setAnnotations(annotations.toArray(new Annotation[0]));
+                    returnValues.put(paramInfo.getName(), paramInfo);
                 }
             });
         }
@@ -206,65 +184,120 @@ public final class ValidationMeta implements Serializable {
         return targetClass;
     }
 
-    public Set<String> getFieldNames() {
-        return Collections.unmodifiableSet(fields.keySet());
+    public Map<String, ParamInfo> getFields() {
+        return Collections.unmodifiableMap(fields);
     }
 
-    public String getFieldLabel(String fieldName) {
-        return labels.get(fieldName);
-    }
-
-    public String getFieldLabel(Method method, String fieldName) {
-        return methodLabels.get(method).get(fieldName);
-    }
-
-    public String getFieldMessage(String fieldName) {
-        return messages.get(fieldName);
-    }
-
-    public String getFieldMessage(Method method, String fieldName) {
-        return methodMessages.get(method).get(fieldName);
-    }
-
-    public ParamInfo getFieldAnnotations(String fieldName) {
-        return fields.get(fieldName);
-    }
-
-    public Validation getMethodValidation(Method method) {
+    public MethodInfo getMethod(Method method) {
         return methods.get(method);
     }
 
-    public Map<String, ParamInfo> getMethodParamAnnotations(Method method) {
-        if (methodParams.containsKey(method)) {
-            return Collections.unmodifiableMap(methodParams.get(method));
+    public final class MethodInfo {
+
+        private String name;
+
+        private Map<String, ParamInfo> params = new LinkedHashMap<>();
+
+        private Validation validation;
+
+        public String getName() {
+            return name;
         }
-        return Collections.emptyMap();
+
+        public void setName(String name) {
+            this.name = name;
+        }
+
+        public Map<String, ParamInfo> getParams() {
+            return params;
+        }
+
+        public void setParams(Map<String, ParamInfo> params) {
+            this.params = params;
+        }
+
+        public Validation getValidation() {
+            return validation;
+        }
+
+        public void setValidation(Validation validation) {
+            this.validation = validation;
+        }
     }
 
     public final class ParamInfo {
 
-        private final String name;
+        private String name;
 
-        private final Class<?> type;
+        /**
+         * 业务参数名(来自VField)
+         */
+        private String fieldName;
 
-        private final Annotation[] annotations;
+        /**
+         * 自定义消息(来自VMsg)
+         */
+        private String message;
 
-        ParamInfo(String name, Class<?> type, Annotation[] annotations) {
-            this.name = name;
-            this.type = type;
-            this.annotations = annotations;
-        }
+        /**
+         * 业务参数显示名称(来自VField)
+         */
+        private String label;
+
+        private Class<?> type;
+
+        private Annotation[] annotations;
 
         public String getName() {
             return name;
+        }
+
+        public void setName(String name) {
+            this.name = name;
+        }
+
+        public String getFieldName() {
+            return fieldName;
+        }
+
+        public void setFieldName(String fieldName) {
+            this.fieldName = fieldName;
+        }
+
+        public String getMessage() {
+            return message;
+        }
+
+        public void setMessage(String message) {
+            this.message = message;
+        }
+
+        public String getLabel() {
+            return label;
+        }
+
+        public void setLabel(String label) {
+            this.label = label;
         }
 
         public Class<?> getType() {
             return type;
         }
 
+        public void setType(Class<?> type) {
+            this.type = type;
+        }
+
         public Annotation[] getAnnotations() {
             return annotations;
+        }
+
+        public void setAnnotations(Annotation[] annotations) {
+            this.annotations = annotations;
+        }
+
+        public String getSafeLabelName() {
+            return StringUtils.defaultIfBlank(StringUtils.defaultIfBlank(label, fieldName), name);
         }
     }
 }

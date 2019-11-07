@@ -59,6 +59,9 @@ public final class CompareValidator extends AbstractValidator {
     public ValidateResult validate(ValidateContext context) {
         Object paramValue = context.getParamValue();
         if (paramValue != null) {
+            if (paramValue.getClass().isArray()) {
+                throw new UnsupportedOperationException("Array parameters are not supported by the CompareValidator.");
+            }
             VCompare vCompare = (VCompare) context.getAnnotation();
             boolean matched = false;
             //
@@ -66,27 +69,31 @@ public final class CompareValidator extends AbstractValidator {
             String compareValueStr = getParamValue(context.getParamValue(vCompare.with()), true);
             //
             if (StringUtils.isNumeric(paramValueStr)) {
-                int compResult = new BigDecimal(paramValueStr).compareTo(new BigDecimal(compareValueStr));
-                switch (vCompare.cond()) {
-                    case EQ:
-                        matched = compResult != 0;
-                        break;
-                    case NOT_EQ:
-                        matched = compResult == 0;
-                        break;
-                    case GT:
-                        matched = compResult <= 0;
-                        break;
-                    case LT:
-                        matched = compResult >= 0;
-                        break;
-                    case GT_EQ:
-                        matched = compResult < 0;
-                        break;
-                    case LT_EQ:
-                        matched = compResult > 0;
-                        break;
-                    default:
+                if (StringUtils.isNumeric(compareValueStr)) {
+                    int compResult = new BigDecimal(paramValueStr).compareTo(new BigDecimal(compareValueStr));
+                    switch (vCompare.cond()) {
+                        case EQ:
+                            matched = compResult != 0;
+                            break;
+                        case NOT_EQ:
+                            matched = compResult == 0;
+                            break;
+                        case GT:
+                            matched = compResult <= 0;
+                            break;
+                        case LT:
+                            matched = compResult >= 0;
+                            break;
+                        case GT_EQ:
+                            matched = compResult < 0;
+                            break;
+                        case LT_EQ:
+                            matched = compResult > 0;
+                            break;
+                        default:
+                    }
+                } else {
+                    matched = true;
                 }
             } else {
                 switch (vCompare.cond()) {
@@ -97,10 +104,14 @@ public final class CompareValidator extends AbstractValidator {
                         matched = StringUtils.equals(paramValueStr, compareValueStr);
                         break;
                     default:
+                        throw new UnsupportedOperationException("Non numeric type parameters only support equal or unequal operations.");
                 }
             }
-            if (!matched) {
-                String compParamName = StringUtils.defaultIfBlank(vCompare.withLabel(), vCompare.with());
+            if (matched) {
+                String compParamName = StringUtils.defaultIfBlank(vCompare.withLabel().label(), vCompare.withLabel().name());
+                if (StringUtils.isBlank(compParamName)) {
+                    compParamName = vCompare.with();
+                }
                 compParamName = ValidateResult.formatMessage(context, compParamName, compParamName);
                 //
                 ValidateResult.Builder builder = ValidateResult.builder(context).matched(true);
@@ -109,22 +120,22 @@ public final class CompareValidator extends AbstractValidator {
                 }
                 switch (vCompare.cond()) {
                     case NOT_EQ:
-                        builder.msg(I18N_MESSAGE_NOT_EQ_KEY, I18N_MESSAGE_NOT_EQ_DEFAULT_VALUE, builder.name(), compParamName);
+                        builder.msg(I18N_MESSAGE_NOT_EQ_KEY, I18N_MESSAGE_NOT_EQ_DEFAULT_VALUE, context.getParamInfo().getSafeLabelName(), compParamName);
                         break;
                     case GT:
-                        builder.msg(I18N_MESSAGE_GT_KEY, I18N_MESSAGE_GT_DEFAULT_VALUE, builder.name(), compParamName);
+                        builder.msg(I18N_MESSAGE_GT_KEY, I18N_MESSAGE_GT_DEFAULT_VALUE, context.getParamInfo().getSafeLabelName(), compParamName);
                         break;
                     case LT:
-                        builder.msg(I18N_MESSAGE_LT_KEY, I18N_MESSAGE_LT_DEFAULT_VALUE, builder.name(), compParamName);
+                        builder.msg(I18N_MESSAGE_LT_KEY, I18N_MESSAGE_LT_DEFAULT_VALUE, context.getParamInfo().getSafeLabelName(), compParamName);
                         break;
                     case GT_EQ:
-                        builder.msg(I18N_MESSAGE_GT_EQ_KEY, I18N_MESSAGE_GT_EQ_DEFAULT_VALUE, builder.name(), compParamName);
+                        builder.msg(I18N_MESSAGE_GT_EQ_KEY, I18N_MESSAGE_GT_EQ_DEFAULT_VALUE, context.getParamInfo().getSafeLabelName(), compParamName);
                         break;
                     case LT_EQ:
-                        builder.msg(I18N_MESSAGE_LT_EQ_KEY, I18N_MESSAGE_LT_EQ_DEFAULT_VALUE, builder.name(), compParamName);
+                        builder.msg(I18N_MESSAGE_LT_EQ_KEY, I18N_MESSAGE_LT_EQ_DEFAULT_VALUE, context.getParamInfo().getSafeLabelName(), compParamName);
                         break;
                     default:
-                        builder.msg(I18N_MESSAGE_EQ_KEY, I18N_MESSAGE_EQ_DEFAULT_VALUE, builder.name(), compParamName);
+                        builder.msg(I18N_MESSAGE_EQ_KEY, I18N_MESSAGE_EQ_DEFAULT_VALUE, context.getParamInfo().getSafeLabelName(), compParamName);
                 }
                 return builder.build();
             }

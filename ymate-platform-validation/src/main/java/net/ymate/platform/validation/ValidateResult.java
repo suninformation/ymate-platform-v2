@@ -52,8 +52,11 @@ public final class ValidateResult implements Serializable {
         return msg;
     }
 
-    public static String formatParamName(ValidateContext context) {
-        String pName = StringUtils.defaultIfBlank(context.getParamLabel(), context.getParamName());
+    public static String formatParamName(ValidateContext context, String customName) {
+        String pName = customName;
+        if (StringUtils.isBlank(customName)) {
+            pName = StringUtils.defaultIfBlank(context.getParamInfo().getFieldName(), context.getParamInfo().getName());
+        }
         return formatMessage(context, pName, pName);
     }
 
@@ -74,6 +77,15 @@ public final class ValidateResult implements Serializable {
         return new Builder(context);
     }
 
+    public static Builder builder(ValidateContext context, String msg, String i18nKey, String defaultValue) {
+        Builder builder = new Builder(context);
+        msg = StringUtils.defaultIfBlank(msg, context.getParamInfo().getMessage());
+        if (StringUtils.isNotBlank(msg)) {
+            return builder.msg(msg);
+        }
+        return builder.msg(i18nKey, defaultValue, context.getParamInfo().getSafeLabelName());
+    }
+
     public static class Builder {
 
         private final ValidateContext context;
@@ -82,7 +94,7 @@ public final class ValidateResult implements Serializable {
 
         public Builder(ValidateContext context) {
             this.context = context;
-            target.name = formatParamName(context);
+            target.name = formatParamName(context, null);
         }
 
         public boolean matched() {
@@ -99,7 +111,7 @@ public final class ValidateResult implements Serializable {
         }
 
         public Builder name(String name) {
-            target.name = name;
+            target.name = formatParamName(context, name);
             return this;
         }
 
@@ -110,8 +122,9 @@ public final class ValidateResult implements Serializable {
 
         public Builder msg(String i18nKey, String defaultValue, Object... args) {
             // 若自定义消息不存在则加载i18n配置
-            if (StringUtils.isNotBlank(context.getParamMessage())) {
-                target.msg = formatMessage(context, context.getParamMessage(), context.getParamMessage(), args);
+            String vMsg = context.getParamInfo().getMessage();
+            if (StringUtils.isNotBlank(vMsg)) {
+                target.msg = formatMessage(context, vMsg, vMsg, args);
             } else if (StringUtils.isNotBlank(i18nKey)) {
                 target.msg = formatMessage(context, i18nKey, defaultValue, args);
             }

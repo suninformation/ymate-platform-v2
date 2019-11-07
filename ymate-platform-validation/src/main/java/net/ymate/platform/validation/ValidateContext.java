@@ -43,24 +43,15 @@ public class ValidateContext extends AbstractContext {
 
     private final Annotation annotation;
 
-    private final String paramName;
-
-    private final Class<?> paramType;
-
-    private final String paramLabel;
-
-    private final String paramMessage;
+    private final ValidationMeta.ParamInfo paramInfo;
 
     private final Map<String, Object> paramValues;
 
-    public ValidateContext(IApplication owner, Annotation annotation, String paramName, Class<?> paramType, String paramLabel, String paramMessage, Map<String, Object> paramValues, Map<String, String> contextParams, String resourceName) {
+    public ValidateContext(IApplication owner, Annotation annotation, ValidationMeta.ParamInfo paramInfo, Map<String, Object> paramValues, Map<String, String> contextParams, String resourceName) {
         super(owner, contextParams);
         //
         this.annotation = annotation;
-        this.paramName = paramName;
-        this.paramType = paramType;
-        this.paramLabel = paramLabel;
-        this.paramMessage = paramMessage;
+        this.paramInfo = paramInfo;
         this.paramValues = paramValues;
         //
         this.resourceName = resourceName;
@@ -74,24 +65,12 @@ public class ValidateContext extends AbstractContext {
         return annotation;
     }
 
-    public String getParamName() {
-        return paramName;
-    }
-
-    public Class<?> getParamType() {
-        return paramType;
-    }
-
-    public String getParamLabel() {
-        return paramLabel;
-    }
-
-    public String getParamMessage() {
-        return paramMessage;
+    public ValidationMeta.ParamInfo getParamInfo() {
+        return paramInfo;
     }
 
     public Object getParamValue() {
-        return getParamValue(this.paramName);
+        return getParamValue(paramInfo.getName());
     }
 
     public Object getParamValue(String paramName) {
@@ -114,7 +93,7 @@ public class ValidateContext extends AbstractContext {
                     targetValue = null;
                 } finally {
                     // 上述过程无论取值是否为空都将被缓存, 防止多次执行
-                    this.paramValues.put(this.paramName, targetValue);
+                    this.paramValues.put(paramInfo.getName(), targetValue);
                 }
             }
         }
