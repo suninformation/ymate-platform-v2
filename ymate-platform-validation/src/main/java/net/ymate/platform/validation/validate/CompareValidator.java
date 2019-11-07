@@ -40,45 +40,50 @@ public class CompareValidator extends AbstractValidator {
         Object _paramValue = context.getParamValue();
         if (_paramValue != null) {
             VCompare _vCompare = (VCompare) context.getAnnotation();
-            boolean _matched = true;
+            boolean _matched = false;
             String _paramValueStr = getParamValue(_paramValue);
             String _compareValueStr = getParamValue(context.getParamValue(_vCompare.with()));
             //
             if (StringUtils.isNumeric(_paramValueStr)) {
-                int _compValue = new BigDecimal(_paramValueStr).compareTo(new BigDecimal(_compareValueStr));
-                switch (_vCompare.cond()) {
-                    case EQ:
-                        _matched = _compValue == 0;
-                        break;
-                    case NOT_EQ:
-                        _matched = _compValue != 0;
-                        break;
-                    case GT:
-                        _matched = _compValue > 0;
-                        break;
-                    case LT:
-                        _matched = _compValue < 0;
-                        break;
-                    case GT_EQ:
-                        _matched = _compValue >= 0;
-                        break;
-                    case LT_EQ:
-                        _matched = _compValue <= 0;
-                        break;
-                    default:
+                if (StringUtils.isNumeric(StringUtils.trimToNull(_compareValueStr))) {
+                    int _compValue = new BigDecimal(_paramValueStr).compareTo(new BigDecimal(_compareValueStr));
+                    switch (_vCompare.cond()) {
+                        case EQ:
+                            _matched = _compValue != 0;
+                            break;
+                        case NOT_EQ:
+                            _matched = _compValue == 0;
+                            break;
+                        case GT:
+                            _matched = _compValue <= 0;
+                            break;
+                        case LT:
+                            _matched = _compValue >= 0;
+                            break;
+                        case GT_EQ:
+                            _matched = _compValue < 0;
+                            break;
+                        case LT_EQ:
+                            _matched = _compValue > 0;
+                            break;
+                        default:
+                    }
+                } else {
+                    _matched = true;
                 }
             } else {
                 switch (_vCompare.cond()) {
                     case EQ:
-                        _matched = StringUtils.equals(_paramValueStr, _compareValueStr);
-                        break;
-                    case NOT_EQ:
                         _matched = !StringUtils.equals(_paramValueStr, _compareValueStr);
                         break;
+                    case NOT_EQ:
+                        _matched = StringUtils.equals(_paramValueStr, _compareValueStr);
+                        break;
                     default:
+                        throw new UnsupportedOperationException("Non numeric type parameters only support equal or unequal operations.");
                 }
             }
-            if (!_matched) {
+            if (_matched) {
                 String _pName = StringUtils.defaultIfBlank(context.getParamLabel(), context.getParamName());
                 _pName = __doGetI18nFormatMessage(context, _pName, _pName);
 
@@ -118,13 +123,15 @@ public class CompareValidator extends AbstractValidator {
 
     private String getParamValue(Object paramValue) {
         String _pValue = null;
-        if (paramValue.getClass().isArray()) {
-            Object[] _objArr = (Object[]) paramValue;
-            if (_objArr.length > 0) {
-                _pValue = BlurObject.bind(_objArr[0]).toStringValue();
+        if (paramValue != null) {
+            if (paramValue.getClass().isArray()) {
+                Object[] _objArr = (Object[]) paramValue;
+                if (_objArr.length > 0) {
+                    _pValue = BlurObject.bind(_objArr[0]).toStringValue();
+                }
+            } else {
+                _pValue = BlurObject.bind(paramValue).toStringValue();
             }
-        } else {
-            _pValue = BlurObject.bind(paramValue).toStringValue();
         }
         return StringUtils.trimToEmpty(_pValue);
     }

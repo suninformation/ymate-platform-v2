@@ -44,6 +44,8 @@ public class ValidationMeta {
 
     private Map<String, Annotation[]> __fields;
 
+    private Map<String, String> __fieldNames;
+
     private Map<String, String> __labels;
 
     private Map<Method, Map<String, String>> __methodLabels;
@@ -64,6 +66,7 @@ public class ValidationMeta {
         }
         __targetClass = targetClass;
         __fields = new LinkedHashMap<String, Annotation[]>();
+        __fieldNames = new LinkedHashMap<String, String>();
         __labels = new LinkedHashMap<String, String>();
         __methodLabels = new LinkedHashMap<Method, Map<String, String>>();
         __methods = new LinkedHashMap<Method, Validation>();
@@ -94,7 +97,7 @@ public class ValidationMeta {
                         if (_vField instanceof VField) {
                             VField _vF = (VField) _vField;
                             if (StringUtils.isNotBlank(_vF.name())) {
-                                _paramName = ((VField) _vField).name();
+                                __fieldNames.put(_paramName, ((VField) _vField).name());
                             }
                             if (StringUtils.isNotBlank(_vF.label())) {
                                 _paramLabels.put(_paramName, _vF.label());
@@ -140,7 +143,7 @@ public class ValidationMeta {
                 if (_field.isAnnotationPresent(VField.class)) {
                     _vField = _field.getAnnotation(VField.class);
                     if (StringUtils.isNotBlank(_vField.name())) {
-                        _fieldName = _vField.name();
+                        __fieldNames.put(__doGetFieldName(parentFieldName, _fieldName), _vField.name());
                     }
                     if (StringUtils.isNotBlank(_vField.label())) {
                         __labels.put(_fieldName, _vField.label());
@@ -206,6 +209,10 @@ public class ValidationMeta {
 
     public String getFieldLabel(String fieldName) {
         return __labels.get(fieldName);
+    }
+
+    public String getFieldName(String fieldName) {
+        return __fieldNames.get(fieldName);
     }
 
     public String getFieldLabel(Method method, String fieldName) {

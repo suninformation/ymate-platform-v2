@@ -133,7 +133,7 @@ public class Validations implements IModule, IValidation {
         for (String _fieldName : _meta.getFieldNames()) {
             ValidateResult _result = __doValidate(_meta.getFieldAnnotations(_fieldName), _fieldName, _meta.getFieldLabel(_fieldName), paramValues, _contextParams, _meta.getResourcesName());
             if (_result != null) {
-                _returnValues.put(_fieldName, _result);
+                _returnValues.put(StringUtils.defaultIfBlank(_meta.getFieldName(_fieldName), _fieldName), _result);
                 if (_meta.getMode() == Validation.MODE.NORMAL) {
                     break;
                 }
@@ -155,7 +155,7 @@ public class Validations implements IModule, IValidation {
         for (Map.Entry<String, Annotation[]> _entry : _paramAnnoMap.entrySet()) {
             ValidateResult _result = __doValidate(_entry.getValue(), _entry.getKey(), _meta.getFieldLabel(targetMethod, _entry.getKey()), paramValues, _contextParams, _resourceName);
             if (_result != null) {
-                _returnValues.put(_entry.getKey(), _result);
+                _returnValues.put(StringUtils.defaultIfBlank(_meta.getFieldName(_entry.getKey()), _entry.getKey()), _result);
                 //
                 if (_mode == Validation.MODE.NORMAL) {
                     break;
