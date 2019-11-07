@@ -25,6 +25,7 @@ import net.ymate.platform.core.beans.BeanMeta;
 import net.ymate.platform.core.beans.proxy.IProxyFactory;
 import net.ymate.platform.core.module.IModule;
 import net.ymate.platform.core.module.IModuleConfigurer;
+import net.ymate.platform.core.module.annotation.Module;
 import net.ymate.platform.validation.IValidation;
 import net.ymate.platform.validation.Validations;
 import net.ymate.platform.webmvc.annotation.Controller;
@@ -63,6 +64,7 @@ import java.util.Map;
  *
  * @author 刘镇 (suninformation@163.com) on 2012-12-7 下午10:23:39
  */
+@Module
 public final class WebMVC implements IModule, IWebMvc {
 
     private static final Log LOG = LogFactory.getLog(WebMVC.class);

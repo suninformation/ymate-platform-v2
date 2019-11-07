@@ -169,9 +169,6 @@ public final class RequestExecutor {
             case TEXT:
                 view = TextView.bind(viewParts[0]);
                 break;
-            case BEETL:
-                view = BeetlView.bind(viewParts[0]);
-                break;
             default:
                 view = NullView.bind();
         }

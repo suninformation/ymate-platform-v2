@@ -412,12 +412,7 @@ public class Type {
         /**
          * 文本
          */
-        TEXT,
-
-        /**
-         * BEETL
-         */
-        BEETL
+        TEXT
     }
 
     public enum ContentType {

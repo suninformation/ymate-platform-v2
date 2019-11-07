@@ -18,24 +18,42 @@ package net.ymate.platform.webmvc.view;
 import net.ymate.platform.commons.lang.PairObject;
 import net.ymate.platform.webmvc.IWebMvc;
 import net.ymate.platform.webmvc.view.impl.*;
+import org.apache.commons.lang3.StringUtils;
 
 import java.io.File;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 /**
  * @author 刘镇 (suninformation@163.com) on 15/5/28 下午5:44
  */
 public class View {
 
-    public static BeetlView beetlView(IWebMvc owner, String path) {
-        return BeetlView.bind(owner, path);
+    private static final Map<String, IViewBuilder> VIEW_BUILDERS = new LinkedHashMap<>();
+
+    static {
+        VIEW_BUILDERS.put(HtmlView.FILE_SUFFIX, HtmlView::bind);
+        VIEW_BUILDERS.put(JspView.FILE_SUFFIX, JspView::bind);
+        VIEW_BUILDERS.put(FreemarkerView.FILE_SUFFIX, FreemarkerView::bind);
+        VIEW_BUILDERS.put(VelocityView.FILE_SUFFIX, VelocityView::bind);
     }
 
-    public static BeetlView beetlView(String path) {
-        return BeetlView.bind(path);
-    }
-
-    public static BeetlView beetlView() {
-        return BeetlView.bind();
+    /**
+     * 注册视图文件处理器
+     *
+     * @param fileSuffix  文件扩展名
+     * @param viewBuilder 文件视图对象构建器
+     * @since 2.1.0
+     */
+    public static void registerViewBuilder(String fileSuffix, IViewBuilder viewBuilder) {
+        if (StringUtils.isNotBlank(fileSuffix) && viewBuilder != null) {
+            if (!StringUtils.startsWith(fileSuffix, ".")) {
+                fileSuffix = "." + fileSuffix;
+            }
+            if (!VIEW_BUILDERS.containsKey(fileSuffix)) {
+                VIEW_BUILDERS.put(fileSuffix, viewBuilder);
+            }
+        }
     }
 
     public static BinaryView binaryView(File targetFile) throws Exception {
@@ -123,38 +141,27 @@ public class View {
     }
 
     public static PairObject<IView, String> mappingToView(IWebMvc owner, String requestMapping) throws Exception {
-        // 采用系统默认方式处理约定优于配置的URL请求映射
-        String[] fileTypes = {HtmlView.FILE_SUFFIX, JspView.FILE_SUFFIX, FreemarkerView.FILE_SUFFIX, VelocityView.FILE_SUFFIX, BeetlView.FILE_SUFFIX};
         IView view = null;
         String fileType = null;
-        for (String type : fileTypes) {
-            File targetFile = new File(owner.getConfig().getAbstractBaseViewPath(), requestMapping + fileType);
+        for (Map.Entry<String, IViewBuilder> entry : VIEW_BUILDERS.entrySet()) {
+            File targetFile = new File(owner.getConfig().getAbstractBaseViewPath(), requestMapping + entry.getKey());
             if (targetFile.exists()) {
-                switch (type) {
-                    case HtmlView.FILE_SUFFIX:
-                        view = HtmlView.bind(owner, requestMapping);
-                        fileType = type;
-                        break;
-                    case JspView.FILE_SUFFIX:
-                        view = JspView.bind(owner, requestMapping);
-                        fileType = type;
-                        break;
-                    case FreemarkerView.FILE_SUFFIX:
-                        view = FreemarkerView.bind(owner, requestMapping);
-                        fileType = type;
-                        break;
-                    case VelocityView.FILE_SUFFIX:
-                        view = VelocityView.bind(owner, requestMapping);
-                        fileType = type;
-                        break;
-                    case BeetlView.FILE_SUFFIX:
-                        view = BeetlView.bind(owner, requestMapping);
-                        fileType = type;
-                        break;
-                    default:
-                }
+                fileType = entry.getKey();
+                view = entry.getValue().build(owner, requestMapping);
+                break;
             }
         }
         return PairObject.bind(view, fileType);
+    }
+
+    /**
+     * 文件视图构建器接口
+     *
+     * @author 刘镇 (suninformation@163.com) on 19/11/07 12:28
+     * @since 2.1.0
+     */
+    public interface IViewBuilder {
+
+        IView build(IWebMvc owner, String requestMapping) throws Exception;
     }
 }

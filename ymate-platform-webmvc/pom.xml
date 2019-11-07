@@ -71,10 +71,6 @@
             <artifactId>velocity</artifactId>
         </dependency>
         <dependency>
-            <groupId>com.ibeetl</groupId>
-            <artifactId>beetl</artifactId>
-        </dependency>
-        <dependency>
             <groupId>net.ymate.platform</groupId>
             <artifactId>ymate-platform-cache</artifactId>
             <version>${project.parent.version}</version>
