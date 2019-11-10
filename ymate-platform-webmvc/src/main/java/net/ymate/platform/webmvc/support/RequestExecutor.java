@@ -28,6 +28,7 @@ import net.ymate.platform.webmvc.annotation.ResponseBody;
 import net.ymate.platform.webmvc.annotation.ResponseView;
 import net.ymate.platform.webmvc.base.Type;
 import net.ymate.platform.webmvc.context.WebContext;
+import net.ymate.platform.webmvc.util.WebResult;
 import net.ymate.platform.webmvc.view.IView;
 import net.ymate.platform.webmvc.view.impl.*;
 import org.apache.commons.lang3.ArrayUtils;
@@ -100,6 +101,8 @@ public final class RequestExecutor {
         if (responseBody != null) {
             if (resultObj instanceof IView || resultObj instanceof String) {
                 resultView = doProcessResultToView(resultObj);
+            } else if (resultObj instanceof WebResult) {
+                resultView = WebResult.formatView((WebResult) resultObj, Type.Const.FORMAT_JSON);
             } else {
                 IResponseBodyProcessor responseBodyProcessor;
                 if (IResponseBodyProcessor.class.equals(responseBody.value())) {

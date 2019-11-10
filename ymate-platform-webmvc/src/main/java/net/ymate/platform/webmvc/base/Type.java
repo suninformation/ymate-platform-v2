@@ -121,6 +121,8 @@ public class Type {
 
         String WEB_INF = WEB_INF_PREFIX + PATH_SEPARATOR;
 
+        String DEFAULT_ERROR_VIEW_FILE = "error.jsp";
+
         String FORMAT_JSON = "json";
 
         String FORMAT_XML = "xml";

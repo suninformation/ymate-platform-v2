@@ -15,7 +15,10 @@
  */
 package net.ymate.platform.webmvc.exception;
 
+import net.ymate.platform.validation.ValidateResult;
 import net.ymate.platform.webmvc.view.IView;
+
+import java.util.Map;
 
 /**
  * 用于在验证器中设置控制器响应
@@ -29,6 +32,8 @@ public class ValidationResultException extends RuntimeException {
 
     private IView resultView;
 
+    private Map<String, ValidateResult> validateResults;
+
     public ValidationResultException(int httpStatus) {
         this.httpStatus = httpStatus;
     }
@@ -37,42 +42,13 @@ public class ValidationResultException extends RuntimeException {
         this.resultView = resultView;
     }
 
+    public ValidationResultException(Map<String, ValidateResult> validateResults) {
+        this.validateResults = validateResults;
+    }
+
     public ValidationResultException(String message, int httpStatus) {
         super(message);
         this.httpStatus = httpStatus;
-    }
-
-    public ValidationResultException(String message, Throwable cause, int httpStatus) {
-        super(message, cause);
-        this.httpStatus = httpStatus;
-    }
-
-    public ValidationResultException(Throwable cause, int httpStatus) {
-        super(cause);
-        this.httpStatus = httpStatus;
-    }
-
-    public ValidationResultException(int httpStatus, IView resultView) {
-        this.httpStatus = httpStatus;
-        this.resultView = resultView;
-    }
-
-    public ValidationResultException(String message, int httpStatus, IView resultView) {
-        super(message);
-        this.httpStatus = httpStatus;
-        this.resultView = resultView;
-    }
-
-    public ValidationResultException(String message, Throwable cause, int httpStatus, IView resultView) {
-        super(message, cause);
-        this.httpStatus = httpStatus;
-        this.resultView = resultView;
-    }
-
-    public ValidationResultException(Throwable cause, int httpStatus, IView resultView) {
-        super(cause);
-        this.httpStatus = httpStatus;
-        this.resultView = resultView;
     }
 
     public int getHttpStatus() {
@@ -81,5 +57,9 @@ public class ValidationResultException extends RuntimeException {
 
     public IView getResultView() {
         return resultView;
+    }
+
+    public Map<String, ValidateResult> getValidateResults() {
+        return validateResults;
     }
 }

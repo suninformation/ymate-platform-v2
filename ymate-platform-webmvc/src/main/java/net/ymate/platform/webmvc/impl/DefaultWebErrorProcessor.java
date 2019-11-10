@@ -87,7 +87,9 @@ public class DefaultWebErrorProcessor implements IWebErrorProcessor, IWebInitial
             if (unwrapThrow != null) {
                 if (unwrapThrow instanceof ValidationResultException) {
                     ValidationResultException exception = (ValidationResultException) unwrapThrow;
-                    if (exception.getResultView() != null) {
+                    if (exception.getValidateResults() != null && !exception.getValidateResults().isEmpty()) {
+                        onValidation(owner, exception.getValidateResults()).render();
+                    } else if (exception.getResultView() != null) {
                         exception.getResultView().render();
                     } else {
                         View.httpStatusView(exception.getHttpStatus(), exception.getMessage()).render();

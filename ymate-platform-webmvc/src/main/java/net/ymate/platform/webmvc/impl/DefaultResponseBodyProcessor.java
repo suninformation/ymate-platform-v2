@@ -17,6 +17,8 @@ package net.ymate.platform.webmvc.impl;
 
 import net.ymate.platform.webmvc.IResponseBodyProcessor;
 import net.ymate.platform.webmvc.IWebMvc;
+import net.ymate.platform.webmvc.base.Type;
+import net.ymate.platform.webmvc.util.WebResult;
 import net.ymate.platform.webmvc.view.IView;
 import net.ymate.platform.webmvc.view.impl.JsonView;
 
@@ -27,6 +29,9 @@ public class DefaultResponseBodyProcessor implements IResponseBodyProcessor {
 
     @Override
     public IView processBody(IWebMvc owner, Object result, boolean contentType, boolean keepNull, boolean quoteField) throws Exception {
+        if (result instanceof WebResult) {
+            return WebResult.formatView((WebResult) result, Type.Const.FORMAT_JSON);
+        }
         JsonView view = new JsonView(result);
         if (keepNull) {
             view.keepNullValue();

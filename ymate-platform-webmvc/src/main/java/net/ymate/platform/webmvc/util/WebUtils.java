@@ -525,7 +525,10 @@ public class WebUtils {
 
     public static IView buildErrorView(IWebMvc owner, String resourceName, int code, String msg, String redirectUrl, int timeInterval, Map<String, Object> data) {
         IView returnView;
-        String errorViewPath = doGetConfigValue(owner.getOwner(), IWebMvcConfig.PARAMS_ERROR_VIEW, "error.jsp");
+        String errorViewPath = doGetConfigValue(owner.getOwner(), IWebMvcConfig.PARAMS_ERROR_VIEW, Type.Const.DEFAULT_ERROR_VIEW_FILE);
+        if (!new File(owner.getConfig().getAbstractBaseViewPath(), errorViewPath).exists()) {
+            errorViewPath = Type.Const.DEFAULT_ERROR_VIEW_FILE;
+        }
         if (StringUtils.endsWithIgnoreCase(errorViewPath, FreemarkerView.FILE_SUFFIX)) {
             returnView = View.freemarkerView(owner, errorViewPath);
         } else if (StringUtils.endsWithIgnoreCase(errorViewPath, VelocityView.FILE_SUFFIX)) {

@@ -318,10 +318,10 @@ public final class WebResult {
         if (result != null) {
             boolean flag = false;
             HttpServletRequest request = WebContext.getRequest();
-            if (WebUtils.isJsonAccepted(request, paramFormat)) {
+            if (WebUtils.isJsonAccepted(request, paramFormat) || StringUtils.equalsIgnoreCase(defaultFormat, Type.Const.FORMAT_JSON)) {
                 returnView = result.toJSON(StringUtils.trimToNull(WebContext.getRequest().getParameter(paramCallback)));
                 flag = true;
-            } else if (WebUtils.isXmlAccepted(request, paramFormat)) {
+            } else if (WebUtils.isXmlAccepted(request, paramFormat) || StringUtils.equalsIgnoreCase(defaultFormat, Type.Const.FORMAT_XML)) {
                 returnView = result.toXML(true);
                 flag = true;
             }

@@ -18,6 +18,7 @@ package net.ymate.platform.webmvc;
 import com.alibaba.fastjson.JSON;
 import net.ymate.platform.commons.lang.PairObject;
 import net.ymate.platform.commons.util.ClassUtils;
+import net.ymate.platform.commons.util.FileUtils;
 import net.ymate.platform.commons.util.RuntimeUtils;
 import net.ymate.platform.core.IApplication;
 import net.ymate.platform.core.YMP;
@@ -41,6 +42,7 @@ import net.ymate.platform.webmvc.impl.DefaultWebMvcConfig;
 import net.ymate.platform.webmvc.support.MultipartRequestWrapper;
 import net.ymate.platform.webmvc.support.RequestExecutor;
 import net.ymate.platform.webmvc.support.RequestParametersProxy;
+import net.ymate.platform.webmvc.util.WebUtils;
 import net.ymate.platform.webmvc.validate.*;
 import net.ymate.platform.webmvc.view.IView;
 import net.ymate.platform.webmvc.view.View;
@@ -53,6 +55,9 @@ import org.apache.commons.logging.LogFactory;
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.Arrays;
@@ -146,7 +151,28 @@ public final class WebMVC implements IModule, IWebMvc {
             validation.registerValidator(VToken.class, TokenValidator.class);
             validation.registerValidator(VUploadFile.class, UploadFileValidator.class);
             //
+            doGenerateErrorViewIfNeed();
+            //
             initialized = true;
+        }
+    }
+
+    private void doGenerateErrorViewIfNeed() {
+        if (RuntimeUtils.getRootPath(false).endsWith(Type.Const.WEB_INF)) {
+            String currentErrorViewPath = owner.getParam(IWebMvcConfig.PARAMS_ERROR_VIEW, Type.Const.DEFAULT_ERROR_VIEW_FILE);
+            File viewFile = new File(config.getAbstractBaseViewPath(), currentErrorViewPath);
+            if (!viewFile.exists()) {
+                viewFile = new File(config.getAbstractBaseViewPath(), Type.Const.DEFAULT_ERROR_VIEW_FILE);
+                try (InputStream inputStream = WebUtils.class.getClassLoader().getResourceAsStream("META-INF/templates-default-error.jsp")) {
+                    if (!FileUtils.createFileIfNotExists(viewFile, inputStream) && LOG.isInfoEnabled()) {
+                        LOG.info(String.format("Failed to create default error page file: %s", viewFile.getPath()));
+                    }
+                } catch (IOException e) {
+                    if (LOG.isWarnEnabled()) {
+                        LOG.warn(String.format("An exception occurred while trying to generate the default error page file: %s", viewFile.getPath()), RuntimeUtils.unwrapThrow(e));
+                    }
+                }
+            }
         }
     }
 
@@ -186,22 +212,26 @@ public final class WebMVC implements IModule, IWebMvc {
     @Override
     public boolean registerController(String requestMappingPrefix, Class<?> targetClass) throws Exception {
         boolean isValid = false;
-        for (Method method : targetClass.getDeclaredMethods()) {
-            if (method.isAnnotationPresent(RequestMapping.class) && method.getModifiers() == Modifier.PUBLIC) {
-                RequestMeta requestMeta = new RequestMeta(requestMappingPrefix, targetClass, method);
-                config.getRequestMappingParser().registerRequestMeta(requestMeta);
-                //
-                if (owner.isDevEnv() && LOG.isDebugEnabled()) {
-                    LOG.debug(String.format("--> %s: %s : %s.%s", requestMeta.getAllowMethods(), requestMeta.getMapping(), requestMeta.getTargetClass().getName(), requestMeta.getMethod().getName()));
+        if (ClassUtils.isNormalClass(targetClass) && !targetClass.isInterface()) {
+            for (Method method : targetClass.getDeclaredMethods()) {
+                if (method.isAnnotationPresent(RequestMapping.class) && method.getModifiers() == Modifier.PUBLIC) {
+                    RequestMeta requestMeta = new RequestMeta(requestMappingPrefix, targetClass, method);
+                    config.getRequestMappingParser().registerRequestMeta(requestMeta);
+                    //
+                    if (owner.isDevEnv() && LOG.isDebugEnabled()) {
+                        LOG.debug(String.format("--> %s: %s : %s.%s", requestMeta.getAllowMethods(), requestMeta.getMapping(), requestMeta.getTargetClass().getName(), requestMeta.getMethod().getName()));
+                    }
+                    //
+                    isValid = true;
                 }
-                //
-                isValid = true;
             }
-        }
-        //
-        if (isValid) {
-            Controller annotation = targetClass.getAnnotation(Controller.class);
-            owner.getBeanFactory().registerBean(BeanMeta.create(targetClass, annotation == null || annotation.singleton()));
+            //
+            if (isValid) {
+                Controller annotation = targetClass.getAnnotation(Controller.class);
+                BeanMeta beanMeta = BeanMeta.create(targetClass, annotation == null || annotation.singleton());
+                beanMeta.setInterfaceIgnored(true);
+                owner.getBeanFactory().registerBean(beanMeta);
+            }
         }
         return isValid;
     }

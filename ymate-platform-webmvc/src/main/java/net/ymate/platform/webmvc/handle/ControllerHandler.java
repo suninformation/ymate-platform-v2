@@ -15,7 +15,6 @@
  */
 package net.ymate.platform.webmvc.handle;
 
-import net.ymate.platform.commons.util.ClassUtils;
 import net.ymate.platform.core.beans.IBeanHandler;
 import net.ymate.platform.webmvc.IWebMvc;
 
@@ -34,9 +33,7 @@ public class ControllerHandler implements IBeanHandler {
 
     @Override
     public Object handle(Class<?> targetClass) throws Exception {
-        if (ClassUtils.isNormalClass(targetClass) && !targetClass.isInterface()) {
-            owner.registerController(targetClass);
-        }
+        owner.registerController(targetClass);
         return null;
     }
 }
