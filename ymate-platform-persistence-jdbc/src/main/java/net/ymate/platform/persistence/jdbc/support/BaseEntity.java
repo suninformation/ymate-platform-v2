@@ -356,6 +356,25 @@ public abstract class BaseEntity<Entity extends IEntity, PK extends Serializable
         }
     }
 
+    public long count() throws Exception {
+        return count(Where.create(buildCond(owner, this)));
+    }
+
+    public long count(Where where) throws Exception {
+        try (IDatabaseSession session = new DefaultDatabaseSession(owner, doGetSafeConnectionHolder())) {
+            return session.count(this.getEntityClass(), where, this.getShardingable());
+        }
+    }
+
+    public <T extends BaseEntity> EntityStateWrapper<T> stateWrapper() throws Exception {
+        return stateWrapper(true);
+    }
+
+    @SuppressWarnings("unchecked")
+    public <T extends BaseEntity> EntityStateWrapper<T> stateWrapper(boolean ignoreNull) throws Exception {
+        return new EntityStateWrapper<>((T) this, ignoreNull);
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {
