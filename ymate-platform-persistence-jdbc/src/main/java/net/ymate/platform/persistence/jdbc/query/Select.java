@@ -15,7 +15,10 @@
  */
 package net.ymate.platform.persistence.jdbc.query;
 
-import net.ymate.platform.core.persistence.*;
+import net.ymate.platform.core.persistence.Fields;
+import net.ymate.platform.core.persistence.IFunction;
+import net.ymate.platform.core.persistence.Page;
+import net.ymate.platform.core.persistence.Params;
 import net.ymate.platform.core.persistence.base.EntityMeta;
 import net.ymate.platform.core.persistence.base.IEntity;
 import net.ymate.platform.persistence.jdbc.IDBLocker;
@@ -351,15 +354,15 @@ public final class Select extends Query<Select> {
         return SQL.create(this);
     }
 
-    public <T> IResultSet<T> execute(IResultSetHandler<T> handler) throws Exception {
-        return owner().openSession(session -> session.find(toSQL(), handler));
+    public <T> List<T> execute(IResultSetHandler<T> handler) throws Exception {
+        return owner().openSession(session -> session.find(toSQL(), handler).getResultData());
     }
 
-    public <T> IResultSet<T> execute(String dataSourceName, IResultSetHandler<T> handler) throws Exception {
-        return owner().openSession(dataSourceName, session -> session.find(toSQL(), handler));
+    public <T> List<T> execute(String dataSourceName, IResultSetHandler<T> handler) throws Exception {
+        return owner().openSession(dataSourceName, session -> session.find(toSQL(), handler).getResultData());
     }
 
-    public <T> IResultSet<T> execute(IDatabaseConnectionHolder connectionHolder, IResultSetHandler<T> handler) throws Exception {
-        return owner().openSession(connectionHolder, session -> session.find(toSQL(), handler));
+    public <T> List<T> execute(IDatabaseConnectionHolder connectionHolder, IResultSetHandler<T> handler) throws Exception {
+        return owner().openSession(connectionHolder, session -> session.find(toSQL(), handler).getResultData());
     }
 }

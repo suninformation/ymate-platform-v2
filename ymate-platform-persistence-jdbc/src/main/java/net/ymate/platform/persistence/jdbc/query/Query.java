@@ -151,26 +151,22 @@ public class Query<T> {
     }
 
     protected String wrapIdentifierField(String field) {
+        return wrapIdentifierField(this.dialect, field);
+    }
+
+    public static String wrapIdentifierField(IDialect dialect, String field) {
         String[] splits = StringUtils.split(field, ".");
         if (splits != null && splits.length == 2) {
             String[] alias = StringUtils.split(splits[1]);
             if (alias != null && alias.length == 2) {
-                return splits[0] + "." + this.dialect().wrapIdentifierQuote(alias[0]) + " " + alias[1];
+                return splits[0] + "." + dialect.wrapIdentifierQuote(alias[0]) + " " + alias[1];
             }
-            return splits[0] + "." + this.dialect().wrapIdentifierQuote(splits[1]);
+            return splits[0] + "." + dialect.wrapIdentifierQuote(splits[1]);
         }
-        return this.dialect().wrapIdentifierQuote(field);
+        return dialect.wrapIdentifierQuote(field);
     }
 
     public static String wrapIdentifierField(IDatabaseConnectionHolder connectionHolder, String field) {
-        String[] splits = StringUtils.split(field, ".");
-        if (splits != null && splits.length == 2) {
-            String[] alias = StringUtils.split(splits[1]);
-            if (alias != null && alias.length == 2) {
-                return splits[0] + "." + connectionHolder.getDialect().wrapIdentifierQuote(alias[0]) + " " + alias[1];
-            }
-            return splits[0] + "." + connectionHolder.getDialect().wrapIdentifierQuote(splits[1]);
-        }
-        return connectionHolder.getDialect().wrapIdentifierQuote(field);
+        return wrapIdentifierField(connectionHolder.getDialect(), field);
     }
 }
