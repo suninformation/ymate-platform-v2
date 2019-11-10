@@ -16,6 +16,7 @@
 package net.ymate.platform.log.impl;
 
 import net.ymate.platform.commons.util.ClassUtils;
+import net.ymate.platform.commons.util.FileUtils;
 import net.ymate.platform.commons.util.RuntimeUtils;
 import net.ymate.platform.core.configuration.IConfigReader;
 import net.ymate.platform.core.module.IModuleConfigurer;
@@ -27,6 +28,8 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
 
 /**
  * 默认日志管理器配置类
@@ -101,12 +104,30 @@ public final class DefaultLogConfig implements ILogConfig {
     @Override
     public void initialize(ILog owner) throws Exception {
         if (!initialized) {
-            if (configFile == null || !configFile.isAbsolute() || !configFile.canRead() || !configFile.exists() || configFile.isDirectory()) {
-                throw new IllegalArgumentException("ConfigFile is not a valid file.");
+            if (!configFile.isAbsolute()) {
+                throw new IllegalArgumentException(String.format("Parameter config_file value [%s] is not an absolute file path.", configFile.getPath()));
+            } else if (!configFile.exists()) {
+                try (InputStream inputStream = DefaultLogConfig.class.getClassLoader().getResourceAsStream("META-INF/default-log4j.xml")) {
+                    if (!FileUtils.createFileIfNotExists(configFile, inputStream) && LOG.isInfoEnabled()) {
+                        LOG.info(String.format("Failed to create default log4j file: %s", configFile.getPath()));
+                    }
+                } catch (IOException e) {
+                    if (LOG.isWarnEnabled()) {
+                        LOG.warn(String.format("An exception occurred while trying to generate the default log4j file: %s", configFile.getPath()), RuntimeUtils.unwrapThrow(e));
+                    }
+                }
             }
             //
-            if (outputDir == null || !outputDir.isAbsolute() || !outputDir.canRead() || !outputDir.canWrite() || !outputDir.exists() || !outputDir.isDirectory()) {
-                throw new IllegalArgumentException("OutputDir is not a valid directory.");
+            if (!outputDir.isAbsolute()) {
+                throw new IllegalArgumentException(String.format("Parameter output_dir value [%s] is not an absolute directory path.", outputDir.getPath()));
+            } else if (!outputDir.exists()) {
+                if (outputDir.mkdirs()) {
+                    if (LOG.isInfoEnabled()) {
+                        LOG.info(String.format("Successfully created output_dir directory: %s", outputDir.getPath()));
+                    }
+                } else {
+                    throw new IllegalArgumentException(String.format("Failed to create output_dir directory: %s", outputDir.getPath()));
+                }
             }
             if (StringUtils.isBlank(defaultLoggerName)) {
                 defaultLoggerName = DEFAULT_STR;

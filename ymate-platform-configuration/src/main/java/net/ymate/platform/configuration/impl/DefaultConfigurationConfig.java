@@ -101,8 +101,16 @@ public final class DefaultConfigurationConfig implements IConfigurationConfig {
             }
             //
             File configHomeFile = new File(configHome);
-            if (!configHomeFile.exists() || !configHomeFile.isDirectory()) {
-                throw new IllegalArgumentException("CONFIG_HOME invalid directory.");
+            if (!configHomeFile.isAbsolute()) {
+                throw new IllegalArgumentException(String.format("Parameter config_home value [%s] is not an absolute path.", configHomeFile.getPath()));
+            } else if (!configHomeFile.exists() || !configHomeFile.isDirectory()) {
+                if (configHomeFile.mkdirs()) {
+                    if (LOG.isInfoEnabled()) {
+                        LOG.info(String.format("Successfully created config_home directory: %s", configHomeFile.getPath()));
+                    }
+                } else {
+                    throw new IllegalArgumentException(String.format("Failed to create config_home directory: %s", configHomeFile.getPath()));
+                }
             }
             configHome = configHomeFile.getPath();
             System.setProperty(USER_DIR, configHome);

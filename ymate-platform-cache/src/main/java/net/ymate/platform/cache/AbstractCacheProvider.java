@@ -18,6 +18,7 @@ package net.ymate.platform.cache;
 import net.sf.ehcache.CacheManager;
 import net.ymate.platform.commons.ReentrantLockHelper;
 import net.ymate.platform.commons.util.ClassUtils;
+import net.ymate.platform.commons.util.FileUtils;
 import net.ymate.platform.commons.util.RuntimeUtils;
 import net.ymate.platform.persistence.redis.Redis;
 import org.apache.commons.lang3.StringUtils;
@@ -25,6 +26,8 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.util.Iterator;
 import java.util.Map;
@@ -86,7 +89,19 @@ public abstract class AbstractCacheProvider implements ICacheProvider {
         CacheManager cacheManager = null;
         //
         File configFile = owner.getConfig().getConfigFile();
-        if (configFile != null) {
+        if (configFile == null) {
+            configFile = new File(RuntimeUtils.replaceEnvVariable(ICacheConfig.DEFAULT_CONFIG_FILE));
+            try (InputStream inputStream = AbstractCacheProvider.class.getClassLoader().getResourceAsStream("META-INF/default-ehcache.xml")) {
+                if (!FileUtils.createFileIfNotExists(configFile, inputStream) && LOG.isInfoEnabled()) {
+                    LOG.info(String.format("Failed to create default ehcache file: %s", configFile.getPath()));
+                }
+            } catch (IOException e) {
+                if (LOG.isWarnEnabled()) {
+                    LOG.warn(String.format("An exception occurred while trying to generate the default ehcache file: %s", configFile.getPath()), RuntimeUtils.unwrapThrow(e));
+                }
+            }
+        }
+        if (configFile.exists()) {
             try {
                 cacheManager = CacheManager.create(configFile.toURI().toURL());
             } catch (MalformedURLException e) {
