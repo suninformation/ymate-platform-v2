@@ -165,7 +165,7 @@
             <dependency>
                 <groupId>org.apache.commons</groupId>
                 <artifactId>commons-text</artifactId>
-                <version>1.7</version>
+                <version>1.8</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.commons</groupId>
@@ -190,13 +190,13 @@
             <dependency>
                 <groupId>org.javassist</groupId>
                 <artifactId>javassist</artifactId>
-                <version>3.25.0-GA</version>
+                <version>3.26.0-GA</version>
                 <scope>provided</scope>
             </dependency>
             <dependency>
                 <groupId>com.alibaba</groupId>
                 <artifactId>fastjson</artifactId>
-                <version>1.2.61</version>
+                <version>1.2.62</version>
             </dependency>
             <dependency>
                 <groupId>net.sf.ehcache</groupId>
@@ -216,12 +216,12 @@
             <dependency>
                 <groupId>org.slf4j</groupId>
                 <artifactId>slf4j-api</artifactId>
-                <version>1.7.28</version>
+                <version>1.7.29</version>
             </dependency>
             <dependency>
                 <groupId>org.slf4j</groupId>
                 <artifactId>jul-to-slf4j</artifactId>
-                <version>1.7.28</version>
+                <version>1.7.29</version>
             </dependency>
             <dependency>
                 <groupId>com.mchange</groupId>
@@ -236,12 +236,12 @@
             <dependency>
                 <groupId>com.alibaba</groupId>
                 <artifactId>druid</artifactId>
-                <version>1.1.19</version>
+                <version>1.1.21</version>
             </dependency>
             <dependency>
                 <groupId>com.zaxxer</groupId>
                 <artifactId>HikariCP</artifactId>
-                <version>3.3.1</version>
+                <version>3.4.1</version>
             </dependency>
             <dependency>
                 <groupId>redis.clients</groupId>
@@ -251,7 +251,7 @@
             <dependency>
                 <groupId>org.mongodb</groupId>
                 <artifactId>mongodb-driver</artifactId>
-                <version>3.11.0</version>
+                <version>3.11.2</version>
             </dependency>
             <dependency>
                 <groupId>javax.servlet</groupId>
@@ -285,7 +285,7 @@
             <dependency>
                 <groupId>org.apache.httpcomponents</groupId>
                 <artifactId>httpmime</artifactId>
-                <version>4.5.9</version>
+                <version>4.5.10</version>
                 <exclusions>
                     <exclusion>
                         <groupId>commons-codec</groupId>
@@ -313,13 +313,13 @@
             <dependency>
                 <groupId>org.apache.poi</groupId>
                 <artifactId>poi-ooxml</artifactId>
-                <version>4.1.0</version>
+                <version>4.1.1</version>
                 <scope>provided</scope>
             </dependency>
             <dependency>
                 <groupId>org.jxls</groupId>
                 <artifactId>jxls</artifactId>
-                <version>2.6.0</version>
+                <version>2.7.0</version>
                 <scope>provided</scope>
             </dependency>
         </dependencies>
