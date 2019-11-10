@@ -176,10 +176,10 @@ public class FileUtils {
      */
     public static void writeTo(File src, File dest) throws IOException {
         if (src == null || !src.exists() || !src.isFile()) {
-            throw new IllegalArgumentException("Failure to write file, Source file type must be file and exists.");
+            throw new IllegalArgumentException(String.format("Failure to write file, Source file [%s] type must be file and exist.", src != null ? src.getPath() : StringUtils.EMPTY));
         }
         if (dest == null || !dest.isAbsolute()) {
-            throw new IllegalArgumentException("Failure to write file, Dest file must be absolute path.");
+            throw new IllegalArgumentException(String.format("Failure to write file, Dest file [%s] must be absolute path.", dest != null ? dest.getPath() : StringUtils.EMPTY));
         }
         if (!src.renameTo(dest)) {
             try (BufferedInputStream inputStream = new BufferedInputStream(new FileInputStream(src));
@@ -218,7 +218,7 @@ public class FileUtils {
             throw new NullArgumentException("prefixPath");
         }
         if (targetFile == null || !targetFile.isAbsolute() || !targetFile.isDirectory()) {
-            throw new IllegalArgumentException("The target file must be directory and absolute path.");
+            throw new IllegalArgumentException(String.format("Unpack target file [%s] must be directory and absolute path.", targetFile != null ? targetFile.getPath() : StringUtils.EMPTY));
         }
         boolean result = false;
         prefixPath = "META-INF/" + prefixPath;
@@ -237,7 +237,7 @@ public class FileUtils {
                                     File distFile = new File(targetFile, entryName);
                                     File distFileParent = distFile.getParentFile();
                                     if (!distFileParent.exists() && !distFileParent.mkdirs()) {
-                                        throw new IOException("Unable to create file directory '" + distFileParent.getPath() + "'.");
+                                        throw new IOException(String.format("Unable to create directory: %s", distFileParent.getPath()));
                                     }
                                     if (LOG.isDebugEnabled()) {
                                         LOG.debug(String.format("Unpacking resource file: %s", entry.getName()));
@@ -256,7 +256,7 @@ public class FileUtils {
                         writeDirTo(new File(url.toURI()), targetFile);
                         result = true;
                     } catch (URISyntaxException e) {
-                        throw new IOException("Unable to unpack file '" + url + "'.", e);
+                        throw new IOException(String.format("Unable to unpack file: %s", url), e);
                     }
                 }
             } finally {
@@ -282,7 +282,7 @@ public class FileUtils {
                     if (!file.isDirectory()) {
                         File targetFileParent = targetFile.getParentFile();
                         if (!targetFileParent.exists() && !targetFileParent.mkdirs()) {
-                            throw new IOException("Unable to create file directory '" + targetFileParent.getPath() + "'.");
+                            throw new IOException(String.format("Unable to create directory: %s", targetFileParent.getPath()));
                         }
                         if (LOG.isDebugEnabled()) {
                             LOG.debug(String.format("Unpacking resource file: %s", targetFile.getPath()));
@@ -297,5 +297,48 @@ public class FileUtils {
                 }
             }
         }
+    }
+
+    /**
+     * 在指定路径中创建空文件(同时生成其父级目录)
+     *
+     * @param newFile 新文件
+     * @return 若文件创建成功或已存在则返回true, 若存在且为目录则返回false
+     * @throws IOException 可能产生的异常
+     * @since 2.1.0
+     */
+    public static boolean createEmptyFile(File newFile) throws IOException {
+        return createFileIfNotExists(newFile, null);
+    }
+
+    /**
+     * 在指定路径中创建文件(同时生成其父级目录)若内容流不为空则写入内容
+     *
+     * @param newFile     新文件
+     * @param inputStream 新文件内容流
+     * @return 若文件创建成功或已存在则返回true, 若存在且为目录则返回false
+     * @throws IOException 可能产生的异常
+     * @since 2.1.0
+     */
+    public static boolean createFileIfNotExists(File newFile, InputStream inputStream) throws IOException {
+        if (!newFile.isAbsolute()) {
+            throw new IllegalArgumentException(String.format("File path [%s] is not an absolute path.", newFile.getPath()));
+        } else if (!newFile.exists()) {
+            File parentFile = newFile.getParentFile();
+            if (!parentFile.exists() && !parentFile.mkdirs()) {
+                throw new IOException(String.format("Unable to create directory: %s", parentFile.getPath()));
+            }
+            if (newFile.createNewFile()) {
+                if (inputStream != null) {
+                    try (OutputStream outputStream = new FileOutputStream(newFile)) {
+                        IOUtils.copyLarge(inputStream, outputStream);
+                    }
+                }
+                if (LOG.isInfoEnabled()) {
+                    LOG.info(String.format("Successfully created file: %s", newFile.getPath()));
+                }
+            }
+        }
+        return !newFile.isDirectory();
     }
 }
