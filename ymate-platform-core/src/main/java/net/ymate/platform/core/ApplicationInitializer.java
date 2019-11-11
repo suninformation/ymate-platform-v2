@@ -19,7 +19,6 @@ import net.ymate.platform.core.beans.IBeanFactory;
 import net.ymate.platform.core.beans.IBeanLoader;
 import net.ymate.platform.core.event.Events;
 import net.ymate.platform.core.module.ModuleManager;
-import org.apache.commons.lang3.ArrayUtils;
 
 import java.util.*;
 
@@ -32,18 +31,32 @@ public final class ApplicationInitializer implements IApplicationInitializer {
     private final List<IApplicationInitializer> initializers = new ArrayList<>();
 
     public ApplicationInitializer(IApplicationInitializer... applicationInitializers) {
-        if (ArrayUtils.isNotEmpty(applicationInitializers)) {
-            addInitializer(applicationInitializers);
-        }
+        addInitializer(applicationInitializers);
+    }
+
+    public List<IApplicationInitializer> getInitializers() {
+        return Collections.unmodifiableList(initializers);
     }
 
     public ApplicationInitializer addInitializer(IApplicationInitializer... applicationInitializers) {
-        Arrays.stream(applicationInitializers).filter(Objects::nonNull).forEachOrdered(initializers::add);
+        Arrays.stream(applicationInitializers).filter(Objects::nonNull).forEachOrdered(applicationInitializer -> {
+            if (applicationInitializer instanceof ApplicationInitializer) {
+                initializers.addAll(((ApplicationInitializer) applicationInitializer).getInitializers());
+            } else {
+                initializers.add(applicationInitializer);
+            }
+        });
         return this;
     }
 
     public ApplicationInitializer addInitializer(Collection<IApplicationInitializer> applicationInitializers) {
-        applicationInitializers.stream().filter(Objects::nonNull).forEachOrdered(initializers::add);
+        applicationInitializers.stream().filter(Objects::nonNull).forEachOrdered(applicationInitializer -> {
+            if (applicationInitializer instanceof ApplicationInitializer) {
+                initializers.addAll(((ApplicationInitializer) applicationInitializer).getInitializers());
+            } else {
+                initializers.add(applicationInitializer);
+            }
+        });
         return this;
     }
 

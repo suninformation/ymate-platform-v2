@@ -29,7 +29,10 @@ public interface IApplicationCreator {
     /**
      * 构建应用容器接口实现对象
      *
+     * @param mainClass               启动配置类(用于解析初始化配置注解)
+     * @param applicationInitializers 扩展初始化处理器
      * @return 返回应用容器对象
+     * @throws Exception 可能产生的任何异常
      */
-    IApplication create();
+    IApplication create(Class<?> mainClass, IApplicationInitializer... applicationInitializers) throws Exception;
 }

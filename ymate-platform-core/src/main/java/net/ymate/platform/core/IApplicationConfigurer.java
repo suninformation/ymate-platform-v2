@@ -65,9 +65,9 @@ public interface IApplicationConfigurer {
     IApplicationConfigureParser getConfigureParser();
 
     /**
-     * 获取默认密码处理器类型
+     * 获取默认密码处理器
      *
-     * @return 返回密码处理器类型
+     * @return 返回密码处理器
      */
     IPasswordProcessor getPasswordProcessor();
 

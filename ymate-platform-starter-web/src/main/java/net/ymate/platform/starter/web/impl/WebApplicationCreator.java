@@ -15,10 +15,7 @@
  */
 package net.ymate.platform.starter.web.impl;
 
-import net.ymate.platform.core.Application;
-import net.ymate.platform.core.IApplication;
-import net.ymate.platform.core.IApplicationCreator;
-import net.ymate.platform.core.YMP;
+import net.ymate.platform.core.*;
 
 /**
  * @author 刘镇 (suninformation@163.com) on 2019-08-15 02:40
@@ -34,7 +31,7 @@ public class WebApplicationCreator implements IApplicationCreator {
     }
 
     @Override
-    public IApplication create() {
+    public IApplication create(Class<?> mainClass, IApplicationInitializer... applicationInitializers) {
         return application;
     }
 }

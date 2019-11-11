@@ -21,7 +21,7 @@ import net.ymate.platform.core.event.Events;
 import net.ymate.platform.core.module.ModuleManager;
 
 /**
- * 应用容器扩展初始化处理接口
+ * 应用容器扩展初始化处理器接口
  *
  * @author 刘镇 (suninformation@163.com) on 2019-08-26 20:30
  * @since 2.1.0

@@ -19,6 +19,7 @@ import net.ymate.platform.commons.util.ClassUtils;
 import net.ymate.platform.commons.util.RuntimeUtils;
 import net.ymate.platform.configuration.support.ConfigurationApplicationInitializer;
 import net.ymate.platform.core.*;
+import org.apache.commons.lang.NullArgumentException;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -36,12 +37,12 @@ public class DefaultApplicationCreator implements IApplicationCreator {
 
     private static final List<IApplicationInitializer> INITIALIZERS = new ArrayList<>();
 
-    private final IApplication application;
+    private IApplication application;
 
     static {
         try {
-            for (Class<IApplicationInitializer> converter : ClassUtils.getExtensionLoader(IApplicationInitializer.class).getExtensionClasses()) {
-                INITIALIZERS.add(converter.newInstance());
+            for (Class<IApplicationInitializer> initializerClass : ClassUtils.getExtensionLoader(IApplicationInitializer.class).getExtensionClasses()) {
+                INITIALIZERS.add(initializerClass.newInstance());
             }
         } catch (Exception e) {
             if (LOG.isWarnEnabled()) {
@@ -51,11 +52,21 @@ public class DefaultApplicationCreator implements IApplicationCreator {
     }
 
     public DefaultApplicationCreator() {
-        application = new Application(YMP.getConfigureFactory(), new ApplicationInitializer(new ConfigurationApplicationInitializer()).addInitializer(INITIALIZERS));
     }
 
     @Override
-    public IApplication create() {
+    public IApplication create(Class<?> mainClass, IApplicationInitializer... applicationInitializers) throws Exception {
+        if (application == null) {
+            ApplicationInitializer initializers = new ApplicationInitializer(new ConfigurationApplicationInitializer())
+                    .addInitializer(INITIALIZERS)
+                    .addInitializer(applicationInitializers);
+            IApplicationConfigureFactory configureFactory = YMP.getConfigureFactory();
+            if (configureFactory == null) {
+                throw new NullArgumentException("IApplicationConfigureFactory interface implementation class");
+            }
+            configureFactory.initialize(mainClass);
+            application = new Application(configureFactory, initializers);
+        }
         return application;
     }
 }

@@ -18,7 +18,6 @@ package net.ymate.platform.core;
 import net.ymate.platform.commons.util.ClassUtils;
 import net.ymate.platform.commons.util.ExpressionUtils;
 import net.ymate.platform.commons.util.ResourceUtils;
-import net.ymate.platform.commons.util.RuntimeUtils;
 import net.ymate.platform.core.beans.IBeanLoadFactory;
 import net.ymate.platform.core.beans.proxy.IProxyFactory;
 import net.ymate.platform.core.beans.proxy.impl.DefaultProxyFactory;
@@ -152,34 +151,59 @@ public final class YMP {
         return IApplication.Environment.UNKNOWN.equals(env) && runEnv != null ? runEnv : env;
     }
 
-    public static IApplication get() {
+    /**
+     * 执行框架初始化动作, 若已初始化则直接返回当前应用容器实例对象
+     *
+     * @param applicationInitializers 扩展初始化处理器
+     * @return 返回应用容器实例对象
+     * @throws Exception 可能产生的任何异常
+     */
+    public static IApplication run(IApplicationInitializer... applicationInitializers) throws Exception {
+        return run(null, applicationInitializers);
+    }
+
+    /**
+     * 执行框架初始化动作, 若已初始化则直接返回当前应用容器实例对象
+     *
+     * @param mainClass               启动配置类(用于解析初始化配置注解)
+     * @param applicationInitializers 扩展初始化处理器
+     * @return 返回应用容器实例对象
+     * @throws Exception 可能产生的任何异常
+     */
+    public static IApplication run(Class<?> mainClass, IApplicationInitializer... applicationInitializers) throws Exception {
         IApplication application = instance;
         if (application == null) {
             synchronized (YMP.class) {
                 application = instance;
                 if (application == null) {
-                    try {
-                        IApplicationCreator creator = ClassUtils.getExtensionLoader(IApplicationCreator.class).getExtension();
-                        if (creator == null) {
-                            throw new ClassNotFoundException(String.format("Implementation class of interface [%s] not found.", IApplicationCreator.class.getName()));
-                        }
-                        application = creator.create();
-                        if (application == null) {
-                            throw new IllegalStateException(String.format("IApplicationCreator [%s] returns the IApplication interface instance object invalid.", creator.getClass().getName()));
-                        }
-                        //
-                        application.initialize();
-                        //
-                        instance = application;
-                    } catch (Exception e) {
-                        if (LOG.isErrorEnabled()) {
-                            LOG.error(StringUtils.EMPTY, RuntimeUtils.unwrapThrow(e));
-                        }
+                    IApplicationCreator creator = ClassUtils.getExtensionLoader(IApplicationCreator.class).getExtension();
+                    if (creator == null) {
+                        throw new ClassNotFoundException(String.format("Implementation class of interface [%s] not found.", IApplicationCreator.class.getName()));
                     }
+                    application = creator.create(mainClass, applicationInitializers);
+                    if (application == null) {
+                        throw new IllegalStateException(String.format("IApplicationCreator [%s] returns the IApplication interface instance object invalid.", creator.getClass().getName()));
+                    }
+                    //
+                    application.initialize();
+                    //
+                    instance = application;
                 }
             }
         }
         return application;
+    }
+
+    /**
+     * 获取当前已初始化的应用容器实例
+     *
+     * @return 返回应用容器实例对象, 若尚未初始化将抛出IllegalStateException异常
+     */
+    public static IApplication get() {
+        if (instance == null) {
+            throw new IllegalStateException("IApplication has not been initialized. Call YMP.run method to complete the initialization first.");
+        }
+        return instance;
     }
 
     public static void destroy() throws Exception {

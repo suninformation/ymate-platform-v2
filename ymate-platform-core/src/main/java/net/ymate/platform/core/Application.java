@@ -15,7 +15,6 @@
  */
 package net.ymate.platform.core;
 
-import net.ymate.platform.commons.IPasswordProcessor;
 import net.ymate.platform.commons.util.RuntimeUtils;
 import net.ymate.platform.core.beans.IBeanFactory;
 import net.ymate.platform.core.beans.IBeanLoadFactory;
@@ -68,8 +67,6 @@ public final class Application implements IApplication {
     private Events events;
 
     private final InterceptSettings interceptSettings;
-
-    private Class<? extends IPasswordProcessor> passwordProcessorClass;
 
     private boolean initialized;
 

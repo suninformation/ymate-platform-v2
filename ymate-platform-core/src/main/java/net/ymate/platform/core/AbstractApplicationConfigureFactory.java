@@ -15,27 +15,31 @@
  */
 package net.ymate.platform.core;
 
-import net.ymate.platform.core.support.IInitialization;
-
 /**
- * 应用容器配置器工厂
- *
- * @author 刘镇 (suninformation@163.com) on 2019-08-12 04:10
+ * @author 刘镇 (suninformation@163.com) on 2019-11-11 12:46
  * @since 2.1.0
  */
-public interface IApplicationConfigureFactory extends IInitialization<Class<?>> {
+public abstract class AbstractApplicationConfigureFactory implements IApplicationConfigureFactory {
 
-    /**
-     * 获取启动配置类类型
-     *
-     * @return 返回启动配置类类型
-     */
-    Class<?> getMainClass();
+    private Class<?> mainClass;
 
-    /**
-     * 获取应用容器配置器
-     *
-     * @return 返回应用容器配置器
-     */
-    IApplicationConfigurer getConfigurer();
+    private boolean initialized;
+
+    @Override
+    public void initialize(Class<?> mainClass) throws Exception {
+        if (mainClass != null) {
+            this.mainClass = mainClass;
+            initialized = true;
+        }
+    }
+
+    @Override
+    public Class<?> getMainClass() {
+        return mainClass;
+    }
+
+    @Override
+    public boolean isInitialized() {
+        return initialized;
+    }
 }
