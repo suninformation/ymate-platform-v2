@@ -197,9 +197,13 @@ public class ClassUtils {
         return instance;
     }
 
-    @SuppressWarnings("unchecked")
     public static <T> ExtensionLoader<T> getExtensionLoader(Class<T> clazz) throws Exception {
-        return ReentrantLockHelper.putIfAbsentAsync(EXTENSION_LOADERS, clazz, () -> new ExtensionLoader<>(clazz));
+        return getExtensionLoader(clazz, false);
+    }
+
+    @SuppressWarnings("unchecked")
+    public static <T> ExtensionLoader<T> getExtensionLoader(Class<T> clazz, boolean alwaysInternal) throws Exception {
+        return ReentrantLockHelper.putIfAbsentAsync(EXTENSION_LOADERS, clazz, () -> new ExtensionLoader<>(clazz, alwaysInternal));
     }
 
     /**
@@ -493,7 +497,7 @@ public class ClassUtils {
 
         private final Map<String, T> instancesCache = new ConcurrentHashMap<>();
 
-        ExtensionLoader(Class<T> clazz) {
+        ExtensionLoader(Class<T> clazz, boolean alwaysInternal) {
             if (clazz == null) {
                 throw new NullArgumentException("clazz");
             }
@@ -502,7 +506,7 @@ public class ClassUtils {
             }
             try {
                 loadResources(String.format("META-INF/services/%s", clazz.getName()), clazz);
-                if (classesCache.isEmpty()) {
+                if (classesCache.isEmpty() || alwaysInternal) {
                     loadResources(String.format("META-INF/services/internal/%s", clazz.getName()), clazz);
                 }
             } catch (IOException e) {
