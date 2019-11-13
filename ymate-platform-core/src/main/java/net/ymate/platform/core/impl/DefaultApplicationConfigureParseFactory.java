@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.ymate.platform.starter.impl;
+package net.ymate.platform.core.impl;
 
 import net.ymate.platform.core.IApplicationConfigureParseFactory;
 import net.ymate.platform.core.IApplicationConfigureParser;

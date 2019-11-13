@@ -13,10 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.ymate.platform.starter.impl;
+package net.ymate.platform.core.impl;
 
 import net.ymate.platform.commons.ReentrantLockHelper;
 import net.ymate.platform.commons.lang.BlurObject;
+import net.ymate.platform.commons.util.FileUtils;
 import net.ymate.platform.commons.util.RuntimeUtils;
 import net.ymate.platform.core.IApplication;
 import net.ymate.platform.core.IApplicationConfigureParser;
@@ -30,8 +31,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.net.URL;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -71,15 +71,28 @@ public class DefaultApplicationConfigureParser implements IApplicationConfigureP
     }
 
     private static InputStream loadSystemConfig() {
+        String configFileName = System.getProperty(IApplication.SYSTEM_CONFIG_FILE);
+        if (StringUtils.isNotBlank(configFileName) && StringUtils.equalsIgnoreCase(FileUtils.getExtName(configFileName), FileUtils.FILE_SUFFIX_PROPERTIES)) {
+            configFileName = RuntimeUtils.replaceEnvVariable(configFileName);
+            File configFile = new File(configFileName);
+            if (configFile.isAbsolute() && configFile.exists() && configFile.isFile()) {
+                try {
+                    if (LOG.isInfoEnabled()) {
+                        LOG.info(String.format("Found and load the configuration file: %s", configFile.getPath()));
+                    }
+                    return new FileInputStream(configFile);
+                } catch (FileNotFoundException ignored) {
+                }
+            }
+        }
         IApplication.Environment runEnv = YMP.getPriorityRunEnv(IApplication.Environment.DEV);
         String prefix = StringUtils.EMPTY;
         if (runEnv != IApplication.Environment.UNKNOWN) {
             prefix = "_" + runEnv.name();
         }
-        String configFileName = CONFIG_FILE_PREFIX + prefix;
+        configFileName = CONFIG_FILE_PREFIX + prefix;
         //
         List<String> filePaths = new ArrayList<>();
-        filePaths.add(System.getProperty(IApplication.SYSTEM_CONFIG_FILE));
         filePaths.add(String.format("%s.properties", configFileName));
         if (RuntimeUtils.isWindows()) {
             filePaths.add(String.format("%s_WIN.properties", configFileName));
@@ -101,7 +114,7 @@ public class DefaultApplicationConfigureParser implements IApplicationConfigureP
                         try {
                             inputStream = url.openStream();
                             if (LOG.isInfoEnabled()) {
-                                LOG.info(String.format("Found and load the configuration file from %s.", url));
+                                LOG.info(String.format("Found and load the configuration file: %s", url));
                             }
                             break;
                         } catch (IOException ignored) {

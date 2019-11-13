@@ -13,11 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.ymate.platform.starter.impl;
+package net.ymate.platform.core.impl;
 
 import net.ymate.platform.commons.util.ClassUtils;
 import net.ymate.platform.commons.util.RuntimeUtils;
-import net.ymate.platform.configuration.support.ConfigurationApplicationInitializer;
 import net.ymate.platform.core.*;
 import org.apache.commons.lang.NullArgumentException;
 import org.apache.commons.lang3.StringUtils;
@@ -41,7 +40,7 @@ public class DefaultApplicationCreator implements IApplicationCreator {
 
     static {
         try {
-            for (Class<IApplicationInitializer> initializerClass : ClassUtils.getExtensionLoader(IApplicationInitializer.class).getExtensionClasses()) {
+            for (Class<IApplicationInitializer> initializerClass : ClassUtils.getExtensionLoader(IApplicationInitializer.class, true).getExtensionClasses()) {
                 INITIALIZERS.add(initializerClass.newInstance());
             }
         } catch (Exception e) {
@@ -55,9 +54,9 @@ public class DefaultApplicationCreator implements IApplicationCreator {
     }
 
     @Override
-    public IApplication create(Class<?> mainClass, IApplicationInitializer... applicationInitializers) throws Exception {
+    public IApplication create(Class<?> mainClass, String[] args, IApplicationInitializer... applicationInitializers) throws Exception {
         if (application == null) {
-            ApplicationInitializer initializers = new ApplicationInitializer(new ConfigurationApplicationInitializer())
+            ApplicationInitializer initializers = new ApplicationInitializer()
                     .addInitializer(INITIALIZERS)
                     .addInitializer(applicationInitializers);
             IApplicationConfigureFactory configureFactory = YMP.getConfigureFactory();

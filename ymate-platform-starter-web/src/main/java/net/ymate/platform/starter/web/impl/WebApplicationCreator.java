@@ -31,7 +31,7 @@ public class WebApplicationCreator implements IApplicationCreator {
     }
 
     @Override
-    public IApplication create(Class<?> mainClass, IApplicationInitializer... applicationInitializers) {
+    public IApplication create(Class<?> mainClass, String[] args, IApplicationInitializer... applicationInitializers) {
         return application;
     }
 }

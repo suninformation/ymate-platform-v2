@@ -159,18 +159,31 @@ public final class YMP {
      * @throws Exception 可能产生的任何异常
      */
     public static IApplication run(IApplicationInitializer... applicationInitializers) throws Exception {
-        return run(null, applicationInitializers);
+        return run(null, null, applicationInitializers);
+    }
+
+    /**
+     * 执行框架初始化动作, 若已初始化则直接返回当前应用容器实例对象
+     *
+     * @param args                    启动参数集合
+     * @param applicationInitializers 扩展初始化处理器
+     * @return 返回应用容器实例对象
+     * @throws Exception 可能产生的任何异常
+     */
+    public static IApplication run(String[] args, IApplicationInitializer... applicationInitializers) throws Exception {
+        return run(null, args, applicationInitializers);
     }
 
     /**
      * 执行框架初始化动作, 若已初始化则直接返回当前应用容器实例对象
      *
      * @param mainClass               启动配置类(用于解析初始化配置注解)
+     * @param args                    启动参数集合
      * @param applicationInitializers 扩展初始化处理器
      * @return 返回应用容器实例对象
      * @throws Exception 可能产生的任何异常
      */
-    public static IApplication run(Class<?> mainClass, IApplicationInitializer... applicationInitializers) throws Exception {
+    public static IApplication run(Class<?> mainClass, String[] args, IApplicationInitializer... applicationInitializers) throws Exception {
         IApplication application = instance;
         if (application == null) {
             synchronized (YMP.class) {
@@ -180,7 +193,7 @@ public final class YMP {
                     if (creator == null) {
                         throw new ClassNotFoundException(String.format("Implementation class of interface [%s] not found.", IApplicationCreator.class.getName()));
                     }
-                    application = creator.create(mainClass, applicationInitializers);
+                    application = creator.create(mainClass, args, applicationInitializers);
                     if (application == null) {
                         throw new IllegalStateException(String.format("IApplicationCreator [%s] returns the IApplication interface instance object invalid.", creator.getClass().getName()));
                     }
