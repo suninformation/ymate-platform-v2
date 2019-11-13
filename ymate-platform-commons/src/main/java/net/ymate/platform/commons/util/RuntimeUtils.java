@@ -187,10 +187,14 @@ public class RuntimeUtils {
     /**
      * @param origin 原始字符串
      * @return 替换${root}、${user.dir}和${user.home}环境变量
+     * @since 2.1.0 调整当获取应用根路径为空则默认使用user.dir路径
      */
     public static String replaceEnvVariable(String origin) {
         if ((origin = StringUtils.trimToNull(origin)) != null) {
             String rootPath = getRootPath();
+            if (StringUtils.isBlank(rootPath)) {
+                rootPath = System.getProperty(USER_DIR);
+            }
             if (StringUtils.contains(origin, VAR_ROOT)) {
                 origin = ExpressionUtils.bind(origin).set(ROOT, rootPath).getResult();
             } else if (StringUtils.contains(origin, VAR_USER_DIR)) {
