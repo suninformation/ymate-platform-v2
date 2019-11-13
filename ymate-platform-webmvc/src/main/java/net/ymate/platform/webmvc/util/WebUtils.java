@@ -20,6 +20,7 @@ import net.ymate.platform.commons.util.ExpressionUtils;
 import net.ymate.platform.commons.util.NetworkUtils;
 import net.ymate.platform.commons.util.RuntimeUtils;
 import net.ymate.platform.core.IApplication;
+import net.ymate.platform.core.support.ErrorCode;
 import net.ymate.platform.core.support.IContext;
 import net.ymate.platform.validation.ValidateResult;
 import net.ymate.platform.webmvc.IWebMvc;
@@ -515,8 +516,7 @@ public class WebUtils {
     }
 
     public static IView buildErrorView(IWebMvc owner, String resourceName, ErrorCode errorCode, String redirectUrl, int timeInterval) {
-        Map<String, Object> data = errorCode.getAttribute(Type.Const.PARAM_DATA);
-        return buildErrorView(owner, resourceName, errorCode.getCode(), errorCode.getMessage(), redirectUrl, timeInterval, data);
+        return buildErrorView(owner, resourceName, errorCode.code(), errorCode.message(), redirectUrl, timeInterval, errorCode.data());
     }
 
     public static IView buildErrorView(IWebMvc owner, int code, String msg, String redirectUrl, int timeInterval, Map<String, Object> data) {

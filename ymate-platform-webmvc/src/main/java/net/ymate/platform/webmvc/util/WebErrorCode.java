@@ -15,27 +15,13 @@
  */
 package net.ymate.platform.webmvc.util;
 
-import net.ymate.platform.commons.lang.BlurObject;
-
-import java.io.Serializable;
-import java.util.HashMap;
-import java.util.Map;
+import net.ymate.platform.core.support.ErrorCode;
 
 /**
- * ret = 0: 正确返回<br>
- * ret &gt; 0: 调用OpenAPI时发生错误，需要开发者进行相应的处理<br>
- * -50 &lt;= ret &lt;= -1: 接口调用不能通过接口代理机校验，需要开发者进行相应的处理<br>
- * ret &lt;-50: 系统内部错误
- *
- * @author 刘镇 (suninformation@163.com) on 14/7/6 下午6:53
- * @since 2.0.6
+ * @author 刘镇 (suninformation@163.com) on 2019-11-13 22:46
+ * @since 2.1.0
  */
-public class ErrorCode implements Serializable {
-
-    /**
-     * 请求成功
-     */
-    public final static int SUCCEED = 0;
+public final class WebErrorCode {
 
     /**
      * 参数验证无效
@@ -92,18 +78,6 @@ public class ErrorCode implements Serializable {
      */
     public final static int UPLOAD_CONTENT_TYPE_INVALID = -11;
 
-    /**
-     * 数据版本不匹配
-     */
-    public final static int DATA_VERSION_NOT_MATCH = -20;
-
-    /**
-     * 系统内部错误
-     */
-    public final static int INTERNAL_SYSTEM_ERROR = -50;
-
-    // ----------
-
     public final static String MSG_RESOURCE_NOT_FOUND_OR_NOT_EXIST = "The resources was not found or not existed.";
 
     public final static String MSG_INVALID_PARAMS_VALIDATION = "Request parameter validation is invalid.";
@@ -125,16 +99,6 @@ public class ErrorCode implements Serializable {
     public final static String MSG_UPLOAD_SIZE_LIMIT_EXCEEDED = "The total size of uploaded files exceeds the limit.";
 
     public final static String MSG_UPLOAD_CONTENT_TYPE_INVALID = "The upload file content type is invalid.";
-
-    public final static String MSG_DATA_VERSION_NOT_MATCH = "The data version does not match.";
-
-    public final static String MSG_INTERNAL_SYSTEM_ERROR = "The system is busy, try again later!";
-
-    // ----------
-
-    public static ErrorCode succeed() {
-        return new ErrorCode(SUCCEED);
-    }
 
     public static ErrorCode resourceNotFoundOrNotExist() {
         return ErrorCode.create(RESOURCE_NOT_FOUND_OR_NOT_EXIST, MSG_RESOURCE_NOT_FOUND_OR_NOT_EXIST);
@@ -178,100 +142,5 @@ public class ErrorCode implements Serializable {
 
     public static ErrorCode uploadContentTypeInvalid() {
         return ErrorCode.create(UPLOAD_CONTENT_TYPE_INVALID, MSG_UPLOAD_CONTENT_TYPE_INVALID);
-    }
-
-    public static ErrorCode dataVersionNotMatch() {
-        return ErrorCode.create(DATA_VERSION_NOT_MATCH, MSG_DATA_VERSION_NOT_MATCH);
-    }
-
-    public static ErrorCode internalSystemError() {
-        return ErrorCode.create(INTERNAL_SYSTEM_ERROR, MSG_INTERNAL_SYSTEM_ERROR);
-    }
-
-    public static ErrorCode create(int code) {
-        return new ErrorCode(code);
-    }
-
-    public static ErrorCode create(int code, String message) {
-        return new ErrorCode(code, message);
-    }
-
-    public static ErrorCode create(int code, String i18nKey, String message) {
-        return new ErrorCode(code, i18nKey, message);
-    }
-
-    private int code;
-
-    private String i18nKey;
-
-    private String message;
-
-    private final Map<String, Object> attributes = new HashMap<>();
-
-    public ErrorCode(int code) {
-        this.code = code;
-    }
-
-    public ErrorCode(int code, String message) {
-        this(code, null, message);
-    }
-
-    public ErrorCode(int code, String i18nKey, String message) {
-        this.code = code;
-        this.i18nKey = i18nKey;
-        this.message = message;
-    }
-
-    public boolean isSucceed() {
-        return SUCCEED == code;
-    }
-
-    public int getCode() {
-        return code;
-    }
-
-    public void setCode(int code) {
-        this.code = code;
-    }
-
-    public String getI18nKey() {
-        return i18nKey;
-    }
-
-    public ErrorCode setI18nKey(String i18nKey) {
-        this.i18nKey = i18nKey;
-        return this;
-    }
-
-    public String getMessage() {
-        return message;
-    }
-
-    public ErrorCode setMessage(String message) {
-        this.message = message;
-        return this;
-    }
-
-    public Map<String, Object> getAttributes() {
-        return attributes;
-    }
-
-    @SuppressWarnings("unchecked")
-    public <T> T getAttribute(String attrKey) {
-        return (T) attributes.get(attrKey);
-    }
-
-    public BlurObject getAttr(String attrKey) {
-        return BlurObject.bind(attributes.get(attrKey));
-    }
-
-    public ErrorCode addAttribute(String attrKey, Object attrValue) {
-        this.attributes.put(attrKey, attrValue);
-        return this;
-    }
-
-    public ErrorCode addAttributes(Map<String, Object> attributes) {
-        this.attributes.putAll(attributes);
-        return this;
     }
 }

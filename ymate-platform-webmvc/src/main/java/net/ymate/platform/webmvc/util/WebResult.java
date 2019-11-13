@@ -18,6 +18,7 @@ package net.ymate.platform.webmvc.util;
 import com.alibaba.fastjson.JSONObject;
 import net.ymate.platform.commons.lang.BlurObject;
 import net.ymate.platform.commons.util.ClassUtils;
+import net.ymate.platform.core.support.ErrorCode;
 import net.ymate.platform.webmvc.IWebMvc;
 import net.ymate.platform.webmvc.IWebMvcConfig;
 import net.ymate.platform.webmvc.base.Type;
@@ -32,6 +33,7 @@ import org.apache.commons.lang3.StringUtils;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.io.Serializable;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
@@ -40,7 +42,7 @@ import java.util.Map;
  * @author 刘镇 (suninformation@163.com) on 15/8/18 下午2:18
  * @since 2.0.6
  */
-public final class WebResult {
+public final class WebResult implements Serializable {
 
     public static WebResult create() {
         return new WebResult();
@@ -64,15 +66,18 @@ public final class WebResult {
 
     public static WebResult create(IWebMvc owner, String resourceName, ErrorCode errorCode) {
         String msg = null;
-        if (StringUtils.isNotBlank(errorCode.getI18nKey())) {
-            msg = WebUtils.i18nStr(owner, resourceName, errorCode.getI18nKey(), null);
+        if (StringUtils.isNotBlank(errorCode.i18nKey())) {
+            msg = WebUtils.i18nStr(owner, resourceName, errorCode.i18nKey(), null);
         }
         if (StringUtils.isBlank(msg)) {
-            msg = WebUtils.errorCodeI18n(owner, resourceName, errorCode.getCode(), errorCode.getMessage());
+            msg = WebUtils.errorCodeI18n(owner, resourceName, errorCode.code(), errorCode.message());
         }
-        WebResult result = new WebResult(errorCode.getCode()).msg(msg);
-        if (!errorCode.getAttributes().isEmpty()) {
-            result.attrs(errorCode.getAttributes());
+        WebResult result = new WebResult(errorCode.code()).msg(msg);
+        if (!errorCode.attrs().isEmpty()) {
+            result.attrs(errorCode.attrs());
+        }
+        if (!errorCode.data().isEmpty()) {
+            result.data(errorCode.data());
         }
         return result;
     }

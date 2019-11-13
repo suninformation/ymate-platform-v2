@@ -19,6 +19,7 @@ import com.alibaba.fastjson.JSON;
 import net.ymate.platform.commons.lang.BlurObject;
 import net.ymate.platform.commons.util.DateTimeUtils;
 import net.ymate.platform.commons.util.RuntimeUtils;
+import net.ymate.platform.core.support.ErrorCode;
 import net.ymate.platform.validation.ValidateResult;
 import net.ymate.platform.webmvc.*;
 import net.ymate.platform.webmvc.base.Type;
@@ -128,7 +129,7 @@ public class DefaultWebErrorProcessor implements IWebErrorProcessor, IWebInitial
 
     @Override
     public IView onValidation(IWebMvc owner, Map<String, ValidateResult> results) {
-        String message = WebUtils.errorCodeI18n(this.owner, ErrorCode.INVALID_PARAMS_VALIDATION, ErrorCode.MSG_INVALID_PARAMS_VALIDATION);
+        String message = WebUtils.errorCodeI18n(this.owner, WebErrorCode.INVALID_PARAMS_VALIDATION, WebErrorCode.MSG_INVALID_PARAMS_VALIDATION);
         Map<String, Object> dataMap = new HashMap<>(results.size());
         results.values().forEach((result) -> {
             dataMap.put(result.getName(), result.getMsg());
@@ -138,7 +139,7 @@ public class DefaultWebErrorProcessor implements IWebErrorProcessor, IWebInitial
             // 拼装所有的验证消息
             message = WebUtils.messageWithTemplate(owner.getOwner(), message, results.values());
         }
-        return showErrorMsg(ErrorCode.INVALID_PARAMS_VALIDATION, message, dataMap);
+        return showErrorMsg(WebErrorCode.INVALID_PARAMS_VALIDATION, message, dataMap);
     }
 
     @Override
