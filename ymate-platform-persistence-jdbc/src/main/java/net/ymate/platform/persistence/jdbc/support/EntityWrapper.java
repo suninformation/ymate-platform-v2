@@ -15,33 +15,28 @@
  */
 package net.ymate.platform.persistence.jdbc.support;
 
-import com.alibaba.fastjson.annotation.JSONField;
 import net.ymate.platform.commons.util.ClassUtils;
 import net.ymate.platform.core.persistence.Fields;
 import net.ymate.platform.core.persistence.IResultSet;
 import net.ymate.platform.core.persistence.IShardingable;
 import net.ymate.platform.core.persistence.Page;
-import net.ymate.platform.core.persistence.base.EntityMeta;
 import net.ymate.platform.core.persistence.base.IEntity;
 import net.ymate.platform.persistence.jdbc.*;
 import net.ymate.platform.persistence.jdbc.impl.DefaultDatabaseSession;
 import net.ymate.platform.persistence.jdbc.query.*;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.builder.ToStringBuilder;
-import org.apache.commons.lang3.builder.ToStringStyle;
-
-import java.io.Serializable;
 
 /**
- * 实体模型接口抽象实现，提供基本数据库操作方法
+ * 主要作用是为没有继承BaseEntity的实体类提供基本数据库操作方法
  *
- * @param <Entity> 实体类型
- * @param <PK>     主键类型
- * @author 刘镇 (suninformation@163.com) on 2013-7-16 下午5:22:15
+ * @author 刘镇 (suninformation@163.com) on 2019-11-13 09:19
+ * @since 2.1.0
  */
-public abstract class BaseEntity<Entity extends IEntity, PK extends Serializable> implements IEntity<PK> {
+public final class EntityWrapper<Entity extends IEntity> {
 
     private final IDatabase owner;
+
+    private final Entity entity;
 
     private final Class<Entity> entityClass;
 
@@ -51,30 +46,29 @@ public abstract class BaseEntity<Entity extends IEntity, PK extends Serializable
 
     private String dataSourceName;
 
-    /**
-     * 构造器
-     */
-    public BaseEntity() {
-        this(JDBC.get());
+    public static <Entity extends IEntity> EntityWrapper<Entity> bind(Entity entity) {
+        return new EntityWrapper<>(entity);
     }
 
-    /**
-     * 构造器
-     *
-     * @param owner 所属JDBC数据库管理器
-     */
+    public static <Entity extends IEntity> EntityWrapper<Entity> bind(IDatabase owner, Entity entity) {
+        return new EntityWrapper<>(owner, entity);
+    }
+
+    private EntityWrapper(Entity entity) {
+        this(JDBC.get(), entity);
+    }
+
     @SuppressWarnings("unchecked")
-    public BaseEntity(IDatabase owner) {
+    private EntityWrapper(IDatabase owner, Entity entity) {
         this.owner = owner;
+        this.entity = entity;
         entityClass = (Class<Entity>) ClassUtils.getParameterizedTypes(getClass()).get(0);
     }
 
-    @JSONField(serialize = false)
     public IDatabaseConnectionHolder getConnectionHolder() {
-        return this.connectionHolder;
+        return connectionHolder;
     }
 
-    @JSONField(deserialize = false)
     public void setConnectionHolder(IDatabaseConnectionHolder connectionHolder) {
         this.connectionHolder = connectionHolder;
         // 每次设置将记录数据源名称，若设置为空将重置
@@ -85,56 +79,28 @@ public abstract class BaseEntity<Entity extends IEntity, PK extends Serializable
         }
     }
 
-    @JSONField(serialize = false)
     public IShardingable getShardingable() {
         return this.shardingable;
     }
 
-    @JSONField(deserialize = false)
     public void setShardingable(IShardingable shardingable) {
         this.shardingable = shardingable;
     }
 
-    @JSONField(serialize = false)
     public String getDataSourceName() {
-        return this.dataSourceName;
+        return dataSourceName;
     }
 
-    @JSONField(deserialize = false)
     public void setDataSourceName(String dataSourceName) {
         this.dataSourceName = StringUtils.trimToNull(dataSourceName);
     }
 
-    /**
-     * @return 获取实体对象类型
-     */
     protected Class<Entity> getEntityClass() {
-        return this.entityClass;
+        return entityClass;
     }
 
-    /**
-     * 确保能够正确获取到数据库连接持有对象，即连接持有对象为null时尝试获取JDBC默认连接
-     *
-     * @param owner            数据库管理器
-     * @param connectionHolder 当前数据库连接持有对象
-     * @param dataSourceName   数据源名称
-     * @return 返回数据库连接持有对象
-     * @throws Exception 可能产生的异常
-     * @since 2.1.0 提取为静态方法
-     */
-    public static IDatabaseConnectionHolder getSafeConnectionHolder(IDatabase owner, IDatabaseConnectionHolder connectionHolder, String dataSourceName) throws Exception {
-        if (connectionHolder == null || connectionHolder.getConnection() == null || connectionHolder.getConnection().isClosed()) {
-            if (StringUtils.isNotBlank(dataSourceName)) {
-                return owner.getConnectionHolder(dataSourceName);
-            } else {
-                return owner.getDefaultConnectionHolder();
-            }
-        }
-        return connectionHolder;
-    }
-
-    protected IDatabaseConnectionHolder doGetSafeConnectionHolder() throws Exception {
-        return getSafeConnectionHolder(owner, connectionHolder, dataSourceName);
+    private IDatabaseConnectionHolder doGetSafeConnectionHolder() throws Exception {
+        return BaseEntity.getSafeConnectionHolder(owner, connectionHolder, dataSourceName);
     }
 
     public void entityCreate() throws Exception {
@@ -170,21 +136,19 @@ public abstract class BaseEntity<Entity extends IEntity, PK extends Serializable
             if (dbLocker != null) {
                 entitySql.forUpdate(dbLocker);
             }
-            return session.find(entitySql, this.getId(), this.getShardingable());
+            return session.find(entitySql, entity.getId(), this.getShardingable());
         }
     }
 
-    @SuppressWarnings("unchecked")
     public Entity save() throws Exception {
         try (IDatabaseSession session = new DefaultDatabaseSession(owner, doGetSafeConnectionHolder())) {
-            return session.insert((Entity) this, this.getShardingable());
+            return session.insert(entity, this.getShardingable());
         }
     }
 
-    @SuppressWarnings("unchecked")
     public Entity save(Fields fields) throws Exception {
         try (IDatabaseSession session = new DefaultDatabaseSession(owner, doGetSafeConnectionHolder())) {
-            return session.insert((Entity) this, fields, this.getShardingable());
+            return session.insert(entity, fields, this.getShardingable());
         }
     }
 
@@ -192,18 +156,17 @@ public abstract class BaseEntity<Entity extends IEntity, PK extends Serializable
         return saveOrUpdate(null);
     }
 
-    @SuppressWarnings("unchecked")
     public Entity saveOrUpdate(Fields fields) throws Exception {
         try (IDatabaseSession session = new DefaultDatabaseSession(owner, doGetSafeConnectionHolder())) {
             EntitySQL<Entity> entitySql = EntitySQL.create(this.getEntityClass());
             if (fields != null) {
                 entitySql.field(fields);
             }
-            Entity entity = session.find(entitySql, this.getId(), this.getShardingable());
-            if (entity == null) {
-                return session.insert((Entity) this, this.getShardingable());
+            Entity result = session.find(entitySql, entity.getId(), this.getShardingable());
+            if (result == null) {
+                return session.insert(entity, this.getShardingable());
             }
-            return session.update((Entity) this, fields, this.getShardingable());
+            return session.update(entity, fields, this.getShardingable());
         }
     }
 
@@ -211,28 +174,26 @@ public abstract class BaseEntity<Entity extends IEntity, PK extends Serializable
         return update(null);
     }
 
-    @SuppressWarnings("unchecked")
     public Entity update(Fields fields) throws Exception {
         try (IDatabaseSession session = new DefaultDatabaseSession(owner, doGetSafeConnectionHolder())) {
-            return session.update((Entity) this, fields, this.getShardingable());
+            return session.update(entity, fields, this.getShardingable());
         }
     }
 
-    @SuppressWarnings("unchecked")
     public Entity delete() throws Exception {
         try (IDatabaseSession session = new DefaultDatabaseSession(owner, doGetSafeConnectionHolder())) {
-            if (null != this.getId()) {
-                if (session.delete(this.getEntityClass(), this.getId(), this.getShardingable()) > 0) {
-                    return (Entity) this;
+            if (null != entity.getId()) {
+                if (session.delete(this.getEntityClass(), entity.getId(), this.getShardingable()) > 0) {
+                    return entity;
                 }
             } else {
-                Cond cond = buildCond(owner, this);
+                Cond cond = BaseEntity.buildCond(owner, entity);
                 if (StringUtils.isNotBlank(cond.toString())) {
                     if (session.executeForUpdate(Delete.create(owner)
                             .shardingable(this.getShardingable())
                             .from(this.getEntityClass())
                             .where(Where.create(cond)).toSQL()) > 0) {
-                        return (Entity) this;
+                        return entity;
                     }
                 }
             }
@@ -241,35 +202,35 @@ public abstract class BaseEntity<Entity extends IEntity, PK extends Serializable
     }
 
     public IResultSet<Entity> find() throws Exception {
-        return find(Where.create(buildCond(owner, this)), null, null, null);
+        return find(Where.create(BaseEntity.buildCond(owner, entity)), null, null, null);
     }
 
     public IResultSet<Entity> find(IDBLocker dbLocker) throws Exception {
-        return find(Where.create(buildCond(owner, this)), null, null, dbLocker);
+        return find(Where.create(BaseEntity.buildCond(owner, entity)), null, null, dbLocker);
     }
 
     public IResultSet<Entity> find(Page page) throws Exception {
-        return find(Where.create(buildCond(owner, this)), null, page, null);
+        return find(Where.create(BaseEntity.buildCond(owner, entity)), null, page, null);
     }
 
     public IResultSet<Entity> find(Page page, IDBLocker dbLocker) throws Exception {
-        return find(Where.create(buildCond(owner, this)), null, page, dbLocker);
+        return find(Where.create(BaseEntity.buildCond(owner, entity)), null, page, dbLocker);
     }
 
     public IResultSet<Entity> find(Fields fields) throws Exception {
-        return find(Where.create(buildCond(owner, this)), fields, null, null);
+        return find(Where.create(BaseEntity.buildCond(owner, entity)), fields, null, null);
     }
 
     public IResultSet<Entity> find(Fields fields, IDBLocker dbLocker) throws Exception {
-        return find(Where.create(buildCond(owner, this)), fields, null, dbLocker);
+        return find(Where.create(BaseEntity.buildCond(owner, entity)), fields, null, dbLocker);
     }
 
     public IResultSet<Entity> find(Fields fields, Page page) throws Exception {
-        return find(Where.create(buildCond(owner, this)), fields, page, null);
+        return find(Where.create(BaseEntity.buildCond(owner, entity)), fields, page, null);
     }
 
     public IResultSet<Entity> find(Fields fields, Page page, IDBLocker dbLocker) throws Exception {
-        return find(Where.create(buildCond(owner, this)), fields, page, dbLocker);
+        return find(Where.create(BaseEntity.buildCond(owner, entity)), fields, page, dbLocker);
     }
 
     public IResultSet<Entity> find(Where where) throws Exception {
@@ -300,21 +261,8 @@ public abstract class BaseEntity<Entity extends IEntity, PK extends Serializable
         return find(where, null, page, dbLocker);
     }
 
-    public static <Entity extends IEntity> IResultSet<Entity> find(IDatabase owner, IDatabaseConnectionHolder connectionHolder, String dataSourceName, IShardingable shardingable, Class<Entity> entityClass, Where where, Fields fields, Page page, IDBLocker dbLocker) throws Exception {
-        try (IDatabaseSession session = new DefaultDatabaseSession(owner, getSafeConnectionHolder(owner, connectionHolder, dataSourceName))) {
-            EntitySQL<Entity> entitySql = EntitySQL.create(entityClass);
-            if (fields != null) {
-                entitySql.field(fields);
-            }
-            if (dbLocker != null) {
-                entitySql.forUpdate(dbLocker);
-            }
-            return session.find(entitySql, where, page, shardingable);
-        }
-    }
-
     public IResultSet<Entity> find(Where where, Fields fields, Page page, IDBLocker dbLocker) throws Exception {
-        return find(owner, getConnectionHolder(), getDataSourceName(), getShardingable(), getEntityClass(), where, fields, page, dbLocker);
+        return BaseEntity.find(owner, getConnectionHolder(), getDataSourceName(), getShardingable(), getEntityClass(), where, fields, page, dbLocker);
     }
 
     public IResultSet<Entity> findAll() throws Exception {
@@ -334,19 +282,19 @@ public abstract class BaseEntity<Entity extends IEntity, PK extends Serializable
     }
 
     public Entity findFirst() throws Exception {
-        return findFirst(Where.create(buildCond(owner, this)), null, null);
+        return findFirst(Where.create(BaseEntity.buildCond(owner, entity)), null, null);
     }
 
     public Entity findFirst(IDBLocker dbLocker) throws Exception {
-        return findFirst(Where.create(buildCond(owner, this)), null, dbLocker);
+        return findFirst(Where.create(BaseEntity.buildCond(owner, entity)), null, dbLocker);
     }
 
     public Entity findFirst(Fields fields) throws Exception {
-        return findFirst(Where.create(buildCond(owner, this)), fields, null);
+        return findFirst(Where.create(BaseEntity.buildCond(owner, entity)), fields, null);
     }
 
     public Entity findFirst(Fields fields, IDBLocker dbLocker) throws Exception {
-        return findFirst(Where.create(buildCond(owner, this)), fields, dbLocker);
+        return findFirst(Where.create(BaseEntity.buildCond(owner, entity)), fields, dbLocker);
     }
 
     public Entity findFirst(Where where) throws Exception {
@@ -361,25 +309,12 @@ public abstract class BaseEntity<Entity extends IEntity, PK extends Serializable
         return findFirst(where, fields, null);
     }
 
-    public static <Entity extends IEntity> Entity findFirst(IDatabase owner, IDatabaseConnectionHolder connectionHolder, String dataSourceName, IShardingable shardingable, Class<Entity> entityClass, Where where, Fields fields, IDBLocker dbLocker) throws Exception {
-        try (IDatabaseSession session = new DefaultDatabaseSession(owner, getSafeConnectionHolder(owner, connectionHolder, dataSourceName))) {
-            EntitySQL<Entity> entitySql = EntitySQL.create(entityClass);
-            if (fields != null) {
-                entitySql.field(fields);
-            }
-            if (dbLocker != null) {
-                entitySql.forUpdate(dbLocker);
-            }
-            return session.findFirst(entitySql, where, shardingable);
-        }
-    }
-
     public Entity findFirst(Where where, Fields fields, IDBLocker dbLocker) throws Exception {
-        return findFirst(owner, getConnectionHolder(), getDataSourceName(), getShardingable(), getEntityClass(), where, fields, dbLocker);
+        return BaseEntity.findFirst(owner, getConnectionHolder(), getDataSourceName(), getShardingable(), getEntityClass(), where, fields, dbLocker);
     }
 
     public long count() throws Exception {
-        return count(Where.create(buildCond(owner, this)));
+        return count(Where.create(BaseEntity.buildCond(owner, entity)));
     }
 
     public long count(Where where) throws Exception {
@@ -388,66 +323,11 @@ public abstract class BaseEntity<Entity extends IEntity, PK extends Serializable
         }
     }
 
-    public <T extends BaseEntity> EntityStateWrapper<T> stateWrapper() throws Exception {
+    public EntityStateWrapper<Entity> stateWrapper() throws Exception {
         return stateWrapper(true);
     }
 
-    @SuppressWarnings("unchecked")
-    public <T extends BaseEntity> EntityStateWrapper<T> stateWrapper(boolean ignoreNull) throws Exception {
-        return EntityStateWrapper.bind((T) this, ignoreNull);
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) {
-            return true;
-        }
-        if (o == null || getClass() != o.getClass()) {
-            return false;
-        }
-        BaseEntity that = (BaseEntity) o;
-        return getId() != null ? getId().equals(that.getId()) : that.getId() == null;
-    }
-
-    @Override
-    public int hashCode() {
-        return getId() != null ? getId().hashCode() : 0;
-    }
-
-    @Override
-    public String toString() {
-        return ToStringBuilder.reflectionToString(this, ToStringStyle.DEFAULT_STYLE);
-    }
-
-    public static <T extends IEntity> Cond buildCond(IDatabase owner, T entity) throws Exception {
-        return buildCond(owner, entity, false);
-    }
-
-    public static <T extends IEntity> Cond buildCond(IDatabase owner, T entity, boolean or) throws Exception {
-        Cond cond = Cond.create(owner);
-        EntityMeta entityMeta = EntityMeta.load(entity.getClass());
-        ClassUtils.BeanWrapper<T> wrapper = ClassUtils.wrapper(entity);
-        boolean flag = false;
-        for (String field : entityMeta.getPropertyNames()) {
-            Object value;
-            if (entityMeta.isMultiplePrimaryKey() && entityMeta.isPrimaryKey(field)) {
-                value = entityMeta.getPropertyByName(field).getField().get(entity.getId());
-            } else {
-                value = wrapper.getValue(entityMeta.getPropertyByName(field).getField().getName());
-            }
-            if (value != null) {
-                if (flag) {
-                    if (or) {
-                        cond.or();
-                    } else {
-                        cond.and();
-                    }
-                } else {
-                    flag = true;
-                }
-                cond.eq(field).param(value);
-            }
-        }
-        return cond;
+    public EntityStateWrapper<Entity> stateWrapper(boolean ignoreNull) throws Exception {
+        return EntityStateWrapper.bind(entity, ignoreNull);
     }
 }
