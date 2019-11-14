@@ -17,8 +17,8 @@ package net.ymate.platform.commons;
 
 import net.ymate.platform.commons.lang.BlurObject;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.poi.hssf.usermodel.HSSFDateUtil;
 import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.DateUtil;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 
@@ -82,7 +82,7 @@ public interface ISheetHandler<T> {
                         value = cell.getStringCellValue();
                         break;
                     case NUMERIC:
-                        if (HSSFDateUtil.isCellDateFormatted(cell) && cell.getDateCellValue() != null) {
+                        if (DateUtil.isCellDateFormatted(cell) && cell.getDateCellValue() != null) {
                             value = cell.getDateCellValue().getTime();
                         } else {
                             value = new DecimalFormat("0").format(cell.getNumericCellValue());
