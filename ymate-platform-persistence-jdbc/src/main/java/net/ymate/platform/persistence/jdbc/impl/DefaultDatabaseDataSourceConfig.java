@@ -88,7 +88,7 @@ public final class DefaultDatabaseDataSourceConfig extends AbstractDataSourceCon
                 adapterClassName = StringUtils.defaultIfBlank(JDBC.DS_ADAPTERS.get(adapterClassName), adapterClassName);
                 this.adapterClass = (Class<? extends IDatabaseDataSourceAdapter>) ClassUtils.loadClass(adapterClassName, this.getClass());
                 // 连接和数据库类型
-                this.type = StringUtils.defaultIfBlank(configReader.getString(IDatabaseConfig.TYPE).toUpperCase(), Type.DATABASE.UNKNOWN);
+                this.type = StringUtils.defaultIfBlank(configReader.getString(IDatabaseConfig.TYPE), Type.DATABASE.UNKNOWN).toUpperCase();
                 //
                 String filePath = RuntimeUtils.replaceEnvVariable(configReader.getString(IDatabaseConfig.CONFIG_FILE));
                 if (StringUtils.isNotBlank(filePath)) {
@@ -118,7 +118,7 @@ public final class DefaultDatabaseDataSourceConfig extends AbstractDataSourceCon
             throw new NullArgumentException("connectionUrl");
         }
         connectionUrl = RuntimeUtils.replaceEnvVariable(connectionUrl);
-        if (type == null) {
+        if (type == null || Type.DATABASE.UNKNOWN.equalsIgnoreCase(type)) {
             parseDatabaseType();
         }
         driverClass = StringUtils.defaultIfBlank(driverClass, JDBC.DB_DRIVERS.get(this.type));
