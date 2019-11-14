@@ -531,7 +531,7 @@ public class ClassUtils {
                                     if (!StringUtils.startsWith(lineStr, "#")) {
                                         try {
                                             Class<T> loadedClass = (Class<T>) loadClass(lineStr, clazz);
-                                            if (ClassUtils.isNormalClass(loadedClass) && !classesCache.contains(loadedClass)) {
+                                            if (ClassUtils.isNormalClass(loadedClass) && !loadedClass.isInterface() && !classesCache.contains(loadedClass)) {
                                                 classesCache.add(loadedClass);
                                             }
                                         } catch (ClassNotFoundException e) {
