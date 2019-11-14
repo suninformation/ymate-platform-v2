@@ -169,7 +169,7 @@ public class RuntimeUtils {
         if (rootUrl == null) {
             rootUrl = RuntimeUtils.class.getClassLoader().getResource(StringUtils.EMPTY);
             if (rootUrl != null) {
-                rootPath = rootUrl.getPath();
+                rootPath = StringUtils.removeEnd(rootUrl.getPath(), "/");
             }
         } else {
             rootPath = StringUtils.removeEnd(StringUtils.substringBefore(rootUrl.getPath(), safe ? "classes/" : "WEB-INF/"), "/");
