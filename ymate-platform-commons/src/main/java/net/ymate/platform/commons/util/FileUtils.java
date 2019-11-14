@@ -341,4 +341,33 @@ public class FileUtils {
         }
         return !newFile.isDirectory();
     }
+
+    /**
+     * 按数组顺序查加载文件并返回文件输入流
+     *
+     * @param filePaths 文件列表
+     * @return 返回文件输入流
+     * @since 2.1.0
+     */
+    public static InputStream loadFileAsStream(String... filePaths) {
+        InputStream inputStream = null;
+        if (filePaths != null && filePaths.length > 0) {
+            for (String filePath : filePaths) {
+                if (StringUtils.isNotBlank(filePath)) {
+                    File file = new File(filePath);
+                    if (file.isAbsolute() && file.exists() && file.isFile()) {
+                        try {
+                            inputStream = new FileInputStream(file);
+                            if (LOG.isInfoEnabled()) {
+                                LOG.info(String.format("Found and load the file: %s", file.getPath()));
+                            }
+                            break;
+                        } catch (FileNotFoundException ignored) {
+                        }
+                    }
+                }
+            }
+        }
+        return inputStream;
+    }
 }

@@ -16,6 +16,8 @@
 package net.ymate.platform.commons.util;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -28,6 +30,8 @@ import java.util.*;
  * @author 刘镇 (suninformation@163.com) on 2010-5-16 下午04:12:19
  */
 public class ResourceUtils {
+
+    private static final Log LOG = LogFactory.getLog(ResourceUtils.class);
 
     public static final char PATH_SEPARATOR_CHAR = '/';
 
@@ -80,6 +84,37 @@ public class ResourceUtils {
     public static InputStream getResourceAsStream(String resourceName, Class<?> callingClass) throws IOException {
         URL url = getResource(resourceName, callingClass);
         return url != null ? url.openStream() : null;
+    }
+
+    /**
+     * 按数组顺序查加载资源文件并返回输入流
+     *
+     * @param callingClass 调用都类型
+     * @param filePaths    资源文件列表
+     * @return 返回文件输入流
+     * @since 2.1.0
+     */
+    public static InputStream getResourceAsStream(Class<?> callingClass, String... filePaths) {
+        InputStream inputStream = null;
+        if (filePaths != null && filePaths.length > 0) {
+            ClassLoader classLoader = callingClass.getClassLoader();
+            for (String filePath : filePaths) {
+                if (StringUtils.isNotBlank(filePath)) {
+                    URL url = classLoader.getResource(filePath);
+                    if (url != null) {
+                        try {
+                            inputStream = url.openStream();
+                            if (LOG.isInfoEnabled()) {
+                                LOG.info(String.format("Found and load the resource file: %s", url));
+                            }
+                            break;
+                        } catch (IOException ignored) {
+                        }
+                    }
+                }
+            }
+        }
+        return inputStream;
     }
 
     protected static class AggregateIterator<E> implements Iterator<E> {
