@@ -164,8 +164,8 @@ public final class WebMVC implements IModule, IWebMvc {
             if (!viewFile.exists()) {
                 viewFile = new File(config.getAbstractBaseViewPath(), Type.Const.DEFAULT_ERROR_VIEW_FILE);
                 try (InputStream inputStream = WebUtils.class.getClassLoader().getResourceAsStream("META-INF/templates-default-error.jsp")) {
-                    if (!FileUtils.createFileIfNotExists(viewFile, inputStream) && LOG.isInfoEnabled()) {
-                        LOG.info(String.format("Failed to create default error page file: %s", viewFile.getPath()));
+                    if (!FileUtils.createFileIfNotExists(viewFile, inputStream) && LOG.isWarnEnabled()) {
+                        LOG.warn(String.format("Failed to create default error page file: %s", viewFile.getPath()));
                     }
                 } catch (IOException e) {
                     if (LOG.isWarnEnabled()) {

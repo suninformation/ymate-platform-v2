@@ -18,6 +18,7 @@ package net.ymate.platform.core.impl;
 import net.ymate.platform.commons.ReentrantLockHelper;
 import net.ymate.platform.commons.lang.BlurObject;
 import net.ymate.platform.commons.util.FileUtils;
+import net.ymate.platform.commons.util.ResourceUtils;
 import net.ymate.platform.commons.util.RuntimeUtils;
 import net.ymate.platform.core.IApplication;
 import net.ymate.platform.core.IApplicationConfigureParser;
@@ -32,7 +33,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import java.io.*;
-import java.net.URL;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -100,30 +100,7 @@ public class DefaultApplicationConfigureParser implements IApplicationConfigureP
             filePaths.add(String.format("%s_UNIX.properties", configFileName));
         }
         filePaths.add(String.format("%s.properties", CONFIG_FILE_PREFIX));
-        return loadSystemConfigAsStream(filePaths.toArray(new String[0]));
-    }
-
-    private static InputStream loadSystemConfigAsStream(String... filePaths) {
-        InputStream inputStream = null;
-        if (filePaths != null && filePaths.length > 0) {
-            ClassLoader classLoader = DefaultApplicationConfigureParser.class.getClassLoader();
-            for (String filePath : filePaths) {
-                if (StringUtils.isNotBlank(filePath)) {
-                    URL url = classLoader.getResource(filePath);
-                    if (url != null) {
-                        try {
-                            inputStream = url.openStream();
-                            if (LOG.isInfoEnabled()) {
-                                LOG.info(String.format("Found and load the configuration file: %s", url));
-                            }
-                            break;
-                        } catch (IOException ignored) {
-                        }
-                    }
-                }
-            }
-        }
-        return inputStream;
+        return ResourceUtils.getResourceAsStream(DefaultApplicationConfigureParser.class, filePaths.toArray(new String[0]));
     }
 
     public DefaultApplicationConfigureParser(Map<?, ?> configData) {

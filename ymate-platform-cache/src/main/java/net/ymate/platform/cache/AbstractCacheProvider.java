@@ -92,12 +92,12 @@ public abstract class AbstractCacheProvider implements ICacheProvider {
         if (configFile == null) {
             configFile = new File(RuntimeUtils.replaceEnvVariable(ICacheConfig.DEFAULT_CONFIG_FILE));
             try (InputStream inputStream = AbstractCacheProvider.class.getClassLoader().getResourceAsStream("META-INF/default-ehcache.xml")) {
-                if (!FileUtils.createFileIfNotExists(configFile, inputStream) && LOG.isInfoEnabled()) {
-                    LOG.info(String.format("Failed to create default ehcache file: %s", configFile.getPath()));
+                if (!FileUtils.createFileIfNotExists(configFile, inputStream) && LOG.isWarnEnabled()) {
+                    LOG.warn(String.format("Failed to create default ehcache config file: %s", configFile.getPath()));
                 }
             } catch (IOException e) {
                 if (LOG.isWarnEnabled()) {
-                    LOG.warn(String.format("An exception occurred while trying to generate the default ehcache file: %s", configFile.getPath()), RuntimeUtils.unwrapThrow(e));
+                    LOG.warn(String.format("An exception occurred while trying to generate the default ehcache config file: %s", configFile.getPath()), RuntimeUtils.unwrapThrow(e));
                 }
             }
         }

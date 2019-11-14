@@ -108,8 +108,8 @@ public final class DefaultLogConfig implements ILogConfig {
                 throw new IllegalArgumentException(String.format("Parameter config_file value [%s] is not an absolute file path.", configFile.getPath()));
             } else if (!configFile.exists()) {
                 try (InputStream inputStream = DefaultLogConfig.class.getClassLoader().getResourceAsStream("META-INF/default-log4j.xml")) {
-                    if (!FileUtils.createFileIfNotExists(configFile, inputStream) && LOG.isInfoEnabled()) {
-                        LOG.info(String.format("Failed to create default log4j file: %s", configFile.getPath()));
+                    if (!FileUtils.createFileIfNotExists(configFile, inputStream) && LOG.isWarnEnabled()) {
+                        LOG.warn(String.format("Failed to create default log4j file: %s", configFile.getPath()));
                     }
                 } catch (IOException e) {
                     if (LOG.isWarnEnabled()) {
