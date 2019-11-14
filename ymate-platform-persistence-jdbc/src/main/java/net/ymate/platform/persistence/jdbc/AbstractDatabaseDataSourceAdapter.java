@@ -109,10 +109,16 @@ public abstract class AbstractDatabaseDataSourceAdapter extends AbstractDataSour
             properties.load(inputStream);
         }
         //
-        properties.put("driverClassName", getDataSourceConfig().getDriverClass());
+        if (StringUtils.isNotBlank(getDataSourceConfig().getDriverClass())) {
+            properties.put("driverClassName", getDataSourceConfig().getDriverClass());
+        }
         properties.put(forHikari ? "jdbcUrl" : "url", getDataSourceConfig().getConnectionUrl());
-        properties.put("username", getDataSourceConfig().getUsername());
-        properties.put("password", decryptPasswordIfNeed());
+        if (StringUtils.isNotBlank(getDataSourceConfig().getUsername())) {
+            properties.put("username", StringUtils.trimToEmpty(getDataSourceConfig().getUsername()));
+        }
+        if (StringUtils.isNotBlank(getDataSourceConfig().getPassword())) {
+            properties.put("password", decryptPasswordIfNeed());
+        }
         //
         return properties;
     }

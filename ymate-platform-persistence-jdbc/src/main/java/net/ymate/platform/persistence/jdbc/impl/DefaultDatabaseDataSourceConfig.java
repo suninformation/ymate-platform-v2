@@ -72,31 +72,28 @@ public final class DefaultDatabaseDataSourceConfig extends AbstractDataSourceCon
     @SuppressWarnings("unchecked")
     private DefaultDatabaseDataSourceConfig(String dataSourceName, IConfigReader configReader) throws ClassNotFoundException {
         super(dataSourceName, configReader);
-        // 验证必填参数
-        if (StringUtils.isNotBlank(getUsername())) {
-            this.connectionUrl = configReader.getString(IDatabaseConfig.CONNECTION_URL);
-            if (StringUtils.isNotBlank(this.connectionUrl)) {
-                // 基础参数
-                this.showSql = configReader.getBoolean(IDatabaseConfig.SHOW_SQL);
-                this.stackTraces = configReader.getBoolean(IDatabaseConfig.STACK_TRACES);
-                this.stackTraceDepth = configReader.getInt(IDatabaseConfig.STACK_TRACE_DEPTH);
-                this.stackTracePackage = configReader.getString(IDatabaseConfig.STACK_TRACE_PACKAGE);
-                this.tablePrefix = configReader.getString(IDatabaseConfig.TABLE_PREFIX);
-                this.identifierQuote = configReader.getString(IDatabaseConfig.IDENTIFIER_QUOTE);
-                // 数据源适配器
-                String adapterClassName = configReader.getString(IDatabaseConfig.ADAPTER_CLASS, IDatabaseConfig.DEFAULT_STR);
-                adapterClassName = StringUtils.defaultIfBlank(JDBC.DS_ADAPTERS.get(adapterClassName), adapterClassName);
-                this.adapterClass = (Class<? extends IDatabaseDataSourceAdapter>) ClassUtils.loadClass(adapterClassName, this.getClass());
-                // 连接和数据库类型
-                this.type = StringUtils.defaultIfBlank(configReader.getString(IDatabaseConfig.TYPE), Type.DATABASE.UNKNOWN).toUpperCase();
-                //
-                String filePath = RuntimeUtils.replaceEnvVariable(configReader.getString(IDatabaseConfig.CONFIG_FILE));
-                if (StringUtils.isNotBlank(filePath)) {
-                    this.configFile = new File(filePath);
-                }
-                this.dialectClass = configReader.getString(IDatabaseConfig.DIALECT_CLASS);
-                this.driverClass = configReader.getString(IDatabaseConfig.DRIVER_CLASS);
+        this.connectionUrl = configReader.getString(IDatabaseConfig.CONNECTION_URL);
+        if (StringUtils.isNotBlank(this.connectionUrl)) {
+            // 基础参数
+            this.showSql = configReader.getBoolean(IDatabaseConfig.SHOW_SQL);
+            this.stackTraces = configReader.getBoolean(IDatabaseConfig.STACK_TRACES);
+            this.stackTraceDepth = configReader.getInt(IDatabaseConfig.STACK_TRACE_DEPTH);
+            this.stackTracePackage = configReader.getString(IDatabaseConfig.STACK_TRACE_PACKAGE);
+            this.tablePrefix = configReader.getString(IDatabaseConfig.TABLE_PREFIX);
+            this.identifierQuote = configReader.getString(IDatabaseConfig.IDENTIFIER_QUOTE);
+            // 数据源适配器
+            String adapterClassName = configReader.getString(IDatabaseConfig.ADAPTER_CLASS, IDatabaseConfig.DEFAULT_STR);
+            adapterClassName = StringUtils.defaultIfBlank(JDBC.DS_ADAPTERS.get(adapterClassName), adapterClassName);
+            this.adapterClass = (Class<? extends IDatabaseDataSourceAdapter>) ClassUtils.loadClass(adapterClassName, this.getClass());
+            // 连接和数据库类型
+            this.type = StringUtils.defaultIfBlank(configReader.getString(IDatabaseConfig.TYPE), Type.DATABASE.UNKNOWN).toUpperCase();
+            //
+            String filePath = RuntimeUtils.replaceEnvVariable(configReader.getString(IDatabaseConfig.CONFIG_FILE));
+            if (StringUtils.isNotBlank(filePath)) {
+                this.configFile = new File(filePath);
             }
+            this.dialectClass = configReader.getString(IDatabaseConfig.DIALECT_CLASS);
+            this.driverClass = configReader.getString(IDatabaseConfig.DRIVER_CLASS);
         }
     }
 
