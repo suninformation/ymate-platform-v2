@@ -17,6 +17,7 @@ package net.ymate.platform.persistence.jdbc.dialect.impl;
 
 import net.ymate.platform.commons.util.ExpressionUtils;
 import net.ymate.platform.core.persistence.base.Type;
+import net.ymate.platform.persistence.jdbc.annotation.Dialect;
 import net.ymate.platform.persistence.jdbc.dialect.AbstractDialect;
 
 /**
@@ -24,11 +25,12 @@ import net.ymate.platform.persistence.jdbc.dialect.AbstractDialect;
  *
  * @author 刘镇 (suninformation@163.com) on 15/4/16 上午11:26
  */
+@Dialect(value = Type.DATABASE.DB2, driverClass = "com.ibm.db2.jcc.DB2Driver")
 public class DB2Dialect extends AbstractDialect {
 
     @Override
     public String getName() {
-        return Type.DATABASE.DB2.name();
+        return Type.DATABASE.DB2;
     }
 
     @Override

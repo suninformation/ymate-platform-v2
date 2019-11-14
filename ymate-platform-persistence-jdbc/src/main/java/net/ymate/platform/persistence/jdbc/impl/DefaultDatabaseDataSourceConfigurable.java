@@ -116,8 +116,8 @@ public final class DefaultDatabaseDataSourceConfigurable extends AbstractDataSou
             return this;
         }
 
-        public Builder type(Type.DATABASE type) {
-            configurable.addConfig(IDatabaseConfig.TYPE, type.name());
+        public Builder type(String type) {
+            configurable.addConfig(IDatabaseConfig.TYPE, type);
             return this;
         }
 
@@ -131,7 +131,7 @@ public final class DefaultDatabaseDataSourceConfigurable extends AbstractDataSou
             return this;
         }
 
-        public IDataSourceConfigurable build() {
+        public IDatabaseDataSourceConfigurable build() {
             return configurable;
         }
     }

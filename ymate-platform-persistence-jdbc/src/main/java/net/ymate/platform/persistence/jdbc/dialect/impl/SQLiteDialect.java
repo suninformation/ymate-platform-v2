@@ -16,6 +16,7 @@
 package net.ymate.platform.persistence.jdbc.dialect.impl;
 
 import net.ymate.platform.core.persistence.base.Type;
+import net.ymate.platform.persistence.jdbc.annotation.Dialect;
 import net.ymate.platform.persistence.jdbc.dialect.AbstractDialect;
 
 /**
@@ -23,10 +24,11 @@ import net.ymate.platform.persistence.jdbc.dialect.AbstractDialect;
  *
  * @author 刘镇 (suninformation@163.com) on 15/4/16 上午11:28
  */
+@Dialect(value = Type.DATABASE.SQLITE, driverClass = "org.sqlite.JDBC")
 public class SQLiteDialect extends AbstractDialect {
 
     @Override
     public String getName() {
-        return Type.DATABASE.SQLITE.name();
+        return Type.DATABASE.SQLITE;
     }
 }

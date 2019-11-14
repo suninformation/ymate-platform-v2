@@ -71,9 +71,6 @@ public abstract class AbstractPersistenceConfig<OWNER extends IPersistence, DATA
     public void initialize(OWNER owner) throws Exception {
         if (!initialized) {
             dataSourceDefaultName = StringUtils.defaultIfBlank(dataSourceDefaultName, DEFAULT_STR);
-            if (!dataSourceConfigs.containsKey(this.dataSourceDefaultName)) {
-                throw new IllegalArgumentException("The default datasource name does not match.");
-            }
             //
             for (DATA_SOURCE_CONFIG dataSourceConfig : dataSourceConfigs.values()) {
                 dataSourceConfig.initialize(owner);

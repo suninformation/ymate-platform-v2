@@ -15,7 +15,9 @@
  */
 package net.ymate.platform.persistence.jdbc.impl;
 
+import net.ymate.platform.core.persistence.base.Type;
 import net.ymate.platform.persistence.jdbc.AbstractDatabaseDataSourceAdapter;
+import net.ymate.platform.persistence.jdbc.annotation.DataSourceAdapter;
 
 import javax.naming.Context;
 import javax.naming.InitialContext;
@@ -27,6 +29,7 @@ import java.sql.Connection;
  *
  * @author 刘镇 (suninformation@163.com) on 2013年12月19日 下午2:43:51
  */
+@DataSourceAdapter(Type.DS_ADAPTER.JNDI)
 public class JNDIDataSourceAdapter extends AbstractDatabaseDataSourceAdapter {
 
     private DataSource dataSource;

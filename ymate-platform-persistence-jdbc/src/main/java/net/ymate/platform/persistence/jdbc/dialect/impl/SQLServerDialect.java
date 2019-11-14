@@ -17,6 +17,7 @@ package net.ymate.platform.persistence.jdbc.dialect.impl;
 
 import net.ymate.platform.commons.util.ExpressionUtils;
 import net.ymate.platform.core.persistence.base.Type;
+import net.ymate.platform.persistence.jdbc.annotation.Dialect;
 import net.ymate.platform.persistence.jdbc.dialect.AbstractDialect;
 
 /**
@@ -24,6 +25,7 @@ import net.ymate.platform.persistence.jdbc.dialect.AbstractDialect;
  *
  * @author 刘镇 (suninformation@163.com) on 2012-4-19 下午3:38:40
  */
+@Dialect(value = Type.DATABASE.SQLSERVER, driverClass = "com.microsoft.sqlserver.jdbc.SQLServerDriver")
 public class SQLServerDialect extends AbstractDialect {
 
     public SQLServerDialect() {
@@ -32,7 +34,7 @@ public class SQLServerDialect extends AbstractDialect {
 
     @Override
     public String getName() {
-        return Type.DATABASE.SQLSERVER.name();
+        return Type.DATABASE.SQLSERVER;
     }
 
     @Override

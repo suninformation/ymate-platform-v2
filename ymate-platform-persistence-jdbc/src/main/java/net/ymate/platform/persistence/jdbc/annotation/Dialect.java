@@ -13,22 +13,30 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.ymate.platform.persistence.jdbc.dialect.impl;
+package net.ymate.platform.persistence.jdbc.annotation;
 
-import net.ymate.platform.core.persistence.base.Type;
-import net.ymate.platform.persistence.jdbc.annotation.Dialect;
-import net.ymate.platform.persistence.jdbc.dialect.AbstractDialect;
+import org.apache.commons.lang3.StringUtils;
+
+import java.lang.annotation.*;
 
 /**
- * H2数据库方言接口实现
+ * 声明一个类为数据库方言接口实现
  *
- * @author 刘镇 (suninformation@163.com) on 15/4/16 上午11:33
+ * @author 刘镇 (suninformation@163.com) on 2019-11-14 11:05
+ * @since 2.1.0
  */
-@Dialect(value = Type.DATABASE.H2, driverClass = "org.h2.Driver")
-public class H2Dialect extends AbstractDialect {
+@Target(ElementType.TYPE)
+@Retention(RetentionPolicy.RUNTIME)
+@Documented
+public @interface Dialect {
 
-    @Override
-    public String getName() {
-        return Type.DATABASE.H2;
-    }
+    /**
+     * @return 数据库方言名称
+     */
+    String value();
+
+    /**
+     * @return 数据库默认驱动类名称
+     */
+    String driverClass() default StringUtils.EMPTY;
 }

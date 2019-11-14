@@ -22,6 +22,7 @@ import net.ymate.platform.core.persistence.IShardingRule;
 import net.ymate.platform.core.persistence.IShardingable;
 import net.ymate.platform.core.persistence.base.EntityMeta;
 import net.ymate.platform.core.persistence.base.IEntity;
+import net.ymate.platform.core.persistence.base.Type;
 import org.apache.commons.lang3.StringUtils;
 
 import java.math.BigDecimal;
@@ -125,36 +126,36 @@ public abstract class AbstractDialect implements IDialect {
         throw new UnsupportedOperationException();
     }
 
-    protected String doGetColumnType(Class<?> clazz) {
-        String columnType = "VARCHAR";
+    protected Type.FIELD doGetColumnType(Class<?> clazz) {
+        Type.FIELD columnType = Type.FIELD.VARCHAR;
         if (BigDecimal.class.equals(clazz)) {
-            columnType = "NUMERIC";
+            columnType = Type.FIELD.NUMBER;
         } else if (Boolean.class.equals(clazz) || boolean.class.equals(clazz)) {
-            columnType = "BIT";
+            columnType = Type.FIELD.TINYINT;
         } else if (Byte.class.equals(clazz) || byte.class.equals(clazz)) {
-            columnType = "TINYINT";
+            columnType = Type.FIELD.BIT;
         } else if (Short.class.equals(clazz) || short.class.equals(clazz)) {
-            columnType = "SMALLINT";
+            columnType = Type.FIELD.SMALLINT;
         } else if (Integer.class.equals(clazz) || int.class.equals(clazz)) {
-            columnType = "INTEGER";
+            columnType = Type.FIELD.INT;
         } else if (Long.class.equals(clazz) || long.class.equals(clazz)) {
-            columnType = "BIGINT";
+            columnType = Type.FIELD.LONG;
         } else if (Float.class.equals(clazz) || float.class.equals(clazz)) {
-            columnType = "FLOAT";
+            columnType = Type.FIELD.FLOAT;
         } else if (Double.class.equals(clazz) || double.class.equals(clazz)) {
-            columnType = "DOUBLE";
+            columnType = Type.FIELD.DOUBLE;
         } else if (byte[].class.equals(clazz) || Byte[].class.equals(clazz)) {
-            columnType = "BINARY";
+            columnType = Type.FIELD.BINARY;
         } else if (java.sql.Date.class.equals(clazz) || java.util.Date.class.equals(clazz)) {
-            columnType = "DATE";
+            columnType = Type.FIELD.DATE;
         } else if (java.sql.Time.class.equals(clazz)) {
-            columnType = "TIME";
+            columnType = Type.FIELD.TIME;
         } else if (java.sql.Timestamp.class.equals(clazz)) {
-            columnType = "TIMESTAMP";
+            columnType = Type.FIELD.TIMESTAMP;
         } else if (java.sql.Blob.class.equals(clazz)) {
-            columnType = "BLOB";
+            columnType = Type.FIELD.BLOB;
         } else if (java.sql.Clob.class.equals(clazz)) {
-            columnType = "CLOB";
+            columnType = Type.FIELD.CLOB;
         }
         return columnType;
     }
@@ -201,11 +202,11 @@ public abstract class AbstractDialect implements IDialect {
     protected void doValidProperty(EntityMeta entityMeta, Fields fields, boolean isPrimaryKeys) {
         if (isPrimaryKeys) {
             fields.fields().stream().filter((pkField) -> (!entityMeta.isPrimaryKey(pkField))).forEachOrdered((pkField) -> {
-                throw new IllegalArgumentException("'".concat(pkField).concat("' isn't primary key field."));
+                throw new IllegalArgumentException(String.format("'%s' isn't primary key field.", pkField));
             });
         } else {
             fields.fields().stream().filter((field) -> (!entityMeta.containsProperty(field))).forEachOrdered((field) -> {
-                throw new IllegalArgumentException("'".concat(field).concat("' isn't table field."));
+                throw new IllegalArgumentException(String.format("'%s' isn't table field.", field));
             });
         }
     }
@@ -257,7 +258,7 @@ public abstract class AbstractDialect implements IDialect {
                 }
                 newFields.add(field);
             } else {
-                throw new IllegalArgumentException("'".concat(field).concat("' isn't table field"));
+                throw new IllegalArgumentException(String.format("'%s' isn't table field", field));
             }
         }
         exp.set("fields", doGenerateFieldsFormatStr(newFields, " = ?", null));

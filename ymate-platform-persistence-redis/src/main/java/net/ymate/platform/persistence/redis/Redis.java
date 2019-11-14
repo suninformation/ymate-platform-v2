@@ -130,12 +130,16 @@ public final class Redis implements IModule, IRedis {
 
     @Override
     public IRedisCommandHolder getDefaultConnectionHolder() {
-        return new RedisCommandHolder(dataSourceCaches.get(config.getDefaultDataSourceName()));
+        return getConnectionHolder(config.getDefaultDataSourceName());
     }
 
     @Override
     public IRedisCommandHolder getConnectionHolder(String dataSourceName) {
-        return new RedisCommandHolder(dataSourceCaches.get(dataSourceName));
+        IRedisDataSourceAdapter dataSourceAdapter = dataSourceCaches.get(dataSourceName);
+        if (dataSourceAdapter == null) {
+            throw new IllegalStateException("Datasource '" + dataSourceName + "' not found.");
+        }
+        return new RedisCommandHolder(dataSourceAdapter);
     }
 
     @Override

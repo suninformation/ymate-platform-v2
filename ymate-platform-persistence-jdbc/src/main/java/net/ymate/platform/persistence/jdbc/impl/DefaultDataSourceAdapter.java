@@ -15,7 +15,9 @@
  */
 package net.ymate.platform.persistence.jdbc.impl;
 
+import net.ymate.platform.core.persistence.base.Type;
 import net.ymate.platform.persistence.jdbc.AbstractDatabaseDataSourceAdapter;
+import net.ymate.platform.persistence.jdbc.annotation.DataSourceAdapter;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -25,6 +27,7 @@ import java.sql.DriverManager;
  *
  * @author 刘镇 (suninformation@163.com) on 2012-12-29 下午4:12:05
  */
+@DataSourceAdapter(Type.DS_ADAPTER.DEFAULT)
 public class DefaultDataSourceAdapter extends AbstractDatabaseDataSourceAdapter {
 
     private String password;

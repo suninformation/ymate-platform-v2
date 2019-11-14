@@ -53,12 +53,14 @@ public abstract class AbstractDataSourceConfig<OWNER extends IPersistence> imple
         //
         this.username = configReader.getString(IPersistenceConfig.USERNAME);
         this.password = configReader.getString(IPersistenceConfig.PASSWORD);
-        this.passwordEncrypted = configReader.getBoolean(IPersistenceConfig.PASSWORD_ENCRYPTED);
         //
-        if (this.passwordEncrypted) {
-            String passwordClassStr = configReader.getString(IPersistenceConfig.PASSWORD_CLASS);
-            if (this.passwordEncrypted && StringUtils.isNotBlank(this.password) && StringUtils.isNotBlank(passwordClassStr)) {
-                this.passwordClass = (Class<? extends IPasswordProcessor>) ClassUtils.loadClass(passwordClassStr, this.getClass());
+        if (StringUtils.isNotBlank(this.password)) {
+            this.passwordEncrypted = configReader.getBoolean(IPersistenceConfig.PASSWORD_ENCRYPTED);
+            if (this.passwordEncrypted) {
+                String passwordClassStr = configReader.getString(IPersistenceConfig.PASSWORD_CLASS);
+                if (StringUtils.isNotBlank(passwordClassStr)) {
+                    this.passwordClass = (Class<? extends IPasswordProcessor>) ClassUtils.loadClass(passwordClassStr, this.getClass());
+                }
             }
         }
     }

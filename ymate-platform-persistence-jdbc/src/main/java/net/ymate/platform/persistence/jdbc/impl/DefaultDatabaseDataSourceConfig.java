@@ -41,7 +41,7 @@ public final class DefaultDatabaseDataSourceConfig extends AbstractDataSourceCon
 
     private File configFile;
 
-    private Type.DATABASE type;
+    private String type;
 
     private String dialectClass;
 
@@ -88,10 +88,7 @@ public final class DefaultDatabaseDataSourceConfig extends AbstractDataSourceCon
                 adapterClassName = StringUtils.defaultIfBlank(JDBC.DS_ADAPTERS.get(adapterClassName), adapterClassName);
                 this.adapterClass = (Class<? extends IDatabaseDataSourceAdapter>) ClassUtils.loadClass(adapterClassName, this.getClass());
                 // 连接和数据库类型
-                try {
-                    this.type = Type.DATABASE.valueOf(StringUtils.trimToEmpty(configReader.getString(IDatabaseConfig.TYPE)).toUpperCase());
-                } catch (IllegalArgumentException ignored) {
-                }
+                this.type = StringUtils.defaultIfBlank(configReader.getString(IDatabaseConfig.TYPE).toUpperCase(), Type.DATABASE.UNKNOWN);
                 //
                 String filePath = RuntimeUtils.replaceEnvVariable(configReader.getString(IDatabaseConfig.CONFIG_FILE));
                 if (StringUtils.isNotBlank(filePath)) {
@@ -110,7 +107,7 @@ public final class DefaultDatabaseDataSourceConfig extends AbstractDataSourceCon
             if ("microsoft".equals(connStrArr[1])) {
                 this.type = Type.DATABASE.SQLSERVER;
             } else {
-                this.type = Type.DATABASE.valueOf(connStrArr[1].toUpperCase());
+                this.type = connStrArr[1].toUpperCase();
             }
         }
     }
@@ -119,9 +116,6 @@ public final class DefaultDatabaseDataSourceConfig extends AbstractDataSourceCon
     protected void doInitialize(IDatabase iDatabase) throws Exception {
         if (StringUtils.isBlank(connectionUrl)) {
             throw new NullArgumentException("connectionUrl");
-        }
-        if (StringUtils.isNotBlank(getUsername())) {
-            throw new NullArgumentException("username");
         }
         connectionUrl = RuntimeUtils.replaceEnvVariable(connectionUrl);
         if (type == null) {
@@ -176,11 +170,11 @@ public final class DefaultDatabaseDataSourceConfig extends AbstractDataSourceCon
     }
 
     @Override
-    public Type.DATABASE getType() {
+    public String getType() {
         return type;
     }
 
-    public void setType(Type.DATABASE type) {
+    public void setType(String type) {
         if (!isInitialized()) {
             this.type = type;
         }
@@ -291,7 +285,7 @@ public final class DefaultDatabaseDataSourceConfig extends AbstractDataSourceCon
             return this;
         }
 
-        public Builder type(Type.DATABASE type) {
+        public Builder type(String type) {
             config.setType(type);
             return this;
         }

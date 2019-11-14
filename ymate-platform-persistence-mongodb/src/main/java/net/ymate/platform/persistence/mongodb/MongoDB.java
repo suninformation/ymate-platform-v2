@@ -122,11 +122,11 @@ public class MongoDB implements IModule, IMongo {
 
     @Override
     public IMongoConnectionHolder getConnectionHolder(String dataSourceName) throws Exception {
-        IMongoDataSourceAdapter dataSourceAdapter = dataSourceCaches.get(config.getDefaultDataSourceName());
-        if (dataSourceAdapter != null) {
-            return new DefaultMongoConnectionHolder(dataSourceAdapter);
+        IMongoDataSourceAdapter dataSourceAdapter = dataSourceCaches.get(dataSourceName);
+        if (dataSourceAdapter == null) {
+            throw new IllegalStateException("Datasource '" + dataSourceName + "' not found.");
         }
-        return null;
+        return new DefaultMongoConnectionHolder(dataSourceAdapter);
     }
 
     @Override

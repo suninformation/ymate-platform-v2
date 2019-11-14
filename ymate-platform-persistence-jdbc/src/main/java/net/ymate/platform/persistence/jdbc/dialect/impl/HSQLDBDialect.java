@@ -16,6 +16,7 @@
 package net.ymate.platform.persistence.jdbc.dialect.impl;
 
 import net.ymate.platform.core.persistence.base.Type;
+import net.ymate.platform.persistence.jdbc.annotation.Dialect;
 import net.ymate.platform.persistence.jdbc.dialect.AbstractDialect;
 
 /**
@@ -23,11 +24,12 @@ import net.ymate.platform.persistence.jdbc.dialect.AbstractDialect;
  *
  * @author 刘镇 (suninformation@163.com) on 15/4/16 上午11:33
  */
+@Dialect(value = Type.DATABASE.HSQLDB, driverClass = "org.hsqldb.jdbcDriver")
 public class HSQLDBDialect extends AbstractDialect {
 
     @Override
     public String getName() {
-        return Type.DATABASE.HSQLDB.name();
+        return Type.DATABASE.HSQLDB;
     }
 
     @Override

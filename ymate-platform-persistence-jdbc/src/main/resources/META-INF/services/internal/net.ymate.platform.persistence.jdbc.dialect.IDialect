@@ -1,0 +1,8 @@
+net.ymate.platform.persistence.jdbc.dialect.impl.DB2Dialect
+net.ymate.platform.persistence.jdbc.dialect.impl.H2Dialect
+net.ymate.platform.persistence.jdbc.dialect.impl.HSQLDBDialect
+net.ymate.platform.persistence.jdbc.dialect.impl.MySQLDialect
+net.ymate.platform.persistence.jdbc.dialect.impl.OracleDialect
+net.ymate.platform.persistence.jdbc.dialect.impl.PostgreSQLDialect
+net.ymate.platform.persistence.jdbc.dialect.impl.SQLiteDialect
+net.ymate.platform.persistence.jdbc.dialect.impl.SQLServerDialect

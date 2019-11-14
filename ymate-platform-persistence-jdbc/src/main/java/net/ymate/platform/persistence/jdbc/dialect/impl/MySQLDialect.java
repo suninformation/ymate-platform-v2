@@ -21,6 +21,7 @@ import net.ymate.platform.core.persistence.base.EntityMeta;
 import net.ymate.platform.core.persistence.base.IEntity;
 import net.ymate.platform.core.persistence.base.PropertyMeta;
 import net.ymate.platform.core.persistence.base.Type;
+import net.ymate.platform.persistence.jdbc.annotation.Dialect;
 import net.ymate.platform.persistence.jdbc.dialect.AbstractDialect;
 import org.apache.commons.lang3.StringUtils;
 
@@ -33,6 +34,7 @@ import java.util.List;
  *
  * @author 刘镇 (suninformation@163.com) on 2011-8-30 下午01:55:13
  */
+@Dialect(value = Type.DATABASE.MYSQL, driverClass = "com.mysql.jdbc.Driver")
 public class MySQLDialect extends AbstractDialect {
 
     public MySQLDialect() {
@@ -41,7 +43,7 @@ public class MySQLDialect extends AbstractDialect {
 
     @Override
     public String getName() {
-        return Type.DATABASE.MYSQL.name();
+        return Type.DATABASE.MYSQL;
     }
 
     @Override
@@ -50,12 +52,11 @@ public class MySQLDialect extends AbstractDialect {
         if (entityMeta == null) {
             throw new IllegalArgumentException(String.format("Entity class [%s] invalid.", entityClass.getName()));
         }
-        ExpressionUtils exp = ExpressionUtils.bind("CREATE TABLE ${table_name} (\n${fields} ${primary_keys} ${indexes}) ${comment} ")
-                .set("table_name", buildTableName(prefix, entityMeta, shardingable));
+        ExpressionUtils exp = ExpressionUtils.bind("CREATE TABLE ${table_name} (\n${fields} ${primary_keys} ${indexes}) ${comment} ").set("table_name", buildTableName(prefix, entityMeta, shardingable));
         if (StringUtils.isNotBlank(entityMeta.getComment())) {
-            exp.set("comment", "COMMENT='" + StringUtils.trimToEmpty(entityMeta.getComment()) + "'");
+            exp.set("comment", String.format("COMMENT='%s'", StringUtils.trimToEmpty(entityMeta.getComment())));
         } else {
-            exp.set("comment", "");
+            exp.set("comment", StringUtils.EMPTY);
         }
         StringBuilder stringBuilder = new StringBuilder();
         // FIELDS
@@ -94,22 +95,24 @@ public class MySQLDialect extends AbstractDialect {
 
     private void doProcessField(PropertyMeta propertyMeta, StringBuilder stringBuilder) {
         stringBuilder.append("\t").append(wrapIdentifierQuote(propertyMeta.getName())).append(StringUtils.SPACE);
-        String propType;
-        if (!propertyMeta.getType().equals(Type.FIELD.UNKNOWN)) {
-            propType = propertyMeta.getType().name();
+        Type.FIELD propType;
+        if (!Type.FIELD.UNKNOWN.equals(propertyMeta.getType())) {
+            propType = propertyMeta.getType();
         } else {
             propType = doGetColumnType(propertyMeta.getField().getType());
         }
-        if ("VARCHAR".equals(propType) && propertyMeta.getLength() > 2000) {
-            propType = "TEXT";
-        } else if ("BOOLEAN".equals(propType) || "BIT".equals(propType)) {
-            propType = "SMALLINT";
+        boolean needLength;
+        switch (propType) {
+            case DATE:
+            case TIME:
+            case TIMESTAMP:
+            case TEXT:
+                needLength = false;
+                break;
+            default:
+                needLength = true;
         }
-        boolean needLength = true;
-        if ("DATE".equals(propType) || "TIME".equals(propType) || "TIMESTAMP".equals(propType) || "TEXT".equals(propType)) {
-            needLength = false;
-        }
-        stringBuilder.append(propType);
+        stringBuilder.append(propType.getName());
         if (needLength) {
             stringBuilder.append("(").append(propertyMeta.getLength());
             if (propertyMeta.getDecimals() > 0) {
@@ -118,10 +121,17 @@ public class MySQLDialect extends AbstractDialect {
             stringBuilder.append(")");
         }
         if (propertyMeta.isUnsigned()) {
-            if ("NUMERIC".equals(propType) || "LONG".equals(propType) || "FLOAT".equals(propType)
-                    || "SMALLINT".equals(propType) || "TINYINT".equals(propType)
-                    || "DOUBLE".equals(propType) || "INTEGER".equals(propType)) {
-                stringBuilder.append(" unsigned ");
+            switch (propType) {
+                case NUMBER:
+                case LONG:
+                case FLOAT:
+                case SMALLINT:
+                case TINYINT:
+                case DOUBLE:
+                case INT:
+                    stringBuilder.append(" unsigned ");
+                    break;
+                default:
             }
         }
         if (propertyMeta.isNullable()) {

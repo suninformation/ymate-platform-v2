@@ -94,6 +94,7 @@ public class RedisDataSourceAdapter extends AbstractDataSourceAdapter<IRedis, IR
                     isCluster = true;
                 }
                 break;
+            case DEFAULT:
             default:
                 if (dataSourceConfig.getServerMetas().isEmpty()) {
                     pool = new JedisPool(dataSourceConfig.getObjectPoolConfig(), "localhost");

@@ -16,7 +16,9 @@
 package net.ymate.platform.persistence.jdbc.impl;
 
 import com.mchange.v2.c3p0.ComboPooledDataSource;
+import net.ymate.platform.core.persistence.base.Type;
 import net.ymate.platform.persistence.jdbc.AbstractDatabaseDataSourceAdapter;
+import net.ymate.platform.persistence.jdbc.annotation.DataSourceAdapter;
 
 import java.sql.Connection;
 
@@ -25,6 +27,7 @@ import java.sql.Connection;
  *
  * @author 刘镇 (suninformation@163.com) on 2013-6-5 下午4:27:09
  */
+@DataSourceAdapter(Type.DS_ADAPTER.C3P0)
 public class C3P0DataSourceAdapter extends AbstractDatabaseDataSourceAdapter {
 
     private ComboPooledDataSource dataSource;

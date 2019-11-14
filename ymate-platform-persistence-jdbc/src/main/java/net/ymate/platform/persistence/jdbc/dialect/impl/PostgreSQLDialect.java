@@ -16,6 +16,7 @@
 package net.ymate.platform.persistence.jdbc.dialect.impl;
 
 import net.ymate.platform.core.persistence.base.Type;
+import net.ymate.platform.persistence.jdbc.annotation.Dialect;
 import net.ymate.platform.persistence.jdbc.dialect.AbstractDialect;
 
 /**
@@ -23,6 +24,7 @@ import net.ymate.platform.persistence.jdbc.dialect.AbstractDialect;
  *
  * @author 刘镇 (suninformation@163.com) on 15/4/16 上午11:29
  */
+@Dialect(value = Type.DATABASE.POSTGRESQL, driverClass = "org.postgresql.Driver")
 public class PostgreSQLDialect extends AbstractDialect {
 
     public PostgreSQLDialect() {
@@ -31,7 +33,7 @@ public class PostgreSQLDialect extends AbstractDialect {
 
     @Override
     public String getName() {
-        return Type.DATABASE.POSTGRESQL.name();
+        return Type.DATABASE.POSTGRESQL;
     }
 
     @Override

@@ -1,0 +1,6 @@
+net.ymate.platform.persistence.jdbc.impl.DefaultDataSourceAdapter
+net.ymate.platform.persistence.jdbc.impl.JNDIDataSourceAdapter
+net.ymate.platform.persistence.jdbc.impl.C3P0DataSourceAdapter
+net.ymate.platform.persistence.jdbc.impl.DBCPDataSourceAdapter
+net.ymate.platform.persistence.jdbc.impl.DruidDataSourceAdapter
+net.ymate.platform.persistence.jdbc.impl.HikariCPDataSourceAdapter

@@ -17,7 +17,9 @@ package net.ymate.platform.persistence.jdbc.impl;
 
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
+import net.ymate.platform.core.persistence.base.Type;
 import net.ymate.platform.persistence.jdbc.AbstractDatabaseDataSourceAdapter;
+import net.ymate.platform.persistence.jdbc.annotation.DataSourceAdapter;
 
 import java.io.InputStream;
 import java.sql.Connection;
@@ -26,13 +28,14 @@ import java.sql.Connection;
  * @author 刘镇 (suninformation@163.com) on 2019-08-02 14:03
  * @since 2.1.0
  */
+@DataSourceAdapter(Type.DS_ADAPTER.HIKARICP)
 public class HikariCPDataSourceAdapter extends AbstractDatabaseDataSourceAdapter {
 
     private HikariDataSource dataSource;
 
     @Override
     protected void doInitialize() throws Exception {
-        try (InputStream inputStream = getDataSourceConfigFileAsStream("hibaricp", getDataSourceConfig().getName())) {
+        try (InputStream inputStream = getDataSourceConfigFileAsStream(Type.DS_ADAPTER.HIKARICP, getDataSourceConfig().getName())) {
             dataSource = new HikariDataSource(new HikariConfig(doCreateConfigProperties(inputStream, true)));
         }
     }

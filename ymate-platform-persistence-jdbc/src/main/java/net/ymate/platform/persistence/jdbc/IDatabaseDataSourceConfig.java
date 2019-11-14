@@ -17,7 +17,6 @@ package net.ymate.platform.persistence.jdbc;
 
 import net.ymate.platform.core.beans.annotation.Ignored;
 import net.ymate.platform.core.persistence.IDataSourceConfig;
-import net.ymate.platform.core.persistence.base.Type;
 
 import java.io.File;
 
@@ -87,9 +86,9 @@ public interface IDatabaseDataSourceConfig extends IDataSourceConfig<IDatabase> 
     /**
      * 数据库类型，可选参数，默认值将通过连接字符串分析获得
      *
-     * @return 返回数据库类型枚举值
+     * @return 返回数据库类型
      */
-    Type.DATABASE getType();
+    String getType();
 
     /**
      * 数据库方言，可选参数，自定义方言将覆盖默认配置

@@ -33,80 +33,118 @@ public final class Type {
         /**
          * 字符串
          */
-        VARCHAR(Types.VARCHAR),
+        VARCHAR(Types.VARCHAR, "VARCHAR"),
+
+        /**
+         * 非ASCII字符串
+         */
+        NCHAR(Types.NCHAR, "NCHAR"),
 
         /**
          * 字符
          */
-        CHAR(Types.CHAR),
+        CHAR(Types.CHAR, "CHAR"),
 
         /**
          * 备注
          */
-        TEXT(Types.LONGVARCHAR),
+        TEXT(Types.LONGVARCHAR, "TEXT"),
 
         /**
          * 布尔
          */
-        BOOLEAN(Types.SMALLINT),
+        BOOLEAN(Types.BOOLEAN, "BOOLEAN"),
 
         /**
          * 二进制
          */
-        BINARY(Types.BINARY),
+        BINARY(Types.BINARY, "BINARY"),
 
         /**
          * 时间戳
          */
-        TIMESTAMP(Types.TIMESTAMP),
+        TIMESTAMP(Types.TIMESTAMP, "TIMESTAMP"),
 
         /**
          * 日期
          */
-        DATE(Types.DATE),
+        DATE(Types.DATE, "DATE"),
 
         /**
          * 时间
          */
-        TIME(Types.TIME),
+        TIME(Types.TIME, "TIME"),
 
         /**
          * 整型
          */
-        INT(Types.INTEGER),
+        INT(Types.INTEGER, "INTEGER"),
+
+        /**
+         * 短整型
+         */
+        SMALLINT(Types.SMALLINT, "SMALLINT"),
 
         /**
          * 长整型
          */
-        LONG(Types.BIGINT),
+        LONG(Types.BIGINT, "BIGINT"),
 
         /**
          * 浮点型
          */
-        FLOAT(Types.FLOAT),
+        FLOAT(Types.FLOAT, "FLOAT"),
+
+        /**
+         * 双精度型
+         */
+        DOUBLE(Types.DOUBLE, "DOUBLE"),
 
         /**
          * 数值型
          */
-        NUMBER(Types.NUMERIC),
+        NUMBER(Types.NUMERIC, "NUMERIC"),
+
+        /**
+         * 二进制大对象
+         */
+        BLOB(Types.BLOB, "BLOB"),
+
+        /**
+         * 字符大对象
+         */
+        CLOB(Types.CLOB, "CLOB"),
+
+        /**
+         * 布尔型
+         */
+        BIT(Types.BIT, "BIT"),
+
+        /**
+         * 单字节整型
+         */
+        TINYINT(Types.TINYINT, "TINYINT"),
 
         /**
          * 未知类型
          */
-        UNKNOWN(Types.OTHER);
+        UNKNOWN(Types.OTHER, "VARCHAR");
 
         private int type;
 
-        FIELD(int type) {
+        private String name;
+
+        FIELD(int type, String name) {
             this.type = type;
+            this.name = name;
         }
 
         public int getType() {
             return this.type;
         }
 
-        public void setType(int type) {
-            this.type = type;
+        public String getName() {
+            return name;
         }
     }
 
@@ -139,52 +177,43 @@ public final class Type {
     /**
      * 数据库类型
      */
-    public enum DATABASE {
+    public interface DATABASE {
 
-        /**
-         * MySQL
-         */
-        MYSQL,
+        String MYSQL = "MYSQL";
 
-        /**
-         * Oracle
-         */
-        ORACLE,
+        String ORACLE = "ORACLE";
 
-        /**
-         * SQL Server
-         */
-        SQLSERVER,
+        String SQLSERVER = "SQLSERVER";
 
-        /**
-         * DB2
-         */
-        DB2,
+        String DB2 = "DB2";
 
-        /**
-         * SQL Lite
-         */
-        SQLITE,
+        String SQLITE = "SQLITE";
 
-        /**
-         * PostgreSQL
-         */
-        POSTGRESQL,
+        String POSTGRESQL = "POSTGRESQL";
 
-        /**
-         * HSQLDB
-         */
-        HSQLDB,
+        String HSQLDB = "HSQLDB";
 
-        /**
-         * H2
-         */
-        H2,
+        String H2 = "H2";
 
-        /**
-         * UNKNOWN
-         */
-        UNKNOWN
+        String UNKNOWN = "UNKNOWN";
+    }
+
+    /**
+     * 数据源适配器类型
+     */
+    public interface DS_ADAPTER {
+
+        String DEFAULT = "default";
+
+        String JNDI = "jndi";
+
+        String C3P0 = "c3p0";
+
+        String DBCP = "dbcp";
+
+        String DRUID = "druid";
+
+        String HIKARICP = "hikaricp";
     }
 
     /**

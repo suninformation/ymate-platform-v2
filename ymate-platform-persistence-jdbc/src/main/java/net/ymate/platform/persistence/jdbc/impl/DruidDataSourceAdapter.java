@@ -17,7 +17,9 @@ package net.ymate.platform.persistence.jdbc.impl;
 
 import com.alibaba.druid.pool.DruidDataSource;
 import com.alibaba.druid.pool.DruidDataSourceFactory;
+import net.ymate.platform.core.persistence.base.Type;
 import net.ymate.platform.persistence.jdbc.AbstractDatabaseDataSourceAdapter;
+import net.ymate.platform.persistence.jdbc.annotation.DataSourceAdapter;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -27,14 +29,15 @@ import java.sql.Connection;
  * @author 刘镇 (suninformation@163.com) on 2019-08-02 10:00
  * @since 2.1.0
  */
+@DataSourceAdapter(Type.DS_ADAPTER.DRUID)
 public class DruidDataSourceAdapter extends AbstractDatabaseDataSourceAdapter {
 
     private DruidDataSource dataSource;
 
     private InputStream openInputStream() throws IOException {
-        InputStream inputStream = getDataSourceConfigFileAsStream("druid", getDataSourceConfig().getName());
+        InputStream inputStream = getDataSourceConfigFileAsStream(Type.DS_ADAPTER.DRUID, getDataSourceConfig().getName());
         if (inputStream == null) {
-            inputStream = getDataSourceConfigFileAsStream("dbcp", getDataSourceConfig().getName());
+            inputStream = getDataSourceConfigFileAsStream(Type.DS_ADAPTER.DBCP, getDataSourceConfig().getName());
         }
         return inputStream;
     }

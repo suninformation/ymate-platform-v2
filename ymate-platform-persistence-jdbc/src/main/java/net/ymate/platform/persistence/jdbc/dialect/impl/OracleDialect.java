@@ -22,6 +22,7 @@ import net.ymate.platform.core.persistence.base.EntityMeta;
 import net.ymate.platform.core.persistence.base.IEntity;
 import net.ymate.platform.core.persistence.base.PropertyMeta;
 import net.ymate.platform.core.persistence.base.Type;
+import net.ymate.platform.persistence.jdbc.annotation.Dialect;
 import net.ymate.platform.persistence.jdbc.dialect.AbstractDialect;
 import org.apache.commons.lang3.StringUtils;
 
@@ -30,6 +31,7 @@ import org.apache.commons.lang3.StringUtils;
  *
  * @author 刘镇 (suninformation@163.com) on 2011-8-30 下午01:55:13
  */
+@Dialect(value = Type.DATABASE.ORACLE, driverClass = "oracle.jdbc.OracleDriver")
 public class OracleDialect extends AbstractDialect {
 
     public OracleDialect() {
@@ -37,7 +39,7 @@ public class OracleDialect extends AbstractDialect {
 
     @Override
     public String getName() {
-        return Type.DATABASE.ORACLE.name();
+        return Type.DATABASE.ORACLE;
     }
 
     @Override

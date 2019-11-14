@@ -15,6 +15,8 @@
  */
 package net.ymate.platform.persistence.jdbc;
 
+import net.ymate.platform.commons.util.ClassUtils;
+import net.ymate.platform.commons.util.RuntimeUtils;
 import net.ymate.platform.core.IApplication;
 import net.ymate.platform.core.YMP;
 import net.ymate.platform.core.beans.IBeanLoadFactory;
@@ -23,9 +25,9 @@ import net.ymate.platform.core.module.IModule;
 import net.ymate.platform.core.module.IModuleConfigurer;
 import net.ymate.platform.core.module.annotation.Module;
 import net.ymate.platform.core.persistence.IDataSourceRouter;
-import net.ymate.platform.core.persistence.base.Type;
+import net.ymate.platform.persistence.jdbc.annotation.DataSourceAdapter;
+import net.ymate.platform.persistence.jdbc.annotation.Dialect;
 import net.ymate.platform.persistence.jdbc.dialect.IDialect;
-import net.ymate.platform.persistence.jdbc.dialect.impl.*;
 import net.ymate.platform.persistence.jdbc.impl.DefaultDatabaseConfig;
 import net.ymate.platform.persistence.jdbc.impl.DefaultDatabaseConnectionHolder;
 import net.ymate.platform.persistence.jdbc.impl.DefaultDatabaseSession;
@@ -35,16 +37,22 @@ import net.ymate.platform.persistence.jdbc.repo.handle.RepositoryHandler;
 import net.ymate.platform.persistence.jdbc.transaction.ITransaction;
 import net.ymate.platform.persistence.jdbc.transaction.TransactionProxy;
 import net.ymate.platform.persistence.jdbc.transaction.Transactions;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * @author 刘镇 (suninformation@163.com) on 2011-9-10 下午11:45:25
  */
 @Module
 public final class JDBC implements IModule, IDatabase {
+
+    private static final Log LOG = LogFactory.getLog(JDBC.class);
 
     private static volatile IDatabase instance;
 
@@ -56,44 +64,41 @@ public final class JDBC implements IModule, IDatabase {
     /**
      * 框架提供的已知数据库连接驱动
      */
-    public static final Map<Type.DATABASE, String> DB_DRIVERS;
+    public static final Map<String, String> DB_DRIVERS;
 
     /**
      * 提供的已知数据库方言
      */
-    public static final Map<Type.DATABASE, Class<? extends IDialect>> DB_DIALECTS;
+    public static final Map<String, Class<? extends IDialect>> DB_DIALECTS;
 
     static {
-        Map<String, String> adapters = new HashMap<>(4);
-        adapters.put("default", "net.ymate.platform.persistence.jdbc.impl.DefaultDataSourceAdapter");
-        adapters.put("jndi", "net.ymate.platform.persistence.jdbc.impl.JNDIDataSourceAdapter");
-        adapters.put("c3p0", "net.ymate.platform.persistence.jdbc.impl.C3P0DataSourceAdapter");
-        adapters.put("dbcp", "net.ymate.platform.persistence.jdbc.impl.DBCPDataSourceAdapter");
-        adapters.put("druid", "net.ymate.platform.persistence.jdbc.impl.DruidDataSourceAdapter");
-        adapters.put("hikaricp", "net.ymate.platform.persistence.jdbc.impl.HikariCPDataSourceAdapter");
-        DS_ADAPTERS = Collections.unmodifiableMap(adapters);
-        //
-        Map<Type.DATABASE, String> drivers = new HashMap<>(8);
-        drivers.put(Type.DATABASE.MYSQL, "com.mysql.jdbc.Driver");
-        drivers.put(Type.DATABASE.ORACLE, "oracle.jdbc.OracleDriver");
-        drivers.put(Type.DATABASE.SQLSERVER, "com.microsoft.sqlserver.jdbc.SQLServerDriver");
-        drivers.put(Type.DATABASE.DB2, "com.ibm.db2.jcc.DB2Driver");
-        drivers.put(Type.DATABASE.SQLITE, "org.sqlite.JDBC");
-        drivers.put(Type.DATABASE.POSTGRESQL, "org.postgresql.Driver");
-        drivers.put(Type.DATABASE.HSQLDB, "org.hsqldb.jdbcDriver");
-        drivers.put(Type.DATABASE.H2, "org.h2.Driver");
-        DB_DRIVERS = Collections.unmodifiableMap(drivers);
-        //
-        Map<Type.DATABASE, Class<? extends IDialect>> dialects = new HashMap<>(8);
-        dialects.put(Type.DATABASE.MYSQL, MySQLDialect.class);
-        dialects.put(Type.DATABASE.ORACLE, OracleDialect.class);
-        dialects.put(Type.DATABASE.SQLSERVER, SQLServerDialect.class);
-        dialects.put(Type.DATABASE.DB2, DB2Dialect.class);
-        dialects.put(Type.DATABASE.SQLITE, SQLiteDialect.class);
-        dialects.put(Type.DATABASE.POSTGRESQL, PostgreSQLDialect.class);
-        dialects.put(Type.DATABASE.HSQLDB, HSQLDBDialect.class);
-        dialects.put(Type.DATABASE.H2, H2Dialect.class);
-        DB_DIALECTS = Collections.unmodifiableMap(dialects);
+        Map<String, Class<? extends IDialect>> dbDialects = new HashMap<>();
+        Map<String, String> dbDrivers = new HashMap<>();
+        Map<String, String> dbAdapters = new HashMap<>();
+        try {
+            ClassUtils.getExtensionLoader(IDialect.class, true).getExtensionClasses().forEach(dialectClass -> {
+                Dialect dialectAnn = dialectClass.getAnnotation(Dialect.class);
+                if (dialectAnn != null) {
+                    dbDialects.put(dialectAnn.value(), dialectClass);
+                    if (StringUtils.isNotBlank(dialectAnn.driverClass())) {
+                        dbDrivers.put(dialectAnn.value(), dialectAnn.driverClass());
+                    }
+                }
+            });
+            ClassUtils.getExtensionLoader(IDatabaseDataSourceAdapter.class, true).getExtensionClasses().forEach(adapterClass -> {
+                DataSourceAdapter adapterAnn = adapterClass.getAnnotation(DataSourceAdapter.class);
+                if (adapterAnn != null) {
+                    dbAdapters.put(adapterAnn.value(), adapterClass.getName());
+                }
+            });
+        } catch (Exception e) {
+            if (LOG.isWarnEnabled()) {
+                LOG.warn(StringUtils.EMPTY, RuntimeUtils.unwrapThrow(e));
+            }
+        }
+        DB_DIALECTS = Collections.unmodifiableMap(dbDialects);
+        DB_DRIVERS = Collections.unmodifiableMap(dbDrivers);
+        DS_ADAPTERS = Collections.unmodifiableMap(dbAdapters);
     }
 
     public static IDatabase get() {
@@ -113,7 +118,7 @@ public final class JDBC implements IModule, IDatabase {
 
     private IDatabaseConfig config;
 
-    private Map<String, IDatabaseDataSourceAdapter> dataSourceCaches;
+    private Map<String, IDatabaseDataSourceAdapter> dataSourceCaches = new ConcurrentHashMap<>();
 
     private boolean initialized;
 
@@ -202,6 +207,14 @@ public final class JDBC implements IModule, IDatabase {
         return getConnectionHolder(config.getDefaultDataSourceName());
     }
 
+    private IDatabaseDataSourceAdapter doSafeGetDataSourceAdapter(String dataSourceName) {
+        IDatabaseDataSourceAdapter dataSourceAdapter = dataSourceCaches.get(dataSourceName);
+        if (dataSourceAdapter == null) {
+            throw new IllegalStateException("Datasource '" + dataSourceName + "' not found.");
+        }
+        return dataSourceAdapter;
+    }
+
     @Override
     public IDatabaseConnectionHolder getConnectionHolder(String dataSourceName) throws Exception {
         IDatabaseConnectionHolder connectionHolder;
@@ -209,11 +222,11 @@ public final class JDBC implements IModule, IDatabase {
         if (transaction != null) {
             connectionHolder = transaction.getConnectionHolder(dataSourceName);
             if (connectionHolder == null) {
-                connectionHolder = new DefaultDatabaseConnectionHolder(dataSourceCaches.get(dataSourceName));
+                connectionHolder = new DefaultDatabaseConnectionHolder(doSafeGetDataSourceAdapter(dataSourceName));
                 transaction.registerConnectionHolder(connectionHolder);
             }
         } else {
-            connectionHolder = new DefaultDatabaseConnectionHolder(dataSourceCaches.get(dataSourceName));
+            connectionHolder = new DefaultDatabaseConnectionHolder(doSafeGetDataSourceAdapter(dataSourceName));
         }
         return connectionHolder;
     }

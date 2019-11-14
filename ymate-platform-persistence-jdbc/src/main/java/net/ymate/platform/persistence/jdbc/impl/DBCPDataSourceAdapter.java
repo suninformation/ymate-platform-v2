@@ -16,7 +16,9 @@
 package net.ymate.platform.persistence.jdbc.impl;
 
 import net.ymate.platform.commons.util.RuntimeUtils;
+import net.ymate.platform.core.persistence.base.Type;
 import net.ymate.platform.persistence.jdbc.AbstractDatabaseDataSourceAdapter;
+import net.ymate.platform.persistence.jdbc.annotation.DataSourceAdapter;
 import org.apache.commons.dbcp2.BasicDataSource;
 import org.apache.commons.dbcp2.BasicDataSourceFactory;
 import org.apache.commons.lang3.StringUtils;
@@ -32,6 +34,7 @@ import java.sql.SQLException;
  *
  * @author 刘镇 (suninformation@163.com) on 2013年12月19日 下午2:47:10
  */
+@DataSourceAdapter(Type.DS_ADAPTER.DBCP)
 public class DBCPDataSourceAdapter extends AbstractDatabaseDataSourceAdapter {
 
     private static final Log LOG = LogFactory.getLog(DBCPDataSourceAdapter.class);
@@ -40,7 +43,7 @@ public class DBCPDataSourceAdapter extends AbstractDatabaseDataSourceAdapter {
 
     @Override
     protected void doInitialize() throws Exception {
-        try (InputStream inputStream = getDataSourceConfigFileAsStream("dbcp", getDataSourceConfig().getName())) {
+        try (InputStream inputStream = getDataSourceConfigFileAsStream(Type.DS_ADAPTER.DBCP, getDataSourceConfig().getName())) {
             dataSource = BasicDataSourceFactory.createDataSource(doCreateConfigProperties(inputStream, false));
         }
     }
