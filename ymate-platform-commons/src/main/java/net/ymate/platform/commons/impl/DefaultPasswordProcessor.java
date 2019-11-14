@@ -17,7 +17,6 @@ package net.ymate.platform.commons.impl;
 
 import net.ymate.platform.commons.IPasswordProcessor;
 import net.ymate.platform.commons.util.CodecUtils;
-import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.lang3.StringUtils;
 
 /**
@@ -27,7 +26,7 @@ import org.apache.commons.lang3.StringUtils;
  */
 public class DefaultPasswordProcessor implements IPasswordProcessor {
 
-    private final String KEY = DigestUtils.md5Hex(DefaultPasswordProcessor.class.getName());
+//    private final String KEY = DigestUtils.md5Hex(DefaultPasswordProcessor.class.getName());
 
     private String passKey;
 
@@ -38,7 +37,7 @@ public class DefaultPasswordProcessor implements IPasswordProcessor {
 
     @Override
     public String getPassKey() {
-        return StringUtils.defaultIfBlank(passKey, KEY);
+        return StringUtils.defaultIfBlank(passKey, "16296b50a6db0d0bd45d2e5f84fcdd76");
     }
 
     @Override
