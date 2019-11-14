@@ -16,7 +16,9 @@
 package net.ymate.platform.persistence.jdbc;
 
 import net.ymate.platform.commons.util.ClassUtils;
+import net.ymate.platform.commons.util.FileUtils;
 import net.ymate.platform.commons.util.ResourceUtils;
+import net.ymate.platform.commons.util.RuntimeUtils;
 import net.ymate.platform.core.persistence.AbstractDataSourceAdapter;
 import net.ymate.platform.core.persistence.base.Type;
 import net.ymate.platform.persistence.jdbc.dialect.IDialect;
@@ -26,10 +28,11 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import java.io.*;
-import java.net.URL;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Properties;
 
 /**
@@ -43,7 +46,7 @@ public abstract class AbstractDatabaseDataSourceAdapter extends AbstractDataSour
 
     private IDialect dialect;
 
-    protected InputStream getDataSourceConfigFileAsStream(String fileName, String dataSourceName) throws IOException {
+    protected InputStream getDataSourceConfigFileAsStream(String dsAdapterType, String dataSourceName) throws IOException {
         if (StringUtils.isBlank(dataSourceName)) {
             throw new NullArgumentException("dataSourceName");
         }
@@ -53,27 +56,51 @@ public abstract class AbstractDatabaseDataSourceAdapter extends AbstractDataSour
             try {
                 inputStream = new FileInputStream(configFile);
                 if (LOG.isInfoEnabled()) {
-                    LOG.info(String.format("Found and load the data source [%s] config file from %s.", dataSourceName, configFile.toURI().toURL()));
+                    LOG.info(String.format("Found and load the datasource [%s] config file: %s", dataSourceName, configFile.toURI().toURL()));
                 }
             } catch (FileNotFoundException ignored) {
             }
         }
         if (inputStream == null) {
-            if (StringUtils.isBlank(fileName)) {
-                throw new NullArgumentException("fileName");
+            if (StringUtils.isBlank(dsAdapterType)) {
+                throw new NullArgumentException("dsAdapterType");
             }
-            URL url = ResourceUtils.getResource(String.format("%s_%s.properties", fileName, dataSourceName), this.getClass());
-            if (url == null) {
-                url = ResourceUtils.getResource(String.format("%s.properties", fileName), this.getClass());
-            }
-            if (url != null) {
-                inputStream = url.openStream();
-                if (LOG.isInfoEnabled()) {
-                    LOG.info(String.format("Found and load the data source [%s] config file from %s.", dataSourceName, url));
-                }
+            List<String> filePaths = new ArrayList<>();
+            filePaths.add(RuntimeUtils.replaceEnvVariable(String.format("${root}/cfgs/%s_%s.properties", dsAdapterType, dataSourceName)));
+            filePaths.add(RuntimeUtils.replaceEnvVariable(String.format("${root}/cfgs/%s.properties", dsAdapterType)));
+            inputStream = FileUtils.loadFileAsStream(filePaths.toArray(new String[0]));
+            //
+            if (inputStream == null) {
+                filePaths.clear();
+                filePaths.add(String.format("%s_%s.properties", dsAdapterType, dataSourceName));
+                filePaths.add(String.format("%s.properties", dsAdapterType));
+                //
+                inputStream = ResourceUtils.getResourceAsStream(AbstractDatabaseDataSourceAdapter.class, filePaths.toArray(new String[0]));
             }
         }
         return inputStream;
+    }
+
+    protected boolean doCreateDataSourceConfigFile(String dsAdapterType) {
+        if (StringUtils.isNotBlank(dsAdapterType)) {
+            File configFile = new File(String.format("%s/%s.properties", RuntimeUtils.replaceEnvVariable("${root}/cfgs"), dsAdapterType));
+            if (configFile.isAbsolute() && !configFile.exists()) {
+                try (InputStream inputStream = AbstractDatabaseDataSourceAdapter.class.getClassLoader().getResourceAsStream(String.format("META-INF/default-%s.properties", dsAdapterType))) {
+                    if (inputStream != null) {
+                        if (FileUtils.createFileIfNotExists(configFile, inputStream)) {
+                            return true;
+                        } else if (LOG.isWarnEnabled()) {
+                            LOG.warn(String.format("Failed to create default %s config file: %s", dsAdapterType, configFile.getPath()));
+                        }
+                    }
+                } catch (IOException e) {
+                    if (LOG.isWarnEnabled()) {
+                        LOG.warn(String.format("An exception occurred while trying to generate the default %s config file: %s", dsAdapterType, configFile.getPath()), RuntimeUtils.unwrapThrow(e));
+                    }
+                }
+            }
+        }
+        return false;
     }
 
     protected Properties doCreateConfigProperties(InputStream inputStream, boolean forHikari) throws Exception {

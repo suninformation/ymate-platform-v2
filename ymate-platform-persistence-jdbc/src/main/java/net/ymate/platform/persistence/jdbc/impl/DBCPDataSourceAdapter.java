@@ -44,7 +44,13 @@ public class DBCPDataSourceAdapter extends AbstractDatabaseDataSourceAdapter {
     @Override
     protected void doInitialize() throws Exception {
         try (InputStream inputStream = getDataSourceConfigFileAsStream(Type.DS_ADAPTER.DBCP, getDataSourceConfig().getName())) {
-            dataSource = BasicDataSourceFactory.createDataSource(doCreateConfigProperties(inputStream, false));
+            if (inputStream != null) {
+                dataSource = BasicDataSourceFactory.createDataSource(doCreateConfigProperties(inputStream, false));
+            } else if (doCreateDataSourceConfigFile(Type.DS_ADAPTER.DBCP)) {
+                try (InputStream newInputStream = getDataSourceConfigFileAsStream(Type.DS_ADAPTER.DBCP, getDataSourceConfig().getName())) {
+                    dataSource = BasicDataSourceFactory.createDataSource(doCreateConfigProperties(newInputStream, false));
+                }
+            }
         }
     }
 

@@ -45,8 +45,15 @@ public class DruidDataSourceAdapter extends AbstractDatabaseDataSourceAdapter {
     @Override
     protected void doInitialize() throws Exception {
         try (InputStream inputStream = openInputStream()) {
-            dataSource = new DruidDataSource();
-            DruidDataSourceFactory.config(dataSource, doCreateConfigProperties(inputStream, false));
+            if (inputStream != null) {
+                dataSource = new DruidDataSource();
+                DruidDataSourceFactory.config(dataSource, doCreateConfigProperties(inputStream, false));
+            } else if (doCreateDataSourceConfigFile(Type.DS_ADAPTER.DRUID)) {
+                try (InputStream newInputStream = getDataSourceConfigFileAsStream(Type.DS_ADAPTER.DRUID, getDataSourceConfig().getName())) {
+                    dataSource = new DruidDataSource();
+                    DruidDataSourceFactory.config(dataSource, doCreateConfigProperties(newInputStream, false));
+                }
+            }
         }
     }
 
