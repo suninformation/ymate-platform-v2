@@ -20,6 +20,10 @@ import org.apache.commons.lang3.SystemUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import javax.management.MBeanServer;
+import javax.management.MalformedObjectNameException;
+import javax.management.ObjectInstance;
+import javax.management.ObjectName;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -204,6 +208,78 @@ public class RuntimeUtils {
             }
         }
         return origin;
+    }
+
+    /**
+     * 注册JMXBean
+     *
+     * @param objectName  对象名称
+     * @param managedBean JMXBean实例
+     * @return 返回true表示注册成功, 若注册失败或重复注册则返回false
+     * @since 2.1.0
+     */
+    public static boolean registerManagedBean(ObjectName objectName, Object managedBean) {
+        MBeanServer mBeanServer = ManagementFactory.getPlatformMBeanServer();
+        try {
+            if (!mBeanServer.isRegistered(objectName)) {
+                ObjectInstance objectInstance = mBeanServer.registerMBean(managedBean, objectName);
+                if (LOG.isInfoEnabled()) {
+                    LOG.info(String.format("ManagedBean %s registered.", objectInstance));
+                }
+                return true;
+            }
+        } catch (Exception e) {
+            if (LOG.isWarnEnabled()) {
+                LOG.warn(String.format("Failed to register ManagedBean: %s", objectName));
+            }
+        }
+        return false;
+    }
+
+    /**
+     * 注册JMXBean
+     *
+     * @param objectName  对象名称字符串
+     * @param managedBean JMXBean实例
+     * @return 返回true表示注册成功, 若注册失败或重复注册则返回false
+     * @throws MalformedObjectNameException ObjectName格式无效异常
+     * @since 2.1.0
+     */
+    public static boolean registerManagedBean(String objectName, Object managedBean) throws MalformedObjectNameException {
+        return registerManagedBean(new ObjectName(objectName), managedBean);
+    }
+
+    /**
+     * 解注册JMXBean
+     *
+     * @param objectName 对象名称
+     * @since 2.1.0
+     */
+    public static void unregisterManagedBean(ObjectName objectName) {
+        MBeanServer mBeanServer = ManagementFactory.getPlatformMBeanServer();
+        try {
+            if (mBeanServer.isRegistered(objectName)) {
+                mBeanServer.unregisterMBean(objectName);
+                if (LOG.isInfoEnabled()) {
+                    LOG.info(String.format("ManagedBean %s unregistered.", objectName));
+                }
+            }
+        } catch (Exception e) {
+            if (LOG.isWarnEnabled()) {
+                LOG.warn(String.format("Failed to unregister ManagedBean: %s", objectName));
+            }
+        }
+    }
+
+    /**
+     * 解注册JMXBean
+     *
+     * @param objectName 对象名称字符串
+     * @throws MalformedObjectNameException ObjectName格式无效异常
+     * @since 2.1.0
+     */
+    public static void unregisterManagedBean(String objectName) throws MalformedObjectNameException {
+        unregisterManagedBean(new ObjectName(objectName));
     }
 
     /**
