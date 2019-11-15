@@ -16,7 +16,7 @@
 package net.ymate.platform.core.support;
 
 import java.io.Serializable;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 /**
@@ -80,9 +80,9 @@ public class ErrorCode implements Serializable {
 
     private String message;
 
-    private final Map<String, Object> attributes = new HashMap<>();
+    private final Map<String, Object> attributes = new LinkedHashMap<>();
 
-    private final Map<String, Object> data = new HashMap<>();
+    private final Map<String, Object> data = new LinkedHashMap<>();
 
     public ErrorCode(int code) {
         this.code = code;

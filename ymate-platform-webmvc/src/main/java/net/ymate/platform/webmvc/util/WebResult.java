@@ -35,7 +35,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.Serializable;
 import java.util.Collection;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 /**
@@ -90,9 +90,9 @@ public final class WebResult implements Serializable {
 
     private String msg;
 
-    private Map<String, Object> data = new HashMap<>();
+    private Map<String, Object> data = new LinkedHashMap<>();
 
-    private Map<String, Object> attrs = new HashMap<>();
+    private Map<String, Object> attrs = new LinkedHashMap<>();
 
     private boolean withContentType;
 
@@ -138,7 +138,7 @@ public final class WebResult implements Serializable {
     }
 
     public WebResult attrs(Map<String, Object> attrs) {
-        this.attrs = attrs;
+        this.attrs.putAll(attrs);
         return this;
     }
 
@@ -188,7 +188,7 @@ public final class WebResult implements Serializable {
 
     private Map<String, Object> doFilter(IDateFilter dateFilter, boolean attr, Map<String, Object> targetMap) {
         if (dateFilter != null && targetMap != null && !targetMap.isEmpty()) {
-            Map<String, Object> filtered = new HashMap<>(data.size());
+            Map<String, Object> filtered = new LinkedHashMap<>(data.size());
             data.forEach((key, value) -> {
                 Object item = dateFilter.filter(attr, key, value);
                 if (item != null) {
@@ -211,7 +211,7 @@ public final class WebResult implements Serializable {
     }
 
     public IView toJSON(String callback) {
-        JSONObject jsonObj = new JSONObject();
+        JSONObject jsonObj = new JSONObject(true);
         if (code != null) {
             jsonObj.put(Type.Const.PARAM_RET, code);
         }
