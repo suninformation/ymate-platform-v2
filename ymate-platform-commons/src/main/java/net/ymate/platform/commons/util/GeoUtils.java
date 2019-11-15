@@ -352,7 +352,7 @@ public class GeoUtils {
             double lat1 = rad(latitude);
             double lat2 = rad(point.latitude);
             double diff = rad(longitude) - rad(point.longitude);
-            return Math.round(2 * Math.asin(Math.sqrt(Math.pow(Math.sin((lat1 - lat2) / 2), 2) + Math.cos(lat1) * Math.cos(lat2) * Math.pow(Math.sin(diff / 2), 2))) * EARTH_RADIUS * 10000) / 10000;
+            return Math.round((2 * Math.asin(Math.sqrt(Math.pow(Math.sin((lat1 - lat2) / 2), 2) + Math.cos(lat1) * Math.cos(lat2) * Math.pow(Math.sin(diff / 2), 2)))) * EARTH_RADIUS * 10000) / 10000;
         }
 
         /**
