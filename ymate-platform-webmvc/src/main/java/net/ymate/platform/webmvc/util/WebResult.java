@@ -32,7 +32,7 @@ import org.apache.commons.lang.StringUtils;
 
 import javax.servlet.http.HttpServletResponse;
 import java.util.Collection;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 /**
@@ -85,9 +85,9 @@ public final class WebResult {
 
     private String __msg;
 
-    private Map<String, Object> __data = new HashMap<String, Object>();
+    private Map<String, Object> __data = new LinkedHashMap<String, Object>();
 
-    private Map<String, Object> __attrs = new HashMap<String, Object>();
+    private Map<String, Object> __attrs = new LinkedHashMap<String, Object>();
 
     private boolean __withContentType;
 
@@ -190,7 +190,7 @@ public final class WebResult {
 
     private Map<String, Object> __doFilter(boolean attr, Map<String, Object> targetMap) {
         if (__dataFilter != null && targetMap != null && !targetMap.isEmpty()) {
-            Map<String, Object> _filtered = new HashMap<String, Object>();
+            Map<String, Object> _filtered = new LinkedHashMap<String, Object>();
             for (Map.Entry<String, Object> _entry : __data.entrySet()) {
                 Object _item = __dataFilter.filter(attr, _entry.getKey(), _entry.getValue());
                 if (_item != null) {
@@ -213,7 +213,7 @@ public final class WebResult {
     }
 
     public IView toJSON(String callback) {
-        JSONObject _jsonObj = new JSONObject();
+        JSONObject _jsonObj = new JSONObject(true);
         if (__code != null) {
             _jsonObj.put(Type.Const.PARAM_RET, __code);
         }

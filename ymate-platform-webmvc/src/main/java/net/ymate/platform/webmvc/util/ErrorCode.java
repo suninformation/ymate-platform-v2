@@ -18,7 +18,7 @@ package net.ymate.platform.webmvc.util;
 import net.ymate.platform.core.lang.BlurObject;
 
 import java.io.Serializable;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 /**
@@ -207,7 +207,7 @@ public class ErrorCode implements Serializable {
 
     private String message;
 
-    private Map<String, Object> attributes = new HashMap<String, Object>();
+    private Map<String, Object> attributes = new LinkedHashMap<String, Object>();
 
     public ErrorCode(int code) {
         this.code = code;
