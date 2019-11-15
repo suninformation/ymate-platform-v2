@@ -45,18 +45,20 @@ public class C3P0DataSourceAdapter extends AbstractDatabaseDataSourceAdapter {
     @Override
     protected void doInitialize() throws Exception {
         String path = RuntimeUtils.replaceEnvVariable("${root}");
-        if (!StringUtils.endsWith(path, "/classes")) {
+        if (StringUtils.endsWith(path, "/WEB-INF")) {
             path += "/classes";
         }
-        File configFile = new File(path, "c3p0.properties");
-        if (!configFile.exists()) {
-            try (InputStream inputStream = C3P0DataSourceAdapter.class.getClassLoader().getResourceAsStream("META-INF/default-c3p0.properties")) {
-                if (!FileUtils.createFileIfNotExists(configFile, inputStream) && LOG.isWarnEnabled()) {
-                    LOG.warn(String.format("Failed to create default c3p0 config file: %s", configFile.getPath()));
-                }
-            } catch (IOException e) {
-                if (LOG.isWarnEnabled()) {
-                    LOG.warn(String.format("An exception occurred while trying to generate the default c3p0 config file: %s", configFile.getPath()), RuntimeUtils.unwrapThrow(e));
+        if (StringUtils.endsWith(path, "/classes")) {
+            File configFile = new File(path, "c3p0.properties");
+            if (!configFile.exists()) {
+                try (InputStream inputStream = C3P0DataSourceAdapter.class.getClassLoader().getResourceAsStream("META-INF/default-c3p0.properties")) {
+                    if (!FileUtils.createFileIfNotExists(configFile, inputStream) && LOG.isWarnEnabled()) {
+                        LOG.warn(String.format("Failed to create default c3p0 config file: %s", configFile.getPath()));
+                    }
+                } catch (IOException e) {
+                    if (LOG.isWarnEnabled()) {
+                        LOG.warn(String.format("An exception occurred while trying to generate the default c3p0 config file: %s", configFile.getPath()), RuntimeUtils.unwrapThrow(e));
+                    }
                 }
             }
         }
