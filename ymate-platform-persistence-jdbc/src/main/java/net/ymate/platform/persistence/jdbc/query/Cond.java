@@ -432,9 +432,9 @@ public final class Cond extends Query<Cond> {
      * @param cond       条件对象
      * @return 根据逻辑表达式运算结果决定是否采纳cond条件
      */
-    public Cond expr(boolean expression, Cond cond) {
+    public Cond expr(boolean expression, IConditionBuilder cond) {
         if (expression && cond != null) {
-            this.cond(cond);
+            this.cond(cond.build());
         }
         return this;
     }
@@ -451,7 +451,7 @@ public final class Cond extends Query<Cond> {
      * @param cond   条件对象
      * @return 当目标对象非空则采纳cond条件
      */
-    public Cond exprNotEmpty(Object target, Cond cond) {
+    public Cond exprNotEmpty(Object target, IConditionBuilder cond) {
         if (target != null && cond != null) {
             boolean flag = true;
             if (target.getClass().isArray()) {
@@ -461,7 +461,7 @@ public final class Cond extends Query<Cond> {
             }
             //
             if (flag) {
-                this.cond(cond);
+                this.cond(cond.build());
             }
         }
         return this;
@@ -473,7 +473,7 @@ public final class Cond extends Query<Cond> {
      * @return 返回Where对象实例
      * @since 2.1.0
      */
-    public Where toWhere() {
+    public Where buildWhere() {
         return Where.create(this);
     }
 
