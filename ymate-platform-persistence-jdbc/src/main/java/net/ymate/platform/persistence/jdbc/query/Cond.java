@@ -372,7 +372,7 @@ public final class Cond extends Query<Cond> {
     }
 
     public Cond exists(SQL subSql) {
-        condBuilder.append(" EXISTS (").append(subSql.getSQL()).append(")");
+        condBuilder.append(" EXISTS (").append(subSql.toString()).append(")");
         params.add(subSql.params());
         return this;
     }
@@ -390,7 +390,7 @@ public final class Cond extends Query<Cond> {
     }
 
     public Cond in(String field, SQL subSql) {
-        condBuilder.append(field).append(" IN (").append(subSql.getSQL()).append(")");
+        condBuilder.append(field).append(" IN (").append(subSql.toString()).append(")");
         params.add(subSql.params());
         return this;
     }

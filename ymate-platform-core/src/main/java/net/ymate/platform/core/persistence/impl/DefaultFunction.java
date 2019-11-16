@@ -208,7 +208,7 @@ public class DefaultFunction implements IFunction {
         return this;
     }
 
-    public Fields params() {
+    public Fields fields() {
         return params;
     }
 

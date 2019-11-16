@@ -134,7 +134,7 @@ public class DefaultDatabaseSession extends AbstractSession<IDatabaseConnectionH
 
     @Override
     public <T> IResultSet<T> find(SQL sql, IResultSetHandler<T> handler) throws Exception {
-        IQueryOperator<T> queryOperator = new DefaultQueryOperator<>(sql.getSQL(), connectionHolder, handler);
+        IQueryOperator<T> queryOperator = new DefaultQueryOperator<>(sql.toString(), connectionHolder, handler);
         doOperator(Type.OPT.QUERY, DatabaseEvent.EVENT.QUERY_AFTER, sql.params(), queryOperator);
         //
         return new DefaultResultSet<>(queryOperator.getResultSet());
@@ -142,11 +142,11 @@ public class DefaultDatabaseSession extends AbstractSession<IDatabaseConnectionH
 
     @Override
     public <T> IResultSet<T> find(SQL sql, IResultSetHandler<T> handler, Page page) throws Exception {
-        String sqlStr = sql.getSQL();
+        String sqlStr = sql.toString();
         //
         long count = 0;
         if (page != null) {
-            sqlStr = dialect.buildPagedQuerySql(sql.getSQL(), page.page(), page.pageSize());
+            sqlStr = dialect.buildPagedQuerySql(sql.toString(), page.page(), page.pageSize());
             if (page.isCount()) {
                 count = this.count(sql);
                 if (count == 0) {
@@ -290,7 +290,7 @@ public class DefaultDatabaseSession extends AbstractSession<IDatabaseConnectionH
 
     @Override
     public <T> T findFirst(SQL sql, IResultSetHandler<T> handler) throws Exception {
-        String sqlStr = dialect.buildPagedQuerySql(sql.getSQL(), 1, 1);
+        String sqlStr = dialect.buildPagedQuerySql(sql.toString(), 1, 1);
         IQueryOperator<T> queryOperator = new DefaultQueryOperator<>(sqlStr, this.connectionHolder, handler);
         doOperator(Type.OPT.QUERY, DatabaseEvent.EVENT.QUERY_AFTER, sql.params(), queryOperator);
         //
@@ -328,7 +328,7 @@ public class DefaultDatabaseSession extends AbstractSession<IDatabaseConnectionH
 
     @Override
     public int executeForUpdate(SQL sql) throws Exception {
-        IUpdateOperator updateOperator = new DefaultUpdateOperator(sql.getSQL(), this.getConnectionHolder());
+        IUpdateOperator updateOperator = new DefaultUpdateOperator(sql.toString(), this.getConnectionHolder());
         doOperator(Type.OPT.UPDATE, DatabaseEvent.EVENT.UPDATE_AFTER, sql.params(), updateOperator);
         //
         return updateOperator.getEffectCounts();
@@ -619,7 +619,7 @@ public class DefaultDatabaseSession extends AbstractSession<IDatabaseConnectionH
     @Override
     public long count(SQL sql) throws Exception {
         String sqlStr = ExpressionUtils.bind("SELECT count(*) FROM (${sql}) c_t")
-                .set("sql", sql.getSQL()).getResult();
+                .set("sql", sql.toString()).getResult();
         IQueryOperator<Object[]> queryOperator = new DefaultQueryOperator<>(sqlStr, this.getConnectionHolder(), IResultSetHandler.ARRAY);
         doOperator(Type.OPT.QUERY, DatabaseEvent.EVENT.QUERY_AFTER, sql.params(), queryOperator);
         //

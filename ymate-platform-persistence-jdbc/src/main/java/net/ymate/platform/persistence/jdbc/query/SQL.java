@@ -16,6 +16,12 @@
 package net.ymate.platform.persistence.jdbc.query;
 
 import net.ymate.platform.core.persistence.Params;
+import net.ymate.platform.persistence.jdbc.IDatabase;
+import net.ymate.platform.persistence.jdbc.IDatabaseConnectionHolder;
+import net.ymate.platform.persistence.jdbc.JDBC;
+import net.ymate.platform.persistence.jdbc.base.IResultSetHandler;
+
+import java.util.List;
 
 /**
  * SQL语句及参数对象
@@ -24,37 +30,40 @@ import net.ymate.platform.core.persistence.Params;
  */
 public final class SQL {
 
+    private final IDatabase owner;
+
     private final String sql;
 
     private final Params params;
 
     public static SQL create(String sql) {
-        return new SQL(sql);
+        return new SQL(JDBC.get(), sql);
+    }
+
+    public static SQL create(IDatabase owner, String sql) {
+        return new SQL(owner, sql);
     }
 
     public static SQL create(Select select) {
-        return new SQL(select.toString()).param(select.getParams());
+        return new SQL(select.owner(), select.toString()).param(select.getParams());
     }
 
     public static SQL create(Insert insert) {
-        return new SQL(insert.toString()).param(insert.params());
+        return new SQL(insert.owner(), insert.toString()).param(insert.params());
     }
 
     public static SQL create(Update update) {
-        return new SQL(update.toString()).param(update.getParams());
+        return new SQL(update.owner(), update.toString()).param(update.getParams());
     }
 
     public static SQL create(Delete delete) {
-        return new SQL(delete.toString()).param(delete.getParams());
+        return new SQL(delete.owner(), delete.toString()).param(delete.getParams());
     }
 
-    private SQL(String sql) {
+    private SQL(IDatabase owner, String sql) {
+        this.owner = owner;
         this.params = Params.create();
         this.sql = sql;
-    }
-
-    public String getSQL() {
-        return this.sql;
     }
 
     public SQL param(Object param) {
@@ -74,5 +83,41 @@ public final class SQL {
     @Override
     public String toString() {
         return this.sql;
+    }
+
+    public int execute() throws Exception {
+        return owner.openSession(session -> session.executeForUpdate(this));
+    }
+
+    public int execute(String dataSourceName) throws Exception {
+        return owner.openSession(dataSourceName, session -> session.executeForUpdate(this));
+    }
+
+    public int execute(IDatabaseConnectionHolder connectionHolder) throws Exception {
+        return owner.openSession(connectionHolder, session -> session.executeForUpdate(this));
+    }
+
+    public <T> T findFirst(IResultSetHandler<T> handler) throws Exception {
+        return owner.openSession(session -> session.findFirst(this, handler));
+    }
+
+    public <T> T findFirst(String dataSourceName, IResultSetHandler<T> handler) throws Exception {
+        return owner.openSession(dataSourceName, session -> session.findFirst(this, handler));
+    }
+
+    public <T> T findFirst(IDatabaseConnectionHolder connectionHolder, IResultSetHandler<T> handler) throws Exception {
+        return owner.openSession(connectionHolder, session -> session.findFirst(this, handler));
+    }
+
+    public <T> List<T> find(IResultSetHandler<T> handler) throws Exception {
+        return owner.openSession(session -> session.find(this, handler).getResultData());
+    }
+
+    public <T> List<T> find(String dataSourceName, IResultSetHandler<T> handler) throws Exception {
+        return owner.openSession(dataSourceName, session -> session.find(this, handler).getResultData());
+    }
+
+    public <T> List<T> find(IDatabaseConnectionHolder connectionHolder, IResultSetHandler<T> handler) throws Exception {
+        return owner.openSession(connectionHolder, session -> session.find(this, handler).getResultData());
     }
 }

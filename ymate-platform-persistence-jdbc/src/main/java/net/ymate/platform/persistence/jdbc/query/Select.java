@@ -23,9 +23,7 @@ import net.ymate.platform.core.persistence.base.EntityMeta;
 import net.ymate.platform.core.persistence.base.IEntity;
 import net.ymate.platform.persistence.jdbc.IDBLocker;
 import net.ymate.platform.persistence.jdbc.IDatabase;
-import net.ymate.platform.persistence.jdbc.IDatabaseConnectionHolder;
 import net.ymate.platform.persistence.jdbc.JDBC;
-import net.ymate.platform.persistence.jdbc.base.IResultSetHandler;
 import net.ymate.platform.persistence.jdbc.dialect.IDialect;
 import org.apache.commons.lang3.StringUtils;
 
@@ -352,17 +350,5 @@ public final class Select extends Query<Select> {
 
     public SQL toSQL() {
         return SQL.create(this);
-    }
-
-    public <T> List<T> execute(IResultSetHandler<T> handler) throws Exception {
-        return owner().openSession(session -> session.find(toSQL(), handler).getResultData());
-    }
-
-    public <T> List<T> execute(String dataSourceName, IResultSetHandler<T> handler) throws Exception {
-        return owner().openSession(dataSourceName, session -> session.find(toSQL(), handler).getResultData());
-    }
-
-    public <T> List<T> execute(IDatabaseConnectionHolder connectionHolder, IResultSetHandler<T> handler) throws Exception {
-        return owner().openSession(connectionHolder, session -> session.find(toSQL(), handler).getResultData());
     }
 }
