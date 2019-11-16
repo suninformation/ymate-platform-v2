@@ -13,106 +13,46 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.ymate.platform.core.persistence.impl;
+package net.ymate.platform.core.persistence;
 
-import net.ymate.platform.core.persistence.Fields;
-import net.ymate.platform.core.persistence.IFunction;
 import org.apache.commons.lang.NullArgumentException;
 import org.apache.commons.lang3.StringUtils;
 
 /**
  * @author 刘镇 (suninformation@163.com) on 17/6/22 上午10:50
  */
-public class DefaultFunction implements IFunction {
+public abstract class AbstractFunction implements IFunction {
 
     private Fields params;
 
     private boolean flag;
 
-    public DefaultFunction() {
+    public AbstractFunction() {
         params = Fields.create();
+        onBuild();
     }
 
-    public DefaultFunction(String funcName) {
+    public AbstractFunction(String funcName) {
         if (StringUtils.isBlank(funcName)) {
             throw new NullArgumentException("funcName");
         }
         params = Fields.create(funcName, "(");
         flag = true;
+        //
+        onBuild();
     }
 
-    private IFunction operate(String opt, String param) {
-        return space().param(opt).space().param(param);
-    }
+    /**
+     * 处理函数构建过程
+     */
+    public abstract void onBuild();
 
-    @Override
-    public IFunction addition(Number param) {
-        return operate("+", param.toString());
-    }
-
-    @Override
-    public IFunction addition(String param) {
-        return operate("+", param);
-    }
-
-    @Override
-    public IFunction addition(IFunction param) {
-        return operate("+", param.build());
-    }
-
-    @Override
-    public IFunction subtract(Number param) {
-        return operate("-", param.toString());
-    }
-
-    @Override
-    public IFunction subtract(String param) {
-        return operate("-", param);
-    }
-
-    @Override
-    public IFunction subtract(IFunction param) {
-        return operate("-", param.build());
-    }
-
-    @Override
-    public IFunction multiply(Number param) {
-        return operate("*", param.toString());
-    }
-
-    @Override
-    public IFunction multiply(String param) {
-        return operate("*", param);
-    }
-
-    @Override
-    public IFunction multiply(IFunction param) {
-        return operate("*", param.build());
-    }
-
-    @Override
-    public IFunction divide(Number param) {
-        return operate("/", param.toString());
-    }
-
-    @Override
-    public IFunction divide(String param) {
-        return operate("/", param);
-    }
-
-    @Override
-    public IFunction divide(IFunction param) {
-        return operate("/", param.build());
-    }
-
-    @Override
-    public IFunction param(Number param) {
+    public AbstractFunction param(Number param) {
         params.add(param.toString());
         return this;
     }
 
-    @Override
-    public IFunction param(Number[] params) {
+    public AbstractFunction param(Number[] params) {
         if (params != null && params.length > 0) {
             boolean has = false;
             for (Number param : params) {
@@ -128,38 +68,36 @@ public class DefaultFunction implements IFunction {
         return this;
     }
 
-    @Override
-    public IFunction separator() {
+    public AbstractFunction operate(String opt, String param) {
+        return space().param(opt).space().param(param);
+    }
+
+    public AbstractFunction separator() {
         params.add(", ");
         return this;
     }
 
-    @Override
-    public IFunction space() {
+    public AbstractFunction space() {
         params.add(StringUtils.SPACE);
         return this;
     }
 
-    @Override
-    public IFunction bracketBegin() {
+    public AbstractFunction bracketBegin() {
         params.add("(");
         return this;
     }
 
-    @Override
-    public IFunction bracketEnd() {
+    public AbstractFunction bracketEnd() {
         params.add(")");
         return this;
     }
 
-    @Override
-    public IFunction param(IFunction param) {
-        params.add(param.build());
+    public AbstractFunction param(IFunction function) {
+        params.add(function.build());
         return this;
     }
 
-    @Override
-    public IFunction paramWS(Object... params) {
+    public AbstractFunction paramWS(Object... params) {
         if (params != null && params.length > 0) {
             boolean has = false;
             for (Object param : params) {
@@ -179,14 +117,12 @@ public class DefaultFunction implements IFunction {
         return this;
     }
 
-    @Override
-    public IFunction param(String param) {
+    public AbstractFunction param(String param) {
         params.add(param);
         return this;
     }
 
-    @Override
-    public IFunction param(String[] params) {
+    public AbstractFunction param(String[] params) {
         if (params != null && params.length > 0) {
             boolean has = false;
             for (String param : params) {
@@ -202,13 +138,12 @@ public class DefaultFunction implements IFunction {
         return this;
     }
 
-    @Override
-    public IFunction param(String prefix, String field) {
+    public AbstractFunction param(String prefix, String field) {
         params.add(prefix, field);
         return this;
     }
 
-    public Fields fields() {
+    public Fields params() {
         return params;
     }
 
@@ -218,5 +153,10 @@ public class DefaultFunction implements IFunction {
             params.add(")");
         }
         return StringUtils.join(params.toArray(), StringUtils.EMPTY);
+    }
+
+    @Override
+    public String toString() {
+        return build();
     }
 }

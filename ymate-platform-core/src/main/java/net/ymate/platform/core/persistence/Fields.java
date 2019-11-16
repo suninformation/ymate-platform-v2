@@ -74,7 +74,7 @@ public final class Fields implements Serializable {
     public Fields add(String prefix, String field, String alias) {
         field = field(prefix, field);
         if (StringUtils.isNotBlank(alias)) {
-            field = field.concat(" ").concat(alias);
+            field = field.concat(StringUtils.SPACE).concat(alias);
         }
         this.fields.add(field);
         return this;
@@ -93,7 +93,7 @@ public final class Fields implements Serializable {
     public Fields add(IFunction func, String alias) {
         String field = func.build();
         if (StringUtils.isNotBlank(alias)) {
-            field = field.concat(" ").concat(alias);
+            field = field.concat(StringUtils.SPACE).concat(alias);
         }
         this.fields.add(field);
         return this;

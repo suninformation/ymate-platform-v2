@@ -26,185 +26,240 @@ import net.ymate.platform.core.beans.annotation.Ignored;
 public interface IFunction {
 
     /**
-     * 加法
+     * 构建自定义函数
      *
-     * @param param 数值参数
-     * @return 返回当前函数对象
+     * @param funcName 函数名称
+     * @return 返回函数接口对象
      */
-    IFunction addition(Number param);
+    static AbstractFunction create(String funcName) {
+        return new AbstractFunction(funcName) {
+            @Override
+            public void onBuild() {
+            }
+        };
+    }
+
+    /**
+     * 构建自定义函数(无名)
+     *
+     * @return 返回函数接口对象
+     */
+    static AbstractFunction create() {
+        return new AbstractFunction() {
+            @Override
+            public void onBuild() {
+            }
+        };
+    }
+
+    /**
+     * 操作符函数
+     *
+     * @param opt   操作符号
+     * @param param 参数
+     * @return 返回函数接口对象
+     */
+    static IFunction operate(String opt, String param) {
+        return new AbstractFunction() {
+            @Override
+            public void onBuild() {
+                operate(opt, param);
+            }
+        };
+    }
+
+    /**
+     * 操作符函数
+     *
+     * @param paramOne 参数1
+     * @param opt      操作符号
+     * @param paramTwo 参数2
+     * @return 返回函数接口对象
+     */
+    static IFunction operate(String paramOne, String opt, String paramTwo) {
+        return new AbstractFunction() {
+            @Override
+            public void onBuild() {
+                param(paramOne).operate(opt, paramTwo);
+            }
+        };
+    }
+
+    // ---
 
     /**
      * 加法
      *
-     * @param param 字符串参数
-     * @return 返回当前函数对象
+     * @param param 数值型被加数
+     * @return 返回函数接口对象
      */
-    IFunction addition(String param);
+    static IFunction addition(Number param) {
+        return addition(param.toString());
+    }
+
+    static IFunction addition(String paramOne, Number param) {
+        return addition(paramOne, param.toString());
+    }
 
     /**
      * 加法
      *
-     * @param param 函数参数
-     * @return 返回当前函数对象
+     * @param param 函数型被加数
+     * @return 返回函数接口对象
      */
-    IFunction addition(IFunction param);
+    static IFunction addition(IFunction param) {
+        return addition(param.toString());
+    }
+
+    static IFunction addition(String paramOne, IFunction paramTwo) {
+        return addition(paramOne, paramTwo.toString());
+    }
+
+    /**
+     * 加法
+     *
+     * @param param 字符串型被加数
+     * @return 返回函数接口对象
+     */
+    static IFunction addition(String param) {
+        return operate("+", param);
+    }
+
+    static IFunction addition(String paramOne, String paramTwo) {
+        return operate(paramOne, "+", paramTwo);
+    }
+
+    // ---
 
     /**
      * 减法
      *
-     * @param param 数值参数
-     * @return 返回当前函数对象
+     * @param param 数值型被加数
+     * @return 返回函数接口对象
      */
-    IFunction subtract(Number param);
+    static IFunction subtract(Number param) {
+        return subtract(param.toString());
+    }
+
+    static IFunction subtract(String paramOne, Number paramTwo) {
+        return subtract(paramOne, paramTwo.toString());
+    }
 
     /**
      * 减法
      *
-     * @param param 字符串参数
-     * @return 返回当前函数对象
+     * @param param 函数型被加数
+     * @return 返回函数接口对象
      */
-    IFunction subtract(String param);
+    static IFunction subtract(IFunction param) {
+        return subtract(param.build());
+    }
+
+    static IFunction subtract(String paramOne, IFunction paramTwo) {
+        return subtract(paramOne, paramTwo.build());
+    }
 
     /**
      * 减法
      *
-     * @param param 函数参数
-     * @return 返回当前函数对象
+     * @param param 字符串被加数
+     * @return 返回函数接口对象
      */
-    IFunction subtract(IFunction param);
+    static IFunction subtract(String param) {
+        return operate("-", param);
+    }
+
+    static IFunction subtract(String paramOne, String paramTwo) {
+        return operate(paramOne, "-", paramTwo);
+    }
+
+    // ---
 
     /**
      * 乘法
      *
-     * @param param 数值参数
-     * @return 返回当前函数对象
+     * @param param 数值型被加数
+     * @return 返回函数接口对象
      */
-    IFunction multiply(Number param);
+    static IFunction multiply(Number param) {
+        return multiply(param.toString());
+    }
+
+    static IFunction multiply(String paramOne, Number paramTwo) {
+        return multiply(paramOne, paramTwo.toString());
+    }
 
     /**
      * 乘法
      *
-     * @param param 字符串参数
-     * @return 返回当前函数对象
+     * @param param 函数型被加数
+     * @return 返回函数接口对象
      */
-    IFunction multiply(String param);
+    static IFunction multiply(IFunction param) {
+        return multiply(param.build());
+    }
+
+    static IFunction multiply(String paramOne, IFunction paramTwo) {
+        return multiply(paramOne, paramTwo.build());
+    }
 
     /**
      * 乘法
      *
-     * @param param 函数参数
-     * @return 返回当前函数对象
+     * @param param 字符串被加数
+     * @return 返回函数接口对象
      */
-    IFunction multiply(IFunction param);
+    static IFunction multiply(String param) {
+        return operate("*", param);
+    }
+
+    static IFunction multiply(String paramOne, String paramTwo) {
+        return operate(paramOne, "*", paramTwo);
+    }
+
+    // ---
 
     /**
      * 除法
      *
-     * @param param 数值参数
-     * @return 返回当前函数对象
+     * @param param 数值型被加数
+     * @return 返回函数接口对象
      */
-    IFunction divide(Number param);
+    static IFunction divide(Number param) {
+        return divide(param.toString());
+    }
+
+    static IFunction divide(String paramOne, Number paramTwo) {
+        return divide(paramOne, paramTwo.toString());
+    }
 
     /**
      * 除法
      *
-     * @param param 字符串参数
-     * @return 返回当前函数对象
+     * @param param 函数型被加数
+     * @return 返回函数接口对象
      */
-    IFunction divide(String param);
+    static IFunction divide(IFunction param) {
+        return divide(param.build());
+    }
+
+    static IFunction divide(String paramOne, IFunction paramTwo) {
+        return divide(paramOne, paramTwo.build());
+    }
 
     /**
      * 除法
      *
-     * @param param 函数参数
-     * @return 返回当前函数对象
+     * @param param 字符串被加数
+     * @return 返回函数接口对象
      */
-    IFunction divide(IFunction param);
+    static IFunction divide(String param) {
+        return operate("/", param);
+    }
 
-    /**
-     * 设置参数
-     *
-     * @param param 数值参数
-     * @return 返回当前函数对象
-     */
-    IFunction param(Number param);
-
-    /**
-     * 设置参数
-     *
-     * @param params 数值参数集合
-     * @return 返回当前函数对象
-     */
-    IFunction param(Number[] params);
-
-    /**
-     * 设置参数分隔符
-     *
-     * @return 返回当前函数对象
-     */
-    IFunction separator();
-
-    /**
-     * 添加空格符
-     *
-     * @return 返回当前函数对象
-     */
-    IFunction space();
-
-    /**
-     * 添加左括号
-     *
-     * @return 返回当前函数对象
-     */
-    IFunction bracketBegin();
-
-    /**
-     * 添加右括号
-     *
-     * @return 返回当前函数对象
-     */
-    IFunction bracketEnd();
-
-    /**
-     * 设置参数
-     *
-     * @param param 函数参数
-     * @return 返回当前函数对象
-     */
-    IFunction param(IFunction param);
-
-    /**
-     * 设置参数
-     *
-     * @param param 字符串参数
-     * @return 返回当前函数对象
-     */
-    IFunction param(String param);
-
-    /**
-     * 设置参数
-     *
-     * @param params 字符串参数集合
-     * @return 返回当前函数对象
-     */
-    IFunction param(String[] params);
-
-    /**
-     * 设置参数
-     *
-     * @param prefix 前缀
-     * @param field  字段名称
-     * @return 返回当前函数对象
-     */
-    IFunction param(String prefix, String field);
-
-    /**
-     * 设置参数
-     *
-     * @param params 参数对象集合
-     * @return 返回当前函数对象
-     */
-    IFunction paramWS(Object... params);
+    static IFunction divide(String paramOne, String paramTwo) {
+        return operate(paramOne, "/", paramTwo);
+    }
 
     /**
      * 构建函数表达式
