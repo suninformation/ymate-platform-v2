@@ -15,22 +15,21 @@
  */
 package net.ymate.platform.persistence.jdbc.support;
 
+import net.ymate.platform.commons.ConsoleTableBuilder;
 import net.ymate.platform.commons.lang.BlurObject;
 import net.ymate.platform.commons.util.ClassUtils;
 import net.ymate.platform.core.persistence.IResultSet;
 import net.ymate.platform.core.persistence.base.EntityMeta;
 import net.ymate.platform.core.persistence.base.IEntity;
 import net.ymate.platform.core.persistence.base.PropertyMeta;
+import org.apache.commons.lang3.StringUtils;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.sql.Date;
 import java.sql.Time;
 import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * 数据结果集处理类，用于帮助开发人员便捷的读取结果集中数据内容<br>
@@ -565,5 +564,44 @@ public final class ResultSetHelper {
             }
             return valueObject;
         }
+    }
+
+    private ConsoleTableBuilder buildTableBuilder(String type) {
+        ConsoleTableBuilder tableBuilder = ConsoleTableBuilder.create(columnCount).escape();
+        switch (type) {
+            case "csv":
+                tableBuilder.csv();
+                break;
+            case "markdown":
+                tableBuilder.markdown();
+                break;
+            default:
+        }
+        // Append Headers
+        ConsoleTableBuilder.Row header = tableBuilder.addRow();
+        Arrays.stream(getColumnNames()).map(StringUtils::upperCase).forEachOrdered(header::addColumn);
+        // Append Rows
+        try {
+            forEach((wrapper, row) -> {
+                ConsoleTableBuilder.Row newRow = tableBuilder.addRow();
+                Arrays.stream(wrapper.getColumnNames()).map(colName -> BlurObject.bind(wrapper.getObject(colName)).toStringValue()).forEachOrdered(newRow::addColumn);
+                return true;
+            });
+        } catch (Exception ignored) {
+        }
+        return tableBuilder;
+    }
+
+    @Override
+    public String toString() {
+        return buildTableBuilder("table").toString();
+    }
+
+    public String toCsv() {
+        return buildTableBuilder("csv").toString();
+    }
+
+    public String toMarkdown() {
+        return buildTableBuilder("markdown").toString();
     }
 }
