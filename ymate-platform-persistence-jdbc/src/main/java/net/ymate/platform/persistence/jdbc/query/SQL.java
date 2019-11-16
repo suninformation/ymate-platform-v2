@@ -15,13 +15,12 @@
  */
 package net.ymate.platform.persistence.jdbc.query;
 
+import net.ymate.platform.core.persistence.IResultSet;
 import net.ymate.platform.core.persistence.Params;
 import net.ymate.platform.persistence.jdbc.IDatabase;
 import net.ymate.platform.persistence.jdbc.IDatabaseConnectionHolder;
 import net.ymate.platform.persistence.jdbc.JDBC;
 import net.ymate.platform.persistence.jdbc.base.IResultSetHandler;
-
-import java.util.List;
 
 /**
  * SQL语句及参数对象
@@ -64,6 +63,10 @@ public final class SQL {
         this.owner = owner;
         this.params = Params.create();
         this.sql = sql;
+    }
+
+    public IDatabase owner() {
+        return owner;
     }
 
     public SQL param(Object param) {
@@ -109,15 +112,15 @@ public final class SQL {
         return owner.openSession(connectionHolder, session -> session.findFirst(this, handler));
     }
 
-    public <T> List<T> find(IResultSetHandler<T> handler) throws Exception {
-        return owner.openSession(session -> session.find(this, handler).getResultData());
+    public <T> IResultSet<T> find(IResultSetHandler<T> handler) throws Exception {
+        return owner.openSession(session -> session.find(this, handler));
     }
 
-    public <T> List<T> find(String dataSourceName, IResultSetHandler<T> handler) throws Exception {
-        return owner.openSession(dataSourceName, session -> session.find(this, handler).getResultData());
+    public <T> IResultSet<T> find(String dataSourceName, IResultSetHandler<T> handler) throws Exception {
+        return owner.openSession(dataSourceName, session -> session.find(this, handler));
     }
 
-    public <T> List<T> find(IDatabaseConnectionHolder connectionHolder, IResultSetHandler<T> handler) throws Exception {
-        return owner.openSession(connectionHolder, session -> session.find(this, handler).getResultData());
+    public <T> IResultSet<T> find(IDatabaseConnectionHolder connectionHolder, IResultSetHandler<T> handler) throws Exception {
+        return owner.openSession(connectionHolder, session -> session.find(this, handler));
     }
 }

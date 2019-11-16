@@ -16,8 +16,16 @@
 package net.ymate.platform.persistence.jdbc.query;
 
 import net.ymate.platform.core.persistence.Fields;
+import net.ymate.platform.core.persistence.IResultSet;
+import net.ymate.platform.core.persistence.IShardingable;
+import net.ymate.platform.core.persistence.Page;
 import net.ymate.platform.core.persistence.base.IEntity;
 import net.ymate.platform.persistence.jdbc.IDBLocker;
+import net.ymate.platform.persistence.jdbc.IDatabase;
+import net.ymate.platform.persistence.jdbc.IDatabaseConnectionHolder;
+import net.ymate.platform.persistence.jdbc.JDBC;
+
+import java.io.Serializable;
 
 /**
  * 实体SQL及参数对象
@@ -26,6 +34,10 @@ import net.ymate.platform.persistence.jdbc.IDBLocker;
  * @author 刘镇 (suninformation@163.com) on 15/5/9 下午1:14
  */
 public final class EntitySQL<T extends IEntity> {
+
+    private final IDatabase owner;
+
+    private IShardingable shardingable;
 
     /**
      * 实体对象
@@ -40,16 +52,35 @@ public final class EntitySQL<T extends IEntity> {
     private IDBLocker dbLocker;
 
     public static <T extends IEntity> EntitySQL<T> create(Class<T> entityClass) {
-        return new EntitySQL<>(entityClass);
+        return new EntitySQL<>(JDBC.get(), entityClass);
     }
 
-    private EntitySQL(Class<T> entityClass) {
+    public static <T extends IEntity> EntitySQL<T> create(IDatabase owner, Class<T> entityClass) {
+        return new EntitySQL<>(owner, entityClass);
+    }
+
+    private EntitySQL(IDatabase owner, Class<T> entityClass) {
+        this.owner = owner;
         this.entityClass = entityClass;
         this.fields = Fields.create();
     }
 
+    public IDatabase owner() {
+        return owner;
+    }
+
     public Class<T> getEntityClass() {
         return this.entityClass;
+    }
+
+    public IShardingable shardingable() {
+        return shardingable;
+    }
+
+    public EntitySQL<T> shardingable(IShardingable shardingable) {
+        this.shardingable = shardingable;
+        //
+        return this;
     }
 
     public EntitySQL<T> field(String field) {
@@ -73,5 +104,53 @@ public final class EntitySQL<T extends IEntity> {
 
     public IDBLocker forUpdate() {
         return dbLocker;
+    }
+
+    public T find(Serializable id) throws Exception {
+        return owner.openSession(session -> session.find(this, id, shardingable));
+    }
+
+    public T find(String dataSourceName, Serializable id) throws Exception {
+        return owner.openSession(dataSourceName, session -> session.find(this, id, shardingable));
+    }
+
+    public T find(IDatabaseConnectionHolder connectionHolder, Serializable id) throws Exception {
+        return owner.openSession(connectionHolder, session -> session.find(this, id, shardingable));
+    }
+
+    public T findFirst(Where where) throws Exception {
+        return owner.openSession(session -> session.findFirst(this, where, shardingable));
+    }
+
+    public T findFirst(String dataSourceName, Where where) throws Exception {
+        return owner.openSession(dataSourceName, session -> session.findFirst(this, where, shardingable));
+    }
+
+    public T findFirst(IDatabaseConnectionHolder connectionHolder, Where where) throws Exception {
+        return owner.openSession(connectionHolder, session -> session.findFirst(this, where, shardingable));
+    }
+
+    public IResultSet<T> find(Where where) throws Exception {
+        return owner.openSession(session -> session.find(this, where, shardingable));
+    }
+
+    public IResultSet<T> find(Where where, Page page) throws Exception {
+        return owner.openSession(session -> session.find(this, where, page, shardingable));
+    }
+
+    public IResultSet<T> find(String dataSourceName, Where where) throws Exception {
+        return owner.openSession(dataSourceName, session -> session.find(this, where, shardingable));
+    }
+
+    public IResultSet<T> find(String dataSourceName, Where where, Page page) throws Exception {
+        return owner.openSession(dataSourceName, session -> session.find(this, where, page, shardingable));
+    }
+
+    public IResultSet<T> find(IDatabaseConnectionHolder connectionHolder, Where where) throws Exception {
+        return owner.openSession(connectionHolder, session -> session.find(this, where, shardingable));
+    }
+
+    public IResultSet<T> find(IDatabaseConnectionHolder connectionHolder, Where where, Page page) throws Exception {
+        return owner.openSession(connectionHolder, session -> session.find(this, where, page, shardingable));
     }
 }

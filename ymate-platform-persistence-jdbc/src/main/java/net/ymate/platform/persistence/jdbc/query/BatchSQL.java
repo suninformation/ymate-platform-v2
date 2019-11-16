@@ -16,6 +16,9 @@
 package net.ymate.platform.persistence.jdbc.query;
 
 import net.ymate.platform.core.persistence.Params;
+import net.ymate.platform.persistence.jdbc.IDatabase;
+import net.ymate.platform.persistence.jdbc.IDatabaseConnectionHolder;
+import net.ymate.platform.persistence.jdbc.JDBC;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.ArrayList;
@@ -28,6 +31,8 @@ import java.util.List;
  */
 public final class BatchSQL {
 
+    private final IDatabase owner;
+
     private final String batchSql;
 
     private final List<Params> params = new ArrayList<>();
@@ -35,15 +40,28 @@ public final class BatchSQL {
     private final List<String> sqls = new ArrayList<>();
 
     public static BatchSQL create(String batchSql) {
-        return new BatchSQL(batchSql);
+        return new BatchSQL(JDBC.get(), batchSql);
+    }
+
+    public static BatchSQL create(IDatabase owner, String batchSql) {
+        return new BatchSQL(owner, batchSql);
     }
 
     public static BatchSQL create() {
-        return new BatchSQL(null);
+        return new BatchSQL(JDBC.get(), null);
     }
 
-    private BatchSQL(String batchSql) {
+    public static BatchSQL create(IDatabase owner) {
+        return new BatchSQL(owner, null);
+    }
+
+    private BatchSQL(IDatabase owner, String batchSql) {
+        this.owner = owner;
         this.batchSql = batchSql;
+    }
+
+    public IDatabase owner() {
+        return owner;
     }
 
     public List<Params> params() {
@@ -70,5 +88,17 @@ public final class BatchSQL {
     public BatchSQL addSQL(String sql) {
         this.sqls.add(sql);
         return this;
+    }
+
+    public int[] execute() throws Exception {
+        return owner.openSession(session -> session.executeForUpdate(this));
+    }
+
+    public int[] execute(String dataSourceName) throws Exception {
+        return owner.openSession(dataSourceName, session -> session.executeForUpdate(this));
+    }
+
+    public int[] execute(IDatabaseConnectionHolder connectionHolder) throws Exception {
+        return owner.openSession(connectionHolder, session -> session.executeForUpdate(this));
     }
 }
