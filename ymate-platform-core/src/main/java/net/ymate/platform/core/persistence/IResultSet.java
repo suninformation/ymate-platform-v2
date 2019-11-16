@@ -17,6 +17,7 @@ package net.ymate.platform.core.persistence;
 
 import net.ymate.platform.core.beans.annotation.Ignored;
 
+import java.io.Serializable;
 import java.util.List;
 
 /**
@@ -26,7 +27,7 @@ import java.util.List;
  * @author 刘镇 (suninformation@163.com) on 2011-9-24 下午08:32:02
  */
 @Ignored
-public interface IResultSet<T> {
+public interface IResultSet<T> extends Serializable {
 
     /**
      * 获取当前结果集是否可用，即是否为空或元素数量为0
