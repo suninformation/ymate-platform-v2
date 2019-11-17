@@ -15,12 +15,16 @@
  */
 package net.ymate.platform.persistence.jdbc.query;
 
+import net.ymate.platform.commons.util.ExpressionUtils;
 import net.ymate.platform.core.persistence.IResultSet;
 import net.ymate.platform.core.persistence.Params;
 import net.ymate.platform.persistence.jdbc.IDatabase;
 import net.ymate.platform.persistence.jdbc.IDatabaseConnectionHolder;
 import net.ymate.platform.persistence.jdbc.JDBC;
 import net.ymate.platform.persistence.jdbc.base.IResultSetHandler;
+
+import java.util.List;
+import java.util.Map;
 
 /**
  * SQL语句及参数对象
@@ -57,6 +61,20 @@ public final class SQL {
 
     public static SQL create(Delete delete) {
         return new SQL(delete.owner(), delete.toString()).param(delete.getParams());
+    }
+
+    public static SQL create(String expressionSqlStr, Map<String, Object> params) {
+        return create(JDBC.get(), expressionSqlStr, params);
+    }
+
+    public static SQL create(IDatabase owner, String expressionSqlStr, Map<String, Object> params) {
+        ExpressionUtils expression = ExpressionUtils.bind(expressionSqlStr);
+        Params paramValues = Params.create();
+        List<String> variables = expression.getVariables();
+        if (!variables.isEmpty()) {
+            variables.stream().peek((paramName) -> expression.set(paramName, "?")).forEachOrdered((paramName) -> paramValues.add(params.get(paramName)));
+        }
+        return SQL.create(owner, expression.getResult()).param(paramValues);
     }
 
     private SQL(IDatabase owner, String sql) {

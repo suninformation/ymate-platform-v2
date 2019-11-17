@@ -16,14 +16,12 @@
 package net.ymate.platform.persistence.jdbc.repo;
 
 import net.ymate.platform.commons.util.ClassUtils;
-import net.ymate.platform.commons.util.ExpressionUtils;
 import net.ymate.platform.commons.util.RuntimeUtils;
 import net.ymate.platform.core.beans.annotation.Order;
 import net.ymate.platform.core.beans.proxy.IProxy;
 import net.ymate.platform.core.beans.proxy.IProxyChain;
 import net.ymate.platform.core.configuration.IConfiguration;
 import net.ymate.platform.core.persistence.Page;
-import net.ymate.platform.core.persistence.Params;
 import net.ymate.platform.persistence.jdbc.IDatabase;
 import net.ymate.platform.persistence.jdbc.IDatabaseSession;
 import net.ymate.platform.persistence.jdbc.base.IResultSetHandler;
@@ -74,21 +72,15 @@ public class RepositoryProxy implements IProxy {
         return session;
     }
 
-    private SQL doBuildSqlStr(String targetSql, Method targetMethod, Object[] params, boolean page) {
+    private SQL doCreateSQL(String targetSql, Method targetMethod, Object[] params, boolean page) {
         Map<String, Object> paramMap = new HashMap<>(params.length);
         String[] paramNames = ClassUtils.getMethodParamNames(targetMethod);
-        if (paramNames != null && paramNames.length > 0) {
+        if (ArrayUtils.isNotEmpty(paramNames)) {
             for (int idx = 0; idx < paramNames.length - (page ? 2 : 1); idx++) {
                 paramMap.put(paramNames[idx], params[idx]);
             }
-            if (!paramMap.isEmpty()) {
-                ExpressionUtils exp = ExpressionUtils.bind(targetSql);
-                Params paramValues = Params.create();
-                exp.getVariables().stream().peek((paramName) -> exp.set(paramName, "?")).forEachOrdered((paramName) -> paramValues.add(paramMap.get(paramName)));
-                return SQL.create(exp.getResult()).param(paramValues);
-            }
         }
-        return SQL.create(targetSql);
+        return SQL.create(owner, targetSql, paramMap);
     }
 
     @Override
@@ -131,10 +123,10 @@ public class RepositoryProxy implements IProxy {
                 if (StringUtils.isNotBlank(sqlStr)) {
                     Object result;
                     if (repositoryAnn.update()) {
-                        result = session.executeForUpdate(doBuildSqlStr(sqlStr, proxyChain.getTargetMethod(), proxyChain.getMethodParams(), repositoryAnn.page()));
+                        result = session.executeForUpdate(doCreateSQL(sqlStr, proxyChain.getTargetMethod(), proxyChain.getMethodParams(), repositoryAnn.page()));
                     } else {
                         Page page = repositoryAnn.page() ? (Page) proxyChain.getMethodParams()[proxyChain.getMethodParams().length - 2] : null;
-                        result = session.find(doBuildSqlStr(sqlStr, proxyChain.getTargetMethod(), proxyChain.getMethodParams(), repositoryAnn.page()), IResultSetHandler.ARRAY, page);
+                        result = session.find(doCreateSQL(sqlStr, proxyChain.getTargetMethod(), proxyChain.getMethodParams(), repositoryAnn.page()), IResultSetHandler.ARRAY, page);
                         if (processor != null && processor.isFilterable()) {
                             result = processor.doFilter(result);
                         }
