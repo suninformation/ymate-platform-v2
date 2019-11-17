@@ -15,10 +15,12 @@
  */
 package net.ymate.platform.commons.util;
 
+import net.ymate.platform.commons.lang.BlurObject;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -69,6 +71,17 @@ public final class ExpressionUtils {
             String namePattern = PRE + key + SUF;
             this.result = this.result.replaceAll(namePattern, Matcher.quoteReplacement(value));
         }
+        return this;
+    }
+
+    /**
+     * 批量设置变量值
+     *
+     * @param values 变量值映射
+     * @return 当前表达式工具类实例
+     */
+    public ExpressionUtils set(Map<String, Object> values) {
+        getVariables().forEach(var -> set(var, BlurObject.bind(values.get(var)).toStringValue()));
         return this;
     }
 
