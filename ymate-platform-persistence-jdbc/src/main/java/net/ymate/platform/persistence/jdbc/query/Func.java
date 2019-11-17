@@ -239,7 +239,6 @@ public interface Func {
 
     }
 
-
     /**
      * String Functions
      */
@@ -887,9 +886,10 @@ public interface Func {
         }
     }
 
-    // ----------
-    // Control Flow Functions
-    // ----------
+    /**
+     * Control Flow Functions
+     */
+    interface ControlFlow {
 
 //    public abstract Func CASE();
 
@@ -898,4 +898,5 @@ public interface Func {
 //    public abstract Func IFNULL();
 
 //    public abstract Func NULLIF();
+    }
 }

@@ -182,6 +182,6 @@ public final class Join extends Query<Join> {
         } else {
             alias = StringUtils.SPACE.concat(alias);
         }
-        return from + alias + " ON " + on;
+        return String.format("%s%s ON %s", from, alias, on);
     }
 }

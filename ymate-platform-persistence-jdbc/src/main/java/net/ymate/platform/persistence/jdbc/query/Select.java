@@ -250,10 +250,86 @@ public final class Select extends Query<Select> {
         return this;
     }
 
+    public Select innerJoin(Select select, String alias, Cond on) {
+        return join(Join.inner(select).alias(alias).on(on));
+    }
+
+    public Select leftJoin(Select select, String alias, Cond on) {
+        return join(Join.left(select).alias(alias).on(on));
+    }
+
+    public Select rightJoin(Select select, String alias, Cond on) {
+        return join(Join.right(select).alias(alias).on(on));
+    }
+
+    //
+
+    public Select innerJoin(String from, Cond on) {
+        return join(Join.inner(owner(), from).on(on));
+    }
+
+    public Select leftJoin(String from, Cond on) {
+        return join(Join.left(owner(), from).on(on));
+    }
+
+    public Select rightJoin(String from, Cond on) {
+        return join(Join.right(owner(), from).on(on));
+    }
+
+    //
+
+    public Select innerJoin(String prefix, String from, Cond on) {
+        return join(Join.inner(owner(), prefix, from).on(on));
+    }
+
+    public Select leftJoin(String prefix, String from, Cond on) {
+        return join(Join.left(owner(), prefix, from).on(on));
+    }
+
+    public Select rightJoin(String prefix, String from, Cond on) {
+        return join(Join.right(owner(), prefix, from).on(on));
+    }
+
+    //
+
+    public Select innerJoin(String prefix, String from, String alias, Cond on) {
+        return join(Join.inner(owner(), prefix, from).alias(alias).on(on));
+    }
+
+    public Select leftJoin(String prefix, String from, String alias, Cond on) {
+        return join(Join.left(owner(), prefix, from).alias(alias).on(on));
+    }
+
+    public Select rightJoin(String prefix, String from, String alias, Cond on) {
+        return join(Join.right(owner(), prefix, from).alias(alias).on(on));
+    }
+
+    //
+
+    public Select innerJoin(String prefix, String from, boolean safePrefix, String alias, Cond on) {
+        return join(Join.inner(owner(), prefix, from, safePrefix).alias(alias).on(on));
+    }
+
+    public Select leftJoin(String prefix, String from, boolean safePrefix, String alias, Cond on) {
+        return join(Join.left(owner(), prefix, from, safePrefix).alias(alias).on(on));
+    }
+
+    public Select rightJoin(String prefix, String from, boolean safePrefix, String alias, Cond on) {
+        return join(Join.right(owner(), prefix, from, safePrefix).alias(alias).on(on));
+    }
+
     public Select union(Union union) {
         unions.add(union);
         where().param(union.select().getParams());
         return this;
+    }
+
+    public Select union(Select select) {
+        return union(Union.create(select));
+    }
+
+    public Select unionAll(Select select) {
+        return union(Union.create(select).all());
     }
 
     public Select where(Where where) {
@@ -270,6 +346,26 @@ public final class Select extends Query<Select> {
             this.where = Where.create(owner());
         }
         return where;
+    }
+
+    public Select where(Cond cond) {
+        where().cond().cond(cond);
+        return this;
+    }
+
+    public Select orderBy(OrderBy orderBy) {
+        where().orderBy().orderBy(orderBy);
+        return this;
+    }
+
+    public Select groupBy(GroupBy groupBy) {
+        where().groupBy(groupBy);
+        return this;
+    }
+
+    public Select having(Cond cond) {
+        where().having(cond);
+        return this;
     }
 
     /**
@@ -339,7 +435,7 @@ public final class Select extends Query<Select> {
         }
         //
         if (StringUtils.isNotBlank(alias)) {
-            return "(".concat(stringBuilder.toString()).concat(") ").concat(alias);
+            return String.format("(%s) %s", stringBuilder.toString(), alias);
         }
         //
         if (dbLocker != null) {

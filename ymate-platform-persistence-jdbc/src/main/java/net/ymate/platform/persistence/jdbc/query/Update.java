@@ -221,6 +221,74 @@ public final class Update extends Query<Update> {
         return this;
     }
 
+    public Update innerJoin(Select select, String alias, Cond on) {
+        return join(Join.inner(select).alias(alias).on(on));
+    }
+
+    public Update leftJoin(Select select, String alias, Cond on) {
+        return join(Join.left(select).alias(alias).on(on));
+    }
+
+    public Update rightJoin(Select select, String alias, Cond on) {
+        return join(Join.right(select).alias(alias).on(on));
+    }
+
+    //
+
+    public Update innerJoin(String from, Cond on) {
+        return join(Join.inner(owner(), from).on(on));
+    }
+
+    public Update leftJoin(String from, Cond on) {
+        return join(Join.left(owner(), from).on(on));
+    }
+
+    public Update rightJoin(String from, Cond on) {
+        return join(Join.right(owner(), from).on(on));
+    }
+
+    //
+
+    public Update innerJoin(String prefix, String from, Cond on) {
+        return join(Join.inner(owner(), prefix, from).on(on));
+    }
+
+    public Update leftJoin(String prefix, String from, Cond on) {
+        return join(Join.left(owner(), prefix, from).on(on));
+    }
+
+    public Update rightJoin(String prefix, String from, Cond on) {
+        return join(Join.right(owner(), prefix, from).on(on));
+    }
+
+    //
+
+    public Update innerJoin(String prefix, String from, String alias, Cond on) {
+        return join(Join.inner(owner(), prefix, from).alias(alias).on(on));
+    }
+
+    public Update leftJoin(String prefix, String from, String alias, Cond on) {
+        return join(Join.left(owner(), prefix, from).alias(alias).on(on));
+    }
+
+    public Update rightJoin(String prefix, String from, String alias, Cond on) {
+        return join(Join.right(owner(), prefix, from).alias(alias).on(on));
+    }
+
+    //
+
+    public Update innerJoin(String prefix, String from, boolean safePrefix, String alias, Cond on) {
+        return join(Join.inner(owner(), prefix, from, safePrefix).alias(alias).on(on));
+    }
+
+    public Update leftJoin(String prefix, String from, boolean safePrefix, String alias, Cond on) {
+        return join(Join.left(owner(), prefix, from, safePrefix).alias(alias).on(on));
+    }
+
+    public Update rightJoin(String prefix, String from, boolean safePrefix, String alias, Cond on) {
+        return join(Join.right(owner(), prefix, from, safePrefix).alias(alias).on(on));
+    }
+
     public Update where(Where where) {
         where().where(where);
         return this;
@@ -245,6 +313,16 @@ public final class Update extends Query<Update> {
             this.where = Where.create(owner());
         }
         return where;
+    }
+
+    public Update where(Cond cond) {
+        where().cond().cond(cond);
+        return this;
+    }
+
+    public Update orderBy(OrderBy orderBy) {
+        where().orderBy().orderBy(orderBy);
+        return this;
     }
 
     @Override

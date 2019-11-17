@@ -42,13 +42,23 @@ public final class Fields implements Serializable {
     /**
      * @param prefix 字段名前缀
      * @param field  字段名
+     * @param alias  别名
      * @return 组合后的字段名称
      */
-    public static String field(String prefix, String field) {
-        if (StringUtils.isNotBlank(prefix)) {
-            return prefix.concat(".").concat(field);
+    public static String field(String prefix, String field, String alias) {
+        if (StringUtils.isNotBlank(field)) {
+            if (StringUtils.isNotBlank(prefix)) {
+                field = prefix.concat(".").concat(field);
+            }
+            if (StringUtils.isNotBlank(alias)) {
+                field = field.concat(StringUtils.SPACE).concat(alias);
+            }
         }
         return field;
+    }
+
+    public static String field(String prefix, String field) {
+        return field(prefix, field, null);
     }
 
     public static Fields create(String... fields) {
@@ -72,11 +82,7 @@ public final class Fields implements Serializable {
     }
 
     public Fields add(String prefix, String field, String alias) {
-        field = field(prefix, field);
-        if (StringUtils.isNotBlank(alias)) {
-            field = field.concat(StringUtils.SPACE).concat(alias);
-        }
-        this.fields.add(field);
+        this.fields.add(field(prefix, field, alias));
         return this;
     }
 
@@ -91,11 +97,7 @@ public final class Fields implements Serializable {
     }
 
     public Fields add(IFunction func, String alias) {
-        String field = func.build();
-        if (StringUtils.isNotBlank(alias)) {
-            field = field.concat(StringUtils.SPACE).concat(alias);
-        }
-        this.fields.add(field);
+        this.fields.add(field(null, func.build(), alias));
         return this;
     }
 

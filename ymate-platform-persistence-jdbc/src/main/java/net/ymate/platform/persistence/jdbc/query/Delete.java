@@ -219,6 +219,16 @@ public final class Delete extends Query<Delete> {
         return where;
     }
 
+    public Delete where(Cond cond) {
+        where().cond().cond(cond);
+        return this;
+    }
+
+    public Delete orderBy(OrderBy orderBy) {
+        where().orderBy().orderBy(orderBy);
+        return this;
+    }
+
     @Override
     public String toString() {
         StringBuilder stringBuilder = new StringBuilder("DELETE ");

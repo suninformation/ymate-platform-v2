@@ -151,7 +151,7 @@ public class Query<T> {
     }
 
     protected String wrapIdentifierField(String field) {
-        return wrapIdentifierField(this.dialect, field);
+        return wrapIdentifierField(this.dialect(), field);
     }
 
     public static String wrapIdentifierField(IDialect dialect, String field) {
@@ -159,11 +159,11 @@ public class Query<T> {
         if (splits != null && splits.length == 2) {
             String[] alias = StringUtils.split(splits[1]);
             if (alias != null && alias.length == 2) {
-                return splits[0] + "." + dialect.wrapIdentifierQuote(alias[0]) + " " + alias[1];
+                return String.format("%s.%s %s", splits[0], dialect.wrapIdentifierQuote(alias[0]), alias[1]);
             }
-            return splits[0] + "." + dialect.wrapIdentifierQuote(splits[1]);
+            return String.format("%s.%s", splits[0], dialect.wrapIdentifierQuote(splits[1]));
         }
-        return dialect.wrapIdentifierQuote(field);
+        return field;
     }
 
     public static String wrapIdentifierField(IDatabaseConnectionHolder connectionHolder, String field) {

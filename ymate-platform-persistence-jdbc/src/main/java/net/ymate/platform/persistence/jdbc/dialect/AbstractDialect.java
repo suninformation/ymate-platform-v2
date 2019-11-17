@@ -62,7 +62,14 @@ public abstract class AbstractDialect implements IDialect {
 
     @Override
     public String wrapIdentifierQuote(String origin) {
-        return identifierQuoteBegin.concat(origin).concat(identifierQuoteEnd);
+        origin = StringUtils.trim(origin);
+        if (!StringUtils.startsWith(origin, identifierQuoteBegin)) {
+            origin = identifierQuoteBegin + origin;
+        }
+        if (!StringUtils.endsWith(origin, identifierQuoteEnd)) {
+            origin += identifierQuoteEnd;
+        }
+        return origin;
     }
 
     @Override
