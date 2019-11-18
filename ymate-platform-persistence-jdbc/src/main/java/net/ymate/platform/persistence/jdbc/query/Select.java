@@ -394,6 +394,16 @@ public final class Select extends Query<Select> {
         return this;
     }
 
+    public Select page(Integer page) {
+        this.page = Page.create(page);
+        return this;
+    }
+
+    public Select page(Integer page, Integer pageSize) {
+        this.page = Page.createIfNeed(page, pageSize);
+        return this;
+    }
+
     public Select page(IDialect dialect, Page page) {
         this.dialect(dialect);
         this.page = page;

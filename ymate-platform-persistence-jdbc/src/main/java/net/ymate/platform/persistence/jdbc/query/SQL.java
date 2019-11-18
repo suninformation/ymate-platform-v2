@@ -17,6 +17,7 @@ package net.ymate.platform.persistence.jdbc.query;
 
 import net.ymate.platform.commons.util.ExpressionUtils;
 import net.ymate.platform.core.persistence.IResultSet;
+import net.ymate.platform.core.persistence.Page;
 import net.ymate.platform.core.persistence.Params;
 import net.ymate.platform.persistence.jdbc.IDatabase;
 import net.ymate.platform.persistence.jdbc.IDatabaseConnectionHolder;
@@ -134,11 +135,23 @@ public final class SQL {
         return owner.openSession(session -> session.find(this, handler));
     }
 
+    public <T> IResultSet<T> find(IResultSetHandler<T> handler, Page page) throws Exception {
+        return owner.openSession(session -> session.find(this, handler, page));
+    }
+
     public <T> IResultSet<T> find(String dataSourceName, IResultSetHandler<T> handler) throws Exception {
         return owner.openSession(dataSourceName, session -> session.find(this, handler));
     }
 
+    public <T> IResultSet<T> find(String dataSourceName, IResultSetHandler<T> handler, Page page) throws Exception {
+        return owner.openSession(dataSourceName, session -> session.find(this, handler, page));
+    }
+
     public <T> IResultSet<T> find(IDatabaseConnectionHolder connectionHolder, IResultSetHandler<T> handler) throws Exception {
         return owner.openSession(connectionHolder, session -> session.find(this, handler));
+    }
+
+    public <T> IResultSet<T> find(IDatabaseConnectionHolder connectionHolder, IResultSetHandler<T> handler, Page page) throws Exception {
+        return owner.openSession(connectionHolder, session -> session.find(this, handler, page));
     }
 }
