@@ -119,7 +119,7 @@ public final class Where {
         if (cond != null) {
             String condStr = cond.toString();
             if (StringUtils.isNotBlank(condStr)) {
-                whereBuilder.append("WHERE ").append(condStr);
+                whereBuilder.append(StringUtils.SPACE).append("WHERE ").append(condStr);
             }
         }
         if (groupBy != null) {
@@ -161,7 +161,11 @@ public final class Where {
     }
 
     public Where having(Cond cond) {
-        groupBy.having(cond);
+        if (groupBy != null) {
+            groupBy.having(cond);
+        } else {
+            groupBy = GroupBy.create(owner, cond);
+        }
         return this;
     }
 

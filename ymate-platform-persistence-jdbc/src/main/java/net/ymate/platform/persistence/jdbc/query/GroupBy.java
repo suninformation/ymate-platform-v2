@@ -31,41 +31,62 @@ public final class GroupBy extends Query<GroupBy> {
 
     private Cond having;
 
+    public static GroupBy create() {
+        return new GroupBy(JDBC.get());
+    }
+
+    public static GroupBy create(IDatabase owner) {
+        return new GroupBy(owner);
+    }
+
+    public static GroupBy create(Cond having) {
+        return new GroupBy(JDBC.get()).having(having);
+    }
+
+    public static GroupBy create(IDatabase owner, Cond having) {
+        return new GroupBy(owner).having(having);
+    }
+
     public static GroupBy create(String prefix, String field, String alias) {
-        return new GroupBy(JDBC.get(), Fields.create().add(prefix, field, alias));
+        return new GroupBy(JDBC.get()).field(Fields.create().add(prefix, field, alias));
     }
 
     public static GroupBy create(String prefix, String field) {
-        return new GroupBy(JDBC.get(), Fields.create().add(prefix, field));
+        return new GroupBy(JDBC.get()).field(Fields.create().add(prefix, field));
     }
 
     public static GroupBy create(String field) {
-        return new GroupBy(JDBC.get(), Fields.create().add(field));
+        return new GroupBy(JDBC.get()).field(Fields.create(field));
     }
 
     public static GroupBy create(Fields fields) {
-        return new GroupBy(JDBC.get(), fields);
+        return new GroupBy(JDBC.get()).field(fields);
     }
 
     public static GroupBy create(IDatabase owner, String prefix, String field, String alias) {
-        return new GroupBy(owner, Fields.create().add(prefix, field, alias));
+        return new GroupBy(owner).field(Fields.create().add(prefix, field, alias));
     }
 
     public static GroupBy create(IDatabase owner, String prefix, String field) {
-        return new GroupBy(owner, Fields.create().add(prefix, field));
+        return new GroupBy(owner).field(Fields.create().add(prefix, field));
     }
 
     public static GroupBy create(IDatabase owner, String field) {
-        return new GroupBy(owner, Fields.create().add(field));
+        return new GroupBy(owner).field(Fields.create(field));
     }
 
     public static GroupBy create(IDatabase owner, Fields fields) {
-        return new GroupBy(owner, fields);
+        return new GroupBy(owner).field(fields);
     }
 
-    private GroupBy(IDatabase owner, Fields fields) {
+    private GroupBy(IDatabase owner) {
         super(owner);
-        groupByNames = Fields.create().add(checkFieldExcluded(fields));
+        groupByNames = Fields.create();
+    }
+
+    public GroupBy field(Fields fields) {
+        groupByNames.add(checkFieldExcluded(fields));
+        return this;
     }
 
     public Fields fields() {
@@ -83,7 +104,10 @@ public final class GroupBy extends Query<GroupBy> {
 
     @Override
     public String toString() {
-        StringBuilder groupByBuilder = new StringBuilder("GROUP BY ").append(StringUtils.join(wrapIdentifierFields(groupByNames.toArray()).fields(), ", "));
+        StringBuilder groupByBuilder = new StringBuilder();
+        if (!groupByNames.isEmpty()) {
+            groupByBuilder.append(" GROUP BY ").append(StringUtils.join(wrapIdentifierFields(groupByNames.toArray()).fields(), ", "));
+        }
         if (having != null) {
             groupByBuilder.append(" HAVING ").append(having);
         }
