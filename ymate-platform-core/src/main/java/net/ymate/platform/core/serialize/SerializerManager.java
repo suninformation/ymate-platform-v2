@@ -42,7 +42,7 @@ public class SerializerManager {
         SERIALIZERS.put(JSONSerializer.NAME, new JSONSerializer());
         //
         try {
-            ClassUtils.ExtensionLoader<ISerializer> extensionLoader = ClassUtils.getExtensionLoader(ISerializer.class);
+            ClassUtils.ExtensionLoader<ISerializer> extensionLoader = ClassUtils.getExtensionLoader(ISerializer.class, true);
             for (Class<ISerializer> serializerClass : extensionLoader.getExtensionClasses()) {
                 Serializer serializerAnn = serializerClass.getAnnotation(Serializer.class);
                 if (serializerAnn != null) {

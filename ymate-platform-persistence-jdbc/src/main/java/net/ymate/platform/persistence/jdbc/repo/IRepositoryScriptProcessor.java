@@ -83,7 +83,7 @@ public interface IRepositoryScriptProcessor {
             SCRIPT_PROCESSORS.put(DefaultRepositoryScriptProcessor.JAVASCRIPT.toLowerCase(), new DefaultRepositoryScriptProcessor());
             //
             try {
-                ClassUtils.ExtensionLoader<IRepositoryScriptProcessor> extensionLoader = ClassUtils.getExtensionLoader(IRepositoryScriptProcessor.class);
+                ClassUtils.ExtensionLoader<IRepositoryScriptProcessor> extensionLoader = ClassUtils.getExtensionLoader(IRepositoryScriptProcessor.class, true);
                 for (Class<IRepositoryScriptProcessor> scriptProcessorClass : extensionLoader.getExtensionClasses()) {
                     RepositoryScriptProcessor scriptProcessorAnn = scriptProcessorClass.getAnnotation(RepositoryScriptProcessor.class);
                     if (scriptProcessorAnn != null) {
