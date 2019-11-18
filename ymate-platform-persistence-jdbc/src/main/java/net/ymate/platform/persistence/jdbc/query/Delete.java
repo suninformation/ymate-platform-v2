@@ -104,7 +104,7 @@ public final class Delete extends Query<Delete> {
 
     public static Delete create(Select select) {
         Delete target = new Delete(select.owner(), null, select.toString(), null, false);
-        target.where().param(select.getParams());
+        target.where().param(select.params());
         return target;
     }
 
@@ -156,7 +156,7 @@ public final class Delete extends Query<Delete> {
 
     public Delete from(Select select) {
         Delete target = from(null, select.toString(), null);
-        target.where().param(select.getParams());
+        target.where().param(select.params());
         return target;
     }
 
@@ -198,8 +198,8 @@ public final class Delete extends Query<Delete> {
         return this;
     }
 
-    public Params getParams() {
-        return where().getParams();
+    public Params params() {
+        return where().params();
     }
 
     public Delete param(Object param) {
@@ -250,14 +250,14 @@ public final class Delete extends Query<Delete> {
     }
 
     public int execute() throws Exception {
-        return owner().openSession(session -> session.executeForUpdate(toSQL()));
+        return toSQL().execute();
     }
 
     public int execute(String dataSourceName) throws Exception {
-        return owner().openSession(dataSourceName, session -> session.executeForUpdate(toSQL()));
+        return toSQL().execute(dataSourceName);
     }
 
     public int execute(IDatabaseConnectionHolder connectionHolder) throws Exception {
-        return owner().openSession(connectionHolder, session -> session.executeForUpdate(toSQL()));
+        return toSQL().execute(connectionHolder);
     }
 }

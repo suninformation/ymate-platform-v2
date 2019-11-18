@@ -187,14 +187,14 @@ public final class Insert extends Query<Insert> {
     }
 
     public int execute() throws Exception {
-        return owner().openSession(session -> session.executeForUpdate(toSQL()));
+        return toSQL().execute();
     }
 
     public int execute(String dataSourceName) throws Exception {
-        return owner().openSession(dataSourceName, session -> session.executeForUpdate(toSQL()));
+        return toSQL().execute(dataSourceName);
     }
 
     public int execute(IDatabaseConnectionHolder connectionHolder) throws Exception {
-        return owner().openSession(connectionHolder, session -> session.executeForUpdate(toSQL()));
+        return toSQL().execute(connectionHolder);
     }
 }

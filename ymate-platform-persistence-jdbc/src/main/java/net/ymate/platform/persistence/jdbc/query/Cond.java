@@ -456,7 +456,7 @@ public final class Cond extends Query<Cond> {
     }
 
     public Cond exists(Select subSql) {
-        params.add(subSql.getParams());
+        params.add(subSql.params());
         return cond(String.format("EXISTS (%s)", subSql.toString()));
     }
 
@@ -480,7 +480,7 @@ public final class Cond extends Query<Cond> {
     }
 
     public Cond in(String field, Select subSql) {
-        params.add(subSql.getParams());
+        params.add(subSql.params());
         return cond(String.format("%s IN (%s)", field, subSql.toString()));
     }
 

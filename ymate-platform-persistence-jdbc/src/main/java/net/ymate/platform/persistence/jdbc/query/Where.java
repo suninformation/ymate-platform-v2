@@ -106,7 +106,7 @@ public final class Where {
     /**
      * @return 此方法仅返回只读参数集合, 若要维护参数请调用where().param(...)相关方法
      */
-    public Params getParams() {
+    public Params params() {
         Params params = Params.create().add(cond.params());
         if (groupBy != null && groupBy.having() != null) {
             params.add(groupBy.having().params());
@@ -169,22 +169,22 @@ public final class Where {
         return this;
     }
 
-    public Where orderAsc(String field) {
+    public Where orderByAsc(String field) {
         orderBy.asc(field);
         return this;
     }
 
-    public Where orderAsc(String prefix, String field) {
+    public Where orderByAsc(String prefix, String field) {
         orderBy.asc(prefix, field);
         return this;
     }
 
-    public Where orderDesc(String field) {
+    public Where orderByDesc(String field) {
         orderBy.desc(field);
         return this;
     }
 
-    public Where orderDesc(String prefix, String field) {
+    public Where orderByDesc(String prefix, String field) {
         orderBy.desc(prefix, field);
         return this;
     }

@@ -242,7 +242,7 @@ public class DefaultDatabaseSession extends AbstractSession<IDatabaseConnectionH
 
     @Override
     public <T extends IEntity> IResultSet<T> find(EntitySQL<T> entity, Where where, Page page, IShardingable shardingable) throws Exception {
-        String sqlStr = dialect.buildSelectSql(entity.getEntityClass(), tablePrefix, shardingable, doGetNotExcludedFields(EntityMeta.load(entity.getEntityClass()), entity.fields(), false, true));
+        String sqlStr = dialect.buildSelectSql(entity.entityClass(), tablePrefix, shardingable, doGetNotExcludedFields(EntityMeta.load(entity.entityClass()), entity.fields(), false, true));
         if (where != null) {
             sqlStr = sqlStr.concat(StringUtils.SPACE).concat(where.toString());
         }
@@ -250,15 +250,15 @@ public class DefaultDatabaseSession extends AbstractSession<IDatabaseConnectionH
         if (page != null) {
             sqlStr = dialect.buildPagedQuerySql(sqlStr, page.page(), page.pageSize());
             if (page.isCount()) {
-                count = this.count(entity.getEntityClass(), where);
+                count = this.count(entity.entityClass(), where);
                 if (count == 0) {
                     return new DefaultResultSet<>(Collections.emptyList(), page.page(), page.pageSize(), count);
                 }
             }
         }
         //
-        IQueryOperator<T> queryOperator = new DefaultQueryOperator<>(doForUpdateIfNeed(sqlStr, entity.forUpdate()), this.connectionHolder, new EntityResultSetHandler<>(entity.getEntityClass()));
-        doOperator(Type.OPT.QUERY, DatabaseEvent.EVENT.QUERY_AFTER, where != null ? where.getParams() : null, queryOperator);
+        IQueryOperator<T> queryOperator = new DefaultQueryOperator<>(doForUpdateIfNeed(sqlStr, entity.forUpdate()), this.connectionHolder, new EntityResultSetHandler<>(entity.entityClass()));
+        doOperator(Type.OPT.QUERY, DatabaseEvent.EVENT.QUERY_AFTER, where != null ? where.params() : null, queryOperator);
         //
         if (page != null) {
             return new DefaultResultSet<>(queryOperator.getResultSet(), page.page(), page.pageSize(), count);
@@ -273,11 +273,11 @@ public class DefaultDatabaseSession extends AbstractSession<IDatabaseConnectionH
 
     @Override
     public <T extends IEntity> T find(EntitySQL<T> entity, Serializable id, IShardingable shardingable) throws Exception {
-        EntityMeta entityMeta = EntityMeta.load(entity.getEntityClass());
+        EntityMeta entityMeta = EntityMeta.load(entity.entityClass());
         PairObject<Fields, Params> entityPrimaryKeyValues = doGetPrimaryKeyFieldAndValues(entityMeta, id, null);
-        String sqlStr = dialect.buildSelectByPkSql(entity.getEntityClass(), tablePrefix, shardingable, entityPrimaryKeyValues.getKey(), doGetNotExcludedFields(entityMeta, entity.fields(), false, true));
+        String sqlStr = dialect.buildSelectByPkSql(entity.entityClass(), tablePrefix, shardingable, entityPrimaryKeyValues.getKey(), doGetNotExcludedFields(entityMeta, entity.fields(), false, true));
         //
-        IQueryOperator<T> queryOperator = new DefaultQueryOperator<>(doForUpdateIfNeed(sqlStr, entity.forUpdate()), this.connectionHolder, new EntityResultSetHandler<>(entity.getEntityClass()));
+        IQueryOperator<T> queryOperator = new DefaultQueryOperator<>(doForUpdateIfNeed(sqlStr, entity.forUpdate()), this.connectionHolder, new EntityResultSetHandler<>(entity.entityClass()));
         if (entityMeta.isMultiplePrimaryKey()) {
             entityPrimaryKeyValues.getValue().params().forEach(queryOperator::addParameter);
         } else {
@@ -314,14 +314,14 @@ public class DefaultDatabaseSession extends AbstractSession<IDatabaseConnectionH
 
     @Override
     public <T extends IEntity> T findFirst(EntitySQL<T> entity, Where where, IShardingable shardingable) throws Exception {
-        String sqlStr = dialect.buildSelectSql(entity.getEntityClass(), tablePrefix, shardingable, doGetNotExcludedFields(EntityMeta.load(entity.getEntityClass()), entity.fields(), false, true));
+        String sqlStr = dialect.buildSelectSql(entity.entityClass(), tablePrefix, shardingable, doGetNotExcludedFields(EntityMeta.load(entity.entityClass()), entity.fields(), false, true));
         if (where != null) {
             sqlStr = sqlStr.concat(StringUtils.SPACE).concat(where.toString());
         }
         sqlStr = dialect.buildPagedQuerySql(sqlStr, 1, 1);
         //
-        IQueryOperator<T> queryOperator = new DefaultQueryOperator<>(doForUpdateIfNeed(sqlStr, entity.forUpdate()), this.connectionHolder, new EntityResultSetHandler<>(entity.getEntityClass()));
-        doOperator(Type.OPT.QUERY, DatabaseEvent.EVENT.QUERY_AFTER, where != null ? where.getParams() : null, queryOperator);
+        IQueryOperator<T> queryOperator = new DefaultQueryOperator<>(doForUpdateIfNeed(sqlStr, entity.forUpdate()), this.connectionHolder, new EntityResultSetHandler<>(entity.entityClass()));
+        doOperator(Type.OPT.QUERY, DatabaseEvent.EVENT.QUERY_AFTER, where != null ? where.params() : null, queryOperator);
         //
         return queryOperator.getResultSet().isEmpty() ? null : queryOperator.getResultSet().get(0);
     }
@@ -611,7 +611,7 @@ public class DefaultDatabaseSession extends AbstractSession<IDatabaseConnectionH
                 .set("table_name", dialect.buildTableName(tablePrefix, entityMeta, shardingable))
                 .set("where", where == null ? StringUtils.EMPTY : where.toSQL());
         IQueryOperator<Object[]> queryOperator = new DefaultQueryOperator<>(exp.getResult(), this.getConnectionHolder(), IResultSetHandler.ARRAY);
-        doOperator(Type.OPT.QUERY, DatabaseEvent.EVENT.QUERY_AFTER, where != null ? where.getParams() : null, queryOperator);
+        doOperator(Type.OPT.QUERY, DatabaseEvent.EVENT.QUERY_AFTER, where != null ? where.params() : null, queryOperator);
         //
         return BlurObject.bind(((Object[]) queryOperator.getResultSet().get(0)[0])[1]).toLongValue();
     }

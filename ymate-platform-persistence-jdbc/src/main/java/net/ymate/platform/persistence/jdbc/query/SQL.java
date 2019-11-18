@@ -49,7 +49,7 @@ public final class SQL {
     }
 
     public static SQL create(Select select) {
-        return new SQL(select.owner(), select.toString()).param(select.getParams());
+        return new SQL(select.owner(), select.toString()).param(select.params());
     }
 
     public static SQL create(Insert insert) {
@@ -57,11 +57,11 @@ public final class SQL {
     }
 
     public static SQL create(Update update) {
-        return new SQL(update.owner(), update.toString()).param(update.getParams());
+        return new SQL(update.owner(), update.toString()).param(update.params());
     }
 
     public static SQL create(Delete delete) {
-        return new SQL(delete.owner(), delete.toString()).param(delete.getParams());
+        return new SQL(delete.owner(), delete.toString()).param(delete.params());
     }
 
     public static SQL create(String expressionSqlStr, Map<String, Object> params) {
@@ -153,5 +153,17 @@ public final class SQL {
 
     public <T> IResultSet<T> find(IDatabaseConnectionHolder connectionHolder, IResultSetHandler<T> handler, Page page) throws Exception {
         return owner.openSession(connectionHolder, session -> session.find(this, handler, page));
+    }
+
+    public long count() throws Exception {
+        return owner.openSession(session -> session.count(this));
+    }
+
+    public long count(String dataSourceName) throws Exception {
+        return owner.openSession(dataSourceName, session -> session.count(this));
+    }
+
+    public long count(IDatabaseConnectionHolder connectionHolder) throws Exception {
+        return owner.openSession(connectionHolder, session -> session.count(this));
     }
 }

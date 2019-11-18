@@ -15,15 +15,14 @@
  */
 package net.ymate.platform.persistence.jdbc.query;
 
-import net.ymate.platform.core.persistence.Fields;
-import net.ymate.platform.core.persistence.IFunction;
-import net.ymate.platform.core.persistence.Page;
-import net.ymate.platform.core.persistence.Params;
+import net.ymate.platform.core.persistence.*;
 import net.ymate.platform.core.persistence.base.EntityMeta;
 import net.ymate.platform.core.persistence.base.IEntity;
 import net.ymate.platform.persistence.jdbc.IDBLocker;
 import net.ymate.platform.persistence.jdbc.IDatabase;
+import net.ymate.platform.persistence.jdbc.IDatabaseConnectionHolder;
 import net.ymate.platform.persistence.jdbc.JDBC;
+import net.ymate.platform.persistence.jdbc.base.IResultSetHandler;
 import net.ymate.platform.persistence.jdbc.dialect.IDialect;
 import org.apache.commons.lang3.StringUtils;
 
@@ -117,7 +116,7 @@ public final class Select extends Query<Select> {
 
     public static Select create(Select select) {
         Select target = new Select(select.owner(), null, select.toString(), null, false);
-        target.where().param(select.getParams());
+        target.where().param(select.params());
         return target;
     }
 
@@ -168,7 +167,7 @@ public final class Select extends Query<Select> {
 
     public Select from(Select select) {
         Select target = from(null, select.toString(), null);
-        target.where().param(select.getParams());
+        target.where().param(select.params());
         return target;
     }
 
@@ -320,7 +319,7 @@ public final class Select extends Query<Select> {
 
     public Select union(Union union) {
         unions.add(union);
-        where().param(union.select().getParams());
+        where().param(union.select().params());
         return this;
     }
 
@@ -337,8 +336,8 @@ public final class Select extends Query<Select> {
         return this;
     }
 
-    public Params getParams() {
-        return where().getParams();
+    public Params params() {
+        return where().params();
     }
 
     public Where where() {
@@ -358,8 +357,43 @@ public final class Select extends Query<Select> {
         return this;
     }
 
+    public Select orderByAsc(String field) {
+        where().orderBy().asc(field);
+        return this;
+    }
+
+    public Select orderByAsc(String prefix, String field) {
+        where().orderBy().asc(prefix, field);
+        return this;
+    }
+
+    public Select orderByDesc(String field) {
+        where().orderBy().desc(field);
+        return this;
+    }
+
+    public Select orderByDesc(String prefix, String field) {
+        where().orderBy().desc(prefix, field);
+        return this;
+    }
+
     public Select groupBy(GroupBy groupBy) {
         where().groupBy(groupBy);
+        return this;
+    }
+
+    public Select groupBy(Fields fields) {
+        where().groupBy(fields);
+        return this;
+    }
+
+    public Select groupBy(String prefix, String field) {
+        where().groupBy(prefix, field);
+        return this;
+    }
+
+    public Select groupBy(String field) {
+        where().groupBy(field);
         return this;
     }
 
@@ -456,5 +490,53 @@ public final class Select extends Query<Select> {
 
     public SQL toSQL() {
         return SQL.create(this);
+    }
+
+    public <T> T findFirst(IResultSetHandler<T> handler) throws Exception {
+        return toSQL().findFirst(handler);
+    }
+
+    public <T> T findFirst(String dataSourceName, IResultSetHandler<T> handler) throws Exception {
+        return toSQL().findFirst(dataSourceName, handler);
+    }
+
+    public <T> T findFirst(IDatabaseConnectionHolder connectionHolder, IResultSetHandler<T> handler) throws Exception {
+        return findFirst(connectionHolder, handler);
+    }
+
+    public <T> IResultSet<T> find(IResultSetHandler<T> handler) throws Exception {
+        return toSQL().find(handler);
+    }
+
+    public <T> IResultSet<T> find(IResultSetHandler<T> handler, Page page) throws Exception {
+        return toSQL().find(handler, page);
+    }
+
+    public <T> IResultSet<T> find(String dataSourceName, IResultSetHandler<T> handler) throws Exception {
+        return toSQL().find(dataSourceName, handler);
+    }
+
+    public <T> IResultSet<T> find(String dataSourceName, IResultSetHandler<T> handler, Page page) throws Exception {
+        return toSQL().find(dataSourceName, handler, page);
+    }
+
+    public <T> IResultSet<T> find(IDatabaseConnectionHolder connectionHolder, IResultSetHandler<T> handler) throws Exception {
+        return toSQL().find(connectionHolder, handler);
+    }
+
+    public <T> IResultSet<T> find(IDatabaseConnectionHolder connectionHolder, IResultSetHandler<T> handler, Page page) throws Exception {
+        return toSQL().find(connectionHolder, handler, page);
+    }
+
+    public long count() throws Exception {
+        return toSQL().count();
+    }
+
+    public long count(String dataSourceName) throws Exception {
+        return toSQL().count(dataSourceName);
+    }
+
+    public long count(IDatabaseConnectionHolder connectionHolder) throws Exception {
+        return toSQL().count(connectionHolder);
     }
 }

@@ -91,7 +91,7 @@ public final class Join extends Query<Join> {
 
     public static Join inner(Select select) {
         Join target = inner(select.owner(), null, select.toString(), false);
-        target.params().add(select.getParams());
+        target.params().add(select.params());
         return target;
     }
 
@@ -115,7 +115,7 @@ public final class Join extends Query<Join> {
 
     public static Join left(Select select) {
         Join target = left(select.owner(), null, select.toString(), false);
-        target.params().add(select.getParams());
+        target.params().add(select.params());
         return target;
     }
 
@@ -139,7 +139,7 @@ public final class Join extends Query<Join> {
 
     public static Join right(Select select) {
         Join target = right(select.owner(), null, select.toString(), false);
-        target.params().add(select.getParams());
+        target.params().add(select.params());
         return target;
     }
 

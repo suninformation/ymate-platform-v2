@@ -69,7 +69,7 @@ public final class EntitySQL<T extends IEntity> {
         return owner;
     }
 
-    public Class<T> getEntityClass() {
+    public Class<T> entityClass() {
         return this.entityClass;
     }
 
@@ -152,5 +152,45 @@ public final class EntitySQL<T extends IEntity> {
 
     public IResultSet<T> find(IDatabaseConnectionHolder connectionHolder, Where where, Page page) throws Exception {
         return owner.openSession(connectionHolder, session -> session.find(this, where, page, shardingable));
+    }
+
+    public long count() throws Exception {
+        return owner.openSession(session -> session.count(entityClass));
+    }
+
+    public long count(Where where) throws Exception {
+        return owner.openSession(session -> session.count(entityClass, where));
+    }
+
+    public long count(String dataSourceName, Where where) throws Exception {
+        return owner.openSession(dataSourceName, session -> session.count(entityClass, where, shardingable));
+    }
+
+    public long count(IDatabaseConnectionHolder connectionHolder, Where where) throws Exception {
+        return owner.openSession(connectionHolder, session -> session.count(entityClass, where, shardingable));
+    }
+
+    public int delete(Serializable id) throws Exception {
+        return owner.openSession(session -> session.delete(entityClass, id, shardingable));
+    }
+
+    public int delete(String dataSourceName, Serializable id) throws Exception {
+        return owner.openSession(dataSourceName, session -> session.delete(entityClass, id, shardingable));
+    }
+
+    public int delete(IDatabaseConnectionHolder connectionHolder, Serializable id) throws Exception {
+        return owner.openSession(connectionHolder, session -> session.delete(entityClass, id, shardingable));
+    }
+
+    public int[] delete(Serializable[] ids) throws Exception {
+        return owner.openSession(session -> session.delete(entityClass, ids));
+    }
+
+    public int[] delete(String dataSourceName, Serializable[] ids) throws Exception {
+        return owner.openSession(dataSourceName, session -> session.delete(entityClass, ids));
+    }
+
+    public int[] delete(IDatabaseConnectionHolder connectionHolder, Serializable[] ids) throws Exception {
+        return owner.openSession(connectionHolder, session -> session.delete(entityClass, ids));
     }
 }

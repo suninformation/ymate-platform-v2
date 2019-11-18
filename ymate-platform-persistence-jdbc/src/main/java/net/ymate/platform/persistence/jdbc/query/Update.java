@@ -294,8 +294,8 @@ public final class Update extends Query<Update> {
         return this;
     }
 
-    public Params getParams() {
-        return where().getParams();
+    public Params params() {
+        return where().params();
     }
 
     public Update param(Object param) {
@@ -359,14 +359,14 @@ public final class Update extends Query<Update> {
     }
 
     public int execute() throws Exception {
-        return owner().openSession(session -> session.executeForUpdate(toSQL()));
+        return toSQL().execute();
     }
 
     public int execute(String dataSourceName) throws Exception {
-        return owner().openSession(dataSourceName, session -> session.executeForUpdate(toSQL()));
+        return toSQL().execute(dataSourceName);
     }
 
     public int execute(IDatabaseConnectionHolder connectionHolder) throws Exception {
-        return owner().openSession(connectionHolder, session -> session.executeForUpdate(toSQL()));
+        return toSQL().execute(connectionHolder);
     }
 }
