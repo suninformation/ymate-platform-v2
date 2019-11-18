@@ -145,7 +145,11 @@ public final class Where {
     }
 
     public Where having(Cond cond) {
-        __groupBy.having(cond);
+        if (__groupBy != null) {
+            __groupBy.having(cond);
+        } else {
+            __groupBy = GroupBy.create(cond);
+        }
         return this;
     }
 

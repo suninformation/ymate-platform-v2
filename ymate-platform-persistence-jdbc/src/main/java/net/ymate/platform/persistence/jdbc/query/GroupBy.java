@@ -30,6 +30,14 @@ public final class GroupBy extends Query<GroupBy> {
 
     private Cond __having;
 
+    public static GroupBy create() {
+        return new GroupBy();
+    }
+
+    public static GroupBy create(Cond having) {
+        return new GroupBy().having(having);
+    }
+
     public static GroupBy create(String prefix, String field, String alias) {
         return new GroupBy(Fields.create().add(prefix, field, alias));
     }
@@ -46,8 +54,17 @@ public final class GroupBy extends Query<GroupBy> {
         return new GroupBy(fields);
     }
 
+    private GroupBy() {
+        __groupByNames = Fields.create();
+    }
+
     private GroupBy(Fields fields) {
         __groupByNames = Fields.create().add(__checkFieldExcluded(fields));
+    }
+
+    public GroupBy field(Fields fields) {
+        __groupByNames.add(__checkFieldExcluded(fields));
+        return this;
     }
 
     public Fields fields() {
@@ -65,10 +82,13 @@ public final class GroupBy extends Query<GroupBy> {
 
     @Override
     public String toString() {
-        StringBuilder _groupBySB = new StringBuilder("GROUP BY ").append(StringUtils.join(__wrapIdentifierFields(__groupByNames.toArray()).fields(), ", "));
-        if (__having != null) {
-            _groupBySB.append(" HAVING ").append(__having);
+        StringBuilder groupByBuilder = new StringBuilder();
+        if (!__groupByNames.fields().isEmpty()) {
+            groupByBuilder.append(" GROUP BY ").append(StringUtils.join(__wrapIdentifierFields(__groupByNames.toArray()).fields(), ", "));
         }
-        return _groupBySB.toString();
+        if (__having != null) {
+            groupByBuilder.append(" HAVING ").append(__having);
+        }
+        return groupByBuilder.toString();
     }
 }
