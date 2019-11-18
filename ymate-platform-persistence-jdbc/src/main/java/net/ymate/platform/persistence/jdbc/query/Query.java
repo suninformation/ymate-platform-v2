@@ -141,6 +141,9 @@ public class Query<T> {
     }
 
     protected Fields wrapIdentifierFields(String... fields) {
+        if (!this.dialect().hasIdentifierQuote()) {
+            return Fields.create(fields);
+        }
         Fields returnValue = Fields.create();
         if (fields != null) {
             for (String field : fields) {
@@ -155,13 +158,19 @@ public class Query<T> {
     }
 
     public static String wrapIdentifierField(IDialect dialect, String field) {
-        String[] splits = StringUtils.split(field, ".");
-        if (splits != null && splits.length == 2) {
-            String[] alias = StringUtils.split(splits[1]);
-            if (alias != null && alias.length == 2) {
-                return String.format("%s.%s %s", splits[0], dialect.wrapIdentifierQuote(alias[0]), alias[1]);
+        if (dialect.hasIdentifierQuote()) {
+            String[] splits = StringUtils.split(field, ".");
+            if (splits != null && splits.length > 0) {
+                if (splits.length == 2) {
+                    String[] alias = StringUtils.split(splits[1]);
+                    if (alias != null && alias.length == 2) {
+                        return String.format("%s.%s %s", splits[0], dialect.wrapIdentifierQuote(alias[0]), alias[1]);
+                    }
+                    return String.format("%s.%s", splits[0], dialect.wrapIdentifierQuote(splits[1]));
+                } else if (splits.length == 1) {
+                    return dialect.wrapIdentifierQuote(splits[0]);
+                }
             }
-            return String.format("%s.%s", splits[0], dialect.wrapIdentifierQuote(splits[1]));
         }
         return field;
     }

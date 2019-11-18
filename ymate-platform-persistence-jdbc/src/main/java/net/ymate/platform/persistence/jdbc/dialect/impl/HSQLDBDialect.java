@@ -36,9 +36,8 @@ public class HSQLDBDialect extends AbstractDialect {
     public String buildPagedQuerySql(String originSql, int page, int pageSize) {
         int limit = ((page - 1) * pageSize);
         if (pageSize == 0) {
-            return originSql.concat(" limit ").concat(String.valueOf(limit));
-        } else {
-            return originSql.concat(" limit ").concat(String.valueOf(pageSize)).concat(" offset ").concat(String.valueOf(limit));
+            return String.format("%s LIMIT %d", originSql, limit);
         }
+        return String.format("%s LIMIT %d OFFSET %d", originSql, pageSize, limit);
     }
 }

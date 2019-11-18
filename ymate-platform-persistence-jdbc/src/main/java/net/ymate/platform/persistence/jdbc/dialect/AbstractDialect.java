@@ -62,12 +62,14 @@ public abstract class AbstractDialect implements IDialect {
 
     @Override
     public String wrapIdentifierQuote(String origin) {
-        origin = StringUtils.trim(origin);
-        if (!StringUtils.startsWith(origin, identifierQuoteBegin)) {
-            origin = identifierQuoteBegin + origin;
-        }
-        if (!StringUtils.endsWith(origin, identifierQuoteEnd)) {
-            origin += identifierQuoteEnd;
+        if (hasIdentifierQuote()) {
+            origin = StringUtils.trim(origin);
+            if (!StringUtils.startsWith(origin, identifierQuoteBegin)) {
+                origin = identifierQuoteBegin + origin;
+            }
+            if (!StringUtils.endsWith(origin, identifierQuoteEnd)) {
+                origin += identifierQuoteEnd;
+            }
         }
         return origin;
     }
@@ -76,6 +78,11 @@ public abstract class AbstractDialect implements IDialect {
     public void setIdentifierQuote(String identifierQuoteBegin, String identifierQuoteEnd) {
         this.identifierQuoteBegin = StringUtils.trimToEmpty(identifierQuoteBegin);
         this.identifierQuoteEnd = StringUtils.trimToEmpty(identifierQuoteEnd);
+    }
+
+    @Override
+    public boolean hasIdentifierQuote() {
+        return StringUtils.isNotBlank(identifierQuoteBegin) && StringUtils.isNotBlank(identifierQuoteEnd);
     }
 
     @Override
@@ -117,10 +124,9 @@ public abstract class AbstractDialect implements IDialect {
     public String buildPagedQuerySql(String originSql, int page, int pageSize) {
         int limit = (page - 1) * pageSize;
         if (pageSize == 0) {
-            return originSql.concat(" limit ").concat(Integer.toString(limit));
-        } else {
-            return originSql.concat(" limit ").concat(Integer.toString(limit)).concat(", ").concat(Integer.toString(pageSize));
+            return String.format("%s LIMIT %d", originSql, limit);
         }
+        return String.format("%s LIMIT %d, %d", originSql, limit, pageSize);
     }
 
     @Override

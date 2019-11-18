@@ -58,6 +58,13 @@ public interface IDialect {
     void setIdentifierQuote(String identifierQuoteBegin, String identifierQuoteEnd);
 
     /**
+     * 是否存在引用标识符
+     *
+     * @return 返回true表示引用标识符存在(即值不为空)
+     */
+    boolean hasIdentifierQuote();
+
+    /**
      * 获取引用标识符
      *
      * @return 返回引用标识符
