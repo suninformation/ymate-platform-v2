@@ -93,7 +93,12 @@ public abstract class AbstractFunction implements IFunction {
     }
 
     public AbstractFunction param(IFunction function) {
-        params.add(function.build());
+        params.add(function);
+        return this;
+    }
+
+    public AbstractFunction param(IFunction function, String alias) {
+        params.add(function, alias);
         return this;
     }
 

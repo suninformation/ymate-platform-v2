@@ -243,6 +243,11 @@ public final class Select extends Query<Select> {
         return this;
     }
 
+    public Select field(IFunction func) {
+        this.fields.add(func);
+        return this;
+    }
+
     public Select join(Join join) {
         joins.add(join);
         where().param(join.params());
