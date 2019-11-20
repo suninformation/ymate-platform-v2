@@ -26,7 +26,7 @@ import org.apache.commons.lang3.StringUtils;
  *
  * @author 刘镇 (suninformation@163.com) on 15/5/7 下午1:19
  */
-public final class Where {
+public final class Where extends Slot {
 
     private final IDatabase owner;
 
@@ -121,6 +121,9 @@ public final class Where {
             if (StringUtils.isNotBlank(condStr)) {
                 whereBuilder.append(StringUtils.SPACE).append("WHERE ").append(condStr);
             }
+        }
+        if (hasSlotContent()) {
+            whereBuilder.append(buildSlot());
         }
         if (groupBy != null) {
             whereBuilder.append(StringUtils.SPACE).append(groupBy);

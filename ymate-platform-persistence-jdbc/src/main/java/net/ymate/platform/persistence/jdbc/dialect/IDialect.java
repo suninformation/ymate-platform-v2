@@ -17,6 +17,7 @@ package net.ymate.platform.persistence.jdbc.dialect;
 
 import net.ymate.platform.core.beans.annotation.Ignored;
 import net.ymate.platform.core.persistence.Fields;
+import net.ymate.platform.core.persistence.IShardingRule;
 import net.ymate.platform.core.persistence.IShardingable;
 import net.ymate.platform.core.persistence.base.EntityMeta;
 import net.ymate.platform.core.persistence.base.IEntity;
@@ -87,6 +88,17 @@ public interface IDialect {
      * @return 返回数据表名称
      */
     String buildTableName(String prefix, EntityMeta entityMeta, IShardingable shardingable);
+
+    /**
+     * 获取完整的数据表名称，并根据数据库特性决定是否添加引用标识符
+     *
+     * @param prefix       数据表名称前缀
+     * @param tableName    数据表名称
+     * @param shardingRule 数据分片(表)规则
+     * @param shardingable 分片(表)参数对象
+     * @return 返回数据表名称
+     */
+    String buildTableName(String prefix, String tableName, IShardingRule shardingRule, IShardingable shardingable);
 
     /**
      * 获取自增主键值（按 Long 类型返回），采用JDBC Statement对象获取自动生成的主键（仅处理单主键）

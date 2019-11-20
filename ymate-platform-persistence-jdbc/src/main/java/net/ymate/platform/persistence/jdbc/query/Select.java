@@ -506,7 +506,7 @@ public final class Select extends Query<Select> {
     }
 
     public <T> T findFirst(IDatabaseConnectionHolder connectionHolder, IResultSetHandler<T> handler) throws Exception {
-        return findFirst(connectionHolder, handler);
+        return toSQL().findFirst(connectionHolder, handler);
     }
 
     public <T> IResultSet<T> find(IResultSetHandler<T> handler) throws Exception {

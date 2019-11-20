@@ -42,9 +42,13 @@ public abstract class AbstractResultSetHandler<T> implements IResultSetHandler<T
             columnMetas[idx] = new ColumnMeta(metaData.getColumnLabel(idx + 1), metaData.getColumnType(idx + 1));
         }
         //
+        return processResult(resultSet);
+    }
+
+    protected List<T> processResult(ResultSet resultSet) throws Exception {
         List<T> results = new ArrayList<>();
         while (resultSet.next()) {
-            results.add(this.processResultRow(resultSet));
+            results.add(processResultRow(resultSet));
         }
         return results;
     }
@@ -75,7 +79,7 @@ public abstract class AbstractResultSetHandler<T> implements IResultSetHandler<T
 
         private final int type;
 
-        ColumnMeta(String name, int type) {
+        public ColumnMeta(String name, int type) {
             this.name = name;
             this.type = type;
         }

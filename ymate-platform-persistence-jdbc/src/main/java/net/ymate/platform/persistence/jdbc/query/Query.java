@@ -17,6 +17,7 @@ package net.ymate.platform.persistence.jdbc.query;
 
 import net.ymate.platform.commons.util.RuntimeUtils;
 import net.ymate.platform.core.persistence.Fields;
+import net.ymate.platform.core.persistence.IShardingRule;
 import net.ymate.platform.core.persistence.IShardingable;
 import net.ymate.platform.core.persistence.base.EntityMeta;
 import net.ymate.platform.persistence.jdbc.IDatabase;
@@ -37,9 +38,9 @@ public class Query<T> {
 
     private final IDatabase owner;
 
-    private String tablePrefix;
-
     private IDialect dialect;
+
+    private IShardingRule shardingRule;
 
     private IShardingable shardingable;
 
@@ -49,31 +50,6 @@ public class Query<T> {
 
     public IDatabase owner() {
         return owner;
-    }
-
-    /**
-     * @return 返回表前缀，若未设置则返回默认数据源配置的表前缀
-     */
-    public String tablePrefix() {
-        if (StringUtils.isBlank(tablePrefix)) {
-            try (IDatabaseSession session = owner.openSession()) {
-                if (session != null) {
-                    tablePrefix = session.getConnectionHolder().getDataSourceConfig().getTablePrefix();
-                }
-            } catch (Exception e) {
-                if (LOG.isWarnEnabled()) {
-                    LOG.warn(StringUtils.EMPTY, RuntimeUtils.unwrapThrow(e));
-                }
-            }
-        }
-        return tablePrefix;
-    }
-
-    @SuppressWarnings("unchecked")
-    public T tablePrefix(String tablePrefix) {
-        this.tablePrefix = tablePrefix;
-        //
-        return (T) this;
     }
 
     /**
@@ -97,7 +73,16 @@ public class Query<T> {
     @SuppressWarnings("unchecked")
     public T dialect(IDialect dialect) {
         this.dialect = dialect;
-        //
+        return (T) this;
+    }
+
+    public IShardingRule shardingRule() {
+        return shardingRule;
+    }
+
+    @SuppressWarnings("unchecked")
+    public T shardingRule(IShardingRule shardingRule) {
+        this.shardingRule = shardingRule;
         return (T) this;
     }
 
@@ -108,7 +93,6 @@ public class Query<T> {
     @SuppressWarnings("unchecked")
     public T shardingable(IShardingable shardingable) {
         this.shardingable = shardingable;
-        //
         return (T) this;
     }
 
@@ -126,16 +110,20 @@ public class Query<T> {
 
     protected String buildSafeTableName(String prefix, String tableName, boolean safePrefix) {
         if (safePrefix) {
-            prefix = StringUtils.defaultIfBlank(prefix, this.tablePrefix());
-            return this.dialect().wrapIdentifierQuote(StringUtils.trimToEmpty(prefix).concat(tableName));
+            return dialect().buildTableName(prefix, tableName, shardingRule(), shardingable());
+        }
+        if (StringUtils.isNotBlank(prefix) && StringUtils.startsWith(tableName, prefix)) {
+            prefix = StringUtils.EMPTY;
         }
         return StringUtils.trimToEmpty(prefix).concat(tableName);
     }
 
     protected String buildSafeTableName(String prefix, EntityMeta entityMeta, boolean safePrefix) {
         if (safePrefix) {
-            prefix = StringUtils.defaultIfBlank(prefix, this.tablePrefix());
-            return this.dialect().buildTableName(prefix, entityMeta, this.shardingable());
+            return dialect().buildTableName(prefix, entityMeta, shardingable());
+        }
+        if (StringUtils.isNotBlank(prefix) && StringUtils.startsWith(entityMeta.getEntityName(), prefix)) {
+            prefix = StringUtils.EMPTY;
         }
         return StringUtils.trimToEmpty(prefix).concat(entityMeta.getEntityName());
     }
@@ -154,7 +142,7 @@ public class Query<T> {
     }
 
     protected String wrapIdentifierField(String field) {
-        return wrapIdentifierField(this.dialect(), field);
+        return wrapIdentifierField(dialect(), field);
     }
 
     public static String wrapIdentifierField(IDialect dialect, String field) {

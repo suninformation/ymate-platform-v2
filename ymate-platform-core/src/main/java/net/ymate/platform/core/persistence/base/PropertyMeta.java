@@ -15,6 +15,7 @@
  */
 package net.ymate.platform.core.persistence.base;
 
+import java.io.Serializable;
 import java.lang.reflect.Field;
 
 /**
@@ -22,7 +23,9 @@ import java.lang.reflect.Field;
  *
  * @author 刘镇 (suninformation@163.com) on 15/4/20 上午10:47
  */
-public class PropertyMeta {
+public class PropertyMeta implements Serializable {
+
+    public static final String NULL = "@NULL";
 
     /**
      * 属性名称
@@ -78,6 +81,9 @@ public class PropertyMeta {
      */
     private Class<?> conversionType;
 
+    public PropertyMeta() {
+    }
+
     public PropertyMeta(String name, Field field) {
         this.name = name;
         this.field = field;
@@ -107,104 +113,117 @@ public class PropertyMeta {
         return name;
     }
 
-    public void setName(String name) {
+    public PropertyMeta setName(String name) {
         this.name = name;
+        return this;
     }
 
     public Field getField() {
         return field;
     }
 
-    public void setField(Field field) {
+    public PropertyMeta setField(Field field) {
         this.field = field;
+        return this;
     }
 
     public boolean isAutoincrement() {
         return autoincrement;
     }
 
-    public void setAutoincrement(boolean autoincrement) {
+    public PropertyMeta setAutoincrement(boolean autoincrement) {
         this.autoincrement = autoincrement;
+        return this;
     }
 
     public String getSequenceName() {
         return sequenceName;
     }
 
-    public void setSequenceName(String sequenceName) {
+    public PropertyMeta setSequenceName(String sequenceName) {
         this.sequenceName = sequenceName;
+        return this;
     }
 
     public boolean isNullable() {
         return nullable;
     }
 
-    public void setNullable(boolean nullable) {
+    public PropertyMeta setNullable(boolean nullable) {
         this.nullable = nullable;
+        return this;
     }
 
     public boolean isUnsigned() {
         return unsigned;
     }
 
-    public void setUnsigned(boolean unsigned) {
+    public PropertyMeta setUnsigned(boolean unsigned) {
         this.unsigned = unsigned;
+        return this;
     }
 
     public int getLength() {
         return length;
     }
 
-    public void setLength(int length) {
+    public PropertyMeta setLength(int length) {
         this.length = length;
+        return this;
     }
 
     public int getDecimals() {
         return decimals;
     }
 
-    public void setDecimals(int decimals) {
+    public PropertyMeta setDecimals(int decimals) {
         this.decimals = decimals;
+        return this;
     }
 
     public Type.FIELD getType() {
         return type;
     }
 
-    public void setType(Type.FIELD type) {
+    public PropertyMeta setType(Type.FIELD type) {
         this.type = type;
+        return this;
     }
 
     public String getDefaultValue() {
         return defaultValue;
     }
 
-    public void setDefaultValue(String defaultValue) {
+    public PropertyMeta setDefaultValue(String defaultValue) {
         this.defaultValue = defaultValue;
+        return this;
     }
 
     public String getComment() {
         return comment;
     }
 
-    public void setComment(String comment) {
+    public PropertyMeta setComment(String comment) {
         this.comment = comment;
+        return this;
     }
 
     public boolean isReadonly() {
         return readonly;
     }
 
-    public void setReadonly(boolean readonly) {
+    public PropertyMeta setReadonly(boolean readonly) {
         this.readonly = readonly;
+        return this;
     }
 
     public Class<?> getConversionType() {
         return conversionType;
     }
 
-    public void setConversionType(Class<?> conversionType) {
+    public PropertyMeta setConversionType(Class<?> conversionType) {
         this.conversionType = conversionType;
+        return this;
     }
 
     @Override

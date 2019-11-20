@@ -22,10 +22,10 @@ import net.ymate.platform.core.persistence.IShardingRule;
 import net.ymate.platform.core.persistence.IShardingable;
 import net.ymate.platform.core.persistence.base.EntityMeta;
 import net.ymate.platform.core.persistence.base.IEntity;
-import net.ymate.platform.core.persistence.base.Type;
+import net.ymate.platform.persistence.jdbc.query.Table;
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 
-import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -33,6 +33,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.IntStream;
 
 /**
  * 数据库方言接口抽象实现
@@ -40,8 +41,6 @@ import java.util.Map;
  * @author 刘镇 (suninformation@163.com) on 2011-8-30 下午01:55:13
  */
 public abstract class AbstractDialect implements IDialect {
-
-    protected static final String LINE_END_FLAG = ",\n";
 
     /**
      * 引用标识符-开始
@@ -63,12 +62,18 @@ public abstract class AbstractDialect implements IDialect {
     @Override
     public String wrapIdentifierQuote(String origin) {
         if (hasIdentifierQuote()) {
-            origin = StringUtils.trim(origin);
-            if (!StringUtils.startsWith(origin, identifierQuoteBegin)) {
-                origin = identifierQuoteBegin + origin;
-            }
-            if (!StringUtils.endsWith(origin, identifierQuoteEnd)) {
-                origin += identifierQuoteEnd;
+            String[] originArr = StringUtils.split(origin, ".");
+            if (ArrayUtils.isNotEmpty(originArr)) {
+                IntStream.range(0, originArr.length).forEach(idx -> {
+                    originArr[idx] = StringUtils.trim(originArr[idx]);
+                    if (!StringUtils.startsWith(originArr[idx], identifierQuoteBegin)) {
+                        originArr[idx] = identifierQuoteBegin + originArr[idx];
+                    }
+                    if (!StringUtils.endsWith(originArr[idx], identifierQuoteEnd)) {
+                        originArr[idx] += identifierQuoteEnd;
+                    }
+                });
+                return StringUtils.join(originArr, ".");
             }
         }
         return origin;
@@ -131,46 +136,14 @@ public abstract class AbstractDialect implements IDialect {
 
     @Override
     public String buildCreateSql(Class<? extends IEntity> entityClass, String prefix, IShardingable shardingable) {
-        throw new UnsupportedOperationException();
+        Table table = new Table(this, prefix, EntityMeta.load(entityClass)).shardingable(shardingable);
+        table.getSlot().addSlotContent("ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+        return table.toCreateSQL();
     }
 
     @Override
     public String buildDropSql(Class<? extends IEntity> entityClass, String prefix, IShardingable shardingable) {
-        throw new UnsupportedOperationException();
-    }
-
-    protected Type.FIELD doGetColumnType(Class<?> clazz) {
-        Type.FIELD columnType = Type.FIELD.VARCHAR;
-        if (BigDecimal.class.equals(clazz)) {
-            columnType = Type.FIELD.NUMBER;
-        } else if (Boolean.class.equals(clazz) || boolean.class.equals(clazz)) {
-            columnType = Type.FIELD.TINYINT;
-        } else if (Byte.class.equals(clazz) || byte.class.equals(clazz)) {
-            columnType = Type.FIELD.BIT;
-        } else if (Short.class.equals(clazz) || short.class.equals(clazz)) {
-            columnType = Type.FIELD.SMALLINT;
-        } else if (Integer.class.equals(clazz) || int.class.equals(clazz)) {
-            columnType = Type.FIELD.INT;
-        } else if (Long.class.equals(clazz) || long.class.equals(clazz)) {
-            columnType = Type.FIELD.LONG;
-        } else if (Float.class.equals(clazz) || float.class.equals(clazz)) {
-            columnType = Type.FIELD.FLOAT;
-        } else if (Double.class.equals(clazz) || double.class.equals(clazz)) {
-            columnType = Type.FIELD.DOUBLE;
-        } else if (byte[].class.equals(clazz) || Byte[].class.equals(clazz)) {
-            columnType = Type.FIELD.BINARY;
-        } else if (java.sql.Date.class.equals(clazz) || java.util.Date.class.equals(clazz)) {
-            columnType = Type.FIELD.DATE;
-        } else if (java.sql.Time.class.equals(clazz)) {
-            columnType = Type.FIELD.TIME;
-        } else if (java.sql.Timestamp.class.equals(clazz)) {
-            columnType = Type.FIELD.TIMESTAMP;
-        } else if (java.sql.Blob.class.equals(clazz)) {
-            columnType = Type.FIELD.BLOB;
-        } else if (java.sql.Clob.class.equals(clazz)) {
-            columnType = Type.FIELD.CLOB;
-        }
-        return columnType;
+        return new Table(this, prefix, EntityMeta.load(entityClass)).shardingable(shardingable).toDropSQL();
     }
 
     /**
@@ -195,14 +168,22 @@ public abstract class AbstractDialect implements IDialect {
 
     @Override
     public String buildTableName(String prefix, EntityMeta entityMeta, IShardingable shardingable) {
-        String entityName = entityMeta.getEntityName();
+        IShardingRule shardingRule = null;
         if (shardingable != null && entityMeta.getShardingRule() != null) {
-            IShardingRule rule = ClassUtils.impl(entityMeta.getShardingRule(), IShardingRule.class);
-            if (rule != null) {
-                entityName = rule.getShardName(entityMeta.getEntityName(), shardingable.getShardingParam());
-            }
+            shardingRule = ClassUtils.impl(entityMeta.getShardingRule(), IShardingRule.class);
         }
-        return this.wrapIdentifierQuote(StringUtils.trimToEmpty(prefix).concat(entityName));
+        return buildTableName(prefix, entityMeta.getEntityName(), shardingRule, shardingable);
+    }
+
+    @Override
+    public String buildTableName(String prefix, String tableName, IShardingRule shardingRule, IShardingable shardingable) {
+        if (shardingable != null && shardingRule != null) {
+            tableName = shardingRule.getShardName(tableName, shardingable.getShardingParam());
+        }
+        if (StringUtils.isNotBlank(prefix) && StringUtils.startsWith(tableName, prefix)) {
+            prefix = StringUtils.EMPTY;
+        }
+        return this.wrapIdentifierQuote(StringUtils.trimToEmpty(prefix).concat(tableName));
     }
 
     /**
