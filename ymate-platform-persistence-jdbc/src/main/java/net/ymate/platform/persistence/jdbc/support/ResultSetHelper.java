@@ -72,7 +72,7 @@ public final class ResultSetHelper {
 
     /**
      * @param dataSet 结果数据集合
-     * @return 绑定结果集数据，若参数为空则返回 null
+     * @return 绑定结果集数据，若参数为空则返回默认数据为空的实例对象
      */
     public static ResultSetHelper bind(List<?> dataSet) {
         if (dataSet != null && !dataSet.isEmpty()) {
@@ -83,7 +83,20 @@ public final class ResultSetHelper {
                 return new ResultSetHelper(dataSet, true);
             }
         }
-        return null;
+        return new ResultSetHelper();
+    }
+
+    /**
+     * 空构造
+     *
+     * @since 2.1.0
+     */
+    private ResultSetHelper() {
+        this.dataSet = new ArrayList<>();
+        this.isArray = true;
+        this.rowCount = 0;
+        this.columnCount = 0;
+        this.columnNames = new String[0];
     }
 
 
@@ -126,6 +139,16 @@ public final class ResultSetHelper {
                 }
             }
         }
+    }
+
+    /**
+     * 获取当前结果集是否可用，即是否为空或元素数量为0
+     *
+     * @return 若当前结果集可用将返回true，否则返回false
+     * @since 2.1.0
+     */
+    public boolean isResultsAvailable() {
+        return !dataSet.isEmpty();
     }
 
     /**
@@ -592,16 +615,37 @@ public final class ResultSetHelper {
         return tableBuilder;
     }
 
+    /**
+     * @return 输出控制台表格
+     * @since 2.1.0
+     */
     @Override
     public String toString() {
-        return buildTableBuilder("table").toString();
+        if (!dataSet.isEmpty()) {
+            return buildTableBuilder("table").toString();
+        }
+        return StringUtils.EMPTY;
     }
 
+    /**
+     * @return 输出CSV表格
+     * @since 2.1.0
+     */
     public String toCsv() {
-        return buildTableBuilder("csv").toString();
+        if (!dataSet.isEmpty()) {
+            return buildTableBuilder("csv").toString();
+        }
+        return StringUtils.EMPTY;
     }
 
+    /**
+     * @return 输出Markdown表格
+     * @since 2.1.0
+     */
     public String toMarkdown() {
-        return buildTableBuilder("markdown").toString();
+        if (!dataSet.isEmpty()) {
+            return buildTableBuilder("markdown").toString();
+        }
+        return StringUtils.EMPTY;
     }
 }
