@@ -38,9 +38,7 @@ import java.util.stream.Collectors;
  * @author 刘镇 (suninformation@163.com) on 2019-11-20 15:14
  * @since 2.1.0
  */
-public class Table {
-
-    public static final String LINE_END_FLAG = ",";
+public class Table extends QueryHandleAdapter<Table> {
 
     private IDialect dialect;
 
@@ -224,7 +222,7 @@ public class Table {
         if (StringUtils.isNotBlank(propertyMeta.getComment())) {
             expression.set("comment", String.format("COMMENT '%s'", propertyMeta.getComment()));
         }
-        return expression.clean().getResult();
+        return StringUtils.trimToEmpty(expression.clean().getResult());
     }
 
     /**
@@ -233,29 +231,36 @@ public class Table {
      * @return 返回表创建SQL对象
      */
     public String toCreateSQL() {
-        ExpressionUtils expression = ExpressionUtils.bind("CREATE TABLE IF NOT EXISTS ${tableName} (${fields} ${primaryKeys} ${indexes}) ${slot} ${comment}")
-                .set("tableName", dialect.buildTableName(prefix, tableName, shardingRule, shardingable));
+        ExpressionUtils expression = ExpressionUtils.bind(getExpressionStr("CREATE TABLE IF NOT EXISTS ${tableName} (${fields} ${primaryKeys} ${indexes}) ${slot} ${comment}"));
+        if (queryHandler() != null) {
+            queryHandler().beforeBuild(expression, this);
+        }
+        expression.set("tableName", dialect.buildTableName(prefix, tableName, shardingRule, shardingable));
         if (StringUtils.isNotBlank(comment)) {
             expression.set("comment", String.format("COMMENT='%s'", comment));
         }
         //
         List<String> fields = properties.values().stream().map(this::doProcessProperty).collect(Collectors.toList());
-        expression.set("fields", StringUtils.join(fields, LINE_END_FLAG));
+        expression.set("fields", StringUtils.join(fields, Query.LINE_END_FLAG));
         //
         if (!primaryKeys.isEmpty()) {
-            expression.set("primaryKeys", String.format("%s PRIMARY KEY (%s)", LINE_END_FLAG, StringUtils.join(primaryKeys, LINE_END_FLAG)));
+            List<String> primaryKeyStr = primaryKeys.stream().map(primaryKey -> dialect.wrapIdentifierQuote(primaryKey)).collect(Collectors.toList());
+            expression.set("primaryKeys", String.format("%s PRIMARY KEY (%s)", Query.LINE_END_FLAG, StringUtils.join(primaryKeyStr, Query.LINE_END_FLAG)));
         }
         //
         if (!indexes.isEmpty()) {
             List<String> indexesStr = indexes.values().stream()
                     .map(indexMeta -> String.format("%s%s (%s)", indexMeta.isUnique() ? "UNIQUE KEY " : "INDEX ", dialect.wrapIdentifierQuote(indexMeta.getName()), StringUtils.join(indexMeta.getFields().stream()
-                            .map(idxField -> dialect.wrapIdentifierQuote(idxField)).collect(Collectors.toList()), LINE_END_FLAG))).collect(Collectors.toList());
-            expression.set("indexes", String.format("%s%s", LINE_END_FLAG, StringUtils.join(indexesStr, LINE_END_FLAG)));
+                            .map(idxField -> dialect.wrapIdentifierQuote(idxField)).collect(Collectors.toList()), Query.LINE_END_FLAG))).collect(Collectors.toList());
+            expression.set("indexes", String.format("%s%s", Query.LINE_END_FLAG, StringUtils.join(indexesStr, Query.LINE_END_FLAG)));
         }
         if (slot.hasSlotContent()) {
             expression.set("slot", slot.buildSlot());
         }
-        return expression.clean().getResult();
+        if (queryHandler() != null) {
+            queryHandler().afterBuild(expression, this);
+        }
+        return StringUtils.trimToEmpty(expression.clean().getResult());
     }
 
     /**

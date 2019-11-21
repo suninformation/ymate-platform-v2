@@ -15,6 +15,7 @@
  */
 package net.ymate.platform.persistence.jdbc.query;
 
+import net.ymate.platform.commons.util.ExpressionUtils;
 import net.ymate.platform.core.persistence.Fields;
 import net.ymate.platform.core.persistence.Params;
 import net.ymate.platform.core.persistence.base.EntityMeta;
@@ -327,31 +328,20 @@ public final class Update extends Query<Update> {
 
     @Override
     public String toString() {
-        StringBuilder stringBuilder = new StringBuilder("UPDATE ")
-                .append(StringUtils.join(tables, ", "));
-        //
-        joins.forEach((join) -> stringBuilder.append(StringUtils.SPACE).append(join));
-        //
-        stringBuilder.append(" SET ");
-        boolean flag = false;
-        for (String field : fields.fields()) {
-            if (flag) {
-                stringBuilder.append(", ");
-            }
-            //
-            stringBuilder.append(field);
-            //
-            if (!field.contains("=")) {
-                stringBuilder.append(" = ?");
-            }
-            //
-            flag = true;
+        ExpressionUtils expression = ExpressionUtils.bind(getExpressionStr("UPDATE ${tableNames} ${joins} SET ${fields} ${where}"));
+        if (queryHandler() != null) {
+            queryHandler().beforeBuild(expression, this);
         }
-        //
+        expression.set("tableNames", StringUtils.join(tables, LINE_END_FLAG));
+        expression.set("joins", StringUtils.join(joins, StringUtils.SPACE));
+        expression.set("fields", StringUtils.join(fields.fields(), "=?,"));
         if (where != null) {
-            stringBuilder.append(StringUtils.SPACE).append(where);
+            expression.set("where", where.toString());
         }
-        return stringBuilder.toString();
+        if (queryHandler() != null) {
+            queryHandler().afterBuild(expression, this);
+        }
+        return StringUtils.trimToEmpty(expression.clean().getResult());
     }
 
     public SQL toSQL() {

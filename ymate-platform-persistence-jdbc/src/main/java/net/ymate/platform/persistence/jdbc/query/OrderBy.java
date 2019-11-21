@@ -45,7 +45,7 @@ public final class OrderBy extends Query<OrderBy> {
         String newOrderBy = StringUtils.substringAfter(orderBy.toSQL(), "ORDER BY ");
         if (StringUtils.isNotBlank(newOrderBy)) {
             if (orderByBuilder.length() > 0) {
-                orderByBuilder.append(", ");
+                orderByBuilder.append(LINE_END_FLAG);
             }
             orderByBuilder.append(newOrderBy);
         }
@@ -58,7 +58,7 @@ public final class OrderBy extends Query<OrderBy> {
 
     public OrderBy asc(String prefix, String field) {
         if (orderByBuilder.length() > 0) {
-            orderByBuilder.append(", ");
+            orderByBuilder.append(LINE_END_FLAG);
         }
         if (StringUtils.isNotBlank(prefix)) {
             orderByBuilder.append(prefix).append(".");
@@ -73,7 +73,7 @@ public final class OrderBy extends Query<OrderBy> {
 
     public OrderBy desc(String prefix, String field) {
         if (orderByBuilder.length() > 0) {
-            orderByBuilder.append(", ");
+            orderByBuilder.append(LINE_END_FLAG);
         }
         if (StringUtils.isNotBlank(prefix)) {
             orderByBuilder.append(prefix).append(".");

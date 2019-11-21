@@ -15,6 +15,7 @@
  */
 package net.ymate.platform.persistence.jdbc.query;
 
+import net.ymate.platform.commons.util.ExpressionUtils;
 import net.ymate.platform.core.persistence.Fields;
 import net.ymate.platform.core.persistence.Params;
 import net.ymate.platform.core.persistence.base.EntityMeta;
@@ -174,12 +175,21 @@ public final class Insert extends Query<Insert> {
 
     @Override
     public String toString() {
-        String sqlStr = "INSERT INTO ".concat(safePrefix ? (entityClass != null ? buildSafeTableName(prefix, EntityMeta.createAndGet(entityClass), safePrefix) : buildSafeTableName(prefix, tableName, true)) : tableName)
-                .concat(" (").concat(StringUtils.join(fields.fields(), ", "));
-        if (select != null) {
-            return sqlStr.concat(") ").concat(select.toString());
+        ExpressionUtils expression = ExpressionUtils.bind(getExpressionStr("INSERT INTO ${tableName} (${fields}) ${values}"));
+        if (queryHandler() != null) {
+            queryHandler().beforeBuild(expression, this);
         }
-        return sqlStr.concat(") VALUES (").concat(StringUtils.repeat("?", ", ", params.params().size())).concat(")");
+        expression.set("tableName", safePrefix ? (entityClass != null ? buildSafeTableName(prefix, EntityMeta.createAndGet(entityClass), true) : buildSafeTableName(prefix, tableName, true)) : tableName);
+        expression.set("fields", StringUtils.join(fields.fields(), LINE_END_FLAG));
+        if (select != null) {
+            expression.set("values", select.toString());
+        } else {
+            expression.set("values", String.format("VALUES (%s)", StringUtils.repeat("?", LINE_END_FLAG, params.params().size())));
+        }
+        if (queryHandler() != null) {
+            queryHandler().afterBuild(expression, this);
+        }
+        return StringUtils.trimToEmpty(expression.clean().getResult());
     }
 
     public SQL toSQL() {

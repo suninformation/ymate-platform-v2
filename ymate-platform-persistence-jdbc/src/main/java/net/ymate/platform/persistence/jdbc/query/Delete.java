@@ -15,6 +15,7 @@
  */
 package net.ymate.platform.persistence.jdbc.query;
 
+import net.ymate.platform.commons.util.ExpressionUtils;
 import net.ymate.platform.core.persistence.Fields;
 import net.ymate.platform.core.persistence.Params;
 import net.ymate.platform.core.persistence.base.EntityMeta;
@@ -231,18 +232,23 @@ public final class Delete extends Query<Delete> {
 
     @Override
     public String toString() {
-        StringBuilder stringBuilder = new StringBuilder("DELETE ");
-        if (!fields.fields().isEmpty()) {
-            stringBuilder.append(StringUtils.join(fields.fields(), ", "));
+        ExpressionUtils expression = ExpressionUtils.bind(getExpressionStr("DELETE ${fields} FROM ${froms} ${joins} ${where}"));
+        if (queryHandler() != null) {
+            queryHandler().beforeBuild(expression, this);
         }
-        stringBuilder.append(" FROM ").append(StringUtils.join(froms, ", "));
-        //
-        joins.forEach((join) -> stringBuilder.append(StringUtils.SPACE).append(join));
+        if (!fields.fields().isEmpty()) {
+            expression.set("fields", StringUtils.join(fields.fields(), LINE_END_FLAG));
+        }
+        expression.set("forms", StringUtils.join(froms, LINE_END_FLAG));
+        expression.set("joins", StringUtils.join(joins, StringUtils.SPACE));
         //
         if (where != null) {
-            stringBuilder.append(StringUtils.SPACE).append(where);
+            expression.set("where", where.toString());
         }
-        return stringBuilder.toString();
+        if (queryHandler() != null) {
+            queryHandler().afterBuild(expression, this);
+        }
+        return StringUtils.trimToEmpty(expression.clean().getResult());
     }
 
     public SQL toSQL() {

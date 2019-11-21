@@ -15,6 +15,7 @@
  */
 package net.ymate.platform.persistence.jdbc.query;
 
+import net.ymate.platform.commons.util.ExpressionUtils;
 import net.ymate.platform.core.persistence.*;
 import net.ymate.platform.core.persistence.base.EntityMeta;
 import net.ymate.platform.core.persistence.base.IEntity;
@@ -451,46 +452,53 @@ public final class Select extends Query<Select> {
 
     @Override
     public String toString() {
-        StringBuilder stringBuilder = new StringBuilder("SELECT ");
+        ExpressionUtils expression = ExpressionUtils.bind(getExpressionStr("SELECT ${distinct} ${fields} FROM ${froms} ${joins} ${where} ${unions}"));
+        if (queryHandler() != null) {
+            queryHandler().beforeBuild(expression, this);
+        }
         if (distinct) {
-            stringBuilder.append("DISTINCT ");
+            expression.set("distinct", "DISTINCT");
         }
         if (fields.fields().isEmpty()) {
-            stringBuilder.append(" * ");
+            expression.set("fields", "*");
         } else {
-            stringBuilder.append(StringUtils.join(fields.fields(), ", "));
+            expression.set("fields", StringUtils.join(fields.fields(), LINE_END_FLAG));
         }
-        stringBuilder.append(" FROM ").append(StringUtils.join(froms, ", "));
-        //
-        for (Join join : joins) {
-            stringBuilder.append(StringUtils.SPACE).append(join);
-        }
+        expression.set("froms", StringUtils.join(froms, LINE_END_FLAG));
+        expression.set("joins", StringUtils.join(joins, StringUtils.SPACE));
         //
         if (where != null) {
-            stringBuilder.append(StringUtils.SPACE).append(where.toString());
+            expression.set("where", where.toString());
         }
         //
-        for (Union union : unions) {
-            stringBuilder.append(" UNION ");
-            if (union.isAll()) {
-                stringBuilder.append("ALL ");
+        if (!unions.isEmpty()) {
+            StringBuilder unionsBuilder = new StringBuilder();
+            for (Union union : unions) {
+                unionsBuilder.append("UNION ");
+                if (union.isAll()) {
+                    unionsBuilder.append("ALL ");
+                }
+                unionsBuilder.append(union.select());
             }
-            stringBuilder.append(union.select());
+            unionsBuilder.append(StringUtils.SPACE);
+            //
+            expression.set("unions", unionsBuilder.toString());
         }
-        stringBuilder.append(StringUtils.SPACE);
+        if (queryHandler() != null) {
+            queryHandler().afterBuild(expression, this);
+        }
+        String resultStr = StringUtils.trimToEmpty(expression.clean().getResult());
         //
         if (page != null) {
-            stringBuilder = new StringBuilder(this.dialect().buildPagedQuerySql(stringBuilder.toString(), page.page(), page.pageSize())).append(StringUtils.SPACE);
+            resultStr = dialect().buildPagedQuerySql(resultStr, page.page(), page.pageSize());
         }
-        //
-        if (StringUtils.isNotBlank(alias)) {
-            return String.format("(%s) %s", stringBuilder.toString(), alias);
-        }
-        //
         if (dbLocker != null) {
-            stringBuilder.append(dbLocker.toSQL());
+            resultStr += String.format(" %s", dbLocker.toSQL());
         }
-        return stringBuilder.toString();
+        if (StringUtils.isNotBlank(alias)) {
+            resultStr = String.format("(%s) %s", resultStr, alias);
+        }
+        return resultStr;
     }
 
     public SQL toSQL() {

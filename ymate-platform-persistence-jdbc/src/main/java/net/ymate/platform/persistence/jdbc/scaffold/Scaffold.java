@@ -276,7 +276,7 @@ public final class Scaffold {
             SQL sql;
             switch (dbType) {
                 case Type.DATABASE.MYSQL:
-                    sql = SQL.create("SHOW FULL TABLES WHERE table_type =? ").param(view ? "VIEW" : "BASE TABLE");
+                    sql = SQL.create("SHOW FULL TABLES WHERE table_type = ?").param(view ? "VIEW" : "BASE TABLE");
                     break;
                 case Type.DATABASE.ORACLE:
                     sql = Select.create(view ? "USER_VIEWS" : "USER_TABLES").field(view ? "VIEW_NAME" : "TABLE_NAME").toSQL();

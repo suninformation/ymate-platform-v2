@@ -15,6 +15,7 @@
  */
 package net.ymate.platform.persistence.jdbc.query;
 
+import net.ymate.platform.commons.util.ExpressionUtils;
 import net.ymate.platform.core.persistence.Fields;
 import net.ymate.platform.persistence.jdbc.IDatabase;
 import net.ymate.platform.persistence.jdbc.JDBC;
@@ -104,13 +105,19 @@ public final class GroupBy extends Query<GroupBy> {
 
     @Override
     public String toString() {
-        StringBuilder groupByBuilder = new StringBuilder();
+        ExpressionUtils expression = ExpressionUtils.bind(getExpressionStr("${groupBy} ${having}"));
+        if (queryHandler() != null) {
+            queryHandler().beforeBuild(expression, this);
+        }
         if (!groupByNames.isEmpty()) {
-            groupByBuilder.append(" GROUP BY ").append(StringUtils.join(wrapIdentifierFields(groupByNames.toArray()).fields(), ", "));
+            expression.set("groupBy", String.format("GROUP BY %s", StringUtils.join(wrapIdentifierFields(groupByNames.toArray()).fields(), LINE_END_FLAG)));
         }
         if (having != null) {
-            groupByBuilder.append(" HAVING ").append(having);
+            expression.set("having", having.toString());
         }
-        return groupByBuilder.toString();
+        if (queryHandler() != null) {
+            queryHandler().afterBuild(expression, this);
+        }
+        return StringUtils.trimToEmpty(expression.clean().getResult());
     }
 }

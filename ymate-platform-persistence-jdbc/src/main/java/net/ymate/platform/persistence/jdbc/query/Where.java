@@ -15,6 +15,7 @@
  */
 package net.ymate.platform.persistence.jdbc.query;
 
+import net.ymate.platform.commons.util.ExpressionUtils;
 import net.ymate.platform.core.persistence.Fields;
 import net.ymate.platform.core.persistence.Params;
 import net.ymate.platform.persistence.jdbc.IDatabase;
@@ -26,7 +27,7 @@ import org.apache.commons.lang3.StringUtils;
  *
  * @author 刘镇 (suninformation@163.com) on 15/5/7 下午1:19
  */
-public final class Where extends Slot {
+public final class Where extends QueryHandleAdapter<Where> {
 
     private final IDatabase owner;
 
@@ -38,6 +39,8 @@ public final class Where extends Slot {
     private GroupBy groupBy;
 
     private OrderBy orderBy;
+
+    private Slot slot = new Slot();
 
     public static Where create() {
         return new Where(JDBC.get());
@@ -103,6 +106,10 @@ public final class Where extends Slot {
         return orderBy;
     }
 
+    public Slot getSlot() {
+        return slot;
+    }
+
     /**
      * @return 此方法仅返回只读参数集合, 若要维护参数请调用where().param(...)相关方法
      */
@@ -112,23 +119,6 @@ public final class Where extends Slot {
             params.add(groupBy.having().params());
         }
         return params;
-    }
-
-    public String toSQL() {
-        StringBuilder whereBuilder = new StringBuilder();
-        if (cond != null) {
-            String condStr = cond.toString();
-            if (StringUtils.isNotBlank(condStr)) {
-                whereBuilder.append(StringUtils.SPACE).append("WHERE ").append(condStr);
-            }
-        }
-        if (hasSlotContent()) {
-            whereBuilder.append(buildSlot());
-        }
-        if (groupBy != null) {
-            whereBuilder.append(StringUtils.SPACE).append(groupBy);
-        }
-        return whereBuilder.toString();
     }
 
     public Where param(Object param) {
@@ -190,6 +180,29 @@ public final class Where extends Slot {
     public Where orderByDesc(String prefix, String field) {
         orderBy.desc(prefix, field);
         return this;
+    }
+
+    public String toSQL() {
+        ExpressionUtils expression = ExpressionUtils.bind(getExpressionStr("${whereCond} ${slot} ${groupBy}"));
+        if (queryHandler() != null) {
+            queryHandler().beforeBuild(expression, this);
+        }
+        if (cond != null) {
+            String condStr = cond.toString();
+            if (StringUtils.isNotBlank(condStr)) {
+                expression.set("whereCond", String.format("WHERE %s", condStr));
+            }
+        }
+        if (slot.hasSlotContent()) {
+            expression.set("slot", slot.buildSlot());
+        }
+        if (groupBy != null) {
+            expression.set("groupBy", groupBy.toString());
+        }
+        if (queryHandler() != null) {
+            queryHandler().afterBuild(expression, this);
+        }
+        return StringUtils.trimToEmpty(expression.clean().getResult());
     }
 
     @Override
