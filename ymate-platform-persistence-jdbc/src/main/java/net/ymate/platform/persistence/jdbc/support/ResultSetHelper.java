@@ -23,8 +23,10 @@ import net.ymate.platform.core.persistence.base.EntityMeta;
 import net.ymate.platform.core.persistence.base.IEntity;
 import net.ymate.platform.core.persistence.base.PropertyMeta;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
-import java.io.Serializable;
+import java.io.*;
 import java.math.BigDecimal;
 import java.sql.Date;
 import java.sql.Time;
@@ -38,6 +40,8 @@ import java.util.*;
  * @author 刘镇 (suninformation@163.com) on 2010-10-10 上午10:59:40
  */
 public final class ResultSetHelper {
+
+    private static final Log LOG = LogFactory.getLog(ResultSetHelper.class);
 
     /**
      * 数据结果集
@@ -591,14 +595,16 @@ public final class ResultSetHelper {
 
     private ConsoleTableBuilder buildTableBuilder(String type) {
         ConsoleTableBuilder tableBuilder = ConsoleTableBuilder.create(columnCount).escape();
-        switch (type) {
-            case "csv":
-                tableBuilder.csv();
-                break;
-            case "markdown":
-                tableBuilder.markdown();
-                break;
-            default:
+        if (StringUtils.isNotBlank(type)) {
+            switch (type) {
+                case ConsoleTableBuilder.TYPE_CSV:
+                    tableBuilder.csv();
+                    break;
+                case ConsoleTableBuilder.TYPE_MARKDOWN:
+                    tableBuilder.markdown();
+                    break;
+                default:
+            }
         }
         // Append Headers
         ConsoleTableBuilder.Row header = tableBuilder.addRow();
@@ -622,7 +628,7 @@ public final class ResultSetHelper {
     @Override
     public String toString() {
         if (!dataSet.isEmpty()) {
-            return buildTableBuilder("table").toString();
+            return buildTableBuilder(null).toString();
         }
         return StringUtils.EMPTY;
     }
@@ -633,7 +639,7 @@ public final class ResultSetHelper {
      */
     public String toCsv() {
         if (!dataSet.isEmpty()) {
-            return buildTableBuilder("csv").toString();
+            return buildTableBuilder(ConsoleTableBuilder.TYPE_CSV).toString();
         }
         return StringUtils.EMPTY;
     }
@@ -644,8 +650,33 @@ public final class ResultSetHelper {
      */
     public String toMarkdown() {
         if (!dataSet.isEmpty()) {
-            return buildTableBuilder("markdown").toString();
+            return buildTableBuilder(ConsoleTableBuilder.TYPE_MARKDOWN).toString();
         }
         return StringUtils.EMPTY;
+    }
+
+    public void writeTo(File outputFile) throws IOException {
+        writeTo(null, outputFile);
+    }
+
+    public void writeTo(String type, File outputFile) throws IOException {
+        if (!dataSet.isEmpty()) {
+            try (FileOutputStream outputStream = new FileOutputStream(outputFile)) {
+                buildTableBuilder(type).writeTo(outputStream);
+                if (LOG.isInfoEnabled()) {
+                    LOG.info(String.format("Successfully written to file: %s", outputFile.getPath()));
+                }
+            }
+        }
+    }
+
+    public void writeTo(OutputStream outputStream) throws IOException {
+        writeTo(null, outputStream);
+    }
+
+    public void writeTo(String type, OutputStream outputStream) throws IOException {
+        if (!dataSet.isEmpty()) {
+            buildTableBuilder(type).writeTo(outputStream);
+        }
     }
 }

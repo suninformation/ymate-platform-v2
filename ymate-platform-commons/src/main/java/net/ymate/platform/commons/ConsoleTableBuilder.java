@@ -15,8 +15,13 @@
  */
 package net.ymate.platform.commons;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.IntStream;
@@ -27,6 +32,10 @@ import java.util.stream.IntStream;
  * @author 刘镇 (suninformation@163.com) on 2017/10/21 上午12:42
  */
 public class ConsoleTableBuilder {
+
+    public static final String TYPE_CSV = "csv";
+
+    public static final String TYPE_MARKDOWN = "markdown";
 
     private static final int MARGIN = 1;
 
@@ -52,12 +61,12 @@ public class ConsoleTableBuilder {
     }
 
     public ConsoleTableBuilder markdown() {
-        format = "markdown";
+        format = TYPE_MARKDOWN;
         return this;
     }
 
     public ConsoleTableBuilder csv() {
-        format = "csv";
+        format = TYPE_CSV;
         return this;
     }
 
@@ -115,8 +124,8 @@ public class ConsoleTableBuilder {
     public String toString() {
         StringBuilder stringBuilder = new StringBuilder();
         //
-        boolean markdown = StringUtils.equals(format, "markdown");
-        boolean csv = StringUtils.equals(format, "csv");
+        boolean markdown = StringUtils.equals(format, TYPE_MARKDOWN);
+        boolean csv = StringUtils.equals(format, TYPE_CSV);
         //
         if (csv) {
             rows.forEach(row -> {
@@ -178,6 +187,12 @@ public class ConsoleTableBuilder {
         return stringBuilder.toString();
     }
 
+    public void writeTo(OutputStream outputStream) throws IOException {
+        try (InputStream inputStream = new ByteArrayInputStream(toString().getBytes())) {
+            IOUtils.copyLarge(inputStream, outputStream);
+        }
+    }
+
     public static class Column {
 
         private final int length;
@@ -213,8 +228,8 @@ public class ConsoleTableBuilder {
         }
 
         public Row addColumn(String content) {
-            boolean csv = StringUtils.equals(builder.format, "csv");
-            boolean markdown = StringUtils.equals(builder.format, "markdown");
+            boolean csv = StringUtils.equals(builder.format, TYPE_CSV);
+            boolean markdown = StringUtils.equals(builder.format, TYPE_MARKDOWN);
             if (!csv && builder.escape) {
                 if (markdown) {
                     content = StringUtils.replaceEach(content, new String[]{"_", "|", "\r\n", "\r", "\n", "\t"}, new String[]{"\\_", "\\|", "<br>", "", "<br>", "    "});
@@ -227,7 +242,7 @@ public class ConsoleTableBuilder {
                     content = StringUtils.replace(content, "\"", "\"\"");
                 }
                 if (StringUtils.contains(content, ',')) {
-                    content = "\"" + content + "\"";
+                    content = String.format("\"%s\"", content);
                 }
             }
             this.columns.add(new Column(content));
