@@ -186,23 +186,43 @@ public class Table extends QueryHandleAdapter<Table> {
             case TIME:
             case TIMESTAMP:
             case TEXT:
+            case LONG:
+            case FLOAT:
+            case SMALLINT:
+            case TINYINT:
+            case DOUBLE:
+            case BIT:
+            case BOOLEAN:
+            case INT:
                 break;
             default:
                 String decimals = propertyMeta.getDecimals() > 0 ? String.format(", %d", propertyMeta.getDecimals()) : StringUtils.EMPTY;
                 expression.set("fieldLength", String.format("(%d%s)", propertyMeta.getLength(), decimals));
         }
-        if (propertyMeta.isUnsigned()) {
-            switch (propertyMeta.getType()) {
-                case NUMBER:
-                case LONG:
-                case FLOAT:
-                case SMALLINT:
-                case TINYINT:
-                case DOUBLE:
-                case INT:
-                    expression.set("unsigned", "unsigned");
-                    break;
-                default:
+        if (Type.DATABASE.MYSQL.equals(dialect.getName())) {
+            if (propertyMeta.isUnsigned()) {
+                switch (propertyMeta.getType()) {
+                    case NUMBER:
+                    case LONG:
+                    case FLOAT:
+                    case SMALLINT:
+                    case TINYINT:
+                    case DOUBLE:
+                    case INT:
+                        expression.set("unsigned", "unsigned");
+                        break;
+                    default:
+                }
+            }
+            if (propertyMeta.isAutoincrement()) {
+                expression.set("autoIncrement", "AUTO_INCREMENT");
+            }
+            if (StringUtils.isNotBlank(propertyMeta.getComment())) {
+                expression.set("comment", String.format("COMMENT '%s'", propertyMeta.getComment()));
+            }
+        } else if (Type.DATABASE.SQLSERVER.equals(dialect.getName())) {
+            if (propertyMeta.isAutoincrement()) {
+                expression.set("autoIncrement", "IDENTITY(1,1)");
             }
         }
         if (propertyMeta.isNullable()) {
@@ -216,12 +236,6 @@ public class Table extends QueryHandleAdapter<Table> {
         } else {
             expression.set("nullable", "NOT NULL");
         }
-        if (propertyMeta.isAutoincrement()) {
-            expression.set("autoIncrement", "AUTO_INCREMENT");
-        }
-        if (StringUtils.isNotBlank(propertyMeta.getComment())) {
-            expression.set("comment", String.format("COMMENT '%s'", propertyMeta.getComment()));
-        }
         return StringUtils.trimToEmpty(expression.clean().getResult());
     }
 
@@ -231,14 +245,12 @@ public class Table extends QueryHandleAdapter<Table> {
      * @return 返回表创建SQL对象
      */
     public String toCreateSQL() {
-        ExpressionUtils expression = ExpressionUtils.bind(getExpressionStr("CREATE TABLE IF NOT EXISTS ${tableName} (${fields} ${primaryKeys} ${indexes}) ${slot} ${comment}"));
+        ExpressionUtils expression = ExpressionUtils.bind(getExpressionStr("CREATE TABLE ${ifNotExists} ${tableName} (${fields} ${primaryKeys} ${indexes}) ${slot} ${comment}"));
         if (queryHandler() != null) {
             queryHandler().beforeBuild(expression, this);
         }
-        expression.set("tableName", dialect.buildTableName(prefix, tableName, shardingRule, shardingable));
-        if (StringUtils.isNotBlank(comment)) {
-            expression.set("comment", String.format("COMMENT='%s'", comment));
-        }
+        String tableNameBuildStr = dialect.buildTableName(prefix, tableName, shardingRule, shardingable);
+        expression.set("tableName", tableNameBuildStr);
         //
         List<String> fields = properties.values().stream().map(this::doProcessProperty).collect(Collectors.toList());
         expression.set("fields", StringUtils.join(fields, Query.LINE_END_FLAG));
@@ -248,11 +260,8 @@ public class Table extends QueryHandleAdapter<Table> {
             expression.set("primaryKeys", String.format("%s PRIMARY KEY (%s)", Query.LINE_END_FLAG, StringUtils.join(primaryKeyStr, Query.LINE_END_FLAG)));
         }
         //
-        if (!indexes.isEmpty()) {
-            List<String> indexesStr = indexes.values().stream()
-                    .map(indexMeta -> String.format("%s%s (%s)", indexMeta.isUnique() ? "UNIQUE KEY " : "INDEX ", dialect.wrapIdentifierQuote(indexMeta.getName()), StringUtils.join(indexMeta.getFields().stream()
-                            .map(idxField -> dialect.wrapIdentifierQuote(idxField)).collect(Collectors.toList()), Query.LINE_END_FLAG))).collect(Collectors.toList());
-            expression.set("indexes", String.format("%s%s", Query.LINE_END_FLAG, StringUtils.join(indexesStr, Query.LINE_END_FLAG)));
+        if (Type.DATABASE.MYSQL.equals(dialect.getName())) {
+            slot.addSlotContent("ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
         }
         if (slot.hasSlotContent()) {
             expression.set("slot", slot.buildSlot());
@@ -260,7 +269,36 @@ public class Table extends QueryHandleAdapter<Table> {
         if (queryHandler() != null) {
             queryHandler().afterBuild(expression, this);
         }
-        return StringUtils.trimToEmpty(expression.clean().getResult());
+        //
+        String resultStr;
+        switch (dialect.getName()) {
+            case Type.DATABASE.MYSQL:
+                expression.set("ifNotExists", "IF NOT EXISTS");
+                if (StringUtils.isNotBlank(comment)) {
+                    expression.set("comment", String.format("COMMENT='%s'", comment));
+                }
+                if (!indexes.isEmpty()) {
+                    List<String> indexesStr = indexes.values().stream()
+                            .map(indexMeta -> String.format("%s%s (%s)", indexMeta.isUnique() ? "UNIQUE INDEX " : "INDEX ", dialect.wrapIdentifierQuote(indexMeta.getName()), StringUtils.join(indexMeta.getFields().stream()
+                                    .map(idxField -> dialect.wrapIdentifierQuote(idxField)).collect(Collectors.toList()), Query.LINE_END_FLAG))).collect(Collectors.toList());
+                    expression.set("indexes", String.format("%s%s", Query.LINE_END_FLAG, StringUtils.join(indexesStr, Query.LINE_END_FLAG)));
+                }
+                resultStr = expression.clean().getResult();
+                break;
+            case Type.DATABASE.SQLSERVER:
+                resultStr = StringUtils.trimToEmpty(expression.clean().getResult());
+                if (!indexes.isEmpty()) {
+                    List<String> indexesStr = indexes.values().stream()
+                            .map(indexMeta -> String.format("CREATE %s %s ON %s (%s)", indexMeta.isUnique() ? "UNIQUE INDEX " : "INDEX ", dialect.wrapIdentifierQuote(indexMeta.getName()), tableNameBuildStr, StringUtils.join(indexMeta.getFields().stream()
+                                    .map(idxField -> dialect.wrapIdentifierQuote(idxField)).collect(Collectors.toList()), Query.LINE_END_FLAG))).collect(Collectors.toList());
+                    resultStr += String.format("; %s", StringUtils.join(indexesStr, "; "));
+                }
+                break;
+            case Type.DATABASE.ORACLE:
+            default:
+                resultStr = expression.clean().getResult();
+        }
+        return StringUtils.trimToEmpty(resultStr);
     }
 
     /**
@@ -269,6 +307,15 @@ public class Table extends QueryHandleAdapter<Table> {
      * @return 返回表删除SQL语句
      */
     public String toDropSQL() {
-        return String.format("DROP TABLE IF EXISTS %s", dialect.buildTableName(prefix, tableName, shardingRule, shardingable));
+        return String.format("DROP TABLE %s %s", (StringUtils.equals(Type.DATABASE.MYSQL, dialect.getName()) ? "IF EXISTS" : StringUtils.EMPTY), dialect.buildTableName(prefix, tableName, shardingRule, shardingable));
+    }
+
+    /**
+     * 构建表数据请空SQL语句
+     *
+     * @return 返回表数据清空SQL语句
+     */
+    public String toTruncateSQL() {
+        return String.format("TRUNCATE TABLE %s", dialect.buildTableName(prefix, tableName, shardingRule, shardingable));
     }
 }

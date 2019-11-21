@@ -321,9 +321,9 @@ public final class EntityMeta implements Serializable {
         this.primaryKeys = new ArrayList<>();
         this.autoincrementProps = new ArrayList<>();
         this.readonlyProps = new ArrayList<>();
-        this.properties = new HashMap<>();
-        this.fields = new HashMap<>();
-        this.indexes = new HashMap<>();
+        this.properties = new LinkedHashMap<>();
+        this.fields = new LinkedHashMap<>();
+        this.indexes = new LinkedHashMap<>();
         //
         this.entityName = name;
         this.view = view;

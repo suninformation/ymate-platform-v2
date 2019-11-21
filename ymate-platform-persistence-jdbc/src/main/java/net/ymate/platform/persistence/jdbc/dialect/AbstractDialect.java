@@ -136,9 +136,7 @@ public abstract class AbstractDialect implements IDialect {
 
     @Override
     public String buildCreateSql(Class<? extends IEntity> entityClass, String prefix, IShardingable shardingable) {
-        Table table = new Table(this, prefix, EntityMeta.load(entityClass)).shardingable(shardingable);
-        table.getSlot().addSlotContent("ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
-        return table.toCreateSQL();
+        return new Table(this, prefix, EntityMeta.load(entityClass)).shardingable(shardingable).toCreateSQL();
     }
 
     @Override
