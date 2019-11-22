@@ -25,6 +25,10 @@ import java.lang.reflect.Field;
  */
 public class PropertyMeta implements Serializable {
 
+    public static PropertyMeta create(String name, Type.FIELD type) {
+        return new PropertyMeta(name, type);
+    }
+
     public static final String NULL = "@NULL";
 
     /**
@@ -81,7 +85,9 @@ public class PropertyMeta implements Serializable {
      */
     private Class<?> conversionType;
 
-    public PropertyMeta() {
+    public PropertyMeta(String name, Type.FIELD type) {
+        this.name = name;
+        this.type = type;
     }
 
     public PropertyMeta(String name, Field field) {
@@ -113,7 +119,7 @@ public class PropertyMeta implements Serializable {
         return name;
     }
 
-    public PropertyMeta setName(String name) {
+    public PropertyMeta name(String name) {
         this.name = name;
         return this;
     }
@@ -122,7 +128,7 @@ public class PropertyMeta implements Serializable {
         return field;
     }
 
-    public PropertyMeta setField(Field field) {
+    public PropertyMeta field(Field field) {
         this.field = field;
         return this;
     }
@@ -131,7 +137,7 @@ public class PropertyMeta implements Serializable {
         return autoincrement;
     }
 
-    public PropertyMeta setAutoincrement(boolean autoincrement) {
+    public PropertyMeta autoincrement(boolean autoincrement) {
         this.autoincrement = autoincrement;
         return this;
     }
@@ -140,7 +146,7 @@ public class PropertyMeta implements Serializable {
         return sequenceName;
     }
 
-    public PropertyMeta setSequenceName(String sequenceName) {
+    public PropertyMeta sequenceName(String sequenceName) {
         this.sequenceName = sequenceName;
         return this;
     }
@@ -149,7 +155,7 @@ public class PropertyMeta implements Serializable {
         return nullable;
     }
 
-    public PropertyMeta setNullable(boolean nullable) {
+    public PropertyMeta nullable(boolean nullable) {
         this.nullable = nullable;
         return this;
     }
@@ -158,7 +164,7 @@ public class PropertyMeta implements Serializable {
         return unsigned;
     }
 
-    public PropertyMeta setUnsigned(boolean unsigned) {
+    public PropertyMeta unsigned(boolean unsigned) {
         this.unsigned = unsigned;
         return this;
     }
@@ -167,7 +173,7 @@ public class PropertyMeta implements Serializable {
         return length;
     }
 
-    public PropertyMeta setLength(int length) {
+    public PropertyMeta length(int length) {
         this.length = length;
         return this;
     }
@@ -176,7 +182,7 @@ public class PropertyMeta implements Serializable {
         return decimals;
     }
 
-    public PropertyMeta setDecimals(int decimals) {
+    public PropertyMeta decimals(int decimals) {
         this.decimals = decimals;
         return this;
     }
@@ -185,7 +191,7 @@ public class PropertyMeta implements Serializable {
         return type;
     }
 
-    public PropertyMeta setType(Type.FIELD type) {
+    public PropertyMeta type(Type.FIELD type) {
         this.type = type;
         return this;
     }
@@ -194,7 +200,7 @@ public class PropertyMeta implements Serializable {
         return defaultValue;
     }
 
-    public PropertyMeta setDefaultValue(String defaultValue) {
+    public PropertyMeta defaultValue(String defaultValue) {
         this.defaultValue = defaultValue;
         return this;
     }
@@ -203,7 +209,7 @@ public class PropertyMeta implements Serializable {
         return comment;
     }
 
-    public PropertyMeta setComment(String comment) {
+    public PropertyMeta comment(String comment) {
         this.comment = comment;
         return this;
     }
@@ -212,7 +218,7 @@ public class PropertyMeta implements Serializable {
         return readonly;
     }
 
-    public PropertyMeta setReadonly(boolean readonly) {
+    public PropertyMeta readonly(boolean readonly) {
         this.readonly = readonly;
         return this;
     }
@@ -221,7 +227,7 @@ public class PropertyMeta implements Serializable {
         return conversionType;
     }
 
-    public PropertyMeta setConversionType(Class<?> conversionType) {
+    public PropertyMeta conversionType(Class<?> conversionType) {
         this.conversionType = conversionType;
         return this;
     }

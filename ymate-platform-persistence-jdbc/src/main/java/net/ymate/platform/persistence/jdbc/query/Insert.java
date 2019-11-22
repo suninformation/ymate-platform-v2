@@ -25,6 +25,9 @@ import net.ymate.platform.persistence.jdbc.IDatabaseConnectionHolder;
 import net.ymate.platform.persistence.jdbc.JDBC;
 import org.apache.commons.lang3.StringUtils;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * Insert语句对象
  *
@@ -41,6 +44,8 @@ public final class Insert extends Query<Insert> {
     private final Fields fields;
 
     private final Params params;
+
+    private final List<Params> groupParams = new ArrayList<>();
 
     private Select select;
 
@@ -168,6 +173,11 @@ public final class Insert extends Query<Insert> {
         return this;
     }
 
+    public Insert addGroupParam(Params params) {
+        groupParams.add(params);
+        return this;
+    }
+
     public Insert select(Select select) {
         this.select = select;
         return this;
@@ -184,7 +194,15 @@ public final class Insert extends Query<Insert> {
         if (select != null) {
             expression.set("values", select.toString());
         } else {
-            expression.set("values", String.format("VALUES (%s)", StringUtils.repeat("?", LINE_END_FLAG, params.params().size())));
+            List<String> valuesStr = new ArrayList<>();
+            String valueStr = StringUtils.repeat("?", LINE_END_FLAG, params.params().size());
+            if (!params.isEmpty()) {
+                valuesStr.add(String.format("(%s)", valueStr));
+            }
+            if (!groupParams.isEmpty()) {
+                groupParams.stream().filter(p -> !p.isEmpty()).map(p -> String.format("(%s)", valueStr)).forEach(valuesStr::add);
+            }
+            expression.set("values", String.format("VALUES %s", StringUtils.join(valuesStr, LINE_END_FLAG)));
         }
         if (queryHandler() != null) {
             queryHandler().afterBuild(expression, this);
@@ -193,7 +211,9 @@ public final class Insert extends Query<Insert> {
     }
 
     public SQL toSQL() {
-        return SQL.create(this);
+        SQL sql = SQL.create(this);
+        groupParams.forEach(sql::param);
+        return sql;
     }
 
     public int execute() throws Exception {

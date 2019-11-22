@@ -24,6 +24,10 @@ import java.util.List;
  */
 public class IndexMeta {
 
+    public static IndexMeta create() {
+        return new IndexMeta();
+    }
+
     /**
      * 索引名称
      */
@@ -37,6 +41,9 @@ public class IndexMeta {
      */
     private List<String> fields;
 
+    public IndexMeta() {
+    }
+
     public IndexMeta(String name, boolean unique, List<String> fields) {
         this.name = name;
         this.unique = unique;
@@ -47,24 +54,27 @@ public class IndexMeta {
         return name;
     }
 
-    public void setName(String name) {
+    public IndexMeta name(String name) {
         this.name = name;
+        return this;
     }
 
     public boolean isUnique() {
         return unique;
     }
 
-    public void setUnique(boolean unique) {
+    public IndexMeta unique(boolean unique) {
         this.unique = unique;
+        return this;
     }
 
     public List<String> getFields() {
         return fields;
     }
 
-    public void setFields(List<String> fields) {
+    public IndexMeta fields(List<String> fields) {
         this.fields = fields;
+        return this;
     }
 
     @Override

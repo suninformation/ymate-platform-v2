@@ -494,7 +494,7 @@ public final class Cond extends Query<Cond> {
 
     public Cond in(String field, Params params) {
         this.params.add(params);
-        return cond(String.format("%s IN (%s)", field, StringUtils.repeat("?", ", ", params.params().size())));
+        return cond(String.format("%s IN (%s)", field, StringUtils.repeat("?", LINE_END_FLAG, params.params().size())));
     }
 
     public Cond inWrap(String field, Params params) {

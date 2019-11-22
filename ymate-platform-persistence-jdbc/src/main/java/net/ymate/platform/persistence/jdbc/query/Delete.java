@@ -236,14 +236,17 @@ public final class Delete extends Query<Delete> {
         if (queryHandler() != null) {
             queryHandler().beforeBuild(expression, this);
         }
-        if (!fields.fields().isEmpty()) {
+        List<String> variables = expression.getVariables();
+        //
+        if (!fields.fields().isEmpty() && variables.contains("fields")) {
             expression.set("fields", StringUtils.join(fields.fields(), LINE_END_FLAG));
         }
         expression.set("forms", StringUtils.join(froms, LINE_END_FLAG));
-        expression.set("joins", StringUtils.join(joins, StringUtils.SPACE));
-        //
-        if (where != null) {
+        if (where != null && variables.contains("where")) {
             expression.set("where", where.toString());
+        }
+        if (variables.contains("joins")) {
+            expression.set("joins", StringUtils.join(joins, StringUtils.SPACE));
         }
         if (queryHandler() != null) {
             queryHandler().afterBuild(expression, this);

@@ -21,6 +21,8 @@ import net.ymate.platform.persistence.jdbc.IDatabase;
 import net.ymate.platform.persistence.jdbc.JDBC;
 import org.apache.commons.lang3.StringUtils;
 
+import java.util.List;
+
 /**
  * 分组对象
  *
@@ -109,10 +111,11 @@ public final class GroupBy extends Query<GroupBy> {
         if (queryHandler() != null) {
             queryHandler().beforeBuild(expression, this);
         }
-        if (!groupByNames.isEmpty()) {
+        List<String> variables = expression.getVariables();
+        if (!groupByNames.isEmpty() && variables.contains("groupBy")) {
             expression.set("groupBy", String.format("GROUP BY %s", StringUtils.join(wrapIdentifierFields(groupByNames.toArray()).fields(), LINE_END_FLAG)));
         }
-        if (having != null) {
+        if (having != null && variables.contains("having")) {
             expression.set("having", having.toString());
         }
         if (queryHandler() != null) {

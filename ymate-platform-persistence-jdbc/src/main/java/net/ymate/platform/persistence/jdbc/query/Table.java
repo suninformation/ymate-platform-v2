@@ -40,6 +40,10 @@ import java.util.stream.Collectors;
  */
 public class Table extends QueryHandleAdapter<Table> {
 
+    public static final String IF_NOT_EXISTS = "IF NOT EXISTS";
+
+    public static final String IF_EXISTS = "IF EXISTS";
+
     private IDialect dialect;
 
     private IShardingRule shardingRule;
@@ -57,6 +61,10 @@ public class Table extends QueryHandleAdapter<Table> {
     private Map<String, PropertyMeta> properties = new LinkedHashMap<>();
 
     private Map<String, IndexMeta> indexes = new LinkedHashMap<>();
+
+    private String propertyExpressionStr = "${fieldName} ${fieldType}${fieldLength} ${unsigned} ${nullable} ${autoIncrement} ${comment}";
+
+    private boolean ifExistsOrNot;
 
     private Slot slot = new Slot();
 
@@ -177,10 +185,32 @@ public class Table extends QueryHandleAdapter<Table> {
         return columnType;
     }
 
-    protected String doProcessProperty(PropertyMeta propertyMeta) {
-        ExpressionUtils expression = ExpressionUtils.bind("${fieldName} ${fieldType}${fieldLength} ${unsigned} ${nullable} ${autoIncrement} ${comment}")
+    public boolean ifExistsOrNot() {
+        return ifExistsOrNot;
+    }
+
+    public Table ifExistsOrNot(boolean ifExistsOrNot) {
+        this.ifExistsOrNot = ifExistsOrNot;
+        return this;
+    }
+
+    public String propertyExpressionStr() {
+        return propertyExpressionStr;
+    }
+
+    public Table propertyExpressionStr(String propertyExpressionStr) {
+        if (StringUtils.isNotBlank(propertyExpressionStr)) {
+            this.propertyExpressionStr = propertyExpressionStr;
+        }
+        return this;
+    }
+
+    public String processProperty(PropertyMeta propertyMeta) {
+        ExpressionUtils expression = ExpressionUtils.bind(propertyExpressionStr())
                 .set("fieldName", dialect.wrapIdentifierQuote(propertyMeta.getName()))
                 .set("fieldType", propertyMeta.getType().getName());
+        List<String> variables = expression.getVariables();
+        //
         switch (propertyMeta.getType()) {
             case DATE:
             case TIME:
@@ -200,7 +230,7 @@ public class Table extends QueryHandleAdapter<Table> {
                 expression.set("fieldLength", String.format("(%d%s)", propertyMeta.getLength(), decimals));
         }
         if (Type.DATABASE.MYSQL.equals(dialect.getName())) {
-            if (propertyMeta.isUnsigned()) {
+            if (propertyMeta.isUnsigned() && variables.contains("unsigned")) {
                 switch (propertyMeta.getType()) {
                     case NUMBER:
                     case LONG:
@@ -214,27 +244,29 @@ public class Table extends QueryHandleAdapter<Table> {
                     default:
                 }
             }
-            if (propertyMeta.isAutoincrement()) {
+            if (propertyMeta.isAutoincrement() && variables.contains("autoIncrement")) {
                 expression.set("autoIncrement", "AUTO_INCREMENT");
             }
-            if (StringUtils.isNotBlank(propertyMeta.getComment())) {
+            if (StringUtils.isNotBlank(propertyMeta.getComment()) && variables.contains("comment")) {
                 expression.set("comment", String.format("COMMENT '%s'", propertyMeta.getComment()));
             }
         } else if (Type.DATABASE.SQLSERVER.equals(dialect.getName())) {
-            if (propertyMeta.isAutoincrement()) {
+            if (propertyMeta.isAutoincrement() && variables.contains("autoIncrement")) {
                 expression.set("autoIncrement", "IDENTITY(1,1)");
             }
         }
-        if (propertyMeta.isNullable()) {
-            if (StringUtils.isNotBlank(propertyMeta.getDefaultValue())) {
-                if (PropertyMeta.NULL.equals(propertyMeta.getDefaultValue())) {
-                    expression.set("nullable", "DEFAULT NULL");
-                } else {
-                    expression.set("nullable", String.format("DEFAULT '%s'", propertyMeta.getDefaultValue()));
+        if (variables.contains("nullable")) {
+            if (propertyMeta.isNullable()) {
+                if (StringUtils.isNotBlank(propertyMeta.getDefaultValue())) {
+                    if (PropertyMeta.NULL.equals(propertyMeta.getDefaultValue())) {
+                        expression.set("nullable", "DEFAULT NULL");
+                    } else {
+                        expression.set("nullable", String.format("DEFAULT '%s'", propertyMeta.getDefaultValue()));
+                    }
                 }
+            } else {
+                expression.set("nullable", "NOT NULL");
             }
-        } else {
-            expression.set("nullable", "NOT NULL");
         }
         return StringUtils.trimToEmpty(expression.clean().getResult());
     }
@@ -249,23 +281,30 @@ public class Table extends QueryHandleAdapter<Table> {
         if (queryHandler() != null) {
             queryHandler().beforeBuild(expression, this);
         }
+        List<String> variables = expression.getVariables();
+        //
         String tableNameBuildStr = dialect.buildTableName(prefix, tableName, shardingRule, shardingable);
         expression.set("tableName", tableNameBuildStr);
         //
-        List<String> fields = properties.values().stream().map(this::doProcessProperty).collect(Collectors.toList());
-        expression.set("fields", StringUtils.join(fields, Query.LINE_END_FLAG));
+        if (variables.contains("fields")) {
+            List<String> fields = properties.values().stream().map(this::processProperty).collect(Collectors.toList());
+            expression.set("fields", StringUtils.join(fields, Query.LINE_END_FLAG));
+        }
         //
-        if (!primaryKeys.isEmpty()) {
+        if (!primaryKeys.isEmpty() && variables.contains("primaryKeys")) {
             List<String> primaryKeyStr = primaryKeys.stream().map(primaryKey -> dialect.wrapIdentifierQuote(primaryKey)).collect(Collectors.toList());
             expression.set("primaryKeys", String.format("%s PRIMARY KEY (%s)", Query.LINE_END_FLAG, StringUtils.join(primaryKeyStr, Query.LINE_END_FLAG)));
         }
         //
-        if (Type.DATABASE.MYSQL.equals(dialect.getName())) {
-            slot.addSlotContent("ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+        if (variables.contains("slot")) {
+            if (Type.DATABASE.MYSQL.equals(dialect.getName())) {
+                slot.addSlotContent("ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+            }
+            if (slot.hasSlotContent()) {
+                expression.set("slot", slot.buildSlot());
+            }
         }
-        if (slot.hasSlotContent()) {
-            expression.set("slot", slot.buildSlot());
-        }
+        //
         if (queryHandler() != null) {
             queryHandler().afterBuild(expression, this);
         }
@@ -273,7 +312,7 @@ public class Table extends QueryHandleAdapter<Table> {
         String resultStr;
         switch (dialect.getName()) {
             case Type.DATABASE.MYSQL:
-                expression.set("ifNotExists", "IF NOT EXISTS");
+                expression.set("ifNotExists", IF_NOT_EXISTS);
                 if (StringUtils.isNotBlank(comment)) {
                     expression.set("comment", String.format("COMMENT='%s'", comment));
                 }
@@ -296,6 +335,9 @@ public class Table extends QueryHandleAdapter<Table> {
                 break;
             case Type.DATABASE.ORACLE:
             default:
+                if (ifExistsOrNot && variables.contains("ifNotExists")) {
+                    expression.set("ifNotExists", IF_NOT_EXISTS);
+                }
                 resultStr = expression.clean().getResult();
         }
         return StringUtils.trimToEmpty(resultStr);
@@ -307,7 +349,7 @@ public class Table extends QueryHandleAdapter<Table> {
      * @return 返回表删除SQL语句
      */
     public String toDropSQL() {
-        return String.format("DROP TABLE %s %s", (StringUtils.equals(Type.DATABASE.MYSQL, dialect.getName()) ? "IF EXISTS" : StringUtils.EMPTY), dialect.buildTableName(prefix, tableName, shardingRule, shardingable));
+        return String.format("DROP TABLE %s %s", (StringUtils.equals(Type.DATABASE.MYSQL, dialect.getName()) || ifExistsOrNot ? IF_EXISTS : StringUtils.EMPTY), dialect.buildTableName(prefix, tableName, shardingRule, shardingable));
     }
 
     /**

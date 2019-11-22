@@ -229,16 +229,16 @@ public final class EntityMeta implements Serializable {
             propertyMeta = new PropertyMeta(propName, field, property.autoincrement(),
                     property.sequenceName(), property.nullable(), property.unsigned(), property.length(), property.decimals(), property.type());
             if (ClassUtils.isAnnotationOf(field, Default.class)) {
-                propertyMeta.setDefaultValue(field.getAnnotation(Default.class).value());
+                propertyMeta.defaultValue(field.getAnnotation(Default.class).value());
             }
             if (ClassUtils.isAnnotationOf(field, Comment.class)) {
-                propertyMeta.setComment(field.getAnnotation(Comment.class).value());
+                propertyMeta.comment(field.getAnnotation(Comment.class).value());
             }
             if (ClassUtils.isAnnotationOf(field, Conversion.class)) {
-                propertyMeta.setConversionType(field.getAnnotation(Conversion.class).to());
+                propertyMeta.conversionType(field.getAnnotation(Conversion.class).to());
             }
             if (ClassUtils.isAnnotationOf(field, Readonly.class)) {
-                propertyMeta.setReadonly(true);
+                propertyMeta.readonly(true);
                 targetMeta.readonlyProps.add(propertyMeta.getName());
             }
             if (propertyMeta.isAutoincrement()) {

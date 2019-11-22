@@ -22,6 +22,8 @@ import net.ymate.platform.persistence.jdbc.IDatabase;
 import net.ymate.platform.persistence.jdbc.JDBC;
 import org.apache.commons.lang3.StringUtils;
 
+import java.util.List;
+
 /**
  * Where条件及参数对象
  *
@@ -187,16 +189,17 @@ public final class Where extends QueryHandleAdapter<Where> {
         if (queryHandler() != null) {
             queryHandler().beforeBuild(expression, this);
         }
-        if (cond != null) {
+        List<String> variables = expression.getVariables();
+        if (cond != null && variables.contains("whereCond")) {
             String condStr = cond.toString();
             if (StringUtils.isNotBlank(condStr)) {
                 expression.set("whereCond", String.format("WHERE %s", condStr));
             }
         }
-        if (slot.hasSlotContent()) {
+        if (slot.hasSlotContent() && variables.contains("slot")) {
             expression.set("slot", slot.buildSlot());
         }
-        if (groupBy != null) {
+        if (groupBy != null && variables.contains("groupBy")) {
             expression.set("groupBy", groupBy.toString());
         }
         if (queryHandler() != null) {

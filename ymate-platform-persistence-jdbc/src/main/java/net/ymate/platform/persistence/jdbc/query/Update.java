@@ -160,7 +160,7 @@ public final class Update extends Query<Update> {
     public Update table(String prefix, String from, String alias, boolean safePrefix) {
         from = buildSafeTableName(prefix, from, safePrefix);
         if (StringUtils.isNotBlank(alias)) {
-            from = from.concat(StringUtils.SPACE).concat(alias);
+            from = String.format("%s %s", from, alias);
         }
         this.tables.add(from);
         return this;
@@ -332,10 +332,14 @@ public final class Update extends Query<Update> {
         if (queryHandler() != null) {
             queryHandler().beforeBuild(expression, this);
         }
+        List<String> variables = expression.getVariables();
+        //
         expression.set("tableNames", StringUtils.join(tables, LINE_END_FLAG));
-        expression.set("joins", StringUtils.join(joins, StringUtils.SPACE));
         expression.set("fields", StringUtils.join(fields.fields(), "=?,"));
-        if (where != null) {
+        if (variables.contains("joins")) {
+            expression.set("joins", StringUtils.join(joins, StringUtils.SPACE));
+        }
+        if (where != null && variables.contains("where")) {
             expression.set("where", where.toString());
         }
         if (queryHandler() != null) {

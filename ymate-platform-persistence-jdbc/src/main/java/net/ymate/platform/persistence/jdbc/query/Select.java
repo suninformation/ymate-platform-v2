@@ -456,7 +456,8 @@ public final class Select extends Query<Select> {
         if (queryHandler() != null) {
             queryHandler().beforeBuild(expression, this);
         }
-        if (distinct) {
+        List<String> variables = expression.getVariables();
+        if (distinct && variables.contains("distinct")) {
             expression.set("distinct", "DISTINCT");
         }
         if (fields.fields().isEmpty()) {
@@ -465,13 +466,16 @@ public final class Select extends Query<Select> {
             expression.set("fields", StringUtils.join(fields.fields(), LINE_END_FLAG));
         }
         expression.set("froms", StringUtils.join(froms, LINE_END_FLAG));
-        expression.set("joins", StringUtils.join(joins, StringUtils.SPACE));
         //
-        if (where != null) {
+        if (variables.contains("joins")) {
+            expression.set("joins", StringUtils.join(joins, StringUtils.SPACE));
+        }
+        //
+        if (where != null && variables.contains("where")) {
             expression.set("where", where.toString());
         }
         //
-        if (!unions.isEmpty()) {
+        if (!unions.isEmpty() && variables.contains("unions")) {
             StringBuilder unionsBuilder = new StringBuilder();
             for (Union union : unions) {
                 unionsBuilder.append("UNION ");
