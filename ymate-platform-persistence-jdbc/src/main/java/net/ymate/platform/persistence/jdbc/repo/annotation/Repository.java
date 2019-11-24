@@ -15,7 +15,6 @@
  */
 package net.ymate.platform.persistence.jdbc.repo.annotation;
 
-import net.ymate.platform.core.beans.annotation.Ignored;
 import net.ymate.platform.core.persistence.base.Type;
 import org.apache.commons.lang3.StringUtils;
 
@@ -29,7 +28,6 @@ import java.lang.annotation.*;
 @Target({ElementType.TYPE, ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
-@Ignored
 public @interface Repository {
 
     /**
@@ -66,4 +64,9 @@ public @interface Repository {
      * @return 指定当前存储器适用的数据库类型，默认为全部，否则将根据数据库类型进行存储器加载
      */
     String dbType() default Type.DATABASE.UNKNOWN;
+
+    /**
+     * @return 指定结果集类型，若设置则使用BeanResultSetHandler进行处理否则默认使用ArrayResultSetHandler处理结果集
+     */
+    Class<?> resultClass() default Void.class;
 }

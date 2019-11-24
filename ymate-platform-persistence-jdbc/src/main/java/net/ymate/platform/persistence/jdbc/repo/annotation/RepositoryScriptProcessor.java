@@ -15,7 +15,6 @@
  */
 package net.ymate.platform.persistence.jdbc.repo.annotation;
 
-import net.ymate.platform.core.beans.annotation.Ignored;
 import org.apache.commons.lang3.StringUtils;
 
 import java.lang.annotation.*;
@@ -27,7 +26,6 @@ import java.lang.annotation.*;
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
-@Ignored
 public @interface RepositoryScriptProcessor {
 
     /**

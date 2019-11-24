@@ -25,6 +25,7 @@ import net.ymate.platform.core.persistence.Page;
 import net.ymate.platform.persistence.jdbc.IDatabase;
 import net.ymate.platform.persistence.jdbc.IDatabaseSession;
 import net.ymate.platform.persistence.jdbc.base.IResultSetHandler;
+import net.ymate.platform.persistence.jdbc.base.impl.BeanResultSetHandler;
 import net.ymate.platform.persistence.jdbc.query.SQL;
 import net.ymate.platform.persistence.jdbc.repo.annotation.Repository;
 import org.apache.commons.lang.NullArgumentException;
@@ -72,11 +73,11 @@ public class RepositoryProxy implements IProxy {
         return session;
     }
 
-    private SQL doCreateSQL(String targetSql, Method targetMethod, Object[] params, boolean page) {
+    private SQL doCreateSQL(String targetSql, Method targetMethod, Object[] params, boolean page, boolean filter) {
         Map<String, Object> paramMap = new HashMap<>(params.length);
         String[] paramNames = ClassUtils.getMethodParamNames(targetMethod);
         if (ArrayUtils.isNotEmpty(paramNames)) {
-            for (int idx = 0; idx < paramNames.length - (page ? 2 : 1); idx++) {
+            for (int idx = 0; idx < paramNames.length - (page ? (filter ? 2 : 1) : (filter ? 1 : 0)); idx++) {
                 paramMap.put(paramNames[idx], params[idx]);
             }
         }
@@ -123,29 +124,29 @@ public class RepositoryProxy implements IProxy {
                 if (StringUtils.isNotBlank(sqlStr)) {
                     Object result;
                     if (repositoryAnn.update()) {
-                        result = session.executeForUpdate(doCreateSQL(sqlStr, proxyChain.getTargetMethod(), proxyChain.getMethodParams(), repositoryAnn.page()));
+                        result = session.executeForUpdate(doCreateSQL(sqlStr, proxyChain.getTargetMethod(), proxyChain.getMethodParams(), repositoryAnn.page(), repositoryAnn.useFilter()));
                     } else {
-                        Page page = repositoryAnn.page() ? (Page) proxyChain.getMethodParams()[proxyChain.getMethodParams().length - 2] : null;
-                        result = session.find(doCreateSQL(sqlStr, proxyChain.getTargetMethod(), proxyChain.getMethodParams(), repositoryAnn.page()), IResultSetHandler.ARRAY, page);
+                        Page page = repositoryAnn.page() ? (Page) proxyChain.getMethodParams()[proxyChain.getMethodParams().length - (repositoryAnn.useFilter() ? 2 : 1)] : null;
+                        IResultSetHandler<?> resultSetHandler = !repositoryAnn.resultClass().equals(Void.class) ? new BeanResultSetHandler<>(repositoryAnn.resultClass()) : IResultSetHandler.ARRAY;
+                        result = session.find(doCreateSQL(sqlStr, proxyChain.getTargetMethod(), proxyChain.getMethodParams(), repositoryAnn.page(), repositoryAnn.useFilter()), resultSetHandler, page);
                         if (processor != null && processor.isFilterable()) {
                             result = processor.doFilter(result);
                         }
-                    }
-                    if (repositoryAnn.useFilter()) {
-                        // 将执行结果赋予目标方法的最后一个参数
-                        int position = proxyChain.getMethodParams().length - 1;
-                        Object lastParam = proxyChain.getMethodParams()[position];
-                        Class<?> paramType = lastParam != null ? proxyChain.getMethodParams()[position].getClass() : null;
-                        if (paramType != null && paramType.isArray()) {
-                            if (result != null) {
-                                proxyChain.getMethodParams()[position] = ArrayUtils.add((Object[]) proxyChain.getMethodParams()[position], result);
+                        if (repositoryAnn.useFilter()) {
+                            // 将执行结果赋予目标方法的最后一个参数
+                            int position = proxyChain.getMethodParams().length - 1;
+                            Object lastParam = proxyChain.getMethodParams()[position];
+                            Class<?> paramType = lastParam != null ? lastParam.getClass() : null;
+                            if (paramType != null && paramType.isArray()) {
+                                if (result != null) {
+                                    proxyChain.getMethodParams()[position] = ArrayUtils.add((Object[]) proxyChain.getMethodParams()[position], result);
+                                }
+                            } else {
+                                proxyChain.getMethodParams()[position] = result;
                             }
-                        } else {
-                            proxyChain.getMethodParams()[position] = result;
                         }
-                    } else {
-                        return result;
                     }
+                    return result;
                 }
             }
         }
