@@ -109,7 +109,17 @@ public class BeanMeta implements Serializable {
 
     public Set<Class<?>> getInterfaces(Collection<Class<?>> excludedClassSet) {
         Set<Class<?>> returnValues = new HashSet<>();
-        for (Class<?> interfaceClass : beanClass.getInterfaces()) {
+        Class<?>[] interfaces;
+        if (beanClass.isInterface()) {
+            if (beanObject != null) {
+                interfaces = beanObject.getClass().getInterfaces();
+            } else {
+                interfaces = new Class<?>[]{beanClass};
+            }
+        } else {
+            interfaces = beanClass.getInterfaces();
+        }
+        for (Class<?> interfaceClass : interfaces) {
             if (!interfaceClass.isAnnotationPresent(Ignored.class)) {
                 // 排除自定义接口
                 if (excludedClassSet != null && excludedClassSet.contains(interfaceClass)) {

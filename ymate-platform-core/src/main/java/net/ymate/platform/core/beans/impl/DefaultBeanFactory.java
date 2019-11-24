@@ -233,8 +233,12 @@ public class DefaultBeanFactory implements IBeanFactory {
             // 注解、枚举和接口类型采用不同方式处理
             if (beanMeta.getBeanClass().isInterface()) {
                 if (beanMeta.getBeanObject() != null) {
-                    beanInstancesMap.put(beanMeta.getBeanClass(), beanMeta);
-                    parseInterfaces(beanMeta);
+                    beanInstancesMap.put(beanMeta.getBeanObject().getClass(), beanMeta);
+                    if (!beanMeta.isInterfaceIgnored()) {
+                        beanMeta.getInterfaces(excludedInterfaceClasses).forEach((interfaceClass) -> beanInterfacesMap.put(interfaceClass, beanMeta.getBeanObject().getClass()));
+                    } else {
+                        beanInterfacesMap.put(beanMeta.getBeanClass(), beanMeta.getBeanObject().getClass());
+                    }
                 } else if (isOwnerDev() && LOG.isWarnEnabled()) {
                     LOG.warn(String.format("BeanMeta interface [%s] instance object not provided, ignored.", beanMeta.getBeanClass().getName()));
                 }
@@ -251,17 +255,8 @@ public class DefaultBeanFactory implements IBeanFactory {
 
     protected void parseClass(BeanMeta beanMeta) {
         beanInstancesMap.put(beanMeta.getBeanClass(), beanMeta);
-        //
-        parseInterfaces(beanMeta);
-    }
-
-    protected void parseInterfaces(BeanMeta beanMeta) {
         if (!beanMeta.isInterfaceIgnored()) {
-            beanMeta.getInterfaces(excludedInterfaceClasses).forEach((interfaceClass) -> {
-                beanInterfacesMap.put(interfaceClass, beanMeta.getBeanClass());
-            });
-        } else if (isExcludedInterfaceClass(beanMeta.getBeanClass())) {
-            beanInterfacesMap.put(beanMeta.getBeanClass(), beanMeta.getBeanClass());
+            beanMeta.getInterfaces(excludedInterfaceClasses).forEach((interfaceClass) -> beanInterfacesMap.put(interfaceClass, beanMeta.getBeanClass()));
         }
     }
 
