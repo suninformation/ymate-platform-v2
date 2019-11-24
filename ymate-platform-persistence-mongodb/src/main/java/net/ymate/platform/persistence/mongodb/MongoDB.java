@@ -22,7 +22,6 @@ import net.ymate.platform.core.IApplication;
 import net.ymate.platform.core.YMP;
 import net.ymate.platform.core.module.IModule;
 import net.ymate.platform.core.module.IModuleConfigurer;
-import net.ymate.platform.core.module.annotation.Module;
 import net.ymate.platform.core.persistence.AbstractTrade;
 import net.ymate.platform.core.persistence.IDataSourceRouter;
 import net.ymate.platform.core.persistence.ITrade;
@@ -34,7 +33,6 @@ import java.util.concurrent.ConcurrentHashMap;
 /**
  * @author 刘镇 (suninformation@163.com) on 15/11/21 上午9:24
  */
-@Module
 public class MongoDB implements IModule, IMongo {
 
     private static volatile IMongo instance;

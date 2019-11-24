@@ -23,7 +23,6 @@ import net.ymate.platform.core.event.Events;
 import net.ymate.platform.core.event.IEventListener;
 import net.ymate.platform.core.module.IModule;
 import net.ymate.platform.core.module.IModuleConfigurer;
-import net.ymate.platform.core.module.annotation.Module;
 import net.ymate.platform.plugin.impl.DefaultPluginFactory;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -33,7 +32,6 @@ import org.apache.commons.logging.LogFactory;
  *
  * @author 刘镇 (suninformation@163.com) on 2012-11-30 下午6:28:20
  */
-@Module
 public class Plugins implements IModule, IPlugins {
 
     private static final Log LOG = LogFactory.getLog(Plugins.class);

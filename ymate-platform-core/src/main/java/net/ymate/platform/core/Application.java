@@ -124,6 +124,17 @@ public final class Application implements IApplication {
             //
             try {
                 moduleManager.addExcludedModules(configurer.getExcludedModules());
+                // 触发容器启动事件
+                events.fireEvent(new ApplicationEvent(this, ApplicationEvent.EVENT.APPLICATION_STARTUP));
+                //
+                if (initializer != null) {
+                    initializer.beforeModuleManagerInit(this, moduleManager);
+                }
+                moduleManager.initialize(this);
+                //
+                if (initializer != null) {
+                    initializer.beforeBeanFactoryInit(this, beanFactory);
+                }
                 // 尝试使用自定义加载器加载模块
                 IBeanLoadFactory beanLoadFactory = configurer.getBeanLoadFactory();
                 if (beanLoadFactory != null && beanLoadFactory.getBeanLoader() != null) {
@@ -149,17 +160,6 @@ public final class Application implements IApplication {
                         initializer.beforeBeanLoad(this, beanLoader);
                     }
                     beanLoader.load(beanFactory);
-                }
-                // 触发容器启动事件
-                events.fireEvent(new ApplicationEvent(this, ApplicationEvent.EVENT.APPLICATION_STARTUP));
-                //
-                if (initializer != null) {
-                    initializer.beforeModuleManagerInit(this, moduleManager);
-                }
-                moduleManager.initialize(this);
-                //
-                if (initializer != null) {
-                    initializer.beforeBeanFactoryInit(this, beanFactory);
                 }
                 beanFactory.initialize(this);
             } catch (Exception e) {

@@ -17,6 +17,7 @@ package net.ymate.platform.core.module;
 
 import net.ymate.platform.commons.ConcurrentHashSet;
 import net.ymate.platform.commons.ReentrantLockHelper;
+import net.ymate.platform.commons.util.ClassUtils;
 import net.ymate.platform.commons.util.RuntimeUtils;
 import net.ymate.platform.core.IApplication;
 import net.ymate.platform.core.support.IDestroyable;
@@ -49,6 +50,8 @@ public class ModuleManager implements IInitialization<IApplication>, IDestroyabl
         if (!initialized) {
             this.owner = owner;
             owner.getEvents().registerEvent(ModuleEvent.class);
+            //
+            ClassUtils.getExtensionLoader(IModule.class, true).getExtensionClasses().forEach(this::registerModule);
             //
             modules.entrySet().stream()
                     .filter((entry) -> (!isModuleExcluded(entry.getValue().getName()) && !isModuleExcluded(entry.getKey()) && !entry.getValue().isInitialized()))

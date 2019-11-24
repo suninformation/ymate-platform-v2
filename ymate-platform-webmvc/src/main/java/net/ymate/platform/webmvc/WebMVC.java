@@ -23,20 +23,21 @@ import net.ymate.platform.commons.util.RuntimeUtils;
 import net.ymate.platform.core.IApplication;
 import net.ymate.platform.core.YMP;
 import net.ymate.platform.core.beans.BeanMeta;
+import net.ymate.platform.core.beans.IBeanLoadFactory;
+import net.ymate.platform.core.beans.IBeanLoader;
 import net.ymate.platform.core.beans.proxy.IProxyFactory;
 import net.ymate.platform.core.module.IModule;
 import net.ymate.platform.core.module.IModuleConfigurer;
-import net.ymate.platform.core.module.annotation.Module;
 import net.ymate.platform.validation.IValidation;
 import net.ymate.platform.validation.Validations;
-import net.ymate.platform.webmvc.annotation.Controller;
-import net.ymate.platform.webmvc.annotation.FileUpload;
-import net.ymate.platform.webmvc.annotation.RequestMapping;
-import net.ymate.platform.webmvc.annotation.ResponseCache;
+import net.ymate.platform.webmvc.annotation.*;
 import net.ymate.platform.webmvc.base.Type;
 import net.ymate.platform.webmvc.context.WebContext;
 import net.ymate.platform.webmvc.cors.CrossDomainAnnotationInterceptor;
 import net.ymate.platform.webmvc.cors.annotation.CrossDomain;
+import net.ymate.platform.webmvc.handle.ControllerHandler;
+import net.ymate.platform.webmvc.handle.ExceptionProcessorHandler;
+import net.ymate.platform.webmvc.handle.InterceptorRuleHandler;
 import net.ymate.platform.webmvc.impl.DefaultInterceptorRuleProcessor;
 import net.ymate.platform.webmvc.impl.DefaultWebMvcConfig;
 import net.ymate.platform.webmvc.support.MultipartRequestWrapper;
@@ -69,7 +70,6 @@ import java.util.Map;
  *
  * @author 刘镇 (suninformation@163.com) on 2012-12-7 下午10:23:39
  */
-@Module
 public final class WebMVC implements IModule, IWebMvc {
 
     private static final Log LOG = LogFactory.getLog(WebMVC.class);
@@ -139,6 +139,17 @@ public final class WebMVC implements IModule, IWebMvc {
             //
             if (config.getCrossDomainSettings().isEnabled()) {
                 owner.getInterceptSettings().getInterceptAnnHelper().registerInterceptAnnotation(CrossDomain.class, CrossDomainAnnotationInterceptor.class);
+            }
+            //
+            //
+            IBeanLoadFactory beanLoaderFactory = YMP.getBeanLoadFactory();
+            if (beanLoaderFactory != null) {
+                IBeanLoader beanLoader = beanLoaderFactory.getBeanLoader();
+                if (beanLoader != null) {
+                    beanLoader.registerHandler(Controller.class, new ControllerHandler(this));
+                    beanLoader.registerHandler(InterceptorRule.class, new InterceptorRuleHandler(this));
+                    beanLoader.registerHandler(ExceptionProcessor.class, new ExceptionProcessorHandler());
+                }
             }
             //
             IProxyFactory proxyFactory = owner.getBeanFactory().getProxyFactory();

@@ -23,7 +23,6 @@ import net.ymate.platform.core.IApplication;
 import net.ymate.platform.core.YMP;
 import net.ymate.platform.core.module.IModule;
 import net.ymate.platform.core.module.IModuleConfigurer;
-import net.ymate.platform.core.module.annotation.Module;
 import net.ymate.platform.core.persistence.IDataSourceRouter;
 import net.ymate.platform.persistence.redis.impl.DefaultRedisConfig;
 import net.ymate.platform.persistence.redis.impl.RedisCommandHolder;
@@ -41,7 +40,6 @@ import java.util.concurrent.ExecutorService;
 /**
  * @author 刘镇 (suninformation@163.com) on 15/11/30 上午3:14
  */
-@Module
 public final class Redis implements IModule, IRedis {
 
     private static final Log LOG = LogFactory.getLog(Redis.class);

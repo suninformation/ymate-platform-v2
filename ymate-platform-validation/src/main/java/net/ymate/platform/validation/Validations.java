@@ -20,10 +20,12 @@ import net.ymate.platform.commons.util.RuntimeUtils;
 import net.ymate.platform.core.IApplication;
 import net.ymate.platform.core.YMP;
 import net.ymate.platform.core.beans.BeanMeta;
+import net.ymate.platform.core.beans.IBeanLoadFactory;
 import net.ymate.platform.core.beans.intercept.InterceptAnnHelper;
 import net.ymate.platform.core.module.IModule;
-import net.ymate.platform.core.module.annotation.Module;
 import net.ymate.platform.validation.annotation.Validation;
+import net.ymate.platform.validation.annotation.Validator;
+import net.ymate.platform.validation.handle.ValidateHandler;
 import net.ymate.platform.validation.validate.*;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
@@ -40,7 +42,6 @@ import java.util.concurrent.ConcurrentHashMap;
  *
  * @author 刘镇 (suninformation@163.com) on 2013-4-7 下午4:43:48
  */
-@Module
 public final class Validations implements IModule, IValidation {
 
     private static final Log LOG = LogFactory.getLog(Validations.class);
@@ -85,6 +86,12 @@ public final class Validations implements IModule, IValidation {
             YMP.showModuleVersion("ymate-platform-validation", this);
             //
             this.owner = owner;
+            //
+            IBeanLoadFactory beanLoaderFactory = YMP.getBeanLoadFactory();
+            if (beanLoaderFactory != null && beanLoaderFactory.getBeanLoader() != null) {
+                beanLoaderFactory.getBeanLoader().registerHandler(Validator.class, new ValidateHandler(this));
+            }
+            //
             initialized = true;
             //
             registerValidator(VRequired.class, RequiredValidator.class);

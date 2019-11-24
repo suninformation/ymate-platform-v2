@@ -22,7 +22,6 @@ import net.ymate.platform.core.YMP;
 import net.ymate.platform.core.beans.proxy.IProxyFactory;
 import net.ymate.platform.core.module.IModule;
 import net.ymate.platform.core.module.IModuleConfigurer;
-import net.ymate.platform.core.module.annotation.Module;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -34,7 +33,6 @@ import java.util.Map;
  *
  * @author 刘镇 (suninformation@163.com) on 14-10-16
  */
-@Module
 public final class Caches implements IModule, ICaches {
 
     private static volatile ICaches instance;

@@ -23,7 +23,6 @@ import net.ymate.platform.core.beans.IBeanLoadFactory;
 import net.ymate.platform.core.beans.proxy.IProxyFactory;
 import net.ymate.platform.core.module.IModule;
 import net.ymate.platform.core.module.IModuleConfigurer;
-import net.ymate.platform.core.module.annotation.Module;
 import net.ymate.platform.core.persistence.IDataSourceRouter;
 import net.ymate.platform.persistence.jdbc.annotation.DataSourceAdapter;
 import net.ymate.platform.persistence.jdbc.annotation.Dialect;
@@ -49,7 +48,6 @@ import java.util.concurrent.ConcurrentHashMap;
 /**
  * @author 刘镇 (suninformation@163.com) on 2011-9-10 下午11:45:25
  */
-@Module
 public final class JDBC implements IModule, IDatabase {
 
     private static final Log LOG = LogFactory.getLog(JDBC.class);
