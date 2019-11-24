@@ -15,6 +15,7 @@
  */
 package net.ymate.platform.commons.util;
 
+import com.thoughtworks.paranamer.AdaptiveParanamer;
 import net.ymate.platform.commons.ReentrantLockHelper;
 import net.ymate.platform.commons.lang.BlurObject;
 import net.ymate.platform.commons.lang.PairObject;
@@ -421,14 +422,7 @@ public class ClassUtils {
      * @return 获取方法的参数名集合，若找不到则返回元素数量为0的空数组
      */
     public static String[] getMethodParamNames(final Method method) {
-        String[] paramNames = new String[method.getParameterCount()];
-        if (paramNames.length > 0) {
-            int idx = 0;
-            for (Parameter parameter : method.getParameters()) {
-                paramNames[idx++] = parameter.getName();
-            }
-        }
-        return paramNames;
+        return new AdaptiveParanamer().lookupParameterNames(method, false);
     }
 
     /**
