@@ -1,29 +1,41 @@
 package org.slf4j.impl;
 
-import org.slf4j.helpers.BasicMDCAdapter;
 import org.slf4j.spi.MDCAdapter;
 
 /**
- * Copied from org.slf4j:slf4j-log4j12-1.7.26
+ * Copied from org.slf4j:slf4j-log4j12-1.7.29
  *
  * @author QOS.ch
  */
 public class StaticMDCBinder {
 
+    /**
+     * The unique instance of this class.
+     */
     public static final StaticMDCBinder SINGLETON = new StaticMDCBinder();
 
     private StaticMDCBinder() {
     }
 
-    public static StaticMDCBinder getSingleton() {
+    /**
+     * Return the singleton of this class.
+     *
+     * @return the StaticMDCBinder singleton
+     * @since 1.7.14
+     */
+    public static final StaticMDCBinder getSingleton() {
         return SINGLETON;
     }
 
+    /**
+     * Currently this method always returns an instance of
+     * {@link StaticMDCBinder}.
+     */
     public MDCAdapter getMDCA() {
-        return new BasicMDCAdapter();
+        return new Log4jMDCAdapter();
     }
 
     public String getMDCAdapterClassStr() {
-        return BasicMDCAdapter.class.getName();
+        return Log4jMDCAdapter.class.getName();
     }
 }
