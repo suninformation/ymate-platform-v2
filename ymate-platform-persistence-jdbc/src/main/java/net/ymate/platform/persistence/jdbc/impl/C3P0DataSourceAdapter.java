@@ -44,7 +44,7 @@ public class C3P0DataSourceAdapter extends AbstractDatabaseDataSourceAdapter {
 
     @Override
     protected void doInitialize() throws Exception {
-        String path = RuntimeUtils.replaceEnvVariable("${root}");
+        String path = RuntimeUtils.getRootPath();
         if (StringUtils.endsWith(path, "/WEB-INF")) {
             path += "/classes";
         }

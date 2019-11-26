@@ -51,11 +51,11 @@ public class RedirectView extends AbstractView {
         if (!path.startsWith(Type.Const.HTTP_PREFIX) && !path.startsWith(Type.Const.HTTPS_PREFIX)) {
             // 重定向决对路径
             if (path.length() > 0 && path.charAt(0) == Type.Const.PATH_SEPARATOR_CHAR) {
-                path = WebContext.getRequest().getContextPath() + path;
+                path = String.format("%s%s", WebContext.getRequest().getContextPath(), path);
             }
             // 重定向相对路径
             else {
-                path = RuntimeUtils.getRootPath() + Type.Const.PATH_SEPARATOR_CHAR + path;
+                path = String.format("%s%s%s", RuntimeUtils.getRootPath(), Type.Const.PATH_SEPARATOR_CHAR, path);
             }
         }
         WebContext.getResponse().sendRedirect(buildUrl(path));

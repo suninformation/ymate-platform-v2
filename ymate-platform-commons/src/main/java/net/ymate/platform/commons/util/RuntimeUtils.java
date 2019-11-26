@@ -155,7 +155,7 @@ public class RuntimeUtils {
     }
 
     /**
-     * @return 获取应用根路径（若WEB工程则基于.../WEB-INF/返回，若普通工程则返回类所在路径）
+     * @return 获取应用根路径（若WEB工程则基于.../WEB-INF返回，若普通工程则返回类所在路径）
      */
     public static String getRootPath() {
         return getRootPath(true);
@@ -164,26 +164,22 @@ public class RuntimeUtils {
     /**
      * @param safe 若WEB工程是否保留WEB-INF
      * @return 返回应用根路径
+     * @since 2.1.0 若获取的路径为空则默认使用user.dir路径(结尾的斜杠字符将被移除)
      */
     public static String getRootPath(boolean safe) {
-        //
-        String rootPath = null;
-        //
         URL rootUrl = RuntimeUtils.class.getClassLoader().getResource("/");
         if (rootUrl == null) {
             rootUrl = RuntimeUtils.class.getClassLoader().getResource(StringUtils.EMPTY);
-            if (rootUrl != null) {
-                rootPath = StringUtils.removeEnd(rootUrl.getPath(), "/");
-            }
-        } else {
-            rootPath = StringUtils.removeEnd(StringUtils.substringBefore(rootUrl.getPath(), safe ? "classes/" : "WEB-INF/"), "/");
         }
-        //
+        String rootPath = rootUrl != null ? rootUrl.getPath() : null;
         if (rootPath != null) {
-            rootPath = StringUtils.replace(rootPath, "%20", StringUtils.SPACE);
+            rootPath = StringUtils.replace(StringUtils.removeEnd(StringUtils.substringBefore(rootUrl.getPath(), safe ? "classes/" : "WEB-INF/"), "/"), "%20", StringUtils.SPACE);
             if (isWindows()) {
                 rootPath = StringUtils.removeStart(rootPath, "/");
             }
+        }
+        if (StringUtils.isBlank(rootPath)) {
+            rootPath = System.getProperty(USER_DIR);
         }
         return StringUtils.trimToEmpty(rootPath);
     }
@@ -196,9 +192,6 @@ public class RuntimeUtils {
     public static String replaceEnvVariable(String origin) {
         if ((origin = StringUtils.trimToNull(origin)) != null) {
             String rootPath = getRootPath();
-            if (StringUtils.isBlank(rootPath)) {
-                rootPath = System.getProperty(USER_DIR);
-            }
             if (StringUtils.contains(origin, VAR_ROOT)) {
                 origin = ExpressionUtils.bind(origin).set(ROOT, rootPath).getResult();
             } else if (StringUtils.contains(origin, VAR_USER_DIR)) {
