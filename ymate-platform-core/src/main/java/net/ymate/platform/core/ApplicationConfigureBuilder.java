@@ -48,7 +48,8 @@ public class ApplicationConfigureBuilder {
         configurer = new AbstractApplicationConfigurer(configureParser) {
             @Override
             public IModuleConfigurer getModuleConfigurer(String moduleName) {
-                return moduleConfigurers.get(moduleName);
+                IModuleConfigurer moduleConfigurer = moduleConfigurers.get(moduleName);
+                return moduleConfigurer != null ? moduleConfigurer : (getConfigureParser() != null ? getConfigureParser().getModuleConfigurer(moduleName) : null);
             }
         };
     }
