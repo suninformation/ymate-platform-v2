@@ -48,6 +48,13 @@ public interface IDataSourceAdapter<OWNER, DATASOURCE_CONFIG extends IDataSource
     boolean initializeIfNeed() throws Exception;
 
     /**
+     * 获取所属持久化模块
+     *
+     * @return 返回所属持久化模块对象
+     */
+    OWNER getOwner();
+
+    /**
      * 获取数据源配置
      *
      * @return 返回数据源配置

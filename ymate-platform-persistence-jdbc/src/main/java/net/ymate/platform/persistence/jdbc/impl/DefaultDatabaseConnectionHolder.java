@@ -15,6 +15,7 @@
  */
 package net.ymate.platform.persistence.jdbc.impl;
 
+import net.ymate.platform.persistence.jdbc.IDatabase;
 import net.ymate.platform.persistence.jdbc.IDatabaseConnectionHolder;
 import net.ymate.platform.persistence.jdbc.IDatabaseDataSourceAdapter;
 import net.ymate.platform.persistence.jdbc.IDatabaseDataSourceConfig;
@@ -39,6 +40,11 @@ public class DefaultDatabaseConnectionHolder implements IDatabaseConnectionHolde
         if (dataSourceAdapter.initializeIfNeed()) {
             conn = dsAdapter.getConnection();
         }
+    }
+
+    @Override
+    public IDatabase getOwner() {
+        return dataSourceAdapter.getOwner();
     }
 
     @Override

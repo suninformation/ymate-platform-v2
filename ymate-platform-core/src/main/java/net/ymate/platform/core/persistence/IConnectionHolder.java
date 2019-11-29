@@ -27,7 +27,14 @@ import net.ymate.platform.core.support.IDestroyable;
  * @since 2.1.0
  */
 @Ignored
-public interface IConnectionHolder<CONNECTION, DATASOURCE_CONFIG extends IDataSourceConfig> extends IDestroyable {
+public interface IConnectionHolder<OWNER extends IPersistence, CONNECTION, DATASOURCE_CONFIG extends IDataSourceConfig> extends IDestroyable {
+
+    /**
+     * 获取所属持久化模块
+     *
+     * @return 返回所属持久化模块对象
+     */
+    OWNER getOwner();
 
     /**
      * 获取数据源配置

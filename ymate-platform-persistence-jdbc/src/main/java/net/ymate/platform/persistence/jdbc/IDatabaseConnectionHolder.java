@@ -27,7 +27,7 @@ import java.sql.Connection;
  * @author 刘镇 (suninformation@163.com) on 2012-12-29 上午12:30:49
  */
 @Ignored
-public interface IDatabaseConnectionHolder extends IConnectionHolder<Connection, IDatabaseDataSourceConfig> {
+public interface IDatabaseConnectionHolder extends IConnectionHolder<IDatabase, Connection, IDatabaseDataSourceConfig> {
 
     /**
      * 获取数据库方言

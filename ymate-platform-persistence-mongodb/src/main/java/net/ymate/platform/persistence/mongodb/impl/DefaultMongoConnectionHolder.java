@@ -17,6 +17,7 @@ package net.ymate.platform.persistence.mongodb.impl;
 
 import com.mongodb.MongoClient;
 import com.mongodb.client.MongoDatabase;
+import net.ymate.platform.persistence.mongodb.IMongo;
 import net.ymate.platform.persistence.mongodb.IMongoConnectionHolder;
 import net.ymate.platform.persistence.mongodb.IMongoDataSourceAdapter;
 import net.ymate.platform.persistence.mongodb.IMongoDataSourceConfig;
@@ -33,6 +34,11 @@ public class DefaultMongoConnectionHolder implements IMongoConnectionHolder {
     public DefaultMongoConnectionHolder(IMongoDataSourceAdapter dataSourceAdapter) throws Exception {
         this.dataSourceAdapter = dataSourceAdapter;
         this.mongoClient = dataSourceAdapter.getConnection();
+    }
+
+    @Override
+    public IMongo getOwner() {
+        return dataSourceAdapter.getOwner();
     }
 
     @Override

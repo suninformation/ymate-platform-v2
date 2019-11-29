@@ -56,7 +56,8 @@ public abstract class AbstractDataSourceAdapter<OWNER extends IPersistence, DATA
         }
     }
 
-    protected OWNER getOwner() {
+    @Override
+    public OWNER getOwner() {
         return owner;
     }
 

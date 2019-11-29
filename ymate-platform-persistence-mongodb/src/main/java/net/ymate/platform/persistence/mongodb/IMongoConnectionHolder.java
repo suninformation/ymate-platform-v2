@@ -23,7 +23,7 @@ import net.ymate.platform.core.persistence.IConnectionHolder;
  * @author 刘镇 (suninformation@163.com) on 15/11/21 上午11:45
  */
 @Ignored
-public interface IMongoConnectionHolder extends IConnectionHolder<MongoDatabase, IMongoDataSourceConfig> {
+public interface IMongoConnectionHolder extends IConnectionHolder<IMongo, MongoDatabase, IMongoDataSourceConfig> {
 
     /**
      * 获取连接对象

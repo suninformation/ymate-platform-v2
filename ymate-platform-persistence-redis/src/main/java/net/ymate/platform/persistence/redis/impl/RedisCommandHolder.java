@@ -17,7 +17,6 @@ package net.ymate.platform.persistence.redis.impl;
 
 import net.ymate.platform.commons.util.RuntimeUtils;
 import net.ymate.platform.persistence.redis.*;
-import org.apache.commons.lang.NullArgumentException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -35,10 +34,12 @@ public class RedisCommandHolder implements IRedisCommandHolder {
     private IRedisDataSourceAdapter dataSourceAdapter;
 
     public RedisCommandHolder(IRedisDataSourceAdapter dataSourceAdapter) {
-        if (dataSourceAdapter == null) {
-            throw new NullArgumentException("dataSourceAdapter");
-        }
         this.dataSourceAdapter = dataSourceAdapter;
+    }
+
+    @Override
+    public IRedis getOwner() {
+        return dataSourceAdapter.getOwner();
     }
 
     @Override

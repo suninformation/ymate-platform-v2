@@ -24,5 +24,5 @@ import net.ymate.platform.core.persistence.IConnectionHolder;
  * @author 刘镇 (suninformation@163.com) on 15/12/4 上午12:59
  */
 @Ignored
-public interface IRedisCommandHolder extends IConnectionHolder<IRedisCommander, IRedisDataSourceConfig> {
+public interface IRedisCommandHolder extends IConnectionHolder<IRedis, IRedisCommander, IRedisDataSourceConfig> {
 }
