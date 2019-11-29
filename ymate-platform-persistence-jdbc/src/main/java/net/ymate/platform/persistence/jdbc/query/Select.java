@@ -24,7 +24,6 @@ import net.ymate.platform.persistence.jdbc.IDatabase;
 import net.ymate.platform.persistence.jdbc.IDatabaseConnectionHolder;
 import net.ymate.platform.persistence.jdbc.JDBC;
 import net.ymate.platform.persistence.jdbc.base.IResultSetHandler;
-import net.ymate.platform.persistence.jdbc.dialect.IDialect;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.ArrayList;
@@ -55,98 +54,140 @@ public final class Select extends Query<Select> {
 
     private Page page;
 
-    public static Select create() {
-        return new Select(JDBC.get());
+    public static Select create() throws Exception {
+        return new Select(JDBC.get().getDefaultConnectionHolder());
     }
 
-    public static Select create(Class<? extends IEntity> entityClass) {
-        return new Select(JDBC.get()).from(null, entityClass, null);
+    public static Select create(Class<? extends IEntity> entityClass) throws Exception {
+        return new Select(JDBC.get().getDefaultConnectionHolder()).from(null, entityClass, null);
     }
 
-    public static Select create(String prefix, Class<? extends IEntity> entityClass) {
-        return new Select(JDBC.get()).from(prefix, entityClass, null);
+    public static Select create(String prefix, Class<? extends IEntity> entityClass) throws Exception {
+        return new Select(JDBC.get().getDefaultConnectionHolder()).from(prefix, entityClass, null);
     }
 
-    public static Select create(Class<? extends IEntity> entityClass, String alias) {
-        return new Select(JDBC.get()).from(null, entityClass, alias);
+    public static Select create(Class<? extends IEntity> entityClass, String alias) throws Exception {
+        return new Select(JDBC.get().getDefaultConnectionHolder()).from(null, entityClass, alias);
     }
 
-    public static Select create(String prefix, Class<? extends IEntity> entityClass, String alias) {
-        return new Select(JDBC.get()).from(prefix, entityClass, alias);
+    public static Select create(String prefix, Class<? extends IEntity> entityClass, String alias) throws Exception {
+        return new Select(JDBC.get().getDefaultConnectionHolder()).from(prefix, entityClass, alias);
     }
 
-    public static Select create(String prefix, String from, String alias) {
-        return new Select(JDBC.get(), prefix, from, alias, true);
+    public static Select create(String prefix, String from, String alias) throws Exception {
+        return new Select(JDBC.get().getDefaultConnectionHolder(), prefix, from, alias, true);
     }
 
-    public static Select create(String from, String alias) {
-        return new Select(JDBC.get(), null, from, alias, true);
+    public static Select create(String from, String alias) throws Exception {
+        return new Select(JDBC.get().getDefaultConnectionHolder(), null, from, alias, true);
     }
 
-    public static Select create(String from, String alias, boolean safePrefix) {
-        return new Select(JDBC.get(), null, from, alias, safePrefix);
+    public static Select create(String from, String alias, boolean safePrefix) throws Exception {
+        return new Select(JDBC.get().getDefaultConnectionHolder(), null, from, alias, safePrefix);
     }
 
-    public static Select create(String from) {
-        return new Select(JDBC.get(), null, from, null, true);
+    public static Select create(String from) throws Exception {
+        return new Select(JDBC.get().getDefaultConnectionHolder(), null, from, null, true);
     }
 
-    public static Select create(String from, boolean safePrefix) {
-        return new Select(JDBC.get(), null, from, null, safePrefix);
-    }
-
-    public static Select create(IDatabase owner) {
-        return new Select(owner);
-    }
-
-    public static Select create(IDatabase owner, Class<? extends IEntity> entityClass) {
-        return new Select(owner).from(null, entityClass, null);
-    }
-
-    public static Select create(IDatabase owner, String prefix, Class<? extends IEntity> entityClass) {
-        return new Select(owner).from(prefix, entityClass, null);
-    }
-
-    public static Select create(IDatabase owner, Class<? extends IEntity> entityClass, String alias) {
-        return new Select(owner).from(null, entityClass, alias);
-    }
-
-    public static Select create(IDatabase owner, String prefix, Class<? extends IEntity> entityClass, String alias) {
-        return new Select(owner).from(prefix, entityClass, alias);
+    public static Select create(String from, boolean safePrefix) throws Exception {
+        return new Select(JDBC.get().getDefaultConnectionHolder(), null, from, null, safePrefix);
     }
 
     public static Select create(Select select) {
-        Select target = new Select(select.owner(), null, select.toString(), null, false);
+        Select target = new Select(select.connectionHolder(), null, select.toString(), null, false);
         target.where().param(select.params());
         return target;
     }
 
-    public static Select create(IDatabase owner, String prefix, String from, String alias) {
-        return new Select(owner, prefix, from, alias, true);
+    public static Select create(IDatabase owner) throws Exception {
+        return new Select(owner.getDefaultConnectionHolder());
     }
 
-    public static Select create(IDatabase owner, String from, String alias) {
-        return new Select(owner, null, from, alias, true);
+    public static Select create(IDatabase owner, Class<? extends IEntity> entityClass) throws Exception {
+        return new Select(owner.getDefaultConnectionHolder()).from(null, entityClass, null);
     }
 
-    public static Select create(IDatabase owner, String from, String alias, boolean safePrefix) {
-        return new Select(owner, null, from, alias, safePrefix);
+    public static Select create(IDatabase owner, String prefix, Class<? extends IEntity> entityClass) throws Exception {
+        return new Select(owner.getDefaultConnectionHolder()).from(prefix, entityClass, null);
     }
 
-    public static Select create(IDatabase owner, String from) {
-        return new Select(owner, null, from, null, true);
+    public static Select create(IDatabase owner, Class<? extends IEntity> entityClass, String alias) throws Exception {
+        return new Select(owner.getDefaultConnectionHolder()).from(null, entityClass, alias);
     }
 
-    public static Select create(IDatabase owner, String from, boolean safePrefix) {
-        return new Select(owner, null, from, null, safePrefix);
+    public static Select create(IDatabase owner, String prefix, Class<? extends IEntity> entityClass, String alias) throws Exception {
+        return new Select(owner.getDefaultConnectionHolder()).from(prefix, entityClass, alias);
     }
 
-    private Select(IDatabase owner) {
-        super(owner);
+    public static Select create(IDatabase owner, String prefix, String from, String alias) throws Exception {
+        return new Select(owner.getDefaultConnectionHolder(), prefix, from, alias, true);
     }
 
-    private Select(IDatabase owner, String prefix, String from, String alias, boolean safePrefix) {
-        super(owner);
+    public static Select create(IDatabase owner, String from, String alias) throws Exception {
+        return new Select(owner.getDefaultConnectionHolder(), null, from, alias, true);
+    }
+
+    public static Select create(IDatabase owner, String from, String alias, boolean safePrefix) throws Exception {
+        return new Select(owner.getDefaultConnectionHolder(), null, from, alias, safePrefix);
+    }
+
+    public static Select create(IDatabase owner, String from) throws Exception {
+        return new Select(owner.getDefaultConnectionHolder(), null, from, null, true);
+    }
+
+    public static Select create(IDatabase owner, String from, boolean safePrefix) throws Exception {
+        return new Select(owner.getDefaultConnectionHolder(), null, from, null, safePrefix);
+    }
+
+    //
+
+    public static Select create(IDatabaseConnectionHolder connectionHolder) {
+        return new Select(connectionHolder);
+    }
+
+    public static Select create(IDatabaseConnectionHolder connectionHolder, Class<? extends IEntity> entityClass) {
+        return new Select(connectionHolder).from(null, entityClass, null);
+    }
+
+    public static Select create(IDatabaseConnectionHolder connectionHolder, String prefix, Class<? extends IEntity> entityClass) {
+        return new Select(connectionHolder).from(prefix, entityClass, null);
+    }
+
+    public static Select create(IDatabaseConnectionHolder connectionHolder, Class<? extends IEntity> entityClass, String alias) {
+        return new Select(connectionHolder).from(null, entityClass, alias);
+    }
+
+    public static Select create(IDatabaseConnectionHolder connectionHolder, String prefix, Class<? extends IEntity> entityClass, String alias) {
+        return new Select(connectionHolder).from(prefix, entityClass, alias);
+    }
+
+    public static Select create(IDatabaseConnectionHolder connectionHolder, String prefix, String from, String alias) {
+        return new Select(connectionHolder, prefix, from, alias, true);
+    }
+
+    public static Select create(IDatabaseConnectionHolder connectionHolder, String from, String alias) {
+        return new Select(connectionHolder, null, from, alias, true);
+    }
+
+    public static Select create(IDatabaseConnectionHolder connectionHolder, String from, String alias, boolean safePrefix) {
+        return new Select(connectionHolder, null, from, alias, safePrefix);
+    }
+
+    public static Select create(IDatabaseConnectionHolder connectionHolder, String from) {
+        return new Select(connectionHolder, null, from, null, true);
+    }
+
+    public static Select create(IDatabaseConnectionHolder connectionHolder, String from, boolean safePrefix) {
+        return new Select(connectionHolder, null, from, null, safePrefix);
+    }
+
+    private Select(IDatabaseConnectionHolder connectionHolder) {
+        super(connectionHolder);
+    }
+
+    private Select(IDatabaseConnectionHolder connectionHolder, String prefix, String from, String alias, boolean safePrefix) {
+        super(connectionHolder);
         if (safePrefix) {
             from(null, buildSafeTableName(prefix, from, true), alias);
         } else {
@@ -270,57 +311,57 @@ public final class Select extends Query<Select> {
     //
 
     public Select innerJoin(String from, Cond on) {
-        return join(Join.inner(owner(), from).on(on));
+        return join(Join.inner(connectionHolder(), from).on(on));
     }
 
     public Select leftJoin(String from, Cond on) {
-        return join(Join.left(owner(), from).on(on));
+        return join(Join.left(connectionHolder(), from).on(on));
     }
 
     public Select rightJoin(String from, Cond on) {
-        return join(Join.right(owner(), from).on(on));
+        return join(Join.right(connectionHolder(), from).on(on));
     }
 
     //
 
     public Select innerJoin(String prefix, String from, Cond on) {
-        return join(Join.inner(owner(), prefix, from).on(on));
+        return join(Join.inner(connectionHolder(), prefix, from).on(on));
     }
 
     public Select leftJoin(String prefix, String from, Cond on) {
-        return join(Join.left(owner(), prefix, from).on(on));
+        return join(Join.left(connectionHolder(), prefix, from).on(on));
     }
 
     public Select rightJoin(String prefix, String from, Cond on) {
-        return join(Join.right(owner(), prefix, from).on(on));
+        return join(Join.right(connectionHolder(), prefix, from).on(on));
     }
 
     //
 
     public Select innerJoin(String prefix, String from, String alias, Cond on) {
-        return join(Join.inner(owner(), prefix, from).alias(alias).on(on));
+        return join(Join.inner(connectionHolder(), prefix, from).alias(alias).on(on));
     }
 
     public Select leftJoin(String prefix, String from, String alias, Cond on) {
-        return join(Join.left(owner(), prefix, from).alias(alias).on(on));
+        return join(Join.left(connectionHolder(), prefix, from).alias(alias).on(on));
     }
 
     public Select rightJoin(String prefix, String from, String alias, Cond on) {
-        return join(Join.right(owner(), prefix, from).alias(alias).on(on));
+        return join(Join.right(connectionHolder(), prefix, from).alias(alias).on(on));
     }
 
     //
 
     public Select innerJoin(String prefix, String from, boolean safePrefix, String alias, Cond on) {
-        return join(Join.inner(owner(), prefix, from, safePrefix).alias(alias).on(on));
+        return join(Join.inner(connectionHolder(), prefix, from, safePrefix).alias(alias).on(on));
     }
 
     public Select leftJoin(String prefix, String from, boolean safePrefix, String alias, Cond on) {
-        return join(Join.left(owner(), prefix, from, safePrefix).alias(alias).on(on));
+        return join(Join.left(connectionHolder(), prefix, from, safePrefix).alias(alias).on(on));
     }
 
     public Select rightJoin(String prefix, String from, boolean safePrefix, String alias, Cond on) {
-        return join(Join.right(owner(), prefix, from, safePrefix).alias(alias).on(on));
+        return join(Join.right(connectionHolder(), prefix, from, safePrefix).alias(alias).on(on));
     }
 
     public Select union(Union union) {
@@ -348,7 +389,7 @@ public final class Select extends Query<Select> {
 
     public Where where() {
         if (this.where == null) {
-            this.where = Where.create(owner());
+            this.where = Where.create(connectionHolder());
         }
         return where;
     }
@@ -444,12 +485,6 @@ public final class Select extends Query<Select> {
         return this;
     }
 
-    public Select page(IDialect dialect, Page page) {
-        this.dialect(dialect);
-        this.page = page;
-        return this;
-    }
-
     @Override
     public String toString() {
         ExpressionUtils expression = ExpressionUtils.bind(getExpressionStr("SELECT ${distinct} ${fields} FROM ${froms} ${joins} ${where} ${unions}"));
@@ -510,50 +545,18 @@ public final class Select extends Query<Select> {
     }
 
     public <T> T findFirst(IResultSetHandler<T> handler) throws Exception {
-        return toSQL().findFirst(handler);
-    }
-
-    public <T> T findFirst(String dataSourceName, IResultSetHandler<T> handler) throws Exception {
-        return toSQL().findFirst(dataSourceName, handler);
-    }
-
-    public <T> T findFirst(IDatabaseConnectionHolder connectionHolder, IResultSetHandler<T> handler) throws Exception {
-        return toSQL().findFirst(connectionHolder, handler);
+        return toSQL().findFirst(connectionHolder(), handler);
     }
 
     public <T> IResultSet<T> find(IResultSetHandler<T> handler) throws Exception {
-        return toSQL().find(handler);
+        return toSQL().find(connectionHolder(), handler);
     }
 
     public <T> IResultSet<T> find(IResultSetHandler<T> handler, Page page) throws Exception {
-        return toSQL().find(handler, page);
-    }
-
-    public <T> IResultSet<T> find(String dataSourceName, IResultSetHandler<T> handler) throws Exception {
-        return toSQL().find(dataSourceName, handler);
-    }
-
-    public <T> IResultSet<T> find(String dataSourceName, IResultSetHandler<T> handler, Page page) throws Exception {
-        return toSQL().find(dataSourceName, handler, page);
-    }
-
-    public <T> IResultSet<T> find(IDatabaseConnectionHolder connectionHolder, IResultSetHandler<T> handler) throws Exception {
-        return toSQL().find(connectionHolder, handler);
-    }
-
-    public <T> IResultSet<T> find(IDatabaseConnectionHolder connectionHolder, IResultSetHandler<T> handler, Page page) throws Exception {
-        return toSQL().find(connectionHolder, handler, page);
+        return toSQL().find(connectionHolder(), handler, page);
     }
 
     public long count() throws Exception {
-        return toSQL().count();
-    }
-
-    public long count(String dataSourceName) throws Exception {
-        return toSQL().count(dataSourceName);
-    }
-
-    public long count(IDatabaseConnectionHolder connectionHolder) throws Exception {
-        return toSQL().count(connectionHolder);
+        return toSQL().count(connectionHolder());
     }
 }

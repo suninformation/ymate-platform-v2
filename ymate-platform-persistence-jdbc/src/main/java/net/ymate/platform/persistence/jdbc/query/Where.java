@@ -19,6 +19,7 @@ import net.ymate.platform.commons.util.ExpressionUtils;
 import net.ymate.platform.core.persistence.Fields;
 import net.ymate.platform.core.persistence.Params;
 import net.ymate.platform.persistence.jdbc.IDatabase;
+import net.ymate.platform.persistence.jdbc.IDatabaseConnectionHolder;
 import net.ymate.platform.persistence.jdbc.JDBC;
 import org.apache.commons.lang3.StringUtils;
 
@@ -31,7 +32,7 @@ import java.util.List;
  */
 public final class Where extends QueryHandleAdapter<Where> {
 
-    private final IDatabase owner;
+    private final IDatabaseConnectionHolder connectionHolder;
 
     /**
      * SQL条件对象
@@ -44,40 +45,48 @@ public final class Where extends QueryHandleAdapter<Where> {
 
     private Slot slot = new Slot();
 
-    public static Where create() {
-        return new Where(JDBC.get());
+    public static Where create() throws Exception {
+        return new Where(JDBC.get().getDefaultConnectionHolder());
     }
 
-    public static Where create(String whereCond) {
-        return new Where(JDBC.get(), whereCond);
+    public static Where create(String whereCond) throws Exception {
+        return new Where(JDBC.get().getDefaultConnectionHolder(), whereCond);
     }
 
-    public static Where create(IDatabase owner) {
-        return new Where(owner);
+    public static Where create(IDatabase owner) throws Exception {
+        return new Where(owner.getDefaultConnectionHolder());
     }
 
-    public static Where create(IDatabase owner, String whereCond) {
-        return new Where(owner, whereCond);
+    public static Where create(IDatabase owner, String whereCond) throws Exception {
+        return new Where(owner.getDefaultConnectionHolder(), whereCond);
+    }
+
+    public static Where create(IDatabaseConnectionHolder connectionHolder) {
+        return new Where(connectionHolder);
+    }
+
+    public static Where create(IDatabaseConnectionHolder connectionHolder, String whereCond) {
+        return new Where(connectionHolder, whereCond);
     }
 
     public static Where create(Cond cond) {
         return new Where(cond);
     }
 
-    private Where(IDatabase owner) {
-        this.owner = owner;
-        orderBy = OrderBy.create(owner);
-        cond = Cond.create(owner);
+    private Where(IDatabaseConnectionHolder connectionHolder) {
+        this.connectionHolder = connectionHolder;
+        orderBy = OrderBy.create(connectionHolder);
+        cond = Cond.create(connectionHolder);
     }
 
-    private Where(IDatabase owner, String whereCond) {
-        this(owner);
+    private Where(IDatabaseConnectionHolder connectionHolder, String whereCond) {
+        this(connectionHolder);
         cond.cond(whereCond);
     }
 
     private Where(Cond cond) {
-        owner = cond.owner();
-        orderBy = OrderBy.create(cond.owner());
+        connectionHolder = cond.connectionHolder();
+        orderBy = OrderBy.create(connectionHolder);
         this.cond = cond;
     }
 
@@ -141,7 +150,7 @@ public final class Where extends QueryHandleAdapter<Where> {
         if (groupBy != null) {
             groupBy.fields().add(fields);
         } else {
-            groupBy = GroupBy.create(owner, fields);
+            groupBy = GroupBy.create(connectionHolder, fields);
         }
         return this;
     }
@@ -159,7 +168,7 @@ public final class Where extends QueryHandleAdapter<Where> {
         if (groupBy != null) {
             groupBy.having(cond);
         } else {
-            groupBy = GroupBy.create(owner, cond);
+            groupBy = GroupBy.create(connectionHolder, cond);
         }
         return this;
     }

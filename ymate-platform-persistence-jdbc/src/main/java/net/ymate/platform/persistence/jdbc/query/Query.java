@@ -15,14 +15,11 @@
  */
 package net.ymate.platform.persistence.jdbc.query;
 
-import net.ymate.platform.commons.util.RuntimeUtils;
 import net.ymate.platform.core.persistence.Fields;
 import net.ymate.platform.core.persistence.IShardingRule;
 import net.ymate.platform.core.persistence.IShardingable;
 import net.ymate.platform.core.persistence.base.EntityMeta;
-import net.ymate.platform.persistence.jdbc.IDatabase;
 import net.ymate.platform.persistence.jdbc.IDatabaseConnectionHolder;
-import net.ymate.platform.persistence.jdbc.IDatabaseSession;
 import net.ymate.platform.persistence.jdbc.dialect.IDialect;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
@@ -38,44 +35,29 @@ public class Query<T> extends QueryHandleAdapter<T> {
 
     public static final String LINE_END_FLAG = ",";
 
-    private final IDatabase owner;
-
-    private IDialect dialect;
+    private final IDatabaseConnectionHolder connectionHolder;
 
     private IShardingRule shardingRule;
 
     private IShardingable shardingable;
 
-    public Query(IDatabase owner) {
-        this.owner = owner;
+    public Query(IDatabaseConnectionHolder connectionHolder) {
+        this.connectionHolder = connectionHolder;
     }
 
-    public IDatabase owner() {
-        return owner;
+    public IDatabaseConnectionHolder connectionHolder() {
+        return connectionHolder;
+    }
+
+    public String dataSourceName() {
+        return connectionHolder.getDataSourceConfig().getName();
     }
 
     /**
      * @return 返回当前数据库方言，若未设置则返回默认数据源配置的方言
      */
     public IDialect dialect() {
-        if (dialect == null) {
-            try (IDatabaseSession session = owner.openSession()) {
-                if (session != null) {
-                    dialect = session.getConnectionHolder().getDialect();
-                }
-            } catch (Exception e) {
-                if (LOG.isWarnEnabled()) {
-                    LOG.warn(StringUtils.EMPTY, RuntimeUtils.unwrapThrow(e));
-                }
-            }
-        }
-        return dialect;
-    }
-
-    @SuppressWarnings("unchecked")
-    public T dialect(IDialect dialect) {
-        this.dialect = dialect;
-        return (T) this;
+        return connectionHolder.getDialect();
     }
 
     public IShardingRule shardingRule() {

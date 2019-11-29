@@ -49,19 +49,19 @@ public final class SQL {
     }
 
     public static SQL create(Select select) {
-        return new SQL(select.owner(), select.toString()).param(select.params());
+        return new SQL(select.connectionHolder().getOwner(), select.toString()).param(select.params());
     }
 
     public static SQL create(Insert insert) {
-        return new SQL(insert.owner(), insert.toString()).param(insert.params());
+        return new SQL(insert.connectionHolder().getOwner(), insert.toString()).param(insert.params());
     }
 
     public static SQL create(Update update) {
-        return new SQL(update.owner(), update.toString()).param(update.params());
+        return new SQL(update.connectionHolder().getOwner(), update.toString()).param(update.params());
     }
 
     public static SQL create(Delete delete) {
-        return new SQL(delete.owner(), delete.toString()).param(delete.params());
+        return new SQL(delete.connectionHolder().getOwner(), delete.toString()).param(delete.params());
     }
 
     public static SQL create(String expressionSqlStr, Map<String, Object> params) {

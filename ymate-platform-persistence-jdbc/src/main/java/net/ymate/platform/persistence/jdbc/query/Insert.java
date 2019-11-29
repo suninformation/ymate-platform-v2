@@ -51,48 +51,70 @@ public final class Insert extends Query<Insert> {
 
     private final boolean safePrefix;
 
-    public static Insert create(String prefix, Class<? extends IEntity> entityClass) {
-        return new Insert(JDBC.get(), prefix, entityClass);
+    public static Insert create(String prefix, Class<? extends IEntity> entityClass) throws Exception {
+        return new Insert(JDBC.get().getDefaultConnectionHolder(), prefix, entityClass);
     }
 
-    public static Insert create(IEntity<?> entity) {
+    public static Insert create(IEntity<?> entity) throws Exception {
         return create(JDBC.get(), entity.getClass());
     }
 
-    public static Insert create(Class<? extends IEntity> entityClass) {
-        return new Insert(JDBC.get(), null, entityClass);
+    public static Insert create(Class<? extends IEntity> entityClass) throws Exception {
+        return new Insert(JDBC.get().getDefaultConnectionHolder(), null, entityClass);
     }
 
-    public static Insert create(String tableName) {
-        return new Insert(JDBC.get(), null, tableName, true);
+    public static Insert create(String tableName) throws Exception {
+        return new Insert(JDBC.get().getDefaultConnectionHolder(), null, tableName, true);
     }
 
-    public static Insert create(String tableName, boolean safePrefix) {
-        return new Insert(JDBC.get(), null, tableName, safePrefix);
+    public static Insert create(String tableName, boolean safePrefix) throws Exception {
+        return new Insert(JDBC.get().getDefaultConnectionHolder(), null, tableName, safePrefix);
     }
 
-    public static Insert create(IDatabase owner, String prefix, Class<? extends IEntity> entityClass) {
-        return new Insert(owner, prefix, entityClass);
+    public static Insert create(IDatabase owner, String prefix, Class<? extends IEntity> entityClass) throws Exception {
+        return new Insert(owner.getDefaultConnectionHolder(), prefix, entityClass);
     }
 
-    public static Insert create(IDatabase owner, IEntity<?> entity) {
+    public static Insert create(IDatabase owner, IEntity<?> entity) throws Exception {
         return create(owner, entity.getClass());
     }
 
-    public static Insert create(IDatabase owner, Class<? extends IEntity> entityClass) {
-        return new Insert(owner, null, entityClass);
+    public static Insert create(IDatabase owner, Class<? extends IEntity> entityClass) throws Exception {
+        return new Insert(owner.getDefaultConnectionHolder(), null, entityClass);
     }
 
-    public static Insert create(IDatabase owner, String tableName) {
-        return new Insert(owner, null, tableName, true);
+    public static Insert create(IDatabase owner, String tableName) throws Exception {
+        return new Insert(owner.getDefaultConnectionHolder(), null, tableName, true);
     }
 
-    public static Insert create(IDatabase owner, String tableName, boolean safePrefix) {
-        return new Insert(owner, null, tableName, safePrefix);
+    public static Insert create(IDatabase owner, String tableName, boolean safePrefix) throws Exception {
+        return new Insert(owner.getDefaultConnectionHolder(), null, tableName, safePrefix);
     }
 
-    private Insert(IDatabase owner, String prefix, Class<? extends IEntity> entityClass) {
-        super(owner);
+    //
+
+    public static Insert create(IDatabaseConnectionHolder connectionHolder, String prefix, Class<? extends IEntity> entityClass) {
+        return new Insert(connectionHolder, prefix, entityClass);
+    }
+
+    public static Insert create(IDatabaseConnectionHolder connectionHolder, IEntity<?> entity) {
+        return create(connectionHolder, entity.getClass());
+    }
+
+    public static Insert create(IDatabaseConnectionHolder connectionHolder, Class<? extends IEntity> entityClass) {
+        return new Insert(connectionHolder, null, entityClass);
+    }
+
+    public static Insert create(IDatabaseConnectionHolder connectionHolder, String tableName) {
+        return new Insert(connectionHolder, null, tableName, true);
+    }
+
+    public static Insert create(IDatabaseConnectionHolder connectionHolder, String tableName, boolean safePrefix) {
+        return new Insert(connectionHolder, null, tableName, safePrefix);
+    }
+
+    private Insert(IDatabaseConnectionHolder connectionHolder, String prefix, Class<? extends IEntity> entityClass) {
+        super(connectionHolder);
         this.prefix = prefix;
         this.entityClass = entityClass;
         this.safePrefix = true;
@@ -100,8 +122,8 @@ public final class Insert extends Query<Insert> {
         this.params = Params.create();
     }
 
-    private Insert(IDatabase owner, String prefix, String tableName, boolean safePrefix) {
-        super(owner);
+    private Insert(IDatabaseConnectionHolder connectionHolder, String prefix, String tableName, boolean safePrefix) {
+        super(connectionHolder);
         this.prefix = prefix;
         this.tableName = tableName;
         this.safePrefix = safePrefix;
@@ -217,14 +239,6 @@ public final class Insert extends Query<Insert> {
     }
 
     public int execute() throws Exception {
-        return toSQL().execute();
-    }
-
-    public int execute(String dataSourceName) throws Exception {
-        return toSQL().execute(dataSourceName);
-    }
-
-    public int execute(IDatabaseConnectionHolder connectionHolder) throws Exception {
-        return toSQL().execute(connectionHolder);
+        return toSQL().execute(connectionHolder());
     }
 }

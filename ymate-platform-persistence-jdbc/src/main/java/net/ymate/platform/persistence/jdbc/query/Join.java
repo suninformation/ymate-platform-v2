@@ -17,6 +17,7 @@ package net.ymate.platform.persistence.jdbc.query;
 
 import net.ymate.platform.core.persistence.Params;
 import net.ymate.platform.persistence.jdbc.IDatabase;
+import net.ymate.platform.persistence.jdbc.IDatabaseConnectionHolder;
 import net.ymate.platform.persistence.jdbc.JDBC;
 import org.apache.commons.lang3.StringUtils;
 
@@ -33,131 +34,181 @@ public final class Join extends Query<Join> {
 
     private final Cond on;
 
-    public static Join inner(String from) {
+    public static Join inner(String from) throws Exception {
         return inner(JDBC.get(), from, true);
     }
 
-    public static Join inner(String from, boolean safePrefix) {
+    public static Join inner(String from, boolean safePrefix) throws Exception {
         return inner(JDBC.get(), null, from, safePrefix);
     }
 
-    public static Join inner(String prefix, String from) {
+    public static Join inner(String prefix, String from) throws Exception {
         return inner(JDBC.get(), prefix, from, true);
     }
 
-    public static Join inner(String prefix, String from, boolean safePrefix) {
-        return new Join(JDBC.get(), "INNER JOIN", prefix, from, safePrefix);
+    public static Join inner(String prefix, String from, boolean safePrefix) throws Exception {
+        return new Join(JDBC.get().getDefaultConnectionHolder(), "INNER JOIN", prefix, from, safePrefix);
     }
 
-    public static Join left(String from) {
+    public static Join left(String from) throws Exception {
         return left(JDBC.get(), from, true);
     }
 
-    public static Join left(String from, boolean safePrefix) {
+    public static Join left(String from, boolean safePrefix) throws Exception {
         return left(JDBC.get(), null, from, safePrefix);
     }
 
-    public static Join left(String prefix, String from) {
+    public static Join left(String prefix, String from) throws Exception {
         return left(JDBC.get(), prefix, from, true);
     }
 
-    public static Join left(String prefix, String from, boolean safePrefix) {
-        return new Join(JDBC.get(), "LEFT JOIN", prefix, from, safePrefix);
+    public static Join left(String prefix, String from, boolean safePrefix) throws Exception {
+        return new Join(JDBC.get().getDefaultConnectionHolder(), "LEFT JOIN", prefix, from, safePrefix);
     }
 
-    public static Join right(String from) {
+    public static Join right(String from) throws Exception {
         return right(JDBC.get(), from, true);
     }
 
-    public static Join right(String from, boolean safePrefix) {
+    public static Join right(String from, boolean safePrefix) throws Exception {
         return right(JDBC.get(), null, from, safePrefix);
     }
 
-    public static Join right(String prefix, String from) {
+    public static Join right(String prefix, String from) throws Exception {
         return right(JDBC.get(), prefix, from, true);
     }
 
-    public static Join right(String prefix, String from, boolean safePrefix) {
-        return new Join(JDBC.get(), "RIGHT JOIN", prefix, from, safePrefix);
+    public static Join right(String prefix, String from, boolean safePrefix) throws Exception {
+        return new Join(JDBC.get().getDefaultConnectionHolder(), "RIGHT JOIN", prefix, from, safePrefix);
     }
 
-    public static Join inner(IDatabase owner, String from) {
+    //
+
+    public static Join inner(Select select) {
+        Join target = inner(select.connectionHolder(), null, select.toString(), false);
+        target.params().add(select.params());
+        return target;
+    }
+
+    public static Join inner(IDatabase owner, String from) throws Exception {
         return inner(owner, from, true);
     }
 
-    public static Join inner(IDatabase owner, String from, boolean safePrefix) {
+    public static Join inner(IDatabase owner, String from, boolean safePrefix) throws Exception {
         return inner(owner, null, from, safePrefix);
     }
 
-    public static Join inner(Select select) {
-        Join target = inner(select.owner(), null, select.toString(), false);
-        target.params().add(select.params());
-        return target;
-    }
-
-    public static Join inner(IDatabase owner, String prefix, String from) {
+    public static Join inner(IDatabase owner, String prefix, String from) throws Exception {
         return inner(owner, prefix, from, true);
     }
 
-    public static Join inner(IDatabase owner, String prefix, String from, boolean safePrefix) {
-        return new Join(owner, "INNER JOIN", prefix, from, safePrefix);
+    public static Join inner(IDatabase owner, String prefix, String from, boolean safePrefix) throws Exception {
+        return new Join(owner.getDefaultConnectionHolder(), "INNER JOIN", prefix, from, safePrefix);
+    }
+
+    public static Join inner(IDatabaseConnectionHolder connectionHolder, String from) {
+        return inner(connectionHolder, from, true);
+    }
+
+    public static Join inner(IDatabaseConnectionHolder connectionHolder, String from, boolean safePrefix) {
+        return inner(connectionHolder, null, from, safePrefix);
+    }
+
+    public static Join inner(IDatabaseConnectionHolder connectionHolder, String prefix, String from) {
+        return inner(connectionHolder, prefix, from, true);
+    }
+
+    public static Join inner(IDatabaseConnectionHolder connectionHolder, String prefix, String from, boolean safePrefix) {
+        return new Join(connectionHolder, "INNER JOIN", prefix, from, safePrefix);
     }
 
     //
 
-    public static Join left(IDatabase owner, String from) {
+    public static Join left(Select select) {
+        Join target = left(select.connectionHolder(), null, select.toString(), false);
+        target.params().add(select.params());
+        return target;
+    }
+
+    public static Join left(IDatabase owner, String from) throws Exception {
         return left(owner, from, true);
     }
 
-    public static Join left(IDatabase owner, String from, boolean safePrefix) {
+    public static Join left(IDatabase owner, String from, boolean safePrefix) throws Exception {
         return left(owner, null, from, safePrefix);
     }
 
-    public static Join left(Select select) {
-        Join target = left(select.owner(), null, select.toString(), false);
-        target.params().add(select.params());
-        return target;
-    }
-
-    public static Join left(IDatabase owner, String prefix, String from) {
+    public static Join left(IDatabase owner, String prefix, String from) throws Exception {
         return left(owner, prefix, from, true);
     }
 
-    public static Join left(IDatabase owner, String prefix, String from, boolean safePrefix) {
-        return new Join(owner, "LEFT JOIN", prefix, from, safePrefix);
+    public static Join left(IDatabase owner, String prefix, String from, boolean safePrefix) throws Exception {
+        return new Join(owner.getDefaultConnectionHolder(), "LEFT JOIN", prefix, from, safePrefix);
+    }
+
+    public static Join left(IDatabaseConnectionHolder connectionHolder, String from) {
+        return left(connectionHolder, from, true);
+    }
+
+    public static Join left(IDatabaseConnectionHolder connectionHolder, String from, boolean safePrefix) {
+        return left(connectionHolder, null, from, safePrefix);
+    }
+
+    public static Join left(IDatabaseConnectionHolder connectionHolder, String prefix, String from) {
+        return left(connectionHolder, prefix, from, true);
+    }
+
+    public static Join left(IDatabaseConnectionHolder connectionHolder, String prefix, String from, boolean safePrefix) {
+        return new Join(connectionHolder, "LEFT JOIN", prefix, from, safePrefix);
     }
 
     //
 
-    public static Join right(IDatabase owner, String from) {
-        return right(owner, from, true);
-    }
-
-    public static Join right(IDatabase owner, String from, boolean safePrefix) {
-        return right(owner, null, from, safePrefix);
-    }
-
     public static Join right(Select select) {
-        Join target = right(select.owner(), null, select.toString(), false);
+        Join target = right(select.connectionHolder(), null, select.toString(), false);
         target.params().add(select.params());
         return target;
     }
 
-    public static Join right(IDatabase owner, String prefix, String from) {
+    public static Join right(IDatabase owner, String from) throws Exception {
+        return right(owner, from, true);
+    }
+
+    public static Join right(IDatabase owner, String from, boolean safePrefix) throws Exception {
+        return right(owner.getDefaultConnectionHolder(), null, from, safePrefix);
+    }
+
+    public static Join right(IDatabase owner, String prefix, String from) throws Exception {
         return right(owner, prefix, from, true);
     }
 
-    public static Join right(IDatabase owner, String prefix, String from, boolean safePrefix) {
-        return new Join(owner, "RIGHT JOIN", prefix, from, safePrefix);
+    public static Join right(IDatabase owner, String prefix, String from, boolean safePrefix) throws Exception {
+        return new Join(owner.getDefaultConnectionHolder(), "RIGHT JOIN", prefix, from, safePrefix);
     }
 
-    private Join(IDatabase owner, String type, String prefix, String from, boolean safePrefix) {
-        super(owner);
+    public static Join right(IDatabaseConnectionHolder connectionHolder, String from) {
+        return right(connectionHolder, from, true);
+    }
+
+    public static Join right(IDatabaseConnectionHolder connectionHolder, String from, boolean safePrefix) {
+        return right(connectionHolder, null, from, safePrefix);
+    }
+
+    public static Join right(IDatabaseConnectionHolder connectionHolder, String prefix, String from) {
+        return right(connectionHolder, prefix, from, true);
+    }
+
+    public static Join right(IDatabaseConnectionHolder connectionHolder, String prefix, String from, boolean safePrefix) {
+        return new Join(connectionHolder, "RIGHT JOIN", prefix, from, safePrefix);
+    }
+
+    private Join(IDatabaseConnectionHolder connectionHolder, String type, String prefix, String from, boolean safePrefix) {
+        super(connectionHolder);
         if (safePrefix) {
             from = buildSafeTableName(prefix, from, true);
         }
-        this.from = type.concat(StringUtils.SPACE).concat(from);
-        on = Cond.create(owner);
+        this.from = String.format("%s %s", type, from);
+        on = Cond.create(connectionHolder);
     }
 
     public Join alias(String alias) {

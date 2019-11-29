@@ -18,6 +18,7 @@ package net.ymate.platform.persistence.jdbc.query;
 import net.ymate.platform.commons.util.ExpressionUtils;
 import net.ymate.platform.core.persistence.Fields;
 import net.ymate.platform.persistence.jdbc.IDatabase;
+import net.ymate.platform.persistence.jdbc.IDatabaseConnectionHolder;
 import net.ymate.platform.persistence.jdbc.JDBC;
 import org.apache.commons.lang3.StringUtils;
 
@@ -34,56 +35,84 @@ public final class GroupBy extends Query<GroupBy> {
 
     private Cond having;
 
-    public static GroupBy create() {
-        return new GroupBy(JDBC.get());
+    public static GroupBy create() throws Exception {
+        return new GroupBy(JDBC.get().getDefaultConnectionHolder());
     }
 
-    public static GroupBy create(IDatabase owner) {
-        return new GroupBy(owner);
+    public static GroupBy create(Cond having) throws Exception {
+        return new GroupBy(JDBC.get().getDefaultConnectionHolder()).having(having);
     }
 
-    public static GroupBy create(Cond having) {
-        return new GroupBy(JDBC.get()).having(having);
+    public static GroupBy create(String prefix, String field, String alias) throws Exception {
+        return new GroupBy(JDBC.get().getDefaultConnectionHolder()).field(Fields.create().add(prefix, field, alias));
     }
 
-    public static GroupBy create(IDatabase owner, Cond having) {
-        return new GroupBy(owner).having(having);
+    public static GroupBy create(String prefix, String field) throws Exception {
+        return new GroupBy(JDBC.get().getDefaultConnectionHolder()).field(Fields.create().add(prefix, field));
     }
 
-    public static GroupBy create(String prefix, String field, String alias) {
-        return new GroupBy(JDBC.get()).field(Fields.create().add(prefix, field, alias));
+    public static GroupBy create(String field) throws Exception {
+        return new GroupBy(JDBC.get().getDefaultConnectionHolder()).field(Fields.create(field));
     }
 
-    public static GroupBy create(String prefix, String field) {
-        return new GroupBy(JDBC.get()).field(Fields.create().add(prefix, field));
+    public static GroupBy create(Fields fields) throws Exception {
+        return new GroupBy(JDBC.get().getDefaultConnectionHolder()).field(fields);
     }
 
-    public static GroupBy create(String field) {
-        return new GroupBy(JDBC.get()).field(Fields.create(field));
+    //
+
+    public static GroupBy create(IDatabase owner) throws Exception {
+        return new GroupBy(owner.getDefaultConnectionHolder());
     }
 
-    public static GroupBy create(Fields fields) {
-        return new GroupBy(JDBC.get()).field(fields);
+    public static GroupBy create(IDatabase owner, Cond having) throws Exception {
+        return new GroupBy(owner.getDefaultConnectionHolder()).having(having);
     }
 
-    public static GroupBy create(IDatabase owner, String prefix, String field, String alias) {
-        return new GroupBy(owner).field(Fields.create().add(prefix, field, alias));
+    public static GroupBy create(IDatabase owner, String prefix, String field, String alias) throws Exception {
+        return new GroupBy(owner.getDefaultConnectionHolder()).field(Fields.create().add(prefix, field, alias));
     }
 
-    public static GroupBy create(IDatabase owner, String prefix, String field) {
-        return new GroupBy(owner).field(Fields.create().add(prefix, field));
+    public static GroupBy create(IDatabase owner, String prefix, String field) throws Exception {
+        return new GroupBy(owner.getDefaultConnectionHolder()).field(Fields.create().add(prefix, field));
     }
 
-    public static GroupBy create(IDatabase owner, String field) {
-        return new GroupBy(owner).field(Fields.create(field));
+    public static GroupBy create(IDatabase owner, String field) throws Exception {
+        return new GroupBy(owner.getDefaultConnectionHolder()).field(Fields.create(field));
     }
 
-    public static GroupBy create(IDatabase owner, Fields fields) {
-        return new GroupBy(owner).field(fields);
+    public static GroupBy create(IDatabase owner, Fields fields) throws Exception {
+        return new GroupBy(owner.getDefaultConnectionHolder()).field(fields);
     }
 
-    private GroupBy(IDatabase owner) {
-        super(owner);
+    //
+
+    public static GroupBy create(IDatabaseConnectionHolder connectionHolder) {
+        return new GroupBy(connectionHolder);
+    }
+
+    public static GroupBy create(IDatabaseConnectionHolder connectionHolder, Cond having) {
+        return new GroupBy(connectionHolder).having(having);
+    }
+
+    public static GroupBy create(IDatabaseConnectionHolder connectionHolder, String prefix, String field, String alias) {
+        return new GroupBy(connectionHolder).field(Fields.create().add(prefix, field, alias));
+    }
+
+    public static GroupBy create(IDatabaseConnectionHolder connectionHolder, String prefix, String field) {
+        return new GroupBy(connectionHolder).field(Fields.create().add(prefix, field));
+    }
+
+    public static GroupBy create(IDatabaseConnectionHolder connectionHolder, String field) {
+        return new GroupBy(connectionHolder).field(Fields.create(field));
+    }
+
+    public static GroupBy create(IDatabaseConnectionHolder connectionHolder, Fields fields) {
+        return new GroupBy(connectionHolder).field(fields);
+    }
+
+    private GroupBy(IDatabaseConnectionHolder connectionHolder) {
+        super(connectionHolder);
         groupByNames = Fields.create();
     }
 
