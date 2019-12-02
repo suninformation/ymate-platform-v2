@@ -2187,7 +2187,7 @@ public class JedisClusterCommander implements IRedisCommander {
     }
 
     @Override
-    public List<Module> moduleList() {
+    public List<redis.clients.jedis.Module> moduleList() {
         throw new UnsupportedOperationException();
     }
 
