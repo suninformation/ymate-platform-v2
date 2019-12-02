@@ -165,7 +165,7 @@ public final class Cond extends Query<Cond> {
                     cond((IFunction) cond);
                 } else if (cond instanceof Cond) {
                     cond((Cond) cond);
-                } else {
+                } else if (cond != null) {
                     cond(cond.toString());
                 }
             }

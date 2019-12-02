@@ -18,6 +18,7 @@ package net.ymate.platform.persistence.jdbc.query;
 import net.ymate.platform.commons.util.ExpressionUtils;
 
 /**
+ * @param <T> 目标对象类型
  * @author 刘镇 (suninformation@163.com) on 2019-11-21 09:23
  * @since 2.1.0
  */

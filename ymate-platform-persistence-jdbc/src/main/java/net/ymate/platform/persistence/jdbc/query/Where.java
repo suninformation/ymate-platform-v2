@@ -44,7 +44,7 @@ public final class Where extends QueryHandleAdapter<Where> {
 
     private OrderBy orderBy;
 
-    private Slot slot = new Slot();
+    private final Slot slot = new Slot();
 
     public static Where create() {
         return create(JDBC.get());

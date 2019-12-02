@@ -29,7 +29,7 @@ import java.util.List;
  */
 public class Slot {
 
-    private List<CharSequence> contents = new ArrayList<>();
+    private final List<CharSequence> contents = new ArrayList<>();
 
     public Slot addSlotContent(CharSequence charSequence) {
         contents.add(charSequence);

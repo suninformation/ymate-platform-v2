@@ -473,13 +473,12 @@ public final class Select extends Query<Select> {
         //
         if (!unions.isEmpty() && variables.contains("unions")) {
             StringBuilder unionsBuilder = new StringBuilder();
-            for (Union union : unions) {
+            unions.stream().peek((union) -> {
                 unionsBuilder.append("UNION ");
                 if (union.isAll()) {
                     unionsBuilder.append("ALL ");
                 }
-                unionsBuilder.append(union.select());
-            }
+            }).forEachOrdered((union) -> unionsBuilder.append(union.select()));
             unionsBuilder.append(StringUtils.SPACE);
             //
             expression.set("unions", unionsBuilder.toString());

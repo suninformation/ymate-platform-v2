@@ -56,17 +56,17 @@ public class Table extends QueryHandleAdapter<Table> {
 
     private String comment;
 
-    private List<String> primaryKeys = new ArrayList<>();
+    private final List<String> primaryKeys = new ArrayList<>();
 
-    private Map<String, PropertyMeta> properties = new LinkedHashMap<>();
+    private final Map<String, PropertyMeta> properties = new LinkedHashMap<>();
 
-    private Map<String, IndexMeta> indexes = new LinkedHashMap<>();
+    private final Map<String, IndexMeta> indexes = new LinkedHashMap<>();
 
     private String propertyExpressionStr = "${fieldName} ${fieldType}${fieldLength} ${unsigned} ${nullable} ${autoIncrement} ${comment}";
 
     private boolean ifExistsOrNot;
 
-    private Slot slot = new Slot();
+    private final Slot slot = new Slot();
 
     public Table(IDialect dialect, String tableName) {
         this(dialect, null, tableName);
