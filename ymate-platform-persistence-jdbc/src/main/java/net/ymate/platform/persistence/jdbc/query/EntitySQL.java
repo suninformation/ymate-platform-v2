@@ -22,7 +22,6 @@ import net.ymate.platform.core.persistence.Page;
 import net.ymate.platform.core.persistence.base.IEntity;
 import net.ymate.platform.persistence.jdbc.IDBLocker;
 import net.ymate.platform.persistence.jdbc.IDatabase;
-import net.ymate.platform.persistence.jdbc.IDatabaseConnectionHolder;
 import net.ymate.platform.persistence.jdbc.JDBC;
 
 import java.io.Serializable;
@@ -114,20 +113,12 @@ public final class EntitySQL<T extends IEntity> {
         return owner.openSession(dataSourceName, session -> session.find(this, id, shardingable));
     }
 
-    public T find(IDatabaseConnectionHolder connectionHolder, Serializable id) throws Exception {
-        return owner.openSession(connectionHolder, session -> session.find(this, id, shardingable));
-    }
-
     public T findFirst(Where where) throws Exception {
         return owner.openSession(session -> session.findFirst(this, where, shardingable));
     }
 
     public T findFirst(String dataSourceName, Where where) throws Exception {
         return owner.openSession(dataSourceName, session -> session.findFirst(this, where, shardingable));
-    }
-
-    public T findFirst(IDatabaseConnectionHolder connectionHolder, Where where) throws Exception {
-        return owner.openSession(connectionHolder, session -> session.findFirst(this, where, shardingable));
     }
 
     public IResultSet<T> find(Where where) throws Exception {
@@ -146,14 +137,6 @@ public final class EntitySQL<T extends IEntity> {
         return owner.openSession(dataSourceName, session -> session.find(this, where, page, shardingable));
     }
 
-    public IResultSet<T> find(IDatabaseConnectionHolder connectionHolder, Where where) throws Exception {
-        return owner.openSession(connectionHolder, session -> session.find(this, where, shardingable));
-    }
-
-    public IResultSet<T> find(IDatabaseConnectionHolder connectionHolder, Where where, Page page) throws Exception {
-        return owner.openSession(connectionHolder, session -> session.find(this, where, page, shardingable));
-    }
-
     public long count() throws Exception {
         return owner.openSession(session -> session.count(entityClass));
     }
@@ -166,10 +149,6 @@ public final class EntitySQL<T extends IEntity> {
         return owner.openSession(dataSourceName, session -> session.count(entityClass, where, shardingable));
     }
 
-    public long count(IDatabaseConnectionHolder connectionHolder, Where where) throws Exception {
-        return owner.openSession(connectionHolder, session -> session.count(entityClass, where, shardingable));
-    }
-
     public int delete(Serializable id) throws Exception {
         return owner.openSession(session -> session.delete(entityClass, id, shardingable));
     }
@@ -178,19 +157,11 @@ public final class EntitySQL<T extends IEntity> {
         return owner.openSession(dataSourceName, session -> session.delete(entityClass, id, shardingable));
     }
 
-    public int delete(IDatabaseConnectionHolder connectionHolder, Serializable id) throws Exception {
-        return owner.openSession(connectionHolder, session -> session.delete(entityClass, id, shardingable));
-    }
-
     public int[] delete(Serializable[] ids) throws Exception {
         return owner.openSession(session -> session.delete(entityClass, ids));
     }
 
     public int[] delete(String dataSourceName, Serializable[] ids) throws Exception {
         return owner.openSession(dataSourceName, session -> session.delete(entityClass, ids));
-    }
-
-    public int[] delete(IDatabaseConnectionHolder connectionHolder, Serializable[] ids) throws Exception {
-        return owner.openSession(connectionHolder, session -> session.delete(entityClass, ids));
     }
 }

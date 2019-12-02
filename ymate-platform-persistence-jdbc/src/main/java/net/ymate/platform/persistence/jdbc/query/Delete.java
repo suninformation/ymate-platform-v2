@@ -21,7 +21,6 @@ import net.ymate.platform.core.persistence.Params;
 import net.ymate.platform.core.persistence.base.EntityMeta;
 import net.ymate.platform.core.persistence.base.IEntity;
 import net.ymate.platform.persistence.jdbc.IDatabase;
-import net.ymate.platform.persistence.jdbc.IDatabaseConnectionHolder;
 import net.ymate.platform.persistence.jdbc.JDBC;
 import org.apache.commons.lang3.StringUtils;
 
@@ -43,140 +42,102 @@ public final class Delete extends Query<Delete> {
 
     private Where where;
 
-    public static Delete create() throws Exception {
-        return new Delete(JDBC.get().getDefaultConnectionHolder());
+    public static Delete create() {
+        return new Delete(JDBC.get(), JDBC.get().getConfig().getDefaultDataSourceName());
     }
 
-    public static Delete create(Class<? extends IEntity> entityClass) throws Exception {
-        return new Delete(JDBC.get().getDefaultConnectionHolder()).from(entityClass);
+    public static Delete create(Class<? extends IEntity> entityClass) {
+        return new Delete(JDBC.get(), JDBC.get().getConfig().getDefaultDataSourceName()).from(entityClass);
     }
 
-    public static Delete create(String prefix, Class<? extends IEntity> entityClass) throws Exception {
-        return new Delete(JDBC.get().getDefaultConnectionHolder()).from(prefix, entityClass, null);
+    public static Delete create(String prefix, Class<? extends IEntity> entityClass) {
+        return new Delete(JDBC.get(), JDBC.get().getConfig().getDefaultDataSourceName()).from(prefix, entityClass, null);
     }
 
-    public static Delete create(Class<? extends IEntity> entityClass, String alias) throws Exception {
-        return new Delete(JDBC.get().getDefaultConnectionHolder()).from(null, entityClass, alias);
+    public static Delete create(Class<? extends IEntity> entityClass, String alias) {
+        return new Delete(JDBC.get(), JDBC.get().getConfig().getDefaultDataSourceName()).from(null, entityClass, alias);
     }
 
-    public static Delete create(String prefix, Class<? extends IEntity> entityClass, String alias) throws Exception {
-        return new Delete(JDBC.get().getDefaultConnectionHolder()).from(prefix, entityClass, alias);
+    public static Delete create(String prefix, Class<? extends IEntity> entityClass, String alias) {
+        return new Delete(JDBC.get(), JDBC.get().getConfig().getDefaultDataSourceName()).from(prefix, entityClass, alias);
     }
 
-    public static Delete create(String prefix, String tableName, String alias) throws Exception {
-        return new Delete(JDBC.get().getDefaultConnectionHolder(), prefix, tableName, alias, true);
+    public static Delete create(String prefix, String tableName, String alias) {
+        return new Delete(JDBC.get(), JDBC.get().getConfig().getDefaultDataSourceName(), prefix, tableName, alias, true);
     }
 
-    public static Delete create(String tableName, String alias) throws Exception {
-        return new Delete(JDBC.get().getDefaultConnectionHolder(), null, tableName, alias, true);
+    public static Delete create(String tableName, String alias) {
+        return new Delete(JDBC.get(), JDBC.get().getConfig().getDefaultDataSourceName(), null, tableName, alias, true);
     }
 
-    public static Delete create(String tableName, String alias, boolean safePrefix) throws Exception {
-        return new Delete(JDBC.get().getDefaultConnectionHolder(), null, tableName, alias, safePrefix);
+    public static Delete create(String tableName, String alias, boolean safePrefix) {
+        return new Delete(JDBC.get(), JDBC.get().getConfig().getDefaultDataSourceName(), null, tableName, alias, safePrefix);
     }
 
-    public static Delete create(String tableName) throws Exception {
-        return new Delete(JDBC.get().getDefaultConnectionHolder(), null, tableName, null, true);
+    public static Delete create(String tableName) {
+        return new Delete(JDBC.get(), JDBC.get().getConfig().getDefaultDataSourceName(), null, tableName, null, true);
     }
 
-    public static Delete create(String tableName, boolean safePrefix) throws Exception {
-        return new Delete(JDBC.get().getDefaultConnectionHolder(), null, tableName, null, safePrefix);
+    public static Delete create(String tableName, boolean safePrefix) {
+        return new Delete(JDBC.get(), JDBC.get().getConfig().getDefaultDataSourceName(), null, tableName, null, safePrefix);
     }
 
     public static Delete create(Select select) {
-        Delete target = new Delete(select.connectionHolder(), null, select.toString(), null, false);
+        Delete target = new Delete(select.owner(), select.dataSourceName(), null, select.toString(), null, false);
         target.where().param(select.params());
         return target;
     }
 
-    public static Delete create(IDatabase owner) throws Exception {
-        return new Delete(owner.getDefaultConnectionHolder());
+    public static Delete create(IDatabase owner) {
+        return new Delete(owner, owner.getConfig().getDefaultDataSourceName());
     }
 
-    public static Delete create(IDatabase owner, Class<? extends IEntity> entityClass) throws Exception {
-        return new Delete(owner.getDefaultConnectionHolder()).from(entityClass);
+    public static Delete create(IDatabase owner, String dataSourceName) {
+        return new Delete(owner, dataSourceName);
     }
 
-    public static Delete create(IDatabase owner, String prefix, Class<? extends IEntity> entityClass) throws Exception {
-        return new Delete(owner.getDefaultConnectionHolder()).from(prefix, entityClass, null);
+    public static Delete create(IDatabase owner, String dataSourceName, Class<? extends IEntity> entityClass) {
+        return new Delete(owner, dataSourceName).from(entityClass);
     }
 
-    public static Delete create(IDatabase owner, Class<? extends IEntity> entityClass, String alias) throws Exception {
-        return new Delete(owner.getDefaultConnectionHolder()).from(null, entityClass, alias);
+    public static Delete create(IDatabase owner, String dataSourceName, String prefix, Class<? extends IEntity> entityClass) {
+        return new Delete(owner, dataSourceName).from(prefix, entityClass, null);
     }
 
-    public static Delete create(IDatabase owner, String prefix, Class<? extends IEntity> entityClass, String alias) throws Exception {
-        return new Delete(owner.getDefaultConnectionHolder()).from(prefix, entityClass, alias);
+    public static Delete create(IDatabase owner, String dataSourceName, Class<? extends IEntity> entityClass, String alias) {
+        return new Delete(owner, dataSourceName).from(null, entityClass, alias);
     }
 
-    public static Delete create(IDatabase owner, String prefix, String tableName, String alias) throws Exception {
-        return new Delete(owner.getDefaultConnectionHolder(), prefix, tableName, alias, true);
+    public static Delete create(IDatabase owner, String dataSourceName, String prefix, Class<? extends IEntity> entityClass, String alias) {
+        return new Delete(owner, dataSourceName).from(prefix, entityClass, alias);
     }
 
-    public static Delete create(IDatabase owner, String tableName, String alias) throws Exception {
-        return new Delete(owner.getDefaultConnectionHolder(), null, tableName, alias, true);
+    public static Delete create(IDatabase owner, String dataSourceName, String prefix, String tableName, String alias) {
+        return new Delete(owner, dataSourceName, prefix, tableName, alias, true);
     }
 
-    public static Delete create(IDatabase owner, String tableName, String alias, boolean safePrefix) throws Exception {
-        return new Delete(owner.getDefaultConnectionHolder(), null, tableName, alias, safePrefix);
+    public static Delete create(IDatabase owner, String dataSourceName, String tableName, String alias) {
+        return new Delete(owner, dataSourceName, null, tableName, alias, true);
     }
 
-    public static Delete create(IDatabase owner, String tableName) throws Exception {
-        return new Delete(owner.getDefaultConnectionHolder(), null, tableName, null, true);
+    public static Delete create(IDatabase owner, String dataSourceName, String tableName, String alias, boolean safePrefix) {
+        return new Delete(owner, dataSourceName, null, tableName, alias, safePrefix);
     }
 
-    public static Delete create(IDatabase owner, String tableName, boolean safePrefix) throws Exception {
-        return new Delete(owner.getDefaultConnectionHolder(), null, tableName, null, safePrefix);
+    public static Delete create(IDatabase owner, String dataSourceName, String tableName) {
+        return new Delete(owner, dataSourceName, null, tableName, null, true);
     }
 
-    //
-
-    public static Delete create(IDatabaseConnectionHolder connectionHolder) {
-        return new Delete(connectionHolder);
+    public static Delete create(IDatabase owner, String dataSourceName, String tableName, boolean safePrefix) {
+        return new Delete(owner, dataSourceName, null, tableName, null, safePrefix);
     }
 
-    public static Delete create(IDatabaseConnectionHolder connectionHolder, Class<? extends IEntity> entityClass) {
-        return new Delete(connectionHolder).from(entityClass);
+    private Delete(IDatabase owner, String dataSourceName) {
+        super(owner, dataSourceName);
     }
 
-    public static Delete create(IDatabaseConnectionHolder connectionHolder, String prefix, Class<? extends IEntity> entityClass) {
-        return new Delete(connectionHolder).from(prefix, entityClass, null);
-    }
-
-    public static Delete create(IDatabaseConnectionHolder connectionHolder, Class<? extends IEntity> entityClass, String alias) {
-        return new Delete(connectionHolder).from(null, entityClass, alias);
-    }
-
-    public static Delete create(IDatabaseConnectionHolder connectionHolder, String prefix, Class<? extends IEntity> entityClass, String alias) {
-        return new Delete(connectionHolder).from(prefix, entityClass, alias);
-    }
-
-    public static Delete create(IDatabaseConnectionHolder connectionHolder, String prefix, String tableName, String alias) {
-        return new Delete(connectionHolder, prefix, tableName, alias, true);
-    }
-
-    public static Delete create(IDatabaseConnectionHolder connectionHolder, String tableName, String alias) {
-        return new Delete(connectionHolder, null, tableName, alias, true);
-    }
-
-    public static Delete create(IDatabaseConnectionHolder connectionHolder, String tableName, String alias, boolean safePrefix) {
-        return new Delete(connectionHolder, null, tableName, alias, safePrefix);
-    }
-
-    public static Delete create(IDatabaseConnectionHolder connectionHolder, String tableName) {
-        return new Delete(connectionHolder, null, tableName, null, true);
-    }
-
-    public static Delete create(IDatabaseConnectionHolder connectionHolder, String tableName, boolean safePrefix) {
-        return new Delete(connectionHolder, null, tableName, null, safePrefix);
-    }
-
-    private Delete(IDatabaseConnectionHolder connectionHolder) {
-        super(connectionHolder);
-    }
-
-    private Delete(IDatabaseConnectionHolder connectionHolder, String prefix, String from, String alias, boolean safePrefix) {
-        super(connectionHolder);
+    private Delete(IDatabase owner, String dataSourceName, String prefix, String from, String alias, boolean safePrefix) {
+        super(owner, dataSourceName);
         //
         if (safePrefix) {
             from(null, buildSafeTableName(prefix, from, true), alias);
@@ -257,7 +218,7 @@ public final class Delete extends Query<Delete> {
 
     public Where where() {
         if (this.where == null) {
-            this.where = Where.create(connectionHolder());
+            this.where = Where.create(owner());
         }
         return where;
     }
@@ -301,6 +262,6 @@ public final class Delete extends Query<Delete> {
     }
 
     public int execute() throws Exception {
-        return toSQL().execute(connectionHolder());
+        return toSQL().execute(dataSourceName());
     }
 }

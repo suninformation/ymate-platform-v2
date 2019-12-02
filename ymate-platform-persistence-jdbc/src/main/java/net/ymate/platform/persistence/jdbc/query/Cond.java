@@ -19,7 +19,6 @@ import net.ymate.platform.core.persistence.Fields;
 import net.ymate.platform.core.persistence.IFunction;
 import net.ymate.platform.core.persistence.Params;
 import net.ymate.platform.persistence.jdbc.IDatabase;
-import net.ymate.platform.persistence.jdbc.IDatabaseConnectionHolder;
 import net.ymate.platform.persistence.jdbc.JDBC;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -113,20 +112,20 @@ public final class Cond extends Query<Cond> {
      */
     private final Params params = Params.create();
 
-    public static Cond create() throws Exception {
-        return new Cond(JDBC.get().getDefaultConnectionHolder());
+    public static Cond create() {
+        return create(JDBC.get());
     }
 
-    public static Cond create(IDatabase owner) throws Exception {
-        return new Cond(owner.getDefaultConnectionHolder());
+    public static Cond create(IDatabase owner) {
+        return new Cond(owner, owner.getConfig().getDefaultDataSourceName());
     }
 
-    public static Cond create(IDatabaseConnectionHolder connectionHolder) {
-        return new Cond(connectionHolder);
+    public static Cond create(IDatabase owner, String dataSourceName) {
+        return new Cond(owner, dataSourceName);
     }
 
-    private Cond(IDatabaseConnectionHolder connectionHolder) {
-        super(connectionHolder);
+    private Cond(IDatabase owner, String dataSourceName) {
+        super(owner, dataSourceName);
     }
 
     public Params params() {

@@ -21,7 +21,6 @@ import net.ymate.platform.core.persistence.Params;
 import net.ymate.platform.core.persistence.base.EntityMeta;
 import net.ymate.platform.core.persistence.base.IEntity;
 import net.ymate.platform.persistence.jdbc.IDatabase;
-import net.ymate.platform.persistence.jdbc.IDatabaseConnectionHolder;
 import net.ymate.platform.persistence.jdbc.JDBC;
 import org.apache.commons.lang3.StringUtils;
 
@@ -51,70 +50,48 @@ public final class Insert extends Query<Insert> {
 
     private final boolean safePrefix;
 
-    public static Insert create(String prefix, Class<? extends IEntity> entityClass) throws Exception {
-        return new Insert(JDBC.get().getDefaultConnectionHolder(), prefix, entityClass);
+    public static Insert create(String prefix, Class<? extends IEntity> entityClass) {
+        return new Insert(JDBC.get(), JDBC.get().getConfig().getDefaultDataSourceName(), prefix, entityClass);
     }
 
-    public static Insert create(IEntity<?> entity) throws Exception {
-        return create(JDBC.get(), entity.getClass());
+    public static Insert create(IEntity<?> entity) {
+        return create(JDBC.get(), JDBC.get().getConfig().getDefaultDataSourceName(), entity.getClass());
     }
 
-    public static Insert create(Class<? extends IEntity> entityClass) throws Exception {
-        return new Insert(JDBC.get().getDefaultConnectionHolder(), null, entityClass);
+    public static Insert create(Class<? extends IEntity> entityClass) {
+        return new Insert(JDBC.get(), JDBC.get().getConfig().getDefaultDataSourceName(), null, entityClass);
     }
 
-    public static Insert create(String tableName) throws Exception {
-        return new Insert(JDBC.get().getDefaultConnectionHolder(), null, tableName, true);
+    public static Insert create(String tableName) {
+        return new Insert(JDBC.get(), JDBC.get().getConfig().getDefaultDataSourceName(), null, tableName, true);
     }
 
-    public static Insert create(String tableName, boolean safePrefix) throws Exception {
-        return new Insert(JDBC.get().getDefaultConnectionHolder(), null, tableName, safePrefix);
+    public static Insert create(String tableName, boolean safePrefix) {
+        return new Insert(JDBC.get(), JDBC.get().getConfig().getDefaultDataSourceName(), null, tableName, safePrefix);
     }
 
-    public static Insert create(IDatabase owner, String prefix, Class<? extends IEntity> entityClass) throws Exception {
-        return new Insert(owner.getDefaultConnectionHolder(), prefix, entityClass);
+    public static Insert create(IDatabase owner, String dataSourceName, String prefix, Class<? extends IEntity> entityClass) {
+        return new Insert(owner, dataSourceName, prefix, entityClass);
     }
 
-    public static Insert create(IDatabase owner, IEntity<?> entity) throws Exception {
-        return create(owner, entity.getClass());
+    public static Insert create(IDatabase owner, String dataSourceName, IEntity<?> entity) {
+        return create(owner, dataSourceName, entity.getClass());
     }
 
-    public static Insert create(IDatabase owner, Class<? extends IEntity> entityClass) throws Exception {
-        return new Insert(owner.getDefaultConnectionHolder(), null, entityClass);
+    public static Insert create(IDatabase owner, String dataSourceName, Class<? extends IEntity> entityClass) {
+        return new Insert(owner, dataSourceName, null, entityClass);
     }
 
-    public static Insert create(IDatabase owner, String tableName) throws Exception {
-        return new Insert(owner.getDefaultConnectionHolder(), null, tableName, true);
+    public static Insert create(IDatabase owner, String dataSourceName, String tableName) {
+        return new Insert(owner, dataSourceName, null, tableName, true);
     }
 
-    public static Insert create(IDatabase owner, String tableName, boolean safePrefix) throws Exception {
-        return new Insert(owner.getDefaultConnectionHolder(), null, tableName, safePrefix);
+    public static Insert create(IDatabase owner, String dataSourceName, String tableName, boolean safePrefix) {
+        return new Insert(owner, dataSourceName, null, tableName, safePrefix);
     }
 
-    //
-
-    public static Insert create(IDatabaseConnectionHolder connectionHolder, String prefix, Class<? extends IEntity> entityClass) {
-        return new Insert(connectionHolder, prefix, entityClass);
-    }
-
-    public static Insert create(IDatabaseConnectionHolder connectionHolder, IEntity<?> entity) {
-        return create(connectionHolder, entity.getClass());
-    }
-
-    public static Insert create(IDatabaseConnectionHolder connectionHolder, Class<? extends IEntity> entityClass) {
-        return new Insert(connectionHolder, null, entityClass);
-    }
-
-    public static Insert create(IDatabaseConnectionHolder connectionHolder, String tableName) {
-        return new Insert(connectionHolder, null, tableName, true);
-    }
-
-    public static Insert create(IDatabaseConnectionHolder connectionHolder, String tableName, boolean safePrefix) {
-        return new Insert(connectionHolder, null, tableName, safePrefix);
-    }
-
-    private Insert(IDatabaseConnectionHolder connectionHolder, String prefix, Class<? extends IEntity> entityClass) {
-        super(connectionHolder);
+    private Insert(IDatabase owner, String dataSourceName, String prefix, Class<? extends IEntity> entityClass) {
+        super(owner, dataSourceName);
         this.prefix = prefix;
         this.entityClass = entityClass;
         this.safePrefix = true;
@@ -122,8 +99,8 @@ public final class Insert extends Query<Insert> {
         this.params = Params.create();
     }
 
-    private Insert(IDatabaseConnectionHolder connectionHolder, String prefix, String tableName, boolean safePrefix) {
-        super(connectionHolder);
+    private Insert(IDatabase owner, String dataSourceName, String prefix, String tableName, boolean safePrefix) {
+        super(owner, dataSourceName);
         this.prefix = prefix;
         this.tableName = tableName;
         this.safePrefix = safePrefix;
@@ -239,6 +216,6 @@ public final class Insert extends Query<Insert> {
     }
 
     public int execute() throws Exception {
-        return toSQL().execute(connectionHolder());
+        return toSQL().execute(dataSourceName());
     }
 }

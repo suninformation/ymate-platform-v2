@@ -15,10 +15,12 @@
  */
 package net.ymate.platform.persistence.jdbc.query;
 
+import net.ymate.platform.commons.util.RuntimeUtils;
 import net.ymate.platform.core.persistence.Fields;
 import net.ymate.platform.core.persistence.IShardingRule;
 import net.ymate.platform.core.persistence.IShardingable;
 import net.ymate.platform.core.persistence.base.EntityMeta;
+import net.ymate.platform.persistence.jdbc.IDatabase;
 import net.ymate.platform.persistence.jdbc.IDatabaseConnectionHolder;
 import net.ymate.platform.persistence.jdbc.dialect.IDialect;
 import org.apache.commons.lang3.StringUtils;
@@ -35,29 +37,55 @@ public class Query<T> extends QueryHandleAdapter<T> {
 
     public static final String LINE_END_FLAG = ",";
 
-    private final IDatabaseConnectionHolder connectionHolder;
+    private final IDatabase owner;
+
+    private String dataSourceName;
+
+    private IDialect dialect;
 
     private IShardingRule shardingRule;
 
     private IShardingable shardingable;
 
-    public Query(IDatabaseConnectionHolder connectionHolder) {
-        this.connectionHolder = connectionHolder;
+    public Query(IDatabase owner, String dataSourceName) {
+        this.owner = owner;
+        this.dataSourceName = dataSourceName;
     }
 
-    public IDatabaseConnectionHolder connectionHolder() {
-        return connectionHolder;
+    public IDatabase owner() {
+        return owner;
     }
 
     public String dataSourceName() {
-        return connectionHolder.getDataSourceConfig().getName();
+        return StringUtils.isNotBlank(dataSourceName) ? dataSourceName : owner.getConfig().getDefaultDataSourceName();
+    }
+
+    @SuppressWarnings("unchecked")
+    public T dataSourceName(String dataSourceName) {
+        this.dataSourceName = dataSourceName;
+        return (T) this;
     }
 
     /**
      * @return 返回当前数据库方言，若未设置则返回默认数据源配置的方言
      */
     public IDialect dialect() {
-        return connectionHolder.getDialect();
+        if (dialect == null) {
+            try (IDatabaseConnectionHolder connectionHolder = owner.getConnectionHolder(dataSourceName())) {
+                dialect = connectionHolder.getDialect();
+            } catch (Exception e) {
+                if (LOG.isWarnEnabled()) {
+                    LOG.warn(StringUtils.EMPTY, RuntimeUtils.unwrapThrow(e));
+                }
+            }
+        }
+        return dialect;
+    }
+
+    @SuppressWarnings("unchecked")
+    public T dialect(IDialect dialect) {
+        this.dialect = dialect;
+        return (T) this;
     }
 
     public IShardingRule shardingRule() {

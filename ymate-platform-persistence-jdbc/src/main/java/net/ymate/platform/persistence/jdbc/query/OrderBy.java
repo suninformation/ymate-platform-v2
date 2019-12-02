@@ -16,7 +16,6 @@
 package net.ymate.platform.persistence.jdbc.query;
 
 import net.ymate.platform.persistence.jdbc.IDatabase;
-import net.ymate.platform.persistence.jdbc.IDatabaseConnectionHolder;
 import net.ymate.platform.persistence.jdbc.JDBC;
 import org.apache.commons.lang3.StringUtils;
 
@@ -29,20 +28,20 @@ public final class OrderBy extends Query<OrderBy> {
 
     private final StringBuilder orderByBuilder;
 
-    public static OrderBy create() throws Exception {
-        return new OrderBy(JDBC.get().getDefaultConnectionHolder());
+    public static OrderBy create() {
+        return create(JDBC.get());
     }
 
-    public static OrderBy create(IDatabase owner) throws Exception {
-        return new OrderBy(owner.getDefaultConnectionHolder());
+    public static OrderBy create(IDatabase owner) {
+        return new OrderBy(owner, owner.getConfig().getDefaultDataSourceName());
     }
 
-    public static OrderBy create(IDatabaseConnectionHolder connectionHolder) {
-        return new OrderBy(connectionHolder);
+    public static OrderBy create(IDatabase owner, String dataSourceName) {
+        return new OrderBy(owner, dataSourceName);
     }
 
-    private OrderBy(IDatabaseConnectionHolder connectionHolder) {
-        super(connectionHolder);
+    private OrderBy(IDatabase owner, String dataSourceName) {
+        super(owner, dataSourceName);
         orderByBuilder = new StringBuilder();
     }
 

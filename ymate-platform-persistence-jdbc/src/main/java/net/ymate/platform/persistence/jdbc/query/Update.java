@@ -21,7 +21,6 @@ import net.ymate.platform.core.persistence.Params;
 import net.ymate.platform.core.persistence.base.EntityMeta;
 import net.ymate.platform.core.persistence.base.IEntity;
 import net.ymate.platform.persistence.jdbc.IDatabase;
-import net.ymate.platform.persistence.jdbc.IDatabaseConnectionHolder;
 import net.ymate.platform.persistence.jdbc.JDBC;
 import org.apache.commons.lang3.StringUtils;
 
@@ -43,134 +42,96 @@ public final class Update extends Query<Update> {
 
     private Where where;
 
-    public static Update create() throws Exception {
-        return new Update(JDBC.get().getDefaultConnectionHolder());
+    public static Update create() {
+        return new Update(JDBC.get(), JDBC.get().getConfig().getDefaultDataSourceName());
     }
 
-    public static Update create(String prefix, Class<? extends IEntity> entityClass, String alias) throws Exception {
-        return new Update(JDBC.get().getDefaultConnectionHolder()).table(prefix, entityClass, alias);
+    public static Update create(String prefix, Class<? extends IEntity> entityClass, String alias) {
+        return new Update(JDBC.get(), JDBC.get().getConfig().getDefaultDataSourceName()).table(prefix, entityClass, alias);
     }
 
-    public static Update create(String prefix, Class<? extends IEntity> entityClass) throws Exception {
-        return new Update(JDBC.get().getDefaultConnectionHolder()).table(prefix, entityClass, null);
+    public static Update create(String prefix, Class<? extends IEntity> entityClass) {
+        return new Update(JDBC.get(), JDBC.get().getConfig().getDefaultDataSourceName()).table(prefix, entityClass, null);
     }
 
-    public static Update create(Class<? extends IEntity> entityClass) throws Exception {
-        return new Update(JDBC.get().getDefaultConnectionHolder()).table(entityClass, null);
+    public static Update create(Class<? extends IEntity> entityClass) {
+        return new Update(JDBC.get(), JDBC.get().getConfig().getDefaultDataSourceName()).table(entityClass, null);
     }
 
-    public static Update create(String prefix, String tableName, String alias) throws Exception {
-        return new Update(JDBC.get().getDefaultConnectionHolder(), prefix, tableName, alias, true);
+    public static Update create(String prefix, String tableName, String alias) {
+        return new Update(JDBC.get(), JDBC.get().getConfig().getDefaultDataSourceName(), prefix, tableName, alias, true);
     }
 
-    public static Update create(String prefix, String tableName, String alias, boolean safePrefix) throws Exception {
-        return new Update(JDBC.get().getDefaultConnectionHolder(), prefix, tableName, alias, safePrefix);
+    public static Update create(String prefix, String tableName, String alias, boolean safePrefix) {
+        return new Update(JDBC.get(), JDBC.get().getConfig().getDefaultDataSourceName(), prefix, tableName, alias, safePrefix);
     }
 
-    public static Update create(String tableName, String alias) throws Exception {
-        return new Update(JDBC.get().getDefaultConnectionHolder(), null, tableName, alias, true);
+    public static Update create(String tableName, String alias) {
+        return new Update(JDBC.get(), JDBC.get().getConfig().getDefaultDataSourceName(), null, tableName, alias, true);
     }
 
-    public static Update create(String tableName, String alias, boolean safePrefix) throws Exception {
-        return new Update(JDBC.get().getDefaultConnectionHolder(), null, tableName, alias, safePrefix);
+    public static Update create(String tableName, String alias, boolean safePrefix) {
+        return new Update(JDBC.get(), JDBC.get().getConfig().getDefaultDataSourceName(), null, tableName, alias, safePrefix);
     }
 
-    public static Update create(String tableName) throws Exception {
-        return new Update(JDBC.get().getDefaultConnectionHolder(), null, tableName, null, true);
+    public static Update create(String tableName) {
+        return new Update(JDBC.get(), JDBC.get().getConfig().getDefaultDataSourceName(), null, tableName, null, true);
     }
 
-    public static Update create(String tableName, boolean safePrefix) throws Exception {
-        return new Update(JDBC.get().getDefaultConnectionHolder(), null, tableName, null, safePrefix);
+    public static Update create(String tableName, boolean safePrefix) {
+        return new Update(JDBC.get(), JDBC.get().getConfig().getDefaultDataSourceName(), null, tableName, null, safePrefix);
     }
 
-    public static Update create(IDatabase owner) throws Exception {
-        return new Update(owner.getDefaultConnectionHolder());
+    public static Update create(IDatabase owner) {
+        return new Update(owner, owner.getConfig().getDefaultDataSourceName());
     }
 
-    public static Update create(IDatabase owner, String prefix, Class<? extends IEntity> entityClass, String alias) throws Exception {
-        return new Update(owner.getDefaultConnectionHolder()).table(prefix, entityClass, alias);
+    public static Update create(IDatabase owner, String dataSourceName) {
+        return new Update(owner, dataSourceName);
     }
 
-    public static Update create(IDatabase owner, String prefix, Class<? extends IEntity> entityClass) throws Exception {
-        return new Update(owner.getDefaultConnectionHolder()).table(prefix, entityClass, null);
+    public static Update create(IDatabase owner, String dataSourceName, String prefix, Class<? extends IEntity> entityClass, String alias) {
+        return new Update(owner, dataSourceName).table(prefix, entityClass, alias);
     }
 
-    public static Update create(IDatabase owner, Class<? extends IEntity> entityClass) throws Exception {
-        return new Update(owner.getDefaultConnectionHolder()).table(entityClass, null);
+    public static Update create(IDatabase owner, String dataSourceName, String prefix, Class<? extends IEntity> entityClass) {
+        return new Update(owner, dataSourceName).table(prefix, entityClass, null);
     }
 
-    public static Update create(IDatabase owner, String prefix, String tableName, String alias) throws Exception {
-        return new Update(owner.getDefaultConnectionHolder(), prefix, tableName, alias, true);
+    public static Update create(IDatabase owner, String dataSourceName, Class<? extends IEntity> entityClass) {
+        return new Update(owner, dataSourceName).table(entityClass, null);
     }
 
-    public static Update create(IDatabase owner, String prefix, String tableName, String alias, boolean safePrefix) throws Exception {
-        return new Update(owner.getDefaultConnectionHolder(), prefix, tableName, alias, safePrefix);
+    public static Update create(IDatabase owner, String dataSourceName, String prefix, String tableName, String alias) {
+        return new Update(owner, dataSourceName, prefix, tableName, alias, true);
     }
 
-    public static Update create(IDatabase owner, String tableName, String alias) throws Exception {
-        return new Update(owner.getDefaultConnectionHolder(), null, tableName, alias, true);
+    public static Update create(IDatabase owner, String dataSourceName, String prefix, String tableName, String alias, boolean safePrefix) {
+        return new Update(owner, dataSourceName, prefix, tableName, alias, safePrefix);
     }
 
-    public static Update create(IDatabase owner, String tableName, String alias, boolean safePrefix) throws Exception {
-        return new Update(owner.getDefaultConnectionHolder(), null, tableName, alias, safePrefix);
+    public static Update create(IDatabase owner, String dataSourceName, String tableName, String alias) {
+        return new Update(owner, dataSourceName, null, tableName, alias, true);
     }
 
-    public static Update create(IDatabase owner, String tableName) throws Exception {
-        return new Update(owner.getDefaultConnectionHolder(), null, tableName, null, true);
+    public static Update create(IDatabase owner, String dataSourceName, String tableName, String alias, boolean safePrefix) {
+        return new Update(owner, dataSourceName, null, tableName, alias, safePrefix);
     }
 
-    public static Update create(IDatabase owner, String tableName, boolean safePrefix) throws Exception {
-        return new Update(owner.getDefaultConnectionHolder(), null, tableName, null, safePrefix);
+    public static Update create(IDatabase owner, String dataSourceName, String tableName) {
+        return new Update(owner, dataSourceName, null, tableName, null, true);
     }
 
-    //
-
-    public static Update create(IDatabaseConnectionHolder connectionHolder) {
-        return new Update(connectionHolder);
+    public static Update create(IDatabase owner, String dataSourceName, String tableName, boolean safePrefix) {
+        return new Update(owner, dataSourceName, null, tableName, null, safePrefix);
     }
 
-    public static Update create(IDatabaseConnectionHolder connectionHolder, String prefix, Class<? extends IEntity> entityClass, String alias) {
-        return new Update(connectionHolder).table(prefix, entityClass, alias);
+    private Update(IDatabase owner, String dataSourceName) {
+        super(owner, dataSourceName);
     }
 
-    public static Update create(IDatabaseConnectionHolder connectionHolder, String prefix, Class<? extends IEntity> entityClass) {
-        return new Update(connectionHolder).table(prefix, entityClass, null);
-    }
-
-    public static Update create(IDatabaseConnectionHolder connectionHolder, Class<? extends IEntity> entityClass) {
-        return new Update(connectionHolder).table(entityClass, null);
-    }
-
-    public static Update create(IDatabaseConnectionHolder connectionHolder, String prefix, String tableName, String alias) {
-        return new Update(connectionHolder, prefix, tableName, alias, true);
-    }
-
-    public static Update create(IDatabaseConnectionHolder connectionHolder, String prefix, String tableName, String alias, boolean safePrefix) {
-        return new Update(connectionHolder, prefix, tableName, alias, safePrefix);
-    }
-
-    public static Update create(IDatabaseConnectionHolder connectionHolder, String tableName, String alias) {
-        return new Update(connectionHolder, null, tableName, alias, true);
-    }
-
-    public static Update create(IDatabaseConnectionHolder connectionHolder, String tableName, String alias, boolean safePrefix) {
-        return new Update(connectionHolder, null, tableName, alias, safePrefix);
-    }
-
-    public static Update create(IDatabaseConnectionHolder connectionHolder, String tableName) {
-        return new Update(connectionHolder, null, tableName, null, true);
-    }
-
-    public static Update create(IDatabaseConnectionHolder connectionHolder, String tableName, boolean safePrefix) {
-        return new Update(connectionHolder, null, tableName, null, safePrefix);
-    }
-
-    private Update(IDatabaseConnectionHolder connectionHolder) {
-        super(connectionHolder);
-    }
-
-    private Update(IDatabaseConnectionHolder connectionHolder, String prefix, String tableName, String alias, boolean safePrefix) {
-        super(connectionHolder);
+    private Update(IDatabase owner, String dataSourceName, String prefix, String tableName, String alias, boolean safePrefix) {
+        super(owner, dataSourceName);
         //
         table(prefix, tableName, alias, safePrefix);
     }
@@ -279,57 +240,57 @@ public final class Update extends Query<Update> {
     //
 
     public Update innerJoin(String from, Cond on) {
-        return join(Join.inner(connectionHolder(), from).on(on));
+        return join(Join.inner(owner(), dataSourceName(), from).on(on));
     }
 
     public Update leftJoin(String from, Cond on) {
-        return join(Join.left(connectionHolder(), from).on(on));
+        return join(Join.left(owner(), dataSourceName(), from).on(on));
     }
 
     public Update rightJoin(String from, Cond on) {
-        return join(Join.right(connectionHolder(), from).on(on));
+        return join(Join.right(owner(), dataSourceName(), from).on(on));
     }
 
     //
 
     public Update innerJoin(String prefix, String from, Cond on) {
-        return join(Join.inner(connectionHolder(), prefix, from).on(on));
+        return join(Join.inner(owner(), dataSourceName(), prefix, from).on(on));
     }
 
     public Update leftJoin(String prefix, String from, Cond on) {
-        return join(Join.left(connectionHolder(), prefix, from).on(on));
+        return join(Join.left(owner(), dataSourceName(), prefix, from).on(on));
     }
 
     public Update rightJoin(String prefix, String from, Cond on) {
-        return join(Join.right(connectionHolder(), prefix, from).on(on));
+        return join(Join.right(owner(), dataSourceName(), prefix, from).on(on));
     }
 
     //
 
     public Update innerJoin(String prefix, String from, String alias, Cond on) {
-        return join(Join.inner(connectionHolder(), prefix, from).alias(alias).on(on));
+        return join(Join.inner(owner(), dataSourceName(), prefix, from).alias(alias).on(on));
     }
 
     public Update leftJoin(String prefix, String from, String alias, Cond on) {
-        return join(Join.left(connectionHolder(), prefix, from).alias(alias).on(on));
+        return join(Join.left(owner(), dataSourceName(), prefix, from).alias(alias).on(on));
     }
 
     public Update rightJoin(String prefix, String from, String alias, Cond on) {
-        return join(Join.right(connectionHolder(), prefix, from).alias(alias).on(on));
+        return join(Join.right(owner(), dataSourceName(), prefix, from).alias(alias).on(on));
     }
 
     //
 
     public Update innerJoin(String prefix, String from, boolean safePrefix, String alias, Cond on) {
-        return join(Join.inner(connectionHolder(), prefix, from, safePrefix).alias(alias).on(on));
+        return join(Join.inner(owner(), dataSourceName(), prefix, from, safePrefix).alias(alias).on(on));
     }
 
     public Update leftJoin(String prefix, String from, boolean safePrefix, String alias, Cond on) {
-        return join(Join.left(connectionHolder(), prefix, from, safePrefix).alias(alias).on(on));
+        return join(Join.left(owner(), dataSourceName(), prefix, from, safePrefix).alias(alias).on(on));
     }
 
     public Update rightJoin(String prefix, String from, boolean safePrefix, String alias, Cond on) {
-        return join(Join.right(connectionHolder(), prefix, from, safePrefix).alias(alias).on(on));
+        return join(Join.right(owner(), dataSourceName(), prefix, from, safePrefix).alias(alias).on(on));
     }
 
     public Update where(Where where) {
@@ -353,7 +314,7 @@ public final class Update extends Query<Update> {
 
     public Where where() {
         if (this.where == null) {
-            this.where = Where.create(connectionHolder());
+            this.where = Where.create(owner());
         }
         return where;
     }
@@ -395,6 +356,6 @@ public final class Update extends Query<Update> {
     }
 
     public int execute() throws Exception {
-        return toSQL().execute(connectionHolder());
+        return toSQL().execute(dataSourceName());
     }
 }

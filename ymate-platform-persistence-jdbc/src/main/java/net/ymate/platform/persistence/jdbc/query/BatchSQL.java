@@ -17,7 +17,6 @@ package net.ymate.platform.persistence.jdbc.query;
 
 import net.ymate.platform.core.persistence.Params;
 import net.ymate.platform.persistence.jdbc.IDatabase;
-import net.ymate.platform.persistence.jdbc.IDatabaseConnectionHolder;
 import net.ymate.platform.persistence.jdbc.JDBC;
 import org.apache.commons.lang3.StringUtils;
 
@@ -96,9 +95,5 @@ public final class BatchSQL {
 
     public int[] execute(String dataSourceName) throws Exception {
         return owner.openSession(dataSourceName, session -> session.executeForUpdate(this));
-    }
-
-    public int[] execute(IDatabaseConnectionHolder connectionHolder) throws Exception {
-        return owner.openSession(connectionHolder, session -> session.executeForUpdate(this));
     }
 }

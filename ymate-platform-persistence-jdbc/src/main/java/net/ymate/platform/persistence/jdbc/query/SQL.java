@@ -20,7 +20,6 @@ import net.ymate.platform.core.persistence.IResultSet;
 import net.ymate.platform.core.persistence.Page;
 import net.ymate.platform.core.persistence.Params;
 import net.ymate.platform.persistence.jdbc.IDatabase;
-import net.ymate.platform.persistence.jdbc.IDatabaseConnectionHolder;
 import net.ymate.platform.persistence.jdbc.JDBC;
 import net.ymate.platform.persistence.jdbc.base.IResultSetHandler;
 
@@ -49,19 +48,19 @@ public final class SQL {
     }
 
     public static SQL create(Select select) {
-        return new SQL(select.connectionHolder().getOwner(), select.toString()).param(select.params());
+        return new SQL(select.owner(), select.toString()).param(select.params());
     }
 
     public static SQL create(Insert insert) {
-        return new SQL(insert.connectionHolder().getOwner(), insert.toString()).param(insert.params());
+        return new SQL(insert.owner(), insert.toString()).param(insert.params());
     }
 
     public static SQL create(Update update) {
-        return new SQL(update.connectionHolder().getOwner(), update.toString()).param(update.params());
+        return new SQL(update.owner(), update.toString()).param(update.params());
     }
 
     public static SQL create(Delete delete) {
-        return new SQL(delete.connectionHolder().getOwner(), delete.toString()).param(delete.params());
+        return new SQL(delete.owner(), delete.toString()).param(delete.params());
     }
 
     public static SQL create(String expressionSqlStr, Map<String, Object> params) {
@@ -115,20 +114,12 @@ public final class SQL {
         return owner.openSession(dataSourceName, session -> session.executeForUpdate(this));
     }
 
-    public int execute(IDatabaseConnectionHolder connectionHolder) throws Exception {
-        return owner.openSession(connectionHolder, session -> session.executeForUpdate(this));
-    }
-
     public <T> T findFirst(IResultSetHandler<T> handler) throws Exception {
         return owner.openSession(session -> session.findFirst(this, handler));
     }
 
     public <T> T findFirst(String dataSourceName, IResultSetHandler<T> handler) throws Exception {
         return owner.openSession(dataSourceName, session -> session.findFirst(this, handler));
-    }
-
-    public <T> T findFirst(IDatabaseConnectionHolder connectionHolder, IResultSetHandler<T> handler) throws Exception {
-        return owner.openSession(connectionHolder, session -> session.findFirst(this, handler));
     }
 
     public <T> IResultSet<T> find(IResultSetHandler<T> handler) throws Exception {
@@ -147,23 +138,11 @@ public final class SQL {
         return owner.openSession(dataSourceName, session -> session.find(this, handler, page));
     }
 
-    public <T> IResultSet<T> find(IDatabaseConnectionHolder connectionHolder, IResultSetHandler<T> handler) throws Exception {
-        return owner.openSession(connectionHolder, session -> session.find(this, handler));
-    }
-
-    public <T> IResultSet<T> find(IDatabaseConnectionHolder connectionHolder, IResultSetHandler<T> handler, Page page) throws Exception {
-        return owner.openSession(connectionHolder, session -> session.find(this, handler, page));
-    }
-
     public long count() throws Exception {
         return owner.openSession(session -> session.count(this));
     }
 
     public long count(String dataSourceName) throws Exception {
         return owner.openSession(dataSourceName, session -> session.count(this));
-    }
-
-    public long count(IDatabaseConnectionHolder connectionHolder) throws Exception {
-        return owner.openSession(connectionHolder, session -> session.count(this));
     }
 }
