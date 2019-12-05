@@ -124,11 +124,6 @@ public interface IWebMvcConfig extends IInitialization<IWebMvc> {
     String PARAMS_EXCEPTION_ANALYSIS_DISABLED = "webmvc.exception_analysis_disabled";
 
     /**
-     * 系统错误消息是否指定ContentType响应头
-     */
-    String PARAMS_ERROR_WITH_CONTENT_TYPE = "webmvc.error_with_content_type";
-
-    /**
      * 默认异常响应视图格式, 默认值: "", 可选范围: json|xml
      */
     String PARAMS_ERROR_DEFAULT_VIEW_FORMAT = "webmvc.error_default_view_format";

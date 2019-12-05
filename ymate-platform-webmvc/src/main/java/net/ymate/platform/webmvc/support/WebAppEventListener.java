@@ -16,6 +16,8 @@
 package net.ymate.platform.webmvc.support;
 
 import net.ymate.platform.commons.util.RuntimeUtils;
+import net.ymate.platform.core.IApplication;
+import net.ymate.platform.core.YMP;
 import net.ymate.platform.webmvc.IWebMvc;
 import net.ymate.platform.webmvc.WebEvent;
 import net.ymate.platform.webmvc.WebMVC;
@@ -40,18 +42,15 @@ public class WebAppEventListener implements ServletContextListener, ServletConte
 
     private static final Log LOG = LogFactory.getLog(WebAppEventListener.class);
 
-    private static final IWebMvc OWNER;
+    private IApplication application;
 
-    private static final boolean INITIALIZED;
+    private IWebMvc owner;
 
-    static {
-        OWNER = WebMVC.get();
-        INITIALIZED = OWNER != null && OWNER.isInitialized();
-    }
+    private boolean initialized;
 
     private void doFireEvent(WebEvent.EVENT event, Object eventSource) {
-        if (INITIALIZED) {
-            OWNER.getOwner().getEvents().fireEvent(new WebEvent(WebMVC.get(), event).addParamExtend(WebEvent.EVENT_SOURCE, eventSource));
+        if (initialized) {
+            application.getEvents().fireEvent(new WebEvent(owner, event).addParamExtend(WebEvent.EVENT_SOURCE, eventSource));
         }
     }
 
@@ -59,15 +58,26 @@ public class WebAppEventListener implements ServletContextListener, ServletConte
 
     @Override
     public void contextInitialized(ServletContextEvent sce) {
-        doFireEvent(WebEvent.EVENT.SERVLET_CONTEXT_INITIALIZED, sce);
+        try {
+            application = YMP.run();
+            if (application != null && application.isInitialized()) {
+                owner = application.getModuleManager().getModule(WebMVC.class);
+                initialized = owner != null && owner.isInitialized();
+            }
+            doFireEvent(WebEvent.EVENT.SERVLET_CONTEXT_INITIALIZED, sce);
+        } catch (Exception e) {
+            if (LOG.isErrorEnabled()) {
+                LOG.error(StringUtils.EMPTY, RuntimeUtils.unwrapThrow(e));
+            }
+        }
     }
 
     @Override
     public void contextDestroyed(ServletContextEvent sce) {
         doFireEvent(WebEvent.EVENT.SERVLET_CONTEXT_DESTROYED, sce);
-        if (INITIALIZED) {
+        if (initialized) {
             try {
-                OWNER.getOwner().close();
+                application.close();
             } catch (Exception e) {
                 if (LOG.isWarnEnabled()) {
                     LOG.warn(StringUtils.EMPTY, RuntimeUtils.unwrapThrow(e));

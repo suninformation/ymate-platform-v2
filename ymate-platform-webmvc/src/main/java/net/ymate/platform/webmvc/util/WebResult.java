@@ -16,11 +16,9 @@
 package net.ymate.platform.webmvc.util;
 
 import com.alibaba.fastjson.JSONObject;
-import net.ymate.platform.commons.lang.BlurObject;
 import net.ymate.platform.commons.util.ClassUtils;
 import net.ymate.platform.core.support.ErrorCode;
 import net.ymate.platform.webmvc.IWebMvc;
-import net.ymate.platform.webmvc.IWebMvcConfig;
 import net.ymate.platform.webmvc.base.Type;
 import net.ymate.platform.webmvc.context.WebContext;
 import net.ymate.platform.webmvc.view.IView;
@@ -321,17 +319,13 @@ public final class WebResult implements Serializable {
     public static IView formatView(String path, String paramFormat, String defaultFormat, String paramCallback, WebResult result) {
         IView returnView = null;
         if (result != null) {
-            boolean flag = false;
             HttpServletRequest request = WebContext.getRequest();
             if (WebUtils.isJsonAccepted(request, paramFormat) || StringUtils.equalsIgnoreCase(defaultFormat, Type.Const.FORMAT_JSON)) {
-                returnView = result.toJSON(StringUtils.trimToNull(WebContext.getRequest().getParameter(paramCallback)));
-                flag = true;
+                returnView = result.withContentType().toJSON(StringUtils.trimToNull(WebContext.getRequest().getParameter(paramCallback)));
             } else if (WebUtils.isXmlAccepted(request, paramFormat) || StringUtils.equalsIgnoreCase(defaultFormat, Type.Const.FORMAT_XML)) {
-                returnView = result.toXML(true);
-                flag = true;
-            }
-            if (flag || BlurObject.bind(WebUtils.getOwner().getOwner().getParam(IWebMvcConfig.PARAMS_ERROR_WITH_CONTENT_TYPE)).toBooleanValue()) {
-                result.withContentType();
+                returnView = result.withContentType().toXML(true);
+            } else if (WebUtils.isAjax(request)) {
+                returnView = result.withContentType().toJSON(StringUtils.trimToNull(WebContext.getRequest().getParameter(paramCallback)));
             }
         }
         if (returnView == null) {

@@ -1,6 +1,6 @@
 <%@ page import="net.ymate.platform.commons.lang.BlurObject" %>
 <%@ page import="net.ymate.platform.webmvc.util.WebUtils" %>
-<%@ page import="org.apache.commons.lang.StringUtils" %>
+<%@ page import="org.apache.commons.lang3.StringUtils" %>
 <%@ page import="java.util.Map" %>
 <%@ page contentType="text/html;charset=UTF-8" trimDirectiveWhitespaces="true" pageEncoding="UTF-8" session="false" %>
 
@@ -293,17 +293,18 @@
 </head>
 <%
     out.write("<body><div class=\"content\"><div class=\"icon");
-    out.write(ret == 0 ? "icon-warning" : "icon-wrong");
-    out.write("></div><h1>");
+    out.write(ret == 0 ? " icon-warning" : " icon-wrong");
+    out.write("\"></div><h1>");
     Integer status = BlurObject.bind(request.getParameter("status")).toInteger();
     if (status != null) {
         out.write(WebUtils.httpStatusI18n(WebUtils.getOwner(), status));
     } else {
         out.write(BlurObject.bind(request.getAttribute("msg")).toStringValue());
         if (ret != 0) {
+            out.write(StringUtils.SPACE);
             out.write(WebUtils.getOwner().getOwner().getI18n().load("messages", "error.page.label_code", "Code:"));
-            out.write(' ');
-            out.write(ret);
+            out.write(StringUtils.SPACE);
+            out.write(String.valueOf(ret));
         }
     }
     out.write("</h1>");

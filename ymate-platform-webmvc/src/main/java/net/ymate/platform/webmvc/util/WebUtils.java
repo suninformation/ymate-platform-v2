@@ -191,23 +191,6 @@ public class WebUtils {
         return StringUtils.isNotBlank(requestHeader) && Type.HttpHead.XML_HTTP_REQUEST.equalsIgnoreCase(requestHeader);
     }
 
-    public static boolean isAjax(HttpServletRequest request, boolean ifJson, boolean ifXml) {
-        return isAjax(request, ifJson, ifXml, null);
-    }
-
-    public static boolean isAjax(HttpServletRequest request, boolean ifJson, boolean ifXml, String paramFormat) {
-        if (isAjax(request)) {
-            return true;
-        }
-        if (ifJson || ifXml) {
-            if (ifJson && isJsonAccepted(request, paramFormat)) {
-                return true;
-            }
-            return ifXml && isXmlAccepted(request, paramFormat);
-        }
-        return false;
-    }
-
     public static boolean isWebSocket(HttpServletRequest request) {
         return StringUtils.equalsIgnoreCase(request.getHeader(Type.HttpHead.CONNECTION), Type.HttpHead.UPGRADE)
                 && StringUtils.equalsIgnoreCase(request.getHeader(Type.HttpHead.UPGRADE), Type.HttpHead.WEBSOCKET);
@@ -226,7 +209,15 @@ public class WebUtils {
     }
 
     public static boolean isJsonAccepted(HttpServletRequest request, String paramFormat) {
-        return StringUtils.containsIgnoreCase(request.getHeader(Type.HttpHead.ACCEPT), Type.ContentType.JSON.getContentType()) || StringUtils.equalsIgnoreCase(request.getParameter(StringUtils.defaultIfBlank(paramFormat, Type.Const.PARAM_FORMAT)), Type.Const.FORMAT_JSON);
+        return StringUtils.containsIgnoreCase(request.getHeader(Type.HttpHead.ACCEPT), Type.ContentType.JSON.getContentType()) || isJsonFormat(request, paramFormat);
+    }
+
+    public static boolean isJsonFormat(HttpServletRequest request) {
+        return isJsonFormat(request, null);
+    }
+
+    public static boolean isJsonFormat(HttpServletRequest request, String paramFormat) {
+        return StringUtils.equalsIgnoreCase(request.getParameter(StringUtils.defaultIfBlank(paramFormat, Type.Const.PARAM_FORMAT)), Type.Const.FORMAT_JSON);
     }
 
     public static boolean isXmlAccepted(HttpServletRequest request) {
@@ -234,7 +225,15 @@ public class WebUtils {
     }
 
     public static boolean isXmlAccepted(HttpServletRequest request, String paramFormat) {
-        return StringUtils.containsIgnoreCase(request.getHeader(Type.HttpHead.ACCEPT), Type.ContentType.XML.getContentType()) || StringUtils.equalsIgnoreCase(request.getParameter(StringUtils.defaultIfBlank(paramFormat, Type.Const.PARAM_FORMAT)), Type.Const.FORMAT_XML);
+        return StringUtils.containsIgnoreCase(request.getHeader(Type.HttpHead.ACCEPT), Type.ContentType.XML.getContentType()) || isXmlFormat(request, paramFormat);
+    }
+
+    public static boolean isXmlFormat(HttpServletRequest request) {
+        return isXmlFormat(request, null);
+    }
+
+    public static boolean isXmlFormat(HttpServletRequest request, String paramFormat) {
+        return StringUtils.equalsIgnoreCase(request.getParameter(StringUtils.defaultIfBlank(paramFormat, Type.Const.PARAM_FORMAT)), Type.Const.FORMAT_XML);
     }
 
     /**

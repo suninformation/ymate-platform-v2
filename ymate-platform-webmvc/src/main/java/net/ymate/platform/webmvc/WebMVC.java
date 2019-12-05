@@ -169,7 +169,7 @@ public final class WebMVC implements IModule, IWebMvc {
     }
 
     private void doGenerateErrorViewIfNeed() {
-        if (RuntimeUtils.getRootPath(false).endsWith(Type.Const.WEB_INF_PREFIX)) {
+        if (RuntimeUtils.getRootPath().endsWith(Type.Const.WEB_INF_PREFIX)) {
             String currentErrorViewPath = owner.getParam(IWebMvcConfig.PARAMS_ERROR_VIEW, Type.Const.DEFAULT_ERROR_VIEW_FILE);
             File viewFile = new File(config.getAbstractBaseViewPath(), currentErrorViewPath);
             if (!viewFile.exists()) {

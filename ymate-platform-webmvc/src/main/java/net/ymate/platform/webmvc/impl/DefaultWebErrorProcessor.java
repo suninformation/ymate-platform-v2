@@ -34,10 +34,12 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import javax.servlet.http.Cookie;
+import javax.servlet.http.HttpServletRequest;
 import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * @author 刘镇 (suninformation@163.com) on 2018-12-10 13:54
@@ -75,8 +77,9 @@ public class DefaultWebErrorProcessor implements IWebErrorProcessor, IWebInitial
     }
 
     public IView showErrorMsg(int code, String msg, Map<String, Object> dataMap) {
-        if (WebUtils.isAjax(WebContext.getRequest(), true, true) || Type.Const.FORMAT_JSON.equals(getErrorDefaultViewFormat())) {
-            return WebResult.formatView(WebResult.create(code).msg(msg).data(dataMap), Type.Const.FORMAT_JSON);
+        HttpServletRequest httpServletRequest = WebContext.getRequest();
+        if (WebUtils.isAjax(httpServletRequest) || WebUtils.isXmlFormat(httpServletRequest) || WebUtils.isJsonFormat(httpServletRequest) || StringUtils.containsAny(getErrorDefaultViewFormat(), Type.Const.FORMAT_JSON, Type.Const.FORMAT_XML)) {
+            return WebResult.formatView(WebResult.create(code).msg(msg).data(dataMap), getErrorDefaultViewFormat());
         }
         return WebUtils.buildErrorView(owner, code, msg).addAttribute(Type.Const.PARAM_DATA, dataMap);
     }
@@ -130,15 +133,13 @@ public class DefaultWebErrorProcessor implements IWebErrorProcessor, IWebInitial
     @Override
     public IView onValidation(IWebMvc owner, Map<String, ValidateResult> results) {
         String message = WebUtils.errorCodeI18n(this.owner, WebErrorCode.INVALID_PARAMS_VALIDATION, WebErrorCode.MSG_INVALID_PARAMS_VALIDATION);
-        Map<String, Object> dataMap = new HashMap<>(results.size());
-        results.values().forEach((result) -> {
-            dataMap.put(result.getName(), result.getMsg());
-        });
         //
-        if (!WebUtils.isAjax(WebContext.getRequest(), true, true) && !Type.Const.FORMAT_JSON.equals(getErrorDefaultViewFormat())) {
+        HttpServletRequest httpServletRequest = WebContext.getRequest();
+        if (!WebUtils.isAjax(httpServletRequest) && !WebUtils.isXmlFormat(httpServletRequest) && !WebUtils.isJsonFormat(httpServletRequest) && !StringUtils.containsAny(getErrorDefaultViewFormat(), Type.Const.FORMAT_JSON, Type.Const.FORMAT_XML)) {
             // 拼装所有的验证消息
             message = WebUtils.messageWithTemplate(owner.getOwner(), message, results.values());
         }
+        Map<String, Object> dataMap = results.values().stream().collect(Collectors.toMap(ValidateResult::getName, ValidateResult::getMsg, (a, b) -> b, () -> new HashMap<>(results.size())));
         return showErrorMsg(WebErrorCode.INVALID_PARAMS_VALIDATION, message, dataMap);
     }
 
