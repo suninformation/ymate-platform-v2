@@ -20,6 +20,7 @@ import net.ymate.platform.webmvc.IWebMvc;
 import net.ymate.platform.webmvc.base.Type;
 import net.ymate.platform.webmvc.context.WebContext;
 import net.ymate.platform.webmvc.view.AbstractView;
+import net.ymate.platform.webmvc.view.View;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.velocity.VelocityContext;
 import org.apache.velocity.app.Velocity;
@@ -40,6 +41,10 @@ public class VelocityView extends AbstractView {
     public static final String FILE_SUFFIX = ".vm";
 
     private static Properties velocityConfig = new Properties();
+
+    static {
+        View.registerViewBuilder(FILE_SUFFIX, VelocityView::bind);
+    }
 
     private VelocityContext velocityContext;
 

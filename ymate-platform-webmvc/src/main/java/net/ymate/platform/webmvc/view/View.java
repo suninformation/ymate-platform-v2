@@ -35,7 +35,6 @@ public class View {
         VIEW_BUILDERS.put(HtmlView.FILE_SUFFIX, HtmlView::bind);
         VIEW_BUILDERS.put(JspView.FILE_SUFFIX, JspView::bind);
         VIEW_BUILDERS.put(FreemarkerView.FILE_SUFFIX, FreemarkerView::bind);
-        VIEW_BUILDERS.put(VelocityView.FILE_SUFFIX, VelocityView::bind);
     }
 
     /**
