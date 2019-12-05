@@ -109,17 +109,17 @@ public interface IWebMvcConfig extends IInitialization<IWebMvc> {
     String CROSS_DOMAIN_MAX_AGE = "cross_domain_max_age";
 
     /**
-     * 控制器请求URL后缀参数名称
+     * 控制器请求URL后缀, 默认值为空
      */
     String PARAMS_REQUEST_SUFFIX = "webmvc.request_suffix";
 
     /**
-     * 服务名称参数, 默认值: request.getServerName();
+     * 服务名称, 默认值: request.getServerName();
      */
     String PARAMS_SERVER_NAME = "webmvc.server_name";
 
     /**
-     * 系统异常分析是否关闭参数名称
+     * 系统异常分析是否关闭
      */
     String PARAMS_EXCEPTION_ANALYSIS_DISABLED = "webmvc.exception_analysis_disabled";
 
@@ -129,27 +129,27 @@ public interface IWebMvcConfig extends IInitialization<IWebMvc> {
     String PARAMS_ERROR_DEFAULT_VIEW_FORMAT = "webmvc.error_default_view_format";
 
     /**
-     * 异常信息视图文件参数名称
+     * 异常信息视图文件，默认值为error.jsp
      */
     String PARAMS_ERROR_VIEW = "webmvc.error_view";
 
     /**
-     * 验证结果消息模板参数名称, 默认值: "${items}"
+     * 验证结果消息模板, 默认值: "${items}"
      */
     String PARAMS_VALIDATION_TEMPLATE_ELEMENT = "webmvc.validation_template_element";
 
     /**
-     * 验证结果消息项模板参数名称, 默认值: "${message}<br>"
+     * 验证结果消息项模板, 默认值: "${message}<br>"
      */
     String PARAMS_VALIDATION_TEMPLATE_ITEM = "webmvc.validation_template_item";
 
     /**
-     * 重定向主页URL地址参数名称, 默认值: ""
+     * 重定向主页URL地址, 默认值: ""
      */
     String PARAMS_REDIRECT_HOME_URL = "webmvc.redirect_home_url";
 
     /**
-     * 自定义重定向URL地址参数名称
+     * 自定义重定向URL地址
      */
     String PARAMS_REDIRECT_CUSTOM_URL = "webmvc.redirect_custom_url";
 
@@ -159,19 +159,19 @@ public interface IWebMvcConfig extends IInitialization<IWebMvc> {
     String PARAMS_ALLOWED_ACCESS_HOSTS = "webmvc.allowed_access_hosts";
 
     /**
-     * 允许上传的文件类型验证参数名称
+     * 允许上传的文件类型
      */
     String PARAMS_ALLOWED_UPLOAD_CONTENT_TYPES = "webmvc.allowed_upload_content_types";
 
     /**
-     * 控制器请求映射路径分析器，可选值为已知分析器名称或自定义分析器类名称，默认为restful，目前支持已知分析器[default|restful|...]
+     * 控制器请求映射路径分析器，可选值为已知分析器名称或自定义分析器类名称，默认为default，目前支持已知分析器[default|...]
      *
      * @return 返回控制器请求映射路径分析器
      */
     IRequestMappingParser getRequestMappingParser();
 
     /**
-     * 控制器请求处理器，可选值为已知处理器名称或自定义处理器类名称，默认为default，目前支持已知处理器[default|json|xml|...]
+     * 控制器请求处理器，可选值为已知处理器名称或自定义处理器类名称，自定义类需实现net.ymate.platform.webmvc.IRequestProcessor接口，默认为default，目前支持已知处理器[default|json|xml|...]
      *
      * @return 返回控制器请求处理器
      */
@@ -185,7 +185,7 @@ public interface IWebMvcConfig extends IInitialization<IWebMvc> {
     IWebErrorProcessor getErrorProcessor();
 
     /**
-     * 缓存处理器，可选参数
+     * 缓存处理器，可选参数，此类需实现net.ymate.platform.webmvc.IWebCacheProcessor接口
      *
      * @return 返回缓存处理器
      */
@@ -234,7 +234,7 @@ public interface IWebMvcConfig extends IInitialization<IWebMvc> {
     Set<String> getRequestIgnoreSuffixes();
 
     /**
-     * 请求方法参数名称，可选参数， 默认值为_method
+     * 请求方法参数名称，可选参数，默认值为_method
      *
      * @return 返回请求方法参数名称
      */
@@ -332,7 +332,7 @@ public interface IWebMvcConfig extends IInitialization<IWebMvc> {
     int getUploadSizeThreshold();
 
     /**
-     * 文件上传状态监听器
+     * 文件上传状态监听器，可选参数，默认值为空
      *
      * @return 返回文件上传状态监听器
      */
@@ -367,7 +367,7 @@ public interface IWebMvcConfig extends IInitialization<IWebMvc> {
     Set<String> getConventionViewAllowPaths();
 
     /**
-     * Convention模式开启时视图文件路径(基于base_view_path的相对路径, 减号代表不允许访问)，可选参数，默认值为空(即不限制访问路径)，多个路径间用'|'分隔
+     * Convention模式开启时视图文件路径(基于base_view_path的相对路径，'-'号代表禁止访问，'+'或无符串代表允许访问)，可选参数，默认值为空(即不限制访问路径)，多个路径间用'|'分隔
      *
      * @return 返回禁止访问的视图文件路径集合
      */
