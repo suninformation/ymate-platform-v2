@@ -161,13 +161,11 @@ public class ModuleManager implements IInitialization<IApplication>, IDestroyabl
      */
     @SuppressWarnings("unchecked")
     public <T extends IModule> T getModule(String moduleClassName) {
-        if (initialized) {
-            if (!isModuleExcluded(moduleClassName)) {
-                IModule module = modules.get(moduleClassName);
-                if (!isModuleExcluded(module.getName())) {
-                    initializeModuleIfNeed(module);
-                    return (T) module;
-                }
+        if (!isModuleExcluded(moduleClassName)) {
+            IModule module = modules.get(moduleClassName);
+            if (!isModuleExcluded(module.getName())) {
+                initializeModuleIfNeed(module);
+                return (T) module;
             }
         }
         return null;
