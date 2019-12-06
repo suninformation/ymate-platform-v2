@@ -37,6 +37,8 @@ public final class FreemarkerConfigBuilder {
 
     private String encoding;
 
+    private String outputEncoding;
+
     private TemplateExceptionHandler templateExceptionHandler;
 
     private final List<TemplateLoader> templateLoaders = new ArrayList<>();
@@ -64,6 +66,15 @@ public final class FreemarkerConfigBuilder {
 
     public FreemarkerConfigBuilder setEncoding(String encoding) {
         this.encoding = encoding;
+        return this;
+    }
+
+    public String getOutputEncoding() {
+        return outputEncoding;
+    }
+
+    public FreemarkerConfigBuilder setOutputEncoding(String outputEncoding) {
+        this.outputEncoding = outputEncoding;
         return this;
     }
 
@@ -107,6 +118,7 @@ public final class FreemarkerConfigBuilder {
     public Configuration build() throws IOException {
         Configuration config = new Configuration(getVersion());
         config.setDefaultEncoding(getEncoding());
+        config.setOutputEncoding(StringUtils.defaultIfBlank(getOutputEncoding(), getEncoding()));
         config.setTemplateExceptionHandler(templateExceptionHandler != null ? templateExceptionHandler : TemplateExceptionHandler.HTML_DEBUG_HANDLER);
         //
         for (File tplFileDir : templateFiles) {
