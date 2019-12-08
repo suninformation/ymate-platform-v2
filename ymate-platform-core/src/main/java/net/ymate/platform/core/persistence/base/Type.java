@@ -56,6 +56,11 @@ public final class Type {
         BOOLEAN(Types.BOOLEAN, "BOOLEAN"),
 
         /**
+         * 布尔
+         */
+        BOOL(Types.BOOLEAN, "BOOL"),
+
+        /**
          * 二进制
          */
         BINARY(Types.BINARY, "BINARY"),

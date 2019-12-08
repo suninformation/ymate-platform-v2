@@ -223,6 +223,7 @@ public class Table extends QueryHandleAdapter<Table> {
             case DOUBLE:
             case BIT:
             case BOOLEAN:
+            case BOOL:
             case INT:
                 break;
             default:
