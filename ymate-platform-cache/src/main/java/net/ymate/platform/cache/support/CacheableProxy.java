@@ -21,6 +21,7 @@ import net.ymate.platform.cache.ICacheScopeProcessor;
 import net.ymate.platform.cache.ICaches;
 import net.ymate.platform.cache.annotation.Cacheable;
 import net.ymate.platform.commons.ReentrantLockHelper;
+import net.ymate.platform.commons.util.ClassUtils;
 import net.ymate.platform.core.beans.annotation.Order;
 import net.ymate.platform.core.beans.proxy.IProxy;
 import net.ymate.platform.core.beans.proxy.IProxyChain;
@@ -43,7 +44,21 @@ public class CacheableProxy implements IProxy {
             return proxyChain.doProxyChain();
         }
         ICaches caches = proxyChain.getProxyFactory().getOwner().getModuleManager().getModule(Caches.class);
-        Object cacheKey = StringUtils.trimToNull(cacheable.key());
+        Object cacheKey = null;
+        // 若缓存key以'#'开头则尝试从方法参数中获取该参数值
+        if (StringUtils.startsWith(cacheable.key(), "#")) {
+            String paramName = StringUtils.substringAfter(cacheable.key(), "#");
+            String[] paramNames = ClassUtils.getMethodParamNames(proxyChain.getTargetMethod());
+            for (int idx = 0; idx < paramNames.length; idx++) {
+                if (StringUtils.equals(paramNames[idx], paramName)) {
+                    cacheKey = proxyChain.getMethodParams()[idx];
+                    break;
+                }
+            }
+        } else {
+            cacheKey = StringUtils.trimToNull(cacheable.key());
+        }
+        // 若缓存key为空则通过默认key生成器创建
         if (cacheKey == null) {
             cacheKey = caches.getConfig().getKeyGenerator().generateKey(proxyChain.getTargetMethod(), proxyChain.getMethodParams());
         }

@@ -37,7 +37,7 @@ public @interface Cacheable {
     String cacheName() default "default";
 
     /**
-     * @return 缓存Key, 若未设置则使用keyGenerator自动生成
+     * @return 缓存Key, 若以'#'开头则尝试从方法参数中获取该参数值, 若未设置则使用keyGenerator自动生成
      */
     String key() default StringUtils.EMPTY;
 
