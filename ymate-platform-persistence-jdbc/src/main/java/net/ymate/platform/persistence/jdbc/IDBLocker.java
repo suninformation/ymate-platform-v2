@@ -27,59 +27,17 @@ public interface IDBLocker {
 
     IDBLocker DEFAULT = () -> " FOR UPDATE";
 
-    IDBLocker ORACLE_NOWAIT = () -> "FOR UPDATE NOWAIT";
-
-    /**
-     * 不加锁
-     * <p>
-     * 在读取或修改数据时不加任何锁。
-     * 在这种情况下，用户有可能读取到未完成事务（Uncommited Transaction）或回滚(Roll Back)中的数据, 即所谓的“脏数据”
-     */
-    IDBLocker SQLSERVER_NOLOCK = new SQLServerLocker(SQLServerLocker.LockType.NOLOCK);
-
-    /**
-     * 保持锁
-     * <p>
-     * 会将此共享锁保持至整个事务结束，而不会在途中释放。
-     */
-    IDBLocker SQLSERVER_HOLDLOCK = new SQLServerLocker(SQLServerLocker.LockType.HOLDLOCK);
-
-    /**
-     * 修改锁
-     * <p>
-     * 在读取数据时使用修改锁来代替共享锁，并将此锁保持至整个事务或命令结束。
-     * 使用此选项能够保证多个进程能同时读取数据但只有该进程能修改数据。
-     */
-    IDBLocker SQLSERVER_UPDLOCK = new SQLServerLocker(SQLServerLocker.LockType.UPDLOCK);
-
-    /**
-     * 表锁
-     * <p>
-     * 将在整个表上置共享锁直至该命令结束。 这个选项保证其他进程只能读取而不能修改数据。
-     */
-    IDBLocker SQLSERVER_TABLOCK = new SQLServerLocker(SQLServerLocker.LockType.TABLOCK);
-
-    /**
-     * 页锁
-     */
-    IDBLocker SQLSERVER_PAGLOCK = new SQLServerLocker(SQLServerLocker.LockType.PAGLOCK);
-
-    /**
-     * 排它表锁
-     * <p>
-     * 将在整个表上置排它锁直至该命令或事务结束。这将防止其他进程读取或修改表中的数据。
-     */
-    IDBLocker SQLSERVER_TABLOCKX = new SQLServerLocker(SQLServerLocker.LockType.TABLOCKX);
+    IDBLocker NOWAIT = () -> "FOR UPDATE NOWAIT";
 
     /**
      * SQLServer数据库锁
      */
-    class SQLServerLocker implements IDBLocker {
+    class SQLServer implements IDBLocker {
 
         /**
          * 锁类型
          */
-        enum LockType {
+        enum SQLServerLockType {
 
             /**
              * 不加锁
@@ -112,15 +70,57 @@ public interface IDBLocker {
             TABLOCKX
         }
 
-        private final LockType lockType;
+        /**
+         * 不加锁
+         * <p>
+         * 在读取或修改数据时不加任何锁。
+         * 在这种情况下，用户有可能读取到未完成事务（Uncommited Transaction）或回滚(Roll Back)中的数据, 即所谓的“脏数据”
+         */
+        public static IDBLocker NOLOCK = new SQLServer(SQLServerLockType.NOLOCK);
 
-        SQLServerLocker(LockType lockType) {
+        /**
+         * 保持锁
+         * <p>
+         * 会将此共享锁保持至整个事务结束，而不会在途中释放。
+         */
+        public static IDBLocker HOLDLOCK = new SQLServer(SQLServerLockType.HOLDLOCK);
+
+        /**
+         * 修改锁
+         * <p>
+         * 在读取数据时使用修改锁来代替共享锁，并将此锁保持至整个事务或命令结束。
+         * 使用此选项能够保证多个进程能同时读取数据但只有该进程能修改数据。
+         */
+        public static IDBLocker UPDLOCK = new SQLServer(SQLServerLockType.UPDLOCK);
+
+        /**
+         * 表锁
+         * <p>
+         * 将在整个表上置共享锁直至该命令结束。 这个选项保证其他进程只能读取而不能修改数据。
+         */
+        public static IDBLocker TABLOCK = new SQLServer(SQLServerLockType.TABLOCK);
+
+        /**
+         * 页锁
+         */
+        public static IDBLocker PAGLOCK = new SQLServer(SQLServerLockType.PAGLOCK);
+
+        /**
+         * 排它表锁
+         * <p>
+         * 将在整个表上置排它锁直至该命令或事务结束。这将防止其他进程读取或修改表中的数据。
+         */
+        public static IDBLocker TABLOCKX = new SQLServer(SQLServerLockType.TABLOCKX);
+
+        private final SQLServerLockType lockType;
+
+        SQLServer(SQLServerLockType lockType) {
             this.lockType = lockType;
         }
 
         @Override
         public String toSQL() {
-            return "WITH (" + lockType.name() + ")";
+            return String.format("WITH (%s)", lockType.name());
         }
     }
 
