@@ -11,6 +11,10 @@ bin/
 lib/
 target/
 
+node_modules/
+dist/
+package-lock.json
+
 # Package Files #
 *.jar
 *.war
