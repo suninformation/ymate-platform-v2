@@ -39,7 +39,7 @@ public class TokenProcessHelper {
 
     private static final String TRANSACTION_TOKEN_KEY = "net.ymate.platform.webmvc.TRANSACTION_TOKEN";
 
-    private static final String TOKEN_KEY = "net.ymate.platform.webmvc.TOKEN";
+    public static final String TOKEN_KEY = "net.ymate.platform.webmvc.TOKEN";
 
     private static final TokenProcessHelper INSTANCE = new TokenProcessHelper();
 
@@ -82,6 +82,21 @@ public class TokenProcessHelper {
 
     public synchronized boolean isTokenValid(HttpServletRequest request, String name, boolean reset) {
         return isTokenValid(request, name, StringUtils.trimToNull(request.getParameter(TOKEN_KEY)), reset);
+    }
+
+    public String getToken(HttpServletRequest request) {
+        return getToken(request, null);
+    }
+
+    public String getToken(HttpServletRequest request, String name) {
+        HttpSession session = request.getSession(false);
+        if (session != null) {
+            if (StringUtils.isNotBlank(name)) {
+                return (String) session.getAttribute(TRANSACTION_TOKEN_KEY + "|" + name);
+            }
+            return (String) session.getAttribute(TRANSACTION_TOKEN_KEY);
+        }
+        return null;
     }
 
     public synchronized void resetToken(HttpServletRequest request) {
