@@ -198,9 +198,9 @@ public final class YMP {
                         throw new IllegalStateException(String.format("IApplicationCreator [%s] returns the IApplication interface instance object invalid.", creator.getClass().getName()));
                     }
                     //
-                    application.initialize();
-                    //
                     instance = application;
+                    //
+                    application.initialize();
                 }
             }
         }

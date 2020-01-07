@@ -28,7 +28,6 @@ import net.ymate.platform.core.event.annotation.EventRegister;
 import net.ymate.platform.core.handle.*;
 import net.ymate.platform.core.i18n.I18N;
 import net.ymate.platform.core.module.ModuleManager;
-import net.ymate.platform.core.module.annotation.Module;
 import net.ymate.platform.core.serialize.annotation.Serializer;
 import net.ymate.platform.core.support.RecycleHelper;
 import org.apache.commons.lang3.StringUtils;
@@ -152,7 +151,6 @@ public final class Application implements IApplication {
                     beanLoader.registerHandler(Injector.class, new InjectorHandler(this));
                     beanLoader.registerHandler(Event.class, new EventHandler(this));
                     beanLoader.registerHandler(EventRegister.class, new EventRegisterHandler(this));
-                    beanLoader.registerHandler(Module.class, new ModuleHandler(this));
                     beanLoader.registerHandler(Proxy.class, new ProxyHandler(this));
                     beanLoader.registerHandler(Serializer.class, new SerializerHandler());
                     //

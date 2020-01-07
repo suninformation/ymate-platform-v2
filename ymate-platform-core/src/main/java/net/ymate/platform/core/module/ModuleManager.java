@@ -107,40 +107,34 @@ public class ModuleManager implements IInitialization<IApplication>, IDestroyabl
     }
 
     /**
-     * 向模块类排除列表添加被排除的模块名或类名(未初始化前有效)
+     * 向模块类排除列表添加被排除的模块名或类名
      *
      * @param excludedModuleName 模块名或类名
      */
     public void addExcludedModule(String excludedModuleName) {
-        if (!initialized) {
-            excludedModules.add(excludedModuleName);
-        }
+        excludedModules.add(excludedModuleName);
     }
 
     /**
-     * 向模块类排除列表添加被排除的模块名或类名集合(未初始化前有效)
+     * 向模块类排除列表添加被排除的模块名或类名集合
      *
      * @param excludedModuleNames 模块名或类名集合
      */
     public void addExcludedModules(Collection<String> excludedModuleNames) {
-        if (!initialized) {
-            excludedModules.addAll(excludedModuleNames);
-        }
+        excludedModules.addAll(excludedModuleNames);
     }
 
     /**
-     * 注册模块实例(此方法仅在框架核心管理器未初始化前有效)
+     * 注册模块实例
      *
      * @param moduleClass 目标模块类
      */
     public void registerModule(Class<? extends IModule> moduleClass) {
-        if (!initialized) {
-            if (moduleClass != null && !isModuleExcluded(moduleClass.getName())) {
-                try {
-                    ReentrantLockHelper.putIfAbsentAsync(modules, moduleClass.getName(), moduleClass::newInstance);
-                } catch (Exception e) {
-                    throw RuntimeUtils.wrapRuntimeThrow(e, "An exception occurred while registering module [%s].", moduleClass);
-                }
+        if (moduleClass != null && !isModuleExcluded(moduleClass.getName())) {
+            try {
+                ReentrantLockHelper.putIfAbsentAsync(modules, moduleClass.getName(), moduleClass::newInstance);
+            } catch (Exception e) {
+                throw RuntimeUtils.wrapRuntimeThrow(e, "An exception occurred while registering module [%s].", moduleClass);
             }
         }
     }
