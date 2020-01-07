@@ -202,6 +202,16 @@ public class MathCalcHelper {
 
     //
 
+    /**
+     * 获取当前值对象
+     *
+     * @return 返回当前值对象
+     * @since 2.1.0
+     */
+    public BigDecimal value() {
+        return value;
+    }
+
     public BlurObject toBlurObject() {
         return BlurObject.bind(value);
     }
