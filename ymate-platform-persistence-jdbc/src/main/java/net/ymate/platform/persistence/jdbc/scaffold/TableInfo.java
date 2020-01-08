@@ -139,6 +139,27 @@ public final class TableInfo implements Serializable {
     }
 
     @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        TableInfo tableInfo = (TableInfo) o;
+        return Objects.equals(catalog, tableInfo.catalog) &&
+                Objects.equals(schema, tableInfo.schema) &&
+                name.equals(tableInfo.name) &&
+                Objects.equals(primaryKeys, tableInfo.primaryKeys) &&
+                Objects.equals(columns, tableInfo.columns);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(catalog, schema, name, primaryKeys, columns);
+    }
+
+    @Override
     public String toString() {
         return String.format("TableInfo{catalog='%s', schema='%s', name='%s', primaryKeys=%s, columns=%s}", catalog, schema, name, primaryKeys, columns);
     }

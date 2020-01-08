@@ -66,6 +66,8 @@ public interface IDatabaseConfig extends IPersistenceConfig<IDatabase, IDatabase
 
     String PARAMS_JDBC_TABLE_PREFIX = "jdbc.table_prefix";
 
+    String PARAMS_JDBC_CLASS_SUFFIX = "jdbc.class_suffix";
+
     String PARAMS_JDBC_REMOVE_TABLE_PREFIX = "jdbc.remove_table_prefix";
 
     String PARAMS_JDBC_TABLE_LIST = "jdbc.table_list";
