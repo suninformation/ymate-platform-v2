@@ -551,23 +551,43 @@ public class BlurObject implements Serializable, Cloneable {
         if (clazz.equals(String.class)) {
             object = toStringValue();
         } else if (clazz.equals(Double.class)) {
-            object = nullable ? toDoubleValue() : toDouble();
+            if (nullable) {
+                object = toDoubleValue();
+            } else if (attr != null) {
+                object = toDouble();
+            }
         } else if (clazz.equals(double.class)) {
             object = toDoubleValue();
         } else if (clazz.equals(Float.class)) {
-            object = nullable ? toFloatValue() : toFloat();
+            if (nullable) {
+                object = toFloatValue();
+            } else if (attr != null) {
+                object = toFloat();
+            }
         } else if (clazz.equals(float.class)) {
             object = toFloatValue();
         } else if (clazz.equals(Integer.class)) {
-            object = nullable ? toIntValue() : toInteger();
+            if (nullable) {
+                object = toIntValue();
+            } else if (attr != null) {
+                object = toInteger();
+            }
         } else if (clazz.equals(int.class)) {
             object = toIntValue();
         } else if (clazz.equals(Short.class)) {
-            object = nullable ? toShortValue() : toShort();
+            if (nullable) {
+                object = toShortValue();
+            } else if (attr != null) {
+                object = toShort();
+            }
         } else if (clazz.equals(short.class)) {
             object = toShortValue();
         } else if (clazz.equals(Long.class)) {
-            object = nullable ? toLongValue() : toLong();
+            if (nullable) {
+                object = toLongValue();
+            } else if (attr != null) {
+                object = toLong();
+            }
         } else if (clazz.equals(long.class)) {
             object = toLongValue();
         } else if (clazz.equals(BigInteger.class)) {
@@ -581,11 +601,19 @@ public class BlurObject implements Serializable, Cloneable {
                 object = new BigDecimal(value);
             }
         } else if (clazz.equals(Boolean.class)) {
-            object = nullable ? toBooleanValue() : toBoolean();
+            if (nullable) {
+                object = toBooleanValue();
+            } else if (attr != null) {
+                object = toBoolean();
+            }
         } else if (clazz.equals(boolean.class)) {
             object = toBooleanValue();
         } else if (clazz.equals(Byte.class)) {
-            object = nullable ? toByteValue() : toByte();
+            if (nullable) {
+                object = toByteValue();
+            } else if (attr != null) {
+                object = toByte();
+            }
         } else if (clazz.equals(byte.class)) {
             object = toByteValue();
         } else if (clazz.equals(Byte[].class) || clazz.equals(byte[].class)) {
