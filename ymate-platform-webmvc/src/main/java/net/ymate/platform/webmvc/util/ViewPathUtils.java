@@ -17,7 +17,6 @@ package net.ymate.platform.webmvc.util;
 
 import net.ymate.platform.plugin.Plugins;
 import net.ymate.platform.webmvc.base.Type;
-import org.apache.commons.lang3.RegExUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.File;
@@ -52,8 +51,8 @@ public class ViewPathUtils {
     }
 
     private static String pathChecker(String path, String defaultPath, boolean substring) {
-        path = RegExUtils.replaceAll(path, "\\\\", Type.Const.PATH_SEPARATOR);
         if (StringUtils.isNotBlank(path)) {
+            path = path.replaceAll("\\\\", Type.Const.PATH_SEPARATOR);
             if (substring && path.contains(Type.Const.WEB_INF)) {
                 path = StringUtils.substring(path, path.indexOf(Type.Const.WEB_INF));
             }
