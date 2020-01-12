@@ -29,6 +29,7 @@ import org.apache.commons.logging.LogFactory;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 
 /**
  * YMP框架核心管理器
@@ -251,15 +252,18 @@ public final class YMP {
     }
 
     private static void showBanner() {
-        if (LOG.isInfoEnabled()) {
-            String bannerStr = null;
-            try (InputStream inputStream = ResourceUtils.getResourceAsStream("banner.txt", YMP.class)) {
-                if (inputStream != null) {
-                    bannerStr = IOUtils.toString(inputStream, "UTF-8");
-                }
-            } catch (IOException ignored) {
+        String bannerStr = null;
+        try (InputStream inputStream = ResourceUtils.getResourceAsStream("banner.txt", YMP.class)) {
+            if (inputStream != null) {
+                bannerStr = IOUtils.toString(inputStream, StandardCharsets.UTF_8);
             }
-            LOG.info(String.format("\n%s", StringUtils.defaultIfBlank(bannerStr, DEFAULT_BANNER_STR)));
+        } catch (IOException ignored) {
+        }
+        bannerStr = String.format("\n%s", StringUtils.defaultIfBlank(bannerStr, DEFAULT_BANNER_STR));
+        if (LOG.isInfoEnabled()) {
+            LOG.info(bannerStr);
+        } else {
+            System.out.println(bannerStr);
         }
     }
 
