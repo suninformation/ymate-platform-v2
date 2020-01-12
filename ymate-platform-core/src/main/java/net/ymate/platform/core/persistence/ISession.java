@@ -21,7 +21,7 @@ import net.ymate.platform.core.support.IDestroyable;
 /**
  * 基准会话接口
  *
- * @param <CONNECTION_HOLDER>
+ * @param <CONNECTION_HOLDER> 连接持有者类型
  * @author 刘镇 (suninformation@163.com) on 15/11/22 下午8:40
  */
 @Ignored

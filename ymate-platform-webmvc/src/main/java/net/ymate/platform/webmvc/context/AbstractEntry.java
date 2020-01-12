@@ -18,8 +18,8 @@ package net.ymate.platform.webmvc.context;
 import java.util.Map;
 
 /**
- * @param <K>
- * @param <V>
+ * @param <K> 键类型
+ * @param <V> 值类型
  * @author 刘镇 (suninformation@163.com) on 2011-7-24 下午10:31:48
  */
 public abstract class AbstractEntry<K, V> implements Map.Entry<K, V> {

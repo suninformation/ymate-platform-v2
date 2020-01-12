@@ -22,7 +22,7 @@ import org.apache.commons.lang.NullArgumentException;
 import org.apache.commons.lang3.StringUtils;
 
 /**
- * @param <OWNER>
+ * @param <OWNER> 所属持久化容器类型
  * @author 刘镇 (suninformation@163.com) on 2019-07-31 16:20
  * @since 2.1.0
  */

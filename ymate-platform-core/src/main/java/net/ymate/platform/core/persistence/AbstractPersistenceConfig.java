@@ -25,8 +25,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * @param <OWNER>
- * @param <DATA_SOURCE_CONFIG>
+ * @param <OWNER>              所属持久化容器类型
+ * @param <DATA_SOURCE_CONFIG> 数据源配置类型
  * @author 刘镇 (suninformation@163.com) on 2019-07-31 15:19
  */
 public abstract class AbstractPersistenceConfig<OWNER extends IPersistence, DATA_SOURCE_CONFIG extends IDataSourceConfig> implements IPersistenceConfig<OWNER, DATA_SOURCE_CONFIG> {

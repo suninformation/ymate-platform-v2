@@ -28,8 +28,9 @@ public class StaticMDCBinder {
     }
 
     /**
-     * Currently this method always returns an instance of
-     * {@link StaticMDCBinder}.
+     * Currently this method always returns an instance of {@link StaticMDCBinder}.
+     *
+     * @return instance of MDCAdapter
      */
     public MDCAdapter getMDCA() {
         return new Log4jMDCAdapter();

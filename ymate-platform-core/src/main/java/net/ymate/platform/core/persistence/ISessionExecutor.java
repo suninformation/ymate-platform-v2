@@ -18,8 +18,8 @@ package net.ymate.platform.core.persistence;
 /**
  * 基准会话执行器接口
  *
- * @param <RESULT>
- * @param <SESSION>
+ * @param <RESULT>  结果集类型
+ * @param <SESSION> 会话类型
  * @author 刘镇 (suninformation@163.com) on 2019-05-16 01:04
  * @since 2.1.0
  */

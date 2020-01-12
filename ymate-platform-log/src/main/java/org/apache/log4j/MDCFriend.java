@@ -26,11 +26,7 @@ public class MDCFriend {
             Field removeMethodField = MDC.class.getDeclaredField("removeMethod");
             removeMethodField.setAccessible(true);
             removeMethodField.set(mdc, removeMethod);
-        } catch (NoSuchMethodException e) {
-        } catch (SecurityException e) {
-        } catch (NoSuchFieldException e) {
-        } catch (IllegalArgumentException e) {
-        } catch (IllegalAccessException e) {
+        } catch (NoSuchMethodException | SecurityException | NoSuchFieldException | IllegalArgumentException | IllegalAccessException ignored) {
         }
     }
 }

@@ -137,6 +137,7 @@ public interface IConfig extends IDestroyable {
     /**
      * 填充配置对象
      *
+     * @param <T>          目标对象类型
      * @param configObject 配置对象，不可为空
      * @param cfgFileName  配置所需要的装载参数
      * @return 是否成功装载配置
@@ -146,6 +147,7 @@ public interface IConfig extends IDestroyable {
     /**
      * 填充配置对象
      *
+     * @param <T>          目标对象类型
      * @param configObject 配置对象，不可为空
      * @param cfgFileName  配置所需要的装载参数
      * @param search       是否采用搜索
@@ -156,6 +158,7 @@ public interface IConfig extends IDestroyable {
     /**
      * 填充配置对象
      *
+     * @param <T>          目标对象类型
      * @param configObject 配置对象，不可为空
      * @return 是否成功装载配置
      */
@@ -164,6 +167,7 @@ public interface IConfig extends IDestroyable {
     /**
      * 装载配置，根据Configuration注解指定的配置文件进行加载，否则默认使用当前配置类对象的SimpleName作为配置文件名，即：SimpleName.CfgTagName.xml
      *
+     * @param <T>          目标对象类型
      * @param configObject 配置对象，不可为空
      * @param search       是否采用搜索
      * @return 是否成功装载配置
@@ -173,6 +177,7 @@ public interface IConfig extends IDestroyable {
     /**
      * 根据自定义配置提供者填充配置对象
      *
+     * @param <T>           目标对象类型
      * @param providerClass 配置提供者类对象，若为空则采用框架默认
      * @param configObject  配置对象，不可为空
      * @param cfgFileName   配置所需要的装载参数
@@ -184,6 +189,7 @@ public interface IConfig extends IDestroyable {
     /**
      * 根据自定义配置提供者填充配置对象
      *
+     * @param <T>           目标对象类型
      * @param providerClass 配置提供者类对象，若为空则采用框架默认
      * @param configObject  配置对象，不可为空
      * @param cfgFileName   配置所需要的装载参数

@@ -75,17 +75,17 @@ public final class EntityMeta implements Serializable {
     private final List<String> readonlyProps;
 
     /**
-     * 字段->属性映射
+     * 字段 to 属性映射
      */
     private final Map<String, PropertyMeta> properties;
 
     /**
-     * 属性->字段映射
+     * 属性 to 字段映射
      */
     private final Map<String, PropertyMeta> fields;
 
     /**
-     * 索引名称->索引映射
+     * 索引名称 to 索引映射
      */
     private final Map<String, IndexMeta> indexes;
 

@@ -23,9 +23,9 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 /**
- * @param <OWNER>
- * @param <DATASOURCE_CONFIG>
- * @param <CONNECTION>
+ * @param <OWNER>             所属持久化容器类型
+ * @param <DATASOURCE_CONFIG> 数据源配置类型
+ * @param <CONNECTION>        连接类型
  * @author 刘镇 (suninformation@163.com) on 2019-08-01 10:51
  * @since 2.1.0
  */
