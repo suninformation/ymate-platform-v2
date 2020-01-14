@@ -17,10 +17,8 @@ package net.ymate.platform.cache;
 
 import net.sf.ehcache.CacheManager;
 import net.ymate.platform.commons.ReentrantLockHelper;
-import net.ymate.platform.commons.util.ClassUtils;
 import net.ymate.platform.commons.util.FileUtils;
 import net.ymate.platform.commons.util.RuntimeUtils;
-import net.ymate.platform.persistence.redis.Redis;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -39,24 +37,6 @@ import java.util.concurrent.ConcurrentHashMap;
 public abstract class AbstractCacheProvider implements ICacheProvider {
 
     private static final Log LOG = LogFactory.getLog(AbstractCacheProvider.class);
-
-    protected static final IRedisCreator REDIS_CREATOR;
-
-    static {
-        IRedisCreator redisCreator = null;
-        try {
-            redisCreator = ClassUtils.getExtensionLoader(IRedisCreator.class).getExtension();
-            if (redisCreator == null) {
-                redisCreator = Redis::get;
-            }
-        } catch (NoClassDefFoundError ignored) {
-        } catch (Exception e) {
-            if (LOG.isErrorEnabled()) {
-                LOG.error(StringUtils.EMPTY, RuntimeUtils.unwrapThrow(e));
-            }
-        }
-        REDIS_CREATOR = redisCreator;
-    }
 
     private ICaches owner;
 

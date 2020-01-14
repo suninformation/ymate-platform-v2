@@ -15,7 +15,7 @@
  */
 package net.ymate.platform.cache.impl;
 
-import net.ymate.platform.cache.AbstractCacheProvider;
+import net.ymate.platform.cache.AbstractRedisCacheProvider;
 import net.ymate.platform.cache.ICache;
 import net.ymate.platform.cache.ICacheEventListener;
 import net.ymate.platform.cache.support.RedisCacheWrapper;
@@ -24,7 +24,7 @@ import net.ymate.platform.persistence.redis.IRedis;
 /**
  * @author 刘镇 (suninformation@163.com) on 15/12/6 上午4:20
  */
-public class RedisCacheProvider extends AbstractCacheProvider {
+public class RedisCacheProvider extends AbstractRedisCacheProvider {
 
     private IRedis redis;
 

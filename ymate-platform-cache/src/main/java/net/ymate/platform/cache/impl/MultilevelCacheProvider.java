@@ -17,7 +17,7 @@ package net.ymate.platform.cache.impl;
 
 import net.sf.ehcache.CacheManager;
 import net.sf.ehcache.Ehcache;
-import net.ymate.platform.cache.AbstractCacheProvider;
+import net.ymate.platform.cache.AbstractRedisCacheProvider;
 import net.ymate.platform.cache.ICache;
 import net.ymate.platform.cache.ICacheEventListener;
 import net.ymate.platform.cache.support.MultilevelCacheWrapper;
@@ -26,7 +26,7 @@ import net.ymate.platform.persistence.redis.IRedis;
 /**
  * @author 刘镇 (suninformation@163.com) on 15/12/6 上午4:58
  */
-public class MultilevelCacheProvider extends AbstractCacheProvider {
+public class MultilevelCacheProvider extends AbstractRedisCacheProvider {
 
     private CacheManager cacheManager;
 
