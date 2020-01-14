@@ -164,16 +164,18 @@ public final class Validations implements IModule, IValidation {
             ValidationMeta validationMeta = bindValidationMeta(targetMethod.getDeclaringClass());
             if (validationMeta != null) {
                 ValidationMeta.MethodInfo methodInfo = validationMeta.getMethod(targetMethod);
-                Validation.MODE mode = methodInfo.getValidation() == null ? validationMeta.getMode() : methodInfo.getValidation().mode();
-                String resourceName = methodInfo.getValidation() == null ? validationMeta.getResourcesName() : StringUtils.defaultIfBlank(methodInfo.getValidation().resourcesName(), validationMeta.getResourcesName());
-                //
-                Map<String, String> contextParams = InterceptAnnHelper.getContextParams(owner, (targetClass != null ? targetClass : targetMethod.getDeclaringClass()), targetMethod);
-                for (Map.Entry<String, ValidationMeta.ParamInfo> entry : methodInfo.getParams().entrySet()) {
-                    ValidateResult validateResult = doValidate(entry.getValue(), paramValues, contextParams, resourceName);
-                    if (validateResult != null && validateResult.isMatched()) {
-                        returnValues.put(validateResult.getName(), validateResult);
-                        if (Validation.MODE.NORMAL.equals(mode)) {
-                            break;
+                if (methodInfo != null) {
+                    Validation.MODE mode = methodInfo.getValidation() == null ? validationMeta.getMode() : methodInfo.getValidation().mode();
+                    String resourceName = methodInfo.getValidation() == null ? validationMeta.getResourcesName() : StringUtils.defaultIfBlank(methodInfo.getValidation().resourcesName(), validationMeta.getResourcesName());
+                    //
+                    Map<String, String> contextParams = InterceptAnnHelper.getContextParams(owner, (targetClass != null ? targetClass : targetMethod.getDeclaringClass()), targetMethod);
+                    for (Map.Entry<String, ValidationMeta.ParamInfo> entry : methodInfo.getParams().entrySet()) {
+                        ValidateResult validateResult = doValidate(entry.getValue(), paramValues, contextParams, resourceName);
+                        if (validateResult != null && validateResult.isMatched()) {
+                            returnValues.put(validateResult.getName(), validateResult);
+                            if (Validation.MODE.NORMAL.equals(mode)) {
+                                break;
+                            }
                         }
                     }
                 }

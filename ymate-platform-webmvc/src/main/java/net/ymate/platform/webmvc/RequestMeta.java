@@ -180,11 +180,14 @@ public class RequestMeta {
         this.methodParameterMetas = new ArrayList<>();
         this.methodParamNames = Arrays.asList(ClassUtils.getMethodParamNames(method));
         if (!this.methodParamNames.isEmpty()) {
-            for (Parameter parameter : method.getParameters()) {
-                ParameterMeta parameterMeta = new ParameterMeta(parameter.getType(), parameter.getName(), parameter.getAnnotations());
+            Parameter[] parameters = method.getParameters();
+            int idx = 0;
+            for (String methodName : methodParamNames) {
+                ParameterMeta parameterMeta = new ParameterMeta(parameters[idx].getType(), methodName, parameters[idx].getAnnotations());
                 if (parameterMeta.isParamField()) {
                     this.methodParameterMetas.add(parameterMeta);
                 }
+                idx++;
             }
         }
     }

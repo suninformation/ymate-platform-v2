@@ -67,36 +67,42 @@ public final class ValidationMeta implements Serializable {
         // 处理targetClass所有Field成员属性
         fields.putAll(parseClassFields(null, targetClass));
         // 处理targetClass所有Method方法
-        for (Method method : targetClass.getDeclaredMethods()) {
-            MethodInfo methodInfo = new MethodInfo();
-            // 处理每个方法上有@Validation的注解
-            methodInfo.setValidation(method.getAnnotation(Validation.class));
-            // 处理每个方法参数上有关验证的注解
-            for (Parameter parameter : method.getParameters()) {
-                ParamInfo paramInfo = new ParamInfo();
-                paramInfo.setName(parameter.getName());
-                List<Annotation> tmpAnnList = new ArrayList<>();
-                // 尝试获取自定义的参数别名
-                VField vField = parameter.getAnnotation(VField.class);
-                if (vField != null) {
-                    paramInfo.setFieldName(StringUtils.trimToNull(vField.name()));
-                    paramInfo.setLabel(StringUtils.trimToNull(vField.label()));
-                }
-                if (parameter.isAnnotationPresent(VModel.class)) {
-                    // 递归处理@VModel
-                    methodInfo.getParams().putAll(parseClassFields(paramInfo.getName(), parameter.getType()));
-                } else {
-                    for (Annotation annotation : parameter.getAnnotations()) {
-                        parseAnnotation(annotation, tmpAnnList);
+        ClassUtils.BeanWrapper<?> wrapper = ClassUtils.wrapper(targetClass);
+        if (wrapper != null) {
+            for (Method method : wrapper.getMethods()) {
+                MethodInfo methodInfo = new MethodInfo();
+                // 处理每个方法上有@Validation的注解
+                methodInfo.setValidation(method.getAnnotation(Validation.class));
+                // 处理每个方法参数上有关验证的注解
+                String[] methodParamNames = ClassUtils.getMethodParamNames(method);
+                int idx = 0;
+                for (Parameter parameter : method.getParameters()) {
+                    ParamInfo paramInfo = new ParamInfo();
+                    paramInfo.setName(methodParamNames[idx]);
+                    List<Annotation> tmpAnnList = new ArrayList<>();
+                    // 尝试获取自定义的参数别名
+                    VField vField = parameter.getAnnotation(VField.class);
+                    if (vField != null) {
+                        paramInfo.setFieldName(StringUtils.trimToNull(vField.name()));
+                        paramInfo.setLabel(StringUtils.trimToNull(vField.label()));
                     }
+                    if (parameter.isAnnotationPresent(VModel.class)) {
+                        // 递归处理@VModel
+                        methodInfo.getParams().putAll(parseClassFields(paramInfo.getName(), parameter.getType()));
+                    } else {
+                        for (Annotation annotation : parameter.getAnnotations()) {
+                            parseAnnotation(annotation, tmpAnnList);
+                        }
+                    }
+                    if (!tmpAnnList.isEmpty()) {
+                        paramInfo.setAnnotations(tmpAnnList.toArray(new Annotation[0]));
+                        methodInfo.getParams().put(paramInfo.getName(), paramInfo);
+                    }
+                    idx++;
                 }
-                if (!tmpAnnList.isEmpty()) {
-                    paramInfo.setAnnotations(tmpAnnList.toArray(new Annotation[0]));
-                    methodInfo.getParams().put(paramInfo.getName(), paramInfo);
+                if (!methodInfo.getParams().isEmpty()) {
+                    methods.put(method, methodInfo);
                 }
-            }
-            if (!methodInfo.getParams().isEmpty()) {
-                methods.put(method, methodInfo);
             }
         }
     }
