@@ -42,7 +42,7 @@ public @interface ConfigValue {
     String value() default StringUtils.EMPTY;
 
     /**
-     * @return 项置项默认值
+     * @return 配置项默认值
      */
     String defaultValue() default StringUtils.EMPTY;
 
