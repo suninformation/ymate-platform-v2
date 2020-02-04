@@ -41,6 +41,25 @@ public interface IBeanLoader {
     void setClassLoader(ClassLoader classLoader);
 
     /**
+     * 加载类对象
+     *
+     * @return 返回加载的类对象集合
+     * @throws Exception 类加载过程可能产生异常
+     * @since 2.1.0
+     */
+    List<Class<?>> load() throws Exception;
+
+    /**
+     * 加载类对象
+     *
+     * @param filter 类对象过滤器
+     * @return 返回加载的类对象集合
+     * @throws Exception 类加载过程可能产生异常
+     * @since 2.1.0
+     */
+    List<Class<?>> load(IBeanFilter filter) throws Exception;
+
+    /**
      * 加载的类对象集合
      *
      * @param beanFactory 对象工厂

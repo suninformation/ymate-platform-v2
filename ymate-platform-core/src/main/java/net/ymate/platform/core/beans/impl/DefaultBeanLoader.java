@@ -43,31 +43,41 @@ import java.util.zip.ZipInputStream;
 public class DefaultBeanLoader extends AbstractBeanLoader {
 
     @Override
-    public void load(IBeanFactory beanFactory, IBeanFilter filter) throws Exception {
+    public List<Class<?>> load() throws Exception {
+        return load((IBeanFilter) null);
+    }
+
+    @Override
+    public List<Class<?>> load(IBeanFilter filter) throws Exception {
+        List<Class<?>> results = new ArrayList<>();
         List<String> packageNames = getPackageNames();
         if (!packageNames.isEmpty()) {
             String[] excludedPackages = getExcludedPackageNames().toArray(new String[0]);
             for (String packageName : packageNames) {
-                List<Class<?>> classes = doLoad(packageName, filter);
-                for (Class<?> clazz : classes) {
-                    if (!StringUtils.startsWithAny(clazz.getPackage().getName(), excludedPackages)) {
-                        // 不扫描注解、枚举类，被声明@Ingored注解的类也将被忽略，因为需要处理package-info信息，所以放开接口限制
-                        if (!clazz.isAnnotation() && !clazz.isEnum() && !clazz.isAnnotationPresent(Ignored.class)) {
-                            Annotation[] annotations = clazz.getAnnotations();
-                            if (annotations != null && annotations.length > 0) {
-                                for (Annotation annotation : annotations) {
-                                    IBeanHandler beanHandler = getBeanHandler(annotation.annotationType());
-                                    if (beanHandler != null) {
-                                        Object instanceObj = beanHandler.handle(clazz);
-                                        if (instanceObj instanceof BeanMeta) {
-                                            beanFactory.registerBean((BeanMeta) instanceObj);
-                                        } else if (instanceObj != null) {
-                                            BeanMeta beanMeta = BeanMeta.create(clazz, true);
-                                            beanMeta.setBeanObject(instanceObj);
-                                            beanFactory.registerBean(beanMeta);
-                                        }
-                                    }
-                                }
+                doLoad(packageName, filter).stream().filter(clazz -> !StringUtils.startsWithAny(clazz.getPackage().getName(), excludedPackages)).forEachOrdered(results::add);
+            }
+        }
+        return results;
+    }
+
+    @Override
+    public void load(IBeanFactory beanFactory, IBeanFilter filter) throws Exception {
+        List<Class<?>> classes = load(filter);
+        for (Class<?> clazz : classes) {
+            // 不扫描注解、枚举类，被声明@Ingored注解的类也将被忽略，因为需要处理package-info信息，所以放开接口限制
+            if (!clazz.isAnnotation() && !clazz.isEnum() && !clazz.isAnnotationPresent(Ignored.class)) {
+                Annotation[] annotations = clazz.getAnnotations();
+                if (annotations != null && annotations.length > 0) {
+                    for (Annotation annotation : annotations) {
+                        IBeanHandler beanHandler = getBeanHandler(annotation.annotationType());
+                        if (beanHandler != null) {
+                            Object instanceObj = beanHandler.handle(clazz);
+                            if (instanceObj instanceof BeanMeta) {
+                                beanFactory.registerBean((BeanMeta) instanceObj);
+                            } else if (instanceObj != null) {
+                                BeanMeta beanMeta = BeanMeta.create(clazz, true);
+                                beanMeta.setBeanObject(instanceObj);
+                                beanFactory.registerBean(beanMeta);
                             }
                         }
                     }
