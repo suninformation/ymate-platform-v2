@@ -98,7 +98,7 @@ public class NioUdpSession extends AbstractNioSession<AbstractNioUdpListener> {
         ByteBufferBuilder copiedBuffer = buffer().duplicate().flip();
         while (true) {
             copiedBuffer.mark();
-            NioUdpMessageWrapper message;
+            NioUdpMessageWrapper<?> message;
             InetSocketAddress address = attr(SocketAddress.class.getName());
             if (address != null && copiedBuffer.remaining() > 0) {
                 message = new NioUdpMessageWrapper<>(address, eventGroup().codec().decode(copiedBuffer));

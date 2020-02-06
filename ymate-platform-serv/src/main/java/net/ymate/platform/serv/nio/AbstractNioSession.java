@@ -174,7 +174,7 @@ public abstract class AbstractNioSession<LISTENER extends IListener<INioSession>
         if (selectionKey == null) {
             return;
         }
-        NioEventProcessor eventProcessor = eventGroup.processor(selectionKey);
+        NioEventProcessor<?> eventProcessor = eventGroup.processor(selectionKey);
         if (eventProcessor != null) {
             eventGroup.listener().onBeforeSessionClosed(this);
             eventProcessor.unregisterEvent(this);
@@ -344,7 +344,7 @@ public abstract class AbstractNioSession<LISTENER extends IListener<INioSession>
         if (o == null || getClass() != o.getClass()) {
             return false;
         }
-        AbstractNioSession session = (AbstractNioSession) o;
+        AbstractNioSession<?> session = (AbstractNioSession<?>) o;
         return id.equals(session.id);
     }
 

@@ -25,7 +25,7 @@ import java.io.Closeable;
  * @since 2.1.0
  */
 @Ignored
-public interface IService extends IInitialization<IClient>, Closeable {
+public interface IService extends IInitialization<IClient<?, ?>>, Closeable {
 
     /**
      * 启动服务

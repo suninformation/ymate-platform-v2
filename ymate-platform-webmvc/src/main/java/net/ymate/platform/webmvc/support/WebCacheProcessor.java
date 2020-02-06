@@ -70,10 +70,9 @@ public class WebCacheProcessor implements IWebCacheProcessor {
     }
 
     private PageCacheElement putCacheElement(GenericResponseWrapper response, ICaches caches, ResponseCache responseCache, String cacheKey, IView resultView) throws Exception {
+        PageCacheElement cacheElement = null;
         ReentrantLock locker = LOCK.getLocker(cacheKey);
         locker.lock();
-        //
-        PageCacheElement cacheElement = null;
         try {
             // 尝试读取缓存
             cacheElement = (PageCacheElement) caches.get(responseCache.cacheName(), cacheKey);
@@ -97,7 +96,7 @@ public class WebCacheProcessor implements IWebCacheProcessor {
                 LOG.warn(String.format("%s Unsupported Render To OutputStream Operation, Skip Cache.", resultView.getClass().getName()));
             }
         } finally {
-            LOCK.unlock(locker);
+            locker.unlock();
         }
         return cacheElement;
     }

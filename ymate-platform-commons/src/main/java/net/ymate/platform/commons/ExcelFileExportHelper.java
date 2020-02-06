@@ -169,7 +169,7 @@ public final class ExcelFileExportHelper {
             }
             for (Object item : data.values()) {
                 if (item instanceof Collection) {
-                    for (Object obj : (Collection) item) {
+                    for (Object obj : (Collection<?>) item) {
                         ClassUtils.BeanWrapper<?> objectBeanWrapper = ClassUtils.wrapper(obj);
                         ConsoleTableBuilder.Row newRow = tableBuilder.addRow();
                         for (String fieldName : objectBeanWrapper.getFieldNames()) {

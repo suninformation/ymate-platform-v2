@@ -31,16 +31,16 @@ public abstract class AbstractHeartbeatService<HEARTBEAT_TYPE> extends AbstractS
 
     private static final Log LOG = LogFactory.getLog(AbstractHeartbeatService.class);
 
-    private IClient client;
+    private IClient<?, ?> client;
 
     private long heartbeatInterval;
 
-    protected IClient getClient() {
+    protected IClient<?, ?> getClient() {
         return client;
     }
 
     @Override
-    public void initialize(IClient client) {
+    public void initialize(IClient<?, ?> client) {
         this.client = client;
         doInit();
     }

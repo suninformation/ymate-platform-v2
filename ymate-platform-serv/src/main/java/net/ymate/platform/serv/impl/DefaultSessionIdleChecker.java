@@ -30,7 +30,7 @@ import java.util.Map;
  * @param <MESSAGE_TYPE>    消息类型
  * @author 刘镇 (suninformation@163.com) on 2018/11/22 2:27 AM
  */
-public class DefaultSessionIdleChecker<SESSION_WRAPPER extends ISessionWrapper, SESSION_ID, MESSAGE_TYPE> implements ISessionIdleChecker<SESSION_WRAPPER, SESSION_ID, MESSAGE_TYPE> {
+public class DefaultSessionIdleChecker<SESSION_WRAPPER extends ISessionWrapper<?, ?>, SESSION_ID, MESSAGE_TYPE> implements ISessionIdleChecker<SESSION_WRAPPER, SESSION_ID, MESSAGE_TYPE> {
 
     private static final Log LOG = LogFactory.getLog(DefaultSessionIdleChecker.class);
 
@@ -67,7 +67,7 @@ public class DefaultSessionIdleChecker<SESSION_WRAPPER extends ISessionWrapper, 
                 if (LOG.isDebugEnabled()) {
                     LOG.debug(String.format("%s - Session idle removed. Session count: %d", entry.getValue(), this.getSessionManager().sessionCount()));
                 }
-                getSessionManager().sessionListener().onSessionIdleRemoved(entry.getValue());
+                getSessionManager().getSessionListener().onSessionIdleRemoved(entry.getValue());
             }
         }
     }

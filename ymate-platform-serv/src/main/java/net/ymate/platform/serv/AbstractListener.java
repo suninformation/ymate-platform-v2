@@ -21,17 +21,17 @@ import net.ymate.platform.serv.nio.INioSession;
 import java.io.IOException;
 
 /**
- * @param <T> 会话类型
+ * @param <SESSION_TYPE> 会话类型
  * @author 刘镇 (suninformation@163.com) on 15/11/15 下午6:01
  */
-public abstract class AbstractListener<T extends INioSession> implements IListener<T> {
+public abstract class AbstractListener<SESSION_TYPE extends INioSession> implements IListener<SESSION_TYPE> {
 
     @Override
-    public void onClientReconnected(IClient client) {
+    public void onClientReconnected(IClient<?, ?> client) {
     }
 
     @Override
-    public void onExceptionCaught(Throwable e, T session) throws IOException {
+    public void onExceptionCaught(Throwable e, SESSION_TYPE session) throws IOException {
         if (e instanceof IOException) {
             throw (IOException) e;
         } else {

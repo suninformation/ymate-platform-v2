@@ -30,6 +30,8 @@ import java.nio.channels.SelectableChannel;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
@@ -42,7 +44,7 @@ public class NioEventGroup<LISTENER extends IListener<INioSession>> extends Abst
 
     private int selectorCount = 1;
 
-    private NioEventProcessor[] eventProcessors;
+    private List<NioEventProcessor<LISTENER>> eventProcessors;
 
     private final AtomicInteger handlerCount = new AtomicInteger(0);
 
@@ -67,14 +69,13 @@ public class NioEventGroup<LISTENER extends IListener<INioSession>> extends Abst
     }
 
     @Override
-    @SuppressWarnings("unchecked")
     protected INioSession sessionCreate(IClientCfg cfg) throws IOException {
         SocketChannel socketChannel = SocketChannel.open();
         socketChannel.configureBlocking(false);
         socketChannel.socket().setReuseAddress(true);
         socketChannel.connect(new InetSocketAddress(cfg.getRemoteHost(), cfg.getPort()));
         selectableChannel = socketChannel;
-        return new NioSession(this, socketChannel);
+        return new NioSession<>(this, socketChannel);
     }
 
     @Override
@@ -97,7 +98,7 @@ public class NioEventGroup<LISTENER extends IListener<INioSession>> extends Abst
         return selectorCount;
     }
 
-    protected NioEventProcessor[] processors() {
+    protected List<NioEventProcessor<LISTENER>> processors() {
         return eventProcessors;
     }
 
@@ -105,11 +106,12 @@ public class NioEventGroup<LISTENER extends IListener<INioSession>> extends Abst
         return StringUtils.capitalize(name()).concat(isServer() ? "Server" : "Client").concat("-NioEventProcessor-");
     }
 
-    protected NioEventProcessor[] initProcessors() throws IOException {
-        NioEventProcessor[] newEventProcessors = new NioEventProcessor[selectorCount];
+    protected List<NioEventProcessor<LISTENER>> initProcessors() throws IOException {
+        List<NioEventProcessor<LISTENER>> newEventProcessors = new ArrayList<>(selectorCount);
         for (int idx = 0; idx < selectorCount; idx++) {
-            newEventProcessors[idx] = new NioEventProcessor<>(this, buildProcessorName() + idx);
-            newEventProcessors[idx].start();
+            NioEventProcessor<LISTENER> eventProcessor = new NioEventProcessor<>(this, buildProcessorName() + idx);
+            eventProcessor.start();
+            newEventProcessors.add(eventProcessor);
         }
         return newEventProcessors;
     }
@@ -127,7 +129,7 @@ public class NioEventGroup<LISTENER extends IListener<INioSession>> extends Abst
 
     @Override
     public void stop() throws IOException {
-        for (NioEventProcessor processor : eventProcessors) {
+        for (NioEventProcessor<?> processor : eventProcessors) {
             processor.interrupt();
         }
         if (selectableChannel != null) {
@@ -139,22 +141,17 @@ public class NioEventGroup<LISTENER extends IListener<INioSession>> extends Abst
     }
 
     @Override
-    public NioEventProcessor processor(SelectionKey key) {
-        for (NioEventProcessor processor : eventProcessors) {
-            if (key.selector() == processor.selector()) {
-                return processor;
-            }
-        }
-        return null;
+    public NioEventProcessor<LISTENER> processor(SelectionKey key) {
+        return eventProcessors.stream().filter(processor -> key.selector() == processor.selector()).findFirst().orElse(null);
     }
 
     @Override
-    public NioEventProcessor processor() {
+    public NioEventProcessor<LISTENER> processor() {
         int nextIdx = handlerCount.getAndIncrement() % selectorCount;
         if (nextIdx < 0) {
             handlerCount.set(0);
             nextIdx = 0;
         }
-        return eventProcessors[nextIdx];
+        return eventProcessors.get(nextIdx);
     }
 }

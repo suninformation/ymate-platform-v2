@@ -29,7 +29,7 @@ import java.io.IOException;
  * @author 刘镇 (suninformation@163.com) on 15/10/15 上午10:21
  */
 @Ignored
-public interface IClient<LISTENER extends IListener, CODEC extends INioCodec> extends Closeable {
+public interface IClient<LISTENER extends IListener<?>, CODEC extends INioCodec> extends Closeable {
 
     /**
      * 初始化客户端服务

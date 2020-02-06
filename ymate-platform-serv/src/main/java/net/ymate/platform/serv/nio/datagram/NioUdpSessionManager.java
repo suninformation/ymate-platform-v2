@@ -19,7 +19,6 @@ import net.ymate.platform.commons.util.RuntimeUtils;
 import net.ymate.platform.serv.AbstractSessionManager;
 import net.ymate.platform.serv.IServer;
 import net.ymate.platform.serv.IServerCfg;
-import net.ymate.platform.serv.ISessionListener;
 import net.ymate.platform.serv.nio.INioCodec;
 import net.ymate.platform.serv.nio.INioSession;
 import net.ymate.platform.serv.nio.server.NioSessionManager;
@@ -71,12 +70,12 @@ public class NioUdpSessionManager<SESSION_WRAPPER extends NioUdpSessionWrapper, 
     }
 
     @Override
-    protected IServer buildServer(IServerCfg serverCfg, INioCodec codec) {
+    protected IServer<?, ?> buildServer(IServerCfg serverCfg, INioCodec codec) {
         NioUdpServer udpServer = new NioUdpServer();
         udpServer.initialize(serverCfg, new AbstractNioUdpListener() {
             @Override
             @SuppressWarnings("unchecked")
-            protected void onMessageReceived(NioUdpMessageWrapper messageWrapper, INioSession session) throws IOException {
+            protected void onMessageReceived(NioUdpMessageWrapper<?> messageWrapper, INioSession session) throws IOException {
                 SESSION_WRAPPER sessionWrapper = sessionWrapper(messageWrapper.getSocketAddress());
                 if (sessionWrapper == null) {
                     sessionWrapper = registerSession(session, messageWrapper.getSocketAddress());
@@ -119,7 +118,7 @@ public class NioUdpSessionManager<SESSION_WRAPPER extends NioUdpSessionWrapper, 
     }
 
     @Override
-    public ISessionListener<SESSION_WRAPPER> sessionListener() {
+    public INioUdpSessionListener<SESSION_WRAPPER, MESSAGE_TYPE> getSessionListener() {
         return sessionListener;
     }
 

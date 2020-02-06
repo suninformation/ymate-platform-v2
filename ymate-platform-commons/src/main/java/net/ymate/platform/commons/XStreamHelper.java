@@ -63,7 +63,6 @@ public class XStreamHelper {
                 private boolean cdata = false;
 
                 @Override
-                @SuppressWarnings("rawtypes")
                 public void startNode(String name, Class clazz) {
                     super.startNode(name, clazz);
                     this.name = name;

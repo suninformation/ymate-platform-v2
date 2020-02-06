@@ -23,6 +23,8 @@ import java.util.Map;
 /**
  * 会话包装器接口
  *
+ * @param <SESSION_TYPE> 会话类型
+ * @param <SESSION_ID>   会话标识类型
  * @author 刘镇 (suninformation@163.com) on 2018/11/14 11:41 AM
  */
 @Ignored

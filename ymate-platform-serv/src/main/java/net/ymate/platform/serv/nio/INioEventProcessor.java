@@ -25,6 +25,7 @@ import java.nio.channels.Selector;
 /**
  * 事件处理器
  *
+ * @param <SESSION> 会话类型
  * @author 刘镇 (suninformation@163.com) on 15/11/15 下午6:31
  */
 @Ignored

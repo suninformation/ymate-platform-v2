@@ -62,10 +62,10 @@ public class CacheableProxy implements IProxy {
         if (cacheKey == null) {
             cacheKey = caches.getConfig().getKeyGenerator().generateKey(proxyChain.getTargetMethod(), proxyChain.getMethodParams());
         }
-        ReentrantLock locker = LOCKER.getLocker(cacheKey.toString());
-        locker.lock();
         //
         CacheElement cacheElement;
+        ReentrantLock locker = LOCKER.getLocker(cacheKey.toString());
+        locker.lock();
         try {
             ICacheScopeProcessor cacheScopeProcessor = caches.getConfig().getCacheScopeProcessor();
             if (!cacheable.scope().equals(ICaches.Scope.DEFAULT) && cacheScopeProcessor != null) {
@@ -93,7 +93,7 @@ public class CacheableProxy implements IProxy {
                 }
             }
         } finally {
-            LOCKER.unlock(locker);
+            locker.unlock();
         }
         return cacheElement != null ? cacheElement.getObject() : null;
     }

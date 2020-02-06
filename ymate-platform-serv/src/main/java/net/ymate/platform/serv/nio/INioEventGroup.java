@@ -27,6 +27,7 @@ import java.util.concurrent.ExecutorService;
 /**
  * 多路复用通道事件处理器
  *
+ * @param <LISTENER> 监听器类型
  * @author 刘镇 (suninformation@163.com) on 2018/11/16 1:40 AM
  */
 @Ignored

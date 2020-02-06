@@ -23,10 +23,13 @@ import java.util.Map;
 /**
  * 会话空闲检查器接口
  *
+ * @param <SESSION_WRAPPER> 会话包装器类型
+ * @param <SESSION_ID>      会话标识类型
+ * @param <MESSAGE_TYPE>    消息类型
  * @author 刘镇 (suninformation@163.com) on 2018/11/21 7:26 PM
  */
 @Ignored
-public interface ISessionIdleChecker<SESSION_WRAPPER extends ISessionWrapper, SESSION_ID, MESSAGE_TYPE> extends IDestroyable {
+public interface ISessionIdleChecker<SESSION_WRAPPER extends ISessionWrapper<?, ?>, SESSION_ID, MESSAGE_TYPE> extends IDestroyable {
 
     /**
      * 初始化

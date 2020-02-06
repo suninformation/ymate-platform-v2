@@ -39,11 +39,11 @@ import java.util.concurrent.TimeUnit;
  * @param <MESSAGE_TYPE>    消息类型
  * @author 刘镇 (suninformation@163.com) on 2018/11/14 11:35 AM
  */
-public abstract class AbstractSessionManager<SESSION_WRAPPER extends ISessionWrapper, SESSION_ID, MESSAGE_TYPE> implements ISessionManager<SESSION_WRAPPER, SESSION_ID, MESSAGE_TYPE> {
+public abstract class AbstractSessionManager<SESSION_WRAPPER extends ISessionWrapper<?, ?>, SESSION_ID, MESSAGE_TYPE> implements ISessionManager<SESSION_WRAPPER, SESSION_ID, MESSAGE_TYPE> {
 
     private final Map<SESSION_ID, SESSION_WRAPPER> sessionWrappers = new ConcurrentHashMap<>();
 
-    private IServer server;
+    private IServer<?, ?> server;
 
     private final IServerCfg serverCfg;
 
@@ -186,7 +186,7 @@ public abstract class AbstractSessionManager<SESSION_WRAPPER extends ISessionWra
      * @param codec     编解码器
      * @return 返回构建后的服务端接口实例对象
      */
-    protected abstract IServer buildServer(IServerCfg serverCfg, INioCodec codec);
+    protected abstract IServer<?, ?> buildServer(IServerCfg serverCfg, INioCodec codec);
 
     @Override
     public void initialize() throws Exception {

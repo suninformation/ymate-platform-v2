@@ -23,11 +23,11 @@ import java.io.IOException;
 /**
  * 事件监听器
  *
- * @param <T> 会话类型
+ * @param <SESSION> 会话类型
  * @author 刘镇 (suninformation@163.com) on 15/11/6 下午3:41
  */
 @Ignored
-public interface IListener<T extends INioSession> {
+public interface IListener<SESSION extends INioSession> {
 
     /**
      * 会话注册成功事件处理方法
@@ -35,7 +35,7 @@ public interface IListener<T extends INioSession> {
      * @param session 当前会话对象
      * @throws IOException 可能产生的异常
      */
-    void onSessionRegistered(T session) throws IOException;
+    void onSessionRegistered(SESSION session) throws IOException;
 
     /**
      * 会话连接事件处理方法
@@ -43,7 +43,7 @@ public interface IListener<T extends INioSession> {
      * @param session 当前会话对象
      * @throws IOException 可能产生的异常
      */
-    void onSessionConnected(T session) throws IOException;
+    void onSessionConnected(SESSION session) throws IOException;
 
     /**
      * 会话被接受事件处理方法
@@ -51,7 +51,7 @@ public interface IListener<T extends INioSession> {
      * @param session 当前会话对象
      * @throws IOException 可能产生的异常
      */
-    void onSessionAccepted(T session) throws IOException;
+    void onSessionAccepted(SESSION session) throws IOException;
 
     /**
      * 会话关闭前事件处理方法
@@ -59,7 +59,7 @@ public interface IListener<T extends INioSession> {
      * @param session 当前会话对象
      * @throws IOException 可能产生的异常
      */
-    void onBeforeSessionClosed(T session) throws IOException;
+    void onBeforeSessionClosed(SESSION session) throws IOException;
 
     /**
      * 会话关闭后事件处理方法
@@ -67,7 +67,7 @@ public interface IListener<T extends INioSession> {
      * @param session 当前会话对象
      * @throws IOException 可能产生的异常
      */
-    void onAfterSessionClosed(T session) throws IOException;
+    void onAfterSessionClosed(SESSION session) throws IOException;
 
     /**
      * 消息到达事件处理方法
@@ -76,7 +76,7 @@ public interface IListener<T extends INioSession> {
      * @param session 会话对象
      * @throws IOException 可能产生的异常
      */
-    void onMessageReceived(Object message, T session) throws IOException;
+    void onMessageReceived(Object message, SESSION session) throws IOException;
 
     /**
      * 异常事件处理方法
@@ -85,7 +85,7 @@ public interface IListener<T extends INioSession> {
      * @param session 会话对象
      * @throws IOException 可能产生的异常
      */
-    void onExceptionCaught(Throwable e, T session) throws IOException;
+    void onExceptionCaught(Throwable e, SESSION session) throws IOException;
 
     /**
      * 断线重连事件处理方法
@@ -93,5 +93,5 @@ public interface IListener<T extends INioSession> {
      * @param client 当前客户端对象
      * @throws IOException 可能产生的异常
      */
-    void onClientReconnected(IClient client) throws IOException;
+    void onClientReconnected(IClient<?, ?> client) throws IOException;
 }

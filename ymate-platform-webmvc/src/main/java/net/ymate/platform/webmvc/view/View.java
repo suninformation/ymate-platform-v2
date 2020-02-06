@@ -161,6 +161,14 @@ public class View {
      */
     public interface IViewBuilder {
 
+        /**
+         * 构建视图
+         *
+         * @param owner          所属容器对象
+         * @param requestMapping 请求路径
+         * @return 返回视图对象
+         * @throws Exception 可能产生的任何异常
+         */
         IView build(IWebMvc owner, String requestMapping) throws Exception;
     }
 }

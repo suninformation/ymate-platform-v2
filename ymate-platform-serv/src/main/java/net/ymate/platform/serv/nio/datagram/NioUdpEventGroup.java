@@ -31,6 +31,8 @@ import java.net.InetSocketAddress;
 import java.nio.channels.DatagramChannel;
 import java.nio.channels.SelectableChannel;
 import java.nio.channels.SelectionKey;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @author 刘镇 (suninformation@163.com) on 2018/11/16 3:29 AM
@@ -87,18 +89,19 @@ public class NioUdpEventGroup extends NioEventGroup<AbstractNioUdpListener> {
     }
 
     @Override
-    protected NioEventProcessor[] initProcessors() throws IOException {
-        NioEventProcessor[] processors = new NioEventProcessor[selectorCount()];
+    protected List<NioEventProcessor<AbstractNioUdpListener>> initProcessors() throws IOException {
+        List<NioEventProcessor<AbstractNioUdpListener>> newEventProcessors = new ArrayList<>(selectorCount());
         for (int idx = 0; idx < selectorCount(); idx++) {
-            processors[idx] = eventProcessorCreate(buildProcessorName() + idx);
-            processors[idx].start();
+            NioEventProcessor<AbstractNioUdpListener> eventProcessor = eventProcessorCreate(buildProcessorName() + idx);
+            eventProcessor.start();
+            newEventProcessors.add(eventProcessor);
         }
-        return processors;
+        return newEventProcessors;
     }
 
     @Override
     protected void registerEvent() throws IOException {
-        for (NioEventProcessor processor : processors()) {
+        for (NioEventProcessor<AbstractNioUdpListener> processor : processors()) {
             processor.registerEvent(channel(), SelectionKey.OP_READ, isServer() ? new NioUdpSession(this, (DatagramChannel) channel()) : session());
         }
     }

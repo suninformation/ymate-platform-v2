@@ -21,10 +21,11 @@ import net.ymate.platform.serv.impl.DefaultHeartbeatServiceImpl;
 /**
  * 链路维护(心跳)服务接口
  *
+ * @param <HEARTBEAT_TYPE> 心跳包类型
  * @author 刘镇 (suninformation@163.com) on 15/11/19 下午1:28
  */
 @Ignored
-public interface IHeartbeatService<T> extends IService {
+public interface IHeartbeatService<HEARTBEAT_TYPE> extends IService {
 
     IHeartbeatService<String> DEFAULT = new DefaultHeartbeatServiceImpl();
 
@@ -33,5 +34,5 @@ public interface IHeartbeatService<T> extends IService {
      *
      * @return 返回心跳包对象
      */
-    T getHeartbeatPacket();
+    HEARTBEAT_TYPE getHeartbeatPacket();
 }

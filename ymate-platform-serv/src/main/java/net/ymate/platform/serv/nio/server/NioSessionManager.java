@@ -19,7 +19,6 @@ import net.ymate.platform.commons.util.RuntimeUtils;
 import net.ymate.platform.serv.AbstractSessionManager;
 import net.ymate.platform.serv.IServer;
 import net.ymate.platform.serv.IServerCfg;
-import net.ymate.platform.serv.ISessionListener;
 import net.ymate.platform.serv.nio.INioCodec;
 import net.ymate.platform.serv.nio.INioSession;
 import org.apache.commons.logging.Log;
@@ -57,7 +56,7 @@ public class NioSessionManager<SESSION_WRAPPER extends NioSessionWrapper, MESSAG
     }
 
     @Override
-    protected IServer buildServer(IServerCfg serverCfg, INioCodec codec) {
+    protected IServer<?, ?> buildServer(IServerCfg serverCfg, INioCodec codec) {
         NioServer server = new NioServer();
         server.initialize(serverCfg, new NioServerListener() {
             @Override
@@ -151,7 +150,7 @@ public class NioSessionManager<SESSION_WRAPPER extends NioSessionWrapper, MESSAG
     }
 
     @Override
-    public ISessionListener<SESSION_WRAPPER> sessionListener() {
+    public INioSessionListener<SESSION_WRAPPER, MESSAGE_TYPE> getSessionListener() {
         return sessionListener;
     }
 

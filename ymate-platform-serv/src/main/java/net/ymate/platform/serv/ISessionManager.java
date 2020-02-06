@@ -31,7 +31,7 @@ import java.util.Collection;
  * @author 刘镇 (suninformation@163.com) on 2018/11/14 11:10 AM
  */
 @Ignored
-public interface ISessionManager<SESSION_WRAPPER extends ISessionWrapper, SESSION_ID, MESSAGE_TYPE> extends IDestroyable {
+public interface ISessionManager<SESSION_WRAPPER extends ISessionWrapper<?, ?>, SESSION_ID, MESSAGE_TYPE> extends IDestroyable {
 
     /**
      * 初始化
@@ -82,7 +82,7 @@ public interface ISessionManager<SESSION_WRAPPER extends ISessionWrapper, SESSIO
      *
      * @return 会话事件监听器接口实现
      */
-    ISessionListener<SESSION_WRAPPER> sessionListener();
+    ISessionListener<SESSION_WRAPPER> getSessionListener();
 
     /**
      * 设置速度计数器(仅在服务启动前调用有效)
