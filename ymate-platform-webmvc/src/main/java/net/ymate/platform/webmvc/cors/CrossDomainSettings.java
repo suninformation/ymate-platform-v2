@@ -117,7 +117,7 @@ public final class CrossDomainSettings implements IInitialization<IWebMvc> {
                     // 遍历方法、类及上层包寻找跨域配置注解，直至找不到
                     CrossDomainSetting settingAnn = interceptContext.getTargetMethod().getAnnotation(CrossDomainSetting.class);
                     if (settingAnn == null && (settingAnn = interceptContext.getTargetClass().getAnnotation(CrossDomainSetting.class)) == null) {
-                        settingAnn = ClassUtils.getAnnotation(interceptContext.getTargetClass().getPackage(), CrossDomainSetting.class);
+                        settingAnn = ClassUtils.getPackageAnnotation(interceptContext.getTargetClass(), CrossDomainSetting.class);
                     }
                     if (settingAnn != null) {
                         crossDomainSetting = DefaultCrossDomainSetting.valueOf(settingAnn);

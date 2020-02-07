@@ -19,6 +19,7 @@ import net.ymate.platform.commons.IPasswordProcessor;
 import net.ymate.platform.core.beans.IBeanLoadFactory;
 import net.ymate.platform.core.beans.proxy.IProxyFactory;
 import net.ymate.platform.core.i18n.II18nEventHandler;
+import net.ymate.platform.core.impl.DefaultApplicationConfigureParser;
 import net.ymate.platform.core.module.IModuleConfigurer;
 
 import java.util.Arrays;
@@ -45,11 +46,11 @@ public class ApplicationConfigureBuilder {
     }
 
     private ApplicationConfigureBuilder(IApplicationConfigureParser configureParser) {
-        configurer = new AbstractApplicationConfigurer(configureParser) {
+        configurer = new AbstractApplicationConfigurer(configureParser != null ? configureParser : DefaultApplicationConfigureParser.defaultEmpty()) {
             @Override
             public IModuleConfigurer getModuleConfigurer(String moduleName) {
                 IModuleConfigurer moduleConfigurer = moduleConfigurers.get(moduleName);
-                return moduleConfigurer != null ? moduleConfigurer : (getConfigureParser() != null ? getConfigureParser().getModuleConfigurer(moduleName) : null);
+                return moduleConfigurer != null ? moduleConfigurer : getConfigureParser().getModuleConfigurer(moduleName);
             }
         };
     }

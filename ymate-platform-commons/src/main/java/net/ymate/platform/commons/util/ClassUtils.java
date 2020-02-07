@@ -292,14 +292,12 @@ public class ClassUtils {
         return annotation;
     }
 
-    public static <A extends Annotation> A getAnnotation(Package targetPackage, Class<A> annotationClass) {
+    public static <A extends Annotation> A getPackageAnnotation(Class<?> targetClass, Class<A> annotationClass) {
+        Package targetPackage = targetClass.getPackage();
         A annotation = targetPackage.getAnnotation(annotationClass);
         if (annotation == null) {
-            String packageName = targetPackage.getName();
-            while (StringUtils.contains(packageName, ".")) {
-                packageName = StringUtils.substringBeforeLast(packageName, ".");
-                targetPackage = Package.getPackage(packageName);
-                if (targetPackage == null || (annotation = targetPackage.getAnnotation(annotationClass)) != null) {
+            while ((targetPackage = targetClass.getSuperclass().getPackage()) != null) {
+                if ((annotation = targetPackage.getAnnotation(annotationClass)) != null) {
                     break;
                 }
             }
