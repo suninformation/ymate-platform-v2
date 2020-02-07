@@ -17,12 +17,11 @@ package net.ymate.platform.plugin.handle;
 
 import net.ymate.platform.commons.util.ClassUtils;
 import net.ymate.platform.core.beans.IBeanHandler;
-import net.ymate.platform.plugin.IPlugin;
-import net.ymate.platform.plugin.PluginClassLoader;
-import net.ymate.platform.plugin.PluginMeta;
+import net.ymate.platform.plugin.*;
 import net.ymate.platform.plugin.annotation.Plugin;
-import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import java.util.Arrays;
 
@@ -33,7 +32,12 @@ import java.util.Arrays;
  */
 public class PluginHandler implements IBeanHandler {
 
-    public PluginHandler() {
+    private static final Log LOG = LogFactory.getLog(PluginHandler.class);
+
+    private final IPluginFactory pluginFactory;
+
+    public PluginHandler(IPluginFactory pluginFactory) {
+        this.pluginFactory = pluginFactory;
     }
 
     @Override
@@ -42,21 +46,26 @@ public class PluginHandler implements IBeanHandler {
         if (ClassUtils.isNormalClass(targetClass) && ClassUtils.isInterfaceOf(targetClass, IPlugin.class)) {
             Plugin pluginAnn = targetClass.getAnnotation(Plugin.class);
             //
-            PluginMeta pluginMeta = new PluginMeta(targetClass.getClassLoader());
-            pluginMeta.setId(StringUtils.defaultIfBlank(pluginAnn.id(), DigestUtils.md5Hex(targetClass.getName())));
-            pluginMeta.setName(StringUtils.defaultIfBlank(pluginAnn.name(), targetClass.getSimpleName()));
-            pluginMeta.setAlias(Arrays.asList(pluginAnn.alias()));
-            pluginMeta.setInitClass((Class<? extends IPlugin>) targetClass);
-            pluginMeta.setVersion(pluginAnn.version());
-            pluginMeta.setAuthor(pluginAnn.author());
-            pluginMeta.setEmail(pluginAnn.email());
-            pluginMeta.setAutomatic(pluginAnn.automatic());
-            pluginMeta.setDescription(pluginAnn.description());
-            //
-            if (targetClass.getClassLoader() instanceof PluginClassLoader) {
-                pluginMeta.setPath(((PluginClassLoader) targetClass.getClassLoader()).getPluginHome());
+            String pluginId = StringUtils.defaultIfBlank(pluginAnn.id(), targetClass.getName());
+            if (!StringUtils.equalsIgnoreCase(pluginFactory.getOwner().getParam(IPluginConfig.PARAMS_PLUGIN_DISABLED_PREFIX + pluginId), IPluginConfig.DISABLED)) {
+                PluginMeta pluginMeta = new PluginMeta(targetClass.getClassLoader());
+                pluginMeta.setId(pluginId);
+                pluginMeta.setName(StringUtils.defaultIfBlank(pluginAnn.name(), targetClass.getSimpleName()));
+                pluginMeta.setAlias(Arrays.asList(pluginAnn.alias()));
+                pluginMeta.setInitClass((Class<? extends IPlugin>) targetClass);
+                pluginMeta.setVersion(pluginAnn.version());
+                pluginMeta.setAuthor(pluginAnn.author());
+                pluginMeta.setEmail(pluginAnn.email());
+                pluginMeta.setAutomatic(pluginAnn.automatic());
+                pluginMeta.setDescription(pluginAnn.description());
+                //
+                if (targetClass.getClassLoader() instanceof PluginClassLoader) {
+                    pluginMeta.setPath(((PluginClassLoader) targetClass.getClassLoader()).getPluginHome());
+                }
+                return pluginMeta;
+            } else if (pluginFactory.getOwner().isDevEnv() && LOG.isWarnEnabled()) {
+                LOG.warn(String.format("Plugin class [%s:%s] has been disabled.", pluginId, targetClass.getName()));
             }
-            return pluginMeta;
         }
         return null;
     }

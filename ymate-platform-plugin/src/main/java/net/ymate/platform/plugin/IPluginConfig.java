@@ -30,6 +30,8 @@ public interface IPluginConfig {
 
     String ENABLED = "enabled";
 
+    String DISABLED = "disabled";
+
     String PLUGIN_HOME = "plugin_home";
 
     String PACKAGE_NAMES = "package_names";
@@ -37,6 +39,8 @@ public interface IPluginConfig {
     String AUTOMATIC = "automatic";
 
     String INCLUDED_CLASSPATH = "included_classpath";
+
+    String PARAMS_PLUGIN_DISABLED_PREFIX = "plugin.";
 
     /**
      * 插件工厂自动扫描的包名前缀集合

@@ -177,7 +177,7 @@ public class DefaultPluginFactory implements IPluginFactory {
             this.beanLoader.registerPackageNames(pluginConfig.getPackageNames());
             this.beanLoader.registerHandler(Bean.class, new PluginBeanHandler(this));
             this.beanLoader.registerHandler(Interceptor.class, new PluginInterceptorHandler(this));
-            this.beanLoader.registerHandler(Plugin.class, new PluginHandler());
+            this.beanLoader.registerHandler(Plugin.class, new PluginHandler(this));
             this.beanLoader.registerHandler(Handler.class, targetClass -> {
                 if (ClassUtils.isNormalClass(targetClass) && !targetClass.isInterface() && targetClass.isAnnotationPresent(Handler.class) && ClassUtils.isInterfaceOf(targetClass, IBeanHandler.class)) {
                     IBeanHandler beanHandler;
