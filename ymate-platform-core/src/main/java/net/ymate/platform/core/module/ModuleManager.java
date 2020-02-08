@@ -22,6 +22,7 @@ import net.ymate.platform.commons.util.RuntimeUtils;
 import net.ymate.platform.core.IApplication;
 import net.ymate.platform.core.support.IDestroyable;
 import net.ymate.platform.core.support.IInitialization;
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.Collection;
 import java.util.Iterator;
@@ -145,7 +146,7 @@ public class ModuleManager implements IInitialization<IApplication>, IDestroyabl
      * @return 获取模块类实例对象
      */
     public <T extends IModule> T getModule(Class<T> moduleClass) {
-        return getModule(moduleClass.getName());
+        return moduleClass != null ? getModule(moduleClass.getName()) : null;
     }
 
     /**
@@ -155,9 +156,9 @@ public class ModuleManager implements IInitialization<IApplication>, IDestroyabl
      */
     @SuppressWarnings("unchecked")
     public <T extends IModule> T getModule(String moduleClassName) {
-        if (!isModuleExcluded(moduleClassName)) {
+        if (StringUtils.isNotBlank(moduleClassName) && !isModuleExcluded(moduleClassName)) {
             IModule module = modules.get(moduleClassName);
-            if (!isModuleExcluded(module.getName())) {
+            if (module != null && !isModuleExcluded(module.getName())) {
                 initializeModuleIfNeed(module);
                 return (T) module;
             }
