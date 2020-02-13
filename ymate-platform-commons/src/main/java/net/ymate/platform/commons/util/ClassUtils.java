@@ -447,7 +447,7 @@ public class ClassUtils {
      */
     public static Class<?> getArrayClassType(Class<?> clazz) {
         try {
-            return Class.forName(StringUtils.substringBetween(clazz.getName(), "[L", ";"));
+            return Class.forName(StringUtils.substringBetween(clazz.getName(), "[L", ";"), false, clazz.getClassLoader());
         } catch (ClassNotFoundException e) {
             if (LOG.isWarnEnabled()) {
                 LOG.warn(StringUtils.EMPTY, RuntimeUtils.unwrapThrow(e));
