@@ -292,17 +292,35 @@ public class ClassUtils {
         return annotation;
     }
 
-    public static <A extends Annotation> A getPackageAnnotation(Class<?> targetClass, Class<A> annotationClass) {
+    /**
+     * @param targetClass     目标类对象
+     * @param annotationClass 注解类对象
+     * @return 尝试获取目标类被指定注解声明的包对象(包含上级包直到包对象为空)
+     * @since 2.1.0
+     */
+    public static Package getPackage(Class<?> targetClass, Class<? extends Annotation> annotationClass) {
         Package targetPackage = targetClass.getPackage();
-        A annotation = targetPackage.getAnnotation(annotationClass);
-        if (annotation == null) {
-            while ((targetPackage = targetClass.getSuperclass().getPackage()) != null) {
-                if ((annotation = targetPackage.getAnnotation(annotationClass)) != null) {
+        if (!targetPackage.isAnnotationPresent(annotationClass)) {
+            String packageName = targetPackage.getName();
+            while (StringUtils.contains(packageName, ".")) {
+                packageName = StringUtils.substringBeforeLast(packageName, ".");
+                try {
+                    Class<?> clazz = targetClass.getClassLoader().loadClass(String.format("%s.package-info", packageName));
+                    targetPackage = clazz.getPackage();
+                } catch (ClassNotFoundException ignored) {
+                    targetPackage = null;
+                }
+                if (targetPackage != null && targetPackage.isAnnotationPresent(annotationClass)) {
                     break;
                 }
             }
         }
-        return annotation;
+        return targetPackage;
+    }
+
+    public static <A extends Annotation> A getPackageAnnotation(Class<?> targetClass, Class<A> annotationClass) {
+        Package targetPackage = getPackage(targetClass, annotationClass);
+        return targetPackage != null ? targetPackage.getAnnotation(annotationClass) : null;
     }
 
     /**
