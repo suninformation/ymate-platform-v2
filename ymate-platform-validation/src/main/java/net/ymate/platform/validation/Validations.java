@@ -104,6 +104,7 @@ public final class Validations implements IModule, IValidation {
             registerValidator(VDataRange.class, DataRangeValidator.class);
             registerValidator(VCompare.class, CompareValidator.class);
             registerValidator(VRSAData.class, RSADataValidator.class);
+            registerValidator(VIDCard.class, IDCardValidator.class);
         }
     }
 
