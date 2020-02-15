@@ -48,8 +48,8 @@ public class TransactionProxy implements IProxy {
         if (currentLevel != null) {
             return Transactions.execute(currentLevel, new AbstractTrade<Object>() {
                 @Override
-                public void deal() throws Throwable {
-                    this.setResult(proxyChain.doProxyChain());
+                public Object dealing() throws Throwable {
+                    return proxyChain.doProxyChain();
                 }
             });
         } else {

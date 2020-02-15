@@ -26,15 +26,6 @@ public abstract class AbstractTrade<T> implements ITrade {
     protected T result;
 
     /**
-     * 设置执行结果
-     *
-     * @param result 预返回的结果对象
-     */
-    protected void setResult(T result) {
-        this.result = result;
-    }
-
-    /**
      * 获取执行结果
      *
      * @return 返回执行结果对象
@@ -42,4 +33,17 @@ public abstract class AbstractTrade<T> implements ITrade {
     public T getResult() {
         return result;
     }
+
+    @Override
+    public void deal() throws Throwable {
+        result = dealing();
+    }
+
+    /**
+     * 执行事务处理
+     *
+     * @return 返回业务执行结果对象
+     * @throws Throwable 可能产生的异常
+     */
+    public abstract T dealing() throws Throwable;
 }
