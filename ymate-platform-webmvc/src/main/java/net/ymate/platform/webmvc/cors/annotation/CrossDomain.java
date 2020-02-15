@@ -25,7 +25,7 @@ import java.lang.annotation.*;
  * @author 刘镇 (suninformation@163.com) on 2019-08-17 14:19
  * @since 2.1.0
  */
-@Target({ElementType.PACKAGE, ElementType.TYPE, ElementType.METHOD})
+@Target({ElementType.TYPE, ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
 @InterceptAnnotation
