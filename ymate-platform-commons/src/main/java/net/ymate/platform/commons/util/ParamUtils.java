@@ -179,7 +179,7 @@ public class ParamUtils {
 
     private static void doAppendHiddenElement(StringBuilder stringBuilder, String key, String value, boolean encode, String charset) {
         if (StringUtils.isNotBlank(key) && StringUtils.isNotBlank(value)) {
-            String splitStr = StringUtils.contains(value, '\"') ? "\'" : "\"";
+            String splitStr = StringUtils.contains(value, '\"') ? "'" : "\"";
             //
             stringBuilder.append("<input type=").append(splitStr).append("hidden").append(splitStr).append(" name=").append(splitStr).append(key).append(splitStr);
             //

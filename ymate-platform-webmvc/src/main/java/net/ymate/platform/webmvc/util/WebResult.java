@@ -100,10 +100,10 @@ public final class WebResult implements Serializable {
 
     private boolean useSingleQuotes;
 
-    private WebResult() {
+    public WebResult() {
     }
 
-    private WebResult(int code) {
+    public WebResult(int code) {
         this.code = code;
     }
 
@@ -204,11 +204,7 @@ public final class WebResult implements Serializable {
         return this;
     }
 
-    public IView toJSON() {
-        return toJSON(null);
-    }
-
-    public IView toJSON(String callback) {
+    public JSONObject toJSONObject() {
         JSONObject jsonObj = new JSONObject(true);
         if (code != null) {
             jsonObj.put(Type.Const.PARAM_RET, code);
@@ -222,8 +218,15 @@ public final class WebResult implements Serializable {
         if (attrs != null && !attrs.isEmpty()) {
             jsonObj.putAll(attrs);
         }
-        //
-        JsonView jsonView = new JsonView(jsonObj).withJsonCallback(callback);
+        return jsonObj;
+    }
+
+    public JsonView toJsonView() {
+        return toJsonView(null);
+    }
+
+    public JsonView toJsonView(String callback) {
+        JsonView jsonView = new JsonView(toJSONObject()).withJsonCallback(callback);
         if (quoteFieldNames) {
             jsonView.quoteFieldNames();
             if (useSingleQuotes) {
@@ -239,11 +242,7 @@ public final class WebResult implements Serializable {
         return jsonView;
     }
 
-    public IView toXML() {
-        return toXML(false);
-    }
-
-    public IView toXML(boolean cdata) {
+    public String toXml(boolean cdata) {
         StringBuilder content = new StringBuilder("<?xml version=\"1.0\" encoding=\"UTF-8\"?><xml>")
                 .append("<ret>").append(code).append("</ret>");
         if (StringUtils.isNotBlank(msg)) {
@@ -262,8 +261,15 @@ public final class WebResult implements Serializable {
             attrs.forEach((key, value) -> doContentAppend(content, cdata, key, value));
         }
         content.append("</xml>");
-        //
-        TextView textView = View.textView(content.toString());
+        return content.toString();
+    }
+
+    public TextView toXmlView() {
+        return toXmlView(true);
+    }
+
+    public TextView toXmlView(boolean cdata) {
+        TextView textView = View.textView(toXml(cdata));
         if (withContentType) {
             textView.setContentType(Type.ContentType.XML.getContentType());
         }
@@ -279,7 +285,7 @@ public final class WebResult implements Serializable {
             } else if (value instanceof Map) {
                 ((Map<String, Object>) value).forEach((key1, value1) -> doContentAppend(content, cdata, key1, value1));
             } else if (value instanceof Collection) {
-                ((Collection) value).forEach((item) -> doContentAppend(content, cdata, "item", item));
+                ((Collection<?>) value).forEach((item) -> doContentAppend(content, cdata, "item", item));
             } else if (value instanceof Boolean || value instanceof String || boolean.class.isAssignableFrom(value.getClass())) {
                 if (cdata) {
                     content.append("<![CDATA[").append(value).append("]]>");
@@ -321,11 +327,11 @@ public final class WebResult implements Serializable {
         if (result != null) {
             HttpServletRequest request = WebContext.getRequest();
             if (WebUtils.isJsonAccepted(request, paramFormat) || StringUtils.equalsIgnoreCase(defaultFormat, Type.Const.FORMAT_JSON)) {
-                returnView = result.withContentType().toJSON(StringUtils.trimToNull(WebContext.getRequest().getParameter(paramCallback)));
+                returnView = result.withContentType().toJsonView(StringUtils.trimToNull(WebContext.getRequest().getParameter(paramCallback)));
             } else if (WebUtils.isXmlAccepted(request, paramFormat) || StringUtils.equalsIgnoreCase(defaultFormat, Type.Const.FORMAT_XML)) {
-                returnView = result.withContentType().toXML(true);
+                returnView = result.withContentType().toXmlView();
             } else if (WebUtils.isAjax(request)) {
-                returnView = result.withContentType().toJSON(StringUtils.trimToNull(WebContext.getRequest().getParameter(paramCallback)));
+                returnView = result.withContentType().toJsonView(StringUtils.trimToNull(WebContext.getRequest().getParameter(paramCallback)));
             }
         }
         if (returnView == null) {
