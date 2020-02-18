@@ -35,6 +35,7 @@ import org.apache.commons.logging.LogFactory;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
 import java.util.*;
 
 /**
@@ -271,7 +272,7 @@ public class DefaultBeanFactory implements IBeanFactory {
     }
 
     private Object buildBeanProxyIfNeed(Class<?> targetClass, Object targetObject) throws IllegalAccessException, InstantiationException {
-        if (useProxy) {
+        if (useProxy && !Modifier.isFinal(targetClass.getModifiers())) {
             List<IProxy> proxies = proxyFactory.getProxies(new IProxyFilter() {
 
                 private boolean checkAnnotation(Proxy targetProxyAnn) {
