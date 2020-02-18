@@ -21,6 +21,7 @@ import net.ymate.platform.webmvc.annotation.*;
 import net.ymate.platform.webmvc.base.Type;
 import org.apache.commons.lang3.StringUtils;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 import java.util.*;
@@ -59,49 +60,28 @@ public class RequestMeta {
 
     private ResponseBody responseBody;
 
+    private SignatureValidate signatureValidate;
+
     private final Set<Header> responseHeaders;
 
-    private final Set<Type.HttpMethod> allowMethods;
+    private final Set<Type.HttpMethod> allowMethods = new HashSet<>();
 
-    private final Map<String, String> allowHeaders;
+    private final Map<String, String> allowHeaders = new HashMap<>();
 
-    private final Map<String, String> allowParams;
+    private final Map<String, String> allowParams = new HashMap<>();
 
     public RequestMeta(String requestMappingPrefix, Class<?> targetClass, Method method) throws Exception {
         this.targetClass = targetClass;
         this.method = method;
         //
-        this.allowMethods = new HashSet<>();
-        this.allowHeaders = new HashMap<>();
-        this.allowParams = new HashMap<>();
-        //
         Controller controller = targetClass.getAnnotation(Controller.class);
         this.name = StringUtils.defaultIfBlank(controller == null ? null : controller.name(), targetClass.getName());
         this.singleton = controller == null || controller.singleton();
         //
-        this.responseCache = method.getAnnotation(ResponseCache.class);
-        if (this.responseCache == null) {
-            this.responseCache = targetClass.getAnnotation(ResponseCache.class);
-            if (this.responseCache == null) {
-                this.responseCache = targetClass.getPackage().getAnnotation(ResponseCache.class);
-            }
-        }
-        //
-        this.responseView = method.getAnnotation(ResponseView.class);
-        if (this.responseView == null) {
-            this.responseView = targetClass.getAnnotation(ResponseView.class);
-            if (this.responseView == null) {
-                this.responseView = targetClass.getPackage().getAnnotation(ResponseView.class);
-            }
-        }
-        //
-        this.responseBody = method.getAnnotation(ResponseBody.class);
-        if (this.responseBody == null) {
-            this.responseBody = targetClass.getAnnotation(ResponseBody.class);
-            if (this.responseBody == null) {
-                this.responseBody = targetClass.getPackage().getAnnotation(ResponseBody.class);
-            }
-        }
+        this.responseCache = findAnnotation(ResponseCache.class);
+        this.responseView = findAnnotation(ResponseView.class);
+        this.responseBody = findAnnotation(ResponseBody.class);
+        this.signatureValidate = findAnnotation(SignatureValidate.class);
         //
         this.responseHeaders = new HashSet<>();
         ResponseHeader respHeader = targetClass.getPackage().getAnnotation(ResponseHeader.class);
@@ -139,24 +119,12 @@ public class RequestMeta {
         //
         this.mapping = doBuildRequestMapping(root, requestMapping);
         //
-        RequestProcessor requestProcessor = method.getAnnotation(RequestProcessor.class);
-        if (requestProcessor == null) {
-            requestProcessor = targetClass.getAnnotation(RequestProcessor.class);
-            if (requestProcessor == null) {
-                requestProcessor = targetClass.getPackage().getAnnotation(RequestProcessor.class);
-            }
-        }
+        RequestProcessor requestProcessor = findAnnotation(RequestProcessor.class);
         if (requestProcessor != null) {
             this.processor = requestProcessor.value();
         }
         //
-        ResponseErrorProcessor responseErrorProcessor = method.getAnnotation(ResponseErrorProcessor.class);
-        if (responseErrorProcessor == null) {
-            responseErrorProcessor = targetClass.getAnnotation(ResponseErrorProcessor.class);
-            if (responseErrorProcessor == null) {
-                responseErrorProcessor = targetClass.getPackage().getAnnotation(ResponseErrorProcessor.class);
-            }
-        }
+        ResponseErrorProcessor responseErrorProcessor = findAnnotation(ResponseErrorProcessor.class);
         if (responseErrorProcessor != null) {
             this.errorProcessor = responseErrorProcessor.value();
         }
@@ -190,6 +158,17 @@ public class RequestMeta {
                 idx++;
             }
         }
+    }
+
+    private <T extends Annotation> T findAnnotation(Class<T> annotationClass) {
+        T annotation = method.getAnnotation(annotationClass);
+        if (annotation == null) {
+            annotation = targetClass.getAnnotation(annotationClass);
+            if (annotation == null) {
+                annotation = targetClass.getPackage().getAnnotation(annotationClass);
+            }
+        }
+        return annotation;
     }
 
     private void doSetAllowValues(RequestMapping requestMapping) {
@@ -274,6 +253,10 @@ public class RequestMeta {
 
     public ResponseBody getResponseBody() {
         return responseBody;
+    }
+
+    public SignatureValidate getSignatureValidate() {
+        return signatureValidate;
     }
 
     public Set<Header> getResponseHeaders() {

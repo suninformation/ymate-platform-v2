@@ -17,17 +17,17 @@ package net.ymate.platform.webmvc.support;
 
 import net.ymate.platform.commons.lang.BlurObject;
 import net.ymate.platform.commons.util.ClassUtils;
+import net.ymate.platform.commons.util.ParamUtils;
 import net.ymate.platform.commons.util.RuntimeUtils;
 import net.ymate.platform.core.beans.intercept.InterceptException;
-import net.ymate.platform.webmvc.IRequestProcessor;
-import net.ymate.platform.webmvc.IResponseBodyProcessor;
-import net.ymate.platform.webmvc.IWebMvc;
-import net.ymate.platform.webmvc.RequestMeta;
+import net.ymate.platform.webmvc.*;
 import net.ymate.platform.webmvc.annotation.Header;
 import net.ymate.platform.webmvc.annotation.ResponseBody;
 import net.ymate.platform.webmvc.annotation.ResponseView;
+import net.ymate.platform.webmvc.annotation.SignatureValidate;
 import net.ymate.platform.webmvc.base.Type;
 import net.ymate.platform.webmvc.context.WebContext;
+import net.ymate.platform.webmvc.exception.ParameterSignatureException;
 import net.ymate.platform.webmvc.util.WebResult;
 import net.ymate.platform.webmvc.view.IView;
 import net.ymate.platform.webmvc.view.impl.*;
@@ -36,6 +36,7 @@ import org.apache.commons.lang3.StringUtils;
 
 import java.io.File;
 import java.lang.reflect.InvocationTargetException;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -72,6 +73,35 @@ public final class RequestExecutor {
         List<String> methodParamNames = requestMeta.getMethodParamNames();
         // 根据参数名称, 从请求中提取对应的参数值
         Map<String, Object> paramValues = requestProcessor.processRequestParams(owner, requestMeta);
+        // 尝试处理参数签名验证
+        SignatureValidate signatureValidate = requestMeta.getSignatureValidate();
+        if (signatureValidate != null) {
+            String originSign = null;
+            if (paramValues.containsKey(signatureValidate.paramName())) {
+                originSign = BlurObject.bind(paramValues.get(signatureValidate.paramName())).toStringValue();
+            }
+            if (StringUtils.isBlank(originSign)) {
+                originSign = WebContext.getRequest().getParameter(signatureValidate.paramName());
+            }
+            boolean invalid = StringUtils.isBlank(originSign) || StringUtils.isNotBlank(signatureValidate.nonceName()) && !paramValues.containsKey(signatureValidate.nonceName());
+            if (invalid) {
+                throw new ParameterSignatureException("Missing signature required parameter.");
+            }
+            Map<String, Object> signatureParams = new HashMap<>(paramValues.size());
+            paramValues.forEach((key, value) -> {
+                if (!key.equals(signatureValidate.paramName()) && !ArrayUtils.contains(signatureValidate.excludedParams(), key)) {
+                    signatureParams.put(key, value);
+                }
+            });
+            ISignatureExtraParamProcessor extraParamProcessor = null;
+            if (!signatureValidate.extraParamProcess().equals(ISignatureExtraParamProcessor.class)) {
+                extraParamProcessor = ClassUtils.impl(signatureValidate.extraParamProcess(), ISignatureExtraParamProcessor.class);
+            }
+            String sign = ParamUtils.createSignature(signatureParams, signatureValidate.encode(), signatureValidate.upperCase(), extraParamProcessor != null ? extraParamProcessor.getExtraParams(owner, signatureParams) : null);
+            if (!StringUtils.equals(originSign, sign)) {
+                throw new ParameterSignatureException("Parameter signature mismatch.");
+            }
+        }
         // 将当前RequestMeta对象和参数映射放入WebContext中, 便于其它环节中获取并使用
         WebContext context = WebContext.getContext();
         context.addAttribute(RequestMeta.class.getName(), requestMeta);
