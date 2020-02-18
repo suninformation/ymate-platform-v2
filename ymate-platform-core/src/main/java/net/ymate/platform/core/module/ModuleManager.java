@@ -141,6 +141,26 @@ public class ModuleManager implements IInitialization<IApplication>, IDestroyabl
     }
 
     /**
+     * 判断指定模块是否存在
+     *
+     * @param moduleClass 模块类型
+     * @return 返回true表示存在
+     */
+    public boolean hasModule(Class<? extends IModule> moduleClass) {
+        return moduleClass != null && modules.containsKey(moduleClass.getName());
+    }
+
+    /**
+     * 判断指定模块是否存在
+     *
+     * @param moduleClassName 模块类名称
+     * @return 返回true表示存在
+     */
+    public boolean hasModule(String moduleClassName) {
+        return modules.containsKey(moduleClassName);
+    }
+
+    /**
      * @param moduleClass 模块类型
      * @param <T>         模块类型
      * @return 获取模块类实例对象
