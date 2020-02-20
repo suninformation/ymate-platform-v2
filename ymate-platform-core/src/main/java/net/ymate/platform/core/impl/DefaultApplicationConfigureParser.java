@@ -17,6 +17,7 @@ package net.ymate.platform.core.impl;
 
 import net.ymate.platform.commons.ReentrantLockHelper;
 import net.ymate.platform.commons.lang.BlurObject;
+import net.ymate.platform.commons.util.ClassUtils;
 import net.ymate.platform.commons.util.FileUtils;
 import net.ymate.platform.commons.util.ResourceUtils;
 import net.ymate.platform.commons.util.RuntimeUtils;
@@ -125,7 +126,7 @@ public class DefaultApplicationConfigureParser implements IApplicationConfigureP
             try {
                 return ReentrantLockHelper.putIfAbsentAsync(CONFIGURERS_CACHE, moduleName, () -> {
                     Map<String, String> configs = new HashMap<>(16);
-                    String prefix = MODULE_CONFIG_PREFIX + moduleName + ".";
+                    String prefix = MODULE_CONFIG_PREFIX + moduleName + ClassUtils.PACKAGE_SEPARATOR;
                     configReader.toMap().keySet().forEach(key -> {
                         String keyStr = BlurObject.bind(key).toStringValue();
                         if (StringUtils.startsWith(keyStr, prefix)) {

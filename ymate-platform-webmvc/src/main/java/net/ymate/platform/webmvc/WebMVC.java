@@ -138,7 +138,7 @@ public final class WebMVC implements IModule, IWebMvc {
             }
             //
             if (config.getCrossDomainSettings().isEnabled()) {
-                owner.getInterceptSettings().getInterceptAnnHelper().registerInterceptAnnotation(CrossDomain.class, CrossDomainAnnotationInterceptor.class);
+                owner.getInterceptSettings().registerInterceptAnnotation(CrossDomain.class, CrossDomainAnnotationInterceptor.class);
             }
             //
             //

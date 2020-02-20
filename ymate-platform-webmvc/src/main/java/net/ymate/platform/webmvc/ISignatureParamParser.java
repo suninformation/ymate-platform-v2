@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2019 the original author or authors.
+ * Copyright 2007-2020 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,15 +13,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.ymate.platform.core.beans.annotation;
+package net.ymate.platform.webmvc;
 
-import java.lang.annotation.*;
+import net.ymate.platform.core.beans.annotation.Ignored;
+
+import java.util.Map;
 
 /**
- * @author 刘镇 (suninformation@163.com) on 2017/8/3 下午6:41
+ * @author 刘镇 (suninformation@163.com) on 2020/02/18 21:38
+ * @since 2.1.0
  */
-@Target(ElementType.PACKAGE)
-@Retention(RetentionPolicy.RUNTIME)
-@Documented
-public @interface Packages {
+@Ignored
+public interface ISignatureParamParser {
+
+    /**
+     * 获取签名所需参数集合
+     *
+     * @param owner       所属容器参数对象
+     * @param requestMeta 请求元描述
+     * @return 返回参数集合
+     */
+    Map<String, Object> getParams(IWebMvc owner, RequestMeta requestMeta);
 }

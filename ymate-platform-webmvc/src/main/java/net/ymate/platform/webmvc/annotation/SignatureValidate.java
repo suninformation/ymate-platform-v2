@@ -16,7 +16,9 @@
 package net.ymate.platform.webmvc.annotation;
 
 import net.ymate.platform.webmvc.ISignatureExtraParamProcessor;
-import org.apache.commons.lang.StringUtils;
+import net.ymate.platform.webmvc.ISignatureParamParser;
+import net.ymate.platform.webmvc.impl.DefaultSignatureParamParser;
+import org.apache.commons.lang3.StringUtils;
 
 import java.lang.annotation.*;
 
@@ -24,7 +26,7 @@ import java.lang.annotation.*;
  * @author 刘镇 (suninformation@163.com) on 2020/02/18 11:40
  * @since 2.1.0
  */
-@Target({ElementType.TYPE, ElementType.METHOD})
+@Target({ElementType.PACKAGE, ElementType.TYPE, ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
 public @interface SignatureValidate {
@@ -50,12 +52,22 @@ public @interface SignatureValidate {
     boolean upperCase() default true;
 
     /**
+     * @return 是否已禁用
+     */
+    boolean disabled() default false;
+
+    /**
      * @return 排除的参数名称集合
      */
     String[] excludedParams() default {};
 
     /**
-     * @return 签名参数处理器类型
+     * @return 签名参数分析器类型
      */
-    Class<? extends ISignatureExtraParamProcessor> extraParamProcess() default ISignatureExtraParamProcessor.class;
+    Class<? extends ISignatureParamParser> parserClass() default DefaultSignatureParamParser.class;
+
+    /**
+     * @return 附加签名参数处理器类型
+     */
+    Class<? extends ISignatureExtraParamProcessor> processorClass() default ISignatureExtraParamProcessor.class;
 }

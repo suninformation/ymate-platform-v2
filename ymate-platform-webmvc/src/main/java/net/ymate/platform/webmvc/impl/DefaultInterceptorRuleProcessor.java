@@ -21,6 +21,7 @@ import net.ymate.platform.core.beans.intercept.InterceptContext;
 import net.ymate.platform.webmvc.*;
 import net.ymate.platform.webmvc.annotation.ResponseCache;
 import net.ymate.platform.webmvc.base.Type;
+import net.ymate.platform.webmvc.support.RequestExecutor;
 import net.ymate.platform.webmvc.view.IView;
 import org.apache.commons.lang3.StringUtils;
 
@@ -77,14 +78,11 @@ public class DefaultInterceptorRuleProcessor implements IInterceptorRuleProcesso
             InterceptContext interceptContext = new InterceptContext(IInterceptor.Direction.BEFORE, owner.getOwner(), null, null, null, ruleMeta.getContextParams());
             //
             for (Class<? extends IInterceptor> interceptClass : ruleMeta.getBeforeIntercepts()) {
-                IInterceptor interceptor = owner.getOwner().getBeanFactory().getBean(interceptClass);
-                if (interceptor == null) {
-                    interceptor = interceptClass.newInstance();
-                }
+                IInterceptor interceptor = owner.getOwner().getInterceptSettings().getInterceptorInstance(owner.getOwner(), interceptClass);
                 // 执行前置拦截器，若其结果对象不为空则返回并停止执行
                 Object result = interceptor.intercept(interceptContext);
                 if (result != null) {
-                    view = (IView) result;
+                    view = RequestExecutor.doProcessResultToView(owner, null, result);
                     break;
                 }
             }

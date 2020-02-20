@@ -23,10 +23,18 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 /**
+ * 用于解析拦截器配置字符串
+ *
  * @author 刘镇 (suninformation@163.com) on 2019-08-14 17:42
  * @since 2.1.0
  */
 public final class InterceptSetting {
+
+    private static final String CHAR_STAR = "*";
+
+    private static final String CHAR_PLUS = "+";
+
+    private static final String CHAR_MINUS = "-";
 
     private Class<? extends IInterceptor> interceptorClass;
 
@@ -50,38 +58,38 @@ public final class InterceptSetting {
         String[] itemArr = StringUtils.split(setting, ":");
         if (itemArr != null) {
             if (itemArr.length == 1) {
-                if (StringUtils.equals(itemArr[0], "*")) {
+                if (StringUtils.equals(itemArr[0], CHAR_STAR)) {
                     type = IInterceptor.SettingType.CLEAN_ALL;
                 } else {
-                    if (StringUtils.endsWith(itemArr[0], "-")) {
-                        interceptorClass = InterceptSettings.loadInterceptorClass(StringUtils.substringBefore(itemArr[0], "-"));
+                    if (StringUtils.endsWith(itemArr[0], CHAR_MINUS)) {
+                        interceptorClass = InterceptSettings.loadInterceptorClass(StringUtils.substringBefore(itemArr[0], CHAR_MINUS));
                         type = IInterceptor.SettingType.REMOVE_ALL;
                     } else {
-                        interceptorClass = InterceptSettings.loadInterceptorClass(StringUtils.substringBefore(itemArr[0], "+"));
+                        interceptorClass = InterceptSettings.loadInterceptorClass(StringUtils.substringBefore(itemArr[0], CHAR_PLUS));
                         type = IInterceptor.SettingType.ADD_ALL;
                     }
                 }
             } else if (StringUtils.equalsIgnoreCase(itemArr[0], IInterceptor.Direction.BEFORE.name())) {
-                if (StringUtils.equals(itemArr[1], "*")) {
+                if (StringUtils.equals(itemArr[1], CHAR_STAR)) {
                     type = IInterceptor.SettingType.CLEAN_BEFORE;
                 } else {
-                    if (StringUtils.endsWith(itemArr[1], "-")) {
-                        interceptorClass = InterceptSettings.loadInterceptorClass(StringUtils.substringBefore(itemArr[1], "-"));
+                    if (StringUtils.endsWith(itemArr[1], CHAR_MINUS)) {
+                        interceptorClass = InterceptSettings.loadInterceptorClass(StringUtils.substringBefore(itemArr[1], CHAR_MINUS));
                         type = IInterceptor.SettingType.REMOVE_BEFORE;
                     } else {
-                        interceptorClass = InterceptSettings.loadInterceptorClass(StringUtils.substringBefore(itemArr[1], "+"));
+                        interceptorClass = InterceptSettings.loadInterceptorClass(StringUtils.substringBefore(itemArr[1], CHAR_PLUS));
                         type = IInterceptor.SettingType.ADD_BEFORE;
                     }
                 }
             } else if (StringUtils.equalsIgnoreCase(itemArr[0], IInterceptor.Direction.AFTER.name())) {
-                if (StringUtils.equals(itemArr[1], "*")) {
+                if (StringUtils.equals(itemArr[1], CHAR_STAR)) {
                     type = IInterceptor.SettingType.CLEAN_AFTER;
                 } else {
-                    if (StringUtils.endsWith(itemArr[1], "-")) {
-                        interceptorClass = InterceptSettings.loadInterceptorClass(StringUtils.substringBefore(itemArr[1], "-"));
+                    if (StringUtils.endsWith(itemArr[1], CHAR_MINUS)) {
+                        interceptorClass = InterceptSettings.loadInterceptorClass(StringUtils.substringBefore(itemArr[1], CHAR_MINUS));
                         type = IInterceptor.SettingType.REMOVE_AFTER;
                     } else {
-                        interceptorClass = InterceptSettings.loadInterceptorClass(StringUtils.substringBefore(itemArr[1], "+"));
+                        interceptorClass = InterceptSettings.loadInterceptorClass(StringUtils.substringBefore(itemArr[1], CHAR_PLUS));
                         type = IInterceptor.SettingType.ADD_AFTER;
                     }
                 }

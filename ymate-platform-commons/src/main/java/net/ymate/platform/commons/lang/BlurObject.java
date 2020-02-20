@@ -81,8 +81,7 @@ public class BlurObject implements Serializable, Cloneable {
      * @throws Exception 可能产生的任何异常
      */
     public static void registerConverter(Class<?> fromClass, Class<?> toClass, IConverter<?> converter) throws Exception {
-        Map<Class<?>, IConverter<?>> map = ReentrantLockHelper.putIfAbsentAsync(CONVERTERS, toClass, () -> new HashMap<>(16));
-        map.put(fromClass, converter);
+        ReentrantLockHelper.putIfAbsentAsync(CONVERTERS, toClass, () -> new HashMap<>(16)).put(fromClass, converter);
     }
 
     @SuppressWarnings("unchecked")
@@ -212,10 +211,10 @@ public class BlurObject implements Serializable, Cloneable {
             return ((Number) attr).floatValue() > 0;
         }
         if (attr instanceof List) {
-            return ((Collection) attr).size() > 0;
+            return ((Collection<?>) attr).size() > 0;
         }
         if (attr instanceof Map) {
-            return ((Map) attr).size() > 0;
+            return ((Map<?, ?>) attr).size() > 0;
         }
         return attr instanceof BlurObject && ((BlurObject) this.attr).toBoolean();
     }
@@ -278,10 +277,10 @@ public class BlurObject implements Serializable, Cloneable {
             return (Boolean) attr ? 1 : 0;
         }
         if (attr instanceof Map) {
-            return ((Map) attr).size();
+            return ((Map<?, ?>) attr).size();
         }
         if (attr instanceof List) {
-            return ((Collection) attr).size();
+            return ((Collection<?>) attr).size();
         }
         return -1;
     }
@@ -349,10 +348,10 @@ public class BlurObject implements Serializable, Cloneable {
                 return (Boolean) attr ? 1f : 0f;
             }
             if (attr instanceof Map) {
-                return (float) ((Map) attr).size();
+                return (float) ((Map<?, ?>) attr).size();
             }
             if (attr instanceof List) {
-                return (float) ((Collection) attr).size();
+                return (float) ((Collection<?>) attr).size();
             }
             if (attr instanceof BlurObject) {
                 return ((BlurObject) this.attr).toFloatValue();
@@ -403,10 +402,10 @@ public class BlurObject implements Serializable, Cloneable {
                 return (Boolean) attr ? 1d : 0d;
             }
             if (attr instanceof Map) {
-                return (double) ((Map) attr).size();
+                return (double) ((Map<?, ?>) attr).size();
             }
             if (attr instanceof List) {
-                return (double) ((Collection) attr).size();
+                return (double) ((Collection<?>) attr).size();
             }
             if (attr instanceof BlurObject) {
                 return ((BlurObject) this.attr).toDouble();

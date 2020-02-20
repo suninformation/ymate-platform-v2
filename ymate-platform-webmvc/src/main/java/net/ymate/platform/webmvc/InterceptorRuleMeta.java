@@ -15,16 +15,18 @@
  */
 package net.ymate.platform.webmvc;
 
+import net.ymate.platform.commons.util.ClassUtils;
 import net.ymate.platform.core.beans.intercept.IInterceptor;
-import net.ymate.platform.core.beans.intercept.InterceptAnnHelper;
+import net.ymate.platform.core.beans.intercept.InterceptMeta;
 import net.ymate.platform.webmvc.annotation.InterceptorRule;
 import net.ymate.platform.webmvc.annotation.ResponseCache;
 import net.ymate.platform.webmvc.base.Type;
 import org.apache.commons.lang3.StringUtils;
 
 import java.lang.reflect.Method;
-import java.util.List;
+import java.util.Collections;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * @author 刘镇 (suninformation@163.com) on 16/1/8 下午11:27
@@ -33,7 +35,7 @@ public class InterceptorRuleMeta {
 
     private String mapping;
 
-    private List<Class<? extends IInterceptor>> beforeIntercepts;
+    private Set<Class<? extends IInterceptor>> beforeIntercepts;
 
     private Map<String, String> contextParams;
 
@@ -66,12 +68,16 @@ public class InterceptorRuleMeta {
                 this.mapping = StringUtils.substringBeforeLast(this.mapping, Type.Const.PATH_SEPARATOR_ALL);
             }
             //
-            beforeIntercepts = owner.getOwner().getInterceptSettings().getInterceptAnnHelper().getBeforeInterceptors(targetClass, targetMethod);
-            contextParams = InterceptAnnHelper.getContextParams(owner.getOwner(), targetClass, targetMethod);
+            InterceptMeta interceptMeta = new InterceptMeta(owner.getOwner(), targetClass, targetMethod);
+            beforeIntercepts = interceptMeta.getBeforeIntercepts();
+            contextParams = beforeIntercepts.isEmpty() ? Collections.emptyMap() : owner.getOwner().getInterceptSettings().getContextParams(owner.getOwner(), targetClass, targetMethod);
             //
             this.responseCache = targetMethod.getAnnotation(ResponseCache.class);
             if (this.responseCache == null) {
                 this.responseCache = targetClass.getAnnotation(ResponseCache.class);
+                if (this.responseCache == null) {
+                    this.responseCache = ClassUtils.getPackageAnnotation(targetClass, ResponseCache.class);
+                }
             }
         }
     }
@@ -80,7 +86,7 @@ public class InterceptorRuleMeta {
         return mapping;
     }
 
-    public List<Class<? extends IInterceptor>> getBeforeIntercepts() {
+    public Set<Class<? extends IInterceptor>> getBeforeIntercepts() {
         return beforeIntercepts;
     }
 

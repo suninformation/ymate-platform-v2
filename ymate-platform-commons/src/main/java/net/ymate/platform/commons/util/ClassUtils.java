@@ -48,6 +48,10 @@ public class ClassUtils {
 
     private static final String ANONYMOUS_CLASS_FLAG = "$$";
 
+    public static final String PACKAGE_INFO = "package-info";
+
+    public static final String PACKAGE_SEPARATOR = ".";
+
     private static final InnerClassLoader INNER_CLASS_LOADER = new InnerClassLoader(new URL[]{}, ClassUtils.class.getClassLoader());
 
     private static final Map<Class<?>, ExtensionLoader> EXTENSION_LOADERS = new ConcurrentHashMap<>();
@@ -301,26 +305,43 @@ public class ClassUtils {
     public static Package getPackage(Class<?> targetClass, Class<? extends Annotation> annotationClass) {
         Package targetPackage = targetClass.getPackage();
         if (!targetPackage.isAnnotationPresent(annotationClass)) {
-            String packageName = targetPackage.getName();
-            while (StringUtils.contains(packageName, ".")) {
-                packageName = StringUtils.substringBeforeLast(packageName, ".");
-                try {
-                    Class<?> clazz = targetClass.getClassLoader().loadClass(String.format("%s.package-info", packageName));
-                    targetPackage = clazz.getPackage();
-                } catch (ClassNotFoundException ignored) {
-                    targetPackage = null;
+            Class<?> clazz = findParentPackage(targetClass);
+            while (clazz != null) {
+                targetPackage = clazz.getPackage();
+                if (targetPackage.isAnnotationPresent(annotationClass)) {
+                    return targetPackage;
                 }
-                if (targetPackage != null && targetPackage.isAnnotationPresent(annotationClass)) {
-                    break;
-                }
+                clazz = findParentPackage(clazz);
             }
         }
-        return targetPackage;
+        return targetPackage.isAnnotationPresent(annotationClass) ? targetPackage : null;
     }
 
     public static <A extends Annotation> A getPackageAnnotation(Class<?> targetClass, Class<A> annotationClass) {
         Package targetPackage = getPackage(targetClass, annotationClass);
         return targetPackage != null ? targetPackage.getAnnotation(annotationClass) : null;
+    }
+
+    /**
+     * 查找目标类上层包对象(若上层为空则继续向上查找，直至找不到为止)
+     *
+     * @param targetClass 目标类
+     * @return 返回包对象
+     * @since 2.1.0
+     */
+    public static Class<?> findParentPackage(Class<?> targetClass) {
+        String packageName = targetClass.getPackage().getName();
+        while (StringUtils.contains(packageName, PACKAGE_SEPARATOR)) {
+            packageName = StringUtils.substringBeforeLast(packageName, PACKAGE_SEPARATOR);
+            try {
+                Class<?> clazz = targetClass.getClassLoader().loadClass(String.format("%s.%s", packageName, PACKAGE_INFO));
+                if (clazz != null) {
+                    return clazz;
+                }
+            } catch (ClassNotFoundException ignored) {
+            }
+        }
+        return null;
     }
 
     /**
@@ -574,7 +595,13 @@ public class ClassUtils {
             try {
                 if (clazz != null) {
                     synchronized (instancesCache) {
-                        return ReentrantLockHelper.putIfAbsentAsync(instancesCache, clazz.getName(), clazz::newInstance);
+                        return ReentrantLockHelper.putIfAbsentAsync(instancesCache, clazz.getName(), () -> {
+                            try {
+                                return clazz.newInstance();
+                            } catch (InstantiationException | IllegalAccessException e) {
+                                throw new RuntimeException(e.getMessage(), e);
+                            }
+                        });
                     }
                 }
             } catch (Exception e) {

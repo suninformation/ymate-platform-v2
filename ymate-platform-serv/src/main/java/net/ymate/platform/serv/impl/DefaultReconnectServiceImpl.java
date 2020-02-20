@@ -35,12 +35,12 @@ public class DefaultReconnectServiceImpl extends AbstractService implements IRec
 
     private final AtomicLong counter = new AtomicLong(0);
 
-    private IClient client;
+    private IClient<?, ?> client;
 
     private long timeout;
 
     @Override
-    public void initialize(IClient client) {
+    public void initialize(IClient<?, ?> client) {
         this.client = client;
         doInit();
     }

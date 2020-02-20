@@ -19,7 +19,7 @@ import net.ymate.platform.core.module.IModuleConfigurer;
 import net.ymate.platform.core.module.impl.DefaultModuleConfigurable;
 import net.ymate.platform.webmvc.*;
 import org.apache.commons.fileupload.ProgressListener;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * @author 刘镇 (suninformation@163.com) on 2019-08-15 03:46

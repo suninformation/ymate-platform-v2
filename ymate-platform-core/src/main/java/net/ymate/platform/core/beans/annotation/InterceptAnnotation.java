@@ -15,6 +15,8 @@
  */
 package net.ymate.platform.core.beans.annotation;
 
+import net.ymate.platform.core.beans.intercept.IInterceptor;
+
 import java.lang.annotation.*;
 
 /**
@@ -27,4 +29,9 @@ import java.lang.annotation.*;
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
 public @interface InterceptAnnotation {
+
+    /**
+     * @return 设置拦截器方向, 默认为空表示全部方向
+     */
+    IInterceptor.Direction[] value() default {};
 }

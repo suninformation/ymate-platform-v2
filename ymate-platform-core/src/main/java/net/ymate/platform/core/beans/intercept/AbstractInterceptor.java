@@ -15,6 +15,7 @@
  */
 package net.ymate.platform.core.beans.intercept;
 
+import net.ymate.platform.commons.util.ClassUtils;
 import net.ymate.platform.core.beans.annotation.InterceptAnnotation;
 
 import java.lang.annotation.Annotation;
@@ -49,6 +50,9 @@ public abstract class AbstractInterceptor implements IInterceptor {
             annotation = context.getTargetMethod().getAnnotation(annotationClass);
             if (annotation == null) {
                 annotation = context.getTargetClass().getAnnotation(annotationClass);
+                if (annotation == null) {
+                    annotation = ClassUtils.getPackageAnnotation(context.getTargetClass(), annotationClass);
+                }
             }
         }
         return annotation;

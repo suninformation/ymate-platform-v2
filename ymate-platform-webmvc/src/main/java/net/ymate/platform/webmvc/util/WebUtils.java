@@ -478,7 +478,7 @@ public class WebUtils {
         return fixedRedirectUrl;
     }
 
-    public static String buildRedirectUrl(IContext context, String defaultValue) {
+    public static String getCustomRedirectUrl(IContext context, String defaultValue) {
         String returnValue = null;
         if (context.getContextParams().containsKey(Type.Const.CUSTOM_REDIRECT)) {
             String value = context.getContextParams().get(Type.Const.CUSTOM_REDIRECT);

@@ -62,7 +62,7 @@ public class RequestMeta {
 
     private SignatureValidate signatureValidate;
 
-    private final Set<Header> responseHeaders;
+    private final Set<ResponseHeader> responseHeaders = new HashSet<>();
 
     private final Set<Type.HttpMethod> allowMethods = new HashSet<>();
 
@@ -83,41 +83,36 @@ public class RequestMeta {
         this.responseBody = findAnnotation(ResponseBody.class);
         this.signatureValidate = findAnnotation(SignatureValidate.class);
         //
-        this.responseHeaders = new HashSet<>();
-        ResponseHeader respHeader = targetClass.getPackage().getAnnotation(ResponseHeader.class);
-        if (respHeader != null) {
-            Collections.addAll(this.responseHeaders, respHeader.value());
+        String packageMapping = processPackageAnnotations(targetClass);
+        RequestMapping mappingAnn = targetClass.getAnnotation(RequestMapping.class);
+        if (mappingAnn != null) {
+            packageMapping = doBuildRequestMapping(packageMapping, mappingAnn.value(), false);
+            doSetAllowValues(mappingAnn);
         }
-        respHeader = targetClass.getAnnotation(ResponseHeader.class);
-        if (respHeader != null) {
-            Collections.addAll(this.responseHeaders, respHeader.value());
-        }
-        respHeader = method.getAnnotation(ResponseHeader.class);
-        if (respHeader != null) {
-            Collections.addAll(this.responseHeaders, respHeader.value());
-        }
-        // 优化自定义请求映射前缀逻辑, 包级请求映射前缀优先处理
-        RequestMapping requestMapping = targetClass.getPackage().getAnnotation(RequestMapping.class);
-        String root;
-        if (requestMapping != null) {
-            root = doBuildRequestMapping(requestMappingPrefix, requestMapping);
-            doSetAllowValues(requestMapping);
-        } else {
-            root = doCheckMappingSeparator(requestMappingPrefix);
-        }
-        requestMapping = targetClass.getAnnotation(RequestMapping.class);
-        if (requestMapping != null) {
-            root = doBuildRequestMapping(root, requestMapping);
-            doSetAllowValues(requestMapping);
-        }
-        requestMapping = method.getAnnotation(RequestMapping.class);
-        doSetAllowValues(requestMapping);
+        mappingAnn = method.getAnnotation(RequestMapping.class);
+        doSetAllowValues(mappingAnn);
+        this.mapping = doBuildRequestMapping(requestMappingPrefix, doBuildRequestMapping(packageMapping, mappingAnn.value(), true), false);
         //
         if (this.allowMethods.isEmpty()) {
             this.allowMethods.add(Type.HttpMethod.GET);
         }
         //
-        this.mapping = doBuildRequestMapping(root, requestMapping);
+        ResponseHeader responseHeaderAnn = targetClass.getAnnotation(ResponseHeader.class);
+        if (responseHeaderAnn != null) {
+            this.responseHeaders.add(responseHeaderAnn);
+        }
+        ResponseHeaders responseHeadersAnn = targetClass.getAnnotation(ResponseHeaders.class);
+        if (responseHeadersAnn != null) {
+            Collections.addAll(this.responseHeaders, responseHeadersAnn.value());
+        }
+        responseHeaderAnn = method.getAnnotation(ResponseHeader.class);
+        if (responseHeaderAnn != null) {
+            this.responseHeaders.add(responseHeaderAnn);
+        }
+        responseHeadersAnn = method.getAnnotation(ResponseHeaders.class);
+        if (responseHeadersAnn != null) {
+            Collections.addAll(this.responseHeaders, responseHeadersAnn.value());
+        }
         //
         RequestProcessor requestProcessor = findAnnotation(RequestProcessor.class);
         if (requestProcessor != null) {
@@ -160,12 +155,41 @@ public class RequestMeta {
         }
     }
 
+    private String processPackageAnnotations(Class<?> targetClass) {
+        String packageMapping = null;
+        Package targetPackage = targetClass.getPackage();
+        if (targetPackage != null) {
+            Class<?> parentPackage = ClassUtils.findParentPackage(targetClass);
+            if (parentPackage != null) {
+                packageMapping = processPackageAnnotations(parentPackage);
+            }
+            //
+            RequestMapping requestMappingAnn = targetPackage.getAnnotation(RequestMapping.class);
+            if (requestMappingAnn != null) {
+                packageMapping = doBuildRequestMapping(packageMapping, requestMappingAnn.value(), false);
+                doSetAllowValues(requestMappingAnn);
+            } else {
+                packageMapping = doCheckMappingSeparator(packageMapping);
+            }
+            //
+            ResponseHeader responseHeaderAnn = targetPackage.getAnnotation(ResponseHeader.class);
+            if (responseHeaderAnn != null) {
+                this.responseHeaders.add(responseHeaderAnn);
+            }
+            ResponseHeaders responseHeadersAnn = targetPackage.getAnnotation(ResponseHeaders.class);
+            if (responseHeadersAnn != null) {
+                Collections.addAll(this.responseHeaders, responseHeadersAnn.value());
+            }
+        }
+        return packageMapping;
+    }
+
     private <T extends Annotation> T findAnnotation(Class<T> annotationClass) {
         T annotation = method.getAnnotation(annotationClass);
         if (annotation == null) {
             annotation = targetClass.getAnnotation(annotationClass);
             if (annotation == null) {
-                annotation = targetClass.getPackage().getAnnotation(annotationClass);
+                annotation = ClassUtils.getPackageAnnotation(targetClass, annotationClass);
             }
         }
         return annotation;
@@ -187,10 +211,9 @@ public class RequestMeta {
         }
     }
 
-    private String doBuildRequestMapping(String root, RequestMapping requestMapping) {
-        StringBuilder mappingBuilder = new StringBuilder(doCheckMappingSeparator(root));
-        String mappingStr = requestMapping.value();
-        if (StringUtils.isBlank(mappingStr)) {
+    private String doBuildRequestMapping(String parentMapping, String mappingStr, boolean notEmpty) {
+        StringBuilder mappingBuilder = new StringBuilder(doCheckMappingSeparator(parentMapping));
+        if (notEmpty && StringUtils.isBlank(mappingStr)) {
             mappingBuilder.append(Type.Const.PATH_SEPARATOR).append(method.getName());
         } else {
             mappingBuilder.append(doCheckMappingSeparator(mappingStr));
@@ -259,7 +282,7 @@ public class RequestMeta {
         return signatureValidate;
     }
 
-    public Set<Header> getResponseHeaders() {
+    public Set<ResponseHeader> getResponseHeaders() {
         return Collections.unmodifiableSet(responseHeaders);
     }
 

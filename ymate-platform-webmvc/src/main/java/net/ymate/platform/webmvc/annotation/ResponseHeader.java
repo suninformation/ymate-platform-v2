@@ -15,20 +15,34 @@
  */
 package net.ymate.platform.webmvc.annotation;
 
+import net.ymate.platform.webmvc.base.Type;
+import org.apache.commons.lang3.StringUtils;
+
 import java.lang.annotation.*;
 
 /**
- * 设置控制器方法返回结果时增加响应头参数的注解
+ * 声明一个请求/回应Header键值对
  *
- * @author 刘镇 (suninformation@163.com) on 15/10/29 下午7:25
+ * @author 刘镇 (suninformation@163.com) on 15/10/29 下午8:19
  */
 @Target({ElementType.PACKAGE, ElementType.TYPE, ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
+@Repeatable(ResponseHeaders.class)
 @Documented
 public @interface ResponseHeader {
 
     /**
-     * @return 响应头Header参数集合
+     * @return Header键名称
      */
-    Header[] value();
+    String name();
+
+    /**
+     * @return Header值
+     */
+    String value() default StringUtils.EMPTY;
+
+    /**
+     * @return Header类型
+     */
+    Type.HeaderType type() default Type.HeaderType.STRING;
 }

@@ -21,8 +21,8 @@ import net.ymate.platform.commons.util.ParamUtils;
 import net.ymate.platform.commons.util.RuntimeUtils;
 import net.ymate.platform.core.beans.intercept.InterceptException;
 import net.ymate.platform.webmvc.*;
-import net.ymate.platform.webmvc.annotation.Header;
 import net.ymate.platform.webmvc.annotation.ResponseBody;
+import net.ymate.platform.webmvc.annotation.ResponseHeader;
 import net.ymate.platform.webmvc.annotation.ResponseView;
 import net.ymate.platform.webmvc.annotation.SignatureValidate;
 import net.ymate.platform.webmvc.base.Type;
@@ -68,20 +68,14 @@ public final class RequestExecutor {
         }
     }
 
-    public IView execute() throws Exception {
-        // 取得当前控制器方法参数的名称集合
-        List<String> methodParamNames = requestMeta.getMethodParamNames();
-        // 根据参数名称, 从请求中提取对应的参数值
-        Map<String, Object> paramValues = requestProcessor.processRequestParams(owner, requestMeta);
-        // 尝试处理参数签名验证
+    private void doSignatureValidate() {
         SignatureValidate signatureValidate = requestMeta.getSignatureValidate();
-        if (signatureValidate != null) {
+        if (signatureValidate != null && !signatureValidate.disabled()) {
+            ISignatureParamParser paramParser = ClassUtils.impl(signatureValidate.parserClass(), ISignatureParamParser.class);
+            Map<String, Object> paramValues = new HashMap<>(paramParser.getParams(owner, requestMeta));
             String originSign = null;
             if (paramValues.containsKey(signatureValidate.paramName())) {
                 originSign = BlurObject.bind(paramValues.get(signatureValidate.paramName())).toStringValue();
-            }
-            if (StringUtils.isBlank(originSign)) {
-                originSign = WebContext.getRequest().getParameter(signatureValidate.paramName());
             }
             boolean invalid = StringUtils.isBlank(originSign) || StringUtils.isNotBlank(signatureValidate.nonceName()) && !paramValues.containsKey(signatureValidate.nonceName());
             if (invalid) {
@@ -94,14 +88,23 @@ public final class RequestExecutor {
                 }
             });
             ISignatureExtraParamProcessor extraParamProcessor = null;
-            if (!signatureValidate.extraParamProcess().equals(ISignatureExtraParamProcessor.class)) {
-                extraParamProcessor = ClassUtils.impl(signatureValidate.extraParamProcess(), ISignatureExtraParamProcessor.class);
+            if (!signatureValidate.processorClass().equals(ISignatureExtraParamProcessor.class)) {
+                extraParamProcessor = ClassUtils.impl(signatureValidate.processorClass(), ISignatureExtraParamProcessor.class);
             }
             String sign = ParamUtils.createSignature(signatureParams, signatureValidate.encode(), signatureValidate.upperCase(), extraParamProcessor != null ? extraParamProcessor.getExtraParams(owner, signatureParams) : null);
             if (!StringUtils.equals(originSign, sign)) {
                 throw new ParameterSignatureException("Parameter signature mismatch.");
             }
         }
+    }
+
+    public IView execute() throws Exception {
+        // 尝试处理参数签名验证
+        doSignatureValidate();
+        // 取得当前控制器方法参数的名称集合
+        List<String> methodParamNames = requestMeta.getMethodParamNames();
+        // 根据参数名称, 从请求中提取对应的参数值
+        Map<String, Object> paramValues = requestProcessor.processRequestParams(owner, requestMeta);
         // 将当前RequestMeta对象和参数映射放入WebContext中, 便于其它环节中获取并使用
         WebContext context = WebContext.getContext();
         context.addAttribute(RequestMeta.class.getName(), requestMeta);
@@ -130,7 +133,7 @@ public final class RequestExecutor {
         ResponseBody responseBody = requestMeta.getResponseBody();
         if (responseBody != null) {
             if (resultObj instanceof IView || resultObj instanceof String) {
-                resultView = doProcessResultToView(resultObj);
+                resultView = doProcessResultToView(owner, requestMeta, resultObj);
             } else if (resultObj instanceof WebResult) {
                 resultView = WebResult.formatView((WebResult) resultObj, Type.Const.FORMAT_JSON);
             } else {
@@ -145,10 +148,10 @@ public final class RequestExecutor {
                 }
             }
         } else {
-            resultView = doProcessResultToView(resultObj);
+            resultView = doProcessResultToView(owner, requestMeta, resultObj);
         }
         if (resultView != null) {
-            for (Header header : requestMeta.getResponseHeaders()) {
+            for (ResponseHeader header : requestMeta.getResponseHeaders()) {
                 switch (header.type()) {
                     case DATE:
                         resultView.addDateHeader(header.name(), BlurObject.bind(header.value()).toLongValue());
@@ -164,7 +167,7 @@ public final class RequestExecutor {
         return resultView;
     }
 
-    private IView doSwitchView(Type.View viewType, String[] viewParts) throws Exception {
+    public static IView doSwitchView(IWebMvc owner, Type.View viewType, String[] viewParts) throws Exception {
         IView view;
         switch (viewType) {
             case BINARY:
@@ -208,13 +211,13 @@ public final class RequestExecutor {
         return view;
     }
 
-    private IView doProcessResultToView(Object result) throws Exception {
+    public static IView doProcessResultToView(IWebMvc owner, RequestMeta requestMeta, Object result) throws Exception {
         IView view;
         if (result == null) {
-            if (requestMeta.getResponseView() != null) {
+            if (requestMeta != null && requestMeta.getResponseView() != null) {
                 ResponseView responseView = requestMeta.getResponseView();
                 String[] viewParts = StringUtils.split(responseView.value(), ":");
-                view = doSwitchView(responseView.type(), viewParts);
+                view = doSwitchView(owner, responseView.type(), viewParts);
             } else {
                 view = JspView.bind(owner);
             }
@@ -223,7 +226,7 @@ public final class RequestExecutor {
         } else if (result instanceof String) {
             String[] parts = StringUtils.split((String) result, ":");
             if (ArrayUtils.isNotEmpty(parts) && parts.length > 1) {
-                view = doSwitchView(Type.View.valueOf(parts[0].toUpperCase()), parts);
+                view = doSwitchView(owner, Type.View.valueOf(parts[0].toUpperCase()), parts);
             } else {
                 view = HtmlView.bind((String) result);
             }

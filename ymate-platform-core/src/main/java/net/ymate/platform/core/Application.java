@@ -19,7 +19,10 @@ import net.ymate.platform.commons.util.RuntimeUtils;
 import net.ymate.platform.core.beans.IBeanFactory;
 import net.ymate.platform.core.beans.IBeanLoadFactory;
 import net.ymate.platform.core.beans.IBeanLoader;
-import net.ymate.platform.core.beans.annotation.*;
+import net.ymate.platform.core.beans.annotation.Bean;
+import net.ymate.platform.core.beans.annotation.Injector;
+import net.ymate.platform.core.beans.annotation.Interceptor;
+import net.ymate.platform.core.beans.annotation.Proxy;
 import net.ymate.platform.core.beans.impl.DefaultBeanFactory;
 import net.ymate.platform.core.beans.intercept.InterceptSettings;
 import net.ymate.platform.core.event.Events;
@@ -146,7 +149,6 @@ public final class Application implements IApplication {
                     //
                     beanLoader.registerHandler(Bean.class);
                     beanLoader.registerHandler(Interceptor.class, new InterceptorHandler(this));
-                    beanLoader.registerHandler(Packages.class, new PackagesHandler(this));
                     //
                     beanLoader.registerHandler(Injector.class, new InjectorHandler(this));
                     beanLoader.registerHandler(Event.class, new EventHandler(this));

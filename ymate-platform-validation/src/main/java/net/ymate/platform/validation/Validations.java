@@ -21,7 +21,6 @@ import net.ymate.platform.core.IApplication;
 import net.ymate.platform.core.YMP;
 import net.ymate.platform.core.beans.BeanMeta;
 import net.ymate.platform.core.beans.IBeanLoadFactory;
-import net.ymate.platform.core.beans.intercept.InterceptAnnHelper;
 import net.ymate.platform.core.module.IModule;
 import net.ymate.platform.validation.annotation.Validation;
 import net.ymate.platform.validation.annotation.Validator;
@@ -143,7 +142,7 @@ public final class Validations implements IModule, IValidation {
         if (initialized) {
             ValidationMeta validationMeta = bindValidationMeta(targetClass);
             if (validationMeta != null) {
-                Map<String, String> contextParams = InterceptAnnHelper.getContextParams(owner, targetClass);
+                Map<String, String> contextParams = owner.getInterceptSettings().getContextParams(owner, targetClass);
                 for (Map.Entry<String, ValidationMeta.ParamInfo> entry : validationMeta.getFields().entrySet()) {
                     ValidateResult validateResult = doValidate(entry.getValue(), paramValues, contextParams, validationMeta.getResourcesName());
                     if (validateResult != null && validateResult.isMatched()) {
@@ -169,7 +168,7 @@ public final class Validations implements IModule, IValidation {
                     Validation.MODE mode = methodInfo.getValidation() == null ? validationMeta.getMode() : methodInfo.getValidation().mode();
                     String resourceName = methodInfo.getValidation() == null ? validationMeta.getResourcesName() : StringUtils.defaultIfBlank(methodInfo.getValidation().resourcesName(), validationMeta.getResourcesName());
                     //
-                    Map<String, String> contextParams = InterceptAnnHelper.getContextParams(owner, (targetClass != null ? targetClass : targetMethod.getDeclaringClass()), targetMethod);
+                    Map<String, String> contextParams = owner.getInterceptSettings().getContextParams(owner, (targetClass != null ? targetClass : targetMethod.getDeclaringClass()), targetMethod);
                     for (Map.Entry<String, ValidationMeta.ParamInfo> entry : methodInfo.getParams().entrySet()) {
                         ValidateResult validateResult = doValidate(entry.getValue(), paramValues, contextParams, resourceName);
                         if (validateResult != null && validateResult.isMatched()) {

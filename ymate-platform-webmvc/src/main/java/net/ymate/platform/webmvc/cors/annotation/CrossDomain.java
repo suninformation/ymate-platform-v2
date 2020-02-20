@@ -16,6 +16,7 @@
 package net.ymate.platform.webmvc.cors.annotation;
 
 import net.ymate.platform.core.beans.annotation.InterceptAnnotation;
+import net.ymate.platform.core.beans.intercept.IInterceptor;
 
 import java.lang.annotation.*;
 
@@ -25,9 +26,9 @@ import java.lang.annotation.*;
  * @author 刘镇 (suninformation@163.com) on 2019-08-17 14:19
  * @since 2.1.0
  */
-@Target({ElementType.TYPE, ElementType.METHOD})
+@Target({ElementType.PACKAGE, ElementType.TYPE, ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
-@InterceptAnnotation
+@InterceptAnnotation(IInterceptor.Direction.BEFORE)
 public @interface CrossDomain {
 }

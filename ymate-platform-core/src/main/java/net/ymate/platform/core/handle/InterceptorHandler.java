@@ -42,7 +42,7 @@ public final class InterceptorHandler implements IBeanHandler {
             Interceptor interceptorAnn = targetClass.getAnnotation(Interceptor.class);
             if (interceptorAnn != null) {
                 if (!Annotation.class.equals(interceptorAnn.value())) {
-                    owner.getInterceptSettings().getInterceptAnnHelper().registerInterceptAnnotation(interceptorAnn.value(), (Class<? extends IInterceptor>) targetClass);
+                    owner.getInterceptSettings().registerInterceptAnnotation(interceptorAnn.value(), (Class<? extends IInterceptor>) targetClass);
                 }
                 return BeanMeta.create(targetClass, interceptorAnn.singleton());
             }
