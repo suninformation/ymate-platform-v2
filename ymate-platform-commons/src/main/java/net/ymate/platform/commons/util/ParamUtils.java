@@ -25,6 +25,7 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -34,6 +35,10 @@ import java.util.Map;
 public class ParamUtils {
 
     private static final Log LOG = LogFactory.getLog(ParamUtils.class);
+
+    public static boolean isInvalid(Object obj) {
+        return obj == null || obj instanceof Map && ((Map<?, ?>) obj).isEmpty() || obj instanceof Collection && ((Collection<?>) obj).isEmpty() || obj instanceof CharSequence && StringUtils.isBlank((CharSequence) obj);
+    }
 
     /**
      * @param params  请求参数映射
