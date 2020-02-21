@@ -15,6 +15,7 @@
  */
 package net.ymate.platform.webmvc.view;
 
+import net.ymate.platform.commons.util.ParamUtils;
 import net.ymate.platform.webmvc.IWebMvc;
 import net.ymate.platform.webmvc.base.Type;
 import net.ymate.platform.webmvc.context.WebContext;
@@ -68,7 +69,9 @@ public abstract class AbstractView implements IView {
 
     @Override
     public IView addAttribute(String name, Object value) {
-        attributes.put(name, value);
+        if (!ParamUtils.isInvalid(value)) {
+            attributes.put(name, value);
+        }
         return this;
     }
 
