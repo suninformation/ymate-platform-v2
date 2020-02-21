@@ -138,8 +138,6 @@ public class Type {
         String PARAM_DATA = "data";
 
         String REDIRECT_URL = "redirect_url";
-
-        String CUSTOM_REDIRECT = "custom_redirect";
     }
 
     public interface HttpHead {

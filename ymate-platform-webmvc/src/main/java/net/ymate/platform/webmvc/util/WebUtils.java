@@ -311,6 +311,20 @@ public class WebUtils {
         return StringUtils.split(ip, ',');
     }
 
+    public static String getContextParamValue(IContext context, String paramName, String defaultValue) {
+        if (context == null) {
+            throw new NullArgumentException("context");
+        }
+        if (StringUtils.isBlank(paramName)) {
+            throw new NullArgumentException("paramName");
+        }
+        String returnValue = StringUtils.defaultIfBlank(context.getContextParams().get(paramName), defaultValue);
+        if (StringUtils.isNotBlank(returnValue)) {
+            returnValue = doGetConfigValue(context.getOwner(), returnValue, returnValue);
+        }
+        return returnValue;
+    }
+
     /**
      * @param source 源字符串
      * @param key    键
@@ -460,38 +474,22 @@ public class WebUtils {
     }
 
     public static String buildRedirectUrl(IContext context, HttpServletRequest request, String redirectUrl, boolean needPrefix) {
-        String fixedRedirectUrl = StringUtils.trimToNull(redirectUrl);
-        if (fixedRedirectUrl == null) {
-            fixedRedirectUrl = StringUtils.defaultIfBlank(request.getParameter(Type.Const.REDIRECT_URL), context != null ? context.getContextParams().get(Type.Const.REDIRECT_URL) : StringUtils.EMPTY);
-            if (StringUtils.isBlank(fixedRedirectUrl)) {
-                if (context != null) {
-                    fixedRedirectUrl = doGetConfigValue(context.getOwner(), IWebMvcConfig.PARAMS_REDIRECT_HOME_URL, null);
-                }
-                if (StringUtils.isBlank(fixedRedirectUrl)) {
-                    fixedRedirectUrl = baseUrl(request);
+        if (StringUtils.isBlank(redirectUrl)) {
+            redirectUrl = request.getParameter(Type.Const.REDIRECT_URL);
+            if (StringUtils.isBlank(redirectUrl) && context != null) {
+                redirectUrl = context.getContextParams().get(Type.Const.REDIRECT_URL);
+                if (StringUtils.isNotBlank(redirectUrl)) {
+                    redirectUrl = doGetConfigValue(context.getOwner(), redirectUrl, redirectUrl);
                 }
             }
-        }
-        if (needPrefix && !StringUtils.startsWithIgnoreCase(fixedRedirectUrl, Type.Const.HTTP_PREFIX) && !StringUtils.startsWithIgnoreCase(fixedRedirectUrl, Type.Const.HTTPS_PREFIX)) {
-            fixedRedirectUrl = WebUtils.buildUrl(request, fixedRedirectUrl, true);
-        }
-        return fixedRedirectUrl;
-    }
-
-    public static String getCustomRedirectUrl(IContext context, String defaultValue) {
-        String returnValue = null;
-        if (context.getContextParams().containsKey(Type.Const.CUSTOM_REDIRECT)) {
-            String value = context.getContextParams().get(Type.Const.CUSTOM_REDIRECT);
-            if (StringUtils.equalsIgnoreCase(value, Type.Const.CUSTOM_REDIRECT)) {
-                value = IWebMvcConfig.PARAMS_REDIRECT_CUSTOM_URL;
-            } else if (StringUtils.startsWithIgnoreCase(value, Type.Const.HTTP_PREFIX) || StringUtils.startsWithIgnoreCase(value, Type.Const.HTTPS_PREFIX)) {
-                return value;
-            }
-            if (StringUtils.isNotBlank(value)) {
-                returnValue = doGetConfigValue(context.getOwner(), value, null);
+            if (StringUtils.isBlank(redirectUrl)) {
+                return baseUrl(request);
             }
         }
-        return StringUtils.trimToEmpty(StringUtils.defaultIfBlank(returnValue, defaultValue));
+        if (needPrefix && !StringUtils.startsWithIgnoreCase(redirectUrl, Type.Const.HTTP_PREFIX) && !StringUtils.startsWithIgnoreCase(redirectUrl, Type.Const.HTTPS_PREFIX)) {
+            redirectUrl = buildUrl(request, redirectUrl, true);
+        }
+        return redirectUrl;
     }
 
     public static IView buildErrorView(IWebMvc owner, int code, String msg) {

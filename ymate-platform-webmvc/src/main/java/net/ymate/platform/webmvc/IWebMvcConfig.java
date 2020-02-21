@@ -144,16 +144,6 @@ public interface IWebMvcConfig extends IInitialization<IWebMvc> {
     String PARAMS_VALIDATION_TEMPLATE_ITEM = "webmvc.validation_template_item";
 
     /**
-     * 重定向主页URL地址, 默认值: ""
-     */
-    String PARAMS_REDIRECT_HOME_URL = "webmvc.redirect_home_url";
-
-    /**
-     * 自定义重定向URL地址
-     */
-    String PARAMS_REDIRECT_CUSTOM_URL = "webmvc.redirect_custom_url";
-
-    /**
      * 允许访问和重定向的主机名称, 多个主机名称用'|'分隔, 默认值: 空(表示不限制)
      */
     String PARAMS_ALLOWED_ACCESS_HOSTS = "webmvc.allowed_access_hosts";
