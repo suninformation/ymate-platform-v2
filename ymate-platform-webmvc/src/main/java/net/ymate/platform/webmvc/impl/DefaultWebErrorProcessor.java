@@ -103,7 +103,7 @@ public class DefaultWebErrorProcessor implements IWebErrorProcessor, IWebInitial
                     if (exceptionProcessor != null) {
                         IExceptionProcessor.Result result = exceptionProcessor.process(unwrapThrow);
                         if (result != null) {
-                            showErrorMsg(result.getCode(), WebUtils.errorCodeI18n(this.owner, result), null).render();
+                            showErrorMsg(result.getCode(), WebUtils.errorCodeI18n(this.owner, result), result.getAttributes()).render();
                         } else if (LOG.isErrorEnabled()) {
                             if (!analysisDisabled && owner.getOwner().isDevEnv()) {
                                 LOG.error(exceptionAnalysis(unwrapThrow));

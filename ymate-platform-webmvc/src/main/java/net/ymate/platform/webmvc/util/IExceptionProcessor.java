@@ -15,7 +15,12 @@
  */
 package net.ymate.platform.webmvc.util;
 
+import net.ymate.platform.commons.util.ParamUtils;
 import net.ymate.platform.core.beans.annotation.Ignored;
+import org.apache.commons.lang3.StringUtils;
+
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 /**
  * 异常处理器接口
@@ -44,6 +49,8 @@ public interface IExceptionProcessor {
 
         private final String message;
 
+        private final Map<String, Object> attributes = new LinkedHashMap<>();
+
         public Result(int code, String message) {
             this.code = code;
             this.message = message;
@@ -55,6 +62,22 @@ public interface IExceptionProcessor {
 
         public String getMessage() {
             return message;
+        }
+
+        public Map<String, Object> getAttributes() {
+            return attributes;
+        }
+
+        public Result addAttribute(String attrKey, Object attrValue) {
+            if (StringUtils.isNotBlank(attrKey) && !ParamUtils.isInvalid(attrValue)) {
+                attributes.put(attrKey, attrValue);
+            }
+            return this;
+        }
+
+        public Result addAttributes(Map<String, Object> attributes) {
+            this.attributes.putAll(attributes);
+            return this;
         }
     }
 }
