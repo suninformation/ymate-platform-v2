@@ -68,7 +68,8 @@ public class InterceptMeta {
                 .forEach(interceptorClass -> afterIntercepts.add(interceptorClass));
         //
         Clean cleanAnn = targetMethod.getAnnotation(Clean.class);
-        processClass(owner, targetClass, cleanAnn, settingMeta);
+        processPackage(owner, targetClass, cleanAnn, settingMeta);
+        processAnnotations(owner, targetClass.getAnnotations(), cleanAnn, settingMeta);
         processAnnotations(owner, targetMethod.getAnnotations(), cleanAnn, settingMeta);
     }
 
@@ -146,7 +147,7 @@ public class InterceptMeta {
      * @param owner       所属容器对象
      * @param targetClass 目标类
      */
-    private void processClass(IApplication owner, Class<?> targetClass, Clean cleanAnn, InterceptSettings.InterceptSettingMeta settingMeta) {
+    private void processPackage(IApplication owner, Class<?> targetClass, Clean cleanAnn, InterceptSettings.InterceptSettingMeta settingMeta) {
         if (settingMeta != null && settingMeta.isCleanAll()) {
             return;
         }
@@ -156,7 +157,7 @@ public class InterceptMeta {
                 // 优先查找并处理上级包
                 Class<?> parentPackage = ClassUtils.findParentPackage(targetClass);
                 if (parentPackage != null) {
-                    processClass(owner, parentPackage, cleanAnn, settingMeta);
+                    processPackage(owner, parentPackage, cleanAnn, settingMeta);
                 }
                 // 分析当前包中拦截器相关注解
                 processAnnotations(owner, targetPackage.getAnnotations(), cleanAnn, settingMeta);
