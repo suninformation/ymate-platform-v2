@@ -15,20 +15,15 @@
  */
 package net.ymate.platform.core.beans.annotation;
 
-import org.apache.commons.lang3.StringUtils;
-
 import java.lang.annotation.*;
 
 /**
- * @author 刘镇 (suninformation@163.com) on 15/11/12 下午3:48
+ * @author 刘镇 (suninformation@163.com) on 15/11/12 下午3:43
  */
 @Target({ElementType.PACKAGE, ElementType.TYPE, ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
-@Repeatable(ContextParam.class)
 @Documented
-public @interface ParamItem {
+public @interface ContextParams {
 
-    String key() default StringUtils.EMPTY;
-
-    String value();
+    ContextParam[] value();
 }

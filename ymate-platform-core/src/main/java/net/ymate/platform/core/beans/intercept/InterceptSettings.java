@@ -18,8 +18,8 @@ package net.ymate.platform.core.beans.intercept;
 import net.ymate.platform.commons.util.ClassUtils;
 import net.ymate.platform.core.IApplication;
 import net.ymate.platform.core.beans.annotation.ContextParam;
+import net.ymate.platform.core.beans.annotation.ContextParams;
 import net.ymate.platform.core.beans.annotation.InterceptAnnotation;
-import net.ymate.platform.core.beans.annotation.ParamItem;
 import net.ymate.platform.core.configuration.IConfigReader;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.lang.NullArgumentException;
@@ -122,10 +122,10 @@ public final class InterceptSettings {
         this.enabled = enabled;
     }
 
-    private void parseParamItemValue(IApplication owner, ParamItem paramItemAnn, Map<String, String> contextParams) {
-        if (paramItemAnn != null) {
-            String key = paramItemAnn.key();
-            String value = paramItemAnn.value();
+    private void parseContextParamValue(IApplication owner, ContextParam contextParamAnn, Map<String, String> contextParams) {
+        if (contextParamAnn != null) {
+            String key = contextParamAnn.key();
+            String value = contextParamAnn.value();
             if (StringUtils.isNotBlank(value)) {
                 boolean flag = value.length() > 1 && value.charAt(0) == '$';
                 if (StringUtils.isBlank(key)) {
@@ -148,13 +148,13 @@ public final class InterceptSettings {
     /**
      * 分析并注册上下文参数注解
      *
-     * @param owner           所属容器对象
-     * @param contextParamAnn 上下文参数注解
-     * @param contextParams   目标参数存储映射
+     * @param owner            所属容器对象
+     * @param contextParamsAnn 上下文参数注解
+     * @param contextParams    目标参数存储映射
      */
-    private void parseContextParamValue(IApplication owner, ContextParam contextParamAnn, Map<String, String> contextParams) {
-        if (contextParamAnn != null) {
-            Arrays.stream(contextParamAnn.value()).forEach(paramItem -> parseParamItemValue(owner, paramItem, contextParams));
+    private void parseContextParamValue(IApplication owner, ContextParams contextParamsAnn, Map<String, String> contextParams) {
+        if (contextParamsAnn != null) {
+            Arrays.stream(contextParamsAnn.value()).forEach(contextParam -> parseContextParamValue(owner, contextParam, contextParams));
         }
     }
 
@@ -166,8 +166,8 @@ public final class InterceptSettings {
             if (parentPackage != null) {
                 parsePackageContextParams(owner, parentPackage, contextParams);
             }
-            parseParamItemValue(owner, targetPackage.getAnnotation(ParamItem.class), contextParams);
             parseContextParamValue(owner, targetPackage.getAnnotation(ContextParam.class), contextParams);
+            parseContextParamValue(owner, targetPackage.getAnnotation(ContextParams.class), contextParams);
         }
     }
 
@@ -179,7 +179,7 @@ public final class InterceptSettings {
         return CONTEXT_PARAMS.computeIfAbsent(id, i -> {
             Map<String, String> contextParams = new HashMap<>(16);
             parsePackageContextParams(owner, targetClass, contextParams);
-            parseContextParamValue(owner, targetClass.getAnnotation(ContextParam.class), contextParams);
+            parseContextParamValue(owner, targetClass.getAnnotation(ContextParams.class), contextParams);
             return contextParams.isEmpty() ? Collections.emptyMap() : contextParams;
         });
     }
@@ -187,8 +187,8 @@ public final class InterceptSettings {
     public Map<String, String> getContextParams(IApplication owner, Class<?> targetClass, Method targetMethod) {
         Map<String, String> contextParams = new HashMap<>(getContextParams(owner, targetClass));
         //
-        parseParamItemValue(owner, targetMethod.getAnnotation(ParamItem.class), contextParams);
         parseContextParamValue(owner, targetMethod.getAnnotation(ContextParam.class), contextParams);
+        parseContextParamValue(owner, targetMethod.getAnnotation(ContextParams.class), contextParams);
         //
         return contextParams;
     }
