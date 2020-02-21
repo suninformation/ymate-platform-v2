@@ -17,6 +17,7 @@ package net.ymate.platform.webmvc.util;
 
 import net.ymate.platform.commons.ReentrantLockHelper;
 import net.ymate.platform.core.support.ErrorCode;
+import net.ymate.platform.webmvc.base.Type;
 import net.ymate.platform.webmvc.exception.*;
 import org.apache.commons.fileupload.FileUploadBase;
 import org.apache.commons.lang.NullArgumentException;
@@ -45,6 +46,12 @@ public final class ExceptionProcessHelper {
         DEFAULT.registerProcessor(ResourceNotFoundException.class, target -> new IExceptionProcessor.Result(WebErrorCode.RESOURCE_NOT_FOUND_OR_NOT_EXIST, WebErrorCode.MSG_RESOURCE_NOT_FOUND_OR_NOT_EXIST));
         DEFAULT.registerProcessor(UserSessionInvalidException.class, target -> new IExceptionProcessor.Result(WebErrorCode.USER_SESSION_INVALID_OR_TIMEOUT, WebErrorCode.MSG_USER_SESSION_INVALID_OR_TIMEOUT));
         DEFAULT.registerProcessor(ParameterSignatureException.class, target -> new IExceptionProcessor.Result(WebErrorCode.INVALID_PARAMS_SIGNATURE, WebErrorCode.MSG_INVALID_PARAMS_SIGNATURE));
+        DEFAULT.registerProcessor(UserSessionConfirmationStateException.class, target -> new IExceptionProcessor.Result(WebErrorCode.USER_SESSION_CONFIRMATION_STATE, WebErrorCode.MSG_USER_SESSION_CONFIRMATION_STATE)
+                .addAttribute(Type.Const.REDIRECT_URL, ((UserSessionConfirmationStateException) target).getRedirectUrl()));
+        DEFAULT.registerProcessor(UserSessionForceOfflineException.class, target -> new IExceptionProcessor.Result(WebErrorCode.USER_SESSION_FORCE_OFFLINE, WebErrorCode.MSG_USER_SESSION_FORCE_OFFLINE)
+                .addAttribute("remote_addr", ((UserSessionForceOfflineException) target).getRemoteAddr())
+                .addAttribute("event_time", ((UserSessionForceOfflineException) target).getEventTime())
+                .addAttribute("description", ((UserSessionForceOfflineException) target).getDescription()));
     }
 
     public static StringBuilder exceptionToString(Throwable e) {

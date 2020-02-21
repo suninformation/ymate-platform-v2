@@ -78,6 +78,16 @@ public final class WebErrorCode {
      */
     public final static int UPLOAD_CONTENT_TYPE_INVALID = -11;
 
+    /**
+     * 用户会话确认状态无效
+     */
+    public final static int USER_SESSION_CONFIRMATION_STATE = -12;
+
+    /**
+     * 用户会话被强制下线
+     */
+    public final static int USER_SESSION_FORCE_OFFLINE = -13;
+
     public final static String MSG_RESOURCE_NOT_FOUND_OR_NOT_EXIST = "The resources was not found or not existed.";
 
     public final static String MSG_INVALID_PARAMS_VALIDATION = "Request parameter validation is invalid.";
@@ -99,6 +109,10 @@ public final class WebErrorCode {
     public final static String MSG_UPLOAD_SIZE_LIMIT_EXCEEDED = "The total size of uploaded files exceeds the limit.";
 
     public final static String MSG_UPLOAD_CONTENT_TYPE_INVALID = "The upload file content type is invalid.";
+
+    public final static String MSG_USER_SESSION_CONFIRMATION_STATE = "User session confirmation state invalid.";
+
+    public final static String MSG_USER_SESSION_FORCE_OFFLINE = "User session has been forced offline.";
 
     public static ErrorCode resourceNotFoundOrNotExist() {
         return ErrorCode.create(RESOURCE_NOT_FOUND_OR_NOT_EXIST, MSG_RESOURCE_NOT_FOUND_OR_NOT_EXIST);
