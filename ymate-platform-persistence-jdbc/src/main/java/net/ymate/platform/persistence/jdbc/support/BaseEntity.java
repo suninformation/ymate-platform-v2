@@ -195,7 +195,7 @@ public abstract class BaseEntity<Entity extends IEntity, PK extends Serializable
     @SuppressWarnings("unchecked")
     public Entity saveOrUpdate(Fields fields) throws Exception {
         try (IDatabaseSession session = new DefaultDatabaseSession(owner, doGetSafeConnectionHolder())) {
-            EntitySQL<Entity> entitySql = EntitySQL.create(this.getEntityClass());
+            EntitySQL<Entity> entitySql = EntitySQL.create(this.getEntityClass()).forUpdate(IDBLocker.DEFAULT);
             if (fields != null) {
                 entitySql.field(fields);
             }
