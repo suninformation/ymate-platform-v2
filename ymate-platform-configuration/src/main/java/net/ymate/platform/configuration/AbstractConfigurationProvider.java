@@ -63,11 +63,11 @@ public abstract class AbstractConfigurationProvider implements IConfigurationPro
         this.cfgFileName = cfgFileName;
         //
         ReentrantLock locker = LOCK.getLocker(this.cfgFileName);
+        locker.lock();
         try {
-            locker.lock();
             doLoad(false);
         } finally {
-            LOCK.unlock(locker);
+            locker.unlock();
         }
     }
 
@@ -106,12 +106,12 @@ public abstract class AbstractConfigurationProvider implements IConfigurationPro
     @Override
     public void reload() throws Exception {
         ReentrantLock locker = LOCK.getLocker(cfgFileName);
+        locker.lock();
         try {
-            locker.lock();
             // 加载配置
             doLoad(true);
         } finally {
-            LOCK.unlock(locker);
+            locker.unlock();
         }
     }
 
