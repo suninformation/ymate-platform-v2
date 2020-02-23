@@ -188,6 +188,25 @@ public abstract class BaseEntity<Entity extends IEntity, PK extends Serializable
         }
     }
 
+    public boolean saveIfNotExist() throws Exception {
+        return saveIfNotExist(false);
+    }
+
+    @SuppressWarnings("unchecked")
+    public boolean saveIfNotExist(boolean useLocker) throws Exception {
+        try (IDatabaseSession session = new DefaultDatabaseSession(owner, doGetSafeConnectionHolder())) {
+            EntitySQL<Entity> entitySql = EntitySQL.create(this.getEntityClass());
+            if (useLocker) {
+                entitySql.forUpdate(IDBLocker.DEFAULT);
+            }
+            Entity entity = session.find(entitySql, this.getId(), this.getShardingable());
+            if (entity == null) {
+                return session.insert((Entity) this, this.getShardingable()) != null;
+            }
+            return false;
+        }
+    }
+
     public Entity saveOrUpdate() throws Exception {
         return saveOrUpdate(null);
     }
