@@ -83,6 +83,10 @@ public class DateTimeHelper {
         calendar.set(year, month - 1, day, hour, minute, second);
     }
 
+    public Calendar getCalendar() {
+        return calendar;
+    }
+
     public DateTimeHelper timeZone(TimeZone timeZone) {
         calendar.setTimeZone(timeZone);
         return this;
@@ -165,7 +169,11 @@ public class DateTimeHelper {
     }
 
     public int dayOfWeek() {
-        return calendar.get(Calendar.DAY_OF_WEEK) - 1;
+        int day = calendar.get(Calendar.DAY_OF_WEEK);
+        if (day == Calendar.SUNDAY) {
+            return 7;
+        }
+        return day - 1;
     }
 
     public int weekOfMonth() {
