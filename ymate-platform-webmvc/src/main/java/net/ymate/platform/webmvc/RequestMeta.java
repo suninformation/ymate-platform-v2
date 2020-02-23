@@ -22,7 +22,9 @@ import net.ymate.platform.webmvc.base.Type;
 import org.apache.commons.lang3.StringUtils;
 
 import java.lang.annotation.Annotation;
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.lang.reflect.Parameter;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -125,19 +127,16 @@ public class RequestMeta {
         }
         //
         ReentrantLockHelper.putIfAbsentAsync(CLASS_PARAMETER_METAS, targetClass, () -> {
-            ClassUtils.BeanWrapper<?> beanWrapper = ClassUtils.wrapper(targetClass);
-            if (beanWrapper != null) {
-                Map<String, ParameterMeta> parameterMetas = new HashMap<>();
-                //
-                beanWrapper.getFieldNames().stream().filter((fieldName) -> (!parameterMetas.containsKey(fieldName))).forEachOrdered((fieldName) -> {
-                    ParameterMeta parameterMeta = new ParameterMeta(beanWrapper.getField(fieldName));
+            Map<String, ParameterMeta> parameterMetas = new HashMap<>();
+            for (Field field : targetClass.getDeclaredFields()) {
+                if (!Modifier.isStatic(field.getModifiers()) && !parameterMetas.containsKey(field.getName())) {
+                    ParameterMeta parameterMeta = new ParameterMeta(field);
                     if (parameterMeta.isParamField()) {
-                        parameterMetas.put(fieldName, parameterMeta);
+                        parameterMetas.put(field.getName(), parameterMeta);
                     }
-                });
-                return parameterMetas;
+                }
             }
-            return null;
+            return parameterMetas;
         });
         //
         this.methodParameterMetas = new ArrayList<>();
@@ -146,6 +145,9 @@ public class RequestMeta {
             Parameter[] parameters = method.getParameters();
             int idx = 0;
             for (String methodName : methodParamNames) {
+                if (parameters.length <= idx) {
+                    break;
+                }
                 ParameterMeta parameterMeta = new ParameterMeta(parameters[idx].getType(), methodName, parameters[idx].getAnnotations());
                 if (parameterMeta.isParamField()) {
                     this.methodParameterMetas.add(parameterMeta);

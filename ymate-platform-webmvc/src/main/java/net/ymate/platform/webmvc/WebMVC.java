@@ -225,7 +225,7 @@ public final class WebMVC implements IModule, IWebMvc {
         boolean isValid = false;
         if (ClassUtils.isNormalClass(targetClass) && !targetClass.isInterface()) {
             for (Method method : targetClass.getDeclaredMethods()) {
-                if (method.isAnnotationPresent(RequestMapping.class) && method.getModifiers() == Modifier.PUBLIC) {
+                if (method.isAnnotationPresent(RequestMapping.class) && !Modifier.isStatic(method.getModifiers()) && Modifier.isPublic(method.getModifiers()) && !ClassUtils.EXCLUDED_METHOD_NAMES.contains(method.getName())) {
                     RequestMeta requestMeta = new RequestMeta(requestMappingPrefix, targetClass, method);
                     config.getRequestMappingParser().registerRequestMeta(requestMeta);
                     //

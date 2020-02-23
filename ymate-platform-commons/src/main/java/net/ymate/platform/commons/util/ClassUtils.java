@@ -56,6 +56,8 @@ public class ClassUtils {
 
     private static final Map<Class<?>, ExtensionLoader> EXTENSION_LOADERS = new ConcurrentHashMap<>();
 
+    public static final Set<String> EXCLUDED_METHOD_NAMES = Collections.unmodifiableSet(Arrays.stream(Object.class.getDeclaredMethods()).map(Method::getName).collect(Collectors.toSet()));
+
     /**
      * @return 返回默认类加载器对象
      */
@@ -653,15 +655,12 @@ public class ClassUtils {
         BeanWrapper(T target) {
             this.target = target;
             //
-            ClassUtils.getFields(target.getClass(), true).stream().filter((field) -> !(Modifier.isStatic(field.getModifiers()))).peek((field) -> {
-                // 忽略静态成员
-                field.setAccessible(true);
-            }).forEachOrdered((field) -> {
-                this.fieldMap.put(field.getName(), field);
-            });
-            // 提取get/set/is方法
+            ClassUtils.getFields(target.getClass(), true).stream()
+                    .filter((field) -> !Modifier.isStatic(field.getModifiers()))
+                    .peek((field) -> field.setAccessible(true))
+                    .forEachOrdered((field) -> this.fieldMap.put(field.getName(), field));
             ClassUtils.getMethods(target.getClass(), true).stream()
-                    .filter(method -> !Modifier.isStatic(method.getModifiers()) && Modifier.isPublic(method.getModifiers()) && StringUtils.startsWithAny(method.getName(), "get", "set", "is"))
+                    .filter(method -> !Modifier.isStatic(method.getModifiers()) && Modifier.isPublic(method.getModifiers()) && !EXCLUDED_METHOD_NAMES.contains(method.getName()))
                     .forEachOrdered(method -> this.methodMap.put(method.getName(), method));
         }
 

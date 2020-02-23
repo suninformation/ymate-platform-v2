@@ -15,6 +15,7 @@
  */
 package net.ymate.platform.core.beans.intercept;
 
+import net.ymate.platform.commons.util.ClassUtils;
 import net.ymate.platform.core.IApplication;
 import net.ymate.platform.core.beans.annotation.Ignored;
 import net.ymate.platform.core.beans.annotation.Order;
@@ -23,11 +24,7 @@ import net.ymate.platform.core.beans.proxy.IProxyChain;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Set;
 
 /**
  * 拦截器代理，支持@Before、@After和@Around方法注解
@@ -39,12 +36,6 @@ public class InterceptProxy implements IProxy {
 
     private static final Log LOG = LogFactory.getLog(InterceptProxy.class);
 
-    private static final Set<String> EXCLUDED_METHOD_NAMES = new HashSet<>();
-
-    static {
-        Arrays.stream(Object.class.getDeclaredMethods()).map(Method::getName).forEach(EXCLUDED_METHOD_NAMES::add);
-    }
-
     @Override
     public Object doProxy(IProxyChain proxyChain) throws Throwable {
         // 若当前目标类为拦截器接口实现类则跳过本次拦截
@@ -53,7 +44,7 @@ public class InterceptProxy implements IProxy {
         }
         // 方法声明了@Ignored注解或非PUBLIC方法和Object类方法将被排除
         boolean ignored = proxyChain.getTargetMethod().isAnnotationPresent(Ignored.class);
-        if (ignored || EXCLUDED_METHOD_NAMES.contains(proxyChain.getTargetMethod().getName())
+        if (ignored || ClassUtils.EXCLUDED_METHOD_NAMES.contains(proxyChain.getTargetMethod().getName())
                 || proxyChain.getTargetMethod().getDeclaringClass().equals(Object.class)
                 || !Modifier.isPublic(proxyChain.getTargetMethod().getModifiers())) {
             return proxyChain.doProxyChain();

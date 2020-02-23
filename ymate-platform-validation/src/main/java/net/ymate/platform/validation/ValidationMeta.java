@@ -20,13 +20,17 @@ import net.ymate.platform.validation.annotation.VField;
 import net.ymate.platform.validation.annotation.VModel;
 import net.ymate.platform.validation.annotation.VMsg;
 import net.ymate.platform.validation.annotation.Validation;
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.Serializable;
 import java.lang.annotation.Annotation;
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.lang.reflect.Parameter;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * 目标类型验证配置描述
@@ -67,16 +71,19 @@ public final class ValidationMeta implements Serializable {
         // 处理targetClass所有Field成员属性
         fields.putAll(parseClassFields(null, targetClass));
         // 处理targetClass所有Method方法
-        ClassUtils.BeanWrapper<?> wrapper = ClassUtils.wrapper(targetClass);
-        if (wrapper != null) {
-            for (Method method : wrapper.getMethods()) {
-                MethodInfo methodInfo = new MethodInfo();
-                // 处理每个方法上有@Validation的注解
-                methodInfo.setValidation(method.getAnnotation(Validation.class));
-                // 处理每个方法参数上有关验证的注解
-                String[] methodParamNames = ClassUtils.getMethodParamNames(method);
+        for (Method method : targetClass.getDeclaredMethods()) {
+            if (!Modifier.isStatic(method.getModifiers()) && Modifier.isPublic(method.getModifiers()) && !ClassUtils.EXCLUDED_METHOD_NAMES.contains(method.getName())) {
+                continue;
+            }
+            MethodInfo methodInfo = new MethodInfo();
+            // 处理每个方法上有@Validation的注解
+            methodInfo.setValidation(method.getAnnotation(Validation.class));
+            // 处理每个方法参数上有关验证的注解
+            String[] methodParamNames = ClassUtils.getMethodParamNames(method);
+            Parameter[] methodParams = method.getParameters();
+            if (ArrayUtils.isNotEmpty(methodParamNames) && ArrayUtils.isNotEmpty(methodParams) && methodParamNames.length == methodParams.length) {
                 int idx = 0;
-                for (Parameter parameter : method.getParameters()) {
+                for (Parameter parameter : methodParams) {
                     ParamInfo paramInfo = new ParamInfo();
                     paramInfo.setName(methodParamNames[idx]);
                     List<Annotation> tmpAnnList = new ArrayList<>();
@@ -90,9 +97,7 @@ public final class ValidationMeta implements Serializable {
                         // 递归处理@VModel
                         methodInfo.getParams().putAll(parseClassFields(paramInfo.getName(), parameter.getType()));
                     } else {
-                        for (Annotation annotation : parameter.getAnnotations()) {
-                            parseAnnotation(annotation, tmpAnnList);
-                        }
+                        tmpAnnList = Arrays.stream(parameter.getAnnotations()).filter(this::isValid).collect(Collectors.toList());
                     }
                     if (!tmpAnnList.isEmpty()) {
                         paramInfo.setAnnotations(tmpAnnList.toArray(new Annotation[0]));
@@ -100,9 +105,9 @@ public final class ValidationMeta implements Serializable {
                     }
                     idx++;
                 }
-                if (!methodInfo.getParams().isEmpty()) {
-                    methods.put(method, methodInfo);
-                }
+            }
+            if (!methodInfo.getParams().isEmpty()) {
+                methods.put(method, methodInfo);
             }
         }
     }
@@ -114,40 +119,38 @@ public final class ValidationMeta implements Serializable {
      */
     public final Map<String, ParamInfo> parseClassFields(String parentFieldName, Class<?> targetClass) {
         Map<String, ParamInfo> returnValues = new LinkedHashMap<>();
-        ClassUtils.BeanWrapper<?> wrapper = ClassUtils.wrapper(targetClass);
-        if (wrapper != null) {
-            wrapper.getFields().forEach((field) -> {
-                ParamInfo paramInfo = new ParamInfo();
-                paramInfo.setName(buildFieldName(parentFieldName, field.getName()));
-                // 尝试获取自定义的参数别名
-                VField vField = field.getAnnotation(VField.class);
-                if (vField != null) {
-                    if (StringUtils.isNotBlank(vField.name())) {
-                        paramInfo.setFieldName(vField.name());
-                    }
-                    if (StringUtils.isNotBlank(vField.label())) {
-                        paramInfo.setLabel(vField.label());
-                    }
+        for (Field field : targetClass.getDeclaredFields()) {
+            if (!(Modifier.isStatic(field.getModifiers()))) {
+                continue;
+            }
+            ParamInfo paramInfo = new ParamInfo();
+            paramInfo.setName(buildFieldName(parentFieldName, field.getName()));
+            // 尝试获取自定义的参数别名
+            VField vField = field.getAnnotation(VField.class);
+            if (vField != null) {
+                if (StringUtils.isNotBlank(vField.name())) {
+                    paramInfo.setFieldName(vField.name());
                 }
-                List<Annotation> annotations = new ArrayList<>();
-                if (field.isAnnotationPresent(VModel.class)) {
-                    // 递归处理@VModel
-                    returnValues.putAll(parseClassFields(paramInfo.getName(), field.getType()));
-                } else {
-                    // 尝试获取自定义消息内容
-                    VMsg vMsg = field.getAnnotation(VMsg.class);
-                    if (vMsg != null && StringUtils.isNotBlank(vMsg.value())) {
-                        paramInfo.setMessage(vMsg.value());
-                    }
-                    for (Annotation annotation : field.getAnnotations()) {
-                        parseAnnotation(annotation, annotations);
-                    }
+                if (StringUtils.isNotBlank(vField.label())) {
+                    paramInfo.setLabel(vField.label());
                 }
-                if (!annotations.isEmpty()) {
-                    paramInfo.setAnnotations(annotations.toArray(new Annotation[0]));
-                    returnValues.put(paramInfo.getName(), paramInfo);
+            }
+            List<Annotation> annotations = new ArrayList<>();
+            if (field.isAnnotationPresent(VModel.class)) {
+                // 递归处理@VModel
+                returnValues.putAll(parseClassFields(paramInfo.getName(), field.getType()));
+            } else {
+                // 尝试获取自定义消息内容
+                VMsg vMsg = field.getAnnotation(VMsg.class);
+                if (vMsg != null && StringUtils.isNotBlank(vMsg.value())) {
+                    paramInfo.setMessage(vMsg.value());
                 }
-            });
+                annotations = Arrays.stream(field.getAnnotations()).filter(this::isValid).collect(Collectors.toList());
+            }
+            if (!annotations.isEmpty()) {
+                paramInfo.setAnnotations(annotations.toArray(new Annotation[0]));
+                returnValues.put(paramInfo.getName(), paramInfo);
+            }
         }
         return returnValues;
     }
@@ -167,15 +170,6 @@ public final class ValidationMeta implements Serializable {
     private boolean isValid(Annotation annotation) {
         // 判断是否包含验证器中声明的注解
         return validation.containsValidator(annotation.annotationType());
-    }
-
-    private void parseAnnotation(Annotation annotation, List<Annotation> annotationList) {
-        if (annotation.getClass().equals(VModel.class) || annotation.getClass().equals(VField.class) || annotation.getClass().equals(VMsg.class)) {
-            return;
-        }
-        if (isValid(annotation)) {
-            annotationList.add(annotation);
-        }
     }
 
     public Validation.MODE getMode() {
@@ -198,7 +192,7 @@ public final class ValidationMeta implements Serializable {
         return methods.get(method);
     }
 
-    public final class MethodInfo {
+    public static final class MethodInfo {
 
         private String name;
 
@@ -231,7 +225,7 @@ public final class ValidationMeta implements Serializable {
         }
     }
 
-    public final class ParamInfo {
+    public static final class ParamInfo {
 
         private String name;
 
