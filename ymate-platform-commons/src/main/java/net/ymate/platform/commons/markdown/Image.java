@@ -20,7 +20,7 @@ import org.apache.commons.lang3.StringUtils;
 /**
  * @author 刘镇 (suninformation@163.com) on 2020/02/09 13:52
  */
-public class Image implements IMarkdown {
+public final class Image implements IMarkdown {
 
     private String alt;
 

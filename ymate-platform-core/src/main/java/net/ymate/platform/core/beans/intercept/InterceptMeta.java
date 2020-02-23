@@ -31,15 +31,15 @@ import java.util.Set;
  * @author 刘镇 (suninformation@163.com) on 2020/02/19 11:08
  * @since 2.1.0
  */
-public class InterceptMeta {
+public final class InterceptMeta {
 
     public static final InterceptMeta DEFAULT = new InterceptMeta("default");
 
     private final String id;
 
-    private Set<Class<? extends IInterceptor>> beforeIntercepts = new LinkedHashSet<>();
+    private final Set<Class<? extends IInterceptor>> beforeIntercepts = new LinkedHashSet<>();
 
-    private Set<Class<? extends IInterceptor>> afterIntercepts = new LinkedHashSet<>();
+    private final Set<Class<? extends IInterceptor>> afterIntercepts = new LinkedHashSet<>();
 
     public InterceptMeta(String id) {
         this.id = id;

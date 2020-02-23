@@ -23,9 +23,9 @@ import java.util.stream.Collectors;
 /**
  * @author 刘镇 (suninformation@163.com) on 2020/02/09 12:35
  */
-public class Text implements IMarkdown {
+public final class Text implements IMarkdown {
 
-    private StringBuilder content = new StringBuilder();
+    private final StringBuilder content = new StringBuilder();
 
     private Style style;
 

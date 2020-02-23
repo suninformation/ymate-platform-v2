@@ -20,9 +20,9 @@ import org.apache.commons.lang3.StringUtils;
 /**
  * @author 刘镇 (suninformation@163.com) on 2020/02/09 13:16
  */
-public class Code implements IMarkdown {
+public final class Code implements IMarkdown {
 
-    private StringBuilder code = new StringBuilder();
+    private final StringBuilder code = new StringBuilder();
 
     private String language;
 

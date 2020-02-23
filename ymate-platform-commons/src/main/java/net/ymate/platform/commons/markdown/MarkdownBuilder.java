@@ -20,7 +20,7 @@ import org.apache.commons.lang3.StringUtils;
 /**
  * @author 刘镇 (suninformation@163.com) on 2020/02/09 15:29
  */
-public class MarkdownBuilder implements IMarkdown {
+public final class MarkdownBuilder implements IMarkdown {
 
     private final StringBuilder stringBuilder = new StringBuilder();
 

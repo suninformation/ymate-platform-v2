@@ -42,8 +42,8 @@ public abstract class AbstractConfigFileParser implements IConfigFileParser {
             // 判断是否保证顺序
             if (sorted) {
                 this.sorted = true;
-                categories = new LinkedHashMap<>(16);
-                attributes = new LinkedHashMap<>(16);
+                categories = new LinkedHashMap<>();
+                attributes = new LinkedHashMap<>();
             } else {
                 categories = new HashMap<>(16);
                 attributes = new HashMap<>(16);

@@ -24,11 +24,11 @@ import java.util.List;
 /**
  * @author 刘镇 (suninformation@163.com) on 2020/2/9 15:34
  */
-public class Table implements IMarkdown {
+public final class Table implements IMarkdown {
 
-    private List<Header> headers = new ArrayList<>();
+    private final List<Header> headers = new ArrayList<>();
 
-    private List<Row> rows = new ArrayList<>();
+    private final List<Row> rows = new ArrayList<>();
 
     public static Table create() {
         return new Table();
@@ -118,7 +118,7 @@ public class Table implements IMarkdown {
         }
     }
 
-    public static class Row {
+    public static final class Row {
 
         private final Table table;
 

@@ -25,7 +25,7 @@ import java.util.List;
 /**
  * @author 刘镇 (suninformation@163.com) on 2020/02/09 14:35
  */
-public class ParagraphList implements IMarkdown {
+public final class ParagraphList implements IMarkdown {
 
     private final List<Serializable> items = new ArrayList<>();
 

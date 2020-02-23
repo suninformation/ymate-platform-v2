@@ -20,9 +20,9 @@ import org.apache.commons.lang3.StringUtils;
 /**
  * @author 刘镇 (suninformation@163.com) on 2020/02/09 12:21
  */
-public class Title implements IMarkdown {
+public final class Title implements IMarkdown {
 
-    public StringBuilder title = new StringBuilder();
+    public final StringBuilder title = new StringBuilder();
 
     private int level;
 

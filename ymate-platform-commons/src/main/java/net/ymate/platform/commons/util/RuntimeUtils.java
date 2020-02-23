@@ -20,10 +20,7 @@ import org.apache.commons.lang3.SystemUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import javax.management.MBeanServer;
-import javax.management.MalformedObjectNameException;
-import javax.management.ObjectInstance;
-import javax.management.ObjectName;
+import javax.management.*;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -173,7 +170,7 @@ public class RuntimeUtils {
         }
         String rootPath = rootUrl != null ? rootUrl.getPath() : null;
         if (rootPath != null) {
-            rootPath = StringUtils.replace(StringUtils.removeEnd(StringUtils.substringBefore(rootUrl.getPath(), safe ? "classes/" : "WEB-INF/"), "/"), "%20", StringUtils.SPACE);
+            rootPath = StringUtils.replace(StringUtils.removeEnd(StringUtils.substringBefore(rootPath, safe ? "classes/" : "WEB-INF/"), "/"), "%20", StringUtils.SPACE);
             if (isWindows()) {
                 rootPath = StringUtils.removeStart(rootPath, "/");
             }
@@ -221,9 +218,9 @@ public class RuntimeUtils {
                 }
                 return true;
             }
-        } catch (Exception e) {
+        } catch (InstanceAlreadyExistsException | MBeanRegistrationException | NotCompliantMBeanException e) {
             if (LOG.isWarnEnabled()) {
-                LOG.warn(String.format("Failed to register ManagedBean: %s", objectName));
+                LOG.warn(String.format("Failed to register ManagedBean: %s", objectName), unwrapThrow(e));
             }
         }
         return false;
@@ -257,9 +254,9 @@ public class RuntimeUtils {
                     LOG.info(String.format("ManagedBean %s unregistered.", objectName));
                 }
             }
-        } catch (Exception e) {
+        } catch (InstanceNotFoundException | MBeanRegistrationException e) {
             if (LOG.isWarnEnabled()) {
-                LOG.warn(String.format("Failed to unregister ManagedBean: %s", objectName));
+                LOG.warn(String.format("Failed to unregister ManagedBean: %s", objectName), unwrapThrow(e));
             }
         }
     }
