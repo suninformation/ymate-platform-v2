@@ -66,11 +66,13 @@ public abstract class AbstractDialect implements IDialect {
             if (ArrayUtils.isNotEmpty(originArr)) {
                 IntStream.range(0, originArr.length).forEach(idx -> {
                     originArr[idx] = StringUtils.trim(originArr[idx]);
-                    if (!StringUtils.startsWith(originArr[idx], identifierQuoteBegin)) {
-                        originArr[idx] = identifierQuoteBegin + originArr[idx];
-                    }
-                    if (!StringUtils.endsWith(originArr[idx], identifierQuoteEnd)) {
-                        originArr[idx] += identifierQuoteEnd;
+                    if (!StringUtils.equals(originArr[idx], "*")) {
+                        if (!StringUtils.startsWith(originArr[idx], identifierQuoteBegin)) {
+                            originArr[idx] = identifierQuoteBegin + originArr[idx];
+                        }
+                        if (!StringUtils.endsWith(originArr[idx], identifierQuoteEnd)) {
+                            originArr[idx] += identifierQuoteEnd;
+                        }
                     }
                 });
                 return StringUtils.join(originArr, ".");
