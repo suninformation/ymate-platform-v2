@@ -15,6 +15,7 @@
  */
 package net.ymate.platform.persistence.jdbc.transaction;
 
+import net.ymate.platform.commons.util.ClassUtils;
 import net.ymate.platform.core.beans.annotation.Order;
 import net.ymate.platform.core.beans.proxy.IProxy;
 import net.ymate.platform.core.beans.proxy.IProxyChain;
@@ -34,7 +35,7 @@ public class TransactionProxy implements IProxy {
     public Object doProxy(final IProxyChain proxyChain) throws Throwable {
         Type.TRANSACTION currentLevel = null;
         // 判断方法对象是否被声明@Transaction注解，否则忽略
-        if (proxyChain.getTargetMethod().isAnnotationPresent(Transaction.class)) {
+        if (proxyChain.getTargetMethod().isAnnotationPresent(Transaction.class) && ClassUtils.isNormalMethod(proxyChain.getTargetMethod())) {
             // 获取当前类声明的全局事务级别参数
             currentLevel = proxyChain.getTargetClass().getAnnotation(Transaction.class).value();
             //

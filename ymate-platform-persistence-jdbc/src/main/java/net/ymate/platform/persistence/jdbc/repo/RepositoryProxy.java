@@ -87,7 +87,7 @@ public class RepositoryProxy implements IProxy {
     @Override
     public Object doProxy(IProxyChain proxyChain) throws Throwable {
         Repository repositoryAnn = proxyChain.getTargetMethod().getAnnotation(Repository.class);
-        if (repositoryAnn != null) {
+        if (repositoryAnn != null && ClassUtils.isNormalMethod(proxyChain.getTargetMethod())) {
             try (IDatabaseSession session = doOpenSession(proxyChain, repositoryAnn)) {
                 IRepositoryScriptProcessor processor = null;
                 String sqlStr = repositoryAnn.value();

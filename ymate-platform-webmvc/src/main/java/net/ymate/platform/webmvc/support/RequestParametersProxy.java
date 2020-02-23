@@ -29,7 +29,6 @@ import net.ymate.platform.webmvc.annotation.RequestMapping;
 import net.ymate.platform.webmvc.context.WebContext;
 import net.ymate.platform.webmvc.view.IView;
 
-import java.lang.reflect.Modifier;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -44,7 +43,7 @@ public class RequestParametersProxy implements IProxy {
     @Override
     public Object doProxy(IProxyChain proxyChain) throws Throwable {
         // 该代理仅处理控制器中声明@RequestMapping的方法
-        if (proxyChain.getTargetMethod().isAnnotationPresent(RequestMapping.class) && proxyChain.getTargetMethod().getModifiers() == Modifier.PUBLIC) {
+        if (proxyChain.getTargetMethod().isAnnotationPresent(RequestMapping.class) && ClassUtils.isNormalMethod(proxyChain.getTargetMethod())) {
             WebContext context = WebContext.getContext();
             IWebMvc owner = context.getOwner();
             RequestMeta requestMeta = context.getAttribute(RequestMeta.class.getName());

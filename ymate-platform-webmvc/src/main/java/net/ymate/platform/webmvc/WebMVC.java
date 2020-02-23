@@ -60,7 +60,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -225,7 +224,7 @@ public final class WebMVC implements IModule, IWebMvc {
         boolean isValid = false;
         if (ClassUtils.isNormalClass(targetClass) && !targetClass.isInterface()) {
             for (Method method : targetClass.getDeclaredMethods()) {
-                if (method.isAnnotationPresent(RequestMapping.class) && !Modifier.isStatic(method.getModifiers()) && Modifier.isPublic(method.getModifiers()) && !ClassUtils.EXCLUDED_METHOD_NAMES.contains(method.getName())) {
+                if (method.isAnnotationPresent(RequestMapping.class) && ClassUtils.isNormalMethod(method)) {
                     RequestMeta requestMeta = new RequestMeta(requestMappingPrefix, targetClass, method);
                     config.getRequestMappingParser().registerRequestMeta(requestMeta);
                     //

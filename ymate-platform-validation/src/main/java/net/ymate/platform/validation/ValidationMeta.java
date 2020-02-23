@@ -72,7 +72,7 @@ public final class ValidationMeta implements Serializable {
         fields.putAll(parseClassFields(null, targetClass));
         // 处理targetClass所有Method方法
         for (Method method : targetClass.getDeclaredMethods()) {
-            if (!Modifier.isStatic(method.getModifiers()) && Modifier.isPublic(method.getModifiers()) && !ClassUtils.EXCLUDED_METHOD_NAMES.contains(method.getName())) {
+            if (!ClassUtils.isNormalMethod(method)) {
                 continue;
             }
             MethodInfo methodInfo = new MethodInfo();
@@ -120,7 +120,7 @@ public final class ValidationMeta implements Serializable {
     public final Map<String, ParamInfo> parseClassFields(String parentFieldName, Class<?> targetClass) {
         Map<String, ParamInfo> returnValues = new LinkedHashMap<>();
         for (Field field : targetClass.getDeclaredFields()) {
-            if (!(Modifier.isStatic(field.getModifiers()))) {
+            if (Modifier.isStatic(field.getModifiers())) {
                 continue;
             }
             ParamInfo paramInfo = new ParamInfo();

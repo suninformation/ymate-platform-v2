@@ -222,6 +222,15 @@ public class ClassUtils {
     }
 
     /**
+     * @param method 目标方法
+     * @return 验证method是否为公有非静态且不属于Object基类方法
+     * @since 2.1.0
+     */
+    public static boolean isNormalMethod(Method method) {
+        return !Modifier.isStatic(method.getModifiers()) && Modifier.isPublic(method.getModifiers()) && !method.getDeclaringClass().equals(Object.class) && !EXCLUDED_METHOD_NAMES.contains(method.getName());
+    }
+
+    /**
      * @param clazz      目标类
      * @param superClass 父类
      * @return 判断类clazz是否是superClass类的子类对象
@@ -255,6 +264,7 @@ public class ClassUtils {
             for (Class<?> cc : clazz.getInterfaces()) {
                 if (cc.equals(interfaceClass)) {
                     flag = true;
+                    break;
                 }
             }
             clazz = clazz.getSuperclass();
@@ -660,7 +670,7 @@ public class ClassUtils {
                     .peek((field) -> field.setAccessible(true))
                     .forEachOrdered((field) -> this.fieldMap.put(field.getName(), field));
             ClassUtils.getMethods(target.getClass(), true).stream()
-                    .filter(method -> !Modifier.isStatic(method.getModifiers()) && Modifier.isPublic(method.getModifiers()) && !EXCLUDED_METHOD_NAMES.contains(method.getName()))
+                    .filter(ClassUtils::isNormalMethod)
                     .forEachOrdered(method -> this.methodMap.put(method.getName(), method));
         }
 

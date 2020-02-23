@@ -24,8 +24,6 @@ import net.ymate.platform.core.beans.proxy.IProxyChain;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import java.lang.reflect.Modifier;
-
 /**
  * 拦截器代理，支持@Before、@After和@Around方法注解
  *
@@ -44,9 +42,7 @@ public class InterceptProxy implements IProxy {
         }
         // 方法声明了@Ignored注解或非PUBLIC方法和Object类方法将被排除
         boolean ignored = proxyChain.getTargetMethod().isAnnotationPresent(Ignored.class);
-        if (ignored || ClassUtils.EXCLUDED_METHOD_NAMES.contains(proxyChain.getTargetMethod().getName())
-                || proxyChain.getTargetMethod().getDeclaringClass().equals(Object.class)
-                || !Modifier.isPublic(proxyChain.getTargetMethod().getModifiers())) {
+        if (ignored || !ClassUtils.isNormalMethod(proxyChain.getTargetMethod())) {
             return proxyChain.doProxyChain();
         }
         //

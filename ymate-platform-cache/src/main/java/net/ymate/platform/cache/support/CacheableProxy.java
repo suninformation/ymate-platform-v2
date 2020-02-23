@@ -40,7 +40,7 @@ public class CacheableProxy implements IProxy {
     @Override
     public Object doProxy(IProxyChain proxyChain) throws Throwable {
         Cacheable cacheable = proxyChain.getTargetMethod().getAnnotation(Cacheable.class);
-        if (cacheable == null || proxyChain.getTargetMethod().getReturnType().equals(void.class)) {
+        if (cacheable == null || !ClassUtils.isNormalMethod(proxyChain.getTargetMethod())) {
             return proxyChain.doProxyChain();
         }
         ICaches caches = proxyChain.getProxyFactory().getOwner().getModuleManager().getModule(Caches.class);
