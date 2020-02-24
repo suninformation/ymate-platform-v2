@@ -722,6 +722,26 @@ public class JedisClusterCommander implements IRedisCommander {
     }
 
     @Override
+    public Tuple zpopmax(byte[] key) {
+        return jedisCluster.zpopmax(key);
+    }
+
+    @Override
+    public Set<Tuple> zpopmax(byte[] key, int count) {
+        return jedisCluster.zpopmax(key, count);
+    }
+
+    @Override
+    public Tuple zpopmin(byte[] key) {
+        return jedisCluster.zpopmin(key);
+    }
+
+    @Override
+    public Set<Tuple> zpopmin(byte[] key, int count) {
+        return jedisCluster.zpopmin(key, count);
+    }
+
+    @Override
     public List<byte[]> sort(byte[] key) {
         return jedisCluster.sort(key);
     }
@@ -1694,6 +1714,26 @@ public class JedisClusterCommander implements IRedisCommander {
     @Override
     public Double zscore(String key, String member) {
         return jedisCluster.zscore(key, member);
+    }
+
+    @Override
+    public Tuple zpopmax(String key) {
+        return jedisCluster.zpopmax(key);
+    }
+
+    @Override
+    public Set<Tuple> zpopmax(String key, int count) {
+        return jedisCluster.zpopmax(key, count);
+    }
+
+    @Override
+    public Tuple zpopmin(String key) {
+        return jedisCluster.zpopmin(key);
+    }
+
+    @Override
+    public Set<Tuple> zpopmin(String key, int count) {
+        return jedisCluster.zpopmin(key, count);
     }
 
     @Override
