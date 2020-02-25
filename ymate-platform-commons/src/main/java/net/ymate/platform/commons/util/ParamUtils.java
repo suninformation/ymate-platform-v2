@@ -216,15 +216,28 @@ public class ParamUtils {
      * @return 返回最终生成的签名
      */
     public static String createSignature(Map<String, ?> queryParamMap, boolean encode, String... extraParams) {
-        return createSignature(queryParamMap, encode, true, extraParams);
+        return createSignature(queryParamMap, encode, true, null, extraParams);
+    }
+
+    public static String createSignature(Map<String, ?> queryParamMap, boolean encode, ISignatureCreator signatureCreator, String... extraParams) {
+        return createSignature(queryParamMap, encode, true, signatureCreator, extraParams);
     }
 
     public static String createSignature(Map<String, ?> queryParamMap, boolean encode, boolean upperCase, String... extraParams) {
+        return createSignature(queryParamMap, encode, upperCase, null, extraParams);
+    }
+
+    public static String createSignature(Map<String, ?> queryParamMap, boolean encode, boolean upperCase, ISignatureCreator signatureCreator, String... extraParams) {
         StringBuilder stringBuilder = new StringBuilder(buildQueryParamStr(queryParamMap, encode, null));
         if (extraParams != null && extraParams.length > 0) {
             Arrays.stream(extraParams).forEachOrdered(extraParam -> stringBuilder.append("&").append(extraParam));
         }
-        String signStr = DigestUtils.md5Hex(stringBuilder.toString());
+        String signStr;
+        if (signatureCreator != null) {
+            signStr = signatureCreator.sign(stringBuilder.toString());
+        } else {
+            signStr = DigestUtils.md5Hex(stringBuilder.toString());
+        }
         if (upperCase) {
             signStr = signStr.toUpperCase();
         }
