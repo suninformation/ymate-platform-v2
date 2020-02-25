@@ -15,6 +15,7 @@
  */
 package net.ymate.platform.webmvc.annotation;
 
+import net.ymate.platform.commons.util.ISignatureCreator;
 import net.ymate.platform.webmvc.ISignatureExtraParamProcessor;
 import net.ymate.platform.webmvc.ISignatureParamParser;
 import net.ymate.platform.webmvc.impl.DefaultSignatureParamParser;
@@ -60,6 +61,11 @@ public @interface SignatureValidate {
      * @return 排除的参数名称集合
      */
     String[] excludedParams() default {};
+
+    /**
+     * @return 签名生成器类
+     */
+    Class<? extends ISignatureCreator> creatorClass() default ISignatureCreator.class;
 
     /**
      * @return 签名参数分析器类型

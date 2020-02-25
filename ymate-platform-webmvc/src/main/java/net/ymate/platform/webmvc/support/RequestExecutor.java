@@ -17,6 +17,7 @@ package net.ymate.platform.webmvc.support;
 
 import net.ymate.platform.commons.lang.BlurObject;
 import net.ymate.platform.commons.util.ClassUtils;
+import net.ymate.platform.commons.util.ISignatureCreator;
 import net.ymate.platform.commons.util.ParamUtils;
 import net.ymate.platform.commons.util.RuntimeUtils;
 import net.ymate.platform.core.beans.intercept.InterceptException;
@@ -91,7 +92,11 @@ public final class RequestExecutor {
             if (!signatureValidate.processorClass().equals(ISignatureExtraParamProcessor.class)) {
                 extraParamProcessor = ClassUtils.impl(signatureValidate.processorClass(), ISignatureExtraParamProcessor.class);
             }
-            String sign = ParamUtils.createSignature(signatureParams, signatureValidate.encode(), signatureValidate.upperCase(), extraParamProcessor != null ? extraParamProcessor.getExtraParams(owner, signatureParams) : null);
+            ISignatureCreator signatureCreator = null;
+            if (!signatureValidate.creatorClass().equals(ISignatureCreator.class)) {
+                signatureCreator = ClassUtils.impl(signatureValidate.creatorClass(), ISignatureCreator.class);
+            }
+            String sign = ParamUtils.createSignature(signatureParams, signatureValidate.encode(), signatureValidate.upperCase(), signatureCreator, extraParamProcessor != null ? extraParamProcessor.getExtraParams(owner, signatureParams) : null);
             if (!StringUtils.equals(originSign, sign)) {
                 throw new ParameterSignatureException("Parameter signature mismatch.");
             }
