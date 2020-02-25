@@ -43,7 +43,11 @@ public class CodecUtils {
 
     public static final String RSA_SIGN_SHA1_WITH_RSA = "SHA1withRSA";
 
-    public static final CodecHelper DES = new CodecHelper(56, "DES", "DES/ECB/PKCS5Padding");
+    public static final String RSA_CIPHER_RSA_ECB_PKCS1 = "RSA/ECB/PKCS1Padding";
+
+    public static final String DES_CIPHER_DES_ECB_PKCS5 = "DES/ECB/PKCS5Padding";
+
+    public static final CodecHelper DES = new CodecHelper(56, "DES", DES_CIPHER_DES_ECB_PKCS5);
 
     public static final CodecHelper AES = new AESCodecHelper(128, 128);
 
@@ -106,7 +110,7 @@ public class CodecUtils {
         }
 
         public String initKeyToString() throws Exception {
-            return Base64.encodeBase64String(initKey());
+            return StringUtils.newStringUtf8(Base64.encodeBase64(initKey()));
         }
 
         /**
@@ -141,7 +145,7 @@ public class CodecUtils {
         }
 
         public String encrypt(String data, String key) throws Exception {
-            return Base64.encodeBase64String(encrypt(data.getBytes(), key.getBytes()));
+            return StringUtils.newStringUtf8(Base64.encodeBase64(encrypt(data.getBytes(), key.getBytes())));
         }
 
         /**
@@ -226,7 +230,7 @@ public class CodecUtils {
         }
 
         public String encrypt(String data, String key, String salt) throws Exception {
-            return Base64.encodeBase64String(encrypt(data.getBytes(), key.getBytes(), salt.getBytes()));
+            return StringUtils.newStringUtf8(Base64.encodeBase64(encrypt(data.getBytes(), key.getBytes(), salt.getBytes())));
         }
 
         @Override
@@ -251,20 +255,24 @@ public class CodecUtils {
 
     public static class RSACodecHelper extends CodecHelper {
 
+        private int maxEncryptBlockSize = 117;
+
+        private int maxDecryptBlockSize = 128;
+
         private String signatureAlgorithm;
 
         private Provider signatureAlgorithmProvider;
 
         public RSACodecHelper(int keySize) {
-            super(keySize, "RSA", "RSA/ECB/PKCS1Padding");
+            this(keySize, null, null, null, null);
         }
 
         public RSACodecHelper(int keySize, String signatureAlgorithm, Provider signatureAlgorithmProvider) {
-            this(keySize, "RSA/ECB/PKCS1Padding", null, signatureAlgorithm, signatureAlgorithmProvider);
+            this(keySize, null, null, signatureAlgorithm, signatureAlgorithmProvider);
         }
 
         public RSACodecHelper(int keySize, String cipherAlgorithm) {
-            super(keySize, "RSA", cipherAlgorithm);
+            this(keySize, cipherAlgorithm, null, cipherAlgorithm, null);
         }
 
         public RSACodecHelper(int keySize, String cipherAlgorithm, String signatureAlgorithm, Provider signatureAlgorithmProvider) {
@@ -272,7 +280,7 @@ public class CodecUtils {
         }
 
         public RSACodecHelper(int keySize, String cipherAlgorithm, Provider cipherAlgorithmProvider, String signatureAlgorithm, Provider signatureAlgorithmProvider) {
-            super(keySize, "RSA", cipherAlgorithm, cipherAlgorithmProvider);
+            super(keySize, "RSA", org.apache.commons.lang3.StringUtils.defaultIfBlank(cipherAlgorithm, RSA_CIPHER_RSA_ECB_PKCS1), cipherAlgorithmProvider);
             this.signatureAlgorithm = org.apache.commons.lang3.StringUtils.defaultIfBlank(signatureAlgorithm, RSA_SIGN_MD5_WITH_RSA);
             this.signatureAlgorithmProvider = signatureAlgorithmProvider;
         }
@@ -287,6 +295,24 @@ public class CodecUtils {
             return sign;
         }
 
+        public int getMaxEncryptBlockSize() {
+            return maxEncryptBlockSize;
+        }
+
+        public RSACodecHelper maxEncryptBlockSize(int maxEncryptBlockSize) {
+            this.maxEncryptBlockSize = maxEncryptBlockSize;
+            return this;
+        }
+
+        public int getMaxDecryptBlockSize() {
+            return maxDecryptBlockSize;
+        }
+
+        public RSACodecHelper maxDecryptBlockSize(int maxDecryptBlockSize) {
+            this.maxDecryptBlockSize = maxDecryptBlockSize;
+            return this;
+        }
+
         @Override
         public byte[] initKey() throws Exception {
             throw new UnsupportedOperationException();
@@ -298,19 +324,23 @@ public class CodecUtils {
         }
 
         public PairObject<RSAPublicKey, RSAPrivateKey> initRSAKey() throws Exception {
-            KeyPairGenerator keyPG = KeyPairGenerator.getInstance(KEY_ALGORITHM);
-            keyPG.initialize(KEY_SIZE);
+            KeyPairGenerator keyPairGenerator = KeyPairGenerator.getInstance(KEY_ALGORITHM);
+            keyPairGenerator.initialize(KEY_SIZE);
             //
-            KeyPair keyPair = keyPG.generateKeyPair();
+            KeyPair keyPair = keyPairGenerator.generateKeyPair();
             //
             return new PairObject<>((RSAPublicKey) keyPair.getPublic(), (RSAPrivateKey) keyPair.getPrivate());
         }
 
-        public String getRSAKey(Key rsaKey) throws Exception {
-            return Base64.encodeBase64String(rsaKey.getEncoded());
+        public String getRSAKey(Key rsaKey) {
+            return StringUtils.newStringUtf8(Base64.encodeBase64(rsaKey.getEncoded()));
         }
 
-        public String sign(byte[] data, String privateKey) throws Exception {
+        public String sign(String data, String privateKey) throws Exception {
+            return StringUtils.newStringUtf8(Base64.encodeBase64(sign(data.getBytes(), privateKey)));
+        }
+
+        public byte[] sign(byte[] data, String privateKey) throws Exception {
             PKCS8EncodedKeySpec keySpec = new PKCS8EncodedKeySpec(Base64.decodeBase64(privateKey));
             KeyFactory keyFactory = KeyFactory.getInstance(KEY_ALGORITHM);
             PrivateKey privKey = keyFactory.generatePrivate(keySpec);
@@ -319,7 +349,7 @@ public class CodecUtils {
             sign.initSign(privKey);
             sign.update(data);
             //
-            return Base64.encodeBase64String(sign.sign());
+            return sign.sign();
         }
 
         public boolean verify(byte[] data, String publicKey, String sign) throws Exception {
@@ -362,12 +392,12 @@ public class CodecUtils {
             Cipher cipher = getCipherInstance();
             cipher.init(Cipher.ENCRYPT_MODE, privKey);
             //
-            return dataSegment(data, cipher, 117);
+            return dataSegment(data, cipher, maxEncryptBlockSize);
         }
 
         @Override
         public String encrypt(String data, String key) throws Exception {
-            return Base64.encodeBase64String(encrypt(data.getBytes(), Base64.decodeBase64(key)));
+            return StringUtils.newStringUtf8(Base64.encodeBase64(encrypt(data.getBytes(), Base64.decodeBase64(key))));
         }
 
         @Override
@@ -378,7 +408,7 @@ public class CodecUtils {
             Cipher cipher = getCipherInstance();
             cipher.init(Cipher.DECRYPT_MODE, privKey);
             //
-            return dataSegment(data, cipher, 128);
+            return dataSegment(data, cipher, maxDecryptBlockSize);
         }
 
         @Override
@@ -393,11 +423,11 @@ public class CodecUtils {
             Cipher cipher = getCipherInstance();
             cipher.init(Cipher.ENCRYPT_MODE, pubKey);
             //
-            return dataSegment(data, cipher, 117);
+            return dataSegment(data, cipher, maxEncryptBlockSize);
         }
 
         public String encryptPublicKey(String data, String key) throws Exception {
-            return Base64.encodeBase64String(encryptPublicKey(data.getBytes(), Base64.decodeBase64(key)));
+            return StringUtils.newStringUtf8(Base64.encodeBase64(encryptPublicKey(data.getBytes(), Base64.decodeBase64(key))));
         }
 
         public byte[] decryptPublicKey(byte[] data, byte[] key) throws Exception {
@@ -407,7 +437,7 @@ public class CodecUtils {
             Cipher cipher = getCipherInstance();
             cipher.init(Cipher.DECRYPT_MODE, pubKey);
             //
-            return dataSegment(data, cipher, 128);
+            return dataSegment(data, cipher, maxDecryptBlockSize);
         }
 
         public String decryptPublicKey(String data, String key) throws Exception {
