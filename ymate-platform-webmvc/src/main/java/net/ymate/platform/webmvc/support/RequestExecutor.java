@@ -17,8 +17,6 @@ package net.ymate.platform.webmvc.support;
 
 import net.ymate.platform.commons.lang.BlurObject;
 import net.ymate.platform.commons.util.ClassUtils;
-import net.ymate.platform.commons.util.ISignatureCreator;
-import net.ymate.platform.commons.util.ParamUtils;
 import net.ymate.platform.commons.util.RuntimeUtils;
 import net.ymate.platform.core.beans.intercept.InterceptException;
 import net.ymate.platform.webmvc.*;
@@ -37,7 +35,6 @@ import org.apache.commons.lang3.StringUtils;
 
 import java.io.File;
 import java.lang.reflect.InvocationTargetException;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -72,32 +69,8 @@ public final class RequestExecutor {
     private void doSignatureValidate() {
         SignatureValidate signatureValidate = requestMeta.getSignatureValidate();
         if (signatureValidate != null && !signatureValidate.disabled()) {
-            ISignatureParamParser paramParser = ClassUtils.impl(signatureValidate.parserClass(), ISignatureParamParser.class);
-            Map<String, Object> paramValues = new HashMap<>(paramParser.getParams(owner, requestMeta));
-            String originSign = null;
-            if (paramValues.containsKey(signatureValidate.paramName())) {
-                originSign = BlurObject.bind(paramValues.get(signatureValidate.paramName())).toStringValue();
-            }
-            boolean invalid = StringUtils.isBlank(originSign) || StringUtils.isNotBlank(signatureValidate.nonceName()) && !paramValues.containsKey(signatureValidate.nonceName());
-            if (invalid) {
-                throw new ParameterSignatureException("Missing signature required parameter.");
-            }
-            Map<String, Object> signatureParams = new HashMap<>(paramValues.size());
-            paramValues.forEach((key, value) -> {
-                if (!key.equals(signatureValidate.paramName()) && !ArrayUtils.contains(signatureValidate.excludedParams(), key)) {
-                    signatureParams.put(key, value);
-                }
-            });
-            ISignatureExtraParamProcessor extraParamProcessor = null;
-            if (!signatureValidate.processorClass().equals(ISignatureExtraParamProcessor.class)) {
-                extraParamProcessor = ClassUtils.impl(signatureValidate.processorClass(), ISignatureExtraParamProcessor.class);
-            }
-            ISignatureCreator signatureCreator = null;
-            if (!signatureValidate.creatorClass().equals(ISignatureCreator.class)) {
-                signatureCreator = ClassUtils.impl(signatureValidate.creatorClass(), ISignatureCreator.class);
-            }
-            String sign = ParamUtils.createSignature(signatureParams, signatureValidate.encode(), signatureValidate.upperCase(), signatureCreator, extraParamProcessor != null ? extraParamProcessor.getExtraParams(owner, signatureParams) : null);
-            if (!StringUtils.equals(originSign, sign)) {
+            ISignatureValidator signatureValidator = ClassUtils.impl(signatureValidate.creatorClass(), ISignatureValidator.class);
+            if (!signatureValidator.validate(owner, requestMeta, signatureValidate)) {
                 throw new ParameterSignatureException("Parameter signature mismatch.");
             }
         }

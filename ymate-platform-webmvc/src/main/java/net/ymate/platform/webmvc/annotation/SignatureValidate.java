@@ -15,15 +15,18 @@
  */
 package net.ymate.platform.webmvc.annotation;
 
-import net.ymate.platform.commons.util.ISignatureCreator;
 import net.ymate.platform.webmvc.ISignatureExtraParamProcessor;
 import net.ymate.platform.webmvc.ISignatureParamParser;
+import net.ymate.platform.webmvc.ISignatureValidator;
 import net.ymate.platform.webmvc.impl.DefaultSignatureParamParser;
+import net.ymate.platform.webmvc.impl.DefaultSignatureValidator;
 import org.apache.commons.lang3.StringUtils;
 
 import java.lang.annotation.*;
 
 /**
+ * 签名验证规则注解
+ *
  * @author 刘镇 (suninformation@163.com) on 2020/02/18 11:40
  * @since 2.1.0
  */
@@ -65,7 +68,7 @@ public @interface SignatureValidate {
     /**
      * @return 签名生成器类
      */
-    Class<? extends ISignatureCreator> creatorClass() default ISignatureCreator.class;
+    Class<? extends ISignatureValidator> creatorClass() default DefaultSignatureValidator.class;
 
     /**
      * @return 签名参数分析器类型

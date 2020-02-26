@@ -219,22 +219,22 @@ public class ParamUtils {
         return createSignature(queryParamMap, encode, true, null, extraParams);
     }
 
-    public static String createSignature(Map<String, ?> queryParamMap, boolean encode, ISignatureCreator signatureCreator, String... extraParams) {
-        return createSignature(queryParamMap, encode, true, signatureCreator, extraParams);
+    public static String createSignature(Map<String, ?> queryParamMap, boolean encode, ISignatureBuilder signatureBuilder, String... extraParams) {
+        return createSignature(queryParamMap, encode, true, signatureBuilder, extraParams);
     }
 
     public static String createSignature(Map<String, ?> queryParamMap, boolean encode, boolean upperCase, String... extraParams) {
         return createSignature(queryParamMap, encode, upperCase, null, extraParams);
     }
 
-    public static String createSignature(Map<String, ?> queryParamMap, boolean encode, boolean upperCase, ISignatureCreator signatureCreator, String... extraParams) {
+    public static String createSignature(Map<String, ?> queryParamMap, boolean encode, boolean upperCase, ISignatureBuilder signatureBuilder, String... extraParams) {
         StringBuilder stringBuilder = new StringBuilder(buildQueryParamStr(queryParamMap, encode, null));
         if (extraParams != null && extraParams.length > 0) {
             Arrays.stream(extraParams).forEachOrdered(extraParam -> stringBuilder.append("&").append(extraParam));
         }
         String signStr;
-        if (signatureCreator != null) {
-            signStr = signatureCreator.sign(stringBuilder.toString());
+        if (signatureBuilder != null) {
+            signStr = signatureBuilder.build(stringBuilder.toString());
         } else {
             signStr = DigestUtils.md5Hex(stringBuilder.toString());
         }
@@ -242,5 +242,21 @@ public class ParamUtils {
             signStr = signStr.toUpperCase();
         }
         return signStr;
+    }
+
+    /**
+     * 签名生成器接口
+     *
+     * @since 2.1.0
+     */
+    public interface ISignatureBuilder {
+
+        /**
+         * 生成签名
+         *
+         * @param content 待签内容
+         * @return 返回签名字符串
+         */
+        String build(String content);
     }
 }

@@ -13,19 +13,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.ymate.platform.commons.util;
+package net.ymate.platform.webmvc;
+
+import net.ymate.platform.core.beans.annotation.Ignored;
+import net.ymate.platform.webmvc.annotation.SignatureValidate;
 
 /**
  * @author 刘镇 (suninformation@163.com) on 2020/02/25 18:41
  * @since 2.1.0
  */
-public interface ISignatureCreator {
+@Ignored
+public interface ISignatureValidator {
 
     /**
-     * 签名
+     * 验证签名
      *
-     * @param content 待签内容
-     * @return 返回签名字符串
+     * @param owner             所属应用容器实例
+     * @param requestMeta       请求映射元数据描述
+     * @param signatureValidate 签名验证规则注解
+     * @return 返回true表示验证通过
      */
-    String sign(String content);
+    boolean validate(IWebMvc owner, RequestMeta requestMeta, SignatureValidate signatureValidate);
 }
