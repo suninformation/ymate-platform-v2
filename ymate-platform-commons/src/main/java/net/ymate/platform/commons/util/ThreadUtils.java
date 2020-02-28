@@ -68,15 +68,15 @@ public final class ThreadUtils {
     }
 
     public static ExecutorService newCachedThreadPool() {
-        return new ThreadPoolExecutor(0, 1024, 60L, TimeUnit.SECONDS, new SynchronousQueue<>(), DefaultThreadFactory.create());
+        return new ThreadPoolExecutor(0, 1024, 60000L, TimeUnit.MILLISECONDS, new SynchronousQueue<>(), DefaultThreadFactory.create());
     }
 
     public static ExecutorService newCachedThreadPool(int maximumPoolSize) {
-        return new ThreadPoolExecutor(0, maximumPoolSize, 60L, TimeUnit.SECONDS, new SynchronousQueue<>(), DefaultThreadFactory.create());
+        return new ThreadPoolExecutor(0, maximumPoolSize, 60000L, TimeUnit.MILLISECONDS, new SynchronousQueue<>(), DefaultThreadFactory.create());
     }
 
     public static ExecutorService newCachedThreadPool(ThreadFactory threadFactory) {
-        return new ThreadPoolExecutor(0, 1024, 60L, TimeUnit.SECONDS, new SynchronousQueue<>(), threadFactory);
+        return new ThreadPoolExecutor(0, 1024, 60000L, TimeUnit.MILLISECONDS, new SynchronousQueue<>(), threadFactory);
     }
 
     public static ExecutorService newCachedThreadPool(int maximumPoolSize, long keepAliveTime) {
@@ -122,12 +122,15 @@ public final class ThreadUtils {
     }
 
     public static <T> T executeOnce(Callable<T> worker, long timeout, IFutureResultFilter<T> resultFilter) throws InterruptedException, ExecutionException {
+        return executeOnce(worker, timeout, 0, resultFilter);
+    }
+
+    public static <T> T executeOnce(Callable<T> worker, long timeout, int reAwaitTimes, IFutureResultFilter<T> resultFilter) throws InterruptedException, ExecutionException {
         FutureTask<T> future = new FutureTask<>(worker);
         //
         ExecutorService executorService = newSingleThreadExecutor();
         executorService.submit(future);
-        executorService.shutdown();
-        executorService.awaitTermination(timeout > 0L ? timeout : 30L, TimeUnit.SECONDS);
+        shutdownExecutorService(executorService, timeout, reAwaitTimes);
         //
         if (resultFilter != null) {
             return resultFilter.filter(future);
@@ -144,13 +147,16 @@ public final class ThreadUtils {
     }
 
     public static <T> List<T> executeOnce(List<Callable<T>> workers, long timeout, IFutureResultFilter<T> resultFilter) throws InterruptedException, ExecutionException {
+        return executeOnce(workers, timeout, 0, resultFilter);
+    }
+
+    public static <T> List<T> executeOnce(List<Callable<T>> workers, long timeout, int reAwaitTimes, IFutureResultFilter<T> resultFilter) throws InterruptedException, ExecutionException {
         if (workers != null && !workers.isEmpty()) {
             ExecutorService executorService = newFixedThreadPool(workers.size());
             //
             List<FutureTask<T>> futures = new ArrayList<>();
             workers.stream().map(FutureTask::new).peek(executorService::submit).forEachOrdered(futures::add);
-            executorService.shutdown();
-            executorService.awaitTermination(timeout > 0L ? timeout : 30L, TimeUnit.SECONDS);
+            shutdownExecutorService(executorService, timeout, reAwaitTimes);
             //
             List<T> results = new ArrayList<>();
             for (FutureTask<T> future : futures) {
@@ -167,6 +173,29 @@ public final class ThreadUtils {
             return results;
         }
         return Collections.emptyList();
+    }
+
+    public static void shutdownExecutorService(ExecutorService executorService, long timeout, int reAwaitTimes) {
+        try {
+            executorService.shutdown();
+            boolean flag = executorService.awaitTermination(timeout > 0L ? timeout : 30000L, TimeUnit.MILLISECONDS);
+            if (!flag) {
+                if (reAwaitTimes > 0) {
+                    while (reAwaitTimes > 0) {
+                        flag = executorService.awaitTermination(timeout > 0L ? timeout : 30000L, TimeUnit.MILLISECONDS);
+                        if (flag) {
+                            break;
+                        }
+                        reAwaitTimes--;
+                    }
+                }
+            }
+            if (!flag) {
+                executorService.shutdownNow();
+            }
+        } catch (InterruptedException e) {
+            executorService.shutdownNow();
+        }
     }
 
     /**
