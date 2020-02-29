@@ -19,6 +19,7 @@ import net.ymate.platform.core.IApplication;
 import net.ymate.platform.core.support.AbstractContext;
 
 import java.lang.reflect.Method;
+import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -27,6 +28,12 @@ import java.util.Map;
  * @author 刘镇 (suninformation@163.com) on 15/5/19 下午3:26
  */
 public class InterceptContext extends AbstractContext {
+
+    private static final ThreadLocal<Map<String, Object>> ATTRIBUTES = ThreadLocal.withInitial(() -> new HashMap<>(16));
+
+    public static Map<String, Object> getLocalAttributes() {
+        return ATTRIBUTES.get();
+    }
 
     private IInterceptor.Direction direction;
 
