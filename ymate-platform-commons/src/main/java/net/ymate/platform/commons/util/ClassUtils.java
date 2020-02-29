@@ -223,11 +223,24 @@ public class ClassUtils {
 
     /**
      * @param method 目标方法
-     * @return 验证method是否为公有非静态且不属于Object基类方法
+     * @return 验证method是否为公有非静态、非抽象且不属于Object基类方法
      * @since 2.1.0
      */
     public static boolean isNormalMethod(Method method) {
-        return !Modifier.isStatic(method.getModifiers()) && Modifier.isPublic(method.getModifiers()) && !method.getDeclaringClass().equals(Object.class) && !EXCLUDED_METHOD_NAMES.contains(method.getName());
+        return !Modifier.isStatic(method.getModifiers()) && Modifier.isAbstract(method.getModifiers()) && Modifier.isPublic(method.getModifiers()) && !method.getDeclaringClass().equals(Object.class) && !EXCLUDED_METHOD_NAMES.contains(method.getName());
+    }
+
+    /**
+     * @param field 目标成员
+     * @return 验证field是否正常成员
+     * @since 2.1.0
+     */
+    public static boolean isNormalField(Field field) {
+        return !Modifier.isStatic(field.getModifiers())
+                && !Modifier.isTransient(field.getModifiers())
+                && !Modifier.isFinal(field.getModifiers())
+                && !Modifier.isNative(field.getModifiers())
+                && !Modifier.isVolatile(field.getModifiers());
     }
 
     /**
@@ -457,10 +470,12 @@ public class ClassUtils {
     public static <A extends Annotation> PairObject<Field, A> getFieldAnnotationFirst(Class<?> clazz, Class<A> annotationClazz) {
         PairObject<Field, A> returnAnn = null;
         for (Field field : ClassUtils.getFields(clazz, true)) {
-            A annotation = field.getAnnotation(annotationClazz);
-            if (annotation != null) {
-                returnAnn = new PairObject<>(field, annotation);
-                break;
+            if (isNormalField(field)) {
+                A annotation = field.getAnnotation(annotationClazz);
+                if (annotation != null) {
+                    returnAnn = new PairObject<>(field, annotation);
+                    break;
+                }
             }
         }
         return returnAnn;
