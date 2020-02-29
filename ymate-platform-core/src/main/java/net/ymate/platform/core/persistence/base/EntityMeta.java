@@ -213,7 +213,7 @@ public final class EntityMeta implements Serializable {
      */
     private static void parseProperties(Class<? extends IEntity> targetClass, EntityMeta targetMeta) {
         ClassUtils.getFields(targetClass, true).stream()
-                .filter((field) -> (ClassUtils.isAnnotationOf(field, Property.class)))
+                .filter((field) -> ClassUtils.isNormalField(field) && ClassUtils.isAnnotationOf(field, Property.class))
                 .map((field) -> getPropertyMeta(field.getAnnotation(Property.class), field, targetMeta))
                 .filter(Objects::nonNull).peek((propertyMeta) -> targetMeta.properties.put(propertyMeta.getName(), propertyMeta)).forEachOrdered((propertyMeta) -> {
             targetMeta.fields.put(propertyMeta.getField().getName(), propertyMeta);
@@ -266,13 +266,11 @@ public final class EntityMeta implements Serializable {
             if (ClassUtils.isInterfaceOf(id.getKey().getType(), IEntityPK.class)) {
                 targetMeta.multiplePrimaryKey = true;
                 ClassUtils.getFields(id.getKey().getType(), true).stream()
-                        .filter((field) -> (ClassUtils.isAnnotationOf(field, Property.class)))
+                        .filter((field) -> ClassUtils.isNormalField(field) && ClassUtils.isAnnotationOf(field, Property.class))
                         .map((field) -> getPropertyMeta(field.getAnnotation(Property.class), field, targetMeta))
                         .filter(Objects::nonNull).peek((propertyMeta) -> targetMeta.properties.put(propertyMeta.getName(), propertyMeta))
                         .peek((propertyMeta) -> targetMeta.fields.put(propertyMeta.getField().getName(), propertyMeta))
-                        .forEachOrdered((propertyMeta) -> {
-                            targetMeta.primaryKeys.add(propertyMeta.getName());
-                        });
+                        .forEachOrdered((propertyMeta) -> targetMeta.primaryKeys.add(propertyMeta.getName()));
             } else {
                 throw new IllegalArgumentException("PrimaryKey must implement IEntityPK interface.");
             }
