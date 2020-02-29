@@ -227,7 +227,7 @@ public class ClassUtils {
      * @since 2.1.0
      */
     public static boolean isNormalMethod(Method method) {
-        return !Modifier.isStatic(method.getModifiers()) && Modifier.isAbstract(method.getModifiers()) && Modifier.isPublic(method.getModifiers()) && !method.getDeclaringClass().equals(Object.class) && !EXCLUDED_METHOD_NAMES.contains(method.getName());
+        return !Modifier.isStatic(method.getModifiers()) && !Modifier.isAbstract(method.getModifiers()) && Modifier.isPublic(method.getModifiers()) && !method.getDeclaringClass().equals(Object.class) && !EXCLUDED_METHOD_NAMES.contains(method.getName());
     }
 
     /**
