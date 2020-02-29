@@ -28,7 +28,6 @@ import net.ymate.platform.core.beans.proxy.IProxyFactory;
 import net.ymate.platform.core.beans.proxy.IProxyFilter;
 import net.ymate.platform.core.module.IModule;
 import net.ymate.platform.core.support.IDestroyable;
-import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -339,30 +338,32 @@ public class DefaultBeanFactory implements IBeanFactory {
      * @throws Exception 可能产生的异常
      */
     private void initBeanIoC(Class<?> targetClass, Object targetObject, BeanMeta.IInitializer initializer) throws Exception {
-        Field[] fields = targetClass.getDeclaredFields();
-        if (ArrayUtils.isNotEmpty(fields)) {
+        List<Field> fields = ClassUtils.getFields(targetClass, true);
+        if (!fields.isEmpty()) {
             for (Field field : fields) {
-                Object injectObj = null;
-                if (field.isAnnotationPresent(Inject.class)) {
-                    if (!field.getType().isInterface() && ClassUtils.isInterfaceOf(field.getType(), IModule.class)) {
-                        injectObj = owner.getModuleManager().getModule(field.getType().getName());
-                    } else {
-                        if (field.isAnnotationPresent(By.class)) {
-                            By injectBy = field.getAnnotation(By.class);
-                            if (!injectBy.value().isInterface() && ClassUtils.isInterfaceOf(injectBy.value(), IModule.class)) {
-                                injectObj = owner.getModuleManager().getModule(injectBy.value().getName());
-                            } else {
-                                injectObj = this.getBean(injectBy.value());
-                            }
+                if (ClassUtils.isNormalField(field)) {
+                    Object injectObj = null;
+                    if (field.isAnnotationPresent(Inject.class)) {
+                        if (!field.getType().isInterface() && ClassUtils.isInterfaceOf(field.getType(), IModule.class)) {
+                            injectObj = owner.getModuleManager().getModule(field.getType().getName());
                         } else {
-                            injectObj = this.getBean(field.getType());
+                            if (field.isAnnotationPresent(By.class)) {
+                                By injectBy = field.getAnnotation(By.class);
+                                if (!injectBy.value().isInterface() && ClassUtils.isInterfaceOf(injectBy.value(), IModule.class)) {
+                                    injectObj = owner.getModuleManager().getModule(injectBy.value().getName());
+                                } else {
+                                    injectObj = this.getBean(injectBy.value());
+                                }
+                            } else {
+                                injectObj = this.getBean(field.getType());
+                            }
                         }
                     }
-                }
-                injectObj = tryBeanInjector(targetClass, field, injectObj);
-                if (injectObj != null) {
-                    field.setAccessible(true);
-                    field.set(targetObject, injectObj);
+                    injectObj = tryBeanInjector(targetClass, field, injectObj);
+                    if (injectObj != null) {
+                        field.setAccessible(true);
+                        field.set(targetObject, injectObj);
+                    }
                 }
             }
         }
