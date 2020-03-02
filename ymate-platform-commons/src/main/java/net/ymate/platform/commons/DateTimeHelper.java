@@ -53,15 +53,16 @@ public class DateTimeHelper {
 
     private DateTimeHelper() {
         calendar = Calendar.getInstance();
+        calendar.setFirstDayOfWeek(Calendar.MONDAY);
     }
 
     private DateTimeHelper(Date date) {
-        calendar = Calendar.getInstance();
+        this();
         calendar.setTime(date);
     }
 
     private DateTimeHelper(long date) {
-        calendar = Calendar.getInstance();
+        this();
         if (String.valueOf(date).length() <= UTC_TIME_LENGTH) {
             date *= DateTimeUtils.SECOND;
         }
@@ -69,17 +70,17 @@ public class DateTimeHelper {
     }
 
     private DateTimeHelper(String dateStr, String dateFormat) throws ParseException {
-        calendar = Calendar.getInstance();
+        this();
         calendar.setTime(new SimpleDateFormat(dateFormat).parse(dateStr));
     }
 
     private DateTimeHelper(int year, int month, int day) {
-        calendar = Calendar.getInstance();
+        this();
         calendar.set(year, month - 1, day);
     }
 
     private DateTimeHelper(int year, int month, int day, int hour, int minute, int second) {
-        calendar = Calendar.getInstance();
+        this();
         calendar.set(year, month - 1, day, hour, minute, second);
     }
 
@@ -186,6 +187,16 @@ public class DateTimeHelper {
 
     public int dayOfWeekInMonth() {
         return calendar.get(Calendar.DAY_OF_WEEK_IN_MONTH);
+    }
+
+    public DateTimeHelper toWeekStart() {
+        calendar.set(Calendar.DAY_OF_WEEK, Calendar.MONDAY);
+        return this;
+    }
+
+    public DateTimeHelper toWeekEnd() {
+        calendar.set(Calendar.DAY_OF_WEEK, Calendar.SUNDAY);
+        return this;
     }
 
     public long timeMillis() {
