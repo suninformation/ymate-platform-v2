@@ -58,7 +58,7 @@ public class DefaultWebErrorProcessor implements IWebErrorProcessor, IWebInitial
     private boolean initialized;
 
     @Override
-    public void initialize(WebMVC owner) throws Exception {
+    public void initialize(IWebMvc owner) throws Exception {
         this.owner = owner;
         //
         errorDefaultViewFormat = StringUtils.trimToEmpty(owner.getOwner().getParam(IWebMvcConfig.PARAMS_ERROR_DEFAULT_VIEW_FORMAT)).toLowerCase();

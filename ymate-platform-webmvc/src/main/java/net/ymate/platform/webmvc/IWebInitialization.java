@@ -24,5 +24,5 @@ import net.ymate.platform.core.support.IInitialization;
  * @author 刘镇 (suninformation@163.com) on 2017/10/17 上午11:16
  */
 @Ignored
-public interface IWebInitialization extends IInitialization<WebMVC>, IDestroyable {
+public interface IWebInitialization extends IInitialization<IWebMvc>, IDestroyable {
 }

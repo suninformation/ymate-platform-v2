@@ -230,6 +230,9 @@ public final class DefaultWebMvcConfig implements IWebMvcConfig {
             if (errorProcessor == null) {
                 errorProcessor = new DefaultWebErrorProcessor();
             }
+            if (errorProcessor instanceof IWebInitialization) {
+                ((IWebInitialization) errorProcessor).initialize(owner);
+            }
             resourceHome = RuntimeUtils.replaceEnvVariable(StringUtils.defaultIfBlank(resourceHome, "${root}/i18n/"));
             resourceName = StringUtils.defaultIfBlank(resourceName, "messages");
             languageParamName = StringUtils.defaultIfBlank(languageParamName, "_lang");

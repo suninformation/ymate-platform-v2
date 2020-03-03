@@ -84,8 +84,6 @@ public final class Caches implements IModule, ICaches {
             if (!config.isInitialized()) {
                 config.initialize(this);
             }
-            config.getCacheEventListener().initialize(this);
-            config.getCacheProvider().initialize(this);
             //
             IProxyFactory proxyFactory = owner.getBeanFactory().getProxyFactory();
             if (proxyFactory != null) {

@@ -124,22 +124,16 @@ public final class WebMVC implements IModule, IWebMvc {
                 IModuleConfigurer moduleConfigurer = owner.getConfigurer().getModuleConfigurer(MODULE_NAME);
                 config = moduleConfigurer == null ? DefaultWebMvcConfig.defaultConfig() : DefaultWebMvcConfig.create(moduleConfigurer);
             }
-            //
             if (!config.isInitialized()) {
                 config.initialize(this);
-            }
-            if (config.getErrorProcessor() instanceof IWebInitialization) {
-                ((IWebInitialization) config.getErrorProcessor()).initialize(this);
             }
             if (config.isConventionInterceptorMode()) {
                 interceptorRuleProcessor = new DefaultInterceptorRuleProcessor();
                 interceptorRuleProcessor.initialize(this);
             }
-            //
             if (config.getCrossDomainSettings().isEnabled()) {
                 owner.getInterceptSettings().registerInterceptAnnotation(CrossDomain.class, CrossDomainInterceptor.class);
             }
-            //
             //
             IBeanLoadFactory beanLoaderFactory = YMP.getBeanLoadFactory();
             if (beanLoaderFactory != null) {

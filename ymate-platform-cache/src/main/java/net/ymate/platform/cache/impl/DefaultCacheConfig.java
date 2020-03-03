@@ -109,9 +109,13 @@ public final class DefaultCacheConfig implements ICacheConfig {
             if (cacheProvider == null) {
                 cacheProvider = new DefaultCacheProvider();
             }
+            cacheProvider.initialize(owner);
+            //
             if (cacheEventListener == null) {
                 cacheEventListener = new DefaultCacheEventListener();
             }
+            cacheEventListener.initialize(owner);
+            //
             if (serializer == null) {
                 serializer = SerializerManager.getDefaultSerializer();
             }
