@@ -33,7 +33,7 @@ import javax.servlet.http.HttpServletResponse;
  * @author 刘镇 (suninformation@163.com) on 17/3/23 下午5:01
  * @since 2.1.0
  */
-public final class CrossDomainAnnotationInterceptor extends AbstractInterceptor {
+public final class CrossDomainInterceptor extends AbstractInterceptor {
 
     @Override
     protected Object before(InterceptContext context) throws InterceptException {

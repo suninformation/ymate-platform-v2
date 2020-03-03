@@ -33,7 +33,7 @@ import net.ymate.platform.validation.Validations;
 import net.ymate.platform.webmvc.annotation.*;
 import net.ymate.platform.webmvc.base.Type;
 import net.ymate.platform.webmvc.context.WebContext;
-import net.ymate.platform.webmvc.cors.CrossDomainAnnotationInterceptor;
+import net.ymate.platform.webmvc.cors.CrossDomainInterceptor;
 import net.ymate.platform.webmvc.cors.annotation.CrossDomain;
 import net.ymate.platform.webmvc.handle.ControllerHandler;
 import net.ymate.platform.webmvc.handle.ExceptionProcessorHandler;
@@ -137,7 +137,7 @@ public final class WebMVC implements IModule, IWebMvc {
             }
             //
             if (config.getCrossDomainSettings().isEnabled()) {
-                owner.getInterceptSettings().registerInterceptAnnotation(CrossDomain.class, CrossDomainAnnotationInterceptor.class);
+                owner.getInterceptSettings().registerInterceptAnnotation(CrossDomain.class, CrossDomainInterceptor.class);
             }
             //
             //
