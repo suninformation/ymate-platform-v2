@@ -24,10 +24,7 @@ import org.apache.commons.logging.LogFactory;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 /**
  * @author 刘镇 (suninformation@163.com) on 15-1-12 下午4:50
@@ -47,10 +44,10 @@ public class ParamUtils {
      * @return 对参数进行ASCII正序排列并生成请求参数串
      */
     public static String buildQueryParamStr(Map<String, ?> params, boolean encode, String charset) {
-        String[] keys = params.keySet().toArray(new String[0]);
-        Arrays.sort(keys);
+        List<String> keys = new ArrayList<>(params.keySet());
+        Collections.sort(keys);
         StringBuilder stringBuilder = new StringBuilder();
-        Arrays.stream(keys).forEachOrdered(key -> {
+        keys.forEach(key -> {
             Object value = params.get(key);
             if (value != null) {
                 if (value.getClass().isArray()) {
