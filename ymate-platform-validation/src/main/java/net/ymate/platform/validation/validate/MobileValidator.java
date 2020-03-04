@@ -38,7 +38,12 @@ import org.apache.commons.lang3.StringUtils;
 @CleanProxy
 public final class MobileValidator implements IValidator {
 
-    private static final String REGEX_STR = "^1([358][0-9]|4[579]|66|7[0135678]|9[89])[0-9]{8}$";
+    private static final String REGEX_STR;
+
+    static {
+        // 手机号段可能随时变化，允许通过系统参数重设！
+        REGEX_STR = System.getProperty("mobile.regex", "^1([358][0-9]|4[579]|66|7[0135678]|9[89])[0-9]{8}$");
+    }
 
     private static final String I18N_MESSAGE_KEY = "ymp.validation.mobile";
 
