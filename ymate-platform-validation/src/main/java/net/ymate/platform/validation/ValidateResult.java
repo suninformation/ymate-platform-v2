@@ -26,6 +26,40 @@ import java.io.Serializable;
  */
 public final class ValidateResult implements Serializable {
 
+    public static String i18nParamLabel(ValidateContext context, String paramName, String label) {
+        if (StringUtils.isNotBlank(label)) {
+            return formatMessage(context, label, paramName);
+        }
+        return paramName;
+    }
+
+    public static String formatMessage(ValidateContext context, String i18nKey, String defaultValue, Object... args) {
+        String message = null;
+        if (StringUtils.isNotBlank(i18nKey)) {
+            if (StringUtils.isNotBlank(context.getResourceName())) {
+                message = context.getOwner().getI18n().formatMessage(context.getResourceName(), i18nKey, StringUtils.EMPTY, args);
+            }
+            if (StringUtils.isBlank(message)) {
+                message = context.getOwner().getI18n().formatMessage(IValidator.VALIDATION_I18N_RESOURCE, i18nKey, defaultValue, args);
+            }
+        }
+        return StringUtils.defaultIfBlank(message, defaultValue);
+    }
+
+    public static Builder builder(ValidateContext context) {
+        return new Builder(context);
+    }
+
+    public static Builder builder(ValidateContext context, String msg, String i18nKey, String defaultValue) {
+        Builder builder = new Builder(context);
+        ValidationMeta.ParamInfo paramInfo = context.getParamInfo();
+        msg = StringUtils.defaultIfBlank(msg, paramInfo.getMessage());
+        if (StringUtils.isNotBlank(msg)) {
+            return builder.msg(msg);
+        }
+        return builder.msg(i18nKey, defaultValue);
+    }
+
     private boolean matched;
 
     private String name;
@@ -52,40 +86,6 @@ public final class ValidateResult implements Serializable {
         return msg;
     }
 
-    public static String formatParamName(ValidateContext context, String customName) {
-        String pName = customName;
-        if (StringUtils.isBlank(customName)) {
-            pName = StringUtils.defaultIfBlank(context.getParamInfo().getFieldName(), context.getParamInfo().getName());
-        }
-        return formatMessage(context, pName, pName);
-    }
-
-    public static String formatMessage(ValidateContext context, String i18nKey, String defaultValue, Object... args) {
-        String message = null;
-        if (StringUtils.isNotBlank(i18nKey)) {
-            if (StringUtils.isNotBlank(context.getResourceName())) {
-                message = context.getOwner().getI18n().formatMessage(context.getResourceName(), i18nKey, StringUtils.EMPTY, args);
-            }
-            if (StringUtils.isBlank(message)) {
-                message = context.getOwner().getI18n().formatMessage(IValidator.VALIDATION_I18N_RESOURCE, i18nKey, defaultValue, args);
-            }
-        }
-        return StringUtils.defaultIfBlank(message, defaultValue);
-    }
-
-    public static Builder builder(ValidateContext context) {
-        return new Builder(context);
-    }
-
-    public static Builder builder(ValidateContext context, String msg, String i18nKey, String defaultValue) {
-        Builder builder = new Builder(context);
-        msg = StringUtils.defaultIfBlank(msg, context.getParamInfo().getMessage());
-        if (StringUtils.isNotBlank(msg)) {
-            return builder.msg(msg);
-        }
-        return builder.msg(i18nKey, defaultValue, context.getParamInfo().getSafeLabelName());
-    }
-
     public static class Builder {
 
         private final ValidateContext context;
@@ -94,7 +94,7 @@ public final class ValidateResult implements Serializable {
 
         public Builder(ValidateContext context) {
             this.context = context;
-            target.name = formatParamName(context, null);
+            target.name = context.getParamInfo().getName();
         }
 
         public boolean matched() {
@@ -110,23 +110,17 @@ public final class ValidateResult implements Serializable {
             return target.name;
         }
 
-        public Builder name(String name) {
-            target.name = formatParamName(context, name);
-            return this;
-        }
-
         public Builder msg(String msg) {
-            target.msg = ValidateResult.formatMessage(context, msg, msg);
+            target.msg = msg;
             return this;
         }
 
         public Builder msg(String i18nKey, String defaultValue, Object... args) {
+            ValidationMeta.ParamInfo paramInfo = context.getParamInfo();
+            target.msg = paramInfo.getMessage();
             // 若自定义消息不存在则加载i18n配置
-            String vMsg = context.getParamInfo().getMessage();
-            if (StringUtils.isNotBlank(vMsg)) {
-                target.msg = formatMessage(context, vMsg, vMsg, args);
-            } else if (StringUtils.isNotBlank(i18nKey)) {
-                target.msg = formatMessage(context, i18nKey, defaultValue, args);
+            if (StringUtils.isBlank(target.msg) && StringUtils.isNotBlank(i18nKey)) {
+                target.msg = formatMessage(context, i18nKey, defaultValue, i18nParamLabel(context, paramInfo.getCustomName(), paramInfo.getLabel()), args);
             }
             return this;
         }

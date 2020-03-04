@@ -97,16 +97,16 @@ public final class LengthValidator implements IValidator {
                 }
                 switch (result) {
                     case 1:
-                        builder.msg(I18N_MESSAGE_BETWEEN_KEY, I18N_MESSAGE_BETWEEN_DEFAULT_VALUE, context.getParamInfo().getSafeLabelName(), vLength.min(), vLength.max());
+                        builder.msg(I18N_MESSAGE_BETWEEN_KEY, I18N_MESSAGE_BETWEEN_DEFAULT_VALUE, vLength.min(), vLength.max());
                         break;
                     case 2:
-                        builder.msg(I18N_MESSAGE_MIN_KEY, I18N_MESSAGE_MIN_DEFAULT_VALUE, context.getParamInfo().getSafeLabelName(), vLength.min());
+                        builder.msg(I18N_MESSAGE_MIN_KEY, I18N_MESSAGE_MIN_DEFAULT_VALUE, vLength.min());
                         break;
                     case 3:
-                        builder.msg(I18N_MESSAGE_MAX_KEY, I18N_MESSAGE_MAX_DEFAULT_VALUE, context.getParamInfo().getSafeLabelName(), vLength.max());
+                        builder.msg(I18N_MESSAGE_MAX_KEY, I18N_MESSAGE_MAX_DEFAULT_VALUE, vLength.max());
                         break;
                     default:
-                        builder.msg(I18N_MESSAGE_EQ_KEY, I18N_MESSAGE_EQ_DEFAULT_VALUE, context.getParamInfo().getSafeLabelName(), vLength.eq());
+                        builder.msg(I18N_MESSAGE_EQ_KEY, I18N_MESSAGE_EQ_DEFAULT_VALUE, vLength.eq());
                 }
                 return builder.build();
             }

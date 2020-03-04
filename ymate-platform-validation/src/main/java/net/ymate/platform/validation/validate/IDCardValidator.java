@@ -82,7 +82,6 @@ public class IDCardValidator implements IValidator {
         Object paramValue = context.getParamValue();
         if (paramValue != null) {
             boolean matched = false;
-            VIDCard ann = (VIDCard) context.getAnnotation();
             if (context.getParamValue().getClass().isArray()) {
                 Object[] values = (Object[]) paramValue;
                 for (Object pValue : values) {
@@ -95,6 +94,7 @@ public class IDCardValidator implements IValidator {
                 matched = !validate(BlurObject.bind(paramValue).toStringValue());
             }
             if (matched) {
+                VIDCard ann = (VIDCard) context.getAnnotation();
                 return ValidateResult.builder(context, ann.msg(), I18N_MESSAGE_KEY, I18N_MESSAGE_DEFAULT_VALUE).matched(true).build();
             }
         }

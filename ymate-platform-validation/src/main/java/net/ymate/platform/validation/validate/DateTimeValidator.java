@@ -69,7 +69,7 @@ public final class DateTimeValidator implements IValidator {
     public static Date parseDate(String paramValue, String pattern) {
         try {
             if (StringUtils.isNumeric(paramValue)) {
-                return new Date(Long.valueOf(paramValue));
+                return new Date(Long.parseLong(paramValue));
             }
             return DateTimeUtils.parseDateTime(paramValue, StringUtils.defaultIfBlank(pattern, DateTimeUtils.YYYY_MM_DD_HH_MM_SS));
         } catch (ParseException e) {
@@ -161,10 +161,10 @@ public final class DateTimeValidator implements IValidator {
                 switch (result) {
                     case 2:
                     case 3:
-                        builder.msg(I18N_MESSAGE_MAX_DAYS_KEY, I18N_MESSAGE_MAX_DAYS_DEFAULT_VALUE, context.getParamInfo().getSafeLabelName());
+                        builder.msg(I18N_MESSAGE_MAX_DAYS_KEY, I18N_MESSAGE_MAX_DAYS_DEFAULT_VALUE);
                         break;
                     default:
-                        builder.msg(I18N_MESSAGE_KEY, I18N_MESSAGE_DEFAULT_VALUE, context.getParamInfo().getSafeLabelName());
+                        builder.msg(I18N_MESSAGE_KEY, I18N_MESSAGE_DEFAULT_VALUE);
                 }
                 return builder.build();
             }

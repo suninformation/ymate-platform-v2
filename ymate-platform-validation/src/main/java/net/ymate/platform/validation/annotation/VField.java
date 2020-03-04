@@ -35,7 +35,7 @@ public @interface VField {
     String name() default StringUtils.EMPTY;
 
     /**
-     * @return 自定义参数标签名称
+     * @return 自定义参数I18n标签名称
      */
     String label() default StringUtils.EMPTY;
 }

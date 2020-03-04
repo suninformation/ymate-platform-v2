@@ -120,22 +120,22 @@ public final class NumericValidator implements IValidator {
                 }
                 switch (result) {
                     case 2:
-                        builder.msg(I18N_MESSAGE_DECIMALS_KEY, I18N_MESSAGE_DECIMALS_DEFAULT_VALUE, context.getParamInfo().getSafeLabelName(), vNumeric.decimals());
+                        builder.msg(I18N_MESSAGE_DECIMALS_KEY, I18N_MESSAGE_DECIMALS_DEFAULT_VALUE, vNumeric.decimals());
                         break;
                     case 3:
-                        builder.msg(I18N_MESSAGE_BETWEEN_KEY, I18N_MESSAGE_BETWEEN_DEFAULT_VALUE, context.getParamInfo().getSafeLabelName(), vNumeric.min(), vNumeric.max());
+                        builder.msg(I18N_MESSAGE_BETWEEN_KEY, I18N_MESSAGE_BETWEEN_DEFAULT_VALUE, vNumeric.min(), vNumeric.max());
                         break;
                     case 4:
-                        builder.msg(I18N_MESSAGE_MIN_KEY, I18N_MESSAGE_MIN_DEFAULT_VALUE, context.getParamInfo().getSafeLabelName(), vNumeric.min());
+                        builder.msg(I18N_MESSAGE_MIN_KEY, I18N_MESSAGE_MIN_DEFAULT_VALUE, vNumeric.min());
                         break;
                     case 5:
-                        builder.msg(I18N_MESSAGE_MAX_KEY, I18N_MESSAGE_MAX_DEFAULT_VALUE, context.getParamInfo().getSafeLabelName(), vNumeric.max());
+                        builder.msg(I18N_MESSAGE_MAX_KEY, I18N_MESSAGE_MAX_DEFAULT_VALUE, vNumeric.max());
                         break;
                     case 6:
-                        builder.msg(I18N_MESSAGE_EQ_KEY, I18N_MESSAGE_EQ_DEFAULT_VALUE, context.getParamInfo().getSafeLabelName(), vNumeric.eq());
+                        builder.msg(I18N_MESSAGE_EQ_KEY, I18N_MESSAGE_EQ_DEFAULT_VALUE, vNumeric.eq());
                         break;
                     default:
-                        builder.msg(I18N_MESSAGE_KEY, I18N_MESSAGE_DEFAULT_VALUE, context.getParamInfo().getSafeLabelName());
+                        builder.msg(I18N_MESSAGE_KEY, I18N_MESSAGE_DEFAULT_VALUE);
                 }
                 return builder.build();
             }

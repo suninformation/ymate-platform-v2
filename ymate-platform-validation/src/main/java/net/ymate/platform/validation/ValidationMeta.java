@@ -90,7 +90,7 @@ public final class ValidationMeta implements Serializable {
                     // 尝试获取自定义的参数别名
                     VField vField = parameter.getAnnotation(VField.class);
                     if (vField != null) {
-                        paramInfo.setFieldName(StringUtils.trimToNull(vField.name()));
+                        paramInfo.setCustomName(StringUtils.trimToNull(vField.name()));
                         paramInfo.setLabel(StringUtils.trimToNull(vField.label()));
                     }
                     if (parameter.isAnnotationPresent(VModel.class)) {
@@ -129,7 +129,7 @@ public final class ValidationMeta implements Serializable {
             VField vField = field.getAnnotation(VField.class);
             if (vField != null) {
                 if (StringUtils.isNotBlank(vField.name())) {
-                    paramInfo.setFieldName(vField.name());
+                    paramInfo.setCustomName(vField.name());
                 }
                 if (StringUtils.isNotBlank(vField.label())) {
                     paramInfo.setLabel(vField.label());
@@ -230,19 +230,19 @@ public final class ValidationMeta implements Serializable {
         private String name;
 
         /**
-         * 业务参数名(来自VField)
+         * 业务自定义参数名(来自VField, 若未提供则与name取值相同)
          */
-        private String fieldName;
+        private String customName;
+
+        /**
+         * 业务参数显示名称(来自VField, 用于匹配I18N键名)
+         */
+        private String label;
 
         /**
          * 自定义消息(来自VMsg)
          */
         private String message;
-
-        /**
-         * 业务参数显示名称(来自VField)
-         */
-        private String label;
 
         private Class<?> type;
 
@@ -256,20 +256,12 @@ public final class ValidationMeta implements Serializable {
             this.name = name;
         }
 
-        public String getFieldName() {
-            return fieldName;
+        public String getCustomName() {
+            return StringUtils.defaultIfBlank(customName, name);
         }
 
-        public void setFieldName(String fieldName) {
-            this.fieldName = fieldName;
-        }
-
-        public String getMessage() {
-            return message;
-        }
-
-        public void setMessage(String message) {
-            this.message = message;
+        public void setCustomName(String customName) {
+            this.customName = customName;
         }
 
         public String getLabel() {
@@ -278,6 +270,14 @@ public final class ValidationMeta implements Serializable {
 
         public void setLabel(String label) {
             this.label = label;
+        }
+
+        public String getMessage() {
+            return message;
+        }
+
+        public void setMessage(String message) {
+            this.message = message;
         }
 
         public Class<?> getType() {
@@ -294,10 +294,6 @@ public final class ValidationMeta implements Serializable {
 
         public void setAnnotations(Annotation[] annotations) {
             this.annotations = annotations;
-        }
-
-        public String getSafeLabelName() {
-            return StringUtils.defaultIfBlank(StringUtils.defaultIfBlank(label, fieldName), name);
         }
     }
 }

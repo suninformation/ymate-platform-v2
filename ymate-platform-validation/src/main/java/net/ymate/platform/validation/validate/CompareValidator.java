@@ -108,11 +108,10 @@ public final class CompareValidator extends AbstractValidator {
                 }
             }
             if (matched) {
-                String compParamName = StringUtils.defaultIfBlank(vCompare.withLabel().label(), vCompare.withLabel().name());
+                String compParamName = ValidateResult.i18nParamLabel(context, vCompare.withLabel().name(), vCompare.withLabel().label());
                 if (StringUtils.isBlank(compParamName)) {
                     compParamName = vCompare.with();
                 }
-                compParamName = ValidateResult.formatMessage(context, compParamName, compParamName);
                 //
                 ValidateResult.Builder builder = ValidateResult.builder(context).matched(true);
                 if (StringUtils.isNotBlank(vCompare.msg())) {
@@ -120,22 +119,22 @@ public final class CompareValidator extends AbstractValidator {
                 }
                 switch (vCompare.cond()) {
                     case NOT_EQ:
-                        builder.msg(I18N_MESSAGE_NOT_EQ_KEY, I18N_MESSAGE_NOT_EQ_DEFAULT_VALUE, context.getParamInfo().getSafeLabelName(), compParamName);
+                        builder.msg(I18N_MESSAGE_NOT_EQ_KEY, I18N_MESSAGE_NOT_EQ_DEFAULT_VALUE, compParamName);
                         break;
                     case GT:
-                        builder.msg(I18N_MESSAGE_GT_KEY, I18N_MESSAGE_GT_DEFAULT_VALUE, context.getParamInfo().getSafeLabelName(), compParamName);
+                        builder.msg(I18N_MESSAGE_GT_KEY, I18N_MESSAGE_GT_DEFAULT_VALUE, compParamName);
                         break;
                     case LT:
-                        builder.msg(I18N_MESSAGE_LT_KEY, I18N_MESSAGE_LT_DEFAULT_VALUE, context.getParamInfo().getSafeLabelName(), compParamName);
+                        builder.msg(I18N_MESSAGE_LT_KEY, I18N_MESSAGE_LT_DEFAULT_VALUE, compParamName);
                         break;
                     case GT_EQ:
-                        builder.msg(I18N_MESSAGE_GT_EQ_KEY, I18N_MESSAGE_GT_EQ_DEFAULT_VALUE, context.getParamInfo().getSafeLabelName(), compParamName);
+                        builder.msg(I18N_MESSAGE_GT_EQ_KEY, I18N_MESSAGE_GT_EQ_DEFAULT_VALUE, compParamName);
                         break;
                     case LT_EQ:
-                        builder.msg(I18N_MESSAGE_LT_EQ_KEY, I18N_MESSAGE_LT_EQ_DEFAULT_VALUE, context.getParamInfo().getSafeLabelName(), compParamName);
+                        builder.msg(I18N_MESSAGE_LT_EQ_KEY, I18N_MESSAGE_LT_EQ_DEFAULT_VALUE, compParamName);
                         break;
                     default:
-                        builder.msg(I18N_MESSAGE_EQ_KEY, I18N_MESSAGE_EQ_DEFAULT_VALUE, context.getParamInfo().getSafeLabelName(), compParamName);
+                        builder.msg(I18N_MESSAGE_EQ_KEY, I18N_MESSAGE_EQ_DEFAULT_VALUE, compParamName);
                 }
                 return builder.build();
             }

@@ -35,7 +35,7 @@ public final class DataRangeValidator implements IValidator {
 
     private static final String I18N_MESSAGE_KEY = "ymp.validation.data_range_invalid";
 
-    private static final String I18N_MESSAGE_DEFAULT_VALUE = "{0} invalid.";
+    private static final String I18N_MESSAGE_DEFAULT_VALUE = "{0} value is out of the data range.";
 
     /**
      * 判断paramValue是否被collection包含
@@ -73,18 +73,19 @@ public final class DataRangeValidator implements IValidator {
     public ValidateResult validate(ValidateContext context) {
         Object paramValue = context.getParamValue();
         if (paramValue != null) {
-            boolean matched = false;
+            boolean matched;
             VDataRange vDataRange = (VDataRange) context.getAnnotation();
+            IDataRangeValuesProvider provider = null;
             if (!vDataRange.providerClass().equals(IDataRangeValuesProvider.class)) {
-                IDataRangeValuesProvider provider = context.getOwner().getBeanFactory().getBean(vDataRange.providerClass());
+                provider = context.getOwner().getBeanFactory().getBean(vDataRange.providerClass());
                 if (provider == null) {
                     provider = ClassUtils.impl(vDataRange.providerClass(), IDataRangeValuesProvider.class);
                 }
-                if (provider != null) {
-                    matched = !validate(provider.values(), paramValue, vDataRange.ignoreCase());
-                } else {
-                    matched = !validate(Arrays.asList(vDataRange.value()), paramValue, vDataRange.ignoreCase());
-                }
+            }
+            if (provider != null) {
+                matched = !validate(provider.values(), paramValue, vDataRange.ignoreCase());
+            } else {
+                matched = !validate(Arrays.asList(vDataRange.value()), paramValue, vDataRange.ignoreCase());
             }
             if (matched) {
                 return ValidateResult.builder(context, vDataRange.msg(), I18N_MESSAGE_KEY, I18N_MESSAGE_DEFAULT_VALUE).matched(true).build();

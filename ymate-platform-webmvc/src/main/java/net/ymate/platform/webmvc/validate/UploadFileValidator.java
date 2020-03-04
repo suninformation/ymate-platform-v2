@@ -78,7 +78,7 @@ public class UploadFileValidator extends AbstractValidator {
                         if (StringUtils.isNotBlank(uploadFileAnn.msg())) {
                             validateResult = builder.msg(uploadFileAnn.msg()).build();
                         } else {
-                            validateResult = builder.msg(I18N_MESSAGE_TOTAL_MAX_KEY, I18N_MESSAGE_TOTAL_MAX_DEFAULT_VALUE, builder.name(), uploadFileAnn.totalMax()).build();
+                            validateResult = builder.msg(I18N_MESSAGE_TOTAL_MAX_KEY, I18N_MESSAGE_TOTAL_MAX_DEFAULT_VALUE, uploadFileAnn.totalMax()).build();
                         }
                         break;
                     } else {
@@ -88,14 +88,14 @@ public class UploadFileValidator extends AbstractValidator {
                             if (StringUtils.isNotBlank(uploadFileAnn.msg())) {
                                 validateResult = builder.msg(uploadFileAnn.msg()).build();
                             } else if (result == 3) {
-                                validateResult = builder.msg(I18N_MESSAGE_CONTENT_TYPE_KEY, I18N_MESSAGE_CONTENT_TYPE_DEFAULT_VALUE, builder.name(), StringUtils.join(allowedContentTypes, ",")).build();
+                                validateResult = builder.msg(I18N_MESSAGE_CONTENT_TYPE_KEY, I18N_MESSAGE_CONTENT_TYPE_DEFAULT_VALUE, StringUtils.join(allowedContentTypes, ",")).build();
                             } else {
                                 if (uploadFileAnn.min() > 0 && uploadFileAnn.max() > 0) {
-                                    validateResult = builder.msg(I18N_MESSAGE_BETWEEN_KEY, I18N_MESSAGE_BETWEEN_DEFAULT_VALUE, builder.name(), uploadFileAnn.min(), uploadFileAnn.max()).build();
+                                    validateResult = builder.msg(I18N_MESSAGE_BETWEEN_KEY, I18N_MESSAGE_BETWEEN_DEFAULT_VALUE, uploadFileAnn.min(), uploadFileAnn.max()).build();
                                 } else if (result == 2) {
-                                    validateResult = builder.msg(I18N_MESSAGE_MAX_KEY, I18N_MESSAGE_MAX_DEFAULT_VALUE, builder.name(), uploadFileAnn.max()).build();
+                                    validateResult = builder.msg(I18N_MESSAGE_MAX_KEY, I18N_MESSAGE_MAX_DEFAULT_VALUE, uploadFileAnn.max()).build();
                                 } else if (result == 1) {
-                                    validateResult = builder.msg(I18N_MESSAGE_MIN_KEY, I18N_MESSAGE_MIN_DEFAULT_VALUE, builder.name(), uploadFileAnn.min()).build();
+                                    validateResult = builder.msg(I18N_MESSAGE_MIN_KEY, I18N_MESSAGE_MIN_DEFAULT_VALUE, uploadFileAnn.min()).build();
                                 }
                             }
                             break;
