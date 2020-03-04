@@ -51,7 +51,7 @@ public interface ICacheProvider extends IInitialization<ICaches>, IDestroyable {
     ICache createCache(String name, ICacheEventListener listener);
 
     /**
-     * 获取缓存对象，若不存在则返回null
+     * 获取缓存对象，若不存在则创建
      *
      * @param name 缓存名称
      * @return 返回缓存对象
