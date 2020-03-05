@@ -150,7 +150,7 @@ public final class JDBC implements IModule, IDatabase {
                 config.initialize(this);
             }
             //
-            IBeanLoadFactory beanLoaderFactory = YMP.getBeanLoadFactory();
+            IBeanLoadFactory beanLoaderFactory = owner.getConfigurer().getBeanLoadFactory();
             if (beanLoaderFactory != null && beanLoaderFactory.getBeanLoader() != null) {
                 beanLoaderFactory.getBeanLoader().registerHandler(Repository.class, new RepositoryHandler(this));
             }

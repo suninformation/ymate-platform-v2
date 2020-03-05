@@ -135,7 +135,7 @@ public final class WebMVC implements IModule, IWebMvc {
                 owner.getInterceptSettings().registerInterceptAnnotation(CrossDomain.class, CrossDomainInterceptor.class);
             }
             //
-            IBeanLoadFactory beanLoaderFactory = YMP.getBeanLoadFactory();
+            IBeanLoadFactory beanLoaderFactory = owner.getConfigurer().getBeanLoadFactory();
             if (beanLoaderFactory != null) {
                 IBeanLoader beanLoader = beanLoaderFactory.getBeanLoader();
                 if (beanLoader != null) {

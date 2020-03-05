@@ -33,7 +33,7 @@ public final class RequiredValidator implements IValidator {
 
     private static final String I18N_MESSAGE_KEY = "ymp.validation.required";
 
-    private static final String I18N_MESSAGE_DEFAULT_VALUE = "{0} must be required.";
+    private static final String I18N_MESSAGE_DEFAULT_VALUE = "{0} is required.";
 
     /**
      * 验证paramValue值是否不空

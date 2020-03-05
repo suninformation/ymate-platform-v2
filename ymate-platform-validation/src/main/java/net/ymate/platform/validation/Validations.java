@@ -86,7 +86,7 @@ public final class Validations implements IModule, IValidation {
             //
             this.owner = owner;
             //
-            IBeanLoadFactory beanLoaderFactory = YMP.getBeanLoadFactory();
+            IBeanLoadFactory beanLoaderFactory = owner.getConfigurer().getBeanLoadFactory();
             if (beanLoaderFactory != null && beanLoaderFactory.getBeanLoader() != null) {
                 beanLoaderFactory.getBeanLoader().registerHandler(Validator.class, new ValidateHandler(this));
             }
