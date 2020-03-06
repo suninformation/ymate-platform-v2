@@ -152,13 +152,31 @@ public final class EntityWrapper<Entity extends IEntity> {
         }
     }
 
+    public boolean saveIfNotExist() throws Exception {
+        return saveIfNotExist(false);
+    }
+
+    public boolean saveIfNotExist(boolean useLocker) throws Exception {
+        try (IDatabaseSession session = new DefaultDatabaseSession(owner, doGetSafeConnectionHolder())) {
+            EntitySQL<Entity> entitySql = EntitySQL.create(this.getEntityClass());
+            if (useLocker) {
+                entitySql.forUpdate(IDBLocker.DEFAULT);
+            }
+            Entity result = session.find(entitySql, entity.getId(), this.getShardingable());
+            if (result == null) {
+                return session.insert(entity, this.getShardingable()) != null;
+            }
+            return false;
+        }
+    }
+
     public Entity saveOrUpdate() throws Exception {
         return saveOrUpdate(null);
     }
 
     public Entity saveOrUpdate(Fields fields) throws Exception {
         try (IDatabaseSession session = new DefaultDatabaseSession(owner, doGetSafeConnectionHolder())) {
-            EntitySQL<Entity> entitySql = EntitySQL.create(this.getEntityClass());
+            EntitySQL<Entity> entitySql = EntitySQL.create(this.getEntityClass()).forUpdate(IDBLocker.DEFAULT);
             if (fields != null) {
                 entitySql.field(fields);
             }
