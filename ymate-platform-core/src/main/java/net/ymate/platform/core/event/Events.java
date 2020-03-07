@@ -46,7 +46,7 @@ public final class Events {
     private final IEventConfig eventConfig;
 
     public Events(IApplication owner) {
-        IApplicationConfigurer configurer = owner.getConfigurer();
+        IApplicationConfigurer configurer = owner.getConfigureFactory().getConfigurer();
         this.eventConfig = configurer != null ? DefaultEventConfig.create(configurer.getModuleConfigurer(Events.MODULE_NAME)) : DefaultEventConfig.defaultConfig();
     }
 

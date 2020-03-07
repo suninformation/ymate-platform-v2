@@ -77,7 +77,7 @@ public class Plugins implements IModule, IPlugins {
         if (!initialized) {
             //
             if (pluginFactory == null) {
-                IModuleConfigurer moduleConfigurer = owner.getConfigurer().getModuleConfigurer(MODULE_NAME);
+                IModuleConfigurer moduleConfigurer = owner.getConfigureFactory().getConfigurer().getModuleConfigurer(MODULE_NAME);
                 if (moduleConfigurer != null) {
                     pluginFactory = DefaultPluginFactory.create(moduleConfigurer);
                 }

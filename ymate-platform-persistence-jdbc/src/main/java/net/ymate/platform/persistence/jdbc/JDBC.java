@@ -18,6 +18,7 @@ package net.ymate.platform.persistence.jdbc;
 import net.ymate.platform.commons.util.ClassUtils;
 import net.ymate.platform.commons.util.RuntimeUtils;
 import net.ymate.platform.core.IApplication;
+import net.ymate.platform.core.IApplicationConfigurer;
 import net.ymate.platform.core.YMP;
 import net.ymate.platform.core.beans.IBeanLoadFactory;
 import net.ymate.platform.core.beans.proxy.IProxyFactory;
@@ -141,8 +142,9 @@ public final class JDBC implements IModule, IDatabase {
             this.owner = owner;
             this.owner.getEvents().registerEvent(DatabaseEvent.class);
             //
+            IApplicationConfigurer configurer = owner.getConfigureFactory().getConfigurer();
             if (config == null) {
-                IModuleConfigurer moduleConfigurer = owner.getConfigurer().getModuleConfigurer(MODULE_NAME);
+                IModuleConfigurer moduleConfigurer = configurer.getModuleConfigurer(MODULE_NAME);
                 config = moduleConfigurer == null ? DefaultDatabaseConfig.defaultConfig() : DefaultDatabaseConfig.create(moduleConfigurer);
             }
             //
@@ -150,7 +152,7 @@ public final class JDBC implements IModule, IDatabase {
                 config.initialize(this);
             }
             //
-            IBeanLoadFactory beanLoaderFactory = owner.getConfigurer().getBeanLoadFactory();
+            IBeanLoadFactory beanLoaderFactory = configurer.getBeanLoadFactory();
             if (beanLoaderFactory != null && beanLoaderFactory.getBeanLoader() != null) {
                 beanLoaderFactory.getBeanLoader().registerHandler(Repository.class, new RepositoryHandler(this));
             }

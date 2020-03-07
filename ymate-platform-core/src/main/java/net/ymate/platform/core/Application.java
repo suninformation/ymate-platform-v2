@@ -52,7 +52,7 @@ public final class Application implements IApplication {
 
     private final Map<String, String> parameters = new HashMap<>();
 
-    private final IApplicationConfigurer configurer;
+    private final IApplicationConfigureFactory configureFactory;
 
     private final IApplicationInitializer initializer;
 
@@ -74,22 +74,15 @@ public final class Application implements IApplication {
 
     private boolean errorFlag;
 
-    public Application(IApplicationConfigureFactory factory) {
-        this(factory.getConfigurer());
+    public Application(IApplicationConfigureFactory configureFactory) {
+        this(configureFactory, null);
     }
 
-    public Application(IApplicationConfigureFactory factory, IApplicationInitializer initializer) {
-        this(factory.getConfigurer(), initializer);
-    }
-
-    public Application(IApplicationConfigurer configurer) {
-        this(configurer, null);
-    }
-
-    public Application(IApplicationConfigurer configurer, IApplicationInitializer initializer) {
-        this.configurer = configurer;
+    public Application(IApplicationConfigureFactory configureFactory, IApplicationInitializer initializer) {
+        this.configureFactory = configureFactory;
         this.initializer = initializer;
         //
+        IApplicationConfigurer configurer = configureFactory.getConfigurer();
         this.moduleManager = new ModuleManager();
         this.beanFactory = new DefaultBeanFactory(configurer.getProxyFactory());
         this.i18n = new I18N(configurer.getDefaultLocale(), configurer.getI18nEventHandler());
@@ -125,6 +118,7 @@ public final class Application implements IApplication {
             }
             //
             try {
+                IApplicationConfigurer configurer = configureFactory.getConfigurer();
                 moduleManager.addExcludedModules(configurer.getExcludedModules());
                 // 触发容器启动事件
                 events.fireEvent(new ApplicationEvent(this, ApplicationEvent.EVENT.APPLICATION_STARTUP));
@@ -189,8 +183,8 @@ public final class Application implements IApplication {
     }
 
     @Override
-    public IApplicationConfigurer getConfigurer() {
-        return configurer;
+    public IApplicationConfigureFactory getConfigureFactory() {
+        return configureFactory;
     }
 
     @Override

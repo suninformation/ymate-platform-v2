@@ -92,7 +92,7 @@ public final class Redis implements IModule, IRedis {
             this.owner = owner;
             //
             if (config == null) {
-                IModuleConfigurer moduleConfigurer = owner.getConfigurer().getModuleConfigurer(MODULE_NAME);
+                IModuleConfigurer moduleConfigurer = owner.getConfigureFactory().getConfigurer().getModuleConfigurer(MODULE_NAME);
                 config = moduleConfigurer == null ? DefaultRedisConfig.defaultConfig() : DefaultRedisConfig.create(moduleConfigurer);
             }
             //

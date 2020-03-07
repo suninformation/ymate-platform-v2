@@ -122,7 +122,7 @@ public abstract class AbstractDataSourceAdapter<OWNER extends IPersistence, DATA
             if (dataSourceConfig.getPasswordClass() != null) {
                 return ((IPasswordProcessor) dataSourceConfig.getPasswordClass().newInstance()).decrypt(password);
             }
-            IPasswordProcessor passwordProcessor = owner.getOwner().getConfigurer().getPasswordProcessor();
+            IPasswordProcessor passwordProcessor = owner.getOwner().getConfigureFactory().getConfigurer().getPasswordProcessor();
             if (passwordProcessor == null) {
                 passwordProcessor = new DefaultPasswordProcessor();
             }

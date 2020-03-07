@@ -78,7 +78,7 @@ public final class Caches implements IModule, ICaches {
             this.owner.getEvents().registerEvent(CacheEvent.class);
             //
             if (config == null) {
-                IModuleConfigurer moduleConfigurer = owner.getConfigurer().getModuleConfigurer(MODULE_NAME);
+                IModuleConfigurer moduleConfigurer = owner.getConfigureFactory().getConfigurer().getModuleConfigurer(MODULE_NAME);
                 config = moduleConfigurer == null ? DefaultCacheConfig.defaultConfig() : DefaultCacheConfig.create(moduleConfigurer);
             }
             if (!config.isInitialized()) {

@@ -45,6 +45,8 @@ public interface IApplication extends IDestroyable {
 
     String SYSTEM_CONFIG_FILE = "ymp.configFile";
 
+    String SYSTEM_MAIN_CLASS = "ymp.mainClass";
+
     /**
      * 初始化
      *
@@ -60,11 +62,11 @@ public interface IApplication extends IDestroyable {
     boolean isInitialized();
 
     /**
-     * 获取配置加载器
+     * 获取应用容器配置器工厂
      *
-     * @return 返回配置加载器
+     * @return 返回应用容器配置器工厂
      */
-    IApplicationConfigurer getConfigurer();
+    IApplicationConfigureFactory getConfigureFactory();
 
     /**
      * 获取模块管理器

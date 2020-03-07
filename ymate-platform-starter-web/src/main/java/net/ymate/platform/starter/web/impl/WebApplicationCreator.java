@@ -15,23 +15,19 @@
  */
 package net.ymate.platform.starter.web.impl;
 
-import net.ymate.platform.core.*;
+import net.ymate.platform.core.IApplication;
+import net.ymate.platform.core.IApplicationInitializer;
+import net.ymate.platform.core.impl.DefaultApplicationCreator;
 
 /**
  * @author 刘镇 (suninformation@163.com) on 2019-08-15 02:40
  * @since 2.1.0
  */
-public class WebApplicationCreator implements IApplicationCreator {
-
-    private final IApplication application;
-
-    public WebApplicationCreator() {
-        // TODO 通过自定义Maven插件生成特制Jar包, 启动时自动解压并采用嵌入式Web容器完成启动过程, 支持Tomcat、Jetty、Undertow等常用嵌入式Web容器;
-        application = new Application(YMP.getConfigureFactory().getConfigurer());
-    }
+public class WebApplicationCreator extends DefaultApplicationCreator {
 
     @Override
-    public IApplication create(Class<?> mainClass, String[] args, IApplicationInitializer... applicationInitializers) {
-        return application;
+    public IApplication create(Class<?> mainClass, String[] args, IApplicationInitializer... applicationInitializers) throws Exception {
+        // TODO 通过自定义Maven插件生成特制Jar包, 启动时自动解压并采用嵌入式Web容器完成启动过程, 支持Tomcat、Jetty、Undertow等常用嵌入式Web容器;
+        return super.create(mainClass, args, applicationInitializers);
     }
 }
