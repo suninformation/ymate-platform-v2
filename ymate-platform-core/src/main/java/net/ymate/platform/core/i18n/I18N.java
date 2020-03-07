@@ -15,6 +15,7 @@
  */
 package net.ymate.platform.core.i18n;
 
+import net.ymate.platform.commons.ReentrantLockHelper;
 import net.ymate.platform.commons.util.RuntimeUtils;
 import net.ymate.platform.core.support.IDestroyable;
 import org.apache.commons.lang3.ArrayUtils;
@@ -22,7 +23,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.text.MessageFormat;
 import java.util.*;
@@ -166,16 +166,12 @@ public final class I18N implements IDestroyable {
                 }
                 if (prop != null && !prop.isEmpty()) {
                     if (cache == null) {
-                        cache = new ConcurrentHashMap<>(16);
-                        Map<String, Properties> previous = RESOURCES_CACHES.putIfAbsent(local, cache);
-                        if (previous != null) {
-                            cache = previous;
-                        }
+                        cache = ReentrantLockHelper.putIfAbsentAsync(RESOURCES_CACHES, local, () -> new ConcurrentHashMap<>(16));
                     }
                     cache.put(resourceName, prop);
                 }
-            } catch (IOException e) {
-                LOG.warn(StringUtils.EMPTY, RuntimeUtils.unwrapThrow(e));
+            } catch (Exception e) {
+                LOG.warn(e.getMessage(), RuntimeUtils.unwrapThrow(e));
             }
         }
         String returnValue = null;

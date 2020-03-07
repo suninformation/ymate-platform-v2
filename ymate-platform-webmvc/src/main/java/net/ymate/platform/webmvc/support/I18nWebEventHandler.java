@@ -21,6 +21,8 @@ import net.ymate.platform.webmvc.context.WebContext;
 import net.ymate.platform.webmvc.util.CookieHelper;
 import org.apache.commons.lang3.LocaleUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -32,6 +34,8 @@ import java.util.Locale;
  * @author 刘镇 (suninformation@163.com) on 15/7/20 上午10:02
  */
 public class I18nWebEventHandler implements II18nEventHandler {
+
+    private static final Log LOG = LogFactory.getLog(I18nWebEventHandler.class);
 
     @Override
     public Locale onLocale() {
@@ -75,6 +79,9 @@ public class I18nWebEventHandler implements II18nEventHandler {
         if (StringUtils.isNotBlank(resourceName) && WebContext.getContext() != null) {
             File resourceFile = new File(WebContext.getContext().getOwner().getConfig().getResourceHome(), resourceName);
             if (resourceFile.canRead() && resourceFile.exists() && resourceFile.isFile()) {
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug(String.format("Load i18n resource file: %s", resourceFile.getPath()));
+                }
                 return new FileInputStream(resourceFile);
             }
         }
