@@ -28,6 +28,8 @@ import java.util.List;
 @Ignored
 public interface IPluginConfig {
 
+    String DEFAULT_PLUGIN_HOME = "${root}/plugins";
+
     String ENABLED = "enabled";
 
     String DISABLED = "disabled";

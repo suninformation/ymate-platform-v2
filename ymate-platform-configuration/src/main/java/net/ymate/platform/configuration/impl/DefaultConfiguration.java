@@ -87,6 +87,11 @@ public class DefaultConfiguration implements IConfiguration {
     }
 
     @Override
+    public String[] getArray(String key, String[] defaultValue) {
+        return new String[0];
+    }
+
+    @Override
     public String[] getArray(String key, boolean zeroSize) {
         return provider.getArray(key, zeroSize);
     }

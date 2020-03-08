@@ -21,7 +21,7 @@ import net.ymate.platform.core.support.IDestroyable;
 import net.ymate.platform.core.support.IInitialization;
 
 /**
- * 插件框架模块管理器接口
+ * 插件管理器接口
  *
  * @author 刘镇 (suninformation@163.com) on 15/7/9 下午2:09
  */

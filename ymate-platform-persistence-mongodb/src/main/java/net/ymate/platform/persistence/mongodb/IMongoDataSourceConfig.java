@@ -50,7 +50,7 @@ public interface IMongoDataSourceConfig extends IDataSourceConfig<IMongo> {
     List<ServerAddress> getServerAddresses();
 
     /**
-     * 默认数据库名称，必填参数
+     * 数据库名称，必填参数
      *
      * @return 返回数据库名称
      */

@@ -182,6 +182,12 @@ public abstract class AbstractConfigurationProvider implements IConfigurationPro
     }
 
     @Override
+    public String[] getArray(String key, String[] defaultValue) {
+        List<String> resultValue = getList(key);
+        return resultValue.isEmpty() ? defaultValue : resultValue.toArray(new String[0]);
+    }
+
+    @Override
     public String[] getArray(String key, boolean zeroSize) {
         return getArray(IConfigFileParser.DEFAULT_CATEGORY_NAME, key, zeroSize);
     }

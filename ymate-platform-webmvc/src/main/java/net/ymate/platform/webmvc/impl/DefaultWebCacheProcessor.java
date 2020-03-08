@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.ymate.platform.webmvc.support;
+package net.ymate.platform.webmvc.impl;
 
 import net.ymate.platform.cache.Caches;
 import net.ymate.platform.cache.ICaches;
@@ -24,6 +24,7 @@ import net.ymate.platform.webmvc.IWebMvc;
 import net.ymate.platform.webmvc.PageCacheElement;
 import net.ymate.platform.webmvc.annotation.ResponseCache;
 import net.ymate.platform.webmvc.context.WebContext;
+import net.ymate.platform.webmvc.support.GenericResponseWrapper;
 import net.ymate.platform.webmvc.util.WebCacheHelper;
 import net.ymate.platform.webmvc.view.IView;
 import org.apache.commons.codec.digest.DigestUtils;
@@ -40,9 +41,9 @@ import java.util.concurrent.locks.ReentrantLock;
 /**
  * @author 刘镇 (suninformation@163.com) on 16/2/1 上午3:11
  */
-public class WebCacheProcessor implements IWebCacheProcessor {
+public class DefaultWebCacheProcessor implements IWebCacheProcessor {
 
-    private static final Log LOG = LogFactory.getLog(WebCacheProcessor.class);
+    private static final Log LOG = LogFactory.getLog(DefaultWebCacheProcessor.class);
 
     private static final ReentrantLockHelper LOCK = new ReentrantLockHelper();
 

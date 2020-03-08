@@ -17,6 +17,7 @@ package net.ymate.platform.core;
 
 import net.ymate.platform.core.beans.IBeanFactory;
 import net.ymate.platform.core.beans.IBeanLoader;
+import net.ymate.platform.core.beans.annotation.Ignored;
 import net.ymate.platform.core.event.Events;
 import net.ymate.platform.core.module.ModuleManager;
 
@@ -26,6 +27,7 @@ import net.ymate.platform.core.module.ModuleManager;
  * @author 刘镇 (suninformation@163.com) on 2019-08-26 20:30
  * @since 2.1.0
  */
+@Ignored
 public interface IApplicationInitializer {
 
     /**

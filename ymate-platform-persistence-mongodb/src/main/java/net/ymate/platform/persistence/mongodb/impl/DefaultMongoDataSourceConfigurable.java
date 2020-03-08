@@ -99,7 +99,7 @@ public class DefaultMongoDataSourceConfigurable extends AbstractDataSourceConfig
             return this;
         }
 
-        public IDataSourceConfigurable build() {
+        public DefaultMongoDataSourceConfigurable build() {
             return configurable;
         }
     }

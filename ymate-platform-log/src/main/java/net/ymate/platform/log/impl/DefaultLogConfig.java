@@ -23,6 +23,7 @@ import net.ymate.platform.core.module.IModuleConfigurer;
 import net.ymate.platform.log.ILog;
 import net.ymate.platform.log.ILogConfig;
 import net.ymate.platform.log.ILogger;
+import net.ymate.platform.log.annotation.LogConf;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -60,12 +61,16 @@ public final class DefaultLogConfig implements ILogConfig {
 
     private boolean initialized;
 
-    public static ILogConfig defaultConfig() {
+    public static DefaultLogConfig defaultConfig() {
         return builder().build();
     }
 
-    public static ILogConfig create(IModuleConfigurer moduleConfigurer) {
-        return new DefaultLogConfig(moduleConfigurer);
+    public static DefaultLogConfig create(IModuleConfigurer moduleConfigurer) {
+        return new DefaultLogConfig(null, moduleConfigurer);
+    }
+
+    public static DefaultLogConfig create(Class<?> mainClass, IModuleConfigurer moduleConfigurer) {
+        return new DefaultLogConfig(mainClass, moduleConfigurer);
     }
 
     public static Builder builder() {
@@ -76,11 +81,13 @@ public final class DefaultLogConfig implements ILogConfig {
     }
 
     @SuppressWarnings("unchecked")
-    private DefaultLogConfig(IModuleConfigurer moduleConfigurer) {
+    private DefaultLogConfig(Class<?> mainClass, IModuleConfigurer moduleConfigurer) {
         IConfigReader configReader = moduleConfigurer.getConfigReader();
         //
-        configFile = new File(RuntimeUtils.replaceEnvVariable(configReader.getString(CONFIG_FILE, DEFAULT_CONFIG_FILE)));
-        outputDir = new File(RuntimeUtils.replaceEnvVariable(configReader.getString(OUTPUT_DIR, DEFAULT_OUTPUT_DIR)));
+        LogConf confAnn = mainClass == null ? null : mainClass.getAnnotation(LogConf.class);
+        //
+        configFile = new File(RuntimeUtils.replaceEnvVariable(configReader.getString(CONFIG_FILE, StringUtils.defaultIfBlank(confAnn == null ? null : confAnn.configFile(), DEFAULT_CONFIG_FILE))));
+        outputDir = new File(RuntimeUtils.replaceEnvVariable(configReader.getString(OUTPUT_DIR, StringUtils.defaultIfBlank(confAnn == null ? null : confAnn.outputDir(), DEFAULT_OUTPUT_DIR))));
         //
         String loggerClassName = configReader.getString(LOGGER_CLASS);
         if (StringUtils.isNotBlank(loggerClassName)) {
@@ -91,14 +98,16 @@ public final class DefaultLogConfig implements ILogConfig {
                     LOG.warn(StringUtils.EMPTY, RuntimeUtils.unwrapThrow(e));
                 }
             }
+        } else if (confAnn != null && !confAnn.loggerClass().equals(ILogger.class)) {
+            loggerClass = confAnn.loggerClass();
         }
         //
-        defaultLoggerName = configReader.getString(LOGGER_NAME);
-        logFormat = configReader.getString(LOG_FORMAT);
-        printStackCount = configReader.getInt(PRINT_STACK_COUNT);
-        allowConsoleOutput = configReader.getBoolean(ALLOW_OUTPUT_CONSOLE);
-        simplifiedPackageName = configReader.getBoolean(SIMPLIFIED_PACKAGE_NAME);
-        formatPaddedOutput = configReader.getBoolean(FORMAT_PADDED_OUTPUT);
+        defaultLoggerName = configReader.getString(LOGGER_NAME, confAnn == null ? null : confAnn.defaultLoggerName());
+        logFormat = configReader.getString(LOG_FORMAT, confAnn == null ? null : confAnn.logFormat());
+        printStackCount = configReader.getInt(PRINT_STACK_COUNT, confAnn == null ? 0 : confAnn.printStackCount());
+        allowConsoleOutput = configReader.getBoolean(ALLOW_OUTPUT_CONSOLE, confAnn != null && confAnn.allowConsoleOutput());
+        simplifiedPackageName = configReader.getBoolean(SIMPLIFIED_PACKAGE_NAME, confAnn != null && confAnn.simplifiedPackageName());
+        formatPaddedOutput = configReader.getBoolean(FORMAT_PADDED_OUTPUT, confAnn != null && confAnn.formatPaddedOutput());
     }
 
     @Override
@@ -299,7 +308,7 @@ public final class DefaultLogConfig implements ILogConfig {
             return this;
         }
 
-        public ILogConfig build() {
+        public DefaultLogConfig build() {
             return config;
         }
     }

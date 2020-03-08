@@ -55,7 +55,7 @@ public final class DefaultDatabaseDataSourceConfig extends AbstractDataSourceCon
 
     private int stackTraceDepth;
 
-    private String stackTracePackage;
+    private String stackTracePackages;
 
     public static IDatabaseDataSourceConfig create(String dataSourceName, IConfigReader configReader) throws ClassNotFoundException {
         return new DefaultDatabaseDataSourceConfig(dataSourceName, configReader);
@@ -78,7 +78,7 @@ public final class DefaultDatabaseDataSourceConfig extends AbstractDataSourceCon
             this.showSql = configReader.getBoolean(IDatabaseConfig.SHOW_SQL);
             this.stackTraces = configReader.getBoolean(IDatabaseConfig.STACK_TRACES);
             this.stackTraceDepth = configReader.getInt(IDatabaseConfig.STACK_TRACE_DEPTH);
-            this.stackTracePackage = configReader.getString(IDatabaseConfig.STACK_TRACE_PACKAGE);
+            this.stackTracePackages = configReader.getString(IDatabaseConfig.STACK_TRACE_PACKAGES);
             this.tablePrefix = configReader.getString(IDatabaseConfig.TABLE_PREFIX);
             this.identifierQuote = configReader.getString(IDatabaseConfig.IDENTIFIER_QUOTE);
             // 数据源适配器
@@ -244,13 +244,13 @@ public final class DefaultDatabaseDataSourceConfig extends AbstractDataSourceCon
     }
 
     @Override
-    public String getStackTracePackage() {
-        return stackTracePackage;
+    public String getStackTracePackages() {
+        return stackTracePackages;
     }
 
-    public void setStackTracePackage(String stackTracePackage) {
+    public void setStackTracePackages(String stackTracePackages) {
         if (!isInitialized()) {
-            this.stackTracePackage = stackTracePackage;
+            this.stackTracePackages = stackTracePackages;
         }
     }
 
@@ -332,8 +332,8 @@ public final class DefaultDatabaseDataSourceConfig extends AbstractDataSourceCon
             return this;
         }
 
-        public Builder stackTracePackage(String stackTracePackage) {
-            config.setStackTracePackage(stackTracePackage);
+        public Builder stackTracePackages(String stackTracePackages) {
+            config.setStackTracePackages(stackTracePackages);
             return this;
         }
 
@@ -342,7 +342,7 @@ public final class DefaultDatabaseDataSourceConfig extends AbstractDataSourceCon
             return this;
         }
 
-        public IDatabaseDataSourceConfig build() {
+        public DefaultDatabaseDataSourceConfig build() {
             return config;
         }
     }

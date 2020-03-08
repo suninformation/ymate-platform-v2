@@ -20,9 +20,11 @@ import net.ymate.platform.commons.util.ClassUtils;
 import net.ymate.platform.commons.util.RuntimeUtils;
 import net.ymate.platform.configuration.Cfgs;
 import net.ymate.platform.core.IApplicationConfigureFactory;
+import net.ymate.platform.core.IApplicationConfigurer;
 import net.ymate.platform.core.Version;
 import net.ymate.platform.core.YMP;
 import net.ymate.platform.core.module.IModuleConfigurer;
+import net.ymate.platform.core.module.impl.DefaultModuleConfigurer;
 import net.ymate.platform.log.impl.DefaultLogConfig;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
@@ -51,14 +53,18 @@ public final class Logs implements ILog {
         } catch (NoClassDefFoundError | ClassNotFoundException ignored) {
         }
         //
+        DefaultLogConfig logConfig = null;
         IApplicationConfigureFactory configureFactory = YMP.getConfigureFactory();
-        ILog logInst;
-        IModuleConfigurer moduleConfigurer;
-        if (configureFactory == null || configureFactory.getConfigurer() == null || (moduleConfigurer = configureFactory.getConfigurer().getModuleConfigurer(MODULE_NAME)) == null) {
-            logInst = new Logs(DefaultLogConfig.defaultConfig());
-        } else {
-            logInst = new Logs(DefaultLogConfig.create(moduleConfigurer));
+        if (configureFactory != null) {
+            IApplicationConfigurer configurer = configureFactory.getConfigurer();
+            IModuleConfigurer moduleConfigurer = configurer == null ? null : configurer.getModuleConfigurer(MODULE_NAME);
+            if (moduleConfigurer != null) {
+                logConfig = DefaultLogConfig.create(configureFactory.getMainClass(), moduleConfigurer);
+            } else {
+                logConfig = DefaultLogConfig.create(configureFactory.getMainClass(), DefaultModuleConfigurer.createEmpty(MODULE_NAME));
+            }
         }
+        ILog logInst = new Logs(logConfig != null ? logConfig : DefaultLogConfig.defaultConfig());
         try {
             logInst.initialize();
         } catch (Exception e) {

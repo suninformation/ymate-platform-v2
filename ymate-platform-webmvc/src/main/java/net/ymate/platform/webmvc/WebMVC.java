@@ -21,6 +21,7 @@ import net.ymate.platform.commons.util.ClassUtils;
 import net.ymate.platform.commons.util.FileUtils;
 import net.ymate.platform.commons.util.RuntimeUtils;
 import net.ymate.platform.core.IApplication;
+import net.ymate.platform.core.IApplicationConfigureFactory;
 import net.ymate.platform.core.IApplicationConfigurer;
 import net.ymate.platform.core.YMP;
 import net.ymate.platform.core.beans.BeanMeta;
@@ -29,6 +30,7 @@ import net.ymate.platform.core.beans.IBeanLoader;
 import net.ymate.platform.core.beans.proxy.IProxyFactory;
 import net.ymate.platform.core.module.IModule;
 import net.ymate.platform.core.module.IModuleConfigurer;
+import net.ymate.platform.core.module.impl.DefaultModuleConfigurer;
 import net.ymate.platform.validation.IValidation;
 import net.ymate.platform.validation.Validations;
 import net.ymate.platform.webmvc.annotation.*;
@@ -121,10 +123,31 @@ public final class WebMVC implements IModule, IWebMvc {
             this.owner = owner;
             this.owner.getEvents().registerEvent(WebEvent.class);
             //
-            IApplicationConfigurer configurer = owner.getConfigureFactory().getConfigurer();
+            IApplicationConfigureFactory configureFactory = owner.getConfigureFactory();
+            if (configureFactory != null) {
+                IApplicationConfigurer configurer = configureFactory.getConfigurer();
+                if (configurer != null) {
+                    IBeanLoadFactory beanLoaderFactory = configurer.getBeanLoadFactory();
+                    if (beanLoaderFactory != null) {
+                        IBeanLoader beanLoader = beanLoaderFactory.getBeanLoader();
+                        if (beanLoader != null) {
+                            beanLoader.registerHandler(Controller.class, new ControllerHandler(this));
+                            beanLoader.registerHandler(InterceptorRule.class, new InterceptorRuleHandler(this));
+                            beanLoader.registerHandler(ExceptionProcessor.class, new ExceptionProcessorHandler());
+                        }
+                    }
+                }
+                if (config == null) {
+                    IModuleConfigurer moduleConfigurer = configurer == null ? null : configurer.getModuleConfigurer(MODULE_NAME);
+                    if (moduleConfigurer != null) {
+                        config = DefaultWebMvcConfig.create(configureFactory.getMainClass(), moduleConfigurer);
+                    } else {
+                        config = DefaultWebMvcConfig.create(configureFactory.getMainClass(), DefaultModuleConfigurer.createEmpty(MODULE_NAME));
+                    }
+                }
+            }
             if (config == null) {
-                IModuleConfigurer moduleConfigurer = configurer.getModuleConfigurer(MODULE_NAME);
-                config = moduleConfigurer == null ? DefaultWebMvcConfig.defaultConfig() : DefaultWebMvcConfig.create(moduleConfigurer);
+                config = DefaultWebMvcConfig.defaultConfig();
             }
             if (!config.isInitialized()) {
                 config.initialize(this);
@@ -135,16 +158,6 @@ public final class WebMVC implements IModule, IWebMvc {
             }
             if (config.getCrossDomainSettings().isEnabled()) {
                 owner.getInterceptSettings().registerInterceptAnnotation(CrossDomain.class, CrossDomainInterceptor.class);
-            }
-            //
-            IBeanLoadFactory beanLoaderFactory = configurer.getBeanLoadFactory();
-            if (beanLoaderFactory != null) {
-                IBeanLoader beanLoader = beanLoaderFactory.getBeanLoader();
-                if (beanLoader != null) {
-                    beanLoader.registerHandler(Controller.class, new ControllerHandler(this));
-                    beanLoader.registerHandler(InterceptorRule.class, new InterceptorRuleHandler(this));
-                    beanLoader.registerHandler(ExceptionProcessor.class, new ExceptionProcessorHandler());
-                }
             }
             //
             IProxyFactory proxyFactory = owner.getBeanFactory().getProxyFactory();

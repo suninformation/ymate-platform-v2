@@ -19,6 +19,7 @@ import org.apache.commons.lang.NullArgumentException;
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.Serializable;
+import java.util.Objects;
 
 /**
  * 服务配置描述
@@ -137,6 +138,23 @@ public class RedisServerMeta implements Serializable {
     }
 
     @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        RedisServerMeta that = (RedisServerMeta) o;
+        return port == that.port && host.equals(that.host);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(host, port);
+    }
+
+    @Override
     public String toString() {
         return String.format("RedisServer [name='%s', host='%s', port=%d, weight=%d, database=%d, clientName='%s']", name, host, port, weight, database, clientName);
     }
@@ -197,6 +215,5 @@ public class RedisServerMeta implements Serializable {
         public RedisServerMeta build() {
             return serverMeta;
         }
-
     }
 }

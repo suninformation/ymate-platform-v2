@@ -101,10 +101,10 @@ public abstract class AbstractOperator implements IOperator {
     }
 
     protected void doAppendStackTraces(IDatabaseDataSourceConfig dataSourceConfig, StringBuilder stackBuilder) {
-        String[] tracePackages = StringUtils.split(dataSourceConfig.getStackTracePackage(), "|");
+        String[] tracePackages = StringUtils.split(dataSourceConfig.getStackTracePackages(), "|");
         StackTraceElement[] stacks = new Throwable().getStackTrace();
         if (stacks != null && stacks.length > 0) {
-            int depth = dataSourceConfig.getStackTraceDepth() <= 0 ? stacks.length : (dataSourceConfig.getStackTraceDepth() > stacks.length ? stacks.length : dataSourceConfig.getStackTraceDepth());
+            int depth = dataSourceConfig.getStackTraceDepth() <= 0 ? stacks.length : Math.min(dataSourceConfig.getStackTraceDepth(), stacks.length);
             if (depth > 0) {
                 for (int idx = 0; idx < depth; idx++) {
                     if (tracePackages != null && tracePackages.length > 0) {

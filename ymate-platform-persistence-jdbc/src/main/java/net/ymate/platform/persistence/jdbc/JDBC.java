@@ -18,12 +18,15 @@ package net.ymate.platform.persistence.jdbc;
 import net.ymate.platform.commons.util.ClassUtils;
 import net.ymate.platform.commons.util.RuntimeUtils;
 import net.ymate.platform.core.IApplication;
+import net.ymate.platform.core.IApplicationConfigureFactory;
 import net.ymate.platform.core.IApplicationConfigurer;
 import net.ymate.platform.core.YMP;
 import net.ymate.platform.core.beans.IBeanLoadFactory;
+import net.ymate.platform.core.beans.IBeanLoader;
 import net.ymate.platform.core.beans.proxy.IProxyFactory;
 import net.ymate.platform.core.module.IModule;
 import net.ymate.platform.core.module.IModuleConfigurer;
+import net.ymate.platform.core.module.impl.DefaultModuleConfigurer;
 import net.ymate.platform.core.persistence.IDataSourceRouter;
 import net.ymate.platform.persistence.jdbc.annotation.DataSourceAdapter;
 import net.ymate.platform.persistence.jdbc.annotation.Dialect;
@@ -142,19 +145,33 @@ public final class JDBC implements IModule, IDatabase {
             this.owner = owner;
             this.owner.getEvents().registerEvent(DatabaseEvent.class);
             //
-            IApplicationConfigurer configurer = owner.getConfigureFactory().getConfigurer();
+            IApplicationConfigureFactory configureFactory = owner.getConfigureFactory();
+            if (configureFactory != null) {
+                IApplicationConfigurer configurer = configureFactory.getConfigurer();
+                if (configurer != null) {
+                    IBeanLoadFactory beanLoaderFactory = configurer.getBeanLoadFactory();
+                    if (beanLoaderFactory != null) {
+                        IBeanLoader beanLoader = beanLoaderFactory.getBeanLoader();
+                        if (beanLoader != null) {
+                            beanLoader.registerHandler(Repository.class, new RepositoryHandler(this));
+                        }
+                    }
+                }
+                if (config == null) {
+                    IModuleConfigurer moduleConfigurer = configurer == null ? null : configurer.getModuleConfigurer(MODULE_NAME);
+                    if (moduleConfigurer != null) {
+                        config = DefaultDatabaseConfig.create(configureFactory.getMainClass(), moduleConfigurer);
+                    } else {
+                        config = DefaultDatabaseConfig.create(configureFactory.getMainClass(), DefaultModuleConfigurer.createEmpty(MODULE_NAME));
+                    }
+                }
+            }
             if (config == null) {
-                IModuleConfigurer moduleConfigurer = configurer.getModuleConfigurer(MODULE_NAME);
-                config = moduleConfigurer == null ? DefaultDatabaseConfig.defaultConfig() : DefaultDatabaseConfig.create(moduleConfigurer);
+                config = DefaultDatabaseConfig.defaultConfig();
             }
             //
             if (!config.isInitialized()) {
                 config.initialize(this);
-            }
-            //
-            IBeanLoadFactory beanLoaderFactory = configurer.getBeanLoadFactory();
-            if (beanLoaderFactory != null && beanLoaderFactory.getBeanLoader() != null) {
-                beanLoaderFactory.getBeanLoader().registerHandler(Repository.class, new RepositoryHandler(this));
             }
             //
             IProxyFactory proxyFactory = owner.getBeanFactory().getProxyFactory();
@@ -210,7 +227,7 @@ public final class JDBC implements IModule, IDatabase {
     private IDatabaseDataSourceAdapter doSafeGetDataSourceAdapter(String dataSourceName) {
         IDatabaseDataSourceAdapter dataSourceAdapter = dataSourceCaches.get(dataSourceName);
         if (dataSourceAdapter == null) {
-            throw new IllegalStateException("Datasource '" + dataSourceName + "' not found.");
+            throw new IllegalStateException(String.format("Datasource '%s' not found.", dataSourceName));
         }
         return dataSourceAdapter;
     }

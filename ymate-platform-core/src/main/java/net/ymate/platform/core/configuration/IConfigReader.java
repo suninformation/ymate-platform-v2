@@ -70,6 +70,15 @@ public interface IConfigReader {
     /**
      * 获取键值数组值
      *
+     * @param key          属性键
+     * @param defaultValue 默认值
+     * @return 键值数组
+     */
+    String[] getArray(String key, String[] defaultValue);
+
+    /**
+     * 获取键值数组值
+     *
      * @param key      属性键
      * @param zeroSize 是否返回空元素数组
      * @return 键值数组

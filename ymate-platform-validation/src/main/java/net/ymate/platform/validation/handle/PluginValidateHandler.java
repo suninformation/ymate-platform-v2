@@ -17,9 +17,7 @@ package net.ymate.platform.validation.handle;
 
 import net.ymate.platform.core.IApplication;
 import net.ymate.platform.plugin.PluginClassLoader;
-import net.ymate.platform.plugin.annotation.Handler;
 import net.ymate.platform.validation.Validations;
-import net.ymate.platform.validation.annotation.Validator;
 
 /**
  * 插件验证器类处理器 (from ymate-framework-addons)
@@ -27,7 +25,6 @@ import net.ymate.platform.validation.annotation.Validator;
  * @author 刘镇 (suninformation@163.com) on 15/8/15 上午9:31
  * @since 2.1.0
  */
-@Handler(Validator.class)
 public class PluginValidateHandler extends ValidateHandler {
 
     public PluginValidateHandler(IApplication owner) {

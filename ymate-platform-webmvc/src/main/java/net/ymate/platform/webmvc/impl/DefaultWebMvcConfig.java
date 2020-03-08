@@ -20,6 +20,9 @@ import net.ymate.platform.commons.util.RuntimeUtils;
 import net.ymate.platform.core.configuration.IConfigReader;
 import net.ymate.platform.core.module.IModuleConfigurer;
 import net.ymate.platform.webmvc.*;
+import net.ymate.platform.webmvc.annotation.EnableConventionMode;
+import net.ymate.platform.webmvc.annotation.EnableCrossDomainSettings;
+import net.ymate.platform.webmvc.annotation.WebConf;
 import net.ymate.platform.webmvc.base.Type;
 import net.ymate.platform.webmvc.cors.CrossDomainSettings;
 import net.ymate.platform.webmvc.cors.impl.DefaultCrossDomainSetting;
@@ -105,12 +108,16 @@ public final class DefaultWebMvcConfig implements IWebMvcConfig {
 
     private boolean initialized;
 
-    public static IWebMvcConfig defaultConfig() {
+    public static DefaultWebMvcConfig defaultConfig() {
         return builder().build();
     }
 
-    public static IWebMvcConfig create(IModuleConfigurer moduleConfigurer) {
-        return new DefaultWebMvcConfig(moduleConfigurer);
+    public static DefaultWebMvcConfig create(IModuleConfigurer moduleConfigurer) {
+        return new DefaultWebMvcConfig(null, moduleConfigurer);
+    }
+
+    public static DefaultWebMvcConfig create(Class<?> mainClass, IModuleConfigurer moduleConfigurer) {
+        return new DefaultWebMvcConfig(mainClass, moduleConfigurer);
     }
 
     public static Builder builder() {
@@ -120,10 +127,12 @@ public final class DefaultWebMvcConfig implements IWebMvcConfig {
     private DefaultWebMvcConfig() {
     }
 
-    private DefaultWebMvcConfig(IModuleConfigurer moduleConfigurer) {
+    private DefaultWebMvcConfig(Class<?> mainClass, IModuleConfigurer moduleConfigurer) {
         IConfigReader configReader = moduleConfigurer.getConfigReader();
         //
-        String mappingParserClassName = configReader.getString(REQUEST_MAPPING_PARSER_CLASS, DEFAULT_STR);
+        WebConf confAnn = mainClass == null ? null : mainClass.getAnnotation(WebConf.class);
+        //
+        String mappingParserClassName = configReader.getString(REQUEST_MAPPING_PARSER_CLASS, StringUtils.defaultIfBlank(confAnn != null && !confAnn.mappingParserClass().equals(IRequestMappingParser.class) ? confAnn.mappingParserClass().getName() : null, DEFAULT_STR));
         Class<? extends IRequestMappingParser> mappingParserClass = Type.REQUEST_MAPPING_PARSERS.get(mappingParserClassName);
         if (mappingParserClass == null && StringUtils.isNotBlank(mappingParserClassName)) {
             requestMappingParser = ClassUtils.impl(mappingParserClassName, IRequestMappingParser.class, this.getClass());
@@ -131,7 +140,7 @@ public final class DefaultWebMvcConfig implements IWebMvcConfig {
             requestMappingParser = ClassUtils.impl(mappingParserClass, IRequestMappingParser.class);
         }
         //
-        String requestProcessorClassName = configReader.getString(REQUEST_PROCESSOR_CLASS, DEFAULT_STR);
+        String requestProcessorClassName = configReader.getString(REQUEST_PROCESSOR_CLASS, StringUtils.defaultIfBlank(confAnn != null && !confAnn.requestProcessClass().equals(IRequestProcessor.class) ? confAnn.requestProcessClass().getName() : null, DEFAULT_STR));
         Class<? extends IRequestProcessor> requestProcessorClass = Type.REQUEST_PROCESSORS.get(requestProcessorClassName);
         if (requestProcessorClass == null && StringUtils.isNotBlank(requestProcessorClassName)) {
             requestProcessor = ClassUtils.impl(requestProcessorClassName, IRequestProcessor.class, this.getClass());
@@ -139,53 +148,62 @@ public final class DefaultWebMvcConfig implements IWebMvcConfig {
             requestProcessor = ClassUtils.impl(requestProcessorClass, IRequestProcessor.class);
         }
         //
-        errorProcessor = configReader.getClassImpl(ERROR_PROCESSOR_CLASS, DefaultWebErrorProcessor.class.getName(), IWebErrorProcessor.class);
-        cacheProcessor = configReader.getClassImpl(CACHE_PROCESSOR_CLASS, IWebCacheProcessor.class);
+        errorProcessor = configReader.getClassImpl(ERROR_PROCESSOR_CLASS, confAnn != null && !confAnn.errorProcessorClass().equals(IWebErrorProcessor.class) ? confAnn.errorProcessorClass().getName() : null, IWebErrorProcessor.class);
+        cacheProcessor = configReader.getClassImpl(CACHE_PROCESSOR_CLASS, confAnn == null || confAnn.cacheProcessorClass().equals(IWebCacheProcessor.class) ? null : confAnn.cacheProcessorClass().getName(), IWebCacheProcessor.class);
         //
-        resourceHome = configReader.getString(RESOURCES_HOME);
-        resourceName = configReader.getString(RESOURCE_NAME);
-        languageParamName = configReader.getString(LANGUAGE_PARAM_NAME);
+        resourceHome = configReader.getString(RESOURCES_HOME, confAnn == null ? null : confAnn.resourceHome());
+        resourceName = configReader.getString(RESOURCE_NAME, confAnn == null ? null : confAnn.resourceName());
+        languageParamName = configReader.getString(LANGUAGE_PARAM_NAME, confAnn == null ? null : confAnn.languageParamName());
         //
-        defaultCharsetEncoding = configReader.getString(DEFAULT_CHARSET_ENCODING);
-        defaultContentType = configReader.getString(DEFAULT_CONTENT_TYPE);
+        defaultCharsetEncoding = configReader.getString(DEFAULT_CHARSET_ENCODING, confAnn == null ? null : confAnn.defaultCharsetEncoding());
+        defaultContentType = configReader.getString(DEFAULT_CONTENT_TYPE, confAnn == null ? null : confAnn.defaultContentType());
         //
-        requestIgnoreSuffixes.addAll(Arrays.asList(configReader.getArray(REQUEST_IGNORE_SUFFIX, true)));
-        requestMethodParam = configReader.getString(REQUEST_METHOD_PARAM);
-        requestPrefix = configReader.getString(REQUEST_PREFIX);
+        requestIgnoreSuffixes.addAll(Arrays.asList(configReader.getArray(REQUEST_IGNORE_SUFFIX, confAnn != null ? confAnn.requestIgnoreSuffixes() : new String[0])));
+        requestMethodParam = configReader.getString(REQUEST_METHOD_PARAM, confAnn == null ? null : confAnn.requestMethodParam());
+        requestPrefix = configReader.getString(REQUEST_PREFIX, confAnn == null ? null : confAnn.requestPrefix());
         //
-        baseViewPath = configReader.getString(BASE_VIEW_PATH);
+        baseViewPath = configReader.getString(BASE_VIEW_PATH, confAnn == null ? null : confAnn.baseViewPath());
         //
-        cookiePrefix = configReader.getString(COOKIE_PREFIX);
-        cookieDomain = configReader.getString(COOKIE_DOMAIN);
-        cookiePath = configReader.getString(COOKIE_PATH);
-        cookieAuthKey = configReader.getString(COOKIE_AUTH_KEY);
-        cookieAuthEnabled = configReader.getBoolean(COOKIE_AUTH_ENABLED);
-        cookieUseHttpOnly = configReader.getBoolean(COOKIE_USE_HTTP_ONLY);
+        cookiePrefix = configReader.getString(COOKIE_PREFIX, confAnn == null ? null : confAnn.cookiePrefix());
+        cookieDomain = configReader.getString(COOKIE_DOMAIN, confAnn == null ? null : confAnn.cookieDomain());
+        cookiePath = configReader.getString(COOKIE_PATH, confAnn == null ? null : confAnn.cookiePath());
+        cookieAuthKey = configReader.getString(COOKIE_AUTH_KEY, confAnn == null ? null : confAnn.cookieAuthKey());
+        cookieAuthEnabled = configReader.getBoolean(COOKIE_AUTH_ENABLED, confAnn != null && confAnn.cookieAuthEnabled());
+        cookieUseHttpOnly = configReader.getBoolean(COOKIE_USE_HTTP_ONLY, confAnn != null && confAnn.cookieUseHttpOnly());
         //
-        uploadTempDir = configReader.getString(UPLOAD_TEMP_DIR);
-        uploadFileSizeMax = configReader.getInt(UPLOAD_FILE_SIZE_MAX);
-        uploadTotalSizeMax = configReader.getInt(UPLOAD_TOTAL_SIZE_MAX);
-        uploadSizeThreshold = configReader.getInt(UPLOAD_SIZE_THRESHOLD);
-        uploadListener = configReader.getClassImpl(UPLOAD_LISTENER_CLASS, ProgressListener.class);
+        uploadTempDir = configReader.getString(UPLOAD_TEMP_DIR, confAnn == null ? null : confAnn.uploadTempDir());
+        uploadFileSizeMax = configReader.getInt(UPLOAD_FILE_SIZE_MAX, confAnn == null ? 0 : confAnn.uploadFileSizeMax());
+        uploadTotalSizeMax = configReader.getInt(UPLOAD_TOTAL_SIZE_MAX, confAnn == null ? 0 : confAnn.uploadTotalSizeMax());
+        uploadSizeThreshold = configReader.getInt(UPLOAD_SIZE_THRESHOLD, confAnn == null ? 0 : confAnn.uploadSizeThreshold());
+        uploadListener = configReader.getClassImpl(UPLOAD_LISTENER_CLASS, confAnn == null || confAnn.uploadListenerClass().equals(ProgressListener.class) ? null : confAnn.uploadListenerClass().getName(), ProgressListener.class);
         //
-        conventionMode = configReader.getBoolean(CONVENTION_MODE);
+        EnableConventionMode conventionModeAnn = mainClass == null ? null : mainClass.getAnnotation(EnableConventionMode.class);
+        conventionMode = configReader.getBoolean(CONVENTION_MODE, conventionModeAnn != null);
         if (conventionMode) {
-            conventionUrlRewriteMode = configReader.getBoolean(CONVENTION_URL_REWRITE_MODE);
-            conventionInterceptorMode = configReader.getBoolean(CONVENTION_INTERCEPTOR_MODE);
+            conventionUrlRewriteMode = configReader.getBoolean(CONVENTION_URL_REWRITE_MODE, conventionModeAnn != null && conventionModeAnn.urlRewriteMode());
+            conventionInterceptorMode = configReader.getBoolean(CONVENTION_INTERCEPTOR_MODE, conventionModeAnn != null && conventionModeAnn.interceptorMode());
             //
-            parseConventionViewPaths(configReader.getArray(CONVENTION_VIEW_PATHS));
+            String[] viewPaths = configReader.getArray(CONVENTION_VIEW_PATHS);
+            if (ArrayUtils.isNotEmpty(viewPaths)) {
+                parseConventionViewPaths(viewPaths);
+            } else if (conventionModeAnn != null) {
+                conventionViewAllowPaths.addAll(Arrays.asList(conventionModeAnn.viewAllowPaths()));
+                conventionViewNotAllowPaths.addAll(Arrays.asList(conventionModeAnn.viewNotAllowPaths()));
+            }
         }
         //
-        crossDomainSettings.setEnabled(configReader.getBoolean(CROSS_DOMAIN_SETTINGS_ENABLED));
+        EnableCrossDomainSettings crossDomainSettingsAnn = mainClass == null ? null : mainClass.getAnnotation(EnableCrossDomainSettings.class);
+        crossDomainSettings.setEnabled(configReader.getBoolean(CROSS_DOMAIN_SETTINGS_ENABLED, crossDomainSettingsAnn != null));
         if (crossDomainSettings.isEnabled()) {
             DefaultCrossDomainSetting defaultSetting = crossDomainSettings.getDefaultSetting();
-            defaultSetting.setOptionsAutoReply(configReader.getBoolean(CROSS_DOMAIN_OPTIONS_AUTO_REPLY));
-            defaultSetting.setAllowedCredentials(configReader.getBoolean(CROSS_DOMAIN_ALLOWED_CREDENTIALS));
-            defaultSetting.setMaxAge(configReader.getLong(CROSS_DOMAIN_MAX_AGE));
+            defaultSetting.setOptionsAutoReply(configReader.getBoolean(CROSS_DOMAIN_OPTIONS_AUTO_REPLY, crossDomainSettingsAnn != null && crossDomainSettingsAnn.optionsAutoReply()));
+            defaultSetting.setAllowedCredentials(configReader.getBoolean(CROSS_DOMAIN_ALLOWED_CREDENTIALS, crossDomainSettingsAnn != null && crossDomainSettingsAnn.allowedCredentials()));
+            defaultSetting.setMaxAge(configReader.getLong(CROSS_DOMAIN_MAX_AGE, crossDomainSettingsAnn == null ? 0 : crossDomainSettingsAnn.maxAge()));
             //
-            defaultSetting.addAllowedOrigin(configReader.getArray(CROSS_DOMAIN_ALLOWED_ORIGINS));
-            defaultSetting.addAllowedMethod(configReader.getArray(CROSS_DOMAIN_ALLOWED_METHODS));
-            defaultSetting.addAllowedHeader(configReader.getArray(CROSS_DOMAIN_ALLOWED_HEADERS));
+            defaultSetting.addAllowedOrigin(configReader.getArray(CROSS_DOMAIN_ALLOWED_ORIGINS, crossDomainSettingsAnn != null ? crossDomainSettingsAnn.allowedOrigins() : null));
+            defaultSetting.addAllowedMethod(configReader.getArray(CROSS_DOMAIN_ALLOWED_METHODS, crossDomainSettingsAnn != null ? Arrays.stream(crossDomainSettingsAnn.allowedMethods()).map(Enum::name).toArray(String[]::new) : null));
+            defaultSetting.addAllowedHeader(configReader.getArray(CROSS_DOMAIN_ALLOWED_HEADERS, crossDomainSettingsAnn != null ? crossDomainSettingsAnn.allowedHeaders() : null));
+            defaultSetting.addExposedHeader(configReader.getArray(CROSS_DOMAIN_EXPOSED_HEADERS, crossDomainSettingsAnn != null ? crossDomainSettingsAnn.exposedHeaders() : null));
         }
     }
 
@@ -226,6 +244,9 @@ public final class DefaultWebMvcConfig implements IWebMvcConfig {
             }
             if (requestProcessor == null) {
                 requestProcessor = new DefaultRequestProcessor();
+            }
+            if (cacheProcessor == null) {
+                cacheProcessor = new DefaultWebCacheProcessor();
             }
             if (errorProcessor == null) {
                 errorProcessor = new DefaultWebErrorProcessor();
@@ -852,7 +873,7 @@ public final class DefaultWebMvcConfig implements IWebMvcConfig {
             return this;
         }
 
-        public IWebMvcConfig build() {
+        public DefaultWebMvcConfig build() {
             return config;
         }
     }

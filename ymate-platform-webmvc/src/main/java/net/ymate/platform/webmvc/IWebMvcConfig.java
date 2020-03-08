@@ -104,6 +104,8 @@ public interface IWebMvcConfig extends IInitialization<IWebMvc> {
 
     String CROSS_DOMAIN_ALLOWED_HEADERS = "cross_domain_allowed_headers";
 
+    String CROSS_DOMAIN_EXPOSED_HEADERS = "cross_domain_exposed_headers";
+
     String CROSS_DOMAIN_ALLOWED_CREDENTIALS = "cross_domain_allowed_credentials";
 
     String CROSS_DOMAIN_MAX_AGE = "cross_domain_max_age";

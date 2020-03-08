@@ -15,8 +15,10 @@
  */
 package net.ymate.platform.core.event;
 
+import net.ymate.platform.commons.util.ClassUtils;
 import net.ymate.platform.core.IApplication;
 import net.ymate.platform.core.IApplicationConfigurer;
+import net.ymate.platform.core.annotation.EventsConf;
 import net.ymate.platform.core.event.impl.DefaultEventConfig;
 
 /**
@@ -32,6 +34,7 @@ public final class Events {
      * 事件触发模式枚举
      */
     public enum MODE {
+
         /**
          * NORMAL - 同步执行
          */
@@ -47,7 +50,28 @@ public final class Events {
 
     public Events(IApplication owner) {
         IApplicationConfigurer configurer = owner.getConfigureFactory().getConfigurer();
-        this.eventConfig = configurer != null ? DefaultEventConfig.create(configurer.getModuleConfigurer(Events.MODULE_NAME)) : DefaultEventConfig.defaultConfig();
+        DefaultEventConfig config = configurer != null ? DefaultEventConfig.create(configurer.getModuleConfigurer(Events.MODULE_NAME)) : DefaultEventConfig.defaultConfig();
+        if (owner.getConfigureFactory().getMainClass() != null) {
+            EventsConf eventsConfAnn = owner.getConfigureFactory().getMainClass().getAnnotation(EventsConf.class);
+            if (eventsConfAnn != null) {
+                if (config.getDefaultMode() == null) {
+                    config.setDefaultMode(eventsConfAnn.mode());
+                }
+                if (config.getEventProvider() == null && !IEventProvider.class.equals(eventsConfAnn.providerClass())) {
+                    config.setEventProvider(ClassUtils.impl(eventsConfAnn.providerClass(), IEventProvider.class));
+                }
+                if (config.getThreadMaxPoolSize() <= 0) {
+                    config.setThreadMaxPoolSize(eventsConfAnn.threadMaxPoolSize());
+                }
+                if (config.getThreadPoolSize() <= 0) {
+                    config.setThreadPoolSize(eventsConfAnn.threadPoolSize());
+                }
+                if (config.getThreadQueueSize() <= 0) {
+                    config.setThreadQueueSize(eventsConfAnn.threadQueueSize());
+                }
+            }
+        }
+        this.eventConfig = config;
     }
 
     public void initialize() {

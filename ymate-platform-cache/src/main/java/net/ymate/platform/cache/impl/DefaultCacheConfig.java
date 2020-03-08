@@ -16,6 +16,7 @@
 package net.ymate.platform.cache.impl;
 
 import net.ymate.platform.cache.*;
+import net.ymate.platform.cache.annotation.CacheConf;
 import net.ymate.platform.commons.util.ClassUtils;
 import net.ymate.platform.commons.util.RuntimeUtils;
 import net.ymate.platform.core.configuration.IConfigReader;
@@ -57,12 +58,16 @@ public final class DefaultCacheConfig implements ICacheConfig {
 
     private boolean initialized;
 
-    public static ICacheConfig defaultConfig() {
+    public static DefaultCacheConfig defaultConfig() {
         return builder().build();
     }
 
-    public static ICacheConfig create(IModuleConfigurer moduleConfigurer) {
-        return new DefaultCacheConfig(moduleConfigurer);
+    public static DefaultCacheConfig create(IModuleConfigurer moduleConfigurer) {
+        return new DefaultCacheConfig(null, moduleConfigurer);
+    }
+
+    public static DefaultCacheConfig create(Class<?> mainClass, IModuleConfigurer moduleConfigurer) {
+        return new DefaultCacheConfig(mainClass, moduleConfigurer);
     }
 
     public static Builder builder() {
@@ -72,10 +77,12 @@ public final class DefaultCacheConfig implements ICacheConfig {
     private DefaultCacheConfig() {
     }
 
-    private DefaultCacheConfig(IModuleConfigurer moduleConfigurer) {
+    private DefaultCacheConfig(Class<?> mainClass, IModuleConfigurer moduleConfigurer) {
         IConfigReader configReader = moduleConfigurer.getConfigReader();
         //
-        String providerClassStr = configReader.getString(PROVIDER_CLASS, DEFAULT_STR);
+        CacheConf confAnn = mainClass == null ? null : mainClass.getAnnotation(CacheConf.class);
+        //
+        String providerClassStr = configReader.getString(PROVIDER_CLASS, confAnn != null && !confAnn.providerClass().equals(ICacheProvider.class) ? confAnn.providerClass().getName() : DEFAULT_STR);
         switch (StringUtils.lowerCase(providerClassStr)) {
             case DEFAULT_STR:
                 cacheProvider = new DefaultCacheProvider();
@@ -90,27 +97,22 @@ public final class DefaultCacheConfig implements ICacheConfig {
                 cacheProvider = ClassUtils.impl(providerClassStr, ICacheProvider.class, this.getClass());
         }
         //
-        cacheEventListener = configReader.getClassImpl(EVENT_LISTENER_CLASS, ICacheEventListener.class);
-        cacheScopeProcessor = configReader.getClassImpl(SCOPE_PROCESSOR_CLASS, ICacheScopeProcessor.class);
-        serializer = SerializerManager.getSerializer(configReader.getString(SERIALIZER_CLASS));
-        keyGenerator = configReader.getClassImpl(KEY_GENERATOR_CLASS, ICacheKeyGenerator.class);
-        defaultCacheName = configReader.getString(DEFAULT_CACHE_NAME);
-        defaultCacheTimeout = configReader.getInt(DEFAULT_CACHE_TIMEOUT);
+        cacheEventListener = configReader.getClassImpl(EVENT_LISTENER_CLASS, confAnn == null || confAnn.eventListenerClass().equals(ICacheEventListener.class) ? null : confAnn.eventListenerClass().getName(), ICacheEventListener.class);
+        cacheScopeProcessor = configReader.getClassImpl(SCOPE_PROCESSOR_CLASS, confAnn == null || confAnn.scopeProcessorClass().equals(ICacheScopeProcessor.class) ? null : confAnn.scopeProcessorClass().getName(), ICacheScopeProcessor.class);
+        serializer = SerializerManager.getSerializer(configReader.getString(SERIALIZER_CLASS, confAnn == null || confAnn.serializerClass().equals(ISerializer.class) ? null : confAnn.serializerClass().getName()));
+        keyGenerator = configReader.getClassImpl(KEY_GENERATOR_CLASS, confAnn == null || confAnn.keyGeneratorClass().equals(ICacheKeyGenerator.class) ? null : confAnn.keyGeneratorClass().getName(), ICacheKeyGenerator.class);
+        defaultCacheName = configReader.getString(DEFAULT_CACHE_NAME, confAnn != null ? confAnn.defaultCacheName() : null);
+        defaultCacheTimeout = configReader.getInt(DEFAULT_CACHE_TIMEOUT, confAnn != null ? confAnn.defaultCacheTimeout() : 0);
         //
-        configFile = new File(RuntimeUtils.replaceEnvVariable(configReader.getString(CONFIG_FILE, DEFAULT_CONFIG_FILE)));
-        storageWithSet = configReader.getBoolean(ICacheConfig.STORAGE_WITH_SET);
-        enabledSubscribeExpired = configReader.getBoolean(ICacheConfig.ENABLED_SUBSCRIBE_EXPIRED);
-        multilevelSlavesAutoSync = configReader.getBoolean(ICacheConfig.MULTILEVEL_SLAVE_AUTO_SYNC);
+        configFile = new File(RuntimeUtils.replaceEnvVariable(configReader.getString(CONFIG_FILE, StringUtils.defaultIfBlank(confAnn != null ? confAnn.configFile() : null, DEFAULT_CONFIG_FILE))));
+        storageWithSet = configReader.getBoolean(ICacheConfig.STORAGE_WITH_SET, confAnn != null && confAnn.storageWithSet());
+        enabledSubscribeExpired = configReader.getBoolean(ICacheConfig.ENABLED_SUBSCRIBE_EXPIRED, confAnn != null && confAnn.subscribeExpired());
+        multilevelSlavesAutoSync = configReader.getBoolean(ICacheConfig.MULTILEVEL_SLAVE_AUTO_SYNC, confAnn != null && confAnn.multilevelSlavesAutoSync());
     }
 
     @Override
     public void initialize(ICaches owner) throws Exception {
         if (!initialized) {
-            if (cacheProvider == null) {
-                cacheProvider = new DefaultCacheProvider();
-            }
-            cacheProvider.initialize(owner);
-            //
             if (cacheEventListener == null) {
                 cacheEventListener = new DefaultCacheEventListener();
             }
@@ -131,6 +133,11 @@ public final class DefaultCacheConfig implements ICacheConfig {
             if (configFile == null || !configFile.isAbsolute() || !configFile.canRead() || !configFile.exists() || configFile.isDirectory()) {
                 configFile = null;
             }
+            //
+            if (cacheProvider == null) {
+                cacheProvider = new DefaultCacheProvider();
+            }
+            cacheProvider.initialize(owner);
             //
             initialized = true;
         }
@@ -322,7 +329,7 @@ public final class DefaultCacheConfig implements ICacheConfig {
             return this;
         }
 
-        public ICacheConfig build() {
+        public DefaultCacheConfig build() {
             return config;
         }
     }

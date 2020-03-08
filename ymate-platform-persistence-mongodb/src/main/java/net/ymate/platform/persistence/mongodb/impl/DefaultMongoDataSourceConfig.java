@@ -27,6 +27,7 @@ import net.ymate.platform.persistence.mongodb.IMongoDataSourceConfig;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -45,7 +46,7 @@ public final class DefaultMongoDataSourceConfig extends AbstractDataSourceConfig
 
     private Class<? extends IMongoClientOptionsHandler> clientOptionsHandlerClass;
 
-    public static IMongoDataSourceConfig create(String dataSourceName, IConfigReader configReader) throws ClassNotFoundException {
+    public static DefaultMongoDataSourceConfig create(String dataSourceName, IConfigReader configReader) throws ClassNotFoundException {
         return new DefaultMongoDataSourceConfig(dataSourceName, configReader);
     }
 
@@ -70,15 +71,8 @@ public final class DefaultMongoDataSourceConfig extends AbstractDataSourceConfig
             if (StringUtils.isNotBlank(clientOptionsHandlerClassName)) {
                 this.clientOptionsHandlerClass = (Class<? extends IMongoClientOptionsHandler>) ClassUtils.loadClass(clientOptionsHandlerClassName, getClass());
             }
-            //
-            for (String serverStr : configReader.getArray(IMongoConfig.SERVERS, true)) {
-                String[] server = StringUtils.split(serverStr, ":");
-                if (server.length > 1) {
-                    serverAddresses.add(new ServerAddress(server[0], Integer.parseInt(server[1])));
-                } else {
-                    serverAddresses.add(new ServerAddress(server[0]));
-                }
-            }
+            Arrays.stream(configReader.getArray(IMongoConfig.SERVERS, true)).map(serverStr -> StringUtils.split(serverStr, ":"))
+                    .forEachOrdered(server -> serverAddresses.add(server.length > 1 ? new ServerAddress(server[0], Integer.parseInt(server[1])) : new ServerAddress(server[0])));
         }
     }
 
@@ -152,6 +146,11 @@ public final class DefaultMongoDataSourceConfig extends AbstractDataSourceConfig
             return this;
         }
 
+        public Builder databaseName(String databaseName) {
+            config.setDatabaseName(databaseName);
+            return this;
+        }
+
         public Builder clientOptionsHandlerClass(Class<? extends IMongoClientOptionsHandler> clientOptionsHandlerClass) {
             config.setClientOptionsHandlerClass(clientOptionsHandlerClass);
             return this;
@@ -164,9 +163,7 @@ public final class DefaultMongoDataSourceConfig extends AbstractDataSourceConfig
 
         public Builder addServerAddresses(ServerAddress... serverAddresses) {
             if (serverAddresses != null && serverAddresses.length > 0) {
-                for (ServerAddress serverAddress : serverAddresses) {
-                    config.addServerAddress(serverAddress);
-                }
+                Arrays.stream(serverAddresses).forEachOrdered(config::addServerAddress);
             }
             return this;
         }
@@ -191,7 +188,7 @@ public final class DefaultMongoDataSourceConfig extends AbstractDataSourceConfig
             return this;
         }
 
-        public IMongoDataSourceConfig build() {
+        public DefaultMongoDataSourceConfig build() {
             return config;
         }
     }

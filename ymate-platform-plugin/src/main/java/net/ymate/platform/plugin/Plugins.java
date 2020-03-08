@@ -15,15 +15,17 @@
  */
 package net.ymate.platform.plugin;
 
+import net.ymate.platform.commons.util.ClassUtils;
 import net.ymate.platform.commons.util.RuntimeUtils;
-import net.ymate.platform.core.ApplicationEvent;
-import net.ymate.platform.core.IApplication;
-import net.ymate.platform.core.YMP;
+import net.ymate.platform.core.*;
 import net.ymate.platform.core.event.Events;
 import net.ymate.platform.core.event.IEventListener;
 import net.ymate.platform.core.module.IModule;
 import net.ymate.platform.core.module.IModuleConfigurer;
+import net.ymate.platform.core.module.impl.DefaultModuleConfigurer;
 import net.ymate.platform.plugin.impl.DefaultPluginFactory;
+import net.ymate.platform.plugin.impl.PluginBeanLoadInitializer;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -35,6 +37,20 @@ import org.apache.commons.logging.LogFactory;
 public class Plugins implements IModule, IPlugins {
 
     private static final Log LOG = LogFactory.getLog(Plugins.class);
+
+    private static final PluginBeanLoadInitializer PLUGIN_BEAN_LOAD_INITIALIZER = new PluginBeanLoadInitializer();
+
+    static {
+        try {
+            for (Class<IPluginBeanLoadInitializer> initializerClass : ClassUtils.getExtensionLoader(IPluginBeanLoadInitializer.class, true).getExtensionClasses()) {
+                PLUGIN_BEAN_LOAD_INITIALIZER.addInitializer(initializerClass.newInstance());
+            }
+        } catch (Exception e) {
+            if (LOG.isWarnEnabled()) {
+                LOG.warn(StringUtils.EMPTY, RuntimeUtils.unwrapThrow(e));
+            }
+        }
+    }
 
     private IApplication owner;
 
@@ -77,9 +93,15 @@ public class Plugins implements IModule, IPlugins {
         if (!initialized) {
             //
             if (pluginFactory == null) {
-                IModuleConfigurer moduleConfigurer = owner.getConfigureFactory().getConfigurer().getModuleConfigurer(MODULE_NAME);
-                if (moduleConfigurer != null) {
-                    pluginFactory = DefaultPluginFactory.create(moduleConfigurer);
+                IApplicationConfigureFactory configureFactory = owner.getConfigureFactory();
+                if (configureFactory != null) {
+                    IApplicationConfigurer configurer = configureFactory.getConfigurer();
+                    IModuleConfigurer moduleConfigurer = configurer == null ? null : configurer.getModuleConfigurer(MODULE_NAME);
+                    if (moduleConfigurer != null) {
+                        pluginFactory = DefaultPluginFactory.create(configureFactory.getMainClass(), moduleConfigurer);
+                    } else {
+                        pluginFactory = DefaultPluginFactory.create(configureFactory.getMainClass(), DefaultModuleConfigurer.createEmpty(MODULE_NAME));
+                    }
                 }
             }
             //
@@ -99,6 +121,8 @@ public class Plugins implements IModule, IPlugins {
                     }
                     return false;
                 });
+                //
+                PLUGIN_BEAN_LOAD_INITIALIZER.beforeBeanLoad(this, pluginFactory.getBeanLoader());
                 //
                 if (pluginFactory.isIncludedClassPath()) {
                     pluginFactory.getBeanLoader().registerPackageName(IApplication.YMP_BASE_PACKAGE_NAME);

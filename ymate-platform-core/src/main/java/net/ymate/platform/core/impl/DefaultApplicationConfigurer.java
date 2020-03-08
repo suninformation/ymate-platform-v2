@@ -16,26 +16,25 @@
 package net.ymate.platform.core.impl;
 
 import net.ymate.platform.commons.IPasswordProcessor;
-import net.ymate.platform.core.AbstractApplicationConfigurer;
-import net.ymate.platform.core.IApplication;
-import net.ymate.platform.core.IApplicationConfigureParser;
-import net.ymate.platform.core.YMP;
+import net.ymate.platform.commons.util.ClassUtils;
+import net.ymate.platform.core.*;
+import net.ymate.platform.core.annotation.*;
+import net.ymate.platform.core.beans.IBeanLoadFactory;
 import net.ymate.platform.core.beans.intercept.InterceptSettings;
+import net.ymate.platform.core.beans.proxy.IProxyFactory;
 import net.ymate.platform.core.configuration.impl.MapSafeConfigReader;
 import net.ymate.platform.core.i18n.II18nEventHandler;
 import net.ymate.platform.core.module.IModuleConfigurer;
 import org.apache.commons.lang3.LocaleUtils;
 import org.apache.commons.lang3.StringUtils;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 /**
  * @author 刘镇 (suninformation@163.com) on 2019-08-07 20:41
  * @since 2.1.0
  */
-public class DefaultApplicationConfigurer extends AbstractApplicationConfigurer {
+public final class DefaultApplicationConfigurer extends AbstractApplicationConfigurer {
 
     private static final String CONFIG_DEV_MODE = "ymp.dev_mode";
 
@@ -55,30 +54,102 @@ public class DefaultApplicationConfigurer extends AbstractApplicationConfigurer 
 
     private static final String CONFIG_INTERCEPT_PREFIX = "ymp.intercept.";
 
-    public DefaultApplicationConfigurer() {
-        this(DefaultApplicationConfigureParser.systemDefault());
+    public DefaultApplicationConfigurer(IApplicationConfigureFactory configureFactory) {
+        this(configureFactory, DefaultApplicationConfigureParser.systemDefault());
     }
 
-    public DefaultApplicationConfigurer(IApplicationConfigureParser configureParser) {
+    public DefaultApplicationConfigurer(IApplicationConfigureFactory configureFactory, IApplicationConfigureParser configureParser) {
         super(configureParser);
         if (configureParser != null) {
-            setRunEnv(YMP.getPriorityRunEnv(configureParser.getConfigReader().getBoolean(CONFIG_DEV_MODE) ? IApplication.Environment.DEV : null));
+            IApplication.Environment runEnv = configureParser.getConfigReader().getBoolean(CONFIG_DEV_MODE) ? IApplication.Environment.DEV : null;
+            IProxyFactory proxyFactory = YMP.getProxyFactory();
+            IBeanLoadFactory beanLoadFactory = YMP.getBeanLoadFactory();
+            IPasswordProcessor passwordProcessor = configureParser.getConfigReader().getClassImpl(CONFIG_DEFAULT_PASSWORD_PROCESS_CLASS, IPasswordProcessor.class);
+            Locale defaultLocale = LocaleUtils.toLocale(StringUtils.trimToNull(configureParser.getConfigReader().getString(CONFIG_DEFAULT_LOCALE)));
+            II18nEventHandler i18nEventHandler = configureParser.getConfigReader().getClassImpl(CONFIG_I18N_EVENT_HANDLER_CLASS, II18nEventHandler.class);
             //
-            setProxyFactory(YMP.getProxyFactory());
-            setBeanLoadFactory(YMP.getBeanLoadFactory());
-            setPasswordProcessor(configureParser.getConfigReader().getClassImpl(CONFIG_DEFAULT_PASSWORD_PROCESS_CLASS, IPasswordProcessor.class));
+            List<String> packageNames = parseArrayValue(IApplication.SYSTEM_PACKAGES, IApplication.SYSTEM_PACKAGES);
+            List<String> excludedPackageNames = parseArrayValue(CONFIG_EXCLUDED_PACKAGES);
+            List<String> excludedFiles = parseArrayValue(CONFIG_EXCLUDED_FILES);
+            List<String> excludedModules = parseArrayValue(CONFIG_EXCLUDED_NODULES);
+            Map<String, String> parameterMap = configureParser.getConfigReader().getMap(CONFIG_PARAMS_PREFIX);
+            if (configureFactory.getMainClass() != null) {
+                if (runEnv == null && configureFactory.getMainClass().isAnnotationPresent(EnableDevMode.class)) {
+                    runEnv = IApplication.Environment.DEV;
+                }
+                // 处理代理工厂配置注解类
+                if (proxyFactory == null) {
+                    EnableBeanProxy enableBeanProxyAnn = configureFactory.getMainClass().getAnnotation(EnableBeanProxy.class);
+                    if (enableBeanProxyAnn != null && !enableBeanProxyAnn.factoryClass().equals(IProxyFactory.class)) {
+                        proxyFactory = ClassUtils.impl(enableBeanProxyAnn.factoryClass(), IProxyFactory.class);
+                    }
+                }
+                // 处理自定义加载器配置注解类
+                EnableAutoScan enableAutoScanAnn = configureFactory.getMainClass().getAnnotation(EnableAutoScan.class);
+                if (enableAutoScanAnn != null) {
+                    if (beanLoadFactory == null && !enableAutoScanAnn.factoryClass().equals(IBeanLoadFactory.class)) {
+                        beanLoadFactory = ClassUtils.impl(enableAutoScanAnn.factoryClass(), IBeanLoadFactory.class);
+                    }
+                    if (packageNames.isEmpty()) {
+                        packageNames.add(configureFactory.getMainClass().getPackage().getName());
+                        packageNames.addAll(Arrays.asList(enableAutoScanAnn.value()));
+                    }
+                    if (excludedPackageNames.isEmpty()) {
+                        excludedPackageNames.addAll(Arrays.asList(enableAutoScanAnn.excluded()));
+                    }
+                    if (excludedFiles.isEmpty()) {
+                        excludedFiles.addAll(Arrays.asList(enableAutoScanAnn.excludedFiles()));
+                    }
+                    if (excludedModules.isEmpty()) {
+                        excludedModules.addAll(Arrays.asList(enableAutoScanAnn.excludedModules()));
+                    }
+                }
+                // 处理默认密码处理器配置注解类
+                if (passwordProcessor == null) {
+                    DefaultPasswordProcessClass passwordProcessClass = configureFactory.getMainClass().getAnnotation(DefaultPasswordProcessClass.class);
+                    if (passwordProcessClass != null && !passwordProcessClass.value().equals(IPasswordProcessor.class)) {
+                        passwordProcessor = ClassUtils.impl(passwordProcessClass.value(), IPasswordProcessor.class);
+                    }
+                }
+                // 处理国际化配置注解类
+                I18nConf i18nConfAnn = configureFactory.getMainClass().getAnnotation(I18nConf.class);
+                if (i18nConfAnn != null) {
+                    if (defaultLocale == null) {
+                        defaultLocale = LocaleUtils.toLocale(i18nConfAnn.defaultLocale());
+                    }
+                    if (i18nEventHandler == null && !II18nEventHandler.class.equals(i18nConfAnn.eventHandlerClass())) {
+                        i18nEventHandler = ClassUtils.impl(i18nConfAnn.eventHandlerClass(), II18nEventHandler.class);
+                    }
+                }
+                if (parameterMap.isEmpty()) {
+                    // 处理自定义参数配置注解类
+                    Params params = configureFactory.getMainClass().getAnnotation(Params.class);
+                    if (params != null) {
+                        Arrays.stream(params.value()).forEachOrdered(param -> parameterMap.put(param.name(), StringUtils.join(param.value(), '|')));
+                    } else {
+                        Param param = configureFactory.getMainClass().getAnnotation(Param.class);
+                        if (param != null) {
+                            parameterMap.put(param.name(), StringUtils.join(param.value(), '|'));
+                        }
+                    }
+                }
+            }
+            setRunEnv(YMP.getPriorityRunEnv(runEnv));
+            setProxyFactory(proxyFactory);
+            setBeanLoadFactory(beanLoadFactory);
+            setPasswordProcessor(passwordProcessor);
             //
-            addPackageNames(parseArrayValue(IApplication.SYSTEM_PACKAGES, IApplication.SYSTEM_PACKAGES));
-            addExcludedPackageNames(parseArrayValue(CONFIG_EXCLUDED_PACKAGES));
-            addExcludedFiles(parseArrayValue(CONFIG_EXCLUDED_FILES));
-            addExcludedModules(parseArrayValue(CONFIG_EXCLUDED_NODULES));
+            setDefaultLocale(defaultLocale);
+            setI18nEventHandler(i18nEventHandler);
             //
-            setDefaultLocale(LocaleUtils.toLocale(StringUtils.trimToNull(configureParser.getConfigReader().getString(CONFIG_DEFAULT_LOCALE))));
-            setI18nEventHandler(configureParser.getConfigReader().getClassImpl(CONFIG_I18N_EVENT_HANDLER_CLASS, II18nEventHandler.class));
+            addPackageNames(packageNames);
+            addExcludedPackageNames(excludedPackageNames);
+            addExcludedFiles(excludedFiles);
+            addExcludedModules(excludedModules);
             //
             setInterceptSettings(InterceptSettings.create(MapSafeConfigReader.bind(configureParser.getConfigReader().getMap(CONFIG_INTERCEPT_PREFIX))));
             //
-            addParameters(configureParser.getConfigReader().getMap(CONFIG_PARAMS_PREFIX));
+            addParameters(parameterMap);
         }
     }
 
@@ -87,11 +158,12 @@ public class DefaultApplicationConfigurer extends AbstractApplicationConfigurer 
     }
 
     private List<String> parseArrayValue(String systemVarName, String configVarName) {
+        List<String> returnValue = new ArrayList<>();
         String[] packageNames = StringUtils.split(StringUtils.defaultIfBlank(StringUtils.isBlank(systemVarName) ? null : System.getProperty(systemVarName), getConfigureParser() != null ? getConfigureParser().getConfigReader().getString(configVarName) : StringUtils.EMPTY), "|");
         if (packageNames != null && packageNames.length > 0) {
-            return Arrays.asList(packageNames);
+            returnValue.addAll(Arrays.asList(packageNames));
         }
-        return Collections.emptyList();
+        return returnValue;
     }
 
     @Override

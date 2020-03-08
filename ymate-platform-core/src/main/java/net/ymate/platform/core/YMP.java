@@ -38,6 +38,18 @@ import java.nio.charset.StandardCharsets;
  */
 public final class YMP {
 
+    private static Class<?> systemMainClass;
+
+    static {
+        String mainClassName = System.getProperty(IApplication.SYSTEM_MAIN_CLASS);
+        if (StringUtils.isNotBlank(mainClassName)) {
+            try {
+                systemMainClass = Class.forName(mainClassName);
+            } catch (ClassNotFoundException ignored) {
+            }
+        }
+    }
+
     public static final Version VERSION = new Version(2, 1, 0, Version.VersionType.Release);
 
     private static final String DEFAULT_BANNER_STR = "__  __ __  ___ ___\n" +
@@ -72,6 +84,9 @@ public final class YMP {
                 inst = configureFactory;
                 if (inst == null) {
                     configureFactory = inst = ClassUtils.loadClass(IApplicationConfigureFactory.class);
+                    if (configureFactory != null) {
+                        configureFactory.setMainClass(systemMainClass);
+                    }
                 }
             }
         }
@@ -160,7 +175,7 @@ public final class YMP {
      * @throws Exception 可能产生的任何异常
      */
     public static IApplication run(IApplicationInitializer... applicationInitializers) throws Exception {
-        return run(null, null, applicationInitializers);
+        return run(null, applicationInitializers);
     }
 
     /**
@@ -172,19 +187,6 @@ public final class YMP {
      * @throws Exception 可能产生的任何异常
      */
     public static IApplication run(String[] args, IApplicationInitializer... applicationInitializers) throws Exception {
-        return run(null, args, applicationInitializers);
-    }
-
-    /**
-     * 执行框架初始化动作, 若已初始化则直接返回当前应用容器实例对象
-     *
-     * @param mainClass               启动配置类(用于解析初始化配置注解)
-     * @param args                    启动参数集合
-     * @param applicationInitializers 扩展初始化处理器
-     * @return 返回应用容器实例对象
-     * @throws Exception 可能产生的任何异常
-     */
-    public static IApplication run(Class<?> mainClass, String[] args, IApplicationInitializer... applicationInitializers) throws Exception {
         IApplication application = instance;
         if (application == null) {
             synchronized (YMP.class) {
@@ -194,7 +196,7 @@ public final class YMP {
                     if (creator == null) {
                         throw new ClassNotFoundException(String.format("Implementation class of interface [%s] not found.", IApplicationCreator.class.getName()));
                     }
-                    application = creator.create(mainClass, args, applicationInitializers);
+                    application = creator.create(systemMainClass, args, applicationInitializers);
                     if (application == null) {
                         throw new IllegalStateException(String.format("IApplicationCreator [%s] returns the IApplication interface instance object invalid.", creator.getClass().getName()));
                     }

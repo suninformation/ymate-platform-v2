@@ -103,6 +103,12 @@ public class MapSafeConfigReader implements IConfigReader {
     }
 
     @Override
+    public String[] getArray(String key, String[] defaultValue) {
+        String[] array = getArray(key);
+        return array == null || array.length == 0 ? defaultValue : array;
+    }
+
+    @Override
     public String[] getArray(String key, boolean zeroSize) {
         String[] array = StringUtils.split(getString(key), "|");
         return array == null || array.length == 0 ? (zeroSize ? new String[0] : null) : array;

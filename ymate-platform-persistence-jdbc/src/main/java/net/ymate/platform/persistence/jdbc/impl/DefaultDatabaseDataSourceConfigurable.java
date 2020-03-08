@@ -18,8 +18,6 @@ package net.ymate.platform.persistence.jdbc.impl;
 import net.ymate.platform.commons.IPasswordProcessor;
 import net.ymate.platform.core.persistence.AbstractDataSourceConfigurable;
 import net.ymate.platform.core.persistence.IDataSourceAdapter;
-import net.ymate.platform.core.persistence.IDataSourceConfigurable;
-import net.ymate.platform.core.persistence.base.Type;
 import net.ymate.platform.persistence.jdbc.IDatabaseConfig;
 import net.ymate.platform.persistence.jdbc.IDatabaseDataSourceConfigurable;
 import net.ymate.platform.persistence.jdbc.dialect.IDialect;
@@ -86,8 +84,8 @@ public final class DefaultDatabaseDataSourceConfigurable extends AbstractDataSou
             return this;
         }
 
-        public Builder stackTracePackage(String stackTracePackage) {
-            configurable.addConfig(IDatabaseConfig.STACK_TRACE_PACKAGE, stackTracePackage);
+        public Builder stackTracePackages(String stackTracePackages) {
+            configurable.addConfig(IDatabaseConfig.STACK_TRACE_PACKAGES, stackTracePackages);
             return this;
         }
 
@@ -131,7 +129,7 @@ public final class DefaultDatabaseDataSourceConfigurable extends AbstractDataSou
             return this;
         }
 
-        public IDatabaseDataSourceConfigurable build() {
+        public DefaultDatabaseDataSourceConfigurable build() {
             return configurable;
         }
     }

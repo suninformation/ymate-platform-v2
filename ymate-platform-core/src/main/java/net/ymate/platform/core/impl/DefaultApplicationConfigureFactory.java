@@ -21,7 +21,7 @@ import net.ymate.platform.core.*;
  * @author 刘镇 (suninformation@163.com) on 2019-08-12 04:20
  * @since 2.1.0
  */
-public class DefaultApplicationConfigureFactory extends AbstractApplicationConfigureFactory {
+public final class DefaultApplicationConfigureFactory extends AbstractApplicationConfigureFactory {
 
     private IApplicationConfigurer configurer;
 
@@ -31,15 +31,12 @@ public class DefaultApplicationConfigureFactory extends AbstractApplicationConfi
     @Override
     public IApplicationConfigurer getConfigurer() {
         if (configurer == null) {
-            if (isInitialized()) {
-                // TODO 需要支持通过全注解方式配置框架各模块，注解中的配置为默认配置，配置文件中的设置优先级最高
-            }
             IApplicationConfigureParseFactory configureParseFactory = YMP.getConfigureParseFactory();
             IApplicationConfigureParser configureParser;
             if (configureParseFactory != null && (configureParser = configureParseFactory.getConfigureParser()) != null) {
-                configurer = new DefaultApplicationConfigurer(configureParser);
+                configurer = new DefaultApplicationConfigurer(this, configureParser);
             } else {
-                configurer = new DefaultApplicationConfigurer();
+                configurer = new DefaultApplicationConfigurer(this);
             }
         }
         return configurer;

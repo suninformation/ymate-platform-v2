@@ -177,7 +177,7 @@ public final class DefaultRedisDataSourceConfigurable extends AbstractDataSource
             return this;
         }
 
-        public IDataSourceConfigurable build() {
+        public DefaultRedisDataSourceConfigurable build() {
             return configurable;
         }
     }

@@ -17,13 +17,11 @@ package net.ymate.platform.configuration.handle;
 
 import net.ymate.platform.commons.util.ClassUtils;
 import net.ymate.platform.configuration.Cfgs;
-import net.ymate.platform.configuration.annotation.Configuration;
 import net.ymate.platform.core.IApplication;
 import net.ymate.platform.core.beans.BeanMeta;
 import net.ymate.platform.core.beans.IBeanHandler;
 import net.ymate.platform.core.configuration.IConfiguration;
 import net.ymate.platform.plugin.PluginClassLoader;
-import net.ymate.platform.plugin.annotation.Handler;
 
 /**
  * 插件配置文件加载路径注解 (from ymate-framework-addons)
@@ -31,7 +29,6 @@ import net.ymate.platform.plugin.annotation.Handler;
  * @author 刘镇 (suninformation@163.com) on 15/8/15 上午10:27
  * @since 2.1.0
  */
-@Handler(Configuration.class)
 public class PluginConfigBeanHandler implements IBeanHandler {
 
     private final IApplication owner;

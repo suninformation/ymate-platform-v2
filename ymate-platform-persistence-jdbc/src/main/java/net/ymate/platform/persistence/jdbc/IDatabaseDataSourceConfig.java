@@ -53,7 +53,7 @@ public interface IDatabaseDataSourceConfig extends IDataSourceConfig<IDatabase> 
      *
      * @return 返回包名称
      */
-    String getStackTracePackage();
+    String getStackTracePackages();
 
     /**
      * 数据库表前缀名称，默认为空

@@ -15,8 +15,6 @@
  */
 package net.ymate.platform.core;
 
-import org.apache.commons.lang3.StringUtils;
-
 /**
  * @author 刘镇 (suninformation@163.com) on 2019-11-11 12:46
  * @since 2.1.0
@@ -25,21 +23,7 @@ public abstract class AbstractApplicationConfigureFactory implements IApplicatio
 
     private Class<?> mainClass;
 
-    private boolean initialized;
-
-    @Override
-    public void initialize(Class<?> mainClass) throws Exception {
-        if (!initialized) {
-            if (mainClass == null) {
-                String mainClassName = System.getProperty(IApplication.SYSTEM_MAIN_CLASS);
-                if (StringUtils.isNotBlank(mainClassName)) {
-                    mainClass = Class.forName(mainClassName);
-                }
-            }
-            this.mainClass = mainClass;
-            initialized = true;
-        }
-    }
+    private String[] args;
 
     @Override
     public Class<?> getMainClass() {
@@ -47,7 +31,17 @@ public abstract class AbstractApplicationConfigureFactory implements IApplicatio
     }
 
     @Override
-    public boolean isInitialized() {
-        return initialized;
+    public void setMainClass(Class<?> mainClass) {
+        this.mainClass = mainClass;
+    }
+
+    @Override
+    public String[] getArgs() {
+        return args;
+    }
+
+    @Override
+    public void setArgs(String[] args) {
+        this.args = args;
     }
 }

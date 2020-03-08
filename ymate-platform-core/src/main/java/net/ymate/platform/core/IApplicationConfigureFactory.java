@@ -15,7 +15,7 @@
  */
 package net.ymate.platform.core;
 
-import net.ymate.platform.core.support.IInitialization;
+import net.ymate.platform.core.beans.annotation.Ignored;
 
 /**
  * 应用容器配置器工厂
@@ -23,14 +23,36 @@ import net.ymate.platform.core.support.IInitialization;
  * @author 刘镇 (suninformation@163.com) on 2019-08-12 04:10
  * @since 2.1.0
  */
-public interface IApplicationConfigureFactory extends IInitialization<Class<?>> {
+@Ignored
+public interface IApplicationConfigureFactory {
 
     /**
-     * 获取启动配置类类型
+     * 获取启动配置类
      *
-     * @return 返回启动配置类类型
+     * @return 返回启动配置类
      */
     Class<?> getMainClass();
+
+    /**
+     * 设置启动配置类
+     *
+     * @param mainClass 启动配置类
+     */
+    void setMainClass(Class<?> mainClass);
+
+    /**
+     * 获取启动参数
+     *
+     * @return 返回启动参数集合
+     */
+    String[] getArgs();
+
+    /**
+     * 设置启动参数
+     *
+     * @param args 启动参数集合
+     */
+    void setArgs(String[] args);
 
     /**
      * 获取应用容器配置器

@@ -18,15 +18,14 @@ package net.ymate.platform.plugin.impl;
 import net.ymate.platform.commons.util.ClassUtils;
 import net.ymate.platform.commons.util.RuntimeUtils;
 import net.ymate.platform.core.IApplication;
-import net.ymate.platform.core.beans.IBeanHandler;
 import net.ymate.platform.core.beans.IBeanLoader;
 import net.ymate.platform.core.beans.annotation.Bean;
 import net.ymate.platform.core.beans.annotation.Interceptor;
 import net.ymate.platform.core.configuration.IConfigReader;
 import net.ymate.platform.core.module.IModuleConfigurer;
 import net.ymate.platform.plugin.*;
-import net.ymate.platform.plugin.annotation.Handler;
 import net.ymate.platform.plugin.annotation.Plugin;
+import net.ymate.platform.plugin.annotation.PluginConf;
 import net.ymate.platform.plugin.annotation.PluginFactory;
 import net.ymate.platform.plugin.annotation.PluginRefer;
 import net.ymate.platform.plugin.handle.PluginBeanHandler;
@@ -41,6 +40,7 @@ import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -77,8 +77,8 @@ public class DefaultPluginFactory implements IPluginFactory {
      * @return 创建并返回默认插件工厂实例
      * @throws Exception 创建插件工厂时可能产生的异常
      */
-    public static IPluginFactory create(IApplication owner, String pluginHome, String[] packageNames) throws Exception {
-        IPluginFactory pluginFactory = new DefaultPluginFactory(DefaultPluginConfig.load(pluginHome, packageNames), false);
+    public static DefaultPluginFactory create(IApplication owner, String pluginHome, String[] packageNames) throws Exception {
+        DefaultPluginFactory pluginFactory = new DefaultPluginFactory(DefaultPluginConfig.load(pluginHome, packageNames), false);
         pluginFactory.initialize(owner);
         //
         return pluginFactory;
@@ -110,17 +110,27 @@ public class DefaultPluginFactory implements IPluginFactory {
     }
 
     public static IPluginFactory create(IModuleConfigurer moduleConfigurer) {
+        return create(null, moduleConfigurer);
+    }
+
+    public static IPluginFactory create(Class<?> mainClass, IModuleConfigurer moduleConfigurer) {
         IConfigReader configReader = moduleConfigurer.getConfigReader();
         //
-        boolean included = configReader.getBoolean(IPluginConfig.INCLUDED_CLASSPATH);
+        PluginConf confAnn = mainClass == null ? null : mainClass.getAnnotation(PluginConf.class);
         //
+        boolean included = configReader.getBoolean(IPluginConfig.INCLUDED_CLASSPATH, confAnn != null && confAnn.includeClasspath());
+        //
+        List<String> packageNames = new ArrayList<>(configReader.getList(IPluginConfig.PACKAGE_NAMES));
+        if (packageNames.isEmpty() && confAnn != null) {
+            packageNames.add(mainClass.getPackage().getName());
+            packageNames.addAll(Arrays.asList(confAnn.packageNames()));
+        }
         IPluginConfig pluginConfig = DefaultPluginConfig.builder()
-                .pluginHome(new File(RuntimeUtils.replaceEnvVariable(configReader.getString(IPluginConfig.PLUGIN_HOME, "${root}/plugins"))))
-                .packageNames(configReader.getList(IPluginConfig.PACKAGE_NAMES))
-                .enabled(configReader.getBoolean(IPluginConfig.ENABLED, true))
-                .automatic(configReader.getBoolean(IPluginConfig.AUTOMATIC, true))
+                .pluginHome(new File(RuntimeUtils.replaceEnvVariable(configReader.getString(IPluginConfig.PLUGIN_HOME, StringUtils.defaultIfBlank(confAnn == null ? null : confAnn.pluginHome(), IPluginConfig.DEFAULT_PLUGIN_HOME)))))
+                .packageNames(packageNames)
+                .enabled(configReader.getBoolean(IPluginConfig.ENABLED, confAnn == null || confAnn.enabled()))
+                .automatic(configReader.getBoolean(IPluginConfig.AUTOMATIC, confAnn == null || confAnn.automatic()))
                 .eventListener(new IPluginEventListener() {
-
                     private boolean doCheckContext(IPluginContext context, PluginEvent.EVENT event) {
                         if (context.getPluginFactory() != null) {
                             if (context.getPluginFactory().getOwner().isDevEnv() && LOG.isInfoEnabled()) {
@@ -178,22 +188,6 @@ public class DefaultPluginFactory implements IPluginFactory {
             this.beanLoader.registerHandler(Bean.class, new PluginBeanHandler(this));
             this.beanLoader.registerHandler(Interceptor.class, new PluginInterceptorHandler(this));
             this.beanLoader.registerHandler(Plugin.class, new PluginHandler(this));
-            this.beanLoader.registerHandler(Handler.class, targetClass -> {
-                if (ClassUtils.isNormalClass(targetClass) && !targetClass.isInterface() && targetClass.isAnnotationPresent(Handler.class) && ClassUtils.isInterfaceOf(targetClass, IBeanHandler.class)) {
-                    IBeanHandler beanHandler;
-                    try {
-                        beanHandler = (IBeanHandler) targetClass.getConstructor(IApplication.class).newInstance(owner);
-                    } catch (NoSuchMethodException e) {
-                        try {
-                            beanHandler = (IBeanHandler) targetClass.getConstructor(IPluginFactory.class).newInstance(this);
-                        } catch (NoSuchMethodException ex) {
-                            beanHandler = (IBeanHandler) targetClass.newInstance();
-                        }
-                    }
-                    this.beanLoader.registerHandler(targetClass.getAnnotation(Handler.class).value(), beanHandler);
-                }
-                return null;
-            });
         }
     }
 

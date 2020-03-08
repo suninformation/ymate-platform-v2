@@ -41,7 +41,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * @author 刘镇 (suninformation@163.com) on 2019-08-07 18:48
  * @since 2.1.0
  */
-public class DefaultApplicationConfigureParser implements IApplicationConfigureParser {
+public final class DefaultApplicationConfigureParser implements IApplicationConfigureParser {
 
     private static final Log LOG = LogFactory.getLog(DefaultApplicationConfigureParser.class);
 

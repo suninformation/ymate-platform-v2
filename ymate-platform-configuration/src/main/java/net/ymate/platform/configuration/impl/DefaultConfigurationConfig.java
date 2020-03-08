@@ -17,6 +17,7 @@ package net.ymate.platform.configuration.impl;
 
 import net.ymate.platform.commons.util.ClassUtils;
 import net.ymate.platform.commons.util.RuntimeUtils;
+import net.ymate.platform.configuration.annotation.ConfigurationConf;
 import net.ymate.platform.core.IApplication;
 import net.ymate.platform.core.configuration.IConfig;
 import net.ymate.platform.core.configuration.IConfigReader;
@@ -47,18 +48,22 @@ public final class DefaultConfigurationConfig implements IConfigurationConfig {
 
     private String moduleName;
 
-    private int configCheckTimeInterval;
+    private long configCheckTimeInterval;
 
     private Class<? extends IConfigurationProvider> configurationProviderClass;
 
     private boolean initialized;
 
-    public static IConfigurationConfig defaultConfig() {
+    public static DefaultConfigurationConfig defaultConfig() {
         return builder().build();
     }
 
-    public static IConfigurationConfig create(IModuleConfigurer moduleConfigurer) {
-        return new DefaultConfigurationConfig(moduleConfigurer);
+    public static DefaultConfigurationConfig create(IModuleConfigurer moduleConfigurer) {
+        return new DefaultConfigurationConfig(null, moduleConfigurer);
+    }
+
+    public static DefaultConfigurationConfig create(Class<?> mainClass, IModuleConfigurer moduleConfigurer) {
+        return new DefaultConfigurationConfig(mainClass, moduleConfigurer);
     }
 
     public static Builder builder() {
@@ -69,17 +74,19 @@ public final class DefaultConfigurationConfig implements IConfigurationConfig {
     }
 
     @SuppressWarnings("unchecked")
-    private DefaultConfigurationConfig(IModuleConfigurer moduleConfigurer) {
+    private DefaultConfigurationConfig(Class<?> mainClass, IModuleConfigurer moduleConfigurer) {
         IConfigReader configReader = moduleConfigurer.getConfigReader();
         //
-        configHome = configReader.getString(CONFIG_HOME);
-        projectName = configReader.getString(PROJECT_NAME);
-        moduleName = configReader.getString(MODULE_NAME);
+        ConfigurationConf confAnn = mainClass == null ? null : mainClass.getAnnotation(ConfigurationConf.class);
         //
-        configCheckTimeInterval = configReader.getInt(CONFIG_CHECK_TIME_INTERVAL);
+        configHome = configReader.getString(CONFIG_HOME, confAnn == null ? null : confAnn.configHome());
+        projectName = configReader.getString(PROJECT_NAME, confAnn == null ? null : confAnn.projectName());
+        moduleName = configReader.getString(MODULE_NAME, confAnn == null ? null : confAnn.moduleName());
+        //
+        configCheckTimeInterval = configReader.getLong(CONFIG_CHECK_TIME_INTERVAL, confAnn == null ? 0 : confAnn.checkTimeInterval());
         //
         try {
-            configurationProviderClass = (Class<? extends IConfigurationProvider>) ClassUtils.loadClass(configReader.getString(PROVIDER_CLASS, DefaultConfigurationProvider.class.getName()), this.getClass());
+            configurationProviderClass = (Class<? extends IConfigurationProvider>) ClassUtils.loadClass(configReader.getString(PROVIDER_CLASS, confAnn == null || confAnn.providerClass().equals(IConfigurationProvider.class) ? null : confAnn.providerClass().getName()), this.getClass());
         } catch (ClassNotFoundException e) {
             if (LOG.isWarnEnabled()) {
                 LOG.warn(StringUtils.EMPTY, RuntimeUtils.unwrapThrow(e));
@@ -211,7 +218,7 @@ public final class DefaultConfigurationConfig implements IConfigurationConfig {
             return this;
         }
 
-        public IConfigurationConfig build() {
+        public DefaultConfigurationConfig build() {
             return config;
         }
     }

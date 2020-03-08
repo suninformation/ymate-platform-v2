@@ -63,7 +63,8 @@ public class DefaultApplicationCreator implements IApplicationCreator {
             if (configureFactory == null) {
                 throw new NullArgumentException("IApplicationConfigureFactory interface implementation class");
             }
-            configureFactory.initialize(mainClass);
+            configureFactory.setMainClass(mainClass);
+            configureFactory.setArgs(args);
             application = new Application(configureFactory, initializers);
         }
         return application;

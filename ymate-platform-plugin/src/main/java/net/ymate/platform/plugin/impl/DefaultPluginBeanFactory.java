@@ -75,7 +75,7 @@ public class DefaultPluginBeanFactory extends DefaultBeanFactory implements IPlu
             //
             BeanMeta pluginBeanMeta = BeanMeta.create(beanMeta.getBeanClass(), true);
             pluginBeanMeta.setInitializer(target -> {
-                // 尝试通过IPluginExtend接口方式获取扩展对象
+                // 尝试通过IPluginExtension接口方式获取扩展对象
                 if (pluginMeta.getExtensionObject() == null && target instanceof IPluginExtension) {
                     pluginMeta.setExtensionObject(((IPluginExtension<?>) target).getExtensionObject(new DefaultPluginContext(pluginFactory, pluginMeta)));
                 }

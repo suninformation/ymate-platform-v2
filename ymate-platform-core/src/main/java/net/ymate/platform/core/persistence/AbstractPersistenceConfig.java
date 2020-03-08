@@ -40,7 +40,7 @@ public abstract class AbstractPersistenceConfig<OWNER extends IPersistence, DATA
     public AbstractPersistenceConfig() {
     }
 
-    public AbstractPersistenceConfig(IModuleConfigurer moduleConfigurer) throws Exception {
+    public AbstractPersistenceConfig(Class<?> mainClass, IModuleConfigurer moduleConfigurer) throws Exception {
         IConfigReader configReader = moduleConfigurer.getConfigReader();
         //
         this.dataSourceDefaultName = configReader.getString(DS_DEFAULT_NAME, DEFAULT_STR);
@@ -54,6 +54,10 @@ public abstract class AbstractPersistenceConfig<OWNER extends IPersistence, DATA
                 }
             }
         }
+        afterDataSourceConfigs(mainClass, dataSourceConfigs);
+    }
+
+    protected void afterDataSourceConfigs(Class<?> mainClass, Map<String, DATA_SOURCE_CONFIG> dataSourceConfigs) {
     }
 
     /**

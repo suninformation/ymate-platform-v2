@@ -15,24 +15,38 @@
  */
 package net.ymate.platform.persistence.mongodb.impl;
 
+import com.mongodb.ServerAddress;
+import net.ymate.platform.commons.IPasswordProcessor;
 import net.ymate.platform.core.configuration.IConfigReader;
 import net.ymate.platform.core.module.IModuleConfigurer;
 import net.ymate.platform.core.persistence.AbstractPersistenceConfig;
 import net.ymate.platform.persistence.mongodb.IMongo;
+import net.ymate.platform.persistence.mongodb.IMongoClientOptionsHandler;
 import net.ymate.platform.persistence.mongodb.IMongoConfig;
 import net.ymate.platform.persistence.mongodb.IMongoDataSourceConfig;
+import net.ymate.platform.persistence.mongodb.annotation.MongoConf;
+import net.ymate.platform.persistence.mongodb.annotation.MongoDataSource;
+import org.apache.commons.lang3.StringUtils;
+
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * @author 刘镇 (suninformation@163.com) on 15/11/22 上午12:42
  */
 public final class DefaultMongoConfig extends AbstractPersistenceConfig<IMongo, IMongoDataSourceConfig> implements IMongoConfig {
 
-    public static IMongoConfig defaultConfig() {
+    public static DefaultMongoConfig defaultConfig() {
         return builder().build();
     }
 
-    public static IMongoConfig create(IModuleConfigurer moduleConfigurer) throws Exception {
-        return new DefaultMongoConfig(moduleConfigurer);
+    public static DefaultMongoConfig create(IModuleConfigurer moduleConfigurer) throws Exception {
+        return new DefaultMongoConfig(null, moduleConfigurer);
+    }
+
+    public static DefaultMongoConfig create(Class<?> mainClass, IModuleConfigurer moduleConfigurer) throws Exception {
+        return new DefaultMongoConfig(mainClass, moduleConfigurer);
     }
 
     public static Builder builder() {
@@ -43,8 +57,48 @@ public final class DefaultMongoConfig extends AbstractPersistenceConfig<IMongo, 
         super();
     }
 
-    private DefaultMongoConfig(IModuleConfigurer moduleConfigurer) throws Exception {
-        super(moduleConfigurer);
+    private DefaultMongoConfig(Class<?> mainClass, IModuleConfigurer moduleConfigurer) throws Exception {
+        super(mainClass, moduleConfigurer);
+    }
+
+    @Override
+    protected void afterDataSourceConfigs(Class<?> mainClass, Map<String, IMongoDataSourceConfig> dataSourceConfigs) {
+        if (mainClass != null && dataSourceConfigs.isEmpty()) {
+            MongoConf mongoConf = mainClass.getAnnotation(MongoConf.class);
+            setDataSourceDefaultName(StringUtils.defaultIfBlank(mongoConf != null ? mongoConf.dsDefaultName() : null, DEFAULT_STR));
+            Map<String, MongoDataSource> dataSourceMap = new HashMap<>(16);
+            if (mongoConf != null) {
+                for (MongoDataSource dataSource : mongoConf.value()) {
+                    if (StringUtils.isNotBlank(dataSource.name())) {
+                        dataSourceMap.put(dataSource.name(), dataSource);
+                    }
+                }
+            } else {
+                MongoDataSource dataSource = mainClass.getAnnotation(MongoDataSource.class);
+                if (dataSource != null && StringUtils.isNotBlank(dataSource.name())) {
+                    dataSourceMap.put(dataSource.name(), dataSource);
+                }
+            }
+            if (!dataSourceMap.isEmpty()) {
+                for (MongoDataSource dataSource : dataSourceMap.values()) {
+                    DefaultMongoDataSourceConfig.Builder builder = DefaultMongoDataSourceConfig.builder(dataSource.name())
+                            .username(dataSource.username())
+                            .password(dataSource.password())
+                            .passwordEncrypted(dataSource.passwordEncrypted())
+                            .passwordClass(dataSource.passwordClass().equals(IPasswordProcessor.class) ? null : dataSource.passwordClass())
+                            .collectionPrefix(dataSource.collectionPrefix())
+                            .databaseName(dataSource.databaseName())
+                            .clientOptionsHandlerClass(dataSource.optionsHandlerClass().equals(IMongoClientOptionsHandler.class) ? null : dataSource.optionsHandlerClass());
+                    if (StringUtils.isNotBlank(dataSource.connectionUrl())) {
+                        builder.connectionUrl(dataSource.connectionUrl());
+                    } else if (dataSource.servers().length > 0) {
+                        Arrays.stream(dataSource.servers()).map(serverStr -> StringUtils.split(serverStr, ":"))
+                                .forEachOrdered(server -> builder.addServerAddresses(server.length > 1 ? new ServerAddress(server[0], Integer.parseInt(server[1])) : new ServerAddress(server[0])));
+                    }
+                    dataSourceConfigs.put(dataSource.name(), builder.build());
+                }
+            }
+        }
     }
 
     @Override
@@ -73,7 +127,7 @@ public final class DefaultMongoConfig extends AbstractPersistenceConfig<IMongo, 
             return this;
         }
 
-        public IMongoConfig build() {
+        public DefaultMongoConfig build() {
             return config;
         }
     }

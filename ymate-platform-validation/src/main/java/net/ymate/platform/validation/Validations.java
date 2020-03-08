@@ -18,9 +18,12 @@ package net.ymate.platform.validation;
 import net.ymate.platform.commons.ReentrantLockHelper;
 import net.ymate.platform.commons.util.RuntimeUtils;
 import net.ymate.platform.core.IApplication;
+import net.ymate.platform.core.IApplicationConfigureFactory;
+import net.ymate.platform.core.IApplicationConfigurer;
 import net.ymate.platform.core.YMP;
 import net.ymate.platform.core.beans.BeanMeta;
 import net.ymate.platform.core.beans.IBeanLoadFactory;
+import net.ymate.platform.core.beans.IBeanLoader;
 import net.ymate.platform.core.module.IModule;
 import net.ymate.platform.validation.annotation.Validation;
 import net.ymate.platform.validation.annotation.Validator;
@@ -86,9 +89,18 @@ public final class Validations implements IModule, IValidation {
             //
             this.owner = owner;
             //
-            IBeanLoadFactory beanLoaderFactory = owner.getConfigureFactory().getConfigurer().getBeanLoadFactory();
-            if (beanLoaderFactory != null && beanLoaderFactory.getBeanLoader() != null) {
-                beanLoaderFactory.getBeanLoader().registerHandler(Validator.class, new ValidateHandler(this));
+            IApplicationConfigureFactory configureFactory = owner.getConfigureFactory();
+            if (configureFactory != null) {
+                IApplicationConfigurer configurer = configureFactory.getConfigurer();
+                if (configurer != null) {
+                    IBeanLoadFactory beanLoaderFactory = configurer.getBeanLoadFactory();
+                    if (beanLoaderFactory != null) {
+                        IBeanLoader beanLoader = beanLoaderFactory.getBeanLoader();
+                        if (beanLoader != null) {
+                            beanLoader.registerHandler(Validator.class, new ValidateHandler(this));
+                        }
+                    }
+                }
             }
             //
             initialized = true;

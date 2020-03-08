@@ -81,15 +81,15 @@ public final class Application implements IApplication {
     public Application(IApplicationConfigureFactory configureFactory, IApplicationInitializer initializer) {
         this.configureFactory = configureFactory;
         this.initializer = initializer;
+        this.moduleManager = new ModuleManager();
         //
         IApplicationConfigurer configurer = configureFactory.getConfigurer();
-        this.moduleManager = new ModuleManager();
+        this.moduleManager.addExcludedModules(configurer.getExcludedModules());
+        this.runEnv = configurer.getRunEnv();
         this.beanFactory = new DefaultBeanFactory(configurer.getProxyFactory());
         this.i18n = new I18N(configurer.getDefaultLocale(), configurer.getI18nEventHandler());
         this.events = new Events(this);
         this.interceptSettings = configurer.getInterceptSettings() != null ? configurer.getInterceptSettings() : InterceptSettings.create();
-        this.runEnv = configurer.getRunEnv();
-        //
         if (configurer.getParameters() != null && !configurer.getParameters().isEmpty()) {
             this.parameters.putAll(configurer.getParameters());
         }
@@ -119,7 +119,6 @@ public final class Application implements IApplication {
             //
             try {
                 IApplicationConfigurer configurer = configureFactory.getConfigurer();
-                moduleManager.addExcludedModules(configurer.getExcludedModules());
                 // 触发容器启动事件
                 events.fireEvent(new ApplicationEvent(this, ApplicationEvent.EVENT.APPLICATION_STARTUP));
                 //
@@ -131,29 +130,28 @@ public final class Application implements IApplication {
                 if (initializer != null) {
                     initializer.beforeBeanFactoryInit(this, beanFactory);
                 }
-                // 尝试使用自定义加载器加载模块
+                // 尝试执行自定义加载器
                 IBeanLoadFactory beanLoadFactory = configurer.getBeanLoadFactory();
-                if (beanLoadFactory != null && beanLoadFactory.getBeanLoader() != null) {
+                if (beanLoadFactory != null) {
                     IBeanLoader beanLoader = beanLoadFactory.getBeanLoader();
-                    //
-                    beanLoader.registerPackageName(YMP_BASE_PACKAGE_NAME);
-                    beanLoader.registerPackageNames(configurer.getPackageNames());
-                    beanLoader.registerExcludedPackageNames(configurer.getExcludedPackageNames());
-                    beanLoader.registerExcludedFiles(configurer.getExcludedFiles());
-                    //
-                    beanLoader.registerHandler(Bean.class);
-                    beanLoader.registerHandler(Interceptor.class, new InterceptorHandler(this));
-                    //
-                    beanLoader.registerHandler(Injector.class, new InjectorHandler(this));
-                    beanLoader.registerHandler(Event.class, new EventHandler(this));
-                    beanLoader.registerHandler(EventRegister.class, new EventRegisterHandler(this));
-                    beanLoader.registerHandler(Proxy.class, new ProxyHandler(this));
-                    beanLoader.registerHandler(Serializer.class, new SerializerHandler());
-                    //
-                    if (initializer != null) {
-                        initializer.beforeBeanLoad(this, beanLoader);
+                    if (beanLoader != null) {
+                        beanLoader.registerPackageName(YMP_BASE_PACKAGE_NAME);
+                        beanLoader.registerPackageNames(configurer.getPackageNames());
+                        beanLoader.registerExcludedPackageNames(configurer.getExcludedPackageNames());
+                        beanLoader.registerExcludedFiles(configurer.getExcludedFiles());
+                        //
+                        beanLoader.registerHandler(Bean.class);
+                        beanLoader.registerHandler(Interceptor.class, new InterceptorHandler(this));
+                        beanLoader.registerHandler(Injector.class, new InjectorHandler(this));
+                        beanLoader.registerHandler(Event.class, new EventHandler(this));
+                        beanLoader.registerHandler(EventRegister.class, new EventRegisterHandler(this));
+                        beanLoader.registerHandler(Proxy.class, new ProxyHandler(this));
+                        beanLoader.registerHandler(Serializer.class, new SerializerHandler());
+                        if (initializer != null) {
+                            initializer.beforeBeanLoad(this, beanLoader);
+                        }
+                        beanLoader.load(beanFactory);
                     }
-                    beanLoader.load(beanFactory);
                 }
                 beanFactory.initialize(this);
             } catch (Exception e) {

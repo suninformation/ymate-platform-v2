@@ -18,10 +18,13 @@ package net.ymate.platform.cache;
 import net.ymate.platform.cache.impl.DefaultCacheConfig;
 import net.ymate.platform.cache.support.CacheableProxy;
 import net.ymate.platform.core.IApplication;
+import net.ymate.platform.core.IApplicationConfigureFactory;
+import net.ymate.platform.core.IApplicationConfigurer;
 import net.ymate.platform.core.YMP;
 import net.ymate.platform.core.beans.proxy.IProxyFactory;
 import net.ymate.platform.core.module.IModule;
 import net.ymate.platform.core.module.IModuleConfigurer;
+import net.ymate.platform.core.module.impl.DefaultModuleConfigurer;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -78,8 +81,19 @@ public final class Caches implements IModule, ICaches {
             this.owner.getEvents().registerEvent(CacheEvent.class);
             //
             if (config == null) {
-                IModuleConfigurer moduleConfigurer = owner.getConfigureFactory().getConfigurer().getModuleConfigurer(MODULE_NAME);
-                config = moduleConfigurer == null ? DefaultCacheConfig.defaultConfig() : DefaultCacheConfig.create(moduleConfigurer);
+                IApplicationConfigureFactory configureFactory = owner.getConfigureFactory();
+                if (configureFactory != null) {
+                    IApplicationConfigurer configurer = configureFactory.getConfigurer();
+                    IModuleConfigurer moduleConfigurer = configurer == null ? null : configurer.getModuleConfigurer(MODULE_NAME);
+                    if (moduleConfigurer != null) {
+                        config = DefaultCacheConfig.create(configureFactory.getMainClass(), moduleConfigurer);
+                    } else {
+                        config = DefaultCacheConfig.create(configureFactory.getMainClass(), DefaultModuleConfigurer.createEmpty(MODULE_NAME));
+                    }
+                }
+                if (config == null) {
+                    config = DefaultCacheConfig.defaultConfig();
+                }
             }
             if (!config.isInitialized()) {
                 config.initialize(this);

@@ -40,7 +40,7 @@ public final class DefaultPluginConfig implements IPluginConfig {
      * @param packageNames 自动扫描包路径
      * @return 创建默认插件工厂初始化配置
      */
-    public static IPluginConfig load(String pluginHome, String[] packageNames) {
+    public static DefaultPluginConfig load(String pluginHome, String[] packageNames) {
         return builder().pluginHome(new File(pluginHome)).packageNames(Arrays.asList(packageNames)).build();
     }
 
@@ -48,7 +48,7 @@ public final class DefaultPluginConfig implements IPluginConfig {
      * @param clazz 插件工厂类
      * @return 通过注解分析插件工厂初始化配置
      */
-    public static IPluginConfig load(Class<? extends IPluginFactory> clazz) {
+    public static DefaultPluginConfig load(Class<? extends IPluginFactory> clazz) {
         if (clazz != null && clazz.isAnnotationPresent(PluginFactory.class)) {
             PluginFactory factoryAnn = clazz.getAnnotation(PluginFactory.class);
             Builder builder = builder()
@@ -182,7 +182,7 @@ public final class DefaultPluginConfig implements IPluginConfig {
             return this;
         }
 
-        public IPluginConfig build() {
+        public DefaultPluginConfig build() {
             return pluginConfig;
         }
     }

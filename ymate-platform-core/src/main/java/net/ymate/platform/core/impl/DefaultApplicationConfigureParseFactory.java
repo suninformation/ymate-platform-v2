@@ -22,7 +22,7 @@ import net.ymate.platform.core.IApplicationConfigureParser;
  * @author 刘镇 (suninformation@163.com) on 2019-08-13 15:27
  * @since 2.1.0
  */
-public class DefaultApplicationConfigureParseFactory implements IApplicationConfigureParseFactory {
+public final class DefaultApplicationConfigureParseFactory implements IApplicationConfigureParseFactory {
 
     private final IApplicationConfigureParser configureParser;
 

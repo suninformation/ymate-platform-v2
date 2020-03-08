@@ -15,10 +15,13 @@
  */
 package net.ymate.platform.core;
 
+import net.ymate.platform.core.beans.annotation.Ignored;
+
 /**
  * @author 刘镇 (suninformation@163.com) on 2019-08-13 15:24
  * @since 2.1.0
  */
+@Ignored
 public interface IApplicationConfigureParseFactory {
 
     /**

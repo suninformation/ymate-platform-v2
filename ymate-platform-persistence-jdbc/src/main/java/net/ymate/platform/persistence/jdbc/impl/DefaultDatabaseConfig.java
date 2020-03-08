@@ -15,12 +15,24 @@
  */
 package net.ymate.platform.persistence.jdbc.impl;
 
+import net.ymate.platform.commons.IPasswordProcessor;
+import net.ymate.platform.commons.util.RuntimeUtils;
 import net.ymate.platform.core.configuration.IConfigReader;
 import net.ymate.platform.core.module.IModuleConfigurer;
 import net.ymate.platform.core.persistence.AbstractPersistenceConfig;
+import net.ymate.platform.core.persistence.base.Type;
 import net.ymate.platform.persistence.jdbc.IDatabase;
 import net.ymate.platform.persistence.jdbc.IDatabaseConfig;
+import net.ymate.platform.persistence.jdbc.IDatabaseDataSourceAdapter;
 import net.ymate.platform.persistence.jdbc.IDatabaseDataSourceConfig;
+import net.ymate.platform.persistence.jdbc.annotation.DatabaseConf;
+import net.ymate.platform.persistence.jdbc.annotation.DatabaseDataSource;
+import net.ymate.platform.persistence.jdbc.dialect.IDialect;
+import org.apache.commons.lang3.StringUtils;
+
+import java.io.File;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * 默认数据库JDBC持久化模块配置类
@@ -29,12 +41,16 @@ import net.ymate.platform.persistence.jdbc.IDatabaseDataSourceConfig;
  */
 public final class DefaultDatabaseConfig extends AbstractPersistenceConfig<IDatabase, IDatabaseDataSourceConfig> implements IDatabaseConfig {
 
-    public static IDatabaseConfig defaultConfig() {
+    public static DefaultDatabaseConfig defaultConfig() {
         return builder().build();
     }
 
-    public static IDatabaseConfig create(IModuleConfigurer moduleConfigurer) throws Exception {
-        return new DefaultDatabaseConfig(moduleConfigurer);
+    public static DefaultDatabaseConfig create(IModuleConfigurer moduleConfigurer) throws Exception {
+        return new DefaultDatabaseConfig(null, moduleConfigurer);
+    }
+
+    public static DefaultDatabaseConfig create(Class<?> mainClass, IModuleConfigurer moduleConfigurer) throws Exception {
+        return new DefaultDatabaseConfig(mainClass, moduleConfigurer);
     }
 
     public static Builder builder() {
@@ -45,8 +61,54 @@ public final class DefaultDatabaseConfig extends AbstractPersistenceConfig<IData
         super();
     }
 
-    private DefaultDatabaseConfig(IModuleConfigurer moduleConfigurer) throws Exception {
-        super(moduleConfigurer);
+    private DefaultDatabaseConfig(Class<?> mainClass, IModuleConfigurer moduleConfigurer) throws Exception {
+        super(mainClass, moduleConfigurer);
+    }
+
+    @Override
+    protected void afterDataSourceConfigs(Class<?> mainClass, Map<String, IDatabaseDataSourceConfig> dataSourceConfigs) {
+        if (mainClass != null && dataSourceConfigs.isEmpty()) {
+            DatabaseConf databaseConf = mainClass.getAnnotation(DatabaseConf.class);
+            setDataSourceDefaultName(StringUtils.defaultIfBlank(databaseConf != null ? databaseConf.dsDefaultName() : null, DEFAULT_STR));
+            Map<String, DatabaseDataSource> dataSourceMap = new HashMap<>(16);
+            if (databaseConf != null) {
+                for (DatabaseDataSource dataSource : databaseConf.value()) {
+                    if (StringUtils.isNotBlank(dataSource.name())) {
+                        dataSourceMap.put(dataSource.name(), dataSource);
+                    }
+                }
+            } else {
+                DatabaseDataSource dataSource = mainClass.getAnnotation(DatabaseDataSource.class);
+                if (dataSource != null && StringUtils.isNotBlank(dataSource.name())) {
+                    dataSourceMap.put(dataSource.name(), dataSource);
+                }
+            }
+            if (!dataSourceMap.isEmpty()) {
+                for (DatabaseDataSource dataSource : dataSourceMap.values()) {
+                    DefaultDatabaseDataSourceConfig.Builder builder = DefaultDatabaseDataSourceConfig.builder(dataSource.name())
+                            .connectionUrl(dataSource.connectionUrl())
+                            .username(dataSource.username())
+                            .password(dataSource.password())
+                            .passwordEncrypted(dataSource.passwordEncrypted())
+                            .passwordClass(dataSource.passwordClass().equals(IPasswordProcessor.class) ? null : dataSource.passwordClass())
+                            .type(StringUtils.defaultIfBlank(dataSource.type(), Type.DATABASE.UNKNOWN).toUpperCase())
+                            .dialectClass(dataSource.dialectClass().equals(IDialect.class) ? null : dataSource.dialectClass().getName())
+                            .adapterClass(dataSource.adapterClass().equals(IDatabaseDataSourceAdapter.class) ? DefaultDataSourceAdapter.class : dataSource.adapterClass())
+                            .driverClass(dataSource.driverClass())
+                            .showSql(dataSource.showSql())
+                            .stackTraces(dataSource.stackTraces())
+                            .stackTraceDepth(dataSource.stackTraceDepth())
+                            .stackTracePackages(StringUtils.join(dataSource.stackTracePackages(), '|'))
+                            .tablePrefix(dataSource.tablePrefix())
+                            .identifierQuote(dataSource.identifierQuote());
+                    String filePath = RuntimeUtils.replaceEnvVariable(dataSource.configFile());
+                    if (StringUtils.isNotBlank(filePath)) {
+                        builder.configFile(new File(filePath));
+                    }
+                    dataSourceConfigs.put(dataSource.name(), builder.build());
+                }
+            }
+        }
     }
 
     @Override
@@ -75,7 +137,7 @@ public final class DefaultDatabaseConfig extends AbstractPersistenceConfig<IData
             return this;
         }
 
-        public IDatabaseConfig build() {
+        public DefaultDatabaseConfig build() {
             return config;
         }
     }

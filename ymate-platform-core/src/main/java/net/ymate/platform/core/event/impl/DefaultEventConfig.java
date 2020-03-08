@@ -41,11 +41,11 @@ public final class DefaultEventConfig implements IEventConfig {
 
     private boolean initialized;
 
-    public static IEventConfig defaultConfig() {
+    public static DefaultEventConfig defaultConfig() {
         return new DefaultEventConfig();
     }
 
-    public static IEventConfig create(IModuleConfigurer moduleConfigurer) {
+    public static DefaultEventConfig create(IModuleConfigurer moduleConfigurer) {
         return new DefaultEventConfig(moduleConfigurer);
     }
 
@@ -177,7 +177,7 @@ public final class DefaultEventConfig implements IEventConfig {
             return this;
         }
 
-        public IEventConfig build() {
+        public DefaultEventConfig build() {
             return config;
         }
     }

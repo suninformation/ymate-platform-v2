@@ -27,8 +27,9 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 import redis.clients.jedis.Protocol;
 
+import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 /**
@@ -41,11 +42,11 @@ public final class DefaultRedisDataSourceConfig extends AbstractDataSourceConfig
 
     private String masterServerName;
 
-    private final Map<String, RedisServerMeta> serverMetas = new HashMap<>();
+    private final Map<String, RedisServerMeta> serverMetas = new LinkedHashMap<>();
 
     private final GenericObjectPoolConfig objectPoolConfig = new GenericObjectPoolConfig();
 
-    public static IRedisDataSourceConfig create(String dataSourceName, IConfigReader configReader) throws ClassNotFoundException {
+    public static DefaultRedisDataSourceConfig create(String dataSourceName, IConfigReader configReader) throws ClassNotFoundException {
         return new DefaultRedisDataSourceConfig(dataSourceName, configReader);
     }
 
@@ -171,9 +172,7 @@ public final class DefaultRedisDataSourceConfig extends AbstractDataSourceConfig
 
         public Builder addServerMetas(RedisServerMeta... serverMetas) {
             if (serverMetas != null && serverMetas.length > 0) {
-                for (RedisServerMeta serverMeta : serverMetas) {
-                    config.addServerMeta(serverMeta);
-                }
+                Arrays.stream(serverMetas).forEachOrdered(config::addServerMeta);
             }
             return this;
         }
@@ -293,7 +292,7 @@ public final class DefaultRedisDataSourceConfig extends AbstractDataSourceConfig
             return this;
         }
 
-        public IRedisDataSourceConfig build() {
+        public DefaultRedisDataSourceConfig build() {
             return config;
         }
     }

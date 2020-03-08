@@ -17,9 +17,7 @@ package net.ymate.platform.webmvc.handle;
 
 import net.ymate.platform.core.IApplication;
 import net.ymate.platform.plugin.PluginClassLoader;
-import net.ymate.platform.plugin.annotation.Handler;
 import net.ymate.platform.webmvc.WebMVC;
-import net.ymate.platform.webmvc.annotation.Controller;
 
 /**
  * 插件控制器类处理器 (from ymate-framework-addons)
@@ -27,7 +25,6 @@ import net.ymate.platform.webmvc.annotation.Controller;
  * @author 刘镇 (suninformation@163.com) on 15/8/15 上午9:24
  * @since 2.1.0
  */
-@Handler(Controller.class)
 public class PluginControllerHandler extends ControllerHandler {
 
     public PluginControllerHandler(IApplication owner) {

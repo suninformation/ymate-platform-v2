@@ -34,7 +34,7 @@ public interface IDatabaseConfig extends IPersistenceConfig<IDatabase, IDatabase
 
     String STACK_TRACE_DEPTH = "stack_trace_depth";
 
-    String STACK_TRACE_PACKAGE = "stack_trace_package";
+    String STACK_TRACE_PACKAGES = "stack_trace_packages";
 
     String TABLE_PREFIX = "table_prefix";
 

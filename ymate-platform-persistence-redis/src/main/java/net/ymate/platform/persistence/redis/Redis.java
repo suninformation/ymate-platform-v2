@@ -20,9 +20,12 @@ import net.ymate.platform.commons.util.DateTimeUtils;
 import net.ymate.platform.commons.util.RuntimeUtils;
 import net.ymate.platform.commons.util.ThreadUtils;
 import net.ymate.platform.core.IApplication;
+import net.ymate.platform.core.IApplicationConfigureFactory;
+import net.ymate.platform.core.IApplicationConfigurer;
 import net.ymate.platform.core.YMP;
 import net.ymate.platform.core.module.IModule;
 import net.ymate.platform.core.module.IModuleConfigurer;
+import net.ymate.platform.core.module.impl.DefaultModuleConfigurer;
 import net.ymate.platform.core.persistence.IDataSourceRouter;
 import net.ymate.platform.persistence.redis.impl.DefaultRedisConfig;
 import net.ymate.platform.persistence.redis.impl.RedisCommandHolder;
@@ -92,8 +95,19 @@ public final class Redis implements IModule, IRedis {
             this.owner = owner;
             //
             if (config == null) {
-                IModuleConfigurer moduleConfigurer = owner.getConfigureFactory().getConfigurer().getModuleConfigurer(MODULE_NAME);
-                config = moduleConfigurer == null ? DefaultRedisConfig.defaultConfig() : DefaultRedisConfig.create(moduleConfigurer);
+                IApplicationConfigureFactory configureFactory = owner.getConfigureFactory();
+                if (configureFactory != null) {
+                    IApplicationConfigurer configurer = configureFactory.getConfigurer();
+                    IModuleConfigurer moduleConfigurer = configurer == null ? null : configurer.getModuleConfigurer(MODULE_NAME);
+                    if (moduleConfigurer != null) {
+                        config = DefaultRedisConfig.create(configureFactory.getMainClass(), moduleConfigurer);
+                    } else {
+                        config = DefaultRedisConfig.create(configureFactory.getMainClass(), DefaultModuleConfigurer.createEmpty(MODULE_NAME));
+                    }
+                }
+                if (config == null) {
+                    config = DefaultRedisConfig.defaultConfig();
+                }
             }
             //
             if (!config.isInitialized()) {

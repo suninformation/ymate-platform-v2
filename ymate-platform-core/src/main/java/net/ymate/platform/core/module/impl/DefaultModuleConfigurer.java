@@ -21,6 +21,7 @@ import net.ymate.platform.core.module.IModuleConfigurer;
 import org.apache.commons.lang.NullArgumentException;
 import org.apache.commons.lang3.StringUtils;
 
+import java.util.Collections;
 import java.util.Map;
 
 /**
@@ -28,6 +29,10 @@ import java.util.Map;
  * @since 2.1.0
  */
 public class DefaultModuleConfigurer implements IModuleConfigurer {
+
+    public static DefaultModuleConfigurer createEmpty(String moduleName) {
+        return new DefaultModuleConfigurer(moduleName, Collections.emptyMap());
+    }
 
     private final String moduleName;
 

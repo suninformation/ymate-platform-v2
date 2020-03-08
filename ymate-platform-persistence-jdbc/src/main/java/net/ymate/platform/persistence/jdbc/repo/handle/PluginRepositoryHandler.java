@@ -17,14 +17,11 @@ package net.ymate.platform.persistence.jdbc.repo.handle;
 
 import net.ymate.platform.core.IApplication;
 import net.ymate.platform.persistence.jdbc.JDBC;
-import net.ymate.platform.persistence.jdbc.repo.annotation.Repository;
 import net.ymate.platform.plugin.PluginClassLoader;
-import net.ymate.platform.plugin.annotation.Handler;
 
 /**
  * @author 刘镇 (suninformation@163.com) on 2018-12-12 19:27
  */
-@Handler(Repository.class)
 public class PluginRepositoryHandler extends RepositoryHandler {
 
     public PluginRepositoryHandler(IApplication owner) {

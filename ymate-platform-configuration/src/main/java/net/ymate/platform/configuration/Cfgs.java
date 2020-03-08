@@ -26,6 +26,7 @@ import net.ymate.platform.configuration.impl.DefaultConfigurationProvider;
 import net.ymate.platform.configuration.impl.PropertyConfigurationProvider;
 import net.ymate.platform.configuration.support.ConfigFileChecker;
 import net.ymate.platform.core.IApplicationConfigureFactory;
+import net.ymate.platform.core.IApplicationConfigurer;
 import net.ymate.platform.core.Version;
 import net.ymate.platform.core.YMP;
 import net.ymate.platform.core.configuration.IConfig;
@@ -33,6 +34,7 @@ import net.ymate.platform.core.configuration.IConfiguration;
 import net.ymate.platform.core.configuration.IConfigurationConfig;
 import net.ymate.platform.core.configuration.IConfigurationProvider;
 import net.ymate.platform.core.module.IModuleConfigurer;
+import net.ymate.platform.core.module.impl.DefaultModuleConfigurer;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -59,14 +61,18 @@ public final class Cfgs implements IConfig {
     private static final IConfig INSTANCE;
 
     static {
+        IConfigurationConfig config = null;
         IApplicationConfigureFactory configureFactory = YMP.getConfigureFactory();
-        IConfig configInst;
-        IModuleConfigurer moduleConfigurer;
-        if (configureFactory == null || configureFactory.getConfigurer() == null || (moduleConfigurer = configureFactory.getConfigurer().getModuleConfigurer(MODULE_NAME)) == null) {
-            configInst = new Cfgs(DefaultConfigurationConfig.defaultConfig());
-        } else {
-            configInst = new Cfgs(DefaultConfigurationConfig.create(moduleConfigurer));
+        if (configureFactory != null) {
+            IApplicationConfigurer configurer = configureFactory.getConfigurer();
+            IModuleConfigurer moduleConfigurer = configurer == null ? null : configurer.getModuleConfigurer(MODULE_NAME);
+            if (moduleConfigurer != null) {
+                config = DefaultConfigurationConfig.create(configureFactory.getMainClass(), moduleConfigurer);
+            } else {
+                config = DefaultConfigurationConfig.create(configureFactory.getMainClass(), DefaultModuleConfigurer.createEmpty(MODULE_NAME));
+            }
         }
+        IConfig configInst = new Cfgs(config != null ? config : DefaultConfigurationConfig.defaultConfig());
         try {
             configInst.initialize();
         } catch (Exception e) {
