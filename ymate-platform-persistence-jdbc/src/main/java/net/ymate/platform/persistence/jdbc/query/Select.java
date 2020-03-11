@@ -285,16 +285,16 @@ public final class Select extends Query<Select> {
 
     //
 
-    public Select innerJoin(String prefix, String from, Cond on) {
-        return join(Join.inner(owner(), dataSourceName(), prefix, from).on(on));
+    public Select innerJoin(String from, String alias, Cond on) {
+        return join(Join.inner(owner(), dataSourceName(), from).alias(alias).on(on));
     }
 
-    public Select leftJoin(String prefix, String from, Cond on) {
-        return join(Join.left(owner(), dataSourceName(), prefix, from).on(on));
+    public Select leftJoin(String from, String alias, Cond on) {
+        return join(Join.left(owner(), dataSourceName(), from).alias(alias).on(on));
     }
 
-    public Select rightJoin(String prefix, String from, Cond on) {
-        return join(Join.right(owner(), dataSourceName(), prefix, from).on(on));
+    public Select rightJoin(String from, String alias, Cond on) {
+        return join(Join.right(owner(), dataSourceName(), from).alias(alias).on(on));
     }
 
     //
@@ -313,15 +313,15 @@ public final class Select extends Query<Select> {
 
     //
 
-    public Select innerJoin(String prefix, String from, boolean safePrefix, String alias, Cond on) {
+    public Select innerJoin(String prefix, String from, String alias, Cond on, boolean safePrefix) {
         return join(Join.inner(owner(), dataSourceName(), prefix, from, safePrefix).alias(alias).on(on));
     }
 
-    public Select leftJoin(String prefix, String from, boolean safePrefix, String alias, Cond on) {
+    public Select leftJoin(String prefix, String from, String alias, Cond on, boolean safePrefix) {
         return join(Join.left(owner(), dataSourceName(), prefix, from, safePrefix).alias(alias).on(on));
     }
 
-    public Select rightJoin(String prefix, String from, boolean safePrefix, String alias, Cond on) {
+    public Select rightJoin(String prefix, String from, String alias, Cond on, boolean safePrefix) {
         return join(Join.right(owner(), dataSourceName(), prefix, from, safePrefix).alias(alias).on(on));
     }
 
