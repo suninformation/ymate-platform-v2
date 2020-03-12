@@ -71,6 +71,9 @@ public final class Validations implements IModule, IValidation {
         return inst;
     }
 
+    public Validations() {
+    }
+
     @Override
     public String getName() {
         return MODULE_NAME;

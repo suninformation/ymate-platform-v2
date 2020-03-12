@@ -225,16 +225,16 @@ public final class Update extends Query<Update> {
         return this;
     }
 
-    public Update innerJoin(Select select, String alias, Cond on) {
-        return join(Join.inner(select).alias(alias).on(on));
+    public Update innerJoin(Select select, Cond on) {
+        return join(Join.inner(select).on(on));
     }
 
-    public Update leftJoin(Select select, String alias, Cond on) {
-        return join(Join.left(select).alias(alias).on(on));
+    public Update leftJoin(Select select, Cond on) {
+        return join(Join.left(select).on(on));
     }
 
-    public Update rightJoin(Select select, String alias, Cond on) {
-        return join(Join.right(select).alias(alias).on(on));
+    public Update rightJoin(Select select, Cond on) {
+        return join(Join.right(select).on(on));
     }
 
     //

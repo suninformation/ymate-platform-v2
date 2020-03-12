@@ -257,16 +257,16 @@ public final class Select extends Query<Select> {
         return this;
     }
 
-    public Select innerJoin(Select select, String alias, Cond on) {
-        return join(Join.inner(select).alias(alias).on(on));
+    public Select innerJoin(Select select, Cond on) {
+        return join(Join.inner(select).on(on));
     }
 
-    public Select leftJoin(Select select, String alias, Cond on) {
-        return join(Join.left(select).alias(alias).on(on));
+    public Select leftJoin(Select select, Cond on) {
+        return join(Join.left(select).on(on));
     }
 
-    public Select rightJoin(Select select, String alias, Cond on) {
-        return join(Join.right(select).alias(alias).on(on));
+    public Select rightJoin(Select select, Cond on) {
+        return join(Join.right(select).on(on));
     }
 
     //
