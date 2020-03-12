@@ -48,10 +48,18 @@ public final class Scaffold {
     }
 
     public static Builder builder(IApplication owner) {
-        return builder(MapSafeConfigReader.bind(owner.getParams()));
+        return builder(owner, true);
+    }
+
+    public static Builder builder(IApplication owner, boolean loadNamedFilter) {
+        return builder(MapSafeConfigReader.bind(owner.getParams()), loadNamedFilter);
     }
 
     public static Builder builder(IConfigReader configReader) {
+        return builder(configReader, true);
+    }
+
+    public static Builder builder(IConfigReader configReader, boolean loadNamedFilter) {
         return builder().useBaseEntity(configReader.getBoolean(IDatabaseConfig.PARAMS_JDBC_USE_BASE_ENTITY))
                 .useClassSuffix(configReader.getBoolean(IDatabaseConfig.PARAMS_JDBC_USE_CLASS_SUFFIX))
                 .classSuffix(configReader.getString(IDatabaseConfig.PARAMS_JDBC_CLASS_SUFFIX))
@@ -66,7 +74,7 @@ public final class Scaffold {
                 .addExcludedTableNames(configReader.getList(IDatabaseConfig.PARAMS_JDBC_TABLE_EXCLUDE_LIST))
                 .addTableNames(configReader.getList(IDatabaseConfig.PARAMS_JDBC_TABLE_LIST))
                 .addReadonlyColumns(configReader.getList(IDatabaseConfig.PARAMS_JDBC_READONLY_FIELD_LIST))
-                .namedFilter(configReader.getClassImpl(IDatabaseConfig.PARAMS_JDBC_NAMED_FILTER_CLASS, INamedFilter.class));
+                .namedFilter(loadNamedFilter ? configReader.getClassImpl(IDatabaseConfig.PARAMS_JDBC_NAMED_FILTER_CLASS, INamedFilter.class) : null);
     }
 
     /**
