@@ -66,11 +66,15 @@ public class Version {
     private VersionType versionType;
 
     public Version(int majorVersion, int minorVersion, int revisionNumber) {
-        this(majorVersion, minorVersion, revisionNumber, null, null);
+        this(majorVersion, minorVersion, revisionNumber, (String) null, null);
     }
 
     public Version(int majorVersion, int minorVersion, int revisionNumber, VersionType versionType) {
-        this(majorVersion, minorVersion, revisionNumber, null, versionType);
+        this(majorVersion, minorVersion, revisionNumber, (String) null, versionType);
+    }
+
+    public Version(int majorVersion, int minorVersion, int revisionNumber, Class<?> targetClass, VersionType versionType) {
+        this(majorVersion, minorVersion, revisionNumber, targetClass != null ? targetClass.getPackage().getImplementationVersion() : null, versionType);
     }
 
     public Version(int majorVersion, int minorVersion, int revisionNumber, String buildNumber, VersionType versionType) {
