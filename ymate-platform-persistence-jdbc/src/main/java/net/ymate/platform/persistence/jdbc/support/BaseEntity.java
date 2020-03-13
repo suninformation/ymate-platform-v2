@@ -41,13 +41,13 @@ import java.io.Serializable;
  */
 public abstract class BaseEntity<Entity extends IEntity, PK extends Serializable> implements IEntity<PK> {
 
-    private final IDatabase owner;
+    private transient final IDatabase owner;
 
     private final Class<Entity> entityClass;
 
-    private IDatabaseConnectionHolder connectionHolder;
+    private transient IDatabaseConnectionHolder connectionHolder;
 
-    private IShardingable shardingable;
+    private transient IShardingable shardingable;
 
     private String dataSourceName;
 

@@ -90,12 +90,12 @@ public final class Scaffold {
     /**
      * 生成代码基准包名称
      */
-    private String packageName;
+    private final String packageName;
 
     /**
      * 生成文件输出路径
      */
-    private String outputPath;
+    private final String outputPath;
 
     /**
      * 待生成数据库表名称集合
@@ -115,34 +115,34 @@ public final class Scaffold {
     /**
      * 是否移除表名称前缀
      */
-    private boolean useRemovePrefix;
+    private final boolean useRemovePrefix;
 
     /**
      * 是否使用/继承实体模型接口抽象实现类
      */
-    private boolean useBaseEntity;
+    private final boolean useBaseEntity;
 
     /**
      * 是否使用类名后缀
      */
-    private boolean useClassSuffix;
+    private final boolean useClassSuffix;
 
-    private String classSuffix;
+    private final String classSuffix;
 
     /**
      * 是否使用链式调用模式
      */
-    private boolean useChainMode;
+    private final boolean useChainMode;
 
     /**
      * 是否使用类成员属性值状态变化注解
      */
-    private boolean useStateSupport;
+    private final boolean useStateSupport;
 
     /**
      * 实体及属性命名过滤器
      */
-    private INamedFilter namedFilter;
+    private final INamedFilter namedFilter;
 
     /**
      * 只读字段名称集合
@@ -367,11 +367,11 @@ public final class Scaffold {
 
         private String outputPath;
 
-        private Set<String> tableNames = new LinkedHashSet<>();
+        private final Set<String> tableNames = new LinkedHashSet<>();
 
-        private Set<String> excludedTableNames = new LinkedHashSet<>();
+        private final Set<String> excludedTableNames = new LinkedHashSet<>();
 
-        private Set<String> tablePrefixes = new LinkedHashSet<>();
+        private final Set<String> tablePrefixes = new LinkedHashSet<>();
 
         private boolean useRemovePrefix;
 
@@ -387,7 +387,7 @@ public final class Scaffold {
 
         private INamedFilter namedFilter;
 
-        private Set<String> readonlyColumns = new LinkedHashSet<>();
+        private final Set<String> readonlyColumns = new LinkedHashSet<>();
 
         Builder() {
         }

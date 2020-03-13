@@ -26,8 +26,6 @@ import org.apache.commons.logging.Log;
  */
 public class JCLogger extends AbstractLogAdapter implements Log {
 
-    private static final long serialVersionUID = 1L;
-
     JCLogger(String name) {
         super(name);
     }

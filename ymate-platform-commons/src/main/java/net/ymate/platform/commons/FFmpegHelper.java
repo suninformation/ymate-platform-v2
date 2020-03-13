@@ -37,7 +37,7 @@ public class FFmpegHelper {
 
     private static final String ZERO_STR = "0";
 
-    private String ffmpegPath;
+    private final String ffmpegPath;
 
     private String mediaFile;
 
@@ -55,13 +55,13 @@ public class FFmpegHelper {
         int min = 0;
         String[] strArr = timeLen.split(":");
         if (strArr[0].compareTo(ZERO_STR) > 0) {
-            min += Integer.valueOf(strArr[0]) * 60 * 60;
+            min += Integer.parseInt(strArr[0]) * 60 * 60;
         }
         if (strArr[1].compareTo(ZERO_STR) > 0) {
-            min += Integer.valueOf(strArr[1]) * 60;
+            min += Integer.parseInt(strArr[1]) * 60;
         }
         if (strArr[2].compareTo(ZERO_STR) > 0) {
-            min += Math.round(Float.valueOf(strArr[2]));
+            min += Math.round(Float.parseFloat(strArr[2]));
         }
         return min;
     }

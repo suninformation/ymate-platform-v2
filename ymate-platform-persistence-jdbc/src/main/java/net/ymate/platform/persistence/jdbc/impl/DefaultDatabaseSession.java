@@ -50,13 +50,13 @@ import java.util.*;
  */
 public class DefaultDatabaseSession extends AbstractSession<IDatabaseConnectionHolder> implements IDatabaseSession {
 
-    private IDatabase owner;
+    private final IDatabase owner;
 
-    private IDatabaseConnectionHolder connectionHolder;
+    private final IDatabaseConnectionHolder connectionHolder;
 
-    private IDialect dialect;
+    private final IDialect dialect;
 
-    private String tablePrefix;
+    private final String tablePrefix;
 
     public DefaultDatabaseSession(IDatabase owner) throws Exception {
         this(owner, owner.getDefaultConnectionHolder());

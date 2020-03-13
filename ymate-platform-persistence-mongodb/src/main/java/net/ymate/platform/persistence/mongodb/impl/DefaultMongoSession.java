@@ -261,6 +261,6 @@ public class DefaultMongoSession extends AbstractSession<IMongoConnectionHolder>
     @Override
     public <T extends IEntity> long delete(Class<T> entity, Collection<Serializable> ids) throws Exception {
         DeleteResult result = doGetCollection(entity).deleteMany(Query.create(IMongo.Opt.ID, ComparisonExp.in(Params.create(ids))).toBson());
-        return result == null ? 0 : result.getDeletedCount();
+        return result.getDeletedCount();
     }
 }

@@ -34,7 +34,7 @@ public class RedisServerMeta implements Serializable {
         return new Builder(name);
     }
 
-    private String name;
+    private final String name;
 
     private String host;
 

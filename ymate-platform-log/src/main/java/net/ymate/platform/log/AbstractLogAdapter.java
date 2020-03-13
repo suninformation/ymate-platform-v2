@@ -20,17 +20,13 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.impl.SimpleLog;
 
-import java.io.Serializable;
-
 /**
  * @author 刘镇 (suninformation@163.com) on 2019-07-05 13:09
  * @since 2.1.0
  */
-public abstract class AbstractLogAdapter extends AbstractLogger implements Serializable {
+public abstract class AbstractLogAdapter extends AbstractLogger {
 
-    private static final long serialVersionUID = 1L;
-
-    private transient Log simpleLog;
+    private Log simpleLog;
 
     private ILogger logger;
 

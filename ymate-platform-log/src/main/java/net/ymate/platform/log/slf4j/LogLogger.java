@@ -27,8 +27,6 @@ import org.slf4j.spi.LocationAwareLogger;
  */
 public class LogLogger extends AbstractLogAdapter implements LocationAwareLogger {
 
-    private static final long serialVersionUID = 1L;
-
     LogLogger(String name) {
         super(name);
     }

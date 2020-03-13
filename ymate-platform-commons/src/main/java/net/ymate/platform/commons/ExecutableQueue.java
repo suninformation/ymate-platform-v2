@@ -42,7 +42,7 @@ public class ExecutableQueue<E extends Serializable> implements AutoCloseable {
 
     private BlockingQueue<E> queue;
 
-    private BlockingQueue<Runnable> workQueue;
+    private final BlockingQueue<Runnable> workQueue;
 
     private long queueTimeout;
 

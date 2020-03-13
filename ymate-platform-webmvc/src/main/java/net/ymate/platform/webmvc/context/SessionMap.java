@@ -49,7 +49,6 @@ public class SessionMap extends AbstractMap<String, Object> implements Serializa
     }
 
     @Override
-    @SuppressWarnings("unchecked")
     public void clear() {
         if (session == null) {
             return;

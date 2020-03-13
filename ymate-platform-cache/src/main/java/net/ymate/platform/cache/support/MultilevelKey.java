@@ -24,9 +24,9 @@ public class MultilevelKey implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    private Object key;
+    private final Object key;
 
-    private boolean master;
+    private final boolean master;
 
     public static MultilevelKey bind(Object keyObj) {
         if (keyObj instanceof MultilevelKey) {
