@@ -23,7 +23,7 @@ import org.apache.commons.lang3.StringUtils;
  */
 public abstract class AbstractFunction implements IFunction {
 
-    private Fields params;
+    private final Fields params;
 
     private boolean flag;
 

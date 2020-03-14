@@ -22,9 +22,9 @@ import org.apache.commons.lang3.StringUtils;
  */
 public final class Link implements IMarkdown {
 
-    private String name;
+    private final String name;
 
-    private String url;
+    private final String url;
 
     public static Link create(String url) {
         return new Link((String) null, url);

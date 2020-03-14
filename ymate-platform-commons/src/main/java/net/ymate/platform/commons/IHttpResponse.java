@@ -37,15 +37,15 @@ public interface IHttpResponse {
      */
     class Default implements IHttpResponse {
 
-        private int statusCode;
+        private final int statusCode;
 
-        private String content;
+        private final String content;
 
         private String contentType;
 
         private String contentEncoding;
 
-        private long contentLength;
+        private final long contentLength;
 
         //
         private final Map<String, String> headers = new HashMap<>();

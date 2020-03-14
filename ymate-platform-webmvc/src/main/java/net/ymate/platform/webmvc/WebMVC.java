@@ -278,8 +278,8 @@ public final class WebMVC implements IModule, IWebMvc {
     }
 
     private void processRequestMeta(IRequestContext context, HttpServletRequest request, RequestMeta requestMeta, boolean devEnv) throws Exception {
-        if (devEnv && LOG.isInfoEnabled()) {
-            LOG.info("Request mode: controller");
+        if (devEnv && LOG.isDebugEnabled()) {
+            LOG.debug("Request mode: controller");
         }
         // 判断是否需要处理文件上传
         if (context.getHttpMethod().equals(Type.HttpMethod.POST) && requestMeta.getMethod().isAnnotationPresent(FileUpload.class)) {
@@ -288,8 +288,8 @@ public final class WebMVC implements IModule, IWebMvc {
                 request = new MultipartRequestWrapper(this, request);
             }
             //
-            if (devEnv && LOG.isInfoEnabled()) {
-                LOG.info("Include file upload: YES");
+            if (devEnv && LOG.isDebugEnabled()) {
+                LOG.debug("Include file upload: YES");
             }
         }
         WebContext.getContext().addAttribute(Type.Context.HTTP_REQUEST, request);
@@ -303,8 +303,8 @@ public final class WebMVC implements IModule, IWebMvc {
                 // 加载成功, 则
                 view = View.nullView();
                 //
-                if (devEnv && LOG.isInfoEnabled()) {
-                    LOG.info("Load data from the cache: YES");
+                if (devEnv && LOG.isDebugEnabled()) {
+                    LOG.debug("Load data from the cache: YES");
                 }
             }
         }
@@ -317,8 +317,8 @@ public final class WebMVC implements IModule, IWebMvc {
                         if (cacheProcessor.processResponseCache(this, requestMeta.getResponseCache(), context, view)) {
                             view = View.nullView();
                             //
-                            if (devEnv && LOG.isInfoEnabled()) {
-                                LOG.info("Results data cached: YES");
+                            if (devEnv && LOG.isDebugEnabled()) {
+                                LOG.debug("Results data cached: YES");
                             }
                         }
                     } catch (Exception e) {
@@ -336,8 +336,8 @@ public final class WebMVC implements IModule, IWebMvc {
     }
 
     private void processRequestConvention(IRequestContext context, boolean devEnv) throws Exception {
-        if (devEnv && LOG.isInfoEnabled()) {
-            LOG.info("Request mode: convention");
+        if (devEnv && LOG.isDebugEnabled()) {
+            LOG.debug("Request mode: convention");
         }
         //
         IView view = null;
@@ -357,8 +357,8 @@ public final class WebMVC implements IModule, IWebMvc {
                 // 加载成功, 则
                 view = View.nullView();
                 //
-                if (devEnv && LOG.isInfoEnabled()) {
-                    LOG.info("Load data from the cache: YES");
+                if (devEnv && LOG.isDebugEnabled()) {
+                    LOG.debug("Load data from the cache: YES");
                 }
             }
         }
@@ -371,8 +371,8 @@ public final class WebMVC implements IModule, IWebMvc {
                 List<String> urlParams = Arrays.asList(urlParamArr).subList(1, urlParamArr.length);
                 WebContext.getRequest().setAttribute("UrlParams", urlParams);
                 //
-                if (devEnv && LOG.isInfoEnabled()) {
-                    LOG.info("With parameters: " + urlParams);
+                if (devEnv && LOG.isDebugEnabled()) {
+                    LOG.debug("With parameters: " + urlParams);
                 }
             }
             //
@@ -382,8 +382,8 @@ public final class WebMVC implements IModule, IWebMvc {
             if (view == null) {
                 PairObject<IView, String> mappingView = View.mappingToView(this, requestMapping);
                 view = mappingView.getKey();
-                if (mappingView.getValue() != null && devEnv && LOG.isInfoEnabled()) {
-                    LOG.info(String.format("Rendering template file: %s%s", requestMapping, mappingView.getValue()));
+                if (mappingView.getValue() != null && devEnv && LOG.isDebugEnabled()) {
+                    LOG.debug(String.format("Rendering template file: %s%s", requestMapping, mappingView.getValue()));
                 }
             }
             //
@@ -392,8 +392,8 @@ public final class WebMVC implements IModule, IWebMvc {
                     if (cacheProcessor.processResponseCache(this, responseCacheAnn, context, view)) {
                         view = View.nullView();
                         //
-                        if (devEnv && LOG.isInfoEnabled()) {
-                            LOG.info("Results data cached: YES");
+                        if (devEnv && LOG.isDebugEnabled()) {
+                            LOG.debug("Results data cached: YES");
                         }
                     }
                 } catch (Exception e) {
@@ -418,16 +418,16 @@ public final class WebMVC implements IModule, IWebMvc {
                 String header = WebContext.getRequest().getHeader(entry.getKey());
                 if (StringUtils.equals(entry.getValue(), "*")) {
                     if (StringUtils.isBlank(header)) {
-                        if (devEnv && LOG.isInfoEnabled()) {
-                            LOG.info("Check request allowed: NO");
+                        if (devEnv && LOG.isDebugEnabled()) {
+                            LOG.debug("Check request allowed: NO");
                         }
                         response.sendError(HttpServletResponse.SC_BAD_REQUEST);
                         flag = false;
                     }
                 } else {
                     if (header == null || !header.equalsIgnoreCase(entry.getValue())) {
-                        if (devEnv && LOG.isInfoEnabled()) {
-                            LOG.info("Check request allowed: NO");
+                        if (devEnv && LOG.isDebugEnabled()) {
+                            LOG.debug("Check request allowed: NO");
                         }
                         response.sendError(HttpServletResponse.SC_BAD_REQUEST);
                         flag = false;
@@ -441,8 +441,8 @@ public final class WebMVC implements IModule, IWebMvc {
                     if (!WebContext.getRequest().getParameterMap().containsKey(entry.getKey())) {
                         response.sendError(HttpServletResponse.SC_BAD_REQUEST);
                         //
-                        if (devEnv && LOG.isInfoEnabled()) {
-                            LOG.info("Check request allowed: NO");
+                        if (devEnv && LOG.isDebugEnabled()) {
+                            LOG.debug("Check request allowed: NO");
                         }
                         flag = false;
                     }
@@ -451,8 +451,8 @@ public final class WebMVC implements IModule, IWebMvc {
                     if (paramValue == null || !paramValue.equalsIgnoreCase(entry.getValue())) {
                         response.sendError(HttpServletResponse.SC_BAD_REQUEST);
                         //
-                        if (devEnv && LOG.isInfoEnabled()) {
-                            LOG.info("Check request allowed: NO");
+                        if (devEnv && LOG.isDebugEnabled()) {
+                            LOG.debug("Check request allowed: NO");
                         }
                         flag = false;
                     }
@@ -495,12 +495,12 @@ public final class WebMVC implements IModule, IWebMvc {
         StopWatch consumeTime = null;
         RequestMeta requestMeta = null;
         try {
-            if (owner.isDevEnv() && LOG.isInfoEnabled()) {
+            if (owner.isDevEnv() && LOG.isDebugEnabled()) {
                 consumeTime = new StopWatch();
                 consumeTime.start();
                 //
-                LOG.info(String.format("Process request start: %s:%s", context.getHttpMethod(), context.getRequestMapping()));
-                LOG.info(String.format("Parameters: %s", JSON.toJSONString(request.getParameterMap())));
+                LOG.debug(String.format("Process request start: %s:%s", context.getHttpMethod(), context.getRequestMapping()));
+                LOG.debug(String.format("Parameters: %s", JSON.toJSONString(request.getParameterMap())));
             }
             //
             requestMeta = config.getRequestMappingParser().parse(context);
@@ -521,8 +521,8 @@ public final class WebMVC implements IModule, IWebMvc {
                 IResponseErrorProcessor errorProcessor = ClassUtils.impl(requestMeta.getErrorProcessor(), IResponseErrorProcessor.class);
                 if (errorProcessor != null) {
                     view = errorProcessor.processError(this, e);
-                    if (owner.isDevEnv() && LOG.isInfoEnabled()) {
-                        LOG.info(String.format("An exception processed with: %s", requestMeta.getErrorProcessor().getName()));
+                    if (owner.isDevEnv() && LOG.isDebugEnabled()) {
+                        LOG.debug(String.format("An exception processed with: %s", requestMeta.getErrorProcessor().getName()));
                     }
                 }
             }
@@ -532,9 +532,9 @@ public final class WebMVC implements IModule, IWebMvc {
                 throw e;
             }
         } finally {
-            if (consumeTime != null && owner.isDevEnv() && LOG.isInfoEnabled()) {
+            if (consumeTime != null && owner.isDevEnv() && LOG.isDebugEnabled()) {
                 consumeTime.stop();
-                LOG.info(String.format("Process request completed: %s:%s: %d, total execution time: %dms", context.getHttpMethod(), context.getRequestMapping(), response.getStatus(), consumeTime.getTime()));
+                LOG.debug(String.format("Process request completed: %s:%s: %d, total execution time: %dms", context.getHttpMethod(), context.getRequestMapping(), response.getStatus(), consumeTime.getTime()));
             }
         }
     }

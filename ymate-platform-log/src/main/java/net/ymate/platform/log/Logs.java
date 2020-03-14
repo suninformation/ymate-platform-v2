@@ -44,7 +44,7 @@ public final class Logs implements ILog {
 
     private static final Map<String, ILogger> LOGGER_CACHE = new ConcurrentHashMap<>();
 
-    private static volatile ILog INSTANCE;
+    private static final ILog INSTANCE;
 
     static {
         try {

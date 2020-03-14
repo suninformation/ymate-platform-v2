@@ -41,7 +41,6 @@ import java.io.StringReader;
 import java.lang.reflect.Field;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -195,15 +194,6 @@ public class XPathHelper {
         return (NodeList) doEvaluate(expression, item, XPathConstants.NODESET);
     }
 
-    public <T> T toObject(Class<T> targetClass) {
-        try {
-            return toObject(targetClass.newInstance());
-        } catch (IllegalAccessException | InstantiationException e) {
-            LOG.warn(StringUtils.EMPTY, RuntimeUtils.unwrapThrow(e));
-        }
-        return null;
-    }
-
     public <T> T toObject(T targetObject) {
         try {
             XPathNode rootNodeAnn = targetObject.getClass().getAnnotation(XPathNode.class);
@@ -216,14 +206,9 @@ public class XPathHelper {
                 return toObject(document, targetObject);
             }
         } catch (IllegalAccessException | XPathExpressionException e) {
-            LOG.warn(StringUtils.EMPTY, RuntimeUtils.unwrapThrow(e));
-        }
-        return null;
-    }
-
-    private <T> T toObject(Object parentNode, Class<T> targetClass) throws XPathExpressionException, IllegalAccessException {
-        if (parentNode != null && targetClass != null) {
-            return doWrapperValues(parentNode, Objects.requireNonNull(ClassUtils.wrapper(targetClass)));
+            if (LOG.isWarnEnabled()) {
+                LOG.warn(StringUtils.EMPTY, RuntimeUtils.unwrapThrow(e));
+            }
         }
         return null;
     }
@@ -250,13 +235,21 @@ public class XPathHelper {
                                 INodeValueParser parser = fieldNodeAnn.parser().newInstance();
                                 childObject = parser.parse(this, parentNode, field.getType(), fieldValue);
                             } catch (InstantiationException e) {
-                                LOG.warn(StringUtils.EMPTY, RuntimeUtils.unwrapThrow(e));
+                                if (LOG.isWarnEnabled()) {
+                                    LOG.warn(StringUtils.EMPTY, RuntimeUtils.unwrapThrow(e));
+                                }
                             }
                         } else {
                             if (fieldValue != null) {
                                 childObject = toObject(childNode, fieldValue);
                             } else {
-                                childObject = toObject(childNode, Void.class.equals(fieldNodeAnn.implClass()) ? field.getType() : fieldNodeAnn.implClass());
+                                try {
+                                    childObject = toObject(childNode, Void.class.equals(fieldNodeAnn.implClass()) ? field.getType().newInstance() : fieldNodeAnn.implClass().newInstance());
+                                } catch (InstantiationException e) {
+                                    if (LOG.isWarnEnabled()) {
+                                        LOG.warn(StringUtils.EMPTY, RuntimeUtils.unwrapThrow(e));
+                                    }
+                                }
                             }
                         }
                         beanWrapper.setValue(field, childObject);
@@ -268,7 +261,9 @@ public class XPathHelper {
                             INodeValueParser parser = fieldNodeAnn.parser().newInstance();
                             beanWrapper.setValue(field, BlurObject.bind(parser.parse(this, parentNode, field.getType(), value)).toObjectValue(field.getType()));
                         } catch (InstantiationException e) {
-                            LOG.warn(StringUtils.EMPTY, RuntimeUtils.unwrapThrow(e));
+                            if (LOG.isWarnEnabled()) {
+                                LOG.warn(StringUtils.EMPTY, RuntimeUtils.unwrapThrow(e));
+                            }
                         }
                     } else {
                         beanWrapper.setValue(field, BlurObject.bind(value).toObjectValue(field.getType()));

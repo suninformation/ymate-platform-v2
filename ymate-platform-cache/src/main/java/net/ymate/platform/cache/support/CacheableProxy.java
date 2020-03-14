@@ -15,10 +15,7 @@
  */
 package net.ymate.platform.cache.support;
 
-import net.ymate.platform.cache.CacheElement;
-import net.ymate.platform.cache.Caches;
-import net.ymate.platform.cache.ICacheScopeProcessor;
-import net.ymate.platform.cache.ICaches;
+import net.ymate.platform.cache.*;
 import net.ymate.platform.cache.annotation.Cacheable;
 import net.ymate.platform.commons.ReentrantLockHelper;
 import net.ymate.platform.commons.util.ClassUtils;
@@ -67,11 +64,12 @@ public class CacheableProxy implements IProxy {
         ReentrantLock locker = LOCKER.getLocker(cacheKey.toString());
         locker.lock();
         try {
+            String cacheName = StringUtils.defaultIfBlank(cacheable.cacheName(), ICacheConfig.DEFAULT_STR);
             ICacheScopeProcessor cacheScopeProcessor = caches.getConfig().getCacheScopeProcessor();
             if (!cacheable.scope().equals(ICaches.Scope.DEFAULT) && cacheScopeProcessor != null) {
-                cacheElement = cacheScopeProcessor.getFromCache(caches, cacheable.scope(), cacheable.cacheName(), cacheKey.toString());
+                cacheElement = cacheScopeProcessor.getFromCache(caches, cacheable.scope(), cacheName, cacheKey.toString());
             } else {
-                cacheElement = (CacheElement) caches.get(cacheable.cacheName(), cacheKey);
+                cacheElement = (CacheElement) caches.get(cacheName, cacheKey);
             }
             boolean flag = true;
             if (cacheElement != null && !cacheElement.isExpired()) {
@@ -86,9 +84,9 @@ public class CacheableProxy implements IProxy {
                         cacheElement.setTimeout(timeout);
                     }
                     if (!cacheable.scope().equals(ICaches.Scope.DEFAULT) && cacheScopeProcessor != null) {
-                        cacheScopeProcessor.putInCache(caches, cacheable.scope(), cacheable.cacheName(), cacheKey.toString(), cacheElement);
+                        cacheScopeProcessor.putInCache(caches, cacheable.scope(), cacheName, cacheKey.toString(), cacheElement);
                     } else {
-                        caches.put(cacheable.cacheName(), cacheKey, cacheElement);
+                        caches.put(cacheName, cacheKey, cacheElement);
                     }
                 }
             }

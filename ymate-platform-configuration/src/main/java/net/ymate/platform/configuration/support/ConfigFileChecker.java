@@ -96,7 +96,9 @@ public class ConfigFileChecker implements Runnable {
                         value.getConfiguration().reload();
                         value.setLastModifyTime(file.lastModified());
                     } catch (Exception e) {
-                        LOG.warn(String.format("An exception occurred while checking configuration file[%s]: ", file.getPath()), RuntimeUtils.unwrapThrow(e));
+                        if (LOG.isWarnEnabled()) {
+                            LOG.warn(String.format("An exception occurred while checking configuration file[%s]: ", file.getPath()), RuntimeUtils.unwrapThrow(e));
+                        }
                     }
                 }
             });

@@ -52,7 +52,7 @@ public class JCLogFactory extends LogFactory {
     }
 
     @Override
-    public Log getInstance(@SuppressWarnings("rawtypes") final Class clazz) throws LogConfigurationException {
+    public Log getInstance(final Class clazz) throws LogConfigurationException {
         return getInstance(clazz.getName());
     }
 

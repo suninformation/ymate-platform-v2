@@ -40,7 +40,7 @@ public class VelocityView extends AbstractView {
 
     public static final String FILE_SUFFIX = ".vm";
 
-    private static Properties velocityConfig = new Properties();
+    private static final Properties velocityConfig = new Properties();
 
     static {
         View.registerViewBuilder(FILE_SUFFIX, VelocityView::bind);

@@ -135,9 +135,9 @@ public final class Type {
          */
         UNKNOWN(Types.OTHER, "VARCHAR");
 
-        private int type;
+        private final int type;
 
-        private String name;
+        private final String name;
 
         FIELD(int type, String name) {
             this.type = type;

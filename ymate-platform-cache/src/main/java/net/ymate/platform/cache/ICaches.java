@@ -181,7 +181,7 @@ public interface ICaches extends IInitialization<IApplication>, IDestroyable {
      * @param keys      缓存Key
      * @throws CacheException 可能产生的异常
      */
-    void removeAll(String cacheName, List keys) throws CacheException;
+    void removeAll(String cacheName, List<?> keys) throws CacheException;
 
     /**
      * 批量从默认缓存中移除对象
@@ -189,7 +189,7 @@ public interface ICaches extends IInitialization<IApplication>, IDestroyable {
      * @param keys 缓存Key
      * @throws CacheException 可能产生的异常
      */
-    void removeAll(List keys) throws CacheException;
+    void removeAll(List<?> keys) throws CacheException;
 
     /**
      * 清理指定名称的缓存

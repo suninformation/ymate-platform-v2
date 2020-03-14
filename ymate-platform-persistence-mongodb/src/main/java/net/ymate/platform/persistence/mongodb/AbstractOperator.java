@@ -46,7 +46,7 @@ public abstract class AbstractOperator implements IOperator {
         }
     }
 
-    protected void putOperator(String opt, Map object) {
+    protected void putOperator(String opt, Map<?, ?> object) {
         DBObject dbObject = (DBObject) operation.get(opt);
         if (dbObject == null) {
             dbObject = new BasicDBObject();
@@ -59,7 +59,7 @@ public abstract class AbstractOperator implements IOperator {
 
     @Override
     public void add(IOperator operator) {
-        operation.putAll((Map) operator.toBson());
+        operation.putAll((Map<?, ?>) operator.toBson());
     }
 
     @Override

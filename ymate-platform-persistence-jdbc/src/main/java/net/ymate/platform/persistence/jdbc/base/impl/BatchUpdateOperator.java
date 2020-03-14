@@ -37,9 +37,9 @@ public class BatchUpdateOperator extends AbstractOperator implements IBatchUpdat
 
     private int effectCountsTotal;
 
-    private List<String> batchSQL;
+    private final List<String> batchSQL;
 
-    private List<SQLBatchParameter> batchParameters;
+    private final List<SQLBatchParameter> batchParameters;
 
     public BatchUpdateOperator(IDatabaseConnectionHolder connectionHolder) {
         this(null, connectionHolder, null);

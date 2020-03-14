@@ -28,15 +28,15 @@ import java.util.List;
  */
 public class DefaultResultSet<T> implements IResultSet<T> {
 
-    private int pageNumber;
+    private final int pageNumber;
 
-    private int pageSize;
+    private final int pageSize;
 
     private int pageCount;
 
-    private long recordCount;
+    private final long recordCount;
 
-    private List<T> resultData;
+    private final List<T> resultData;
 
     /**
      * 构造方法，不采用分页方式

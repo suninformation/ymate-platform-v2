@@ -38,11 +38,11 @@ public final class Where extends QueryHandleAdapter<Where> {
     /**
      * SQL条件对象
      */
-    private Cond cond;
+    private final Cond cond;
 
     private GroupBy groupBy;
 
-    private OrderBy orderBy;
+    private final OrderBy orderBy;
 
     private final Slot slot = new Slot();
 

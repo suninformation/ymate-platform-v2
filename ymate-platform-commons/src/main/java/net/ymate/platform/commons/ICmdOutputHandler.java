@@ -30,9 +30,9 @@ public interface ICmdOutputHandler<T> {
 
     class WriteConsoleLog implements ICmdOutputHandler<Void> {
 
-        private static Log LOG = LogFactory.getLog(WriteConsoleLog.class);
+        private static final Log LOG = LogFactory.getLog(WriteConsoleLog.class);
 
-        private boolean output;
+        private final boolean output;
 
         public WriteConsoleLog() {
             this(true);

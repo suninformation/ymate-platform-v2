@@ -38,7 +38,7 @@ public class ResultSetHelper {
 
     @SuppressWarnings("unchecked")
     public static <T extends IEntity> T toEntity(Class<T> entity, Document document) throws Exception {
-        ClassUtils.BeanWrapper<T> beanWrapper = ClassUtils.wrapper(entity);
+        ClassUtils.BeanWrapper<T> beanWrapper = ClassUtils.wrapperClass(entity);
         if (beanWrapper != null) {
             EntityMeta entityMeta = EntityMeta.load(entity);
             Object primaryKeyObject = null;

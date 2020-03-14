@@ -46,7 +46,7 @@ public class PageCacheElement extends CacheElement {
 
     private byte[] gzippedBody;
 
-    private byte[] unGzippedBody;
+    private final byte[] unGzippedBody;
 
     private final boolean storeGzipped;
 

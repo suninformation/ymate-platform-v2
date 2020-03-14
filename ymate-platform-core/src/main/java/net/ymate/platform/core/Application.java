@@ -56,17 +56,17 @@ public final class Application implements IApplication {
 
     private final IApplicationInitializer initializer;
 
-    private ModuleManager moduleManager;
+    private final ModuleManager moduleManager;
 
-    private IBeanFactory beanFactory;
+    private final IBeanFactory beanFactory;
 
     private final RecycleHelper recycleHelper = RecycleHelper.getInstance();
 
-    private I18N i18n;
+    private final I18N i18n;
 
-    private Environment runEnv;
+    private final Environment runEnv;
 
-    private Events events;
+    private final Events events;
 
     private final InterceptSettings interceptSettings;
 

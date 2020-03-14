@@ -27,7 +27,7 @@ public final class Text implements IMarkdown {
 
     private final StringBuilder content = new StringBuilder();
 
-    private Style style;
+    private final Style style;
 
     public static Text create(IMarkdown content) {
         return new Text(content);

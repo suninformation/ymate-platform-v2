@@ -45,11 +45,11 @@ import java.util.List;
  */
 public class DefaultMongoSession extends AbstractSession<IMongoConnectionHolder> implements IMongoSession {
 
-    private IMongo owner;
+    private final IMongo owner;
 
-    private IMongoConnectionHolder connectionHolder;
+    private final IMongoConnectionHolder connectionHolder;
 
-    private String collectionPrefix;
+    private final String collectionPrefix;
 
     public DefaultMongoSession(IMongo owner) throws Exception {
         this(owner, owner.getDefaultConnectionHolder());

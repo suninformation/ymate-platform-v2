@@ -32,7 +32,7 @@ import java.util.Set;
  */
 public class JedisCommander implements IRedisCommander {
 
-    private Jedis jedis;
+    private final Jedis jedis;
 
     JedisCommander(Jedis jedis) {
         if (jedis == null) {

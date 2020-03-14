@@ -55,15 +55,15 @@ public class Version {
         Release
     }
 
-    private int majorVersion;
+    private final int majorVersion;
 
-    private int minorVersion;
+    private final int minorVersion;
 
-    private int revisionNumber;
+    private final int revisionNumber;
 
-    private String buildNumber;
+    private final String buildNumber;
 
-    private VersionType versionType;
+    private final VersionType versionType;
 
     public Version(int majorVersion, int minorVersion, int revisionNumber) {
         this(majorVersion, minorVersion, revisionNumber, (String) null, null);

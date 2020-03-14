@@ -121,9 +121,8 @@ public class EhCacheWrapper implements ICache, ICacheLocker {
     }
 
     @Override
-    @SuppressWarnings("unchecked")
     public List<?> keys() throws CacheException {
-        return new ArrayList(ehcache.getKeys());
+        return new ArrayList<Object>(ehcache.getKeys());
     }
 
     @Override

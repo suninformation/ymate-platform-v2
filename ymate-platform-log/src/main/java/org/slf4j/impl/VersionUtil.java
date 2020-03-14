@@ -30,8 +30,7 @@ public class VersionUtil {
                 Method versionMethod = Runtime.class.getMethod("version");
                 Object versionObj = versionMethod.invoke(null);
                 Method majorMethod = versionObj.getClass().getMethod("major");
-                Integer resultInteger = (Integer) majorMethod.invoke(versionObj);
-                return resultInteger.intValue();
+                return (Integer) majorMethod.invoke(versionObj);
             } catch (Exception e) {
                 return MINIMAL_VERSION;
             }

@@ -38,7 +38,7 @@ public final class DefaultRedisDataSourceConfigurable extends AbstractDataSource
         return new Builder(dataSourceName);
     }
 
-    private Map<String, RedisServerConfigurable> servers = new HashMap<>();
+    private final Map<String, RedisServerConfigurable> servers = new HashMap<>();
 
     private DefaultRedisDataSourceConfigurable(String dataSourceName) {
         super(dataSourceName);

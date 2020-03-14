@@ -28,7 +28,7 @@ import org.apache.commons.lang3.StringUtils;
  */
 public abstract class AbstractDataSourceConfig<OWNER extends IPersistence> implements IDataSourceConfig<OWNER> {
 
-    private String name;
+    private final String name;
 
     private String username;
 

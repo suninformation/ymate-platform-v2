@@ -56,13 +56,13 @@ public class RequestMeta {
 
     private final boolean singleton;
 
-    private ResponseCache responseCache;
+    private final ResponseCache responseCache;
 
-    private ResponseView responseView;
+    private final ResponseView responseView;
 
-    private ResponseBody responseBody;
+    private final ResponseBody responseBody;
 
-    private SignatureValidate signatureValidate;
+    private final SignatureValidate signatureValidate;
 
     private final Set<ResponseHeader> responseHeaders = new HashSet<>();
 

@@ -336,13 +336,15 @@ public final class Cfgs implements IConfig {
                         //
                         return configObject;
                     } catch (Exception e) {
-                        LOG.warn(String.format("An exception occurred while filling the config file [%s]: ", StringUtils.trimToEmpty(cfgFileName)), RuntimeUtils.unwrapThrow(e));
+                        if (LOG.isWarnEnabled()) {
+                            LOG.warn(String.format("An exception occurred while filling the config file [%s]: ", StringUtils.trimToEmpty(cfgFileName)), RuntimeUtils.unwrapThrow(e));
+                        }
                     }
-                } else {
+                } else if (LOG.isWarnEnabled()) {
                     LOG.warn(String.format("Config file [%s] not found.", StringUtils.trimToEmpty(cfgFileName)));
                 }
             }
-        } else {
+        } else if (LOG.isWarnEnabled()) {
             LOG.warn("Configuration module not initialized, fill operation could not be completed.");
         }
         return null;

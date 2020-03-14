@@ -41,11 +41,11 @@ public abstract class AbstractOperator implements IOperator {
 
     protected String sql;
 
-    private IDatabaseConnectionHolder connectionHolder;
+    private final IDatabaseConnectionHolder connectionHolder;
 
     private IAccessorConfig accessorConfig;
 
-    private List<SQLParameter> parameters;
+    private final List<SQLParameter> parameters;
 
     protected long expenseTime;
 

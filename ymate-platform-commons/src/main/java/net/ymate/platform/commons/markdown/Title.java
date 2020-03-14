@@ -24,7 +24,7 @@ public final class Title implements IMarkdown {
 
     public final StringBuilder title = new StringBuilder();
 
-    private int level;
+    private final int level;
 
     public static Title create(IMarkdown title) {
         return new Title(title);

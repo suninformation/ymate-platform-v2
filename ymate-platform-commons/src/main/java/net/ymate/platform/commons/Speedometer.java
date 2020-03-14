@@ -32,7 +32,7 @@ import java.util.concurrent.ExecutorService;
  */
 public class Speedometer implements AutoCloseable {
 
-    private String name;
+    private final String name;
 
     private int interval = 5000;
 

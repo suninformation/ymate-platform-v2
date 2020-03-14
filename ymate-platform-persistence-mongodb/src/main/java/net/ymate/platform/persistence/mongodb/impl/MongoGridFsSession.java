@@ -54,13 +54,13 @@ import java.util.stream.Collectors;
  */
 public class MongoGridFsSession extends AbstractSession<IMongoConnectionHolder> implements IGridFsSession {
 
-    private String bucketName;
+    private final String bucketName;
 
-    private GridFSBucket fsBucket;
+    private final GridFSBucket fsBucket;
 
-    private MongoCollection<GridFSFile> dbCollection;
+    private final MongoCollection<GridFSFile> dbCollection;
 
-    private IMongoConnectionHolder connectionHolder;
+    private final IMongoConnectionHolder connectionHolder;
 
     public MongoGridFsSession(IMongoDataSourceAdapter dataSourceAdapter) throws Exception {
         this(dataSourceAdapter, GridFS.DEFAULT_BUCKET);
@@ -104,7 +104,7 @@ public class MongoGridFsSession extends AbstractSession<IMongoConnectionHolder> 
     @Override
     public String upload(String fileName, InputStream inputStream, GridFSUploadOptions fsUploadOption) throws Exception {
         ObjectId returnValue = fsBucket.uploadFromStream(fileName, inputStream, fsUploadOption != null ? fsUploadOption : new GridFSUploadOptions());
-        return returnValue != null ? returnValue.toString() : null;
+        return returnValue.toString();
     }
 
     @Override

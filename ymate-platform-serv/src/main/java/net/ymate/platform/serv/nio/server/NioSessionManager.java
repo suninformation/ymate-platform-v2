@@ -38,7 +38,7 @@ public class NioSessionManager<SESSION_WRAPPER extends NioSessionWrapper, MESSAG
 
     private static final Log LOG = LogFactory.getLog(NioSessionManager.class);
 
-    private INioSessionListener<SESSION_WRAPPER, MESSAGE_TYPE> sessionListener;
+    private final INioSessionListener<SESSION_WRAPPER, MESSAGE_TYPE> sessionListener;
 
     public NioSessionManager(IServerCfg serverCfg, INioCodec codec, INioSessionListener<SESSION_WRAPPER, MESSAGE_TYPE> listener) {
         this(serverCfg, codec, listener, 0L);

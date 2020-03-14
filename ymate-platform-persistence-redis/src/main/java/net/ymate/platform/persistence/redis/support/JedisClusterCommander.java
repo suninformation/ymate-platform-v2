@@ -32,7 +32,7 @@ import java.util.Set;
  */
 public class JedisClusterCommander implements IRedisCommander {
 
-    private JedisCluster jedisCluster;
+    private final JedisCluster jedisCluster;
 
     JedisClusterCommander(JedisCluster jedisCluster) {
         if (jedisCluster == null) {

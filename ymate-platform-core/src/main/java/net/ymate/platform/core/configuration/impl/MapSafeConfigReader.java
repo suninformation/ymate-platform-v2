@@ -28,7 +28,7 @@ import java.util.*;
  */
 public class MapSafeConfigReader implements IConfigReader {
 
-    private Map<String, String> innerMap;
+    private final Map<String, String> innerMap;
 
     public static Map<String, String> keyStartsWith(Map<String, String> map, String keyPrefix) {
         Map<String, String> returnValues = new HashMap<>(16);

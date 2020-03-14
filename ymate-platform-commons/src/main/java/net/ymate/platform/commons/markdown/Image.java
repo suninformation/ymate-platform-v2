@@ -22,11 +22,11 @@ import org.apache.commons.lang3.StringUtils;
  */
 public final class Image implements IMarkdown {
 
-    private String alt;
+    private final String alt;
 
-    private String url;
+    private final String url;
 
-    private int zoom;
+    private final int zoom;
 
     public static Image create(String url) {
         return new Image(url);

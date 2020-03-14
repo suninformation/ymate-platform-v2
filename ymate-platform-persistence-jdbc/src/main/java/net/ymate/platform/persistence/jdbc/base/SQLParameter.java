@@ -39,9 +39,9 @@ public final class SQLParameter {
         }
     }
 
-    private Type.FIELD type;
+    private final Type.FIELD type;
 
-    private Object value;
+    private final Object value;
 
     public SQLParameter(Object value) {
         this(Type.FIELD.UNKNOWN, value);

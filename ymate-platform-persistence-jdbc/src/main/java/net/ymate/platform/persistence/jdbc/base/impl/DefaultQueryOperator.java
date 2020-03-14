@@ -32,11 +32,11 @@ import java.util.List;
  */
 public class DefaultQueryOperator<T> extends AbstractOperator implements IQueryOperator<T> {
 
-    private IResultSetHandler<T> resultSetHandler;
+    private final IResultSetHandler<T> resultSetHandler;
 
     private List<T> resultSet;
 
-    private int maxRow;
+    private final int maxRow;
 
     public DefaultQueryOperator(String sql, IDatabaseConnectionHolder connectionHolder, IResultSetHandler<T> resultSetHandler) {
         this(sql, connectionHolder, null, resultSetHandler, 0);

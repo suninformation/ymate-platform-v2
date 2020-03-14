@@ -29,9 +29,9 @@ import java.util.stream.IntStream;
  */
 public class ExcelFileAnalysisHelper implements Closeable {
 
-    private Workbook workbook;
+    private final Workbook workbook;
 
-    private String[] sheetNames;
+    private final String[] sheetNames;
 
     public static ExcelFileAnalysisHelper bind(File file) throws IOException {
         return new ExcelFileAnalysisHelper(new FileInputStream(file));

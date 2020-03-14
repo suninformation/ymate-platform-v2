@@ -209,7 +209,9 @@ public class DefaultBeanFactory implements IBeanFactory {
                         obj = (T) buildBeanProxyIfNeed(beanMeta.getBeanClass(), beanMeta.getBeanObject());
                         initBeanIoC(beanMeta.getBeanClass(), obj, beanMeta.getInitializer());
                     } catch (Exception e) {
-                        LOG.warn(StringUtils.EMPTY, e);
+                        if (LOG.isWarnEnabled()) {
+                            LOG.warn(StringUtils.EMPTY, e);
+                        }
                     }
                 } else {
                     obj = (T) beanMeta.getBeanObject();

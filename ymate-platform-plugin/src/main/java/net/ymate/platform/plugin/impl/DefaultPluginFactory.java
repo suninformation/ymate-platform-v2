@@ -319,7 +319,9 @@ public class DefaultPluginFactory implements IPluginFactory {
                 eventListener.onStarted(plugin.getPluginContext(), plugin);
                 return true;
             } catch (Exception e) {
-                LOG.warn(String.format("A exception occurred while starting [%s]: ", plugin.getPluginContext().getPluginMeta().toString()), RuntimeUtils.unwrapThrow(e));
+                if (LOG.isWarnEnabled()) {
+                    LOG.warn(String.format("A exception occurred while starting [%s]: ", plugin.getPluginContext().getPluginMeta().toString()), RuntimeUtils.unwrapThrow(e));
+                }
             }
         }
         return false;

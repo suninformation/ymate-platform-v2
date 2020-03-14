@@ -37,7 +37,7 @@ import java.util.*;
  */
 public final class FileUploadHelper {
 
-    private HttpServletRequest request;
+    private final HttpServletRequest request;
 
     /**
      * 监听器
@@ -271,9 +271,9 @@ public final class FileUploadHelper {
      */
     public static class UploadFormWrapper {
 
-        private Map<String, String[]> fieldMap = new HashMap<>();
+        private final Map<String, String[]> fieldMap = new HashMap<>();
 
-        private Map<String, IUploadFileWrapper[]> fileMap = new HashMap<>();
+        private final Map<String, IUploadFileWrapper[]> fileMap = new HashMap<>();
 
         UploadFormWrapper() {
         }

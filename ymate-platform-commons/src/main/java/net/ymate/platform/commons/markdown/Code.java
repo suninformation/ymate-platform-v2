@@ -24,7 +24,7 @@ public final class Code implements IMarkdown {
 
     private final StringBuilder code = new StringBuilder();
 
-    private String language;
+    private final String language;
 
     public static Code create(IMarkdown code) {
         return new Code(code);

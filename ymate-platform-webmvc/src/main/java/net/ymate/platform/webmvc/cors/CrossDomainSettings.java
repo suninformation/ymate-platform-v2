@@ -25,8 +25,6 @@ import net.ymate.platform.webmvc.cors.annotation.CrossDomainSetting;
 import net.ymate.platform.webmvc.cors.impl.DefaultCrossDomainSetting;
 import org.apache.commons.lang.NullArgumentException;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -36,8 +34,6 @@ import java.util.concurrent.ConcurrentHashMap;
  * @since 2.1.0
  */
 public final class CrossDomainSettings implements IInitialization<IWebMvc> {
-
-    private static final Log LOG = LogFactory.getLog(CrossDomainSettings.class);
 
     private final Map<String, ICrossDomainSetting> resolvedSettings = new ConcurrentHashMap<>();
 

@@ -44,15 +44,15 @@ public class Table extends QueryHandleAdapter<Table> {
 
     public static final String IF_EXISTS = "IF EXISTS";
 
-    private IDialect dialect;
+    private final IDialect dialect;
 
     private IShardingRule shardingRule;
 
     private IShardingable shardingable;
 
-    private String prefix;
+    private final String prefix;
 
-    private String tableName;
+    private final String tableName;
 
     private String comment;
 

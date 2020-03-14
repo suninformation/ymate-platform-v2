@@ -229,7 +229,7 @@ public class FileUtils {
                 if (connection instanceof JarURLConnection) {
                     try (JarFile jarFile = ((JarURLConnection) connection).getJarFile()) {
                         Enumeration<JarEntry> entriesEnum = jarFile.entries();
-                        for (; entriesEnum.hasMoreElements(); ) {
+                        while (entriesEnum.hasMoreElements()) {
                             JarEntry entry = entriesEnum.nextElement();
                             if (StringUtils.startsWith(entry.getName(), prefixPath)) {
                                 if (!entry.isDirectory()) {

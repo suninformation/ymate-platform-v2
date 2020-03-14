@@ -62,10 +62,10 @@ public final class InterceptMeta {
         InterceptSettings.InterceptSettingMeta settingMeta = interceptSettings.getInterceptSettings(targetClass, targetMethod);
         settingMeta.getBeforeIntercepts().stream()
                 .filter(interceptSettings::isNotDisabledInterceptor)
-                .forEach(interceptorClass -> beforeIntercepts.add(interceptorClass));
+                .forEach(beforeIntercepts::add);
         settingMeta.getAfterIntercepts().stream()
                 .filter(interceptSettings::isNotDisabledInterceptor)
-                .forEach(interceptorClass -> afterIntercepts.add(interceptorClass));
+                .forEach(afterIntercepts::add);
         //
         Clean cleanAnn = targetMethod.getAnnotation(Clean.class);
         processPackage(owner, targetClass, cleanAnn, settingMeta);
@@ -131,11 +131,11 @@ public final class InterceptMeta {
                 } else if (annotation instanceof Before) {
                     Arrays.stream(((Before) annotation).value())
                             .filter(interceptorClass -> isNotCleanInterceptor(cleanAnn, IInterceptor.CleanType.BEFORE, interceptorClass, settingMeta))
-                            .forEach(interceptorClass -> beforeIntercepts.add(interceptorClass));
+                            .forEach(beforeIntercepts::add);
                 } else if (annotation instanceof After) {
                     Arrays.stream(((After) annotation).value())
                             .filter(interceptorClass -> isNotCleanInterceptor(cleanAnn, IInterceptor.CleanType.AFTER, interceptorClass, settingMeta))
-                            .forEach(interceptorClass -> beforeIntercepts.add(interceptorClass));
+                            .forEach(beforeIntercepts::add);
                 }
             }
         }

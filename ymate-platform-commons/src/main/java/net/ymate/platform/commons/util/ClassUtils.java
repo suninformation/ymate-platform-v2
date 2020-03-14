@@ -80,8 +80,8 @@ public class ClassUtils {
                 Class<?> implClass = loadClass(className, callingClass);
                 return impl(implClass, interfaceClass);
             } catch (ClassNotFoundException e) {
-                if (LOG.isWarnEnabled()) {
-                    LOG.warn(StringUtils.EMPTY, RuntimeUtils.unwrapThrow(e));
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug(StringUtils.EMPTY, RuntimeUtils.unwrapThrow(e));
                 }
             }
         }
@@ -95,8 +95,8 @@ public class ClassUtils {
                 try {
                     return (T) implClass.newInstance();
                 } catch (IllegalAccessException | InstantiationException e) {
-                    if (LOG.isWarnEnabled()) {
-                        LOG.warn(StringUtils.EMPTY, RuntimeUtils.unwrapThrow(e));
+                    if (LOG.isDebugEnabled()) {
+                        LOG.debug(StringUtils.EMPTY, RuntimeUtils.unwrapThrow(e));
                     }
                 }
             }
@@ -122,8 +122,8 @@ public class ClassUtils {
                 Class<?> implClass = loadClass(className, callingClass);
                 return impl(implClass, interfaceClass, parameterTypes, initArgs, allowNoSuchMethod);
             } catch (ClassNotFoundException e) {
-                if (LOG.isWarnEnabled()) {
-                    LOG.warn(StringUtils.EMPTY, RuntimeUtils.unwrapThrow(e));
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug(StringUtils.EMPTY, RuntimeUtils.unwrapThrow(e));
                 }
             }
         }
@@ -144,8 +144,8 @@ public class ClassUtils {
                     if (e instanceof NoSuchMethodException) {
                         flag = allowNoSuchMethod;
                     }
-                    if (flag && LOG.isWarnEnabled()) {
-                        LOG.warn(StringUtils.EMPTY, RuntimeUtils.unwrapThrow(e));
+                    if (flag && LOG.isDebugEnabled()) {
+                        LOG.debug(StringUtils.EMPTY, RuntimeUtils.unwrapThrow(e));
                     }
                 }
             }
@@ -171,8 +171,8 @@ public class ClassUtils {
                     }
                 }
             } catch (NoClassDefFoundError e) {
-                if (LOG.isWarnEnabled()) {
-                    LOG.warn(e.toString());
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug(e.toString());
                 }
             }
         }
@@ -188,16 +188,16 @@ public class ClassUtils {
         try {
             instance = getExtensionLoader(clazz).getExtension();
         } catch (Exception e) {
-            if (LOG.isWarnEnabled()) {
-                LOG.warn(StringUtils.EMPTY, RuntimeUtils.unwrapThrow(e));
+            if (LOG.isDebugEnabled()) {
+                LOG.debug(StringUtils.EMPTY, RuntimeUtils.unwrapThrow(e));
             }
         }
         if (instance == null && defaultClass != null) {
             try {
                 instance = defaultClass.newInstance();
             } catch (InstantiationException | IllegalAccessException e) {
-                if (LOG.isWarnEnabled()) {
-                    LOG.warn(StringUtils.EMPTY, RuntimeUtils.unwrapThrow(e));
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug(StringUtils.EMPTY, RuntimeUtils.unwrapThrow(e));
                 }
             }
         }
@@ -262,7 +262,7 @@ public class ClassUtils {
             } else {
                 break;
             }
-        } while ((clazz != null && clazz != Object.class));
+        } while (clazz != Object.class);
         return flag;
     }
 
@@ -497,8 +497,8 @@ public class ClassUtils {
         try {
             return Class.forName(StringUtils.substringBetween(clazz.getName(), "[L", ";"), false, clazz.getClassLoader());
         } catch (ClassNotFoundException e) {
-            if (LOG.isWarnEnabled()) {
-                LOG.warn(StringUtils.EMPTY, RuntimeUtils.unwrapThrow(e));
+            if (LOG.isDebugEnabled()) {
+                LOG.debug(StringUtils.EMPTY, RuntimeUtils.unwrapThrow(e));
             }
         }
         return null;
@@ -509,12 +509,12 @@ public class ClassUtils {
      * @param clazz 目标类型
      * @return 创建一个类对象实例，包裹它并赋予其简单对象属性操作能力，可能返回空
      */
-    public static <T> BeanWrapper<T> wrapper(Class<T> clazz) {
+    public static <T> BeanWrapper<T> wrapperClass(Class<T> clazz) {
         try {
             return wrapper(clazz.newInstance());
         } catch (IllegalAccessException | InstantiationException e) {
-            if (LOG.isWarnEnabled()) {
-                LOG.warn(StringUtils.EMPTY, RuntimeUtils.unwrapThrow(e));
+            if (LOG.isDebugEnabled()) {
+                LOG.debug(StringUtils.EMPTY, RuntimeUtils.unwrapThrow(e));
             }
         }
         return null;
@@ -568,8 +568,8 @@ public class ClassUtils {
                     loadResources(String.format("META-INF/services/internal/%s", clazz.getName()), clazz);
                 }
             } catch (IOException e) {
-                if (LOG.isWarnEnabled()) {
-                    LOG.warn(StringUtils.EMPTY, RuntimeUtils.unwrapThrow(e));
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug(StringUtils.EMPTY, RuntimeUtils.unwrapThrow(e));
                 }
             }
         }
@@ -593,8 +593,8 @@ public class ClassUtils {
                                                 classesCache.add(loadedClass);
                                             }
                                         } catch (ClassNotFoundException e) {
-                                            if (LOG.isWarnEnabled()) {
-                                                LOG.warn(StringUtils.EMPTY, RuntimeUtils.unwrapThrow(e));
+                                            if (LOG.isDebugEnabled()) {
+                                                LOG.debug(StringUtils.EMPTY, RuntimeUtils.unwrapThrow(e));
                                             }
                                         }
                                     }
@@ -632,8 +632,8 @@ public class ClassUtils {
                     }
                 }
             } catch (Exception e) {
-                if (LOG.isWarnEnabled()) {
-                    LOG.warn(StringUtils.EMPTY, RuntimeUtils.unwrapThrow(e));
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug(StringUtils.EMPTY, RuntimeUtils.unwrapThrow(e));
                 }
             }
             return null;
@@ -673,9 +673,9 @@ public class ClassUtils {
 
         private final T target;
 
-        private Map<String, Method> methodMap = new LinkedHashMap<>();
+        private final Map<String, Method> methodMap = new LinkedHashMap<>();
 
-        private Map<String, Field> fieldMap = new LinkedHashMap<>();
+        private final Map<String, Field> fieldMap = new LinkedHashMap<>();
 
         BeanWrapper(T target) {
             this.target = target;

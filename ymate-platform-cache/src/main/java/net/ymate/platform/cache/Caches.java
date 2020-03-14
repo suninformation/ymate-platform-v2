@@ -216,7 +216,7 @@ public final class Caches implements IModule, ICaches {
     }
 
     @Override
-    public void removeAll(String cacheName, List keys) {
+    public void removeAll(String cacheName, List<?> keys) {
         ICache cache = config.getCacheProvider().getCache(cacheName);
         if (cache != null) {
             cache.removeAll(keys);
@@ -224,7 +224,7 @@ public final class Caches implements IModule, ICaches {
     }
 
     @Override
-    public void removeAll(List keys) {
+    public void removeAll(List<?> keys) {
         removeAll(config.getDefaultCacheName(), keys);
     }
 

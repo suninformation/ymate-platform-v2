@@ -60,7 +60,9 @@ public class DBCPDataSourceAdapter extends AbstractDatabaseDataSourceAdapter {
             try {
                 dataSource.close();
             } catch (SQLException e) {
-                LOG.warn(StringUtils.EMPTY, RuntimeUtils.unwrapThrow(e));
+                if (LOG.isWarnEnabled()) {
+                    LOG.warn(StringUtils.EMPTY, RuntimeUtils.unwrapThrow(e));
+                }
             }
         }
         super.doClose();

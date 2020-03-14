@@ -259,9 +259,9 @@ public class CodecUtils {
 
         private int maxDecryptBlockSize = 128;
 
-        private String signatureAlgorithm;
+        private final String signatureAlgorithm;
 
-        private Provider signatureAlgorithmProvider;
+        private final Provider signatureAlgorithmProvider;
 
         public RSACodecHelper(int keySize) {
             this(keySize, null, null, null, null);

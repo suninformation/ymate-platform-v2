@@ -67,7 +67,7 @@ public class DefaultBeanLoader extends AbstractBeanLoader {
             // 不扫描注解、枚举类，被声明@Ingored注解的类也将被忽略，因为需要处理package-info信息，所以放开接口限制
             if (!clazz.isAnnotation() && !clazz.isEnum() && !clazz.isAnnotationPresent(Ignored.class)) {
                 Annotation[] annotations = clazz.getAnnotations();
-                if (annotations != null && annotations.length > 0) {
+                if (annotations.length > 0) {
                     for (Annotation annotation : annotations) {
                         IBeanHandler beanHandler = getBeanHandler(annotation.annotationType());
                         if (beanHandler != null) {

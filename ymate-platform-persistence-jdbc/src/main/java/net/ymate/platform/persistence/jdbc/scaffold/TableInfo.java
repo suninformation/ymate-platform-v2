@@ -48,8 +48,10 @@ public final class TableInfo implements Serializable {
                             primaryKeyNames.add(resultSet.getString(4).toLowerCase());
                         }
                     }
-                    if (primaryKeyNames.isEmpty() && LOG.isWarnEnabled()) {
-                        LOG.warn(String.format("Database table '%s' no primary key set, ignored.", tableName));
+                    if (primaryKeyNames.isEmpty()) {
+                        if (LOG.isWarnEnabled()) {
+                            LOG.warn(String.format("Database table '%s' no primary key set, ignored.", tableName));
+                        }
                         return null;
                     }
                 }

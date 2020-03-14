@@ -34,12 +34,12 @@ public class ParameterMeta {
     /**
      * 成员属性或方法参数名称
      */
-    private String fieldName;
+    private final String fieldName;
 
     /**
      * 参数类型
      */
-    private Class<?> paramType;
+    private final Class<?> paramType;
 
     /**
      * 参数名称前缀
@@ -54,12 +54,12 @@ public class ParameterMeta {
     /**
      * 是否为数组
      */
-    private boolean array;
+    private final boolean array;
 
     /**
      * 是否为上传文件类型
      */
-    private boolean uploadFile;
+    private final boolean uploadFile;
 
     /**
      * 是否为ModelBind模式
@@ -83,17 +83,7 @@ public class ParameterMeta {
     }
 
     public ParameterMeta(Field paramField) {
-        this.fieldName = paramField.getName();
-        this.paramType = paramField.getType();
-        this.array = this.paramType.isArray();
-        this.uploadFile = this.paramType.equals(IUploadFileWrapper.class);
-        //
-        for (Annotation annotation : paramField.getAnnotations()) {
-            this.paramField = parseAnnotation(annotation);
-            if (this.paramField) {
-                break;
-            }
-        }
+        this(paramField.getType(), paramField.getName(), paramField.getAnnotations());
     }
 
     private boolean parseAnnotation(Annotation annotation) {

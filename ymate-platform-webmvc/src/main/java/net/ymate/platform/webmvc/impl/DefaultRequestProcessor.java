@@ -164,7 +164,7 @@ public class DefaultRequestProcessor implements IRequestProcessor {
     }
 
     private Object doParseModelBindSingleton(IWebMvc owner, RequestMeta requestMeta, ParameterMeta paramMeta, Class<?> paramType) throws Exception {
-        ClassUtils.BeanWrapper<?> beanWrapper = ClassUtils.wrapper(paramType);
+        ClassUtils.BeanWrapper<?> beanWrapper = ClassUtils.wrapperClass(paramType);
         if (beanWrapper != null) {
             for (String fieldName : beanWrapper.getFieldNames()) {
                 ParameterMeta parameterMeta = new ParameterMeta(beanWrapper.getField(fieldName));
@@ -188,7 +188,7 @@ public class DefaultRequestProcessor implements IRequestProcessor {
             //
             Class<?> arrayClassType = ClassUtils.getArrayClassType(paramType);
             if (arrayClassType != null) {
-                ClassUtils.BeanWrapper<?> beanWrapper = ClassUtils.wrapper(arrayClassType);
+                ClassUtils.BeanWrapper<?> beanWrapper = ClassUtils.wrapperClass(arrayClassType);
                 if (beanWrapper != null) {
                     int maxLength = 0;
                     for (String fieldName : beanWrapper.getFieldNames()) {
@@ -211,7 +211,7 @@ public class DefaultRequestProcessor implements IRequestProcessor {
             //
             if (returnValue != null && !parameterMetaMap.isEmpty()) {
                 for (int idx = 0; idx < returnValue.length; idx++) {
-                    ClassUtils.BeanWrapper<?> beanWrapper = ClassUtils.wrapper(arrayClassType);
+                    ClassUtils.BeanWrapper<?> beanWrapper = ClassUtils.wrapperClass(arrayClassType);
                     if (beanWrapper != null) {
                         for (Map.Entry<String, ParameterMeta> parameterMetaEntry : parameterMetaMap.entrySet()) {
                             String paramName = parameterMetaEntry.getValue().doBuildParamName(paramMeta.getPrefix(), parameterMetaEntry.getValue().getParamName(), parameterMetaEntry.getKey());

@@ -140,7 +140,7 @@ public final class ExcelFileExportHelper {
     }
 
     private File doExport(Class<?> dataType, int index, Map<String, Object> data, String charset) throws Exception {
-        ClassUtils.BeanWrapper<?> beanWrapper = ClassUtils.wrapper(dataType);
+        ClassUtils.BeanWrapper<?> beanWrapper = ClassUtils.wrapperClass(dataType);
         if (beanWrapper != null) {
             Collection<Field> fields = beanWrapper.getFields();
             Map<String, ExportColumn> columnsMap = new HashMap<>(fields.size());

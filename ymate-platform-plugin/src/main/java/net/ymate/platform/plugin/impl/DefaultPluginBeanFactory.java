@@ -44,9 +44,9 @@ public class DefaultPluginBeanFactory extends DefaultBeanFactory implements IPlu
      */
     private final Map<String, String> pluginAliasMap = new ConcurrentHashMap<>();
 
-    private IPluginFactory pluginFactory;
+    private final IPluginFactory pluginFactory;
 
-    private boolean includedClassPath;
+    private final boolean includedClassPath;
 
     public DefaultPluginBeanFactory(IPluginFactory pluginFactory) {
         this(pluginFactory, false);

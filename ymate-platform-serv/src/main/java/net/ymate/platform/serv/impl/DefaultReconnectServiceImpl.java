@@ -20,6 +20,7 @@ import net.ymate.platform.commons.util.RuntimeUtils;
 import net.ymate.platform.serv.AbstractService;
 import net.ymate.platform.serv.IClient;
 import net.ymate.platform.serv.IReconnectService;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -71,8 +72,8 @@ public class DefaultReconnectServiceImpl extends AbstractService implements IRec
                 }
             }
         } catch (IOException | InterruptedException e) {
-            if (isStarted()) {
-                LOG.error(e.getMessage(), RuntimeUtils.unwrapThrow(e));
+            if (isStarted() && LOG.isErrorEnabled()) {
+                LOG.error(StringUtils.EMPTY, RuntimeUtils.unwrapThrow(e));
             }
         }
     }

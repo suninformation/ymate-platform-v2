@@ -171,7 +171,9 @@ public final class I18N implements IDestroyable {
                     cache.put(resourceName, prop);
                 }
             } catch (Exception e) {
-                LOG.warn(e.getMessage(), RuntimeUtils.unwrapThrow(e));
+                if (LOG.isWarnEnabled()) {
+                    LOG.warn(e.getMessage(), RuntimeUtils.unwrapThrow(e));
+                }
             }
         }
         String returnValue = null;

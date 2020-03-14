@@ -78,9 +78,7 @@ public class PropertyConfigFileParser extends AbstractConfigFileParser {
                         case 4:
                             if (propArr[2].equalsIgnoreCase(TAG_NAME_ATTRIBUTES)) {
                                 Property prop = safeGetProperty(category, propArr[1]);
-                                if (prop != null) {
-                                    fixedSetAttribute(prop, propName, propArr[3]);
-                                }
+                                fixedSetAttribute(prop, propName, propArr[3]);
                             } else {
                                 category.getPropertyMap().put(propArr[3], new Property(propArr[3], properties.getProperty(propName), null));
                             }
@@ -93,9 +91,7 @@ public class PropertyConfigFileParser extends AbstractConfigFileParser {
                                 category.getAttributeMap().put(propArr[2], new Attribute(propArr[2], properties.getProperty(propName)));
                             } else {
                                 Property prop = safeGetProperty(category, propArr[1]);
-                                if (prop != null) {
-                                    fixedSetAttribute(prop, propName, propArr[2]);
-                                }
+                                fixedSetAttribute(prop, propName, propArr[2]);
                             }
                             break;
                     }

@@ -108,7 +108,7 @@ public class EntityInfo implements Serializable {
 
     public static class Builder {
 
-        private EntityInfo target = new EntityInfo();
+        private final EntityInfo target = new EntityInfo();
 
         public Builder name(String name) {
             target.name = name;

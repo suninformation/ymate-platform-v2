@@ -31,7 +31,7 @@ public class RedisCommandHolder implements IRedisCommandHolder {
 
     private static final ThreadLocal<IRedisCommander> COMMANDER_THREAD_LOCAL = new ThreadLocal<>();
 
-    private IRedisDataSourceAdapter dataSourceAdapter;
+    private final IRedisDataSourceAdapter dataSourceAdapter;
 
     public RedisCommandHolder(IRedisDataSourceAdapter dataSourceAdapter) {
         this.dataSourceAdapter = dataSourceAdapter;

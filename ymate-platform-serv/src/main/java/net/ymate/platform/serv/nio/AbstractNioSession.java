@@ -199,7 +199,9 @@ public abstract class AbstractNioSession<LISTENER extends IListener<INioSession>
             try {
                 eventGroup.listener().onAfterSessionClosed(AbstractNioSession.this);
             } catch (IOException ex) {
-                LOG.error(StringUtils.EMPTY, RuntimeUtils.unwrapThrow(ex));
+                if (LOG.isErrorEnabled()) {
+                    LOG.error(StringUtils.EMPTY, RuntimeUtils.unwrapThrow(ex));
+                }
             }
         });
     }
@@ -224,7 +226,9 @@ public abstract class AbstractNioSession<LISTENER extends IListener<INioSession>
         try {
             return countDownLatch.await(time, TimeUnit.MILLISECONDS);
         } catch (InterruptedException e) {
-            LOG.error(StringUtils.EMPTY, RuntimeUtils.unwrapThrow(e));
+            if (LOG.isErrorEnabled()) {
+                LOG.error(StringUtils.EMPTY, RuntimeUtils.unwrapThrow(e));
+            }
         }
         return false;
     }
@@ -258,7 +262,9 @@ public abstract class AbstractNioSession<LISTENER extends IListener<INioSession>
                     try {
                         close();
                     } catch (IOException exx) {
-                        LOG.error(StringUtils.EMPTY, RuntimeUtils.unwrapThrow(exx));
+                        if (LOG.isErrorEnabled()) {
+                            LOG.error(StringUtils.EMPTY, RuntimeUtils.unwrapThrow(exx));
+                        }
                     }
                 }
             }

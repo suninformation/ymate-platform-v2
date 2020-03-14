@@ -33,7 +33,7 @@ public class TextView extends AbstractView {
     /**
      * 文本内容
      */
-    private String content;
+    private final String content;
 
     public static TextView bind(String content) {
         return new TextView(content);

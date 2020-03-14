@@ -37,7 +37,7 @@ public class NioUdpSessionManager<SESSION_WRAPPER extends NioUdpSessionWrapper, 
 
     private static final Log LOG = LogFactory.getLog(NioSessionManager.class);
 
-    private INioUdpSessionListener<SESSION_WRAPPER, MESSAGE_TYPE> sessionListener;
+    private final INioUdpSessionListener<SESSION_WRAPPER, MESSAGE_TYPE> sessionListener;
 
     /**
      * 构造器

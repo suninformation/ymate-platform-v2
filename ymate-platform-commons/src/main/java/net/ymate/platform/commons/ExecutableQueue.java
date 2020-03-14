@@ -435,9 +435,7 @@ public class ExecutableQueue<E extends Serializable> implements AutoCloseable {
                 if (LOG.isInfoEnabled()) {
                     LOG.info(String.format("ExecutableQueue[%s] Executor Submit: %d", prefix, workers.size()));
                 }
-                workers.forEach((worker) -> {
-                    executor.submit(new ExecutableWorker<>(queue, semaphore, worker));
-                });
+                workers.forEach((worker) -> executor.submit(new ExecutableWorker<>(queue, semaphore, worker)));
             }
         }
     }
@@ -486,7 +484,9 @@ public class ExecutableQueue<E extends Serializable> implements AutoCloseable {
                     queue.add(result);
                 }
             } catch (Exception e) {
-                LOG.warn("An error occurred when ExecutableWorker was executed:", RuntimeUtils.unwrapThrow(e));
+                if (LOG.isWarnEnabled()) {
+                    LOG.warn("An error occurred when ExecutableWorker was executed:", RuntimeUtils.unwrapThrow(e));
+                }
             } finally {
                 if (semaphore != null) {
                     semaphore.release();

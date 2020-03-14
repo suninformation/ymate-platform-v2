@@ -187,7 +187,7 @@ public class DefaultWebErrorProcessor implements IWebErrorProcessor, IWebInitial
         WebContext.getContext().getParameters().forEach((key, value) -> stringBuilder.append("\t  ").append(key).append(": ").append(JSON.toJSONString(value)).append("\n"));
         //
         stringBuilder.append("-- Attributes:").append("\n");
-        Enumeration enumeration = WebContext.getRequest().getAttributeNames();
+        Enumeration<?> enumeration = WebContext.getRequest().getAttributeNames();
         while (enumeration.hasMoreElements()) {
             String attrName = (String) enumeration.nextElement();
             stringBuilder.append("\t  ").append(attrName).append(": ").append(JSON.toJSONString(WebContext.getRequest().getAttribute(attrName))).append("\n");

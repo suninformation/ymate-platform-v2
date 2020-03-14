@@ -23,7 +23,7 @@ public class StaticMDCBinder {
      * @return the StaticMDCBinder singleton
      * @since 1.7.14
      */
-    public static final StaticMDCBinder getSingleton() {
+    public static StaticMDCBinder getSingleton() {
         return SINGLETON;
     }
 
