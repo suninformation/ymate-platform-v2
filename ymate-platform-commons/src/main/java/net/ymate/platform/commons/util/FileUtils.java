@@ -94,10 +94,10 @@ public class FileUtils {
 
     /**
      * @param url 目标URL地址
-     * @return 将URL地址转换成File对象, 若url指向的是jar包中文件，则返回null
+     * @return 将URL地址转换成File对象
      */
     public static File toFile(URL url) {
-        if ((url == null) || (!PROTOCOL_FILE.equals(url.getProtocol()))) {
+        if (url == null) {
             return null;
         }
         String filename = url.getFile().replace('/', File.separatorChar);

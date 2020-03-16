@@ -224,10 +224,7 @@ public final class Cfgs implements IConfig {
             if (targetFile == null) {
                 URL targetFileUrl = ResourceUtils.getResource(cfgFile, this.getClass());
                 if (targetFileUrl != null) {
-                    targetFile = FileUtils.toFile(targetFileUrl);
-                    if (targetFile != null) {
-                        return targetFileUrl.toString();
-                    }
+                    return targetFileUrl.toString();
                 }
             }
             if (targetFile != null) {

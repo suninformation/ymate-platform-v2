@@ -16,6 +16,7 @@
 package net.ymate.platform.webmvc.support;
 
 import net.ymate.platform.commons.util.RuntimeUtils;
+import net.ymate.platform.validation.ValidateContext;
 import net.ymate.platform.webmvc.IRequestContext;
 import net.ymate.platform.webmvc.IWebErrorProcessor;
 import net.ymate.platform.webmvc.IWebMvc;
@@ -70,6 +71,7 @@ public final class GenericDispatcher {
             }
         } finally {
             doFireEvent(WebEvent.EVENT.REQUEST_COMPLETED, requestContext);
+            ValidateContext.destroy();
             WebContext.destroy();
         }
     }

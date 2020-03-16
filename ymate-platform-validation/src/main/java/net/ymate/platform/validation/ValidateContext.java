@@ -39,6 +39,10 @@ public class ValidateContext extends AbstractContext {
         return ATTRIBUTES.get();
     }
 
+    public static void destroy() {
+        ATTRIBUTES.remove();
+    }
+
     private final String resourceName;
 
     private final Annotation annotation;
