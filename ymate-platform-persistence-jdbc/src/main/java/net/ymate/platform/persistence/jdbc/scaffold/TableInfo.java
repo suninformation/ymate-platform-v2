@@ -56,7 +56,7 @@ public final class TableInfo implements Serializable {
                     }
                 }
             }
-            try (ResultSet resultSet = statement.executeQuery(String.format("SELECT * FROM %s", connectionHolder.getDialect().wrapIdentifierQuote(tableName)))) {
+            try (ResultSet resultSet = statement.executeQuery(connectionHolder.getDialect().buildPagedQuerySql(String.format("SELECT * FROM %s", connectionHolder.getDialect().wrapIdentifierQuote(tableName)), 1, 1))) {
                 ResultSetMetaData tableMetaData = resultSet.getMetaData();
                 Map<String, ColumnInfo> columns = new LinkedHashMap<>(tableMetaData.getColumnCount());
                 for (int idx = 1; idx <= tableMetaData.getColumnCount(); idx++) {
