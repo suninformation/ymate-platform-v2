@@ -170,10 +170,7 @@ public class ClassUtils {
                         }
                     }
                 }
-            } catch (NoClassDefFoundError e) {
-                if (LOG.isDebugEnabled()) {
-                    LOG.debug(e.toString());
-                }
+            } catch (NoClassDefFoundError ignored) {
             }
         }
         return targetClass;

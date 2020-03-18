@@ -15,11 +15,16 @@
  */
 package net.ymate.platform.core;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 /**
  * @author 刘镇 (suninformation@163.com) on 2019-11-11 12:46
  * @since 2.1.0
  */
 public abstract class AbstractApplicationConfigureFactory implements IApplicationConfigureFactory {
+
+    private static final Log LOG = LogFactory.getLog(AbstractApplicationConfigureFactory.class);
 
     private Class<?> mainClass;
 
@@ -32,6 +37,9 @@ public abstract class AbstractApplicationConfigureFactory implements IApplicatio
 
     @Override
     public void setMainClass(Class<?> mainClass) {
+        if (LOG.isInfoEnabled() && this.mainClass == null && mainClass != null) {
+            LOG.info(String.format("Set the main startup class: %s", mainClass.getName()));
+        }
         this.mainClass = mainClass;
     }
 
