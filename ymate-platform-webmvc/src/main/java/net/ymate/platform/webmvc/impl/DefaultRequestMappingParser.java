@@ -129,6 +129,9 @@ public class DefaultRequestMappingParser implements IRequestMappingParser {
 
     @Override
     public final RequestMeta parse(IRequestContext context) {
+        if (StringUtils.containsAny(context.getRequestMapping(), "{", "}")) {
+            return null;
+        }
         Map<String, RequestMeta> requestMetas = getRequestMetas(context.getHttpMethod());
         RequestMeta requestMeta = requestMetas.get(context.getRequestMapping());
         if (requestMeta == null) {
