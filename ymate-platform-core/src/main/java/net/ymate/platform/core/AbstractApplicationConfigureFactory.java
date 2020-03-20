@@ -38,7 +38,7 @@ public abstract class AbstractApplicationConfigureFactory implements IApplicatio
     @Override
     public void setMainClass(Class<?> mainClass) {
         if (LOG.isInfoEnabled() && this.mainClass == null && mainClass != null) {
-            LOG.info(String.format("Set the main startup class: %s", mainClass.getName()));
+            LOG.info(String.format("Using startup class: %s", mainClass.getName()));
         }
         this.mainClass = mainClass;
     }
