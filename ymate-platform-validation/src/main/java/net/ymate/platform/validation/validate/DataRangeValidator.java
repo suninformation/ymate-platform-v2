@@ -51,22 +51,29 @@ public final class DataRangeValidator implements IValidator {
         if (paramValue.getClass().isArray()) {
             Object[] values = (Object[]) paramValue;
             for (Object pValue : values) {
-                String pValueStr = BlurObject.bind(pValue).toStringValue();
-                if (ignoreCase) {
-                    for (String value : collection) {
-                        if (StringUtils.equalsIgnoreCase(pValueStr, value)) {
-                            contained = true;
-                            break;
-                        }
-                    }
-                } else {
-                    contained = collection.contains(pValueStr);
+                contained = containsValue(collection, pValue, ignoreCase);
+                if (contained) {
+                    break;
                 }
             }
         } else {
-            contained = collection.contains(BlurObject.bind(paramValue).toStringValue());
+            contained = containsValue(collection, paramValue, ignoreCase);
         }
         return contained;
+    }
+
+    private static boolean containsValue(Collection<String> collection, Object paramValue, boolean ignoreCase) {
+        String pValueStr = BlurObject.bind(paramValue).toStringValue();
+        if (ignoreCase) {
+            for (String value : collection) {
+                if (StringUtils.equalsIgnoreCase(pValueStr, value)) {
+                    return true;
+                }
+            }
+        } else {
+            return collection.contains(pValueStr);
+        }
+        return false;
     }
 
     @Override
