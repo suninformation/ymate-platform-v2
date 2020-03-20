@@ -204,12 +204,17 @@ public class WebUtils {
         return isCorsRequest(request) && Type.HttpMethod.OPTIONS.name().equals(request.getMethod()) && request.getHeader(Type.HttpHead.ACCESS_CONTROL_REQUEST_METHOD) != null;
     }
 
+    public static boolean isAccepted(HttpServletRequest request, String contentType) {
+        String accept = request.getHeader(Type.HttpHead.ACCEPT);
+        return StringUtils.containsAny(accept, "*/*", contentType);
+    }
+
     public static boolean isJsonAccepted(HttpServletRequest request) {
         return isJsonAccepted(request, null);
     }
 
     public static boolean isJsonAccepted(HttpServletRequest request, String paramFormat) {
-        return StringUtils.containsIgnoreCase(request.getHeader(Type.HttpHead.ACCEPT), Type.ContentType.JSON.getContentType()) || isJsonFormat(request, paramFormat);
+        return isAccepted(request, Type.ContentType.JSON.getContentType()) || isJsonFormat(request, paramFormat);
     }
 
     public static boolean isJsonFormat(HttpServletRequest request) {
@@ -225,7 +230,7 @@ public class WebUtils {
     }
 
     public static boolean isXmlAccepted(HttpServletRequest request, String paramFormat) {
-        return StringUtils.containsIgnoreCase(request.getHeader(Type.HttpHead.ACCEPT), Type.ContentType.XML.getContentType()) || isXmlFormat(request, paramFormat);
+        return isAccepted(request, Type.ContentType.XML.getContentType()) || isXmlFormat(request, paramFormat);
     }
 
     public static boolean isXmlFormat(HttpServletRequest request) {
