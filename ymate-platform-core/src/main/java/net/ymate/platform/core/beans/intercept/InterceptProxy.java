@@ -78,9 +78,11 @@ public class InterceptProxy implements IProxy {
             //
             for (Class<? extends IInterceptor> interceptClass : interceptMeta.getAfterIntercepts()) {
                 IInterceptor interceptor = owner.getInterceptSettings().getInterceptorInstance(owner, interceptClass);
-                // 执行后置拦截器，所有后置拦截器的执行结果都将被忽略
-                if (interceptor.intercept(context) != null && LOG.isWarnEnabled()) {
-                    LOG.warn(String.format("Interceptor class [%s] has a return value in the after direction. Ignored!", interceptClass.getName()));
+                // 执行后置拦截器
+                Object afterReturnValue = interceptor.intercept(context);
+                if (afterReturnValue != null) {
+                    // 若后置拦截器返回的执行结果不为空则赋值
+                    returnValue = afterReturnValue;
                 }
             }
         }
