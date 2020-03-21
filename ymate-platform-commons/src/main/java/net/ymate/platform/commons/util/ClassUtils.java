@@ -522,7 +522,11 @@ public class ClassUtils {
      * @param target 目标类对象
      * @return 包裹它并赋予其简单对象属性操作能力，可能返回空
      */
+    @SuppressWarnings("unchecked")
     public static <T> BeanWrapper<T> wrapper(T target) {
+        if (target instanceof Class) {
+            return wrapperClass((Class<T>) target);
+        }
         return new BeanWrapper<>(target);
     }
 
