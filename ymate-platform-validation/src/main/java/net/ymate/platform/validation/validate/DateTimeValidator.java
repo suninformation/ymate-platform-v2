@@ -106,7 +106,7 @@ public final class DateTimeValidator implements IValidator {
                         if (dateTimeArr.length > 1 && !StringUtils.equalsIgnoreCase(StringUtils.trim(dateTimeArr[0]), StringUtils.trim(dateTimeArr[1]))) {
                             dateTimeEnd = parseDate(dateTimeArr[1], pattern);
                             if (dateTimeEnd != null) {
-                                if (dateTimeBegin.getTime() < dateTimeEnd.getTime()) {
+                                if (dateTimeBegin.getTime() > dateTimeEnd.getTime()) {
                                     result = 3;
                                 } else if (maxDays > 0) {
                                     long days = DateTimeHelper.bind(dateTimeBegin).subtract(dateTimeEnd) / DateTimeUtils.DAY;
