@@ -15,9 +15,13 @@
  */
 package net.ymate.platform.validation;
 
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * 验证器执行结果
@@ -33,14 +37,32 @@ public final class ValidateResult implements Serializable {
         return paramName;
     }
 
+    private static Object[] parseArgs(Object... args) {
+        List<Object> argList = new ArrayList<>();
+        if (ArrayUtils.isNotEmpty(args)) {
+            for (Object arg : args) {
+                if (arg.getClass().isArray()) {
+                    Collections.addAll(argList, (Object[]) arg);
+                } else {
+                    argList.add(arg);
+                }
+            }
+        }
+        if (!argList.isEmpty()) {
+            return argList.toArray();
+        }
+        return null;
+    }
+
     public static String formatMessage(ValidateContext context, String i18nKey, String defaultValue, Object... args) {
         String message = null;
         if (StringUtils.isNotBlank(i18nKey)) {
+            Object[] argArr = parseArgs(args);
             if (StringUtils.isNotBlank(context.getResourceName())) {
-                message = context.getOwner().getI18n().formatMessage(context.getResourceName(), i18nKey, StringUtils.EMPTY, args);
+                message = context.getOwner().getI18n().formatMessage(context.getResourceName(), i18nKey, StringUtils.EMPTY, argArr);
             }
             if (StringUtils.isBlank(message)) {
-                message = context.getOwner().getI18n().formatMessage(IValidator.VALIDATION_I18N_RESOURCE, i18nKey, defaultValue, args);
+                message = context.getOwner().getI18n().formatMessage(IValidator.VALIDATION_I18N_RESOURCE, i18nKey, defaultValue, argArr);
             }
         }
         return StringUtils.defaultIfBlank(message, defaultValue);
