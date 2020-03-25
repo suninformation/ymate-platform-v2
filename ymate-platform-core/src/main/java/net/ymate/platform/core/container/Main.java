@@ -20,8 +20,8 @@ import net.ymate.platform.core.container.impl.DefaultContainer;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @author 刘镇 (suninformation@163.com) on 2018/03/15 14:41
@@ -39,7 +39,7 @@ public class Main {
      */
     public static void main(String[] args) {
         try {
-            Set<IContainer> containers = new HashSet<>(ContainerManager.getContainers());
+            List<IContainer> containers = new ArrayList<>(ContainerManager.getContainers());
             if (containers.isEmpty()) {
                 // 若未设定任何容器则添加默认容器
                 containers.add(new DefaultContainer());

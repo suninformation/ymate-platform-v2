@@ -40,7 +40,7 @@ public class VelocityView extends AbstractView {
 
     public static final String FILE_SUFFIX = ".vm";
 
-    private static final Properties velocityConfig = new Properties();
+    private static final Properties VELOCITY_CONFIG = new Properties();
 
     static {
         View.registerViewBuilder(FILE_SUFFIX, VelocityView::bind);
@@ -83,22 +83,22 @@ public class VelocityView extends AbstractView {
     protected synchronized void doViewInit(IWebMvc owner) {
         super.doViewInit(owner);
         if (!initialized) {
-            velocityConfig.setProperty(Velocity.INPUT_ENCODING, DEFAULT_CHARSET);
-            velocityConfig.setProperty(Velocity.OUTPUT_ENCODING, DEFAULT_CHARSET);
+            VELOCITY_CONFIG.setProperty(Velocity.INPUT_ENCODING, DEFAULT_CHARSET);
+            VELOCITY_CONFIG.setProperty(Velocity.OUTPUT_ENCODING, DEFAULT_CHARSET);
             //
             if (baseViewPath.startsWith(Type.Const.WEB_INF)) {
-                velocityConfig.setProperty(Velocity.FILE_RESOURCE_LOADER_PATH, new File(RuntimeUtils.getRootPath(), StringUtils.substringAfter(baseViewPath, Type.Const.WEB_INF)).getPath());
+                VELOCITY_CONFIG.setProperty(Velocity.FILE_RESOURCE_LOADER_PATH, new File(RuntimeUtils.getRootPath(), StringUtils.substringAfter(baseViewPath, Type.Const.WEB_INF)).getPath());
             } else {
-                velocityConfig.setProperty(Velocity.FILE_RESOURCE_LOADER_PATH, baseViewPath);
+                VELOCITY_CONFIG.setProperty(Velocity.FILE_RESOURCE_LOADER_PATH, baseViewPath);
             }
-            Velocity.init(velocityConfig);
+            Velocity.init(VELOCITY_CONFIG);
             //
             initialized = true;
         }
     }
 
     public static void properties(String key, String value) {
-        velocityConfig.setProperty(key, value);
+        VELOCITY_CONFIG.setProperty(key, value);
     }
 
     private void doProcessPath() {
