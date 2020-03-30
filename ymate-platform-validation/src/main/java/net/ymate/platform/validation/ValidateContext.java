@@ -39,7 +39,7 @@ public class ValidateContext extends AbstractContext {
         return ATTRIBUTES.get();
     }
 
-    public static void destroy() {
+    public static void removeLocalAttributes() {
         ATTRIBUTES.remove();
     }
 

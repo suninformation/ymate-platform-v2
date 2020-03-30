@@ -35,6 +35,10 @@ public class InterceptContext extends AbstractContext {
         return ATTRIBUTES.get();
     }
 
+    public static void removeLocalAttributes() {
+        ATTRIBUTES.remove();
+    }
+
     private IInterceptor.Direction direction;
 
     private final Object targetObject;

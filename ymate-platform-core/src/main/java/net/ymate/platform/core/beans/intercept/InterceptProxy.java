@@ -45,48 +45,51 @@ public class InterceptProxy implements IProxy {
         if (ignored || !ClassUtils.isNormalMethod(proxyChain.getTargetMethod())) {
             return proxyChain.doProxyChain();
         }
-        //
-        IApplication owner = proxyChain.getProxyFactory().getOwner();
-        InterceptMeta interceptMeta = owner.getInterceptSettings().getInterceptMeta(owner, proxyChain.getTargetClass(), proxyChain.getTargetMethod());
-        //
-        InterceptContext context = interceptMeta.hasBeforeIntercepts() ? buildContext(proxyChain, IInterceptor.Direction.BEFORE) : null;
-        if (context != null) {
-            for (Class<? extends IInterceptor> interceptClass : interceptMeta.getBeforeIntercepts()) {
-                IInterceptor interceptor = owner.getInterceptSettings().getInterceptorInstance(owner, interceptClass);
-                // 执行前置拦截器，若其结果对象不为空则返回并停止执行
-                Object resultObj = interceptor.intercept(context);
-                if (resultObj != null) {
-                    // 如果目标方法的返回值类型为void则采用异常形式向上层返回拦截器执行结果
-                    if (void.class.equals(proxyChain.getTargetMethod().getReturnType())) {
-                        throw new InterceptException(resultObj);
-                    }
-                    return resultObj;
-                }
-            }
-        }
-        //
-        Object returnValue = proxyChain.doProxyChain();
-        //
-        if (interceptMeta.hasAfterIntercepts()) {
-            if (context == null) {
-                context = buildContext(proxyChain, IInterceptor.Direction.AFTER);
-            } else {
-                context.setDirection(IInterceptor.Direction.AFTER);
-            }
-            // 初始化拦截器上下文对象，并将当前方法的执行结果对象赋予后置拦截器使用
-            context.setResultObject(returnValue);
+        try {
+            IApplication owner = proxyChain.getProxyFactory().getOwner();
+            InterceptMeta interceptMeta = owner.getInterceptSettings().getInterceptMeta(owner, proxyChain.getTargetClass(), proxyChain.getTargetMethod());
             //
-            for (Class<? extends IInterceptor> interceptClass : interceptMeta.getAfterIntercepts()) {
-                IInterceptor interceptor = owner.getInterceptSettings().getInterceptorInstance(owner, interceptClass);
-                // 执行后置拦截器
-                Object afterReturnValue = interceptor.intercept(context);
-                if (afterReturnValue != null) {
-                    // 若后置拦截器返回的执行结果不为空则赋值
-                    returnValue = afterReturnValue;
+            InterceptContext context = interceptMeta.hasBeforeIntercepts() ? buildContext(proxyChain, IInterceptor.Direction.BEFORE) : null;
+            if (context != null) {
+                for (Class<? extends IInterceptor> interceptClass : interceptMeta.getBeforeIntercepts()) {
+                    IInterceptor interceptor = owner.getInterceptSettings().getInterceptorInstance(owner, interceptClass);
+                    // 执行前置拦截器，若其结果对象不为空则返回并停止执行
+                    Object resultObj = interceptor.intercept(context);
+                    if (resultObj != null) {
+                        // 如果目标方法的返回值类型为void则采用异常形式向上层返回拦截器执行结果
+                        if (void.class.equals(proxyChain.getTargetMethod().getReturnType())) {
+                            throw new InterceptException(resultObj);
+                        }
+                        return resultObj;
+                    }
                 }
             }
+            //
+            Object returnValue = proxyChain.doProxyChain();
+            //
+            if (interceptMeta.hasAfterIntercepts()) {
+                if (context == null) {
+                    context = buildContext(proxyChain, IInterceptor.Direction.AFTER);
+                } else {
+                    context.setDirection(IInterceptor.Direction.AFTER);
+                }
+                // 初始化拦截器上下文对象，并将当前方法的执行结果对象赋予后置拦截器使用
+                context.setResultObject(returnValue);
+                //
+                for (Class<? extends IInterceptor> interceptClass : interceptMeta.getAfterIntercepts()) {
+                    IInterceptor interceptor = owner.getInterceptSettings().getInterceptorInstance(owner, interceptClass);
+                    // 执行后置拦截器
+                    Object afterReturnValue = interceptor.intercept(context);
+                    if (afterReturnValue != null) {
+                        // 若后置拦截器返回的执行结果不为空则赋值
+                        returnValue = afterReturnValue;
+                    }
+                }
+            }
+            return returnValue;
+        } finally {
+            InterceptContext.removeLocalAttributes();
         }
-        return returnValue;
     }
 
     private InterceptContext buildContext(IProxyChain proxyChain, IInterceptor.Direction direction) {

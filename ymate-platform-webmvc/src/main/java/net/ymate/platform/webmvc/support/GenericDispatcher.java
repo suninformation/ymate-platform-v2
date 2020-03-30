@@ -71,7 +71,7 @@ public final class GenericDispatcher {
             }
         } finally {
             doFireEvent(WebEvent.EVENT.REQUEST_COMPLETED, requestContext);
-            ValidateContext.destroy();
+            ValidateContext.removeLocalAttributes();
             WebContext.destroy();
         }
     }
