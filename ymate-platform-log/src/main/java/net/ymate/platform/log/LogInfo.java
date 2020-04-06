@@ -17,8 +17,11 @@ package net.ymate.platform.log;
 
 import net.ymate.platform.commons.util.ExpressionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.ThreadContext;
 
 import java.io.Serializable;
+import java.util.List;
+import java.util.Map;
 
 /**
  * @author 刘镇 (suninformation@163.com) on 16/6/12 上午1:27
@@ -171,14 +174,22 @@ public class LogInfo implements Serializable {
      * @return 返回格式化日志内容
      */
     public String toString(String logFormat, boolean padded) {
-        String logStr = ExpressionUtils.bind(StringUtils.defaultIfBlank(logFormat, DEFAULT_LOG_FORMAT))
+        ExpressionUtils expressionUtils = ExpressionUtils.bind(StringUtils.defaultIfBlank(logFormat, DEFAULT_LOG_FORMAT))
                 .set("dateTime", createTime)
                 .set("level", level.getDisplayName())
                 .set("hostName", hostName)
                 .set("threadName", padded ? StringUtils.rightPad(threadName, safeGetAndSetThreadNameMaxLength(threadName.length()), StringUtils.SPACE) : threadName)
                 .set("threadId", padded ? StringUtils.rightPad(threadId, safeGetAndSetThreadIdMaxLength(threadId.length()), StringUtils.SPACE) : threadId)
                 .set("callerInfo", padded ? StringUtils.rightPad(callerInfo, safeGetAndSetPackageNameMaxLength(callerInfo.length()), StringUtils.SPACE) : callerInfo)
-                .set("logContent", logContent).clean().getResult();
+                .set("logContent", logContent);
+        List<String> vars = expressionUtils.getVariables();
+        if (!vars.isEmpty()) {
+            Map<String, String> contextMap = ThreadContext.getContext();
+            if (!contextMap.isEmpty()) {
+                vars.forEach(var -> expressionUtils.set(var, contextMap.get(var)));
+            }
+        }
+        String logStr = expressionUtils.clean().getResult();
         StringBuilder stringBuilder = new StringBuilder(StringUtils.trimToEmpty(logStr));
         if (StringUtils.isNotBlank(stackInfo)) {
             stringBuilder.append(" - ").append(stackInfo);
