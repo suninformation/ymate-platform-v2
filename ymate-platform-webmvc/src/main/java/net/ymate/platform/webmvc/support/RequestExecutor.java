@@ -89,6 +89,10 @@ public final class RequestExecutor {
         context.addAttribute(RequestParametersProxy.class.getName(), paramValues);
         // 提取控制器类实例
         Object targetObj = owner.getOwner().getBeanFactory().getBean(requestMeta.getTargetClass());
+        if (!requestMeta.isSingleton() && !paramValues.isEmpty()) {
+            // 为非单例控制器类成员赋值
+            ClassUtils.wrapper(targetObj).fromMap(paramValues);
+        }
         Object resultObj;
         try {
             if (!methodParamNames.isEmpty()) {
