@@ -30,12 +30,11 @@ public interface IWebCacheProcessor {
     /**
      * 对控制器方法返回视图进行缓存处理
      *
-     * @param owner          所属WebMVC管理器
-     * @param responseCache  控制器方法回应结果缓存注解
-     * @param requestContext 请求上下文
-     * @param resultView     视图对象, 若为空则表示该接口方法仅尝试读取缓存
+     * @param owner         所属WebMVC管理器
+     * @param responseCache 控制器方法回应结果缓存注解
+     * @param resultView    视图对象, 若为空则表示该接口方法仅尝试读取缓存
      * @return 返回处理结果是否成功
      * @throws Exception 可能产生的异常
      */
-    boolean processResponseCache(IWebMvc owner, ResponseCache responseCache, IRequestContext requestContext, IView resultView) throws Exception;
+    boolean processResponseCache(IWebMvc owner, ResponseCache responseCache, IView resultView) throws Exception;
 }

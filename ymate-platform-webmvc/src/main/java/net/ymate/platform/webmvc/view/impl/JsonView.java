@@ -83,6 +83,17 @@ public class JsonView extends AbstractView {
      */
     public JsonView withContentType() {
         withContentType = true;
+        return doSetContentType();
+    }
+
+    private JsonView doSetContentType() {
+        if (withContentType) {
+            if (jsonCallback == null) {
+                setContentType(Type.ContentType.JSON.getContentType());
+            } else {
+                setContentType(Type.ContentType.JAVASCRIPT.getContentType());
+            }
+        }
         return this;
     }
 
@@ -92,7 +103,7 @@ public class JsonView extends AbstractView {
      */
     public JsonView withJsonCallback(String callback) {
         jsonCallback = StringUtils.trimToNull(callback);
-        return this;
+        return doSetContentType();
     }
 
     /**
@@ -144,20 +155,11 @@ public class JsonView extends AbstractView {
 
     @Override
     protected void doRenderView() throws Exception {
-        HttpServletResponse httpServletResponse = WebContext.getResponse();
-        if (StringUtils.isNotBlank(getContentType())) {
-            httpServletResponse.setContentType(getContentType());
-        } else if (this.withContentType) {
-            if (jsonCallback == null) {
-                httpServletResponse.setContentType(Type.ContentType.JSON.getContentType());
-            } else {
-                httpServletResponse.setContentType(Type.ContentType.JAVASCRIPT.getContentType());
-            }
-        }
         StringBuilder jsonStringBuilder = new StringBuilder(doObjectToJsonString());
         if (jsonCallback != null) {
             jsonStringBuilder.insert(0, jsonCallback + "(").append(");");
         }
+        HttpServletResponse httpServletResponse = WebContext.getResponse();
         IOUtils.write(jsonStringBuilder.toString(), httpServletResponse.getOutputStream(), httpServletResponse.getCharacterEncoding());
     }
 

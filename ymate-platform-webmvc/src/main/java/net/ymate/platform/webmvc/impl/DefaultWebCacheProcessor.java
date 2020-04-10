@@ -18,7 +18,7 @@ package net.ymate.platform.webmvc.impl;
 import net.ymate.platform.cache.Caches;
 import net.ymate.platform.cache.ICaches;
 import net.ymate.platform.commons.ReentrantLockHelper;
-import net.ymate.platform.webmvc.IRequestContext;
+import net.ymate.platform.commons.util.ExpressionUtils;
 import net.ymate.platform.webmvc.IWebCacheProcessor;
 import net.ymate.platform.webmvc.IWebMvc;
 import net.ymate.platform.webmvc.PageCacheElement;
@@ -48,7 +48,7 @@ public class DefaultWebCacheProcessor implements IWebCacheProcessor {
     private static final ReentrantLockHelper LOCK = new ReentrantLockHelper();
 
     @Override
-    public boolean processResponseCache(IWebMvc owner, ResponseCache responseCache, IRequestContext requestContext, IView resultView) throws Exception {
+    public boolean processResponseCache(IWebMvc owner, ResponseCache responseCache, IView resultView) throws Exception {
         HttpServletRequest request = WebContext.getRequest();
         GenericResponseWrapper response = (GenericResponseWrapper) WebContext.getResponse();
 
@@ -57,6 +57,7 @@ public class DefaultWebCacheProcessor implements IWebCacheProcessor {
         PageCacheElement cacheElement = (PageCacheElement) caches.get(responseCache.cacheName(), cacheKey);
         if (cacheElement == null && resultView != null) {
             // 仅缓存处理状态为200响应
+            // TODO 目前存在的问题：需要对验证验证、异常错误等设置为非200响应码，否则会造成错误内容被缓存的情况
             if (response.getStatus() == HttpServletResponse.SC_OK) {
                 cacheElement = putCacheElement(response, caches, responseCache, cacheKey, resultView);
             }
@@ -83,7 +84,7 @@ public class DefaultWebCacheProcessor implements IWebCacheProcessor {
                 ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
                 resultView.render(outputStream);
 
-                cacheElement = new PageCacheElement(response.getContentType(), response.getHeaders(), outputStream.toByteArray(), responseCache.useGZip());
+                cacheElement = new PageCacheElement(StringUtils.defaultIfBlank(resultView.getContentType(), response.getContentType()), response.getHeaders(), outputStream.toByteArray(), responseCache.useGZip());
                 // 计算超时时间
                 int timeout = responseCache.timeout() > 0 ? responseCache.timeout() : caches.getConfig().getDefaultCacheTimeout();
                 if (timeout > 0) {
@@ -105,11 +106,16 @@ public class DefaultWebCacheProcessor implements IWebCacheProcessor {
     private String doBuildCacheKey(IWebMvc owner, HttpServletRequest request, ResponseCache responseCache) {
         // 计算缓存KEY值
         StringBuilder stringBuilder = new StringBuilder()
-                .append(ResponseCache.class.getName())
-                .append(owner.getOwner().getI18n().current());
+                .append(ResponseCache.class.getSimpleName()).append(":").append(owner.getOwner().getI18n().current());
         if (StringUtils.isNotBlank(responseCache.key())) {
-            stringBuilder.append(":").append(responseCache.key());
+            // 若指定的缓存KEY中存在变量则尝试从请求参数中获取并替换
+            ExpressionUtils expressionUtils = ExpressionUtils.bind(responseCache.key());
+            for (String var : expressionUtils.getVariables()) {
+                expressionUtils.set(var, request.getParameter(var));
+            }
+            stringBuilder.append(":").append(expressionUtils.clean().getResult());
         } else {
+            // TODO 当前这种KEY生成方式存在的问题是请求参数数量由请求端控制，可能存在安全风险
             stringBuilder
                     .append(":").append(request.getMethod())
                     .append(":").append(request.getRequestURI())

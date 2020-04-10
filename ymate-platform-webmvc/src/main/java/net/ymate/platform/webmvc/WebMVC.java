@@ -299,7 +299,7 @@ public final class WebMVC implements IModule, IWebMvc {
         // 首先判断是否可以使用缓存
         if (cacheProcessor != null) {
             // 尝试从缓存中加载执行结果
-            if (cacheProcessor.processResponseCache(this, requestMeta.getResponseCache(), context, null)) {
+            if (cacheProcessor.processResponseCache(this, requestMeta.getResponseCache(), null)) {
                 // 加载成功, 则
                 view = View.nullView();
                 //
@@ -314,7 +314,7 @@ public final class WebMVC implements IModule, IWebMvc {
                 if (cacheProcessor != null) {
                     try {
                         // 生成缓存
-                        if (cacheProcessor.processResponseCache(this, requestMeta.getResponseCache(), context, view)) {
+                        if (cacheProcessor.processResponseCache(this, requestMeta.getResponseCache(), view)) {
                             view = View.nullView();
                             //
                             if (devEnv && LOG.isDebugEnabled()) {
@@ -353,7 +353,7 @@ public final class WebMVC implements IModule, IWebMvc {
         // 首先判断是否可以使用缓存
         if (cacheProcessor != null) {
             // 尝试从缓存中加载执行结果
-            if (cacheProcessor.processResponseCache(this, responseCacheAnn, context, null)) {
+            if (cacheProcessor.processResponseCache(this, responseCacheAnn, null)) {
                 // 加载成功, 则
                 view = View.nullView();
                 //
@@ -389,7 +389,7 @@ public final class WebMVC implements IModule, IWebMvc {
             //
             if (view != null && cacheProcessor != null) {
                 try {
-                    if (cacheProcessor.processResponseCache(this, responseCacheAnn, context, view)) {
+                    if (cacheProcessor.processResponseCache(this, responseCacheAnn, view)) {
                         view = View.nullView();
                         //
                         if (devEnv && LOG.isDebugEnabled()) {
