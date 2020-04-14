@@ -89,10 +89,10 @@ public class RequestMeta {
         RequestMapping mappingAnn = targetClass.getAnnotation(RequestMapping.class);
         if (mappingAnn != null) {
             packageMapping = doBuildRequestMapping(packageMapping, mappingAnn.value(), false);
-            doSetAllowValues(mappingAnn);
+            doSetAllowValues(mappingAnn, false);
         }
         mappingAnn = method.getAnnotation(RequestMapping.class);
-        doSetAllowValues(mappingAnn);
+        doSetAllowValues(mappingAnn, true);
         this.mapping = doBuildRequestMapping(requestMappingPrefix, doBuildRequestMapping(packageMapping, mappingAnn.value(), true), false);
         //
         if (this.allowMethods.isEmpty()) {
@@ -169,7 +169,7 @@ public class RequestMeta {
             RequestMapping requestMappingAnn = targetPackage.getAnnotation(RequestMapping.class);
             if (requestMappingAnn != null) {
                 packageMapping = doBuildRequestMapping(packageMapping, requestMappingAnn.value(), false);
-                doSetAllowValues(requestMappingAnn);
+                doSetAllowValues(requestMappingAnn, false);
             } else {
                 packageMapping = doCheckMappingSeparator(packageMapping);
             }
@@ -197,8 +197,12 @@ public class RequestMeta {
         return annotation;
     }
 
-    private void doSetAllowValues(RequestMapping requestMapping) {
-        this.allowMethods.addAll(Arrays.asList(requestMapping.method()));
+    private void doSetAllowValues(RequestMapping requestMapping, boolean classMethod) {
+        if (requestMapping.method().length == 0 && classMethod) {
+            this.allowMethods.add(Type.HttpMethod.GET);
+        } else {
+            this.allowMethods.addAll(Arrays.asList(requestMapping.method()));
+        }
         for (String header : requestMapping.header()) {
             String[] headerParts = StringUtils.split(StringUtils.trimToEmpty(header), "=");
             if (headerParts.length == 2) {
