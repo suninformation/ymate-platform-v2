@@ -13,8 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.ymate.platform.commons;
+package net.ymate.platform.commons.http;
 
+import net.ymate.platform.commons.http.impl.DefaultFileWrapper;
+import net.ymate.platform.commons.http.impl.DefaultHttpResponse;
 import org.apache.commons.lang.NullArgumentException;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -132,21 +134,27 @@ public class HttpClientHelper {
     }
 
     public HttpClientHelper connectionTimeout(int connectionTimeout) {
-        this.connectionTimeout = connectionTimeout;
+        if (connectionTimeout > -1) {
+            this.connectionTimeout = connectionTimeout;
+        }
         return this;
     }
 
     public HttpClientHelper requestTimeout(int requestTimeout) {
-        this.requestTimeout = requestTimeout;
+        if (requestTimeout > -1) {
+            this.requestTimeout = requestTimeout;
+        }
         return this;
     }
 
     public HttpClientHelper socketTimeout(int socketTimeout) {
-        this.socketTimeout = socketTimeout;
+        if (socketTimeout > -1) {
+            this.socketTimeout = socketTimeout;
+        }
         return this;
     }
 
-    private CloseableHttpClient buildHttpClient() {
+    public CloseableHttpClient getHttpClient() {
         CloseableHttpClient httpClient = httpClientConfigurable != null ? httpClientConfigurable.createHttpClient(socketFactory, connectionTimeout, requestTimeout, socketTimeout) : null;
         if (httpClient == null) {
             HttpClientBuilder clientBuilder = HttpClientBuilder.create()
@@ -180,15 +188,10 @@ public class HttpClientHelper {
         return requestBuilder;
     }
 
-    private IHttpResponse execute(RequestBuilder requestBuilder, final String defaultResponseCharset) throws Exception {
-        CloseableHttpClient httpClient = buildHttpClient();
+    public IHttpResponse execute(RequestBuilder requestBuilder, final String defaultResponseCharset) throws Exception {
+        CloseableHttpClient httpClient = getHttpClient();
         try {
-            return httpClient.execute(requestBuilder.build(), (ResponseHandler<IHttpResponse>) response -> {
-                if (StringUtils.isNotBlank(defaultResponseCharset)) {
-                    return new IHttpResponse.Default(response, defaultResponseCharset);
-                }
-                return new IHttpResponse.Default(response);
-            });
+            return httpClient.execute(requestBuilder.build(), (ResponseHandler<IHttpResponse>) response -> new DefaultHttpResponse(response, defaultResponseCharset));
         } finally {
             if (httpClientConfigurable != null) {
                 httpClientConfigurable.closeHttpClient(httpClient);
@@ -199,7 +202,7 @@ public class HttpClientHelper {
     }
 
     public <T> T execute(IHttpRequestExecutor<T> requestExecutor) throws Exception {
-        CloseableHttpClient httpClient = buildHttpClient();
+        CloseableHttpClient httpClient = getHttpClient();
         try {
             return requestExecutor.execute(httpClient);
         } finally {
@@ -370,17 +373,18 @@ public class HttpClientHelper {
         return upload(url, uploadFile, null);
     }
 
-    private <T> T execHttpDownload(RequestBuilder requestBuilder, final IFileHandler<T> handler) throws Exception {
-        CloseableHttpClient httpClient = buildHttpClient();
+    public void execHttpDownload(RequestBuilder requestBuilder, final IFileHandler handler) throws Exception {
+        CloseableHttpClient httpClient = getHttpClient();
         try {
-            return httpClient.execute(requestBuilder.build(), response -> {
+            httpClient.execute(requestBuilder.build(), response -> {
                 String fileName = null;
                 if (response.getStatusLine().getStatusCode() == HTTP_STATUS_CODE_SUCCESS) {
                     if (response.containsHeader(HEADER_CONTENT_DISPOSITION)) {
                         fileName = StringUtils.substringAfter(response.getFirstHeader(HEADER_CONTENT_DISPOSITION).getValue(), "filename=");
                     }
                 }
-                return handler.handle(response, new IFileWrapper.Default(fileName, response.getEntity().getContentType().getValue(), response.getEntity().getContentLength(), new BufferedInputStream(response.getEntity().getContent())));
+                handler.handle(response, new DefaultFileWrapper(fileName, response.getEntity().getContentType().getValue(), response.getEntity().getContentLength(), new BufferedInputStream(response.getEntity().getContent())));
+                return null;
             });
         } finally {
             if (httpClientConfigurable != null) {
@@ -391,26 +395,26 @@ public class HttpClientHelper {
         }
     }
 
-    public <T> T download(String url, ContentType contentType, String content, Header[] headers, final IFileHandler<T> handler) throws Exception {
+    public void download(String url, ContentType contentType, String content, Header[] headers, final IFileHandler handler) throws Exception {
         RequestBuilder requestBuilder = RequestBuilder.post()
                 .setUri(url)
                 .setEntity(EntityBuilder.create()
                         .setContentEncoding(contentType == null || contentType.getCharset() == null ? DEFAULT_CHARSET : contentType.getCharset().name())
                         .setContentType(contentType)
                         .setText(content).build());
-        return execHttpDownload(processRequestHeaders(requestBuilder, headers, null), handler);
+        execHttpDownload(processRequestHeaders(requestBuilder, headers, null), handler);
     }
 
-    public <T> T download(String url, String content, IFileHandler<T> handler) throws Exception {
-        return download(url, ContentType.create(CONTENT_TYPE_FORM_URL_ENCODED, DEFAULT_CHARSET), content, null, handler);
+    public void download(String url, String content, IFileHandler handler) throws Exception {
+        download(url, ContentType.create(CONTENT_TYPE_FORM_URL_ENCODED, DEFAULT_CHARSET), content, null, handler);
     }
 
-    public <T> T download(String url, Header[] headers, final IFileHandler<T> handler) throws Exception {
+    public void download(String url, Header[] headers, final IFileHandler handler) throws Exception {
         RequestBuilder requestBuilder = processRequestHeaders(url, headers);
-        return execHttpDownload(requestBuilder, handler);
+        execHttpDownload(requestBuilder, handler);
     }
 
-    public <T> T download(String url, IFileHandler<T> handler) throws Exception {
-        return download(url, new Header[0], handler);
+    public void download(String url, IFileHandler handler) throws Exception {
+        download(url, new Header[0], handler);
     }
 }

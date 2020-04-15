@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.ymate.platform.commons;
+package net.ymate.platform.commons.http;
 
 import org.apache.http.HttpResponse;
 
@@ -22,18 +22,16 @@ import java.io.IOException;
 /**
  * 文件处理器接口
  *
- * @param <T> 结果对象类型
  * @author 刘镇 (suninformation@163.com) on 16/7/13 下午1:35
  */
-public interface IFileHandler<T> {
+public interface IFileHandler {
 
     /**
      * 执行处理过程
      *
      * @param response    HTTP响应对象
      * @param fileWrapper 文件包装器
-     * @return 返回处理结果对象
      * @throws IOException 可能产生的异常
      */
-    T handle(HttpResponse response, IFileWrapper fileWrapper) throws IOException;
+    void handle(HttpResponse response, IFileWrapper fileWrapper) throws IOException;
 }

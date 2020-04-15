@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.ymate.platform.commons;
+package net.ymate.platform.commons.http;
 
 import org.apache.http.impl.client.CloseableHttpClient;
 
