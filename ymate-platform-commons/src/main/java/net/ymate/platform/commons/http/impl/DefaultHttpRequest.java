@@ -97,7 +97,7 @@ public class DefaultHttpRequest implements IHttpRequest {
                 .requestTimeout(httpRequestBuilder.getRequestTimeout())
                 .socketTimeout(httpRequestBuilder.getSocketTimeout())
                 .getHttpClient()) {
-            return httpClient.execute(requestBuilder.build(), (ResponseHandler<IHttpResponse>) response -> new DefaultHttpResponse(response, httpRequestBuilder.getResponseCharset(), httpRequestBuilder.isDownload()));
+            return httpClient.execute(requestBuilder.build(), (ResponseHandler<IHttpResponse>) response -> new DefaultHttpResponse(response, httpRequestBuilder.getResponseCharset(), httpRequestBuilder.isDownload(), httpRequestBuilder.getFileHandler()));
         }
     }
 

@@ -22,6 +22,7 @@
 package net.ymate.platform.commons.http.impl;
 
 import net.ymate.platform.commons.http.HttpClientHelper;
+import net.ymate.platform.commons.http.IFileHandler;
 import net.ymate.platform.commons.http.IFileWrapper;
 import net.ymate.platform.commons.http.IHttpResponse;
 import org.apache.commons.lang3.StringUtils;
@@ -68,14 +69,22 @@ public class DefaultHttpResponse implements IHttpResponse {
     }
 
     public DefaultHttpResponse(HttpResponse response, String defaultCharset) throws IOException {
-        this(response, defaultCharset, false);
+        this(response, defaultCharset, false, null);
     }
 
     public DefaultHttpResponse(HttpResponse response, Charset defaultCharset, boolean download) throws IOException {
-        this(response, defaultCharset != null ? defaultCharset.name() : null, download);
+        this(response, defaultCharset, download, null);
+    }
+
+    public DefaultHttpResponse(HttpResponse response, Charset defaultCharset, boolean download, IFileHandler fileHandler) throws IOException {
+        this(response, defaultCharset != null ? defaultCharset.name() : null, download, fileHandler);
     }
 
     public DefaultHttpResponse(HttpResponse response, String defaultCharset, boolean download) throws IOException {
+        this(response, defaultCharset, download, null);
+    }
+
+    public DefaultHttpResponse(HttpResponse response, String defaultCharset, boolean download, IFileHandler fileHandler) throws IOException {
         statusCode = response.getStatusLine().getStatusCode();
         reasonPhrase = response.getStatusLine().getReasonPhrase();
         locale = response.getLocale();
@@ -86,6 +95,9 @@ public class DefaultHttpResponse implements IHttpResponse {
                 fileName = StringUtils.substringAfter(response.getFirstHeader(HttpClientHelper.HEADER_CONTENT_DISPOSITION).getValue(), "filename=");
             }
             fileWrapper = new DefaultFileWrapper(fileName, response.getEntity().getContentType().getValue(), response.getEntity().getContentLength(), new BufferedInputStream(response.getEntity().getContent()));
+            if (fileHandler != null) {
+                fileHandler.handle(response, fileWrapper);
+            }
         } else {
             content = EntityUtils.toString(response.getEntity(), defaultCharset);
         }

@@ -65,6 +65,8 @@ public final class HttpRequestBuilder {
 
     private boolean download;
 
+    private IFileHandler fileHandler;
+
     private int connectionTimeout = -1;
 
     private int requestTimeout = -1;
@@ -214,6 +216,12 @@ public final class HttpRequestBuilder {
         return this;
     }
 
+    public HttpRequestBuilder download(IFileHandler fileHandler) {
+        this.download = true;
+        this.fileHandler = fileHandler;
+        return this;
+    }
+
     public HttpRequestBuilder connectionTimeout(int connectionTimeout) {
         if (connectionTimeout > -1) {
             this.connectionTimeout = connectionTimeout;
@@ -279,6 +287,10 @@ public final class HttpRequestBuilder {
 
     public boolean isDownload() {
         return download;
+    }
+
+    public IFileHandler getFileHandler() {
+        return fileHandler;
     }
 
     public int getConnectionTimeout() {
