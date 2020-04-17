@@ -36,5 +36,5 @@ public @interface Configuration {
     /**
      * @return 是否自动重新加载
      */
-    boolean relaod() default true;
+    boolean reload() default true;
 }

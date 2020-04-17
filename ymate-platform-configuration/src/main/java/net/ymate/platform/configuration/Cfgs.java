@@ -296,7 +296,7 @@ public class Cfgs implements IModule, IConfig {
             Configuration _configuration = ClassUtils.getAnnotation(config, Configuration.class);
             ConfigurationProvider _providerClass = config.getClass().getAnnotation(ConfigurationProvider.class);
             String _cfgFileName = _configuration == null ? null : _configuration.value();
-            boolean _reload = _configuration == null || _configuration.relaod();
+            boolean _reload = _configuration == null || _configuration.reload();
             if (StringUtils.isBlank(_cfgFileName)) {
                 _cfgFileName = config.getClass().getSimpleName().toLowerCase().concat(config.getTagName()).concat(".xml");
             }
