@@ -43,17 +43,20 @@ public class InterceptContext extends AbstractContext {
 
     private final Object targetObject;
 
+    private final Class<?> targetClass;
+
     private final Method targetMethod;
 
     private final Object[] methodParams;
 
     private Object resultObject;
 
-    public InterceptContext(IInterceptor.Direction direction, IApplication owner, Object targetObject, Method targetMethod, Object[] methodParams, Map<String, String> contextParams) {
+    public InterceptContext(IInterceptor.Direction direction, IApplication owner, Object targetObject, Class<?> targetClass, Method targetMethod, Object[] methodParams, Map<String, String> contextParams) {
         super(owner, contextParams);
         //
         this.direction = direction;
         this.targetObject = targetObject;
+        this.targetClass = targetClass;
         this.targetMethod = targetMethod;
         this.methodParams = methodParams;
     }
@@ -73,7 +76,10 @@ public class InterceptContext extends AbstractContext {
      * @return 获取被拦截的目标类型
      */
     public Class<?> getTargetClass() {
-        return targetObject.getClass();
+        if (targetClass == null && targetMethod != null) {
+            return targetMethod.getDeclaringClass();
+        }
+        return targetClass;
     }
 
     /**

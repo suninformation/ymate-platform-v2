@@ -75,7 +75,7 @@ public class DefaultInterceptorRuleProcessor implements IInterceptorRuleProcesso
         ResponseCache responseCacheAnn = null;
         if (ruleMeta != null) {
             responseCacheAnn = ruleMeta.getResponseCache();
-            InterceptContext interceptContext = new InterceptContext(IInterceptor.Direction.BEFORE, owner.getOwner(), null, null, null, ruleMeta.getContextParams());
+            InterceptContext interceptContext = new InterceptContext(IInterceptor.Direction.BEFORE, owner.getOwner(), null, null, null, null, ruleMeta.getContextParams());
             //
             for (Class<? extends IInterceptor> interceptClass : ruleMeta.getBeforeIntercepts()) {
                 IInterceptor interceptor = owner.getOwner().getInterceptSettings().getInterceptorInstance(owner.getOwner(), interceptClass);

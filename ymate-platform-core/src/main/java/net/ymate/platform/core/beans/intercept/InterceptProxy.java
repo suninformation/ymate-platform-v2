@@ -96,6 +96,7 @@ public class InterceptProxy implements IProxy {
         IApplication owner = proxyChain.getProxyFactory().getOwner();
         return new InterceptContext(direction, proxyChain.getProxyFactory().getOwner(),
                 proxyChain.getTargetObject(),
+                proxyChain.getTargetClass(),
                 proxyChain.getTargetMethod(),
                 proxyChain.getMethodParams(), owner.getInterceptSettings().getContextParams(owner, proxyChain.getTargetClass(), proxyChain.getTargetMethod()));
     }
