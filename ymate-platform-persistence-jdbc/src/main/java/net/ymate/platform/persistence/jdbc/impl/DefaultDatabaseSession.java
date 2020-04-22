@@ -728,6 +728,8 @@ public class DefaultDatabaseSession extends AbstractSession<IDatabaseConnectionH
                     } else {
                         values.add(value);
                     }
+                } else if (!propertyMeta.isNullable()) {
+                    throw new IllegalArgumentException(String.format("Entity field '%s.%s' value can not be null.", entityMeta.getEntityName(), propertyMeta.getName()));
                 }
             }
         }
