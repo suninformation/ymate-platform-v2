@@ -58,39 +58,42 @@ public final class Select extends Query<Select> {
     }
 
     public static Select create(Class<? extends IEntity> entityClass) {
-        return new Select(JDBC.get(), JDBC.get().getConfig().getDefaultDataSourceName()).from(null, entityClass, null);
+        return create(null, entityClass, null);
     }
 
     public static Select create(String prefix, Class<? extends IEntity> entityClass) {
-        return new Select(JDBC.get(), JDBC.get().getConfig().getDefaultDataSourceName()).from(prefix, entityClass, null);
+        return create(prefix, entityClass, null);
     }
 
     public static Select create(Class<? extends IEntity> entityClass, String alias) {
-        return new Select(JDBC.get(), JDBC.get().getConfig().getDefaultDataSourceName()).from(null, entityClass, alias);
+        return create(null, entityClass, alias);
     }
 
     public static Select create(String prefix, Class<? extends IEntity> entityClass, String alias) {
-        return new Select(JDBC.get(), JDBC.get().getConfig().getDefaultDataSourceName()).from(prefix, entityClass, alias);
+        IDatabase owner = JDBC.get();
+        return new Select(owner, owner.getConfig().getDefaultDataSourceName()).from(prefix, entityClass, alias);
     }
 
     public static Select create(String prefix, String from, String alias) {
-        return new Select(JDBC.get(), JDBC.get().getConfig().getDefaultDataSourceName(), prefix, from, alias, true);
+        IDatabase owner = JDBC.get();
+        return new Select(owner, owner.getConfig().getDefaultDataSourceName(), prefix, from, alias, true);
     }
 
     public static Select create(String from, String alias) {
-        return new Select(JDBC.get(), JDBC.get().getConfig().getDefaultDataSourceName(), null, from, alias, true);
+        return create(from, alias, true);
     }
 
     public static Select create(String from, String alias, boolean safePrefix) {
-        return new Select(JDBC.get(), JDBC.get().getConfig().getDefaultDataSourceName(), null, from, alias, safePrefix);
+        IDatabase owner = JDBC.get();
+        return new Select(owner, owner.getConfig().getDefaultDataSourceName(), null, from, alias, safePrefix);
     }
 
     public static Select create(String from) {
-        return new Select(JDBC.get(), JDBC.get().getConfig().getDefaultDataSourceName(), null, from, null, true);
+        return create(from, null, true);
     }
 
     public static Select create(String from, boolean safePrefix) {
-        return new Select(JDBC.get(), JDBC.get().getConfig().getDefaultDataSourceName(), null, from, null, safePrefix);
+        return create(from, null, safePrefix);
     }
 
     public static Select create(Select select) {
@@ -143,11 +146,19 @@ public final class Select extends Query<Select> {
         return new Select(owner, dataSourceName, null, from, null, safePrefix);
     }
 
-    private Select(IDatabase owner, String dataSourceName) {
+    public static Select create(Query<?> query) {
+        return new Select(query.owner(), query.dataSourceName());
+    }
+
+    public static Select create(Query<?> query, String prefix, String from, String alias, boolean safePrefix) {
+        return new Select(query.owner(), query.dataSourceName(), prefix, from, alias, safePrefix);
+    }
+
+    public Select(IDatabase owner, String dataSourceName) {
         super(owner, dataSourceName);
     }
 
-    private Select(IDatabase owner, String dataSourceName, String prefix, String from, String alias, boolean safePrefix) {
+    public Select(IDatabase owner, String dataSourceName, String prefix, String from, String alias, boolean safePrefix) {
         super(owner, dataSourceName);
         if (safePrefix) {
             from(null, buildSafeTableName(prefix, from, true), alias);
@@ -157,15 +168,27 @@ public final class Select extends Query<Select> {
     }
 
     public Select from(Class<? extends IEntity> entityClass) {
-        return from(null, buildSafeTableName(null, EntityMeta.createAndGet(entityClass), true), null);
+        return from(entityClass, true);
+    }
+
+    public Select from(Class<? extends IEntity> entityClass, boolean safePrefix) {
+        return from(null, buildSafeTableName(null, EntityMeta.createAndGet(entityClass), safePrefix), null);
     }
 
     public Select from(Class<? extends IEntity> entityClass, String alias) {
-        return from(null, buildSafeTableName(null, EntityMeta.createAndGet(entityClass), true), alias);
+        return from(entityClass, alias, true);
+    }
+
+    public Select from(Class<? extends IEntity> entityClass, String alias, boolean safePrefix) {
+        return from(null, buildSafeTableName(null, EntityMeta.createAndGet(entityClass), safePrefix), alias);
     }
 
     public Select from(String prefix, Class<? extends IEntity> entityClass, String alias) {
-        return from(null, buildSafeTableName(prefix, EntityMeta.createAndGet(entityClass), true), alias);
+        return from(prefix, entityClass, alias, true);
+    }
+
+    public Select from(String prefix, Class<? extends IEntity> entityClass, String alias, boolean safePrefix) {
+        return from(null, buildSafeTableName(prefix, EntityMeta.createAndGet(entityClass), safePrefix), alias);
     }
 
     public Select from(Select select) {
@@ -183,7 +206,11 @@ public final class Select extends Query<Select> {
     }
 
     public Select from(String prefix, String from, String alias) {
-        from = buildSafeTableName(prefix, from, false);
+        return from(prefix, from, alias, false);
+    }
+
+    public Select from(String prefix, String from, String alias, boolean safePrefix) {
+        from = buildSafeTableName(prefix, from, safePrefix);
         if (StringUtils.isNotBlank(alias)) {
             from = from.concat(StringUtils.SPACE).concat(alias);
         }

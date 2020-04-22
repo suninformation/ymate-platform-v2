@@ -51,23 +51,25 @@ public final class Insert extends Query<Insert> {
     private final boolean safePrefix;
 
     public static Insert create(String prefix, Class<? extends IEntity> entityClass) {
-        return new Insert(JDBC.get(), JDBC.get().getConfig().getDefaultDataSourceName(), prefix, entityClass);
+        IDatabase owner = JDBC.get();
+        return new Insert(owner, owner.getConfig().getDefaultDataSourceName(), prefix, entityClass);
     }
 
     public static Insert create(IEntity<?> entity) {
-        return create(JDBC.get(), JDBC.get().getConfig().getDefaultDataSourceName(), entity.getClass());
+        return create(null, entity.getClass());
     }
 
     public static Insert create(Class<? extends IEntity> entityClass) {
-        return new Insert(JDBC.get(), JDBC.get().getConfig().getDefaultDataSourceName(), null, entityClass);
+        return create(null, entityClass);
     }
 
     public static Insert create(String tableName) {
-        return new Insert(JDBC.get(), JDBC.get().getConfig().getDefaultDataSourceName(), null, tableName, true);
+        return create(tableName, true);
     }
 
     public static Insert create(String tableName, boolean safePrefix) {
-        return new Insert(JDBC.get(), JDBC.get().getConfig().getDefaultDataSourceName(), null, tableName, safePrefix);
+        IDatabase owner = JDBC.get();
+        return new Insert(owner, owner.getConfig().getDefaultDataSourceName(), null, tableName, safePrefix);
     }
 
     public static Insert create(IDatabase owner, String dataSourceName, String prefix, Class<? extends IEntity> entityClass) {
@@ -90,7 +92,15 @@ public final class Insert extends Query<Insert> {
         return new Insert(owner, dataSourceName, null, tableName, safePrefix);
     }
 
-    private Insert(IDatabase owner, String dataSourceName, String prefix, Class<? extends IEntity> entityClass) {
+    public static Insert create(Query<?> query, String prefix, Class<? extends IEntity> entityClass) {
+        return new Insert(query.owner(), query.dataSourceName(), prefix, entityClass);
+    }
+
+    public static Insert create(Query<?> query, String prefix, String tableName, boolean safePrefix) {
+        return new Insert(query.owner(), query.dataSourceName(), prefix, tableName, safePrefix);
+    }
+
+    public Insert(IDatabase owner, String dataSourceName, String prefix, Class<? extends IEntity> entityClass) {
         super(owner, dataSourceName);
         this.prefix = prefix;
         this.entityClass = entityClass;
@@ -99,7 +109,7 @@ public final class Insert extends Query<Insert> {
         this.params = Params.create();
     }
 
-    private Insert(IDatabase owner, String dataSourceName, String prefix, String tableName, boolean safePrefix) {
+    public Insert(IDatabase owner, String dataSourceName, String prefix, String tableName, boolean safePrefix) {
         super(owner, dataSourceName);
         this.prefix = prefix;
         this.tableName = tableName;
@@ -188,7 +198,7 @@ public final class Insert extends Query<Insert> {
         if (queryHandler() != null) {
             queryHandler().beforeBuild(expression, this);
         }
-        expression.set("tableName", safePrefix ? (entityClass != null ? buildSafeTableName(prefix, EntityMeta.createAndGet(entityClass), true) : buildSafeTableName(prefix, tableName, true)) : tableName);
+        expression.set("tableName", entityClass != null ? buildSafeTableName(prefix, EntityMeta.createAndGet(entityClass), safePrefix) : buildSafeTableName(prefix, tableName, safePrefix));
         expression.set("fields", StringUtils.join(fields.fields(), LINE_END_FLAG));
         if (select != null) {
             expression.set("values", select.toString());

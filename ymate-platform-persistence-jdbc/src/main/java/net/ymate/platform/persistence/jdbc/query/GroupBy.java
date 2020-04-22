@@ -88,7 +88,11 @@ public final class GroupBy extends Query<GroupBy> {
         return new GroupBy(owner, dataSourceName).field(fields);
     }
 
-    private GroupBy(IDatabase owner, String dataSourceName) {
+    public static GroupBy create(Query<?> query) {
+        return new GroupBy(query.owner(), query.dataSourceName());
+    }
+
+    public GroupBy(IDatabase owner, String dataSourceName) {
         super(owner, dataSourceName);
         groupByNames = Fields.create();
     }

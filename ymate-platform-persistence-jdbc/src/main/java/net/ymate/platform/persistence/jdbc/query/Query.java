@@ -15,17 +15,25 @@
  */
 package net.ymate.platform.persistence.jdbc.query;
 
+import net.ymate.platform.commons.util.ClassUtils;
 import net.ymate.platform.commons.util.RuntimeUtils;
-import net.ymate.platform.core.persistence.Fields;
-import net.ymate.platform.core.persistence.IShardingRule;
-import net.ymate.platform.core.persistence.IShardingable;
+import net.ymate.platform.core.persistence.*;
 import net.ymate.platform.core.persistence.base.EntityMeta;
 import net.ymate.platform.persistence.jdbc.IDatabase;
 import net.ymate.platform.persistence.jdbc.IDatabaseConnectionHolder;
+import net.ymate.platform.persistence.jdbc.JDBC;
+import net.ymate.platform.persistence.jdbc.base.impl.BeanResultSetHandler;
 import net.ymate.platform.persistence.jdbc.dialect.IDialect;
+import net.ymate.platform.persistence.jdbc.query.annotation.*;
+import org.apache.commons.lang.NullArgumentException;
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * @param <T> 当前实现类类型
@@ -43,9 +51,20 @@ public class Query<T> extends QueryHandleAdapter<T> {
 
     private IDialect dialect;
 
+    private String defaultTablePrefix;
+
     private IShardingRule shardingRule;
 
     private IShardingable shardingable;
+
+    public static <T> Executor<T> build(Class<T> queryClass) {
+        IDatabase owner = JDBC.get();
+        return build(owner, owner.getConfig().getDefaultDataSourceName(), queryClass);
+    }
+
+    public static <T> Executor<T> build(IDatabase owner, String dataSourceName, Class<T> queryClass) {
+        return new Executor<>(owner, dataSourceName, queryClass);
+    }
 
     public Query(IDatabase owner, String dataSourceName) {
         this.owner = owner;
@@ -88,6 +107,13 @@ public class Query<T> extends QueryHandleAdapter<T> {
         return (T) this;
     }
 
+    public String defaultTablePrefix() {
+        if (defaultTablePrefix == null) {
+            defaultTablePrefix = StringUtils.defaultIfBlank(owner.getConfig().getDataSourceConfig(dataSourceName()).getTablePrefix(), StringUtils.EMPTY);
+        }
+        return StringUtils.trimToEmpty(defaultTablePrefix);
+    }
+
     public IShardingRule shardingRule() {
         return shardingRule;
     }
@@ -122,6 +148,9 @@ public class Query<T> extends QueryHandleAdapter<T> {
 
     protected String buildSafeTableName(String prefix, String tableName, boolean safePrefix) {
         if (safePrefix) {
+            if (StringUtils.isBlank(prefix)) {
+                prefix = defaultTablePrefix();
+            }
             return dialect().buildTableName(prefix, tableName, shardingRule(), shardingable());
         }
         if (StringUtils.isNotBlank(prefix) && StringUtils.startsWith(tableName, prefix)) {
@@ -132,6 +161,9 @@ public class Query<T> extends QueryHandleAdapter<T> {
 
     protected String buildSafeTableName(String prefix, EntityMeta entityMeta, boolean safePrefix) {
         if (safePrefix) {
+            if (StringUtils.isBlank(prefix)) {
+                prefix = defaultTablePrefix();
+            }
             return dialect().buildTableName(prefix, entityMeta, shardingable());
         }
         if (StringUtils.isNotBlank(prefix) && StringUtils.startsWith(entityMeta.getEntityName(), prefix)) {
@@ -177,5 +209,170 @@ public class Query<T> extends QueryHandleAdapter<T> {
 
     public static String wrapIdentifierField(IDatabaseConnectionHolder connectionHolder, String field) {
         return wrapIdentifierField(connectionHolder.getDialect(), field);
+    }
+
+    /**
+     * 查询执行器，用于解析和执行基于注解配置查询的类
+     *
+     * @param <T> 结果对象类型
+     */
+    public static class Executor<T> extends Query<Executor<T>> {
+
+        private final Class<T> queryClass;
+
+        private final Map<String, Object> variables = new HashMap<>();
+
+        private Where where;
+
+        private boolean replaceWhere;
+
+        public Executor(IDatabase owner, String dataSourceName, Class<T> queryClass) {
+            super(owner, dataSourceName);
+            if (queryClass == null) {
+                throw new NullArgumentException("queryClass");
+            }
+            this.queryClass = queryClass;
+        }
+
+        public Executor<T> addVariable(String name, Object value) {
+            if (StringUtils.isNotBlank(name)) {
+                variables.put(name, value);
+            }
+            return this;
+        }
+
+        public Executor<T> addVariables(Map<String, Object> variables) {
+            if (variables != null && !variables.isEmpty()) {
+                variables.forEach(this::addVariable);
+            }
+            return this;
+        }
+
+        public Executor<T> where(Where where) {
+            return where(where, false);
+        }
+
+        public Executor<T> where(Where where, boolean replace) {
+            this.where = where;
+            this.replaceWhere = replace;
+            return this;
+        }
+
+        private void doParseFrom(Select select, QFrom qFrom) {
+            if (qFrom != null) {
+                if (QFrom.Type.SQL == qFrom.type()) {
+                    String sql = qFrom.value();
+                    if (StringUtils.isNotBlank(qFrom.alias())) {
+                        sql = String.format("(%s)", sql);
+                    }
+                    select.from(null, sql, qFrom.alias());
+                } else {
+                    select.from(qFrom.prefix(), qFrom.value(), qFrom.alias(), true);
+                }
+            }
+        }
+
+        private Cond doParseCond(QCond[] qConds) {
+            if (ArrayUtils.isNotEmpty(qConds)) {
+                Cond cond = Cond.create(this);
+                int idx = 0;
+                for (QCond qCond : qConds) {
+                    if (idx > 0) {
+                        switch (qCond.logicalOpt()) {
+                            case NOT:
+                                cond.and();
+                                break;
+                            case OR:
+                                cond.or();
+                                break;
+                            default:
+                                cond.not();
+                        }
+                    }
+                    cond.opt(Fields.field(qCond.fieldA().prefix(), qCond.fieldA().value()), qCond.opt(), Fields.field(qCond.fieldB().prefix(), qCond.fieldB().value()));
+                    idx++;
+                }
+                return cond;
+            }
+            return null;
+        }
+
+        private void doParseJoin(Select select, QJoin qJoin) {
+            if (qJoin != null) {
+                Join join;
+                if (QFrom.Type.SQL == qJoin.from().type()) {
+                    String sql = qJoin.from().value();
+                    if (StringUtils.isNotBlank(qJoin.from().alias())) {
+                        sql = String.format("(%s)", sql);
+                    }
+                    join = new Join(owner(), dataSourceName(), qJoin.type().getName(), null, sql, false);
+                } else {
+                    join = new Join(owner(), dataSourceName(), qJoin.type().getName(), qJoin.from().prefix(), qJoin.from().value(), true);
+                }
+                join.alias(qJoin.from().alias());
+                Cond cond = doParseCond(qJoin.on());
+                if (cond != null) {
+                    select.join(join.on(cond));
+                }
+            }
+        }
+
+        private Where doParseWhere() {
+            return null;
+        }
+
+        public Select buildSelect() {
+            Select select = Select.create(this);
+            // Parse From
+            QFroms qFroms = queryClass.getAnnotation(QFroms.class);
+            if (qFroms != null) {
+                Arrays.stream(qFroms.value()).forEachOrdered(qFrom -> doParseFrom(select, qFrom));
+            }
+            doParseFrom(select, queryClass.getAnnotation(QFrom.class));
+            // Parse Field
+            ClassUtils.getFields(queryClass, true)
+                    .stream()
+                    .filter(ClassUtils::isNormalField)
+                    .forEachOrdered((field) -> {
+                        QField qField = field.getAnnotation(QField.class);
+                        if (qField != null) {
+                            select.field(qField.prefix(), qField.value(), qField.alias());
+                        }
+                    });
+            // Parse Join
+            QJoins qJoins = queryClass.getAnnotation(QJoins.class);
+            if (qJoins != null) {
+                Arrays.stream(qJoins.value()).forEachOrdered(qJoin -> doParseJoin(select, qJoin));
+            }
+            doParseJoin(select, queryClass.getAnnotation(QJoin.class));
+            // Parse Where
+            if (where != null) {
+                if (replaceWhere) {
+                    select.where(where);
+                } else {
+                    select.where().where(where);
+                }
+            } else {
+                Where qWhere = doParseWhere();
+            }
+            //
+            return select;
+        }
+
+        public T findFirst() throws Exception {
+            return buildSelect().findFirst(new BeanResultSetHandler<>(queryClass));
+        }
+
+        public IResultSet<T> find() throws Exception {
+            return buildSelect().find(new BeanResultSetHandler<>(queryClass));
+        }
+
+        public IResultSet<T> find(Page page) throws Exception {
+            return buildSelect().find(new BeanResultSetHandler<>(queryClass), page);
+        }
+
+        public long count() throws Exception {
+            return buildSelect().count();
+        }
     }
 }

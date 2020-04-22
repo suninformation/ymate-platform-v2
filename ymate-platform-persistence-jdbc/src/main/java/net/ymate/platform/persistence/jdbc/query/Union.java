@@ -28,7 +28,7 @@ public final class Union {
         return new Union(select);
     }
 
-    private Union(Select select) {
+    public Union(Select select) {
         this.select = select;
     }
 

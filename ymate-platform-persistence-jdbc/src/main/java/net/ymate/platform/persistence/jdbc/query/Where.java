@@ -66,22 +66,26 @@ public final class Where extends QueryHandleAdapter<Where> {
         return new Where(cond);
     }
 
-    private Where(IDatabase owner, String dataSourceName) {
-        this.owner = owner;
-        this.dataSourceName = dataSourceName;
-        orderBy = OrderBy.create(owner);
-        cond = Cond.create(owner);
+    public static Where create(Query<?> query) {
+        return new Where(query.owner(), query.dataSourceName());
     }
 
-    private Where(IDatabase owner, String dataSourceName, String whereCond) {
+    public Where(IDatabase owner, String dataSourceName) {
+        this.owner = owner;
+        this.dataSourceName = dataSourceName;
+        orderBy = OrderBy.create(owner, dataSourceName);
+        cond = Cond.create(owner, dataSourceName);
+    }
+
+    public Where(IDatabase owner, String dataSourceName, String whereCond) {
         this(owner, dataSourceName);
         cond.cond(whereCond);
     }
 
-    private Where(Cond cond) {
+    public Where(Cond cond) {
         owner = cond.owner();
         dataSourceName = cond.dataSourceName();
-        orderBy = OrderBy.create(cond.owner());
+        orderBy = OrderBy.create(cond);
         this.cond = cond;
     }
 

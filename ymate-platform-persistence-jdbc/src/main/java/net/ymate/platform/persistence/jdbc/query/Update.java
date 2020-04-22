@@ -43,43 +43,46 @@ public final class Update extends Query<Update> {
     private Where where;
 
     public static Update create() {
-        return new Update(JDBC.get(), JDBC.get().getConfig().getDefaultDataSourceName());
+        IDatabase owner = JDBC.get();
+        return new Update(owner, owner.getConfig().getDefaultDataSourceName());
     }
 
     public static Update create(String prefix, Class<? extends IEntity> entityClass, String alias) {
-        return new Update(JDBC.get(), JDBC.get().getConfig().getDefaultDataSourceName()).table(prefix, entityClass, alias);
+        IDatabase owner = JDBC.get();
+        return new Update(owner, owner.getConfig().getDefaultDataSourceName()).table(prefix, entityClass, alias);
     }
 
     public static Update create(String prefix, Class<? extends IEntity> entityClass) {
-        return new Update(JDBC.get(), JDBC.get().getConfig().getDefaultDataSourceName()).table(prefix, entityClass, null);
+        return create(prefix, entityClass, null);
     }
 
     public static Update create(Class<? extends IEntity> entityClass) {
-        return new Update(JDBC.get(), JDBC.get().getConfig().getDefaultDataSourceName()).table(entityClass, null);
+        return create(null, entityClass, null);
     }
 
     public static Update create(String prefix, String tableName, String alias) {
-        return new Update(JDBC.get(), JDBC.get().getConfig().getDefaultDataSourceName(), prefix, tableName, alias, true);
+        return create(prefix, tableName, alias, true);
     }
 
     public static Update create(String prefix, String tableName, String alias, boolean safePrefix) {
-        return new Update(JDBC.get(), JDBC.get().getConfig().getDefaultDataSourceName(), prefix, tableName, alias, safePrefix);
+        IDatabase owner = JDBC.get();
+        return new Update(owner, owner.getConfig().getDefaultDataSourceName(), prefix, tableName, alias, safePrefix);
     }
 
     public static Update create(String tableName, String alias) {
-        return new Update(JDBC.get(), JDBC.get().getConfig().getDefaultDataSourceName(), null, tableName, alias, true);
+        return create((String) null, tableName, alias, true);
     }
 
     public static Update create(String tableName, String alias, boolean safePrefix) {
-        return new Update(JDBC.get(), JDBC.get().getConfig().getDefaultDataSourceName(), null, tableName, alias, safePrefix);
+        return create((String) null, tableName, alias, safePrefix);
     }
 
     public static Update create(String tableName) {
-        return new Update(JDBC.get(), JDBC.get().getConfig().getDefaultDataSourceName(), null, tableName, null, true);
+        return create((String) null, tableName, null, true);
     }
 
     public static Update create(String tableName, boolean safePrefix) {
-        return new Update(JDBC.get(), JDBC.get().getConfig().getDefaultDataSourceName(), null, tableName, null, safePrefix);
+        return create((String) null, tableName, null, safePrefix);
     }
 
     public static Update create(IDatabase owner) {
@@ -126,26 +129,46 @@ public final class Update extends Query<Update> {
         return new Update(owner, dataSourceName, null, tableName, null, safePrefix);
     }
 
-    private Update(IDatabase owner, String dataSourceName) {
+    public static Update create(Query<?> query) {
+        return new Update(query.owner(), query.dataSourceName());
+    }
+
+    public static Update create(Query<?> query, String prefix, String tableName, String alias, boolean safePrefix) {
+        return new Update(query.owner(), query.dataSourceName(), prefix, tableName, alias, safePrefix);
+    }
+
+    public Update(IDatabase owner, String dataSourceName) {
         super(owner, dataSourceName);
     }
 
-    private Update(IDatabase owner, String dataSourceName, String prefix, String tableName, String alias, boolean safePrefix) {
+    public Update(IDatabase owner, String dataSourceName, String prefix, String tableName, String alias, boolean safePrefix) {
         super(owner, dataSourceName);
         //
         table(prefix, tableName, alias, safePrefix);
     }
 
     public Update table(Class<? extends IEntity> entityClass) {
-        return table(null, buildSafeTableName(null, EntityMeta.createAndGet(entityClass), true), null, false);
+        return table(entityClass, true);
+    }
+
+    public Update table(Class<? extends IEntity> entityClass, boolean safePrefix) {
+        return table(null, buildSafeTableName(null, EntityMeta.createAndGet(entityClass), safePrefix), null, false);
     }
 
     public Update table(Class<? extends IEntity> entityClass, String alias) {
-        return table(null, buildSafeTableName(null, EntityMeta.createAndGet(entityClass), true), alias, false);
+        return table(entityClass, alias, true);
+    }
+
+    public Update table(Class<? extends IEntity> entityClass, String alias, boolean safePrefix) {
+        return table(null, buildSafeTableName(null, EntityMeta.createAndGet(entityClass), safePrefix), alias, false);
     }
 
     public Update table(String prefix, Class<? extends IEntity> entityClass, String alias) {
-        return table(null, buildSafeTableName(prefix, EntityMeta.createAndGet(entityClass), true), alias, false);
+        return table(prefix, entityClass, alias, true);
+    }
+
+    public Update table(String prefix, Class<? extends IEntity> entityClass, String alias, boolean safePrefix) {
+        return table(null, buildSafeTableName(prefix, EntityMeta.createAndGet(entityClass), safePrefix), alias, false);
     }
 
     public Update table(String tableName, String alias) {

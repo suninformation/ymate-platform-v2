@@ -77,7 +77,7 @@ public final class SQL {
         return SQL.create(owner, expression.getResult()).param(paramValues);
     }
 
-    private SQL(IDatabase owner, String sql) {
+    public SQL(IDatabase owner, String sql) {
         this.owner = owner;
         this.params = Params.create();
         this.sql = sql;

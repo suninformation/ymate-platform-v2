@@ -43,43 +43,47 @@ public final class Delete extends Query<Delete> {
     private Where where;
 
     public static Delete create() {
-        return new Delete(JDBC.get(), JDBC.get().getConfig().getDefaultDataSourceName());
+        IDatabase owner = JDBC.get();
+        return new Delete(owner, owner.getConfig().getDefaultDataSourceName());
     }
 
     public static Delete create(Class<? extends IEntity> entityClass) {
-        return new Delete(JDBC.get(), JDBC.get().getConfig().getDefaultDataSourceName()).from(entityClass);
+        return create(null, entityClass, null);
     }
 
     public static Delete create(String prefix, Class<? extends IEntity> entityClass) {
-        return new Delete(JDBC.get(), JDBC.get().getConfig().getDefaultDataSourceName()).from(prefix, entityClass, null);
+        return create(prefix, entityClass, null);
     }
 
     public static Delete create(Class<? extends IEntity> entityClass, String alias) {
-        return new Delete(JDBC.get(), JDBC.get().getConfig().getDefaultDataSourceName()).from(null, entityClass, alias);
+        return create(null, entityClass, alias);
     }
 
     public static Delete create(String prefix, Class<? extends IEntity> entityClass, String alias) {
-        return new Delete(JDBC.get(), JDBC.get().getConfig().getDefaultDataSourceName()).from(prefix, entityClass, alias);
+        IDatabase owner = JDBC.get();
+        return new Delete(owner, owner.getConfig().getDefaultDataSourceName()).from(prefix, entityClass, alias);
     }
 
     public static Delete create(String prefix, String tableName, String alias) {
-        return new Delete(JDBC.get(), JDBC.get().getConfig().getDefaultDataSourceName(), prefix, tableName, alias, true);
+        IDatabase owner = JDBC.get();
+        return new Delete(owner, owner.getConfig().getDefaultDataSourceName(), prefix, tableName, alias, true);
     }
 
     public static Delete create(String tableName, String alias) {
-        return new Delete(JDBC.get(), JDBC.get().getConfig().getDefaultDataSourceName(), null, tableName, alias, true);
+        return create((String) null, tableName, alias);
     }
 
     public static Delete create(String tableName, String alias, boolean safePrefix) {
-        return new Delete(JDBC.get(), JDBC.get().getConfig().getDefaultDataSourceName(), null, tableName, alias, safePrefix);
+        IDatabase owner = JDBC.get();
+        return new Delete(owner, owner.getConfig().getDefaultDataSourceName(), null, tableName, alias, safePrefix);
     }
 
     public static Delete create(String tableName) {
-        return new Delete(JDBC.get(), JDBC.get().getConfig().getDefaultDataSourceName(), null, tableName, null, true);
+        return create((String) null, tableName, null);
     }
 
     public static Delete create(String tableName, boolean safePrefix) {
-        return new Delete(JDBC.get(), JDBC.get().getConfig().getDefaultDataSourceName(), null, tableName, null, safePrefix);
+        return create(tableName, null, safePrefix);
     }
 
     public static Delete create(Select select) {
@@ -132,30 +136,46 @@ public final class Delete extends Query<Delete> {
         return new Delete(owner, dataSourceName, null, tableName, null, safePrefix);
     }
 
-    private Delete(IDatabase owner, String dataSourceName) {
+    public static Delete create(Query<?> query) {
+        return new Delete(query.owner(), query.dataSourceName());
+    }
+
+    public static Delete create(Query<?> query, String prefix, String from, String alias, boolean safePrefix) {
+        return new Delete(query.owner(), query.dataSourceName(), prefix, from, alias, safePrefix);
+    }
+
+    public Delete(IDatabase owner, String dataSourceName) {
         super(owner, dataSourceName);
     }
 
-    private Delete(IDatabase owner, String dataSourceName, String prefix, String from, String alias, boolean safePrefix) {
+    public Delete(IDatabase owner, String dataSourceName, String prefix, String from, String alias, boolean safePrefix) {
         super(owner, dataSourceName);
         //
-        if (safePrefix) {
-            from(null, buildSafeTableName(prefix, from, true), alias);
-        } else {
-            from(prefix, from, alias);
-        }
+        from(prefix, from, alias, safePrefix);
     }
 
     public Delete from(Class<? extends IEntity> entityClass) {
-        return from(null, buildSafeTableName(null, EntityMeta.createAndGet(entityClass), true), null);
+        return from(entityClass, true);
+    }
+
+    public Delete from(Class<? extends IEntity> entityClass, boolean safePrefix) {
+        return from(null, buildSafeTableName(null, EntityMeta.createAndGet(entityClass), safePrefix), null);
     }
 
     public Delete from(Class<? extends IEntity> entityClass, String alias) {
-        return from(null, buildSafeTableName(null, EntityMeta.createAndGet(entityClass), true), alias);
+        return from(entityClass, alias, true);
+    }
+
+    public Delete from(Class<? extends IEntity> entityClass, String alias, boolean safePrefix) {
+        return from(null, buildSafeTableName(null, EntityMeta.createAndGet(entityClass), safePrefix), alias);
     }
 
     public Delete from(String prefix, Class<? extends IEntity> entityClass, String alias) {
-        return from(null, buildSafeTableName(prefix, EntityMeta.createAndGet(entityClass), true), alias);
+        return from(prefix, entityClass, alias, true);
+    }
+
+    public Delete from(String prefix, Class<? extends IEntity> entityClass, String alias, boolean safePrefix) {
+        return from(null, buildSafeTableName(prefix, EntityMeta.createAndGet(entityClass), safePrefix), alias);
     }
 
     public Delete from(Select select) {
@@ -173,7 +193,11 @@ public final class Delete extends Query<Delete> {
     }
 
     public Delete from(String prefix, String from, String alias) {
-        from = buildSafeTableName(prefix, from, false);
+        return from(prefix, from, alias, false);
+    }
+
+    public Delete from(String prefix, String from, String alias, boolean safePrefix) {
+        from = buildSafeTableName(prefix, from, safePrefix);
         if (StringUtils.isNotBlank(alias)) {
             from = from.concat(StringUtils.SPACE).concat(alias);
         }
@@ -218,7 +242,7 @@ public final class Delete extends Query<Delete> {
 
     public Where where() {
         if (this.where == null) {
-            this.where = Where.create(owner());
+            this.where = Where.create(this);
         }
         return where;
     }

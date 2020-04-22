@@ -54,7 +54,7 @@ public final class BatchSQL {
         return new BatchSQL(owner, null);
     }
 
-    private BatchSQL(IDatabase owner, String batchSql) {
+    public BatchSQL(IDatabase owner, String batchSql) {
         this.owner = owner;
         this.batchSql = batchSql;
     }

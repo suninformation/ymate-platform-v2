@@ -40,7 +40,11 @@ public final class OrderBy extends Query<OrderBy> {
         return new OrderBy(owner, dataSourceName);
     }
 
-    private OrderBy(IDatabase owner, String dataSourceName) {
+    public static OrderBy create(Query<?> query) {
+        return new OrderBy(query.owner(), query.dataSourceName());
+    }
+
+    public OrderBy(IDatabase owner, String dataSourceName) {
         super(owner, dataSourceName);
         orderByBuilder = new StringBuilder();
     }

@@ -58,7 +58,7 @@ public final class EntitySQL<T extends IEntity> {
         return new EntitySQL<>(owner, entityClass);
     }
 
-    private EntitySQL(IDatabase owner, Class<T> entityClass) {
+    public EntitySQL(IDatabase owner, Class<T> entityClass) {
         this.owner = owner;
         this.entityClass = entityClass;
         this.fields = Fields.create();

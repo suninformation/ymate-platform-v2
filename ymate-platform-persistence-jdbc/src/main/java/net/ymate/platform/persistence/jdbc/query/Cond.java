@@ -124,7 +124,11 @@ public final class Cond extends Query<Cond> {
         return new Cond(owner, dataSourceName);
     }
 
-    private Cond(IDatabase owner, String dataSourceName) {
+    public static Cond create(Query<?> query) {
+        return new Cond(query.owner(), query.dataSourceName());
+    }
+
+    public Cond(IDatabase owner, String dataSourceName) {
         super(owner, dataSourceName);
     }
 
