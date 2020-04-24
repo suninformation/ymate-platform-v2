@@ -121,7 +121,7 @@ public final class DateTimeValidator implements IValidator {
                     }
                     if (result == 0) {
                         if (dateTimeEnd == null) {
-                            dateTimeEnd = DateTimeHelper.bind(dateTimeBegin).hoursAdd(23).minutesAdd(59).secondsAdd(59).time();
+                            dateTimeEnd = DateTimeHelper.bind(dateTimeBegin).toDayEnd().time();
                         }
                         ValidateContext.getLocalAttributes().put(paramName, PairObject.bind(dateTimeBegin, dateTimeEnd));
                     }
