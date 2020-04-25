@@ -96,7 +96,14 @@ public final class Where extends QueryHandleAdapter<Where> {
         if (where.groupBy() != null) {
             if (groupBy != null) {
                 groupBy.fields().add(where.groupBy().fields());
-                groupBy.having().cond(where.groupBy().having());
+                Cond havingCond = where.groupBy().having();
+                if (havingCond != null) {
+                    if (groupBy.having() != null) {
+                        groupBy.having().cond(havingCond);
+                    } else {
+                        groupBy.having(havingCond);
+                    }
+                }
             } else {
                 groupBy = where.groupBy();
             }

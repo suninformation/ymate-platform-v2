@@ -34,7 +34,7 @@ public @interface QField {
     String prefix() default StringUtils.EMPTY;
 
     /**
-     * @return 名称（在条件注解中将支持'${...}'形式的参数变量）
+     * @return 名称
      */
     String value();
 

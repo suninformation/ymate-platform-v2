@@ -549,6 +549,10 @@ public final class Cond extends Query<Cond> {
         return this;
     }
 
+    public boolean isEmpty() {
+        return StringUtils.isBlank(condition);
+    }
+
     /**
      * 通过当前条件对象创建Where对象实例
      *

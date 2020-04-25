@@ -126,7 +126,7 @@ public final class GroupBy extends Query<GroupBy> {
             expression.set("groupBy", String.format("GROUP BY %s", StringUtils.join(wrapIdentifierFields(groupByNames.toArray()).fields(), LINE_END_FLAG)));
         }
         if (having != null && variables.contains("having")) {
-            expression.set("having", having.toString());
+            expression.set("having", String.format("HAVING %s", having.toString()));
         }
         if (queryHandler() != null) {
             queryHandler().afterBuild(expression, this);
