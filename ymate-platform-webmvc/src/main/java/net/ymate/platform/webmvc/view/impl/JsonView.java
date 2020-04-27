@@ -23,6 +23,7 @@ import net.ymate.platform.webmvc.base.Type;
 import net.ymate.platform.webmvc.context.WebContext;
 import net.ymate.platform.webmvc.view.AbstractView;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.servlet.http.HttpServletResponse;
@@ -38,6 +39,8 @@ import java.util.List;
  * @author 刘镇 (suninformation@163.com) on 2011-10-23 上午11:27:16
  */
 public class JsonView extends AbstractView {
+
+    private final List<SerializerFeature> serializerFeatures = new ArrayList<>();
 
     private final Object jsonObj;
 
@@ -131,10 +134,22 @@ public class JsonView extends AbstractView {
     }
 
     /**
+     * 自定义序列化配置
+     *
+     * @param serialFeatures 序列化配置
+     * @return 返回当前视图对象
+     */
+    public JsonView addSerializerFeatures(SerializerFeature... serialFeatures) {
+        if (ArrayUtils.isNotEmpty(serialFeatures)) {
+            serializerFeatures.addAll(Arrays.asList(serialFeatures));
+        }
+        return this;
+    }
+
+    /**
      * @return 将视图数据对象转换为JSON字符串
      */
     private String doObjectToJsonString() {
-        List<SerializerFeature> serializerFeatures = new ArrayList<>();
         if (quoteFieldNames) {
             serializerFeatures.add(SerializerFeature.QuoteFieldNames);
             if (useSingleQuotes) {
