@@ -27,6 +27,7 @@ import net.ymate.platform.core.beans.impl.DefaultBeanFactory;
 import net.ymate.platform.core.beans.intercept.InterceptSettings;
 import net.ymate.platform.core.event.Events;
 import net.ymate.platform.core.event.annotation.Event;
+import net.ymate.platform.core.event.annotation.EventListener;
 import net.ymate.platform.core.event.annotation.EventRegister;
 import net.ymate.platform.core.handle.*;
 import net.ymate.platform.core.i18n.I18N;
@@ -145,6 +146,7 @@ public final class Application implements IApplication {
                         beanLoader.registerHandler(Injector.class, new InjectorHandler(this));
                         beanLoader.registerHandler(Event.class, new EventHandler(this));
                         beanLoader.registerHandler(EventRegister.class, new EventRegisterHandler(this));
+                        beanLoader.registerHandler(EventListener.class, new EventListenerHandler(this));
                         beanLoader.registerHandler(Proxy.class, new ProxyHandler(this));
                         beanLoader.registerHandler(Serializer.class, new SerializerHandler());
                         if (initializer != null) {
