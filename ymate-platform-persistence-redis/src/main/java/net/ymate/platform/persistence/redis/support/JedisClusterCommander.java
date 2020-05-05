@@ -21,7 +21,6 @@ import redis.clients.jedis.*;
 import redis.clients.jedis.params.*;
 import redis.clients.jedis.util.Slowlog;
 
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -82,6 +81,16 @@ public class JedisClusterCommander implements IRedisCommander {
     }
 
     @Override
+    public List<byte[]> objectHelpBinary() {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public Long objectFreq(byte[] key) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
     public String migrate(String host, int port, byte[] key, int destinationDB, int timeout) {
         throw new UnsupportedOperationException();
     }
@@ -113,6 +122,56 @@ public class JedisClusterCommander implements IRedisCommander {
 
     @Override
     public byte[] memoryDoctorBinary() {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public byte[] aclWhoAmIBinary() {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public byte[] aclGenPassBinary() {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public List<byte[]> aclListBinary() {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public List<byte[]> aclUsersBinary() {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public AccessControlUser aclGetUser(byte[] name) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public String aclSetUser(byte[] name) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public String aclSetUser(byte[] name, byte[]... keys) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public Long aclDelUser(byte[] name) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public List<byte[]> aclCatBinary() {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public List<byte[]> aclCat(byte[] category) {
         throw new UnsupportedOperationException();
     }
 
@@ -162,6 +221,16 @@ public class JedisClusterCommander implements IRedisCommander {
     }
 
     @Override
+    public List<String> objectHelp() {
+        return null;
+    }
+
+    @Override
+    public Long objectFreq(String key) {
+        return null;
+    }
+
+    @Override
     public String migrate(String host, int port, String key, int destinationDB, int timeout) {
         throw new UnsupportedOperationException();
     }
@@ -207,6 +276,56 @@ public class JedisClusterCommander implements IRedisCommander {
     }
 
     @Override
+    public String aclWhoAmI() {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public String aclGenPass() {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public List<String> aclList() {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public List<String> aclUsers() {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public AccessControlUser aclGetUser(String name) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public String aclSetUser(String name) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public String aclSetUser(String name, String... keys) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public Long aclDelUser(String name) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public List<String> aclCat() {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public List<String> aclCat(String category) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
     public String ping() {
         throw new UnsupportedOperationException();
     }
@@ -243,6 +362,11 @@ public class JedisClusterCommander implements IRedisCommander {
 
     @Override
     public String auth(String password) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public String auth(String user, String password) {
         throw new UnsupportedOperationException();
     }
 
@@ -537,7 +661,7 @@ public class JedisClusterCommander implements IRedisCommander {
     }
 
     @Override
-    public Collection<byte[]> hvals(byte[] key) {
+    public List<byte[]> hvals(byte[] key) {
         return jedisCluster.hvals(key);
     }
 
@@ -1047,6 +1171,11 @@ public class JedisClusterCommander implements IRedisCommander {
     }
 
     @Override
+    public List<Long> bitfieldReadonly(byte[] key, byte[]... arguments) {
+        return jedisCluster.bitfieldReadonly(key, arguments);
+    }
+
+    @Override
     public Long hstrlen(byte[] key, byte[] field) {
         return jedisCluster.hstrlen(key, field);
     }
@@ -1092,7 +1221,7 @@ public class JedisClusterCommander implements IRedisCommander {
     }
 
     @Override
-    public String xgroupDelConsumer(byte[] key, byte[] consumer, byte[] consumerName) {
+    public Long xgroupDelConsumer(byte[] key, byte[] consumer, byte[] consumerName) {
         return jedisCluster.xgroupDelConsumer(key, consumer, consumerName);
     }
 
@@ -1114,6 +1243,21 @@ public class JedisClusterCommander implements IRedisCommander {
     @Override
     public List<byte[]> xclaim(byte[] key, byte[] groupname, byte[] consumername, long minIdleTime, long newIdleTime, int retries, boolean force, byte[][] ids) {
         return jedisCluster.xclaim(key, groupname, consumername, minIdleTime, newIdleTime, retries, force, ids);
+    }
+
+    @Override
+    public StreamInfo xinfoStream(byte[] key) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public List<StreamGroupInfo> xinfoGroup(byte[] key) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public List<StreamConsumersInfo> xinfoConsumers(byte[] key, byte[] group) {
+        throw new UnsupportedOperationException();
     }
 
     @Override
@@ -2062,6 +2206,11 @@ public class JedisClusterCommander implements IRedisCommander {
     }
 
     @Override
+    public List<Long> bitfieldReadonly(String key, String... arguments) {
+        return null;
+    }
+
+    @Override
     public Long hstrlen(String key, String field) {
         return jedisCluster.hstrlen(key, field);
     }
@@ -2112,7 +2261,7 @@ public class JedisClusterCommander implements IRedisCommander {
     }
 
     @Override
-    public String xgroupDelConsumer(String key, String groupname, String consumername) {
+    public Long xgroupDelConsumer(String key, String groupname, String consumername) {
         return jedisCluster.xgroupDelConsumer(key, groupname, consumername);
     }
 
@@ -2134,6 +2283,21 @@ public class JedisClusterCommander implements IRedisCommander {
     @Override
     public List<StreamEntry> xclaim(String key, String group, String consumername, long minIdleTime, long newIdleTime, int retries, boolean force, StreamEntryID... ids) {
         return jedisCluster.xclaim(key, group, consumername, minIdleTime, newIdleTime, retries, force, ids);
+    }
+
+    @Override
+    public StreamInfo xinfoStream(String key) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public List<StreamGroupInfo> xinfoGroup(String key) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public List<StreamConsumersInfo> xinfoConsumers(String key, String group) {
+        throw new UnsupportedOperationException();
     }
 
     @Override

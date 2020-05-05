@@ -21,7 +21,6 @@ import redis.clients.jedis.*;
 import redis.clients.jedis.params.*;
 import redis.clients.jedis.util.Slowlog;
 
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -82,6 +81,16 @@ public class JedisCommander implements IRedisCommander {
     }
 
     @Override
+    public List<byte[]> objectHelpBinary() {
+        return jedis.objectHelpBinary();
+    }
+
+    @Override
+    public Long objectFreq(byte[] key) {
+        return jedis.objectFreq(key);
+    }
+
+    @Override
     public String migrate(String host, int port, byte[] key, int destinationDB, int timeout) {
         return jedis.migrate(host, port, key, destinationDB, timeout);
     }
@@ -114,6 +123,56 @@ public class JedisCommander implements IRedisCommander {
     @Override
     public byte[] memoryDoctorBinary() {
         return jedis.memoryDoctorBinary();
+    }
+
+    @Override
+    public byte[] aclWhoAmIBinary() {
+        return jedis.aclWhoAmIBinary();
+    }
+
+    @Override
+    public byte[] aclGenPassBinary() {
+        return jedis.aclGenPassBinary();
+    }
+
+    @Override
+    public List<byte[]> aclListBinary() {
+        return jedis.aclListBinary();
+    }
+
+    @Override
+    public List<byte[]> aclUsersBinary() {
+        return jedis.aclUsersBinary();
+    }
+
+    @Override
+    public AccessControlUser aclGetUser(byte[] name) {
+        return jedis.aclGetUser(name);
+    }
+
+    @Override
+    public String aclSetUser(byte[] name) {
+        return jedis.aclSetUser(name);
+    }
+
+    @Override
+    public String aclSetUser(byte[] name, byte[]... keys) {
+        return jedis.aclSetUser(name, keys);
+    }
+
+    @Override
+    public Long aclDelUser(byte[] name) {
+        return jedis.aclDelUser(name);
+    }
+
+    @Override
+    public List<byte[]> aclCatBinary() {
+        return jedis.aclCatBinary();
+    }
+
+    @Override
+    public List<byte[]> aclCat(byte[] category) {
+        return jedis.aclCat(category);
     }
 
     @Override
@@ -162,6 +221,16 @@ public class JedisCommander implements IRedisCommander {
     }
 
     @Override
+    public List<String> objectHelp() {
+        return jedis.objectHelp();
+    }
+
+    @Override
+    public Long objectFreq(String key) {
+        return jedis.objectFreq(key);
+    }
+
+    @Override
     public String migrate(String host, int port, String key, int destinationDB, int timeout) {
         return jedis.migrate(host, port, key, destinationDB, timeout);
     }
@@ -207,6 +276,56 @@ public class JedisCommander implements IRedisCommander {
     }
 
     @Override
+    public String aclWhoAmI() {
+        return jedis.aclWhoAmI();
+    }
+
+    @Override
+    public String aclGenPass() {
+        return jedis.aclGenPass();
+    }
+
+    @Override
+    public List<String> aclList() {
+        return jedis.aclList();
+    }
+
+    @Override
+    public List<String> aclUsers() {
+        return jedis.aclUsers();
+    }
+
+    @Override
+    public AccessControlUser aclGetUser(String name) {
+        return jedis.aclGetUser(name);
+    }
+
+    @Override
+    public String aclSetUser(String name) {
+        return jedis.aclSetUser(name);
+    }
+
+    @Override
+    public String aclSetUser(String name, String... keys) {
+        return jedis.aclSetUser(name, keys);
+    }
+
+    @Override
+    public Long aclDelUser(String name) {
+        return jedis.aclDelUser(name);
+    }
+
+    @Override
+    public List<String> aclCat() {
+        return jedis.aclCat();
+    }
+
+    @Override
+    public List<String> aclCat(String category) {
+        return jedis.aclCat(category);
+    }
+
+    @Override
     public String ping() {
         return jedis.ping();
     }
@@ -244,6 +363,11 @@ public class JedisCommander implements IRedisCommander {
     @Override
     public String auth(String password) {
         return jedis.auth(password);
+    }
+
+    @Override
+    public String auth(String user, String password) {
+        return jedis.auth(user, password);
     }
 
     @Override
@@ -537,7 +661,7 @@ public class JedisCommander implements IRedisCommander {
     }
 
     @Override
-    public Collection<byte[]> hvals(byte[] key) {
+    public List<byte[]> hvals(byte[] key) {
         return jedis.hvals(key);
     }
 
@@ -1047,6 +1171,11 @@ public class JedisCommander implements IRedisCommander {
     }
 
     @Override
+    public List<Long> bitfieldReadonly(byte[] key, byte[]... arguments) {
+        return jedis.bitfieldReadonly(key, arguments);
+    }
+
+    @Override
     public Long hstrlen(byte[] key, byte[] field) {
         return jedis.hstrlen(key, field);
     }
@@ -1092,7 +1221,7 @@ public class JedisCommander implements IRedisCommander {
     }
 
     @Override
-    public String xgroupDelConsumer(byte[] key, byte[] consumer, byte[] consumerName) {
+    public Long xgroupDelConsumer(byte[] key, byte[] consumer, byte[] consumerName) {
         return jedis.xgroupDelConsumer(key, consumer, consumerName);
     }
 
@@ -1114,6 +1243,21 @@ public class JedisCommander implements IRedisCommander {
     @Override
     public List<byte[]> xclaim(byte[] key, byte[] groupname, byte[] consumername, long minIdleTime, long newIdleTime, int retries, boolean force, byte[][] ids) {
         return jedis.xclaim(key, groupname, consumername, minIdleTime, newIdleTime, retries, force, ids);
+    }
+
+    @Override
+    public StreamInfo xinfoStream(byte[] key) {
+        return jedis.xinfoStream(key);
+    }
+
+    @Override
+    public List<StreamGroupInfo> xinfoGroup(byte[] key) {
+        return jedis.xinfoGroup(key);
+    }
+
+    @Override
+    public List<StreamConsumersInfo> xinfoConsumers(byte[] key, byte[] group) {
+        return jedis.xinfoConsumers(key, group);
     }
 
     @Override
@@ -2062,6 +2206,11 @@ public class JedisCommander implements IRedisCommander {
     }
 
     @Override
+    public List<Long> bitfieldReadonly(String key, String... arguments) {
+        return jedis.bitfieldReadonly(key, arguments);
+    }
+
+    @Override
     public Long hstrlen(String key, String field) {
         return jedis.hstrlen(key, field);
     }
@@ -2112,7 +2261,7 @@ public class JedisCommander implements IRedisCommander {
     }
 
     @Override
-    public String xgroupDelConsumer(String key, String groupname, String consumername) {
+    public Long xgroupDelConsumer(String key, String groupname, String consumername) {
         return jedis.xgroupDelConsumer(key, groupname, consumername);
     }
 
@@ -2134,6 +2283,21 @@ public class JedisCommander implements IRedisCommander {
     @Override
     public List<StreamEntry> xclaim(String key, String group, String consumername, long minIdleTime, long newIdleTime, int retries, boolean force, StreamEntryID... ids) {
         return jedis.xclaim(key, group, consumername, minIdleTime, newIdleTime, retries, force, ids);
+    }
+
+    @Override
+    public StreamInfo xinfoStream(String key) {
+        return jedis.xinfoStream(key);
+    }
+
+    @Override
+    public List<StreamGroupInfo> xinfoGroup(String key) {
+        return jedis.xinfoGroup(key);
+    }
+
+    @Override
+    public List<StreamConsumersInfo> xinfoConsumers(String key, String group) {
+        return jedis.xinfoConsumers(key, group);
     }
 
     @Override
