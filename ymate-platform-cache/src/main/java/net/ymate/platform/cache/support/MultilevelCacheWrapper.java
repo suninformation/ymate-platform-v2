@@ -213,39 +213,46 @@ public class MultilevelCacheWrapper implements ICache, ICacheLocker {
         return this;
     }
 
+    private ICacheLocker doGetCacheLocker(MultilevelKey key) {
+        if (key.isMaster()) {
+            return masterCache.acquireCacheLocker();
+        }
+        return slaveCache.acquireCacheLocker();
+    }
+
     @Override
     public void readLock(Object key) {
         MultilevelKey multilevelKey = MultilevelKey.bind(key);
-        masterCache.acquireCacheLocker().readLock(multilevelKey.getKey());
+        doGetCacheLocker(multilevelKey).readLock(multilevelKey.getKey());
     }
 
     @Override
     public void writeLock(Object key) {
         MultilevelKey multilevelKey = MultilevelKey.bind(key);
-        masterCache.acquireCacheLocker().writeLock(multilevelKey.getKey());
+        doGetCacheLocker(multilevelKey).writeLock(multilevelKey.getKey());
     }
 
     @Override
     public boolean tryReadLock(Object key, long timeout) throws CacheException {
         MultilevelKey multilevelKey = MultilevelKey.bind(key);
-        return masterCache.acquireCacheLocker().tryReadLock(multilevelKey.getKey(), timeout);
+        return doGetCacheLocker(multilevelKey).tryReadLock(multilevelKey.getKey(), timeout);
     }
 
     @Override
     public boolean tryWriteLock(Object key, long timeout) throws CacheException {
         MultilevelKey multilevelKey = MultilevelKey.bind(key);
-        return masterCache.acquireCacheLocker().tryWriteLock(multilevelKey.getKey(), timeout);
+        return doGetCacheLocker(multilevelKey).tryWriteLock(multilevelKey.getKey(), timeout);
     }
 
     @Override
     public void releaseReadLock(Object key) {
         MultilevelKey multilevelKey = MultilevelKey.bind(key);
-        masterCache.acquireCacheLocker().releaseReadLock(multilevelKey.getKey());
+        doGetCacheLocker(multilevelKey).releaseReadLock(multilevelKey.getKey());
     }
 
     @Override
     public void releaseWriteLock(Object key) {
         MultilevelKey multilevelKey = MultilevelKey.bind(key);
-        masterCache.acquireCacheLocker().releaseWriteLock(multilevelKey.getKey());
+        doGetCacheLocker(multilevelKey).releaseWriteLock(multilevelKey.getKey());
     }
 }
