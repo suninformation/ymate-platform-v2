@@ -45,6 +45,13 @@ public interface IPlugins extends IInitialization<IApplication>, IDestroyable {
     IPluginConfig getConfig();
 
     /**
+     * 获取插件工厂实例
+     *
+     * @return 返回插件工厂实例
+     */
+    IPluginFactory getPluginFactory();
+
+    /**
      * 通过ID获取默认插件工厂中的插件实例
      *
      * @param id 插件唯一ID

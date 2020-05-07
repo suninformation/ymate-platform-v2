@@ -21,6 +21,8 @@ import net.ymate.platform.core.beans.annotation.Ignored;
 import net.ymate.platform.core.support.IDestroyable;
 import net.ymate.platform.core.support.IInitialization;
 
+import java.util.Collection;
+
 /**
  * 插件工厂接口定义
  *
@@ -56,6 +58,21 @@ public interface IPluginFactory extends IInitialization<IApplication>, IDestroya
      * @return 返回对象加载器实例
      */
     IBeanLoader getBeanLoader();
+
+    /**
+     * 通过插件唯一标识获取插件配置信息元数据描述
+     *
+     * @param idOrAlias 插件唯一标识或别名
+     * @return 返回插件配置信息元数据描述
+     */
+    PluginMeta getPluginMeta(String idOrAlias);
+
+    /**
+     * 获取插件配置信息描述对象集合
+     *
+     * @return 返回插件配置信息描述对象集合
+     */
+    Collection<PluginMeta> getPluginMetas();
 
     /**
      * 通过插件唯一标识获取插件实例

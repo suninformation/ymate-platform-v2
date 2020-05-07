@@ -167,6 +167,11 @@ public class Plugins implements IModule, IPlugins {
     }
 
     @Override
+    public IPluginFactory getPluginFactory() {
+        return pluginFactory;
+    }
+
+    @Override
     public IPlugin getPlugin(String id) {
         if (pluginFactory == null) {
             return null;

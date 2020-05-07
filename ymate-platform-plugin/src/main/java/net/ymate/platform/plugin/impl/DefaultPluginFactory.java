@@ -41,6 +41,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -271,6 +272,16 @@ public class DefaultPluginFactory implements IPluginFactory {
     @Override
     public IBeanLoader getBeanLoader() {
         return beanLoader;
+    }
+
+    @Override
+    public PluginMeta getPluginMeta(String idOrAlias) {
+        return pluginBeanFactory.getPluginMeta(idOrAlias);
+    }
+
+    @Override
+    public Collection<PluginMeta> getPluginMetas() {
+        return pluginBeanFactory.getPluginMetas();
     }
 
     private synchronized PluginClassLoader buildPluginClassLoader() throws Exception {
