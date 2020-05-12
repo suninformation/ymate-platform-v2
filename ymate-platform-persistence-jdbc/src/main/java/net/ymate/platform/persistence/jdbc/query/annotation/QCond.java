@@ -44,10 +44,10 @@ public @interface QCond {
     /**
      * @return 条件字段1
      */
-    QField fieldA();
+    QField field();
 
     /**
      * @return 条件字段2（在此QField注解中，支持以'#'开头的字符形式参数变量）
      */
-    QField fieldB();
+    QField with();
 }

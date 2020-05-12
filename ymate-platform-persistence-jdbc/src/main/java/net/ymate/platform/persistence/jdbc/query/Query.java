@@ -289,19 +289,19 @@ public class Query<T> extends QueryHandleAdapter<T> {
                                 cond.not();
                         }
                     }
-                    String fieldBValue = qCond.fieldB().value();
-                    if (StringUtils.isNotBlank(qCond.fieldA().value()) && StringUtils.isNotBlank(fieldBValue)) {
-                        if (fieldBValue.charAt(0) == '#') {
-                            String varName = StringUtils.substring(fieldBValue, 1);
+                    String withFieldValue = qCond.with().value();
+                    if (StringUtils.isNotBlank(qCond.field().value()) && StringUtils.isNotBlank(withFieldValue)) {
+                        if (withFieldValue.charAt(0) == '#') {
+                            String varName = StringUtils.substring(withFieldValue, 1);
                             if (!variables.containsKey(varName)) {
                                 throw new IllegalArgumentException(String.format("Variable '%s' is not set.", varName));
                             }
-                            fieldBValue = "?";
+                            withFieldValue = "?";
                             cond.param(variables.get(varName));
                         } else {
-                            fieldBValue = Fields.field(qCond.fieldB().prefix(), qCond.fieldB().value());
+                            withFieldValue = Fields.field(qCond.with().prefix(), qCond.with().value());
                         }
-                        cond.opt(Fields.field(qCond.fieldA().prefix(), qCond.fieldA().value()), qCond.opt(), fieldBValue);
+                        cond.opt(Fields.field(qCond.field().prefix(), qCond.field().value()), qCond.opt(), withFieldValue);
                         idx++;
                     }
                 }
