@@ -280,24 +280,29 @@ public class Query<T> extends QueryHandleAdapter<T> {
                     if (idx > 0) {
                         switch (qCond.logicalOpt()) {
                             case NOT:
-                                cond.and();
+                                cond.not();
                                 break;
                             case OR:
                                 cond.or();
                                 break;
                             default:
-                                cond.not();
+                                cond.and();
                         }
                     }
                     String withFieldValue = qCond.with().value();
                     if (StringUtils.isNotBlank(qCond.field().value()) && StringUtils.isNotBlank(withFieldValue)) {
-                        if (withFieldValue.charAt(0) == '#') {
+                        char firstChar = withFieldValue.charAt(0);
+                        if (firstChar == '#') {
+                            // 以#开头则替换变量值
                             String varName = StringUtils.substring(withFieldValue, 1);
                             if (!variables.containsKey(varName)) {
                                 throw new IllegalArgumentException(String.format("Variable '%s' is not set.", varName));
                             }
                             withFieldValue = "?";
                             cond.param(variables.get(varName));
+                        } else if (firstChar == '$') {
+                            // 以$开头则字符串原样传入
+                            withFieldValue = StringUtils.substring(withFieldValue, 1);
                         } else {
                             withFieldValue = Fields.field(qCond.with().prefix(), qCond.with().value());
                         }
