@@ -86,19 +86,15 @@ public final class DefaultApplicationConfigureParser implements IApplicationConf
                 }
             }
         }
-        IApplication.Environment runEnv = YMP.getPriorityRunEnv(IApplication.Environment.DEV);
-        String prefix = StringUtils.EMPTY;
-        if (runEnv != IApplication.Environment.UNKNOWN) {
-            prefix = "_" + runEnv.name();
-        }
-        configFileName = CONFIG_FILE_PREFIX + prefix;
-        //
         List<String> filePaths = new ArrayList<>();
-        filePaths.add(String.format("%s.properties", configFileName));
+        IApplication.Environment runEnv = YMP.getPriorityRunEnv(IApplication.Environment.DEV);
+        if (runEnv != IApplication.Environment.UNKNOWN) {
+            filePaths.add(String.format("%s_%s.properties", CONFIG_FILE_PREFIX, runEnv.name()));
+        }
         if (RuntimeUtils.isWindows()) {
-            filePaths.add(String.format("%s_WIN.properties", configFileName));
+            filePaths.add(String.format("%s_WIN.properties", CONFIG_FILE_PREFIX));
         } else if (RuntimeUtils.isUnixOrLinux()) {
-            filePaths.add(String.format("%s_UNIX.properties", configFileName));
+            filePaths.add(String.format("%s_UNIX.properties", CONFIG_FILE_PREFIX));
         }
         filePaths.add(String.format("%s.properties", CONFIG_FILE_PREFIX));
         return ResourceUtils.getResourceAsStream(DefaultApplicationConfigureParser.class, filePaths.toArray(new String[0]));
