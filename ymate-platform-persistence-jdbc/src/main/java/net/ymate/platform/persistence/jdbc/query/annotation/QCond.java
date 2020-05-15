@@ -47,7 +47,12 @@ public @interface QCond {
     QField field();
 
     /**
-     * @return 条件字段2（在此QField注解中，支持以'#'开头的字符形式参数变量）
+     * @return 条件字段2（在此QField注解中，支持以'#'开头的字符形式参数变量或以'$'开头的字符串原样传入）
      */
     QField with();
+
+    /**
+     * @return 是否可被忽略（仅以'#'开头的字符形式参数时有效，若为true则忽略当前条件并不会抛出异常）
+     */
+    boolean ignorable() default false;
 }

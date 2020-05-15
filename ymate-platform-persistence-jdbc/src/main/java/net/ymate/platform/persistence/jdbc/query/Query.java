@@ -277,37 +277,43 @@ public class Query<T> extends QueryHandleAdapter<T> {
                 Cond cond = Cond.create(this);
                 int idx = 0;
                 for (QCond qCond : qConds) {
-                    if (idx > 0) {
-                        switch (qCond.logicalOpt()) {
-                            case NOT:
-                                cond.not();
-                                break;
-                            case OR:
-                                cond.or();
-                                break;
-                            default:
-                                cond.and();
-                        }
-                    }
                     String withFieldValue = qCond.with().value();
                     if (StringUtils.isNotBlank(qCond.field().value()) && StringUtils.isNotBlank(withFieldValue)) {
+                        boolean skipped = false;
                         char firstChar = withFieldValue.charAt(0);
                         if (firstChar == '#') {
                             // 以#开头则替换变量值
                             String varName = StringUtils.substring(withFieldValue, 1);
-                            if (!variables.containsKey(varName)) {
+                            if (variables.containsKey(varName)) {
+                                withFieldValue = "?";
+                                cond.param(variables.get(varName));
+                            } else if (qCond.ignorable()) {
+                                skipped = true;
+                            } else {
                                 throw new IllegalArgumentException(String.format("Variable '%s' is not set.", varName));
                             }
-                            withFieldValue = "?";
-                            cond.param(variables.get(varName));
                         } else if (firstChar == '$') {
                             // 以$开头则字符串原样传入
                             withFieldValue = StringUtils.substring(withFieldValue, 1);
                         } else {
                             withFieldValue = Fields.field(qCond.with().prefix(), qCond.with().value());
                         }
-                        cond.opt(Fields.field(qCond.field().prefix(), qCond.field().value()), qCond.opt(), withFieldValue);
-                        idx++;
+                        if (!skipped) {
+                            if (idx > 0) {
+                                switch (qCond.logicalOpt()) {
+                                    case NOT:
+                                        cond.not();
+                                        break;
+                                    case OR:
+                                        cond.or();
+                                        break;
+                                    default:
+                                        cond.and();
+                                }
+                            }
+                            cond.opt(Fields.field(qCond.field().prefix(), qCond.field().value()), qCond.opt(), withFieldValue);
+                            idx++;
+                        }
                     }
                 }
                 return cond;
