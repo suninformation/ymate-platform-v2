@@ -69,7 +69,7 @@ public final class RequestExecutor {
     private void doSignatureValidate() {
         SignatureValidate signatureValidate = requestMeta.getSignatureValidate();
         if (signatureValidate != null && !signatureValidate.disabled()) {
-            ISignatureValidator signatureValidator = ClassUtils.impl(signatureValidate.creatorClass(), ISignatureValidator.class);
+            ISignatureValidator signatureValidator = ClassUtils.impl(signatureValidate.validatorClass(), ISignatureValidator.class);
             if (!signatureValidator.validate(owner, requestMeta, signatureValidate)) {
                 throw new ParameterSignatureException("Parameter signature mismatch.");
             }

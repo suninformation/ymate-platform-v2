@@ -66,9 +66,9 @@ public @interface SignatureValidate {
     String[] excludedParams() default {};
 
     /**
-     * @return 签名生成器类
+     * @return 签名验证器类
      */
-    Class<? extends ISignatureValidator> creatorClass() default DefaultSignatureValidator.class;
+    Class<? extends ISignatureValidator> validatorClass() default DefaultSignatureValidator.class;
 
     /**
      * @return 签名参数分析器类型
