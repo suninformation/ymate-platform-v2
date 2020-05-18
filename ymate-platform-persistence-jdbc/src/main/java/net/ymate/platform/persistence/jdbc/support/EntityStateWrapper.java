@@ -51,6 +51,10 @@ public final class EntityStateWrapper<Entity extends IEntity> {
         return update(propertyNames -> !Arrays.asList(propertyNames).containsAll(fields.fields()));
     }
 
+    public Entity update() throws Exception {
+        return update(null);
+    }
+
     @SuppressWarnings("unchecked")
     public Entity update(IUpdatePropertyChecker propertyChecker) throws Exception {
         String[] propNames = stateSupport.getChangedPropertyNames();
