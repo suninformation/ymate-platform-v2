@@ -18,6 +18,7 @@ package net.ymate.platform.persistence.jdbc.support;
 import net.ymate.platform.core.beans.support.PropertyStateSupport;
 import net.ymate.platform.core.persistence.Fields;
 import net.ymate.platform.core.persistence.base.IEntity;
+import net.ymate.platform.persistence.jdbc.IDatabase;
 import org.apache.commons.lang3.ArrayUtils;
 
 import java.util.Arrays;
@@ -29,13 +30,20 @@ import java.util.Arrays;
  */
 public final class EntityStateWrapper<Entity extends IEntity> {
 
+    private IDatabase owner;
+
     private final PropertyStateSupport<Entity> stateSupport;
 
     public static <Entity extends IEntity> EntityStateWrapper<Entity> bind(Entity entity, boolean ignoreNull) throws Exception {
-        return new EntityStateWrapper<>(entity, ignoreNull);
+        return new EntityStateWrapper<>(null, entity, ignoreNull);
     }
 
-    private EntityStateWrapper(Entity entity, boolean ignoreNull) throws Exception {
+    public static <Entity extends IEntity> EntityStateWrapper<Entity> bind(IDatabase owner, Entity entity, boolean ignoreNull) throws Exception {
+        return new EntityStateWrapper<>(owner, entity, ignoreNull);
+    }
+
+    private EntityStateWrapper(IDatabase owner, Entity entity, boolean ignoreNull) throws Exception {
+        this.owner = owner;
         this.stateSupport = PropertyStateSupport.create(entity, ignoreNull);
     }
 
@@ -64,7 +72,7 @@ public final class EntityStateWrapper<Entity extends IEntity> {
                 if (entity instanceof BaseEntity) {
                     return (Entity) ((BaseEntity) entity).update(Fields.create(propNames));
                 } else {
-                    return EntityWrapper.bind(entity).update(Fields.create(propNames));
+                    return EntityWrapper.bind(owner, entity).update(Fields.create(propNames));
                 }
             }
         }
