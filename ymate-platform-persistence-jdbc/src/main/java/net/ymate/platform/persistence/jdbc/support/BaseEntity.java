@@ -274,32 +274,100 @@ public abstract class BaseEntity<Entity extends IEntity, PK extends Serializable
         return find(Where.create(buildCond(doGetSafeOwner(), this)), null, null, null);
     }
 
+    public IResultSet<Entity> find(OrderBy orderBy) throws Exception {
+        return find(null, orderBy, null, null, null);
+    }
+
+    public IResultSet<Entity> find(OrderBy orderBy, GroupBy groupBy) throws Exception {
+        return find(null, orderBy, groupBy, null, null);
+    }
+
     public IResultSet<Entity> find(IDBLocker dbLocker) throws Exception {
         return find(Where.create(buildCond(doGetSafeOwner(), this)), null, null, dbLocker);
+    }
+
+    public IResultSet<Entity> find(OrderBy orderBy, IDBLocker dbLocker) throws Exception {
+        return find(null, orderBy, null, null, dbLocker);
+    }
+
+    public IResultSet<Entity> find(OrderBy orderBy, GroupBy groupBy, IDBLocker dbLocker) throws Exception {
+        return find(null, orderBy, groupBy, null, dbLocker);
     }
 
     public IResultSet<Entity> find(Page page) throws Exception {
         return find(Where.create(buildCond(doGetSafeOwner(), this)), null, page, null);
     }
 
+    public IResultSet<Entity> find(OrderBy orderBy, Page page) throws Exception {
+        return find(null, orderBy, page, null);
+    }
+
+    public IResultSet<Entity> find(OrderBy orderBy, GroupBy groupBy, Page page) throws Exception {
+        return find(null, orderBy, groupBy, page, null);
+    }
+
     public IResultSet<Entity> find(Page page, IDBLocker dbLocker) throws Exception {
         return find(Where.create(buildCond(doGetSafeOwner(), this)), null, page, dbLocker);
+    }
+
+    public IResultSet<Entity> find(OrderBy orderBy, Page page, IDBLocker dbLocker) throws Exception {
+        return find(null, orderBy, page, dbLocker);
+    }
+
+    public IResultSet<Entity> find(OrderBy orderBy, GroupBy groupBy, Page page, IDBLocker dbLocker) throws Exception {
+        return find(null, orderBy, groupBy, page, dbLocker);
     }
 
     public IResultSet<Entity> find(Fields fields) throws Exception {
         return find(Where.create(buildCond(doGetSafeOwner(), this)), fields, null, null);
     }
 
+    public IResultSet<Entity> find(Fields fields, OrderBy orderBy) throws Exception {
+        return find(fields, orderBy, null, null, null);
+    }
+
+    public IResultSet<Entity> find(Fields fields, OrderBy orderBy, GroupBy groupBy) throws Exception {
+        return find(fields, orderBy, groupBy, null, null);
+    }
+
     public IResultSet<Entity> find(Fields fields, IDBLocker dbLocker) throws Exception {
         return find(Where.create(buildCond(doGetSafeOwner(), this)), fields, null, dbLocker);
+    }
+
+    public IResultSet<Entity> find(Fields fields, OrderBy orderBy, IDBLocker dbLocker) throws Exception {
+        return find(fields, orderBy, null, null, dbLocker);
+    }
+
+    public IResultSet<Entity> find(Fields fields, OrderBy orderBy, GroupBy groupBy, IDBLocker dbLocker) throws Exception {
+        return find(fields, orderBy, groupBy, null, dbLocker);
     }
 
     public IResultSet<Entity> find(Fields fields, Page page) throws Exception {
         return find(Where.create(buildCond(doGetSafeOwner(), this)), fields, page, null);
     }
 
+    public IResultSet<Entity> find(Fields fields, OrderBy orderBy, Page page) throws Exception {
+        return find(fields, orderBy, page, null);
+    }
+
+    public IResultSet<Entity> find(Fields fields, OrderBy orderBy, GroupBy groupBy, Page page) throws Exception {
+        return find(fields, orderBy, groupBy, page, null);
+    }
+
     public IResultSet<Entity> find(Fields fields, Page page, IDBLocker dbLocker) throws Exception {
         return find(Where.create(buildCond(doGetSafeOwner(), this)), fields, page, dbLocker);
+    }
+
+    public IResultSet<Entity> find(Fields fields, OrderBy orderBy, Page page, IDBLocker dbLocker) throws Exception {
+        return find(fields, orderBy, null, page, dbLocker);
+    }
+
+    public IResultSet<Entity> find(Fields fields, OrderBy orderBy, GroupBy groupBy, Page page, IDBLocker dbLocker) throws Exception {
+        Where where = Where.create(buildCond(doGetSafeOwner(), this));
+        if (orderBy != null) {
+            where.orderBy().orderBy(orderBy);
+        }
+        return find(where.groupBy(groupBy), fields, page, dbLocker);
     }
 
     public IResultSet<Entity> find(Where where) throws Exception {
@@ -348,35 +416,92 @@ public abstract class BaseEntity<Entity extends IEntity, PK extends Serializable
     }
 
     public IResultSet<Entity> findAll() throws Exception {
-        return find(null, null, null, null);
+        return find((Where) null, null, null, null);
+    }
+
+    public IResultSet<Entity> findAll(OrderBy orderBy) throws Exception {
+        return findAll(null, orderBy, null);
     }
 
     public IResultSet<Entity> findAll(Fields fields, Page page) throws Exception {
         return find(null, fields, page, null);
     }
 
+    public IResultSet<Entity> findAll(Fields fields, OrderBy orderBy, Page page) throws Exception {
+        Where where = null;
+        if (orderBy != null) {
+            where = Where.create(doGetSafeOwner());
+            where.orderBy().orderBy(orderBy);
+        }
+        return find(where, fields, page, null);
+    }
+
     public IResultSet<Entity> findAll(Fields fields) throws Exception {
         return find(null, fields, null, null);
     }
 
+    public IResultSet<Entity> findAll(Fields fields, OrderBy orderBy) throws Exception {
+        return findAll(fields, orderBy, null);
+    }
+
     public IResultSet<Entity> findAll(Page page) throws Exception {
-        return find(null, null, page, null);
+        return find((Where) null, null, page, null);
+    }
+
+    public IResultSet<Entity> findAll(OrderBy orderBy, Page page) throws Exception {
+        return findAll(null, orderBy, page);
     }
 
     public Entity findFirst() throws Exception {
         return findFirst(Where.create(buildCond(doGetSafeOwner(), this)), null, null);
     }
 
+    public Entity findFirst(OrderBy orderBy) throws Exception {
+        return findFirst(null, orderBy, null, null);
+    }
+
+    public Entity findFirst(OrderBy orderBy, GroupBy groupBy) throws Exception {
+        return findFirst(null, orderBy, groupBy, null);
+    }
+
     public Entity findFirst(IDBLocker dbLocker) throws Exception {
         return findFirst(Where.create(buildCond(doGetSafeOwner(), this)), null, dbLocker);
+    }
+
+    public Entity findFirst(OrderBy orderBy, IDBLocker dbLocker) throws Exception {
+        return findFirst(null, orderBy, null, dbLocker);
+    }
+
+    public Entity findFirst(OrderBy orderBy, GroupBy groupBy, IDBLocker dbLocker) throws Exception {
+        return findFirst(null, orderBy, groupBy, dbLocker);
     }
 
     public Entity findFirst(Fields fields) throws Exception {
         return findFirst(Where.create(buildCond(doGetSafeOwner(), this)), fields, null);
     }
 
+    public Entity findFirst(Fields fields, OrderBy orderBy) throws Exception {
+        return findFirst(fields, orderBy, null, null);
+    }
+
+    public Entity findFirst(Fields fields, OrderBy orderBy, GroupBy groupBy) throws Exception {
+        return findFirst(fields, orderBy, groupBy, null);
+    }
+
     public Entity findFirst(Fields fields, IDBLocker dbLocker) throws Exception {
         return findFirst(Where.create(buildCond(doGetSafeOwner(), this)), fields, dbLocker);
+    }
+
+    public Entity findFirst(Fields fields, OrderBy orderBy, IDBLocker dbLocker) throws Exception {
+        return findFirst(fields, orderBy, null, dbLocker);
+    }
+
+    public Entity findFirst(Fields fields, OrderBy orderBy, GroupBy groupBy, IDBLocker dbLocker) throws Exception {
+        Where where = Where.create(buildCond(doGetSafeOwner(), this));
+        if (orderBy != null) {
+            where.orderBy().orderBy(orderBy);
+        }
+        return findFirst(where.groupBy(groupBy), fields, dbLocker);
     }
 
     public Entity findFirst(Where where) throws Exception {
