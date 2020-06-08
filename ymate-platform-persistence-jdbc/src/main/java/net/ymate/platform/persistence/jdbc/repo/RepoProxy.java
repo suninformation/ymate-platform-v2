@@ -27,7 +27,7 @@ import net.ymate.platform.persistence.Params;
 import net.ymate.platform.persistence.jdbc.IDatabase;
 import net.ymate.platform.persistence.jdbc.ISession;
 import net.ymate.platform.persistence.jdbc.JDBC;
-import net.ymate.platform.persistence.jdbc.base.IResultSetHandler;
+import net.ymate.platform.persistence.jdbc.base.impl.ArrayResultSetHandler;
 import net.ymate.platform.persistence.jdbc.query.SQL;
 import net.ymate.platform.persistence.jdbc.repo.annotation.Repository;
 import org.apache.commons.lang.ArrayUtils;
@@ -107,7 +107,7 @@ public class RepoProxy implements IProxy {
                         _result = _session.executeForUpdate(__buildSQL(_targetSQL, proxyChain.getTargetMethod(), proxyChain.getMethodParams()));
                         break;
                     default:
-                        _result = _session.find(__buildSQL(_targetSQL, proxyChain.getTargetMethod(), proxyChain.getMethodParams()), IResultSetHandler.ARRAY);
+                        _result = _session.find(__buildSQL(_targetSQL, proxyChain.getTargetMethod(), proxyChain.getMethodParams()), new ArrayResultSetHandler());
                         if (_processor != null && _processor.isFilterable()) {
                             _result = _processor.doFilter(_result);
                         }

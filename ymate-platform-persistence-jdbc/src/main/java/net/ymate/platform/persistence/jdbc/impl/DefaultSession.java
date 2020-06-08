@@ -24,10 +24,7 @@ import net.ymate.platform.persistence.base.*;
 import net.ymate.platform.persistence.impl.DefaultResultSet;
 import net.ymate.platform.persistence.jdbc.*;
 import net.ymate.platform.persistence.jdbc.base.*;
-import net.ymate.platform.persistence.jdbc.base.impl.BatchUpdateOperator;
-import net.ymate.platform.persistence.jdbc.base.impl.DefaultQueryOperator;
-import net.ymate.platform.persistence.jdbc.base.impl.DefaultUpdateOperator;
-import net.ymate.platform.persistence.jdbc.base.impl.EntityResultSetHandler;
+import net.ymate.platform.persistence.jdbc.base.impl.*;
 import net.ymate.platform.persistence.jdbc.dialect.IDialect;
 import net.ymate.platform.persistence.jdbc.dialect.impl.OracleDialect;
 import net.ymate.platform.persistence.jdbc.query.BatchSQL;
@@ -812,7 +809,7 @@ public class DefaultSession implements ISession {
         ExpressionUtils _exp = ExpressionUtils.bind("SELECT count(*) FROM ${table_name} ${where}")
                 .set("table_name", __dialect.buildTableName(__tablePrefix, _meta, shardingable))
                 .set("where", where == null ? "" : where.toSQL());
-        IQueryOperator<Object[]> _opt = new DefaultQueryOperator<Object[]>(_exp.getResult(), this.getConnectionHolder(), IResultSetHandler.ARRAY);
+        IQueryOperator<Object[]> _opt = new DefaultQueryOperator<Object[]>(_exp.getResult(), this.getConnectionHolder(), new ArrayResultSetHandler());
         if (where != null) {
             for (Object _param : where.getParams().params()) {
                 _opt.addParameter(_param);
@@ -835,7 +832,7 @@ public class DefaultSession implements ISession {
     @Override
     public long count(SQL sql) throws Exception {
         String _sql = ExpressionUtils.bind("SELECT count(*) FROM (${sql}) c_t").set("sql", sql.getSQL()).getResult();
-        IQueryOperator<Object[]> _opt = new DefaultQueryOperator<Object[]>(_sql, this.getConnectionHolder(), IResultSetHandler.ARRAY);
+        IQueryOperator<Object[]> _opt = new DefaultQueryOperator<Object[]>(_sql, this.getConnectionHolder(), new ArrayResultSetHandler());
         for (Object _param : sql.params().params()) {
             _opt.addParameter(_param);
         }

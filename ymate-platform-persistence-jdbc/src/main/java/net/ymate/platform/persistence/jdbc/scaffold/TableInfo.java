@@ -20,7 +20,7 @@ import net.ymate.platform.persistence.jdbc.IConnectionHolder;
 import net.ymate.platform.persistence.jdbc.IDatabase;
 import net.ymate.platform.persistence.jdbc.ISession;
 import net.ymate.platform.persistence.jdbc.ISessionExecutor;
-import net.ymate.platform.persistence.jdbc.base.IResultSetHandler;
+import net.ymate.platform.persistence.jdbc.base.impl.ArrayResultSetHandler;
 import net.ymate.platform.persistence.jdbc.query.SQL;
 import net.ymate.platform.persistence.jdbc.support.ResultSetHelper;
 import org.apache.commons.logging.Log;
@@ -59,7 +59,7 @@ public class TableInfo {
                     throw new Error("The current database \"" + _dbType + "\" type not supported");
                 }
                 final List<String> _results = new ArrayList<String>();
-                ResultSetHelper _helper = ResultSetHelper.bind(session.find(SQL.create(_sql), IResultSetHandler.ARRAY));
+                ResultSetHelper _helper = ResultSetHelper.bind(session.find(SQL.create(_sql), new ArrayResultSetHandler()));
                 if (_helper != null) {
                     _helper.forEach(new ResultSetHelper.ItemHandler() {
                         @Override
@@ -90,7 +90,7 @@ public class TableInfo {
                     throw new Error("The current database \"" + _dbType + "\" type not supported");
                 }
                 final List<String> _results = new ArrayList<String>();
-                ResultSetHelper _helper = ResultSetHelper.bind(session.find(SQL.create(_sql), IResultSetHandler.ARRAY));
+                ResultSetHelper _helper = ResultSetHelper.bind(session.find(SQL.create(_sql), new ArrayResultSetHandler()));
                 if (_helper != null) {
                     _helper.forEach(new ResultSetHelper.ItemHandler() {
                         @Override
