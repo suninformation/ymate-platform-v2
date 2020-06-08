@@ -54,6 +54,10 @@ public class ParamUtils {
                     for (Object v : (Object[]) value) {
                         doAppendParamValue(key, v, stringBuilder, encode, charset);
                     }
+                } else if (value instanceof Collection) {
+                    for (Object v : (Collection<?>) value) {
+                        doAppendParamValue(key, v, stringBuilder, encode, charset);
+                    }
                 } else {
                     doAppendParamValue(key, value, stringBuilder, encode, charset);
                 }
@@ -80,7 +84,7 @@ public class ParamUtils {
         }
     }
 
-    public static String appendQueryParamValue(String url, Map<String, String> params, boolean encode, String charset) {
+    public static String appendQueryParamValue(String url, Map<String, ?> params, boolean encode, String charset) {
         if (params != null && !params.isEmpty()) {
             StringBuilder stringBuilder = new StringBuilder(url);
             if (!url.contains("?")) {
@@ -88,34 +92,30 @@ public class ParamUtils {
             } else {
                 stringBuilder.append("&");
             }
-            params.forEach((key, value) -> {
-                if (encode) {
-                    try {
-                        stringBuilder.append(key).append("=").append(URLEncoder.encode(value, StringUtils.defaultIfBlank(charset, "UTF-8"))).append("&");
-                    } catch (UnsupportedEncodingException e) {
-                        if (LOG.isWarnEnabled()) {
-                            LOG.warn(StringUtils.EMPTY, RuntimeUtils.unwrapThrow(e));
-                        }
-                    }
-                } else {
-                    stringBuilder.append(key).append("=").append(value).append("&");
-                }
-            });
-            if (stringBuilder.length() > 0 && stringBuilder.charAt(stringBuilder.length() - 1) == '&') {
-                stringBuilder.setLength(stringBuilder.length() - 1);
-            }
-            return stringBuilder.toString();
+            return stringBuilder.append(buildQueryParamStr(params, encode, charset)).toString();
         }
         return url;
     }
 
-    public static Map<String, String> convertParamMap(Map<String, Object> sourceMap) {
-        Map<String, String> returnValue = new HashMap<>(sourceMap.size());
+    public static Map<String, String[]> convertParamMap(Map<String, ?> sourceMap) {
+        Map<String, List<String>> params = new HashMap<>(sourceMap.size());
         sourceMap.forEach((key, value) -> {
             if (value != null) {
-                returnValue.put(key, BlurObject.bind(value).toStringValue());
+                if (value.getClass().isArray()) {
+                    for (Object v : (Object[]) value) {
+                        params.computeIfAbsent(key, k -> new ArrayList<>()).add(BlurObject.bind(v).toStringValue());
+                    }
+                } else if (value instanceof Collection) {
+                    for (Object v : (Collection<?>) value) {
+                        params.computeIfAbsent(key, k -> new ArrayList<>()).add(BlurObject.bind(v).toStringValue());
+                    }
+                } else {
+                    params.computeIfAbsent(key, k -> new ArrayList<>()).add(BlurObject.bind(value).toStringValue());
+                }
             }
         });
+        Map<String, String[]> returnValue = new HashMap<>(params.size());
+        params.forEach((key, value) -> returnValue.put(key, value.toArray(new String[0])));
         return returnValue;
     }
 
@@ -125,15 +125,15 @@ public class ParamUtils {
      * @param paramStr 要解析的字符串
      * @return 解析结果
      */
-    public static Map<String, String> parseQueryParamStr(String paramStr) {
+    public static Map<String, String[]> parseQueryParamStr(String paramStr) {
         return parseQueryParamStr(paramStr, false, null);
     }
 
-    public static Map<String, String> parseQueryParamStr(String paramStr, boolean decode, String charset) {
+    public static Map<String, String[]> parseQueryParamStr(String paramStr, boolean decode, String charset) {
         // 以“&”字符切割字符串
         String[] paramArr = StringUtils.split(paramStr, '&');
         // 把切割后的字符串数组变成变量与数值组合的字典数组
-        Map<String, String> returnValue = new HashMap<>(paramArr.length);
+        Map<String, List<String>> params = new HashMap<>(paramArr.length);
         for (String param : paramArr) {
             //获得第一个=字符的位置
             int nPos = param.indexOf('=');
@@ -153,16 +153,18 @@ public class ParamUtils {
                 }
             }
             //放入MAP类中
-            returnValue.put(strKey, strValue);
+            params.computeIfAbsent(strKey, key -> new ArrayList<>()).add(strValue);
         }
+        Map<String, String[]> returnValue = new HashMap<>(params.size());
+        params.forEach((key, value) -> returnValue.put(key, value.toArray(new String[0])));
         return returnValue;
     }
 
-    public static String buildActionForm(String actionUrl, boolean usePost, Map<String, String> params) {
+    public static String buildActionForm(String actionUrl, boolean usePost, Map<String, ?> params) {
         return buildActionForm(actionUrl, usePost, false, false, null, params);
     }
 
-    public static String buildActionForm(String actionUrl, boolean usePost, boolean encode, boolean enctype, String charset, Map<String, String> params) {
+    public static String buildActionForm(String actionUrl, boolean usePost, boolean encode, boolean enctype, String charset, Map<String, ?> params) {
         String fixedCharset = StringUtils.defaultIfBlank(charset, "UTF-8");
         StringBuilder stringBuilder = new StringBuilder("<form id=\"_payment_submit\" name=\"_payment_submit\" action=\"")
                 .append(actionUrl).append("\" method=\"")
@@ -172,7 +174,17 @@ public class ParamUtils {
         }
         stringBuilder.append(">");
         //
-        params.forEach((key, value) -> doAppendHiddenElement(stringBuilder, key, value, encode, fixedCharset));
+        params.forEach((key, value) -> {
+            if (value != null) {
+                if (value.getClass().isArray()) {
+                    for (Object v : (Object[]) value) {
+                        doAppendHiddenElement(stringBuilder, key, BlurObject.bind(v).toStringValue(), encode, fixedCharset);
+                    }
+                } else {
+                    doAppendHiddenElement(stringBuilder, key, BlurObject.bind(value).toStringValue(), encode, fixedCharset);
+                }
+            }
+        });
         // submit按钮控件请不要含有name属性
         stringBuilder.append("<input type=\"submit\" value=\"doSubmit\" style=\"display:none;\"></form>")
                 .append("<script>document.forms['_payment_submit'].submit();</script>");
