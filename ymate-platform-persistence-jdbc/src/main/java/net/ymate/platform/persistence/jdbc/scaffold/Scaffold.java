@@ -24,7 +24,7 @@ import net.ymate.platform.core.persistence.base.EntityMeta;
 import net.ymate.platform.core.persistence.base.Type;
 import net.ymate.platform.persistence.jdbc.IDatabase;
 import net.ymate.platform.persistence.jdbc.IDatabaseConfig;
-import net.ymate.platform.persistence.jdbc.base.IResultSetHandler;
+import net.ymate.platform.persistence.jdbc.base.impl.ArrayResultSetHandler;
 import net.ymate.platform.persistence.jdbc.query.SQL;
 import net.ymate.platform.persistence.jdbc.query.Select;
 import net.ymate.platform.persistence.jdbc.support.ResultSetHelper;
@@ -250,7 +250,7 @@ public final class Scaffold {
                     throw new UnsupportedOperationException(String.format("The current database type '%s' not supported.", dbType));
             }
             List<TableInfo> tableInfos = new ArrayList<>();
-            ResultSetHelper.bind(session.find(sql, IResultSetHandler.ARRAY)).forEach((wrapper, row) -> {
+            ResultSetHelper.bind(session.find(sql, new ArrayResultSetHandler())).forEach((wrapper, row) -> {
                 String tableName = wrapper.getAsString(0);
                 if (tableNames.isEmpty() || tableNames.contains(tableName)) {
                     if (doCheckTableNameNotInBlacklist(tableName)) {

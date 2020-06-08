@@ -32,8 +32,16 @@ import java.util.Map;
 @Ignored
 public interface IResultSetHandler<T> {
 
+    /**
+     * @deprecated 存在多线程问题，请在使用时通过new ArrayResultSetHandler()方式创建实例
+     */
+    @Deprecated
     IResultSetHandler<Object[]> ARRAY = new ArrayResultSetHandler();
 
+    /**
+     * @deprecated 存在多线程问题，请在使用时通过new MapResultSetHandler()方式创建实例
+     */
+    @Deprecated
     IResultSetHandler<Map<String, Object>> MAP = new MapResultSetHandler();
 
     /**

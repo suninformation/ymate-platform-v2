@@ -23,10 +23,7 @@ import net.ymate.platform.core.persistence.base.*;
 import net.ymate.platform.core.persistence.impl.DefaultResultSet;
 import net.ymate.platform.persistence.jdbc.*;
 import net.ymate.platform.persistence.jdbc.base.*;
-import net.ymate.platform.persistence.jdbc.base.impl.BatchUpdateOperator;
-import net.ymate.platform.persistence.jdbc.base.impl.DefaultQueryOperator;
-import net.ymate.platform.persistence.jdbc.base.impl.DefaultUpdateOperator;
-import net.ymate.platform.persistence.jdbc.base.impl.EntityResultSetHandler;
+import net.ymate.platform.persistence.jdbc.base.impl.*;
 import net.ymate.platform.persistence.jdbc.dialect.IDialect;
 import net.ymate.platform.persistence.jdbc.dialect.impl.OracleDialect;
 import net.ymate.platform.persistence.jdbc.query.BatchSQL;
@@ -610,7 +607,7 @@ public class DefaultDatabaseSession extends AbstractSession<IDatabaseConnectionH
         ExpressionUtils exp = ExpressionUtils.bind("SELECT count(*) FROM ${table_name} ${where}")
                 .set("table_name", dialect.buildTableName(tablePrefix, entityMeta, shardingable))
                 .set("where", where == null ? StringUtils.EMPTY : where.toSQL());
-        IQueryOperator<Object[]> queryOperator = new DefaultQueryOperator<>(exp.getResult(), this.getConnectionHolder(), IResultSetHandler.ARRAY);
+        IQueryOperator<Object[]> queryOperator = new DefaultQueryOperator<>(exp.getResult(), this.getConnectionHolder(), new ArrayResultSetHandler());
         doOperator(Type.OPT.QUERY, DatabaseEvent.EVENT.QUERY_AFTER, where != null ? where.params() : null, queryOperator);
         //
         return BlurObject.bind(((Object[]) queryOperator.getResultSet().get(0)[0])[1]).toLongValue();
@@ -620,7 +617,7 @@ public class DefaultDatabaseSession extends AbstractSession<IDatabaseConnectionH
     public long count(SQL sql) throws Exception {
         String sqlStr = ExpressionUtils.bind("SELECT count(*) FROM (${sql}) c_t")
                 .set("sql", sql.toString()).getResult();
-        IQueryOperator<Object[]> queryOperator = new DefaultQueryOperator<>(sqlStr, this.getConnectionHolder(), IResultSetHandler.ARRAY);
+        IQueryOperator<Object[]> queryOperator = new DefaultQueryOperator<>(sqlStr, this.getConnectionHolder(), new ArrayResultSetHandler());
         doOperator(Type.OPT.QUERY, DatabaseEvent.EVENT.QUERY_AFTER, sql.params(), queryOperator);
         //
         return BlurObject.bind(((Object[]) queryOperator.getResultSet().get(0)[0])[1]).toLongValue();
