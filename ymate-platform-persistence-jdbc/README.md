@@ -1102,7 +1102,7 @@ JDBC模块将数据查询的结果集合统一使用IResultSet接口进行封装
 	// 自定义SQL语句
 	SQL _sql = SQL.create("select * from user where age > ? and username like ?").param(18).param("%ymp%");
 	// 执行
-    session.find(_sql, IResultSetHandler.ARRAY);
+    session.find(_sql, new ArrayResultSetHandler());
 
     // 或封装语句对象
     SQL.create(_select);
@@ -1325,8 +1325,8 @@ JDBC模块提供的ORM主要是针对单实体操作，实际业务中往往会�
                                 .add("u", User.FIELDS.USER_NAME, "username")
                                 .add("ue", UserExt.FIELDS.MONEY, "money"));
 
-                // 执行查询并指定采用Object[]数组存储结果集数据，若采用Map存储请使用：IResultSetHandler.MAP
-                return session.find(SQL.create(_uSelect), IResultSetHandler.ARRAY);
+                // 执行查询并指定采用Object[]数组存储结果集数据，若采用Map存储请使用：new MapResultSetHandler()
+                return session.find(SQL.create(_uSelect), new ArrayResultSetHandler());
             }
         });
 
@@ -1418,7 +1418,7 @@ JDBC模块提供的ORM主要是针对单实体操作，实际业务中往往会�
             IProcedureOperator<Object[]> _opt = new DefaultProcedureOperator<Object[]>("procedure_name", _conn)
                     .addParameter("param1")
                     .addParameter("param2")
-                    .execute(IResultSetHandler.ARRAY);
+                    .execute(new ArrayResultSetHandler());
             // 遍历结果集集合
             for (List<Object[]> _item : _opt.getResultSets()) {
                 ResultSetHelper.bind(_item).forEach(new ResultSetHelper.ItemHandler() {
@@ -1464,7 +1464,7 @@ JDBC模块提供的ORM主要是针对单实体操作，实际业务中往往会�
                             public void process(int idx, int paramType, Object result) throws Exception {
                                 System.out.println(result);
                             }
-                        }).setResultSetHandler(IResultSetHandler.ARRAY);
+                        }).setResultSetHandler(new ArrayResultSetHandler());
                 // 执行
                 _opt.execute();
                 return _opt.getResultSets();
@@ -1525,7 +1525,7 @@ JDBC模块提供的ORM主要是针对单实体操作，实际业务中往往会�
                     Cond.create().eq(User.FIELDS.ID).param("bc19f5645aa9438089c5e9954e5f1ac5")))
             .forUpdate(IDBLocker.DEFAULT);
 
-    session.find(SQL.create(_select), IResultSetHandler.ARRAY);
+    session.find(SQL.create(_select), new ArrayResultSetHandler());
     
 示例代码三：基于数据实体对象传递锁参数
     
