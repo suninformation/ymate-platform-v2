@@ -110,7 +110,7 @@ public @interface RedisDataSource {
     long poolMinEvictableIdleTimeMillis() default GenericObjectPoolConfig.DEFAULT_MIN_EVICTABLE_IDLE_TIME_MILLIS;
 
     /**
-     * @return 连接池--对象空闲多久后逐出, 当空闲时间>该值且空闲连接>最大空闲数时直接逐出
+     * @return 连接池--对象空闲多久后逐出, 当空闲时间 &gt; 该值且空闲连接 &gt; 最大空闲数时直接逐出
      */
     long poolSoftMinEvictableIdleTimeMillis() default GenericObjectPoolConfig.DEFAULT_SOFT_MIN_EVICTABLE_IDLE_TIME_MILLIS;
 
