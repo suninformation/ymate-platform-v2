@@ -199,9 +199,14 @@
                 <version>2.10.3</version>
             </dependency>
             <dependency>
+                <groupId>com.google.code.gson</groupId>
+                <artifactId>gson</artifactId>
+                <version>2.8.6</version>
+            </dependency>
+            <dependency>
                 <groupId>com.alibaba</groupId>
                 <artifactId>fastjson</artifactId>
-                <version>1.2.68</version>
+                <version>1.2.70</version>
             </dependency>
             <dependency>
                 <groupId>net.sf.ehcache</groupId>
