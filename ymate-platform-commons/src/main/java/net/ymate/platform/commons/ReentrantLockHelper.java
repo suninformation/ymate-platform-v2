@@ -84,7 +84,7 @@ public class ReentrantLockHelper {
         return putIfAbsentAsync(lockCaches, lockKey, ReentrantLock::new);
     }
 
-    public void unlock(ReentrantLock lock) {
+    public static void unlock(ReentrantLock lock) {
         if (lock != null && lock.isLocked()) {
             lock.unlock();
         }

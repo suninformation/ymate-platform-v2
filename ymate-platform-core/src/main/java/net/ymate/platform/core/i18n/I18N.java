@@ -27,6 +27,7 @@ import java.io.InputStream;
 import java.text.MessageFormat;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * 国际化资源管理器
@@ -38,6 +39,8 @@ public final class I18N implements IDestroyable {
     private static final Log LOG = LogFactory.getLog(I18N.class);
 
     private static final Map<Locale, Map<String, Properties>> RESOURCES_CACHES = new ConcurrentHashMap<>();
+
+    private static final ReentrantLockHelper RESOURCES_LOCKS = new ReentrantLockHelper();
 
     private Locale defaultLocale;
 
@@ -150,30 +153,41 @@ public final class I18N implements IDestroyable {
      */
     public String load(String resourceName, String key, String defaultValue) {
         Locale local = current();
-        Map<String, Properties> cache = RESOURCES_CACHES.get(local);
-        Properties prop = cache != null ? cache.get(resourceName) : null;
-        if (prop == null && eventHandler != null) {
-            try {
-                List<String> resourceNames = getResourceNames(local, resourceName);
-                for (String resName : resourceNames) {
-                    try (InputStream inputStream = eventHandler.onLoad(resName)) {
-                        if (inputStream != null) {
-                            prop = new Properties();
-                            prop.load(inputStream);
-                            break;
+        Properties prop = null;
+        try {
+            Map<String, Properties> cache = RESOURCES_CACHES.get(local);
+            prop = cache != null ? cache.get(resourceName) : null;
+            if (prop == null && eventHandler != null) {
+                ReentrantLock lock = RESOURCES_LOCKS.getLocker(resourceName);
+                lock.lock();
+                try {
+                    cache = RESOURCES_CACHES.get(local);
+                    prop = cache != null ? cache.get(resourceName) : null;
+                    if (prop == null) {
+                        List<String> resourceNames = getResourceNames(local, resourceName);
+                        for (String resName : resourceNames) {
+                            try (InputStream inputStream = eventHandler.onLoad(resName)) {
+                                if (inputStream != null) {
+                                    prop = new Properties();
+                                    prop.load(inputStream);
+                                    break;
+                                }
+                            }
+                        }
+                        if (prop != null && !prop.isEmpty()) {
+                            if (cache == null) {
+                                cache = ReentrantLockHelper.putIfAbsentAsync(RESOURCES_CACHES, local, () -> new ConcurrentHashMap<>(16));
+                            }
+                            cache.put(resourceName, prop);
                         }
                     }
+                } finally {
+                    lock.unlock();
                 }
-                if (prop != null && !prop.isEmpty()) {
-                    if (cache == null) {
-                        cache = ReentrantLockHelper.putIfAbsentAsync(RESOURCES_CACHES, local, () -> new ConcurrentHashMap<>(16));
-                    }
-                    cache.put(resourceName, prop);
-                }
-            } catch (Exception e) {
-                if (LOG.isWarnEnabled()) {
-                    LOG.warn(e.getMessage(), RuntimeUtils.unwrapThrow(e));
-                }
+            }
+        } catch (Exception e) {
+            if (LOG.isWarnEnabled()) {
+                LOG.warn(e.getMessage(), RuntimeUtils.unwrapThrow(e));
             }
         }
         String returnValue = null;
