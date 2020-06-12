@@ -112,7 +112,7 @@ public class JacksonObjectWrapper implements IJsonObjectWrapper {
     @Override
     public String getString(String key) {
         JsonNode jsonNode = objectNode.get(key);
-        return jsonNode != null ? jsonNode.toString() : null;
+        return jsonNode != null ? jsonNode.asText() : null;
     }
 
     @Override

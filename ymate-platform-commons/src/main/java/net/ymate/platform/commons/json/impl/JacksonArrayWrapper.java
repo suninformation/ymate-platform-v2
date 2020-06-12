@@ -115,7 +115,7 @@ public class JacksonArrayWrapper implements IJsonArrayWrapper {
     @Override
     public String getString(int index) {
         JsonNode jsonNode = arrayNode.get(index);
-        return jsonNode != null ? jsonNode.toString() : null;
+        return jsonNode != null ? jsonNode.asText() : null;
     }
 
     @Override

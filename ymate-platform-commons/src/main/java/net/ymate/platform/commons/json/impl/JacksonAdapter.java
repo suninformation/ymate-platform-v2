@@ -22,6 +22,7 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.databind.json.JsonMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import net.ymate.platform.commons.json.IJsonAdapter;
@@ -48,12 +49,13 @@ public class JacksonAdapter implements IJsonAdapter {
     public static final ObjectMapper OBJECT_MAPPER = createObjectMapper();
 
     private static ObjectMapper createObjectMapper() {
-        ObjectMapper objectMapper = new ObjectMapper();
-        objectMapper.getSerializationConfig()
-                .withFeatures(JsonReadFeature.ALLOW_UNESCAPED_CONTROL_CHARS, JsonReadFeature.ALLOW_BACKSLASH_ESCAPING_ANY_CHARACTER);
-        objectMapper.configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false)
-                .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-        return objectMapper;
+        return JsonMapper.builder()
+                .enable(JsonReadFeature.ALLOW_UNESCAPED_CONTROL_CHARS, JsonReadFeature.ALLOW_BACKSLASH_ESCAPING_ANY_CHARACTER)
+                .enable(SerializationFeature.WRITE_ENUMS_USING_TO_STRING)
+                .enable(DeserializationFeature.READ_ENUMS_USING_TO_STRING)
+                .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
+                .disable(SerializationFeature.FAIL_ON_EMPTY_BEANS)
+                .build();
     }
 
     public static JsonNode toJsonNode(Object value) {
@@ -155,15 +157,16 @@ public class JacksonAdapter implements IJsonAdapter {
 
     @Override
     public String toJsonString(Object object, boolean format, boolean keepNullValue) {
-        ObjectMapper objectMapper = new ObjectMapper();
-        if (format) {
-            objectMapper.writerWithDefaultPrettyPrinter();
-        }
+        ObjectMapper objectMapper = createObjectMapper();
         if (keepNullValue) {
             objectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
         }
         try {
-            return objectMapper.writeValueAsString(JsonWrapper.unwrap(object));
+            if (format) {
+                return objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(JsonWrapper.unwrap(object));
+            } else {
+                return objectMapper.writeValueAsString(JsonWrapper.unwrap(object));
+            }
         } catch (JsonProcessingException e) {
             if (LOG.isWarnEnabled()) {
                 LOG.warn(StringUtils.EMPTY, RuntimeUtils.unwrapThrow(e));
