@@ -15,8 +15,8 @@
  */
 package net.ymate.platform.cache;
 
+import net.ymate.platform.commons.serialize.ISerializer;
 import net.ymate.platform.core.beans.annotation.Ignored;
-import net.ymate.platform.core.serialize.ISerializer;
 
 import java.io.Serializable;
 import java.lang.reflect.Method;

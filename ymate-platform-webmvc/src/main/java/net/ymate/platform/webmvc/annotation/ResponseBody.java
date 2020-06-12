@@ -40,11 +40,6 @@ public @interface ResponseBody {
     boolean keepNull() default true;
 
     /**
-     * @return 参数键名是否使有引号标识符
-     */
-    boolean quoteField() default true;
-
-    /**
      * @return 自定义对象输出处理器, 默认为JSON格式输出
      */
     Class<? extends IResponseBodyProcessor> value() default IResponseBodyProcessor.class;

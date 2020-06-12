@@ -34,9 +34,8 @@ public interface IResponseBodyProcessor {
      * @param result      控制器方法执行结果对象
      * @param contentType 是否需要设置ContentType响应头信息
      * @param keepNull    是否保留空值
-     * @param quoteField  是否为键名使用引号
      * @return 返回响应视图对象, 若为null将交由框架默认处理
      * @throws Exception 可能产生的任何异常
      */
-    IView processBody(IWebMvc owner, Object result, boolean contentType, boolean keepNull, boolean quoteField) throws Exception;
+    IView processBody(IWebMvc owner, Object result, boolean contentType, boolean keepNull) throws Exception;
 }

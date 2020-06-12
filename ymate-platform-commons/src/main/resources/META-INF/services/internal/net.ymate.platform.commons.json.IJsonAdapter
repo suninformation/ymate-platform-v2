@@ -1,0 +1,3 @@
+net.ymate.platform.commons.json.impl.FastJsonAdapter
+net.ymate.platform.commons.json.impl.GsonAdapter
+net.ymate.platform.commons.json.impl.JacksonAdapter

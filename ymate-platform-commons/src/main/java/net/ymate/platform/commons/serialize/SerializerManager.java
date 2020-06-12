@@ -13,14 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.ymate.platform.core.serialize;
+package net.ymate.platform.commons.serialize;
 
 import net.ymate.platform.commons.ReentrantLockHelper;
+import net.ymate.platform.commons.serialize.annotation.Serializer;
+import net.ymate.platform.commons.serialize.impl.DefaultSerializer;
+import net.ymate.platform.commons.serialize.impl.JSONSerializer;
 import net.ymate.platform.commons.util.ClassUtils;
 import net.ymate.platform.commons.util.RuntimeUtils;
-import net.ymate.platform.core.serialize.annotation.Serializer;
-import net.ymate.platform.core.serialize.impl.DefaultSerializer;
-import net.ymate.platform.core.serialize.impl.JSONSerializer;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;

@@ -15,9 +15,9 @@
  */
 package net.ymate.platform.webmvc.impl;
 
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONArray;
-import com.alibaba.fastjson.JSONObject;
+import net.ymate.platform.commons.json.IJsonArrayWrapper;
+import net.ymate.platform.commons.json.IJsonObjectWrapper;
+import net.ymate.platform.commons.json.JsonWrapper;
 import net.ymate.platform.commons.lang.BlurObject;
 import net.ymate.platform.commons.util.ClassUtils;
 import net.ymate.platform.commons.util.RuntimeUtils;
@@ -42,18 +42,25 @@ public class JSONRequestProcessor extends DefaultRequestProcessor {
 
     private static final Log LOG = LogFactory.getLog(JSONRequestProcessor.class);
 
-    private JSONObject doGetProtocol(IWebMvc owner) {
+    private IJsonObjectWrapper doGetProtocol(IWebMvc owner) {
         IRequestContext requestContext = WebContext.getRequestContext();
-        JSONObject protocol = requestContext.getAttribute(JSONRequestProcessor.class.getName());
+        IJsonObjectWrapper protocol = requestContext.getAttribute(JSONRequestProcessor.class.getName());
         if (protocol == null) {
             try {
-                protocol = JSON.parseObject(StringUtils.defaultIfBlank(IOUtils.toString(WebContext.getRequest().getInputStream(), owner.getConfig().getDefaultCharsetEncoding()), "{}"));
+                String jsonStr = StringUtils.defaultIfBlank(IOUtils.toString(WebContext.getRequest().getInputStream(), owner.getConfig().getDefaultCharsetEncoding()), "{}");
+                JsonWrapper jsonWrapper = JsonWrapper.fromJson(jsonStr);
+                if (jsonWrapper.isJsonObject()) {
+                    protocol = jsonWrapper.getAsJsonObject();
+                } else if (owner.getOwner().isDevEnv() && LOG.isWarnEnabled()) {
+                    LOG.warn(String.format("Invalid protocol content: %s", jsonStr));
+                }
             } catch (IOException e) {
-                protocol = JSON.parseObject("{}");
-                //
                 if (owner.getOwner().isDevEnv() && LOG.isWarnEnabled()) {
                     LOG.warn("Invalid protocol.", RuntimeUtils.unwrapThrow(e));
                 }
+            }
+            if (protocol == null) {
+                protocol = JsonWrapper.createJsonObject();
             }
             requestContext.addAttribute(JSONRequestProcessor.class.getName(), protocol);
         }
@@ -63,21 +70,21 @@ public class JSONRequestProcessor extends DefaultRequestProcessor {
     @Override
     protected Object doParseRequestParam(IWebMvc owner, String paramName, String defaultValue, Class<?> paramType, boolean fullScope) {
         Object returnValue = null;
-        JSONObject protocol = doGetProtocol(owner);
+        IJsonObjectWrapper protocol = doGetProtocol(owner);
         String[] paramNameArr = StringUtils.split(paramName, ".");
         if (paramType.isArray()) {
             if (!paramType.equals(IUploadFileWrapper[].class)) {
                 Object[] values = null;
                 if (paramNameArr.length > 1) {
-                    JSONObject jsonObj = protocol.getJSONObject(paramNameArr[0]);
+                    IJsonObjectWrapper jsonObj = protocol.getJsonObject(paramNameArr[0]);
                     if (jsonObj != null) {
-                        JSONArray jsonArr = jsonObj.getJSONArray(paramNameArr[1]);
+                        IJsonArrayWrapper jsonArr = jsonObj.getJsonArray(paramNameArr[1]);
                         if (jsonArr != null) {
                             values = jsonArr.toArray();
                         }
                     }
                 } else {
-                    JSONArray jsonArr = protocol.getJSONArray(paramName);
+                    IJsonArrayWrapper jsonArr = protocol.getJsonArray(paramName);
                     if (jsonArr != null) {
                         values = jsonArr.toArray();
                     }
@@ -93,7 +100,7 @@ public class JSONRequestProcessor extends DefaultRequestProcessor {
             }
         } else if (!paramType.equals(IUploadFileWrapper.class)) {
             if (paramNameArr.length > 1) {
-                JSONObject jsonObj = protocol.getJSONObject(paramNameArr[0]);
+                IJsonObjectWrapper jsonObj = protocol.getJsonObject(paramNameArr[0]);
                 if (jsonObj != null) {
                     returnValue = doSafeGetParamValue(owner, paramName, paramType, jsonObj.getString(paramNameArr[1]), defaultValue, fullScope);
                 }

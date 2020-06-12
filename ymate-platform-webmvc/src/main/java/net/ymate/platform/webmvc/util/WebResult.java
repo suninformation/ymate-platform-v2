@@ -15,7 +15,8 @@
  */
 package net.ymate.platform.webmvc.util;
 
-import com.alibaba.fastjson.JSONObject;
+import net.ymate.platform.commons.json.IJsonObjectWrapper;
+import net.ymate.platform.commons.json.JsonWrapper;
 import net.ymate.platform.commons.util.ClassUtils;
 import net.ymate.platform.commons.util.ParamUtils;
 import net.ymate.platform.core.support.ErrorCode;
@@ -177,16 +178,6 @@ public final class WebResult implements Serializable {
         return this;
     }
 
-    public WebResult quoteFieldNames() {
-        quoteFieldNames = true;
-        return this;
-    }
-
-    public WebResult useSingleQuotes() {
-        useSingleQuotes = true;
-        return this;
-    }
-
     private Map<String, Object> doFilter(IDateFilter dateFilter, boolean attr, Map<String, Object> targetMap) {
         if (dateFilter != null && targetMap != null && !targetMap.isEmpty()) {
             Map<String, Object> filtered = new LinkedHashMap<>(data.size());
@@ -207,8 +198,8 @@ public final class WebResult implements Serializable {
         return this;
     }
 
-    public JSONObject toJSONObject() {
-        JSONObject jsonObj = new JSONObject(true);
+    public IJsonObjectWrapper toJsonObject() {
+        IJsonObjectWrapper jsonObj = JsonWrapper.createJsonObject(true);
         if (code != null) {
             jsonObj.put(Type.Const.PARAM_RET, code);
         }
@@ -219,7 +210,7 @@ public final class WebResult implements Serializable {
             jsonObj.put(Type.Const.PARAM_DATA, data);
         }
         if (attrs != null && !attrs.isEmpty()) {
-            jsonObj.putAll(attrs);
+            attrs.forEach(jsonObj::put);
         }
         return jsonObj;
     }
@@ -229,13 +220,7 @@ public final class WebResult implements Serializable {
     }
 
     public JsonView toJsonView(String callback) {
-        JsonView jsonView = new JsonView(toJSONObject()).withJsonCallback(callback);
-        if (quoteFieldNames) {
-            jsonView.quoteFieldNames();
-            if (useSingleQuotes) {
-                jsonView.useSingleQuotes();
-            }
-        }
+        JsonView jsonView = new JsonView(toJsonObject()).withJsonCallback(callback);
         if (keepNullValue) {
             jsonView.keepNullValue();
         }

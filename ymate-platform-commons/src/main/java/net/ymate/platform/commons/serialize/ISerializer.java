@@ -13,14 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.ymate.platform.core.serialize;
-
-import net.ymate.platform.core.beans.annotation.Ignored;
+package net.ymate.platform.commons.serialize;
 
 /**
  * @author 刘镇 (suninformation@163.com) on 2017/10/3 下午3:52
  */
-@Ignored
 public interface ISerializer {
 
     /**

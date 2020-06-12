@@ -15,7 +15,7 @@
  */
 package net.ymate.platform.webmvc;
 
-import com.alibaba.fastjson.JSON;
+import net.ymate.platform.commons.json.JsonWrapper;
 import net.ymate.platform.commons.lang.PairObject;
 import net.ymate.platform.commons.util.ClassUtils;
 import net.ymate.platform.commons.util.FileUtils;
@@ -500,7 +500,7 @@ public final class WebMVC implements IModule, IWebMvc {
                 consumeTime.start();
                 //
                 LOG.debug(String.format("Process request start: %s:%s", context.getHttpMethod(), context.getRequestMapping()));
-                LOG.debug(String.format("Parameters: %s", JSON.toJSONString(request.getParameterMap())));
+                LOG.debug(String.format("Parameters: %s", JsonWrapper.toJsonString(request.getParameterMap(), false, true)));
             }
             //
             requestMeta = config.getRequestMappingParser().parse(context);

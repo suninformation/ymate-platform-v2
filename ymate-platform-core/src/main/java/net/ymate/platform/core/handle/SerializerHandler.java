@@ -15,11 +15,11 @@
  */
 package net.ymate.platform.core.handle;
 
+import net.ymate.platform.commons.serialize.ISerializer;
+import net.ymate.platform.commons.serialize.SerializerManager;
+import net.ymate.platform.commons.serialize.annotation.Serializer;
 import net.ymate.platform.commons.util.ClassUtils;
 import net.ymate.platform.core.beans.IBeanHandler;
-import net.ymate.platform.core.serialize.ISerializer;
-import net.ymate.platform.core.serialize.SerializerManager;
-import net.ymate.platform.core.serialize.annotation.Serializer;
 
 /**
  * @author 刘镇 (suninformation@163.com) on 2017/10/10 上午11:46

@@ -16,10 +16,10 @@
 package net.ymate.platform.persistence.jdbc.repo;
 
 import net.ymate.platform.commons.ReentrantLockHelper;
+import net.ymate.platform.commons.serialize.SerializerManager;
 import net.ymate.platform.commons.util.ClassUtils;
 import net.ymate.platform.commons.util.RuntimeUtils;
 import net.ymate.platform.core.beans.annotation.Ignored;
-import net.ymate.platform.core.serialize.SerializerManager;
 import net.ymate.platform.persistence.jdbc.repo.annotation.RepositoryScriptProcessor;
 import net.ymate.platform.persistence.jdbc.repo.impl.DefaultRepositoryScriptProcessor;
 import org.apache.commons.lang3.StringUtils;

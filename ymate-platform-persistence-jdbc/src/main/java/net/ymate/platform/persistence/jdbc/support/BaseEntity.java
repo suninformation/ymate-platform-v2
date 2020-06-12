@@ -15,7 +15,6 @@
  */
 package net.ymate.platform.persistence.jdbc.support;
 
-import com.alibaba.fastjson.annotation.JSONField;
 import net.ymate.platform.commons.util.ClassUtils;
 import net.ymate.platform.core.persistence.Fields;
 import net.ymate.platform.core.persistence.IResultSet;
@@ -69,12 +68,10 @@ public abstract class BaseEntity<Entity extends IEntity, PK extends Serializable
         this.dbOwner = dbOwner;
     }
 
-    @JSONField(serialize = false)
     public IDatabaseConnectionHolder getConnectionHolder() {
         return this.connectionHolder;
     }
 
-    @JSONField(deserialize = false)
     public void setConnectionHolder(IDatabaseConnectionHolder connectionHolder) {
         this.connectionHolder = connectionHolder;
         // 每次设置将记录数据源名称，若设置为空将重置
@@ -85,22 +82,18 @@ public abstract class BaseEntity<Entity extends IEntity, PK extends Serializable
         }
     }
 
-    @JSONField(serialize = false)
     public IShardingable getShardingable() {
         return this.shardingable;
     }
 
-    @JSONField(deserialize = false)
     public void setShardingable(IShardingable shardingable) {
         this.shardingable = shardingable;
     }
 
-    @JSONField(serialize = false)
     public String getDataSourceName() {
         return this.dataSourceName;
     }
 
-    @JSONField(deserialize = false)
     public void setDataSourceName(String dataSourceName) {
         this.dataSourceName = StringUtils.trimToNull(dataSourceName);
     }

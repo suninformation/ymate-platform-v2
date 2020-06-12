@@ -17,8 +17,8 @@ package net.ymate.platform.cache.impl;
 
 import net.ymate.platform.cache.ICacheKeyGenerator;
 import net.ymate.platform.cache.ICaches;
-import net.ymate.platform.core.serialize.ISerializer;
-import net.ymate.platform.core.serialize.SerializerManager;
+import net.ymate.platform.commons.serialize.ISerializer;
+import net.ymate.platform.commons.serialize.SerializerManager;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.codec.digest.DigestUtils;
 

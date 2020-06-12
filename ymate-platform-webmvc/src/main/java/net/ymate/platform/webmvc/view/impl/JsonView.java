@@ -15,23 +15,15 @@
  */
 package net.ymate.platform.webmvc.view.impl;
 
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.TypeReference;
-import com.alibaba.fastjson.parser.Feature;
-import com.alibaba.fastjson.serializer.SerializerFeature;
+import net.ymate.platform.commons.json.JsonWrapper;
 import net.ymate.platform.webmvc.base.Type;
 import net.ymate.platform.webmvc.context.WebContext;
 import net.ymate.platform.webmvc.view.AbstractView;
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.OutputStream;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.LinkedHashMap;
-import java.util.List;
 
 /**
  * JSON视图
@@ -40,8 +32,6 @@ import java.util.List;
  */
 public class JsonView extends AbstractView {
 
-    private final List<SerializerFeature> serializerFeatures = new ArrayList<>();
-
     private final Object jsonObj;
 
     private boolean withContentType;
@@ -49,10 +39,6 @@ public class JsonView extends AbstractView {
     private String jsonCallback;
 
     private boolean keepNullValue;
-
-    private boolean quoteFieldNames;
-
-    private boolean useSingleQuotes;
 
     public static JsonView bind(Object obj) {
         if (obj instanceof String) {
@@ -68,7 +54,7 @@ public class JsonView extends AbstractView {
      * @param obj 任意对象
      */
     public JsonView(Object obj) {
-        jsonObj = JSON.toJSON(obj);
+        jsonObj = JsonWrapper.toJson(obj);
     }
 
     /**
@@ -77,8 +63,7 @@ public class JsonView extends AbstractView {
      * @param jsonStr JSON字符串
      */
     public JsonView(String jsonStr) {
-        jsonObj = JSON.parseObject(jsonStr, new TypeReference<LinkedHashMap<String, Object>>() {
-        }, Feature.OrderedField);
+        jsonObj = JsonWrapper.fromJson(jsonStr);
     }
 
     /**
@@ -117,60 +102,9 @@ public class JsonView extends AbstractView {
         return this;
     }
 
-    /**
-     * @return 设置JSON属性KEY使用引号
-     */
-    public JsonView quoteFieldNames() {
-        quoteFieldNames = true;
-        return this;
-    }
-
-    /**
-     * @return 设置JSON属性KEY使用单引号
-     */
-    public JsonView useSingleQuotes() {
-        useSingleQuotes = true;
-        return this;
-    }
-
-    /**
-     * 自定义序列化配置
-     *
-     * @param serialFeatures 序列化配置
-     * @return 返回当前视图对象
-     */
-    public JsonView addSerializerFeatures(SerializerFeature... serialFeatures) {
-        if (ArrayUtils.isNotEmpty(serialFeatures)) {
-            serializerFeatures.addAll(Arrays.asList(serialFeatures));
-        }
-        return this;
-    }
-
-    /**
-     * @return 将视图数据对象转换为JSON字符串
-     */
-    private String doObjectToJsonString() {
-        if (quoteFieldNames) {
-            serializerFeatures.add(SerializerFeature.QuoteFieldNames);
-            if (useSingleQuotes) {
-                serializerFeatures.add(SerializerFeature.UseSingleQuotes);
-            }
-        }
-        if (keepNullValue) {
-            serializerFeatures.addAll(Arrays.asList(
-                    SerializerFeature.WriteMapNullValue,
-                    SerializerFeature.WriteNullBooleanAsFalse,
-                    SerializerFeature.WriteNullListAsEmpty,
-                    SerializerFeature.WriteNullNumberAsZero,
-                    SerializerFeature.WriteNullStringAsEmpty,
-                    SerializerFeature.WriteNullNumberAsZero));
-        }
-        return JSON.toJSONString(jsonObj, serializerFeatures.toArray(new SerializerFeature[0]));
-    }
-
     @Override
     protected void doRenderView() throws Exception {
-        StringBuilder jsonStringBuilder = new StringBuilder(doObjectToJsonString());
+        StringBuilder jsonStringBuilder = new StringBuilder(JsonWrapper.toJsonString(jsonObj, false, keepNullValue));
         if (jsonCallback != null) {
             jsonStringBuilder.insert(0, jsonCallback + "(").append(");");
         }
@@ -180,7 +114,7 @@ public class JsonView extends AbstractView {
 
     @Override
     public void render(OutputStream output) throws Exception {
-        StringBuilder jsonStringBuilder = new StringBuilder(doObjectToJsonString());
+        StringBuilder jsonStringBuilder = new StringBuilder(JsonWrapper.toJsonString(jsonObj, false, keepNullValue));
         if (jsonCallback != null) {
             jsonStringBuilder.insert(0, jsonCallback + "(").append(");");
         }

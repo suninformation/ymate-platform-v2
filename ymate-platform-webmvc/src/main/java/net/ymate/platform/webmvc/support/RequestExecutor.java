@@ -126,7 +126,7 @@ public final class RequestExecutor {
                     responseBodyProcessor = ClassUtils.impl(responseBody.value(), IResponseBodyProcessor.class);
                 }
                 if (responseBodyProcessor != null) {
-                    resultView = responseBodyProcessor.processBody(owner, resultObj, responseBody.contentType(), responseBody.keepNull(), responseBody.quoteField());
+                    resultView = responseBodyProcessor.processBody(owner, resultObj, responseBody.contentType(), responseBody.keepNull());
                 }
             }
         } else {
@@ -213,7 +213,7 @@ public final class RequestExecutor {
                 view = HtmlView.bind((String) result);
             }
         } else {
-            view = IResponseBodyProcessor.DEFAULT.processBody(owner, result, true, true, true);
+            view = IResponseBodyProcessor.DEFAULT.processBody(owner, result, true, true);
         }
         return view;
     }

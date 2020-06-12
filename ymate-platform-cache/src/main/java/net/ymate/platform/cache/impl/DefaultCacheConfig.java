@@ -17,12 +17,12 @@ package net.ymate.platform.cache.impl;
 
 import net.ymate.platform.cache.*;
 import net.ymate.platform.cache.annotation.CacheConf;
+import net.ymate.platform.commons.serialize.ISerializer;
+import net.ymate.platform.commons.serialize.SerializerManager;
 import net.ymate.platform.commons.util.ClassUtils;
 import net.ymate.platform.commons.util.RuntimeUtils;
 import net.ymate.platform.core.configuration.IConfigReader;
 import net.ymate.platform.core.module.IModuleConfigurer;
-import net.ymate.platform.core.serialize.ISerializer;
-import net.ymate.platform.core.serialize.SerializerManager;
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.File;

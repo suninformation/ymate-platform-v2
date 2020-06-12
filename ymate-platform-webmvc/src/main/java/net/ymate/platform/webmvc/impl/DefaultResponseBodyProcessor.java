@@ -26,7 +26,7 @@ import net.ymate.platform.webmvc.view.IView;
 public class DefaultResponseBodyProcessor implements IResponseBodyProcessor {
 
     @Override
-    public IView processBody(IWebMvc owner, Object result, boolean contentType, boolean keepNull, boolean quoteField) throws Exception {
+    public IView processBody(IWebMvc owner, Object result, boolean contentType, boolean keepNull) throws Exception {
         WebResult returnValue;
         if (result instanceof WebResult) {
             returnValue = (WebResult) result;
@@ -35,9 +35,6 @@ public class DefaultResponseBodyProcessor implements IResponseBodyProcessor {
         }
         if (keepNull) {
             returnValue.keepNullValue();
-        }
-        if (quoteField) {
-            returnValue.quoteFieldNames();
         }
         if (contentType) {
             returnValue.withContentType();

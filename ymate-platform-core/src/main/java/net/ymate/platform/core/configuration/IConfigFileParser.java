@@ -15,8 +15,9 @@
  */
 package net.ymate.platform.core.configuration;
 
-import com.alibaba.fastjson.JSONArray;
-import com.alibaba.fastjson.JSONObject;
+import net.ymate.platform.commons.json.IJsonArrayWrapper;
+import net.ymate.platform.commons.json.IJsonObjectWrapper;
+import net.ymate.platform.commons.json.JsonWrapper;
 import net.ymate.platform.core.beans.annotation.Ignored;
 import org.apache.commons.lang3.StringUtils;
 
@@ -116,17 +117,17 @@ public interface IConfigFileParser {
      *
      * @return 返回JSON对象
      */
-    JSONObject toJSON();
+    IJsonObjectWrapper toJson();
 
     class Category {
 
-        private String name;
+        private final String name;
 
-        private Map<String, Attribute> attributeMap;
+        private final Map<String, Attribute> attributeMap;
 
-        private Map<String, Property> propertyMap;
+        private final Map<String, Property> propertyMap;
 
-        private boolean sorted;
+        private final boolean sorted;
 
         public Category(String name, List<Attribute> attributes, List<Property> properties, boolean sorted) {
             this.name = name;
@@ -177,19 +178,19 @@ public interface IConfigFileParser {
             return propertyMap;
         }
 
-        public JSONObject toJSON() {
-            JSONObject jsonO = new JSONObject(sorted);
+        public IJsonObjectWrapper toJson() {
+            IJsonObjectWrapper jsonO = JsonWrapper.createJsonObject(sorted);
             jsonO.put("name", name);
 
-            JSONObject jsonAttr = new JSONObject();
+            IJsonObjectWrapper jsonAttr = JsonWrapper.createJsonObject(sorted);
             for (Attribute attr : attributeMap.values()) {
                 jsonAttr.put(attr.getKey(), attr.getValue());
             }
             jsonO.put("attributes", jsonAttr);
 
-            JSONArray jsonArrayProp = new JSONArray();
+            IJsonArrayWrapper jsonArrayProp = JsonWrapper.createJsonArray();
             for (Property prop : propertyMap.values()) {
-                jsonArrayProp.add(prop.toJSON());
+                jsonArrayProp.add(prop.toJson());
             }
             jsonO.put("properties", jsonArrayProp);
             return jsonO;
@@ -202,7 +203,7 @@ public interface IConfigFileParser {
 
         private String content;
 
-        private Map<String, Attribute> attributeMap;
+        private final Map<String, Attribute> attributeMap;
 
         public Property(String name, String content, List<Attribute> attributes) {
             this.name = name;
@@ -247,12 +248,12 @@ public interface IConfigFileParser {
             return attributeMap;
         }
 
-        public JSONObject toJSON() {
-            JSONObject jsonO = new JSONObject();
+        public IJsonObjectWrapper toJson() {
+            IJsonObjectWrapper jsonO = JsonWrapper.createJsonObject();
             jsonO.put("name", name);
             jsonO.put("content", content);
             //
-            JSONObject jsonAttrs = new JSONObject();
+            IJsonObjectWrapper jsonAttrs = JsonWrapper.createJsonObject();
             for (Attribute attr : attributeMap.values()) {
                 attr.appendTo(jsonAttrs);
             }
@@ -292,13 +293,13 @@ public interface IConfigFileParser {
             return StringUtils.defaultIfBlank(value, defaultValue);
         }
 
-        public JSONObject toJSON() {
-            JSONObject jsonO = new JSONObject();
+        public IJsonObjectWrapper toJson() {
+            IJsonObjectWrapper jsonO = JsonWrapper.createJsonObject();
             jsonO.put(key, value);
             return jsonO;
         }
 
-        public void appendTo(JSONObject jsonObject) {
+        public void appendTo(IJsonObjectWrapper jsonObject) {
             jsonObject.put(key, value);
         }
     }

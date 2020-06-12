@@ -15,7 +15,7 @@
  */
 package net.ymate.platform.webmvc.support;
 
-import com.alibaba.fastjson.JSON;
+import net.ymate.platform.commons.json.JsonWrapper;
 import net.ymate.platform.commons.util.ClassUtils;
 import net.ymate.platform.core.beans.annotation.Order;
 import net.ymate.platform.core.beans.proxy.IProxy;
@@ -63,7 +63,7 @@ public class RequestParametersProxy implements IProxy {
                     validationView = owner.getConfig().getErrorProcessor().onValidation(owner, validateResultMap);
                 }
                 if (validationView == null) {
-                    throw new IllegalArgumentException(JSON.toJSONString(validateResultMap.values()));
+                    throw new IllegalArgumentException(JsonWrapper.toJsonString(validateResultMap.values(), false, true));
                 } else {
                     return validationView;
                 }

@@ -15,8 +15,9 @@
  */
 package net.ymate.platform.configuration;
 
-import com.alibaba.fastjson.JSONArray;
-import com.alibaba.fastjson.JSONObject;
+import net.ymate.platform.commons.json.IJsonArrayWrapper;
+import net.ymate.platform.commons.json.IJsonObjectWrapper;
+import net.ymate.platform.commons.json.JsonWrapper;
 import net.ymate.platform.core.configuration.IConfigFileParser;
 
 import java.util.HashMap;
@@ -90,18 +91,18 @@ public abstract class AbstractConfigFileParser implements IConfigFileParser {
     }
 
     @Override
-    public JSONObject toJSON() {
-        JSONObject jsonObject = new JSONObject(sorted);
+    public IJsonObjectWrapper toJson() {
+        IJsonObjectWrapper jsonObject = JsonWrapper.createJsonObject(sorted);
         //
-        JSONObject jsonAttrs = new JSONObject();
+        IJsonObjectWrapper jsonAttrs = JsonWrapper.createJsonObject();
         attributes.values().forEach((attr) -> {
             attr.appendTo(jsonAttrs);
         });
         jsonObject.put(TAG_NAME_ATTRIBUTES, jsonAttrs);
         //
-        JSONArray jsonCategories = new JSONArray();
+        IJsonArrayWrapper jsonCategories = JsonWrapper.createJsonArray();
         categories.values().forEach((category) -> {
-            jsonCategories.add(category.toJSON());
+            jsonCategories.add(category.toJson());
         });
         jsonObject.put(TAG_NAME_CATEGORIES, jsonCategories);
         return jsonObject;

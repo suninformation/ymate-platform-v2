@@ -15,6 +15,7 @@
  */
 package net.ymate.platform.core;
 
+import net.ymate.platform.commons.serialize.annotation.Serializer;
 import net.ymate.platform.commons.util.RuntimeUtils;
 import net.ymate.platform.core.beans.IBeanFactory;
 import net.ymate.platform.core.beans.IBeanLoadFactory;
@@ -32,7 +33,6 @@ import net.ymate.platform.core.event.annotation.EventRegister;
 import net.ymate.platform.core.handle.*;
 import net.ymate.platform.core.i18n.I18N;
 import net.ymate.platform.core.module.ModuleManager;
-import net.ymate.platform.core.serialize.annotation.Serializer;
 import net.ymate.platform.core.support.RecycleHelper;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.StopWatch;

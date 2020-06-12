@@ -19,7 +19,7 @@ import net.ymate.platform.cache.ICacheEventListener;
 import net.ymate.platform.cache.ICacheKeyGenerator;
 import net.ymate.platform.cache.ICacheProvider;
 import net.ymate.platform.cache.ICacheScopeProcessor;
-import net.ymate.platform.core.serialize.ISerializer;
+import net.ymate.platform.commons.serialize.ISerializer;
 import org.apache.commons.lang3.StringUtils;
 
 import java.lang.annotation.*;

@@ -13,9 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.ymate.platform.core.serialize.impl;
+package net.ymate.platform.commons.serialize.impl;
 
-import net.ymate.platform.core.serialize.ISerializer;
+import net.ymate.platform.commons.serialize.ISerializer;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;

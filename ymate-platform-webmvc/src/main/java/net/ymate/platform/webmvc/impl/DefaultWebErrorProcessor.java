@@ -15,7 +15,7 @@
  */
 package net.ymate.platform.webmvc.impl;
 
-import com.alibaba.fastjson.JSON;
+import net.ymate.platform.commons.json.JsonWrapper;
 import net.ymate.platform.commons.lang.BlurObject;
 import net.ymate.platform.commons.util.DateTimeUtils;
 import net.ymate.platform.commons.util.RuntimeUtils;
@@ -171,7 +171,7 @@ public class DefaultWebErrorProcessor implements IWebErrorProcessor, IWebInitial
         stringBuilder.append("-- RequestMapping: ").append(WebContext.getRequestContext().getRequestMapping()).append("\n");
         stringBuilder.append("-- ResponseStatus: ").append(((GenericResponseWrapper) WebContext.getResponse()).getStatus()).append("\n");
         stringBuilder.append("-- Method: ").append(WebContext.getRequestContext().getHttpMethod().name()).append("\n");
-        stringBuilder.append("-- RemoteAddress: ").append(JSON.toJSONString(WebUtils.getRemoteAddresses(WebContext.getRequest()))).append("\n");
+        stringBuilder.append("-- RemoteAddress: ").append(JsonWrapper.toJsonString(WebUtils.getRemoteAddresses(WebContext.getRequest()), false, true)).append("\n");
         //
         RequestMeta requestMeta = WebContext.getContext().getAttribute(RequestMeta.class.getName());
         if (requestMeta != null) {
@@ -181,16 +181,16 @@ public class DefaultWebErrorProcessor implements IWebErrorProcessor, IWebInitial
         stringBuilder.append("-- ContextAttributes:").append("\n");
         WebContext.getContext().getAttributes().entrySet().stream()
                 .filter(entry -> !StringUtils.startsWith(entry.getKey(), WebMVC.class.getPackage().getName()))
-                .forEachOrdered(entry -> stringBuilder.append("\t  ").append(entry.getKey()).append(": ").append(JSON.toJSONString(entry.getValue())).append("\n"));
+                .forEachOrdered(entry -> stringBuilder.append("\t  ").append(entry.getKey()).append(": ").append(JsonWrapper.toJsonString(entry.getValue(), false, true)).append("\n"));
         //
         stringBuilder.append("-- Parameters:").append("\n");
-        WebContext.getContext().getParameters().forEach((key, value) -> stringBuilder.append("\t  ").append(key).append(": ").append(JSON.toJSONString(value)).append("\n"));
+        WebContext.getContext().getParameters().forEach((key, value) -> stringBuilder.append("\t  ").append(key).append(": ").append(JsonWrapper.toJsonString(value, false, true)).append("\n"));
         //
         stringBuilder.append("-- Attributes:").append("\n");
         Enumeration<?> enumeration = WebContext.getRequest().getAttributeNames();
         while (enumeration.hasMoreElements()) {
             String attrName = (String) enumeration.nextElement();
-            stringBuilder.append("\t  ").append(attrName).append(": ").append(JSON.toJSONString(WebContext.getRequest().getAttribute(attrName))).append("\n");
+            stringBuilder.append("\t  ").append(attrName).append(": ").append(JsonWrapper.toJsonString(WebContext.getRequest().getAttribute(attrName), false, true)).append("\n");
         }
         //
         stringBuilder.append("-- Headers:").append("\n");
@@ -200,17 +200,17 @@ public class DefaultWebErrorProcessor implements IWebErrorProcessor, IWebInitial
             if ("cookie".equalsIgnoreCase(headName)) {
                 continue;
             }
-            stringBuilder.append("\t  ").append(headName).append(": ").append(JSON.toJSONString(WebContext.getRequest().getHeader(headName))).append("\n");
+            stringBuilder.append("\t  ").append(headName).append(": ").append(JsonWrapper.toJsonString(WebContext.getRequest().getHeader(headName), false, true)).append("\n");
         }
         //
         stringBuilder.append("-- Cookies:").append("\n");
         Cookie[] cookies = WebContext.getRequest().getCookies();
         if (cookies != null) {
-            Arrays.stream(cookies).forEach(cookie -> stringBuilder.append("\t  ").append(cookie.getName()).append(": ").append(JSON.toJSONString(cookie.getValue())).append("\n"));
+            Arrays.stream(cookies).forEach(cookie -> stringBuilder.append("\t  ").append(cookie.getName()).append(": ").append(JsonWrapper.toJsonString(cookie.getValue(), false, true)).append("\n"));
         }
         //
         stringBuilder.append("-- Session:").append("\n");
-        WebContext.getContext().getSession().forEach((key, value) -> stringBuilder.append("\t  ").append(key).append(": ").append(JSON.toJSONString(value)).append("\n"));
+        WebContext.getContext().getSession().forEach((key, value) -> stringBuilder.append("\t  ").append(key).append(": ").append(JsonWrapper.toJsonString(value, false, true)).append("\n"));
         //
         stringBuilder.append(ExceptionProcessHelper.exceptionToString(e)).append("-------------------------------------------------\n");
         //

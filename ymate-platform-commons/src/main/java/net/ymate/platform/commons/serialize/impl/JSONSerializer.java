@@ -13,13 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.ymate.platform.core.serialize.impl;
+package net.ymate.platform.commons.serialize.impl;
 
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.serializer.SerializerFeature;
-import net.ymate.platform.core.serialize.ISerializer;
-
-import java.nio.charset.StandardCharsets;
+import net.ymate.platform.commons.json.JsonWrapper;
+import net.ymate.platform.commons.serialize.ISerializer;
 
 /**
  * @author 刘镇 (suninformation@163.com) on 2017/10/10 上午11:14
@@ -35,15 +32,11 @@ public class JSONSerializer implements ISerializer {
 
     @Override
     public byte[] serialize(Object object) throws Exception {
-        com.alibaba.fastjson.serializer.JSONSerializer serializer = new com.alibaba.fastjson.serializer.JSONSerializer();
-        serializer.config(SerializerFeature.WriteEnumUsingToString, true);
-        serializer.config(SerializerFeature.WriteClassName, true);
-        serializer.write(object);
-        return serializer.getWriter().toBytes(StandardCharsets.UTF_8);
+        return JsonWrapper.serialize(object);
     }
 
     @Override
-    public <T> T deserialize(byte[] bytes, Class<T> clazz) {
-        return JSON.parseObject(new String(bytes, StandardCharsets.UTF_8), clazz);
+    public <T> T deserialize(byte[] bytes, Class<T> clazz) throws Exception {
+        return JsonWrapper.deserialize(bytes, clazz);
     }
 }
