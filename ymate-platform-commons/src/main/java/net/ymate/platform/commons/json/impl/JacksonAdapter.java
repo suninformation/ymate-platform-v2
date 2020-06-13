@@ -50,7 +50,10 @@ public class JacksonAdapter implements IJsonAdapter {
 
     private static ObjectMapper createObjectMapper() {
         return JsonMapper.builder()
-                .enable(JsonReadFeature.ALLOW_UNESCAPED_CONTROL_CHARS, JsonReadFeature.ALLOW_BACKSLASH_ESCAPING_ANY_CHARACTER)
+                .enable(JsonReadFeature.ALLOW_UNESCAPED_CONTROL_CHARS,
+                        JsonReadFeature.ALLOW_BACKSLASH_ESCAPING_ANY_CHARACTER,
+                        JsonReadFeature.ALLOW_UNQUOTED_FIELD_NAMES,
+                        JsonReadFeature.ALLOW_SINGLE_QUOTES)
                 .enable(SerializationFeature.WRITE_ENUMS_USING_TO_STRING)
                 .enable(DeserializationFeature.READ_ENUMS_USING_TO_STRING)
                 .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
@@ -158,7 +161,7 @@ public class JacksonAdapter implements IJsonAdapter {
     @Override
     public String toJsonString(Object object, boolean format, boolean keepNullValue) {
         ObjectMapper objectMapper = createObjectMapper();
-        if (keepNullValue) {
+        if (!keepNullValue) {
             objectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
         }
         try {
