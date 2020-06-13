@@ -144,7 +144,7 @@ public class FastJsonAdapter implements IJsonAdapter {
         JSONSerializer serializer = new JSONSerializer();
         serializer.config(SerializerFeature.WriteEnumUsingToString, true);
         serializer.config(SerializerFeature.WriteClassName, true);
-        serializer.write(object);
+        serializer.write(JsonWrapper.unwrap(object));
         return serializer.getWriter().toBytes(StandardCharsets.UTF_8);
     }
 
