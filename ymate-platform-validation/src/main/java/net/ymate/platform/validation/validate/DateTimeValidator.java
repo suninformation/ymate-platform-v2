@@ -17,7 +17,6 @@ package net.ymate.platform.validation.validate;
 
 import net.ymate.platform.commons.DateTimeHelper;
 import net.ymate.platform.commons.lang.BlurObject;
-import net.ymate.platform.commons.lang.PairObject;
 import net.ymate.platform.commons.util.DateTimeUtils;
 import net.ymate.platform.core.beans.annotation.CleanProxy;
 import net.ymate.platform.validation.IValidator;
@@ -37,7 +36,7 @@ import java.util.Date;
 @CleanProxy
 public final class DateTimeValidator implements IValidator {
 
-    private static final int DATETIME_PART_MAX_LENGTH = 2;
+    public static final int DATETIME_PART_MAX_LENGTH = 2;
 
     private static final String I18N_MESSAGE_KEY = "ymp.validation.datetime";
 
@@ -94,7 +93,7 @@ public final class DateTimeValidator implements IValidator {
             if (date == null) {
                 result = 1;
             } else {
-                ValidateContext.getLocalAttributes().put(paramName, date);
+                ValidateContext.getLocalAttributes().put(paramName, new DateTimeValue(date));
             }
         } else {
             String[] dateTimeArr = StringUtils.split(paramValue, StringUtils.defaultIfBlank(separator, "/"));
@@ -123,7 +122,7 @@ public final class DateTimeValidator implements IValidator {
                         if (dateTimeEnd == null) {
                             dateTimeEnd = DateTimeHelper.bind(dateTimeBegin).toDayEnd().time();
                         }
-                        ValidateContext.getLocalAttributes().put(paramName, PairObject.bind(dateTimeBegin, dateTimeEnd));
+                        ValidateContext.getLocalAttributes().put(paramName, new DateTimeValue(dateTimeBegin, dateTimeEnd));
                     }
                 } else {
                     result = 1;
