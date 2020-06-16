@@ -137,6 +137,11 @@ public abstract class AbstractDialect implements IDialect {
     }
 
     @Override
+    public String buildCountSQL(String originSql) {
+        return String.format("SELECT count(*) FROM (%s) c_t", originSql);
+    }
+
+    @Override
     public String buildCreateSql(Class<? extends IEntity> entityClass, String prefix, IShardingable shardingable) {
         return new Table(this, prefix, EntityMeta.load(entityClass)).shardingable(shardingable).toCreateSQL();
     }

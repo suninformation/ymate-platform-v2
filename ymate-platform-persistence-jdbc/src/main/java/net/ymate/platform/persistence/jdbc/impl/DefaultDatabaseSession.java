@@ -615,8 +615,7 @@ public class DefaultDatabaseSession extends AbstractSession<IDatabaseConnectionH
 
     @Override
     public long count(SQL sql) throws Exception {
-        String sqlStr = ExpressionUtils.bind("SELECT count(*) FROM (${sql}) c_t")
-                .set("sql", sql.toString()).getResult();
+        String sqlStr = dialect.buildCountSQL(sql.toString());
         IQueryOperator<Object[]> queryOperator = new DefaultQueryOperator<>(sqlStr, this.getConnectionHolder(), new ArrayResultSetHandler());
         doOperator(Type.OPT.QUERY, DatabaseEvent.EVENT.QUERY_AFTER, sql.params(), queryOperator);
         //
