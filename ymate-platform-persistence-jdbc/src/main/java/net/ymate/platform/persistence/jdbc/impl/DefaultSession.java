@@ -831,7 +831,7 @@ public class DefaultSession implements ISession {
 
     @Override
     public long count(SQL sql) throws Exception {
-        String _sql = ExpressionUtils.bind("SELECT count(*) FROM (${sql}) c_t").set("sql", sql.getSQL()).getResult();
+        String _sql = __dialect.buildCountSQL(sql.getSQL());
         IQueryOperator<Object[]> _opt = new DefaultQueryOperator<Object[]>(_sql, this.getConnectionHolder(), new ArrayResultSetHandler());
         for (Object _param : sql.params().params()) {
             _opt.addParameter(_param);

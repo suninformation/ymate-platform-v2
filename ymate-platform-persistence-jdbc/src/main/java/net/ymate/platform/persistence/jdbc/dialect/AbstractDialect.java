@@ -120,6 +120,11 @@ public abstract class AbstractDialect implements IDialect {
     }
 
     @Override
+    public String buildCountSQL(String originSql) {
+        return ExpressionUtils.bind("SELECT count(*) FROM (${sql}) c_t").set("sql", originSql).getResult();
+    }
+
+    @Override
     public String buildCreateSQL(Class<? extends IEntity> entityClass, String prefix, IShardingable shardingable) {
         throw new UnsupportedOperationException();
     }

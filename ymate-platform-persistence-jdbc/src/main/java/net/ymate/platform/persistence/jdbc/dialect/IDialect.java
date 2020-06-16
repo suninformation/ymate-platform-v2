@@ -90,6 +90,12 @@ public interface IDialect {
     String buildPagedQuerySQL(String originSql, int page, int pageSize);
 
     /**
+     * @param originSql 原SQL语句
+     * @return 返回计算查询结果总记录数量的SQL语句
+     */
+    String buildCountSQL(String originSql);
+
+    /**
      * @param entityClass  实体模型类
      * @param prefix       实体名称前缀
      * @param shardingable 分片(表)参数对象
