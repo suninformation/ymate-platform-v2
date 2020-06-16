@@ -95,16 +95,13 @@ public abstract class AbstractConfigFileParser implements IConfigFileParser {
         IJsonObjectWrapper jsonObject = JsonWrapper.createJsonObject(sorted);
         //
         IJsonObjectWrapper jsonAttrs = JsonWrapper.createJsonObject();
-        attributes.values().forEach((attr) -> {
-            attr.appendTo(jsonAttrs);
-        });
+        attributes.values().forEach(attr -> attr.appendTo(jsonAttrs));
         jsonObject.put(TAG_NAME_ATTRIBUTES, jsonAttrs);
         //
         IJsonArrayWrapper jsonCategories = JsonWrapper.createJsonArray();
-        categories.values().forEach((category) -> {
-            jsonCategories.add(category.toJson());
-        });
+        categories.values().forEach(category -> jsonCategories.add(category.toJson()));
         jsonObject.put(TAG_NAME_CATEGORIES, jsonCategories);
+        //
         return jsonObject;
     }
 }

@@ -24,10 +24,9 @@ import org.apache.commons.lang3.StringUtils;
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 /**
  * @author 刘镇 (suninformation@163.com) on 2017/7/31 上午12:02
@@ -37,7 +36,7 @@ public interface IConfigFileParser {
 
     String DEFAULT_CATEGORY_NAME = "default";
 
-    String TAG_NAME_ROOT = "properties";
+    String TAG_NAME_PROPERTIES = "properties";
 
     String TAG_NAME_CATEGORY = "category";
 
@@ -121,32 +120,44 @@ public interface IConfigFileParser {
 
     class Category {
 
+        public static List<Category> fromJson(IJsonArrayWrapper jsonArray, boolean sorted) {
+            if (jsonArray != null) {
+                return IntStream.range(0, jsonArray.size()).mapToObj(idx -> fromJson(jsonArray.getJsonObject(idx), sorted)).filter(Objects::nonNull).collect(Collectors.toList());
+            }
+            return new ArrayList<>();
+        }
+
+        public static Category fromJson(IJsonObjectWrapper jsonObject, boolean sorted) {
+            if (jsonObject != null) {
+                String name = jsonObject.getString("name");
+                if (StringUtils.isNotBlank(name)) {
+                    return new Category(name, Attribute.fromJson(jsonObject.getJsonObject(TAG_NAME_ATTRIBUTES)), Property.fromJson(jsonObject.getJsonArray(TAG_NAME_PROPERTIES)), sorted);
+                }
+            }
+            return null;
+        }
+
         private final String name;
 
-        private final Map<String, Attribute> attributeMap;
+        private final Map<String, Attribute> attributes = new HashMap<>();
 
-        private final Map<String, Property> propertyMap;
+        private final Map<String, Property> properties;
 
         private final boolean sorted;
 
         public Category(String name, List<Attribute> attributes, List<Property> properties, boolean sorted) {
             this.name = name;
             this.sorted = sorted;
-            this.attributeMap = new HashMap<>();
             if (this.sorted) {
-                this.propertyMap = new LinkedHashMap<>();
+                this.properties = new LinkedHashMap<>();
             } else {
-                this.propertyMap = new HashMap<>();
+                this.properties = new HashMap<>();
             }
             if (attributes != null) {
-                for (Attribute attr : attributes) {
-                    this.attributeMap.put(attr.getKey(), attr);
-                }
+                attributes.forEach(attr -> this.attributes.put(attr.getKey(), attr));
             }
             if (properties != null) {
-                for (Property prop : properties) {
-                    this.propertyMap.put(prop.getName(), prop);
-                }
+                properties.forEach(prop -> this.properties.put(prop.getName(), prop));
             }
         }
 
@@ -155,64 +166,73 @@ public interface IConfigFileParser {
         }
 
         public Attribute getAttribute(String key) {
-            return this.attributeMap.get(key);
+            return this.attributes.get(key);
         }
 
         public String getAttribute(String key, String defaultValue) {
-            Attribute attr = this.attributeMap.get(key);
+            Attribute attr = this.attributes.get(key);
             if (attr != null) {
                 return attr.getValue(defaultValue);
             }
             return defaultValue;
         }
 
-        public Map<String, Attribute> getAttributeMap() {
-            return attributeMap;
+        public Map<String, Attribute> getAttributes() {
+            return attributes;
         }
 
         public Property getProperty(String name) {
-            return this.propertyMap.get(name);
+            return this.properties.get(name);
         }
 
-        public Map<String, Property> getPropertyMap() {
-            return propertyMap;
+        public Map<String, Property> getProperties() {
+            return properties;
         }
 
         public IJsonObjectWrapper toJson() {
-            IJsonObjectWrapper jsonO = JsonWrapper.createJsonObject(sorted);
-            jsonO.put("name", name);
-
+            IJsonObjectWrapper jsonO = JsonWrapper.createJsonObject(sorted)
+                    .put("name", name);
             IJsonObjectWrapper jsonAttr = JsonWrapper.createJsonObject(sorted);
-            for (Attribute attr : attributeMap.values()) {
-                jsonAttr.put(attr.getKey(), attr.getValue());
-            }
-            jsonO.put("attributes", jsonAttr);
-
+            attributes.values().forEach(attr -> jsonAttr.put(attr.getKey(), attr.getValue()));
+            jsonO.put(TAG_NAME_ATTRIBUTES, jsonAttr);
+            //
             IJsonArrayWrapper jsonArrayProp = JsonWrapper.createJsonArray();
-            for (Property prop : propertyMap.values()) {
-                jsonArrayProp.add(prop.toJson());
-            }
-            jsonO.put("properties", jsonArrayProp);
+            properties.values().stream().map(Property::toJson).forEach(jsonArrayProp::add);
+            jsonO.put(TAG_NAME_PROPERTIES, jsonArrayProp);
             return jsonO;
         }
     }
 
     class Property {
 
+        public static List<Property> fromJson(IJsonArrayWrapper jsonArray) {
+            if (jsonArray != null) {
+                return IntStream.range(0, jsonArray.size()).mapToObj(idx -> fromJson(jsonArray.getJsonObject(idx))).filter(Objects::nonNull).collect(Collectors.toList());
+            }
+            return new ArrayList<>();
+        }
+
+        public static Property fromJson(IJsonObjectWrapper jsonObject) {
+            if (jsonObject != null) {
+                String name = jsonObject.getString("name");
+                if (StringUtils.isNotBlank(name)) {
+                    return new Property(name, jsonObject.getString("content"), Attribute.fromJson(jsonObject.getJsonObject(TAG_NAME_ATTRIBUTES)));
+                }
+            }
+            return null;
+        }
+
         private String name;
 
         private String content;
 
-        private final Map<String, Attribute> attributeMap;
+        private final Map<String, Attribute> attributes = new HashMap<>();
 
         public Property(String name, String content, List<Attribute> attributes) {
             this.name = name;
             this.content = content;
-            this.attributeMap = new HashMap<>();
             if (attributes != null) {
-                for (Attribute attr : attributes) {
-                    this.attributeMap.put(attr.getKey(), attr);
-                }
+                attributes.forEach(attr -> this.attributes.put(attr.getKey(), attr));
             }
         }
 
@@ -233,36 +253,41 @@ public interface IConfigFileParser {
         }
 
         public Attribute getAttribute(String key) {
-            return this.attributeMap.get(key);
+            return this.attributes.get(key);
         }
 
         public String getAttribute(String key, String defaultValue) {
-            Attribute attr = this.attributeMap.get(key);
+            Attribute attr = this.attributes.get(key);
             if (attr != null) {
                 return attr.getValue(defaultValue);
             }
             return defaultValue;
         }
 
-        public Map<String, Attribute> getAttributeMap() {
-            return attributeMap;
+        public Map<String, Attribute> getAttributes() {
+            return attributes;
         }
 
         public IJsonObjectWrapper toJson() {
-            IJsonObjectWrapper jsonO = JsonWrapper.createJsonObject();
-            jsonO.put("name", name);
-            jsonO.put("content", content);
-            //
+            IJsonObjectWrapper jsonO = JsonWrapper.createJsonObject()
+                    .put("name", name)
+                    .put("content", content);
             IJsonObjectWrapper jsonAttrs = JsonWrapper.createJsonObject();
-            for (Attribute attr : attributeMap.values()) {
-                attr.appendTo(jsonAttrs);
-            }
+            attributes.values().forEach(attr -> attr.appendTo(jsonAttrs));
             jsonO.put(TAG_NAME_ATTRIBUTES, jsonAttrs);
+            //
             return jsonO;
         }
     }
 
     class Attribute {
+
+        public static List<Attribute> fromJson(IJsonObjectWrapper jsonObject) {
+            if (jsonObject != null) {
+                return jsonObject.keySet().stream().map(key -> new Attribute(key, jsonObject.getString(key))).collect(Collectors.toList());
+            }
+            return new ArrayList<>();
+        }
 
         private String key;
 
@@ -294,9 +319,7 @@ public interface IConfigFileParser {
         }
 
         public IJsonObjectWrapper toJson() {
-            IJsonObjectWrapper jsonO = JsonWrapper.createJsonObject();
-            jsonO.put(key, value);
-            return jsonO;
+            return JsonWrapper.createJsonObject().put(key, value);
         }
 
         public void appendTo(IJsonObjectWrapper jsonObject) {

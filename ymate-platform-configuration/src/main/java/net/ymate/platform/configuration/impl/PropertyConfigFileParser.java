@@ -54,8 +54,8 @@ public class PropertyConfigFileParser extends AbstractConfigFileParser {
         Enumeration<String> propNames = (Enumeration<String>) properties.propertyNames();
         while (propNames.hasMoreElements()) {
             String propName = propNames.nextElement();
-            if (StringUtils.startsWith(propName, TAG_NAME_ROOT)) {
-                String newPropName = StringUtils.substringAfter(propName, TAG_NAME_ROOT.concat("."));
+            if (StringUtils.startsWith(propName, TAG_NAME_PROPERTIES)) {
+                String newPropName = StringUtils.substringAfter(propName, TAG_NAME_PROPERTIES.concat("."));
                 // _propArr[0] = categoryName
                 // _propArr[1] = propertyName
                 // _propArr[2] = attributes关键字
@@ -80,7 +80,7 @@ public class PropertyConfigFileParser extends AbstractConfigFileParser {
                                 Property prop = safeGetProperty(category, propArr[1]);
                                 fixedSetAttribute(prop, propName, propArr[3]);
                             } else {
-                                category.getPropertyMap().put(propArr[3], new Property(propArr[3], properties.getProperty(propName), null));
+                                category.getProperties().put(propArr[3], new Property(propArr[3], properties.getProperty(propName), null));
                             }
                             break;
                         case 2:
@@ -88,7 +88,7 @@ public class PropertyConfigFileParser extends AbstractConfigFileParser {
                             break;
                         default:
                             if (propArr[1].equalsIgnoreCase(TAG_NAME_ATTRIBUTES)) {
-                                category.getAttributeMap().put(propArr[2], new Attribute(propArr[2], properties.getProperty(propName)));
+                                category.getAttributes().put(propArr[2], new Attribute(propArr[2], properties.getProperty(propName)));
                             } else {
                                 Property prop = safeGetProperty(category, propArr[1]);
                                 fixedSetAttribute(prop, propName, propArr[2]);
@@ -108,7 +108,7 @@ public class PropertyConfigFileParser extends AbstractConfigFileParser {
         Property property = category.getProperty(newPropName);
         if (property == null) {
             property = new Property(newPropName, null, null);
-            category.getPropertyMap().put(newPropName, property);
+            category.getProperties().put(newPropName, property);
         }
         return property;
     }
@@ -118,7 +118,7 @@ public class PropertyConfigFileParser extends AbstractConfigFileParser {
         String attrValue = properties.getProperty(propName);
         if (attr == null) {
             attr = new Attribute(newPropName, attrValue);
-            property.getAttributeMap().put(newPropName, attr);
+            property.getAttributes().put(newPropName, attr);
         } else {
             attr.setKey(newPropName);
             attr.setValue(attrValue);
@@ -130,7 +130,7 @@ public class PropertyConfigFileParser extends AbstractConfigFileParser {
         String propContent = properties.getProperty(propName);
         if (prop == null) {
             prop = new Property(newPropName, propContent, null);
-            category.getPropertyMap().put(newPropName, prop);
+            category.getProperties().put(newPropName, prop);
         } else {
             prop.setName(newPropName);
             prop.setContent(propContent);

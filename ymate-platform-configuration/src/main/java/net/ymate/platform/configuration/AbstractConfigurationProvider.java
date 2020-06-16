@@ -151,7 +151,7 @@ public abstract class AbstractConfigurationProvider implements IConfigurationPro
         List<String> returnValue = new ArrayList<>();
         IConfigFileParser.Property prop = configFileParser.getCategory(category).getProperty(key);
         if (prop != null) {
-            prop.getAttributeMap().values().stream().filter((attr) -> (StringUtils.isBlank(attr.getValue())))
+            prop.getAttributes().values().stream().filter((attr) -> (StringUtils.isBlank(attr.getValue())))
                     .forEachOrdered((attr) -> returnValue.add(attr.getKey()));
         }
         return returnValue;
@@ -167,7 +167,7 @@ public abstract class AbstractConfigurationProvider implements IConfigurationPro
         Map<String, String> returnValue = new LinkedHashMap<>();
         IConfigFileParser.Property prop = configFileParser.getCategory(category).getProperty(key);
         if (prop != null) {
-            prop.getAttributeMap().values().stream().filter((attr) -> (StringUtils.isNotBlank(attr.getValue())))
+            prop.getAttributes().values().stream().filter((attr) -> (StringUtils.isNotBlank(attr.getValue())))
                     .forEachOrdered((attr) -> returnValue.put(attr.getKey(), attr.getValue()));
         }
         return returnValue;
@@ -335,10 +335,10 @@ public abstract class AbstractConfigurationProvider implements IConfigurationPro
         if (categoryObj == null) {
             return Collections.emptyMap();
         }
-        Collection<IConfigFileParser.Property> properties = categoryObj.getPropertyMap().values();
+        Collection<IConfigFileParser.Property> properties = categoryObj.getProperties().values();
         Map<String, String> returnValue = new LinkedHashMap<>(properties.size());
         properties.stream().peek((prop) -> returnValue.put(prop.getName(), prop.getContent()))
-                .forEachOrdered((prop) -> prop.getAttributeMap().values()
+                .forEachOrdered((prop) -> prop.getAttributes().values()
                         .forEach((attr) -> returnValue.put(prop.getName().concat(".").concat(attr.getKey()), attr.getValue())));
         return returnValue;
     }
