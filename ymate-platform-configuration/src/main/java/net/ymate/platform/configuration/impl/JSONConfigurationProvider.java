@@ -41,21 +41,20 @@ public class JSONConfigurationProvider extends AbstractConfigurationProvider {
     @Override
     public List<String> getList(String category, String key) {
         IConfigFileParser.Property prop = getConfigFileParser().getCategory(category).getProperty(key);
+        List<String> resultValue = new ArrayList<>();
         if (prop != null) {
             String content = prop.getContent();
             if (StringUtils.isNotBlank(content)) {
-                if (!StringUtils.startsWith(content, "[")) {
-                    content = "[" + content;
-                }
-                if (!StringUtils.endsWith(content, "]")) {
-                    content += "]";
-                }
-                IJsonArrayWrapper jsonArray = JsonWrapper.fromJson(content).getAsJsonArray();
-                if (jsonArray != null && !jsonArray.isEmpty()) {
-                    return IntStream.range(0, jsonArray.size()).mapToObj(jsonArray::getString).collect(Collectors.toList());
+                if (StringUtils.startsWith(content, "[") && StringUtils.endsWith(content, "]")) {
+                    IJsonArrayWrapper jsonArray = JsonWrapper.fromJson(content).getAsJsonArray();
+                    if (jsonArray != null && !jsonArray.isEmpty()) {
+                        return IntStream.range(0, jsonArray.size()).mapToObj(jsonArray::getString).collect(Collectors.toList());
+                    }
+                } else {
+                    resultValue.add(content);
                 }
             }
         }
-        return new ArrayList<>();
+        return resultValue;
     }
 }
