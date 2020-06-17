@@ -34,7 +34,7 @@ public class DefaultConfiguration implements IConfiguration {
 
     @Override
     public IConfigFileParser.Property getProperty(String category, String key) {
-        IConfigFileParser.Category categoryObj = provider.getConfigFileParser().getDefaultCategory();
+        IConfigFileParser.Category categoryObj = provider.getConfigFileParser().getCategory(category);
         if (categoryObj == null) {
             return null;
         }
