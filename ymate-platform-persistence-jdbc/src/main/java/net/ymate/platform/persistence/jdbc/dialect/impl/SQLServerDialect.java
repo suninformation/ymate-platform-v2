@@ -39,7 +39,8 @@ public class SQLServerDialect extends AbstractDialect {
     @Override
     public String buildPagedQuerySQL(String originSql, int page, int pageSize) {
         int _limit = ((page - 1) * pageSize);
-        boolean _position = originSql.toUpperCase().indexOf("SELECT") == originSql.toUpperCase().indexOf("SELECT DISTINCT");
+        String upperCaseOriginSql = originSql.toUpperCase();
+        boolean _position = upperCaseOriginSql.indexOf("SELECT") == upperCaseOriginSql.indexOf("SELECT DISTINCT");
         String _tmpSQL = originSql.substring((_position ? 15 : 6));
         return ExpressionUtils.bind("SELECT * FROM (SELECT ROW_NUMBER() OVER(ORDER BY __tc__) __rn__, * FROM (SELECT TOP ${_limit} 0 __tc__, ${_sql}) t) tt WHERE __rn__ > ${_offset}")
                 .set("_limit", _limit + pageSize + "")
