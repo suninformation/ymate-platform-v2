@@ -18,6 +18,7 @@ package net.ymate.platform.persistence.jdbc.dialect.impl;
 import net.ymate.platform.core.util.ExpressionUtils;
 import net.ymate.platform.persistence.jdbc.JDBC;
 import net.ymate.platform.persistence.jdbc.dialect.AbstractDialect;
+import org.apache.commons.lang.StringUtils;
 
 /**
  * SQLServer2005及以上数据库方言接口实现
@@ -26,6 +27,10 @@ import net.ymate.platform.persistence.jdbc.dialect.AbstractDialect;
  * @version 1.0
  */
 public class SQLServerDialect extends AbstractDialect {
+
+    private static final String SELECT = "SELECT";
+
+    private static final String DISTINCT = "DISTINCT";
 
     public SQLServerDialect() {
         super("[", "]");
@@ -39,12 +44,19 @@ public class SQLServerDialect extends AbstractDialect {
     @Override
     public String buildPagedQuerySQL(String originSql, int page, int pageSize) {
         int _limit = ((page - 1) * pageSize);
-        String upperCaseOriginSql = originSql.toUpperCase();
-        boolean _position = upperCaseOriginSql.indexOf("SELECT") == upperCaseOriginSql.indexOf("SELECT DISTINCT");
-        String _tmpSQL = originSql.substring((_position ? 15 : 6));
-        return ExpressionUtils.bind("SELECT * FROM (SELECT ROW_NUMBER() OVER(ORDER BY __tc__) __rn__, * FROM (SELECT TOP ${_limit} 0 __tc__, ${_sql}) t) tt WHERE __rn__ > ${_offset}")
-                .set("_limit", _limit + pageSize + "")
+        String _tmpSQL = StringUtils.trim(originSql);
+        if (StringUtils.startsWithIgnoreCase(_tmpSQL, SELECT)) {
+            _tmpSQL = StringUtils.trim(StringUtils.substring(_tmpSQL, SELECT.length()));
+        }
+        boolean distinct = false;
+        if (StringUtils.startsWithIgnoreCase(_tmpSQL, DISTINCT)) {
+            _tmpSQL = StringUtils.substring(_tmpSQL, DISTINCT.length());
+            distinct = true;
+        }
+        return ExpressionUtils.bind("SELECT * FROM (SELECT ROW_NUMBER() OVER(ORDER BY __tc__) __rn__, * FROM (SELECT ${_distinct} TOP ${_limit} 0 __tc__, ${_sql}) t) tt WHERE __rn__ > ${_offset}")
+                .set("_distinct", distinct ? DISTINCT : StringUtils.EMPTY)
+                .set("_limit", String.valueOf(_limit + pageSize))
                 .set("_sql", _tmpSQL)
-                .set("_offset", _limit + "").getResult();
+                .set("_offset", String.valueOf(_limit)).getResult();
     }
 }
