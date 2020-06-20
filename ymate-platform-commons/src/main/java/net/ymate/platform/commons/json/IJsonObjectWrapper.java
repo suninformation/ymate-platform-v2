@@ -28,7 +28,7 @@ import java.util.Set;
  */
 public interface IJsonObjectWrapper extends Serializable {
 
-    Object get(String key);
+    IJsonNodeWrapper get(String key);
 
     boolean getBoolean(String key);
 

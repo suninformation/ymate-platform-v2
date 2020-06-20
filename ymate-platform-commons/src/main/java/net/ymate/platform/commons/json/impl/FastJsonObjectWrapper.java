@@ -18,6 +18,7 @@ package net.ymate.platform.commons.json.impl;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import net.ymate.platform.commons.json.IJsonArrayWrapper;
+import net.ymate.platform.commons.json.IJsonNodeWrapper;
 import net.ymate.platform.commons.json.IJsonObjectWrapper;
 import net.ymate.platform.commons.json.JsonWrapper;
 import org.apache.commons.lang3.builder.EqualsBuilder;
@@ -67,8 +68,9 @@ public class FastJsonObjectWrapper implements IJsonObjectWrapper {
         this.jsonObject = jsonObject != null ? jsonObject : new JSONObject();
     }
 
-    public Object get(String key) {
-        return jsonObject.get(key);
+    public IJsonNodeWrapper get(String key) {
+        Object object = jsonObject.get(key);
+        return object != null ? new FastJsonNodeWrapper(object) : null;
     }
 
     public boolean getBoolean(String key) {

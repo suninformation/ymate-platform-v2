@@ -28,7 +28,7 @@ import java.util.Map;
  */
 public interface IJsonArrayWrapper extends Serializable {
 
-    Object get(int index);
+    IJsonNodeWrapper get(int index);
 
     boolean getBoolean(int index);
 

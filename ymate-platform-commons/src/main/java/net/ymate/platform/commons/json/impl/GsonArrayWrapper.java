@@ -19,6 +19,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import net.ymate.platform.commons.json.IJsonArrayWrapper;
+import net.ymate.platform.commons.json.IJsonNodeWrapper;
 import net.ymate.platform.commons.json.IJsonObjectWrapper;
 import net.ymate.platform.commons.json.JsonWrapper;
 import org.apache.commons.lang3.builder.EqualsBuilder;
@@ -61,8 +62,9 @@ public class GsonArrayWrapper implements IJsonArrayWrapper {
         this.jsonArray = jsonArray != null ? jsonArray : new JsonArray();
     }
 
-    public Object get(int index) {
-        return jsonArray.get(index);
+    public IJsonNodeWrapper get(int index) {
+        JsonElement jsonElement = jsonArray.get(index);
+        return jsonElement != null ? new GsonNodeWrapper(jsonElement) : null;
     }
 
     public boolean getBoolean(int index) {

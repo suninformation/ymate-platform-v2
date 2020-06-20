@@ -17,11 +17,13 @@ package net.ymate.platform.commons.json.impl;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import net.ymate.platform.commons.json.IJsonArrayWrapper;
+import net.ymate.platform.commons.json.IJsonNodeWrapper;
 import net.ymate.platform.commons.json.IJsonObjectWrapper;
 import net.ymate.platform.commons.json.JsonWrapper;
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -51,68 +53,69 @@ public class JacksonObjectWrapper implements IJsonObjectWrapper {
     }
 
     @Override
-    public Object get(String key) {
-        return objectNode.get(key);
+    public IJsonNodeWrapper get(String key) {
+        JsonNode jsonNode = objectNode.get(key);
+        return jsonNode != null ? new JacksonNodeWrapper(jsonNode) : null;
     }
 
     @Override
     public boolean getBoolean(String key) {
-        JsonNode jsonNode = objectNode.get(key);
-        return jsonNode != null && jsonNode.booleanValue();
+        IJsonNodeWrapper jsonNode = get(key);
+        return jsonNode != null && jsonNode.getBoolean();
     }
 
     @Override
     public BigInteger getBigInteger(String key) {
-        JsonNode jsonNode = objectNode.get(key);
-        return jsonNode != null ? jsonNode.bigIntegerValue() : null;
+        IJsonNodeWrapper jsonNode = get(key);
+        return jsonNode != null ? jsonNode.getBigInteger() : null;
     }
 
     @Override
     public BigDecimal getBigDecimal(String key) {
-        JsonNode jsonNode = objectNode.get(key);
-        return jsonNode != null ? jsonNode.decimalValue() : null;
+        IJsonNodeWrapper jsonNode = get(key);
+        return jsonNode != null ? jsonNode.getBigDecimal() : null;
     }
 
     @Override
     public double getDouble(String key) {
-        JsonNode jsonNode = objectNode.get(key);
-        return jsonNode != null ? jsonNode.doubleValue() : 0d;
+        IJsonNodeWrapper jsonNode = get(key);
+        return jsonNode != null ? jsonNode.getDouble() : 0d;
     }
 
     @Override
     public float getFloat(String key) {
-        JsonNode jsonNode = objectNode.get(key);
-        return jsonNode != null ? jsonNode.floatValue() : 0f;
+        IJsonNodeWrapper jsonNode = get(key);
+        return jsonNode != null ? jsonNode.getFloat() : 0f;
     }
 
     @Override
     public int getInt(String key) {
-        JsonNode jsonNode = objectNode.get(key);
-        return jsonNode != null ? jsonNode.intValue() : 0;
+        IJsonNodeWrapper jsonNode = get(key);
+        return jsonNode != null ? jsonNode.getInt() : 0;
     }
 
     @Override
     public IJsonArrayWrapper getJsonArray(String key) {
-        JsonNode jsonNode = objectNode.get(key);
-        return jsonNode != null && jsonNode.isArray() ? new JacksonArrayWrapper((ArrayNode) jsonNode) : null;
+        IJsonNodeWrapper jsonNode = get(key);
+        return jsonNode != null ? jsonNode.getJsonArray() : null;
     }
 
     @Override
     public IJsonObjectWrapper getJsonObject(String key) {
-        JsonNode jsonNode = objectNode.get(key);
-        return jsonNode != null && jsonNode.isObject() ? new JacksonObjectWrapper((ObjectNode) jsonNode) : null;
+        IJsonNodeWrapper jsonNode = get(key);
+        return jsonNode != null ? jsonNode.getJsonObject() : null;
     }
 
     @Override
     public long getLong(String key) {
-        JsonNode jsonNode = objectNode.get(key);
-        return jsonNode != null ? jsonNode.longValue() : 0L;
+        IJsonNodeWrapper jsonNode = get(key);
+        return jsonNode != null ? jsonNode.getLong() : 0L;
     }
 
     @Override
     public String getString(String key) {
-        JsonNode jsonNode = objectNode.get(key);
-        return jsonNode != null ? jsonNode.asText() : null;
+        IJsonNodeWrapper jsonNode = get(key);
+        return jsonNode != null ? jsonNode.getString() : null;
     }
 
     @Override
@@ -191,6 +194,27 @@ public class JacksonObjectWrapper implements IJsonObjectWrapper {
     @Override
     public Object remove(String key) {
         return objectNode.remove(key);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        JacksonObjectWrapper that = (JacksonObjectWrapper) o;
+        return new EqualsBuilder()
+                .append(objectNode, that.objectNode)
+                .isEquals();
+    }
+
+    @Override
+    public int hashCode() {
+        return new HashCodeBuilder(17, 37)
+                .append(objectNode)
+                .toHashCode();
     }
 
     @Override

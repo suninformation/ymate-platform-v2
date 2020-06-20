@@ -85,6 +85,8 @@ public final class JsonWrapper implements Serializable {
             value = ((IJsonArrayWrapper) value).toList();
         } else if (value instanceof IJsonObjectWrapper) {
             value = ((IJsonObjectWrapper) value).toMap();
+        } else if (value instanceof IJsonNodeWrapper) {
+            value = ((IJsonNodeWrapper) value).get();
         } else if (value instanceof Collection) {
             Collection<?> collection = (Collection<?>) value;
             value = collection.stream().map(JsonWrapper::unwrap).collect(Collectors.toCollection(() -> new ArrayList<>(collection.size())));
