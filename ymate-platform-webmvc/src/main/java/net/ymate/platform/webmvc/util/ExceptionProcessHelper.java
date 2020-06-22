@@ -16,6 +16,7 @@
 package net.ymate.platform.webmvc.util;
 
 import net.ymate.platform.commons.ReentrantLockHelper;
+import net.ymate.platform.commons.exception.DataVersionMismatchException;
 import net.ymate.platform.core.support.ErrorCode;
 import net.ymate.platform.webmvc.base.Type;
 import net.ymate.platform.webmvc.exception.*;
