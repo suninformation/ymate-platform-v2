@@ -511,12 +511,24 @@ public final class Cond extends Query<Cond> {
 
     /**
      * @param expression 逻辑表达式
-     * @param cond       条件对象
+     * @param builder    条件构建器
      * @return 根据逻辑表达式运算结果决定是否采纳cond条件
      */
-    public Cond expr(boolean expression, IConditionBuilder cond) {
-        if (expression && cond != null) {
-            this.cond(cond.build());
+    public Cond expr(boolean expression, IConditionBuilder builder) {
+        if (expression && builder != null) {
+            this.cond(builder.build());
+        }
+        return this;
+    }
+
+    /**
+     * @param expression 逻辑表达式
+     * @param appender   条件追加器
+     * @return 根据逻辑表达式运算结果决定是否采纳cond条件
+     */
+    public Cond expr(boolean expression, IConditionAppender appender) {
+        if (expression && appender != null) {
+            appender.append(this);
         }
         return this;
     }
@@ -529,12 +541,12 @@ public final class Cond extends Query<Cond> {
     }
 
     /**
-     * @param target 目标对象
-     * @param cond   条件对象
+     * @param target  目标对象
+     * @param builder 条件构建器
      * @return 当目标对象非空则采纳cond条件
      */
-    public Cond exprNotEmpty(Object target, IConditionBuilder cond) {
-        if (target != null && cond != null) {
+    public Cond exprNotEmpty(Object target, IConditionBuilder builder) {
+        if (target != null && builder != null) {
             boolean flag = true;
             if (target.getClass().isArray()) {
                 flag = ((Object[]) target).length > 0;
@@ -543,7 +555,28 @@ public final class Cond extends Query<Cond> {
             }
             //
             if (flag) {
-                this.cond(cond.build());
+                this.cond(builder.build());
+            }
+        }
+        return this;
+    }
+
+    /**
+     * @param target   目标对象
+     * @param appender 条件追加器
+     * @return 当目标对象非空则采纳cond条件
+     */
+    public Cond exprNotEmpty(Object target, IConditionAppender appender) {
+        if (target != null && appender != null) {
+            boolean flag = true;
+            if (target.getClass().isArray()) {
+                flag = ((Object[]) target).length > 0;
+            } else if (target instanceof String) {
+                flag = StringUtils.isNotBlank((String) target);
+            }
+            //
+            if (flag) {
+                appender.append(this);
             }
         }
         return this;
