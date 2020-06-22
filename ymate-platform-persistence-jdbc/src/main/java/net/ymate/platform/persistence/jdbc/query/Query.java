@@ -31,9 +31,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 /**
  * @param <T> 当前实现类类型
@@ -220,6 +218,8 @@ public class Query<T> extends QueryHandleAdapter<T> {
 
         private final Class<T> queryClass;
 
+        private final Set<String> excludedFields = new HashSet<>();
+
         private final Map<String, Object> variables = new HashMap<>();
 
         private Where where;
@@ -232,6 +232,20 @@ public class Query<T> extends QueryHandleAdapter<T> {
                 throw new NullArgumentException("queryClass");
             }
             this.queryClass = queryClass;
+        }
+
+        public Executor<T> addExcludeField(String field) {
+            if (StringUtils.isNotBlank(field)) {
+                excludedFields.add(field);
+            }
+            return this;
+        }
+
+        public Executor<T> addExcludeField(Fields fields) {
+            if (fields != null && !fields.isEmpty()) {
+                excludedFields.addAll(fields.fields());
+            }
+            return this;
         }
 
         public Executor<T> addVariable(String name, Object value) {
@@ -386,7 +400,7 @@ public class Query<T> extends QueryHandleAdapter<T> {
             // Parse Field
             ClassUtils.getFields(queryClass, true)
                     .stream()
-                    .filter(ClassUtils::isNormalField)
+                    .filter(field -> ClassUtils.isNormalField(field) && !excludedFields.contains(field.getName()))
                     .forEachOrdered((field) -> {
                         QField qField = field.getAnnotation(QField.class);
                         if (qField != null) {
