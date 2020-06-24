@@ -41,15 +41,15 @@ public class XStreamHelper {
         boolean doFilter(String name);
     }
 
-    public static class WeChatDomDriver extends DomDriver {
+    public static class FilterableDomDriver extends DomDriver {
 
         private INodeFilter nodeFilter;
 
-        public WeChatDomDriver(String encoding, NameCoder nameCoder) {
+        public FilterableDomDriver(String encoding, NameCoder nameCoder) {
             super(encoding, nameCoder);
         }
 
-        public WeChatDomDriver(String encoding, NameCoder nameCoder, INodeFilter nodeFilter) {
+        public FilterableDomDriver(String encoding, NameCoder nameCoder, INodeFilter nodeFilter) {
             super(encoding, nameCoder);
             this.nodeFilter = nodeFilter;
         }
@@ -92,10 +92,11 @@ public class XStreamHelper {
      */
     public static XStream createXStream(boolean isAddCDATA, INodeFilter nodeFilter) {
         XStream xstream;
+        XmlFriendlyNameCoder nameCoder = new XmlFriendlyNameCoder("-_", "_");
         if (isAddCDATA) {
-            xstream = new XStream(new WeChatDomDriver("UTF-8", new XmlFriendlyNameCoder("-_", "_"), nodeFilter));
+            xstream = new XStream(new FilterableDomDriver("UTF-8", nameCoder, nodeFilter));
         } else {
-            xstream = new XStream(new DomDriver("UTF-8", new XmlFriendlyNameCoder("-_", "_")));
+            xstream = new XStream(new DomDriver("UTF-8", nameCoder));
         }
         return xstream;
     }
