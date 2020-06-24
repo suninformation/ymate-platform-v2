@@ -28,15 +28,18 @@ import org.w3c.dom.NodeList;
 import org.xml.sax.EntityResolver;
 import org.xml.sax.ErrorHandler;
 import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
 
 import javax.xml.namespace.QName;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
 import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.io.StringReader;
 import java.lang.reflect.Array;
 import java.lang.reflect.Field;
@@ -51,15 +54,14 @@ public class XPathHelper {
 
     private static final Log LOG = LogFactory.getLog(XPathHelper.class);
 
-    public static final DocumentBuilderFactory DOCUMENT_BUILDER_FACTORY;
+    public static DocumentBuilderFactory newDocumentBuilderFactory() {
+        DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
+        documentBuilderFactory.setExpandEntityReferences(false);
+        return documentBuilderFactory;
+    }
 
-    public static final XPathFactory XPATH_FACTORY;
-
-    static {
-        DOCUMENT_BUILDER_FACTORY = DocumentBuilderFactory.newInstance();
-        DOCUMENT_BUILDER_FACTORY.setExpandEntityReferences(false);
-        //
-        XPATH_FACTORY = XPathFactory.newInstance();
+    public static XPathFactory newXPathFactory() {
+        return XPathFactory.newInstance();
     }
 
     /**
@@ -67,67 +69,74 @@ public class XPathHelper {
      */
     public static final EntityResolver IGNORE_DTD_ENTITY_RESOLVER = (publicId, systemId) -> new InputSource(new ByteArrayInputStream("<?xml version='1.0' encoding='UTF-8'?>".getBytes()));
 
-    public static XPathHelper create(Document document) {
-        return new XPathHelper(document);
+    public static XPathHelper create(XPathFactory xPathFactory, Document document) {
+        return new XPathHelper(xPathFactory, document);
     }
 
     private XPath xPath;
 
     private Document document;
 
-    public XPathHelper(Document document) {
-        xPath = XPATH_FACTORY.newXPath();
+    public XPathHelper(XPathFactory xPathFactory, Document document) {
+        xPath = xPathFactory.newXPath();
         this.document = document;
     }
 
-    public XPathHelper(InputSource inputSource) throws Exception {
-        this(inputSource, null, null);
+    public XPathHelper(DocumentBuilder documentBuilder, XPath xPath, InputSource inputSource) throws IOException, SAXException {
+        doInit(documentBuilder, xPath, inputSource);
     }
 
-    public XPathHelper(InputSource inputSource, EntityResolver entityResolver) throws Exception {
-        this(inputSource, entityResolver, null);
+    public XPathHelper(InputSource inputSource) throws ParserConfigurationException, SAXException, IOException {
+        this(newDocumentBuilderFactory(), newXPathFactory(), inputSource, null, null);
     }
 
-    public XPathHelper(InputSource inputSource, ErrorHandler errorHandler) throws Exception {
-        this(inputSource, null, errorHandler);
+    public XPathHelper(InputSource inputSource, EntityResolver entityResolver) throws ParserConfigurationException, SAXException, IOException {
+        this(newDocumentBuilderFactory(), newXPathFactory(), inputSource, entityResolver, null);
     }
 
-    public XPathHelper(InputSource inputSource, EntityResolver entityResolver, ErrorHandler errorHandler) throws Exception {
-        doInit(inputSource, entityResolver, errorHandler);
+    public XPathHelper(InputSource inputSource, ErrorHandler errorHandler) throws ParserConfigurationException, SAXException, IOException {
+        this(newDocumentBuilderFactory(), newXPathFactory(), inputSource, null, errorHandler);
     }
 
-    public XPathHelper(String content) throws Exception {
+    public XPathHelper(DocumentBuilderFactory documentBuilderFactory, XPathFactory xPathFactory, InputSource inputSource, EntityResolver entityResolver, ErrorHandler errorHandler) throws IOException, SAXException, ParserConfigurationException {
+        doInit(documentBuilderFactory, xPathFactory, inputSource, entityResolver, errorHandler);
+    }
+
+    public XPathHelper(DocumentBuilderFactory documentBuilderFactory, XPathFactory xPathFactory, String content) throws ParserConfigurationException, IOException, SAXException {
         try (StringReader reader = new StringReader(content)) {
-            document = DOCUMENT_BUILDER_FACTORY.newDocumentBuilder().parse(new InputSource(reader));
-            xPath = XPATH_FACTORY.newXPath();
+            document = documentBuilderFactory.newDocumentBuilder().parse(new InputSource(reader));
+            xPath = xPathFactory.newXPath();
         }
     }
 
-    public XPathHelper(String content, EntityResolver entityResolver) throws Exception {
-        this(content, entityResolver, null);
+    public XPathHelper(DocumentBuilderFactory documentBuilderFactory, XPathFactory xPathFactory, String content, EntityResolver entityResolver) throws ParserConfigurationException, SAXException, IOException {
+        this(documentBuilderFactory, xPathFactory, content, entityResolver, null);
     }
 
-    public XPathHelper(String content, ErrorHandler errorHandler) throws Exception {
-        this(content, null, errorHandler);
+    public XPathHelper(DocumentBuilderFactory documentBuilderFactory, XPathFactory xPathFactory, String content, ErrorHandler errorHandler) throws ParserConfigurationException, SAXException, IOException {
+        this(documentBuilderFactory, xPathFactory, content, null, errorHandler);
     }
 
-    public XPathHelper(String content, EntityResolver entityResolver, ErrorHandler errorHandler) throws Exception {
+    public XPathHelper(DocumentBuilderFactory documentBuilderFactory, XPathFactory xPathFactory, String content, EntityResolver entityResolver, ErrorHandler errorHandler) throws IOException, SAXException, ParserConfigurationException {
         try (StringReader reader = new StringReader(content)) {
-            doInit(new InputSource(reader), entityResolver, errorHandler);
-            xPath = XPATH_FACTORY.newXPath();
+            doInit(documentBuilderFactory, xPathFactory, new InputSource(reader), entityResolver, errorHandler);
         }
     }
 
-    private void doInit(InputSource inputSource, EntityResolver entityResolver, ErrorHandler errorHandler) throws Exception {
-        DocumentBuilder builder = DOCUMENT_BUILDER_FACTORY.newDocumentBuilder();
+    private void doInit(DocumentBuilderFactory documentBuilderFactory, XPathFactory xPathFactory, InputSource inputSource, EntityResolver entityResolver, ErrorHandler errorHandler) throws ParserConfigurationException, IOException, SAXException {
+        DocumentBuilder documentBuilder = documentBuilderFactory.newDocumentBuilder();
         if (entityResolver != null) {
-            builder.setEntityResolver(entityResolver);
+            documentBuilder.setEntityResolver(entityResolver);
         }
         if (errorHandler != null) {
-            builder.setErrorHandler(errorHandler);
+            documentBuilder.setErrorHandler(errorHandler);
         }
-        xPath = XPATH_FACTORY.newXPath();
-        document = builder.parse(inputSource);
+        doInit(documentBuilder, xPathFactory.newXPath(), inputSource);
+    }
+
+    private void doInit(DocumentBuilder documentBuilder, XPath xPath, InputSource inputSource) throws IOException, SAXException {
+        document = documentBuilder.parse(inputSource);
+        this.xPath = xPath;
     }
 
     public Document getDocument() {
@@ -333,12 +342,26 @@ public class XPathHelper {
 
     public static class Builder {
 
+        private DocumentBuilderFactory documentBuilderFactory;
+
+        private XPathFactory xPathFactory;
+
         private EntityResolver entityResolver;
 
         private ErrorHandler errorHandler;
 
         public static Builder create() {
             return new Builder();
+        }
+
+        public Builder documentBuilderFactory(DocumentBuilderFactory documentBuilderFactory) {
+            this.documentBuilderFactory = documentBuilderFactory;
+            return this;
+        }
+
+        public Builder xPathFactory(XPathFactory xPathFactory) {
+            this.xPathFactory = xPathFactory;
+            return this;
         }
 
         public Builder entityResolver(EntityResolver entityResolver) {
@@ -356,12 +379,16 @@ public class XPathHelper {
             return this;
         }
 
-        public XPathHelper build(InputSource inputSource) throws Exception {
-            return new XPathHelper(inputSource, entityResolver, errorHandler);
+        public XPathHelper build(InputSource inputSource) throws ParserConfigurationException, SAXException, IOException {
+            return new XPathHelper(documentBuilderFactory != null ? documentBuilderFactory : newDocumentBuilderFactory(), xPathFactory != null ? xPathFactory : newXPathFactory(), inputSource, entityResolver, errorHandler);
         }
 
-        public XPathHelper build(String content) throws Exception {
-            return new XPathHelper(content, entityResolver, errorHandler);
+        public XPathHelper build(String content) throws ParserConfigurationException, SAXException, IOException {
+            return new XPathHelper(documentBuilderFactory != null ? documentBuilderFactory : newDocumentBuilderFactory(), xPathFactory != null ? xPathFactory : newXPathFactory(), content, entityResolver, errorHandler);
+        }
+
+        public XPathHelper build(Document document) {
+            return new XPathHelper(xPathFactory != null ? xPathFactory : newXPathFactory(), document);
         }
     }
 
