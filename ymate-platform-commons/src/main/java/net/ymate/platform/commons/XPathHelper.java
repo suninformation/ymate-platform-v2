@@ -38,9 +38,9 @@ import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
 import java.io.ByteArrayInputStream;
 import java.io.StringReader;
+import java.lang.reflect.Array;
 import java.lang.reflect.Field;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -194,6 +194,17 @@ public class XPathHelper {
         return (NodeList) doEvaluate(expression, item, XPathConstants.NODESET);
     }
 
+    public <T> T toObject(Class<T> targetObject) {
+        try {
+            return toObject(targetObject.newInstance());
+        } catch (InstantiationException | IllegalAccessException e) {
+            if (LOG.isWarnEnabled()) {
+                LOG.warn(StringUtils.EMPTY, RuntimeUtils.unwrapThrow(e));
+            }
+        }
+        return null;
+    }
+
     public <T> T toObject(T targetObject) {
         try {
             XPathNode rootNodeAnn = targetObject.getClass().getAnnotation(XPathNode.class);
@@ -220,39 +231,85 @@ public class XPathHelper {
         return null;
     }
 
+    @SuppressWarnings("unchecked")
     private <T> T doWrapperValues(Object parentNode, ClassUtils.BeanWrapper<T> beanWrapper) throws XPathExpressionException, IllegalAccessException {
         for (Field field : beanWrapper.getFields()) {
             if (field.isAnnotationPresent(XPathNode.class)) {
                 XPathNode fieldNodeAnn = field.getAnnotation(XPathNode.class);
                 if (fieldNodeAnn.child()) {
-                    Object childNode = StringUtils.isNotBlank(fieldNodeAnn.value()) ? getNode(parentNode, fieldNodeAnn.value()) : parentNode;
-                    if (childNode != null) {
-                        Object childObject = null;
-                        Object fieldValue = beanWrapper.getValue(field);
-                        //
-                        if (!INodeValueParser.class.equals(fieldNodeAnn.parser())) {
-                            try {
-                                INodeValueParser parser = fieldNodeAnn.parser().newInstance();
-                                childObject = parser.parse(this, parentNode, field.getType(), fieldValue);
-                            } catch (InstantiationException e) {
-                                if (LOG.isWarnEnabled()) {
-                                    LOG.warn(StringUtils.EMPTY, RuntimeUtils.unwrapThrow(e));
+                    if (field.getType().equals(Collection.class) || field.getType().equals(List.class) || field.getType().equals(Set.class) || field.getType().isArray()) {
+                        // 支持集合和数据类型
+                        String expression = fieldNodeAnn.value();
+                        if (StringUtils.isBlank(expression)) {
+                            if (!Void.class.equals(fieldNodeAnn.implClass())) {
+                                XPathNode nodeAnn = fieldNodeAnn.implClass().getAnnotation(XPathNode.class);
+                                if (nodeAnn != null) {
+                                    expression = nodeAnn.value();
                                 }
                             }
-                        } else {
-                            if (fieldValue != null) {
-                                childObject = toObject(childNode, fieldValue);
+                        }
+                        NodeList childNodes = getNodeList(parentNode, expression);
+                        if (childNodes != null && childNodes.getLength() > 0) {
+                            Collection<Object> collection;
+                            if (field.getType().equals(Set.class)) {
+                                collection = new HashSet<>(childNodes.getLength());
                             } else {
+                                collection = new ArrayList<>(childNodes.getLength());
+                            }
+                            boolean isArray = field.getType().isArray();
+                            Class<?> fieldClassType = field.getType();
+                            if (isArray) {
+                                fieldClassType = ClassUtils.getArrayClassType(fieldClassType);
+                            } else if (!Void.class.equals(fieldNodeAnn.implClass())) {
+                                fieldClassType = fieldNodeAnn.implClass();
+                            }
+                            for (int idx = 0; idx < childNodes.getLength(); idx++) {
+                                Object item = toObject(childNodes.item(idx), fieldClassType);
+                                if (item != null) {
+                                    collection.add(item);
+                                }
+                            }
+                            if (isArray) {
+                                beanWrapper.setValue(field, collection.toArray((Object[]) Array.newInstance(fieldClassType, 0)));
+                            } else {
+                                Object targetValue = beanWrapper.getValue(field);
+                                if (targetValue instanceof Collection) {
+                                    ((Collection<Object>) targetValue).addAll(collection);
+                                } else {
+                                    beanWrapper.setValue(field, collection);
+                                }
+                            }
+                        }
+                    } else {
+                        Object childNode = StringUtils.isNotBlank(fieldNodeAnn.value()) ? getNode(parentNode, fieldNodeAnn.value()) : parentNode;
+                        if (childNode != null) {
+                            Object childObject = null;
+                            Object fieldValue = beanWrapper.getValue(field);
+                            //
+                            if (!INodeValueParser.class.equals(fieldNodeAnn.parser())) {
                                 try {
-                                    childObject = toObject(childNode, Void.class.equals(fieldNodeAnn.implClass()) ? field.getType().newInstance() : fieldNodeAnn.implClass().newInstance());
+                                    INodeValueParser parser = fieldNodeAnn.parser().newInstance();
+                                    childObject = parser.parse(this, parentNode, field.getType(), fieldValue);
                                 } catch (InstantiationException e) {
                                     if (LOG.isWarnEnabled()) {
                                         LOG.warn(StringUtils.EMPTY, RuntimeUtils.unwrapThrow(e));
                                     }
                                 }
+                            } else {
+                                if (fieldValue != null) {
+                                    childObject = toObject(childNode, fieldValue);
+                                } else {
+                                    try {
+                                        childObject = toObject(childNode, Void.class.equals(fieldNodeAnn.implClass()) ? field.getType().newInstance() : fieldNodeAnn.implClass().newInstance());
+                                    } catch (InstantiationException e) {
+                                        if (LOG.isWarnEnabled()) {
+                                            LOG.warn(StringUtils.EMPTY, RuntimeUtils.unwrapThrow(e));
+                                        }
+                                    }
+                                }
                             }
+                            beanWrapper.setValue(field, childObject);
                         }
-                        beanWrapper.setValue(field, childObject);
                     }
                 } else {
                     String value = StringUtils.defaultIfBlank(StringUtils.isNotBlank(fieldNodeAnn.value()) ? getStringValue(parentNode, fieldNodeAnn.value()) : null, StringUtils.trimToNull(fieldNodeAnn.defaultValue()));
