@@ -23,6 +23,7 @@ import net.ymate.platform.core.persistence.Page;
 import net.ymate.platform.core.persistence.base.EntityMeta;
 import net.ymate.platform.core.persistence.base.IEntity;
 import net.ymate.platform.persistence.jdbc.*;
+import net.ymate.platform.persistence.jdbc.base.impl.BeanResultSetHandler;
 import net.ymate.platform.persistence.jdbc.impl.DefaultDatabaseSession;
 import net.ymate.platform.persistence.jdbc.query.*;
 import org.apache.commons.lang3.StringUtils;
@@ -263,96 +264,196 @@ public abstract class BaseEntity<Entity extends IEntity, PK extends Serializable
         }
     }
 
+    public <T extends Serializable> IResultSet<T> find(Class<T> beanClass) throws Exception {
+        return find(beanClass, Where.create(buildCond(doGetSafeOwner(), this)), null, null, null);
+    }
+
     public IResultSet<Entity> find() throws Exception {
         return find(Where.create(buildCond(doGetSafeOwner(), this)), null, null, null);
     }
 
+    public <T extends Serializable> IResultSet<T> find(Class<T> beanClass, OrderBy orderBy) throws Exception {
+        return find(beanClass, null, orderBy, null, null, null);
+    }
+
     public IResultSet<Entity> find(OrderBy orderBy) throws Exception {
-        return find(null, orderBy, null, null, null);
+        return find((Fields) null, orderBy, null, null, null);
+    }
+
+    public <T extends Serializable> IResultSet<T> find(Class<T> beanClass, OrderBy orderBy, GroupBy groupBy) throws Exception {
+        return find(beanClass, null, orderBy, groupBy, null, null);
     }
 
     public IResultSet<Entity> find(OrderBy orderBy, GroupBy groupBy) throws Exception {
-        return find(null, orderBy, groupBy, null, null);
+        return find((Fields) null, orderBy, groupBy, null, null);
+    }
+
+    public <T extends Serializable> IResultSet<T> find(Class<T> beanClass, IDBLocker dbLocker) throws Exception {
+        return find(beanClass, Where.create(buildCond(doGetSafeOwner(), this)), null, null, dbLocker);
     }
 
     public IResultSet<Entity> find(IDBLocker dbLocker) throws Exception {
         return find(Where.create(buildCond(doGetSafeOwner(), this)), null, null, dbLocker);
     }
 
+    public <T extends Serializable> IResultSet<T> find(Class<T> beanClass, OrderBy orderBy, IDBLocker dbLocker) throws Exception {
+        return find(beanClass, null, orderBy, null, null, dbLocker);
+    }
+
     public IResultSet<Entity> find(OrderBy orderBy, IDBLocker dbLocker) throws Exception {
-        return find(null, orderBy, null, null, dbLocker);
+        return find((Fields) null, orderBy, null, null, dbLocker);
+    }
+
+    public <T extends Serializable> IResultSet<T> find(Class<T> beanClass, OrderBy orderBy, GroupBy groupBy, IDBLocker dbLocker) throws Exception {
+        return find(beanClass, null, orderBy, groupBy, null, dbLocker);
     }
 
     public IResultSet<Entity> find(OrderBy orderBy, GroupBy groupBy, IDBLocker dbLocker) throws Exception {
-        return find(null, orderBy, groupBy, null, dbLocker);
+        return find((Fields) null, orderBy, groupBy, null, dbLocker);
+    }
+
+    public <T extends Serializable> IResultSet<T> find(Class<T> beanClass, Page page) throws Exception {
+        return find(beanClass, Where.create(buildCond(doGetSafeOwner(), this)), null, page, null);
     }
 
     public IResultSet<Entity> find(Page page) throws Exception {
         return find(Where.create(buildCond(doGetSafeOwner(), this)), null, page, null);
     }
 
+    public <T extends Serializable> IResultSet<T> find(Class<T> beanClass, OrderBy orderBy, Page page) throws Exception {
+        return find(beanClass, null, orderBy, page, null);
+    }
+
     public IResultSet<Entity> find(OrderBy orderBy, Page page) throws Exception {
-        return find(null, orderBy, page, null);
+        return find((Fields) null, orderBy, page, null);
+    }
+
+    public <T extends Serializable> IResultSet<T> find(Class<T> beanClass, OrderBy orderBy, GroupBy groupBy, Page page) throws Exception {
+        return find(beanClass, null, orderBy, groupBy, page, null);
     }
 
     public IResultSet<Entity> find(OrderBy orderBy, GroupBy groupBy, Page page) throws Exception {
-        return find(null, orderBy, groupBy, page, null);
+        return find((Fields) null, orderBy, groupBy, page, null);
+    }
+
+    public <T extends Serializable> IResultSet<T> find(Class<T> beanClass, Page page, IDBLocker dbLocker) throws Exception {
+        return find(beanClass, Where.create(buildCond(doGetSafeOwner(), this)), null, page, dbLocker);
     }
 
     public IResultSet<Entity> find(Page page, IDBLocker dbLocker) throws Exception {
         return find(Where.create(buildCond(doGetSafeOwner(), this)), null, page, dbLocker);
     }
 
+    public <T extends Serializable> IResultSet<T> find(Class<T> beanClass, OrderBy orderBy, Page page, IDBLocker dbLocker) throws Exception {
+        return find(beanClass, null, orderBy, page, dbLocker);
+    }
+
     public IResultSet<Entity> find(OrderBy orderBy, Page page, IDBLocker dbLocker) throws Exception {
-        return find(null, orderBy, page, dbLocker);
+        return find((Fields) null, orderBy, page, dbLocker);
+    }
+
+    public <T extends Serializable> IResultSet<T> find(Class<T> beanClass, OrderBy orderBy, GroupBy groupBy, Page page, IDBLocker dbLocker) throws Exception {
+        return find(beanClass, null, orderBy, groupBy, page, dbLocker);
     }
 
     public IResultSet<Entity> find(OrderBy orderBy, GroupBy groupBy, Page page, IDBLocker dbLocker) throws Exception {
-        return find(null, orderBy, groupBy, page, dbLocker);
+        return find((Fields) null, orderBy, groupBy, page, dbLocker);
+    }
+
+    public <T extends Serializable> IResultSet<T> find(Class<T> beanClass, Fields fields) throws Exception {
+        return find(beanClass, Where.create(buildCond(doGetSafeOwner(), this)), fields, null, null);
     }
 
     public IResultSet<Entity> find(Fields fields) throws Exception {
         return find(Where.create(buildCond(doGetSafeOwner(), this)), fields, null, null);
     }
 
+    public <T extends Serializable> IResultSet<T> find(Class<T> beanClass, Fields fields, OrderBy orderBy) throws Exception {
+        return find(beanClass, fields, orderBy, null, null, null);
+    }
+
     public IResultSet<Entity> find(Fields fields, OrderBy orderBy) throws Exception {
         return find(fields, orderBy, null, null, null);
+    }
+
+    public <T extends Serializable> IResultSet<T> find(Class<T> beanClass, Fields fields, OrderBy orderBy, GroupBy groupBy) throws Exception {
+        return find(beanClass, fields, orderBy, groupBy, null, null);
     }
 
     public IResultSet<Entity> find(Fields fields, OrderBy orderBy, GroupBy groupBy) throws Exception {
         return find(fields, orderBy, groupBy, null, null);
     }
 
+    public <T extends Serializable> IResultSet<T> find(Class<T> beanClass, Fields fields, IDBLocker dbLocker) throws Exception {
+        return find(beanClass, Where.create(buildCond(doGetSafeOwner(), this)), fields, null, dbLocker);
+    }
+
     public IResultSet<Entity> find(Fields fields, IDBLocker dbLocker) throws Exception {
         return find(Where.create(buildCond(doGetSafeOwner(), this)), fields, null, dbLocker);
+    }
+
+    public <T extends Serializable> IResultSet<T> find(Class<T> beanClass, Fields fields, OrderBy orderBy, IDBLocker dbLocker) throws Exception {
+        return find(beanClass, fields, orderBy, null, null, dbLocker);
     }
 
     public IResultSet<Entity> find(Fields fields, OrderBy orderBy, IDBLocker dbLocker) throws Exception {
         return find(fields, orderBy, null, null, dbLocker);
     }
 
+    public <T extends Serializable> IResultSet<T> find(Class<T> beanClass, Fields fields, OrderBy orderBy, GroupBy groupBy, IDBLocker dbLocker) throws Exception {
+        return find(beanClass, fields, orderBy, groupBy, null, dbLocker);
+    }
+
     public IResultSet<Entity> find(Fields fields, OrderBy orderBy, GroupBy groupBy, IDBLocker dbLocker) throws Exception {
         return find(fields, orderBy, groupBy, null, dbLocker);
+    }
+
+    public <T extends Serializable> IResultSet<T> find(Class<T> beanClass, Fields fields, Page page) throws Exception {
+        return find(beanClass, Where.create(buildCond(doGetSafeOwner(), this)), fields, page, null);
     }
 
     public IResultSet<Entity> find(Fields fields, Page page) throws Exception {
         return find(Where.create(buildCond(doGetSafeOwner(), this)), fields, page, null);
     }
 
+    public <T extends Serializable> IResultSet<T> find(Class<T> beanClass, Fields fields, OrderBy orderBy, Page page) throws Exception {
+        return find(beanClass, fields, orderBy, page, null);
+    }
+
     public IResultSet<Entity> find(Fields fields, OrderBy orderBy, Page page) throws Exception {
         return find(fields, orderBy, page, null);
+    }
+
+    public <T extends Serializable> IResultSet<T> find(Class<T> beanClass, Fields fields, OrderBy orderBy, GroupBy groupBy, Page page) throws Exception {
+        return find(beanClass, fields, orderBy, groupBy, page, null);
     }
 
     public IResultSet<Entity> find(Fields fields, OrderBy orderBy, GroupBy groupBy, Page page) throws Exception {
         return find(fields, orderBy, groupBy, page, null);
     }
 
+    public <T extends Serializable> IResultSet<T> find(Class<T> beanClass, Fields fields, Page page, IDBLocker dbLocker) throws Exception {
+        return find(beanClass, Where.create(buildCond(doGetSafeOwner(), this)), fields, page, dbLocker);
+    }
+
     public IResultSet<Entity> find(Fields fields, Page page, IDBLocker dbLocker) throws Exception {
         return find(Where.create(buildCond(doGetSafeOwner(), this)), fields, page, dbLocker);
     }
 
+    public <T extends Serializable> IResultSet<T> find(Class<T> beanClass, Fields fields, OrderBy orderBy, Page page, IDBLocker dbLocker) throws Exception {
+        return find(beanClass, fields, orderBy, null, page, dbLocker);
+    }
+
     public IResultSet<Entity> find(Fields fields, OrderBy orderBy, Page page, IDBLocker dbLocker) throws Exception {
         return find(fields, orderBy, null, page, dbLocker);
+    }
+
+    public <T extends Serializable> IResultSet<T> find(Class<T> beanClass, Fields fields, OrderBy orderBy, GroupBy groupBy, Page page, IDBLocker dbLocker) throws Exception {
+        Where where = Where.create(buildCond(doGetSafeOwner(), this));
+        if (orderBy != null) {
+            where.orderBy().orderBy(orderBy);
+        }
+        return find(beanClass, where.groupBy(groupBy), fields, page, dbLocker);
     }
 
     public IResultSet<Entity> find(Fields fields, OrderBy orderBy, GroupBy groupBy, Page page, IDBLocker dbLocker) throws Exception {
@@ -363,28 +464,56 @@ public abstract class BaseEntity<Entity extends IEntity, PK extends Serializable
         return find(where.groupBy(groupBy), fields, page, dbLocker);
     }
 
+    public <T extends Serializable> IResultSet<T> find(Class<T> beanClass, Where where) throws Exception {
+        return find(beanClass, where, null, null, null);
+    }
+
     public IResultSet<Entity> find(Where where) throws Exception {
         return find(where, null, null, null);
+    }
+
+    public <T extends Serializable> IResultSet<T> find(Class<T> beanClass, Where where, IDBLocker dbLocker) throws Exception {
+        return find(beanClass, where, null, null, dbLocker);
     }
 
     public IResultSet<Entity> find(Where where, IDBLocker dbLocker) throws Exception {
         return find(where, null, null, dbLocker);
     }
 
+    public <T extends Serializable> IResultSet<T> find(Class<T> beanClass, Where where, Fields fields) throws Exception {
+        return find(beanClass, where, fields, null, null);
+    }
+
     public IResultSet<Entity> find(Where where, Fields fields) throws Exception {
         return find(where, fields, null, null);
+    }
+
+    public <T extends Serializable> IResultSet<T> find(Class<T> beanClass, Where where, Fields fields, IDBLocker dbLocker) throws Exception {
+        return find(beanClass, where, fields, null, dbLocker);
     }
 
     public IResultSet<Entity> find(Where where, Fields fields, IDBLocker dbLocker) throws Exception {
         return find(where, fields, null, dbLocker);
     }
 
+    public <T extends Serializable> IResultSet<T> find(Class<T> beanClass, Where where, Fields fields, Page page) throws Exception {
+        return find(beanClass, where, fields, page, null);
+    }
+
     public IResultSet<Entity> find(Where where, Fields fields, Page page) throws Exception {
         return find(where, fields, page, null);
     }
 
+    public <T extends Serializable> IResultSet<T> find(Class<T> beanClass, Where where, Page page) throws Exception {
+        return find(beanClass, where, null, page, null);
+    }
+
     public IResultSet<Entity> find(Where where, Page page) throws Exception {
         return find(where, null, page, null);
+    }
+
+    public <T extends Serializable> IResultSet<T> find(Class<T> beanClass, Where where, Page page, IDBLocker dbLocker) throws Exception {
+        return find(beanClass, where, null, page, dbLocker);
     }
 
     public IResultSet<Entity> find(Where where, Page page, IDBLocker dbLocker) throws Exception {
@@ -404,20 +533,64 @@ public abstract class BaseEntity<Entity extends IEntity, PK extends Serializable
         }
     }
 
+    private static <Entity extends IEntity> Select buildSelect(IDatabase owner, String dataSourceName, IShardingable shardingable, Class<Entity> entityClass, Where where, Fields fields, IDBLocker dbLocker) {
+        Select select = Select.create(owner, dataSourceName, entityClass)
+                .shardingable(shardingable);
+        if (fields != null && !fields.isEmpty()) {
+            select.field(fields);
+        }
+        if (where != null) {
+            select.where(where);
+        }
+        if (dbLocker != null) {
+            select.forUpdate(dbLocker);
+        }
+        return select;
+    }
+
+    public static <Entity extends IEntity, T extends Serializable> IResultSet<T> find(IDatabase owner, String dataSourceName, IShardingable shardingable, Class<Entity> entityClass, Class<T> beanClass, Where where, Fields fields, Page page, IDBLocker dbLocker) throws Exception {
+        return buildSelect(owner, dataSourceName, shardingable, entityClass, where, fields, dbLocker).find(new BeanResultSetHandler<>(beanClass), page);
+    }
+
+    public <T extends Serializable> IResultSet<T> find(Class<T> beanClass, Where where, Fields fields, Page page, IDBLocker dbLocker) throws Exception {
+        return find(doGetSafeOwner(), getDataSourceName(), getShardingable(), getEntityClass(), beanClass, where, fields, page, dbLocker);
+    }
+
     public IResultSet<Entity> find(Where where, Fields fields, Page page, IDBLocker dbLocker) throws Exception {
         return find(doGetSafeOwner(), getConnectionHolder(), getDataSourceName(), getShardingable(), getEntityClass(), where, fields, page, dbLocker);
+    }
+
+    public <T extends Serializable> IResultSet<T> findAll(Class<T> beanClass) throws Exception {
+        return find(beanClass, (Where) null, null, null, null);
     }
 
     public IResultSet<Entity> findAll() throws Exception {
         return find((Where) null, null, null, null);
     }
 
+    public <T extends Serializable> IResultSet<T> findAll(Class<T> beanClass, OrderBy orderBy) throws Exception {
+        return findAll(beanClass, null, orderBy, null);
+    }
+
     public IResultSet<Entity> findAll(OrderBy orderBy) throws Exception {
         return findAll(null, orderBy, null);
     }
 
+    public <T extends Serializable> IResultSet<T> findAll(Class<T> beanClass, Fields fields, Page page) throws Exception {
+        return find(beanClass, null, fields, page, null);
+    }
+
     public IResultSet<Entity> findAll(Fields fields, Page page) throws Exception {
-        return find(null, fields, page, null);
+        return find((Where) null, fields, page, null);
+    }
+
+    public <T extends Serializable> IResultSet<T> findAll(Class<T> beanClass, Fields fields, OrderBy orderBy, Page page) throws Exception {
+        Where where = null;
+        if (orderBy != null) {
+            where = Where.create(doGetSafeOwner());
+            where.orderBy().orderBy(orderBy);
+        }
+        return find(beanClass, where, fields, page, null);
     }
 
     public IResultSet<Entity> findAll(Fields fields, OrderBy orderBy, Page page) throws Exception {
@@ -430,7 +603,7 @@ public abstract class BaseEntity<Entity extends IEntity, PK extends Serializable
     }
 
     public IResultSet<Entity> findAll(Fields fields) throws Exception {
-        return find(null, fields, null, null);
+        return find((Where) null, fields, null, null);
     }
 
     public IResultSet<Entity> findAll(Fields fields, OrderBy orderBy) throws Exception {
@@ -445,48 +618,96 @@ public abstract class BaseEntity<Entity extends IEntity, PK extends Serializable
         return findAll(null, orderBy, page);
     }
 
+    public <T extends Serializable> T findFirst(Class<T> beanClass) throws Exception {
+        return findFirst(beanClass, Where.create(buildCond(doGetSafeOwner(), this)), null, null);
+    }
+
     public Entity findFirst() throws Exception {
         return findFirst(Where.create(buildCond(doGetSafeOwner(), this)), null, null);
     }
 
     public Entity findFirst(OrderBy orderBy) throws Exception {
-        return findFirst(null, orderBy, null, null);
+        return findFirst((Fields) null, orderBy, null, null);
+    }
+
+    public <T extends Serializable> T findFirst(Class<T> beanClass, OrderBy orderBy, GroupBy groupBy) throws Exception {
+        return findFirst(beanClass, null, orderBy, groupBy, null);
     }
 
     public Entity findFirst(OrderBy orderBy, GroupBy groupBy) throws Exception {
-        return findFirst(null, orderBy, groupBy, null);
+        return findFirst((Fields) null, orderBy, groupBy, null);
+    }
+
+    public <T extends Serializable> T findFirst(Class<T> beanClass, IDBLocker dbLocker) throws Exception {
+        return findFirst(beanClass, Where.create(buildCond(doGetSafeOwner(), this)), null, dbLocker);
     }
 
     public Entity findFirst(IDBLocker dbLocker) throws Exception {
         return findFirst(Where.create(buildCond(doGetSafeOwner(), this)), null, dbLocker);
     }
 
+    public <T extends Serializable> T findFirst(Class<T> beanClass, OrderBy orderBy, IDBLocker dbLocker) throws Exception {
+        return findFirst(beanClass, null, orderBy, null, dbLocker);
+    }
+
     public Entity findFirst(OrderBy orderBy, IDBLocker dbLocker) throws Exception {
-        return findFirst(null, orderBy, null, dbLocker);
+        return findFirst((Fields) null, orderBy, null, dbLocker);
+    }
+
+    public <T extends Serializable> T findFirst(Class<T> beanClass, OrderBy orderBy, GroupBy groupBy, IDBLocker dbLocker) throws Exception {
+        return findFirst(beanClass, null, orderBy, groupBy, dbLocker);
     }
 
     public Entity findFirst(OrderBy orderBy, GroupBy groupBy, IDBLocker dbLocker) throws Exception {
-        return findFirst(null, orderBy, groupBy, dbLocker);
+        return findFirst((Fields) null, orderBy, groupBy, dbLocker);
+    }
+
+    public <T extends Serializable> T findFirst(Class<T> beanClass, Fields fields) throws Exception {
+        return findFirst(beanClass, Where.create(buildCond(doGetSafeOwner(), this)), fields, null);
     }
 
     public Entity findFirst(Fields fields) throws Exception {
         return findFirst(Where.create(buildCond(doGetSafeOwner(), this)), fields, null);
     }
 
+    public <T extends Serializable> T findFirst(Class<T> beanClass, Fields fields, OrderBy orderBy) throws Exception {
+        return findFirst(beanClass, fields, orderBy, null, null);
+    }
+
     public Entity findFirst(Fields fields, OrderBy orderBy) throws Exception {
         return findFirst(fields, orderBy, null, null);
+    }
+
+    public <T extends Serializable> T findFirst(Class<T> beanClass, Fields fields, OrderBy orderBy, GroupBy groupBy) throws Exception {
+        return findFirst(beanClass, fields, orderBy, groupBy, null);
     }
 
     public Entity findFirst(Fields fields, OrderBy orderBy, GroupBy groupBy) throws Exception {
         return findFirst(fields, orderBy, groupBy, null);
     }
 
+    public <T extends Serializable> T findFirst(Class<T> beanClass, Fields fields, IDBLocker dbLocker) throws Exception {
+        return findFirst(beanClass, Where.create(buildCond(doGetSafeOwner(), this)), fields, dbLocker);
+    }
+
     public Entity findFirst(Fields fields, IDBLocker dbLocker) throws Exception {
         return findFirst(Where.create(buildCond(doGetSafeOwner(), this)), fields, dbLocker);
     }
 
+    public <T extends Serializable> T findFirst(Class<T> beanClass, Fields fields, OrderBy orderBy, IDBLocker dbLocker) throws Exception {
+        return findFirst(beanClass, fields, orderBy, null, dbLocker);
+    }
+
     public Entity findFirst(Fields fields, OrderBy orderBy, IDBLocker dbLocker) throws Exception {
         return findFirst(fields, orderBy, null, dbLocker);
+    }
+
+    public <T extends Serializable> T findFirst(Class<T> beanClass, Fields fields, OrderBy orderBy, GroupBy groupBy, IDBLocker dbLocker) throws Exception {
+        Where where = Where.create(buildCond(doGetSafeOwner(), this));
+        if (orderBy != null) {
+            where.orderBy().orderBy(orderBy);
+        }
+        return findFirst(beanClass, where.groupBy(groupBy), fields, dbLocker);
     }
 
     public Entity findFirst(Fields fields, OrderBy orderBy, GroupBy groupBy, IDBLocker dbLocker) throws Exception {
@@ -497,12 +718,24 @@ public abstract class BaseEntity<Entity extends IEntity, PK extends Serializable
         return findFirst(where.groupBy(groupBy), fields, dbLocker);
     }
 
+    public <T extends Serializable> T findFirst(Class<T> beanClass, Where where) throws Exception {
+        return findFirst(beanClass, where, null, null);
+    }
+
     public Entity findFirst(Where where) throws Exception {
         return findFirst(where, null, null);
     }
 
+    public <T extends Serializable> T findFirst(Class<T> beanClass, Where where, IDBLocker dbLocker) throws Exception {
+        return findFirst(beanClass, where, null, dbLocker);
+    }
+
     public Entity findFirst(Where where, IDBLocker dbLocker) throws Exception {
         return findFirst(where, null, dbLocker);
+    }
+
+    public <T extends Serializable> T findFirst(Class<T> beanClass, Where where, Fields fields) throws Exception {
+        return findFirst(beanClass, where, fields, null);
     }
 
     public Entity findFirst(Where where, Fields fields) throws Exception {
@@ -520,6 +753,14 @@ public abstract class BaseEntity<Entity extends IEntity, PK extends Serializable
             }
             return session.findFirst(entitySql, where, shardingable);
         }
+    }
+
+    public static <Entity extends IEntity, T extends Serializable> T findFirst(IDatabase owner, String dataSourceName, IShardingable shardingable, Class<Entity> entityClass, Class<T> beanClass, Where where, Fields fields, IDBLocker dbLocker) throws Exception {
+        return buildSelect(owner, dataSourceName, shardingable, entityClass, where, fields, dbLocker).findFirst(new BeanResultSetHandler<>(beanClass));
+    }
+
+    public <T extends Serializable> T findFirst(Class<T> beanClass, Where where, Fields fields, IDBLocker dbLocker) throws Exception {
+        return findFirst(doGetSafeOwner(), getDataSourceName(), getShardingable(), getEntityClass(), beanClass, where, fields, dbLocker);
     }
 
     public Entity findFirst(Where where, Fields fields, IDBLocker dbLocker) throws Exception {
