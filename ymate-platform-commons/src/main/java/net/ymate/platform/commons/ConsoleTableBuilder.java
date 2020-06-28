@@ -86,6 +86,10 @@ public class ConsoleTableBuilder {
         return row;
     }
 
+    public List<Row> getRows() {
+        return rows;
+    }
+
     public int[] getColumnLengths() {
         int[] lengths = new int[column];
         for (int idx = 0; idx < column; idx++) {
