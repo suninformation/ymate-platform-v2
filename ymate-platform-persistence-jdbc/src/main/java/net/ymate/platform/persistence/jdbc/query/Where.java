@@ -179,6 +179,11 @@ public final class Where extends QueryHandleAdapter<Where> {
         return this;
     }
 
+    public Where orderByAsc(Fields fields) {
+        orderBy.asc(fields);
+        return this;
+    }
+
     public Where orderByAsc(String field) {
         orderBy.asc(field);
         return this;
@@ -186,6 +191,11 @@ public final class Where extends QueryHandleAdapter<Where> {
 
     public Where orderByAsc(String prefix, String field) {
         orderBy.asc(prefix, field);
+        return this;
+    }
+
+    public Where orderByDesc(Fields fields) {
+        orderBy.desc(fields);
         return this;
     }
 

@@ -15,6 +15,7 @@
  */
 package net.ymate.platform.persistence.jdbc.query;
 
+import net.ymate.platform.core.persistence.Fields;
 import net.ymate.platform.persistence.jdbc.IDatabase;
 import net.ymate.platform.persistence.jdbc.JDBC;
 import org.apache.commons.lang3.StringUtils;
@@ -60,6 +61,13 @@ public final class OrderBy extends Query<OrderBy> {
         return this;
     }
 
+    public OrderBy asc(Fields fields) {
+        if (fields != null && !fields.isEmpty()) {
+            fields.fields().forEach(this::asc);
+        }
+        return this;
+    }
+
     public OrderBy asc(String field) {
         return asc(null, field);
     }
@@ -72,6 +80,13 @@ public final class OrderBy extends Query<OrderBy> {
             orderByBuilder.append(prefix).append(".");
         }
         orderByBuilder.append(wrapIdentifierField(field));
+        return this;
+    }
+
+    public OrderBy desc(Fields fields) {
+        if (fields != null && !fields.isEmpty()) {
+            fields.fields().forEach(this::desc);
+        }
         return this;
     }
 
