@@ -360,9 +360,9 @@ public class WebUtils {
      * @throws IOException      可能产生的异常
      */
     public static String includeJsp(HttpServletRequest request, HttpServletResponse response, String jspFile, String charsetEncoding) throws ServletException, IOException {
-        final OutputStream outputStream = new ByteArrayOutputStream();
+        final ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
         includeJsp(request, response, jspFile, charsetEncoding, outputStream);
-        return outputStream.toString();
+        return new String(outputStream.toByteArray(), StringUtils.defaultIfBlank(charsetEncoding, response.getCharacterEncoding()));
     }
 
     public static void includeJsp(HttpServletRequest request, HttpServletResponse response, String jspFile, String charsetEncoding, final OutputStream outputStream) throws ServletException, IOException {
