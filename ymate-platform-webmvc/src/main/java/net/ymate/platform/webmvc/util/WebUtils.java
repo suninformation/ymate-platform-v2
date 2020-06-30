@@ -301,9 +301,9 @@ public class WebUtils {
      * @throws IOException      可能产生的异常
      */
     public static String includeJSP(HttpServletRequest request, HttpServletResponse response, String jspFile, String charsetEncoding) throws ServletException, IOException {
-        final OutputStream _output = new ByteArrayOutputStream();
-        includeJSP(request, response, jspFile, charsetEncoding, _output);
-        return _output.toString();
+        final ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        includeJSP(request, response, jspFile, charsetEncoding, outputStream);
+        return new String(outputStream.toByteArray(), StringUtils.defaultIfBlank(charsetEncoding, response.getCharacterEncoding()));
     }
 
     public static void includeJSP(HttpServletRequest request, HttpServletResponse response, String jspFile, String charsetEncoding, final OutputStream outputStream) throws ServletException, IOException {
