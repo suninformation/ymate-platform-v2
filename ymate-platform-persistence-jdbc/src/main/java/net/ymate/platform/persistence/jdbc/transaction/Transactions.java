@@ -16,6 +16,7 @@
 package net.ymate.platform.persistence.jdbc.transaction;
 
 import net.ymate.platform.commons.lang.BlurObject;
+import net.ymate.platform.commons.util.ClassUtils;
 import net.ymate.platform.commons.util.RuntimeUtils;
 import net.ymate.platform.core.persistence.AbstractTrade;
 import net.ymate.platform.core.persistence.ITrade;
@@ -31,7 +32,17 @@ import net.ymate.platform.persistence.jdbc.transaction.impl.DefaultTransaction;
  *
  * @author 刘镇 (suninformation@163.com) on 2011-9-6 下午04:36:53
  */
-public class Transactions {
+public final class Transactions {
+
+    private static Class<? extends ITransaction> transactionClass;
+
+    static {
+        try {
+            transactionClass = ClassUtils.getExtensionLoader(ITransaction.class, false).getExtensionClass();
+        } catch (Exception e) {
+            transactionClass = DefaultTransaction.class;
+        }
+    }
 
     private static final ThreadLocal<ITransaction> TRANS_LOCAL = new ThreadLocal<>();
 
@@ -52,7 +63,9 @@ public class Transactions {
      */
     private static void begin(Type.TRANSACTION level) throws Exception {
         if (TRANS_LOCAL.get() == null) {
-            TRANS_LOCAL.set(new DefaultTransaction(level));
+            ITransaction transaction = transactionClass.newInstance();
+            transaction.setLevel(level);
+            TRANS_LOCAL.set(transaction);
             COUNT.set(0);
         }
         COUNT.set(COUNT.get() + 1);

@@ -34,15 +34,19 @@ public class TransactionProxy implements IProxy {
     @Override
     public Object doProxy(final IProxyChain proxyChain) throws Throwable {
         Type.TRANSACTION currentLevel = null;
-        // 判断方法对象是否被声明@Transaction注解，否则忽略
-        if (proxyChain.getTargetMethod().isAnnotationPresent(Transaction.class) && ClassUtils.isNormalMethod(proxyChain.getTargetMethod())) {
-            // 获取当前类声明的全局事务级别参数
-            currentLevel = proxyChain.getTargetClass().getAnnotation(Transaction.class).value();
-            //
-            Type.TRANSACTION tmpLevel = proxyChain.getTargetMethod().getAnnotation(Transaction.class).value();
-            // 如果全局事务级别被设置或低于NONE，则分析targetMethod是否存在@Transaction注解声明并尝试获取其事务级别设置
-            if (currentLevel.compareTo(Type.TRANSACTION.NONE) > 0) {
-                currentLevel = tmpLevel;
+        if (ClassUtils.isNormalMethod(proxyChain.getTargetMethod())) {
+            // 判断方法对象是否被声明@Transaction注解，否则忽略
+            Transaction methodTransAnn = proxyChain.getTargetMethod().getAnnotation(Transaction.class);
+            if (methodTransAnn != null) {
+                currentLevel = methodTransAnn.value();
+                // 如果事务级别为NONE，则分析targetClass是否存在@Transaction注解声明并尝试获取其事务级别设置
+                if (Type.TRANSACTION.NONE.equals(currentLevel)) {
+                    // 获取当前类声明的全局事务级别参数
+                    Transaction classTransAnn = proxyChain.getTargetClass().getAnnotation(Transaction.class);
+                    if (classTransAnn != null) {
+                        currentLevel = classTransAnn.value();
+                    }
+                }
             }
         }
         // 如果事务级别非空，则开启事务
