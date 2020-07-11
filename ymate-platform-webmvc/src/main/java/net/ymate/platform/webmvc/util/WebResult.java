@@ -98,10 +98,6 @@ public final class WebResult implements Serializable {
 
     private boolean keepNullValue;
 
-    private boolean quoteFieldNames;
-
-    private boolean useSingleQuotes;
-
     public WebResult() {
     }
 
