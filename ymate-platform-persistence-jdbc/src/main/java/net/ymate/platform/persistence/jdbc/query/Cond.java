@@ -397,6 +397,36 @@ public final class Cond extends Query<Cond> {
 
     // ------
 
+    public Cond range(String field, Number valueOne, Number valueTwo, LogicalOpt opt) {
+        if (valueOne != null && valueTwo != null) {
+            if (opt != null) {
+                opt(opt);
+            }
+            between(field, valueOne, valueTwo);
+        } else if (valueOne != null) {
+            if (opt != null) {
+                opt(opt);
+            }
+            gtEq(field).param(valueOne);
+        } else if (valueTwo != null) {
+            if (opt != null) {
+                opt(opt);
+            }
+            ltEq(field).param(valueTwo);
+        }
+        return this;
+    }
+
+    public Cond rangeWrap(String field, Number valueOne, Number valueTwo, LogicalOpt opt) {
+        return range(wrapIdentifierField(field), valueOne, valueTwo, opt);
+    }
+
+    public Cond range(IFunction func, Number valueOne, Number valueTwo, LogicalOpt opt) {
+        return range(func.build(), valueOne, valueTwo, opt);
+    }
+
+    // ------
+
     public Cond isNull(String prefix, String field) {
         return isNull(Fields.field(prefix, field));
     }
