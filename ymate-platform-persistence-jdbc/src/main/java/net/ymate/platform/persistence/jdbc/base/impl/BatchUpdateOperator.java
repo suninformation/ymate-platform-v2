@@ -23,6 +23,7 @@ import org.apache.commons.lang3.StringUtils;
 import java.sql.PreparedStatement;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -32,6 +33,13 @@ import java.util.List;
  * @author 刘镇 (suninformation@163.com) on 2011-9-23 下午01:15:43
  */
 public class BatchUpdateOperator extends AbstractOperator implements IBatchUpdateOperator {
+
+    public static int parseEffectCounts(int[] effectCounts) {
+        if (effectCounts == null || effectCounts.length == 0) {
+            return 0;
+        }
+        return Arrays.stream(effectCounts).filter(c -> c > 0).sum();
+    }
 
     private int[] effectCounts;
 
@@ -101,9 +109,7 @@ public class BatchUpdateOperator extends AbstractOperator implements IBatchUpdat
             }
             effectCounts = statement.executeBatch();
             // 累计受影响的总记录数
-            for (int c : effectCounts) {
-                effectCountsTotal += c;
-            }
+            effectCountsTotal = parseEffectCounts(effectCounts);
             return effectCountsTotal;
         } catch (Exception ex) {
             hasEx = true;
