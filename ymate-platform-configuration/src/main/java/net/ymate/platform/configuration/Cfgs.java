@@ -48,7 +48,7 @@ import java.util.concurrent.locks.ReentrantLock;
 @Module
 public class Cfgs implements IModule, IConfig {
 
-    public static final Version VERSION = new Version(2, 0, 9, Cfgs.class.getPackage().getImplementationVersion(), Version.VersionType.Release);
+    public static final Version VERSION = new Version(2, 0, 10, Cfgs.class.getPackage().getImplementationVersion(), Version.VersionType.Release);
 
     private static final Log _LOG = LogFactory.getLog(Cfgs.class);
 

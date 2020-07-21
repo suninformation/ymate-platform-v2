@@ -43,7 +43,7 @@ import java.util.Arrays;
 @Module
 public class Plugins implements IModule, IPlugins, IPluginEventListener {
 
-    public static final Version VERSION = new Version(2, 0, 9, Plugins.class.getPackage().getImplementationVersion(), Version.VersionType.Release);
+    public static final Version VERSION = new Version(2, 0, 10, Plugins.class.getPackage().getImplementationVersion(), Version.VersionType.Release);
 
     private static final Log _LOG = LogFactory.getLog(Plugins.class);
 
