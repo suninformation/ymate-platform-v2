@@ -288,7 +288,7 @@ public final class Scaffold {
         if (tableInfo.getPrimaryKeys().size() > 1) {
             String primaryKeyType = String.format("%sPK", names.getKey());
             entityInfoBuilder.primaryKeyType(primaryKeyType)
-                    .primaryKeyName(StringUtils.uncapitalize(primaryKeyType));
+                    .primaryKeyName("id");
             //
             Attr primaryKeyAttr = new Attr(entityInfoBuilder.build().getPrimaryKeyType(), entityInfoBuilder.build().getPrimaryKeyName());
             entityInfoBuilder.addField(primaryKeyAttr)
