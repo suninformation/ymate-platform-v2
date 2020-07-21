@@ -147,7 +147,9 @@ public final class Cond extends Query<Cond> {
     }
 
     public Cond cond(String cond) {
-        condition.append(StringUtils.SPACE).append(cond).append(StringUtils.SPACE);
+        if (StringUtils.isNotBlank(cond)) {
+            condition.append(StringUtils.SPACE).append(cond).append(StringUtils.SPACE);
+        }
         return this;
     }
 
@@ -164,13 +166,20 @@ public final class Cond extends Query<Cond> {
     public Cond cond(LogicalOpt opt, Object... condArr) {
         if (opt != null && ArrayUtils.isNotEmpty(condArr)) {
             for (Object cond : condArr) {
-                opt(opt);
                 if (cond instanceof IFunction) {
-                    cond((IFunction) cond);
+                    String funcStr = ((IFunction) cond).build();
+                    if (StringUtils.isNotBlank(funcStr)) {
+                        opt(opt).cond(funcStr);
+                    }
                 } else if (cond instanceof Cond) {
-                    cond((Cond) cond);
+                    if (!((Cond) cond).isEmpty()) {
+                        opt(opt).cond((Cond) cond);
+                    }
                 } else if (cond != null) {
-                    cond(cond.toString());
+                    String condStr = cond.toString();
+                    if (StringUtils.isNotBlank(condStr)) {
+                        opt(opt).cond(condStr);
+                    }
                 }
             }
         }
@@ -203,6 +212,13 @@ public final class Cond extends Query<Cond> {
 
     public Cond opt(LogicalOpt opt) {
         return cond(opt.name());
+    }
+
+    public Cond optIfNeed(LogicalOpt opt) {
+        if (!isEmpty()) {
+            return cond(opt.name());
+        }
+        return this;
     }
 
     /**
@@ -467,12 +483,24 @@ public final class Cond extends Query<Cond> {
         return opt(LogicalOpt.AND);
     }
 
+    public Cond andIfNeed() {
+        return optIfNeed(LogicalOpt.AND);
+    }
+
     public Cond or() {
         return opt(LogicalOpt.OR);
     }
 
+    public Cond orIfNeed() {
+        return optIfNeed(LogicalOpt.OR);
+    }
+
     public Cond not() {
         return opt(LogicalOpt.NOT);
+    }
+
+    public Cond notIfNeed() {
+        return optIfNeed(LogicalOpt.NOT);
     }
 
     public Cond bracketBegin() {
