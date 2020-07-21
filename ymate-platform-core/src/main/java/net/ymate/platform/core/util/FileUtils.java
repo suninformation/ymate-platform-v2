@@ -204,7 +204,7 @@ public class FileUtils {
                     JarFile _jarFile = ((JarURLConnection) _conn).getJarFile();
                     try {
                         Enumeration<JarEntry> _entriesEnum = _jarFile.entries();
-                        for (; _entriesEnum.hasMoreElements(); ) {
+                        while (_entriesEnum.hasMoreElements()) {
                             JarEntry _entry = _entriesEnum.nextElement();
                             if (StringUtils.startsWith(_entry.getName(), _prefixPath)) {
                                 if (!_entry.isDirectory()) {
@@ -230,7 +230,7 @@ public class FileUtils {
                             }
                         }
                     } finally {
-                        IOUtils.closeQuietly(_jarFile);
+                        IOUtils.closeQuietly((Closeable) _jarFile);
                     }
                 } else {
                     try {
