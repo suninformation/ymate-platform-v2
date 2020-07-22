@@ -22,11 +22,24 @@ package net.ymate.platform.persistence.jdbc.scaffold;
  */
 public interface INamedFilter {
 
+    enum Type {
+
+        /**
+         * 表
+         */
+        TABLE,
+
+        /**
+         * 字段
+         */
+        COLUMN
+    }
+
     /**
      * 处理表/字段名称
      *
      * @param original 原始名称
      * @return 返回经过处理的名称字符串
      */
-    String filter(String original);
+    String filter(Type type, String original);
 }

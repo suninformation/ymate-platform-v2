@@ -99,7 +99,7 @@ public class ColumnInfo implements Serializable {
         this.remarks = StringUtils.replaceEach(remarks, new String[]{"\"", "\r\n", "\r", "\n", "\t"}, new String[]{"\\\"", "[\\r][\\n]", "[\\r]", "[\\n]", "[\\t]"});
         //
         if (namedFilter != null) {
-            this.name = StringUtils.defaultIfBlank(namedFilter.filter(columnName), columnName);
+            this.name = StringUtils.defaultIfBlank(namedFilter.filter(INamedFilter.Type.COLUMN, columnName), columnName);
         } else {
             this.name = columnName;
         }
