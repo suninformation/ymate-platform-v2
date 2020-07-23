@@ -54,6 +54,18 @@ public final class BatchSQL {
         return new BatchSQL(owner, null);
     }
 
+    public static BatchSQL create(Insert insert) {
+        return new BatchSQL(insert.owner(), insert.toString());
+    }
+
+    public static BatchSQL create(Update update) {
+        return new BatchSQL(update.owner(), update.toString());
+    }
+
+    public static BatchSQL create(Delete delete) {
+        return new BatchSQL(delete.owner(), delete.toString());
+    }
+
     public BatchSQL(IDatabase owner, String batchSql) {
         this.owner = owner;
         this.batchSql = batchSql;
