@@ -174,12 +174,12 @@ public class DefaultPluginFactory implements IPluginFactory {
     }
 
     /**
-     * 构造器(仅限内部使用)
+     * 构造器(仅限内部或自定义子类使用)
      *
      * @param pluginConfig      指定的插件工厂初始化配置
      * @param includedClassPath 是否扫描当前CLASSPATH内的相关插件
      */
-    private DefaultPluginFactory(IPluginConfig pluginConfig, boolean includedClassPath) {
+    protected DefaultPluginFactory(IPluginConfig pluginConfig, boolean includedClassPath) {
         this.pluginConfig = pluginConfig;
         this.includedClassPath = includedClassPath;
         this.eventListener = pluginConfig.getPluginEventListener() != null ? pluginConfig.getPluginEventListener() : new DefaultPluginEventListener();
