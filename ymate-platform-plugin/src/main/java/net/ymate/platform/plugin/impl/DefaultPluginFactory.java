@@ -123,8 +123,13 @@ public class DefaultPluginFactory implements IPluginFactory {
         //
         List<String> packageNames = new ArrayList<>(configReader.getList(IPluginConfig.PACKAGE_NAMES));
         if (packageNames.isEmpty() && confAnn != null) {
-            packageNames.add(mainClass.getPackage().getName());
             packageNames.addAll(Arrays.asList(confAnn.packageNames()));
+        }
+        if (mainClass != null) {
+            String mainClassPackageName = mainClass.getPackage().getName();
+            if (!packageNames.contains(mainClassPackageName)) {
+                packageNames.add(mainClassPackageName);
+            }
         }
         IPluginConfig pluginConfig = DefaultPluginConfig.builder()
                 .pluginHome(new File(RuntimeUtils.replaceEnvVariable(configReader.getString(IPluginConfig.PLUGIN_HOME, StringUtils.defaultIfBlank(confAnn == null ? null : confAnn.pluginHome(), IPluginConfig.DEFAULT_PLUGIN_HOME)))))
@@ -314,9 +319,9 @@ public class DefaultPluginFactory implements IPluginFactory {
                             if (classesFile.exists() && classesFile.isDirectory()) {
                                 results.add(classesFile.toURI().toURL());
                             }
+                        } else if (file.isFile() && file.getAbsolutePath().endsWith("jar")) {
+                            results.add(file.toURI().toURL());
                         }
-                    } else if (file.isFile() && file.getAbsolutePath().endsWith("jar")) {
-                        results.add(file.toURI().toURL());
                     }
                 }
             }

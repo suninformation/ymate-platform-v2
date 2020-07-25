@@ -85,7 +85,7 @@ public class DefaultPluginBeanFactory extends DefaultBeanFactory implements IPlu
             pluginMetaMap.put(pluginMeta.getId(), pluginMeta);
             pluginMeta.getAlias().forEach(alias -> pluginAliasMap.put(alias, pluginMeta.getId()));
             //
-            if (getOwner().isDevEnv() && LOG.isInfoEnabled()) {
+            if (pluginFactory.getOwner().isDevEnv() && LOG.isInfoEnabled()) {
                 LOG.info(String.format("%s registered.", pluginMeta.toString()));
             }
         } else {
