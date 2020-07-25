@@ -18,7 +18,6 @@ package net.ymate.platform.webmvc.util;
 import net.ymate.platform.commons.json.IJsonObjectWrapper;
 import net.ymate.platform.commons.json.JsonWrapper;
 import net.ymate.platform.commons.util.ClassUtils;
-import net.ymate.platform.commons.util.ParamUtils;
 import net.ymate.platform.core.support.ErrorCode;
 import net.ymate.platform.webmvc.IWebMvc;
 import net.ymate.platform.webmvc.base.Type;
@@ -124,7 +123,7 @@ public final class WebResult implements Serializable {
     }
 
     public WebResult data(Object data) {
-        if (!ParamUtils.isInvalid(data)) {
+        if (data != null) {
             attrs.put(Type.Const.PARAM_DATA, data);
         }
         return this;
