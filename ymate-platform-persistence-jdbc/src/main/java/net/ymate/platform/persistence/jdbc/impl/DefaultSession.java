@@ -947,7 +947,7 @@ public class DefaultSession implements ISession {
                     // 若value不为空则添加至返回对象中
                     _fields.add(_fieldName);
                     _values.add(_value);
-                } else if (!_propMeta.isNullable()) {
+                } else if (!_propMeta.isAutoincrement() && !_propMeta.isNullable()) {
                     throw new IllegalArgumentException(String.format("Entity field '%s.%s' value can not be null.", entityMeta.getEntityName(), _propMeta.getName()));
                 }
             }
