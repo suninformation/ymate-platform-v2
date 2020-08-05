@@ -78,6 +78,10 @@ public final class DefaultPluginConfig implements IPluginConfig {
 
     private final List<String> packageNames = new ArrayList<>();
 
+    private final List<String> excludedPackageNames = new ArrayList<>();
+
+    private final List<String> excludedFileNames = new ArrayList<>();
+
     private IPluginEventListener pluginEventListener;
 
     private IPluginBeanLoaderFactory pluginBeanLoaderFactory;
@@ -96,8 +100,26 @@ public final class DefaultPluginConfig implements IPluginConfig {
         return Collections.unmodifiableList(packageNames);
     }
 
+    @Override
+    public List<String> getExcludedPackageNames() {
+        return Collections.unmodifiableList(excludedPackageNames);
+    }
+
+    @Override
+    public List<String> getExcludedFileNames() {
+        return Collections.unmodifiableList(excludedFileNames);
+    }
+
     public void addPackageNames(List<String> packageNames) {
         packageNames.stream().filter(packageName -> !this.packageNames.contains(packageName)).forEach(this.packageNames::add);
+    }
+
+    public void addExcludedPackageNames(List<String> excludedPackageNames) {
+        excludedPackageNames.stream().filter(excludedPackageName -> !this.excludedPackageNames.contains(excludedPackageName)).forEach(this.excludedPackageNames::add);
+    }
+
+    public void addExcludedFileNames(List<String> excludedFileNames) {
+        excludedFileNames.stream().filter(fileName -> !this.excludedFileNames.contains(fileName)).forEach(this.excludedFileNames::add);
     }
 
     @Override
@@ -154,6 +176,16 @@ public final class DefaultPluginConfig implements IPluginConfig {
 
         public Builder packageNames(List<String> packageNames) {
             pluginConfig.addPackageNames(packageNames);
+            return this;
+        }
+
+        public Builder excludedPackageNames(List<String> excludedPackageNames) {
+            pluginConfig.addExcludedPackageNames(excludedPackageNames);
+            return this;
+        }
+
+        public Builder excludedFileNames(List<String> excludedFileNames) {
+            pluginConfig.addExcludedFileNames(excludedFileNames);
             return this;
         }
 

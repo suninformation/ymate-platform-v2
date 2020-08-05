@@ -41,9 +41,19 @@ public @interface PluginConf {
     String pluginHome() default StringUtils.EMPTY;
 
     /**
-     * @return 插件自动扫描的包名前缀集合（将默认包含主程序类所在包）
+     * @return 插件自动扫描的包名前缀集合（若未设置将默认包含主程序类所在包）
      */
     String[] packageNames() default {};
+
+    /**
+     * @return 插件自动扫描时排除包名称集合, 被包含在包路径下的类文件在扫描过程中将被忽略
+     */
+    String[] excludedPackageNames() default {};
+
+    /**
+     * @return 插件自动扫描时排除包文件名称集合, 被包含的JAR或ZIP文件在扫描过程中将被忽略
+     */
+    String[] excludedFileNames() default {};
 
     /**
      * @return 是否扫描当前CLASSPATH内的相关插件

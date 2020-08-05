@@ -38,6 +38,10 @@ public interface IPluginConfig {
 
     String PACKAGE_NAMES = "package_names";
 
+    String EXCLUDED_PACKAGE_NAMES = "excluded_package_names";
+
+    String EXCLUDED_FILE_NAMES = "excluded_file_names";
+
     String AUTOMATIC = "automatic";
 
     String INCLUDED_CLASSPATH = "included_classpath";
@@ -50,6 +54,20 @@ public interface IPluginConfig {
      * @return 返回插件工厂自动扫描的包名前缀集合
      */
     List<String> getPackageNames();
+
+    /**
+     * 插件自动扫描时排除包名称集合
+     *
+     * @return 返回插件自动扫描时排除包名称集合
+     */
+    List<String> getExcludedPackageNames();
+
+    /**
+     * 插件自动扫描时排除包文件名称集合
+     *
+     * @return 返回插件自动扫描时排除包文件名称集合
+     */
+    List<String> getExcludedFileNames();
 
     /**
      * 插件生命周期事件监听器

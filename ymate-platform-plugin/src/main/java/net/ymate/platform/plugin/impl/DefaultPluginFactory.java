@@ -122,18 +122,24 @@ public class DefaultPluginFactory implements IPluginFactory {
         boolean included = configReader.getBoolean(IPluginConfig.INCLUDED_CLASSPATH, confAnn != null && confAnn.includeClasspath());
         //
         List<String> packageNames = new ArrayList<>(configReader.getList(IPluginConfig.PACKAGE_NAMES));
-        if (packageNames.isEmpty() && confAnn != null) {
-            packageNames.addAll(Arrays.asList(confAnn.packageNames()));
-        }
-        if (mainClass != null) {
-            String mainClassPackageName = mainClass.getPackage().getName();
-            if (!packageNames.contains(mainClassPackageName)) {
-                packageNames.add(mainClassPackageName);
+        List<String> excludedPackageNames = new ArrayList<>(configReader.getList(IPluginConfig.EXCLUDED_PACKAGE_NAMES));
+        List<String> excludedFileNames = new ArrayList<>(configReader.getList(IPluginConfig.EXCLUDED_FILE_NAMES));
+        if (confAnn != null) {
+            if (packageNames.isEmpty()) {
+                packageNames.addAll(Arrays.asList(confAnn.packageNames()));
+            }
+            if (excludedPackageNames.isEmpty()) {
+                excludedPackageNames.addAll(Arrays.asList(confAnn.excludedPackageNames()));
+            }
+            if (excludedFileNames.isEmpty()) {
+                excludedFileNames.addAll(Arrays.asList(confAnn.excludedFileNames()));
             }
         }
         IPluginConfig pluginConfig = DefaultPluginConfig.builder()
                 .pluginHome(new File(RuntimeUtils.replaceEnvVariable(configReader.getString(IPluginConfig.PLUGIN_HOME, StringUtils.defaultIfBlank(confAnn == null ? null : confAnn.pluginHome(), IPluginConfig.DEFAULT_PLUGIN_HOME)))))
                 .packageNames(packageNames)
+                .excludedPackageNames(excludedPackageNames)
+                .excludedFileNames(excludedFileNames)
                 .enabled(configReader.getBoolean(IPluginConfig.ENABLED, confAnn == null || confAnn.enabled()))
                 .automatic(configReader.getBoolean(IPluginConfig.AUTOMATIC, confAnn == null || confAnn.automatic()))
                 .eventListener(new IPluginEventListener() {
@@ -202,6 +208,14 @@ public class DefaultPluginFactory implements IPluginFactory {
         if (!initialized && pluginConfig.isEnabled()) {
             this.owner = owner;
             this.owner.getBeanFactory().registerInjector(PluginRefer.class, new PluginReferInjector(this));
+            //
+            if (pluginConfig.getPackageNames().isEmpty()) {
+                Class<?> mainClass = owner.getConfigureFactory().getMainClass();
+                if (mainClass != null) {
+                    beanLoader.registerPackageName(mainClass.getPackage().getName());
+                }
+                beanLoader.registerPackageNames(owner.getConfigureFactory().getConfigurer().getPackageNames());
+            }
             //
             pluginBeanFactory = new DefaultPluginBeanFactory(this, includedClassPath);
             pluginClassLoader = buildPluginClassLoader();
