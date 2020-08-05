@@ -88,11 +88,21 @@ public class Query<T> extends QueryHandleAdapter<T> {
      */
     public IDialect dialect() {
         if (dialect == null) {
-            try (IDatabaseConnectionHolder connectionHolder = owner.getConnectionHolder(dataSourceName())) {
+            IDatabaseConnectionHolder connectionHolder = null;
+            try {
+                connectionHolder = owner.getConnectionHolder(dataSourceName());
                 dialect = connectionHolder.getDialect();
             } catch (Exception e) {
                 if (LOG.isWarnEnabled()) {
                     LOG.warn(StringUtils.EMPTY, RuntimeUtils.unwrapThrow(e));
+                }
+            } finally {
+                try {
+                    owner.releaseConnectionHolder(connectionHolder);
+                } catch (Exception e) {
+                    if (LOG.isWarnEnabled()) {
+                        LOG.warn(StringUtils.EMPTY, RuntimeUtils.unwrapThrow(e));
+                    }
                 }
             }
         }
