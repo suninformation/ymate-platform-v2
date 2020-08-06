@@ -343,16 +343,18 @@ public class DefaultPluginFactory implements IPluginFactory {
     }
 
     private boolean checkPluginStatus(IPlugin plugin) {
-        if (plugin != null && plugin.isInitialized() && !plugin.isStarted()) {
-            try {
-                plugin.startup();
-                eventListener.onStarted(plugin.getPluginContext(), plugin);
-                return true;
-            } catch (Exception e) {
-                if (LOG.isWarnEnabled()) {
-                    LOG.warn(String.format("A exception occurred while starting [%s]: ", plugin.getPluginContext().getPluginMeta().toString()), RuntimeUtils.unwrapThrow(e));
+        if (plugin != null && plugin.isInitialized()) {
+            if (!plugin.isStarted()) {
+                try {
+                    plugin.startup();
+                    eventListener.onStarted(plugin.getPluginContext(), plugin);
+                } catch (Exception e) {
+                    if (LOG.isWarnEnabled()) {
+                        LOG.warn(String.format("A exception occurred while starting [%s]: ", plugin.getPluginContext().getPluginMeta().toString()), RuntimeUtils.unwrapThrow(e));
+                    }
                 }
             }
+            return true;
         }
         return false;
     }
