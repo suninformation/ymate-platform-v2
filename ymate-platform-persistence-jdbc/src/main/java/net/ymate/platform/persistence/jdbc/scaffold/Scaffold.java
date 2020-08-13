@@ -241,7 +241,7 @@ public final class Scaffold {
                     sql = SQL.create(owner, "SHOW FULL TABLES WHERE table_type = ?").param(view ? "VIEW" : "BASE TABLE");
                     break;
                 case Type.DATABASE.ORACLE:
-                    sql = Select.create(owner, view ? "USER_VIEWS" : "USER_TABLES").field(view ? "VIEW_NAME" : "TABLE_NAME").toSQL();
+                    sql = Select.create(owner).from(view ? "USER_VIEWS" : "USER_TABLES").field(view ? "VIEW_NAME" : "TABLE_NAME").toSQL();
                     break;
                 case Type.DATABASE.SQLSERVER:
                     sql = SQL.create(owner, "SELECT name FROM SYSOBJECTS WHERE xtype = ?").param(view ? "V" : "U");
