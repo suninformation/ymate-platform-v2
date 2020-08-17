@@ -181,6 +181,18 @@ public class WebUtils {
         return StringUtils.EMPTY;
     }
 
+    public static String fixUrlWithProtocol(String url, boolean needEndWith) {
+        url = StringUtils.trimToNull(url);
+        if (url != null) {
+            if (!StringUtils.startsWithIgnoreCase(url, Type.Const.HTTP_PREFIX) &&
+                    !StringUtils.startsWithIgnoreCase(url, Type.Const.HTTPS_PREFIX)) {
+                throw new IllegalArgumentException(String.format("URL '%s' must start with HTTP or HTTPS.", url));
+            }
+            return fixUrl(url, false, needEndWith);
+        }
+        return StringUtils.EMPTY;
+    }
+
     /**
      * @param request HttpServletRequest对象
      * @return 是否AJAX请求（需要在使用Ajax请求时设置请求头）
