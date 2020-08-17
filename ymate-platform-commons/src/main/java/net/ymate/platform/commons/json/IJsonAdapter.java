@@ -50,5 +50,7 @@ public interface IJsonAdapter {
 
     byte[] serialize(Object object) throws Exception;
 
+    <T> T deserialize(String jsonStr, Class<T> clazz) throws Exception;
+
     <T> T deserialize(byte[] bytes, Class<T> clazz) throws Exception;
 }

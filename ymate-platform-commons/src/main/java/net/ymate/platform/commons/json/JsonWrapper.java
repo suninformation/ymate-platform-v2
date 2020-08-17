@@ -150,6 +150,10 @@ public final class JsonWrapper implements Serializable {
         return jsonAdapter.serialize(object);
     }
 
+    public static <T> T deserialize(String jsonStr, Class<T> clazz) throws Exception {
+        return jsonAdapter.deserialize(jsonStr, clazz);
+    }
+
     public static <T> T deserialize(byte[] bytes, Class<T> clazz) throws Exception {
         return jsonAdapter.deserialize(bytes, clazz);
     }
@@ -211,5 +215,10 @@ public final class JsonWrapper implements Serializable {
         return new HashCodeBuilder(17, 37)
                 .append(object)
                 .toHashCode();
+    }
+
+    @Override
+    public String toString() {
+        return object.toString();
     }
 }

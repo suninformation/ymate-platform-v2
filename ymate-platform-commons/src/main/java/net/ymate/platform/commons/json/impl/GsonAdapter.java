@@ -129,7 +129,12 @@ public class GsonAdapter implements IJsonAdapter {
     }
 
     @Override
+    public <T> T deserialize(String jsonStr, Class<T> clazz) throws Exception {
+        return GSON.fromJson(jsonStr, clazz);
+    }
+
+    @Override
     public <T> T deserialize(byte[] bytes, Class<T> clazz) throws Exception {
-        return GSON.fromJson(new String(bytes, StandardCharsets.UTF_8), clazz);
+        return deserialize(new String(bytes, StandardCharsets.UTF_8), clazz);
     }
 }

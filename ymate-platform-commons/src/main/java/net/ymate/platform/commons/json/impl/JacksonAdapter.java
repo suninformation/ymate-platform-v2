@@ -184,7 +184,12 @@ public class JacksonAdapter implements IJsonAdapter {
     }
 
     @Override
+    public <T> T deserialize(String jsonStr, Class<T> clazz) throws Exception {
+        return OBJECT_MAPPER.readValue(jsonStr, clazz);
+    }
+
+    @Override
     public <T> T deserialize(byte[] bytes, Class<T> clazz) throws Exception {
-        return OBJECT_MAPPER.readValue(new String(bytes, StandardCharsets.UTF_8), clazz);
+        return deserialize(new String(bytes, StandardCharsets.UTF_8), clazz);
     }
 }
