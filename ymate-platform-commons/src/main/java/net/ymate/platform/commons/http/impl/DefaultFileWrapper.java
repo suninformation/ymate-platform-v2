@@ -18,6 +18,7 @@ package net.ymate.platform.commons.http.impl;
 import net.ymate.platform.commons.http.HttpClientHelper;
 import net.ymate.platform.commons.http.IFileWrapper;
 import net.ymate.platform.commons.util.FileUtils;
+import net.ymate.platform.commons.util.MimeTypeUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpResponse;
@@ -50,14 +51,25 @@ public class DefaultFileWrapper implements IFileWrapper {
 
     private File tempFile;
 
+    public DefaultFileWrapper(String fileName, String contentType, File sourceFile) {
+        this.tempFile = sourceFile;
+        this.fileName = StringUtils.defaultIfBlank(fileName, sourceFile.getName());
+        if (StringUtils.isBlank(contentType)) {
+            this.contentType = MimeTypeUtils.getFileMimeType(FileUtils.getExtName(sourceFile.getName()));
+        } else {
+            this.contentType = contentType;
+        }
+        this.contentLength = sourceFile.length();
+        //
+        doParseFileName();
+    }
+
     public DefaultFileWrapper(String fileName, String contentType, long contentLength, InputStream sourceInputStream) throws IOException {
         this.fileName = fileName;
-        if (StringUtils.isNotBlank(this.fileName)) {
-            name = StringUtils.substringBefore(StringUtils.replace(this.fileName, "\"", StringUtils.EMPTY), ".");
-            suffix = FileUtils.getExtName(this.fileName);
-        }
         this.contentType = contentType;
         this.contentLength = contentLength;
+        //
+        doParseFileName();
         //
         tempFile = File.createTempFile("download_", fileName);
         try (OutputStream outputStream = new FileOutputStream(tempFile)) {
@@ -65,8 +77,23 @@ public class DefaultFileWrapper implements IFileWrapper {
         }
     }
 
+    public DefaultFileWrapper(String contentType, File sourceFile) {
+        this(null, contentType, sourceFile);
+    }
+
+    public DefaultFileWrapper(File sourceFile) {
+        this(null, null, sourceFile);
+    }
+
     public DefaultFileWrapper(String contentType, long contentLength, InputStream sourceInputStream) throws IOException {
         this(null, contentType, contentLength, sourceInputStream);
+    }
+
+    private void doParseFileName() {
+        if (StringUtils.isNotBlank(this.fileName)) {
+            name = StringUtils.substringBefore(StringUtils.replace(this.fileName, "\"", StringUtils.EMPTY), ".");
+            suffix = FileUtils.getExtName(this.fileName);
+        }
     }
 
     private static String doParseFileName(HttpResponse httpResponse) {
