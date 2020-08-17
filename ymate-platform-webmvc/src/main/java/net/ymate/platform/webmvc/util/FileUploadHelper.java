@@ -479,7 +479,16 @@ public final class FileUploadHelper {
             }
             if (tempFile == null) {
                 tempFile = File.createTempFile("upload_", getName());
-                __fileItemObj.write(tempFile);
+                InputStream inputStream = null;
+                OutputStream outputStream = null;
+                try {
+                    inputStream = new BufferedInputStream(__fileItemObj.getInputStream());
+                    outputStream = new BufferedOutputStream(new FileOutputStream(tempFile));
+                    IOUtils.copyLarge(inputStream, outputStream);
+                } finally {
+                    IOUtils.closeQuietly(inputStream);
+                    IOUtils.closeQuietly(outputStream);
+                }
             }
             return tempFile;
         }
