@@ -74,15 +74,15 @@ public final class NumericValidator implements IValidator {
             if (number == null) {
                 result = 1;
             } else {
-                if (min > 0 && MathCalcHelper.eq(min, max) && number.doubleValue() != min) {
+                if (min != 0 && MathCalcHelper.eq(min, max) && number.doubleValue() != min) {
                     result = 6;
                 } else {
-                    boolean cond = min > 0 && max > 0 && (number.doubleValue() < min || number.doubleValue() > max);
+                    boolean cond = min != 0 && max != 0 && (number.doubleValue() < min || number.doubleValue() > max);
                     if (cond) {
                         result = 3;
-                    } else if (min > 0 && number.doubleValue() < min) {
+                    } else if (min != 0 && number.doubleValue() < min) {
                         result = 4;
-                    } else if (max > 0 && number.doubleValue() > max) {
+                    } else if (max != 0 && number.doubleValue() > max) {
                         result = 5;
                     }
                 }
@@ -105,13 +105,13 @@ public final class NumericValidator implements IValidator {
             if (paramValue.getClass().isArray()) {
                 Object[] values = (Object[]) paramValue;
                 for (Object pValue : values) {
-                    result = validate(pValue, vNumeric.eq() > 0 ? vNumeric.eq() : vNumeric.min(), vNumeric.eq() > 0 ? vNumeric.eq() : vNumeric.max(), vNumeric.decimals());
+                    result = validate(pValue, vNumeric.eq() != 0 ? vNumeric.eq() : vNumeric.min(), vNumeric.eq() != 0 ? vNumeric.eq() : vNumeric.max(), vNumeric.decimals());
                     if (result > 0) {
                         break;
                     }
                 }
             } else {
-                result = validate(paramValue, vNumeric.eq() > 0 ? vNumeric.eq() : vNumeric.min(), vNumeric.eq() > 0 ? vNumeric.eq() : vNumeric.max(), vNumeric.decimals());
+                result = validate(paramValue, vNumeric.eq() != 0 ? vNumeric.eq() : vNumeric.min(), vNumeric.eq() != 0 ? vNumeric.eq() : vNumeric.max(), vNumeric.decimals());
             }
             if (result > 0) {
                 ValidateResult.Builder builder = ValidateResult.builder(context).matched(true);
