@@ -77,6 +77,8 @@ public class FileUtils {
 
     public static final String FILE_SUFFIX_PROPERTIES = "properties";
 
+    public static final String FILE_SUFFIX_JSON = "json";
+
     private static final Log LOG = LogFactory.getLog(FileUtils.class);
 
     /**

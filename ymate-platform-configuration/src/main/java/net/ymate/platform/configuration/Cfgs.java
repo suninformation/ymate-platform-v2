@@ -20,10 +20,7 @@ import net.ymate.platform.commons.util.FileUtils;
 import net.ymate.platform.commons.util.ResourceUtils;
 import net.ymate.platform.commons.util.RuntimeUtils;
 import net.ymate.platform.configuration.annotation.Configuration;
-import net.ymate.platform.configuration.impl.DefaultConfiguration;
-import net.ymate.platform.configuration.impl.DefaultConfigurationConfig;
-import net.ymate.platform.configuration.impl.DefaultConfigurationProvider;
-import net.ymate.platform.configuration.impl.PropertyConfigurationProvider;
+import net.ymate.platform.configuration.impl.*;
 import net.ymate.platform.configuration.support.ConfigFileChecker;
 import net.ymate.platform.core.IApplicationConfigureFactory;
 import net.ymate.platform.core.IApplicationConfigurer;
@@ -261,6 +258,8 @@ public final class Cfgs implements IConfig {
                 provClass = DefaultConfigurationProvider.class;
             } else if (StringUtils.equalsIgnoreCase(extName, FILE_SUFFIX_PROPERTIES)) {
                 provClass = PropertyConfigurationProvider.class;
+            } else if (StringUtils.equalsAnyIgnoreCase(extName, FILE_SUFFIX_JSON)) {
+                provClass = JSONConfigurationProvider.class;
             } else {
                 provClass = config.getConfigurationProviderClass();
             }

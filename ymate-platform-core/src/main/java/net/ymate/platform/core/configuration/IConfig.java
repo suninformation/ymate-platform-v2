@@ -118,7 +118,7 @@ public interface IConfig extends IDestroyable {
     InputStream searchAsStream(String cfgFile);
 
     /**
-     * 根据配置文件名称自动分析文件类型(xml或properties)并填充配置对象, 若未找到则返回null
+     * 根据配置文件名称自动分析(xml、properties和json等)文件类型并填充配置对象, 若未找到则返回null
      *
      * @param cfgFileName 配置所需要的装载参数
      * @param search      是否采用搜索
@@ -127,7 +127,7 @@ public interface IConfig extends IDestroyable {
     IConfiguration loadCfg(String cfgFileName, boolean search);
 
     /**
-     * 根据配置文件名称自动分析文件类型(xml或properties)并填充配置对象, 若未找到则返回null
+     * 根据配置文件名称自动分析(xml、properties和json等)文件类型并填充配置对象, 若未找到则返回null
      *
      * @param cfgFileName 配置所需要的装载参数
      * @return 返回配置对象
