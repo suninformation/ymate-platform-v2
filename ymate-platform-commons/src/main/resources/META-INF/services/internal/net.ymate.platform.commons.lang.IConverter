@@ -1,1 +1,2 @@
 net.ymate.platform.commons.lang.converter.TimestampConverter
+net.ymate.platform.commons.lang.converter.JsonWrapperConverter

@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2019 the original author or authors.
+ * Copyright 2007-2020 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,24 +16,21 @@
 package net.ymate.platform.commons.lang.converter;
 
 import net.ymate.platform.commons.annotation.Converter;
+import net.ymate.platform.commons.json.JsonWrapper;
 import net.ymate.platform.commons.lang.IConverter;
 import org.apache.commons.lang3.StringUtils;
 
-import java.sql.Timestamp;
-
 /**
- * @author 刘镇 (suninformation@163.com) on 2019-11-18 08:48
+ * @author 刘镇 (suninformation@163.com) on 2020/08/23 16:50
  * @since 2.1.0
  */
-@Converter(from = {Long.class, Integer.class, String.class}, to = Timestamp.class)
-public class TimestampConverter implements IConverter<Timestamp> {
+@Converter(from = String.class, to = JsonWrapper.class)
+public class JsonWrapperConverter implements IConverter<JsonWrapper> {
 
     @Override
-    public Timestamp convert(Object target) {
-        if (target instanceof Number) {
-            return new Timestamp(((Number) target).longValue());
-        } else if (target instanceof String && StringUtils.isNotBlank((CharSequence) target)) {
-            return Timestamp.valueOf((String) target);
+    public JsonWrapper convert(Object target) {
+        if (target instanceof String && StringUtils.isNotBlank((CharSequence) target)) {
+            return JsonWrapper.fromJson((String) target);
         }
         return null;
     }
