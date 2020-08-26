@@ -538,6 +538,10 @@ public class WebUtils {
     }
 
     public static IView buildErrorView(IWebMvc owner, String resourceName, int code, String msg, String redirectUrl, int timeInterval, Map<String, Object> data) {
+        return buildErrorView(owner, resourceName, String.valueOf(code), msg, redirectUrl, timeInterval, data);
+    }
+
+    public static IView buildErrorView(IWebMvc owner, String resourceName, String code, String msg, String redirectUrl, int timeInterval, Map<String, Object> data) {
         IView returnView;
         String errorViewPath = doGetConfigValue(owner.getOwner(), IWebMvcConfig.PARAMS_ERROR_VIEW, Type.Const.DEFAULT_ERROR_VIEW_FILE);
         if (!new File(owner.getConfig().getAbstractBaseViewPath(), errorViewPath).exists()) {
@@ -607,8 +611,19 @@ public class WebUtils {
         return errorCodeI18n(owner, null, code, defaultValue);
     }
 
+    public static String errorCodeI18n(IWebMvc owner, String code, String defaultValue) {
+        return errorCodeI18n(owner, null, code, defaultValue);
+    }
+
     public static String errorCodeI18n(IWebMvc owner, String resourceName, int code, String defaultValue) {
-        if (code == 0) {
+        if (code == ErrorCode.SUCCEED) {
+            return defaultValue;
+        }
+        return errorCodeI18n(owner, resourceName, String.valueOf(code), defaultValue);
+    }
+
+    public static String errorCodeI18n(IWebMvc owner, String resourceName, String code, String defaultValue) {
+        if (StringUtils.isBlank(code)) {
             return defaultValue;
         }
         return i18nStr(owner, resourceName, "webmvc.error_code_" + code, defaultValue);

@@ -116,8 +116,8 @@ public final class RequestExecutor {
         if (responseBody != null) {
             if (resultObj instanceof IView || resultObj instanceof String) {
                 resultView = doProcessResultToView(owner, requestMeta, resultObj);
-            } else if (resultObj instanceof WebResult) {
-                resultView = WebResult.formatView((WebResult) resultObj, Type.Const.FORMAT_JSON);
+            } else if (resultObj instanceof IWebResult) {
+                resultView = WebResult.formatView((IWebResult<?>) resultObj, Type.Const.FORMAT_JSON);
             } else {
                 IResponseBodyProcessor responseBodyProcessor;
                 if (IResponseBodyProcessor.class.equals(responseBody.value())) {

@@ -15,33 +15,26 @@
  */
 package net.ymate.platform.webmvc.util;
 
-import net.ymate.platform.commons.json.IJsonObjectWrapper;
-import net.ymate.platform.commons.json.JsonWrapper;
-import net.ymate.platform.commons.util.ClassUtils;
 import net.ymate.platform.core.support.ErrorCode;
+import net.ymate.platform.webmvc.AbstractWebResult;
 import net.ymate.platform.webmvc.IWebMvc;
+import net.ymate.platform.webmvc.IWebResult;
 import net.ymate.platform.webmvc.base.Type;
 import net.ymate.platform.webmvc.context.WebContext;
 import net.ymate.platform.webmvc.view.IView;
-import net.ymate.platform.webmvc.view.View;
 import net.ymate.platform.webmvc.view.impl.HttpStatusView;
-import net.ymate.platform.webmvc.view.impl.JsonView;
 import net.ymate.platform.webmvc.view.impl.JspView;
-import net.ymate.platform.webmvc.view.impl.TextView;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.Serializable;
-import java.util.Collection;
-import java.util.LinkedHashMap;
 import java.util.Map;
 
 /**
  * @author 刘镇 (suninformation@163.com) on 15/8/18 下午2:18
  * @since 2.0.6
  */
-public final class WebResult implements Serializable {
+public final class WebResult extends AbstractWebResult<Integer> {
 
     public static WebResult create() {
         return new WebResult();
@@ -85,212 +78,76 @@ public final class WebResult implements Serializable {
         return new WebResult(ErrorCode.SUCCEED);
     }
 
-    private Integer code;
-
-    private String msg;
-
-    private Map<String, Object> data = new LinkedHashMap<>();
-
-    private Map<String, Object> attrs = new LinkedHashMap<>();
-
-    private boolean withContentType;
-
-    private boolean keepNullValue;
-
     public WebResult() {
+        super();
     }
 
     public WebResult(int code) {
-        this.code = code;
+        super(code);
     }
 
-    public int code() {
-        return code;
+    @Override
+    public boolean isSuccess() {
+        return code() != null && code().equals(ErrorCode.SUCCEED);
     }
 
+    @Override
     public WebResult code(Integer code) {
-        this.code = code;
+        super.code(code);
         return this;
     }
 
-    public String msg() {
-        return StringUtils.trimToEmpty(msg);
-    }
-
+    @Override
     public WebResult msg(String msg) {
-        this.msg = msg;
+        super.msg(msg);
         return this;
     }
 
+    @Override
     public WebResult data(Object data) {
-        if (data != null) {
-            attrs.put(Type.Const.PARAM_DATA, data);
-        }
+        super.data(data);
         return this;
     }
 
-    @SuppressWarnings("unchecked")
-    public <T> T data() {
-        return (T) attrs.get(Type.Const.PARAM_DATA);
-    }
-
+    @Override
     public WebResult attrs(Map<String, Object> attrs) {
-        this.attrs.putAll(attrs);
+        super.attrs(attrs);
         return this;
     }
 
-    public Map<String, Object> attrs() {
-        return attrs;
-    }
-
-    @SuppressWarnings("unchecked")
-    public <T> T dataAttr(String dataKey) {
-        return (T) data.get(dataKey);
-    }
-
+    @Override
     public WebResult dataAttr(String dataKey, Object dataValue) {
-        data.put(dataKey, dataValue);
+        super.dataAttr(dataKey, dataValue);
         return this;
     }
 
-    @SuppressWarnings("unchecked")
-    public <T> T attr(String attrKey) {
-        return (T) attrs.get(attrKey);
-    }
-
+    @Override
     public WebResult attr(String attrKey, Object attrValue) {
-        attrs.put(attrKey, attrValue);
+        super.attr(attrKey, attrValue);
         return this;
     }
 
+    @Override
     public WebResult withContentType() {
-        withContentType = true;
+        super.withContentType();
         return this;
     }
 
+    @Override
     public WebResult keepNullValue() {
-        keepNullValue = true;
+        super.keepNullValue();
         return this;
     }
 
-    private Map<String, Object> doFilter(IDateFilter dateFilter, boolean attr, Map<String, Object> targetMap) {
-        if (dateFilter != null && targetMap != null && !targetMap.isEmpty()) {
-            Map<String, Object> filtered = new LinkedHashMap<>(data.size());
-            data.forEach((key, value) -> {
-                Object item = dateFilter.filter(attr, key, value);
-                if (item != null) {
-                    filtered.put(key, value);
-                }
-            });
-            return filtered;
-        }
-        return targetMap;
-    }
-
-    public WebResult dataFilter(IDateFilter dateFilter) {
-        data = doFilter(dateFilter, true, data);
-        attrs = doFilter(dateFilter, false, attrs);
-        return this;
-    }
-
-    public IJsonObjectWrapper toJsonObject() {
-        IJsonObjectWrapper jsonObj = JsonWrapper.createJsonObject(true);
-        if (code != null) {
-            jsonObj.put(Type.Const.PARAM_RET, code);
-        }
-        if (StringUtils.isNotBlank(msg)) {
-            jsonObj.put(Type.Const.PARAM_MSG, msg);
-        }
-        if (data != null && !data.isEmpty()) {
-            jsonObj.put(Type.Const.PARAM_DATA, data);
-        }
-        if (attrs != null && !attrs.isEmpty()) {
-            attrs.forEach(jsonObj::put);
-        }
-        return jsonObj;
-    }
-
-    public JsonView toJsonView() {
-        return toJsonView(null);
-    }
-
-    public JsonView toJsonView(String callback) {
-        JsonView jsonView = new JsonView(toJsonObject()).withJsonCallback(callback);
-        if (keepNullValue) {
-            jsonView.keepNullValue();
-        }
-        if (withContentType) {
-            jsonView.withContentType();
-        }
-        return jsonView;
-    }
-
-    public String toXml(boolean cdata) {
-        StringBuilder content = new StringBuilder("<?xml version=\"1.0\" encoding=\"UTF-8\"?><xml>")
-                .append("<ret>").append(code).append("</ret>");
-        if (StringUtils.isNotBlank(msg)) {
-            if (cdata) {
-                content.append("<msg><![CDATA[").append(msg).append("]]></msg>");
-            } else {
-                content.append("<msg>").append(msg).append("</msg>");
-            }
-        }
-        if (data != null && !data.isEmpty()) {
-            content.append("<data>");
-            data.forEach((key, value) -> doContentAppend(content, cdata, key, value));
-            content.append("</data>");
-        }
-        if (attrs != null && !attrs.isEmpty()) {
-            attrs.forEach((key, value) -> doContentAppend(content, cdata, key, value));
-        }
-        content.append("</xml>");
-        return content.toString();
-    }
-
-    public TextView toXmlView() {
-        return toXmlView(true);
-    }
-
-    public TextView toXmlView(boolean cdata) {
-        TextView textView = View.textView(toXml(cdata));
-        if (withContentType) {
-            textView.setContentType(Type.ContentType.XML.getContentType());
-        }
-        return textView;
-    }
-
-    @SuppressWarnings("unchecked")
-    private void doContentAppend(StringBuilder content, boolean cdata, String key, Object value) {
-        if (value != null) {
-            content.append("<").append(key).append(">");
-            if (value instanceof Number || int.class.isAssignableFrom(value.getClass()) || long.class.isAssignableFrom(value.getClass()) || float.class.isAssignableFrom(value.getClass()) || double.class.isAssignableFrom(value.getClass())) {
-                content.append(value);
-            } else if (value instanceof Map) {
-                ((Map<String, Object>) value).forEach((key1, value1) -> doContentAppend(content, cdata, key1, value1));
-            } else if (value instanceof Collection) {
-                ((Collection<?>) value).forEach((item) -> doContentAppend(content, cdata, "item", item));
-            } else if (value instanceof Boolean || value instanceof String || boolean.class.isAssignableFrom(value.getClass())) {
-                if (cdata) {
-                    content.append("<![CDATA[").append(value).append("]]>");
-                } else {
-                    content.append(value);
-                }
-            } else {
-                ClassUtils.wrapper(value).toMap().forEach((key1, value1) -> doContentAppend(content, cdata, key1, value1));
-            }
-            content.append("</").append(key).append(">");
-        }
-    }
-
-    public static IView formatView(WebResult result) {
+    public static IView formatView(IWebResult<?> result) {
         return formatView(null, Type.Const.PARAM_FORMAT, Type.Const.PARAM_CALLBACK, result);
     }
 
-    public static IView formatView(String path, WebResult result) {
+    public static IView formatView(String path, IWebResult<?> result) {
         return formatView(path, Type.Const.PARAM_FORMAT, Type.Const.PARAM_CALLBACK, result);
     }
 
-    public static IView formatView(WebResult result, String defaultFormat) {
+    public static IView formatView(IWebResult<?> result, String defaultFormat) {
         return formatView(null, Type.Const.PARAM_FORMAT, defaultFormat, Type.Const.PARAM_CALLBACK, result);
     }
 
@@ -301,11 +158,11 @@ public final class WebResult implements Serializable {
      * @param result        回应的数据对象
      * @return 根据paramFormat等参数判断返回对应的视图对象
      */
-    public static IView formatView(String path, String paramFormat, String paramCallback, WebResult result) {
+    public static IView formatView(String path, String paramFormat, String paramCallback, IWebResult<?> result) {
         return formatView(path, paramFormat, null, paramCallback, result);
     }
 
-    public static IView formatView(String path, String paramFormat, String defaultFormat, String paramCallback, WebResult result) {
+    public static IView formatView(String path, String paramFormat, String defaultFormat, String paramCallback, IWebResult<?> result) {
         IView returnView = null;
         if (result != null) {
             HttpServletRequest request = WebContext.getRequest();
@@ -340,21 +197,5 @@ public final class WebResult implements Serializable {
             }
         }
         return returnView;
-    }
-
-    /**
-     * 数据过滤器接口
-     */
-    public interface IDateFilter {
-
-        /**
-         * 执行数据过滤
-         *
-         * @param dataAttr  当前数据是否为data属性
-         * @param itemName  属性名称
-         * @param itemValue 属性值对象
-         * @return 若返回null则该属性将被忽略
-         */
-        Object filter(boolean dataAttr, String itemName, Object itemValue);
     }
 }

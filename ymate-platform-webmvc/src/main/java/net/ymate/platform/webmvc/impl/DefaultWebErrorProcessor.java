@@ -76,12 +76,12 @@ public class DefaultWebErrorProcessor implements IWebErrorProcessor, IWebInitial
     public void close() throws Exception {
     }
 
-    public IView showErrorMsg(int code, String msg, Map<String, Object> dataMap) {
+    public IView showErrorMsg(String code, String msg, Map<String, Object> dataMap) {
         HttpServletRequest httpServletRequest = WebContext.getRequest();
         if (WebUtils.isAjax(httpServletRequest) || WebUtils.isXmlFormat(httpServletRequest) || WebUtils.isJsonFormat(httpServletRequest) || StringUtils.containsAny(getErrorDefaultViewFormat(), Type.Const.FORMAT_JSON, Type.Const.FORMAT_XML)) {
-            return WebResult.formatView(WebResult.create(code).msg(msg).data(dataMap), getErrorDefaultViewFormat());
+            return WebResult.formatView(WebResult.create(BlurObject.bind(code).toIntValue()).msg(msg).data(dataMap), getErrorDefaultViewFormat());
         }
-        return WebUtils.buildErrorView(owner, code, msg).addAttribute(Type.Const.PARAM_DATA, dataMap);
+        return WebUtils.buildErrorView(owner, BlurObject.bind(code).toIntValue(), msg).addAttribute(Type.Const.PARAM_DATA, dataMap);
     }
 
     @Override
@@ -103,7 +103,7 @@ public class DefaultWebErrorProcessor implements IWebErrorProcessor, IWebInitial
                     if (exceptionProcessor != null) {
                         IExceptionProcessor.Result result = exceptionProcessor.process(unwrapThrow);
                         if (result != null) {
-                            showErrorMsg(result.getCode(), WebUtils.errorCodeI18n(this.owner, result), result.getAttributes()).render();
+                            showErrorMsg(String.valueOf(result.getCode()), WebUtils.errorCodeI18n(this.owner, result), result.getAttributes()).render();
                         } else if (LOG.isErrorEnabled()) {
                             if (!analysisDisabled && owner.getOwner().isDevEnv()) {
                                 LOG.error(exceptionAnalysis(unwrapThrow));
@@ -119,7 +119,7 @@ public class DefaultWebErrorProcessor implements IWebErrorProcessor, IWebInitial
                                 LOG.error(StringUtils.EMPTY, unwrapThrow);
                             }
                         }
-                        showErrorMsg(ErrorCode.INTERNAL_SYSTEM_ERROR, WebUtils.errorCodeI18n(this.owner, ErrorCode.INTERNAL_SYSTEM_ERROR, ErrorCode.MSG_INTERNAL_SYSTEM_ERROR), null).render();
+                        showErrorMsg(String.valueOf(ErrorCode.INTERNAL_SYSTEM_ERROR), WebUtils.errorCodeI18n(this.owner, ErrorCode.INTERNAL_SYSTEM_ERROR, ErrorCode.MSG_INTERNAL_SYSTEM_ERROR), null).render();
                     }
                 }
             }
@@ -140,7 +140,7 @@ public class DefaultWebErrorProcessor implements IWebErrorProcessor, IWebInitial
             message = WebUtils.messageWithTemplate(owner.getOwner(), message, results.values());
         }
         Map<String, Object> dataMap = results.values().stream().collect(Collectors.toMap(ValidateResult::getName, ValidateResult::getMsg, (a, b) -> b, () -> new HashMap<>(results.size())));
-        return showErrorMsg(WebErrorCode.INVALID_PARAMS_VALIDATION, message, dataMap);
+        return showErrorMsg(String.valueOf(WebErrorCode.INVALID_PARAMS_VALIDATION), message, dataMap);
     }
 
     @Override
