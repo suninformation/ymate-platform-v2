@@ -72,13 +72,13 @@ public class XMLRequestProcessor extends DefaultRequestProcessor {
         if (paramType.isArray()) {
             if (!paramType.equals(IUploadFileWrapper[].class)) {
                 String[] values;
+                String valueStr;
                 if (paramNameArr.length > 1) {
-                    String valueStr = protocol.getSubProperty(paramNameArr[0], paramNameArr[1], defaultValue);
-                    values = StringUtils.split(valueStr, "|");
+                    valueStr = protocol.getSubProperty(paramNameArr[0], paramNameArr[1], defaultValue);
                 } else {
-                    String valueStr = protocol.getProperty(paramName, defaultValue);
-                    values = StringUtils.split(valueStr, "|");
+                    valueStr = protocol.getProperty(paramName, defaultValue);
                 }
+                values = StringUtils.split(valueStr, "|");
                 if (values != null && values.length > 0) {
                     returnValue = doSafeGetParamValueArray(owner, paramName, ClassUtils.getArrayClassType(paramType), values);
                 }

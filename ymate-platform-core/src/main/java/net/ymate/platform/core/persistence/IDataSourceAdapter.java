@@ -28,6 +28,7 @@ import net.ymate.platform.core.support.IDestroyable;
  * @since 2.1.0
  */
 @Ignored
+@SuppressWarnings("rawtypes")
 public interface IDataSourceAdapter<OWNER, DATASOURCE_CONFIG extends IDataSourceConfig, CONNECTION> extends IDestroyable {
 
     /**

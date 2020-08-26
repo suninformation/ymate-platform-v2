@@ -37,6 +37,7 @@ import java.util.List;
  * @author 刘镇 (suninformation@163.com) on 15/11/21 下午12:07
  */
 @Ignored
+@SuppressWarnings("rawtypes")
 public interface IMongoSession extends ISession<IMongoConnectionHolder> {
 
     /**

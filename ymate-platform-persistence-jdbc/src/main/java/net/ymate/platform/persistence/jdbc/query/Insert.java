@@ -32,6 +32,7 @@ import java.util.List;
  *
  * @author 刘镇 (suninformation@163.com) on 15/5/12 下午6:00
  */
+@SuppressWarnings("rawtypes")
 public final class Insert extends Query<Insert> {
 
     private final String prefix;

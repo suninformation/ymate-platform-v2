@@ -130,6 +130,7 @@ public interface INioEventGroup<LISTENER extends IListener<INioSession>> extends
      * @param key 通道选择键
      * @return 返回事件处理器对象
      */
+    @SuppressWarnings("rawtypes")
     NioEventProcessor processor(SelectionKey key);
 
     /**
@@ -137,5 +138,6 @@ public interface INioEventGroup<LISTENER extends IListener<INioSession>> extends
      *
      * @return 返回事件处理器对象
      */
+    @SuppressWarnings("rawtypes")
     NioEventProcessor processor();
 }

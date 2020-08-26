@@ -274,8 +274,8 @@ public class TreeObject implements Serializable, Cloneable {
         if (tObject.isMap()) {
             TreeObject itemObject;
             Map<String, TreeObject> nodeValue = tObject.getMap();
+            JSONObject itemJson = new JSONObject();
             if (nodeValue != null && !nodeValue.isEmpty()) {
-                JSONObject itemJson = new JSONObject();
                 for (Map.Entry<String, TreeObject> entry : nodeValue.entrySet()) {
                     if (StringUtils.isNotBlank(entry.getKey())) {
                         itemObject = entry.getValue();
@@ -304,7 +304,6 @@ public class TreeObject implements Serializable, Cloneable {
                     return itemJson;
                 }
             } else {
-                JSONObject itemJson = new JSONObject();
                 itemJson.put(KEY_CLASS, TYPE_MAP);
                 itemJson.put(KEY_VALUE, new JSONObject());
                 return itemJson;

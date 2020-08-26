@@ -73,7 +73,7 @@ public final class WebContext {
     }
 
     public static ServletContext getServletContext() {
-        return (ServletContext) WebContext.getContext().getAttribute(Type.Context.SERVLET_CONTEXT);
+        return WebContext.getContext().getAttribute(Type.Context.SERVLET_CONTEXT);
     }
 
     public static PageContext getPageContext() {

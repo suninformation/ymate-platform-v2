@@ -25,6 +25,7 @@ import net.ymate.platform.core.support.IDestroyable;
  * @author 刘镇 (suninformation@163.com) on 15/11/22 下午8:40
  */
 @Ignored
+@SuppressWarnings("rawtypes")
 public interface ISession<CONNECTION_HOLDER extends IConnectionHolder> extends IDestroyable {
 
     /**

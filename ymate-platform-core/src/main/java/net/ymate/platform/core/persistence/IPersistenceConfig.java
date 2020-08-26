@@ -25,6 +25,7 @@ import java.util.Map;
  * @since 2.1.0
  */
 @Ignored
+@SuppressWarnings("rawtypes")
 public interface IPersistenceConfig<OWNER extends IPersistence, DATA_SOURCE_CONFIG extends IDataSourceConfig> extends IInitialization<OWNER> {
 
     String DEFAULT_STR = "default";

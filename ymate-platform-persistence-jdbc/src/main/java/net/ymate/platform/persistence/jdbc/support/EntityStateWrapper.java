@@ -28,9 +28,10 @@ import java.util.Arrays;
  * @author 刘镇 (suninformation@163.com) on 2019-11-09 11:43
  * @since 2.1.0
  */
+@SuppressWarnings("rawtypes")
 public final class EntityStateWrapper<Entity extends IEntity> {
 
-    private IDatabase owner;
+    private final IDatabase owner;
 
     private final PropertyStateSupport<Entity> stateSupport;
 

@@ -27,7 +27,7 @@ public class DefaultSpeedListener implements Speedometer.IListener {
 
     private static final Log LOG = LogFactory.getLog(DefaultSpeedListener.class);
 
-    private Speedometer speedometer;
+    private final Speedometer speedometer;
 
     public DefaultSpeedListener(Speedometer speedometer) {
         if (speedometer == null) {

@@ -26,6 +26,7 @@ import java.util.Map;
  * @param <E> 事件枚举
  * @author 刘镇 (suninformation@163.com) on 15/5/16 上午2:58
  */
+@SuppressWarnings("rawtypes")
 public abstract class AbstractEventContext<T, E extends Enum> extends EventObject {
 
     private final Class<? extends IEvent> eventClass;

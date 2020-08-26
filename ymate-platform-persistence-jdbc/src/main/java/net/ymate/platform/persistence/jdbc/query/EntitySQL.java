@@ -32,6 +32,7 @@ import java.io.Serializable;
  * @param <T> 实体类型
  * @author 刘镇 (suninformation@163.com) on 15/5/9 下午1:14
  */
+@SuppressWarnings("rawtypes")
 public final class EntitySQL<T extends IEntity> {
 
     private final IDatabase owner;

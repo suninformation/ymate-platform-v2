@@ -57,6 +57,7 @@ public class UpdateExp extends AbstractOperator {
         return updateExp;
     }
 
+    @SuppressWarnings("rawtypes")
     public static UpdateExp setOnInsert(Map object) {
         UpdateExp updateExp = new UpdateExp();
         updateExp.putOperator(IMongo.Opt.SET_ON_INSERT, object);
@@ -69,6 +70,7 @@ public class UpdateExp extends AbstractOperator {
         return updateExp;
     }
 
+    @SuppressWarnings("rawtypes")
     public static UpdateExp set(Map object) {
         UpdateExp updateExp = new UpdateExp();
         updateExp.putOperator(IMongo.Opt.SET, object);

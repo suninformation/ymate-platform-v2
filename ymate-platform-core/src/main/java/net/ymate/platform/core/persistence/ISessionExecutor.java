@@ -23,6 +23,7 @@ package net.ymate.platform.core.persistence;
  * @author 刘镇 (suninformation@163.com) on 2019-05-16 01:04
  * @since 2.1.0
  */
+@SuppressWarnings("rawtypes")
 public interface ISessionExecutor<RESULT, SESSION extends ISession> {
 
     /**

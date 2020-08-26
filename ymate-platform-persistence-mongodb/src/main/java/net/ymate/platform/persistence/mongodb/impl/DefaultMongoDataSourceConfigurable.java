@@ -18,7 +18,6 @@ package net.ymate.platform.persistence.mongodb.impl;
 import com.mongodb.ServerAddress;
 import net.ymate.platform.commons.IPasswordProcessor;
 import net.ymate.platform.core.persistence.AbstractDataSourceConfigurable;
-import net.ymate.platform.core.persistence.IDataSourceConfigurable;
 import net.ymate.platform.persistence.mongodb.IMongoConfig;
 import net.ymate.platform.persistence.mongodb.IMongoDataSourceConfigurable;
 import org.apache.commons.lang3.ArrayUtils;

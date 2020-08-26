@@ -43,6 +43,7 @@ import java.util.concurrent.ConcurrentHashMap;
  *
  * @author 刘镇 (suninformation@163.com) on 2010-4-16 下午11:51:39
  */
+@SuppressWarnings("rawtypes")
 public class BlurObject implements Serializable, Cloneable {
 
     private static final Log LOG = LogFactory.getLog(BlurObject.class);

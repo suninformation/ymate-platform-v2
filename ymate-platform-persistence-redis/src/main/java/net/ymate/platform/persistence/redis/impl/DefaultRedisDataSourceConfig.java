@@ -44,6 +44,7 @@ public final class DefaultRedisDataSourceConfig extends AbstractDataSourceConfig
 
     private final Map<String, RedisServerMeta> serverMetas = new LinkedHashMap<>();
 
+    @SuppressWarnings("rawtypes")
     private final GenericObjectPoolConfig objectPoolConfig = new GenericObjectPoolConfig();
 
     public static DefaultRedisDataSourceConfig create(String dataSourceName, IConfigReader configReader) throws ClassNotFoundException {
@@ -148,6 +149,7 @@ public final class DefaultRedisDataSourceConfig extends AbstractDataSourceConfig
     }
 
     @Override
+    @SuppressWarnings("rawtypes")
     public GenericObjectPoolConfig getObjectPoolConfig() {
         return objectPoolConfig;
     }

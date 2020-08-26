@@ -21,6 +21,7 @@ import net.ymate.platform.commons.util.UUIDUtils;
  * @param <CONNECTION_HOLDER> 连接持有者类型
  * @author 刘镇 (suninformation@163.com) on 2019-05-23 16:27
  */
+@SuppressWarnings("rawtypes")
 public abstract class AbstractSession<CONNECTION_HOLDER extends IConnectionHolder> implements ISession<CONNECTION_HOLDER> {
 
     private static final ThreadLocal<String> SESSION_THREAD_LOCAL = ThreadLocal.withInitial(UUIDUtils::UUID);

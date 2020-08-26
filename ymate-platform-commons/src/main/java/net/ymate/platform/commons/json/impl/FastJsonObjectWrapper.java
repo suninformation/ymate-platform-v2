@@ -68,109 +68,133 @@ public class FastJsonObjectWrapper implements IJsonObjectWrapper {
         this.jsonObject = jsonObject != null ? jsonObject : new JSONObject();
     }
 
+    @Override
     public IJsonNodeWrapper get(String key) {
         Object object = jsonObject.get(key);
         return object != null ? new FastJsonNodeWrapper(object) : null;
     }
 
+    @Override
     public boolean getBoolean(String key) {
         return jsonObject.getBooleanValue(key);
     }
 
+    @Override
     public BigInteger getBigInteger(String key) {
         return jsonObject.getBigInteger(key);
     }
 
+    @Override
     public BigDecimal getBigDecimal(String key) {
         return jsonObject.getBigDecimal(key);
     }
 
+    @Override
     public double getDouble(String key) {
         return jsonObject.getDoubleValue(key);
     }
 
+    @Override
     public float getFloat(String key) {
         return jsonObject.getFloatValue(key);
     }
 
+    @Override
     public int getInt(String key) {
         return jsonObject.getIntValue(key);
     }
 
+    @Override
     public IJsonArrayWrapper getJsonArray(String key) {
         JSONArray value = jsonObject.getJSONArray(key);
         return value == null ? null : new FastJsonArrayWrapper(value);
     }
 
+    @Override
     public IJsonObjectWrapper getJsonObject(String key) {
         JSONObject value = jsonObject.getJSONObject(key);
         return value == null ? null : new FastJsonObjectWrapper(value);
     }
 
+    @Override
     public long getLong(String key) {
         return jsonObject.getLongValue(key);
     }
 
+    @Override
     public String getString(String key) {
         return jsonObject.getString(key);
     }
 
+    @Override
     public boolean has(String key) {
         return jsonObject.containsKey(key);
     }
 
+    @Override
     public Set<String> keySet() {
         return jsonObject.keySet();
     }
 
+    @Override
     public int size() {
         return jsonObject.size();
     }
 
+    @Override
     public boolean isEmpty() {
         return jsonObject.isEmpty();
     }
 
+    @Override
     public IJsonObjectWrapper put(String key, boolean value) {
         jsonObject.put(key, value);
         return this;
     }
 
+    @Override
     public IJsonObjectWrapper put(String key, Collection<?> value) {
         jsonObject.put(key, FastJsonAdapter.toJsonArray(value));
         return this;
     }
 
+    @Override
     public IJsonObjectWrapper put(String key, double value) {
         jsonObject.put(key, value);
         return this;
     }
 
+    @Override
     public IJsonObjectWrapper put(String key, float value) {
         jsonObject.put(key, value);
         return this;
     }
 
+    @Override
     public IJsonObjectWrapper put(String key, int value) {
         jsonObject.put(key, value);
         return this;
     }
 
+    @Override
     public IJsonObjectWrapper put(String key, long value) {
         jsonObject.put(key, value);
         return this;
     }
 
+    @Override
     public IJsonObjectWrapper put(String key, Map<?, ?> value) {
         jsonObject.put(key, FastJsonAdapter.toJsonObject(value));
         return this;
     }
 
+    @Override
     public IJsonObjectWrapper put(String key, Object value) {
         jsonObject.put(key, JsonWrapper.unwrap(value));
         return this;
     }
 
+    @Override
     public Object remove(String key) {
         return jsonObject.remove(key);
     }
@@ -201,10 +225,12 @@ public class FastJsonObjectWrapper implements IJsonObjectWrapper {
         return this.toString(false, false);
     }
 
+    @Override
     public String toString(boolean format, boolean keepNullValue) {
         return JsonWrapper.toJsonString(jsonObject, format, keepNullValue);
     }
 
+    @Override
     public Map<String, Object> toMap() {
         return jsonObject;
     }

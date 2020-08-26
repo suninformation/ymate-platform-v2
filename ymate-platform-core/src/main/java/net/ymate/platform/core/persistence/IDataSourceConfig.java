@@ -26,6 +26,7 @@ import net.ymate.platform.core.support.IInitialization;
  * @since 2.1.0
  */
 @Ignored
+@SuppressWarnings("rawtypes")
 public interface IDataSourceConfig<OWNER extends IPersistence> extends IInitialization<OWNER> {
 
     /**

@@ -34,6 +34,7 @@ import java.io.Serializable;
  * @author 刘镇 (suninformation@163.com) on 2019-11-13 09:19
  * @since 2.1.0
  */
+@SuppressWarnings("rawtypes")
 public final class EntityWrapper<Entity extends IEntity> {
 
     private IDatabase owner;

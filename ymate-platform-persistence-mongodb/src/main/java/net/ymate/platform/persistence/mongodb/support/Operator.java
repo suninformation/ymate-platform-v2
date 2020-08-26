@@ -276,6 +276,7 @@ public final class Operator extends AbstractOperator {
         return this;
     }
 
+    @SuppressWarnings("rawtypes")
     public Operator setOnInsert(Map object) {
         putOperator(IMongo.Opt.SET_ON_INSERT, object);
         return this;
@@ -286,6 +287,7 @@ public final class Operator extends AbstractOperator {
         return this;
     }
 
+    @SuppressWarnings("rawtypes")
     public Operator set(Map object) {
         putOperator(IMongo.Opt.SET, object);
         return this;

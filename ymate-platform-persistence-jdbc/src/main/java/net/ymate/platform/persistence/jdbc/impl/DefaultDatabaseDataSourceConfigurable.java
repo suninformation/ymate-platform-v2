@@ -104,6 +104,7 @@ public final class DefaultDatabaseDataSourceConfigurable extends AbstractDataSou
             return this;
         }
 
+        @SuppressWarnings("rawtypes")
         public Builder adapterClass(Class<? extends IDataSourceAdapter> adapterClass) {
             configurable.addConfig(IDatabaseConfig.ADAPTER_CLASS, adapterClass.getName());
             return this;

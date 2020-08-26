@@ -43,6 +43,7 @@ import java.util.List;
 /**
  * @author 刘镇 (suninformation@163.com) on 15/11/22 下午10:35
  */
+@SuppressWarnings("rawtypes")
 public class DefaultMongoSession extends AbstractSession<IMongoConnectionHolder> implements IMongoSession {
 
     private final IMongo owner;

@@ -54,6 +54,7 @@ public class ClassUtils {
 
     private static final InnerClassLoader INNER_CLASS_LOADER = new InnerClassLoader(new URL[]{}, ClassUtils.class.getClassLoader());
 
+    @SuppressWarnings("rawtypes")
     private static final Map<Class<?>, ExtensionLoader> EXTENSION_LOADERS = new ConcurrentHashMap<>();
 
     public static final Set<String> EXCLUDED_METHOD_NAMES = Collections.unmodifiableSet(Arrays.stream(Object.class.getDeclaredMethods()).map(Method::getName).collect(Collectors.toSet()));

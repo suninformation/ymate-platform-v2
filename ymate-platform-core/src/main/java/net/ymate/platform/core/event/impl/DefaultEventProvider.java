@@ -123,6 +123,7 @@ public final class DefaultEventProvider<T, E extends Enum<E>, EVENT extends Clas
         }
     }
 
+    @SuppressWarnings("rawtypes")
     private boolean unregisterEventListener(Map<EVENT, List<IEventListener<CONTEXT>>> listenersMap, EVENT eventClass, Class<? extends IEventListener> listenerClass) {
         boolean flag = false;
         List<IEventListener<CONTEXT>> listeners = listenersMap.get(eventClass);
@@ -153,6 +154,7 @@ public final class DefaultEventProvider<T, E extends Enum<E>, EVENT extends Clas
     }
 
     @Override
+    @SuppressWarnings("rawtypes")
     public boolean unregisterListener(EVENT eventClass, Class<? extends IEventListener> listenerClass) {
         return unregisterEventListener(asyncListeners, eventClass, listenerClass) || unregisterEventListener(normalListeners, eventClass, listenerClass);
     }

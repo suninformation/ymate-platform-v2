@@ -110,17 +110,15 @@ public final class CookieHelper {
 
     private Cookie doGetCookie(String cookieName) {
         Cookie[] cookies = request.getCookies();
-        if (cookies == null) {
-            return null;
-        } else {
+        if (cookies != null) {
             for (Cookie cookie : cookies) {
                 String name = cookie.getName();
                 if (name.equals(cookieName)) {
                     return cookie;
                 }
             }
-            return null;
         }
+        return null;
     }
 
     /**

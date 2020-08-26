@@ -102,24 +102,24 @@ public final class Events {
         return this.eventConfig.getEventProvider().unregisterEvent(eventClass);
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({"rawtypes", "unchecked"})
     public <CONTEXT extends AbstractEventContext> Events registerListener(Class<? extends IEvent> eventClass, IEventListener<CONTEXT> eventListener) {
         this.eventConfig.getEventProvider().registerListener(eventClass, eventListener);
         return this;
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({"rawtypes", "unchecked"})
     public <CONTEXT extends AbstractEventContext> Events registerListener(MODE mode, Class<? extends IEvent> eventClass, IEventListener<CONTEXT> eventListener) {
         this.eventConfig.getEventProvider().registerListener(mode, eventClass, eventListener);
         return this;
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({"rawtypes", "unchecked"})
     public boolean unregisterListener(Class<? extends IEvent> eventClass, Class<? extends IEventListener> listenerClass) {
         return this.eventConfig.getEventProvider().unregisterListener(eventClass, listenerClass);
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({"rawtypes", "unchecked"})
     public <CONTEXT extends AbstractEventContext> Events fireEvent(CONTEXT context) {
         this.eventConfig.getEventProvider().fireEvent(context);
         return this;

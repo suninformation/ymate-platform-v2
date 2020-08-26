@@ -52,6 +52,7 @@ public interface IEventConfig {
      *
      * @return 返回事件管理提供者接口对象
      */
+    @SuppressWarnings("rawtypes")
     IEventProvider getEventProvider();
 
     /**

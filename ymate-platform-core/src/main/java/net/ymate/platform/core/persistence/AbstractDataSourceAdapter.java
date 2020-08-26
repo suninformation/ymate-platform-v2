@@ -29,6 +29,7 @@ import org.apache.commons.logging.LogFactory;
  * @author 刘镇 (suninformation@163.com) on 2019-08-01 10:51
  * @since 2.1.0
  */
+@SuppressWarnings("rawtypes")
 public abstract class AbstractDataSourceAdapter<OWNER extends IPersistence, DATASOURCE_CONFIG extends IDataSourceConfig, CONNECTION> implements IDataSourceAdapter<OWNER, DATASOURCE_CONFIG, CONNECTION> {
 
     private static final Log LOG = LogFactory.getLog(AbstractDataSourceAdapter.class);

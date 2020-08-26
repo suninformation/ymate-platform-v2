@@ -54,117 +54,141 @@ public class GsonObjectWrapper implements IJsonObjectWrapper {
         this.jsonObject = jsonObject != null ? jsonObject : new JsonObject();
     }
 
+    @Override
     public IJsonNodeWrapper get(String key) {
         JsonElement jsonElement = jsonObject.get(key);
         return jsonElement != null ? new GsonNodeWrapper(jsonElement) : null;
     }
 
+    @Override
     public boolean getBoolean(String key) {
         JsonElement jsonElement = jsonObject.get(key);
         return jsonElement != null && jsonElement.getAsBoolean();
     }
 
+    @Override
     public BigInteger getBigInteger(String key) {
         JsonElement jsonElement = jsonObject.get(key);
         return jsonElement != null ? jsonElement.getAsBigInteger() : null;
     }
 
+    @Override
     public BigDecimal getBigDecimal(String key) {
         JsonElement jsonElement = jsonObject.get(key);
         return jsonElement != null ? jsonElement.getAsBigDecimal() : null;
     }
 
+    @Override
     public double getDouble(String key) {
         JsonElement jsonElement = jsonObject.get(key);
         return jsonElement != null ? jsonElement.getAsDouble() : 0d;
     }
 
+    @Override
     public float getFloat(String key) {
         JsonElement jsonElement = jsonObject.get(key);
         return jsonElement != null ? jsonElement.getAsFloat() : 0f;
     }
 
+    @Override
     public int getInt(String key) {
         JsonElement jsonElement = jsonObject.get(key);
         return jsonElement != null ? jsonElement.getAsInt() : 0;
     }
 
+    @Override
     public IJsonArrayWrapper getJsonArray(String key) {
         JsonArray value = jsonObject.getAsJsonArray(key);
         return value == null ? null : new GsonArrayWrapper(value);
     }
 
+    @Override
     public IJsonObjectWrapper getJsonObject(String key) {
         JsonObject value = jsonObject.getAsJsonObject(key);
         return value == null ? null : new GsonObjectWrapper(value);
     }
 
+    @Override
     public long getLong(String key) {
         JsonElement jsonElement = jsonObject.get(key);
         return jsonElement != null ? jsonElement.getAsLong() : 0L;
     }
 
+    @Override
     public String getString(String key) {
         JsonElement jsonElement = jsonObject.get(key);
         return jsonElement != null ? jsonElement.getAsString() : null;
     }
 
+    @Override
     public boolean has(String key) {
         return jsonObject.has(key);
     }
 
+    @Override
     public Set<String> keySet() {
         return jsonObject.keySet();
     }
 
+    @Override
     public int size() {
         return jsonObject.size();
     }
 
+    @Override
     public boolean isEmpty() {
         return jsonObject.size() == 0;
     }
 
+    @Override
     public IJsonObjectWrapper put(String key, boolean value) {
         jsonObject.addProperty(key, value);
         return this;
     }
 
+    @Override
     public IJsonObjectWrapper put(String key, Collection<?> value) {
         jsonObject.add(key, GsonAdapter.toJsonArray(value));
         return this;
     }
 
+    @Override
     public IJsonObjectWrapper put(String key, double value) {
         jsonObject.addProperty(key, value);
         return this;
     }
 
+    @Override
     public IJsonObjectWrapper put(String key, float value) {
         jsonObject.addProperty(key, value);
         return this;
     }
 
+    @Override
     public IJsonObjectWrapper put(String key, int value) {
         jsonObject.addProperty(key, value);
         return this;
     }
 
+    @Override
     public IJsonObjectWrapper put(String key, long value) {
         jsonObject.addProperty(key, value);
         return this;
     }
 
+    @Override
     public IJsonObjectWrapper put(String key, Map<?, ?> value) {
         jsonObject.add(key, GsonAdapter.toJsonObject(value));
         return this;
     }
 
+    @Override
     public IJsonObjectWrapper put(String key, Object value) {
         jsonObject.add(key, GsonAdapter.toJsonElement(value));
         return this;
     }
 
+    @Override
     public Object remove(String key) {
         return jsonObject.remove(key);
     }
@@ -195,10 +219,12 @@ public class GsonObjectWrapper implements IJsonObjectWrapper {
         return this.toString(false, false);
     }
 
+    @Override
     public String toString(boolean format, boolean keepNullValue) {
         return JsonWrapper.toJsonString(jsonObject, format, keepNullValue);
     }
 
+    @Override
     @SuppressWarnings("unchecked")
     public Map<String, Object> toMap() {
         return GsonAdapter.GSON.fromJson(jsonObject, Map.class);

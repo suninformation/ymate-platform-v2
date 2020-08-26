@@ -31,6 +31,7 @@ import java.sql.ResultSet;
  * @param <T> 实体类型
  * @author 刘镇 (suninformation@163.com) on 15/5/8 下午3:58
  */
+@SuppressWarnings("rawtypes")
 public class EntityResultSetHandler<T extends IEntity> extends AbstractResultSetHandler<T> {
 
     private final Class<T> entityClass;

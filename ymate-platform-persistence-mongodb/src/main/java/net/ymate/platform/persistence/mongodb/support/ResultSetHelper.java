@@ -36,7 +36,7 @@ import java.util.List;
  */
 public class ResultSetHelper {
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({"rawtypes", "unchecked"})
     public static <T extends IEntity> T toEntity(Class<T> entity, Document document) throws Exception {
         ClassUtils.BeanWrapper<T> beanWrapper = ClassUtils.wrapperClass(entity);
         if (beanWrapper != null) {
@@ -72,6 +72,7 @@ public class ResultSetHelper {
         return null;
     }
 
+    @SuppressWarnings("rawtypes")
     public static <T extends IEntity> List<T> toEntities(Class<T> entity, MongoIterable<Document> iterable) throws Exception {
         MongoCursor<Document> documentIt = iterable.iterator();
         List<T> resultSet = new ArrayList<>();
@@ -81,6 +82,7 @@ public class ResultSetHelper {
         return resultSet;
     }
 
+    @SuppressWarnings("rawtypes")
     public static <T extends IEntity> Document toDocument(T entity) throws Exception {
         EntityMeta entityMeta = EntityMeta.load(entity.getClass());
         Document returnObj = new Document();

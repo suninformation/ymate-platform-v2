@@ -33,6 +33,7 @@ import java.util.List;
  * @author 刘镇 (suninformation@163.com) on 2011-9-21 下午01:45:36
  */
 @Ignored
+@SuppressWarnings("rawtypes")
 public interface IDatabaseSession extends ISession<IDatabaseConnectionHolder> {
 
     /**

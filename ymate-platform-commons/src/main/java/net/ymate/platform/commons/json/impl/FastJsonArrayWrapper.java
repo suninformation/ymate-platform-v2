@@ -61,145 +61,176 @@ public class FastJsonArrayWrapper implements IJsonArrayWrapper {
         this.jsonArray = jsonArray != null ? jsonArray : new JSONArray();
     }
 
+    @Override
     public IJsonNodeWrapper get(int index) {
         Object object = jsonArray.get(index);
         return object != null ? new FastJsonNodeWrapper(object) : null;
     }
 
+    @Override
     public boolean getBoolean(int index) {
         return jsonArray.getBooleanValue(index);
     }
 
+    @Override
     public double getDouble(int index) {
         return jsonArray.getDoubleValue(index);
     }
 
+    @Override
     public float getFloat(int index) {
         return jsonArray.getFloatValue(index);
     }
 
+    @Override
     public BigDecimal getBigDecimal(int index) {
         return jsonArray.getBigDecimal(index);
     }
 
+    @Override
     public BigInteger getBigInteger(int index) {
         return jsonArray.getBigInteger(index);
     }
 
+    @Override
     public int getInt(int index) {
         return jsonArray.getIntValue(index);
     }
 
+    @Override
     public IJsonArrayWrapper getJsonArray(int index) {
         JSONArray value = jsonArray.getJSONArray(index);
         return value == null ? null : new FastJsonArrayWrapper(value);
     }
 
+    @Override
     public IJsonObjectWrapper getJsonObject(int index) {
         JSONObject value = jsonArray.getJSONObject(index);
         return value == null ? null : new FastJsonObjectWrapper(value);
     }
 
+    @Override
     public long getLong(int index) {
         return jsonArray.getLongValue(index);
     }
 
+    @Override
     public String getString(int index) {
         return jsonArray.getString(index);
     }
 
+    @Override
     public boolean isNull(int index) {
         return jsonArray.get(index) == null;
     }
 
+    @Override
     public int size() {
         return jsonArray.size();
     }
 
+    @Override
     public boolean isEmpty() {
         return jsonArray.isEmpty();
     }
 
+    @Override
     public IJsonArrayWrapper add(boolean value) {
         jsonArray.add(value);
         return this;
     }
 
+    @Override
     public IJsonArrayWrapper add(Collection<?> value) {
         jsonArray.add(FastJsonAdapter.toJsonArray(value));
         return this;
     }
 
+    @Override
     public IJsonArrayWrapper add(double value) {
         jsonArray.add(value);
         return this;
     }
 
+    @Override
     public IJsonArrayWrapper add(float value) {
         jsonArray.add(value);
         return this;
     }
 
+    @Override
     public IJsonArrayWrapper add(int value) {
         jsonArray.add(value);
         return this;
     }
 
+    @Override
     public IJsonArrayWrapper add(long value) {
         jsonArray.add(value);
         return this;
     }
 
+    @Override
     public IJsonArrayWrapper add(Map<?, ?> value) {
         jsonArray.add(FastJsonAdapter.toJsonObject(value));
         return this;
     }
 
+    @Override
     public IJsonArrayWrapper add(Object value) {
         jsonArray.add(JsonWrapper.unwrap(value));
         return this;
     }
 
+    @Override
     public IJsonArrayWrapper add(int index, boolean value) {
         jsonArray.add(index, value);
         return this;
     }
 
+    @Override
     public IJsonArrayWrapper add(int index, Collection<?> value) {
         jsonArray.add(index, value);
         return this;
     }
 
+    @Override
     public IJsonArrayWrapper add(int index, double value) {
         jsonArray.add(index, value);
         return this;
     }
 
+    @Override
     public IJsonArrayWrapper add(int index, float value) {
         jsonArray.add(index, value);
         return this;
     }
 
+    @Override
     public IJsonArrayWrapper add(int index, int value) {
         jsonArray.add(index, value);
         return this;
     }
 
+    @Override
     public IJsonArrayWrapper add(int index, long value) {
         jsonArray.add(index, value);
         return this;
     }
 
+    @Override
     public IJsonArrayWrapper add(int index, Map<?, ?> value) {
         jsonArray.add(index, FastJsonAdapter.toJsonObject(value));
         return this;
     }
 
+    @Override
     public IJsonArrayWrapper add(int index, Object value) {
         jsonArray.add(index, JsonWrapper.unwrap(value));
         return this;
     }
 
+    @Override
     public Object remove(int index) {
         return jsonArray.remove(index);
     }
@@ -230,10 +261,12 @@ public class FastJsonArrayWrapper implements IJsonArrayWrapper {
         return this.toString(false, false);
     }
 
+    @Override
     public String toString(boolean format, boolean keepNullValue) {
         return JsonWrapper.toJsonString(jsonArray, format, keepNullValue);
     }
 
+    @Override
     public List<Object> toList() {
         return jsonArray;
     }

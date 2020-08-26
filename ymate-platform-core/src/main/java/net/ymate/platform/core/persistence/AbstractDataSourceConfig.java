@@ -26,6 +26,7 @@ import org.apache.commons.lang3.StringUtils;
  * @author 刘镇 (suninformation@163.com) on 2019-07-31 16:20
  * @since 2.1.0
  */
+@SuppressWarnings("rawtypes")
 public abstract class AbstractDataSourceConfig<OWNER extends IPersistence> implements IDataSourceConfig<OWNER> {
 
     private final String name;

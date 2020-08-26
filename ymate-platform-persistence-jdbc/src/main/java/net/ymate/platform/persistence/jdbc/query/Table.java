@@ -293,7 +293,7 @@ public class Table extends QueryHandleAdapter<Table> {
         }
         //
         if (!primaryKeys.isEmpty() && variables.contains("primaryKeys")) {
-            List<String> primaryKeyStr = primaryKeys.stream().map(primaryKey -> dialect.wrapIdentifierQuote(primaryKey)).collect(Collectors.toList());
+            List<String> primaryKeyStr = primaryKeys.stream().map(dialect::wrapIdentifierQuote).collect(Collectors.toList());
             expression.set("primaryKeys", String.format("%s PRIMARY KEY (%s)", Query.LINE_END_FLAG, StringUtils.join(primaryKeyStr, Query.LINE_END_FLAG)));
         }
         //
@@ -320,7 +320,7 @@ public class Table extends QueryHandleAdapter<Table> {
                 if (!indexes.isEmpty()) {
                     List<String> indexesStr = indexes.values().stream()
                             .map(indexMeta -> String.format("%s%s (%s)", indexMeta.isUnique() ? "UNIQUE INDEX " : "INDEX ", dialect.wrapIdentifierQuote(indexMeta.getName()), StringUtils.join(indexMeta.getFields().stream()
-                                    .map(idxField -> dialect.wrapIdentifierQuote(idxField)).collect(Collectors.toList()), Query.LINE_END_FLAG))).collect(Collectors.toList());
+                                    .map(dialect::wrapIdentifierQuote).collect(Collectors.toList()), Query.LINE_END_FLAG))).collect(Collectors.toList());
                     expression.set("indexes", String.format("%s%s", Query.LINE_END_FLAG, StringUtils.join(indexesStr, Query.LINE_END_FLAG)));
                 }
                 resultStr = expression.clean().getResult();
@@ -330,7 +330,7 @@ public class Table extends QueryHandleAdapter<Table> {
                 if (!indexes.isEmpty()) {
                     List<String> indexesStr = indexes.values().stream()
                             .map(indexMeta -> String.format("CREATE %s %s ON %s (%s)", indexMeta.isUnique() ? "UNIQUE INDEX " : "INDEX ", dialect.wrapIdentifierQuote(indexMeta.getName()), tableNameBuildStr, StringUtils.join(indexMeta.getFields().stream()
-                                    .map(idxField -> dialect.wrapIdentifierQuote(idxField)).collect(Collectors.toList()), Query.LINE_END_FLAG))).collect(Collectors.toList());
+                                    .map(dialect::wrapIdentifierQuote).collect(Collectors.toList()), Query.LINE_END_FLAG))).collect(Collectors.toList());
                     resultStr += String.format("; %s", StringUtils.join(indexesStr, "; "));
                 }
                 break;

@@ -33,6 +33,7 @@ import java.util.List;
  *
  * @author 刘镇 (suninformation@163.com) on 15/5/12 下午5:59
  */
+@SuppressWarnings("rawtypes")
 public final class Select extends Query<Select> {
 
     private final List<String> froms = new ArrayList<>();

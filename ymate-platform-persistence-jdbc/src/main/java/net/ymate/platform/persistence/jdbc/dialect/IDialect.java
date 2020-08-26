@@ -144,6 +144,7 @@ public interface IDialect {
      * @param shardingable 分片(表)参数对象
      * @return 返回创建实体数据表SQL语句
      */
+    @SuppressWarnings("rawtypes")
     String buildCreateSql(Class<? extends IEntity> entityClass, String prefix, IShardingable shardingable);
 
     /**
@@ -154,6 +155,7 @@ public interface IDialect {
      * @param shardingable 分片(表)参数对象
      * @return 返回删除实体数据表SQL语句
      */
+    @SuppressWarnings("rawtypes")
     String buildDropSql(Class<? extends IEntity> entityClass, String prefix, IShardingable shardingable);
 
     /**
@@ -165,6 +167,7 @@ public interface IDialect {
      * @param fields       字段名称集合，可选参数，若不指定则包括全部字段
      * @return 返回插入实体数据记录SQL语句
      */
+    @SuppressWarnings("rawtypes")
     String buildInsertSql(Class<? extends IEntity> entityClass, String prefix, IShardingable shardingable, Fields fields);
 
     /**
@@ -176,6 +179,7 @@ public interface IDialect {
      * @param pkFields     主键字段名称集合，可选参数，若不指定则包括全部主键
      * @return 返回删除实体数据记录SQL语句
      */
+    @SuppressWarnings("rawtypes")
     String buildDeleteByPkSql(Class<? extends IEntity> entityClass, String prefix, IShardingable shardingable, Fields pkFields);
 
     /**
@@ -188,6 +192,7 @@ public interface IDialect {
      * @param fields       字段名称集合，可选参数，若不指定则包括全部字段
      * @return 返回更新实体数据记录SQL语句
      */
+    @SuppressWarnings("rawtypes")
     String buildUpdateByPkSql(Class<? extends IEntity> entityClass, String prefix, IShardingable shardingable, Fields pkFields, Fields fields);
 
     /**
@@ -200,6 +205,7 @@ public interface IDialect {
      * @param fields       字段名称集合，可选参数，若不指定则包括全部字段
      * @return 返回根据主键查询实体数据记录SQL语句
      */
+    @SuppressWarnings("rawtypes")
     String buildSelectByPkSql(Class<? extends IEntity> entityClass, String prefix, IShardingable shardingable, Fields pkFields, Fields fields);
 
     /**
@@ -211,5 +217,6 @@ public interface IDialect {
      * @param fields       字段名称集合，可选参数，若不指定则包括全部字段
      * @return 返回查询全部实体数据记录SQL语句
      */
+    @SuppressWarnings("rawtypes")
     String buildSelectSql(Class<? extends IEntity> entityClass, String prefix, IShardingable shardingable, Fields fields);
 }

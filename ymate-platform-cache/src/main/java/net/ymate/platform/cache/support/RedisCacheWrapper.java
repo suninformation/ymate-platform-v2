@@ -173,10 +173,8 @@ public class RedisCacheWrapper implements ICache {
                 }
             } else {
                 String keyPrefix = cacheName.concat(SEPARATOR);
-                Set<String> keys = commander.keys(keyPrefix.concat("*"));
-                keys.forEach((key) -> {
-                    returnValue.add(StringUtils.substringAfterLast(key, keyPrefix));
-                });
+                commander.keys(keyPrefix.concat("*"))
+                        .forEach((key) -> returnValue.add(StringUtils.substringAfterLast(key, keyPrefix)));
             }
         } catch (Exception e) {
             if (e instanceof CacheException) {
@@ -218,9 +216,7 @@ public class RedisCacheWrapper implements ICache {
         try (IRedisCommandHolder holder = redis.getDefaultConnectionHolder()) {
             IRedisCommander commander = holder.getConnection();
             List<String> serializeKeys = new ArrayList<>(keys.size());
-            keys.forEach((key) -> {
-                serializeKeys.add(serializeKey(key));
-            });
+            keys.forEach((key) -> serializeKeys.add(serializeKey(key)));
             if (owner.getConfig().isStorageWithSet()) {
                 commander.hdel(cacheName, serializeKeys.toArray(new String[0]));
                 if (owner.getConfig().isEnabledSubscribeExpired()) {
@@ -253,10 +249,8 @@ public class RedisCacheWrapper implements ICache {
             IRedisCommander commander = holder.getConnection();
             if (owner.getConfig().isStorageWithSet()) {
                 if (owner.getConfig().isEnabledSubscribeExpired()) {
-                    Set<String> keys = commander.hkeys(cacheName);
-                    keys.forEach((key) -> {
-                        commander.del(cacheName.concat(SEPARATOR).concat(key));
-                    });
+                    commander.hkeys(cacheName)
+                            .forEach((key) -> commander.del(cacheName.concat(SEPARATOR).concat(key)));
                 }
                 commander.del(cacheName);
             } else {

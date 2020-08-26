@@ -32,6 +32,7 @@ import java.util.List;
  *
  * @author 刘镇 (suninformation@163.com) on 15/5/12 下午6:03
  */
+@SuppressWarnings("rawtypes")
 public final class Delete extends Query<Delete> {
 
     private final List<String> froms = new ArrayList<>();

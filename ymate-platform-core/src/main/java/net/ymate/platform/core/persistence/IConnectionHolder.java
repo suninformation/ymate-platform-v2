@@ -27,6 +27,7 @@ import net.ymate.platform.core.support.IDestroyable;
  * @since 2.1.0
  */
 @Ignored
+@SuppressWarnings("rawtypes")
 public interface IConnectionHolder<OWNER extends IPersistence, CONNECTION, DATASOURCE_CONFIG extends IDataSourceConfig> extends IDestroyable {
 
     /**

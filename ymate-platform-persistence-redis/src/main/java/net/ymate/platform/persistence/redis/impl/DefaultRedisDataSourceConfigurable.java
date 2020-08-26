@@ -16,7 +16,6 @@
 package net.ymate.platform.persistence.redis.impl;
 
 import net.ymate.platform.core.persistence.AbstractDataSourceConfigurable;
-import net.ymate.platform.core.persistence.IDataSourceConfigurable;
 import net.ymate.platform.persistence.redis.IRedis;
 import net.ymate.platform.persistence.redis.IRedisConfig;
 import net.ymate.platform.persistence.redis.IRedisDataSourceConfigurable;

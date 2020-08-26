@@ -29,6 +29,7 @@ import org.apache.commons.lang3.StringUtils;
  */
 public final class DefaultEventConfig implements IEventConfig {
 
+    @SuppressWarnings("rawtypes")
     private IEventProvider eventProvider;
 
     private Events.MODE defaultMode;
@@ -73,6 +74,7 @@ public final class DefaultEventConfig implements IEventConfig {
     }
 
     @Override
+    @SuppressWarnings("rawtypes")
     public void initialize() {
         if (!initialized) {
             this.eventProvider = eventProvider != null ? eventProvider : new DefaultEventProvider();
@@ -91,10 +93,12 @@ public final class DefaultEventConfig implements IEventConfig {
     }
 
     @Override
+    @SuppressWarnings("rawtypes")
     public IEventProvider getEventProvider() {
         return eventProvider;
     }
 
+    @SuppressWarnings("rawtypes")
     public void setEventProvider(IEventProvider eventProvider) {
         if (!initialized) {
             this.eventProvider = eventProvider;
@@ -152,6 +156,7 @@ public final class DefaultEventConfig implements IEventConfig {
         private Builder() {
         }
 
+        @SuppressWarnings("rawtypes")
         public Builder eventProvider(IEventProvider eventProvider) {
             config.setEventProvider(eventProvider);
             return this;

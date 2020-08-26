@@ -142,11 +142,13 @@ public abstract class AbstractDialect implements IDialect {
     }
 
     @Override
+    @SuppressWarnings("rawtypes")
     public String buildCreateSql(Class<? extends IEntity> entityClass, String prefix, IShardingable shardingable) {
         return new Table(this, prefix, EntityMeta.load(entityClass)).shardingable(shardingable).toCreateSQL();
     }
 
     @Override
+    @SuppressWarnings("rawtypes")
     public String buildDropSql(Class<? extends IEntity> entityClass, String prefix, IShardingable shardingable) {
         return new Table(this, prefix, EntityMeta.load(entityClass)).shardingable(shardingable).toDropSQL();
     }
@@ -211,6 +213,7 @@ public abstract class AbstractDialect implements IDialect {
     }
 
     @Override
+    @SuppressWarnings("rawtypes")
     public String buildInsertSql(Class<? extends IEntity> entityClass, String prefix, IShardingable shardingable, Fields fields) {
         EntityMeta entityMeta = EntityMeta.load(entityClass);
         ExpressionUtils exp = ExpressionUtils.bind("INSERT INTO ${table_name} (${fields}) VALUES (${values})")
@@ -227,6 +230,7 @@ public abstract class AbstractDialect implements IDialect {
     }
 
     @Override
+    @SuppressWarnings("rawtypes")
     public String buildDeleteByPkSql(Class<? extends IEntity> entityClass, String prefix, IShardingable shardingable, Fields pkFields) {
         EntityMeta entityMeta = EntityMeta.load(entityClass);
         ExpressionUtils exp = ExpressionUtils.bind("DELETE FROM ${table_name} WHERE ${pk}")
@@ -243,6 +247,7 @@ public abstract class AbstractDialect implements IDialect {
     }
 
     @Override
+    @SuppressWarnings("rawtypes")
     public String buildUpdateByPkSql(Class<? extends IEntity> entityClass, String prefix, IShardingable shardingable, Fields pkFields, Fields fields) {
         EntityMeta entityMeta = EntityMeta.load(entityClass);
         ExpressionUtils exp = ExpressionUtils.bind("UPDATE ${table_name} SET ${fields} WHERE ${pk}")
@@ -272,6 +277,7 @@ public abstract class AbstractDialect implements IDialect {
     }
 
     @Override
+    @SuppressWarnings("rawtypes")
     public String buildSelectByPkSql(Class<? extends IEntity> entityClass, String prefix, IShardingable shardingable, Fields pkFields, Fields fields) {
         EntityMeta entityMeta = EntityMeta.load(entityClass);
         ExpressionUtils exp = ExpressionUtils.bind("SELECT ${fields} FROM ${table_name} WHERE ${pk}")
@@ -293,6 +299,7 @@ public abstract class AbstractDialect implements IDialect {
     }
 
     @Override
+    @SuppressWarnings("rawtypes")
     public String buildSelectSql(Class<? extends IEntity> entityClass, String prefix, IShardingable shardingable, Fields fields) {
         EntityMeta entityMeta = EntityMeta.load(entityClass);
         ExpressionUtils exp = ExpressionUtils.bind("SELECT ${fields} FROM ${table_name}")

@@ -32,6 +32,7 @@ import java.util.List;
  *
  * @author 刘镇 (suninformation@163.com) on 15/5/12 下午6:02
  */
+@SuppressWarnings("rawtypes")
 public final class Update extends Query<Update> {
 
     private final List<String> tables = new ArrayList<>();

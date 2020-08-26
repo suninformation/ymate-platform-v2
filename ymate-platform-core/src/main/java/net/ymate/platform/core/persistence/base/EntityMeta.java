@@ -42,6 +42,7 @@ public final class EntityMeta implements Serializable {
 
     private static final Log LOG = LogFactory.getLog(EntityMeta.class);
 
+    @SuppressWarnings("rawtypes")
     private static final Map<Class<? extends IEntity>, EntityMeta> ENTITY_METAS = new ConcurrentHashMap<>();
 
     /**
@@ -104,6 +105,7 @@ public final class EntityMeta implements Serializable {
      */
     private String comment;
 
+    @SuppressWarnings("rawtypes")
     public static EntityMeta load(Class<? extends IEntity> entityClass) {
         EntityMeta entityMeta = EntityMeta.createAndGet(entityClass);
         if (entityMeta == null) {
@@ -116,6 +118,7 @@ public final class EntityMeta implements Serializable {
      * @param targetClass 目标实体类对象
      * @return 创建数据实体属性描述对象
      */
+    @SuppressWarnings("rawtypes")
     public static EntityMeta createAndGet(Class<? extends IEntity> targetClass) {
         // 判断clazz对象是否声明了@Entity注解
         if (ClassUtils.isAnnotationOf(targetClass, Entity.class)) {
@@ -149,6 +152,7 @@ public final class EntityMeta implements Serializable {
         return null;
     }
 
+    @SuppressWarnings("rawtypes")
     public static Set<Class<? extends IEntity>> getEntityClasses() {
         return Collections.unmodifiableSet(ENTITY_METAS.keySet());
     }
@@ -211,13 +215,12 @@ public final class EntityMeta implements Serializable {
      * @param targetClass 目标类型
      * @param targetMeta  实体元数据
      */
+    @SuppressWarnings("rawtypes")
     private static void parseProperties(Class<? extends IEntity> targetClass, EntityMeta targetMeta) {
         ClassUtils.getFields(targetClass, true).stream()
                 .filter((field) -> ClassUtils.isNormalField(field) && ClassUtils.isAnnotationOf(field, Property.class))
                 .map((field) -> getPropertyMeta(field.getAnnotation(Property.class), field, targetMeta))
-                .filter(Objects::nonNull).peek((propertyMeta) -> targetMeta.properties.put(propertyMeta.getName(), propertyMeta)).forEachOrdered((propertyMeta) -> {
-            targetMeta.fields.put(propertyMeta.getField().getName(), propertyMeta);
-        });
+                .filter(Objects::nonNull).peek((propertyMeta) -> targetMeta.properties.put(propertyMeta.getName(), propertyMeta)).forEachOrdered((propertyMeta) -> targetMeta.fields.put(propertyMeta.getField().getName(), propertyMeta));
     }
 
     private static PropertyMeta getPropertyMeta(Property property, Field field, EntityMeta targetMeta) {
@@ -254,6 +257,7 @@ public final class EntityMeta implements Serializable {
      * @param targetClass 目标类型
      * @param targetMeta  实体元数据
      */
+    @SuppressWarnings("rawtypes")
     private static void parsePrimaryKeys(Class<? extends IEntity> targetClass, EntityMeta targetMeta) {
         PairObject<Field, Id> id = ClassUtils.getFieldAnnotationFirst(targetClass, Id.class);
         if (id == null) {
@@ -285,6 +289,7 @@ public final class EntityMeta implements Serializable {
      * @param targetClass 目标类型
      * @param targetMeta  实体元数据
      */
+    @SuppressWarnings("rawtypes")
     private static void parseIndexes(Class<? extends IEntity> targetClass, EntityMeta targetMeta) {
         List<Index> indexes = new ArrayList<>();
         if (ClassUtils.isAnnotationOf(targetClass, Indexes.class)) {
@@ -303,9 +308,7 @@ public final class EntityMeta implements Serializable {
                     Arrays.stream(index.fields()).filter(field -> !targetMeta.containsProperty(field)).forEach(field -> {
                         throw new IllegalArgumentException(String.format("Invalid index field '%s'.", field));
                     });
-                }).forEachOrdered((index) -> {
-            targetMeta.indexes.put(index.name(), new IndexMeta(index.name(), index.unique(), Arrays.asList(index.fields())));
-        });
+                }).forEachOrdered((index) -> targetMeta.indexes.put(index.name(), new IndexMeta(index.name(), index.unique(), Arrays.asList(index.fields()))));
     }
 
     /**

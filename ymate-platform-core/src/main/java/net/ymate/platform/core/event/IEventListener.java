@@ -24,6 +24,7 @@ import net.ymate.platform.core.beans.annotation.Ignored;
  * @author 刘镇 (suninformation@163.com) on 15/5/16 上午2:20
  */
 @Ignored
+@SuppressWarnings("rawtypes")
 public interface IEventListener<CONTEXT extends AbstractEventContext> {
 
     /**

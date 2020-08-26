@@ -48,6 +48,7 @@ public class OracleDialect extends AbstractDialect {
     }
 
     @Override
+    @SuppressWarnings("rawtypes")
     public String buildInsertSql(Class<? extends IEntity> entityClass, String prefix, IShardingable shardingable, Fields fields) {
         EntityMeta entityMeta = EntityMeta.load(entityClass);
         ExpressionUtils exp = ExpressionUtils.bind("INSERT INTO ${table_name} (${fields}) VALUES (${values})")

@@ -480,9 +480,7 @@ public class WebUtils {
             item.set("name", validateResult.getName());
             item.set("message", validateResult.getMsg());
             return item;
-        }).forEachOrdered((item) -> {
-            messagesBuilder.append(item.clean().getResult());
-        });
+        }).forEachOrdered((item) -> messagesBuilder.append(item.clean().getResult()));
         ExpressionUtils element = ExpressionUtils.bind(doGetConfigValue(owner, IWebMvcConfig.PARAMS_VALIDATION_TEMPLATE_ELEMENT, "${title}"));
         if (StringUtils.isNotBlank(title)) {
             element.set("title", title);

@@ -21,8 +21,6 @@ import net.ymate.platform.core.beans.annotation.Ignored;
 import net.ymate.platform.core.beans.annotation.Order;
 import net.ymate.platform.core.beans.proxy.IProxy;
 import net.ymate.platform.core.beans.proxy.IProxyChain;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 /**
  * 拦截器代理，支持@Before、@After和@Around方法注解
@@ -31,8 +29,6 @@ import org.apache.commons.logging.LogFactory;
  */
 @Order(-90000)
 public class InterceptProxy implements IProxy {
-
-    private static final Log LOG = LogFactory.getLog(InterceptProxy.class);
 
     @Override
     public Object doProxy(IProxyChain proxyChain) throws Throwable {

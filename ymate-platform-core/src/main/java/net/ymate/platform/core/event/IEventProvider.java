@@ -94,6 +94,7 @@ public interface IEventProvider<T, E extends Enum<E>, EVENT extends Class<? exte
      * @param listenerClass 事件监听器类型
      * @return 移除成功将返回true
      */
+    @SuppressWarnings("rawtypes")
     boolean unregisterListener(EVENT eventClass, Class<? extends IEventListener> listenerClass);
 
     /**

@@ -39,6 +39,7 @@ import java.io.Serializable;
  * @param <PK>     主键类型
  * @author 刘镇 (suninformation@163.com) on 2013-7-16 下午5:22:15
  */
+@SuppressWarnings("rawtypes")
 public abstract class BaseEntity<Entity extends IEntity, PK extends Serializable> implements IEntity<PK> {
 
     private transient IDatabase dbOwner;

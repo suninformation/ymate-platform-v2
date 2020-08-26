@@ -25,7 +25,6 @@ import net.ymate.platform.webmvc.*;
 import net.ymate.platform.webmvc.base.Type;
 import net.ymate.platform.webmvc.context.WebContext;
 import net.ymate.platform.webmvc.exception.ValidationResultException;
-import net.ymate.platform.webmvc.support.GenericResponseWrapper;
 import net.ymate.platform.webmvc.util.*;
 import net.ymate.platform.webmvc.view.IView;
 import net.ymate.platform.webmvc.view.View;
@@ -169,7 +168,7 @@ public class DefaultWebErrorProcessor implements IWebErrorProcessor, IWebInitial
         stringBuilder.append("-------------------------------------------------\n");
         stringBuilder.append("-- ThreadId: ").append(Thread.currentThread().getId()).append("\n");
         stringBuilder.append("-- RequestMapping: ").append(WebContext.getRequestContext().getRequestMapping()).append("\n");
-        stringBuilder.append("-- ResponseStatus: ").append(((GenericResponseWrapper) WebContext.getResponse()).getStatus()).append("\n");
+        stringBuilder.append("-- ResponseStatus: ").append((WebContext.getResponse()).getStatus()).append("\n");
         stringBuilder.append("-- Method: ").append(WebContext.getRequestContext().getHttpMethod().name()).append("\n");
         stringBuilder.append("-- RemoteAddress: ").append(JsonWrapper.toJsonString(WebUtils.getRemoteAddresses(WebContext.getRequest()), false, true)).append("\n");
         //

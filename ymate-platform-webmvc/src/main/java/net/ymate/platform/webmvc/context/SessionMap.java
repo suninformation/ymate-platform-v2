@@ -64,6 +64,7 @@ public class SessionMap extends AbstractMap<String, Object> implements Serializa
 
 
     @Override
+    @SuppressWarnings("rawtypes")
     public Set<Entry<String, Object>> entrySet() {
         if (session == null) {
             return Collections.emptySet();

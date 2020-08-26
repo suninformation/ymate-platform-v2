@@ -27,6 +27,7 @@ import java.util.Set;
 /**
  * @author 刘镇 (suninformation@163.com) on 2011-7-24 下午10:31:48
  */
+@SuppressWarnings("rawtypes")
 public class AttributeMap implements Map {
 
     private static final String UNSUPPORTED = "method makes no sense for a simplified map";

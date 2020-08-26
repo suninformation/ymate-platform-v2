@@ -86,7 +86,10 @@ public final class Aggregation implements IBsonable {
     }
 
     public Aggregation group(Operator id, Query... queries) {
-        BasicDBObject dbObject = new BasicDBObject(IMongo.Opt.ID, id == null ? null : id.toBson());
+        BasicDBObject dbObject = new BasicDBObject();
+        if (id != null) {
+            dbObject.put(IMongo.Opt.ID, id.toBson());
+        }
         for (Query query : queries) {
             dbObject.putAll((BSONObject) query.toBson());
         }

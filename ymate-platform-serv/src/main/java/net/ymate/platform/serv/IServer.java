@@ -29,6 +29,7 @@ import java.io.IOException;
  * @author 刘镇 (suninformation@163.com) on 15/10/15 上午10:21
  */
 @Ignored
+@SuppressWarnings("rawtypes")
 public interface IServer<LISTENER extends IListener, CODEC extends INioCodec> extends Closeable {
 
     /**

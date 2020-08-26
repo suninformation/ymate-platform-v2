@@ -53,6 +53,7 @@ public abstract class AbstractPersistenceConfigurable<DATA_SOURCE extends IDataS
         return super.toModuleConfigurer();
     }
 
+    @SuppressWarnings("rawtypes")
     protected static abstract class AbstractBuilder<T extends AbstractBuilder, CONFIGURABLE extends AbstractPersistenceConfigurable, DATA_SOURCE extends IDataSourceConfigurable> {
 
         protected final CONFIGURABLE configurable;

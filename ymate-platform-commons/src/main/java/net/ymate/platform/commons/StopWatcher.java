@@ -26,11 +26,11 @@ import java.util.concurrent.Callable;
 public final class StopWatcher<V> {
 
     public static StopWatcher<Void> watch(Runnable runnable) {
-        return new StopWatcher<Void>(runnable);
+        return new StopWatcher<>(runnable);
     }
 
     public static <V> StopWatcher<V> watch(Callable<V> callable) throws Exception {
-        return new StopWatcher<V>(callable);
+        return new StopWatcher<>(callable);
     }
 
     private final StopWatch stopWatch = new StopWatch();
