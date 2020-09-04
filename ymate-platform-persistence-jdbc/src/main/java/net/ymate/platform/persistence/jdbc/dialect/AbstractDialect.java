@@ -15,6 +15,10 @@
  */
 package net.ymate.platform.persistence.jdbc.dialect;
 
+import net.sf.jsqlparser.JSQLParserException;
+import net.sf.jsqlparser.parser.CCJSqlParserManager;
+import net.sf.jsqlparser.statement.select.PlainSelect;
+import net.sf.jsqlparser.statement.select.Select;
 import net.ymate.platform.core.util.ClassUtils;
 import net.ymate.platform.core.util.ExpressionUtils;
 import net.ymate.platform.persistence.Fields;
@@ -24,6 +28,7 @@ import net.ymate.platform.persistence.base.EntityMeta;
 import net.ymate.platform.persistence.base.IEntity;
 import org.apache.commons.lang.StringUtils;
 
+import java.io.StringReader;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -119,9 +124,27 @@ public abstract class AbstractDialect implements IDialect {
         }
     }
 
+    protected String doRemoveOrderByElements(String originSql) {
+        try {
+            net.sf.jsqlparser.statement.Statement statement = new CCJSqlParserManager().parse(new StringReader(originSql));
+            if (statement instanceof Select) {
+                Select select = (Select) statement;
+                if (select.getSelectBody() instanceof PlainSelect) {
+                    PlainSelect selectBody = (PlainSelect) select.getSelectBody();
+                    if (null != selectBody.getOrderByElements()) {
+                        selectBody.setOrderByElements(null);
+                    }
+                    return select.toString();
+                }
+            }
+        } catch (JSQLParserException ignored) {
+        }
+        return originSql;
+    }
+
     @Override
     public String buildCountSQL(String originSql) {
-        return ExpressionUtils.bind("SELECT count(*) FROM (${sql}) c_t").set("sql", originSql).getResult();
+        return ExpressionUtils.bind("SELECT count(*) FROM (${sql}) c_t").set("sql", doRemoveOrderByElements(originSql)).getResult();
     }
 
     @Override
