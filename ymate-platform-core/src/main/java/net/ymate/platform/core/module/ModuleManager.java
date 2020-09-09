@@ -42,6 +42,8 @@ public class ModuleManager implements IInitialization<IApplication>, IDestroyabl
 
     private final Set<String> excludedModules = new ConcurrentHashSet<>();
 
+    private final Set<String> includedModules = new ConcurrentHashSet<>();
+
     private IApplication owner;
 
     private boolean initialized;
@@ -104,7 +106,10 @@ public class ModuleManager implements IInitialization<IApplication>, IDestroyabl
      * @return 判断指定名称或类名的模块是否已被排除
      */
     public boolean isModuleExcluded(String moduleName) {
-        return excludedModules.contains(moduleName);
+        if (includedModules.isEmpty()) {
+            return excludedModules.contains(moduleName);
+        }
+        return !includedModules.contains(moduleName);
     }
 
     /**
@@ -123,6 +128,24 @@ public class ModuleManager implements IInitialization<IApplication>, IDestroyabl
      */
     public void addExcludedModules(Collection<String> excludedModuleNames) {
         excludedModules.addAll(excludedModuleNames);
+    }
+
+    /**
+     * 向模块类包含列表添加被包含的模块名或类名
+     *
+     * @param includedModuleName 模块名或类名
+     */
+    public void addIncludedModule(String includedModuleName) {
+        includedModules.add(includedModuleName);
+    }
+
+    /**
+     * 向模块类包含列表添加被包含的模块名或类名集合
+     *
+     * @param includedModuleNames 模块名或类名集合
+     */
+    public void addIncludedModules(Collection<String> includedModuleNames) {
+        includedModules.addAll(includedModuleNames);
     }
 
     /**

@@ -53,6 +53,8 @@ public abstract class AbstractApplicationConfigurer implements IApplicationConfi
 
     private final List<String> excludedModules = new ArrayList<>();
 
+    private final List<String> includedModules = new ArrayList<>();
+
     private final Map<String, String> parameters = new HashMap<>();
 
     public AbstractApplicationConfigurer(IApplicationConfigureParser configureParser) {
@@ -147,6 +149,11 @@ public abstract class AbstractApplicationConfigurer implements IApplicationConfi
         return Collections.unmodifiableList(excludedModules);
     }
 
+    @Override
+    public List<String> getIncludedModules() {
+        return Collections.unmodifiableList(includedModules);
+    }
+
     public void addPackageNames(List<String> packageNames) {
         packageNames.stream().filter(packageName -> !this.packageNames.contains(packageName)).forEach(this.packageNames::add);
     }
@@ -161,6 +168,10 @@ public abstract class AbstractApplicationConfigurer implements IApplicationConfi
 
     public void addExcludedModules(List<String> excludedModules) {
         excludedModules.stream().filter(module -> !this.excludedModules.contains(module)).forEach(this.excludedModules::add);
+    }
+
+    public void addIncludedModules(List<String> includedModules) {
+        includedModules.stream().filter(module -> !this.includedModules.contains(module)).forEach(this.includedModules::add);
     }
 
     @Override

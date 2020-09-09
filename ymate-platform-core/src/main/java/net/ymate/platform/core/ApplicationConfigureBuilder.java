@@ -98,6 +98,13 @@ public class ApplicationConfigureBuilder {
         return this;
     }
 
+    public ApplicationConfigureBuilder includedModules(String... includedModules) {
+        if (includedModules != null && includedModules.length > 0) {
+            configurer.addIncludedModules(Arrays.asList(includedModules));
+        }
+        return this;
+    }
+
     public ApplicationConfigureBuilder passwordProcess(IPasswordProcessor passwordProcessor) {
         configurer.setPasswordProcessor(passwordProcessor);
         return this;

@@ -44,6 +44,8 @@ public final class DefaultApplicationConfigurer extends AbstractApplicationConfi
 
     private static final String CONFIG_EXCLUDED_NODULES = "ymp.excluded_modules";
 
+    private static final String CONFIG_INCLUDED_NODULES = "ymp.included_modules";
+
     private static final String CONFIG_PARAMS_PREFIX = "ymp.params.";
 
     private static final String CONFIG_DEFAULT_LOCALE = "ymp.default_locale";
@@ -72,6 +74,7 @@ public final class DefaultApplicationConfigurer extends AbstractApplicationConfi
             List<String> excludedPackageNames = parseArrayValue(CONFIG_EXCLUDED_PACKAGES);
             List<String> excludedFiles = parseArrayValue(CONFIG_EXCLUDED_FILES);
             List<String> excludedModules = parseArrayValue(CONFIG_EXCLUDED_NODULES);
+            List<String> includedModules = parseArrayValue(CONFIG_INCLUDED_NODULES);
             Map<String, String> parameterMap = configureParser.getConfigReader().getMap(CONFIG_PARAMS_PREFIX);
             if (configureFactory.getMainClass() != null) {
                 if (runEnv == null && configureFactory.getMainClass().isAnnotationPresent(EnableDevMode.class)) {
@@ -102,6 +105,9 @@ public final class DefaultApplicationConfigurer extends AbstractApplicationConfi
                     }
                     if (excludedModules.isEmpty()) {
                         excludedModules.addAll(Arrays.asList(enableAutoScanAnn.excludedModules()));
+                    }
+                    if (includedModules.isEmpty()) {
+                        includedModules.addAll(Arrays.asList(enableAutoScanAnn.includedModules()));
                     }
                 }
                 // 处理默认密码处理器配置注解类
@@ -146,6 +152,7 @@ public final class DefaultApplicationConfigurer extends AbstractApplicationConfi
             addExcludedPackageNames(excludedPackageNames);
             addExcludedFiles(excludedFiles);
             addExcludedModules(excludedModules);
+            addIncludedModules(includedModules);
             //
             setInterceptSettings(InterceptSettings.create(MapSafeConfigReader.bind(configureParser.getConfigReader().getMap(CONFIG_INTERCEPT_PREFIX))));
             //

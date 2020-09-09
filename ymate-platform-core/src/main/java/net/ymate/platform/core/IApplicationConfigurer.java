@@ -100,6 +100,13 @@ public interface IApplicationConfigurer {
     List<String> getExcludedModules();
 
     /**
+     * 获取包含模块名集合，若设置该参数则框架初始化时仅加载被包含的模块
+     *
+     * @return 返回包含模块名集合
+     */
+    List<String> getIncludedModules();
+
+    /**
      * 获取默认语言，若为空则采用JVM默认语言
      *
      * @return 返回语言

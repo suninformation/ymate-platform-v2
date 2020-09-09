@@ -86,6 +86,7 @@ public final class Application implements IApplication {
         //
         IApplicationConfigurer configurer = configureFactory.getConfigurer();
         this.moduleManager.addExcludedModules(configurer.getExcludedModules());
+        this.moduleManager.addIncludedModules(configurer.getIncludedModules());
         this.runEnv = configurer.getRunEnv();
         this.beanFactory = new DefaultBeanFactory(configurer.getProxyFactory());
         this.i18n = new I18N(configurer.getDefaultLocale(), configurer.getI18nEventHandler());

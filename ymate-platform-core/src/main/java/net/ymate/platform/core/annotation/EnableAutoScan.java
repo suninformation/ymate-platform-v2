@@ -50,6 +50,11 @@ public @interface EnableAutoScan {
     String[] excludedModules() default {};
 
     /**
+     * @return 包含模块名集合，若设置该参数则框架初始化时仅加载被包含的模块
+     */
+    String[] includedModules() default {};
+
+    /**
      * @return 对象加载器工厂类型
      */
     Class<? extends IBeanLoadFactory> factoryClass() default DefaultBeanLoadFactory.class;
