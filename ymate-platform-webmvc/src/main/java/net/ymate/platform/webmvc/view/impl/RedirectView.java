@@ -15,7 +15,6 @@
  */
 package net.ymate.platform.webmvc.view.impl;
 
-import net.ymate.platform.commons.util.RuntimeUtils;
 import net.ymate.platform.webmvc.base.Type;
 import net.ymate.platform.webmvc.context.WebContext;
 import net.ymate.platform.webmvc.view.AbstractView;
@@ -47,15 +46,11 @@ public class RedirectView extends AbstractView {
 
     @Override
     protected void doRenderView() throws Exception {
-        // 重定向到其它站点
         if (!path.startsWith(Type.Const.HTTP_PREFIX) && !path.startsWith(Type.Const.HTTPS_PREFIX)) {
-            // 重定向决对路径
             if (path.length() > 0 && path.charAt(0) == Type.Const.PATH_SEPARATOR_CHAR) {
-                path = String.format("%s%s", WebContext.getRequest().getContextPath(), path);
-            }
-            // 重定向相对路径
-            else {
-                path = String.format("%s%s%s", RuntimeUtils.getRootPath(), Type.Const.PATH_SEPARATOR_CHAR, path);
+                path = WebContext.getRequest().getContextPath() + path;
+            } else {
+                path = WebContext.getRequest().getContextPath() + Type.Const.PATH_SEPARATOR_CHAR + path;
             }
         }
         WebContext.getResponse().sendRedirect(buildUrl(path));

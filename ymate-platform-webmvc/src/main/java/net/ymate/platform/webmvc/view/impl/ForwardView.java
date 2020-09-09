@@ -49,8 +49,7 @@ public class ForwardView extends AbstractView {
     @Override
     protected void doRenderView() throws Exception {
         // 绝对路径 : 以 '/' 开头的路径不增加 '/WEB-INF'
-        if (path.charAt(0) != Type.Const.PATH_SEPARATOR_CHAR) {
-            // 包名形式的路径
+        if (path.length() > 0 && path.charAt(0) != Type.Const.PATH_SEPARATOR_CHAR) {
             path = Type.Const.WEB_INF + path;
         }
         // 执行 Forward
