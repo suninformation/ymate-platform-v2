@@ -78,9 +78,9 @@ public class DefaultWebErrorProcessor implements IWebErrorProcessor, IWebInitial
     public IView showErrorMsg(String code, String msg, Map<String, Object> dataMap) {
         HttpServletRequest httpServletRequest = WebContext.getRequest();
         if (WebUtils.isAjax(httpServletRequest) || WebUtils.isXmlFormat(httpServletRequest) || WebUtils.isJsonFormat(httpServletRequest) || StringUtils.containsAny(getErrorDefaultViewFormat(), Type.Const.FORMAT_JSON, Type.Const.FORMAT_XML)) {
-            return WebResult.formatView(WebResult.create(BlurObject.bind(code).toIntValue()).msg(msg).data(dataMap), getErrorDefaultViewFormat());
+            return WebResult.formatView(WebResult.builder().code(code).msg(msg).data(dataMap).build(), getErrorDefaultViewFormat());
         }
-        return WebUtils.buildErrorView(owner, BlurObject.bind(code).toIntValue(), msg).addAttribute(Type.Const.PARAM_DATA, dataMap);
+        return WebUtils.buildErrorView(owner, null, code, msg, null, 0, dataMap);
     }
 
     @Override

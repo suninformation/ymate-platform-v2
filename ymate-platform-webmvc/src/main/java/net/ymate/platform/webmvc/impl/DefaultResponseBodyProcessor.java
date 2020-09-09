@@ -32,7 +32,7 @@ public class DefaultResponseBodyProcessor implements IResponseBodyProcessor {
         if (result instanceof IWebResult) {
             returnValue = (IWebResult<?>) result;
         } else {
-            returnValue = WebResult.succeed().data(result);
+            returnValue = WebResult.builder().succeed().data(result).build();
         }
         if (keepNull) {
             returnValue.keepNullValue();
