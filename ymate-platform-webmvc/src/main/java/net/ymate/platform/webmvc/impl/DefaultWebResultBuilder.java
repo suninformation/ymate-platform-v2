@@ -15,14 +15,19 @@
  */
 package net.ymate.platform.webmvc.impl;
 
+import net.ymate.platform.commons.json.IJsonObjectWrapper;
+import net.ymate.platform.commons.json.JsonWrapper;
 import net.ymate.platform.commons.lang.BlurObject;
 import net.ymate.platform.core.support.ErrorCode;
 import net.ymate.platform.webmvc.IWebResult;
 import net.ymate.platform.webmvc.IWebResultBuilder;
+import net.ymate.platform.webmvc.base.Type;
 import net.ymate.platform.webmvc.util.WebResult;
 
 import java.io.Serializable;
+import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * @author 刘镇 (suninformation@163.com) on 2020/09/08 22:31
@@ -31,6 +36,34 @@ import java.util.Map;
 public class DefaultWebResultBuilder implements IWebResultBuilder {
 
     private final WebResult result = new WebResult();
+
+    @Override
+    public IWebResultBuilder fromJson(String jsonStr) {
+        JsonWrapper jsonWrapper = JsonWrapper.fromJson(jsonStr);
+        if (jsonWrapper != null && jsonWrapper.isJsonObject()) {
+            return fromJson(Objects.requireNonNull(jsonWrapper.getAsJsonObject()));
+        }
+        return this;
+    }
+
+    @Override
+    public IWebResultBuilder fromJson(IJsonObjectWrapper jsonObject) {
+        Map<String, Object> map = new HashMap<>(jsonObject.toMap());
+        Object ret = map.remove(Type.Const.PARAM_RET);
+        if (ret != null) {
+            result.code(BlurObject.bind(ret).toInteger());
+        }
+        Object msg = map.remove(Type.Const.PARAM_MSG);
+        if (msg != null) {
+            result.msg(BlurObject.bind(msg).toStringValue());
+        }
+        Object data = map.remove(Type.Const.PARAM_DATA);
+        if (data != null) {
+            result.data(data);
+        }
+        result.attrs(map);
+        return this;
+    }
 
     @Override
     public IWebResultBuilder succeed() {
