@@ -135,8 +135,12 @@ public class DefaultPluginFactory implements IPluginFactory {
                 excludedFileNames.addAll(Arrays.asList(confAnn.excludedFileNames()));
             }
         }
+        File pluginHomeFile = new File(RuntimeUtils.replaceEnvVariable(configReader.getString(IPluginConfig.PLUGIN_HOME, StringUtils.defaultIfBlank(confAnn == null ? null : confAnn.pluginHome(), IPluginConfig.DEFAULT_PLUGIN_HOME))));
+        if (!pluginHomeFile.exists() && pluginHomeFile.mkdirs() && LOG.isInfoEnabled()) {
+            LOG.info(String.format("Successfully created plugin home directory: %s", pluginHomeFile.getPath()));
+        }
         IPluginConfig pluginConfig = DefaultPluginConfig.builder()
-                .pluginHome(new File(RuntimeUtils.replaceEnvVariable(configReader.getString(IPluginConfig.PLUGIN_HOME, StringUtils.defaultIfBlank(confAnn == null ? null : confAnn.pluginHome(), IPluginConfig.DEFAULT_PLUGIN_HOME)))))
+                .pluginHome(pluginHomeFile)
                 .packageNames(packageNames)
                 .excludedPackageNames(excludedPackageNames)
                 .excludedFileNames(excludedFileNames)
