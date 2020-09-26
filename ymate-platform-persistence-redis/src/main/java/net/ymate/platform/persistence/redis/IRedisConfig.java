@@ -34,7 +34,7 @@ public interface IRedisConfig extends IPersistenceConfig<IRedis, IRedisDataSourc
 
     String HOST = "host";
 
-    String PORT = "host";
+    String PORT = "port";
 
     String CLIENT_NAME = "client_name";
 
