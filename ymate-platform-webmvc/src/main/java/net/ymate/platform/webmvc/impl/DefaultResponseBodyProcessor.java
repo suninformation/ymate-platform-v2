@@ -18,6 +18,7 @@ package net.ymate.platform.webmvc.impl;
 import net.ymate.platform.webmvc.IResponseBodyProcessor;
 import net.ymate.platform.webmvc.IWebMvc;
 import net.ymate.platform.webmvc.IWebResult;
+import net.ymate.platform.webmvc.IWebResultBuilder;
 import net.ymate.platform.webmvc.util.WebResult;
 import net.ymate.platform.webmvc.view.IView;
 
@@ -31,6 +32,8 @@ public class DefaultResponseBodyProcessor implements IResponseBodyProcessor {
         IWebResult<?> returnValue;
         if (result instanceof IWebResult) {
             returnValue = (IWebResult<?>) result;
+        } else if (result instanceof IWebResultBuilder) {
+            returnValue = ((IWebResultBuilder) result).build();
         } else {
             returnValue = WebResult.builder().succeed().data(result).build();
         }

@@ -118,6 +118,8 @@ public final class RequestExecutor {
                 resultView = doProcessResultToView(owner, requestMeta, resultObj);
             } else if (resultObj instanceof IWebResult) {
                 resultView = WebResult.formatView((IWebResult<?>) resultObj, Type.Const.FORMAT_JSON);
+            } else if (resultObj instanceof IWebResultBuilder) {
+                resultView = WebResult.formatView(((IWebResultBuilder) resultObj).build(), Type.Const.FORMAT_JSON);
             } else {
                 IResponseBodyProcessor responseBodyProcessor;
                 if (IResponseBodyProcessor.class.equals(responseBody.value())) {
