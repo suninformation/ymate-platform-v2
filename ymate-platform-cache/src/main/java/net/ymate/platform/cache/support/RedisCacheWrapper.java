@@ -113,12 +113,11 @@ public class RedisCacheWrapper implements ICache {
         }
     }
 
-    private void put(Object key, Object value, boolean update) throws CacheException {
+    private void put(Object key, Object value, int timeout, boolean update) throws CacheException {
         try (IRedisCommandHolder holder = redis.getDefaultConnectionHolder()) {
             IRedisCommander commander = holder.getConnection();
             String cacheKey = serializeKey(key);
             String cacheValue = serializeValue(value);
-            int timeout = 0;
             if (value instanceof CacheElement) {
                 timeout = ((CacheElement) value).getTimeout();
             }
@@ -155,12 +154,22 @@ public class RedisCacheWrapper implements ICache {
 
     @Override
     public void put(Object key, Object value) throws CacheException {
-        put(key, value, false);
+        put(key, value, 0, false);
+    }
+
+    @Override
+    public void put(Object key, Object value, int timeout) throws CacheException {
+        put(key, value, timeout, false);
     }
 
     @Override
     public void update(Object key, Object value) throws CacheException {
-        put(key, value, true);
+        put(key, value, 0, true);
+    }
+
+    @Override
+    public void update(Object key, Object value, int timeout) throws CacheException {
+        put(key, value, timeout, true);
     }
 
     @Override

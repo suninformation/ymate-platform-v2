@@ -97,9 +97,13 @@ public class EhCacheWrapper implements ICache, ICacheLocker {
 
     @Override
     public void put(Object key, Object value) throws CacheException {
+        put(key, value, 0);
+    }
+
+    @Override
+    public void put(Object key, Object value, int timeout) throws CacheException {
         try {
             Element element = new Element(key, value);
-            int timeout = 0;
             if (value instanceof CacheElement) {
                 timeout = ((CacheElement) value).getTimeout();
             }
@@ -118,6 +122,11 @@ public class EhCacheWrapper implements ICache, ICacheLocker {
     @Override
     public void update(Object key, Object value) throws CacheException {
         put(key, value);
+    }
+
+    @Override
+    public void update(Object key, Object value, int timeout) throws CacheException {
+        put(key, value, timeout);
     }
 
     @Override

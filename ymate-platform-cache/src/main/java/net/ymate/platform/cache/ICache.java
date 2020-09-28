@@ -54,6 +54,16 @@ public interface ICache extends IDestroyable {
     void put(Object key, Object value) throws CacheException;
 
     /**
+     * 添加对象到缓存
+     *
+     * @param key     缓存key
+     * @param value   预缓存的元素对象
+     * @param timeout 自定义超时时间（秒），若为0则使用默认值
+     * @throws CacheException 可能产生的异常
+     */
+    void put(Object key, Object value, int timeout) throws CacheException;
+
+    /**
      * 更新对象到缓存
      *
      * @param key   缓存key
@@ -61,6 +71,16 @@ public interface ICache extends IDestroyable {
      * @throws CacheException 可能产生的异常
      */
     void update(Object key, Object value) throws CacheException;
+
+    /**
+     * 更新对象到缓存
+     *
+     * @param key     缓存key
+     * @param value   预缓存的元素对象
+     * @param timeout 自定义超时时间（秒），若为0则使用默认值
+     * @throws CacheException 可能产生的异常
+     */
+    void update(Object key, Object value, int timeout) throws CacheException;
 
     /**
      * 获取当前所有缓存对象key的集合

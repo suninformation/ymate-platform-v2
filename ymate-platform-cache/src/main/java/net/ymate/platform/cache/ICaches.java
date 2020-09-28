@@ -113,6 +113,17 @@ public interface ICaches extends IInitialization<IApplication>, IDestroyable {
     void put(String cacheName, Object key, Object value) throws CacheException;
 
     /**
+     * 添加对象到指定名称的缓存中
+     *
+     * @param cacheName 缓存名称
+     * @param key       缓存Key
+     * @param value     预缓存的元素对象
+     * @param timeout   自定义超时时间（秒），若为0则使用默认值
+     * @throws CacheException 可能产生的异常
+     */
+    void put(String cacheName, Object key, Object value, int timeout) throws CacheException;
+
+    /**
      * 添加对象到默认缓存中
      *
      * @param key   缓存Key
@@ -120,6 +131,16 @@ public interface ICaches extends IInitialization<IApplication>, IDestroyable {
      * @throws CacheException 可能产生的异常
      */
     void put(Object key, Object value) throws CacheException;
+
+    /**
+     * 添加对象到默认缓存中
+     *
+     * @param key     缓存Key
+     * @param value   预缓存的元素对象
+     * @param timeout 自定义超时时间（秒），若为0则使用默认值
+     * @throws CacheException 可能产生的异常
+     */
+    void put(Object key, Object value, int timeout) throws CacheException;
 
     /**
      * 更新对象到指定名称的缓存中
@@ -132,6 +153,17 @@ public interface ICaches extends IInitialization<IApplication>, IDestroyable {
     void update(String cacheName, Object key, Object value) throws CacheException;
 
     /**
+     * 更新对象到指定名称的缓存中
+     *
+     * @param cacheName 缓存名称
+     * @param key       缓存Key
+     * @param value     缓存元素对象
+     * @param timeout   自定义超时时间（秒），若为0则使用默认值
+     * @throws CacheException 可能产生的异常
+     */
+    void update(String cacheName, Object key, Object value, int timeout) throws CacheException;
+
+    /**
      * 更新对象到默认缓存中
      *
      * @param key   缓存Key
@@ -139,6 +171,8 @@ public interface ICaches extends IInitialization<IApplication>, IDestroyable {
      * @throws CacheException 可能产生的异常
      */
     void update(Object key, Object value) throws CacheException;
+
+    void update(Object key, Object value, int timeout) throws CacheException;
 
     /**
      * 获取指定名称的缓存中所有key值集合

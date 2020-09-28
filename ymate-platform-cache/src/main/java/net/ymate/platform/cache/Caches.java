@@ -160,32 +160,56 @@ public final class Caches implements IModule, ICaches {
         return getAll(config.getDefaultCacheName());
     }
 
-    private void doPut(String cacheName, Object key, Object value) {
+    private void doPut(String cacheName, Object key, Object value, int timeout, boolean update) {
         ICache cache = config.getCacheProvider().getCache(cacheName);
         if (cache == null) {
             cache = config.getCacheProvider().createCache(cacheName, config.getCacheEventListener());
         }
-        cache.put(key, value);
+        if (update) {
+            cache.update(key, value, timeout);
+        } else {
+            cache.put(key, value, timeout);
+        }
     }
 
     @Override
     public void put(String cacheName, Object key, Object value) {
-        doPut(cacheName, key, value);
+        doPut(cacheName, key, value, 0, false);
+    }
+
+    @Override
+    public void put(String cacheName, Object key, Object value, int timeout) throws CacheException {
+        doPut(cacheName, key, value, timeout, false);
     }
 
     @Override
     public void put(Object key, Object value) {
-        put(config.getDefaultCacheName(), key, value);
+        put(config.getDefaultCacheName(), key, value, 0);
+    }
+
+    @Override
+    public void put(Object key, Object value, int timeout) throws CacheException {
+        put(config.getDefaultCacheName(), key, value, timeout);
     }
 
     @Override
     public void update(String cacheName, Object key, Object value) {
-        doPut(cacheName, key, value);
+        doPut(cacheName, key, value, 0, true);
+    }
+
+    @Override
+    public void update(String cacheName, Object key, Object value, int timeout) throws CacheException {
+        doPut(cacheName, key, value, timeout, true);
     }
 
     @Override
     public void update(Object key, Object value) {
         update(config.getDefaultCacheName(), key, value);
+    }
+
+    @Override
+    public void update(Object key, Object value, int timeout) throws CacheException {
+        update(config.getDefaultCacheName(), key, value, timeout);
     }
 
     @Override

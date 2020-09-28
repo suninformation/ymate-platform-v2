@@ -121,27 +121,37 @@ public class MultilevelCacheWrapper implements ICache, ICacheLocker {
 
     @Override
     public void put(Object key, Object value) throws CacheException {
+        put(key, value, 0);
+    }
+
+    @Override
+    public void put(Object key, Object value, int timeout) throws CacheException {
         MultilevelKey multilevelKey = MultilevelKey.bind(key);
         if (multilevelKey.isMaster()) {
-            masterCache.put(multilevelKey.getKey(), value);
+            masterCache.put(multilevelKey.getKey(), value, timeout);
             if (slaveCacheAutoSync) {
-                slaveCache.put(multilevelKey.getKey(), value);
+                slaveCache.put(multilevelKey.getKey(), value, timeout);
             }
         } else {
-            slaveCache.put(multilevelKey.getKey(), value);
+            slaveCache.put(multilevelKey.getKey(), value, timeout);
         }
     }
 
     @Override
     public void update(Object key, Object value) throws CacheException {
+        update(key, value, 0);
+    }
+
+    @Override
+    public void update(Object key, Object value, int timeout) throws CacheException {
         MultilevelKey multilevelKey = MultilevelKey.bind(key);
         if (multilevelKey.isMaster()) {
-            masterCache.update(multilevelKey.getKey(), value);
+            masterCache.update(multilevelKey.getKey(), value, timeout);
             if (slaveCacheAutoSync) {
-                slaveCache.update(multilevelKey.getKey(), value);
+                slaveCache.update(multilevelKey.getKey(), value, timeout);
             }
         } else {
-            slaveCache.update(multilevelKey.getKey(), value);
+            slaveCache.update(multilevelKey.getKey(), value, timeout);
         }
     }
 
