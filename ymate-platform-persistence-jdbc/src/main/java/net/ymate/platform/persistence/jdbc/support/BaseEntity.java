@@ -819,9 +819,12 @@ public abstract class BaseEntity<Entity extends IEntity, PK extends Serializable
         ClassUtils.BeanWrapper<T> wrapper = ClassUtils.wrapper(entity);
         boolean flag = false;
         for (String field : entityMeta.getPropertyNames()) {
-            Object value;
+            Object value = null;
             if (entityMeta.isMultiplePrimaryKey() && entityMeta.isPrimaryKey(field)) {
-                value = entityMeta.getPropertyByName(field).getField().get(entity.getId());
+                Object entityId = entity.getId();
+                if (entityId != null) {
+                    value = entityMeta.getPropertyByName(field).getField().get(entityId);
+                }
             } else {
                 value = wrapper.getValue(entityMeta.getPropertyByName(field).getField().getName());
             }
