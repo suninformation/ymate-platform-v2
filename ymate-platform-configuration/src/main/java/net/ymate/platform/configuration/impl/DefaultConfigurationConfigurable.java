@@ -17,6 +17,7 @@ package net.ymate.platform.configuration.impl;
 
 import net.ymate.platform.core.configuration.IConfig;
 import net.ymate.platform.core.configuration.IConfigurationConfig;
+import net.ymate.platform.core.configuration.IConfigurationProvider;
 import net.ymate.platform.core.module.IModuleConfigurer;
 import net.ymate.platform.core.module.impl.DefaultModuleConfigurable;
 
@@ -61,8 +62,8 @@ public final class DefaultConfigurationConfigurable extends DefaultModuleConfigu
             return this;
         }
 
-        public Builder configurationProviderClass(String configurationProviderClass) {
-            configurable.addConfig(IConfigurationConfig.PROVIDER_CLASS, configurationProviderClass);
+        public Builder configurationProviderClass(Class<? extends IConfigurationProvider> configurationProviderClass) {
+            configurable.addConfig(IConfigurationConfig.PROVIDER_CLASS, configurationProviderClass.getName());
             return this;
         }
 
