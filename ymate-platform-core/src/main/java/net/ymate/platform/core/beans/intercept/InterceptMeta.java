@@ -135,7 +135,7 @@ public final class InterceptMeta {
                 } else if (annotation instanceof After) {
                     Arrays.stream(((After) annotation).value())
                             .filter(interceptorClass -> isNotCleanInterceptor(cleanAnn, IInterceptor.CleanType.AFTER, interceptorClass, settingMeta))
-                            .forEach(beforeIntercepts::add);
+                            .forEach(afterIntercepts::add);
                 }
             }
         }
