@@ -103,21 +103,11 @@ public class DefaultWebErrorProcessor implements IWebErrorProcessor, IWebInitial
                         IExceptionProcessor.Result result = exceptionProcessor.process(unwrapThrow);
                         if (result != null) {
                             showErrorMsg(String.valueOf(result.getCode()), WebUtils.errorCodeI18n(this.owner, result), result.getAttributes()).render();
-                        } else if (LOG.isErrorEnabled()) {
-                            if (!analysisDisabled && owner.getOwner().isDevEnv()) {
-                                LOG.error(exceptionAnalysis(unwrapThrow));
-                            } else {
-                                LOG.error(StringUtils.EMPTY, unwrapThrow);
-                            }
+                        } else {
+                            doProcessError(unwrapThrow);
                         }
                     } else {
-                        if (LOG.isErrorEnabled()) {
-                            if (!analysisDisabled && owner.getOwner().isDevEnv()) {
-                                LOG.error(exceptionAnalysis(unwrapThrow));
-                            } else {
-                                LOG.error(StringUtils.EMPTY, unwrapThrow);
-                            }
-                        }
+                        doProcessError(unwrapThrow);
                         showErrorMsg(String.valueOf(ErrorCode.INTERNAL_SYSTEM_ERROR), WebUtils.errorCodeI18n(this.owner, ErrorCode.INTERNAL_SYSTEM_ERROR, ErrorCode.MSG_INTERNAL_SYSTEM_ERROR), null).render();
                     }
                 }
@@ -127,6 +117,20 @@ public class DefaultWebErrorProcessor implements IWebErrorProcessor, IWebInitial
                 LOG.warn(StringUtils.EMPTY, RuntimeUtils.unwrapThrow(e1));
             }
         }
+    }
+
+    protected void doProcessError(Throwable unwrapThrow) {
+        WebEvent eventContext = (WebEvent) new WebEvent(owner, WebEvent.EVENT.REQUEST_UNEXPECTED_ERROR).setEventSource(unwrapThrow);
+        if (LOG.isErrorEnabled()) {
+            if (!analysisDisabled && owner.getOwner().isDevEnv()) {
+                String errMsg = exceptionAnalysis(unwrapThrow);
+                LOG.error(errMsg);
+                eventContext.addParamExtend("errorMessage", errMsg);
+            } else {
+                LOG.error(StringUtils.EMPTY, unwrapThrow);
+            }
+        }
+        owner.getOwner().getEvents().fireEvent(eventContext);
     }
 
     @Override

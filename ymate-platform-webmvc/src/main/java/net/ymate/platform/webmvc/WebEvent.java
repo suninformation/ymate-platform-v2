@@ -115,7 +115,12 @@ public class WebEvent extends AbstractEventContext<IWebMvc, WebEvent.EVENT> impl
         /**
          * 完成控制器方法请求事件
          */
-        REQUEST_COMPLETED
+        REQUEST_COMPLETED,
+
+        /**
+         * 控制器方法执行过程中发生异常错误
+         */
+        REQUEST_UNEXPECTED_ERROR
     }
 
     public WebEvent(IWebMvc owner, EVENT eventName) {
