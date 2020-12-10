@@ -22,6 +22,7 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.IntStream;
@@ -134,8 +135,10 @@ public class ConsoleTableBuilder {
         if (csv) {
             rows.forEach(row -> {
                 IntStream.range(0, this.column).forEachOrdered(columnIdx -> {
-                    Column currColumn = row.getColumns().get(columnIdx);
-                    stringBuilder.append(currColumn.getContent());
+                    if (columnIdx < row.getColumns().size()) {
+                        Column currColumn = row.getColumns().get(columnIdx);
+                        stringBuilder.append(currColumn.getContent());
+                    }
                     if (columnIdx < this.column - 1) {
                         stringBuilder.append(',');
                     }
@@ -193,6 +196,17 @@ public class ConsoleTableBuilder {
 
     public void writeTo(OutputStream outputStream) throws IOException {
         try (InputStream inputStream = new ByteArrayInputStream(toString().getBytes())) {
+            IOUtils.copyLarge(inputStream, outputStream);
+        }
+    }
+
+    public void writeTo(OutputStream outputStream, Charset charset) throws IOException {
+        writeTo(outputStream, charset.name());
+    }
+
+    public void writeTo(OutputStream outputStream, String charsetName) throws IOException {
+        byte[] bytes = StringUtils.isNotBlank(charsetName) ? toString().getBytes(charsetName) : toString().getBytes();
+        try (InputStream inputStream = new ByteArrayInputStream(bytes)) {
             IOUtils.copyLarge(inputStream, outputStream);
         }
     }
