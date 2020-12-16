@@ -309,7 +309,7 @@ public final class Scaffold {
                     .addConstField(new Attr(String.class.getSimpleName(), doNamedFilter(INamedFilter.Type.COLUMN, primaryKeyColumn.getColumnName()).toUpperCase(), primaryKeyColumn.getColumnName()));
         } else {
             ColumnInfo primaryKeyColumn = tableInfo.getColumns().get("id");
-            Attr primaryKeyAttr = primaryKeyColumn == null ? new Attr(Serializable.class.getSimpleName(), "id") : Attr.build(primaryKeyColumn);
+            Attr primaryKeyAttr = primaryKeyColumn == null ? new Attr(Serializable.class.getSimpleName(), "id", "id") : Attr.build(primaryKeyColumn);
             entityInfoBuilder.primaryKeyName("id")
                     .primaryKeyType(primaryKeyColumn == null ? Serializable.class.getSimpleName() : primaryKeyColumn.getColumnType())
                     .addField(primaryKeyAttr)
