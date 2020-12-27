@@ -252,7 +252,7 @@ public final class Scaffold {
             List<TableInfo> tableInfos = new ArrayList<>();
             ResultSetHelper.bind(session.find(sql, new ArrayResultSetHandler())).forEach((wrapper, row) -> {
                 String tableName = wrapper.getAsString(0);
-                if (tableNames.isEmpty() || tableNames.contains(tableName)) {
+                if (tableNames.isEmpty() || tableNames.contains(tableName) || tableNames.stream().anyMatch(tName -> StringUtils.contains(tName, "*") && StringUtils.startsWithIgnoreCase(tableName, StringUtils.substringBefore(tName, "*")))) {
                     if (doCheckTableNameNotInBlacklist(tableName)) {
                         tableInfos.add(TableInfo.create(session.getConnectionHolder(), scaffold, tableName, view));
                     } else if (LOG.isInfoEnabled()) {
