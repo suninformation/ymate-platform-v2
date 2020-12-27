@@ -17,6 +17,7 @@ package net.ymate.platform.commons.http;
 
 import org.apache.http.entity.mime.content.ContentBody;
 
+import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -26,7 +27,7 @@ import java.io.InputStream;
  *
  * @author 刘镇 (suninformation@163.com) on 15/8/29 上午9:37
  */
-public interface IFileWrapper {
+public interface IFileWrapper extends Closeable {
 
     /**
      * 是否存在错误
@@ -84,6 +85,13 @@ public interface IFileWrapper {
      * @throws IOException 可能产生的异常
      */
     InputStream getInputStream() throws IOException;
+
+    /**
+     * 获取文件对象
+     *
+     * @return 返回文件对象
+     */
+    File getFile();
 
     /**
      * 复制文件到目标文件

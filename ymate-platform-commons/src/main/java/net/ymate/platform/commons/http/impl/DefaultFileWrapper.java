@@ -51,6 +51,8 @@ public class DefaultFileWrapper implements IFileWrapper {
 
     private File tempFile;
 
+    private boolean needClean;
+
     public DefaultFileWrapper(String fileName, String contentType, File sourceFile) {
         this.tempFile = sourceFile;
         this.fileName = StringUtils.defaultIfBlank(fileName, sourceFile.getName());
@@ -69,12 +71,12 @@ public class DefaultFileWrapper implements IFileWrapper {
         this.contentType = contentType;
         this.contentLength = contentLength;
         //
-        doParseFileName();
-        //
         tempFile = File.createTempFile("download_", fileName);
         try (OutputStream outputStream = new FileOutputStream(tempFile)) {
             IOUtils.copyLarge(sourceInputStream, outputStream);
         }
+        needClean = true;
+        doParseFileName();
     }
 
     public DefaultFileWrapper(String contentType, File sourceFile) {
@@ -90,9 +92,17 @@ public class DefaultFileWrapper implements IFileWrapper {
     }
 
     private void doParseFileName() {
-        if (StringUtils.isNotBlank(this.fileName)) {
+        boolean fileNameNull = StringUtils.isBlank(this.fileName);
+        if (fileNameNull && tempFile != null) {
+            this.fileName = tempFile.getName();
+            fileNameNull = false;
+        }
+        if (!fileNameNull) {
             name = StringUtils.substringBefore(StringUtils.replace(this.fileName, "\"", StringUtils.EMPTY), ".");
             suffix = FileUtils.getExtName(this.fileName);
+            if (StringUtils.equalsIgnoreCase(suffix, "tmp") && StringUtils.isNotBlank(this.contentType)) {
+                suffix = StringUtils.defaultIfBlank(MimeTypeUtils.getFileExtName(this.contentType), suffix);
+            }
         }
     }
 
@@ -156,6 +166,11 @@ public class DefaultFileWrapper implements IFileWrapper {
     }
 
     @Override
+    public File getFile() {
+        return tempFile;
+    }
+
+    @Override
     public void writeTo(File distFile) throws IOException {
         FileUtils.writeTo(tempFile, distFile);
     }
@@ -169,5 +184,12 @@ public class DefaultFileWrapper implements IFileWrapper {
                 return len;
             }
         };
+    }
+
+    @Override
+    public void close() throws IOException {
+        if (needClean && tempFile != null) {
+            tempFile.delete();
+        }
     }
 }

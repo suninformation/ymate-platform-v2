@@ -32,10 +32,7 @@ import org.apache.http.message.BasicNameValuePair;
 import java.io.File;
 import java.io.InputStream;
 import java.nio.charset.Charset;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * @author 刘镇 (suninformation@163.com) on 2020/04/12 13:56
@@ -91,6 +88,13 @@ public final class HttpRequestBuilder {
     public HttpRequestBuilder addHeader(Header header) {
         if (header != null) {
             headers.add(header);
+        }
+        return this;
+    }
+
+    public HttpRequestBuilder addHeaders(Header[] headers) {
+        if (headers != null) {
+            Arrays.stream(headers).forEach(this::addHeader);
         }
         return this;
     }

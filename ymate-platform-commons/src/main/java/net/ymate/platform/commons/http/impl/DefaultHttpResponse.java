@@ -92,7 +92,7 @@ public class DefaultHttpResponse implements IHttpResponse {
         if (download && response.getStatusLine().getStatusCode() == HttpClientHelper.HTTP_STATUS_CODE_SUCCESS) {
             String fileName = null;
             if (response.containsHeader(HttpClientHelper.HEADER_CONTENT_DISPOSITION)) {
-                fileName = StringUtils.substringAfter(response.getFirstHeader(HttpClientHelper.HEADER_CONTENT_DISPOSITION).getValue(), "filename=");
+                fileName = StringUtils.replace(StringUtils.substringAfter(response.getFirstHeader(HttpClientHelper.HEADER_CONTENT_DISPOSITION).getValue(), "filename="), "\"", StringUtils.EMPTY);
             }
             fileWrapper = new DefaultFileWrapper(fileName, response.getEntity().getContentType().getValue(), response.getEntity().getContentLength(), new BufferedInputStream(response.getEntity().getContent()));
             if (fileHandler != null) {
@@ -168,5 +168,12 @@ public class DefaultHttpResponse implements IHttpResponse {
     @Override
     public String toString() {
         return String.format("{statusCode=%d, content='%s', contentType='%s', contentEncoding='%s', contentLength=%d, headers=%s}", statusCode, content, contentType, contentEncoding, contentLength, headers);
+    }
+
+    @Override
+    public void close() throws IOException {
+        if (fileWrapper != null) {
+            fileWrapper.close();
+        }
     }
 }

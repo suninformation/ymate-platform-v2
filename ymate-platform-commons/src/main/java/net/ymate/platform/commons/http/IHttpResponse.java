@@ -15,6 +15,7 @@
  */
 package net.ymate.platform.commons.http;
 
+import java.io.Closeable;
 import java.io.IOException;
 import java.util.Locale;
 import java.util.Map;
@@ -24,7 +25,7 @@ import java.util.Map;
  *
  * @author 刘镇 (suninformation@163.com) on 15/9/7 下午11:20
  */
-public interface IHttpResponse {
+public interface IHttpResponse extends Closeable {
 
     /**
      * 获取HTTP状态码
