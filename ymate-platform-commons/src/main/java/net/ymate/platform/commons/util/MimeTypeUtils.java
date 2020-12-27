@@ -30,6 +30,8 @@ public class MimeTypeUtils {
 
     private static final Map<String, String> MIME_TYPE_MAPS = new HashMap<>();
 
+    private static final Map<String, String> FILE_EXT_MAPS = new HashMap<>();
+
     static {
         Properties configs = new Properties();
         InputStream inputStream = MimeTypeUtils.class.getClassLoader().getResourceAsStream("mimetypes-conf.properties");
@@ -41,8 +43,11 @@ public class MimeTypeUtils {
                 configs.load(inputStream);
                 configs.keySet().forEach((key) -> {
                     String[] values = StringUtils.split(configs.getProperty((String) key, StringUtils.EMPTY), "|");
-                    for (String value : values) {
-                        MIME_TYPE_MAPS.put(value, (String) key);
+                    if (values != null && values.length > 0) {
+                        FILE_EXT_MAPS.put((String) key, values[0]);
+                        for (String value : values) {
+                            MIME_TYPE_MAPS.put(value, (String) key);
+                        }
                     }
                 });
             } catch (IOException ignored) {
@@ -67,5 +72,16 @@ public class MimeTypeUtils {
             extName = extName.substring(1);
         }
         return MIME_TYPE_MAPS.get(extName);
+    }
+
+    /**
+     * @param mimeType MIME_TYPE类型
+     * @return 根据MIME_TYPE类型获取对应的文件扩展名
+     */
+    public static String getFileExtName(String mimeType) {
+        if (StringUtils.isBlank(mimeType)) {
+            return null;
+        }
+        return FILE_EXT_MAPS.get(mimeType);
     }
 }
