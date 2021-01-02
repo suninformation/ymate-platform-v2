@@ -115,6 +115,10 @@ public interface IFunction {
         return addition(paramOne, paramTwo.toString());
     }
 
+    static IFunction addition(IFunction paramOne, IFunction paramTwo) {
+        return addition(paramOne.toString(), paramTwo.toString());
+    }
+
     /**
      * 加法
      *
@@ -157,6 +161,10 @@ public interface IFunction {
 
     static IFunction subtract(String paramOne, IFunction paramTwo) {
         return subtract(paramOne, paramTwo.build());
+    }
+
+    static IFunction subtract(IFunction paramOne, IFunction paramTwo) {
+        return subtract(paramOne.toString(), paramTwo.build());
     }
 
     /**
@@ -203,6 +211,10 @@ public interface IFunction {
         return multiply(paramOne, paramTwo.build());
     }
 
+    static IFunction multiply(IFunction paramOne, IFunction paramTwo) {
+        return multiply(paramOne.toString(), paramTwo.build());
+    }
+
     /**
      * 乘法
      *
@@ -245,6 +257,10 @@ public interface IFunction {
 
     static IFunction divide(String paramOne, IFunction paramTwo) {
         return divide(paramOne, paramTwo.build());
+    }
+
+    static IFunction divide(IFunction paramOne, IFunction paramTwo) {
+        return divide(paramOne.toString(), paramTwo.build());
     }
 
     /**
