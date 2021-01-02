@@ -25,10 +25,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -91,7 +88,7 @@ public final class JsonWrapper implements Serializable {
             Collection<?> collection = (Collection<?>) value;
             value = collection.stream().map(JsonWrapper::unwrap).collect(Collectors.toCollection(() -> new ArrayList<>(collection.size())));
         } else if (value instanceof Map) {
-            Map<String, Object> newMap = new HashMap<>();
+            Map<String, Object> newMap = new LinkedHashMap<>();
             ((Map<?, ?>) value).forEach((key, v) -> newMap.put(String.valueOf(key), unwrap(v)));
             value = newMap;
         }
