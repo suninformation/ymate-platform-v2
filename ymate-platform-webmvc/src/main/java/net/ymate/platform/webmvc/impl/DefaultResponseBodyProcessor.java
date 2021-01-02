@@ -32,16 +32,18 @@ public class DefaultResponseBodyProcessor implements IResponseBodyProcessor {
         IWebResult<?> returnValue;
         if (result instanceof IWebResult) {
             returnValue = (IWebResult<?>) result;
-        } else if (result instanceof IWebResultBuilder) {
-            returnValue = ((IWebResultBuilder) result).build();
         } else {
-            returnValue = WebResult.builder().succeed().data(result).build();
-        }
-        if (keepNull) {
-            returnValue.keepNullValue();
-        }
-        if (contentType) {
-            returnValue.withContentType();
+            if (result instanceof IWebResultBuilder) {
+                returnValue = ((IWebResultBuilder) result).build();
+            } else {
+                returnValue = WebResult.builder().succeed().data(result).build();
+            }
+            if (keepNull) {
+                returnValue.keepNullValue();
+            }
+            if (contentType) {
+                returnValue.withContentType();
+            }
         }
         return WebResult.formatView(returnValue);
     }
