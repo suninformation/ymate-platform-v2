@@ -252,22 +252,24 @@ public final class Cfgs implements IConfig {
     @Override
     public IConfiguration loadCfg(String cfgFileName, boolean search) {
         if (StringUtils.isNotBlank(cfgFileName)) {
-            Class<? extends IConfigurationProvider> provClass;
-            String extName = FileUtils.getExtName(cfgFileName);
-            if (StringUtils.equalsIgnoreCase(extName, FILE_SUFFIX_XML)) {
-                provClass = DefaultConfigurationProvider.class;
-            } else if (StringUtils.equalsIgnoreCase(extName, FILE_SUFFIX_PROPERTIES)) {
-                provClass = PropertyConfigurationProvider.class;
-            } else if (StringUtils.equalsAnyIgnoreCase(extName, FILE_SUFFIX_JSON)) {
-                provClass = JSONConfigurationProvider.class;
-            } else {
-                provClass = config.getConfigurationProviderClass();
-            }
+            Class<? extends IConfigurationProvider> provClass = doParseConfigurationProviderClass(cfgFileName);
             if (provClass != null) {
                 return fillCfg(provClass, new DefaultConfiguration(), cfgFileName, search);
             }
         }
         return null;
+    }
+
+    private Class<? extends IConfigurationProvider> doParseConfigurationProviderClass(String cfgFileName) {
+        String extName = FileUtils.getExtName(cfgFileName);
+        if (StringUtils.equalsIgnoreCase(extName, FILE_SUFFIX_XML)) {
+            return DefaultConfigurationProvider.class;
+        } else if (StringUtils.equalsIgnoreCase(extName, FILE_SUFFIX_PROPERTIES)) {
+            return PropertyConfigurationProvider.class;
+        } else if (StringUtils.equalsAnyIgnoreCase(extName, FILE_SUFFIX_JSON)) {
+            return JSONConfigurationProvider.class;
+        }
+        return config.getConfigurationProviderClass();
     }
 
     @Override
@@ -296,9 +298,6 @@ public final class Cfgs implements IConfig {
             Configuration configuration = ClassUtils.getAnnotation(configObject, Configuration.class);
             String cfgFileName = configuration == null ? null : configuration.value();
             boolean reload = configuration == null || configuration.reload();
-            if (StringUtils.isBlank(cfgFileName)) {
-                cfgFileName = configObject.getClass().getSimpleName().toLowerCase().concat(configObject.getTagName()).concat(".xml");
-            }
             return fillCfg((configuration == null || configuration.provider().equals(IConfigurationProvider.class) ? null : configuration.provider()), configObject, cfgFileName, search, reload);
         }
         return null;
@@ -313,31 +312,33 @@ public final class Cfgs implements IConfig {
     public <T extends IConfiguration> T fillCfg(Class<? extends IConfigurationProvider> providerClass, T configObject, String cfgFileName, boolean search, boolean reload) {
         if (initialized) {
             if (configObject != null) {
-                String targetCfgFile = search ? searchAsPath(cfgFileName) : cfgFileName;
-                if (StringUtils.isNotBlank(targetCfgFile)) {
-                    try {
-                        IConfigurationProvider provider = null;
-                        if (providerClass != null) {
-                            provider = ClassUtils.impl(providerClass, IConfigurationProvider.class);
-                        }
-                        if (provider == null) {
-                            provider = config.getConfigurationProviderClass().newInstance();
-                        }
+                try {
+                    IConfigurationProvider provider = null;
+                    if (providerClass != null) {
+                        provider = ClassUtils.impl(providerClass, IConfigurationProvider.class);
+                    }
+                    if (provider == null) {
+                        provider = doParseConfigurationProviderClass(cfgFileName).newInstance();
+                    }
+                    if (StringUtils.isBlank(cfgFileName)) {
+                        cfgFileName = String.format("%s%s.%s", configObject.getClass().getSimpleName().toLowerCase(), configObject.getTagName(), provider.getSupportFileExtName());
+                    }
+                    String targetCfgFile = search ? searchAsPath(cfgFileName) : cfgFileName;
+                    if (StringUtils.isNotBlank(targetCfgFile)) {
                         provider.load(targetCfgFile);
                         configObject.initialize(provider);
                         //
                         if (fileChecker != null && reload) {
                             fileChecker.putFileStatus(targetCfgFile, new ConfigFileChecker.FileStatus(configObject, new File(targetCfgFile).lastModified()));
                         }
-                        //
                         return configObject;
-                    } catch (Exception e) {
-                        if (LOG.isWarnEnabled()) {
-                            LOG.warn(String.format("An exception occurred while filling the config file [%s]: ", StringUtils.trimToEmpty(cfgFileName)), RuntimeUtils.unwrapThrow(e));
-                        }
+                    } else if (LOG.isWarnEnabled()) {
+                        LOG.warn(String.format("Config file [%s] not found.", StringUtils.trimToEmpty(cfgFileName)));
                     }
-                } else if (LOG.isWarnEnabled()) {
-                    LOG.warn(String.format("Config file [%s] not found.", StringUtils.trimToEmpty(cfgFileName)));
+                } catch (Exception e) {
+                    if (LOG.isWarnEnabled()) {
+                        LOG.warn(String.format("An exception occurred while filling the config file [%s]: ", StringUtils.trimToEmpty(cfgFileName)), RuntimeUtils.unwrapThrow(e));
+                    }
                 }
             }
         } else if (LOG.isWarnEnabled()) {

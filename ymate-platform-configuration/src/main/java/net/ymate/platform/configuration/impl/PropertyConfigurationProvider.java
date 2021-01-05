@@ -15,6 +15,7 @@
  */
 package net.ymate.platform.configuration.impl;
 
+import net.ymate.platform.commons.util.FileUtils;
 import net.ymate.platform.configuration.AbstractConfigurationProvider;
 import net.ymate.platform.core.configuration.IConfigFileParser;
 import org.apache.commons.lang3.StringUtils;
@@ -34,6 +35,11 @@ public class PropertyConfigurationProvider extends AbstractConfigurationProvider
     @Override
     protected IConfigFileParser buildConfigFileParser(URL cfgFileName) throws Exception {
         return new PropertyConfigFileParser(cfgFileName);
+    }
+
+    @Override
+    public String getSupportFileExtName() {
+        return FileUtils.FILE_SUFFIX_PROPERTIES;
     }
 
     @Override

@@ -17,6 +17,7 @@ package net.ymate.platform.configuration.impl;
 
 import net.ymate.platform.commons.json.IJsonArrayWrapper;
 import net.ymate.platform.commons.json.JsonWrapper;
+import net.ymate.platform.commons.util.FileUtils;
 import net.ymate.platform.configuration.AbstractConfigurationProvider;
 import net.ymate.platform.core.configuration.IConfigFileParser;
 import org.apache.commons.lang3.StringUtils;
@@ -36,6 +37,11 @@ public class JSONConfigurationProvider extends AbstractConfigurationProvider {
     @Override
     protected IConfigFileParser buildConfigFileParser(URL cfgFileName) throws Exception {
         return new JSONConfigFileParser(cfgFileName);
+    }
+
+    @Override
+    public String getSupportFileExtName() {
+        return FileUtils.FILE_SUFFIX_JSON;
     }
 
     @Override

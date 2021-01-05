@@ -15,6 +15,7 @@
  */
 package net.ymate.platform.configuration.impl;
 
+import net.ymate.platform.commons.util.FileUtils;
 import net.ymate.platform.configuration.AbstractConfigurationProvider;
 import net.ymate.platform.core.configuration.IConfigFileParser;
 
@@ -30,5 +31,10 @@ public class DefaultConfigurationProvider extends AbstractConfigurationProvider 
     @Override
     protected IConfigFileParser buildConfigFileParser(URL cfgFileName) throws Exception {
         return new XMLConfigFileParser(cfgFileName);
+    }
+
+    @Override
+    public String getSupportFileExtName() {
+        return FileUtils.FILE_SUFFIX_XML;
     }
 }

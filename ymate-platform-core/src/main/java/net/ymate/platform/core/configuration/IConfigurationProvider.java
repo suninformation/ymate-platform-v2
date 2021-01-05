@@ -58,6 +58,13 @@ public interface IConfigurationProvider extends IConfigReader {
     String getCfgFileName();
 
     /**
+     * 获取当前配置文件解析器支持的文件扩展名称
+     *
+     * @return 返回配置文件扩展名称
+     */
+    String getSupportFileExtName();
+
+    /**
      * 获取指定分类中键对应的文字值，若为空则返回指定默认值
      *
      * @param category     分类名称
