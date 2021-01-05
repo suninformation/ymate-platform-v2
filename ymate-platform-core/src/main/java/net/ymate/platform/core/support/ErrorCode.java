@@ -15,6 +15,10 @@
  */
 package net.ymate.platform.core.support;
 
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
+import org.apache.commons.lang3.builder.ToStringBuilder;
+
 import java.io.Serializable;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -72,6 +76,13 @@ public class ErrorCode implements Serializable {
 
     public static ErrorCode create(int code, String i18nKey, String message) {
         return new ErrorCode(code, i18nKey, message);
+    }
+
+    public static ErrorCode create(ErrorCode errorCode) {
+        ErrorCode newErrorCode = new ErrorCode(errorCode.code, errorCode.i18nKey, errorCode.message);
+        newErrorCode.attributes.putAll(errorCode.attributes);
+        newErrorCode.dataAttrs(errorCode.data);
+        return newErrorCode;
     }
 
     private int code;
@@ -164,5 +175,33 @@ public class ErrorCode implements Serializable {
     public ErrorCode dataAttrs(Map<String, Object> dataAttributes) {
         data.putAll(dataAttributes);
         return this;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        ErrorCode errorCode = (ErrorCode) o;
+        return new EqualsBuilder().append(code, errorCode.code).isEquals();
+    }
+
+    @Override
+    public int hashCode() {
+        return new HashCodeBuilder(17, 37).append(code).toHashCode();
+    }
+
+    @Override
+    public String toString() {
+        return new ToStringBuilder(this)
+                .append("code", code)
+                .append("i18nKey", i18nKey)
+                .append("message", message)
+                .append("attributes", attributes)
+                .append("data", data)
+                .toString();
     }
 }
