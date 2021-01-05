@@ -74,6 +74,9 @@ public final class WebResult {
         if (!errorCode.getAttributes().isEmpty()) {
             _result.attrs(errorCode.getAttributes());
         }
+        if (!errorCode.data().isEmpty()) {
+            _result.data(errorCode.data());
+        }
         return _result;
     }
 

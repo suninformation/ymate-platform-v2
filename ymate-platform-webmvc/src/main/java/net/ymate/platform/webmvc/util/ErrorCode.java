@@ -16,6 +16,9 @@
 package net.ymate.platform.webmvc.util;
 
 import net.ymate.platform.core.lang.BlurObject;
+import org.apache.commons.lang.builder.EqualsBuilder;
+import org.apache.commons.lang.builder.HashCodeBuilder;
+import org.apache.commons.lang.builder.ToStringBuilder;
 
 import java.io.Serializable;
 import java.util.LinkedHashMap;
@@ -201,6 +204,13 @@ public class ErrorCode implements Serializable {
         return new ErrorCode(code, i18nKey, message);
     }
 
+    public static ErrorCode create(ErrorCode errorCode) {
+        ErrorCode newErrorCode = new ErrorCode(errorCode.code, errorCode.i18nKey, errorCode.message);
+        newErrorCode.addAttributes(errorCode.attributes);
+        newErrorCode.dataAttrs(errorCode.data);
+        return newErrorCode;
+    }
+
     private int code;
 
     private String i18nKey;
@@ -208,6 +218,8 @@ public class ErrorCode implements Serializable {
     private String message;
 
     private Map<String, Object> attributes = new LinkedHashMap<String, Object>();
+
+    private Map<String, Object> data = new LinkedHashMap<String, Object>();
 
     public ErrorCode(int code) {
         this.code = code;
@@ -274,5 +286,52 @@ public class ErrorCode implements Serializable {
     public ErrorCode addAttributes(Map<String, Object> attributes) {
         this.attributes.putAll(attributes);
         return this;
+    }
+
+    public Map<String, Object> data() {
+        return data;
+    }
+
+    @SuppressWarnings("unchecked")
+    public <T> T dataAttr(String dataKey) {
+        return (T) data.get(dataKey);
+    }
+
+    public ErrorCode dataAttr(String dataKey, Object dataValue) {
+        data.put(dataKey, dataValue);
+        return this;
+    }
+
+    public ErrorCode dataAttrs(Map<String, Object> dataAttributes) {
+        data.putAll(dataAttributes);
+        return this;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        ErrorCode errorCode = (ErrorCode) o;
+        return new EqualsBuilder().append(code, errorCode.code).isEquals();
+    }
+
+    @Override
+    public int hashCode() {
+        return new HashCodeBuilder(17, 37).append(code).toHashCode();
+    }
+
+    @Override
+    public String toString() {
+        return new ToStringBuilder(this)
+                .append("code", code)
+                .append("i18nKey", i18nKey)
+                .append("message", message)
+                .append("attributes", attributes)
+                .append("data", data)
+                .toString();
     }
 }
