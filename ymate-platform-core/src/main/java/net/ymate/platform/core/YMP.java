@@ -20,7 +20,6 @@ import net.ymate.platform.commons.util.ExpressionUtils;
 import net.ymate.platform.commons.util.ResourceUtils;
 import net.ymate.platform.core.beans.IBeanLoadFactory;
 import net.ymate.platform.core.beans.proxy.IProxyFactory;
-import net.ymate.platform.core.beans.proxy.impl.DefaultProxyFactory;
 import net.ymate.platform.core.module.IModule;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -125,7 +124,7 @@ public final class YMP {
             synchronized (YMP.class) {
                 inst = proxyFactory;
                 if (inst == null) {
-                    proxyFactory = inst = ClassUtils.loadClass(IProxyFactory.class, DefaultProxyFactory.class);
+                    proxyFactory = inst = ClassUtils.loadClass(IProxyFactory.class);
                 }
             }
         }

@@ -56,9 +56,10 @@ public class ModuleManager implements IInitialization<IApplication>, IDestroyabl
             //
             ClassUtils.getExtensionLoader(IModule.class, true).getExtensionClasses().forEach(this::registerModule);
             //
-            modules.entrySet().stream()
-                    .filter((entry) -> (!isModuleExcluded(entry.getValue().getName()) && !isModuleExcluded(entry.getKey()) && !entry.getValue().isInitialized()))
-                    .forEachOrdered((entry) -> initializeModuleIfNeed(entry.getValue()));
+            modules.entrySet()
+                    .stream()
+                    .filter(entry -> !isModuleExcluded(entry.getValue().getName()) || !isModuleExcluded(entry.getKey()))
+                    .forEach(entry -> initializeModuleIfNeed(entry.getValue()));
             initialized = true;
         }
     }
