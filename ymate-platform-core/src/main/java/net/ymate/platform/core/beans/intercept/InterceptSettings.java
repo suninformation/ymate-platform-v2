@@ -320,16 +320,19 @@ public final class InterceptSettings {
      */
     public InterceptPackageMeta getInterceptPackages(Class<?> targetClass) {
         List<InterceptPackageMeta> packageMetas = new ArrayList<>();
-        String packageName = targetClass.getPackage().getName();
-        InterceptPackageMeta packageMeta = packageMetaMap.get(packageName);
-        if (packageMeta != null) {
-            packageMetas.add(0, packageMeta);
-        }
-        while (StringUtils.contains(packageName, ClassUtils.PACKAGE_SEPARATOR)) {
-            packageName = StringUtils.substringBeforeLast(packageName, ClassUtils.PACKAGE_SEPARATOR);
-            packageMeta = packageMetaMap.get(packageName);
+        Package targetClassPackage = targetClass.getPackage();
+        if (targetClassPackage != null) {
+            String packageName = targetClassPackage.getName();
+            InterceptPackageMeta packageMeta = packageMetaMap.get(packageName);
             if (packageMeta != null) {
                 packageMetas.add(0, packageMeta);
+            }
+            while (StringUtils.contains(packageName, ClassUtils.PACKAGE_SEPARATOR)) {
+                packageName = StringUtils.substringBeforeLast(packageName, ClassUtils.PACKAGE_SEPARATOR);
+                packageMeta = packageMetaMap.get(packageName);
+                if (packageMeta != null) {
+                    packageMetas.add(0, packageMeta);
+                }
             }
         }
         if (packageMetas.isEmpty()) {
