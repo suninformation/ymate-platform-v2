@@ -16,7 +16,6 @@
 package net.ymate.platform.core.module;
 
 import net.ymate.platform.commons.ConcurrentHashSet;
-import net.ymate.platform.commons.ReentrantLockHelper;
 import net.ymate.platform.commons.util.ClassUtils;
 import net.ymate.platform.commons.util.RuntimeUtils;
 import net.ymate.platform.core.IApplication;
@@ -56,10 +55,7 @@ public class ModuleManager implements IInitialization<IApplication>, IDestroyabl
             //
             ClassUtils.getExtensionLoader(IModule.class, true).getExtensionClasses().forEach(this::registerModule);
             //
-            modules.entrySet()
-                    .stream()
-                    .filter(entry -> !isModuleExcluded(entry.getValue().getName()) || !isModuleExcluded(entry.getKey()))
-                    .forEach(entry -> initializeModuleIfNeed(entry.getValue()));
+            modules.forEach((key, value) -> initializeModuleIfNeed(value));
             initialized = true;
         }
     }
@@ -155,9 +151,20 @@ public class ModuleManager implements IInitialization<IApplication>, IDestroyabl
      * @param moduleClass 目标模块类
      */
     public void registerModule(Class<? extends IModule> moduleClass) {
-        if (moduleClass != null && !isModuleExcluded(moduleClass.getName())) {
+        if (moduleClass != null) {
             try {
-                ReentrantLockHelper.putIfAbsentAsync(modules, moduleClass.getName(), moduleClass::newInstance);
+                IModule moduleInst = null;
+                boolean flag = false;
+                if (includedModules.isEmpty()) {
+                    if (!excludedModules.contains(moduleClass.getName()) && !excludedModules.contains(((moduleInst = moduleClass.newInstance()).getName()))) {
+                        flag = true;
+                    }
+                } else if (includedModules.contains(moduleClass.getName()) || includedModules.contains(((moduleInst = moduleClass.newInstance()).getName()))) {
+                    flag = true;
+                }
+                if (flag) {
+                    modules.put(moduleClass.getName(), moduleInst != null ? moduleInst : moduleClass.newInstance());
+                }
             } catch (Exception e) {
                 throw RuntimeUtils.wrapRuntimeThrow(e, "An exception occurred while registering module [%s].", moduleClass);
             }
