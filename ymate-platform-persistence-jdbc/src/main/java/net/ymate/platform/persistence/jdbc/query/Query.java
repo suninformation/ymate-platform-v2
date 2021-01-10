@@ -335,7 +335,7 @@ public class Query<T> extends QueryHandleAdapter<T> {
                                         cond.and();
                                 }
                             }
-                            cond.opt(Fields.field(qCond.field().prefix(), qCond.field().value()), qCond.opt(), withFieldValue);
+                            cond.optWrap(Fields.field(qCond.field().prefix(), qCond.field().value()), qCond.opt(), withFieldValue);
                             idx++;
                         }
                     }

@@ -163,6 +163,10 @@ public final class Cond extends Query<Cond> {
         return this;
     }
 
+    public Cond cond(FieldCondition cond) {
+        return cond(cond.build());
+    }
+
     public Cond cond(LogicalOpt opt, Object... condArr) {
         if (opt != null && ArrayUtils.isNotEmpty(condArr)) {
             for (Object cond : condArr) {
@@ -483,24 +487,72 @@ public final class Cond extends Query<Cond> {
         return opt(LogicalOpt.AND);
     }
 
+    public Cond and(Cond cond) {
+        return and().cond(cond);
+    }
+
+    public Cond and(FieldCondition cond) {
+        return and().cond(cond);
+    }
+
     public Cond andIfNeed() {
         return optIfNeed(LogicalOpt.AND);
+    }
+
+    public Cond andIfNeed(Cond cond) {
+        return andIfNeed().cond(cond);
+    }
+
+    public Cond andIfNeed(FieldCondition cond) {
+        return andIfNeed().cond(cond);
     }
 
     public Cond or() {
         return opt(LogicalOpt.OR);
     }
 
+    public Cond or(Cond cond) {
+        return or().cond(cond);
+    }
+
+    public Cond or(FieldCondition cond) {
+        return or().cond(cond);
+    }
+
     public Cond orIfNeed() {
         return optIfNeed(LogicalOpt.OR);
+    }
+
+    public Cond orIfNeed(Cond cond) {
+        return orIfNeed().cond(cond);
+    }
+
+    public Cond orIfNeed(FieldCondition cond) {
+        return orIfNeed().cond(cond);
     }
 
     public Cond not() {
         return opt(LogicalOpt.NOT);
     }
 
+    public Cond not(Cond cond) {
+        return not().cond(cond);
+    }
+
+    public Cond not(FieldCondition cond) {
+        return not().cond(cond);
+    }
+
     public Cond notIfNeed() {
         return optIfNeed(LogicalOpt.NOT);
+    }
+
+    public Cond notIfNeed(Cond cond) {
+        return notIfNeed().cond(cond);
+    }
+
+    public Cond notIfNeed(FieldCondition cond) {
+        return notIfNeed().cond(cond);
     }
 
     public Cond bracketBegin() {
@@ -509,6 +561,14 @@ public final class Cond extends Query<Cond> {
 
     public Cond bracketEnd() {
         return cond(")");
+    }
+
+    public Cond bracket(Cond cond) {
+        return bracketBegin().cond(cond).bracketEnd();
+    }
+
+    public Cond bracket(FieldCondition cond) {
+        return bracketBegin().cond(cond).bracketEnd();
     }
 
     public Cond brackets() {
