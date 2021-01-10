@@ -35,15 +35,15 @@ public class Like implements Serializable {
         this.originStr = StringUtils.replaceEach(originStr, new String[]{"/", "%", "_"}, new String[]{"//", "/%", "/_"});
     }
 
-    public String full() {
+    public String contains() {
         return String.format("%%%s%%", originStr);
     }
 
-    public String left() {
+    public String endsWith() {
         return String.format("%%%s", originStr);
     }
 
-    public String right() {
+    public String startsWith() {
         return String.format("%s%%", originStr);
     }
 
