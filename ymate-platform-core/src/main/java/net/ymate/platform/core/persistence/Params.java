@@ -52,7 +52,7 @@ public final class Params implements Serializable {
     private Params(Object... params) {
         this.params = new ArrayList<>();
         if (params != null && params.length > 0) {
-            this.params.addAll(Arrays.asList(params));
+            Arrays.stream(params).forEach(this::add);
         }
     }
 
@@ -61,10 +61,12 @@ public final class Params implements Serializable {
     }
 
     public Params add(Object param) {
-        if (param instanceof Collection) {
-            this.params.addAll((Collection<?>) param);
+        if (param instanceof Params) {
+            add((Params) param);
+        } else if (param instanceof Collection) {
+            add((Collection<?>) param);
         } else if (param != null && param.getClass().isArray()) {
-            this.params.addAll(Arrays.asList((Object[]) param));
+            add(Arrays.asList((Object[]) param));
         } else {
             this.params.add(param);
         }
@@ -76,8 +78,8 @@ public final class Params implements Serializable {
         return this;
     }
 
-    public Params add(Collection<Object> params) {
-        this.params.addAll(params);
+    public Params add(Collection<?> params) {
+        params.forEach(this::add);
         return this;
     }
 
