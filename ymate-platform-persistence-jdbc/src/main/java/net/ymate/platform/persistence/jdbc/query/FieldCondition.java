@@ -67,8 +67,18 @@
          return this;
      }
 
+     public FieldCondition eq(String prefix, String otherField) {
+         cond.opt(fieldName, Cond.OPT.EQ, Fields.field(prefix, otherField));
+         return this;
+     }
+
      public FieldCondition eqWrap(String otherField) {
          cond.optWrap(fieldName, Cond.OPT.EQ, otherField);
+         return this;
+     }
+
+     public FieldCondition eqWrap(String prefix, String otherField) {
+         cond.optWrap(fieldName, Cond.OPT.EQ, Fields.field(prefix, otherField));
          return this;
      }
 
@@ -82,7 +92,7 @@
          return this;
      }
 
-     public FieldCondition eqWrapValue(Object value) {
+     public FieldCondition eqValueWrap(Object value) {
          cond.eqWrap(fieldName).param(value);
          return this;
      }
@@ -104,8 +114,18 @@
          return this;
      }
 
+     public FieldCondition notEq(String prefix, String otherField) {
+         cond.opt(fieldName, Cond.OPT.NOT_EQ, Fields.field(prefix, otherField));
+         return this;
+     }
+
      public FieldCondition notEqWrap(String otherField) {
          cond.optWrap(fieldName, Cond.OPT.NOT_EQ, otherField);
+         return this;
+     }
+
+     public FieldCondition notEqWrap(String prefix, String otherField) {
+         cond.optWrap(fieldName, Cond.OPT.NOT_EQ, Fields.field(prefix, otherField));
          return this;
      }
 
@@ -119,7 +139,7 @@
          return this;
      }
 
-     public FieldCondition notEqWrapValue(Object value) {
+     public FieldCondition notEqValueWrap(Object value) {
          cond.notEqWrap(fieldName).param(value);
          return this;
      }
@@ -141,8 +161,18 @@
          return this;
      }
 
+     public FieldCondition gtEq(String prefix, String otherField) {
+         cond.opt(fieldName, Cond.OPT.GT_EQ, Fields.field(prefix, otherField));
+         return this;
+     }
+
      public FieldCondition gtEqWrap(String otherField) {
          cond.optWrap(fieldName, Cond.OPT.GT_EQ, otherField);
+         return this;
+     }
+
+     public FieldCondition gtEqWrap(String prefix, String otherField) {
+         cond.optWrap(fieldName, Cond.OPT.GT_EQ, Fields.field(prefix, otherField));
          return this;
      }
 
@@ -156,7 +186,7 @@
          return this;
      }
 
-     public FieldCondition gtEqWrapValue(Object value) {
+     public FieldCondition gtEqValueWrap(Object value) {
          cond.gtEqWrap(fieldName).param(value);
          return this;
      }
@@ -178,8 +208,18 @@
          return this;
      }
 
+     public FieldCondition gt(String prefix, String otherField) {
+         cond.opt(fieldName, Cond.OPT.GT, Fields.field(prefix, otherField));
+         return this;
+     }
+
      public FieldCondition gtWrap(String otherField) {
          cond.optWrap(fieldName, Cond.OPT.GT, otherField);
+         return this;
+     }
+
+     public FieldCondition gtWrap(String prefix, String otherField) {
+         cond.optWrap(fieldName, Cond.OPT.GT, Fields.field(prefix, otherField));
          return this;
      }
 
@@ -193,7 +233,7 @@
          return this;
      }
 
-     public FieldCondition gtWrapValue(Object value) {
+     public FieldCondition gtValueWrap(Object value) {
          cond.gtWrap(fieldName).param(value);
          return this;
      }
@@ -215,8 +255,18 @@
          return this;
      }
 
+     public FieldCondition ltEq(String prefix, String otherField) {
+         cond.opt(fieldName, Cond.OPT.LT_EQ, Fields.field(prefix, otherField));
+         return this;
+     }
+
      public FieldCondition ltEqWrap(String otherField) {
          cond.optWrap(fieldName, Cond.OPT.LT_EQ, otherField);
+         return this;
+     }
+
+     public FieldCondition ltEqWrap(String prefix, String otherField) {
+         cond.optWrap(fieldName, Cond.OPT.LT_EQ, Fields.field(prefix, otherField));
          return this;
      }
 
@@ -230,7 +280,7 @@
          return this;
      }
 
-     public FieldCondition ltEqWrapValue(Object value) {
+     public FieldCondition ltEqValueWrap(Object value) {
          cond.ltEqWrap(fieldName).param(value);
          return this;
      }
@@ -252,8 +302,18 @@
          return this;
      }
 
+     public FieldCondition lt(String prefix, String otherField) {
+         cond.opt(fieldName, Cond.OPT.LT, Fields.field(prefix, otherField));
+         return this;
+     }
+
      public FieldCondition ltWrap(String otherField) {
          cond.optWrap(fieldName, Cond.OPT.LT, otherField);
+         return this;
+     }
+
+     public FieldCondition ltWrap(String prefix, String otherField) {
+         cond.optWrap(fieldName, Cond.OPT.LT, Fields.field(prefix, otherField));
          return this;
      }
 
@@ -267,7 +327,7 @@
          return this;
      }
 
-     public FieldCondition ltWrapValue(Object value) {
+     public FieldCondition ltValueWrap(Object value) {
          cond.ltWrap(fieldName).param(value);
          return this;
      }

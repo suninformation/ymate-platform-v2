@@ -232,16 +232,24 @@ public final class Cond extends Query<Cond> {
         return cond("1 = 1");
     }
 
-    public Cond eq(String fieldOne, String fieldTwo) {
+    public Cond eqField(String fieldOne, String fieldTwo) {
         return opt(fieldOne, OPT.EQ, fieldTwo);
+    }
+
+    public Cond eqFieldWrap(String fieldOne, String fieldTwo) {
+        return optWrap(fieldOne, OPT.EQ, fieldTwo);
+    }
+
+    public Cond eq(String prefix, String field) {
+        return opt(Fields.field(prefix, field), OPT.EQ);
     }
 
     public Cond eq(String field) {
         return opt(field, OPT.EQ);
     }
 
-    public Cond eqWrap(String fieldOne, String fieldTwo) {
-        return optWrap(fieldOne, OPT.EQ, fieldTwo);
+    public Cond eqWrap(String prefix, String field) {
+        return optWrap(Fields.field(prefix, field), OPT.EQ);
     }
 
     public Cond eqWrap(String field) {
@@ -258,16 +266,24 @@ public final class Cond extends Query<Cond> {
 
     // ------
 
-    public Cond notEq(String fieldOne, String fieldTwo) {
+    public Cond notEqField(String fieldOne, String fieldTwo) {
         return opt(fieldOne, OPT.NOT_EQ, fieldTwo);
+    }
+
+    public Cond notEqFieldWrap(String fieldOne, String fieldTwo) {
+        return optWrap(fieldOne, OPT.NOT_EQ, fieldTwo);
+    }
+
+    public Cond notEq(String prefix, String field) {
+        return opt(Fields.field(prefix, field), OPT.NOT_EQ);
     }
 
     public Cond notEq(String field) {
         return opt(field, OPT.NOT_EQ);
     }
 
-    public Cond notEqWrap(String fieldOne, String fieldTwo) {
-        return optWrap(fieldOne, OPT.NOT_EQ, fieldTwo);
+    public Cond notEqWrap(String prefix, String field) {
+        return optWrap(Fields.field(prefix, field), OPT.NOT_EQ);
     }
 
     public Cond notEqWrap(String field) {
@@ -284,20 +300,28 @@ public final class Cond extends Query<Cond> {
 
     // ------
 
-    public Cond gtEq(String fieldOne, String fieldTwo) {
+    public Cond gtEqField(String fieldOne, String fieldTwo) {
         return opt(fieldOne, OPT.GT_EQ, fieldTwo);
+    }
+
+    public Cond gtEqFieldWrap(String fieldOne, String fieldTwo) {
+        return optWrap(fieldOne, OPT.GT_EQ, fieldTwo);
     }
 
     public Cond gtEq(String field) {
         return opt(field, OPT.GT_EQ);
     }
 
-    public Cond gtEqWrap(String fieldOne, String fieldTwo) {
-        return optWrap(fieldOne, OPT.GT_EQ, fieldTwo);
+    public Cond gtEq(String prefix, String field) {
+        return opt(Fields.field(prefix, field), OPT.GT_EQ);
     }
 
     public Cond gtEqWrap(String field) {
         return optWrap(field, OPT.GT_EQ);
+    }
+
+    public Cond gtEqWrap(String prefix, String field) {
+        return optWrap(Fields.field(prefix, field), OPT.GT_EQ);
     }
 
     public Cond gtEq(IFunction funcOne, IFunction funcTwo) {
@@ -310,20 +334,28 @@ public final class Cond extends Query<Cond> {
 
     // ------
 
-    public Cond gt(String fieldOne, String fieldTwo) {
+    public Cond gtField(String fieldOne, String fieldTwo) {
         return opt(fieldOne, OPT.GT, fieldTwo);
+    }
+
+    public Cond gtFieldWrap(String fieldOne, String fieldTwo) {
+        return optWrap(fieldOne, OPT.GT, fieldTwo);
     }
 
     public Cond gt(String field) {
         return opt(field, OPT.GT);
     }
 
-    public Cond gtWrap(String fieldOne, String fieldTwo) {
-        return optWrap(fieldOne, OPT.GT, fieldTwo);
+    public Cond gt(String prefix, String field) {
+        return opt(Fields.field(prefix, field), OPT.GT);
     }
 
     public Cond gtWrap(String field) {
         return optWrap(field, OPT.GT);
+    }
+
+    public Cond gtWrap(String prefix, String field) {
+        return optWrap(Fields.field(prefix, field), OPT.GT);
     }
 
     public Cond gt(IFunction funcOne, IFunction funcTwo) {
@@ -336,20 +368,28 @@ public final class Cond extends Query<Cond> {
 
     // ------
 
-    public Cond ltEq(String fieldOne, String fieldTwo) {
+    public Cond ltEqField(String fieldOne, String fieldTwo) {
         return opt(fieldOne, OPT.LT_EQ, fieldTwo);
+    }
+
+    public Cond ltEqFieldWrap(String fieldOne, String fieldTwo) {
+        return optWrap(fieldOne, OPT.LT_EQ, fieldTwo);
     }
 
     public Cond ltEq(String field) {
         return opt(field, OPT.LT_EQ);
     }
 
-    public Cond ltEqWrap(String fieldOne, String fieldTwo) {
-        return optWrap(fieldOne, OPT.LT_EQ, fieldTwo);
+    public Cond ltEq(String prefix, String field) {
+        return opt(Fields.field(prefix, field), OPT.LT_EQ);
     }
 
     public Cond ltEqWrap(String field) {
         return optWrap(field, OPT.LT_EQ);
+    }
+
+    public Cond ltEqWrap(String prefix, String field) {
+        return optWrap(Fields.field(prefix, field), OPT.LT_EQ);
     }
 
     public Cond ltEq(IFunction funcOne, IFunction funcTwo) {
@@ -362,20 +402,28 @@ public final class Cond extends Query<Cond> {
 
     // ------
 
-    public Cond lt(String fieldOne, String fieldTwo) {
+    public Cond ltField(String fieldOne, String fieldTwo) {
         return opt(fieldOne, OPT.LT, fieldTwo);
+    }
+
+    public Cond ltFieldWrap(String fieldOne, String fieldTwo) {
+        return optWrap(fieldOne, OPT.LT, fieldTwo);
     }
 
     public Cond lt(String field) {
         return opt(field, OPT.LT);
     }
 
-    public Cond ltWrap(String fieldOne, String fieldTwo) {
-        return optWrap(fieldOne, OPT.LT, fieldTwo);
+    public Cond lt(String prefix, String field) {
+        return opt(Fields.field(prefix, field), OPT.LT);
     }
 
     public Cond ltWrap(String field) {
         return optWrap(field, OPT.LT);
+    }
+
+    public Cond ltWrap(String prefix, String field) {
+        return optWrap(Fields.field(prefix, field), OPT.LT);
     }
 
     public Cond lt(IFunction funcOne, IFunction funcTwo) {
@@ -392,8 +440,16 @@ public final class Cond extends Query<Cond> {
         return opt(field, OPT.LIKE);
     }
 
+    public Cond like(String prefix, String field) {
+        return opt(Fields.field(prefix, field), OPT.LIKE);
+    }
+
     public Cond likeWrap(String field) {
         return optWrap(field, OPT.LIKE);
+    }
+
+    public Cond likeWrap(String prefix, String field) {
+        return optWrap(Fields.field(prefix, field), OPT.LIKE);
     }
 
     public Cond like(IFunction func) {
@@ -403,12 +459,20 @@ public final class Cond extends Query<Cond> {
     // ------
 
     public Cond between(String field, Object valueOne, Object valueTwo) {
+        return between(null, field, valueOne, valueTwo);
+    }
+
+    public Cond between(String prefix, String field, Object valueOne, Object valueTwo) {
         params.add(valueOne).add(valueTwo);
-        return cond(String.format("%s BETWEEN ? AND ?", field));
+        return cond(String.format("%s BETWEEN ? AND ?", Fields.field(prefix, field)));
     }
 
     public Cond betweenWrap(String field, Object valueOne, Object valueTwo) {
-        return between(wrapIdentifierField(field), valueOne, valueTwo);
+        return betweenWrap(null, field, valueOne, valueTwo);
+    }
+
+    public Cond betweenWrap(String prefix, String field, Object valueOne, Object valueTwo) {
+        return between(prefix, wrapIdentifierField(field), valueOne, valueTwo);
     }
 
     public Cond between(IFunction func, Object valueOne, Object valueTwo) {
@@ -418,27 +482,35 @@ public final class Cond extends Query<Cond> {
     // ------
 
     public Cond range(String field, Number valueOne, Number valueTwo, LogicalOpt opt) {
+        return range(null, field, valueOne, valueTwo, opt);
+    }
+
+    public Cond range(String prefix, String field, Number valueOne, Number valueTwo, LogicalOpt opt) {
         if (valueOne != null && valueTwo != null) {
             if (opt != null) {
                 opt(opt);
             }
-            between(field, valueOne, valueTwo);
+            between(prefix, field, valueOne, valueTwo);
         } else if (valueOne != null) {
             if (opt != null) {
                 opt(opt);
             }
-            gtEq(field).param(valueOne);
+            gtEq(prefix, field).param(valueOne);
         } else if (valueTwo != null) {
             if (opt != null) {
                 opt(opt);
             }
-            ltEq(field).param(valueTwo);
+            ltEq(prefix, field).param(valueTwo);
         }
         return this;
     }
 
     public Cond rangeWrap(String field, Number valueOne, Number valueTwo, LogicalOpt opt) {
-        return range(wrapIdentifierField(field), valueOne, valueTwo, opt);
+        return rangeWrap(null, field, valueOne, valueTwo, opt);
+    }
+
+    public Cond rangeWrap(String prefix, String field, Number valueOne, Number valueTwo, LogicalOpt opt) {
+        return range(prefix, wrapIdentifierField(field), valueOne, valueTwo, opt);
     }
 
     public Cond range(IFunction func, Number valueOne, Number valueTwo, LogicalOpt opt) {
@@ -453,6 +525,10 @@ public final class Cond extends Query<Cond> {
 
     public Cond isNull(String field) {
         return cond(String.format("%s IS NULL", field));
+    }
+
+    public Cond isNullWrap(String prefix, String field) {
+        return isNull(prefix, wrapIdentifierField(field));
     }
 
     public Cond isNullWrap(String field) {
@@ -471,6 +547,10 @@ public final class Cond extends Query<Cond> {
 
     public Cond isNotNull(String field) {
         return cond(String.format("%s IS NOT NULL", field));
+    }
+
+    public Cond isNotNullWrap(String prefix, String field) {
+        return isNotNull(prefix, wrapIdentifierField(field));
     }
 
     public Cond isNotNullWrap(String field) {
@@ -597,8 +677,12 @@ public final class Cond extends Query<Cond> {
         return cond(String.format("%s IN (%s)", field, subSql.toString()));
     }
 
+    public Cond inWrap(String prefix, String field, SQL subSql) {
+        return in(prefix, wrapIdentifierField(field), subSql);
+    }
+
     public Cond inWrap(String field, SQL subSql) {
-        return in(wrapIdentifierField(field), subSql);
+        return in(null, wrapIdentifierField(field), subSql);
     }
 
     public Cond in(String prefix, String field, Select subSql) {
@@ -608,6 +692,10 @@ public final class Cond extends Query<Cond> {
     public Cond in(String field, Select subSql) {
         params.add(subSql.params());
         return cond(String.format("%s IN (%s)", field, subSql.toString()));
+    }
+
+    public Cond inWrap(String prefix, String field, Select subSql) {
+        return in(prefix, wrapIdentifierField(field), subSql);
     }
 
     public Cond inWrap(String field, Select subSql) {
@@ -623,8 +711,12 @@ public final class Cond extends Query<Cond> {
         return cond(String.format("%s IN (%s)", field, StringUtils.repeat("?", LINE_END_FLAG, params.params().size())));
     }
 
+    public Cond inWrap(String prefix, String field, Params params) {
+        return in(prefix, wrapIdentifierField(field), params);
+    }
+
     public Cond inWrap(String field, Params params) {
-        return in(wrapIdentifierField(field), params);
+        return in(null, wrapIdentifierField(field), params);
     }
 
     /**

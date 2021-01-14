@@ -22,8 +22,10 @@
  import net.ymate.platform.persistence.jdbc.IDatabase;
  import net.ymate.platform.persistence.jdbc.JDBC;
 
+ import java.util.Arrays;
  import java.util.Collection;
  import java.util.Map;
+ import java.util.stream.Collectors;
 
  /**
   * @author 刘镇 (suninformation@163.com) on 2021/01/13 23:38
@@ -429,6 +431,22 @@
 
      public Fields fields(Collection<String> fields) {
          return Fields.create(fields);
+     }
+
+     public String fieldWrap(String prefix, String field, String alias) {
+         return wrapIdentifierField(Fields.field(prefix, field, alias));
+     }
+
+     public String fieldWrap(String prefix, String field) {
+         return fieldWrap(prefix, field, null);
+     }
+
+     public Fields fieldsWrap(String... fields) {
+         return Fields.create(Arrays.stream(fields).map(this::wrapIdentifierField).collect(Collectors.toList()));
+     }
+
+     public Fields fieldsWrap(Collection<String> fields) {
+         return Fields.create(fields.stream().map(this::wrapIdentifierField).collect(Collectors.toList()));
      }
 
      // ------ Params
