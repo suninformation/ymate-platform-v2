@@ -253,11 +253,6 @@ public final class Delete extends Query<Delete> {
         return this;
     }
 
-    public Delete orderBy(OrderBy orderBy) {
-        where().orderBy().orderBy(orderBy);
-        return this;
-    }
-
     @Override
     public String toString() {
         ExpressionUtils expression = ExpressionUtils.bind(getExpressionStr("DELETE ${fields} FROM ${froms} ${joins} ${where}"));

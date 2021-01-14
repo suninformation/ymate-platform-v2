@@ -42,20 +42,32 @@ public final class GroupBy extends Query<GroupBy> {
         return create().having(having);
     }
 
-    public static GroupBy create(String prefix, String field, String alias) {
-        return create().field(Fields.create().add(prefix, field, alias));
+    public static GroupBy create(String prefix, String field) {
+        return create().field(prefix, field);
     }
 
-    public static GroupBy create(String prefix, String field) {
-        return create().field(Fields.create().add(prefix, field));
+    public static GroupBy create(String prefix, String field, boolean wrapIdentifier) {
+        return create().field(prefix, field, wrapIdentifier);
     }
 
     public static GroupBy create(String field) {
-        return create().field(Fields.create(field));
+        return create().field(field);
+    }
+
+    public static GroupBy create(String field, boolean wrapIdentifier) {
+        return create().field(field, wrapIdentifier);
     }
 
     public static GroupBy create(Fields fields) {
         return create().field(fields);
+    }
+
+    public static GroupBy create(Fields fields, boolean wrapIdentifier) {
+        return create().field(fields, wrapIdentifier);
+    }
+
+    public static GroupBy create(String prefix, Fields fields, boolean wrapIdentifier) {
+        return create().field(prefix, fields, wrapIdentifier);
     }
 
     //
@@ -72,20 +84,36 @@ public final class GroupBy extends Query<GroupBy> {
         return new GroupBy(owner, dataSourceName).having(having);
     }
 
-    public static GroupBy create(IDatabase owner, String dataSourceName, String prefix, String field, String alias) {
-        return new GroupBy(owner, dataSourceName).field(Fields.create().add(prefix, field, alias));
+    public static GroupBy create(IDatabase owner, String dataSourceName, String prefix, String field) {
+        return new GroupBy(owner, dataSourceName).field(prefix, field);
     }
 
-    public static GroupBy create(IDatabase owner, String dataSourceName, String prefix, String field) {
-        return new GroupBy(owner, dataSourceName).field(Fields.create().add(prefix, field));
+    public static GroupBy create(IDatabase owner, String dataSourceName, String prefix, String field, boolean wrapIdentifier) {
+        return new GroupBy(owner, dataSourceName).field(prefix, field, wrapIdentifier);
     }
 
     public static GroupBy create(IDatabase owner, String dataSourceName, String field) {
-        return new GroupBy(owner, dataSourceName).field(Fields.create(field));
+        return new GroupBy(owner, dataSourceName).field(field);
+    }
+
+    public static GroupBy create(IDatabase owner, String dataSourceName, String field, boolean wrapIdentifier) {
+        return new GroupBy(owner, dataSourceName).field(field, wrapIdentifier);
+    }
+
+    public static GroupBy create(IDatabase owner, String dataSourceName, String prefix, Fields fields) {
+        return new GroupBy(owner, dataSourceName).field(prefix, fields);
+    }
+
+    public static GroupBy create(IDatabase owner, String dataSourceName, String prefix, Fields fields, boolean wrapIdentifier) {
+        return new GroupBy(owner, dataSourceName).field(prefix, fields, wrapIdentifier);
     }
 
     public static GroupBy create(IDatabase owner, String dataSourceName, Fields fields) {
         return new GroupBy(owner, dataSourceName).field(fields);
+    }
+
+    public static GroupBy create(IDatabase owner, String dataSourceName, Fields fields, boolean wrapIdentifier) {
+        return new GroupBy(owner, dataSourceName).field(fields, wrapIdentifier);
     }
 
     public static GroupBy create(Query<?> query) {
@@ -97,8 +125,39 @@ public final class GroupBy extends Query<GroupBy> {
         groupByNames = Fields.create();
     }
 
+    public GroupBy field(String prefix, Fields fields) {
+        return field(prefix, fields, true);
+    }
+
+    public GroupBy field(String prefix, Fields fields, boolean wrapIdentifier) {
+        checkFieldExcluded(fields).fields().forEach((field) -> groupByNames.add(prefix, wrapIdentifier ? wrapIdentifierField(field) : field));
+        return this;
+    }
+
     public GroupBy field(Fields fields) {
-        groupByNames.add(checkFieldExcluded(fields));
+        return field(null, fields, true);
+    }
+
+    public GroupBy field(Fields fields, boolean wrapIdentifier) {
+        return field(null, fields, wrapIdentifier);
+    }
+
+    // ------
+
+    public GroupBy field(String field) {
+        return field(null, field, true);
+    }
+
+    public GroupBy field(String field, boolean wrapIdentifier) {
+        return field(null, field, wrapIdentifier);
+    }
+
+    public GroupBy field(String prefix, String field) {
+        return field(prefix, field, true);
+    }
+
+    public GroupBy field(String prefix, String field, boolean wrapIdentifier) {
+        groupByNames.add(prefix, wrapIdentifier ? wrapIdentifierField(field) : field);
         return this;
     }
 

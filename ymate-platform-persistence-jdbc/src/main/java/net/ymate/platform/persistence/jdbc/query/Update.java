@@ -348,11 +348,6 @@ public final class Update extends Query<Update> {
         return this;
     }
 
-    public Update orderBy(OrderBy orderBy) {
-        where().orderBy().orderBy(orderBy);
-        return this;
-    }
-
     @Override
     public String toString() {
         ExpressionUtils expression = ExpressionUtils.bind(getExpressionStr("UPDATE ${tableNames} ${joins} SET ${fields} ${where}"));

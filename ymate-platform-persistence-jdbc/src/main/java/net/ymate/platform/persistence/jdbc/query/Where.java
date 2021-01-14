@@ -148,21 +148,48 @@ public final class Where extends QueryHandleAdapter<Where> {
         return this;
     }
 
+    // ------
+
     public Where groupBy(String field) {
-        return groupBy(Fields.create().add(field));
+        return groupBy(null, field, true);
     }
 
-    public Where groupBy(Fields fields) {
+    public Where groupBy(String field, boolean wrapIdentifier) {
+        return groupBy(null, field, wrapIdentifier);
+    }
+
+    public Where groupBy(String prefix, String field) {
+        return groupBy(prefix, field, true);
+    }
+
+    public Where groupBy(String prefix, String field, boolean wrapIdentifier) {
         if (groupBy != null) {
-            groupBy.fields().add(fields);
+            groupBy.field(prefix, field, wrapIdentifier);
         } else {
-            groupBy = GroupBy.create(owner, dataSourceName, fields);
+            groupBy = GroupBy.create(owner, dataSourceName, prefix, field, wrapIdentifier);
         }
         return this;
     }
 
-    public Where groupBy(String prefix, String field) {
-        return groupBy(Fields.create().add(prefix, field));
+    public Where groupBy(String prefix, Fields fields) {
+        return groupBy(prefix, fields, true);
+    }
+
+    public Where groupBy(String prefix, Fields fields, boolean wrapIdentifier) {
+        if (groupBy != null) {
+            groupBy.field(prefix, fields, wrapIdentifier);
+        } else {
+            groupBy = GroupBy.create(owner, dataSourceName, prefix, fields, wrapIdentifier);
+        }
+        return this;
+    }
+
+    public Where groupBy(Fields fields) {
+        return groupBy(null, fields, true);
+    }
+
+    public Where groupBy(Fields fields, boolean wrapIdentifier) {
+        return groupBy(null, fields, wrapIdentifier);
     }
 
     public Where groupBy(GroupBy groupBy) {
@@ -179,35 +206,91 @@ public final class Where extends QueryHandleAdapter<Where> {
         return this;
     }
 
+    // ------
+
     public Where orderByAsc(Fields fields) {
-        orderBy.asc(fields);
+        orderBy.asc(fields, true);
+        return this;
+    }
+
+    public Where orderByAsc(Fields fields, boolean wrapIdentifier) {
+        orderBy.asc(fields, wrapIdentifier);
+        return this;
+    }
+
+    public Where orderByAsc(String prefix, Fields fields) {
+        orderBy.asc(prefix, fields, true);
+        return this;
+    }
+
+    public Where orderByAsc(String prefix, Fields fields, boolean wrapIdentifier) {
+        orderBy.asc(prefix, fields, wrapIdentifier);
         return this;
     }
 
     public Where orderByAsc(String field) {
-        orderBy.asc(field);
+        orderBy.asc(field, true);
+        return this;
+    }
+
+    public Where orderByAsc(String field, boolean wrapIdentifier) {
+        orderBy.asc(field, wrapIdentifier);
         return this;
     }
 
     public Where orderByAsc(String prefix, String field) {
-        orderBy.asc(prefix, field);
+        orderBy.asc(prefix, field, true);
         return this;
     }
 
+    public Where orderByAsc(String prefix, String field, boolean wrapIdentifier) {
+        orderBy.asc(prefix, field, wrapIdentifier);
+        return this;
+    }
+
+    // ------
+
     public Where orderByDesc(Fields fields) {
-        orderBy.desc(fields);
+        orderBy.desc(fields, true);
+        return this;
+    }
+
+    public Where orderByDesc(Fields fields, boolean wrapIdentifier) {
+        orderBy.desc(fields, wrapIdentifier);
+        return this;
+    }
+
+    public Where orderByDesc(String prefix, Fields fields) {
+        orderBy.desc(prefix, fields, true);
+        return this;
+    }
+
+    public Where orderByDesc(String prefix, Fields fields, boolean wrapIdentifier) {
+        orderBy.desc(prefix, fields, wrapIdentifier);
         return this;
     }
 
     public Where orderByDesc(String field) {
-        orderBy.desc(field);
+        orderBy.desc(field, true);
+        return this;
+    }
+
+    public Where orderByDesc(String field, boolean wrapIdentifier) {
+        orderBy.desc(field, wrapIdentifier);
         return this;
     }
 
     public Where orderByDesc(String prefix, String field) {
-        orderBy.desc(prefix, field);
+        orderBy.desc(prefix, field, true);
         return this;
     }
+
+    public Where orderByDesc(String prefix, String field, boolean wrapIdentifier) {
+        orderBy.desc(prefix, field, wrapIdentifier);
+        return this;
+    }
+
+    // ------
 
     public String toSQL() {
         ExpressionUtils expression = ExpressionUtils.bind(getExpressionStr("${whereCond} ${slot} ${groupBy}"));

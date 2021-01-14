@@ -61,49 +61,93 @@ public final class OrderBy extends Query<OrderBy> {
         return this;
     }
 
-    public OrderBy asc(Fields fields) {
+    public OrderBy asc(String prefix, Fields fields, boolean wrapIdentifier) {
         if (fields != null && !fields.isEmpty()) {
-            fields.fields().forEach(this::asc);
+            fields.fields().forEach(field -> asc(prefix, field, wrapIdentifier));
         }
         return this;
+    }
+
+    public OrderBy asc(String prefix, Fields fields) {
+        return asc(prefix, fields, true);
+    }
+
+    public OrderBy asc(Fields fields) {
+        return asc(null, fields);
+    }
+
+    public OrderBy asc(Fields fields, boolean wrapIdentifier) {
+        return asc(null, fields, wrapIdentifier);
     }
 
     public OrderBy asc(String field) {
-        return asc(null, field);
+        return asc(null, field, true);
+    }
+
+    public OrderBy asc(String field, boolean wrapIdentifier) {
+        return asc(null, field, wrapIdentifier);
     }
 
     public OrderBy asc(String prefix, String field) {
+        return asc(prefix, field, true);
+    }
+
+    public OrderBy asc(String prefix, String field, boolean wrapIdentifier) {
         if (orderByBuilder.length() > 0) {
             orderByBuilder.append(LINE_END_FLAG);
         }
         if (StringUtils.isNotBlank(prefix)) {
             orderByBuilder.append(prefix).append(".");
         }
-        orderByBuilder.append(wrapIdentifierField(field));
+        orderByBuilder.append(wrapIdentifier ? wrapIdentifierField(field) : field);
         return this;
+    }
+
+    // ------
+
+    public OrderBy desc(String prefix, Fields fields, boolean wrapIdentifier) {
+        if (fields != null && !fields.isEmpty()) {
+            fields.fields().forEach(field -> desc(prefix, field, wrapIdentifier));
+        }
+        return this;
+    }
+
+    public OrderBy desc(String prefix, Fields fields) {
+        return desc(prefix, fields, true);
     }
 
     public OrderBy desc(Fields fields) {
-        if (fields != null && !fields.isEmpty()) {
-            fields.fields().forEach(this::desc);
-        }
-        return this;
+        return desc(null, fields, true);
+    }
+
+    public OrderBy desc(Fields fields, boolean wrapIdentifier) {
+        return desc(null, fields, wrapIdentifier);
     }
 
     public OrderBy desc(String field) {
-        return desc(null, field);
+        return desc(null, field, true);
+    }
+
+    public OrderBy desc(String field, boolean wrapIdentifier) {
+        return desc(null, field, wrapIdentifier);
     }
 
     public OrderBy desc(String prefix, String field) {
+        return desc(prefix, field, true);
+    }
+
+    public OrderBy desc(String prefix, String field, boolean wrapIdentifier) {
         if (orderByBuilder.length() > 0) {
             orderByBuilder.append(LINE_END_FLAG);
         }
         if (StringUtils.isNotBlank(prefix)) {
             orderByBuilder.append(prefix).append(".");
         }
-        orderByBuilder.append(wrapIdentifierField(field)).append(" DESC");
+        orderByBuilder.append(wrapIdentifier ? wrapIdentifierField(field) : field).append(" DESC");
         return this;
     }
+
+    // ------
 
     public String toSQL() {
         StringBuilder stringBuilder = new StringBuilder();

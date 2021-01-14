@@ -394,27 +394,89 @@ public final class Select extends Query<Select> {
     }
 
     public Select orderByAsc(String field) {
-        where().orderBy().asc(field);
-        return this;
+        return orderByAsc(null, field, true);
+    }
+
+    public Select orderByAsc(String field, boolean wrapIdentifier) {
+        return orderByAsc(null, field, wrapIdentifier);
     }
 
     public Select orderByAsc(String prefix, String field) {
-        where().orderBy().asc(prefix, field);
+        return orderByAsc(prefix, field, true);
+    }
+
+    public Select orderByAsc(String prefix, String field, boolean wrapIdentifier) {
+        where().orderBy().asc(prefix, field, wrapIdentifier);
         return this;
     }
 
-    public Select orderByDesc(String field) {
-        where().orderBy().desc(field);
+    public Select orderByAsc(Fields fields) {
+        return orderByAsc(fields, true);
+    }
+
+    public Select orderByAsc(Fields fields, boolean wrapIdentifier) {
+        return orderByAsc(null, fields, wrapIdentifier);
+    }
+
+    public Select orderByAsc(String prefix, Fields fields) {
+        return orderByAsc(prefix, fields, true);
+    }
+
+    public Select orderByAsc(String prefix, Fields fields, boolean wrapIdentifier) {
+        where().orderBy().asc(prefix, fields, wrapIdentifier);
         return this;
+    }
+
+    // ------
+
+    public Select orderByDesc(String field) {
+        return orderByDesc(null, field, true);
+    }
+
+    public Select orderByDesc(String field, boolean wrapIdentifier) {
+        return orderByDesc(null, field, wrapIdentifier);
     }
 
     public Select orderByDesc(String prefix, String field) {
-        where().orderBy().desc(prefix, field);
+        return orderByDesc(prefix, field, true);
+    }
+
+    public Select orderByDesc(String prefix, String field, boolean wrapIdentifier) {
+        where().orderBy().desc(prefix, field, wrapIdentifier);
         return this;
     }
 
+    public Select orderByDesc(Fields fields) {
+        return orderByDesc(fields, true);
+    }
+
+    public Select orderByDesc(Fields fields, boolean wrapIdentifier) {
+        return orderByDesc(null, fields, wrapIdentifier);
+    }
+
+    public Select orderByDesc(String prefix, Fields fields) {
+        return orderByDesc(prefix, fields, true);
+    }
+
+    public Select orderByDesc(String prefix, Fields fields, boolean wrapIdentifier) {
+        where().orderBy().desc(prefix, fields, wrapIdentifier);
+        return this;
+    }
+
+    // ------
+
     public Select groupBy(GroupBy groupBy) {
         where().groupBy(groupBy);
+        return this;
+    }
+
+    public Select groupBy(String prefix, Fields fields, boolean wrapIdentifier) {
+        where().groupBy(prefix, fields, wrapIdentifier);
+        return this;
+    }
+
+    public Select groupBy(String prefix, Fields fields) {
+        where().groupBy(prefix, fields);
         return this;
     }
 
@@ -423,13 +485,28 @@ public final class Select extends Query<Select> {
         return this;
     }
 
+    public Select groupBy(Fields fields, boolean wrapIdentifier) {
+        where().groupBy(fields, wrapIdentifier);
+        return this;
+    }
+
     public Select groupBy(String prefix, String field) {
         where().groupBy(prefix, field);
         return this;
     }
 
+    public Select groupBy(String prefix, String field, boolean wrapIdentifier) {
+        where().groupBy(prefix, field, wrapIdentifier);
+        return this;
+    }
+
     public Select groupBy(String field) {
         where().groupBy(field);
+        return this;
+    }
+
+    public Select groupBy(String field, boolean wrapIdentifier) {
+        where().groupBy(field, wrapIdentifier);
         return this;
     }
 
