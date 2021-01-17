@@ -39,7 +39,11 @@ public class DefaultWebResultBuilder implements IWebResultBuilder {
 
     @Override
     public IWebResultBuilder fromJson(String jsonStr) {
-        JsonWrapper jsonWrapper = JsonWrapper.fromJson(jsonStr);
+        return fromJson(JsonWrapper.fromJson(jsonStr));
+    }
+
+    @Override
+    public IWebResultBuilder fromJson(JsonWrapper jsonWrapper) {
         if (jsonWrapper != null && jsonWrapper.isJsonObject()) {
             return fromJson(Objects.requireNonNull(jsonWrapper.getAsJsonObject()));
         }

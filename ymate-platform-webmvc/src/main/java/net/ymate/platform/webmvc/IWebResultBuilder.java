@@ -16,6 +16,7 @@
 package net.ymate.platform.webmvc;
 
 import net.ymate.platform.commons.json.IJsonObjectWrapper;
+import net.ymate.platform.commons.json.JsonWrapper;
 
 import java.io.Serializable;
 import java.util.Map;
@@ -27,6 +28,8 @@ import java.util.Map;
 public interface IWebResultBuilder {
 
     IWebResultBuilder fromJson(String jsonStr);
+
+    IWebResultBuilder fromJson(JsonWrapper jsonWrapper);
 
     IWebResultBuilder fromJson(IJsonObjectWrapper jsonObject);
 

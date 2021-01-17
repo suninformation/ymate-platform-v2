@@ -52,7 +52,7 @@
          return result;
      }
 
-     public void build(RESULT result) {
+     protected void build(RESULT result) {
          this.result = result;
      }
 
