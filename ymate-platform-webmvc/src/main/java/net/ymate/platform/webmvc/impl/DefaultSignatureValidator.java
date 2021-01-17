@@ -51,11 +51,14 @@ public class DefaultSignatureValidator implements ISignatureValidator {
                 signatureParams.put(key, value);
             }
         });
+        return StringUtils.equals(originSign, doSignature(owner, signatureValidate, signatureParams));
+    }
+
+    protected String doSignature(IWebMvc owner, SignatureValidate signatureValidate, Map<String, Object> signatureParams) {
         ISignatureExtraParamProcessor extraParamProcessor = null;
         if (!signatureValidate.processorClass().equals(ISignatureExtraParamProcessor.class)) {
             extraParamProcessor = ClassUtils.impl(signatureValidate.processorClass(), ISignatureExtraParamProcessor.class);
         }
-        String sign = ParamUtils.createSignature(signatureParams, signatureValidate.encode(), signatureValidate.upperCase(), extraParamProcessor != null ? extraParamProcessor.getExtraParams(owner, signatureParams) : null);
-        return StringUtils.equals(originSign, sign);
+        return ParamUtils.createSignature(signatureParams, signatureValidate.encode(), signatureValidate.upperCase(), extraParamProcessor != null ? extraParamProcessor.getExtraParams(owner, signatureParams) : null);
     }
 }
