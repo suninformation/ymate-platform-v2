@@ -92,6 +92,8 @@ public interface IJsonArrayWrapper extends Serializable {
 
     String toString(boolean format, boolean keepNullValue);
 
+    String toString(boolean format, boolean keepNullValue, boolean snakeCase);
+
     List<Object> toList();
 
     Object[] toArray();

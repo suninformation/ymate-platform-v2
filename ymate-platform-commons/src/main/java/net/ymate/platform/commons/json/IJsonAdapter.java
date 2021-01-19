@@ -44,13 +44,23 @@ public interface IJsonAdapter {
 
     JsonWrapper fromJson(String jsonStr);
 
+    JsonWrapper fromJson(String jsonStr, boolean snakeCase);
+
     JsonWrapper toJson(Object object);
 
     String toJsonString(Object object, boolean format, boolean keepNullValue);
 
+    String toJsonString(Object object, boolean format, boolean keepNullValue, boolean snakeCase);
+
     byte[] serialize(Object object) throws Exception;
+
+    byte[] serialize(Object object, boolean snakeCase) throws Exception;
 
     <T> T deserialize(String jsonStr, Class<T> clazz) throws Exception;
 
+    <T> T deserialize(String jsonStr, boolean snakeCase, Class<T> clazz) throws Exception;
+
     <T> T deserialize(byte[] bytes, Class<T> clazz) throws Exception;
+
+    <T> T deserialize(byte[] bytes, boolean snakeCase, Class<T> clazz) throws Exception;
 }

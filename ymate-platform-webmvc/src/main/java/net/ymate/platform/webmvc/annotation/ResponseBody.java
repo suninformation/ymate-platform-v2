@@ -40,6 +40,11 @@ public @interface ResponseBody {
     boolean keepNull() default true;
 
     /**
+     * @return 是否使用下划线分隔属性名称
+     */
+    boolean snakeCase() default false;
+
+    /**
      * @return 自定义对象输出处理器, 默认为JSON格式输出
      */
     Class<? extends IResponseBodyProcessor> value() default IResponseBodyProcessor.class;

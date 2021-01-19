@@ -277,6 +277,11 @@ public class GsonArrayWrapper implements IJsonArrayWrapper {
     }
 
     @Override
+    public String toString(boolean format, boolean keepNullValue, boolean snakeCase) {
+        return JsonWrapper.toJsonString(jsonArray, format, keepNullValue, snakeCase);
+    }
+
+    @Override
     @SuppressWarnings("unchecked")
     public List<Object> toList() {
         return GsonAdapter.GSON.fromJson(jsonArray, List.class);

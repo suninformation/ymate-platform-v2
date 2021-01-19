@@ -182,6 +182,12 @@ public final class WebResult extends AbstractWebResult<Integer> {
         return this;
     }
 
+    @Override
+    public WebResult snakeCase() {
+        super.snakeCase();
+        return this;
+    }
+
     public static IView formatView(IWebResult<?> result) {
         return formatView(null, Type.Const.PARAM_FORMAT, Type.Const.PARAM_CALLBACK, result);
     }

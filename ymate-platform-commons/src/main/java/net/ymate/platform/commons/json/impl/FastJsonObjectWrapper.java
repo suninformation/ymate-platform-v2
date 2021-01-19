@@ -231,6 +231,11 @@ public class FastJsonObjectWrapper implements IJsonObjectWrapper {
     }
 
     @Override
+    public String toString(boolean format, boolean keepNullValue, boolean snakeCase) {
+        return JsonWrapper.toJsonString(jsonObject, format, keepNullValue, snakeCase);
+    }
+
+    @Override
     public Map<String, Object> toMap() {
         return jsonObject;
     }

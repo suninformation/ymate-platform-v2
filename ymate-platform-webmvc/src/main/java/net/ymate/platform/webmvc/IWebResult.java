@@ -58,6 +58,8 @@ public interface IWebResult<CODE_TYPE extends Serializable> {
 
     IWebResult<CODE_TYPE> keepNullValue();
 
+    IWebResult<CODE_TYPE> snakeCase();
+
     IWebResult<CODE_TYPE> dataFilter(IDateFilter dateFilter);
 
     IJsonObjectWrapper toJsonObject();

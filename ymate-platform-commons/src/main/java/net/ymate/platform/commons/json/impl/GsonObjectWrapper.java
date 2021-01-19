@@ -225,6 +225,11 @@ public class GsonObjectWrapper implements IJsonObjectWrapper {
     }
 
     @Override
+    public String toString(boolean format, boolean keepNullValue, boolean snakeCase) {
+        return JsonWrapper.toJsonString(jsonObject, format, keepNullValue, snakeCase);
+    }
+
+    @Override
     @SuppressWarnings("unchecked")
     public Map<String, Object> toMap() {
         return GsonAdapter.GSON.fromJson(jsonObject, Map.class);

@@ -270,6 +270,11 @@ public class JacksonArrayWrapper implements IJsonArrayWrapper {
     }
 
     @Override
+    public String toString(boolean format, boolean keepNullValue, boolean snakeCase) {
+        return JsonWrapper.toJsonString(arrayNode, format, keepNullValue, snakeCase);
+    }
+
+    @Override
     public List<Object> toList() {
         return JacksonAdapter.OBJECT_MAPPER.convertValue(arrayNode, new TypeReference<ArrayList<Object>>() {
         });

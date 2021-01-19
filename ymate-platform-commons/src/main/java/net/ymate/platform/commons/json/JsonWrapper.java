@@ -25,7 +25,10 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import java.io.Serializable;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
@@ -135,6 +138,10 @@ public final class JsonWrapper implements Serializable {
         return jsonAdapter.fromJson(jsonStr);
     }
 
+    public static JsonWrapper fromJson(String jsonStr, boolean snakeCase) {
+        return jsonAdapter.fromJson(jsonStr, snakeCase);
+    }
+
     public static JsonWrapper toJson(Object object) {
         return jsonAdapter.toJson(object);
     }
@@ -143,16 +150,32 @@ public final class JsonWrapper implements Serializable {
         return jsonAdapter.toJsonString(object, format, keepNullValue);
     }
 
+    public static String toJsonString(Object object, boolean format, boolean keepNullValue, boolean snakeCase) {
+        return jsonAdapter.toJsonString(object, format, keepNullValue, snakeCase);
+    }
+
     public static byte[] serialize(Object object) throws Exception {
         return jsonAdapter.serialize(object);
+    }
+
+    public static byte[] serialize(Object object, boolean snakeCase) throws Exception {
+        return jsonAdapter.serialize(object, snakeCase);
     }
 
     public static <T> T deserialize(String jsonStr, Class<T> clazz) throws Exception {
         return jsonAdapter.deserialize(jsonStr, clazz);
     }
 
+    public static <T> T deserialize(String jsonStr, boolean snakeCase, Class<T> clazz) throws Exception {
+        return jsonAdapter.deserialize(jsonStr, snakeCase, clazz);
+    }
+
     public static <T> T deserialize(byte[] bytes, Class<T> clazz) throws Exception {
         return jsonAdapter.deserialize(bytes, clazz);
+    }
+
+    public static <T> T deserialize(byte[] bytes, boolean snakeCase, Class<T> clazz) throws Exception {
+        return jsonAdapter.deserialize(bytes, snakeCase, clazz);
     }
 
     private final Object object;

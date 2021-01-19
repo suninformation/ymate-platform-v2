@@ -40,6 +40,8 @@ public class JsonView extends AbstractView {
 
     private boolean keepNullValue;
 
+    private boolean snakeCase;
+
     public static JsonView bind(Object obj) {
         if (obj instanceof String) {
             return new JsonView((String) obj);
@@ -102,9 +104,14 @@ public class JsonView extends AbstractView {
         return this;
     }
 
+    public JsonView snakeCase() {
+        snakeCase = true;
+        return this;
+    }
+
     @Override
     protected void doRenderView() throws Exception {
-        StringBuilder jsonStringBuilder = new StringBuilder(JsonWrapper.toJsonString(jsonObj, false, keepNullValue));
+        StringBuilder jsonStringBuilder = new StringBuilder(JsonWrapper.toJsonString(jsonObj, false, keepNullValue, snakeCase));
         if (jsonCallback != null) {
             jsonStringBuilder.insert(0, jsonCallback + "(").append(");");
         }
@@ -114,7 +121,7 @@ public class JsonView extends AbstractView {
 
     @Override
     public void render(OutputStream output) throws Exception {
-        StringBuilder jsonStringBuilder = new StringBuilder(JsonWrapper.toJsonString(jsonObj, false, keepNullValue));
+        StringBuilder jsonStringBuilder = new StringBuilder(JsonWrapper.toJsonString(jsonObj, false, keepNullValue, snakeCase));
         if (jsonCallback != null) {
             jsonStringBuilder.insert(0, jsonCallback + "(").append(");");
         }

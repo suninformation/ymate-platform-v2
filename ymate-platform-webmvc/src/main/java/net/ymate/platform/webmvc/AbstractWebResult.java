@@ -47,6 +47,8 @@ public abstract class AbstractWebResult<CODE_TYPE extends Serializable> implemen
 
     private boolean keepNullValue;
 
+    private boolean snakeCase;
+
     public AbstractWebResult() {
     }
 
@@ -137,6 +139,12 @@ public abstract class AbstractWebResult<CODE_TYPE extends Serializable> implemen
         return this;
     }
 
+    @Override
+    public IWebResult<CODE_TYPE> snakeCase() {
+        snakeCase = true;
+        return this;
+    }
+
     protected Map<String, Object> doFilter(IDateFilter dateFilter, boolean attr, Map<String, Object> targetMap) {
         if (dateFilter != null && targetMap != null && !targetMap.isEmpty()) {
             Map<String, Object> filtered = new LinkedHashMap<>(data.size());
@@ -184,6 +192,9 @@ public abstract class AbstractWebResult<CODE_TYPE extends Serializable> implemen
     @Override
     public JsonView toJsonView(String callback) {
         JsonView jsonView = new JsonView(toJsonObject()).withJsonCallback(callback);
+        if (snakeCase) {
+            jsonView.snakeCase();
+        }
         if (keepNullValue) {
             jsonView.keepNullValue();
         }

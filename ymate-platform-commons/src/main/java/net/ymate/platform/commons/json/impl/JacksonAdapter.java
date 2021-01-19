@@ -18,10 +18,7 @@ package net.ymate.platform.commons.json.impl;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.json.JsonReadFeature;
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.databind.*;
 import com.fasterxml.jackson.databind.json.JsonMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -124,10 +121,22 @@ public class JacksonAdapter implements IJsonAdapter {
 
     @Override
     public JsonWrapper fromJson(String jsonStr) {
+        return fromJson(jsonStr, false);
+    }
+
+    @Override
+    public JsonWrapper fromJson(String jsonStr, boolean snakeCase) {
         JsonWrapper jsonWrapper = null;
         if (jsonStr != null) {
             try {
-                jsonWrapper = parseJsonJsonWrapper(OBJECT_MAPPER.readTree(jsonStr));
+                ObjectMapper objectMapper;
+                if (snakeCase) {
+                    objectMapper = createObjectMapper()
+                            .setPropertyNamingStrategy(PropertyNamingStrategy.SNAKE_CASE);
+                } else {
+                    objectMapper = OBJECT_MAPPER;
+                }
+                jsonWrapper = parseJsonJsonWrapper(objectMapper.readTree(jsonStr));
             } catch (JsonProcessingException e) {
                 if (LOG.isWarnEnabled()) {
                     LOG.warn(StringUtils.EMPTY, RuntimeUtils.unwrapThrow(e));
@@ -160,9 +169,17 @@ public class JacksonAdapter implements IJsonAdapter {
 
     @Override
     public String toJsonString(Object object, boolean format, boolean keepNullValue) {
+        return toJsonString(object, format, keepNullValue, false);
+    }
+
+    @Override
+    public String toJsonString(Object object, boolean format, boolean keepNullValue, boolean snakeCase) {
         ObjectMapper objectMapper = createObjectMapper();
         if (!keepNullValue) {
             objectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
+        }
+        if (snakeCase) {
+            objectMapper.setPropertyNamingStrategy(PropertyNamingStrategy.SNAKE_CASE);
         }
         try {
             if (format) {
@@ -180,16 +197,36 @@ public class JacksonAdapter implements IJsonAdapter {
 
     @Override
     public byte[] serialize(Object object) throws Exception {
-        return toJsonString(object, false, false).getBytes(StandardCharsets.UTF_8);
+        return serialize(object, false);
+    }
+
+    @Override
+    public byte[] serialize(Object object, boolean snakeCase) throws Exception {
+        return toJsonString(object, false, false, snakeCase).getBytes(StandardCharsets.UTF_8);
     }
 
     @Override
     public <T> T deserialize(String jsonStr, Class<T> clazz) throws Exception {
+        return deserialize(jsonStr, false, clazz);
+    }
+
+    @Override
+    public <T> T deserialize(String jsonStr, boolean snakeCase, Class<T> clazz) throws Exception {
+        if (snakeCase) {
+            return createObjectMapper()
+                    .setPropertyNamingStrategy(PropertyNamingStrategy.SNAKE_CASE)
+                    .readValue(jsonStr, clazz);
+        }
         return OBJECT_MAPPER.readValue(jsonStr, clazz);
     }
 
     @Override
     public <T> T deserialize(byte[] bytes, Class<T> clazz) throws Exception {
-        return deserialize(new String(bytes, StandardCharsets.UTF_8), clazz);
+        return deserialize(bytes, false, clazz);
+    }
+
+    @Override
+    public <T> T deserialize(byte[] bytes, boolean snakeCase, Class<T> clazz) throws Exception {
+        return deserialize(new String(bytes, StandardCharsets.UTF_8), snakeCase, clazz);
     }
 }

@@ -96,8 +96,20 @@ public class GsonAdapter implements IJsonAdapter {
 
     @Override
     public JsonWrapper fromJson(String jsonStr) {
+        return fromJson(jsonStr, false);
+    }
+
+    @Override
+    public JsonWrapper fromJson(String jsonStr, boolean snakeCase) {
         JsonWrapper jsonWrapper = null;
-        Object obj = GSON.fromJson(jsonStr, JsonElement.class);
+        Object obj;
+        if (snakeCase) {
+            obj = GSON.newBuilder()
+                    .setFieldNamingPolicy(FieldNamingPolicy.LOWER_CASE_WITH_UNDERSCORES).create()
+                    .fromJson(jsonStr, JsonElement.class);
+        } else {
+            obj = GSON.fromJson(jsonStr, JsonElement.class);
+        }
         if (obj instanceof JsonObject) {
             jsonWrapper = new JsonWrapper(new GsonObjectWrapper((JsonObject) obj));
         } else if (obj instanceof JsonArray) {
@@ -113,9 +125,17 @@ public class GsonAdapter implements IJsonAdapter {
 
     @Override
     public String toJsonString(Object object, boolean format, boolean keepNullValue) {
+        return toJsonString(object, format, keepNullValue, false);
+    }
+
+    @Override
+    public String toJsonString(Object object, boolean format, boolean keepNullValue, boolean snakeCase) {
         GsonBuilder gsonBuilder = GSON.newBuilder();
         if (format) {
             gsonBuilder.setPrettyPrinting();
+        }
+        if (snakeCase) {
+            gsonBuilder.setFieldNamingPolicy(FieldNamingPolicy.LOWER_CASE_WITH_UNDERSCORES);
         }
         if (keepNullValue) {
             gsonBuilder.serializeNulls();
@@ -125,16 +145,36 @@ public class GsonAdapter implements IJsonAdapter {
 
     @Override
     public byte[] serialize(Object object) throws Exception {
-        return toJsonString(object, false, false).getBytes(StandardCharsets.UTF_8);
+        return serialize(object, false);
+    }
+
+    @Override
+    public byte[] serialize(Object object, boolean snakeCase) throws Exception {
+        return toJsonString(object, false, false, snakeCase).getBytes(StandardCharsets.UTF_8);
     }
 
     @Override
     public <T> T deserialize(String jsonStr, Class<T> clazz) throws Exception {
+        return deserialize(jsonStr, false, clazz);
+    }
+
+    @Override
+    public <T> T deserialize(String jsonStr, boolean snakeCase, Class<T> clazz) throws Exception {
+        if (snakeCase) {
+            return GSON.newBuilder()
+                    .setFieldNamingPolicy(FieldNamingPolicy.LOWER_CASE_WITH_UNDERSCORES)
+                    .create().fromJson(jsonStr, clazz);
+        }
         return GSON.fromJson(jsonStr, clazz);
     }
 
     @Override
     public <T> T deserialize(byte[] bytes, Class<T> clazz) throws Exception {
-        return deserialize(new String(bytes, StandardCharsets.UTF_8), clazz);
+        return deserialize(bytes, false, clazz);
+    }
+
+    @Override
+    public <T> T deserialize(byte[] bytes, boolean snakeCase, Class<T> clazz) throws Exception {
+        return deserialize(new String(bytes, StandardCharsets.UTF_8), snakeCase, clazz);
     }
 }

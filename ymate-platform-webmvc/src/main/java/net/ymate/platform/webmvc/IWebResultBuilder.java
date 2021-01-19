@@ -29,6 +29,8 @@ public interface IWebResultBuilder {
 
     IWebResultBuilder fromJson(String jsonStr);
 
+    IWebResultBuilder fromJson(String jsonStr, boolean snakeCase);
+
     IWebResultBuilder fromJson(JsonWrapper jsonWrapper);
 
     IWebResultBuilder fromJson(IJsonObjectWrapper jsonObject);

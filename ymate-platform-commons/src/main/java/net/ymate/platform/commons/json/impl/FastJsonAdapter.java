@@ -18,9 +18,11 @@ package net.ymate.platform.commons.json.impl;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import com.alibaba.fastjson.PropertyNamingStrategy;
 import com.alibaba.fastjson.parser.Feature;
 import com.alibaba.fastjson.parser.ParserConfig;
 import com.alibaba.fastjson.serializer.JSONSerializer;
+import com.alibaba.fastjson.serializer.SerializeConfig;
 import com.alibaba.fastjson.serializer.SerializerFeature;
 import net.ymate.platform.commons.json.IJsonAdapter;
 import net.ymate.platform.commons.json.IJsonArrayWrapper;
@@ -35,6 +37,15 @@ import java.util.*;
  * @since 2.1.0
  */
 public class FastJsonAdapter implements IJsonAdapter {
+
+    public static final SerializeConfig SNAKE_CASE_SERIALIZE_CONFIG = new SerializeConfig();
+
+    public static final ParserConfig SNAKE_CASE_PARSE_CONFIG = new ParserConfig();
+
+    static {
+        SNAKE_CASE_SERIALIZE_CONFIG.setPropertyNamingStrategy(PropertyNamingStrategy.SnakeCase);
+        SNAKE_CASE_PARSE_CONFIG.propertyNamingStrategy = PropertyNamingStrategy.SnakeCase;
+    }
 
     public static JSONObject toJsonObject(Map<?, ?> value) {
         JSONObject jsonObj = new JSONObject(value.size(), value instanceof LinkedHashMap);
@@ -99,8 +110,13 @@ public class FastJsonAdapter implements IJsonAdapter {
 
     @Override
     public JsonWrapper fromJson(String jsonStr) {
+        return fromJson(jsonStr, false);
+    }
+
+    @Override
+    public JsonWrapper fromJson(String jsonStr, boolean snakeCase) {
         JsonWrapper jsonWrapper = null;
-        Object obj = JSON.parse(jsonStr, Feature.OrderedField);
+        Object obj = JSON.parse(jsonStr, snakeCase ? SNAKE_CASE_PARSE_CONFIG : ParserConfig.getGlobalInstance(), Feature.OrderedField);
         if (obj instanceof JSONObject) {
             jsonWrapper = new JsonWrapper(new FastJsonObjectWrapper((JSONObject) obj));
         } else if (obj instanceof JSONArray) {
@@ -123,6 +139,11 @@ public class FastJsonAdapter implements IJsonAdapter {
 
     @Override
     public String toJsonString(Object object, boolean format, boolean keepNullValue) {
+        return toJsonString(object, format, keepNullValue, false);
+    }
+
+    @Override
+    public String toJsonString(Object object, boolean format, boolean keepNullValue, boolean snakeCase) {
         List<SerializerFeature> serializerFeatures = new ArrayList<>();
         if (format) {
             serializerFeatures.add(SerializerFeature.PrettyFormat);
@@ -136,12 +157,17 @@ public class FastJsonAdapter implements IJsonAdapter {
                     SerializerFeature.WriteNullStringAsEmpty,
                     SerializerFeature.WriteNullNumberAsZero));
         }
-        return JSON.toJSONString(JsonWrapper.unwrap(object), serializerFeatures.toArray(new SerializerFeature[0]));
+        return JSON.toJSONString(JsonWrapper.unwrap(object), snakeCase ? SNAKE_CASE_SERIALIZE_CONFIG : SerializeConfig.getGlobalInstance(), serializerFeatures.toArray(new SerializerFeature[0]));
     }
 
     @Override
     public byte[] serialize(Object object) throws Exception {
-        JSONSerializer serializer = new JSONSerializer();
+        return serialize(object, false);
+    }
+
+    @Override
+    public byte[] serialize(Object object, boolean snakeCase) throws Exception {
+        JSONSerializer serializer = new JSONSerializer(snakeCase ? SNAKE_CASE_SERIALIZE_CONFIG : SerializeConfig.getGlobalInstance());
         serializer.config(SerializerFeature.WriteEnumUsingToString, true);
         serializer.config(SerializerFeature.WriteClassName, true);
         serializer.write(JsonWrapper.unwrap(object));
@@ -154,7 +180,17 @@ public class FastJsonAdapter implements IJsonAdapter {
     }
 
     @Override
+    public <T> T deserialize(String jsonStr, boolean snakeCase, Class<T> clazz) throws Exception {
+        return JSON.parseObject(jsonStr, clazz, snakeCase ? SNAKE_CASE_PARSE_CONFIG : ParserConfig.getGlobalInstance());
+    }
+
+    @Override
     public <T> T deserialize(byte[] bytes, Class<T> clazz) throws Exception {
-        return deserialize(new String(bytes, StandardCharsets.UTF_8), clazz);
+        return deserialize(bytes, false, clazz);
+    }
+
+    @Override
+    public <T> T deserialize(byte[] bytes, boolean snakeCase, Class<T> clazz) throws Exception {
+        return deserialize(new String(bytes, StandardCharsets.UTF_8), snakeCase, clazz);
     }
 }

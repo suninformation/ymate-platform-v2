@@ -228,6 +228,11 @@ public class JacksonObjectWrapper implements IJsonObjectWrapper {
     }
 
     @Override
+    public String toString(boolean format, boolean keepNullValue, boolean snakeCase) {
+        return JsonWrapper.toJsonString(objectNode, format, keepNullValue, snakeCase);
+    }
+
+    @Override
     public Map<String, Object> toMap() {
         return JacksonAdapter.OBJECT_MAPPER.convertValue(objectNode, new TypeReference<Map<String, Object>>() {
         });
