@@ -29,5 +29,7 @@ public interface IRepository {
      *
      * @return 返回配置接口对象
      */
-    IConfiguration getConfig();
+    default IConfiguration getConfig() {
+        return null;
+    }
 }
