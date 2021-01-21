@@ -100,6 +100,14 @@ public abstract class BaseEntity<Entity extends IEntity, PK extends Serializable
         this.dataSourceName = StringUtils.trimToNull(dataSourceName);
     }
 
+    public IDatabase getDbOwner() {
+        return dbOwner;
+    }
+
+    public void setDbOwner(IDatabase dbOwner) {
+        this.dbOwner = dbOwner;
+    }
+
     /**
      * @return 获取实体对象类型
      */
