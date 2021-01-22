@@ -15,9 +15,10 @@
  */
 package net.ymate.platform.commons.lang;
 
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONArray;
-import com.alibaba.fastjson.JSONObject;
+import net.ymate.platform.commons.json.IJsonArrayWrapper;
+import net.ymate.platform.commons.json.IJsonNodeWrapper;
+import net.ymate.platform.commons.json.IJsonObjectWrapper;
+import net.ymate.platform.commons.json.JsonWrapper;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang.NullArgumentException;
 import org.apache.commons.lang3.StringUtils;
@@ -217,42 +218,46 @@ public class TreeObject implements Serializable, Cloneable {
     //////////
 
     public static TreeObject fromJson(String jsonStr) {
-        return fromJson(JSON.parseObject(jsonStr));
+        JsonWrapper jsonWrapper = JsonWrapper.fromJson(jsonStr);
+        return fromJson(jsonWrapper != null ? jsonWrapper.getAsJsonObject() : null);
     }
 
-    public static TreeObject fromJson(JSONObject json) {
+    public static TreeObject fromJson(IJsonObjectWrapper json) {
         if (json == null) {
             throw new NullArgumentException("json");
         }
-        if (!json.containsKey(KEY_CLASS)) {
-            throw new IllegalArgumentException();
+        if (!json.has(KEY_CLASS)) {
+            throw new IllegalArgumentException(KEY_CLASS);
         }
-        int classType = json.getIntValue(KEY_CLASS);
+        int classType = json.getInt(KEY_CLASS);
         TreeObject target = new TreeObject();
         switch (classType) {
             case TYPE_MAP: {
                 // MAP
-                JSONObject value = json.getJSONObject(KEY_VALUE);
+                IJsonObjectWrapper value = json.getJsonObject(KEY_VALUE);
                 for (String key : value.keySet()) {
-                    target.put(key, fromJson(value.getJSONObject(key)));
+                    target.put(key, fromJson(value.getJsonObject(key)));
                 }
                 break;
             }
             case TYPE_COLLECTION: {
                 // COLLECTION
-                JSONArray value = json.getJSONArray(KEY_VALUE);
+                IJsonArrayWrapper value = json.getJsonArray(KEY_VALUE);
                 for (int idx = 0; idx < value.size(); idx++) {
-                    target.add(fromJson(value.getJSONObject(idx)));
+                    target.add(fromJson(value.getJsonObject(idx)));
                 }
                 break;
             }
             default: {
                 // VALUE
-                Object value = json.get(KEY_VALUE);
+                Object value;
                 if (classType == TYPE_MIX_STRING) {
-                    value = new String(Base64.decodeBase64((String) value));
+                    value = new String(Base64.decodeBase64(json.getString(KEY_VALUE)));
                 } else if (classType == TYPE_BYTES) {
-                    value = Base64.decodeBase64((String) value);
+                    value = Base64.decodeBase64(json.getString(KEY_VALUE));
+                } else {
+                    IJsonNodeWrapper nodeWrapper = json.get(KEY_VALUE);
+                    value = nodeWrapper != null ? nodeWrapper.get() : null;
                 }
                 target = new TreeObject(value, classType);
                 break;
@@ -261,20 +266,20 @@ public class TreeObject implements Serializable, Cloneable {
         return target;
     }
 
-    public JSONObject toJson() {
+    public IJsonObjectWrapper toJson() {
         return toJson(this);
     }
 
-    public static JSONObject toJson(TreeObject tObject) {
+    public static IJsonObjectWrapper toJson(TreeObject tObject) {
         if (tObject == null) {
             return null;
         }
-        JSONObject returnJson;
+        IJsonObjectWrapper returnJson;
         // MAP
         if (tObject.isMap()) {
             TreeObject itemObject;
             Map<String, TreeObject> nodeValue = tObject.getMap();
-            JSONObject itemJson = new JSONObject();
+            IJsonObjectWrapper itemJson = JsonWrapper.createJsonObject();
             if (nodeValue != null && !nodeValue.isEmpty()) {
                 for (Map.Entry<String, TreeObject> entry : nodeValue.entrySet()) {
                     if (StringUtils.isNotBlank(entry.getKey())) {
@@ -282,8 +287,8 @@ public class TreeObject implements Serializable, Cloneable {
                         if (itemObject != null) {
                             returnJson = toJson(itemObject);
                             if (returnJson != null) {
-                                if (!returnJson.containsKey(KEY_VALUE)) {
-                                    JSONObject nodeAttrValue = new JSONObject();
+                                if (!returnJson.has(KEY_VALUE)) {
+                                    IJsonObjectWrapper nodeAttrValue = JsonWrapper.createJsonObject();
                                     nodeAttrValue.put(KEY_VALUE, returnJson);
                                     nodeAttrValue.put(KEY_CLASS, TYPE_MAP);
                                     itemJson.put(entry.getKey(), nodeAttrValue);
@@ -295,8 +300,8 @@ public class TreeObject implements Serializable, Cloneable {
                     }
                 }
                 // 处理值为map类型时没有_v的情况，保证结构为{_v:{},_c:9}
-                if (!itemJson.containsKey(KEY_VALUE)) {
-                    JSONObject nodeAttrValue = new JSONObject();
+                if (!itemJson.has(KEY_VALUE)) {
+                    IJsonObjectWrapper nodeAttrValue = JsonWrapper.createJsonObject();
                     nodeAttrValue.put(KEY_CLASS, TYPE_MAP);
                     nodeAttrValue.put(KEY_VALUE, itemJson);
                     return nodeAttrValue;
@@ -305,14 +310,14 @@ public class TreeObject implements Serializable, Cloneable {
                 }
             } else {
                 itemJson.put(KEY_CLASS, TYPE_MAP);
-                itemJson.put(KEY_VALUE, new JSONObject());
+                itemJson.put(KEY_VALUE, JsonWrapper.createJsonObject());
                 return itemJson;
             }
         } else if (tObject.isList()) {
             // ARRAY
             List<TreeObject> nodeValue = tObject.getList();
             if (nodeValue != null && !nodeValue.isEmpty()) {
-                JSONArray itemJson = new JSONArray();
+                IJsonArrayWrapper itemJson = JsonWrapper.createJsonArray();
                 for (TreeObject itemObject : nodeValue) {
                     if (itemObject != null) {
                         returnJson = toJson(itemObject);
@@ -322,19 +327,19 @@ public class TreeObject implements Serializable, Cloneable {
                     }
                 }
                 // 保证数组的格式:{_value:[{_class:,_value},{}..]}
-                JSONObject nodeJson = new JSONObject();
+                IJsonObjectWrapper nodeJson = JsonWrapper.createJsonObject();
                 nodeJson.put(KEY_VALUE, itemJson);
                 nodeJson.put(KEY_CLASS, TYPE_COLLECTION);
                 return nodeJson;
             } else {
-                JSONObject nodeJson = new JSONObject();
-                nodeJson.put(KEY_VALUE, new JSONArray());
+                IJsonObjectWrapper nodeJson = JsonWrapper.createJsonObject();
+                nodeJson.put(KEY_VALUE, JsonWrapper.createJsonArray());
                 nodeJson.put(KEY_CLASS, TYPE_COLLECTION);
                 return nodeJson;
             }
         } else {
             // VALUE
-            JSONObject nodeJson = new JSONObject();
+            IJsonObjectWrapper nodeJson = JsonWrapper.createJsonObject();
             nodeJson.put(KEY_CLASS, tObject.getType());
             //
             switch (tObject.getType()) {

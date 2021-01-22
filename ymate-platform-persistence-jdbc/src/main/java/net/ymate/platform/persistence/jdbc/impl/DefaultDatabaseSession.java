@@ -45,6 +45,7 @@ import java.util.*;
  *
  * @author 刘镇 (suninformation@163.com) on 2011-9-27 下午03:09:46
  */
+@SuppressWarnings("rawtypes")
 public class DefaultDatabaseSession extends AbstractSession<IDatabaseConnectionHolder> implements IDatabaseSession {
 
     private final IDatabase owner;
