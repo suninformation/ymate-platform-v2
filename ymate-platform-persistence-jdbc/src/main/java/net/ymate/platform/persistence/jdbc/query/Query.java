@@ -203,11 +203,23 @@ public class Query<T> extends QueryHandleAdapter<T> {
             if (splits != null && splits.length > 0) {
                 if (splits.length == 2) {
                     String[] alias = StringUtils.split(splits[1]);
-                    if (alias != null && alias.length == 2) {
-                        return String.format("%s.%s %s", splits[0], dialect.wrapIdentifierQuote(alias[0]), alias[1]);
+                    if (alias != null) {
+                        if (alias.length == 2) {
+                            return String.format("%s.%s %s", splits[0], dialect.wrapIdentifierQuote(alias[0]), dialect.wrapIdentifierQuote(alias[1]));
+                        } else if (alias.length == 3 && StringUtils.equalsIgnoreCase(alias[1], "as")) {
+                            return String.format("%s as %s", dialect.wrapIdentifierQuote(alias[0]), dialect.wrapIdentifierQuote(alias[2]));
+                        }
                     }
                     return String.format("%s.%s", splits[0], dialect.wrapIdentifierQuote(splits[1]));
                 } else if (splits.length == 1) {
+                    String[] alias = StringUtils.split(splits[0]);
+                    if (alias != null) {
+                        if (alias.length == 2) {
+                            return String.format("%s %s", dialect.wrapIdentifierQuote(alias[0]), dialect.wrapIdentifierQuote(alias[1]));
+                        } else if (alias.length == 3 && StringUtils.equalsIgnoreCase(alias[1], "as")) {
+                            return String.format("%s as %s", dialect.wrapIdentifierQuote(alias[0]), dialect.wrapIdentifierQuote(alias[2]));
+                        }
+                    }
                     return dialect.wrapIdentifierQuote(splits[0]);
                 }
             }
