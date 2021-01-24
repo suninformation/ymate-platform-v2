@@ -149,6 +149,12 @@ public final class OrderBy extends Query<OrderBy> {
 
     // ------
 
+    public boolean isEmpty() {
+        return orderByBuilder.length() == 0;
+    }
+
+    // ------
+
     public String toSQL() {
         StringBuilder stringBuilder = new StringBuilder();
         if (orderByBuilder.length() > 0) {

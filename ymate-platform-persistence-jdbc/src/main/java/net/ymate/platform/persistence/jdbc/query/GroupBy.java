@@ -174,6 +174,10 @@ public final class GroupBy extends Query<GroupBy> {
         return this;
     }
 
+    public boolean isEmpty() {
+        return fields().isEmpty() && (having == null || having.isEmpty());
+    }
+
     @Override
     public String toString() {
         ExpressionUtils expression = ExpressionUtils.bind(getExpressionStr("${groupBy} ${having}"));
