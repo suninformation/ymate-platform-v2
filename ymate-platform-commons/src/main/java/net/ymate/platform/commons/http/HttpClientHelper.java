@@ -40,6 +40,7 @@ import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.ssl.SSLContexts;
 
+import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLContext;
 import java.io.BufferedInputStream;
 import java.io.File;
@@ -104,6 +105,11 @@ public class HttpClientHelper {
 
     public static SSLConnectionSocketFactory createConnectionSocketFactory(String certType, URL certFilePath, char[] passwordChars)
             throws KeyStoreException, IOException, CertificateException, NoSuchAlgorithmException, UnrecoverableKeyException, KeyManagementException {
+        return createConnectionSocketFactory(certType, certFilePath, passwordChars, new String[]{"TLSv1"}, null);
+    }
+
+    public static SSLConnectionSocketFactory createConnectionSocketFactory(String certType, URL certFilePath, char[] passwordChars, String[] supportedProtocols, String[] supportedCipherSuites)
+            throws KeyStoreException, IOException, CertificateException, NoSuchAlgorithmException, UnrecoverableKeyException, KeyManagementException {
         if (StringUtils.isBlank(certType)) {
             throw new NullArgumentException("certType");
         }
@@ -118,7 +124,29 @@ public class HttpClientHelper {
             keyStore.load(certFileStream, passwordChars);
         }
         SSLContext sslContext = SSLContexts.custom().loadKeyMaterial(keyStore, passwordChars).build();
-        return new SSLConnectionSocketFactory(sslContext, new String[]{"TLSv1"}, null, new DefaultHostnameVerifier());
+        return createConnectionSocketFactory(sslContext, supportedProtocols, supportedCipherSuites, new DefaultHostnameVerifier());
+    }
+
+    public static SSLConnectionSocketFactory createConnectionSocketFactory(SSLContext sslContext, String[] supportedProtocols, String[] supportedCipherSuites, HostnameVerifier hostnameVerifier) {
+        if (sslContext == null) {
+            sslContext = SSLContexts.createSystemDefault();
+        }
+        if (hostnameVerifier == null) {
+            hostnameVerifier = new DefaultHostnameVerifier();
+        }
+        return new SSLConnectionSocketFactory(sslContext, supportedProtocols, supportedCipherSuites, hostnameVerifier);
+    }
+
+    public static SSLConnectionSocketFactory createConnectionSocketFactory(SSLContext sslContext, String[] supportedProtocols, String[] supportedCipherSuites) {
+        return createConnectionSocketFactory(sslContext, supportedProtocols, supportedCipherSuites, null);
+    }
+
+    public static SSLConnectionSocketFactory createConnectionSocketFactory(SSLContext sslContext) {
+        return createConnectionSocketFactory(sslContext, null, null, null);
+    }
+
+    public static SSLConnectionSocketFactory createConnectionSocketFactory(String[] supportedProtocols, String[] supportedCipherSuites) {
+        return createConnectionSocketFactory(null, supportedProtocols, supportedCipherSuites, null);
     }
 
     private HttpClientHelper() {
