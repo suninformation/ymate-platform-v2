@@ -71,7 +71,7 @@ public abstract class AbstractDialect implements IDialect {
             if (ArrayUtils.isNotEmpty(originArr)) {
                 IntStream.range(0, originArr.length).forEach(idx -> {
                     originArr[idx] = StringUtils.trim(originArr[idx]);
-                    if (!StringUtils.equals(originArr[idx], "*")) {
+                    if (!StringUtils.equalsAny(originArr[idx], "*", "?")) {
                         if (!StringUtils.startsWith(originArr[idx], identifierQuoteBegin)) {
                             originArr[idx] = identifierQuoteBegin + originArr[idx];
                         }
