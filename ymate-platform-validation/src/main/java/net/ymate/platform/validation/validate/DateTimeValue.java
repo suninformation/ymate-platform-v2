@@ -40,6 +40,13 @@ public class DateTimeValue implements Serializable {
         return (DateTimeValue) ValidateContext.getLocalAttributes().get(paramName);
     }
 
+    public static void get(String paramName, IValueProcessor valueProcessor) {
+        DateTimeValue dateTimeValue = get(paramName);
+        if (dateTimeValue != null) {
+            valueProcessor.process(dateTimeValue);
+        }
+    }
+
     public static DateTimeValue parse(String dateTimeStr, boolean single) {
         return parse(dateTimeStr, null, null, single);
     }
@@ -114,11 +121,25 @@ public class DateTimeValue implements Serializable {
         return isNullStartDate() ? 0 : startDate.getTime();
     }
 
+    public Long getStartDateTimeMillisOrNull() {
+        if (isNullStartDate()) {
+            return null;
+        }
+        return startDate.getTime();
+    }
+
     /**
      * @return 获取结束日期毫秒值，若为空则返回0
      */
     public long getEndDateTimeMillis() {
         return isNullEndDate() ? 0 : endDate.getTime();
+    }
+
+    public Long getEndDateTimeMillisOrNull() {
+        if (isNullEndDate()) {
+            return null;
+        }
+        return endDate.getTime();
     }
 
     public DateTimeHelper bindStartDate() {
@@ -127,5 +148,15 @@ public class DateTimeValue implements Serializable {
 
     public DateTimeHelper bindEndDate() {
         return DateTimeHelper.bind(endDate);
+    }
+
+    public interface IValueProcessor {
+
+        /**
+         * 处理日期时间值
+         *
+         * @param dateTimeValue 日期时间值对象
+         */
+        void process(DateTimeValue dateTimeValue);
     }
 }
