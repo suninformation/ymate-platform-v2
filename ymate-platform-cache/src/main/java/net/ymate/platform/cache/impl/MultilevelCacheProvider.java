@@ -15,8 +15,6 @@
  */
 package net.ymate.platform.cache.impl;
 
-import net.sf.ehcache.CacheManager;
-import net.sf.ehcache.Ehcache;
 import net.ymate.platform.cache.AbstractRedisCacheProvider;
 import net.ymate.platform.cache.ICache;
 import net.ymate.platform.cache.ICacheEventListener;
@@ -28,8 +26,6 @@ import net.ymate.platform.persistence.redis.IRedis;
  */
 public class MultilevelCacheProvider extends AbstractRedisCacheProvider {
 
-    private CacheManager cacheManager;
-
     private IRedis redis;
 
     @Override
@@ -39,15 +35,15 @@ public class MultilevelCacheProvider extends AbstractRedisCacheProvider {
 
     @Override
     protected void onInitialize() throws Exception {
-        cacheManager = doCreateCacheManager();
+        super.onInitialize();
+        //
         redis = REDIS_CREATOR.create();
         redis.initialize(getOwner().getOwner());
     }
 
     @Override
     protected void onDestroy() throws Exception {
-        cacheManager.shutdown();
-        cacheManager = null;
+        super.onDestroy();
         //
         redis.close();
         redis = null;
@@ -55,11 +51,7 @@ public class MultilevelCacheProvider extends AbstractRedisCacheProvider {
 
     @Override
     protected ICache onCreateCache(String cacheName, ICacheEventListener listener) {
-        Ehcache ehcache = cacheManager.getEhcache(cacheName);
-        if (ehcache == null) {
-            cacheManager.addCache(cacheName);
-            ehcache = cacheManager.getCache(cacheName);
-        }
-        return new MultilevelCacheWrapper(getOwner(), cacheName, ehcache, redis, listener);
+        ICache cache = getCacheManager().createCache(cacheName, listener);
+        return new MultilevelCacheWrapper(getOwner(), cacheName, cache, redis);
     }
 }

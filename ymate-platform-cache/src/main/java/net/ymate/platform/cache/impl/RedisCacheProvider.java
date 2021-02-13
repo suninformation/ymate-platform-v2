@@ -35,12 +35,16 @@ public class RedisCacheProvider extends AbstractRedisCacheProvider {
 
     @Override
     protected void onInitialize() throws Exception {
+        super.onInitialize();
+        //
         redis = REDIS_CREATOR.create();
         redis.initialize(getOwner().getOwner());
     }
 
     @Override
     protected void onDestroy() throws Exception {
+        super.onDestroy();
+        //
         redis.close();
         redis = null;
     }

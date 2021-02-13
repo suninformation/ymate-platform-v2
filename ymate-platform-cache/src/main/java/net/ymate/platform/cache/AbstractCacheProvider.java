@@ -15,18 +15,14 @@
  */
 package net.ymate.platform.cache;
 
-import net.sf.ehcache.CacheManager;
 import net.ymate.platform.commons.ReentrantLockHelper;
-import net.ymate.platform.commons.util.FileUtils;
+import net.ymate.platform.commons.util.ClassUtils;
 import net.ymate.platform.commons.util.RuntimeUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
-import java.net.MalformedURLException;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -38,62 +34,70 @@ public abstract class AbstractCacheProvider implements ICacheProvider {
 
     private static final Log LOG = LogFactory.getLog(AbstractCacheProvider.class);
 
+    private static ICacheManager cacheManager;
+
+    static {
+        try {
+            String cacheManagerClass = System.getProperty("ymp.cacheManagerClass");
+            cacheManager = ClassUtils.impl(cacheManagerClass, ICacheManager.class, AbstractCacheProvider.class);
+            if (cacheManager == null) {
+                ClassUtils.ExtensionLoader<ICacheManager> extensionLoader = ClassUtils.getExtensionLoader(ICacheManager.class);
+                for (Class<ICacheManager> managerClass : extensionLoader.getExtensionClasses()) {
+                    try {
+                        cacheManager = ClassUtils.impl(managerClass, ICacheManager.class);
+                        if (cacheManager != null) {
+                            if (LOG.isInfoEnabled()) {
+                                LOG.info(String.format("Using CacheManager class [%s].", managerClass.getName()));
+                            }
+                            break;
+                        }
+                    } catch (NoClassDefFoundError | Exception ignored) {
+                    }
+                }
+            } else if (LOG.isInfoEnabled()) {
+                LOG.info(String.format("Using CacheManager class [%s].", cacheManagerClass));
+            }
+        } catch (Exception e) {
+            if (LOG.isWarnEnabled()) {
+                LOG.warn(StringUtils.EMPTY, RuntimeUtils.unwrapThrow(e));
+            }
+        }
+    }
+
     private ICaches owner;
 
     private boolean initialized;
 
     private final Map<String, ICache> caches = new ConcurrentHashMap<>();
 
-    private String cacheNameSafety(String name) {
-        if (ICache.DEFAULT.equalsIgnoreCase(name)) {
-            return CacheManager.DEFAULT_NAME;
-        }
-        return name;
-    }
-
     /**
      * 初始化
      *
      * @throws Exception 可能产生的任何异常
      */
-    protected abstract void onInitialize() throws Exception;
+    protected void onInitialize() throws Exception {
+        if (!cacheManager.isInitialized()) {
+            cacheManager.initialize(getOwner());
+        }
+    }
 
     /**
      * 销毁
      *
      * @throws Exception 可能产生的任何异常
      */
-    protected abstract void onDestroy() throws Exception;
+    protected void onDestroy() throws Exception {
+        try {
+            cacheManager.close();
+        } catch (IOException e) {
+            if (LOG.isErrorEnabled()) {
+                LOG.error(StringUtils.EMPTY, RuntimeUtils.unwrapThrow(e));
+            }
+        }
+        cacheManager = null;
+    }
 
-    protected CacheManager doCreateCacheManager() {
-        CacheManager cacheManager = null;
-        //
-        File configFile = owner.getConfig().getConfigFile();
-        if (configFile == null) {
-            configFile = new File(RuntimeUtils.replaceEnvVariable(ICacheConfig.DEFAULT_CONFIG_FILE));
-            try (InputStream inputStream = AbstractCacheProvider.class.getClassLoader().getResourceAsStream("META-INF/default-ehcache.xml")) {
-                if (!FileUtils.createFileIfNotExists(configFile, inputStream) && LOG.isWarnEnabled()) {
-                    LOG.warn(String.format("Failed to create default ehcache config file: %s", configFile.getPath()));
-                }
-            } catch (IOException e) {
-                if (LOG.isWarnEnabled()) {
-                    LOG.warn(String.format("An exception occurred while trying to generate the default ehcache config file: %s", configFile.getPath()), RuntimeUtils.unwrapThrow(e));
-                }
-            }
-        }
-        if (configFile.exists()) {
-            try {
-                cacheManager = CacheManager.create(configFile.toURI().toURL());
-            } catch (MalformedURLException e) {
-                if (LOG.isWarnEnabled()) {
-                    LOG.warn(StringUtils.EMPTY, RuntimeUtils.unwrapThrow(e));
-                }
-            }
-        }
-        //
-        if (cacheManager == null) {
-            cacheManager = CacheManager.create();
-        }
+    protected ICacheManager getCacheManager() {
         return cacheManager;
     }
 
@@ -137,7 +141,7 @@ public abstract class AbstractCacheProvider implements ICacheProvider {
     @Override
     public ICache createCache(String name, final ICacheEventListener listener) {
         try {
-            final String cacheName = cacheNameSafety(name);
+            final String cacheName = cacheManager.cacheNameSafety(name);
             return ReentrantLockHelper.putIfAbsentAsync(caches, cacheName, () -> onCreateCache(cacheName, listener));
         } catch (Exception e) {
             if (LOG.isWarnEnabled()) {
@@ -169,7 +173,7 @@ public abstract class AbstractCacheProvider implements ICacheProvider {
     @Override
     public ICache getCache(String name, boolean create, ICacheEventListener listener) {
         try {
-            final String cacheName = cacheNameSafety(name);
+            final String cacheName = cacheManager.cacheNameSafety(name);
             return ReentrantLockHelper.putIfAbsentAsync(caches, cacheName, () -> create ? onCreateCache(cacheName, listener) : null);
         } catch (Exception e) {
             if (LOG.isWarnEnabled()) {

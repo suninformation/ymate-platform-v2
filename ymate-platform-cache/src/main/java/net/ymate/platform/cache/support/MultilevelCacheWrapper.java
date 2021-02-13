@@ -15,7 +15,6 @@
  */
 package net.ymate.platform.cache.support;
 
-import net.sf.ehcache.Ehcache;
 import net.ymate.platform.cache.*;
 import net.ymate.platform.commons.util.RuntimeUtils;
 import net.ymate.platform.persistence.redis.IRedis;
@@ -38,10 +37,10 @@ public class MultilevelCacheWrapper implements ICache, ICacheLocker {
 
     private final boolean slaveCacheAutoSync;
 
-    public MultilevelCacheWrapper(ICaches owner, String cacheName, Ehcache ehcache, IRedis redis, ICacheEventListener listener) {
+    public MultilevelCacheWrapper(ICaches owner, String cacheName, ICache masterCache, IRedis redis) {
         slaveCacheAutoSync = owner.getConfig().isMultilevelSlavesAutoSync();
         //
-        masterCache = new EhCacheWrapper(owner, ehcache, listener);
+        this.masterCache = masterCache;
         //
         ICacheEventListener slaveCacheListener = null;
         if (slaveCacheAutoSync) {

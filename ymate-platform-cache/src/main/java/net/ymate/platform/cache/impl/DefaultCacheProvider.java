@@ -15,19 +15,14 @@
  */
 package net.ymate.platform.cache.impl;
 
-import net.sf.ehcache.CacheManager;
-import net.sf.ehcache.Ehcache;
 import net.ymate.platform.cache.AbstractCacheProvider;
 import net.ymate.platform.cache.ICache;
 import net.ymate.platform.cache.ICacheEventListener;
-import net.ymate.platform.cache.support.EhCacheWrapper;
 
 /**
  * @author 刘镇 (suninformation@163.com) on 14/10/17
  */
 public class DefaultCacheProvider extends AbstractCacheProvider {
-
-    private CacheManager cacheManager;
 
     @Override
     public String getName() {
@@ -36,22 +31,6 @@ public class DefaultCacheProvider extends AbstractCacheProvider {
 
     @Override
     protected ICache onCreateCache(String cacheName, ICacheEventListener listener) {
-        Ehcache ehcache = cacheManager.getEhcache(cacheName);
-        if (ehcache == null) {
-            cacheManager.addCache(cacheName);
-            ehcache = cacheManager.getCache(cacheName);
-        }
-        return new EhCacheWrapper(getOwner(), ehcache, listener);
-    }
-
-    @Override
-    protected void onInitialize() {
-        cacheManager = doCreateCacheManager();
-    }
-
-    @Override
-    protected void onDestroy() {
-        cacheManager.shutdown();
-        cacheManager = null;
+        return getCacheManager().createCache(cacheName, listener);
     }
 }
