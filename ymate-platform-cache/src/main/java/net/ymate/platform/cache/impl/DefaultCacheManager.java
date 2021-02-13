@@ -106,6 +106,9 @@ public class DefaultCacheManager implements ICacheManager {
 
     @Override
     public void close() throws IOException {
-        cacheManager.shutdown();
+        if (initialized) {
+            initialized = false;
+            cacheManager.shutdown();
+        }
     }
 }

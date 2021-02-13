@@ -76,7 +76,7 @@ public abstract class AbstractCacheProvider implements ICacheProvider {
      * @throws Exception 可能产生的任何异常
      */
     protected void onInitialize() throws Exception {
-        if (!cacheManager.isInitialized()) {
+        if (cacheManager != null && !cacheManager.isInitialized()) {
             cacheManager.initialize(getOwner());
         }
     }
@@ -87,14 +87,16 @@ public abstract class AbstractCacheProvider implements ICacheProvider {
      * @throws Exception 可能产生的任何异常
      */
     protected void onDestroy() throws Exception {
-        try {
-            cacheManager.close();
-        } catch (IOException e) {
-            if (LOG.isErrorEnabled()) {
-                LOG.error(StringUtils.EMPTY, RuntimeUtils.unwrapThrow(e));
+        if (cacheManager != null && cacheManager.isInitialized()) {
+            try {
+                cacheManager.close();
+            } catch (IOException e) {
+                if (LOG.isErrorEnabled()) {
+                    LOG.error(StringUtils.EMPTY, RuntimeUtils.unwrapThrow(e));
+                }
             }
+            cacheManager = null;
         }
-        cacheManager = null;
     }
 
     protected ICacheManager getCacheManager() {
