@@ -240,7 +240,7 @@ public class RedisCacheWrapper implements ICache {
                 }
             } else {
                 serializeKeys.forEach(key -> {
-                    holder.getConnection().del(cacheName.concat(SEPARATOR).concat(key));
+                    commander.del(cacheName.concat(SEPARATOR).concat(key));
                     if (cacheEventListener != null) {
                         cacheEventListener.notifyElementRemoved(cacheName, key);
                     }

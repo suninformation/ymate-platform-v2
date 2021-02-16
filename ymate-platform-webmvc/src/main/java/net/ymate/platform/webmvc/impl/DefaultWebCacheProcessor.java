@@ -53,7 +53,7 @@ public class DefaultWebCacheProcessor implements IWebCacheProcessor {
         GenericResponseWrapper response = (GenericResponseWrapper) WebContext.getResponse();
 
         String cacheKey = doBuildCacheKey(owner, request, responseCache);
-        ICaches caches = Caches.get();
+        ICaches caches = owner.getOwner().getModuleManager().getModule(Caches.class);
         PageCacheElement cacheElement = (PageCacheElement) caches.get(responseCache.cacheName(), cacheKey);
         if (cacheElement == null && resultView != null) {
             // 仅缓存处理状态为200响应
