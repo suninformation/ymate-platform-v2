@@ -126,6 +126,9 @@ public class RedisDataSourceAdapter extends AbstractDataSourceAdapter<IRedis, IR
 
     @Override
     public void doClose() throws Exception {
+        if (jedisCluster != null) {
+            jedisCluster.close();
+        }
         if (pool != null) {
             pool.destroy();
         }

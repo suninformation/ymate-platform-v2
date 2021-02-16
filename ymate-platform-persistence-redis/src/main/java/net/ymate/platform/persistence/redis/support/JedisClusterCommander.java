@@ -56,12 +56,12 @@ public class JedisClusterCommander implements IRedisCommander {
     }
 
     @Override
-    public List<byte[]> slowlogGetBinary() {
+    public List<Object> slowlogGetBinary() {
         throw new UnsupportedOperationException();
     }
 
     @Override
-    public List<byte[]> slowlogGetBinary(long entries) {
+    public List<Object> slowlogGetBinary(long entries) {
         throw new UnsupportedOperationException();
     }
 
@@ -121,6 +121,11 @@ public class JedisClusterCommander implements IRedisCommander {
     }
 
     @Override
+    public Long clientId() {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
     public byte[] memoryDoctorBinary() {
         throw new UnsupportedOperationException();
     }
@@ -172,6 +177,21 @@ public class JedisClusterCommander implements IRedisCommander {
 
     @Override
     public List<byte[]> aclCat(byte[] category) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public List<byte[]> aclLogBinary() {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public List<byte[]> aclLogBinary(int limit) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public byte[] aclLog(byte[] options) {
         throw new UnsupportedOperationException();
     }
 
@@ -276,6 +296,16 @@ public class JedisClusterCommander implements IRedisCommander {
     }
 
     @Override
+    public Long memoryUsage(String key) {
+        return jedisCluster.memoryUsage(key);
+    }
+
+    @Override
+    public Long memoryUsage(String key, int samples) {
+        return jedisCluster.memoryUsage(key, samples);
+    }
+
+    @Override
     public String aclWhoAmI() {
         throw new UnsupportedOperationException();
     }
@@ -322,6 +352,21 @@ public class JedisClusterCommander implements IRedisCommander {
 
     @Override
     public List<String> aclCat(String category) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public List<AccessControlLogEntry> aclLog() {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public List<AccessControlLogEntry> aclLog(int limit) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public String aclLog(String options) {
         throw new UnsupportedOperationException();
     }
 
@@ -716,8 +761,33 @@ public class JedisClusterCommander implements IRedisCommander {
     }
 
     @Override
+    public List<byte[]> lpop(byte[] key, int count) {
+        return jedisCluster.lpop(key, count);
+    }
+
+    @Override
+    public Long lpos(byte[] key, byte[] element) {
+        return jedisCluster.lpos(key, element);
+    }
+
+    @Override
+    public Long lpos(byte[] key, byte[] element, LPosParams params) {
+        return jedisCluster.lpos(key, element, params);
+    }
+
+    @Override
+    public List<Long> lpos(byte[] key, byte[] element, LPosParams params, long count) {
+        return jedisCluster.lpos(key, element, params, count);
+    }
+
+    @Override
     public byte[] rpop(byte[] key) {
         return jedisCluster.rpop(key);
+    }
+
+    @Override
+    public List<byte[]> rpop(byte[] key, int count) {
+        return jedisCluster.rpop(key, count);
     }
 
     @Override
@@ -753,6 +823,11 @@ public class JedisClusterCommander implements IRedisCommander {
     @Override
     public Boolean sismember(byte[] key, byte[] member) {
         return jedisCluster.sismember(key, member);
+    }
+
+    @Override
+    public List<Boolean> smismember(byte[] key, byte[]... members) {
+        return jedisCluster.smismember(key, members);
     }
 
     @Override
@@ -843,6 +918,11 @@ public class JedisClusterCommander implements IRedisCommander {
     @Override
     public Double zscore(byte[] key, byte[] member) {
         return jedisCluster.zscore(key, member);
+    }
+
+    @Override
+    public List<Double> zmscore(byte[] key, byte[]... members) {
+        return jedisCluster.zmscore(key, members);
     }
 
     @Override
@@ -1263,6 +1343,16 @@ public class JedisClusterCommander implements IRedisCommander {
     @Override
     public Long waitReplicas(byte[] key, int replicas, long timeout) {
         return jedisCluster.waitReplicas(key, replicas, timeout);
+    }
+
+    @Override
+    public Long memoryUsage(byte[] key) {
+        return jedisCluster.memoryUsage(key);
+    }
+
+    @Override
+    public Long memoryUsage(byte[] key, int samples) {
+        return jedisCluster.memoryUsage(key, samples);
     }
 
     @Override
@@ -1731,8 +1821,33 @@ public class JedisClusterCommander implements IRedisCommander {
     }
 
     @Override
+    public List<String> lpop(String key, int count) {
+        return jedisCluster.lpop(key, count);
+    }
+
+    @Override
+    public Long lpos(String key, String element) {
+        return jedisCluster.lpos(key, element);
+    }
+
+    @Override
+    public Long lpos(String key, String element, LPosParams params) {
+        return jedisCluster.lpos(key, element, params);
+    }
+
+    @Override
+    public List<Long> lpos(String key, String element, LPosParams params, long count) {
+        return jedisCluster.lpos(key, element, params, count);
+    }
+
+    @Override
     public String rpop(String key) {
         return jedisCluster.rpop(key);
+    }
+
+    @Override
+    public List<String> rpop(String key, int count) {
+        return jedisCluster.rpop(key, count);
     }
 
     @Override
@@ -1768,6 +1883,11 @@ public class JedisClusterCommander implements IRedisCommander {
     @Override
     public Boolean sismember(String key, String member) {
         return jedisCluster.sismember(key, member);
+    }
+
+    @Override
+    public List<Boolean> smismember(String key, String... members) {
+        return jedisCluster.smismember(key, members);
     }
 
     @Override
@@ -1858,6 +1978,11 @@ public class JedisClusterCommander implements IRedisCommander {
     @Override
     public Double zscore(String key, String member) {
         return jedisCluster.zscore(key, member);
+    }
+
+    @Override
+    public List<Double> zmscore(String key, String... members) {
+        return jedisCluster.zmscore(key, members);
     }
 
     @Override
@@ -2596,6 +2721,16 @@ public class JedisClusterCommander implements IRedisCommander {
     }
 
     @Override
+    public Long georadiusStore(byte[] key, double longitude, double latitude, double radius, GeoUnit unit, GeoRadiusParam param, GeoRadiusStoreParam storeParam) {
+        return jedisCluster.georadiusStore(key, longitude, latitude, radius, unit, param, storeParam);
+    }
+
+    @Override
+    public Long georadiusByMemberStore(byte[] key, byte[] member, double radius, GeoUnit unit, GeoRadiusParam param, GeoRadiusStoreParam storeParam) {
+        return jedisCluster.georadiusByMemberStore(key, member, radius, unit, param, storeParam);
+    }
+
+    @Override
     public List<String> blpop(String... args) {
         throw new UnsupportedOperationException();
     }
@@ -2805,6 +2940,16 @@ public class JedisClusterCommander implements IRedisCommander {
     @Override
     public Set<String> keys(String pattern) {
         return jedisCluster.keys(pattern);
+    }
+
+    @Override
+    public Long georadiusStore(String key, double longitude, double latitude, double radius, GeoUnit unit, GeoRadiusParam param, GeoRadiusStoreParam storeParam) {
+        return jedisCluster.georadiusStore(key, longitude, latitude, radius, unit, param, storeParam);
+    }
+
+    @Override
+    public Long georadiusByMemberStore(String key, String member, double radius, GeoUnit unit, GeoRadiusParam param, GeoRadiusStoreParam storeParam) {
+        return jedisCluster.georadiusByMemberStore(key, member, radius, unit, param, storeParam);
     }
 
     @Override

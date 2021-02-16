@@ -15,15 +15,15 @@
  */
 package net.ymate.platform.persistence.redis.impl;
 
+import net.ymate.platform.commons.ConcurrentHashSet;
 import net.ymate.platform.commons.util.RuntimeUtils;
 import net.ymate.platform.persistence.redis.*;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.List;
+import java.util.Set;
 
 /**
  * @author 刘镇 (suninformation@163.com) on 15/12/4 上午1:04
@@ -32,7 +32,7 @@ public class RedisCommandHolder implements IRedisCommandHolder {
 
     private static final Log LOG = LogFactory.getLog(RedisCommandHolder.class);
 
-    private final List<IRedisCommander> cacheCommanders = new ArrayList<>();
+    private final Set<IRedisCommander> cacheCommanders = new ConcurrentHashSet<>();
 
     private final IRedisDataSourceAdapter dataSourceAdapter;
 
