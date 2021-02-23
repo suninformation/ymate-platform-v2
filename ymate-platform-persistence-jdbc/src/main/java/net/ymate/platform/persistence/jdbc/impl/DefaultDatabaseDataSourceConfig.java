@@ -118,7 +118,19 @@ public final class DefaultDatabaseDataSourceConfig extends AbstractDataSourceCon
         if (type == null || Type.DATABASE.UNKNOWN.equalsIgnoreCase(type)) {
             parseDatabaseType();
         }
-        driverClass = StringUtils.defaultIfBlank(driverClass, JDBC.DB_DRIVERS.get(this.type));
+        if (StringUtils.isBlank(driverClass)) {
+            if (Type.DATABASE.MYSQL.equalsIgnoreCase(type)) {
+                // 判断MySQL驱动版本是否为8.x
+                Class<?> newDiverClass = ClassUtils.loadClassOrNull("com.mysql.cj.jdbc.Driver", this.getClass());
+                if (newDiverClass != null) {
+                    driverClass = newDiverClass.getName();
+                } else {
+                    driverClass = JDBC.DB_DRIVERS.get(this.type);
+                }
+            } else {
+                driverClass = JDBC.DB_DRIVERS.get(this.type);
+            }
+        }
         if (configFile == null || !configFile.isAbsolute() || !configFile.canRead() || !configFile.exists() || configFile.isDirectory()) {
             configFile = null;
         }
