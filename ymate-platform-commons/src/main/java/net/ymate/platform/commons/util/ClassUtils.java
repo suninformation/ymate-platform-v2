@@ -177,6 +177,14 @@ public class ClassUtils {
         return targetClass;
     }
 
+    public static Class<?> loadClassOrNull(String className, Class<?> callingClass) {
+        try {
+            return loadClass(className, callingClass);
+        } catch (ClassNotFoundException e) {
+            return null;
+        }
+    }
+
     public static <T> T loadClass(Class<T> clazz) {
         return loadClass(clazz, null);
     }
