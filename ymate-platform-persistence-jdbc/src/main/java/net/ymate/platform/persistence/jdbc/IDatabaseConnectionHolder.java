@@ -35,4 +35,11 @@ public interface IDatabaseConnectionHolder extends IConnectionHolder<IDatabase, 
      * @return 返回数据库方言
      */
     IDialect getDialect();
+
+    /**
+     * 获取数据源适配器
+     *
+     * @return 返回数据源适配器对象
+     */
+    IDatabaseDataSourceAdapter getDataSourceAdapter();
 }

@@ -81,4 +81,9 @@ public class RedisCommandHolder implements IRedisCommandHolder {
             iterator.remove();
         }
     }
+
+    @Override
+    public IRedisDataSourceAdapter getDataSourceAdapter() {
+        return dataSourceAdapter;
+    }
 }

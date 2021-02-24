@@ -19,6 +19,7 @@ import net.ymate.platform.core.beans.annotation.Ignored;
 import net.ymate.platform.core.persistence.IDataSourceAdapter;
 import net.ymate.platform.persistence.jdbc.dialect.IDialect;
 
+import javax.sql.DataSource;
 import java.sql.Connection;
 
 /**
@@ -35,4 +36,11 @@ public interface IDatabaseDataSourceAdapter extends IDataSourceAdapter<IDatabase
      * @return 返回数据库方言
      */
     IDialect getDialect();
+
+    /**
+     * 获取数据源
+     *
+     * @return 返回数据源接口实例对象
+     */
+    DataSource getDataSource();
 }

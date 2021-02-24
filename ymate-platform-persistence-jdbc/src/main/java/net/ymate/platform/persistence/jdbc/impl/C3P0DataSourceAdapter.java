@@ -25,6 +25,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import javax.sql.DataSource;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -80,5 +81,10 @@ public class C3P0DataSourceAdapter extends AbstractDatabaseDataSourceAdapter {
     @Override
     public Connection getConnection() throws Exception {
         return dataSource.getConnection();
+    }
+
+    @Override
+    public DataSource getDataSource() {
+        return dataSource;
     }
 }

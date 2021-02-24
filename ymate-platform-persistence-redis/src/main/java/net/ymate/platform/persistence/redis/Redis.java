@@ -140,6 +140,14 @@ public final class Redis implements IModule, IRedis {
         return config;
     }
 
+    private IRedisDataSourceAdapter doSafeGetDataSourceAdapter(String dataSourceName) {
+        IRedisDataSourceAdapter dataSourceAdapter = dataSourceCaches.get(dataSourceName);
+        if (dataSourceAdapter == null) {
+            throw new IllegalStateException(String.format("Datasource '%s' not found.", dataSourceName));
+        }
+        return dataSourceAdapter;
+    }
+
     @Override
     public IRedisCommandHolder getDefaultConnectionHolder() {
         return getConnectionHolder(config.getDefaultDataSourceName());
@@ -147,16 +155,22 @@ public final class Redis implements IModule, IRedis {
 
     @Override
     public IRedisCommandHolder getConnectionHolder(String dataSourceName) {
-        IRedisDataSourceAdapter dataSourceAdapter = dataSourceCaches.get(dataSourceName);
-        if (dataSourceAdapter == null) {
-            throw new IllegalStateException("Datasource '" + dataSourceName + "' not found.");
-        }
-        return new RedisCommandHolder(dataSourceAdapter);
+        return new RedisCommandHolder(doSafeGetDataSourceAdapter(dataSourceName));
     }
 
     @Override
     public void releaseConnectionHolder(IRedisCommandHolder connectionHolder) throws Exception {
         connectionHolder.close();
+    }
+
+    @Override
+    public IRedisDataSourceAdapter getDefaultDataSourceAdapter() {
+        return getDataSourceAdapter(config.getDefaultDataSourceName());
+    }
+
+    @Override
+    public IRedisDataSourceAdapter getDataSourceAdapter(String dataSourceName) {
+        return doSafeGetDataSourceAdapter(dataSourceName);
     }
 
     @Override

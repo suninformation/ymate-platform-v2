@@ -31,6 +31,23 @@ public interface IRedis extends IPersistence<IRedisSession, IRedisConfig, IRedis
     String MODULE_NAME = "persistence.redis";
 
     /**
+     * 获取默认数据源适配器
+     *
+     * @return 返回数据源适配器对象
+     * @throws Exception 可能产生的任何异常
+     */
+    IRedisDataSourceAdapter getDefaultDataSourceAdapter() throws Exception;
+
+    /**
+     * 获取指定源数据源适配器
+     *
+     * @param dataSourceName 数据源名称
+     * @return 返回数据源适配器对象
+     * @throws Exception 可能产生的任何异常
+     */
+    IRedisDataSourceAdapter getDataSourceAdapter(String dataSourceName) throws Exception;
+
+    /**
      * 开启会话并执行会话执行器接口逻辑(执行完毕会话将自动关闭)
      *
      * @param executor 会话执行器

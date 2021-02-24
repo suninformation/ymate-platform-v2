@@ -71,4 +71,9 @@ public class DefaultDatabaseConnectionHolder implements IDatabaseConnectionHolde
     public IDialect getDialect() {
         return dataSourceAdapter.getDialect();
     }
+
+    @Override
+    public IDatabaseDataSourceAdapter getDataSourceAdapter() {
+        return dataSourceAdapter;
+    }
 }

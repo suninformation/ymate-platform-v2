@@ -21,6 +21,7 @@ import net.ymate.platform.core.persistence.base.Type;
 import net.ymate.platform.persistence.jdbc.AbstractDatabaseDataSourceAdapter;
 import net.ymate.platform.persistence.jdbc.annotation.DataSourceAdapter;
 
+import javax.sql.DataSource;
 import java.io.InputStream;
 import java.sql.Connection;
 
@@ -61,5 +62,10 @@ public class HikariCPDataSourceAdapter extends AbstractDatabaseDataSourceAdapter
     @Override
     public Connection getConnection() throws Exception {
         return dataSource.getConnection();
+    }
+
+    @Override
+    public DataSource getDataSource() {
+        return dataSource;
     }
 }

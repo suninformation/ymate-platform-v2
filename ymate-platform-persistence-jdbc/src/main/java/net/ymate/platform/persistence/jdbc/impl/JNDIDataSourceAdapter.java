@@ -46,4 +46,9 @@ public class JNDIDataSourceAdapter extends AbstractDatabaseDataSourceAdapter {
     public Connection getConnection() throws Exception {
         return dataSource.getConnection();
     }
+
+    @Override
+    public DataSource getDataSource() {
+        return dataSource;
+    }
 }

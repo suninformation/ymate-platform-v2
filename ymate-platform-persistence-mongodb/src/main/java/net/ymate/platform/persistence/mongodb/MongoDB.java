@@ -127,6 +127,14 @@ public class MongoDB implements IModule, IMongo {
         return config;
     }
 
+    private IMongoDataSourceAdapter doSafeGetDataSourceAdapter(String dataSourceName) {
+        IMongoDataSourceAdapter dataSourceAdapter = dataSourceCaches.get(dataSourceName);
+        if (dataSourceAdapter == null) {
+            throw new IllegalStateException(String.format("Datasource '%s' not found.", dataSourceName));
+        }
+        return dataSourceAdapter;
+    }
+
     @Override
     public IMongoConnectionHolder getDefaultConnectionHolder() throws Exception {
         return getConnectionHolder(config.getDefaultDataSourceName());
@@ -134,11 +142,7 @@ public class MongoDB implements IModule, IMongo {
 
     @Override
     public IMongoConnectionHolder getConnectionHolder(String dataSourceName) throws Exception {
-        IMongoDataSourceAdapter dataSourceAdapter = dataSourceCaches.get(dataSourceName);
-        if (dataSourceAdapter == null) {
-            throw new IllegalStateException("Datasource '" + dataSourceName + "' not found.");
-        }
-        return new DefaultMongoConnectionHolder(dataSourceAdapter);
+        return new DefaultMongoConnectionHolder(doSafeGetDataSourceAdapter(dataSourceName));
     }
 
     @Override
@@ -169,12 +173,12 @@ public class MongoDB implements IModule, IMongo {
     }
 
     @Override
-    public IMongoDataSourceAdapter getDefaultDataSourceAdapter() throws Exception {
+    public IMongoDataSourceAdapter getDefaultDataSourceAdapter() {
         return dataSourceCaches.get(config.getDefaultDataSourceName());
     }
 
     @Override
-    public IMongoDataSourceAdapter getDataSourceAdapter(String dataSourceName) throws Exception {
+    public IMongoDataSourceAdapter getDataSourceAdapter(String dataSourceName) {
         return dataSourceCaches.get(dataSourceName);
     }
 

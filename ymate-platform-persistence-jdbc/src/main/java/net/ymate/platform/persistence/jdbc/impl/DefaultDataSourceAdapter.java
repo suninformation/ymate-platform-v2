@@ -19,6 +19,7 @@ import net.ymate.platform.core.persistence.base.Type;
 import net.ymate.platform.persistence.jdbc.AbstractDatabaseDataSourceAdapter;
 import net.ymate.platform.persistence.jdbc.annotation.DataSourceAdapter;
 
+import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.DriverManager;
 
@@ -42,5 +43,10 @@ public class DefaultDataSourceAdapter extends AbstractDatabaseDataSourceAdapter 
     @Override
     public Connection getConnection() throws Exception {
         return DriverManager.getConnection(getDataSourceConfig().getConnectionUrl(), getDataSourceConfig().getUsername(), password);
+    }
+
+    @Override
+    public DataSource getDataSource() {
+        return null;
     }
 }

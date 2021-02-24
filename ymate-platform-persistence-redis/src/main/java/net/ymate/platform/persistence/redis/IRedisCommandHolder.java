@@ -25,4 +25,11 @@ import net.ymate.platform.core.persistence.IConnectionHolder;
  */
 @Ignored
 public interface IRedisCommandHolder extends IConnectionHolder<IRedis, IRedisCommander, IRedisDataSourceConfig> {
+
+    /**
+     * 获取数据源适配器
+     *
+     * @return 返回数据源适配器对象
+     */
+    IRedisDataSourceAdapter getDataSourceAdapter();
 }

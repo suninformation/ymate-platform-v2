@@ -259,6 +259,16 @@ public final class JDBC implements IModule, IDatabase {
     }
 
     @Override
+    public IDatabaseDataSourceAdapter getDefaultDataSourceAdapter() {
+        return getDataSourceAdapter(config.getDefaultDataSourceName());
+    }
+
+    @Override
+    public IDatabaseDataSourceAdapter getDataSourceAdapter(String dataSourceName) {
+        return doSafeGetDataSourceAdapter(dataSourceName);
+    }
+
+    @Override
     public <T> T openSession(IDatabaseSessionExecutor<T> executor) throws Exception {
         return openSession(getDefaultConnectionHolder(), executor);
     }

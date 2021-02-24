@@ -25,6 +25,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import javax.sql.DataSource;
 import java.io.InputStream;
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -71,5 +72,10 @@ public class DBCPDataSourceAdapter extends AbstractDatabaseDataSourceAdapter {
     @Override
     public Connection getConnection() throws Exception {
         return dataSource.getConnection();
+    }
+
+    @Override
+    public DataSource getDataSource() {
+        return dataSource;
     }
 }
