@@ -373,7 +373,7 @@ public class DefaultBeanFactory implements IBeanFactory {
             initializer.initialize(targetObject);
         }
         if (targetObject instanceof IBeanInitializer) {
-            ((IBeanInitializer) targetObject).afterInitialized();
+            ((IBeanInitializer) targetObject).afterInitialized(this);
         }
     }
 

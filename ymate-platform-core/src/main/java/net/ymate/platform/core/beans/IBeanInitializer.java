@@ -23,7 +23,8 @@ public interface IBeanInitializer {
     /**
      * 执行类初始化方法
      *
+     * @param beanFactory 对象工厂
      * @throws Exception 可能产生的任何异常
      */
-    void afterInitialized() throws Exception;
+    void afterInitialized(IBeanFactory beanFactory) throws Exception;
 }
