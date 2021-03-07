@@ -27,6 +27,8 @@ import net.ymate.platform.core.i18n.II18nEventHandler;
 import net.ymate.platform.core.module.IModuleConfigurer;
 import org.apache.commons.lang3.LocaleUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import java.util.*;
 
@@ -35,6 +37,8 @@ import java.util.*;
  * @since 2.1.0
  */
 public final class DefaultApplicationConfigurer extends AbstractApplicationConfigurer {
+
+    private static final Log LOG = LogFactory.getLog(DefaultApplicationConfigurer.class);
 
     private static final String CONFIG_DEV_MODE = "ymp.dev_mode";
 
@@ -146,6 +150,18 @@ public final class DefaultApplicationConfigurer extends AbstractApplicationConfi
             setPasswordProcessor(passwordProcessor);
             //
             setDefaultLocale(defaultLocale);
+            if (i18nEventHandler == null) {
+                try {
+                    Class<II18nEventHandler> i18nEventHandlerClass = ClassUtils.getExtensionLoader(II18nEventHandler.class).getExtensionClass();
+                    if (i18nEventHandlerClass != null) {
+                        i18nEventHandler = ClassUtils.impl(i18nEventHandlerClass, II18nEventHandler.class);
+                    }
+                } catch (Exception ignored) {
+                }
+            }
+            if (i18nEventHandler != null && LOG.isInfoEnabled()) {
+                LOG.info(String.format("Using I18nEventHandler class [%s].", i18nEventHandler.getClass().getName()));
+            }
             setI18nEventHandler(i18nEventHandler);
             //
             addPackageNames(packageNames);
