@@ -24,6 +24,8 @@ import net.ymate.platform.commons.util.RuntimeUtils;
 import net.ymate.platform.core.configuration.IConfigReader;
 import net.ymate.platform.core.module.IModuleConfigurer;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import java.io.File;
 
@@ -33,6 +35,8 @@ import java.io.File;
  * @author 刘镇 (suninformation@163.com) on 14/12/25 下午5:58
  */
 public final class DefaultCacheConfig implements ICacheConfig {
+
+    private static final Log LOG = LogFactory.getLog(DefaultCacheConfig.class);
 
     private ICacheProvider cacheProvider;
 
@@ -117,6 +121,16 @@ public final class DefaultCacheConfig implements ICacheConfig {
                 cacheEventListener = new DefaultCacheEventListener();
             }
             cacheEventListener.initialize(owner);
+            //
+            if (cacheScopeProcessor == null) {
+                Class<ICacheScopeProcessor> cacheScopeProcessorClass = ClassUtils.getExtensionLoader(ICacheScopeProcessor.class).getExtensionClass();
+                if (cacheScopeProcessorClass != null) {
+                    cacheScopeProcessor = ClassUtils.impl(cacheScopeProcessorClass, ICacheScopeProcessor.class);
+                }
+            }
+            if (cacheScopeProcessor != null && LOG.isInfoEnabled()) {
+                LOG.info(String.format("Using CacheScopeProcessor class [%s].", cacheScopeProcessor.getClass().getName()));
+            }
             //
             if (serializer == null) {
                 serializer = SerializerManager.getDefaultSerializer();
