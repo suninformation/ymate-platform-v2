@@ -33,6 +33,8 @@ public class JedisClusterCommander implements IRedisCommander {
 
     private final JedisCluster jedisCluster;
 
+    private volatile boolean isClosed;
+
     JedisClusterCommander(JedisCluster jedisCluster) {
         if (jedisCluster == null) {
             throw new NullArgumentException("jedisCluster");
@@ -42,7 +44,10 @@ public class JedisClusterCommander implements IRedisCommander {
 
     @Override
     public void close() {
-        jedisCluster.close();
+        if (!isClosed) {
+            jedisCluster.close();
+            isClosed = true;
+        }
     }
 
     @Override
@@ -2995,6 +3000,11 @@ public class JedisClusterCommander implements IRedisCommander {
     @Override
     public boolean isCluster() {
         return true;
+    }
+
+    @Override
+    public boolean isClosed() {
+        return isClosed;
     }
 
 }

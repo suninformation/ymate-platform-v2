@@ -33,6 +33,8 @@ public class JedisCommander implements IRedisCommander {
 
     private final Jedis jedis;
 
+    private volatile boolean isClosed;
+
     JedisCommander(Jedis jedis) {
         if (jedis == null) {
             throw new NullArgumentException("jedis");
@@ -42,7 +44,10 @@ public class JedisCommander implements IRedisCommander {
 
     @Override
     public void close() {
-        jedis.close();
+        if (!isClosed) {
+            jedis.close();
+            isClosed = true;
+        }
     }
 
     @Override
@@ -2997,4 +3002,8 @@ public class JedisCommander implements IRedisCommander {
         return false;
     }
 
+    @Override
+    public boolean isClosed() {
+        return isClosed;
+    }
 }

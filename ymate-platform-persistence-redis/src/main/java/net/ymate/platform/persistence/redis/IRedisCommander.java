@@ -34,4 +34,11 @@ public interface IRedisCommander extends BinaryJedisClusterCommands, MultiKeyBin
      * @return 若是则返回true
      */
     boolean isCluster();
+
+    /**
+     * 判断当前是否已被关闭
+     *
+     * @return 若是则返回true
+     */
+    boolean isClosed();
 }

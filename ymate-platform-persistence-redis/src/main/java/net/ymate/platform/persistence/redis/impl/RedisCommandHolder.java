@@ -69,7 +69,7 @@ public class RedisCommandHolder implements IRedisCommandHolder {
         Iterator<IRedisCommander> iterator = cacheCommanders.iterator();
         while (iterator.hasNext()) {
             IRedisCommander commander = iterator.next();
-            if (commander != null && !IRedis.ConnectionType.CLUSTER.equals(dataSourceAdapter.getDataSourceConfig().getConnectionType())) {
+            if (commander != null && !commander.isClosed() && !IRedis.ConnectionType.CLUSTER.equals(dataSourceAdapter.getDataSourceConfig().getConnectionType())) {
                 try {
                     commander.close();
                 } catch (IOException e) {
