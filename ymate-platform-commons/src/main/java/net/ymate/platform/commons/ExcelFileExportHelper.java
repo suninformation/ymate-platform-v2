@@ -23,6 +23,7 @@ import net.ymate.platform.commons.util.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.NullArgumentException;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.poi.ss.usermodel.*;
 import org.jxls.common.Context;
 import org.jxls.util.JxlsHelper;
 
@@ -108,10 +109,18 @@ public final class ExcelFileExportHelper {
     }
 
     public File export(Class<?> dataType) throws Exception {
-        return export(dataType, null);
+        return export(dataType, false);
+    }
+
+    public File export(Class<?> dataType, boolean xssf) throws Exception {
+        return export(dataType, null, xssf);
     }
 
     public File export(Class<?> dataType, String charset) throws Exception {
+        return export(dataType, charset, false);
+    }
+
+    public File export(Class<?> dataType, String charset, boolean xssf) throws Exception {
         File file = null;
         if (processor != null) {
             List<File> files = new ArrayList<>();
@@ -120,11 +129,11 @@ public final class ExcelFileExportHelper {
                 if (processorData == null || processorData.isEmpty()) {
                     break;
                 }
-                files.add(doExport(dataType, idx, processorData, charset));
+                files.add(doExport(dataType, idx, processorData, charset, xssf));
             }
             file = toZip(files);
         } else if (!data.isEmpty()) {
-            file = doExport(dataType, 1, data, charset);
+            file = doExport(dataType, 1, data, charset, xssf);
         }
         return file;
     }
@@ -139,7 +148,7 @@ public final class ExcelFileExportHelper {
         return null;
     }
 
-    private File doExport(Class<?> dataType, int index, Map<String, Object> data, String charset) throws Exception {
+    private File doExport(Class<?> dataType, int index, Map<String, Object> data, String charset, boolean xssf) throws Exception {
         ClassUtils.BeanWrapper<?> beanWrapper = ClassUtils.wrapperClass(dataType);
         if (beanWrapper != null) {
             Collection<Field> fields = beanWrapper.getFields();
@@ -163,17 +172,35 @@ public final class ExcelFileExportHelper {
                     columnNames.add(customFieldNames.getOrDefault(field.getName(), field.getName()));
                 }
             });
-            ConsoleTableBuilder tableBuilder = ConsoleTableBuilder.create(columnNames.size()).csv();
-            if (!columnNames.isEmpty()) {
-                columnNames.forEach(tableBuilder.addRow()::addColumn);
+            if (xssf) {
+                return doExportExcel(columnNames, columnsMap, index, data);
+            } else {
+                return doExportCsv(columnNames, columnsMap, index, data, charset);
+            }
+        }
+        return null;
+    }
+
+    private File doExportExcel(List<String> columnNames, Map<String, ExportColumn> columnsMap, int index, Map<String, Object> data) throws Exception {
+        try (Workbook workbook = WorkbookFactory.create(true)) {
+            Sheet sheet = workbook.createSheet();
+            CellStyle cellStyle = workbook.createCellStyle();
+            int rowCount = 0;
+            Row head = sheet.createRow(rowCount++);
+            for (int i = 0; i < columnNames.size(); i++) {
+                Cell cell = head.createCell(i);
+                cell.setCellValue(columnNames.get(i));
+                cell.setCellStyle(cellStyle);
             }
             for (Object item : data.values()) {
                 if (item instanceof Collection) {
                     for (Object obj : (Collection<?>) item) {
                         ClassUtils.BeanWrapper<?> objectBeanWrapper = ClassUtils.wrapper(obj);
-                        ConsoleTableBuilder.Row newRow = tableBuilder.addRow();
+                        Row newRow = sheet.createRow(rowCount++);
+                        int cellCount = 0;
                         for (String fieldName : objectBeanWrapper.getFieldNames()) {
                             if (!excludedFieldNames.contains(fieldName)) {
+                                String cellValue;
                                 try {
                                     ExportColumn exportColumnAnn = columnsMap.get(fieldName);
                                     if (exportColumnAnn != null && exportColumnAnn.excluded()) {
@@ -183,34 +210,85 @@ public final class ExcelFileExportHelper {
                                     if (exportColumnAnn != null && dataRender != null) {
                                         String valueStr = dataRender.render(exportColumnAnn, fieldName, objectBeanWrapper.getValue(fieldName));
                                         if (StringUtils.isNotBlank(valueStr)) {
-                                            newRow.addColumn(valueStr);
+                                            cellValue = valueStr;
                                         } else {
-                                            newRow.addColumn(StringUtils.trimToEmpty(BlurObject.bind(objectBeanWrapper.getValue(fieldName)).toStringValue()));
+                                            cellValue = StringUtils.trimToEmpty(BlurObject.bind(objectBeanWrapper.getValue(fieldName)).toStringValue());
                                         }
                                     } else if (exportColumnAnn != null && exportColumnAnn.dateTime()) {
-                                        newRow.addColumn(DateTimeUtils.formatTime(BlurObject.bind(objectBeanWrapper.getValue(fieldName)).toLongValue(), DateTimeUtils.YYYY_MM_DD_HH_MM_SS));
+                                        cellValue = DateTimeUtils.formatTime(BlurObject.bind(objectBeanWrapper.getValue(fieldName)).toLongValue(), DateTimeUtils.YYYY_MM_DD_HH_MM_SS);
                                     } else if (exportColumnAnn != null && exportColumnAnn.dataRange().length > 0) {
-                                        newRow.addColumn(exportColumnAnn.dataRange()[BlurObject.bind(objectBeanWrapper.getValue(fieldName)).toIntValue()]);
+                                        cellValue = exportColumnAnn.dataRange()[BlurObject.bind(objectBeanWrapper.getValue(fieldName)).toIntValue()];
                                     } else if (exportColumnAnn != null && exportColumnAnn.currency()) {
-                                        newRow.addColumn(MathCalcHelper.bind(BlurObject.bind(objectBeanWrapper.getValue(fieldName)).toStringValue()).scale(2).divide("100").toBlurObject().toStringValue());
+                                        cellValue = MathCalcHelper.bind(BlurObject.bind(objectBeanWrapper.getValue(fieldName)).toStringValue()).scale(2).divide("100").toBlurObject().toStringValue();
                                     } else {
-                                        newRow.addColumn(StringUtils.trimToEmpty(BlurObject.bind(objectBeanWrapper.getValue(fieldName)).toStringValue()));
+                                        cellValue = StringUtils.trimToEmpty(BlurObject.bind(objectBeanWrapper.getValue(fieldName)).toStringValue());
                                     }
                                 } catch (Exception e) {
-                                    newRow.addColumn(StringUtils.trimToEmpty(BlurObject.bind(objectBeanWrapper.getValue(fieldName)).toStringValue()));
+                                    cellValue = StringUtils.trimToEmpty(BlurObject.bind(objectBeanWrapper.getValue(fieldName)).toStringValue());
                                 }
+                                Cell cell = newRow.createCell(cellCount++);
+                                cell.setCellValue(cellValue);
+                                cell.setCellStyle(cellStyle);
                             }
                         }
                     }
                 }
             }
-            File tempFile = File.createTempFile("export_", "_" + index + ".csv");
+            File tempFile = File.createTempFile("export_", "_" + index + ".xlsx");
             try (OutputStream outputStream = new FileOutputStream(tempFile)) {
-                IOUtils.write(tableBuilder.toString(), outputStream, StringUtils.defaultIfBlank(charset, "GB2312"));
+                workbook.write(outputStream);
             }
             return tempFile;
         }
-        return null;
+    }
+
+    private File doExportCsv(List<String> columnNames, Map<String, ExportColumn> columnsMap, int index, Map<String, Object> data, String charset) throws Exception {
+        ConsoleTableBuilder tableBuilder = ConsoleTableBuilder.create(columnNames.size()).csv();
+        if (!columnNames.isEmpty()) {
+            columnNames.forEach(tableBuilder.addRow()::addColumn);
+        }
+        for (Object item : data.values()) {
+            if (item instanceof Collection) {
+                for (Object obj : (Collection<?>) item) {
+                    ClassUtils.BeanWrapper<?> objectBeanWrapper = ClassUtils.wrapper(obj);
+                    ConsoleTableBuilder.Row newRow = tableBuilder.addRow();
+                    for (String fieldName : objectBeanWrapper.getFieldNames()) {
+                        if (!excludedFieldNames.contains(fieldName)) {
+                            try {
+                                ExportColumn exportColumnAnn = columnsMap.get(fieldName);
+                                if (exportColumnAnn != null && exportColumnAnn.excluded()) {
+                                    continue;
+                                }
+                                IExportDataRender dataRender = renders.get(fieldName);
+                                if (exportColumnAnn != null && dataRender != null) {
+                                    String valueStr = dataRender.render(exportColumnAnn, fieldName, objectBeanWrapper.getValue(fieldName));
+                                    if (StringUtils.isNotBlank(valueStr)) {
+                                        newRow.addColumn(valueStr);
+                                    } else {
+                                        newRow.addColumn(StringUtils.trimToEmpty(BlurObject.bind(objectBeanWrapper.getValue(fieldName)).toStringValue()));
+                                    }
+                                } else if (exportColumnAnn != null && exportColumnAnn.dateTime()) {
+                                    newRow.addColumn(DateTimeUtils.formatTime(BlurObject.bind(objectBeanWrapper.getValue(fieldName)).toLongValue(), DateTimeUtils.YYYY_MM_DD_HH_MM_SS));
+                                } else if (exportColumnAnn != null && exportColumnAnn.dataRange().length > 0) {
+                                    newRow.addColumn(exportColumnAnn.dataRange()[BlurObject.bind(objectBeanWrapper.getValue(fieldName)).toIntValue()]);
+                                } else if (exportColumnAnn != null && exportColumnAnn.currency()) {
+                                    newRow.addColumn(MathCalcHelper.bind(BlurObject.bind(objectBeanWrapper.getValue(fieldName)).toStringValue()).scale(2).divide("100").toBlurObject().toStringValue());
+                                } else {
+                                    newRow.addColumn(StringUtils.trimToEmpty(BlurObject.bind(objectBeanWrapper.getValue(fieldName)).toStringValue()));
+                                }
+                            } catch (Exception e) {
+                                newRow.addColumn(StringUtils.trimToEmpty(BlurObject.bind(objectBeanWrapper.getValue(fieldName)).toStringValue()));
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        File tempFile = File.createTempFile("export_", "_" + index + ".csv");
+        try (OutputStream outputStream = new FileOutputStream(tempFile)) {
+            IOUtils.write(tableBuilder.toString(), outputStream, StringUtils.defaultIfBlank(charset, "GB2312"));
+        }
+        return tempFile;
     }
 
     private File doExport(String tmplFile, int index, Map<String, Object> data) throws Exception {
