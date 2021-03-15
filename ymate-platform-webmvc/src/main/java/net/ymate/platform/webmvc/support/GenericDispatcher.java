@@ -18,7 +18,6 @@ package net.ymate.platform.webmvc.support;
 import net.ymate.platform.commons.util.RuntimeUtils;
 import net.ymate.platform.validation.ValidateContext;
 import net.ymate.platform.webmvc.IRequestContext;
-import net.ymate.platform.webmvc.IWebErrorProcessor;
 import net.ymate.platform.webmvc.IWebMvc;
 import net.ymate.platform.webmvc.WebEvent;
 import net.ymate.platform.webmvc.context.WebContext;
@@ -37,15 +36,12 @@ public final class GenericDispatcher {
 
     private final IWebMvc owner;
 
-    private final IWebErrorProcessor errorProcessor;
-
     public static GenericDispatcher create(IWebMvc owner) {
         return new GenericDispatcher(owner);
     }
 
     private GenericDispatcher(IWebMvc owner) {
         this.owner = owner;
-        errorProcessor = owner.getConfig().getErrorProcessor();
     }
 
     private void doFireEvent(WebEvent.EVENT event, Object eventSource) {
@@ -64,11 +60,7 @@ public final class GenericDispatcher {
             //
             owner.processRequest(requestContext, servletContext, request, response);
         } catch (Exception e) {
-            if (errorProcessor != null) {
-                errorProcessor.onError(owner, e);
-            } else {
-                throw new ServletException(RuntimeUtils.unwrapThrow(e));
-            }
+            throw new ServletException(RuntimeUtils.unwrapThrow(e));
         } finally {
             doFireEvent(WebEvent.EVENT.REQUEST_COMPLETED, requestContext);
             ValidateContext.removeLocalAttributes();

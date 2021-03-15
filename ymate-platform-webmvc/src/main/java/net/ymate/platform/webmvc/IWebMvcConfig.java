@@ -131,6 +131,11 @@ public interface IWebMvcConfig extends IInitialization<IWebMvc> {
     String PARAMS_ERROR_DEFAULT_VIEW_FORMAT = "webmvc.error_default_view_format";
 
     /**
+     * 异常响应时是否使用状态码, 默认值: false, 若开启则当发生异常且响应状态码值为200(OK)时将强制修改为400(BAD_REQUEST)
+     */
+    String PARAMS_ERROR_WITH_STATUS_CODE = "webmvc.error_with_status_code";
+
+    /**
      * 异常信息视图文件，默认值为error.jsp
      */
     String PARAMS_ERROR_VIEW = "webmvc.error_view";

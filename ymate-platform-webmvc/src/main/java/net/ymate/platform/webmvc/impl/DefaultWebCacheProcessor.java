@@ -57,7 +57,7 @@ public class DefaultWebCacheProcessor implements IWebCacheProcessor {
         PageCacheElement cacheElement = (PageCacheElement) caches.get(responseCache.cacheName(), cacheKey);
         if (cacheElement == null && resultView != null) {
             // 仅缓存处理状态为200响应
-            // TODO 目前存在的问题：需要对验证验证、异常错误等设置为非200响应码，否则会造成错误内容被缓存的情况
+            // TODO 注意：需要设置"webmvc.error_with_status_code"参数值为true，以对验证验证、异常错误等设置为非200响应码，否则会造成错误内容被缓存的情况
             if (response.getStatus() == HttpServletResponse.SC_OK) {
                 cacheElement = putCacheElement(response, caches, responseCache, cacheKey, resultView);
             }

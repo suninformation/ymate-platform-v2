@@ -34,6 +34,7 @@ import org.apache.commons.logging.LogFactory;
 
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -52,6 +53,8 @@ public class DefaultWebErrorProcessor implements IWebErrorProcessor, IWebInitial
 
     private String errorDefaultViewFormat;
 
+    private boolean errorWithStatusCode;
+
     private boolean analysisDisabled;
 
     private boolean initialized;
@@ -61,6 +64,7 @@ public class DefaultWebErrorProcessor implements IWebErrorProcessor, IWebInitial
         this.owner = owner;
         //
         errorDefaultViewFormat = StringUtils.trimToEmpty(owner.getOwner().getParam(IWebMvcConfig.PARAMS_ERROR_DEFAULT_VIEW_FORMAT)).toLowerCase();
+        errorWithStatusCode = BlurObject.bind(owner.getOwner().getParam(IWebMvcConfig.PARAMS_ERROR_WITH_STATUS_CODE)).toBooleanValue();
         analysisDisabled = BlurObject.bind(owner.getOwner().getParam(IWebMvcConfig.PARAMS_EXCEPTION_ANALYSIS_DISABLED)).toBooleanValue();
         //
         initialized = true;
@@ -76,6 +80,7 @@ public class DefaultWebErrorProcessor implements IWebErrorProcessor, IWebInitial
     }
 
     public IView showErrorMsg(String code, String msg, Map<String, Object> dataMap) {
+        doProcessErrorStatusCodeIfNeed();
         HttpServletRequest httpServletRequest = WebContext.getRequest();
         if (WebUtils.isAjax(httpServletRequest) || WebUtils.isXmlFormat(httpServletRequest) || WebUtils.isJsonFormat(httpServletRequest) || StringUtils.containsAny(getErrorDefaultViewFormat(), Type.Const.FORMAT_JSON, Type.Const.FORMAT_XML)) {
             return WebResult.formatView(WebResult.builder().code(code).msg(msg).data(dataMap).build(), getErrorDefaultViewFormat());
@@ -133,6 +138,15 @@ public class DefaultWebErrorProcessor implements IWebErrorProcessor, IWebInitial
         owner.getOwner().getEvents().fireEvent(eventContext);
     }
 
+    protected void doProcessErrorStatusCodeIfNeed() {
+        if (errorWithStatusCode) {
+            HttpServletResponse httpServletResponse = WebContext.getResponse();
+            if (httpServletResponse.getStatus() == HttpServletResponse.SC_OK) {
+                httpServletResponse.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            }
+        }
+    }
+
     @Override
     public IView onValidation(IWebMvc owner, Map<String, ValidateResult> results) {
         String message = WebUtils.errorCodeI18n(this.owner, WebErrorCode.INVALID_PARAMS_VALIDATION, WebErrorCode.MSG_INVALID_PARAMS_VALIDATION);
@@ -159,6 +173,10 @@ public class DefaultWebErrorProcessor implements IWebErrorProcessor, IWebInitial
 
     public final String getErrorDefaultViewFormat() {
         return errorDefaultViewFormat;
+    }
+
+    public boolean isErrorWithStatusCode() {
+        return errorWithStatusCode;
     }
 
     public final boolean isAnalysisDisabled() {

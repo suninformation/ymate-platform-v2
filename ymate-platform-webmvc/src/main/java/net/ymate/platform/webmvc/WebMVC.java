@@ -527,15 +527,28 @@ public final class WebMVC implements IModule, IWebMvc {
                 }
             }
             if (view != null) {
-                view.render();
+                try {
+                    view.render();
+                } catch (Exception e1) {
+                    doProcessError(e1);
+                }
             } else {
-                throw e;
+                doProcessError(e);
             }
         } finally {
             if (consumeTime != null && owner.isDevEnv() && LOG.isDebugEnabled()) {
                 consumeTime.stop();
                 LOG.debug(String.format("Process request completed: %s:%s: %d, total execution time: %dms", context.getHttpMethod(), context.getRequestMapping(), response.getStatus(), consumeTime.getTime()));
             }
+        }
+    }
+
+    private void doProcessError(Exception e) throws Exception {
+        IWebErrorProcessor errorProcessor = getConfig().getErrorProcessor();
+        if (errorProcessor != null) {
+            errorProcessor.onError(this, e);
+        } else {
+            throw e;
         }
     }
 }
