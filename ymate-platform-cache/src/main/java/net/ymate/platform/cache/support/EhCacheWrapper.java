@@ -150,11 +150,7 @@ public class EhCacheWrapper implements ICache, ICacheLocker {
 
     @Override
     public void destroy() throws CacheException {
-        try {
-            __ehcache.getCacheManager().removeCache(__ehcache.getName());
-        } catch (IllegalStateException e) {
-            throw new CacheException(RuntimeUtils.unwrapThrow(e));
-        }
+        // 不要移除缓存, 否则后果将抛出异常: java.lang.IllegalStateException: The CacheManager has been shut down. It can no longer be used.
     }
 
     @Override
