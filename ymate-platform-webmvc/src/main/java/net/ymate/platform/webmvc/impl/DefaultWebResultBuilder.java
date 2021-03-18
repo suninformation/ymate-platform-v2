@@ -16,7 +16,6 @@
 package net.ymate.platform.webmvc.impl;
 
 import net.ymate.platform.commons.json.IJsonObjectWrapper;
-import net.ymate.platform.commons.json.JsonWrapper;
 import net.ymate.platform.commons.lang.BlurObject;
 import net.ymate.platform.core.support.ErrorCode;
 import net.ymate.platform.webmvc.IWebResult;
@@ -27,7 +26,6 @@ import net.ymate.platform.webmvc.util.WebResult;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Objects;
 
 /**
  * @author 刘镇 (suninformation@163.com) on 2020/09/08 22:31
@@ -36,24 +34,6 @@ import java.util.Objects;
 public class DefaultWebResultBuilder implements IWebResultBuilder {
 
     private final WebResult result = new WebResult();
-
-    @Override
-    public IWebResultBuilder fromJson(String jsonStr) {
-        return fromJson(JsonWrapper.fromJson(jsonStr));
-    }
-
-    @Override
-    public IWebResultBuilder fromJson(String jsonStr, boolean snakeCase) {
-        return fromJson(JsonWrapper.fromJson(jsonStr, snakeCase));
-    }
-
-    @Override
-    public IWebResultBuilder fromJson(JsonWrapper jsonWrapper) {
-        if (jsonWrapper != null && jsonWrapper.isJsonObject()) {
-            return fromJson(Objects.requireNonNull(jsonWrapper.getAsJsonObject()));
-        }
-        return this;
-    }
 
     @Override
     public IWebResultBuilder fromJson(IJsonObjectWrapper jsonObject) {

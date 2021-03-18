@@ -20,6 +20,7 @@ import net.ymate.platform.commons.json.JsonWrapper;
 
 import java.io.Serializable;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * @author 刘镇 (suninformation@163.com) on 2020/09/08 22:20
@@ -27,11 +28,20 @@ import java.util.Map;
  */
 public interface IWebResultBuilder {
 
-    IWebResultBuilder fromJson(String jsonStr);
+    default IWebResultBuilder fromJson(String jsonStr) {
+        return fromJson(JsonWrapper.fromJson(jsonStr));
+    }
 
-    IWebResultBuilder fromJson(String jsonStr, boolean snakeCase);
+    default IWebResultBuilder fromJson(String jsonStr, boolean snakeCase) {
+        return fromJson(JsonWrapper.fromJson(jsonStr, snakeCase));
+    }
 
-    IWebResultBuilder fromJson(JsonWrapper jsonWrapper);
+    default IWebResultBuilder fromJson(JsonWrapper jsonWrapper) {
+        if (jsonWrapper != null && jsonWrapper.isJsonObject()) {
+            return fromJson(Objects.requireNonNull(jsonWrapper.getAsJsonObject()));
+        }
+        return this;
+    }
 
     IWebResultBuilder fromJson(IJsonObjectWrapper jsonObject);
 
