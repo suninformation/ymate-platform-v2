@@ -135,6 +135,11 @@ public final class Caches implements IModule, ICaches {
     }
 
     @Override
+    public boolean isMultilevel() {
+        return ICache.MULTILEVEL.equalsIgnoreCase(config.getCacheProvider().getName());
+    }
+
+    @Override
     public Object get(String cacheName, Object key) {
         ICache cache = config.getCacheProvider().getCache(cacheName);
         if (cache != null) {

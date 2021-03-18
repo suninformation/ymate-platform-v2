@@ -35,6 +35,13 @@ public class MultilevelKey implements Serializable {
         return new MultilevelKey(keyObj);
     }
 
+    public static Object unbind(Object keyObj) {
+        if (keyObj instanceof MultilevelKey) {
+            return ((MultilevelKey) keyObj).getKey();
+        }
+        return keyObj;
+    }
+
     public MultilevelKey(Object key, boolean master) {
         this.key = key;
         this.master = master;

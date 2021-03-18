@@ -67,6 +67,13 @@ public interface ICaches extends IInitialization<IApplication>, IDestroyable {
     ICacheConfig getConfig();
 
     /**
+     * 是否为Multilevel模式
+     *
+     * @return 返回true表示当前为Multilevel模式
+     */
+    boolean isMultilevel();
+
+    /**
      * 从指定名称的缓存中获取key对应的对象
      *
      * @param cacheName 缓存名称
