@@ -36,16 +36,55 @@ public interface ISheetHandler<T> {
 
     class Default implements ISheetHandler<Object[]> {
 
+        private int firstRowNum;
+
+        private int lastRowNum;
+
+        private int firstCellNum;
+
+        private int lastCellNum;
+
+        private String decimalPattern;
+
         private CellMeta[] cellMetas;
+
+        public Default firstRowNum(int firstRowNum) {
+            this.firstRowNum = firstRowNum;
+            return this;
+        }
+
+        public Default lastRowNum(int lastRowNum) {
+            this.lastRowNum = lastRowNum;
+            return this;
+        }
+
+        public Default firstCellNum(int firstCellNum) {
+            this.firstCellNum = firstCellNum;
+            return this;
+        }
+
+        public Default lastCellNum(int lastCellNum) {
+            this.lastCellNum = lastCellNum;
+            return this;
+        }
+
+        public Default decimalPattern(String decimalPattern) {
+            this.decimalPattern = decimalPattern;
+            return this;
+        }
 
         @Override
         public List<Object[]> handle(Sheet sheet) throws Exception {
             List<Object[]> results = new ArrayList<>();
-            for (int rowIdx = sheet.getFirstRowNum(); rowIdx <= sheet.getLastRowNum(); rowIdx++) {
+            int rowIdx = firstRowNum > 0 ? firstRowNum : sheet.getFirstRowNum();
+            int maxRowIdx = lastRowNum > 0 ? lastRowNum : sheet.getLastRowNum();
+            for (; rowIdx <= maxRowIdx; rowIdx++) {
                 Row sheetRow = sheet.getRow(rowIdx);
                 if (rowIdx == sheet.getFirstRowNum()) {
                     List<CellMeta> metaList = new ArrayList<>();
-                    for (short cellIdx = sheetRow.getFirstCellNum(); cellIdx <= sheetRow.getLastCellNum(); cellIdx++) {
+                    short cellIdx = firstCellNum > 0 ? (short) firstCellNum : sheetRow.getFirstCellNum();
+                    short maxCellIdx = lastCellNum > 0 ? (short) lastCellNum : sheetRow.getLastCellNum();
+                    for (; cellIdx <= maxCellIdx; cellIdx++) {
                         Object cellValue = parseCell(sheetRow.getCell(cellIdx));
                         if (cellValue != null) {
                             metaList.add(new CellMeta(BlurObject.bind(cellValue).toStringValue(), cellIdx));
@@ -85,7 +124,7 @@ public interface ISheetHandler<T> {
                         if (DateUtil.isCellDateFormatted(cell) && cell.getDateCellValue() != null) {
                             value = cell.getDateCellValue().getTime();
                         } else {
-                            value = new DecimalFormat("0").format(cell.getNumericCellValue());
+                            value = new DecimalFormat(StringUtils.defaultIfBlank(decimalPattern, "##.###")).format(cell.getNumericCellValue());
                         }
                         break;
                     case FORMULA:
