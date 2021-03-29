@@ -15,7 +15,7 @@
  */
 package net.ymate.platform.commons;
 
-import java.util.Map;
+import java.util.List;
 
 /**
  * @author 刘镇 (suninformation@163.com) on 2017/12/25 下午2:42
@@ -26,8 +26,8 @@ public interface IExportDataProcessor {
      * 处理导出数据
      *
      * @param index 索引
-     * @return 返回导出数据映射
+     * @return 返回导出数据对象集合
      * @throws Exception 可能产生的任何异常
      */
-    Map<String, Object> getData(int index) throws Exception;
+    List<?> getData(int index) throws Exception;
 }
