@@ -68,7 +68,7 @@ public class Main {
                     LOG.info(String.format("Container [%s] started.", container.getClass().getName()));
                 }
             }
-        } catch (Exception e) {
+        } catch (Throwable e) {
             if (LOG.isErrorEnabled()) {
                 LOG.error(e.getMessage(), RuntimeUtils.unwrapThrow(e));
             }
