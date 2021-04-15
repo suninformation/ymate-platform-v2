@@ -17,6 +17,7 @@ package net.ymate.platform.cache.impl;
 
 import net.sf.ehcache.CacheManager;
 import net.sf.ehcache.Ehcache;
+import net.sf.ehcache.ObjectExistsException;
 import net.ymate.platform.cache.*;
 import net.ymate.platform.cache.support.EhCacheWrapper;
 import net.ymate.platform.commons.util.FileUtils;
@@ -87,10 +88,16 @@ public class DefaultCacheManager implements ICacheManager {
     }
 
     @Override
-    public ICache createCache(String cacheName, ICacheEventListener listener) {
+    public synchronized ICache createCache(String cacheName, ICacheEventListener listener) {
         Ehcache ehcache = cacheManager.getEhcache(cacheName);
         if (ehcache == null) {
-            cacheManager.addCache(cacheName);
+            try {
+                cacheManager.addCache(cacheName);
+            } catch (ObjectExistsException e) {
+                if (LOG.isWarnEnabled()) {
+                    LOG.warn("Cache " + cacheName + " already exists and will be used directly.");
+                }
+            }
             ehcache = cacheManager.getCache(cacheName);
         }
         return new EhCacheWrapper(owner, ehcache, listener);
