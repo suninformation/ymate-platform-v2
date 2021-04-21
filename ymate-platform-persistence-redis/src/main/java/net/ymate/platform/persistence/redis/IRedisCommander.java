@@ -19,6 +19,7 @@ import net.ymate.platform.core.beans.annotation.Ignored;
 import redis.clients.jedis.commands.*;
 
 import java.io.Closeable;
+import java.util.List;
 
 /**
  * @author 刘镇 (suninformation@163.com) on 2019-05-23 02:48
@@ -41,4 +42,28 @@ public interface IRedisCommander extends BinaryJedisClusterCommands, MultiKeyBin
      * @return 若是则返回true
      */
     boolean isClosed();
+
+    @Override
+    @Deprecated
+    default String restore(byte[] key, int ttl, byte[] serializedValue) {
+        return restore(key, (long) ttl, serializedValue);
+    }
+
+    @Override
+    @Deprecated
+    default String setex(byte[] key, int seconds, byte[] value) {
+        return setex(key, (long) seconds, value);
+    }
+
+    @Override
+    @Deprecated
+    default List<byte[]> xrange(byte[] key, byte[] start, byte[] end, long count) {
+        return xrange(key, start, end, (int) Math.min(count, (long) Integer.MAX_VALUE));
+    }
+
+    @Override
+    @Deprecated
+    default Long expire(byte[] key, int seconds) {
+        return expire(key, (long) seconds);
+    }
 }

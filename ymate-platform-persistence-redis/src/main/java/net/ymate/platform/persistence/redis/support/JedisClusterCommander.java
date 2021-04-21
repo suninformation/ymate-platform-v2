@@ -18,7 +18,12 @@ package net.ymate.platform.persistence.redis.support;
 import net.ymate.platform.persistence.redis.IRedisCommander;
 import org.apache.commons.lang.NullArgumentException;
 import redis.clients.jedis.*;
+import redis.clients.jedis.args.FlushMode;
+import redis.clients.jedis.args.ListDirection;
+import redis.clients.jedis.args.UnblockType;
 import redis.clients.jedis.params.*;
+import redis.clients.jedis.resps.KeyedListElement;
+import redis.clients.jedis.resps.KeyedZSetElement;
 import redis.clients.jedis.util.Slowlog;
 
 import java.util.List;
@@ -121,6 +126,16 @@ public class JedisClusterCommander implements IRedisCommander {
     }
 
     @Override
+    public byte[] clientListBinary(long... clientIds) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public byte[] clientInfoBinary() {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
     public String clientSetname(byte[] name) {
         throw new UnsupportedOperationException();
     }
@@ -197,6 +212,16 @@ public class JedisClusterCommander implements IRedisCommander {
 
     @Override
     public byte[] aclLog(byte[] options) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public String aclLoad() {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public String aclSave() {
         throw new UnsupportedOperationException();
     }
 
@@ -281,12 +306,27 @@ public class JedisClusterCommander implements IRedisCommander {
     }
 
     @Override
+    public Long clientUnblock(long clientId, UnblockType unblockType) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
     public String clientGetname() {
         throw new UnsupportedOperationException();
     }
 
     @Override
     public String clientList() {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public String clientList(long... clientIds) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public String clientInfo() {
         throw new UnsupportedOperationException();
     }
 
@@ -391,6 +431,11 @@ public class JedisClusterCommander implements IRedisCommander {
     }
 
     @Override
+    public String flushDB(FlushMode flushMode) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
     public Long dbSize() {
         throw new UnsupportedOperationException();
     }
@@ -407,6 +452,11 @@ public class JedisClusterCommander implements IRedisCommander {
 
     @Override
     public String flushAll() {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public String flushAll(FlushMode flushMode) {
         throw new UnsupportedOperationException();
     }
 
@@ -506,6 +556,16 @@ public class JedisClusterCommander implements IRedisCommander {
     }
 
     @Override
+    public byte[] getDel(byte[] key) {
+        return jedisCluster.getDel(key);
+    }
+
+    @Override
+    public byte[] getEx(byte[] key, GetExParams params) {
+        return jedisCluster.getEx(key, params);
+    }
+
+    @Override
     public Boolean exists(byte[] key) {
         return jedisCluster.exists(key);
     }
@@ -526,18 +586,29 @@ public class JedisClusterCommander implements IRedisCommander {
     }
 
     @Override
-    public String restore(byte[] key, int ttl, byte[] serializedValue) {
+    public String restore(byte[] key, long ttl, byte[] serializedValue) {
         return jedisCluster.restore(key, ttl, serializedValue);
     }
 
     @Override
-    public String restoreReplace(byte[] key, int ttl, byte[] serializedValue) {
+    public String restore(byte[] key, long ttl, byte[] serializedValue, RestoreParams params) {
+        return null;
+    }
+
+    @Override
+    public String restoreReplace(byte[] key, long ttl, byte[] serializedValue) {
         throw new UnsupportedOperationException();
     }
 
     @Override
     public Long expire(byte[] key, int seconds) {
         return jedisCluster.expire(key, seconds);
+    }
+
+    @Override
+    public Long expire(byte[] key, long seconds) {
+        // TODO Redis接口参数设定可能存在问题?
+        return jedisCluster.expire(key, (int) seconds);
     }
 
     @Override
@@ -606,7 +677,7 @@ public class JedisClusterCommander implements IRedisCommander {
     }
 
     @Override
-    public String setex(byte[] key, int seconds, byte[] value) {
+    public String setex(byte[] key, long seconds, byte[] value) {
         return jedisCluster.setex(key, seconds, value);
     }
 
@@ -718,6 +789,21 @@ public class JedisClusterCommander implements IRedisCommander {
     @Override
     public Map<byte[], byte[]> hgetAll(byte[] key) {
         return jedisCluster.hgetAll(key);
+    }
+
+    @Override
+    public byte[] hrandfield(byte[] key) {
+        return jedisCluster.hrandfield(key);
+    }
+
+    @Override
+    public List<byte[]> hrandfield(byte[] key, long count) {
+        return jedisCluster.hrandfield(key, count);
+    }
+
+    @Override
+    public Map<byte[], byte[]> hrandfieldWithValues(byte[] key, long count) {
+        return jedisCluster.hrandfieldWithValues(key, count);
     }
 
     @Override
@@ -871,6 +957,11 @@ public class JedisClusterCommander implements IRedisCommander {
     }
 
     @Override
+    public Double zaddIncr(byte[] key, double score, byte[] member, ZAddParams params) {
+        return jedisCluster.zaddIncr(key, score, member, params);
+    }
+
+    @Override
     public Set<byte[]> zrange(byte[] key, long start, long stop) {
         return jedisCluster.zrange(key, start, stop);
     }
@@ -913,6 +1004,21 @@ public class JedisClusterCommander implements IRedisCommander {
     @Override
     public Set<Tuple> zrevrangeWithScores(byte[] key, long start, long stop) {
         return jedisCluster.zrevrangeWithScores(key, start, stop);
+    }
+
+    @Override
+    public byte[] zrandmember(byte[] key) {
+        return jedisCluster.zrandmember(key);
+    }
+
+    @Override
+    public Set<byte[]> zrandmember(byte[] key, long count) {
+        return jedisCluster.zrandmember(key, count);
+    }
+
+    @Override
+    public Set<Tuple> zrandmemberWithScores(byte[] key, long count) {
+        return jedisCluster.zrandmemberWithScores(key, count);
     }
 
     @Override
@@ -1161,6 +1267,11 @@ public class JedisClusterCommander implements IRedisCommander {
     }
 
     @Override
+    public Long geoadd(byte[] key, GeoAddParams params, Map<byte[], GeoCoordinate> memberCoordinateMap) {
+        return jedisCluster.geoadd(key, params, memberCoordinateMap);
+    }
+
+    @Override
     public Double geodist(byte[] key, byte[] member1, byte[] member2) {
         return jedisCluster.geodist(key, member1, member2);
     }
@@ -1271,13 +1382,33 @@ public class JedisClusterCommander implements IRedisCommander {
     }
 
     @Override
+    public byte[] xadd(byte[] key, Map<byte[], byte[]> hash, XAddParams params) {
+        return jedisCluster.xadd(key, hash, params);
+    }
+
+    @Override
     public Long xlen(byte[] key) {
         return jedisCluster.xlen(key);
     }
 
     @Override
+    public List<byte[]> xrange(byte[] key, byte[] start, byte[] end) {
+        return jedisCluster.xrange(key, start, end);
+    }
+
+    @Override
     public List<byte[]> xrange(byte[] key, byte[] start, byte[] end, long count) {
         return jedisCluster.xrange(key, start, end, count);
+    }
+
+    @Override
+    public List<byte[]> xrange(byte[] key, byte[] start, byte[] end, int count) {
+        return jedisCluster.xrange(key, start, end, count);
+    }
+
+    @Override
+    public List<byte[]> xrevrange(byte[] key, byte[] end, byte[] start) {
+        return jedisCluster.xrevrange(key, end, start);
     }
 
     @Override
@@ -1321,8 +1452,23 @@ public class JedisClusterCommander implements IRedisCommander {
     }
 
     @Override
-    public List<byte[]> xpending(byte[] key, byte[] groupname, byte[] start, byte[] end, int count, byte[] consumername) {
+    public Long xtrim(byte[] key, XTrimParams params) {
+        return jedisCluster.xtrim(key, params);
+    }
+
+    @Override
+    public Object xpending(byte[] key, byte[] groupname) {
+        return jedisCluster.xpending(key, groupname);
+    }
+
+    @Override
+    public List<Object> xpending(byte[] key, byte[] groupname, byte[] start, byte[] end, int count, byte[] consumername) {
         return jedisCluster.xpending(key, groupname, start, end, count, consumername);
+    }
+
+    @Override
+    public List<Object> xpending(byte[] key, byte[] groupname, XPendingParams params) {
+        return jedisCluster.xpending(key, groupname, params);
     }
 
     @Override
@@ -1331,7 +1477,22 @@ public class JedisClusterCommander implements IRedisCommander {
     }
 
     @Override
+    public List<byte[]> xclaim(byte[] key, byte[] group, byte[] consumername, long minIdleTime, XClaimParams params, byte[]... ids) {
+        return jedisCluster.xclaim(key, group, consumername, minIdleTime, params, ids);
+    }
+
+    @Override
+    public List<byte[]> xclaimJustId(byte[] key, byte[] group, byte[] consumername, long minIdleTime, XClaimParams params, byte[]... ids) {
+        return jedisCluster.xclaimJustId(key, group, consumername, minIdleTime, params, ids);
+    }
+
+    @Override
     public StreamInfo xinfoStream(byte[] key) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public Object xinfoStreamBinary(byte[] key) {
         throw new UnsupportedOperationException();
     }
 
@@ -1341,7 +1502,17 @@ public class JedisClusterCommander implements IRedisCommander {
     }
 
     @Override
+    public List<Object> xinfoGroupBinary(byte[] key) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
     public List<StreamConsumersInfo> xinfoConsumers(byte[] key, byte[] group) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public List<Object> xinfoConsumersBinary(byte[] key, byte[] group) {
         throw new UnsupportedOperationException();
     }
 
@@ -1382,6 +1553,11 @@ public class JedisClusterCommander implements IRedisCommander {
 
     @Override
     public String scriptFlush() {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public String scriptFlush(FlushMode flushMode) {
         throw new UnsupportedOperationException();
     }
 
@@ -1546,6 +1722,11 @@ public class JedisClusterCommander implements IRedisCommander {
     }
 
     @Override
+    public String scriptFlush(byte[] sampleKey, FlushMode flushMode) {
+        return jedisCluster.scriptFlush(sampleKey, flushMode);
+    }
+
+    @Override
     public String scriptKill(byte[] sampleKey) {
         return jedisCluster.scriptKill(sampleKey);
     }
@@ -1563,6 +1744,16 @@ public class JedisClusterCommander implements IRedisCommander {
     @Override
     public String get(String key) {
         return jedisCluster.get(key);
+    }
+
+    @Override
+    public String getDel(String key) {
+        return jedisCluster.getDel(key);
+    }
+
+    @Override
+    public String getEx(String key, GetExParams params) {
+        return jedisCluster.getEx(key, params);
     }
 
     @Override
@@ -1586,17 +1777,22 @@ public class JedisClusterCommander implements IRedisCommander {
     }
 
     @Override
-    public String restore(String key, int ttl, byte[] serializedValue) {
+    public String restore(String key, long ttl, byte[] serializedValue) {
         return jedisCluster.restore(key, ttl, serializedValue);
     }
 
     @Override
-    public String restoreReplace(String key, int ttl, byte[] serializedValue) {
+    public String restoreReplace(String key, long ttl, byte[] serializedValue) {
         throw new UnsupportedOperationException();
     }
 
     @Override
-    public Long expire(String key, int seconds) {
+    public String restore(String key, long ttl, byte[] serializedValue, RestoreParams params) {
+        return jedisCluster.restore(key, ttl, serializedValue, params);
+    }
+
+    @Override
+    public Long expire(String key, long seconds) {
         return jedisCluster.expire(key, seconds);
     }
 
@@ -1666,7 +1862,7 @@ public class JedisClusterCommander implements IRedisCommander {
     }
 
     @Override
-    public String setex(String key, int seconds, String value) {
+    public String setex(String key, long seconds, String value) {
         return jedisCluster.setex(key, seconds, value);
     }
 
@@ -1778,6 +1974,21 @@ public class JedisClusterCommander implements IRedisCommander {
     @Override
     public Map<String, String> hgetAll(String key) {
         return jedisCluster.hgetAll(key);
+    }
+
+    @Override
+    public String hrandfield(String key) {
+        return jedisCluster.hrandfield(key);
+    }
+
+    @Override
+    public List<String> hrandfield(String key, long count) {
+        return jedisCluster.hrandfield(key, count);
+    }
+
+    @Override
+    public Map<String, String> hrandfieldWithValues(String key, long count) {
+        return jedisCluster.hrandfieldWithValues(key, count);
     }
 
     @Override
@@ -1931,6 +2142,11 @@ public class JedisClusterCommander implements IRedisCommander {
     }
 
     @Override
+    public Double zaddIncr(String key, double score, String member, ZAddParams params) {
+        return jedisCluster.zaddIncr(key, score, member, params);
+    }
+
+    @Override
     public Set<String> zrange(String key, long start, long stop) {
         return jedisCluster.zrange(key, start, stop);
     }
@@ -1973,6 +2189,21 @@ public class JedisClusterCommander implements IRedisCommander {
     @Override
     public Set<Tuple> zrevrangeWithScores(String key, long start, long stop) {
         return jedisCluster.zrevrangeWithScores(key, start, stop);
+    }
+
+    @Override
+    public String zrandmember(String key) {
+        return jedisCluster.zrandmember(key);
+    }
+
+    @Override
+    public Set<String> zrandmember(String key, long count) {
+        return jedisCluster.zrandmember(key, count);
+    }
+
+    @Override
+    public Set<Tuple> zrandmemberWithScores(String key, long count) {
+        return jedisCluster.zrandmemberWithScores(key, count);
     }
 
     @Override
@@ -2176,8 +2407,18 @@ public class JedisClusterCommander implements IRedisCommander {
     }
 
     @Override
+    public KeyedListElement blpop(double timeout, String key) {
+        return jedisCluster.blpop(timeout, key);
+    }
+
+    @Override
     public List<String> brpop(int timeout, String key) {
         return jedisCluster.brpop(timeout, key);
+    }
+
+    @Override
+    public KeyedListElement brpop(double timeout, String key) {
+        return jedisCluster.blpop(timeout, key);
     }
 
     @Override
@@ -2271,6 +2512,11 @@ public class JedisClusterCommander implements IRedisCommander {
     }
 
     @Override
+    public Long geoadd(String key, GeoAddParams params, Map<String, GeoCoordinate> memberCoordinateMap) {
+        return jedisCluster.geoadd(key, params, memberCoordinateMap);
+    }
+
+    @Override
     public Double geodist(String key, String member1, String member2) {
         return jedisCluster.geodist(key, member1, member2);
     }
@@ -2356,13 +2602,28 @@ public class JedisClusterCommander implements IRedisCommander {
     }
 
     @Override
+    public StreamEntryID xadd(String key, Map<String, String> hash, XAddParams params) {
+        return jedisCluster.xadd(key, hash, params);
+    }
+
+    @Override
     public Long xlen(String key) {
         return jedisCluster.xlen(key);
     }
 
     @Override
+    public List<StreamEntry> xrange(String key, StreamEntryID start, StreamEntryID end) {
+        return jedisCluster.xrange(key, start, end);
+    }
+
+    @Override
     public List<StreamEntry> xrange(String key, StreamEntryID start, StreamEntryID end, int count) {
         return jedisCluster.xrange(key, start, end, count);
+    }
+
+    @Override
+    public List<StreamEntry> xrevrange(String key, StreamEntryID end, StreamEntryID start) {
+        return jedisCluster.xrevrange(key, end, start);
     }
 
     @Override
@@ -2396,8 +2657,18 @@ public class JedisClusterCommander implements IRedisCommander {
     }
 
     @Override
+    public StreamPendingSummary xpending(String key, String groupname) {
+        return jedisCluster.xpending(key, groupname);
+    }
+
+    @Override
     public List<StreamPendingEntry> xpending(String key, String groupname, StreamEntryID start, StreamEntryID end, int count, String consumername) {
         return jedisCluster.xpending(key, groupname, start, end, count, consumername);
+    }
+
+    @Override
+    public List<StreamPendingEntry> xpending(String key, String groupname, XPendingParams params) {
+        return jedisCluster.xpending(key, groupname, params);
     }
 
     @Override
@@ -2411,8 +2682,23 @@ public class JedisClusterCommander implements IRedisCommander {
     }
 
     @Override
+    public long xtrim(String key, XTrimParams params) {
+        return jedisCluster.xtrim(key, params);
+    }
+
+    @Override
     public List<StreamEntry> xclaim(String key, String group, String consumername, long minIdleTime, long newIdleTime, int retries, boolean force, StreamEntryID... ids) {
         return jedisCluster.xclaim(key, group, consumername, minIdleTime, newIdleTime, retries, force, ids);
+    }
+
+    @Override
+    public List<StreamEntry> xclaim(String key, String group, String consumername, long minIdleTime, XClaimParams params, StreamEntryID... ids) {
+        return jedisCluster.xclaim(key, group, consumername, minIdleTime, params, ids);
+    }
+
+    @Override
+    public List<StreamEntryID> xclaimJustId(String key, String group, String consumername, long minIdleTime, XClaimParams params, StreamEntryID... ids) {
+        return jedisCluster.xclaimJustId(key, group, consumername, minIdleTime, params, ids);
     }
 
     @Override
@@ -2546,6 +2832,16 @@ public class JedisClusterCommander implements IRedisCommander {
     }
 
     @Override
+    public Boolean copy(byte[] srcKey, byte[] dstKey, int db, boolean replace) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public Boolean copy(byte[] srcKey, byte[] dstKey, boolean replace) {
+        return jedisCluster.copy(srcKey, dstKey, replace);
+    }
+
+    @Override
     public Long del(byte[]... keys) {
         return jedisCluster.del(keys);
     }
@@ -2561,13 +2857,43 @@ public class JedisClusterCommander implements IRedisCommander {
     }
 
     @Override
+    public byte[] lmove(byte[] srcKey, byte[] dstKey, ListDirection from, ListDirection to) {
+        return jedisCluster.lmove(srcKey, dstKey, from, to);
+    }
+
+    @Override
+    public byte[] blmove(byte[] srcKey, byte[] dstKey, ListDirection from, ListDirection to, double timeout) {
+        return jedisCluster.blmove(srcKey, dstKey, from, to, timeout);
+    }
+
+    @Override
     public List<byte[]> blpop(int timeout, byte[]... keys) {
+        return jedisCluster.blpop(timeout, keys);
+    }
+
+    @Override
+    public List<byte[]> blpop(double timeout, byte[]... keys) {
         return jedisCluster.blpop(timeout, keys);
     }
 
     @Override
     public List<byte[]> brpop(int timeout, byte[]... keys) {
         return jedisCluster.brpop(timeout, keys);
+    }
+
+    @Override
+    public List<byte[]> brpop(double timeout, byte[]... keys) {
+        return jedisCluster.brpop(timeout, keys);
+    }
+
+    @Override
+    public List<byte[]> bzpopmax(double timeout, byte[]... keys) {
+        return jedisCluster.bzpopmax(timeout, keys);
+    }
+
+    @Override
+    public List<byte[]> bzpopmin(double timeout, byte[]... keys) {
+        return jedisCluster.bzpopmin(timeout, keys);
     }
 
     @Override
@@ -2646,6 +2972,31 @@ public class JedisClusterCommander implements IRedisCommander {
     }
 
     @Override
+    public Set<byte[]> zdiff(byte[]... keys) {
+        return jedisCluster.zdiff(keys);
+    }
+
+    @Override
+    public Set<Tuple> zdiffWithScores(byte[]... keys) {
+        return jedisCluster.zdiffWithScores(keys);
+    }
+
+    @Override
+    public Long zdiffStore(byte[] dstkey, byte[]... keys) {
+        return jedisCluster.zdiffStore(dstkey, keys);
+    }
+
+    @Override
+    public Set<byte[]> zinter(ZParams params, byte[]... keys) {
+        return jedisCluster.zinter(params, keys);
+    }
+
+    @Override
+    public Set<Tuple> zinterWithScores(ZParams params, byte[]... keys) {
+        return jedisCluster.zinterWithScores(params, keys);
+    }
+
+    @Override
     public Long zinterstore(byte[] dstkey, byte[]... sets) {
         return jedisCluster.zinterstore(dstkey, sets);
     }
@@ -2653,6 +3004,16 @@ public class JedisClusterCommander implements IRedisCommander {
     @Override
     public Long zinterstore(byte[] dstkey, ZParams params, byte[]... sets) {
         return jedisCluster.zinterstore(dstkey, params, sets);
+    }
+
+    @Override
+    public Set<byte[]> zunion(ZParams params, byte[]... keys) {
+        return jedisCluster.zunion(params, keys);
+    }
+
+    @Override
+    public Set<Tuple> zunionWithScores(ZParams params, byte[]... keys) {
+        return jedisCluster.zunionWithScores(params, keys);
     }
 
     @Override
@@ -2721,8 +3082,18 @@ public class JedisClusterCommander implements IRedisCommander {
     }
 
     @Override
+    public List<byte[]> xread(XReadParams xReadParams, Map.Entry<byte[], byte[]>... streams) {
+        return jedisCluster.xread(xReadParams, streams);
+    }
+
+    @Override
     public List<byte[]> xreadGroup(byte[] groupname, byte[] consumer, int count, long block, boolean noAck, Map<byte[], byte[]> streams) {
         return jedisCluster.xreadGroup(groupname, consumer, count, block, noAck, streams);
+    }
+
+    @Override
+    public List<byte[]> xreadGroup(byte[] groupname, byte[] consumer, XReadGroupParams xReadGroupParams, Map.Entry<byte[], byte[]>... streams) {
+        return jedisCluster.xreadGroup(groupname, consumer, xReadGroupParams, streams);
     }
 
     @Override
@@ -2766,6 +3137,16 @@ public class JedisClusterCommander implements IRedisCommander {
     }
 
     @Override
+    public Boolean copy(String srcKey, String dstKey, int db, boolean replace) {
+        return null;
+    }
+
+    @Override
+    public Boolean copy(String srcKey, String dstKey, boolean replace) {
+        return null;
+    }
+
+    @Override
     public Long del(String... keys) {
         return jedisCluster.del(keys);
     }
@@ -2781,13 +3162,43 @@ public class JedisClusterCommander implements IRedisCommander {
     }
 
     @Override
+    public String lmove(String srcKey, String dstKey, ListDirection from, ListDirection to) {
+        return jedisCluster.lmove(srcKey, dstKey, from, to);
+    }
+
+    @Override
+    public String blmove(String srcKey, String dstKey, ListDirection from, ListDirection to, double timeout) {
+        return jedisCluster.blmove(srcKey, dstKey, from, to, timeout);
+    }
+
+    @Override
     public List<String> blpop(int timeout, String... keys) {
+        return jedisCluster.blpop(timeout, keys);
+    }
+
+    @Override
+    public KeyedListElement blpop(double timeout, String... keys) {
         return jedisCluster.blpop(timeout, keys);
     }
 
     @Override
     public List<String> brpop(int timeout, String... keys) {
         return jedisCluster.brpop(timeout, keys);
+    }
+
+    @Override
+    public KeyedListElement brpop(double timeout, String... keys) {
+        return jedisCluster.brpop(timeout, keys);
+    }
+
+    @Override
+    public KeyedZSetElement bzpopmax(double timeout, String... keys) {
+        return jedisCluster.bzpopmax(timeout, keys);
+    }
+
+    @Override
+    public KeyedZSetElement bzpopmin(double timeout, String... keys) {
+        return jedisCluster.bzpopmin(timeout, keys);
     }
 
     @Override
@@ -2866,6 +3277,31 @@ public class JedisClusterCommander implements IRedisCommander {
     }
 
     @Override
+    public Set<String> zdiff(String... keys) {
+        return jedisCluster.zdiff(keys);
+    }
+
+    @Override
+    public Set<Tuple> zdiffWithScores(String... keys) {
+        return jedisCluster.zdiffWithScores(keys);
+    }
+
+    @Override
+    public Long zdiffStore(String dstkey, String... keys) {
+        return jedisCluster.zdiffStore(dstkey, keys);
+    }
+
+    @Override
+    public Set<String> zinter(ZParams params, String... keys) {
+        return jedisCluster.zinter(params, keys);
+    }
+
+    @Override
+    public Set<Tuple> zinterWithScores(ZParams params, String... keys) {
+        return jedisCluster.zinterWithScores(params, keys);
+    }
+
+    @Override
     public Long zinterstore(String dstkey, String... sets) {
         return jedisCluster.zinterstore(dstkey, sets);
     }
@@ -2873,6 +3309,16 @@ public class JedisClusterCommander implements IRedisCommander {
     @Override
     public Long zinterstore(String dstkey, ZParams params, String... sets) {
         return jedisCluster.zinterstore(dstkey, params, sets);
+    }
+
+    @Override
+    public Set<String> zunion(ZParams params, String... keys) {
+        return jedisCluster.zunion(params, keys);
+    }
+
+    @Override
+    public Set<Tuple> zunionWithScores(ZParams params, String... keys) {
+        return jedisCluster.zunionWithScores(params, keys);
     }
 
     @Override
@@ -2931,10 +3377,20 @@ public class JedisClusterCommander implements IRedisCommander {
         return jedisCluster.xread(count, block, streams);
     }
 
+    @Override
+    public List<Map.Entry<String, List<StreamEntry>>> xread(XReadParams xReadParams, Map<String, StreamEntryID> streams) {
+        return jedisCluster.xread(xReadParams, streams);
+    }
+
     @SafeVarargs
     @Override
     public final List<Map.Entry<String, List<StreamEntry>>> xreadGroup(String groupname, String consumer, int count, long block, boolean noAck, Map.Entry<String, StreamEntryID>... streams) {
         return jedisCluster.xreadGroup(groupname, consumer, count, block, noAck, streams);
+    }
+
+    @Override
+    public List<Map.Entry<String, List<StreamEntry>>> xreadGroup(String groupname, String consumer, XReadGroupParams xReadGroupParams, Map<String, StreamEntryID> streams) {
+        return jedisCluster.xreadGroup(groupname, consumer, xReadGroupParams, streams);
     }
 
     @Override
