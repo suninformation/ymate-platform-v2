@@ -357,7 +357,7 @@ public final class Update extends Query<Update> {
         List<String> variables = expression.getVariables();
         //
         expression.set("tableNames", StringUtils.join(tables, LINE_END_FLAG));
-        expression.set("fields", StringUtils.join(fields.fields(), "=?,"));
+        expression.set("fields", fields.fields().size() == 1 ? fields.fields().get(0) + "=?" : StringUtils.join(fields.fields(), "=?,"));
         if (variables.contains("joins")) {
             expression.set("joins", StringUtils.join(joins, StringUtils.SPACE));
         }
