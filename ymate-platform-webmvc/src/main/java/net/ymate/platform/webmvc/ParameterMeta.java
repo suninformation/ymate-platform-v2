@@ -20,6 +20,7 @@ import org.apache.commons.lang3.StringUtils;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
+import java.util.Arrays;
 
 /**
  * @author 刘镇 (suninformation@163.com) on 15/10/31 上午11:04
@@ -57,6 +58,11 @@ public class ParameterMeta {
     private final boolean array;
 
     /**
+     * 拆分字符串数组的分隔符
+     */
+    private String splitArraySeparator;
+
+    /**
      * 是否为上传文件类型
      */
     private final boolean uploadFile;
@@ -79,6 +85,12 @@ public class ParameterMeta {
             if (this.paramField) {
                 break;
             }
+        }
+        if (this.paramField) {
+            splitArraySeparator = Arrays.stream(fieldAnnotations)
+                    .filter(annotation -> annotation instanceof SplitArrayWith)
+                    .findFirst().map(annotation -> StringUtils.trimToNull(((SplitArrayWith) annotation).separator()))
+                    .orElse(this.splitArraySeparator);
         }
     }
 
@@ -156,6 +168,10 @@ public class ParameterMeta {
 
     public boolean isArray() {
         return array;
+    }
+
+    public String getSplitArraySeparator() {
+        return splitArraySeparator;
     }
 
     public boolean isUploadFile() {

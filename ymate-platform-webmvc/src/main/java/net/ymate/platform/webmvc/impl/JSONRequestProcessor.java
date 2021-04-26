@@ -24,6 +24,7 @@ import net.ymate.platform.commons.util.RuntimeUtils;
 import net.ymate.platform.webmvc.IRequestContext;
 import net.ymate.platform.webmvc.IUploadFileWrapper;
 import net.ymate.platform.webmvc.IWebMvc;
+import net.ymate.platform.webmvc.ParameterMeta;
 import net.ymate.platform.webmvc.context.WebContext;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -68,12 +69,12 @@ public class JSONRequestProcessor extends DefaultRequestProcessor {
     }
 
     @Override
-    protected Object doParseRequestParam(IWebMvc owner, String paramName, String defaultValue, Class<?> paramType, boolean fullScope) {
+    protected Object doParseRequestParam(IWebMvc owner, ParameterMeta paramMeta, String paramName, String defaultValue, boolean fullScope) {
         Object returnValue = null;
         IJsonObjectWrapper protocol = doGetProtocol(owner);
         String[] paramNameArr = StringUtils.split(paramName, ".");
-        if (paramType.isArray()) {
-            if (!paramType.equals(IUploadFileWrapper[].class)) {
+        if (paramMeta.isArray()) {
+            if (!paramMeta.getParamType().equals(IUploadFileWrapper[].class)) {
                 Object[] values = null;
                 if (paramNameArr.length > 1) {
                     IJsonObjectWrapper jsonObj = protocol.getJsonObject(paramNameArr[0]);
@@ -90,7 +91,7 @@ public class JSONRequestProcessor extends DefaultRequestProcessor {
                     }
                 }
                 if (values != null && values.length > 0) {
-                    Class<?> arrayClassType = ClassUtils.getArrayClassType(paramType);
+                    Class<?> arrayClassType = ClassUtils.getArrayClassType(paramMeta.getParamType());
                     Object[] newArray = (Object[]) Array.newInstance(arrayClassType, values.length);
                     for (int arrayIdx = 0; arrayIdx < values.length; arrayIdx++) {
                         newArray[arrayIdx] = doSafeGetParamValue(owner, paramName, arrayClassType, BlurObject.bind(values[arrayIdx]).toStringValue(), null, false);
@@ -98,14 +99,14 @@ public class JSONRequestProcessor extends DefaultRequestProcessor {
                     returnValue = newArray;
                 }
             }
-        } else if (!paramType.equals(IUploadFileWrapper.class)) {
+        } else if (!paramMeta.getParamType().equals(IUploadFileWrapper.class)) {
             if (paramNameArr.length > 1) {
                 IJsonObjectWrapper jsonObj = protocol.getJsonObject(paramNameArr[0]);
                 if (jsonObj != null) {
-                    returnValue = doSafeGetParamValue(owner, paramName, paramType, jsonObj.getString(paramNameArr[1]), defaultValue, fullScope);
+                    returnValue = doSafeGetParamValue(owner, paramName, paramMeta.getParamType(), jsonObj.getString(paramNameArr[1]), defaultValue, fullScope);
                 }
             } else {
-                returnValue = doSafeGetParamValue(owner, paramName, paramType, protocol.getString(paramName), defaultValue, fullScope);
+                returnValue = doSafeGetParamValue(owner, paramName, paramMeta.getParamType(), protocol.getString(paramName), defaultValue, fullScope);
             }
         }
         return returnValue;

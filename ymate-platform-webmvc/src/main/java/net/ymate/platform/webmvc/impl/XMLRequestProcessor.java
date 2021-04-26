@@ -21,6 +21,7 @@ import net.ymate.platform.commons.util.RuntimeUtils;
 import net.ymate.platform.webmvc.IRequestContext;
 import net.ymate.platform.webmvc.IUploadFileWrapper;
 import net.ymate.platform.webmvc.IWebMvc;
+import net.ymate.platform.webmvc.ParameterMeta;
 import net.ymate.platform.webmvc.context.WebContext;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
@@ -65,12 +66,12 @@ public class XMLRequestProcessor extends DefaultRequestProcessor {
     }
 
     @Override
-    protected Object doParseRequestParam(IWebMvc owner, String paramName, String defaultValue, Class<?> paramType, boolean fullScope) {
+    protected Object doParseRequestParam(IWebMvc owner, ParameterMeta paramMeta, String paramName, String defaultValue, boolean fullScope) {
         Object returnValue = null;
         XMLProtocol protocol = doGetProtocol(owner);
         String[] paramNameArr = StringUtils.split(paramName, ".");
-        if (paramType.isArray()) {
-            if (!paramType.equals(IUploadFileWrapper[].class)) {
+        if (paramMeta.isArray()) {
+            if (!paramMeta.getParamType().equals(IUploadFileWrapper[].class)) {
                 String[] values;
                 String valueStr;
                 if (paramNameArr.length > 1) {
@@ -78,16 +79,16 @@ public class XMLRequestProcessor extends DefaultRequestProcessor {
                 } else {
                     valueStr = protocol.getProperty(paramName, defaultValue);
                 }
-                values = StringUtils.split(valueStr, "|");
+                values = StringUtils.split(valueStr, StringUtils.defaultIfBlank(paramMeta.getSplitArraySeparator(), ","));
                 if (values != null && values.length > 0) {
-                    returnValue = doSafeGetParamValueArray(owner, paramName, ClassUtils.getArrayClassType(paramType), values);
+                    returnValue = doSafeGetParamValueArray(owner, paramName, ClassUtils.getArrayClassType(paramMeta.getParamType()), values);
                 }
             }
-        } else if (!paramType.equals(IUploadFileWrapper.class)) {
+        } else if (!paramMeta.getParamType().equals(IUploadFileWrapper.class)) {
             if (paramNameArr.length > 1) {
-                returnValue = doSafeGetParamValue(owner, paramName, paramType, protocol.getSubProperty(paramNameArr[0], paramNameArr[1], defaultValue), defaultValue, fullScope);
+                returnValue = doSafeGetParamValue(owner, paramName, paramMeta.getParamType(), protocol.getSubProperty(paramNameArr[0], paramNameArr[1], defaultValue), defaultValue, fullScope);
             } else {
-                returnValue = doSafeGetParamValue(owner, paramName, paramType, protocol.getProperty(paramName, defaultValue), defaultValue, fullScope);
+                returnValue = doSafeGetParamValue(owner, paramName, paramMeta.getParamType(), protocol.getProperty(paramName, defaultValue), defaultValue, fullScope);
             }
         }
         return returnValue;
