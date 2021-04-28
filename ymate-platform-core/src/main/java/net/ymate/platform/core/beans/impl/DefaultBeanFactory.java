@@ -95,20 +95,6 @@ public class DefaultBeanFactory implements IBeanFactory {
             if (useProxy && !proxyFactory.isInitialized()) {
                 proxyFactory.initialize(owner);
             }
-            //
-            for (Map.Entry<Class<?>, BeanMeta> entry : this.getBeans().entrySet()) {
-                if (!entry.getKey().isInterface() && entry.getValue().isSingleton()) {
-                    Object beanProxyObj = buildBeanProxyIfNeed(entry.getValue().getBeanClass(), entry.getValue().getBeanObject());
-                    entry.getValue().setBeanObject(beanProxyObj);
-                }
-            }
-            //
-            for (Map.Entry<Class<?>, BeanMeta> entry : this.getBeans().entrySet()) {
-                if (!entry.getKey().isInterface() && entry.getValue().isSingleton()) {
-                    initBeanIoC(entry.getKey(), entry.getValue().getBeanObject(), entry.getValue().getInitializer());
-                }
-            }
-            //
             initialized = true;
         }
     }
@@ -205,16 +191,20 @@ public class DefaultBeanFactory implements IBeanFactory {
             }
             if (beanMeta != null) {
                 if (!beanMeta.isSingleton()) {
-                    try {
-                        obj = (T) buildBeanProxyIfNeed(beanMeta.getBeanClass(), beanMeta.getBeanObject());
-                        initBeanIoC(beanMeta.getBeanClass(), obj, beanMeta.getInitializer());
-                    } catch (Exception e) {
-                        if (LOG.isWarnEnabled()) {
-                            LOG.warn(StringUtils.EMPTY, e);
-                        }
-                    }
+                    obj = (T) doCreateObjectInst(beanMeta);
                 } else {
                     obj = (T) beanMeta.getBeanObject();
+                    if (obj == null) {
+                        synchronized (beanMeta.getBeanClass()) {
+                            obj = (T) beanMeta.getBeanObject();
+                            if (obj == null) {
+                                obj = (T) doCreateObjectInst(beanMeta);
+                                if (obj != null) {
+                                    beanMeta.setBeanObject(obj);
+                                }
+                            }
+                        }
+                    }
                 }
             }
             if (obj == null && parentFactory != null) {
@@ -222,6 +212,19 @@ public class DefaultBeanFactory implements IBeanFactory {
             }
         }
         return obj;
+    }
+
+    private Object doCreateObjectInst(BeanMeta beanMeta) {
+        Object objectInst = null;
+        try {
+            objectInst = buildBeanProxyIfNeed(beanMeta.getBeanClass(), beanMeta.getBeanObject());
+            initBeanIoC(beanMeta.getBeanClass(), objectInst, beanMeta.getInitializer());
+        } catch (Exception e) {
+            if (LOG.isWarnEnabled()) {
+                LOG.warn(StringUtils.EMPTY, e);
+            }
+        }
+        return objectInst;
     }
 
     @Override
