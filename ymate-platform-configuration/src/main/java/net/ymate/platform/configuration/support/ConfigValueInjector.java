@@ -16,7 +16,9 @@
 package net.ymate.platform.configuration.support;
 
 import net.ymate.platform.commons.lang.BlurObject;
+import net.ymate.platform.commons.util.ClassUtils;
 import net.ymate.platform.configuration.annotation.ConfigValue;
+import net.ymate.platform.configuration.annotation.Configs;
 import net.ymate.platform.core.beans.IBeanFactory;
 import net.ymate.platform.core.beans.IBeanInjector;
 import net.ymate.platform.core.configuration.IConfigFileParser;
@@ -34,11 +36,27 @@ public class ConfigValueInjector implements IBeanInjector {
 
     @Override
     public Object inject(IBeanFactory beanFactory, Annotation annotation, Class<?> targetClass, Field field, Object originInject) {
+        if (ClassUtils.isInterfaceOf(targetClass, IConfiguration.class)) {
+            return originInject;
+        }
         ConfigValue configValueAnn = ((ConfigValue) annotation);
         String valueStr = null;
         String keyStr = StringUtils.defaultIfBlank(configValueAnn.value(), field.getName());
-        if (ArrayUtils.isNotEmpty(configValueAnn.configs())) {
-            for (Class<? extends IConfiguration> configurationClass : configValueAnn.configs()) {
+        Class<? extends IConfiguration>[] configs = configValueAnn.configs();
+        if (ArrayUtils.isEmpty(configs)) {
+            Configs configsAnn = targetClass.getAnnotation(Configs.class);
+            if (configsAnn != null) {
+                configs = configsAnn.value();
+            }
+            if (ArrayUtils.isEmpty(configs)) {
+                configsAnn = ClassUtils.getPackageAnnotation(targetClass, Configs.class);
+                if (configsAnn != null) {
+                    configs = configsAnn.value();
+                }
+            }
+        }
+        if (ArrayUtils.isNotEmpty(configs)) {
+            for (Class<? extends IConfiguration> configurationClass : configs) {
                 IConfiguration configuration = beanFactory.getBean(configurationClass);
                 if (configuration != null) {
                     valueStr = configuration.getString(configValueAnn.category(), keyStr, null);
