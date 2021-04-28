@@ -15,7 +15,6 @@
  */
 package net.ymate.platform.configuration.annotation;
 
-import net.ymate.platform.core.configuration.IConfigFileParser;
 import net.ymate.platform.core.configuration.IConfiguration;
 import org.apache.commons.lang3.StringUtils;
 
@@ -34,7 +33,7 @@ public @interface ConfigValue {
     /**
      * @return 配置分类名称, 默认值为: default
      */
-    String category() default IConfigFileParser.DEFAULT_CATEGORY_NAME;
+    String category() default StringUtils.EMPTY;
 
     /**
      * @return 配置项名称, 若未提供则使用成员变量或方法参数名称

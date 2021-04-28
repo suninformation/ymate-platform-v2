@@ -40,26 +40,38 @@ public class ConfigValueInjector implements IBeanInjector {
             return originInject;
         }
         ConfigValue configValueAnn = ((ConfigValue) annotation);
+        String categoryStr = configValueAnn.category();
         String valueStr = null;
         String keyStr = StringUtils.defaultIfBlank(configValueAnn.value(), field.getName());
         Class<? extends IConfiguration>[] configs = configValueAnn.configs();
-        if (ArrayUtils.isEmpty(configs)) {
+        if (ArrayUtils.isEmpty(configs) || StringUtils.isBlank(categoryStr)) {
             Configs configsAnn = targetClass.getAnnotation(Configs.class);
             if (configsAnn != null) {
-                configs = configsAnn.value();
+                if (ArrayUtils.isEmpty(configs)) {
+                    configs = configsAnn.value();
+                }
+                if (StringUtils.isBlank(categoryStr)) {
+                    categoryStr = configsAnn.category();
+                }
             }
-            if (ArrayUtils.isEmpty(configs)) {
+            if (ArrayUtils.isEmpty(configs) || StringUtils.isBlank(categoryStr)) {
                 configsAnn = ClassUtils.getPackageAnnotation(targetClass, Configs.class);
                 if (configsAnn != null) {
-                    configs = configsAnn.value();
+                    if (ArrayUtils.isEmpty(configs)) {
+                        configs = configsAnn.value();
+                    }
+                    if (StringUtils.isBlank(categoryStr)) {
+                        categoryStr = configsAnn.category();
+                    }
                 }
             }
         }
+        categoryStr = StringUtils.defaultIfBlank(categoryStr, IConfigFileParser.DEFAULT_CATEGORY_NAME);
         if (ArrayUtils.isNotEmpty(configs)) {
             for (Class<? extends IConfiguration> configurationClass : configs) {
                 IConfiguration configuration = beanFactory.getBean(configurationClass);
                 if (configuration != null) {
-                    valueStr = configuration.getString(configValueAnn.category(), keyStr, null);
+                    valueStr = configuration.getString(categoryStr, keyStr, null);
                     if (StringUtils.isNotBlank(valueStr)) {
                         break;
                     }
@@ -67,8 +79,8 @@ public class ConfigValueInjector implements IBeanInjector {
             }
         }
         if (StringUtils.isBlank(valueStr)) {
-            if (!StringUtils.equalsIgnoreCase(IConfigFileParser.DEFAULT_CATEGORY_NAME, configValueAnn.category())) {
-                keyStr = configValueAnn.category().concat(".").concat(keyStr);
+            if (!StringUtils.equalsIgnoreCase(IConfigFileParser.DEFAULT_CATEGORY_NAME, categoryStr)) {
+                keyStr = categoryStr.concat(".").concat(keyStr);
             }
             valueStr = beanFactory.getOwner().getParam(keyStr);
         }

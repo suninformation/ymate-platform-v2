@@ -16,6 +16,7 @@
 package net.ymate.platform.configuration.annotation;
 
 import net.ymate.platform.core.configuration.IConfiguration;
+import org.apache.commons.lang3.StringUtils;
 
 import java.lang.annotation.*;
 
@@ -27,6 +28,11 @@ import java.lang.annotation.*;
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
 public @interface Configs {
+
+    /**
+     * @return 配置分类名称, 默认值为: default
+     */
+    String category() default StringUtils.EMPTY;
 
     /**
      * @return 配置类集合
