@@ -129,10 +129,10 @@ public class RedisCacheWrapper implements ICache {
                 commander.hset(cacheName, cacheKey, cacheValue);
                 //
                 if (owner.getConfig().isEnabledSubscribeExpired() && timeout > 0) {
-                    commander.setex(cacheName.concat(SEPARATOR).concat(cacheKey), timeout, StringUtils.EMPTY);
+                    commander.setex(cacheName.concat(SEPARATOR).concat(cacheKey), (long) timeout, StringUtils.EMPTY);
                 }
             } else if (timeout > 0) {
-                commander.setex(cacheName.concat(SEPARATOR).concat(cacheKey), timeout, cacheValue);
+                commander.setex(cacheName.concat(SEPARATOR).concat(cacheKey), (long) timeout, cacheValue);
             } else {
                 commander.set(cacheName.concat(SEPARATOR).concat(cacheKey), cacheValue);
             }

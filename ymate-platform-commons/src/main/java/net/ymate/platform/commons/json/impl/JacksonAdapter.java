@@ -132,7 +132,7 @@ public class JacksonAdapter implements IJsonAdapter {
                 ObjectMapper objectMapper;
                 if (snakeCase) {
                     objectMapper = createObjectMapper()
-                            .setPropertyNamingStrategy(PropertyNamingStrategy.SNAKE_CASE);
+                            .setPropertyNamingStrategy(new PropertyNamingStrategies.SnakeCaseStrategy());
                 } else {
                     objectMapper = OBJECT_MAPPER;
                 }
@@ -179,7 +179,7 @@ public class JacksonAdapter implements IJsonAdapter {
             objectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
         }
         if (snakeCase) {
-            objectMapper.setPropertyNamingStrategy(PropertyNamingStrategy.SNAKE_CASE);
+            objectMapper.setPropertyNamingStrategy(new PropertyNamingStrategies.SnakeCaseStrategy());
         }
         try {
             if (format) {
@@ -214,7 +214,7 @@ public class JacksonAdapter implements IJsonAdapter {
     public <T> T deserialize(String jsonStr, boolean snakeCase, Class<T> clazz) throws Exception {
         if (snakeCase) {
             return createObjectMapper()
-                    .setPropertyNamingStrategy(PropertyNamingStrategy.SNAKE_CASE)
+                    .setPropertyNamingStrategy(new PropertyNamingStrategies.SnakeCaseStrategy())
                     .readValue(jsonStr, clazz);
         }
         return OBJECT_MAPPER.readValue(jsonStr, clazz);
