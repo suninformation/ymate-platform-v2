@@ -34,6 +34,8 @@ import net.ymate.platform.persistence.jdbc.support.BaseEntity;
 import net.ymate.platform.persistence.jdbc.transaction.Transactions;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import java.io.Serializable;
 import java.lang.reflect.Field;
@@ -47,6 +49,8 @@ import java.util.*;
  */
 @SuppressWarnings("rawtypes")
 public class DefaultDatabaseSession extends AbstractSession<IDatabaseConnectionHolder> implements IDatabaseSession {
+
+    private static final Log LOG = LogFactory.getLog(DefaultDatabaseSession.class);
 
     private final IDatabase owner;
 
@@ -708,13 +712,23 @@ public class DefaultDatabaseSession extends AbstractSession<IDatabaseConnectionH
                 } else {
                     value = propertyMeta.getField().get(targetObj);
                 }
+                // 尝试为非自增长字段执行键值生成器
+                boolean isAutoincrementField = entityMeta.isAutoincrement(fieldName);
+                if (!isAutoincrementField && value == null && StringUtils.isNotBlank(propertyMeta.getUseKeyGenerator())) {
+                    IKeyGenerator keyGenerator = IKeyGenerator.Manager.getKeyGenerator(propertyMeta.getUseKeyGenerator());
+                    if (keyGenerator != null) {
+                        value = keyGenerator.generate(owner, propertyMeta, targetObj);
+                    } else if (LOG.isWarnEnabled()) {
+                        LOG.warn(String.format("KeyGenerator named '%s' was not found.", propertyMeta.getUseKeyGenerator()));
+                    }
+                }
                 // 以下操作是为了使@Default起效果的同时也保证数据库中的字段默认值不被null值替代
-                if (value == null) {
+                if (value == null && StringUtils.isNotBlank(propertyMeta.getDefaultValue())) {
                     // 如果value为空则尝试提取默认值
                     value = BlurObject.bind(propertyMeta.getDefaultValue()).toObjectValue(propertyMeta.getField().getType());
                 }
                 if (value != null || propertyMeta.isNullable()) {
-                    if (includePrimaryKey && entityMeta.isPrimaryKey(fieldName) && entityMeta.isAutoincrement(fieldName)) {
+                    if (includePrimaryKey && entityMeta.isPrimaryKey(fieldName) && isAutoincrementField) {
                         continue;
                     }
                     // 若value不为空则添加至返回对象中

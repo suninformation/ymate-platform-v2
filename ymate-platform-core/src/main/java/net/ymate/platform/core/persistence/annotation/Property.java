@@ -46,6 +46,12 @@ public @interface Property {
     String sequenceName() default StringUtils.EMPTY;
 
     /**
+     * @return 指定键值生成器名称，默认为空表示不启用（仅当非自动增长且主键值为空时调用）
+     * @since 2.1.0
+     */
+    String useKeyGenerator() default StringUtils.EMPTY;
+
+    /**
      * @return 允许为空
      */
     boolean nullable() default true;

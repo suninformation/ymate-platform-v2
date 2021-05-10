@@ -231,8 +231,12 @@ public final class EntityMeta implements Serializable {
             field.setAccessible(true);
             propertyMeta = new PropertyMeta(propName, field, property.autoincrement(),
                     property.sequenceName(), property.nullable(), property.unsigned(), property.length(), property.decimals(), property.type());
+            propertyMeta.useKeyGenerator(property.useKeyGenerator());
             if (ClassUtils.isAnnotationOf(field, Default.class)) {
-                propertyMeta.defaultValue(field.getAnnotation(Default.class).value());
+                Default defaultAnn = field.getAnnotation(Default.class);
+                if (!defaultAnn.ignored()) {
+                    propertyMeta.defaultValue(defaultAnn.value());
+                }
             }
             if (ClassUtils.isAnnotationOf(field, Comment.class)) {
                 propertyMeta.comment(field.getAnnotation(Comment.class).value());

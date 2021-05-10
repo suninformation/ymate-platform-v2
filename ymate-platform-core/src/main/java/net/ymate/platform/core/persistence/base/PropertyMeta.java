@@ -47,6 +47,13 @@ public class PropertyMeta implements Serializable {
      * 序列名称
      */
     private String sequenceName;
+
+    /**
+     * 键值生成器名称
+     *
+     * @since 2.1.0
+     */
+    private String useKeyGenerator;
     /**
      * 允许为空
      */
@@ -151,6 +158,15 @@ public class PropertyMeta implements Serializable {
         return this;
     }
 
+    public String getUseKeyGenerator() {
+        return useKeyGenerator;
+    }
+
+    public PropertyMeta useKeyGenerator(String useKeyGenerator) {
+        this.useKeyGenerator = useKeyGenerator;
+        return this;
+    }
+
     public boolean isNullable() {
         return nullable;
     }
@@ -234,7 +250,7 @@ public class PropertyMeta implements Serializable {
 
     @Override
     public String toString() {
-        return String.format("PropertyMeta [name='%s', field=%s, autoincrement=%s, sequenceName='%s', nullable=%s, unsigned=%s, length=%d, decimals=%d, type=%s, defaultValue='%s', comment='%s', readonly=%s, conversionType=%s]", name, field, autoincrement, sequenceName, nullable, unsigned, length, decimals, type, defaultValue, comment, readonly, conversionType);
+        return String.format("PropertyMeta [name='%s', field=%s, autoincrement=%s, sequenceName='%s', useKeyGenerator='%s', nullable=%s, unsigned=%s, length=%d, decimals=%d, type=%s, defaultValue='%s', comment='%s', readonly=%s, conversionType=%s]", name, field, autoincrement, sequenceName, useKeyGenerator, nullable, unsigned, length, decimals, type, defaultValue, comment, readonly, conversionType);
     }
 
 }
