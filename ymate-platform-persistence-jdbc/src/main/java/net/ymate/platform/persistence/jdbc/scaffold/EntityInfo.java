@@ -67,7 +67,7 @@ public class EntityInfo implements Serializable {
     /**
      * 用于生成字段名称常量
      */
-    private final Set<Attr> constFields = new LinkedHashSet<>();
+    private final Set<ConstAttr> constFields = new LinkedHashSet<>();
 
     public String getName() {
         return name;
@@ -145,7 +145,7 @@ public class EntityInfo implements Serializable {
             return this;
         }
 
-        public Builder addConstField(Attr constField) {
+        public Builder addConstField(ConstAttr constField) {
             target.constFields.add(constField);
             return this;
         }

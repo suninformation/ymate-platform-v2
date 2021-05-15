@@ -273,7 +273,7 @@ public final class Scaffold {
                 .map(key -> tableInfo.getColumns().get(key)).forEachOrdered(columnInfo -> {
             Attr attr = Attr.build(columnInfo).setReadonly(readonlyColumns.contains(columnInfo.getColumnName()));
             entityInfoBuilder.addField(attr)
-                    .addConstField(new Attr(String.class.getSimpleName(), doNamedFilter(INamedFilter.Type.COLUMN, columnInfo.getColumnName()).toUpperCase(), columnInfo.getColumnName()));
+                    .addConstField(new ConstAttr(String.class.getSimpleName(), doNamedFilter(INamedFilter.Type.COLUMN, columnInfo.getColumnName()).toUpperCase(), columnInfo.getColumnName(), attr.getVarName()));
             if (!attr.isNullable()) {
                 entityInfoBuilder.addNonNullableField(attr);
             }
@@ -297,7 +297,7 @@ public final class Scaffold {
             tableInfo.getPrimaryKeys().stream()
                     .map(pkey -> tableInfo.getColumns().get(pkey))
                     .forEachOrdered(columnInfo -> entityInfoBuilder.addPrimaryKey(Attr.build(columnInfo).setReadonly(readonlyColumns.contains(columnInfo.getColumnName())))
-                            .addConstField(new Attr(String.class.getSimpleName(), doNamedFilter(INamedFilter.Type.COLUMN, columnInfo.getColumnName()).toUpperCase(), columnInfo.getColumnName())));
+                            .addConstField(new ConstAttr(String.class.getSimpleName(), doNamedFilter(INamedFilter.Type.COLUMN, columnInfo.getColumnName()).toUpperCase(), columnInfo.getColumnName(), columnInfo.getName())));
         } else if (!tableInfo.getPrimaryKeys().isEmpty()) {
             String primaryKeyName = tableInfo.getPrimaryKeys().get(0);
             ColumnInfo primaryKeyColumn = tableInfo.getColumns().get(primaryKeyName);
@@ -306,7 +306,7 @@ public final class Scaffold {
                     .primaryKeyName(StringUtils.uncapitalize(EntityMeta.propertyNameToFieldName(primaryKeyName)))
                     .addField(primaryKeyAttr)
                     .addNonNullableField(primaryKeyAttr)
-                    .addConstField(new Attr(String.class.getSimpleName(), doNamedFilter(INamedFilter.Type.COLUMN, primaryKeyColumn.getColumnName()).toUpperCase(), primaryKeyColumn.getColumnName()));
+                    .addConstField(new ConstAttr(String.class.getSimpleName(), doNamedFilter(INamedFilter.Type.COLUMN, primaryKeyColumn.getColumnName()).toUpperCase(), primaryKeyColumn.getColumnName(), primaryKeyColumn.getName()));
         } else {
             ColumnInfo primaryKeyColumn = tableInfo.getColumns().get("id");
             Attr primaryKeyAttr = primaryKeyColumn == null ? new Attr(Serializable.class.getSimpleName(), "id", "id") : Attr.build(primaryKeyColumn);
@@ -314,7 +314,7 @@ public final class Scaffold {
                     .primaryKeyType(primaryKeyColumn == null ? Serializable.class.getSimpleName() : primaryKeyColumn.getColumnType())
                     .addField(primaryKeyAttr)
                     .addNonNullableField(primaryKeyAttr)
-                    .addConstField(new Attr(String.class.getSimpleName(), "ID", "id"));
+                    .addConstField(new ConstAttr(String.class.getSimpleName(), "ID", "id", "id"));
         }
         doProcessColumns(entityInfoBuilder, tableInfo);
         return entityInfoBuilder.build();
