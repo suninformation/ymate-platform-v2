@@ -22,6 +22,9 @@ import net.ymate.platform.core.persistence.AbstractTrade;
 import net.ymate.platform.core.persistence.ITrade;
 import net.ymate.platform.core.persistence.base.Type;
 import net.ymate.platform.persistence.jdbc.transaction.impl.DefaultTransaction;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 /**
  * 事务管理器类，用于执行基于JDBC事务的相关操作；<br>
@@ -34,13 +37,23 @@ import net.ymate.platform.persistence.jdbc.transaction.impl.DefaultTransaction;
  */
 public final class Transactions {
 
+    private static final Log LOG = LogFactory.getLog(Transactions.class);
+
     private static Class<? extends ITransaction> transactionClass;
 
     static {
         try {
             transactionClass = ClassUtils.getExtensionLoader(ITransaction.class, false).getExtensionClass();
         } catch (Exception e) {
+            if (LOG.isWarnEnabled()) {
+                LOG.warn(StringUtils.EMPTY, RuntimeUtils.unwrapThrow(e));
+            }
+        }
+        if (transactionClass == null) {
             transactionClass = DefaultTransaction.class;
+        }
+        if (LOG.isInfoEnabled()) {
+            LOG.info(String.format("Using Transaction class [%s].", transactionClass.getName()));
         }
     }
 
