@@ -59,16 +59,23 @@ public interface IConfig extends IDestroyable {
     String getConfigHome();
 
     /**
-     * 项目主目录路径
+     * 项目名称
      *
-     * @return 返回项目主目录路径
+     * @return 返回项目名称
      */
     String getProjectName();
 
     /**
-     * 模块主目录路径
+     * 项目主目录路径
      *
-     * @return 返回模块主目录路径
+     * @return 返回项目主目录路径
+     */
+    String getProjectHome();
+
+    /**
+     * 模块名称
+     *
+     * @return 返回模块名称
      */
     String getModuleName();
 

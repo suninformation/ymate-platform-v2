@@ -17,19 +17,14 @@ package net.ymate.platform.configuration;
 
 import net.ymate.platform.commons.util.ClassUtils;
 import net.ymate.platform.commons.util.FileUtils;
-import net.ymate.platform.commons.util.ResourceUtils;
 import net.ymate.platform.commons.util.RuntimeUtils;
 import net.ymate.platform.configuration.annotation.Configuration;
 import net.ymate.platform.configuration.impl.*;
-import net.ymate.platform.configuration.support.ConfigFileChecker;
 import net.ymate.platform.core.IApplicationConfigureFactory;
 import net.ymate.platform.core.IApplicationConfigurer;
 import net.ymate.platform.core.Version;
 import net.ymate.platform.core.YMP;
-import net.ymate.platform.core.configuration.IConfig;
-import net.ymate.platform.core.configuration.IConfiguration;
-import net.ymate.platform.core.configuration.IConfigurationConfig;
-import net.ymate.platform.core.configuration.IConfigurationProvider;
+import net.ymate.platform.core.configuration.*;
 import net.ymate.platform.core.module.IModuleConfigurer;
 import net.ymate.platform.core.module.impl.DefaultModuleConfigurer;
 import org.apache.commons.lang3.StringUtils;
@@ -37,10 +32,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.InputStream;
-import java.net.URL;
 
 import static net.ymate.platform.commons.util.FileUtils.*;
 import static net.ymate.platform.commons.util.RuntimeUtils.USER_DIR;
@@ -90,7 +82,9 @@ public final class Cfgs implements IConfig {
 
     private String userDir;
 
-    private ConfigFileChecker fileChecker;
+    private IConfigFileSearcher fileSearcher;
+
+    private IConfigFileChecker fileChecker;
 
     private boolean initialized;
 
@@ -126,9 +120,24 @@ public final class Cfgs implements IConfig {
             userHome = System.getProperty(USER_HOME, StringUtils.EMPTY);
             userDir = System.getProperty(USER_DIR, StringUtils.EMPTY);
             //
+            fileSearcher = ClassUtils.getExtensionLoader(IConfigFileSearcher.class).getExtension();
+            if (fileSearcher == null) {
+                fileSearcher = new DefaultConfigFileSearcher();
+            }
+            if (LOG.isInfoEnabled()) {
+                LOG.info(String.format("Using ConfigFileSearcher class [%s].", fileSearcher.getClass().getName()));
+            }
+            fileSearcher.initialize(this);
+            //
             if (config.getConfigCheckTimeInterval() > 0) {
-                fileChecker = new ConfigFileChecker(config.getConfigCheckTimeInterval());
-                fileChecker.start();
+                fileChecker = ClassUtils.getExtensionLoader(IConfigFileChecker.class).getExtension();
+                if (fileChecker == null) {
+                    fileChecker = new DefaultConfigFileChecker();
+                }
+                if (LOG.isInfoEnabled()) {
+                    LOG.info(String.format("Using ConfigFileChecker class [%s].", fileChecker.getClass().getName()));
+                }
+                fileChecker.initialize(config.getConfigCheckTimeInterval());
             }
             //
             if (LOG.isInfoEnabled()) {
@@ -152,12 +161,13 @@ public final class Cfgs implements IConfig {
     }
 
     @Override
-    public void close() {
+    public void close() throws Exception {
         if (initialized) {
             initialized = false;
             //
-            if (fileChecker != null && fileChecker.isInitialized()) {
-                fileChecker.stop();
+            fileSearcher.close();
+            if (fileChecker != null) {
+                fileChecker.close();
             }
         }
     }
@@ -170,6 +180,11 @@ public final class Cfgs implements IConfig {
     @Override
     public String getProjectName() {
         return config.getProjectName();
+    }
+
+    @Override
+    public String getProjectHome() {
+        return projectHome;
     }
 
     @Override
@@ -192,61 +207,19 @@ public final class Cfgs implements IConfig {
         return userDir;
     }
 
-    private File doSearch(String cfgFile) {
-        if (initialized) {
-            // 若指定的 cfgFile 为文件绝对路径名，则直接返回
-            File result = new File(cfgFile);
-            if (result.isAbsolute() && result.canRead() && result.isFile() && result.exists()) {
-                return result;
-            }
-            // 按路径顺序寻找 cfgFile 指定的文件
-            String[] paths = {moduleHome, projectHome, config.getConfigHome(), userDir, userHome};
-            for (String path : paths) {
-                result = new File(path, cfgFile);
-                if (result.isAbsolute() && result.canRead() && result.isFile() && result.exists()) {
-                    return result;
-                }
-            }
-        }
-        return null;
-    }
-
     @Override
     public String searchAsPath(String cfgFile) {
-        if (StringUtils.isNotBlank(cfgFile)) {
-            if (cfgFile.startsWith(FILE_PREFIX_JAR)) {
-                return cfgFile;
-            }
-            File targetFile = doSearch(cfgFile);
-            if (targetFile == null) {
-                URL targetFileUrl = ResourceUtils.getResource(cfgFile, this.getClass());
-                if (targetFileUrl != null) {
-                    return targetFileUrl.toString();
-                }
-            }
-            if (targetFile != null) {
-                return targetFile.getPath();
-            }
-        }
-        return null;
+        return fileSearcher.searchAsPath(cfgFile);
     }
 
     @Override
     public File searchAsFile(String cfgFile) {
-        if (StringUtils.isNotBlank(cfgFile)) {
-            return doSearch(cfgFile);
-        }
-        return null;
+        return fileSearcher.search(cfgFile);
     }
 
     @Override
     public InputStream searchAsStream(String cfgFile) {
-        String filePath = searchAsPath(cfgFile);
-        try {
-            return filePath != null ? new FileInputStream(new File(filePath)) : null;
-        } catch (FileNotFoundException e) {
-            return null;
-        }
+        return fileSearcher.searchAsStream(cfgFile);
     }
 
     @Override
@@ -329,7 +302,7 @@ public final class Cfgs implements IConfig {
                         configObject.initialize(provider);
                         //
                         if (fileChecker != null && reload) {
-                            fileChecker.putFileStatus(targetCfgFile, new ConfigFileChecker.FileStatus(configObject, new File(targetCfgFile).lastModified()));
+                            fileChecker.addStatus(new DefaultConfigFileChecker.Status(configObject, new File(targetCfgFile)));
                         }
                         return configObject;
                     } else if (LOG.isWarnEnabled()) {
