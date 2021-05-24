@@ -26,6 +26,8 @@ import net.ymate.platform.core.beans.annotation.Interceptor;
 import net.ymate.platform.core.beans.annotation.Proxy;
 import net.ymate.platform.core.beans.impl.DefaultBeanFactory;
 import net.ymate.platform.core.beans.intercept.InterceptSettings;
+import net.ymate.platform.core.configuration.IConfigReader;
+import net.ymate.platform.core.configuration.impl.MapSafeConfigReader;
 import net.ymate.platform.core.event.Events;
 import net.ymate.platform.core.event.annotation.Event;
 import net.ymate.platform.core.event.annotation.EventListener;
@@ -39,8 +41,6 @@ import org.apache.commons.lang3.time.StopWatch;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -51,7 +51,7 @@ public final class Application implements IApplication {
 
     private static final Log LOG = LogFactory.getLog(Application.class);
 
-    private final Map<String, String> parameters = new HashMap<>();
+    private final IConfigReader parameters;
 
     private final IApplicationConfigureFactory configureFactory;
 
@@ -92,9 +92,7 @@ public final class Application implements IApplication {
         this.i18n = new I18N(configurer.getDefaultLocale(), configurer.getI18nEventHandler());
         this.events = new Events(this);
         this.interceptSettings = configurer.getInterceptSettings() != null ? configurer.getInterceptSettings() : InterceptSettings.create();
-        if (configurer.getParameters() != null && !configurer.getParameters().isEmpty()) {
-            this.parameters.putAll(configurer.getParameters());
-        }
+        this.parameters = MapSafeConfigReader.bind(configurer.getParameters());
     }
 
     @Override
@@ -259,19 +257,21 @@ public final class Application implements IApplication {
 
     @Override
     public Map<String, String> getParams() {
-        return Collections.unmodifiableMap(parameters);
+        return parameters.toMap();
     }
 
     @Override
     public String getParam(String name) {
-        if (StringUtils.isBlank(name)) {
-            return null;
-        }
-        return parameters.get(name);
+        return parameters.getString(name);
     }
 
     @Override
     public String getParam(String name, String defaultValue) {
-        return StringUtils.defaultIfBlank(getParam(name), defaultValue);
+        return parameters.getString(name, defaultValue);
+    }
+
+    @Override
+    public IConfigReader getParamConfigReader() {
+        return parameters;
     }
 }

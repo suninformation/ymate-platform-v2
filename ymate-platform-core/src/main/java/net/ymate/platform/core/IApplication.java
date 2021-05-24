@@ -18,6 +18,7 @@ package net.ymate.platform.core;
 import net.ymate.platform.core.beans.IBeanFactory;
 import net.ymate.platform.core.beans.annotation.Ignored;
 import net.ymate.platform.core.beans.intercept.InterceptSettings;
+import net.ymate.platform.core.configuration.IConfigReader;
 import net.ymate.platform.core.event.Events;
 import net.ymate.platform.core.i18n.I18N;
 import net.ymate.platform.core.module.ModuleManager;
@@ -161,6 +162,13 @@ public interface IApplication extends IDestroyable {
      * @return 返回参数值
      */
     String getParam(String name, String defaultValue);
+
+    /**
+     * 获取全局配置参数读取器
+     *
+     * @return 返回全局配置参数读取器
+     */
+    IConfigReader getParamConfigReader();
 
     /**
      * 运行模式枚举
