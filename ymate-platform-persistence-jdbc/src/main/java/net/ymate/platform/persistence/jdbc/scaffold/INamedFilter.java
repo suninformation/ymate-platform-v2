@@ -38,6 +38,7 @@ public interface INamedFilter {
     /**
      * 处理表/字段名称
      *
+     * @param type     被过滤值类型
      * @param original 原始名称
      * @return 返回经过处理的名称字符串
      */
