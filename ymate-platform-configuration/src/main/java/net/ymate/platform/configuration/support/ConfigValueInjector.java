@@ -17,6 +17,7 @@ package net.ymate.platform.configuration.support;
 
 import net.ymate.platform.commons.lang.BlurObject;
 import net.ymate.platform.commons.util.ClassUtils;
+import net.ymate.platform.configuration.Cfgs;
 import net.ymate.platform.configuration.annotation.ConfigValue;
 import net.ymate.platform.configuration.annotation.Configs;
 import net.ymate.platform.core.beans.IBeanFactory;
@@ -46,22 +47,28 @@ public class ConfigValueInjector implements IBeanInjector {
         ConfigValue configValueAnn = ((ConfigValue) annotation);
         String categoryStr = configValueAnn.category();
         String keyStr = StringUtils.defaultIfBlank(configValueAnn.value(), field.getName());
-        Class<? extends IConfiguration>[] configs = configValueAnn.configs();
-        if (ArrayUtils.isEmpty(configs) || StringUtils.isBlank(categoryStr)) {
+        Set<IConfiguration> configs = new LinkedHashSet<>();
+        parseConfigurations(beanFactory, configValueAnn.configs(), configs);
+        if (configs.isEmpty()) {
+            parseConfigurations(configValueAnn.files(), configs);
+        }
+        if (configs.isEmpty() || StringUtils.isBlank(categoryStr)) {
             Configs configsAnn = targetClass.getAnnotation(Configs.class);
             if (configsAnn != null) {
-                if (ArrayUtils.isEmpty(configs)) {
-                    configs = configsAnn.value();
+                parseConfigurations(beanFactory, configsAnn.value(), configs);
+                if (configs.isEmpty()) {
+                    parseConfigurations(configsAnn.files(), configs);
                 }
                 if (StringUtils.isBlank(categoryStr)) {
                     categoryStr = configsAnn.category();
                 }
             }
-            if (ArrayUtils.isEmpty(configs) || StringUtils.isBlank(categoryStr)) {
+            if (configs.isEmpty() || StringUtils.isBlank(categoryStr)) {
                 configsAnn = ClassUtils.getPackageAnnotation(targetClass, Configs.class);
                 if (configsAnn != null) {
-                    if (ArrayUtils.isEmpty(configs)) {
-                        configs = configsAnn.value();
+                    parseConfigurations(beanFactory, configsAnn.value(), configs);
+                    if (configs.isEmpty()) {
+                        parseConfigurations(configsAnn.files(), configs);
                     }
                     if (StringUtils.isBlank(categoryStr)) {
                         categoryStr = configsAnn.category();
@@ -71,15 +78,10 @@ public class ConfigValueInjector implements IBeanInjector {
         }
         Object returnValue = null;
         categoryStr = StringUtils.defaultIfBlank(categoryStr, IConfigFileParser.DEFAULT_CATEGORY_NAME);
-        if (ArrayUtils.isNotEmpty(configs)) {
-            for (Class<? extends IConfiguration> configurationClass : configs) {
-                IConfiguration configuration = beanFactory.getBean(configurationClass);
-                if (configuration != null) {
-                    returnValue = parseParam(configuration, field, categoryStr, keyStr);
-                    if (returnValue != null) {
-                        break;
-                    }
-                }
+        for (IConfiguration configuration : configs) {
+            returnValue = parseParam(configuration, field, categoryStr, keyStr);
+            if (returnValue != null) {
+                break;
             }
         }
         if (returnValue == null) {
@@ -89,6 +91,28 @@ public class ConfigValueInjector implements IBeanInjector {
             returnValue = parseParam(beanFactory, field, keyStr, configValueAnn.defaultValue());
         }
         return returnValue;
+    }
+
+    private void parseConfigurations(IBeanFactory beanFactory, Class<? extends IConfiguration>[] configurationClasses, Set<IConfiguration> configs) {
+        if (ArrayUtils.isNotEmpty(configurationClasses)) {
+            for (Class<? extends IConfiguration> configurationClass : configurationClasses) {
+                IConfiguration configuration = beanFactory.getBean(configurationClass);
+                if (configuration != null) {
+                    configs.add(configuration);
+                }
+            }
+        }
+    }
+
+    private void parseConfigurations(String[] files, Set<IConfiguration> configs) {
+        if (ArrayUtils.isNotEmpty(files)) {
+            for (String file : files) {
+                IConfiguration configuration = Cfgs.get().loadCfg(file, true);
+                if (configuration != null) {
+                    configs.add(configuration);
+                }
+            }
+        }
     }
 
     private Object parseParam(IConfiguration configuration, Field field, String categoryStr, String keyStr) {

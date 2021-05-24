@@ -37,5 +37,10 @@ public @interface Configs {
     /**
      * @return 配置类集合
      */
-    Class<? extends IConfiguration>[] value();
+    Class<? extends IConfiguration>[] value() default {};
+
+    /**
+     * @return 配置文件路径集合
+     */
+    String[] files() default {};
 }
