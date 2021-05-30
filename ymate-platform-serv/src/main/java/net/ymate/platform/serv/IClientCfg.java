@@ -15,8 +15,6 @@
  */
 package net.ymate.platform.serv;
 
-import net.ymate.platform.core.beans.annotation.Ignored;
-
 import java.util.Map;
 
 /**
@@ -24,7 +22,6 @@ import java.util.Map;
  *
  * @author 刘镇 (suninformation@163.com) on 15/11/4 下午5:36
  */
-@Ignored
 public interface IClientCfg {
 
     /**

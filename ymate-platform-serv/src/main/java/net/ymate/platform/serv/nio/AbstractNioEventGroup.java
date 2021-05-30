@@ -89,7 +89,7 @@ public abstract class AbstractNioEventGroup<CODEC extends INioCodec, LISTENER ex
             bufferSize = cfg.getBufferSize();
         }
         //
-        executorCount = threadMaxPoolSize = cfg.getExecutorCount();
+        executorCount = threadMaxPoolSize = Math.max(cfg.getExecutorCount(), 1);
         threadQueueSize = Integer.MAX_VALUE;
         //
         this.codec = codec;

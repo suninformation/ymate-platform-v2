@@ -15,7 +15,6 @@
  */
 package net.ymate.platform.serv;
 
-import net.ymate.platform.core.beans.annotation.Ignored;
 import net.ymate.platform.serv.nio.INioCodec;
 
 import java.io.Closeable;
@@ -28,7 +27,6 @@ import java.io.IOException;
  * @param <CODEC>    服务端编解码器接口类型
  * @author 刘镇 (suninformation@163.com) on 15/10/15 上午10:21
  */
-@Ignored
 @SuppressWarnings("rawtypes")
 public interface IServer<LISTENER extends IListener, CODEC extends INioCodec> extends Closeable {
 

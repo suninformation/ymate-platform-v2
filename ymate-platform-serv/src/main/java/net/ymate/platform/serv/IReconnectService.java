@@ -15,16 +15,10 @@
  */
 package net.ymate.platform.serv;
 
-import net.ymate.platform.core.beans.annotation.Ignored;
-import net.ymate.platform.serv.impl.DefaultReconnectServiceImpl;
-
 /**
  * 断线重连服务接口
  *
  * @author 刘镇 (suninformation@163.com) on 15/11/19 下午1:24
  */
-@Ignored
 public interface IReconnectService extends IService {
-
-    IReconnectService DEFAULT = new DefaultReconnectServiceImpl();
 }

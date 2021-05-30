@@ -15,7 +15,6 @@
  */
 package net.ymate.platform.serv;
 
-import net.ymate.platform.core.beans.annotation.Ignored;
 import net.ymate.platform.serv.nio.INioSession;
 
 import java.io.IOException;
@@ -26,7 +25,6 @@ import java.io.IOException;
  * @param <SESSION> 会话类型
  * @author 刘镇 (suninformation@163.com) on 15/11/6 下午3:41
  */
-@Ignored
 public interface IListener<SESSION extends INioSession> {
 
     /**

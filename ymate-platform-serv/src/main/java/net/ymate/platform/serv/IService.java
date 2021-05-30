@@ -15,17 +15,28 @@
  */
 package net.ymate.platform.serv;
 
-import net.ymate.platform.core.beans.annotation.Ignored;
-import net.ymate.platform.core.support.IInitialization;
-
 import java.io.Closeable;
 
 /**
  * @author 刘镇 (suninformation@163.com) on 2019-07-31 18:34
  * @since 2.1.0
  */
-@Ignored
-public interface IService extends IInitialization<IClient<?, ?>>, Closeable {
+public interface IService extends Closeable {
+
+    /**
+     * 初始化
+     *
+     * @param owner 指定所属容器参数对象
+     * @throws Exception 初始过程中产生的任何异常
+     */
+    void initialize(IClient<?, ?> owner) throws Exception;
+
+    /**
+     * 是否已初始化
+     *
+     * @return 返回true表示已初始化
+     */
+    boolean isInitialized();
 
     /**
      * 启动服务

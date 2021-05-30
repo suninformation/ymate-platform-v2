@@ -15,8 +15,6 @@
  */
 package net.ymate.platform.serv.nio;
 
-import net.ymate.platform.core.beans.annotation.Ignored;
-
 import java.io.Closeable;
 import java.io.IOException;
 import java.io.Serializable;
@@ -27,7 +25,6 @@ import java.util.Map;
 /**
  * @author 刘镇 (suninformation@163.com) on 15/11/15 下午6:10
  */
-@Ignored
 public interface INioSession extends Serializable, Closeable {
 
     /**

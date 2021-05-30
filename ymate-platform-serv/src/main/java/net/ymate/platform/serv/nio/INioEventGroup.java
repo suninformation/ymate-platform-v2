@@ -15,7 +15,6 @@
  */
 package net.ymate.platform.serv.nio;
 
-import net.ymate.platform.core.beans.annotation.Ignored;
 import net.ymate.platform.serv.IListener;
 import net.ymate.platform.serv.nio.support.NioEventProcessor;
 
@@ -30,7 +29,6 @@ import java.util.concurrent.ExecutorService;
  * @param <LISTENER> 监听器类型
  * @author 刘镇 (suninformation@163.com) on 2018/11/16 1:40 AM
  */
-@Ignored
 public interface INioEventGroup<LISTENER extends IListener<INioSession>> extends Closeable {
 
     /**

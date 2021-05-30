@@ -15,9 +15,6 @@
  */
 package net.ymate.platform.serv.nio;
 
-import net.ymate.platform.core.beans.annotation.Ignored;
-import net.ymate.platform.core.support.IDestroyable;
-
 import java.io.IOException;
 import java.nio.channels.SelectableChannel;
 import java.nio.channels.Selector;
@@ -28,8 +25,7 @@ import java.nio.channels.Selector;
  * @param <SESSION> 会话类型
  * @author 刘镇 (suninformation@163.com) on 15/11/15 下午6:31
  */
-@Ignored
-public interface INioEventProcessor<SESSION extends INioSession> extends IDestroyable {
+public interface INioEventProcessor<SESSION extends INioSession> extends AutoCloseable {
 
     /**
      * 注册事件

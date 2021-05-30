@@ -50,7 +50,7 @@
         </dependency>
         <dependency>
             <groupId>net.ymate.platform</groupId>
-            <artifactId>ymate-platform-core</artifactId>
+            <artifactId>ymate-platform-commons</artifactId>
             <version>${project.parent.version}</version>
         </dependency>
     </dependencies>

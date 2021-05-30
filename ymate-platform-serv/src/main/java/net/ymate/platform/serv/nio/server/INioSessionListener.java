@@ -15,7 +15,6 @@
  */
 package net.ymate.platform.serv.nio.server;
 
-import net.ymate.platform.core.beans.annotation.Ignored;
 import net.ymate.platform.serv.ISessionListener;
 
 import java.io.IOException;
@@ -27,7 +26,6 @@ import java.io.IOException;
  * @param <MESSAGE_TYPE>    消息类型
  * @author 刘镇 (suninformation@163.com) on 2018/11/13 12:11 AM
  */
-@Ignored
 public interface INioSessionListener<SESSION_WRAPPER extends NioSessionWrapper, MESSAGE_TYPE> extends ISessionListener<SESSION_WRAPPER> {
 
     /**

@@ -15,13 +15,10 @@
  */
 package net.ymate.platform.serv;
 
-import net.ymate.platform.core.beans.annotation.Ignored;
-
 /**
  * @param <SESSION_WRAPPER> 会话包装器类型
  * @author 刘镇 (suninformation@163.com) on 2018/11/21 9:20 PM
  */
-@Ignored
 public interface ISessionListener<SESSION_WRAPPER extends ISessionWrapper<?, ?>> {
 
     /**

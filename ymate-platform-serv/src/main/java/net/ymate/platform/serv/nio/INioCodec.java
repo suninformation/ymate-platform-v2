@@ -15,7 +15,6 @@
  */
 package net.ymate.platform.serv.nio;
 
-import net.ymate.platform.core.beans.annotation.Ignored;
 import net.ymate.platform.serv.nio.support.ByteBufferBuilder;
 
 /**
@@ -23,7 +22,6 @@ import net.ymate.platform.serv.nio.support.ByteBufferBuilder;
  *
  * @author 刘镇 (suninformation@163.com) on 15/11/15 下午8:44
  */
-@Ignored
 public interface INioCodec {
 
     /**
