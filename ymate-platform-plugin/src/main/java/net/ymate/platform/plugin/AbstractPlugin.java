@@ -29,12 +29,21 @@ public abstract class AbstractPlugin implements IPlugin {
     private boolean started;
 
     @Override
-    public void initialize(IPluginContext context) {
+    public void initialize(IPluginContext context) throws Exception {
         if (!initialized) {
             this.context = context;
+            doInitialize(context);
             initialized = true;
         }
     }
+
+    /**
+     * 初始化
+     *
+     * @param context 插件环境上下文对象
+     * @throws Exception 初始过程中产生的任何异常
+     */
+    protected abstract void doInitialize(IPluginContext context) throws Exception;
 
     @Override
     public boolean isInitialized() {
@@ -52,25 +61,40 @@ public abstract class AbstractPlugin implements IPlugin {
     }
 
     @Override
-    public void startup() {
+    public void startup() throws Exception {
         if (initialized) {
+            doStartup();
             started = true;
         }
     }
 
+    /**
+     * 启动插件
+     *
+     * @throws Exception 启动插件时可能产生的异常
+     */
+    protected abstract void doStartup() throws Exception;
+
     @Override
-    public void shutdown() {
+    public void shutdown() throws Exception {
         if (started) {
             started = false;
+            doShutdown();
         }
     }
 
+    /**
+     * 停止插件
+     *
+     * @throws Exception 停止插件时可能产生的异常
+     */
+    protected abstract void doShutdown() throws Exception;
+
     @Override
-    public void close() {
+    public void close() throws Exception {
         if (initialized) {
-            shutdown();
-            //
             initialized = false;
+            shutdown();
             context = null;
         }
     }
