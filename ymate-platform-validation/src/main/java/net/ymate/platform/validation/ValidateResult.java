@@ -108,6 +108,11 @@ public final class ValidateResult implements Serializable {
         return msg;
     }
 
+    @Override
+    public String toString() {
+        return String.format("ValidateResult{matched=%s, name='%s', msg='%s'}", matched, name, msg);
+    }
+
     public static class Builder {
 
         private final ValidateContext context;
@@ -133,7 +138,11 @@ public final class ValidateResult implements Serializable {
         }
 
         public Builder msg(String msg) {
-            target.msg = msg;
+            if (StringUtils.isNotBlank(msg)) {
+                ValidationMeta.ParamInfo paramInfo = context.getParamInfo();
+                String label = paramInfo.getLabel();
+                target.msg = context.getOwner().getI18n().formatMsg(msg, StringUtils.isNotBlank(label) ? label : paramInfo.getCustomName());
+            }
             return this;
         }
 
@@ -141,7 +150,9 @@ public final class ValidateResult implements Serializable {
             ValidationMeta.ParamInfo paramInfo = context.getParamInfo();
             target.msg = paramInfo.getMessage();
             // 若自定义消息不存在则加载i18n配置
-            if (StringUtils.isBlank(target.msg) && StringUtils.isNotBlank(i18nKey)) {
+            if (StringUtils.isNotBlank(target.msg)) {
+                return msg(target.msg);
+            } else if (StringUtils.isNotBlank(i18nKey)) {
                 target.msg = formatMessage(context, i18nKey, defaultValue, i18nParamLabel(context, paramInfo.getCustomName(), paramInfo.getLabel()), args);
             }
             return this;

@@ -95,13 +95,13 @@ public final class ValidationMeta implements Serializable {
                     }
                     if (parameter.isAnnotationPresent(VModel.class)) {
                         // 递归处理@VModel
-                        methodInfo.getParams().putAll(parseClassFields(paramInfo.getName(), parameter.getType()));
+                        methodInfo.getParams().putAll(parseClassFields(paramInfo.getCustomName(), parameter.getType()));
                     } else {
                         tmpAnnList = Arrays.stream(parameter.getAnnotations()).filter(this::isValid).collect(Collectors.toList());
                     }
                     if (!tmpAnnList.isEmpty()) {
                         paramInfo.setAnnotations(tmpAnnList.toArray(new Annotation[0]));
-                        methodInfo.getParams().put(paramInfo.getName(), paramInfo);
+                        methodInfo.getParams().put(paramInfo.getCustomName(), paramInfo);
                     }
                     idx++;
                 }
@@ -138,7 +138,7 @@ public final class ValidationMeta implements Serializable {
             List<Annotation> annotations = new ArrayList<>();
             if (field.isAnnotationPresent(VModel.class)) {
                 // 递归处理@VModel
-                returnValues.putAll(parseClassFields(paramInfo.getName(), field.getType()));
+                returnValues.putAll(parseClassFields(paramInfo.getCustomName(), field.getType()));
             } else {
                 // 尝试获取自定义消息内容
                 VMsg vMsg = field.getAnnotation(VMsg.class);
@@ -149,7 +149,7 @@ public final class ValidationMeta implements Serializable {
             }
             if (!annotations.isEmpty()) {
                 paramInfo.setAnnotations(annotations.toArray(new Annotation[0]));
-                returnValues.put(paramInfo.getName(), paramInfo);
+                returnValues.put(paramInfo.getCustomName(), paramInfo);
             }
         }
         return returnValues;
