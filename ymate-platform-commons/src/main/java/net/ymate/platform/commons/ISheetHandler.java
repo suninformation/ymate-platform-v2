@@ -76,11 +76,11 @@ public interface ISheetHandler<T> {
         @Override
         public List<Object[]> handle(Sheet sheet) throws Exception {
             List<Object[]> results = new ArrayList<>();
-            int rowIdx = firstRowNum > 0 ? firstRowNum : sheet.getFirstRowNum();
+            int startRowIdx = firstRowNum > 0 ? firstRowNum : sheet.getFirstRowNum();
             int maxRowIdx = lastRowNum > 0 ? lastRowNum : sheet.getLastRowNum();
-            for (; rowIdx <= maxRowIdx; rowIdx++) {
+            for (int rowIdx = startRowIdx; rowIdx <= maxRowIdx; rowIdx++) {
                 Row sheetRow = sheet.getRow(rowIdx);
-                if (rowIdx == sheet.getFirstRowNum()) {
+                if (cellMetas == null && rowIdx == startRowIdx) {
                     List<CellMeta> metaList = new ArrayList<>();
                     short cellIdx = firstCellNum > 0 ? (short) firstCellNum : sheetRow.getFirstCellNum();
                     short maxCellIdx = lastCellNum > 0 ? (short) lastCellNum : sheetRow.getLastCellNum();
@@ -91,7 +91,7 @@ public interface ISheetHandler<T> {
                         }
                     }
                     cellMetas = metaList.toArray(new CellMeta[0]);
-                } else {
+                } else if (rowIdx > startRowIdx) {
                     results.add(parseRow(sheetRow));
                 }
             }
