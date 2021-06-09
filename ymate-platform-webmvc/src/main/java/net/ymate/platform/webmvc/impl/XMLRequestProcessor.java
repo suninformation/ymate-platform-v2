@@ -51,9 +51,9 @@ public class XMLRequestProcessor extends DefaultRequestProcessor {
         IRequestContext requestContext = WebContext.getRequestContext();
         XMLProtocol protocol = requestContext.getAttribute(XMLRequestProcessor.class.getName());
         if (protocol == null) {
-            try {
-                protocol = new XMLProtocol(WebContext.getRequest().getInputStream(), owner.getConfig().getDefaultCharsetEncoding());
-            } catch (IOException | ParserConfigurationException | SAXException e) {
+            try (InputStream inputStream = WebContext.getRequest().getInputStream()) {
+                protocol = new XMLProtocol(inputStream, owner.getConfig().getDefaultCharsetEncoding());
+            } catch (Exception e) {
                 protocol = new XMLProtocol();
                 //
                 if (owner.getOwner().isDevEnv() && LOG.isWarnEnabled()) {

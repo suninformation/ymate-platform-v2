@@ -31,7 +31,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import java.io.IOException;
+import java.io.InputStream;
 import java.lang.reflect.Array;
 
 /**
@@ -47,15 +47,15 @@ public class JSONRequestProcessor extends DefaultRequestProcessor {
         IRequestContext requestContext = WebContext.getRequestContext();
         IJsonObjectWrapper protocol = requestContext.getAttribute(JSONRequestProcessor.class.getName());
         if (protocol == null) {
-            try {
-                String jsonStr = StringUtils.defaultIfBlank(IOUtils.toString(WebContext.getRequest().getInputStream(), owner.getConfig().getDefaultCharsetEncoding()), "{}");
+            try (InputStream inputStream = WebContext.getRequest().getInputStream()) {
+                String jsonStr = StringUtils.defaultIfBlank(IOUtils.toString(inputStream, owner.getConfig().getDefaultCharsetEncoding()), "{}");
                 JsonWrapper jsonWrapper = JsonWrapper.fromJson(jsonStr);
                 if (jsonWrapper.isJsonObject()) {
                     protocol = jsonWrapper.getAsJsonObject();
                 } else if (owner.getOwner().isDevEnv() && LOG.isWarnEnabled()) {
                     LOG.warn(String.format("Invalid protocol content: %s", jsonStr));
                 }
-            } catch (IOException e) {
+            } catch (Exception e) {
                 if (owner.getOwner().isDevEnv() && LOG.isWarnEnabled()) {
                     LOG.warn("Invalid protocol.", RuntimeUtils.unwrapThrow(e));
                 }
