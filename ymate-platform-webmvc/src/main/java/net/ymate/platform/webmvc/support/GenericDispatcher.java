@@ -63,6 +63,7 @@ public final class GenericDispatcher {
             throw new ServletException(RuntimeUtils.unwrapThrow(e));
         } finally {
             doFireEvent(WebEvent.EVENT.REQUEST_COMPLETED, requestContext);
+            owner.getOwner().getI18n().reset();
             ValidateContext.removeLocalAttributes();
             WebContext.destroy();
         }

@@ -108,6 +108,13 @@ public final class I18N implements IDestroyable {
     }
 
     /**
+     * 重置当前本地线程语言
+     */
+    public void reset() {
+        currentLocale.remove();
+    }
+
+    /**
      * 修改当前线程语言设置，不触发事件
      *
      * @param locale 预设置语言

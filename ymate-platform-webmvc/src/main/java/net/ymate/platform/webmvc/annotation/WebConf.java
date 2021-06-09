@@ -128,7 +128,7 @@ public @interface WebConf {
     /**
      * @return Cookie是否默认使用HttpOnly
      */
-    boolean cookieUseHttpOnly() default true;
+    boolean cookieUseHttpOnly() default false;
 
     /**
      * @return 文件上传临时目录
