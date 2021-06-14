@@ -47,6 +47,8 @@ public class SerializerManager {
                 Serializer serializerAnn = serializerClass.getAnnotation(Serializer.class);
                 if (serializerAnn != null) {
                     registerSerializer(serializerAnn.value(), serializerClass);
+                } else {
+                    registerSerializer(serializerClass);
                 }
             }
         } catch (Exception e) {

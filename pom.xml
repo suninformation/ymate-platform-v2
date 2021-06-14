@@ -146,6 +146,18 @@
                     <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
                 </repository>
             </distributionManagement>
+            <!--
+            <distributionManagement>
+                <snapshotRepository>
+                    <id>nexus-ymatenet</id>
+                    <url>https://maven.ymate.net/repository/maven-snapshots/</url>
+                </snapshotRepository>
+                <repository>
+                    <id>nexus-ymatenet</id>
+                    <url>https://maven.ymate.net/repository/maven-releases/</url>
+                </repository>
+            </distributionManagement>
+            -->
         </profile>
     </profiles>
 
@@ -362,6 +374,12 @@
                 <groupId>org.jxls</groupId>
                 <artifactId>jxls</artifactId>
                 <version>2.9.0</version>
+                <scope>provided</scope>
+            </dependency>
+            <dependency>
+                <groupId>com.caucho</groupId>
+                <artifactId>hessian</artifactId>
+                <version>4.0.65</version>
                 <scope>provided</scope>
             </dependency>
         </dependencies>
