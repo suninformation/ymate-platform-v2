@@ -56,6 +56,8 @@ public class RequestMeta {
 
     private final boolean singleton;
 
+    private final boolean snakeCase;
+
     private final ResponseCache responseCache;
 
     private final ResponseView responseView;
@@ -79,6 +81,8 @@ public class RequestMeta {
         Controller controller = targetClass.getAnnotation(Controller.class);
         this.name = StringUtils.defaultIfBlank(controller == null ? null : controller.name(), targetClass.getName());
         this.singleton = controller == null || controller.singleton();
+        //
+        this.snakeCase = findAnnotation(EnableSnakeCaseParam.class) != null;
         //
         this.responseCache = findAnnotation(ResponseCache.class);
         this.responseView = findAnnotation(ResponseView.class);
@@ -130,7 +134,7 @@ public class RequestMeta {
             Map<String, ParameterMeta> parameterMetas = new HashMap<>();
             for (Field field : targetClass.getDeclaredFields()) {
                 if (!Modifier.isStatic(field.getModifiers()) && !parameterMetas.containsKey(field.getName())) {
-                    ParameterMeta parameterMeta = new ParameterMeta(field);
+                    ParameterMeta parameterMeta = new ParameterMeta(field, snakeCase);
                     if (parameterMeta.isParamField()) {
                         parameterMetas.put(field.getName(), parameterMeta);
                     }
@@ -144,11 +148,11 @@ public class RequestMeta {
         if (!this.methodParamNames.isEmpty()) {
             Parameter[] parameters = method.getParameters();
             int idx = 0;
-            for (String methodName : methodParamNames) {
+            for (String paramName : methodParamNames) {
                 if (parameters.length <= idx) {
                     break;
                 }
-                ParameterMeta parameterMeta = new ParameterMeta(parameters[idx].getType(), methodName, parameters[idx].getAnnotations());
+                ParameterMeta parameterMeta = new ParameterMeta(parameters[idx].getType(), paramName, parameters[idx].getAnnotations(), snakeCase);
                 if (parameterMeta.isParamField()) {
                     this.methodParameterMetas.add(parameterMeta);
                 }
@@ -270,6 +274,10 @@ public class RequestMeta {
 
     public boolean isSingleton() {
         return singleton;
+    }
+
+    public boolean isSnakeCase() {
+        return snakeCase;
     }
 
     public ResponseCache getResponseCache() {

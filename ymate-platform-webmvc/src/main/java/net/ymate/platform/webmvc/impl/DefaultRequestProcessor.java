@@ -168,9 +168,9 @@ public class DefaultRequestProcessor implements IRequestProcessor {
         ClassUtils.BeanWrapper<?> beanWrapper = ClassUtils.wrapperClass(paramType);
         if (beanWrapper != null) {
             for (String fieldName : beanWrapper.getFieldNames()) {
-                ParameterMeta parameterMeta = new ParameterMeta(beanWrapper.getField(fieldName));
+                ParameterMeta parameterMeta = new ParameterMeta(beanWrapper.getField(fieldName), requestMeta.isSnakeCase());
                 if (parameterMeta.isParamField()) {
-                    Object paramValue = doGetParamValue(owner, requestMeta, parameterMeta, parameterMeta.doBuildParamName(paramMeta.getPrefix(), parameterMeta.getParamName(), fieldName));
+                    Object paramValue = doGetParamValue(owner, requestMeta, parameterMeta, parameterMeta.doBuildParamName(paramMeta.getPrefix(), parameterMeta.getParamName(), fieldName, requestMeta.isSnakeCase()));
                     if (paramValue != null) {
                         beanWrapper.setValue(fieldName, paramValue);
                     }
@@ -194,11 +194,11 @@ public class DefaultRequestProcessor implements IRequestProcessor {
                     int maxLength = 0;
                     for (String fieldName : beanWrapper.getFieldNames()) {
                         // 当控制器参数为@ModelBind数组时，仅支持通过@RequestParam注解获取参数
-                        ParameterMeta parameterMeta = new ParameterMeta(beanWrapper.getField(fieldName));
+                        ParameterMeta parameterMeta = new ParameterMeta(beanWrapper.getField(fieldName), requestMeta.isSnakeCase());
                         if (parameterMeta.getParamAnnotation() instanceof RequestParam) {
                             parameterMetaMap.put(fieldName, parameterMeta);
                             // 尝试计算数组长度并创建数组对象实例
-                            String[] param = httpServletRequest.getParameterMap().get(parameterMeta.doBuildParamName(paramMeta.getPrefix(), parameterMeta.getParamName(), fieldName));
+                            String[] param = httpServletRequest.getParameterMap().get(parameterMeta.doBuildParamName(paramMeta.getPrefix(), parameterMeta.getParamName(), fieldName, requestMeta.isSnakeCase()));
                             if (param != null) {
                                 if (param.length > maxLength) {
                                     maxLength = param.length;
@@ -215,7 +215,7 @@ public class DefaultRequestProcessor implements IRequestProcessor {
                     ClassUtils.BeanWrapper<?> beanWrapper = ClassUtils.wrapperClass(arrayClassType);
                     if (beanWrapper != null) {
                         for (Map.Entry<String, ParameterMeta> parameterMetaEntry : parameterMetaMap.entrySet()) {
-                            String paramName = parameterMetaEntry.getValue().doBuildParamName(paramMeta.getPrefix(), parameterMetaEntry.getValue().getParamName(), parameterMetaEntry.getKey());
+                            String paramName = parameterMetaEntry.getValue().doBuildParamName(paramMeta.getPrefix(), parameterMetaEntry.getValue().getParamName(), parameterMetaEntry.getKey(), requestMeta.isSnakeCase());
                             Object paramValue = null;
                             if (parameterMetaEntry.getValue().getParamAnnotation() instanceof RequestParam) {
                                 RequestParam ann = (RequestParam) parameterMetaEntry.getValue().getParamAnnotation();

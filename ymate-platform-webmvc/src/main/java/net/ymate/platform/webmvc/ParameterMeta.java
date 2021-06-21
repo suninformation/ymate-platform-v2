@@ -15,6 +15,7 @@
  */
 package net.ymate.platform.webmvc;
 
+import net.ymate.platform.core.persistence.base.EntityMeta;
 import net.ymate.platform.webmvc.annotation.*;
 import org.apache.commons.lang3.StringUtils;
 
@@ -74,14 +75,14 @@ public class ParameterMeta {
 
     private boolean paramField;
 
-    public ParameterMeta(Class<?> paramType, String fieldName, Annotation[] fieldAnnotations) {
+    public ParameterMeta(Class<?> paramType, String fieldName, Annotation[] fieldAnnotations, boolean snakeCase) {
         this.fieldName = fieldName;
         this.paramType = paramType;
         this.array = paramType.isArray();
         this.uploadFile = paramType.equals(IUploadFileWrapper.class);
         //
         for (Annotation annotation : fieldAnnotations) {
-            this.paramField = parseAnnotation(annotation);
+            this.paramField = parseAnnotation(annotation, snakeCase);
             if (this.paramField) {
                 break;
             }
@@ -94,32 +95,32 @@ public class ParameterMeta {
         }
     }
 
-    public ParameterMeta(Field paramField) {
-        this(paramField.getType(), paramField.getName(), paramField.getAnnotations());
+    public ParameterMeta(Field paramField, boolean snakeCase) {
+        this(paramField.getType(), paramField.getName(), paramField.getAnnotations(), snakeCase);
     }
 
-    private boolean parseAnnotation(Annotation annotation) {
+    private boolean parseAnnotation(Annotation annotation, boolean snakeCase) {
         boolean flag = false;
         if (annotation != null) {
             if (annotation instanceof CookieVariable) {
                 CookieVariable ann = (CookieVariable) annotation;
                 this.paramAnnotation = ann;
-                this.paramName = doBuildParamName(StringUtils.defaultIfBlank(ann.prefix(), prefix), ann.value(), fieldName);
+                this.paramName = doBuildParamName(StringUtils.defaultIfBlank(ann.prefix(), prefix), ann.value(), fieldName, false);
                 flag = true;
             } else if (annotation instanceof PathVariable) {
                 PathVariable ann = (PathVariable) annotation;
                 this.paramAnnotation = ann;
-                this.paramName = doBuildParamName(StringUtils.EMPTY, ann.value(), fieldName);
+                this.paramName = doBuildParamName(StringUtils.EMPTY, ann.value(), fieldName, false);
                 flag = true;
             } else if (annotation instanceof RequestHeader) {
                 RequestHeader ann = (RequestHeader) annotation;
                 this.paramAnnotation = ann;
-                this.paramName = doBuildParamName(StringUtils.defaultIfBlank(ann.prefix(), prefix), ann.value(), fieldName);
+                this.paramName = doBuildParamName(StringUtils.defaultIfBlank(ann.prefix(), prefix), ann.value(), fieldName, false);
                 flag = true;
             } else if (annotation instanceof RequestParam) {
                 RequestParam ann = (RequestParam) annotation;
                 this.paramAnnotation = ann;
-                this.paramName = doBuildParamName(StringUtils.defaultIfBlank(ann.prefix(), prefix), ann.value(), fieldName);
+                this.paramName = doBuildParamName(StringUtils.defaultIfBlank(ann.prefix(), prefix), ann.value(), fieldName, snakeCase);
                 flag = true;
             } else if (annotation instanceof ModelBind) {
                 ModelBind ann = (ModelBind) annotation;
@@ -136,10 +137,14 @@ public class ParameterMeta {
      * @param prefix      前缀
      * @param paramName   参数名称
      * @param defaultName 默认名称
+     * @param snakeCase   是否使用蛇形命名
      * @return 根据前缀生成有效的参数名称
      */
-    public String doBuildParamName(String prefix, String paramName, String defaultName) {
+    public String doBuildParamName(String prefix, String paramName, String defaultName, boolean snakeCase) {
         String name = StringUtils.defaultIfBlank(paramName, defaultName);
+        if (snakeCase) {
+            name = EntityMeta.fieldNameToPropertyName(name, 0);
+        }
         if (StringUtils.isNotBlank(prefix)) {
             name = prefix.trim().concat(".").concat(name);
         }
