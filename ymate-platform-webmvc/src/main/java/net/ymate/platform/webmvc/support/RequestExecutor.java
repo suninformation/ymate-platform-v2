@@ -119,7 +119,17 @@ public final class RequestExecutor {
             } else if (resultObj instanceof IWebResult) {
                 resultView = WebResult.formatView((IWebResult<?>) resultObj, Type.Const.FORMAT_JSON);
             } else if (resultObj instanceof IWebResultBuilder) {
-                resultView = WebResult.formatView(((IWebResultBuilder) resultObj).build(), Type.Const.FORMAT_JSON);
+                IWebResult<?> result = ((IWebResultBuilder) resultObj).build();
+                if (responseBody.keepNull()) {
+                    result.keepNullValue();
+                }
+                if (responseBody.snakeCase()) {
+                    result.snakeCase();
+                }
+                if (responseBody.contentType()) {
+                    result.withContentType();
+                }
+                resultView = WebResult.formatView(result, Type.Const.FORMAT_JSON);
             } else {
                 IResponseBodyProcessor responseBodyProcessor;
                 if (IResponseBodyProcessor.class.equals(responseBody.value())) {
