@@ -23,6 +23,7 @@ import net.ymate.platform.webmvc.IUploadFileWrapper;
 import net.ymate.platform.webmvc.IWebMvc;
 import net.ymate.platform.webmvc.ParameterMeta;
 import net.ymate.platform.webmvc.context.WebContext;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -52,7 +53,16 @@ public class XMLRequestProcessor extends DefaultRequestProcessor {
         XMLProtocol protocol = requestContext.getAttribute(XMLRequestProcessor.class.getName());
         if (protocol == null) {
             try (InputStream inputStream = WebContext.getRequest().getInputStream()) {
-                protocol = new XMLProtocol(inputStream, owner.getConfig().getDefaultCharsetEncoding());
+                String charsetEncoding = owner.getConfig().getDefaultCharsetEncoding();
+                if (owner.getOwner().isDevEnv() && LOG.isDebugEnabled() && owner.getOwner().getParamConfigReader().getBoolean(REQUEST_PROTOCOL_LOG_ENABLED_KEY)) {
+                    String content = IOUtils.toString(inputStream, charsetEncoding);
+                    try (InputStream contentStream = IOUtils.toInputStream(content, charsetEncoding)) {
+                        protocol = new XMLProtocol(contentStream, charsetEncoding);
+                        LOG.debug(String.format("Protocol content: %s", content));
+                    }
+                } else {
+                    protocol = new XMLProtocol(inputStream, charsetEncoding);
+                }
             } catch (Exception e) {
                 protocol = new XMLProtocol();
                 //

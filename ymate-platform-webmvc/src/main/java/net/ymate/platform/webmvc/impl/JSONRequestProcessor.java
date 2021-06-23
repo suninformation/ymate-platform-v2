@@ -52,6 +52,9 @@ public class JSONRequestProcessor extends DefaultRequestProcessor {
                 JsonWrapper jsonWrapper = JsonWrapper.fromJson(jsonStr);
                 if (jsonWrapper.isJsonObject()) {
                     protocol = jsonWrapper.getAsJsonObject();
+                    if (owner.getOwner().isDevEnv() && LOG.isDebugEnabled() && owner.getOwner().getParamConfigReader().getBoolean(REQUEST_PROTOCOL_LOG_ENABLED_KEY)) {
+                        LOG.debug(String.format("Protocol content: %s", protocol));
+                    }
                 } else if (owner.getOwner().isDevEnv() && LOG.isWarnEnabled()) {
                     LOG.warn(String.format("Invalid protocol content: %s", jsonStr));
                 }

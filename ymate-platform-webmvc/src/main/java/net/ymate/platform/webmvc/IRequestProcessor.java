@@ -28,6 +28,11 @@ import java.util.Map;
 public interface IRequestProcessor {
 
     /**
+     * 自定义参数键名，用于设置是否开启日志输出JSON或XML等请求报文内容，默认值：false
+     */
+    String REQUEST_PROTOCOL_LOG_ENABLED_KEY = "webmvc.request_protocol_log_enabled";
+
+    /**
      * 分析请求协议内容
      *
      * @param owner       Owner
