@@ -38,6 +38,8 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public interface IKeyGenerator {
 
+    String UUID = "uuid";
+
     /**
      * 生成主键值
      *
@@ -59,7 +61,7 @@ public interface IKeyGenerator {
 
         static {
             try {
-                registerKeyGenerator("uuid", DefaultKeyGenerator.class);
+                registerKeyGenerator(UUID, DefaultKeyGenerator.class);
                 //
                 ClassUtils.ExtensionLoader<IKeyGenerator> extensionLoader = ClassUtils.getExtensionLoader(IKeyGenerator.class, true);
                 for (Class<IKeyGenerator> keyGeneratorClass : extensionLoader.getExtensionClasses()) {
