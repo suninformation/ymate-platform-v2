@@ -49,6 +49,8 @@ public final class EntityWrapper<Entity extends IEntity> {
 
     private String dataSourceName;
 
+    private boolean matchAny;
+
     public static <Entity extends IEntity> EntityWrapper<Entity> bind(Entity entity) {
         return new EntityWrapper<>(entity);
     }
@@ -215,7 +217,7 @@ public final class EntityWrapper<Entity extends IEntity> {
                     return entity;
                 }
             } else {
-                Cond cond = BaseEntity.buildCond(doGetSafeOwner(), entity);
+                Cond cond = BaseEntity.buildCond(doGetSafeOwner(), entity, matchAny);
                 if (StringUtils.isNotBlank(cond.toString())) {
                     if (session.executeForUpdate(Delete.create(doGetSafeOwner())
                             .shardingable(this.getShardingable())
@@ -230,11 +232,11 @@ public final class EntityWrapper<Entity extends IEntity> {
     }
 
     public <T extends Serializable> IResultSet<T> find(Class<T> beanClass) throws Exception {
-        return find(beanClass, Where.create(BaseEntity.buildCond(doGetSafeOwner(), entity)), null, null, null);
+        return find(beanClass, Where.create(BaseEntity.buildCond(doGetSafeOwner(), entity, matchAny)), null, null, null);
     }
 
     public IResultSet<Entity> find() throws Exception {
-        return find(Where.create(BaseEntity.buildCond(doGetSafeOwner(), entity)), null, null, null);
+        return find(Where.create(BaseEntity.buildCond(doGetSafeOwner(), entity, matchAny)), null, null, null);
     }
 
     public <T extends Serializable> IResultSet<T> find(Class<T> beanClass, OrderBy orderBy) throws Exception {
@@ -254,11 +256,11 @@ public final class EntityWrapper<Entity extends IEntity> {
     }
 
     public <T extends Serializable> IResultSet<T> find(Class<T> beanClass, IDBLocker dbLocker) throws Exception {
-        return find(beanClass, Where.create(BaseEntity.buildCond(doGetSafeOwner(), entity)), null, null, dbLocker);
+        return find(beanClass, Where.create(BaseEntity.buildCond(doGetSafeOwner(), entity, matchAny)), null, null, dbLocker);
     }
 
     public IResultSet<Entity> find(IDBLocker dbLocker) throws Exception {
-        return find(Where.create(BaseEntity.buildCond(doGetSafeOwner(), entity)), null, null, dbLocker);
+        return find(Where.create(BaseEntity.buildCond(doGetSafeOwner(), entity, matchAny)), null, null, dbLocker);
     }
 
     public <T extends Serializable> IResultSet<T> find(Class<T> beanClass, OrderBy orderBy, IDBLocker dbLocker) throws Exception {
@@ -278,11 +280,11 @@ public final class EntityWrapper<Entity extends IEntity> {
     }
 
     public <T extends Serializable> IResultSet<T> find(Class<T> beanClass, Page page) throws Exception {
-        return find(beanClass, Where.create(BaseEntity.buildCond(doGetSafeOwner(), entity)), null, page, null);
+        return find(beanClass, Where.create(BaseEntity.buildCond(doGetSafeOwner(), entity, matchAny)), null, page, null);
     }
 
     public IResultSet<Entity> find(Page page) throws Exception {
-        return find(Where.create(BaseEntity.buildCond(doGetSafeOwner(), entity)), null, page, null);
+        return find(Where.create(BaseEntity.buildCond(doGetSafeOwner(), entity, matchAny)), null, page, null);
     }
 
     public <T extends Serializable> IResultSet<T> find(Class<T> beanClass, OrderBy orderBy, Page page) throws Exception {
@@ -302,11 +304,11 @@ public final class EntityWrapper<Entity extends IEntity> {
     }
 
     public <T extends Serializable> IResultSet<T> find(Class<T> beanClass, Page page, IDBLocker dbLocker) throws Exception {
-        return find(beanClass, Where.create(BaseEntity.buildCond(doGetSafeOwner(), entity)), null, page, dbLocker);
+        return find(beanClass, Where.create(BaseEntity.buildCond(doGetSafeOwner(), entity, matchAny)), null, page, dbLocker);
     }
 
     public IResultSet<Entity> find(Page page, IDBLocker dbLocker) throws Exception {
-        return find(Where.create(BaseEntity.buildCond(doGetSafeOwner(), entity)), null, page, dbLocker);
+        return find(Where.create(BaseEntity.buildCond(doGetSafeOwner(), entity, matchAny)), null, page, dbLocker);
     }
 
     public <T extends Serializable> IResultSet<T> find(Class<T> beanClass, OrderBy orderBy, Page page, IDBLocker dbLocker) throws Exception {
@@ -326,11 +328,11 @@ public final class EntityWrapper<Entity extends IEntity> {
     }
 
     public <T extends Serializable> IResultSet<T> find(Class<T> beanClass, Fields fields) throws Exception {
-        return find(beanClass, Where.create(BaseEntity.buildCond(doGetSafeOwner(), entity)), fields, null, null);
+        return find(beanClass, Where.create(BaseEntity.buildCond(doGetSafeOwner(), entity, matchAny)), fields, null, null);
     }
 
     public IResultSet<Entity> find(Fields fields) throws Exception {
-        return find(Where.create(BaseEntity.buildCond(doGetSafeOwner(), entity)), fields, null, null);
+        return find(Where.create(BaseEntity.buildCond(doGetSafeOwner(), entity, matchAny)), fields, null, null);
     }
 
     public <T extends Serializable> IResultSet<T> find(Class<T> beanClass, Fields fields, OrderBy orderBy) throws Exception {
@@ -350,11 +352,11 @@ public final class EntityWrapper<Entity extends IEntity> {
     }
 
     public <T extends Serializable> IResultSet<T> find(Class<T> beanClass, Fields fields, IDBLocker dbLocker) throws Exception {
-        return find(beanClass, Where.create(BaseEntity.buildCond(doGetSafeOwner(), entity)), fields, null, dbLocker);
+        return find(beanClass, Where.create(BaseEntity.buildCond(doGetSafeOwner(), entity, matchAny)), fields, null, dbLocker);
     }
 
     public IResultSet<Entity> find(Fields fields, IDBLocker dbLocker) throws Exception {
-        return find(Where.create(BaseEntity.buildCond(doGetSafeOwner(), entity)), fields, null, dbLocker);
+        return find(Where.create(BaseEntity.buildCond(doGetSafeOwner(), entity, matchAny)), fields, null, dbLocker);
     }
 
     public <T extends Serializable> IResultSet<T> find(Class<T> beanClass, Fields fields, OrderBy orderBy, IDBLocker dbLocker) throws Exception {
@@ -374,11 +376,11 @@ public final class EntityWrapper<Entity extends IEntity> {
     }
 
     public <T extends Serializable> IResultSet<T> find(Class<T> beanClass, Fields fields, Page page) throws Exception {
-        return find(beanClass, Where.create(BaseEntity.buildCond(doGetSafeOwner(), entity)), fields, page, null);
+        return find(beanClass, Where.create(BaseEntity.buildCond(doGetSafeOwner(), entity, matchAny)), fields, page, null);
     }
 
     public IResultSet<Entity> find(Fields fields, Page page) throws Exception {
-        return find(Where.create(BaseEntity.buildCond(doGetSafeOwner(), entity)), fields, page, null);
+        return find(Where.create(BaseEntity.buildCond(doGetSafeOwner(), entity, matchAny)), fields, page, null);
     }
 
     public <T extends Serializable> IResultSet<T> find(Class<T> beanClass, Fields fields, OrderBy orderBy, Page page) throws Exception {
@@ -398,11 +400,11 @@ public final class EntityWrapper<Entity extends IEntity> {
     }
 
     public <T extends Serializable> IResultSet<T> find(Class<T> beanClass, Fields fields, Page page, IDBLocker dbLocker) throws Exception {
-        return find(beanClass, Where.create(BaseEntity.buildCond(doGetSafeOwner(), entity)), fields, page, dbLocker);
+        return find(beanClass, Where.create(BaseEntity.buildCond(doGetSafeOwner(), entity, matchAny)), fields, page, dbLocker);
     }
 
     public IResultSet<Entity> find(Fields fields, Page page, IDBLocker dbLocker) throws Exception {
-        return find(Where.create(BaseEntity.buildCond(doGetSafeOwner(), entity)), fields, page, dbLocker);
+        return find(Where.create(BaseEntity.buildCond(doGetSafeOwner(), entity, matchAny)), fields, page, dbLocker);
     }
 
     public <T extends Serializable> IResultSet<T> find(Class<T> beanClass, Fields fields, OrderBy orderBy, Page page, IDBLocker dbLocker) throws Exception {
@@ -414,7 +416,7 @@ public final class EntityWrapper<Entity extends IEntity> {
     }
 
     public <T extends Serializable> IResultSet<T> find(Class<T> beanClass, Fields fields, OrderBy orderBy, GroupBy groupBy, Page page, IDBLocker dbLocker) throws Exception {
-        Where where = Where.create(BaseEntity.buildCond(doGetSafeOwner(), entity));
+        Where where = Where.create(BaseEntity.buildCond(doGetSafeOwner(), entity, matchAny));
         if (orderBy != null) {
             where.orderBy().orderBy(orderBy);
         }
@@ -422,7 +424,7 @@ public final class EntityWrapper<Entity extends IEntity> {
     }
 
     public IResultSet<Entity> find(Fields fields, OrderBy orderBy, GroupBy groupBy, Page page, IDBLocker dbLocker) throws Exception {
-        Where where = Where.create(BaseEntity.buildCond(doGetSafeOwner(), entity));
+        Where where = Where.create(BaseEntity.buildCond(doGetSafeOwner(), entity, matchAny));
         if (orderBy != null) {
             where.orderBy().orderBy(orderBy);
         }
@@ -556,11 +558,11 @@ public final class EntityWrapper<Entity extends IEntity> {
     }
 
     public <T extends Serializable> T findFirst(Class<T> beanClass) throws Exception {
-        return findFirst(beanClass, Where.create(BaseEntity.buildCond(doGetSafeOwner(), entity)), null, null);
+        return findFirst(beanClass, Where.create(BaseEntity.buildCond(doGetSafeOwner(), entity, matchAny)), null, null);
     }
 
     public Entity findFirst() throws Exception {
-        return findFirst(Where.create(BaseEntity.buildCond(doGetSafeOwner(), entity)), null, null);
+        return findFirst(Where.create(BaseEntity.buildCond(doGetSafeOwner(), entity, matchAny)), null, null);
     }
 
     public <T extends Serializable> T findFirst(Class<T> beanClass, OrderBy orderBy) throws Exception {
@@ -580,11 +582,11 @@ public final class EntityWrapper<Entity extends IEntity> {
     }
 
     public <T extends Serializable> T findFirst(Class<T> beanClass, IDBLocker dbLocker) throws Exception {
-        return findFirst(beanClass, Where.create(BaseEntity.buildCond(doGetSafeOwner(), entity)), null, dbLocker);
+        return findFirst(beanClass, Where.create(BaseEntity.buildCond(doGetSafeOwner(), entity, matchAny)), null, dbLocker);
     }
 
     public Entity findFirst(IDBLocker dbLocker) throws Exception {
-        return findFirst(Where.create(BaseEntity.buildCond(doGetSafeOwner(), entity)), null, dbLocker);
+        return findFirst(Where.create(BaseEntity.buildCond(doGetSafeOwner(), entity, matchAny)), null, dbLocker);
     }
 
     public <T extends Serializable> T findFirst(Class<T> beanClass, OrderBy orderBy, IDBLocker dbLocker) throws Exception {
@@ -604,11 +606,11 @@ public final class EntityWrapper<Entity extends IEntity> {
     }
 
     public <T extends Serializable> T findFirst(Class<T> beanClass, Fields fields) throws Exception {
-        return findFirst(beanClass, Where.create(BaseEntity.buildCond(doGetSafeOwner(), entity)), fields, null);
+        return findFirst(beanClass, Where.create(BaseEntity.buildCond(doGetSafeOwner(), entity, matchAny)), fields, null);
     }
 
     public Entity findFirst(Fields fields) throws Exception {
-        return findFirst(Where.create(BaseEntity.buildCond(doGetSafeOwner(), entity)), fields, null);
+        return findFirst(Where.create(BaseEntity.buildCond(doGetSafeOwner(), entity, matchAny)), fields, null);
     }
 
     public <T extends Serializable> T findFirst(Class<T> beanClass, Fields fields, OrderBy orderBy) throws Exception {
@@ -628,11 +630,11 @@ public final class EntityWrapper<Entity extends IEntity> {
     }
 
     public <T extends Serializable> T findFirst(Class<T> beanClass, Fields fields, IDBLocker dbLocker) throws Exception {
-        return findFirst(beanClass, Where.create(BaseEntity.buildCond(doGetSafeOwner(), entity)), fields, dbLocker);
+        return findFirst(beanClass, Where.create(BaseEntity.buildCond(doGetSafeOwner(), entity, matchAny)), fields, dbLocker);
     }
 
     public Entity findFirst(Fields fields, IDBLocker dbLocker) throws Exception {
-        return findFirst(Where.create(BaseEntity.buildCond(doGetSafeOwner(), entity)), fields, dbLocker);
+        return findFirst(Where.create(BaseEntity.buildCond(doGetSafeOwner(), entity, matchAny)), fields, dbLocker);
     }
 
     public <T extends Serializable> T findFirst(Class<T> beanClass, Fields fields, OrderBy orderBy, IDBLocker dbLocker) throws Exception {
@@ -644,7 +646,7 @@ public final class EntityWrapper<Entity extends IEntity> {
     }
 
     public <T extends Serializable> T findFirst(Class<T> beanClass, Fields fields, OrderBy orderBy, GroupBy groupBy, IDBLocker dbLocker) throws Exception {
-        Where where = Where.create(BaseEntity.buildCond(doGetSafeOwner(), entity));
+        Where where = Where.create(BaseEntity.buildCond(doGetSafeOwner(), entity, matchAny));
         if (orderBy != null) {
             where.orderBy().orderBy(orderBy);
         }
@@ -652,7 +654,7 @@ public final class EntityWrapper<Entity extends IEntity> {
     }
 
     public Entity findFirst(Fields fields, OrderBy orderBy, GroupBy groupBy, IDBLocker dbLocker) throws Exception {
-        Where where = Where.create(BaseEntity.buildCond(doGetSafeOwner(), entity));
+        Where where = Where.create(BaseEntity.buildCond(doGetSafeOwner(), entity, matchAny));
         if (orderBy != null) {
             where.orderBy().orderBy(orderBy);
         }
@@ -692,13 +694,27 @@ public final class EntityWrapper<Entity extends IEntity> {
     }
 
     public long count() throws Exception {
-        return count(Where.create(BaseEntity.buildCond(doGetSafeOwner(), entity)));
+        return count(Where.create(BaseEntity.buildCond(doGetSafeOwner(), entity, matchAny)));
     }
 
     public long count(Where where) throws Exception {
         try (IDatabaseSession session = new DefaultDatabaseSession(doGetSafeOwner(), doGetSafeConnectionHolder())) {
             return session.count(this.getEntityClass(), where, this.getShardingable());
         }
+    }
+
+    public boolean isMatchAny() {
+        return matchAny;
+    }
+
+    public EntityWrapper<Entity> matchAny() {
+        this.matchAny = true;
+        return this;
+    }
+
+    public EntityWrapper<Entity> matchAny(boolean matchAny) {
+        this.matchAny = matchAny;
+        return this;
     }
 
     public EntityStateWrapper<Entity> stateWrapper() throws Exception {
