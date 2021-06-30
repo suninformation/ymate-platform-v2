@@ -34,7 +34,9 @@ public class ExcelFileAnalysisHelper implements Closeable {
     private final String[] sheetNames;
 
     public static ExcelFileAnalysisHelper bind(File file) throws IOException {
-        return new ExcelFileAnalysisHelper(new FileInputStream(file));
+        try (InputStream inputStream = new FileInputStream(file)) {
+            return new ExcelFileAnalysisHelper(inputStream);
+        }
     }
 
     public static ExcelFileAnalysisHelper bind(InputStream inputStream) throws IOException {

@@ -25,6 +25,7 @@ import org.apache.commons.lang3.StringUtils;
 import javax.servlet.http.HttpServletResponse;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.InputStream;
 import java.io.OutputStream;
 
 /**
@@ -60,7 +61,9 @@ public class HtmlView extends AbstractView {
 
     public static HtmlView bind(File htmlFile) throws Exception {
         if (htmlFile != null && htmlFile.canRead() && htmlFile.exists() && htmlFile.isFile()) {
-            return new HtmlView(IOUtils.toString(new FileInputStream(htmlFile), WebContext.getResponse().getCharacterEncoding()));
+            try (InputStream inputStream = new FileInputStream(htmlFile)) {
+                return new HtmlView(IOUtils.toString(inputStream, WebContext.getResponse().getCharacterEncoding()));
+            }
         }
         return null;
     }

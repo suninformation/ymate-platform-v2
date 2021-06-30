@@ -91,8 +91,8 @@ public class View {
         return HtmlView.bind(owner, htmlFile);
     }
 
-    public static HtmlView htmlView(String htmlFile) throws Exception {
-        return HtmlView.bind(htmlFile);
+    public static HtmlView htmlView(String content) throws Exception {
+        return HtmlView.bind(content);
     }
 
     public static HtmlView htmlView(File htmlFile) throws Exception {

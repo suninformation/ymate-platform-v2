@@ -15,6 +15,7 @@
  */
 package net.ymate.platform.commons.util;
 
+import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.NullArgumentException;
 import org.apache.commons.lang3.ArrayUtils;
@@ -92,6 +93,19 @@ public class FileUtils {
             suffix = fileName.substring(pos + 1);
         }
         return StringUtils.trimToEmpty(suffix);
+    }
+
+    /**
+     * 获取文件MD5签名值
+     *
+     * @param targetFile 目标文件对象
+     * @return 返回MD5值
+     * @throws IOException 可能产生的异常
+     */
+    public static String getHash(File targetFile) throws IOException {
+        try (InputStream inputStream = new FileInputStream(targetFile)) {
+            return DigestUtils.md5Hex(inputStream);
+        }
     }
 
     /**

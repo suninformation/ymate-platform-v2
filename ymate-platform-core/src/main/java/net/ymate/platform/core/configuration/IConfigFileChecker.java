@@ -15,12 +15,11 @@
  */
 package net.ymate.platform.core.configuration;
 
+import net.ymate.platform.commons.util.FileUtils;
 import net.ymate.platform.core.beans.annotation.Ignored;
-import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 
 /**
@@ -68,7 +67,7 @@ public interface IConfigFileChecker extends AutoCloseable {
         private long lastModifyTime;
 
         public Status(IConfiguration configuration, File targetFile) throws IOException {
-            this(configuration, targetFile.getPath(), DigestUtils.md5Hex(new FileInputStream(targetFile)), targetFile.lastModified());
+            this(configuration, targetFile.getPath(), FileUtils.getHash(targetFile), targetFile.lastModified());
         }
 
         public Status(IConfiguration configuration, String filePath, String fileHash, long lastModifyTime) {
@@ -98,7 +97,7 @@ public interface IConfigFileChecker extends AutoCloseable {
             File targetFile = new File(filePath);
             if (targetFile.lastModified() != lastModifyTime) {
                 this.lastModifyTime = targetFile.lastModified();
-                String hash = DigestUtils.md5Hex(new FileInputStream(targetFile));
+                String hash = FileUtils.getHash(targetFile);
                 if (!StringUtils.equals(fileHash, hash)) {
                     configuration.reload();
                     return true;

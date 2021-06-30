@@ -110,11 +110,15 @@ public class BinaryView extends AbstractView {
             if (rangePairObj != null) {
                 doSetRangeHeader(httpServletResponse, rangePairObj);
                 // 开始续传文件流
-                IOUtils.copyLarge(new FileInputStream((File) data), httpServletResponse.getOutputStream(), rangePairObj.getKey(), rangePairObj.getValue());
+                try (InputStream inputStream = new FileInputStream((File) data)) {
+                    IOUtils.copyLarge(inputStream, httpServletResponse.getOutputStream(), rangePairObj.getKey(), rangePairObj.getValue());
+                }
             } else {
                 // 正常下载
                 httpServletResponse.setContentLength(BlurObject.bind(length).toIntValue());
-                IOUtils.copyLarge(new FileInputStream((File) data), httpServletResponse.getOutputStream());
+                try (InputStream inputStream = new FileInputStream((File) data)) {
+                    IOUtils.copyLarge(inputStream, httpServletResponse.getOutputStream());
+                }
             }
         }
         // 字节数组

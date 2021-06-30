@@ -24,6 +24,7 @@ import org.apache.commons.lang3.StringUtils;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.lang.annotation.Annotation;
 import java.net.JarURLConnection;
 import java.net.URL;
@@ -174,16 +175,18 @@ public class DefaultBeanLoader extends AbstractBeanLoader {
             }
             File zipFile = new File(zipPath);
             if (checkNonExcludedFile(zipFile.getName())) {
-                zipInputStream = new ZipInputStream(new FileInputStream(zipFile));
-                ZipEntry zipEntry;
-                while (null != (zipEntry = zipInputStream.getNextEntry())) {
-                    if (!zipEntry.isDirectory()) {
-                        if (zipEntry.getName().endsWith(FileUtils.FILE_SUFFIX_CLASS) && zipEntry.getName().indexOf('$') < 0) {
-                            String className = StringUtils.substringBefore(zipEntry.getName().replace("/", FileUtils.POINT_CHAR), FileUtils.FILE_SUFFIX_CLASS);
-                            addClass(returnValue, loadClass(className), filter);
+                try (InputStream inputStream = new FileInputStream(zipFile)) {
+                    zipInputStream = new ZipInputStream(inputStream);
+                    ZipEntry zipEntry;
+                    while (null != (zipEntry = zipInputStream.getNextEntry())) {
+                        if (!zipEntry.isDirectory()) {
+                            if (zipEntry.getName().endsWith(FileUtils.FILE_SUFFIX_CLASS) && zipEntry.getName().indexOf('$') < 0) {
+                                String className = StringUtils.substringBefore(zipEntry.getName().replace("/", FileUtils.POINT_CHAR), FileUtils.FILE_SUFFIX_CLASS);
+                                addClass(returnValue, loadClass(className), filter);
+                            }
                         }
+                        zipInputStream.closeEntry();
                     }
-                    zipInputStream.closeEntry();
                 }
             }
         } finally {
