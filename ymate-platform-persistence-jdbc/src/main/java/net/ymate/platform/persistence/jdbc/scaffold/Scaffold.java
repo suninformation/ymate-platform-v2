@@ -283,7 +283,7 @@ public final class Scaffold {
     public EntityInfo buildEntityInfo(TableInfo tableInfo) {
         PairObject<String, String> names = doOptimizationNames(tableInfo.getName());
         //
-        EntityInfo.Builder entityInfoBuilder = EntityInfo.builder().name(names.getKey()).tableName(names.getValue());
+        EntityInfo.Builder entityInfoBuilder = EntityInfo.builder().name(names.getKey()).tableName(names.getValue()).tableComment(tableInfo.getComment());
         //
         if (tableInfo.getPrimaryKeys().size() > 1) {
             String primaryKeyType = String.format("%sPK", names.getKey());

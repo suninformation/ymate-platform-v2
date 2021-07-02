@@ -40,6 +40,11 @@ public class EntityInfo implements Serializable {
     private String tableName;
 
     /**
+     * 数据表备注
+     */
+    private String tableComment;
+
+    /**
      * 主键类型
      */
     private String primaryKeyType;
@@ -77,6 +82,10 @@ public class EntityInfo implements Serializable {
         return tableName;
     }
 
+    public String getTableComment() {
+        return tableComment;
+    }
+
     public String getPrimaryKeyType() {
         return primaryKeyType;
     }
@@ -103,7 +112,7 @@ public class EntityInfo implements Serializable {
 
     @Override
     public String toString() {
-        return String.format("EntityInfo{name='%s', tableName='%s', primaryKeyType='%s', primaryKeyName='%s', primaryKeys=%s, fields=%s, nonNullableFields=%s, constFields=%s}", name, tableName, primaryKeyType, primaryKeyName, primaryKeys, fields, nonNullableFields, constFields);
+        return String.format("EntityInfo{name='%s', tableName='%s', tableComment='%s', primaryKeyType='%s', primaryKeyName='%s', primaryKeys=%s, fields=%s, nonNullableFields=%s, constFields=%s}", name, tableName, tableComment, primaryKeyType, primaryKeyName, primaryKeys, fields, nonNullableFields, constFields);
     }
 
     public static class Builder {
@@ -117,6 +126,11 @@ public class EntityInfo implements Serializable {
 
         public Builder tableName(String tableName) {
             target.tableName = tableName;
+            return this;
+        }
+
+        public Builder tableComment(String tableComment) {
+            target.tableComment = tableComment;
             return this;
         }
 

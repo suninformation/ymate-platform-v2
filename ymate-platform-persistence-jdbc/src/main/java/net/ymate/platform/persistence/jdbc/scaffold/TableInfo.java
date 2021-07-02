@@ -79,7 +79,16 @@ public final class TableInfo implements Serializable {
                         }
                     }
                 }
-                return new TableInfo(scaffold.getDbName(), scaffold.getDbUserName(), tableName, columns);
+                String comment = null;
+                if (Type.DATABASE.MYSQL.equalsIgnoreCase(connectionHolder.getDialect().getName()) && StringUtils.isNotBlank(scaffold.getDbName())) {
+                    try (ResultSet commentResultSet = statement.executeQuery(String.format("SELECT table_comment FROM information_schema.tables WHERE table_schema = '%s' and table_name = '%s'", scaffold.getDbName(), tableName))) {
+                        if (commentResultSet.next()) {
+                            comment = commentResultSet.getString("table_comment");
+                        }
+                    } catch (Exception ignored) {
+                    }
+                }
+                return new TableInfo(scaffold.getDbName(), scaffold.getDbUserName(), tableName, comment, columns);
             }
         }
     }
@@ -100,6 +109,11 @@ public final class TableInfo implements Serializable {
     private final String name;
 
     /**
+     * 数据库表备注
+     */
+    private final String comment;
+
+    /**
      * 主键字段名称
      */
     private final List<String> primaryKeys = new ArrayList<>();
@@ -109,10 +123,11 @@ public final class TableInfo implements Serializable {
      */
     private final Map<String, ColumnInfo> columns;
 
-    public TableInfo(String catalog, String schema, String name, Map<String, ColumnInfo> columns) {
+    public TableInfo(String catalog, String schema, String name, String comment, Map<String, ColumnInfo> columns) {
         this.catalog = catalog;
         this.schema = schema;
         this.name = name;
+        this.comment = comment;
         this.columns = columns;
         //
         if (columns != null) {
@@ -130,6 +145,10 @@ public final class TableInfo implements Serializable {
 
     public String getName() {
         return name;
+    }
+
+    public String getComment() {
+        return comment;
     }
 
     public List<String> getPrimaryKeys() {
