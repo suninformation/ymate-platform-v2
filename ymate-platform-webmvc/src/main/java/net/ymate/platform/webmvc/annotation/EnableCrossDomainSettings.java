@@ -16,6 +16,7 @@
 package net.ymate.platform.webmvc.annotation;
 
 import net.ymate.platform.webmvc.base.Type;
+import net.ymate.platform.webmvc.validate.IHostNameChecker;
 
 import java.lang.annotation.*;
 
@@ -47,6 +48,11 @@ public @interface EnableCrossDomainSettings {
      * @return 允许跨域的原始主机
      */
     String[] allowedOrigins() default {};
+
+    /**
+     * @return 允许跨域的主机检测器
+     */
+    Class<? extends IHostNameChecker> allowedOriginsChecker() default IHostNameChecker.class;
 
     /**
      * @return 允许跨域请求的方法

@@ -17,8 +17,10 @@ package net.ymate.platform.webmvc.validate;
 
 import net.ymate.platform.core.support.IContext;
 import net.ymate.platform.webmvc.IWebMvcConfig;
+import net.ymate.platform.webmvc.base.Type;
 import org.apache.commons.lang3.StringUtils;
 
+import java.net.MalformedURLException;
 import java.net.URL;
 
 /**
@@ -30,7 +32,17 @@ public interface IHostNameChecker {
     IHostNameChecker DEFAULT = (context, url) -> {
         String hosts = context.getOwner().getParam(IWebMvcConfig.PARAMS_ALLOWED_ACCESS_HOSTS);
         if (StringUtils.isNotBlank(hosts)) {
-            return StringUtils.containsIgnoreCase(hosts, new URL(url).getHost());
+            String host;
+            try {
+                URL hostUrl = new URL(url);
+                host = hostUrl.getHost();
+                if (hostUrl.getPort() > -1) {
+                    host += ":" + hostUrl.getPort();
+                }
+            } catch (MalformedURLException e) {
+                host = StringUtils.substringBefore(url, Type.Const.PATH_SEPARATOR);
+            }
+            return StringUtils.containsIgnoreCase(hosts, host);
         }
         return true;
     };

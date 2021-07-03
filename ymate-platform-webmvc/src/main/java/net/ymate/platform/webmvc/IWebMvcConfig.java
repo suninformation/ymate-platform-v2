@@ -100,6 +100,8 @@ public interface IWebMvcConfig extends IInitialization<IWebMvc> {
 
     String CROSS_DOMAIN_ALLOWED_ORIGINS = "cross_domain_allowed_origins";
 
+    String CROSS_DOMAIN_ALLOWED_ORIGINS_CHECKER_CLASS = "cross_domain_allowed_origins_checker_class";
+
     String CROSS_DOMAIN_ALLOWED_METHODS = "cross_domain_allowed_methods";
 
     String CROSS_DOMAIN_ALLOWED_HEADERS = "cross_domain_allowed_headers";

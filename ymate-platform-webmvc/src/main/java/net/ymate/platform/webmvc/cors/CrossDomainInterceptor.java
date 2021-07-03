@@ -21,6 +21,7 @@ import net.ymate.platform.core.beans.intercept.InterceptException;
 import net.ymate.platform.webmvc.base.Type;
 import net.ymate.platform.webmvc.context.WebContext;
 import net.ymate.platform.webmvc.util.WebUtils;
+import net.ymate.platform.webmvc.validate.IHostNameChecker;
 import net.ymate.platform.webmvc.view.View;
 import org.apache.commons.lang3.StringUtils;
 
@@ -46,23 +47,41 @@ public final class CrossDomainInterceptor extends AbstractInterceptor {
                     //
                     HttpServletResponse response = WebContext.getResponse();
                     //
-                    response.addHeader(Type.HttpHead.ACCESS_CONTROL_ALLOW_ORIGIN, StringUtils.defaultIfBlank(StringUtils.join(domainSetting.getAllowedOrigins(), ", "), "*"));
-                    if (!domainSetting.getAllowedMethods().isEmpty()) {
-                        response.addHeader(Type.HttpHead.ACCESS_CONTROL_ALLOW_METHODS, StringUtils.upperCase(StringUtils.join(domainSetting.getAllowedMethods(), ", ")));
+                    boolean allowed = false;
+                    String origin = httpServletRequest.getHeader(Type.HttpHead.ORIGIN);
+                    if (!domainSetting.getAllowedOrigins().isEmpty()) {
+                        allowed = domainSetting.getAllowedOrigins().stream().anyMatch(o -> StringUtils.equals(o, "*") || StringUtils.containsIgnoreCase(o, origin));
                     }
-                    if (!domainSetting.getAllowedHeaders().isEmpty()) {
-                        response.addHeader(Type.HttpHead.ACCESS_CONTROL_ALLOW_HEADERS, StringUtils.upperCase(StringUtils.join(domainSetting.getAllowedHeaders(), ", ")));
+                    if (!allowed) {
+                        IHostNameChecker hostNameChecker = domainSetting.getAllowedOriginsChecker();
+                        if (hostNameChecker == null) {
+                            hostNameChecker = IHostNameChecker.DEFAULT;
+                        }
+                        allowed = hostNameChecker.check(context, origin);
                     }
-                    if (!domainSetting.getExposedHeaders().isEmpty()) {
-                        response.addHeader(Type.HttpHead.ACCESS_CONTROL_EXPOSE_HEADERS, StringUtils.upperCase(StringUtils.join(domainSetting.getExposedHeaders(), ", ")));
+                    if (allowed) {
+                        response.addHeader(Type.HttpHead.ACCESS_CONTROL_ALLOW_ORIGIN, origin);
+                    } else if (domainSetting.getAllowedOrigins().isEmpty() && domainSetting.getAllowedOriginsChecker() == null) {
+                        response.addHeader(Type.HttpHead.ACCESS_CONTROL_ALLOW_ORIGIN, "*");
+                        allowed = true;
                     }
-                    if (domainSetting.isAllowedCredentials()) {
-                        response.addHeader(Type.HttpHead.ACCESS_CONTROL_ALLOW_CREDENTIALS, Boolean.TRUE.toString());
+                    if (allowed) {
+                        if (!domainSetting.getAllowedMethods().isEmpty()) {
+                            response.addHeader(Type.HttpHead.ACCESS_CONTROL_ALLOW_METHODS, StringUtils.upperCase(StringUtils.join(domainSetting.getAllowedMethods(), ", ")));
+                        }
+                        if (!domainSetting.getAllowedHeaders().isEmpty()) {
+                            response.addHeader(Type.HttpHead.ACCESS_CONTROL_ALLOW_HEADERS, StringUtils.upperCase(StringUtils.join(domainSetting.getAllowedHeaders(), ", ")));
+                        }
+                        if (!domainSetting.getExposedHeaders().isEmpty()) {
+                            response.addHeader(Type.HttpHead.ACCESS_CONTROL_EXPOSE_HEADERS, StringUtils.upperCase(StringUtils.join(domainSetting.getExposedHeaders(), ", ")));
+                        }
+                        if (domainSetting.isAllowedCredentials()) {
+                            response.addHeader(Type.HttpHead.ACCESS_CONTROL_ALLOW_CREDENTIALS, Boolean.TRUE.toString());
+                        }
+                        if (domainSetting.getMaxAge() > 0) {
+                            response.addHeader(Type.HttpHead.ACCESS_CONTROL_MAX_AGE, String.valueOf(domainSetting.getMaxAge()));
+                        }
                     }
-                    if (domainSetting.getMaxAge() > 0) {
-                        response.addHeader(Type.HttpHead.ACCESS_CONTROL_MAX_AGE, String.valueOf(domainSetting.getMaxAge()));
-                    }
-                    //
                     if (domainSetting.isOptionsAutoReply() && WebUtils.isCorsOptionsRequest(httpServletRequest)) {
                         return View.nullView();
                     }

@@ -26,6 +26,7 @@ import net.ymate.platform.webmvc.annotation.WebConf;
 import net.ymate.platform.webmvc.base.Type;
 import net.ymate.platform.webmvc.cors.CrossDomainSettings;
 import net.ymate.platform.webmvc.cors.impl.DefaultCrossDomainSetting;
+import net.ymate.platform.webmvc.validate.IHostNameChecker;
 import org.apache.commons.fileupload.ProgressListener;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.lang3.ArrayUtils;
@@ -200,6 +201,7 @@ public final class DefaultWebMvcConfig implements IWebMvcConfig {
             defaultSetting.setAllowedCredentials(configReader.getBoolean(CROSS_DOMAIN_ALLOWED_CREDENTIALS, crossDomainSettingsAnn != null && crossDomainSettingsAnn.allowedCredentials()));
             defaultSetting.setMaxAge(configReader.getLong(CROSS_DOMAIN_MAX_AGE, crossDomainSettingsAnn == null ? 0 : crossDomainSettingsAnn.maxAge()));
             //
+            defaultSetting.setAllowedOriginsChecker(configReader.getClassImpl(CROSS_DOMAIN_ALLOWED_ORIGINS_CHECKER_CLASS, crossDomainSettingsAnn != null ? crossDomainSettingsAnn.allowedOriginsChecker().getName() : null, IHostNameChecker.class));
             defaultSetting.addAllowedOrigin(configReader.getArray(CROSS_DOMAIN_ALLOWED_ORIGINS, crossDomainSettingsAnn != null ? crossDomainSettingsAnn.allowedOrigins() : null));
             defaultSetting.addAllowedMethod(configReader.getArray(CROSS_DOMAIN_ALLOWED_METHODS, crossDomainSettingsAnn != null ? Arrays.stream(crossDomainSettingsAnn.allowedMethods()).map(Enum::name).toArray(String[]::new) : null));
             defaultSetting.addAllowedHeader(configReader.getArray(CROSS_DOMAIN_ALLOWED_HEADERS, crossDomainSettingsAnn != null ? crossDomainSettingsAnn.allowedHeaders() : null));

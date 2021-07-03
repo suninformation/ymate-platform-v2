@@ -16,6 +16,7 @@
 package net.ymate.platform.webmvc.cors.annotation;
 
 import net.ymate.platform.webmvc.base.Type;
+import net.ymate.platform.webmvc.validate.IHostNameChecker;
 
 import java.lang.annotation.*;
 
@@ -30,13 +31,15 @@ import java.lang.annotation.*;
 @Documented
 public @interface CrossDomainSetting {
 
-    boolean optionsAutoReply();
+    boolean optionsAutoReply() default false;
 
-    boolean allowedCredentials();
+    boolean allowedCredentials() default false;
 
-    long maxAge();
+    long maxAge() default 0;
 
     String[] allowedOrigins() default {};
+
+    Class<? extends IHostNameChecker> allowedOriginsChecker() default IHostNameChecker.class;
 
     Type.HttpMethod[] allowedMethods() default {};
 

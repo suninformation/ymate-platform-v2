@@ -23,11 +23,7 @@ import net.ymate.platform.core.support.IContext;
 import net.ymate.platform.validation.IValidator;
 import net.ymate.platform.validation.ValidateContext;
 import net.ymate.platform.validation.ValidateResult;
-import net.ymate.platform.webmvc.IRequestContext;
-import net.ymate.platform.webmvc.base.Type;
-import net.ymate.platform.webmvc.context.WebContext;
 import net.ymate.platform.webmvc.exception.ValidationResultException;
-import org.apache.commons.lang3.StringUtils;
 
 /**
  * @author 刘镇 (suninformation@163.com) on 2018/8/12 上午 02:01
@@ -42,10 +38,7 @@ public class HostNameValidator implements IValidator {
 
     public static boolean validate(IContext context, String url, Class<? extends IHostNameChecker> checker) throws Exception {
         boolean matched;
-        IRequestContext requestContext = WebContext.getContext().getAttribute(Type.Context.WEB_REQUEST_CONTEXT);
-        if (requestContext != null && StringUtils.containsIgnoreCase(StringUtils.substringBefore(url, "?"), requestContext.getOriginalUrl())) {
-            matched = true;
-        } else if (IHostNameChecker.class.equals(checker)) {
+        if (IHostNameChecker.class.equals(checker)) {
             matched = !IHostNameChecker.DEFAULT.check(context, url);
         } else {
             matched = !ClassUtils.impl(checker, IHostNameChecker.class).check(context, url);

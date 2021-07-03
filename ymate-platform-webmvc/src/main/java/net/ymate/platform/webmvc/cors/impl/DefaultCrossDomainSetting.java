@@ -15,9 +15,11 @@
  */
 package net.ymate.platform.webmvc.cors.impl;
 
+import net.ymate.platform.commons.util.ClassUtils;
 import net.ymate.platform.webmvc.base.Type;
 import net.ymate.platform.webmvc.cors.ICrossDomainSetting;
 import net.ymate.platform.webmvc.cors.annotation.CrossDomainSetting;
+import net.ymate.platform.webmvc.validate.IHostNameChecker;
 import org.apache.commons.lang3.ArrayUtils;
 
 import java.util.Collections;
@@ -38,6 +40,8 @@ public final class DefaultCrossDomainSetting implements ICrossDomainSetting {
 
     private final Set<String> allowedOrigins = new HashSet<>();
 
+    private IHostNameChecker allowedOriginsChecker;
+
     private final Set<String> allowedMethods = new HashSet<>();
 
     private final Set<String> allowedHeaders = new HashSet<>();
@@ -56,6 +60,9 @@ public final class DefaultCrossDomainSetting implements ICrossDomainSetting {
                 .addAllowedOrigin(crossDomainSetting.allowedOrigins())
                 .addAllowedHeader(crossDomainSetting.allowedHeaders())
                 .addExposedHeader(crossDomainSetting.exposedHeaders());
+        if (!IHostNameChecker.class.equals(crossDomainSetting.allowedOriginsChecker())) {
+            builder.allowedOriginsChecker(ClassUtils.impl(crossDomainSetting.allowedOriginsChecker(), IHostNameChecker.class));
+        }
         for (Type.HttpMethod method : crossDomainSetting.allowedMethods()) {
             builder.addAllowedMethod(method.name());
         }
@@ -101,6 +108,15 @@ public final class DefaultCrossDomainSetting implements ICrossDomainSetting {
         if (ArrayUtils.isNotEmpty(allowedOrigins)) {
             Collections.addAll(this.allowedOrigins, allowedOrigins);
         }
+    }
+
+    @Override
+    public IHostNameChecker getAllowedOriginsChecker() {
+        return allowedOriginsChecker;
+    }
+
+    public void setAllowedOriginsChecker(IHostNameChecker allowedOriginsChecker) {
+        this.allowedOriginsChecker = allowedOriginsChecker;
     }
 
     @Override
@@ -163,6 +179,11 @@ public final class DefaultCrossDomainSetting implements ICrossDomainSetting {
             if (ArrayUtils.isNotEmpty(allowedOrigins)) {
                 setting.addAllowedOrigin(allowedOrigins);
             }
+            return this;
+        }
+
+        public Builder allowedOriginsChecker(IHostNameChecker allowedOriginsChecker) {
+            setting.setAllowedOriginsChecker(allowedOriginsChecker);
             return this;
         }
 

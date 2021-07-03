@@ -16,6 +16,7 @@
 package net.ymate.platform.webmvc.cors;
 
 import net.ymate.platform.core.beans.annotation.Ignored;
+import net.ymate.platform.webmvc.validate.IHostNameChecker;
 
 import java.util.Set;
 
@@ -53,6 +54,13 @@ public interface ICrossDomainSetting {
      * @return 返回主机集合
      */
     Set<String> getAllowedOrigins();
+
+    /**
+     * 允许跨域的主机名称检测器
+     *
+     * @return 返回主机名称检测器接口实例
+     */
+    IHostNameChecker getAllowedOriginsChecker();
 
     /**
      * 允许跨域请求的方法
