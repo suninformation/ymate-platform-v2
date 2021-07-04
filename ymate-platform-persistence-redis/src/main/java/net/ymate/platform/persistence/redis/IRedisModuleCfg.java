@@ -35,7 +35,7 @@ public interface IRedisModuleCfg {
 
     String HOST = "host";
 
-    String PORT = "host";
+    String PORT = "port";
 
     String CLIENT_NAME = "client_name";
 
