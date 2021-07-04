@@ -85,8 +85,8 @@ public class DefaultRedisModuleCfg implements IRedisModuleCfg {
                     _servMeta.setMaxAttempts(_serverCfg.getInt(MAX_ATTEMPTS, 3));
                     _servMeta.setWeight(_serverCfg.getInt(WEIGHT, 1));
                     _servMeta.setDatabase(_serverCfg.getInt(DATABASE, 0));
-                    _servMeta.setClientName(_serverCfg.getString(CLIENT_NAME));
-                    _servMeta.setPassword(_serverCfg.getString(PASSWORD));
+                    _servMeta.setClientName(StringUtils.trimToNull(_serverCfg.getString(CLIENT_NAME)));
+                    _servMeta.setPassword(StringUtils.trimToNull(_serverCfg.getString(PASSWORD)));
                     //
                     boolean _isPwdEncrypted = _dataSourceCfg.getBoolean(PASSWORD_ENCRYPTED);
                     //
@@ -95,9 +95,7 @@ public class DefaultRedisModuleCfg implements IRedisModuleCfg {
                         if (_proc == null) {
                             _proc = __owner.getConfig().getDefaultPasswordClass().newInstance();
                         }
-                        if (_proc != null) {
-                            _servMeta.setPassword(_proc.decrypt(_servMeta.getPassword()));
-                        }
+                        _servMeta.setPassword(_proc.decrypt(_servMeta.getPassword()));
                     }
                     //
                     _servers.add(_servMeta);
