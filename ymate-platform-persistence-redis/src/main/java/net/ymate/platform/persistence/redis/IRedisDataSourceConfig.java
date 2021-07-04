@@ -62,6 +62,5 @@ public interface IRedisDataSourceConfig extends IDataSourceConfig<IRedis> {
      *
      * @return 返回对象池配置
      */
-    @SuppressWarnings("rawtypes")
-    GenericObjectPoolConfig getObjectPoolConfig();
+    GenericObjectPoolConfig<?> getObjectPoolConfig();
 }

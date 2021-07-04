@@ -21,6 +21,7 @@ import net.ymate.platform.persistence.redis.*;
 import net.ymate.platform.persistence.redis.support.JedisCommandsWrapper;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 import redis.clients.jedis.*;
 import redis.clients.jedis.util.Pool;
 
@@ -42,6 +43,7 @@ public class RedisDataSourceAdapter extends AbstractDataSourceAdapter<IRedis, IR
     private boolean isCluster;
 
     @Override
+    @SuppressWarnings("unchecked")
     public void doInitialize(IRedis owner, IRedisDataSourceConfig dataSourceConfig) throws Exception {
         switch (dataSourceConfig.getConnectionType()) {
             case SHARD:
@@ -63,7 +65,7 @@ public class RedisDataSourceAdapter extends AbstractDataSourceAdapter<IRedis, IR
                                 return shardInfo;
                             })
                             .collect(Collectors.toList());
-                    pool = new ShardedJedisPool(dataSourceConfig.getObjectPoolConfig(), shardInfos);
+                    pool = new ShardedJedisPool((GenericObjectPoolConfig<ShardedJedis>) dataSourceConfig.getObjectPoolConfig(), shardInfos);
                 }
                 break;
             case SENTINEL:
@@ -72,7 +74,7 @@ public class RedisDataSourceAdapter extends AbstractDataSourceAdapter<IRedis, IR
                             .map(serverMeta -> serverMeta.getHost() + ":" + serverMeta.getPort()).collect(Collectors.toSet());
                     RedisServerMeta masterServerMeta = dataSourceConfig.getMasterServerMeta();
                     pool = new JedisSentinelPool(masterServerMeta.getName(), sentinels,
-                            dataSourceConfig.getObjectPoolConfig(),
+                            (GenericObjectPoolConfig<Jedis>) dataSourceConfig.getObjectPoolConfig(),
                             masterServerMeta.getTimeout(),
                             decryptPasswordIfNeed(masterServerMeta.getPassword()),
                             masterServerMeta.getDatabase(),
@@ -90,17 +92,17 @@ public class RedisDataSourceAdapter extends AbstractDataSourceAdapter<IRedis, IR
                             masterServerMeta.getSocketTimeout(),
                             masterServerMeta.getMaxAttempts(),
                             decryptPasswordIfNeed(masterServerMeta.getPassword()),
-                            dataSourceConfig.getObjectPoolConfig());
+                            (GenericObjectPoolConfig<Jedis>) dataSourceConfig.getObjectPoolConfig());
                     isCluster = true;
                 }
                 break;
             case DEFAULT:
             default:
                 if (dataSourceConfig.getServerMetas().isEmpty()) {
-                    pool = new JedisPool(dataSourceConfig.getObjectPoolConfig(), "localhost");
+                    pool = new JedisPool((GenericObjectPoolConfig<Jedis>) dataSourceConfig.getObjectPoolConfig(), "localhost");
                 } else {
                     RedisServerMeta defaultServerMeta = dataSourceConfig.getServerMetas().get(owner.getConfig().getDefaultDataSourceName());
-                    pool = new JedisPool(dataSourceConfig.getObjectPoolConfig(),
+                    pool = new JedisPool((GenericObjectPoolConfig<Jedis>) dataSourceConfig.getObjectPoolConfig(),
                             defaultServerMeta.getHost(),
                             defaultServerMeta.getPort(),
                             defaultServerMeta.getTimeout(),
