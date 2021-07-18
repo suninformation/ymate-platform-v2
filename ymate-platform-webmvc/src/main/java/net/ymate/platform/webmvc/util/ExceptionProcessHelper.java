@@ -50,9 +50,9 @@ public final class ExceptionProcessHelper {
         DEFAULT.registerProcessor(UserSessionConfirmationStateException.class, target -> new IExceptionProcessor.Result(WebErrorCode.USER_SESSION_CONFIRMATION_STATE, WebErrorCode.MSG_USER_SESSION_CONFIRMATION_STATE)
                 .addAttribute(Type.Const.REDIRECT_URL, ((UserSessionConfirmationStateException) target).getRedirectUrl()));
         DEFAULT.registerProcessor(UserSessionForceOfflineException.class, target -> new IExceptionProcessor.Result(WebErrorCode.USER_SESSION_FORCE_OFFLINE, WebErrorCode.MSG_USER_SESSION_FORCE_OFFLINE)
-                .addAttribute("remote_addr", ((UserSessionForceOfflineException) target).getRemoteAddr())
-                .addAttribute("event_time", ((UserSessionForceOfflineException) target).getEventTime())
-                .addAttribute("description", ((UserSessionForceOfflineException) target).getDescription()));
+                .addAttribute(Type.Const.REMOTE_ADDR, ((UserSessionForceOfflineException) target).getRemoteAddr())
+                .addAttribute(Type.Const.EVENT_TIME, ((UserSessionForceOfflineException) target).getEventTime())
+                .addAttribute(Type.Const.DESCRIPTION, ((UserSessionForceOfflineException) target).getDescription()));
     }
 
     public static StringBuilder exceptionToString(Throwable e) {

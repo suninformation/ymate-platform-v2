@@ -138,6 +138,12 @@ public class Type {
         String PARAM_DATA = "data";
 
         String REDIRECT_URL = "redirect_url";
+
+        String REMOTE_ADDR = "remote_addr";
+
+        String EVENT_TIME = "event_time";
+
+        String DESCRIPTION = "description";
     }
 
     public interface HttpHead {

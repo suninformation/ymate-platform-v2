@@ -16,6 +16,8 @@
 package net.ymate.platform.webmvc.util;
 
 import net.ymate.platform.core.support.ErrorCode;
+import net.ymate.platform.webmvc.base.Type;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * @author 刘镇 (suninformation@163.com) on 2019-11-13 22:46
@@ -140,6 +142,29 @@ public final class WebErrorCode {
 
     public static ErrorCode userSessionAuthorized() {
         return ErrorCode.create(USER_SESSION_AUTHORIZED, MSG_USER_SESSION_AUTHORIZED);
+    }
+
+    public static ErrorCode userSessionConfirmationState() {
+        return userSessionConfirmationState(null);
+    }
+
+    public static ErrorCode userSessionConfirmationState(String redirectUrl) {
+        ErrorCode errorCode = ErrorCode.create(USER_SESSION_CONFIRMATION_STATE, MSG_USER_SESSION_CONFIRMATION_STATE);
+        if (StringUtils.isNotBlank(redirectUrl)) {
+            errorCode.attr(Type.Const.REDIRECT_URL, redirectUrl);
+        }
+        return errorCode;
+    }
+
+    public static ErrorCode userSessionForceOffline() {
+        return userSessionForceOffline(null, null, null);
+    }
+
+    public static ErrorCode userSessionForceOffline(String remoteAddr, Long eventTime, String description) {
+        return ErrorCode.create(USER_SESSION_FORCE_OFFLINE, MSG_USER_SESSION_FORCE_OFFLINE)
+                .attr(Type.Const.REMOTE_ADDR, remoteAddr)
+                .attr(Type.Const.EVENT_TIME, eventTime)
+                .attr(Type.Const.DESCRIPTION, description);
     }
 
     public static ErrorCode invalidParamsSignature() {
