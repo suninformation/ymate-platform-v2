@@ -37,10 +37,6 @@ public class HikariCPDataSourceAdapter extends AbstractDatabaseDataSourceAdapter
     @Override
     protected void doInitialize() throws Exception {
         try (InputStream inputStream = getDataSourceConfigFileAsStream(Type.DS_ADAPTER.HIKARICP, getDataSourceConfig().getName())) {
-            dataSource = new HikariDataSource(new HikariConfig(doCreateConfigProperties(inputStream, true)));
-        }
-        //
-        try (InputStream inputStream = getDataSourceConfigFileAsStream(Type.DS_ADAPTER.HIKARICP, getDataSourceConfig().getName())) {
             if (inputStream != null) {
                 dataSource = new HikariDataSource(new HikariConfig(doCreateConfigProperties(inputStream, true)));
             } else if (doCreateDataSourceConfigFile(Type.DS_ADAPTER.HIKARICP)) {
