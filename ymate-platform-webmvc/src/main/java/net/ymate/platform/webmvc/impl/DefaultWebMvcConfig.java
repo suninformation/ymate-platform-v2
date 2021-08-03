@@ -33,10 +33,7 @@ import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.File;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
 /**
  * 默认WebMVC模块配置接口实现
@@ -159,7 +156,14 @@ public final class DefaultWebMvcConfig implements IWebMvcConfig {
         defaultCharsetEncoding = configReader.getString(DEFAULT_CHARSET_ENCODING, confAnn == null ? null : confAnn.defaultCharsetEncoding());
         defaultContentType = configReader.getString(DEFAULT_CONTENT_TYPE, confAnn == null ? null : confAnn.defaultContentType());
         //
-        requestIgnoreSuffixes.addAll(Arrays.asList(configReader.getArray(REQUEST_IGNORE_SUFFIX, confAnn != null ? confAnn.requestIgnoreSuffixes() : new String[0])));
+        List<String> reqIgnoreSuffix = new ArrayList<>(Arrays.asList(configReader.getArray(REQUEST_IGNORE_SUFFIX, confAnn != null ? confAnn.requestIgnoreSuffixes() : new String[0])));
+        if (!reqIgnoreSuffix.isEmpty() && StringUtils.equals(reqIgnoreSuffix.get(0), "~")) {
+            if (reqIgnoreSuffix.size() > 1) {
+                requestIgnoreSuffixes.addAll(Arrays.asList(StringUtils.split(IGNORE_REGEX_DEFAULT, "|")));
+            }
+            reqIgnoreSuffix.remove(0);
+        }
+        requestIgnoreSuffixes.addAll(reqIgnoreSuffix);
         requestMethodParam = configReader.getString(REQUEST_METHOD_PARAM, confAnn == null ? null : confAnn.requestMethodParam());
         requestPrefix = configReader.getString(REQUEST_PREFIX, confAnn == null ? null : confAnn.requestPrefix());
         //

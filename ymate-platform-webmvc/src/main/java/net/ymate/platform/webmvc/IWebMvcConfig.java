@@ -36,7 +36,9 @@ public interface IWebMvcConfig extends IInitialization<IWebMvc> {
 
     String IGNORE_REGEX_SUFFIX = ")$";
 
-    String IGNORE_REGEX = IGNORE_REGEX_PREFIX + "jsp|jspx|png|gif|jpg|jpeg|js|css|swf|ico|htm|html|eot|woff|woff2|ttf|svg|map" + IGNORE_REGEX_SUFFIX;
+    String IGNORE_REGEX_DEFAULT = "jsp|jspx|png|gif|jpg|jpeg|js|css|swf|ico|htm|html|eot|woff|woff2|ttf|svg|map";
+
+    String IGNORE_REGEX = IGNORE_REGEX_PREFIX + IGNORE_REGEX_DEFAULT + IGNORE_REGEX_SUFFIX;
 
     String REQUEST_MAPPING_PARSER_CLASS = "request_mapping_parser_class";
 
