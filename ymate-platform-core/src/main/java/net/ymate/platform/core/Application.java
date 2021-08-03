@@ -61,7 +61,7 @@ public final class Application implements IApplication {
 
     private final IBeanFactory beanFactory;
 
-    private final RecycleHelper recycleHelper = RecycleHelper.getInstance();
+    private final RecycleHelper recycleHelper = RecycleHelper.create();
 
     private final I18N i18n;
 
