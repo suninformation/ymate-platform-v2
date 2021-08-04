@@ -145,11 +145,11 @@ public abstract class AbstractWebResult<CODE_TYPE extends Serializable> implemen
         return this;
     }
 
-    protected Map<String, Object> doFilter(IDateFilter dateFilter, boolean attr, Map<String, Object> targetMap) {
-        if (dateFilter != null && targetMap != null && !targetMap.isEmpty()) {
+    protected Map<String, Object> doFilter(IDataFilter dataFilter, boolean attr, Map<String, Object> targetMap) {
+        if (dataFilter != null && targetMap != null && !targetMap.isEmpty()) {
             Map<String, Object> filtered = new LinkedHashMap<>(data.size());
             data.forEach((key, value) -> {
-                Object item = dateFilter.filter(attr, key, value);
+                Object item = dataFilter.filter(attr, key, value);
                 if (item != null) {
                     filtered.put(key, value);
                 }
@@ -160,9 +160,9 @@ public abstract class AbstractWebResult<CODE_TYPE extends Serializable> implemen
     }
 
     @Override
-    public IWebResult<CODE_TYPE> dataFilter(IDateFilter dateFilter) {
-        data = doFilter(dateFilter, true, data);
-        attrs = doFilter(dateFilter, false, attrs);
+    public IWebResult<CODE_TYPE> dataFilter(IDataFilter dataFilter) {
+        data = doFilter(dataFilter, true, data);
+        attrs = doFilter(dataFilter, false, attrs);
         return this;
     }
 

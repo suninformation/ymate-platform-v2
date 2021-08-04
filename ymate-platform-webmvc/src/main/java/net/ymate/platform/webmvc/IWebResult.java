@@ -60,7 +60,7 @@ public interface IWebResult<CODE_TYPE extends Serializable> {
 
     IWebResult<CODE_TYPE> snakeCase();
 
-    IWebResult<CODE_TYPE> dataFilter(IDateFilter dateFilter);
+    IWebResult<CODE_TYPE> dataFilter(IDataFilter dataFilter);
 
     IJsonObjectWrapper toJsonObject();
 
@@ -77,7 +77,7 @@ public interface IWebResult<CODE_TYPE extends Serializable> {
     /**
      * 数据过滤器接口
      */
-    interface IDateFilter {
+    interface IDataFilter {
 
         /**
          * 执行数据过滤
