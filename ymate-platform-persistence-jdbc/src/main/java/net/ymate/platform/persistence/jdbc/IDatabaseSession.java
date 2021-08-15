@@ -344,6 +344,16 @@ public interface IDatabaseSession extends ISession<IDatabaseConnectionHolder> {
      *
      * @param <T>    指定实体数据类型
      * @param entity 实体查询对象
+     * @return 返回更新后的实体对象，若影响记录数为0则返回null
+     * @throws Exception 可能产生的异常
+     */
+    <T extends IEntity> T update(T entity) throws Exception;
+
+    /**
+     * 根据实体执行SQL更新
+     *
+     * @param <T>    指定实体数据类型
+     * @param entity 实体查询对象
      * @param filter 字段过滤集合
      * @return 返回更新后的实体对象，若影响记录数为0则返回null
      * @throws Exception 可能产生的异常

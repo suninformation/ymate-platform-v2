@@ -356,6 +356,11 @@ public class DefaultDatabaseSession extends AbstractSession<IDatabaseConnectionH
     }
 
     @Override
+    public <T extends IEntity> T update(T entity) throws Exception {
+        return update(entity, null, entity instanceof IShardingable ? (IShardingable) entity : null);
+    }
+
+    @Override
     public <T extends IEntity> T update(T entity, Fields filter) throws Exception {
         return update(entity, filter, entity instanceof IShardingable ? (IShardingable) entity : null);
     }
