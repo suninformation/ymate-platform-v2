@@ -125,6 +125,11 @@ public final class Fields implements Serializable {
         return fields.isEmpty();
     }
 
+    public Fields clear() {
+        this.fields.clear();
+        return this;
+    }
+
     public List<String> fields() {
         return Collections.unmodifiableList(this.fields);
     }

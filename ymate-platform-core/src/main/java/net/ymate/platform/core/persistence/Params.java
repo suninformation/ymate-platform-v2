@@ -83,6 +83,11 @@ public final class Params implements Serializable {
         return this;
     }
 
+    public Params clear() {
+        this.params.clear();
+        return this;
+    }
+
     public boolean isEmpty() {
         return params.isEmpty();
     }
