@@ -19,6 +19,7 @@
  import net.ymate.platform.core.persistence.IFunction;
  import net.ymate.platform.core.persistence.Params;
  import net.ymate.platform.persistence.jdbc.IDatabase;
+ import net.ymate.platform.persistence.jdbc.JDBC;
  import org.apache.commons.lang.NullArgumentException;
  import org.apache.commons.lang3.StringUtils;
 
@@ -31,6 +32,32 @@
      private final Cond cond;
 
      private final String fieldName;
+
+     public static FieldCondition create(String fieldName) {
+         IDatabase database = JDBC.get();
+         return new FieldCondition(database, database.getConfig().getDefaultDataSourceName(), fieldName);
+     }
+
+     public static FieldCondition create(String prefix, String fieldName) {
+         IDatabase database = JDBC.get();
+         return new FieldCondition(database, database.getConfig().getDefaultDataSourceName(), prefix, fieldName);
+     }
+
+     public static FieldCondition create(Query<?> query, String fieldName) {
+         return new FieldCondition(query, fieldName);
+     }
+
+     public static FieldCondition create(Query<?> query, String prefix, String fieldName) {
+         return new FieldCondition(query, prefix, fieldName);
+     }
+
+     public static FieldCondition create(IDatabase owner, String dataSourceName, String fieldName) {
+         return new FieldCondition(owner, dataSourceName, fieldName);
+     }
+
+     public static FieldCondition create(IDatabase owner, String dataSourceName, String prefix, String fieldName) {
+         return new FieldCondition(owner, dataSourceName, prefix, fieldName);
+     }
 
      public FieldCondition(Query<?> query, String prefix, String fieldName) {
          this(query.owner(), query.dataSourceName(), prefix, fieldName);

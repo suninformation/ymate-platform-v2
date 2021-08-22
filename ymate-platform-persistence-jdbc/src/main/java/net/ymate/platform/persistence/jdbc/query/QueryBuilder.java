@@ -269,6 +269,14 @@
          return new Cond(owner(), dataSourceName());
      }
 
+     public FieldCondition fieldCondition(String prefix, String fieldName) {
+         return new FieldCondition(owner(), dataSourceName(), prefix, fieldName);
+     }
+
+     public FieldCondition fieldCondition(String fieldName) {
+         return new FieldCondition(owner(), dataSourceName(), fieldName);
+     }
+
      // ------ GroupBy
 
      public GroupBy groupBy() {

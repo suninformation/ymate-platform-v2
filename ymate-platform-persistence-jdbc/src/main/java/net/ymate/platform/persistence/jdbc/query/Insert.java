@@ -195,23 +195,31 @@ public final class Insert extends Query<Insert> {
 
     @Override
     public String toString() {
-        ExpressionUtils expression = ExpressionUtils.bind(getExpressionStr("INSERT INTO ${tableName} (${fields}) ${values}"));
+        ExpressionUtils expression = ExpressionUtils.bind(getExpressionStr("INSERT INTO ${tableName} ${fields} ${values}"));
         if (queryHandler() != null) {
             queryHandler().beforeBuild(expression, this);
         }
         expression.set("tableName", entityClass != null ? buildSafeTableName(prefix, EntityMeta.createAndGet(entityClass), safePrefix) : buildSafeTableName(prefix, tableName, safePrefix));
-        expression.set("fields", StringUtils.join(fields.fields(), LINE_END_FLAG));
         if (select != null) {
             expression.set("values", select.toString());
+            if (!fields.isEmpty()) {
+                expression.set("fields", String.format("(%s)", StringUtils.join(fields.fields(), LINE_END_FLAG)));
+            }
+            params.clear().add(select.params());
         } else {
             List<String> valuesStr = new ArrayList<>();
-            String valueStr = StringUtils.repeat("?", LINE_END_FLAG, params.params().size());
+            String valueStr = StringUtils.repeat("?", LINE_END_FLAG, fields.fields().size());
             if (!params.isEmpty()) {
                 valuesStr.add(String.format("(%s)", valueStr));
             }
             if (!groupParams.isEmpty()) {
                 groupParams.stream().filter(p -> !p.isEmpty()).map(p -> String.format("(%s)", valueStr)).forEach(valuesStr::add);
             }
+            if (valuesStr.isEmpty()) {
+                // 为了保证SQL语句的完整性
+                valuesStr.add(String.format("(%s)", valueStr));
+            }
+            expression.set("fields", String.format("(%s)", StringUtils.join(fields.fields(), LINE_END_FLAG)));
             expression.set("values", String.format("VALUES %s", StringUtils.join(valuesStr, LINE_END_FLAG)));
         }
         if (queryHandler() != null) {
@@ -222,7 +230,9 @@ public final class Insert extends Query<Insert> {
 
     public SQL toSQL() {
         SQL sql = SQL.create(this);
-        groupParams.forEach(sql::param);
+        if (select == null) {
+            groupParams.forEach(sql::param);
+        }
         return sql;
     }
 

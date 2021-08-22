@@ -216,10 +216,91 @@ public final class Delete extends Query<Delete> {
         return this;
     }
 
+    public Delete table(Class<? extends IEntity> entityClass) {
+        return table(null, entityClass, true);
+    }
+
+    public Delete table(String prefix, Class<? extends IEntity> entityClass) {
+        return table(prefix, entityClass, true);
+    }
+
+    public Delete table(String prefix, Class<? extends IEntity> entityClass, boolean safePrefix) {
+        this.fields.add(buildSafeTableName(prefix, EntityMeta.createAndGet(entityClass), safePrefix));
+        return this;
+    }
+
     public Delete join(Join join) {
         joins.add(join);
         where().param(join.params());
         return this;
+    }
+
+    public Delete innerJoin(Select select, Cond on) {
+        return join(Join.inner(select).on(on));
+    }
+
+    public Delete leftJoin(Select select, Cond on) {
+        return join(Join.left(select).on(on));
+    }
+
+    public Delete rightJoin(Select select, Cond on) {
+        return join(Join.right(select).on(on));
+    }
+
+    //
+
+    public Delete innerJoin(String from, Cond on) {
+        return join(Join.inner(owner(), dataSourceName(), from).on(on));
+    }
+
+    public Delete leftJoin(String from, Cond on) {
+        return join(Join.left(owner(), dataSourceName(), from).on(on));
+    }
+
+    public Delete rightJoin(String from, Cond on) {
+        return join(Join.right(owner(), dataSourceName(), from).on(on));
+    }
+
+    //
+
+    public Delete innerJoin(String from, String alias, Cond on) {
+        return join(Join.inner(owner(), dataSourceName(), from).alias(alias).on(on));
+    }
+
+    public Delete leftJoin(String from, String alias, Cond on) {
+        return join(Join.left(owner(), dataSourceName(), from).alias(alias).on(on));
+    }
+
+    public Delete rightJoin(String from, String alias, Cond on) {
+        return join(Join.right(owner(), dataSourceName(), from).alias(alias).on(on));
+    }
+
+    //
+
+    public Delete innerJoin(String prefix, String from, String alias, Cond on) {
+        return join(Join.inner(owner(), dataSourceName(), prefix, from).alias(alias).on(on));
+    }
+
+    public Delete leftJoin(String prefix, String from, String alias, Cond on) {
+        return join(Join.left(owner(), dataSourceName(), prefix, from).alias(alias).on(on));
+    }
+
+    public Delete rightJoin(String prefix, String from, String alias, Cond on) {
+        return join(Join.right(owner(), dataSourceName(), prefix, from).alias(alias).on(on));
+    }
+
+    //
+
+    public Delete innerJoin(String prefix, String from, String alias, Cond on, boolean safePrefix) {
+        return join(Join.inner(owner(), dataSourceName(), prefix, from, safePrefix).alias(alias).on(on));
+    }
+
+    public Delete leftJoin(String prefix, String from, String alias, Cond on, boolean safePrefix) {
+        return join(Join.left(owner(), dataSourceName(), prefix, from, safePrefix).alias(alias).on(on));
+    }
+
+    public Delete rightJoin(String prefix, String from, String alias, Cond on, boolean safePrefix) {
+        return join(Join.right(owner(), dataSourceName(), prefix, from, safePrefix).alias(alias).on(on));
     }
 
     public Delete where(Where where) {
@@ -264,7 +345,7 @@ public final class Delete extends Query<Delete> {
         if (!fields.fields().isEmpty() && variables.contains("fields")) {
             expression.set("fields", StringUtils.join(fields.fields(), LINE_END_FLAG));
         }
-        expression.set("forms", StringUtils.join(froms, LINE_END_FLAG));
+        expression.set("froms", StringUtils.join(froms, LINE_END_FLAG));
         if (where != null && variables.contains("where")) {
             expression.set("where", where.toString());
         }
