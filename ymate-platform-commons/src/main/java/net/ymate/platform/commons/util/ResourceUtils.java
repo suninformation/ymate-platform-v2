@@ -41,7 +41,10 @@ public class ResourceUtils {
         AggregateIterator<URL> iterator = new AggregateIterator<>();
         iterator.addEnumeration(Thread.currentThread().getContextClassLoader().getResources(resourceName));
         if ((!iterator.hasNext()) || (aggregate)) {
-            iterator.addEnumeration(ClassUtils.getDefaultClassLoader().getResources(resourceName));
+            ClassLoader defaultClassLoader = ClassUtils.getDefaultClassLoader();
+            if (defaultClassLoader != null) {
+                iterator.addEnumeration(defaultClassLoader.getResources(resourceName));
+            }
         }
         if (!iterator.hasNext() || aggregate) {
             if (callingClass != null) {
@@ -64,7 +67,10 @@ public class ResourceUtils {
         //
         URL url = Thread.currentThread().getContextClassLoader().getResource(resourceName);
         if (url == null) {
-            url = ClassUtils.getDefaultClassLoader().getResource(resourceName);
+            ClassLoader defaultClassLoader = ClassUtils.getDefaultClassLoader();
+            if (defaultClassLoader != null) {
+                url = defaultClassLoader.getResource(resourceName);
+            }
         }
         if (url == null && callingClass != null) {
             url = callingClass.getResource(resourceName);
