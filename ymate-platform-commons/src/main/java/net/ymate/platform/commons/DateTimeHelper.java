@@ -115,6 +115,10 @@ public class DateTimeHelper {
         return this;
     }
 
+    public boolean isLeapYear() {
+        return DateTimeUtils.isLeapYear(year());
+    }
+
     public int month() {
         return calendar.get(Calendar.MONTH) + 1;
     }

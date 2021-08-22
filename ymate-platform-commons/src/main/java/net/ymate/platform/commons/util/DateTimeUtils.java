@@ -201,4 +201,11 @@ public final class DateTimeUtils {
         return getSimpleDateFormat(StringUtils.defaultIfBlank(pattern, YYYY_MM_DD_HH_MM_SS), timeOffset).parse(dateTime);
     }
 
+    /**
+     * @param year 年份
+     * @return 判断年份是否为闰年
+     */
+    public static boolean isLeapYear(int year) {
+        return year % 4 == 0 && (year % 100 != 0 || year % 400 == 0);
+    }
 }
