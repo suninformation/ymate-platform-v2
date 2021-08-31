@@ -110,7 +110,7 @@
      }
 
      public FieldCondition eq(IFunction func) {
-         cond.eq(fieldName, func.build());
+         cond.opt(fieldName, Cond.OPT.EQ, func.build()).param(func.params());
          return this;
      }
 
@@ -157,7 +157,7 @@
      }
 
      public FieldCondition notEq(IFunction func) {
-         cond.notEq(fieldName, func.build());
+         cond.opt(fieldName, Cond.OPT.NOT_EQ, func.build()).param(func.params());
          return this;
      }
 
@@ -204,7 +204,7 @@
      }
 
      public FieldCondition gtEq(IFunction func) {
-         cond.gtEq(fieldName, func.build());
+         cond.opt(fieldName, Cond.OPT.GT_EQ, func.build()).param(func.params());
          return this;
      }
 
@@ -251,7 +251,7 @@
      }
 
      public FieldCondition gt(IFunction func) {
-         cond.gt(fieldName, func.build());
+         cond.opt(fieldName, Cond.OPT.GT, func.build()).param(func.params());
          return this;
      }
 
@@ -298,7 +298,7 @@
      }
 
      public FieldCondition ltEq(IFunction func) {
-         cond.gtEq(fieldName, func.build());
+         cond.opt(fieldName, Cond.OPT.LT_EQ, func.build()).param(func.params());
          return this;
      }
 
@@ -345,7 +345,7 @@
      }
 
      public FieldCondition lt(IFunction func) {
-         cond.lt(fieldName, func.build());
+         cond.opt(fieldName, Cond.OPT.LT, func.build()).param(func.params());
          return this;
      }
 

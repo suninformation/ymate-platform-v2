@@ -23,12 +23,14 @@ import org.apache.commons.lang3.StringUtils;
  */
 public abstract class AbstractFunction implements IFunction {
 
-    private final Fields params;
+    private final Fields fields;
+
+    private final Params params = Params.create();
 
     private boolean flag;
 
     public AbstractFunction() {
-        params = Fields.create();
+        fields = Fields.create();
         onBuild();
     }
 
@@ -36,7 +38,7 @@ public abstract class AbstractFunction implements IFunction {
         if (StringUtils.isBlank(funcName)) {
             throw new NullArgumentException("funcName");
         }
-        params = Fields.create(funcName, "(");
+        fields = Fields.create(funcName, "(");
         flag = true;
         //
         onBuild();
@@ -47,12 +49,12 @@ public abstract class AbstractFunction implements IFunction {
      */
     public abstract void onBuild();
 
-    public AbstractFunction param(Number param) {
-        params.add(param.toString());
+    public AbstractFunction field(Number param) {
+        fields.add(param.toString());
         return this;
     }
 
-    public AbstractFunction param(Number[] params) {
+    public AbstractFunction field(Number[] params) {
         if (params != null && params.length > 0) {
             boolean has = false;
             for (Number param : params) {
@@ -60,7 +62,7 @@ public abstract class AbstractFunction implements IFunction {
                     if (has) {
                         separator();
                     }
-                    this.params.add(param.toString());
+                    this.fields.add(param.toString());
                     has = true;
                 }
             }
@@ -69,51 +71,54 @@ public abstract class AbstractFunction implements IFunction {
     }
 
     public AbstractFunction operate(String opt, String param) {
-        return space().param(opt).space().param(param);
+        return space().field(opt).space().field(param);
     }
 
     public AbstractFunction separator() {
-        params.add(", ");
+        fields.add(", ");
         return this;
     }
 
     public AbstractFunction space() {
-        params.add(StringUtils.SPACE);
+        fields.add(StringUtils.SPACE);
         return this;
     }
 
     public AbstractFunction bracketBegin() {
-        params.add("(");
+        fields.add("(");
         return this;
     }
 
     public AbstractFunction bracketEnd() {
-        params.add(")");
+        fields.add(")");
         return this;
     }
 
-    public AbstractFunction param(IFunction function) {
-        params.add(function);
+    public AbstractFunction field(IFunction function) {
+        fields.add(function);
+        params.add(function.params());
         return this;
     }
 
-    public AbstractFunction param(IFunction function, String alias) {
-        params.add(function, alias);
+    public AbstractFunction field(IFunction function, String alias) {
+        fields.add(function, alias);
+        params.add(function.params());
         return this;
     }
 
-    public AbstractFunction paramWS(Object... params) {
-        if (params != null && params.length > 0) {
+    public AbstractFunction fieldWS(Object... fields) {
+        if (fields != null && fields.length > 0) {
             boolean has = false;
-            for (Object param : params) {
-                if (param != null) {
+            for (Object field : fields) {
+                if (field != null) {
                     if (has) {
                         separator();
                     }
-                    if (param instanceof IFunction) {
-                        this.params.add(((IFunction) param).build());
+                    if (field instanceof IFunction) {
+                        this.fields.add(((IFunction) field));
+                        this.params.add(((IFunction) field).params());
                     } else {
-                        this.params.add(param.toString());
+                        this.fields.add(field.toString());
                     }
                     has = true;
                 }
@@ -122,12 +127,12 @@ public abstract class AbstractFunction implements IFunction {
         return this;
     }
 
-    public AbstractFunction param(String param) {
-        params.add(param);
+    public AbstractFunction field(String param) {
+        fields.add(param);
         return this;
     }
 
-    public AbstractFunction param(String[] params) {
+    public AbstractFunction field(String[] params) {
         if (params != null && params.length > 0) {
             boolean has = false;
             for (String param : params) {
@@ -135,7 +140,7 @@ public abstract class AbstractFunction implements IFunction {
                     if (has) {
                         separator();
                     }
-                    this.params.add(param);
+                    this.fields.add(param);
                     has = true;
                 }
             }
@@ -143,21 +148,38 @@ public abstract class AbstractFunction implements IFunction {
         return this;
     }
 
-    public AbstractFunction param(String prefix, String field) {
-        params.add(prefix, field);
+    public AbstractFunction field(String prefix, String field) {
+        fields.add(prefix, field);
         return this;
     }
 
-    public Fields params() {
-        return params;
+    public Fields fields() {
+        return fields;
     }
 
     @Override
     public String build() {
         if (flag) {
-            params.add(")");
+            fields.add(")");
         }
-        return StringUtils.join(params.toArray(), StringUtils.EMPTY);
+        return StringUtils.join(fields.toArray(), StringUtils.EMPTY);
+    }
+
+    @Override
+    public Params params() {
+        return params;
+    }
+
+    @Override
+    public IFunction param(Object param) {
+        params.add(param);
+        return this;
+    }
+
+    @Override
+    public IFunction param(Params params) {
+        this.params.add(params);
+        return this;
     }
 
     @Override

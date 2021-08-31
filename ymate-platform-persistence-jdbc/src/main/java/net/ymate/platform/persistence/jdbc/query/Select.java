@@ -271,11 +271,13 @@ public final class Select extends Query<Select> {
 
     public Select field(IFunction func, String alias) {
         this.fields.add(func, alias);
+        where().param(func.params());
         return this;
     }
 
     public Select field(IFunction func) {
         this.fields.add(func);
+        where.param(func.params());
         return this;
     }
 
@@ -553,7 +555,7 @@ public final class Select extends Query<Select> {
 
     @Override
     public String toString() {
-        ExpressionUtils expression = ExpressionUtils.bind(getExpressionStr("SELECT ${distinct} ${fields} FROM ${froms} ${joins} ${where} ${unions}"));
+        ExpressionUtils expression = ExpressionUtils.bind(getExpressionStr("SELECT ${distinct} ${fields} ${froms} ${joins} ${where} ${unions}"));
         if (queryHandler() != null) {
             queryHandler().beforeBuild(expression, this);
         }
@@ -566,7 +568,9 @@ public final class Select extends Query<Select> {
         } else {
             expression.set("fields", StringUtils.join(fields.fields(), LINE_END_FLAG));
         }
-        expression.set("froms", StringUtils.join(froms, LINE_END_FLAG));
+        if (!froms.isEmpty() && variables.contains("froms")) {
+            expression.set("froms", String.format("FROM %s", StringUtils.join(froms, LINE_END_FLAG)));
+        }
         //
         if (variables.contains("joins")) {
             expression.set("joins", StringUtils.join(joins, StringUtils.SPACE));

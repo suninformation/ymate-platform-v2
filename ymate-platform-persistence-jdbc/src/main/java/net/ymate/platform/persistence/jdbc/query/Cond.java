@@ -154,7 +154,7 @@ public final class Cond extends Query<Cond> {
     }
 
     public Cond cond(IFunction func) {
-        return cond(func.build());
+        return cond(func.build()).param(func.params());
     }
 
     public Cond cond(Cond cond) {
@@ -207,11 +207,13 @@ public final class Cond extends Query<Cond> {
     }
 
     public Cond opt(IFunction funcOne, OPT opt, IFunction funcTwo) {
-        return opt(funcOne.build(), opt, funcTwo.build());
+        return opt(funcOne.build(), opt, funcTwo.build())
+                .param(funcOne.params())
+                .param(funcTwo.params());
     }
 
     public Cond opt(IFunction func, OPT opt) {
-        return opt(func.build(), opt);
+        return opt(func.build(), opt).param(func.params());
     }
 
     public Cond opt(LogicalOpt opt) {
@@ -476,7 +478,7 @@ public final class Cond extends Query<Cond> {
     }
 
     public Cond between(IFunction func, Object valueOne, Object valueTwo) {
-        return between(func.build(), valueOne, valueTwo);
+        return between(func.build(), valueOne, valueTwo).param(func.params());
     }
 
     // ------
@@ -514,7 +516,7 @@ public final class Cond extends Query<Cond> {
     }
 
     public Cond range(IFunction func, Number valueOne, Number valueTwo, LogicalOpt opt) {
-        return range(func.build(), valueOne, valueTwo, opt);
+        return range(func.build(), valueOne, valueTwo, opt).param(func.params());
     }
 
     // ------
@@ -536,7 +538,7 @@ public final class Cond extends Query<Cond> {
     }
 
     public Cond isNull(IFunction func) {
-        return isNull(func.build());
+        return isNull(func.build()).param(func.params());
     }
 
     // ------
@@ -558,7 +560,7 @@ public final class Cond extends Query<Cond> {
     }
 
     public Cond isNotNull(IFunction func) {
-        return isNotNull(func.build());
+        return isNotNull(func.build()).param(func.params());
     }
 
     // ------
@@ -806,11 +808,15 @@ public final class Cond extends Query<Cond> {
         return Where.create(this);
     }
 
-    @Override
-    public String toString() {
+    public String build() {
         if (brackets) {
             return String.format(" (%s) ", condition.toString());
         }
         return condition.toString();
+    }
+
+    @Override
+    public String toString() {
+        return build();
     }
 }

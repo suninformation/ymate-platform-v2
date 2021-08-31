@@ -16,6 +16,7 @@
  package net.ymate.platform.persistence.jdbc.query;
 
  import net.ymate.platform.core.persistence.Fields;
+ import net.ymate.platform.core.persistence.IFunction;
  import net.ymate.platform.core.persistence.Page;
  import net.ymate.platform.core.persistence.Params;
  import net.ymate.platform.core.persistence.base.IEntity;
@@ -32,7 +33,7 @@
   * @since 2.1.0
   */
  @SuppressWarnings("rawtypes")
- public class QueryBuilder<RESULT> extends Query<QueryBuilder> implements Func {
+ public class QueryBuilder<RESULT> extends Query<QueryBuilder> implements Func.Operators, Func.ControlFlow, Func.Aggregate, Func.DateTime, Func.Math, Func.Strings {
 
      private RESULT result;
 
@@ -155,6 +156,14 @@
 
      public Select select(String from, boolean safePrefix) {
          return new Select(owner(), dataSourceName(), null, from, null, safePrefix);
+     }
+
+     public Select select(IFunction func) {
+         return new Select(owner(), dataSourceName()).field(func);
+     }
+
+     public Select select(IFunction func, String alias) {
+         return new Select(owner(), dataSourceName()).field(func, alias);
      }
 
      // ------ UPDATE
