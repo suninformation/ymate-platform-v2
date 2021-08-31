@@ -18,12 +18,12 @@ package net.ymate.platform.persistence.redis.support;
 import net.ymate.platform.persistence.redis.IRedisCommander;
 import org.apache.commons.lang.NullArgumentException;
 import redis.clients.jedis.*;
-import redis.clients.jedis.args.FlushMode;
-import redis.clients.jedis.args.ListDirection;
-import redis.clients.jedis.args.UnblockType;
+import redis.clients.jedis.args.*;
+import redis.clients.jedis.exceptions.JedisException;
 import redis.clients.jedis.params.*;
 import redis.clients.jedis.resps.KeyedListElement;
 import redis.clients.jedis.resps.KeyedZSetElement;
+import redis.clients.jedis.resps.LCSMatchResult;
 import redis.clients.jedis.util.Slowlog;
 
 import java.util.List;
@@ -56,12 +56,22 @@ public class JedisClusterCommander implements IRedisCommander {
     }
 
     @Override
+    public List<Object> roleBinary() {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
     public List<byte[]> configGet(byte[] pattern) {
         throw new UnsupportedOperationException();
     }
 
     @Override
     public byte[] configSet(byte[] parameter, byte[] value) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public String configSetBinary(byte[] parameter, byte[] value) {
         throw new UnsupportedOperationException();
     }
 
@@ -126,6 +136,11 @@ public class JedisClusterCommander implements IRedisCommander {
     }
 
     @Override
+    public byte[] clientListBinary(ClientType type) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
     public byte[] clientListBinary(long... clientIds) {
         throw new UnsupportedOperationException();
     }
@@ -142,6 +157,16 @@ public class JedisClusterCommander implements IRedisCommander {
 
     @Override
     public Long clientId() {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public String clientPause(long timeout) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public String clientPause(long timeout, ClientPauseMode mode) {
         throw new UnsupportedOperationException();
     }
 
@@ -222,6 +247,11 @@ public class JedisClusterCommander implements IRedisCommander {
 
     @Override
     public String aclSave() {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public List<Object> role() {
         throw new UnsupportedOperationException();
     }
 
@@ -317,6 +347,11 @@ public class JedisClusterCommander implements IRedisCommander {
 
     @Override
     public String clientList() {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public String clientList(ClientType type) {
         throw new UnsupportedOperationException();
     }
 
@@ -492,6 +527,11 @@ public class JedisClusterCommander implements IRedisCommander {
 
     @Override
     public String shutdown() {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void shutdown(SaveMode saveMode) throws JedisException {
         throw new UnsupportedOperationException();
     }
 
@@ -1487,6 +1527,16 @@ public class JedisClusterCommander implements IRedisCommander {
     }
 
     @Override
+    public List<Object> xautoclaim(byte[] key, byte[] groupName, byte[] consumerName, long minIdleTime, byte[] start, XAutoClaimParams params) {
+        return jedisCluster.xautoclaim(key, groupName, consumerName, minIdleTime, start, params);
+    }
+
+    @Override
+    public List<Object> xautoclaimJustId(byte[] key, byte[] groupName, byte[] consumerName, long minIdleTime, byte[] start, XAutoClaimParams params) {
+        return jedisCluster.xautoclaimJustId(key, groupName, consumerName, minIdleTime, start, params);
+    }
+
+    @Override
     public StreamInfo xinfoStream(byte[] key) {
         throw new UnsupportedOperationException();
     }
@@ -1532,6 +1582,21 @@ public class JedisClusterCommander implements IRedisCommander {
     }
 
     @Override
+    public String failover() {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public String failover(FailoverParams failoverParams) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public String failoverAbort() {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
     public Object eval(byte[] script) {
         throw new UnsupportedOperationException();
     }
@@ -1568,6 +1633,11 @@ public class JedisClusterCommander implements IRedisCommander {
 
     @Override
     public String clusterNodes() {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public String clusterReplicas(String nodeId) {
         throw new UnsupportedOperationException();
     }
 
@@ -1657,6 +1727,11 @@ public class JedisClusterCommander implements IRedisCommander {
     }
 
     @Override
+    public String clusterFailover(ClusterFailoverOption failoverOption) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
     public List<Object> clusterSlots() {
         throw new UnsupportedOperationException();
     }
@@ -1667,7 +1742,22 @@ public class JedisClusterCommander implements IRedisCommander {
     }
 
     @Override
+    public String clusterReset(ClusterResetType resetType) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public String clusterMyId() {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
     public String readonly() {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public String readwrite() {
         throw new UnsupportedOperationException();
     }
 
@@ -2702,6 +2792,16 @@ public class JedisClusterCommander implements IRedisCommander {
     }
 
     @Override
+    public Map.Entry<StreamEntryID, List<StreamEntry>> xautoclaim(String key, String group, String consumerName, long minIdleTime, StreamEntryID start, XAutoClaimParams params) {
+        return jedisCluster.xautoclaim(key, group, consumerName, minIdleTime, start, params);
+    }
+
+    @Override
+    public Map.Entry<StreamEntryID, List<StreamEntryID>> xautoclaimJustId(String key, String group, String consumerName, long minIdleTime, StreamEntryID start, XAutoClaimParams params) {
+        return jedisCluster.xautoclaimJustId(key, group, consumerName, minIdleTime, start, params);
+    }
+
+    @Override
     public StreamInfo xinfoStream(String key) {
         throw new UnsupportedOperationException();
     }
@@ -3067,8 +3167,18 @@ public class JedisClusterCommander implements IRedisCommander {
     }
 
     @Override
+    public ScanResult<byte[]> scan(byte[] cursor) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
     public ScanResult<byte[]> scan(byte[] cursor, ScanParams params) {
         return jedisCluster.scan(cursor, params);
+    }
+
+    @Override
+    public ScanResult<byte[]> scan(byte[] cursor, ScanParams params, byte[] type) {
+        return jedisCluster.scan(cursor, params, type);
     }
 
     @Override
@@ -3104,6 +3214,16 @@ public class JedisClusterCommander implements IRedisCommander {
     @Override
     public Long georadiusByMemberStore(byte[] key, byte[] member, double radius, GeoUnit unit, GeoRadiusParam param, GeoRadiusStoreParam storeParam) {
         return jedisCluster.georadiusByMemberStore(key, member, radius, unit, param, storeParam);
+    }
+
+    @Override
+    public LCSMatchResult strAlgoLCSKeys(byte[] keyA, byte[] keyB, StrAlgoLCSParams params) {
+        return jedisCluster.strAlgoLCSKeys(keyA, keyB, params);
+    }
+
+    @Override
+    public LCSMatchResult strAlgoLCSStrings(byte[] strA, byte[] strB, StrAlgoLCSParams params) {
+        return jedisCluster.strAlgoLCSStrings(strA, strB, params);
     }
 
     @Override
@@ -3394,8 +3514,23 @@ public class JedisClusterCommander implements IRedisCommander {
     }
 
     @Override
+    public LCSMatchResult strAlgoLCSKeys(String keyA, String keyB, StrAlgoLCSParams params) {
+        return jedisCluster.strAlgoLCSKeys(keyA, keyB, params);
+    }
+
+    @Override
+    public LCSMatchResult strAlgoLCSStrings(String strA, String strB, StrAlgoLCSParams params) {
+        return jedisCluster.strAlgoLCSStrings(strA, strB, params);
+    }
+
+    @Override
     public ScanResult<String> scan(String cursor, ScanParams params) {
         return jedisCluster.scan(cursor, params);
+    }
+
+    @Override
+    public ScanResult<String> scan(String cursor, ScanParams params, String type) {
+        return jedisCluster.scan(cursor, params, type);
     }
 
     @Override
@@ -3414,7 +3549,22 @@ public class JedisClusterCommander implements IRedisCommander {
     }
 
     @Override
+    public String sentinelMyId() {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
     public List<Map<String, String>> sentinelMasters() {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public Map<String, String> sentinelMaster(String masterName) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public List<Map<String, String>> sentinelSentinels(String masterName) {
         throw new UnsupportedOperationException();
     }
 
@@ -3430,6 +3580,11 @@ public class JedisClusterCommander implements IRedisCommander {
 
     @Override
     public List<Map<String, String>> sentinelSlaves(String masterName) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public List<Map<String, String>> sentinelReplicas(String masterName) {
         throw new UnsupportedOperationException();
     }
 
