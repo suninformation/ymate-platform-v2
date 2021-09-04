@@ -17,6 +17,8 @@ package net.ymate.platform.persistence.jdbc.query;
 
 import net.ymate.platform.commons.util.ExpressionUtils;
 import net.ymate.platform.core.persistence.Fields;
+import net.ymate.platform.core.persistence.IFunction;
+import net.ymate.platform.core.persistence.Params;
 import net.ymate.platform.persistence.jdbc.IDatabase;
 import net.ymate.platform.persistence.jdbc.JDBC;
 import org.apache.commons.lang3.StringUtils;
@@ -30,9 +32,13 @@ import java.util.List;
  */
 public final class GroupBy extends Query<GroupBy> {
 
-    private final Fields groupByNames;
+    private final StringBuilder groupByBuilder;
+
+    private final Params params;
 
     private Cond having;
+
+    private boolean rollup;
 
     public static GroupBy create() {
         return create(JDBC.get());
@@ -92,12 +98,21 @@ public final class GroupBy extends Query<GroupBy> {
         return new GroupBy(owner, dataSourceName).field(prefix, field, wrapIdentifier);
     }
 
+    public static GroupBy create(IDatabase owner, String dataSourceName, String prefix, String field, boolean desc, boolean wrapIdentifier) {
+        return new GroupBy(owner, dataSourceName).field(prefix, field, desc, wrapIdentifier);
+    }
+
     public static GroupBy create(IDatabase owner, String dataSourceName, String field) {
         return new GroupBy(owner, dataSourceName).field(field);
     }
 
     public static GroupBy create(IDatabase owner, String dataSourceName, String field, boolean wrapIdentifier) {
         return new GroupBy(owner, dataSourceName).field(field, wrapIdentifier);
+    }
+
+
+    public static GroupBy create(IDatabase owner, String dataSourceName, String field, boolean desc, boolean wrapIdentifier) {
+        return new GroupBy(owner, dataSourceName).field(field, desc, wrapIdentifier);
     }
 
     public static GroupBy create(IDatabase owner, String dataSourceName, String prefix, Fields fields) {
@@ -108,6 +123,10 @@ public final class GroupBy extends Query<GroupBy> {
         return new GroupBy(owner, dataSourceName).field(prefix, fields, wrapIdentifier);
     }
 
+    public static GroupBy create(IDatabase owner, String dataSourceName, String prefix, Fields fields, boolean desc, boolean wrapIdentifier) {
+        return new GroupBy(owner, dataSourceName).field(prefix, fields, desc, wrapIdentifier);
+    }
+
     public static GroupBy create(IDatabase owner, String dataSourceName, Fields fields) {
         return new GroupBy(owner, dataSourceName).field(fields);
     }
@@ -116,53 +135,139 @@ public final class GroupBy extends Query<GroupBy> {
         return new GroupBy(owner, dataSourceName).field(fields, wrapIdentifier);
     }
 
+    public static GroupBy create(IDatabase owner, String dataSourceName, Fields fields, boolean desc, boolean wrapIdentifier) {
+        return new GroupBy(owner, dataSourceName).field(fields, desc, wrapIdentifier);
+    }
+
     public static GroupBy create(Query<?> query) {
         return new GroupBy(query.owner(), query.dataSourceName());
     }
 
     public GroupBy(IDatabase owner, String dataSourceName) {
         super(owner, dataSourceName);
-        groupByNames = Fields.create();
+        groupByBuilder = new StringBuilder();
+        params = Params.create();
+    }
+
+    public GroupBy groupBy(GroupBy groupBy) {
+        String newGroupBy = StringUtils.substringAfter(groupBy.toSQL(), "GROUP BY ");
+        if (StringUtils.isNotBlank(newGroupBy)) {
+            if (groupByBuilder.length() > 0) {
+                groupByBuilder.append(LINE_END_FLAG);
+            }
+            groupByBuilder.append(newGroupBy);
+            params.add(groupBy.params());
+        }
+        return this;
     }
 
     public GroupBy field(String prefix, Fields fields) {
-        return field(prefix, fields, true);
+        return field(prefix, fields, false, true);
     }
 
     public GroupBy field(String prefix, Fields fields, boolean wrapIdentifier) {
-        checkFieldExcluded(fields).fields().forEach((field) -> groupByNames.add(prefix, wrapIdentifier ? wrapIdentifierField(field) : field));
+        return field(prefix, fields, false, wrapIdentifier);
+    }
+
+    public GroupBy field(String prefix, Fields fields, boolean desc, boolean wrapIdentifier) {
+        checkFieldExcluded(fields).fields().forEach((field) -> field(prefix, field, desc, wrapIdentifier));
         return this;
     }
 
     public GroupBy field(Fields fields) {
-        return field(null, fields, true);
+        return field(null, fields, false, true);
     }
 
     public GroupBy field(Fields fields, boolean wrapIdentifier) {
-        return field(null, fields, wrapIdentifier);
+        return field(null, fields, false, wrapIdentifier);
+    }
+
+    public GroupBy field(Fields fields, boolean desc, boolean wrapIdentifier) {
+        return field(null, fields, desc, wrapIdentifier);
     }
 
     // ------
 
     public GroupBy field(String field) {
-        return field(null, field, true);
+        return field(null, field, false, true);
     }
 
-    public GroupBy field(String field, boolean wrapIdentifier) {
-        return field(null, field, wrapIdentifier);
+    public GroupBy field(String field, boolean desc) {
+        return field(null, field, desc, true);
+    }
+
+    public GroupBy field(String field, boolean desc, boolean wrapIdentifier) {
+        return field(null, field, desc, wrapIdentifier);
+    }
+
+    public GroupBy field(IFunction func) {
+        return field(null, func.build(), false, false).param(func.params());
+    }
+
+    public GroupBy field(IFunction func, boolean desc) {
+        return field(null, func.build(), desc, false).param(func.params());
     }
 
     public GroupBy field(String prefix, String field) {
-        return field(prefix, field, true);
+        return field(prefix, field, false, true);
     }
 
-    public GroupBy field(String prefix, String field, boolean wrapIdentifier) {
-        groupByNames.add(prefix, wrapIdentifier ? wrapIdentifierField(field) : field);
+    public GroupBy field(String prefix, String field, boolean desc) {
+        return field(prefix, field, desc, true);
+    }
+
+    public GroupBy field(String prefix, String field, boolean desc, boolean wrapIdentifier) {
+        if (groupByBuilder.length() > 0) {
+            groupByBuilder.append(LINE_END_FLAG);
+        }
+        if (StringUtils.isNotBlank(prefix)) {
+            groupByBuilder.append(prefix).append(".");
+        }
+        groupByBuilder.append(wrapIdentifier ? wrapIdentifierField(field) : field);
+        if (desc) {
+            groupByBuilder.append(" DESC");
+        }
         return this;
     }
 
-    public Fields fields() {
-        return groupByNames;
+    // --- DESC
+
+    public GroupBy desc(String prefix, Fields fields) {
+        return field(prefix, fields, true, true);
+    }
+
+    public GroupBy desc(String prefix, Fields fields, boolean wrapIdentifier) {
+        return field(prefix, fields, true, wrapIdentifier);
+    }
+
+    public GroupBy desc(Fields fields) {
+        return field(null, fields, true, true);
+    }
+
+    public GroupBy desc(Fields fields, boolean wrapIdentifier) {
+        return field(null, fields, true, wrapIdentifier);
+    }
+
+    // ------
+
+    public GroupBy desc(String field) {
+        return field(null, field, true, true);
+    }
+
+    public GroupBy desc(String field, boolean wrapIdentifier) {
+        return field(null, field, true, wrapIdentifier);
+    }
+
+    public GroupBy desc(IFunction func) {
+        return field(func, true);
+    }
+
+    public GroupBy desc(String prefix, String field) {
+        return field(prefix, field, true, true);
+    }
+
+    public GroupBy desc(String prefix, String field, boolean wrapIdentifier) {
+        return field(prefix, field, true, wrapIdentifier);
     }
 
     public Cond having() {
@@ -174,26 +279,53 @@ public final class GroupBy extends Query<GroupBy> {
         return this;
     }
 
-    public boolean isEmpty() {
-        return fields().isEmpty() && (having == null || having.isEmpty());
+    public GroupBy rollup() {
+        rollup = true;
+        return this;
     }
 
-    @Override
-    public String toString() {
+    public Params params() {
+        return params;
+    }
+
+    public GroupBy param(Object param) {
+        params.add(param);
+        return this;
+    }
+
+    public GroupBy param(Params params) {
+        this.params.add(params);
+        return this;
+    }
+
+    public boolean isEmpty() {
+        return groupByBuilder.length() == 0 && (having == null || having.isEmpty());
+    }
+
+    public String toSQL() {
         ExpressionUtils expression = ExpressionUtils.bind(getExpressionStr("${groupBy} ${having}"));
         if (queryHandler() != null) {
             queryHandler().beforeBuild(expression, this);
         }
         List<String> variables = expression.getVariables();
-        if (!groupByNames.isEmpty() && variables.contains("groupBy")) {
-            expression.set("groupBy", String.format("GROUP BY %s", StringUtils.join(wrapIdentifierFields(groupByNames.toArray()).fields(), LINE_END_FLAG)));
+        if (groupByBuilder.length() > 0 && variables.contains("groupBy")) {
+            StringBuilder stringBuilder = new StringBuilder("GROUP BY ").append(groupByBuilder);
+            if (rollup) {
+                stringBuilder.append(" WITH ROLLUP");
+            }
+            expression.set("groupBy", stringBuilder.toString());
         }
-        if (having != null && variables.contains("having")) {
+        if (having != null && !having().isEmpty() && variables.contains("having")) {
             expression.set("having", String.format("HAVING %s", having.toString()));
         }
         if (queryHandler() != null) {
             queryHandler().afterBuild(expression, this);
         }
         return StringUtils.trimToEmpty(expression.clean().getResult());
+    }
+
+    @Override
+    public String toString() {
+        return toSQL();
     }
 }

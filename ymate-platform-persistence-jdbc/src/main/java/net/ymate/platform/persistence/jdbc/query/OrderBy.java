@@ -15,10 +15,15 @@
  */
 package net.ymate.platform.persistence.jdbc.query;
 
+import net.ymate.platform.commons.util.ExpressionUtils;
 import net.ymate.platform.core.persistence.Fields;
+import net.ymate.platform.core.persistence.IFunction;
+import net.ymate.platform.core.persistence.Params;
 import net.ymate.platform.persistence.jdbc.IDatabase;
 import net.ymate.platform.persistence.jdbc.JDBC;
 import org.apache.commons.lang3.StringUtils;
+
+import java.util.List;
 
 /**
  * 排序对象
@@ -28,6 +33,9 @@ import org.apache.commons.lang3.StringUtils;
 public final class OrderBy extends Query<OrderBy> {
 
     private final StringBuilder orderByBuilder;
+
+    // TODO 若OrderBy中存在参数值，当分页查询count记录数量时可能产生参数下标越界异常!!! 需要单独获取OrderBy中参数完成赋值。
+    private final Params params;
 
     public static OrderBy create() {
         return create(JDBC.get());
@@ -48,6 +56,7 @@ public final class OrderBy extends Query<OrderBy> {
     public OrderBy(IDatabase owner, String dataSourceName) {
         super(owner, dataSourceName);
         orderByBuilder = new StringBuilder();
+        params = Params.create();
     }
 
     public OrderBy orderBy(OrderBy orderBy) {
@@ -57,6 +66,7 @@ public final class OrderBy extends Query<OrderBy> {
                 orderByBuilder.append(LINE_END_FLAG);
             }
             orderByBuilder.append(newOrderBy);
+            params.add(orderBy.params);
         }
         return this;
     }
@@ -103,6 +113,10 @@ public final class OrderBy extends Query<OrderBy> {
         return this;
     }
 
+    public OrderBy asc(IFunction func) {
+        return asc(null, func.build(), false).param(func.params());
+    }
+
     // ------
 
     public OrderBy desc(String prefix, Fields fields, boolean wrapIdentifier) {
@@ -147,7 +161,25 @@ public final class OrderBy extends Query<OrderBy> {
         return this;
     }
 
+    public OrderBy desc(IFunction func) {
+        return desc(null, func.build(), false).param(func.params());
+    }
+
     // ------
+
+    public Params params() {
+        return params;
+    }
+
+    public OrderBy param(Object param) {
+        params.add(param);
+        return this;
+    }
+
+    public OrderBy param(Params params) {
+        this.params.add(params);
+        return this;
+    }
 
     public boolean isEmpty() {
         return orderByBuilder.length() == 0;
@@ -156,11 +188,18 @@ public final class OrderBy extends Query<OrderBy> {
     // ------
 
     public String toSQL() {
-        StringBuilder stringBuilder = new StringBuilder();
-        if (orderByBuilder.length() > 0) {
-            stringBuilder.append("ORDER BY ").append(orderByBuilder);
+        ExpressionUtils expression = ExpressionUtils.bind(getExpressionStr("${orderBy}"));
+        if (queryHandler() != null) {
+            queryHandler().beforeBuild(expression, this);
         }
-        return stringBuilder.toString();
+        List<String> variables = expression.getVariables();
+        if (orderByBuilder.length() > 0 && variables.contains("orderBy")) {
+            expression.set("orderBy", String.format("ORDER BY %s", orderByBuilder));
+        }
+        if (queryHandler() != null) {
+            queryHandler().afterBuild(expression, this);
+        }
+        return StringUtils.trimToEmpty(expression.clean().getResult());
     }
 
     @Override

@@ -94,6 +94,11 @@ public abstract class AbstractFunction implements IFunction {
         return this;
     }
 
+    public AbstractFunction quotes() {
+        fields.add("'");
+        return this;
+    }
+
     public AbstractFunction field(IFunction function) {
         fields.add(function);
         params.add(function.params());

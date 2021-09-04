@@ -1403,19 +1403,19 @@ public interface Func {
         // ------ 返回expr 的平均值。 DISTINCT 选项可用于返回 expr的不同值的平均值。
 
         default IFunction AVG(String expr) {
-            return create("AVG").field(expr);
+            return AVG(false, expr);
         }
 
         default IFunction AVG(IFunction expr) {
-            return AVG(expr.build()).param(expr.params());
+            return AVG(false, expr.build()).param(expr.params());
         }
 
-        default IFunction AVG(String expr, boolean distinct) {
+        default IFunction AVG(boolean distinct, String expr) {
             return create("AVG").field(distinct ? "DISTINCT " : "").field(expr);
         }
 
         default IFunction AVG(IFunction expr, boolean distinct) {
-            return AVG(expr.build(), distinct).param(expr.params());
+            return AVG(distinct, expr.build()).param(expr.params());
         }
 
         // ------ 返回expr中所有比特的 bitwise AND 。计算执行的精确度为64比特(BIGINT) 。
@@ -1451,65 +1451,112 @@ public interface Func {
         // ------ 返回SELECT语句检索到的行中非NULL值的数目。
 
         default IFunction COUNT(String expr) {
-            return create("COUNT").field(expr);
+            return COUNT(false, expr);
         }
 
         default IFunction COUNT(IFunction expr) {
-            return COUNT(expr.build()).param(expr.params());
+            return COUNT(false, expr.build()).param(expr.params());
         }
 
-        default IFunction COUNT(String expr, boolean distinct) {
+        default IFunction COUNT(boolean distinct, String expr) {
             return create("COUNT").field(distinct ? "DISTINCT " : "").field(expr);
         }
 
         default IFunction COUNT(IFunction expr, boolean distinct) {
-            return COUNT(expr.build(), distinct).param(expr.params());
+            return COUNT(distinct, expr.build()).param(expr.params());
         }
 
         // ------
 
-        default IFunction GROUP_CONCAT(String expr) {
-            return create("GROUP_CONCAT").field(expr);
+        default IFunction GROUP_CONCAT(boolean distinct, OrderBy orderBy, String separator, String... expr) {
+            AbstractFunction func = create("GROUP_CONCAT").field(distinct ? "DISTINCT " : "").field(expr);
+            if (orderBy != null && !orderBy.isEmpty()) {
+                func.space().field(orderBy.toSQL()).param(orderBy.params());
+            }
+            if (StringUtils.isNotEmpty(separator)) {
+                func.space().field("SEPARATOR ").field(separator);
+            }
+            return func;
         }
 
-        default IFunction GROUP_CONCAT(IFunction expr) {
-            return GROUP_CONCAT(expr.build()).param(expr.params());
+        default IFunction GROUP_CONCAT(boolean distinct, String... expr) {
+            return GROUP_CONCAT(distinct, null, null, expr);
         }
 
-        default IFunction WM_CONCAT(String expr) {
-            return create("WM_CONCAT").field(expr);
+        default IFunction GROUP_CONCAT(boolean distinct, OrderBy orderBy, String separator, IFunction... expr) {
+            Params params = Params.create();
+            List<String> fields = new ArrayList<>();
+            Arrays.stream(expr).forEach(function -> {
+                fields.add(function.build());
+                params.add(function.params());
+            });
+            return GROUP_CONCAT(distinct, orderBy, separator, fields.toArray(new String[0])).param(params);
         }
 
-        default IFunction WM_CONCAT(IFunction expr) {
-            return WM_CONCAT(expr.build()).param(expr.params());
+        default IFunction GROUP_CONCAT(boolean distinct, IFunction... expr) {
+            return GROUP_CONCAT(distinct, null, null, expr);
+        }
+
+        default IFunction GROUP_CONCAT(String... expr) {
+            return GROUP_CONCAT(false, null, null, expr);
+        }
+
+        default IFunction GROUP_CONCAT(IFunction... expr) {
+            return GROUP_CONCAT(false, null, null, expr);
         }
 
         // ------ 返回expr 的最小值和最大值。
 
+        default IFunction MAX(boolean distinct, String expr) {
+            return create("MAX").field(distinct ? "DISTINCT " : "").field(expr);
+        }
+
+        default IFunction MAX(boolean distinct, IFunction expr) {
+            return MAX(distinct, expr.build()).param(expr.params());
+        }
+
         default IFunction MAX(String expr) {
-            return create("MAX").field(expr);
+            return MAX(false, expr);
         }
 
         default IFunction MAX(IFunction expr) {
-            return MAX(expr.build()).param(expr.params());
+            return MAX(false, expr.build()).param(expr.params());
+        }
+
+        // ---
+
+        default IFunction MIN(boolean distinct, String expr) {
+            return create("MIN").field(distinct ? "DISTINCT " : "").field(expr);
+        }
+
+        default IFunction MIN(boolean distinct, IFunction expr) {
+            return MIN(distinct, expr.build()).param(expr.params());
         }
 
         default IFunction MIN(String expr) {
-            return create("MIN").field(expr);
+            return MIN(false, expr);
         }
 
         default IFunction MIN(IFunction expr) {
-            return MIN(expr.build()).param(expr.params());
+            return MIN(false, expr.build()).param(expr.params());
         }
 
         // ------ 返回expr 的总数。 若返回集合中无任何行，则 SUM() 返回NULL。
 
+        default IFunction SUM(boolean distinct, String expr) {
+            return create("SUM").field(distinct ? "DISTINCT " : "").field(expr);
+        }
+
+        default IFunction SUM(boolean distinct, IFunction expr) {
+            return SUM(distinct, expr.build()).param(expr.params());
+        }
+
         default IFunction SUM(String expr) {
-            return create("SUM").field(expr);
+            return SUM(false, expr);
         }
 
         default IFunction SUM(IFunction expr) {
-            return SUM(expr.build()).param(expr.params());
+            return SUM(false, expr.build()).param(expr.params());
         }
     }
 
@@ -1730,6 +1777,20 @@ public interface Func {
 
         default IFunction brackets(String content) {
             return create().bracketBegin().field(content).bracketEnd();
+        }
+
+        /**
+         * 括号
+         *
+         * @param content 内容
+         * @return 返回加括号的内容
+         */
+        default IFunction quotes(IFunction content) {
+            return create().quotes().field(content).quotes();
+        }
+
+        default IFunction quotes(String content) {
+            return create().quotes().field(content).quotes();
         }
 
         /**

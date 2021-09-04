@@ -17,6 +17,7 @@ package net.ymate.platform.persistence.jdbc.query;
 
 import net.ymate.platform.commons.util.ExpressionUtils;
 import net.ymate.platform.core.persistence.Fields;
+import net.ymate.platform.core.persistence.IFunction;
 import net.ymate.platform.core.persistence.Params;
 import net.ymate.platform.persistence.jdbc.IDatabase;
 import net.ymate.platform.persistence.jdbc.JDBC;
@@ -73,6 +74,7 @@ public final class Where extends QueryHandleAdapter<Where> {
     public Where(IDatabase owner, String dataSourceName) {
         this.owner = owner;
         this.dataSourceName = dataSourceName;
+        groupBy = GroupBy.create(owner, dataSourceName);
         orderBy = OrderBy.create(owner, dataSourceName);
         cond = Cond.create(owner, dataSourceName);
     }
@@ -85,29 +87,15 @@ public final class Where extends QueryHandleAdapter<Where> {
     public Where(Cond cond) {
         owner = cond.owner();
         dataSourceName = cond.dataSourceName();
+        groupBy = GroupBy.create(cond);
         orderBy = OrderBy.create(cond);
         this.cond = cond;
     }
 
     public Where where(Where where) {
         cond.cond(where.cond());
+        groupBy.groupBy(where.groupBy());
         orderBy.orderBy(where.orderBy());
-        //
-        if (where.groupBy() != null) {
-            if (groupBy != null) {
-                groupBy.fields().add(where.groupBy().fields());
-                Cond havingCond = where.groupBy().having();
-                if (havingCond != null) {
-                    if (groupBy.having() != null) {
-                        groupBy.having().cond(havingCond);
-                    } else {
-                        groupBy.having(havingCond);
-                    }
-                }
-            } else {
-                groupBy = where.groupBy();
-            }
-        }
         return this;
     }
 
@@ -131,8 +119,10 @@ public final class Where extends QueryHandleAdapter<Where> {
      * @return 此方法仅返回只读参数集合, 若要维护参数请调用where().param(...)相关方法
      */
     public Params params() {
-        Params params = Params.create().add(cond.params());
-        if (groupBy != null && groupBy.having() != null) {
+        Params params = Params.create()
+                .add(cond.params())
+                .add(groupBy.params());
+        if (groupBy.having() != null) {
             params.add(groupBy.having().params());
         }
         return params;
@@ -150,50 +140,130 @@ public final class Where extends QueryHandleAdapter<Where> {
 
     // ------
 
-    public Where groupBy(String field) {
-        return groupBy(null, field, true);
-    }
-
-    public Where groupBy(String field, boolean wrapIdentifier) {
-        return groupBy(null, field, wrapIdentifier);
-    }
-
-    public Where groupBy(String prefix, String field) {
-        return groupBy(prefix, field, true);
-    }
-
-    public Where groupBy(String prefix, String field, boolean wrapIdentifier) {
-        if (groupBy != null) {
-            groupBy.field(prefix, field, wrapIdentifier);
-        } else {
-            groupBy = GroupBy.create(owner, dataSourceName, prefix, field, wrapIdentifier);
-        }
+    public Where groupByRollup() {
+        this.groupBy.rollup();
         return this;
     }
 
-    public Where groupBy(String prefix, Fields fields) {
-        return groupBy(prefix, fields, true);
-    }
-
-    public Where groupBy(String prefix, Fields fields, boolean wrapIdentifier) {
-        if (groupBy != null) {
-            groupBy.field(prefix, fields, wrapIdentifier);
-        } else {
-            groupBy = GroupBy.create(owner, dataSourceName, prefix, fields, wrapIdentifier);
-        }
+    public Where groupBy(GroupBy groupBy) {
+        this.groupBy.groupBy(groupBy);
         return this;
     }
 
     public Where groupBy(Fields fields) {
-        return groupBy(null, fields, true);
+        groupBy.field(null, fields, false, true);
+        return this;
     }
 
     public Where groupBy(Fields fields, boolean wrapIdentifier) {
-        return groupBy(null, fields, wrapIdentifier);
+        groupBy.field(null, fields, false, wrapIdentifier);
+        return this;
     }
 
-    public Where groupBy(GroupBy groupBy) {
-        this.groupBy = groupBy;
+    public Where groupBy(Fields fields, boolean desc, boolean wrapIdentifier) {
+        groupBy.field(null, fields, desc, wrapIdentifier);
+        return this;
+    }
+
+    public Where groupBy(String prefix, Fields fields) {
+        groupBy.field(prefix, fields, false, true);
+        return this;
+    }
+
+    public Where groupBy(String prefix, Fields fields, boolean wrapIdentifier) {
+        groupBy.field(prefix, fields, false, wrapIdentifier);
+        return this;
+    }
+
+    public Where groupBy(String prefix, Fields fields, boolean desc, boolean wrapIdentifier) {
+        groupBy.field(prefix, fields, desc, wrapIdentifier);
+        return this;
+    }
+
+    public Where groupBy(String field) {
+        groupBy.field(null, field, false, true);
+        return this;
+    }
+
+    public Where groupBy(String field, boolean wrapIdentifier) {
+        groupBy.field(null, field, false, wrapIdentifier);
+        return this;
+    }
+
+    public Where groupBy(String field, boolean desc, boolean wrapIdentifier) {
+        groupBy.field(null, field, desc, wrapIdentifier);
+        return this;
+    }
+
+    public Where groupBy(String prefix, String field) {
+        groupBy.field(prefix, field, false, true);
+        return this;
+    }
+
+    public Where groupBy(String prefix, String field, boolean wrapIdentifier) {
+        groupBy.field(prefix, field, false, wrapIdentifier);
+        return this;
+    }
+
+    public Where groupBy(String prefix, String field, boolean desc, boolean wrapIdentifier) {
+        groupBy.field(prefix, field, desc, wrapIdentifier);
+        return this;
+    }
+
+    public Where groupBy(IFunction func) {
+        groupBy.field(func, false);
+        return this;
+    }
+
+    public Where groupBy(IFunction func, boolean desc) {
+        groupBy.field(func, desc);
+        return this;
+    }
+
+    // --- GroupBy DESC
+
+    public Where groupByDesc(Fields fields) {
+        groupBy.field(null, fields, true, true);
+        return this;
+    }
+
+    public Where groupByDesc(Fields fields, boolean wrapIdentifier) {
+        groupBy.field(null, fields, true, wrapIdentifier);
+        return this;
+    }
+
+    public Where groupByDesc(String prefix, Fields fields) {
+        groupBy.field(prefix, fields, true, true);
+        return this;
+    }
+
+    public Where groupByDesc(String prefix, Fields fields, boolean wrapIdentifier) {
+        groupBy.field(prefix, fields, true, wrapIdentifier);
+        return this;
+    }
+
+    public Where groupByDesc(String field) {
+        groupBy.field(null, field, true, true);
+        return this;
+    }
+
+    public Where groupByDesc(String field, boolean wrapIdentifier) {
+        groupBy.field(null, field, true, wrapIdentifier);
+        return this;
+    }
+
+    public Where groupByDesc(String prefix, String field) {
+        groupBy.field(prefix, field, true, true);
+        return this;
+    }
+
+    public Where groupByDesc(String prefix, String field, boolean wrapIdentifier) {
+        groupBy.field(prefix, field, true, wrapIdentifier);
+        return this;
+    }
+
+    public Where groupByDesc(IFunction func) {
+        groupBy.field(func, true);
         return this;
     }
 
@@ -207,6 +277,11 @@ public final class Where extends QueryHandleAdapter<Where> {
     }
 
     // ------
+
+    public Where orderBy(OrderBy orderBy) {
+        this.orderBy.orderBy(orderBy);
+        return this;
+    }
 
     public Where orderByAsc(Fields fields) {
         orderBy.asc(fields, true);
@@ -245,6 +320,11 @@ public final class Where extends QueryHandleAdapter<Where> {
 
     public Where orderByAsc(String prefix, String field, boolean wrapIdentifier) {
         orderBy.asc(prefix, field, wrapIdentifier);
+        return this;
+    }
+
+    public Where orderByAsc(IFunction func) {
+        orderBy.asc(func);
         return this;
     }
 
@@ -290,6 +370,11 @@ public final class Where extends QueryHandleAdapter<Where> {
         return this;
     }
 
+    public Where orderByDesc(IFunction func) {
+        orderBy.desc(func);
+        return this;
+    }
+
     // ------
 
     public String toSQL() {
@@ -307,7 +392,7 @@ public final class Where extends QueryHandleAdapter<Where> {
         if (slot.hasSlotContent() && variables.contains("slot")) {
             expression.set("slot", slot.buildSlot());
         }
-        if (groupBy != null && variables.contains("groupBy")) {
+        if (!groupBy.isEmpty() && variables.contains("groupBy")) {
             expression.set("groupBy", groupBy.toString());
         }
         if (queryHandler() != null) {
