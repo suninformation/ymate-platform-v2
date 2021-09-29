@@ -45,7 +45,7 @@ public final class GroupBy extends Query<GroupBy> {
     }
 
     public static GroupBy create(Cond having) {
-        return create().having(having);
+        return create(having.owner(), having.dataSourceName(), having);
     }
 
     public static GroupBy create(String prefix, String field) {
