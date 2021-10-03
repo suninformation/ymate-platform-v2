@@ -39,7 +39,7 @@ public class RepositoryHandler implements IBeanHandler {
     public Object handle(Class<?> targetClass) throws Exception {
         if (ClassUtils.isNormalClass(targetClass) && !targetClass.isInterface()) {
             Repository repositoryAnn = targetClass.getAnnotation(Repository.class);
-            if (Type.DATABASE.UNKNOWN.equals(repositoryAnn.dbType())) {
+            if (Type.DATABASE.UNKNOWN.equalsIgnoreCase(repositoryAnn.dbType())) {
                 return BeanMeta.create(targetClass, true);
             } else {
                 IDatabaseDataSourceConfig dataSourceConfig;
@@ -48,7 +48,7 @@ public class RepositoryHandler implements IBeanHandler {
                 } else {
                     dataSourceConfig = owner.getConfig().getDataSourceConfig(repositoryAnn.dsName());
                 }
-                if (dataSourceConfig != null && dataSourceConfig.getType().equals(repositoryAnn.dbType())) {
+                if (dataSourceConfig != null && dataSourceConfig.getType().equalsIgnoreCase(repositoryAnn.dbType())) {
                     return BeanMeta.create(targetClass, true);
                 }
             }

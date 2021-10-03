@@ -41,6 +41,11 @@ public @interface Repository {
     String item() default StringUtils.EMPTY;
 
     /**
+     * @return 资源文件路径名称，默认为空
+     */
+    String configFile() default StringUtils.EMPTY;
+
+    /**
      * @return 自定义SQL配置
      */
     String value() default StringUtils.EMPTY;

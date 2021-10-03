@@ -15,9 +15,22 @@
   */
  package net.ymate.platform.persistence.jdbc.query;
 
+ import net.ymate.platform.persistence.jdbc.IDatabase;
+
  /**
   * @author 刘镇 (suninformation@163.com) on 2021/01/13 23:38
   * @since 2.1.0
   */
  public class QueryBuilder<RESULT> extends AbstractQueryBuilder<RESULT, QueryBuilder<RESULT>> implements Func.Operators, Func.ControlFlow, Func.Aggregate, Func.DateTime, Func.Math, Func.Strings {
+
+     public QueryBuilder() {
+     }
+
+     public QueryBuilder(IDatabase owner) {
+         super(owner);
+     }
+
+     public QueryBuilder(IDatabase owner, String dataSourceName) {
+         super(owner, dataSourceName);
+     }
  }

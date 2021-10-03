@@ -60,18 +60,22 @@ public final class ResultSetHelper {
 
     public static ResultSetHelper bind(Object[] data) {
         List<Object[]> arrayList = new ArrayList<>();
-        arrayList.add(data);
+        if (data != null && data.length > 0) {
+            arrayList.add(data);
+        }
         return bind(arrayList);
     }
 
     public static ResultSetHelper bind(Map<String, Object> data) {
         List<Map<String, Object>> mapList = new ArrayList<>();
-        mapList.add(data);
+        if (data != null && !data.isEmpty()) {
+            mapList.add(data);
+        }
         return bind(mapList);
     }
 
     public static ResultSetHelper bind(IResultSet<?> resultSet) {
-        return bind(resultSet.getResultData());
+        return bind(resultSet != null ? resultSet.getResultData() : null);
     }
 
     /**

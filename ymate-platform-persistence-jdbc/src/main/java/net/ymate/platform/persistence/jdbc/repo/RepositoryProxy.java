@@ -17,6 +17,7 @@ package net.ymate.platform.persistence.jdbc.repo;
 
 import net.ymate.platform.commons.util.ClassUtils;
 import net.ymate.platform.commons.util.RuntimeUtils;
+import net.ymate.platform.configuration.Cfgs;
 import net.ymate.platform.core.beans.annotation.Order;
 import net.ymate.platform.core.beans.proxy.IProxy;
 import net.ymate.platform.core.beans.proxy.IProxyChain;
@@ -29,7 +30,6 @@ import net.ymate.platform.persistence.jdbc.base.impl.ArrayResultSetHandler;
 import net.ymate.platform.persistence.jdbc.base.impl.BeanResultSetHandler;
 import net.ymate.platform.persistence.jdbc.query.SQL;
 import net.ymate.platform.persistence.jdbc.repo.annotation.Repository;
-import org.apache.commons.lang.NullArgumentException;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
@@ -95,25 +95,39 @@ public class RepositoryProxy implements IProxy {
                 if (StringUtils.isBlank(sqlStr) && proxyChain.getTargetObject() instanceof IRepository) {
                     try {
                         IConfiguration configuration = ((IRepository) proxyChain.getTargetObject()).getConfig();
+                        if (configuration == null) {
+                            String configFile = repositoryAnn.configFile();
+                            if (StringUtils.isBlank(configFile)) {
+                                Repository classRepoAnn = proxyChain.getTargetClass().getAnnotation(Repository.class);
+                                if (classRepoAnn != null) {
+                                    configFile = classRepoAnn.configFile();
+                                }
+                            }
+                            if (StringUtils.isNotBlank(configFile)) {
+                                try {
+                                    configuration = Cfgs.get().loadCfg(configFile);
+                                } catch (NoClassDefFoundError ignored) {
+                                }
+                            }
+                        }
                         if (configuration != null) {
                             String keyStr = StringUtils.lowerCase(String.format("%s_%s", repositoryAnn.item(), session.getConnectionHolder().getDialect().getName()));
-                            Map<String, String> statementMap = configuration.getMap(keyStr);
-                            if (statementMap == null || statementMap.isEmpty()) {
+                            if (!configuration.contains(keyStr)) {
                                 keyStr = StringUtils.lowerCase(repositoryAnn.item());
-                                statementMap = configuration.getMap(keyStr);
                             }
-                            if (statementMap == null || statementMap.isEmpty()) {
-                                throw new NullArgumentException(keyStr);
-                            } else {
-                                sqlStr = configuration.getString(keyStr);
-                            }
-                            String languageType = StringUtils.trimToNull(statementMap.get("language"));
-                            if (StringUtils.isNotBlank(languageType)) {
-                                processor = IRepositoryScriptProcessor.Manager.getScriptProcessor(languageType);
-                                if (processor != null) {
-                                    processor.init(sqlStr);
-                                    sqlStr = processor.process(repositoryAnn.item(), proxyChain.getMethodParams());
+                            Map<String, String> attributeMap = configuration.getMap(keyStr);
+                            if (attributeMap != null && !attributeMap.isEmpty()) {
+                                String languageType = StringUtils.trimToNull(attributeMap.get("language"));
+                                if (StringUtils.isNotBlank(languageType)) {
+                                    processor = IRepositoryScriptProcessor.Manager.getScriptProcessor(languageType);
+                                    if (processor != null) {
+                                        processor.init(sqlStr);
+                                        sqlStr = processor.process(repositoryAnn.item(), proxyChain.getMethodParams());
+                                    }
                                 }
+                            }
+                            if (StringUtils.isBlank(sqlStr)) {
+                                sqlStr = configuration.getString(keyStr);
                             }
                         }
                     } catch (Exception e) {
