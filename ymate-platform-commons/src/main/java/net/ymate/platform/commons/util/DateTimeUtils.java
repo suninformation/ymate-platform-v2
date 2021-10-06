@@ -128,6 +128,7 @@ public final class DateTimeUtils {
 
     public static SimpleDateFormat getSimpleDateFormat(String format, String timeOffset) {
         SimpleDateFormat dateFormat = new SimpleDateFormat(format, Locale.ENGLISH);
+        timeOffset = StringUtils.defaultIfBlank(timeOffset, TIMEZONE_OFFSET);
         if (StringUtils.isNotBlank(timeOffset) && TIME_ZONES.containsKey(timeOffset)) {
             dateFormat.setTimeZone(getTimeZone(timeOffset));
         }
@@ -183,7 +184,7 @@ public final class DateTimeUtils {
      * @return 格式化日期时间输出字符串
      */
     public static String formatTime(long time, String pattern) {
-        return formatTime(time, pattern, TIMEZONE_OFFSET);
+        return formatTime(time, pattern, null);
     }
 
     public static String formatTime(long time, String pattern, String timeOffset) {
@@ -194,7 +195,7 @@ public final class DateTimeUtils {
     }
 
     public static Date parseDateTime(String dateTime, String pattern) throws ParseException {
-        return parseDateTime(dateTime, pattern, TIMEZONE_OFFSET);
+        return parseDateTime(dateTime, pattern, null);
     }
 
     public static Date parseDateTime(String dateTime, String pattern, String timeOffset) throws ParseException {

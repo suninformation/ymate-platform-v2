@@ -25,6 +25,7 @@ import org.apache.commons.logging.LogFactory;
 import java.io.Serializable;
 import java.util.*;
 import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * 可执行队列服务
@@ -226,6 +227,7 @@ public class ExecutableQueue<E extends Serializable> implements AutoCloseable {
                         if (element != null) {
                             speedometer.touch();
                             if (listeners != null && !listeners.isEmpty()) {
+                                AtomicInteger abandonedCount = new AtomicInteger(0);
                                 for (String id : listeners.keySet()) {
                                     IListener<E> listener = listeners.get(id);
                                     if (listener != null) {
@@ -241,12 +243,18 @@ public class ExecutableQueue<E extends Serializable> implements AutoCloseable {
                                         }
                                         if (!flag) {
                                             listener.listen(element);
-                                        } else {
-                                            onElementAbandoned(element);
+                                        } else if (!listener.abandoned(element)) {
+                                            // 被抛弃次数累加
+                                            abandonedCount.addAndGet(1);
                                         }
                                     } else {
                                         onListenerRemoved(id, listeners.remove(id));
                                     }
+                                }
+                                // 如果被抛弃次数与注册的监听器数量相当，表示元素未被处理过
+                                if (abandonedCount.get() >= listeners.size()) {
+                                    // 调用全局事件处理
+                                    onElementAbandoned(element);
                                 }
                             } else {
                                 onElementAbandoned(element);
@@ -287,15 +295,17 @@ public class ExecutableQueue<E extends Serializable> implements AutoCloseable {
                     stopped = true;
                     innerExecutorService.shutdown();
                     if (millis > 0) {
-                        innerExecutorService.awaitTermination(millis, TimeUnit.MILLISECONDS);
+                        if (!innerExecutorService.awaitTermination(millis, TimeUnit.MILLISECONDS) && LOG.isWarnEnabled()) {
+                            LOG.warn(String.format("Waiting for ExecutableQueue[%s] listener service to stop, but timed out before terminating.", prefix));
+                        }
                     }
                 } catch (InterruptedException e) {
                     if (LOG.isWarnEnabled()) {
                         LOG.warn(String.format("Interrupt exception when waiting for ExecutableQueue[%s] listener service to stop: ", prefix), RuntimeUtils.unwrapThrow(e));
                     }
                 }
+                onListenStopped();
             }
-            onListenStopped();
         }
     }
 
@@ -521,5 +531,15 @@ public class ExecutableQueue<E extends Serializable> implements AutoCloseable {
          * @param element 元素对象
          */
         void listen(E element);
+
+        /**
+         * 当元素被丢弃（即被过滤）时调用该方法
+         *
+         * @param element 元素对象
+         * @return 返回 true 表示该方法内已对元素进行处置，否则该元素将交给队列全局事件处理
+         */
+        default boolean abandoned(E element) {
+            return false;
+        }
     }
 }

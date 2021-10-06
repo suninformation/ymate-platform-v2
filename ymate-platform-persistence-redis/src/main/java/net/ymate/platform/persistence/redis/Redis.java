@@ -16,7 +16,6 @@
 package net.ymate.platform.persistence.redis;
 
 import net.ymate.platform.commons.impl.DefaultThreadFactory;
-import net.ymate.platform.commons.util.DateTimeUtils;
 import net.ymate.platform.commons.util.RuntimeUtils;
 import net.ymate.platform.commons.util.ThreadUtils;
 import net.ymate.platform.core.IApplication;
@@ -35,6 +34,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import redis.clients.jedis.JedisPubSub;
+import redis.clients.jedis.ShardedJedis;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -233,7 +233,14 @@ public final class Redis implements IModule, IRedis {
                 while (initialized) {
                     try {
                         boolean succeeded = openSession(dsName, session -> {
-                            session.getConnectionHolder().getConnection().subscribe(jedisPubSub, channels);
+                            IRedisCommander redisCommander = session.getConnectionHolder().getConnection();
+                            if (redisCommander.isSharded()) {
+                                // 分片模式下不支持订阅，此处是将订阅命令发送至第一个分片服务
+                                ShardedJedis shardedJedis = (ShardedJedis) redisCommander.getOriginJedis();
+                                shardedJedis.getAllShards().stream().findFirst().ifPresent(jedis -> jedis.subscribe(jedisPubSub, channels));
+                            } else {
+                                redisCommander.subscribe(jedisPubSub, channels);
+                            }
                             return true;
                         });
                         if (succeeded) {
@@ -241,15 +248,7 @@ public final class Redis implements IModule, IRedis {
                         }
                     } catch (Exception e) {
                         if (LOG.isWarnEnabled()) {
-                            LOG.error(String.format("Redis connection [%s] has been interrupted and is constantly trying to reconnect....", dsName), RuntimeUtils.unwrapThrow(e));
-                        }
-                        try {
-                            Thread.sleep(DateTimeUtils.SECOND);
-                        } catch (InterruptedException e1) {
-                            if (LOG.isWarnEnabled()) {
-                                LOG.warn(StringUtils.EMPTY, RuntimeUtils.unwrapThrow(e1));
-                            }
-                            break;
+                            LOG.warn(String.format("Redis connection [%s] has been interrupted and is constantly trying to reconnect....", dsName), RuntimeUtils.unwrapThrow(e));
                         }
                     }
                 }
@@ -262,7 +261,7 @@ public final class Redis implements IModule, IRedis {
         if (initialized) {
             initialized = false;
             //
-            pubSubMap.values().forEach(JedisPubSub::unsubscribe);
+            pubSubMap.values().stream().filter(JedisPubSub::isSubscribed).forEach(JedisPubSub::unsubscribe);
             subscribePool.shutdown();
             subscribePool = null;
             //

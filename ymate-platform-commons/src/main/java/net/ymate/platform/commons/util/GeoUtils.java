@@ -47,7 +47,7 @@ public class GeoUtils {
     /**
      * @param point    坐标点
      * @param distance 距离(米)
-     * @return 返回从坐标点到直定距离的矩形范围
+     * @return 返回从坐标点到指定距离的矩形范围
      */
     public static GeoBound rectangle(GeoPoint point, long distance) {
         if (point == null || distance <= 0) {

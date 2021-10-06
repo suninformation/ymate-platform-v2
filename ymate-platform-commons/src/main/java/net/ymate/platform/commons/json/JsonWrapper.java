@@ -138,12 +138,12 @@ public final class JsonWrapper implements Serializable {
         return jsonAdapter.fromJson(jsonStr);
     }
 
-    public static JsonWrapper fromJson(String jsonStr, boolean snakeCase) {
-        return jsonAdapter.fromJson(jsonStr, snakeCase);
-    }
-
     public static JsonWrapper toJson(Object object) {
         return jsonAdapter.toJson(object);
+    }
+
+    public static JsonWrapper toJson(Object object, boolean snakeCase) {
+        return jsonAdapter.toJson(object, snakeCase);
     }
 
     public static String toJsonString(Object object, boolean format, boolean keepNullValue) {
@@ -235,6 +235,19 @@ public final class JsonWrapper implements Serializable {
         return new HashCodeBuilder(17, 37)
                 .append(object)
                 .toHashCode();
+    }
+
+    public String toString(boolean format, boolean keepNullValue) {
+        return toString(format, keepNullValue, false);
+    }
+
+    public String toString(boolean format, boolean keepNullValue, boolean snakeCase) {
+        if (isJsonObject()) {
+            return ((IJsonObjectWrapper) object).toString(format, keepNullValue, snakeCase);
+        } else if (isJsonArray()) {
+            return ((IJsonArrayWrapper) object).toString(format, keepNullValue, snakeCase);
+        }
+        return object.toString();
     }
 
     @Override

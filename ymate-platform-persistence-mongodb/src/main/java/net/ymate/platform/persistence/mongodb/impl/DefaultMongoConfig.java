@@ -82,12 +82,12 @@ public final class DefaultMongoConfig extends AbstractPersistenceConfig<IMongo, 
             if (!dataSourceMap.isEmpty()) {
                 for (MongoDataSource dataSource : dataSourceMap.values()) {
                     DefaultMongoDataSourceConfig.Builder builder = DefaultMongoDataSourceConfig.builder(dataSource.name())
-                            .username(dataSource.username())
-                            .password(dataSource.password())
+                            .username(StringUtils.trimToNull(dataSource.username()))
+                            .password(StringUtils.trimToNull(dataSource.password()))
                             .passwordEncrypted(dataSource.passwordEncrypted())
                             .passwordClass(dataSource.passwordClass().equals(IPasswordProcessor.class) ? null : dataSource.passwordClass())
-                            .collectionPrefix(dataSource.collectionPrefix())
-                            .databaseName(dataSource.databaseName())
+                            .collectionPrefix(StringUtils.trimToNull(dataSource.collectionPrefix()))
+                            .databaseName(StringUtils.trimToNull(dataSource.databaseName()))
                             .clientOptionsHandlerClass(dataSource.optionsHandlerClass().equals(IMongoClientOptionsHandler.class) ? null : dataSource.optionsHandlerClass());
                     if (StringUtils.isNotBlank(dataSource.connectionUrl())) {
                         builder.connectionUrl(dataSource.connectionUrl());

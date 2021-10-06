@@ -3614,8 +3614,28 @@ public class JedisClusterCommander implements IRedisCommander {
     }
 
     @Override
+    public boolean isSentinel() {
+        return false;
+    }
+
+    @Override
+    public boolean isSharded() {
+        return false;
+    }
+
+    @Override
+    public boolean isNormal() {
+        return false;
+    }
+
+    @Override
     public boolean isClosed() {
         return isClosed;
+    }
+
+    @Override
+    public Object getOriginJedis() {
+        return jedisCluster;
     }
 
 }

@@ -27,6 +27,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 import redis.clients.jedis.Protocol;
 
+import java.time.Duration;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.LinkedHashMap;
@@ -94,14 +95,20 @@ public final class DefaultRedisDataSourceConfig extends AbstractDataSourceConfig
             objectPoolConfig.setEvictionPolicyClassName(poolConfigReader.getString(IRedisConfig.EVICTION_POLICY_CLASS_NAME, GenericObjectPoolConfig.DEFAULT_EVICTION_POLICY_CLASS_NAME));
             objectPoolConfig.setLifo(poolConfigReader.getBoolean(IRedisConfig.LIFO, GenericObjectPoolConfig.DEFAULT_LIFO));
             objectPoolConfig.setMaxWaitMillis(poolConfigReader.getLong(IRedisConfig.MAX_WAIT_MILLIS, GenericObjectPoolConfig.DEFAULT_MAX_WAIT_MILLIS));
-            objectPoolConfig.setMinEvictableIdleTimeMillis(poolConfigReader.getLong(IRedisConfig.MIN_EVICTABLE_IDLE_TIME_MILLIS, GenericObjectPoolConfig.DEFAULT_MIN_EVICTABLE_IDLE_TIME_MILLIS));
-            objectPoolConfig.setSoftMinEvictableIdleTimeMillis(poolConfigReader.getLong(IRedisConfig.SOFT_MIN_EVICTABLE_IDLE_TIME_MILLIS, GenericObjectPoolConfig.DEFAULT_SOFT_MIN_EVICTABLE_IDLE_TIME_MILLIS));
+            //
+            long minEvictableIdleTime = poolConfigReader.getLong(IRedisConfig.MIN_EVICTABLE_IDLE_TIME_MILLIS);
+            objectPoolConfig.setMinEvictableIdleTime(minEvictableIdleTime > 0 ? Duration.ofMillis(minEvictableIdleTime) : GenericObjectPoolConfig.DEFAULT_MIN_EVICTABLE_IDLE_TIME);
+            long softMinEvictableIdleTimeMillis = poolConfigReader.getLong(IRedisConfig.SOFT_MIN_EVICTABLE_IDLE_TIME_MILLIS);
+            objectPoolConfig.setSoftMinEvictableIdleTime(softMinEvictableIdleTimeMillis > 0 ? Duration.ofMillis(softMinEvictableIdleTimeMillis) : GenericObjectPoolConfig.DEFAULT_SOFT_MIN_EVICTABLE_IDLE_TIME);
+            //
             objectPoolConfig.setTestOnBorrow(poolConfigReader.getBoolean(IRedisConfig.TEST_ON_BORROW, GenericObjectPoolConfig.DEFAULT_TEST_ON_BORROW));
             objectPoolConfig.setTestOnReturn(poolConfigReader.getBoolean(IRedisConfig.TEST_ON_RETURN, GenericObjectPoolConfig.DEFAULT_TEST_ON_RETURN));
             objectPoolConfig.setTestOnCreate(poolConfigReader.getBoolean(IRedisConfig.TEST_ON_CREATE, GenericObjectPoolConfig.DEFAULT_TEST_ON_CREATE));
             objectPoolConfig.setTestWhileIdle(poolConfigReader.getBoolean(IRedisConfig.TEST_WHILE_IDLE, GenericObjectPoolConfig.DEFAULT_TEST_WHILE_IDLE));
             objectPoolConfig.setNumTestsPerEvictionRun(poolConfigReader.getInt(IRedisConfig.NUM_TESTS_PER_EVICTION_RUN, GenericObjectPoolConfig.DEFAULT_NUM_TESTS_PER_EVICTION_RUN));
-            objectPoolConfig.setTimeBetweenEvictionRunsMillis(poolConfigReader.getLong(IRedisConfig.TIME_BETWEEN_EVICTION_RUNS_MILLIS, GenericObjectPoolConfig.DEFAULT_TIME_BETWEEN_EVICTION_RUNS_MILLIS));
+            //
+            long timeBetweenEvictionRunsMillis = poolConfigReader.getLong(IRedisConfig.TIME_BETWEEN_EVICTION_RUNS_MILLIS);
+            objectPoolConfig.setTimeBetweenEvictionRuns(timeBetweenEvictionRunsMillis > 0 ? Duration.ofMillis(timeBetweenEvictionRunsMillis) : GenericObjectPoolConfig.DEFAULT_TIME_BETWEEN_EVICTION_RUNS);
         }
     }
 
@@ -253,12 +260,12 @@ public final class DefaultRedisDataSourceConfig extends AbstractDataSourceConfig
         }
 
         public Builder poolMinEvictableIdleTimeMillis(long minEvictableIdleTimeMillis) {
-            config.getObjectPoolConfig().setMinEvictableIdleTimeMillis(minEvictableIdleTimeMillis);
+            config.getObjectPoolConfig().setMinEvictableIdleTime(minEvictableIdleTimeMillis > 0 ? Duration.ofMillis(minEvictableIdleTimeMillis) : GenericObjectPoolConfig.DEFAULT_MIN_EVICTABLE_IDLE_TIME);
             return this;
         }
 
         public Builder poolSoftMinEvictableIdleTimeMillis(long softMinEvictableIdleTimeMillis) {
-            config.getObjectPoolConfig().setSoftMinEvictableIdleTimeMillis(softMinEvictableIdleTimeMillis);
+            config.getObjectPoolConfig().setSoftMinEvictableIdleTime(softMinEvictableIdleTimeMillis > 0 ? Duration.ofMillis(softMinEvictableIdleTimeMillis) : GenericObjectPoolConfig.DEFAULT_SOFT_MIN_EVICTABLE_IDLE_TIME);
             return this;
         }
 
@@ -288,7 +295,7 @@ public final class DefaultRedisDataSourceConfig extends AbstractDataSourceConfig
         }
 
         public Builder poolTimeBetweenEvictionRunsMillis(long timeBetweenEvictionRunsMillis) {
-            config.getObjectPoolConfig().setTimeBetweenEvictionRunsMillis(timeBetweenEvictionRunsMillis);
+            config.getObjectPoolConfig().setTimeBetweenEvictionRuns(timeBetweenEvictionRunsMillis > 0 ? Duration.ofMillis(timeBetweenEvictionRunsMillis) : GenericObjectPoolConfig.DEFAULT_TIME_BETWEEN_EVICTION_RUNS);
             return this;
         }
 

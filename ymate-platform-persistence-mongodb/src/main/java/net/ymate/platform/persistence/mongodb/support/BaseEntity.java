@@ -18,6 +18,7 @@ package net.ymate.platform.persistence.mongodb.support;
 import net.ymate.platform.core.persistence.annotation.Id;
 import net.ymate.platform.core.persistence.annotation.Property;
 import net.ymate.platform.core.persistence.base.IEntity;
+import net.ymate.platform.persistence.mongodb.IMongo;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 
@@ -29,7 +30,7 @@ import java.util.Objects;
 public class BaseEntity implements IEntity<String> {
 
     @Id
-    @Property(name = "_id")
+    @Property(name = IMongo.Opt.ID)
     private String id;
 
     @Override

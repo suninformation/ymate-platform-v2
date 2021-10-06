@@ -1118,6 +1118,11 @@ public class TreeObject implements Serializable, Cloneable {
         return toMixStringValue();
     }
 
+    @Override
+    public String toString() {
+        return toStringValue();
+    }
+
     /**
      * @return 转换为UTC时间毫秒数
      */

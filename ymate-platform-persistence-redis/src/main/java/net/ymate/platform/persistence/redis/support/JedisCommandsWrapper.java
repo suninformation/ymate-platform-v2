@@ -18,6 +18,7 @@ package net.ymate.platform.persistence.redis.support;
 import net.ymate.platform.persistence.redis.IRedisCommander;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisCluster;
+import redis.clients.jedis.ShardedJedis;
 
 /**
  * @author 刘镇 (suninformation@163.com) on 2019-05-23 00:24
@@ -29,7 +30,11 @@ public final class JedisCommandsWrapper {
         return new JedisClusterCommander(jedisCluster);
     }
 
-    public static IRedisCommander bind(Jedis jedis) {
-        return new JedisCommander(jedis);
+    public static IRedisCommander bind(Jedis jedis, boolean isSentinel) {
+        return new JedisCommander(jedis, isSentinel);
+    }
+
+    public static IRedisCommander bind(ShardedJedis shardedJedis) {
+        return new JedisShardedCommander(shardedJedis);
     }
 }

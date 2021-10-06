@@ -35,4 +35,9 @@ public @interface QGroupBy {
      * @return 条件过滤
      */
     QCond[] having() default {};
+
+    /**
+     * @return 是否对分组结果进行数据统计，默认为false
+     */
+    boolean rollup() default false;
 }

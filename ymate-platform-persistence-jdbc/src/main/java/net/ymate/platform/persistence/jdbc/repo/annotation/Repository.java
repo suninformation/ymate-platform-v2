@@ -31,47 +31,47 @@ import java.lang.annotation.*;
 public @interface Repository {
 
     /**
-     * @return 数据源名称, 默认为空
+     * @return 数据源名称（方法优先于类）, 默认为空
      */
     String dsName() default StringUtils.EMPTY;
 
     /**
-     * @return 从资源文件中加载item指定的配置项, 默认为空
+     * @return 从资源文件中加载item指定的配置项（仅作用于方法）, 默认为空
      */
     String item() default StringUtils.EMPTY;
 
     /**
-     * @return 资源文件路径名称，默认为空
+     * @return 资源文件路径名称（方法优先于类），默认为空
      */
     String configFile() default StringUtils.EMPTY;
 
     /**
-     * @return 自定义SQL配置
+     * @return 自定义SQL配置（仅作用于方法）
      */
     String value() default StringUtils.EMPTY;
 
     /**
-     * @return 是否为更新操作, 默认为false
+     * @return 是否为更新操作（仅作用于方法）, 默认为false
      */
     boolean update() default false;
 
     /**
-     * @return 是否分页查询, 默认为false
+     * @return 是否分页查询（仅作用于方法）, 默认为false
      */
     boolean page() default false;
 
     /**
-     * @return 是否调用方法过滤, 默认为false
+     * @return 是否调用方法过滤（仅作用于方法）, 默认为false
      */
     boolean useFilter() default false;
 
     /**
-     * @return 指定当前存储器适用的数据库类型，默认为全部，否则将根据数据库类型进行存储器加载
+     * @return 指定当前存储器适用的数据库类型，默认为全部，否则将根据数据库类型进行存储器加载（仅作用于类）
      */
     String dbType() default Type.DATABASE.UNKNOWN;
 
     /**
-     * @return 指定结果集类型，若设置则使用BeanResultSetHandler进行处理否则默认使用ArrayResultSetHandler处理结果集
+     * @return 指定结果集类型（仅作用于方法），若设置则使用BeanResultSetHandler进行处理否则默认使用ArrayResultSetHandler处理结果集
      */
     Class<?> resultClass() default Void.class;
 }

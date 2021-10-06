@@ -24,9 +24,11 @@ import net.ymate.platform.core.persistence.ISession;
 import net.ymate.platform.core.persistence.Page;
 import net.ymate.platform.persistence.mongodb.support.OrderBy;
 import net.ymate.platform.persistence.mongodb.support.Query;
+import net.ymate.platform.persistence.mongodb.support.QueryBuilder;
 
 import java.io.File;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.Collection;
 
 /**
@@ -62,6 +64,36 @@ public interface IGridFsSession extends ISession<IMongoConnectionHolder> {
     /**
      * 上传文件
      *
+     * @param id             自定义文件唯一标识
+     * @param file           待上传的文件对象
+     * @param fsUploadOption 文件上传配置对象
+     * @return 返回上传的文件唯一标识
+     * @throws Exception 可能产生的任何异常
+     */
+    String upload(String id, File file, GridFSUploadOptions fsUploadOption) throws Exception;
+
+    /**
+     * 上传文件
+     *
+     * @param file 待上传的文件对象
+     * @return 返回上传的文件唯一标识
+     * @throws Exception 可能产生的任何异常
+     */
+    String upload(File file) throws Exception;
+
+    /**
+     * 上传文件
+     *
+     * @param id   自定义文件唯一标识
+     * @param file 待上传的文件对象
+     * @return 返回上传的文件唯一标识
+     * @throws Exception 可能产生的任何异常
+     */
+    String upload(String id, File file) throws Exception;
+
+    /**
+     * 上传文件
+     *
      * @param fileName       文件名称
      * @param inputStream    文件输入流对象
      * @param fsUploadOption 文件上传配置对象
@@ -69,6 +101,57 @@ public interface IGridFsSession extends ISession<IMongoConnectionHolder> {
      * @throws Exception 可能产生的任何异常
      */
     String upload(String fileName, InputStream inputStream, GridFSUploadOptions fsUploadOption) throws Exception;
+
+    /**
+     * 上传文件
+     *
+     * @param id             自定义文件唯一标识
+     * @param fileName       文件名称
+     * @param inputStream    文件输入流对象
+     * @param fsUploadOption 文件上传配置对象
+     * @return 返回上传的文件唯一标识
+     * @throws Exception 可能产生的任何异常
+     */
+    String upload(String id, String fileName, InputStream inputStream, GridFSUploadOptions fsUploadOption) throws Exception;
+
+    /**
+     * 上传文件
+     *
+     * @param fileName    文件名称
+     * @param inputStream 文件输入流对象
+     * @return 返回上传的文件唯一标识
+     * @throws Exception 可能产生的任何异常
+     */
+    String upload(String fileName, InputStream inputStream) throws Exception;
+
+    /**
+     * 上传文件
+     *
+     * @param id          自定义文件唯一标识
+     * @param fileName    文件名称
+     * @param inputStream 文件输入流对象
+     * @return 返回上传的文件唯一标识
+     * @throws Exception 可能产生的任何异常
+     */
+    String upload(String id, String fileName, InputStream inputStream) throws Exception;
+
+    /**
+     * 下载文件数据到指定的输出流
+     *
+     * @param id               文件唯一标识
+     * @param distOutputStream 目标输出流
+     * @throws Exception 可能产生的任何异常
+     */
+    void download(String id, OutputStream distOutputStream) throws Exception;
+
+    /**
+     * 下载文件数据并写入指定的文件
+     *
+     * @param id       文件唯一标识
+     * @param distFile 目标文件
+     * @throws Exception 可能产生的任何异常
+     */
+    void download(String id, File distFile) throws Exception;
 
     /**
      * 判断指定id的文件是否存在
@@ -79,12 +162,28 @@ public interface IGridFsSession extends ISession<IMongoConnectionHolder> {
     boolean exists(String id);
 
     /**
+     * 判断指定fileHash值的文件是否存在
+     *
+     * @param fileHash 文件MD5值
+     * @return 若存在则返回对应的文件记录对象，否则返回null
+     */
+    GridFSFile match(String fileHash);
+
+    /**
      * 根据条件查询符合条件的第一条记录
      *
      * @param query 查询条件对象
      * @return 返回文件记录对象
      */
     GridFSFile findFirst(Query query);
+
+    /**
+     * 根据条件查询符合条件的第一条记录
+     *
+     * @param query 查询条件对象
+     * @return 返回文件记录对象
+     */
+    GridFSFile findFirst(QueryBuilder query);
 
     /**
      * 根据id查询文件记录
@@ -128,12 +227,30 @@ public interface IGridFsSession extends ISession<IMongoConnectionHolder> {
     IResultSet<GridFSFile> find(String filename, OrderBy orderBy);
 
     /**
+     * 查询指定名称的文件记录
+     *
+     * @param filename 文件名称
+     * @param orderBy  排序对象
+     * @param page     分页对象
+     * @return 返回查询结果集对象
+     */
+    IResultSet<GridFSFile> find(String filename, OrderBy orderBy, Page page);
+
+    /**
      * 根据条件查询符合条件的文件记录
      *
      * @param query 条件对象
      * @return 返回查询结果集对象
      */
     IResultSet<GridFSFile> find(Query query);
+
+    /**
+     * 根据条件查询符合条件的文件记录
+     *
+     * @param query 条件对象
+     * @return 返回查询结果集对象
+     */
+    IResultSet<GridFSFile> find(QueryBuilder query);
 
     /**
      * 根据条件查询符合条件的文件记录
@@ -149,10 +266,29 @@ public interface IGridFsSession extends ISession<IMongoConnectionHolder> {
      *
      * @param query   条件对象
      * @param orderBy 排序对象
+     * @return 返回查询结果集对象
+     */
+    IResultSet<GridFSFile> find(QueryBuilder query, OrderBy orderBy);
+
+    /**
+     * 根据条件查询符合条件的文件记录
+     *
+     * @param query   条件对象
+     * @param orderBy 排序对象
      * @param page    分页对象
      * @return 返回查询结果集对象
      */
     IResultSet<GridFSFile> find(Query query, OrderBy orderBy, Page page);
+
+    /**
+     * 根据条件查询符合条件的文件记录
+     *
+     * @param query   条件对象
+     * @param orderBy 排序对象
+     * @param page    分页对象
+     * @return 返回查询结果集对象
+     */
+    IResultSet<GridFSFile> find(QueryBuilder query, OrderBy orderBy, Page page);
 
     /**
      * 根据条件查询符合条件的文件记录
@@ -162,6 +298,15 @@ public interface IGridFsSession extends ISession<IMongoConnectionHolder> {
      * @return 返回查询结果集对象
      */
     IResultSet<GridFSFile> find(Query query, Page page);
+
+    /**
+     * 根据条件查询符合条件的文件记录
+     *
+     * @param query 条件对象
+     * @param page  分页对象
+     * @return 返回查询结果集对象
+     */
+    IResultSet<GridFSFile> find(QueryBuilder query, Page page);
 
     /**
      * 文件重命名

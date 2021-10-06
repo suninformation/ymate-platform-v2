@@ -18,6 +18,7 @@ package net.ymate.platform.commons.util;
 /**
  * 坐标点类型
  *
+ * @author 刘镇 (suninformation@163.com) on 2016/12/12 15:27
  * @since 2.0.6
  */
 public enum GeoPointType {

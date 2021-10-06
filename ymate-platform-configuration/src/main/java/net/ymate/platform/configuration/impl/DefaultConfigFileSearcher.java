@@ -105,7 +105,7 @@ public class DefaultConfigFileSearcher implements IConfigFileSearcher {
     public InputStream searchAsStream(String cfgFile) {
         String filePath = searchAsPath(cfgFile);
         try {
-            return filePath != null ? new FileInputStream(new File(filePath)) : null;
+            return filePath != null ? new FileInputStream(filePath) : null;
         } catch (FileNotFoundException e) {
             return null;
         }

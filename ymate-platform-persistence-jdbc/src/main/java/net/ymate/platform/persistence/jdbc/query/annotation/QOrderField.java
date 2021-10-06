@@ -22,7 +22,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 
 /**
- * 定义一下排序字段
+ * 定义一个参与排序的字段
  *
  * @author 刘镇 (suninformation@163.com) on 2020/04/18 11:39
  * @since 2.1.0

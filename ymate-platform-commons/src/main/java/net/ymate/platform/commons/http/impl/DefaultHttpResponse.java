@@ -89,7 +89,7 @@ public class DefaultHttpResponse implements IHttpResponse {
         reasonPhrase = response.getStatusLine().getReasonPhrase();
         locale = response.getLocale();
         //
-        if (download && response.getStatusLine().getStatusCode() == HttpClientHelper.HTTP_STATUS_CODE_SUCCESS) {
+        if (download && statusCode == HttpClientHelper.HTTP_STATUS_CODE_SUCCESS) {
             String fileName = null;
             if (response.containsHeader(HttpClientHelper.HEADER_CONTENT_DISPOSITION)) {
                 fileName = StringUtils.replace(StringUtils.substringAfter(response.getFirstHeader(HttpClientHelper.HEADER_CONTENT_DISPOSITION).getValue(), "filename="), "\"", StringUtils.EMPTY);

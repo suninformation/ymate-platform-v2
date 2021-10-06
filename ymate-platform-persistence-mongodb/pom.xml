@@ -52,7 +52,6 @@
         <dependency>
             <groupId>org.mongodb</groupId>
             <artifactId>mongodb-driver</artifactId>
-            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>net.ymate.platform</groupId>

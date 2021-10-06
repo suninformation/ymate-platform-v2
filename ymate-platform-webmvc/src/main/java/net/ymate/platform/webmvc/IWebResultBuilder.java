@@ -32,10 +32,6 @@ public interface IWebResultBuilder {
         return fromJson(JsonWrapper.fromJson(jsonStr));
     }
 
-    default IWebResultBuilder fromJson(String jsonStr, boolean snakeCase) {
-        return fromJson(JsonWrapper.fromJson(jsonStr, snakeCase));
-    }
-
     default IWebResultBuilder fromJson(JsonWrapper jsonWrapper) {
         if (jsonWrapper != null && jsonWrapper.isJsonObject()) {
             return fromJson(Objects.requireNonNull(jsonWrapper.getAsJsonObject()));

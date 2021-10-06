@@ -199,12 +199,8 @@ public class CodecUtils {
 
         @Override
         public byte[] initKey() throws Exception {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public String initKeyToString() throws Exception {
-            throw new UnsupportedOperationException();
+            SecureRandom random = new SecureRandom();
+            return random.generateSeed(8);
         }
 
         @Override

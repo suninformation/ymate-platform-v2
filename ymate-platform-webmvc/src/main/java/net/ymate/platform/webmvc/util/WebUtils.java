@@ -374,7 +374,7 @@ public class WebUtils {
     public static String includeJsp(HttpServletRequest request, HttpServletResponse response, String jspFile, String charsetEncoding) throws ServletException, IOException {
         final ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
         includeJsp(request, response, jspFile, charsetEncoding, outputStream);
-        return new String(outputStream.toByteArray(), StringUtils.defaultIfBlank(charsetEncoding, response.getCharacterEncoding()));
+        return outputStream.toString(StringUtils.defaultIfBlank(charsetEncoding, response.getCharacterEncoding()));
     }
 
     public static void includeJsp(HttpServletRequest request, HttpServletResponse response, String jspFile, String charsetEncoding, final OutputStream outputStream) throws ServletException, IOException {

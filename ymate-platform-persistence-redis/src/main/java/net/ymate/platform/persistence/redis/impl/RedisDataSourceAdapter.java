@@ -42,6 +42,10 @@ public class RedisDataSourceAdapter extends AbstractDataSourceAdapter<IRedis, IR
 
     private boolean isCluster;
 
+    private boolean isSentinel;
+
+    private boolean isSharded;
+
     @Override
     @SuppressWarnings("unchecked")
     public void doInitialize(IRedis owner, IRedisDataSourceConfig dataSourceConfig) throws Exception {
@@ -66,6 +70,7 @@ public class RedisDataSourceAdapter extends AbstractDataSourceAdapter<IRedis, IR
                             })
                             .collect(Collectors.toList());
                     pool = new ShardedJedisPool((GenericObjectPoolConfig<ShardedJedis>) dataSourceConfig.getObjectPoolConfig(), shardInfos);
+                    isSharded = true;
                 }
                 break;
             case SENTINEL:
@@ -79,6 +84,7 @@ public class RedisDataSourceAdapter extends AbstractDataSourceAdapter<IRedis, IR
                             decryptPasswordIfNeed(masterServerMeta.getPassword()),
                             masterServerMeta.getDatabase(),
                             masterServerMeta.getClientName());
+                    isSentinel = true;
                 }
                 break;
             case CLUSTER:
@@ -122,8 +128,10 @@ public class RedisDataSourceAdapter extends AbstractDataSourceAdapter<IRedis, IR
     public IRedisCommander getConnection() throws Exception {
         if (isCluster) {
             return JedisCommandsWrapper.bind(jedisCluster);
+        } else if (isSharded) {
+            return JedisCommandsWrapper.bind((ShardedJedis) pool.getResource());
         }
-        return JedisCommandsWrapper.bind((Jedis) pool.getResource());
+        return JedisCommandsWrapper.bind((Jedis) pool.getResource(), isSentinel);
     }
 
     @Override

@@ -404,6 +404,9 @@ public class Query<T> extends QueryHandleAdapter<T> {
                 Cond havingCond = doParseCond(qGroupBy.having());
                 if (havingCond != null && !havingCond.isEmpty()) {
                     selectWhere.having(havingCond);
+                    if (qGroupBy.rollup()) {
+                        selectWhere.groupByRollup();
+                    }
                 }
             }
             if (where != null) {

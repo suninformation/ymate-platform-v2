@@ -49,7 +49,7 @@ public interface IRepositoryScriptProcessor {
      * 执行处理器
      *
      * @param name   方法名称
-     * @param params 参数集合Ω
+     * @param params 参数集合
      * @return 返回最终预执行SQL语句
      * @throws Exception 可能产生的任何异常
      */

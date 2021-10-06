@@ -117,7 +117,7 @@ public final class ValidationMeta implements Serializable {
      * @param targetClass     目标类
      * @return 处理targetClass所有Field成员属性
      */
-    public final Map<String, ParamInfo> parseClassFields(String parentFieldName, Class<?> targetClass) {
+    public Map<String, ParamInfo> parseClassFields(String parentFieldName, Class<?> targetClass) {
         Map<String, ParamInfo> returnValues = new LinkedHashMap<>();
         for (Field field : targetClass.getDeclaredFields()) {
             if (Modifier.isStatic(field.getModifiers())) {

@@ -15,17 +15,12 @@
  */
 package net.ymate.platform.persistence.mongodb.support;
 
-import com.mongodb.BasicDBObject;
-import net.ymate.platform.persistence.mongodb.IBsonable;
 import net.ymate.platform.persistence.mongodb.IOperator;
-import org.bson.conversions.Bson;
 
 /**
  * @author 刘镇 (suninformation@163.com) on 15/11/23 下午3:45
  */
-public final class Query implements IBsonable {
-
-    private final BasicDBObject condition = new BasicDBObject();
+public final class Query extends BaseOperator<Query> {
 
     public static Query create() {
         return new Query();
@@ -36,27 +31,11 @@ public final class Query implements IBsonable {
         return query.cond(key, operator);
     }
 
-    public static Query create(String key, Bson operator) {
-        Query query = new Query();
-        return query.cond(key, operator);
-    }
-
     private Query() {
     }
 
     public Query cond(String key, IOperator operator) {
-        condition.put(key, operator.toBson());
+        putOperator(key, operator.toBson());
         return this;
     }
-
-    public Query cond(String key, Bson operator) {
-        condition.put(key, operator);
-        return this;
-    }
-
-    @Override
-    public BasicDBObject toBson() {
-        return condition;
-    }
-
 }

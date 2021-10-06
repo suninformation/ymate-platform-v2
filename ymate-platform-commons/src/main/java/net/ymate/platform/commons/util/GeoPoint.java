@@ -29,6 +29,8 @@ import java.io.Serializable;
  * https://blog.csdn.net/a13570320979/article/details/51366355
  * <p>
  * https://blog.csdn.net/m0_37738114/article/details/80452485
+ *
+ * @author 刘镇 (suninformation@163.com) on 2016/12/12 15:27
  */
 public class GeoPoint implements Serializable {
 

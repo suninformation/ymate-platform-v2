@@ -71,10 +71,7 @@ public class CacheableProxy implements IProxy {
             } else {
                 cacheElement = (CacheElement) caches.get(cacheName, cacheKey);
             }
-            boolean flag = true;
-            if (cacheElement != null && !cacheElement.isExpired()) {
-                flag = false;
-            }
+            boolean flag = cacheElement == null || cacheElement.isExpired();
             if (flag) {
                 Object cacheTarget = proxyChain.doProxyChain();
                 if (cacheTarget != null) {

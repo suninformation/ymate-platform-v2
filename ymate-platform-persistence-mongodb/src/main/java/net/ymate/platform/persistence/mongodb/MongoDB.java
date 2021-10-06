@@ -16,7 +16,6 @@
 package net.ymate.platform.persistence.mongodb;
 
 import com.mongodb.ClientSessionOptions;
-import com.mongodb.client.ClientSession;
 import net.ymate.platform.commons.util.RuntimeUtils;
 import net.ymate.platform.core.IApplication;
 import net.ymate.platform.core.IApplicationConfigureFactory;
@@ -29,6 +28,8 @@ import net.ymate.platform.core.persistence.AbstractTrade;
 import net.ymate.platform.core.persistence.IDataSourceRouter;
 import net.ymate.platform.core.persistence.ITrade;
 import net.ymate.platform.persistence.mongodb.impl.*;
+import net.ymate.platform.persistence.mongodb.transaction.ITransaction;
+import net.ymate.platform.persistence.mongodb.transaction.Transactions;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -142,13 +143,22 @@ public class MongoDB implements IModule, IMongo {
 
     @Override
     public IMongoConnectionHolder getConnectionHolder(String dataSourceName) throws Exception {
-        return new DefaultMongoConnectionHolder(doSafeGetDataSourceAdapter(dataSourceName));
+        IMongoConnectionHolder connectionHolder;
+        ITransaction transaction = Transactions.get();
+        if (transaction != null) {
+            connectionHolder = transaction.getConnectionHolder(dataSourceName);
+        } else {
+            connectionHolder = new DefaultMongoConnectionHolder(doSafeGetDataSourceAdapter(dataSourceName));
+        }
+        return connectionHolder;
     }
 
     @Override
     public void releaseConnectionHolder(IMongoConnectionHolder connectionHolder) throws Exception {
-        if (connectionHolder != null) {
-            connectionHolder.close();
+        if (Transactions.get() == null) {
+            if (connectionHolder != null) {
+                connectionHolder.close();
+            }
         }
     }
 
@@ -174,12 +184,12 @@ public class MongoDB implements IModule, IMongo {
 
     @Override
     public IMongoDataSourceAdapter getDefaultDataSourceAdapter() {
-        return dataSourceCaches.get(config.getDefaultDataSourceName());
+        return doSafeGetDataSourceAdapter(config.getDefaultDataSourceName());
     }
 
     @Override
     public IMongoDataSourceAdapter getDataSourceAdapter(String dataSourceName) {
-        return dataSourceCaches.get(dataSourceName);
+        return doSafeGetDataSourceAdapter(dataSourceName);
     }
 
     @Override
@@ -202,10 +212,15 @@ public class MongoDB implements IModule, IMongo {
     }
 
     @Override
-    public <T> T openSession(IMongoConnectionHolder databaseHolder, IMongoSessionExecutor<T> executor) throws Exception {
-        try (IMongoSession session = new DefaultMongoSession(this, databaseHolder)) {
+    public <T> T openSession(IMongoConnectionHolder connectionHolder, IMongoSessionExecutor<T> executor) throws Exception {
+        try (IMongoSession session = new DefaultMongoSession(this, connectionHolder)) {
             return executor.execute(session);
         }
+    }
+
+    @Override
+    public <T> T openSession(String dataSourceName, IMongoSessionExecutor<T> executor) throws Exception {
+        return openSession(getConnectionHolder(dataSourceName), executor);
     }
 
     @Override
@@ -214,35 +229,75 @@ public class MongoDB implements IModule, IMongo {
     }
 
     @Override
-    public <T> T openSession(IGridFsSessionExecutor<T> executor) throws Exception {
-        return openSession(getDefaultDataSourceAdapter(), null, executor);
+    public <T> T openGridFsSession(IGridFsSessionExecutor<T> executor) throws Exception {
+        return openGridFsSession(getDefaultConnectionHolder(), null, executor);
     }
 
     @Override
-    public <T> T openSession(String bucketName, IGridFsSessionExecutor<T> executor) throws Exception {
-        return openSession(getDefaultDataSourceAdapter(), bucketName, executor);
+    public <T> T openGridFsSession(String bucketName, IGridFsSessionExecutor<T> executor) throws Exception {
+        return openGridFsSession(getDefaultConnectionHolder(), bucketName, executor);
     }
 
     @Override
-    public <T> T openSession(IMongoDataSourceAdapter dataSourceAdapter, IGridFsSessionExecutor<T> executor) throws Exception {
-        return openSession(dataSourceAdapter, null, executor);
+    public <T> T openGridFsSession(String dataSourceName, String bucketName, IGridFsSessionExecutor<T> executor) throws Exception {
+        return openGridFsSession(getConnectionHolder(dataSourceName), bucketName, executor);
     }
 
     @Override
-    public <T> T openSession(IDataSourceRouter dataSourceRouter, IGridFsSessionExecutor<T> executor) throws Exception {
-        return openSession(getDataSourceAdapter(dataSourceRouter.getDataSourceName()), null, executor);
+    public <T> T openGridFsSession(IMongoConnectionHolder connectionHolder, IGridFsSessionExecutor<T> executor) throws Exception {
+        return openGridFsSession(connectionHolder, null, executor);
     }
 
     @Override
-    public <T> T openSession(IMongoDataSourceAdapter dataSourceAdapter, String bucketName, IGridFsSessionExecutor<T> executor) throws Exception {
-        try (IGridFsSession fsSession = new MongoGridFsSession(dataSourceAdapter, bucketName)) {
+    public <T> T openGridFsSession(IDataSourceRouter dataSourceRouter, IGridFsSessionExecutor<T> executor) throws Exception {
+        return openGridFsSession(getConnectionHolder(dataSourceRouter.getDataSourceName()), null, executor);
+    }
+
+    @Override
+    public <T> T openGridFsSession(IMongoConnectionHolder connectionHolder, String bucketName, IGridFsSessionExecutor<T> executor) throws Exception {
+        try (IGridFsSession fsSession = new MongoGridFsSession(connectionHolder, bucketName)) {
             return executor.execute(fsSession);
         }
     }
 
     @Override
-    public <T> T openSession(IDataSourceRouter dataSourceRouter, String bucketName, IGridFsSessionExecutor<T> executor) throws Exception {
-        return openSession(getDataSourceAdapter(dataSourceRouter.getDataSourceName()), bucketName, executor);
+    public <T> T openGridFsSession(IDataSourceRouter dataSourceRouter, String bucketName, IGridFsSessionExecutor<T> executor) throws Exception {
+        return openGridFsSession(getConnectionHolder(dataSourceRouter.getDataSourceName()), bucketName, executor);
+    }
+
+    @Override
+    public IGridFsSession openGridFsSession() throws Exception {
+        return new MongoGridFsSession(getDefaultConnectionHolder());
+    }
+
+    @Override
+    public IGridFsSession openGridFsSession(String bucketName) throws Exception {
+        return new MongoGridFsSession(getDefaultConnectionHolder(), bucketName);
+    }
+
+    @Override
+    public IGridFsSession openGridFsSession(String dataSourceName, String bucketName) throws Exception {
+        return new MongoGridFsSession(getConnectionHolder(dataSourceName), bucketName);
+    }
+
+    @Override
+    public IGridFsSession openGridFsSession(IMongoConnectionHolder connectionHolder, String bucketName) throws Exception {
+        return new MongoGridFsSession(connectionHolder, bucketName);
+    }
+
+    @Override
+    public IGridFsSession openGridFsSession(IMongoConnectionHolder connectionHolder) throws Exception {
+        return new MongoGridFsSession(connectionHolder);
+    }
+
+    @Override
+    public IGridFsSession openGridFsSession(IDataSourceRouter dataSourceRouter, String bucketName) throws Exception {
+        return new MongoGridFsSession(getConnectionHolder(dataSourceRouter.getDataSourceName()), bucketName);
+    }
+
+    @Override
+    public IGridFsSession openGridFsSession(IDataSourceRouter dataSourceRouter) throws Exception {
+        return new MongoGridFsSession(getConnectionHolder(dataSourceRouter.getDataSourceName()));
     }
 
     @Override
@@ -257,19 +312,21 @@ public class MongoDB implements IModule, IMongo {
     }
 
     @Override
-    public void openTransaction(IMongoConnectionHolder databaseHolder, ITrade trade) throws Exception {
-        openTransaction(databaseHolder, trade, null);
+    public void openTransaction(IMongoConnectionHolder connectionHolder, ITrade trade) throws Exception {
+        openTransaction(connectionHolder, trade, null);
     }
 
     @Override
-    public void openTransaction(IMongoConnectionHolder databaseHolder, ITrade trade, ClientSessionOptions clientSessionOptions) throws Exception {
-        try (ClientSession clientSession = databaseHolder.getDataSourceAdapter().getConnection().startSession(clientSessionOptions != null ? clientSessionOptions : ClientSessionOptions.builder().build())) {
-            try {
-                trade.deal();
-                clientSession.commitTransaction();
-            } catch (Throwable throwable) {
-                clientSession.abortTransaction();
-            }
+    public void openTransaction(IMongoConnectionHolder connectionHolder, ITrade trade, ClientSessionOptions clientSessionOptions) throws Exception {
+        try {
+            Transactions.create(connectionHolder, clientSessionOptions);
+            trade.deal();
+            Transactions.commit();
+        } catch (Throwable throwable) {
+            Transactions.rollback();
+            throw new Exception(RuntimeUtils.unwrapThrow(throwable));
+        } finally {
+            Transactions.close();
         }
     }
 
@@ -284,6 +341,16 @@ public class MongoDB implements IModule, IMongo {
     }
 
     @Override
+    public void openTransaction(String dataSourceName, ITrade trade) throws Exception {
+        openTransaction(getConnectionHolder(dataSourceName), trade, null);
+    }
+
+    @Override
+    public void openTransaction(String dataSourceName, ITrade trade, ClientSessionOptions clientSessionOptions) throws Exception {
+        openTransaction(getConnectionHolder(dataSourceName), trade, clientSessionOptions);
+    }
+
+    @Override
     public <T> T openTransaction(AbstractTrade<T> trade) throws Exception {
         return openTransaction(getDefaultConnectionHolder(), trade, null);
     }
@@ -294,22 +361,14 @@ public class MongoDB implements IModule, IMongo {
     }
 
     @Override
-    public <T> T openTransaction(IMongoConnectionHolder databaseHolder, AbstractTrade<T> trade, ClientSessionOptions clientSessionOptions) throws Exception {
-        try (ClientSession clientSession = databaseHolder.getDataSourceAdapter().getConnection().startSession(clientSessionOptions != null ? clientSessionOptions : ClientSessionOptions.builder().build())) {
-            try {
-                trade.deal();
-                clientSession.commitTransaction();
-                return trade.getResult();
-            } catch (Throwable throwable) {
-                clientSession.abortTransaction();
-                throw new Exception(RuntimeUtils.unwrapThrow(throwable));
-            }
-        }
+    public <T> T openTransaction(IMongoConnectionHolder connectionHolder, AbstractTrade<T> trade, ClientSessionOptions clientSessionOptions) throws Exception {
+        openTransaction(connectionHolder, (ITrade) trade, clientSessionOptions);
+        return trade.getResult();
     }
 
     @Override
-    public <T> T openTransaction(IMongoConnectionHolder databaseHolder, AbstractTrade<T> trade) throws Exception {
-        return openTransaction(databaseHolder, trade, null);
+    public <T> T openTransaction(IMongoConnectionHolder connectionHolder, AbstractTrade<T> trade) throws Exception {
+        return openTransaction(connectionHolder, trade, null);
     }
 
     @Override
@@ -320,5 +379,15 @@ public class MongoDB implements IModule, IMongo {
     @Override
     public <T> T openTransaction(IDataSourceRouter dataSourceRouter, AbstractTrade<T> trade, ClientSessionOptions clientSessionOptions) throws Exception {
         return openTransaction(getConnectionHolder(dataSourceRouter.getDataSourceName()), trade, clientSessionOptions);
+    }
+
+    @Override
+    public <T> T openTransaction(String dataSourceName, AbstractTrade<T> trade) throws Exception {
+        return openTransaction(getConnectionHolder(dataSourceName), trade, null);
+    }
+
+    @Override
+    public <T> T openTransaction(String dataSourceName, AbstractTrade<T> trade, ClientSessionOptions clientSessionOptions) throws Exception {
+        return openTransaction(getConnectionHolder(dataSourceName), trade, clientSessionOptions);
     }
 }

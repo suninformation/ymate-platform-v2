@@ -44,9 +44,9 @@ public interface IJsonAdapter {
 
     JsonWrapper fromJson(String jsonStr);
 
-    JsonWrapper fromJson(String jsonStr, boolean snakeCase);
-
     JsonWrapper toJson(Object object);
+
+    JsonWrapper toJson(Object object, boolean snakeCase);
 
     String toJsonString(Object object, boolean format, boolean keepNullValue);
 

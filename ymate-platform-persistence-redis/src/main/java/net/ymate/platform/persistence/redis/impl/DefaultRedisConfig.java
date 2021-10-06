@@ -85,7 +85,7 @@ public final class DefaultRedisConfig extends AbstractPersistenceConfig<IRedis, 
                 for (RedisDataSource dataSource : dataSourceMap.values()) {
                     DefaultRedisDataSourceConfig.Builder builder = DefaultRedisDataSourceConfig.builder(dataSource.name())
                             .connectionType(dataSource.connectionType())
-                            .masterServerName(dataSource.masterServerName())
+                            .masterServerName(StringUtils.defaultIfBlank(dataSource.masterServerName(), IRedisConfig.DEFAULT_STR))
                             .passwordEncrypted(dataSource.passwordEncrypted())
                             .passwordClass(dataSource.passwordClass().equals(IPasswordProcessor.class) ? null : dataSource.passwordClass())
                             .poolMinIdle(dataSource.poolMinIdle())
@@ -95,7 +95,7 @@ public final class DefaultRedisConfig extends AbstractPersistenceConfig<IRedis, 
                             .poolFairness(dataSource.poolFairness())
                             .poolJmxEnabled(dataSource.poolJmxEnabled())
                             .poolJmxNameBase(StringUtils.trimToNull(dataSource.poolJmxNameBase()))
-                            .poolJmxNamePrefix(dataSource.poolJmxNamePrefix())
+                            .poolJmxNamePrefix(StringUtils.trimToNull(dataSource.poolJmxNamePrefix()))
                             .poolEvictionPolicyClassName(StringUtils.defaultIfBlank(dataSource.poolEvictionPolicyClassName(), GenericObjectPoolConfig.DEFAULT_EVICTION_POLICY_CLASS_NAME))
                             .poolLifo(dataSource.poolLifo())
                             .poolMaxWaitMillis(dataSource.poolMaxWaitMillis())
@@ -117,8 +117,8 @@ public final class DefaultRedisConfig extends AbstractPersistenceConfig<IRedis, 
                                     .maxAttempts(server.maxAttempts() > 0 ? server.maxAttempts() : 3)
                                     .weight(server.weight() > 0 ? server.weight() : 1)
                                     .database(server.database() >= 0 ? server.database() : Protocol.DEFAULT_DATABASE)
-                                    .clientName(server.clientName())
-                                    .password(server.password()).build());
+                                    .clientName(StringUtils.trimToNull(server.clientName()))
+                                    .password(StringUtils.trimToNull(server.password())).build());
                         }
                     }
                     dataSourceConfigs.put(dataSource.name(), builder.build());

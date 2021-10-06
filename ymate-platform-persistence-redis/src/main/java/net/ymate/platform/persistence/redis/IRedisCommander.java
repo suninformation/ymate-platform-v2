@@ -37,11 +37,39 @@ public interface IRedisCommander extends BinaryJedisClusterCommands, MultiKeyBin
     boolean isCluster();
 
     /**
+     * 判断当前是否为哨兵模式
+     *
+     * @return 若是则返回true
+     */
+    boolean isSentinel();
+
+    /**
+     * 判断当前是否为分片模式
+     *
+     * @return 若是则返回true
+     */
+    boolean isSharded();
+
+    /**
+     * 判断当前是否为正常模式（即排除集群、分片模式）
+     *
+     * @return 若是则返回true
+     */
+    boolean isNormal();
+
+    /**
      * 判断当前是否已被关闭
      *
      * @return 若是则返回true
      */
     boolean isClosed();
+
+    /**
+     * 获取原始Jedis对象
+     *
+     * @return 返回原始Jedis对象
+     */
+    Object getOriginJedis();
 
     @Override
     @Deprecated
@@ -58,7 +86,7 @@ public interface IRedisCommander extends BinaryJedisClusterCommands, MultiKeyBin
     @Override
     @Deprecated
     default List<byte[]> xrange(byte[] key, byte[] start, byte[] end, long count) {
-        return xrange(key, start, end, (int) Math.min(count, (long) Integer.MAX_VALUE));
+        return xrange(key, start, end, (int) Math.min(count, Integer.MAX_VALUE));
     }
 
     @Override

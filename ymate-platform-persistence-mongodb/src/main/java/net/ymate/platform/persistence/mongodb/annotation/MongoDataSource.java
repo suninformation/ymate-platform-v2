@@ -39,7 +39,7 @@ public @interface MongoDataSource {
     /**
      * @return 数据库访问用户名称
      */
-    String username();
+    String username() default StringUtils.EMPTY;
 
     /**
      * @return 数据库访问密码

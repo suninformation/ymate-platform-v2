@@ -23,6 +23,8 @@ import java.io.Serializable;
 
 /**
  * 地理坐标矩形区域
+ *
+ * @author 刘镇 (suninformation@163.com) on 2016/12/12 15:27
  */
 public class GeoBound implements Serializable {
 

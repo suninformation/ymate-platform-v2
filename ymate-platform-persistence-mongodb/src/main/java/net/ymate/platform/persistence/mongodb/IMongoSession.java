@@ -18,6 +18,7 @@ package net.ymate.platform.persistence.mongodb;
 import com.mongodb.client.AggregateIterable;
 import com.mongodb.client.DistinctIterable;
 import com.mongodb.client.MapReduceIterable;
+import com.mongodb.client.MongoCollection;
 import net.ymate.platform.core.beans.annotation.Ignored;
 import net.ymate.platform.core.persistence.Fields;
 import net.ymate.platform.core.persistence.IResultSet;
@@ -27,6 +28,7 @@ import net.ymate.platform.core.persistence.base.IEntity;
 import net.ymate.platform.persistence.mongodb.support.Aggregation;
 import net.ymate.platform.persistence.mongodb.support.OrderBy;
 import net.ymate.platform.persistence.mongodb.support.Query;
+import net.ymate.platform.persistence.mongodb.support.QueryBuilder;
 import org.bson.Document;
 
 import java.io.Serializable;
@@ -41,7 +43,27 @@ import java.util.List;
 public interface IMongoSession extends ISession<IMongoConnectionHolder> {
 
     /**
+     * 获取数据库集合对象
+     *
+     * @param entity 实体类
+     * @param <T>    实体类型
+     * @return 返回对应实体类型的数据库集合对象
+     */
+    <T extends IEntity> MongoCollection<Document> getCollection(Class<T> entity);
+
+    /**
      * 根据实体执行查询
+     *
+     * @param <T>    指定结果集数据类型
+     * @param entity 实体对象
+     * @param filter 过滤条件
+     * @return 返回全部结果数据
+     * @throws Exception 可能产生的异常
+     */
+    <T extends IEntity> IResultSet<T> find(Class<T> entity, Query filter) throws Exception;
+
+    /**
+     * 根据实体执行查询全部
      *
      * @param <T>    指定结果集数据类型
      * @param entity 实体对象
@@ -53,36 +75,87 @@ public interface IMongoSession extends ISession<IMongoConnectionHolder> {
     /**
      * 根据实体执行查询
      *
+     * @param <T>    指定结果集数据类型
+     * @param entity 实体对象
+     * @param filter 过滤条件
+     * @return 返回全部结果数据
+     * @throws Exception 可能产生的异常
+     */
+    <T extends IEntity> IResultSet<T> find(Class<T> entity, QueryBuilder filter) throws Exception;
+
+    /**
+     * 根据实体执行查询
+     *
      * @param <T>     指定结果集数据类型
      * @param entity  实体对象
+     * @param filter  过滤条件
      * @param orderBy 排序条件
      * @return 返回全部结果数据
      * @throws Exception 可能产生的异常
      */
-    <T extends IEntity> IResultSet<T> find(Class<T> entity, OrderBy orderBy) throws Exception;
+    <T extends IEntity> IResultSet<T> find(Class<T> entity, Query filter, OrderBy orderBy) throws Exception;
+
+    /**
+     * 根据实体执行查询
+     *
+     * @param <T>     指定结果集数据类型
+     * @param entity  实体对象
+     * @param filter  过滤条件
+     * @param orderBy 排序条件
+     * @return 返回全部结果数据
+     * @throws Exception 可能产生的异常
+     */
+    <T extends IEntity> IResultSet<T> find(Class<T> entity, QueryBuilder filter, OrderBy orderBy) throws Exception;
 
     /**
      * 根据实体执行分页查询
      *
      * @param <T>    指定结果集数据类型
      * @param entity 实体对象
+     * @param filter 过滤条件
      * @param page   分页查询对象
      * @return 返回结果数据
      * @throws Exception 可能产生的异常
      */
-    <T extends IEntity> IResultSet<T> find(Class<T> entity, Page page) throws Exception;
+    <T extends IEntity> IResultSet<T> find(Class<T> entity, Query filter, Page page) throws Exception;
+
+    /**
+     * 根据实体执行分页查询
+     *
+     * @param <T>    指定结果集数据类型
+     * @param entity 实体对象
+     * @param filter 过滤条件
+     * @param page   分页查询对象
+     * @return 返回结果数据
+     * @throws Exception 可能产生的异常
+     */
+    <T extends IEntity> IResultSet<T> find(Class<T> entity, QueryBuilder filter, Page page) throws Exception;
 
     /**
      * 根据实体执行分页查询
      *
      * @param <T>     指定结果集数据类型
      * @param entity  实体对象
+     * @param filter  过滤条件
      * @param orderBy 排序条件
      * @param page    分页查询对象
      * @return 返回结果数据
      * @throws Exception 可能产生的异常
      */
-    <T extends IEntity> IResultSet<T> find(Class<T> entity, OrderBy orderBy, Page page) throws Exception;
+    <T extends IEntity> IResultSet<T> find(Class<T> entity, Query filter, OrderBy orderBy, Page page) throws Exception;
+
+    /**
+     * 根据实体执行分页查询
+     *
+     * @param <T>     指定结果集数据类型
+     * @param entity  实体对象
+     * @param filter  过滤条件
+     * @param orderBy 排序条件
+     * @param page    分页查询对象
+     * @return 返回结果数据
+     * @throws Exception 可能产生的异常
+     */
+    <T extends IEntity> IResultSet<T> find(Class<T> entity, QueryBuilder filter, OrderBy orderBy, Page page) throws Exception;
 
     /**
      * 根据指定key条件执行查询
@@ -94,6 +167,41 @@ public interface IMongoSession extends ISession<IMongoConnectionHolder> {
      * @throws Exception 可能产生的异常
      */
     <T extends IEntity> T findFirst(Class<T> entity, Query filter) throws Exception;
+
+    /**
+     * 根据指定key条件执行查询
+     *
+     * @param <T>    指定结果集数据类型
+     * @param entity 实体对象
+     * @param filter 过滤条件
+     * @return 返回结果集中第一条数据
+     * @throws Exception 可能产生的异常
+     */
+    <T extends IEntity> T findFirst(Class<T> entity, QueryBuilder filter) throws Exception;
+
+    /**
+     * 根据指定key条件执行查询
+     *
+     * @param <T>     指定结果集数据类型
+     * @param entity  实体对象
+     * @param filter  过滤条件
+     * @param orderBy 排序条件
+     * @return 返回结果集中第一条数据
+     * @throws Exception 可能产生的异常
+     */
+    <T extends IEntity> T findFirst(Class<T> entity, Query filter, OrderBy orderBy) throws Exception;
+
+    /**
+     * 根据指定key条件执行查询
+     *
+     * @param <T>     指定结果集数据类型
+     * @param entity  实体对象
+     * @param filter  过滤条件
+     * @param orderBy 排序条件
+     * @return 返回结果集中第一条数据
+     * @throws Exception 可能产生的异常
+     */
+    <T extends IEntity> T findFirst(Class<T> entity, QueryBuilder filter, OrderBy orderBy) throws Exception;
 
     /**
      * 通过ID查找指定的实体对象
@@ -128,6 +236,17 @@ public interface IMongoSession extends ISession<IMongoConnectionHolder> {
     <T extends IEntity> long count(Class<T> entity, Query filter) throws Exception;
 
     /**
+     * 计算查询结果总记录数量
+     *
+     * @param <T>    指定实体类型
+     * @param entity 实体类对象
+     * @param filter 过滤条件
+     * @return 返回总记录数量
+     * @throws Exception 可能产生的异常
+     */
+    <T extends IEntity> long count(Class<T> entity, QueryBuilder filter) throws Exception;
+
+    /**
      * 判断指定ID的实体记录是否存在
      *
      * @param entity 实体类对象
@@ -148,6 +267,17 @@ public interface IMongoSession extends ISession<IMongoConnectionHolder> {
      * @throws Exception 可能产生的异常
      */
     <T extends IEntity> boolean exists(Class<T> entity, Query filter) throws Exception;
+
+    /**
+     * 判断指定条件的实体记录是否存在
+     *
+     * @param entity 实体类对象
+     * @param filter 条件对象
+     * @param <T>    指定实体类型
+     * @return 返回true表示记录存在
+     * @throws Exception 可能产生的异常
+     */
+    <T extends IEntity> boolean exists(Class<T> entity, QueryBuilder filter) throws Exception;
 
     /**
      * 聚合
@@ -188,6 +318,20 @@ public interface IMongoSession extends ISession<IMongoConnectionHolder> {
      * @throws Exception 可能产生的异常
      */
     <T extends IEntity, RESULT> DistinctIterable<RESULT> distinct(Class<T> entity, Class<RESULT> resultClass, String fieldName, Query query) throws Exception;
+
+    /**
+     * 去重
+     *
+     * @param entity      实体类对象
+     * @param resultClass 结果类对象
+     * @param fieldName   属性名称
+     * @param query       过滤条件
+     * @param <T>         指定实体类型
+     * @param <RESULT>    指定结果类型
+     * @return 返回去重结果集迭代器对象
+     * @throws Exception 可能产生的异常
+     */
+    <T extends IEntity, RESULT> DistinctIterable<RESULT> distinct(Class<T> entity, Class<RESULT> resultClass, String fieldName, QueryBuilder query) throws Exception;
 
     /**
      * MapReduce
@@ -303,10 +447,10 @@ public interface IMongoSession extends ISession<IMongoConnectionHolder> {
      *
      * @param <T>      指定结果集数据类型
      * @param entities 实体对象集合
-     * @return 返回删除之前的实体对象集合
+     * @return 返回删除操作影响记录数量
      * @throws Exception 可能产生的异常
      */
-    <T extends IEntity> List<T> delete(List<T> entities) throws Exception;
+    <T extends IEntity> long delete(List<T> entities) throws Exception;
 
     /**
      * 批量删除指定ID的记录
@@ -314,7 +458,7 @@ public interface IMongoSession extends ISession<IMongoConnectionHolder> {
      * @param <T>    指定结果集数据类型
      * @param entity 实体对象
      * @param ids    记录唯一标识集合
-     * @return 返回删除之前的实体对象集合
+     * @return 返回删除操作影响记录数量
      * @throws Exception 可能产生的异常
      */
     <T extends IEntity> long delete(Class<T> entity, Collection<Serializable> ids) throws Exception;

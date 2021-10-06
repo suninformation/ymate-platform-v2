@@ -110,13 +110,8 @@ public class FastJsonAdapter implements IJsonAdapter {
 
     @Override
     public JsonWrapper fromJson(String jsonStr) {
-        return fromJson(jsonStr, false);
-    }
-
-    @Override
-    public JsonWrapper fromJson(String jsonStr, boolean snakeCase) {
         JsonWrapper jsonWrapper = null;
-        Object obj = JSON.parse(jsonStr, snakeCase ? SNAKE_CASE_PARSE_CONFIG : ParserConfig.getGlobalInstance(), Feature.OrderedField);
+        Object obj = JSON.parse(jsonStr, ParserConfig.getGlobalInstance(), Feature.OrderedField);
         if (obj instanceof JSONObject) {
             jsonWrapper = new JsonWrapper(new FastJsonObjectWrapper((JSONObject) obj));
         } else if (obj instanceof JSONArray) {
@@ -127,8 +122,13 @@ public class FastJsonAdapter implements IJsonAdapter {
 
     @Override
     public JsonWrapper toJson(Object object) {
+        return toJson(object, false);
+    }
+
+    @Override
+    public JsonWrapper toJson(Object object, boolean snakeCase) {
         JsonWrapper jsonWrapper = null;
-        Object obj = JSON.toJSON(JsonWrapper.unwrap(object));
+        Object obj = JSON.toJSON(JsonWrapper.unwrap(object), snakeCase ? SNAKE_CASE_SERIALIZE_CONFIG : SerializeConfig.globalInstance);
         if (obj instanceof JSONObject) {
             jsonWrapper = new JsonWrapper(new FastJsonObjectWrapper((JSONObject) obj));
         } else if (obj instanceof JSONArray) {

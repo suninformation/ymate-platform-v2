@@ -29,7 +29,7 @@ import java.lang.annotation.*;
 public @interface QOrderBy {
 
     /**
-     * @return 参于排序的字段
+     * @return 参与排序的字段
      */
     QOrderField[] value();
 }

@@ -26,10 +26,8 @@ import net.ymate.platform.persistence.mongodb.IMongoConnectionHolder;
 import net.ymate.platform.persistence.mongodb.IMongoSession;
 import net.ymate.platform.persistence.mongodb.expression.ComparisonExp;
 import net.ymate.platform.persistence.mongodb.expression.UpdateExp;
-import net.ymate.platform.persistence.mongodb.support.Aggregation;
-import net.ymate.platform.persistence.mongodb.support.OrderBy;
-import net.ymate.platform.persistence.mongodb.support.Query;
-import net.ymate.platform.persistence.mongodb.support.ResultSetHelper;
+import net.ymate.platform.persistence.mongodb.support.*;
+import net.ymate.platform.persistence.mongodb.transaction.Transactions;
 import org.apache.commons.lang3.StringUtils;
 import org.bson.Document;
 import org.bson.conversions.Bson;
@@ -39,6 +37,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * @author 刘镇 (suninformation@163.com) on 15/11/22 下午10:35
@@ -73,11 +72,38 @@ public class DefaultMongoSession extends AbstractSession<IMongoConnectionHolder>
 
     @Override
     public void close() throws Exception {
-        connectionHolder.close();
+        if (connectionHolder != null) {
+            if (Transactions.get() == null) {
+                connectionHolder.close();
+            }
+        }
     }
 
-    private <T extends IEntity> MongoCollection<Document> doGetCollection(Class<T> entity) {
+    @Override
+    public <T extends IEntity> MongoCollection<Document> getCollection(Class<T> entity) {
         return connectionHolder.getConnection().getCollection(collectionPrefix.concat(EntityMeta.load(entity).getEntityName()));
+    }
+
+    private <T extends IEntity> FindIterable<Document> doFindIterable(MongoCollection<Document> collection, Class<T> entity, Query filter, OrderBy orderBy) throws Exception {
+        FindIterable<Document> findIterable;
+        ClientSession clientSession = Transactions.getClientSession(connectionHolder);
+        if (filter != null) {
+            if (clientSession == null) {
+                findIterable = collection.find(filter.toBson());
+            } else {
+                findIterable = collection.find(clientSession, filter.toBson());
+            }
+        } else {
+            if (clientSession == null) {
+                findIterable = collection.find();
+            } else {
+                findIterable = collection.find(clientSession);
+            }
+        }
+        if (orderBy != null) {
+            findIterable.sort(orderBy.toBson());
+        }
+        return findIterable;
     }
 
     private boolean doPageInit(FindIterable<Document> findIterable, Page page) {
@@ -89,30 +115,44 @@ public class DefaultMongoSession extends AbstractSession<IMongoConnectionHolder>
     }
 
     @Override
-    public <T extends IEntity> IResultSet<T> find(final Class<T> entity) throws Exception {
-        if (getSessionEventListener() != null) {
-            getSessionEventListener().onQueryBefore(new SessionEventContext(entity));
-        }
-        return new DefaultResultSet<>(ResultSetHelper.toEntities(entity, doGetCollection(entity).find()));
+    public <T extends IEntity> IResultSet<T> find(final Class<T> entity, Query filter) throws Exception {
+        return find(entity, filter, null, null);
     }
 
     @Override
-    public <T extends IEntity> IResultSet<T> find(Class<T> entity, OrderBy orderBy) throws Exception {
-        return find(entity, orderBy, null);
+    public <T extends IEntity> IResultSet<T> find(Class<T> entity) throws Exception {
+        return find(entity, (Query) null, null, null);
     }
 
     @Override
-    public <T extends IEntity> IResultSet<T> find(Class<T> entity, Page page) throws Exception {
-        return find(entity, null, page);
+    public <T extends IEntity> IResultSet<T> find(Class<T> entity, QueryBuilder filter) throws Exception {
+        return find(entity, filter.build(), null, null);
     }
 
     @Override
-    public <T extends IEntity> IResultSet<T> find(Class<T> entity, OrderBy orderBy, Page page) throws Exception {
-        MongoCollection<Document> collection = doGetCollection(entity);
-        FindIterable<Document> findIterable = collection.find();
-        if (orderBy != null) {
-            findIterable.sort(orderBy.toBson());
-        }
+    public <T extends IEntity> IResultSet<T> find(Class<T> entity, Query filter, OrderBy orderBy) throws Exception {
+        return find(entity, filter, orderBy, null);
+    }
+
+    @Override
+    public <T extends IEntity> IResultSet<T> find(Class<T> entity, QueryBuilder filter, OrderBy orderBy) throws Exception {
+        return find(entity, filter.build(), orderBy, null);
+    }
+
+    @Override
+    public <T extends IEntity> IResultSet<T> find(Class<T> entity, Query filter, Page page) throws Exception {
+        return find(entity, filter, null, page);
+    }
+
+    @Override
+    public <T extends IEntity> IResultSet<T> find(Class<T> entity, QueryBuilder filter, Page page) throws Exception {
+        return find(entity, filter.build(), null, page);
+    }
+
+    @Override
+    public <T extends IEntity> IResultSet<T> find(Class<T> entity, Query filter, OrderBy orderBy, Page page) throws Exception {
+        MongoCollection<Document> collection = getCollection(entity);
+        FindIterable<Document> findIterable = doFindIterable(collection, entity, filter, orderBy);
         if (doPageInit(findIterable, page)) {
             return new DefaultResultSet<>(ResultSetHelper.toEntities(entity, findIterable), page.page(), page.pageSize(), page.isCount() ? collection.countDocuments() : 0);
         }
@@ -120,8 +160,29 @@ public class DefaultMongoSession extends AbstractSession<IMongoConnectionHolder>
     }
 
     @Override
+    public <T extends IEntity> IResultSet<T> find(Class<T> entity, QueryBuilder filter, OrderBy orderBy, Page page) throws Exception {
+        return find(entity, filter.build(), orderBy, page);
+    }
+
+    @Override
     public <T extends IEntity> T findFirst(Class<T> entity, Query filter) throws Exception {
-        return ResultSetHelper.toEntity(entity, doGetCollection(entity).find(filter.toBson()).first());
+        return findFirst(entity, filter, null);
+    }
+
+    @Override
+    public <T extends IEntity> T findFirst(Class<T> entity, QueryBuilder filter) throws Exception {
+        return findFirst(entity, filter.build(), null);
+    }
+
+    @Override
+    public <T extends IEntity> T findFirst(Class<T> entity, Query filter, OrderBy orderBy) throws Exception {
+        MongoCollection<Document> collection = getCollection(entity);
+        return ResultSetHelper.toEntity(entity, doFindIterable(collection, entity, filter, orderBy).first());
+    }
+
+    @Override
+    public <T extends IEntity> T findFirst(Class<T> entity, QueryBuilder filter, OrderBy orderBy) throws Exception {
+        return findFirst(entity, filter.build(), orderBy);
     }
 
     @Override
@@ -131,12 +192,30 @@ public class DefaultMongoSession extends AbstractSession<IMongoConnectionHolder>
 
     @Override
     public <T extends IEntity> long count(Class<T> entity) throws Exception {
-        return doGetCollection(entity).countDocuments();
+        return count(entity, (Query) null);
     }
 
     @Override
     public <T extends IEntity> long count(Class<T> entity, Query filter) throws Exception {
-        return doGetCollection(entity).countDocuments(filter.toBson());
+        MongoCollection<Document> collection = getCollection(entity);
+        ClientSession clientSession = Transactions.getClientSession(connectionHolder);
+        if (filter != null) {
+            if (clientSession == null) {
+                return collection.countDocuments(filter.toBson());
+            } else {
+                return collection.countDocuments(clientSession, filter.toBson());
+            }
+        }
+        if (clientSession == null) {
+            return collection.countDocuments();
+        } else {
+            return collection.countDocuments(clientSession);
+        }
+    }
+
+    @Override
+    public <T extends IEntity> long count(Class<T> entity, QueryBuilder filter) throws Exception {
+        return count(entity, filter.build());
     }
 
     @Override
@@ -150,32 +229,62 @@ public class DefaultMongoSession extends AbstractSession<IMongoConnectionHolder>
     }
 
     @Override
+    public <T extends IEntity> boolean exists(Class<T> entity, QueryBuilder filter) throws Exception {
+        return exists(entity, filter.build());
+    }
+
+    @Override
     public <T extends IEntity, RESULT> AggregateIterable<RESULT> aggregate(Class<T> entity, Class<RESULT> resultClass, Aggregation... aggregations) throws Exception {
         List<Bson> pipeline = new ArrayList<>(aggregations.length);
         for (Aggregation aggregation : aggregations) {
             pipeline.add(aggregation.toBson());
         }
-        return doGetCollection(entity).aggregate(pipeline, resultClass);
+        ClientSession clientSession = Transactions.getClientSession(connectionHolder);
+        if (clientSession == null) {
+            return getCollection(entity).aggregate(pipeline, resultClass);
+        }
+        return getCollection(entity).aggregate(clientSession, pipeline, resultClass);
     }
 
     @Override
     public <T extends IEntity, RESULT> DistinctIterable<RESULT> distinct(Class<T> entity, Class<RESULT> resultClass, String fieldName) throws Exception {
-        return doGetCollection(entity).distinct(fieldName, resultClass);
+        ClientSession clientSession = Transactions.getClientSession(connectionHolder);
+        if (clientSession == null) {
+            return getCollection(entity).distinct(fieldName, resultClass);
+        }
+        return getCollection(entity).distinct(clientSession, fieldName, resultClass);
     }
 
     @Override
     public <T extends IEntity, RESULT> DistinctIterable<RESULT> distinct(Class<T> entity, Class<RESULT> resultClass, String fieldName, Query query) throws Exception {
-        return doGetCollection(entity).distinct(fieldName, query.toBson(), resultClass);
+        ClientSession clientSession = Transactions.getClientSession(connectionHolder);
+        if (clientSession == null) {
+            return getCollection(entity).distinct(fieldName, query.toBson(), resultClass);
+        }
+        return getCollection(entity).distinct(clientSession, fieldName, query.toBson(), resultClass);
+    }
+
+    @Override
+    public <T extends IEntity, RESULT> DistinctIterable<RESULT> distinct(Class<T> entity, Class<RESULT> resultClass, String fieldName, QueryBuilder query) throws Exception {
+        return distinct(entity, resultClass, fieldName, query.build());
     }
 
     @Override
     public <T extends IEntity, RESULT> MapReduceIterable<RESULT> mapReduce(Class<T> entity, Class<RESULT> resultClass, String mapFunction, String reduceFunction) throws Exception {
-        return doGetCollection(entity).mapReduce(mapFunction, reduceFunction, resultClass);
+        ClientSession clientSession = Transactions.getClientSession(connectionHolder);
+        if (clientSession == null) {
+            return getCollection(entity).mapReduce(mapFunction, reduceFunction, resultClass);
+        }
+        return getCollection(entity).mapReduce(clientSession, mapFunction, reduceFunction, resultClass);
     }
 
     @Override
     public <T extends IEntity> MapReduceIterable<Document> mapReduce(Class<T> entity, String mapFunction, String reduceFunction) throws Exception {
-        return doGetCollection(entity).mapReduce(mapFunction, reduceFunction);
+        ClientSession clientSession = Transactions.getClientSession(connectionHolder);
+        if (clientSession == null) {
+            return getCollection(entity).mapReduce(mapFunction, reduceFunction);
+        }
+        return getCollection(entity).mapReduce(clientSession, mapFunction, reduceFunction);
     }
 
     @Override
@@ -186,7 +295,7 @@ public class DefaultMongoSession extends AbstractSession<IMongoConnectionHolder>
     @Override
     @SuppressWarnings("unchecked")
     public <T extends IEntity> T update(T entity, Fields filter) throws Exception {
-        Document document = ResultSetHelper.toDocument(entity);
+        Document document = ResultSetHelper.toDocument(owner, entity, filter, true);
         Query query = Query.create(IMongo.Opt.ID, ComparisonExp.eq(document.remove(IMongo.Opt.ID)));
         UpdateExp updateExp = new UpdateExp();
         if (filter != null && !filter.fields().isEmpty()) {
@@ -200,7 +309,12 @@ public class DefaultMongoSession extends AbstractSession<IMongoConnectionHolder>
         } else {
             updateExp.add(UpdateExp.set(document));
         }
-        document = doGetCollection(entity.getClass()).findOneAndUpdate(query.toBson(), updateExp.toBson());
+        ClientSession clientSession = Transactions.getClientSession(connectionHolder);
+        if (clientSession == null) {
+            document = getCollection(entity.getClass()).findOneAndUpdate(query.toBson(), updateExp.toBson());
+        } else {
+            document = getCollection(entity.getClass()).findOneAndUpdate(clientSession, query.toBson(), updateExp.toBson());
+        }
         return (T) ResultSetHelper.toEntity(entity.getClass(), document);
     }
 
@@ -221,21 +335,35 @@ public class DefaultMongoSession extends AbstractSession<IMongoConnectionHolder>
     @Override
     @SuppressWarnings("unchecked")
     public <T extends IEntity> T insert(T entity) throws Exception {
-        Document document = ResultSetHelper.toDocument(entity);
-        if (entity.getId() != null && !StringUtils.isBlank(String.valueOf(entity.getId()))) {
-            document.remove(IMongo.Opt.ID);
+        Document document = ResultSetHelper.toDocument(owner, entity, null, false);
+        ClientSession clientSession = Transactions.getClientSession(connectionHolder);
+        if (clientSession == null) {
+            getCollection(entity.getClass()).insertOne(document);
+        } else {
+            getCollection(entity.getClass()).insertOne(clientSession, document);
         }
-        doGetCollection(entity.getClass()).insertOne(document);
-        entity.setId(String.valueOf(document.get(IMongo.Opt.ID)));
-        return entity;
+        return (T) ResultSetHelper.toEntity(entity.getClass(), document);
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public <T extends IEntity> List<T> insert(List<T> entities) throws Exception {
+        Class<T> entityClass = (Class<T>) entities.get(0).getClass();
+        List<Document> documents = new ArrayList<>();
         for (T entity : entities) {
-            insert(entity);
+            documents.add(ResultSetHelper.toDocument(owner, entity, null, false));
         }
-        return entities;
+        ClientSession clientSession = Transactions.getClientSession(connectionHolder);
+        if (clientSession == null) {
+            getCollection(entityClass).insertMany(documents);
+        } else {
+            getCollection(entityClass).insertMany(clientSession, documents);
+        }
+        List<T> returnValue = new ArrayList<>();
+        for (Document document : documents) {
+            returnValue.add(ResultSetHelper.toEntity(entityClass, document));
+        }
+        return returnValue;
     }
 
     @Override
@@ -246,22 +374,36 @@ public class DefaultMongoSession extends AbstractSession<IMongoConnectionHolder>
 
     @Override
     public <T extends IEntity> T delete(Class<T> entity, Serializable id) throws Exception {
-        Document document = doGetCollection(entity).findOneAndDelete(Query.create(IMongo.Opt.ID, ComparisonExp.eq(new ObjectId(id.toString()))).toBson());
+        Document document;
+        ClientSession clientSession = Transactions.getClientSession(connectionHolder);
+        if (clientSession == null) {
+            document = getCollection(entity).findOneAndDelete(Query.create(IMongo.Opt.ID, ComparisonExp.eq(new ObjectId(id.toString()))).toBson());
+        } else {
+            document = getCollection(entity).findOneAndDelete(clientSession, Query.create(IMongo.Opt.ID, ComparisonExp.eq(new ObjectId(id.toString()))).toBson());
+        }
         return ResultSetHelper.toEntity(entity, document);
     }
 
     @Override
-    public <T extends IEntity> List<T> delete(List<T> entities) throws Exception {
-        List<T> results = new ArrayList<>();
-        for (T entity : entities) {
-            results.add(delete(entity));
-        }
-        return results;
+    public <T extends IEntity> long delete(List<T> entities) throws Exception {
+        List<Serializable> ids = entities.stream()
+                .map(IEntity::getId)
+                .filter(id -> id != null && StringUtils.isNotBlank(id.toString()))
+                .collect(Collectors.toList());
+        return delete(entities.get(0).getClass(), ids);
     }
 
     @Override
     public <T extends IEntity> long delete(Class<T> entity, Collection<Serializable> ids) throws Exception {
-        DeleteResult result = doGetCollection(entity).deleteMany(Query.create(IMongo.Opt.ID, ComparisonExp.in(Params.create(ids))).toBson());
+        Params objectIds = Params.create();
+        ids.stream().map(id -> new ObjectId(id.toString())).forEach(objectIds::add);
+        ClientSession clientSession = Transactions.getClientSession(connectionHolder);
+        DeleteResult result;
+        if (clientSession == null) {
+            result = getCollection(entity).deleteMany(Query.create(IMongo.Opt.ID, ComparisonExp.in(objectIds)).toBson());
+        } else {
+            result = getCollection(entity).deleteMany(clientSession, Query.create(IMongo.Opt.ID, ComparisonExp.in(objectIds)).toBson());
+        }
         return result.getDeletedCount();
     }
 }

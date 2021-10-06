@@ -100,7 +100,7 @@ public final class EntityWrapper<Entity extends IEntity> {
         this.dataSourceName = StringUtils.trimToNull(dataSourceName);
     }
 
-    protected Class<Entity> getEntityClass() {
+    public Class<Entity> getEntityClass() {
         return entityClass;
     }
 

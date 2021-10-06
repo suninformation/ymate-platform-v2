@@ -121,22 +121,10 @@ public class JacksonAdapter implements IJsonAdapter {
 
     @Override
     public JsonWrapper fromJson(String jsonStr) {
-        return fromJson(jsonStr, false);
-    }
-
-    @Override
-    public JsonWrapper fromJson(String jsonStr, boolean snakeCase) {
         JsonWrapper jsonWrapper = null;
         if (jsonStr != null) {
             try {
-                ObjectMapper objectMapper;
-                if (snakeCase) {
-                    objectMapper = createObjectMapper()
-                            .setPropertyNamingStrategy(new PropertyNamingStrategies.SnakeCaseStrategy());
-                } else {
-                    objectMapper = OBJECT_MAPPER;
-                }
-                jsonWrapper = parseJsonJsonWrapper(objectMapper.readTree(jsonStr));
+                jsonWrapper = parseJsonJsonWrapper(OBJECT_MAPPER.readTree(jsonStr));
             } catch (JsonProcessingException e) {
                 if (LOG.isWarnEnabled()) {
                     LOG.warn(StringUtils.EMPTY, RuntimeUtils.unwrapThrow(e));
@@ -160,9 +148,18 @@ public class JacksonAdapter implements IJsonAdapter {
 
     @Override
     public JsonWrapper toJson(Object object) {
+        return toJson(object, false);
+    }
+
+    @Override
+    public JsonWrapper toJson(Object object, boolean snakeCase) {
         JsonWrapper jsonWrapper = null;
         if (object != null) {
-            jsonWrapper = parseJsonJsonWrapper(OBJECT_MAPPER.valueToTree(JsonWrapper.unwrap(object)));
+            ObjectMapper objectMapper = createObjectMapper();
+            if (snakeCase) {
+                objectMapper.setPropertyNamingStrategy(new PropertyNamingStrategies.SnakeCaseStrategy());
+            }
+            jsonWrapper = parseJsonJsonWrapper(objectMapper.valueToTree(JsonWrapper.unwrap(object)));
         }
         return jsonWrapper;
     }

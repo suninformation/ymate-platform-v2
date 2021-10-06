@@ -137,13 +137,12 @@ public class RepositoryProxy implements IProxy {
                     }
                 }
                 if (StringUtils.isNotBlank(sqlStr)) {
-                    Object result;
                     if (repositoryAnn.update()) {
-                        result = session.executeForUpdate(doCreateSQL(sqlStr, proxyChain.getTargetMethod(), proxyChain.getMethodParams(), repositoryAnn.page(), repositoryAnn.useFilter()));
+                        return session.executeForUpdate(doCreateSQL(sqlStr, proxyChain.getTargetMethod(), proxyChain.getMethodParams(), repositoryAnn.page(), repositoryAnn.useFilter()));
                     } else {
                         Page page = repositoryAnn.page() ? (Page) proxyChain.getMethodParams()[proxyChain.getMethodParams().length - (repositoryAnn.useFilter() ? 2 : 1)] : null;
                         IResultSetHandler<?> resultSetHandler = !repositoryAnn.resultClass().equals(Void.class) ? new BeanResultSetHandler<>(repositoryAnn.resultClass()) : new ArrayResultSetHandler();
-                        result = session.find(doCreateSQL(sqlStr, proxyChain.getTargetMethod(), proxyChain.getMethodParams(), repositoryAnn.page(), repositoryAnn.useFilter()), resultSetHandler, page);
+                        Object result = session.find(doCreateSQL(sqlStr, proxyChain.getTargetMethod(), proxyChain.getMethodParams(), repositoryAnn.page(), repositoryAnn.useFilter()), resultSetHandler, page);
                         if (processor != null && processor.isFilterable()) {
                             result = processor.doFilter(result);
                         }
@@ -159,9 +158,10 @@ public class RepositoryProxy implements IProxy {
                             } else {
                                 proxyChain.getMethodParams()[position] = result;
                             }
+                        } else {
+                            return result;
                         }
                     }
-                    return result;
                 }
             }
         }

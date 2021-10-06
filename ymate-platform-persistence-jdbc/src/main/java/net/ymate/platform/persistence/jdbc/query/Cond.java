@@ -660,12 +660,12 @@ public final class Cond extends Query<Cond> {
 
     public Cond exists(SQL subSql) {
         params.add(subSql.params());
-        return cond(String.format("EXISTS (%s)", subSql.toString()));
+        return cond(String.format("EXISTS (%s)", subSql));
     }
 
     public Cond exists(Select subSql) {
         params.add(subSql.params());
-        return cond(String.format("EXISTS (%s)", subSql.toString()));
+        return cond(String.format("EXISTS (%s)", subSql));
     }
 
     // ------
@@ -676,7 +676,7 @@ public final class Cond extends Query<Cond> {
 
     public Cond in(String field, SQL subSql) {
         params.add(subSql.params());
-        return cond(String.format("%s IN (%s)", field, subSql.toString()));
+        return cond(String.format("%s IN (%s)", field, subSql));
     }
 
     public Cond inWrap(String prefix, String field, SQL subSql) {
@@ -693,7 +693,7 @@ public final class Cond extends Query<Cond> {
 
     public Cond in(String field, Select subSql) {
         params.add(subSql.params());
-        return cond(String.format("%s IN (%s)", field, subSql.toString()));
+        return cond(String.format("%s IN (%s)", field, subSql));
     }
 
     public Cond inWrap(String prefix, String field, Select subSql) {
@@ -810,7 +810,7 @@ public final class Cond extends Query<Cond> {
 
     public String build() {
         if (brackets) {
-            return String.format(" (%s) ", condition.toString());
+            return String.format(" (%s) ", condition);
         }
         return condition.toString();
     }

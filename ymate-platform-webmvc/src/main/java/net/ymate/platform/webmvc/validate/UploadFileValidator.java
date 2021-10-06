@@ -73,7 +73,7 @@ public class UploadFileValidator extends AbstractValidator {
                 ValidateResult validateResult = null;
                 for (IUploadFileWrapper fileWrapper : fileWrappers) {
                     totalSize += fileWrapper.getSize();
-                    if (totalSize > uploadFileAnn.totalMax()) {
+                    if (uploadFileAnn.totalMax() > 0 && totalSize > uploadFileAnn.totalMax()) {
                         ValidateResult.Builder builder = ValidateResult.builder(context).matched(true);
                         if (StringUtils.isNotBlank(uploadFileAnn.msg())) {
                             validateResult = builder.msg(uploadFileAnn.msg()).build();

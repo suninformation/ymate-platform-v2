@@ -96,20 +96,8 @@ public class GsonAdapter implements IJsonAdapter {
 
     @Override
     public JsonWrapper fromJson(String jsonStr) {
-        return fromJson(jsonStr, false);
-    }
-
-    @Override
-    public JsonWrapper fromJson(String jsonStr, boolean snakeCase) {
         JsonWrapper jsonWrapper = null;
-        Object obj;
-        if (snakeCase) {
-            obj = GSON.newBuilder()
-                    .setFieldNamingPolicy(FieldNamingPolicy.LOWER_CASE_WITH_UNDERSCORES).create()
-                    .fromJson(jsonStr, JsonElement.class);
-        } else {
-            obj = GSON.fromJson(jsonStr, JsonElement.class);
-        }
+        Object obj = GSON.fromJson(jsonStr, JsonElement.class);
         if (obj instanceof JsonObject) {
             jsonWrapper = new JsonWrapper(new GsonObjectWrapper((JsonObject) obj));
         } else if (obj instanceof JsonArray) {
@@ -121,6 +109,11 @@ public class GsonAdapter implements IJsonAdapter {
     @Override
     public JsonWrapper toJson(Object object) {
         return fromJson(toJsonString(object, false, false));
+    }
+
+    @Override
+    public JsonWrapper toJson(Object object, boolean snakeCase) {
+        return fromJson(toJsonString(object, false, false, snakeCase));
     }
 
     @Override

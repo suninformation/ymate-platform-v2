@@ -148,49 +148,49 @@ public final class ByteBufferBuilder {
         return byteBuffer.getLong();
     }
 
-    public final ByteBufferBuilder clear() {
+    public ByteBufferBuilder clear() {
         byteBuffer.clear();
         return this;
     }
 
-    public final ByteBufferBuilder flip() {
+    public ByteBufferBuilder flip() {
         byteBuffer.flip();
         return this;
     }
 
-    public final ByteBufferBuilder mark() {
+    public ByteBufferBuilder mark() {
         byteBuffer.mark();
         return this;
     }
 
-    public final ByteBufferBuilder reset() {
+    public ByteBufferBuilder reset() {
         byteBuffer.reset();
         return this;
     }
 
-    public final int remaining() {
+    public int remaining() {
         return byteBuffer.remaining();
     }
 
-    public final ByteBufferBuilder rewind() {
+    public ByteBufferBuilder rewind() {
         byteBuffer.rewind();
         return this;
     }
 
-    public final int position() {
+    public int position() {
         return byteBuffer.position();
     }
 
-    public final ByteBufferBuilder position(int newPosition) {
+    public ByteBufferBuilder position(int newPosition) {
         byteBuffer.position(newPosition);
         return this;
     }
 
-    public final int limit() {
+    public int limit() {
         return byteBuffer.limit();
     }
 
-    public final ByteBufferBuilder limit(int newLimit) {
+    public ByteBufferBuilder limit(int newLimit) {
         byteBuffer.limit(newLimit);
         return this;
     }
@@ -204,7 +204,7 @@ public final class ByteBufferBuilder {
         return ByteBufferBuilder.wrap(byteBuffer.duplicate());
     }
 
-    public final byte[] array() {
+    public byte[] array() {
         return byteBuffer.array();
     }
 
