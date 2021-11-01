@@ -129,7 +129,7 @@ public final class Table implements IMarkdown {
         }
 
         public Row addColumn(String content) {
-            columns.add(StringUtils.replaceEach(content, new String[]{"|", "\r\n", "\r", "\n", "\t"}, new String[]{"\\|", "<br>", StringUtils.EMPTY, "<br>", TAB}));
+            columns.add(StringUtils.replaceEach(content, new String[]{"|", "\r\n", "\r", "\n", "\t"}, new String[]{"\\|", "<br/>", StringUtils.EMPTY, "<br/>", TAB}));
             return this;
         }
 
