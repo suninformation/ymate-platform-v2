@@ -1,0 +1,38 @@
+{
+  "title": {
+    "message": "YMP",
+    "description": "The title in the navbar"
+  },
+  "item.label.快速上手": {
+    "message": "Quickstart",
+    "description": "Navbar item with label 快速上手"
+  },
+  "item.label.开发指南": {
+    "message": "Guide",
+    "description": "Navbar item with label 开发指南"
+  },
+  "item.label.模块": {
+    "message": "Modules",
+    "description": "Navbar item with label 模块"
+  },
+  "item.label.博客": {
+    "message": "Blog",
+    "description": "Navbar item with label 博客"
+  },
+  "item.label.支持 & 捐赠": {
+    "message": "Support & Donate",
+    "description": "Navbar item with label 支持 & 捐赠"
+  },
+  "item.label.下载源码": {
+    "message": "Download",
+    "description": "Navbar item with label 下载源码"
+  },
+  "item.label.GitHub": {
+    "message": "GitHub",
+    "description": "Navbar item with label GitHub"
+  },
+  "item.label.Gitee": {
+    "message": "Gitee",
+    "description": "Navbar item with label Gitee"
+  }
+}

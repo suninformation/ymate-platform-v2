@@ -1,0 +1,10 @@
+{
+  "version.label": {
+    "message": "Next",
+    "description": "The label for version current"
+  },
+  "sidebar.tutorialSidebar.category.持久化 (Persistence)": {
+    "message": "持久化 (Persistence)",
+    "description": "The label for category 持久化 (Persistence) in sidebar tutorialSidebar"
+  }
+}

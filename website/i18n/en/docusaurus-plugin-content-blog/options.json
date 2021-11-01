@@ -1,0 +1,14 @@
+{
+  "title": {
+    "message": "Blog",
+    "description": "The title for the blog used in SEO"
+  },
+  "description": {
+    "message": "分享 YMP 框架开发和使用过程中的点点滴滴！",
+    "description": "The description for the blog used in SEO"
+  },
+  "sidebar.title": {
+    "message": "Recent posts",
+    "description": "The label for the left sidebar"
+  }
+}
