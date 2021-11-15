@@ -121,7 +121,7 @@ public class Starter {
 
 ### 自定义Banner
 
-以 Maven 工程为例，在 `src/main/resources` 路径下新建名称为 `banner.txt` 的文本文件，该文件编译后将被放置在 `classes` 目录下，框架在启动时会优化加载该文件内容，若文件不存在或文件内容为空时，将默认输出如下内容：
+以 Maven 工程为例，在 `src/main/resources` 路径下新建名称为 `banner.txt` 的文本文件，该文件编译后将被放置在 `classes` 目录下，框架在启动时会优先加载该文件内容，若文件不存在或文件内容为空时，将默认输出如下内容：
 
 ```shell
 __  __ __  ___ ___
