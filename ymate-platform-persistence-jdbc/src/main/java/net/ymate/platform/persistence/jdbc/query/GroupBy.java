@@ -150,13 +150,15 @@ public final class GroupBy extends Query<GroupBy> {
     }
 
     public GroupBy groupBy(GroupBy groupBy) {
-        String newGroupBy = StringUtils.substringAfter(groupBy.toSQL(), "GROUP BY ");
-        if (StringUtils.isNotBlank(newGroupBy)) {
-            if (groupByBuilder.length() > 0) {
-                groupByBuilder.append(LINE_END_FLAG);
+        if (groupBy != null) {
+            String newGroupBy = StringUtils.substringAfter(groupBy.toSQL(), "GROUP BY ");
+            if (StringUtils.isNotBlank(newGroupBy)) {
+                if (groupByBuilder.length() > 0) {
+                    groupByBuilder.append(LINE_END_FLAG);
+                }
+                groupByBuilder.append(newGroupBy);
+                params.add(groupBy.params());
             }
-            groupByBuilder.append(newGroupBy);
-            params.add(groupBy.params());
         }
         return this;
     }

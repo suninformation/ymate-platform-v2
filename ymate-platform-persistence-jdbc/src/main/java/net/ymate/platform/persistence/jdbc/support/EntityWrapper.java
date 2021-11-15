@@ -420,7 +420,10 @@ public final class EntityWrapper<Entity extends IEntity> {
         if (orderBy != null) {
             where.orderBy().orderBy(orderBy);
         }
-        return find(beanClass, where.groupBy(groupBy), fields, page, dbLocker);
+        if (groupBy != null) {
+            where.groupBy(groupBy);
+        }
+        return find(beanClass, where, fields, page, dbLocker);
     }
 
     public IResultSet<Entity> find(Fields fields, OrderBy orderBy, GroupBy groupBy, Page page, IDBLocker dbLocker) throws Exception {
@@ -428,7 +431,10 @@ public final class EntityWrapper<Entity extends IEntity> {
         if (orderBy != null) {
             where.orderBy().orderBy(orderBy);
         }
-        return find(where.groupBy(groupBy), fields, page, dbLocker);
+        if (groupBy != null) {
+            where.groupBy(groupBy);
+        }
+        return find(where, fields, page, dbLocker);
     }
 
     public <T extends Serializable> IResultSet<T> find(Class<T> beanClass, Where where) throws Exception {
@@ -650,7 +656,10 @@ public final class EntityWrapper<Entity extends IEntity> {
         if (orderBy != null) {
             where.orderBy().orderBy(orderBy);
         }
-        return findFirst(beanClass, where.groupBy(groupBy), fields, dbLocker);
+        if (groupBy != null) {
+            where.groupBy(groupBy);
+        }
+        return findFirst(beanClass, where, fields, dbLocker);
     }
 
     public Entity findFirst(Fields fields, OrderBy orderBy, GroupBy groupBy, IDBLocker dbLocker) throws Exception {
@@ -658,7 +667,10 @@ public final class EntityWrapper<Entity extends IEntity> {
         if (orderBy != null) {
             where.orderBy().orderBy(orderBy);
         }
-        return findFirst(where.groupBy(groupBy), fields, dbLocker);
+        if (groupBy != null) {
+            where.groupBy(groupBy);
+        }
+        return findFirst(where, fields, dbLocker);
     }
 
     public <T extends Serializable> T findFirst(Class<T> beanClass, Where where) throws Exception {

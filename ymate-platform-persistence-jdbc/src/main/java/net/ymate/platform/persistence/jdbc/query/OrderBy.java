@@ -60,13 +60,15 @@ public final class OrderBy extends Query<OrderBy> {
     }
 
     public OrderBy orderBy(OrderBy orderBy) {
-        String newOrderBy = StringUtils.substringAfter(orderBy.toSQL(), "ORDER BY ");
-        if (StringUtils.isNotBlank(newOrderBy)) {
-            if (orderByBuilder.length() > 0) {
-                orderByBuilder.append(LINE_END_FLAG);
+        if (orderBy != null) {
+            String newOrderBy = StringUtils.substringAfter(orderBy.toSQL(), "ORDER BY ");
+            if (StringUtils.isNotBlank(newOrderBy)) {
+                if (orderByBuilder.length() > 0) {
+                    orderByBuilder.append(LINE_END_FLAG);
+                }
+                orderByBuilder.append(newOrderBy);
+                params.add(orderBy.params);
             }
-            orderByBuilder.append(newOrderBy);
-            params.add(orderBy.params);
         }
         return this;
     }
