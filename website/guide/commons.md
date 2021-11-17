@@ -3103,7 +3103,7 @@ XPath 辅助工具类。
 
 
 
-**示例：** 
+**示例一：** 基本操作演示
 
 ```java
 public class Demo {
@@ -3132,6 +3132,83 @@ public class Demo {
             System.out.printf("Name: %s, Value: %s%n", name, value);
         }
     }
+}
+```
+
+
+
+**示例二：** 直接将 XML 转换为类对象
+
+```java
+public class Main {
+
+    @XPathNode("xml")
+    public static class Config {
+
+        @XPathNode(value = "//category", child = true)
+        private Category[] categories;
+
+        //
+        // 此处省略了Get/Set方法
+        //
+    }
+
+    public static class Category {
+
+        @XPathNode("@name")
+        private String name;
+
+        @XPathNode(value = "//property", child = true)
+        private Property[] properties;
+
+        //
+        // 此处省略了Get/Set方法
+        //
+    }
+
+    public static class Property {
+
+        @XPathNode("@name")
+        private String key;
+
+        @XPathNode(".")
+        private String value;
+
+        //
+        // 此处省略了Get/Set方法
+        //
+    }
+
+    public static void main(String[] args) throws Exception {
+        String xml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
+                "<xml>" +
+                "    <category name=\"default\">" +
+                "        <property name=\"key1\">value1</property>" +
+                "        <property name=\"key2\">value2</property>" +
+                "    </category>" +
+                "</xml>";
+        Config config = XPathHelper.Builder.create().build(xml).toObject(Config.class);
+        System.out.println(JsonWrapper.toJsonString(config, true, true));
+    }
+}
+```
+
+
+
+**执行结果：** 
+
+```json
+{
+	"categories":[{
+		"name":"default",
+		"properties":[{
+			"key":"key1",
+			"value":"value1"
+		},{
+			"key":"key2",
+			"value":"value2"
+		}]
+	}]
 }
 ```
 
