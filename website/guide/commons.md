@@ -1762,6 +1762,107 @@ result = polygon.on(new GeoPoint(116.69, 39.89));
 
 
 
+### ImageUtils
+
+图片处理工具类，使用时需在工程中引入以下依赖包：
+
+```xml
+<dependency>
+    <groupId>com.google.zxing</groupId>
+    <artifactId>javase</artifactId>
+    <version>3.4.1</version>
+</dependency>
+<dependency>
+    <groupId>net.coobird</groupId>
+    <artifactId>thumbnailator</artifactId>
+    <version>0.4.14</version>
+</dependency>
+```
+
+
+
+**示例：** 计算图片文件 dHash 值
+
+```java
+String dHash = ImageUtils.dHash(ImageIO.read(new File(RuntimeUtils.getRootPath(), "demo.png")));
+```
+
+
+
+**示例：** 计算海明（Hamming Distance）距离
+
+```java
+String dHash = ImageUtils.dHash(ImageIO.read(new File(RuntimeUtils.getRootPath(), "demo.png")));
+String dHash2 = ImageUtils.dHash(ImageIO.read(new File(RuntimeUtils.getRootPath(), "demo_resized.png")));
+long hamming = ImageUtils.hammingDistance(dHash, dHash2);
+```
+
+
+
+**示例：** 替换原图片里面的二维码
+
+```java
+BufferedImage qrCodeImage = QRCodeHelper.create("https://ymate.net/", 300, 300, ErrorCorrectionLevel.H).toBufferedImage();
+BufferedImage newImage = ImageUtils.replaceQrCode(ImageIO.read(new File(RuntimeUtils.getRootPath(), "demo.png")), qrCodeImage);
+if (!ImageIO.write(newImage, "jpeg", new File(RuntimeUtils.getRootPath(), "newImage.jpeg"))) {
+    throw new IOException(String.format("Could not write an image of format %s", "jpeg"));
+}
+```
+
+
+
+**示例：** 将图片等比例缩放50%
+
+```java
+String basePath = RuntimeUtils.getRootPath();
+File source = new File(basePath, "demo.png");
+ImageUtils.resize(ImageIO.read(source), new File(basePath, "demo_resized.png"), 0.5f, 1.0f);
+```
+
+
+
+**示例：** 将图片宽度调整为100像素且高度等比例缩放
+
+```java
+String basePath = RuntimeUtils.getRootPath();
+File source = new File(basePath, "demo.webp");
+ImageUtils.resize(ImageIO.read(source), new File(basePath, "demo_resized.webp"), 100, -1, 1.0f);
+```
+
+
+
+:::tip 关于对 webp 图片格式的支持
+
+Webp 是 Google 推出的一种新型图片格式，相比于传统的 PNG 和 JPG 图片有着更小体积的优势，在 Web 中有着广泛的应用。
+
+由于 Webp 格式推出比较晚，JDK 内置的图片编解码库对此并不支持。
+
+这里推荐大家使用开源项目：https://github.com/nintha/webp-imageio-core
+
+由于这个项目并未发布到 Maven 中央仓库，所以需要手动下载并安装到本地仓库，执行命令如下：
+
+```shell
+git clone https://github.com/nintha/webp-imageio-core.git
+cd webp-imageio-core
+mvn clean source:jar install
+```
+
+然后，在工程的 pom.xml 文件中添加如下依赖配置：
+
+```xml
+<dependency>
+    <groupId>com.github.nintha</groupId>
+    <artifactId>webp-imageio-core</artifactId>
+    <version>0.1.3</version>
+</dependency>
+```
+
+该依赖包中已集成了跨平台动态链接库依赖，经测试只需引入即可支持 Webp 图片格式，而无需编写任何代码，更多使用方法请阅读此项目源码及文档。
+
+:::
+
+
+
 ### MimeTypeUtils
 
 文件的 MimeType 类型处理工具类。

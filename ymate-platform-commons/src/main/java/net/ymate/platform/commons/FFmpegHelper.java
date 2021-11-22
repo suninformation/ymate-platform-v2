@@ -168,7 +168,7 @@ public class FFmpegHelper {
         return null;
     }
 
-    public File screenshotVideo(int startSecond, int imageWidth, int imageHeight, int time, File outputJpeg) {
+    public File screenshotVideo(int startSecond, int imageWidth, int imageHeight, float time, File outputJpeg) {
         // ffmpeg -i input.mp4 -r 1 -q:v 2 -f image2 pic-%03d.jpeg
         List<String> cmd = new ArrayList<>();
         cmd.add(ffmpegPath);

@@ -92,6 +92,10 @@ public class QRCodeHelper {
         return new QRCodeHelper(new MultiFormatWriter().encode(content, BarcodeFormat.QR_CODE, width, height, hints));
     }
 
+    public static QRCodeHelper create(String content, int width, int height, int margin, ErrorCorrectionLevel level) throws WriterException {
+        return create(content, null, width, height, margin, level);
+    }
+
     /**
      * @param content 二维码内容字符串
      * @param width   二维码图片宽度
