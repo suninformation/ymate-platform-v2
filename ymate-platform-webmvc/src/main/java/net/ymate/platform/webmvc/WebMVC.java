@@ -185,10 +185,17 @@ public final class WebMVC implements IModule, IWebMvc {
                 try (InputStream inputStream = WebUtils.class.getClassLoader().getResourceAsStream("META-INF/templates-default-error.jsp")) {
                     if (!FileUtils.createFileIfNotExists(viewFile, inputStream) && LOG.isWarnEnabled()) {
                         LOG.warn(String.format("Failed to create default error page file: %s", viewFile.getPath()));
+                    } else {
+                        try (InputStream cssInputStream = WebUtils.class.getClassLoader().getResourceAsStream("META-INF/templates-default-error.css")) {
+                            File cssFile = new File(RuntimeUtils.getRootPath(false), "assets/error/error.css");
+                            if (!FileUtils.createFileIfNotExists(cssFile, cssInputStream) && LOG.isWarnEnabled()) {
+                                LOG.warn(String.format("Failed to create default error css file: %s", cssFile.getPath()));
+                            }
+                        }
                     }
                 } catch (IOException e) {
                     if (LOG.isWarnEnabled()) {
-                        LOG.warn(String.format("An exception occurred while trying to generate the default error page file: %s", viewFile.getPath()), RuntimeUtils.unwrapThrow(e));
+                        LOG.warn(String.format("An exception occurred while trying to generate the default error file: %s", viewFile.getPath()), RuntimeUtils.unwrapThrow(e));
                     }
                 }
             }
