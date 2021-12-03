@@ -80,6 +80,11 @@ public class FastJsonObjectWrapper implements IJsonObjectWrapper {
     }
 
     @Override
+    public Boolean getAsBoolean(String key) {
+        return jsonObject.getBoolean(key);
+    }
+
+    @Override
     public BigInteger getBigInteger(String key) {
         return jsonObject.getBigInteger(key);
     }
@@ -95,13 +100,28 @@ public class FastJsonObjectWrapper implements IJsonObjectWrapper {
     }
 
     @Override
+    public Double getAsDouble(String key) {
+        return jsonObject.getDouble(key);
+    }
+
+    @Override
     public float getFloat(String key) {
         return jsonObject.getFloatValue(key);
     }
 
     @Override
+    public Float getAsFloat(String key) {
+        return jsonObject.getFloat(key);
+    }
+
+    @Override
     public int getInt(String key) {
         return jsonObject.getIntValue(key);
+    }
+
+    @Override
+    public Integer getAsInteger(String key) {
+        return jsonObject.getInteger(key);
     }
 
     @Override
@@ -119,6 +139,11 @@ public class FastJsonObjectWrapper implements IJsonObjectWrapper {
     @Override
     public long getLong(String key) {
         return jsonObject.getLongValue(key);
+    }
+
+    @Override
+    public Long getAsLong(String key) {
+        return jsonObject.getLong(key);
     }
 
     @Override

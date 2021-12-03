@@ -32,21 +32,31 @@ public interface IJsonObjectWrapper extends Serializable {
 
     boolean getBoolean(String key);
 
+    Boolean getAsBoolean(String key);
+
     BigInteger getBigInteger(String key);
 
     BigDecimal getBigDecimal(String key);
 
     double getDouble(String key);
 
+    Double getAsDouble(String key);
+
     float getFloat(String key);
 
+    Float getAsFloat(String key);
+
     int getInt(String key);
+
+    Integer getAsInteger(String key);
 
     IJsonArrayWrapper getJsonArray(String key);
 
     IJsonObjectWrapper getJsonObject(String key);
 
     long getLong(String key);
+
+    Long getAsLong(String key);
 
     String getString(String key);
 

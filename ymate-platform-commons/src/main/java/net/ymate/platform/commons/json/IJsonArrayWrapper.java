@@ -32,9 +32,15 @@ public interface IJsonArrayWrapper extends Serializable {
 
     boolean getBoolean(int index);
 
+    Boolean getAsBoolean(int index);
+
     double getDouble(int index);
 
+    Double getAsDouble(int index);
+
     float getFloat(int index);
+
+    Float getAsFloat(int index);
 
     BigDecimal getBigDecimal(int index);
 
@@ -42,11 +48,15 @@ public interface IJsonArrayWrapper extends Serializable {
 
     int getInt(int index);
 
+    Integer getAsInteger(int index);
+
     IJsonArrayWrapper getJsonArray(int index);
 
     IJsonObjectWrapper getJsonObject(int index);
 
     long getLong(int index);
+
+    Long getAsLong(int index);
 
     String getString(int index);
 

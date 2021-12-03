@@ -15,10 +15,7 @@
  */
 package net.ymate.platform.webmvc.util;
 
-import net.ymate.platform.commons.util.CodecUtils;
-import net.ymate.platform.commons.util.ExpressionUtils;
-import net.ymate.platform.commons.util.NetworkUtils;
-import net.ymate.platform.commons.util.RuntimeUtils;
+import net.ymate.platform.commons.util.*;
 import net.ymate.platform.core.IApplication;
 import net.ymate.platform.core.support.ErrorCode;
 import net.ymate.platform.core.support.IContext;
@@ -162,35 +159,24 @@ public class WebUtils {
      * @param needStartWith 是否以'/'开始
      * @param needEndWith   是否以'/'结束
      * @return 返回修正后的URL地址
+     * @see ParamUtils#fixUrl(String, boolean, boolean)
+     * @deprecated
      */
+    @Deprecated
     public static String fixUrl(String url, boolean needStartWith, boolean needEndWith) {
-        url = StringUtils.trimToNull(url);
-        if (url != null) {
-            if (needStartWith && !StringUtils.startsWith(url, Type.Const.PATH_SEPARATOR)) {
-                url = Type.Const.PATH_SEPARATOR + url;
-            } else if (!needStartWith && StringUtils.startsWith(url, Type.Const.PATH_SEPARATOR)) {
-                url = StringUtils.substringAfter(url, Type.Const.PATH_SEPARATOR);
-            }
-            if (needEndWith && !StringUtils.endsWith(url, Type.Const.PATH_SEPARATOR)) {
-                url = url + Type.Const.PATH_SEPARATOR;
-            } else if (!needEndWith && StringUtils.endsWith(url, Type.Const.PATH_SEPARATOR)) {
-                url = StringUtils.substringBeforeLast(url, Type.Const.PATH_SEPARATOR);
-            }
-            return url;
-        }
-        return StringUtils.EMPTY;
+        return ParamUtils.fixUrl(url, needStartWith, needEndWith);
     }
 
+    /**
+     * @param url         URL地址
+     * @param needEndWith 是否必须以分隔符结束
+     * @return 返回修正后的URL地址
+     * @see ParamUtils#fixUrlWithProtocol(String, boolean)
+     * @deprecated
+     */
+    @Deprecated
     public static String fixUrlWithProtocol(String url, boolean needEndWith) {
-        url = StringUtils.trimToNull(url);
-        if (url != null) {
-            if (!StringUtils.startsWithIgnoreCase(url, Type.Const.HTTP_PREFIX) &&
-                    !StringUtils.startsWithIgnoreCase(url, Type.Const.HTTPS_PREFIX)) {
-                throw new IllegalArgumentException(String.format("URL '%s' must start with HTTP or HTTPS.", url));
-            }
-            return fixUrl(url, false, needEndWith);
-        }
-        return StringUtils.EMPTY;
+        return ParamUtils.fixUrlWithProtocol(url, needEndWith);
     }
 
     /**

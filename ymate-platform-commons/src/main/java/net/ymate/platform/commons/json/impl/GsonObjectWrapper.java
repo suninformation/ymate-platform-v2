@@ -67,6 +67,15 @@ public class GsonObjectWrapper implements IJsonObjectWrapper {
     }
 
     @Override
+    public Boolean getAsBoolean(String key) {
+        JsonElement jsonElement = jsonObject.get(key);
+        if (jsonElement != null) {
+            return jsonElement.getAsBoolean();
+        }
+        return null;
+    }
+
+    @Override
     public BigInteger getBigInteger(String key) {
         JsonElement jsonElement = jsonObject.get(key);
         return jsonElement != null ? jsonElement.getAsBigInteger() : null;
@@ -85,15 +94,42 @@ public class GsonObjectWrapper implements IJsonObjectWrapper {
     }
 
     @Override
+    public Double getAsDouble(String key) {
+        JsonElement jsonElement = jsonObject.get(key);
+        if (jsonElement != null) {
+            return jsonElement.getAsDouble();
+        }
+        return null;
+    }
+
+    @Override
     public float getFloat(String key) {
         JsonElement jsonElement = jsonObject.get(key);
         return jsonElement != null ? jsonElement.getAsFloat() : 0f;
     }
 
     @Override
+    public Float getAsFloat(String key) {
+        JsonElement jsonElement = jsonObject.get(key);
+        if (jsonElement != null) {
+            return jsonElement.getAsFloat();
+        }
+        return null;
+    }
+
+    @Override
     public int getInt(String key) {
         JsonElement jsonElement = jsonObject.get(key);
         return jsonElement != null ? jsonElement.getAsInt() : 0;
+    }
+
+    @Override
+    public Integer getAsInteger(String key) {
+        JsonElement jsonElement = jsonObject.get(key);
+        if (jsonElement != null) {
+            return jsonElement.getAsInt();
+        }
+        return null;
     }
 
     @Override
@@ -112,6 +148,15 @@ public class GsonObjectWrapper implements IJsonObjectWrapper {
     public long getLong(String key) {
         JsonElement jsonElement = jsonObject.get(key);
         return jsonElement != null ? jsonElement.getAsLong() : 0L;
+    }
+
+    @Override
+    public Long getAsLong(String key) {
+        JsonElement jsonElement = jsonObject.get(key);
+        if (jsonElement != null) {
+            return jsonElement.getAsLong();
+        }
+        return null;
     }
 
     @Override

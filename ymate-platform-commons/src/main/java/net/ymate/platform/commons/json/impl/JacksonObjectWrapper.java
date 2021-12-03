@@ -65,6 +65,15 @@ public class JacksonObjectWrapper implements IJsonObjectWrapper {
     }
 
     @Override
+    public Boolean getAsBoolean(String key) {
+        IJsonNodeWrapper jsonNode = get(key);
+        if (jsonNode != null) {
+            return jsonNode.getBoolean();
+        }
+        return null;
+    }
+
+    @Override
     public BigInteger getBigInteger(String key) {
         IJsonNodeWrapper jsonNode = get(key);
         return jsonNode != null ? jsonNode.getBigInteger() : null;
@@ -83,15 +92,42 @@ public class JacksonObjectWrapper implements IJsonObjectWrapper {
     }
 
     @Override
+    public Double getAsDouble(String key) {
+        IJsonNodeWrapper jsonNode = get(key);
+        if (jsonNode != null) {
+            return jsonNode.getDouble();
+        }
+        return null;
+    }
+
+    @Override
     public float getFloat(String key) {
         IJsonNodeWrapper jsonNode = get(key);
         return jsonNode != null ? jsonNode.getFloat() : 0f;
     }
 
     @Override
+    public Float getAsFloat(String key) {
+        IJsonNodeWrapper jsonNode = get(key);
+        if (jsonNode != null) {
+            return jsonNode.getFloat();
+        }
+        return null;
+    }
+
+    @Override
     public int getInt(String key) {
         IJsonNodeWrapper jsonNode = get(key);
         return jsonNode != null ? jsonNode.getInt() : 0;
+    }
+
+    @Override
+    public Integer getAsInteger(String key) {
+        IJsonNodeWrapper jsonNode = get(key);
+        if (jsonNode != null) {
+            return jsonNode.getInt();
+        }
+        return null;
     }
 
     @Override
@@ -110,6 +146,15 @@ public class JacksonObjectWrapper implements IJsonObjectWrapper {
     public long getLong(String key) {
         IJsonNodeWrapper jsonNode = get(key);
         return jsonNode != null ? jsonNode.getLong() : 0L;
+    }
+
+    @Override
+    public Long getAsLong(String key) {
+        IJsonNodeWrapper jsonNode = get(key);
+        if (jsonNode != null) {
+            return jsonNode.getLong();
+        }
+        return null;
     }
 
     @Override

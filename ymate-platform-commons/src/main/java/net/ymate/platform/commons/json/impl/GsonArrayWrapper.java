@@ -75,15 +75,42 @@ public class GsonArrayWrapper implements IJsonArrayWrapper {
     }
 
     @Override
+    public Boolean getAsBoolean(int index) {
+        JsonElement jsonElement = jsonArray.get(index);
+        if (jsonElement != null) {
+            return jsonElement.getAsBoolean();
+        }
+        return null;
+    }
+
+    @Override
     public double getDouble(int index) {
         JsonElement jsonElement = jsonArray.get(index);
         return jsonElement != null ? jsonElement.getAsDouble() : 0d;
     }
 
     @Override
+    public Double getAsDouble(int index) {
+        JsonElement jsonElement = jsonArray.get(index);
+        if (jsonElement != null) {
+            return jsonElement.getAsDouble();
+        }
+        return null;
+    }
+
+    @Override
     public float getFloat(int index) {
         JsonElement jsonElement = jsonArray.get(index);
         return jsonElement != null ? jsonElement.getAsFloat() : 0f;
+    }
+
+    @Override
+    public Float getAsFloat(int index) {
+        JsonElement jsonElement = jsonArray.get(index);
+        if (jsonElement != null) {
+            return jsonElement.getAsFloat();
+        }
+        return null;
     }
 
     @Override
@@ -105,6 +132,15 @@ public class GsonArrayWrapper implements IJsonArrayWrapper {
     }
 
     @Override
+    public Integer getAsInteger(int index) {
+        JsonElement jsonElement = jsonArray.get(index);
+        if (jsonElement != null) {
+            return jsonElement.getAsInt();
+        }
+        return null;
+    }
+
+    @Override
     public IJsonArrayWrapper getJsonArray(int index) {
         JsonArray value = jsonArray.get(index).getAsJsonArray();
         return value == null ? null : new GsonArrayWrapper(value);
@@ -120,6 +156,15 @@ public class GsonArrayWrapper implements IJsonArrayWrapper {
     public long getLong(int index) {
         JsonElement jsonElement = jsonArray.get(index);
         return jsonElement != null ? jsonElement.getAsLong() : 0L;
+    }
+
+    @Override
+    public Long getAsLong(int index) {
+        JsonElement jsonElement = jsonArray.get(index);
+        if (jsonElement != null) {
+            return jsonElement.getAsLong();
+        }
+        return null;
     }
 
     @Override

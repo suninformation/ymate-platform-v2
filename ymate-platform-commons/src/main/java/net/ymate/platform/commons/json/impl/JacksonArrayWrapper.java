@@ -68,15 +68,42 @@ public class JacksonArrayWrapper implements IJsonArrayWrapper {
     }
 
     @Override
+    public Boolean getAsBoolean(int index) {
+        IJsonNodeWrapper jsonNode = get(index);
+        if (jsonNode != null) {
+            return jsonNode.getBoolean();
+        }
+        return null;
+    }
+
+    @Override
     public double getDouble(int index) {
         IJsonNodeWrapper jsonNode = get(index);
         return jsonNode != null ? jsonNode.getDouble() : 0d;
     }
 
     @Override
+    public Double getAsDouble(int index) {
+        IJsonNodeWrapper jsonNode = get(index);
+        if (jsonNode != null) {
+            return jsonNode.getDouble();
+        }
+        return null;
+    }
+
+    @Override
     public float getFloat(int index) {
         IJsonNodeWrapper jsonNode = get(index);
         return jsonNode != null ? jsonNode.getFloat() : 0f;
+    }
+
+    @Override
+    public Float getAsFloat(int index) {
+        IJsonNodeWrapper jsonNode = get(index);
+        if (jsonNode != null) {
+            return jsonNode.getFloat();
+        }
+        return null;
     }
 
     @Override
@@ -98,6 +125,15 @@ public class JacksonArrayWrapper implements IJsonArrayWrapper {
     }
 
     @Override
+    public Integer getAsInteger(int index) {
+        IJsonNodeWrapper jsonNode = get(index);
+        if (jsonNode != null) {
+            return jsonNode.getInt();
+        }
+        return null;
+    }
+
+    @Override
     public IJsonArrayWrapper getJsonArray(int index) {
         IJsonNodeWrapper jsonNode = get(index);
         return jsonNode != null ? jsonNode.getJsonArray() : null;
@@ -113,6 +149,15 @@ public class JacksonArrayWrapper implements IJsonArrayWrapper {
     public long getLong(int index) {
         IJsonNodeWrapper jsonNode = get(index);
         return jsonNode != null ? jsonNode.getLong() : 0L;
+    }
+
+    @Override
+    public Long getAsLong(int index) {
+        IJsonNodeWrapper jsonNode = get(index);
+        if (jsonNode != null) {
+            return jsonNode.getLong();
+        }
+        return null;
     }
 
     @Override

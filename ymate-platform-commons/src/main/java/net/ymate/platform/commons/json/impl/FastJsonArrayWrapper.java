@@ -73,13 +73,28 @@ public class FastJsonArrayWrapper implements IJsonArrayWrapper {
     }
 
     @Override
+    public Boolean getAsBoolean(int index) {
+        return jsonArray.getBoolean(index);
+    }
+
+    @Override
     public double getDouble(int index) {
         return jsonArray.getDoubleValue(index);
     }
 
     @Override
+    public Double getAsDouble(int index) {
+        return jsonArray.getDouble(index);
+    }
+
+    @Override
     public float getFloat(int index) {
         return jsonArray.getFloatValue(index);
+    }
+
+    @Override
+    public Float getAsFloat(int index) {
+        return jsonArray.getFloat(index);
     }
 
     @Override
@@ -98,6 +113,11 @@ public class FastJsonArrayWrapper implements IJsonArrayWrapper {
     }
 
     @Override
+    public Integer getAsInteger(int index) {
+        return jsonArray.getInteger(index);
+    }
+
+    @Override
     public IJsonArrayWrapper getJsonArray(int index) {
         JSONArray value = jsonArray.getJSONArray(index);
         return value == null ? null : new FastJsonArrayWrapper(value);
@@ -112,6 +132,11 @@ public class FastJsonArrayWrapper implements IJsonArrayWrapper {
     @Override
     public long getLong(int index) {
         return jsonArray.getLongValue(index);
+    }
+
+    @Override
+    public Long getAsLong(int index) {
+        return jsonArray.getLong(index);
     }
 
     @Override

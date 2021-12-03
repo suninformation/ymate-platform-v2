@@ -33,6 +33,53 @@ public class ParamUtils {
 
     private static final Log LOG = LogFactory.getLog(ParamUtils.class);
 
+    public static final String HTTP_PREFIX = "http://";
+
+    public static final String HTTPS_PREFIX = "https://";
+
+    public static final String PATH_SEPARATOR = "/";
+
+    /**
+     * @param url         URL地址
+     * @param needEndWith 是否必须以分隔符结束
+     * @return 返回修正后的URL地址
+     */
+    public static String fixUrlWithProtocol(String url, boolean needEndWith) {
+        url = StringUtils.trimToNull(url);
+        if (url != null) {
+            if (!StringUtils.startsWithIgnoreCase(url, HTTP_PREFIX) &&
+                    !StringUtils.startsWithIgnoreCase(url, HTTPS_PREFIX)) {
+                throw new IllegalArgumentException(String.format("URL '%s' must start with HTTP or HTTPS.", url));
+            }
+            return fixUrl(url, false, needEndWith);
+        }
+        return StringUtils.EMPTY;
+    }
+
+    /**
+     * @param url           URL地址
+     * @param needStartWith 是否以'/'开始
+     * @param needEndWith   是否以'/'结束
+     * @return 返回修正后的URL地址
+     */
+    public static String fixUrl(String url, boolean needStartWith, boolean needEndWith) {
+        url = StringUtils.trimToNull(url);
+        if (url != null) {
+            if (needStartWith && !StringUtils.startsWith(url, PATH_SEPARATOR)) {
+                url = PATH_SEPARATOR + url;
+            } else if (!needStartWith && StringUtils.startsWith(url, PATH_SEPARATOR)) {
+                url = StringUtils.substringAfter(url, PATH_SEPARATOR);
+            }
+            if (needEndWith && !StringUtils.endsWith(url, PATH_SEPARATOR)) {
+                url = url + PATH_SEPARATOR;
+            } else if (!needEndWith && StringUtils.endsWith(url, PATH_SEPARATOR)) {
+                url = StringUtils.substringBeforeLast(url, PATH_SEPARATOR);
+            }
+            return url;
+        }
+        return StringUtils.EMPTY;
+    }
+
     public static boolean isInvalid(Object obj) {
         return obj == null || obj instanceof Map && ((Map<?, ?>) obj).isEmpty() || obj instanceof Collection && ((Collection<?>) obj).isEmpty() || obj instanceof CharSequence && StringUtils.isBlank((CharSequence) obj);
     }

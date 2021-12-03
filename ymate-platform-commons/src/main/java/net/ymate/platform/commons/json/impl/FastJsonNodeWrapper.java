@@ -28,8 +28,6 @@ import org.apache.commons.lang3.builder.HashCodeBuilder;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 
-import static com.alibaba.fastjson.util.TypeUtils.*;
-
 /**
  * @author 刘镇 (suninformation@163.com) on 2020/6/20 4:44 下午
  * @since 2.1.0
@@ -64,7 +62,7 @@ public class FastJsonNodeWrapper implements IJsonNodeWrapper {
 
     @Override
     public double getDouble() {
-        Double doubleValue = castToDouble(object);
+        Double doubleValue = TypeUtils.castToDouble(object);
         if (doubleValue == null) {
             return 0d;
         }
@@ -73,7 +71,7 @@ public class FastJsonNodeWrapper implements IJsonNodeWrapper {
 
     @Override
     public float getFloat() {
-        Float floatValue = castToFloat(object);
+        Float floatValue = TypeUtils.castToFloat(object);
         if (floatValue == null) {
             return 0f;
         }
@@ -82,7 +80,7 @@ public class FastJsonNodeWrapper implements IJsonNodeWrapper {
 
     @Override
     public int getInt() {
-        Integer intVal = castToInt(object);
+        Integer intVal = TypeUtils.castToInt(object);
         if (intVal == null) {
             return 0;
         }
@@ -91,7 +89,7 @@ public class FastJsonNodeWrapper implements IJsonNodeWrapper {
 
     @Override
     public long getLong() {
-        Long longVal = castToLong(object);
+        Long longVal = TypeUtils.castToLong(object);
         if (longVal == null) {
             return 0L;
         }
