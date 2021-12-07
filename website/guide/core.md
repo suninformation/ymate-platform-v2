@@ -1445,7 +1445,7 @@ src
 <plugin>
     <groupId>net.ymate.maven.plugins</groupId>
     <artifactId>ymate-maven-plugin</artifactId>
-    <version>1.1-SNAPSHOT</version>
+    <version>1.0.0</version>
 </plugin>
 ```
 
@@ -1453,7 +1453,7 @@ import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
 :::tip
-本文使用的 YMP 框架 Maven 插件集版本为 `1.1-SNAPSHOT` ，了解更多内容请访问： 
+本文使用的 YMP 框架 Maven 插件集版本为 `1.0.0` ，了解更多内容请访问： 
 
 <Tabs
 defaultValue="github"

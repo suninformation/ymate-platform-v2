@@ -1182,7 +1182,7 @@ ymp.params.jdbc.package_name=
 <plugin>
     <groupId>net.ymate.maven.plugins</groupId>
     <artifactId>ymate-maven-plugin</artifactId>
-    <version>1.1-SNAPSHOT</version>
+    <version>1.0.0</version>
 </plugin>
 ```
 
@@ -1192,7 +1192,7 @@ ymp.params.jdbc.package_name=
 <plugin>
     <groupId>net.ymate.maven.plugins</groupId>
     <artifactId>ymate-maven-plugin</artifactId>
-    <version>1.1-SNAPSHOT</version>
+    <version>1.0.0</version>
     <dependencies>
         <dependency>
             <groupId>mysql</groupId>
