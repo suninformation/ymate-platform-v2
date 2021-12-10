@@ -20,6 +20,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.core.LoggerContext;
 import org.apache.logging.log4j.core.config.*;
 import org.apache.logging.log4j.core.config.xml.XmlConfigurationFactory;
 
@@ -147,15 +148,18 @@ public class DefaultLogger extends AbstractLogger {
             //
             if (!__logInited) {
                 ConfigurationSource _source = new ConfigurationSource(new FileInputStream(__owner.getModuleCfg().getConfigFile()));
-                Configurator.initialize(null, _source);
-                final Configuration _config = new DefaultConfiguration();
+                LoggerContext loggerContext = Configurator.initialize(null, _source);
                 ConfigurationFactory.setConfigurationFactory(new XmlConfigurationFactory() {
+
+                    private final Configuration _config = new DefaultConfiguration();
+
                     @Override
-                    public Configuration getConfiguration(ConfigurationSource source) {
+                    public Configuration getConfiguration(final LoggerContext loggerContext, final ConfigurationSource source) {
                         return _config;
                     }
                 });
-                ConfigurationFactory.getInstance().getConfiguration(_source);
+                ConfigurationFactory.getInstance().getConfiguration(loggerContext, _source);
+                //
                 __logInited = true;
             }
             __logger = LogManager.getLogger(StringUtils.defaultIfBlank(loggerName, __owner.getModuleCfg().getLoggerName()));

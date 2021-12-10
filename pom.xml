@@ -153,7 +153,7 @@
             <dependency>
                 <groupId>junit</groupId>
                 <artifactId>junit</artifactId>
-                <version>4.12</version>
+                <version>4.13.1</version>
                 <scope>test</scope>
             </dependency>
             <dependency>
@@ -169,7 +169,7 @@
             <dependency>
                 <groupId>commons-io</groupId>
                 <artifactId>commons-io</artifactId>
-                <version>2.5</version>
+                <version>2.7</version>
             </dependency>
             <dependency>
                 <groupId>commons-codec</groupId>
@@ -195,7 +195,7 @@
             <dependency>
                 <groupId>com.alibaba</groupId>
                 <artifactId>fastjson</artifactId>
-                <version>1.2.72</version>
+                <version>1.2.78</version>
             </dependency>
             <dependency>
                 <groupId>net.sf.ehcache</groupId>
@@ -211,12 +211,12 @@
             <dependency>
                 <groupId>org.apache.logging.log4j</groupId>
                 <artifactId>log4j-api</artifactId>
-                <version>2.3</version>
+                <version>2.15.0</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.logging.log4j</groupId>
                 <artifactId>log4j-core</artifactId>
-                <version>2.3</version>
+                <version>2.15.0</version>
             </dependency>
             <dependency>
                 <groupId>org.slf4j</groupId>
