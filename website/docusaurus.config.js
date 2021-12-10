@@ -105,7 +105,7 @@ const darkCodeTheme = require('prism-react-renderer/themes/dracula');
     /** @type {import('@docusaurus/preset-classic').ThemeConfig} */
         ({
             image: 'img/logo_big.png',
-            metadatas: [
+            metadata: [
                 {name: 'author', content: 'suninformation'}
             ],
             hideableSidebar: true,
