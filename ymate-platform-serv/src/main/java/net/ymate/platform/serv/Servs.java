@@ -48,7 +48,7 @@ import java.util.concurrent.ConcurrentHashMap;
 @Module
 public class Servs implements IModule, IServ {
 
-    public static final Version VERSION = new Version(2, 0, 10, Servs.class.getPackage().getImplementationVersion(), Version.VersionType.Release);
+    public static final Version VERSION = new Version(2, 0, 11, Servs.class.getPackage().getImplementationVersion(), Version.VersionType.Release);
 
     private static final Log _LOG = LogFactory.getLog(Servs.class);
 
