@@ -246,16 +246,16 @@ public final class DefaultWebMvcConfig implements IWebMvcConfig {
     public void initialize(IWebMvc owner) throws Exception {
         if (!initialized) {
             if (requestMappingParser == null) {
-                requestMappingParser = new DefaultRequestMappingParser();
+                requestMappingParser = ClassUtils.loadClass(IRequestMappingParser.class, DefaultRequestMappingParser.class);
             }
             if (requestProcessor == null) {
-                requestProcessor = new DefaultRequestProcessor();
+                requestProcessor = ClassUtils.loadClass(IRequestProcessor.class, DefaultRequestProcessor.class);
             }
             if (cacheProcessor == null) {
-                cacheProcessor = new DefaultWebCacheProcessor();
+                cacheProcessor = ClassUtils.loadClass(IWebCacheProcessor.class, DefaultWebCacheProcessor.class);
             }
             if (errorProcessor == null) {
-                errorProcessor = new DefaultWebErrorProcessor();
+                errorProcessor = ClassUtils.loadClass(IWebErrorProcessor.class, DefaultWebErrorProcessor.class);
             }
             if (errorProcessor instanceof IWebInitialization) {
                 ((IWebInitialization) errorProcessor).initialize(owner);

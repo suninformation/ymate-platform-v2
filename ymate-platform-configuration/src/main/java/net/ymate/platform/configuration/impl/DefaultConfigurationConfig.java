@@ -104,7 +104,10 @@ public final class DefaultConfigurationConfig implements IConfigurationConfig {
             configHome = StringUtils.replace(RuntimeUtils.replaceEnvVariable(StringUtils.defaultIfEmpty(configHome, VAR_ROOT)), "%20", StringUtils.SPACE);
             //
             if (configurationProviderClass == null) {
-                configurationProviderClass = DefaultConfigurationProvider.class;
+                configurationProviderClass = ClassUtils.getExtensionLoader(IConfigurationProvider.class).getExtensionClass();
+                if (configurationProviderClass == null) {
+                    configurationProviderClass = DefaultConfigurationProvider.class;
+                }
             }
             //
             File configHomeFile = new File(configHome);

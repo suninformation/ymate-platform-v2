@@ -118,15 +118,12 @@ public final class DefaultCacheConfig implements ICacheConfig {
     public void initialize(ICaches owner) throws Exception {
         if (!initialized) {
             if (cacheEventListener == null) {
-                cacheEventListener = new DefaultCacheEventListener();
+                cacheEventListener = ClassUtils.loadClass(ICacheEventListener.class, DefaultCacheEventListener.class);
             }
             cacheEventListener.initialize(owner);
             //
             if (cacheScopeProcessor == null) {
-                Class<ICacheScopeProcessor> cacheScopeProcessorClass = ClassUtils.getExtensionLoader(ICacheScopeProcessor.class).getExtensionClass();
-                if (cacheScopeProcessorClass != null) {
-                    cacheScopeProcessor = ClassUtils.impl(cacheScopeProcessorClass, ICacheScopeProcessor.class);
-                }
+                cacheScopeProcessor = ClassUtils.loadClass(ICacheScopeProcessor.class);
             }
             if (cacheScopeProcessor != null && LOG.isInfoEnabled()) {
                 LOG.info(String.format("Using CacheScopeProcessor class [%s].", cacheScopeProcessor.getClass().getName()));
@@ -136,7 +133,7 @@ public final class DefaultCacheConfig implements ICacheConfig {
                 serializer = SerializerManager.getDefaultSerializer();
             }
             if (keyGenerator == null) {
-                keyGenerator = new DefaultCacheKeyGenerator();
+                keyGenerator = ClassUtils.loadClass(ICacheKeyGenerator.class, DefaultCacheKeyGenerator.class);
             }
             keyGenerator.initialize(owner, serializer);
             //
@@ -149,7 +146,7 @@ public final class DefaultCacheConfig implements ICacheConfig {
             }
             //
             if (cacheProvider == null) {
-                cacheProvider = new DefaultCacheProvider();
+                cacheProvider = ClassUtils.loadClass(ICacheProvider.class, DefaultCacheProvider.class);
             }
             cacheProvider.initialize(owner);
             //

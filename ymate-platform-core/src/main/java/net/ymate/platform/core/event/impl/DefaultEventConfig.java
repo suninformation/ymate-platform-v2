@@ -15,6 +15,7 @@
  */
 package net.ymate.platform.core.event.impl;
 
+import net.ymate.platform.commons.util.ClassUtils;
 import net.ymate.platform.core.configuration.IConfigReader;
 import net.ymate.platform.core.event.Events;
 import net.ymate.platform.core.event.IEventConfig;
@@ -74,10 +75,11 @@ public final class DefaultEventConfig implements IEventConfig {
     }
 
     @Override
-    @SuppressWarnings("rawtypes")
     public void initialize() {
         if (!initialized) {
-            this.eventProvider = eventProvider != null ? eventProvider : new DefaultEventProvider();
+            if (this.eventProvider == null) {
+                this.eventProvider = ClassUtils.loadClass(IEventProvider.class, DefaultEventProvider.class);
+            }
             this.defaultMode = defaultMode != null ? defaultMode : Events.MODE.ASYNC;
             this.threadPoolSize = threadPoolSize > 0 ? threadPoolSize : Runtime.getRuntime().availableProcessors();
             this.threadMaxPoolSize = threadMaxPoolSize > 0 ? threadMaxPoolSize : 200;

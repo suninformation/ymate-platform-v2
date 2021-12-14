@@ -98,7 +98,8 @@ public final class DefaultLogConfig implements ILogConfig {
                     LOG.warn(StringUtils.EMPTY, RuntimeUtils.unwrapThrow(e));
                 }
             }
-        } else if (confAnn != null && !confAnn.loggerClass().equals(ILogger.class)) {
+        }
+        if (loggerClass == null && confAnn != null && !confAnn.loggerClass().equals(ILogger.class)) {
             loggerClass = confAnn.loggerClass();
         }
         //
@@ -143,7 +144,10 @@ public final class DefaultLogConfig implements ILogConfig {
             }
             //
             if (this.loggerClass == null) {
-                this.loggerClass = DefaultLogger.class;
+                this.loggerClass = ClassUtils.getExtensionLoader(ILogger.class).getExtensionClass();
+                if (this.loggerClass == null) {
+                    this.loggerClass = DefaultLogger.class;
+                }
             }
             //
             initialized = true;

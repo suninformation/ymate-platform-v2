@@ -120,20 +120,14 @@ public final class Cfgs implements IConfig {
             userHome = System.getProperty(USER_HOME, StringUtils.EMPTY);
             userDir = System.getProperty(USER_DIR, StringUtils.EMPTY);
             //
-            fileSearcher = ClassUtils.getExtensionLoader(IConfigFileSearcher.class).getExtension();
-            if (fileSearcher == null) {
-                fileSearcher = new DefaultConfigFileSearcher();
-            }
+            fileSearcher = ClassUtils.loadClass(IConfigFileSearcher.class, DefaultConfigFileSearcher.class);
             if (LOG.isInfoEnabled()) {
                 LOG.info(String.format("Using ConfigFileSearcher class [%s].", fileSearcher.getClass().getName()));
             }
             fileSearcher.initialize(this);
             //
             if (config.getConfigCheckTimeInterval() > 0) {
-                fileChecker = ClassUtils.getExtensionLoader(IConfigFileChecker.class).getExtension();
-                if (fileChecker == null) {
-                    fileChecker = new DefaultConfigFileChecker();
-                }
+                fileChecker = ClassUtils.loadClass(IConfigFileChecker.class, DefaultConfigFileChecker.class);
                 if (LOG.isInfoEnabled()) {
                     LOG.info(String.format("Using ConfigFileChecker class [%s].", fileChecker.getClass().getName()));
                 }

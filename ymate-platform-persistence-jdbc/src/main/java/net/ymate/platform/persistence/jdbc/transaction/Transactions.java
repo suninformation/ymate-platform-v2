@@ -43,7 +43,7 @@ public final class Transactions {
 
     static {
         try {
-            transactionClass = ClassUtils.getExtensionLoader(ITransaction.class, false).getExtensionClass();
+            transactionClass = ClassUtils.getExtensionLoader(ITransaction.class).getExtensionClass();
         } catch (Exception e) {
             if (LOG.isWarnEnabled()) {
                 LOG.warn(StringUtils.EMPTY, RuntimeUtils.unwrapThrow(e));
