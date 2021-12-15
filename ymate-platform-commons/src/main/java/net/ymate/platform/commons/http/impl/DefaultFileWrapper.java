@@ -188,8 +188,10 @@ public class DefaultFileWrapper implements IFileWrapper {
 
     @Override
     public void close() throws IOException {
-        if (needClean && tempFile != null) {
-            tempFile.delete();
+        if (needClean && tempFile != null && tempFile.exists()) {
+            if (tempFile.delete()) {
+                tempFile.deleteOnExit();
+            }
         }
     }
 }

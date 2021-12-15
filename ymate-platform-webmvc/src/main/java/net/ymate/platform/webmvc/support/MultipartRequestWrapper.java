@@ -121,4 +121,9 @@ public class MultipartRequestWrapper extends HttpServletRequestWrapper implement
     public Set<IUploadFileWrapper> getUploadFiles() {
         return formWrapper.getFileMap().values().stream().filter(ArrayUtils::isNotEmpty).flatMap(Arrays::stream).collect(Collectors.toSet());
     }
+
+    @Override
+    public void close() throws Exception {
+        formWrapper.close();
+    }
 }

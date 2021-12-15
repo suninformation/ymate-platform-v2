@@ -288,57 +288,64 @@ public final class WebMVC implements IModule, IWebMvc {
         if (devEnv && LOG.isDebugEnabled()) {
             LOG.debug("Request mode: controller");
         }
-        // 判断是否需要处理文件上传
-        if (context.getHttpMethod().equals(Type.HttpMethod.POST) && requestMeta.getMethod().isAnnotationPresent(FileUpload.class)) {
-            if (!(request instanceof IMultipartRequestWrapper)) {
-                // 避免重复处理
-                request = new MultipartRequestWrapper(this, request);
-            }
-            //
-            if (devEnv && LOG.isDebugEnabled()) {
-                LOG.debug("Include file upload: YES");
-            }
-        }
-        WebContext.getContext().addAttribute(Type.Context.HTTP_REQUEST, request);
-        //
-        IWebCacheProcessor cacheProcessor = doGetWebCacheProcessor(requestMeta.getResponseCache());
-        IView view = null;
-        // 首先判断是否可以使用缓存
-        if (cacheProcessor != null) {
-            // 尝试从缓存中加载执行结果
-            if (cacheProcessor.processResponseCache(this, requestMeta.getResponseCache(), null)) {
-                // 加载成功, 则
-                view = View.nullView();
+        try {
+            // 判断是否需要处理文件上传
+            if (context.getHttpMethod().equals(Type.HttpMethod.POST) && requestMeta.getMethod().isAnnotationPresent(FileUpload.class)) {
+                if (!(request instanceof IMultipartRequestWrapper)) {
+                    // 避免重复处理
+                    request = new MultipartRequestWrapper(this, request);
+                }
                 //
                 if (devEnv && LOG.isDebugEnabled()) {
-                    LOG.debug("Load data from the cache: YES");
+                    LOG.debug("Include file upload: YES");
                 }
             }
-        }
-        if (view == null) {
-            view = RequestExecutor.bind(this, requestMeta).execute();
-            if (view != null) {
-                if (cacheProcessor != null) {
-                    try {
-                        // 生成缓存
-                        if (cacheProcessor.processResponseCache(this, requestMeta.getResponseCache(), view)) {
-                            view = View.nullView();
-                            //
-                            if (devEnv && LOG.isDebugEnabled()) {
-                                LOG.debug("Results data cached: YES");
-                            }
-                        }
-                    } catch (Exception e) {
-                        // 缓存处理过程中的任何异常都不能影响本交请求的正常响应, 仅输出异常日志
-                        LOG.warn(e.getMessage(), RuntimeUtils.unwrapThrow(e));
+            WebContext.getContext().addAttribute(Type.Context.HTTP_REQUEST, request);
+            //
+            IWebCacheProcessor cacheProcessor = doGetWebCacheProcessor(requestMeta.getResponseCache());
+            IView view = null;
+            // 首先判断是否可以使用缓存
+            if (cacheProcessor != null) {
+                // 尝试从缓存中加载执行结果
+                if (cacheProcessor.processResponseCache(this, requestMeta.getResponseCache(), null)) {
+                    // 加载成功, 则
+                    view = View.nullView();
+                    //
+                    if (devEnv && LOG.isDebugEnabled()) {
+                        LOG.debug("Load data from the cache: YES");
                     }
                 }
-                view.render();
-            } else {
-                HttpStatusView.NOT_FOUND.render();
             }
-        } else {
-            view.render();
+            if (view == null) {
+                view = RequestExecutor.bind(this, requestMeta).execute();
+                if (view != null) {
+                    if (cacheProcessor != null) {
+                        try {
+                            // 生成缓存
+                            if (cacheProcessor.processResponseCache(this, requestMeta.getResponseCache(), view)) {
+                                view = View.nullView();
+                                //
+                                if (devEnv && LOG.isDebugEnabled()) {
+                                    LOG.debug("Results data cached: YES");
+                                }
+                            }
+                        } catch (Exception e) {
+                            // 缓存处理过程中的任何异常都不能影响本交请求的正常响应, 仅输出异常日志
+                            LOG.warn(e.getMessage(), RuntimeUtils.unwrapThrow(e));
+                        }
+                    }
+                    view.render();
+                } else {
+                    HttpStatusView.NOT_FOUND.render();
+                }
+            } else {
+                view.render();
+            }
+        } finally {
+            if (request instanceof IMultipartRequestWrapper) {
+                // 若存在文件上传则尝试清理临时文件
+                ((IMultipartRequestWrapper) request).close();
+            }
         }
     }
 

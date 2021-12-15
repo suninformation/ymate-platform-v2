@@ -170,6 +170,7 @@ public class FileUtils {
             prefix = prefix.concat("_");
         }
         File zipFile = File.createTempFile(prefix, ".zip");
+        zipFile.deleteOnExit();
         try (ZipOutputStream outputStream = new ZipOutputStream(new FileOutputStream(zipFile))) {
             for (File file : files) {
                 ZipEntry zipEntry = new ZipEntry(file.getName());

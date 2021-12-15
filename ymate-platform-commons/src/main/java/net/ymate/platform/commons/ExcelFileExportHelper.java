@@ -231,6 +231,7 @@ public final class ExcelFileExportHelper {
                 }
             }
             File tempFile = File.createTempFile("export_", "_" + index + ".xlsx");
+            tempFile.deleteOnExit();
             try (OutputStream outputStream = new FileOutputStream(tempFile)) {
                 workbook.write(outputStream);
             }
@@ -277,6 +278,7 @@ public final class ExcelFileExportHelper {
             }
         }
         File tempFile = File.createTempFile("export_", "_" + index + ".csv");
+        tempFile.deleteOnExit();
         try (OutputStream outputStream = new FileOutputStream(tempFile)) {
             IOUtils.write(tableBuilder.toString(), outputStream, StringUtils.defaultIfBlank(charset, "GB2312"));
         }
@@ -286,6 +288,7 @@ public final class ExcelFileExportHelper {
     private File doExport(String tmplFile, int index, Map<String, Object> data) throws Exception {
         try (InputStream resourceAsStream = ExcelFileExportHelper.class.getResourceAsStream(tmplFile + ".xls")) {
             File tempFile = File.createTempFile("export_", "_" + index + ".xls");
+            tempFile.deleteOnExit();
             try (OutputStream fileOutputStream = new FileOutputStream(tempFile)) {
                 JxlsHelper.getInstance().processTemplate(resourceAsStream, fileOutputStream, new Context(data));
             }

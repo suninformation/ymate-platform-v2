@@ -269,7 +269,7 @@ public final class FileUploadHelper {
      *
      * @author 刘镇 (suninformation@163.com) on 2011-6-7 上午09:50:56
      */
-    public static class UploadFormWrapper {
+    public static class UploadFormWrapper implements AutoCloseable {
 
         private final Map<String, String[]> fieldMap = new HashMap<>();
 
@@ -297,6 +297,19 @@ public final class FileUploadHelper {
 
         public IUploadFileWrapper[] getFile(String fieldName) {
             return fileMap.get(fieldName);
+        }
+
+        @Override
+        public void close() throws Exception {
+            for (IUploadFileWrapper[] fileWrappers : fileMap.values()) {
+                if (fileWrappers != null) {
+                    for (IUploadFileWrapper fileWrapper : fileWrappers) {
+                        if (fileWrapper != null) {
+                            fileWrapper.close();
+                        }
+                    }
+                }
+            }
         }
     }
 
@@ -375,7 +388,9 @@ public final class FileUploadHelper {
         public void delete() {
             if (fileObj) {
                 if (file != null && file.exists()) {
-                    file.delete();
+                    if (!file.delete()) {
+                        file.deleteOnExit();
+                    }
                 }
             } else {
                 fileItem.delete();
@@ -419,6 +434,7 @@ public final class FileUploadHelper {
             }
             if (tempFile == null) {
                 tempFile = File.createTempFile("upload_", getName());
+                tempFile.deleteOnExit();
                 try (InputStream inputStream = new BufferedInputStream(fileItem.getInputStream());
                      OutputStream outputStream = new BufferedOutputStream(new FileOutputStream(tempFile))) {
                     IOUtils.copyLarge(inputStream, outputStream);
@@ -445,6 +461,11 @@ public final class FileUploadHelper {
                 return fileItem.getContentType();
             }
             return null;
+        }
+
+        @Override
+        public void close() throws Exception {
+            delete();
         }
     }
 }

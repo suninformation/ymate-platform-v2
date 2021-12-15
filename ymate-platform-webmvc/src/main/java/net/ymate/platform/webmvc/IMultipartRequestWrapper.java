@@ -23,7 +23,7 @@ import java.util.Set;
  * @author 刘镇 (suninformation@163.com) on 16/4/29 下午2:28
  */
 @Ignored
-public interface IMultipartRequestWrapper {
+public interface IMultipartRequestWrapper extends AutoCloseable {
 
     /**
      * 获取上传的文件

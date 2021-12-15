@@ -28,7 +28,7 @@ import java.io.OutputStream;
  * @author 刘镇 (suninformation@163.com) on 2012-12-26 下午1:24:51
  */
 @Ignored
-public interface IUploadFileWrapper {
+public interface IUploadFileWrapper extends AutoCloseable {
 
     /**
      * 获取完整的文件名及路径
