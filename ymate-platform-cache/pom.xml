@@ -14,7 +14,7 @@
     <packaging>jar</packaging>
 
     <name>ymate-platform-cache</name>
-    <url>http://www.ymate.net/</url>
+    <url>https://www.ymate.net/</url>
     <description>YMP Cache.</description>
 
     <build>

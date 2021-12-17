@@ -2369,10 +2369,10 @@
     cssesc "^3.0.0"
     immediate "^3.2.3"
 
-"@easyops-cn/docusaurus-search-local@^0.21.3":
-  version "0.21.3"
-  resolved "https://registry.npmmirror.com/@easyops-cn/docusaurus-search-local/download/@easyops-cn/docusaurus-search-local-0.21.3.tgz#bd2582b51178732d3f8ef54e7bad6e9df37d98e6"
-  integrity sha512-zXldMlqaapL7y+940txT0yeIR0NLgfuR2RxHtvaumXmDmjIccG3Q9/zZXXaGK+vBEJU0O77HA7b+/8rIKzXJUQ==
+"@easyops-cn/docusaurus-search-local@^0.21.4":
+  version "0.21.4"
+  resolved "https://registry.npmmirror.com/@easyops-cn/docusaurus-search-local/download/@easyops-cn/docusaurus-search-local-0.21.4.tgz#d5df409e5f80503bcd62def991dbd230e58ee3c5"
+  integrity sha512-sUYxRKLfN/rInn1awf3Z6M5lefk9gSsrQp/6nKUTgaJI/NUmvZY8Hk3nRk0BPIHK8jjjzm+gWOhz8O0SBq8ihw==
   dependencies:
     "@docusaurus/utils" "^2.0.0-beta.4"
     "@docusaurus/utils-validation" "^2.0.0-beta.4"

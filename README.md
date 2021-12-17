@@ -1,4 +1,4 @@
-### YMP ——轻量级JAVA应用开发框架
+# YMP ——轻量级 Java 应用开发框架
 
 ![LOGO](https://ymate.net/img/logo_small.png "LOGO")
 
@@ -8,7 +8,7 @@
 
 > A lightweight modular simple and powerful Java application development framework.
 
-> 一个非常简单、易用的一套轻量级Java应用开发框架，设计原则主要侧重于简化工作任务、规范开发流程、提高开发效率，让开发工作像搭积木一样轻松是我们一直不懈努力的目标！
+> 一个非常简单、易用的一套轻量级 Java 应用开发框架，设计原则主要侧重于简化工作任务、规范开发流程、提高开发效率，让开发工作像搭积木一样轻松是我们一直不懈努力的目标！
 
 
 

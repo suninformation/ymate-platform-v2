@@ -10,7 +10,7 @@
     <packaging>pom</packaging>
 
     <name>ymate-platform-parent</name>
-    <url>http://www.ymate.net/</url>
+    <url>https://www.ymate.net/</url>
     <description>YMP - A lightweight modular simple and powerful Java application development framework.</description>
 
     <modules>
@@ -40,7 +40,7 @@
     <licenses>
         <license>
             <name>The Apache Software License, Version 2.0</name>
-            <url>http://apache.org/licenses/LICENSE-2.0.txt</url>
+            <url>https://apache.org/licenses/LICENSE-2.0.txt</url>
         </license>
     </licenses>
 

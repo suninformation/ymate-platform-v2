@@ -14,7 +14,7 @@
     <packaging>jar</packaging>
 
     <name>ymate-platform-commons</name>
-    <url>http://www.ymate.net/</url>
+    <url>https://www.ymate.net/</url>
     <description>YMP Commons.</description>
 
     <build>
