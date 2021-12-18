@@ -2967,9 +2967,20 @@ public class DemoRepository implements IRepository {
 
 ### 示例三：执行动态SQL语句及数据过滤
 
-目前， JDBC 持久化模块的存储器默认仅支持基于 `JavaScript` 脚本语言实现的动态 SQL 语句拼装和数据过滤。
+目前， JDBC 持久化模块的存储器默认支持基于 `JavaScript` 和 `Groovy` 脚本语言实现的动态 SQL 语句拼装和数据过滤。
 
-可以通过 `IRepositoryScriptProcessor` 脚本处理器接口实现自定义脚本语言并通过 `SPI` 机制向模块注册，接口结构及方法说明如下：
+若使用 `Groovy` 脚本，需求在工程中添加如下依赖包配置：
+
+```xml
+<dependency>
+    <groupId>org.codehaus.groovy</groupId>
+    <artifactId>groovy-all</artifactId>
+    <version>3.0.9</version>
+    <type>pom</type>
+</dependency>
+```
+
+也可以通过 `IRepositoryScriptProcessor` 脚本处理器接口实现自定义脚本语言并通过 `SPI` 机制向模块注册（自定义脚本处理器接口实现类必须使用 `@RepositoryScriptProcessor` 注解指定脚本语言名称），接口结构及方法说明如下：
 
 ```java
 @RepositoryScriptProcessor(value = "lua")
@@ -2981,8 +2992,17 @@ public class LuaRepositoryScriptProcessor implements IRepositoryScriptProcessor 
      * @param scriptStatement 脚本代码段
      * @throws Exception 可能产生的任何异常
      */
-    @Override
-    public void init(String scriptStatement) throws Exception {
+    public void initialize(String scriptStatement) throws Exception {
+        // 此处编写自定义脚本引擎的初始化逻辑
+    }
+
+    /**
+     * 是否已初始化
+     *
+     * @return 返回true表示已初始化
+     */
+    public boolean isInitialized() {
+        return true;
     }
 
     /**
@@ -3017,7 +3037,7 @@ public class LuaRepositoryScriptProcessor implements IRepositoryScriptProcessor 
      * @return 返回过滤后的结果对象
      */
     @Override
-    public Object doFilter(Object results) {
+    public Object filter(Object results) {
         // 此处调用脚本中的具体方法实现数据过滤
         return null;
     }

@@ -22,6 +22,7 @@ import net.ymate.platform.commons.util.RuntimeUtils;
 import net.ymate.platform.core.beans.annotation.Ignored;
 import net.ymate.platform.persistence.jdbc.repo.annotation.RepositoryScriptProcessor;
 import net.ymate.platform.persistence.jdbc.repo.impl.DefaultRepositoryScriptProcessor;
+import net.ymate.platform.persistence.jdbc.repo.impl.GroovyRepositoryScriptProcessor;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -37,13 +38,24 @@ import java.util.concurrent.ConcurrentHashMap;
 @Ignored
 public interface IRepositoryScriptProcessor {
 
+    String JAVASCRIPT = "JavaScript";
+
+    String GROOVY = "Groovy";
+
     /**
      * 初始化脚本处理器
      *
      * @param scriptStatement 脚本代码段
      * @throws Exception 可能产生的任何异常
      */
-    void init(String scriptStatement) throws Exception;
+    void initialize(String scriptStatement) throws Exception;
+
+    /**
+     * 是否已初始化
+     *
+     * @return 返回true表示已初始化
+     */
+    boolean isInitialized();
 
     /**
      * 执行处理器
@@ -68,7 +80,7 @@ public interface IRepositoryScriptProcessor {
      * @param results 待过滤结果对象
      * @return 返回过滤后的结果对象
      */
-    Object doFilter(Object results);
+    Object filter(Object results);
 
     /**
      * 存储器脚本处理器类管理器
@@ -80,7 +92,8 @@ public interface IRepositoryScriptProcessor {
         private static final Map<String, IRepositoryScriptProcessor> SCRIPT_PROCESSORS = new ConcurrentHashMap<>();
 
         static {
-            SCRIPT_PROCESSORS.put(DefaultRepositoryScriptProcessor.JAVASCRIPT.toLowerCase(), new DefaultRepositoryScriptProcessor());
+            SCRIPT_PROCESSORS.put(JAVASCRIPT.toLowerCase(), new DefaultRepositoryScriptProcessor());
+            SCRIPT_PROCESSORS.put(GROOVY.toLowerCase(), new GroovyRepositoryScriptProcessor());
             //
             try {
                 ClassUtils.ExtensionLoader<IRepositoryScriptProcessor> extensionLoader = ClassUtils.getExtensionLoader(IRepositoryScriptProcessor.class, true);
@@ -103,7 +116,7 @@ public interface IRepositoryScriptProcessor {
         }
 
         public static IRepositoryScriptProcessor getDefaultScriptProcessor() {
-            return getScriptProcessor(DefaultRepositoryScriptProcessor.JAVASCRIPT);
+            return getScriptProcessor(JAVASCRIPT);
         }
 
         public static IRepositoryScriptProcessor getScriptProcessor(Class<? extends IRepositoryScriptProcessor> clazz) {

@@ -36,8 +36,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import java.lang.reflect.Method;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 /**
  * JDBC存储器代理
@@ -91,6 +90,7 @@ public class RepositoryProxy implements IProxy {
         if (repositoryAnn != null && ClassUtils.isNormalMethod(proxyChain.getTargetMethod())) {
             try (IDatabaseSession session = doOpenSession(proxyChain, repositoryAnn)) {
                 IRepositoryScriptProcessor processor = null;
+                ParamsWrapper paramsWrapper = new ParamsWrapper(repositoryAnn, proxyChain.getMethodParams());
                 String sqlStr = repositoryAnn.value();
                 if (StringUtils.isBlank(sqlStr) && proxyChain.getTargetObject() instanceof IRepository) {
                     try {
@@ -119,10 +119,13 @@ public class RepositoryProxy implements IProxy {
                             if (attributeMap != null && !attributeMap.isEmpty()) {
                                 String languageType = StringUtils.trimToNull(attributeMap.get("language"));
                                 if (StringUtils.isNotBlank(languageType)) {
-                                    processor = IRepositoryScriptProcessor.Manager.getScriptProcessor(languageType);
-                                    if (processor != null) {
-                                        processor.init(sqlStr);
-                                        sqlStr = processor.process(repositoryAnn.item(), proxyChain.getMethodParams());
+                                    String scriptStatement = configuration.getString(keyStr);
+                                    if (StringUtils.isNotBlank(scriptStatement)) {
+                                        processor = IRepositoryScriptProcessor.Manager.getScriptProcessor(languageType);
+                                        if (processor != null) {
+                                            processor.initialize(scriptStatement);
+                                            sqlStr = processor.process(repositoryAnn.item(), paramsWrapper.getParams());
+                                        }
                                     }
                                 }
                             }
@@ -140,24 +143,12 @@ public class RepositoryProxy implements IProxy {
                     if (repositoryAnn.update()) {
                         return session.executeForUpdate(doCreateSQL(sqlStr, proxyChain.getTargetMethod(), proxyChain.getMethodParams(), repositoryAnn.page(), repositoryAnn.useFilter()));
                     } else {
-                        Page page = repositoryAnn.page() ? (Page) proxyChain.getMethodParams()[proxyChain.getMethodParams().length - (repositoryAnn.useFilter() ? 2 : 1)] : null;
-                        IResultSetHandler<?> resultSetHandler = !repositoryAnn.resultClass().equals(Void.class) ? new BeanResultSetHandler<>(repositoryAnn.resultClass()) : new ArrayResultSetHandler();
-                        Object result = session.find(doCreateSQL(sqlStr, proxyChain.getTargetMethod(), proxyChain.getMethodParams(), repositoryAnn.page(), repositoryAnn.useFilter()), resultSetHandler, page);
+                        Object result = session.find(doCreateSQL(sqlStr, proxyChain.getTargetMethod(), proxyChain.getMethodParams(), repositoryAnn.page(), repositoryAnn.useFilter()), paramsWrapper.getResultSetHandler(), paramsWrapper.getPage());
                         if (processor != null && processor.isFilterable()) {
-                            result = processor.doFilter(result);
+                            result = processor.filter(result);
                         }
                         if (repositoryAnn.useFilter()) {
-                            // 将执行结果赋予目标方法的最后一个参数
-                            int position = proxyChain.getMethodParams().length - 1;
-                            Object lastParam = proxyChain.getMethodParams()[position];
-                            Class<?> paramType = lastParam != null ? lastParam.getClass() : null;
-                            if (paramType != null && paramType.isArray()) {
-                                if (result != null) {
-                                    proxyChain.getMethodParams()[position] = ArrayUtils.add((Object[]) proxyChain.getMethodParams()[position], result);
-                                }
-                            } else {
-                                proxyChain.getMethodParams()[position] = result;
-                            }
+                            paramsWrapper.doSetResultParam(proxyChain.getMethodParams(), result);
                         } else {
                             return result;
                         }
@@ -166,5 +157,52 @@ public class RepositoryProxy implements IProxy {
             }
         }
         return proxyChain.doProxyChain();
+    }
+
+    static class ParamsWrapper {
+
+        List<Object> params;
+
+        Page page;
+
+        IResultSetHandler<?> resultSetHandler;
+
+        ParamsWrapper(Repository repositoryAnn, Object[] params) {
+            if (params != null && params.length > 0) {
+                this.params = new ArrayList<>(Arrays.asList(params));
+                if (repositoryAnn.useFilter()) {
+                    this.params.remove(this.params.size() - 1);
+                }
+                if (!this.params.isEmpty() && repositoryAnn.page()) {
+                    page = (Page) this.params.remove(this.params.size() - 1);
+                }
+            }
+            resultSetHandler = !repositoryAnn.resultClass().equals(Void.class) ? new BeanResultSetHandler<>(repositoryAnn.resultClass()) : new ArrayResultSetHandler();
+        }
+
+        public Object[] getParams() {
+            return params == null ? null : params.toArray();
+        }
+
+        public void doSetResultParam(Object[] originParams, Object result) {
+            if (result != null) {
+                // 将执行结果赋予目标方法的最后一个参数
+                int position = originParams.length - 1;
+                Class<?> paramType = originParams[position] == null ? null : originParams[position].getClass();
+                if (paramType != null && paramType.isArray()) {
+                    originParams[position] = ArrayUtils.add((Object[]) originParams[position], result);
+                } else {
+                    originParams[position] = result;
+                }
+            }
+        }
+
+        public Page getPage() {
+            return page;
+        }
+
+        public IResultSetHandler<?> getResultSetHandler() {
+            return resultSetHandler;
+        }
     }
 }
