@@ -244,6 +244,11 @@ public class JedisCommander implements IRedisCommander {
     }
 
     @Override
+    public String aclLogReset() {
+        return jedis.aclLogReset();
+    }
+
+    @Override
     public String aclLoad() {
         return jedis.aclLoad();
     }
@@ -1661,6 +1666,11 @@ public class JedisCommander implements IRedisCommander {
     @Override
     public List<String> clusterGetKeysInSlot(int slot, int count) {
         return jedis.clusterGetKeysInSlot(slot, count);
+    }
+
+    @Override
+    public List<byte[]> clusterGetKeysInSlotBinary(int slot, int count) {
+        return jedis.clusterGetKeysInSlotBinary(slot, count);
     }
 
     @Override

@@ -241,6 +241,11 @@ public class JedisShardedCommander implements IRedisCommander {
     }
 
     @Override
+    public String aclLogReset() {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
     public String aclLoad() {
         throw new UnsupportedOperationException();
     }
@@ -1657,6 +1662,11 @@ public class JedisShardedCommander implements IRedisCommander {
 
     @Override
     public List<String> clusterGetKeysInSlot(int slot, int count) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public List<byte[]> clusterGetKeysInSlotBinary(int slot, int count) {
         throw new UnsupportedOperationException();
     }
 
