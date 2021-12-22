@@ -3245,6 +3245,74 @@ select.find(new IResultSetHandler<CustomUser>() {
 
 
 
+### 实体字段属性值自定义渲染
+
+在处理查询结果集数据时，为了能够在一次循环遍历过程中对字段的原始数据进行自定义加工处理，例如，对电子邮件、手机号码或身份证件号码进行数据脱敏，对文本内容进行格式转换等。在 JDBC 持久化模块中，我们可以通过 @ValueRenderer 注解并配合  IValueRenderer 接口实现类完成此类操作。
+
+#### @ValueRenderer
+
+为类成员属性指定自定义渲染器类集合。
+
+| 配置项 | 描述                                               |
+| ------ | -------------------------------------------------- |
+| value  | 指定属性值渲染器类型集合，将按配置顺序执行渲染操作 |
+
+
+
+#### 自定义渲染器接口实现
+
+**示例：** 将邮箱地址中 `@` 符号之前的字符替换为 `*` 字符。
+
+```java
+public class EmailValueRenderer implements IValueRenderer {
+    @Override
+    public Object render(Class<?> targetType, Object originValue) {
+        if (String.class.equals(originValue.getClass())) {
+            String[] strings = StringUtils.split(originValue.toString(), "@");
+            if (!ArrayUtils.isEmpty(strings) && strings.length == 2) {
+                return String.format("%s@%s", StringUtils.repeat("*", strings[0].length()), strings[1]);
+            }
+        }
+        return originValue;
+    }
+}
+```
+
+
+
+#### 自定义渲染器注册
+
+自定义渲染器支持通过 SPI 和手动两种方式注册，手动注册示例如下：
+
+```java
+IValueRenderer.Manager.registerValueRenderer(EmailValueRenderer.class);
+```
+
+
+
+#### 示例：自定义渲染器的使用
+
+自定义渲染器注解可以应用在数据实体或类的成员属性之上，通过 EntityResultSetHandler 和 BeanResultSetHander 处理过的查询结果集将根据自定义渲染器注解配置顺序执行渲染操作。
+
+```java
+public class UserBean implements Serializable {
+
+    private static final long serialVersionUID = 1L;
+
+    private java.lang.String id;
+
+    @ValueRenderer({EmailValueRenderer.class})
+    private java.lang.String email;
+    
+    // 忽略Getter和Setter方法
+}
+
+IResultSet<UserBean> resultSet = SQL.create("SELECT id, email FROM user")
+    .find(new BeanResultSetHandler<>(UserBean.class), Page.create(1));
+```
+
+
+
 ### 基于注解配置多表连接查询
 
 在我们的日常项目开发过程中，多表关联查询是使用非常频繁的一种查询手段，在前面的 `多表查询及自定义结果集数据处理` 章节中已经介绍过如何通过代码编写多表关联查询及结果集的处理方法，但编写比较复杂的关联查询时仍然很麻烦，因此，JDBC 持久化模块特别提供了一系列注解类用来定义多表关联关系及字段与类成员之间的关系绑定，根据注解配置将自动生成 SQL 语句并执行，查询结果集也将被自动映射到类成员变量。
