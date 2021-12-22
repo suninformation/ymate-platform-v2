@@ -35,14 +35,17 @@ public class PropertyMeta implements Serializable {
      * 属性名称
      */
     private String name;
+
     /**
      * 成员变量Field对象
      */
     private Field field;
+
     /**
      * 是否为自动增长
      */
     private boolean autoincrement;
+
     /**
      * 序列名称
      */
@@ -54,34 +57,42 @@ public class PropertyMeta implements Serializable {
      * @since 2.1.0
      */
     private String useKeyGenerator;
+
     /**
      * 允许为空
      */
     private boolean nullable;
+
     /**
      * 是否为无符号
      */
     private boolean unsigned;
+
     /**
      * 数据长度，默认0为不限制
      */
     private int length;
+
     /**
      * 小数位数，默认0为无小数
      */
     private int decimals;
+
     /**
      * 数据类型
      */
     private Type.FIELD type;
+
     /**
      * 默认值
      */
     private String defaultValue;
+
     /**
      * 属性注释
      */
     private String comment;
+
     /**
      * 是否为只读属性
      */
@@ -120,7 +131,7 @@ public class PropertyMeta implements Serializable {
         this.defaultValue = defaultValue;
         this.comment = comment;
         this.readonly = readonly;
-    } //
+    }
 
     public String getName() {
         return name;

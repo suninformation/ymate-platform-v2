@@ -712,7 +712,8 @@ public class ClassUtils {
         }
 
         public Annotation[] getFieldAnnotations(String fieldName) {
-            return fieldMap.get(fieldName).getAnnotations();
+            Field field = fieldMap.get(fieldName);
+            return field == null ? null : field.getAnnotations();
         }
 
         public Collection<Field> getFields() {

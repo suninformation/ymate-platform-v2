@@ -559,7 +559,7 @@ public final class ResultSetHelper {
             }
         }
 
-        @SuppressWarnings("unchecked")
+        @SuppressWarnings({"unchecked", "rawtypes"})
         public <T extends IEntity> T toEntity(T entityObject) throws Exception {
             EntityMeta entityMeta = EntityMeta.createAndGet(entityObject.getClass());
             if (entityMeta != null) {
@@ -600,7 +600,7 @@ public final class ResultSetHelper {
     /**
      * 结果集输出列渲染器
      */
-    public interface ColumnRender {
+    public interface IColumnRenderer {
 
         /**
          * 渲染列值
@@ -612,7 +612,7 @@ public final class ResultSetHelper {
         Object render(String columnName, Object value);
     }
 
-    private ConsoleTableBuilder buildTableBuilder(String type, ColumnRender columnRender) {
+    private ConsoleTableBuilder buildTableBuilder(String type, IColumnRenderer columnRenderer) {
         ConsoleTableBuilder tableBuilder = ConsoleTableBuilder.create(columnCount).escape();
         if (StringUtils.isNotBlank(type)) {
             switch (type) {
@@ -634,8 +634,8 @@ public final class ResultSetHelper {
                 ConsoleTableBuilder.Row newRow = tableBuilder.addRow();
                 for (String colName : wrapper.getColumnNames()) {
                     Object colValue = wrapper.getObject(colName);
-                    if (columnRender != null) {
-                        colValue = columnRender.render(colName, colValue);
+                    if (columnRenderer != null) {
+                        colValue = columnRenderer.render(colName, colValue);
                     }
                     String s = BlurObject.bind(colValue).toStringValue();
                     newRow.addColumn(s);
@@ -657,13 +657,13 @@ public final class ResultSetHelper {
     }
 
     /**
-     * @param columnRender 结果集输出列渲染器
+     * @param columnRenderer 结果集输出列渲染器
      * @return 输出控制台表格
      * @since 2.1.0
      */
-    public String toString(ColumnRender columnRender) {
+    public String toString(IColumnRenderer columnRenderer) {
         if (!dataSet.isEmpty()) {
-            return buildTableBuilder(null, columnRender).toString();
+            return buildTableBuilder(null, columnRenderer).toString();
         }
         return StringUtils.EMPTY;
     }
@@ -677,13 +677,13 @@ public final class ResultSetHelper {
     }
 
     /**
-     * @param columnRender 结果集输出列渲染器
+     * @param columnRenderer 结果集输出列渲染器
      * @return 输出CSV表格
      * @since 2.1.0
      */
-    public String toCsv(ColumnRender columnRender) {
+    public String toCsv(IColumnRenderer columnRenderer) {
         if (!dataSet.isEmpty()) {
-            return buildTableBuilder(ConsoleTableBuilder.TYPE_CSV, columnRender).toString();
+            return buildTableBuilder(ConsoleTableBuilder.TYPE_CSV, columnRenderer).toString();
         }
         return StringUtils.EMPTY;
     }
@@ -697,13 +697,13 @@ public final class ResultSetHelper {
     }
 
     /**
-     * @param columnRender 结果集输出列渲染器
+     * @param columnRenderer 结果集输出列渲染器
      * @return 输出Markdown表格
      * @since 2.1.0
      */
-    public String toMarkdown(ColumnRender columnRender) {
+    public String toMarkdown(IColumnRenderer columnRenderer) {
         if (!dataSet.isEmpty()) {
-            return buildTableBuilder(ConsoleTableBuilder.TYPE_MARKDOWN, columnRender).toString();
+            return buildTableBuilder(ConsoleTableBuilder.TYPE_MARKDOWN, columnRenderer).toString();
         }
         return StringUtils.EMPTY;
     }
@@ -734,16 +734,16 @@ public final class ResultSetHelper {
     /**
      * 输出指定类型表格到文件
      *
-     * @param type         表格类型(可选值: 空|csv|markdown)
-     * @param outputFile   输出文件对象
-     * @param columnRender 结果集输出列渲染器
+     * @param type           表格类型(可选值: 空|csv|markdown)
+     * @param outputFile     输出文件对象
+     * @param columnRenderer 结果集输出列渲染器
      * @throws IOException 可能产生的IO异常
      * @since 2.1.0
      */
-    public void writeTo(String type, File outputFile, ColumnRender columnRender) throws IOException {
+    public void writeTo(String type, File outputFile, IColumnRenderer columnRenderer) throws IOException {
         if (!dataSet.isEmpty()) {
             try (FileOutputStream outputStream = new FileOutputStream(outputFile)) {
-                buildTableBuilder(type, columnRender).writeTo(outputStream);
+                buildTableBuilder(type, columnRenderer).writeTo(outputStream);
                 if (LOG.isInfoEnabled()) {
                     LOG.info(String.format("Successfully written to file: %s", outputFile.getPath()));
                 }
@@ -777,15 +777,15 @@ public final class ResultSetHelper {
     /**
      * 输出指定类型表格到流
      *
-     * @param type         表格类型(可选值: 空|csv|markdown)
-     * @param outputStream 输出流对象
-     * @param columnRender 结果集输出列渲染器
+     * @param type           表格类型(可选值: 空|csv|markdown)
+     * @param outputStream   输出流对象
+     * @param columnRenderer 结果集输出列渲染器
      * @throws IOException 可能产生的IO异常
      * @since 2.1.0
      */
-    public void writeTo(String type, OutputStream outputStream, ColumnRender columnRender) throws IOException {
+    public void writeTo(String type, OutputStream outputStream, IColumnRenderer columnRenderer) throws IOException {
         if (!dataSet.isEmpty()) {
-            buildTableBuilder(type, columnRender).writeTo(outputStream);
+            buildTableBuilder(type, columnRenderer).writeTo(outputStream);
         }
     }
 }
