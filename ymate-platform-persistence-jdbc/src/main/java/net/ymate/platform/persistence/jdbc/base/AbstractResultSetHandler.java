@@ -15,6 +15,11 @@
  */
 package net.ymate.platform.persistence.jdbc.base;
 
+import net.ymate.platform.core.persistence.IValueRenderer;
+import net.ymate.platform.core.persistence.annotation.ValueRenderer;
+import org.apache.commons.lang3.ArrayUtils;
+
+import java.lang.reflect.Field;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.util.ArrayList;
@@ -51,6 +56,23 @@ public abstract class AbstractResultSetHandler<T> implements IResultSetHandler<T
             results.add(processResultRow(resultSet));
         }
         return results;
+    }
+
+    protected Object processValueRenderer(Field field, Object originValue) {
+        if (field != null && originValue != null) {
+            ValueRenderer valueRendererAnn = field.getAnnotation(ValueRenderer.class);
+            if (valueRendererAnn != null && !ArrayUtils.isEmpty(valueRendererAnn.value())) {
+                for (Class<? extends IValueRenderer> valueRendererClass : valueRendererAnn.value()) {
+                    if (valueRendererClass != null) {
+                        IValueRenderer valueRenderer = IValueRenderer.Manager.getValueRenderer(valueRendererClass);
+                        if (valueRenderer != null) {
+                            originValue = valueRenderer.render(field.getType(), originValue);
+                        }
+                    }
+                }
+            }
+        }
+        return originValue;
     }
 
     /**

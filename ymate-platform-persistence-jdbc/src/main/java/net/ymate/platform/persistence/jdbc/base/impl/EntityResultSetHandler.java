@@ -23,6 +23,7 @@ import net.ymate.platform.core.persistence.base.PropertyMeta;
 import net.ymate.platform.persistence.jdbc.base.AbstractResultSetHandler;
 
 import java.io.Serializable;
+import java.lang.reflect.Field;
 import java.sql.ResultSet;
 
 /**
@@ -62,7 +63,8 @@ public class EntityResultSetHandler<T extends IEntity> extends AbstractResultSet
         for (int idx = 0; idx < getColumnCount(); idx++) {
             PropertyMeta propertyMeta = entityMeta.getPropertyByName(getColumnMeta(idx).getName().toLowerCase());
             if (propertyMeta != null) {
-                Object fieldValue = BlurObject.bind(resultSet.getObject(idx + 1)).toObjectValue(propertyMeta.getField().getType());
+                Field field = propertyMeta.getField();
+                Object fieldValue = processValueRenderer(field, BlurObject.bind(resultSet.getObject(idx + 1)).toObjectValue(field.getType()));
                 if (entityMeta.isPrimaryKey(propertyMeta.getName()) && entityMeta.isMultiplePrimaryKey()) {
                     propertyMeta.getField().set(primaryKeyObject, fieldValue);
                 } else {

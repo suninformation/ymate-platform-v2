@@ -47,7 +47,8 @@ public class BeanResultSetHandler<T> extends AbstractResultSetHandler<T> {
         for (int idx = 0; idx < getColumnCount(); idx++) {
             Object value = resultSet.getObject(idx + 1);
             if (value != null) {
-                targetWrapper.setValue(StringUtils.uncapitalize(EntityMeta.propertyNameToFieldName(getColumnMeta(idx).getName())), value);
+                String fieldName = StringUtils.uncapitalize(EntityMeta.propertyNameToFieldName(getColumnMeta(idx).getName()));
+                targetWrapper.setValue(fieldName, processValueRenderer(targetWrapper.getField(fieldName), value));
             }
         }
         return targetWrapper.getTargetObject();
