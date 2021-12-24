@@ -85,29 +85,29 @@
 
      // ------ EntitySQL
 
-     public <T extends IEntity> EntitySQL<T> entitySql(Class<T> entityClass) {
+     public <T extends IEntity> EntitySQL<T> entity(Class<T> entityClass) {
          return new EntitySQL<>(owner(), entityClass);
      }
 
      // ------ BatchSQL
 
-     public BatchSQL batchSql(String batchSql) {
+     public BatchSQL batch(String batchSql) {
          return new BatchSQL(owner(), batchSql);
      }
 
-     public BatchSQL batchSql() {
+     public BatchSQL batch() {
          return new BatchSQL(owner(), null);
      }
 
-     public BatchSQL batchSql(Insert insert) {
+     public BatchSQL batch(Insert insert) {
          return new BatchSQL(insert.owner(), insert.toString());
      }
 
-     public BatchSQL batchSql(Update update) {
+     public BatchSQL batch(Update update) {
          return new BatchSQL(update.owner(), update.toString());
      }
 
-     public BatchSQL batchSql(Delete delete) {
+     public BatchSQL batch(Delete delete) {
          return new BatchSQL(delete.owner(), delete.toString());
      }
 
@@ -278,11 +278,11 @@
          return new Cond(owner(), dataSourceName());
      }
 
-     public FieldCondition fieldCondition(String prefix, String fieldName) {
+     public FieldCondition fieldCond(String prefix, String fieldName) {
          return new FieldCondition(owner(), dataSourceName(), prefix, fieldName);
      }
 
-     public FieldCondition fieldCondition(String fieldName) {
+     public FieldCondition fieldCond(String fieldName) {
          return new FieldCondition(owner(), dataSourceName(), fieldName);
      }
 
@@ -336,73 +336,73 @@
 
      // ------ Join
 
-     public Join innerJoin(Select select) {
+     public Join inner(Select select) {
          Join target = new Join(select.owner(), select.dataSourceName(), Join.Type.INNER.getName(), null, select.toString(), false);
          target.params().add(select.params());
          return target;
      }
 
-     public Join innerJoin(String from) {
+     public Join inner(String from) {
          return new Join(owner(), dataSourceName(), Join.Type.INNER.getName(), null, from, true);
      }
 
-     public Join innerJoin(String from, boolean safePrefix) {
+     public Join inner(String from, boolean safePrefix) {
          return new Join(owner(), dataSourceName(), Join.Type.INNER.getName(), null, from, safePrefix);
      }
 
-     public Join innerJoin(String prefix, String from) {
+     public Join inner(String prefix, String from) {
          return new Join(owner(), dataSourceName(), Join.Type.INNER.getName(), prefix, from, true);
      }
 
-     public Join innerJoin(String prefix, String from, boolean safePrefix) {
+     public Join inner(String prefix, String from, boolean safePrefix) {
          return new Join(owner(), dataSourceName(), Join.Type.INNER.getName(), prefix, from, safePrefix);
      }
 
      // ------
 
-     public Join leftJoin(Select select) {
+     public Join left(Select select) {
          Join target = new Join(select.owner(), select.dataSourceName(), Join.Type.LEFT.getName(), null, select.toString(), false);
          target.params().add(select.params());
          return target;
      }
 
-     public Join leftJoin(String from) {
+     public Join left(String from) {
          return new Join(owner(), dataSourceName(), Join.Type.LEFT.getName(), null, from, true);
      }
 
-     public Join leftJoin(String from, boolean safePrefix) {
+     public Join left(String from, boolean safePrefix) {
          return new Join(owner(), dataSourceName(), Join.Type.LEFT.getName(), null, from, safePrefix);
      }
 
-     public Join leftJoin(String prefix, String from) {
+     public Join left(String prefix, String from) {
          return new Join(owner(), dataSourceName(), Join.Type.LEFT.getName(), prefix, from, true);
      }
 
-     public Join leftJoin(String prefix, String from, boolean safePrefix) {
+     public Join left(String prefix, String from, boolean safePrefix) {
          return new Join(owner(), dataSourceName(), Join.Type.LEFT.getName(), prefix, from, safePrefix);
      }
 
      // ------
 
-     public Join rightJoin(Select select) {
+     public Join right(Select select) {
          Join target = new Join(select.owner(), select.dataSourceName(), Join.Type.RIGHT.getName(), null, select.toString(), false);
          target.params().add(select.params());
          return target;
      }
 
-     public Join rightJoin(String from) {
+     public Join right(String from) {
          return new Join(owner(), dataSourceName(), Join.Type.RIGHT.getName(), null, from, true);
      }
 
-     public Join rightJoin(String from, boolean safePrefix) {
+     public Join right(String from, boolean safePrefix) {
          return new Join(owner(), dataSourceName(), Join.Type.RIGHT.getName(), null, from, safePrefix);
      }
 
-     public Join rightJoin(String prefix, String from) {
+     public Join right(String prefix, String from) {
          return new Join(owner(), dataSourceName(), Join.Type.RIGHT.getName(), prefix, from, true);
      }
 
-     public Join rightJoin(String prefix, String from, boolean safePrefix) {
+     public Join right(String prefix, String from, boolean safePrefix) {
          return new Join(owner(), dataSourceName(), Join.Type.RIGHT.getName(), prefix, from, safePrefix);
      }
 

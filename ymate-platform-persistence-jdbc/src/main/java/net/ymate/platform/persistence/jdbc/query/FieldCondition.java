@@ -492,7 +492,7 @@
          return cond;
      }
 
-     public String getFieldName() {
+     public String fieldName() {
          return fieldName;
      }
  }

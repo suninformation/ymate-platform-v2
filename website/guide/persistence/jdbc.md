@@ -2821,7 +2821,7 @@ IResultSet<Object[]> resultSet = Select.create(owner, dsName, UserEntity.class, 
 // 另一种写法
 IResultSet<Object[]> resultSet = new QueryBuilder<IResultSet<Object[]>>(owner, dsName) {{
     Select select = select(UserEntity.class, "u")
-          .join(leftJoin(UserExtEntity.TABLE_NAME).alias("ue")
+          .join(left(UserExtEntity.TABLE_NAME).alias("ue")
                 .on(cond().eqField(field("u", UserEntity.FIELDS.ID), field("ue", UserExtEntity.FIELDS.UID))))
           .field("u", fields(UserEntity.FIELDS.ID, UserEntity.FIELDS.USERNAME))
           .field(field("ue", UserExtEntity.FIELDS.MONEY));
