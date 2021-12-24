@@ -23,11 +23,13 @@ import net.ymate.platform.core.beans.proxy.IProxy;
 import net.ymate.platform.core.beans.proxy.IProxyChain;
 import net.ymate.platform.core.configuration.IConfiguration;
 import net.ymate.platform.core.persistence.Page;
+import net.ymate.platform.core.persistence.base.IEntity;
 import net.ymate.platform.persistence.jdbc.IDatabase;
 import net.ymate.platform.persistence.jdbc.IDatabaseSession;
 import net.ymate.platform.persistence.jdbc.base.IResultSetHandler;
 import net.ymate.platform.persistence.jdbc.base.impl.ArrayResultSetHandler;
 import net.ymate.platform.persistence.jdbc.base.impl.BeanResultSetHandler;
+import net.ymate.platform.persistence.jdbc.base.impl.EntityResultSetHandler;
 import net.ymate.platform.persistence.jdbc.query.SQL;
 import net.ymate.platform.persistence.jdbc.repo.annotation.Repository;
 import org.apache.commons.lang3.ArrayUtils;
@@ -167,6 +169,7 @@ public class RepositoryProxy implements IProxy {
 
         IResultSetHandler<?> resultSetHandler;
 
+        @SuppressWarnings({"unchecked", "rawtypes"})
         ParamsWrapper(Repository repositoryAnn, Object[] params) {
             if (params != null && params.length > 0) {
                 this.params = new ArrayList<>(Arrays.asList(params));
@@ -177,7 +180,15 @@ public class RepositoryProxy implements IProxy {
                     page = (Page) this.params.remove(this.params.size() - 1);
                 }
             }
-            resultSetHandler = !repositoryAnn.resultClass().equals(Void.class) ? new BeanResultSetHandler<>(repositoryAnn.resultClass()) : new ArrayResultSetHandler();
+            if (!repositoryAnn.resultClass().equals(Void.class)) {
+                if (ClassUtils.isInterfaceOf(repositoryAnn.resultClass(), IEntity.class)) {
+                    resultSetHandler = new EntityResultSetHandler<>((Class<? extends IEntity>) repositoryAnn.resultClass());
+                } else {
+                    resultSetHandler = new BeanResultSetHandler<>(repositoryAnn.resultClass());
+                }
+            } else {
+                resultSetHandler = new ArrayResultSetHandler();
+            }
         }
 
         public Object[] getParams() {

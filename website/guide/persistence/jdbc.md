@@ -2848,7 +2848,7 @@ IResultSet<Object[]> resultSet = new QueryBuilder<IResultSet<Object[]>>(owner, d
 | page        | 是否分页查询，默认为 `false`                                 |
 | useFilter   | 是否调用方法过滤，默认为 `false`                             |
 | dbType      | 指定当前存储器适用的数据库类型，默认为全部，否则将根据数据库类型进行存储器加载 |
-| resultClass | 指定结果集类型，若设置则使用 `BeanResultSetHandler` ，默认使用 `ArrayResultSetHandler` 处理结果集 |
+| resultClass | 指定结果集类型，若设置的类型为实体类型则使用 `EntityResultSetHandler` 否则使用 `BeanResultSetHandler` ，默认使用 `ArrayResultSetHandler` 处理结果集 |
 
 :::tip **说明：**
 
@@ -2857,7 +2857,7 @@ IResultSet<Object[]> resultSet = new QueryBuilder<IResultSet<Object[]>>(owner, d
 - 当 `useFilter=true` 时，存储器类方法的参数至少有一个参数（方法有多个参数时，采用最后一个参数）用于接收SQL执行结果；
 - 当 `useFilter=false` 时，存储器方法体将不会被执行；
 - 当 `page=true` 时，若 `useFilter=false` 则存储器类方法的最后一个参数必须是 `Page` 类型，否则 `Page` 参数必须位于结果集参数之前；
-- 查询类型 SQL 的执行结果数据类型默认为 `IResultSet<Object[]>`，而更新类型 SQL（即`update=true`时）的执行结果必须为 `int` 类型；
+- 查询类型 SQL 的执行结果数据类型默认为 `IResultSet<Object[]>` （取决于 `resultClass` 参数设置），而更新类型 SQL（即`update=true`时）的执行结果必须为 `int` 类型；
 - 用于接收 SQL 执行结果的方法参数支持变长类型，如：`IResultSet<Object[]> results`和`IResultSet<Object[]>... results`的效果是一样的；
 - 读取配置文件中的 SQL 配置时，配置项名称必须全部采用小写字符，如：`demo_query`；
 - 框架将优先加载以当前数据源连接的数据库类型名称作为后缀的配置项，如：`demo_query_mysql`、`demo_query_oracle`，若找不到则加载默认名称，即：`demo_query`；
