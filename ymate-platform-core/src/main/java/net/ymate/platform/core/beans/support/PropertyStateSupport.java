@@ -41,7 +41,7 @@ public class PropertyStateSupport<T> {
 
     private final boolean ignoreNull;
 
-    private final List<PropertyStateMeta> stateMetas = new ArrayList<>();
+    private final Set<PropertyStateMeta> stateMetas = new HashSet<>();
 
     private final Map<String, PropertyStateMeta> propertyStates = new HashMap<>();
 

@@ -28,9 +28,7 @@ import java.io.InputStream;
 import java.lang.annotation.Annotation;
 import java.net.JarURLConnection;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.Enumeration;
-import java.util.List;
+import java.util.*;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.zip.ZipEntry;
@@ -44,14 +42,14 @@ import java.util.zip.ZipInputStream;
 public class DefaultBeanLoader extends AbstractBeanLoader {
 
     @Override
-    public List<Class<?>> load() throws Exception {
+    public Set<Class<?>> load() throws Exception {
         return load((IBeanFilter) null);
     }
 
     @Override
-    public List<Class<?>> load(IBeanFilter filter) throws Exception {
-        List<Class<?>> results = new ArrayList<>();
-        List<String> packageNames = getPackageNames();
+    public Set<Class<?>> load(IBeanFilter filter) throws Exception {
+        Set<Class<?>> results = new HashSet<>();
+        Set<String> packageNames = getPackageNames();
         if (!packageNames.isEmpty()) {
             String[] excludedPackages = getExcludedPackageNames().toArray(new String[0]);
             for (String packageName : packageNames) {
@@ -63,7 +61,7 @@ public class DefaultBeanLoader extends AbstractBeanLoader {
 
     @Override
     public void load(IBeanFactory beanFactory, IBeanFilter filter) throws Exception {
-        List<Class<?>> classes = load(filter);
+        Set<Class<?>> classes = load(filter);
         for (Class<?> clazz : classes) {
             // 不扫描注解、枚举类，被声明@Ingored注解的类也将被忽略，因为需要处理package-info信息，所以放开接口限制
             if (!clazz.isAnnotation() && !clazz.isEnum() && !clazz.isAnnotationPresent(Ignored.class)) {
@@ -129,7 +127,7 @@ public class DefaultBeanLoader extends AbstractBeanLoader {
     }
 
     private boolean checkNonExcludedFile(String targetFileName) {
-        List<String> excludedFiles = getExcludedFiles();
+        Set<String> excludedFiles = getExcludedFiles();
         if (!excludedFiles.isEmpty() && StringUtils.isNotBlank(targetFileName)) {
             if (excludedFiles.contains(targetFileName)) {
                 return false;

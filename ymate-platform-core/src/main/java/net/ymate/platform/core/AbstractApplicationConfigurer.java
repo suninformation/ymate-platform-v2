@@ -45,15 +45,15 @@ public abstract class AbstractApplicationConfigurer implements IApplicationConfi
 
     private InterceptSettings interceptSettings;
 
-    private final List<String> packageNames = new ArrayList<>();
+    private final Set<String> packageNames = new HashSet<>();
 
-    private final List<String> excludedPackageNames = new ArrayList<>();
+    private final Set<String> excludedPackageNames = new HashSet<>();
 
-    private final List<String> excludedFiles = new ArrayList<>();
+    private final Set<String> excludedFiles = new HashSet<>();
 
-    private final List<String> excludedModules = new ArrayList<>();
+    private final Set<String> excludedModules = new HashSet<>();
 
-    private final List<String> includedModules = new ArrayList<>();
+    private final Set<String> includedModules = new HashSet<>();
 
     private final Map<String, String> parameters = new HashMap<>();
 
@@ -130,28 +130,28 @@ public abstract class AbstractApplicationConfigurer implements IApplicationConfi
     }
 
     @Override
-    public List<String> getPackageNames() {
-        return Collections.unmodifiableList(packageNames);
+    public Set<String> getPackageNames() {
+        return Collections.unmodifiableSet(packageNames);
     }
 
     @Override
-    public List<String> getExcludedPackageNames() {
-        return Collections.unmodifiableList(excludedPackageNames);
+    public Set<String> getExcludedPackageNames() {
+        return Collections.unmodifiableSet(excludedPackageNames);
     }
 
     @Override
-    public List<String> getExcludedFiles() {
-        return Collections.unmodifiableList(excludedFiles);
+    public Set<String> getExcludedFiles() {
+        return Collections.unmodifiableSet(excludedFiles);
     }
 
     @Override
-    public List<String> getExcludedModules() {
-        return Collections.unmodifiableList(excludedModules);
+    public Set<String> getExcludedModules() {
+        return Collections.unmodifiableSet(excludedModules);
     }
 
     @Override
-    public List<String> getIncludedModules() {
-        return Collections.unmodifiableList(includedModules);
+    public Set<String> getIncludedModules() {
+        return Collections.unmodifiableSet(includedModules);
     }
 
     public void addPackageNames(List<String> packageNames) {

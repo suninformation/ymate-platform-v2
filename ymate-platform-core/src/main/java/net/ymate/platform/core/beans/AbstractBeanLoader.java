@@ -31,11 +31,11 @@ public abstract class AbstractBeanLoader implements IBeanLoader {
 
     private ClassLoader classLoader;
 
-    private final List<String> packageNames = new ArrayList<>();
+    private final Set<String> packageNames = new HashSet<>();
 
-    private final List<String> excludedPackageNames = new ArrayList<>();
+    private final Set<String> excludedPackageNames = new HashSet<>();
 
-    private final List<String> excludedFiles = new ArrayList<>();
+    private final Set<String> excludedFiles = new HashSet<>();
 
     private final Map<Class<? extends Annotation>, IBeanHandler> handlerMap = new HashMap<>();
 
@@ -54,7 +54,7 @@ public abstract class AbstractBeanLoader implements IBeanLoader {
         load(beanFactory, null);
     }
 
-    private boolean hasPackageParent(List<String> targetList, String packageName) {
+    private boolean hasPackageParent(Set<String> targetList, String packageName) {
         boolean flag = false;
         do {
             packageName = StringUtils.substringBeforeLast(packageName, ".");
@@ -65,7 +65,7 @@ public abstract class AbstractBeanLoader implements IBeanLoader {
         return flag;
     }
 
-    private void parsePackagePath(List<String> targetList, String packageName) {
+    private void parsePackagePath(Set<String> targetList, String packageName) {
         if (!targetList.contains(packageName)) {
             if (targetList.isEmpty()) {
                 targetList.add(packageName);
@@ -87,8 +87,8 @@ public abstract class AbstractBeanLoader implements IBeanLoader {
     }
 
     @Override
-    public List<String> getPackageNames() {
-        return Collections.unmodifiableList(packageNames);
+    public Set<String> getPackageNames() {
+        return Collections.unmodifiableSet(packageNames);
     }
 
     @Override
@@ -102,8 +102,8 @@ public abstract class AbstractBeanLoader implements IBeanLoader {
     }
 
     @Override
-    public List<String> getExcludedPackageNames() {
-        return Collections.unmodifiableList(excludedPackageNames);
+    public Set<String> getExcludedPackageNames() {
+        return Collections.unmodifiableSet(excludedPackageNames);
     }
 
     @Override
@@ -130,8 +130,8 @@ public abstract class AbstractBeanLoader implements IBeanLoader {
     }
 
     @Override
-    public List<String> getExcludedFiles() {
-        return Collections.unmodifiableList(excludedFiles);
+    public Set<String> getExcludedFiles() {
+        return Collections.unmodifiableSet(excludedFiles);
     }
 
     @Override

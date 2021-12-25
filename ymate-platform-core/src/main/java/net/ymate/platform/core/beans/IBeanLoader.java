@@ -17,7 +17,7 @@ package net.ymate.platform.core.beans;
 
 import java.lang.annotation.Annotation;
 import java.util.Collection;
-import java.util.List;
+import java.util.Set;
 
 /**
  * 对象加载器接口
@@ -47,7 +47,7 @@ public interface IBeanLoader {
      * @throws Exception 类加载过程可能产生异常
      * @since 2.1.0
      */
-    List<Class<?>> load() throws Exception;
+    Set<Class<?>> load() throws Exception;
 
     /**
      * 加载类对象
@@ -57,7 +57,7 @@ public interface IBeanLoader {
      * @throws Exception 类加载过程可能产生异常
      * @since 2.1.0
      */
-    List<Class<?>> load(IBeanFilter filter) throws Exception;
+    Set<Class<?>> load(IBeanFilter filter) throws Exception;
 
     /**
      * 加载的类对象集合
@@ -95,7 +95,7 @@ public interface IBeanLoader {
      *
      * @return 返回扫描包路径名称集合
      */
-    List<String> getPackageNames();
+    Set<String> getPackageNames();
 
     /**
      * 注册排除的包名称
@@ -116,7 +116,7 @@ public interface IBeanLoader {
      *
      * @return 返回被排除的包名称集合
      */
-    List<String> getExcludedPackageNames();
+    Set<String> getExcludedPackageNames();
 
     /**
      * 注册自定义注解类对象处理器
@@ -146,7 +146,7 @@ public interface IBeanLoader {
      *
      * @return 返回当前被排除的jar或zip等包文件名称集合
      */
-    List<String> getExcludedFiles();
+    Set<String> getExcludedFiles();
 
     /**
      * 注册被排除的jar或zip等包文件名称集合

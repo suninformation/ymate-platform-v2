@@ -23,9 +23,9 @@ import net.ymate.platform.core.beans.proxy.IProxyFactory;
 import net.ymate.platform.core.i18n.II18nEventHandler;
 import net.ymate.platform.core.module.IModuleConfigurer;
 
-import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * 应用容器配置器接口定义
@@ -76,35 +76,35 @@ public interface IApplicationConfigurer {
      *
      * @return 返回自动扫描的包名称集合
      */
-    List<String> getPackageNames();
+    Set<String> getPackageNames();
 
     /**
      * 获取排除包名称集合，多个包名之间用'|'分隔，被包含在包路径下的类文件在扫描过程中将被忽略
      *
      * @return 返回排除包名称集合
      */
-    List<String> getExcludedPackageNames();
+    Set<String> getExcludedPackageNames();
 
     /**
      * 获取排除包文件名称集合，被包含的JAR或ZIP文件在扫描过程中将被忽略
      *
      * @return 返回排除包文件名称集合
      */
-    List<String> getExcludedFiles();
+    Set<String> getExcludedFiles();
 
     /**
      * 获取排除模块类名集合，被包含的模块在加载过程中将被忽略
      *
      * @return 返回排除模块类名集合
      */
-    List<String> getExcludedModules();
+    Set<String> getExcludedModules();
 
     /**
      * 获取包含模块名集合，若设置该参数则框架初始化时仅加载被包含的模块
      *
      * @return 返回包含模块名集合
      */
-    List<String> getIncludedModules();
+    Set<String> getIncludedModules();
 
     /**
      * 获取默认语言，若为空则采用JVM默认语言
