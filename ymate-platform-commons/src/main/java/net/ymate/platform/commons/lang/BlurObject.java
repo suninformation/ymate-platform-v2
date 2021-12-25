@@ -44,7 +44,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * @author 刘镇 (suninformation@163.com) on 2010-4-16 下午11:51:39
  */
 @SuppressWarnings("rawtypes")
-public class BlurObject implements Serializable, Cloneable {
+public class BlurObject implements Serializable {
 
     private static final Log LOG = LogFactory.getLog(BlurObject.class);
 
@@ -629,6 +629,17 @@ public class BlurObject implements Serializable, Cloneable {
         }
         if (object == null) {
             object = convertTo(attr, clazz);
+            if (object == null) {
+                Object tryOtherAttrValue = null;
+                if (attr instanceof Clob) {
+                    tryOtherAttrValue = toStringValue();
+                } else if (attr instanceof Blob) {
+                    tryOtherAttrValue = toBytesValue();
+                }
+                if (tryOtherAttrValue != null) {
+                    object = convertTo(tryOtherAttrValue, clazz);
+                }
+            }
         }
         return object;
     }

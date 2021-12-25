@@ -44,6 +44,7 @@ public class FastJsonAdapter implements IJsonAdapter {
 
     static {
         SNAKE_CASE_SERIALIZE_CONFIG.setPropertyNamingStrategy(PropertyNamingStrategy.SnakeCase);
+        SNAKE_CASE_PARSE_CONFIG.setSafeMode(true);
         SNAKE_CASE_PARSE_CONFIG.propertyNamingStrategy = PropertyNamingStrategy.SnakeCase;
     }
 

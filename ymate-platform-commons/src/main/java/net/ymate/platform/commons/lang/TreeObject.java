@@ -35,7 +35,7 @@ import java.util.stream.Collectors;
  * @author 刘镇 (suninformation@163.com) on 2010-3-27 下午10:32:09
  */
 @SuppressWarnings("unchecked")
-public class TreeObject implements Serializable, Cloneable {
+public class TreeObject implements Serializable {
 
     /**
      *
