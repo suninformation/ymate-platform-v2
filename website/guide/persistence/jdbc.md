@@ -1233,7 +1233,22 @@ mvn ymate:entity -Doverwrite=true
 
 ### 数据实体操作
 
-本小节所指的数据实体类必须是通过实体生成工具自动生成的并继承框架提供的 `BaseEntity` 抽象类。
+本小节中使用的数据实体类是指通过实体生成工具自动生成并继承了框架提供的 `BaseEntity` 抽象类。
+
+:::tip
+
+针对非工具自动生成或并未继承 `BaseEntity` 的实体类，通过 `EntityWrapper` 类包装也可以达到同样的效果：
+
+```java
+UserEntity user = new UserEntity();
+user.setId(UUIDUtils.UUID());
+user.setUsername("suninformation");
+// ......
+EntityWrapper<UserEntity> wrapper = EntityWrapper.bind(user);
+wrapper.saveOrUpdate();
+```
+
+:::
 
 #### 插入（Insert）
 
@@ -1257,6 +1272,8 @@ user.saveOrUpdate(Fields.create(UserEntity.FIELDS.NICKNAME, UserEntity.FIELDS.EM
 
 #### 更新（Update）
 
+##### 方式一：常规更新
+
 ```java
 UserEntity user = UserEntity.builder()
 	.id("bc19f5645aa9438089c5e9954e5f1ac5")
@@ -1267,6 +1284,22 @@ UserEntity user = UserEntity.builder()
 user.update();
 // 或者仅更新指定的字段/排除某些字段
 user.update(Fields.create(UserEntity.FIELDS.PASSWORD));
+```
+
+##### 方式二：仅更新值发生变化的字段
+
+```java
+// 从数据库中加载记录
+UserEntity user = UserEntity.builder()
+    .id("bc19f5645aa9438089c5e9954e5f1ac5").build().load();
+// 获取记录类成员属性状态包装器
+EntityStateWrapper<UserEntity> stateWrapper = user.stateWrapper();
+// 为字段赋值
+stateWrapper.getEntity().bind()
+    .password(DigestUtils.md5Hex("654321"))
+	.gender("M");
+// 执行更新（将排除掉值未发生变化的字段）
+stateWrapper.update();
 ```
 
 #### 查询（Find）
@@ -1350,7 +1383,7 @@ UserEntity user = UserEntity.builder()
     .build().delete();
 ```
 
-基于数据实体类可以帮助你完成的事情还有很多，上面的示例仅是一部份比较典型的应用，请大家在实际应用中结合源码和API文档去尝试，也随时欢迎与您一起沟通、交流经验和建议。
+基于数据实体类可以帮助你完成的事情还有很多，上面的示例仅是一部份比较典型的应用，请大家在实际应用中结合源码和 API 文档去尝试，也随时欢迎与您一起沟通、交流经验和建议。
 
 
 
