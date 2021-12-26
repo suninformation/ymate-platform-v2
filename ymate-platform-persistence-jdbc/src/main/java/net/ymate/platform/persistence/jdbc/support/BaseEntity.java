@@ -201,6 +201,22 @@ public abstract class BaseEntity<Entity extends IEntity, PK extends Serializable
         }
     }
 
+    public boolean exist() throws Exception {
+        return exist(false);
+    }
+
+    public boolean exist(boolean useLocker) throws Exception {
+        IDatabase owner = doGetSafeOwner();
+        try (IDatabaseSession session = new DefaultDatabaseSession(owner, doGetSafeConnectionHolder())) {
+            EntitySQL<Entity> entitySql = EntitySQL.create(owner, this.getEntityClass());
+            EntityMeta.load(this.getEntityClass()).getPrimaryKeys().forEach(entitySql::field);
+            if (useLocker) {
+                entitySql.forUpdate(IDBLocker.DEFAULT);
+            }
+            return session.find(entitySql, this.getId(), this.getShardingable()) != null;
+        }
+    }
+
     public boolean saveIfNotExist() throws Exception {
         return saveIfNotExist(false);
     }
@@ -209,12 +225,7 @@ public abstract class BaseEntity<Entity extends IEntity, PK extends Serializable
     public boolean saveIfNotExist(boolean useLocker) throws Exception {
         IDatabase owner = doGetSafeOwner();
         try (IDatabaseSession session = new DefaultDatabaseSession(owner, doGetSafeConnectionHolder())) {
-            EntitySQL<Entity> entitySql = EntitySQL.create(owner, this.getEntityClass());
-            if (useLocker) {
-                entitySql.forUpdate(IDBLocker.DEFAULT);
-            }
-            Entity entity = session.find(entitySql, this.getId(), this.getShardingable());
-            if (entity == null) {
+            if (!exist(useLocker)) {
                 return session.insert((Entity) this, this.getShardingable()) != null;
             }
             return false;
@@ -229,15 +240,10 @@ public abstract class BaseEntity<Entity extends IEntity, PK extends Serializable
     public Entity saveOrUpdate(Fields fields) throws Exception {
         IDatabase owner = doGetSafeOwner();
         try (IDatabaseSession session = new DefaultDatabaseSession(owner, doGetSafeConnectionHolder())) {
-            EntitySQL<Entity> entitySql = EntitySQL.create(owner, this.getEntityClass()).forUpdate(IDBLocker.DEFAULT);
-            if (fields != null) {
-                entitySql.field(fields);
+            if (exist(true)) {
+                return session.update((Entity) this, fields, this.getShardingable());
             }
-            Entity entity = session.find(entitySql, this.getId(), this.getShardingable());
-            if (entity == null) {
-                return session.insert((Entity) this, this.getShardingable());
-            }
-            return session.update((Entity) this, fields, this.getShardingable());
+            return session.insert((Entity) this, this.getShardingable());
         }
     }
 

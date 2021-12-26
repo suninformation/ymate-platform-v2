@@ -20,6 +20,7 @@ import net.ymate.platform.core.persistence.Fields;
 import net.ymate.platform.core.persistence.IResultSet;
 import net.ymate.platform.core.persistence.IShardingable;
 import net.ymate.platform.core.persistence.Page;
+import net.ymate.platform.core.persistence.base.EntityMeta;
 import net.ymate.platform.core.persistence.base.IEntity;
 import net.ymate.platform.persistence.jdbc.*;
 import net.ymate.platform.persistence.jdbc.impl.DefaultDatabaseSession;
@@ -164,18 +165,29 @@ public final class EntityWrapper<Entity extends IEntity> {
         }
     }
 
+    public boolean exist() throws Exception {
+        return exist(false);
+    }
+
+    public boolean exist(boolean useLocker) throws Exception {
+        IDatabase owner = doGetSafeOwner();
+        try (IDatabaseSession session = new DefaultDatabaseSession(owner, doGetSafeConnectionHolder())) {
+            EntitySQL<Entity> entitySql = EntitySQL.create(owner, this.getEntityClass());
+            EntityMeta.load(this.getEntityClass()).getPrimaryKeys().forEach(entitySql::field);
+            if (useLocker) {
+                entitySql.forUpdate(IDBLocker.DEFAULT);
+            }
+            return session.find(entitySql, entity.getId(), this.getShardingable()) != null;
+        }
+    }
+
     public boolean saveIfNotExist() throws Exception {
         return saveIfNotExist(false);
     }
 
     public boolean saveIfNotExist(boolean useLocker) throws Exception {
         try (IDatabaseSession session = new DefaultDatabaseSession(doGetSafeOwner(), doGetSafeConnectionHolder())) {
-            EntitySQL<Entity> entitySql = EntitySQL.create(this.getEntityClass());
-            if (useLocker) {
-                entitySql.forUpdate(IDBLocker.DEFAULT);
-            }
-            Entity result = session.find(entitySql, entity.getId(), this.getShardingable());
-            if (result == null) {
+            if (!exist(useLocker)) {
                 return session.insert(entity, this.getShardingable()) != null;
             }
             return false;
@@ -188,15 +200,10 @@ public final class EntityWrapper<Entity extends IEntity> {
 
     public Entity saveOrUpdate(Fields fields) throws Exception {
         try (IDatabaseSession session = new DefaultDatabaseSession(doGetSafeOwner(), doGetSafeConnectionHolder())) {
-            EntitySQL<Entity> entitySql = EntitySQL.create(this.getEntityClass()).forUpdate(IDBLocker.DEFAULT);
-            if (fields != null) {
-                entitySql.field(fields);
+            if (exist(true)) {
+                return session.update(entity, fields, this.getShardingable());
             }
-            Entity result = session.find(entitySql, entity.getId(), this.getShardingable());
-            if (result == null) {
-                return session.insert(entity, this.getShardingable());
-            }
-            return session.update(entity, fields, this.getShardingable());
+            return session.insert(entity, this.getShardingable());
         }
     }
 
