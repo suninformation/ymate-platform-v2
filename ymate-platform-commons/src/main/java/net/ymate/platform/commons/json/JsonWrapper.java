@@ -25,10 +25,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.LinkedHashMap;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -94,6 +91,10 @@ public final class JsonWrapper implements Serializable {
             Map<String, Object> newMap = new LinkedHashMap<>();
             ((Map<?, ?>) value).forEach((key, v) -> newMap.put(String.valueOf(key), unwrap(v)));
             value = newMap;
+        } else if (value != null && value.getClass().isArray()) {
+            // 将数组转集合是为了兼顾fastjson对数组进行序列化操作时未能传递SerializeConfig参数导致结果未达预期
+            Object[] array = (Object[]) value;
+            value = Arrays.asList(array);
         }
         return value;
     }
@@ -144,6 +145,14 @@ public final class JsonWrapper implements Serializable {
 
     public static JsonWrapper toJson(Object object, boolean snakeCase) {
         return jsonAdapter.toJson(object, snakeCase);
+    }
+
+    public static String toJsonString(Object object) {
+        return jsonAdapter.toJsonString(object);
+    }
+
+    public static String toJsonString(Object object, boolean format) {
+        return jsonAdapter.toJsonString(object, format);
     }
 
     public static String toJsonString(Object object, boolean format, boolean keepNullValue) {

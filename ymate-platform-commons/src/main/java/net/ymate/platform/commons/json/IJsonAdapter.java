@@ -48,6 +48,10 @@ public interface IJsonAdapter {
 
     JsonWrapper toJson(Object object, boolean snakeCase);
 
+    String toJsonString(Object object);
+
+    String toJsonString(Object object, boolean format);
+
     String toJsonString(Object object, boolean format, boolean keepNullValue);
 
     String toJsonString(Object object, boolean format, boolean keepNullValue, boolean snakeCase);

@@ -20,12 +20,16 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.json.JsonReadFeature;
 import com.fasterxml.jackson.databind.*;
 import com.fasterxml.jackson.databind.json.JsonMapper;
+import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import net.ymate.platform.commons.json.IJsonAdapter;
 import net.ymate.platform.commons.json.IJsonArrayWrapper;
 import net.ymate.platform.commons.json.IJsonObjectWrapper;
 import net.ymate.platform.commons.json.JsonWrapper;
+import net.ymate.platform.commons.json.support.JsonArrayJacksonSerializer;
+import net.ymate.platform.commons.json.support.JsonObjectJacksonSerializer;
+import net.ymate.platform.commons.json.support.JsonWrapperJacksonSerializer;
 import net.ymate.platform.commons.util.RuntimeUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
@@ -46,7 +50,7 @@ public class JacksonAdapter implements IJsonAdapter {
     public static final ObjectMapper OBJECT_MAPPER = createObjectMapper();
 
     private static ObjectMapper createObjectMapper() {
-        return JsonMapper.builder()
+        ObjectMapper objectMapper = JsonMapper.builder()
                 .enable(JsonReadFeature.ALLOW_UNESCAPED_CONTROL_CHARS,
                         JsonReadFeature.ALLOW_BACKSLASH_ESCAPING_ANY_CHARACTER,
                         JsonReadFeature.ALLOW_UNQUOTED_FIELD_NAMES,
@@ -56,6 +60,14 @@ public class JacksonAdapter implements IJsonAdapter {
                 .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
                 .disable(SerializationFeature.FAIL_ON_EMPTY_BEANS)
                 .build();
+        SimpleModule module = new SimpleModule()
+                .addSerializer(JsonWrapper.class, new JsonWrapperJacksonSerializer.Serializer())
+                .addSerializer(IJsonObjectWrapper.class, new JsonObjectJacksonSerializer.Serializer())
+                .addSerializer(IJsonArrayWrapper.class, new JsonArrayJacksonSerializer.Serializer());
+        module.addDeserializer(JsonWrapper.class, new JsonWrapperJacksonSerializer.Deserializer())
+                .addDeserializer(IJsonObjectWrapper.class, new JsonObjectJacksonSerializer.Deserializer())
+                .addDeserializer(IJsonArrayWrapper.class, new JsonArrayJacksonSerializer.Deserializer());
+        return objectMapper.registerModule(module);
     }
 
     public static JsonNode toJsonNode(Object value) {
@@ -162,6 +174,16 @@ public class JacksonAdapter implements IJsonAdapter {
             jsonWrapper = parseJsonJsonWrapper(objectMapper.valueToTree(JsonWrapper.unwrap(object)));
         }
         return jsonWrapper;
+    }
+
+    @Override
+    public String toJsonString(Object object) {
+        return toJsonString(object, false, false, false);
+    }
+
+    @Override
+    public String toJsonString(Object object, boolean format) {
+        return toJsonString(object, format, false, false);
     }
 
     @Override

@@ -20,6 +20,9 @@ import net.ymate.platform.commons.json.IJsonAdapter;
 import net.ymate.platform.commons.json.IJsonArrayWrapper;
 import net.ymate.platform.commons.json.IJsonObjectWrapper;
 import net.ymate.platform.commons.json.JsonWrapper;
+import net.ymate.platform.commons.json.support.JsonArrayGsonSerializer;
+import net.ymate.platform.commons.json.support.JsonObjectGsonSerializer;
+import net.ymate.platform.commons.json.support.JsonWrapperGsonSerializer;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Collection;
@@ -31,7 +34,11 @@ import java.util.Map;
  */
 public class GsonAdapter implements IJsonAdapter {
 
-    public static final Gson GSON = new Gson();
+    public static final Gson GSON = new GsonBuilder()
+            .registerTypeAdapter(JsonWrapper.class, new JsonWrapperGsonSerializer())
+            .registerTypeAdapter(IJsonObjectWrapper.class, new JsonObjectGsonSerializer())
+            .registerTypeAdapter(IJsonArrayWrapper.class, new JsonArrayGsonSerializer())
+            .create();
 
     public static JsonElement toJsonElement(Object value) {
         return GSON.toJsonTree(JsonWrapper.unwrap(value));
@@ -114,6 +121,16 @@ public class GsonAdapter implements IJsonAdapter {
     @Override
     public JsonWrapper toJson(Object object, boolean snakeCase) {
         return fromJson(toJsonString(object, false, false, snakeCase));
+    }
+
+    @Override
+    public String toJsonString(Object object) {
+        return toJsonString(object, false, false, false);
+    }
+
+    @Override
+    public String toJsonString(Object object, boolean format) {
+        return toJsonString(object, format, false, false);
     }
 
     @Override

@@ -28,6 +28,9 @@ import net.ymate.platform.commons.json.IJsonAdapter;
 import net.ymate.platform.commons.json.IJsonArrayWrapper;
 import net.ymate.platform.commons.json.IJsonObjectWrapper;
 import net.ymate.platform.commons.json.JsonWrapper;
+import net.ymate.platform.commons.json.support.JsonArrayFastJsonSerializer;
+import net.ymate.platform.commons.json.support.JsonObjectFastJsonSerializer;
+import net.ymate.platform.commons.json.support.JsonWrapperFastJsonSerializer;
 
 import java.nio.charset.StandardCharsets;
 import java.util.*;
@@ -43,9 +46,39 @@ public class FastJsonAdapter implements IJsonAdapter {
     public static final ParserConfig SNAKE_CASE_PARSE_CONFIG = new ParserConfig();
 
     static {
+        JsonWrapperFastJsonSerializer jsonWrapperFastJsonSerializer = new JsonWrapperFastJsonSerializer();
+        JsonObjectFastJsonSerializer jsonObjectFastJsonSerializer = new JsonObjectFastJsonSerializer();
+        JsonArrayFastJsonSerializer jsonArrayFastJsonSerializer = new JsonArrayFastJsonSerializer();
+        //
+        SerializeConfig serializeConfig = SerializeConfig.getGlobalInstance();
+        serializeConfig.put(JsonWrapper.class, jsonWrapperFastJsonSerializer);
+        serializeConfig.put(FastJsonObjectWrapper.class, jsonObjectFastJsonSerializer);
+        serializeConfig.put(FastJsonArrayWrapper.class, jsonArrayFastJsonSerializer);
+        serializeConfig.put(IJsonObjectWrapper.class, jsonObjectFastJsonSerializer);
+        serializeConfig.put(IJsonArrayWrapper.class, jsonArrayFastJsonSerializer);
+        //
         SNAKE_CASE_SERIALIZE_CONFIG.setPropertyNamingStrategy(PropertyNamingStrategy.SnakeCase);
+        SNAKE_CASE_SERIALIZE_CONFIG.put(JsonWrapper.class, jsonWrapperFastJsonSerializer);
+        SNAKE_CASE_SERIALIZE_CONFIG.put(FastJsonObjectWrapper.class, jsonObjectFastJsonSerializer);
+        SNAKE_CASE_SERIALIZE_CONFIG.put(FastJsonArrayWrapper.class, jsonArrayFastJsonSerializer);
+        SNAKE_CASE_SERIALIZE_CONFIG.put(IJsonObjectWrapper.class, jsonObjectFastJsonSerializer);
+        SNAKE_CASE_SERIALIZE_CONFIG.put(IJsonArrayWrapper.class, jsonArrayFastJsonSerializer);
+        //
+        ParserConfig parserConfig = ParserConfig.getGlobalInstance();
+        parserConfig.setSafeMode(true);
+        parserConfig.putDeserializer(JsonWrapper.class, jsonWrapperFastJsonSerializer);
+        parserConfig.putDeserializer(FastJsonObjectWrapper.class, jsonObjectFastJsonSerializer);
+        parserConfig.putDeserializer(FastJsonArrayWrapper.class, jsonArrayFastJsonSerializer);
+        parserConfig.putDeserializer(IJsonObjectWrapper.class, jsonObjectFastJsonSerializer);
+        parserConfig.putDeserializer(IJsonArrayWrapper.class, jsonArrayFastJsonSerializer);
+        //
         SNAKE_CASE_PARSE_CONFIG.setSafeMode(true);
         SNAKE_CASE_PARSE_CONFIG.propertyNamingStrategy = PropertyNamingStrategy.SnakeCase;
+        SNAKE_CASE_PARSE_CONFIG.putDeserializer(JsonWrapper.class, jsonWrapperFastJsonSerializer);
+        SNAKE_CASE_PARSE_CONFIG.putDeserializer(FastJsonObjectWrapper.class, jsonObjectFastJsonSerializer);
+        SNAKE_CASE_PARSE_CONFIG.putDeserializer(FastJsonArrayWrapper.class, jsonArrayFastJsonSerializer);
+        SNAKE_CASE_PARSE_CONFIG.putDeserializer(IJsonObjectWrapper.class, jsonObjectFastJsonSerializer);
+        SNAKE_CASE_PARSE_CONFIG.putDeserializer(IJsonArrayWrapper.class, jsonArrayFastJsonSerializer);
     }
 
     public static JSONObject toJsonObject(Map<?, ?> value) {
@@ -61,7 +94,6 @@ public class FastJsonAdapter implements IJsonAdapter {
     }
 
     public FastJsonAdapter() {
-        ParserConfig.getGlobalInstance().setSafeMode(true);
     }
 
     @Override
@@ -136,6 +168,16 @@ public class FastJsonAdapter implements IJsonAdapter {
             jsonWrapper = new JsonWrapper(new FastJsonArrayWrapper((JSONArray) obj));
         }
         return jsonWrapper;
+    }
+
+    @Override
+    public String toJsonString(Object object) {
+        return toJsonString(object, false, false, false);
+    }
+
+    @Override
+    public String toJsonString(Object object, boolean format) {
+        return toJsonString(object, format, false, false);
     }
 
     @Override
