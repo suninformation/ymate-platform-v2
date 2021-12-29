@@ -1964,6 +1964,8 @@ public class DemoWebErrorProcessor implements IWebErrorProcessor {
 
 通过 `@ResponseErrorProcessor` 注解并配合 `IResponseErrorProcessor` 接口实现控制器类或方法指定自定义异常处理过程，若自定义异常处理过程执行的返回值为 `null` 时，将交由全局异常处理器进行统一处理。
 
+框架中默认提供了 `DefaultResponseErrorProcessor` 、 `JSONResponseErrorProcessor` 和 `XMLResponseErrorProcessor` 三种实现方式。自定义实现及使用示例如下：
+
 **示例代码**：
 
 ```java
