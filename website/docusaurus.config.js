@@ -194,7 +194,7 @@ const darkCodeTheme = require('prism-react-renderer/themes/dracula');
                             },
                             {
                                 label: 'QQ群：480374360',
-                                href: '#',
+                                href: 'https://qm.qq.com/cgi-bin/qm/qr?k=3KSXbRoridGeFxTVA8HZzyhwU_btZQJ2',
                             },
                             // {
                             //     html: `<a href="https://ymate.net" target="_blank" rel="" aria-label="yMateNet"><img src="https://ymate.net/img/logo.png" alt="yMateNet" /></a>`,
