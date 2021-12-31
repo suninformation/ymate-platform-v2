@@ -174,7 +174,7 @@ WebMVC 模块在 YMP 框架中是除了 JDBC 持久化模块以外的另一个�
 
 YMP 不仅提供便捷的 Web 及其它 Java 项目的快速开发体验，也将不断提供更多丰富的项目实践经验。
 
-感兴趣的小伙伴儿们可以加入官方 QQ 群：480374360，一起交流学习，帮助 YMP 成长！
+感兴趣的小伙伴儿们可以加入官方 QQ 群：[480374360](https://qm.qq.com/cgi-bin/qm/qr?k=3KSXbRoridGeFxTVA8HZzyhwU_btZQJ2)，一起交流学习，帮助 YMP 成长！
 
 如果喜欢 YMP，希望得到你的支持和鼓励！
 
