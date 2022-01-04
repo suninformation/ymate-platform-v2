@@ -268,16 +268,17 @@ public final class Scaffold {
     }
 
     private void doProcessColumns(EntityInfo.Builder entityInfoBuilder, TableInfo tableInfo) {
-        tableInfo.getColumns().keySet().stream()
+        tableInfo.getColumns()
+                .keySet().stream()
                 .filter(key -> !tableInfo.getPrimaryKeys().contains(key))
                 .map(key -> tableInfo.getColumns().get(key)).forEachOrdered(columnInfo -> {
-            Attr attr = Attr.build(columnInfo).setReadonly(readonlyColumns.contains(columnInfo.getColumnName()));
-            entityInfoBuilder.addField(attr)
-                    .addConstField(new ConstAttr(String.class.getSimpleName(), doNamedFilter(INamedFilter.Type.COLUMN, columnInfo.getColumnName()).toUpperCase(), columnInfo.getColumnName(), attr.getVarName()));
-            if (!attr.isNullable()) {
-                entityInfoBuilder.addNonNullableField(attr);
-            }
-        });
+                    Attr attr = Attr.build(columnInfo).setReadonly(readonlyColumns.contains(columnInfo.getColumnName()));
+                    entityInfoBuilder.addField(attr)
+                            .addConstField(new ConstAttr(String.class.getSimpleName(), doNamedFilter(INamedFilter.Type.COLUMN, columnInfo.getColumnName()).toUpperCase(), columnInfo.getColumnName(), attr.getVarName()));
+                    if (!attr.isNullable()) {
+                        entityInfoBuilder.addNonNullableField(attr);
+                    }
+                });
     }
 
     public EntityInfo buildEntityInfo(TableInfo tableInfo) {
@@ -392,9 +393,17 @@ public final class Scaffold {
         Builder() {
         }
 
+        public String dbName() {
+            return dbName;
+        }
+
         public Builder dbName(String dbName) {
             this.dbName = dbName;
             return this;
+        }
+
+        public String dbUserName() {
+            return dbUserName;
         }
 
         public Builder dbUserName(String dbUserName) {
@@ -402,14 +411,26 @@ public final class Scaffold {
             return this;
         }
 
+        public String packageName() {
+            return packageName;
+        }
+
         public Builder packageName(String packageName) {
             this.packageName = packageName;
             return this;
         }
 
+        public String outputPath() {
+            return outputPath;
+        }
+
         public Builder outputPath(String outputPath) {
             this.outputPath = outputPath;
             return this;
+        }
+
+        public Set<String> tableNames() {
+            return tableNames;
         }
 
         public Builder addTableName(String tableName) {
@@ -422,6 +443,10 @@ public final class Scaffold {
             return this;
         }
 
+        public Set<String> excludedTableNames() {
+            return excludedTableNames;
+        }
+
         public Builder addExcludedTableName(String excludedTableName) {
             this.excludedTableNames.add(excludedTableName);
             return this;
@@ -430,6 +455,10 @@ public final class Scaffold {
         public Builder addExcludedTableNames(Collection<String> excludedTableNames) {
             this.excludedTableNames.addAll(excludedTableNames);
             return this;
+        }
+
+        public Set<String> tablePrefixes() {
+            return tablePrefixes;
         }
 
         public Builder addTablePrefix(String tablePrefix) {
@@ -442,9 +471,17 @@ public final class Scaffold {
             return this;
         }
 
+        public boolean isUseRemovePrefix() {
+            return useRemovePrefix;
+        }
+
         public Builder useRemovePrefix(boolean useRemovePrefix) {
             this.useRemovePrefix = useRemovePrefix;
             return this;
+        }
+
+        public boolean isUseBaseEntity() {
+            return useBaseEntity;
         }
 
         public Builder useBaseEntity(boolean useBaseEntity) {
@@ -452,9 +489,17 @@ public final class Scaffold {
             return this;
         }
 
+        public boolean isUseClassSuffix() {
+            return useClassSuffix;
+        }
+
         public Builder useClassSuffix(boolean useClassSuffix) {
             this.useClassSuffix = useClassSuffix;
             return this;
+        }
+
+        public String classSuffix() {
+            return classSuffix;
         }
 
         public Builder classSuffix(String classSuffix) {
@@ -462,9 +507,17 @@ public final class Scaffold {
             return this;
         }
 
+        public boolean isUseChainMode() {
+            return useChainMode;
+        }
+
         public Builder useChainMode(boolean useChainMode) {
             this.useChainMode = useChainMode;
             return this;
+        }
+
+        public boolean isUseStateSupport() {
+            return useStateSupport;
         }
 
         public Builder useStateSupport(boolean useStateSupport) {
@@ -472,9 +525,17 @@ public final class Scaffold {
             return this;
         }
 
+        public INamedFilter namedFilter() {
+            return namedFilter;
+        }
+
         public Builder namedFilter(INamedFilter namedFilter) {
             this.namedFilter = namedFilter;
             return this;
+        }
+
+        public Set<String> readonlyColumns() {
+            return readonlyColumns;
         }
 
         public Builder addReadonlyColumns(Collection<String> readonlyColumns) {
