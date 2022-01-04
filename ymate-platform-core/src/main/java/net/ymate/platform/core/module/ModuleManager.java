@@ -155,15 +155,22 @@ public class ModuleManager implements IInitialization<IApplication>, IDestroyabl
             try {
                 IModule moduleInst = null;
                 boolean flag = false;
+                boolean includedFlag = false;
                 if (includedModules.isEmpty()) {
                     if (!excludedModules.contains(moduleClass.getName()) && !excludedModules.contains(((moduleInst = moduleClass.newInstance()).getName()))) {
                         flag = true;
                     }
                 } else if (includedModules.contains(moduleClass.getName()) || includedModules.contains(((moduleInst = moduleClass.newInstance()).getName()))) {
                     flag = true;
+                    includedFlag = true;
                 }
                 if (flag) {
-                    modules.put(moduleClass.getName(), moduleInst != null ? moduleInst : moduleClass.newInstance());
+                    moduleInst = moduleInst != null ? moduleInst : moduleClass.newInstance();
+                    modules.put(moduleClass.getName(), moduleInst);
+                    if (includedFlag) {
+                        includedModules.add(moduleClass.getName());
+                        includedModules.add(moduleInst.getName());
+                    }
                 }
             } catch (Exception e) {
                 throw RuntimeUtils.wrapRuntimeThrow(e, "An exception occurred while registering module [%s].", moduleClass);

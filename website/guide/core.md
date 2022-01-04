@@ -160,6 +160,9 @@ ymp.excluded_files=
 # 排除模块类名集合, 多个模块类名之间用'|'分隔, 被包含的模块在加载过程中将被忽略
 ymp.excluded_modules=
 
+# 包含模块名集合, 多个模块类名之间用'|'分隔，若设置该参数则框架初始化时仅加载被包含的模块
+ymp.included_modules=
+
 # 国际化资源默认语言设置, 默认采用系统环境语言
 ymp.default_locale=zh_CN
 
@@ -210,6 +213,7 @@ ymp.configs.event.thread_queue_size=
 | excluded        | 排除包名称集合, 被包含在包路径下的类文件在扫描过程中将被忽略。 |
 | excludedFiles   | 排除包文件名称集合, 被包含的JAR或ZIP文件在扫描过程中将被忽略。 |
 | excludedModules | 排除模块类名集合, 被包含的模块在加载过程中将被忽略。          |
+| includedModules | 包含模块类名集合，若设置该参数则框架初始化时仅加载被包含的模块 |
 | factoryClass | 对象加载器工厂类型，默认值：`DefaultBeanLoadFactory` |
 
 **示例：**
