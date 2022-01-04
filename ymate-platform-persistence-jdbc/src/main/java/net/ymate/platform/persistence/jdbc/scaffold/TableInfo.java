@@ -22,10 +22,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import java.io.Serializable;
-import java.sql.DatabaseMetaData;
-import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
-import java.sql.Statement;
+import java.sql.*;
 import java.util.*;
 
 /**
@@ -64,8 +61,18 @@ public final class TableInfo implements Serializable {
                         if (resultSetColumn.next()) {
                             // 提取字段定义及字段默认值
                             String name = StringUtils.lowerCase(tableMetaData.getColumnName(idx));
+                            String columnType;
+                            switch (tableMetaData.getColumnType(idx)) {
+                                case Types.BINARY:
+                                case Types.VARBINARY:
+                                case Types.LONGVARBINARY:
+                                    columnType = "byte[]";
+                                    break;
+                                default:
+                                    columnType = tableMetaData.getColumnClassName(idx);
+                            }
                             ColumnInfo column = new ColumnInfo(scaffold.getNamedFilter(), name,
-                                    tableMetaData.getColumnClassName(idx),
+                                    columnType,
                                     tableMetaData.isAutoIncrement(idx),
                                     primaryKeyNames.contains(name),
                                     tableMetaData.isSigned(idx),

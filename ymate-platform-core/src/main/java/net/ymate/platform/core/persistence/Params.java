@@ -15,6 +15,8 @@
  */
 package net.ymate.platform.core.persistence;
 
+import net.ymate.platform.commons.util.ClassUtils;
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.Serializable;
@@ -66,7 +68,16 @@ public final class Params implements Serializable {
         } else if (param instanceof Collection) {
             add((Collection<?>) param);
         } else if (param != null && param.getClass().isArray()) {
-            add(Arrays.asList((Object[]) param));
+            Class<?> arrayClassType = ClassUtils.getArrayClassType(param.getClass());
+            if (byte.class.equals(arrayClassType) || char.class.equals(arrayClassType)) {
+                this.params.add(param);
+            } else if (Byte.class.equals(arrayClassType)) {
+                this.params.add(ArrayUtils.toPrimitive((Byte[]) param));
+            } else if (Character.class.equals(arrayClassType)) {
+                this.params.add(ArrayUtils.toPrimitive((Character[]) param));
+            } else {
+                add(Arrays.asList((Object[]) param));
+            }
         } else {
             this.params.add(param);
         }

@@ -500,12 +500,21 @@ public class ClassUtils {
      * @return 返回数组元素类型
      */
     public static Class<?> getArrayClassType(Class<?> clazz) {
-        try {
-            return Class.forName(StringUtils.substringBetween(clazz.getName(), "[L", ";"), false, clazz.getClassLoader());
-        } catch (ClassNotFoundException e) {
-            if (LOG.isDebugEnabled()) {
-                LOG.debug(StringUtils.EMPTY, RuntimeUtils.unwrapThrow(e));
+        if (clazz.isArray()) {
+            Class<?> componentType = clazz.getComponentType();
+            if (componentType == null) {
+                String clazzName = StringUtils.substringBetween(clazz.getName(), "[L", ";");
+                if (StringUtils.isNotBlank(clazzName)) {
+                    try {
+                        componentType = Class.forName(clazzName, false, clazz.getClassLoader());
+                    } catch (ClassNotFoundException e) {
+                        if (LOG.isDebugEnabled()) {
+                            LOG.debug(StringUtils.EMPTY, RuntimeUtils.unwrapThrow(e));
+                        }
+                    }
+                }
             }
+            return componentType;
         }
         return null;
     }

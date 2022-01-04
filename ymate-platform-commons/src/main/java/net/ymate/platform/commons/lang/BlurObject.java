@@ -20,6 +20,7 @@ import net.ymate.platform.commons.annotation.Converter;
 import net.ymate.platform.commons.util.ClassUtils;
 import net.ymate.platform.commons.util.RuntimeUtils;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -296,6 +297,12 @@ public class BlurObject implements Serializable {
         if (attr instanceof String) {
             return (String) attr;
         }
+        if (attr instanceof char[]) {
+            return String.valueOf((char[]) attr);
+        }
+        if (attr instanceof Character[]) {
+            return String.valueOf(ArrayUtils.toPrimitive((Character[]) attr));
+        }
         if (attr instanceof Clob) {
             Clob clob = (Clob) attr;
             try (Reader reader = clob.getCharacterStream()) {
@@ -486,6 +493,10 @@ public class BlurObject implements Serializable {
         return Optional.ofNullable(toByte()).orElse((byte) 0);
     }
 
+    public Byte[] toBytes() {
+        return ArrayUtils.toObject(toBytesValue());
+    }
+
     public byte[] toBytesValue() {
         if (attr instanceof byte[]) {
             return (byte[]) attr;
@@ -536,6 +547,26 @@ public class BlurObject implements Serializable {
             return ((BlurObject) this.attr).toCharValue();
         }
         return Character.MIN_CODE_POINT;
+    }
+
+    public char[] toCharsValue() {
+        if (attr instanceof char[]) {
+            return (char[]) attr;
+        }
+        if (attr instanceof Character[]) {
+            return ArrayUtils.toPrimitive((Character[]) attr);
+        }
+        return null;
+    }
+
+    public Character[] toCharacters() {
+        if (attr instanceof Character[]) {
+            return (Character[]) attr;
+        }
+        if (attr instanceof char[]) {
+            return ArrayUtils.toObject((char[]) attr);
+        }
+        return null;
     }
 
     /**
@@ -616,10 +647,16 @@ public class BlurObject implements Serializable {
             }
         } else if (clazz.equals(byte.class)) {
             object = toByteValue();
-        } else if (clazz.equals(Byte[].class) || clazz.equals(byte[].class)) {
+        } else if (clazz.equals(Byte[].class)) {
+            object = toBytes();
+        } else if (clazz.equals(byte[].class)) {
             object = toBytesValue();
         } else if (clazz.equals(Character.class) || clazz.equals(char.class)) {
             object = toCharValue();
+        } else if (clazz.equals(Character[].class)) {
+            object = toCharacters();
+        } else if (clazz.equals(char[].class)) {
+            object = toCharsValue();
         } else if (clazz.equals(List.class)) {
             object = toListValue();
         } else if (clazz.equals(Map.class)) {
