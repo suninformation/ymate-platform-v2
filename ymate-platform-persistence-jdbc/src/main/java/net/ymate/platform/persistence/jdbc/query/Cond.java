@@ -483,11 +483,11 @@ public final class Cond extends Query<Cond> {
 
     // ------
 
-    public Cond range(String field, Number valueOne, Number valueTwo, LogicalOpt opt) {
+    public Cond range(String field, Object valueOne, Object valueTwo, LogicalOpt opt) {
         return range(null, field, valueOne, valueTwo, opt);
     }
 
-    public Cond range(String prefix, String field, Number valueOne, Number valueTwo, LogicalOpt opt) {
+    public Cond range(String prefix, String field, Object valueOne, Object valueTwo, LogicalOpt opt) {
         if (valueOne != null && valueTwo != null) {
             if (opt != null) {
                 opt(opt);
@@ -507,15 +507,15 @@ public final class Cond extends Query<Cond> {
         return this;
     }
 
-    public Cond rangeWrap(String field, Number valueOne, Number valueTwo, LogicalOpt opt) {
+    public Cond rangeWrap(String field, Object valueOne, Object valueTwo, LogicalOpt opt) {
         return rangeWrap(null, field, valueOne, valueTwo, opt);
     }
 
-    public Cond rangeWrap(String prefix, String field, Number valueOne, Number valueTwo, LogicalOpt opt) {
+    public Cond rangeWrap(String prefix, String field, Object valueOne, Object valueTwo, LogicalOpt opt) {
         return range(prefix, wrapIdentifierField(field), valueOne, valueTwo, opt);
     }
 
-    public Cond range(IFunction func, Number valueOne, Number valueTwo, LogicalOpt opt) {
+    public Cond range(IFunction func, Object valueOne, Object valueTwo, LogicalOpt opt) {
         return range(func.build(), valueOne, valueTwo, opt).param(func.params());
     }
 

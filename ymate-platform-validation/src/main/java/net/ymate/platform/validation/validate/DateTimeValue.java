@@ -22,6 +22,7 @@ import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.Serializable;
+import java.sql.Timestamp;
 import java.util.Date;
 
 /**
@@ -128,6 +129,13 @@ public class DateTimeValue implements Serializable {
         return startDate.getTime();
     }
 
+    public Timestamp getStartDateTimestampOrNull() {
+        if (isNullStartDate()) {
+            return null;
+        }
+        return new Timestamp(startDate.getTime());
+    }
+
     /**
      * @return 获取结束日期毫秒值，若为空则返回0
      */
@@ -140,6 +148,13 @@ public class DateTimeValue implements Serializable {
             return null;
         }
         return endDate.getTime();
+    }
+
+    public Timestamp getEndDateTimestampOrNull() {
+        if (isNullEndDate()) {
+            return null;
+        }
+        return new Timestamp(endDate.getTime());
     }
 
     public DateTimeHelper bindStartDate() {

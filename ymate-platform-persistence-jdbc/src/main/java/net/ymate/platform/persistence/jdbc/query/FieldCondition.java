@@ -385,12 +385,12 @@
 
      // ------
 
-     public FieldCondition range(Number valueOne, Number valueTwo) {
+     public FieldCondition range(Object valueOne, Object valueTwo) {
          cond.range(fieldName, valueOne, valueTwo, null);
          return this;
      }
 
-     public FieldCondition rangeWrap(Number valueOne, Number valueTwo) {
+     public FieldCondition rangeWrap(Object valueOne, Object valueTwo) {
          cond.rangeWrap(fieldName, valueOne, valueTwo, null);
          return this;
      }
