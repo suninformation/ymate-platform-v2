@@ -61,7 +61,7 @@ public class EntityResultSetHandler<T extends IEntity> extends AbstractResultSet
             returnValue.setId((Serializable) primaryKeyObject);
         }
         for (int idx = 0; idx < getColumnCount(); idx++) {
-            PropertyMeta propertyMeta = entityMeta.getPropertyByName(getColumnMeta(idx).getName().toLowerCase());
+            PropertyMeta propertyMeta = entityMeta.getPropertyByName(getColumnMeta(idx).getName());
             if (propertyMeta != null) {
                 Field field = propertyMeta.getField();
                 Object fieldValue = processValueRenderer(field, BlurObject.bind(resultSet.getObject(idx + 1)).toObjectValue(field.getType()));

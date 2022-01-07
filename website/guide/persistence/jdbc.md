@@ -1134,6 +1134,9 @@ ymp.params.jdbc.class_suffix=entity
 # 是否采用链式调用模式, 默认值: false
 ymp.params.jdbc.use_chain_mode=true
 
+# 为兼容历史数据库保持原表和字段名称的大小写，默认值: false
+ymp.params.jdbc.keep_case=
+
 # 自定义表或字段名称过滤器, 默认值: 空
 ymp.params.jdbc.named_filter_class=
 

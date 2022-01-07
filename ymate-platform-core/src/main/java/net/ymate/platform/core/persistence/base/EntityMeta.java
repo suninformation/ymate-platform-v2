@@ -178,7 +178,7 @@ public final class EntityMeta implements Serializable {
                 return StringUtils.capitalize(words[0].toLowerCase());
             }
         }
-        return StringUtils.capitalize(propertyName.toLowerCase());
+        return StringUtils.capitalize(propertyName);
     }
 
     /**

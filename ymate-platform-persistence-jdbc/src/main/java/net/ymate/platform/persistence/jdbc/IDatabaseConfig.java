@@ -60,6 +60,8 @@ public interface IDatabaseConfig extends IPersistenceConfig<IDatabase, IDatabase
 
     String PARAMS_JDBC_NAMED_FILTER_CLASS = "jdbc.named_filter_class";
 
+    String PARAMS_JDBC_KEEP_CASE = "jdbc.keep_case";
+
     String PARAMS_JDBC_DB_NAME = "jdbc.db_name";
 
     String PARAMS_JDBC_DB_USERNAME = "jdbc.db_username";

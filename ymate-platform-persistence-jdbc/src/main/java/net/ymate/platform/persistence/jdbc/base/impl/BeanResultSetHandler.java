@@ -20,6 +20,7 @@ import net.ymate.platform.core.persistence.base.EntityMeta;
 import net.ymate.platform.persistence.jdbc.base.AbstractResultSetHandler;
 import org.apache.commons.lang3.StringUtils;
 
+import java.lang.reflect.Field;
 import java.sql.ResultSet;
 
 /**
@@ -48,7 +49,13 @@ public class BeanResultSetHandler<T> extends AbstractResultSetHandler<T> {
             Object value = resultSet.getObject(idx + 1);
             if (value != null) {
                 String fieldName = StringUtils.uncapitalize(EntityMeta.propertyNameToFieldName(getColumnMeta(idx).getName()));
-                targetWrapper.setValue(fieldName, processValueRenderer(targetWrapper.getField(fieldName), value));
+                Field targetField = targetWrapper.getField(fieldName);
+                if (targetField == null) {
+                    targetField = targetWrapper.getField(fieldName.toLowerCase());
+                }
+                if (targetField != null) {
+                    targetWrapper.setValue(targetField, processValueRenderer(targetField, value));
+                }
             }
         }
         return targetWrapper.getTargetObject();

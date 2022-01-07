@@ -74,7 +74,8 @@ public final class Scaffold {
                 .addExcludedTableNames(configReader.getList(IDatabaseConfig.PARAMS_JDBC_TABLE_EXCLUDE_LIST))
                 .addTableNames(configReader.getList(IDatabaseConfig.PARAMS_JDBC_TABLE_LIST))
                 .addReadonlyColumns(configReader.getList(IDatabaseConfig.PARAMS_JDBC_READONLY_FIELD_LIST))
-                .namedFilter(loadNamedFilter ? configReader.getClassImpl(IDatabaseConfig.PARAMS_JDBC_NAMED_FILTER_CLASS, INamedFilter.class) : null);
+                .namedFilter(loadNamedFilter ? configReader.getClassImpl(IDatabaseConfig.PARAMS_JDBC_NAMED_FILTER_CLASS, INamedFilter.class) : null)
+                .keepCase(configReader.getBoolean(IDatabaseConfig.PARAMS_JDBC_KEEP_CASE));
     }
 
     /**
@@ -149,7 +150,13 @@ public final class Scaffold {
      */
     private final Set<String> readonlyColumns;
 
+    private final boolean keepCase;
+
     public Scaffold(String dbName, String dbUserName, String packageName, String outputPath, Set<String> tableNames, Set<String> excludedTableNames, Set<String> tablePrefixes, boolean useRemovePrefix, boolean useBaseEntity, boolean useClassSuffix, String classSuffix, boolean useChainMode, boolean useStateSupport, INamedFilter namedFilter, Set<String> readonlyColumns) {
+        this(dbName, dbUserName, packageName, outputPath, tableNames, excludedTableNames, tablePrefixes, useRemovePrefix, useBaseEntity, useClassSuffix, classSuffix, useChainMode, useStateSupport, namedFilter, readonlyColumns, false);
+    }
+
+    public Scaffold(String dbName, String dbUserName, String packageName, String outputPath, Set<String> tableNames, Set<String> excludedTableNames, Set<String> tablePrefixes, boolean useRemovePrefix, boolean useBaseEntity, boolean useClassSuffix, String classSuffix, boolean useChainMode, boolean useStateSupport, INamedFilter namedFilter, Set<String> readonlyColumns, boolean keepCase) {
         this.dbName = dbName;
         this.dbUserName = dbUserName;
         this.packageName = StringUtils.defaultIfBlank(packageName, "packages");
@@ -165,6 +172,7 @@ public final class Scaffold {
         this.useStateSupport = useStateSupport;
         this.namedFilter = namedFilter;
         this.readonlyColumns = readonlyColumns != null ? readonlyColumns : new HashSet<>();
+        this.keepCase = keepCase;
     }
 
     public String getDbName() {
@@ -225,6 +233,10 @@ public final class Scaffold {
 
     public Set<String> getReadonlyColumns() {
         return Collections.unmodifiableSet(readonlyColumns);
+    }
+
+    public boolean isKeepCase() {
+        return keepCase;
     }
 
     public List<TableInfo> getTables(IDatabase owner, boolean view) throws Exception {
@@ -304,21 +316,28 @@ public final class Scaffold {
             ColumnInfo primaryKeyColumn = tableInfo.getColumns().get(primaryKeyName);
             Attr primaryKeyAttr = Attr.build(primaryKeyColumn);
             entityInfoBuilder.primaryKeyType(primaryKeyColumn.getColumnType())
-                    .primaryKeyName(StringUtils.uncapitalize(EntityMeta.propertyNameToFieldName(primaryKeyName)))
+                    .primaryKeyName(StringUtils.uncapitalize(propertyNameToFieldNameIfNeed(primaryKeyName)))
                     .addField(primaryKeyAttr)
                     .addNonNullableField(primaryKeyAttr)
                     .addConstField(new ConstAttr(String.class.getSimpleName(), doNamedFilter(INamedFilter.Type.COLUMN, primaryKeyColumn.getColumnName()).toUpperCase(), primaryKeyColumn.getColumnName(), primaryKeyColumn.getName()));
         } else {
             ColumnInfo primaryKeyColumn = tableInfo.getColumns().get("id");
-            Attr primaryKeyAttr = primaryKeyColumn == null ? new Attr(Serializable.class.getSimpleName(), "id", "id") : Attr.build(primaryKeyColumn);
+            Attr primaryKeyAttr = primaryKeyColumn == null ? new Attr(Serializable.class.getName(), "id", "id") : Attr.build(primaryKeyColumn);
             entityInfoBuilder.primaryKeyName("id")
-                    .primaryKeyType(primaryKeyColumn == null ? Serializable.class.getSimpleName() : primaryKeyColumn.getColumnType())
+                    .primaryKeyType(primaryKeyColumn == null ? Serializable.class.getName() : primaryKeyColumn.getColumnType())
                     .addField(primaryKeyAttr)
                     .addNonNullableField(primaryKeyAttr)
                     .addConstField(new ConstAttr(String.class.getSimpleName(), "ID", "id", "id"));
         }
         doProcessColumns(entityInfoBuilder, tableInfo);
         return entityInfoBuilder.build();
+    }
+
+    public String propertyNameToFieldNameIfNeed(String originName) {
+        if (!keepCase) {
+            originName = EntityMeta.propertyNameToFieldName(originName);
+        }
+        return originName;
     }
 
     private PairObject<String, String> doOptimizationNames(String tableName) {
@@ -328,12 +347,12 @@ public final class Scaffold {
                 if (useRemovePrefix) {
                     tableName = tableName.substring(prefix.length());
                 }
-                modelName = StringUtils.capitalize(EntityMeta.propertyNameToFieldName(doNamedFilter(INamedFilter.Type.TABLE, tableName)));
+                modelName = StringUtils.capitalize(propertyNameToFieldNameIfNeed(doNamedFilter(INamedFilter.Type.TABLE, tableName)));
                 break;
             }
         }
         if (StringUtils.isBlank(modelName)) {
-            modelName = StringUtils.capitalize(EntityMeta.propertyNameToFieldName(doNamedFilter(INamedFilter.Type.TABLE, tableName)));
+            modelName = StringUtils.capitalize(propertyNameToFieldNameIfNeed(doNamedFilter(INamedFilter.Type.TABLE, tableName)));
         }
         return PairObject.bind(modelName, tableName);
     }
@@ -389,6 +408,8 @@ public final class Scaffold {
         private INamedFilter namedFilter;
 
         private final Set<String> readonlyColumns = new LinkedHashSet<>();
+
+        private boolean keepCase;
 
         Builder() {
         }
@@ -543,8 +564,17 @@ public final class Scaffold {
             return this;
         }
 
+        public boolean isKeepCase() {
+            return keepCase;
+        }
+
+        public Builder keepCase(boolean keepCase) {
+            this.keepCase = keepCase;
+            return this;
+        }
+
         public Scaffold build() {
-            return new Scaffold(dbName, dbUserName, packageName, outputPath, tableNames, excludedTableNames, tablePrefixes, useRemovePrefix, useBaseEntity, useClassSuffix, classSuffix, useChainMode, useStateSupport, namedFilter, readonlyColumns);
+            return new Scaffold(dbName, dbUserName, packageName, outputPath, tableNames, excludedTableNames, tablePrefixes, useRemovePrefix, useBaseEntity, useClassSuffix, classSuffix, useChainMode, useStateSupport, namedFilter, readonlyColumns, keepCase);
         }
     }
 }

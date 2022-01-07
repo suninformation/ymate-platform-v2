@@ -760,7 +760,7 @@ public class ClassUtils {
         }
 
         public BeanWrapper<T> setValue(Field field, Object value) throws IllegalAccessException {
-            field.set(target, value);
+            field.set(target, BlurObject.bind(value).toObjectValue(field.getType()));
             return this;
         }
 

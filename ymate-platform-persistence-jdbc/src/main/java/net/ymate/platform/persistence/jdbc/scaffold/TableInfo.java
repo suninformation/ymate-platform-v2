@@ -42,7 +42,12 @@ public final class TableInfo implements Serializable {
                 try (ResultSet resultSet = databaseMetaData.getPrimaryKeys(scaffold.getDbName(), dbUserName, tableName)) {
                     if (resultSet != null) {
                         while (resultSet.next()) {
-                            primaryKeyNames.add(resultSet.getString(4).toLowerCase());
+                            String columnName = resultSet.getString(4);
+                            if (!scaffold.isKeepCase()) {
+                                primaryKeyNames.add(columnName.toLowerCase());
+                            } else {
+                                primaryKeyNames.add(columnName);
+                            }
                         }
                     }
                     if (primaryKeyNames.isEmpty()) {
@@ -60,7 +65,10 @@ public final class TableInfo implements Serializable {
                     try (ResultSet resultSetColumn = databaseMetaData.getColumns(scaffold.getDbName(), dbUserName, tableName, tableMetaData.getColumnName(idx))) {
                         if (resultSetColumn.next()) {
                             // 提取字段定义及字段默认值
-                            String name = StringUtils.lowerCase(tableMetaData.getColumnName(idx));
+                            String name = tableMetaData.getColumnName(idx);
+                            if (!scaffold.isKeepCase()) {
+                                name = StringUtils.lowerCase(name);
+                            }
                             String columnType;
                             switch (tableMetaData.getColumnType(idx)) {
                                 case Types.BINARY:
@@ -71,7 +79,7 @@ public final class TableInfo implements Serializable {
                                 default:
                                     columnType = tableMetaData.getColumnClassName(idx);
                             }
-                            ColumnInfo column = new ColumnInfo(scaffold.getNamedFilter(), name,
+                            ColumnInfo column = new ColumnInfo(scaffold, name,
                                     columnType,
                                     tableMetaData.isAutoIncrement(idx),
                                     primaryKeyNames.contains(name),

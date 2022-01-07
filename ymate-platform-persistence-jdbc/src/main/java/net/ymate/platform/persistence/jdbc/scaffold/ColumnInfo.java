@@ -85,7 +85,7 @@ public class ColumnInfo implements Serializable {
      */
     private final String remarks;
 
-    public ColumnInfo(INamedFilter namedFilter, String columnName, String columnType, boolean autoIncrement, boolean primaryKey, boolean signed, int precision, int scale, int nullable, boolean readonly, String defaultValue, String remarks) {
+    public ColumnInfo(Scaffold scaffold, String columnName, String columnType, boolean autoIncrement, boolean primaryKey, boolean signed, int precision, int scale, int nullable, boolean readonly, String defaultValue, String remarks) {
         this.columnName = columnName;
         this.columnType = columnType;
         this.autoIncrement = autoIncrement;
@@ -98,12 +98,16 @@ public class ColumnInfo implements Serializable {
         this.defaultValue = defaultValue;
         this.remarks = StringUtils.replaceEach(remarks, new String[]{"\"", "\r\n", "\r", "\n", "\t"}, new String[]{"\\\"", "[\\r][\\n]", "[\\r]", "[\\n]", "[\\t]"});
         //
-        if (namedFilter != null) {
-            this.name = StringUtils.defaultIfBlank(namedFilter.filter(INamedFilter.Type.COLUMN, columnName), columnName);
+        if (scaffold.getNamedFilter() != null) {
+            this.name = StringUtils.defaultIfBlank(scaffold.getNamedFilter().filter(INamedFilter.Type.COLUMN, columnName), columnName);
         } else {
             this.name = columnName;
         }
-        this.name = StringUtils.uncapitalize(EntityMeta.propertyNameToFieldName(this.name.toLowerCase()));
+        if (scaffold.isKeepCase()) {
+            this.name = StringUtils.uncapitalize(scaffold.propertyNameToFieldNameIfNeed(this.name));
+        } else {
+            this.name = StringUtils.uncapitalize(EntityMeta.propertyNameToFieldName(this.name.toLowerCase()));
+        }
     }
 
     public String getName() {
