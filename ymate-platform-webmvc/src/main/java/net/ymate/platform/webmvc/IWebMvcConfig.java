@@ -347,7 +347,7 @@ public interface IWebMvcConfig extends IInitialization<IWebMvc> {
     boolean isConventionMode();
 
     /**
-     * Convention模式开启时是否采用URL伪静态 (URL中通过分隔符'_'传递多个请求参数，通过_path[index]方式引用参数值) 模式，可选参数，默认值为false
+     * Convention模式开启时是否采用URL伪静态 (URL中通过分隔符'_'传递多个请求参数，通过UrlParams[index]方式引用参数值) 模式，可选参数，默认值为false
      *
      * @return 返回true表示开启
      */

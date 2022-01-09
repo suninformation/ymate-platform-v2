@@ -1630,7 +1630,7 @@ WebMVC 模块通过约定模式可以将参数融合在 URL 中，不再通过 `
 伪静态模式下的参数传递规则：
 
 - URL 中通过分隔符`_`传递多个请求参数；
-- 通过 `_path[index]` 方式引用参数值；
+- 通过 `UrlParams[index]` 方式引用参数值；
 
 假如，URL 原始格式为：
 
@@ -1647,14 +1647,14 @@ http://localhost:8080/user/info/list_all_2_15
 在 JSP 中可以通过 EL 表达式获取请求参数的引用：
 
 ```jsp
-${_path[0]}：all
-${_path[1]}：2
-${_path[2]}：15
+${UrlParams[0]}：all
+${UrlParams[1]}：2
+${UrlParams[2]}：15
 ```
 
 :::tip **注意**：
 
-伪静态参数必须是连续的，`_path` 参数集合存储在 Request 作用域内。
+伪静态参数必须是连续的，`UrlParams` 参数集合存储在 Request 作用域内。
 
 :::
 
@@ -1675,7 +1675,7 @@ ymp.configs.webmvc.convention_mode=
 # Convention模式开启时视图文件路径(基于base_view_path的相对路径, '-'号代表禁止访问, '+'或无符串代表允许访问), 多个路径间用'|'分隔, 可选参数, 默认值: 空(即不限制访问路径)
 ymp.configs.webmvc.convention_view_paths=
 
-# Convention模式开启时是否采用URL伪静态(URL中通过分隔符'_'传递多个请求参数, 通过_path[index]方式引用参数值)模式, 可选参数, 默认值: false
+# Convention模式开启时是否采用URL伪静态(URL中通过分隔符'_'传递多个请求参数, 通过UrlParams[index]方式引用参数值)模式, 可选参数, 默认值: false
 ymp.configs.webmvc.convention_url_rewrite_mode=
 
 # Convention模式开启时是否采用拦截器规则设置, 可选参数, 默认值: false
