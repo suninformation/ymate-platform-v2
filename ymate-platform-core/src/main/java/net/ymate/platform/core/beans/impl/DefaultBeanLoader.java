@@ -199,11 +199,14 @@ public class DefaultBeanLoader extends AbstractBeanLoader {
     }
 
     private Class<?> loadClass(String className) throws ClassNotFoundException {
-        Class<?> clazz;
+        Class<?> clazz = null;
         try {
-            clazz = ClassUtils.loadClass(className, this.getClass());
-        } catch (ClassNotFoundException e) {
-            clazz = getClassLoader().loadClass(className);
+            try {
+                clazz = ClassUtils.loadClass(className, this.getClass());
+            } catch (ClassNotFoundException e) {
+                clazz = getClassLoader().loadClass(className);
+            }
+        } catch (NoClassDefFoundError ignored) {
         }
         return clazz;
     }
