@@ -67,17 +67,17 @@ const darkCodeTheme = require('prism-react-renderer/themes/dracula');
                 fromExtensions: ['html'],
             },
         ],
-        [
-            '@docusaurus/plugin-content-docs',
-            {
-                id: 'modules',
-                path: 'modules',
-                routeBasePath: 'modules',
-                sidebarPath: require.resolve('./sidebars.js'),
-                editUrl: 'https://github.com/suninformation/ymatenet-platform-v2/website/edit/',
-                editLocalizedFiles: true,
-            },
-        ],
+        // [
+        //     '@docusaurus/plugin-content-docs',
+        //     {
+        //         id: 'modules',
+        //         path: 'modules',
+        //         routeBasePath: 'modules',
+        //         sidebarPath: require.resolve('./sidebars.js'),
+        //         editUrl: 'https://github.com/suninformation/ymatenet-platform-v2/website/edit/',
+        //         editLocalizedFiles: true,
+        //     },
+        // ],
         [
             require.resolve('@easyops-cn/docusaurus-search-local'),
             {
@@ -128,12 +128,17 @@ const darkCodeTheme = require('prism-react-renderer/themes/dracula');
                         position: 'right',
                     },
                     {
-                        type: 'doc',
-                        docId: 'intro',
-                        docsPluginId: 'modules',
+                        to: '/modules',
                         label: '模块',
-                        position: 'right',
+                        position: 'right'
                     },
+                    // {
+                    //     type: 'doc',
+                    //     docId: 'intro',
+                    //     docsPluginId: 'modules',
+                    //     label: '模块',
+                    //     position: 'right',
+                    // },
                     {to: '/blog', label: '博客', position: 'right'},
                     {
                         to: '/support',

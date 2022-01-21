@@ -392,7 +392,7 @@ public class TcpSessionListener implements INioSessionListener<NioSessionWrapper
         NioSessionManager<NioSessionWrapper, String> sessionManager = new NioSessionManager<>(serverCfg, new TextLineCodec(), new TcpSessionListener(), 30000L);
         // 设置空闲会话检查服务
         sessionManager.idleChecker(new DefaultSessionIdleChecker<>());
-        / 设置并启动流量速度计数器
+        // 设置并启动流量速度计数器
         Speedometer speedometer = new Speedometer("tcpServerSpeedometer").interval(10000);
         // 注：此处为自定义流量速度监听，若仅日志输出以下两行代码可忽略
         Speedometer.IListener speedListener = new DefaultSpeedListener(speedometer);
