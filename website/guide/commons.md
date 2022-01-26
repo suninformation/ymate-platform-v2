@@ -476,7 +476,7 @@ JSON 包装器，为了让不同的第三方 JSON 解析器拥有统一的 API �
   <dependency>
       <groupId>com.google.code.gson</groupId>
       <artifactId>gson</artifactId>
-      <version>2.8.8</version>
+      <version>2.8.9</version>
   </dependency>
   ```
 
@@ -486,7 +486,7 @@ JSON 包装器，为了让不同的第三方 JSON 解析器拥有统一的 API �
   <dependency>
       <groupId>com.fasterxml.jackson.datatype</groupId>
       <artifactId>jackson-datatype-jdk8</artifactId>
-      <version>2.12.4</version>
+      <version>2.13.1</version>
   </dependency>
   ```
 
@@ -1775,7 +1775,7 @@ result = polygon.on(new GeoPoint(116.69, 39.89));
 <dependency>
     <groupId>net.coobird</groupId>
     <artifactId>thumbnailator</artifactId>
-    <version>0.4.14</version>
+    <version>0.4.15</version>
 </dependency>
 ```
 
@@ -2484,7 +2484,7 @@ Excel 文件数据导入助手类，用于辅助操作和分析 Excel 文件中�
 <dependency>
     <groupId>org.apache.poi</groupId>
     <artifactId>poi-ooxml</artifactId>
-    <version>5.0.0</version>
+    <version>5.1.0</version>
 </dependency>
 ```
 
@@ -2540,12 +2540,12 @@ public class Demo {
 <dependency>
     <groupId>org.apache.poi</groupId>
     <artifactId>poi-ooxml</artifactId>
-    <version>5.0.0</version>
+    <version>5.1.0</version>
 </dependency>
 <dependency>
     <groupId>org.jxls</groupId>
     <artifactId>jxls</artifactId>
-    <version>2.10.0</version>
+    <version>2.11.0</version>
 </dependency>
 ```
 
