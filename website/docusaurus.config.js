@@ -1,6 +1,13 @@
 const lightCodeTheme = require('prism-react-renderer/themes/github');
 const darkCodeTheme = require('prism-react-renderer/themes/dracula');
 
+const versions = require('./versions.json');
+const VersionsArchived = require('./versionsArchived.json');
+const ArchivedVersionsDropdownItems = Object.entries(VersionsArchived).splice(
+    0,
+    5,
+);
+
 // With JSDoc @type annotations, IDEs can provide config autocompletion
 /** @type {import('@docusaurus/types').DocusaurusConfig} */
 (module.exports = {
@@ -11,8 +18,8 @@ const darkCodeTheme = require('prism-react-renderer/themes/dracula');
     onBrokenLinks: 'warn',
     onBrokenMarkdownLinks: 'warn',
     favicon: 'img/favicon.ico',
-    organizationName: '', // Usually your GitHub org/user name.
-    projectName: '', // Usually your repo name.
+    organizationName: '',
+    projectName: '',
     customFields: {
         logoBigUrl: 'img/logo_big.png',
     },
@@ -44,6 +51,15 @@ const darkCodeTheme = require('prism-react-renderer/themes/dracula');
                     sidebarPath: require.resolve('./sidebars.js'),
                     editUrl: 'https://github.com/suninformation/ymatenet-platform-v2/website/edit/',
                     editLocalizedFiles: true,
+                    disableVersioning: false,
+                    lastVersion: "current",
+                    versions: {
+                        current: {
+                            label: "2.1.x"
+                        }
+                    },
+                    includeCurrentVersion: true,
+                    onlyIncludeVersions: (() => ['current', ...versions.slice(0, 2)])(),
                 },
                 blog: {
                     blogSidebarCount: 'ALL',
@@ -158,6 +174,23 @@ const darkCodeTheme = require('prism-react-renderer/themes/dracula');
                                 href: 'https://gitee.com/suninformation/ymate-platform-v2',
                                 label: 'Gitee',
                             },
+                        ],
+                    },
+                    {
+                        type: "docsVersionDropdown",
+                        position: "right",
+                        dropdownActiveClassDisabled: true,
+                        dropdownItemsAfter: [
+                            ...ArchivedVersionsDropdownItems.map(
+                                ([versionName, versionUrl]) => ({
+                                    label: versionName,
+                                    href: versionUrl,
+                                }),
+                            ),
+                            {
+                                href: 'https://gitee.com/suninformation/ymate-platform-v2/blob/dev_2.0.x/README.md',
+                                label: '2.0.x',
+                            }
                         ],
                     },
                     {
