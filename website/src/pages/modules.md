@@ -13,6 +13,10 @@ import TabItem from '@theme/TabItem';
 
 ### 接口文档生成器（Apidocs)
 
+为 YMP 框架开发提供的一套基于 Java 注解实现的接口开发文档自动生成工具，支持 HTML、Gitbook、Postman、JSON、 Markdown 等格式。
+
+[![Maven Central status](https://img.shields.io/maven-central/v/net.ymate.apidocs/ymate-apidocs-annotation.svg)](https://search.maven.org/artifact/net.ymate.apidocs/ymate-apidocs-annotation)
+
 :::note 项目地址
 
 <Tabs
@@ -37,7 +41,9 @@ values={[
 
 ### 验证码（Captcha）
 
-基于YMP框架实现的验证码模块，支持图片、邮件和短信三种验证类型，采用注解验证，配置简单、灵活，可自定义扩展；
+基于 YMP 框架实现的验证码模块，支持图片、邮件和短信三种验证类型，采用注解验证，配置简单、灵活，可自定义扩展。
+
+[![Maven Central status](https://img.shields.io/maven-central/v/net.ymate.module/ymate-module-captcha.svg)](https://search.maven.org/artifact/net.ymate.module/ymate-module-captcha)
 
 :::note 项目地址
 
@@ -91,6 +97,10 @@ values={[
 
 ### 文件上传（Fileuploader）
 
+基于 YMP 框架实现的文件上传及资源访问服务模块。
+
+[![Maven Central status](https://img.shields.io/maven-central/v/net.ymate.module/ymate-module-fileuploader.svg)](https://search.maven.org/artifact/net.ymate.module/ymate-module-fileuploader)
+
 :::note 项目地址
 
 <Tabs
@@ -141,6 +151,10 @@ values={[
 
 ### 任务调度（Schedule）
 
+为 YMP 框架提供基于 Quartz 技术的任务调度服务集成与模块封装。
+
+[![Maven Central status](https://img.shields.io/maven-central/v/net.ymate.module/ymate-module-schedule.svg)](https://search.maven.org/artifact/net.ymate.module/ymate-module-schedule)
+
 :::note 项目地址
 
 <Tabs
@@ -165,6 +179,10 @@ values={[
 :::
 
 ### 单点登录（SSO）
+
+基于 YMP 框架实现的单点登录模块封装。
+
+[![Maven Central status](https://img.shields.io/maven-central/v/net.ymate.module/ymate-module-sso.svg)](https://search.maven.org/artifact/net.ymate.module/ymate-module-sso)
 
 :::note 项目地址
 
@@ -191,6 +209,10 @@ values={[
 
 ### WEB 标签库（Taglib）
 
+为 YMP 框架提供的一套 JSP 标签库。
+
+[![Maven Central status](https://img.shields.io/maven-central/v/net.ymate.web/ymate-web-taglib.svg)](https://search.maven.org/artifact/net.ymate.web/ymate-web-taglib)
+
 :::note 项目地址
 
 <Tabs
@@ -215,6 +237,10 @@ values={[
 :::
 
 ### 集成测试（Test）
+
+为 YMP 框架集成 JUnit 测试开发工具包。
+
+[![Maven Central status](https://img.shields.io/maven-central/v/net.ymate.platform/ymate-platform-test.svg)](https://search.maven.org/artifact/net.ymate.platform/ymate-platform-test)
 
 :::note 项目地址
 
@@ -241,6 +267,10 @@ values={[
 
 ### Unpack
 
+基于 YMP 框架实现的文件解包器模块封装，用于自动执行文件解压。
+
+[![Maven Central status](https://img.shields.io/maven-central/v/net.ymate.module/ymate-module-unpack.svg)](https://search.maven.org/artifact/net.ymate.module/ymate-module-unpack)
+
 :::note 项目地址
 
 <Tabs
@@ -265,6 +295,10 @@ values={[
 :::
 
 ### Websocket
+
+为 YMP 框架提供对 WebSocket 技术的集成与模块封装。
+
+[![Maven Central status](https://img.shields.io/maven-central/v/net.ymate.module/ymate-module-websocket.svg)](https://search.maven.org/artifact/net.ymate.module/ymate-module-websocket)
 
 :::note 项目地址
 
@@ -343,7 +377,11 @@ values={[
 
 ## 插件（Plugins）
 
-### YMP 框架插件集
+### YMP 框架 Maven 插件
+
+本项目为基于 YMP 轻量级 Java 应用开发框架开发的小伙伴儿们提供的一系列 Maven 插件工具，辅助快速生成代码与服务等。
+
+[![Maven Central status](https://img.shields.io/maven-central/v/net.ymate.maven.plugins/ymate-maven-plugin.svg)](https://search.maven.org/artifact/net.ymate.maven.plugins/ymate-maven-plugin)
 
 :::note 项目地址
 
