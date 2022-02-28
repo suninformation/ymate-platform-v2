@@ -350,7 +350,11 @@ values={[
 
 :::
 
-### 管理后台工程原型
+### 管理后台 UI 资源包
+
+在标准 Web 工程的基础之上，采用自动解压释放方式的管理后台 UI 资源包，集成 AdminLTE 前端相关资源文件等。
+
+[![Maven Central status](https://img.shields.io/maven-central/v/net.ymate.web/ymate-web-adminlte-assets.svg)](https://search.maven.org/artifact/net.ymate.web/ymate-web-adminlte-assets)
 
 :::note 项目地址
 
@@ -363,12 +367,12 @@ values={[
 }>
 <TabItem value="github">
 
-[https://github.com/suninformation/ymate-web-adminlte](https://github.com/suninformation/ymate-web-adminlte)
+[https://github.com/suninformation/ymate-web-adminlte-assets](https://github.com/suninformation/ymate-web-adminlte-assets)
 
 </TabItem>
 <TabItem value="gitee">
 
-[https://gitee.com/suninformation/ymate-web-adminlte](https://gitee.com/suninformation/ymate-web-adminlte)
+[https://gitee.com/suninformation/ymate-web-adminlte-assets](https://gitee.com/suninformation/ymate-web-adminlte-assets)
 
 </TabItem>
 </Tabs>

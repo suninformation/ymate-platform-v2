@@ -21,6 +21,7 @@ import TabItem from '@theme/TabItem';
 | ------------ | ------------------------------------------------------------ |
 | Quickstart   | 标准 Java 工程，已集成 YMP 核心依赖和参数配置                |
 | Webapp       | 标准 Web 工程，已集成 WebMVC 相关依赖和参数配置              |
+| AdminLTE     | 在标准 Web 工程的基础之上，集成 AdminLTE 前端相关标签库及资源文件等 |
 | Module       | 标准 Maven 多模块工程，已集成 Assembly 插件的自定义打包规则和命令行启动脚本 |
 | Microservice | 基于 YMP 框架的微服务多模块工程（***暂仅内部使用***）        |
 
@@ -97,7 +98,7 @@ mvn archetype:generate -DarchetypeCatalog=local
 :::tip **小技巧！**
 为了方便书写，可以通过 `alias` 命令为其创建一个别名（如：`createprj`），设置方法如下：
 
-- 编辑 `~/.bash_profile` 文件并添加以下内容：
+- 编辑 `~/.bash_profile` 或 `~/.bashrc` 文件并添加以下内容：
 
 ```shell
 alias createprj="mvn archetype:generate -DarchetypeCatalog=local"
@@ -124,10 +125,12 @@ createprj
 
 ```shell
 ......
+Choose archetype:
 1: local -> net.ymate.maven.archetypes:ymate-archetype-microservice (microservice)
-2: local -> net.ymate.maven.archetypes:ymate-archetype-quickstart (quickstart)
-3: local -> net.ymate.maven.archetypes:ymate-archetype-module (module)
-4: local -> net.ymate.maven.archetypes:ymate-archetype-webapp (webapp)
+2: local -> net.ymate.maven.archetypes:ymate-archetype-webapp-adminlte (adminlte)
+3: local -> net.ymate.maven.archetypes:ymate-archetype-quickstart (quickstart)
+4: local -> net.ymate.maven.archetypes:ymate-archetype-module (module)
+5: local -> net.ymate.maven.archetypes:ymate-archetype-webapp (webapp)
 Choose a number or apply filter (format: [groupId:]artifactId, case sensitive contains): :
 ```
 
@@ -141,7 +144,7 @@ Choose a number or apply filter (format: [groupId:]artifactId, case sensitive co
 
 ### 选择模板并按提示设置
 
-本例演示如何创建和运行 Web 工程，所以此处按屏幕提示应选择 `4` 号模板类型，输入数字并按屏幕提示设置坐标系等信息，如下所示：
+本例演示如何创建和运行 Web 工程，所以此处按屏幕提示应选择 `5` 号模板类型，输入数字并按屏幕提示设置坐标系等信息，如下所示：
 
 ```shell
 Choose a number or apply filter (format: [groupId:]artifactId, case sensitive contains): : 4
