@@ -1482,6 +1482,26 @@ public class DemoService extends DemoOneServiceImpl {
 }
 ```
 
+#### 处理字段名称使其符合 JavaBean 属性串格式
+
+
+**示例：**
+
+```java
+// 将 "user_name" 转换为 "UserName"
+ClassUtils.propertyNameToFieldName("user_name");
+```
+
+
+#### 将 JavaBean 属性串格式转换为下划线小写方式
+
+
+**示例：**
+
+```java
+// 将 "userName" 转换为 "user_name"
+ClassUtils.fieldNameToPropertyName("userName", 0);
+```
 
 
 ### CodecUtils
@@ -1632,7 +1652,7 @@ File demoFile = new File(RuntimeUtils.replaceEnvVariable("${root}/files/demo.tex
 boolean success = FileUtils.createFileIfNotExists(demoFile, new FileInputStream(RuntimeUtils.replaceEnvVariable("${root}/files/origin.text")));
 // 在指定路径中创建空文件（同时生成其父级目录）
 FileUtils.createEmptyFile(demoFile);
-// 提取文件扩展名称，若不存在扩展名则返回原始文件名称
+// 提取文件扩展名称，若不存在则返回空字符串
 String extName = FileUtils.getExtName(demoFile.getName());
 // 获取文件MD5签名值
 String hash = FileUtils.getHash(demoFile);

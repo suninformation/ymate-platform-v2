@@ -125,7 +125,7 @@ public final class EntityMeta implements Serializable {
             try {
                 return ReentrantLockHelper.putIfAbsentAsync(ENTITY_METAS, targetClass, () -> {
                     // 注册数据实体类
-                    String entityName = StringUtils.defaultIfBlank(targetClass.getAnnotation(Entity.class).value(), fieldNameToPropertyName(targetClass.getSimpleName(), 0));
+                    String entityName = StringUtils.defaultIfBlank(targetClass.getAnnotation(Entity.class).value(), ClassUtils.fieldNameToPropertyName(targetClass.getSimpleName(), 0));
                     ShardingRule shardingRule = targetClass.getAnnotation(ShardingRule.class);
                     EntityMeta entityMeta = new EntityMeta(entityName, ClassUtils.isAnnotationOf(targetClass, Readonly.class), shardingRule != null ? shardingRule.value() : null);
                     // 判断clazz对象是否声明了@Comment注解
@@ -163,22 +163,12 @@ public final class EntityMeta implements Serializable {
      *
      * @param propertyName 属性名称
      * @return 符合JavaBean属性格式串
+     * @see ClassUtils#propertyNameToFieldName(String)
+     * @deprecated 已迁移至ClassUtils类
      */
+    @Deprecated
     public static String propertyNameToFieldName(String propertyName) {
-        if (StringUtils.contains(propertyName, '_')) {
-            String[] words = StringUtils.split(propertyName, '_');
-            if (words != null) {
-                if (words.length > 1) {
-                    StringBuilder returnBuilder = new StringBuilder();
-                    for (String word : words) {
-                        returnBuilder.append(StringUtils.capitalize(word.toLowerCase()));
-                    }
-                    return returnBuilder.toString();
-                }
-                return StringUtils.capitalize(words[0].toLowerCase());
-            }
-        }
-        return StringUtils.capitalize(propertyName);
+        return ClassUtils.propertyNameToFieldName(propertyName);
     }
 
     /**
@@ -188,25 +178,12 @@ public final class EntityMeta implements Serializable {
      * @param fieldName  字段名称
      * @param capitalize 大小写字母输出方式(小于等于0-全小写，等于1-首字母大写，大于1-全大写)
      * @return 转换以下划线间隔的字符串
+     * @see ClassUtils#fieldNameToPropertyName(String, int)
+     * @deprecated 已迁移至ClassUtils类
      */
+    @Deprecated
     public static String fieldNameToPropertyName(String fieldName, int capitalize) {
-        if (StringUtils.isNotBlank(fieldName) && !StringUtils.contains(fieldName, '_')) {
-            String currStr = fieldName.substring(0, 1);
-            currStr = capitalize <= 0 ? currStr.toLowerCase() : currStr.toUpperCase();
-            StringBuilder returnBuilder = new StringBuilder(currStr);
-            for (int idx = 1; idx < fieldName.length(); idx++) {
-                currStr = fieldName.substring(idx, idx + 1);
-                if (currStr.equals(currStr.toUpperCase()) && !Character.isDigit(currStr.charAt(0))) {
-                    returnBuilder.append("_");
-                    currStr = capitalize > 0 ? currStr.toUpperCase() : currStr.toLowerCase();
-                } else {
-                    currStr = capitalize > 1 ? currStr.toUpperCase() : currStr.toLowerCase();
-                }
-                returnBuilder.append(currStr);
-            }
-            return returnBuilder.toString();
-        }
-        return fieldName;
+        return ClassUtils.fieldNameToPropertyName(fieldName, capitalize);
     }
 
     /**
@@ -226,7 +203,7 @@ public final class EntityMeta implements Serializable {
     private static PropertyMeta getPropertyMeta(Property property, Field field, EntityMeta targetMeta) {
         PropertyMeta propertyMeta = null;
         // 忽略属性名称已存在的Field对象
-        String propName = StringUtils.defaultIfBlank(property.name(), fieldNameToPropertyName(field.getName(), 0));
+        String propName = StringUtils.defaultIfBlank(property.name(), ClassUtils.fieldNameToPropertyName(field.getName(), 0));
         if (!targetMeta.containsProperty(propName)) {
             field.setAccessible(true);
             propertyMeta = new PropertyMeta(propName, field, property.autoincrement(),

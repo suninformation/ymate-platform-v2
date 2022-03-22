@@ -520,6 +520,72 @@ public class ClassUtils {
     }
 
     /**
+     * 处理字段名称，使其符合JavaBean属性串格式<br>
+     * 例如：属性名称为"user_name"，其处理结果为"UserName"<br>
+     *
+     * @param propertyName 属性名称
+     * @return 符合JavaBean属性格式串
+     */
+    public static String propertyNameToFieldName(String propertyName) {
+        return propertyNameToFieldName(propertyName, "_");
+    }
+
+    public static String propertyNameToFieldName(String propertyName, String separator) {
+        if (StringUtils.isBlank(separator)) {
+            separator = "_";
+        }
+        if (StringUtils.contains(propertyName, separator)) {
+            String[] words = StringUtils.split(propertyName, separator);
+            if (words != null) {
+                if (words.length > 1) {
+                    StringBuilder returnBuilder = new StringBuilder();
+                    for (String word : words) {
+                        returnBuilder.append(StringUtils.capitalize(word.toLowerCase()));
+                    }
+                    return returnBuilder.toString();
+                }
+                return StringUtils.capitalize(words[0].toLowerCase());
+            }
+        }
+        return StringUtils.capitalize(propertyName);
+    }
+
+    /**
+     * 将JavaBean属性串格式转换为下划线小写方式<br>
+     * 例如：字段名称为"userName"，其处理结果为"user_name"<br>
+     *
+     * @param fieldName  字段名称
+     * @param capitalize 大小写字母输出方式(小于等于0-全小写，等于1-首字母大写，大于1-全大写)
+     * @return 转换以下划线间隔的字符串
+     */
+    public static String fieldNameToPropertyName(String fieldName, int capitalize) {
+        return fieldNameToPropertyName(fieldName, capitalize, "_");
+    }
+
+    public static String fieldNameToPropertyName(String fieldName, int capitalize, String separator) {
+        if (StringUtils.isBlank(separator)) {
+            separator = "_";
+        }
+        if (StringUtils.isNotBlank(fieldName) && !StringUtils.contains(fieldName, separator)) {
+            String currStr = fieldName.substring(0, 1);
+            currStr = capitalize <= 0 ? currStr.toLowerCase() : currStr.toUpperCase();
+            StringBuilder returnBuilder = new StringBuilder(currStr);
+            for (int idx = 1; idx < fieldName.length(); idx++) {
+                currStr = fieldName.substring(idx, idx + 1);
+                if (currStr.equals(currStr.toUpperCase()) && !Character.isDigit(currStr.charAt(0))) {
+                    returnBuilder.append(separator);
+                    currStr = capitalize > 0 ? currStr.toUpperCase() : currStr.toLowerCase();
+                } else {
+                    currStr = capitalize > 1 ? currStr.toUpperCase() : currStr.toLowerCase();
+                }
+                returnBuilder.append(currStr);
+            }
+            return returnBuilder.toString();
+        }
+        return fieldName;
+    }
+
+    /**
      * @param <T>   目标类型
      * @param clazz 目标类型
      * @return 创建一个类对象实例，包裹它并赋予其简单对象属性操作能力，可能返回空

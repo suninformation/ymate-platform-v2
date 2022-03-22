@@ -16,11 +16,11 @@
 package net.ymate.platform.persistence.jdbc.scaffold;
 
 import net.ymate.platform.commons.lang.PairObject;
+import net.ymate.platform.commons.util.ClassUtils;
 import net.ymate.platform.commons.util.RuntimeUtils;
 import net.ymate.platform.core.IApplication;
 import net.ymate.platform.core.configuration.IConfigReader;
 import net.ymate.platform.core.configuration.impl.MapSafeConfigReader;
-import net.ymate.platform.core.persistence.base.EntityMeta;
 import net.ymate.platform.core.persistence.base.Type;
 import net.ymate.platform.persistence.jdbc.IDatabase;
 import net.ymate.platform.persistence.jdbc.IDatabaseConfig;
@@ -335,7 +335,7 @@ public final class Scaffold {
 
     public String propertyNameToFieldNameIfNeed(String originName) {
         if (!keepCase) {
-            originName = EntityMeta.propertyNameToFieldName(originName);
+            originName = ClassUtils.propertyNameToFieldName(originName);
         }
         return originName;
     }

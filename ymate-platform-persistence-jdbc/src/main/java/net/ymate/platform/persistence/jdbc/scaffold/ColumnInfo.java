@@ -15,7 +15,7 @@
  */
 package net.ymate.platform.persistence.jdbc.scaffold;
 
-import net.ymate.platform.core.persistence.base.EntityMeta;
+import net.ymate.platform.commons.util.ClassUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.Serializable;
@@ -106,7 +106,7 @@ public class ColumnInfo implements Serializable {
         if (scaffold.isKeepCase()) {
             this.name = StringUtils.uncapitalize(scaffold.propertyNameToFieldNameIfNeed(this.name));
         } else {
-            this.name = StringUtils.uncapitalize(EntityMeta.propertyNameToFieldName(this.name.toLowerCase()));
+            this.name = StringUtils.uncapitalize(ClassUtils.propertyNameToFieldName(this.name.toLowerCase()));
         }
     }
 

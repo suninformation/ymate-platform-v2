@@ -16,7 +16,6 @@
 package net.ymate.platform.persistence.jdbc.base.impl;
 
 import net.ymate.platform.commons.util.ClassUtils;
-import net.ymate.platform.core.persistence.base.EntityMeta;
 import net.ymate.platform.persistence.jdbc.base.AbstractResultSetHandler;
 import org.apache.commons.lang3.StringUtils;
 
@@ -48,7 +47,7 @@ public class BeanResultSetHandler<T> extends AbstractResultSetHandler<T> {
         for (int idx = 0; idx < getColumnCount(); idx++) {
             Object value = resultSet.getObject(idx + 1);
             if (value != null) {
-                String fieldName = StringUtils.uncapitalize(EntityMeta.propertyNameToFieldName(getColumnMeta(idx).getName()));
+                String fieldName = StringUtils.uncapitalize(ClassUtils.propertyNameToFieldName(getColumnMeta(idx).getName()));
                 Field targetField = targetWrapper.getField(fieldName);
                 if (targetField == null) {
                     targetField = targetWrapper.getField(fieldName.toLowerCase());

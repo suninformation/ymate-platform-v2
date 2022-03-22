@@ -15,7 +15,7 @@
  */
 package net.ymate.platform.webmvc;
 
-import net.ymate.platform.core.persistence.base.EntityMeta;
+import net.ymate.platform.commons.util.ClassUtils;
 import net.ymate.platform.webmvc.annotation.*;
 import org.apache.commons.lang3.StringUtils;
 
@@ -143,7 +143,7 @@ public class ParameterMeta {
     public String doBuildParamName(String prefix, String paramName, String defaultName, boolean snakeCase) {
         String name = StringUtils.defaultIfBlank(paramName, defaultName);
         if (snakeCase) {
-            name = EntityMeta.fieldNameToPropertyName(name, 0);
+            name = ClassUtils.fieldNameToPropertyName(name, 0);
         }
         if (StringUtils.isNotBlank(prefix)) {
             name = prefix.trim().concat(".").concat(name);

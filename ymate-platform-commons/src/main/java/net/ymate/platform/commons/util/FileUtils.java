@@ -84,7 +84,7 @@ public class FileUtils {
 
     /**
      * @param fileName 原始文件名称
-     * @return 提取文件扩展名称，若不存在扩展名则返回原始文件名称
+     * @return 提取文件扩展名称，若不存在则返回空字符串
      */
     public static String getExtName(String fileName) {
         String suffix = null;

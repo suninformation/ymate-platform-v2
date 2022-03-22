@@ -586,7 +586,7 @@ public final class ResultSetHelper {
         public <T> T toObject(T valueObject) throws Exception {
             ClassUtils.BeanWrapper<?> wrapper = ClassUtils.wrapper(valueObject);
             for (String fieldName : wrapper.getFieldNames()) {
-                String columnName = EntityMeta.fieldNameToPropertyName(fieldName, 0);
+                String columnName = ClassUtils.fieldNameToPropertyName(fieldName, 0);
                 Object value = this.getObject(columnName);
                 if (value == null) {
                     continue;
