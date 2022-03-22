@@ -90,6 +90,9 @@ ymp.configs.configuration.project_name=
 # 模块名称, 此模块一般指现实项目中分拆的若干子项目的名称, 默认为空
 ymp.configs.configuration.module_name=
 
+# 配置文件存放的基准目录名称，不允许以'/'开头但必须以'/'结束，默认值为空
+ymp.configs.configuration.config_base_dir=
+
 # 配置文件检查时间间隔(毫秒), 默认值为0表示不开启
 ymp.configs.configuration.config_check_time_interval=
 
@@ -119,6 +122,7 @@ java -jar -Dymp.configHome=...
 | configHome        | 配置体系根路径               |
 | projectName       | 项目名称                     |
 | moduleName        | 模块名称                     |
+| configBaseDir     | 配置文件基准目录名称           |
 | checkTimeInterval | 配置文件检查时间间隔（毫秒） |
 | providerClass     | 默认配置文件分析器           |
 

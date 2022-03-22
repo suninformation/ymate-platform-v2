@@ -45,6 +45,11 @@ public @interface ConfigurationConf {
     String moduleName() default StringUtils.EMPTY;
 
     /**
+     * @return 配置文件基准目录名称
+     */
+    String configBaseDir() default StringUtils.EMPTY;
+
+    /**
      * @return 配置文件检查时间间隔(毫秒)
      */
     long checkTimeInterval() default 0;

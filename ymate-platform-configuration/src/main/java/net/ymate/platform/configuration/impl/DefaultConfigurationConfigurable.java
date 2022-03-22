@@ -57,6 +57,11 @@ public final class DefaultConfigurationConfigurable extends DefaultModuleConfigu
             return this;
         }
 
+        public Builder configBaseDir(String configBaseDir) {
+            configurable.addConfig(IConfigurationConfig.CONFIG_BASE_DIR, configBaseDir);
+            return this;
+        }
+
         public Builder configCheckTimeInterval(int configCheckTimeInterval) {
             configurable.addConfig(IConfigurationConfig.CONFIG_CHECK_TIME_INTERVAL, String.valueOf(configCheckTimeInterval));
             return this;

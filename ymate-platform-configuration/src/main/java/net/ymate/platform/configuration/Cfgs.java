@@ -138,6 +138,9 @@ public final class Cfgs implements IConfig {
                 LOG.info(String.format("-- CONFIG_HOME: %s", config.getConfigHome()));
                 LOG.info(String.format("-- USER_HOME: %s", userHome));
                 LOG.info(String.format("-- USER_DIR: %s", userDir));
+                if (StringUtils.isNotBlank(config.getConfigBaseDir())) {
+                    LOG.info(String.format("-- CONFIG_BASE_DIR: %s", config.getConfigBaseDir()));
+                }
                 if (StringUtils.isNotBlank(config.getProjectName())) {
                     LOG.info(String.format("-- PROJECT_NAME: %s", config.getProjectName()));
                 }
@@ -287,8 +290,14 @@ public final class Cfgs implements IConfig {
                     if (provider == null) {
                         provider = doParseConfigurationProviderClass(cfgFileName).newInstance();
                     }
+                    cfgFileName = StringUtils.trim(cfgFileName);
                     if (StringUtils.isBlank(cfgFileName)) {
                         cfgFileName = String.format("%s%s.%s", configObject.getClass().getSimpleName().toLowerCase(), configObject.getTagName(), provider.getSupportFileExtName());
+                    } else if (StringUtils.isBlank(FileUtils.getExtName(cfgFileName))) {
+                        cfgFileName += String.format("%s%s", StringUtils.endsWith(cfgFileName, ".") ? StringUtils.EMPTY : ".", provider.getSupportFileExtName());
+                    }
+                    if (StringUtils.isNotBlank(config.getConfigBaseDir()) && !StringUtils.startsWith(cfgFileName, config.getConfigBaseDir())) {
+                        cfgFileName = String.format("%s%s", config.getConfigBaseDir(), cfgFileName);
                     }
                     String targetCfgFile = search ? searchAsPath(cfgFileName) : cfgFileName;
                     if (StringUtils.isNotBlank(targetCfgFile)) {

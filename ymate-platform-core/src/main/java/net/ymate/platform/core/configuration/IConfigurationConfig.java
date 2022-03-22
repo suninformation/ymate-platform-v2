@@ -30,6 +30,8 @@ public interface IConfigurationConfig extends IInitialization<IConfig> {
 
     String MODULE_NAME = "module_name";
 
+    String CONFIG_BASE_DIR = "config_base_dir";
+
     String CONFIG_CHECK_TIME_INTERVAL = "config_check_time_interval";
 
     String PROVIDER_CLASS = "provider_class";
@@ -54,6 +56,13 @@ public interface IConfigurationConfig extends IInitialization<IConfig> {
      * @return 返回模块名称
      */
     String getModuleName();
+
+    /**
+     * 配置文件存放的基准目录名称，不允许以'/'开头但必须以'/'结束，默认值为空
+     *
+     * @return 返回基准目录名称
+     */
+    String getConfigBaseDir();
 
     /**
      * 配置文件检查时间间隔(毫秒)，默认值为0表示不开启

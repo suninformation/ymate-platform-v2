@@ -48,6 +48,8 @@ public final class DefaultConfigurationConfig implements IConfigurationConfig {
 
     private String moduleName;
 
+    private String configBaseDir;
+
     private long configCheckTimeInterval;
 
     private Class<? extends IConfigurationProvider> configurationProviderClass;
@@ -82,6 +84,8 @@ public final class DefaultConfigurationConfig implements IConfigurationConfig {
         configHome = configReader.getString(CONFIG_HOME, confAnn == null ? null : confAnn.configHome());
         projectName = configReader.getString(PROJECT_NAME, confAnn == null ? null : confAnn.projectName());
         moduleName = configReader.getString(MODULE_NAME, confAnn == null ? null : confAnn.moduleName());
+        //
+        configBaseDir = StringUtils.trimToEmpty(configReader.getString(CONFIG_BASE_DIR, confAnn == null ? null : confAnn.configBaseDir()));
         //
         configCheckTimeInterval = configReader.getLong(CONFIG_CHECK_TIME_INTERVAL, confAnn == null ? 0 : confAnn.checkTimeInterval());
         //
@@ -125,6 +129,15 @@ public final class DefaultConfigurationConfig implements IConfigurationConfig {
             configHome = configHomeFile.getPath();
             System.setProperty(USER_DIR, configHome);
             //
+            if (StringUtils.isNotBlank(configBaseDir)) {
+                if (StringUtils.startsWith(configBaseDir, File.separator)) {
+                    configBaseDir = StringUtils.substringAfter(configBaseDir, File.separator);
+                }
+                if (!StringUtils.endsWith(configBaseDir, File.separator)) {
+                    configBaseDir += File.separator;
+                }
+            }
+            //
             initialized = true;
         }
     }
@@ -164,6 +177,18 @@ public final class DefaultConfigurationConfig implements IConfigurationConfig {
     public void setModuleName(String moduleName) {
         if (!initialized) {
             this.moduleName = moduleName;
+        }
+    }
+
+
+    @Override
+    public String getConfigBaseDir() {
+        return configBaseDir;
+    }
+
+    public void setConfigBaseDir(String configBaseDir) {
+        if (!initialized) {
+            this.configBaseDir = configBaseDir;
         }
     }
 
@@ -208,6 +233,11 @@ public final class DefaultConfigurationConfig implements IConfigurationConfig {
 
         public Builder moduleName(String moduleName) {
             config.setModuleName(moduleName);
+            return this;
+        }
+
+        public Builder configBaseDir(String configBaseDir) {
+            config.setConfigBaseDir(configBaseDir);
             return this;
         }
 
