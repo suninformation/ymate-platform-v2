@@ -221,7 +221,11 @@ public abstract class AbstractSessionManager<SESSION_WRAPPER extends ISessionWra
         if (speedometer != null && speedometer.isStarted()) {
             speedometer.close();
         }
-        idleCheckExecutorService.shutdownNow();
-        server.close();
+        if (idleCheckExecutorService != null && !idleCheckExecutorService.isShutdown()) {
+            idleCheckExecutorService.shutdownNow();
+        }
+        if (server != null && server.isStarted()) {
+            server.close();
+        }
     }
 }
