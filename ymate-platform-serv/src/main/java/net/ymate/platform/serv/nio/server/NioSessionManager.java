@@ -63,9 +63,6 @@ public class NioSessionManager<SESSION_WRAPPER extends NioSessionWrapper, MESSAG
             public void onSessionRegistered(INioSession session) throws IOException {
                 SESSION_WRAPPER sessionWrapper = registerSession(session, null);
                 if (sessionWrapper != null) {
-                    if (LOG.isDebugEnabled()) {
-                        LOG.debug(String.format("%s - Registered. Session count: %d", sessionWrapper, sessionCount()));
-                    }
                     sessionListener.onSessionRegistered(sessionWrapper);
                 }
             }
@@ -75,9 +72,6 @@ public class NioSessionManager<SESSION_WRAPPER extends NioSessionWrapper, MESSAG
                 super.onSessionAccepted(session);
                 SESSION_WRAPPER sessionWrapper = sessionWrapper(session.id());
                 if (sessionWrapper != null) {
-                    if (LOG.isDebugEnabled()) {
-                        LOG.debug(String.format("%s - Accepted.", sessionWrapper));
-                    }
                     sessionListener.onSessionAccepted(sessionWrapper);
                 }
             }
@@ -86,9 +80,6 @@ public class NioSessionManager<SESSION_WRAPPER extends NioSessionWrapper, MESSAG
             public void onBeforeSessionClosed(INioSession session) throws IOException {
                 SESSION_WRAPPER sessionWrapper = sessionWrapper(session.id());
                 if (sessionWrapper != null) {
-                    if (LOG.isDebugEnabled()) {
-                        LOG.debug(String.format("%s - Before closed.", sessionWrapper));
-                    }
                     sessionListener.onBeforeSessionClosed(sessionWrapper);
                 }
             }
@@ -97,9 +88,6 @@ public class NioSessionManager<SESSION_WRAPPER extends NioSessionWrapper, MESSAG
             public void onAfterSessionClosed(INioSession session) throws IOException {
                 SESSION_WRAPPER sessionWrapper = removeSessionWrapper(session.id());
                 if (sessionWrapper != null) {
-                    if (LOG.isDebugEnabled()) {
-                        LOG.debug(String.format("%s - After closed. Session count: %d", sessionWrapper, sessionCount()));
-                    }
                     sessionListener.onAfterSessionClosed(sessionWrapper);
                 }
             }
@@ -109,9 +97,6 @@ public class NioSessionManager<SESSION_WRAPPER extends NioSessionWrapper, MESSAG
             public void onMessageReceived(Object message, INioSession session) throws IOException {
                 SESSION_WRAPPER sessionWrapper = sessionWrapper(session.id());
                 if (sessionWrapper != null) {
-                    if (LOG.isDebugEnabled()) {
-                        LOG.debug(String.format("%s - Received: %s", sessionWrapper, message));
-                    }
                     speedTouch();
                     sessionWrapper.touch();
                     sessionListener.onMessageReceived((MESSAGE_TYPE) message, sessionWrapper);
@@ -121,9 +106,6 @@ public class NioSessionManager<SESSION_WRAPPER extends NioSessionWrapper, MESSAG
             @Override
             public void onExceptionCaught(Throwable e, INioSession session) throws IOException {
                 SESSION_WRAPPER sessionWrapper = sessionWrapper(session.id());
-                if (LOG.isDebugEnabled()) {
-                    LOG.debug(String.format("%s - Exception: ", sessionWrapper != null ? sessionWrapper : session), RuntimeUtils.unwrapThrow(e));
-                }
                 if (sessionWrapper != null) {
                     sessionListener.onExceptionCaught(e, sessionWrapper);
                 }

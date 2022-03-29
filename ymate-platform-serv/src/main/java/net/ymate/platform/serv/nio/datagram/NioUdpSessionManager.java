@@ -15,15 +15,11 @@
  */
 package net.ymate.platform.serv.nio.datagram;
 
-import net.ymate.platform.commons.util.RuntimeUtils;
 import net.ymate.platform.serv.AbstractSessionManager;
 import net.ymate.platform.serv.IServer;
 import net.ymate.platform.serv.IServerCfg;
 import net.ymate.platform.serv.nio.INioCodec;
 import net.ymate.platform.serv.nio.INioSession;
-import net.ymate.platform.serv.nio.server.NioSessionManager;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -34,8 +30,6 @@ import java.net.InetSocketAddress;
  * @author 刘镇 (suninformation@163.com) on 2018/11/14 4:47 PM
  */
 public class NioUdpSessionManager<SESSION_WRAPPER extends NioUdpSessionWrapper, MESSAGE_TYPE> extends AbstractSessionManager<SESSION_WRAPPER, InetSocketAddress, MESSAGE_TYPE> {
-
-    private static final Log LOG = LogFactory.getLog(NioSessionManager.class);
 
     private final INioUdpSessionListener<SESSION_WRAPPER, MESSAGE_TYPE> sessionListener;
 
@@ -79,17 +73,11 @@ public class NioUdpSessionManager<SESSION_WRAPPER extends NioUdpSessionWrapper, 
                 SESSION_WRAPPER sessionWrapper = sessionWrapper(messageWrapper.getSocketAddress());
                 if (sessionWrapper == null) {
                     sessionWrapper = registerSession(session, messageWrapper.getSocketAddress());
-                    if (LOG.isDebugEnabled()) {
-                        LOG.debug(String.format("%s - Registered. Session count: %d", sessionWrapper, sessionCount()));
-                    }
                 } else {
                     speedTouch();
                     sessionWrapper.touch();
                 }
                 if (sessionWrapper != null) {
-                    if (LOG.isDebugEnabled()) {
-                        LOG.debug(String.format("%s - Received: %s", sessionWrapper, messageWrapper.getMessage()));
-                    }
                     Object result = sessionListener.onMessageReceived(sessionWrapper, (MESSAGE_TYPE) messageWrapper.getMessage());
                     if (result != null) {
                         ((NioUdpSession) session).send(messageWrapper.getSocketAddress(), result);
@@ -107,9 +95,6 @@ public class NioUdpSessionManager<SESSION_WRAPPER extends NioUdpSessionWrapper, 
             public void onExceptionCaught(InetSocketAddress sourceAddress, Throwable e) throws IOException {
                 SESSION_WRAPPER sessionWrapper = sessionWrapper(sourceAddress);
                 if (sessionWrapper != null) {
-                    if (LOG.isDebugEnabled()) {
-                        LOG.debug(sessionWrapper + " - Exception: ", RuntimeUtils.unwrapThrow(e));
-                    }
                     sessionListener.onExceptionCaught(sessionWrapper, e);
                 }
             }

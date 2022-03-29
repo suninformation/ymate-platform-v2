@@ -63,10 +63,6 @@ public class DefaultSessionIdleChecker<SESSION_WRAPPER extends ISessionWrapper<?
                 iterator.remove();
                 //
                 getSessionManager().closeSessionWrapper(entry.getValue());
-                //
-                if (LOG.isDebugEnabled()) {
-                    LOG.debug(String.format("%s - Session idle removed. Session count: %d", entry.getValue(), this.getSessionManager().sessionCount()));
-                }
                 getSessionManager().getSessionListener().onSessionIdleRemoved(entry.getValue());
             }
         }
