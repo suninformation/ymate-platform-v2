@@ -23,6 +23,8 @@ package net.ymate.platform.serv;
  */
 public interface IHeartbeatService<HEARTBEAT_TYPE> extends IService {
 
+    String HEARTBEAT_PACKET = "heartbeat_packet";
+
     /**
      * 获取心跳包对象
      *

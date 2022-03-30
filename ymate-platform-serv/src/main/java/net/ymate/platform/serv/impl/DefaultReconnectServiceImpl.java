@@ -48,7 +48,7 @@ public class DefaultReconnectServiceImpl extends AbstractService implements IRec
 
     @Override
     protected boolean doStart() {
-        setName("ReconnectService-" + client.listener().getClass().getSimpleName());
+        setName(String.format("ReconnectService-%s", StringUtils.defaultIfBlank(client.clientCfg().getClientName(), client.listener().getClass().getSimpleName())));
         int interval = client.clientCfg().getReconnectionInterval();
         if (interval > 0) {
             timeout = interval * DateTimeUtils.SECOND;

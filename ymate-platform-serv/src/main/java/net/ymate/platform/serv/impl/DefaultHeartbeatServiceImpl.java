@@ -26,7 +26,7 @@ public class DefaultHeartbeatServiceImpl extends AbstractHeartbeatService<String
 
     @Override
     protected boolean doStart() {
-        heartbeatPacket = getClient().clientCfg().getParam("heartbeat_packet", "0");
+        heartbeatPacket = getClient().clientCfg().getParam(HEARTBEAT_PACKET, "0");
         return super.doStart();
     }
 

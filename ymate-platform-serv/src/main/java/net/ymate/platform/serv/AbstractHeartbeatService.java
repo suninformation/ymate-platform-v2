@@ -47,7 +47,7 @@ public abstract class AbstractHeartbeatService<HEARTBEAT_TYPE> extends AbstractS
 
     @Override
     protected boolean doStart() {
-        setName("HeartbeatService-" + client.listener().getClass().getSimpleName());
+        setName(String.format("HeartbeatService-%s", StringUtils.defaultIfBlank(client.clientCfg().getClientName(), client.listener().getClass().getSimpleName())));
         int interval = client.clientCfg().getHeartbeatInterval();
         if (interval > 0) {
             heartbeatInterval = interval * DateTimeUtils.SECOND;
@@ -62,7 +62,10 @@ public abstract class AbstractHeartbeatService<HEARTBEAT_TYPE> extends AbstractS
         try {
             if (!client.isClosing()) {
                 if (client.isConnected()) {
-                    client.send(getHeartbeatPacket());
+                    HEARTBEAT_TYPE heartbeatObj = getHeartbeatPacket();
+                    if (heartbeatObj != null) {
+                        client.send(heartbeatObj);
+                    }
                 }
                 sleep(heartbeatInterval);
             }
