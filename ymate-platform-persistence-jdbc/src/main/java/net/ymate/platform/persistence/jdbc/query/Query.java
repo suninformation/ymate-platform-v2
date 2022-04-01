@@ -15,6 +15,7 @@
  */
 package net.ymate.platform.persistence.jdbc.query;
 
+import net.ymate.platform.commons.lang.BlurObject;
 import net.ymate.platform.commons.util.ClassUtils;
 import net.ymate.platform.commons.util.RuntimeUtils;
 import net.ymate.platform.core.persistence.*;
@@ -329,8 +330,35 @@ public class Query<T> extends QueryHandleAdapter<T> {
                                 throw new IllegalArgumentException(String.format("Variable '%s' is not set.", varName));
                             }
                         } else if (firstChar == '$') {
-                            // 以$开头则字符串原样传入
-                            withFieldValue = StringUtils.substring(withFieldValue, 1);
+                            // 以$开头的字符串表达式可以通过分隔符指定其数据类型并根据表达式尝试转换数据类型或跳过
+                            String fieldValue = StringUtils.substring(withFieldValue, 1);
+                            withFieldValue = "?";
+                            if (StringUtils.contains(fieldValue, ":")) {
+                                String[] fieldValueArr = StringUtils.split(fieldValue, ":");
+                                if (fieldValueArr != null && fieldValueArr.length == 2) {
+                                    if (StringUtils.equalsIgnoreCase(fieldValueArr[0], "int")) {
+                                        cond.param(BlurObject.bind(fieldValueArr[1]).toIntValue());
+                                    } else if (StringUtils.equalsIgnoreCase(fieldValueArr[0], "long")) {
+                                        cond.param(BlurObject.bind(fieldValueArr[1]).toLongValue());
+                                    } else if (StringUtils.equalsIgnoreCase(fieldValueArr[0], "float")) {
+                                        cond.param(BlurObject.bind(fieldValueArr[1]).toFloatValue());
+                                    } else if (StringUtils.equalsIgnoreCase(fieldValueArr[0], "double")) {
+                                        cond.param(BlurObject.bind(fieldValueArr[1]).toDoubleValue());
+                                    } else if (StringUtils.equalsIgnoreCase(fieldValueArr[0], "string")) {
+                                        cond.param(fieldValueArr[1]);
+                                    } else {
+                                        throw new UnsupportedOperationException(String.format("Unsupported data type prefix '%s:'.", fieldValueArr[0]));
+                                    }
+                                } else if (qCond.ignorable()) {
+                                    skipped = true;
+                                } else {
+                                    cond.param(fieldValue);
+                                }
+                            } else if (StringUtils.isBlank(fieldValue) && qCond.ignorable()) {
+                                skipped = true;
+                            } else {
+                                cond.param(fieldValue);
+                            }
                         } else {
                             withFieldValue = Fields.field(qCond.with().prefix(), qCond.with().value());
                         }
