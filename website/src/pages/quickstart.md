@@ -116,7 +116,14 @@ source ~/.bash_profile
 createprj
 ```
 
-*（注：该方法适用于 Linux 和 Mac OS）*
+*（注：上述方法适用于 Linux 和 Mac OS）*
+
+在 Windows 系统环境下，可以在 JDK 或 Maven 的 bin 目录下创建 `createprj.cmd` 文件，其内容如下：
+
+```shell
+mvn archetype:generate -DarchetypeCatalog=local
+```
+
 :::
 
 

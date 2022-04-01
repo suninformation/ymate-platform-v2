@@ -3393,8 +3393,14 @@ IResultSet<UserBean> resultSet = SQL.create("SELECT id, email FROM user")
 | logicalOpt | 与已存在条件之间的逻辑关系，默认为：`Cond.LogicalOpt.AND`（与） |
 | opt        | 条件字段之间的运算操作方式，默认为：`Cond.OPT.EQ`（等于）    |
 | field      | 条件字段1                                                    |
-| with       | 条件字段2<br />（支持以 `#` 开头的字符形式参数变量或以 `$` 开头的字符串原样传入） |
-| ignorable  | 是否可被忽略<br />（仅以 `#` 开头的字符形式参数时有效，若为 `true` 则忽略当前条件并不会抛出异常） |
+| with       | 条件字段2                                                    |
+| ignorable  | 是否可被忽略<br />（仅当 `with` 配置项以 `#` 或 `$` 开头的字符形式参数时有效，若为 `true` 则忽略当前条件并不会抛出异常） |
+
+:::tip 关于 with 配置项的说明:
+
+支持以 `#` 开头的字符形式参数变量或以 `$` 开头的字符串表达式，当使用 `$` 表达式时，可以通过分隔符`:` 指定其数据类型，若未指定则默认采用 `string` 类型，目前支持 `int` 、 `long` 、 `float` 、 `double` 和 `string`  类型转换，如：`$int:10`
+
+:::
 
 
 
