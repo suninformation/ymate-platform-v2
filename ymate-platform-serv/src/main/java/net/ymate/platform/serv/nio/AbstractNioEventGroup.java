@@ -20,9 +20,13 @@ import net.ymate.platform.commons.util.ThreadUtils;
 import net.ymate.platform.serv.IClientCfg;
 import net.ymate.platform.serv.IListener;
 import net.ymate.platform.serv.IServerCfg;
+import org.apache.commons.lang.NullArgumentException;
+import org.apache.commons.lang3.StringUtils;
 
 import java.io.IOException;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.RejectedExecutionHandler;
+import java.util.concurrent.ThreadPoolExecutor;
 
 /**
  * @param <CODEC>    编码器类型
@@ -101,14 +105,29 @@ public abstract class AbstractNioEventGroup<CODEC extends INioCodec, LISTENER ex
         session = sessionCreate(cfg);
     }
 
+    protected String buildThreadNamePrefix(String suffix) {
+        if (StringUtils.isBlank(name)) {
+            throw new NullArgumentException(isServer() ? "serverName" : "clientName");
+        }
+        return StringUtils.capitalize(name).concat(isServer() ? "Server" : "Client").concat(StringUtils.trimToEmpty(suffix));
+    }
+
     @Override
     public void start() throws IOException {
         if (started) {
             return;
         }
-        executorService = ThreadUtils.newThreadExecutor(executorCount, threadMaxPoolSize, keepAliveTime, threadQueueSize, DefaultThreadFactory.create("EventGroup-"));
+        RejectedExecutionHandler rejectedExecutionHandler = buildRejectedExecutionHandler();
+        if (rejectedExecutionHandler == null) {
+            rejectedExecutionHandler = new ThreadPoolExecutor.AbortPolicy();
+        }
+        executorService = ThreadUtils.newThreadExecutor(executorCount, threadMaxPoolSize, keepAliveTime, threadQueueSize, DefaultThreadFactory.create(buildThreadNamePrefix("-EventGroup-")), rejectedExecutionHandler);
         //
         started = true;
+    }
+
+    protected RejectedExecutionHandler buildRejectedExecutionHandler() {
+        return null;
     }
 
     @Override

@@ -92,7 +92,7 @@ public class NioUdpEventGroup extends NioEventGroup<AbstractNioUdpListener> {
     protected List<NioEventProcessor<AbstractNioUdpListener>> initProcessors() throws IOException {
         List<NioEventProcessor<AbstractNioUdpListener>> newEventProcessors = new ArrayList<>(selectorCount());
         for (int idx = 0; idx < selectorCount(); idx++) {
-            NioEventProcessor<AbstractNioUdpListener> eventProcessor = eventProcessorCreate(buildProcessorName() + idx);
+            NioEventProcessor<AbstractNioUdpListener> eventProcessor = eventProcessorCreate(buildThreadNamePrefix("-NioUdpEventProcessor-") + idx);
             eventProcessor.start();
             newEventProcessors.add(eventProcessor);
         }

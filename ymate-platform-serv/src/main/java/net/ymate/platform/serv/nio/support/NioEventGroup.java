@@ -22,7 +22,6 @@ import net.ymate.platform.serv.nio.AbstractNioEventGroup;
 import net.ymate.platform.serv.nio.INioCodec;
 import net.ymate.platform.serv.nio.INioEventGroup;
 import net.ymate.platform.serv.nio.INioSession;
-import org.apache.commons.lang3.StringUtils;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -102,14 +101,10 @@ public class NioEventGroup<LISTENER extends IListener<INioSession>> extends Abst
         return eventProcessors;
     }
 
-    protected String buildProcessorName() {
-        return StringUtils.capitalize(name()).concat(isServer() ? "Server" : "Client").concat("-NioEventProcessor-");
-    }
-
     protected List<NioEventProcessor<LISTENER>> initProcessors() throws IOException {
         List<NioEventProcessor<LISTENER>> newEventProcessors = new ArrayList<>(selectorCount);
         for (int idx = 0; idx < selectorCount; idx++) {
-            NioEventProcessor<LISTENER> eventProcessor = new NioEventProcessor<>(this, buildProcessorName() + idx);
+            NioEventProcessor<LISTENER> eventProcessor = new NioEventProcessor<>(this, buildThreadNamePrefix("-NioEventProcessor-") + idx);
             eventProcessor.start();
             newEventProcessors.add(eventProcessor);
         }

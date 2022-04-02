@@ -99,7 +99,7 @@ public class Speedometer implements AutoCloseable {
         }
         this.listener = listener;
         if (!started) {
-            executorService = ThreadUtils.newSingleThreadExecutor(1, DefaultThreadFactory.create("Speedometer"));
+            executorService = ThreadUtils.newSingleThreadExecutor(1, DefaultThreadFactory.create(String.format("%s-Speedometer", StringUtils.capitalize(name))));
             executorService.submit(() -> {
                 try {
                     while (Speedometer.this.listener != null) {

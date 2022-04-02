@@ -47,7 +47,7 @@ public abstract class AbstractHeartbeatService<HEARTBEAT_TYPE> extends AbstractS
 
     @Override
     protected boolean doStart() {
-        setName(String.format("HeartbeatService-%s", StringUtils.defaultIfBlank(client.clientCfg().getClientName(), client.listener().getClass().getSimpleName())));
+        setName(String.format("%sClient-HeartbeatService", StringUtils.capitalize(StringUtils.defaultIfBlank(client.clientCfg().getClientName(), client.listener().getClass().getSimpleName()))));
         int interval = client.clientCfg().getHeartbeatInterval();
         if (interval > 0) {
             heartbeatInterval = interval * DateTimeUtils.SECOND;

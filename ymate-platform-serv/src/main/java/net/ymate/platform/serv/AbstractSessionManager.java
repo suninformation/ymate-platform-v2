@@ -24,6 +24,7 @@ import net.ymate.platform.serv.impl.DefaultSessionIdleChecker;
 import net.ymate.platform.serv.nio.INioCodec;
 import net.ymate.platform.serv.nio.INioSession;
 import org.apache.commons.lang.NullArgumentException;
+import org.apache.commons.lang3.StringUtils;
 
 import java.net.InetSocketAddress;
 import java.util.Collection;
@@ -211,7 +212,7 @@ public abstract class AbstractSessionManager<SESSION_WRAPPER extends ISessionWra
                 idleChecker.initialize(this);
             }
             //
-            idleCheckExecutorService = ThreadUtils.newScheduledThreadPool(1, DefaultThreadFactory.create("SessionIdleChecker-"));
+            idleCheckExecutorService = ThreadUtils.newScheduledThreadPool(1, DefaultThreadFactory.create(String.format("%sServer-SessionIdleChecker", StringUtils.capitalize(StringUtils.defaultIfBlank(serverCfg.getServerName(), server.listener().getClass().getSimpleName())))));
             idleCheckExecutorService.scheduleWithFixedDelay(() -> idleChecker.processIdleSession(sessionWrappers, idleTimeInMillis), DateTimeUtils.SECOND, DateTimeUtils.SECOND, TimeUnit.MILLISECONDS);
         }
     }
