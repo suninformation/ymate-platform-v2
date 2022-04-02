@@ -87,7 +87,7 @@ public final class Where extends QueryHandleAdapter<Where> {
     public Where(Cond cond) {
         owner = cond.owner();
         dataSourceName = cond.dataSourceName();
-        groupBy = GroupBy.create(cond);
+        groupBy = GroupBy.create(owner, dataSourceName);
         orderBy = OrderBy.create(cond);
         this.cond = cond;
     }
