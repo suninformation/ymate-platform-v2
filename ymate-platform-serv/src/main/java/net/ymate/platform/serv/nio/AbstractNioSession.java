@@ -312,7 +312,9 @@ public abstract class AbstractNioSession<LISTENER extends IListener<INioSession>
             while (true) {
                 ByteBuffer buffer = byteBufferQueue.peek();
                 if (buffer == null) {
-                    selectionKey.interestOps(SelectionKey.OP_READ);
+                    if (selectionKey != null) {
+                        selectionKey.interestOps(SelectionKey.OP_READ);
+                    }
                     break;
                 } else {
                     int len = ((SocketChannel) channel()).write(buffer);

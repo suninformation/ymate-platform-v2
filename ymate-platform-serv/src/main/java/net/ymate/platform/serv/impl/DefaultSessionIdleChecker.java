@@ -18,8 +18,6 @@ package net.ymate.platform.serv.impl;
 import net.ymate.platform.serv.ISessionIdleChecker;
 import net.ymate.platform.serv.ISessionManager;
 import net.ymate.platform.serv.ISessionWrapper;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 import java.util.Iterator;
 import java.util.Map;
@@ -31,8 +29,6 @@ import java.util.Map;
  * @author 刘镇 (suninformation@163.com) on 2018/11/22 2:27 AM
  */
 public class DefaultSessionIdleChecker<SESSION_WRAPPER extends ISessionWrapper<?, ?>, SESSION_ID, MESSAGE_TYPE> implements ISessionIdleChecker<SESSION_WRAPPER, SESSION_ID, MESSAGE_TYPE> {
-
-    private static final Log LOG = LogFactory.getLog(DefaultSessionIdleChecker.class);
 
     private ISessionManager<SESSION_WRAPPER, SESSION_ID, MESSAGE_TYPE> sessionManager;
 
@@ -62,8 +58,8 @@ public class DefaultSessionIdleChecker<SESSION_WRAPPER extends ISessionWrapper<?
             if (System.currentTimeMillis() - entry.getValue().getLastTouchTime() > idleTimeInMillis) {
                 iterator.remove();
                 //
-                getSessionManager().closeSessionWrapper(entry.getValue());
-                getSessionManager().getSessionListener().onSessionIdleRemoved(entry.getValue());
+                sessionManager.closeSessionWrapper(entry.getValue());
+                sessionManager.getSessionListener().onSessionIdleRemoved(entry.getValue());
             }
         }
     }

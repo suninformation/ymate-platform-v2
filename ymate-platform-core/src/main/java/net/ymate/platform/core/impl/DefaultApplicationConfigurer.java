@@ -159,10 +159,22 @@ public final class DefaultApplicationConfigurer extends AbstractApplicationConfi
                 } catch (Exception ignored) {
                 }
             }
-            if (i18nEventHandler != null && LOG.isInfoEnabled()) {
-                LOG.info(String.format("Using I18nEventHandler class [%s].", i18nEventHandler.getClass().getName()));
-            }
             setI18nEventHandler(i18nEventHandler);
+            //
+            if (LOG.isInfoEnabled()) {
+                if (proxyFactory != null) {
+                    LOG.info(String.format("Using IProxyFactory class [%s].", proxyFactory.getClass().getName()));
+                }
+                if (beanLoadFactory != null) {
+                    LOG.info(String.format("Using IBeanLoadFactory class [%s].", beanLoadFactory.getClass().getName()));
+                }
+                if (passwordProcessor != null) {
+                    LOG.info(String.format("Using IPasswordProcessor class [%s].", passwordProcessor.getClass().getName()));
+                }
+                if (i18nEventHandler != null) {
+                    LOG.info(String.format("Using I18nEventHandler class [%s].", i18nEventHandler.getClass().getName()));
+                }
+            }
             //
             addPackageNames(packageNames);
             addExcludedPackageNames(excludedPackageNames);

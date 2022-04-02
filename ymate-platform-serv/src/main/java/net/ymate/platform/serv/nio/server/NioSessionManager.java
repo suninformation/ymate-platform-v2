@@ -140,8 +140,11 @@ public class NioSessionManager<SESSION_WRAPPER extends NioSessionWrapper, MESSAG
     public boolean sendTo(String sessionId, MESSAGE_TYPE message) throws IOException {
         SESSION_WRAPPER wrapper = sessionWrapper(sessionId);
         if (wrapper != null) {
-            wrapper.getSession().send(message);
-            return true;
+            INioSession session = wrapper.getSession();
+            if (session.isConnected()) {
+                session.send(message);
+                return true;
+            }
         }
         return false;
     }
