@@ -2597,6 +2597,19 @@ IResultSet<UserEntity> users = JDBC.get().openSession(new IDatabaseSessionExecut
 
 在编写 SQL 语句时，经常会用到由数据库提供（或根据业务自定义）的一系列函数来处理数据查询等操作，为了能够像编写 Java 代码一样在对象查询的 SQL 语句中使用函数，JDBC模块提供了一种简单的函数封装方法，同时也封装了一些比较常用的函数（目前这些函数封装主要针对 MySQL 数据库实现，其它类型数据库的支持也将在未来版本中逐步完善），其中主要包括：常规运算、数学计算、字符操作、聚合分组、日期时间和流程控制等相关函数。
 
+#### 常规运算函数：Func.Operators
+
+| 函数     | 代码                                                         | 描述 |
+| -------- | ------------------------------------------------------------ | ---- |
+| brackets | `Func.operators.brackets("x")`                               | 括号 |
+| quotes   | `Func.operators.quotes("x")`                                 | 引号 |
+| addition | `Func.operators.addition(n)`<br />`Func.operators.addition("x")`<br />`Func.operators.addition("x", n)`<br />`Func.operators.addition("x", 'y')` | 加法 |
+| subtract | `Func.operators.subtract(n)`<br />`Func.operators.subtract("x")`<br />`Func.operators.subtract("x", n)`<br />`Func.operators.subtract(n, 'x')`<br />`Func.operators.subtract("x", 'y')` | 减法 |
+| multiply | `Func.operators.multiply(n)`<br />`Func.operators.multiply("x")`<br />`Func.operators.multiply("x", n)`<br />`Func.operators.multiply("x", 'y')` | 乘法 |
+| divide   | `Func.operators.divide(n)`<br />`Func.operators.divide("x")`<br />`Func.operators.divide("x", n)`<br />`Func.operators.divide(n, 'x')`<br />`Func.operators.divide("x", 'y')` | 除法 |
+
+
+
 #### 数学计算类函数：Func.Math
 
 | 函数     | 代码                                                        | 描述                                                         |
