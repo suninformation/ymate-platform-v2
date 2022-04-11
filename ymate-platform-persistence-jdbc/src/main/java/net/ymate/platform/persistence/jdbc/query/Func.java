@@ -1780,10 +1780,10 @@ public interface Func {
         }
 
         /**
-         * 括号
+         * 引号
          *
          * @param content 内容
-         * @return 返回加括号的内容
+         * @return 返回加引号的内容
          */
         default IFunction quotes(IFunction content) {
             return create().quotes().field(content).quotes();
@@ -1803,8 +1803,8 @@ public interface Func {
             return addition(param.toString());
         }
 
-        default IFunction addition(String paramOne, Number param) {
-            return addition(paramOne, param.toString());
+        default IFunction addition(String paramOne, Number paramTwo) {
+            return addition(paramOne, paramTwo.toString());
         }
 
         /**
@@ -1857,6 +1857,10 @@ public interface Func {
             return subtract(paramOne, paramTwo.toString());
         }
 
+        default IFunction subtract(Number paramOne, String paramTwo) {
+            return subtract(paramOne.toString(), paramTwo);
+        }
+
         /**
          * 减法
          *
@@ -1869,6 +1873,10 @@ public interface Func {
 
         default IFunction subtract(String paramOne, IFunction paramTwo) {
             return subtract(paramOne, paramTwo.build()).param(paramTwo.params());
+        }
+
+        default IFunction subtract(IFunction paramOne, String paramTwo) {
+            return subtract(paramOne.build(), paramTwo).param(paramOne.params());
         }
 
         default IFunction subtract(IFunction paramOne, IFunction paramTwo) {
@@ -1957,6 +1965,10 @@ public interface Func {
             return divide(paramOne, paramTwo.toString());
         }
 
+        default IFunction divide(Number paramOne, String paramTwo) {
+            return divide(paramOne.toString(), paramTwo);
+        }
+
         /**
          * 除法
          *
@@ -1969,6 +1981,10 @@ public interface Func {
 
         default IFunction divide(String paramOne, IFunction paramTwo) {
             return divide(paramOne, paramTwo.build()).param(paramTwo.params());
+        }
+
+        default IFunction divide(IFunction paramOne, String paramTwo) {
+            return divide(paramOne.build(), paramTwo).param(paramOne.params());
         }
 
         default IFunction divide(IFunction paramOne, IFunction paramTwo) {
