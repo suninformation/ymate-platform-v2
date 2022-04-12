@@ -13,7 +13,7 @@ slug: serv
 <dependency>
     <groupId>net.ymate.platform</groupId>
     <artifactId>ymate-platform-serv</artifactId>
-    <version>2.1.0</version>
+    <version>2.1.1</version>
 </dependency>
 ```
 

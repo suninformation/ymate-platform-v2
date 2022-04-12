@@ -15,7 +15,7 @@ slug: commons
 <dependency>
     <groupId>net.ymate.platform</groupId>
     <artifactId>ymate-platform-commons</artifactId>
-    <version>2.1.0</version>
+    <version>2.1.1</version>
 </dependency>
 ```
 
@@ -466,7 +466,7 @@ JSON 包装器，为了让不同的第三方 JSON 解析器拥有统一的 API �
   <dependency>
       <groupId>com.alibaba</groupId>
       <artifactId>fastjson</artifactId>
-      <version>1.2.78</version>
+      <version>1.2.80</version>
   </dependency>
   ```
 
@@ -476,7 +476,7 @@ JSON 包装器，为了让不同的第三方 JSON 解析器拥有统一的 API �
   <dependency>
       <groupId>com.google.code.gson</groupId>
       <artifactId>gson</artifactId>
-      <version>2.8.9</version>
+      <version>2.9.0</version>
   </dependency>
   ```
 
@@ -486,7 +486,7 @@ JSON 包装器，为了让不同的第三方 JSON 解析器拥有统一的 API �
   <dependency>
       <groupId>com.fasterxml.jackson.datatype</groupId>
       <artifactId>jackson-datatype-jdk8</artifactId>
-      <version>2.13.1</version>
+      <version>2.13.2</version>
   </dependency>
   ```
 
@@ -1795,7 +1795,7 @@ result = polygon.on(new GeoPoint(116.69, 39.89));
 <dependency>
     <groupId>net.coobird</groupId>
     <artifactId>thumbnailator</artifactId>
-    <version>0.4.15</version>
+    <version>0.4.17</version>
 </dependency>
 ```
 
@@ -1857,7 +1857,7 @@ Webp 是 Google 推出的一种新型图片格式，相比于传统的 PNG 和 J
 
 由于 Webp 格式推出比较晚，JDK 内置的图片编解码库对此并不支持。
 
-这里推荐大家使用开源项目：https://github.com/nintha/webp-imageio-core
+这里推荐大家使用开源项目：[https://github.com/nintha/webp-imageio-core](https://github.com/nintha/webp-imageio-core)
 
 由于这个项目并未发布到 Maven 中央仓库，所以需要手动下载并安装到本地仓库，执行命令如下：
 
@@ -2504,7 +2504,7 @@ Excel 文件数据导入助手类，用于辅助操作和分析 Excel 文件中�
 <dependency>
     <groupId>org.apache.poi</groupId>
     <artifactId>poi-ooxml</artifactId>
-    <version>5.1.0</version>
+    <version>5.2.2</version>
 </dependency>
 ```
 
@@ -2560,7 +2560,7 @@ public class Demo {
 <dependency>
     <groupId>org.apache.poi</groupId>
     <artifactId>poi-ooxml</artifactId>
-    <version>5.1.0</version>
+    <version>5.2.2</version>
 </dependency>
 <dependency>
     <groupId>org.jxls</groupId>
@@ -3343,7 +3343,7 @@ XStream 辅助构建工具类，使用时需在工程中引入以下依赖包：
 <dependency>
     <groupId>com.thoughtworks.xstream</groupId>
     <artifactId>xstream</artifactId>
-    <version>1.4.18</version>
+    <version>1.4.19</version>
 </dependency>
 ```
 

@@ -15,7 +15,7 @@ YMP 框架主要是由核心（Core）和若干模块（Module）组成，核心
 <dependency>
     <groupId>net.ymate.platform</groupId>
     <artifactId>ymate-platform-core</artifactId>
-    <version>2.1.0</version>
+    <version>2.1.1</version>
 </dependency>
 ```
 
@@ -781,7 +781,7 @@ YMP 框架的 `AOP` 是基于代理（`Proxy`）技术实现的方法拦截，�
 <dependency>
     <groupId>net.ymate.platform</groupId>
     <artifactId>ymate-platform-starter</artifactId>
-    <version>2.1.0</version>
+    <version>2.1.1</version>
 </dependency>
 ```
 
@@ -1449,7 +1449,7 @@ src
 <plugin>
     <groupId>net.ymate.maven.plugins</groupId>
     <artifactId>ymate-maven-plugin</artifactId>
-    <version>1.0.0</version>
+    <version>1.0.1</version>
 </plugin>
 ```
 
@@ -1457,7 +1457,7 @@ import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
 :::tip
-本文使用的 YMP 框架 Maven 插件集版本为 `1.0.0` ，了解更多内容请访问： 
+本文使用的 YMP 框架 Maven 插件集版本为 `1.0.1` ，了解更多内容请访问： 
 
 <Tabs
 defaultValue="github"

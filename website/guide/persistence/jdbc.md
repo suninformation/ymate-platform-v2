@@ -27,7 +27,7 @@ JDBC 持久化模块针对关系型数据库（RDBMS）数据存取的一套简�
 <dependency>
     <groupId>net.ymate.platform</groupId>
     <artifactId>ymate-platform-persistence-jdbc</artifactId>
-    <version>2.1.0</version>
+    <version>2.1.1</version>
 </dependency>
 ```
 
@@ -1185,17 +1185,17 @@ ymp.params.jdbc.package_name=
 <plugin>
     <groupId>net.ymate.maven.plugins</groupId>
     <artifactId>ymate-maven-plugin</artifactId>
-    <version>1.0.0</version>
+    <version>1.0.1</version>
 </plugin>
 ```
 
-插件中默认已经包含 `mysql-connector-java-5.1.48` 驱动，若需要其它版本或其它类型数据库驱动时，需要在插件中配置相关依赖，如：
+插件中默认已经包含 `mysql-connector-java-5.1.49` 驱动，若需要其它版本或其它类型数据库驱动时，需要在插件中配置相关依赖，如：
 
 ```xml
 <plugin>
     <groupId>net.ymate.maven.plugins</groupId>
     <artifactId>ymate-maven-plugin</artifactId>
-    <version>1.0.0</version>
+    <version>1.0.1</version>
     <dependencies>
         <dependency>
             <groupId>mysql</groupId>

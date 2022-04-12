@@ -7,6 +7,8 @@
 *.classpath
 *.iml
 
+*.vscode/
+
 bin/
 lib/
 target/
