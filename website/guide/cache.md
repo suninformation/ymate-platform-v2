@@ -27,7 +27,7 @@ slug: cache
 <dependency>
     <groupId>net.ymate.platform</groupId>
     <artifactId>ymate-platform-persistence-redis</artifactId>
-    <version>2.1.0</version>
+    <version>2.1.1</version>
 </dependency>
 ```
 

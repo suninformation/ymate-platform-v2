@@ -25,7 +25,6 @@ const ArchivedVersionsDropdownItems = Object.entries(VersionsArchived).splice(
     },
     scripts: [
         {src: 'https://hm.baidu.com/hm.js?d732d09a2ccea77b26ad0581cd9bd91c', async: true},
-        {src: 'https://s4.cnzz.com/z_stat.php?id=1254908110&web_id=1254908110', async: true},
     ],
     i18n: {
         defaultLocale: 'zh-CN',
