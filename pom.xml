@@ -202,7 +202,7 @@
             <dependency>
                 <groupId>org.javassist</groupId>
                 <artifactId>javassist</artifactId>
-                <version>3.28.0-GA</version>
+                <version>3.29.0-GA</version>
                 <scope>provided</scope>
             </dependency>
             <dependency>
@@ -218,7 +218,7 @@
             <dependency>
                 <groupId>com.alibaba</groupId>
                 <artifactId>fastjson</artifactId>
-                <version>1.2.80</version>
+                <version>1.2.83</version>
             </dependency>
             <dependency>
                 <groupId>net.sf.ehcache</groupId>
@@ -264,7 +264,7 @@
             <dependency>
                 <groupId>com.alibaba</groupId>
                 <artifactId>druid</artifactId>
-                <version>1.2.8</version>
+                <version>1.2.9</version>
             </dependency>
             <dependency>
                 <groupId>com.zaxxer</groupId>
@@ -274,7 +274,7 @@
             <dependency>
                 <groupId>com.github.jsqlparser</groupId>
                 <artifactId>jsqlparser</artifactId>
-                <version>4.3</version>
+                <version>4.4</version>
             </dependency>
             <dependency>
                 <groupId>redis.clients</groupId>
@@ -284,7 +284,7 @@
             <dependency>
                 <groupId>org.mongodb</groupId>
                 <artifactId>mongodb-driver</artifactId>
-                <version>3.12.10</version>
+                <version>3.12.11</version>
             </dependency>
             <dependency>
                 <groupId>javax.servlet</groupId>
@@ -391,7 +391,7 @@
             <dependency>
                 <groupId>com.caucho</groupId>
                 <artifactId>hessian</artifactId>
-                <version>4.0.65</version>
+                <version>4.0.66</version>
                 <scope>provided</scope>
             </dependency>
         </dependencies>
