@@ -822,13 +822,13 @@ public abstract class BaseEntity<Entity extends IEntity, PK extends Serializable
         return (Entity) this;
     }
 
-    public <T extends BaseEntity> EntityStateWrapper<T> stateWrapper() throws Exception {
+    public EntityStateWrapper<Entity> stateWrapper() throws Exception {
         return stateWrapper(true);
     }
 
     @SuppressWarnings("unchecked")
-    public <T extends BaseEntity> EntityStateWrapper<T> stateWrapper(boolean ignoreNull) throws Exception {
-        return EntityStateWrapper.bind(dbOwner, (T) this, ignoreNull);
+    public EntityStateWrapper<Entity> stateWrapper(boolean ignoreNull) throws Exception {
+        return EntityStateWrapper.bind(dbOwner, (Entity) this, ignoreNull);
     }
 
     @Override

@@ -15,6 +15,7 @@
  */
 package net.ymate.platform.persistence.jdbc.support;
 
+import net.ymate.platform.core.beans.proxy.IProxyFactory;
 import net.ymate.platform.core.beans.support.PropertyStateSupport;
 import net.ymate.platform.core.persistence.Fields;
 import net.ymate.platform.core.persistence.base.IEntity;
@@ -22,6 +23,7 @@ import net.ymate.platform.persistence.jdbc.IDatabase;
 import org.apache.commons.lang3.ArrayUtils;
 
 import java.util.Arrays;
+import java.util.HashSet;
 
 /**
  * @param <Entity> 数据实体类型
@@ -45,11 +47,20 @@ public final class EntityStateWrapper<Entity extends IEntity> {
 
     private EntityStateWrapper(IDatabase owner, Entity entity, boolean ignoreNull) throws Exception {
         this.owner = owner;
-        this.stateSupport = PropertyStateSupport.create(entity, ignoreNull);
+        this.stateSupport = PropertyStateSupport.create(owner != null ? owner.getOwner().getConfigureFactory().getConfigurer().getProxyFactory() : null, entity, ignoreNull);
     }
 
     public PropertyStateSupport<Entity> getStateSupport() {
         return stateSupport;
+    }
+
+    public IProxyFactory getProxyFactory() {
+        return stateSupport.getProxyFactory();
+    }
+
+    public EntityStateWrapper<Entity> setProxyFactory(IProxyFactory proxyFactory) {
+        stateSupport.setProxyFactory(proxyFactory);
+        return this;
     }
 
     public Entity getEntity() {
@@ -57,7 +68,7 @@ public final class EntityStateWrapper<Entity extends IEntity> {
     }
 
     public Entity updateNotIncluded(Fields fields) throws Exception {
-        return update(propertyNames -> !Arrays.asList(propertyNames).containsAll(fields.fields()));
+        return update(propertyNames -> !new HashSet<>(Arrays.asList(propertyNames)).containsAll(fields.fields()));
     }
 
     public Entity update() throws Exception {

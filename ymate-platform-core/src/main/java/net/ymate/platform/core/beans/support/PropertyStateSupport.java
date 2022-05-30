@@ -15,10 +15,10 @@
  */
 package net.ymate.platform.core.beans.support;
 
-import net.sf.cglib.proxy.Enhancer;
-import net.sf.cglib.proxy.MethodInterceptor;
 import net.ymate.platform.commons.util.ClassUtils;
 import net.ymate.platform.core.beans.annotation.PropertyState;
+import net.ymate.platform.core.beans.proxy.IProxyFactory;
+import net.ymate.platform.core.beans.proxy.impl.DefaultProxyFactory;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 
@@ -33,6 +33,8 @@ import java.util.*;
  */
 public class PropertyStateSupport<T> {
 
+    private IProxyFactory proxyFactory;
+
     private final T source;
 
     private T bound;
@@ -46,18 +48,27 @@ public class PropertyStateSupport<T> {
     private final Map<String, PropertyStateMeta> propertyStates = new HashMap<>();
 
     public static <T> PropertyStateSupport<T> create(T source) throws Exception {
-        return new PropertyStateSupport<>(source);
+        return new PropertyStateSupport<>(null, source, false);
     }
 
     public static <T> PropertyStateSupport<T> create(T source, boolean ignoreNull) throws Exception {
-        return new PropertyStateSupport<>(source, ignoreNull);
+        return new PropertyStateSupport<>(null, source, ignoreNull);
+    }
+
+    public static <T> PropertyStateSupport<T> create(IProxyFactory proxyFactory, T source, boolean ignoreNull) throws Exception {
+        return new PropertyStateSupport<>(proxyFactory, source, ignoreNull);
     }
 
     public PropertyStateSupport(T source) throws Exception {
-        this(source, false);
+        this(null, source, false);
     }
 
     public PropertyStateSupport(T source, boolean ignoreNull) throws Exception {
+        this(null, source, ignoreNull);
+    }
+
+    public PropertyStateSupport(IProxyFactory proxyFactory, T source, boolean ignoreNull) throws Exception {
+        this.proxyFactory = proxyFactory;
         this.source = source;
         targetClass = source.getClass();
         this.ignoreNull = ignoreNull;
@@ -76,19 +87,38 @@ public class PropertyStateSupport<T> {
         }
     }
 
-    @SuppressWarnings("unchecked")
+    public IProxyFactory getProxyFactory() {
+        return proxyFactory;
+    }
+
+    public PropertyStateSupport<T> setProxyFactory(IProxyFactory proxyFactory) {
+        this.proxyFactory = proxyFactory;
+        return this;
+    }
+
+    private T doBind(IProxyFactory proxyFactory) {
+        return ClassUtils.wrapper(source).duplicate(proxyFactory.createProxy(targetClass, (targetObject, targetMethod, methodParams) -> {
+            PropertyStateMeta stateMeta = propertyStates.get(targetMethod.getName());
+            if (stateMeta != null && ArrayUtils.isNotEmpty(methodParams) && !Objects.equals(stateMeta.getOriginalValue(), methodParams[0])) {
+                if (ignoreNull && methodParams[0] == null) {
+                    methodParams[0] = stateMeta.getOriginalValue();
+                }
+                stateMeta.setNewValue(methodParams[0]);
+            }
+            return methodParams;
+        }));
+    }
+
     public T bind() {
         if (bound == null) {
-            bound = (T) ClassUtils.wrapper(source).duplicate(Enhancer.create(targetClass, (MethodInterceptor) (targetObject, targetMethod, methodParams, methodProxy) -> {
-                PropertyStateMeta stateMeta = propertyStates.get(targetMethod.getName());
-                if (stateMeta != null && ArrayUtils.isNotEmpty(methodParams) && !Objects.equals(stateMeta.getOriginalValue(), methodParams[0])) {
-                    if (ignoreNull && methodParams[0] == null) {
-                        methodParams[0] = stateMeta.getOriginalValue();
-                    }
-                    stateMeta.setNewValue(methodParams[0]);
+            if (proxyFactory == null) {
+                try (IProxyFactory f = new DefaultProxyFactory()) {
+                    bound = doBind(f);
+                } catch (Exception ignored) {
                 }
-                return methodProxy.invokeSuper(targetObject, methodParams);
-            }));
+            } else {
+                bound = doBind(proxyFactory);
+            }
         }
         return bound;
     }
@@ -111,7 +141,8 @@ public class PropertyStateSupport<T> {
                 }
                 Method method = bound.getClass().getMethod("set" + StringUtils.capitalize(key), field.getType());
                 method.invoke(bound, value);
-            } catch (IllegalAccessException | IllegalArgumentException | NoSuchMethodException | SecurityException | InvocationTargetException ignored) {
+            } catch (IllegalAccessException | IllegalArgumentException | NoSuchMethodException | SecurityException |
+                     InvocationTargetException ignored) {
             }
         });
         return bound;
