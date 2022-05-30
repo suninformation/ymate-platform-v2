@@ -19,6 +19,7 @@ import net.ymate.platform.core.IApplication;
 import net.ymate.platform.core.beans.proxy.IProxy;
 import net.ymate.platform.core.beans.proxy.IProxyFactory;
 import net.ymate.platform.core.beans.proxy.IProxyFilter;
+import net.ymate.platform.core.beans.proxy.IProxyMethodParamHandler;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -89,6 +90,11 @@ public class NoOpProxyFactory implements IProxyFactory {
 
     @Override
     public <T> T createProxy(Class<?> targetClass, List<IProxy> proxies) {
+        return null;
+    }
+
+    @Override
+    public <T> T createProxy(Class<?> targetClass, IProxyMethodParamHandler methodParamHandler) {
         return null;
     }
 }

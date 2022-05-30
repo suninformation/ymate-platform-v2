@@ -15,11 +15,13 @@
  */
 package net.ymate.platform.core.beans.proxy.impl;
 
+import javassist.util.proxy.MethodHandler;
 import javassist.util.proxy.Proxy;
 import javassist.util.proxy.ProxyFactory;
 import net.ymate.platform.core.beans.proxy.AbstractProxyChain;
 import net.ymate.platform.core.beans.proxy.AbstractProxyFactory;
 import net.ymate.platform.core.beans.proxy.IProxy;
+import net.ymate.platform.core.beans.proxy.IProxyMethodParamHandler;
 
 import java.util.List;
 
@@ -29,23 +31,32 @@ import java.util.List;
  */
 public class JavassistProxyFactory extends AbstractProxyFactory {
 
-    @Override
     @SuppressWarnings("unchecked")
-    public <T> T createProxy(Class<?> targetClass, List<IProxy> proxies) {
+    private <T> T doCreateProxy(Class<?> targetClass, MethodHandler methodHandler) {
         ProxyFactory factory = new ProxyFactory();
         factory.setSuperclass(targetClass);
         Class<?> clazz = factory.createClass();
         try {
             Object targetObj = clazz.newInstance();
-            ((Proxy) targetObj).setHandler((self, thisMethod, proceed, args) -> new AbstractProxyChain(JavassistProxyFactory.this, targetClass, self, thisMethod, args, proxies) {
-                @Override
-                protected Object doInvoke() throws Throwable {
-                    return proceed.invoke(getTargetObject(), getMethodParams());
-                }
-            }.doProxyChain());
+            ((Proxy) targetObj).setHandler(methodHandler);
             return (T) targetObj;
         } catch (IllegalAccessException | InstantiationException e) {
             throw new Error(e);
         }
+    }
+
+    @Override
+    public <T> T createProxy(Class<?> targetClass, List<IProxy> proxies) {
+        return doCreateProxy(targetClass, (self, thisMethod, proceed, args) -> new AbstractProxyChain(JavassistProxyFactory.this, targetClass, self, thisMethod, args, proxies) {
+            @Override
+            protected Object doInvoke() throws Throwable {
+                return proceed.invoke(getTargetObject(), getMethodParams());
+            }
+        }.doProxyChain());
+    }
+
+    @Override
+    public <T> T createProxy(Class<?> targetClass, IProxyMethodParamHandler methodParamHandler) {
+        return doCreateProxy(targetClass, (self, thisMethod, proceed, args) -> proceed.invoke(self, methodParamHandler.handle(self, thisMethod, args)));
     }
 }

@@ -20,6 +20,7 @@ import net.sf.cglib.proxy.MethodInterceptor;
 import net.ymate.platform.core.beans.proxy.AbstractProxyChain;
 import net.ymate.platform.core.beans.proxy.AbstractProxyFactory;
 import net.ymate.platform.core.beans.proxy.IProxy;
+import net.ymate.platform.core.beans.proxy.IProxyMethodParamHandler;
 
 import java.util.List;
 
@@ -42,5 +43,11 @@ public class DefaultProxyFactory extends AbstractProxyFactory {
                 return methodProxy.invokeSuper(getTargetObject(), getMethodParams());
             }
         }.doProxyChain());
+    }
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public <T> T createProxy(Class<?> targetClass, IProxyMethodParamHandler methodParamHandler) {
+        return (T) Enhancer.create(targetClass, (MethodInterceptor) (targetObject, targetMethod, methodParams, methodProxy) -> methodProxy.invokeSuper(targetObject, methodParamHandler.handle(targetObject, targetMethod, methodParams)));
     }
 }

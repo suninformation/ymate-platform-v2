@@ -87,4 +87,15 @@ public interface IProxyFactory extends IInitialization<IApplication>, IDestroyab
      * @return 返回创建的代理对象
      */
     <T> T createProxy(Class<?> targetClass, List<IProxy> proxies);
+
+    /**
+     * 创建方法参数代理对象
+     *
+     * @param targetClass        目标类
+     * @param methodParamHandler 方法参数处理器
+     * @param <T>                目标类型
+     * @return 返回创建的方法参数代理对象
+     * @since 2.1.2
+     */
+    <T> T createProxy(Class<?> targetClass, IProxyMethodParamHandler methodParamHandler);
 }
