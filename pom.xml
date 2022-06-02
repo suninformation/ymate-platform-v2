@@ -196,7 +196,7 @@
             </dependency>
             <dependency>
                 <groupId>cglib</groupId>
-                <artifactId>cglib</artifactId>
+                <artifactId>cglib-nodep</artifactId>
                 <version>3.3.0</version>
             </dependency>
             <dependency>
@@ -208,7 +208,7 @@
             <dependency>
                 <groupId>com.fasterxml.jackson.datatype</groupId>
                 <artifactId>jackson-datatype-jdk8</artifactId>
-                <version>2.13.2</version>
+                <version>2.13.3</version>
             </dependency>
             <dependency>
                 <groupId>com.google.code.gson</groupId>
@@ -361,13 +361,13 @@
             <dependency>
                 <groupId>com.google.zxing</groupId>
                 <artifactId>core</artifactId>
-                <version>3.4.1</version>
+                <version>3.5.0</version>
                 <scope>provided</scope>
             </dependency>
             <dependency>
                 <groupId>com.google.zxing</groupId>
                 <artifactId>javase</artifactId>
-                <version>3.4.1</version>
+                <version>3.5.0</version>
                 <scope>provided</scope>
             </dependency>
             <dependency>
