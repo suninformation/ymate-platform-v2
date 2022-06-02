@@ -48,6 +48,8 @@ public class ClassUtils {
 
     private static final String ANONYMOUS_CLASS_FLAG = "$$";
 
+    private static final String JAVASSIST_PROXY_CLASS_FLAG = "_$$_";
+
     public static final String PACKAGE_INFO = "package-info";
 
     public static final String PACKAGE_SEPARATOR = ".";
@@ -140,7 +142,8 @@ public class ClassUtils {
                         return (T) implClass.getConstructor(parameterTypes).newInstance(initArgs);
                     }
                     return (T) implClass.newInstance();
-                } catch (IllegalAccessException | IllegalArgumentException | InstantiationException | NoSuchMethodException | SecurityException | InvocationTargetException e) {
+                } catch (IllegalAccessException | IllegalArgumentException | InstantiationException | NoSuchMethodException | SecurityException |
+                         InvocationTargetException e) {
                     boolean flag = true;
                     if (e instanceof NoSuchMethodException) {
                         flag = allowNoSuchMethod;
@@ -315,9 +318,15 @@ public class ClassUtils {
 
     public static <A extends Annotation> A getAnnotation(Class<?> targetClass, Class<A> annotationClass) {
         A annotation = targetClass.getAnnotation(annotationClass);
-        if (annotation == null && StringUtils.contains(targetClass.getName(), ANONYMOUS_CLASS_FLAG)) {
+        if (annotation == null) {
             try {
-                Class<?> clazz = loadClass(StringUtils.substringBefore(targetClass.getName(), ANONYMOUS_CLASS_FLAG), targetClass);
+                String targetClassName = targetClass.getName();
+                if (StringUtils.contains(targetClassName, JAVASSIST_PROXY_CLASS_FLAG)) {
+                    targetClassName = StringUtils.substringBefore(targetClassName, JAVASSIST_PROXY_CLASS_FLAG);
+                } else if (StringUtils.contains(targetClassName, ANONYMOUS_CLASS_FLAG)) {
+                    targetClassName = StringUtils.substringBefore(targetClassName, ANONYMOUS_CLASS_FLAG);
+                }
+                Class<?> clazz = loadClass(targetClassName, targetClass);
                 if (clazz != null) {
                     annotation = clazz.getAnnotation(annotationClass);
                 }
