@@ -231,13 +231,15 @@ public final class Cfgs implements IConfig {
     }
 
     private Class<? extends IConfigurationProvider> doParseConfigurationProviderClass(String cfgFileName) {
-        String extName = FileUtils.getExtName(cfgFileName);
-        if (StringUtils.equalsIgnoreCase(extName, FILE_SUFFIX_XML)) {
-            return DefaultConfigurationProvider.class;
-        } else if (StringUtils.equalsIgnoreCase(extName, FILE_SUFFIX_PROPERTIES)) {
-            return PropertyConfigurationProvider.class;
-        } else if (StringUtils.equalsAnyIgnoreCase(extName, FILE_SUFFIX_JSON)) {
-            return JSONConfigurationProvider.class;
+        if (StringUtils.isNotBlank(cfgFileName)) {
+            String extName = FileUtils.getExtName(cfgFileName);
+            if (StringUtils.equalsIgnoreCase(extName, FILE_SUFFIX_XML)) {
+                return DefaultConfigurationProvider.class;
+            } else if (StringUtils.equalsIgnoreCase(extName, FILE_SUFFIX_PROPERTIES)) {
+                return PropertyConfigurationProvider.class;
+            } else if (StringUtils.equalsAnyIgnoreCase(extName, FILE_SUFFIX_JSON)) {
+                return JSONConfigurationProvider.class;
+            }
         }
         return config.getConfigurationProviderClass();
     }
