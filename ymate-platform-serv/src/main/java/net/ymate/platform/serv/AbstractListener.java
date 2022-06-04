@@ -15,7 +15,6 @@
  */
 package net.ymate.platform.serv;
 
-import net.ymate.platform.commons.util.RuntimeUtils;
 import net.ymate.platform.serv.nio.INioSession;
 
 import java.io.IOException;
@@ -35,7 +34,7 @@ public abstract class AbstractListener<SESSION_TYPE extends INioSession> impleme
         if (e instanceof IOException) {
             throw (IOException) e;
         } else {
-            throw RuntimeUtils.wrapRuntimeThrow(e);
+            throw new IOException(e.getMessage(), e);
         }
     }
 }
