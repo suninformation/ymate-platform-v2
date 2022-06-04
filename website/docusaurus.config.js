@@ -102,16 +102,16 @@ const ArchivedVersionsDropdownItems = Object.entries(VersionsArchived).splice(
                 blogRouteBasePath: ['/blog'],
                 docsDir: ['guide', 'modules'],
                 blogDir: ['blog'],
-                translations: {
-                    'search_placeholder': '搜索',
-                    'see_all_results': '查看全部结果',
-                    'no_results': '无结果',
-                    'search_results_for': '搜索结果： \'{{ keyword }}\'',
-                    'search_the_documentation': '搜索此文档',
-                    'count_documents_found': '找到 {{ count }} 个相关内容',
-                    'count_documents_found_plural': '找到 {{ count }} 个相文内容',
-                    'no_documents_were_found': '未找到相关内容'
-                }
+                // translations: {
+                //     'search_placeholder': '搜索',
+                //     'see_all_results': '查看全部结果',
+                //     'no_results': '无结果',
+                //     'search_results_for': '搜索结果： \'{{ keyword }}\'',
+                //     'search_the_documentation': '搜索此文档',
+                //     'count_documents_found': '找到 {{ count }} 个相关内容',
+                //     'count_documents_found_plural': '找到 {{ count }} 个相文内容',
+                //     'no_documents_were_found': '未找到相关内容'
+                // }
             },
         ],
     ],
@@ -123,7 +123,11 @@ const ArchivedVersionsDropdownItems = Object.entries(VersionsArchived).splice(
             metadata: [
                 {name: 'author', content: 'suninformation'}
             ],
-            hideableSidebar: true,
+            docs: {
+                sidebar: {
+                    hideable: true,
+                },
+            },
             navbar: {
                 title: 'YMP',
                 logo: {
