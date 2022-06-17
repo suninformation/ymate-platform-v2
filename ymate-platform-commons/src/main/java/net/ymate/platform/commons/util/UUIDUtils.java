@@ -18,7 +18,7 @@ package net.ymate.platform.commons.util;
 import net.ymate.platform.commons.lang.PairObject;
 import org.apache.commons.lang3.StringUtils;
 
-import java.util.Random;
+import java.security.SecureRandom;
 import java.util.UUID;
 
 /**
@@ -26,13 +26,16 @@ import java.util.UUID;
  *
  * @author 刘镇 (suninformation@163.com) on 2010-10-20 下午02:02:40
  */
-public class UUIDUtils {
+public final class UUIDUtils {
 
-    private final static String RAND_CHARS = "0123456789abcdefghigklmnopqrstuvtxyzABCDEFGHIGKLMNOPQRSTUVWXYZ";
+    private static final String RAND_CHARS = "0123456789abcdefghigklmnopqrstuvtxyzABCDEFGHIGKLMNOPQRSTUVWXYZ";
 
-    private final static String CHARS_64 = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789^~abcdefghijklmnopqrstuvwxyz";
+    private static final String CHARS_64 = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789^~abcdefghijklmnopqrstuvwxyz";
 
-    private final static Random RANDOM = new Random(System.currentTimeMillis());
+    private static final SecureRandom RANDOM = new SecureRandom();
+
+    private UUIDUtils() {
+    }
 
     /**
      * @param o 预加密字符串
@@ -40,7 +43,7 @@ public class UUIDUtils {
      */
     public static String generateCharUUID(Object o) {
         PairObject<Long, Long> ids = generateIds(o);
-        return convert(ids.getKey(), 6, CHARS_64) + convert(ids.getValue(), 6, CHARS_64).replaceAll(StringUtils.SPACE, "o");
+        return convert(ids.getKey()) + convert(ids.getValue()).replaceAll(StringUtils.SPACE, "o");
     }
 
     public static String generateNumberUUID(Object o) {
@@ -59,7 +62,7 @@ public class UUIDUtils {
     public static String generateRandomUUID() {
         long id1 = System.currentTimeMillis() & 0x3FFFFFFFL;
         long id3 = randomLong(-0x80000000L, 0x80000000L) & 0x3FFFFFFFL;
-        return convert(id1, 6, CHARS_64) + convert(id3, 6, CHARS_64).replaceAll(StringUtils.SPACE, "o");
+        return convert(id1) + convert(id3).replaceAll(StringUtils.SPACE, "o");
     }
 
     /**
@@ -79,16 +82,16 @@ public class UUIDUtils {
         return PairObject.bind(id1, id3);
     }
 
-    private static String convert(long x, int n, String d) {
+    private static String convert(long x) {
         if (x == 0) {
             return "0";
         }
         StringBuilder r = new StringBuilder();
-        int m = 1 << n;
+        int m = 1 << 6;
         m--;
         while (x != 0) {
-            r.insert(0, d.charAt((int) (x & m)));
-            x = x >>> n;
+            r.insert(0, CHARS_64.charAt((int) (x & m)));
+            x = x >>> 6;
         }
         return r.toString();
     }
@@ -108,10 +111,10 @@ public class UUIDUtils {
     }
 
     public static long randomLong(long min, long max) {
-        return min + (long) (Math.random() * (max - min));
+        return min + (long) (RANDOM.nextDouble() * (max - min));
     }
 
     public static int randomInt(int min, int max) {
-        return min + (int) (Math.random() * (max - min));
+        return min + (int) (RANDOM.nextDouble() * (max - min));
     }
 }

@@ -56,7 +56,7 @@ public final class ThreadUtils {
     }
 
     public static ExecutorService newSingleThreadExecutor(int queueCapacity, ThreadFactory threadFactory) {
-        return new ThreadPoolExecutor(1, 1, 0L, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<>(1024), threadFactory, new ThreadPoolExecutor.AbortPolicy());
+        return new ThreadPoolExecutor(1, 1, 0L, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<>(queueCapacity), threadFactory, new ThreadPoolExecutor.AbortPolicy());
     }
 
     public static ScheduledExecutorService newSingleThreadScheduledExecutor() {
@@ -155,7 +155,10 @@ public final class ThreadUtils {
             ExecutorService executorService = newFixedThreadPool(workers.size());
             //
             List<FutureTask<T>> futures = new ArrayList<>();
-            workers.stream().map(FutureTask::new).peek(executorService::submit).forEachOrdered(futures::add);
+            workers.stream().map(FutureTask::new).forEach(futureTask -> {
+                executorService.submit(futureTask);
+                futures.add(futureTask);
+            });
             shutdownExecutorService(executorService, timeout, reAwaitTimes);
             //
             List<T> results = new ArrayList<>();
