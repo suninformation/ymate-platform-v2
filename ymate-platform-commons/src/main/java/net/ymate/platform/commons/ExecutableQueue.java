@@ -228,7 +228,8 @@ public class ExecutableQueue<E extends Serializable> implements AutoCloseable {
                             speedometer.touch();
                             if (listeners != null && !listeners.isEmpty()) {
                                 AtomicInteger abandonedCount = new AtomicInteger(0);
-                                for (String id : listeners.keySet()) {
+                                Set<String> ids = new HashSet<>(listeners.keySet());
+                                for (String id : ids) {
                                     IListener<E> listener = listeners.get(id);
                                     if (listener != null) {
                                         boolean flag = false;
@@ -284,28 +285,24 @@ public class ExecutableQueue<E extends Serializable> implements AutoCloseable {
      * @param millis 等待该线程终止的时间最长为millis毫秒, 为0意味着要一直等下去
      */
     public final synchronized void listenStop(long millis) {
-        if (innerExecutorService != null && !executor.isShutdown()) {
-            if (!stopped) {
-                try {
-                    if (LOG.isInfoEnabled()) {
-                        LOG.info(String.format("Stopping ExecutableQueue[%s] Listener Service...", prefix));
-                    }
-                    speedometer.close();
-                    //
-                    stopped = true;
-                    innerExecutorService.shutdown();
-                    if (millis > 0) {
-                        if (!innerExecutorService.awaitTermination(millis, TimeUnit.MILLISECONDS) && LOG.isWarnEnabled()) {
-                            LOG.warn(String.format("Waiting for ExecutableQueue[%s] listener service to stop, but timed out before terminating.", prefix));
-                        }
-                    }
-                } catch (InterruptedException e) {
-                    if (LOG.isWarnEnabled()) {
-                        LOG.warn(String.format("Interrupt exception when waiting for ExecutableQueue[%s] listener service to stop: ", prefix), RuntimeUtils.unwrapThrow(e));
-                    }
+        if (innerExecutorService != null && !executor.isShutdown() && !stopped) {
+            try {
+                if (LOG.isInfoEnabled()) {
+                    LOG.info(String.format("Stopping ExecutableQueue[%s] Listener Service...", prefix));
                 }
-                onListenStopped();
+                speedometer.close();
+                //
+                stopped = true;
+                innerExecutorService.shutdown();
+                if (millis > 0 && !innerExecutorService.awaitTermination(millis, TimeUnit.MILLISECONDS) && LOG.isWarnEnabled()) {
+                    LOG.warn(String.format("Waiting for ExecutableQueue[%s] listener service to stop, but timed out before terminating.", prefix));
+                }
+            } catch (InterruptedException e) {
+                if (LOG.isWarnEnabled()) {
+                    LOG.warn(String.format("Interrupt exception when waiting for ExecutableQueue[%s] listener service to stop: ", prefix), RuntimeUtils.unwrapThrow(e));
+                }
             }
+            onListenStopped();
         }
     }
 
@@ -440,13 +437,11 @@ public class ExecutableQueue<E extends Serializable> implements AutoCloseable {
     }
 
     public void execute(List<Callable<E>> workers) {
-        if (checkStatus()) {
-            if (workers != null && !workers.isEmpty()) {
-                if (LOG.isInfoEnabled()) {
-                    LOG.info(String.format("ExecutableQueue[%s] Executor Submit: %d", prefix, workers.size()));
-                }
-                workers.forEach((worker) -> executor.submit(new ExecutableWorker<>(queue, semaphore, worker)));
+        if (checkStatus() && workers != null && !workers.isEmpty()) {
+            if (LOG.isInfoEnabled()) {
+                LOG.info(String.format("ExecutableQueue[%s] Executor Submit: %d", prefix, workers.size()));
             }
+            workers.forEach(worker -> executor.submit(new ExecutableWorker<>(queue, semaphore, worker)));
         }
     }
 

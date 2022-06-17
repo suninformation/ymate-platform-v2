@@ -15,6 +15,7 @@
  */
 package net.ymate.platform.serv;
 
+import net.ymate.platform.commons.ISpeedListener;
 import net.ymate.platform.commons.Speedometer;
 
 import java.io.IOException;
@@ -85,8 +86,42 @@ public interface ISessionManager<SESSION_WRAPPER extends ISessionWrapper<?, ?>, 
      * 设置速度计数器(仅在服务启动前调用有效)
      *
      * @param speedometer 速度计数器
+     * @see ISessionManager#speedometer(ISpeedListener, int, int)
+     * @deprecated
      */
+    @Deprecated
     void speedometer(Speedometer speedometer);
+
+    /**
+     * 自定义速度计数器监听器(仅在服务启动前调用有效)
+     *
+     * @param listener 监听器接口实现
+     * @param interval 时间间隔(毫秒)
+     * @param dataSize 抽样数据数量
+     */
+    void speedometer(ISpeedListener listener, int interval, int dataSize);
+
+    /**
+     * 自定义速度计数器监听器(仅在服务启动前调用有效)
+     *
+     * @param listener 监听器接口实现
+     */
+    void speedometer(ISpeedListener listener);
+
+    /**
+     * 使用默认速度计数器监听器(仅在服务启动前调用有效)
+     *
+     * @param interval 时间间隔(毫秒)
+     * @param dataSize 抽样数据数量
+     */
+    void speedometer(int interval, int dataSize);
+
+    /**
+     * 使用默认速度计数器监听器(仅在服务启动前调用有效)
+     *
+     * @param interval 时间间隔(毫秒)
+     */
+    void speedometer(int interval);
 
     /**
      * 设置会话空闲检查器

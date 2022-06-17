@@ -15,6 +15,7 @@
  */
 package net.ymate.platform.serv;
 
+import net.ymate.platform.commons.ISpeedListener;
 import net.ymate.platform.commons.Speedometer;
 import net.ymate.platform.commons.impl.DefaultSpeedListener;
 import net.ymate.platform.commons.impl.DefaultThreadFactory;
@@ -57,6 +58,12 @@ public abstract class AbstractSessionManager<SESSION_WRAPPER extends ISessionWra
     private ScheduledExecutorService idleCheckExecutorService;
 
     private Speedometer speedometer;
+
+    private ISpeedListener speedListener;
+
+    private int interval;
+
+    private int dataSize;
 
     private final Object locker = new Object();
 
@@ -102,10 +109,41 @@ public abstract class AbstractSessionManager<SESSION_WRAPPER extends ISessionWra
     }
 
     @Override
+    @Deprecated
     public void speedometer(Speedometer speedometer) {
         if (server == null) {
             this.speedometer = speedometer;
         }
+    }
+
+    @Override
+    public void speedometer(ISpeedListener listener, int interval, int dataSize) {
+        if (server == null) {
+            if (listener == null) {
+                throw new NullArgumentException("listener");
+            }
+            this.speedListener = listener;
+            this.interval = interval;
+            this.dataSize = dataSize;
+        }
+    }
+
+    @Override
+    public void speedometer(ISpeedListener listener) {
+        speedometer(listener, 0, 0);
+    }
+
+    @Override
+    public void speedometer(int interval, int dataSize) {
+        if (server == null) {
+            this.interval = interval;
+            this.dataSize = dataSize;
+        }
+    }
+
+    @Override
+    public void speedometer(int interval) {
+        speedometer(interval, 0);
     }
 
     @Override
@@ -200,8 +238,17 @@ public abstract class AbstractSessionManager<SESSION_WRAPPER extends ISessionWra
             }
         }
         server.start();
-        if (speedometer != null && !speedometer.isStarted()) {
-            speedometer.start(new DefaultSpeedListener(speedometer));
+        if (speedometer == null && speedListener != null) {
+            if (interval > 0) {
+                speedometer = Speedometer.create(String.format("%sServer", serverCfg.getServerName()))
+                        .dataSize(dataSize)
+                        .interval(interval);
+                speedometer.start(speedListener);
+            }
+        } else if (speedometer != null && !speedometer.isStarted()) {
+            speedometer.dataSize(dataSize)
+                    .interval(interval)
+                    .start(speedListener != null ? speedListener : new DefaultSpeedListener(speedometer));
         }
         //
         if (idleTimeInMillis > 0) {

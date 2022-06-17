@@ -15,6 +15,7 @@
  */
 package net.ymate.platform.commons.impl;
 
+import net.ymate.platform.commons.ISpeedListener;
 import net.ymate.platform.commons.Speedometer;
 import org.apache.commons.lang.NullArgumentException;
 import org.apache.commons.logging.Log;
@@ -23,7 +24,7 @@ import org.apache.commons.logging.LogFactory;
 /**
  * @author 刘镇 (suninformation@163.com) on 2018/11/13 1:01 AM
  */
-public class DefaultSpeedListener implements Speedometer.IListener {
+public class DefaultSpeedListener implements ISpeedListener {
 
     private static final Log LOG = LogFactory.getLog(DefaultSpeedListener.class);
 

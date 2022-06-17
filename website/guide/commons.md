@@ -3161,7 +3161,7 @@ public class Demo {
             // 设置采样数据量为10
             .dataSize(10);
         // 启动计数器监听
-        speedometer.start(new Speedometer.IListener() {
+        speedometer.start(new ISpeedListener() {
             @Override
             public void listen(long speed, long averageSpeed, long maxSpeed, long minSpeed) {
                 // 输出当前、平均、最高和最低处理速度值

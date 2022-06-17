@@ -32,6 +32,10 @@ import java.util.concurrent.ExecutorService;
  */
 public class Speedometer implements AutoCloseable {
 
+    public static Speedometer create(String name) {
+        return new Speedometer(name);
+    }
+
     private final String name;
 
     private int interval = 5000;
@@ -44,7 +48,7 @@ public class Speedometer implements AutoCloseable {
 
     private final LinkedList<Long> sorted = new LinkedList<>();
 
-    private IListener listener;
+    private ISpeedListener listener;
 
     private ExecutorService executorService;
 
@@ -93,7 +97,7 @@ public class Speedometer implements AutoCloseable {
         return curr;
     }
 
-    public void start(IListener listener) {
+    public void start(ISpeedListener listener) {
         if (listener == null) {
             throw new NullArgumentException("listener");
         }
@@ -142,17 +146,10 @@ public class Speedometer implements AutoCloseable {
      * 速度统计监听器接口
      *
      * @author 刘镇 (suninformation@163.com) on 16/12/27 下午4:14
+     * @see net.ymate.platform.commons.ISpeedListener
+     * @deprecated 已迁移为独立接口文件
      */
-    public interface IListener {
-
-        /**
-         * 处理监听数据
-         *
-         * @param speed        速度
-         * @param averageSpeed 平均速度
-         * @param maxSpeed     最大速度
-         * @param minSpeed     最小速度
-         */
-        void listen(long speed, long averageSpeed, long maxSpeed, long minSpeed);
+    @Deprecated
+    public interface IListener extends ISpeedListener {
     }
 }
