@@ -16,8 +16,8 @@
 package net.ymate.platform.webmvc.support;
 
 import net.ymate.platform.webmvc.IRequestContext;
+import net.ymate.platform.webmvc.IWebMvc;
 import net.ymate.platform.webmvc.IWebMvcConfig;
-import net.ymate.platform.webmvc.WebMVC;
 import net.ymate.platform.webmvc.impl.DefaultRequestContext;
 import net.ymate.platform.webmvc.util.WebUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -47,7 +47,7 @@ public class DispatchFilter implements Filter {
     @Override
     public void init(FilterConfig filterConfig) {
         this.filterConfig = filterConfig;
-        IWebMvcConfig config = WebMVC.get().getConfig();
+        IWebMvcConfig config = ((IWebMvc) filterConfig.getServletContext().getAttribute(IWebMvc.class.getName())).getConfig();
         Set<String> ignoreSuffixes = config.getRequestIgnoreSuffixes();
         String ignoreRegex;
         if (ignoreSuffixes != null && !ignoreSuffixes.isEmpty()) {

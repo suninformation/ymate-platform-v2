@@ -16,7 +16,7 @@
 package net.ymate.platform.webmvc.support;
 
 import net.ymate.platform.webmvc.IRequestContext;
-import net.ymate.platform.webmvc.WebMVC;
+import net.ymate.platform.webmvc.IWebMvc;
 
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
@@ -46,6 +46,7 @@ public class Dispatcher {
         response.setCharacterEncoding(charsetEncoding);
         response.setContentType(contentType.concat("; charset=").concat(charsetEncoding));
         //
-        GenericDispatcher.create(WebMVC.get()).execute(requestContext, servletContext, new RequestMethodWrapper(request, requestMethodParam), new GenericResponseWrapper(response));
+        IWebMvc owner = ((IWebMvc) servletContext.getAttribute(IWebMvc.class.getName()));
+        GenericDispatcher.create(owner).execute(requestContext, servletContext, new RequestMethodWrapper(request, requestMethodParam), new GenericResponseWrapper(response));
     }
 }

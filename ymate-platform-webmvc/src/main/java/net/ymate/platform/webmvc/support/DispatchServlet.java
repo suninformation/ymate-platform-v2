@@ -16,8 +16,8 @@
 package net.ymate.platform.webmvc.support;
 
 import net.ymate.platform.webmvc.IRequestContext;
+import net.ymate.platform.webmvc.IWebMvc;
 import net.ymate.platform.webmvc.IWebMvcConfig;
-import net.ymate.platform.webmvc.WebMVC;
 import net.ymate.platform.webmvc.impl.DefaultRequestContext;
 
 import javax.servlet.ServletConfig;
@@ -45,7 +45,7 @@ public class DispatchServlet extends HttpServlet {
     public void init(ServletConfig config) {
         servletContext = config.getServletContext();
         //
-        IWebMvcConfig mvcConfig = WebMVC.get().getConfig();
+        IWebMvcConfig mvcConfig = ((IWebMvc) config.getServletContext().getAttribute(IWebMvc.class.getName())).getConfig();
         dispatcher = new Dispatcher(mvcConfig.getDefaultCharsetEncoding(), mvcConfig.getDefaultContentType(), mvcConfig.getRequestMethodParam());
         requestPrefix = mvcConfig.getRequestPrefix();
     }

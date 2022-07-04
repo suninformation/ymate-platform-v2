@@ -18,6 +18,7 @@ package net.ymate.platform.webmvc.support;
 import net.ymate.platform.commons.util.RuntimeUtils;
 import net.ymate.platform.core.IApplication;
 import net.ymate.platform.core.YMP;
+import net.ymate.platform.core.event.IEvent;
 import net.ymate.platform.webmvc.IWebMvc;
 import net.ymate.platform.webmvc.WebEvent;
 import net.ymate.platform.webmvc.WebMVC;
@@ -50,7 +51,7 @@ public class WebAppEventListener implements ServletContextListener, ServletConte
 
     private void doFireEvent(WebEvent.EVENT event, Object eventSource) {
         if (initialized) {
-            application.getEvents().fireEvent(new WebEvent(owner, event).addParamExtend(WebEvent.EVENT_SOURCE, eventSource));
+            application.getEvents().fireEvent(new WebEvent(owner, event).addParamExtend(IEvent.EVENT_SOURCE, eventSource));
         }
     }
 
@@ -63,6 +64,7 @@ public class WebAppEventListener implements ServletContextListener, ServletConte
             if (application != null && application.isInitialized()) {
                 owner = application.getModuleManager().getModule(WebMVC.class);
                 initialized = owner != null && owner.isInitialized();
+                sce.getServletContext().setAttribute(IWebMvc.class.getName(), owner);
             }
             doFireEvent(WebEvent.EVENT.SERVLET_CONTEXT_INITIALIZED, sce);
         } catch (Exception e) {

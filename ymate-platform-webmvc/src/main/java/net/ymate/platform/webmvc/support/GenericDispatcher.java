@@ -16,6 +16,7 @@
 package net.ymate.platform.webmvc.support;
 
 import net.ymate.platform.commons.util.RuntimeUtils;
+import net.ymate.platform.core.event.IEvent;
 import net.ymate.platform.validation.ValidateContext;
 import net.ymate.platform.webmvc.IRequestContext;
 import net.ymate.platform.webmvc.IWebMvc;
@@ -45,7 +46,7 @@ public final class GenericDispatcher {
     }
 
     private void doFireEvent(WebEvent.EVENT event, Object eventSource) {
-        owner.getOwner().getEvents().fireEvent(new WebEvent(owner, event).addParamExtend(WebEvent.EVENT_SOURCE, eventSource));
+        owner.getOwner().getEvents().fireEvent(new WebEvent(owner, event).addParamExtend(IEvent.EVENT_SOURCE, eventSource));
     }
 
     public void execute(IRequestContext requestContext,
