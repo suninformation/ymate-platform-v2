@@ -2001,13 +2001,13 @@ public class DemoController {
 
 | 配置项 | 描述                |
 | ------ | ------------------- |
-| code   | 异常错误码，非0数字 |
+| code   | 异常错误码 |
 | msg    | 默认错误描述        |
 
 自定义异常类，代码如下：
 
 ```java
-@ExceptionProcessor(code = 10010, msg = "自定义异常消息")
+@ExceptionProcessor(code = "10010", msg = "自定义异常消息")
 public class DemoException extends Exception {
 
     public DemoException() {
@@ -2045,7 +2045,7 @@ IExceptionProcessor exceptionProcessor = ExceptionProcessHelper.DEFAULT.bind(unw
 if (exceptionProcessor != null) {
     IExceptionProcessor.Result result = exceptionProcessor.process(unwrapThrow);
     if (result != null) {
-        showErrorMsg(String.valueOf(result.getCode()), WebUtils.errorCodeI18n(this.owner, result), result.getAttributes()).render();
+        showErrorMsg(result.getCode(), WebUtils.errorCodeI18n(this.owner, result), result.getAttributes()).render();
     } else {
         doProcessError(unwrapThrow);
     }

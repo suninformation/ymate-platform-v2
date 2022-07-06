@@ -29,9 +29,9 @@ import java.lang.annotation.*;
 public @interface ExceptionProcessor {
 
     /**
-     * @return 异常错误码，非0数字
+     * @return 异常错误码
      */
-    int code();
+    String code();
 
     /**
      * @return 默认错误描述

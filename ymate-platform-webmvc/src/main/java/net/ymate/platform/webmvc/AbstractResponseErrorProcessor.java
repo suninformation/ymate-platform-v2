@@ -80,7 +80,7 @@ public abstract class AbstractResponseErrorProcessor implements IResponseErrorPr
                     if (exceptionProcessor != null) {
                         IExceptionProcessor.Result result = exceptionProcessor.process(unwrapThrow);
                         if (result != null) {
-                            returnView = showErrorMsg(owner, String.valueOf(result.getCode()), WebUtils.errorCodeI18n(owner, result), result.getAttributes());
+                            returnView = showErrorMsg(owner, result.getCode(), WebUtils.errorCodeI18n(owner, result), result.getAttributes());
                         } else {
                             doProcessError(owner, unwrapThrow);
                         }

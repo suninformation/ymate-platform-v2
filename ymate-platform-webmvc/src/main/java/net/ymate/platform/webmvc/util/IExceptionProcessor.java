@@ -45,18 +45,23 @@ public interface IExceptionProcessor {
      */
     class Result {
 
-        private final int code;
+        private final String code;
 
         private final String message;
 
         private final Map<String, Object> attributes = new LinkedHashMap<>();
 
         public Result(int code, String message) {
+            this.code = String.valueOf(code);
+            this.message = message;
+        }
+
+        public Result(String code, String message) {
             this.code = code;
             this.message = message;
         }
 
-        public int getCode() {
+        public String getCode() {
             return code;
         }
 

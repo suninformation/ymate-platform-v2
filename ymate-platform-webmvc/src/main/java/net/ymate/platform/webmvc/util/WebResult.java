@@ -131,7 +131,7 @@ public final class WebResult extends AbstractWebResult<Integer> {
 
     @Override
     public boolean isSuccess() {
-        return code() != null && code().equals(ErrorCode.SUCCEED);
+        return Integer.valueOf(ErrorCode.SUCCEED).equals(code());
     }
 
     @Override

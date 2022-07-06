@@ -15,14 +15,6 @@
  */
 package net.ymate.platform.core.support;
 
-import org.apache.commons.lang3.builder.EqualsBuilder;
-import org.apache.commons.lang3.builder.HashCodeBuilder;
-import org.apache.commons.lang3.builder.ToStringBuilder;
-
-import java.io.Serializable;
-import java.util.LinkedHashMap;
-import java.util.Map;
-
 /**
  * ret = 0: 正确返回<br>
  * ret &gt; 0: 调用时发生错误，需要开发者进行相应的处理<br>
@@ -33,26 +25,26 @@ import java.util.Map;
  * @since 2.0.6
  * @since 2.1.0 调整其为框架基础类
  */
-public class ErrorCode implements Serializable {
+public class ErrorCode extends AbstractErrorCode<Integer, ErrorCode> {
 
     /**
      * 请求成功
      */
-    public final static int SUCCEED = 0;
+    public static final int SUCCEED = 0;
 
     /**
      * 数据版本不匹配
      */
-    public final static int DATA_VERSION_NOT_MATCH = -20;
+    public static final int DATA_VERSION_NOT_MATCH = -20;
 
     /**
      * 系统内部错误
      */
-    public final static int INTERNAL_SYSTEM_ERROR = -50;
+    public static final int INTERNAL_SYSTEM_ERROR = -50;
 
-    public final static String MSG_DATA_VERSION_NOT_MATCH = "The data version does not match.";
+    public static final String MSG_DATA_VERSION_NOT_MATCH = "The data version does not match.";
 
-    public final static String MSG_INTERNAL_SYSTEM_ERROR = "The system is busy, try again later!";
+    public static final String MSG_INTERNAL_SYSTEM_ERROR = "The system is busy, try again later!";
 
     public static ErrorCode succeed() {
         return new ErrorCode(SUCCEED);
@@ -79,129 +71,25 @@ public class ErrorCode implements Serializable {
     }
 
     public static ErrorCode create(ErrorCode errorCode) {
-        ErrorCode newErrorCode = new ErrorCode(errorCode.code, errorCode.i18nKey, errorCode.message);
-        newErrorCode.attributes.putAll(errorCode.attributes);
-        newErrorCode.dataAttrs(errorCode.data);
-        return newErrorCode;
+        return new ErrorCode(errorCode.code(), errorCode.i18nKey(), errorCode.message())
+                .attrs(errorCode.attrs())
+                .dataAttrs(errorCode.data());
     }
 
-    private int code;
-
-    private String i18nKey;
-
-    private String message;
-
-    private final Map<String, Object> attributes = new LinkedHashMap<>();
-
-    private final Map<String, Object> data = new LinkedHashMap<>();
-
     public ErrorCode(int code) {
-        this.code = code;
+        super(code);
     }
 
     public ErrorCode(int code, String message) {
-        this(code, null, message);
+        super(code, message);
     }
 
     public ErrorCode(int code, String i18nKey, String message) {
-        this.code = code;
-        this.i18nKey = i18nKey;
-        this.message = message;
+        super(code, i18nKey, message);
     }
 
+    @Override
     public boolean isSucceed() {
-        return SUCCEED == code;
-    }
-
-    public int code() {
-        return code;
-    }
-
-    public void code(int code) {
-        this.code = code;
-    }
-
-    public String i18nKey() {
-        return i18nKey;
-    }
-
-    public ErrorCode i18nKey(String i18nKey) {
-        this.i18nKey = i18nKey;
-        return this;
-    }
-
-    public String message() {
-        return message;
-    }
-
-    public ErrorCode message(String message) {
-        this.message = message;
-        return this;
-    }
-
-    public Map<String, Object> attrs() {
-        return attributes;
-    }
-
-    @SuppressWarnings("unchecked")
-    public <T> T attr(String attrKey) {
-        return (T) attributes.get(attrKey);
-    }
-
-    public ErrorCode attr(String attrKey, Object attrValue) {
-        this.attributes.put(attrKey, attrValue);
-        return this;
-    }
-
-    public ErrorCode attrs(Map<String, Object> attributes) {
-        this.attributes.putAll(attributes);
-        return this;
-    }
-
-    public Map<String, Object> data() {
-        return data;
-    }
-
-    @SuppressWarnings("unchecked")
-    public <T> T dataAttr(String dataKey) {
-        return (T) data.get(dataKey);
-    }
-
-    public ErrorCode dataAttr(String dataKey, Object dataValue) {
-        data.put(dataKey, dataValue);
-        return this;
-    }
-
-    public ErrorCode dataAttrs(Map<String, Object> dataAttributes) {
-        data.putAll(dataAttributes);
-        return this;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) {
-            return true;
-        }
-        if (o == null || getClass() != o.getClass()) {
-            return false;
-        }
-        ErrorCode errorCode = (ErrorCode) o;
-        return new EqualsBuilder().append(code, errorCode.code).isEquals();
-    }
-
-    @Override
-    public int hashCode() {
-        return new HashCodeBuilder(17, 37).append(code).toHashCode();
-    }
-
-    @Override
-    public String toString() {
-        return new ToStringBuilder(this)
-                .append("code", code)
-                .append("i18nKey", i18nKey)
-                .append("message", message)
-                .append("attributes", attributes)
-                .append("data", data)
-                .toString();
+        return Integer.valueOf(SUCCEED).equals(code());
     }
 }
