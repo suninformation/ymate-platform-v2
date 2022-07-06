@@ -15,8 +15,10 @@
  */
 package net.ymate.platform.core;
 
+import net.ymate.platform.commons.lang.BlurObject;
 import net.ymate.platform.commons.serialize.annotation.Serializer;
 import net.ymate.platform.commons.util.RuntimeUtils;
+import net.ymate.platform.core.annotation.ParamValue;
 import net.ymate.platform.core.beans.IBeanFactory;
 import net.ymate.platform.core.beans.IBeanLoadFactory;
 import net.ymate.platform.core.beans.IBeanLoader;
@@ -154,6 +156,18 @@ public final class Application implements IApplication {
                         beanLoader.load(beanFactory);
                     }
                 }
+                beanFactory.registerInjector(ParamValue.class, (beanFactoryImpl, annotation, targetClass, field, originInject) -> {
+                    ParamValue paramValueAnn = (ParamValue) annotation;
+                    String paramName = StringUtils.defaultIfBlank(paramValueAnn.value(), field.getName());
+                    String paramValue = getParam(paramName, StringUtils.trimToNull(paramValueAnn.defaultValue()));
+                    if (String.class.equals(field.getType())) {
+                        if (paramValueAnn.replaceEnvVariable()) {
+                            return RuntimeUtils.replaceEnvVariable(paramValue);
+                        }
+                        return paramValue;
+                    }
+                    return BlurObject.bind(paramValue).toObjectValue(field.getType());
+                });
                 beanFactory.initialize(this);
             } catch (Exception e) {
                 if (LOG.isErrorEnabled()) {

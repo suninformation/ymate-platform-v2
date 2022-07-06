@@ -328,6 +328,24 @@ ymp.configs.event.thread_queue_size=
 
 
 
+#### @ParamValue
+
+自定义扩展参数值注入。
+
+| 配置项 | 描述   |
+| ------ |------|
+| value  | 自定义扩展参数名称, 若未提供则使用成员变量或方法参数名称 |
+| defaultValue  | 自定义扩展参数默认值 |
+| replaceEnvVariable  | 是否替换字符串中的环境变量 |
+
+**示例：**
+
+```java
+@ParamValue(value = "xxx", defaultValue = "${root}/a", replaceEnvVariable = true)
+```
+
+
+
 ## 关于SPI加载机制
 
 YMP 框架从 `2.1.0` 版本开始大量采用`SPI`的加载机制，允许开发者针对框架中诸多功能特性进行自定义，如新版框架中的模块就已经放弃了自动扫描，转而采用了 `SPI` 机制进行加载，更多的细节请注意各文档中的相关描述。
