@@ -51,7 +51,8 @@ slug: cache
 
     + DefaultSerializer - 默认序列化服务采用JDK自带的对象序列化技术实现；
 - 缓存事件监听接口：`ICacheEventListener`
-- 用于监听被缓存对象发生变化时的事件处理，需开发者实现接口；
+
+  + 用于监听被缓存对象发生变化时的事件处理，需开发者实现接口；
 - 缓存作用域处理器接口：`ICacheScopeProcessor`
     - 用于处理`@Cacheable`注解的`scope`参数设置为非DEFAULT作用域的缓存对象，需开发者实现接口；
 

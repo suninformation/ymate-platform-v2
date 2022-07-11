@@ -371,7 +371,7 @@ public class Starter {
     public static void main(String[] args) throws Exception {
         try (IApplication application = YMP.run(args)) {
             IConfiguration cfg = Cfgs.get().loadCfg("cfgs/configuration.properties");
-            if (_cfg != null) {
+            if (cfg != null) {
                 System.out.println(cfg.getString("company_name"));
                 System.out.println(cfg.getMap("product_spec"));
                 System.out.println(cfg.getList("products"));
