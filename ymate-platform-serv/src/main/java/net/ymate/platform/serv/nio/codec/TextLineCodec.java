@@ -18,6 +18,7 @@ package net.ymate.platform.serv.nio.codec;
 import net.ymate.platform.commons.util.RuntimeUtils;
 import net.ymate.platform.serv.nio.AbstractNioCodec;
 import net.ymate.platform.serv.nio.support.ByteBufferBuilder;
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -34,16 +35,9 @@ public class TextLineCodec extends AbstractNioCodec {
 
     @Override
     public ByteBufferBuilder encode(Object message) {
-        if (message != null) {
-            try {
-                String msgStr = message.toString().concat(TEXT_EOF);
-                byte[] bytes = msgStr.getBytes(getCharset());
-                return ByteBufferBuilder.allocate(bytes.length).append(bytes).flip();
-            } catch (UnsupportedEncodingException e) {
-                if (LOG.isWarnEnabled()) {
-                    LOG.warn(e.getMessage(), RuntimeUtils.unwrapThrow(e));
-                }
-            }
+        byte[] bytes = ArrayUtils.addAll(messageToBytes(message), stringToBytes(TEXT_EOF));
+        if (bytes != null) {
+            return ByteBufferBuilder.allocate().append(bytes.length).append(bytes).flip();
         }
         return null;
     }

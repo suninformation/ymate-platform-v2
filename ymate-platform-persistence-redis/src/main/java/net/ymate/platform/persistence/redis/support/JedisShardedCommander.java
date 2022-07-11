@@ -1636,7 +1636,7 @@ public class JedisShardedCommander implements IRedisCommander {
     }
 
     @Override
-    public String clusterReplicas(String nodeId) {
+    public List<String> clusterReplicas(String nodeId) {
         throw new UnsupportedOperationException();
     }
 

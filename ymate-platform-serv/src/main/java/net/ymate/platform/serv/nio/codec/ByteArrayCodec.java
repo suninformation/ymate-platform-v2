@@ -15,13 +15,8 @@
  */
 package net.ymate.platform.serv.nio.codec;
 
-import net.ymate.platform.commons.util.RuntimeUtils;
 import net.ymate.platform.serv.nio.AbstractNioCodec;
 import net.ymate.platform.serv.nio.support.ByteBufferBuilder;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-
-import java.io.UnsupportedEncodingException;
 
 /**
  * @author 刘镇 (suninformation@163.com) on 2021/6/14 10:48 下午
@@ -29,22 +24,9 @@ import java.io.UnsupportedEncodingException;
  */
 public class ByteArrayCodec extends AbstractNioCodec {
 
-    private static final Log LOG = LogFactory.getLog(ByteArrayCodec.class);
-
     @Override
     public ByteBufferBuilder encode(Object message) {
-        byte[] bytes = null;
-        if (message instanceof byte[]) {
-            bytes = (byte[]) message;
-        } else if (message instanceof String) {
-            try {
-                bytes = ((String) message).getBytes(getCharset());
-            } catch (UnsupportedEncodingException e) {
-                if (LOG.isWarnEnabled()) {
-                    LOG.warn(e.getMessage(), RuntimeUtils.unwrapThrow(e));
-                }
-            }
-        }
+        byte[] bytes = messageToBytes(message);
         if (bytes != null) {
             return ByteBufferBuilder.allocate()
                     .append(bytes.length)

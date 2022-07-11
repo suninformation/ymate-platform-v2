@@ -118,6 +118,7 @@ public final class Caches implements IModule, ICaches {
         if (initialized) {
             initialized = false;
             //
+            config.getCacheEventListener().close();
             config.getCacheProvider().close();
             config = null;
             owner = null;

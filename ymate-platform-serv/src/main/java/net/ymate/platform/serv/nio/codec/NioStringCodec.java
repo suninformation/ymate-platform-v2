@@ -30,11 +30,6 @@ public class NioStringCodec extends ByteArrayCodec {
     private static final Log LOG = LogFactory.getLog(NioStringCodec.class);
 
     @Override
-    public ByteBufferBuilder encode(Object message) {
-        return super.encode(message);
-    }
-
-    @Override
     public Object decode(ByteBufferBuilder buffer) {
         try {
             byte[] bytes = (byte[]) super.decode(buffer);

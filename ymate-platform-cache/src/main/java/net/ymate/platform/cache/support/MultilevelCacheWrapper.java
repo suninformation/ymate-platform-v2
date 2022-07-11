@@ -37,12 +37,13 @@ public class MultilevelCacheWrapper implements ICache, ICacheLocker {
 
     private final boolean slaveCacheAutoSync;
 
+    private ICacheEventListener slaveCacheListener;
+
     public MultilevelCacheWrapper(ICaches owner, String cacheName, ICache masterCache, IRedis redis) {
         slaveCacheAutoSync = owner.getConfig().isMultilevelSlavesAutoSync();
         //
         this.masterCache = masterCache;
         //
-        ICacheEventListener slaveCacheListener = null;
         if (slaveCacheAutoSync) {
             slaveCacheListener = new ICacheEventListener() {
 
@@ -105,12 +106,10 @@ public class MultilevelCacheWrapper implements ICache, ICacheLocker {
         MultilevelKey multilevelKey = MultilevelKey.bind(key);
         if (multilevelKey.isMaster()) {
             Object value = masterCache.get(multilevelKey.getKey());
-            if (slaveCacheAutoSync) {
-                if (value == null) {
-                    value = slaveCache.get(multilevelKey.getKey());
-                    if (value != null) {
-                        masterCache.put(multilevelKey.getKey(), value);
-                    }
+            if (slaveCacheAutoSync && value == null) {
+                value = slaveCache.get(multilevelKey.getKey());
+                if (value != null) {
+                    masterCache.put(multilevelKey.getKey(), value);
                 }
             }
             return value;
@@ -213,6 +212,9 @@ public class MultilevelCacheWrapper implements ICache, ICacheLocker {
 
     @Override
     public void close() throws Exception {
+        if (slaveCacheListener != null) {
+            slaveCacheListener.close();
+        }
         slaveCache.close();
         masterCache.close();
     }

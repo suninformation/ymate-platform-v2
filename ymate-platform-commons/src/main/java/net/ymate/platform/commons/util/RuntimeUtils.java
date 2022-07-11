@@ -64,7 +64,7 @@ public class RuntimeUtils {
     /**
      * 初始化系统环境，获取当前系统环境变量
      */
-    private synchronized static void initSystemEnvs() {
+    private static synchronized void initSystemEnvs() {
         Process process = null;
         try {
             if (SystemUtils.IS_OS_WINDOWS) {

@@ -98,17 +98,16 @@ public class RedisCacheWrapper implements ICache {
             Object cacheValue;
             if (owner.getConfig().isStorageWithSet()) {
                 cacheValue = deserializeValue(commander.hget(cacheName, cacheKey));
-                if (owner.getConfig().isEnabledSubscribeExpired() && cacheValue != null && !commander.exists(cacheName.concat(SEPARATOR).concat(cacheKey))) {
+                if (owner.getConfig().isEnabledSubscribeExpired() && cacheValue != null && Boolean.TRUE.equals(!commander.exists(cacheName.concat(SEPARATOR).concat(cacheKey)))) {
                     remove(key);
                 }
             } else {
                 cacheValue = deserializeValue(commander.get(cacheName.concat(SEPARATOR).concat(cacheKey)));
             }
             return cacheValue;
+        } catch (CacheException e) {
+            throw e;
         } catch (Exception e) {
-            if (e instanceof CacheException) {
-                throw (CacheException) e;
-            }
             throw new CacheException(e);
         }
     }
@@ -144,10 +143,9 @@ public class RedisCacheWrapper implements ICache {
                     cacheEventListener.notifyElementPut(cacheName, cacheKey, cacheValue);
                 }
             }
+        } catch (CacheException e) {
+            throw e;
         } catch (Exception e) {
-            if (e instanceof CacheException) {
-                throw (CacheException) e;
-            }
             throw new CacheException(e);
         }
     }
@@ -185,12 +183,11 @@ public class RedisCacheWrapper implements ICache {
             } else {
                 String keyPrefix = cacheName.concat(SEPARATOR);
                 commander.keys(keyPrefix.concat("*"))
-                        .forEach((key) -> returnValue.add(StringUtils.substringAfterLast(key, keyPrefix)));
+                        .forEach(key -> returnValue.add(StringUtils.substringAfterLast(key, keyPrefix)));
             }
+        } catch (CacheException e) {
+            throw e;
         } catch (Exception e) {
-            if (e instanceof CacheException) {
-                throw (CacheException) e;
-            }
             throw new CacheException(e);
         }
         return returnValue;
@@ -214,10 +211,9 @@ public class RedisCacheWrapper implements ICache {
             if (cacheEventListener != null) {
                 cacheEventListener.notifyElementRemoved(cacheName, cacheKey);
             }
+        } catch (CacheException e) {
+            throw e;
         } catch (Exception e) {
-            if (e instanceof CacheException) {
-                throw (CacheException) e;
-            }
             throw new CacheException(e);
         }
     }
@@ -227,7 +223,7 @@ public class RedisCacheWrapper implements ICache {
         try (IRedisCommandHolder holder = redis.getDefaultConnectionHolder()) {
             IRedisCommander commander = holder.getConnection();
             List<String> serializeKeys = new ArrayList<>(keys.size());
-            keys.forEach((key) -> serializeKeys.add(serializeKey(key)));
+            keys.forEach(key -> serializeKeys.add(serializeKey(key)));
             if (owner.getConfig().isStorageWithSet()) {
                 commander.hdel(cacheName, serializeKeys.toArray(new String[0]));
                 if (owner.getConfig().isEnabledSubscribeExpired()) {
@@ -246,10 +242,9 @@ public class RedisCacheWrapper implements ICache {
                     }
                 });
             }
+        } catch (CacheException e) {
+            throw e;
         } catch (Exception e) {
-            if (e instanceof CacheException) {
-                throw (CacheException) e;
-            }
             throw new CacheException(e);
         }
     }
@@ -261,7 +256,7 @@ public class RedisCacheWrapper implements ICache {
             if (owner.getConfig().isStorageWithSet()) {
                 if (owner.getConfig().isEnabledSubscribeExpired()) {
                     commander.hkeys(cacheName)
-                            .forEach((key) -> commander.del(cacheName.concat(SEPARATOR).concat(key)));
+                            .forEach(key -> commander.del(cacheName.concat(SEPARATOR).concat(key)));
                 }
                 commander.del(cacheName);
             } else {
@@ -271,10 +266,9 @@ public class RedisCacheWrapper implements ICache {
             if (cacheEventListener != null) {
                 cacheEventListener.notifyRemoveAll(cacheName);
             }
+        } catch (CacheException e) {
+            throw e;
         } catch (Exception e) {
-            if (e instanceof CacheException) {
-                throw (CacheException) e;
-            }
             throw new CacheException(e);
         }
     }

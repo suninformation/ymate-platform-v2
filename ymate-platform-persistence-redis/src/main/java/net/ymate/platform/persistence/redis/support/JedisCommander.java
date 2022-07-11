@@ -1639,7 +1639,7 @@ public class JedisCommander implements IRedisCommander {
     }
 
     @Override
-    public String clusterReplicas(String nodeId) {
+    public List<String> clusterReplicas(String nodeId) {
         return jedis.clusterReplicas(nodeId);
     }
 

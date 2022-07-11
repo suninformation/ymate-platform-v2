@@ -15,12 +15,19 @@
  */
 package net.ymate.platform.serv.nio;
 
+import net.ymate.platform.commons.util.RuntimeUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
+import java.io.UnsupportedEncodingException;
 
 /**
  * @author 刘镇 (suninformation@163.com) on 2018/11/6 2:42 PM
  */
 public abstract class AbstractNioCodec implements INioCodec {
+
+    private static final Log LOG = LogFactory.getLog(AbstractNioCodec.class);
 
     private String charset;
 
@@ -34,5 +41,29 @@ public abstract class AbstractNioCodec implements INioCodec {
      */
     public String getCharset() {
         return charset;
+    }
+
+    protected byte[] stringToBytes(String str) {
+        byte[] bytes = null;
+        try {
+            bytes = str.getBytes(getCharset());
+        } catch (UnsupportedEncodingException e) {
+            if (LOG.isWarnEnabled()) {
+                LOG.warn(e.getMessage(), RuntimeUtils.unwrapThrow(e));
+            }
+        }
+        return bytes;
+    }
+
+    protected byte[] messageToBytes(Object message) {
+        byte[] bytes;
+        if (message instanceof byte[]) {
+            bytes = (byte[]) message;
+        } else if (message instanceof String) {
+            bytes = stringToBytes((String) message);
+        } else {
+            bytes = stringToBytes(message.toString());
+        }
+        return bytes;
     }
 }
