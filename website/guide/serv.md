@@ -224,7 +224,7 @@ Hi, guys! I received a message: Hello, from /127.0.0.1:53653
 | charset              | 编解码字符集，默认为`UTF-8`        |
 | executorCount        | 执行线程数量，默认为`1`            |
 | connectionTimeout    | 连接超时时间（秒）， 默认为`30`    |
-| bufferSize           | 最大线程池大小，默认为`200`        |
+| bufferSize           | 缓冲区大小，默认为 `4096`          |
 | reconnectionInterval | 断线重连检测间隔（秒），默认为`1`  |
 | heartbeatInterval    | 心跳发送时间间隔（秒），默认为`60` |
 | params               | 自定义参数映射                     |
