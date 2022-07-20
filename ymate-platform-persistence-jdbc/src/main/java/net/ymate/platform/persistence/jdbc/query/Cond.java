@@ -23,6 +23,8 @@ import net.ymate.platform.persistence.jdbc.JDBC;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 
+import java.util.Collection;
+
 /**
  * 条件对象
  *
@@ -752,23 +754,29 @@ public final class Cond extends Query<Cond> {
         return this;
     }
 
+    private boolean doCheckNotEmpty(Object target) {
+        if (target != null) {
+            boolean flag = true;
+            if (target.getClass().isArray()) {
+                flag = ((Object[]) target).length > 0;
+            } else if (Collection.class.isAssignableFrom(target.getClass())) {
+                flag = ((Collection<?>) target).size() > 0;
+            } else if (target instanceof String) {
+                flag = StringUtils.isNotBlank((String) target);
+            }
+            return flag;
+        }
+        return false;
+    }
+
     /**
      * @param target  目标对象
      * @param builder 条件构建器
      * @return 当目标对象非空则采纳cond条件
      */
     public Cond exprNotEmpty(Object target, IConditionBuilder builder) {
-        if (target != null && builder != null) {
-            boolean flag = true;
-            if (target.getClass().isArray()) {
-                flag = ((Object[]) target).length > 0;
-            } else if (target instanceof String) {
-                flag = StringUtils.isNotBlank((String) target);
-            }
-            //
-            if (flag) {
-                this.cond(builder.build());
-            }
+        if (builder != null && doCheckNotEmpty(target)) {
+            this.cond(builder.build());
         }
         return this;
     }
@@ -779,17 +787,8 @@ public final class Cond extends Query<Cond> {
      * @return 当目标对象非空则采纳cond条件
      */
     public Cond exprNotEmpty(Object target, IConditionAppender appender) {
-        if (target != null && appender != null) {
-            boolean flag = true;
-            if (target.getClass().isArray()) {
-                flag = ((Object[]) target).length > 0;
-            } else if (target instanceof String) {
-                flag = StringUtils.isNotBlank((String) target);
-            }
-            //
-            if (flag) {
-                appender.append(this);
-            }
+        if (appender != null && doCheckNotEmpty(target)) {
+            appender.append(this);
         }
         return this;
     }
