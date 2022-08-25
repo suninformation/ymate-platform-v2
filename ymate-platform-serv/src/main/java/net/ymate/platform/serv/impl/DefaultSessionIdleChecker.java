@@ -19,6 +19,7 @@ import net.ymate.platform.serv.ISessionIdleChecker;
 import net.ymate.platform.serv.ISessionManager;
 import net.ymate.platform.serv.ISessionWrapper;
 
+import java.io.Serializable;
 import java.util.Iterator;
 import java.util.Map;
 
@@ -28,7 +29,7 @@ import java.util.Map;
  * @param <MESSAGE_TYPE>    消息类型
  * @author 刘镇 (suninformation@163.com) on 2018/11/22 2:27 AM
  */
-public class DefaultSessionIdleChecker<SESSION_WRAPPER extends ISessionWrapper<?, ?>, SESSION_ID, MESSAGE_TYPE> implements ISessionIdleChecker<SESSION_WRAPPER, SESSION_ID, MESSAGE_TYPE> {
+public class DefaultSessionIdleChecker<SESSION_WRAPPER extends ISessionWrapper<?, ?>, SESSION_ID extends Serializable, MESSAGE_TYPE> implements ISessionIdleChecker<SESSION_WRAPPER, SESSION_ID, MESSAGE_TYPE> {
 
     private ISessionManager<SESSION_WRAPPER, SESSION_ID, MESSAGE_TYPE> sessionManager;
 

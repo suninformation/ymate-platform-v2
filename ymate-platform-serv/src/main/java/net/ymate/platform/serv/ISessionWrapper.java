@@ -15,6 +15,8 @@
  */
 package net.ymate.platform.serv;
 
+import net.ymate.platform.serv.nio.INioSession;
+
 import java.io.Serializable;
 import java.util.Map;
 
@@ -25,7 +27,7 @@ import java.util.Map;
  * @param <SESSION_ID>   会话标识类型
  * @author 刘镇 (suninformation@163.com) on 2018/11/14 11:41 AM
  */
-public interface ISessionWrapper<SESSION_TYPE extends Serializable, SESSION_ID> extends Serializable {
+public interface ISessionWrapper<SESSION_TYPE extends INioSession, SESSION_ID extends Serializable> extends Serializable {
 
     /**
      * 获取当前会话标识符

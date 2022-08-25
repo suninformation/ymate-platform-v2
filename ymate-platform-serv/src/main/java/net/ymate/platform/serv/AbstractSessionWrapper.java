@@ -15,6 +15,8 @@
  */
 package net.ymate.platform.serv;
 
+import net.ymate.platform.serv.nio.INioSession;
+
 import java.io.Serializable;
 
 /**
@@ -22,7 +24,7 @@ import java.io.Serializable;
  * @param <SESSION_ID>   会话标识类型
  * @author 刘镇 (suninformation@163.com) on 2018/11/14 2:35 PM
  */
-public abstract class AbstractSessionWrapper<SESSION_TYPE extends Serializable, SESSION_ID> implements ISessionWrapper<SESSION_TYPE, SESSION_ID> {
+public abstract class AbstractSessionWrapper<SESSION_TYPE extends INioSession, SESSION_ID extends Serializable> implements ISessionWrapper<SESSION_TYPE, SESSION_ID> {
 
     private static final long serialVersionUID = 1L;
 }

@@ -18,6 +18,7 @@ package net.ymate.platform.serv.nio.server;
 import net.ymate.platform.serv.AbstractSessionWrapper;
 import net.ymate.platform.serv.nio.INioSession;
 
+import java.io.Serializable;
 import java.util.Map;
 
 /**
@@ -25,7 +26,7 @@ import java.util.Map;
  *
  * @author 刘镇 (suninformation@163.com) on 2018/11/13 12:05 AM
  */
-public class NioSessionWrapper extends AbstractSessionWrapper<INioSession, String> {
+public class NioSessionWrapper extends AbstractSessionWrapper<INioSession, Serializable> {
 
     private static final long serialVersionUID = 1L;
 

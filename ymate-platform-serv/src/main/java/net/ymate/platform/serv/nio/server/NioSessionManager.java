@@ -25,6 +25,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import java.io.IOException;
+import java.io.Serializable;
 import java.net.InetSocketAddress;
 
 /**
@@ -34,7 +35,7 @@ import java.net.InetSocketAddress;
  * @param <MESSAGE_TYPE>    消息类型
  * @author 刘镇 (suninformation@163.com) on 2018/11/12 3:40 PM
  */
-public class NioSessionManager<SESSION_WRAPPER extends NioSessionWrapper, MESSAGE_TYPE> extends AbstractSessionManager<SESSION_WRAPPER, String, MESSAGE_TYPE> {
+public class NioSessionManager<SESSION_WRAPPER extends NioSessionWrapper, MESSAGE_TYPE> extends AbstractSessionManager<SESSION_WRAPPER, Serializable, MESSAGE_TYPE> {
 
     private static final Log LOG = LogFactory.getLog(NioSessionManager.class);
 
@@ -137,7 +138,7 @@ public class NioSessionManager<SESSION_WRAPPER extends NioSessionWrapper, MESSAG
     }
 
     @Override
-    public boolean sendTo(String sessionId, MESSAGE_TYPE message) throws IOException {
+    public boolean sendTo(Serializable sessionId, MESSAGE_TYPE message) throws IOException {
         SESSION_WRAPPER wrapper = sessionWrapper(sessionId);
         if (wrapper != null) {
             INioSession session = wrapper.getSession();

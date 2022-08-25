@@ -19,6 +19,7 @@ import net.ymate.platform.commons.ISpeedListener;
 import net.ymate.platform.commons.Speedometer;
 
 import java.io.IOException;
+import java.io.Serializable;
 import java.util.Collection;
 
 /**
@@ -29,7 +30,7 @@ import java.util.Collection;
  * @param <MESSAGE_TYPE>    消息类型
  * @author 刘镇 (suninformation@163.com) on 2018/11/14 11:10 AM
  */
-public interface ISessionManager<SESSION_WRAPPER extends ISessionWrapper<?, ?>, SESSION_ID, MESSAGE_TYPE> extends AutoCloseable {
+public interface ISessionManager<SESSION_WRAPPER extends ISessionWrapper<?, ?>, SESSION_ID extends Serializable, MESSAGE_TYPE> extends AutoCloseable {
 
     /**
      * 初始化

@@ -15,6 +15,7 @@
  */
 package net.ymate.platform.serv;
 
+import java.io.Serializable;
 import java.util.Map;
 
 /**
@@ -25,7 +26,7 @@ import java.util.Map;
  * @param <MESSAGE_TYPE>    消息类型
  * @author 刘镇 (suninformation@163.com) on 2018/11/21 7:26 PM
  */
-public interface ISessionIdleChecker<SESSION_WRAPPER extends ISessionWrapper<?, ?>, SESSION_ID, MESSAGE_TYPE> extends AutoCloseable {
+public interface ISessionIdleChecker<SESSION_WRAPPER extends ISessionWrapper<?, ?>, SESSION_ID extends Serializable, MESSAGE_TYPE> extends AutoCloseable {
 
     /**
      * 初始化

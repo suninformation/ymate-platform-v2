@@ -84,6 +84,6 @@ public class NioUdpSessionWrapper extends AbstractSessionWrapper<NioUdpSession, 
 
     @Override
     public String toString() {
-        return String.format("NioSessionWrapper {session= [id=%s, remote=%s, attrs=%s], lastTouchTime=%d}", id, socketAddress.getHostName() + ":" + socketAddress.getPort(), attributes, getLastTouchTime());
+        return String.format("NioUdpSessionWrapper {session= [id=%s, remote=%s, attrs=%s], lastTouchTime=%d}", id, socketAddress.getHostName() + ":" + socketAddress.getPort(), attributes, getLastTouchTime());
     }
 }
