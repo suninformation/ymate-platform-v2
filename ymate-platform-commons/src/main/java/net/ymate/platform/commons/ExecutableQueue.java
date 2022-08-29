@@ -147,7 +147,7 @@ public class ExecutableQueue<E extends Serializable> implements AutoCloseable {
      */
     protected void onListenStarted() {
         if (LOG.isInfoEnabled()) {
-            LOG.info(String.format("ExecutableQueue Service [%s] Listener Service Started.", prefix));
+            LOG.info(String.format("ExecutableQueue[%s] Listener Service Started.", prefix));
         }
     }
 
@@ -156,7 +156,7 @@ public class ExecutableQueue<E extends Serializable> implements AutoCloseable {
      */
     protected void onListenStopped() {
         if (LOG.isInfoEnabled()) {
-            LOG.info(String.format("ExecutableQueue Service [%s] Listener Service Stopped.", prefix));
+            LOG.info(String.format("ExecutableQueue[%s] Listener Service Stopped.", prefix));
         }
     }
 
@@ -168,7 +168,7 @@ public class ExecutableQueue<E extends Serializable> implements AutoCloseable {
      */
     protected void onListenerAdded(String id, IListener<E> listener) {
         if (LOG.isInfoEnabled()) {
-            LOG.info(String.format("ExecutableQueue Service [%s] Add Listener [%s@%s].", prefix, id, listener.getClass().getName()));
+            LOG.info(String.format("ExecutableQueue[%s] Add Listener [%s@%s].", prefix, id, listener.getClass().getName()));
         }
     }
 
@@ -180,7 +180,7 @@ public class ExecutableQueue<E extends Serializable> implements AutoCloseable {
      */
     protected void onListenerRemoved(String id, IListener<E> listener) {
         if (LOG.isInfoEnabled()) {
-            LOG.info(String.format("ExecutableQueue Service [%s] Remove Listener [%s@%s].", prefix, id, listener == null ? "unknown" : listener.getClass().getName()));
+            LOG.info(String.format("ExecutableQueue[%s] Remove Listener [%s@%s].", prefix, id, listener == null ? "unknown" : listener.getClass().getName()));
         }
     }
 
@@ -191,7 +191,7 @@ public class ExecutableQueue<E extends Serializable> implements AutoCloseable {
      */
     protected void onElementAdded(E element) {
         if (LOG.isInfoEnabled()) {
-            LOG.info(String.format("ExecutableQueue Service [%s] Add Element [%s].", prefix, element.toString()));
+            LOG.info(String.format("ExecutableQueue[%s] Add Element [%s].", prefix, element.toString()));
         }
     }
 
@@ -202,8 +202,27 @@ public class ExecutableQueue<E extends Serializable> implements AutoCloseable {
      */
     protected void onElementAbandoned(E element) {
         if (LOG.isInfoEnabled()) {
-            LOG.info(String.format("ExecutableQueue Service [%s] Abandon Element [%s].", prefix, element.toString()));
+            LOG.info(String.format("ExecutableQueue[%s] Abandon Element [%s].", prefix, element.toString()));
         }
+    }
+
+    /**
+     * 处理速度计数器监听数据
+     *
+     * @param speed        速度
+     * @param averageSpeed 平均速度
+     * @param maxSpeed     最大速度
+     * @param minSpeed     最小速度
+     * @since 2.1.2
+     */
+    protected void onSpeedometerListen(long speed, long averageSpeed, long maxSpeed, long minSpeed) {
+        if (LOG.isInfoEnabled()) {
+            LOG.info(String.format("ExecutableQueue[%s] Status: { semaphore: %d, queue: %d, worker: %d, speed: %d, average: %d, min:%d, max:%d }", prefix, semaphore != null ? semaphore.availablePermits() : -1, queue.size(), workQueue.size(), speed, averageSpeed, minSpeed, maxSpeed));
+        }
+    }
+
+    protected void doSpeedometerStart(Speedometer speedometer) {
+        speedometer.start(this::onSpeedometerListen);
     }
 
     /**
@@ -212,20 +231,18 @@ public class ExecutableQueue<E extends Serializable> implements AutoCloseable {
     public synchronized void listenStart() {
         if (innerExecutorService == null && !closed) {
             if (LOG.isInfoEnabled()) {
-                LOG.info(String.format("Starting ExecutableQueue[%s] Listener Service...", prefix));
+                LOG.info(String.format("ExecutableQueue[%s] Starting Listener Service...", prefix));
             }
-            speedometer.start((speed, averageSpeed, maxSpeed, minSpeed) -> {
-                if (LOG.isInfoEnabled()) {
-                    LOG.info(String.format("ExecutableQueue Service [%s] Status: { semaphore: %d, queue: %d, worker: %d, speed: %d, average: %d, max:%d }", prefix, semaphore != null ? semaphore.availablePermits() : -1, queue.size(), workQueue.size(), speed, averageSpeed, maxSpeed));
-                }
-            });
+            doSpeedometerStart(speedometer);
             innerExecutorService = ThreadUtils.newSingleThreadExecutor(1, DefaultThreadFactory.create(StringUtils.capitalize(prefix) + "ListenerService"));
             innerExecutorService.submit(() -> {
                 try {
                     while (!stopped) {
                         E element = queue.poll(queueTimeout, TimeUnit.SECONDS);
                         if (element != null) {
-                            speedometer.touch();
+                            if (speedometer.isStarted()) {
+                                speedometer.touch();
+                            }
                             if (listeners != null && !listeners.isEmpty()) {
                                 AtomicInteger abandonedCount = new AtomicInteger(0);
                                 Set<String> ids = new HashSet<>(listeners.keySet());
@@ -288,7 +305,7 @@ public class ExecutableQueue<E extends Serializable> implements AutoCloseable {
         if (innerExecutorService != null && !executor.isShutdown() && !stopped) {
             try {
                 if (LOG.isInfoEnabled()) {
-                    LOG.info(String.format("Stopping ExecutableQueue[%s] Listener Service...", prefix));
+                    LOG.info(String.format("ExecutableQueue[%s] Stopping Listener Service...", prefix));
                 }
                 speedometer.close();
                 //
@@ -314,7 +331,7 @@ public class ExecutableQueue<E extends Serializable> implements AutoCloseable {
             //
             if (executor != null && !executor.isShutdown()) {
                 if (LOG.isInfoEnabled()) {
-                    LOG.info(String.format("Shutting down ExecutableQueue[%s] ExecutorService...", prefix));
+                    LOG.info(String.format("ExecutableQueue[%s] Shutting down Executor Service...", prefix));
                 }
                 executor.shutdown();
             }
@@ -397,6 +414,14 @@ public class ExecutableQueue<E extends Serializable> implements AutoCloseable {
             queue.addAll(elements);
             elements.forEach(this::onElementAdded);
         }
+    }
+
+    /**
+     * @return 返回当前队列名称前缀
+     * @since 2.1.2
+     */
+    public String getPrefix() {
+        return prefix;
     }
 
     /**
@@ -518,7 +543,9 @@ public class ExecutableQueue<E extends Serializable> implements AutoCloseable {
          *
          * @return 返回元素过滤器集合
          */
-        List<IFilter<E>> getFilters();
+        default List<IFilter<E>> getFilters() {
+            return null;
+        }
 
         /**
          * 执行监听器处理逻辑
