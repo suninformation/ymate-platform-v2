@@ -56,7 +56,8 @@ public class DefaultSessionIdleChecker<SESSION_WRAPPER extends ISessionWrapper<?
         Iterator<Map.Entry<SESSION_ID, SESSION_WRAPPER>> iterator = sessions.entrySet().iterator();
         while (iterator.hasNext()) {
             Map.Entry<SESSION_ID, SESSION_WRAPPER> entry = iterator.next();
-            if (System.currentTimeMillis() - entry.getValue().getLastTouchTime() > idleTimeInMillis) {
+            // 判断时将设置的空闲时间毫秒值扩大10%
+            if (System.currentTimeMillis() - entry.getValue().getLastTouchTime() >= idleTimeInMillis + idleTimeInMillis * 0.1) {
                 iterator.remove();
                 //
                 sessionManager.closeSessionWrapper(entry.getValue());
