@@ -2756,6 +2756,17 @@ public class CustomMessageQueue extends ExecutableQueue<CustomMessageQueue.Custo
         System.out.println("重写此方法用于处理队列元素被丢弃事件。");
     }
 
+    @Override
+    protected void onSpeedometerListen(long speed, long averageSpeed, long maxSpeed, long minSpeed) {
+      System.out.println("重写此方法用于处理速度计数器监听数据。");
+    }
+
+    @Override
+    protected void doSpeedometerStart(Speedometer speedometer) {
+      // 重定此方法用于设置速度计数器配置参数
+      super.doSpeedometerStart(speedometer.interval(2));
+    }
+
     /**
      * 自定义消息
      */
@@ -2847,6 +2858,28 @@ public class CustomMessageQueue extends ExecutableQueue<CustomMessageQueue.Custo
             message.setContent("INFO: 此条信息将被过滤");
             // 将消息推送到队列
             queue.putElement(message);
+            //
+            try {
+              queue.putElement(queue.execute(() -> {
+                CustomMessage msg = new CustomMessage();
+                msg.setId(UUIDUtils.UUID());
+                msg.setType("warn");
+                msg.setContent("通过FutureTask方式执行业务逻辑以获取消息对象，如：HTTP请求某接口、数据库中查询某数据等");
+                return msg;
+              }, 10));
+              //
+              queue.execute(Collections.singletonList(() -> {
+                CustomMessage msg = new CustomMessage();
+                msg.setId(UUIDUtils.UUID());
+                msg.setType("warn");
+                msg.setContent("批量获取消息对象");
+                return msg;
+              }));
+            } catch (InterruptedException | ExecutionException | TimeoutException e) {
+              throw new RuntimeException(e);
+            }
+            //
+            Thread.sleep(TimeUnit.SECONDS.toMillis(5));
             // 移除监听器
             queue.removeListener(CustomMessageQueue.class);
             // 手动停止队列服务
@@ -2867,6 +2900,9 @@ CustomMessage{id='d37f053f5dd145ad82bf2ec136f3335a', type='warn', content='WARN:
 重写此方法用于处理元素被成功推送至队列事件。
 重写此方法用于处理队列元素被丢弃事件。
 重写此方法用于处理元素被成功推送至队列事件。
+CustomMessage{id='ee59790938d144f5866c058f944f2b2a', type='warn', content='通过FutureTask方式执行业务逻辑以获取消息对象，如：HTTP请求某接口、数据库中查询某数据等'}
+CustomMessage{id='7cd1c917d6f94f24bf86e54bfcc9bfbd', type='warn', content='批量获取消息对象'}
+重写此方法用于处理速度计数器监听数据。
 重写此方法用于处理队列监听服务停止事件。
 ```
 

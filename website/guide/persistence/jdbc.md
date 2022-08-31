@@ -1189,7 +1189,7 @@ ymp.params.jdbc.package_name=
 </plugin>
 ```
 
-插件中默认已经包含 `mysql-connector-java-5.1.49` 驱动，若需要其它版本或其它类型数据库驱动时，需要在插件中配置相关依赖，如：
+插件中默认已经包含 `mysql-connector-java-8.0.30` 驱动，若需要其它版本或其它类型数据库驱动时，需要在插件中配置相关依赖，如：
 
 ```xml
 <plugin>
@@ -1200,7 +1200,17 @@ ymp.params.jdbc.package_name=
         <dependency>
             <groupId>mysql</groupId>
             <artifactId>mysql-connector-java</artifactId>
-            <version>8.0.20</version>
+            <version>8.0.30</version>
+        </dependency>
+        <dependency>
+            <groupId>com.oracle.database.jdbc</groupId>
+            <artifactId>ojdbc8</artifactId>
+            <version>21.7.0.0</version>
+        </dependency>
+        <dependency>
+            <groupId>com.microsoft.sqlserver</groupId>
+            <artifactId>mssql-jdbc</artifactId>
+            <version>11.2.0.jre8</version>
         </dependency>
     </dependencies>
 </plugin>
