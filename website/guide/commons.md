@@ -496,7 +496,7 @@ JSON 包装器，为了让不同的第三方 JSON 解析器拥有统一的 API �
 
 JSON 包装器是由 JsonWrapper 类进行统一维护和管理，当其被首次加载时，会按照 FastJson、Gson 和 Jackson 这一顺序依次尝试实例化对应的包装器类，加载成功则停止加载流程并返回（能否加载成功的依据是当前运行环境依赖库中是否存在与之对应的第三方 JSON 解析器的包文件），否则继续尝试直至未加载到任何结果为止。
 
-当上述第三方 JSON 解析器的依赖包文件都（或大于一种）存在于当前运行环境时，默认将使用 FastJson 的 JSON 包装器实现。若此时希望使用指定的实现类做为默认 JSON 包装器时，可以通过 JVM 启动参数 `ymp.jsonAdapterClass` 进行如下配置：
+当上述第三方 JSON 解析器的依赖包文件都（或大于一种）存在于当前运行环境时，默认将使用 FastJson 的 JSON 包装器实现。若此时希望使用指定的实现类做为默认 JSON 包装器时，可以通过 SPI 方式指定 `IJsonAdapterFactory` 工厂接口实现类，也可以通过 JVM 启动参数 `ymp.jsonAdapterClass` 进行如下配置：
 
 
 

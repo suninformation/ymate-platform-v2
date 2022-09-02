@@ -15,6 +15,7 @@
  */
 package net.ymate.platform.commons.json;
 
+import net.ymate.platform.commons.json.impl.DefaultJsonAdapterFactory;
 import net.ymate.platform.commons.util.ClassUtils;
 import net.ymate.platform.commons.util.RuntimeUtils;
 import org.apache.commons.lang.NullArgumentException;
@@ -43,18 +44,13 @@ public final class JsonWrapper implements Serializable {
             String jsonAdapterClass = System.getProperty("ymp.jsonAdapterClass");
             jsonAdapter = ClassUtils.impl(jsonAdapterClass, IJsonAdapter.class, JsonWrapper.class);
             if (jsonAdapter == null) {
-                ClassUtils.ExtensionLoader<IJsonAdapter> extensionLoader = ClassUtils.getExtensionLoader(IJsonAdapter.class);
-                for (Class<IJsonAdapter> adapterClass : extensionLoader.getExtensionClasses()) {
-                    try {
-                        jsonAdapter = ClassUtils.impl(adapterClass, IJsonAdapter.class);
-                        if (jsonAdapter != null) {
-                            if (LOG.isInfoEnabled()) {
-                                LOG.info(String.format("Using JsonAdapter class [%s].", adapterClass.getName()));
-                            }
-                            break;
-                        }
-                    } catch (NoClassDefFoundError | Exception ignored) {
-                    }
+                IJsonAdapterFactory jsonAdapterFactory = ClassUtils.getExtensionLoader(IJsonAdapterFactory.class).getExtension();
+                if (jsonAdapterFactory == null) {
+                    jsonAdapterFactory = new DefaultJsonAdapterFactory();
+                }
+                jsonAdapter = jsonAdapterFactory.getJsonAdapter();
+                if (jsonAdapter != null && LOG.isInfoEnabled()) {
+                    LOG.info(String.format("Using JsonAdapter class [%s].", jsonAdapter.getClass().getName()));
                 }
             } else if (LOG.isInfoEnabled()) {
                 LOG.info(String.format("Using JsonAdapter class [%s].", jsonAdapterClass));
