@@ -146,8 +146,8 @@ public class ExecutableQueue<E extends Serializable> implements AutoCloseable {
      * 当监听线程开启时被调用
      */
     protected void onListenStarted() {
-        if (LOG.isInfoEnabled()) {
-            LOG.info(String.format("ExecutableQueue[%s] Listener Service Started.", prefix));
+        if (LOG.isDebugEnabled()) {
+            LOG.debug(String.format("ExecutableQueue[%s] Listener Service Started.", prefix));
         }
     }
 
@@ -155,8 +155,8 @@ public class ExecutableQueue<E extends Serializable> implements AutoCloseable {
      * 当监听线程停止时被调用
      */
     protected void onListenStopped() {
-        if (LOG.isInfoEnabled()) {
-            LOG.info(String.format("ExecutableQueue[%s] Listener Service Stopped.", prefix));
+        if (LOG.isDebugEnabled()) {
+            LOG.debug(String.format("ExecutableQueue[%s] Listener Service Stopped.", prefix));
         }
     }
 
@@ -167,8 +167,8 @@ public class ExecutableQueue<E extends Serializable> implements AutoCloseable {
      * @param listener 监听器对象
      */
     protected void onListenerAdded(String id, IListener<E> listener) {
-        if (LOG.isInfoEnabled()) {
-            LOG.info(String.format("ExecutableQueue[%s] Add Listener [%s@%s].", prefix, id, listener.getClass().getName()));
+        if (LOG.isDebugEnabled()) {
+            LOG.debug(String.format("ExecutableQueue[%s] Add Listener [%s@%s].", prefix, id, listener.getClass().getName()));
         }
     }
 
@@ -179,8 +179,8 @@ public class ExecutableQueue<E extends Serializable> implements AutoCloseable {
      * @param listener 监听器对象（可能为空）
      */
     protected void onListenerRemoved(String id, IListener<E> listener) {
-        if (LOG.isInfoEnabled()) {
-            LOG.info(String.format("ExecutableQueue[%s] Remove Listener [%s@%s].", prefix, id, listener == null ? "unknown" : listener.getClass().getName()));
+        if (LOG.isDebugEnabled()) {
+            LOG.debug(String.format("ExecutableQueue[%s] Remove Listener [%s@%s].", prefix, id, listener == null ? "unknown" : listener.getClass().getName()));
         }
     }
 
@@ -190,8 +190,8 @@ public class ExecutableQueue<E extends Serializable> implements AutoCloseable {
      * @param element 新元素对象
      */
     protected void onElementAdded(E element) {
-        if (LOG.isInfoEnabled()) {
-            LOG.info(String.format("ExecutableQueue[%s] Add Element [%s].", prefix, element.toString()));
+        if (LOG.isDebugEnabled()) {
+            LOG.debug(String.format("ExecutableQueue[%s] Add Element [%s].", prefix, element.toString()));
         }
     }
 
@@ -201,8 +201,8 @@ public class ExecutableQueue<E extends Serializable> implements AutoCloseable {
      * @param element 元素对象
      */
     protected void onElementAbandoned(E element) {
-        if (LOG.isInfoEnabled()) {
-            LOG.info(String.format("ExecutableQueue[%s] Abandon Element [%s].", prefix, element.toString()));
+        if (LOG.isDebugEnabled()) {
+            LOG.debug(String.format("ExecutableQueue[%s] Abandon Element [%s].", prefix, element.toString()));
         }
     }
 
@@ -216,8 +216,8 @@ public class ExecutableQueue<E extends Serializable> implements AutoCloseable {
      * @since 2.1.2
      */
     protected void onSpeedometerListen(long speed, long averageSpeed, long maxSpeed, long minSpeed) {
-        if (LOG.isInfoEnabled()) {
-            LOG.info(String.format("ExecutableQueue[%s] Status: { semaphore: %d, queue: %d, worker: %d, speed: %d, average: %d, min:%d, max:%d }", prefix, semaphore != null ? semaphore.availablePermits() : -1, queue.size(), workQueue.size(), speed, averageSpeed, minSpeed, maxSpeed));
+        if (LOG.isDebugEnabled()) {
+            LOG.debug(String.format("ExecutableQueue[%s] Status: { semaphore: %d, queue: %d, worker: %d, speed: %d, average: %d, min:%d, max:%d }", prefix, semaphore != null ? semaphore.availablePermits() : -1, queue.size(), workQueue.size(), speed, averageSpeed, minSpeed, maxSpeed));
         }
     }
 
@@ -347,12 +347,7 @@ public class ExecutableQueue<E extends Serializable> implements AutoCloseable {
     }
 
     public boolean checkStatus() {
-        boolean flag = !closed && (innerExecutorService == null || !stopped);
-        if (flag && LOG.isInfoEnabled()) {
-            // 输出当前队列数量
-            LOG.info(String.format("ExecutableQueue[%s] Queue size: %d", prefix, queue.size()));
-        }
-        return flag;
+        return !closed && (innerExecutorService == null || !stopped);
     }
 
     public void addListener(IListener<E> listener) {
@@ -463,8 +458,8 @@ public class ExecutableQueue<E extends Serializable> implements AutoCloseable {
 
     public void execute(List<Callable<E>> workers) {
         if (checkStatus() && workers != null && !workers.isEmpty()) {
-            if (LOG.isInfoEnabled()) {
-                LOG.info(String.format("ExecutableQueue[%s] Executor Submit: %d", prefix, workers.size()));
+            if (LOG.isDebugEnabled()) {
+                LOG.debug(String.format("ExecutableQueue[%s] Executor Submit Workers: %d", prefix, workers.size()));
             }
             workers.forEach(worker -> executor.submit(new ExecutableWorker<>(queue, semaphore, worker)));
         }
