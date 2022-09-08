@@ -84,8 +84,6 @@ public class VelocityView extends AbstractView {
         super.doViewInit(owner);
         if (!initialized) {
             VELOCITY_CONFIG.setProperty(Velocity.INPUT_ENCODING, DEFAULT_CHARSET);
-            VELOCITY_CONFIG.setProperty(Velocity.OUTPUT_ENCODING, DEFAULT_CHARSET);
-            //
             if (baseViewPath.startsWith(Type.Const.WEB_INF)) {
                 VELOCITY_CONFIG.setProperty(Velocity.FILE_RESOURCE_LOADER_PATH, new File(RuntimeUtils.getRootPath(), StringUtils.substringAfter(baseViewPath, Type.Const.WEB_INF)).getPath());
             } else {

@@ -188,8 +188,10 @@ public abstract class AbstractView implements IView {
                 if (!path.contains("?") && !path.endsWith(suffix)) {
                     path += suffix;
                 }
-            } else if (path.startsWith(baseViewPath)) {
-                path = StringUtils.substringAfter(path, baseViewPath);
+            } else {
+                if (path.startsWith(baseViewPath)) {
+                    path = StringUtils.substringAfter(path, baseViewPath);
+                }
                 if (StringUtils.isNotBlank(suffix) && !path.endsWith(suffix)) {
                     path += suffix;
                 }
