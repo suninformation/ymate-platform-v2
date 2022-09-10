@@ -15,9 +15,7 @@
  */
 package net.ymate.platform.core.event;
 
-import java.util.EventObject;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 /**
  * 事件上下文接口
@@ -68,6 +66,23 @@ public abstract class AbstractEventContext<T, E extends Enum> extends EventObjec
     public AbstractEventContext<T, E> setEventSource(Object eventSource) {
         params.put(IEvent.EVENT_SOURCE, eventSource);
         return this;
+    }
+
+    /**
+     * @param paramName 扩展参数名称
+     * @return 返回 true 表示该参数名称存在
+     * @since 2.1.2
+     */
+    public boolean hasParamExtend(String paramName) {
+        return params.containsKey(paramName);
+    }
+
+    /**
+     * @return 返回全部扩展参名称集合
+     * @since 2.1.2
+     */
+    public Collection<String> getParamExtendNames() {
+        return Collections.unmodifiableSet(params.keySet());
     }
 
     public AbstractEventContext<T, E> addParamExtend(String paramName, Object paramObject) {
