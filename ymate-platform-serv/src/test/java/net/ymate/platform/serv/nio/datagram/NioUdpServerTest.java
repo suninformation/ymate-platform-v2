@@ -69,6 +69,7 @@ public class NioUdpServerTest extends AbstractNioUdpListener implements INioUdpS
     }
 
     private void doBuildClient() throws Exception {
+        Thread.sleep(TimeUnit.SECONDS.toMillis(5));
         IClientCfg clientCfg = DefaultClientCfg.builder()
                 .clientName("UdpClient")
                 .remoteHost("0.0.0.0")
@@ -81,7 +82,7 @@ public class NioUdpServerTest extends AbstractNioUdpListener implements INioUdpS
     @After
     public void tearDown() throws Exception {
         try {
-            Thread.sleep(TimeUnit.SECONDS.toMillis(15));
+            Thread.sleep(TimeUnit.SECONDS.toMillis(20));
             // 当前会话总数
             LOG.info("Current session count: " + sessionManager.sessionCount());
             // 将已连接的客户端会话从管理器中移除
