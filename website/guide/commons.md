@@ -466,7 +466,7 @@ JSON 包装器，为了让不同的第三方 JSON 解析器拥有统一的 API �
   <dependency>
       <groupId>com.alibaba</groupId>
       <artifactId>fastjson</artifactId>
-      <version>1.2.80</version>
+      <version>1.2.83</version>
   </dependency>
   ```
 
@@ -486,7 +486,7 @@ JSON 包装器，为了让不同的第三方 JSON 解析器拥有统一的 API �
   <dependency>
       <groupId>com.fasterxml.jackson.datatype</groupId>
       <artifactId>jackson-datatype-jdk8</artifactId>
-      <version>2.13.2</version>
+      <version>2.13.4</version>
   </dependency>
   ```
 
@@ -854,23 +854,31 @@ mvn clean source:jar install
 
 ## 序列化（Serialize）
 
-基于 `ISerializer` 接口实现对象序列化与反序列化操作，由 `SerializerManager` 对象序列化管理器维护管理，支持通过 `SPI` 机制和自动扫描 `@Serializer` 注解方式加载并注册，默认提供了两种实现方式：
+基于 `ISerializer` 接口实现对象序列化与反序列化操作，由 `SerializerManager` 对象序列化管理器维护管理，支持通过 `SPI` 机制和自动扫描 `@Serializer` 注解方式加载并注册，默认提供了几种实现方式：
 
 - DefaultSerializer：基于 Java 对象序列化实现。
 
 - JSONSerializer：基于 JSON 对象序列化实现。
 
-- HessianSerializer：基于 Hessian 二进制对象序列化实现，需手工添加以下依赖包：
+- HessianSerializer：基于 Hessian 二进制对象序列化实现，需添加以下依赖包：
 
   ```xml
   <dependency>
       <groupId>com.caucho</groupId>
       <artifactId>hessian</artifactId>
-      <version>4.0.65</version>
+      <version>4.0.66</version>
   </dependency>
   ```
 
+- FstSerializer：基于 FST 二进制对象序列化实现，需添加以下依赖包：
 
+  ```xml
+  <dependency>
+      <groupId>de.ruedigermoeller</groupId>
+      <artifactId>fst</artifactId>
+      <version>2.48-jdk-6</version>
+  </dependency>
+  ```
 
 **示例一：** 对象序列化与反序列化操作
 
@@ -926,7 +934,6 @@ public class CustomSerializer implements ISerializer {
     public byte[] serialize(Object object) throws Exception {
         com.alibaba.fastjson.serializer.JSONSerializer serializer = new com.alibaba.fastjson.serializer.JSONSerializer();
         serializer.config(SerializerFeature.WriteEnumUsingToString, true);
-        serializer.config(SerializerFeature.WriteClassName, true);
         serializer.write(object);
         return serializer.getWriter().toBytes(StandardCharsets.UTF_8);
     }

@@ -150,7 +150,7 @@ WebMVC 模块在 YMP 框架中是除了 JDBC 持久化模块以外的另一个�
 其主要功能特性如下：
 
 - 标准 MVC 实现，结构清晰，完全基于注解方式配置简单；
-- 支持约定模式，无需编写控制器代码，直接匹配并执行视图‘
+- 支持约定模式，无需编写控制器代码，直接匹配并执行视图渲染；
 - 支持多种视图技术（Binary、Forward、Freemarker、HTML、HttpStatus、JSON、JSP、Redirect、Text、Velocity等）；
 - 支持 RESTful 模式及 URL 风格；
 - 支持请求参数与控制器方法参数的自动绑定；
