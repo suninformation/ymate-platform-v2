@@ -18,10 +18,10 @@ package net.ymate.platform.commons.json.impl;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.util.TypeUtils;
+import net.ymate.platform.commons.json.IJsonAdapter;
 import net.ymate.platform.commons.json.IJsonArrayWrapper;
 import net.ymate.platform.commons.json.IJsonNodeWrapper;
 import net.ymate.platform.commons.json.IJsonObjectWrapper;
-import net.ymate.platform.commons.json.JsonWrapper;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 
@@ -34,9 +34,12 @@ import java.math.BigInteger;
  */
 public class FastJsonNodeWrapper implements IJsonNodeWrapper {
 
+    private final IJsonAdapter adapter;
+
     private final Object object;
 
-    public FastJsonNodeWrapper(Object object) {
+    public FastJsonNodeWrapper(IJsonAdapter adapter, Object object) {
+        this.adapter = adapter;
         this.object = object;
     }
 
@@ -118,12 +121,12 @@ public class FastJsonNodeWrapper implements IJsonNodeWrapper {
 
     @Override
     public IJsonArrayWrapper getJsonArray() {
-        return isJsonArray() ? new FastJsonArrayWrapper((JSONArray) object) : null;
+        return isJsonArray() ? new FastJsonArrayWrapper(adapter, (JSONArray) object) : null;
     }
 
     @Override
     public IJsonObjectWrapper getJsonObject() {
-        return isJsonObject() ? new FastJsonObjectWrapper((JSONObject) object) : null;
+        return isJsonObject() ? new FastJsonObjectWrapper(adapter, (JSONObject) object) : null;
     }
 
     @Override
@@ -149,6 +152,6 @@ public class FastJsonNodeWrapper implements IJsonNodeWrapper {
 
     @Override
     public String toString() {
-        return JsonWrapper.toJsonString(object, false, false);
+        return adapter.toJsonString(object, false, false);
     }
 }

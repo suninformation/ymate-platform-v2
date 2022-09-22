@@ -18,10 +18,10 @@ package net.ymate.platform.commons.json.impl;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import net.ymate.platform.commons.json.IJsonAdapter;
 import net.ymate.platform.commons.json.IJsonArrayWrapper;
 import net.ymate.platform.commons.json.IJsonNodeWrapper;
 import net.ymate.platform.commons.json.IJsonObjectWrapper;
-import net.ymate.platform.commons.json.JsonWrapper;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 
@@ -38,34 +38,39 @@ import java.util.Map;
  */
 public class GsonArrayWrapper implements IJsonArrayWrapper {
 
+    private final IJsonAdapter adapter;
+
     private final JsonArray jsonArray;
 
-    public GsonArrayWrapper() {
+    public GsonArrayWrapper(IJsonAdapter adapter) {
+        this.adapter = adapter;
         jsonArray = new JsonArray();
     }
 
-    public GsonArrayWrapper(int initialCapacity) {
+    public GsonArrayWrapper(IJsonAdapter adapter, int initialCapacity) {
+        this.adapter = adapter;
         jsonArray = new JsonArray(initialCapacity);
     }
 
-    public GsonArrayWrapper(Object[] array) {
-        this(array.length);
+    public GsonArrayWrapper(IJsonAdapter adapter, Object[] array) {
+        this(adapter, array.length);
         Arrays.stream(array).forEach(this::add);
     }
 
-    public GsonArrayWrapper(Collection<?> collection) {
-        this(collection.size());
+    public GsonArrayWrapper(IJsonAdapter adapter, Collection<?> collection) {
+        this(adapter, collection.size());
         collection.forEach(this::add);
     }
 
-    public GsonArrayWrapper(JsonArray jsonArray) {
+    public GsonArrayWrapper(IJsonAdapter adapter, JsonArray jsonArray) {
+        this.adapter = adapter;
         this.jsonArray = jsonArray != null ? jsonArray : new JsonArray();
     }
 
     @Override
     public IJsonNodeWrapper get(int index) {
         JsonElement jsonElement = jsonArray.get(index);
-        return jsonElement != null ? new GsonNodeWrapper(jsonElement) : null;
+        return jsonElement != null ? new GsonNodeWrapper(adapter, jsonElement) : null;
     }
 
     @Override
@@ -143,13 +148,13 @@ public class GsonArrayWrapper implements IJsonArrayWrapper {
     @Override
     public IJsonArrayWrapper getJsonArray(int index) {
         JsonArray value = jsonArray.get(index).getAsJsonArray();
-        return value == null ? null : new GsonArrayWrapper(value);
+        return value == null ? null : new GsonArrayWrapper(adapter, value);
     }
 
     @Override
     public IJsonObjectWrapper getJsonObject(int index) {
         JsonObject value = jsonArray.get(index).getAsJsonObject();
-        return value == null ? null : new GsonObjectWrapper(value);
+        return value == null ? null : new GsonObjectWrapper(adapter, value);
     }
 
     @Override
@@ -318,12 +323,12 @@ public class GsonArrayWrapper implements IJsonArrayWrapper {
 
     @Override
     public String toString(boolean format, boolean keepNullValue) {
-        return JsonWrapper.toJsonString(jsonArray, format, keepNullValue);
+        return adapter.toJsonString(jsonArray, format, keepNullValue);
     }
 
     @Override
     public String toString(boolean format, boolean keepNullValue, boolean snakeCase) {
-        return JsonWrapper.toJsonString(jsonArray, format, keepNullValue, snakeCase);
+        return adapter.toJsonString(jsonArray, format, keepNullValue, snakeCase);
     }
 
     @Override

@@ -98,47 +98,47 @@ public class FastJsonAdapter implements IJsonAdapter {
 
     @Override
     public IJsonObjectWrapper createJsonObject() {
-        return new FastJsonObjectWrapper();
+        return new FastJsonObjectWrapper(this);
     }
 
     @Override
     public IJsonObjectWrapper createJsonObject(int initialCapacity) {
-        return new FastJsonObjectWrapper(initialCapacity);
+        return new FastJsonObjectWrapper(this, initialCapacity);
     }
 
     @Override
     public IJsonObjectWrapper createJsonObject(boolean ordered) {
-        return new FastJsonObjectWrapper(ordered);
+        return new FastJsonObjectWrapper(this, ordered);
     }
 
     @Override
     public IJsonObjectWrapper createJsonObject(int initialCapacity, boolean ordered) {
-        return new FastJsonObjectWrapper(initialCapacity, ordered);
+        return new FastJsonObjectWrapper(this, initialCapacity, ordered);
     }
 
     @Override
     public IJsonObjectWrapper createJsonObject(Map<?, ?> map) {
-        return new FastJsonObjectWrapper(map);
+        return new FastJsonObjectWrapper(this, map);
     }
 
     @Override
     public IJsonArrayWrapper createJsonArray() {
-        return new FastJsonArrayWrapper();
+        return new FastJsonArrayWrapper(this);
     }
 
     @Override
     public IJsonArrayWrapper createJsonArray(int initialCapacity) {
-        return new FastJsonArrayWrapper(initialCapacity);
+        return new FastJsonArrayWrapper(this, initialCapacity);
     }
 
     @Override
     public IJsonArrayWrapper createJsonArray(Object[] array) {
-        return new FastJsonArrayWrapper(array);
+        return new FastJsonArrayWrapper(this, array);
     }
 
     @Override
     public IJsonArrayWrapper createJsonArray(Collection<?> collection) {
-        return new FastJsonArrayWrapper(collection);
+        return new FastJsonArrayWrapper(this, collection);
     }
 
     @Override
@@ -146,9 +146,9 @@ public class FastJsonAdapter implements IJsonAdapter {
         JsonWrapper jsonWrapper = null;
         Object obj = JSON.parse(jsonStr, ParserConfig.getGlobalInstance(), Feature.OrderedField);
         if (obj instanceof JSONObject) {
-            jsonWrapper = new JsonWrapper(new FastJsonObjectWrapper((JSONObject) obj));
+            jsonWrapper = new JsonWrapper(new FastJsonObjectWrapper(this, (JSONObject) obj));
         } else if (obj instanceof JSONArray) {
-            jsonWrapper = new JsonWrapper(new FastJsonArrayWrapper((JSONArray) obj));
+            jsonWrapper = new JsonWrapper(new FastJsonArrayWrapper(this, (JSONArray) obj));
         }
         return jsonWrapper;
     }
@@ -163,9 +163,9 @@ public class FastJsonAdapter implements IJsonAdapter {
         JsonWrapper jsonWrapper = null;
         Object obj = JSON.toJSON(JsonWrapper.unwrap(object), snakeCase ? SNAKE_CASE_SERIALIZE_CONFIG : SerializeConfig.globalInstance);
         if (obj instanceof JSONObject) {
-            jsonWrapper = new JsonWrapper(new FastJsonObjectWrapper((JSONObject) obj));
+            jsonWrapper = new JsonWrapper(new FastJsonObjectWrapper(this, (JSONObject) obj));
         } else if (obj instanceof JSONArray) {
-            jsonWrapper = new JsonWrapper(new FastJsonArrayWrapper((JSONArray) obj));
+            jsonWrapper = new JsonWrapper(new FastJsonArrayWrapper(this, (JSONArray) obj));
         }
         return jsonWrapper;
     }
@@ -212,7 +212,7 @@ public class FastJsonAdapter implements IJsonAdapter {
     public byte[] serialize(Object object, boolean snakeCase) throws Exception {
         JSONSerializer serializer = new JSONSerializer(snakeCase ? SNAKE_CASE_SERIALIZE_CONFIG : SerializeConfig.getGlobalInstance());
         serializer.config(SerializerFeature.WriteEnumUsingToString, true);
-        serializer.config(SerializerFeature.WriteClassName, true);
+//        serializer.config(SerializerFeature.WriteClassName, true);
         serializer.write(JsonWrapper.unwrap(object));
         return serializer.getWriter().toBytes(StandardCharsets.UTF_8);
     }

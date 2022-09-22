@@ -17,10 +17,7 @@ package net.ymate.platform.commons.json.impl;
 
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
-import net.ymate.platform.commons.json.IJsonArrayWrapper;
-import net.ymate.platform.commons.json.IJsonNodeWrapper;
-import net.ymate.platform.commons.json.IJsonObjectWrapper;
-import net.ymate.platform.commons.json.JsonWrapper;
+import net.ymate.platform.commons.json.*;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 
@@ -37,34 +34,39 @@ import java.util.Map;
  */
 public class FastJsonArrayWrapper implements IJsonArrayWrapper {
 
+    private final IJsonAdapter adapter;
+
     private final JSONArray jsonArray;
 
-    public FastJsonArrayWrapper() {
+    public FastJsonArrayWrapper(IJsonAdapter adapter) {
+        this.adapter = adapter;
         jsonArray = new JSONArray();
     }
 
-    public FastJsonArrayWrapper(int initialCapacity) {
+    public FastJsonArrayWrapper(IJsonAdapter adapter, int initialCapacity) {
+        this.adapter = adapter;
         jsonArray = new JSONArray(initialCapacity);
     }
 
-    public FastJsonArrayWrapper(Object[] array) {
-        this(array.length);
+    public FastJsonArrayWrapper(IJsonAdapter adapter, Object[] array) {
+        this(adapter, array.length);
         Arrays.stream(array).forEach(this::add);
     }
 
-    public FastJsonArrayWrapper(Collection<?> collection) {
-        this(collection.size());
+    public FastJsonArrayWrapper(IJsonAdapter adapter, Collection<?> collection) {
+        this(adapter, collection.size());
         collection.forEach(this::add);
     }
 
-    public FastJsonArrayWrapper(JSONArray jsonArray) {
+    public FastJsonArrayWrapper(IJsonAdapter adapter, JSONArray jsonArray) {
+        this.adapter = adapter;
         this.jsonArray = jsonArray != null ? jsonArray : new JSONArray();
     }
 
     @Override
     public IJsonNodeWrapper get(int index) {
         Object object = jsonArray.get(index);
-        return object != null ? new FastJsonNodeWrapper(object) : null;
+        return object != null ? new FastJsonNodeWrapper(adapter, object) : null;
     }
 
     @Override
@@ -120,13 +122,13 @@ public class FastJsonArrayWrapper implements IJsonArrayWrapper {
     @Override
     public IJsonArrayWrapper getJsonArray(int index) {
         JSONArray value = jsonArray.getJSONArray(index);
-        return value == null ? null : new FastJsonArrayWrapper(value);
+        return value == null ? null : new FastJsonArrayWrapper(adapter, value);
     }
 
     @Override
     public IJsonObjectWrapper getJsonObject(int index) {
         JSONObject value = jsonArray.getJSONObject(index);
-        return value == null ? null : new FastJsonObjectWrapper(value);
+        return value == null ? null : new FastJsonObjectWrapper(adapter, value);
     }
 
     @Override
@@ -288,12 +290,12 @@ public class FastJsonArrayWrapper implements IJsonArrayWrapper {
 
     @Override
     public String toString(boolean format, boolean keepNullValue) {
-        return JsonWrapper.toJsonString(jsonArray, format, keepNullValue);
+        return adapter.toJsonString(jsonArray, format, keepNullValue);
     }
 
     @Override
     public String toString(boolean format, boolean keepNullValue, boolean snakeCase) {
-        return JsonWrapper.toJsonString(jsonArray, format, keepNullValue, snakeCase);
+        return adapter.toJsonString(jsonArray, format, keepNullValue, snakeCase);
     }
 
     @Override

@@ -88,47 +88,47 @@ public class JacksonAdapter implements IJsonAdapter {
 
     @Override
     public IJsonObjectWrapper createJsonObject() {
-        return new JacksonObjectWrapper();
+        return new JacksonObjectWrapper(this);
     }
 
     @Override
     public IJsonObjectWrapper createJsonObject(int initialCapacity) {
-        return new JacksonObjectWrapper();
+        return new JacksonObjectWrapper(this);
     }
 
     @Override
     public IJsonObjectWrapper createJsonObject(boolean ordered) {
-        return new JacksonObjectWrapper();
+        return new JacksonObjectWrapper(this);
     }
 
     @Override
     public IJsonObjectWrapper createJsonObject(int initialCapacity, boolean ordered) {
-        return new JacksonObjectWrapper();
+        return new JacksonObjectWrapper(this);
     }
 
     @Override
     public IJsonObjectWrapper createJsonObject(Map<?, ?> map) {
-        return new JacksonObjectWrapper(map);
+        return new JacksonObjectWrapper(this, map);
     }
 
     @Override
     public IJsonArrayWrapper createJsonArray() {
-        return new JacksonArrayWrapper();
+        return new JacksonArrayWrapper(this);
     }
 
     @Override
     public IJsonArrayWrapper createJsonArray(int initialCapacity) {
-        return new JacksonArrayWrapper();
+        return new JacksonArrayWrapper(this);
     }
 
     @Override
     public IJsonArrayWrapper createJsonArray(Object[] array) {
-        return new JacksonArrayWrapper(array);
+        return new JacksonArrayWrapper(this, array);
     }
 
     @Override
     public IJsonArrayWrapper createJsonArray(Collection<?> collection) {
-        return new JacksonArrayWrapper(collection);
+        return new JacksonArrayWrapper(this, collection);
     }
 
     @Override
@@ -150,9 +150,9 @@ public class JacksonAdapter implements IJsonAdapter {
         JsonWrapper jsonWrapper = null;
         if (jsonNode != null) {
             if (jsonNode.isObject()) {
-                jsonWrapper = new JsonWrapper(new JacksonObjectWrapper((ObjectNode) jsonNode));
+                jsonWrapper = new JsonWrapper(new JacksonObjectWrapper(this, (ObjectNode) jsonNode));
             } else if (jsonNode.isArray()) {
-                jsonWrapper = new JsonWrapper(new JacksonArrayWrapper((ArrayNode) jsonNode));
+                jsonWrapper = new JsonWrapper(new JacksonArrayWrapper(this, (ArrayNode) jsonNode));
             }
         }
         return jsonWrapper;

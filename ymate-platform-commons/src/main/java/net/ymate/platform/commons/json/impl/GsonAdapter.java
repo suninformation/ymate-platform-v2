@@ -58,47 +58,47 @@ public class GsonAdapter implements IJsonAdapter {
 
     @Override
     public IJsonObjectWrapper createJsonObject() {
-        return new GsonObjectWrapper();
+        return new GsonObjectWrapper(this);
     }
 
     @Override
     public IJsonObjectWrapper createJsonObject(int initialCapacity) {
-        return new GsonObjectWrapper();
+        return new GsonObjectWrapper(this);
     }
 
     @Override
     public IJsonObjectWrapper createJsonObject(boolean ordered) {
-        return new GsonObjectWrapper();
+        return new GsonObjectWrapper(this);
     }
 
     @Override
     public IJsonObjectWrapper createJsonObject(int initialCapacity, boolean ordered) {
-        return new GsonObjectWrapper();
+        return new GsonObjectWrapper(this);
     }
 
     @Override
     public IJsonObjectWrapper createJsonObject(Map<?, ?> map) {
-        return new GsonObjectWrapper(map);
+        return new GsonObjectWrapper(this, map);
     }
 
     @Override
     public IJsonArrayWrapper createJsonArray() {
-        return new GsonArrayWrapper();
+        return new GsonArrayWrapper(this);
     }
 
     @Override
     public IJsonArrayWrapper createJsonArray(int initialCapacity) {
-        return new GsonArrayWrapper(initialCapacity);
+        return new GsonArrayWrapper(this, initialCapacity);
     }
 
     @Override
     public IJsonArrayWrapper createJsonArray(Object[] array) {
-        return new GsonArrayWrapper(array);
+        return new GsonArrayWrapper(this, array);
     }
 
     @Override
     public IJsonArrayWrapper createJsonArray(Collection<?> collection) {
-        return new GsonArrayWrapper(collection);
+        return new GsonArrayWrapper(this, collection);
     }
 
     @Override
@@ -106,9 +106,9 @@ public class GsonAdapter implements IJsonAdapter {
         JsonWrapper jsonWrapper = null;
         Object obj = GSON.fromJson(jsonStr, JsonElement.class);
         if (obj instanceof JsonObject) {
-            jsonWrapper = new JsonWrapper(new GsonObjectWrapper((JsonObject) obj));
+            jsonWrapper = new JsonWrapper(new GsonObjectWrapper(this, (JsonObject) obj));
         } else if (obj instanceof JsonArray) {
-            jsonWrapper = new JsonWrapper(new GsonArrayWrapper((JsonArray) obj));
+            jsonWrapper = new JsonWrapper(new GsonArrayWrapper(this, (JsonArray) obj));
         }
         return jsonWrapper;
     }

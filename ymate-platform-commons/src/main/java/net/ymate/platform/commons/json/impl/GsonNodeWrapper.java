@@ -16,10 +16,10 @@
 package net.ymate.platform.commons.json.impl;
 
 import com.google.gson.JsonElement;
+import net.ymate.platform.commons.json.IJsonAdapter;
 import net.ymate.platform.commons.json.IJsonArrayWrapper;
 import net.ymate.platform.commons.json.IJsonNodeWrapper;
 import net.ymate.platform.commons.json.IJsonObjectWrapper;
-import net.ymate.platform.commons.json.JsonWrapper;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 
@@ -32,9 +32,12 @@ import java.math.BigInteger;
  */
 public class GsonNodeWrapper implements IJsonNodeWrapper {
 
+    private final IJsonAdapter adapter;
+
     private final JsonElement jsonElement;
 
-    public GsonNodeWrapper(JsonElement jsonElement) {
+    public GsonNodeWrapper(IJsonAdapter adapter, JsonElement jsonElement) {
+        this.adapter = adapter;
         this.jsonElement = jsonElement;
     }
 
@@ -100,12 +103,12 @@ public class GsonNodeWrapper implements IJsonNodeWrapper {
 
     @Override
     public IJsonArrayWrapper getJsonArray() {
-        return jsonElement.isJsonArray() ? new GsonArrayWrapper(jsonElement.getAsJsonArray()) : null;
+        return jsonElement.isJsonArray() ? new GsonArrayWrapper(adapter, jsonElement.getAsJsonArray()) : null;
     }
 
     @Override
     public IJsonObjectWrapper getJsonObject() {
-        return jsonElement.isJsonObject() ? new GsonObjectWrapper(jsonElement.getAsJsonObject()) : null;
+        return jsonElement.isJsonObject() ? new GsonObjectWrapper(adapter, jsonElement.getAsJsonObject()) : null;
     }
 
     @Override
@@ -131,6 +134,6 @@ public class GsonNodeWrapper implements IJsonNodeWrapper {
 
     @Override
     public String toString() {
-        return JsonWrapper.toJsonString(jsonElement, false, false);
+        return adapter.toJsonString(jsonElement, false, false);
     }
 }

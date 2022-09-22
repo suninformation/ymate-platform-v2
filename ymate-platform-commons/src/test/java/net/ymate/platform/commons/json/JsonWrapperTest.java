@@ -15,8 +15,12 @@
  */
 package net.ymate.platform.commons.json;
 
+import net.ymate.platform.commons.json.impl.GsonAdapter;
+import net.ymate.platform.commons.json.impl.JacksonAdapter;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 
 /**
@@ -27,15 +31,35 @@ public class JsonWrapperTest {
 
     private static final Log LOG = LogFactory.getLog(JsonWrapperTest.class);
 
+    @Before
+    public void setUp() throws Exception {
+    }
+
+    @After
+    public void tearDown() throws Exception {
+    }
+
     @Test
-    public void testJsonObjectWrapper() {
+    public void testJsonWrappers() throws Exception {
+        IJsonAdapter[] jsonAdapters = {JsonWrapper.getJsonAdapter(), new JacksonAdapter(), new GsonAdapter()};
+        for (IJsonAdapter jsonAdapter : jsonAdapters) {
+            LOG.info("JsonAdapter class: " + jsonAdapter.getClass().getName());
+            testJsonObjectWrapper(jsonAdapter);
+            testJsonArrayWrapper(jsonAdapter);
+            testJsonNodeWrapper(jsonAdapter);
+            testJsonWrapper(jsonAdapter);
+            testJsonSerialize(jsonAdapter);
+        }
+    }
+
+    private void testJsonObjectWrapper(IJsonAdapter jsonAdapter) {
         // 创建 JsonObject 对象实例并设置 ordered 为有序的
-        IJsonObjectWrapper jsonObj = JsonWrapper.createJsonObject(true);
+        IJsonObjectWrapper jsonObj = jsonAdapter.createJsonObject(true);
         jsonObj.put("name", "suninformation");
         jsonObj.put("realName", "有理想的鱼");
         jsonObj.put("age", 20);
         jsonObj.put("gender", (String) null);
-        jsonObj.put("attrs", JsonWrapper.createJsonObject()
+        jsonObj.put("attrs", jsonAdapter.createJsonObject()
                 .put("key1", "value1")
                 .put("key2", "value2"));
         // 采用格式化输出并保留值为空的属性
@@ -49,12 +73,11 @@ public class JsonWrapperTest {
         LOG.info("Key2: " + attrs.getString("key2"));
     }
 
-    @Test
-    public void testJsonArrayWrapper() {
+    private void testJsonArrayWrapper(IJsonAdapter jsonAdapter) {
         // 创建 JsonArray 对象实例
-        IJsonArrayWrapper jsonArray = JsonWrapper.createJsonArray(new Object[]{1, null, 2, 3, false, true})
-                .add(JsonWrapper.createJsonArray().add(new String[]{"a", "b"}))
-                .add(JsonWrapper.createJsonObject(true)
+        IJsonArrayWrapper jsonArray = jsonAdapter.createJsonArray(new Object[]{1, null, 2, 3, false, true})
+                .add(jsonAdapter.createJsonArray().add(new String[]{"a", "b"}))
+                .add(jsonAdapter.createJsonObject(true)
                         .put("name", "suninformation")
                         .put("realName", "有理想的鱼")
                         .put("age", 20)
@@ -71,15 +94,14 @@ public class JsonWrapperTest {
         LOG.info("Age: " + jsonObj.getInt("age"));
     }
 
-    @Test
-    public void testJsonNodeWrapper() {
+    private void testJsonNodeWrapper(IJsonAdapter jsonAdapter) {
         // 创建复杂的 JsonObject 对象
-        IJsonObjectWrapper jsonObj = JsonWrapper.createJsonObject(true)
+        IJsonObjectWrapper jsonObj = jsonAdapter.createJsonObject(true)
                 .put("name", "suninformation")
                 .put("realName", "有理想的鱼")
                 .put("age", 20)
-                .put("array", JsonWrapper.createJsonArray(new String[]{"a", "b"}))
-                .put("attrs", JsonWrapper.createJsonObject()
+                .put("array", jsonAdapter.createJsonArray(new String[]{"a", "b"}))
+                .put("attrs", jsonAdapter.createJsonObject()
                         .put("key1", "value1")
                         .put("key2", "value2"));
         // 采用格式化输出并保留值为空的属性
@@ -100,11 +122,10 @@ public class JsonWrapperTest {
         }
     }
 
-    @Test
-    public void testJsonWrapper() {
+    private void testJsonWrapper(IJsonAdapter jsonAdapter) {
         String jsonStr = "{\"age\":20,\"name\":\"suninformation\",\"real_name\":\"有理想的鱼\"}";
         // 将字符串转换为 JSON 对象
-        JsonWrapper jsonWrapper = JsonWrapper.fromJson(jsonStr);
+        JsonWrapper jsonWrapper = jsonAdapter.fromJson(jsonStr);
         if (jsonWrapper.isJsonObject()) {
             IJsonObjectWrapper jsonObj = jsonWrapper.getAsJsonObject();
             if (jsonObj != null) {
@@ -118,19 +139,18 @@ public class JsonWrapperTest {
         LOG.info(jsonWrapper.toString(true, true));
     }
 
-    @Test
-    public void testJsonSerialize() throws Exception {
+    private void testJsonSerialize(IJsonAdapter jsonAdapter) throws Exception {
         User user = new User();
         user.setName("suninformation");
         user.setAge(20);
         user.setRealName("有理想的鱼");
         //
-        byte[] serializeArr = JsonWrapper.serialize(user, true);
-        User newUser = JsonWrapper.deserialize(serializeArr, User.class);
+        byte[] serializeArr = jsonAdapter.serialize(user, true);
+        User newUser = jsonAdapter.deserialize(serializeArr, User.class);
         LOG.info("newUser: " + newUser);
         // 采用 snakeCase 模式输出和反序列化操作
-        String jsonStr = JsonWrapper.toJsonString(user, false, false, true);
-        User newUser2 = JsonWrapper.deserialize(jsonStr, true, User.class);
+        String jsonStr = jsonAdapter.toJsonString(user, false, false, true);
+        User newUser2 = jsonAdapter.deserialize(jsonStr, true, User.class);
         LOG.info("newUser2: " + newUser2);
     }
 

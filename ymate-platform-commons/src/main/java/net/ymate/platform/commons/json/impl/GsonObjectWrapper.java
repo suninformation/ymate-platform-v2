@@ -18,10 +18,10 @@ package net.ymate.platform.commons.json.impl;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import net.ymate.platform.commons.json.IJsonAdapter;
 import net.ymate.platform.commons.json.IJsonArrayWrapper;
 import net.ymate.platform.commons.json.IJsonNodeWrapper;
 import net.ymate.platform.commons.json.IJsonObjectWrapper;
-import net.ymate.platform.commons.json.JsonWrapper;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 
@@ -37,27 +37,31 @@ import java.util.Set;
  */
 public class GsonObjectWrapper implements IJsonObjectWrapper {
 
+    private final IJsonAdapter adapter;
+
     private final JsonObject jsonObject;
 
-    public GsonObjectWrapper() {
+    public GsonObjectWrapper(IJsonAdapter adapter) {
+        this.adapter = adapter;
         jsonObject = new JsonObject();
     }
 
-    public GsonObjectWrapper(Map<?, ?> map) {
-        this();
+    public GsonObjectWrapper(IJsonAdapter adapter, Map<?, ?> map) {
+        this(adapter);
         if (map != null && !map.isEmpty()) {
             map.forEach((key, value) -> put(String.valueOf(key), value));
         }
     }
 
-    public GsonObjectWrapper(JsonObject jsonObject) {
+    public GsonObjectWrapper(IJsonAdapter adapter, JsonObject jsonObject) {
+        this.adapter = adapter;
         this.jsonObject = jsonObject != null ? jsonObject : new JsonObject();
     }
 
     @Override
     public IJsonNodeWrapper get(String key) {
         JsonElement jsonElement = jsonObject.get(key);
-        return jsonElement != null ? new GsonNodeWrapper(jsonElement) : null;
+        return jsonElement != null ? new GsonNodeWrapper(adapter, jsonElement) : null;
     }
 
     @Override
@@ -135,13 +139,13 @@ public class GsonObjectWrapper implements IJsonObjectWrapper {
     @Override
     public IJsonArrayWrapper getJsonArray(String key) {
         JsonArray value = jsonObject.getAsJsonArray(key);
-        return value == null ? null : new GsonArrayWrapper(value);
+        return value == null ? null : new GsonArrayWrapper(adapter, value);
     }
 
     @Override
     public IJsonObjectWrapper getJsonObject(String key) {
         JsonObject value = jsonObject.getAsJsonObject(key);
-        return value == null ? null : new GsonObjectWrapper(value);
+        return value == null ? null : new GsonObjectWrapper(adapter, value);
     }
 
     @Override
@@ -266,12 +270,12 @@ public class GsonObjectWrapper implements IJsonObjectWrapper {
 
     @Override
     public String toString(boolean format, boolean keepNullValue) {
-        return JsonWrapper.toJsonString(jsonObject, format, keepNullValue);
+        return adapter.toJsonString(jsonObject, format, keepNullValue);
     }
 
     @Override
     public String toString(boolean format, boolean keepNullValue, boolean snakeCase) {
-        return JsonWrapper.toJsonString(jsonObject, format, keepNullValue, snakeCase);
+        return adapter.toJsonString(jsonObject, format, keepNullValue, snakeCase);
     }
 
     @Override

@@ -18,10 +18,10 @@ package net.ymate.platform.commons.json.impl;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import net.ymate.platform.commons.json.IJsonAdapter;
 import net.ymate.platform.commons.json.IJsonArrayWrapper;
 import net.ymate.platform.commons.json.IJsonNodeWrapper;
 import net.ymate.platform.commons.json.IJsonObjectWrapper;
-import net.ymate.platform.commons.json.JsonWrapper;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 
@@ -35,27 +35,31 @@ import java.util.*;
  */
 public class JacksonObjectWrapper implements IJsonObjectWrapper {
 
+    private final IJsonAdapter adapter;
+
     private final ObjectNode objectNode;
 
-    public JacksonObjectWrapper() {
+    public JacksonObjectWrapper(IJsonAdapter adapter) {
+        this.adapter = adapter;
         this.objectNode = JacksonAdapter.OBJECT_MAPPER.createObjectNode();
     }
 
-    public JacksonObjectWrapper(Map<?, ?> map) {
-        this();
+    public JacksonObjectWrapper(IJsonAdapter adapter, Map<?, ?> map) {
+        this(adapter);
         if (map != null && !map.isEmpty()) {
             map.forEach((key, value) -> put(String.valueOf(key), value));
         }
     }
 
-    public JacksonObjectWrapper(ObjectNode objectNode) {
+    public JacksonObjectWrapper(IJsonAdapter adapter, ObjectNode objectNode) {
+        this.adapter = adapter;
         this.objectNode = objectNode != null ? objectNode : JacksonAdapter.OBJECT_MAPPER.createObjectNode();
     }
 
     @Override
     public IJsonNodeWrapper get(String key) {
         JsonNode jsonNode = objectNode.get(key);
-        return jsonNode != null ? new JacksonNodeWrapper(jsonNode) : null;
+        return jsonNode != null ? new JacksonNodeWrapper(adapter, jsonNode) : null;
     }
 
     @Override
@@ -269,12 +273,12 @@ public class JacksonObjectWrapper implements IJsonObjectWrapper {
 
     @Override
     public String toString(boolean format, boolean keepNullValue) {
-        return JsonWrapper.toJsonString(objectNode, format, keepNullValue);
+        return adapter.toJsonString(objectNode, format, keepNullValue);
     }
 
     @Override
     public String toString(boolean format, boolean keepNullValue, boolean snakeCase) {
-        return JsonWrapper.toJsonString(objectNode, format, keepNullValue, snakeCase);
+        return adapter.toJsonString(objectNode, format, keepNullValue, snakeCase);
     }
 
     @Override

@@ -17,10 +17,7 @@ package net.ymate.platform.commons.json.impl;
 
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
-import net.ymate.platform.commons.json.IJsonArrayWrapper;
-import net.ymate.platform.commons.json.IJsonNodeWrapper;
-import net.ymate.platform.commons.json.IJsonObjectWrapper;
-import net.ymate.platform.commons.json.JsonWrapper;
+import net.ymate.platform.commons.json.*;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 
@@ -37,25 +34,30 @@ import java.util.Set;
  */
 public class FastJsonObjectWrapper implements IJsonObjectWrapper {
 
+    private final IJsonAdapter adapter;
+
     private final JSONObject jsonObject;
 
-    public FastJsonObjectWrapper() {
-        this(false);
+    public FastJsonObjectWrapper(IJsonAdapter adapter) {
+        this(adapter, false);
     }
 
-    public FastJsonObjectWrapper(boolean ordered) {
+    public FastJsonObjectWrapper(IJsonAdapter adapter, boolean ordered) {
+        this.adapter = adapter;
         jsonObject = new JSONObject(ordered);
     }
 
-    public FastJsonObjectWrapper(int initialCapacity) {
-        this(initialCapacity, false);
+    public FastJsonObjectWrapper(IJsonAdapter adapter, int initialCapacity) {
+        this(adapter, initialCapacity, false);
     }
 
-    public FastJsonObjectWrapper(int initialCapacity, boolean ordered) {
+    public FastJsonObjectWrapper(IJsonAdapter adapter, int initialCapacity, boolean ordered) {
+        this.adapter = adapter;
         jsonObject = new JSONObject(initialCapacity, ordered);
     }
 
-    public FastJsonObjectWrapper(Map<?, ?> map) {
+    public FastJsonObjectWrapper(IJsonAdapter adapter, Map<?, ?> map) {
+        this.adapter = adapter;
         if (map == null) {
             jsonObject = new JSONObject();
         } else {
@@ -64,14 +66,15 @@ public class FastJsonObjectWrapper implements IJsonObjectWrapper {
         }
     }
 
-    public FastJsonObjectWrapper(JSONObject jsonObject) {
+    public FastJsonObjectWrapper(IJsonAdapter adapter, JSONObject jsonObject) {
+        this.adapter = adapter;
         this.jsonObject = jsonObject != null ? jsonObject : new JSONObject();
     }
 
     @Override
     public IJsonNodeWrapper get(String key) {
         Object object = jsonObject.get(key);
-        return object != null ? new FastJsonNodeWrapper(object) : null;
+        return object != null ? new FastJsonNodeWrapper(adapter, object) : null;
     }
 
     @Override
@@ -127,13 +130,13 @@ public class FastJsonObjectWrapper implements IJsonObjectWrapper {
     @Override
     public IJsonArrayWrapper getJsonArray(String key) {
         JSONArray value = jsonObject.getJSONArray(key);
-        return value == null ? null : new FastJsonArrayWrapper(value);
+        return value == null ? null : new FastJsonArrayWrapper(adapter, value);
     }
 
     @Override
     public IJsonObjectWrapper getJsonObject(String key) {
         JSONObject value = jsonObject.getJSONObject(key);
-        return value == null ? null : new FastJsonObjectWrapper(value);
+        return value == null ? null : new FastJsonObjectWrapper(adapter, value);
     }
 
     @Override
@@ -252,12 +255,12 @@ public class FastJsonObjectWrapper implements IJsonObjectWrapper {
 
     @Override
     public String toString(boolean format, boolean keepNullValue) {
-        return JsonWrapper.toJsonString(jsonObject, format, keepNullValue);
+        return adapter.toJsonString(jsonObject, format, keepNullValue);
     }
 
     @Override
     public String toString(boolean format, boolean keepNullValue, boolean snakeCase) {
-        return JsonWrapper.toJsonString(jsonObject, format, keepNullValue, snakeCase);
+        return adapter.toJsonString(jsonObject, format, keepNullValue, snakeCase);
     }
 
     @Override

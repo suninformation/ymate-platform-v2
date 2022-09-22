@@ -18,10 +18,10 @@ package net.ymate.platform.commons.json.impl;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
+import net.ymate.platform.commons.json.IJsonAdapter;
 import net.ymate.platform.commons.json.IJsonArrayWrapper;
 import net.ymate.platform.commons.json.IJsonNodeWrapper;
 import net.ymate.platform.commons.json.IJsonObjectWrapper;
-import net.ymate.platform.commons.json.JsonWrapper;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 
@@ -35,30 +35,34 @@ import java.util.*;
  */
 public class JacksonArrayWrapper implements IJsonArrayWrapper {
 
+    private final IJsonAdapter adapter;
+
     private final ArrayNode arrayNode;
 
-    public JacksonArrayWrapper() {
+    public JacksonArrayWrapper(IJsonAdapter adapter) {
+        this.adapter = adapter;
         this.arrayNode = JacksonAdapter.OBJECT_MAPPER.createArrayNode();
     }
 
-    public JacksonArrayWrapper(Object[] array) {
-        this();
+    public JacksonArrayWrapper(IJsonAdapter adapter, Object[] array) {
+        this(adapter);
         Arrays.stream(array).forEach(this::add);
     }
 
-    public JacksonArrayWrapper(Collection<?> collection) {
-        this();
+    public JacksonArrayWrapper(IJsonAdapter adapter, Collection<?> collection) {
+        this(adapter);
         collection.forEach(this::add);
     }
 
-    public JacksonArrayWrapper(ArrayNode arrayNode) {
+    public JacksonArrayWrapper(IJsonAdapter adapter, ArrayNode arrayNode) {
+        this.adapter = adapter;
         this.arrayNode = arrayNode != null ? arrayNode : JacksonAdapter.OBJECT_MAPPER.createArrayNode();
     }
 
     @Override
     public IJsonNodeWrapper get(int index) {
         JsonNode jsonNode = arrayNode.get(index);
-        return jsonNode != null ? new JacksonNodeWrapper(jsonNode) : null;
+        return jsonNode != null ? new JacksonNodeWrapper(adapter, jsonNode) : null;
     }
 
     @Override
@@ -311,12 +315,12 @@ public class JacksonArrayWrapper implements IJsonArrayWrapper {
 
     @Override
     public String toString(boolean format, boolean keepNullValue) {
-        return JsonWrapper.toJsonString(arrayNode, format, keepNullValue);
+        return adapter.toJsonString(arrayNode, format, keepNullValue);
     }
 
     @Override
     public String toString(boolean format, boolean keepNullValue, boolean snakeCase) {
-        return JsonWrapper.toJsonString(arrayNode, format, keepNullValue, snakeCase);
+        return adapter.toJsonString(arrayNode, format, keepNullValue, snakeCase);
     }
 
     @Override

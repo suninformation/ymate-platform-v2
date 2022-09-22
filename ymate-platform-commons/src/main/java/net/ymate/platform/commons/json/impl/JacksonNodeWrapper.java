@@ -18,10 +18,10 @@ package net.ymate.platform.commons.json.impl;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import net.ymate.platform.commons.json.IJsonAdapter;
 import net.ymate.platform.commons.json.IJsonArrayWrapper;
 import net.ymate.platform.commons.json.IJsonNodeWrapper;
 import net.ymate.platform.commons.json.IJsonObjectWrapper;
-import net.ymate.platform.commons.json.JsonWrapper;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 
@@ -34,9 +34,12 @@ import java.math.BigInteger;
  */
 public class JacksonNodeWrapper implements IJsonNodeWrapper {
 
+    private final IJsonAdapter adapter;
+
     private final JsonNode jsonNode;
 
-    public JacksonNodeWrapper(JsonNode jsonNode) {
+    public JacksonNodeWrapper(IJsonAdapter adapter, JsonNode jsonNode) {
+        this.adapter = adapter;
         this.jsonNode = jsonNode;
     }
 
@@ -102,12 +105,12 @@ public class JacksonNodeWrapper implements IJsonNodeWrapper {
 
     @Override
     public IJsonArrayWrapper getJsonArray() {
-        return jsonNode.isArray() ? new JacksonArrayWrapper((ArrayNode) jsonNode) : null;
+        return jsonNode.isArray() ? new JacksonArrayWrapper(adapter, (ArrayNode) jsonNode) : null;
     }
 
     @Override
     public IJsonObjectWrapper getJsonObject() {
-        return jsonNode.isObject() ? new JacksonObjectWrapper((ObjectNode) jsonNode) : null;
+        return jsonNode.isObject() ? new JacksonObjectWrapper(adapter, (ObjectNode) jsonNode) : null;
     }
 
     @Override
@@ -133,6 +136,6 @@ public class JacksonNodeWrapper implements IJsonNodeWrapper {
 
     @Override
     public String toString() {
-        return JsonWrapper.toJsonString(jsonNode, false, false);
+        return adapter.toJsonString(jsonNode, false, false);
     }
 }
