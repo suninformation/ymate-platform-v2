@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2021 the original author or authors.
+ * Copyright 2007-2022 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,28 +15,29 @@
  */
 package net.ymate.platform.commons.serialize.impl;
 
-import com.caucho.hessian.io.Hessian2Input;
-import com.caucho.hessian.io.Hessian2Output;
 import net.ymate.platform.commons.serialize.ISerializer;
+import org.nustaq.serialization.FSTConfiguration;
+import org.nustaq.serialization.FSTObjectInput;
+import org.nustaq.serialization.FSTObjectOutput;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 
 /**
- * @author 刘镇 (suninformation@163.com) on 2021/6/14 9:57 下午
- * @since 2.1.0
+ * @author 刘镇 (suninformation@163.com) on 2022/9/22 13:20
+ * @since 2.1.2
  */
-public class HessianSerializer implements ISerializer {
+public class FstSerializer implements ISerializer {
 
     @Override
     public String getContentType() {
-        return "application/x-java-serialized-hessian";
+        return "application/x-java-serialized-fst";
     }
 
     @Override
     public byte[] serialize(Object object) throws Exception {
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-        Hessian2Output out = new Hessian2Output(outputStream);
+        FSTObjectOutput out = FSTConfiguration.createDefaultConfiguration().getObjectOutput(outputStream);
         out.writeObject(object);
         out.flush();
         return outputStream.toByteArray();
@@ -45,7 +46,7 @@ public class HessianSerializer implements ISerializer {
     @Override
     @SuppressWarnings("unchecked")
     public <T> T deserialize(byte[] bytes, Class<T> clazz) throws Exception {
-        Hessian2Input input = new Hessian2Input(new ByteArrayInputStream(bytes));
+        FSTObjectInput input = FSTConfiguration.createDefaultConfiguration().getObjectInput(new ByteArrayInputStream(bytes));
         return (T) input.readObject(clazz);
     }
 }

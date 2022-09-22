@@ -15,6 +15,7 @@
  */
 package net.ymate.platform.commons.serialize.impl;
 
+import net.ymate.platform.commons.json.IJsonAdapter;
 import net.ymate.platform.commons.json.JsonWrapper;
 import net.ymate.platform.commons.serialize.ISerializer;
 
@@ -25,6 +26,16 @@ public class JSONSerializer implements ISerializer {
 
     public final static String NAME = "json";
 
+    private final IJsonAdapter jsonAdapter;
+
+    public JSONSerializer() {
+        jsonAdapter = JsonWrapper.getJsonAdapter();
+    }
+
+    public JSONSerializer(IJsonAdapter jsonAdapter) {
+        this.jsonAdapter = jsonAdapter;
+    }
+
     @Override
     public String getContentType() {
         return "application/json";
@@ -32,11 +43,11 @@ public class JSONSerializer implements ISerializer {
 
     @Override
     public byte[] serialize(Object object) throws Exception {
-        return JsonWrapper.serialize(object);
+        return jsonAdapter.serialize(object);
     }
 
     @Override
     public <T> T deserialize(byte[] bytes, Class<T> clazz) throws Exception {
-        return JsonWrapper.deserialize(bytes, clazz);
+        return jsonAdapter.deserialize(bytes, clazz);
     }
 }

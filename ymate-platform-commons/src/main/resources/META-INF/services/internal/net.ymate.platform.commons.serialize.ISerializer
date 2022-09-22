@@ -1,1 +1,2 @@
 net.ymate.platform.commons.serialize.impl.HessianSerializer
+net.ymate.platform.commons.serialize.impl.FstSerializer
