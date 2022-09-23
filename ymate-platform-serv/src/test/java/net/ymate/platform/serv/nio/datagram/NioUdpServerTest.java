@@ -15,6 +15,7 @@
  */
 package net.ymate.platform.serv.nio.datagram;
 
+import net.ymate.platform.commons.util.NetworkUtils;
 import net.ymate.platform.commons.util.RuntimeUtils;
 import net.ymate.platform.serv.IClientCfg;
 import net.ymate.platform.serv.IServerCfg;
@@ -24,6 +25,7 @@ import net.ymate.platform.serv.impl.DefaultHeartbeatServiceImpl;
 import net.ymate.platform.serv.impl.DefaultServerCfg;
 import net.ymate.platform.serv.impl.DefaultSessionIdleChecker;
 import net.ymate.platform.serv.nio.codec.TextLineCodec;
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.junit.After;
@@ -46,8 +48,16 @@ public class NioUdpServerTest extends AbstractNioUdpListener implements INioUdpS
 
     private NioUdpClient client;
 
+    private String hostName;
+
     @Before
     public void setUp() throws Exception {
+        String[] ipAddresses = NetworkUtils.IP.getHostIPAddresses();
+        if (ArrayUtils.isNotEmpty(ipAddresses)) {
+            hostName = ipAddresses[0];
+        } else {
+            hostName = NetworkUtils.IP.getHostName();
+        }
         doBuildServer();
         doBuildClient();
     }
@@ -55,7 +65,7 @@ public class NioUdpServerTest extends AbstractNioUdpListener implements INioUdpS
     private void doBuildServer() throws Exception {
         IServerCfg serverCfg = DefaultServerCfg.builder()
                 .serverName("UdpServer")
-                .serverHost("0.0.0.0")
+                .serverHost(hostName)
                 .port(8281)
                 .keepAliveTime(10000).build();
         // 通过会话管理器创建服务端并设置会话空闲时间为30秒
@@ -72,7 +82,7 @@ public class NioUdpServerTest extends AbstractNioUdpListener implements INioUdpS
         Thread.sleep(TimeUnit.SECONDS.toMillis(5));
         IClientCfg clientCfg = DefaultClientCfg.builder()
                 .clientName("UdpClient")
-                .remoteHost("0.0.0.0")
+                .remoteHost(hostName)
                 .port(8281)
                 .build();
         client = Servs.createUdpClient(clientCfg, new TextLineCodec(), new DefaultHeartbeatServiceImpl(), this);
