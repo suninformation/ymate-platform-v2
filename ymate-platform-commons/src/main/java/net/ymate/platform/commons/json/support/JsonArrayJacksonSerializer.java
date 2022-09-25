@@ -19,8 +19,10 @@ import com.fasterxml.jackson.core.JacksonException;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.*;
+import net.ymate.platform.commons.json.IJsonAdapter;
 import net.ymate.platform.commons.json.IJsonArrayWrapper;
 import net.ymate.platform.commons.json.JsonWrapper;
+import net.ymate.platform.commons.json.impl.JacksonAdapter;
 
 import java.io.IOException;
 
@@ -29,6 +31,8 @@ import java.io.IOException;
  * @since 2.1.0
  */
 public class JsonArrayJacksonSerializer {
+
+    private static final IJsonAdapter adapter = new JacksonAdapter();
 
     public static class Serializer extends JsonSerializer<IJsonArrayWrapper> {
         @Override
@@ -46,7 +50,7 @@ public class JsonArrayJacksonSerializer {
         public IJsonArrayWrapper deserialize(JsonParser jsonParser, DeserializationContext deserializationContext) throws IOException, JacksonException {
             JsonNode node = jsonParser.getCodec().readTree(jsonParser);
             if (node.elements().hasNext()) {
-                JsonWrapper jsonWrapper = JsonWrapper.toJson(node);
+                JsonWrapper jsonWrapper = adapter.toJson(node);
                 if (jsonWrapper != null) {
                     return jsonWrapper.getAsJsonArray();
                 }

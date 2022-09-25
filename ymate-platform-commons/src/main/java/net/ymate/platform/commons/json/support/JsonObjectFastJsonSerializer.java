@@ -29,7 +29,7 @@ public class JsonObjectFastJsonSerializer extends AbstractFastJsonSerializer {
     @Override
     @SuppressWarnings("unchecked")
     public <T> T deserialze(DefaultJSONParser parser, Type type, Object fieldName) {
-        JsonWrapper jsonWrapper = JsonWrapper.toJson(parser.parse());
+        JsonWrapper jsonWrapper = adapter.toJson(parser.parse());
         if (jsonWrapper == null) {
             return null;
         }

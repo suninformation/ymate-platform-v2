@@ -16,7 +16,6 @@
 package net.ymate.platform.commons.json.support;
 
 import com.alibaba.fastjson.parser.DefaultJSONParser;
-import net.ymate.platform.commons.json.JsonWrapper;
 
 import java.lang.reflect.Type;
 
@@ -29,6 +28,6 @@ public class JsonWrapperFastJsonSerializer extends AbstractFastJsonSerializer {
     @Override
     @SuppressWarnings("unchecked")
     public <T> T deserialze(DefaultJSONParser parser, Type type, Object fieldName) {
-        return (T) JsonWrapper.toJson(parser.parse());
+        return (T) adapter.toJson(parser.parse());
     }
 }

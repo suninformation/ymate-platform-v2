@@ -16,6 +16,7 @@
 package net.ymate.platform.commons.json.support;
 
 import com.google.gson.*;
+import net.ymate.platform.commons.json.IJsonAdapter;
 import net.ymate.platform.commons.json.IJsonArrayWrapper;
 import net.ymate.platform.commons.json.JsonWrapper;
 import net.ymate.platform.commons.json.impl.GsonAdapter;
@@ -28,6 +29,8 @@ import java.lang.reflect.Type;
  */
 public class JsonArrayGsonSerializer implements JsonSerializer<IJsonArrayWrapper>, JsonDeserializer<IJsonArrayWrapper> {
 
+    private final IJsonAdapter adapter = new GsonAdapter();
+
     @Override
     public JsonElement serialize(IJsonArrayWrapper jsonArrayWrapper, Type type, JsonSerializationContext jsonSerializationContext) {
         return GsonAdapter.toJsonElement(jsonArrayWrapper);
@@ -35,7 +38,7 @@ public class JsonArrayGsonSerializer implements JsonSerializer<IJsonArrayWrapper
 
     @Override
     public IJsonArrayWrapper deserialize(JsonElement jsonElement, Type type, JsonDeserializationContext jsonDeserializationContext) throws JsonParseException {
-        JsonWrapper jsonWrapper = JsonWrapper.toJson(jsonElement);
+        JsonWrapper jsonWrapper = adapter.toJson(jsonElement);
         if (jsonWrapper != null) {
             return jsonWrapper.getAsJsonArray();
         }

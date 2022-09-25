@@ -19,7 +19,9 @@ import com.fasterxml.jackson.core.JacksonException;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.*;
+import net.ymate.platform.commons.json.IJsonAdapter;
 import net.ymate.platform.commons.json.JsonWrapper;
+import net.ymate.platform.commons.json.impl.JacksonAdapter;
 
 import java.io.IOException;
 
@@ -28,6 +30,8 @@ import java.io.IOException;
  * @since 2.1.0
  */
 public class JsonWrapperJacksonSerializer {
+
+    private static final IJsonAdapter adapter = new JacksonAdapter();
 
     public static class Serializer extends JsonSerializer<JsonWrapper> {
         @Override
@@ -47,7 +51,7 @@ public class JsonWrapperJacksonSerializer {
             if (!node.elements().hasNext()) {
                 return null;
             }
-            return JsonWrapper.toJson(node);
+            return adapter.toJson(node);
         }
     }
 }

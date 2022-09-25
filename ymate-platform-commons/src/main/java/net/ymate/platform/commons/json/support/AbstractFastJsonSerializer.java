@@ -18,7 +18,9 @@ package net.ymate.platform.commons.json.support;
 import com.alibaba.fastjson.parser.deserializer.ObjectDeserializer;
 import com.alibaba.fastjson.serializer.JSONSerializer;
 import com.alibaba.fastjson.serializer.ObjectSerializer;
+import net.ymate.platform.commons.json.IJsonAdapter;
 import net.ymate.platform.commons.json.JsonWrapper;
+import net.ymate.platform.commons.json.impl.FastJsonAdapter;
 
 import java.io.IOException;
 import java.lang.reflect.Type;
@@ -28,6 +30,8 @@ import java.lang.reflect.Type;
  * @since 2.1.0
  */
 public abstract class AbstractFastJsonSerializer implements ObjectSerializer, ObjectDeserializer {
+
+    protected final IJsonAdapter adapter = new FastJsonAdapter();
 
     @Override
     public void write(JSONSerializer serializer, Object object, Object fieldName, Type fieldType, int features) throws IOException {
