@@ -37,7 +37,7 @@ public class TextLineCodec extends AbstractNioCodec {
     public ByteBufferBuilder encode(Object message) {
         byte[] bytes = ArrayUtils.addAll(messageToBytes(message), stringToBytes(TEXT_EOF));
         if (bytes != null) {
-            return ByteBufferBuilder.allocate().append(bytes.length).append(bytes).flip();
+            return ByteBufferBuilder.allocate().append(bytes).flip();
         }
         return null;
     }
