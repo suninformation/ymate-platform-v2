@@ -17,16 +17,13 @@ package net.ymate.platform.webmvc.context;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
-import java.io.Serializable;
 import java.util.*;
 
 
 /**
  * @author 刘镇 (suninformation@163.com) on 2011-7-24 下午10:31:48
  */
-public class SessionMap extends AbstractMap<String, Object> implements Serializable {
-
-    private static final long serialVersionUID = 4678843241638046854L;
+public class SessionMap extends AbstractMap<String, Object> {
 
     protected HttpSession session;
     private Set<Entry<String, Object>> entries;

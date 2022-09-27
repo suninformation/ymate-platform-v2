@@ -16,7 +16,6 @@
 package net.ymate.platform.webmvc.context;
 
 import javax.servlet.ServletContext;
-import java.io.Serializable;
 import java.util.AbstractMap;
 import java.util.Enumeration;
 import java.util.HashSet;
@@ -26,9 +25,7 @@ import java.util.Set;
  * @author 刘镇 (suninformation@163.com) on 2011-7-24 下午10:31:48
  */
 @SuppressWarnings("rawtypes")
-public class ApplicationMap extends AbstractMap implements Serializable {
-
-    private static final long serialVersionUID = 9136809763083228202L;
+public class ApplicationMap extends AbstractMap {
 
     private final ServletContext context;
 

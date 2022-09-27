@@ -16,7 +16,6 @@
 package net.ymate.platform.webmvc.context;
 
 import javax.servlet.http.HttpServletRequest;
-import java.io.Serializable;
 import java.util.AbstractMap;
 import java.util.Enumeration;
 import java.util.HashSet;
@@ -27,9 +26,7 @@ import java.util.Set;
  * @author 刘镇 (suninformation@163.com) on 2011-7-24 下午10:31:48
  */
 @SuppressWarnings("rawtypes")
-public class RequestMap extends AbstractMap implements Serializable {
-
-    private static final long serialVersionUID = -7675640869293787926L;
+public class RequestMap extends AbstractMap {
 
     private Set<Object> entries;
 

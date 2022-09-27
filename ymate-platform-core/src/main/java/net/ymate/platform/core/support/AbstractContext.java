@@ -30,11 +30,11 @@ public abstract class AbstractContext implements IContext {
 
     private final Map<String, String> contextParams;
 
-    public AbstractContext(IApplication owner) {
+    protected AbstractContext(IApplication owner) {
         this(owner, null);
     }
 
-    public AbstractContext(IApplication owner, Map<String, String> contextParams) {
+    protected AbstractContext(IApplication owner, Map<String, String> contextParams) {
         this.owner = owner;
         this.contextParams = contextParams != null ? contextParams : Collections.emptyMap();
     }

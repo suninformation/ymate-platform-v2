@@ -89,7 +89,7 @@ public class AttributeMap implements Map {
 
     @Override
     public Set keySet() {
-        return Collections.EMPTY_SET;
+        return Collections.emptySet();
     }
 
     @Override
@@ -118,7 +118,7 @@ public class AttributeMap implements Map {
 
     @Override
     public Collection values() {
-        return Collections.EMPTY_SET;
+        return Collections.emptySet();
     }
 
     private PageContext getPageContext() {

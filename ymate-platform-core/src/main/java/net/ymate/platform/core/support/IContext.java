@@ -18,7 +18,6 @@ package net.ymate.platform.core.support;
 import net.ymate.platform.core.IApplication;
 import net.ymate.platform.core.beans.annotation.Ignored;
 
-import java.io.Serializable;
 import java.util.Map;
 
 /**
@@ -28,7 +27,7 @@ import java.util.Map;
  * @since 2.0.6
  */
 @Ignored
-public interface IContext extends Serializable {
+public interface IContext {
 
     /**
      * 获取所属应用管理器

@@ -27,8 +27,6 @@ import net.ymate.platform.plugin.PluginMeta;
  */
 public class DefaultPluginContext extends AbstractContext implements IPluginContext {
 
-    private static final long serialVersionUID = 1L;
-
     private final PluginMeta pluginMeta;
 
     private final IPluginFactory pluginFactory;
