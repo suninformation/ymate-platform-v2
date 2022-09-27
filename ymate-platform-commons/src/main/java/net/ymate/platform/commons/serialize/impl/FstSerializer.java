@@ -30,10 +30,13 @@ import java.io.ByteArrayOutputStream;
  */
 public class FstSerializer implements ISerializer {
 
-    private final FSTConfiguration fstConfiguration;
+    private FSTConfiguration fstConfiguration;
 
     public FstSerializer() {
-        fstConfiguration = FstConfigurationFactory.getInstance().getFstConfiguration();
+        try {
+            fstConfiguration = FstConfigurationFactory.getInstance().getFstConfiguration();
+        } catch (NoClassDefFoundError ignored) {
+        }
     }
 
     @Override
