@@ -110,7 +110,7 @@ public final class Caches implements IModule, ICaches {
 
     @Override
     public boolean isInitialized() {
-        return false;
+        return initialized;
     }
 
     @Override
@@ -118,8 +118,7 @@ public final class Caches implements IModule, ICaches {
         if (initialized) {
             initialized = false;
             //
-            config.getCacheEventListener().close();
-            config.getCacheProvider().close();
+            config.close();
             config = null;
             owner = null;
         }

@@ -45,9 +45,6 @@ public class DefaultCacheManager implements ICacheManager {
 
     private boolean initialized;
 
-    public DefaultCacheManager() {
-    }
-
     @Override
     public void initialize(ICaches owner) throws Exception {
         if (!initialized) {

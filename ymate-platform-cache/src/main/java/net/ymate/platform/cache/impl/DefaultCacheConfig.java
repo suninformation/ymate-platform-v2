@@ -38,6 +38,8 @@ public final class DefaultCacheConfig implements ICacheConfig {
 
     private static final Log LOG = LogFactory.getLog(DefaultCacheConfig.class);
 
+    private ICacheManager cacheManager;
+
     private ICacheProvider cacheProvider;
 
     private ICacheEventListener cacheEventListener;
@@ -117,6 +119,18 @@ public final class DefaultCacheConfig implements ICacheConfig {
     @Override
     public void initialize(ICaches owner) throws Exception {
         if (!initialized) {
+            cacheManager = ClassUtils.impl(System.getProperty("ymp.cacheManagerClass"), ICacheManager.class, AbstractCacheProvider.class);
+            if (cacheManager == null) {
+                cacheManager = ClassUtils.getExtensionLoader(ICacheManager.class).getExtension();
+                if (cacheManager == null) {
+                    cacheManager = new DefaultCacheManager();
+                }
+            }
+            if (LOG.isInfoEnabled()) {
+                LOG.info(String.format("Using CacheManager class [%s].", cacheManager.getClass().getName()));
+            }
+            cacheManager.initialize(owner);
+            //
             if (cacheEventListener == null) {
                 cacheEventListener = ClassUtils.loadClass(ICacheEventListener.class, DefaultCacheEventListener.class);
             }
@@ -157,6 +171,11 @@ public final class DefaultCacheConfig implements ICacheConfig {
     @Override
     public boolean isInitialized() {
         return initialized;
+    }
+
+    @Override
+    public ICacheManager getCacheManager() {
+        return cacheManager;
     }
 
     @Override
@@ -275,6 +294,17 @@ public final class DefaultCacheConfig implements ICacheConfig {
     public void setMultilevelSlavesAutoSync(boolean multilevelSlavesAutoSync) {
         if (!initialized) {
             this.multilevelSlavesAutoSync = multilevelSlavesAutoSync;
+        }
+    }
+
+    @Override
+    public void close() throws Exception {
+        if (initialized) {
+            initialized = false;
+            //
+            cacheEventListener.close();
+            cacheProvider.close();
+            cacheManager.close();
         }
     }
 

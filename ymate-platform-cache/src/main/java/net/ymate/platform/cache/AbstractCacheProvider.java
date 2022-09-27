@@ -16,13 +16,11 @@
 package net.ymate.platform.cache;
 
 import net.ymate.platform.commons.ReentrantLockHelper;
-import net.ymate.platform.commons.util.ClassUtils;
 import net.ymate.platform.commons.util.RuntimeUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import java.io.IOException;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -34,37 +32,9 @@ public abstract class AbstractCacheProvider implements ICacheProvider {
 
     private static final Log LOG = LogFactory.getLog(AbstractCacheProvider.class);
 
-    private static ICacheManager cacheManager;
-
-    static {
-        try {
-            String cacheManagerClass = System.getProperty("ymp.cacheManagerClass");
-            cacheManager = ClassUtils.impl(cacheManagerClass, ICacheManager.class, AbstractCacheProvider.class);
-            if (cacheManager == null) {
-                ClassUtils.ExtensionLoader<ICacheManager> extensionLoader = ClassUtils.getExtensionLoader(ICacheManager.class);
-                for (Class<ICacheManager> managerClass : extensionLoader.getExtensionClasses()) {
-                    try {
-                        cacheManager = ClassUtils.impl(managerClass, ICacheManager.class);
-                        if (cacheManager != null) {
-                            if (LOG.isInfoEnabled()) {
-                                LOG.info(String.format("Using CacheManager class [%s].", managerClass.getName()));
-                            }
-                            break;
-                        }
-                    } catch (NoClassDefFoundError | Exception ignored) {
-                    }
-                }
-            } else if (LOG.isInfoEnabled()) {
-                LOG.info(String.format("Using CacheManager class [%s].", cacheManagerClass));
-            }
-        } catch (Exception e) {
-            if (LOG.isWarnEnabled()) {
-                LOG.warn(StringUtils.EMPTY, RuntimeUtils.unwrapThrow(e));
-            }
-        }
-    }
-
     private ICaches owner;
+
+    private ICacheManager cacheManager;
 
     private boolean initialized;
 
@@ -76,9 +46,7 @@ public abstract class AbstractCacheProvider implements ICacheProvider {
      * @throws Exception 可能产生的任何异常
      */
     protected void onInitialize() throws Exception {
-        if (cacheManager != null && !cacheManager.isInitialized()) {
-            cacheManager.initialize(getOwner());
-        }
+        cacheManager = getOwner().getConfig().getCacheManager();
     }
 
     /**
@@ -87,16 +55,6 @@ public abstract class AbstractCacheProvider implements ICacheProvider {
      * @throws Exception 可能产生的任何异常
      */
     protected void onDestroy() throws Exception {
-        if (cacheManager != null && cacheManager.isInitialized()) {
-            try {
-                cacheManager.close();
-            } catch (IOException e) {
-                if (LOG.isErrorEnabled()) {
-                    LOG.error(StringUtils.EMPTY, RuntimeUtils.unwrapThrow(e));
-                }
-            }
-            cacheManager = null;
-        }
     }
 
     protected ICacheManager getCacheManager() {
@@ -132,6 +90,7 @@ public abstract class AbstractCacheProvider implements ICacheProvider {
                 cache.close();
                 cacheIt.remove();
             }
+            cacheManager = null;
         }
     }
 

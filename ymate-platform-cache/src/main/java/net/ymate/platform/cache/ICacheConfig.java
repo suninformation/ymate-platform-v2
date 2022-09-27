@@ -17,6 +17,7 @@ package net.ymate.platform.cache;
 
 import net.ymate.platform.commons.serialize.ISerializer;
 import net.ymate.platform.core.beans.annotation.Ignored;
+import net.ymate.platform.core.support.IDestroyable;
 import net.ymate.platform.core.support.IInitialization;
 
 import java.io.File;
@@ -27,7 +28,7 @@ import java.io.File;
  * @author 刘镇 (suninformation@163.com) on 14-12-1 上午2:52
  */
 @Ignored
-public interface ICacheConfig extends IInitialization<ICaches> {
+public interface ICacheConfig extends IInitialization<ICaches>, IDestroyable {
 
     String DEFAULT_STR = "default";
 
@@ -54,6 +55,13 @@ public interface ICacheConfig extends IInitialization<ICaches> {
     String ENABLED_SUBSCRIBE_EXPIRED = "enabled_subscribe_expired";
 
     String MULTILEVEL_SLAVE_AUTO_SYNC = "multilevel_slave_auto_sync";
+
+    /**
+     * 获取缓存管理器实例
+     *
+     * @return 返回缓存管理器对象
+     */
+    ICacheManager getCacheManager();
 
     /**
      * 缓存提供者，可选参数，默认值为 net.ymate.platform.cache.impl.DefaultCacheProvider
