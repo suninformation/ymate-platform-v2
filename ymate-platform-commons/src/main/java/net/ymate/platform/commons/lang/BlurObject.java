@@ -160,6 +160,9 @@ public class BlurObject implements Serializable {
         if (attr instanceof List) {
             return (List<?>) attr;
         }
+        if (attr instanceof Collection) {
+            return new ArrayList<>((Collection<?>) attr);
+        }
         List<Object> returnValue = new ArrayList<>();
         returnValue.add(attr);
         return returnValue;
@@ -172,8 +175,10 @@ public class BlurObject implements Serializable {
         if (attr == null) {
             return null;
         }
-        if (attr instanceof List) {
+        if (attr instanceof Set) {
             return (Set<?>) attr;
+        } else if (attr instanceof Collection) {
+            return new HashSet<>((Collection<?>) attr);
         }
         Set<Object> returnValue = new HashSet<>();
         returnValue.add(attr);
@@ -212,11 +217,11 @@ public class BlurObject implements Serializable {
         if (attr instanceof Number) {
             return ((Number) attr).floatValue() > 0;
         }
-        if (attr instanceof List) {
-            return ((Collection<?>) attr).size() > 0;
+        if (attr instanceof Collection) {
+            return !((Collection<?>) attr).isEmpty();
         }
         if (attr instanceof Map) {
-            return ((Map<?, ?>) attr).size() > 0;
+            return !((Map<?, ?>) attr).isEmpty();
         }
         return attr instanceof BlurObject && ((BlurObject) this.attr).toBoolean();
     }
@@ -281,7 +286,7 @@ public class BlurObject implements Serializable {
         if (attr instanceof Map) {
             return ((Map<?, ?>) attr).size();
         }
-        if (attr instanceof List) {
+        if (attr instanceof Collection) {
             return ((Collection<?>) attr).size();
         }
         return -1;
@@ -358,7 +363,7 @@ public class BlurObject implements Serializable {
             if (attr instanceof Map) {
                 return (float) ((Map<?, ?>) attr).size();
             }
-            if (attr instanceof List) {
+            if (attr instanceof Collection) {
                 return (float) ((Collection<?>) attr).size();
             }
             if (attr instanceof BlurObject) {
