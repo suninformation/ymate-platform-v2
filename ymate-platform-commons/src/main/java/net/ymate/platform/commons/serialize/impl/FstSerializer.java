@@ -16,6 +16,7 @@
 package net.ymate.platform.commons.serialize.impl;
 
 import net.ymate.platform.commons.serialize.ISerializer;
+import net.ymate.platform.commons.serialize.fst.FstConfigurationFactory;
 import org.nustaq.serialization.FSTConfiguration;
 import org.nustaq.serialization.FSTObjectInput;
 import org.nustaq.serialization.FSTObjectOutput;
@@ -29,6 +30,12 @@ import java.io.ByteArrayOutputStream;
  */
 public class FstSerializer implements ISerializer {
 
+    private final FSTConfiguration fstConfiguration;
+
+    public FstSerializer() {
+        fstConfiguration = FstConfigurationFactory.getInstance().getFstConfiguration();
+    }
+
     @Override
     public String getContentType() {
         return "application/x-java-serialized-fst";
@@ -37,16 +44,18 @@ public class FstSerializer implements ISerializer {
     @Override
     public byte[] serialize(Object object) throws Exception {
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-        FSTObjectOutput out = FSTConfiguration.createDefaultConfiguration().getObjectOutput(outputStream);
-        out.writeObject(object);
-        out.flush();
-        return outputStream.toByteArray();
+        try (FSTObjectOutput out = fstConfiguration.getObjectOutput(outputStream)) {
+            out.writeObject(object);
+            out.flush();
+            return outputStream.toByteArray();
+        }
     }
 
     @Override
     @SuppressWarnings("unchecked")
     public <T> T deserialize(byte[] bytes, Class<T> clazz) throws Exception {
-        FSTObjectInput input = FSTConfiguration.createDefaultConfiguration().getObjectInput(new ByteArrayInputStream(bytes));
-        return (T) input.readObject(clazz);
+        try (FSTObjectInput input = fstConfiguration.getObjectInput(new ByteArrayInputStream(bytes))) {
+            return (T) input.readObject(clazz);
+        }
     }
 }
