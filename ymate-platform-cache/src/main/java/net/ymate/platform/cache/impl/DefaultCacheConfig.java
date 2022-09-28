@@ -119,12 +119,9 @@ public final class DefaultCacheConfig implements ICacheConfig {
     @Override
     public void initialize(ICaches owner) throws Exception {
         if (!initialized) {
-            cacheManager = ClassUtils.impl(System.getProperty("ymp.cacheManagerClass"), ICacheManager.class, AbstractCacheProvider.class);
+            cacheManager = ClassUtils.getExtensionLoader(ICacheManager.class).getExtension();
             if (cacheManager == null) {
-                cacheManager = ClassUtils.getExtensionLoader(ICacheManager.class).getExtension();
-                if (cacheManager == null) {
-                    cacheManager = new DefaultCacheManager();
-                }
+                cacheManager = new DefaultCacheManager();
             }
             if (LOG.isInfoEnabled()) {
                 LOG.info(String.format("Using CacheManager class [%s].", cacheManager.getClass().getName()));
