@@ -15,6 +15,7 @@
  */
 package net.ymate.platform.configuration.impl;
 
+import net.ymate.platform.commons.XPathHelper;
 import net.ymate.platform.commons.lang.PairObject;
 import net.ymate.platform.configuration.AbstractConfigFileParser;
 import org.apache.commons.lang3.StringUtils;
@@ -24,7 +25,6 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
-import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.File;
 import java.io.IOException;
@@ -44,15 +44,15 @@ public class XMLConfigFileParser extends AbstractConfigFileParser {
     private final Element rootElement;
 
     public XMLConfigFileParser(File file) throws ParserConfigurationException, IOException, SAXException {
-        rootElement = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(file).getDocumentElement();
+        rootElement = XPathHelper.newDocumentBuilder().parse(file).getDocumentElement();
     }
 
     public XMLConfigFileParser(InputStream inputStream) throws ParserConfigurationException, IOException, SAXException {
-        rootElement = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(inputStream).getDocumentElement();
+        rootElement = XPathHelper.newDocumentBuilder().parse(inputStream).getDocumentElement();
     }
 
     public XMLConfigFileParser(URL url) throws ParserConfigurationException, IOException, SAXException {
-        rootElement = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(url.openStream()).getDocumentElement();
+        rootElement = XPathHelper.newDocumentBuilder().parse(url.openStream()).getDocumentElement();
     }
 
     public XMLConfigFileParser(Node node) {

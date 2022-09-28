@@ -32,8 +32,6 @@ import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.IOException;
 import java.io.InputStream;
@@ -111,8 +109,6 @@ public class XMLRequestProcessor extends DefaultRequestProcessor {
      */
     private static class XMLProtocol {
 
-        private static final DocumentBuilderFactory DOCUMENT_BUILDER_FACTORY = XPathHelper.newDocumentBuilderFactory();
-
         private Element rootElement;
 
         private boolean initialized;
@@ -121,10 +117,9 @@ public class XMLRequestProcessor extends DefaultRequestProcessor {
         }
 
         XMLProtocol(InputStream inputStream, String charsetName) throws ParserConfigurationException, IOException, SAXException {
-            DocumentBuilder builder = DOCUMENT_BUILDER_FACTORY.newDocumentBuilder();
-            builder.setEntityResolver(XPathHelper.IGNORE_DTD_ENTITY_RESOLVER);
-            //
-            rootElement = builder.parse(new InputSource(new InputStreamReader(inputStream, charsetName))).getDocumentElement();
+            rootElement = XPathHelper.newDocumentBuilder()
+                    .parse(new InputSource(new InputStreamReader(inputStream, charsetName)))
+                    .getDocumentElement();
             initialized = true;
         }
 

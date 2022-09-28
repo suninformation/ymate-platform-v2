@@ -30,6 +30,7 @@ import org.xml.sax.ErrorHandler;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
+import javax.xml.XMLConstants;
 import javax.xml.namespace.QName;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -54,10 +55,25 @@ public class XPathHelper {
 
     private static final Log LOG = LogFactory.getLog(XPathHelper.class);
 
-    public static DocumentBuilderFactory newDocumentBuilderFactory() {
+    public static DocumentBuilderFactory newDocumentBuilderFactory() throws ParserConfigurationException {
+//        System.setProperty("javax.xml.parsers.DocumentBuilderFactory", "com.sun.org.apache.xerces.internal.jaxp.DocumentBuilderFactoryImpl");
+        //
         DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
+        documentBuilderFactory.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true);
+        documentBuilderFactory.setFeature("http://xml.org/sax/features/external-general-entities", false);
+        documentBuilderFactory.setFeature("http://xml.org/sax/features/external-parameter-entities", false);
+        documentBuilderFactory.setFeature("http://apache.org/xml/features/nonvalidating/load-external-dtd", false);
+        documentBuilderFactory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
+        documentBuilderFactory.setXIncludeAware(false);
         documentBuilderFactory.setExpandEntityReferences(false);
         return documentBuilderFactory;
+    }
+
+    public static DocumentBuilder newDocumentBuilder() throws ParserConfigurationException {
+        DocumentBuilder builder = newDocumentBuilderFactory().newDocumentBuilder();
+        builder.setEntityResolver(IGNORE_DTD_ENTITY_RESOLVER);
+        //
+        return builder;
     }
 
     public static XPathFactory newXPathFactory() {
