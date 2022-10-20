@@ -27,6 +27,16 @@ import net.ymate.platform.webmvc.view.IView;
  */
 public class DefaultResponseBodyProcessor implements IResponseBodyProcessor {
 
+    private final String defaultFormat;
+
+    public DefaultResponseBodyProcessor() {
+        defaultFormat = null;
+    }
+
+    public DefaultResponseBodyProcessor(String defaultFormat) {
+        this.defaultFormat = defaultFormat;
+    }
+
     @Override
     public IView processBody(IWebMvc owner, Object result, boolean contentType, boolean keepNull, boolean snakeCase) throws Exception {
         IWebResult<?> returnValue;
@@ -48,6 +58,6 @@ public class DefaultResponseBodyProcessor implements IResponseBodyProcessor {
                 returnValue.withContentType();
             }
         }
-        return WebResult.formatView(returnValue);
+        return WebResult.formatView(returnValue, defaultFormat);
     }
 }

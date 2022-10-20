@@ -16,6 +16,7 @@
 package net.ymate.platform.webmvc;
 
 import net.ymate.platform.core.beans.annotation.Ignored;
+import net.ymate.platform.webmvc.base.Type;
 import net.ymate.platform.webmvc.impl.DefaultResponseBodyProcessor;
 import net.ymate.platform.webmvc.view.IView;
 
@@ -26,6 +27,8 @@ import net.ymate.platform.webmvc.view.IView;
 public interface IResponseBodyProcessor {
 
     IResponseBodyProcessor DEFAULT = new DefaultResponseBodyProcessor();
+
+    IResponseBodyProcessor DEFAULT_JSON = new DefaultResponseBodyProcessor(Type.Const.FORMAT_JSON);
 
     /**
      * 处理响应内容

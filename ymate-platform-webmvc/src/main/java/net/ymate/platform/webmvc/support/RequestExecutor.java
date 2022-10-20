@@ -27,7 +27,6 @@ import net.ymate.platform.webmvc.annotation.SignatureValidate;
 import net.ymate.platform.webmvc.base.Type;
 import net.ymate.platform.webmvc.context.WebContext;
 import net.ymate.platform.webmvc.exception.ParameterSignatureException;
-import net.ymate.platform.webmvc.util.WebResult;
 import net.ymate.platform.webmvc.view.IView;
 import net.ymate.platform.webmvc.view.impl.*;
 import org.apache.commons.lang3.ArrayUtils;
@@ -111,38 +110,20 @@ public final class RequestExecutor {
             }
         }
         //
-        IView resultView = null;
+        IView resultView;
         ResponseBody responseBody = requestMeta.getResponseBody();
-        if (responseBody != null) {
-            if (resultObj instanceof IView || resultObj instanceof String) {
-                resultView = doProcessResultToView(owner, requestMeta, resultObj);
-            } else if (resultObj instanceof IWebResult) {
-                resultView = WebResult.formatView((IWebResult<?>) resultObj, Type.Const.FORMAT_JSON);
-            } else if (resultObj instanceof IWebResultBuilder) {
-                IWebResult<?> result = ((IWebResultBuilder) resultObj).build();
-                if (responseBody.keepNull()) {
-                    result.keepNullValue();
-                }
-                if (responseBody.snakeCase()) {
-                    result.snakeCase();
-                }
-                if (responseBody.contentType()) {
-                    result.withContentType();
-                }
-                resultView = WebResult.formatView(result, Type.Const.FORMAT_JSON);
-            } else {
-                IResponseBodyProcessor responseBodyProcessor;
-                if (IResponseBodyProcessor.class.equals(responseBody.value())) {
-                    responseBodyProcessor = IResponseBodyProcessor.DEFAULT;
-                } else {
-                    responseBodyProcessor = ClassUtils.impl(responseBody.value(), IResponseBodyProcessor.class);
-                }
-                if (responseBodyProcessor != null) {
-                    resultView = responseBodyProcessor.processBody(owner, resultObj, responseBody.contentType(), responseBody.keepNull(), responseBody.snakeCase());
-                }
-            }
-        } else {
+        if (responseBody == null || resultObj instanceof IView || resultObj instanceof String) {
             resultView = doProcessResultToView(owner, requestMeta, resultObj);
+        } else {
+            IResponseBodyProcessor responseBodyProcessor = null;
+            if (!IResponseBodyProcessor.class.equals(responseBody.value())) {
+                responseBodyProcessor = ClassUtils.impl(responseBody.value(), IResponseBodyProcessor.class);
+            }
+            if (responseBodyProcessor == null) {
+                // 指定 FORMAT_JSON 格式是为了与历史版本的处理逻辑一致
+                responseBodyProcessor = IResponseBodyProcessor.DEFAULT_JSON;
+            }
+            resultView = responseBodyProcessor.processBody(owner, resultObj, responseBody.contentType(), responseBody.keepNull(), responseBody.snakeCase());
         }
         if (resultView != null) {
             for (ResponseHeader header : requestMeta.getResponseHeaders()) {
