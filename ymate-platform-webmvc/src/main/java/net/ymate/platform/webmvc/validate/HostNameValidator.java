@@ -39,7 +39,14 @@ public class HostNameValidator implements IValidator {
     public static boolean validate(IContext context, String url, Class<? extends IHostNameChecker> checker) throws Exception {
         boolean matched;
         if (IHostNameChecker.class.equals(checker)) {
-            matched = !IHostNameChecker.DEFAULT.check(context, url);
+            // 先尝试通过 SPI 方式加载接口实例
+            IHostNameChecker spiChecker = ClassUtils.loadClass(IHostNameChecker.class);
+            if (spiChecker != null) {
+                matched = !spiChecker.check(context, url);
+            } else {
+                // 否则使用默认方式
+                matched = !IHostNameChecker.DEFAULT.check(context, url);
+            }
         } else {
             matched = !ClassUtils.impl(checker, IHostNameChecker.class).check(context, url);
         }
