@@ -37,7 +37,7 @@ public @interface VRSAData {
      * @return RSA密钥数据提供者类
      * @since 2.1.0
      */
-    Class<? extends IRSAKeyProvider> providerClass();
+    Class<? extends IRSAKeyProvider> providerClass() default IRSAKeyProvider.class;
 
     /**
      * @return 自定义验证消息

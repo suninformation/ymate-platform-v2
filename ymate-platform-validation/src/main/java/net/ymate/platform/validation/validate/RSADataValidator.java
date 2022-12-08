@@ -18,7 +18,9 @@ package net.ymate.platform.validation.validate;
 import net.ymate.platform.commons.lang.BlurObject;
 import net.ymate.platform.commons.util.ClassUtils;
 import net.ymate.platform.commons.util.CodecUtils;
+import net.ymate.platform.core.IApplication;
 import net.ymate.platform.core.beans.annotation.CleanProxy;
+import net.ymate.platform.core.support.IInitialization;
 import net.ymate.platform.validation.AbstractValidator;
 import net.ymate.platform.validation.ValidateContext;
 import net.ymate.platform.validation.ValidateResult;
@@ -42,6 +44,37 @@ public final class RSADataValidator extends AbstractValidator {
      */
     public static BlurObject getOriginalValue(String paramName) {
         return BlurObject.bind(ValidateContext.getLocalAttributes().get("original_" + paramName));
+    }
+
+    /**
+     * @param owner         所属应用容器对象
+     * @param providerClass 提供者类型
+     * @return 加载RSA密钥提供者接口实现类
+     * @since 2.1.2
+     */
+    public static IRSAKeyProvider getRSAKeyProvider(IApplication owner, Class<? extends IRSAKeyProvider> providerClass) {
+        IRSAKeyProvider keyProvider = owner.getBeanFactory().getBean(providerClass);
+        if (keyProvider == null) {
+            // 若非默认值则不加载全局配置
+            if (IRSAKeyProvider.class.equals(providerClass)) {
+                keyProvider = ClassUtils.loadClass(IRSAKeyProvider.class);
+            } else if (!providerClass.isInterface()) {
+                keyProvider = ClassUtils.impl(providerClass, IRSAKeyProvider.class);
+            }
+        }
+        // 判断是否需要初始化
+        if (keyProvider instanceof IInitialization) {
+            try {
+                @SuppressWarnings("unchecked")
+                IInitialization<IApplication> keyProviderInit = ((IInitialization<IApplication>) keyProvider);
+                if (!keyProviderInit.isInitialized()) {
+                    keyProviderInit.initialize(owner);
+                }
+            } catch (Exception e) {
+                throw new IllegalStateException(e);
+            }
+        }
+        return keyProvider;
     }
 
     /**
@@ -84,10 +117,7 @@ public final class RSADataValidator extends AbstractValidator {
             boolean matched = false;
             String value = getParamValue(paramValue, false);
             if (StringUtils.isNotBlank(value)) {
-                IRSAKeyProvider keyProvider = context.getOwner().getBeanFactory().getBean(ann.providerClass());
-                if (keyProvider == null) {
-                    keyProvider = ClassUtils.impl(ann.providerClass(), IRSAKeyProvider.class);
-                }
+                IRSAKeyProvider keyProvider = getRSAKeyProvider(context.getOwner(), ann.providerClass());
                 if (keyProvider == null) {
                     throw new NullArgumentException("providerClass");
                 }
