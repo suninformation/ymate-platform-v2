@@ -307,7 +307,7 @@ public final class Cfgs implements IConfig {
                         configObject.initialize(provider);
                         //
                         if (fileChecker != null && reload) {
-                            fileChecker.addStatus(new DefaultConfigFileChecker.Status(configObject, new File(targetCfgFile)));
+                            fileChecker.addStatus(new IConfigFileChecker.Status(configObject, new File(targetCfgFile)));
                         }
                         return configObject;
                     } else if (LOG.isWarnEnabled()) {

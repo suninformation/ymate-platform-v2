@@ -18,6 +18,7 @@ package net.ymate.platform.commons;
 import net.ymate.platform.commons.lang.BlurObject;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.Objects;
 
 /**
@@ -48,7 +49,7 @@ public class MathCalcHelper {
 
     private int scale = -1;
 
-    private int roundingMode = -1;
+    private RoundingMode roundingMode = RoundingMode.HALF_EVEN;
 
     public static MathCalcHelper bind(double value) {
         return new MathCalcHelper(value);
@@ -85,42 +86,42 @@ public class MathCalcHelper {
     }
 
     public MathCalcHelper roundUp() {
-        roundingMode = BigDecimal.ROUND_UP;
+        roundingMode = RoundingMode.UP;
         return this;
     }
 
     public MathCalcHelper roundDown() {
-        roundingMode = BigDecimal.ROUND_DOWN;
+        roundingMode = RoundingMode.DOWN;
         return this;
     }
 
     public MathCalcHelper roundCeiling() {
-        roundingMode = BigDecimal.ROUND_CEILING;
+        roundingMode = RoundingMode.CEILING;
         return this;
     }
 
     public MathCalcHelper roundFloor() {
-        roundingMode = BigDecimal.ROUND_FLOOR;
+        roundingMode = RoundingMode.FLOOR;
         return this;
     }
 
     public MathCalcHelper roundHalfUp() {
-        roundingMode = BigDecimal.ROUND_HALF_UP;
+        roundingMode = RoundingMode.HALF_UP;
         return this;
     }
 
     public MathCalcHelper roundHalfDown() {
-        roundingMode = BigDecimal.ROUND_HALF_DOWN;
+        roundingMode = RoundingMode.HALF_DOWN;
         return this;
     }
 
     public MathCalcHelper roundHalfEven() {
-        roundingMode = BigDecimal.ROUND_HALF_EVEN;
+        roundingMode = RoundingMode.HALF_EVEN;
         return this;
     }
 
     public MathCalcHelper roundUnnecessary() {
-        roundingMode = BigDecimal.ROUND_UNNECESSARY;
+        roundingMode = RoundingMode.UNNECESSARY;
         return this;
     }
 
@@ -186,17 +187,14 @@ public class MathCalcHelper {
     }
 
     public MathCalcHelper divide(BigDecimal value) {
-        this.value = this.value.divide(value,
-                (scale >= 0 ? scale : DEFAULT_DIV_SCALE),
-                (roundingMode >= 0 ? roundingMode : BigDecimal.ROUND_HALF_EVEN));
+        this.value = this.value.divide(value, (scale >= 0 ? scale : DEFAULT_DIV_SCALE), roundingMode);
         return this;
     }
 
     //
 
     public MathCalcHelper round() {
-        value = value.setScale((scale >= 0 ? scale : DEFAULT_DIV_SCALE),
-                (roundingMode >= 0 ? roundingMode : BigDecimal.ROUND_HALF_EVEN));
+        value = value.setScale((scale >= 0 ? scale : DEFAULT_DIV_SCALE), roundingMode);
         return this;
     }
 

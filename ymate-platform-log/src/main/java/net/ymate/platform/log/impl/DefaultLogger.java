@@ -23,8 +23,8 @@ import org.apache.logging.log4j.core.LoggerContext;
 import org.apache.logging.log4j.core.config.*;
 import org.apache.logging.log4j.core.config.xml.XmlConfigurationFactory;
 
-import java.io.FileInputStream;
 import java.io.InputStream;
+import java.nio.file.Files;
 
 /**
  * 默认日志记录器（基于Log4J2实现）
@@ -104,7 +104,7 @@ public class DefaultLogger extends AbstractLogger {
             //
             synchronized (DefaultLogger.class) {
                 if (!loggerInitialized) {
-                    try (InputStream inputStream = new FileInputStream(config.getConfigFile())) {
+                    try (InputStream inputStream = Files.newInputStream(config.getConfigFile().toPath())) {
                         ConfigurationSource source = new ConfigurationSource(inputStream);
                         LoggerContext loggerContext = Configurator.initialize(null, source);
                         ConfigurationFactory.setConfigurationFactory(new XmlConfigurationFactory() {
