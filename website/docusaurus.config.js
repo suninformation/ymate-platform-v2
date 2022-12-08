@@ -264,7 +264,7 @@ const ArchivedVersionsDropdownItems = Object.entries(VersionsArchived).splice(
                         ],
                     },
                 ],
-                copyright: `Copyright © 2015-${new Date().getFullYear()} yMate.Net. All Rights Reserved. Built with Docusaurus.<br/>Apache License Version 2.0 | <a href="https://beian.miit.gov.cn/" target="_blank">辽ICP备14001643号</a>`,
+                copyright: `Copyright © 2015-${new Date().getFullYear()} yMate.Net. All Rights Reserved. Built with Docusaurus.<br/>Apache License Version 2.0 | <a href="https://beian.miit.gov.cn/" target="_blank">辽ICP备15013664号-1</a>`,
             },
             prism: {
                 theme: lightCodeTheme,
