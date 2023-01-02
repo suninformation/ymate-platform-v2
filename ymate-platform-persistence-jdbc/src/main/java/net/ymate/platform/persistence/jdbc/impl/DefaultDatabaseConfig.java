@@ -129,7 +129,7 @@ public final class DefaultDatabaseConfig extends AbstractPersistenceConfig<IData
         }
 
         public Builder addDataSourceConfigs(IDatabaseDataSourceConfig... dataSourceConfigs) {
-            if (dataSourceConfigs != null && dataSourceConfigs.length > 0) {
+            if (dataSourceConfigs != null) {
                 for (IDatabaseDataSourceConfig dataSourceConfig : dataSourceConfigs) {
                     config.addDataSourceConfig(dataSourceConfig);
                 }

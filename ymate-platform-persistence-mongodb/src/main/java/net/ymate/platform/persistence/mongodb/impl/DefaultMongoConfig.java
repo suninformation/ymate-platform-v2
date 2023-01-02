@@ -119,7 +119,7 @@ public final class DefaultMongoConfig extends AbstractPersistenceConfig<IMongo, 
         }
 
         public Builder addDataSourceConfigs(IMongoDataSourceConfig... dataSourceConfigs) {
-            if (dataSourceConfigs != null && dataSourceConfigs.length > 0) {
+            if (dataSourceConfigs != null) {
                 for (IMongoDataSourceConfig dataSourceConfig : dataSourceConfigs) {
                     config.addDataSourceConfig(dataSourceConfig);
                 }

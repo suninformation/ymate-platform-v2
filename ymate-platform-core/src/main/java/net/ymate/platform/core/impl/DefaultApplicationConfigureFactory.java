@@ -28,6 +28,10 @@ public final class DefaultApplicationConfigureFactory extends AbstractApplicatio
     public DefaultApplicationConfigureFactory() {
     }
 
+    public DefaultApplicationConfigureFactory(IApplicationConfigurer configurer) {
+        this.configurer = configurer;
+    }
+
     @Override
     public IApplicationConfigurer getConfigurer() {
         if (configurer == null) {

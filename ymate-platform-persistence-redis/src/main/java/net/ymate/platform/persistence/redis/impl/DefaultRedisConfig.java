@@ -107,19 +107,17 @@ public final class DefaultRedisConfig extends AbstractPersistenceConfig<IRedis, 
                             .poolTestWhileIdle(dataSource.poolTestWhileIdle())
                             .poolNumTestsPerEvictionRun(dataSource.poolNumTestsPerEvictionRun())
                             .poolTimeBetweenEvictionRunsMillis(dataSource.poolTimeBetweenEvictionRunsMillis());
-                    if (dataSource.servers().length > 0) {
-                        for (RedisServer server : dataSource.servers()) {
-                            builder.addServerMetas(RedisServerMeta.builder(server.name())
-                                    .host(StringUtils.defaultIfBlank(server.host(), Protocol.DEFAULT_HOST))
-                                    .port(server.port() > 0 ? server.port() : Protocol.DEFAULT_PORT)
-                                    .timeout(server.timeout() > 0 ? server.timeout() : Protocol.DEFAULT_TIMEOUT)
-                                    .socketTimeout(server.socketTimeout() > 0 ? server.socketTimeout() : Protocol.DEFAULT_TIMEOUT)
-                                    .maxAttempts(server.maxAttempts() > 0 ? server.maxAttempts() : 3)
-                                    .weight(server.weight() > 0 ? server.weight() : 1)
-                                    .database(server.database() >= 0 ? server.database() : Protocol.DEFAULT_DATABASE)
-                                    .clientName(StringUtils.trimToNull(server.clientName()))
-                                    .password(StringUtils.trimToNull(server.password())).build());
-                        }
+                    for (RedisServer server : dataSource.servers()) {
+                        builder.addServerMetas(RedisServerMeta.builder(server.name())
+                                .host(StringUtils.defaultIfBlank(server.host(), Protocol.DEFAULT_HOST))
+                                .port(server.port() > 0 ? server.port() : Protocol.DEFAULT_PORT)
+                                .timeout(server.timeout() > 0 ? server.timeout() : Protocol.DEFAULT_TIMEOUT)
+                                .socketTimeout(server.socketTimeout() > 0 ? server.socketTimeout() : Protocol.DEFAULT_TIMEOUT)
+                                .maxAttempts(server.maxAttempts() > 0 ? server.maxAttempts() : 3)
+                                .weight(server.weight() > 0 ? server.weight() : 1)
+                                .database(server.database() >= 0 ? server.database() : Protocol.DEFAULT_DATABASE)
+                                .clientName(StringUtils.trimToNull(server.clientName()))
+                                .password(StringUtils.trimToNull(server.password())).build());
                     }
                     dataSourceConfigs.put(dataSource.name(), builder.build());
                 }
@@ -145,7 +143,7 @@ public final class DefaultRedisConfig extends AbstractPersistenceConfig<IRedis, 
         }
 
         public Builder addDataSourceConfigs(IRedisDataSourceConfig... dataSourceConfigs) {
-            if (dataSourceConfigs != null && dataSourceConfigs.length > 0) {
+            if (dataSourceConfigs != null) {
                 for (IRedisDataSourceConfig dataSourceConfig : dataSourceConfigs) {
                     config.addDataSourceConfig(dataSourceConfig);
                 }

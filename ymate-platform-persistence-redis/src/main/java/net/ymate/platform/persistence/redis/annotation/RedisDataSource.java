@@ -105,14 +105,14 @@ public @interface RedisDataSource {
     /**
      * @return 连接池--获取连接时的最大等待毫秒数
      */
-    long poolMaxWaitMillis() default GenericObjectPoolConfig.DEFAULT_MAX_WAIT_MILLIS;
+    long poolMaxWaitMillis() default -1;
 
-    long poolMinEvictableIdleTimeMillis() default GenericObjectPoolConfig.DEFAULT_MIN_EVICTABLE_IDLE_TIME_MILLIS;
+    long poolMinEvictableIdleTimeMillis() default 1000L * 60L * 30L;
 
     /**
      * @return 连接池--对象空闲多久后逐出, 当空闲时间 &gt; 该值且空闲连接 &gt; 最大空闲数时直接逐出
      */
-    long poolSoftMinEvictableIdleTimeMillis() default GenericObjectPoolConfig.DEFAULT_SOFT_MIN_EVICTABLE_IDLE_TIME_MILLIS;
+    long poolSoftMinEvictableIdleTimeMillis() default -1;
 
     /**
      * @return 连接池--在获取连接的时候检查有效性
@@ -139,5 +139,5 @@ public @interface RedisDataSource {
     /**
      * @return 连接池--逐出扫描的时间间隔(毫秒)
      */
-    long poolTimeBetweenEvictionRunsMillis() default GenericObjectPoolConfig.DEFAULT_TIME_BETWEEN_EVICTION_RUNS_MILLIS;
+    long poolTimeBetweenEvictionRunsMillis() default -1;
 }
