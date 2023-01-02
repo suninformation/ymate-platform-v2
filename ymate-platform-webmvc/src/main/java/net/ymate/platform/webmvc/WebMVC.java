@@ -379,14 +379,18 @@ public final class WebMVC implements IModule, IWebMvc {
         if (view == null) {
             // 处理Convention模式下URL参数集合
             String requestMapping = context.getRequestMapping();
-            String[] urlParamArr = this.config.isConventionUrlRewriteMode() ? StringUtils.split(requestMapping, '_') : new String[]{requestMapping};
-            if (urlParamArr != null && urlParamArr.length > 1) {
-                requestMapping = urlParamArr[0];
-                List<String> urlParams = Arrays.asList(urlParamArr).subList(1, urlParamArr.length);
-                WebContext.getRequest().setAttribute("UrlParams", urlParams);
-                //
-                if (devEnv && LOG.isDebugEnabled()) {
-                    LOG.debug("With parameters: " + urlParams);
+            int position = StringUtils.lastIndexOf(requestMapping, Type.Const.PATH_SEPARATOR_CHAR);
+            if (position > -1 && this.config.isConventionUrlRewriteMode()) {
+                String mappingPart = StringUtils.substring(requestMapping, 0, position);
+                String[] urlParamArr = StringUtils.split(StringUtils.substring(requestMapping, position), '_');
+                if (urlParamArr != null && urlParamArr.length > 1) {
+                    requestMapping = mappingPart + urlParamArr[0];
+                    List<String> urlParams = Arrays.asList(urlParamArr).subList(1, urlParamArr.length);
+                    WebContext.getRequest().setAttribute("UrlParams", urlParams);
+                    //
+                    if (devEnv && LOG.isDebugEnabled()) {
+                        LOG.debug("With parameters: " + urlParams);
+                    }
                 }
             }
             //
