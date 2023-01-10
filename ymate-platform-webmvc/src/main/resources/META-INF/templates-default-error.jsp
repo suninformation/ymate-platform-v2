@@ -25,7 +25,7 @@
     if (status != null) {
         out.write(WebUtils.httpStatusI18n(WebUtils.getOwner(), status));
     } else {
-        out.write(BlurObject.bind(request.getAttribute("msg")).toStringValue());
+        out.write(StringUtils.trimToEmpty(BlurObject.bind(request.getAttribute("msg")).toStringValue()));
         if (ret != 0) {
             out.write(StringUtils.SPACE);
             out.write(WebUtils.getOwner().getOwner().getI18n().load("messages", "error.page.label_code", "Code:"));
