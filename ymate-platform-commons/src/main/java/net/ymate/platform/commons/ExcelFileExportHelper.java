@@ -29,6 +29,7 @@ import org.jxls.util.JxlsHelper;
 
 import java.io.*;
 import java.lang.reflect.Field;
+import java.nio.file.Files;
 import java.util.*;
 
 /**
@@ -232,7 +233,7 @@ public final class ExcelFileExportHelper {
             }
             File tempFile = File.createTempFile("export_", "_" + index + ".xlsx");
             tempFile.deleteOnExit();
-            try (OutputStream outputStream = new FileOutputStream(tempFile)) {
+            try (OutputStream outputStream = Files.newOutputStream(tempFile.toPath())) {
                 workbook.write(outputStream);
             }
             return tempFile;
@@ -279,7 +280,7 @@ public final class ExcelFileExportHelper {
         }
         File tempFile = File.createTempFile("export_", "_" + index + ".csv");
         tempFile.deleteOnExit();
-        try (OutputStream outputStream = new FileOutputStream(tempFile)) {
+        try (OutputStream outputStream = Files.newOutputStream(tempFile.toPath())) {
             IOUtils.write(tableBuilder.toString(), outputStream, StringUtils.defaultIfBlank(charset, "GB2312"));
         }
         return tempFile;
@@ -289,7 +290,7 @@ public final class ExcelFileExportHelper {
         try (InputStream resourceAsStream = ExcelFileExportHelper.class.getResourceAsStream(tmplFile + ".xls")) {
             File tempFile = File.createTempFile("export_", "_" + index + ".xls");
             tempFile.deleteOnExit();
-            try (OutputStream fileOutputStream = new FileOutputStream(tempFile)) {
+            try (OutputStream fileOutputStream = Files.newOutputStream(tempFile.toPath())) {
                 JxlsHelper.getInstance().processTemplate(resourceAsStream, fileOutputStream, new Context(data));
             }
             return tempFile;

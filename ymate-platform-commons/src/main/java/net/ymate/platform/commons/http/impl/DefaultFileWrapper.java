@@ -26,7 +26,11 @@ import org.apache.http.entity.ContentType;
 import org.apache.http.entity.mime.content.ContentBody;
 import org.apache.http.entity.mime.content.InputStreamBody;
 
-import java.io.*;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.nio.file.Files;
 
 /**
  * 文件包装器接口默认实现
@@ -72,7 +76,7 @@ public class DefaultFileWrapper implements IFileWrapper {
         this.contentLength = contentLength;
         //
         tempFile = File.createTempFile("download_", fileName);
-        try (OutputStream outputStream = new FileOutputStream(tempFile)) {
+        try (OutputStream outputStream = Files.newOutputStream(tempFile.toPath())) {
             IOUtils.copyLarge(sourceInputStream, outputStream);
         }
         needClean = true;
@@ -162,7 +166,7 @@ public class DefaultFileWrapper implements IFileWrapper {
 
     @Override
     public InputStream getInputStream() throws IOException {
-        return new FileInputStream(tempFile);
+        return Files.newInputStream(tempFile.toPath());
     }
 
     @Override
@@ -189,7 +193,7 @@ public class DefaultFileWrapper implements IFileWrapper {
     @Override
     public void close() throws IOException {
         if (needClean && tempFile != null && tempFile.exists()) {
-            if (tempFile.delete()) {
+            if (!tempFile.delete()) {
                 tempFile.deleteOnExit();
             }
         }

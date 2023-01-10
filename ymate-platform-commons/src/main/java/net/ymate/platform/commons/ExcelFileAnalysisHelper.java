@@ -19,6 +19,7 @@ import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.usermodel.WorkbookFactory;
 
 import java.io.*;
+import java.nio.file.Files;
 import java.util.List;
 import java.util.stream.IntStream;
 
@@ -34,7 +35,7 @@ public class ExcelFileAnalysisHelper implements Closeable {
     private final String[] sheetNames;
 
     public static ExcelFileAnalysisHelper bind(File file) throws IOException {
-        try (InputStream inputStream = new FileInputStream(file)) {
+        try (InputStream inputStream = Files.newInputStream(file.toPath())) {
             return new ExcelFileAnalysisHelper(inputStream);
         }
     }

@@ -364,31 +364,32 @@ public class WebUtils {
     }
 
     public static void includeJsp(HttpServletRequest request, HttpServletResponse response, String jspFile, String charsetEncoding, final OutputStream outputStream) throws ServletException, IOException {
-        final PrintWriter printWriter = new PrintWriter(new OutputStreamWriter(outputStream, StringUtils.defaultIfBlank(charsetEncoding, response.getCharacterEncoding())));
-        final ServletOutputStream servletOutputStream = new ServletOutputStream() {
-            @Override
-            public void write(int b) throws IOException {
-                outputStream.write(b);
-            }
+        try (final PrintWriter printWriter = new PrintWriter(new OutputStreamWriter(outputStream, StringUtils.defaultIfBlank(charsetEncoding, response.getCharacterEncoding())));
+             final ServletOutputStream servletOutputStream = new ServletOutputStream() {
+                 @Override
+                 public void write(int b) throws IOException {
+                     outputStream.write(b);
+                 }
 
-            @Override
-            public void write(byte[] b, int off, int len) throws IOException {
-                outputStream.write(b, off, len);
-            }
-        };
-        HttpServletResponse responseWrapper = new HttpServletResponseWrapper(response) {
-            @Override
-            public ServletOutputStream getOutputStream() {
-                return servletOutputStream;
-            }
+                 @Override
+                 public void write(byte[] b, int off, int len) throws IOException {
+                     outputStream.write(b, off, len);
+                 }
+             }) {
+            HttpServletResponse responseWrapper = new HttpServletResponseWrapper(response) {
+                @Override
+                public ServletOutputStream getOutputStream() {
+                    return servletOutputStream;
+                }
 
-            @Override
-            public PrintWriter getWriter() {
-                return printWriter;
-            }
-        };
-        request.getRequestDispatcher(jspFile).include(request, responseWrapper);
-        printWriter.flush();
+                @Override
+                public PrintWriter getWriter() {
+                    return printWriter;
+                }
+            };
+            request.getRequestDispatcher(jspFile).include(request, responseWrapper);
+            printWriter.flush();
+        }
     }
 
     /**
