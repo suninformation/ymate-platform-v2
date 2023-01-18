@@ -31,11 +31,7 @@ public class DefaultResponseErrorProcessor extends AbstractResponseErrorProcesso
 
     public DefaultResponseErrorProcessor() {
         setErrorDefaultViewFormat(StringUtils.EMPTY);
-    }
-
-    @Override
-    public String getErrorDefaultViewFormat(IWebMvc owner) {
-        return StringUtils.EMPTY;
+        setErrorWithStatusCode(true);
     }
 
     @Override

@@ -54,7 +54,7 @@ public class ImageUtils {
         Map<DecodeHintType, Object> hints = new HashMap<>(1);
         hints.put(DecodeHintType.CHARACTER_SET, "UTF-8");
         Result[] results = new QRCodeMultiReader().decodeMultiple(binaryBitmap, hints);
-        if (results != null && results.length > 0) {
+        if (results != null) {
             for (Result result : results) {
                 // 定位点的坐标，按照左下、左上、右上顺序
                 ResultPoint[] resultPoint = result.getResultPoints();

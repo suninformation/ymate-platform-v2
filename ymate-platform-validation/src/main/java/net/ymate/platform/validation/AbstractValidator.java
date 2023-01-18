@@ -23,6 +23,20 @@ import org.apache.commons.lang3.StringUtils;
  */
 public abstract class AbstractValidator implements IValidator {
 
+    private static final String ORIGINAL_KEY_PREFIX = "original_";
+
+    /**
+     * @param paramName 参数名称
+     * @return 获取指定名称参数的原始内容
+     */
+    public static BlurObject getOriginalValue(String paramName) {
+        return BlurObject.bind(ValidateContext.getLocalAttributes().get(ORIGINAL_KEY_PREFIX + paramName));
+    }
+
+    public static void setOriginValue(String paramName, Object originalValue) {
+        ValidateContext.getLocalAttributes().put(ORIGINAL_KEY_PREFIX + paramName, originalValue);
+    }
+
     /**
      * 获取参数值，若参数为数组则提取第0个元素值
      *

@@ -62,7 +62,7 @@ public class HostNameValidator implements IValidator {
             try {
                 if (paramValue.getClass().isArray()) {
                     Object[] urls = (Object[]) context.getParamValue();
-                    if (urls != null && urls.length > 0) {
+                    if (urls != null) {
                         for (Object url : urls) {
                             matched = validate(context, BlurObject.bind(url).toStringValue(), hostNameAnn.checker());
                             if (matched) {

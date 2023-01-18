@@ -15,7 +15,6 @@
  */
 package net.ymate.platform.validation.validate;
 
-import net.ymate.platform.commons.lang.BlurObject;
 import net.ymate.platform.commons.util.ClassUtils;
 import net.ymate.platform.commons.util.CodecUtils;
 import net.ymate.platform.core.IApplication;
@@ -37,14 +36,6 @@ public final class RSADataValidator extends AbstractValidator {
     private static final String I18N_MESSAGE_KEY = "ymp.validation.rsa_data_invalid";
 
     private static final String I18N_MESSAGE_DEFAULT_VALUE = "{0} invalid.";
-
-    /**
-     * @param paramName 参数名称
-     * @return 获取指定名称参数的原始内容
-     */
-    public static BlurObject getOriginalValue(String paramName) {
-        return BlurObject.bind(ValidateContext.getLocalAttributes().get("original_" + paramName));
-    }
 
     /**
      * @param owner         所属应用容器对象
@@ -123,7 +114,7 @@ public final class RSADataValidator extends AbstractValidator {
                 }
                 try {
                     String originalValue = decryptStr(keyProvider, value);
-                    ValidateContext.getLocalAttributes().put("original_" + StringUtils.defaultIfBlank(ann.value(), context.getParamInfo().getName()), originalValue);
+                    setOriginValue(StringUtils.defaultIfBlank(ann.value(), context.getParamInfo().getName()), originalValue);
                 } catch (Exception e) {
                     matched = true;
                 }
