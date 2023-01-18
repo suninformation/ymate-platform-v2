@@ -339,7 +339,7 @@ public class DefaultDatabaseSession extends AbstractSession<IDatabaseConnectionH
     @Override
     public int[] executeForUpdate(BatchSQL sql) throws Exception {
         IBatchUpdateOperator updateOperator;
-        if (sql.getSQL() != null) {
+        if (StringUtils.isNotBlank(sql.getSQL())) {
             updateOperator = new BatchUpdateOperator(sql.getSQL(), this.getConnectionHolder());
             sql.params().forEach(param -> {
                 SQLBatchParameter batchParam = SQLBatchParameter.create();

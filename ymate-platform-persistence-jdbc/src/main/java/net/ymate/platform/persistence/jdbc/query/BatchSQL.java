@@ -15,13 +15,23 @@
  */
 package net.ymate.platform.persistence.jdbc.query;
 
+import net.ymate.platform.commons.util.ResourceUtils;
 import net.ymate.platform.core.persistence.Params;
 import net.ymate.platform.persistence.jdbc.IDatabase;
 import net.ymate.platform.persistence.jdbc.JDBC;
+import net.ymate.platform.persistence.jdbc.base.impl.BatchUpdateOperator;
+import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * 批量更新SQL语句及参数对象
@@ -29,6 +39,62 @@ import java.util.List;
  * @author 刘镇 (suninformation@163.com) on 15/5/11 下午2:25
  */
 public final class BatchSQL {
+
+    public static List<String> loadSQL(String resourceName) throws IOException {
+        List<String> scripts = new ArrayList<>();
+        if (StringUtils.isNotBlank(resourceName)) {
+            Iterator<URL> resources = ResourceUtils.getResources(resourceName, BatchSQL.class, true);
+            while (resources.hasNext()) {
+                try (InputStream inputStream = resources.next().openStream()) {
+                    scripts.addAll(loadSQL(inputStream));
+                }
+            }
+        }
+        return scripts;
+    }
+
+    public static List<String> loadSQL(File file) throws IOException {
+        if (file != null && file.exists()) {
+            try (InputStream inputStream = Files.newInputStream(file.toPath())) {
+                return loadSQL(inputStream);
+            }
+        }
+        return Collections.emptyList();
+    }
+
+    public static List<String> loadSQL(InputStream inputStream) throws IOException {
+        if (inputStream != null) {
+            String[] scripts = StringUtils.split(IOUtils.toString(inputStream, StandardCharsets.UTF_8), ";");
+            if (!ArrayUtils.isEmpty(scripts)) {
+                return Arrays.stream(scripts).filter(StringUtils::isNotBlank).collect(Collectors.toList());
+            }
+        }
+        return Collections.emptyList();
+    }
+
+    public static int execSQL(List<String> scripts) throws Exception {
+        return execSQL(JDBC.get(), null, scripts);
+    }
+
+    public static int execSQL(String dataSourceName, List<String> scripts) throws Exception {
+        return execSQL(JDBC.get(), dataSourceName, scripts);
+    }
+
+    public static int execSQL(IDatabase database, List<String> scripts) throws Exception {
+        return execSQL(database, null, scripts);
+    }
+
+    public static int execSQL(IDatabase database, String dataSourceName, List<String> scripts) throws Exception {
+        int effectCount = 0;
+        if (scripts != null && !scripts.isEmpty()) {
+            BatchSQL batchSQL = BatchSQL.create(database);
+            scripts.forEach(batchSQL::addSQL);
+            if (!batchSQL.getSQLs().isEmpty()) {
+                effectCount = BatchUpdateOperator.parseEffectCounts(batchSQL.execute(StringUtils.isNotBlank(dataSourceName) ? dataSourceName : database.getConfig().getDefaultDataSourceName()));
+            }
+        }
+        return effectCount;
+    }
 
     private final IDatabase owner;
 
