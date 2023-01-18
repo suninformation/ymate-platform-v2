@@ -25,6 +25,7 @@ import org.apache.commons.logging.LogFactory;
 
 import java.io.*;
 import java.net.*;
+import java.nio.file.Files;
 import java.util.Enumeration;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
@@ -103,8 +104,21 @@ public class FileUtils {
      * @throws IOException 可能产生的异常
      */
     public static String getHash(File targetFile) throws IOException {
-        try (InputStream inputStream = new FileInputStream(targetFile)) {
-            return DigestUtils.md5Hex(inputStream);
+        return getHash(targetFile, false);
+    }
+
+    /**
+     * 获取文件签名值
+     *
+     * @param targetFile 目标文件对象
+     * @param sha1       是否采用SHA1算法(默认为MD5)
+     * @return 返回文件签名值
+     * @throws IOException 可能产生的异常
+     * @since 2.1.2
+     */
+    public static String getHash(File targetFile, boolean sha1) throws IOException {
+        try (InputStream inputStream = Files.newInputStream(targetFile.toPath())) {
+            return sha1 ? DigestUtils.sha1Hex(inputStream) : DigestUtils.md5Hex(inputStream);
         }
     }
 
@@ -171,12 +185,12 @@ public class FileUtils {
         }
         File zipFile = File.createTempFile(prefix, ".zip");
         zipFile.deleteOnExit();
-        try (ZipOutputStream outputStream = new ZipOutputStream(new FileOutputStream(zipFile))) {
+        try (ZipOutputStream outputStream = new ZipOutputStream(Files.newOutputStream(zipFile.toPath()))) {
             for (File file : files) {
                 ZipEntry zipEntry = new ZipEntry(file.getName());
                 outputStream.putNextEntry(zipEntry);
                 //
-                try (InputStream inputStream = new FileInputStream(file)) {
+                try (InputStream inputStream = Files.newInputStream(file.toPath())) {
                     IOUtils.copyLarge(inputStream, outputStream);
                 }
             }
@@ -199,8 +213,8 @@ public class FileUtils {
             throw new IllegalArgumentException(String.format("Failure to write file, Dest file [%s] must be absolute path.", dest != null ? dest.getPath() : StringUtils.EMPTY));
         }
         if (!src.renameTo(dest)) {
-            try (BufferedInputStream inputStream = new BufferedInputStream(new FileInputStream(src));
-                 BufferedOutputStream outputStream = new BufferedOutputStream(new FileOutputStream(dest))) {
+            try (BufferedInputStream inputStream = new BufferedInputStream(Files.newInputStream(src.toPath()));
+                 BufferedOutputStream outputStream = new BufferedOutputStream(Files.newOutputStream(dest.toPath()))) {
                 IOUtils.copyLarge(inputStream, outputStream);
             }
         }
@@ -260,7 +274,7 @@ public class FileUtils {
                                         LOG.debug(String.format("Unpacking resource file: %s", entry.getName()));
                                     }
                                     try (InputStream inputStream = jarFile.getInputStream(entry);
-                                         OutputStream outputStream = new FileOutputStream(distFile)) {
+                                         OutputStream outputStream = Files.newOutputStream(distFile.toPath())) {
                                         IOUtils.copyLarge(inputStream, outputStream);
                                         result = true;
                                     }
@@ -293,7 +307,7 @@ public class FileUtils {
     public static void writeDirTo(File sources, File targetDir) throws IOException {
         if (sources != null && sources.isDirectory()) {
             File[] files = sources.listFiles();
-            if (files != null && files.length > 0) {
+            if (files != null) {
                 for (File file : files) {
                     File targetFile = new File(targetDir, file.getName());
                     if (!file.isDirectory()) {
@@ -304,8 +318,8 @@ public class FileUtils {
                         if (LOG.isDebugEnabled()) {
                             LOG.debug(String.format("Unpacking resource file: %s", targetFile.getPath()));
                         }
-                        try (InputStream inputStream = new FileInputStream(file);
-                             OutputStream outputStream = new FileOutputStream(targetFile)) {
+                        try (InputStream inputStream = Files.newInputStream(file.toPath());
+                             OutputStream outputStream = Files.newOutputStream(targetFile.toPath())) {
                             IOUtils.copyLarge(inputStream, outputStream);
                         }
                     } else {
@@ -347,7 +361,7 @@ public class FileUtils {
             }
             if (newFile.createNewFile()) {
                 if (inputStream != null) {
-                    try (OutputStream outputStream = new FileOutputStream(newFile)) {
+                    try (OutputStream outputStream = Files.newOutputStream(newFile.toPath())) {
                         IOUtils.copyLarge(inputStream, outputStream);
                     }
                 }
@@ -368,7 +382,7 @@ public class FileUtils {
      */
     public static InputStream loadFileAsStream(String... filePaths) {
         InputStream inputStream = null;
-        if (filePaths != null && filePaths.length > 0) {
+        if (filePaths != null) {
             for (String filePath : filePaths) {
                 if (StringUtils.isNotBlank(filePath)) {
                     File file = new File(filePath);
