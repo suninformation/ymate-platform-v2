@@ -2555,7 +2555,7 @@ int effectCount = sql.execute();
 
 与 SQL 对象一样属于对象查询的基础组件，主要用于批量更新类 SQL 语句的执行和参数对象的封装。
 
-**示例代码：**
+**示例代码一：** 基本使用方法
 
 ```java
 // 构建SQL插入语句：INSERT INTO user (id, username, nickname, password, email) VALUES (?, ?, ?, ?, ?)
@@ -2577,6 +2577,25 @@ BatchSQL batchSQL = BatchSQL.create(insert)
 int[] effectCounts = batchSQL.execute();
 // 可以通过此方法计算实际受影响的记录总数
 int effectCount = BatchUpdateOperator.parseEffectCounts(effectCounts);
+```
+
+
+
+**示例代码二：** 读取并执行SQL脚本文件
+
+```java
+Transactions.execute(() -> {
+    IDatabase database = JDBC.get();
+    int effectCount = database.openSession(session -> {
+        String dialectName = session.getConnectionHolder().getDialect().getName();
+        String filename = String.format("db-init_%s.sql", dialectName);
+        List<String> scripts = BatchSQL.loadSQL(filename);
+        if (scripts.isEmpty()) {
+            scripts = BatchSQL.loadSQL("db-init.sql");
+        }
+        return BatchSQL.execSQL(database, scripts);
+    });
+});
 ```
 
 

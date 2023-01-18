@@ -712,17 +712,19 @@ http://localhost:8088/demo/splitArray?names=A,B,C
 
 用于开启和配置参数签名验证规则。
 
-| 配置项         | 描述                     |
-| -------------- | ------------------------ |
-| paramName      | 签名参数名称             |
-| nonceName      | 随机参数名称             |
-| encode         | 是否进行URLEncoder编码   |
-| upperCase      | 是否转换签名字符串为大写 |
-| disabled       | 是否已禁用               |
-| excludedParams | 排除的参数名称集合       |
-| validatorClass | 签名验证器类             |
-| parserClass    | 签名参数分析器类型       |
-| processorClass | 附加签名参数处理器类型   |
+| 配置项         | 描述                                                     |
+| -------------- | -------------------------------------------------------- |
+| paramName      | 签名参数名称，默认值： `sign`                            |
+| nonceName      | 随机参数名称，如： `nonce`                               |
+| timestampName  | 时间戳参数名称，默认值： `timestamp`                     |
+| timeLifecycle  | 时间戳有效时间（秒），默认值： `30`，值为 `0` 表示不检查 |
+| encode         | 是否进行URLEncoder编码，默认值： `fasle`                 |
+| upperCase      | 是否转换签名字符串为大写，默认值： `true`                |
+| disabled       | 是否已禁用，默认值： `fasle`                             |
+| excludedParams | 排除的参数名称集合                                       |
+| validatorClass | 签名验证器类                                             |
+| parserClass    | 签名参数分析器类型                                       |
+| processorClass | 附加签名参数处理器类型                                   |
 
 ### 默认实现的签名规则
 
@@ -745,8 +747,8 @@ http://localhost:8088/demo/splitArray?names=A,B,C
   ```java
   // 拼接密钥
   signStr = signStr + "&client_secret=6bf18fa2f9a136273fb90e58dff4a964";
-  // 执行MD5签名并将字符转换为大写
-  signStr = MD5(signStr).toUpperCase();
+  // 执行SHA1签名并将字符转换为大写
+  signStr = DigestUtils.sha1Hex(signStr).toUpperCase();
   ```
 
 - 如果有必要，可以在请求参数集合中增加随机参数（如：`nonce`），通过随机数函数生成并转换为字符串，从而保证签名的不可预测性；
@@ -764,7 +766,7 @@ public class SignController {
 
     @RequestMapping("/sign")
     @EnableSnakeCaseParam
-    @SignatureValidate(nonceName = "nonce")
+    @SignatureValidate(nonceName = "nonce", timestampName = "create_time")
     public IView sign(@RequestParam String clientId,
                       @RequestParam Long createTime,
                       @RequestParam String event,

@@ -1663,6 +1663,8 @@ FileUtils.createEmptyFile(demoFile);
 String extName = FileUtils.getExtName(demoFile.getName());
 // 获取文件MD5签名值
 String hash = FileUtils.getHash(demoFile);
+// 获取文件SHA1签名值
+hash = FileUtils.getHash(demoFile, true);
 // 按数组顺序查加载文件并返回第一个成功读取的文件输入流
 String[] filePaths = new String[]{
     RuntimeUtils.replaceEnvVariable("${root}/files/a.properties"),
@@ -2030,7 +2032,7 @@ params.put("name", "suninformation");
 params.put("nickName", "有理想的鱼");
 params.put("age", 20);
 params.put("gender", "M");
-// 默认采用 MD5 进行签名
+// 默认采用 SHA1 进行签名
 String signStr = ParamUtils.createSignature(params, true, true, "扩展参数1", "扩展参数n");
 // 或自定义签名逻辑
 signStr = ParamUtils.createSignature(params, true, true, new ParamUtils.ISignatureBuilder() {
