@@ -292,7 +292,7 @@ public class ParamUtils {
         if (signatureBuilder != null) {
             signStr = signatureBuilder.build(stringBuilder.toString());
         } else {
-            signStr = DigestUtils.md5Hex(stringBuilder.toString());
+            signStr = DigestUtils.sha1Hex(stringBuilder.toString());
         }
         if (upperCase) {
             signStr = signStr.toUpperCase();

@@ -17,6 +17,7 @@ package net.ymate.platform.webmvc.impl;
 
 import net.ymate.platform.commons.lang.BlurObject;
 import net.ymate.platform.commons.util.ClassUtils;
+import net.ymate.platform.commons.util.DateTimeUtils;
 import net.ymate.platform.commons.util.ParamUtils;
 import net.ymate.platform.webmvc.*;
 import net.ymate.platform.webmvc.annotation.SignatureValidate;
@@ -37,13 +38,11 @@ public class DefaultSignatureValidator implements ISignatureValidator {
     public boolean validate(IWebMvc owner, RequestMeta requestMeta, SignatureValidate signatureValidate) {
         ISignatureParamParser paramParser = ClassUtils.impl(signatureValidate.parserClass(), ISignatureParamParser.class);
         Map<String, Object> paramValues = new HashMap<>(paramParser.getParams(owner, requestMeta));
-        String originSign = null;
-        if (paramValues.containsKey(signatureValidate.paramName())) {
-            originSign = BlurObject.bind(paramValues.get(signatureValidate.paramName())).toStringValue();
-        }
-        boolean invalid = StringUtils.isBlank(originSign) || StringUtils.isNotBlank(signatureValidate.nonceName()) && !paramValues.containsKey(signatureValidate.nonceName());
-        if (invalid) {
-            throw new ParameterSignatureException("Missing signature required parameter.");
+        String sign = BlurObject.bind(paramValues.get(signatureValidate.paramName())).toStringValue();
+        long timestamp = BlurObject.bind(paramValues.get(signatureValidate.timestampName())).toLongValue();
+        boolean invalid = StringUtils.isBlank(sign) || timestamp <= 0 || !doNonceValueValidate(owner, signatureValidate.nonceName(), paramValues);
+        if (invalid || signatureValidate.timeLifecycle() > 0 && System.currentTimeMillis() - timestamp > signatureValidate.timeLifecycle() * DateTimeUtils.SECOND) {
+            throw new ParameterSignatureException("Missing signature required parameter or expired timestamp parameter value.");
         }
         Map<String, Object> signatureParams = new HashMap<>(paramValues.size());
         paramValues.forEach((key, value) -> {
@@ -51,7 +50,15 @@ public class DefaultSignatureValidator implements ISignatureValidator {
                 signatureParams.put(key, value);
             }
         });
-        return StringUtils.equals(originSign, doSignature(owner, signatureValidate, signatureParams));
+        return StringUtils.equals(sign, doSignature(owner, signatureValidate, signatureParams));
+    }
+
+    protected boolean doNonceValueValidate(IWebMvc owner, String nonceName, Map<String, Object> paramValues) {
+        if (StringUtils.isNotBlank(nonceName)) {
+            String nonceValue = BlurObject.bind(paramValues.get(nonceName)).toStringValue();
+            return StringUtils.isNotBlank(nonceValue);
+        }
+        return true;
     }
 
     protected String doSignature(IWebMvc owner, SignatureValidate signatureValidate, Map<String, Object> signatureParams) {

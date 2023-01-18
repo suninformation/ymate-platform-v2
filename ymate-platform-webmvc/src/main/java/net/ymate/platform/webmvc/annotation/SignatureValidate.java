@@ -46,6 +46,18 @@ public @interface SignatureValidate {
     String nonceName() default StringUtils.EMPTY;
 
     /**
+     * @return 时间戳参数名称
+     * @since 2.1.2
+     */
+    String timestampName() default "timestamp";
+
+    /**
+     * @return 检测当前时间戳是否在有效范围内，默认为30秒，当取值小于等于0时表示不检测，单位：秒
+     * @since 2.1.2
+     */
+    long timeLifecycle() default 30;
+
+    /**
      * @return 是否进行编码
      */
     boolean encode() default false;
