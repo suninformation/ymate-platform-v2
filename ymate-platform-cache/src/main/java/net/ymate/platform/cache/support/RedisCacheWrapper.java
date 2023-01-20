@@ -75,7 +75,7 @@ public class RedisCacheWrapper implements ICache {
         if (key instanceof String || key instanceof StringBuilder || key instanceof StringBuffer || key instanceof Number) {
             return key.toString();
         }
-        return DigestUtils.md5Hex((StringUtils.EMPTY + key).getBytes());
+        return DigestUtils.sha1Hex((StringUtils.EMPTY + key).getBytes());
     }
 
     private String serializeValue(Object value) throws Exception {

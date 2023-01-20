@@ -15,11 +15,14 @@
  */
 package net.ymate.platform.persistence.jdbc.scaffold;
 
+import net.ymate.platform.core.beans.annotation.Ignored;
+
 /**
  * 实体及属性命名过滤器接口
  *
  * @author 刘镇 (suninformation@163.com) on 17/4/18 上午8:43
  */
+@Ignored
 public interface INamedFilter {
 
     enum Type {

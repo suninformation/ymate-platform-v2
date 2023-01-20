@@ -17,6 +17,7 @@ package net.ymate.platform.core.persistence;
 
 import net.ymate.platform.commons.util.ClassUtils;
 import net.ymate.platform.commons.util.RuntimeUtils;
+import net.ymate.platform.core.beans.annotation.Ignored;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -30,6 +31,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * @author 刘镇 (suninformation@163.com) on 2021/12/22 5:19 下午
  * @since 2.1.0
  */
+@Ignored
 public interface IValueRenderer {
 
     /**

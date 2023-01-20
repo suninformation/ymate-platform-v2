@@ -28,11 +28,11 @@ import org.apache.commons.lang3.StringUtils;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.InputStream;
 import java.io.Reader;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 
 /**
  * 二进制数据流视图
@@ -110,13 +110,13 @@ public class BinaryView extends AbstractView {
             if (rangePairObj != null) {
                 doSetRangeHeader(httpServletResponse, rangePairObj);
                 // 开始续传文件流
-                try (InputStream inputStream = new FileInputStream((File) data)) {
+                try (InputStream inputStream = Files.newInputStream(((File) data).toPath())) {
                     IOUtils.copyLarge(inputStream, httpServletResponse.getOutputStream(), rangePairObj.getKey(), rangePairObj.getValue());
                 }
             } else {
                 // 正常下载
                 httpServletResponse.setContentLength(BlurObject.bind(length).toIntValue());
-                try (InputStream inputStream = new FileInputStream((File) data)) {
+                try (InputStream inputStream = Files.newInputStream(((File) data).toPath())) {
                     IOUtils.copyLarge(inputStream, httpServletResponse.getOutputStream());
                 }
             }

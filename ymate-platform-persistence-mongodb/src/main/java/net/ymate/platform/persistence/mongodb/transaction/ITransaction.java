@@ -16,12 +16,14 @@
 package net.ymate.platform.persistence.mongodb.transaction;
 
 import com.mongodb.client.ClientSession;
+import net.ymate.platform.core.beans.annotation.Ignored;
 import net.ymate.platform.persistence.mongodb.IMongoConnectionHolder;
 
 /**
  * @author 刘镇 (suninformation@163.com) on 2021/10/16 11:11 下午
  * @since 2.1.0
  */
+@Ignored
 public interface ITransaction {
 
     /**

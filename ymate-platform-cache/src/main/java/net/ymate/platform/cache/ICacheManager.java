@@ -15,6 +15,7 @@
  */
 package net.ymate.platform.cache;
 
+import net.ymate.platform.core.beans.annotation.Ignored;
 import net.ymate.platform.core.support.IInitialization;
 
 import java.io.Closeable;
@@ -23,6 +24,7 @@ import java.io.Closeable;
  * @author 刘镇 (suninformation@163.com) on 2021/02/13 13:55
  * @version 2.1.0
  */
+@Ignored
 public interface ICacheManager extends IInitialization<ICaches>, Closeable {
 
     /**

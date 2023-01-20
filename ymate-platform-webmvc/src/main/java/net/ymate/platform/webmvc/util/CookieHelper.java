@@ -19,6 +19,7 @@ import net.ymate.platform.commons.lang.BlurObject;
 import net.ymate.platform.commons.util.CodecUtils;
 import net.ymate.platform.commons.util.RuntimeUtils;
 import net.ymate.platform.webmvc.IWebMvc;
+import net.ymate.platform.webmvc.base.Type;
 import net.ymate.platform.webmvc.context.WebContext;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.codec.digest.DigestUtils;
@@ -238,14 +239,12 @@ public final class CookieHelper {
     }
 
     /**
-     * @return 获取经过MD5加密的Cookie密钥（注：需先开启采用密钥加密，否则返回“”）
+     * @return 获取经过SHA1加密的Cookie密钥（注：需先开启采用密钥加密，否则返回“”）
      */
     private String doGetEncodedAuthKeyStr() {
         if (useAuthKey) {
             String cookieAuthKey = owner.getConfig().getCookieAuthKey();
-            if (StringUtils.isNotBlank(cookieAuthKey)) {
-                return DigestUtils.md5Hex(cookieAuthKey + request.getHeader("User-Agent"));
-            }
+            return DigestUtils.sha1Hex(StringUtils.trimToEmpty(cookieAuthKey) + request.getRemoteAddr() + request.getHeader(Type.HttpHead.USER_AGENT));
         }
         return StringUtils.EMPTY;
     }

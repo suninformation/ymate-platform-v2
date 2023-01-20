@@ -17,12 +17,8 @@ package net.ymate.platform.core.handle;
 
 import net.ymate.platform.commons.util.ClassUtils;
 import net.ymate.platform.core.IApplication;
-import net.ymate.platform.core.beans.BeanMeta;
 import net.ymate.platform.core.beans.IBeanHandler;
-import net.ymate.platform.core.beans.annotation.Interceptor;
 import net.ymate.platform.core.beans.intercept.IInterceptor;
-
-import java.lang.annotation.Annotation;
 
 /**
  * @author 刘镇 (suninformation@163.com) on 2018/7/30 下午10:02
@@ -39,14 +35,7 @@ public final class InterceptorHandler implements IBeanHandler {
     @SuppressWarnings("unchecked")
     public Object handle(Class<?> targetClass) {
         if (ClassUtils.isNormalClass(targetClass) && !targetClass.isInterface() && ClassUtils.isInterfaceOf(targetClass, IInterceptor.class)) {
-            Interceptor interceptorAnn = targetClass.getAnnotation(Interceptor.class);
-            if (interceptorAnn != null) {
-                if (!Annotation.class.equals(interceptorAnn.value())) {
-                    owner.getInterceptSettings().registerInterceptAnnotation(interceptorAnn.value(), (Class<? extends IInterceptor>) targetClass);
-                }
-                return BeanMeta.create(targetClass, interceptorAnn.singleton());
-            }
-            return BeanMeta.create(targetClass);
+            owner.registerInterceptor((Class<? extends IInterceptor>) targetClass);
         }
         return null;
     }

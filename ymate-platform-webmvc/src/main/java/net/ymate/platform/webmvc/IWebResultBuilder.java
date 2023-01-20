@@ -17,6 +17,7 @@ package net.ymate.platform.webmvc;
 
 import net.ymate.platform.commons.json.IJsonObjectWrapper;
 import net.ymate.platform.commons.json.JsonWrapper;
+import net.ymate.platform.core.beans.annotation.Ignored;
 
 import java.io.Serializable;
 import java.util.Map;
@@ -26,6 +27,7 @@ import java.util.Objects;
  * @author 刘镇 (suninformation@163.com) on 2020/09/08 22:20
  * @since 2.1.0
  */
+@Ignored
 public interface IWebResultBuilder {
 
     default IWebResultBuilder fromJson(String jsonStr) {

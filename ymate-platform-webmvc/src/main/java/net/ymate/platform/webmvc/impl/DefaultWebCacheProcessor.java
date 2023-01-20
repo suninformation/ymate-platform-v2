@@ -124,6 +124,6 @@ public class DefaultWebCacheProcessor implements IWebCacheProcessor {
         if (responseCache.scope().equals(ICaches.Scope.SESSION)) {
             stringBuilder.insert(0, "|").insert(0, request.getSession().getId());
         }
-        return DigestUtils.md5Hex(stringBuilder.toString());
+        return DigestUtils.sha1Hex(stringBuilder.toString());
     }
 }

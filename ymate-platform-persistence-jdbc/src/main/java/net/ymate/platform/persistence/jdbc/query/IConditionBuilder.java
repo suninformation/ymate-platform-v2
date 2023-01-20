@@ -15,12 +15,15 @@
  */
 package net.ymate.platform.persistence.jdbc.query;
 
+import net.ymate.platform.core.beans.annotation.Ignored;
+
 /**
  * 条件对象构建器接口
  *
  * @author 刘镇 (suninformation@163.com) on 2019-11-16 11:31
  * @since 2.1.0
  */
+@Ignored
 public interface IConditionBuilder {
 
     /**

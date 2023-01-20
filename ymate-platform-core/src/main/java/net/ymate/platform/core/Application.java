@@ -19,6 +19,7 @@ import net.ymate.platform.commons.lang.BlurObject;
 import net.ymate.platform.commons.serialize.annotation.Serializer;
 import net.ymate.platform.commons.util.RuntimeUtils;
 import net.ymate.platform.core.annotation.ParamValue;
+import net.ymate.platform.core.beans.BeanMeta;
 import net.ymate.platform.core.beans.IBeanFactory;
 import net.ymate.platform.core.beans.IBeanLoadFactory;
 import net.ymate.platform.core.beans.IBeanLoader;
@@ -27,6 +28,7 @@ import net.ymate.platform.core.beans.annotation.Injector;
 import net.ymate.platform.core.beans.annotation.Interceptor;
 import net.ymate.platform.core.beans.annotation.Proxy;
 import net.ymate.platform.core.beans.impl.DefaultBeanFactory;
+import net.ymate.platform.core.beans.intercept.IInterceptor;
 import net.ymate.platform.core.beans.intercept.InterceptSettings;
 import net.ymate.platform.core.configuration.IConfigReader;
 import net.ymate.platform.core.configuration.impl.MapSafeConfigReader;
@@ -43,6 +45,7 @@ import org.apache.commons.lang3.time.StopWatch;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import java.lang.annotation.Annotation;
 import java.util.Map;
 
 /**
@@ -267,6 +270,30 @@ public final class Application implements IApplication {
     @Override
     public InterceptSettings getInterceptSettings() {
         return interceptSettings;
+    }
+
+    @Override
+    public void registerInterceptor(Class<? extends IInterceptor> interceptClass) {
+        if (!interceptClass.isInterface()) {
+            Interceptor interceptorAnn = interceptClass.getAnnotation(Interceptor.class);
+            if (interceptorAnn != null) {
+                if (!Annotation.class.equals(interceptorAnn.value())) {
+                    registerInterceptAnnotation(interceptorAnn.value(), interceptClass, interceptorAnn.singleton());
+                } else {
+                    beanFactory.registerBean(BeanMeta.create(interceptClass, interceptorAnn.singleton()));
+                }
+            } else {
+                beanFactory.registerBean(BeanMeta.create(interceptClass, true));
+            }
+        }
+    }
+
+    @Override
+    public void registerInterceptAnnotation(Class<? extends Annotation> annotationClass, Class<? extends IInterceptor> interceptClass, boolean singleton) {
+        if (annotationClass != null && !interceptClass.isInterface()) {
+            interceptSettings.registerInterceptAnnotation(annotationClass, interceptClass);
+            beanFactory.registerBean(BeanMeta.create(interceptClass, singleton));
+        }
     }
 
     @Override

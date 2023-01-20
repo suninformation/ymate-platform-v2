@@ -15,6 +15,8 @@
  */
 package net.ymate.platform.core.persistence;
 
+import net.ymate.platform.core.beans.annotation.Ignored;
+
 /**
  * 基准会话执行器接口
  *
@@ -23,6 +25,7 @@ package net.ymate.platform.core.persistence;
  * @author 刘镇 (suninformation@163.com) on 2019-05-16 01:04
  * @since 2.1.0
  */
+@Ignored
 @SuppressWarnings("rawtypes")
 public interface ISessionExecutor<RESULT, SESSION extends ISession> {
 

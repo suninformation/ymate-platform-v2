@@ -25,9 +25,9 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Files;
 import java.util.Locale;
 
 /**
@@ -82,7 +82,7 @@ public class I18nWebEventHandler implements II18nEventHandler {
                 if (LOG.isDebugEnabled()) {
                     LOG.debug(String.format("Load i18n resource file: %s", resourceFile.getPath()));
                 }
-                return new FileInputStream(resourceFile);
+                return Files.newInputStream(resourceFile.toPath());
             }
         }
         return null;

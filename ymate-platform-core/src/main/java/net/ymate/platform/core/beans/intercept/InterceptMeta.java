@@ -46,7 +46,7 @@ public final class InterceptMeta {
     }
 
     public InterceptMeta(IApplication owner, Class<?> targetClass, Method targetMethod) {
-        this(DigestUtils.md5Hex(targetClass.toString() + targetMethod.toString()), owner, targetClass, targetMethod);
+        this(DigestUtils.sha1Hex(targetClass.toString() + targetMethod.toString()), owner, targetClass, targetMethod);
     }
 
     public InterceptMeta(String id, IApplication owner, Class<?> targetClass, Method targetMethod) {

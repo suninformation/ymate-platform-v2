@@ -15,6 +15,7 @@
  */
 package net.ymate.platform.webmvc.validate;
 
+import net.ymate.platform.core.beans.annotation.Ignored;
 import net.ymate.platform.core.support.IContext;
 import net.ymate.platform.webmvc.IWebMvcConfig;
 import net.ymate.platform.webmvc.base.Type;
@@ -27,6 +28,7 @@ import java.net.URL;
  * @author 刘镇 (suninformation@163.com) on 2018/8/12 上午4:31
  * @since 2.0.6
  */
+@Ignored
 public interface IHostNameChecker {
 
     IHostNameChecker DEFAULT = (context, url) -> {

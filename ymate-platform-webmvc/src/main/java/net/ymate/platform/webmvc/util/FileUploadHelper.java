@@ -28,6 +28,7 @@ import org.apache.commons.lang3.StringUtils;
 
 import javax.servlet.http.HttpServletRequest;
 import java.io.*;
+import java.nio.file.Files;
 import java.util.*;
 
 /**
@@ -414,7 +415,7 @@ public final class FileUploadHelper {
         @Override
         public InputStream getInputStream() throws IOException {
             if (fileObj) {
-                return new FileInputStream(file);
+                return Files.newInputStream(file.toPath());
             }
             return fileItem.getInputStream();
         }
@@ -436,7 +437,7 @@ public final class FileUploadHelper {
                 tempFile = File.createTempFile("upload_", getName());
                 tempFile.deleteOnExit();
                 try (InputStream inputStream = new BufferedInputStream(fileItem.getInputStream());
-                     OutputStream outputStream = new BufferedOutputStream(new FileOutputStream(tempFile))) {
+                     OutputStream outputStream = new BufferedOutputStream(Files.newOutputStream(tempFile.toPath()))) {
                     IOUtils.copyLarge(inputStream, outputStream);
                 }
             }
@@ -446,7 +447,7 @@ public final class FileUploadHelper {
         @Override
         public OutputStream getOutputStream() throws IOException {
             if (fileObj) {
-                return new FileOutputStream(file);
+                return Files.newOutputStream(file.toPath());
             }
             return fileItem.getOutputStream();
         }

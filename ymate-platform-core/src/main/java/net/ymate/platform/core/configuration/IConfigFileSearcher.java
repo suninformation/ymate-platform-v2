@@ -15,6 +15,7 @@
  */
 package net.ymate.platform.core.configuration;
 
+import net.ymate.platform.core.beans.annotation.Ignored;
 import net.ymate.platform.core.support.IDestroyable;
 import net.ymate.platform.core.support.IInitialization;
 
@@ -27,6 +28,7 @@ import java.io.InputStream;
  * @author 刘镇 (suninformation@163.com) on 2021/5/18 11:35 下午
  * @since 2.1.0
  */
+@Ignored
 public interface IConfigFileSearcher extends IInitialization<IConfig>, IDestroyable {
 
     /**

@@ -15,11 +15,14 @@
  */
 package net.ymate.platform.core.persistence;
 
+import net.ymate.platform.core.beans.annotation.Ignored;
+
 /**
  * 事务业务操作接口
  *
  * @author 刘镇 (suninformation@163.com) on 15/4/28 下午7:28
  */
+@Ignored
 public interface ITrade {
 
     /**

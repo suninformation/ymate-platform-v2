@@ -15,6 +15,7 @@
  */
 package net.ymate.platform.core.configuration;
 
+import net.ymate.platform.core.beans.annotation.Ignored;
 import net.ymate.platform.core.support.IInitialization;
 
 /**
@@ -22,6 +23,7 @@ import net.ymate.platform.core.support.IInitialization;
  *
  * @author 刘镇 (suninformation@163.com) on 2012-11-28 下午9:04:52
  */
+@Ignored
 public interface IConfigurationConfig extends IInitialization<IConfig> {
 
     String CONFIG_HOME = "config_home";

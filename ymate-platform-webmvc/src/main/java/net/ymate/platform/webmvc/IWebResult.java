@@ -16,6 +16,7 @@
 package net.ymate.platform.webmvc;
 
 import net.ymate.platform.commons.json.IJsonObjectWrapper;
+import net.ymate.platform.core.beans.annotation.Ignored;
 import net.ymate.platform.webmvc.view.impl.JsonView;
 import net.ymate.platform.webmvc.view.impl.TextView;
 
@@ -26,6 +27,7 @@ import java.util.Map;
  * @author 刘镇 (suninformation@163.com) on 2020/08/22 22:01
  * @since 2.1.0
  */
+@Ignored
 public interface IWebResult<CODE_TYPE extends Serializable> {
 
     boolean isSuccess();

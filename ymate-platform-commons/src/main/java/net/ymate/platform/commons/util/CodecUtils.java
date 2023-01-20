@@ -212,7 +212,7 @@ public class CodecUtils {
 
         @Override
         public byte[] encrypt(byte[] data, byte[] key) throws Exception {
-            return encrypt(data, key, DigestUtils.md5Hex(key).substring(0, 8).getBytes());
+            return encrypt(data, key, DigestUtils.sha1Hex(key).substring(0, 8).getBytes());
         }
 
         public byte[] encrypt(byte[] data, byte[] key, byte[] salt) throws Exception {
@@ -231,7 +231,7 @@ public class CodecUtils {
 
         @Override
         public byte[] decrypt(byte[] data, byte[] key) throws Exception {
-            return decrypt(data, key, DigestUtils.md5Hex(key).substring(0, 8).getBytes());
+            return decrypt(data, key, DigestUtils.sha1Hex(key).substring(0, 8).getBytes());
         }
 
         public byte[] decrypt(byte[] data, byte[] key, byte[] salt) throws Exception {

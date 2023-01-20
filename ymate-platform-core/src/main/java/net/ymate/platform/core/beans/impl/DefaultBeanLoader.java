@@ -22,12 +22,12 @@ import net.ymate.platform.core.beans.annotation.Ignored;
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.annotation.Annotation;
 import java.net.JarURLConnection;
 import java.net.URL;
+import java.nio.file.Files;
 import java.util.*;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
@@ -66,18 +66,16 @@ public class DefaultBeanLoader extends AbstractBeanLoader {
             // 不扫描注解、枚举类，被声明@Ingored注解的类也将被忽略，因为需要处理package-info信息，所以放开接口限制
             if (!clazz.isAnnotation() && !clazz.isEnum() && !clazz.isAnnotationPresent(Ignored.class)) {
                 Annotation[] annotations = clazz.getAnnotations();
-                if (annotations.length > 0) {
-                    for (Annotation annotation : annotations) {
-                        IBeanHandler beanHandler = getBeanHandler(annotation.annotationType());
-                        if (beanHandler != null) {
-                            Object instanceObj = beanHandler.handle(clazz);
-                            if (instanceObj instanceof BeanMeta) {
-                                beanFactory.registerBean((BeanMeta) instanceObj);
-                            } else if (instanceObj != null) {
-                                BeanMeta beanMeta = BeanMeta.create(clazz, true);
-                                beanMeta.setBeanObject(instanceObj);
-                                beanFactory.registerBean(beanMeta);
-                            }
+                for (Annotation annotation : annotations) {
+                    IBeanHandler beanHandler = getBeanHandler(annotation.annotationType());
+                    if (beanHandler != null) {
+                        Object instanceObj = beanHandler.handle(clazz);
+                        if (instanceObj instanceof BeanMeta) {
+                            beanFactory.registerBean((BeanMeta) instanceObj);
+                        } else if (instanceObj != null) {
+                            BeanMeta beanMeta = BeanMeta.create(clazz, true);
+                            beanMeta.setBeanObject(instanceObj);
+                            beanFactory.registerBean(beanMeta);
                         }
                     }
                 }
@@ -92,7 +90,7 @@ public class DefaultBeanLoader extends AbstractBeanLoader {
             URL res = resources.nextElement();
             if (FileUtils.PROTOCOL_FILE.equalsIgnoreCase(res.getProtocol()) || FileUtils.PROTOCOL_VFS_FILE.equalsIgnoreCase(res.getProtocol())) {
                 File[] files = new File(res.toURI()).listFiles();
-                if (files != null && files.length > 0) {
+                if (files != null) {
                     for (File file : files) {
                         returnValue.addAll(findClassByClazz(packageName, file, filter));
                     }
@@ -117,7 +115,7 @@ public class DefaultBeanLoader extends AbstractBeanLoader {
             }
         } else {
             File[] files = resourceFile.listFiles();
-            if (files != null && files.length > 0) {
+            if (files != null) {
                 for (File file : files) {
                     returnValue.addAll(findClassByClazz(packageName + FileUtils.POINT_CHAR + resourceFileName, file, filter));
                 }
@@ -173,7 +171,7 @@ public class DefaultBeanLoader extends AbstractBeanLoader {
             }
             File zipFile = new File(zipPath);
             if (checkNonExcludedFile(zipFile.getName())) {
-                try (InputStream inputStream = new FileInputStream(zipFile)) {
+                try (InputStream inputStream = Files.newInputStream(zipFile.toPath())) {
                     zipInputStream = new ZipInputStream(inputStream);
                     ZipEntry zipEntry;
                     while (null != (zipEntry = zipInputStream.getNextEntry())) {

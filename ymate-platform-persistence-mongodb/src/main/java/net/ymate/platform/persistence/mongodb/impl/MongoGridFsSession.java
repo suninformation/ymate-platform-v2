@@ -41,7 +41,11 @@ import org.apache.commons.lang3.StringUtils;
 import org.bson.BsonObjectId;
 import org.bson.types.ObjectId;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -105,7 +109,7 @@ public class MongoGridFsSession extends AbstractSession<IMongoConnectionHolder> 
         if (file == null || !file.isAbsolute() || !file.isFile() || !file.exists() || !file.canRead()) {
             throw new IllegalArgumentException("file");
         }
-        try (InputStream inputStream = new FileInputStream(file)) {
+        try (InputStream inputStream = Files.newInputStream(file.toPath())) {
             return upload(id, file.getName(), inputStream, fsUploadOption);
         }
     }

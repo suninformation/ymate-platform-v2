@@ -15,6 +15,7 @@
  */
 package net.ymate.platform.persistence.jdbc.query;
 
+import net.ymate.platform.core.beans.annotation.Ignored;
 import net.ymate.platform.core.persistence.AbstractFunction;
 import net.ymate.platform.core.persistence.IFunction;
 import net.ymate.platform.core.persistence.Params;
@@ -29,6 +30,7 @@ import java.util.List;
  *
  * @author 刘镇 (suninformation@163.com) on 17/6/22 上午10:50
  */
+@Ignored
 public interface Func {
 
     Math math = new Math() {
@@ -114,6 +116,7 @@ public interface Func {
     /**
      * Mathematical Functions
      */
+    @Ignored
     interface Math {
 
         // ------ 返回 X 的绝对值
@@ -432,6 +435,7 @@ public interface Func {
     /**
      * String Functions
      */
+    @Ignored
     interface Strings {
 
         // ------ 返回值为字符串str 的最左字符的数值。假如str为空字符串，则返回值为 0 。假如str 为NULL，则返回值为 NULL。 ASCII()用于带有从 0到255的数值的字符。
@@ -922,6 +926,7 @@ public interface Func {
     /**
      * Date and Time Functions
      */
+    @Ignored
     interface DateTime {
 
         // ------ 若 days 参数只是整数值，将其作为天数值添加至 expr。
@@ -1398,6 +1403,7 @@ public interface Func {
     /**
      * Aggregate (GROUP BY) Function Descriptions
      */
+    @Ignored
     interface Aggregate {
 
         // ------ 返回expr 的平均值。 DISTINCT 选项可用于返回 expr的不同值的平均值。
@@ -1563,6 +1569,7 @@ public interface Func {
     /**
      * Control Flow Functions
      */
+    @Ignored
     interface ControlFlow {
 
         default IFunction CASE(Cond value, IFunction[] whenFn, String elseFn) {
@@ -1763,6 +1770,7 @@ public interface Func {
     /**
      * Operators
      */
+    @Ignored
     interface Operators {
 
         /**

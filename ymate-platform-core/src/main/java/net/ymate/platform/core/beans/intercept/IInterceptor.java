@@ -15,11 +15,14 @@
  */
 package net.ymate.platform.core.beans.intercept;
 
+import net.ymate.platform.core.beans.annotation.Ignored;
+
 /**
  * 拦截器接口
  *
  * @author 刘镇 (suninformation@163.com) on 15/5/19 上午11:55
  */
+@Ignored
 public interface IInterceptor {
 
     enum Direction {

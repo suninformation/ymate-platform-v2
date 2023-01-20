@@ -51,7 +51,7 @@ public class DefaultCacheKeyGenerator implements ICacheKeyGenerator<Serializable
         if (initialized) {
             // [className:methodName:{serializeStr}]
             String keyGenBuilder = String.format("[%s:%s{%s}]", method.getDeclaringClass().getName(), method.getName(), Base64.encodeBase64String(serializer.serialize(params)));
-            return DigestUtils.md5Hex(keyGenBuilder);
+            return DigestUtils.sha1Hex(keyGenBuilder);
         }
         return null;
     }

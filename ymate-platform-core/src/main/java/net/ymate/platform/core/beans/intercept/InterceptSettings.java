@@ -172,7 +172,7 @@ public final class InterceptSettings {
     }
 
     public Map<String, String> getContextParams(IApplication owner, Class<?> targetClass) {
-        String id = DigestUtils.md5Hex(targetClass.getName());
+        String id = DigestUtils.sha1Hex(targetClass.getName());
         if (CONTEXT_PARAMS.containsKey(id)) {
             return CONTEXT_PARAMS.get(id);
         }
@@ -215,7 +215,7 @@ public final class InterceptSettings {
     }
 
     public InterceptMeta getInterceptMeta(IApplication owner, Class<?> targetClass, Method targetMethod) {
-        String id = DigestUtils.md5Hex(targetClass.toString() + targetMethod.toString());
+        String id = DigestUtils.sha1Hex(targetClass.toString() + targetMethod.toString());
         if (INTERCEPT_META_MAP.containsKey(id)) {
             return INTERCEPT_META_MAP.get(id);
         }

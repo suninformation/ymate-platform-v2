@@ -17,6 +17,7 @@ package net.ymate.platform.core;
 
 import net.ymate.platform.core.beans.IBeanFactory;
 import net.ymate.platform.core.beans.annotation.Ignored;
+import net.ymate.platform.core.beans.intercept.IInterceptor;
 import net.ymate.platform.core.beans.intercept.InterceptSettings;
 import net.ymate.platform.core.configuration.IConfigReader;
 import net.ymate.platform.core.event.Events;
@@ -25,6 +26,7 @@ import net.ymate.platform.core.module.ModuleManager;
 import net.ymate.platform.core.support.IDestroyable;
 import net.ymate.platform.core.support.RecycleHelper;
 
+import java.lang.annotation.Annotation;
 import java.util.Map;
 
 /**
@@ -138,6 +140,22 @@ public interface IApplication extends IDestroyable {
      * @return 返回拦截器配置
      */
     InterceptSettings getInterceptSettings();
+
+    /**
+     * 注册拦截器
+     *
+     * @param interceptClass 拦截器类
+     */
+    void registerInterceptor(Class<? extends IInterceptor> interceptClass);
+
+    /**
+     * 注册拦截器注解
+     *
+     * @param annotationClass 注解类
+     * @param interceptClass  拦截器类
+     * @param singleton       是否单例
+     */
+    void registerInterceptAnnotation(Class<? extends Annotation> annotationClass, Class<? extends IInterceptor> interceptClass, boolean singleton);
 
     /**
      * 获取框架全局参数映射

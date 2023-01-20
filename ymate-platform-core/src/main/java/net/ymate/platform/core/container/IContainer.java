@@ -15,11 +15,14 @@
  */
 package net.ymate.platform.core.container;
 
+import net.ymate.platform.core.beans.annotation.Ignored;
+
 /**
  * 容器
  *
  * @author 刘镇 (suninformation@163.com) on 2018/03/15 14:30
  */
+@Ignored
 public interface IContainer {
 
     /**

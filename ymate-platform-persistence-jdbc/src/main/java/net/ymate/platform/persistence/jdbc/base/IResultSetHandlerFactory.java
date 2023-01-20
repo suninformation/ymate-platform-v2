@@ -15,10 +15,13 @@
  */
 package net.ymate.platform.persistence.jdbc.base;
 
+import net.ymate.platform.core.beans.annotation.Ignored;
+
 /**
  * @author 刘镇 (suninformation@163.com) on 2021/6/27 1:32 下午
  * @since 2.1.0
  */
+@Ignored
 public interface IResultSetHandlerFactory<T> {
 
     /**
