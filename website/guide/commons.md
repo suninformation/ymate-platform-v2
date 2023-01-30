@@ -15,7 +15,7 @@ slug: commons
 <dependency>
     <groupId>net.ymate.platform</groupId>
     <artifactId>ymate-platform-commons</artifactId>
-    <version>2.1.1</version>
+    <version>2.1.2</version>
 </dependency>
 ```
 

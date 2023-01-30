@@ -15,7 +15,7 @@ slug: cache
 <dependency>
     <groupId>net.ymate.platform</groupId>
     <artifactId>ymate-platform-cache</artifactId>
-    <version>2.1.1</version>
+    <version>2.1.2</version>
 </dependency>
 ```
 
@@ -27,7 +27,7 @@ slug: cache
 <dependency>
     <groupId>net.ymate.platform</groupId>
     <artifactId>ymate-platform-persistence-redis</artifactId>
-    <version>2.1.1</version>
+    <version>2.1.2</version>
 </dependency>
 ```
 
@@ -342,4 +342,10 @@ public class Starter {
     }
 }
 ```
+
+:::tip **注意**：
+
+框架未提供基于 Redis 的缓存同步锁的默认实现，开发者可以通过 `IRedisCacheLocker` 接口自定义并以 SPI 方式加载。
+
+:::
 

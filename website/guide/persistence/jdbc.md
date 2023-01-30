@@ -27,7 +27,7 @@ JDBC 持久化模块针对关系型数据库（RDBMS）数据存取的一套简�
 <dependency>
     <groupId>net.ymate.platform</groupId>
     <artifactId>ymate-platform-persistence-jdbc</artifactId>
-    <version>2.1.1</version>
+    <version>2.1.2</version>
 </dependency>
 ```
 
@@ -1185,7 +1185,7 @@ ymp.params.jdbc.package_name=
 <plugin>
     <groupId>net.ymate.maven.plugins</groupId>
     <artifactId>ymate-maven-plugin</artifactId>
-    <version>1.0.1</version>
+    <version>1.0.2</version>
 </plugin>
 ```
 
@@ -1195,7 +1195,7 @@ ymp.params.jdbc.package_name=
 <plugin>
     <groupId>net.ymate.maven.plugins</groupId>
     <artifactId>ymate-maven-plugin</artifactId>
-    <version>1.0.1</version>
+    <version>1.0.2</version>
     <dependencies>
         <dependency>
             <groupId>mysql</groupId>

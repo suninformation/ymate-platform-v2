@@ -31,7 +31,7 @@ WebMVC 模块在 YMP 框架中是除了 JDBC 持久化模块以外的另一个�
 <dependency>
     <groupId>net.ymate.platform</groupId>
     <artifactId>ymate-platform-webmvc</artifactId>
-    <version>2.1.1</version>
+    <version>2.1.2</version>
 </dependency>
 ```
 

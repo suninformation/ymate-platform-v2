@@ -15,7 +15,7 @@ YMP 框架主要是由核心（Core）和若干模块（Module）组成，核心
 <dependency>
     <groupId>net.ymate.platform</groupId>
     <artifactId>ymate-platform-core</artifactId>
-    <version>2.1.1</version>
+    <version>2.1.2</version>
 </dependency>
 ```
 

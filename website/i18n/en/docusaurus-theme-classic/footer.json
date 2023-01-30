@@ -52,7 +52,7 @@
     "description": "The label of footer link with label=Gitee linking to https://gitee.com/suninformation/ymate-platform-v2"
   },
   "copyright": {
-    "message": "Copyright © 2015-2022 yMate.Net. All Rights Reserved. Built with Docusaurus.<br/>Apache License Version 2.0 | <a href=\"https://beian.miit.gov.cn/\" target=\"_blank\">辽ICP备15013664号-1</a>",
+    "message": "Copyright © 2015-2023 yMate.Net. All Rights Reserved. Built with Docusaurus.<br/>Apache License Version 2.0 | <a href=\"https://beian.miit.gov.cn/\" target=\"_blank\">辽ICP备15013664号-1</a>",
     "description": "The footer copyright"
   }
 }
