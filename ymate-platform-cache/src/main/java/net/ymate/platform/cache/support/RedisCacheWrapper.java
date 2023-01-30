@@ -16,6 +16,7 @@
 package net.ymate.platform.cache.support;
 
 import net.ymate.platform.cache.*;
+import net.ymate.platform.commons.util.ClassUtils;
 import net.ymate.platform.persistence.redis.IRedis;
 import net.ymate.platform.persistence.redis.IRedisCommandHolder;
 import net.ymate.platform.persistence.redis.IRedisCommander;
@@ -47,11 +48,24 @@ public class RedisCacheWrapper implements ICache {
 
     private final ICacheEventListener cacheEventListener;
 
+    private final IRedisCacheLocker redisCacheLocker;
+
     public RedisCacheWrapper(ICaches owner, IRedis redis, String cacheName, final ICacheEventListener cacheEventListener) {
         this.owner = owner;
         this.redis = redis;
         this.cacheName = cacheName;
         this.cacheEventListener = cacheEventListener;
+        // 通过 SPI 方式尝试加载基于 Redis 的锁实现
+        redisCacheLocker = ClassUtils.loadClass(IRedisCacheLocker.class);
+        if (redisCacheLocker != null && !redisCacheLocker.isInitialized()) {
+            try {
+                redisCacheLocker.initialize(owner, redis, cacheName);
+            } catch (CacheException e) {
+                throw e;
+            } catch (Exception e) {
+                throw new CacheException(e);
+            }
+        }
         //
         if (cacheEventListener != null && owner.getConfig().isEnabledSubscribeExpired()) {
             redis.subscribe(new JedisPubSub() {
@@ -275,12 +289,14 @@ public class RedisCacheWrapper implements ICache {
 
     @Override
     public void close() throws Exception {
+        if (redisCacheLocker != null && redisCacheLocker.isInitialized()) {
+            redisCacheLocker.close();
+        }
         redis = null;
     }
 
     @Override
     public ICacheLocker acquireCacheLocker() {
-        // TODO 基于Redis的锁实现
-        return null;
+        return redisCacheLocker;
     }
 }
