@@ -281,8 +281,8 @@ public final class DefaultWebMvcConfig implements IWebMvcConfig {
             cookieAuthKey = StringUtils.trimToEmpty(cookieAuthKey);
             //
             uploadTempDir = RuntimeUtils.replaceEnvVariable(uploadTempDir);
-            uploadFileSizeMax = uploadFileSizeMax > 0 ? uploadFileSizeMax : 10485760;
-            uploadTotalSizeMax = uploadTotalSizeMax > 0 ? uploadTotalSizeMax : 10485760;
+            uploadFileSizeMax = uploadFileSizeMax > 0 ? uploadFileSizeMax : -1;
+            uploadTotalSizeMax = uploadTotalSizeMax > 0 ? uploadTotalSizeMax : -1;
             uploadSizeThreshold = uploadSizeThreshold > 0 ? uploadSizeThreshold : DiskFileItemFactory.DEFAULT_SIZE_THRESHOLD;
             //
             if (!crossDomainSettings.isInitialized()) {

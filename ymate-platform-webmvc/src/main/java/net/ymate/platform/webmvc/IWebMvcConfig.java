@@ -312,14 +312,14 @@ public interface IWebMvcConfig extends IInitialization<IWebMvc> {
     String getUploadTempDir();
 
     /**
-     * 上传文件大小最大值（字节），默认值：10485760（注：10485760 = 10M）
+     * 上传文件大小最大值（字节），默认值：-1（注：10485760 = 10M）
      *
      * @return 返回上传文件大小最大值
      */
     int getUploadFileSizeMax();
 
     /**
-     * 上传文件总量大小最大值（字节）, 默认值：10485760（注：10485760 = 10M）
+     * 上传文件总量大小最大值（字节）, 默认值：-1（注：10485760 = 10M）
      *
      * @return 返回上传文件总量大小最大值
      */
