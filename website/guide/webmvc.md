@@ -249,6 +249,9 @@ ymp.configs.webmvc.cookie_use_http_only=
 # 文件上传临时目录, 为空则默认使用：System.getProperty("java.io.tmpdir")
 ymp.configs.webmvc.upload_temp_dir=
 
+# 上传文件数量最大值，默认值：-1
+ymp.configs.webmvc.upload_file_count_max=
+
 # 上传文件大小最大值(字节), 默认值: -1(注: 10485760 = 10M)
 ymp.configs.webmvc.upload_file_size_max=
 
@@ -345,6 +348,7 @@ ymp.params.webmvc.allowed_upload_content_types=
 | cookieAuthEnabled      | Cookie密钥验证是否默认开启                         |
 | cookieUseHttpOnly      | Cookie是否默认使用 HttpOnly                        |
 | uploadTempDir          | 文件上传临时目录                                   |
+| uploadFileCountMax     | 上传文件数量最大值                                 |
 | uploadFileSizeMax      | 上传文件大小最大值（字节）                         |
 | uploadTotalSizeMax     | 上传文件总量大小最大值（字节）                     |
 | uploadSizeThreshold    | 内存缓冲区的大小（字节）                           |

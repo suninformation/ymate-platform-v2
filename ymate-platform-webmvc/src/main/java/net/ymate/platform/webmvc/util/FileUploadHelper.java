@@ -51,6 +51,11 @@ public final class FileUploadHelper {
     private File uploadTempDir;
 
     /**
+     * 上传文件数量最大值
+     */
+    private long fileCountMax = -1;
+
+    /**
      * 上传文件最大值, 10485760 = 10M
      */
     private long fileSizeMax = -1;
@@ -109,6 +114,7 @@ public final class FileUploadHelper {
         ServletFileUpload servletFileUpload = new ServletFileUpload(fileItemFactory);
         servletFileUpload.setFileSizeMax(fileSizeMax);
         servletFileUpload.setSizeMax(sizeMax);
+        servletFileUpload.setFileCountMax(fileCountMax);
         if (listener != null) {
             servletFileUpload.setProgressListener(listener);
         }
@@ -195,6 +201,22 @@ public final class FileUploadHelper {
      */
     public FileUploadHelper setUploadTempDir(File uploadDir) {
         uploadTempDir = uploadDir;
+        return this;
+    }
+
+    /**
+     * @return 上传文件数量最大值
+     */
+    public long getFileCountMax() {
+        return fileCountMax;
+    }
+
+    /**
+     * @param fileCountMax 文件数量
+     * @return 设置上传文件数量最大值
+     */
+    public FileUploadHelper setFileCountMax(long fileCountMax) {
+        this.fileCountMax = fileCountMax;
         return this;
     }
 

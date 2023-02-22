@@ -80,6 +80,8 @@ public interface IWebMvcConfig extends IInitialization<IWebMvc> {
 
     String UPLOAD_TEMP_DIR = "upload_temp_dir";
 
+    String UPLOAD_FILE_COUNT_MAX = "upload_file_count_max";
+
     String UPLOAD_FILE_SIZE_MAX = "upload_file_size_max";
 
     String UPLOAD_TOTAL_SIZE_MAX = "upload_total_size_max";
@@ -312,18 +314,26 @@ public interface IWebMvcConfig extends IInitialization<IWebMvc> {
     String getUploadTempDir();
 
     /**
+     * 上传文件数量最大值，默认值：-1
+     *
+     * @return 返回上传文件数量最大值
+     * @since 2.1.2
+     */
+    long getUploadFileCountMax();
+
+    /**
      * 上传文件大小最大值（字节），默认值：-1（注：10485760 = 10M）
      *
      * @return 返回上传文件大小最大值
      */
-    int getUploadFileSizeMax();
+    long getUploadFileSizeMax();
 
     /**
      * 上传文件总量大小最大值（字节）, 默认值：-1（注：10485760 = 10M）
      *
      * @return 返回上传文件总量大小最大值
      */
-    int getUploadTotalSizeMax();
+    long getUploadTotalSizeMax();
 
     /**
      * 内存缓冲区的大小，默认值： 10240字节（=10K），即如果文件大于10K，将使用临时文件缓存上传文件

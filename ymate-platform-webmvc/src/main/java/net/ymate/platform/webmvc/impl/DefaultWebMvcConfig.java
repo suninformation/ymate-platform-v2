@@ -84,9 +84,11 @@ public final class DefaultWebMvcConfig implements IWebMvcConfig {
 
     private String uploadTempDir;
 
-    private int uploadFileSizeMax;
+    private long uploadFileCountMax;
 
-    private int uploadTotalSizeMax;
+    private long uploadFileSizeMax;
+
+    private long uploadTotalSizeMax;
 
     private int uploadSizeThreshold;
 
@@ -177,8 +179,9 @@ public final class DefaultWebMvcConfig implements IWebMvcConfig {
         cookieUseHttpOnly = configReader.getBoolean(COOKIE_USE_HTTP_ONLY, confAnn != null && confAnn.cookieUseHttpOnly());
         //
         uploadTempDir = configReader.getString(UPLOAD_TEMP_DIR, confAnn == null ? null : confAnn.uploadTempDir());
-        uploadFileSizeMax = configReader.getInt(UPLOAD_FILE_SIZE_MAX, confAnn == null ? 0 : confAnn.uploadFileSizeMax());
-        uploadTotalSizeMax = configReader.getInt(UPLOAD_TOTAL_SIZE_MAX, confAnn == null ? 0 : confAnn.uploadTotalSizeMax());
+        uploadFileCountMax = configReader.getLong(UPLOAD_FILE_COUNT_MAX, confAnn == null ? 0 : confAnn.uploadFileCountMax());
+        uploadFileSizeMax = configReader.getLong(UPLOAD_FILE_SIZE_MAX, confAnn == null ? 0 : confAnn.uploadFileSizeMax());
+        uploadTotalSizeMax = configReader.getLong(UPLOAD_TOTAL_SIZE_MAX, confAnn == null ? 0 : confAnn.uploadTotalSizeMax());
         uploadSizeThreshold = configReader.getInt(UPLOAD_SIZE_THRESHOLD, confAnn == null ? 0 : confAnn.uploadSizeThreshold());
         uploadListener = configReader.getClassImpl(UPLOAD_LISTENER_CLASS, confAnn == null || confAnn.uploadListenerClass().equals(ProgressListener.class) ? null : confAnn.uploadListenerClass().getName(), ProgressListener.class);
         //
@@ -281,6 +284,7 @@ public final class DefaultWebMvcConfig implements IWebMvcConfig {
             cookieAuthKey = StringUtils.trimToEmpty(cookieAuthKey);
             //
             uploadTempDir = RuntimeUtils.replaceEnvVariable(uploadTempDir);
+            uploadFileCountMax = uploadFileCountMax > 0 ? uploadFileCountMax : -1;
             uploadFileSizeMax = uploadFileSizeMax > 0 ? uploadFileSizeMax : -1;
             uploadTotalSizeMax = uploadTotalSizeMax > 0 ? uploadTotalSizeMax : -1;
             uploadSizeThreshold = uploadSizeThreshold > 0 ? uploadSizeThreshold : DiskFileItemFactory.DEFAULT_SIZE_THRESHOLD;
@@ -530,22 +534,33 @@ public final class DefaultWebMvcConfig implements IWebMvcConfig {
     }
 
     @Override
-    public int getUploadFileSizeMax() {
+    public long getUploadFileCountMax() {
+        return uploadFileCountMax;
+    }
+
+    public void setUploadFileCountMax(long uploadFileCountMax) {
+        if (!initialized) {
+            this.uploadFileCountMax = uploadFileCountMax;
+        }
+    }
+
+    @Override
+    public long getUploadFileSizeMax() {
         return uploadFileSizeMax;
     }
 
-    public void setUploadFileSizeMax(int uploadFileSizeMax) {
+    public void setUploadFileSizeMax(long uploadFileSizeMax) {
         if (!initialized) {
             this.uploadFileSizeMax = uploadFileSizeMax;
         }
     }
 
     @Override
-    public int getUploadTotalSizeMax() {
+    public long getUploadTotalSizeMax() {
         return uploadTotalSizeMax;
     }
 
-    public void setUploadTotalSizeMax(int uploadTotalSizeMax) {
+    public void setUploadTotalSizeMax(long uploadTotalSizeMax) {
         if (!initialized) {
             this.uploadTotalSizeMax = uploadTotalSizeMax;
         }
@@ -789,12 +804,17 @@ public final class DefaultWebMvcConfig implements IWebMvcConfig {
             return this;
         }
 
-        public Builder uploadFileSizeMax(int uploadFileSizeMax) {
+        public Builder uploadFileCountMax(long uploadFileCountMax) {
+            config.setUploadFileSizeMax(uploadFileCountMax);
+            return this;
+        }
+
+        public Builder uploadFileSizeMax(long uploadFileSizeMax) {
             config.setUploadFileSizeMax(uploadFileSizeMax);
             return this;
         }
 
-        public Builder uploadTotalSizeMax(int uploadTotalSizeMax) {
+        public Builder uploadTotalSizeMax(long uploadTotalSizeMax) {
             config.setUploadTotalSizeMax(uploadTotalSizeMax);
             return this;
         }

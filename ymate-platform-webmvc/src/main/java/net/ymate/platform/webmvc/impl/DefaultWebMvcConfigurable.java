@@ -147,12 +147,17 @@ public final class DefaultWebMvcConfigurable extends DefaultModuleConfigurable {
             return this;
         }
 
-        public Builder uploadFileSizeMax(int uploadFileSizeMax) {
+        public Builder uploadFileCountMax(long uploadFileCountMax) {
+            configurable.addConfig(IWebMvcConfig.UPLOAD_FILE_COUNT_MAX, String.valueOf(uploadFileCountMax));
+            return this;
+        }
+
+        public Builder uploadFileSizeMax(long uploadFileSizeMax) {
             configurable.addConfig(IWebMvcConfig.UPLOAD_FILE_SIZE_MAX, String.valueOf(uploadFileSizeMax));
             return this;
         }
 
-        public Builder uploadTotalSizeMax(int uploadTotalSizeMax) {
+        public Builder uploadTotalSizeMax(long uploadTotalSizeMax) {
             configurable.addConfig(IWebMvcConfig.UPLOAD_TOTAL_SIZE_MAX, String.valueOf(uploadTotalSizeMax));
             return this;
         }

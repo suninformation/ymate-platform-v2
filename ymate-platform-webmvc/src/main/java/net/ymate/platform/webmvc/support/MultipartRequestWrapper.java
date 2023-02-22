@@ -47,6 +47,7 @@ public class MultipartRequestWrapper extends HttpServletRequestWrapper implement
                 .setFileSizeMax(owner.getConfig().getUploadTotalSizeMax())
                 .setSizeMax(owner.getConfig().getUploadFileSizeMax())
                 .setSizeThreshold(owner.getConfig().getUploadSizeThreshold())
+                .setFileCountMax(owner.getConfig().getUploadFileCountMax())
                 .setFileUploadListener(owner.getConfig().getUploadListener())
                 .processUpload();
     }

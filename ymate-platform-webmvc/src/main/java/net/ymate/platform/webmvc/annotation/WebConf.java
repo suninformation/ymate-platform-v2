@@ -136,14 +136,19 @@ public @interface WebConf {
     String uploadTempDir() default StringUtils.EMPTY;
 
     /**
+     * @return 上传文件数量最大值
+     */
+    long uploadFileCountMax() default 0;
+
+    /**
      * @return 上传文件大小最大值（字节）
      */
-    int uploadFileSizeMax() default 0;
+    long uploadFileSizeMax() default 0;
 
     /**
      * @return 上传文件总量大小最大值（字节）
      */
-    int uploadTotalSizeMax() default 0;
+    long uploadTotalSizeMax() default 0;
 
     /**
      * @return 内存缓冲区的大小（字节）
