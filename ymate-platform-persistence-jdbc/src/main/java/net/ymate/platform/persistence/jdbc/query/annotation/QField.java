@@ -42,4 +42,10 @@ public @interface QField {
      * @return 别名
      */
     String alias() default StringUtils.EMPTY;
+
+    /**
+     * @return 是否包装标识符
+     * @since 2.1.2
+     */
+    boolean wrapIdentifier() default true;
 }

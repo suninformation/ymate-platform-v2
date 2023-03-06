@@ -47,6 +47,12 @@ public @interface QOrderField {
     Type type() default Type.ASC;
 
     /**
+     * @return 是否包装标识符
+     * @since 2.1.2
+     */
+    boolean wrapIdentifier() default true;
+
+    /**
      * 排序类型枚举
      */
     enum Type {
