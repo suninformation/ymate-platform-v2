@@ -3418,11 +3418,12 @@ IResultSet<UserBean> resultSet = SQL.create("SELECT id, email FROM user")
 
 定义一个字段或用于类成员与字段之间的关系绑定。
 
-| 配置项 | 描述           |
-| ------ | -------------- |
-| prefix | 前缀，默认为空 |
-| alias  | 别名，默认为空 |
-| value  | 名称           |
+| 配置项         | 描述                           |
+| -------------- | ------------------------------ |
+| prefix         | 前缀，默认为空                 |
+| alias          | 别名，默认为空                 |
+| value          | 名称                           |
+| wrapIdentifier | 是否包装标识符，默认为：`true` |
 
 
 
@@ -3466,11 +3467,12 @@ IResultSet<UserBean> resultSet = SQL.create("SELECT id, email FROM user")
 
 定义一个参与排序的字段。
 
-| 配置项 | 描述                                               |
-| ------ | -------------------------------------------------- |
-| prefix | 前缀，默认为空                                     |
-| value  | 字段名称                                           |
-| type   | 排序类型，默认值为：`QOrderField.Type.ASC`（正序） |
+| 配置项         | 描述                                               |
+| -------------- | -------------------------------------------------- |
+| prefix         | 前缀，默认为空                                     |
+| value          | 字段名称                                           |
+| type           | 排序类型，默认值为：`QOrderField.Type.ASC`（正序） |
+| wrapIdentifier | 是否包装标识符，默认为：`true`                     |
 
 
 
