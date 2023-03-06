@@ -258,26 +258,21 @@ public abstract class BaseEntity<Entity extends IEntity, PK extends Serializable
         }
     }
 
-    @SuppressWarnings("unchecked")
-    public Entity delete() throws Exception {
+    public int delete() throws Exception {
         IDatabase owner = doGetSafeOwner();
         try (IDatabaseSession session = new DefaultDatabaseSession(owner, doGetSafeConnectionHolder())) {
             if (null != this.getId()) {
-                if (session.delete(this.getEntityClass(), this.getId(), this.getShardingable()) > 0) {
-                    return (Entity) this;
-                }
+                return session.delete(this.getEntityClass(), this.getId(), this.getShardingable());
             } else {
                 Cond cond = buildCond(owner, this, matchAny);
-                if (StringUtils.isNotBlank(cond.toString())) {
-                    if (session.executeForUpdate(Delete.create(owner)
+                if (!cond.isEmpty()) {
+                    return session.executeForUpdate(Delete.create(owner)
                             .shardingable(this.getShardingable())
                             .from(this.getEntityClass())
-                            .where(Where.create(cond)).toSQL()) > 0) {
-                        return (Entity) this;
-                    }
+                            .where(Where.create(cond)).toSQL());
                 }
             }
-            return null;
+            return 0;
         }
     }
 

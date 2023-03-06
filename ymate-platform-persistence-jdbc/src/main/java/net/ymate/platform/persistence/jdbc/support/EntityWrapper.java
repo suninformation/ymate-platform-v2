@@ -217,24 +217,20 @@ public final class EntityWrapper<Entity extends IEntity> {
         }
     }
 
-    public Entity delete() throws Exception {
+    public int delete() throws Exception {
         try (IDatabaseSession session = new DefaultDatabaseSession(doGetSafeOwner(), doGetSafeConnectionHolder())) {
             if (null != entity.getId()) {
-                if (session.delete(this.getEntityClass(), entity.getId(), this.getShardingable()) > 0) {
-                    return entity;
-                }
+                return session.delete(this.getEntityClass(), entity.getId(), this.getShardingable());
             } else {
                 Cond cond = BaseEntity.buildCond(doGetSafeOwner(), entity, matchAny);
-                if (StringUtils.isNotBlank(cond.toString())) {
-                    if (session.executeForUpdate(Delete.create(doGetSafeOwner())
+                if (!cond.isEmpty()) {
+                    return session.executeForUpdate(Delete.create(doGetSafeOwner())
                             .shardingable(this.getShardingable())
                             .from(this.getEntityClass())
-                            .where(Where.create(cond)).toSQL()) > 0) {
-                        return entity;
-                    }
+                            .where(Where.create(cond)).toSQL());
                 }
             }
-            return null;
+            return 0;
         }
     }
 
