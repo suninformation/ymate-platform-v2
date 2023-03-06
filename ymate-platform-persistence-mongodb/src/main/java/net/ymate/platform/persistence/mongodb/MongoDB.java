@@ -324,7 +324,11 @@ public class MongoDB implements IModule, IMongo {
             Transactions.commit();
         } catch (Throwable throwable) {
             Transactions.rollback();
-            throw new Exception(RuntimeUtils.unwrapThrow(throwable));
+            if (throwable instanceof Exception) {
+                throw (Exception) throwable;
+            } else {
+                throw new Exception(RuntimeUtils.unwrapThrow(throwable));
+            }
         } finally {
             Transactions.close();
         }

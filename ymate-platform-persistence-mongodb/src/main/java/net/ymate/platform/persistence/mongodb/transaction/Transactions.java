@@ -44,20 +44,25 @@ public final class Transactions {
     }
 
     public static void create(IMongoConnectionHolder connectionHolder, ClientSessionOptions clientSessionOptions) throws Exception {
+        int count;
         ITransaction transaction = get();
         if (transaction == null) {
             transaction = new DefaultTransaction(connectionHolder, clientSessionOptions);
             TRANS_LOCAL.set(transaction);
-            COUNT.set(0);
+            count = 0;
+        } else {
+            count = BlurObject.bind(COUNT.get()).toIntValue();
         }
-        COUNT.set(COUNT.get() + 1);
+        COUNT.set(count + 1);
     }
 
     public static void commit() {
-        if (COUNT.get() > 0) {
-            COUNT.set(COUNT.get() - 1);
+        int count = BlurObject.bind(COUNT.get()).toIntValue();
+        if (count > 0) {
+            count--;
+            COUNT.set(count);
         }
-        if (COUNT.get() == 0) {
+        if (count == 0) {
             ITransaction transaction = TRANS_LOCAL.get();
             if (transaction != null) {
                 transaction.commit();
@@ -68,18 +73,19 @@ public final class Transactions {
     public static void rollback() {
         int number = BlurObject.bind(COUNT.get()).toIntValue();
         COUNT.set(number);
-        if (COUNT.get() == 0) {
+        if (number == 0) {
             ITransaction transaction = TRANS_LOCAL.get();
             if (transaction != null) {
                 transaction.rollback();
             }
         } else {
-            COUNT.set(COUNT.get() - 1);
+            COUNT.set(number - 1);
         }
     }
 
     public static void close() {
-        if (COUNT.get() != null && COUNT.get() == 0) {
+        Integer count = COUNT.get();
+        if (count != null && count == 0) {
             try {
                 ITransaction transaction = TRANS_LOCAL.get();
                 if (transaction != null) {

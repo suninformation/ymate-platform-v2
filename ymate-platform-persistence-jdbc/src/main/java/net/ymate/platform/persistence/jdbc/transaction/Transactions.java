@@ -75,13 +75,17 @@ public final class Transactions {
      * @throws Exception 可能产生的异常
      */
     private static void begin(Type.TRANSACTION level) throws Exception {
-        if (TRANS_LOCAL.get() == null) {
-            ITransaction transaction = transactionClass.newInstance();
+        ITransaction transaction = TRANS_LOCAL.get();
+        int count;
+        if (transaction == null) {
+            transaction = transactionClass.newInstance();
             transaction.setLevel(level);
             TRANS_LOCAL.set(transaction);
-            COUNT.set(0);
+            count = 0;
+        } else {
+            count = BlurObject.bind(COUNT.get()).toIntValue();
         }
-        COUNT.set(COUNT.get() + 1);
+        COUNT.set(count + 1);
     }
 
     /**
@@ -90,11 +94,16 @@ public final class Transactions {
      * @throws Exception 可能产生的异常
      */
     private static void commit() throws Exception {
-        if (COUNT.get() > 0) {
-            COUNT.set(COUNT.get() - 1);
+        int count = BlurObject.bind(COUNT.get()).toIntValue();
+        if (count > 0) {
+            count--;
+            COUNT.set(count);
         }
-        if (COUNT.get() == 0) {
-            TRANS_LOCAL.get().commit();
+        if (count == 0) {
+            ITransaction transaction = TRANS_LOCAL.get();
+            if (transaction != null) {
+                transaction.commit();
+            }
         }
     }
 
@@ -106,10 +115,13 @@ public final class Transactions {
      */
     private static void rollback(int number) throws Exception {
         COUNT.set(number);
-        if (COUNT.get() == 0) {
-            TRANS_LOCAL.get().rollback();
+        if (number == 0) {
+            ITransaction transaction = TRANS_LOCAL.get();
+            if (transaction != null) {
+                transaction.rollback();
+            }
         } else {
-            COUNT.set(COUNT.get() - 1);
+            COUNT.set(number - 1);
         }
     }
 
@@ -119,9 +131,13 @@ public final class Transactions {
      * @throws Exception 可能产生的异常
      */
     private static void close() throws Exception {
-        if (COUNT.get() != null && COUNT.get() == 0) {
+        Integer count = COUNT.get();
+        if (count != null && count == 0) {
             try {
-                TRANS_LOCAL.get().close();
+                ITransaction transaction = TRANS_LOCAL.get();
+                if (transaction != null) {
+                    transaction.close();
+                }
             } finally {
                 TRANS_LOCAL.remove();
                 COUNT.remove();
@@ -159,7 +175,11 @@ public final class Transactions {
                 rollback(number);
             } catch (Exception ignored) {
             }
-            throw new Exception(RuntimeUtils.unwrapThrow(e));
+            if (e instanceof Exception) {
+                throw (Exception) e;
+            } else {
+                throw new Exception(RuntimeUtils.unwrapThrow(e));
+            }
         } finally {
             try {
                 close();
@@ -197,7 +217,11 @@ public final class Transactions {
                 rollback(number);
             } catch (Exception ignored) {
             }
-            throw new Exception(RuntimeUtils.unwrapThrow(e));
+            if (e instanceof Exception) {
+                throw (Exception) e;
+            } else {
+                throw new Exception(RuntimeUtils.unwrapThrow(e));
+            }
         } finally {
             try {
                 close();
