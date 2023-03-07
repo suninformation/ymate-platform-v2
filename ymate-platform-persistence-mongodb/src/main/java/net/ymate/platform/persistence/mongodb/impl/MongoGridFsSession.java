@@ -42,7 +42,6 @@ import org.bson.BsonObjectId;
 import org.bson.types.ObjectId;
 
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.file.Files;
@@ -187,7 +186,7 @@ public class MongoGridFsSession extends AbstractSession<IMongoConnectionHolder> 
         if (distFile == null || !distFile.isAbsolute()) {
             throw new IllegalArgumentException("distFile");
         }
-        try (OutputStream outputStream = new FileOutputStream(distFile)) {
+        try (OutputStream outputStream = Files.newOutputStream(distFile.toPath())) {
             download(id, outputStream);
         }
     }

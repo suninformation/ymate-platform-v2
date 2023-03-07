@@ -78,12 +78,13 @@ public class ResultSetHelper {
 
     @SuppressWarnings("rawtypes")
     public static <T extends IEntity> List<T> toEntities(Class<T> entity, MongoIterable<Document> iterable) throws Exception {
-        MongoCursor<Document> documentIt = iterable.iterator();
-        List<T> resultSet = new ArrayList<>();
-        while (documentIt.hasNext()) {
-            resultSet.add(toEntity(entity, documentIt.next()));
+        try (MongoCursor<Document> documentIt = iterable.iterator()) {
+            List<T> resultSet = new ArrayList<>();
+            while (documentIt.hasNext()) {
+                resultSet.add(toEntity(entity, documentIt.next()));
+            }
+            return resultSet;
         }
-        return resultSet;
     }
 
     @SuppressWarnings("rawtypes")
@@ -114,9 +115,9 @@ public class ResultSetHelper {
                 if (value == null && StringUtils.isNotBlank(propertyMeta.getDefaultValue())) {
                     value = BlurObject.bind(propertyMeta.getDefaultValue()).toObjectValue(propertyMeta.getField().getType());
                 }
-                if (value != null || propertyMeta.isNullable()) {
+                if (value != null) {
                     // 若字段成员声明了@Conversion注解则执行类型转换
-                    if (value != null && propertyMeta.getConversionType() != null) {
+                    if (propertyMeta.getConversionType() != null) {
                         value = BlurObject.bind(value).toObjectValue(propertyMeta.getConversionType());
                     }
                 } else if (!propertyMeta.isNullable()) {
