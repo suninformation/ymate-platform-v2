@@ -17,8 +17,13 @@ package net.ymate.platform.commons.util;
 
 import org.apache.commons.lang3.StringUtils;
 
+import java.sql.Time;
+import java.sql.Timestamp;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.*;
 
 /**
@@ -208,5 +213,29 @@ public final class DateTimeUtils {
      */
     public static boolean isLeapYear(int year) {
         return year % 4 == 0 && (year % 100 != 0 || year % 400 == 0);
+    }
+
+    /**
+     * @param o 目标日期时间类对象
+     * @return 尝试通过目标类对象提取时间毫秒值
+     * @since 2.1.2
+     */
+    public static long timeMillis(Object o) {
+        if (o instanceof java.sql.Date) {
+            return ((java.sql.Date) o).getTime();
+        } else if (o instanceof LocalDate) {
+            return java.sql.Date.valueOf(((LocalDate) o)).getTime();
+        } else if (o instanceof LocalTime) {
+            return Time.valueOf((LocalTime) o).getTime();
+        } else if (o instanceof LocalDateTime) {
+            return java.sql.Date.valueOf(((LocalDateTime) o).toLocalDate()).getTime();
+        } else if (o instanceof Timestamp) {
+            return ((Timestamp) o).getTime();
+        } else if (o instanceof Time) {
+            return ((Time) o).getTime();
+        } else if (o instanceof Date) {
+            return ((Date) o).getTime();
+        }
+        return 0L;
     }
 }
