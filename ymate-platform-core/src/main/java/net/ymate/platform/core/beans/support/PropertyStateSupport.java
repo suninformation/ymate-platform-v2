@@ -157,4 +157,12 @@ public class PropertyStateSupport<T> {
         stateMetas.stream().filter(PropertyStateMeta::isChanged).forEachOrdered(states::add);
         return states;
     }
+
+    /**
+     * @return 返回true表示某属性值已发生变化
+     * @since 2.1.2
+     */
+    public boolean hasChanged() {
+        return stateMetas.stream().anyMatch(PropertyStateMeta::isChanged);
+    }
 }

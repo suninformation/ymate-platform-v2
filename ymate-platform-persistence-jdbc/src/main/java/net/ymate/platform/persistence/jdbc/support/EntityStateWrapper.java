@@ -54,6 +54,14 @@ public final class EntityStateWrapper<Entity extends IEntity> {
         return stateSupport;
     }
 
+    /**
+     * @return 返回true表示某属性值已发生变化
+     * @since 2.1.2
+     */
+    public boolean hasChanged() {
+        return stateSupport.hasChanged();
+    }
+
     public IProxyFactory getProxyFactory() {
         return stateSupport.getProxyFactory();
     }
