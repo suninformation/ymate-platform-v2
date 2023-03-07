@@ -18,6 +18,7 @@ package net.ymate.platform.persistence.jdbc.support;
 import net.ymate.platform.commons.ConsoleTableBuilder;
 import net.ymate.platform.commons.lang.BlurObject;
 import net.ymate.platform.commons.util.ClassUtils;
+import net.ymate.platform.commons.util.DateTimeUtils;
 import net.ymate.platform.core.persistence.IResultSet;
 import net.ymate.platform.core.persistence.base.EntityMeta;
 import net.ymate.platform.core.persistence.base.IEntity;
@@ -336,7 +337,7 @@ public final class ResultSetHelper {
             if (o instanceof Time) {
                 return (Time) o;
             } else {
-                return new Time(((Date) o).getTime());
+                return new Time(DateTimeUtils.timeMillis(o));
             }
         }
 
@@ -348,7 +349,7 @@ public final class ResultSetHelper {
             if (o instanceof Time) {
                 return (Time) o;
             }
-            return new Time(((Date) o).getTime());
+            return new Time(DateTimeUtils.timeMillis(o));
         }
 
         public Timestamp getAsTimestamp(int i) {
@@ -359,7 +360,7 @@ public final class ResultSetHelper {
             if (o instanceof Timestamp) {
                 return (Timestamp) o;
             }
-            return new Timestamp(((Date) o).getTime());
+            return new Timestamp(DateTimeUtils.timeMillis(o));
         }
 
         public Timestamp getAsTimestamp(String columnName) {
@@ -370,7 +371,7 @@ public final class ResultSetHelper {
             if (o instanceof Timestamp) {
                 return (Timestamp) o;
             }
-            return new Timestamp(((Date) o).getTime());
+            return new Timestamp(DateTimeUtils.timeMillis(o));
         }
 
         public Date getAsDate(int i) {
@@ -381,7 +382,7 @@ public final class ResultSetHelper {
             if (o instanceof Date) {
                 return (Date) o;
             }
-            return new Date(((Timestamp) o).getTime());
+            return new Date(DateTimeUtils.timeMillis(o));
         }
 
         public Date getAsDate(String columnName) {
@@ -392,7 +393,7 @@ public final class ResultSetHelper {
             if (o instanceof Date) {
                 return (Date) o;
             }
-            return new Date(((Timestamp) o).getTime());
+            return new Date(DateTimeUtils.timeMillis(o));
         }
 
         public Float getAsFloat(int i) {
