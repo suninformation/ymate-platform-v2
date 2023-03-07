@@ -2125,10 +2125,12 @@ public class Student {
         bindStudent.setUsername("YMPer");
         bindStudent.setAge(30);
         //
-        System.out.printf("发生变更的字段名集合: %s%n", Arrays.asList(stateSupport.getChangedPropertyNames()));
-        stateSupport.getChangedProperties()
-                .forEach(stateMeta ->
-                        System.out.printf("已将%s由%s变更为%s%n", StringUtils.defaultIfBlank(stateMeta.getAliasName(), stateMeta.getPropertyName()), stateMeta.getOriginalValue(), stateMeta.getNewValue()));
+        if (stateSupport.hasChanged()) {
+            System.out.printf("发生变更的字段名集合: %s%n", Arrays.asList(stateSupport.getChangedPropertyNames()));
+            stateSupport.getChangedProperties()
+                    .forEach(stateMeta ->
+                            System.out.printf("已将%s由%s变更为%s%n", StringUtils.defaultIfBlank(stateMeta.getAliasName(), stateMeta.getPropertyName()), stateMeta.getOriginalValue(), stateMeta.getNewValue()));
+        }
     }
 }
 ```

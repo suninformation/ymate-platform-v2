@@ -1600,6 +1600,9 @@ String dateTimeStr = DateTimeUtils.formatTime(systemTimeUTC, DateTimeUtils.YYYY_
 Date date = DateTimeUtils.parseDateTime(dateTimeStr, DateTimeUtils.YYYY_MM_DD_HH_MM_SS_SSS);
 // 判断指定年份是否闰年
 DateTimeUtils.isLeapYear(2021);
+// 尝试通过目标日期时间类对象提取时间毫秒值
+Object o = LocalDate.now();
+DateTimeUtils.timeMillis(o);
 ```
 
 

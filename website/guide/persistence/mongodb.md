@@ -109,7 +109,7 @@ MongoDB 持久化模块默认支持多数据源配置，下面通过简单的配
 ymp.configs.persistence.mongodb.ds_default_name=default
 ymp.configs.persistence.mongodb.ds_name_list=default|othermongodb
 
-# 默认数据源连接本地默认端口Redis服务
+# 默认数据源连接本地默认端口MongoDB服务
 ymp.configs.persistence.mongodb.ds.default.username=clientuser
 ymp.configs.persistence.mongodb.ds.default.password==12345678
 ymp.configs.persistence.mongodb.ds.default.database_name=demo
