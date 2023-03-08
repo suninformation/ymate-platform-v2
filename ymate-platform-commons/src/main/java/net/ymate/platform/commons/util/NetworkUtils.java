@@ -17,11 +17,7 @@ package net.ymate.platform.commons.util;
 
 import org.apache.commons.lang3.StringUtils;
 
-import java.io.IOException;
-import java.net.Inet6Address;
-import java.net.InetAddress;
-import java.net.NetworkInterface;
-import java.net.UnknownHostException;
+import java.net.*;
 import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.regex.Pattern;
@@ -122,29 +118,63 @@ public class NetworkUtils {
 
         /**
          * @return 获取本机IPv6地址，遍历网络接口的各个地址并排除诸如0:0:0:0:0:0:0:1等特殊地址，确保外部设置能够访问
-         * @throws IOException if an I/O error occurs.
          */
-        @Deprecated
-        public static String getLocalIPAddr() throws IOException {
-            InetAddress inetAddress = null;
+        public static String getLocalIPAddr() {
+            try {
+                InetAddress inetAddress = getLocalIPAddr(false);
+                if (inetAddress != null) {
+                    String ipAddr = inetAddress.getHostAddress();
+                    int index = ipAddr.indexOf('%');
+                    if (index > 0) {
+                        ipAddr = ipAddr.substring(0, index);
+                    }
+                    return ipAddr;
+                }
+            } catch (SocketException ignored) {
+            }
+            return null;
+        }
+
+        /**
+         * @return 获取本机IPv4地址
+         * @since 2.1.2
+         */
+        public static String getLocalIPv4Addr() {
+            try {
+                InetAddress inetAddress = getLocalIPAddr(true);
+                if (inetAddress != null) {
+                    return inetAddress.getHostAddress();
+                }
+            } catch (SocketException ignored) {
+            }
+            return null;
+        }
+
+        /**
+         * 获取本机IP地址对象
+         *
+         * @param ipV4 是否IPv4版
+         * @return 返回IP地址对象实例
+         * @throws SocketException 可能产生的异常
+         * @since 2.1.2
+         */
+        public static InetAddress getLocalIPAddr(boolean ipV4) throws SocketException {
+            InetAddress returnValue = null;
             Enumeration<NetworkInterface> networkInterfaces = NetworkInterface.getNetworkInterfaces();
-            outer:
             while (networkInterfaces.hasMoreElements()) {
-                Enumeration<InetAddress> inetAds = networkInterfaces.nextElement().getInetAddresses();
-                while (inetAds.hasMoreElements()) {
-                    inetAddress = inetAds.nextElement();
-                    if (inetAddress instanceof Inet6Address && !isReservedAddr(inetAddress)) {
-                        break outer;
+                NetworkInterface netInterface = networkInterfaces.nextElement();
+                if (!netInterface.isLoopback() && !netInterface.isVirtual() && netInterface.isUp()) {
+                    Enumeration<InetAddress> addresses = netInterface.getInetAddresses();
+                    while (addresses.hasMoreElements()) {
+                        InetAddress inetAddress = addresses.nextElement();
+                        if (ipV4 && inetAddress instanceof Inet4Address || !ipV4 && inetAddress instanceof Inet6Address) {
+                            returnValue = inetAddress;
+                            break;
+                        }
                     }
                 }
             }
-            assert inetAddress != null;
-            String ipAddr = inetAddress.getHostAddress();
-            int index = ipAddr.indexOf('%');
-            if (index > 0) {
-                ipAddr = ipAddr.substring(0, index);
-            }
-            return ipAddr;
+            return returnValue;
         }
 
         public static boolean isLocalIPAddr(String ipAddr) {
@@ -155,7 +185,7 @@ public class NetworkUtils {
          * @param inetAddr IP地址
          * @return 检查inetAddr是否为保留IP
          */
-        private static boolean isReservedAddr(InetAddress inetAddr) {
+        public static boolean isReservedAddr(InetAddress inetAddr) {
             return inetAddr.isAnyLocalAddress() || inetAddr.isLinkLocalAddress() || inetAddr.isLoopbackAddress();
         }
     }
