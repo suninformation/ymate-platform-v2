@@ -332,6 +332,28 @@ public class RuntimeUtils {
     }
 
     /**
+     * 输出异常及堆栈信息
+     *
+     * @param e 异常对象
+     * @return 返回异常堆栈字符串
+     * @since 2.1.2
+     */
+    public static StringBuilder exceptionToString(Throwable e) {
+        StringBuilder stringBuilder = new StringBuilder();
+        if (e != null) {
+            stringBuilder.append("-- Exception: ").append(e.getClass().getName()).append("\n");
+            stringBuilder.append("-- Message: ").append(e.getMessage()).append("\n");
+            //
+            stringBuilder.append("-- StackTrace:\n");
+            StackTraceElement[] stackTrace = e.getStackTrace();
+            for (StackTraceElement traceElement : stackTrace) {
+                stringBuilder.append("\t  at ").append(traceElement).append("\n");
+            }
+        }
+        return stringBuilder;
+    }
+
+    /**
      * 垃圾回收，返回回收的字节数
      *
      * @return 回收的字节数，如果为负数则表示当前内存使用情况很差，基本属于没有内存可用了

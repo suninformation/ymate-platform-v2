@@ -183,7 +183,7 @@ public abstract class AbstractResponseErrorProcessor implements IResponseErrorPr
         stringBuilder.append("-- Session:").append("\n");
         WebContext.getContext().getSession().forEach((key, value) -> stringBuilder.append("\t  ").append(key).append(": ").append(JsonWrapper.toJsonString(value, false, true)).append("\n"));
         //
-        stringBuilder.append(ExceptionProcessHelper.exceptionToString(e)).append("-------------------------------------------------\n");
+        stringBuilder.append(RuntimeUtils.exceptionToString(e)).append("-------------------------------------------------\n");
         //
         return stringBuilder.toString();
     }

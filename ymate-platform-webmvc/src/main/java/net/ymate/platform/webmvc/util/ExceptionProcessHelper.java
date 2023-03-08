@@ -17,6 +17,7 @@ package net.ymate.platform.webmvc.util;
 
 import net.ymate.platform.commons.ReentrantLockHelper;
 import net.ymate.platform.commons.exception.DataVersionMismatchException;
+import net.ymate.platform.commons.util.RuntimeUtils;
 import net.ymate.platform.core.support.ErrorCode;
 import net.ymate.platform.webmvc.base.Type;
 import net.ymate.platform.webmvc.exception.*;
@@ -55,19 +56,17 @@ public final class ExceptionProcessHelper {
                 .addAttribute(Type.Const.DESCRIPTION, ((UserSessionForceOfflineException) target).getDescription()));
     }
 
+    /**
+     * 输出异常及堆栈信息
+     *
+     * @param e 异常对象
+     * @return 返回异常堆栈字符串
+     * @see RuntimeUtils#exceptionToString(Throwable)
+     * @deprecated
+     */
+    @Deprecated
     public static StringBuilder exceptionToString(Throwable e) {
-        StringBuilder stringBuilder = new StringBuilder();
-        if (e != null) {
-            stringBuilder.append("-- Exception: ").append(e.getClass().getName()).append("\n");
-            stringBuilder.append("-- Message: ").append(e.getMessage()).append("\n");
-            //
-            stringBuilder.append("-- StackTrace:\n");
-            StackTraceElement[] stackTrace = e.getStackTrace();
-            for (StackTraceElement traceElement : stackTrace) {
-                stringBuilder.append("\t  at ").append(traceElement).append("\n");
-            }
-        }
-        return stringBuilder;
+        return RuntimeUtils.exceptionToString(e);
     }
 
     public void registerProcessor(Class<? extends Throwable> target, IExceptionProcessor processor) {
