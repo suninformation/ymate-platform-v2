@@ -1924,11 +1924,15 @@ String extName = MimeTypeUtils.getFileExtName("text/plain");
 
 ```java
 // 获取本地所有的IP地址数组
-String[] ipAddrs = NetworkUtils.IP.getHostIPAddresses());
+String[] ipAddrs = NetworkUtils.IP.getHostIPAddresses();
 // 获取一个DNS或计算机名称所对应的IP地址数组
 ipAddrs = NetworkUtils.IP.getHostIPAddresses("localhost");
 // 获取本机名称
 String hostName = NetworkUtils.IP.getHostName();
+// 获取本机IPv6地址
+String ipV6Addr = NetworkUtils.IP.getLocalIPAddr();
+// 获取本机IPv4地址
+String ipV4Addr = NetworkUtils.IP.getLocalIPv4Addr();
 // 验证IP地址有效性
 boolean isValid = NetworkUtils.IP.isIPAddr("192.168.3.6");
 // 检查IPv4地址的合法性
@@ -2188,6 +2192,8 @@ public class Demo {
             RuntimeUtils.wrapRuntimeThrow(e);
             // 通过异常构建自定义消息的运行时异常
             RuntimeUtils.wrapRuntimeThrow(e, "code: %s, msg: %s", "10001", "System Error.");
+            // 构建字符串输出异常及堆栈信息
+            RuntimeUtils.exceptionToString(e);
         }
     }
 }
