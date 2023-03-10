@@ -27,7 +27,10 @@ import org.apache.poi.ss.usermodel.*;
 import org.jxls.common.Context;
 import org.jxls.util.JxlsHelper;
 
-import java.io.*;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.lang.reflect.Field;
 import java.nio.file.Files;
 import java.util.*;
@@ -214,11 +217,31 @@ public final class ExcelFileExportHelper {
                                     cellValue = StringUtils.trimToEmpty(BlurObject.bind(objectBeanWrapper.getValue(fieldName)).toStringValue());
                                 }
                             } else if (exportColumnAnn != null && exportColumnAnn.dateTime()) {
-                                cellValue = DateTimeUtils.formatTime(BlurObject.bind(objectBeanWrapper.getValue(fieldName)).toLongValue(), DateTimeUtils.YYYY_MM_DD_HH_MM_SS);
+                                long timeValue = BlurObject.bind(objectBeanWrapper.getValue(fieldName)).toLongValue();
+                                if (String.valueOf(timeValue).length() >= DateTimeUtils.UTC_LENGTH) {
+                                    cellValue = DateTimeUtils.formatTime(timeValue, DateTimeUtils.YYYY_MM_DD_HH_MM_SS);
+                                } else {
+                                    cellValue = StringUtils.EMPTY;
+                                }
                             } else if (exportColumnAnn != null && exportColumnAnn.dataRange().length > 0) {
-                                cellValue = exportColumnAnn.dataRange()[BlurObject.bind(objectBeanWrapper.getValue(fieldName)).toIntValue()];
+                                Object dataRangeValue = objectBeanWrapper.getValue(fieldName);
+                                if (dataRangeValue != null) {
+                                    int position = BlurObject.bind(dataRangeValue).toIntValue();
+                                    if (position >= 0 && position < exportColumnAnn.dataRange().length) {
+                                        cellValue = exportColumnAnn.dataRange()[position];
+                                    } else {
+                                        cellValue = String.valueOf(position);
+                                    }
+                                } else {
+                                    cellValue = StringUtils.EMPTY;
+                                }
                             } else if (exportColumnAnn != null && exportColumnAnn.currency()) {
-                                cellValue = MathCalcHelper.bind(BlurObject.bind(objectBeanWrapper.getValue(fieldName)).toStringValue()).scale(2).divide("100").toBlurObject().toStringValue();
+                                Object currencyValue = objectBeanWrapper.getValue(fieldName);
+                                if (currencyValue != null) {
+                                    cellValue = MathCalcHelper.bind(BlurObject.bind(currencyValue).toStringValue()).scale(2).divide("100").toBlurObject().toStringValue();
+                                } else {
+                                    cellValue = StringUtils.EMPTY;
+                                }
                             } else {
                                 cellValue = StringUtils.trimToEmpty(BlurObject.bind(objectBeanWrapper.getValue(fieldName)).toStringValue());
                             }
@@ -264,11 +287,31 @@ public final class ExcelFileExportHelper {
                                 newRow.addColumn(StringUtils.trimToEmpty(BlurObject.bind(objectBeanWrapper.getValue(fieldName)).toStringValue()));
                             }
                         } else if (exportColumnAnn != null && exportColumnAnn.dateTime()) {
-                            newRow.addColumn(DateTimeUtils.formatTime(BlurObject.bind(objectBeanWrapper.getValue(fieldName)).toLongValue(), DateTimeUtils.YYYY_MM_DD_HH_MM_SS));
+                            long timeValue = BlurObject.bind(objectBeanWrapper.getValue(fieldName)).toLongValue();
+                            if (String.valueOf(timeValue).length() >= DateTimeUtils.UTC_LENGTH) {
+                                newRow.addColumn(DateTimeUtils.formatTime(timeValue, DateTimeUtils.YYYY_MM_DD_HH_MM_SS));
+                            } else {
+                                newRow.addColumn(StringUtils.EMPTY);
+                            }
                         } else if (exportColumnAnn != null && exportColumnAnn.dataRange().length > 0) {
-                            newRow.addColumn(exportColumnAnn.dataRange()[BlurObject.bind(objectBeanWrapper.getValue(fieldName)).toIntValue()]);
+                            Object dataRangeValue = objectBeanWrapper.getValue(fieldName);
+                            if (dataRangeValue != null) {
+                                int position = BlurObject.bind(dataRangeValue).toIntValue();
+                                if (position >= 0 && position < exportColumnAnn.dataRange().length) {
+                                    newRow.addColumn(exportColumnAnn.dataRange()[position]);
+                                } else {
+                                    newRow.addColumn(String.valueOf(position));
+                                }
+                            } else {
+                                newRow.addColumn(StringUtils.EMPTY);
+                            }
                         } else if (exportColumnAnn != null && exportColumnAnn.currency()) {
-                            newRow.addColumn(MathCalcHelper.bind(BlurObject.bind(objectBeanWrapper.getValue(fieldName)).toStringValue()).scale(2).divide("100").toBlurObject().toStringValue());
+                            Object currencyValue = objectBeanWrapper.getValue(fieldName);
+                            if (currencyValue != null) {
+                                newRow.addColumn(MathCalcHelper.bind(BlurObject.bind(currencyValue).toStringValue()).scale(2).divide("100").toBlurObject().toStringValue());
+                            } else {
+                                newRow.addColumn(StringUtils.EMPTY);
+                            }
                         } else {
                             newRow.addColumn(StringUtils.trimToEmpty(BlurObject.bind(objectBeanWrapper.getValue(fieldName)).toStringValue()));
                         }
