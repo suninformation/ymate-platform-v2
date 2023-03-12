@@ -16,6 +16,7 @@
 package net.ymate.platform.commons.annotation;
 
 import net.ymate.platform.commons.IExportDataRender;
+import net.ymate.platform.commons.util.DateTimeUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import java.lang.annotation.*;
@@ -44,9 +45,26 @@ public @interface ExportColumn {
     boolean dateTime() default false;
 
     /**
-     * @return 指定列为货币类型将值除以100后保留两位小数
+     * @return 日期时间输出模式
+     * @since 2.1.2
+     */
+    String pattern() default DateTimeUtils.YYYY_MM_DD_HH_MM_SS;
+
+    /**
+     * @return 指定列为货币类型将值保留小数
      */
     boolean currency() default false;
+
+    /**
+     * @return 配置货币类型计算时是否将原值除以10的decimals次方后计算（基于数值以整数存储的情况）
+     * @since 2.1.2
+     */
+    boolean accuracy() default true;
+
+    /**
+     * @return 配置货币类型计算时保留小数位数
+     */
+    int decimals() default 2;
 
     /**
      * @return 排除导出属性

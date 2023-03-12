@@ -219,7 +219,7 @@ public final class ExcelFileExportHelper {
                             } else if (exportColumnAnn != null && exportColumnAnn.dateTime()) {
                                 long timeValue = BlurObject.bind(objectBeanWrapper.getValue(fieldName)).toLongValue();
                                 if (String.valueOf(timeValue).length() >= DateTimeUtils.UTC_LENGTH) {
-                                    cellValue = DateTimeUtils.formatTime(timeValue, DateTimeUtils.YYYY_MM_DD_HH_MM_SS);
+                                    cellValue = DateTimeUtils.formatTime(timeValue, StringUtils.defaultIfBlank(exportColumnAnn.pattern(), DateTimeUtils.YYYY_MM_DD_HH_MM_SS));
                                 } else {
                                     cellValue = StringUtils.EMPTY;
                                 }
@@ -238,7 +238,7 @@ public final class ExcelFileExportHelper {
                             } else if (exportColumnAnn != null && exportColumnAnn.currency()) {
                                 Object currencyValue = objectBeanWrapper.getValue(fieldName);
                                 if (currencyValue != null) {
-                                    cellValue = MathCalcHelper.bind(BlurObject.bind(currencyValue).toStringValue()).scale(2).divide("100").toBlurObject().toStringValue();
+                                    cellValue = doProcessCurrencyValue(exportColumnAnn, currencyValue).toStringValue();
                                 } else {
                                     cellValue = StringUtils.EMPTY;
                                 }
@@ -261,6 +261,20 @@ public final class ExcelFileExportHelper {
             }
             return tempFile;
         }
+    }
+
+    private BlurObject doProcessCurrencyValue(ExportColumn exportColumnAnn, Object currencyValue) {
+        int decimals = exportColumnAnn.decimals();
+        if (decimals <= 0) {
+            decimals = 2;
+        }
+        MathCalcHelper mathCalcHelper = MathCalcHelper.bind(BlurObject.bind(currencyValue).toStringValue()).scale(decimals);
+        if (exportColumnAnn.accuracy()) {
+            mathCalcHelper.divide(Math.pow(10, decimals));
+        } else {
+            mathCalcHelper.round();
+        }
+        return mathCalcHelper.toBlurObject();
     }
 
     private File doExportCsv(List<String> columnNames, Map<String, ExportColumn> columnsMap, int index, List<?> data, String charset) throws Exception {
@@ -289,7 +303,7 @@ public final class ExcelFileExportHelper {
                         } else if (exportColumnAnn != null && exportColumnAnn.dateTime()) {
                             long timeValue = BlurObject.bind(objectBeanWrapper.getValue(fieldName)).toLongValue();
                             if (String.valueOf(timeValue).length() >= DateTimeUtils.UTC_LENGTH) {
-                                newRow.addColumn(DateTimeUtils.formatTime(timeValue, DateTimeUtils.YYYY_MM_DD_HH_MM_SS));
+                                newRow.addColumn(DateTimeUtils.formatTime(timeValue, StringUtils.defaultIfBlank(exportColumnAnn.pattern(), DateTimeUtils.YYYY_MM_DD_HH_MM_SS)));
                             } else {
                                 newRow.addColumn(StringUtils.EMPTY);
                             }
@@ -308,7 +322,7 @@ public final class ExcelFileExportHelper {
                         } else if (exportColumnAnn != null && exportColumnAnn.currency()) {
                             Object currencyValue = objectBeanWrapper.getValue(fieldName);
                             if (currencyValue != null) {
-                                newRow.addColumn(MathCalcHelper.bind(BlurObject.bind(currencyValue).toStringValue()).scale(2).divide("100").toBlurObject().toStringValue());
+                                newRow.addColumn(doProcessCurrencyValue(exportColumnAnn, currencyValue).toStringValue());
                             } else {
                                 newRow.addColumn(StringUtils.EMPTY);
                             }
