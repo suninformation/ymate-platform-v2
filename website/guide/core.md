@@ -2121,9 +2121,12 @@ public class Student {
         original.setAge(20);
         //
         PropertyStateSupport<Student> stateSupport = PropertyStateSupport.create(original);
+        System.out.println("变更前：" + PropertyStateSupport.toString(stateSupport.getProperties(), false, true));
+        //
         Student bindStudent = stateSupport.bind();
         bindStudent.setUsername("YMPer");
         bindStudent.setAge(30);
+        System.out.println("变更后：" + PropertyStateSupport.toString(stateSupport.getChangedProperties(), false, true));
         //
         if (stateSupport.hasChanged()) {
             System.out.printf("发生变更的字段名集合: %s%n", Arrays.asList(stateSupport.getChangedPropertyNames()));
@@ -2137,6 +2140,8 @@ public class Student {
 **执行结果：**
 
 ```sh
+变更前：{"user_name":"123456","年龄":20}
+变更后：{"user_name":"YMPer","年龄":30}
 发生变更的字段名集合: [user_name, age]
 已将user_name由123456变更为YMPer
 已将年龄由20变更为30
