@@ -15,6 +15,8 @@
  */
 package net.ymate.platform.core.beans.support;
 
+import net.ymate.platform.commons.json.IJsonObjectWrapper;
+import net.ymate.platform.commons.json.JsonWrapper;
 import net.ymate.platform.commons.util.ClassUtils;
 import net.ymate.platform.core.beans.annotation.PropertyState;
 import net.ymate.platform.core.beans.proxy.IProxyFactory;
@@ -164,5 +166,47 @@ public class PropertyStateSupport<T> {
      */
     public boolean hasChanged() {
         return stateMetas.stream().anyMatch(PropertyStateMeta::isChanged);
+    }
+
+    /**
+     * @return 返回全部属性状态对象集合
+     * @since 2.1.2
+     */
+    public Set<PropertyStateMeta> getProperties() {
+        return Collections.unmodifiableSet(stateMetas);
+    }
+
+    /**
+     * @param properties    属性状态对象集合
+     * @param format        是否格式化
+     * @param keepNullValue 是否保留空属性
+     * @return 以 JSON 格式输出属性名称和值
+     * @since 2.1.2
+     */
+    public static String toString(Collection<PropertyStateMeta> properties, boolean format, boolean keepNullValue) {
+        IJsonObjectWrapper objectWrapper = JsonWrapper.createJsonObject();
+        for (PropertyStateMeta stateMeta : properties) {
+            objectWrapper.put(StringUtils.defaultIfBlank(stateMeta.getAliasName(), stateMeta.getPropertyName()), stateMeta.getNewValue() != null ? stateMeta.getNewValue() : stateMeta.getOriginalValue());
+        }
+        return objectWrapper.toString(format, keepNullValue);
+    }
+
+    /**
+     * @param format        是否格式化
+     * @param keepNullValue 是否保留空属性
+     * @return 以 JSON 格式输出属性名称和值
+     * @since 2.1.2
+     */
+    public String toString(boolean format, boolean keepNullValue) {
+        return toString(stateMetas, format, keepNullValue);
+    }
+
+    /**
+     * @return 以 JSON 格式输出属性名称和值
+     * @since 2.1.2
+     */
+    @Override
+    public String toString() {
+        return toString(false, false);
     }
 }
