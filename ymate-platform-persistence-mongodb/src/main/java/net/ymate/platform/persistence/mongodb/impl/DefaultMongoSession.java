@@ -84,7 +84,7 @@ public class DefaultMongoSession extends AbstractSession<IMongoConnectionHolder>
         return connectionHolder.getConnection().getCollection(collectionPrefix.concat(EntityMeta.load(entity).getEntityName()));
     }
 
-    private <T extends IEntity> FindIterable<Document> doFindIterable(MongoCollection<Document> collection, Class<T> entity, Query filter, OrderBy orderBy) throws Exception {
+    private <T extends IEntity> FindIterable<Document> doFindIterable(MongoCollection<Document> collection, Query filter, OrderBy orderBy) {
         FindIterable<Document> findIterable;
         ClientSession clientSession = Transactions.getClientSession(connectionHolder);
         if (filter != null) {
@@ -152,9 +152,9 @@ public class DefaultMongoSession extends AbstractSession<IMongoConnectionHolder>
     @Override
     public <T extends IEntity> IResultSet<T> find(Class<T> entity, Query filter, OrderBy orderBy, Page page) throws Exception {
         MongoCollection<Document> collection = getCollection(entity);
-        FindIterable<Document> findIterable = doFindIterable(collection, entity, filter, orderBy);
+        FindIterable<Document> findIterable = doFindIterable(collection, filter, orderBy);
         if (doPageInit(findIterable, page)) {
-            return new DefaultResultSet<>(ResultSetHelper.toEntities(entity, findIterable), page.page(), page.pageSize(), page.isCount() ? collection.countDocuments() : 0);
+            return new DefaultResultSet<>(ResultSetHelper.toEntities(entity, findIterable), page.page(), page.pageSize(), page.isCount() ? doCount(collection, filter) : 0);
         }
         return new DefaultResultSet<>(ResultSetHelper.toEntities(entity, findIterable));
     }
@@ -177,7 +177,7 @@ public class DefaultMongoSession extends AbstractSession<IMongoConnectionHolder>
     @Override
     public <T extends IEntity> T findFirst(Class<T> entity, Query filter, OrderBy orderBy) throws Exception {
         MongoCollection<Document> collection = getCollection(entity);
-        return ResultSetHelper.toEntity(entity, doFindIterable(collection, entity, filter, orderBy).first());
+        return ResultSetHelper.toEntity(entity, doFindIterable(collection, filter, orderBy).first());
     }
 
     @Override
@@ -195,9 +195,7 @@ public class DefaultMongoSession extends AbstractSession<IMongoConnectionHolder>
         return count(entity, (Query) null);
     }
 
-    @Override
-    public <T extends IEntity> long count(Class<T> entity, Query filter) throws Exception {
-        MongoCollection<Document> collection = getCollection(entity);
+    private long doCount(MongoCollection<Document> collection, Query filter) {
         ClientSession clientSession = Transactions.getClientSession(connectionHolder);
         if (filter != null) {
             if (clientSession == null) {
@@ -211,6 +209,12 @@ public class DefaultMongoSession extends AbstractSession<IMongoConnectionHolder>
         } else {
             return collection.countDocuments(clientSession);
         }
+    }
+
+    @Override
+    public <T extends IEntity> long count(Class<T> entity, Query filter) throws Exception {
+        MongoCollection<Document> collection = getCollection(entity);
+        return doCount(collection, filter);
     }
 
     @Override
