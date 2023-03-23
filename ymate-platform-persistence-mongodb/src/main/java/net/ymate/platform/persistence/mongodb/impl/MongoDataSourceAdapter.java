@@ -48,7 +48,8 @@ public class MongoDataSourceAdapter extends AbstractDataSourceAdapter<IMongo, IM
         } else {
             String username = StringUtils.trimToNull(dataSourceConfig.getUsername());
             if (username != null) {
-                MongoCredential credential = MongoCredential.createCredential(username, dataSourceConfig.getDatabaseName(), StringUtils.trimToEmpty(decryptPasswordIfNeed()).toCharArray());
+                String authDbName = StringUtils.defaultIfBlank(dataSourceConfig.getAuthenticationDatabaseName(), "admin");
+                MongoCredential credential = MongoCredential.createCredential(username, authDbName, StringUtils.trimToEmpty(decryptPasswordIfNeed()).toCharArray());
                 mongoClient = new MongoClient(dataSourceConfig.getServerAddresses(), credential, clientOptionsBuilder.build());
             } else {
                 mongoClient = new MongoClient(dataSourceConfig.getServerAddresses(), clientOptionsBuilder.build());

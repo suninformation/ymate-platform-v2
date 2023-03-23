@@ -36,7 +36,7 @@ public interface IMongoDataSourceConfig extends IDataSourceConfig<IMongo> {
     String getCollectionPrefix();
 
     /**
-     * 服务器主机连接字符串，可选参数，若提供此参数则下面的servers等参数就不在需要提供
+     * 服务器主机连接字符串，可选参数，若提供此参数则无需再提供username, password, database_name, servers等参数
      *
      * @return 返回连接字符串
      */
@@ -55,6 +55,14 @@ public interface IMongoDataSourceConfig extends IDataSourceConfig<IMongo> {
      * @return 返回数据库名称
      */
     String getDatabaseName();
+
+    /**
+     * 包含用户身份验证数据的数据库名称，可选参数，默认值为admin
+     *
+     * @return 返回身份验证数据库名称
+     * @since 2.1.2
+     */
+    String getAuthenticationDatabaseName();
 
     /**
      * 自定义MongoDB客户端参数配置处理器

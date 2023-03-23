@@ -32,5 +32,7 @@ public interface IMongoConfig extends IPersistenceConfig<IMongo, IMongoDataSourc
 
     String DATABASE_NAME = "database_name";
 
+    String AUTHENTICATION_DATABASE_NAME = "authentication_database_name";
+
     String SERVERS = "servers";
 }

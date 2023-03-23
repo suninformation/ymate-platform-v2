@@ -47,11 +47,14 @@ ymp.configs.persistence.mongodb.ds.default.password_class=
 # 集合前缀名称，可选参数，默认为空
 ymp.configs.persistence.mongodb.ds.default.collection_prefix=
 
-# 服务器主机连接字符串，可选参数，若提供此参数则下面的servers等参数就不在需要提供
+# 服务器主机连接字符串，可选参数，若提供此参数则无需再提供username, password, database_name, servers等参数
 ymp.configs.persistence.mongodb.ds.default.connection_url=
 
 # 数据库名称，必填参数
 ymp.configs.persistence.mongodb.ds.default.database_name=
+
+# 包含用户身份验证数据的数据库名称，可选参数，默认值为admin
+ymp.configs.persistence.mongodb.ds.default.authentication_database_name=
 
 # 服务器主机集合，格式：<IP地址[:端口]>，多个主机之间用'|'分隔，默认为空
 ymp.configs.persistence.mongodb.ds.default.servers=
@@ -83,18 +86,19 @@ ymp.configs.persistence.mongodb.ds.default.options_handler_class=
 
 #### @MongoDataSource
 
-| 配置项              | 描述                     |
-| ------------------- | ------------------------ |
-| name                | 数据源名称               |
-| username            | 数据库访问用户名称       |
-| password            | 数据库访问密码           |
-| passwordEncrypted   | 数据库访问密码是否已加密 |
-| passwordClass       | 数据库密码处理器         |
-| collectionPrefix    | 集合前缀名称             |
-| databaseName        | 数据库名称               |
-| connectionUrl       | 服务器主机连接字符串     |
-| servers             | 服务器主机集合           |
-| optionsHandlerClass | 数据源自定义配置处理器   |
+| 配置项                     | 描述                             |
+| -------------------------- | -------------------------------- |
+| name                       | 数据源名称                       |
+| username                   | 数据库访问用户名称               |
+| password                   | 数据库访问密码                   |
+| passwordEncrypted          | 数据库访问密码是否已加密         |
+| passwordClass              | 数据库密码处理器                 |
+| collectionPrefix           | 集合前缀名称                     |
+| databaseName               | 数据库名称                       |
+| authenticationDatabaseName | 包含用户身份验证数据的数据库名称 |
+| connectionUrl              | 服务器主机连接字符串             |
+| servers                    | 服务器主机集合                   |
+| optionsHandlerClass        | 数据源自定义配置处理器           |
 
 
 

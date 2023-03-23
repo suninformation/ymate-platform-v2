@@ -44,6 +44,8 @@ public final class DefaultMongoDataSourceConfig extends AbstractDataSourceConfig
 
     private String databaseName;
 
+    private String authenticationDatabaseName;
+
     private Class<? extends IMongoClientOptionsHandler> clientOptionsHandlerClass;
 
     public static DefaultMongoDataSourceConfig create(String dataSourceName, IConfigReader configReader) throws ClassNotFoundException {
@@ -65,6 +67,7 @@ public final class DefaultMongoDataSourceConfig extends AbstractDataSourceConfig
         this.collectionPrefix = configReader.getString(IMongoConfig.COLLECTION_PREFIX);
         this.connectionUrl = configReader.getString(IMongoConfig.CONNECTION_URL);
         this.databaseName = configReader.getString(IMongoConfig.DATABASE_NAME);
+        this.authenticationDatabaseName = configReader.getString(IMongoConfig.AUTHENTICATION_DATABASE_NAME);
         //
         if (StringUtils.isBlank(this.connectionUrl)) {
             String clientOptionsHandlerClassName = configReader.getString(IMongoConfig.DS_OPTIONS_HANDLER_CLASS);
@@ -123,6 +126,17 @@ public final class DefaultMongoDataSourceConfig extends AbstractDataSourceConfig
     }
 
     @Override
+    public String getAuthenticationDatabaseName() {
+        return authenticationDatabaseName;
+    }
+
+    public void setAuthenticationDatabaseName(String authenticationDatabaseName) {
+        if (!isInitialized()) {
+            this.authenticationDatabaseName = authenticationDatabaseName;
+        }
+    }
+
+    @Override
     public Class<? extends IMongoClientOptionsHandler> getClientOptionsHandlerClass() {
         return clientOptionsHandlerClass;
     }
@@ -148,6 +162,11 @@ public final class DefaultMongoDataSourceConfig extends AbstractDataSourceConfig
 
         public Builder databaseName(String databaseName) {
             config.setDatabaseName(databaseName);
+            return this;
+        }
+
+        public Builder authenticationDatabaseName(String authenticationDatabaseName) {
+            config.setAuthenticationDatabaseName(authenticationDatabaseName);
             return this;
         }
 

@@ -67,6 +67,11 @@ public @interface MongoDataSource {
     String databaseName();
 
     /**
+     * @return 包含用户身份验证数据的数据库名称
+     */
+    String authenticationDatabaseName() default StringUtils.EMPTY;
+
+    /**
      * @return 服务器主机连接字符串
      */
     String connectionUrl() default StringUtils.EMPTY;

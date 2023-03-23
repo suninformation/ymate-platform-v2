@@ -83,6 +83,11 @@ public class DefaultMongoDataSourceConfigurable extends AbstractDataSourceConfig
             return this;
         }
 
+        public Builder authenticationDatabaseName(String authenticationDatabaseName) {
+            configurable.addConfig(IMongoConfig.AUTHENTICATION_DATABASE_NAME, authenticationDatabaseName);
+            return this;
+        }
+
         public Builder addServerAddresses(ServerAddress... serverAddresses) {
             if (ArrayUtils.isNotEmpty(serverAddresses)) {
                 List<String> servers = new ArrayList<>();
