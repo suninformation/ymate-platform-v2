@@ -72,8 +72,10 @@ public abstract class AbstractResponseErrorProcessor implements IResponseErrorPr
                         returnView = showValidationResults(owner, exception.getValidateResults());
                     } else if (exception.getResultView() != null) {
                         returnView = exception.getResultView();
+                        doProcessErrorStatusCodeIfNeed(owner);
                     } else {
                         returnView = View.httpStatusView(exception.getHttpStatus(), exception.getMessage());
+                        doProcessErrorStatusCodeIfNeed(owner);
                     }
                 } else {
                     IExceptionProcessor exceptionProcessor = ExceptionProcessHelper.DEFAULT.bind(unwrapThrow.getClass());
@@ -88,6 +90,7 @@ public abstract class AbstractResponseErrorProcessor implements IResponseErrorPr
                         doProcessError(owner, unwrapThrow);
                         returnView = showErrorMsg(owner, String.valueOf(ErrorCode.INTERNAL_SYSTEM_ERROR), WebUtils.errorCodeI18n(owner, ErrorCode.INTERNAL_SYSTEM_ERROR, ErrorCode.MSG_INTERNAL_SYSTEM_ERROR), null);
                     }
+                    doProcessErrorStatusCodeIfNeed(owner);
                 }
             }
         } catch (Exception e1) {
@@ -99,6 +102,7 @@ public abstract class AbstractResponseErrorProcessor implements IResponseErrorPr
     }
 
     public IView showValidationResults(IWebMvc owner, Map<String, ValidateResult> results) {
+        doProcessErrorStatusCodeIfNeed(owner);
         String message = WebUtils.errorCodeI18n(owner, WebErrorCode.INVALID_PARAMS_VALIDATION, WebErrorCode.MSG_INVALID_PARAMS_VALIDATION);
         //
         HttpServletRequest httpServletRequest = WebContext.getRequest();
@@ -201,7 +205,7 @@ public abstract class AbstractResponseErrorProcessor implements IResponseErrorPr
 
     public boolean isErrorWithStatusCode(IWebMvc owner) {
         if (errorWithStatusCode == null) {
-            errorWithStatusCode = BlurObject.bind(owner.getOwner().getParam(IWebMvcConfig.PARAMS_EXCEPTION_ANALYSIS_DISABLED)).toBooleanValue();
+            errorWithStatusCode = BlurObject.bind(owner.getOwner().getParam(IWebMvcConfig.PARAMS_ERROR_WITH_STATUS_CODE)).toBooleanValue();
         }
         return errorWithStatusCode;
     }
@@ -212,7 +216,7 @@ public abstract class AbstractResponseErrorProcessor implements IResponseErrorPr
 
     public boolean isAnalysisDisabled(IWebMvc owner) {
         if (analysisDisabled == null) {
-            analysisDisabled = BlurObject.bind(owner.getOwner().getParam(IWebMvcConfig.PARAMS_ERROR_WITH_STATUS_CODE)).toBooleanValue();
+            analysisDisabled = BlurObject.bind(owner.getOwner().getParam(IWebMvcConfig.PARAMS_EXCEPTION_ANALYSIS_DISABLED)).toBooleanValue();
         }
         return analysisDisabled;
     }

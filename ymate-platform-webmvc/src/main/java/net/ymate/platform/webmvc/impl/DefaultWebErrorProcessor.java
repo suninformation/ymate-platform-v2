@@ -61,7 +61,6 @@ public class DefaultWebErrorProcessor extends AbstractResponseErrorProcessor imp
 
     @Override
     public IView showErrorMsg(IWebMvc owner, String code, String msg, Map<String, Object> dataMap) {
-        doProcessErrorStatusCodeIfNeed(owner);
         HttpServletRequest httpServletRequest = WebContext.getRequest();
         String viewFormat = getErrorDefaultViewFormat(owner);
         if (WebUtils.isAjax(httpServletRequest) || WebUtils.isXmlFormat(httpServletRequest) || WebUtils.isJsonFormat(httpServletRequest) || StringUtils.containsAny(viewFormat, Type.Const.FORMAT_JSON, Type.Const.FORMAT_XML)) {
