@@ -85,6 +85,38 @@ public class DateTimeValue implements Serializable {
         return dateTimeValue;
     }
 
+    /**
+     * @return 返回当前时刻的日期时间值对象
+     * @since 2.1.2
+     */
+    public static DateTimeValue now() {
+        return new DateTimeValue(DateTimeHelper.now().time());
+    }
+
+    /**
+     * @return 返回从今天零点到当前时刻的日期时间值对象
+     * @since 2.1.2
+     */
+    public static DateTimeValue today() {
+        return new DateTimeValue(DateTimeHelper.now().toDayStart().time(), DateTimeHelper.now().time());
+    }
+
+    /**
+     * @return 返回从本周一零点到今天当前时刻的日期时间值对象
+     * @since 2.1.2
+     */
+    public static DateTimeValue week() {
+        return new DateTimeValue(DateTimeHelper.now().toWeekStart().time(), DateTimeHelper.now().time());
+    }
+
+    /**
+     * @return 返回本月一号零点到今天当前时刻的日期时间值对象
+     * @since 2.1.2
+     */
+    public static DateTimeValue month() {
+        return new DateTimeValue(DateTimeHelper.now().day(1).toDayStart().time(), DateTimeHelper.now().time());
+    }
+
     public DateTimeValue(Date startDate) {
         this.startDate = startDate;
         this.single = true;
@@ -163,6 +195,35 @@ public class DateTimeValue implements Serializable {
 
     public DateTimeHelper bindEndDate() {
         return DateTimeHelper.bind(endDate);
+    }
+
+    /**
+     * @return 以字符串输出
+     * @since 2.1.2
+     */
+    @Override
+    public String toString() {
+        return toString(DateTimeUtils.YYYY_MM_DD_HH_MM_SS, null);
+    }
+
+    /**
+     * @param dateFormat 日期格式字符串
+     * @param separator  时间段字符串之间的分割符号
+     * @return 以字符串输出
+     * @since 2.1.2
+     */
+    public String toString(String dateFormat, String separator) {
+        StringBuilder stringBuilder = new StringBuilder();
+        if (startDate != null) {
+            stringBuilder.append(DateTimeHelper.bind(startDate).toString(dateFormat));
+        }
+        if (endDate != null) {
+            stringBuilder.append(StringUtils.SPACE)
+                    .append(StringUtils.defaultIfBlank(separator, "/"))
+                    .append(StringUtils.SPACE)
+                    .append(DateTimeHelper.bind(endDate).toString(dateFormat));
+        }
+        return stringBuilder.toString();
     }
 
     public interface IValueProcessor {
