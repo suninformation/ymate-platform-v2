@@ -15,6 +15,7 @@
  */
 package net.ymate.platform.core.impl;
 
+import net.ymate.platform.commons.IPasswordProcessor;
 import net.ymate.platform.commons.ReentrantLockHelper;
 import net.ymate.platform.commons.lang.BlurObject;
 import net.ymate.platform.commons.util.ClassUtils;
@@ -104,7 +105,28 @@ public final class DefaultApplicationConfigureParser implements IApplicationConf
         if (configData == null) {
             throw new NullArgumentException("configData");
         }
-        this.configReader = MapSafeConfigReader.bind(configData);
+        Map<Object, Object> innerMap = new HashMap<>();
+        IPasswordProcessor passwordProcessor = YMP.getPasswordProcessor();
+        configData.forEach((key, value) -> {
+            String keyStr = BlurObject.bind(key).toStringValue();
+            String valueStr = BlurObject.bind(value).toStringValue();
+            if (StringUtils.isNotBlank(valueStr)
+                    && StringUtils.startsWith(valueStr, PASS_PREFIX)
+                    && StringUtils.endsWith(valueStr, PASS_SUFFIX)) {
+                String tmpValueStr = StringUtils.substringBetween(valueStr, PASS_PREFIX, PASS_SUFFIX);
+                if (StringUtils.isNotBlank(tmpValueStr)) {
+                    try {
+                        valueStr = passwordProcessor.decrypt(tmpValueStr);
+                    } catch (Exception e) {
+                        if (LOG.isWarnEnabled()) {
+                            LOG.warn(String.format("An exception occurred while decrypting configuration parameter '%s': ", keyStr), RuntimeUtils.unwrapThrow(e));
+                        }
+                    }
+                }
+            }
+            innerMap.put(keyStr, valueStr);
+        });
+        this.configReader = MapSafeConfigReader.bind(innerMap);
     }
 
     public DefaultApplicationConfigureParser(Properties configData) {

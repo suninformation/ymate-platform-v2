@@ -15,6 +15,8 @@
  */
 package net.ymate.platform.core;
 
+import net.ymate.platform.commons.IPasswordProcessor;
+import net.ymate.platform.commons.impl.DefaultPasswordProcessor;
 import net.ymate.platform.commons.util.ClassUtils;
 import net.ymate.platform.commons.util.ExpressionUtils;
 import net.ymate.platform.commons.util.ResourceUtils;
@@ -69,6 +71,8 @@ public final class YMP {
     private static volatile IBeanLoadFactory beanLoadFactory;
 
     private static volatile IProxyFactory proxyFactory;
+
+    private static volatile IPasswordProcessor passwordProcessor;
 
     private static volatile IApplication.Environment environment;
 
@@ -125,6 +129,29 @@ public final class YMP {
                 inst = proxyFactory;
                 if (inst == null) {
                     proxyFactory = inst = ClassUtils.loadClass(IProxyFactory.class);
+                }
+            }
+        }
+        return inst;
+    }
+
+    /**
+     * @return 返回全局密码处理器接口实例
+     * @since 2.1.2
+     */
+    public static IPasswordProcessor getPasswordProcessor() {
+        IPasswordProcessor inst = passwordProcessor;
+        if (inst == null) {
+            synchronized (YMP.class) {
+                inst = passwordProcessor;
+                if (inst == null) {
+                    String passwordClassName = System.getProperty(IApplication.SYSTEM_PASS_CLASS);
+                    if (StringUtils.isNotBlank(passwordClassName)) {
+                        inst = ClassUtils.impl(passwordClassName, IPasswordProcessor.class, YMP.class);
+                    }
+                    if (inst == null) {
+                        passwordProcessor = inst = ClassUtils.loadClass(IPasswordProcessor.class, DefaultPasswordProcessor.class);
+                    }
                 }
             }
         }

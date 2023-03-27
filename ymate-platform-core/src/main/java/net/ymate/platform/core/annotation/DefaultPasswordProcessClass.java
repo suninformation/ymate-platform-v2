@@ -16,7 +16,6 @@
 package net.ymate.platform.core.annotation;
 
 import net.ymate.platform.commons.IPasswordProcessor;
-import net.ymate.platform.commons.impl.DefaultPasswordProcessor;
 
 import java.lang.annotation.*;
 
@@ -32,5 +31,5 @@ public @interface DefaultPasswordProcessClass {
     /**
      * @return 默认密码处理器类型
      */
-    Class<? extends IPasswordProcessor> value() default DefaultPasswordProcessor.class;
+    Class<? extends IPasswordProcessor> value() default IPasswordProcessor.class;
 }

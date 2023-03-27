@@ -18,6 +18,7 @@ package net.ymate.platform.core;
 import net.ymate.platform.core.beans.annotation.Ignored;
 import net.ymate.platform.core.configuration.IConfigReader;
 import net.ymate.platform.core.module.IModuleConfigurer;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * 应用容器配置分析器接口
@@ -27,6 +28,10 @@ import net.ymate.platform.core.module.IModuleConfigurer;
  */
 @Ignored
 public interface IApplicationConfigureParser {
+
+    String PASS_PREFIX = String.format("%s(", StringUtils.defaultIfBlank(System.getProperty(IApplication.SYSTEM_PASS_PREFIX), "ENC"));
+
+    String PASS_SUFFIX = ")";
 
     /**
      * 获取配置读取器

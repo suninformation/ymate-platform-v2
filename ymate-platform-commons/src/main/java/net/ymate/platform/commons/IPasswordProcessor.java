@@ -22,6 +22,8 @@ package net.ymate.platform.commons;
  */
 public interface IPasswordProcessor {
 
+    String SYSTEM_PASS_KEY = "ymp.passKey";
+
     /**
      * 设置加/解密密钥, 若为未提供则采用默认
      *

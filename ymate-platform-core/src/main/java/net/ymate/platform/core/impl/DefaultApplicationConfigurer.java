@@ -120,6 +120,9 @@ public final class DefaultApplicationConfigurer extends AbstractApplicationConfi
                     if (passwordProcessClass != null && !passwordProcessClass.value().equals(IPasswordProcessor.class)) {
                         passwordProcessor = ClassUtils.impl(passwordProcessClass.value(), IPasswordProcessor.class);
                     }
+                    if (passwordProcessClass == null) {
+                        passwordProcessor = YMP.getPasswordProcessor();
+                    }
                 }
                 // 处理国际化配置注解类
                 I18nConf i18nConfAnn = configureFactory.getMainClass().getAnnotation(I18nConf.class);

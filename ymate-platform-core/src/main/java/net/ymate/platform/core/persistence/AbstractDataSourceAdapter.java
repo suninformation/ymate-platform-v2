@@ -16,8 +16,8 @@
 package net.ymate.platform.core.persistence;
 
 import net.ymate.platform.commons.IPasswordProcessor;
-import net.ymate.platform.commons.impl.DefaultPasswordProcessor;
 import net.ymate.platform.commons.util.RuntimeUtils;
+import net.ymate.platform.core.YMP;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -125,7 +125,7 @@ public abstract class AbstractDataSourceAdapter<OWNER extends IPersistence, DATA
             }
             IPasswordProcessor passwordProcessor = owner.getOwner().getConfigureFactory().getConfigurer().getPasswordProcessor();
             if (passwordProcessor == null) {
-                passwordProcessor = new DefaultPasswordProcessor();
+                passwordProcessor = YMP.getPasswordProcessor();
             }
             return passwordProcessor.decrypt(password);
         }

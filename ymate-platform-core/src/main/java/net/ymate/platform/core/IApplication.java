@@ -50,6 +50,10 @@ public interface IApplication extends IDestroyable {
 
     String SYSTEM_MAIN_CLASS = "ymp.mainClass";
 
+    String SYSTEM_PASS_CLASS = "ymp.passClass";
+
+    String SYSTEM_PASS_PREFIX = "ymp.passPrefix";
+
     /**
      * 初始化
      *

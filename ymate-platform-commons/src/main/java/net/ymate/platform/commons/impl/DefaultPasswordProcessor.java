@@ -30,6 +30,10 @@ public class DefaultPasswordProcessor implements IPasswordProcessor {
 
     private String passKey;
 
+    public DefaultPasswordProcessor() {
+        passKey = StringUtils.trimToNull(System.getProperty(SYSTEM_PASS_KEY));
+    }
+
     @Override
     public void setPassKey(String passKey) {
         this.passKey = passKey;

@@ -197,6 +197,22 @@ ymp.configs.event.thread_queue_size=
 
 
 
+:::tip **关于配置文件参数加密：**
+
+针对配置文件，YMP框架从 `2.1.2` 版本开始支持将任意参数项加密处理，示例如下：
+
+```properties
+ymp.params.xxx=ENC(X4+Fm5GYxsWqGS6d2vLHh11G/R7yaUoDWo4lMH9IShb2C7jx+rlViw==)
+```
+
+- 通过 `JVM` 参数 `-Dymp.passPrefix` 自定义前缀（区分大小写），默认为： `ENC` 。
+- 通过 `JVM` 参数 `-Dymp.passClass` 自定义密码处理器接口实现类，默认为： `DefaultPasswordProcessor` 。
+- 当使用默认密码处理器时，可以通过 `JVM` 参数 `-Dymp.passKey` 自定义加/解密密钥。
+
+:::
+
+
+
 ### 配置注解参数说明
 
 以下所列注解仅用于 YMP 框架基本配置，关于其它模块所提供的注解和配置项说明，请参见各模块文档。
