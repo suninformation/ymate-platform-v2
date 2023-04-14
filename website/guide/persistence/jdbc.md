@@ -3053,7 +3053,7 @@ public class DemoRepository implements IRepository {
 <dependency>
     <groupId>org.codehaus.groovy</groupId>
     <artifactId>groovy-all</artifactId>
-    <version>3.0.9</version>
+    <version>3.0.17</version>
     <type>pom</type>
 </dependency>
 ```
@@ -3164,6 +3164,35 @@ public class LuaRepositoryScriptProcessor implements IRepositoryScriptProcessor 
     </category>
 </properties>
 ```
+
+:::tip 上面的 `JavaScript` 翻译成 `Groovy` 脚本如下：
+
+```groovy
+import net.ymate.platform.core.persistence.IResultSet
+def custom_query(int type) {
+    String sqlStr = "select * from user"
+    if (type) {
+        sqlStr += " where type = ${type}"
+    }
+    return [ 
+        sql: { return sqlStr },
+        filter: (IResultSet results) -> {
+            List result = new ArrayList<>()
+            if (results && results.isResultsAvailable()) {
+                List resultData = results.getResultData()
+                for (i = 0; i < resultData.size(); i++) {
+                    if (i % 2 == 0) {
+                        result.add(resultData.get(i))
+                    }
+                }
+            }
+        	return result
+        }
+    ]
+}
+```
+
+:::
 
 调整存储器类，此处请注意 `execQuery` 方法的最后一个参数的类型是 `List`，其与 `JavaScript` 脚本中指定的 `filter` 过滤器返回的类型须一致，否则将发生类型转换异常，代码如下：
 

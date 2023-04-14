@@ -269,7 +269,7 @@ const ArchivedVersionsDropdownItems = Object.entries(VersionsArchived).splice(
             prism: {
                 theme: lightCodeTheme,
                 darkTheme: darkCodeTheme,
-                additionalLanguages: ['java', 'properties'],
+                additionalLanguages: ['java', 'properties', 'groovy'],
             },
         }),
 });

@@ -32,5 +32,5 @@ public interface IMongoClientOptionsHandler {
      * @param dataSourceName 数据源名称
      * @return 返回客户端参数配置构建器对象
      */
-    MongoClientOptions.Builder handler(String dataSourceName);
+    MongoClientOptions.Builder handle(String dataSourceName);
 }

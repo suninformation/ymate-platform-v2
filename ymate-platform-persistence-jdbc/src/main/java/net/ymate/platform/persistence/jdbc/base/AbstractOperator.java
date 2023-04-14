@@ -85,7 +85,7 @@ public abstract class AbstractOperator implements IOperator {
                         String logStr = ExpressionUtils.bind("[${sql}]${param}[${count}][${time}]")
                                 .set("sql", StringUtils.defaultIfBlank(this.sql, "@NULL"))
                                 .set("param", serializeParameters())
-                                .set("count", effectCounts + "")
+                                .set("count", String.valueOf(effectCounts))
                                 .set("time", this.expenseTime + "ms").getResult();
                         if (dataSourceConfig.isStackTraces()) {
                             StringBuilder stackBuilder = new StringBuilder(logStr);

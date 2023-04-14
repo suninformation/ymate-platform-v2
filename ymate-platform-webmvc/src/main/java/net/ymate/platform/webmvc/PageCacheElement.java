@@ -32,7 +32,7 @@ import java.util.zip.GZIPOutputStream;
  */
 public class PageCacheElement extends CacheElement {
 
-    private static final int FOUR_KB = 4196;
+    private static final int FOUR_KB = 4096;
 
     private static final int GZIP_MAGIC_NUMBER_BYTE_1 = 31;
 
@@ -113,7 +113,7 @@ public class PageCacheElement extends CacheElement {
 
     public byte[] getUnGzippedBody() throws IOException {
         if (storeGzipped) {
-            return ungzip(gzippedBody);
+            return unGzip(gzippedBody);
         }
         return unGzippedBody;
     }
@@ -127,7 +127,7 @@ public class PageCacheElement extends CacheElement {
         }
     }
 
-    private byte[] ungzip(final byte[] gzipped) throws IOException {
+    private byte[] unGzip(final byte[] gzipped) throws IOException {
         try (final GZIPInputStream inputStream = new GZIPInputStream(new ByteArrayInputStream(gzipped));
              ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream(gzipped.length)) {
             byte[] buffer = new byte[FOUR_KB];

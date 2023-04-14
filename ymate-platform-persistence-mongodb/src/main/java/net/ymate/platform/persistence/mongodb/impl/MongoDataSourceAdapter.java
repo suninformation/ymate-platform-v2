@@ -38,7 +38,7 @@ public class MongoDataSourceAdapter extends AbstractDataSourceAdapter<IMongo, IM
     protected void doInitialize(IMongo iMongo, IMongoDataSourceConfig dataSourceConfig) throws Exception {
         MongoClientOptions.Builder clientOptionsBuilder = null;
         if (dataSourceConfig.getClientOptionsHandlerClass() != null) {
-            clientOptionsBuilder = ClassUtils.impl(dataSourceConfig.getClientOptionsHandlerClass(), IMongoClientOptionsHandler.class).handler(dataSourceConfig.getName());
+            clientOptionsBuilder = ClassUtils.impl(dataSourceConfig.getClientOptionsHandlerClass(), IMongoClientOptionsHandler.class).handle(dataSourceConfig.getName());
         }
         if (clientOptionsBuilder == null) {
             clientOptionsBuilder = MongoClientOptions.builder();

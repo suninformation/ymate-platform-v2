@@ -27,7 +27,7 @@ import java.lang.annotation.*;
 public @interface QGroupBy {
 
     /**
-     * @return 参于分组的字段
+     * @return 参与分组的字段
      */
     QField[] value();
 
