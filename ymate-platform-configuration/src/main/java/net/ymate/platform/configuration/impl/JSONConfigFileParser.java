@@ -23,6 +23,7 @@ import org.apache.commons.io.IOUtils;
 import java.io.*;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 
 /**
  * @author 刘镇 (suninformation@163.com) on 2020/06/15 21:13
@@ -74,11 +75,11 @@ public class JSONConfigFileParser extends AbstractConfigFileParser {
 
     @Override
     public void writeTo(File targetFile) throws IOException {
-        // TODO
+        writeTo(Files.newOutputStream(targetFile.toPath()));
     }
 
     @Override
     public void writeTo(OutputStream outputStream) throws IOException {
-        // TODO
+        IOUtils.write(toString(), outputStream, StandardCharsets.UTF_8);
     }
 }

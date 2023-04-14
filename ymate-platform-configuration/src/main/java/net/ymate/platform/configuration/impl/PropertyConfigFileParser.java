@@ -20,6 +20,7 @@ import org.apache.commons.lang3.StringUtils;
 
 import java.io.*;
 import java.net.URL;
+import java.nio.file.Files;
 import java.util.Enumeration;
 import java.util.Properties;
 
@@ -139,11 +140,11 @@ public class PropertyConfigFileParser extends AbstractConfigFileParser {
 
     @Override
     public void writeTo(File targetFile) throws IOException {
-        // TODO write file
+        writeTo(Files.newOutputStream(targetFile.toPath()));
     }
 
     @Override
     public void writeTo(OutputStream outputStream) throws IOException {
-        // TODO write file
+        properties.store(outputStream, StringUtils.EMPTY);
     }
 }

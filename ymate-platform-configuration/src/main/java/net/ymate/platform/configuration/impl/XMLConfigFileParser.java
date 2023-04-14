@@ -26,11 +26,17 @@ import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
 import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URL;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -180,11 +186,16 @@ public class XMLConfigFileParser extends AbstractConfigFileParser {
 
     @Override
     public void writeTo(File targetFile) throws IOException {
-        // TODO write file
+        writeTo(Files.newOutputStream(targetFile.toPath()));
     }
 
     @Override
     public void writeTo(OutputStream outputStream) throws IOException {
-        // TODO write file
+        try {
+            Transformer tr = TransformerFactory.newInstance().newTransformer();
+            tr.transform(new DOMSource(rootElement), new StreamResult(outputStream));
+        } catch (TransformerException e) {
+            throw new IOException(e);
+        }
     }
 }
