@@ -167,6 +167,11 @@ public interface IWebMvcConfig extends IInitialization<IWebMvc> {
     String PARAMS_ALLOWED_UPLOAD_CONTENT_TYPES = "webmvc.allowed_upload_content_types";
 
     /**
+     * 参数签名检测时间戳是否在有效周期内，默认为30秒，当取值小于等于0时表示不检测，单位：秒
+     */
+    String PARAMS_SIGNATURE_TIME_LIFECYCLE = "webmvc.signature_time_lifecycle";
+
+    /**
      * 控制器请求映射路径分析器，可选值为已知分析器名称或自定义分析器类名称，默认为default，目前支持已知分析器[default|...]
      *
      * @return 返回控制器请求映射路径分析器

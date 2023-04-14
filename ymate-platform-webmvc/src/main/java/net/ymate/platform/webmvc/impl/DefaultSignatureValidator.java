@@ -40,8 +40,9 @@ public class DefaultSignatureValidator implements ISignatureValidator {
         Map<String, Object> paramValues = new HashMap<>(paramParser.getParams(owner, requestMeta));
         String sign = BlurObject.bind(paramValues.get(signatureValidate.paramName())).toStringValue();
         long timestamp = BlurObject.bind(paramValues.get(signatureValidate.timestampName())).toLongValue();
+        long timeLifecycle = BlurObject.bind(owner.getOwner().getParam(IWebMvcConfig.PARAMS_SIGNATURE_TIME_LIFECYCLE, String.valueOf(signatureValidate.timeLifecycle()))).toLongValue();
         boolean invalid = StringUtils.isBlank(sign) || timestamp <= 0 || !doNonceValueValidate(owner, signatureValidate.nonceName(), paramValues);
-        if (invalid || signatureValidate.timeLifecycle() > 0 && System.currentTimeMillis() - timestamp > signatureValidate.timeLifecycle() * DateTimeUtils.SECOND) {
+        if (invalid || timeLifecycle > 0 && System.currentTimeMillis() - timestamp > timeLifecycle * DateTimeUtils.SECOND) {
             throw new ParameterSignatureException("Missing signature required parameter or expired timestamp parameter value.");
         }
         Map<String, Object> signatureParams = new HashMap<>(paramValues.size());

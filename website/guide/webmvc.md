@@ -318,6 +318,9 @@ ymp.params.webmvc.allowed_access_hosts=
 
 # 允许上传的文件类型, 多个用'|'分隔, 默认值: 空(表示不限制)
 ymp.params.webmvc.allowed_upload_content_types=
+
+# 参数签名检测时间戳是否在有效周期内，默认为30秒，当取值小于等于0时表示不检测，单位：秒
+ymp.params.webmvc.signature_time_lifecycle=
 ```
 
 
