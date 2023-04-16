@@ -140,7 +140,9 @@ public class PropertyConfigFileParser extends AbstractConfigFileParser {
 
     @Override
     public void writeTo(File targetFile) throws IOException {
-        writeTo(Files.newOutputStream(targetFile.toPath()));
+        try (OutputStream outputStream = Files.newOutputStream(targetFile.toPath())) {
+            writeTo(outputStream);
+        }
     }
 
     @Override
