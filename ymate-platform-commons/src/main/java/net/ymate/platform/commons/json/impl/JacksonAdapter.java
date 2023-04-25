@@ -47,10 +47,17 @@ public class JacksonAdapter implements IJsonAdapter {
 
     private static final Log LOG = LogFactory.getLog(JacksonAdapter.class);
 
-    public static final ObjectMapper OBJECT_MAPPER = createObjectMapper();
+    public static final JsonMapper OBJECT_MAPPER = createObjectMapper();
 
-    private static ObjectMapper createObjectMapper() {
-        ObjectMapper objectMapper = JsonMapper.builder()
+    private static JsonMapper createObjectMapper() {
+        SimpleModule module = new SimpleModule()
+                .addSerializer(JsonWrapper.class, new JsonWrapperJacksonSerializer.Serializer())
+                .addSerializer(IJsonObjectWrapper.class, new JsonObjectJacksonSerializer.Serializer())
+                .addSerializer(IJsonArrayWrapper.class, new JsonArrayJacksonSerializer.Serializer())
+                .addDeserializer(JsonWrapper.class, new JsonWrapperJacksonSerializer.Deserializer())
+                .addDeserializer(IJsonObjectWrapper.class, new JsonObjectJacksonSerializer.Deserializer())
+                .addDeserializer(IJsonArrayWrapper.class, new JsonArrayJacksonSerializer.Deserializer());
+        return JsonMapper.builder()
                 .enable(JsonReadFeature.ALLOW_UNESCAPED_CONTROL_CHARS,
                         JsonReadFeature.ALLOW_BACKSLASH_ESCAPING_ANY_CHARACTER,
                         JsonReadFeature.ALLOW_UNQUOTED_FIELD_NAMES,
@@ -59,15 +66,8 @@ public class JacksonAdapter implements IJsonAdapter {
                 .enable(DeserializationFeature.READ_ENUMS_USING_TO_STRING)
                 .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
                 .disable(SerializationFeature.FAIL_ON_EMPTY_BEANS)
+                .addModule(module)
                 .build();
-        SimpleModule module = new SimpleModule()
-                .addSerializer(JsonWrapper.class, new JsonWrapperJacksonSerializer.Serializer())
-                .addSerializer(IJsonObjectWrapper.class, new JsonObjectJacksonSerializer.Serializer())
-                .addSerializer(IJsonArrayWrapper.class, new JsonArrayJacksonSerializer.Serializer());
-        module.addDeserializer(JsonWrapper.class, new JsonWrapperJacksonSerializer.Deserializer())
-                .addDeserializer(IJsonObjectWrapper.class, new JsonObjectJacksonSerializer.Deserializer())
-                .addDeserializer(IJsonArrayWrapper.class, new JsonArrayJacksonSerializer.Deserializer());
-        return objectMapper.registerModule(module);
     }
 
     public static JsonNode toJsonNode(Object value) {
@@ -167,10 +167,7 @@ public class JacksonAdapter implements IJsonAdapter {
     public JsonWrapper toJson(Object object, boolean snakeCase) {
         JsonWrapper jsonWrapper = null;
         if (object != null) {
-            ObjectMapper objectMapper = createObjectMapper();
-            if (snakeCase) {
-                objectMapper.setPropertyNamingStrategy(new PropertyNamingStrategies.SnakeCaseStrategy());
-            }
+            ObjectMapper objectMapper = snakeCase ? OBJECT_MAPPER.copy().setPropertyNamingStrategy(new PropertyNamingStrategies.SnakeCaseStrategy()) : OBJECT_MAPPER;
             jsonWrapper = parseJsonJsonWrapper(objectMapper.valueToTree(JsonWrapper.unwrap(object)));
         }
         return jsonWrapper;
@@ -193,7 +190,7 @@ public class JacksonAdapter implements IJsonAdapter {
 
     @Override
     public String toJsonString(Object object, boolean format, boolean keepNullValue, boolean snakeCase) {
-        ObjectMapper objectMapper = createObjectMapper();
+        ObjectMapper objectMapper = OBJECT_MAPPER.copy();
         if (!keepNullValue) {
             objectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
         }
@@ -231,12 +228,8 @@ public class JacksonAdapter implements IJsonAdapter {
 
     @Override
     public <T> T deserialize(String jsonStr, boolean snakeCase, Class<T> clazz) throws Exception {
-        if (snakeCase) {
-            return createObjectMapper()
-                    .setPropertyNamingStrategy(new PropertyNamingStrategies.SnakeCaseStrategy())
-                    .readValue(jsonStr, clazz);
-        }
-        return OBJECT_MAPPER.readValue(jsonStr, clazz);
+        ObjectMapper objectMapper = snakeCase ? OBJECT_MAPPER.copy().setPropertyNamingStrategy(new PropertyNamingStrategies.SnakeCaseStrategy()) : OBJECT_MAPPER;
+        return objectMapper.readValue(jsonStr, clazz);
     }
 
     @Override
