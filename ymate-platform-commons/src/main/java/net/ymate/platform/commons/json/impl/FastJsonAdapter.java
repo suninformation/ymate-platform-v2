@@ -24,10 +24,7 @@ import com.alibaba.fastjson.parser.ParserConfig;
 import com.alibaba.fastjson.serializer.JSONSerializer;
 import com.alibaba.fastjson.serializer.SerializeConfig;
 import com.alibaba.fastjson.serializer.SerializerFeature;
-import net.ymate.platform.commons.json.IJsonAdapter;
-import net.ymate.platform.commons.json.IJsonArrayWrapper;
-import net.ymate.platform.commons.json.IJsonObjectWrapper;
-import net.ymate.platform.commons.json.JsonWrapper;
+import net.ymate.platform.commons.json.*;
 import net.ymate.platform.commons.json.support.JsonArrayFastJsonSerializer;
 import net.ymate.platform.commons.json.support.JsonObjectFastJsonSerializer;
 import net.ymate.platform.commons.json.support.JsonWrapperFastJsonSerializer;
@@ -235,5 +232,25 @@ public class FastJsonAdapter implements IJsonAdapter {
     @Override
     public <T> T deserialize(byte[] bytes, boolean snakeCase, Class<T> clazz) throws Exception {
         return deserialize(new String(bytes, StandardCharsets.UTF_8), snakeCase, clazz);
+    }
+
+    @Override
+    public <T> T deserialize(String jsonStr, TypeReferenceWrapper<T> typeRef) throws Exception {
+        return deserialize(jsonStr, false, typeRef);
+    }
+
+    @Override
+    public <T> T deserialize(String jsonStr, boolean snakeCase, TypeReferenceWrapper<T> typeRef) throws Exception {
+        return JSON.parseObject(jsonStr, typeRef.getType(), snakeCase ? SNAKE_CASE_PARSE_CONFIG : ParserConfig.getGlobalInstance());
+    }
+
+    @Override
+    public <T> T deserialize(byte[] bytes, TypeReferenceWrapper<T> typeRef) throws Exception {
+        return deserialize(new String(bytes, StandardCharsets.UTF_8), false, typeRef);
+    }
+
+    @Override
+    public <T> T deserialize(byte[] bytes, boolean snakeCase, TypeReferenceWrapper<T> typeRef) throws Exception {
+        return deserialize(new String(bytes, StandardCharsets.UTF_8), snakeCase, typeRef);
     }
 }

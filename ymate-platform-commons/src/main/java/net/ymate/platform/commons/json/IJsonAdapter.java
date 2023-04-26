@@ -67,4 +67,14 @@ public interface IJsonAdapter {
     <T> T deserialize(byte[] bytes, Class<T> clazz) throws Exception;
 
     <T> T deserialize(byte[] bytes, boolean snakeCase, Class<T> clazz) throws Exception;
+
+    //
+
+    <T> T deserialize(String jsonStr, TypeReferenceWrapper<T> typeRef) throws Exception;
+
+    <T> T deserialize(String jsonStr, boolean snakeCase, TypeReferenceWrapper<T> typeRef) throws Exception;
+
+    <T> T deserialize(byte[] bytes, TypeReferenceWrapper<T> typeRef) throws Exception;
+
+    <T> T deserialize(byte[] bytes, boolean snakeCase, TypeReferenceWrapper<T> typeRef) throws Exception;
 }

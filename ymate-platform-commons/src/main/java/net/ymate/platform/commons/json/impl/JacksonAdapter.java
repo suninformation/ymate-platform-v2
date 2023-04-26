@@ -23,10 +23,7 @@ import com.fasterxml.jackson.databind.json.JsonMapper;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import net.ymate.platform.commons.json.IJsonAdapter;
-import net.ymate.platform.commons.json.IJsonArrayWrapper;
-import net.ymate.platform.commons.json.IJsonObjectWrapper;
-import net.ymate.platform.commons.json.JsonWrapper;
+import net.ymate.platform.commons.json.*;
 import net.ymate.platform.commons.json.support.JsonArrayJacksonSerializer;
 import net.ymate.platform.commons.json.support.JsonObjectJacksonSerializer;
 import net.ymate.platform.commons.json.support.JsonWrapperJacksonSerializer;
@@ -240,5 +237,26 @@ public class JacksonAdapter implements IJsonAdapter {
     @Override
     public <T> T deserialize(byte[] bytes, boolean snakeCase, Class<T> clazz) throws Exception {
         return deserialize(new String(bytes, StandardCharsets.UTF_8), snakeCase, clazz);
+    }
+
+    @Override
+    public <T> T deserialize(String jsonStr, TypeReferenceWrapper<T> typeRef) throws Exception {
+        return deserialize(jsonStr, false, typeRef);
+    }
+
+    @Override
+    public <T> T deserialize(String jsonStr, boolean snakeCase, TypeReferenceWrapper<T> typeRef) throws Exception {
+        ObjectMapper objectMapper = snakeCase ? OBJECT_MAPPER.copy().setPropertyNamingStrategy(new PropertyNamingStrategies.SnakeCaseStrategy()) : OBJECT_MAPPER;
+        return objectMapper.readValue(jsonStr, objectMapper.constructType(typeRef.getType()));
+    }
+
+    @Override
+    public <T> T deserialize(byte[] bytes, TypeReferenceWrapper<T> typeRef) throws Exception {
+        return deserialize(new String(bytes, StandardCharsets.UTF_8), false, typeRef);
+    }
+
+    @Override
+    public <T> T deserialize(byte[] bytes, boolean snakeCase, TypeReferenceWrapper<T> typeRef) throws Exception {
+        return deserialize(new String(bytes, StandardCharsets.UTF_8), snakeCase, typeRef);
     }
 }

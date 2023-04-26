@@ -23,6 +23,9 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * @author 刘镇 (suninformation@163.com) on 2022/9/2 16:03
  * @since 2.1.2
@@ -145,13 +148,23 @@ public class JsonWrapperTest {
         user.setAge(20);
         user.setRealName("有理想的鱼");
         //
-        byte[] serializeArr = jsonAdapter.serialize(user, true);
-        User newUser = jsonAdapter.deserialize(serializeArr, User.class);
-        LOG.info("newUser: " + newUser);
+        User otherUser = new User();
+        otherUser.setName("YMP");
+        otherUser.setAge(16);
+        otherUser.setRealName("YMP");
+        //
+        List<User> users = new ArrayList<>();
+        users.add(user);
+        users.add(otherUser);
+        //
+        byte[] serializeArr = jsonAdapter.serialize(users, true);
+        List<User> newUsers = jsonAdapter.deserialize(serializeArr, new TypeReferenceWrapper<List<User>>() {
+        });
+        LOG.info("newUsers: " + newUsers);
         // 采用 snakeCase 模式输出和反序列化操作
         String jsonStr = jsonAdapter.toJsonString(user, false, false, true);
-        User newUser2 = jsonAdapter.deserialize(jsonStr, true, User.class);
-        LOG.info("newUser2: " + newUser2);
+        User newUser = jsonAdapter.deserialize(jsonStr, true, User.class);
+        LOG.info("newUser: " + newUser);
     }
 
 

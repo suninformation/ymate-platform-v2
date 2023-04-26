@@ -15,6 +15,7 @@
  */
 package net.ymate.platform.commons.serialize;
 
+import net.ymate.platform.commons.json.TypeReferenceWrapper;
 import net.ymate.platform.commons.json.impl.GsonAdapter;
 import net.ymate.platform.commons.json.impl.JacksonAdapter;
 import net.ymate.platform.commons.serialize.impl.FstSerializer;
@@ -48,7 +49,8 @@ public class SerializerTest {
             beanImpl.setContentType(serializer.getContentType());
             //
             byte[] bytes = serializer.serialize(beanImpl);
-            ISerializeBean serializeBean = serializer.deserialize(bytes, SerializeBeanImpl.class);
+            ISerializeBean serializeBean = serializer.deserialize(bytes, new TypeReferenceWrapper<SerializeBeanImpl>() {
+            });
             LOG.info(serializeBean.toString());
         } catch (Exception e) {
             throw new RuntimeException(e);

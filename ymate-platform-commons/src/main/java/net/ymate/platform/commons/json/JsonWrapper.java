@@ -183,6 +183,24 @@ public final class JsonWrapper implements Serializable {
         return jsonAdapter.deserialize(bytes, snakeCase, clazz);
     }
 
+    //
+
+    public static <T> T deserialize(String jsonStr, TypeReferenceWrapper<T> typeRef) throws Exception {
+        return jsonAdapter.deserialize(jsonStr, typeRef);
+    }
+
+    public static <T> T deserialize(String jsonStr, boolean snakeCase, TypeReferenceWrapper<T> typeRef) throws Exception {
+        return jsonAdapter.deserialize(jsonStr, snakeCase, typeRef);
+    }
+
+    public static <T> T deserialize(byte[] bytes, TypeReferenceWrapper<T> typeRef) throws Exception {
+        return jsonAdapter.deserialize(bytes, typeRef);
+    }
+
+    public static <T> T deserialize(byte[] bytes, boolean snakeCase, TypeReferenceWrapper<T> typeRef) throws Exception {
+        return jsonAdapter.deserialize(bytes, snakeCase, typeRef);
+    }
+
     private final Object object;
 
     public JsonWrapper(IJsonObjectWrapper jsonObjectWrapper) {

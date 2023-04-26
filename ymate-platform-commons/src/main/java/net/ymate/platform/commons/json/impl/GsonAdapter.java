@@ -16,10 +16,7 @@
 package net.ymate.platform.commons.json.impl;
 
 import com.google.gson.*;
-import net.ymate.platform.commons.json.IJsonAdapter;
-import net.ymate.platform.commons.json.IJsonArrayWrapper;
-import net.ymate.platform.commons.json.IJsonObjectWrapper;
-import net.ymate.platform.commons.json.JsonWrapper;
+import net.ymate.platform.commons.json.*;
 import net.ymate.platform.commons.json.support.JsonArrayGsonSerializer;
 import net.ymate.platform.commons.json.support.JsonObjectGsonSerializer;
 import net.ymate.platform.commons.json.support.JsonWrapperGsonSerializer;
@@ -186,5 +183,30 @@ public class GsonAdapter implements IJsonAdapter {
     @Override
     public <T> T deserialize(byte[] bytes, boolean snakeCase, Class<T> clazz) throws Exception {
         return deserialize(new String(bytes, StandardCharsets.UTF_8), snakeCase, clazz);
+    }
+
+    @Override
+    public <T> T deserialize(String jsonStr, TypeReferenceWrapper<T> typeRef) throws Exception {
+        return deserialize(jsonStr, false, typeRef);
+    }
+
+    @Override
+    public <T> T deserialize(String jsonStr, boolean snakeCase, TypeReferenceWrapper<T> typeRef) throws Exception {
+        if (snakeCase) {
+            return GSON.newBuilder()
+                    .setFieldNamingPolicy(FieldNamingPolicy.LOWER_CASE_WITH_UNDERSCORES)
+                    .create().fromJson(jsonStr, typeRef.getType());
+        }
+        return GSON.fromJson(jsonStr, typeRef.getType());
+    }
+
+    @Override
+    public <T> T deserialize(byte[] bytes, TypeReferenceWrapper<T> typeRef) throws Exception {
+        return deserialize(new String(bytes, StandardCharsets.UTF_8), false, typeRef);
+    }
+
+    @Override
+    public <T> T deserialize(byte[] bytes, boolean snakeCase, TypeReferenceWrapper<T> typeRef) throws Exception {
+        return deserialize(new String(bytes, StandardCharsets.UTF_8), snakeCase, typeRef);
     }
 }

@@ -17,6 +17,7 @@ package net.ymate.platform.commons.serialize.impl;
 
 import net.ymate.platform.commons.json.IJsonAdapter;
 import net.ymate.platform.commons.json.JsonWrapper;
+import net.ymate.platform.commons.json.TypeReferenceWrapper;
 import net.ymate.platform.commons.serialize.ISerializer;
 
 /**
@@ -49,5 +50,10 @@ public class JSONSerializer implements ISerializer {
     @Override
     public <T> T deserialize(byte[] bytes, Class<T> clazz) throws Exception {
         return jsonAdapter.deserialize(bytes, clazz);
+    }
+
+    @Override
+    public <T> T deserialize(byte[] bytes, TypeReferenceWrapper<T> typeRef) throws Exception {
+        return jsonAdapter.deserialize(bytes, typeRef);
     }
 }

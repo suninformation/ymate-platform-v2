@@ -15,6 +15,8 @@
  */
 package net.ymate.platform.commons.serialize;
 
+import net.ymate.platform.commons.json.TypeReferenceWrapper;
+
 /**
  * @author 刘镇 (suninformation@163.com) on 2017/10/3 下午3:52
  */
@@ -46,4 +48,17 @@ public interface ISerializer {
      * @throws Exception 可能产生的任何异常
      */
     <T> T deserialize(byte[] bytes, Class<T> clazz) throws Exception;
+
+    /**
+     * @param bytes   待反序列化字节数组
+     * @param typeRef 类型引用包装器对象
+     * @param <T>     类泛型
+     * @return 返回反序列化后的类对象
+     * @throws Exception 可能产生的任何异常
+     * @since 2.1.2
+     */
+    @SuppressWarnings("unchecked")
+    default <T> T deserialize(byte[] bytes, TypeReferenceWrapper<T> typeRef) throws Exception {
+        return deserialize(bytes, (Class<T>) typeRef.getType());
+    }
 }

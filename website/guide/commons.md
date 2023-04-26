@@ -754,9 +754,18 @@ public class User {
         user.setAge(20);
         user.setRealName("有理想的鱼");
         //
-        byte[] serializeArr = JsonWrapper.serialize(user, true);
-        User newUser = JsonWrapper.deserialize(serializeArr, User.class);
-        System.out.println(newUser);
+        User otherUser = new User();
+        otherUser.setName("YMPer");
+        otherUser.setAge(16);
+        otherUser.setRealName("YMP");
+        //
+        List<User> users = new ArrayList<>();
+        users.add(user);
+        users.add(otherUser);
+        //
+        byte[] serializeArr = JsonWrapper.serialize(users, true);
+        List<User> newUsers = JsonWrapper.deserialize(serializeArr, new TypeReferenceWrapper<List<User>>() {});
+        System.out.println(newUsers);
         // 采用 snakeCase 模式输出和反序列化操作
         String jsonStr = JsonWrapper.toJsonString(user, false, false, true);
         User newUser2 = JsonWrapper.deserialize(jsonStr, true, User.class);
@@ -770,7 +779,7 @@ public class User {
 **执行结果：**
 
 ```shell
-User{name='suninformation', age=20, realName='有理想的鱼'}
+[User{name='suninformation', age=20, realName='有理想的鱼'}, User{name='YMPer', age=16, realName='YMP'}]
 User{name='suninformation', age=20, realName='有理想的鱼'}
 ```
 
@@ -909,6 +918,8 @@ public class SerialDemoBean implements Serializable {
         byte[] bytes = serializer.serialize(demoBean);
         // 执行对象反序列化操作
         SerialDemoBean deserializeBean = serializer.deserialize(bytes, SerialDemoBean.class);
+        // 或
+        deserializeBean = serializer.deserialize(bytes, new TypeReferenceWrapper<SerialDemoBean>() {});
         // 输出对象值
         System.out.println(deserializeBean.toString());
     }
