@@ -211,7 +211,7 @@ public final class Application implements IApplication {
     @Override
     public void close() throws Exception {
         if (initialized) {
-            recycleHelper.recycle();
+            recycleHelper.recycle(true);
             //
             if (!errorFlag) {
                 // 触发容器销毁事件

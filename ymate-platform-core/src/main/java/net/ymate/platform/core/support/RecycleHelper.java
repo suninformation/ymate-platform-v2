@@ -21,7 +21,6 @@ import net.ymate.platform.commons.util.ThreadUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import java.util.Iterator;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 
@@ -37,6 +36,10 @@ public final class RecycleHelper {
     private static final Log LOG = LogFactory.getLog(RecycleHelper.class);
 
     private static final RecycleHelper INSTANCE = new RecycleHelper();
+
+    static {
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> INSTANCE.recycle(true)));
+    }
 
     private final Set<IDestroyable> destroyableSet = new ConcurrentHashSet<>();
 
@@ -77,23 +80,23 @@ public final class RecycleHelper {
         return destroyableSet.size();
     }
 
-    /**
-     * 执行资源回收
-     */
-    public void recycle() {
-        Iterator<IDestroyable> iterator = destroyableSet.iterator();
-        while (iterator.hasNext()) {
-            IDestroyable destroyable = iterator.next();
+    private void doRecycling(IDestroyable destroyable) {
+        if (destroyable != null) {
             try {
                 destroyable.close();
             } catch (Exception e) {
                 if (LOG.isWarnEnabled()) {
                     LOG.warn(String.format("An exception occurred while destroying object [%s].", destroyable.getClass().getName()), RuntimeUtils.unwrapThrow(e));
                 }
-            } finally {
-                iterator.remove();
             }
         }
+    }
+
+    /**
+     * 执行资源回收
+     */
+    public void recycle() {
+        destroyableSet.forEach(this::doRecycling);
     }
 
     /**
@@ -102,12 +105,16 @@ public final class RecycleHelper {
      * @param async 是否异步
      */
     public void recycle(boolean async) {
-        if (async) {
-            ExecutorService executorService = ThreadUtils.newSingleThreadExecutor();
-            executorService.submit((Runnable) this::recycle);
-            executorService.shutdown();
-        } else {
-            recycle();
+        if (!destroyableSet.isEmpty()) {
+            if (async) {
+                ExecutorService executorService = ThreadUtils.newFixedThreadPool(destroyableSet.size());
+                for (IDestroyable destroyable : destroyableSet) {
+                    executorService.submit(() -> doRecycling(destroyable));
+                }
+                executorService.shutdown();
+            } else {
+                recycle();
+            }
         }
     }
 }
