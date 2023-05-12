@@ -35,6 +35,8 @@ public class Attr implements Serializable {
 
     private String varName;
 
+    private String constVarName;
+
     private String columnName;
 
     private boolean autoIncrement;
@@ -99,6 +101,15 @@ public class Attr implements Serializable {
 
     public Attr setVarName(String varName) {
         this.varName = varName;
+        return this;
+    }
+
+    public String getConstVarName() {
+        return constVarName;
+    }
+
+    public Attr setConstVarName(String constVarName) {
+        this.constVarName = constVarName;
         return this;
     }
 

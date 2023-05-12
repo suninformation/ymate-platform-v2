@@ -22,6 +22,9 @@ import net.ymate.platform.commons.util.ExpressionUtils;
 import net.ymate.platform.commons.util.ResourceUtils;
 import net.ymate.platform.core.beans.IBeanLoadFactory;
 import net.ymate.platform.core.beans.proxy.IProxyFactory;
+import net.ymate.platform.core.impl.DefaultApplicationConfigureFactory;
+import net.ymate.platform.core.impl.DefaultApplicationConfigureParseFactory;
+import net.ymate.platform.core.impl.DefaultApplicationCreator;
 import net.ymate.platform.core.module.IModule;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -86,9 +89,10 @@ public final class YMP {
             synchronized (YMP.class) {
                 inst = configureFactory;
                 if (inst == null) {
-                    configureFactory = inst = ClassUtils.loadClass(IApplicationConfigureFactory.class);
-                    if (configureFactory != null) {
-                        configureFactory.setMainClass(systemMainClass);
+                    configureFactory = inst = ClassUtils.loadClass(IApplicationConfigureFactory.class, DefaultApplicationConfigureFactory.class);
+                    configureFactory.setMainClass(systemMainClass);
+                    if (LOG.isInfoEnabled()) {
+                        LOG.info(String.format("Using IApplicationConfigureFactory class [%s].", configureFactory.getClass().getName()));
                     }
                 }
             }
@@ -102,7 +106,10 @@ public final class YMP {
             synchronized (YMP.class) {
                 inst = configureParseFactory;
                 if (inst == null) {
-                    configureParseFactory = inst = ClassUtils.loadClass(IApplicationConfigureParseFactory.class);
+                    configureParseFactory = inst = ClassUtils.loadClass(IApplicationConfigureParseFactory.class, DefaultApplicationConfigureParseFactory.class);
+                    if (LOG.isInfoEnabled()) {
+                        LOG.info(String.format("Using IApplicationConfigureParseFactory class [%s].", configureParseFactory.getClass().getName()));
+                    }
                 }
             }
         }
@@ -220,7 +227,10 @@ public final class YMP {
                 if (application == null) {
                     IApplicationCreator creator = ClassUtils.getExtensionLoader(IApplicationCreator.class).getExtension();
                     if (creator == null) {
-                        throw new ClassNotFoundException(String.format("Implementation class of interface [%s] not found.", IApplicationCreator.class.getName()));
+                        creator = new DefaultApplicationCreator();
+                    }
+                    if (LOG.isInfoEnabled()) {
+                        LOG.info(String.format("Using IApplicationCreator class [%s].", creator.getClass().getName()));
                     }
                     application = creator.create(systemMainClass, args, applicationInitializers);
                     if (application == null) {

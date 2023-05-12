@@ -15,11 +15,55 @@
  */
 package net.ymate.platform.commons.http;
 
+import org.apache.commons.lang3.StringUtils;
+import org.apache.http.client.methods.*;
+
 /**
  * @author 刘镇 (suninformation@163.com) on 2020/04/12 16:17
  * @since 2.1.0
  */
 public interface IHttpRequest {
+
+    /**
+     * 执行请求
+     *
+     * @param method 方法名称
+     * @return 返回响应接口对象
+     * @throws Exception 可能产生的任何异常
+     * @since 2.1.2
+     */
+    default IHttpResponse execute(String method) throws Exception {
+        IHttpResponse response;
+        switch (StringUtils.upperCase(method)) {
+            case HttpGet.METHOD_NAME:
+                response = get();
+                break;
+            case HttpPost.METHOD_NAME:
+                response = post();
+                break;
+            case HttpHead.METHOD_NAME:
+                response = head();
+                break;
+            case HttpPut.METHOD_NAME:
+                response = put();
+                break;
+            case HttpDelete.METHOD_NAME:
+                response = delete();
+                break;
+            case HttpPatch.METHOD_NAME:
+                response = patch();
+                break;
+            case HttpOptions.METHOD_NAME:
+                response = options();
+                break;
+            case HttpTrace.METHOD_NAME:
+                response = trace();
+                break;
+            default:
+                throw new IllegalArgumentException(String.format("Invalid method parameter value '%s'", method));
+        }
+        return response;
+    }
 
     /**
      * 执行GET请求

@@ -266,7 +266,10 @@ public final class Scaffold {
                 String tableName = wrapper.getAsString(0);
                 if (tableNames.isEmpty() || tableNames.contains(tableName) || tableNames.stream().anyMatch(tName -> StringUtils.contains(tName, "*") && StringUtils.startsWithIgnoreCase(tableName, StringUtils.substringBefore(tName, "*")))) {
                     if (doCheckTableNameNotInBlacklist(tableName)) {
-                        tableInfos.add(TableInfo.create(session.getConnectionHolder(), scaffold, tableName, view));
+                        TableInfo tableInfo = TableInfo.create(session.getConnectionHolder(), scaffold, tableName, view);
+                        if (tableInfo != null) {
+                            tableInfos.add(tableInfo);
+                        }
                     } else if (LOG.isInfoEnabled()) {
                         LOG.info(String.format("Datatable '%s' in the excluded_table_names list, ignored.", tableName));
                     }
@@ -285,8 +288,9 @@ public final class Scaffold {
                 .filter(key -> !tableInfo.getPrimaryKeys().contains(key))
                 .map(key -> tableInfo.getColumns().get(key)).forEachOrdered(columnInfo -> {
                     Attr attr = Attr.build(columnInfo).setReadonly(readonlyColumns.contains(columnInfo.getColumnName()));
-                    entityInfoBuilder.addField(attr)
-                            .addConstField(new ConstAttr(String.class.getSimpleName(), doNamedFilter(INamedFilter.Type.COLUMN, columnInfo.getColumnName()).toUpperCase(), columnInfo.getColumnName(), attr.getVarName()));
+                    String constVarName = doNamedFilter(INamedFilter.Type.COLUMN, columnInfo.getColumnName()).toUpperCase();
+                    entityInfoBuilder.addField(attr.setConstVarName(constVarName))
+                            .addConstField(new ConstAttr(String.class.getSimpleName(), constVarName, columnInfo.getColumnName(), attr.getVarName()));
                     if (!attr.isNullable()) {
                         entityInfoBuilder.addNonNullableField(attr);
                     }
@@ -309,20 +313,24 @@ public final class Scaffold {
             //
             tableInfo.getPrimaryKeys().stream()
                     .map(pkey -> tableInfo.getColumns().get(pkey))
-                    .forEachOrdered(columnInfo -> entityInfoBuilder.addPrimaryKey(Attr.build(columnInfo).setReadonly(readonlyColumns.contains(columnInfo.getColumnName())))
-                            .addConstField(new ConstAttr(String.class.getSimpleName(), doNamedFilter(INamedFilter.Type.COLUMN, columnInfo.getColumnName()).toUpperCase(), columnInfo.getColumnName(), columnInfo.getName())));
+                    .forEachOrdered(columnInfo -> {
+                        String constVarName = doNamedFilter(INamedFilter.Type.COLUMN, columnInfo.getColumnName()).toUpperCase();
+                        entityInfoBuilder.addPrimaryKey(Attr.build(columnInfo).setConstVarName(constVarName).setReadonly(readonlyColumns.contains(columnInfo.getColumnName())))
+                                .addConstField(new ConstAttr(String.class.getSimpleName(), constVarName, columnInfo.getColumnName(), columnInfo.getName()));
+                    });
         } else if (!tableInfo.getPrimaryKeys().isEmpty()) {
             String primaryKeyName = tableInfo.getPrimaryKeys().get(0);
             ColumnInfo primaryKeyColumn = tableInfo.getColumns().get(primaryKeyName);
-            Attr primaryKeyAttr = Attr.build(primaryKeyColumn);
+            Attr primaryKeyAttr = Attr.build(primaryKeyColumn).setConstVarName(doNamedFilter(INamedFilter.Type.COLUMN, primaryKeyColumn.getColumnName()).toUpperCase());
             entityInfoBuilder.primaryKeyType(primaryKeyColumn.getColumnType())
                     .primaryKeyName(StringUtils.uncapitalize(propertyNameToFieldNameIfNeed(primaryKeyName)))
                     .addField(primaryKeyAttr)
                     .addNonNullableField(primaryKeyAttr)
-                    .addConstField(new ConstAttr(String.class.getSimpleName(), doNamedFilter(INamedFilter.Type.COLUMN, primaryKeyColumn.getColumnName()).toUpperCase(), primaryKeyColumn.getColumnName(), primaryKeyColumn.getName()));
+                    .addConstField(new ConstAttr(String.class.getSimpleName(), primaryKeyAttr.getConstVarName(), primaryKeyColumn.getColumnName(), primaryKeyColumn.getName()));
         } else {
             ColumnInfo primaryKeyColumn = tableInfo.getColumns().get("id");
-            Attr primaryKeyAttr = primaryKeyColumn == null ? new Attr(Serializable.class.getName(), "id", "id") : Attr.build(primaryKeyColumn);
+            Attr primaryKeyAttr = (primaryKeyColumn == null ? new Attr(Serializable.class.getName(), "id", "id") : Attr.build(primaryKeyColumn))
+                    .setConstVarName("ID");
             entityInfoBuilder.primaryKeyName("id")
                     .primaryKeyType(primaryKeyColumn == null ? Serializable.class.getName() : primaryKeyColumn.getColumnType())
                     .addField(primaryKeyAttr)

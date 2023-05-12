@@ -28,16 +28,19 @@ public class ConstAttr extends Attr {
 
     public ConstAttr(String varType, String varName, String attrName) {
         super(varType, varName);
+        setConstVarName(varName);
         this.attrName = attrName;
     }
 
     public ConstAttr(String varType, String varName, String columnName, String attrName) {
         super(varType, varName, columnName);
+        setConstVarName(varName);
         this.attrName = attrName;
     }
 
     public ConstAttr(String varType, String varName, String columnName, String attrName, boolean autoIncrement, boolean signed, int precision, int scale, boolean nullable, String defaultValue, String remarks) {
         super(varType, varName, columnName, autoIncrement, signed, precision, scale, nullable, defaultValue, remarks);
+        setConstVarName(varName);
         this.attrName = attrName;
     }
 
