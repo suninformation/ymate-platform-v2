@@ -16,6 +16,7 @@
 package net.ymate.platform.webmvc.annotation;
 
 import net.ymate.platform.webmvc.base.Type;
+import org.apache.commons.lang3.StringUtils;
 
 import java.lang.annotation.*;
 
@@ -30,9 +31,9 @@ import java.lang.annotation.*;
 public @interface RequestMapping {
 
     /**
-     * @return 控制器请求路径映射
+     * @return 控制器请求路径映射，默认为空（即使用方法名称）
      */
-    String value();
+    String value() default StringUtils.EMPTY;
 
     /**
      * @return 允许的请求方式，默认为GET方式
