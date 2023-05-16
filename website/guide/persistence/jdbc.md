@@ -1174,8 +1174,12 @@ ymp.params.jdbc.package_name=
 实际上你可以什么都不用配置（请参看以上配置项说明，根据实际情况进行调整），但使用过程中需要注意以下几点：
 
 - 在多数据源模式下，需要指定具体数据源名称，否则代码生成器使用的是默认数据源；
+
 - 如果使用的 JDBC 驱动是 `mysql-connector-java-6.x` 及以上版本时，则必须配置 `db_name` 和 `db_username` 参数；
-- 实体及属性命名过滤器参数 `named_filter_class` 指定的类需要实现 `IEntityNamedFilter` 接口；
+
+- 实体及属性命名过滤器参数 `named_filter_class` 指定的类需要实现 `INamedFilter` 接口；
+
+  > 插件已提供了中文转拼音的过滤器接口实现类：`net.ymate.maven.plugins.support.ChinesePinyinNamedFilter`
 
 
 
@@ -1189,7 +1193,7 @@ ymp.params.jdbc.package_name=
 </plugin>
 ```
 
-插件中默认已经包含 `mysql-connector-java-8.0.30` 驱动，若需要其它版本或其它类型数据库驱动时，需要在插件中配置相关依赖，如：
+插件中默认已经包含 `mysql-connector-java-8.0.32` 驱动，若需要其它版本或其它类型数据库驱动时，需要在插件中配置相关依赖，如：
 
 ```xml
 <plugin>
@@ -1200,7 +1204,7 @@ ymp.params.jdbc.package_name=
         <dependency>
             <groupId>mysql</groupId>
             <artifactId>mysql-connector-java</artifactId>
-            <version>8.0.30</version>
+            <version>8.0.32</version>
         </dependency>
         <dependency>
             <groupId>com.oracle.database.jdbc</groupId>

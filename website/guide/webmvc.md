@@ -429,7 +429,7 @@ Everything depends on ability!  -- YMP :)
 
 | 配置项 | 描述                                                         |
 | ------ | ------------------------------------------------------------ |
-| value  | 控制器请求路径映射，必选参数                                 |
+| value  | 控制器请求路径映射，默认为空（即使用方法名称）               |
 | method | 允许的请求方式，默认为 `Type.HttpMethod.GET`<br/>取值范围：`GET`、`HEAD`、`POST`、`PUT`、`PATCH`、`DELETE`、`OPTIONS`、`TRACE` |
 | header | 请求头中必须存在的头名称                                     |
 | param  | 请求中必须存在的参数名称                                     |
