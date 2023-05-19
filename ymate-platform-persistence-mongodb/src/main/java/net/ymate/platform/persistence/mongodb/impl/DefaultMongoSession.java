@@ -34,9 +34,7 @@ import org.bson.conversions.Bson;
 import org.bson.types.ObjectId;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -306,9 +304,11 @@ public class DefaultMongoSession extends AbstractSession<IMongoConnectionHolder>
             if (filter.isExcluded()) {
                 updateExp.add(UpdateExp.unset(filter));
             } else {
-                for (String key : filter.fields()) {
-                    updateExp.add(UpdateExp.set(key, document.get(key)));
+                Map<String, Object> fieldMap = new HashMap<>(filter.fields().size());
+                for (String field : filter.fields()) {
+                    fieldMap.put(field, document.get(field));
                 }
+                updateExp.add(UpdateExp.set(fieldMap));
             }
         } else {
             updateExp.add(UpdateExp.set(document));
