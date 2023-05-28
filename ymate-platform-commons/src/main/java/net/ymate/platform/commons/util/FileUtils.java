@@ -174,20 +174,42 @@ public class FileUtils {
      * @throws IOException 可能产生的异常
      */
     public static File toZip(String prefix, File... files) throws IOException {
+        return toZip(prefix, false, files);
+    }
+
+    /**
+     * @param prefix          临时文件名前缀, 若为空则由系统随机生成8位长度字符串
+     * @param renameWithIndex 使用序号索引为文件重命名
+     * @param files           文件集合
+     * @return 将文件集合压缩成单个ZIP文件
+     * @throws IOException 可能产生的异常
+     * @since 2.1.2
+     */
+    public static File toZip(String prefix, boolean renameWithIndex, File... files) throws IOException {
         if (ArrayUtils.isEmpty(files)) {
             throw new NullArgumentException("files");
         }
         if (StringUtils.isBlank(prefix)) {
             prefix = UUIDUtils.randomStr(8, false);
         }
-        if (StringUtils.endsWith(prefix, "_")) {
+        if (!StringUtils.endsWith(prefix, "_")) {
             prefix = prefix.concat("_");
         }
         File zipFile = File.createTempFile(prefix, ".zip");
         zipFile.deleteOnExit();
         try (ZipOutputStream outputStream = new ZipOutputStream(Files.newOutputStream(zipFile.toPath()))) {
+            int idx = 1;
             for (File file : files) {
-                ZipEntry zipEntry = new ZipEntry(file.getName());
+                String fileName = file.getName();
+                if (renameWithIndex) {
+                    String extName = FileUtils.getExtName(file.getName());
+                    if (StringUtils.isBlank(extName)) {
+                        fileName = String.format("%s%d", prefix, idx++);
+                    } else {
+                        fileName = String.format("%s%d.%s", prefix, idx++, extName);
+                    }
+                }
+                ZipEntry zipEntry = new ZipEntry(fileName);
                 outputStream.putNextEntry(zipEntry);
                 //
                 try (InputStream inputStream = Files.newInputStream(file.toPath())) {

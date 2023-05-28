@@ -147,7 +147,7 @@ public final class ExcelFileExportHelper {
             if (files.size() == 1) {
                 return files.get(0);
             }
-            return FileUtils.toZip("export_", files.toArray(new File[0]));
+            return FileUtils.toZip("export_", true, files.toArray(new File[0]));
         }
         return null;
     }
