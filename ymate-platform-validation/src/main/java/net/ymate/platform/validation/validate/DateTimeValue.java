@@ -198,6 +198,25 @@ public class DateTimeValue implements Serializable {
     }
 
     /**
+     * @return 计算两日期之间相差天数
+     * @since 2.1.2
+     */
+    public long getMaxDays() {
+        return getMaxTimeMillis() / DateTimeUtils.DAY;
+    }
+
+    /**
+     * @return 计算两日期之间相差毫秒值
+     * @since 2.1.2
+     */
+    public long getMaxTimeMillis() {
+        if (isNullStartDate() || isNullEndDate()) {
+            return 0L;
+        }
+        return Math.abs(DateTimeHelper.bind(startDate).subtract(endDate));
+    }
+
+    /**
      * @return 以字符串输出
      * @since 2.1.2
      */
