@@ -20,6 +20,8 @@ import net.ymate.platform.webmvc.IWebMvc;
 import net.ymate.platform.webmvc.base.Type;
 import net.ymate.platform.webmvc.context.WebContext;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.OutputStream;
@@ -37,6 +39,8 @@ import java.util.Map;
 public abstract class AbstractView implements IView {
 
     private static final long serialVersionUID = 1L;
+
+    private static final Log LOG = LogFactory.getLog(AbstractView.class);
 
     protected static volatile String baseViewPath;
 
@@ -62,6 +66,16 @@ public abstract class AbstractView implements IView {
             }
         }
         return viewPath;
+    }
+
+    protected void doWriteLog(Class<? extends AbstractView> viewClass, String content) {
+        if (LOG.isDebugEnabled()) {
+            String viewName = viewClass.getSimpleName();
+            if (StringUtils.isNotBlank(contentType)) {
+                LOG.debug(String.format("%s - ContentType: %s", viewName, contentType));
+            }
+            LOG.debug(String.format("%s - Render: %s", viewName, content));
+        }
     }
 
     public AbstractView() {

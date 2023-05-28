@@ -108,12 +108,14 @@ public class VelocityView extends AbstractView {
     @Override
     protected void doRenderView() throws Exception {
         doProcessPath();
+        doWriteLog(VelocityView.class, path);
         Velocity.getTemplate(path).merge(velocityContext, WebContext.getResponse().getWriter());
     }
 
     @Override
     public void render(OutputStream output) throws Exception {
         doProcessPath();
+        doWriteLog(VelocityView.class, path);
         Velocity.getTemplate(path).merge(velocityContext, new BufferedWriter(new OutputStreamWriter(output)));
     }
 

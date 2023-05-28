@@ -22,7 +22,6 @@ import net.ymate.platform.webmvc.view.AbstractView;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 
-import javax.servlet.http.HttpServletResponse;
 import java.io.OutputStream;
 
 /**
@@ -111,12 +110,7 @@ public class JsonView extends AbstractView {
 
     @Override
     protected void doRenderView() throws Exception {
-        StringBuilder jsonStringBuilder = new StringBuilder(JsonWrapper.toJsonString(jsonObj, false, keepNullValue, snakeCase));
-        if (jsonCallback != null) {
-            jsonStringBuilder.insert(0, jsonCallback + "(").append(");");
-        }
-        HttpServletResponse httpServletResponse = WebContext.getResponse();
-        IOUtils.write(jsonStringBuilder.toString(), httpServletResponse.getOutputStream(), httpServletResponse.getCharacterEncoding());
+        render(WebContext.getResponse().getOutputStream());
     }
 
     @Override
@@ -125,6 +119,8 @@ public class JsonView extends AbstractView {
         if (jsonCallback != null) {
             jsonStringBuilder.insert(0, jsonCallback + "(").append(");");
         }
-        IOUtils.write(jsonStringBuilder, output, WebContext.getResponse().getCharacterEncoding());
+        String jsonContent = jsonStringBuilder.toString();
+        doWriteLog(JsonView.class, jsonContent);
+        IOUtils.write(jsonContent, output, WebContext.getResponse().getCharacterEncoding());
     }
 }

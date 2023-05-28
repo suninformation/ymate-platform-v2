@@ -20,7 +20,6 @@ import net.ymate.platform.webmvc.context.WebContext;
 import net.ymate.platform.webmvc.view.AbstractView;
 import org.apache.commons.io.IOUtils;
 
-import javax.servlet.http.HttpServletResponse;
 import java.io.OutputStream;
 
 /**
@@ -61,8 +60,7 @@ public class TextView extends AbstractView {
 
     @Override
     protected void doRenderView() throws Exception {
-        HttpServletResponse httpServletResponse = WebContext.getResponse();
-        IOUtils.write(content, httpServletResponse.getOutputStream(), httpServletResponse.getCharacterEncoding());
+        render(WebContext.getResponse().getOutputStream());
     }
 
     @Override

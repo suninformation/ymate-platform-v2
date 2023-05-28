@@ -101,12 +101,14 @@ public class FreemarkerView extends AbstractView {
     @Override
     protected void doRenderView() throws Exception {
         doProcessPath();
+        doWriteLog(FreemarkerView.class, path);
         freemarkerConfig.getTemplate(path, WebContext.getContext().getLocale()).process(attributes, WebContext.getResponse().getWriter());
     }
 
     @Override
     public void render(OutputStream output) throws Exception {
         doProcessPath();
+        doWriteLog(FreemarkerView.class, path);
         freemarkerConfig.getTemplate(path, WebContext.getContext().getLocale()).process(attributes, new BufferedWriter(new OutputStreamWriter(output)));
     }
 }

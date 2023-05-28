@@ -53,6 +53,8 @@ public class RedirectView extends AbstractView {
                 path = WebContext.getRequest().getContextPath() + Type.Const.PATH_SEPARATOR_CHAR + path;
             }
         }
-        WebContext.getResponse().sendRedirect(buildUrl(path));
+        String finalPath = buildUrl(path);
+        doWriteLog(RedirectView.class, finalPath);
+        WebContext.getResponse().sendRedirect(finalPath);
     }
 }

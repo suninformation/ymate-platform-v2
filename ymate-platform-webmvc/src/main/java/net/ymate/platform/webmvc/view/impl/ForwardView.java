@@ -52,8 +52,10 @@ public class ForwardView extends AbstractView {
         if (path.length() > 0 && path.charAt(0) != Type.Const.PATH_SEPARATOR_CHAR) {
             path = Type.Const.WEB_INF + path;
         }
+        String finalPath = buildUrl(path);
+        doWriteLog(ForwardView.class, finalPath);
         // 执行 Forward
         HttpServletRequest httpServletRequest = WebContext.getRequest();
-        httpServletRequest.getRequestDispatcher(buildUrl(path)).forward(httpServletRequest, WebContext.getResponse());
+        httpServletRequest.getRequestDispatcher(finalPath).forward(httpServletRequest, WebContext.getResponse());
     }
 }

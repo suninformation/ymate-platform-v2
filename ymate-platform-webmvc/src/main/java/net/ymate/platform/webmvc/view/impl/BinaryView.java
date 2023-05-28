@@ -162,7 +162,7 @@ public class BinaryView extends AbstractView {
         addHeader(Type.HttpHead.ACCEPT_RANGES, "bytes");
         // Content-Length: [文件的总大小] - [客户端请求的下载的文件块的开始字节]
         long totalLength = range.getValue() - range.getKey();
-        addHeader(Type.HttpHead.CONTENT_LENGTH, totalLength + "");
+        addHeader(Type.HttpHead.CONTENT_LENGTH, String.valueOf(totalLength));
         // Content-Range: bytes [文件块的开始字节]-[文件的总大小 - 1]/[文件的总大小]
         addHeader(Type.HttpHead.CONTENT_RANGE, String.format("bytes %d-%d/%d", range.getKey(), range.getValue() - 1, length));
         // response.setHeader("Connection", "Close"); //此语句将不能用IE直接下载

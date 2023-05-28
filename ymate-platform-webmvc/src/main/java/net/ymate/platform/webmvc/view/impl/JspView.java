@@ -81,6 +81,7 @@ public class JspView extends AbstractView {
     @Override
     protected void doRenderView() throws Exception {
         doProcessPath();
+        doWriteLog(JspView.class, path);
         HttpServletRequest httpServletRequest = WebContext.getRequest();
         httpServletRequest.getRequestDispatcher(path).forward(httpServletRequest, WebContext.getResponse());
     }
@@ -88,6 +89,7 @@ public class JspView extends AbstractView {
     @Override
     public void render(final OutputStream output) throws Exception {
         doProcessPath();
+        doWriteLog(JspView.class, path);
         WebUtils.includeJsp(WebContext.getRequest(), WebContext.getResponse(), path, WebContext.getResponse().getCharacterEncoding(), output);
     }
 }
