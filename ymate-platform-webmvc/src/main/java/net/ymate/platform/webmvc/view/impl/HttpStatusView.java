@@ -21,6 +21,8 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.servlet.http.HttpServletResponse;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * HTTP返回码视图
@@ -123,6 +125,17 @@ public class HttpStatusView extends AbstractView {
             } else {
                 httpServletResponse.setStatus(status);
             }
+        }
+        if (LOG.isDebugEnabled()) {
+            List<String> strings = new ArrayList<>();
+            strings.add(String.format("Status: %s", status));
+            if (StringUtils.isNotBlank(msg)) {
+                strings.add(String.format("Msg: %s", msg));
+            }
+            if (StringUtils.isNotBlank(body)) {
+                strings.add(String.format("Body: %s", body));
+            }
+            doWriteLog(HttpStatusView.class, strings.toString());
         }
     }
 }

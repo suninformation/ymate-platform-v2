@@ -40,7 +40,7 @@ public abstract class AbstractView implements IView {
 
     private static final long serialVersionUID = 1L;
 
-    private static final Log LOG = LogFactory.getLog(AbstractView.class);
+    protected static final Log LOG = LogFactory.getLog(AbstractView.class);
 
     protected static volatile String baseViewPath;
 
@@ -71,10 +71,11 @@ public abstract class AbstractView implements IView {
     protected void doWriteLog(Class<? extends AbstractView> viewClass, String content) {
         if (LOG.isDebugEnabled()) {
             String viewName = viewClass.getSimpleName();
+            StringBuilder stringBuilder = new StringBuilder(String.format("%s - Render: %s", viewName, content));
             if (StringUtils.isNotBlank(contentType)) {
-                LOG.debug(String.format("%s - ContentType: %s", viewName, contentType));
+                stringBuilder.append(" - ContentType: ").append(contentType);
             }
-            LOG.debug(String.format("%s - Render: %s", viewName, content));
+            LOG.debug(stringBuilder);
         }
     }
 
