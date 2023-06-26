@@ -88,6 +88,15 @@ WebMVC 模块在 YMP 框架中是除了 JDBC 持久化模块以外的另一个�
     <filter>
         <filter-name>DispatchFilter</filter-name>
         <filter-class>net.ymate.platform.webmvc.support.DispatchFilter</filter-class>
+        <!--
+        参数项 "requestIgnoreUrls" 用于配置需要排除的请求地址前缀，多个前缀之间用 "|" 分隔。
+        -->
+        <!--
+        <init-param>
+            <param-name>requestIgnoreUrls</param-name>
+            <param-value>/service1|/serviceN</param-value>
+        </init-param>
+        -->
     </filter>
     <filter-mapping>
         <filter-name>DispatchFilter</filter-name>

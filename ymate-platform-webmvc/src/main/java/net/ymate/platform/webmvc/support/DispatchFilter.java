@@ -20,12 +20,15 @@ import net.ymate.platform.webmvc.IWebMvc;
 import net.ymate.platform.webmvc.IWebMvcConfig;
 import net.ymate.platform.webmvc.impl.DefaultRequestContext;
 import net.ymate.platform.webmvc.util.WebUtils;
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.servlet.*;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Set;
 import java.util.regex.Pattern;
 
@@ -44,6 +47,8 @@ public class DispatchFilter implements Filter {
 
     private String requestPrefix;
 
+    private final Set<String> requestIgnoreUrls = new HashSet<>();
+
     @Override
     public void init(FilterConfig filterConfig) {
         this.filterConfig = filterConfig;
@@ -58,6 +63,11 @@ public class DispatchFilter implements Filter {
         ignorePattern = Pattern.compile(ignoreRegex, Pattern.CASE_INSENSITIVE);
         dispatcher = new Dispatcher(config.getDefaultCharsetEncoding(), config.getDefaultContentType(), config.getRequestMethodParam());
         requestPrefix = config.getRequestPrefix();
+        //
+        String[] requestIgnoreUrlArr = StringUtils.split(StringUtils.defaultIfBlank(filterConfig.getInitParameter("requestIgnoreUrls"), filterConfig.getInitParameter("request-ignore-urls")), "|");
+        if (ArrayUtils.isNotEmpty(requestIgnoreUrlArr)) {
+            Arrays.stream(requestIgnoreUrlArr).filter(StringUtils::isNotBlank).forEach(requestIgnoreUrls::add);
+        }
     }
 
     @Override
@@ -66,7 +76,9 @@ public class DispatchFilter implements Filter {
             chain.doFilter(request, response);
         } else {
             IRequestContext requestContext = new DefaultRequestContext((HttpServletRequest) request, requestPrefix);
-            if (!ignorePattern.matcher(requestContext.getOriginalUrl()).find()) {
+            if (!requestIgnoreUrls.isEmpty() && requestIgnoreUrls.stream().anyMatch(s -> StringUtils.startsWith(requestContext.getOriginalUrl(), s))) {
+                chain.doFilter(request, response);
+            } else if (!ignorePattern.matcher(requestContext.getOriginalUrl()).find()) {
                 dispatcher.dispatch(requestContext, filterConfig.getServletContext(), (HttpServletRequest) request, (HttpServletResponse) response);
             } else {
                 chain.doFilter(request, response);

@@ -2402,7 +2402,7 @@ System.out.println(output);
 // 创建表格构建工具实例，并指定表格列数
 ConsoleTableBuilder tableBuilder = ConsoleTableBuilder.create(3)
     // 开启转义
-    ..escape()
+    .escape()
     // 添加一行
     .addRow()
     // 添加当前行各列
