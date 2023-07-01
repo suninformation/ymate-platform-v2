@@ -74,7 +74,7 @@ ymp.params.plugin.xxx=disabled
 | packageNames         | 插件自动扫描的包名前缀集合（若未设置将默认包含主程序类所在包），可选参数 |
 | excludedPackageNames | 插件自动扫描时排除包名称集合，可选参数                       |
 | excludedFileNames    | 插件自动扫描时排除包文件名称集合，可选参数                   |
-| includeClasspath     | 是否扫描当前 `CLASSPATH` 内的相关插件，默认为 `false         |
+| includeClasspath     | 是否扫描当前 `CLASSPATH` 内的相关插件，默认为 `false`         |
 | automatic            | 是否允许插件自动启动，默认为 `true`                          |
 
 

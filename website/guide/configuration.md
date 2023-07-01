@@ -270,7 +270,7 @@ properties.default.products=iphone|ipad|imac|itouch
 
 #--------------------------------------------------------------------------
 # MAP<K, V>数据类型的表示方法:
-# 如:产品规格(product_spec)的K分别是color|weight|size|age, 对应的V分别是热red|120g|small|2015
+# 如:产品规格(product_spec)的K分别是color|weight|size|age, 对应的V分别是red|120g|small|2015
 #--------------------------------------------------------------------------
 properties.default.product_spec.color=red
 properties.default.product_spec.weight=120g

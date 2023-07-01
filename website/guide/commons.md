@@ -2586,15 +2586,15 @@ public class Demo {
 数据导出 Excel 文件助手类，支持导出 CSV 和 Excel 格式文件，其中 Excel 格式文件的导出分别采用 POI 和 JXLS 模板两种方式，在使用时需在工程中引入对应的依赖包，如下所示：
 
 ```xml
-<dependency>
+ <dependency>
     <groupId>org.apache.poi</groupId>
     <artifactId>poi-ooxml</artifactId>
     <version>5.2.2</version>
 </dependency>
 <dependency>
     <groupId>org.jxls</groupId>
-    <artifactId>jxls</artifactId>
-    <version>2.11.0</version>
+    <artifactId>jxls-poi</artifactId>
+    <version>2.12.0</version>
 </dependency>
 ```
 
@@ -2698,6 +2698,10 @@ public class Demo {
 
 :::tip 注意：
 
+- 模板文件的扩展名必须是 `.xls` 或 `.xlsx` 。
+- 模板文件路径不包含扩展名将自动补全并优化查找 `.xls` 文件。
+- 模板文件路径支持使用 `${root}`、`${user.dir}`、`${user.home}` 等环境变量。
+
 此方式不支持上例中的 @ExportColumn 注解，须提前定义模板文件，关于更多 JXLS 的使用方法，请访问：
 
 [GitHub - jxlsteam/jxls: Java library for creating Excel reports using Excel templates](https://github.com/jxlsteam/jxls)
@@ -2708,8 +2712,6 @@ public class Demo {
 
 ```java
 public static void main(String[] args) throws Exception {
-    // 注意：模板文件路径不能包含扩展名！
-    // （模板文件的扩展名必须是.xls且必须放置在类路径下）
     // 传递数据方式一：
     Map<String, Object> data = new HashMap<>();
     // ......
