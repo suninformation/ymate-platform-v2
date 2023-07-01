@@ -17,9 +17,7 @@ package net.ymate.platform.commons;
 
 import net.ymate.platform.commons.annotation.ExportColumn;
 import net.ymate.platform.commons.lang.BlurObject;
-import net.ymate.platform.commons.util.ClassUtils;
-import net.ymate.platform.commons.util.DateTimeUtils;
-import net.ymate.platform.commons.util.FileUtils;
+import net.ymate.platform.commons.util.*;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.NullArgumentException;
 import org.apache.commons.lang3.StringUtils;
@@ -39,6 +37,10 @@ import java.util.*;
  * @author 刘镇 (suninformation@163.com) on 2017/12/25 下午2:42
  */
 public final class ExcelFileExportHelper {
+
+    private static final String EXCEL_TYPE_XLS = "xls";
+
+    private static final String EXCEL_TYPE_XLSX = "xlsx";
 
     private Map<String, Object> data;
 
@@ -254,7 +256,7 @@ public final class ExcelFileExportHelper {
                     }
                 }
             }
-            File tempFile = File.createTempFile("export_", "_" + index + ".xlsx");
+            File tempFile = File.createTempFile("export_", String.format("_%d.%s", index, EXCEL_TYPE_XLSX));
             tempFile.deleteOnExit();
             try (OutputStream outputStream = Files.newOutputStream(tempFile.toPath())) {
                 workbook.write(outputStream);
@@ -343,15 +345,43 @@ public final class ExcelFileExportHelper {
         return tempFile;
     }
 
-    private File doExport(String tmplFile, int index, Map<String, Object> data) throws Exception {
-        try (InputStream resourceAsStream = ExcelFileExportHelper.class.getResourceAsStream(tmplFile + ".xls")) {
-            File tempFile = File.createTempFile("export_", "_" + index + ".xls");
-            tempFile.deleteOnExit();
-            try (OutputStream fileOutputStream = Files.newOutputStream(tempFile.toPath())) {
-                JxlsHelper.getInstance().processTemplate(resourceAsStream, fileOutputStream, new Context(data));
+    private File doExport(String tmplFile, int index, Map<String, Object> data) throws IOException {
+        String fileType = FileUtils.getExtName(tmplFile).toLowerCase();
+        if (StringUtils.isBlank(fileType)) {
+            List<String> fileTypes = Arrays.asList(EXCEL_TYPE_XLS, EXCEL_TYPE_XLSX);
+            for (String type : fileTypes) {
+                try (InputStream templateStream = doGetTemplateFileInputStream(String.format("%s.%s", tmplFile, type))) {
+                    if (templateStream != null) {
+                        return doExport(templateStream, type, index, data);
+                    }
+                }
             }
-            return tempFile;
+        } else if (StringUtils.endsWithAny(fileType, EXCEL_TYPE_XLS, EXCEL_TYPE_XLSX)) {
+            try (InputStream templateStream = doGetTemplateFileInputStream(tmplFile)) {
+                return doExport(templateStream, fileType, index, data);
+            }
         }
+        return null;
+    }
+
+    private File doExport(InputStream templateStream, String fileExtName, int index, Map<String, Object> data) throws IOException {
+        File tempFile = File.createTempFile("export_", String.format("_%d.%s", index, fileExtName));
+        tempFile.deleteOnExit();
+        try (OutputStream fileOutputStream = Files.newOutputStream(tempFile.toPath())) {
+            JxlsHelper.getInstance().processTemplate(templateStream, fileOutputStream, new Context(data));
+        }
+        return tempFile;
+    }
+
+    private InputStream doGetTemplateFileInputStream(String tmplFilePath) throws IOException {
+        InputStream templateStream;
+        File tmplFile = new File(RuntimeUtils.replaceEnvVariable(tmplFilePath));
+        if (tmplFile.isAbsolute() && tmplFile.exists() && tmplFile.isFile()) {
+            templateStream = Files.newInputStream(tmplFile.toPath());
+        } else {
+            templateStream = ResourceUtils.getResourceAsStream(tmplFilePath, ExcelFileExportHelper.class);
+        }
+        return templateStream;
     }
 
     /**

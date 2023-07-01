@@ -112,7 +112,7 @@
         </dependency>
         <dependency>
             <groupId>org.jxls</groupId>
-            <artifactId>jxls</artifactId>
+            <artifactId>jxls-poi</artifactId>
         </dependency>
         <dependency>
             <groupId>com.caucho</groupId>
