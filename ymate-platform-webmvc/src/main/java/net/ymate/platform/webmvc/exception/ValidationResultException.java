@@ -18,6 +18,7 @@ package net.ymate.platform.webmvc.exception;
 import net.ymate.platform.validation.ValidateResult;
 import net.ymate.platform.webmvc.view.IView;
 
+import java.util.Collections;
 import java.util.Map;
 
 /**
@@ -44,6 +45,10 @@ public class ValidationResultException extends RuntimeException {
 
     public ValidationResultException(Map<String, ValidateResult> validateResults) {
         this.validateResults = validateResults;
+    }
+
+    public ValidationResultException(ValidateResult validateResult) {
+        this.validateResults = Collections.singletonMap(validateResult.getName(), validateResult);
     }
 
     public ValidationResultException(String message, int httpStatus) {

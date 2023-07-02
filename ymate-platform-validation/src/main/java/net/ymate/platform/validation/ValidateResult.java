@@ -96,6 +96,12 @@ public final class ValidateResult implements Serializable {
         this.msg = msg;
     }
 
+    public ValidateResult(String name, String msg, boolean matched) {
+        this.name = name;
+        this.msg = msg;
+        this.matched = matched;
+    }
+
     public boolean isMatched() {
         return matched;
     }
