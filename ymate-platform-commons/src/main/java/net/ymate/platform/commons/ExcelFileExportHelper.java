@@ -345,30 +345,30 @@ public final class ExcelFileExportHelper {
         return tempFile;
     }
 
-    private File doExport(String tmplFile, int index, Map<String, Object> data) throws IOException {
+    private File doExport(JxlsHelper jxlsHelper, String tmplFile, int index, Map<String, Object> data) throws IOException {
         String fileType = FileUtils.getExtName(tmplFile).toLowerCase();
         if (StringUtils.isBlank(fileType)) {
             List<String> fileTypes = Arrays.asList(EXCEL_TYPE_XLS, EXCEL_TYPE_XLSX);
             for (String type : fileTypes) {
                 try (InputStream templateStream = doGetTemplateFileInputStream(String.format("%s.%s", tmplFile, type))) {
                     if (templateStream != null) {
-                        return doExport(templateStream, type, index, data);
+                        return doExport(jxlsHelper, templateStream, type, index, data);
                     }
                 }
             }
         } else if (StringUtils.endsWithAny(fileType, EXCEL_TYPE_XLS, EXCEL_TYPE_XLSX)) {
             try (InputStream templateStream = doGetTemplateFileInputStream(tmplFile)) {
-                return doExport(templateStream, fileType, index, data);
+                return doExport(jxlsHelper, templateStream, fileType, index, data);
             }
         }
         return null;
     }
 
-    private File doExport(InputStream templateStream, String fileExtName, int index, Map<String, Object> data) throws IOException {
+    private File doExport(JxlsHelper jxlsHelper, InputStream templateStream, String fileExtName, int index, Map<String, Object> data) throws IOException {
         File tempFile = File.createTempFile("export_", String.format("_%d.%s", index, fileExtName));
         tempFile.deleteOnExit();
         try (OutputStream fileOutputStream = Files.newOutputStream(tempFile.toPath())) {
-            JxlsHelper.getInstance().processTemplate(templateStream, fileOutputStream, new Context(data));
+            jxlsHelper.processTemplate(templateStream, fileOutputStream, new Context(data));
         }
         return tempFile;
     }
@@ -390,8 +390,22 @@ public final class ExcelFileExportHelper {
      * @throws Exception 可能产生的任何异常
      */
     public File export(String tmplFile) throws Exception {
+        return export(tmplFile, JxlsHelper.getInstance());
+    }
+
+    /**
+     * @param tmplFile   模板文件名称
+     * @param jxlsHelper JXLS辅助类实例对象
+     * @return 将导出数据映射到tmplFile指定的Excel文件模板
+     * @throws Exception 可能产生的任何异常
+     * @since 2.1.2
+     */
+    public File export(String tmplFile, JxlsHelper jxlsHelper) throws Exception {
         if (StringUtils.isBlank(tmplFile)) {
             throw new NullArgumentException("tmplFile");
+        }
+        if (jxlsHelper == null) {
+            throw new NullArgumentException("jxlsHelper");
         }
         File file = null;
         if (processor != null) {
@@ -401,11 +415,11 @@ public final class ExcelFileExportHelper {
                 if (processorData == null || processorData.isEmpty()) {
                     break;
                 }
-                files.add(doExport(tmplFile, idx, Collections.singletonMap("data", processorData)));
+                files.add(doExport(jxlsHelper, tmplFile, idx, Collections.singletonMap("data", processorData)));
             }
             file = toZip(files);
         } else if (!data.isEmpty()) {
-            file = doExport(tmplFile, 1, data);
+            file = doExport(jxlsHelper, tmplFile, 1, data);
         }
         return file;
     }
