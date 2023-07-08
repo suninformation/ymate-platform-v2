@@ -14,7 +14,7 @@ function HomepageHeader() {
             <div className="container">
                 <img src={siteConfig.customFields.logoBigUrl} alt="YMP Big Logo"/>
                 <p className={clsx('hero__subtitle', styles.heroTagline)}><Translate id="home.hero.tagline">轻量级、组件化、简单、高效的 Java 应用开发框架</Translate></p>
-                <p className={styles.heroTagline}><Translate id="home.hero.newVersion">最新版本：</Translate><b>2.1.1</b></p>
+                <p className={styles.heroTagline}><Translate id="home.hero.newVersion">最新版本：</Translate><b>2.1.2</b></p>
                 <p className={styles.heroTagline}>
                     <a href="https://search.maven.org/#search%7Cga%7C1%7Cnet.ymate.platform" target="_blank"><img src="https://img.shields.io/maven-central/v/net.ymate.platform/ymate-platform-core.svg" alt="Maven Central Version"/></a>
                     &nbsp;
