@@ -30,7 +30,11 @@ import org.apache.commons.lang3.StringUtils;
 @CleanProxy
 public final class EmailValidator implements IValidator {
 
-    private static final String REGEX_STR = "(?:\\w[-._\\w]*\\w@\\w[-._\\w]*\\w\\.\\w{2,8}$)";
+    private static final String REGEX_STR;
+
+    static {
+        REGEX_STR = System.getProperty("email.regex", "\\w[-._\\w]*\\w@\\w[-._\\w]*\\w\\.\\w{2,8}$");
+    }
 
     private static final String I18N_MESSAGE_KEY = "ymp.validation.email";
 
