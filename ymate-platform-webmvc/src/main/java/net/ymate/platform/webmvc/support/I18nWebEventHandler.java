@@ -19,6 +19,7 @@ import net.ymate.platform.core.i18n.II18nEventHandler;
 import net.ymate.platform.webmvc.IWebMvc;
 import net.ymate.platform.webmvc.context.WebContext;
 import net.ymate.platform.webmvc.util.CookieHelper;
+import net.ymate.platform.webmvc.util.WebUtils;
 import org.apache.commons.lang3.LocaleUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
@@ -76,8 +77,8 @@ public class I18nWebEventHandler implements II18nEventHandler {
 
     @Override
     public InputStream onLoad(String resourceName) throws IOException {
-        if (StringUtils.isNotBlank(resourceName) && WebContext.getContext() != null) {
-            File resourceFile = new File(WebContext.getContext().getOwner().getConfig().getResourceHome(), resourceName);
+        if (StringUtils.isNotBlank(resourceName)) {
+            File resourceFile = new File(WebUtils.getOwner().getConfig().getResourceHome(), resourceName);
             if (resourceFile.canRead() && resourceFile.exists() && resourceFile.isFile()) {
                 if (LOG.isDebugEnabled()) {
                     LOG.debug(String.format("Load i18n resource file: %s", resourceFile.getPath()));
