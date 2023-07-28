@@ -54,7 +54,7 @@ public final class YMP {
         }
     }
 
-    public static final Version VERSION = new Version(2, 1, 2, Version.VersionType.Release);
+    public static final Version VERSION = new Version(2, 1, 3, Version.VersionType.Release);
 
     private static final String DEFAULT_BANNER_STR = "__  __ __  ___ ___\n" +
             "\\ \\/ //  |/  // _ \\\n" +
