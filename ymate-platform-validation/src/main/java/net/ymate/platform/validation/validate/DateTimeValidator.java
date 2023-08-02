@@ -15,14 +15,12 @@
  */
 package net.ymate.platform.validation.validate;
 
-import net.ymate.platform.commons.DateTimeHelper;
 import net.ymate.platform.commons.lang.BlurObject;
 import net.ymate.platform.commons.util.DateTimeUtils;
 import net.ymate.platform.core.beans.annotation.CleanProxy;
 import net.ymate.platform.validation.IValidator;
 import net.ymate.platform.validation.ValidateContext;
 import net.ymate.platform.validation.ValidateResult;
-import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import java.text.ParseException;
@@ -35,8 +33,6 @@ import java.util.Date;
  */
 @CleanProxy
 public final class DateTimeValidator implements IValidator {
-
-    public static final int DATETIME_PART_MAX_LENGTH = 2;
 
     private static final String I18N_MESSAGE_KEY = "ymp.validation.datetime";
 
@@ -78,7 +74,7 @@ public final class DateTimeValidator implements IValidator {
 
     /**
      * @param paramName  自定参数名称
-     * @param paramValue 待验证参数值对象
+     * @param paramValue 待验证参数值对象（支持使用 today|yesterday|week|month|year 常量）
      * @param pattern    日期格式字符串
      * @param separator  时间段字符串之间的分割符号
      * @param maxDays    时间段之间的天数最大差值，默认为0表示不限制
@@ -87,46 +83,29 @@ public final class DateTimeValidator implements IValidator {
      */
     public static int validate(String paramName, String paramValue, String pattern, String separator, int maxDays, boolean single) {
         int result = 0;
-        pattern = StringUtils.defaultIfBlank(pattern, DateTimeUtils.YYYY_MM_DD_HH_MM_SS);
         if (single) {
-            Date date = parseDate(paramValue, pattern);
-            if (date == null) {
+            DateTimeValue dateTimeValue = DateTimeValue.parse(paramValue, pattern, true);
+            if (dateTimeValue == null) {
                 result = 1;
             } else {
-                ValidateContext.getLocalAttributes().put(paramName, new DateTimeValue(date));
+                ValidateContext.getLocalAttributes().put(paramName, dateTimeValue);
             }
         } else {
-            String[] dateTimeArr = StringUtils.split(paramValue, StringUtils.defaultIfBlank(separator, "/"));
-            if (ArrayUtils.isNotEmpty(dateTimeArr)) {
-                if (dateTimeArr.length <= DATETIME_PART_MAX_LENGTH) {
-                    Date dateTimeBegin = parseDate(dateTimeArr[0], pattern);
-                    Date dateTimeEnd = null;
-                    if (dateTimeBegin != null) {
-                        if (dateTimeArr.length > 1 && !StringUtils.equalsIgnoreCase(StringUtils.trim(dateTimeArr[0]), StringUtils.trim(dateTimeArr[1]))) {
-                            dateTimeEnd = parseDate(dateTimeArr[1], pattern);
-                            if (dateTimeEnd != null) {
-                                if (dateTimeBegin.getTime() > dateTimeEnd.getTime()) {
-                                    result = 3;
-                                } else if (maxDays > 0) {
-                                    long days = DateTimeHelper.bind(dateTimeBegin).subtract(dateTimeEnd) / DateTimeUtils.DAY;
-                                    if (days < 0 || days > maxDays) {
-                                        result = 2;
-                                    }
-                                }
-                            }
-                        }
-                    } else {
-                        result = 1;
+            DateTimeValue dateTimeValue = DateTimeValue.parse(paramValue, pattern, separator, false);
+            if (dateTimeValue != null) {
+                if (dateTimeValue.getStartDateTimeMillis() > dateTimeValue.getEndDateTimeMillis()) {
+                    result = 3;
+                } else if (maxDays > 0) {
+                    long days = dateTimeValue.getMaxDays();
+                    if (days < 0 || days > maxDays) {
+                        result = 2;
                     }
-                    if (result == 0) {
-                        if (dateTimeEnd == null) {
-                            dateTimeEnd = DateTimeHelper.bind(dateTimeBegin).toDayEnd().time();
-                        }
-                        ValidateContext.getLocalAttributes().put(paramName, new DateTimeValue(dateTimeBegin, dateTimeEnd));
-                    }
-                } else {
-                    result = 1;
                 }
+                if (result == 0) {
+                    ValidateContext.getLocalAttributes().put(paramName, dateTimeValue);
+                }
+            } else {
+                result = 1;
             }
         }
         return result;

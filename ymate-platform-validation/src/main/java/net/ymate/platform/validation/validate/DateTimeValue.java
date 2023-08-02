@@ -31,6 +31,18 @@ import java.util.Date;
  */
 public class DateTimeValue implements Serializable {
 
+    public static final String TODAY = "today";
+
+    public static final String YESTERDAY = "yesterday";
+
+    public static final String WEEK = "week";
+
+    public static final String MONTH = "month";
+
+    public static final String YEAR = "year";
+
+    public static final int DATETIME_PART_MAX_LENGTH = 2;
+
     private final Date startDate;
 
     private Date endDate;
@@ -58,26 +70,50 @@ public class DateTimeValue implements Serializable {
 
     public static DateTimeValue parse(String dateTimeStr, String pattern, String separator, boolean single) {
         DateTimeValue dateTimeValue = null;
-        pattern = StringUtils.defaultIfBlank(pattern, DateTimeUtils.YYYY_MM_DD_HH_MM_SS);
         if (single) {
-            Date date = DateTimeValidator.parseDate(dateTimeStr, pattern);
+            Date date;
+            if (StringUtils.equalsIgnoreCase(dateTimeStr, TODAY)) {
+                date = DateTimeHelper.now().toDayStart().time();
+            } else if (StringUtils.equalsIgnoreCase(dateTimeStr, YESTERDAY)) {
+                date = DateTimeHelper.now().toDayStart().daysAdd(-1).time();
+            } else if (StringUtils.equalsIgnoreCase(dateTimeStr, WEEK)) {
+                date = DateTimeHelper.now().toDayStart().toWeekStart().time();
+            } else if (StringUtils.equalsIgnoreCase(dateTimeStr, MONTH)) {
+                date = DateTimeHelper.now().toDayStart().day(1).time();
+            } else if (StringUtils.equalsIgnoreCase(dateTimeStr, YEAR)) {
+                date = DateTimeHelper.now().toDayStart().month(1).day(1).time();
+            } else {
+                date = DateTimeValidator.parseDate(dateTimeStr, pattern);
+            }
             if (date != null) {
                 dateTimeValue = new DateTimeValue(date);
             }
         } else {
-            String[] dateTimeArr = StringUtils.split(dateTimeStr, StringUtils.defaultIfBlank(separator, "/"));
-            if (ArrayUtils.isNotEmpty(dateTimeArr)) {
-                if (dateTimeArr.length <= DateTimeValidator.DATETIME_PART_MAX_LENGTH) {
-                    Date dateTimeBegin = DateTimeValidator.parseDate(dateTimeArr[0], pattern);
-                    Date dateTimeEnd = null;
-                    if (dateTimeBegin != null) {
-                        if (dateTimeArr.length > 1 && !StringUtils.equalsIgnoreCase(StringUtils.trim(dateTimeArr[0]), StringUtils.trim(dateTimeArr[1]))) {
-                            dateTimeEnd = DateTimeValidator.parseDate(dateTimeArr[1], pattern);
+            if (StringUtils.equalsIgnoreCase(dateTimeStr, TODAY)) {
+                dateTimeValue = today();
+            } else if (StringUtils.equalsIgnoreCase(dateTimeStr, YESTERDAY)) {
+                dateTimeValue = yesterday();
+            } else if (StringUtils.equalsIgnoreCase(dateTimeStr, WEEK)) {
+                dateTimeValue = week();
+            } else if (StringUtils.equalsIgnoreCase(dateTimeStr, MONTH)) {
+                dateTimeValue = month();
+            } else if (StringUtils.equalsIgnoreCase(dateTimeStr, YEAR)) {
+                dateTimeValue = year();
+            } else {
+                String[] dateTimeArr = StringUtils.split(dateTimeStr, StringUtils.defaultIfBlank(separator, "/"));
+                if (ArrayUtils.isNotEmpty(dateTimeArr)) {
+                    if (dateTimeArr.length <= DATETIME_PART_MAX_LENGTH) {
+                        Date dateTimeBegin = DateTimeValidator.parseDate(dateTimeArr[0], pattern);
+                        Date dateTimeEnd = null;
+                        if (dateTimeBegin != null) {
+                            if (dateTimeArr.length > 1 && !StringUtils.equalsIgnoreCase(StringUtils.trim(dateTimeArr[0]), StringUtils.trim(dateTimeArr[1]))) {
+                                dateTimeEnd = DateTimeValidator.parseDate(dateTimeArr[1], pattern);
+                            }
+                            if (dateTimeEnd == null) {
+                                dateTimeEnd = DateTimeHelper.bind(dateTimeBegin).toDayEnd().time();
+                            }
+                            dateTimeValue = new DateTimeValue(dateTimeBegin, dateTimeEnd);
                         }
-                        if (dateTimeEnd == null) {
-                            dateTimeEnd = DateTimeHelper.bind(dateTimeBegin).toDayEnd().time();
-                        }
-                        dateTimeValue = new DateTimeValue(dateTimeBegin, dateTimeEnd);
                     }
                 }
             }
@@ -102,6 +138,15 @@ public class DateTimeValue implements Serializable {
     }
 
     /**
+     * @return 返回从昨天零点到昨天23点59分59秒的时间值对象
+     * @since 2.1.3
+     */
+    public static DateTimeValue yesterday() {
+        DateTimeHelper yesterdayHelper = DateTimeHelper.now().toDayStart().daysAdd(-1);
+        return new DateTimeValue(yesterdayHelper.time(), yesterdayHelper.toDayEnd().time());
+    }
+
+    /**
      * @return 返回从本周一零点到今天当前时刻的日期时间值对象
      * @since 2.1.2
      */
@@ -115,6 +160,14 @@ public class DateTimeValue implements Serializable {
      */
     public static DateTimeValue month() {
         return new DateTimeValue(DateTimeHelper.now().day(1).toDayStart().time(), DateTimeHelper.now().time());
+    }
+
+    /**
+     * @return 返回本年一月一号零点到今天当前时刻的日期时间值对象
+     * @since 2.1.3
+     */
+    public static DateTimeValue year() {
+        return new DateTimeValue(DateTimeHelper.now().month(1).day(1).toDayStart().time(), DateTimeHelper.now().time());
     }
 
     public DateTimeValue(Date startDate) {
