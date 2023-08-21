@@ -21,6 +21,7 @@ import net.ymate.platform.core.persistence.IFunction;
 import net.ymate.platform.core.persistence.Params;
 import net.ymate.platform.persistence.jdbc.IDatabase;
 import net.ymate.platform.persistence.jdbc.JDBC;
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.List;
@@ -68,6 +69,74 @@ public final class OrderBy extends Query<OrderBy> {
                 }
                 orderByBuilder.append(newOrderBy);
                 params.add(orderBy.params);
+            }
+        }
+        return this;
+    }
+
+    /**
+     * 分析排序字段字符串（格式：fieldName:desc，多个字段之间使用 '|' 字符分隔并添加引用标识符）进行排序设置
+     *
+     * @param fields 排序字段字符串
+     * @return 返回当前排序对象
+     * @since 2.1.3
+     */
+    public OrderBy orderBy(String fields) {
+        return orderBy(fields, null, true);
+    }
+
+    /**
+     * 分析排序字段字符串（格式：fieldName:desc，多个字段之间使用 '|' 字符分隔）进行排序设置
+     *
+     * @param fields         排序字段字符串
+     * @param wrapIdentifier 是否添加引用标识符
+     * @return 返回当前排序对象
+     * @since 2.1.3
+     */
+    public OrderBy orderBy(String fields, boolean wrapIdentifier) {
+        return orderBy(fields, null, wrapIdentifier);
+    }
+
+    /**
+     * 分析排序字段字符串（格式：fieldName:desc，多个字段之间用 separator 参数指定的字符分隔，默认使用 '|' 分隔符）进行排序设置
+     *
+     * @param fields         排序字段字符串
+     * @param separator      分隔符
+     * @param wrapIdentifier 是否添加引用标识符
+     * @return 返回当前排序对象
+     * @since 2.1.3
+     */
+    public OrderBy orderBy(String fields, String separator, boolean wrapIdentifier) {
+        if (StringUtils.isNotBlank(fields)) {
+            String[] fieldArr = StringUtils.split(fields, StringUtils.defaultIfBlank(separator, "|"));
+            return orderBy(fieldArr, wrapIdentifier);
+        }
+        return this;
+    }
+
+    /**
+     * 分析排序字段字符串（格式：fieldName:desc）进行排序设置
+     *
+     * @param fields         排序字段集合
+     * @param wrapIdentifier 是否添加引用标识符
+     * @return 返回当前排序对象
+     * @since 2.1.3
+     */
+    public OrderBy orderBy(String[] fields, boolean wrapIdentifier) {
+        if (ArrayUtils.isNotEmpty(fields)) {
+            for (String item : fields) {
+                String[] parts = StringUtils.split(item, ':');
+                if (ArrayUtils.isNotEmpty(parts)) {
+                    String field = parts[0];
+                    boolean desc = parts.length > 1 && (StringUtils.isBlank(parts[1]) || StringUtils.equalsIgnoreCase(parts[1], "desc"));
+                    if (StringUtils.isNotBlank(field)) {
+                        if (desc) {
+                            desc(field, wrapIdentifier);
+                        } else {
+                            asc(field, wrapIdentifier);
+                        }
+                    }
+                }
             }
         }
         return this;
