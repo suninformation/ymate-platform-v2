@@ -481,7 +481,7 @@ public class Query<T> extends QueryHandleAdapter<T> {
                     .filter(field -> ClassUtils.isNormalField(field) && !excludedFields.contains(field.getName()))
                     .forEachOrdered((field) -> {
                         QField qField = field.getAnnotation(QField.class);
-                        if (qField != null) {
+                        if (qField != null && (excludedFields.isEmpty() || !excludedFields.contains(Fields.field(qField.prefix(), qField.value())))) {
                             select.field(qField.prefix(), qField.value(), qField.alias(), qField.wrapIdentifier());
                         }
                     });
