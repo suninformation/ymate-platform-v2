@@ -51,8 +51,21 @@ public final class Page {
     }
 
     public static Page createIfNeed(Integer page, Integer pageSize) {
+        return createIfNeed(page, pageSize, true);
+    }
+
+    /**
+     * 根据参数判断是否需要创建分页对象
+     *
+     * @param page     页号
+     * @param pageSize 分页大小
+     * @param count    是否执行总记录数统计
+     * @return 返回分页对象或null
+     * @since 2.1.3
+     */
+    public static Page createIfNeed(Integer page, Integer pageSize, boolean count) {
         if (page != null && page > 0 && pageSize != null && pageSize > 0) {
-            return new Page(page).pageSize(pageSize);
+            return new Page(page).pageSize(pageSize).count(count);
         }
         return null;
     }
