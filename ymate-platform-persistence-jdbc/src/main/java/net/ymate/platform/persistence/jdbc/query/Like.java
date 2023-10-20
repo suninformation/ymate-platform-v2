@@ -32,7 +32,7 @@ public class Like implements Serializable {
     private final String originStr;
 
     public Like(String originStr) {
-        this.originStr = StringUtils.replaceEach(originStr, new String[]{"/", "%", "_"}, new String[]{"//", "/%", "/_"});
+        this.originStr = StringUtils.replaceEach(originStr, new String[]{"\\", "%", "_"}, new String[]{"\\\\", "\\%", "\\_"});
     }
 
     public String contains() {

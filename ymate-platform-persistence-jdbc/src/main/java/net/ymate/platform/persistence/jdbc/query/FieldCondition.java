@@ -371,6 +371,18 @@
          return this;
      }
 
+     /**
+      * 配合like使用，指定不同的转义符
+      *
+      * @param escapeChar 转义字符
+      * @return 返回当前条件构建对象
+      * @since 2.1.3
+      */
+     public FieldCondition escape(char escapeChar) {
+         cond.escape(escapeChar);
+         return this;
+     }
+
      // ------
 
      public FieldCondition between(Object valueOne, Object valueTwo) {

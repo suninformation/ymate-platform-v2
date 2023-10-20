@@ -460,6 +460,17 @@ public final class Cond extends Query<Cond> {
         return opt(func, OPT.LIKE);
     }
 
+    /**
+     * 配合like使用，指定不同的转义符
+     *
+     * @param escapeChar 转义字符
+     * @return 返回当前条件对象
+     * @since 2.1.3
+     */
+    public Cond escape(char escapeChar) {
+        return cond("ESCAPE ?").param(String.valueOf(escapeChar));
+    }
+
     // ------
 
     public Cond between(String field, Object valueOne, Object valueTwo) {
