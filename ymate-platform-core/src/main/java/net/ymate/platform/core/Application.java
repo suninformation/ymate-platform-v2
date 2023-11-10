@@ -147,6 +147,9 @@ public final class Application implements IApplication {
                         //
                         beanLoader.registerHandler(Bean.class);
                         beanLoader.registerHandler(Interceptor.class, new InterceptorHandler(this));
+                        if (interceptSettings.isEnabled()) {
+                            beanLoader.registerHandler(net.ymate.platform.core.beans.annotation.InterceptSettings.class, new InterceptSettingsHandler(this));
+                        }
                         beanLoader.registerHandler(Injector.class, new InjectorHandler(this));
                         beanLoader.registerHandler(Event.class, new EventHandler(this));
                         beanLoader.registerHandler(EventRegister.class, new EventRegisterHandler(this));

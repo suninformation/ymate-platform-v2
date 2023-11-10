@@ -56,6 +56,8 @@ public final class InterceptSettings {
 
     private static final Map<String, Map<String, String>> CONTEXT_PARAMS = new ConcurrentHashMap<>();
 
+    private static final Map<String, Map<String, String>> CONTEXT_PARAMS_EXTEND = new ConcurrentHashMap<>();
+
     private boolean enabled;
 
     private final Map<Class<?>, Class<? extends IInterceptor>> interceptAnnotations = new HashMap<>();
@@ -124,23 +126,25 @@ public final class InterceptSettings {
 
     private void parseContextParamValue(IApplication owner, ContextParam contextParamAnn, Map<String, String> contextParams) {
         if (contextParamAnn != null) {
-            String key = contextParamAnn.key();
-            String value = contextParamAnn.value();
-            if (StringUtils.isNotBlank(value)) {
-                boolean flag = value.length() > 1 && value.charAt(0) == '$';
-                if (StringUtils.isBlank(key)) {
-                    if (flag) {
-                        key = value.substring(1);
-                        value = StringUtils.trimToEmpty(owner.getParam(key));
-                    } else {
-                        key = value;
-                    }
-                } else if (flag) {
-                    value = StringUtils.trimToEmpty(owner.getParam(value.substring(1)));
+            parseContextParamValue(owner, contextParamAnn.key(), contextParamAnn.value(), contextParams);
+        }
+    }
+
+    private void parseContextParamValue(IApplication owner, String key, String value, Map<String, String> contextParams) {
+        if (StringUtils.isNotBlank(value)) {
+            boolean flag = value.length() > 1 && value.charAt(0) == '$';
+            if (StringUtils.isBlank(key)) {
+                if (flag) {
+                    key = value.substring(1);
+                    value = StringUtils.trimToEmpty(owner.getParam(key));
+                } else {
+                    key = value;
                 }
-                if (StringUtils.isNotBlank(key) && StringUtils.isNotBlank(value)) {
-                    contextParams.put(key, value);
-                }
+            } else if (flag) {
+                value = StringUtils.trimToEmpty(owner.getParam(value.substring(1)));
+            }
+            if (StringUtils.isNotBlank(key) && StringUtils.isNotBlank(value)) {
+                contextParams.put(key, value);
             }
         }
     }
@@ -168,6 +172,11 @@ public final class InterceptSettings {
             }
             parseContextParamValue(owner, targetPackage.getAnnotation(ContextParam.class), contextParams);
             parseContextParamValue(owner, targetPackage.getAnnotation(ContextParams.class), contextParams);
+            //
+            Map<String, String> params = CONTEXT_PARAMS_EXTEND.get(targetPackage.getName());
+            if (params != null && !params.isEmpty()) {
+                params.forEach((key, value) -> parseContextParamValue(owner, key, value, contextParams));
+            }
         }
     }
 
@@ -189,6 +198,11 @@ public final class InterceptSettings {
         //
         parseContextParamValue(owner, targetMethod.getAnnotation(ContextParam.class), contextParams);
         parseContextParamValue(owner, targetMethod.getAnnotation(ContextParams.class), contextParams);
+        //
+        Map<String, String> params = CONTEXT_PARAMS_EXTEND.get(String.format("%s#%s", targetClass.getName(), targetMethod.getName()));
+        if (params != null && !params.isEmpty()) {
+            params.forEach((key, value) -> parseContextParamValue(owner, key, value, contextParams));
+        }
         //
         return contextParams;
     }
@@ -226,6 +240,10 @@ public final class InterceptSettings {
     }
 
     public void registerInterceptPackage(String packageName, InterceptSetting... settings) {
+        registerInterceptPackage(packageName, null, settings);
+    }
+
+    public void registerInterceptPackage(String packageName, Map<String, String> contextParams, InterceptSetting... settings) {
         if (StringUtils.isNotBlank(packageName) && ArrayUtils.isNotEmpty(settings)) {
             InterceptPackageMeta packageMeta = packageMetaMap.computeIfAbsent(packageName, i -> new InterceptPackageMeta(packageName));
             for (InterceptSetting setting : settings) {
@@ -245,6 +263,9 @@ public final class InterceptSettings {
                     }
                 }
             }
+            if (contextParams != null && !contextParams.isEmpty()) {
+                CONTEXT_PARAMS_EXTEND.put(packageName, contextParams);
+            }
         }
     }
 
@@ -256,6 +277,10 @@ public final class InterceptSettings {
     }
 
     public void registerInterceptSettings(String name, InterceptSetting... settings) {
+        registerInterceptSettings(name, null, settings);
+    }
+
+    public void registerInterceptSettings(String name, Map<String, String> contextParams, InterceptSetting... settings) {
         String[] nameArr = StringUtils.split(name, "#");
         if (nameArr != null && ArrayUtils.isNotEmpty(settings)) {
             InterceptSettingMeta settingMeta = new InterceptSettingMeta(nameArr[0]);
@@ -309,6 +334,9 @@ public final class InterceptSettings {
                 }
             }
             settingMetaMap.put(settingMeta.toString(), settingMeta);
+            if (contextParams != null && !contextParams.isEmpty()) {
+                CONTEXT_PARAMS_EXTEND.put(settingMeta.toString(), contextParams);
+            }
         }
     }
 

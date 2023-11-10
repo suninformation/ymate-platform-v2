@@ -54,6 +54,16 @@ public final class InterceptSetting {
         return new InterceptSetting(setting);
     }
 
+    /**
+     * @param type             设置类型
+     * @param interceptorClass 拦截器类
+     * @since 2.1.3
+     */
+    public InterceptSetting(IInterceptor.SettingType type, Class<? extends IInterceptor> interceptorClass) {
+        this.type = type;
+        this.interceptorClass = interceptorClass;
+    }
+
     private InterceptSetting(String setting) {
         String[] itemArr = StringUtils.split(setting, ":");
         if (itemArr != null) {

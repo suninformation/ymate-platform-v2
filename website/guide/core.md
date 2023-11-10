@@ -1120,9 +1120,11 @@ import net.ymate.platform.core.beans.annotation.ContextParam;
 
 ### 拦截器全局规则设置
 
-有些时候，需要对指定的拦截器或某些类和方法的拦截器配置进行调整，为了避免因修改代码而重新编译、打包和部署等繁琐操作，我们可以通过配置文件来完成此项工作，配置格式及说明如下：
+有些时候，需要对指定的拦截器或某些类和方法的拦截器配置进行调整，我们可以通过配置文件或 `@InterceptSettings` 注解来完成此项工作。
 
-现在我们可以通过配置文件来完成此项工作，配置格式及说明如下：
+#### 方式一：通过配置文件设置
+
+通过配置文件来完成此项工作，可以避免因修改代码而重新编译、打包和部署等繁琐操作，配置格式及说明如下：
 
 ```properties
 #-------------------------------------
@@ -1181,6 +1183,67 @@ ymp.intercept.settings.net.ymate.demo.controller.DemoController#doLogin=before:*
 ```properties
 ymp.intercept.settings.net.ymate.demo.controller.DemoController#doLogout=before:net.ymate.demo.intercept.UserSessionInterceptor-|after:net.ymate.demo.intercept.UserStatusUpdateInterceptor+
 ```
+
+
+
+#### 方式二：通过注解设置
+
+YMP 框架从 `v2.1.3` 版本开始支持通过在包或类上声明 `@InterceptSettings` 注解进行拦截器全局规则设置。
+
+**示例：** 将 **方式一** 中的示例改写为注解配置格式如下：
+
+```java
+@InterceptSettings(
+    // 禁用拦截器：net.ymate.demo.intercept.UserSessionInterceptor
+    globals = {net.ymate.demo.intercept.UserSessionInterceptor.class},
+    packages = {
+        // 为 net.ymate.demo.controller 包添加 UserSessionInterceptor 前置拦截器
+        @PackageSet(names = {"net.ymate.demo.controller"},
+                    value = {
+                        @Item(value = {UserSessionInterceptor.class})
+                    },
+                    params = {
+                        // 设置自定义上下文参数
+                        @ContextParamSet(key = "xxx", value = "vvv")
+                    })
+    },
+    value = {
+        // 禁用 DemoController 类所有方法的全部拦截器
+        @InterceptSet(targets = {DemoController.class},
+                      value = {@Item(type = IInterceptor.SettingType.CLEAN_ALL)}),
+        // 禁用 DemoController 类 doLogin 方法全部前置拦截器
+        @InterceptSet(targets = {DemoController.class}, name = "doLogin",
+                      value = {@Item(type = IInterceptor.SettingType.CLEAN_BEFORE)}),
+        // 禁止 DemoController 类 doLogout 方法某个前置拦截器并增加一个新的后置拦截器
+        @InterceptSet(targets = {DemoController.class}, name = "doLogout",
+                      value = {@Item(type = IInterceptor.SettingType.REMOVE_BEFORE,
+                                     value = {UserSessionInterceptor.class}),
+                               @Item(type = IInterceptor.SettingType.ADD_AFTER,
+                                     value = {UserStatusUpdateInterceptor.class})},
+                      params = {
+                          // 设置自定义上下文参数
+                          @ContextParamSet(key = "xxx", value = "vvv")
+                      })
+    }
+)
+package net.ymate.demo;
+
+import net.ymate.platform.core.beans.annotation.InterceptSettings;
+import net.ymate.platform.core.beans.annotation.InterceptSettings.ContextParamSet;
+import net.ymate.platform.core.beans.annotation.InterceptSettings.InterceptSet;
+import net.ymate.platform.core.beans.annotation.InterceptSettings.Item;
+import net.ymate.platform.core.beans.annotation.InterceptSettings.PackageSet;
+import net.ymate.platform.core.beans.intercept.IInterceptor;
+```
+
+
+
+:::tip **注意：**
+
+- 以上两种方式均需要在配置 `ymp.intercept.settings_enabled=true` 的前提下生效；
+- 文件中的配置将先于注解中的配置被框架解析。
+
+:::
 
 
 
