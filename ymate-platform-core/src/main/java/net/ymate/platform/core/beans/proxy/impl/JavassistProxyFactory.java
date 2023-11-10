@@ -18,6 +18,7 @@ package net.ymate.platform.core.beans.proxy.impl;
 import javassist.util.proxy.MethodHandler;
 import javassist.util.proxy.Proxy;
 import javassist.util.proxy.ProxyFactory;
+import net.ymate.platform.commons.util.RuntimeUtils;
 import net.ymate.platform.core.beans.proxy.AbstractProxyChain;
 import net.ymate.platform.core.beans.proxy.AbstractProxyFactory;
 import net.ymate.platform.core.beans.proxy.IProxy;
@@ -41,7 +42,7 @@ public class JavassistProxyFactory extends AbstractProxyFactory {
             ((Proxy) targetObj).setHandler(methodHandler);
             return (T) targetObj;
         } catch (IllegalAccessException | InstantiationException e) {
-            throw new Error(e);
+            throw RuntimeUtils.wrapRuntimeThrow(e);
         }
     }
 

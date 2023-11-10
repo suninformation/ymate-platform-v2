@@ -89,7 +89,7 @@ public class FreemarkerView extends AbstractView {
                     freemarkerConfig = configBuilder.addTemplateFileDir(new File(baseViewPath)).build();
                 }
             } catch (IOException e) {
-                throw new Error(RuntimeUtils.unwrapThrow(e));
+                throw RuntimeUtils.wrapRuntimeThrow(e);
             }
         }
     }

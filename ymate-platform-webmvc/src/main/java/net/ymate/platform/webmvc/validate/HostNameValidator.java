@@ -74,7 +74,7 @@ public class HostNameValidator implements IValidator {
                     matched = validate(context, BlurObject.bind(paramValue).toStringValue(), hostNameAnn.checker());
                 }
             } catch (Exception e) {
-                throw new Error(RuntimeUtils.unwrapThrow(e));
+                throw RuntimeUtils.wrapRuntimeThrow(e);
             }
             if (matched) {
                 ValidateResult.Builder builder = ValidateResult.builder(context, hostNameAnn.msg(), I18N_MESSAGE_KEY, I18N_MESSAGE_DEFAULT_VALUE).matched(true);
