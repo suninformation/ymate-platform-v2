@@ -98,9 +98,9 @@ public class WebUtils {
     public static String baseUrl(HttpServletRequest request) {
         StringBuilder basePath = new StringBuilder();
         String serverName = doGetSafeServerName(request);
-        if (!StringUtils.startsWithAny(StringUtils.lowerCase(serverName), new String[]{Type.Const.HTTP_PREFIX, Type.Const.HTTPS_PREFIX})) {
+        if (!StringUtils.startsWithAny(StringUtils.lowerCase(serverName), Type.Const.HTTP_PREFIX, Type.Const.HTTPS_PREFIX)) {
             basePath.append(request.getScheme()).append("://").append(serverName);
-            if (request.getServerPort() != Type.Const.HTTP_PORT && request.getServerPort() != Type.Const.HTTPS_PORT) {
+            if (!StringUtils.contains(serverName, ":") && (request.getServerPort() != Type.Const.HTTP_PORT && request.getServerPort() != Type.Const.HTTPS_PORT)) {
                 basePath.append(":").append(request.getServerPort());
             }
             if (StringUtils.isNotBlank(request.getContextPath())) {
@@ -195,7 +195,12 @@ public class WebUtils {
     }
 
     public static boolean isCorsRequest(HttpServletRequest request) {
-        return request.getHeader(Type.HttpHead.ORIGIN) != null;
+        return isCorsRequest(request, false);
+    }
+
+    public static boolean isCorsRequest(HttpServletRequest request, boolean checkHost) {
+        String origin = request.getHeader(Type.HttpHead.ORIGIN);
+        return origin != null && (!checkHost || !StringUtils.startsWithIgnoreCase(baseUrl(request), origin));
     }
 
     public static boolean isCorsOptionsRequest(HttpServletRequest request) {
@@ -462,12 +467,12 @@ public class WebUtils {
 
     public static String messageWithTemplate(IApplication owner, String title, Collection<ValidateResult> messages) {
         StringBuilder messagesBuilder = new StringBuilder();
-        messages.stream().map((validateResult) -> {
+        messages.stream().map(validateResult -> {
             ExpressionUtils item = ExpressionUtils.bind(doGetConfigValue(owner, IWebMvcConfig.PARAMS_VALIDATION_TEMPLATE_ITEM, "${message}<br>"));
             item.set("name", validateResult.getName());
             item.set("message", validateResult.getMsg());
             return item;
-        }).forEachOrdered((item) -> messagesBuilder.append(item.clean().getResult()));
+        }).forEachOrdered(item -> messagesBuilder.append(item.clean().getResult()));
         ExpressionUtils element = ExpressionUtils.bind(doGetConfigValue(owner, IWebMvcConfig.PARAMS_VALIDATION_TEMPLATE_ELEMENT, "${title}"));
         if (StringUtils.isNotBlank(title)) {
             element.set("title", title);
