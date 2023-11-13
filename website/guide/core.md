@@ -1212,10 +1212,10 @@ YMP 框架从 `v2.1.3` 版本开始支持通过在包或类上声明 `@Intercept
         @InterceptSet(targets = {DemoController.class},
                       value = {@Item(type = IInterceptor.SettingType.CLEAN_ALL)}),
         // 禁用 DemoController 类 doLogin 方法全部前置拦截器
-        @InterceptSet(targets = {DemoController.class}, name = "doLogin",
+        @InterceptSet(targets = {DemoController.class}, names = {"doLogin"},
                       value = {@Item(type = IInterceptor.SettingType.CLEAN_BEFORE)}),
         // 禁止 DemoController 类 doLogout 方法某个前置拦截器并增加一个新的后置拦截器
-        @InterceptSet(targets = {DemoController.class}, name = "doLogout",
+        @InterceptSet(targets = {DemoController.class}, names = {"doLogout"},
                       value = {@Item(type = IInterceptor.SettingType.REMOVE_BEFORE,
                                      value = {UserSessionInterceptor.class}),
                                @Item(type = IInterceptor.SettingType.ADD_AFTER,
@@ -1241,7 +1241,8 @@ import net.ymate.platform.core.beans.intercept.IInterceptor;
 :::tip **注意：**
 
 - 以上两种方式均需要在配置 `ymp.intercept.settings_enabled=true` 的前提下生效；
-- 文件中的配置将先于注解中的配置被框架解析。
+- 文件中的配置将先于注解中的配置被框架解析；
+- 禁用操作仅对代码中包、类和方法上已声明的拦截器配置生效，全局规则设置不受此限制。
 
 :::
 

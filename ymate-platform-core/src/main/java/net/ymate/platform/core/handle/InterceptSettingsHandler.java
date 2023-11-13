@@ -21,9 +21,13 @@ import net.ymate.platform.core.beans.annotation.InterceptSettings;
 import net.ymate.platform.core.beans.annotation.InterceptSettings.Item;
 import net.ymate.platform.core.beans.intercept.IInterceptor;
 import net.ymate.platform.core.beans.intercept.InterceptSetting;
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
@@ -40,14 +44,25 @@ public final class InterceptSettingsHandler implements IBeanHandler {
 
     private InterceptSetting[] doInterceptSettingToArray(Item item) {
         List<InterceptSetting> interceptSettingList = new ArrayList<>();
-        for (Class<? extends IInterceptor> interceptorClass : item.value()) {
-            interceptSettingList.add(new InterceptSetting(item.type(), interceptorClass));
+        if (ArrayUtils.isEmpty(item.value())) {
+            if (IInterceptor.SettingType.CLEAN_ALL.equals(item.type()) || IInterceptor.SettingType.CLEAN_BEFORE.equals(item.type()) || IInterceptor.SettingType.CLEAN_AFTER.equals(item.type())) {
+                interceptSettingList.add(new InterceptSetting(item.type(), null));
+            }
+        } else {
+            for (Class<? extends IInterceptor> interceptorClass : item.value()) {
+                interceptSettingList.add(new InterceptSetting(item.type(), interceptorClass));
+            }
         }
         return interceptSettingList.toArray(new InterceptSetting[0]);
     }
 
     private Map<String, String> doParseContextParams(InterceptSettings.ContextParamSet[] contextParamSets) {
         return Arrays.stream(contextParamSets).collect(Collectors.toMap(InterceptSettings.ContextParamSet::key, InterceptSettings.ContextParamSet::value, (a, b) -> b));
+    }
+
+    private void doRegisterInterceptSettingsItem(String targetName, String methodName, InterceptSettings.ContextParamSet[] params, Item[] items) {
+        String name = String.format("%s#%s", targetName, StringUtils.trimToEmpty(methodName));
+        Arrays.stream(items).forEach(item -> owner.getInterceptSettings().registerInterceptSettings(name, doParseContextParams(params), doInterceptSettingToArray(item)));
     }
 
     @Override
@@ -61,9 +76,14 @@ public final class InterceptSettingsHandler implements IBeanHandler {
                                     .forEach(item -> owner.getInterceptSettings().registerInterceptPackage(name, doParseContextParams(packageSet.params()), doInterceptSettingToArray(item)))));
             Arrays.stream(settingsAnn.value())
                     .forEach(interceptSet -> Arrays.stream(interceptSet.targets())
-                            .map(target -> String.format("%s#%s", target.getName(), StringUtils.trimToEmpty(interceptSet.name())))
-                            .forEach(name -> Arrays.stream(interceptSet.value())
-                                    .forEach(item -> owner.getInterceptSettings().registerInterceptSettings(name, doParseContextParams(interceptSet.params()), doInterceptSettingToArray(item)))));
+                            .forEach(target -> {
+                                if (ArrayUtils.isNotEmpty(interceptSet.names())) {
+                                    Arrays.stream(interceptSet.names())
+                                            .forEach(name -> doRegisterInterceptSettingsItem(target.getName(), name, interceptSet.params(), interceptSet.value()));
+                                } else {
+                                    doRegisterInterceptSettingsItem(target.getName(), null, interceptSet.params(), interceptSet.value());
+                                }
+                            }));
         }
         return null;
     }

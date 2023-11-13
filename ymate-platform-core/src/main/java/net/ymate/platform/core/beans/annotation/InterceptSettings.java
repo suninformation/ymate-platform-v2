@@ -16,7 +16,6 @@
 package net.ymate.platform.core.beans.annotation;
 
 import net.ymate.platform.core.beans.intercept.IInterceptor;
-import org.apache.commons.lang3.StringUtils;
 
 import java.lang.annotation.*;
 
@@ -69,9 +68,9 @@ public @interface InterceptSettings {
         Class<?>[] targets();
 
         /**
-         * @return 方法名称
+         * @return 方法名称集合
          */
-        String name() default StringUtils.EMPTY;
+        String[] names() default {};
 
         /**
          * @return 拦截器集合
