@@ -4,6 +4,7 @@
 <%@ page import="java.util.Map" %>
 <%@ page contentType="text/html;charset=UTF-8" trimDirectiveWhitespaces="true" pageEncoding="UTF-8" session="false" %>
 
+<!DOCTYPE html>
 <html lang="zh" class="md">
 <head>
     <meta charset="utf-8">
