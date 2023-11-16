@@ -30,6 +30,11 @@
             <AppenderRef ref="custom-logname"/>
         </Logger>
         -->
+        <!--
+        <Logger name="net.ymate.platform.webmvc.view.AbstractView" level="off" additivity="false"/>
+        <Logger name="org.apache.http.headers" level="off" additivity="false"/>
+        <Logger name="org.apache.http.wire" level="off" additivity="false"/>
+        -->
         <Root level="debug">
             <AppenderRef ref="default"/>
         </Root>
