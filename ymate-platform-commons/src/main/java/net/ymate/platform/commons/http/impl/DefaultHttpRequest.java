@@ -58,7 +58,7 @@ public class DefaultHttpRequest implements IHttpRequest {
                 ContentType contentType = httpRequestBuilder.getContentType();
                 if (content instanceof String) {
                     if (contentType == null) {
-                        contentType = ContentType.create(HttpClientHelper.CONTENT_TYPE_TEXT_PLAIN, HttpClientHelper.DEFAULT_CHARSET);
+                        contentType = ContentType.create(HttpClientHelper.CONTENT_TYPE_TEXT_PLAIN, requestBuilder.getCharset() != null ? requestBuilder.getCharset().name() : HttpClientHelper.DEFAULT_CHARSET);
                     }
                     requestBuilder.setEntity(EntityBuilder.create()
                             .setContentEncoding(contentType.getCharset().name())
@@ -66,23 +66,27 @@ public class DefaultHttpRequest implements IHttpRequest {
                             .setText((String) content).build());
                 } else {
                     if (contentType == null) {
-                        contentType = ContentType.create(HttpClientHelper.CONTENT_TYPE_OCTET_STREAM, HttpClientHelper.DEFAULT_CHARSET);
+                        contentType = ContentType.create(HttpClientHelper.CONTENT_TYPE_OCTET_STREAM, requestBuilder.getCharset() != null ? requestBuilder.getCharset().name() : HttpClientHelper.DEFAULT_CHARSET);
                     }
+                    String contentEncoding;
+                    if (contentType.getCharset() == null) {
+                        if (requestBuilder.getCharset() != null) {
+                            contentEncoding = requestBuilder.getCharset().name();
+                        } else {
+                            contentEncoding = HttpClientHelper.DEFAULT_CHARSET;
+                        }
+                    } else {
+                        contentEncoding = contentType.getCharset().name();
+                    }
+                    EntityBuilder entityBuilder = EntityBuilder.create()
+                            .setContentEncoding(contentEncoding)
+                            .setContentType(contentType);
                     if (content instanceof byte[]) {
-                        requestBuilder.setEntity(EntityBuilder.create()
-                                .setContentEncoding(contentType.getCharset().name())
-                                .setContentType(contentType)
-                                .setBinary((byte[]) content).build());
+                        requestBuilder.setEntity(entityBuilder.setBinary((byte[]) content).build());
                     } else if (content instanceof InputStream) {
-                        requestBuilder.setEntity(EntityBuilder.create()
-                                .setContentEncoding(contentType.getCharset().name())
-                                .setContentType(contentType)
-                                .setStream((InputStream) content).build());
+                        requestBuilder.setEntity(entityBuilder.setStream((InputStream) content).build());
                     } else if (content instanceof File) {
-                        requestBuilder.setEntity(EntityBuilder.create()
-                                .setContentEncoding(contentType.getCharset().name())
-                                .setContentType(contentType)
-                                .setFile((File) content).build());
+                        requestBuilder.setEntity(entityBuilder.setFile((File) content).build());
                     }
                 }
             }

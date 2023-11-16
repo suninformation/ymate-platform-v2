@@ -112,10 +112,8 @@ public class DefaultFileWrapper implements IFileWrapper {
 
     private static String doParseFileName(HttpResponse httpResponse) {
         String fileName = null;
-        if (httpResponse.getStatusLine().getStatusCode() == HttpClientHelper.HTTP_STATUS_CODE_SUCCESS) {
-            if (httpResponse.containsHeader(HttpClientHelper.HEADER_CONTENT_DISPOSITION)) {
-                fileName = StringUtils.substringAfter(httpResponse.getFirstHeader(HttpClientHelper.HEADER_CONTENT_DISPOSITION).getValue(), "filename=");
-            }
+        if (httpResponse.getStatusLine().getStatusCode() == HttpClientHelper.HTTP_STATUS_CODE_SUCCESS && httpResponse.containsHeader(HttpClientHelper.HEADER_CONTENT_DISPOSITION)) {
+            fileName = StringUtils.substringAfter(httpResponse.getFirstHeader(HttpClientHelper.HEADER_CONTENT_DISPOSITION).getValue(), "filename=");
         }
         return fileName;
     }
@@ -192,10 +190,8 @@ public class DefaultFileWrapper implements IFileWrapper {
 
     @Override
     public void close() throws IOException {
-        if (needClean && tempFile != null && tempFile.exists()) {
-            if (!tempFile.delete()) {
-                tempFile.deleteOnExit();
-            }
+        if (needClean && tempFile != null && tempFile.exists() && !tempFile.delete()) {
+            tempFile.deleteOnExit();
         }
     }
 }

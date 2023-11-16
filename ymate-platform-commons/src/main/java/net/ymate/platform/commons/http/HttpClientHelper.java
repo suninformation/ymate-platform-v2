@@ -48,6 +48,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.security.*;
 import java.security.cert.CertificateException;
 import java.util.ArrayList;
@@ -264,7 +265,7 @@ public class HttpClientHelper {
     }
 
     public IHttpResponse get(String url, Map<String, String> params, Header[] headers, String defaultResponseCharset) throws Exception {
-        return get(url, params, Charset.forName(DEFAULT_CHARSET), headers, defaultResponseCharset);
+        return get(url, params, StandardCharsets.UTF_8, headers, defaultResponseCharset);
     }
 
     public IHttpResponse get(String url, Map<String, String> params, Charset charset, Header[] headers, String defaultResponseCharset) throws Exception {
@@ -286,8 +287,7 @@ public class HttpClientHelper {
                         .setContentEncoding(contentType == null || contentType.getCharset() == null ? DEFAULT_CHARSET : contentType.getCharset().name())
                         .setContentType(contentType)
                         .setText(content).build());
-        requestBuilder = processRequestHeaders(requestBuilder, headers, null);
-        return execute(requestBuilder, defaultResponseCharset);
+        return execute(processRequestHeaders(requestBuilder, headers, null), defaultResponseCharset);
     }
 
     public IHttpResponse post(String url, ContentType contentType, String content) throws Exception {
@@ -305,8 +305,7 @@ public class HttpClientHelper {
                         .setContentEncoding(contentType == null || contentType.getCharset() == null ? DEFAULT_CHARSET : contentType.getCharset().name())
                         .setContentType(contentType)
                         .setBinary(content).build());
-        requestBuilder = processRequestHeaders(requestBuilder, headers, null);
-        return execute(requestBuilder, null);
+        return execute(processRequestHeaders(requestBuilder, headers, null), null);
     }
 
     public IHttpResponse post(String url, ContentType contentType, InputStream content, Header[] headers) throws Exception {
@@ -320,8 +319,7 @@ public class HttpClientHelper {
                         .setContentEncoding(contentType == null || contentType.getCharset() == null ? DEFAULT_CHARSET : contentType.getCharset().name())
                         .setContentType(contentType)
                         .setStream(content).build());
-        requestBuilder = processRequestHeaders(requestBuilder, headers, null);
-        return execute(requestBuilder, defaultResponseCharset);
+        return execute(processRequestHeaders(requestBuilder, headers, null), defaultResponseCharset);
     }
 
     public IHttpResponse post(String url, ContentType contentType, byte[] content) throws Exception {
@@ -347,8 +345,7 @@ public class HttpClientHelper {
                         .setContentType(contentType)
                         .setContentEncoding(contentType == null || contentType.getCharset() == null ? DEFAULT_CHARSET : contentType.getCharset().name())
                         .setParameters(buildNameValuePairs(params)).build());
-        requestBuilder = processRequestHeaders(requestBuilder, headers, null);
-        return execute(requestBuilder, defaultResponseCharset);
+        return execute(processRequestHeaders(requestBuilder, headers, null), defaultResponseCharset);
     }
 
     public IHttpResponse post(String url, Map<String, String> params) throws Exception {
@@ -381,8 +378,7 @@ public class HttpClientHelper {
         RequestBuilder requestBuilder = RequestBuilder.post()
                 .setUri(url)
                 .setEntity(multipartEntityBuilder.build());
-        requestBuilder = processRequestHeaders(requestBuilder, headers, null);
-        return execute(requestBuilder, defaultResponseCharset);
+        return execute(processRequestHeaders(requestBuilder, headers, null), defaultResponseCharset);
     }
 
     public IHttpResponse upload(String url, String fieldName, File uploadFile, Header[] headers) throws Exception {
@@ -406,10 +402,8 @@ public class HttpClientHelper {
         try {
             httpClient.execute(requestBuilder.build(), response -> {
                 String fileName = null;
-                if (response.getStatusLine().getStatusCode() == HTTP_STATUS_CODE_SUCCESS) {
-                    if (response.containsHeader(HEADER_CONTENT_DISPOSITION)) {
-                        fileName = StringUtils.substringAfter(response.getFirstHeader(HEADER_CONTENT_DISPOSITION).getValue(), "filename=");
-                    }
+                if (response.getStatusLine().getStatusCode() == HTTP_STATUS_CODE_SUCCESS && response.containsHeader(HEADER_CONTENT_DISPOSITION)) {
+                    fileName = StringUtils.substringAfter(response.getFirstHeader(HEADER_CONTENT_DISPOSITION).getValue(), "filename=");
                 }
                 handler.handle(response, new DefaultFileWrapper(fileName, response.getEntity().getContentType().getValue(), response.getEntity().getContentLength(), new BufferedInputStream(response.getEntity().getContent())));
                 return null;
