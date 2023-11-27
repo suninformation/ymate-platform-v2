@@ -265,7 +265,7 @@ public final class Select extends Query<Select> {
     }
 
     public Select field(String prefix, Fields fields, boolean wrapIdentifier) {
-        checkFieldExcluded(fields).fields().forEach((field) -> this.fields.add(prefix, wrapIdentifier ? wrapIdentifierField(field) : field));
+        checkFieldExcluded(fields).fields().forEach(field -> this.fields.add(prefix, wrapIdentifier ? wrapIdentifierField(field) : field));
         return this;
     }
 
@@ -661,12 +661,13 @@ public final class Select extends Query<Select> {
         //
         if (!unions.isEmpty() && variables.contains("unions")) {
             StringBuilder unionsBuilder = new StringBuilder();
-            unions.stream().peek((union) -> {
+            unions.forEach(union -> {
                 unionsBuilder.append("UNION ");
                 if (union.isAll()) {
                     unionsBuilder.append("ALL ");
                 }
-            }).forEachOrdered((union) -> unionsBuilder.append(union.select()));
+                unionsBuilder.append(union.select());
+            });
             unionsBuilder.append(StringUtils.SPACE);
             //
             expression.set("unions", unionsBuilder.toString());

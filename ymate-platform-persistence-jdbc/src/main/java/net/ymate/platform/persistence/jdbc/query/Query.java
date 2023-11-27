@@ -57,8 +57,14 @@ public class Query<T> extends QueryHandleAdapter<T> {
     private IShardingable shardingable;
 
     public static <T> Executor<T> build(Class<T> queryClass) {
-        IDatabase owner = JDBC.get();
-        return build(owner, owner.getConfig().getDefaultDataSourceName(), queryClass);
+        return build(JDBC.get(), null, queryClass);
+    }
+
+    /**
+     * @since 2.1.3
+     */
+    public static <T> Executor<T> build(IDatabase owner, Class<T> queryClass) {
+        return new Executor<>(owner, null, queryClass);
     }
 
     public static <T> Executor<T> build(IDatabase owner, String dataSourceName, Class<T> queryClass) {
@@ -248,6 +254,11 @@ public class Query<T> extends QueryHandleAdapter<T> {
         private Where where;
 
         private boolean replaceWhere;
+
+        /**
+         * @since 2.1.3
+         */
+        private boolean distinct;
 
         public Executor(IDatabase owner, String dataSourceName, Class<T> queryClass) {
             super(owner, dataSourceName);
@@ -479,7 +490,7 @@ public class Query<T> extends QueryHandleAdapter<T> {
             ClassUtils.getFields(queryClass, true)
                     .stream()
                     .filter(field -> ClassUtils.isNormalField(field) && !excludedFields.contains(field.getName()))
-                    .forEachOrdered((field) -> {
+                    .forEachOrdered(field -> {
                         QField qField = field.getAnnotation(QField.class);
                         if (qField != null && (excludedFields.isEmpty() || !excludedFields.contains(Fields.field(qField.prefix(), qField.value())))) {
                             select.field(qField.prefix(), qField.value(), qField.alias(), qField.wrapIdentifier());
@@ -499,8 +510,15 @@ public class Query<T> extends QueryHandleAdapter<T> {
             } else {
                 doParseWhere(select);
             }
-            //
+            if (distinct) {
+                return select.distinct();
+            }
             return select;
+        }
+
+        public Executor<T> distinct() {
+            distinct = true;
+            return this;
         }
 
         public T findFirst() throws Exception {
@@ -517,6 +535,27 @@ public class Query<T> extends QueryHandleAdapter<T> {
 
         public long count() throws Exception {
             return buildSelect().count();
+        }
+
+        /**
+         * @since 2.1.3
+         */
+        public <E> E findFirst(Class<E> beanClass) throws Exception {
+            return buildSelect().findFirst(new BeanResultSetHandler<>(beanClass));
+        }
+
+        /**
+         * @since 2.1.3
+         */
+        public <E> IResultSet<E> find(Class<E> beanClass) throws Exception {
+            return buildSelect().find(new BeanResultSetHandler<>(beanClass));
+        }
+
+        /**
+         * @since 2.1.3
+         */
+        public <E> IResultSet<E> find(Class<E> beanClass, Page page) throws Exception {
+            return buildSelect().find(new BeanResultSetHandler<>(beanClass), page);
         }
     }
 }

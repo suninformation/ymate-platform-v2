@@ -42,6 +42,20 @@ public final class Page {
      */
     private boolean count;
 
+    /**
+     * @since 2.1.3
+     */
+    public static Page limitOne() {
+        return limit(1);
+    }
+
+    /**
+     * @since 2.1.3
+     */
+    public static Page limit(int limit) {
+        return new Page(1).pageSize(Math.max(1, limit)).count(false);
+    }
+
     public static Page create() {
         return new Page(1);
     }
