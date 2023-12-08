@@ -20,6 +20,7 @@ import net.ymate.platform.commons.util.ClassUtils;
 import net.ymate.platform.commons.util.RuntimeUtils;
 import net.ymate.platform.core.configuration.IConfigReader;
 import net.ymate.platform.core.persistence.AbstractDataSourceConfig;
+import net.ymate.platform.core.persistence.IPersistenceConfig;
 import net.ymate.platform.core.persistence.base.Type;
 import net.ymate.platform.persistence.jdbc.*;
 import org.apache.commons.lang.NullArgumentException;
@@ -82,7 +83,7 @@ public final class DefaultDatabaseDataSourceConfig extends AbstractDataSourceCon
             this.tablePrefix = configReader.getString(IDatabaseConfig.TABLE_PREFIX);
             this.identifierQuote = configReader.getString(IDatabaseConfig.IDENTIFIER_QUOTE);
             // 数据源适配器
-            String adapterClassName = configReader.getString(IDatabaseConfig.ADAPTER_CLASS, IDatabaseConfig.DEFAULT_STR);
+            String adapterClassName = configReader.getString(IDatabaseConfig.ADAPTER_CLASS, IPersistenceConfig.DEFAULT_STR);
             adapterClassName = StringUtils.defaultIfBlank(JDBC.DS_ADAPTERS.get(adapterClassName), adapterClassName);
             this.adapterClass = (Class<? extends IDatabaseDataSourceAdapter>) ClassUtils.loadClass(adapterClassName, this.getClass());
             // 连接和数据库类型
@@ -131,7 +132,7 @@ public final class DefaultDatabaseDataSourceConfig extends AbstractDataSourceCon
                 driverClass = JDBC.DB_DRIVERS.get(this.type);
             }
         }
-        if (configFile == null || !configFile.isAbsolute() || !configFile.canRead() || !configFile.exists() || configFile.isDirectory()) {
+        if (configFile == null || !configFile.isAbsolute() || configFile.isDirectory()) {
             configFile = null;
         }
     }

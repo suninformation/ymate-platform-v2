@@ -117,14 +117,19 @@ public final class DefaultLogConfig implements ILogConfig {
             if (!configFile.isAbsolute()) {
                 throw new IllegalArgumentException(String.format("Parameter config_file value [%s] is not an absolute file path.", configFile.getPath()));
             } else if (!configFile.exists()) {
-                try (InputStream inputStream = DefaultLogConfig.class.getClassLoader().getResourceAsStream("META-INF/default-log4j.xml")) {
-                    if (!FileUtils.createFileIfNotExists(configFile, inputStream) && LOG.isWarnEnabled()) {
-                        LOG.warn(String.format("Failed to create default log4j file: %s", configFile.getPath()));
+                File newConfigFile = new File(RuntimeUtils.replaceEnvVariable(DEFAULT_CONFIG_FILE));
+                if (!newConfigFile.exists()) {
+                    try (InputStream inputStream = DefaultLogConfig.class.getClassLoader().getResourceAsStream("META-INF/default-log4j.xml")) {
+                        if (!FileUtils.createFileIfNotExists(configFile, inputStream) && LOG.isWarnEnabled()) {
+                            LOG.warn(String.format("Failed to create default log4j file: %s", configFile.getPath()));
+                        }
+                    } catch (IOException e) {
+                        if (LOG.isWarnEnabled()) {
+                            LOG.warn(String.format("An exception occurred while trying to generate the default log4j file: %s", configFile.getPath()), RuntimeUtils.unwrapThrow(e));
+                        }
                     }
-                } catch (IOException e) {
-                    if (LOG.isWarnEnabled()) {
-                        LOG.warn(String.format("An exception occurred while trying to generate the default log4j file: %s", configFile.getPath()), RuntimeUtils.unwrapThrow(e));
-                    }
+                } else {
+                    configFile = newConfigFile;
                 }
             }
             //

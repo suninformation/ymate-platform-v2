@@ -53,7 +53,7 @@ public interface IConfigurationConfig extends IInitialization<IConfig> {
     String getProjectName();
 
     /**
-     * 模块名称，此模块一般指现实项目中分拆的若干子项目的名称，默认值为空
+     * 模块名称，此模块一般指现实项目中分拆的若干个子项目的名称，默认值为空
      *
      * @return 返回模块名称
      */

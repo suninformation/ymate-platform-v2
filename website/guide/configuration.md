@@ -87,7 +87,7 @@ ymp.configs.configuration.config_home=${user.dir}
 # 项目名称, 做为根路径下级子目录, 对现实项目起分类作用, 默认值: 空
 ymp.configs.configuration.project_name=
 
-# 模块名称, 此模块一般指现实项目中分拆的若干子项目的名称, 默认为空
+# 模块名称, 此模块一般指现实项目中分拆的若干个子项目的名称, 默认为空
 ymp.configs.configuration.module_name=
 
 # 配置文件存放的基准目录名称，不允许以'/'开头但必须以'/'结束，默认值为空

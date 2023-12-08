@@ -88,7 +88,7 @@ ymp.configs.cache.default_cache_name=
 # 默认缓存数据超时时间(秒), 可选参数, 数值必须大于等于0, 默认值: 0
 ymp.configs.cache.default_cache_timeout=
 
-# Ehcache配置文件路径, 可选参数, 若未设置或设置的文件路径无效将被忽略, 默认值: 空
+# 可选参数, 若未设置或设置的文件路径无效将使用默认值: ${root}/cfgs/ehcache.xml
 ymp.configs.cache.config_file=
 
 # Redis是否采用Set存储缓存键名, 默认值: false

@@ -119,15 +119,6 @@ public final class DefaultCacheConfig implements ICacheConfig {
     @Override
     public void initialize(ICaches owner) throws Exception {
         if (!initialized) {
-            cacheManager = ClassUtils.getExtensionLoader(ICacheManager.class).getExtension();
-            if (cacheManager == null) {
-                cacheManager = new DefaultCacheManager();
-            }
-            if (LOG.isInfoEnabled()) {
-                LOG.info(String.format("Using CacheManager class [%s].", cacheManager.getClass().getName()));
-            }
-            cacheManager.initialize(owner);
-            //
             if (cacheEventListener == null) {
                 cacheEventListener = ClassUtils.loadClass(ICacheEventListener.class, DefaultCacheEventListener.class);
             }
@@ -152,9 +143,18 @@ public final class DefaultCacheConfig implements ICacheConfig {
             if (defaultCacheTimeout < 0) {
                 defaultCacheTimeout = 0;
             }
-            if (configFile == null || !configFile.isAbsolute() || !configFile.canRead() || !configFile.exists() || configFile.isDirectory()) {
+            if (configFile == null || !configFile.isAbsolute() || configFile.isDirectory()) {
                 configFile = null;
             }
+            //
+            cacheManager = ClassUtils.getExtensionLoader(ICacheManager.class).getExtension();
+            if (cacheManager == null) {
+                cacheManager = new DefaultCacheManager();
+            }
+            if (LOG.isInfoEnabled()) {
+                LOG.info(String.format("Using CacheManager class [%s].", cacheManager.getClass().getName()));
+            }
+            cacheManager.initialize(owner);
             //
             if (cacheProvider == null) {
                 cacheProvider = ClassUtils.loadClass(ICacheProvider.class, DefaultCacheProvider.class);

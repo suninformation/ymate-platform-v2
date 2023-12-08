@@ -51,25 +51,30 @@ public class DefaultCacheManager implements ICacheManager {
             this.owner = owner;
             //
             File configFile = owner.getConfig().getConfigFile();
-            if (configFile == null) {
-                configFile = new File(RuntimeUtils.replaceEnvVariable(ICacheConfig.DEFAULT_CONFIG_FILE));
-                try (InputStream inputStream = AbstractCacheProvider.class.getClassLoader().getResourceAsStream("META-INF/default-ehcache.xml")) {
-                    if (!FileUtils.createFileIfNotExists(configFile, inputStream) && LOG.isWarnEnabled()) {
-                        LOG.warn(String.format("Failed to create default ehcache config file: %s", configFile.getPath()));
+            if (configFile == null || !configFile.exists()) {
+                File newConfigFile = new File(RuntimeUtils.replaceEnvVariable(ICacheConfig.DEFAULT_CONFIG_FILE));
+                if (!newConfigFile.exists()) {
+                    if (configFile == null) {
+                        configFile = newConfigFile;
                     }
-                } catch (IOException e) {
-                    if (LOG.isWarnEnabled()) {
-                        LOG.warn(String.format("An exception occurred while trying to generate the default ehcache config file: %s", configFile.getPath()), RuntimeUtils.unwrapThrow(e));
+                    try (InputStream inputStream = AbstractCacheProvider.class.getClassLoader().getResourceAsStream("META-INF/default-ehcache.xml")) {
+                        if (!FileUtils.createFileIfNotExists(configFile, inputStream) && LOG.isWarnEnabled()) {
+                            LOG.warn(String.format("Failed to create default ehcache config file: %s", configFile.getPath()));
+                        }
+                    } catch (IOException e) {
+                        if (LOG.isWarnEnabled()) {
+                            LOG.warn(String.format("An exception occurred while trying to generate the default ehcache config file: %s", configFile.getPath()), RuntimeUtils.unwrapThrow(e));
+                        }
                     }
+                } else {
+                    configFile = newConfigFile;
                 }
             }
-            if (configFile.exists()) {
-                try {
-                    cacheManager = CacheManager.create(configFile.toURI().toURL());
-                } catch (MalformedURLException e) {
-                    if (LOG.isWarnEnabled()) {
-                        LOG.warn(StringUtils.EMPTY, RuntimeUtils.unwrapThrow(e));
-                    }
+            try {
+                cacheManager = CacheManager.create(configFile.toURI().toURL());
+            } catch (MalformedURLException e) {
+                if (LOG.isWarnEnabled()) {
+                    LOG.warn(StringUtils.EMPTY, RuntimeUtils.unwrapThrow(e));
                 }
             }
             if (cacheManager == null) {

@@ -113,7 +113,7 @@ public interface ICacheConfig extends IInitialization<ICaches>, IDestroyable {
     int getDefaultCacheTimeout();
 
     /**
-     * 获取Ehcache配置文件，可选参数，若未设置或设置的文件路径无效将被忽略，默认值为空
+     * 获取Ehcache配置文件，可选参数，若未设置或设置的文件路径无效将使用默认值: ${root}/cfgs/ehcache.xml
      *
      * @return 返回Ehcache配置文件
      */

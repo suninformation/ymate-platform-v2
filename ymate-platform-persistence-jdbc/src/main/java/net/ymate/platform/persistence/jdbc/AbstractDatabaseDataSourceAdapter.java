@@ -52,7 +52,7 @@ public abstract class AbstractDatabaseDataSourceAdapter extends AbstractDataSour
         }
         InputStream inputStream = null;
         File configFile = getDataSourceConfig().getConfigFile();
-        if (configFile != null) {
+        if (configFile != null && configFile.exists()) {
             try {
                 inputStream = new FileInputStream(configFile);
                 if (LOG.isInfoEnabled()) {
@@ -83,8 +83,12 @@ public abstract class AbstractDatabaseDataSourceAdapter extends AbstractDataSour
 
     protected boolean doCreateDataSourceConfigFile(String dsAdapterType) {
         if (StringUtils.isNotBlank(dsAdapterType)) {
-            File configFile = new File(String.format("%s/%s.properties", RuntimeUtils.replaceEnvVariable("${root}/cfgs"), dsAdapterType));
-            if (configFile.isAbsolute() && !configFile.exists()) {
+            File newConfigFile = new File(String.format("%s/%s.properties", RuntimeUtils.replaceEnvVariable("${root}/cfgs"), dsAdapterType));
+            if (!newConfigFile.exists()) {
+                File configFile = getDataSourceConfig().getConfigFile();
+                if (configFile == null) {
+                    configFile = newConfigFile;
+                }
                 try (InputStream inputStream = AbstractDatabaseDataSourceAdapter.class.getClassLoader().getResourceAsStream(String.format("META-INF/default-%s.properties", dsAdapterType))) {
                     if (inputStream != null) {
                         if (FileUtils.createFileIfNotExists(configFile, inputStream)) {
