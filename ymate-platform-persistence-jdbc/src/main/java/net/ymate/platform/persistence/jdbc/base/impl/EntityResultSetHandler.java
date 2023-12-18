@@ -17,6 +17,7 @@ package net.ymate.platform.persistence.jdbc.base.impl;
 
 import net.ymate.platform.commons.lang.BlurObject;
 import net.ymate.platform.commons.util.ClassUtils;
+import net.ymate.platform.core.persistence.IValueRenderer;
 import net.ymate.platform.core.persistence.base.EntityMeta;
 import net.ymate.platform.core.persistence.base.IEntity;
 import net.ymate.platform.core.persistence.base.PropertyMeta;
@@ -64,7 +65,7 @@ public class EntityResultSetHandler<T extends IEntity> extends AbstractResultSet
             PropertyMeta propertyMeta = entityMeta.getPropertyByName(getColumnMeta(idx).getName());
             if (propertyMeta != null) {
                 Field field = propertyMeta.getField();
-                Object fieldValue = processValueRenderer(field, BlurObject.bind(resultSet.getObject(idx + 1)).toObjectValue(field.getType()));
+                Object fieldValue = IValueRenderer.processValueRenderer(field, BlurObject.bind(resultSet.getObject(idx + 1)).toObjectValue(field.getType()));
                 if (entityMeta.isPrimaryKey(propertyMeta.getName()) && entityMeta.isMultiplePrimaryKey()) {
                     propertyMeta.getField().set(primaryKeyObject, fieldValue);
                 } else {

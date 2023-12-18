@@ -18,10 +18,13 @@ package net.ymate.platform.core.persistence;
 import net.ymate.platform.commons.util.ClassUtils;
 import net.ymate.platform.commons.util.RuntimeUtils;
 import net.ymate.platform.core.beans.annotation.Ignored;
+import net.ymate.platform.core.persistence.annotation.ValueRenderer;
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import java.lang.reflect.Field;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -33,6 +36,26 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 @Ignored
 public interface IValueRenderer {
+
+    /**
+     * @since 2.1.3
+     */
+    static Object processValueRenderer(Field field, Object originValue) {
+        if (field != null && originValue != null) {
+            ValueRenderer valueRendererAnn = field.getAnnotation(ValueRenderer.class);
+            if (valueRendererAnn != null && !ArrayUtils.isEmpty(valueRendererAnn.value())) {
+                for (Class<? extends IValueRenderer> valueRendererClass : valueRendererAnn.value()) {
+                    if (valueRendererClass != null) {
+                        IValueRenderer valueRenderer = IValueRenderer.Manager.getValueRenderer(valueRendererClass);
+                        if (valueRenderer != null) {
+                            originValue = valueRenderer.render(field.getType(), originValue);
+                        }
+                    }
+                }
+            }
+        }
+        return originValue;
+    }
 
     /**
      * 执行渲染操作

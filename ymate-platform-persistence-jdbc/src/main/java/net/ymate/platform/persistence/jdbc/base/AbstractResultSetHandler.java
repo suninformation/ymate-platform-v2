@@ -16,8 +16,6 @@
 package net.ymate.platform.persistence.jdbc.base;
 
 import net.ymate.platform.core.persistence.IValueRenderer;
-import net.ymate.platform.core.persistence.annotation.ValueRenderer;
-import org.apache.commons.lang3.ArrayUtils;
 
 import java.lang.reflect.Field;
 import java.sql.ResultSet;
@@ -58,21 +56,12 @@ public abstract class AbstractResultSetHandler<T> implements IResultSetHandler<T
         return results;
     }
 
+    /**
+     * @see IValueRenderer#processValueRenderer(Field, Object)
+     */
+    @Deprecated
     protected Object processValueRenderer(Field field, Object originValue) {
-        if (field != null && originValue != null) {
-            ValueRenderer valueRendererAnn = field.getAnnotation(ValueRenderer.class);
-            if (valueRendererAnn != null && !ArrayUtils.isEmpty(valueRendererAnn.value())) {
-                for (Class<? extends IValueRenderer> valueRendererClass : valueRendererAnn.value()) {
-                    if (valueRendererClass != null) {
-                        IValueRenderer valueRenderer = IValueRenderer.Manager.getValueRenderer(valueRendererClass);
-                        if (valueRenderer != null) {
-                            originValue = valueRenderer.render(field.getType(), originValue);
-                        }
-                    }
-                }
-            }
-        }
-        return originValue;
+        return IValueRenderer.processValueRenderer(field, originValue);
     }
 
     /**

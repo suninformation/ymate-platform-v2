@@ -16,6 +16,7 @@
 package net.ymate.platform.persistence.jdbc.base.impl;
 
 import net.ymate.platform.commons.util.ClassUtils;
+import net.ymate.platform.core.persistence.IValueRenderer;
 import net.ymate.platform.persistence.jdbc.base.AbstractResultSetHandler;
 import org.apache.commons.lang3.StringUtils;
 
@@ -53,7 +54,7 @@ public class BeanResultSetHandler<T> extends AbstractResultSetHandler<T> {
                     targetField = targetWrapper.getField(fieldName.toLowerCase());
                 }
                 if (targetField != null) {
-                    targetWrapper.setValue(targetField, processValueRenderer(targetField, value));
+                    targetWrapper.setValue(targetField, IValueRenderer.processValueRenderer(targetField, value));
                 }
             }
         }

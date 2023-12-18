@@ -21,6 +21,7 @@ import net.ymate.platform.commons.lang.BlurObject;
 import net.ymate.platform.commons.util.ClassUtils;
 import net.ymate.platform.core.persistence.Fields;
 import net.ymate.platform.core.persistence.IKeyGenerator;
+import net.ymate.platform.core.persistence.IValueRenderer;
 import net.ymate.platform.core.persistence.base.EntityMeta;
 import net.ymate.platform.core.persistence.base.IEntity;
 import net.ymate.platform.core.persistence.base.PropertyMeta;
@@ -32,6 +33,7 @@ import org.bson.Document;
 import org.bson.types.ObjectId;
 
 import java.io.Serializable;
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -56,19 +58,20 @@ public class ResultSetHelper {
                 beanWrapper.getTargetObject().setId((Serializable) primaryKeyObject);
             }
             for (PropertyMeta propertyMeta : entityMeta.getProperties()) {
+                Field field = propertyMeta.getField();
                 Object propValue;
                 if (entityMeta.isPrimaryKey(propertyMeta.getName())) {
                     propValue = document.getObjectId(propertyMeta.getName()).toString();
                 } else {
-                    propValue = BlurObject.bind(document.get(propertyMeta.getName())).toObjectValue(propertyMeta.getField().getType());
+                    propValue = IValueRenderer.processValueRenderer(field, BlurObject.bind(document.get(propertyMeta.getName())).toObjectValue(field.getType()));
                 }
                 if (propValue == null) {
                     continue;
                 }
                 if (entityMeta.isPrimaryKey(propertyMeta.getName()) && entityMeta.isMultiplePrimaryKey()) {
-                    propertyMeta.getField().set(primaryKeyObject, propValue);
+                    field.set(primaryKeyObject, propValue);
                 } else {
-                    propertyMeta.getField().set(beanWrapper.getTargetObject(), propValue);
+                    field.set(beanWrapper.getTargetObject(), propValue);
                 }
             }
             return beanWrapper.getTargetObject();
