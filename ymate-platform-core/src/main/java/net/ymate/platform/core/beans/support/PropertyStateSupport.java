@@ -169,6 +169,19 @@ public class PropertyStateSupport<T> {
     }
 
     /**
+     * @param propertyOrAliasName 属性名或别名
+     * @return 返回true表示该属性值已发生变化
+     * @since 2.1.3
+     */
+    public boolean isChanged(String propertyOrAliasName) {
+        return StringUtils.isNotBlank(propertyOrAliasName) && stateMetas.stream()
+                .filter(stateMeta -> StringUtils.equalsAny(propertyOrAliasName, stateMeta.getPropertyName(), stateMeta.getAliasName()))
+                .findFirst()
+                .filter(PropertyStateMeta::isChanged)
+                .isPresent();
+    }
+
+    /**
      * @return 返回全部属性状态对象集合
      * @since 2.1.2
      */

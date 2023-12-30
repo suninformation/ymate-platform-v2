@@ -62,6 +62,15 @@ public final class EntityStateWrapper<Entity extends IEntity> {
         return stateSupport.hasChanged();
     }
 
+    /**
+     * @param propertyOrAliasName 属性名或别名
+     * @return 返回true表示该属性值已发生变化
+     * @since 2.1.3
+     */
+    public boolean isChanged(String propertyOrAliasName) {
+        return stateSupport.isChanged(propertyOrAliasName);
+    }
+
     public IProxyFactory getProxyFactory() {
         return stateSupport.getProxyFactory();
     }
