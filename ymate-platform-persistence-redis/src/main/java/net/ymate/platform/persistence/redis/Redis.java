@@ -15,6 +15,7 @@
  */
 package net.ymate.platform.persistence.redis;
 
+import net.ymate.platform.commons.ReentrantLockHelper;
 import net.ymate.platform.commons.impl.DefaultThreadFactory;
 import net.ymate.platform.commons.util.RuntimeUtils;
 import net.ymate.platform.commons.util.ThreadUtils;
@@ -39,6 +40,7 @@ import redis.clients.jedis.ShardedJedis;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * @author 刘镇 (suninformation@163.com) on 15/11/30 上午3:14
@@ -48,6 +50,8 @@ public final class Redis implements IModule, IRedis {
     private static final Log LOG = LogFactory.getLog(Redis.class);
 
     private static volatile IRedis instance;
+
+    private static final ReentrantLockHelper LOCKER = new ReentrantLockHelper();
 
     private IApplication owner;
 
@@ -114,12 +118,6 @@ public final class Redis implements IModule, IRedis {
                 config.initialize(this);
             }
             //
-            for (Map.Entry<String, IRedisDataSourceConfig> entry : config.getDataSourceConfigs().entrySet()) {
-                IRedisDataSourceAdapter dataSourceAdapter = new RedisDataSourceAdapter();
-                dataSourceAdapter.initialize(this, entry.getValue());
-                // 将数据源适配器放入缓存
-                dataSourceCaches.put(entry.getKey(), dataSourceAdapter);
-            }
             subscribePool = ThreadUtils.newCachedThreadPool(DefaultThreadFactory.create("redis-subscribe-pool"));
             initialized = true;
         }
@@ -142,6 +140,28 @@ public final class Redis implements IModule, IRedis {
 
     private IRedisDataSourceAdapter doSafeGetDataSourceAdapter(String dataSourceName) {
         IRedisDataSourceAdapter dataSourceAdapter = dataSourceCaches.get(dataSourceName);
+        if (dataSourceAdapter == null) {
+            ReentrantLock lock = null;
+            try {
+                lock = LOCKER.getLocker(dataSourceName);
+                lock.lock();
+                IRedisDataSourceConfig dataSourceConfig = config.getDataSourceConfig(dataSourceName);
+                if (dataSourceConfig != null) {
+                    if (!dataSourceConfig.isInitialized()) {
+                        dataSourceConfig.initialize(this);
+                    }
+                    // 实例化数据源适配器并放入缓存
+                    dataSourceAdapter = dataSourceCaches.computeIfAbsent(dataSourceName, s -> new RedisDataSourceAdapter());
+                    if (!dataSourceAdapter.isInitialized()) {
+                        dataSourceAdapter.initialize(this, dataSourceConfig);
+                    }
+                }
+            } catch (Exception e) {
+                throw RuntimeUtils.wrapRuntimeThrow(e);
+            } finally {
+                ReentrantLockHelper.unlock(lock);
+            }
+        }
         if (dataSourceAdapter == null) {
             throw new IllegalStateException(String.format("Datasource '%s' not found.", dataSourceName));
         }

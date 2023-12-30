@@ -37,7 +37,7 @@ public class DefaultDatabaseConnectionHolder implements IDatabaseConnectionHolde
 
     public DefaultDatabaseConnectionHolder(IDatabaseDataSourceAdapter dsAdapter) throws Exception {
         dataSourceAdapter = dsAdapter;
-        if (dataSourceAdapter.initializeIfNeed()) {
+        if (dataSourceAdapter.isInitialized()) {
             conn = dsAdapter.getConnection();
         }
     }

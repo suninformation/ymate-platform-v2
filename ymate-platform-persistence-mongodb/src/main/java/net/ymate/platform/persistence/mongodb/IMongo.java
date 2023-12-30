@@ -26,26 +26,9 @@ import net.ymate.platform.core.persistence.ITrade;
  * @author 刘镇 (suninformation@163.com) on 15/11/21 上午9:24
  */
 @Ignored
-public interface IMongo extends IPersistence<IMongoSession, IMongoConfig, IMongoConnectionHolder> {
+public interface IMongo extends IPersistence<IMongoSession, IMongoConfig, IMongoConnectionHolder, IMongoDataSourceAdapter> {
 
     String MODULE_NAME = "persistence.mongodb";
-
-    /**
-     * 获取默认数据源适配器
-     *
-     * @return 返回数据源适配器对象
-     * @throws Exception 可能产生的任何异常
-     */
-    IMongoDataSourceAdapter getDefaultDataSourceAdapter() throws Exception;
-
-    /**
-     * 获取指定源数据源适配器
-     *
-     * @param dataSourceName 数据源名称
-     * @return 返回数据源适配器对象
-     * @throws Exception 可能产生的任何异常
-     */
-    IMongoDataSourceAdapter getDataSourceAdapter(String dataSourceName) throws Exception;
 
     // ------
 

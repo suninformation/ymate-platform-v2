@@ -30,7 +30,7 @@ import net.ymate.platform.core.persistence.base.PropertyMeta;
 public class DefaultKeyGenerator implements IKeyGenerator {
 
     @Override
-    public Object generate(IPersistence<?, ?, ?> owner, PropertyMeta propertyMeta, IEntity<?> entity) {
+    public Object generate(IPersistence<?, ?, ?, ?> owner, PropertyMeta propertyMeta, IEntity<?> entity) {
         if (propertyMeta.getField().getType().equals(String.class)) {
             return UUIDUtils.UUID();
         }

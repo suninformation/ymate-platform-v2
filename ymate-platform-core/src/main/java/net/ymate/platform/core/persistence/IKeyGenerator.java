@@ -50,7 +50,7 @@ public interface IKeyGenerator {
      * @param entity       数据实体对象
      * @return 返回生成的键值
      */
-    Object generate(IPersistence<?, ?, ?> owner, PropertyMeta propertyMeta, IEntity<?> entity);
+    Object generate(IPersistence<?, ?, ?, ?> owner, PropertyMeta propertyMeta, IEntity<?> entity);
 
     /**
      * 键值生成器类管理器

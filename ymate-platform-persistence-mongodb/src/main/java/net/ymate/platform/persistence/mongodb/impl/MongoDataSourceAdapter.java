@@ -58,11 +58,6 @@ public class MongoDataSourceAdapter extends AbstractDataSourceAdapter<IMongo, IM
     }
 
     @Override
-    public boolean initializeIfNeed() throws Exception {
-        return isInitialized();
-    }
-
-    @Override
     public MongoClient getConnection() throws Exception {
         return mongoClient;
     }

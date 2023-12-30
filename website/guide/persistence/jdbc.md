@@ -903,7 +903,7 @@ import org.apache.commons.lang3.StringUtils;
 @KeyGenerator(value = "custom")
 public class CustomKeyGenerator implements IKeyGenerator {
     @Override
-    public Object generate(IPersistence<?, ?, ?> owner, PropertyMeta propertyMeta, IEntity<?> entity) {
+    public Object generate(IPersistence<?, ?, ?, ?> owner, PropertyMeta propertyMeta, IEntity<?> entity) {
         // 判断当前主键属性类型，仅对字符串类型生成
         if (propertyMeta.getField().getType().equals(String.class)) {
             if (entity instanceof UserEntity) {

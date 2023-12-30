@@ -120,11 +120,6 @@ public class RedisDataSourceAdapter extends AbstractDataSourceAdapter<IRedis, IR
     }
 
     @Override
-    public boolean initializeIfNeed() throws Exception {
-        return isInitialized();
-    }
-
-    @Override
     public IRedisCommander getConnection() throws Exception {
         if (isCluster) {
             return JedisCommandsWrapper.bind(jedisCluster);

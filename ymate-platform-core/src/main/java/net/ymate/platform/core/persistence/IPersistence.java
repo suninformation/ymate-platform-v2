@@ -29,7 +29,7 @@ import net.ymate.platform.core.support.IInitialization;
  */
 @Ignored
 @SuppressWarnings("rawtypes")
-public interface IPersistence<SESSION, CONFIG, CONNECTION_HOLDER extends IConnectionHolder> extends IInitialization<IApplication>, IDestroyable {
+public interface IPersistence<SESSION, CONFIG, CONNECTION_HOLDER extends IConnectionHolder, DATA_SOURCE_ADAPTER extends IDataSourceAdapter> extends IInitialization<IApplication>, IDestroyable {
 
     /**
      * 获取所属应用容器
@@ -69,6 +69,23 @@ public interface IPersistence<SESSION, CONFIG, CONNECTION_HOLDER extends IConnec
      * @throws Exception 可能产生的异常
      */
     void releaseConnectionHolder(CONNECTION_HOLDER connectionHolder) throws Exception;
+
+    /**
+     * 获取默认数据源适配器
+     *
+     * @return 返回数据源适配器对象
+     * @throws Exception 可能产生的任何异常
+     */
+    DATA_SOURCE_ADAPTER getDefaultDataSourceAdapter() throws Exception;
+
+    /**
+     * 获取指定源数据源适配器
+     *
+     * @param dataSourceName 数据源名称
+     * @return 返回数据源适配器对象
+     * @throws Exception 可能产生的任何异常
+     */
+    DATA_SOURCE_ADAPTER getDataSourceAdapter(String dataSourceName) throws Exception;
 
     /**
      * 开启数据库连接会话(注意一定记得关闭会话)

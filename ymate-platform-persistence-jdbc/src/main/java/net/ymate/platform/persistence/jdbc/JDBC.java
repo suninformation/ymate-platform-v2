@@ -15,6 +15,7 @@
  */
 package net.ymate.platform.persistence.jdbc;
 
+import net.ymate.platform.commons.ReentrantLockHelper;
 import net.ymate.platform.commons.util.ClassUtils;
 import net.ymate.platform.commons.util.RuntimeUtils;
 import net.ymate.platform.core.IApplication;
@@ -48,6 +49,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * @author 刘镇 (suninformation@163.com) on 2011-9-10 下午11:45:25
@@ -57,6 +59,8 @@ public final class JDBC implements IModule, IDatabase {
     private static final Log LOG = LogFactory.getLog(JDBC.class);
 
     private static volatile IDatabase instance;
+
+    private static final ReentrantLockHelper LOCKER = new ReentrantLockHelper();
 
     /**
      * 框架提供的已知数据源适配器名称映射
@@ -179,13 +183,6 @@ public final class JDBC implements IModule, IDatabase {
                 proxyFactory.registerProxy(new TransactionProxy());
                 proxyFactory.registerProxy(new RepositoryProxy(this));
             }
-            //
-            for (Map.Entry<String, IDatabaseDataSourceConfig> entry : config.getDataSourceConfigs().entrySet()) {
-                IDatabaseDataSourceAdapter dataSourceAdapter = entry.getValue().getAdapterClass().newInstance();
-                dataSourceAdapter.initialize(this, entry.getValue());
-                // 将数据源适配器放入缓存
-                dataSourceCaches.put(entry.getKey(), dataSourceAdapter);
-            }
             initialized = true;
         }
     }
@@ -226,6 +223,28 @@ public final class JDBC implements IModule, IDatabase {
 
     private IDatabaseDataSourceAdapter doSafeGetDataSourceAdapter(String dataSourceName) {
         IDatabaseDataSourceAdapter dataSourceAdapter = dataSourceCaches.get(dataSourceName);
+        if (dataSourceAdapter == null) {
+            ReentrantLock lock = null;
+            try {
+                lock = LOCKER.getLocker(dataSourceName);
+                lock.lock();
+                IDatabaseDataSourceConfig dataSourceConfig = config.getDataSourceConfig(dataSourceName);
+                if (dataSourceConfig != null) {
+                    if (!dataSourceConfig.isInitialized()) {
+                        dataSourceConfig.initialize(this);
+                    }
+                    // 实例化数据源适配器并放入缓存
+                    dataSourceAdapter = dataSourceCaches.computeIfAbsent(dataSourceName, s -> ClassUtils.impl(dataSourceConfig.getAdapterClass(), IDatabaseDataSourceAdapter.class));
+                    if (dataSourceAdapter != null && !dataSourceAdapter.isInitialized()) {
+                        dataSourceAdapter.initialize(this, dataSourceConfig);
+                    }
+                }
+            } catch (Exception e) {
+                throw RuntimeUtils.wrapRuntimeThrow(e);
+            } finally {
+                ReentrantLockHelper.unlock(lock);
+            }
+        }
         if (dataSourceAdapter == null) {
             throw new IllegalStateException(String.format("Datasource '%s' not found.", dataSourceName));
         }

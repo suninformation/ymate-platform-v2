@@ -16,6 +16,7 @@
 package net.ymate.platform.persistence.mongodb;
 
 import com.mongodb.ClientSessionOptions;
+import net.ymate.platform.commons.ReentrantLockHelper;
 import net.ymate.platform.commons.util.RuntimeUtils;
 import net.ymate.platform.core.IApplication;
 import net.ymate.platform.core.IApplicationConfigureFactory;
@@ -33,6 +34,7 @@ import net.ymate.platform.persistence.mongodb.transaction.Transactions;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * @author 刘镇 (suninformation@163.com) on 15/11/21 上午9:24
@@ -40,6 +42,8 @@ import java.util.concurrent.ConcurrentHashMap;
 public class MongoDB implements IModule, IMongo {
 
     private static volatile IMongo instance;
+
+    private static final ReentrantLockHelper LOCKER = new ReentrantLockHelper();
 
     private IApplication owner;
 
@@ -130,6 +134,28 @@ public class MongoDB implements IModule, IMongo {
 
     private IMongoDataSourceAdapter doSafeGetDataSourceAdapter(String dataSourceName) {
         IMongoDataSourceAdapter dataSourceAdapter = dataSourceCaches.get(dataSourceName);
+        if (dataSourceAdapter == null) {
+            ReentrantLock lock = null;
+            try {
+                lock = LOCKER.getLocker(dataSourceName);
+                lock.lock();
+                IMongoDataSourceConfig dataSourceConfig = config.getDataSourceConfig(dataSourceName);
+                if (dataSourceConfig != null) {
+                    if (!dataSourceConfig.isInitialized()) {
+                        dataSourceConfig.initialize(this);
+                    }
+                    // 实例化数据源适配器并放入缓存
+                    dataSourceAdapter = dataSourceCaches.computeIfAbsent(dataSourceName, s -> new MongoDataSourceAdapter());
+                    if (!dataSourceAdapter.isInitialized()) {
+                        dataSourceAdapter.initialize(this, dataSourceConfig);
+                    }
+                }
+            } catch (Exception e) {
+                throw RuntimeUtils.wrapRuntimeThrow(e);
+            } finally {
+                ReentrantLockHelper.unlock(lock);
+            }
+        }
         if (dataSourceAdapter == null) {
             throw new IllegalStateException(String.format("Datasource '%s' not found.", dataSourceName));
         }

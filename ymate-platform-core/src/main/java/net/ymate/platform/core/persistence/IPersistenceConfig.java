@@ -70,4 +70,11 @@ public interface IPersistenceConfig<OWNER extends IPersistence, DATA_SOURCE_CONF
      * @return 返回指定名称的数据源配置
      */
     DATA_SOURCE_CONFIG getDataSourceConfig(String dataSourceName);
+
+    /**
+     * 注册数据源配置（在使用通过该方法添加数据源配置时需判断其是否已被初始化）
+     *
+     * @param dataSourceConfig 数据源配置对象
+     */
+    void addDataSourceConfig(DATA_SOURCE_CONFIG dataSourceConfig);
 }

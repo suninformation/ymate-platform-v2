@@ -19,6 +19,8 @@ import net.ymate.platform.core.configuration.IConfigReader;
 import net.ymate.platform.core.configuration.impl.MapSafeConfigReader;
 import net.ymate.platform.core.module.IModuleConfigurer;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -31,6 +33,8 @@ import java.util.Map;
  */
 @SuppressWarnings("rawtypes")
 public abstract class AbstractPersistenceConfig<OWNER extends IPersistence, DATA_SOURCE_CONFIG extends IDataSourceConfig> implements IPersistenceConfig<OWNER, DATA_SOURCE_CONFIG> {
+
+    private static final Log LOG = LogFactory.getLog(AbstractPersistenceConfig.class);
 
     private String dataSourceDefaultName;
 
@@ -106,8 +110,11 @@ public abstract class AbstractPersistenceConfig<OWNER extends IPersistence, DATA
     }
 
     public void addDataSourceConfig(DATA_SOURCE_CONFIG dataSourceConfig) {
-        if (!initialized) {
-            dataSourceConfigs.put(dataSourceConfig.getName(), dataSourceConfig);
+        String dataSourceName = dataSourceConfig.getName();
+        if (!dataSourceConfigs.containsKey(dataSourceName)) {
+            dataSourceConfigs.put(dataSourceName, dataSourceConfig);
+        } else if (LOG.isWarnEnabled()) {
+            LOG.warn(String.format("Datasource config '%s' already exists.", dataSourceName));
         }
     }
 

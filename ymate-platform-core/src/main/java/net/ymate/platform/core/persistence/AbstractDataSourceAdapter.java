@@ -16,7 +16,6 @@
 package net.ymate.platform.core.persistence;
 
 import net.ymate.platform.commons.IPasswordProcessor;
-import net.ymate.platform.commons.util.RuntimeUtils;
 import net.ymate.platform.core.YMP;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
@@ -72,21 +71,6 @@ public abstract class AbstractDataSourceAdapter<OWNER extends IPersistence, DATA
     protected abstract void doInitialize(OWNER owner, DATASOURCE_CONFIG dataSourceConfig) throws Exception;
 
     @Override
-    public boolean initializeIfNeed() throws Exception {
-        if (!initialized) {
-            try {
-                doInitialize(owner, dataSourceConfig);
-                initialized = true;
-            } catch (Exception e) {
-                if (LOG.isWarnEnabled()) {
-                    LOG.warn(String.format("Data source '%s' initialization failed...", dataSourceConfig.getName()), RuntimeUtils.unwrapThrow(e));
-                }
-            }
-        }
-        return initialized;
-    }
-
-    @Override
     public DATASOURCE_CONFIG getDataSourceConfig() {
         return dataSourceConfig;
     }
@@ -110,7 +94,7 @@ public abstract class AbstractDataSourceAdapter<OWNER extends IPersistence, DATA
      */
     protected abstract void doClose() throws Exception;
 
-    protected boolean isInitialized() {
+    public boolean isInitialized() {
         return initialized;
     }
 

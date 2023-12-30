@@ -41,12 +41,12 @@ public interface IDataSourceAdapter<OWNER, DATASOURCE_CONFIG extends IDataSource
     void initialize(OWNER owner, DATASOURCE_CONFIG dataSourceConfig) throws Exception;
 
     /**
-     * 判断是否已初始化, 若尚未执行则尝试初始化
+     * 判断是否已初始化
      *
      * @return 返回true表示已初始化
      * @throws Exception 可能产生的异常
      */
-    boolean initializeIfNeed() throws Exception;
+    boolean isInitialized() throws Exception;
 
     /**
      * 获取所属持久化模块
