@@ -450,6 +450,20 @@
          return Fields.create(fields);
      }
 
+     /**
+      * @since 2.1.3
+      */
+     public String fieldAlias(String field, String alias) {
+         return Fields.fieldAlias(field, alias);
+     }
+
+     /**
+      * @since 2.1.3
+      */
+     public String fieldAliasWrap(String field, String alias) {
+         return wrapIdentifierField(Fields.fieldAlias(field, alias));
+     }
+
      public String fieldWrap(String prefix, String field, String alias) {
          return wrapIdentifierField(Fields.field(prefix, field, alias));
      }

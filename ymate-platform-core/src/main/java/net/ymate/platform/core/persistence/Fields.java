@@ -61,6 +61,16 @@ public final class Fields implements Serializable {
         return field(prefix, field, null);
     }
 
+    /**
+     * @param field 字段名
+     * @param alias 别名
+     * @return 组合后的字段名称
+     * @since 2.1.3
+     */
+    public static String fieldAlias(String field, String alias) {
+        return field(null, field, alias);
+    }
+
     public static Fields create(String... fields) {
         return new Fields(fields);
     }
@@ -88,6 +98,17 @@ public final class Fields implements Serializable {
 
     public Fields add(String field) {
         this.fields.add(field);
+        return this;
+    }
+
+    /**
+     * @param field 字段名
+     * @param alias 别名
+     * @return 字段过滤对象
+     * @since 2.1.3
+     */
+    public Fields addAlias(String field, String alias) {
+        this.fields.add(fieldAlias(field, alias));
         return this;
     }
 

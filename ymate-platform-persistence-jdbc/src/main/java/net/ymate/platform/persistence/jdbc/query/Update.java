@@ -224,6 +224,21 @@ public final class Update extends Query<Update> {
         return this;
     }
 
+    /**
+     * @since 2.1.3
+     */
+    public Update fieldAlias(String field, String alias) {
+        return fieldAlias(field, alias, true);
+    }
+
+    /**
+     * @since 2.1.3
+     */
+    public Update fieldAlias(String field, String alias, boolean wrapIdentifier) {
+        this.fields.addAlias(wrapIdentifier ? wrapIdentifierField(field) : field, alias);
+        return this;
+    }
+
     public Update field(Fields fields) {
         return field(fields, true);
     }

@@ -150,6 +150,21 @@ public final class Insert extends Query<Insert> {
         return this;
     }
 
+    /**
+     * @since 2.1.3
+     */
+    public Insert fieldAlias(String field, String alias) {
+        return fieldAlias(field, alias, true);
+    }
+
+    /**
+     * @since 2.1.3
+     */
+    public Insert fieldAlias(String field, String alias, boolean wrapIdentifier) {
+        this.fields.addAlias(wrapIdentifier ? wrapIdentifierField(field) : field, alias);
+        return this;
+    }
+
     public Insert field(Fields fields) {
         return field(fields, true);
     }

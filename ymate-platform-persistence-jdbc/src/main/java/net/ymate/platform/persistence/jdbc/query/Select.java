@@ -250,6 +250,21 @@ public final class Select extends Query<Select> {
         return this;
     }
 
+    /**
+     * @since 2.1.3
+     */
+    public Select fieldAlias(String field, String alias) {
+        return fieldAlias(field, alias, true);
+    }
+
+    /**
+     * @since 2.1.3
+     */
+    public Select fieldAlias(String field, String alias, boolean wrapIdentifier) {
+        this.fields.addAlias(wrapIdentifier ? wrapIdentifierField(field) : field, alias);
+        return this;
+    }
+
     public Select field(Fields fields) {
         return field(fields, true);
     }
