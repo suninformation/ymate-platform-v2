@@ -338,6 +338,8 @@ public void downloadFile(String url, File distFile) throws Exception {
                 fileWrapper.getFile();
                 // 获取被下载文件输入流
                 fileWrapper.getInputStream();
+                // 将被下载文件转移到目标文件
+                fileWrapper.transferTo(distFile);
                 // 将被下载文件写入目标文件
                 fileWrapper.writeTo(distFile);
             } else {
@@ -415,7 +417,7 @@ public void sendRequest(String url, String charset, Map<String, String> requestP
 **示例：** 新文件上传
 
 ```java
-public static void newUploadFile(String url, File distFile) throws Exception {
+public void newUploadFile(String url, File distFile) throws Exception {
     try (IHttpResponse response = HttpRequestBuilder.create(url).addContent("file", distFile).build().post()) {
         if (response.getStatusCode() == HttpClientHelper.HTTP_STATUS_CODE_SUCCESS) {
             // ......
@@ -445,6 +447,8 @@ public void newDownloadFile(String url, File distFile) throws Exception {
             fileWrapper.getFile();
             // 获取被下载文件输入流
             fileWrapper.getInputStream();
+            // 将被下载文件转移到目标文件
+            fileWrapper.transferTo(distFile);
             // 将被下载文件写入目标文件
             fileWrapper.writeTo(distFile);
         }

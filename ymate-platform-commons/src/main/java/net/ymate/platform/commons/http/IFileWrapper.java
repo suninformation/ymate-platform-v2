@@ -94,6 +94,15 @@ public interface IFileWrapper extends Closeable {
     File getFile();
 
     /**
+     * 转移文件到目标文件
+     *
+     * @param distFile 目标文件
+     * @throws Exception 可能产生的异常
+     * @since 2.1.3
+     */
+    void transferTo(File distFile) throws Exception;
+
+    /**
      * 复制文件到目标文件
      *
      * @param distFile 目标文件

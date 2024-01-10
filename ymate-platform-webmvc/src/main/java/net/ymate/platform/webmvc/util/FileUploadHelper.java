@@ -422,7 +422,11 @@ public final class FileUploadHelper {
 
         @Override
         public void transferTo(File dest) throws Exception {
-            writeTo(dest);
+            if (fileObj) {
+                FileUtils.writeTo(this.file, dest, true);
+            } else {
+                fileItem.write(file);
+            }
         }
 
         @Override

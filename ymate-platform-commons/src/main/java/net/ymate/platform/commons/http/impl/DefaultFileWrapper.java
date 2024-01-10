@@ -173,6 +173,11 @@ public class DefaultFileWrapper implements IFileWrapper {
     }
 
     @Override
+    public void transferTo(File distFile) throws Exception {
+        FileUtils.writeTo(tempFile, distFile, true);
+    }
+
+    @Override
     public void writeTo(File distFile) throws IOException {
         FileUtils.writeTo(tempFile, distFile);
     }

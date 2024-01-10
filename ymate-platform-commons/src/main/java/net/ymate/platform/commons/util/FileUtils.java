@@ -228,13 +228,26 @@ public class FileUtils {
      * @throws IOException 可能产生的异常
      */
     public static void writeTo(File src, File dest) throws IOException {
+        writeTo(src, dest, false);
+    }
+
+    /**
+     * 复制文件
+     *
+     * @param src      原文件
+     * @param dest     目标文件
+     * @param transfer 是否转移原文件
+     * @throws IOException 可能产生的异常
+     * @since 2.1.3
+     */
+    public static void writeTo(File src, File dest, boolean transfer) throws IOException {
         if (src == null || !src.exists() || !src.isFile()) {
             throw new IllegalArgumentException(String.format("Failure to write file, Source file [%s] type must be file and exist.", src != null ? src.getPath() : StringUtils.EMPTY));
         }
         if (dest == null || !dest.isAbsolute()) {
             throw new IllegalArgumentException(String.format("Failure to write file, Dest file [%s] must be absolute path.", dest != null ? dest.getPath() : StringUtils.EMPTY));
         }
-        if (!src.renameTo(dest)) {
+        if (!transfer || !src.renameTo(dest)) {
             try (BufferedInputStream inputStream = new BufferedInputStream(Files.newInputStream(src.toPath()));
                  BufferedOutputStream outputStream = new BufferedOutputStream(Files.newOutputStream(dest.toPath()))) {
                 IOUtils.copyLarge(inputStream, outputStream);
