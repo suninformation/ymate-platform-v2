@@ -16,6 +16,7 @@
 package net.ymate.platform.webmvc.support;
 
 import net.ymate.platform.commons.util.RuntimeUtils;
+import net.ymate.platform.core.beans.intercept.InterceptContext;
 import net.ymate.platform.core.event.IEvent;
 import net.ymate.platform.validation.ValidateContext;
 import net.ymate.platform.webmvc.IRequestContext;
@@ -66,6 +67,7 @@ public final class GenericDispatcher {
             doFireEvent(WebEvent.EVENT.REQUEST_COMPLETED, requestContext);
             owner.getOwner().getI18n().reset();
             ValidateContext.removeLocalAttributes();
+            InterceptContext.removeLocalAttributes();
             WebContext.destroy();
         }
     }
