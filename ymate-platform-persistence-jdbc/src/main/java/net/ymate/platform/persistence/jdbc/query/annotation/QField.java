@@ -48,4 +48,10 @@ public @interface QField {
      * @since 2.1.2
      */
     boolean wrapIdentifier() default true;
+
+    /**
+     * @return 配合 @QGroupBy 注解使用，标记当前字段用于分组
+     * @since 2.1.3
+     */
+    boolean grouped() default true;
 }

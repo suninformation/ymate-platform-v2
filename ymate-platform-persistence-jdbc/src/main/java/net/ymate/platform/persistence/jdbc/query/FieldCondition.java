@@ -20,6 +20,7 @@
  import net.ymate.platform.core.persistence.Params;
  import net.ymate.platform.persistence.jdbc.IDatabase;
  import net.ymate.platform.persistence.jdbc.JDBC;
+ import net.ymate.platform.validation.validate.DateTimeValue;
  import org.apache.commons.lang.NullArgumentException;
  import org.apache.commons.lang3.StringUtils;
 
@@ -404,6 +405,22 @@
 
      public FieldCondition rangeWrap(Object valueOne, Object valueTwo) {
          cond.rangeWrap(fieldName, valueOne, valueTwo, null);
+         return this;
+     }
+
+     /**
+      * @since 2.1.3
+      */
+     public FieldCondition range(DateTimeValue dateTimeValue) {
+         cond.range(fieldName, dateTimeValue, null);
+         return this;
+     }
+
+     /**
+      * @since 2.1.3
+      */
+     public FieldCondition rangeWrap(DateTimeValue dateTimeValue) {
+         cond.rangeWrap(fieldName, dateTimeValue, null);
          return this;
      }
 

@@ -29,7 +29,7 @@ public @interface QGroupBy {
     /**
      * @return 参与分组的字段
      */
-    QField[] value();
+    QField[] value() default {};
 
     /**
      * @return 条件过滤

@@ -20,6 +20,7 @@ import net.ymate.platform.core.persistence.IFunction;
 import net.ymate.platform.core.persistence.Params;
 import net.ymate.platform.persistence.jdbc.IDatabase;
 import net.ymate.platform.persistence.jdbc.JDBC;
+import net.ymate.platform.validation.validate.DateTimeValue;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 
@@ -532,6 +533,41 @@ public final class Cond extends Query<Cond> {
         return range(func.build(), valueOne, valueTwo, opt).param(func.params());
     }
 
+    /**
+     * @since 2.1.3
+     */
+    public Cond range(String field, DateTimeValue dateTimeValue, LogicalOpt opt) {
+        return range(null, field, dateTimeValue.getStartDateTimeMillisOrNull(), dateTimeValue.getEndDateTimeMillisOrNull(), opt);
+    }
+
+    /**
+     * @since 2.1.3
+     */
+    public Cond range(String prefix, String field, DateTimeValue dateTimeValue, LogicalOpt opt) {
+        return range(prefix, field, dateTimeValue.getStartDateTimeMillisOrNull(), dateTimeValue.getEndDateTimeMillisOrNull(), opt);
+    }
+
+    /**
+     * @since 2.1.3
+     */
+    public Cond rangeWrap(String field, DateTimeValue dateTimeValue, LogicalOpt opt) {
+        return rangeWrap(null, field, dateTimeValue.getStartDateTimeMillisOrNull(), dateTimeValue.getEndDateTimeMillisOrNull(), opt);
+    }
+
+    /**
+     * @since 2.1.3
+     */
+    public Cond rangeWrap(String prefix, String field, DateTimeValue dateTimeValue, LogicalOpt opt) {
+        return range(prefix, wrapIdentifierField(field), dateTimeValue.getStartDateTimeMillisOrNull(), dateTimeValue.getEndDateTimeMillisOrNull(), opt);
+    }
+
+    /**
+     * @since 2.1.3
+     */
+    public Cond range(IFunction func, DateTimeValue dateTimeValue, LogicalOpt opt) {
+        return range(func.build(), dateTimeValue.getStartDateTimeMillisOrNull(), dateTimeValue.getEndDateTimeMillisOrNull(), opt).param(func.params());
+    }
+
     // ------
 
     public Cond isNull(String prefix, String field) {
@@ -765,13 +801,43 @@ public final class Cond extends Query<Cond> {
         return this;
     }
 
+    /**
+     * @since 2.1.3
+     */
+    public Cond expr(DateTimeValue expression, IConditionBuilder builder) {
+        if (expression != null && (!expression.isNullStartDate() || !expression.isNullEndDate()) && builder != null) {
+            this.cond(builder.build());
+        }
+        return this;
+    }
+
+    /**
+     * @since 2.1.3
+     */
+    public Cond expr(DateTimeValue expression, IConditionAppender appender) {
+        if (expression != null && (!expression.isNullStartDate() || !expression.isNullEndDate()) && appender != null) {
+            appender.append(this);
+        }
+        return this;
+    }
+
+    /**
+     * @since 2.1.3
+     */
+    public Cond expr(DateTimeValue expression, String cond) {
+        if (expression != null && (!expression.isNullStartDate() || !expression.isNullEndDate()) && cond != null) {
+            this.cond(cond);
+        }
+        return this;
+    }
+
     private boolean doCheckNotEmpty(Object target) {
         if (target != null) {
             boolean flag = true;
             if (target.getClass().isArray()) {
                 flag = ((Object[]) target).length > 0;
             } else if (Collection.class.isAssignableFrom(target.getClass())) {
-                flag = ((Collection<?>) target).size() > 0;
+                flag = !((Collection<?>) target).isEmpty();
             } else if (target instanceof String) {
                 flag = StringUtils.isNotBlank((String) target);
             }

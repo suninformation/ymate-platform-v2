@@ -441,20 +441,26 @@ public class Query<T> extends QueryHandleAdapter<T> {
             }
         }
 
-        private void doParseGroupBy(Where where) {
+        private void doParseGroupBy(Where where, List<QField> groupedFields) {
             if (where != null) {
                 GroupBy groupBy = where.groupBy();
                 if (groupBy == null || groupBy.isEmpty()) {
                     QGroupBy qGroupBy = queryClass.getAnnotation(QGroupBy.class);
                     if (qGroupBy != null) {
-                        for (QField qField : qGroupBy.value()) {
-                            where.groupBy(Fields.field(qField.prefix(), qField.value()), qField.wrapIdentifier());
-                        }
-                        Cond havingCond = doParseCond(qGroupBy.having());
-                        if (havingCond != null && !havingCond.isEmpty()) {
-                            where.having(havingCond);
-                            if (qGroupBy.rollup()) {
-                                where.groupByRollup();
+                        if (ArrayUtils.isEmpty(qGroupBy.value())) {
+                            for (QField qField : groupedFields) {
+                                where.groupBy(Fields.field(qField.prefix(), qField.value()), qField.wrapIdentifier());
+                            }
+                        } else {
+                            for (QField qField : qGroupBy.value()) {
+                                where.groupBy(Fields.field(qField.prefix(), qField.value()), qField.wrapIdentifier());
+                            }
+                            Cond havingCond = doParseCond(qGroupBy.having());
+                            if (havingCond != null && !havingCond.isEmpty()) {
+                                where.having(havingCond);
+                                if (qGroupBy.rollup()) {
+                                    where.groupByRollup();
+                                }
                             }
                         }
                     }
@@ -462,7 +468,7 @@ public class Query<T> extends QueryHandleAdapter<T> {
             }
         }
 
-        private void doParseWhere(Select select) {
+        private void doParseWhere(Select select, List<QField> groupedFields) {
             Where selectWhere = select.where();
             QWhere qWhere = queryClass.getAnnotation(QWhere.class);
             if (qWhere != null) {
@@ -472,7 +478,7 @@ public class Query<T> extends QueryHandleAdapter<T> {
                 }
             }
             doParseOrderBy(selectWhere);
-            doParseGroupBy(selectWhere);
+            doParseGroupBy(selectWhere, groupedFields);
             if (where != null) {
                 selectWhere.where(where);
             }
@@ -487,6 +493,7 @@ public class Query<T> extends QueryHandleAdapter<T> {
             }
             doParseFrom(select, queryClass.getAnnotation(QFrom.class));
             // Parse Field
+            List<QField> groupedFields = new ArrayList<>();
             ClassUtils.getFields(queryClass, true)
                     .stream()
                     .filter(field -> ClassUtils.isNormalField(field) && !excludedFields.contains(field.getName()))
@@ -494,6 +501,9 @@ public class Query<T> extends QueryHandleAdapter<T> {
                         QField qField = field.getAnnotation(QField.class);
                         if (qField != null && (excludedFields.isEmpty() || !excludedFields.contains(Fields.field(qField.prefix(), qField.value())))) {
                             select.field(qField.prefix(), qField.value(), qField.alias(), qField.wrapIdentifier());
+                            if (qField.grouped()) {
+                                groupedFields.add(qField);
+                            }
                         }
                     });
             // Parse Join
@@ -505,10 +515,10 @@ public class Query<T> extends QueryHandleAdapter<T> {
             // Parse Where
             if (where != null && replaceWhere) {
                 doParseOrderBy(where);
-                doParseGroupBy(where);
+                doParseGroupBy(where, groupedFields);
                 select.where(where);
             } else {
-                doParseWhere(select);
+                doParseWhere(select, groupedFields);
             }
             if (distinct) {
                 return select.distinct();
