@@ -56,7 +56,7 @@ public class JSONRequestProcessor extends DefaultRequestProcessor {
                         LOG.debug(String.format("Protocol content: %s", protocol));
                     }
                 } else if (owner.getOwner().isDevEnv() && LOG.isWarnEnabled()) {
-                    LOG.warn(String.format("Invalid protocol content: %s", jsonStr));
+                    LOG.warn(String.format("Invalid protocol content: %s", jsonStr.replaceAll("[\n\r]", "_")));
                 }
             } catch (Exception e) {
                 if (owner.getOwner().isDevEnv() && LOG.isWarnEnabled()) {

@@ -56,7 +56,9 @@ public class XMLRequestProcessor extends DefaultRequestProcessor {
                     String content = IOUtils.toString(inputStream, charsetEncoding);
                     try (InputStream contentStream = IOUtils.toInputStream(content, charsetEncoding)) {
                         protocol = new XMLProtocol(contentStream, charsetEncoding);
-                        LOG.debug(String.format("Protocol content: %s", content));
+                        if (LOG.isDebugEnabled()) {
+                            LOG.debug(String.format("Protocol content: %s", StringUtils.defaultString(content).replaceAll("[\n\r]", "_")));
+                        }
                     }
                 } else {
                     protocol = new XMLProtocol(inputStream, charsetEncoding);

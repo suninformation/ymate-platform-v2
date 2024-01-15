@@ -25,6 +25,7 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
+import javax.xml.XMLConstants;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerException;
@@ -194,7 +195,10 @@ public class XMLConfigFileParser extends AbstractConfigFileParser {
     @Override
     public void writeTo(OutputStream outputStream) throws IOException {
         try {
-            Transformer tr = TransformerFactory.newInstance().newTransformer();
+            TransformerFactory factory = TransformerFactory.newInstance();
+            factory.setAttribute(XMLConstants.ACCESS_EXTERNAL_DTD, StringUtils.EMPTY);
+            factory.setAttribute(XMLConstants.ACCESS_EXTERNAL_STYLESHEET, StringUtils.EMPTY);
+            Transformer tr = factory.newTransformer();
             tr.transform(new DOMSource(rootElement), new StreamResult(outputStream));
         } catch (TransformerException e) {
             throw new IOException(e);
