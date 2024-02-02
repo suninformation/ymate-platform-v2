@@ -16,6 +16,7 @@
 package net.ymate.platform.persistence.jdbc.base;
 
 import net.ymate.platform.commons.util.ExpressionUtils;
+import net.ymate.platform.commons.util.RuntimeUtils;
 import net.ymate.platform.core.persistence.base.Type;
 import net.ymate.platform.persistence.jdbc.IDatabaseConnectionHolder;
 import net.ymate.platform.persistence.jdbc.IDatabaseDataSourceConfig;
@@ -48,6 +49,8 @@ public abstract class AbstractOperator implements IOperator {
     private final List<SQLParameter> parameters;
 
     protected long expenseTime;
+
+    protected boolean hasEx;
 
     /**
      * 是否已执行
@@ -95,6 +98,18 @@ public abstract class AbstractOperator implements IOperator {
                             LOG.info(logStr);
                         }
                     }
+                }
+            }
+        }
+    }
+
+    protected void doAfterStatementExecutionIfNeed(AccessorEventContext eventContext) {
+        if (!hasEx && accessorConfig != null && eventContext != null) {
+            try {
+                accessorConfig.afterStatementExecution(eventContext);
+            } catch (Exception e) {
+                if (LOG.isWarnEnabled()) {
+                    LOG.warn(e.getMessage(), RuntimeUtils.unwrapThrow(e));
                 }
             }
         }

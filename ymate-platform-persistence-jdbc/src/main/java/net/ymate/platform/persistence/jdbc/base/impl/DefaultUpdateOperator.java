@@ -15,11 +15,15 @@
  */
 package net.ymate.platform.persistence.jdbc.base.impl;
 
+import net.ymate.platform.commons.util.RuntimeUtils;
 import net.ymate.platform.core.persistence.base.Type;
 import net.ymate.platform.persistence.jdbc.IDatabaseConnectionHolder;
 import net.ymate.platform.persistence.jdbc.base.*;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import java.sql.PreparedStatement;
+import java.sql.SQLException;
 
 /**
  * 数据库更新操作器接口实现
@@ -27,6 +31,8 @@ import java.sql.PreparedStatement;
  * @author 刘镇 (suninformation@163.com) on 2011-9-23 上午10:38:24
  */
 public class DefaultUpdateOperator extends AbstractOperator implements IUpdateOperator {
+
+    private static final Log LOG = LogFactory.getLog(DefaultUpdateOperator.class);
 
     private int effectCounts;
 
@@ -42,7 +48,6 @@ public class DefaultUpdateOperator extends AbstractOperator implements IUpdateOp
     protected int doExecute() throws Exception {
         PreparedStatement statement = null;
         AccessorEventContext eventContext = null;
-        boolean hasEx = false;
         try {
             IAccessor accessor = new BaseAccessor(this.getAccessorConfig());
             statement = accessor.getPreparedStatement(this.getConnectionHolder().getConnection(), this.getSQL());
@@ -57,11 +62,15 @@ public class DefaultUpdateOperator extends AbstractOperator implements IUpdateOp
             hasEx = true;
             throw ex;
         } finally {
-            if (!hasEx && this.getAccessorConfig() != null && eventContext != null) {
-                this.getAccessorConfig().afterStatementExecution(eventContext);
-            }
+            doAfterStatementExecutionIfNeed(eventContext);
             if (statement != null) {
-                statement.close();
+                try {
+                    statement.close();
+                } catch (SQLException e) {
+                    if (LOG.isWarnEnabled()) {
+                        LOG.warn(e.getMessage(), RuntimeUtils.unwrapThrow(e));
+                    }
+                }
             }
         }
     }

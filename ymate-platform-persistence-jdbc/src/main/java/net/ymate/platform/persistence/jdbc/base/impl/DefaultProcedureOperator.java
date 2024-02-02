@@ -16,6 +16,7 @@
 package net.ymate.platform.persistence.jdbc.base.impl;
 
 import net.ymate.platform.commons.util.ExpressionUtils;
+import net.ymate.platform.commons.util.RuntimeUtils;
 import net.ymate.platform.core.persistence.base.Type;
 import net.ymate.platform.persistence.jdbc.IDatabaseConnectionHolder;
 import net.ymate.platform.persistence.jdbc.IDatabaseDataSourceConfig;
@@ -113,7 +114,6 @@ public class DefaultProcedureOperator<T> extends AbstractOperator implements IPr
     protected int doExecute() throws Exception {
         CallableStatement statement = null;
         AccessorEventContext eventContext = null;
-        boolean hasEx = false;
         try {
             IAccessor accessor = new BaseAccessor(this.getAccessorConfig());
             statement = accessor.getCallableStatement(this.getConnectionHolder().getConnection(), doBuildCallSql());
@@ -144,11 +144,15 @@ public class DefaultProcedureOperator<T> extends AbstractOperator implements IPr
             hasEx = true;
             throw ex;
         } finally {
-            if (!hasEx && this.getAccessorConfig() != null && eventContext != null) {
-                this.getAccessorConfig().afterStatementExecution(eventContext);
-            }
+            doAfterStatementExecutionIfNeed(eventContext);
             if (statement != null) {
-                statement.close();
+                try {
+                    statement.close();
+                } catch (SQLException e) {
+                    if (LOG.isWarnEnabled()) {
+                        LOG.warn(e.getMessage(), RuntimeUtils.unwrapThrow(e));
+                    }
+                }
             }
         }
     }

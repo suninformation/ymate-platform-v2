@@ -15,12 +15,16 @@
  */
 package net.ymate.platform.persistence.jdbc.base.impl;
 
+import net.ymate.platform.commons.util.RuntimeUtils;
 import net.ymate.platform.core.persistence.base.Type;
 import net.ymate.platform.persistence.jdbc.IDatabaseConnectionHolder;
 import net.ymate.platform.persistence.jdbc.base.*;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.Collections;
 import java.util.List;
 
@@ -31,6 +35,8 @@ import java.util.List;
  * @author 刘镇 (suninformation@163.com) on 2011-9-23 上午09:32:37
  */
 public class DefaultQueryOperator<T> extends AbstractOperator implements IQueryOperator<T> {
+
+    private static final Log LOG = LogFactory.getLog(DefaultQueryOperator.class);
 
     private final IResultSetHandler<T> resultSetHandler;
 
@@ -61,7 +67,6 @@ public class DefaultQueryOperator<T> extends AbstractOperator implements IQueryO
         PreparedStatement statement = null;
         ResultSet result = null;
         AccessorEventContext eventContext = null;
-        boolean hasEx = false;
         try {
             IAccessor accessor = new BaseAccessor(this.getAccessorConfig());
             statement = accessor.getPreparedStatement(this.getConnectionHolder().getConnection(), this.getSQL());
@@ -80,14 +85,24 @@ public class DefaultQueryOperator<T> extends AbstractOperator implements IQueryO
             hasEx = true;
             throw ex;
         } finally {
-            if (!hasEx && this.getAccessorConfig() != null && eventContext != null) {
-                this.getAccessorConfig().afterStatementExecution(eventContext);
-            }
+            doAfterStatementExecutionIfNeed(eventContext);
             if (result != null) {
-                result.close();
+                try {
+                    result.close();
+                } catch (SQLException e) {
+                    if (LOG.isWarnEnabled()) {
+                        LOG.warn(e.getMessage(), RuntimeUtils.unwrapThrow(e));
+                    }
+                }
             }
             if (statement != null) {
-                statement.close();
+                try {
+                    statement.close();
+                } catch (SQLException e) {
+                    if (LOG.isWarnEnabled()) {
+                        LOG.warn(e.getMessage(), RuntimeUtils.unwrapThrow(e));
+                    }
+                }
             }
         }
     }
