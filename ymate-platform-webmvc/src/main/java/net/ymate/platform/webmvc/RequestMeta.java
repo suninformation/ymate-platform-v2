@@ -97,7 +97,7 @@ public class RequestMeta {
         }
         mappingAnn = method.getAnnotation(RequestMapping.class);
         doSetAllowValues(mappingAnn, true);
-        this.mapping = doBuildRequestMapping(requestMappingPrefix, doBuildRequestMapping(packageMapping, mappingAnn.value(), true), false);
+        this.mapping = StringUtils.defaultIfBlank(doBuildRequestMapping(requestMappingPrefix, doBuildRequestMapping(packageMapping, mappingAnn.value(), true), false), "/");
         //
         if (this.allowMethods.isEmpty()) {
             this.allowMethods.add(Type.HttpMethod.GET);

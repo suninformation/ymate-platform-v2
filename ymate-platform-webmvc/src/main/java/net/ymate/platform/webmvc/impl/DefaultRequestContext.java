@@ -67,9 +67,6 @@ public class DefaultRequestContext implements IRequestContext {
             if (position < requestMapping.lastIndexOf(Type.Const.PATH_SEPARATOR_CHAR)) {
                 position = -1;
             }
-        } else {
-            // 请求映射字符串(注:必须以字符'/'开始且不以'/'结束)
-            requestMapping = requestMapping.substring(0, requestMapping.length() - 1);
         }
         if (position > 0) {
             this.suffix = requestMapping.substring(position + 1);
