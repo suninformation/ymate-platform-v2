@@ -64,6 +64,20 @@ public final class Page {
         return new Page(page);
     }
 
+    /**
+     * @since 2.1.3
+     */
+    public static Page createIfNeed(Integer page) {
+        return createIfNeed(page, DEFAULT_PAGE_SIZE, true);
+    }
+
+    /**
+     * @since 2.1.3
+     */
+    public static Page createIfNeed(Integer page, boolean count) {
+        return createIfNeed(page, DEFAULT_PAGE_SIZE, count);
+    }
+
     public static Page createIfNeed(Integer page, Integer pageSize) {
         return createIfNeed(page, pageSize, true);
     }
