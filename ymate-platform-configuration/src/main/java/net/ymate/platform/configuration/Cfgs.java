@@ -27,6 +27,7 @@ import net.ymate.platform.core.YMP;
 import net.ymate.platform.core.configuration.*;
 import net.ymate.platform.core.module.IModuleConfigurer;
 import net.ymate.platform.core.module.impl.DefaultModuleConfigurer;
+import net.ymate.platform.core.support.RecycleHelper;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -149,6 +150,8 @@ public final class Cfgs implements IConfig {
                 }
             }
             initialized = config.isInitialized();
+            //
+            RecycleHelper.getInstance().register(this);
         }
     }
 

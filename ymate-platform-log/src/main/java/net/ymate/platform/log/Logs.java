@@ -25,6 +25,7 @@ import net.ymate.platform.core.Version;
 import net.ymate.platform.core.YMP;
 import net.ymate.platform.core.module.IModuleConfigurer;
 import net.ymate.platform.core.module.impl.DefaultModuleConfigurer;
+import net.ymate.platform.core.support.RecycleHelper;
 import net.ymate.platform.log.impl.DefaultLogConfig;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
@@ -114,6 +115,8 @@ public final class Logs implements ILog {
                 LOG.info(String.format("-- SIMPLIFIED_PACKAGE_NAME: %s", config.isSimplifiedPackageName()));
             }
             initialized = config.isInitialized();
+            //
+            RecycleHelper.getInstance().register(this);
         }
     }
 

@@ -24,10 +24,11 @@ import net.ymate.platform.core.support.IInitialization;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.Collection;
-import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
  * 模块管理器
@@ -42,6 +43,8 @@ public class ModuleManager implements IInitialization<IApplication>, IDestroyabl
     private final Set<String> excludedModules = new ConcurrentHashSet<>();
 
     private final Set<String> includedModules = new ConcurrentHashSet<>();
+
+    private final List<String> moduleOrders = new CopyOnWriteArrayList<>();
 
     private IApplication owner;
 
@@ -83,16 +86,12 @@ public class ModuleManager implements IInitialization<IApplication>, IDestroyabl
     @Override
     public void close() throws Exception {
         if (initialized) {
-            Iterator<Map.Entry<String, IModule>> moduleIt = modules.entrySet().iterator();
-            while (moduleIt.hasNext()) {
-                Map.Entry<String, IModule> entry = moduleIt.next();
-                try (IModule module = entry.getValue()) {
-                    if (module != null && module.isInitialized()) {
-                        // 触发模块销毁事件
-                        owner.getEvents().fireEvent(new ModuleEvent(module, ModuleEvent.EVENT.MODULE_DESTROYED));
-                    }
+            for (String moduleClassName : moduleOrders) {
+                IModule module = modules.remove(moduleClassName);
+                if (module != null && module.isInitialized()) {
+                    // 触发模块销毁事件
+                    owner.getEvents().fireEvent(new ModuleEvent(module, ModuleEvent.EVENT.MODULE_DESTROYED));
                 }
-                moduleIt.remove();
             }
             initialized = false;
         }
@@ -166,9 +165,13 @@ public class ModuleManager implements IInitialization<IApplication>, IDestroyabl
                 }
                 if (flag) {
                     moduleInst = moduleInst != null ? moduleInst : moduleClass.newInstance();
-                    modules.put(moduleClass.getName(), moduleInst);
+                    String moduleClassName = moduleClass.getName();
+                    modules.put(moduleClassName, moduleInst);
+                    if (!moduleOrders.contains(moduleClassName)) {
+                        moduleOrders.add(0, moduleClassName);
+                    }
                     if (includedFlag) {
-                        includedModules.add(moduleClass.getName());
+                        includedModules.add(moduleClassName);
                         includedModules.add(moduleInst.getName());
                     }
                 }

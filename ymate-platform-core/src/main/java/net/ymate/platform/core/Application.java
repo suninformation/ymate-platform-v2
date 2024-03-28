@@ -187,7 +187,7 @@ public final class Application implements IApplication {
                 //
                 stopWatch.stop();
                 if (LOG.isInfoEnabled()) {
-                    LOG.info(String.format("RecycleHelper has registered the number of resources to be recycled: %d", recycleHelper.size()));
+                    LOG.info(String.format("RecycleHelper has registered the number of resources to be recycled: %d, global: %d", recycleHelper.size(), RecycleHelper.getInstance().size()));
                     LOG.info(String.format("Initialization completed, Total time: %dms", stopWatch.getTime()));
                 }
             }
