@@ -217,7 +217,7 @@ ymp.configs.webmvc.resource_name=
 # 国际化语言设置参数名称, 可选参数, 默认值: _lang
 ymp.configs.webmvc.language_param_name=
 
-# 请求忽略后缀集合, 可选参数, 默认值: jsp|jspx|png|gif|jpg|jpeg|js|css|swf|ico|htm|html|eot|woff|ttf|svg|map
+# 请求忽略后缀集合, 可选参数, 默认值: jsp|jspx|png|gif|jpg|jpeg|js|css|swf|ico|htm|html|eot|woff|woff2|ttf|svg|map
 ymp.configs.webmvc.request_ignore_regex=
 
 # 请求方法参数名称, 可选参数, 默认值: _method
