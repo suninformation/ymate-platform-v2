@@ -30,6 +30,12 @@ import java.lang.annotation.*;
 public @interface VNumeric {
 
     /**
+     * @return 仅检查值是否为数字（当取值为true时生效，同时其它参数将失效）
+     * @since 2.1.3
+     */
+    boolean digits() default false;
+
+    /**
      * @return 设置最小值，0为不限制
      */
     double min() default 0;

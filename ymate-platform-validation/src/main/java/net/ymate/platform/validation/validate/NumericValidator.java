@@ -24,6 +24,8 @@ import net.ymate.platform.validation.ValidateResult;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.math.NumberUtils;
 
+import java.util.Arrays;
+
 /**
  * 数值类型参数验证
  *
@@ -55,6 +57,16 @@ public final class NumericValidator implements IValidator {
     private static final String I18N_MESSAGE_EQ_KEY = "ymp.validation.numeric_eq";
 
     private static final String I18N_MESSAGE_EQ_DEFAULT_VALUE = "{0} numeric must be equal to {1}.";
+
+    /**
+     * @since 2.1.3
+     */
+    private static final String I18N_MESSAGE_DIGITS_KEY = "ymp.validation.numeric_digits";
+
+    /**
+     * @since 2.1.3
+     */
+    private static final String I18N_MESSAGE_DIGITS_DEFAULT_VALUE = "{0} not a valid digits.";
 
     /**
      * 验证paramValue是否为合法数值
@@ -96,6 +108,17 @@ public final class NumericValidator implements IValidator {
         return result;
     }
 
+    /**
+     * 验证paramValue是否由数字组成
+     *
+     * @param paramValue 待验证的值对象
+     * @return 返回true表示值是由数字组成
+     * @since 2.1.3
+     */
+    public static boolean validate(Object paramValue) {
+        return StringUtils.isNumeric(BlurObject.bind(paramValue).toStringValue());
+    }
+
     @Override
     public ValidateResult validate(ValidateContext context) {
         Object paramValue = context.getParamValue();
@@ -104,14 +127,22 @@ public final class NumericValidator implements IValidator {
             int result = 0;
             if (paramValue.getClass().isArray()) {
                 Object[] values = (Object[]) paramValue;
-                for (Object pValue : values) {
-                    result = validate(pValue, vNumeric.eq() != 0 ? vNumeric.eq() : vNumeric.min(), vNumeric.eq() != 0 ? vNumeric.eq() : vNumeric.max(), vNumeric.decimals());
-                    if (result > 0) {
-                        break;
+                if (vNumeric.digits()) {
+                    result = Arrays.stream(values).anyMatch(pValue -> !validate(pValue)) ? 7 : 0;
+                } else {
+                    for (Object pValue : values) {
+                        result = validate(pValue, vNumeric.eq() != 0 ? vNumeric.eq() : vNumeric.min(), vNumeric.eq() != 0 ? vNumeric.eq() : vNumeric.max(), vNumeric.decimals());
+                        if (result > 0) {
+                            break;
+                        }
                     }
                 }
             } else {
-                result = validate(paramValue, vNumeric.eq() != 0 ? vNumeric.eq() : vNumeric.min(), vNumeric.eq() != 0 ? vNumeric.eq() : vNumeric.max(), vNumeric.decimals());
+                if (vNumeric.digits()) {
+                    result = !validate(paramValue) ? 7 : 0;
+                } else {
+                    result = validate(paramValue, vNumeric.eq() != 0 ? vNumeric.eq() : vNumeric.min(), vNumeric.eq() != 0 ? vNumeric.eq() : vNumeric.max(), vNumeric.decimals());
+                }
             }
             if (result > 0) {
                 ValidateResult.Builder builder = ValidateResult.builder(context).matched(true);
@@ -133,6 +164,9 @@ public final class NumericValidator implements IValidator {
                         break;
                     case 6:
                         builder.msg(I18N_MESSAGE_EQ_KEY, I18N_MESSAGE_EQ_DEFAULT_VALUE, vNumeric.eq());
+                        break;
+                    case 7:
+                        builder.msg(I18N_MESSAGE_DIGITS_KEY, I18N_MESSAGE_DIGITS_DEFAULT_VALUE);
                         break;
                     default:
                         builder.msg(I18N_MESSAGE_KEY, I18N_MESSAGE_DEFAULT_VALUE);
