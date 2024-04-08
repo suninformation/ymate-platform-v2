@@ -16,6 +16,7 @@
 package net.ymate.platform.commons.util;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.time.FastDateFormat;
 
 import java.sql.Time;
 import java.sql.Timestamp;
@@ -131,17 +132,33 @@ public final class DateTimeUtils {
         TIME_ZONES = Collections.unmodifiableMap(timeZonesMap);
     }
 
+    /**
+     * @see DateTimeUtils#getFastDateFormat(String, String)
+     * @deprecated
+     */
+    @Deprecated
     public static SimpleDateFormat getSimpleDateFormat(String format, String timeOffset) {
         SimpleDateFormat dateFormat = new SimpleDateFormat(format, Locale.ENGLISH);
-        timeOffset = StringUtils.defaultIfBlank(timeOffset, TIMEZONE_OFFSET);
-        if (StringUtils.isNotBlank(timeOffset) && TIME_ZONES.containsKey(timeOffset)) {
-            dateFormat.setTimeZone(getTimeZone(timeOffset));
+        TimeZone timeZone = getTimeZone(timeOffset);
+        if (timeZone != null) {
+            dateFormat.setTimeZone(timeZone);
         }
         return dateFormat;
     }
 
+    /**
+     * @since 2.1.3
+     */
+    public static FastDateFormat getFastDateFormat(String format, String timeOffset) {
+        return FastDateFormat.getInstance(format, getTimeZone(timeOffset), Locale.ENGLISH);
+    }
+
     public static TimeZone getTimeZone(String timeOffset) {
-        return TimeZone.getTimeZone(TIME_ZONES.get(timeOffset)[0]);
+        timeOffset = StringUtils.defaultIfBlank(timeOffset, TIMEZONE_OFFSET);
+        if (StringUtils.isNotBlank(timeOffset) && TIME_ZONES.containsKey(timeOffset)) {
+            return TimeZone.getTimeZone(TIME_ZONES.get(timeOffset)[0]);
+        }
+        return null;
     }
 
     /**
@@ -196,7 +213,7 @@ public final class DateTimeUtils {
         if (String.valueOf(time).length() <= UTC_LENGTH) {
             time *= SECOND;
         }
-        return getSimpleDateFormat(StringUtils.defaultIfBlank(pattern, YYYY_MM_DD_HH_MM_SS), timeOffset).format(new Date(time));
+        return getFastDateFormat(StringUtils.defaultIfBlank(pattern, YYYY_MM_DD_HH_MM_SS), timeOffset).format(new Date(time));
     }
 
     public static Date parseDateTime(String dateTime, String pattern) throws ParseException {
@@ -204,7 +221,7 @@ public final class DateTimeUtils {
     }
 
     public static Date parseDateTime(String dateTime, String pattern, String timeOffset) throws ParseException {
-        return getSimpleDateFormat(StringUtils.defaultIfBlank(pattern, YYYY_MM_DD_HH_MM_SS), timeOffset).parse(dateTime);
+        return getFastDateFormat(StringUtils.defaultIfBlank(pattern, YYYY_MM_DD_HH_MM_SS), timeOffset).parse(dateTime);
     }
 
     /**

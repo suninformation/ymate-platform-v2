@@ -15,13 +15,13 @@
  */
 package net.ymate.platform.core.support;
 
-import net.ymate.platform.commons.ConcurrentHashSet;
 import net.ymate.platform.commons.util.RuntimeUtils;
 import net.ymate.platform.commons.util.ThreadUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import java.util.Set;
+import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.concurrent.ExecutorService;
 
 /**
@@ -38,10 +38,10 @@ public final class RecycleHelper {
     private static final RecycleHelper INSTANCE = new RecycleHelper();
 
     static {
-        Runtime.getRuntime().addShutdownHook(new Thread(() -> INSTANCE.recycle(true)));
+        Runtime.getRuntime().addShutdownHook(new Thread(INSTANCE::recycle));
     }
 
-    private final Set<IDestroyable> destroyableSet = new ConcurrentHashSet<>();
+    private final Set<IDestroyable> destroyableSet = new CopyOnWriteArraySet<>();
 
     /**
      * @return 获取全局实例对象

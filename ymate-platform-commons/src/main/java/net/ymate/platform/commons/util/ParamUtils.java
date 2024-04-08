@@ -80,6 +80,66 @@ public class ParamUtils {
         return StringUtils.EMPTY;
     }
 
+    /**
+     * @param str    字符串
+     * @param prefix 前缀
+     * @return 为字符串添加前缀，若字符串为空则原样返回
+     * @since 2.1.3
+     */
+    public static String appendPrefixIfNotEmpty(String str, String prefix) {
+        if (StringUtils.isAnyBlank(str, prefix)) {
+            return str;
+        }
+        return String.format("%s%s", prefix, str);
+    }
+
+    /**
+     * @param text 文本字符串
+     * @return 替换文本字符串中的换行回车单双引号和空格字符使排成一行
+     * @since 2.1.3
+     */
+    public static String inlineText(String text) {
+        return StringUtils.replaceChars(text, "\n\r\t '\"\\", StringUtils.EMPTY);
+    }
+
+    /**
+     * @param text          文本字符串
+     * @param start         开始位置
+     * @param end           结束位置
+     * @param excludedChars 排除的字符集合（集合中的字符不会被替换）
+     * @return 对数据进行安全处理（将start与end之间的字符替换为'*'字符）
+     * @since 2.1.3
+     */
+    public static String safetyText(String text, int start, int end, CharSequence... excludedChars) {
+        if (StringUtils.isBlank(text)) {
+            return text;
+        }
+        char[] charArray = text.toCharArray();
+        if (charArray.length > 0) {
+            if (start < 0) {
+                start = 0;
+            } else if (start >= charArray.length) {
+                start = charArray.length - 1;
+            }
+            if (end <= start) {
+                end = charArray.length - start;
+            }
+            for (int idx = 0; idx < charArray.length; idx++) {
+                if (idx >= start && idx < end) {
+                    if (StringUtils.equalsAny(String.valueOf(charArray[idx]), excludedChars)) {
+                        continue;
+                    }
+                    charArray[idx] = '*';
+                }
+            }
+        }
+        return new String(charArray);
+    }
+
+    public static String safetyText(String text, int start, int end, CharSequence excludedChar) {
+        return safetyText(text, start, end, StringUtils.EMPTY, excludedChar);
+    }
+
     public static boolean isInvalid(Object obj) {
         return obj == null || obj instanceof Map && ((Map<?, ?>) obj).isEmpty() || obj instanceof Collection && ((Collection<?>) obj).isEmpty() || obj instanceof CharSequence && StringUtils.isBlank((CharSequence) obj);
     }

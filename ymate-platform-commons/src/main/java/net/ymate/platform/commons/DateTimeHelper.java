@@ -16,9 +16,9 @@
 package net.ymate.platform.commons;
 
 import net.ymate.platform.commons.util.DateTimeUtils;
+import org.apache.commons.lang3.time.FastDateFormat;
 
 import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.TimeZone;
@@ -71,7 +71,7 @@ public class DateTimeHelper {
 
     private DateTimeHelper(String dateStr, String dateFormat) throws ParseException {
         this();
-        calendar.setTime(new SimpleDateFormat(dateFormat).parse(dateStr));
+        calendar.setTime(DateTimeUtils.parseDateTime(dateStr, dateFormat));
     }
 
     private DateTimeHelper(int year, int month, int day) {
@@ -290,8 +290,6 @@ public class DateTimeHelper {
     }
 
     public String toString(String dateFormat) {
-        SimpleDateFormat fmt = new SimpleDateFormat(dateFormat);
-        fmt.setTimeZone(calendar.getTimeZone());
-        return fmt.format(calendar.getTime());
+        return FastDateFormat.getInstance(dateFormat).format(calendar);
     }
 }
