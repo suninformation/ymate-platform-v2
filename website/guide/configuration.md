@@ -439,8 +439,8 @@ public class Starter {
 
 - 基础数据类型：如：String、Long、Integer、Long、Double等；
 - 基础数据类型数组：如：String[]、Long[]、Integer[]、Long[]、Double[]等；
-- 集合类型：如：List<String\>等；
-- 映射类型：如：Map<String, String>等；
+- 集合类型：如：List\<String\>等；
+- 映射类型：如：Map\<String, String\>等；
 
 :::
 

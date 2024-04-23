@@ -1956,14 +1956,14 @@ SQL: ( username LIKE ? AND age >= ? )  OR  ( gender = ? AND age < ? )
 
 #### 示例三：比较运算符的使用
 
-| 运算符 | 代码                          | 输出SQL语句 |
-| ------ | ----------------------------- | ----------- |
-| `=`    | `cond.eq("age").param(18)`    | age = 18    |
-| `!=`   | `cond.notEq("age").param(18)` | age != 18   |
-| `>`    | `cond.gt("age").param(18)`    | age > 18    |
-| `<`    | `cond.lt("age").param(18)`    | age < 18    |
-| `>=`   | `cond.gtEq("age").param(18)`  | age >= 18   |
-| `<=`   | `cond.ltEq("age").param(18)`  | age <= 18   |
+| 运算符 | 代码                          | 输出SQL语句    |
+| ------ | ----------------------------- |------------|
+| `=`    | `cond.eq("age").param(18)`    | age = 18   |
+| `!=`   | `cond.notEq("age").param(18)` | age != 18  |
+| `>`    | `cond.gt("age").param(18)`    | age \> 18  |
+| `<`    | `cond.lt("age").param(18)`    | age \< 18  |
+| `>=`   | `cond.gtEq("age").param(18)`  | age \>= 18 |
+| `<=`   | `cond.ltEq("age").param(18)`  | age \<= 18 |
 
 :::tip **特别说明：** 
 
@@ -1992,16 +1992,16 @@ cond.notEqField("username", "nickname")
 
 #### 示例四：其它运算符的使用
 
-| 运算符    | 代码                                                         | 输出SQL语句                                                  |
-| --------- | ------------------------------------------------------------ | ------------------------------------------------------------ |
-| `IN`      | `cond.in("uid", Params.create(...))`                         | uid IN (...)                                                 |
-| `EXISTS`  | `cond.exists(...)`<br />`cond.not().exists(...)`             | EXISTS (...)<br />NOT EXISTS (...)                           |
-| `RANGE`   | `cond.range("age", 18, 20, LogicalOpt.AND)`<br />`cond.range("age", 18, null, LogicalOpt.OR)`<br />`cond.range("age", null, 20, null)` | AND age BETWEEN (18 AND 20)<br />OR age >= 18<br />age <= 20 |
-| `BETWEEN` | `cond.between("age", 18, 20)`                                | age BETWEEN 18 AND 20                                        |
-| `()`      | `cond.bracket(cond...)`<br />`cond.bracketBegin()...bracketEnd()` | (...)                                                        |
-| `1=1`     | `cond.eqOne()`                                               | 1=1                                                          |
-| `LIKE`    | `cond.like("username").param(Like.create("ymp").contains())` | username LIKE '%ymp%'                                        |
-| `OPT`     | `cond.opt("username", OPT.EQ)`<br />`cond.opt("username", OPT.EQ, "nickname")` | username = ?<br />username = nickname                        |
+| 运算符    | 代码                                                         | 输出SQL语句                                                        |
+| --------- | ------------------------------------------------------------ |----------------------------------------------------------------|
+| `IN`      | `cond.in("uid", Params.create(...))`                         | uid IN (...)                                                   |
+| `EXISTS`  | `cond.exists(...)`<br />`cond.not().exists(...)`             | EXISTS (...)<br />NOT EXISTS (...)                             |
+| `RANGE`   | `cond.range("age", 18, 20, LogicalOpt.AND)`<br />`cond.range("age", 18, null, LogicalOpt.OR)`<br />`cond.range("age", null, 20, null)` | AND age BETWEEN (18 AND 20)<br />OR age \>= 18<br />age \<= 20 |
+| `BETWEEN` | `cond.between("age", 18, 20)`                                | age BETWEEN 18 AND 20                                          |
+| `()`      | `cond.bracket(cond...)`<br />`cond.bracketBegin()...bracketEnd()` | (...)                                                          |
+| `1=1`     | `cond.eqOne()`                                               | 1=1                                                            |
+| `LIKE`    | `cond.like("username").param(Like.create("ymp").contains())` | username LIKE '%ymp%'                                          |
+| `OPT`     | `cond.opt("username", OPT.EQ)`<br />`cond.opt("username", OPT.EQ, "nickname")` | username = ?<br />username = nickname                          |
 
 :::tip **特别说明：** 
 

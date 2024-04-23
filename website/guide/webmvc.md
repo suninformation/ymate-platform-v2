@@ -922,7 +922,7 @@ WebContext 将 Application、Session、Request 等 Web 容器对象的属性转�
 
 - String getApplicationAttributeToString(String name);
 
-- <T\> T getApplicationAttributeToObject(String name);
+- \<T\> T getApplicationAttributeToObject(String name);
 
 - WebContext addApplicationAttribute(String name, Object value)
 
@@ -936,7 +936,7 @@ WebContext 将 Application、Session、Request 等 Web 容器对象的属性转�
 
 - String getSessionAttributeToString(String name);
 
-- <T\> T getSessionAttributeToObject(String name);
+- \<T\> T getSessionAttributeToObject(String name);
 
 - WebContext addSessionAttribute(String name, Object value)
 
@@ -946,7 +946,7 @@ WebContext 将 Application、Session、Request 等 Web 容器对象的属性转�
 - int getRequestAttributeToInt(String name);
 - long getRequestAttributeToLong(String name);
 - String getRequestAttributeToString(String name);
-- <T\> T getRequestAttributeToObject(String name);
+- \<T\> T getRequestAttributeToObject(String name);
 - WebContext addRequestAttribute(String name, Object value)
 
 #### Parameter相关
@@ -961,14 +961,14 @@ WebContext 将 Application、Session、Request 等 Web 容器对象的属性转�
 
 #### Attribute相关
 
-- <T\> T getAttribute(String name);
+- \<T\> T getAttribute(String name);
 - WebContext addAttribute(String name, Object value);
 
 #### 上传文件相关
 
 - IUploadFileWrapper getUploadFile(String name);
 - IUploadFileWrapper[] getUploadFiles(String name);
-- Set<IUploadFileWrapper\> getUploadFiles();
+- Set\<IUploadFileWrapper\> getUploadFiles();
 
 
 

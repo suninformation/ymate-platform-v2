@@ -1964,7 +1964,7 @@ demo.module.Demo
 
 在 YMP 框架初始化配置文件 `ymp-conf.properties` 中添加自定义模块的配置内容：
 
-> 格式： ymp.configs.<模块名称>.<参数名称>=[参数值]
+> 格式： ymp.configs.\<模块名称\>.\<参数名称\>=[参数值]
 
 ```properties
 # 模块是否已启用, 默认值: true

@@ -73,7 +73,7 @@ BlurObject.bind(date).toObjectValue(java.sql.Date.class);
 
 ### 结对对象（PairObject）
 
-用于将任意两种类型的对象以 <K, V> 的形式组合在一起。
+用于将任意两种类型的对象以 \<K, V\> 的形式组合在一起。
 
 
 
@@ -2018,7 +2018,7 @@ System.out.println(ParamUtils.appendQueryParamValue("/user/find?gender=M", param
 
 
 
-**示例：** 将 Map<String, ?> 转换为 Map<String, String[]>
+**示例：** 将 Map\<String, ?\> 转换为 Map\<String, String[]\>
 
 ```java
 Map<String, Object> params = new HashMap<>();
@@ -2029,7 +2029,7 @@ Map<String, String[]> convertMap = ParamUtils.convertParamMap(params);
 
 
 
-**示例：** 解析 URL 参数并转换成 Map<String, String[]> 映射
+**示例：** 解析 URL 参数并转换成 Map\<String, String[]\> 映射
 
 ```java
 String url = "/user/find?age=20&gender=M&name=suninformation&nickName=%E6%9C%89%E7%90%86%E6%83%B3%E7%9A%84%E9%B1%BC";
