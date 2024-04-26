@@ -168,6 +168,9 @@ public class RuntimeUtils {
         if (rootUrl == null) {
             rootUrl = RuntimeUtils.class.getClassLoader().getResource(StringUtils.EMPTY);
         }
+        if (rootUrl != null && (!StringUtils.equals(FileUtils.PROTOCOL_FILE, rootUrl.getProtocol()) || !FileUtils.toFile(rootUrl).isAbsolute())) {
+            rootUrl = null;
+        }
         String rootPath = rootUrl != null ? rootUrl.getPath() : null;
         if (rootPath != null) {
             boolean isTestPath = StringUtils.contains(rootPath, "/test-classes");
