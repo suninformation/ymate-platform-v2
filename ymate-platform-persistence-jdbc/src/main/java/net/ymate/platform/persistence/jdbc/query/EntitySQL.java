@@ -107,35 +107,35 @@ public final class EntitySQL<T extends IEntity> {
     }
 
     public T find(Serializable id) throws Exception {
-        return owner.openSession(session -> session.find(this, id, shardingable));
+        return owner.openSession(session -> session.find(this, id));
     }
 
     public T find(String dataSourceName, Serializable id) throws Exception {
-        return owner.openSession(dataSourceName, session -> session.find(this, id, shardingable));
+        return owner.openSession(dataSourceName, session -> session.find(this, id));
     }
 
     public T findFirst(Where where) throws Exception {
-        return owner.openSession(session -> session.findFirst(this, where, shardingable));
+        return owner.openSession(session -> session.findFirst(this, where));
     }
 
     public T findFirst(String dataSourceName, Where where) throws Exception {
-        return owner.openSession(dataSourceName, session -> session.findFirst(this, where, shardingable));
+        return owner.openSession(dataSourceName, session -> session.findFirst(this, where));
     }
 
     public IResultSet<T> find(Where where) throws Exception {
-        return owner.openSession(session -> session.find(this, where, shardingable));
+        return owner.openSession(session -> session.find(this, where));
     }
 
     public IResultSet<T> find(Where where, Page page) throws Exception {
-        return owner.openSession(session -> session.find(this, where, page, shardingable));
+        return owner.openSession(session -> session.find(this, where, page));
     }
 
     public IResultSet<T> find(String dataSourceName, Where where) throws Exception {
-        return owner.openSession(dataSourceName, session -> session.find(this, where, shardingable));
+        return owner.openSession(dataSourceName, session -> session.find(this, where));
     }
 
     public IResultSet<T> find(String dataSourceName, Where where, Page page) throws Exception {
-        return owner.openSession(dataSourceName, session -> session.find(this, where, page, shardingable));
+        return owner.openSession(dataSourceName, session -> session.find(this, where, page));
     }
 
     public long count() throws Exception {

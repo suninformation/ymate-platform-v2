@@ -275,11 +275,11 @@ public final class EntityWrapper<Entity extends IEntity> {
     }
 
     public <T extends Serializable> IResultSet<T> find(Class<T> beanClass, OrderBy orderBy, GroupBy groupBy, IDBLocker dbLocker) throws Exception {
-        return find(beanClass, null, orderBy, null, null, dbLocker);
+        return find(beanClass, null, orderBy, groupBy, null, dbLocker);
     }
 
     public IResultSet<Entity> find(OrderBy orderBy, GroupBy groupBy, IDBLocker dbLocker) throws Exception {
-        return find((Fields) null, orderBy, null, null, dbLocker);
+        return find((Fields) null, orderBy, groupBy, null, dbLocker);
     }
 
     public <T extends Serializable> IResultSet<T> find(Class<T> beanClass, Page page) throws Exception {

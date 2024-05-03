@@ -244,7 +244,7 @@ public class DefaultDatabaseSession extends AbstractSession<IDatabaseConnectionH
 
     @Override
     public <T extends IEntity> IResultSet<T> find(EntitySQL<T> entity, Where where, Page page, IShardingable shardingable) throws Exception {
-        String sqlStr = dialect.buildSelectSql(entity.entityClass(), tablePrefix, shardingable, doGetNotExcludedFields(EntityMeta.load(entity.entityClass()), entity.fields(), false, true));
+        String sqlStr = dialect.buildSelectSql(entity.entityClass(), tablePrefix, entity.shardingable() != null ? entity.shardingable() : shardingable, doGetNotExcludedFields(EntityMeta.load(entity.entityClass()), entity.fields(), false, true));
         if (where != null) {
             sqlStr = sqlStr.concat(StringUtils.SPACE).concat(where.toString());
         }
@@ -277,7 +277,7 @@ public class DefaultDatabaseSession extends AbstractSession<IDatabaseConnectionH
     public <T extends IEntity> T find(EntitySQL<T> entity, Serializable id, IShardingable shardingable) throws Exception {
         EntityMeta entityMeta = EntityMeta.load(entity.entityClass());
         PairObject<Fields, Params> entityPrimaryKeyValues = doGetPrimaryKeyFieldAndValues(entityMeta, id, null);
-        String sqlStr = dialect.buildSelectByPkSql(entity.entityClass(), tablePrefix, shardingable, entityPrimaryKeyValues.getKey(), doGetNotExcludedFields(entityMeta, entity.fields(), false, true));
+        String sqlStr = dialect.buildSelectByPkSql(entity.entityClass(), tablePrefix, entity.shardingable() != null ? entity.shardingable() : shardingable, entityPrimaryKeyValues.getKey(), doGetNotExcludedFields(entityMeta, entity.fields(), false, true));
         //
         IQueryOperator<T> queryOperator = new DefaultQueryOperator<>(doForUpdateIfNeed(sqlStr, entity.forUpdate()), this.connectionHolder, new EntityResultSetHandler<>(entity.entityClass()));
         if (entityMeta.isMultiplePrimaryKey()) {
@@ -316,16 +316,8 @@ public class DefaultDatabaseSession extends AbstractSession<IDatabaseConnectionH
 
     @Override
     public <T extends IEntity> T findFirst(EntitySQL<T> entity, Where where, IShardingable shardingable) throws Exception {
-        String sqlStr = dialect.buildSelectSql(entity.entityClass(), tablePrefix, shardingable, doGetNotExcludedFields(EntityMeta.load(entity.entityClass()), entity.fields(), false, true));
-        if (where != null) {
-            sqlStr = sqlStr.concat(StringUtils.SPACE).concat(where.toString());
-        }
-        sqlStr = dialect.buildPagedQuerySql(sqlStr, 1, 1);
-        //
-        IQueryOperator<T> queryOperator = new DefaultQueryOperator<>(doForUpdateIfNeed(sqlStr, entity.forUpdate()), this.connectionHolder, new EntityResultSetHandler<>(entity.entityClass()));
-        doOperator(Type.OPT.QUERY, DatabaseEvent.EVENT.QUERY_AFTER, where != null ? where.params() : null, queryOperator);
-        //
-        return queryOperator.getResultSet().isEmpty() ? null : queryOperator.getResultSet().get(0);
+        IResultSet<T> resultSet = find(entity, where, Page.limitOne(), shardingable);
+        return !resultSet.isResultsAvailable() ? null : resultSet.getResultData().get(0);
     }
 
     @Override
