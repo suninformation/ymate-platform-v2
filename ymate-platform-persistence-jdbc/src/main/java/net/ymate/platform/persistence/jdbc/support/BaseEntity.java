@@ -183,7 +183,7 @@ public abstract class BaseEntity<Entity extends IEntity, PK extends Serializable
             if (dbLocker != null) {
                 entitySql.forUpdate(dbLocker);
             }
-            return session.find(entitySql, this.getId(), this.getShardingable());
+            return session.find(entitySql.shardingable(this.getShardingable()), this.getId());
         }
     }
 
@@ -213,7 +213,7 @@ public abstract class BaseEntity<Entity extends IEntity, PK extends Serializable
             if (useLocker) {
                 entitySql.forUpdate(IDBLocker.DEFAULT);
             }
-            return session.find(entitySql, this.getId(), this.getShardingable()) != null;
+            return session.find(entitySql.shardingable(this.getShardingable()), this.getId()) != null;
         }
     }
 
@@ -547,7 +547,7 @@ public abstract class BaseEntity<Entity extends IEntity, PK extends Serializable
             if (dbLocker != null) {
                 entitySql.forUpdate(dbLocker);
             }
-            return session.find(entitySql, where, page, shardingable);
+            return session.find(entitySql.shardingable(shardingable), where, page);
         }
     }
 
@@ -775,7 +775,7 @@ public abstract class BaseEntity<Entity extends IEntity, PK extends Serializable
             if (dbLocker != null) {
                 entitySql.forUpdate(dbLocker);
             }
-            return session.findFirst(entitySql, where, shardingable);
+            return session.findFirst(entitySql.shardingable(shardingable), where);
         }
     }
 

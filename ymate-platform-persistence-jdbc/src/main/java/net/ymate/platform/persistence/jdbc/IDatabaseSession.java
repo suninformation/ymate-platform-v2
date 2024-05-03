@@ -170,6 +170,7 @@ public interface IDatabaseSession extends ISession<IDatabaseConnectionHolder> {
      * @return 返回全部结果数据
      * @throws Exception 可能产生的异常
      */
+    @Deprecated
     <T extends IEntity> IResultSet<T> find(EntitySQL<T> entity, IShardingable shardingable) throws Exception;
 
     /**
@@ -193,6 +194,7 @@ public interface IDatabaseSession extends ISession<IDatabaseConnectionHolder> {
      * @return 返回查询结果数据
      * @throws Exception 可能产生的异常
      */
+    @Deprecated
     <T extends IEntity> IResultSet<T> find(EntitySQL<T> entity, Page page, IShardingable shardingable) throws Exception;
 
     /**
@@ -216,6 +218,7 @@ public interface IDatabaseSession extends ISession<IDatabaseConnectionHolder> {
      * @return 返回全部结果数据
      * @throws Exception 可能产生的异常
      */
+    @Deprecated
     <T extends IEntity> IResultSet<T> find(EntitySQL<T> entity, Where where, IShardingable shardingable) throws Exception;
 
     /**
@@ -241,6 +244,7 @@ public interface IDatabaseSession extends ISession<IDatabaseConnectionHolder> {
      * @return 返回查询结果数据
      * @throws Exception 可能产生的异常
      */
+    @Deprecated
     <T extends IEntity> IResultSet<T> find(EntitySQL<T> entity, Where where, Page page, IShardingable shardingable) throws Exception;
 
     /**
@@ -264,6 +268,7 @@ public interface IDatabaseSession extends ISession<IDatabaseConnectionHolder> {
      * @return 返回实体对象
      * @throws Exception 可能产生的异常
      */
+    @Deprecated
     <T extends IEntity> T find(EntitySQL<T> entity, Serializable id, IShardingable shardingable) throws Exception;
 
     /**
@@ -298,6 +303,7 @@ public interface IDatabaseSession extends ISession<IDatabaseConnectionHolder> {
      * @return 返回结果集中第一条数据
      * @throws Exception 可能产生的异常
      */
+    @Deprecated
     <T extends IEntity> T findFirst(EntitySQL<T> entity, Where where, IShardingable shardingable) throws Exception;
 
     /**
@@ -319,10 +325,11 @@ public interface IDatabaseSession extends ISession<IDatabaseConnectionHolder> {
      * @return 返回结果集中第一条数据
      * @throws Exception 可能产生的异常
      */
+    @Deprecated
     <T extends IEntity> T findFirst(EntitySQL<T> entity, IShardingable shardingable) throws Exception;
 
     /**
-     * 执行SQL更新（如更新、插入和删除
+     * 执行SQL更新（如更新、插入和删除）
      *
      * @param sql SQL语句对象
      * @return 返回此次更新影响的记录数

@@ -301,23 +301,29 @@ public class DefaultDatabaseSession extends AbstractSession<IDatabaseConnectionH
 
     @Override
     public <T extends IEntity> T findFirst(EntitySQL<T> entity) throws Exception {
-        return findFirst(entity, null, null);
+        return findFirst(entity, (Where) null);
     }
 
     @Override
     public <T extends IEntity> T findFirst(EntitySQL<T> entity, IShardingable shardingable) throws Exception {
-        return findFirst(entity, null, shardingable);
+        if (entity.shardingable() == null && shardingable != null) {
+            entity.shardingable(shardingable);
+        }
+        return findFirst(entity, (Where) null);
     }
 
     @Override
     public <T extends IEntity> T findFirst(EntitySQL<T> entity, Where where) throws Exception {
-        return findFirst(entity, where, null);
+        IResultSet<T> resultSet = find(entity, where, Page.limitOne());
+        return !resultSet.isResultsAvailable() ? null : resultSet.getResultData().get(0);
     }
 
     @Override
     public <T extends IEntity> T findFirst(EntitySQL<T> entity, Where where, IShardingable shardingable) throws Exception {
-        IResultSet<T> resultSet = find(entity, where, Page.limitOne(), shardingable);
-        return !resultSet.isResultsAvailable() ? null : resultSet.getResultData().get(0);
+        if (entity.shardingable() == null && shardingable != null) {
+            entity.shardingable(shardingable);
+        }
+        return findFirst(entity, (Where) null);
     }
 
     @Override

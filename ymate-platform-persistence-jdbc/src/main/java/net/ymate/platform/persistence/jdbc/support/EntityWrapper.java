@@ -149,7 +149,7 @@ public final class EntityWrapper<Entity extends IEntity> {
             if (dbLocker != null) {
                 entitySql.forUpdate(dbLocker);
             }
-            return session.find(entitySql, entity.getId(), this.getShardingable());
+            return session.find(entitySql.shardingable(this.getShardingable()), entity.getId());
         }
     }
 
@@ -177,7 +177,7 @@ public final class EntityWrapper<Entity extends IEntity> {
             if (useLocker) {
                 entitySql.forUpdate(IDBLocker.DEFAULT);
             }
-            return session.find(entitySql, entity.getId(), this.getShardingable()) != null;
+            return session.find(entitySql.shardingable(this.getShardingable()), entity.getId()) != null;
         }
     }
 
