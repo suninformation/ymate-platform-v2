@@ -3245,6 +3245,33 @@ public class DemoOracleRepository implements IDemoRepository {
 
 
 
+### 示例五：存储器的另一种写法
+
+为了便于存储器内部调用会话操作，从 `v2.1.3` 版本开始新增名称为 `AbstractRepository` 的存储器接口实现类，该类提供了一组与 `IDatabaseSession` 会话接口相似的方法集合。
+
+```java
+@Repository
+public class DemoRepository extends AbstractRepository implements IDemoRepository {
+
+    @Inject
+    private IDatabase database;
+
+    public IResultSet<UserEntity> queryUsers(Integer type) throws Exception {
+        // 开启会话操作，之前的写法：
+        // return database.openSession(session ->
+        //         session.find(UserEntity.builder(database)
+        //                 .type(type)
+        //                 .build(), Page.limit(10)));
+        // 现在，可以直接调用：
+        return find(database, UserEntity.builder(database)
+                    .type(type)
+                    .build(), Page.limit(10));
+    }
+}
+```
+
+
+
 ## 高级特性
 
 ### 多表查询及自定义结果集数据处理
