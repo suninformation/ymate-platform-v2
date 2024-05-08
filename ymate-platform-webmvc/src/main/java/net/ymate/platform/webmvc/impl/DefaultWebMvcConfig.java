@@ -66,6 +66,8 @@ public final class DefaultWebMvcConfig implements IWebMvcConfig {
 
     private String requestPrefix;
 
+    private boolean requestStrictModeEnabled;
+
     private String baseViewPath;
 
     private String abstractBaseViewPath;
@@ -168,6 +170,7 @@ public final class DefaultWebMvcConfig implements IWebMvcConfig {
         requestIgnoreSuffixes.addAll(reqIgnoreSuffix);
         requestMethodParam = configReader.getString(REQUEST_METHOD_PARAM, confAnn == null ? null : confAnn.requestMethodParam());
         requestPrefix = configReader.getString(REQUEST_PREFIX, confAnn == null ? null : confAnn.requestPrefix());
+        requestStrictModeEnabled = configReader.getBoolean(REQUEST_STRICT_MODE_ENABLED, confAnn != null && confAnn.requestStrictModeEnabled());
         //
         baseViewPath = configReader.getString(BASE_VIEW_PATH, confAnn == null ? null : confAnn.baseViewPath());
         //
@@ -431,6 +434,17 @@ public final class DefaultWebMvcConfig implements IWebMvcConfig {
     public void setRequestPrefix(String requestPrefix) {
         if (!initialized) {
             this.requestPrefix = requestPrefix;
+        }
+    }
+
+    @Override
+    public boolean isRequestStrictModeEnabled() {
+        return requestStrictModeEnabled;
+    }
+
+    public void setRequestStrictModeEnabled(boolean requestStrictModeEnabled) {
+        if (!initialized) {
+            this.requestStrictModeEnabled = requestStrictModeEnabled;
         }
     }
 
@@ -756,6 +770,11 @@ public final class DefaultWebMvcConfig implements IWebMvcConfig {
 
         public Builder requestPrefix(String requestPrefix) {
             config.setRequestPrefix(requestPrefix);
+            return this;
+        }
+
+        public Builder requestStrictModeEnabled(boolean requestStrictModeEnabled) {
+            config.setRequestStrictModeEnabled(requestStrictModeEnabled);
             return this;
         }
 

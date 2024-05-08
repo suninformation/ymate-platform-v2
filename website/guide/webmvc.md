@@ -226,6 +226,9 @@ ymp.configs.webmvc.request_method_param=
 # 请求路径前缀, 可选参数, 默认值: 空
 ymp.configs.webmvc.request_prefix=
 
+# 请求路径匹配是否启用严格模式，默认值: false
+ymp.configs.webmvc.request_strict_mode_enabled=
+
 # 控制器视图文件基础路径(必须是以 '/' 开始和结尾), 默认值: /WEB-INF/templates/
 ymp.configs.webmvc.base_view_path=
 
@@ -338,33 +341,34 @@ ymp.params.webmvc.signature_time_lifecycle=
 
 #### @WebConf
 
-| 配置项                 | 描述                                               |
-| ---------------------- | -------------------------------------------------- |
-| mappingParserClass     | 控制器请求映射路径分析器                           |
-| requestProcessClass    | 控制器请求处理器                                   |
-| errorProcessorClass    | 异常错误处理器                                     |
-| cacheProcessorClass    | 缓存处理器                                         |
-| resourceHome           | 国际化资源文件存放路径                             |
-| resourceName           | 国际化资源文件名称                                 |
-| languageParamName      | 国际化语言设置参数名称，可选参数，默认值为 `_lang` |
-| defaultCharsetEncoding | 默认字符编码集设置                                 |
-| defaultContentType     | 默认Content-Type设置                               |
-| requestIgnoreSuffixes  | 请求忽略后缀集合                                   |
-| requestMethodParam     | 请求方法参数名称                                   |
-| requestPrefix          | 请求路径前缀                                       |
-| baseViewPath           | 控制器视图文件基础路径                             |
-| cookiePrefix           | Cookie键前缀                                       |
-| cookieDomain           | Cookie作用域                                       |
-| cookiePath             | Cookie作用路径                                     |
-| cookieAuthKey          | Cookie密钥                                         |
-| cookieAuthEnabled      | Cookie密钥验证是否默认开启                         |
-| cookieUseHttpOnly      | Cookie是否默认使用 HttpOnly                        |
-| uploadTempDir          | 文件上传临时目录                                   |
-| uploadFileCountMax     | 上传文件数量最大值                                 |
-| uploadFileSizeMax      | 上传文件大小最大值（字节）                         |
-| uploadTotalSizeMax     | 上传文件总量大小最大值（字节）                     |
-| uploadSizeThreshold    | 内存缓冲区的大小（字节）                           |
-| uploadListenerClass    | 文件上传状态监听器                                 |
+| 配置项                   | 描述                                               |
+| ------------------------ | -------------------------------------------------- |
+| mappingParserClass       | 控制器请求映射路径分析器                           |
+| requestProcessClass      | 控制器请求处理器                                   |
+| errorProcessorClass      | 异常错误处理器                                     |
+| cacheProcessorClass      | 缓存处理器                                         |
+| resourceHome             | 国际化资源文件存放路径                             |
+| resourceName             | 国际化资源文件名称                                 |
+| languageParamName        | 国际化语言设置参数名称，可选参数，默认值为 `_lang` |
+| defaultCharsetEncoding   | 默认字符编码集设置                                 |
+| defaultContentType       | 默认Content-Type设置                               |
+| requestIgnoreSuffixes    | 请求忽略后缀集合                                   |
+| requestMethodParam       | 请求方法参数名称                                   |
+| requestPrefix            | 请求路径前缀                                       |
+| requestStrictModeEnabled | 请求路径匹配是否启用严格模式                       |
+| baseViewPath             | 控制器视图文件基础路径                             |
+| cookiePrefix             | Cookie键前缀                                       |
+| cookieDomain             | Cookie作用域                                       |
+| cookiePath               | Cookie作用路径                                     |
+| cookieAuthKey            | Cookie密钥                                         |
+| cookieAuthEnabled        | Cookie密钥验证是否默认开启                         |
+| cookieUseHttpOnly        | Cookie是否默认使用 HttpOnly                        |
+| uploadTempDir            | 文件上传临时目录                                   |
+| uploadFileCountMax       | 上传文件数量最大值                                 |
+| uploadFileSizeMax        | 上传文件大小最大值（字节）                         |
+| uploadTotalSizeMax       | 上传文件总量大小最大值（字节）                     |
+| uploadSizeThreshold      | 内存缓冲区的大小（字节）                           |
+| uploadListenerClass      | 文件上传状态监听器                                 |
 
 
 

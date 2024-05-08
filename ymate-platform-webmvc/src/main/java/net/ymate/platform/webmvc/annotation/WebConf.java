@@ -96,6 +96,12 @@ public @interface WebConf {
     String requestPrefix() default StringUtils.EMPTY;
 
     /**
+     * @return 请求路径匹配是否启用严格模式，默认值为false
+     * @since 2.1.3
+     */
+    boolean requestStrictModeEnabled() default false;
+
+    /**
      * @return 控制器视图文件基础路径
      */
     String baseViewPath() default StringUtils.EMPTY;

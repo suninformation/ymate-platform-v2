@@ -41,6 +41,8 @@ public class DispatchServlet extends HttpServlet {
 
     private String requestPrefix;
 
+    private boolean strictMode;
+
     @Override
     public void init(ServletConfig config) {
         servletContext = config.getServletContext();
@@ -48,11 +50,12 @@ public class DispatchServlet extends HttpServlet {
         IWebMvcConfig mvcConfig = ((IWebMvc) config.getServletContext().getAttribute(IWebMvc.class.getName())).getConfig();
         dispatcher = new Dispatcher(mvcConfig.getDefaultCharsetEncoding(), mvcConfig.getDefaultContentType(), mvcConfig.getRequestMethodParam());
         requestPrefix = mvcConfig.getRequestPrefix();
+        strictMode = mvcConfig.isRequestStrictModeEnabled();
     }
 
     @Override
     protected void service(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        IRequestContext requestContext = new DefaultRequestContext(request, requestPrefix);
+        IRequestContext requestContext = new DefaultRequestContext(request, requestPrefix, strictMode);
         dispatcher.dispatch(requestContext, servletContext, request, response);
     }
 }

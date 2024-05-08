@@ -64,6 +64,8 @@ public interface IWebMvcConfig extends IInitialization<IWebMvc> {
 
     String REQUEST_PREFIX = "request_prefix";
 
+    String REQUEST_STRICT_MODE_ENABLED = "request_strict_mode_enabled";
+
     String BASE_VIEW_PATH = "base_view_path";
 
     String COOKIE_PREFIX = "cookie_prefix";
@@ -256,6 +258,14 @@ public interface IWebMvcConfig extends IInitialization<IWebMvc> {
     String getRequestPrefix();
 
     /**
+     * 请求路径匹配是否启用严格模式，默认值为false
+     *
+     * @return 返回true表示开启
+     * @since 2.1.3
+     */
+    boolean isRequestStrictModeEnabled();
+
+    /**
      * 控制器视图文件基础路径（必须是以 '/' 开始和结尾，默认值为/WEB-INF/templates/）
      *
      * @return 返回控制器视图文件基础路径
@@ -341,7 +351,7 @@ public interface IWebMvcConfig extends IInitialization<IWebMvc> {
     long getUploadTotalSizeMax();
 
     /**
-     * 内存缓冲区的大小，默认值： 10240字节（=10K），即如果文件大于10K，将使用临时文件缓存上传文件
+     * 内存缓冲区的大小，默认值： 10240 字节（=10K），即如果文件大于10K，将使用临时文件缓存上传文件
      *
      * @return 返回内存缓冲区的大小
      */

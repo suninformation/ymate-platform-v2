@@ -47,6 +47,8 @@ public class DispatchFilter implements Filter {
 
     private String requestPrefix;
 
+    private boolean strictMode;
+
     private final Set<String> requestIgnoreUrls = new HashSet<>();
 
     @Override
@@ -63,6 +65,7 @@ public class DispatchFilter implements Filter {
         ignorePattern = Pattern.compile(ignoreRegex, Pattern.CASE_INSENSITIVE);
         dispatcher = new Dispatcher(config.getDefaultCharsetEncoding(), config.getDefaultContentType(), config.getRequestMethodParam());
         requestPrefix = config.getRequestPrefix();
+        strictMode = config.isRequestStrictModeEnabled();
         //
         String[] requestIgnoreUrlArr = StringUtils.split(StringUtils.defaultIfBlank(filterConfig.getInitParameter("requestIgnoreUrls"), filterConfig.getInitParameter("request-ignore-urls")), "|");
         if (ArrayUtils.isNotEmpty(requestIgnoreUrlArr)) {
@@ -75,7 +78,7 @@ public class DispatchFilter implements Filter {
         if (WebUtils.isWebSocket((HttpServletRequest) request)) {
             chain.doFilter(request, response);
         } else {
-            IRequestContext requestContext = new DefaultRequestContext((HttpServletRequest) request, requestPrefix);
+            IRequestContext requestContext = new DefaultRequestContext((HttpServletRequest) request, requestPrefix, strictMode);
             if (!requestIgnoreUrls.isEmpty() && requestIgnoreUrls.stream().anyMatch(s -> StringUtils.startsWith(requestContext.getOriginalUrl(), s))) {
                 chain.doFilter(request, response);
             } else if (!ignorePattern.matcher(requestContext.getOriginalUrl()).find()) {

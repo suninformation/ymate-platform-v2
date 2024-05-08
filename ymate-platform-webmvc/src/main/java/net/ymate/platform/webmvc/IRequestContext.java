@@ -57,6 +57,14 @@ public interface IRequestContext {
     String getSuffix();
 
     /**
+     * 是否开启严格模式
+     *
+     * @return 返回true表示开启
+     * @since 2.1.3
+     */
+    boolean isStrictMode();
+
+    /**
      * 获取当前请求方式
      *
      * @return 返回当前请求方式

@@ -50,11 +50,15 @@ public class DefaultRequestContext implements IRequestContext {
      */
     private final String suffix;
 
+    private final boolean strictMode;
+
     private final Type.HttpMethod httpMethod;
 
     private final Map<String, Object> attributes = new HashMap<>(16);
 
-    public DefaultRequestContext(HttpServletRequest request, String prefix) {
+    public DefaultRequestContext(HttpServletRequest request, String prefix, boolean strictMode) {
+        this.strictMode = strictMode;
+        //
         httpMethod = Type.HttpMethod.valueOf(request.getMethod());
         requestMapping = originalUrl = StringUtils.defaultIfBlank(request.getPathInfo(), request.getServletPath());
         if (StringUtils.isNotBlank(prefix)) {
@@ -67,6 +71,9 @@ public class DefaultRequestContext implements IRequestContext {
             if (position < requestMapping.lastIndexOf(Type.Const.PATH_SEPARATOR_CHAR)) {
                 position = -1;
             }
+        } else if (!strictMode) {
+            // 建议开启严格模式！非严格模式下处理请求映射字符串使其必须以字符'/'开始且不以'/'结束以防止旧版项目出现兼容问题
+            requestMapping = requestMapping.substring(0, requestMapping.length() - 1);
         }
         if (position > 0) {
             this.suffix = requestMapping.substring(position + 1);
@@ -94,6 +101,11 @@ public class DefaultRequestContext implements IRequestContext {
     @Override
     public String getSuffix() {
         return suffix;
+    }
+
+    @Override
+    public boolean isStrictMode() {
+        return strictMode;
     }
 
     @Override

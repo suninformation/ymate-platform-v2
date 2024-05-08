@@ -107,6 +107,11 @@ public final class DefaultWebMvcConfigurable extends DefaultModuleConfigurable {
             return this;
         }
 
+        public Builder requestStrictModeEnabled(boolean requestStrictModeEnabled) {
+            configurable.addConfig(IWebMvcConfig.REQUEST_STRICT_MODE_ENABLED, String.valueOf(requestStrictModeEnabled));
+            return this;
+        }
+
         public Builder baseViewPath(String baseViewPath) {
             configurable.addConfig(IWebMvcConfig.BASE_VIEW_PATH, StringUtils.trimToEmpty(baseViewPath));
             return this;
