@@ -32,11 +32,6 @@ public class LogLogger extends AbstractLogAdapter implements LocationAwareLogger
     }
 
     @Override
-    public void trace(Throwable e) {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
     public void trace(final String format, final Object arg) {
         if (isTraceEnabled()) {
             buildEx(getSafeMessages(format, arg), null, LogLevel.TRACE);
@@ -115,13 +110,6 @@ public class LogLogger extends AbstractLogAdapter implements LocationAwareLogger
     public void debug(final String format, final Object... args) {
         if (isDebugEnabled()) {
             buildEx(getSafeMessages(format, args), null, LogLevel.DEBUG);
-        }
-    }
-
-    @Override
-    public void debug(final String msg, final Throwable t) {
-        if (isDebugEnabled()) {
-            buildEx(msg, t, LogLevel.DEBUG);
         }
     }
 

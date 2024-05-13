@@ -55,8 +55,10 @@ public abstract class AbstractLogger implements ILogger {
         LogInfo logInfo = new LogInfo(getLoggerName(), level, NetworkUtils.IP.getHostName(), currentThread.getName(), String.valueOf(currentThread.getId()), buildMakeCallerInfo(), info, buildMakeStackInfo(e),
                 DateTimeUtils.formatTime(System.currentTimeMillis(), DateTimeUtils.YYYY_MM_DD_HH_MM_SS_SSS));
         // 判断是否输出到控制台
-        if (Logs.get().getConfig().isAllowConsoleOutput()) {
-            System.out.println(logInfo.toString(Logs.get().getConfig().getLogFormat(), Logs.get().getConfig().isFormatPaddedOutput()));
+        ILog logOwner = Logs.get();
+        ILogConfig logConfig = logOwner != null ? logOwner.getConfig() : null;
+        if (logConfig != null && logConfig.isAllowConsoleOutput()) {
+            System.out.println(logInfo.toString(logConfig.getLogFormat(), logConfig.isFormatPaddedOutput()));
         }
         //
         logWrite(level, logInfo);
@@ -78,7 +80,9 @@ public abstract class AbstractLogger implements ILogger {
     }
 
     public String buildSimplePackageName(String originPackageName) {
-        if (Logs.get().getConfig().isSimplifiedPackageName()) {
+        ILog logOwner = Logs.get();
+        ILogConfig logConfig = logOwner != null ? logOwner.getConfig() : null;
+        if (logConfig != null && logConfig.isSimplifiedPackageName()) {
             String packageName = SIMPLIFIED_PACKAGE_NAMES.get(originPackageName);
             if (packageName == null) {
                 String[] nameParts = StringUtils.split(originPackageName, '.');
@@ -140,7 +144,10 @@ public abstract class AbstractLogger implements ILogger {
                     .append("\n");
             StackTraceElement[] traces = t.getStackTrace();
             int tracesSize = traces.length;
-            int printStackCount = Logs.get().getConfig().getPrintStackCount();
+            //
+            ILog logOwner = Logs.get();
+            ILogConfig logConfig = logOwner != null ? logOwner.getConfig() : null;
+            int printStackCount = logConfig != null ? logConfig.getPrintStackCount() : 0;
             if (printStackCount <= 0) {
                 printStackCount = 5;
             }

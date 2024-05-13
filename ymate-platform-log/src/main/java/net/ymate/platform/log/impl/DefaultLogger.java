@@ -48,7 +48,9 @@ public class DefaultLogger extends AbstractLogger {
 
     @Override
     protected void logWrite(LogLevel level, LogInfo content) {
-        logger.log(LogLevel.parse(level), content.toString(config.getLogFormat(), config.isFormatPaddedOutput()));
+        if (logger != null) {
+            logger.log(LogLevel.parse(level), config != null ? content.toString(config.getLogFormat(), config.isFormatPaddedOutput()) : content.toString());
+        }
     }
 
     @Override

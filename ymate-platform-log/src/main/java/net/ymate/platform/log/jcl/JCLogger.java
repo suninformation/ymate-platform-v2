@@ -16,8 +16,6 @@
 package net.ymate.platform.log.jcl;
 
 import net.ymate.platform.log.AbstractLogAdapter;
-import net.ymate.platform.log.ILogConfig;
-import net.ymate.platform.log.ILogger;
 import net.ymate.platform.log.LogLevel;
 import org.apache.commons.logging.Log;
 
@@ -84,11 +82,6 @@ public class JCLogger extends AbstractLogAdapter implements Log {
         if (isInfoEnabled()) {
             buildEx(message == null ? null : message.toString(), t, LogLevel.INFO);
         }
-    }
-
-    @Override
-    public ILogger initialize(String loggerName, ILogConfig config) throws Exception {
-        throw new UnsupportedOperationException();
     }
 
     @Override

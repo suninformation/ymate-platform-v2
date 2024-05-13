@@ -48,11 +48,12 @@ public abstract class AbstractLogAdapter extends AbstractLogger {
     }
 
     private boolean tryCheckAndInitLogImpl() {
-        if (Logs.get() == null || !Logs.get().isInitialized()) {
+        ILog logOwner = Logs.get();
+        if (logOwner == null || !logOwner.isInitialized()) {
             return false;
         } else if (!initialized) {
             try {
-                logger = Logs.get().getLogger(loggerName).depth(5);
+                logger = logOwner.getLogger(loggerName).depth(5);
                 initialized = true;
             } catch (Exception e) {
                 tryGetLogSafely().warn(StringUtils.EMPTY, RuntimeUtils.unwrapThrow(e));
