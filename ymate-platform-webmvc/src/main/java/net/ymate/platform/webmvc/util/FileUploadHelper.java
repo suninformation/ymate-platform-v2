@@ -460,8 +460,7 @@ public final class FileUploadHelper {
                 return file;
             }
             if (tempFile == null) {
-                String suffix = String.format(".%s", StringUtils.defaultIfBlank(FileUtils.getExtName(getName()), "tmp"));
-                tempFile = File.createTempFile("upload_", suffix);
+                tempFile = FileUtils.createTempFile("upload_", getName());
                 tempFile.deleteOnExit();
                 try (InputStream inputStream = new BufferedInputStream(fileItem.getInputStream());
                      OutputStream outputStream = new BufferedOutputStream(Files.newOutputStream(tempFile.toPath()))) {

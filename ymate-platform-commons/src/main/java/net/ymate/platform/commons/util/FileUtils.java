@@ -85,13 +85,15 @@ public class FileUtils {
 
     /**
      * @param fileName 原始文件名称
-     * @return 提取文件扩展名称，若不存在则返回空字符串
+     * @return 提取文件扩展名称，若为空或不存在则返回空字符串
      */
     public static String getExtName(String fileName) {
         String suffix = null;
-        int pos = fileName.lastIndexOf('.');
-        if (pos > 0 && pos < fileName.length() - 1) {
-            suffix = fileName.substring(pos + 1);
+        if (fileName != null && !fileName.isEmpty()) {
+            int pos = fileName.lastIndexOf('.');
+            if (pos > 0 && pos < fileName.length() - 1) {
+                suffix = fileName.substring(pos + 1);
+            }
         }
         return StringUtils.trimToEmpty(suffix);
     }
@@ -363,6 +365,26 @@ public class FileUtils {
                 }
             }
         }
+    }
+
+    /**
+     * 创建临时文件（尝试从指定的fileName提取其扩展名作为后缀，否则为空）
+     *
+     * @param prefix   前缀
+     * @param fileName 文件名
+     * @return 返回临时文件对象
+     * @throws IOException 可能产生的异常
+     * @since 2.1.3
+     */
+    public static File createTempFile(String prefix, String fileName) throws IOException {
+        String suffix = null;
+        if (StringUtils.isNotBlank(fileName)) {
+            String extName = StringUtils.trimToNull(getExtName(fileName));
+            if (extName != null) {
+                suffix = String.format(".%s", extName);
+            }
+        }
+        return File.createTempFile(prefix, suffix);
     }
 
     /**
