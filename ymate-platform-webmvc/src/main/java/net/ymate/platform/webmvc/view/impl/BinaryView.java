@@ -135,18 +135,23 @@ public class BinaryView extends AbstractView {
         }
         // 文本流
         else if (data instanceof Reader) {
-            Reader r = (Reader) data;
-            IOUtils.copy(r, httpServletResponse.getOutputStream(), httpServletRequest.getCharacterEncoding());
+            try (Reader r = (Reader) data) {
+                IOUtils.copy(r, httpServletResponse.getOutputStream(), httpServletRequest.getCharacterEncoding());
+            }
         }
         // 二进制流
         else if (data instanceof InputStream) {
             PairObject<Long, Long> rangePairObj = doParseRange(length);
             if (rangePairObj != null) {
                 doSetRangeHeader(httpServletResponse, rangePairObj);
-                IOUtils.copyLarge((InputStream) data, httpServletResponse.getOutputStream(), rangePairObj.getKey(), rangePairObj.getValue());
+                try (InputStream in = (InputStream) data) {
+                    IOUtils.copyLarge(in, httpServletResponse.getOutputStream(), rangePairObj.getKey(), rangePairObj.getValue());
+                }
             } else {
                 httpServletResponse.setContentLength(BlurObject.bind(length).toIntValue());
-                IOUtils.copyLarge((InputStream) data, httpServletResponse.getOutputStream());
+                try (InputStream in = (InputStream) data) {
+                    IOUtils.copyLarge(in, httpServletResponse.getOutputStream());
+                }
             }
         }
         // 普通对象
