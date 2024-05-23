@@ -30,6 +30,14 @@
          this.status = status;
      }
 
+     /**
+      * @since 2.1.3
+      */
+     public ServiceStatusException(int status, Throwable cause) {
+         super(cause);
+         this.status = status;
+     }
+
      public int getStatus() {
          return status;
      }

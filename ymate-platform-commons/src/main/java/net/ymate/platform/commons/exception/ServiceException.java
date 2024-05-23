@@ -30,6 +30,14 @@
          this.errorCode = errorCode;
      }
 
+     /**
+      * @since 2.1.3
+      */
+     public ServiceException(int errorCode, Throwable cause) {
+         super(cause);
+         this.errorCode = errorCode;
+     }
+
      public int getErrorCode() {
          return errorCode;
      }

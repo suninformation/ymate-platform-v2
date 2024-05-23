@@ -241,8 +241,8 @@ public final class I18N implements IDestroyable {
     private List<String> getResourceNames(Locale locale, String resourceName) {
         List<String> names = new ArrayList<>();
         names.add(resourceName + ".properties");
-        String localeKey = (locale == null) ? StringUtils.EMPTY : locale.toString();
-        if (localeKey.length() > 0) {
+        String localeKey = locale == null ? StringUtils.EMPTY : locale.toString();
+        if (!localeKey.isEmpty()) {
             resourceName += ("_" + localeKey) + ".properties";
             names.add(0, resourceName);
         }

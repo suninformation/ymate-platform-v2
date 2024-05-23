@@ -3262,8 +3262,8 @@ public class DemoRepository extends AbstractRepository implements IDemoRepositor
         //         session.find(UserEntity.builder(database)
         //                 .type(type)
         //                 .build(), Page.limit(10)));
-        // 现在，可以直接调用：
-        return find(database, UserEntity.builder(database)
+        // 现在可以直接调用，内部方法名称均以'do'为前缀，如：
+        return doFind(database, UserEntity.builder(database)
                     .type(type)
                     .build(), Page.limit(10));
     }
