@@ -15,26 +15,18 @@
  */
 package net.ymate.platform.commons.http;
 
-import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
 import org.apache.http.impl.client.CloseableHttpClient;
+
+import java.io.IOException;
 
 /**
  * 自定义HttpClient操作接口
  *
  * @author 刘镇 (suninformation@163.com) on 2018/7/25 上午10:17
+ * @see ICloseableHttpClientConfigurable
  */
-public interface IHttpClientConfigurable {
-
-    /**
-     * 创建HttpClient实例
-     *
-     * @param socketFactory     Socket工厂对象
-     * @param connectionTimeout 连接超时时间
-     * @param requestTimeout    请求超时时间
-     * @param socketTimeout     Socket超时时间
-     * @return 返回创建的HttpClient实例对象
-     */
-    CloseableHttpClient createHttpClient(SSLConnectionSocketFactory socketFactory, int connectionTimeout, int requestTimeout, int socketTimeout);
+@Deprecated
+public interface IHttpClientConfigurable extends ICloseableHttpClientConfigurable {
 
     /**
      * 关闭(释放)HttpClient实例
@@ -42,4 +34,8 @@ public interface IHttpClientConfigurable {
      * @param httpClient HttpClient实例对象
      */
     void closeHttpClient(CloseableHttpClient httpClient);
+
+    @Override
+    default void close() throws IOException {
+    }
 }

@@ -15,7 +15,7 @@
  */
 package net.ymate.platform.commons.http;
 
-import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.client.HttpClient;
 
 /**
  * HTTP请求执行器接口
@@ -32,5 +32,5 @@ public interface IHttpRequestExecutor<T> {
      * @return 返回执行结果对象
      * @throws Exception 可能产生的任何异常
      */
-    T execute(CloseableHttpClient httpClient) throws Exception;
+    T execute(HttpClient httpClient) throws Exception;
 }

@@ -21,7 +21,7 @@
  */
 package net.ymate.platform.commons.http.impl;
 
-import net.ymate.platform.commons.http.HttpClientHelper;
+import net.ymate.platform.commons.http.AbstractHttpClientHelper;
 import net.ymate.platform.commons.http.IFileHandler;
 import net.ymate.platform.commons.http.IFileWrapper;
 import net.ymate.platform.commons.http.IHttpResponse;
@@ -61,7 +61,7 @@ public class DefaultHttpResponse implements IHttpResponse {
     private final Map<String, String> headers = new HashMap<>();
 
     public DefaultHttpResponse(HttpResponse response) throws IOException {
-        this(response, HttpClientHelper.DEFAULT_CHARSET);
+        this(response, AbstractHttpClientHelper.DEFAULT_CHARSET);
     }
 
     public DefaultHttpResponse(HttpResponse response, Charset defaultCharset) throws IOException {
@@ -89,11 +89,8 @@ public class DefaultHttpResponse implements IHttpResponse {
         reasonPhrase = response.getStatusLine().getReasonPhrase();
         locale = response.getLocale();
         //
-        if (download && statusCode == HttpClientHelper.HTTP_STATUS_CODE_SUCCESS) {
-            String fileName = null;
-            if (response.containsHeader(HttpClientHelper.HEADER_CONTENT_DISPOSITION)) {
-                fileName = StringUtils.replace(StringUtils.substringAfter(response.getFirstHeader(HttpClientHelper.HEADER_CONTENT_DISPOSITION).getValue(), "filename="), "\"", StringUtils.EMPTY);
-            }
+        if (download && isSuccess()) {
+            String fileName = AbstractHttpClientHelper.parseFileName(response);
             fileWrapper = new DefaultFileWrapper(fileName, response.getEntity().getContentType().getValue(), response.getEntity().getContentLength(), new BufferedInputStream(response.getEntity().getContent()));
             if (fileHandler != null) {
                 fileHandler.handle(response, fileWrapper);
@@ -107,7 +104,7 @@ public class DefaultHttpResponse implements IHttpResponse {
             contentEncoding = header.getValue();
         }
         if (contentEncoding == null) {
-            contentEncoding = StringUtils.defaultIfBlank(defaultCharset, HttpClientHelper.DEFAULT_CHARSET);
+            contentEncoding = StringUtils.defaultIfBlank(defaultCharset, AbstractHttpClientHelper.DEFAULT_CHARSET);
         }
         header = response.getEntity().getContentType();
         if (header != null) {

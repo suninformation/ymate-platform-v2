@@ -20,12 +20,24 @@ import java.io.IOException;
 import java.util.Locale;
 import java.util.Map;
 
+import static net.ymate.platform.commons.http.AbstractHttpClientHelper.HTTP_STATUS_CODE_SUCCESS;
+
 /**
  * HTTP请求响应接口
  *
  * @author 刘镇 (suninformation@163.com) on 15/9/7 下午11:20
  */
 public interface IHttpResponse extends Closeable {
+
+    /**
+     * 判断当前HTTP状态码是否为200
+     *
+     * @return 返回true表示请求状态成功
+     * @since 2.1.3
+     */
+    default boolean isSuccess() {
+        return getStatusCode() == HTTP_STATUS_CODE_SUCCESS;
+    }
 
     /**
      * 获取HTTP状态码

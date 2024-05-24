@@ -15,7 +15,7 @@
  */
 package net.ymate.platform.commons.http.impl;
 
-import net.ymate.platform.commons.http.HttpClientHelper;
+import net.ymate.platform.commons.http.AbstractHttpClientHelper;
 import net.ymate.platform.commons.http.IFileWrapper;
 import net.ymate.platform.commons.util.FileUtils;
 import net.ymate.platform.commons.util.MimeTypeUtils;
@@ -67,7 +67,7 @@ public class DefaultFileWrapper implements IFileWrapper {
         }
         this.contentLength = sourceFile.length();
         //
-        doParseFileName();
+        doProcessFileName();
     }
 
     public DefaultFileWrapper(String fileName, String contentType, long contentLength, InputStream sourceInputStream) throws IOException {
@@ -75,12 +75,12 @@ public class DefaultFileWrapper implements IFileWrapper {
         this.contentType = contentType;
         this.contentLength = contentLength;
         //
-        tempFile = File.createTempFile("download_", fileName);
+        tempFile = FileUtils.createTempFile("download_", fileName);
         try (OutputStream outputStream = Files.newOutputStream(tempFile.toPath())) {
             IOUtils.copyLarge(sourceInputStream, outputStream);
         }
         needClean = true;
-        doParseFileName();
+        doProcessFileName();
     }
 
     public DefaultFileWrapper(String contentType, File sourceFile) {
@@ -95,7 +95,7 @@ public class DefaultFileWrapper implements IFileWrapper {
         this(null, contentType, contentLength, sourceInputStream);
     }
 
-    private void doParseFileName() {
+    private void doProcessFileName() {
         boolean fileNameNull = StringUtils.isBlank(this.fileName);
         if (fileNameNull && tempFile != null) {
             this.fileName = tempFile.getName();
@@ -110,16 +110,8 @@ public class DefaultFileWrapper implements IFileWrapper {
         }
     }
 
-    private static String doParseFileName(HttpResponse httpResponse) {
-        String fileName = null;
-        if (httpResponse.getStatusLine().getStatusCode() == HttpClientHelper.HTTP_STATUS_CODE_SUCCESS && httpResponse.containsHeader(HttpClientHelper.HEADER_CONTENT_DISPOSITION)) {
-            fileName = StringUtils.substringAfter(httpResponse.getFirstHeader(HttpClientHelper.HEADER_CONTENT_DISPOSITION).getValue(), "filename=");
-        }
-        return fileName;
-    }
-
     public DefaultFileWrapper(HttpResponse httpResponse) throws IOException {
-        this(doParseFileName(httpResponse), httpResponse.getEntity().getContentType().getValue(), httpResponse.getEntity().getContentLength(), httpResponse.getEntity().getContent());
+        this(AbstractHttpClientHelper.parseFileName(httpResponse), httpResponse.getEntity().getContentType().getValue(), httpResponse.getEntity().getContentLength(), httpResponse.getEntity().getContent());
     }
 
     public DefaultFileWrapper(String errMsg) {
@@ -173,7 +165,7 @@ public class DefaultFileWrapper implements IFileWrapper {
     }
 
     @Override
-    public void transferTo(File distFile) throws Exception {
+    public void transferTo(File distFile) throws IOException {
         FileUtils.writeTo(tempFile, distFile, true);
     }
 

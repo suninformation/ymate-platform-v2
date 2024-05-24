@@ -251,9 +251,19 @@ JSON: {
 
 
 
-### HttpClientHelper
+### CloseableHttpClientHelper
 
 此类主要应用于早期 YMP 框架版本及扩展模块中，支持自定义安全连接方式，支持 GET、POST 请求方法，简化文件上传与下载的处理逻辑等。
+
+
+
+
+
+:::tip **注意**：
+
+从 `2.1.3` 开始 `HttpClientHelper` 标记为不被推荐，请使用 `CloseableHttpClientHelper` 替换。 
+
+:::
 
 
 
@@ -270,15 +280,15 @@ public void sendGetRequest(String url, String charset) throws Exception {
             new BasicHeader("Connection", "keep-alive"),
             new BasicHeader("User-Agent", "Mozilla/5.0......")
     };
-    IHttpResponse httpResponse = HttpClientHelper.create().get(url, headers, charset);
-    if (httpResponse != null) {
-        System.out.println("StatusCode: " + httpResponse.getStatusCode());
-        System.out.println("ContentType: " + httpResponse.getContentType());
-        System.out.println("ContentLength: " + httpResponse.getContentLength());
-        System.out.println("Content: " + httpResponse.getContent());
-        System.out.println("Headers: " + httpResponse.getHeaders());
-        System.out.println("Locale: " + httpResponse.getLocale());
-        System.out.println("ReasonPhrase: " + httpResponse.getReasonPhrase());
+    try (CloseableHttpClientHelper httpClientHelper = CloseableHttpClientHelper.create();
+         IHttpResponse response = httpClientHelper.get(url, headers, charset)) {
+        System.out.println("StatusCode: " + response.getStatusCode());
+        System.out.println("ContentType: " + response.getContentType());
+        System.out.println("ContentLength: " + response.getContentLength());
+        System.out.println("Content: " + response.getContent());
+        System.out.println("Headers: " + response.getHeaders());
+        System.out.println("Locale: " + response.getLocale());
+        System.out.println("ReasonPhrase: " + response.getReasonPhrase());
     }
 }
 ```
@@ -289,15 +299,14 @@ public void sendGetRequest(String url, String charset) throws Exception {
 
 ```java
 public void sendPostRequest(String url, String charset, Map<String, String> requestParams) throws Exception {
-    ContentType contentType = ContentType.create(HttpClientHelper.CONTENT_TYPE_FORM_URL_ENCODED, charset);
-    IHttpResponse httpResponse = HttpClientHelper.create()
-        .post(url, contentType, ParamUtils.buildQueryParamStr(requestParams, true, charset));
-    if (httpResponse != null) {
+    ContentType contentType = ContentType.create(CloseableHttpClientHelper.CONTENT_TYPE_FORM_URL_ENCODED, charset);
+    try (CloseableHttpClientHelper httpClientHelper = CloseableHttpClientHelper.create();
+         IHttpResponse response = httpClientHelper.post(url, contentType, ParamUtils.buildQueryParamStr(requestParams, true, charset))) {
         // 判断响应状态码是否为 200
-        if (httpResponse.getStatusCode() == HttpClientHelper.HTTP_STATUS_CODE_SUCCESS) {
-            // ......
+        if (response.isSuccess()) {
+            System.out.printf("Content: %s%n", response.getContent());
         } else {
-            System.out.printf("ResponseBody: %s%n", httpResponse);
+            System.out.printf("ReasonPhrase: %s%n", response.getReasonPhrase());
         }
     }
 }
@@ -309,12 +318,13 @@ public void sendPostRequest(String url, String charset, Map<String, String> requ
 
 ```java
 public void uploadFile(String url, File distFile) throws Exception {
-    IHttpResponse httpResponse = HttpClientHelper.create().upload(url, "file", distFile);
-    if (httpResponse != null) {
-        if (httpResponse.getStatusCode() == HttpClientHelper.HTTP_STATUS_CODE_SUCCESS) {
+    try (CloseableHttpClientHelper httpClientHelper = CloseableHttpClientHelper.create();
+         IHttpResponse response = httpClientHelper.upload(url, "file", distFile)) {
+        // 判断响应状态码是否为 200
+        if (response.isSuccess()) {
             // ......
         } else {
-            System.out.printf("ResponseBody: %s%n", httpResponse);
+            System.out.printf("ReasonPhrase: %s%n", response.getReasonPhrase());
         }
     }
 }
@@ -326,27 +336,28 @@ public void uploadFile(String url, File distFile) throws Exception {
 
 ```java
 public void downloadFile(String url, File distFile) throws Exception {
-    HttpClientHelper.create().download(url, new IFileHandler() {
-        @Override
-        public void handle(HttpResponse response, IFileWrapper fileWrapper) throws IOException {
-            // 判断响应状态码是否为 200
-            if (response.getStatusLine().getStatusCode() == HttpClientHelper.HTTP_STATUS_CODE_SUCCESS) {
-                System.out.println("FileName: " + fileWrapper.getFileName());
-                System.out.println("ContentType: " + fileWrapper.getContentType());
-                System.out.println("ContentLength: " + fileWrapper.getContentLength());
-                // 获取被下载文件对象
-                fileWrapper.getFile();
-                // 获取被下载文件输入流
-                fileWrapper.getInputStream();
-                // 将被下载文件转移到目标文件
-                fileWrapper.transferTo(distFile);
-                // 将被下载文件写入目标文件
-                fileWrapper.writeTo(distFile);
-            } else {
-                System.out.printf("ReasonPhrase: %s%n", response.getStatusLine().getReasonPhrase());
+    try (CloseableHttpClientHelper httpClientHelper = CloseableHttpClientHelper.create()) {
+        httpClientHelper.download(url, new IFileHandler() {
+            @Override
+            public void handle(HttpResponse response, IFileWrapper fileWrapper) throws IOException {
+                if (fileWrapper != null) {
+                    System.out.println("FileName: " + fileWrapper.getFileName());
+                    System.out.println("ContentType: " + fileWrapper.getContentType());
+                    System.out.println("ContentLength: " + fileWrapper.getContentLength());
+                    // 获取被下载文件对象
+                    fileWrapper.getFile();
+                    // 获取被下载文件输入流
+                    fileWrapper.getInputStream();
+                    // 将被下载文件转移到目标文件
+                    fileWrapper.transferTo(distFile);
+                    // 将被下载文件写入目标文件
+                    fileWrapper.writeTo(distFile);
+                } else {
+                    System.out.printf("ReasonPhrase: %s%n", response.getStatusLine().getReasonPhrase());
+                }
             }
-        }
-    });
+        });
+    }
 }
 ```
 
@@ -355,19 +366,62 @@ public void downloadFile(String url, File distFile) throws Exception {
 **示例：** 自定义安全连接工厂并设置超时时间等配置参数
 
 ```java
-public void customRequest(String url, String charset, Map<String, String> requestParams, URL certFilePath, String passwordChars) throws Exception {
+public void custom(URL certFilePath, String passwordChars) throws Exception {
     // 通过证书文件构建安全套接字工厂
-    SSLConnectionSocketFactory socketFactory = HttpClientHelper.createConnectionSocketFactory("PKCS12", certFilePath, passwordChars.toCharArray());
-    // 构建请求并设置超时时间等配置参数
-    ContentType contentType = ContentType.create(HttpClientHelper.CONTENT_TYPE_FORM_URL_ENCODED, charset);
-    IHttpResponse httpResponse = HttpClientHelper.create()
-        .customSSL(socketFactory)
-        .connectionTimeout(30000)
-        .requestTimeout(30000)
-        .socketTimeout(30000)
-        .post(url, contentType, ParamUtils.buildQueryParamStr(requestParams, true, charset));
-    if (httpResponse != null) {
-        if (httpResponse.getStatusCode() == HttpClientHelper.HTTP_STATUS_CODE_SUCCESS) {
+    SSLConnectionSocketFactory socketFactory = CloseableHttpClientHelper.createConnectionSocketFactory("PKCS12", certFilePath, passwordChars.toCharArray());
+    try (CloseableHttpClientHelper httpClientHelper = CloseableHttpClientHelper.create(new ICloseableHttpClientConfigurable.Default() {
+                @Override
+                protected void doRequestConfig(RequestConfig.Builder builder) {
+                    // 设置自定义代理
+                    HttpHost proxy = new HttpHost("localhost", 8889);
+                    builder.setProxy(proxy);
+                }
+            })
+            .customSSL(socketFactory)
+            .connectionTimeout(30000)
+            .requestTimeout(30000)
+            .socketTimeout(30000)) {
+        // ......
+    }
+}
+```
+
+
+
+### CloseableHttpRequestBuilder
+
+在 CloseableHttpClientHelper 的基础上进行了优化、调整请求构建方式及响应的处理逻辑，除了 GET 和 POST 请求方法之外，还增加了对 PUT、 OPTIONS、 DELETE、 HEAD、 PATCH、 TRACE 等的支持。
+
+:::tip **注意**：
+
+从 `2.1.3` 开始 `HttpClientRequestBuilder` 标记为不被推荐，请使用 `CloseableHttpRequestBuilder` 替换。 
+
+:::
+
+
+
+**示例：** 构建并发送请求
+
+```java
+public void newSendRequest(String url, String charset, Map<String, String> requestParams, URL certFilePath, String passwordChars) throws Exception {
+    // 此种方式的每次请求都要重新构建HttpClinet实例
+    try (IHttpResponse httpResponse = CloseableHttpRequestBuilder.create(url)
+            .socketFactory(CloseableHttpClientHelper.createConnectionSocketFactory("PKCS12", certFilePath, passwordChars.toCharArray()))
+            .contentType(ContentType.create(CloseableHttpClientHelper.CONTENT_TYPE_FORM_URL_ENCODED, charset))
+            .connectionTimeout(30000)
+            .requestTimeout(30000)
+            .socketTimeout(30000)
+            .charset(charset)
+            .addHeaders(new Header[]{
+                    new BasicHeader("Accept", "text/html"),
+                    new BasicHeader("Accept-Encoding", "gzip, deflate, br"),
+                    new BasicHeader("Accept-Language", "zh-Hans-CN,zh-CN;"),
+                    new BasicHeader("Cache-Control", "no-cache"),
+                    new BasicHeader("Pragma", "no-cache"),
+                    new BasicHeader("Connection", "keep-alive"),
+                    new BasicHeader("User-Agent", "Mozilla/5.0......")
+            }).addParams(requestParams).build().post()) {
+        if (httpResponse.isSuccess()) {
             // ......
         } else {
             System.out.printf("ResponseBody: %s%n", httpResponse);
@@ -378,36 +432,23 @@ public void customRequest(String url, String charset, Map<String, String> reques
 
 
 
-### HttpRequestBuilder
-
-在 HttpClientHelper 的基础上进行了优化、调整请求构建方式及响应的处理逻辑，除了 GET 和 POST 请求方法之外，还增加了对 PUT、 OPTIONS、 DELETE、 HEAD、 PATCH、 TRACE 等的支持。
-
-
-
-**示例：** 构建并发送请求
+**示例：** 通过 `CloseableHttpClientHelper` 实例构建并发送请求
 
 ```java
-public void sendRequest(String url, String charset, Map<String, String> requestParams, URL certFilePath, String passwordChars) throws Exception {
-    IHttpResponse httpResponse = HttpRequestBuilder.create(url)
-        .socketFactory(HttpClientHelper.createConnectionSocketFactory("PKCS12", certFilePath, passwordChars.toCharArray()))
-        .contentType(ContentType.create(HttpClientHelper.CONTENT_TYPE_FORM_URL_ENCODED, charset))
-        .connectionTimeout(30000)
-        .requestTimeout(30000)
-        .socketTimeout(30000)
-        .charset(charset)
-        .addHeaders(new Header[]{
-            new BasicHeader("Accept", "text/html"),
-            new BasicHeader("Accept-Encoding", "gzip, deflate, br"),
-            new BasicHeader("Accept-Language", "zh-Hans-CN,zh-CN;"),
-            new BasicHeader("Cache-Control", "no-cache"),
-            new BasicHeader("Pragma", "no-cache"),
-            new BasicHeader("Connection", "keep-alive"),
-            new BasicHeader("User-Agent", "Mozilla/5.0......")
-        }).addParams(requestParams).build().post();
-    if (httpResponse.getStatusCode() == HttpClientHelper.HTTP_STATUS_CODE_SUCCESS) {
-        // ......
-    } else {
-        System.out.printf("ResponseBody: %s%n", httpResponse);
+public void newSendRequest(CloseableHttpClientHelper httpClientHelper, String url, String charset, Map<String, String> requestParams) throws Exception {
+    // 此种方式的每次请求都会复用HttpClient实例
+    try (IHttpResponse response = httpClientHelper.newRequestBuilder(url)
+            .charset(charset)
+            .contentType(ContentType.create(CloseableHttpClientHelper.CONTENT_TYPE_FORM_URL_ENCODED, charset))
+            .addHeaders(headers)
+            .addParams(requestParams)
+            .build()
+            .post()) {
+        if (response.isSuccess()) {
+            // ......
+        } else {
+            System.out.printf("ReasonPhrase: %s%n", response.getReasonPhrase());
+        }
     }
 }
 ```
@@ -418,8 +459,9 @@ public void sendRequest(String url, String charset, Map<String, String> requestP
 
 ```java
 public void newUploadFile(String url, File distFile) throws Exception {
-    try (IHttpResponse response = HttpRequestBuilder.create(url).addContent("file", distFile).build().post()) {
-        if (response.getStatusCode() == HttpClientHelper.HTTP_STATUS_CODE_SUCCESS) {
+    try (IHttpResponse response = CloseableHttpRequestBuilder.create(url)
+            .addContent("file", distFile).build().post()) {
+        if (response.isSuccess()) {
             // ......
         } else {
             System.out.printf("ResponseBody: %s%n", response);
@@ -434,10 +476,15 @@ public void newUploadFile(String url, File distFile) throws Exception {
 
 ```java
 public void newDownloadFile(String url, File distFile) throws Exception {
-    try (IHttpResponse response = HttpRequestBuilder.create(url)
-         .socketFactory(HttpClientHelper.createConnectionSocketFactory(SSLContexts.custom().setProtocol("TLSv1.3").build()))
-         .download(true).build().get()) {
-        if (response.getStatusCode() == HttpClientHelper.HTTP_STATUS_CODE_SUCCESS) {
+    try (CloseableHttpClientHelper newHttpClientHelper = CloseableHttpClientHelper.create()
+            .customSSL(CloseableHttpClientHelper.createConnectionSocketFactory(SSLContexts.custom()
+                    .setProtocol("TLSv1.3")
+                    .build()));
+         IHttpResponse response = newHttpClientHelper.newRequestBuilder(url)
+                 .download(true)
+                 .build()
+                 .get()) {
+        if (response.isSuccess()) {
             IFileWrapper fileWrapper = response.getFileWrapper();
             //
             System.out.println("FileName: " + fileWrapper.getFileName());
@@ -447,8 +494,6 @@ public void newDownloadFile(String url, File distFile) throws Exception {
             fileWrapper.getFile();
             // 获取被下载文件输入流
             fileWrapper.getInputStream();
-            // 将被下载文件转移到目标文件
-            fileWrapper.transferTo(distFile);
             // 将被下载文件写入目标文件
             fileWrapper.writeTo(distFile);
         }
@@ -1677,6 +1722,8 @@ File demoFile = new File(RuntimeUtils.replaceEnvVariable("${root}/files/demo.tex
 boolean success = FileUtils.createFileIfNotExists(demoFile, new FileInputStream(RuntimeUtils.replaceEnvVariable("${root}/files/origin.text")));
 // 在指定路径中创建空文件（同时生成其父级目录）
 FileUtils.createEmptyFile(demoFile);
+// 创建临时文件（尝试从指定的fileName提取其扩展名作为后缀，否则为空）
+FileUtils.createTempFile("prefix", demoFile.getName());
 // 提取文件扩展名称，若不存在则返回空字符串
 String extName = FileUtils.getExtName(demoFile.getName());
 // 获取文件MD5签名值
