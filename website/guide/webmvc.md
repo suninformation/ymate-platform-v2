@@ -333,6 +333,9 @@ ymp.params.webmvc.allowed_upload_content_types=
 
 # 参数签名检测时间戳是否在有效周期内，默认为30秒，当取值小于等于0时表示不检测，单位：秒
 ymp.params.webmvc.signature_time_lifecycle=
+
+# 是否禁用参数签名验证，默认值: false
+ymp.params.webmvc.signature_verification_disabled=
 ```
 
 

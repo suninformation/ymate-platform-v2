@@ -19,14 +19,15 @@ import net.ymate.platform.commons.lang.BlurObject;
 import net.ymate.platform.commons.util.ClassUtils;
 import net.ymate.platform.commons.util.RuntimeUtils;
 import net.ymate.platform.core.beans.intercept.InterceptException;
-import net.ymate.platform.webmvc.*;
+import net.ymate.platform.webmvc.IRequestProcessor;
+import net.ymate.platform.webmvc.IResponseBodyProcessor;
+import net.ymate.platform.webmvc.IWebMvc;
+import net.ymate.platform.webmvc.RequestMeta;
 import net.ymate.platform.webmvc.annotation.ResponseBody;
 import net.ymate.platform.webmvc.annotation.ResponseHeader;
 import net.ymate.platform.webmvc.annotation.ResponseView;
-import net.ymate.platform.webmvc.annotation.SignatureValidate;
 import net.ymate.platform.webmvc.base.Type;
 import net.ymate.platform.webmvc.context.WebContext;
-import net.ymate.platform.webmvc.exception.ParameterSignatureException;
 import net.ymate.platform.webmvc.view.IView;
 import net.ymate.platform.webmvc.view.impl.*;
 import org.apache.commons.lang3.ArrayUtils;
@@ -65,19 +66,7 @@ public final class RequestExecutor {
         }
     }
 
-    private void doSignatureValidate() {
-        SignatureValidate signatureValidate = requestMeta.getSignatureValidate();
-        if (signatureValidate != null && !signatureValidate.disabled()) {
-            ISignatureValidator signatureValidator = ClassUtils.impl(signatureValidate.validatorClass(), ISignatureValidator.class);
-            if (!signatureValidator.validate(owner, requestMeta, signatureValidate)) {
-                throw new ParameterSignatureException("Parameter signature mismatch.");
-            }
-        }
-    }
-
     public IView execute() throws Exception {
-        // 尝试处理参数签名验证
-        doSignatureValidate();
         // 取得当前控制器方法参数的名称集合
         List<String> methodParamNames = requestMeta.getMethodParamNames();
         // 根据参数名称, 从请求中提取对应的参数值

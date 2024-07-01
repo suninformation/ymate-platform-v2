@@ -174,6 +174,13 @@ public interface IWebMvcConfig extends IInitialization<IWebMvc> {
     String PARAMS_SIGNATURE_TIME_LIFECYCLE = "webmvc.signature_time_lifecycle";
 
     /**
+     * 是否禁用参数签名验证，默认为false
+     *
+     * @since 2.1.3
+     */
+    String PARAMS_SIGNATURE_VERIFICATION_DISABLED = "webmvc.signature_verification_disabled";
+
+    /**
      * 控制器请求映射路径分析器，可选值为已知分析器名称或自定义分析器类名称，默认为default，目前支持已知分析器[default|...]
      *
      * @return 返回控制器请求映射路径分析器

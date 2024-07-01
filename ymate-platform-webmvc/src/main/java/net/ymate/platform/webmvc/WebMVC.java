@@ -38,6 +38,7 @@ import net.ymate.platform.webmvc.base.Type;
 import net.ymate.platform.webmvc.context.WebContext;
 import net.ymate.platform.webmvc.cors.CrossDomainInterceptor;
 import net.ymate.platform.webmvc.cors.annotation.CrossDomain;
+import net.ymate.platform.webmvc.exception.ParameterSignatureException;
 import net.ymate.platform.webmvc.handle.ControllerHandler;
 import net.ymate.platform.webmvc.handle.ExceptionProcessorHandler;
 import net.ymate.platform.webmvc.handle.InterceptorRuleHandler;
@@ -284,6 +285,18 @@ public final class WebMVC implements IModule, IWebMvc {
         return cacheProcessor;
     }
 
+    private void doSignatureValidate(RequestMeta requestMeta) {
+        if (!getOwner().getParamConfigReader().getBoolean(IWebMvcConfig.PARAMS_SIGNATURE_VERIFICATION_DISABLED)) {
+            SignatureValidate signatureValidate = requestMeta.getSignatureValidate();
+            if (signatureValidate != null && !signatureValidate.disabled()) {
+                ISignatureValidator signatureValidator = ClassUtils.impl(signatureValidate.validatorClass(), ISignatureValidator.class);
+                if (!signatureValidator.validate(this, requestMeta, signatureValidate)) {
+                    throw new ParameterSignatureException("Parameter signature mismatch.");
+                }
+            }
+        }
+    }
+
     private void processRequestMeta(IRequestContext context, HttpServletRequest request, RequestMeta requestMeta, boolean devEnv) throws Exception {
         if (devEnv && LOG.isDebugEnabled()) {
             LOG.debug("Request mode: controller");
@@ -301,6 +314,8 @@ public final class WebMVC implements IModule, IWebMvc {
                 }
             }
             WebContext.getContext().addAttribute(Type.Context.HTTP_REQUEST, request);
+            // 尝试处理参数签名验证
+            doSignatureValidate(requestMeta);
             //
             IWebCacheProcessor cacheProcessor = doGetWebCacheProcessor(requestMeta.getResponseCache());
             IView view = null;
