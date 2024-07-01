@@ -154,7 +154,7 @@ Choose a number or apply filter (format: [groupId:]artifactId, case sensitive co
 本例演示如何创建和运行 Web 工程，所以此处按屏幕提示应选择 `5` 号模板类型，输入数字并按屏幕提示设置坐标系等信息，如下所示：
 
 ```shell
-Choose a number or apply filter (format: [groupId:]artifactId, case sensitive contains): : 4
+Choose a number or apply filter (format: [groupId:]artifactId, case sensitive contains): : 5
 Define value for property 'groupId': net.ymate.platform.examples
 Define value for property 'artifactId': ymp-examples-webapp
 Define value for property 'version' 1.0-SNAPSHOT: :
