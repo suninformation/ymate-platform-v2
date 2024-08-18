@@ -3478,12 +3478,13 @@ IResultSet<UserBean> resultSet = SQL.create("SELECT id, email FROM user")
 
 定义一个字段或用于类成员与字段之间的关系绑定。
 
-| 配置项         | 描述                           |
-| -------------- | ------------------------------ |
-| prefix         | 前缀，默认为空                 |
-| alias          | 别名，默认为空                 |
-| value          | 名称                           |
-| wrapIdentifier | 是否包装标识符，默认为：`true` |
+| 配置项         | 描述                                            |
+| -------------- | ----------------------------------------------- |
+| prefix         | 前缀，默认为空                                  |
+| alias          | 别名，默认为空                                  |
+| value          | 名称                                            |
+| wrapIdentifier | 是否包装标识符，默认为：`true`                  |
+| grouped        | 配合 `@QGroupBy` 注解使用，标记当前字段用于分组 |
 
 
 

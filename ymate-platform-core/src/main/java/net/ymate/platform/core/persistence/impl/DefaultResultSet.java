@@ -17,6 +17,7 @@ package net.ymate.platform.core.persistence.impl;
 
 import net.ymate.platform.core.persistence.IResultSet;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -37,6 +38,16 @@ public class DefaultResultSet<T> implements IResultSet<T> {
     private final long recordCount;
 
     private final List<T> resultData;
+
+    /**
+     * 构造方法，用于类型转换
+     *
+     * @param resultSet 源结果封装对象
+     * @since 2.1.3
+     */
+    public DefaultResultSet(IResultSet<? extends T> resultSet) {
+        this(new ArrayList<>(resultSet.getResultData()), resultSet.getPageNumber(), resultSet.getPageSize(), resultSet.getRecordCount());
+    }
 
     /**
      * 构造方法，不采用分页方式

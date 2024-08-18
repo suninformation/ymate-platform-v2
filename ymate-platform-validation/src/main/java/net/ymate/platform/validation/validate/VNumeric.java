@@ -51,7 +51,7 @@ public @interface VNumeric {
     double eq() default 0;
 
     /**
-     * @return 设置小数位数，0不不限制
+     * @return 设置小数位数，0为不限制
      */
     int decimals() default 0;
 

@@ -877,7 +877,7 @@ public abstract class BaseEntity<Entity extends IEntity, PK extends Serializable
                 } else {
                     flag = true;
                 }
-                cond.eq(field).param(value);
+                cond.eqWrap(field).param(value);
             }
         }
         return cond;
