@@ -145,10 +145,14 @@ public class MongoDB implements IModule, IMongo {
                         dataSourceConfig.initialize(this);
                     }
                     // 实例化数据源适配器并放入缓存
-                    dataSourceAdapter = dataSourceCaches.computeIfAbsent(dataSourceName, s -> new MongoDataSourceAdapter());
+                    dataSourceAdapter = dataSourceCaches.get(dataSourceName);
+                    if (dataSourceAdapter == null) {
+                        dataSourceAdapter = new MongoDataSourceAdapter();
+                    }
                     if (!dataSourceAdapter.isInitialized()) {
                         dataSourceAdapter.initialize(this, dataSourceConfig);
                     }
+                    dataSourceCaches.put(dataSourceName, dataSourceAdapter);
                 }
             } catch (Exception e) {
                 throw RuntimeUtils.wrapRuntimeThrow(e);

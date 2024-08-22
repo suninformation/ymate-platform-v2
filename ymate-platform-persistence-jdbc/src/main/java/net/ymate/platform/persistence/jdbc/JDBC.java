@@ -234,10 +234,14 @@ public final class JDBC implements IModule, IDatabase {
                         dataSourceConfig.initialize(this);
                     }
                     // 实例化数据源适配器并放入缓存
-                    dataSourceAdapter = dataSourceCaches.computeIfAbsent(dataSourceName, s -> ClassUtils.impl(dataSourceConfig.getAdapterClass(), IDatabaseDataSourceAdapter.class));
+                    dataSourceAdapter = dataSourceCaches.get(dataSourceName);
+                    if (dataSourceAdapter == null) {
+                        dataSourceAdapter = ClassUtils.impl(dataSourceConfig.getAdapterClass(), IDatabaseDataSourceAdapter.class);
+                    }
                     if (dataSourceAdapter != null && !dataSourceAdapter.isInitialized()) {
                         dataSourceAdapter.initialize(this, dataSourceConfig);
                     }
+                    dataSourceCaches.put(dataSourceName, dataSourceAdapter);
                 }
             } catch (Exception e) {
                 throw RuntimeUtils.wrapRuntimeThrow(e);
