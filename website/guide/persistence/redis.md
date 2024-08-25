@@ -36,6 +36,9 @@ ymp.configs.persistence.redis.ds_default_name=
 # 数据源列表，多个数据源名称间用'|'分隔，默认为default
 ymp.configs.persistence.redis.ds_name_list=
 
+# 是否自动连接, 即模块初始化时完成连接动作, 默认值: false
+ymp.configs.persistence.redis.ds.default.auto_connection=true
+
 # 数据源连接方式, 默认为default，目前支持[default|shard|sentinel|cluster]
 ymp.configs.persistence.redis.ds.default.connection_type=
 
@@ -183,6 +186,7 @@ ymp.configs.persistence.redis.ds.default.pool.time_between_eviction_runs_millis=
 | 配置项                             | 描述                                 |
 | ---------------------------------- | ------------------------------------ |
 | name                               | 数据源名称                           |
+| autoConnection                     | 是否自动连接                         |
 | connectionType                     | 数据源连接方式                       |
 | masterServerName                   | 主服务端名称                         |
 | servers                            | 服务端 `@RedisServer` 集合           |

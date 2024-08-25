@@ -170,6 +170,11 @@ public final class DefaultRedisDataSourceConfig extends AbstractDataSourceConfig
             config = new DefaultRedisDataSourceConfig(dataSourceName);
         }
 
+        public Builder autoConnection(boolean autoConnection) {
+            config.setAutoConnection(autoConnection);
+            return this;
+        }
+
         public Builder connectionType(IRedis.ConnectionType connectionType) {
             config.setConnectionType(connectionType);
             return this;

@@ -50,6 +50,9 @@ ymp.configs.persistence.mongodb.ds.default.collection_prefix=
 # 服务器主机连接字符串，可选参数，若提供此参数则无需再提供username, password, database_name, servers等参数
 ymp.configs.persistence.mongodb.ds.default.connection_url=
 
+# 是否自动连接, 即模块初始化时完成连接动作, 默认值: false
+ymp.configs.persistence.mongodb.ds.default.auto_connection=true
+
 # 数据库名称，必填参数
 ymp.configs.persistence.mongodb.ds.default.database_name=
 
@@ -97,6 +100,7 @@ ymp.configs.persistence.mongodb.ds.default.options_handler_class=
 | databaseName               | 数据库名称                       |
 | authenticationDatabaseName | 包含用户身份验证数据的数据库名称 |
 | connectionUrl              | 服务器主机连接字符串             |
+| autoConnection             | 是否自动连接                     |
 | servers                    | 服务器主机集合                   |
 | optionsHandlerClass        | 数据源自定义配置处理器           |
 

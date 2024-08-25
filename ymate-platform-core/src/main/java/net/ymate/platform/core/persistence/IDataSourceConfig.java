@@ -63,4 +63,12 @@ public interface IDataSourceConfig<OWNER extends IPersistence> extends IInitiali
      * @return 返回数据源密码处理器类型
      */
     Class<? extends IPasswordProcessor> getPasswordClass();
+
+    /**
+     * 是否自动连接，即模块初始化时完成连接动作，默认为false
+     *
+     * @return 返回true表示自动连接
+     * @since 2.1.3
+     */
+    boolean isAutoConnection();
 }

@@ -48,6 +48,9 @@ ymp.configs.persistence.jdbc.ds_default_name=
 # 数据源列表, 多个数据源名称间用'|'分隔, 默认值: default
 ymp.configs.persistence.jdbc.ds_name_list=
 
+# 是否自动连接, 即模块初始化时完成连接动作, 默认值: false
+ymp.configs.persistence.jdbc.ds.default.auto_connection=true
+
 # 是否显示执行的SQL语句, 默认值: false
 ymp.configs.persistence.jdbc.ds.default.show_sql=true
 
@@ -133,6 +136,7 @@ ymp.configs.persistence.jdbc.ds.default.password_class=
 | adapterClass       | 数据源适配器             |
 | configFile         | 数据源适配器配置文件     |
 | driverClass        | 数据库默认驱动类名称     |
+| autoConnection | 是否自动连接 |
 | showSql            | 是否显示执行的 SQL 语句    |
 | stackTraces        | 是否开启堆栈跟踪         |
 | stackTraceDepth    | 堆栈跟踪层级深度         |

@@ -86,6 +86,7 @@ public final class DefaultMongoConfig extends AbstractPersistenceConfig<IMongo, 
                             .password(StringUtils.trimToNull(dataSource.password()))
                             .passwordEncrypted(dataSource.passwordEncrypted())
                             .passwordClass(dataSource.passwordClass().equals(IPasswordProcessor.class) ? null : dataSource.passwordClass())
+                            .autoConnection(dataSource.autoConnection())
                             .collectionPrefix(StringUtils.trimToNull(dataSource.collectionPrefix()))
                             .databaseName(StringUtils.trimToNull(dataSource.databaseName()))
                             .authenticationDatabaseName(StringUtils.trimToNull(dataSource.authenticationDatabaseName()))

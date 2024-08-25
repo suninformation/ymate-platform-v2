@@ -42,6 +42,8 @@ public interface IPersistenceConfig<OWNER extends IPersistence, DATA_SOURCE_CONF
 
     String PASSWORD_CLASS = "password_class";
 
+    String AUTO_CONNECTION = "auto_connection";
+
     /**
      * 获取默认数据源名称，默认值：default
      *

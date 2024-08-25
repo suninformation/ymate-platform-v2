@@ -183,6 +183,13 @@ public final class JDBC implements IModule, IDatabase {
                 proxyFactory.registerProxy(new TransactionProxy());
                 proxyFactory.registerProxy(new RepositoryProxy(this));
             }
+            // 处理设置为自动连接的数据源
+            config.getDataSourceConfigs()
+                    .entrySet()
+                    .stream()
+                    .filter(entry -> entry.getValue().isAutoConnection())
+                    .map(Map.Entry::getKey)
+                    .forEach(this::doSafeGetDataSourceAdapter);
             initialized = true;
         }
     }

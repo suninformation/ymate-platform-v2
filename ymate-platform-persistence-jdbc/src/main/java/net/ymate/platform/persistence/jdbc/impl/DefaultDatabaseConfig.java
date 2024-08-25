@@ -95,6 +95,7 @@ public final class DefaultDatabaseConfig extends AbstractPersistenceConfig<IData
                             .dialectClass(dataSource.dialectClass().equals(IDialect.class) ? null : dataSource.dialectClass().getName())
                             .adapterClass(dataSource.adapterClass().equals(IDatabaseDataSourceAdapter.class) ? DefaultDataSourceAdapter.class : dataSource.adapterClass())
                             .driverClass(dataSource.driverClass())
+                            .autoConnection(dataSource.autoConnection())
                             .showSql(dataSource.showSql())
                             .stackTraces(dataSource.stackTraces())
                             .stackTraceDepth(dataSource.stackTraceDepth())

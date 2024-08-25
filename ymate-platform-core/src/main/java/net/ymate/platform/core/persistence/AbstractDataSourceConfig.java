@@ -39,6 +39,8 @@ public abstract class AbstractDataSourceConfig<OWNER extends IPersistence> imple
 
     private Class<? extends IPasswordProcessor> passwordClass;
 
+    private boolean autoConnection;
+
     private boolean initialized;
 
     public AbstractDataSourceConfig(String dataSourceName) {
@@ -54,6 +56,7 @@ public abstract class AbstractDataSourceConfig<OWNER extends IPersistence> imple
         //
         this.username = configReader.getString(IPersistenceConfig.USERNAME);
         this.password = configReader.getString(IPersistenceConfig.PASSWORD);
+        this.autoConnection = configReader.getBoolean(IPersistenceConfig.AUTO_CONNECTION);
         //
         if (StringUtils.isNotBlank(this.password)) {
             this.passwordEncrypted = configReader.getBoolean(IPersistenceConfig.PASSWORD_ENCRYPTED);
@@ -134,6 +137,17 @@ public abstract class AbstractDataSourceConfig<OWNER extends IPersistence> imple
     public void setPasswordClass(Class<? extends IPasswordProcessor> passwordClass) {
         if (!initialized) {
             this.passwordClass = passwordClass;
+        }
+    }
+
+    @Override
+    public boolean isAutoConnection() {
+        return autoConnection;
+    }
+
+    public void setAutoConnection(boolean autoConnection) {
+        if (!isInitialized()) {
+            this.autoConnection = autoConnection;
         }
     }
 }

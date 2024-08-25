@@ -105,13 +105,13 @@ public class MongoDB implements IModule, IMongo {
             if (!config.isInitialized()) {
                 config.initialize(this);
             }
-            //
-            for (Map.Entry<String, IMongoDataSourceConfig> entry : config.getDataSourceConfigs().entrySet()) {
-                IMongoDataSourceAdapter dataSourceAdapter = new MongoDataSourceAdapter();
-                dataSourceAdapter.initialize(this, entry.getValue());
-                // 将数据源适配器放入缓存
-                dataSourceCaches.put(entry.getKey(), dataSourceAdapter);
-            }
+            // 处理设置为自动连接的数据源
+            config.getDataSourceConfigs()
+                    .entrySet()
+                    .stream()
+                    .filter(entry -> entry.getValue().isAutoConnection())
+                    .map(Map.Entry::getKey)
+                    .forEach(this::doSafeGetDataSourceAdapter);
             //
             initialized = true;
         }

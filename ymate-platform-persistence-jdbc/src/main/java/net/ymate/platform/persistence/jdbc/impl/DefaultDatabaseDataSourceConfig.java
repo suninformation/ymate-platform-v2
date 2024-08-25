@@ -330,6 +330,11 @@ public final class DefaultDatabaseDataSourceConfig extends AbstractDataSourceCon
             return this;
         }
 
+        public Builder autoConnection(boolean autoConnection) {
+            config.setAutoConnection(autoConnection);
+            return this;
+        }
+
         public Builder showSql(boolean showSql) {
             config.setShowSql(showSql);
             return this;

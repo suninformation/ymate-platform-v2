@@ -207,6 +207,11 @@ public final class DefaultMongoDataSourceConfig extends AbstractDataSourceConfig
             return this;
         }
 
+        public Builder autoConnection(boolean autoConnection) {
+            config.setAutoConnection(autoConnection);
+            return this;
+        }
+
         public DefaultMongoDataSourceConfig build() {
             return config;
         }

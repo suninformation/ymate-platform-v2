@@ -77,6 +77,12 @@ public @interface MongoDataSource {
     String connectionUrl() default StringUtils.EMPTY;
 
     /**
+     * @return 是否自动连接
+     * @since 2.1.3
+     */
+    boolean autoConnection() default false;
+
+    /**
      * @return 服务器主机集合
      */
     String[] servers() default {};

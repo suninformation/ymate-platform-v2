@@ -84,6 +84,7 @@ public final class DefaultRedisConfig extends AbstractPersistenceConfig<IRedis, 
             if (!dataSourceMap.isEmpty()) {
                 for (RedisDataSource dataSource : dataSourceMap.values()) {
                     DefaultRedisDataSourceConfig.Builder builder = DefaultRedisDataSourceConfig.builder(dataSource.name())
+                            .autoConnection(dataSource.autoConnection())
                             .connectionType(dataSource.connectionType())
                             .masterServerName(StringUtils.defaultIfBlank(dataSource.masterServerName(), IRedisConfig.DEFAULT_STR))
                             .passwordEncrypted(dataSource.passwordEncrypted())

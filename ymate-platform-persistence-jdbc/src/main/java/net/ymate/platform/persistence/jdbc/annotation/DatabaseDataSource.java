@@ -88,6 +88,12 @@ public @interface DatabaseDataSource {
     String driverClass() default StringUtils.EMPTY;
 
     /**
+     * @return 是否自动连接
+     * @since 2.1.3
+     */
+    boolean autoConnection() default false;
+
+    /**
      * @return 是否显示执行的SQL语句
      */
     boolean showSql() default false;

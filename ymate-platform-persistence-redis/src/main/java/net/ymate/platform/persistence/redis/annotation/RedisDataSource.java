@@ -37,6 +37,12 @@ public @interface RedisDataSource {
     String name();
 
     /**
+     * @return 是否自动连接
+     * @since 2.1.3
+     */
+    boolean autoConnection() default false;
+
+    /**
      * @return 数据源连接方式
      */
     IRedis.ConnectionType connectionType() default IRedis.ConnectionType.DEFAULT;
