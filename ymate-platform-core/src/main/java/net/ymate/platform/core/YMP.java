@@ -91,7 +91,7 @@ public final class YMP {
                 if (inst == null) {
                     configureFactory = inst = ClassUtils.loadClass(IApplicationConfigureFactory.class, DefaultApplicationConfigureFactory.class);
                     configureFactory.setMainClass(systemMainClass);
-                    if (LOG.isInfoEnabled()) {
+                    if (LOG != null && LOG.isInfoEnabled()) {
                         LOG.info(String.format("Using IApplicationConfigureFactory class [%s].", configureFactory.getClass().getName()));
                     }
                 }
@@ -107,7 +107,7 @@ public final class YMP {
                 inst = configureParseFactory;
                 if (inst == null) {
                     configureParseFactory = inst = ClassUtils.loadClass(IApplicationConfigureParseFactory.class, DefaultApplicationConfigureParseFactory.class);
-                    if (LOG.isInfoEnabled()) {
+                    if (LOG != null && LOG.isInfoEnabled()) {
                         LOG.info(String.format("Using IApplicationConfigureParseFactory class [%s].", configureParseFactory.getClass().getName()));
                     }
                 }
@@ -229,7 +229,7 @@ public final class YMP {
                     if (creator == null) {
                         creator = new DefaultApplicationCreator();
                     }
-                    if (LOG.isInfoEnabled()) {
+                    if (LOG != null && LOG.isInfoEnabled()) {
                         LOG.info(String.format("Using IApplicationCreator class [%s].", creator.getClass().getName()));
                     }
                     application = creator.create(systemMainClass, args, applicationInitializers);
@@ -278,7 +278,7 @@ public final class YMP {
     }
 
     public static void showVersion(String formatStr, Version version) throws IllegalArgumentException {
-        if (LOG.isInfoEnabled()) {
+        if (LOG != null && LOG.isInfoEnabled()) {
             if (StringUtils.isNotBlank(formatStr) && version != null) {
                 ExpressionUtils expression = ExpressionUtils.bind(formatStr);
                 if (!expression.getVariables().contains(VERSION_STR)) {
@@ -298,7 +298,7 @@ public final class YMP {
         } catch (IOException ignored) {
         }
         bannerStr = String.format("\n%s", StringUtils.defaultIfBlank(bannerStr, DEFAULT_BANNER_STR));
-        if (LOG.isInfoEnabled()) {
+        if (LOG != null && LOG.isInfoEnabled()) {
             LOG.info(bannerStr);
         } else {
             System.out.println(bannerStr);
