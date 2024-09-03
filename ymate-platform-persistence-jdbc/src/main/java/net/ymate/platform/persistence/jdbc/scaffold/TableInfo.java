@@ -35,11 +35,18 @@ public final class TableInfo implements Serializable {
     public static TableInfo create(IDatabaseConnectionHolder connectionHolder, Scaffold scaffold, String tableName, boolean view) throws Exception {
         DatabaseMetaData databaseMetaData = connectionHolder.getConnection().getMetaData();
         //
+        String dbName = scaffold.getDbName();
+        if (StringUtils.isBlank(dbName)) {
+            dbName = connectionHolder.getConnection().getCatalog();
+        }
+        String dbUserName = StringUtils.defaultIfBlank(scaffold.getDbUserName(), connectionHolder.getDataSourceConfig().getUsername());
+        if (Type.DATABASE.ORACLE.equalsIgnoreCase(connectionHolder.getDialect().getName())) {
+            dbUserName = StringUtils.upperCase(dbUserName);
+        }
         try (Statement statement = connectionHolder.getConnection().createStatement(ResultSet.TYPE_SCROLL_SENSITIVE, ResultSet.CONCUR_UPDATABLE)) {
-            String dbUserName = Type.DATABASE.ORACLE.equalsIgnoreCase(connectionHolder.getDialect().getName()) ? StringUtils.upperCase(scaffold.getDbUserName()) : scaffold.getDbUserName();
             List<String> primaryKeyNames = new ArrayList<>();
             if (!view) {
-                try (ResultSet resultSet = databaseMetaData.getPrimaryKeys(scaffold.getDbName(), dbUserName, tableName)) {
+                try (ResultSet resultSet = databaseMetaData.getPrimaryKeys(dbName, dbUserName, tableName)) {
                     if (resultSet != null) {
                         while (resultSet.next()) {
                             String columnName = resultSet.getString(4);
@@ -62,7 +69,7 @@ public final class TableInfo implements Serializable {
                 ResultSetMetaData tableMetaData = resultSet.getMetaData();
                 Map<String, ColumnInfo> columns = new LinkedHashMap<>(tableMetaData.getColumnCount());
                 for (int idx = 1; idx <= tableMetaData.getColumnCount(); idx++) {
-                    try (ResultSet resultSetColumn = databaseMetaData.getColumns(scaffold.getDbName(), dbUserName, tableName, tableMetaData.getColumnName(idx))) {
+                    try (ResultSet resultSetColumn = databaseMetaData.getColumns(dbName, dbUserName, tableName, tableMetaData.getColumnName(idx))) {
                         if (resultSetColumn.next()) {
                             // 提取字段定义及字段默认值
                             String name = tableMetaData.getColumnName(idx);
@@ -95,15 +102,15 @@ public final class TableInfo implements Serializable {
                     }
                 }
                 String comment = null;
-                if (Type.DATABASE.MYSQL.equalsIgnoreCase(connectionHolder.getDialect().getName()) && StringUtils.isNotBlank(scaffold.getDbName())) {
-                    try (ResultSet commentResultSet = statement.executeQuery(String.format("SELECT table_comment FROM information_schema.tables WHERE table_schema = '%s' and table_name = '%s'", scaffold.getDbName(), tableName))) {
+                if (Type.DATABASE.MYSQL.equalsIgnoreCase(connectionHolder.getDialect().getName()) && StringUtils.isNotBlank(dbName)) {
+                    try (ResultSet commentResultSet = statement.executeQuery(String.format("SELECT table_comment FROM information_schema.tables WHERE table_schema = '%s' and table_name = '%s'", dbName, tableName))) {
                         if (commentResultSet.next()) {
                             comment = commentResultSet.getString("table_comment");
                         }
                     } catch (Exception ignored) {
                     }
                 }
-                return new TableInfo(scaffold.getDbName(), scaffold.getDbUserName(), tableName, comment, columns);
+                return new TableInfo(dbName, dbUserName, tableName, comment, columns);
             }
         }
     }
