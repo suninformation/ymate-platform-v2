@@ -101,11 +101,13 @@ public class GsonAdapter implements IJsonAdapter {
     @Override
     public JsonWrapper fromJson(String jsonStr) {
         JsonWrapper jsonWrapper = null;
-        Object obj = GSON.fromJson(jsonStr, JsonElement.class);
-        if (obj instanceof JsonObject) {
-            jsonWrapper = new JsonWrapper(new GsonObjectWrapper(this, (JsonObject) obj));
-        } else if (obj instanceof JsonArray) {
-            jsonWrapper = new JsonWrapper(new GsonArrayWrapper(this, (JsonArray) obj));
+        if (jsonStr != null) {
+            Object obj = GSON.fromJson(jsonStr, JsonElement.class);
+            if (obj instanceof JsonObject) {
+                jsonWrapper = new JsonWrapper(new GsonObjectWrapper(this, (JsonObject) obj));
+            } else if (obj instanceof JsonArray) {
+                jsonWrapper = new JsonWrapper(new GsonArrayWrapper(this, (JsonArray) obj));
+            }
         }
         return jsonWrapper;
     }

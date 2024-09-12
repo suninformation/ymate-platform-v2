@@ -141,11 +141,13 @@ public class FastJsonAdapter implements IJsonAdapter {
     @Override
     public JsonWrapper fromJson(String jsonStr) {
         JsonWrapper jsonWrapper = null;
-        Object obj = JSON.parse(jsonStr, ParserConfig.getGlobalInstance(), Feature.OrderedField);
-        if (obj instanceof JSONObject) {
-            jsonWrapper = new JsonWrapper(new FastJsonObjectWrapper(this, (JSONObject) obj));
-        } else if (obj instanceof JSONArray) {
-            jsonWrapper = new JsonWrapper(new FastJsonArrayWrapper(this, (JSONArray) obj));
+        if (jsonStr != null) {
+            Object obj = JSON.parse(jsonStr, ParserConfig.getGlobalInstance(), Feature.OrderedField);
+            if (obj instanceof JSONObject) {
+                jsonWrapper = new JsonWrapper(new FastJsonObjectWrapper(this, (JSONObject) obj));
+            } else if (obj instanceof JSONArray) {
+                jsonWrapper = new JsonWrapper(new FastJsonArrayWrapper(this, (JSONArray) obj));
+            }
         }
         return jsonWrapper;
     }

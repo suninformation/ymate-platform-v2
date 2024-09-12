@@ -74,5 +74,7 @@ public abstract class AbstractInterceptor implements IInterceptor {
      * @return 返回执行结果
      * @throws InterceptException 执行拦截逻辑可能产生的异常
      */
-    protected abstract Object after(InterceptContext context) throws InterceptException;
+    protected Object after(InterceptContext context) throws InterceptException {
+        return null;
+    }
 }

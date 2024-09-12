@@ -92,9 +92,4 @@ public final class CrossDomainInterceptor extends AbstractInterceptor {
         }
         return null;
     }
-
-    @Override
-    protected Object after(InterceptContext context) throws InterceptException {
-        return null;
-    }
 }
