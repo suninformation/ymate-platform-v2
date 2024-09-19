@@ -29,6 +29,7 @@ import org.apache.commons.logging.LogFactory;
 import javax.servlet.http.HttpServletRequest;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Array;
+import java.lang.reflect.Field;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -59,11 +60,12 @@ public class DefaultRequestProcessor implements IRequestProcessor {
     private Map<String, Object> doGetParamValueFromParameterMetas(IWebMvc owner, RequestMeta requestMeta, Collection<ParameterMeta> metas) throws Exception {
         Map<String, Object> resultMap = new HashMap<>(metas.size());
         for (ParameterMeta parameterMeta : metas) {
-            Object paramValue = doGetParamValue(owner, requestMeta, parameterMeta, parameterMeta.getParamName());
+            String paramName = parameterMeta.isKeepParamName() ? parameterMeta.getParamName() : ParameterMeta.buildParamName(null, parameterMeta.getParamName(), parameterMeta.getFieldName(), requestMeta.isSnakeCase());
+            Object paramValue = doGetParamValue(owner, requestMeta, parameterMeta, paramName);
             if (paramValue != null) {
                 resultMap.put(parameterMeta.getFieldName(), paramValue);
-                if (StringUtils.isNotBlank(parameterMeta.getParamName())) {
-                    resultMap.put(parameterMeta.getParamName(), paramValue);
+                if (!StringUtils.equals(paramName, parameterMeta.getFieldName())) {
+                    resultMap.put(paramName, paramValue);
                 }
             }
         }
@@ -131,7 +133,7 @@ public class DefaultRequestProcessor implements IRequestProcessor {
         return doSafeGetParamValue(owner, paramName, paramMeta.getParamType(), httpServletRequest.getParameter(paramName), defaultValue, fullScope);
     }
 
-    Object[] doSafeGetParamValueArray(IWebMvc owner, String paramName, Class<?> arrayClassType, String[] values) {
+    protected Object[] doSafeGetParamValueArray(IWebMvc owner, String paramName, Class<?> arrayClassType, String[] values) {
         Object[] newArray = (Object[]) Array.newInstance(arrayClassType, values.length);
         for (int arrayIdx = 0; arrayIdx < values.length; arrayIdx++) {
             newArray[arrayIdx] = doSafeGetParamValue(owner, paramName, arrayClassType, values[arrayIdx], null, false);
@@ -139,7 +141,7 @@ public class DefaultRequestProcessor implements IRequestProcessor {
         return newArray;
     }
 
-    Object doSafeGetParamValue(IWebMvc owner, String paramName, Class<?> paramType, String paramValue, String defaultValue, boolean fullScope) {
+    protected Object doSafeGetParamValue(IWebMvc owner, String paramName, Class<?> paramType, String paramValue, String defaultValue, boolean fullScope) {
         Object returnValue = null;
         try {
             if (paramValue == null) {
@@ -164,13 +166,13 @@ public class DefaultRequestProcessor implements IRequestProcessor {
         return returnValue;
     }
 
-    private Object doParseModelBindSingleton(IWebMvc owner, RequestMeta requestMeta, ParameterMeta paramMeta, Class<?> paramType) throws Exception {
+    protected Object doParseModelBindSingleton(IWebMvc owner, RequestMeta requestMeta, ParameterMeta paramMeta, Class<?> paramType) throws Exception {
         ClassUtils.BeanWrapper<?> beanWrapper = ClassUtils.wrapperClass(paramType);
         if (beanWrapper != null) {
             for (String fieldName : beanWrapper.getFieldNames()) {
-                ParameterMeta parameterMeta = new ParameterMeta(beanWrapper.getField(fieldName), requestMeta.isSnakeCase());
+                ParameterMeta parameterMeta = new ParameterMeta(beanWrapper.getField(fieldName));
                 if (parameterMeta.isParamField()) {
-                    Object paramValue = doGetParamValue(owner, requestMeta, parameterMeta, parameterMeta.doBuildParamName(paramMeta.getPrefix(), parameterMeta.getParamName(), fieldName, requestMeta.isSnakeCase()));
+                    Object paramValue = doGetParamValue(owner, requestMeta, parameterMeta, parameterMeta.isKeepParamName() ? parameterMeta.getParamName() : ParameterMeta.buildParamName(paramMeta.getPrefix(), parameterMeta.getParamName(), fieldName, requestMeta.isSnakeCase()));
                     if (paramValue != null) {
                         beanWrapper.setValue(fieldName, paramValue);
                     }
@@ -181,7 +183,7 @@ public class DefaultRequestProcessor implements IRequestProcessor {
         return null;
     }
 
-    private Object doParseModelBind(IWebMvc owner, RequestMeta requestMeta, ParameterMeta paramMeta, Class<?> paramType) throws Exception {
+    protected Object doParseModelBind(IWebMvc owner, RequestMeta requestMeta, ParameterMeta paramMeta, Class<?> paramType) throws Exception {
         if (paramType.isArray()) {
             HttpServletRequest httpServletRequest = WebContext.getRequest();
             Map<String, ParameterMeta> parameterMetaMap = new HashMap<>(16);
@@ -194,14 +196,15 @@ public class DefaultRequestProcessor implements IRequestProcessor {
                     int maxLength = 0;
                     for (String fieldName : beanWrapper.getFieldNames()) {
                         // 当控制器参数为@ModelBind数组时，仅支持通过@RequestParam注解获取参数
-                        ParameterMeta parameterMeta = new ParameterMeta(beanWrapper.getField(fieldName), requestMeta.isSnakeCase());
-                        if (parameterMeta.getParamAnnotation() instanceof RequestParam) {
-                            parameterMetaMap.put(fieldName, parameterMeta);
-                            // 尝试计算数组长度并创建数组对象实例
-                            String[] param = httpServletRequest.getParameterMap().get(parameterMeta.doBuildParamName(paramMeta.getPrefix(), parameterMeta.getParamName(), fieldName, requestMeta.isSnakeCase()));
-                            if (param != null) {
-                                if (param.length > maxLength) {
-                                    maxLength = param.length;
+                        Field field = beanWrapper.getField(fieldName);
+                        if (field.isAnnotationPresent(RequestParam.class)) {
+                            ParameterMeta parameterMeta = new ParameterMeta(field);
+                            if (parameterMeta.isParamField()) {
+                                parameterMetaMap.put(fieldName, parameterMeta);
+                                // 尝试计算数组长度并创建数组对象实例
+                                String[] param = httpServletRequest.getParameterMap().get(ParameterMeta.buildParamName(paramMeta.getPrefix(), parameterMeta.getParamName(), fieldName, requestMeta.isSnakeCase()));
+                                if (param != null) {
+                                    maxLength = Math.max(param.length, maxLength);
                                 }
                             }
                         }
@@ -215,7 +218,7 @@ public class DefaultRequestProcessor implements IRequestProcessor {
                     ClassUtils.BeanWrapper<?> beanWrapper = ClassUtils.wrapperClass(arrayClassType);
                     if (beanWrapper != null) {
                         for (Map.Entry<String, ParameterMeta> parameterMetaEntry : parameterMetaMap.entrySet()) {
-                            String paramName = parameterMetaEntry.getValue().doBuildParamName(paramMeta.getPrefix(), parameterMetaEntry.getValue().getParamName(), parameterMetaEntry.getKey(), requestMeta.isSnakeCase());
+                            String paramName = ParameterMeta.buildParamName(paramMeta.getPrefix(), parameterMetaEntry.getValue().getParamName(), parameterMetaEntry.getKey(), requestMeta.isSnakeCase());
                             Object paramValue = null;
                             if (parameterMetaEntry.getValue().getParamAnnotation() instanceof RequestParam) {
                                 RequestParam ann = (RequestParam) parameterMetaEntry.getValue().getParamAnnotation();

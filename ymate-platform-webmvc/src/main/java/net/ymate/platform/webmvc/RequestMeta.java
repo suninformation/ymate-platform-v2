@@ -134,7 +134,7 @@ public class RequestMeta {
             Map<String, ParameterMeta> parameterMetas = new HashMap<>();
             for (Field field : targetClass.getDeclaredFields()) {
                 if (!Modifier.isStatic(field.getModifiers()) && !parameterMetas.containsKey(field.getName())) {
-                    ParameterMeta parameterMeta = new ParameterMeta(field, snakeCase);
+                    ParameterMeta parameterMeta = new ParameterMeta(field);
                     if (parameterMeta.isParamField()) {
                         parameterMetas.put(field.getName(), parameterMeta);
                     }
@@ -152,7 +152,7 @@ public class RequestMeta {
                 if (parameters.length <= idx) {
                     break;
                 }
-                ParameterMeta parameterMeta = new ParameterMeta(parameters[idx].getType(), paramName, parameters[idx].getAnnotations(), snakeCase);
+                ParameterMeta parameterMeta = new ParameterMeta(parameters[idx].getType(), paramName, parameters[idx].getAnnotations());
                 if (parameterMeta.isParamField()) {
                     this.methodParameterMetas.add(parameterMeta);
                 }

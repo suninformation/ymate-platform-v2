@@ -592,7 +592,7 @@ public class DemoController {
 }
 ```
 
-通过浏览器访问 URL 地址：`http://localhost:8080/demo/param?name=webmvc&user.name=ymper`，输出结果：
+通过浏览器访问 URL 地址：`http://localhost:8080/demo/param?name=webmvc&userName=ymper`，输出结果：
 
 ```shell
 Hi, webmvc, UserName: ymper, Age: 18, AuthType: BASIC, isLogin: false
@@ -628,7 +628,7 @@ public class DemoController {
 }
 ```
 
-通过浏览器访问URL地址：`http://localhost:8080/demo/path/webmvc/20?user.sex=F`，输出结果：
+通过浏览器访问URL地址：`http://localhost:8080/demo/path/webmvc/20?userSex=F`，输出结果：
 
 ```shell
 Hi, webmvc, Age: 20, Sex: F
@@ -644,6 +644,8 @@ WebMVC 模块可以通过实现 `IRequestMappingParser` 接口自定义请求路
 #### @ModelBind
 
 对象参数绑定注解。
+
+> 注意：模型对嵌套绑定处理的支持并不完善，**不推荐使用**。当接收模型数组时将仅处理被声名 `@RequestParam` 注解的成员属性。
 
 | 配置项 | 描述                                   |
 | ------ | -------------------------------------- |
@@ -679,11 +681,37 @@ public class DemoController {
 }
 ```
 
-通过浏览器访问 URL 地址：`http://localhost:8080/demo/bind/webmvc?demo.sex=F&demo.ext.age=20`，输出结果：
+通过浏览器访问 URL 地址：`http://localhost:8080/demo/bind/webmvc?demoSex=F&demoExtAge=20`，输出结果：
 
 ```shell
 Hi, webmvc, Age: 20, Sex: F
 ```
+
+
+
+:::tip **关于前缀（prefix）的说明：**
+
+- 从框架 `v2.1.3` 版本开始将优先使用 `@VField(prefix = "xxx")` 替代 `@RequestParam`、 `@RequestHeader` 、 `@CookieVariable` 注解的前缀属性。
+
+- 从框架 `v2.1.3` 版本开始将优先使用 `@VModel(prefix = "xxx")` 替代 `@ModelBind` 注解的前缀属性。
+
+- 当前缀以 `.` 或 `_` 结尾时，前缀与参数名拼接时将不做任何处理，否则与前缀拼接时参数名称首字母将大写，如：
+
+  ```java
+  @RequestParam @VField(prefix = "user.") String name; // 参数名：user.name
+  @RequestParam @VField(prefix = "user") String name;  // 参数名：userName
+  ```
+
+- `@RequestHeader` 和 `@CookieVariable` 注解的前缀与参数名拼接时同样不会做任何处理。
+
+- 当使用 `@EnableSnakeCaseParam` 注解时，参数名称将自动转换后与前缀拼接，如：
+
+  ```java
+  @RequestParam @VField(prefix = "real_") @EnableSnakeCaseParam String userName;  // 参数名：real_user_name
+  @RequestParam @VField(prefix = "real") @EnableSnakeCaseParam String userName;  // 参数名：realUser_name
+  ```
+
+:::
 
 
 
@@ -1884,6 +1912,83 @@ public class DemoController {
 ```
 
 以上这两种协议格式的控制器方法，同样支持参数的验证等特性。
+
+
+
+#### 场景三：JSONRequestProcessor 支持数组对象嵌套绑定
+
+```java
+public class DemoDTO implements Serializable {
+
+    @RequestParam
+    @VRequired
+    private String id;
+
+    @RequestParam
+    private String[] uids;
+    
+    // 省略Get和Set方法
+}
+
+public class MemberDTO implements Serializable {
+
+    @RequestParam
+    private String sex;
+
+    @RequestParam
+    @VRequired
+    @VField(prefix = "ext")
+    private Integer age;
+    
+    // 省略Get和Set方法
+}
+
+@Controller
+public class DemoController {
+
+    @RequestMapping(value = "/demo2", method = Type.HttpMethod.POST/*, header = "Content-Type=application/json"*/)
+    @RequestProcessor(JSONRequestProcessor.class)
+    public Object demo2(@VModel(prefix = "demo.") @ModelBind DemoDTO[] demo, 
+                        @VModel(prefix = "m.") @ModelBind MemberDTO[] member) throws Exception {
+        return WebResult.builder()
+            .dataAttr("demo", demo)
+            .dataAttr("member", member);
+    }
+}
+```
+
+通过 POST 方式向 `http://localhost:8080/demo2` 发送如下 JSON 数据：
+
+```json
+[
+    {
+        "m": {
+            "sex": "sex",
+            "extAge": 100
+        },
+        "demo": {
+            "id": "demoId",
+            "uids": [
+                "demoUids1",
+                "demoUids2"
+            ]
+        }
+    },
+    {
+        "m": {
+            "sex": "sex1",
+            "extAge": 200
+        },
+        "demo": {
+            "id": "demoId1",
+            "uids": [
+                "demoUids3",
+                "demoUids4"
+            ]
+        }
+    }
+]
+```
 
 
 

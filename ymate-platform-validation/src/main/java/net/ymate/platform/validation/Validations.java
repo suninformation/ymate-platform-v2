@@ -161,7 +161,7 @@ public final class Validations implements IModule, IValidation {
                 for (Map.Entry<String, ValidationMeta.ParamInfo> entry : validationMeta.getFields().entrySet()) {
                     ValidateResult validateResult = doValidate(entry.getValue(), paramValues, contextParams, validationMeta.getResourcesName());
                     if (validateResult != null && validateResult.isMatched()) {
-                        returnValues.put(validateResult.getName(), validateResult);
+                        returnValues.put(entry.getKey(), validateResult);
                         if (validationMeta.getMode() == Validation.MODE.NORMAL) {
                             break;
                         }
@@ -187,7 +187,7 @@ public final class Validations implements IModule, IValidation {
                     for (Map.Entry<String, ValidationMeta.ParamInfo> entry : methodInfo.getParams().entrySet()) {
                         ValidateResult validateResult = doValidate(entry.getValue(), paramValues, contextParams, resourceName);
                         if (validateResult != null && validateResult.isMatched()) {
-                            returnValues.put(validateResult.getName(), validateResult);
+                            returnValues.put(entry.getKey(), validateResult);
                             if (Validation.MODE.NORMAL.equals(mode)) {
                                 break;
                             }

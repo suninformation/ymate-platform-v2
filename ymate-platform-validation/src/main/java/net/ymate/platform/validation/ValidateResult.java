@@ -41,10 +41,12 @@ public final class ValidateResult implements Serializable {
         List<Object> argList = new ArrayList<>();
         if (ArrayUtils.isNotEmpty(args)) {
             for (Object arg : args) {
-                if (arg.getClass().isArray()) {
-                    Collections.addAll(argList, (Object[]) arg);
-                } else {
-                    argList.add(arg);
+                if (arg != null) {
+                    if (arg.getClass().isArray()) {
+                        Collections.addAll(argList, (Object[]) arg);
+                    } else {
+                        argList.add(arg);
+                    }
                 }
             }
         }
@@ -127,7 +129,7 @@ public final class ValidateResult implements Serializable {
 
         public Builder(ValidateContext context) {
             this.context = context;
-            target.name = context.getParamInfo().getName();
+            target.name = context.getParamInfo().getParamName();
         }
 
         public boolean matched() {

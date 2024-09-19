@@ -30,6 +30,18 @@ import java.lang.annotation.*;
 public @interface VField {
 
     /**
+     * @return 绑定的参数名称前缀
+     * @since 2.1.3
+     */
+    String prefix() default StringUtils.EMPTY;
+
+    /**
+     * @return 参数名称(用于与集成端业务参数一致)
+     * @since 2.1.3
+     */
+    String value() default StringUtils.EMPTY;
+
+    /**
      * @return 自定义参数名称
      */
     String name() default StringUtils.EMPTY;

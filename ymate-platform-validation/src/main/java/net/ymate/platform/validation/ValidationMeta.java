@@ -69,7 +69,7 @@ public final class ValidationMeta implements Serializable {
         }
         this.targetClass = targetClass;
         // 处理targetClass所有Field成员属性
-        fields.putAll(parseClassFields(null, targetClass));
+        fields.putAll(parseClassFields(null, null, targetClass));
         // 处理targetClass所有Method方法
         for (Method method : targetClass.getDeclaredMethods()) {
             if (!ClassUtils.isNormalMethod(method)) {
@@ -87,21 +87,25 @@ public final class ValidationMeta implements Serializable {
                     ParamInfo paramInfo = new ParamInfo();
                     paramInfo.setName(methodParamNames[idx]);
                     List<Annotation> tmpAnnList = new ArrayList<>();
-                    // 尝试获取自定义的参数别名
-                    VField vField = parameter.getAnnotation(VField.class);
-                    if (vField != null) {
-                        paramInfo.setCustomName(StringUtils.trimToNull(vField.name()));
-                        paramInfo.setLabel(StringUtils.trimToNull(vField.label()));
-                    }
-                    if (parameter.isAnnotationPresent(VModel.class)) {
+                    VModel vModel = parameter.getAnnotation(VModel.class);
+                    if (vModel != null) {
+                        paramInfo.setPrefix(vModel.prefix());
                         // 递归处理@VModel
-                        methodInfo.getParams().putAll(parseClassFields(paramInfo.getCustomName(), parameter.getType()));
+                        methodInfo.getParams().putAll(parseClassFields(paramInfo.getPrefix(), paramInfo.getName(), parameter.getType()));
                     } else {
+                        // 尝试获取自定义的参数别名
+                        VField vField = parameter.getAnnotation(VField.class);
+                        if (vField != null) {
+                            paramInfo.setPrefix(StringUtils.trimToNull(vField.prefix()));
+                            paramInfo.setCustomName(StringUtils.trimToNull(vField.name()));
+                            paramInfo.setLabel(StringUtils.trimToNull(vField.label()));
+                        }
+                        paramInfo.setParamName(doParseFieldParamName(vField, paramInfo.getPrefix(), paramInfo.getName()));
                         tmpAnnList = Arrays.stream(parameter.getAnnotations()).filter(this::isValid).collect(Collectors.toList());
                     }
                     if (!tmpAnnList.isEmpty()) {
                         paramInfo.setAnnotations(tmpAnnList.toArray(new Annotation[0]));
-                        methodInfo.getParams().put(paramInfo.getCustomName(), paramInfo);
+                        methodInfo.getParams().put(paramInfo.getParamName(), paramInfo);
                     }
                     idx++;
                 }
@@ -112,44 +116,76 @@ public final class ValidationMeta implements Serializable {
         }
     }
 
+    public static String parsePrefixValue(String prefix, String paramName) {
+        if (StringUtils.isNotBlank(prefix)) {
+            if (StringUtils.endsWithAny(prefix, ".", "_")) {
+                paramName = StringUtils.join(prefix, paramName);
+            } else {
+                paramName = StringUtils.join(prefix, StringUtils.capitalize(paramName));
+            }
+        }
+        return paramName;
+    }
+
+    private String doParseFieldParamName(VField vField, String prefix, String paramName) {
+        if (vField == null || StringUtils.isBlank(vField.value())) {
+            paramName = StringUtils.defaultIfBlank(StringUtils.substringAfterLast(paramName, "."), paramName);
+        }
+        return parsePrefixValue(prefix, paramName);
+    }
+
     /**
      * @param parentFieldName 父类属性名称(用于递归)
      * @param targetClass     目标类
      * @return 处理targetClass所有Field成员属性
      */
-    public Map<String, ParamInfo> parseClassFields(String parentFieldName, Class<?> targetClass) {
+    public Map<String, ParamInfo> parseClassFields(String parentPrefix, String parentFieldName, Class<?> targetClass) {
         Map<String, ParamInfo> returnValues = new LinkedHashMap<>();
-        for (Field field : targetClass.getDeclaredFields()) {
-            if (Modifier.isStatic(field.getModifiers())) {
-                continue;
-            }
-            ParamInfo paramInfo = new ParamInfo();
-            paramInfo.setName(buildFieldName(parentFieldName, field.getName()));
-            // 尝试获取自定义的参数别名
-            VField vField = field.getAnnotation(VField.class);
-            if (vField != null) {
-                if (StringUtils.isNotBlank(vField.name())) {
-                    paramInfo.setCustomName(vField.name());
+        if (targetClass.isArray()) {
+            targetClass = ClassUtils.getArrayClassType(targetClass);
+        }
+        if (targetClass != null) {
+            for (Field field : targetClass.getDeclaredFields()) {
+                if (Modifier.isStatic(field.getModifiers())) {
+                    continue;
                 }
-                if (StringUtils.isNotBlank(vField.label())) {
-                    paramInfo.setLabel(vField.label());
+                ParamInfo paramInfo = new ParamInfo();
+                paramInfo.setName(buildFieldName(parentFieldName, field.getName()));
+                paramInfo.setPrefix(parentPrefix);
+                List<Annotation> annotations = new ArrayList<>();
+                VModel vModel = field.getAnnotation(VModel.class);
+                if (vModel != null) {
+                    if (StringUtils.isNotBlank(vModel.prefix())) {
+                        paramInfo.setPrefix(parsePrefixValue(parentPrefix, vModel.prefix()));
+                    }
+                    // 递归处理@VModel
+                    returnValues.putAll(parseClassFields(paramInfo.getPrefix(), paramInfo.getName(), field.getType()));
+                } else {
+                    // 尝试获取自定义的参数别名
+                    VField vField = field.getAnnotation(VField.class);
+                    if (vField != null) {
+                        if (StringUtils.isNotBlank(vField.prefix())) {
+                            paramInfo.setPrefix(StringUtils.join(parentPrefix, vField.prefix()));
+                        }
+                        if (StringUtils.isNotBlank(vField.name())) {
+                            paramInfo.setCustomName(vField.name());
+                        }
+                        if (StringUtils.isNotBlank(vField.label())) {
+                            paramInfo.setLabel(vField.label());
+                        }
+                    }
+                    paramInfo.setParamName(doParseFieldParamName(vField, paramInfo.getPrefix(), paramInfo.getName()));
+                    // 尝试获取自定义消息内容
+                    VMsg vMsg = field.getAnnotation(VMsg.class);
+                    if (vMsg != null && StringUtils.isNotBlank(vMsg.value())) {
+                        paramInfo.setMessage(vMsg.value());
+                    }
+                    annotations = Arrays.stream(field.getAnnotations()).filter(this::isValid).collect(Collectors.toList());
                 }
-            }
-            List<Annotation> annotations = new ArrayList<>();
-            if (field.isAnnotationPresent(VModel.class)) {
-                // 递归处理@VModel
-                returnValues.putAll(parseClassFields(paramInfo.getCustomName(), field.getType()));
-            } else {
-                // 尝试获取自定义消息内容
-                VMsg vMsg = field.getAnnotation(VMsg.class);
-                if (vMsg != null && StringUtils.isNotBlank(vMsg.value())) {
-                    paramInfo.setMessage(vMsg.value());
+                if (!annotations.isEmpty()) {
+                    paramInfo.setAnnotations(annotations.toArray(new Annotation[0]));
+                    returnValues.put(paramInfo.getParamName(), paramInfo);
                 }
-                annotations = Arrays.stream(field.getAnnotations()).filter(this::isValid).collect(Collectors.toList());
-            }
-            if (!annotations.isEmpty()) {
-                paramInfo.setAnnotations(annotations.toArray(new Annotation[0]));
-                returnValues.put(paramInfo.getCustomName(), paramInfo);
             }
         }
         return returnValues;
@@ -229,6 +265,15 @@ public final class ValidationMeta implements Serializable {
 
         private String name;
 
+        private String prefix;
+
+        /**
+         * 参数名称(用于与集成端业务参数一致)
+         *
+         * @since 2.1.3
+         */
+        private String paramName;
+
         /**
          * 业务自定义参数名(来自VField, 若未提供则与name取值相同)
          */
@@ -256,8 +301,24 @@ public final class ValidationMeta implements Serializable {
             this.name = name;
         }
 
+        public String getPrefix() {
+            return prefix;
+        }
+
+        public void setPrefix(String prefix) {
+            this.prefix = prefix;
+        }
+
+        public String getParamName() {
+            return paramName;
+        }
+
+        public void setParamName(String paramName) {
+            this.paramName = paramName;
+        }
+
         public String getCustomName() {
-            return StringUtils.defaultIfBlank(customName, name);
+            return StringUtils.defaultIfBlank(customName, paramName);
         }
 
         public void setCustomName(String customName) {

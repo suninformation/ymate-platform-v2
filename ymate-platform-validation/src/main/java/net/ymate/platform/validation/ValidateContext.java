@@ -89,7 +89,16 @@ public class ValidateContext extends AbstractContext {
                         if (targetValue == null) {
                             targetValue = this.paramValues.get(pName);
                         } else {
-                            targetValue = ClassUtils.wrapper(targetValue).getValue(pName);
+                            if (targetValue.getClass().isArray()) {
+                                Object[] arrayTargetValue = ((Object[]) targetValue);
+                                Object[] newTargetValue = new Object[arrayTargetValue.length];
+                                for (int idx = 0; idx < arrayTargetValue.length; idx++) {
+                                    newTargetValue[idx] = ClassUtils.wrapper(arrayTargetValue[idx]).getValue(pName);
+                                }
+                                targetValue = newTargetValue;
+                            } else {
+                                targetValue = ClassUtils.wrapper(targetValue).getValue(pName);
+                            }
                         }
                     }
                 } catch (IllegalAccessException | InvocationTargetException e) {

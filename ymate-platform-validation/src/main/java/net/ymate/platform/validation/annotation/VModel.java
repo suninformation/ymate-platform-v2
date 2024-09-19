@@ -15,6 +15,8 @@
  */
 package net.ymate.platform.validation.annotation;
 
+import org.apache.commons.lang3.StringUtils;
+
 import java.lang.annotation.*;
 
 /**
@@ -26,4 +28,10 @@ import java.lang.annotation.*;
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
 public @interface VModel {
+
+    /**
+     * @return 绑定的参数名称前缀
+     * @since 2.1.3
+     */
+    String prefix() default StringUtils.EMPTY;
 }

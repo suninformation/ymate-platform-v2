@@ -23,6 +23,8 @@ import net.ymate.platform.validation.ValidateResult;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 
+import java.util.Arrays;
+
 /**
  * 必填项验证
  *
@@ -46,10 +48,10 @@ public final class RequiredValidator implements IValidator {
         boolean result;
         if (paramValue == null) {
             result = true;
-        } else if (!paramValue.getClass().isArray()) {
-            result = StringUtils.isBlank(BlurObject.bind(paramValue).toStringValue());
+        } else if (paramValue.getClass().isArray()) {
+            result = ArrayUtils.isEmpty((Object[]) paramValue) || Arrays.stream(((Object[]) paramValue)).anyMatch(o -> StringUtils.isBlank(BlurObject.bind(o).toStringValue()));
         } else {
-            result = ArrayUtils.isEmpty((Object[]) paramValue);
+            result = StringUtils.isBlank(BlurObject.bind(paramValue).toStringValue());
         }
         return result;
     }
