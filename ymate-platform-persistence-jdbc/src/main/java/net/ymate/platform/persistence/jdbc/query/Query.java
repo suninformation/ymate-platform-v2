@@ -71,6 +71,46 @@ public class Query<T> extends QueryHandleAdapter<T> {
         return new Executor<>(owner, dataSourceName, queryClass);
     }
 
+    /**
+     * @since 2.1.3
+     */
+    public static Select build(String alias, boolean unionAll, Class<?>... queryClasses) throws Exception {
+        return build(JDBC.get(), null, alias, unionAll, queryClasses);
+    }
+
+    /**
+     * @since 2.1.3
+     */
+    public static Select build(IDatabase owner, String alias, boolean unionAll, Class<?>... queryClasses) throws Exception {
+        return build(owner, null, alias, unionAll, queryClasses);
+    }
+
+    /**
+     * @since 2.1.3
+     */
+    public static Select build(IDatabase owner, String dataSourceName, String alias, boolean unionAll, Class<?>... queryClasses) throws Exception {
+        if (StringUtils.isBlank(alias)) {
+            throw new NullArgumentException("alias");
+        }
+        Select select = null;
+        if (ArrayUtils.isNotEmpty(queryClasses)) {
+            for (Class<?> clazz : queryClasses) {
+                Select subselect = build(owner, dataSourceName, clazz).ignoreOrderBy().buildSelect();
+                if (select == null) {
+                    select = subselect;
+                } else if (unionAll) {
+                    select.unionAll(subselect);
+                } else {
+                    select.union(subselect);
+                }
+            }
+        }
+        if (select == null) {
+            throw new NullArgumentException("queryClasses");
+        }
+        return Select.create(select.alias(alias));
+    }
+
     public Query(IDatabase owner, String dataSourceName) {
         this.owner = owner;
         this.dataSourceName = dataSourceName;
@@ -255,6 +295,8 @@ public class Query<T> extends QueryHandleAdapter<T> {
 
         private boolean replaceWhere;
 
+        private boolean ignoreOrderBy;
+
         /**
          * @since 2.1.3
          */
@@ -266,6 +308,7 @@ public class Query<T> extends QueryHandleAdapter<T> {
                 throw new NullArgumentException("queryClass");
             }
             this.queryClass = queryClass;
+            this.distinct = queryClass.isAnnotationPresent(QDistinct.class);
         }
 
         public Executor<T> addExcludeField(String field) {
@@ -424,7 +467,7 @@ public class Query<T> extends QueryHandleAdapter<T> {
         }
 
         private void doParseOrderBy(Where where) {
-            if (where != null) {
+            if (!ignoreOrderBy && where != null) {
                 OrderBy orderBy = where.orderBy();
                 if (orderBy == null || orderBy.isEmpty()) {
                     QOrderBy qOrderBy = queryClass.getAnnotation(QOrderBy.class);
@@ -528,6 +571,11 @@ public class Query<T> extends QueryHandleAdapter<T> {
 
         public Executor<T> distinct() {
             distinct = true;
+            return this;
+        }
+
+        public Executor<T> ignoreOrderBy() {
+            ignoreOrderBy = true;
             return this;
         }
 

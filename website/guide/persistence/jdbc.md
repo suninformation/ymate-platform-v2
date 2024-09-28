@@ -2111,6 +2111,14 @@ email LIKE '%@qq.com' AND gender = 'F' and age <= 18
 | `Like.create("ymp").startsWith()` | 以某字符串做为前缀 | ymp%        |
 | `Like.create("ymp").endsWith()`   | 以某字符串做为后缀 | %ymp        |
 
+从 `v2.1.3` 版本开始新增以下快捷方法：
+
+| 代码                     | 描述               | 输出SQL语句 |
+| ------------------------ | ------------------ | ----------- |
+| `Like.contains("ymp")`   | 包含某字符串       | %ymp%       |
+| `Like.startsWith("ymp")` | 以某字符串做为前缀 | ymp%        |
+| `Like.endsWith("ymp")`   | 以某字符串做为后缀 | %ymp        |
+
 
 
 ### OrderBy：排序对象
@@ -3561,6 +3569,10 @@ IResultSet<UserBean> resultSet = SQL.create("SELECT id, email FROM user")
 | on     | 设置关联条件集合                             |
 | type   | 关联方式，默认为：`Join.Type.LEFT`（左连接） |
 
+#### @QDistinct
+
+定义查询去重。@since 2.1.3
+
 
 
 #### 示例：注解的使用与执行查询
@@ -3612,6 +3624,19 @@ IResultSet<SubarrayStatusVO> statusQuery(String subarrayId, String parentId, int
     }
     return executor.find();
 }
+```
+
+
+
+#### 示例：支持 Union 多个对象查询结果
+
+@since 2.1.3
+
+```java
+// 注意：需确保 PlantStatusVO 和 DeviceStatusVO 两个查询结果集字段一致
+Query.build("s1", true, PlantStatusVO.class, DeviceStatusVO.class)
+    .orderByDesc("s1", "create_time")
+    .find(new BeanResultSetHandler<>(StatusVO.class));
 ```
 
 

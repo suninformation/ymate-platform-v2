@@ -29,6 +29,27 @@ public class Like implements Serializable {
         return new Like(originStr);
     }
 
+    /**
+     * @since 2.1.3
+     */
+    public static String contains(String originStr) {
+        return new Like(originStr).contains();
+    }
+
+    /**
+     * @since 2.1.3
+     */
+    public static String startsWith(String originStr) {
+        return new Like(originStr).startsWith();
+    }
+
+    /**
+     * @since 2.1.3
+     */
+    public static String endsWith(String originStr) {
+        return new Like(originStr).endsWith();
+    }
+
     private final String originStr;
 
     public Like(String originStr) {
