@@ -54,7 +54,7 @@ public class BeanResultSetHandler<T> extends AbstractResultSetHandler<T> {
                     targetField = targetWrapper.getField(fieldName.toLowerCase());
                 }
                 if (targetField != null) {
-                    targetWrapper.setValue(targetField, IValueRenderer.processValueRenderer(targetField, value));
+                    targetWrapper.setValue(targetField, IValueRenderer.processValueRenderer(targetWrapper, targetField, value));
                 }
             }
         }

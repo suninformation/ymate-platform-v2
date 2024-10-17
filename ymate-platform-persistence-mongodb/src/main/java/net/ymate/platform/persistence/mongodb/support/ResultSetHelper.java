@@ -63,7 +63,7 @@ public class ResultSetHelper {
                 if (entityMeta.isPrimaryKey(propertyMeta.getName())) {
                     propValue = document.getObjectId(propertyMeta.getName()).toString();
                 } else {
-                    propValue = IValueRenderer.processValueRenderer(field, BlurObject.bind(document.get(propertyMeta.getName())).toObjectValue(field.getType()));
+                    propValue = IValueRenderer.processValueRenderer(beanWrapper, field, BlurObject.bind(document.get(propertyMeta.getName())).toObjectValue(field.getType()));
                 }
                 if (propValue == null) {
                     continue;

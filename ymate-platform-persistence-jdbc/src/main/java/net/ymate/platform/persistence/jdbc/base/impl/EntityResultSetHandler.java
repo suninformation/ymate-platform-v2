@@ -54,25 +54,25 @@ public class EntityResultSetHandler<T extends IEntity> extends AbstractResultSet
     @Override
     @SuppressWarnings("unchecked")
     protected T processResultRow(ResultSet resultSet) throws Exception {
-        T returnValue = entityClass.newInstance();
+        ClassUtils.BeanWrapper<T> targetWrapper = ClassUtils.wrapper(entityClass.newInstance());
         Object primaryKeyObject = null;
         if (entityMeta.isMultiplePrimaryKey()) {
             primaryKeyObject = entityMeta.getPrimaryKeyClass().newInstance();
             //
-            returnValue.setId((Serializable) primaryKeyObject);
+            targetWrapper.getTargetObject().setId((Serializable) primaryKeyObject);
         }
         for (int idx = 0; idx < getColumnCount(); idx++) {
             PropertyMeta propertyMeta = entityMeta.getPropertyByName(getColumnMeta(idx).getName());
             if (propertyMeta != null) {
                 Field field = propertyMeta.getField();
-                Object fieldValue = IValueRenderer.processValueRenderer(field, BlurObject.bind(resultSet.getObject(idx + 1)).toObjectValue(field.getType()));
+                Object fieldValue = IValueRenderer.processValueRenderer(targetWrapper, field, BlurObject.bind(resultSet.getObject(idx + 1)).toObjectValue(field.getType()));
                 if (entityMeta.isPrimaryKey(propertyMeta.getName()) && entityMeta.isMultiplePrimaryKey()) {
                     propertyMeta.getField().set(primaryKeyObject, fieldValue);
                 } else {
-                    propertyMeta.getField().set(returnValue, fieldValue);
+                    propertyMeta.getField().set(targetWrapper.getTargetObject(), fieldValue);
                 }
             }
         }
-        return returnValue;
+        return targetWrapper.getTargetObject();
     }
 }

@@ -32,4 +32,10 @@ public @interface ValueRenderer {
      * @return 指定属性值渲染器类型集合，将按配置顺序执行渲染操作
      */
     Class<? extends IValueRenderer>[] value();
+
+    /**
+     * @return 自定义参数集合
+     * @since 2.1.3
+     */
+    String[] params() default {};
 }

@@ -15,9 +15,6 @@
  */
 package net.ymate.platform.persistence.jdbc.base;
 
-import net.ymate.platform.core.persistence.IValueRenderer;
-
-import java.lang.reflect.Field;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.util.ArrayList;
@@ -54,14 +51,6 @@ public abstract class AbstractResultSetHandler<T> implements IResultSetHandler<T
             results.add(processResultRow(resultSet));
         }
         return results;
-    }
-
-    /**
-     * @see IValueRenderer#processValueRenderer(Field, Object)
-     */
-    @Deprecated
-    protected Object processValueRenderer(Field field, Object originValue) {
-        return IValueRenderer.processValueRenderer(field, originValue);
     }
 
     /**

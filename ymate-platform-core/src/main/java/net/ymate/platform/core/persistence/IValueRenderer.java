@@ -15,6 +15,7 @@
  */
 package net.ymate.platform.core.persistence;
 
+import net.ymate.platform.commons.lang.BlurObject;
 import net.ymate.platform.commons.util.ClassUtils;
 import net.ymate.platform.commons.util.RuntimeUtils;
 import net.ymate.platform.core.beans.annotation.Ignored;
@@ -40,7 +41,7 @@ public interface IValueRenderer {
     /**
      * @since 2.1.3
      */
-    static Object processValueRenderer(Field field, Object originValue) {
+    static Object processValueRenderer(ClassUtils.BeanWrapper<?> targetWrapper, Field field, Object originValue) {
         if (field != null && originValue != null) {
             ValueRenderer valueRendererAnn = field.getAnnotation(ValueRenderer.class);
             if (valueRendererAnn != null && !ArrayUtils.isEmpty(valueRendererAnn.value())) {
@@ -48,7 +49,7 @@ public interface IValueRenderer {
                     if (valueRendererClass != null) {
                         IValueRenderer valueRenderer = IValueRenderer.Manager.getValueRenderer(valueRendererClass);
                         if (valueRenderer != null) {
-                            originValue = valueRenderer.render(field.getType(), originValue);
+                            originValue = valueRenderer.render(targetWrapper, field, originValue, valueRendererAnn.params());
                         }
                     }
                 }
@@ -64,7 +65,23 @@ public interface IValueRenderer {
      * @param originValue 原始属性值
      * @return 返回渲染后的属性值
      */
-    Object render(Class<?> targetType, Object originValue);
+    default Object render(Class<?> targetType, Object originValue) {
+        return BlurObject.bind(originValue).toObjectValue(targetType);
+    }
+
+    /**
+     * 执行渲染操作
+     *
+     * @param targetWrapper 目标对象包装器
+     * @param field         目标属性对象
+     * @param originValue   原始属性值
+     * @param params        自定义参数集合
+     * @return 返回渲染后的属性值
+     * @since 2.1.3
+     */
+    default Object render(ClassUtils.BeanWrapper<?> targetWrapper, Field field, Object originValue, String[] params) {
+        return render(field.getType(), originValue);
+    }
 
     /**
      * 渲染器类管理器
