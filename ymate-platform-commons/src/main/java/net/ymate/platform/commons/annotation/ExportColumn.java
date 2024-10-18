@@ -24,7 +24,7 @@ import java.lang.annotation.*;
 /**
  * @author 刘镇 (suninformation@163.com) on 2019-02-01 03:36
  */
-@Target({ElementType.TYPE, ElementType.FIELD})
+@Target(ElementType.FIELD)
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
 public @interface ExportColumn {
@@ -75,4 +75,10 @@ public @interface ExportColumn {
      * @return 自定义列渲染器接口实现类
      */
     Class<? extends IExportDataRender> render() default IExportDataRender.class;
+
+    /**
+     * @return 排序
+     * @since 2.1.3
+     */
+    int order() default 0;
 }

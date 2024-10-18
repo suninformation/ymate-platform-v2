@@ -16,6 +16,8 @@
 package net.ymate.platform.commons;
 
 import net.ymate.platform.commons.annotation.ExportColumn;
+import net.ymate.platform.commons.lang.BlurObject;
+import net.ymate.platform.commons.util.ClassUtils;
 
 /**
  * @author 刘镇 (suninformation@163.com) on 2017/12/25 下午2:42
@@ -24,12 +26,35 @@ public interface IExportDataRender {
 
     /**
      * 渲染列
+     * <p>
+     * 使用默认实现是为了保持兼容性
      *
      * @param column    列注解
      * @param fieldName 字段名称
      * @param value     值对象
      * @return 返回字段值字符串
      * @throws Exception 可能产生的任何异常
+     * @see IExportDataRender#render(ClassUtils.BeanWrapper, ExportColumn, String, Object)
      */
-    String render(ExportColumn column, String fieldName, Object value) throws Exception;
+    @Deprecated
+    default String render(ExportColumn column, String fieldName, Object value) throws Exception {
+        return BlurObject.bind(value).toStringValue();
+    }
+
+    /**
+     * 渲染列
+     * <p>
+     * 使用默认实现是为了保持兼容性
+     *
+     * @param beanWrapper 目标对象包裹器
+     * @param column      列注解
+     * @param fieldName   字段名称
+     * @param value       值对象
+     * @return 返回字段值字符串
+     * @throws Exception 可能产生的任何异常
+     * @since 2.1.3
+     */
+    default String render(ClassUtils.BeanWrapper<?> beanWrapper, ExportColumn column, String fieldName, Object value) throws Exception {
+        return render(column, fieldName, value);
+    }
 }

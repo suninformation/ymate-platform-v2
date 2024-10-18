@@ -48,9 +48,13 @@ public final class ExcelFileExportHelper {
 
     private final List<String> excludedFieldNames = new ArrayList<>();
 
+    private final Map<Class<? extends IExportDataRender>, IExportDataRender> rendersCache = new HashMap<>();
+
     private final Map<String, IExportDataRender> renders = new HashMap<>();
 
     private IExportDataProcessor processor;
+
+    private String prefix;
 
     public static ExcelFileExportHelper bind() {
         return new ExcelFileExportHelper();
@@ -82,6 +86,7 @@ public final class ExcelFileExportHelper {
         this.processor = processor;
     }
 
+    @Deprecated
     public ExcelFileExportHelper excludedFieldNames(String[] fieldNames) {
         if (fieldNames != null && fieldNames.length > 0) {
             excludedFieldNames.addAll(Arrays.asList(fieldNames));
@@ -89,6 +94,7 @@ public final class ExcelFileExportHelper {
         return this;
     }
 
+    @Deprecated
     public ExcelFileExportHelper putFieldRender(String fieldName, IExportDataRender render) {
         if (StringUtils.isNotBlank(fieldName) && render != null) {
             renders.put(fieldName, render);
@@ -96,6 +102,7 @@ public final class ExcelFileExportHelper {
         return this;
     }
 
+    @Deprecated
     public ExcelFileExportHelper putCustomFieldName(String name, String customFieldName) {
         if (StringUtils.isNotBlank(name) && StringUtils.isNotBlank(customFieldName)) {
             customFieldNames.put(name, customFieldName);
@@ -103,6 +110,7 @@ public final class ExcelFileExportHelper {
         return this;
     }
 
+    @Deprecated
     public ExcelFileExportHelper putData(String varName, Object data) {
         if (StringUtils.isBlank(varName)) {
             throw new NullArgumentException("varName");
@@ -112,6 +120,24 @@ public final class ExcelFileExportHelper {
         }
         this.data.put(varName, data);
         return this;
+    }
+
+    /**
+     * @since 2.1.3
+     */
+    public ExcelFileExportHelper prefix(String prefix) {
+        this.prefix = prefix;
+        if (StringUtils.isNotBlank(prefix) && !StringUtils.endsWith(prefix, "_")) {
+            this.prefix = prefix.concat("_");
+        }
+        return this;
+    }
+
+    /**
+     * @since 2.1.3
+     */
+    public String prefix() {
+        return StringUtils.defaultIfBlank(prefix, "export_");
     }
 
     public File export(Class<?> dataType) throws Exception {
@@ -149,7 +175,7 @@ public final class ExcelFileExportHelper {
             if (files.size() == 1) {
                 return files.get(0);
             }
-            return FileUtils.toZip("export_", true, files.toArray(new File[0]));
+            return FileUtils.toZip(prefix(), true, files.toArray(new File[0]));
         }
         return null;
     }
@@ -158,26 +184,24 @@ public final class ExcelFileExportHelper {
         ClassUtils.BeanWrapper<?> beanWrapper = ClassUtils.wrapperClass(dataType);
         if (beanWrapper != null) {
             Collection<Field> fields = beanWrapper.getFields();
-            Map<String, ExportColumn> columnsMap = new HashMap<>(fields.size());
+            Map<String, ExportColumn> columnsMap = new LinkedHashMap<>(fields.size());
             List<String> columnNames = new ArrayList<>();
-            fields.stream().filter(field -> !excludedFieldNames.contains(field.getName())).forEachOrdered(field -> {
-                ExportColumn exportColumnAnn = field.getAnnotation(ExportColumn.class);
-                if (exportColumnAnn != null) {
-                    columnsMap.put(field.getName(), exportColumnAnn);
-                    if (!exportColumnAnn.excluded()) {
-                        if (!exportColumnAnn.render().equals(IExportDataRender.class)) {
-                            IExportDataRender dataRender = ClassUtils.impl(exportColumnAnn.render(), IExportDataRender.class);
-                            if (dataRender != null) {
-                                renders.put(field.getName(), dataRender);
+            fields.stream().filter(field -> !excludedFieldNames.contains(field.getName()) && field.isAnnotationPresent(ExportColumn.class))
+                    .sorted(Comparator.comparingInt(field -> field.getAnnotation(ExportColumn.class).order()))
+                    .forEachOrdered(field -> {
+                        ExportColumn exportColumnAnn = field.getAnnotation(ExportColumn.class);
+                        if (!exportColumnAnn.excluded()) {
+                            if (!exportColumnAnn.render().equals(IExportDataRender.class)) {
+                                IExportDataRender dataRender = rendersCache.computeIfAbsent(exportColumnAnn.render(), aClass -> ClassUtils.impl(exportColumnAnn.render(), IExportDataRender.class));
+                                if (dataRender != null) {
+                                    renders.put(field.getName(), dataRender);
+                                }
                             }
+                            String colName = StringUtils.defaultIfBlank(exportColumnAnn.value(), field.getName());
+                            columnNames.add(customFieldNames.getOrDefault(colName, colName));
+                            columnsMap.put(field.getName(), exportColumnAnn);
                         }
-                        String colName = StringUtils.defaultIfBlank(exportColumnAnn.value(), field.getName());
-                        columnNames.add(customFieldNames.getOrDefault(colName, colName));
-                    }
-                } else {
-                    columnNames.add(customFieldNames.getOrDefault(field.getName(), field.getName()));
-                }
-            });
+                    });
             if (xssf) {
                 return doExportExcel(columnNames, columnsMap, index, data);
             } else {
@@ -202,30 +226,28 @@ public final class ExcelFileExportHelper {
                 ClassUtils.BeanWrapper<?> objectBeanWrapper = ClassUtils.wrapper(item);
                 Row newRow = sheet.createRow(rowCount++);
                 int cellCount = 0;
-                for (String fieldName : objectBeanWrapper.getFieldNames()) {
+                for (Map.Entry<String, ExportColumn> columnEntry : columnsMap.entrySet()) {
+                    String fieldName = columnEntry.getKey();
                     if (!excludedFieldNames.contains(fieldName)) {
+                        ExportColumn exportColumnAnn = columnEntry.getValue();
                         String cellValue;
                         try {
-                            ExportColumn exportColumnAnn = columnsMap.get(fieldName);
-                            if (exportColumnAnn != null && exportColumnAnn.excluded()) {
-                                continue;
-                            }
                             IExportDataRender dataRender = renders.get(fieldName);
-                            if (exportColumnAnn != null && dataRender != null) {
-                                String valueStr = dataRender.render(exportColumnAnn, fieldName, objectBeanWrapper.getValue(fieldName));
+                            if (dataRender != null) {
+                                String valueStr = BlurObject.bind(dataRender.render(objectBeanWrapper, exportColumnAnn, fieldName, objectBeanWrapper.getValue(fieldName), false)).toStringValue();
                                 if (StringUtils.isNotBlank(valueStr)) {
                                     cellValue = valueStr;
                                 } else {
                                     cellValue = StringUtils.trimToEmpty(BlurObject.bind(objectBeanWrapper.getValue(fieldName)).toStringValue());
                                 }
-                            } else if (exportColumnAnn != null && exportColumnAnn.dateTime()) {
+                            } else if (exportColumnAnn.dateTime()) {
                                 long timeValue = BlurObject.bind(objectBeanWrapper.getValue(fieldName)).toLongValue();
                                 if (String.valueOf(timeValue).length() >= DateTimeUtils.UTC_LENGTH) {
                                     cellValue = DateTimeUtils.formatTime(timeValue, StringUtils.defaultIfBlank(exportColumnAnn.pattern(), DateTimeUtils.YYYY_MM_DD_HH_MM_SS));
                                 } else {
                                     cellValue = StringUtils.EMPTY;
                                 }
-                            } else if (exportColumnAnn != null && exportColumnAnn.dataRange().length > 0) {
+                            } else if (exportColumnAnn.dataRange().length > 0) {
                                 Object dataRangeValue = objectBeanWrapper.getValue(fieldName);
                                 if (dataRangeValue != null) {
                                     int position = BlurObject.bind(dataRangeValue).toIntValue();
@@ -237,7 +259,7 @@ public final class ExcelFileExportHelper {
                                 } else {
                                     cellValue = StringUtils.EMPTY;
                                 }
-                            } else if (exportColumnAnn != null && exportColumnAnn.currency()) {
+                            } else if (exportColumnAnn.currency()) {
                                 Object currencyValue = objectBeanWrapper.getValue(fieldName);
                                 if (currencyValue != null) {
                                     cellValue = doProcessCurrencyValue(exportColumnAnn, currencyValue).toStringValue();
@@ -256,7 +278,7 @@ public final class ExcelFileExportHelper {
                     }
                 }
             }
-            File tempFile = File.createTempFile("export_", String.format("_%d.%s", index, EXCEL_TYPE_XLSX));
+            File tempFile = File.createTempFile(prefix(), String.format("_%d.%s", index, EXCEL_TYPE_XLSX));
             tempFile.deleteOnExit();
             try (OutputStream outputStream = Files.newOutputStream(tempFile.toPath())) {
                 workbook.write(outputStream);
@@ -287,29 +309,27 @@ public final class ExcelFileExportHelper {
         for (Object item : data) {
             ClassUtils.BeanWrapper<?> objectBeanWrapper = ClassUtils.wrapper(item);
             ConsoleTableBuilder.Row newRow = tableBuilder.addRow();
-            for (String fieldName : objectBeanWrapper.getFieldNames()) {
+            for (Map.Entry<String, ExportColumn> columnEntry : columnsMap.entrySet()) {
+                String fieldName = columnEntry.getKey();
                 if (!excludedFieldNames.contains(fieldName)) {
+                    ExportColumn exportColumnAnn = columnEntry.getValue();
                     try {
-                        ExportColumn exportColumnAnn = columnsMap.get(fieldName);
-                        if (exportColumnAnn != null && exportColumnAnn.excluded()) {
-                            continue;
-                        }
                         IExportDataRender dataRender = renders.get(fieldName);
-                        if (exportColumnAnn != null && dataRender != null) {
-                            String valueStr = dataRender.render(exportColumnAnn, fieldName, objectBeanWrapper.getValue(fieldName));
+                        if (dataRender != null) {
+                            String valueStr = BlurObject.bind(dataRender.render(objectBeanWrapper, exportColumnAnn, fieldName, objectBeanWrapper.getValue(fieldName), false)).toStringValue();
                             if (StringUtils.isNotBlank(valueStr)) {
                                 newRow.addColumn(valueStr);
                             } else {
                                 newRow.addColumn(StringUtils.trimToEmpty(BlurObject.bind(objectBeanWrapper.getValue(fieldName)).toStringValue()));
                             }
-                        } else if (exportColumnAnn != null && exportColumnAnn.dateTime()) {
+                        } else if (exportColumnAnn.dateTime()) {
                             long timeValue = BlurObject.bind(objectBeanWrapper.getValue(fieldName)).toLongValue();
                             if (String.valueOf(timeValue).length() >= DateTimeUtils.UTC_LENGTH) {
                                 newRow.addColumn(DateTimeUtils.formatTime(timeValue, StringUtils.defaultIfBlank(exportColumnAnn.pattern(), DateTimeUtils.YYYY_MM_DD_HH_MM_SS)));
                             } else {
                                 newRow.addColumn(StringUtils.EMPTY);
                             }
-                        } else if (exportColumnAnn != null && exportColumnAnn.dataRange().length > 0) {
+                        } else if (exportColumnAnn.dataRange().length > 0) {
                             Object dataRangeValue = objectBeanWrapper.getValue(fieldName);
                             if (dataRangeValue != null) {
                                 int position = BlurObject.bind(dataRangeValue).toIntValue();
@@ -321,7 +341,7 @@ public final class ExcelFileExportHelper {
                             } else {
                                 newRow.addColumn(StringUtils.EMPTY);
                             }
-                        } else if (exportColumnAnn != null && exportColumnAnn.currency()) {
+                        } else if (exportColumnAnn.currency()) {
                             Object currencyValue = objectBeanWrapper.getValue(fieldName);
                             if (currencyValue != null) {
                                 newRow.addColumn(doProcessCurrencyValue(exportColumnAnn, currencyValue).toStringValue());
@@ -337,7 +357,7 @@ public final class ExcelFileExportHelper {
                 }
             }
         }
-        File tempFile = File.createTempFile("export_", "_" + index + ".csv");
+        File tempFile = File.createTempFile(prefix(), "_" + index + ".csv");
         tempFile.deleteOnExit();
         try (OutputStream outputStream = Files.newOutputStream(tempFile.toPath())) {
             IOUtils.write(tableBuilder.toString(), outputStream, StringUtils.defaultIfBlank(charset, "GB2312"));
@@ -365,7 +385,7 @@ public final class ExcelFileExportHelper {
     }
 
     private File doExport(JxlsHelper jxlsHelper, InputStream templateStream, String fileExtName, int index, Map<String, Object> data) throws IOException {
-        File tempFile = File.createTempFile("export_", String.format("_%d.%s", index, fileExtName));
+        File tempFile = File.createTempFile(prefix(), String.format("_%d.%s", index, fileExtName));
         tempFile.deleteOnExit();
         try (OutputStream fileOutputStream = Files.newOutputStream(tempFile.toPath())) {
             jxlsHelper.processTemplate(templateStream, fileOutputStream, new Context(data));
