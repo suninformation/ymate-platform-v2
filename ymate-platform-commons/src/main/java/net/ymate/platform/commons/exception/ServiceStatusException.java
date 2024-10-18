@@ -44,6 +44,6 @@
 
      @Override
      public String getMessage() {
-         return "Service status exception: [" + status + "] " + StringUtils.trimToEmpty(super.getMessage());
+         return String.format("[%d] %s", status, StringUtils.defaultIfBlank(super.getMessage(), "Service status is abnormal."));
      }
  }
