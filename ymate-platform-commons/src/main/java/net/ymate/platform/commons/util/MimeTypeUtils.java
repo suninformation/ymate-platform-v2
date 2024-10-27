@@ -17,6 +17,7 @@ package net.ymate.platform.commons.util;
 
 import org.apache.commons.lang3.StringUtils;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashMap;
@@ -32,30 +33,28 @@ public class MimeTypeUtils {
 
     private static final Map<String, String> FILE_EXT_MAPS = new HashMap<>();
 
-    static {
-        Properties configs = new Properties();
-        InputStream inputStream = MimeTypeUtils.class.getClassLoader().getResourceAsStream("mimetypes-conf.properties");
-        if (inputStream == null) {
-            inputStream = MimeTypeUtils.class.getClassLoader().getResourceAsStream("META-INF/mimetypes-default-conf.properties");
-        }
+    static void doLoadMimeTypes(InputStream inputStream) throws IOException {
         if (inputStream != null) {
-            try {
-                configs.load(inputStream);
-                configs.keySet().forEach((key) -> {
-                    String[] values = StringUtils.split(configs.getProperty((String) key, StringUtils.EMPTY), "|");
-                    if (values != null && values.length > 0) {
-                        FILE_EXT_MAPS.put((String) key, values[0]);
-                        for (String value : values) {
-                            MIME_TYPE_MAPS.put(value, (String) key);
-                        }
+            Properties configs = new Properties();
+            configs.load(inputStream);
+            configs.keySet().forEach((key) -> {
+                String[] values = StringUtils.split(configs.getProperty((String) key, StringUtils.EMPTY), "|");
+                if (values != null && values.length > 0) {
+                    FILE_EXT_MAPS.put((String) key, values[0]);
+                    for (String value : values) {
+                        MIME_TYPE_MAPS.put(value, (String) key);
                     }
-                });
-            } catch (IOException ignored) {
-            } finally {
-                try {
-                    inputStream.close();
-                } catch (IOException ignored) {
                 }
+            });
+        }
+    }
+
+    static {
+        String[] resourceNames = {"META-INF/mimetypes-default-conf.properties", "mimetypes-conf.properties"};
+        for (String resourceName : resourceNames) {
+            try (InputStream inputStream = MimeTypeUtils.class.getClassLoader().getResourceAsStream(resourceName)) {
+                doLoadMimeTypes(inputStream);
+            } catch (IOException ignored) {
             }
         }
     }
@@ -72,6 +71,18 @@ public class MimeTypeUtils {
             extName = extName.substring(1);
         }
         return MIME_TYPE_MAPS.get(extName);
+    }
+
+    /**
+     * @param file 文件
+     * @return 根据文件扩展名获取对应的MIME_TYPE类型
+     * @since 2.1.3
+     */
+    public static String getFileMimeType(File file) {
+        if (file == null) {
+            return null;
+        }
+        return getFileMimeType(FileUtils.getExtName(file));
     }
 
     /**
