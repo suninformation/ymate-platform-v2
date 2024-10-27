@@ -53,11 +53,23 @@ public class DateTimeValue implements Serializable {
         return (DateTimeValue) ValidateContext.getLocalAttributes().get(paramName);
     }
 
-    public static void get(String paramName, IValueProcessor valueProcessor) {
+    public static DateTimeValue get(String paramName, IValueProcessor valueProcessor) {
         DateTimeValue dateTimeValue = get(paramName);
         if (dateTimeValue != null) {
             valueProcessor.process(dateTimeValue);
         }
+        return dateTimeValue;
+    }
+
+    /**
+     * @since 2.1.3
+     */
+    public static Long getStartDateTimeMillisOrNull(String paramName) {
+        DateTimeValue dateTimeValue = get(paramName);
+        if (dateTimeValue != null) {
+            return dateTimeValue.getStartDateTimeMillisOrNull();
+        }
+        return null;
     }
 
     public static DateTimeValue parse(String dateTimeStr, boolean single) {

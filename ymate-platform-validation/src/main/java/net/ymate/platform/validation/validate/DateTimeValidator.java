@@ -82,30 +82,33 @@ public final class DateTimeValidator implements IValidator {
      * @return 返回结果为0表示合法，为1表示日期字符串格式无效，为2表示时间段差值超过限定天数，为3表示开始日期时间大于结束日期时间
      */
     public static int validate(String paramName, String paramValue, String pattern, String separator, int maxDays, boolean single) {
+        DateTimeValue dateTimeValue = DateTimeValue.parse(paramValue, pattern, separator, single);
+        int result = validate(dateTimeValue, maxDays, single);
+        if (dateTimeValue != null && result == 0 && StringUtils.isNotBlank(paramName)) {
+            ValidateContext.getLocalAttributes().put(paramName, dateTimeValue);
+        }
+        return result;
+    }
+
+    /**
+     * @param dateTimeValue 日期时间值对象
+     * @param maxDays       时间段之间的天数最大差值，默认为0表示不限制
+     * @param single        仅接收单日期(即所选日期的00点00分00秒0毫秒到所选日期的23点59分59秒0毫秒)
+     * @return 返回结果为0表示合法，为1表示日期字符串格式无效，为2表示时间段差值超过限定天数，为3表示开始日期时间大于结束日期时间
+     * @since 2.1.3
+     */
+    public static int validate(DateTimeValue dateTimeValue, int maxDays, boolean single) {
         int result = 0;
-        if (single) {
-            DateTimeValue dateTimeValue = DateTimeValue.parse(paramValue, pattern, true);
-            if (dateTimeValue == null) {
-                result = 1;
-            } else {
-                ValidateContext.getLocalAttributes().put(paramName, dateTimeValue);
-            }
-        } else {
-            DateTimeValue dateTimeValue = DateTimeValue.parse(paramValue, pattern, separator, false);
-            if (dateTimeValue != null) {
-                if (dateTimeValue.getStartDateTimeMillis() > dateTimeValue.getEndDateTimeMillis()) {
-                    result = 3;
-                } else if (maxDays > 0) {
-                    long days = dateTimeValue.getMaxDays();
-                    if (days < 0 || days > maxDays) {
-                        result = 2;
-                    }
+        if (dateTimeValue == null) {
+            result = 1;
+        } else if (!single) {
+            if (dateTimeValue.getStartDateTimeMillis() > dateTimeValue.getEndDateTimeMillis()) {
+                result = 3;
+            } else if (maxDays > 0) {
+                long days = dateTimeValue.getMaxDays();
+                if (days < 0 || days > maxDays) {
+                    result = 2;
                 }
-                if (result == 0) {
-                    ValidateContext.getLocalAttributes().put(paramName, dateTimeValue);
-                }
-            } else {
-                result = 1;
             }
         }
         return result;
@@ -128,8 +131,12 @@ public final class DateTimeValidator implements IValidator {
                     }
                 }
             } else {
-                String pValueStr = BlurObject.bind(paramValue).toStringValue();
-                result = validate(paramName, pValueStr, vDateTime.pattern(), vDateTime.separator(), vDateTime.maxDays(), vDateTime.single());
+                if (paramValue instanceof DateTimeValue) {
+                    result = validate((DateTimeValue) paramValue, vDateTime.maxDays(), vDateTime.single());
+                } else {
+                    String pValueStr = BlurObject.bind(paramValue).toStringValue();
+                    result = validate(paramName, pValueStr, vDateTime.pattern(), vDateTime.separator(), vDateTime.maxDays(), vDateTime.single());
+                }
             }
             if (result > 0) {
                 ValidateResult.Builder builder = ValidateResult.builder(context).matched(true);
