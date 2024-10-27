@@ -99,6 +99,18 @@ public class FileUtils {
     }
 
     /**
+     * @param file 文件
+     * @return 提取文件扩展名称，若为空或不存在则返回空字符串
+     * @since 2.1.3
+     */
+    public static String getExtName(File file) {
+        if (file != null) {
+            return getExtName(file.getName());
+        }
+        return StringUtils.EMPTY;
+    }
+
+    /**
      * 获取文件MD5签名值
      *
      * @param targetFile 目标文件对象
@@ -188,8 +200,24 @@ public class FileUtils {
      * @since 2.1.2
      */
     public static File toZip(String prefix, boolean renameWithIndex, File... files) throws IOException {
+        return toZip(prefix, renameWithIndex, null, files);
+    }
+
+    /**
+     * @param prefix          临时文件名前缀, 若为空则由系统随机生成8位长度字符串
+     * @param renameWithIndex 使用序号索引为文件重命名
+     * @param entryNames      实体文件路径名称（用于自定义文件目录结构及文件名称）
+     * @param files           文件集合
+     * @return 将文件集合压缩成单个ZIP文件
+     * @throws IOException 可能产生的异常
+     * @since 2.1.3
+     */
+    public static File toZip(String prefix, boolean renameWithIndex, String[] entryNames, File... files) throws IOException {
         if (ArrayUtils.isEmpty(files)) {
             throw new NullArgumentException("files");
+        }
+        if (ArrayUtils.isNotEmpty(entryNames) && entryNames.length != files.length) {
+            throw new IllegalArgumentException("Parameter entryNames length must be the same as files.");
         }
         if (StringUtils.isBlank(prefix)) {
             prefix = UUIDUtils.randomStr(8, false);
@@ -200,16 +228,12 @@ public class FileUtils {
         File zipFile = File.createTempFile(prefix, ".zip");
         zipFile.deleteOnExit();
         try (ZipOutputStream outputStream = new ZipOutputStream(Files.newOutputStream(zipFile.toPath()))) {
-            int idx = 1;
-            for (File file : files) {
-                String fileName = file.getName();
+            for (int idx = 0; idx < files.length; idx++) {
+                File file = files[idx];
+                String fileName = entryNames != null ? StringUtils.defaultIfBlank(entryNames[idx], file.getName()) : file.getName();
                 if (renameWithIndex) {
-                    String extName = FileUtils.getExtName(file.getName());
-                    if (StringUtils.isBlank(extName)) {
-                        fileName = String.format("%s%d", prefix, idx++);
-                    } else {
-                        fileName = String.format("%s%d.%s", prefix, idx++, extName);
-                    }
+                    File tmpFile = new File(fileName);
+                    fileName = new File(tmpFile.getParentFile(), String.format("%d_%s", idx + 1, tmpFile.getName())).getPath();
                 }
                 ZipEntry zipEntry = new ZipEntry(fileName);
                 outputStream.putNextEntry(zipEntry);

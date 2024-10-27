@@ -55,7 +55,7 @@ public class ResourceUtils {
             }
         }
         if (!iterator.hasNext()) {
-            if (resourceName.length() == 0 || resourceName.charAt(0) != PATH_SEPARATOR_CHAR) {
+            if (resourceName.isEmpty() || resourceName.charAt(0) != PATH_SEPARATOR_CHAR) {
                 return getResources(PATH_SEPARATOR_CHAR + resourceName, callingClass, aggregate);
             }
         }
@@ -81,7 +81,7 @@ public class ResourceUtils {
                 }
             }
         }
-        if (url == null && (resourceName.length() == 0 || resourceName.charAt(0) != PATH_SEPARATOR_CHAR)) {
+        if (url == null && (resourceName.isEmpty() || resourceName.charAt(0) != PATH_SEPARATOR_CHAR)) {
             return getResource(PATH_SEPARATOR_CHAR + resourceName, callingClass);
         }
         return url;
@@ -166,7 +166,7 @@ public class ResourceUtils {
 
         private Enumeration<E> determineCurrentEnumeration() {
             if ((this.cur != null) && (!this.cur.hasMoreElements())) {
-                if (this.enums.size() > 0) {
+                if (!this.enums.isEmpty()) {
                     this.cur = this.enums.removeLast();
                 } else {
                     this.cur = null;

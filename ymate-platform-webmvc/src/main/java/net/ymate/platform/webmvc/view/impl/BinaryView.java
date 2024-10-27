@@ -83,6 +83,14 @@ public class BinaryView extends AbstractView {
     }
 
     @Override
+    public void render() throws Exception {
+        if (StringUtils.isBlank(contentType)) {
+            contentType = Type.ContentType.OCTET_STREAM.getContentType();
+        }
+        super.render();
+    }
+
+    @Override
     protected void doRenderView() throws Exception {
         HttpServletRequest httpServletRequest = WebContext.getRequest();
         HttpServletResponse httpServletResponse = WebContext.getResponse();
