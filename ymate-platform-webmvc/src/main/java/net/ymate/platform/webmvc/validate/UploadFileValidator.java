@@ -15,6 +15,7 @@
  */
 package net.ymate.platform.webmvc.validate;
 
+import net.ymate.platform.commons.util.MimeTypeUtils;
 import net.ymate.platform.core.beans.annotation.CleanProxy;
 import net.ymate.platform.core.support.IContext;
 import net.ymate.platform.validation.AbstractValidator;
@@ -122,7 +123,7 @@ public class UploadFileValidator extends AbstractValidator {
             return 1;
         } else if (maxSize > 0 && value.getSize() > maxSize) {
             return 2;
-        } else if (allowedContentTypes.size() > 0) {
+        } else if (!allowedContentTypes.isEmpty()) {
             if (allowedContentTypes.stream().noneMatch(contentType -> StringUtils.contains(value.getContentType(), contentType))) {
                 return 3;
             }
@@ -130,19 +131,31 @@ public class UploadFileValidator extends AbstractValidator {
         return 0;
     }
 
-    public static Set<String> getAllowedContentTypes(IContext context, String... allowContentTypes) {
+    /**
+     * @since 2.1.3
+     */
+    public static Set<String> parseAllowedContentTypes(String[] allowContentTypes) {
         Set<String> contentTypes = new HashSet<>();
         if (ArrayUtils.isNotEmpty(allowContentTypes)) {
-            contentTypes.addAll(Arrays.asList(allowContentTypes));
+            for (String allowContentType : allowContentTypes) {
+                String contentType;
+                if (StringUtils.startsWith(allowContentType, ".")) {
+                    contentType = MimeTypeUtils.getFileMimeType(allowContentType);
+                } else {
+                    contentType = allowContentType;
+                }
+                if (StringUtils.isNotBlank(contentType)) {
+                    contentTypes.add(allowContentType);
+                }
+            }
         }
-        String[] types = StringUtils.split(StringUtils.trimToEmpty(context.getContextParams().get(IWebMvcConfig.PARAMS_ALLOWED_UPLOAD_CONTENT_TYPES)), "|");
-        if (ArrayUtils.isNotEmpty(types)) {
-            contentTypes.addAll(Arrays.asList(types));
-        }
-        types = StringUtils.split(StringUtils.trimToEmpty(context.getOwner().getParam(IWebMvcConfig.PARAMS_ALLOWED_UPLOAD_CONTENT_TYPES)), "|");
-        if (ArrayUtils.isNotEmpty(types)) {
-            contentTypes.addAll(Arrays.asList(types));
-        }
+        return contentTypes;
+    }
+
+    public static Set<String> getAllowedContentTypes(IContext context, String... allowContentTypes) {
+        Set<String> contentTypes = new HashSet<>(parseAllowedContentTypes(allowContentTypes));
+        contentTypes.addAll(parseAllowedContentTypes(StringUtils.split(StringUtils.trimToEmpty(context.getContextParams().get(IWebMvcConfig.PARAMS_ALLOWED_UPLOAD_CONTENT_TYPES)), "|")));
+        contentTypes.addAll(parseAllowedContentTypes(StringUtils.split(StringUtils.trimToEmpty(context.getOwner().getParam(IWebMvcConfig.PARAMS_ALLOWED_UPLOAD_CONTENT_TYPES)), "|")));
         return contentTypes;
     }
 }
