@@ -17,15 +17,24 @@ package net.ymate.platform.webmvc.cors;
 
 import net.ymate.platform.commons.ReentrantLockHelper;
 import net.ymate.platform.commons.util.ClassUtils;
-import net.ymate.platform.core.beans.intercept.InterceptContext;
+import net.ymate.platform.core.IApplication;
+import net.ymate.platform.core.support.AbstractContext;
 import net.ymate.platform.core.support.IInitialization;
 import net.ymate.platform.webmvc.IRequestContext;
 import net.ymate.platform.webmvc.IWebMvc;
+import net.ymate.platform.webmvc.RequestMeta;
+import net.ymate.platform.webmvc.base.Type;
 import net.ymate.platform.webmvc.cors.annotation.CrossDomainSetting;
 import net.ymate.platform.webmvc.cors.impl.DefaultCrossDomainSetting;
+import net.ymate.platform.webmvc.util.WebUtils;
+import net.ymate.platform.webmvc.validate.IHostNameChecker;
+import net.ymate.platform.webmvc.view.IView;
+import net.ymate.platform.webmvc.view.View;
 import org.apache.commons.lang.NullArgumentException;
 import org.apache.commons.lang3.StringUtils;
 
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -41,6 +50,8 @@ public final class CrossDomainSettings implements IInitialization<IWebMvc> {
 
     private final DefaultCrossDomainSetting defaultSetting = new DefaultCrossDomainSetting();
 
+    private IWebMvc owner;
+
     private boolean enabled;
 
     private boolean initialized;
@@ -51,6 +62,8 @@ public final class CrossDomainSettings implements IInitialization<IWebMvc> {
     @Override
     public void initialize(IWebMvc owner) throws Exception {
         if (!initialized) {
+            this.owner = owner;
+            //
             initialized = true;
         }
     }
@@ -92,9 +105,9 @@ public final class CrossDomainSettings implements IInitialization<IWebMvc> {
         return this;
     }
 
-    public ICrossDomainSetting bind(InterceptContext interceptContext, IRequestContext requestContext) throws Exception {
+    public ICrossDomainSetting bind(RequestMeta requestMeta, IRequestContext requestContext) throws Exception {
         if (initialized) {
-            return ReentrantLockHelper.putIfAbsentAsync(resolvedSettings, interceptContext.getTargetMethod().toString(), () -> {
+            return ReentrantLockHelper.putIfAbsentAsync(resolvedSettings, requestMeta.getMethod().toString(), () -> {
                 String requestMapping = requestContext.getRequestMapping();
                 ICrossDomainSetting crossDomainSetting = null;
                 for (Map.Entry<String, ICrossDomainSetting> entry : settings.entrySet()) {
@@ -111,9 +124,9 @@ public final class CrossDomainSettings implements IInitialization<IWebMvc> {
                 }
                 if (crossDomainSetting == null) {
                     // 遍历方法、类及上层包寻找跨域配置注解，直至找不到
-                    CrossDomainSetting settingAnn = interceptContext.getTargetMethod().getAnnotation(CrossDomainSetting.class);
-                    if (settingAnn == null && (settingAnn = interceptContext.getTargetClass().getAnnotation(CrossDomainSetting.class)) == null) {
-                        settingAnn = ClassUtils.getPackageAnnotation(interceptContext.getTargetClass(), CrossDomainSetting.class);
+                    CrossDomainSetting settingAnn = requestMeta.getMethod().getAnnotation(CrossDomainSetting.class);
+                    if (settingAnn == null && (settingAnn = requestMeta.getTargetClass().getAnnotation(CrossDomainSetting.class)) == null) {
+                        settingAnn = ClassUtils.getPackageAnnotation(requestMeta.getTargetClass(), CrossDomainSetting.class);
                     }
                     if (settingAnn != null) {
                         crossDomainSetting = DefaultCrossDomainSetting.valueOf(settingAnn);
@@ -123,5 +136,55 @@ public final class CrossDomainSettings implements IInitialization<IWebMvc> {
             });
         }
         return defaultSetting;
+    }
+
+    public IView process(RequestMeta requestMeta, IRequestContext requestContext, HttpServletRequest request, HttpServletResponse response) throws Exception {
+        if (enabled) {
+            if (WebUtils.isCorsRequest(request)) {
+                ICrossDomainSetting domainSetting = bind(requestMeta, requestContext);
+                boolean allowed = false;
+                String origin = request.getHeader(Type.HttpHead.ORIGIN);
+                if (!domainSetting.getAllowedOrigins().isEmpty()) {
+                    allowed = domainSetting.getAllowedOrigins().stream().anyMatch(o -> StringUtils.equals(o, "*") || StringUtils.containsIgnoreCase(o, origin));
+                }
+                if (!allowed) {
+                    IHostNameChecker hostNameChecker = domainSetting.getAllowedOriginsChecker();
+                    if (hostNameChecker == null) {
+                        hostNameChecker = IHostNameChecker.DEFAULT;
+                    }
+                    IApplication application = owner.getOwner();
+                    Map<String, String> contextParams = application.getInterceptSettings().getContextParams(application, requestMeta.getTargetClass(), requestMeta.getMethod());
+                    allowed = hostNameChecker.check(new AbstractContext(application, contextParams) {
+                    }, origin);
+                }
+                if (allowed) {
+                    response.addHeader(Type.HttpHead.ACCESS_CONTROL_ALLOW_ORIGIN, origin);
+                } else if (domainSetting.getAllowedOrigins().isEmpty() && domainSetting.getAllowedOriginsChecker() == null) {
+                    response.addHeader(Type.HttpHead.ACCESS_CONTROL_ALLOW_ORIGIN, "*");
+                    allowed = true;
+                }
+                if (allowed) {
+                    if (!domainSetting.getAllowedMethods().isEmpty()) {
+                        response.addHeader(Type.HttpHead.ACCESS_CONTROL_ALLOW_METHODS, StringUtils.upperCase(StringUtils.join(domainSetting.getAllowedMethods(), ", ")));
+                    }
+                    if (!domainSetting.getAllowedHeaders().isEmpty()) {
+                        response.addHeader(Type.HttpHead.ACCESS_CONTROL_ALLOW_HEADERS, StringUtils.upperCase(StringUtils.join(domainSetting.getAllowedHeaders(), ", ")));
+                    }
+                    if (!domainSetting.getExposedHeaders().isEmpty()) {
+                        response.addHeader(Type.HttpHead.ACCESS_CONTROL_EXPOSE_HEADERS, StringUtils.upperCase(StringUtils.join(domainSetting.getExposedHeaders(), ", ")));
+                    }
+                    if (domainSetting.isAllowedCredentials()) {
+                        response.addHeader(Type.HttpHead.ACCESS_CONTROL_ALLOW_CREDENTIALS, Boolean.TRUE.toString());
+                    }
+                    if (domainSetting.getMaxAge() > 0) {
+                        response.addHeader(Type.HttpHead.ACCESS_CONTROL_MAX_AGE, String.valueOf(domainSetting.getMaxAge()));
+                    }
+                }
+                if (domainSetting.isOptionsAutoReply() && WebUtils.isCorsOptionsRequest(request)) {
+                    return View.nullView();
+                }
+            }
+        }
+        return null;
     }
 }

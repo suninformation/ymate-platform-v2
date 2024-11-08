@@ -25,10 +25,12 @@ import java.lang.annotation.*;
  *
  * @author 刘镇 (suninformation@163.com) on 2019-08-17 14:19
  * @since 2.1.0
+ * @deprecated 从 `2.1.3` 开始不再使用拦截器处理跨域请求
  */
 @Target({ElementType.PACKAGE, ElementType.TYPE, ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
 @InterceptAnnotation(IInterceptor.Direction.BEFORE)
+@Deprecated
 public @interface CrossDomain {
 }

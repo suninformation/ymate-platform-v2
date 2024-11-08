@@ -36,8 +36,6 @@ import net.ymate.platform.validation.Validations;
 import net.ymate.platform.webmvc.annotation.*;
 import net.ymate.platform.webmvc.base.Type;
 import net.ymate.platform.webmvc.context.WebContext;
-import net.ymate.platform.webmvc.cors.CrossDomainInterceptor;
-import net.ymate.platform.webmvc.cors.annotation.CrossDomain;
 import net.ymate.platform.webmvc.exception.ParameterSignatureException;
 import net.ymate.platform.webmvc.handle.ControllerHandler;
 import net.ymate.platform.webmvc.handle.ExceptionProcessorHandler;
@@ -156,9 +154,6 @@ public final class WebMVC implements IModule, IWebMvc {
             if (config.isConventionInterceptorMode()) {
                 interceptorRuleProcessor = new DefaultInterceptorRuleProcessor();
                 interceptorRuleProcessor.initialize(this);
-            }
-            if (config.getCrossDomainSettings().isEnabled()) {
-                owner.getInterceptSettings().registerInterceptAnnotation(CrossDomain.class, CrossDomainInterceptor.class);
             }
             //
             IProxyFactory proxyFactory = owner.getBeanFactory().getProxyFactory();
@@ -455,47 +450,51 @@ public final class WebMVC implements IModule, IWebMvc {
                 String header = WebContext.getRequest().getHeader(entry.getKey());
                 if (StringUtils.equals(entry.getValue(), "*")) {
                     if (StringUtils.isBlank(header)) {
-                        if (devEnv && LOG.isDebugEnabled()) {
-                            LOG.debug("Check request allowed: NO");
-                        }
-                        response.sendError(HttpServletResponse.SC_BAD_REQUEST);
                         flag = false;
                     }
                 } else {
-                    if (header == null || !header.equalsIgnoreCase(entry.getValue())) {
-                        if (devEnv && LOG.isDebugEnabled()) {
-                            LOG.debug("Check request allowed: NO");
-                        }
-                        response.sendError(HttpServletResponse.SC_BAD_REQUEST);
+                    if (header == null || !StringUtils.containsIgnoreCase(header, entry.getValue())) {
                         flag = false;
                     }
                 }
-            }
-            // 判断允许的请求参数
-            allowMap = requestMeta.getAllowParams();
-            for (Map.Entry<String, String> entry : allowMap.entrySet()) {
-                if (StringUtils.equals(entry.getValue(), "*")) {
-                    if (!WebContext.getRequest().getParameterMap().containsKey(entry.getKey())) {
-                        response.sendError(HttpServletResponse.SC_BAD_REQUEST);
-                        //
-                        if (devEnv && LOG.isDebugEnabled()) {
-                            LOG.debug("Check request allowed: NO");
-                        }
-                        flag = false;
+                if (!flag) {
+                    if (devEnv && LOG.isDebugEnabled()) {
+                        LOG.debug("Check request header allowed: NO");
                     }
-                } else {
-                    String paramValue = WebContext.getRequest().getParameter(entry.getKey());
-                    if (paramValue == null || !paramValue.equalsIgnoreCase(entry.getValue())) {
+                    response.sendError(HttpServletResponse.SC_BAD_REQUEST);
+                    break;
+                }
+            }
+            if (flag) {
+                // 判断允许的请求参数
+                allowMap = requestMeta.getAllowParams();
+                for (Map.Entry<String, String> entry : allowMap.entrySet()) {
+                    if (StringUtils.equals(entry.getValue(), "*")) {
+                        if (!WebContext.getRequest().getParameterMap().containsKey(entry.getKey())) {
+                            flag = false;
+                        }
+                    } else {
+                        String paramValue = WebContext.getRequest().getParameter(entry.getKey());
+                        if (paramValue == null || !paramValue.equalsIgnoreCase(entry.getValue())) {
+                            flag = false;
+                        }
+                    }
+                    if (!flag) {
                         response.sendError(HttpServletResponse.SC_BAD_REQUEST);
                         //
                         if (devEnv && LOG.isDebugEnabled()) {
-                            LOG.debug("Check request allowed: NO");
+                            LOG.debug("Check request parameter allowed: NO");
                         }
-                        flag = false;
+                        break;
                     }
                 }
             }
         } else {
+            response.sendError(HttpServletResponse.SC_METHOD_NOT_ALLOWED);
+            //
+            if (devEnv && LOG.isDebugEnabled()) {
+                LOG.debug("Check request method allowed: NO");
+            }
             flag = false;
         }
         return flag;
@@ -542,10 +541,11 @@ public final class WebMVC implements IModule, IWebMvc {
             //
             requestMeta = config.getRequestMappingParser().parse(context);
             if (requestMeta != null) {
-                if (isAllowRequest(context, response, requestMeta, owner.isDevEnv())) {
+                IView view = config.getCrossDomainSettings().process(requestMeta, context, request, response);
+                if (view != null) {
+                    view.render();
+                } else if (isAllowRequest(context, response, requestMeta, owner.isDevEnv())) {
                     processRequestMeta(context, request, requestMeta, owner.isDevEnv());
-                } else {
-                    response.sendError(HttpServletResponse.SC_METHOD_NOT_ALLOWED);
                 }
             } else if (config.isConventionMode() && isAllowConvention(context)) {
                 processRequestConvention(context, owner.isDevEnv());
