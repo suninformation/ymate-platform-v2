@@ -34,7 +34,7 @@ public interface IExportDataRender {
      * @param value     值对象
      * @return 返回字段值字符串
      * @throws Exception 可能产生的任何异常
-     * @see IExportDataRender#render(ClassUtils.BeanWrapper, ExportColumn, String, Object)
+     * @see IExportDataRender#render(ClassUtils.BeanWrapper, ExportColumn, String, Object, boolean)
      */
     @Deprecated
     default String render(ExportColumn column, String fieldName, Object value) throws Exception {
@@ -50,11 +50,12 @@ public interface IExportDataRender {
      * @param column      列注解
      * @param fieldName   字段名称
      * @param value       值对象
-     * @return 返回字段值字符串
+     * @param importing   当前为导入操作
+     * @return 返回字段值对象
      * @throws Exception 可能产生的任何异常
      * @since 2.1.3
      */
-    default String render(ClassUtils.BeanWrapper<?> beanWrapper, ExportColumn column, String fieldName, Object value) throws Exception {
+    default Object render(ClassUtils.BeanWrapper<?> beanWrapper, ExportColumn column, String fieldName, Object value, boolean importing) throws Exception {
         return render(column, fieldName, value);
     }
 }

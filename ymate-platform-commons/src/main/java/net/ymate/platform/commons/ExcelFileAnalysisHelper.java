@@ -18,7 +18,10 @@ package net.ymate.platform.commons;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.usermodel.WorkbookFactory;
 
-import java.io.*;
+import java.io.Closeable;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Files;
 import java.util.List;
 import java.util.stream.IntStream;
@@ -72,6 +75,20 @@ public class ExcelFileAnalysisHelper implements Closeable {
 
     public List<Object[]> openSheet(String sheetName) throws Exception {
         return openSheet(sheetName, new ISheetHandler.Default());
+    }
+
+    /**
+     * @since 2.1.3
+     */
+    public <T> List<T> openSheet(int sheetIdx, Class<T> dataType) throws Exception {
+        return openSheet(sheetIdx, new ISheetHandler.Bean<>(dataType));
+    }
+
+    /**
+     * @since 2.1.3
+     */
+    public <T> List<T> openSheet(String sheetName, Class<T> dataType) throws Exception {
+        return openSheet(sheetName, new ISheetHandler.Bean<>(dataType));
     }
 
     @Override

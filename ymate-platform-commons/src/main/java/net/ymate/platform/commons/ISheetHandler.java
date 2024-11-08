@@ -15,16 +15,23 @@
  */
 package net.ymate.platform.commons;
 
+import net.ymate.platform.commons.annotation.ExportColumn;
 import net.ymate.platform.commons.lang.BlurObject;
+import net.ymate.platform.commons.lang.PairObject;
+import net.ymate.platform.commons.util.ClassUtils;
+import net.ymate.platform.commons.util.DateTimeUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.DateUtil;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 
+import java.lang.reflect.Field;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * SHEET页分析处理器接口
@@ -34,7 +41,113 @@ import java.util.List;
  */
 public interface ISheetHandler<T> {
 
-    class Default implements ISheetHandler<Object[]> {
+    class Default extends Abstract<Object[]> {
+        @Override
+        public Object[] parseRow(Row row) throws Exception {
+            CellMeta[] cellMetas = getCellMetas();
+            Object[] result = new Object[cellMetas.length];
+            for (int idx = 0; idx < cellMetas.length; idx++) {
+                CellMeta cellMeta = cellMetas[idx];
+                Cell cell = row.getCell(cellMeta.getCellIndex());
+                result[idx] = new Object[]{cellMeta.getName(), parseCell(cell)};
+            }
+            return result;
+        }
+    }
+
+    /**
+     * @since 2.1.3
+     */
+    class Bean<T> extends Abstract<T> {
+
+        private final Class<T> beanClass;
+
+        private final Map<Class<? extends IExportDataRender>, IExportDataRender> rendersCache = new HashMap<>();
+
+        private final Map<String, IExportDataRender> renders = new HashMap<>();
+
+        Map<String, PairObject<String, ExportColumn>> columnsMap = new HashMap<>();
+
+        @SuppressWarnings("unchecked")
+        public Bean() {
+            beanClass = (Class<T>) ClassUtils.getParameterizedTypes(getClass()).get(0);
+        }
+
+        public Bean(Class<T> beanClass) {
+            this.beanClass = beanClass;
+        }
+
+        @Override
+        public List<T> handle(Sheet sheet) throws Exception {
+            for (Field field : ClassUtils.getFields(beanClass, true)) {
+                ExportColumn columnAnn = field.getAnnotation(ExportColumn.class);
+                if (columnAnn != null && !columnAnn.excluded() && columnAnn.importable()) {
+                    if (!columnAnn.render().equals(IExportDataRender.class)) {
+                        IExportDataRender dataRender = rendersCache.computeIfAbsent(columnAnn.render(), aClass -> ClassUtils.impl(columnAnn.render(), IExportDataRender.class));
+                        if (dataRender != null) {
+                            renders.put(field.getName(), dataRender);
+                        }
+                    }
+                    columnsMap.put(StringUtils.defaultIfBlank(columnAnn.value(), field.getName()), PairObject.bind(field.getName(), columnAnn));
+                }
+            }
+            return super.handle(sheet);
+        }
+
+        @Override
+        public T parseRow(Row row) throws Exception {
+            ClassUtils.BeanWrapper<T> beanWrapper = ClassUtils.wrapperClass(beanClass);
+            if (beanWrapper != null) {
+                for (CellMeta cellMeta : getCellMetas()) {
+                    PairObject<String, ExportColumn> column = columnsMap.get(cellMeta.getName());
+                    if (column != null) {
+                        Object value = parseCell(row.getCell(cellMeta.getCellIndex()));
+                        if (value != null) {
+                            IExportDataRender dataRender = renders.get(column.getKey());
+                            if (dataRender != null) {
+                                value = dataRender.render(beanWrapper, column.getValue(), column.getKey(), value, true);
+                            } else if (column.getValue().dateTime()) {
+                                value = DateTimeUtils.parseDateTime(BlurObject.bind(value).toStringValue(), StringUtils.defaultIfBlank(column.getValue().pattern(), DateTimeUtils.YYYY_MM_DD_HH_MM_SS)).getTime();
+                            } else if (column.getValue().dataRange().length > 0) {
+                                String valueStr = BlurObject.bind(value).toStringValue();
+                                String[] dataRange = column.getValue().dataRange();
+                                for (int idx = 0; idx < dataRange.length; idx++) {
+                                    if (StringUtils.equalsIgnoreCase(valueStr, dataRange[idx])) {
+                                        value = idx;
+                                        break;
+                                    }
+                                }
+                            } else if (column.getValue().currency()) {
+                                value = doProcessCurrencyValue(column.getValue(), value);
+                            }
+                            beanWrapper.setValue(column.getKey(), value);
+                        }
+                    }
+                }
+                return beanWrapper.getTargetObject();
+            }
+            return null;
+        }
+
+        private BlurObject doProcessCurrencyValue(ExportColumn columnAnn, Object currencyValue) {
+            int decimals = columnAnn.decimals();
+            if (decimals <= 0) {
+                decimals = 2;
+            }
+            MathCalcHelper mathCalcHelper = MathCalcHelper.bind(BlurObject.bind(currencyValue).toStringValue()).scale(decimals);
+            if (columnAnn.accuracy()) {
+                mathCalcHelper.multiply(Math.pow(10, decimals));
+            } else {
+                mathCalcHelper.round();
+            }
+            return mathCalcHelper.toBlurObject();
+        }
+    }
+
+    /**
+     * @since 2.1.3
+     */
+    abstract class Abstract<T> implements ISheetHandler<T> {
 
         private int firstRowNum;
 
@@ -48,34 +161,34 @@ public interface ISheetHandler<T> {
 
         private CellMeta[] cellMetas;
 
-        public Default firstRowNum(int firstRowNum) {
+        public Abstract<T> firstRowNum(int firstRowNum) {
             this.firstRowNum = firstRowNum;
             return this;
         }
 
-        public Default lastRowNum(int lastRowNum) {
+        public Abstract<T> lastRowNum(int lastRowNum) {
             this.lastRowNum = lastRowNum;
             return this;
         }
 
-        public Default firstCellNum(int firstCellNum) {
+        public Abstract<T> firstCellNum(int firstCellNum) {
             this.firstCellNum = firstCellNum;
             return this;
         }
 
-        public Default lastCellNum(int lastCellNum) {
+        public Abstract<T> lastCellNum(int lastCellNum) {
             this.lastCellNum = lastCellNum;
             return this;
         }
 
-        public Default decimalPattern(String decimalPattern) {
+        public Abstract<T> decimalPattern(String decimalPattern) {
             this.decimalPattern = decimalPattern;
             return this;
         }
 
         @Override
-        public List<Object[]> handle(Sheet sheet) throws Exception {
-            List<Object[]> results = new ArrayList<>();
+        public List<T> handle(Sheet sheet) throws Exception {
+            List<T> results = new ArrayList<>();
             int startRowIdx = firstRowNum > 0 ? firstRowNum : sheet.getFirstRowNum();
             int maxRowIdx = lastRowNum > 0 ? lastRowNum : sheet.getLastRowNum();
             for (int rowIdx = startRowIdx; rowIdx <= maxRowIdx; rowIdx++) {
@@ -92,7 +205,10 @@ public interface ISheetHandler<T> {
                     }
                     cellMetas = metaList.toArray(new CellMeta[0]);
                 } else if (rowIdx > startRowIdx) {
-                    results.add(parseRow(sheetRow));
+                    T row = parseRow(sheetRow);
+                    if (row != null) {
+                        results.add(row);
+                    }
                 }
             }
             return results;
@@ -103,17 +219,7 @@ public interface ISheetHandler<T> {
             return cellMetas;
         }
 
-        @Override
-        public Object[] parseRow(Row row) throws Exception {
-            Object[] result = new Object[cellMetas.length];
-            for (int idx = 0; idx < cellMetas.length; idx++) {
-                CellMeta cellMeta = cellMetas[idx];
-                result[idx] = new Object[]{cellMeta.getName(), parseCell(row.getCell(cellMeta.getCellIndex()))};
-            }
-            return result;
-        }
-
-        private Object parseCell(Cell cell) throws Exception {
+        protected Object parseCell(Cell cell) throws Exception {
             Object value = null;
             if (cell != null) {
                 switch (cell.getCellType()) {

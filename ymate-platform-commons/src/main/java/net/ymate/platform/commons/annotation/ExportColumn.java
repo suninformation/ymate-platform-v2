@@ -77,6 +77,12 @@ public @interface ExportColumn {
     Class<? extends IExportDataRender> render() default IExportDataRender.class;
 
     /**
+     * @return 标记列是否用于数据导入
+     * @since 2.1.3
+     */
+    boolean importable() default true;
+
+    /**
      * @return 排序
      * @since 2.1.3
      */
