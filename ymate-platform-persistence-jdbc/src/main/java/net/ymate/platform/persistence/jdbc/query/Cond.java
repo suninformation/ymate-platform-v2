@@ -15,15 +15,18 @@
  */
 package net.ymate.platform.persistence.jdbc.query;
 
+import net.ymate.platform.commons.util.ClassUtils;
 import net.ymate.platform.core.persistence.Fields;
 import net.ymate.platform.core.persistence.IFunction;
 import net.ymate.platform.core.persistence.Params;
 import net.ymate.platform.persistence.jdbc.IDatabase;
 import net.ymate.platform.persistence.jdbc.JDBC;
+import net.ymate.platform.persistence.jdbc.query.annotation.QField;
 import net.ymate.platform.validation.validate.DateTimeValue;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 
+import java.lang.reflect.Field;
 import java.util.Collection;
 
 /**
@@ -32,6 +35,31 @@ import java.util.Collection;
  * @author 刘镇 (suninformation@163.com) on 15/5/9 下午8:12
  */
 public final class Cond extends Query<Cond> {
+
+    /**
+     * @since 2.1.3
+     */
+    public static Cond create(IDatabase owner, String dataSourceName, Object bean) throws IllegalAccessException {
+        Cond cond = create(owner, dataSourceName).eqOne();
+        if (bean != null) {
+            for (Field field : ClassUtils.wrapper(bean).getFields()) {
+                QField qField = field.getAnnotation(QField.class);
+                if (qField != null) {
+                    Object value = field.get(bean);
+                    cond.exprNotEmpty(value, c -> {
+                        if (value instanceof DateTimeValue) {
+                            c.rangeWrap(qField.prefix(), qField.value(), (DateTimeValue) value, LogicalOpt.AND);
+                        } else if (qField.opt().equals(OPT.LIKE)) {
+                            c.and().likeWrap(qField.prefix(), qField.value()).param(Like.contains(value.toString()));
+                        } else {
+                            c.and().optWrap(Fields.field(qField.prefix(), qField.value()), qField.opt()).param(value);
+                        }
+                    });
+                }
+            }
+        }
+        return cond;
+    }
 
     /**
      * 条件操作符枚举

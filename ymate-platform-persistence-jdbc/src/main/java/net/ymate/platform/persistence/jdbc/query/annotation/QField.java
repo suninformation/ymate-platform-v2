@@ -15,6 +15,7 @@
  */
 package net.ymate.platform.persistence.jdbc.query.annotation;
 
+import net.ymate.platform.persistence.jdbc.query.Cond;
 import org.apache.commons.lang3.StringUtils;
 
 import java.lang.annotation.*;
@@ -54,4 +55,10 @@ public @interface QField {
      * @since 2.1.3
      */
     boolean grouped() default true;
+
+    /**
+     * @return 运算操作方式（用于通过类成员属性构建 Cond 对象），默认为：等于
+     * @since 2.1.3
+     */
+    Cond.OPT opt() default Cond.OPT.EQ;
 }
