@@ -133,6 +133,16 @@ public final class Fields implements Serializable {
         return this;
     }
 
+    /**
+     * 设置字段集合类型为排除的
+     *
+     * @return 字段过滤对象
+     * @since 2.1.3
+     */
+    public Fields excluded() {
+        return excluded(true);
+    }
+
     public Fields excluded(boolean excluded) {
         this.excluded = excluded;
         return this;

@@ -32,6 +32,8 @@ import net.ymate.platform.webmvc.view.IView;
 import net.ymate.platform.webmvc.view.View;
 import org.apache.commons.lang.NullArgumentException;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -43,6 +45,8 @@ import java.util.concurrent.ConcurrentHashMap;
  * @since 2.1.0
  */
 public final class CrossDomainSettings implements IInitialization<IWebMvc> {
+
+    private static final Log LOG = LogFactory.getLog(CrossDomainSettings.class);
 
     private final Map<String, ICrossDomainSetting> resolvedSettings = new ConcurrentHashMap<>();
 
@@ -164,14 +168,15 @@ public final class CrossDomainSettings implements IInitialization<IWebMvc> {
                     allowed = true;
                 }
                 if (allowed) {
+                    String separatorStr = ", ";
                     if (!domainSetting.getAllowedMethods().isEmpty()) {
-                        response.addHeader(Type.HttpHead.ACCESS_CONTROL_ALLOW_METHODS, StringUtils.upperCase(StringUtils.join(domainSetting.getAllowedMethods(), ", ")));
+                        response.addHeader(Type.HttpHead.ACCESS_CONTROL_ALLOW_METHODS, StringUtils.upperCase(StringUtils.join(domainSetting.getAllowedMethods(), separatorStr)));
                     }
                     if (!domainSetting.getAllowedHeaders().isEmpty()) {
-                        response.addHeader(Type.HttpHead.ACCESS_CONTROL_ALLOW_HEADERS, StringUtils.upperCase(StringUtils.join(domainSetting.getAllowedHeaders(), ", ")));
+                        response.addHeader(Type.HttpHead.ACCESS_CONTROL_ALLOW_HEADERS, StringUtils.upperCase(StringUtils.join(domainSetting.getAllowedHeaders(), separatorStr)));
                     }
                     if (!domainSetting.getExposedHeaders().isEmpty()) {
-                        response.addHeader(Type.HttpHead.ACCESS_CONTROL_EXPOSE_HEADERS, StringUtils.upperCase(StringUtils.join(domainSetting.getExposedHeaders(), ", ")));
+                        response.addHeader(Type.HttpHead.ACCESS_CONTROL_EXPOSE_HEADERS, StringUtils.upperCase(StringUtils.join(domainSetting.getExposedHeaders(), separatorStr)));
                     }
                     if (domainSetting.isAllowedCredentials()) {
                         response.addHeader(Type.HttpHead.ACCESS_CONTROL_ALLOW_CREDENTIALS, Boolean.TRUE.toString());
@@ -179,8 +184,14 @@ public final class CrossDomainSettings implements IInitialization<IWebMvc> {
                     if (domainSetting.getMaxAge() > 0) {
                         response.addHeader(Type.HttpHead.ACCESS_CONTROL_MAX_AGE, String.valueOf(domainSetting.getMaxAge()));
                     }
+                    if (LOG.isDebugEnabled() && owner.getOwner().isDevEnv()) {
+                        LOG.debug("Cross domain request: ALLOWED");
+                    }
                 }
                 if (domainSetting.isOptionsAutoReply() && WebUtils.isCorsOptionsRequest(request)) {
+                    if (LOG.isDebugEnabled() && owner.getOwner().isDevEnv()) {
+                        LOG.debug("Cross domain OPTIONS request respond automatically: YES");
+                    }
                     return View.nullView();
                 }
             }

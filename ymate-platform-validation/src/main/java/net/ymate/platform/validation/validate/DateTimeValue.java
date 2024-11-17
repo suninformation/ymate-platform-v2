@@ -182,6 +182,20 @@ public class DateTimeValue implements Serializable {
         return new DateTimeValue(DateTimeHelper.now().month(1).day(1).toDayStart().time(), DateTimeHelper.now().time());
     }
 
+    /**
+     * @since 2.1.3
+     */
+    public DateTimeValue(long startDate) {
+        this(DateTimeHelper.bind(startDate).time());
+    }
+
+    /**
+     * @since 2.1.3
+     */
+    public DateTimeValue(long startDate, long endDate) {
+        this(DateTimeHelper.bind(startDate).time(), DateTimeHelper.bind(endDate).time());
+    }
+
     public DateTimeValue(Date startDate) {
         this.startDate = startDate;
         this.single = true;

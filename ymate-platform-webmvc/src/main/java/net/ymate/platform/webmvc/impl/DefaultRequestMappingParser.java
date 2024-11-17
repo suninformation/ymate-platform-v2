@@ -21,6 +21,8 @@ import net.ymate.platform.webmvc.IRequestMappingParser;
 import net.ymate.platform.webmvc.RequestMeta;
 import net.ymate.platform.webmvc.base.Type;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import java.util.*;
 
@@ -30,6 +32,8 @@ import java.util.*;
  * @author 刘镇 (suninformation@163.com) on 2011-7-26 上午11:11:45
  */
 public class DefaultRequestMappingParser implements IRequestMappingParser {
+
+    private static final Log LOG = LogFactory.getLog(DefaultRequestMappingParser.class);
 
     private final Map<String, RequestMeta> MAPPING_META_FOR_GET = new HashMap<>();
 
@@ -53,30 +57,34 @@ public class DefaultRequestMappingParser implements IRequestMappingParser {
     @Override
     public final void registerRequestMeta(RequestMeta requestMeta) {
         for (Type.HttpMethod httpMethod : requestMeta.getAllowMethods()) {
+            RequestMeta prev;
             switch (httpMethod) {
                 case POST:
-                    MAPPING_META_FOR_POST.put(requestMeta.getMapping(), requestMeta);
+                    prev = MAPPING_META_FOR_POST.put(requestMeta.getMapping(), requestMeta);
                     break;
                 case DELETE:
-                    MAPPING_META_FOR_DELETE.put(requestMeta.getMapping(), requestMeta);
+                    prev = MAPPING_META_FOR_DELETE.put(requestMeta.getMapping(), requestMeta);
                     break;
                 case PUT:
-                    MAPPING_META_FOR_PUT.put(requestMeta.getMapping(), requestMeta);
+                    prev = MAPPING_META_FOR_PUT.put(requestMeta.getMapping(), requestMeta);
                     break;
                 case OPTIONS:
-                    MAPPING_META_FOR_OPTIONS.put(requestMeta.getMapping(), requestMeta);
+                    prev = MAPPING_META_FOR_OPTIONS.put(requestMeta.getMapping(), requestMeta);
                     break;
                 case HEAD:
-                    MAPPING_META_FOR_HEAD.put(requestMeta.getMapping(), requestMeta);
+                    prev = MAPPING_META_FOR_HEAD.put(requestMeta.getMapping(), requestMeta);
                     break;
                 case TRACE:
-                    MAPPING_META_FOR_TRACE.put(requestMeta.getMapping(), requestMeta);
+                    prev = MAPPING_META_FOR_TRACE.put(requestMeta.getMapping(), requestMeta);
                     break;
                 case PATCH:
-                    MAPPING_META_FOR_PATCH.put(requestMeta.getMapping(), requestMeta);
+                    prev = MAPPING_META_FOR_PATCH.put(requestMeta.getMapping(), requestMeta);
                     break;
                 default:
-                    MAPPING_META_FOR_GET.put(requestMeta.getMapping(), requestMeta);
+                    prev = MAPPING_META_FOR_GET.put(requestMeta.getMapping(), requestMeta);
+            }
+            if (prev != null && LOG.isWarnEnabled()) {
+                LOG.warn(String.format("--> %s: %s : %s.%s has been replaced!", httpMethod, prev.getMapping(), prev.getTargetClass().getName(), prev.getMethod().getName()));
             }
         }
     }
