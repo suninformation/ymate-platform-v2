@@ -23,7 +23,6 @@ import net.ymate.platform.persistence.jdbc.IDatabase;
 import org.apache.commons.lang3.ArrayUtils;
 
 import java.util.Arrays;
-import java.util.HashSet;
 
 /**
  * @param <Entity> 数据实体类型
@@ -84,24 +83,53 @@ public final class EntityStateWrapper<Entity extends IEntity> {
         return stateSupport.bind();
     }
 
+    /**
+     * @see EntityStateWrapper#update(Fields)
+     */
+    @Deprecated
     public Entity updateNotIncluded(Fields fields) throws Exception {
-        return update(propertyNames -> !new HashSet<>(Arrays.asList(propertyNames)).containsAll(fields.fields()));
+        return update(fields.excluded());
+    }
+
+    /**
+     * @param fields 字段过滤对象
+     * @return 执行更新并返回实体对象
+     * @throws Exception 可能产生的任何异常
+     */
+    public Entity update(Fields fields) throws Exception {
+        if (fields == null || fields.isEmpty()) {
+            return update((IUpdatePropertyFilter) null);
+        } else {
+            return update(propertyNames -> {
+                Fields filtered = Fields.create();
+                Arrays.stream(propertyNames)
+                        .filter(propertyName -> fields.isExcluded() != fields.fields().contains(propertyName))
+                        .forEach(filtered::add);
+                return filtered;
+            });
+        }
     }
 
     public Entity update() throws Exception {
-        return update(null);
+        return update((IUpdatePropertyFilter) null);
     }
 
     @SuppressWarnings("unchecked")
-    public Entity update(IUpdatePropertyChecker propertyChecker) throws Exception {
+    public Entity update(IUpdatePropertyFilter propertyFilter) throws Exception {
         String[] propNames = stateSupport.getChangedPropertyNames();
         if (ArrayUtils.isNotEmpty(propNames)) {
-            if (propertyChecker == null || propertyChecker.check(propNames)) {
+            Fields fields;
+            if (propertyFilter != null) {
+                fields = propertyFilter.filter(propNames);
+            } else {
+                fields = Fields.create(propNames);
+            }
+            if (!fields.isEmpty()) {
                 Entity entity = stateSupport.unbind();
                 if (entity instanceof BaseEntity) {
-                    return (Entity) ((BaseEntity) entity).update(Fields.create(propNames));
+                    return (Entity) ((BaseEntity) entity).update(fields);
                 } else {
-                    return EntityWrapper.bind(owner, entity).update(Fields.create(propNames));
+                    return EntityWrapper.bind(owner, entity).update(fields);
                 }
             }
         }
@@ -109,16 +137,16 @@ public final class EntityStateWrapper<Entity extends IEntity> {
     }
 
     /**
-     * 待更新字段属性检测器接口
+     * 待更新字段属性过滤器接口
      */
-    public interface IUpdatePropertyChecker {
+    public interface IUpdatePropertyFilter {
 
         /**
-         * 执行检查操作
+         * 执行字段过滤操作
          *
          * @param propertyNames 待更新字段名称集合
-         * @return 返回true表示允许执行更新操作
+         * @return 返回最终参与更新的字段集合，返回空集合将终止更新操作
          */
-        boolean check(String[] propertyNames);
+        Fields filter(String[] propertyNames);
     }
 }
