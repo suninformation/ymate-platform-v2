@@ -110,18 +110,17 @@ public final class Transactions {
     /**
      * 回滚事务
      *
-     * @param number 事务层级计数
      * @throws Exception 可能产生的异常
      */
-    private static void rollback(int number) throws Exception {
-        COUNT.set(number);
-        if (number == 0) {
+    private static void rollback() throws Exception {
+        int count = BlurObject.bind(COUNT.get()).toIntValue();
+        if (count == 0) {
             ITransaction transaction = TRANS_LOCAL.get();
             if (transaction != null) {
                 transaction.rollback();
             }
         } else {
-            COUNT.set(number - 1);
+            COUNT.set(count - 1);
         }
     }
 
@@ -163,7 +162,6 @@ public final class Transactions {
      * @throws Exception 可能产生的异常
      */
     public static void execute(Type.TRANSACTION level, ITrade... trades) throws Exception {
-        int number = BlurObject.bind(COUNT.get()).toIntValue();
         try {
             begin(level);
             for (ITrade trade : trades) {
@@ -172,7 +170,7 @@ public final class Transactions {
             commit();
         } catch (Throwable e) {
             try {
-                rollback(number);
+                rollback();
             } catch (Exception ignored) {
             }
             if (e instanceof Exception) {
@@ -206,7 +204,6 @@ public final class Transactions {
      * @throws Exception 可能产生的异常
      */
     public static <T> T execute(Type.TRANSACTION level, AbstractTrade<T> trade) throws Exception {
-        int number = BlurObject.bind(COUNT.get()).toIntValue();
         try {
             begin(level);
             trade.deal();
@@ -214,7 +211,7 @@ public final class Transactions {
             return trade.getResult();
         } catch (Throwable e) {
             try {
-                rollback(number);
+                rollback();
             } catch (Exception ignored) {
             }
             if (e instanceof Exception) {
