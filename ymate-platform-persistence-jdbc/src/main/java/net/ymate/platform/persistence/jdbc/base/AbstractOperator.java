@@ -84,7 +84,7 @@ public abstract class AbstractOperator implements IOperator {
                 //
                 if (LOG.isInfoEnabled()) {
                     IDatabaseDataSourceConfig dataSourceConfig = this.connectionHolder.getDataSourceConfig();
-                    if (dataSourceConfig.isShowSql()) {
+                    if (hasEx || dataSourceConfig.isShowSql()) {
                         String logStr = ExpressionUtils.bind("[${sql}]${param}[${count}][${time}]")
                                 .set("sql", StringUtils.defaultIfBlank(this.sql, "@NULL"))
                                 .set("param", serializeParameters())

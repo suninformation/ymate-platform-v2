@@ -71,15 +71,14 @@ public final class Transactions {
     }
 
     public static void rollback() {
-        int number = BlurObject.bind(COUNT.get()).toIntValue();
-        COUNT.set(number);
-        if (number == 0) {
+        int count = BlurObject.bind(COUNT.get()).toIntValue();
+        if (count == 0) {
             ITransaction transaction = TRANS_LOCAL.get();
             if (transaction != null) {
                 transaction.rollback();
             }
         } else {
-            COUNT.set(number - 1);
+            COUNT.set(count - 1);
         }
     }
 
