@@ -31,6 +31,8 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.lang.reflect.Field;
 import java.nio.file.Files;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.*;
 
 /**
@@ -211,16 +213,43 @@ public final class ExcelFileExportHelper {
         return null;
     }
 
+    private CellStyle doCreateCellStyle(Workbook workbook, boolean alignCenter, boolean bgColor, boolean bold) {
+        CellStyle cellStyle = workbook.createCellStyle();
+        if (bgColor) {
+            cellStyle.setFillForegroundColor(IndexedColors.GREY_25_PERCENT.getIndex());
+            cellStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+        }
+        cellStyle.setAlignment(alignCenter ? HorizontalAlignment.CENTER : HorizontalAlignment.LEFT);
+        cellStyle.setVerticalAlignment(VerticalAlignment.CENTER);
+        cellStyle.setBorderTop(BorderStyle.THIN);
+        cellStyle.setBorderBottom(BorderStyle.THIN);
+        cellStyle.setBorderLeft(BorderStyle.THIN);
+        cellStyle.setBorderRight(BorderStyle.THIN);
+        cellStyle.setTopBorderColor(IndexedColors.BLACK.getIndex());
+        cellStyle.setBottomBorderColor(IndexedColors.BLACK.getIndex());
+        cellStyle.setLeftBorderColor(IndexedColors.BLACK.getIndex());
+        cellStyle.setRightBorderColor(IndexedColors.BLACK.getIndex());
+        if (bold) {
+            workbook.getFontAt(cellStyle.getFontIndex()).setBold(bold);
+        }
+        return cellStyle;
+    }
+
+    private void doSetCellDateFormat(Workbook workbook, CellStyle cellStyle, ExportColumn exportColumnAnn) {
+        cellStyle.setDataFormat(workbook.getCreationHelper().createDataFormat().getFormat(StringUtils.defaultIfBlank(exportColumnAnn.pattern(), DateTimeUtils.YYYY_MM_DD_HH_MM_SS)));
+    }
+
     private File doExportExcel(List<String> columnNames, Map<String, ExportColumn> columnsMap, int index, List<?> data) throws Exception {
         try (Workbook workbook = WorkbookFactory.create(true)) {
             Sheet sheet = workbook.createSheet();
-            CellStyle cellStyle = workbook.createCellStyle();
+            CellStyle headCellStyle = doCreateCellStyle(workbook, true, true, true);
+            //
             int rowCount = 0;
             Row head = sheet.createRow(rowCount++);
             for (int i = 0; i < columnNames.size(); i++) {
                 Cell cell = head.createCell(i);
                 cell.setCellValue(columnNames.get(i));
-                cell.setCellStyle(cellStyle);
+                cell.setCellStyle(headCellStyle);
             }
             for (Object item : data) {
                 ClassUtils.BeanWrapper<?> objectBeanWrapper = ClassUtils.wrapper(item);
@@ -230,51 +259,82 @@ public final class ExcelFileExportHelper {
                     String fieldName = columnEntry.getKey();
                     if (!excludedFieldNames.contains(fieldName)) {
                         ExportColumn exportColumnAnn = columnEntry.getValue();
-                        String cellValue;
+                        Object cellValue = null;
                         try {
                             IExportDataRender dataRender = renders.get(fieldName);
                             if (dataRender != null) {
-                                String valueStr = BlurObject.bind(dataRender.render(objectBeanWrapper, exportColumnAnn, fieldName, objectBeanWrapper.getValue(fieldName), false)).toStringValue();
-                                if (StringUtils.isNotBlank(valueStr)) {
-                                    cellValue = valueStr;
-                                } else {
-                                    cellValue = StringUtils.trimToEmpty(BlurObject.bind(objectBeanWrapper.getValue(fieldName)).toStringValue());
+                                cellValue = dataRender.render(objectBeanWrapper, exportColumnAnn, fieldName, objectBeanWrapper.getValue(fieldName), false);
+                                if (cellValue == null) {
+                                    cellValue = objectBeanWrapper.getValue(fieldName);
                                 }
                             } else if (exportColumnAnn.dateTime()) {
-                                long timeValue = BlurObject.bind(objectBeanWrapper.getValue(fieldName)).toLongValue();
-                                if (String.valueOf(timeValue).length() >= DateTimeUtils.UTC_LENGTH) {
-                                    cellValue = DateTimeUtils.formatTime(timeValue, StringUtils.defaultIfBlank(exportColumnAnn.pattern(), DateTimeUtils.YYYY_MM_DD_HH_MM_SS));
-                                } else {
-                                    cellValue = StringUtils.EMPTY;
+                                cellValue = objectBeanWrapper.getValue(fieldName);
+                                if (cellValue instanceof Number) {
+                                    long timeValue = BlurObject.bind(cellValue).toLongValue();
+                                    cellValue = DateTimeHelper.bind(timeValue).time();
+                                } else if (cellValue instanceof String) {
+                                    cellValue = DateTimeHelper.bind(cellValue.toString(), StringUtils.defaultIfBlank(exportColumnAnn.pattern(), DateTimeUtils.YYYY_MM_DD_HH_MM_SS)).time();
                                 }
                             } else if (exportColumnAnn.dataRange().length > 0) {
                                 Object dataRangeValue = objectBeanWrapper.getValue(fieldName);
-                                if (dataRangeValue != null) {
+                                if (dataRangeValue instanceof Number || dataRangeValue instanceof String) {
                                     int position = BlurObject.bind(dataRangeValue).toIntValue();
                                     if (position >= 0 && position < exportColumnAnn.dataRange().length) {
                                         cellValue = exportColumnAnn.dataRange()[position];
                                     } else {
-                                        cellValue = String.valueOf(position);
+                                        cellValue = BlurObject.bind(dataRangeValue).toStringValue();
                                     }
-                                } else {
-                                    cellValue = StringUtils.EMPTY;
                                 }
                             } else if (exportColumnAnn.currency()) {
                                 Object currencyValue = objectBeanWrapper.getValue(fieldName);
                                 if (currencyValue != null) {
-                                    cellValue = doProcessCurrencyValue(exportColumnAnn, currencyValue).toStringValue();
+                                    cellValue = doProcessCurrencyValue(exportColumnAnn, currencyValue).toDoubleValue();
                                 } else {
                                     cellValue = StringUtils.EMPTY;
                                 }
                             } else {
-                                cellValue = StringUtils.trimToEmpty(BlurObject.bind(objectBeanWrapper.getValue(fieldName)).toStringValue());
+                                cellValue = objectBeanWrapper.getValue(fieldName);
                             }
                         } catch (Exception e) {
-                            cellValue = StringUtils.trimToEmpty(BlurObject.bind(objectBeanWrapper.getValue(fieldName)).toStringValue());
+                            cellValue = BlurObject.bind(objectBeanWrapper.getValue(fieldName)).toStringValue();
                         }
                         Cell cell = newRow.createCell(cellCount++);
-                        cell.setCellValue(cellValue);
-                        cell.setCellStyle(cellStyle);
+                        CellStyle cellStyle = doCreateCellStyle(workbook, false, false, false);
+                        if (cellValue instanceof Date) {
+                            doSetCellDateFormat(workbook, cellStyle, exportColumnAnn);
+                            cell.setCellStyle(cellStyle);
+                            cell.setCellValue((Date) cellValue);
+                        } else if (cellValue instanceof LocalDate) {
+                            doSetCellDateFormat(workbook, cellStyle, exportColumnAnn);
+                            cell.setCellStyle(cellStyle);
+                            cell.setCellValue((LocalDate) cellValue);
+                        } else if (cellValue instanceof Calendar) {
+                            doSetCellDateFormat(workbook, cellStyle, exportColumnAnn);
+                            cell.setCellStyle(cellStyle);
+                            cell.setCellValue((Calendar) cellValue);
+                        } else if (cellValue instanceof LocalDateTime) {
+                            doSetCellDateFormat(workbook, cellStyle, exportColumnAnn);
+                            cell.setCellStyle(cellStyle);
+                            cell.setCellValue((LocalDateTime) cellValue);
+                        } else if (cellValue instanceof Number || (cellValue != null && (float.class.isAssignableFrom(cellValue.getClass())
+                                || int.class.isAssignableFrom(cellValue.getClass())
+                                || long.class.isAssignableFrom(cellValue.getClass())
+                                || double.class.isAssignableFrom(cellValue.getClass())))) {
+                            if (Integer.class.equals(cellValue.getClass()) || int.class.isAssignableFrom(cellValue.getClass())
+                                    || Long.class.equals(cellValue.getClass()) || long.class.isAssignableFrom(cellValue.getClass())) {
+                                cellStyle.setDataFormat(workbook.createDataFormat().getFormat("0_ "));
+                            } else {
+                                cellStyle.setDataFormat(workbook.createDataFormat().getFormat(String.format("0.%s_ ", StringUtils.repeat("0", exportColumnAnn.decimals()))));
+                            }
+                            cell.setCellStyle(cellStyle);
+                            cell.setCellValue(BlurObject.bind(cellValue).toDoubleValue());
+                        } else if (cellValue instanceof Boolean || (cellValue != null && boolean.class.isAssignableFrom(cellValue.getClass()))) {
+                            cell.setCellStyle(cellStyle);
+                            cell.setCellValue(BlurObject.bind(cellValue).toBooleanValue());
+                        } else {
+                            cell.setCellStyle(cellStyle);
+                            cell.setCellValue(StringUtils.trimToEmpty(BlurObject.bind(cellValue).toStringValue()));
+                        }
                     }
                 }
             }
