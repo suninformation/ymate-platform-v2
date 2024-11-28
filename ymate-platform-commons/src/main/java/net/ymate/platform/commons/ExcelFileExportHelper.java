@@ -58,6 +58,8 @@ public final class ExcelFileExportHelper {
 
     private String prefix;
 
+    private boolean firstCellAsIndex;
+
     public static ExcelFileExportHelper bind() {
         return new ExcelFileExportHelper();
     }
@@ -132,6 +134,16 @@ public final class ExcelFileExportHelper {
         if (StringUtils.isNotBlank(prefix) && !StringUtils.endsWith(prefix, "_")) {
             this.prefix = prefix.concat("_");
         }
+        return this;
+    }
+
+    /**
+     * 设置第一个单元格作为索引
+     *
+     * @since 2.1.3
+     */
+    public ExcelFileExportHelper firstCellAsIndex() {
+        this.firstCellAsIndex = true;
         return this;
     }
 
@@ -230,7 +242,9 @@ public final class ExcelFileExportHelper {
         cellStyle.setLeftBorderColor(IndexedColors.BLACK.getIndex());
         cellStyle.setRightBorderColor(IndexedColors.BLACK.getIndex());
         if (bold) {
-            workbook.getFontAt(cellStyle.getFontIndex()).setBold(bold);
+            Font font = workbook.createFont();
+            font.setBold(true);
+            cellStyle.setFont(font);
         }
         return cellStyle;
     }
@@ -256,85 +270,89 @@ public final class ExcelFileExportHelper {
                 Row newRow = sheet.createRow(rowCount++);
                 int cellCount = 0;
                 for (Map.Entry<String, ExportColumn> columnEntry : columnsMap.entrySet()) {
+                    Cell cell = newRow.createCell(cellCount++);
+                    boolean firstCellFlag = firstCellAsIndex && cellCount == 1;
+                    CellStyle cellStyle = doCreateCellStyle(workbook, firstCellFlag, false, false);
+                    if (firstCellFlag) {
+                        cell.setCellStyle(cellStyle);
+                        cell.setCellValue(rowCount - 1);
+                        continue;
+                    }
                     String fieldName = columnEntry.getKey();
-                    if (!excludedFieldNames.contains(fieldName)) {
-                        ExportColumn exportColumnAnn = columnEntry.getValue();
-                        Object cellValue = null;
-                        try {
-                            IExportDataRender dataRender = renders.get(fieldName);
-                            if (dataRender != null) {
-                                cellValue = dataRender.render(objectBeanWrapper, exportColumnAnn, fieldName, objectBeanWrapper.getValue(fieldName), false);
-                                if (cellValue == null) {
-                                    cellValue = objectBeanWrapper.getValue(fieldName);
-                                }
-                            } else if (exportColumnAnn.dateTime()) {
+                    ExportColumn exportColumnAnn = columnEntry.getValue();
+                    Object cellValue = null;
+                    try {
+                        IExportDataRender dataRender = renders.get(fieldName);
+                        if (dataRender != null) {
+                            cellValue = dataRender.render(objectBeanWrapper, exportColumnAnn, fieldName, objectBeanWrapper.getValue(fieldName), false);
+                            if (cellValue == null) {
                                 cellValue = objectBeanWrapper.getValue(fieldName);
-                                if (cellValue instanceof Number) {
-                                    long timeValue = BlurObject.bind(cellValue).toLongValue();
-                                    cellValue = DateTimeHelper.bind(timeValue).time();
-                                } else if (cellValue instanceof String) {
-                                    cellValue = DateTimeHelper.bind(cellValue.toString(), StringUtils.defaultIfBlank(exportColumnAnn.pattern(), DateTimeUtils.YYYY_MM_DD_HH_MM_SS)).time();
-                                }
-                            } else if (exportColumnAnn.dataRange().length > 0) {
-                                Object dataRangeValue = objectBeanWrapper.getValue(fieldName);
-                                if (dataRangeValue instanceof Number || dataRangeValue instanceof String) {
-                                    int position = BlurObject.bind(dataRangeValue).toIntValue();
-                                    if (position >= 0 && position < exportColumnAnn.dataRange().length) {
-                                        cellValue = exportColumnAnn.dataRange()[position];
-                                    } else {
-                                        cellValue = BlurObject.bind(dataRangeValue).toStringValue();
-                                    }
-                                }
-                            } else if (exportColumnAnn.currency()) {
-                                Object currencyValue = objectBeanWrapper.getValue(fieldName);
-                                if (currencyValue != null) {
-                                    cellValue = doProcessCurrencyValue(exportColumnAnn, currencyValue).toDoubleValue();
+                            }
+                        } else if (exportColumnAnn.dateTime()) {
+                            cellValue = objectBeanWrapper.getValue(fieldName);
+                            if (cellValue instanceof Number) {
+                                long timeValue = BlurObject.bind(cellValue).toLongValue();
+                                cellValue = DateTimeHelper.bind(timeValue).time();
+                            } else if (cellValue instanceof String) {
+                                cellValue = DateTimeHelper.bind(cellValue.toString(), StringUtils.defaultIfBlank(exportColumnAnn.pattern(), DateTimeUtils.YYYY_MM_DD_HH_MM_SS)).time();
+                            }
+                        } else if (exportColumnAnn.dataRange().length > 0) {
+                            Object dataRangeValue = objectBeanWrapper.getValue(fieldName);
+                            if (dataRangeValue instanceof Number || dataRangeValue instanceof String) {
+                                int position = BlurObject.bind(dataRangeValue).toIntValue();
+                                if (position >= 0 && position < exportColumnAnn.dataRange().length) {
+                                    cellValue = exportColumnAnn.dataRange()[position];
                                 } else {
-                                    cellValue = StringUtils.EMPTY;
+                                    cellValue = BlurObject.bind(dataRangeValue).toStringValue();
                                 }
-                            } else {
-                                cellValue = objectBeanWrapper.getValue(fieldName);
                             }
-                        } catch (Exception e) {
-                            cellValue = BlurObject.bind(objectBeanWrapper.getValue(fieldName)).toStringValue();
-                        }
-                        Cell cell = newRow.createCell(cellCount++);
-                        CellStyle cellStyle = doCreateCellStyle(workbook, false, false, false);
-                        if (cellValue instanceof Date) {
-                            doSetCellDateFormat(workbook, cellStyle, exportColumnAnn);
-                            cell.setCellStyle(cellStyle);
-                            cell.setCellValue((Date) cellValue);
-                        } else if (cellValue instanceof LocalDate) {
-                            doSetCellDateFormat(workbook, cellStyle, exportColumnAnn);
-                            cell.setCellStyle(cellStyle);
-                            cell.setCellValue((LocalDate) cellValue);
-                        } else if (cellValue instanceof Calendar) {
-                            doSetCellDateFormat(workbook, cellStyle, exportColumnAnn);
-                            cell.setCellStyle(cellStyle);
-                            cell.setCellValue((Calendar) cellValue);
-                        } else if (cellValue instanceof LocalDateTime) {
-                            doSetCellDateFormat(workbook, cellStyle, exportColumnAnn);
-                            cell.setCellStyle(cellStyle);
-                            cell.setCellValue((LocalDateTime) cellValue);
-                        } else if (cellValue instanceof Number || (cellValue != null && (float.class.isAssignableFrom(cellValue.getClass())
-                                || int.class.isAssignableFrom(cellValue.getClass())
-                                || long.class.isAssignableFrom(cellValue.getClass())
-                                || double.class.isAssignableFrom(cellValue.getClass())))) {
-                            if (Integer.class.equals(cellValue.getClass()) || int.class.isAssignableFrom(cellValue.getClass())
-                                    || Long.class.equals(cellValue.getClass()) || long.class.isAssignableFrom(cellValue.getClass())) {
-                                cellStyle.setDataFormat(workbook.createDataFormat().getFormat("0_ "));
+                        } else if (exportColumnAnn.currency()) {
+                            Object currencyValue = objectBeanWrapper.getValue(fieldName);
+                            if (currencyValue != null) {
+                                cellValue = doProcessCurrencyValue(exportColumnAnn, currencyValue).toDoubleValue();
                             } else {
-                                cellStyle.setDataFormat(workbook.createDataFormat().getFormat(String.format("0.%s_ ", StringUtils.repeat("0", exportColumnAnn.decimals()))));
+                                cellValue = StringUtils.EMPTY;
                             }
-                            cell.setCellStyle(cellStyle);
-                            cell.setCellValue(BlurObject.bind(cellValue).toDoubleValue());
-                        } else if (cellValue instanceof Boolean || (cellValue != null && boolean.class.isAssignableFrom(cellValue.getClass()))) {
-                            cell.setCellStyle(cellStyle);
-                            cell.setCellValue(BlurObject.bind(cellValue).toBooleanValue());
                         } else {
-                            cell.setCellStyle(cellStyle);
-                            cell.setCellValue(StringUtils.trimToEmpty(BlurObject.bind(cellValue).toStringValue()));
+                            cellValue = objectBeanWrapper.getValue(fieldName);
                         }
+                    } catch (Exception e) {
+                        cellValue = BlurObject.bind(objectBeanWrapper.getValue(fieldName)).toStringValue();
+                    }
+                    if (cellValue instanceof Date) {
+                        doSetCellDateFormat(workbook, cellStyle, exportColumnAnn);
+                        cell.setCellStyle(cellStyle);
+                        cell.setCellValue((Date) cellValue);
+                    } else if (cellValue instanceof LocalDate) {
+                        doSetCellDateFormat(workbook, cellStyle, exportColumnAnn);
+                        cell.setCellStyle(cellStyle);
+                        cell.setCellValue((LocalDate) cellValue);
+                    } else if (cellValue instanceof Calendar) {
+                        doSetCellDateFormat(workbook, cellStyle, exportColumnAnn);
+                        cell.setCellStyle(cellStyle);
+                        cell.setCellValue((Calendar) cellValue);
+                    } else if (cellValue instanceof LocalDateTime) {
+                        doSetCellDateFormat(workbook, cellStyle, exportColumnAnn);
+                        cell.setCellStyle(cellStyle);
+                        cell.setCellValue((LocalDateTime) cellValue);
+                    } else if (cellValue instanceof Number || (cellValue != null && (float.class.isAssignableFrom(cellValue.getClass())
+                            || int.class.isAssignableFrom(cellValue.getClass())
+                            || long.class.isAssignableFrom(cellValue.getClass())
+                            || double.class.isAssignableFrom(cellValue.getClass())))) {
+                        if (Integer.class.equals(cellValue.getClass()) || int.class.isAssignableFrom(cellValue.getClass())
+                                || Long.class.equals(cellValue.getClass()) || long.class.isAssignableFrom(cellValue.getClass())) {
+                            cellStyle.setDataFormat(workbook.createDataFormat().getFormat("0_ "));
+                        } else {
+                            cellStyle.setDataFormat(workbook.createDataFormat().getFormat(String.format("0.%s_ ", StringUtils.repeat("0", exportColumnAnn.decimals()))));
+                        }
+                        cell.setCellStyle(cellStyle);
+                        cell.setCellValue(BlurObject.bind(cellValue).toDoubleValue());
+                    } else if (cellValue instanceof Boolean || (cellValue != null && boolean.class.isAssignableFrom(cellValue.getClass()))) {
+                        cell.setCellStyle(cellStyle);
+                        cell.setCellValue(BlurObject.bind(cellValue).toBooleanValue());
+                    } else {
+                        cell.setCellStyle(cellStyle);
+                        cell.setCellValue(StringUtils.trimToEmpty(BlurObject.bind(cellValue).toStringValue()));
                     }
                 }
             }
@@ -370,50 +388,52 @@ public final class ExcelFileExportHelper {
             ClassUtils.BeanWrapper<?> objectBeanWrapper = ClassUtils.wrapper(item);
             ConsoleTableBuilder.Row newRow = tableBuilder.addRow();
             for (Map.Entry<String, ExportColumn> columnEntry : columnsMap.entrySet()) {
+                if (firstCellAsIndex && newRow.getColumns().isEmpty()) {
+                    newRow.addColumn(String.valueOf(tableBuilder.getRows().size() - 1));
+                    continue;
+                }
                 String fieldName = columnEntry.getKey();
-                if (!excludedFieldNames.contains(fieldName)) {
-                    ExportColumn exportColumnAnn = columnEntry.getValue();
-                    try {
-                        IExportDataRender dataRender = renders.get(fieldName);
-                        if (dataRender != null) {
-                            String valueStr = BlurObject.bind(dataRender.render(objectBeanWrapper, exportColumnAnn, fieldName, objectBeanWrapper.getValue(fieldName), false)).toStringValue();
-                            if (StringUtils.isNotBlank(valueStr)) {
-                                newRow.addColumn(valueStr);
-                            } else {
-                                newRow.addColumn(StringUtils.trimToEmpty(BlurObject.bind(objectBeanWrapper.getValue(fieldName)).toStringValue()));
-                            }
-                        } else if (exportColumnAnn.dateTime()) {
-                            long timeValue = BlurObject.bind(objectBeanWrapper.getValue(fieldName)).toLongValue();
-                            if (String.valueOf(timeValue).length() >= DateTimeUtils.UTC_LENGTH) {
-                                newRow.addColumn(DateTimeUtils.formatTime(timeValue, StringUtils.defaultIfBlank(exportColumnAnn.pattern(), DateTimeUtils.YYYY_MM_DD_HH_MM_SS)));
-                            } else {
-                                newRow.addColumn(StringUtils.EMPTY);
-                            }
-                        } else if (exportColumnAnn.dataRange().length > 0) {
-                            Object dataRangeValue = objectBeanWrapper.getValue(fieldName);
-                            if (dataRangeValue != null) {
-                                int position = BlurObject.bind(dataRangeValue).toIntValue();
-                                if (position >= 0 && position < exportColumnAnn.dataRange().length) {
-                                    newRow.addColumn(exportColumnAnn.dataRange()[position]);
-                                } else {
-                                    newRow.addColumn(String.valueOf(position));
-                                }
-                            } else {
-                                newRow.addColumn(StringUtils.EMPTY);
-                            }
-                        } else if (exportColumnAnn.currency()) {
-                            Object currencyValue = objectBeanWrapper.getValue(fieldName);
-                            if (currencyValue != null) {
-                                newRow.addColumn(doProcessCurrencyValue(exportColumnAnn, currencyValue).toStringValue());
-                            } else {
-                                newRow.addColumn(StringUtils.EMPTY);
-                            }
+                ExportColumn exportColumnAnn = columnEntry.getValue();
+                try {
+                    IExportDataRender dataRender = renders.get(fieldName);
+                    if (dataRender != null) {
+                        String valueStr = BlurObject.bind(dataRender.render(objectBeanWrapper, exportColumnAnn, fieldName, objectBeanWrapper.getValue(fieldName), false)).toStringValue();
+                        if (StringUtils.isNotBlank(valueStr)) {
+                            newRow.addColumn(valueStr);
                         } else {
                             newRow.addColumn(StringUtils.trimToEmpty(BlurObject.bind(objectBeanWrapper.getValue(fieldName)).toStringValue()));
                         }
-                    } catch (Exception e) {
+                    } else if (exportColumnAnn.dateTime()) {
+                        long timeValue = BlurObject.bind(objectBeanWrapper.getValue(fieldName)).toLongValue();
+                        if (String.valueOf(timeValue).length() >= DateTimeUtils.UTC_LENGTH) {
+                            newRow.addColumn(DateTimeUtils.formatTime(timeValue, StringUtils.defaultIfBlank(exportColumnAnn.pattern(), DateTimeUtils.YYYY_MM_DD_HH_MM_SS)));
+                        } else {
+                            newRow.addColumn(StringUtils.EMPTY);
+                        }
+                    } else if (exportColumnAnn.dataRange().length > 0) {
+                        Object dataRangeValue = objectBeanWrapper.getValue(fieldName);
+                        if (dataRangeValue != null) {
+                            int position = BlurObject.bind(dataRangeValue).toIntValue();
+                            if (position >= 0 && position < exportColumnAnn.dataRange().length) {
+                                newRow.addColumn(exportColumnAnn.dataRange()[position]);
+                            } else {
+                                newRow.addColumn(String.valueOf(position));
+                            }
+                        } else {
+                            newRow.addColumn(StringUtils.EMPTY);
+                        }
+                    } else if (exportColumnAnn.currency()) {
+                        Object currencyValue = objectBeanWrapper.getValue(fieldName);
+                        if (currencyValue != null) {
+                            newRow.addColumn(doProcessCurrencyValue(exportColumnAnn, currencyValue).toStringValue());
+                        } else {
+                            newRow.addColumn(StringUtils.EMPTY);
+                        }
+                    } else {
                         newRow.addColumn(StringUtils.trimToEmpty(BlurObject.bind(objectBeanWrapper.getValue(fieldName)).toStringValue()));
                     }
+                } catch (Exception e) {
+                    newRow.addColumn(StringUtils.trimToEmpty(BlurObject.bind(objectBeanWrapper.getValue(fieldName)).toStringValue()));
                 }
             }
         }
