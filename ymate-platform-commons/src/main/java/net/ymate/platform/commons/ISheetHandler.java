@@ -107,7 +107,14 @@ public interface ISheetHandler<T> {
                             if (dataRender != null) {
                                 value = dataRender.render(beanWrapper, column.getValue(), column.getKey(), value, true);
                             } else if (column.getValue().dateTime()) {
-                                value = DateTimeUtils.parseDateTime(BlurObject.bind(value).toStringValue(), StringUtils.defaultIfBlank(column.getValue().pattern(), DateTimeUtils.YYYY_MM_DD_HH_MM_SS)).getTime();
+                                if (value instanceof String) {
+                                    value = DateTimeUtils.parseDateTime(BlurObject.bind(value).toStringValue(), StringUtils.defaultIfBlank(column.getValue().pattern(), DateTimeUtils.YYYY_MM_DD_HH_MM_SS)).getTime();
+                                } else if (value instanceof Number || float.class.isAssignableFrom(value.getClass())
+                                        || int.class.isAssignableFrom(value.getClass())
+                                        || long.class.isAssignableFrom(value.getClass())
+                                        || double.class.isAssignableFrom(value.getClass())) {
+                                    value = DateTimeHelper.bind(BlurObject.bind(value).toLongValue()).time();
+                                }
                             } else if (column.getValue().dataRange().length > 0) {
                                 String valueStr = BlurObject.bind(value).toStringValue();
                                 String[] dataRange = column.getValue().dataRange();
@@ -118,7 +125,7 @@ public interface ISheetHandler<T> {
                                     }
                                 }
                             } else if (column.getValue().currency()) {
-                                value = doProcessCurrencyValue(column.getValue(), value);
+                                value = doProcessCurrencyValue(column.getValue(), value).toDoubleValue();
                             }
                             beanWrapper.setValue(column.getKey(), value);
                         }
