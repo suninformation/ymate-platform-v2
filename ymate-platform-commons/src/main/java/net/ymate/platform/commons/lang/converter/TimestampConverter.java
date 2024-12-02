@@ -16,6 +16,7 @@
 package net.ymate.platform.commons.lang.converter;
 
 import net.ymate.platform.commons.annotation.Converter;
+import net.ymate.platform.commons.lang.BlurObject;
 import net.ymate.platform.commons.lang.IConverter;
 import org.apache.commons.lang3.StringUtils;
 
@@ -25,13 +26,21 @@ import java.sql.Timestamp;
  * @author 刘镇 (suninformation@163.com) on 2019-11-18 08:48
  * @since 2.1.0
  */
-@Converter(from = {Long.class, Integer.class, String.class}, to = Timestamp.class)
+@Converter(from = {Long.class, Integer.class, Double.class, Float.class, String.class}, to = Timestamp.class)
 public class TimestampConverter implements IConverter<Timestamp> {
 
     @Override
     public Timestamp convert(Object target) {
         if (target instanceof Number) {
             return new Timestamp(((Number) target).longValue());
+        } else if (int.class.isAssignableFrom(target.getClass())
+                || long.class.isAssignableFrom(target.getClass())
+                || float.class.isAssignableFrom(target.getClass())
+                || double.class.isAssignableFrom(target.getClass())) {
+            Long longValue = BlurObject.bind(target).toLong();
+            if (longValue != null) {
+                return new Timestamp(longValue);
+            }
         } else if (target instanceof String && StringUtils.isNotBlank((CharSequence) target)) {
             return Timestamp.valueOf((String) target);
         }

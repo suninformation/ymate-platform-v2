@@ -108,7 +108,7 @@ public interface ISheetHandler<T> {
                                 value = dataRender.render(beanWrapper, column.getValue(), column.getKey(), value, true);
                             } else if (column.getValue().dateTime()) {
                                 if (value instanceof String) {
-                                    value = DateTimeUtils.parseDateTime(BlurObject.bind(value).toStringValue(), StringUtils.defaultIfBlank(column.getValue().pattern(), DateTimeUtils.YYYY_MM_DD_HH_MM_SS)).getTime();
+                                    value = DateTimeUtils.parseDateTime(BlurObject.bind(value).toStringValue(), StringUtils.defaultIfBlank(column.getValue().pattern(), DateTimeUtils.YYYY_MM_DD_HH_MM_SS));
                                 } else if (value instanceof Number || float.class.isAssignableFrom(value.getClass())
                                         || int.class.isAssignableFrom(value.getClass())
                                         || long.class.isAssignableFrom(value.getClass())
@@ -200,21 +200,23 @@ public interface ISheetHandler<T> {
             int maxRowIdx = lastRowNum > 0 ? lastRowNum : sheet.getLastRowNum();
             for (int rowIdx = startRowIdx; rowIdx <= maxRowIdx; rowIdx++) {
                 Row sheetRow = sheet.getRow(rowIdx);
-                if (cellMetas == null && rowIdx == startRowIdx) {
-                    List<CellMeta> metaList = new ArrayList<>();
-                    short cellIdx = firstCellNum > 0 ? (short) firstCellNum : sheetRow.getFirstCellNum();
-                    short maxCellIdx = lastCellNum > 0 ? (short) lastCellNum : sheetRow.getLastCellNum();
-                    for (; cellIdx <= maxCellIdx; cellIdx++) {
-                        Object cellValue = parseCell(sheetRow.getCell(cellIdx));
-                        if (cellValue != null) {
-                            metaList.add(new CellMeta(BlurObject.bind(cellValue).toStringValue(), cellIdx));
+                if (sheetRow != null) {
+                    if (cellMetas == null && rowIdx == startRowIdx) {
+                        List<CellMeta> metaList = new ArrayList<>();
+                        short cellIdx = firstCellNum > 0 ? (short) firstCellNum : sheetRow.getFirstCellNum();
+                        short maxCellIdx = lastCellNum > 0 ? (short) lastCellNum : sheetRow.getLastCellNum();
+                        for (; cellIdx <= maxCellIdx; cellIdx++) {
+                            Object cellValue = parseCell(sheetRow.getCell(cellIdx));
+                            if (cellValue != null) {
+                                metaList.add(new CellMeta(BlurObject.bind(cellValue).toStringValue(), cellIdx));
+                            }
                         }
-                    }
-                    cellMetas = metaList.toArray(new CellMeta[0]);
-                } else if (rowIdx > startRowIdx) {
-                    T row = parseRow(sheetRow);
-                    if (row != null) {
-                        results.add(row);
+                        cellMetas = metaList.toArray(new CellMeta[0]);
+                    } else if (rowIdx > startRowIdx) {
+                        T row = parseRow(sheetRow);
+                        if (row != null) {
+                            results.add(row);
+                        }
                     }
                 }
             }

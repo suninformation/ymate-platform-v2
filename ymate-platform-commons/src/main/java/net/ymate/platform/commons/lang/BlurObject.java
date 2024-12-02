@@ -36,6 +36,9 @@ import java.sql.Clob;
 import java.sql.SQLException;
 import java.text.NumberFormat;
 import java.text.ParseException;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -83,14 +86,14 @@ public class BlurObject implements Serializable {
      * @throws Exception 可能产生的任何异常
      */
     public static void registerConverter(Class<?> fromClass, Class<?> toClass, IConverter<?> converter) throws Exception {
-        ReentrantLockHelper.putIfAbsentAsync(CONVERTERS, toClass, () -> new HashMap<>(16)).put(fromClass, converter);
+        ReentrantLockHelper.putIfAbsentAsync(CONVERTERS, org.apache.commons.lang3.ClassUtils.primitiveToWrapper(toClass), () -> new HashMap<>(16)).put(fromClass, converter);
     }
 
     @SuppressWarnings("unchecked")
     public static <T> T convertTo(Object attr, Class<T> targetType) {
         T object = null;
         if (attr != null && !CONVERTERS.isEmpty()) {
-            Map<Class<?>, IConverter<?>> map = CONVERTERS.get(targetType);
+            Map<Class<?>, IConverter<?>> map = CONVERTERS.get(org.apache.commons.lang3.ClassUtils.primitiveToWrapper(targetType));
             if (map != null && !map.isEmpty()) {
                 IConverter<?> converter = map.get(attr.getClass());
                 if (converter != null) {
@@ -454,6 +457,15 @@ public class BlurObject implements Serializable {
             }
             if (attr instanceof Number) {
                 return ((Number) attr).longValue();
+            }
+            if (attr instanceof Date) {
+                return ((Date) attr).getTime();
+            } else if (attr instanceof LocalDate) {
+                return ((LocalDate) attr).atStartOfDay().toInstant(OffsetDateTime.now().getOffset()).toEpochMilli();
+            } else if (attr instanceof Calendar) {
+                return ((Calendar) attr).getTime().getTime();
+            } else if (attr instanceof LocalDateTime) {
+                return ((LocalDateTime) attr).toInstant(OffsetDateTime.now().getOffset()).toEpochMilli();
             }
             if (attr instanceof String) {
                 try {
