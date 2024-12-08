@@ -29,7 +29,7 @@
 
 ## 模块及功能（Modules）
 
-YMP 框架主要是由核心（Core）和若干模块（Modules）组成，整体结构简约、清晰，如图所示：
+YMP 框架主要是由核心（Core）和模块（Modules）组成，整体结构简约、清晰，如图所示：
 
 ![Structure Diagram](https://ymate.net/img/structure_diagram.png "LOGO")
 

@@ -5,7 +5,7 @@ slug: core
 
 # 核心（Core）
 
-YMP 框架主要是由核心（Core）和若干模块（Module）组成，核心也称之为应用容器（IApplication），主要负责框架初始化、事件（Events）广播与监听、模块的定义及其生命周期管理、国际化资源管理（I18N）和类对象管理等，其核心功能是对包和类的自动扫描（AutoScan）、对象的生命周期管理、以及反转控制（IoC）、依赖注入（DI）和方法拦截（AOP）等。
+YMP 框架主要是由核心（Core）和模块（Module）组成，核心也称之为应用容器（IApplication），主要负责框架初始化、事件（Events）广播与监听、模块的定义及其生命周期管理、国际化资源管理（I18N）和类对象管理等，其核心功能是对包和类的自动扫描（AutoScan）、对象的生命周期管理、以及反转控制（IoC）、依赖注入（DI）和方法拦截（AOP）等。
 
 
 
@@ -15,7 +15,7 @@ YMP 框架主要是由核心（Core）和若干模块（Module）组成，核心
 <dependency>
     <groupId>net.ymate.platform</groupId>
     <artifactId>ymate-platform-core</artifactId>
-    <version>2.1.2</version>
+    <version>2.1.3</version>
 </dependency>
 ```
 
