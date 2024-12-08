@@ -11,7 +11,7 @@ const ArchivedVersionsDropdownItems = Object.entries(VersionsArchived).splice(
 // With JSDoc @type annotations, IDEs can provide config autocompletion
 /** @type {import('@docusaurus/types').DocusaurusConfig} */
 (module.exports = {
-    title: 'YMP - 轻量级、组件化、简单、高效的 Java 应用开发框架',
+    title: 'YMP - 轻量级、组件化、简单、高效的 Java 应用开发框架 - 云友网络',
     tagline: '轻量级、组件化、简单、高效的 Java 应用开发框架',
     url: 'https://ymate.net',
     baseUrl: '/',
@@ -158,15 +158,15 @@ const ArchivedVersionsDropdownItems = Object.entries(VersionsArchived).splice(
                     //     label: '模块',
                     //     position: 'right',
                     // },
-                    {to: '/blog', label: '博客', position: 'right'},
-                    {
-                        to: '/support',
-                        label: '支持 & 捐赠',
-                        position: 'right'
-                    },
+                    // {to: '/blog', label: '博客', position: 'right'},
+                    // {
+                    //     to: '/support',
+                    //     label: '支持 & 捐赠',
+                    //     position: 'right'
+                    // },
                     {
                         type: 'dropdown',
-                        label: '下载源码',
+                        label: '链接',
                         position: 'right',
                         items: [
                             {
@@ -245,14 +245,14 @@ const ArchivedVersionsDropdownItems = Object.entries(VersionsArchived).splice(
                     {
                         title: '更多',
                         items: [
-                            {
-                                label: '博客',
-                                to: '/blog',
-                            },
-                            {
-                                label: '支持 & 捐赠',
-                                to: '/support',
-                            },
+                            // {
+                            //     label: '博客',
+                            //     to: '/blog',
+                            // },
+                            // {
+                            //     label: '支持 & 捐赠',
+                            //     to: '/support',
+                            // },
                             {
                                 label: 'GitHub',
                                 href: 'https://github.com/suninformation/ymate-platform-v2',

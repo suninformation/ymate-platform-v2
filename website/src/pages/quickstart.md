@@ -249,18 +249,29 @@ YMP 不仅提供便捷的 Web 及其它 Java 项目的快速开发体验，也�
 
 如果喜欢 YMP，希望得到你的支持和鼓励！
 
-<Tabs
-defaultValue="donationCode"
-values={[
-{label: '请喝一杯咖啡', value: 'donationCode'},
-{label: '微信支付', value: 'wepay'},
-{label: '支付宝', value: 'alipay'},
-]}>
-<TabItem value="donationCode"><img src="/img/donation_code.png" alt="donationCode"/></TabItem>
-<TabItem value="wepay"><img src="/img/wepay.png" alt="WePay"/></TabItem>
-<TabItem value="alipay"><img src="/img/alipay.jpeg" alt="AliPay"/></TabItem>
-</Tabs>
+[//]: # (<Tabs)
 
-了解更多有关 YMP 框架的内容，请访问官网：[https://ymate.net](https://ymate.net)
+[//]: # (defaultValue="donationCode")
+
+[//]: # (values={[)
+
+[//]: # ({label: '请喝一杯咖啡', value: 'donationCode'},)
+
+[//]: # ({label: '微信支付', value: 'wepay'},)
+
+[//]: # ({label: '支付宝', value: 'alipay'},)
+
+[//]: # (]}>)
+
+[//]: # (<TabItem value="donationCode"><img src="/img/donation_code.png" alt="donationCode"/></TabItem>)
+
+[//]: # (<TabItem value="wepay"><img src="/img/wepay.png" alt="WePay"/></TabItem>)
+
+[//]: # (<TabItem value="alipay"><img src="/img/alipay.jpeg" alt="AliPay"/></TabItem>)
+
+[//]: # (</Tabs>)
+
+[//]: # ()
+[//]: # (了解更多有关 YMP 框架的内容，请访问官网：[https://ymate.net]&#40;https://ymate.net&#41;)
 
 :::

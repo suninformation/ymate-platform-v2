@@ -1961,7 +1961,7 @@ mvn clean source:jar install
 
 文件的 MimeType 类型处理工具类。
 
-> 该类在初始化时，将首先加载类路径下的 `mimetypes-conf.properties` 文件，若未找到或内容为空则加载 `META-INF/mimetypes-default-conf.properties` 默认配置文件。
+> 该类在初始化时，将首先加载 `META-INF/mimetypes-default-conf.properties` 默认配置文件，然后再加载类路径下的 `mimetypes-conf.properties` 文件。
 
 
 

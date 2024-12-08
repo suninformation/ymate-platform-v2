@@ -530,7 +530,7 @@ public interface IDemo {
 // 业务接口实现类：单例模式
 @Bean
 public class SingletonDemoBean implements IDemo {
-  	@Override
+    @Override
     public String sayHi() {
         return "Hello, YMP!";
     }
@@ -539,7 +539,7 @@ public class SingletonDemoBean implements IDemo {
 // 业务接口实现类：非单例模式
 @Bean(singleton = false)
 public class DemoBean implements IDemo {
-  	@Override
+    @Override
     public String sayHi() {
         return "Hello, YMP!";
     }
@@ -584,7 +584,7 @@ public class DemoBeanHandler implements IBeanHandler {
 // 自定义对象处理器 (将取代原来的处理器)
 @Bean(handler=DemoBeanHandler.class)
 public class DemoBean implements IDemo {
-  	@Override
+    @Override
     public String sayHi() {
         return "Hello, YMP!";
     }
@@ -598,12 +598,12 @@ public class DemoBean implements IDemo {
 @Bean
 public class DemoBean implements IDemo, IBeanInitializer {
 
-  	@Override
+    @Override
     public String sayHi() {
         return "Hello, YMP!";
     }
 
-  	@Override
+    @Override
     public void afterInitialized(IBeanFactory beanFactory) throws Exception {
         System.out.println(sayHi() + " ---- afterInitialized.");
     }
@@ -629,7 +629,7 @@ public interface IDemo {
 // 业务接口实现类1
 @Bean
 public class DemoOne implements IDemo {
-  	@Override
+    @Override
     public String sayHi() {
         return "Hello! I'm DemoOne.";
     }
@@ -638,7 +638,7 @@ public class DemoOne implements IDemo {
 // 业务接口实现类2
 @Bean
 public class DemoTwo implements IDemo {
-  	@Override
+    @Override
     public String sayHi() {
         return "Hello! I'm DemoTwo.";
     }
@@ -709,12 +709,12 @@ public class InjectBeanImpl implements IInjectBean {
 
     private String name;
 
-  	@Override
+    @Override
     public String getName() {
         return name;
     }
 
-  	@Override
+    @Override
     public void setName(String name) {
         this.name = name;
     }
@@ -729,12 +729,12 @@ public class InjectBeanWrapper implements IInjectBean {
         this.targetBean = targetBean;
     }
 
-  	@Override
+    @Override
     public String getName() {
         return targetBean.getName();
     }
 
-  	@Override
+    @Override
     public void setName(String name) {
         targetBean.setName(name);
     }
@@ -753,7 +753,7 @@ public @interface DemoInject {
 @Injector(DemoInject.class)
 public class DemoBeanInjector implements IBeanInjector {
 
-  	@Override
+    @Override
     public Object inject(IBeanFactory beanFactory, Annotation annotation, Class<?> targetClass, Field field, Object originInject) {
         // 为从自定义注解取值做准备
         DemoInject anno = (DemoInject) annotation;
@@ -856,7 +856,7 @@ YMP 框架的 `AOP` 是基于代理（`Proxy`）技术实现的方法拦截，�
 @Interceptor
 public class DemoInterceptor implements IInterceptor {
 
-  	@Override
+    @Override
     public Object intercept(InterceptContext context) throws Exception {
         // 判断当前拦截器执行方向
         switch (context.getDirection()) {
@@ -1326,7 +1326,7 @@ public class ModuleEventListener implements IEventListener<ModuleEvent> {
 @EventRegister
 public class DemoEventRegister implements IEventRegister {
 
-  	@Override
+    @Override
     public void register(Events events) throws Exception {
         // 订阅模块事件：异步
         events.registerListener(Events.MODE.ASYNC, ModuleEvent.class, new IEventListener<ModuleEvent>() {
@@ -1462,7 +1462,7 @@ YMP框架支持在初始化时将自动扫描并注册被 `@Event` 注解声明�
 @EventRegister
 public class DemoEventRegister implements IEventRegister {
 
-  	@Override
+    @Override
     public void register(Events events) throws Exception {
         // 注册OrderEvent自定义事件类
         events.registerEvent(OrderEvent.class);

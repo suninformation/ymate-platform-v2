@@ -23,9 +23,9 @@
     "message": "支持 & 捐赠",
     "description": "Navbar item with label 支持 & 捐赠"
   },
-  "item.label.下载源码": {
-    "message": "下载源码",
-    "description": "Navbar item with label 下载源码"
+  "item.label.链接": {
+    "message": "链接",
+    "description": "Navbar item with label 链接"
   },
   "item.label.GitHub": {
     "message": "GitHub",

@@ -1433,13 +1433,17 @@ public class CacheController {
 
 **名词解释**：CORS（Cross-Origin Resource Sharing，跨域资源共享）是一个系统，它由一系列传输的 HTTP 头组成，这些 HTTP 头决定浏览器是否阻止前端 JavaScript 代码获取跨域请求的响应。同源安全策略 默认阻止“跨域”获取资源。但是 CORS 给了 Web 服务器这样的权限，即服务器可以选择，允许跨域请求访问到它们的资源。
 
-WebMVC 框架从 `2.1.0` 版开始基于最新的拦截器注解机制重构了跨域配置和使用方式，主要使用以下两个注解便可轻松实现跨域支持：
+WebMVC 框架从 `2.1.3` 版开始针对跨域配置和使用方式进行了优化调整，废弃了 `@CrossDomain` 注解。
 
-### @CrossDomain
+:::tip **注意**：
 
-声明开启跨域处理的拦截器注解，可以应用在控制器所在的包、类或方法之上，该注解无任何参数配置。
+检查初始化配置项，确认是否已开启跨域设置。
 
-由于它本身的实现方式就是一个前置拦截器，当在使用 `@Clean` 注解进行拦截器清理时，它也将被一并清理，因此在使用过程中需要注意。
+```properties
+ymp.configs.webmvc.cross_domain_settings_enabled=true
+```
+
+:::
 
 ### @CrossDomainSetting
 
@@ -1467,7 +1471,6 @@ WebMVC 框架从 `2.1.0` 版开始基于最新的拦截器注解机制重构了�
 public class CorsController {
 
     @RequestMapping(value = "/", method = {Type.HttpMethod.OPTIONS, Type.HttpMethod.POST})
-    @CrossDomain
     public IView cors() throws Exception {
         return View.textView("Everything depends on ability!  -- YMP :)");
     }

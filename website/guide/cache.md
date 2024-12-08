@@ -280,14 +280,16 @@ public class Starter {
 
 执行结果：
 
-    Not Cached
-    Hi, YMP
-    Hi, YMP
-    --------
-    Not Cached
-    Hi, YMPer
-    Hi, YMP
-    Hi, YMPer
+```shell
+Not Cached
+Hi, YMP
+Hi, YMP
+--------
+Not Cached
+Hi, YMPer
+Hi, YMP
+Hi, YMPer
+```
 
 以上结果输出可以看出，sayHi方法相同参数首次被调用时将输出“Not Cached”字符串，说明它没有使用缓存，再次调用时直接从缓存中返回值。
 

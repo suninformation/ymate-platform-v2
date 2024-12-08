@@ -1119,7 +1119,7 @@ public class Demo {
 
 YMP 框架自 `v1.x` 开始就支持通过数据库表结构自动生成实体类代码，所以 `v2.x` 版本不但重构了实体代码生成器，而且更简单好用！
 
-**步骤1：**配置数据实体代码生成器所需参数：
+**步骤1：** 配置数据实体代码生成器所需参数：
 
 ```properties
 #-------------------------------------
@@ -1187,7 +1187,7 @@ ymp.params.jdbc.package_name=
 
 
 
-**步骤2：**添加插件配置，数据实体生成器是以 Maven 插件的形式提供的，需要在工程的 `pom.xml` 文件添加如下内容：
+**步骤2：** 添加插件配置，数据实体生成器是以 Maven 插件的形式提供的，需要在工程的 `pom.xml` 文件添加如下内容：
 
 ```xml
 <plugin>
@@ -1226,7 +1226,7 @@ ymp.params.jdbc.package_name=
 
 
 
-**步骤3：**在工程根路径下执行插件命令：
+**步骤3：** 在工程根路径下执行插件命令：
 
 ```shell
 mvn ymate:entity -Doverwrite=true
@@ -1505,7 +1505,7 @@ public class Starter {
 
 手动开启事务操作需要借助 `Transactions` 类完成，此类提供了两种事务执行方式，分别针对无返回值和有返回值的情况。
 
-**示例：**无返回值事务，支持批量操作。
+**示例：** 无返回值事务，支持批量操作。
 
 ```java
 Transactions.execute(new ITrade() {
@@ -1539,7 +1539,7 @@ Transactions.execute(Type.TRANSACTION.REPEATABLE_READ, new ITrade() {
 
 
 
-**示例：**有返回值事务，不支持批量操作。
+**示例：** 有返回值事务，不支持批量操作。
 
 ```java
 UserEntity userEntity = Transactions.execute(new AbstractTrade<UserEntity>() {
@@ -1893,7 +1893,7 @@ System.out.println(params.params());
 
 
 
-### Pages：分页参数
+### Page：分页参数
 
 **示例代码：**
 
