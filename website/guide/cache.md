@@ -305,8 +305,8 @@ public Serializable generateKey(Method method, Object[] params) throws Exception
     // [className:methodName:{serializeStr}]
     String className = method.getDeclaringClass().getName();
     ISerializer serializer = SerializerManager.getDefaultSerializer();
-	String paramStr = Base64.encodeBase64String(serializer.serialize(method.getParams()));
-	String keyStr = String.format("[%s:%s{%s}]", className, method.getName(), paramStr);
+    String paramStr = Base64.encodeBase64String(serializer.serialize(method.getParams()));
+    String keyStr = String.format("[%s:%s{%s}]", className, method.getName(), paramStr);
     return DigestUtils.md5Hex(keyStr);
 }
 ```

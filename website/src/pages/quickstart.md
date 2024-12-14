@@ -173,6 +173,7 @@ package: net.ymate.platform.examples
 
 
 
+
 ### 使用 IDE 打开工程
 
 :::tip **提示：** 
@@ -216,9 +217,108 @@ package: net.ymate.platform.examples
 
 ### 编译并启动 Web 服务
 
+#### 通过 IDE 运行调试
+
 如下图所示，点击红框 ③ 处按钮可以运行或调式模式启动 Web 服务，查看控制台输出内容并确认无异常表示服务启动成功。
 
 ![quickstart_tomcat_run](/img/quickstart/quickstart_tomcat_run.png)
+
+
+
+#### 通过命令行打包并启动嵌入式服务
+
+通过模版构建的 Web 工程已集成了嵌入式 Tomcat 容器，可以直接运行 WAR 包文件启动服务。
+
+首先，进入工程目录对工程进行编译、打包，命令如下所示：
+
+```shell
+cd ymp-examples-webapp
+mvn clean package
+```
+
+此时，在 target 目录下会产生以下两个文件：
+
+```shell
+ymp-examples-webapp-dev.war
+ymp-examples-webapp-dev-1.0-SNAPSHOT.tar.gz
+```
+
+可以执行 WAR 包文件快速启动服务，命令如下所示：
+
+```shell
+java -jar ymp-examples-webapp.war --targetDir .
+```
+
+
+
+:::tip 了解更多关于可执行嵌入式 Web 容器配置方法，请访问：
+
+<Tabs
+defaultValue="github"
+values={[
+{ label: 'GitHub', value: 'github', },
+{ label: '码云', value: 'gitee', },
+]
+}>
+<TabItem value="github">
+
+[https://github.com/suninformation/ymate-embed](https://github.com/suninformation/ymate-embed)
+
+</TabItem>
+<TabItem value="gitee">
+
+[https://gitee.com/suninformation/ymate-embed](https://gitee.com/suninformation/ymate-embed)
+
+</TabItem>
+</Tabs>
+:::
+
+
+
+推荐采用更友好的方式管理服务，操作方法如下所示：
+
+```shell
+# 将打包文件复制到目标位置，执行解压缩
+tar zxvf ymp-examples-webapp-dev-1.0-SNAPSHOT.tar.gz
+
+# 进行解压目录
+cd ymp-examples-webapp-dev-1.0-SNAPSHOT
+
+# 查看用例
+bin/manager.sh
+Usage: manager.sh <start|stop|restart|env>
+
+# 启动服务
+bin/manager.sh start
+
+# 停止服务
+bin/manager.sh stop
+
+# 重启服务
+bin/manager.sh restart
+
+# 查看环境变量
+bin/manager.sh env
+```
+
+
+
+:::tip 提示：
+
+- 为了安全考虑，以上操作需要切换到 `deploy` 用户（如有必要请自行修改脚本），否则会提示如下内容：
+
+```shell
+WARN: The current user 'root' is inconsistent with the startup user 'deploy'.
+      Please confirm the logged in user or change the configuration file.
+```
+
+- 服务日志文件默认输出到用户根目录下（可按需修改 `bin/env.sh` 脚本），命令如下：
+
+```shell
+tail -100f ~/ymp-examples-webapp-dev-1.0-SNAPSHOT_std_out.log
+```
+
+:::
 
 
 
@@ -271,7 +371,7 @@ YMP 不仅提供便捷的 Web 及其它 Java 项目的快速开发体验，也�
 
 [//]: # (</Tabs>)
 
-[//]: # ()
+[//]: #
 [//]: # (了解更多有关 YMP 框架的内容，请访问官网：[https://ymate.net]&#40;https://ymate.net&#41;)
 
 :::

@@ -224,12 +224,12 @@ Logs.get().getLogger().debug("Everything depends on ability!  -- YMP :)");
 <RollingRandomAccessFile name="wechat"
                          fileName="${sys:LOG_OUT_DIR}/wechat.log"
                          filePattern="${sys:LOG_OUT_DIR}/$${date:yyyyMMdd}/wechat-%d{yyMMddHH}-%i.log">
-	<PatternLayout pattern="%m %n" charset="UTF-8"/>
-	<Policies>
-		<TimeBasedTriggeringPolicy modulate="true" interval="1"/>
-		<SizeBasedTriggeringPolicy size="200 MB"/>
-	</Policies>
-	<DefaultRolloverStrategy max="100"/>
+    <PatternLayout pattern="%m %n" charset="UTF-8"/>
+    <Policies>
+        <TimeBasedTriggeringPolicy modulate="true" interval="1"/>
+        <SizeBasedTriggeringPolicy size="200 MB"/>
+    </Policies>
+    <DefaultRolloverStrategy max="100"/>
 </RollingRandomAccessFile>
 ```
 
@@ -237,7 +237,7 @@ Logs.get().getLogger().debug("Everything depends on ability!  -- YMP :)");
 
 ```xml
 <Logger name="wechat" level="debug" additivity="false">
-	<AppenderRef ref="wechat"/>
+    <AppenderRef ref="wechat"/>
 </Logger>
 ```
 
@@ -263,7 +263,7 @@ Logs.get().getLogger().debug("Everything depends on ability!  -- YMP :)");
   ILogger wechatLog = Logs.get().getLogger("wechat");
   wechatLog.debug("日志内容将被输出到wechat.log文件中");
   if (wechatLog.isDebugEnabled()) {
-  	wechatLog.debug("日志内容", e);
+      wechatLog.debug("日志内容", e);
   }
   // 或者
   Logs.get().getLogger("wechat").info("日志内容");

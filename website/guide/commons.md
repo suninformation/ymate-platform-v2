@@ -158,69 +158,69 @@ ids: [item1, item2]
 maps: {key1=value1, key2=value2}
 real_name: 汉字将被混淆
 JSON: {
-	"_c":9,
-	"_v":{
-		"is_locked":{
-			"_c":6,
-			"_v":true
-		},
-		"create_time":{
-			"_c":5,
-			"_v":1634100753548
-		},
-		"id":{
-			"_c":3,
-			"_v":"4e6b780192da4f04af9b6b826ea7ead6"
-		},
-		"detail":{
-			"_c":9,
-			"_v":{
-				"real_name":{
-					"_c":2,
-					"_v":"5rGJ5a2X5bCG6KKr5re35reG"
-				},
-				"age":{
-					"_c":1,
-					"_v":32
-				}
-			}
-		},
-		"category":{
-			"_c":14,
-			"_v":"AQIDBA=="
-		},
-		"group":{
-			"_c":9,
-			"_v":{
-				"maps":{
-					"_c":9,
-					"_v":{
-						"key1":{
-							"_c":3,
-							"_v":"value1"
-						},
-						"key2":{
-							"_c":3,
-							"_v":"value2"
-						}
-					}
-				},
-				"ids":{
-					"_c":10,
-					"_v":[
-						{
-							"_c":3,
-							"_v":"item1"
-						},
-						{
-							"_c":3,
-							"_v":"item2"
-						}
-					]
-				}
-			}
-		}
-	}
+    "_c":9,
+    "_v":{
+        "is_locked":{
+            "_c":6,
+            "_v":true
+        },
+        "create_time":{
+            "_c":5,
+            "_v":1634100753548
+        },
+        "id":{
+            "_c":3,
+            "_v":"4e6b780192da4f04af9b6b826ea7ead6"
+        },
+        "detail":{
+            "_c":9,
+            "_v":{
+                "real_name":{
+                    "_c":2,
+                    "_v":"5rGJ5a2X5bCG6KKr5re35reG"
+                },
+                "age":{
+                    "_c":1,
+                    "_v":32
+                }
+            }
+        },
+        "category":{
+            "_c":14,
+            "_v":"AQIDBA=="
+        },
+        "group":{
+            "_c":9,
+            "_v":{
+                "maps":{
+                    "_c":9,
+                    "_v":{
+                        "key1":{
+                            "_c":3,
+                            "_v":"value1"
+                        },
+                        "key2":{
+                            "_c":3,
+                            "_v":"value2"
+                        }
+                    }
+                },
+                "ids":{
+                    "_c":10,
+                    "_v":[
+                        {
+                            "_c":3,
+                            "_v":"item1"
+                        },
+                        {
+                            "_c":3,
+                            "_v":"item2"
+                        }
+                    ]
+                }
+            }
+        }
+    }
 }
 ```
 
@@ -234,7 +234,7 @@ JSON: {
 <dependency>
     <groupId>org.apache.httpcomponents</groupId>
     <artifactId>httpmime</artifactId>
-    <version>4.5.13</version>
+    <version>4.5.14</version>
     <exclusions>
         <!-- YMP 框架已引入更高版本，排除为了避免在产生不必要的问题  -->
         <exclusion>
@@ -253,7 +253,7 @@ JSON: {
 
 ### CloseableHttpClientHelper
 
-此类主要应用于早期 YMP 框架版本及扩展模块中，支持自定义安全连接方式，支持 GET、POST 请求方法，简化文件上传与下载的处理逻辑等。
+HttpClientHelper 类主要应用于早期 YMP 框架版本及扩展模块中，支持自定义安全连接方式，支持 GET、POST 请求方法，简化文件上传与下载的处理逻辑等。
 
 
 
@@ -390,7 +390,7 @@ public void custom(URL certFilePath, String passwordChars) throws Exception {
 
 ### CloseableHttpRequestBuilder
 
-在 CloseableHttpClientHelper 的基础上进行了优化、调整请求构建方式及响应的处理逻辑，除了 GET 和 POST 请求方法之外，还增加了对 PUT、 OPTIONS、 DELETE、 HEAD、 PATCH、 TRACE 等的支持。
+此类是在 CloseableHttpClientHelper 类的基础上进行了优化、调整请求构建方式及响应的处理逻辑，除了 GET 和 POST 请求方法之外，还增加了对 PUT、 OPTIONS、 DELETE、 HEAD、 PATCH、 TRACE 等的支持。
 
 :::tip **注意**：
 
@@ -597,14 +597,14 @@ System.out.println("Key2: " + attrs.getString("key2"));
 
 ```shell
 {
-	"name":"suninformation",
-	"realName":"有理想的鱼",
-	"age":20,
-	"gender":null,
-	"attrs":{
-		"key1":"value1",
-		"key2":"value2"
-	}
+    "name":"suninformation",
+    "realName":"有理想的鱼",
+    "age":20,
+    "gender":null,
+    "attrs":{
+        "key1":"value1",
+        "key2":"value2"
+    }
 }
 Name: suninformation
 Age: 20
@@ -648,21 +648,21 @@ System.out.println("Age: " + jsonObj.getInt("age"));
 
 ```shell
 [
-	1,
-	null,
-	2,
-	3,
-	false,
-	true,
-	[
-		["a","b"]
-	],
-	{
-		"name":"suninformation",
-		"realName":"有理想的鱼",
-		"age":20
-	},
-	11
+    1,
+    null,
+    2,
+    3,
+    false,
+    true,
+    [
+        ["a","b"]
+    ],
+    {
+        "name":"suninformation",
+        "realName":"有理想的鱼",
+        "age":20
+    },
+    11
 ]
 Index3: 3
 Index4: false
@@ -714,17 +714,17 @@ for (String key : jsonObj.keySet()) {
 
 ```shell
 {
-	"name":"suninformation",
-	"realName":"有理想的鱼",
-	"age":20,
-	"array":[
-		"a",
-		"b"
-	],
-	"attrs":{
-		"key1":"value1",
-		"key2":"value2"
-	}
+    "name":"suninformation",
+    "realName":"有理想的鱼",
+    "age":20,
+    "array":[
+        "a",
+        "b"
+    ],
+    "attrs":{
+        "key1":"value1",
+        "key2":"value2"
+    }
 }
 suninformation
 有理想的鱼
@@ -765,9 +765,9 @@ Name: suninformation
 Age: 20
 RealName: 有理想的鱼
 {
-	"age":20,
-	"name":"suninformation",
-	"real_name":"有理想的鱼"
+    "age":20,
+    "name":"suninformation",
+    "real_name":"有理想的鱼"
 }
 ```
 
@@ -3438,16 +3438,16 @@ public class Main {
 
 ```json
 {
-	"categories":[{
-		"name":"default",
-		"properties":[{
-			"key":"key1",
-			"value":"value1"
-		},{
-			"key":"key2",
-			"value":"value2"
-		}]
-	}]
+    "categories":[{
+        "name":"default",
+        "properties":[{
+            "key":"key1",
+            "value":"value1"
+        },{
+            "key":"key2",
+            "value":"value2"
+        }]
+    }]
 }
 ```
 

@@ -1297,10 +1297,10 @@ user.saveOrUpdate(Fields.create(UserEntity.FIELDS.NICKNAME, UserEntity.FIELDS.EM
 
 ```java
 UserEntity user = UserEntity.builder()
-	.id("bc19f5645aa9438089c5e9954e5f1ac5")
-	.password(DigestUtils.md5Hex("654321"))
-	.gender("F")
-	.build();
+    .id("bc19f5645aa9438089c5e9954e5f1ac5")
+    .password(DigestUtils.md5Hex("654321"))
+    .gender("F")
+    .build();
 // 执行记录更新
 user.update();
 // 或者仅更新指定的字段/排除某些字段
@@ -1318,7 +1318,7 @@ EntityStateWrapper<UserEntity> stateWrapper = user.stateWrapper();
 // 为字段赋值
 stateWrapper.getEntity().bind()
     .password(DigestUtils.md5Hex("654321"))
-	.gender("M");
+    .gender("M");
 // 执行更新（将排除掉值未发生变化的字段）
 stateWrapper.update();
 ```
@@ -1329,7 +1329,7 @@ stateWrapper.update();
 
 ```java
 UserEntity user = UserEntity.builder()
-	.id("bc19f5645aa9438089c5e9954e5f1ac5")
+    .id("bc19f5645aa9438089c5e9954e5f1ac5")
     .build();
 // 根据记录ID加载全部字段
 user = user.load();
@@ -1359,7 +1359,7 @@ users = user.matchAny().find();
 FieldCondition cond = UserEntity.conditionBuilder().email().like(Like.create("@163.com").endsWith());
 // 构建Where对象，并设置按创建日期降序排列
 Where where = Where.create(cond.build()).orderByDesc(UserEntity.FIELDS.CREATE_TIME);
-// 执行分页查询每1页且每页10行记录，返回全部字段
+// 执行分页查询第1页且每页10行记录，返回全部字段
 IResultSet<UserEntity> users = new UserEntity().find(where, Page.create(1).pageSize(10));
 ```
 
@@ -1942,9 +1942,9 @@ cond.bracket(Cond.create(cond).eq("age").param(18));
 在 Cond 对象中除两个字段间比较之外的条件都将构建一个基于 `?` 占位的SQL表达式，通过 `param` 方法传入与其对应的参数值，条件对象将按参数传入顺序存储：
 
 ```java
-Cond cond = Cond.create();
-cond.bracket(cond.like("username").param(Like.create("ymp").contains()).and().gtEq("age").param(20))
-        .or().bracket(cond.eq("gender").param("F").and().lt("age").param(18));
+Cond cond = Cond.create()
+    .bracket(Cond.create().like("username").param(Like.create("ymp").contains()).and().gtEq("age").param(20))
+    .or().bracket(Cond.create().eq("gender").param("F").and().lt("age").param(18));
 System.out.println("SQL: " + cond.toString());
 System.out.println("参数: " + cond.params().params());
 ```
@@ -2195,14 +2195,14 @@ System.out.println("参数: " + where.params().params());
 
 ```shell
 SQL: WHERE
-		 username LIKE ?
-	 AND age >= ?
-	 GROUP BY
-		 u.gender,
-		 age
-	 ORDER BY
-		 age,
-		 u.create_time DESC
+         username LIKE ?
+     AND age >= ?
+     GROUP BY
+         u.gender,
+         age
+     ORDER BY
+         age,
+         u.create_time DESC
 参数: [%ymp%, 20]
 ```
 
@@ -2830,7 +2830,7 @@ IResultSet<UserEntity> users = JDBC.get().openSession(new IDatabaseSessionExecut
 
 ```java
 IFunction ABS(String x) {
-	AbstractFunction func = Func.create("ABS");
+    AbstractFunction func = Func.create("ABS");
     func.param(x);
     return func;
 }
@@ -3202,7 +3202,7 @@ def custom_query(int type) {
                     }
                 }
             }
-        	return result
+            return result
         }
     ]
 }
@@ -3289,7 +3289,7 @@ public class DemoRepository extends AbstractRepository implements IDemoRepositor
 ### 多表查询及自定义结果集数据处理
 
 JDBC 持久化模块提供的 ORM 主要是针对单实体操作，实际业务中往往会涉及到多表关联查询以及返回多个表字段，在单实体 ORM 中是无法将 JDBC 结果集记录自动转换为实体对象的，这时就需要对结果集数据自定义处理来满足业务需求。
-	
+    
 若想实现结果集数据的自定义处理，需要了解以下相关接口和类：
 
 + IResultSetHandler 接口：结果集数据处理接口，用于完成将 JDBC 结果集原始数据的每一行记录进行转换为目标对象，JDBC 持久化模块默认提供了该接口的三种实现：
@@ -3310,7 +3310,7 @@ JDBC 持久化模块提供的 ORM 主要是针对单实体操作，实际业务�
 // 通过查询对象创建如下 SQL 语句:
 //
 // SELECT u.id id, u.username, ue.money
-// 			FROM user u LEFT JOIN user_ext ue ON u.id = ue.uid
+//             FROM user u LEFT JOIN user_ext ue ON u.id = ue.uid
 //
 IResultSet<Object[]> resultSet = Select.create(UserEntity.class, "u")
     .join(Join.left(UserExtEntity.TABLE_NAME).alias("ue")
@@ -3700,31 +3700,31 @@ try (IDatabaseConnectionHolder connectionHolder = JDBC.get().getDefaultConnectio
 
 + MySQL：
 
-	> IDBLocker.DEFAULT：行级锁，只有符合条件的数据被加锁，其它进程等待资源解锁后再进行操作；
+    > IDBLocker.DEFAULT：行级锁，只有符合条件的数据被加锁，其它进程等待资源解锁后再进行操作；
 
 + Oracle：
 
-	> IDBLocker.DEFAULT：行级锁，只有符合条件的数据被加锁，其它进程等待资源解锁后再进行操作；
-	>
-	> IDBLocker.NOWAIT：行级锁，不进行资源等待，只要发现结果集中有些数据被加锁，立刻返回 “ORA-00054错误”；
+    > IDBLocker.DEFAULT：行级锁，只有符合条件的数据被加锁，其它进程等待资源解锁后再进行操作；
+    >
+    > IDBLocker.NOWAIT：行级锁，不进行资源等待，只要发现结果集中有些数据被加锁，立刻返回 “ORA-00054错误”；
 
 + SQL Server：
 
-	> IDBLocker.SQLServer.NOLOCK：不加锁，在读取或修改数据时不加任何锁；
-	>
-	> IDBLocker.SQLServer.HOLDLOCK：保持锁，将此共享锁保持至整个事务结束，而不会在途中释放；
-	>
-	> IDBLocker.SQLServer.UPDLOCK：修改锁，能够保证多个进程能同时读取数据但只有该进程能修改数据；
-	>
-	> IDBLocker.SQLServer.TABLOCK：表锁，整个表设置共享锁直至该命令结束，保证其他进程只能读取而不能修改数据；
-	>
-	> IDBLocker.SQLServer.PAGLOCK：页锁；
-	>
-	> IDBLocker.SQLServer.TABLOCKX：排它表锁，将在整个表设置排它锁，能够防止其他进程读取或修改表中的数据；
-	
+    > IDBLocker.SQLServer.NOLOCK：不加锁，在读取或修改数据时不加任何锁；
+    >
+    > IDBLocker.SQLServer.HOLDLOCK：保持锁，将此共享锁保持至整个事务结束，而不会在途中释放；
+    >
+    > IDBLocker.SQLServer.UPDLOCK：修改锁，能够保证多个进程能同时读取数据但只有该进程能修改数据；
+    >
+    > IDBLocker.SQLServer.TABLOCK：表锁，整个表设置共享锁直至该命令结束，保证其他进程只能读取而不能修改数据；
+    >
+    > IDBLocker.SQLServer.PAGLOCK：页锁；
+    >
+    > IDBLocker.SQLServer.TABLOCKX：排它表锁，将在整个表设置排它锁，能够防止其他进程读取或修改表中的数据；
+    
 + 其它数据库：
 
-	> 可以通过IDBLocker接口自行实现；
+    > 可以通过IDBLocker接口自行实现；
 
 
 

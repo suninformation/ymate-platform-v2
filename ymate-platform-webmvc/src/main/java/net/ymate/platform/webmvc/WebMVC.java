@@ -340,7 +340,7 @@ public final class WebMVC implements IModule, IWebMvc {
                                 }
                             }
                         } catch (Exception e) {
-                            // 缓存处理过程中的任何异常都不能影响本交请求的正常响应, 仅输出异常日志
+                            // 缓存处理过程中的任何异常都不能影响本次请求的正常响应, 仅输出异常日志
                             if (LOG.isWarnEnabled()) {
                                 LOG.warn(e.getMessage(), RuntimeUtils.unwrapThrow(e));
                             }
@@ -427,7 +427,7 @@ public final class WebMVC implements IModule, IWebMvc {
                         }
                     }
                 } catch (Exception e) {
-                    // 缓存处理过程中的任何异常都不能影响本交请求的正常响应, 仅输出异常日志
+                    // 缓存处理过程中的任何异常都不能影响本次请求的正常响应, 仅输出异常日志
                     if (LOG.isWarnEnabled()) {
                         LOG.warn(e.getMessage(), RuntimeUtils.unwrapThrow(e));
                     }
