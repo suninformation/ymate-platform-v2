@@ -17,14 +17,13 @@ package net.ymate.platform.cache.support;
 
 import net.ymate.platform.cache.ICacheLocker;
 import net.ymate.platform.cache.ICaches;
-import net.ymate.platform.core.support.IDestroyable;
 import net.ymate.platform.persistence.redis.IRedis;
 
 /**
  * @author 刘镇 (suninformation@163.com) on 2023/1/30 01:41
  * @since 2.1.2
  */
-public interface IRedisCacheLocker extends ICacheLocker, IDestroyable {
+public interface IRedisCacheLocker extends ICacheLocker {
 
     void initialize(ICaches owner, IRedis redis, String cacheName) throws Exception;
 

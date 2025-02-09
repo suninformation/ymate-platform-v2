@@ -15,7 +15,9 @@
  */
 package net.ymate.platform.cache;
 
+import net.ymate.platform.cache.impl.DefaultCacheManager;
 import net.ymate.platform.commons.ReentrantLockHelper;
+import net.ymate.platform.commons.util.ClassUtils;
 import net.ymate.platform.commons.util.RuntimeUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
@@ -46,7 +48,16 @@ public abstract class AbstractCacheProvider implements ICacheProvider {
      * @throws Exception 可能产生的任何异常
      */
     protected void onInitialize() throws Exception {
-        cacheManager = getOwner().getConfig().getCacheManager();
+        if (cacheManager == null) {
+            cacheManager = ClassUtils.getExtensionLoader(ICacheManager.class).getExtension();
+            if (cacheManager == null) {
+                cacheManager = new DefaultCacheManager();
+            }
+            if (LOG.isInfoEnabled()) {
+                LOG.info(String.format("Using CacheManager class [%s].", cacheManager.getClass().getName()));
+            }
+            cacheManager.initialize(owner);
+        }
     }
 
     /**
@@ -55,6 +66,10 @@ public abstract class AbstractCacheProvider implements ICacheProvider {
      * @throws Exception 可能产生的任何异常
      */
     protected void onDestroy() throws Exception {
+        if (cacheManager != null) {
+            cacheManager.close();
+            cacheManager = null;
+        }
     }
 
     protected ICacheManager getCacheManager() {
@@ -90,7 +105,6 @@ public abstract class AbstractCacheProvider implements ICacheProvider {
                 cache.close();
                 cacheIt.remove();
             }
-            cacheManager = null;
         }
     }
 
@@ -102,7 +116,7 @@ public abstract class AbstractCacheProvider implements ICacheProvider {
     @Override
     public ICache createCache(String name, final ICacheEventListener listener) {
         try {
-            final String cacheName = cacheManager.cacheNameSafety(name);
+            final String cacheName = cacheManager != null ? cacheManager.cacheNameSafety(name) : name;
             return ReentrantLockHelper.putIfAbsentAsync(caches, cacheName, () -> onCreateCache(cacheName, listener));
         } catch (Exception e) {
             if (LOG.isWarnEnabled()) {
@@ -134,7 +148,7 @@ public abstract class AbstractCacheProvider implements ICacheProvider {
     @Override
     public ICache getCache(String name, boolean create, ICacheEventListener listener) {
         try {
-            final String cacheName = cacheManager.cacheNameSafety(name);
+            final String cacheName = cacheManager != null ? cacheManager.cacheNameSafety(name) : name;
             return ReentrantLockHelper.putIfAbsentAsync(caches, cacheName, () -> create ? onCreateCache(cacheName, listener) : null);
         } catch (Exception e) {
             if (LOG.isWarnEnabled()) {

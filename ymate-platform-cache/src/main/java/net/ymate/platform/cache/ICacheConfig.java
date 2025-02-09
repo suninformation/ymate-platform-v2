@@ -57,13 +57,6 @@ public interface ICacheConfig extends IInitialization<ICaches>, IDestroyable {
     String MULTILEVEL_SLAVE_AUTO_SYNC = "multilevel_slave_auto_sync";
 
     /**
-     * 获取缓存管理器实例
-     *
-     * @return 返回缓存管理器对象
-     */
-    ICacheManager getCacheManager();
-
-    /**
      * 缓存提供者，可选参数，默认值为 net.ymate.platform.cache.impl.DefaultCacheProvider
      *
      * @return 返回缓存提供者实例

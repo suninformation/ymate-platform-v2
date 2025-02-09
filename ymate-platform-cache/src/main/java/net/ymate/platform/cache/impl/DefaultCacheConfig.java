@@ -38,8 +38,6 @@ public final class DefaultCacheConfig implements ICacheConfig {
 
     private static final Log LOG = LogFactory.getLog(DefaultCacheConfig.class);
 
-    private ICacheManager cacheManager;
-
     private ICacheProvider cacheProvider;
 
     private ICacheEventListener cacheEventListener;
@@ -147,15 +145,6 @@ public final class DefaultCacheConfig implements ICacheConfig {
                 configFile = null;
             }
             //
-            cacheManager = ClassUtils.getExtensionLoader(ICacheManager.class).getExtension();
-            if (cacheManager == null) {
-                cacheManager = new DefaultCacheManager();
-            }
-            if (LOG.isInfoEnabled()) {
-                LOG.info(String.format("Using CacheManager class [%s].", cacheManager.getClass().getName()));
-            }
-            cacheManager.initialize(owner);
-            //
             if (cacheProvider == null) {
                 cacheProvider = ClassUtils.loadClass(ICacheProvider.class, DefaultCacheProvider.class);
             }
@@ -168,11 +157,6 @@ public final class DefaultCacheConfig implements ICacheConfig {
     @Override
     public boolean isInitialized() {
         return initialized;
-    }
-
-    @Override
-    public ICacheManager getCacheManager() {
-        return cacheManager;
     }
 
     @Override
@@ -301,7 +285,6 @@ public final class DefaultCacheConfig implements ICacheConfig {
             //
             cacheEventListener.close();
             cacheProvider.close();
-            cacheManager.close();
         }
     }
 

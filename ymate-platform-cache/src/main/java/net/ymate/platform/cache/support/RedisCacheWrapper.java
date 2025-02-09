@@ -36,6 +36,8 @@ import java.util.Set;
  */
 public class RedisCacheWrapper implements ICache {
 
+    public static final String REDIS_DATA_SOURCE_NAME = System.getProperty("ymp.redisCache.dataSourceName", "default");
+
     private static final String SEPARATOR = ":";
 
     private static final int KEY_LENGTH = 2;
@@ -48,24 +50,11 @@ public class RedisCacheWrapper implements ICache {
 
     private final ICacheEventListener cacheEventListener;
 
-    private final IRedisCacheLocker redisCacheLocker;
-
     public RedisCacheWrapper(ICaches owner, IRedis redis, String cacheName, final ICacheEventListener cacheEventListener) {
         this.owner = owner;
         this.redis = redis;
         this.cacheName = cacheName;
         this.cacheEventListener = cacheEventListener;
-        // 通过 SPI 方式尝试加载基于 Redis 的锁实现
-        redisCacheLocker = ClassUtils.loadClass(IRedisCacheLocker.class);
-        if (redisCacheLocker != null && !redisCacheLocker.isInitialized()) {
-            try {
-                redisCacheLocker.initialize(owner, redis, cacheName);
-            } catch (CacheException e) {
-                throw e;
-            } catch (Exception e) {
-                throw new CacheException(e);
-            }
-        }
         //
         if (cacheEventListener != null && owner.getConfig().isEnabledSubscribeExpired()) {
             redis.subscribe(new JedisPubSub() {
@@ -81,7 +70,7 @@ public class RedisCacheWrapper implements ICache {
                         }
                     }
                 }
-            }, String.format("__keyevent@%d__:expired", redis.getConfig().getDefaultDataSourceConfig().getMasterServerMeta().getDatabase()));
+            }, String.format("__keyevent@%d__:expired", redis.getConfig().getDataSourceConfig(REDIS_DATA_SOURCE_NAME).getMasterServerMeta().getDatabase()));
         }
     }
 
@@ -106,7 +95,7 @@ public class RedisCacheWrapper implements ICache {
 
     @Override
     public Object get(Object key) throws CacheException {
-        try (IRedisCommandHolder holder = redis.getDefaultConnectionHolder()) {
+        try (IRedisCommandHolder holder = redis.getConnectionHolder(REDIS_DATA_SOURCE_NAME)) {
             IRedisCommander commander = holder.getConnection();
             String cacheKey = serializeKey(key);
             Object cacheValue;
@@ -127,7 +116,7 @@ public class RedisCacheWrapper implements ICache {
     }
 
     private void put(Object key, Object value, int timeout, boolean update) throws CacheException {
-        try (IRedisCommandHolder holder = redis.getDefaultConnectionHolder()) {
+        try (IRedisCommandHolder holder = redis.getConnectionHolder(REDIS_DATA_SOURCE_NAME)) {
             IRedisCommander commander = holder.getConnection();
             String cacheKey = serializeKey(key);
             String cacheValue = serializeValue(value);
@@ -187,7 +176,7 @@ public class RedisCacheWrapper implements ICache {
     @Override
     public List<String> keys() throws CacheException {
         List<String> returnValue = new ArrayList<>();
-        try (IRedisCommandHolder holder = redis.getDefaultConnectionHolder()) {
+        try (IRedisCommandHolder holder = redis.getConnectionHolder(REDIS_DATA_SOURCE_NAME)) {
             IRedisCommander commander = holder.getConnection();
             if (owner.getConfig().isStorageWithSet()) {
                 Set<String> keys = commander.hkeys(cacheName);
@@ -209,7 +198,7 @@ public class RedisCacheWrapper implements ICache {
 
     @Override
     public void remove(Object key) throws CacheException {
-        try (IRedisCommandHolder holder = redis.getDefaultConnectionHolder()) {
+        try (IRedisCommandHolder holder = redis.getConnectionHolder(REDIS_DATA_SOURCE_NAME)) {
             IRedisCommander commander = holder.getConnection();
             String cacheKey = serializeKey(key);
             if (owner.getConfig().isStorageWithSet()) {
@@ -234,7 +223,7 @@ public class RedisCacheWrapper implements ICache {
 
     @Override
     public void removeAll(Collection<?> keys) throws CacheException {
-        try (IRedisCommandHolder holder = redis.getDefaultConnectionHolder()) {
+        try (IRedisCommandHolder holder = redis.getConnectionHolder(REDIS_DATA_SOURCE_NAME)) {
             IRedisCommander commander = holder.getConnection();
             List<String> serializeKeys = new ArrayList<>(keys.size());
             keys.forEach(key -> serializeKeys.add(serializeKey(key)));
@@ -265,7 +254,7 @@ public class RedisCacheWrapper implements ICache {
 
     @Override
     public void clear() throws CacheException {
-        try (IRedisCommandHolder holder = redis.getDefaultConnectionHolder()) {
+        try (IRedisCommandHolder holder = redis.getConnectionHolder(REDIS_DATA_SOURCE_NAME)) {
             IRedisCommander commander = holder.getConnection();
             if (owner.getConfig().isStorageWithSet()) {
                 if (owner.getConfig().isEnabledSubscribeExpired()) {
@@ -289,14 +278,22 @@ public class RedisCacheWrapper implements ICache {
 
     @Override
     public void close() throws Exception {
-        if (redisCacheLocker != null && redisCacheLocker.isInitialized()) {
-            redisCacheLocker.close();
-        }
         redis = null;
     }
 
     @Override
     public ICacheLocker acquireCacheLocker() {
+        // 通过 SPI 方式尝试加载基于 Redis 的锁实现
+        IRedisCacheLocker redisCacheLocker = ClassUtils.loadClass(IRedisCacheLocker.class, RedisCacheLocker.class);
+        if (redisCacheLocker != null && !redisCacheLocker.isInitialized()) {
+            try {
+                redisCacheLocker.initialize(owner, redis, cacheName);
+            } catch (CacheException e) {
+                throw e;
+            } catch (Exception e) {
+                throw new CacheException(e);
+            }
+        }
         return redisCacheLocker;
     }
 }
