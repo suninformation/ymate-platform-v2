@@ -27,7 +27,7 @@ JDBC 持久化模块针对关系型数据库（RDBMS）数据存取的一套简�
 <dependency>
     <groupId>net.ymate.platform</groupId>
     <artifactId>ymate-platform-persistence-jdbc</artifactId>
-    <version>2.1.3</version>
+    <version>2.1.4-dev</version>
 </dependency>
 ```
 

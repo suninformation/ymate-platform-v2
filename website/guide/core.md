@@ -15,7 +15,7 @@ YMP 框架主要是由核心（Core）和模块（Module）组成，核心也称
 <dependency>
     <groupId>net.ymate.platform</groupId>
     <artifactId>ymate-platform-core</artifactId>
-    <version>2.1.3</version>
+    <version>2.1.4-dev</version>
 </dependency>
 ```
 
@@ -503,7 +503,7 @@ YMP 框架初始化时默认并未开启自动扫描，可以通过 `@EnableAuto
 <dependency>
     <groupId>net.ymate.platform</groupId>
     <artifactId>ymate-platform-starter</artifactId>
-    <version>2.1.3</version>
+    <version>2.1.4-dev</version>
 </dependency>
 ```
 
@@ -815,7 +815,7 @@ YMP 框架的 `AOP` 是基于代理（`Proxy`）技术实现的方法拦截，�
 <dependency>
     <groupId>net.ymate.platform</groupId>
     <artifactId>ymate-platform-starter</artifactId>
-    <version>2.1.3</version>
+    <version>2.1.4-dev</version>
 </dependency>
 ```
 

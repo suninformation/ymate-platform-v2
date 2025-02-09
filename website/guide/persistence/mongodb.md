@@ -15,7 +15,7 @@ slug: mongodb
 <dependency>
     <groupId>net.ymate.platform</groupId>
     <artifactId>ymate-platform-persistence-mongodb</artifactId>
-    <version>2.1.3</version>
+    <version>2.1.4-dev</version>
 </dependency>
 ```
 
