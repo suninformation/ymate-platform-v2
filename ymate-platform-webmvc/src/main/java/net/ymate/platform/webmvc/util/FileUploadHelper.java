@@ -418,6 +418,9 @@ public final class FileUploadHelper {
             } else {
                 fileItem.delete();
             }
+            if (tempFile != null && !tempFile.delete()) {
+                tempFile.deleteOnExit();
+            }
         }
 
         @Override
@@ -461,7 +464,6 @@ public final class FileUploadHelper {
             }
             if (tempFile == null) {
                 tempFile = FileUtils.createTempFile("upload_", getName());
-                tempFile.deleteOnExit();
                 try (InputStream inputStream = new BufferedInputStream(fileItem.getInputStream());
                      OutputStream outputStream = new BufferedOutputStream(Files.newOutputStream(tempFile.toPath()))) {
                     IOUtils.copyLarge(inputStream, outputStream);
