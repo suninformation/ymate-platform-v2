@@ -20,16 +20,14 @@ import net.ymate.platform.commons.http.IFileWrapper;
 import net.ymate.platform.commons.util.FileUtils;
 import net.ymate.platform.commons.util.MimeTypeUtils;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang.NullArgumentException;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpResponse;
 import org.apache.http.entity.ContentType;
 import org.apache.http.entity.mime.content.ContentBody;
 import org.apache.http.entity.mime.content.InputStreamBody;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.*;
 import java.nio.file.Files;
 
 /**
@@ -53,33 +51,45 @@ public class DefaultFileWrapper implements IFileWrapper {
 
     private long contentLength;
 
+    private InputStream inputStream;
+
     private File tempFile;
 
     private boolean needClean;
 
     public DefaultFileWrapper(String fileName, String contentType, File sourceFile) {
+        if (sourceFile == null) {
+            throw new NullArgumentException("sourceFile");
+        }
         this.tempFile = sourceFile;
         this.fileName = StringUtils.defaultIfBlank(fileName, sourceFile.getName());
+        this.contentLength = sourceFile.length();
         if (StringUtils.isBlank(contentType)) {
             this.contentType = MimeTypeUtils.getFileMimeType(FileUtils.getExtName(sourceFile.getName()));
         } else {
             this.contentType = contentType;
         }
-        this.contentLength = sourceFile.length();
-        //
+        if (StringUtils.isBlank(this.contentType)) {
+            throw new NullArgumentException("contentType");
+        }
         doProcessFileName();
     }
 
-    public DefaultFileWrapper(String fileName, String contentType, long contentLength, InputStream sourceInputStream) throws IOException {
+    public DefaultFileWrapper(String fileName, String contentType, long contentLength, InputStream sourceInputStream) {
+        if (StringUtils.isBlank(fileName)) {
+            throw new NullArgumentException("fileName");
+        }
+        if (StringUtils.isBlank(contentType)) {
+            throw new NullArgumentException("contentType");
+        }
+        if (sourceInputStream == null) {
+            throw new NullArgumentException("sourceInputStream");
+        }
         this.fileName = fileName;
         this.contentType = contentType;
         this.contentLength = contentLength;
+        this.inputStream = sourceInputStream;
         //
-        tempFile = FileUtils.createTempFile("download_", fileName);
-        try (OutputStream outputStream = Files.newOutputStream(tempFile.toPath())) {
-            IOUtils.copyLarge(sourceInputStream, outputStream);
-        }
-        needClean = true;
         doProcessFileName();
     }
 
@@ -89,10 +99,6 @@ public class DefaultFileWrapper implements IFileWrapper {
 
     public DefaultFileWrapper(File sourceFile) {
         this(null, null, sourceFile);
-    }
-
-    public DefaultFileWrapper(String contentType, long contentLength, InputStream sourceInputStream) throws IOException {
-        this(null, contentType, contentLength, sourceInputStream);
     }
 
     private void doProcessFileName() {
@@ -156,22 +162,45 @@ public class DefaultFileWrapper implements IFileWrapper {
 
     @Override
     public InputStream getInputStream() throws IOException {
-        return Files.newInputStream(tempFile.toPath());
+        if (tempFile != null) {
+            return Files.newInputStream(tempFile.toPath());
+        }
+        return inputStream;
     }
 
     @Override
-    public File getFile() {
+    public File getFile() throws IOException {
+        if (tempFile == null && inputStream != null) {
+            tempFile = FileUtils.createTempFile("download_", fileName);
+            try (InputStream in = new BufferedInputStream(inputStream);
+                 OutputStream outputStream = Files.newOutputStream(tempFile.toPath())) {
+                IOUtils.copyLarge(in, outputStream);
+            }
+            needClean = true;
+        }
         return tempFile;
     }
 
     @Override
     public void transferTo(File distFile) throws IOException {
-        FileUtils.writeTo(tempFile, distFile, true);
+        if (tempFile != null) {
+            FileUtils.writeTo(tempFile, distFile, true);
+        } else {
+            try (InputStream in = new BufferedInputStream(inputStream)) {
+                FileUtils.writeTo(in, distFile);
+            }
+        }
     }
 
     @Override
     public void writeTo(File distFile) throws IOException {
-        FileUtils.writeTo(tempFile, distFile);
+        if (tempFile != null) {
+            FileUtils.writeTo(tempFile, distFile);
+        } else {
+            try (InputStream in = new BufferedInputStream(inputStream)) {
+                FileUtils.writeTo(in, distFile);
+            }
+        }
     }
 
     @Override

@@ -90,8 +90,9 @@ public interface IFileWrapper extends Closeable {
      * 获取文件对象
      *
      * @return 返回文件对象
+     * @throws IOException 可能产生的异常
      */
-    File getFile();
+    File getFile() throws IOException;
 
     /**
      * 转移文件到目标文件

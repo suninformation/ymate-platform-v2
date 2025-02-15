@@ -282,6 +282,20 @@ public class FileUtils {
     }
 
     /**
+     * 复制文件
+     *
+     * @param src  原文件流
+     * @param dest 目标文件
+     * @throws IOException 可能产生的异常
+     * @since 2.1.4
+     */
+    public static void writeTo(InputStream src, File dest) throws IOException {
+        try (BufferedOutputStream outputStream = new BufferedOutputStream(Files.newOutputStream(dest.toPath()))) {
+            IOUtils.copyLarge(src, outputStream);
+        }
+    }
+
+    /**
      * 从JAR包中提取/META-INF/{prefixPath}目录下的资源文件并复制到{targetFile}指定的目录中
      *
      * @param prefixPath 资源文件目录名称
