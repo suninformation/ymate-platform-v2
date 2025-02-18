@@ -16,6 +16,7 @@
 package net.ymate.platform.persistence.mongodb;
 
 import com.mongodb.client.gridfs.GridFSBucket;
+import com.mongodb.client.gridfs.GridFSDownloadStream;
 import com.mongodb.client.gridfs.model.GridFSFile;
 import com.mongodb.client.gridfs.model.GridFSUploadOptions;
 import net.ymate.platform.core.beans.annotation.Ignored;
@@ -152,6 +153,15 @@ public interface IGridFsSession extends ISession<IMongoConnectionHolder> {
      * @throws Exception 可能产生的任何异常
      */
     void download(String id, File distFile) throws Exception;
+
+    /**
+     * 开启文件下载数据流
+     *
+     * @param id 文件唯一标识
+     * @throws Exception 可能产生的任何异常
+     * @since 2.1.4
+     */
+    GridFSDownloadStream downloadStream(String id) throws Exception;
 
     /**
      * 判断指定id的文件是否存在

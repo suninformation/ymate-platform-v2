@@ -20,6 +20,7 @@ import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.gridfs.GridFSBucket;
 import com.mongodb.client.gridfs.GridFSBuckets;
+import com.mongodb.client.gridfs.GridFSDownloadStream;
 import com.mongodb.client.gridfs.GridFSFindIterable;
 import com.mongodb.client.gridfs.model.GridFSFile;
 import com.mongodb.client.gridfs.model.GridFSUploadOptions;
@@ -189,6 +190,14 @@ public class MongoGridFsSession extends AbstractSession<IMongoConnectionHolder> 
         try (OutputStream outputStream = Files.newOutputStream(distFile.toPath())) {
             download(id, outputStream);
         }
+    }
+
+    @Override
+    public GridFSDownloadStream downloadStream(String id) throws Exception {
+        if (StringUtils.isBlank(id)) {
+            throw new NullArgumentException("id");
+        }
+        return fsBucket.openDownloadStream(new ObjectId(id));
     }
 
     @Override
