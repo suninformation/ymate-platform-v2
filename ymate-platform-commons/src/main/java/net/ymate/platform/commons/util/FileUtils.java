@@ -225,7 +225,7 @@ public class FileUtils {
         if (!StringUtils.endsWith(prefix, "_")) {
             prefix = prefix.concat("_");
         }
-        File zipFile = File.createTempFile(prefix, ".zip");
+        File zipFile = createTempFile(prefix, ".zip");
         zipFile.deleteOnExit();
         try (ZipOutputStream outputStream = new ZipOutputStream(Files.newOutputStream(zipFile.toPath()))) {
             for (int idx = 0; idx < files.length; idx++) {
@@ -415,6 +415,20 @@ public class FileUtils {
      * @since 2.1.3
      */
     public static File createTempFile(String prefix, String fileName) throws IOException {
+        return createTempFile(prefix, fileName, 0);
+    }
+
+    /**
+     * 创建临时文件（尝试从指定的fileName提取其扩展名作为后缀，否则为空）
+     *
+     * @param prefix   前缀
+     * @param fileName 文件名
+     * @param index    索引序号
+     * @return 返回临时文件对象
+     * @throws IOException 可能产生的异常
+     * @since 2.1.4
+     */
+    public static File createTempFile(String prefix, String fileName, int index) throws IOException {
         String suffix = null;
         if (StringUtils.isNotBlank(fileName)) {
             String extName = StringUtils.trimToNull(getExtName(fileName));
@@ -422,7 +436,14 @@ public class FileUtils {
                 suffix = String.format(".%s", extName);
             }
         }
-        return File.createTempFile(prefix, suffix);
+        if (index > 0) {
+            suffix = String.format("_%d%s", index, StringUtils.trimToEmpty(suffix));
+        }
+        File tmpdir = new File(System.getProperty("java.io.tmpdir"));
+        if (!tmpdir.exists() && !tmpdir.mkdir()) {
+            throw new IOException(String.format("Unable to create directory: %s", tmpdir.getPath()));
+        }
+        return File.createTempFile(prefix, suffix, tmpdir);
     }
 
     /**

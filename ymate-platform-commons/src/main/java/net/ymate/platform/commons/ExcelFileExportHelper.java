@@ -361,7 +361,7 @@ public final class ExcelFileExportHelper {
                     }
                 }
             }
-            File tempFile = File.createTempFile(prefix(), String.format("_%d.%s", index, EXCEL_TYPE_XLSX));
+            File tempFile = FileUtils.createTempFile(prefix(), String.format(".%s", EXCEL_TYPE_XLSX), index);
             tempFile.deleteOnExit();
             try (OutputStream outputStream = Files.newOutputStream(tempFile.toPath())) {
                 workbook.write(outputStream);
@@ -442,7 +442,7 @@ public final class ExcelFileExportHelper {
                 }
             }
         }
-        File tempFile = File.createTempFile(prefix(), "_" + index + ".csv");
+        File tempFile = FileUtils.createTempFile(prefix(), ".csv", index);
         tempFile.deleteOnExit();
         try (OutputStream outputStream = Files.newOutputStream(tempFile.toPath())) {
             IOUtils.write(tableBuilder.toString(), outputStream, StringUtils.defaultIfBlank(charset, "GB2312"));
@@ -470,7 +470,7 @@ public final class ExcelFileExportHelper {
     }
 
     private File doExport(JxlsHelper jxlsHelper, InputStream templateStream, String fileExtName, int index, Map<String, Object> data) throws IOException {
-        File tempFile = File.createTempFile(prefix(), String.format("_%d.%s", index, fileExtName));
+        File tempFile = FileUtils.createTempFile(prefix(), String.format(".%s", fileExtName), index);
         tempFile.deleteOnExit();
         try (OutputStream fileOutputStream = Files.newOutputStream(tempFile.toPath())) {
             jxlsHelper.processTemplate(templateStream, fileOutputStream, new Context(data));
