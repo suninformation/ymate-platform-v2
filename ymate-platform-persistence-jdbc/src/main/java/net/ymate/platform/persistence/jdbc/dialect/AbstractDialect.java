@@ -144,15 +144,12 @@ public abstract class AbstractDialect implements IDialect {
     protected String doRemoveOrderByElements(String originSql) {
         try {
             net.sf.jsqlparser.statement.Statement statement = new CCJSqlParserManager().parse(new StringReader(originSql));
-            if (statement instanceof Select) {
-                Select select = (Select) statement;
-                if (select.getSelectBody() instanceof PlainSelect) {
-                    PlainSelect selectBody = (PlainSelect) select.getSelectBody();
-                    if (null != selectBody.getOrderByElements()) {
-                        selectBody.setOrderByElements(null);
-                    }
-                    return select.toString();
+            if (statement instanceof PlainSelect) {
+                PlainSelect select = ((Select) statement).getPlainSelect();
+                if (null != select.getOrderByElements()) {
+                    select.setOrderByElements(null);
                 }
+                return select.toString();
             }
         } catch (JSQLParserException ignored) {
         }

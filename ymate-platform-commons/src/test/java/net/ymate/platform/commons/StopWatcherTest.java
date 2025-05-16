@@ -41,7 +41,7 @@ public class StopWatcherTest {
         });
         assertNotNull(watcher);
         StopWatch stopWatch = watcher.getStopWatch();
-        LOG.info(String.format("watch: %d ms", stopWatch.getTime()));
+        LOG.info(String.format("watch: %d ms", stopWatch.getTime(TimeUnit.MILLISECONDS)));
         LOG.info(String.format("watch: %s sec", MathCalcHelper.bind(stopWatch.getTime(TimeUnit.MICROSECONDS)).scale(3).divide(1000000L).value()));
     }
 
@@ -56,7 +56,7 @@ public class StopWatcherTest {
         } catch (Exception ignored) {
         }
         assertNotNull(watcher);
-        LOG.info(String.format("testWatch: %dms", watcher.getStopWatch().getTime()));
+        LOG.info(String.format("testWatch: %dms", watcher.getStopWatch().getTime(TimeUnit.MILLISECONDS)));
     }
 
     @Test
@@ -67,6 +67,6 @@ public class StopWatcherTest {
         } catch (Exception ignored) {
         }
         assertNotNull(watcher);
-        assertEquals(watcher.getValue().longValue(), 10L);
+        assertEquals(10L, watcher.getValue().longValue());
     }
 }

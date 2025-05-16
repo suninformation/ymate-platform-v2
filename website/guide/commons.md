@@ -2584,7 +2584,7 @@ Excel 文件数据导入助手类，用于辅助操作和分析 Excel 文件中�
 <dependency>
     <groupId>org.apache.poi</groupId>
     <artifactId>poi-ooxml</artifactId>
-    <version>5.2.2</version>
+    <version>5.4.0</version>
 </dependency>
 ```
 
@@ -2640,12 +2640,12 @@ public class Demo {
  <dependency>
     <groupId>org.apache.poi</groupId>
     <artifactId>poi-ooxml</artifactId>
-    <version>5.2.2</version>
+    <version>5.4.0</version>
 </dependency>
 <dependency>
     <groupId>org.jxls</groupId>
     <artifactId>jxls-poi</artifactId>
-    <version>2.12.0</version>
+    <version>2.14.0</version>
 </dependency>
 ```
 

@@ -30,6 +30,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 /**
  * 数据库操作器接口抽象实现
@@ -80,7 +81,7 @@ public abstract class AbstractOperator implements IOperator {
                 this.executed = true;
             } finally {
                 time.stop();
-                this.expenseTime = time.getTime();
+                this.expenseTime = time.getTime(TimeUnit.MILLISECONDS);
                 //
                 if (LOG.isInfoEnabled()) {
                     IDatabaseDataSourceConfig dataSourceConfig = this.connectionHolder.getDataSourceConfig();

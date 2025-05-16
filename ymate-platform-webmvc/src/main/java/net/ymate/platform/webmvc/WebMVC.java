@@ -65,6 +65,7 @@ import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 /**
  * MVC框架管理器
@@ -575,7 +576,7 @@ public final class WebMVC implements IModule, IWebMvc {
         } finally {
             if (consumeTime != null && owner.isDevEnv() && LOG.isDebugEnabled()) {
                 consumeTime.stop();
-                LOG.debug(String.format("Process request completed: %s:%s: %d, total execution time: %dms", context.getHttpMethod(), context.getRequestMapping(), response.getStatus(), consumeTime.getTime()));
+                LOG.debug(String.format("Process request completed: %s:%s: %d, total execution time: %dms", context.getHttpMethod(), context.getRequestMapping(), response.getStatus(), consumeTime.getTime(TimeUnit.MILLISECONDS)));
             }
         }
     }

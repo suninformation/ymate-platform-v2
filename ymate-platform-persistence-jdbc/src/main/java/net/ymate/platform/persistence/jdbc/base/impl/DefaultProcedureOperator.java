@@ -32,6 +32,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 /**
  * 数据库存储过程操作器接口实现
@@ -73,7 +74,7 @@ public class DefaultProcedureOperator<T> extends AbstractOperator implements IPr
                 this.executed = true;
             } finally {
                 time.stop();
-                this.expenseTime = time.getTime();
+                this.expenseTime = time.getTime(TimeUnit.MILLISECONDS);
                 //
                 if (LOG.isInfoEnabled()) {
                     IDatabaseDataSourceConfig dataSourceConfig = this.getConnectionHolder().getDataSourceConfig();

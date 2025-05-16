@@ -47,6 +47,7 @@ import org.apache.commons.logging.LogFactory;
 
 import java.lang.annotation.Annotation;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @author 刘镇 (suninformation@163.com) on 2019-04-26 01:12
@@ -188,7 +189,7 @@ public final class Application implements IApplication {
                 stopWatch.stop();
                 if (LOG.isInfoEnabled()) {
                     LOG.info(String.format("RecycleHelper has registered the number of resources to be recycled: %d, global: %d", recycleHelper.size(), RecycleHelper.getInstance().size()));
-                    LOG.info(String.format("Initialization completed, Total time: %dms", stopWatch.getTime()));
+                    LOG.info(String.format("Initialization completed, Total time: %dms", stopWatch.getTime(TimeUnit.MILLISECONDS)));
                 }
             }
             //
