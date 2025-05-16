@@ -32,4 +32,10 @@ public @interface QOrderBy {
      * @return 参与排序的字段
      */
     QOrderField[] value();
+
+    /**
+     * @return 是否替换父类注解声明
+     * @since 2.1.4
+     */
+    boolean replace() default false;
 }

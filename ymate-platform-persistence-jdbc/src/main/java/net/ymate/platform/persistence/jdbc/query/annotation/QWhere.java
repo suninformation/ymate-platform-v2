@@ -32,4 +32,10 @@ public @interface QWhere {
      * @return 条件集合
      */
     QCond[] value();
+
+    /**
+     * @return 是否替换父类注解声明
+     * @since 2.1.4
+     */
+    boolean replace() default false;
 }

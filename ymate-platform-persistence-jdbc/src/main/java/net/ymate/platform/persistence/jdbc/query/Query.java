@@ -308,7 +308,7 @@ public class Query<T> extends QueryHandleAdapter<T> {
                 throw new NullArgumentException("queryClass");
             }
             this.queryClass = queryClass;
-            this.distinct = queryClass.isAnnotationPresent(QDistinct.class);
+            this.distinct = !ClassUtils.getAnnotation(queryClass, QDistinct.class, true, true).isEmpty();
         }
 
         public Executor<T> addExcludeField(String field) {
@@ -470,13 +470,18 @@ public class Query<T> extends QueryHandleAdapter<T> {
             if (!ignoreOrderBy && where != null) {
                 OrderBy orderBy = where.orderBy();
                 if (orderBy == null || orderBy.isEmpty()) {
-                    QOrderBy qOrderBy = queryClass.getAnnotation(QOrderBy.class);
-                    if (qOrderBy != null) {
-                        for (QOrderField qOrderField : qOrderBy.value()) {
-                            if (QOrderField.Type.DESC.equals(qOrderField.type())) {
-                                where.orderByDesc(qOrderField.prefix(), qOrderField.value(), qOrderField.wrapIdentifier());
-                            } else {
-                                where.orderByAsc(qOrderField.prefix(), qOrderField.value(), qOrderField.wrapIdentifier());
+                    List<QOrderBy> qOrderBys = ClassUtils.getAnnotation(queryClass, QOrderBy.class, true, false);
+                    if (!qOrderBys.isEmpty()) {
+                        for (QOrderBy qOrderBy : qOrderBys) {
+                            for (QOrderField qOrderField : qOrderBy.value()) {
+                                if (QOrderField.Type.DESC.equals(qOrderField.type())) {
+                                    where.orderByDesc(qOrderField.prefix(), qOrderField.value(), qOrderField.wrapIdentifier());
+                                } else {
+                                    where.orderByAsc(qOrderField.prefix(), qOrderField.value(), qOrderField.wrapIdentifier());
+                                }
+                            }
+                            if (qOrderBy.replace()) {
+                                break;
                             }
                         }
                     }
@@ -488,21 +493,25 @@ public class Query<T> extends QueryHandleAdapter<T> {
             if (where != null) {
                 GroupBy groupBy = where.groupBy();
                 if (groupBy == null || groupBy.isEmpty()) {
-                    QGroupBy qGroupBy = queryClass.getAnnotation(QGroupBy.class);
-                    if (qGroupBy != null) {
-                        if (ArrayUtils.isEmpty(qGroupBy.value())) {
-                            for (QField qField : groupedFields) {
-                                where.groupBy(Fields.field(qField.prefix(), qField.value()), qField.wrapIdentifier());
-                            }
-                        } else {
-                            for (QField qField : qGroupBy.value()) {
-                                where.groupBy(Fields.field(qField.prefix(), qField.value()), qField.wrapIdentifier());
-                            }
-                            Cond havingCond = doParseCond(qGroupBy.having());
-                            if (havingCond != null && !havingCond.isEmpty()) {
-                                where.having(havingCond);
-                                if (qGroupBy.rollup()) {
-                                    where.groupByRollup();
+                    List<QGroupBy> qGroupBys = ClassUtils.getAnnotation(queryClass, QGroupBy.class, true, false);
+                    if (!qGroupBys.isEmpty()) {
+                        for (QGroupBy qGroupBy : qGroupBys) {
+                            if (qGroupBy != null) {
+                                if (ArrayUtils.isEmpty(qGroupBy.value())) {
+                                    for (QField qField : groupedFields) {
+                                        where.groupBy(Fields.field(qField.prefix(), qField.value()), qField.wrapIdentifier());
+                                    }
+                                } else {
+                                    for (QField qField : qGroupBy.value()) {
+                                        where.groupBy(Fields.field(qField.prefix(), qField.value()), qField.wrapIdentifier());
+                                    }
+                                    Cond havingCond = doParseCond(qGroupBy.having());
+                                    if (havingCond != null && !havingCond.isEmpty()) {
+                                        where.having(havingCond);
+                                        if (qGroupBy.rollup()) {
+                                            where.groupByRollup();
+                                        }
+                                    }
                                 }
                             }
                         }
@@ -513,11 +522,18 @@ public class Query<T> extends QueryHandleAdapter<T> {
 
         private void doParseWhere(Select select, List<QField> groupedFields) {
             Where selectWhere = select.where();
-            QWhere qWhere = queryClass.getAnnotation(QWhere.class);
-            if (qWhere != null) {
-                Cond newCond = doParseCond(qWhere.value());
-                if (newCond != null && !newCond.isEmpty()) {
-                    selectWhere.cond().cond(newCond);
+            List<QWhere> qWheres = ClassUtils.getAnnotation(queryClass, QWhere.class, true, false);
+            if (!qWheres.isEmpty()) {
+                for (QWhere qWhere : qWheres) {
+                    if (qWhere != null) {
+                        Cond newCond = doParseCond(qWhere.value());
+                        if (newCond != null && !newCond.isEmpty()) {
+                            selectWhere.cond().cond(newCond);
+                        }
+                        if (qWhere.replace()) {
+                            break;
+                        }
+                    }
                 }
             }
             doParseOrderBy(selectWhere);
@@ -530,11 +546,18 @@ public class Query<T> extends QueryHandleAdapter<T> {
         public Select buildSelect() {
             Select select = Select.create(this);
             // Parse From
-            QFroms qFroms = queryClass.getAnnotation(QFroms.class);
-            if (qFroms != null) {
-                Arrays.stream(qFroms.value()).forEachOrdered(qFrom -> doParseFrom(select, qFrom));
+            List<QFroms> qFromsList = ClassUtils.getAnnotation(queryClass, QFroms.class, true, false);
+            if (!qFromsList.isEmpty()) {
+                for (QFroms qFroms : qFromsList) {
+                    Arrays.stream(qFroms.value()).forEachOrdered(qFrom -> doParseFrom(select, qFrom));
+                }
             }
-            doParseFrom(select, queryClass.getAnnotation(QFrom.class));
+            List<QFrom> qFromList = ClassUtils.getAnnotation(queryClass, QFrom.class, true, false);
+            if (!qFromList.isEmpty()) {
+                for (QFrom qFrom : qFromList) {
+                    doParseFrom(select, qFrom);
+                }
+            }
             // Parse Field
             List<QField> groupedFields = new ArrayList<>();
             ClassUtils.getFields(queryClass, true)
@@ -550,11 +573,18 @@ public class Query<T> extends QueryHandleAdapter<T> {
                         }
                     });
             // Parse Join
-            QJoins qJoins = queryClass.getAnnotation(QJoins.class);
-            if (qJoins != null) {
-                Arrays.stream(qJoins.value()).forEachOrdered(qJoin -> doParseJoin(select, qJoin));
+            List<QJoins> qJoinsList = ClassUtils.getAnnotation(queryClass, QJoins.class, true, false);
+            if (!qJoinsList.isEmpty()) {
+                for (QJoins qJoins : qJoinsList) {
+                    Arrays.stream(qJoins.value()).forEachOrdered(qJoin -> doParseJoin(select, qJoin));
+                }
             }
-            doParseJoin(select, queryClass.getAnnotation(QJoin.class));
+            List<QJoin> qJoinList = ClassUtils.getAnnotation(queryClass, QJoin.class, true, false);
+            if (!qJoinList.isEmpty()) {
+                for (QJoin qJoin : qJoinList) {
+                    doParseJoin(select, qJoin);
+                }
+            }
             // Parse Where
             if (where != null && replaceWhere) {
                 doParseOrderBy(where);

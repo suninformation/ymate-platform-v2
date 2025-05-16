@@ -142,7 +142,8 @@ public class ClassUtils {
                         return (T) implClass.getConstructor(parameterTypes).newInstance(initArgs);
                     }
                     return (T) implClass.newInstance();
-                } catch (IllegalAccessException | IllegalArgumentException | InstantiationException | NoSuchMethodException | SecurityException |
+                } catch (IllegalAccessException | IllegalArgumentException | InstantiationException |
+                         NoSuchMethodException | SecurityException |
                          InvocationTargetException e) {
                     boolean flag = true;
                     if (e instanceof NoSuchMethodException) {
@@ -319,21 +320,69 @@ public class ClassUtils {
     public static <A extends Annotation> A getAnnotation(Class<?> targetClass, Class<A> annotationClass) {
         A annotation = targetClass.getAnnotation(annotationClass);
         if (annotation == null) {
-            try {
-                String targetClassName = targetClass.getName();
-                if (StringUtils.contains(targetClassName, JAVASSIST_PROXY_CLASS_FLAG)) {
-                    targetClassName = StringUtils.substringBefore(targetClassName, JAVASSIST_PROXY_CLASS_FLAG);
-                } else if (StringUtils.contains(targetClassName, ANONYMOUS_CLASS_FLAG)) {
-                    targetClassName = StringUtils.substringBefore(targetClassName, ANONYMOUS_CLASS_FLAG);
-                }
-                Class<?> clazz = loadClass(targetClassName, targetClass);
-                if (clazz != null) {
-                    annotation = clazz.getAnnotation(annotationClass);
-                }
-            } catch (ClassNotFoundException ignored) {
+            Class<?> clazz = getClassNoProxy(targetClass);
+            if (clazz != null) {
+                annotation = clazz.getAnnotation(annotationClass);
             }
         }
         return annotation;
+    }
+
+    /**
+     * @param targetClass 目标类型
+     * @return 尝试去代理目标类型
+     * @since 2.1.4
+     */
+    public static Class<?> getClassNoProxy(Class<?> targetClass) {
+        String targetClassName = targetClass.getName();
+        if (StringUtils.contains(targetClassName, JAVASSIST_PROXY_CLASS_FLAG)) {
+            targetClassName = StringUtils.substringBefore(targetClassName, JAVASSIST_PROXY_CLASS_FLAG);
+        } else if (StringUtils.contains(targetClassName, ANONYMOUS_CLASS_FLAG)) {
+            targetClassName = StringUtils.substringBefore(targetClassName, ANONYMOUS_CLASS_FLAG);
+        } else {
+            return targetClass;
+        }
+        try {
+            return loadClass(targetClassName, targetClass);
+        } catch (ClassNotFoundException ignored) {
+        }
+        return null;
+    }
+
+    /**
+     * @param targetClass     目标类型
+     * @param annotationClass 注解类型
+     * @param parent          是否包含其父类对象
+     * @param matchAny        是否任意匹配
+     * @param <A>             注解类型
+     * @return 尝试获取目标类上声明的注解
+     * @since 2.1.4
+     */
+    public static <A extends Annotation> List<A> getAnnotation(Class<?> targetClass, Class<A> annotationClass, boolean parent, boolean matchAny) {
+        List<A> annotations = new ArrayList<>();
+        A anno = getAnnotation(targetClass, annotationClass);
+        if (anno != null) {
+            annotations.add(anno);
+            if (matchAny) {
+                return annotations;
+            }
+        }
+        if (parent) {
+            Class<?> superClass = targetClass.getSuperclass();
+            do {
+                if (superClass != null) {
+                    A superAnno = getAnnotation(superClass, annotationClass);
+                    if (superAnno != null) {
+                        annotations.add(superAnno);
+                        if (matchAny) {
+                            break;
+                        }
+                    }
+                    superClass = superClass.getSuperclass();
+                }
+            } while (superClass != null);
+        }
+        return annotations;
     }
 
     /**
