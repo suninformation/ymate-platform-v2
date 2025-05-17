@@ -128,6 +128,13 @@ public abstract class AbstractCrudRepository<PK extends Serializable, ENTITY ext
     }
 
     protected <VO_BEAN> VO_BEAN doQuery(IDatabase owner, String dataSourceName, Class<VO_BEAN> voBeanClass, String prefix, PK id, Fields excludedFields) throws Exception {
+        return doQuery(owner, dataSourceName, voBeanClass, prefix, id, excludedFields, null);
+    }
+
+    /**
+     * @since 2.1.4
+     */
+    protected <VO_BEAN> VO_BEAN doQuery(IDatabase owner, String dataSourceName, Class<VO_BEAN> voBeanClass, String prefix, PK id, Fields excludedFields, Cond additionalCond) throws Exception {
         if (id == null) {
             throw new NullArgumentException("id");
         }
@@ -139,6 +146,9 @@ public abstract class AbstractCrudRepository<PK extends Serializable, ENTITY ext
             }
         } else {
             entityMeta.getPrimaryKeys().stream().findFirst().ifPresent(primaryKey -> cond.andIfNeed().eqWrap(prefix, primaryKey).param(id));
+        }
+        if (additionalCond != null && !additionalCond.isEmpty()) {
+            cond.andIfNeed(additionalCond);
         }
         return Query.build(owner, dataSourceName, voBeanClass).where(cond.buildWhere(), true)
                 .addExcludeField(excludedFields)
