@@ -870,14 +870,14 @@ public class ClassUtils {
         }
 
         public BeanWrapper<T> setValue(String fieldName, Object value) throws IllegalAccessException, InvocationTargetException {
-            Field field = fieldMap.get(fieldName);
-            if (field != null) {
-                field.set(target, BlurObject.bind(value).toObjectValue(field.getType()));
+            // 优先尝试通过set方法进行赋值
+            Method method = methodMap.get(String.format("set%s", StringUtils.capitalize(fieldName)));
+            if (method != null && method.getParameterCount() == 1) {
+                method.invoke(target, BlurObject.bind(value).toObjectValue(method.getParameters()[0].getType()));
             } else {
-                // 尝试通过set方法进行赋值
-                Method method = methodMap.get(String.format("set%s", StringUtils.capitalize(fieldName)));
-                if (method != null && method.getParameterCount() == 1) {
-                    method.invoke(target, BlurObject.bind(value).toObjectValue(method.getParameters()[0].getType()));
+                Field field = fieldMap.get(fieldName);
+                if (field != null) {
+                    return setValue(field, value);
                 }
             }
             return this;
@@ -889,11 +889,7 @@ public class ClassUtils {
         }
 
         public Object getValue(String fieldName) throws IllegalAccessException, InvocationTargetException {
-            Field field = fieldMap.get(fieldName);
-            if (field != null) {
-                return field.get(target);
-            }
-            // 尝试通过get或is方法取值
+            // 优先尝试通过get或is方法取值
             String capFieldName = StringUtils.capitalize(fieldName);
             Method method = methodMap.get(String.format("get%s", capFieldName));
             if (method == null) {
@@ -901,6 +897,11 @@ public class ClassUtils {
             }
             if (method != null && method.getParameterCount() == 0) {
                 return method.invoke(target);
+            } else {
+                Field field = fieldMap.get(fieldName);
+                if (field != null) {
+                    return getValue(field);
+                }
             }
             return null;
         }
