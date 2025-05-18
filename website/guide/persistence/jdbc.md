@@ -2275,7 +2275,7 @@ IResultSet<UserEntity> users = Select.create("user", "u")
     .page(1)
     .where(Cond.create().gtEq("u", "age").param(20))
     .distinct()
-    .find(new EntityResultSetHandler<>());
+    .find(new EntityResultSetHandler<>(UserEntity.class));
 ```
 
 
