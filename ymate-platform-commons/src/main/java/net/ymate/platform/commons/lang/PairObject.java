@@ -79,6 +79,20 @@ public class PairObject<K, V> implements Serializable, Cloneable {
         return this;
     }
 
+    /**
+     * @since 2.1.4
+     */
+    public boolean isEmpty() {
+        return key == null && value == null;
+    }
+
+    /**
+     * @since 2.1.4
+     */
+    public boolean isAnyEmpty() {
+        return key == null || value == null;
+    }
+
     @Override
     public int hashCode() {
         int result = key.hashCode();
