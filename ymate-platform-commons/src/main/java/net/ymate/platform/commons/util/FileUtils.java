@@ -91,7 +91,7 @@ public class FileUtils {
         String suffix = null;
         if (fileName != null && !fileName.isEmpty()) {
             int pos = fileName.lastIndexOf('.');
-            if (pos > 0 && pos < fileName.length() - 1) {
+            if ((pos == 0 && StringUtils.startsWith(fileName, ".") || pos > 0) && pos < fileName.length() - 1) {
                 suffix = fileName.substring(pos + 1);
             }
         }
