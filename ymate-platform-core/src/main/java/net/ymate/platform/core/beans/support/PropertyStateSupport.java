@@ -174,11 +174,24 @@ public class PropertyStateSupport<T> {
      * @since 2.1.3
      */
     public boolean isChanged(String propertyOrAliasName) {
-        return StringUtils.isNotBlank(propertyOrAliasName) && stateMetas.stream()
-                .filter(stateMeta -> StringUtils.equalsAny(propertyOrAliasName, stateMeta.getPropertyName(), stateMeta.getAliasName()))
-                .findFirst()
-                .filter(PropertyStateMeta::isChanged)
-                .isPresent();
+        PropertyStateMeta returnValue = getProperty(propertyOrAliasName);
+        return returnValue != null && returnValue.isChanged();
+    }
+
+    /**
+     * @param propertyOrAliasName 属性名或别名
+     * @return 返回指定名称的属性状态对象
+     * @since 2.1.4
+     */
+    public PropertyStateMeta getProperty(String propertyOrAliasName) {
+        PropertyStateMeta returnValue = null;
+        if (StringUtils.isNotBlank(propertyOrAliasName)) {
+            returnValue = stateMetas.stream()
+                    .filter(stateMeta -> StringUtils.equalsAny(propertyOrAliasName, stateMeta.getPropertyName(), stateMeta.getAliasName()))
+                    .findFirst()
+                    .orElse(null);
+        }
+        return returnValue;
     }
 
     /**
