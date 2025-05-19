@@ -15,6 +15,7 @@
  */
 package net.ymate.platform.persistence.jdbc.repo;
 
+import net.ymate.platform.commons.lang.BlurObject;
 import net.ymate.platform.commons.lang.PairObject;
 import net.ymate.platform.commons.util.ClassUtils;
 import net.ymate.platform.core.persistence.Fields;
@@ -40,6 +41,10 @@ import java.io.Serializable;
  */
 public abstract class AbstractCrudRepository<PK extends Serializable, ENTITY extends IEntity<PK>, QUERY_BEAN, CREATE_BEAN, UPDATE_BEAN, VERSION extends Serializable> extends AbstractRepository {
 
+    public static final String DATA_KEY_ID = "id";
+
+    public static final String DATA_KEY_EFFECT_COUNTS = "effectCounts";
+
     private final Class<ENTITY> entityClass;
 
     protected AbstractCrudRepository(Class<ENTITY> entityClass) {
@@ -54,10 +59,15 @@ public abstract class AbstractCrudRepository<PK extends Serializable, ENTITY ext
         }
         ENTITY entity = ClassUtils.wrapper(createBean).duplicate(entityClass.newInstance());
         ErrorCode errorCode = beforeCreate(owner, dataSourceName, entity, createBean);
-        if (errorCode == null) {
+        if (errorCode == null || errorCode.isSucceed()) {
             entity = doInsert(owner, dataSourceName, entity, filter);
             if (entity != null) {
-                errorCode = ErrorCode.succeed().dataAttr("id", entity.getId());
+                if (errorCode == null) {
+                    errorCode = ErrorCode.succeed();
+                }
+                errorCode.dataAttr(DATA_KEY_ID, entity.getId());
+            } else {
+                errorCode = null;
             }
         }
         return PairObject.bind(errorCode, entity);
@@ -80,13 +90,17 @@ public abstract class AbstractCrudRepository<PK extends Serializable, ENTITY ext
             int effectCounts = 0;
             if (stateWrapper.hasChanged()) {
                 errorCode = beforeUpdate(owner, dataSourceName, stateWrapper, updateBean, version);
-                if (errorCode == null) {
+                if (errorCode == null || errorCode.isSucceed()) {
+                    if (errorCode != null) {
+                        effectCounts = BlurObject.bind(errorCode.dataAttr(DATA_KEY_EFFECT_COUNTS)).toIntValue();
+                    }
                     entity = stateWrapper.update(filter);
-                    effectCounts = entity != null ? 1 : 0;
+                    effectCounts += (entity != null ? 1 : 0);
+                    if (errorCode == null) {
+                        errorCode = ErrorCode.succeed();
+                    }
+                    errorCode.dataAttr(DATA_KEY_EFFECT_COUNTS, effectCounts);
                 }
-            }
-            if (errorCode == null) {
-                errorCode = ErrorCode.succeed().dataAttr("effectCounts", effectCounts);
             }
         }
         return PairObject.bind(errorCode, entity);

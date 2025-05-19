@@ -24,7 +24,7 @@ import java.io.Serializable;
  * @param <V> 值类型
  * @author 刘镇 (suninformation@163.com) on 2010-4-17 上午12:07:42
  */
-public class PairObject<K, V> implements Serializable, Cloneable {
+public class PairObject<K, V> implements Serializable {
 
     /**
      *
