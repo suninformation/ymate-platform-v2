@@ -63,7 +63,7 @@ public abstract class AbstractCrudRepository<PK extends Serializable, ENTITY ext
         return PairObject.bind(errorCode, entity);
     }
 
-    protected abstract ErrorCode beforeUpdate(IDatabase owner, String dataSourceName, ENTITY entity, UPDATE_BEAN updateBean, VERSION version) throws Exception;
+    protected abstract ErrorCode beforeUpdate(IDatabase owner, String dataSourceName, EntityStateWrapper<ENTITY> stateWrapper, UPDATE_BEAN updateBean, VERSION version) throws Exception;
 
     protected PairObject<ErrorCode, ENTITY> doUpdate(IDatabase owner, String dataSourceName, PK id, UPDATE_BEAN updateBean, VERSION version, Fields filter, boolean ignoreNull) throws Exception {
         if (id == null) {
@@ -79,7 +79,7 @@ public abstract class AbstractCrudRepository<PK extends Serializable, ENTITY ext
             entity = ClassUtils.wrapper(updateBean).duplicate(stateWrapper.getEntity());
             int effectCounts = 0;
             if (stateWrapper.hasChanged()) {
-                errorCode = beforeUpdate(owner, dataSourceName, entity, updateBean, version);
+                errorCode = beforeUpdate(owner, dataSourceName, stateWrapper, updateBean, version);
                 if (errorCode == null) {
                     entity = stateWrapper.update(filter);
                     effectCounts = entity != null ? 1 : 0;
