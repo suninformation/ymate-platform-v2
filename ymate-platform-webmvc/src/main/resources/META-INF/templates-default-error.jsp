@@ -22,7 +22,7 @@
     out.write("<body><div class=\"content\"><div class=\"icon");
     out.write(ret == 0 ? " icon-warning" : " icon-wrong");
     out.write("\"></div><h1>");
-    Integer status = BlurObject.bind(request.getParameter("status")).toInteger();
+    Integer status = BlurObject.bind(request.getParameter("_sc")).toInteger();
     if (status != null) {
         out.write(WebUtils.httpStatusI18n(WebUtils.getOwner(), status));
     } else {
