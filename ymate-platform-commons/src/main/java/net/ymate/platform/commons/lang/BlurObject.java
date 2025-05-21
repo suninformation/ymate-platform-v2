@@ -311,6 +311,9 @@ public class BlurObject implements Serializable {
         if (attr instanceof Character[]) {
             return String.valueOf(ArrayUtils.toPrimitive((Character[]) attr));
         }
+        if (attr instanceof Object[]) {
+            return StringUtils.join((Object[]) attr, "|");
+        }
         if (attr instanceof Clob) {
             Clob clob = (Clob) attr;
             try (Reader reader = clob.getCharacterStream()) {
@@ -598,6 +601,9 @@ public class BlurObject implements Serializable {
         Object object = null;
         if (clazz.equals(String.class)) {
             object = toStringValue();
+        } else if (clazz.equals(String[].class)) {
+            String objectStr = toStringValue();
+            object = StringUtils.split(objectStr, "|");
         } else if (clazz.equals(Double.class)) {
             if (nullable) {
                 object = toDoubleValue();
