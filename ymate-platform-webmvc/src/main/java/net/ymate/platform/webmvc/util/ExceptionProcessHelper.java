@@ -18,6 +18,7 @@ package net.ymate.platform.webmvc.util;
 import net.ymate.platform.commons.ReentrantLockHelper;
 import net.ymate.platform.commons.exception.DataVersionMismatchException;
 import net.ymate.platform.commons.exception.ServiceException;
+import net.ymate.platform.commons.exception.ServiceStatusException;
 import net.ymate.platform.commons.util.RuntimeUtils;
 import net.ymate.platform.core.support.ErrorCode;
 import net.ymate.platform.webmvc.base.Type;
@@ -57,6 +58,7 @@ public final class ExceptionProcessHelper {
                 .addAttribute(Type.Const.DESCRIPTION, ((UserSessionForceOfflineException) target).getDescription()));
         DEFAULT.registerProcessor(ServiceException.class, target -> new IExceptionProcessor.Result(((ServiceException) target).getErrorCode(), target.getMessage())
                 .addAttributes(((ServiceException) target).getAttributes()));
+        DEFAULT.registerProcessor(ServiceStatusException.class, target -> new IExceptionProcessor.Result(((ServiceStatusException) target).getStatus(), target.getMessage()));
     }
 
     /**
