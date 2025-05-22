@@ -107,6 +107,13 @@ public abstract class AbstractCrudRepository<PK extends Serializable, ENTITY ext
     }
 
     protected int doUpdate(IDatabase owner, String dataSourceName, PK[] ids, Fields fields, Params values) throws Exception {
+        return doUpdate(owner, dataSourceName, ids, fields, values, null);
+    }
+
+    /**
+     * @since 2.1.4
+     */
+    protected int doUpdate(IDatabase owner, String dataSourceName, PK[] ids, Fields fields, Params values, Cond additionalCond) throws Exception {
         if (ArrayUtils.isEmpty(ids)) {
             throw new NullArgumentException("ids");
         }
@@ -120,6 +127,9 @@ public abstract class AbstractCrudRepository<PK extends Serializable, ENTITY ext
         if (entityMeta.getPropertyNames().containsAll(fields.fields())) {
             Cond cond = Cond.create(owner, dataSourceName);
             entityMeta.getPrimaryKeys().forEach(primaryKey -> cond.andIfNeed().eqWrap(primaryKey));
+            if (additionalCond != null && !additionalCond.isEmpty()) {
+                cond.andIfNeed(additionalCond);
+            }
             //
             Update update = Update.create(owner, dataSourceName, entityClass)
                     .field(fields)
