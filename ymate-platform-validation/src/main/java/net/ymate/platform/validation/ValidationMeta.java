@@ -71,7 +71,7 @@ public final class ValidationMeta implements Serializable {
         // 处理targetClass所有Field成员属性
         fields.putAll(parseClassFields(null, null, targetClass));
         // 处理targetClass所有Method方法
-        for (Method method : targetClass.getDeclaredMethods()) {
+        for (Method method : ClassUtils.getMethods(targetClass, true)) {
             if (!ClassUtils.isNormalMethod(method)) {
                 continue;
             }
@@ -145,7 +145,7 @@ public final class ValidationMeta implements Serializable {
             targetClass = ClassUtils.getArrayClassType(targetClass);
         }
         if (targetClass != null) {
-            for (Field field : targetClass.getDeclaredFields()) {
+            for (Field field : ClassUtils.getFields(targetClass, true)) {
                 if (Modifier.isStatic(field.getModifiers())) {
                     continue;
                 }

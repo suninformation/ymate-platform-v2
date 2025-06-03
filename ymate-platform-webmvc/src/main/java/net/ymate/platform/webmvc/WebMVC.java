@@ -236,7 +236,7 @@ public final class WebMVC implements IModule, IWebMvc {
     public boolean registerController(String requestMappingPrefix, Class<?> targetClass) throws Exception {
         boolean isValid = false;
         if (ClassUtils.isNormalClass(targetClass) && !targetClass.isInterface()) {
-            for (Method method : targetClass.getDeclaredMethods()) {
+            for (Method method : ClassUtils.getMethods(targetClass, true)) {
                 if (method.isAnnotationPresent(RequestMapping.class) && ClassUtils.isNormalMethod(method)) {
                     RequestMeta requestMeta = new RequestMeta(requestMappingPrefix, targetClass, method);
                     config.getRequestMappingParser().registerRequestMeta(requestMeta);
