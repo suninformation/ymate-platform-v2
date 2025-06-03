@@ -204,6 +204,8 @@ public final class EntityMeta implements Serializable {
         PropertyMeta propertyMeta = null;
         // 忽略属性名称已存在的Field对象
         String propName = StringUtils.defaultIfBlank(property.name(), ClassUtils.fieldNameToPropertyName(field.getName(), 0));
+        // 为防止不同数据库系统返回字段名称大小写不一致，这里将名称转为小写字符
+        propName = StringUtils.lowerCase(propName);
         if (!targetMeta.containsProperty(propName)) {
             field.setAccessible(true);
             propertyMeta = new PropertyMeta(propName, field, property.autoincrement(),
@@ -332,7 +334,7 @@ public final class EntityMeta implements Serializable {
      * @return 返回字段名称是否存在
      */
     public boolean containsProperty(String propertyName) {
-        return this.properties.containsKey(propertyName);
+        return this.properties.containsKey(StringUtils.lowerCase(propertyName));
     }
 
     /**
@@ -355,7 +357,7 @@ public final class EntityMeta implements Serializable {
      * @return 返回字段是否为自增长字段
      */
     public boolean isAutoincrement(String propertyName) {
-        return this.autoincrementProps.contains(propertyName);
+        return this.autoincrementProps.contains(StringUtils.lowerCase(propertyName));
     }
 
     /**
@@ -363,7 +365,7 @@ public final class EntityMeta implements Serializable {
      * @return 返回字段是否为主键
      */
     public boolean isPrimaryKey(String propertyName) {
-        return this.primaryKeys.contains(propertyName);
+        return this.primaryKeys.contains(StringUtils.lowerCase(propertyName));
     }
 
     /**
@@ -378,7 +380,7 @@ public final class EntityMeta implements Serializable {
      * @return 返回字段是否为只读
      */
     public boolean isReadonly(String propertyName) {
-        return this.readonlyProps.contains(propertyName);
+        return this.readonlyProps.contains(StringUtils.lowerCase(propertyName));
     }
 
     /**
@@ -435,7 +437,7 @@ public final class EntityMeta implements Serializable {
     }
 
     public PropertyMeta getPropertyByName(String propertyName) {
-        return this.properties.get(propertyName);
+        return this.properties.get(StringUtils.lowerCase(propertyName));
     }
 
     public PropertyMeta getPropertyByField(String fieldName) {
