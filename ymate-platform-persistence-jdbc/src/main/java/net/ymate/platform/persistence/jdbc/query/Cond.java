@@ -99,7 +99,17 @@ public final class Cond extends Query<Cond> {
         /**
          * 模糊
          */
-        LIKE("LIKE");
+        LIKE("LIKE"),
+
+        /**
+         * @since 2.1.4
+         */
+        RLIKE("RLIKE"),
+
+        /**
+         * @since 2.1.4
+         */
+        REGEXP("REGEXP");
 
         private final String opt;
 
@@ -498,6 +508,80 @@ public final class Cond extends Query<Cond> {
      */
     public Cond escape(char escapeChar) {
         return cond("ESCAPE ?").param(String.valueOf(escapeChar));
+    }
+
+    // ------
+
+    /**
+     * @since 2.1.4
+     */
+    public Cond rlike(String field) {
+        return opt(field, OPT.RLIKE);
+    }
+
+    /**
+     * @since 2.1.4
+     */
+    public Cond rlike(String prefix, String field) {
+        return opt(Fields.field(prefix, field), OPT.RLIKE);
+    }
+
+    /**
+     * @since 2.1.4
+     */
+    public Cond rlikeWrap(String field) {
+        return optWrap(field, OPT.RLIKE);
+    }
+
+    /**
+     * @since 2.1.4
+     */
+    public Cond rlikeWrap(String prefix, String field) {
+        return optWrap(Fields.field(prefix, field), OPT.RLIKE);
+    }
+
+    /**
+     * @since 2.1.4
+     */
+    public Cond rlike(IFunction func) {
+        return opt(func, OPT.RLIKE);
+    }
+
+    // ------
+
+    /**
+     * @since 2.1.4
+     */
+    public Cond regexp(String field) {
+        return opt(field, OPT.REGEXP);
+    }
+
+    /**
+     * @since 2.1.4
+     */
+    public Cond regexp(String prefix, String field) {
+        return opt(Fields.field(prefix, field), OPT.REGEXP);
+    }
+
+    /**
+     * @since 2.1.4
+     */
+    public Cond regexpWrap(String field) {
+        return optWrap(field, OPT.REGEXP);
+    }
+
+    /**
+     * @since 2.1.4
+     */
+    public Cond regexpWrap(String prefix, String field) {
+        return optWrap(Fields.field(prefix, field), OPT.REGEXP);
+    }
+
+    /**
+     * @since 2.1.4
+     */
+    public Cond regexp(IFunction func) {
+        return opt(func, OPT.REGEXP);
     }
 
     // ------
