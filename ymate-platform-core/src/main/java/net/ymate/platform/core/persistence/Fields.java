@@ -79,6 +79,20 @@ public final class Fields implements Serializable {
         return new Fields().add(fields);
     }
 
+    /**
+     * @since 2.1.4
+     */
+    public static Fields create(String prefix, Collection<String> fields) {
+        return new Fields().add(prefix, fields);
+    }
+
+    /**
+     * @since 2.1.4
+     */
+    public static Fields create(String prefix, Fields fields) {
+        return new Fields().add(prefix, fields);
+    }
+
     private Fields(String... fields) {
         this.fields = new ArrayList<>();
         if (fields != null && fields.length > 0) {
@@ -130,6 +144,23 @@ public final class Fields implements Serializable {
 
     public Fields add(Collection<String> fields) {
         this.fields.addAll(fields);
+        return this;
+    }
+
+    /**
+     * @since 2.1.4
+     */
+    public Fields add(String prefix, Fields fields) {
+        return add(prefix, fields.fields);
+    }
+
+    /**
+     * @since 2.1.4
+     */
+    public Fields add(String prefix, Collection<String> fields) {
+        for (String field : fields) {
+            this.fields.add(field(prefix, field));
+        }
         return this;
     }
 

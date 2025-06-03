@@ -44,8 +44,6 @@ public abstract class AbstractView implements IView {
 
     protected static volatile String baseViewPath;
 
-    protected HttpServletResponse response = WebContext.getResponse();
-
     protected Map<String, Object> attributes = new HashMap<>();
 
     protected String contentType;
@@ -122,6 +120,7 @@ public abstract class AbstractView implements IView {
 
     @Override
     public IView addDateHeader(String name, long date) {
+        HttpServletResponse response = WebContext.getResponse();
         if (response.containsHeader(name)) {
             response.addDateHeader(name, date);
         } else {
@@ -132,6 +131,7 @@ public abstract class AbstractView implements IView {
 
     @Override
     public IView addHeader(String name, String value) {
+        HttpServletResponse response = WebContext.getResponse();
         if (response.containsHeader(name)) {
             response.addHeader(name, value);
         } else {
@@ -142,6 +142,7 @@ public abstract class AbstractView implements IView {
 
     @Override
     public IView addIntHeader(String name, int value) {
+        HttpServletResponse response = WebContext.getResponse();
         if (response.containsHeader(name)) {
             response.addIntHeader(name, value);
         } else {
@@ -152,6 +153,7 @@ public abstract class AbstractView implements IView {
 
     @Override
     public void render() throws Exception {
+        HttpServletResponse response = WebContext.getResponse();
         if (response.isCommitted()) {
             return;
         }

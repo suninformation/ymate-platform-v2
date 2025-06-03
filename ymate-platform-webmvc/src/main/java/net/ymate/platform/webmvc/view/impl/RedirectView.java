@@ -47,7 +47,7 @@ public class RedirectView extends AbstractView {
     @Override
     protected void doRenderView() throws Exception {
         if (!path.startsWith(Type.Const.HTTP_PREFIX) && !path.startsWith(Type.Const.HTTPS_PREFIX)) {
-            if (path.length() > 0 && path.charAt(0) == Type.Const.PATH_SEPARATOR_CHAR) {
+            if (!path.isEmpty() && path.charAt(0) == Type.Const.PATH_SEPARATOR_CHAR) {
                 path = WebContext.getRequest().getContextPath() + path;
             } else {
                 path = WebContext.getRequest().getContextPath() + Type.Const.PATH_SEPARATOR_CHAR + path;
