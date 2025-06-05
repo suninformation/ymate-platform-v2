@@ -15,6 +15,7 @@
  */
 package net.ymate.platform.webmvc.impl;
 
+import net.ymate.platform.core.support.ErrorCode;
 import net.ymate.platform.webmvc.IResponseBodyProcessor;
 import net.ymate.platform.webmvc.IWebMvc;
 import net.ymate.platform.webmvc.IWebResult;
@@ -45,6 +46,8 @@ public class DefaultResponseBodyProcessor implements IResponseBodyProcessor {
         } else {
             if (result instanceof IWebResultBuilder) {
                 returnValue = ((IWebResultBuilder) result).build();
+            } else if (result instanceof ErrorCode) {
+                returnValue = WebResult.builder((ErrorCode) result).build();
             } else {
                 returnValue = WebResult.builder().succeed().data(result).build();
             }

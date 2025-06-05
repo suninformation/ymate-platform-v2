@@ -151,7 +151,7 @@ public final class WebErrorCode {
     public static ErrorCode userSessionConfirmationState(String redirectUrl) {
         ErrorCode errorCode = ErrorCode.create(USER_SESSION_CONFIRMATION_STATE, MSG_USER_SESSION_CONFIRMATION_STATE);
         if (StringUtils.isNotBlank(redirectUrl)) {
-            errorCode.attr(Type.Const.REDIRECT_URL, redirectUrl);
+            errorCode.dataAttr(Type.Const.REDIRECT_URL, redirectUrl);
         }
         return errorCode;
     }
@@ -162,9 +162,9 @@ public final class WebErrorCode {
 
     public static ErrorCode userSessionForceOffline(String remoteAddr, Long eventTime, String description) {
         return ErrorCode.create(USER_SESSION_FORCE_OFFLINE, MSG_USER_SESSION_FORCE_OFFLINE)
-                .attr(Type.Const.REMOTE_ADDR, remoteAddr)
-                .attr(Type.Const.EVENT_TIME, eventTime)
-                .attr(Type.Const.DESCRIPTION, description);
+                .dataAttr(Type.Const.REMOTE_ADDR, remoteAddr)
+                .dataAttr(Type.Const.EVENT_TIME, eventTime)
+                .dataAttr(Type.Const.DESCRIPTION, description);
     }
 
     public static ErrorCode invalidParamsSignature() {
