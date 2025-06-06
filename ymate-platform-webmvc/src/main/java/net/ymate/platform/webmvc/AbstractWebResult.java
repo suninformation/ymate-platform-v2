@@ -23,6 +23,8 @@ import net.ymate.platform.webmvc.view.View;
 import net.ymate.platform.webmvc.view.impl.JsonView;
 import net.ymate.platform.webmvc.view.impl.TextView;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import java.io.Serializable;
 import java.util.Collection;
@@ -34,6 +36,8 @@ import java.util.Map;
  * @since 2.1.0
  */
 public abstract class AbstractWebResult<CODE_TYPE extends Serializable> implements IWebResult<CODE_TYPE>, Serializable {
+
+    private static final Log LOG = LogFactory.getLog(AbstractWebResult.class);
 
     private CODE_TYPE code;
 
@@ -179,6 +183,9 @@ public abstract class AbstractWebResult<CODE_TYPE extends Serializable> implemen
             jsonObj.put(Type.Const.PARAM_DATA, data);
         }
         if (attrs != null && !attrs.isEmpty()) {
+            if (jsonObj.has(Type.Const.PARAM_DATA) && attrs.containsKey(Type.Const.PARAM_DATA) && LOG.isWarnEnabled()) {
+                LOG.warn(String.format("Warning: The '%s' attribute  has been replaced.", Type.Const.PARAM_DATA));
+            }
             attrs.forEach(jsonObj::put);
         }
         return jsonObj;
