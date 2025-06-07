@@ -87,20 +87,20 @@ public abstract class AbstractCrudRepository<PK extends Serializable, ENTITY ext
         if (entity != null) {
             EntityStateWrapper<ENTITY> stateWrapper = EntityStateWrapper.bind(owner, entity, ignoreNull);
             entity = ClassUtils.wrapper(updateBean).duplicate(stateWrapper.getEntity());
-            int effectCounts = 0;
-            if (stateWrapper.hasChanged()) {
-                errorCode = beforeUpdate(owner, dataSourceName, stateWrapper, updateBean, version);
-                if (errorCode == null || errorCode.isSucceed()) {
-                    if (errorCode != null) {
-                        effectCounts = BlurObject.bind(errorCode.dataAttr(DATA_KEY_EFFECT_COUNTS)).toIntValue();
-                    }
+            errorCode = beforeUpdate(owner, dataSourceName, stateWrapper, updateBean, version);
+            if (errorCode == null || errorCode.isSucceed()) {
+                int effectCounts = 0;
+                if (errorCode != null) {
+                    effectCounts = BlurObject.bind(errorCode.dataAttr(DATA_KEY_EFFECT_COUNTS)).toIntValue();
+                }
+                if (stateWrapper.hasChanged()) {
                     entity = stateWrapper.update(filter);
                     effectCounts += (entity != null ? 1 : 0);
-                    if (errorCode == null) {
-                        errorCode = ErrorCode.succeed();
-                    }
-                    errorCode.dataAttr(DATA_KEY_EFFECT_COUNTS, effectCounts);
                 }
+                if (errorCode == null) {
+                    errorCode = ErrorCode.succeed();
+                }
+                errorCode.dataAttr(DATA_KEY_EFFECT_COUNTS, effectCounts);
             }
         }
         return PairObject.bind(errorCode, entity);
