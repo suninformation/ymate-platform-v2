@@ -18,10 +18,7 @@ package net.ymate.platform.commons.json.impl;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import net.ymate.platform.commons.json.IJsonAdapter;
-import net.ymate.platform.commons.json.IJsonArrayWrapper;
-import net.ymate.platform.commons.json.IJsonNodeWrapper;
-import net.ymate.platform.commons.json.IJsonObjectWrapper;
+import net.ymate.platform.commons.json.*;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 
@@ -329,6 +326,16 @@ public class GsonArrayWrapper implements IJsonArrayWrapper {
     @Override
     public String toString(boolean format, boolean keepNullValue, boolean snakeCase) {
         return adapter.toJsonString(jsonArray, format, keepNullValue, snakeCase);
+    }
+
+    @Override
+    public String toString(boolean format, boolean keepNullValue, IJsonPropertyFilter filter) {
+        return adapter.toJsonString(jsonArray, format, keepNullValue, filter);
+    }
+
+    @Override
+    public String toString(boolean format, boolean keepNullValue, boolean snakeCase, IJsonPropertyFilter filter) {
+        return adapter.toJsonString(jsonArray, format, keepNullValue, snakeCase, filter);
     }
 
     @Override

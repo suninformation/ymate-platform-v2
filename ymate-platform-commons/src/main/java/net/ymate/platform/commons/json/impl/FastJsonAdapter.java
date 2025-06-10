@@ -22,6 +22,7 @@ import com.alibaba.fastjson.PropertyNamingStrategy;
 import com.alibaba.fastjson.parser.Feature;
 import com.alibaba.fastjson.parser.ParserConfig;
 import com.alibaba.fastjson.serializer.JSONSerializer;
+import com.alibaba.fastjson.serializer.PropertyPreFilter;
 import com.alibaba.fastjson.serializer.SerializeConfig;
 import com.alibaba.fastjson.serializer.SerializerFeature;
 import net.ymate.platform.commons.json.*;
@@ -171,21 +172,41 @@ public class FastJsonAdapter implements IJsonAdapter {
 
     @Override
     public String toJsonString(Object object) {
-        return toJsonString(object, false, false, false);
+        return toJsonString(object, false, false, false, null);
     }
 
     @Override
     public String toJsonString(Object object, boolean format) {
-        return toJsonString(object, format, false, false);
+        return toJsonString(object, format, false, false, null);
     }
 
     @Override
     public String toJsonString(Object object, boolean format, boolean keepNullValue) {
-        return toJsonString(object, format, keepNullValue, false);
+        return toJsonString(object, format, keepNullValue, false, null);
     }
 
     @Override
     public String toJsonString(Object object, boolean format, boolean keepNullValue, boolean snakeCase) {
+        return toJsonString(object, format, keepNullValue, false, null);
+    }
+
+    @Override
+    public String toJsonString(Object object, IJsonPropertyFilter filter) {
+        return toJsonString(object, false, false, false, filter);
+    }
+
+    @Override
+    public String toJsonString(Object object, boolean format, IJsonPropertyFilter filter) {
+        return toJsonString(object, format, false, false, filter);
+    }
+
+    @Override
+    public String toJsonString(Object object, boolean format, boolean keepNullValue, IJsonPropertyFilter filter) {
+        return toJsonString(object, format, keepNullValue, false, filter);
+    }
+
+    @Override
+    public String toJsonString(Object object, boolean format, boolean keepNullValue, boolean snakeCase, IJsonPropertyFilter filter) {
         List<SerializerFeature> serializerFeatures = new ArrayList<>();
         if (format) {
             serializerFeatures.add(SerializerFeature.PrettyFormat);
@@ -199,7 +220,11 @@ public class FastJsonAdapter implements IJsonAdapter {
                     SerializerFeature.WriteNullStringAsEmpty,
                     SerializerFeature.WriteNullNumberAsZero));
         }
-        return JSON.toJSONString(JsonWrapper.unwrap(object), snakeCase ? SNAKE_CASE_SERIALIZE_CONFIG : SerializeConfig.getGlobalInstance(), serializerFeatures.toArray(new SerializerFeature[0]));
+        PropertyPreFilter propertyPreFilter = null;
+        if (filter != null) {
+            propertyPreFilter = (serializer, source, name) -> filter.filter(source, name);
+        }
+        return JSON.toJSONString(JsonWrapper.unwrap(object), snakeCase ? SNAKE_CASE_SERIALIZE_CONFIG : SerializeConfig.getGlobalInstance(), propertyPreFilter, serializerFeatures.toArray(new SerializerFeature[0]));
     }
 
     @Override

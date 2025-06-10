@@ -299,6 +299,16 @@ public class FastJsonArrayWrapper implements IJsonArrayWrapper {
     }
 
     @Override
+    public String toString(boolean format, boolean keepNullValue, IJsonPropertyFilter filter) {
+        return adapter.toJsonString(jsonArray, format, keepNullValue, filter);
+    }
+
+    @Override
+    public String toString(boolean format, boolean keepNullValue, boolean snakeCase, IJsonPropertyFilter filter) {
+        return adapter.toJsonString(jsonArray, format, keepNullValue, snakeCase, filter);
+    }
+
+    @Override
     public List<Object> toList() {
         return jsonArray;
     }

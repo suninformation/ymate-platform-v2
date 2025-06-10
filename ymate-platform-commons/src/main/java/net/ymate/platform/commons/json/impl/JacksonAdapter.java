@@ -172,21 +172,41 @@ public class JacksonAdapter implements IJsonAdapter {
 
     @Override
     public String toJsonString(Object object) {
-        return toJsonString(object, false, false, false);
+        return toJsonString(object, false, false, false, null);
     }
 
     @Override
     public String toJsonString(Object object, boolean format) {
-        return toJsonString(object, format, false, false);
+        return toJsonString(object, format, false, false, null);
     }
 
     @Override
     public String toJsonString(Object object, boolean format, boolean keepNullValue) {
-        return toJsonString(object, format, keepNullValue, false);
+        return toJsonString(object, format, keepNullValue, false, null);
     }
 
     @Override
     public String toJsonString(Object object, boolean format, boolean keepNullValue, boolean snakeCase) {
+        return toJsonString(object, false, false, false, null);
+    }
+
+    @Override
+    public String toJsonString(Object object, IJsonPropertyFilter filter) {
+        return toJsonString(object, false, false, false, filter);
+    }
+
+    @Override
+    public String toJsonString(Object object, boolean format, IJsonPropertyFilter filter) {
+        return toJsonString(object, format, false, false, filter);
+    }
+
+    @Override
+    public String toJsonString(Object object, boolean format, boolean keepNullValue, IJsonPropertyFilter filter) {
+        return toJsonString(object, format, keepNullValue, false, filter);
+    }
+
+    @Override
+    public String toJsonString(Object object, boolean format, boolean keepNullValue, boolean snakeCase, IJsonPropertyFilter filter) {
         ObjectMapper objectMapper = OBJECT_MAPPER.copy();
         if (!keepNullValue) {
             objectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
@@ -194,6 +214,7 @@ public class JacksonAdapter implements IJsonAdapter {
         if (snakeCase) {
             objectMapper.setPropertyNamingStrategy(new PropertyNamingStrategies.SnakeCaseStrategy());
         }
+        // TODO filtering feature is not supported.
         try {
             if (format) {
                 return objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(JsonWrapper.unwrap(object));

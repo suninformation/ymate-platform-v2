@@ -56,6 +56,26 @@ public interface IJsonAdapter {
 
     String toJsonString(Object object, boolean format, boolean keepNullValue, boolean snakeCase);
 
+    /**
+     * @since 2.1.4
+     */
+    String toJsonString(Object object, IJsonPropertyFilter filter);
+
+    /**
+     * @since 2.1.4
+     */
+    String toJsonString(Object object, boolean format, IJsonPropertyFilter filter);
+
+    /**
+     * @since 2.1.4
+     */
+    String toJsonString(Object object, boolean format, boolean keepNullValue, IJsonPropertyFilter filter);
+
+    /**
+     * @since 2.1.4
+     */
+    String toJsonString(Object object, boolean format, boolean keepNullValue, boolean snakeCase, IJsonPropertyFilter filter);
+
     byte[] serialize(Object object) throws Exception;
 
     byte[] serialize(Object object, boolean snakeCase) throws Exception;

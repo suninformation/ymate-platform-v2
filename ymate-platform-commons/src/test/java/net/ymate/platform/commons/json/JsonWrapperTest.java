@@ -17,6 +17,7 @@ package net.ymate.platform.commons.json;
 
 import net.ymate.platform.commons.json.impl.GsonAdapter;
 import net.ymate.platform.commons.json.impl.JacksonAdapter;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.junit.After;
@@ -52,7 +53,33 @@ public class JsonWrapperTest {
             testJsonNodeWrapper(jsonAdapter);
             testJsonWrapper(jsonAdapter);
             testJsonSerialize(jsonAdapter);
+            testJsonPropertyFilter(jsonAdapter);
         }
+    }
+
+    private void testJsonPropertyFilter(IJsonAdapter jsonAdapter) {
+        User user = new User();
+        user.setName("suninformation");
+        user.setAge(20);
+        user.setRealName("有理想的鱼");
+        //
+        User otherUser = new User();
+        otherUser.setName("YMP");
+        otherUser.setAge(16);
+        otherUser.setRealName("YMP");
+        //
+        List<User> users = new ArrayList<>();
+        users.add(user);
+        users.add(otherUser);
+        String jsonStr = jsonAdapter.toJsonString(users, true, false, (source, name) -> {
+            if (StringUtils.equals(name, "age")) {
+                if (source instanceof User) {
+                    return ((User) source).getAge() <= 16;
+                }
+            }
+            return true;
+        });
+        LOG.info(jsonStr);
     }
 
     private void testJsonObjectWrapper(IJsonAdapter jsonAdapter) {

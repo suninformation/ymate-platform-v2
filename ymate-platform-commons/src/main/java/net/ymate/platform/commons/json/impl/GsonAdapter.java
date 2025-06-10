@@ -124,22 +124,43 @@ public class GsonAdapter implements IJsonAdapter {
 
     @Override
     public String toJsonString(Object object) {
-        return toJsonString(object, false, false, false);
+        return toJsonString(object, false, false, false, null);
     }
 
     @Override
     public String toJsonString(Object object, boolean format) {
-        return toJsonString(object, format, false, false);
+        return toJsonString(object, format, false, false, null);
     }
 
     @Override
     public String toJsonString(Object object, boolean format, boolean keepNullValue) {
-        return toJsonString(object, format, keepNullValue, false);
+        return toJsonString(object, format, keepNullValue, false, null);
     }
 
     @Override
     public String toJsonString(Object object, boolean format, boolean keepNullValue, boolean snakeCase) {
+        return toJsonString(object, format, keepNullValue, snakeCase, null);
+    }
+
+    @Override
+    public String toJsonString(Object object, IJsonPropertyFilter filter) {
+        return toJsonString(object, false, false, false, filter);
+    }
+
+    @Override
+    public String toJsonString(Object object, boolean format, IJsonPropertyFilter filter) {
+        return toJsonString(object, format, false, false, filter);
+    }
+
+    @Override
+    public String toJsonString(Object object, boolean format, boolean keepNullValue, IJsonPropertyFilter filter) {
+        return toJsonString(object, format, keepNullValue, false, filter);
+    }
+
+    @Override
+    public String toJsonString(Object object, boolean format, boolean keepNullValue, boolean snakeCase, IJsonPropertyFilter filter) {
         GsonBuilder gsonBuilder = GSON.newBuilder();
+        // TODO filtering feature is not supported.
         if (format) {
             gsonBuilder.setPrettyPrinting();
         }

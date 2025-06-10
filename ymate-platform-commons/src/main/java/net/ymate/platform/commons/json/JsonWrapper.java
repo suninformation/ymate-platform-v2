@@ -159,6 +159,34 @@ public final class JsonWrapper implements Serializable {
         return jsonAdapter.toJsonString(object, format, keepNullValue, snakeCase);
     }
 
+    /**
+     * @since 2.1.4
+     */
+    public static String toJsonString(Object object, IJsonPropertyFilter filter) {
+        return jsonAdapter.toJsonString(object, filter);
+    }
+
+    /**
+     * @since 2.1.4
+     */
+    public static String toJsonString(Object object, boolean format, IJsonPropertyFilter filter) {
+        return jsonAdapter.toJsonString(object, format, filter);
+    }
+
+    /**
+     * @since 2.1.4
+     */
+    public static String toJsonString(Object object, boolean format, boolean keepNullValue, IJsonPropertyFilter filter) {
+        return jsonAdapter.toJsonString(object, format, keepNullValue, filter);
+    }
+
+    /**
+     * @since 2.1.4
+     */
+    public static String toJsonString(Object object, boolean format, boolean keepNullValue, boolean snakeCase, IJsonPropertyFilter filter) {
+        return jsonAdapter.toJsonString(object, format, keepNullValue, snakeCase, filter);
+    }
+
     public static byte[] serialize(Object object) throws Exception {
         return jsonAdapter.serialize(object);
     }
