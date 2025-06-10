@@ -42,11 +42,14 @@ public class JsonView extends AbstractView {
     private boolean snakeCase;
 
     public static JsonView bind(Object obj) {
-        if (obj instanceof String) {
-            return new JsonView((String) obj);
-        } else {
-            return new JsonView(obj);
-        }
+        return new JsonView(obj);
+    }
+
+    /**
+     * @since 2.1.4
+     */
+    public static JsonView bind(String obj, boolean convert) {
+        return new JsonView(obj, convert);
     }
 
     /**
@@ -55,7 +58,11 @@ public class JsonView extends AbstractView {
      * @param obj 任意对象
      */
     public JsonView(Object obj) {
-        jsonObj = JsonWrapper.toJson(obj);
+        if (obj instanceof String) {
+            jsonObj = obj;
+        } else {
+            jsonObj = JsonWrapper.toJson(obj);
+        }
     }
 
     /**
@@ -64,7 +71,22 @@ public class JsonView extends AbstractView {
      * @param jsonStr JSON字符串
      */
     public JsonView(String jsonStr) {
-        jsonObj = JsonWrapper.fromJson(jsonStr);
+        this(jsonStr, false);
+    }
+
+    /**
+     * 构造器
+     *
+     * @param jsonStr JSON字符串
+     * @param convert 是否转换为JSON对象
+     * @since 2.1.4
+     */
+    public JsonView(String jsonStr, boolean convert) {
+        if (convert) {
+            jsonObj = JsonWrapper.fromJson(jsonStr);
+        } else {
+            jsonObj = jsonStr;
+        }
     }
 
     /**
@@ -115,7 +137,12 @@ public class JsonView extends AbstractView {
 
     @Override
     public void render(OutputStream output) throws Exception {
-        StringBuilder jsonStringBuilder = new StringBuilder(JsonWrapper.toJsonString(jsonObj, false, keepNullValue, snakeCase));
+        StringBuilder jsonStringBuilder = new StringBuilder();
+        if (jsonObj instanceof String) {
+            jsonStringBuilder.append(jsonObj);
+        } else {
+            jsonStringBuilder.append(JsonWrapper.toJsonString(jsonObj, false, keepNullValue, snakeCase));
+        }
         if (jsonCallback != null) {
             jsonStringBuilder.insert(0, jsonCallback + "(").append(");");
         }

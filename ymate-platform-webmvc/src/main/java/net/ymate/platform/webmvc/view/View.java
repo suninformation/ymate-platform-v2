@@ -111,6 +111,13 @@ public class View {
         return JsonView.bind(obj);
     }
 
+    /**
+     * @since 2.1.4
+     */
+    public static JsonView jsonView(String obj, boolean convert) {
+        return JsonView.bind(obj, convert);
+    }
+
     public static JspView jspView() {
         return JspView.bind();
     }

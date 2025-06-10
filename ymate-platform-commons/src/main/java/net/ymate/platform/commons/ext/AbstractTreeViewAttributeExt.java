@@ -16,8 +16,11 @@
 package net.ymate.platform.commons.ext;
 
 import net.ymate.platform.commons.lang.BlurObject;
-import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
+import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringStyle;
 
 import java.io.Serializable;
 import java.util.*;
@@ -48,18 +51,43 @@ public abstract class AbstractTreeViewAttributeExt<ID extends Serializable, CHIL
     }
 
     @Override
-    public void removeChildren(ID... ids) {
-        if (!ArrayUtils.isEmpty(ids)) {
-            Arrays.stream(ids)
+    public final void removeChildren() {
+        children.clear();
+    }
+
+    @Override
+    public final void removeChildren(Set<ID> ids) {
+        if (ids != null && !ids.isEmpty()) {
+            ids.stream()
                     .filter(id -> StringUtils.isNotBlank(BlurObject.bind(id).toStringValue()))
                     .forEach(children::remove);
-        } else {
-            children.clear();
         }
     }
 
     @Override
     public boolean hasChild(ID id) {
         return StringUtils.isNotBlank(BlurObject.bind(id).toStringValue()) && children.containsKey(id);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        AbstractTreeViewAttributeExt<?, ?> that = (AbstractTreeViewAttributeExt<?, ?>) o;
+        return new EqualsBuilder().append(getId(), that.getId()).isEquals();
+    }
+
+    @Override
+    public int hashCode() {
+        return new HashCodeBuilder(17, 37).append(getId()).toHashCode();
+    }
+
+    @Override
+    public String toString() {
+        return ToStringBuilder.reflectionToString(this, ToStringStyle.DEFAULT_STYLE);
     }
 }

@@ -17,6 +17,8 @@ package net.ymate.platform.commons.ext;
 
 import java.io.Serializable;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Set;
 
 /**
  * 支持树型层级结构扩展
@@ -65,11 +67,25 @@ public interface ITreeViewExt<ID extends Serializable, CHILD_TYPE extends ITreeV
     void addChild(CHILD_TYPE child);
 
     /**
+     * 清空子节点
+     */
+    void removeChildren();
+
+    /**
      * 删除子节点
      *
-     * @param id 子节点唯一标识集合（为空时表示清空）
+     * @param id 子节点唯一标识
      */
-    void removeChildren(ID... id);
+    default void removeChildren(ID id) {
+        removeChildren(Collections.singleton(id));
+    }
+
+    /**
+     * 删除子节点
+     *
+     * @param ids 子节点唯一标识集合
+     */
+    void removeChildren(Set<ID> ids);
 
     /**
      * 判断指定名称的属性是否已存在
