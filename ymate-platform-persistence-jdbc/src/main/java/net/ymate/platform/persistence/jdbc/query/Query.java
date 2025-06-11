@@ -565,7 +565,7 @@ public class Query<T> extends QueryHandleAdapter<T> {
                     .filter(field -> ClassUtils.isNormalField(field) && !excludedFields.contains(field.getName()))
                     .forEachOrdered(field -> {
                         QField qField = field.getAnnotation(QField.class);
-                        if (qField != null && (excludedFields.isEmpty() || !excludedFields.contains(Fields.field(qField.prefix(), qField.value())))) {
+                        if (qField != null && (excludedFields.isEmpty() || !excludedFields.contains(Fields.field(qField.prefix(), StringUtils.defaultIfBlank(qField.alias(), qField.value()))))) {
                             select.field(qField.prefix(), qField.value(), qField.alias(), qField.wrapIdentifier());
                             if (qField.grouped()) {
                                 groupedFields.add(qField);
