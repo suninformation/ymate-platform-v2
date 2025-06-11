@@ -144,6 +144,9 @@ public abstract class AbstractCrudRepository<PK extends Serializable, ENTITY ext
                 } else {
                     params.add(id);
                 }
+                if (additionalCond != null && !additionalCond.isEmpty() && !additionalCond.params().isEmpty()) {
+                    params.add(additionalCond.params());
+                }
                 batchSql.addParameter(params);
             }
             return BatchUpdateOperator.parseEffectCounts(batchSql.execute(update.dataSourceName()));
