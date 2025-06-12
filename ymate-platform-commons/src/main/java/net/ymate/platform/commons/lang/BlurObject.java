@@ -322,6 +322,7 @@ public class BlurObject implements Serializable {
                 }
             } catch (IOException | SQLException ignored) {
             }
+            return null;
         }
         if (attr instanceof BlurObject) {
             return ((BlurObject) this.attr).toStringValue();
