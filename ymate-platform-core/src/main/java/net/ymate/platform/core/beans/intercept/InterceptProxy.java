@@ -60,7 +60,13 @@ public class InterceptProxy implements IProxy {
             }
         }
         //
-        Object returnValue = proxyChain.doProxyChain();
+        Throwable throwable = null;
+        Object returnValue = null;
+        try {
+            returnValue = proxyChain.doProxyChain();
+        } catch (Throwable e) {
+            throwable = e;
+        }
         //
         if (interceptMeta.hasAfterIntercepts()) {
             if (context == null) {
@@ -70,16 +76,21 @@ public class InterceptProxy implements IProxy {
             }
             // 初始化拦截器上下文对象，并将当前方法的执行结果对象赋予后置拦截器使用
             context.setResultObject(returnValue);
+            context.setThrowable(throwable);
             //
             for (Class<? extends IInterceptor> interceptClass : interceptMeta.getAfterIntercepts()) {
                 IInterceptor interceptor = owner.getInterceptSettings().getInterceptorInstance(owner, interceptClass);
                 // 执行后置拦截器
                 Object afterReturnValue = interceptor.intercept(context);
                 if (afterReturnValue != null) {
-                    // 若后置拦截器返回的执行结果不为空则赋值
+                    // 若后置拦截器返回的执行结果不为空则赋值并传递给下一个后置拦截器
                     returnValue = afterReturnValue;
+                    context.setResultObject(returnValue);
                 }
             }
+        }
+        if (throwable != null) {
+            throw throwable;
         }
         return returnValue;
     }

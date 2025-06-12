@@ -51,6 +51,11 @@ public class InterceptContext extends AbstractContext {
 
     private Object resultObject;
 
+    /**
+     * @since 2.1.4
+     */
+    private Throwable throwable;
+
     public InterceptContext(IInterceptor.Direction direction, IApplication owner, Object targetObject, Class<?> targetClass, Method targetMethod, Object[] methodParams, Map<String, String> contextParams) {
         super(owner, contextParams);
         //
@@ -117,6 +122,30 @@ public class InterceptContext extends AbstractContext {
      */
     void setResultObject(Object resultObject) {
         this.resultObject = resultObject;
+    }
+
+    /**
+     * 是否存在异常
+     *
+     * @return 返回true表示存在
+     * @since 2.1.4
+     */
+    public boolean hasThrowable() {
+        return throwable != null;
+    }
+
+    /**
+     * @since 2.1.4
+     */
+    public Throwable getThrowable() {
+        return throwable;
+    }
+
+    /**
+     * @since 2.1.4
+     */
+    public void setThrowable(Throwable throwable) {
+        this.throwable = throwable;
     }
 
     /**
