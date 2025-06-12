@@ -116,4 +116,27 @@ public class ValidateContext extends AbstractContext {
     public Map<String, Object> getParamValues() {
         return Collections.unmodifiableMap(paramValues);
     }
+
+    /**
+     * @since 2.1.4
+     */
+    @SuppressWarnings("unchecked")
+    public <T> T getAttribute(String name) {
+        return (T) getLocalAttributes().get(name);
+    }
+
+    /**
+     * @since 2.1.4
+     */
+    public ValidateContext addAttribute(String name, Object value) {
+        getLocalAttributes().put(name, value);
+        return this;
+    }
+
+    /**
+     * @since 2.1.4
+     */
+    public Map<String, Object> getAttributes() {
+        return getLocalAttributes();
+    }
 }

@@ -118,4 +118,27 @@ public class InterceptContext extends AbstractContext {
     void setResultObject(Object resultObject) {
         this.resultObject = resultObject;
     }
+
+    /**
+     * @since 2.1.4
+     */
+    @SuppressWarnings("unchecked")
+    public <T> T getAttribute(String name) {
+        return (T) getLocalAttributes().get(name);
+    }
+
+    /**
+     * @since 2.1.4
+     */
+    public InterceptContext addAttribute(String name, Object value) {
+        getLocalAttributes().put(name, value);
+        return this;
+    }
+
+    /**
+     * @since 2.1.4
+     */
+    public Map<String, Object> getAttributes() {
+        return getLocalAttributes();
+    }
 }
