@@ -15,6 +15,7 @@
  */
 package net.ymate.platform.persistence.jdbc.repo;
 
+import net.ymate.platform.commons.ext.ITreeViewExtBuilder;
 import net.ymate.platform.commons.lang.BlurObject;
 import net.ymate.platform.commons.lang.PairObject;
 import net.ymate.platform.commons.util.ClassUtils;
@@ -32,8 +33,11 @@ import net.ymate.platform.persistence.jdbc.query.*;
 import net.ymate.platform.persistence.jdbc.support.EntityStateWrapper;
 import org.apache.commons.lang.NullArgumentException;
 import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import java.io.Serializable;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * @author 刘镇 (suninformation@163.com) on 2024/10/27 00:22
@@ -44,6 +48,88 @@ public abstract class AbstractCrudRepository<PK extends Serializable, ENTITY ext
     public static final String DATA_KEY_ID = "id";
 
     public static final String DATA_KEY_EFFECT_COUNTS = "effectCounts";
+
+    /**
+     * 将数组写入Set集合，若数组为空或存在空元素则立即返回true
+     *
+     * @since 2.1.4
+     */
+    protected static <T extends Serializable> boolean doArrayToSet(T[] array, Set<T> set) {
+        if (ArrayUtils.isNotEmpty(array)) {
+            boolean flag = false;
+            for (T element : array) {
+                if (element != null && StringUtils.isNotBlank(element.toString())) {
+                    set.add(element);
+                } else {
+                    flag = true;
+                    break;
+                }
+            }
+            return flag;
+        }
+        return true;
+    }
+
+    /**
+     * 将数组转为Set集合，若数组中的空元素将被丢弃
+     *
+     * @since 2.1.4
+     */
+    protected static <T extends Serializable> Set<T> doArrayToSet(T[] array) {
+        Set<T> idSet = new HashSet<>();
+        if (ArrayUtils.isNotEmpty(array)) {
+            for (T t : array) {
+                if (t != null && StringUtils.isNotBlank(t.toString())) {
+                    idSet.add(t);
+                }
+            }
+        }
+        return idSet;
+    }
+
+    /**
+     * @since 2.1.4
+     */
+    protected static <T extends Serializable> Set<T> doParseNotInSet(IResultSet<? extends IEntity<T>> entities, Set<T> ids) {
+        return doParseNotInSet(entities != null ? entities.getResultData() : Collections.emptyList(), ids);
+    }
+
+    /**
+     * @since 2.1.4
+     */
+    protected static <T extends Serializable> Set<T> doParseNotInSet(Collection<? extends IEntity<T>> entities, Set<T> ids) {
+        if (ids == null) {
+            ids = new HashSet<>();
+        }
+        Set<T> notInSet;
+        if (entities != null && !entities.isEmpty()) {
+            Set<T> loadedIds = entities.stream().map(IEntity::getId).collect(Collectors.toSet());
+            notInSet = ids.stream().filter(id -> !loadedIds.contains(id)).collect(Collectors.toSet());
+        } else {
+            notInSet = ids;
+        }
+        return notInSet;
+    }
+
+    /**
+     * @since 2.1.4
+     */
+    protected static <PK extends Serializable, T extends ITreeViewExtBuilder<PK, T>> boolean doProcessTreeData(ITreeViewExtBuilder<PK, T> current, ITreeViewExtBuilder<PK, T> parent) {
+        if (!Objects.equals(parent.id(), current.id())) {
+            long depth = BlurObject.bind(parent.depth()).toLongValue();
+            current.rootId(depth > 0 ? parent.rootId() : parent.id())
+                    .parentId(parent.id())
+                    .depth(++depth);
+            String parentIdStr = BlurObject.bind(parent.id()).toStringValue();
+            if (StringUtils.isNotBlank(parent.path())) {
+                current.path(StringUtils.join(new String[]{parent.path(), parentIdStr}, "|"));
+            } else {
+                current.path(parentIdStr);
+            }
+            return true;
+        }
+        return false;
+    }
 
     private final Class<ENTITY> entityClass;
 
