@@ -70,7 +70,7 @@ public final class DefaultMongoDataSourceConfig extends AbstractDataSourceConfig
         this.authenticationDatabaseName = configReader.getString(IMongoConfig.AUTHENTICATION_DATABASE_NAME);
         //
         if (StringUtils.isBlank(this.connectionUrl)) {
-            String clientOptionsHandlerClassName = configReader.getString(IMongoConfig.DS_OPTIONS_HANDLER_CLASS);
+            String clientOptionsHandlerClassName = configReader.getString(IMongoConfig.OPTIONS_HANDLER_CLASS);
             if (StringUtils.isNotBlank(clientOptionsHandlerClassName)) {
                 this.clientOptionsHandlerClass = (Class<? extends IMongoClientOptionsHandler>) ClassUtils.loadClass(clientOptionsHandlerClassName, getClass());
             }

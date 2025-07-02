@@ -18,6 +18,7 @@ package net.ymate.platform.persistence.mongodb.impl;
 import com.mongodb.ServerAddress;
 import net.ymate.platform.commons.IPasswordProcessor;
 import net.ymate.platform.core.persistence.AbstractDataSourceConfigurable;
+import net.ymate.platform.persistence.mongodb.IMongoClientOptionsHandler;
 import net.ymate.platform.persistence.mongodb.IMongoConfig;
 import net.ymate.platform.persistence.mongodb.IMongoDataSourceConfigurable;
 import org.apache.commons.lang3.ArrayUtils;
@@ -85,6 +86,11 @@ public class DefaultMongoDataSourceConfigurable extends AbstractDataSourceConfig
 
         public Builder authenticationDatabaseName(String authenticationDatabaseName) {
             configurable.addConfig(IMongoConfig.AUTHENTICATION_DATABASE_NAME, authenticationDatabaseName);
+            return this;
+        }
+
+        public Builder clientOptionsHandlerClass(Class<? extends IMongoClientOptionsHandler> clientOptionsHandlerClass) {
+            configurable.addConfig(IMongoConfig.OPTIONS_HANDLER_CLASS, clientOptionsHandlerClass.getName());
             return this;
         }
 

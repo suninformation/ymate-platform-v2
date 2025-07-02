@@ -24,7 +24,7 @@ import net.ymate.platform.core.persistence.IPersistenceConfig;
 @Ignored
 public interface IMongoConfig extends IPersistenceConfig<IMongo, IMongoDataSourceConfig> {
 
-    String DS_OPTIONS_HANDLER_CLASS = "ds_options_handler_class";
+    String OPTIONS_HANDLER_CLASS = "options_handler_class";
 
     String CONNECTION_URL = "connection_url";
 

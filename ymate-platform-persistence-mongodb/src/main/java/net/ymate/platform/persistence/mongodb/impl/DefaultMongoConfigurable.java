@@ -17,8 +17,6 @@ package net.ymate.platform.persistence.mongodb.impl;
 
 import net.ymate.platform.core.persistence.AbstractPersistenceConfigurable;
 import net.ymate.platform.persistence.mongodb.IMongo;
-import net.ymate.platform.persistence.mongodb.IMongoClientOptionsHandler;
-import net.ymate.platform.persistence.mongodb.IMongoConfig;
 import net.ymate.platform.persistence.mongodb.IMongoDataSourceConfigurable;
 
 /**
@@ -39,11 +37,6 @@ public final class DefaultMongoConfigurable extends AbstractPersistenceConfigura
 
         private Builder() {
             super(new DefaultMongoConfigurable());
-        }
-
-        public Builder dataSourceOptionsHandlerClass(Class<? extends IMongoClientOptionsHandler> dataSourceOptionsHandlerClass) {
-            configurable.addConfig(IMongoConfig.DS_OPTIONS_HANDLER_CLASS, dataSourceOptionsHandlerClass.getName());
-            return this;
         }
     }
 }
