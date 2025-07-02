@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2019 the original author or authors.
+ * Copyright 2007-2025 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
 package net.ymate.platform.persistence.jdbc.query;
 
 import net.ymate.platform.commons.util.ClassUtils;
+import net.ymate.platform.commons.util.RuntimeUtils;
 import net.ymate.platform.core.persistence.Fields;
 import net.ymate.platform.core.persistence.IFunction;
 import net.ymate.platform.core.persistence.Params;
@@ -26,8 +27,11 @@ import net.ymate.platform.validation.validate.DateTimeValue;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 
-import java.lang.reflect.Field;
 import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
 /**
  * 条件对象
@@ -36,26 +40,38 @@ import java.util.Collection;
  */
 public final class Cond extends Query<Cond> {
 
+    private static final Map<Class<?>, List<QFieldWrapper>> BEAN_FIELD_CACHE = new ConcurrentHashMap<>();
+
     /**
      * @since 2.1.3
      */
-    public static Cond create(IDatabase owner, String dataSourceName, Object bean) throws IllegalAccessException {
+    public static Cond create(IDatabase owner, String dataSourceName, Object bean) {
         Cond cond = create(owner, dataSourceName).eqOne();
         if (bean != null) {
-            for (Field field : ClassUtils.wrapper(bean).getFields()) {
-                QField qField = field.getAnnotation(QField.class);
-                if (qField != null) {
-                    Object value = field.get(bean);
-                    cond.exprNotEmpty(value, c -> {
-                        if (value instanceof DateTimeValue) {
-                            c.rangeWrap(qField.prefix(), qField.value(), (DateTimeValue) value, LogicalOpt.AND);
-                        } else if (qField.opt().equals(OPT.LIKE)) {
-                            c.and().likeWrap(qField.prefix(), qField.value()).param(Like.contains(value.toString()));
-                        } else {
-                            c.and().optWrap(Fields.field(qField.prefix(), qField.value()), qField.opt()).param(value);
-                        }
-                    });
-                }
+            List<QFieldWrapper> cachedFields = BEAN_FIELD_CACHE.computeIfAbsent(bean.getClass(), key ->
+                    ClassUtils.wrapper(key).getFields().stream()
+                            .filter(field -> field.isAnnotationPresent(QField.class))
+                            .map(QFieldWrapper::new)
+                            .collect(Collectors.toList()));
+            //
+            if (!cachedFields.isEmpty()) {
+                cachedFields.forEach(fieldWrapper -> {
+                    try {
+                        Object value = fieldWrapper.field.get(bean);
+                        cond.exprNotEmpty(value, c -> {
+                            QField qField = fieldWrapper.qField;
+                            if (value instanceof DateTimeValue) {
+                                c.rangeWrap(qField.prefix(), qField.value(), (DateTimeValue) value, LogicalOpt.AND);
+                            } else if (qField.opt().equals(OPT.LIKE)) {
+                                c.and().likeWrap(qField.prefix(), qField.value()).param(Like.contains(value.toString()));
+                            } else {
+                                c.and().optWrap(Fields.field(qField.prefix(), qField.value()), qField.opt()).param(value);
+                            }
+                        });
+                    } catch (IllegalAccessException e) {
+                        throw RuntimeUtils.wrapRuntimeThrow(e, "Failed to access field '%s' in bean of type '%s'", fieldWrapper.field.getName(), bean.getClass().getName());
+                    }
+                });
             }
         }
         return cond;

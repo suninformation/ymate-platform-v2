@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2019 the original author or authors.
+ * Copyright 2007-2025 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,6 +33,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * @param <T> 当前实现类类型
@@ -135,22 +136,10 @@ public class Query<T> extends QueryHandleAdapter<T> {
      */
     public IDialect dialect() {
         if (dialect == null) {
-            IDatabaseConnectionHolder connectionHolder = null;
-            try {
-                connectionHolder = owner.getConnectionHolder(dataSourceName());
+            try (IDatabaseConnectionHolder connectionHolder = owner.getConnectionHolder(dataSourceName())) {
                 dialect = connectionHolder.getDialect();
             } catch (Exception e) {
-                if (LOG.isWarnEnabled()) {
-                    LOG.warn(StringUtils.EMPTY, RuntimeUtils.unwrapThrow(e));
-                }
-            } finally {
-                try {
-                    owner.releaseConnectionHolder(connectionHolder);
-                } catch (Exception e) {
-                    if (LOG.isWarnEnabled()) {
-                        LOG.warn(StringUtils.EMPTY, RuntimeUtils.unwrapThrow(e));
-                    }
-                }
+                throw RuntimeUtils.wrapRuntimeThrow(e, "Failed to get dialect for data source '%s'", dataSourceName());
             }
         }
         return dialect;
@@ -285,6 +274,8 @@ public class Query<T> extends QueryHandleAdapter<T> {
      */
     public static class Executor<T> extends Query<Executor<T>> {
 
+        private static final Map<Class<?>, ParsedQueryMetadata> METADATA_CACHE = new ConcurrentHashMap<>();
+
         private final Class<T> queryClass;
 
         private final Set<String> excludedFields = new HashSet<>();
@@ -339,13 +330,42 @@ public class Query<T> extends QueryHandleAdapter<T> {
             return this;
         }
 
+        /**
+         * @see #appendWhere(Where)
+         * @deprecated since 2.1.4, use {@link #appendWhere(Where)} instead.
+         */
+        @Deprecated
         public Executor<T> where(Where where) {
-            return where(where, false);
+            return appendWhere(where);
         }
 
+        /**
+         * @see #appendWhere(Where)
+         * @see #replaceWhere(Where)
+         * @deprecated since 2.1.4, use {@link #appendWhere(Where)} or {@link #replaceWhere(Where)} instead.
+         */
+        @Deprecated
         public Executor<T> where(Where where, boolean replace) {
             this.where = where;
             this.replaceWhere = replace;
+            return this;
+        }
+
+        /**
+         * @since 2.1.4
+         */
+        public Executor<T> appendWhere(Where where) {
+            this.where = where;
+            this.replaceWhere = false;
+            return this;
+        }
+
+        /**
+         * @since 2.1.4
+         */
+        public Executor<T> replaceWhere(Where where) {
+            this.where = where;
+            this.replaceWhere = true;
             return this;
         }
 
@@ -363,87 +383,100 @@ public class Query<T> extends QueryHandleAdapter<T> {
             }
         }
 
-        private Cond doParseCond(QCond[] qConds) {
-            if (ArrayUtils.isNotEmpty(qConds)) {
-                Cond cond = Cond.create(this);
-                int idx = 0;
-                for (QCond qCond : qConds) {
-                    String withFieldValue = qCond.with().value();
-                    if (StringUtils.isNotBlank(qCond.field().value()) && StringUtils.isNotBlank(withFieldValue)) {
-                        boolean skipped = false;
-                        char firstChar = withFieldValue.charAt(0);
-                        if (firstChar == '#') {
-                            // 以#开头则替换变量值
-                            String varName = StringUtils.substring(withFieldValue, 1);
-                            if (variables.containsKey(varName)) {
-                                withFieldValue = "?";
-                                cond.param(variables.get(varName));
-                            } else if (qCond.ignorable()) {
-                                skipped = true;
-                            } else {
-                                throw new IllegalArgumentException(String.format("Variable '%s' is not set.", varName));
-                            }
-                        } else if (firstChar == '$') {
-                            // 以$开头的字符串表达式可以通过分隔符指定其数据类型并根据表达式尝试转换数据类型或跳过
-                            String fieldValue = StringUtils.substring(withFieldValue, 1);
-                            withFieldValue = "?";
-                            if (StringUtils.contains(fieldValue, ":")) {
-                                String[] fieldValueArr = StringUtils.split(fieldValue, ":");
-                                if (fieldValueArr != null && fieldValueArr.length == 2) {
-                                    if (StringUtils.equalsIgnoreCase(fieldValueArr[0], "int")) {
-                                        cond.param(BlurObject.bind(fieldValueArr[1]).toIntValue());
-                                    } else if (StringUtils.equalsIgnoreCase(fieldValueArr[0], "long")) {
-                                        cond.param(BlurObject.bind(fieldValueArr[1]).toLongValue());
-                                    } else if (StringUtils.equalsIgnoreCase(fieldValueArr[0], "float")) {
-                                        cond.param(BlurObject.bind(fieldValueArr[1]).toFloatValue());
-                                    } else if (StringUtils.equalsIgnoreCase(fieldValueArr[0], "double")) {
-                                        cond.param(BlurObject.bind(fieldValueArr[1]).toDoubleValue());
-                                    } else if (StringUtils.equalsIgnoreCase(fieldValueArr[0], "string")) {
-                                        cond.param(fieldValueArr[1]);
-                                    } else {
-                                        throw new UnsupportedOperationException(String.format("Unsupported data type prefix '%s:'.", fieldValueArr[0]));
-                                    }
-                                } else if (qCond.ignorable()) {
-                                    skipped = true;
-                                } else {
-                                    cond.param(fieldValue);
-                                }
-                            } else if (StringUtils.isBlank(fieldValue) && qCond.ignorable()) {
-                                skipped = true;
-                            } else {
-                                cond.param(fieldValue);
-                            }
-                        } else {
-                            withFieldValue = Fields.field(qCond.with().prefix(), qCond.with().value());
+        private Object doProcessCondWithValue(QCond qCond, Cond cond) {
+            String withFieldValue = qCond.with().value();
+            char firstChar = withFieldValue.charAt(0);
+            if (firstChar == '#') {
+                // 以#开头则替换变量值
+                String varName = StringUtils.substring(withFieldValue, 1);
+                if (variables.containsKey(varName)) {
+                    cond.param(variables.get(varName));
+                    return "?";
+                } else if (qCond.ignorable()) {
+                    return null; // Indicates skipped
+                } else {
+                    throw new IllegalArgumentException(String.format("Variable '%s' is not set.", varName));
+                }
+            } else if (firstChar == '$') {
+                // 以$开头的字符串表达式可以通过分隔符指定其数据类型并根据表达式尝试转换数据类型或跳过
+                String fieldValue = StringUtils.substring(withFieldValue, 1);
+                if (StringUtils.contains(fieldValue, ":")) {
+                    String[] fieldValueArr = StringUtils.split(fieldValue, ":");
+                    if (fieldValueArr != null && fieldValueArr.length == 2) {
+                        String type = fieldValueArr[0].toLowerCase();
+                        String value = fieldValueArr[1];
+                        switch (type) {
+                            case "int":
+                                cond.param(BlurObject.bind(value).toIntValue());
+                                break;
+                            case "long":
+                                cond.param(BlurObject.bind(value).toLongValue());
+                                break;
+                            case "float":
+                                cond.param(BlurObject.bind(value).toFloatValue());
+                                break;
+                            case "double":
+                                cond.param(BlurObject.bind(value).toDoubleValue());
+                                break;
+                            case "string":
+                                cond.param(value);
+                                break;
+                            default:
+                                throw new UnsupportedOperationException(String.format("Unsupported data type prefix '%s:'.", fieldValueArr[0]));
                         }
-                        if (!skipped) {
-                            if (idx > 0) {
-                                switch (qCond.logicalOpt()) {
-                                    case NOT:
-                                        cond.not();
-                                        break;
-                                    case OR:
-                                        cond.or();
-                                        break;
-                                    default:
-                                        cond.and();
-                                }
-                            }
-                            String fieldOne = Fields.field(qCond.field().prefix(), qCond.field().value());
-                            if (qCond.field().wrapIdentifier()) {
-                                fieldOne = wrapIdentifierField(fieldOne);
-                            }
-                            if (qCond.with().wrapIdentifier()) {
-                                withFieldValue = wrapIdentifierField(withFieldValue);
-                            }
-                            cond.opt(fieldOne, qCond.opt(), withFieldValue);
-                            idx++;
+                        return "?";
+                    } else if (qCond.ignorable()) {
+                        return null; // Indicates skipped
+                    } else {
+                        cond.param(fieldValue);
+                    }
+                } else if (StringUtils.isBlank(fieldValue) && qCond.ignorable()) {
+                    return null; // Indicates skipped
+                } else {
+                    cond.param(fieldValue);
+                }
+                return "?";
+            }
+            return Fields.field(qCond.with().prefix(), qCond.with().value());
+        }
+
+        private Cond doParseCond(QCond[] qConds) {
+            if (ArrayUtils.isEmpty(qConds)) {
+                return null;
+            }
+            Cond cond = Cond.create(this);
+            int idx = 0;
+            for (QCond qCond : qConds) {
+                if (StringUtils.isBlank(qCond.field().value()) || StringUtils.isBlank(qCond.with().value())) {
+                    continue;
+                }
+                Object withFieldValue = doProcessCondWithValue(qCond, cond);
+                if (withFieldValue != null) {
+                    if (idx > 0) {
+                        switch (qCond.logicalOpt()) {
+                            case NOT:
+                                cond.not();
+                                break;
+                            case OR:
+                                cond.or();
+                                break;
+                            default:
+                                cond.and();
                         }
                     }
+                    String fieldOne = Fields.field(qCond.field().prefix(), qCond.field().value());
+                    if (qCond.field().wrapIdentifier()) {
+                        fieldOne = wrapIdentifierField(fieldOne);
+                    }
+                    String withFieldValueStr = (String) withFieldValue;
+                    if (!StringUtils.equals(withFieldValueStr, "?") && qCond.with().wrapIdentifier()) {
+                        withFieldValueStr = wrapIdentifierField(withFieldValueStr);
+                    }
+                    cond.opt(fieldOne, qCond.opt(), withFieldValueStr);
+                    idx++;
                 }
-                return cond;
             }
-            return null;
+            return cond.isEmpty() ? null : cond;
         }
 
         private void doParseJoin(Select select, QJoin qJoin) {
@@ -466,11 +499,10 @@ public class Query<T> extends QueryHandleAdapter<T> {
             }
         }
 
-        private void doParseOrderBy(Where where) {
+        private void doParseOrderBy(Where where, List<QOrderBy> qOrderBys) {
             if (!ignoreOrderBy && where != null) {
                 OrderBy orderBy = where.orderBy();
                 if (orderBy == null || orderBy.isEmpty()) {
-                    List<QOrderBy> qOrderBys = ClassUtils.getAnnotation(queryClass, QOrderBy.class, true, false);
                     if (!qOrderBys.isEmpty()) {
                         for (QOrderBy qOrderBy : qOrderBys) {
                             for (QOrderField qOrderField : qOrderBy.value()) {
@@ -489,11 +521,10 @@ public class Query<T> extends QueryHandleAdapter<T> {
             }
         }
 
-        private void doParseGroupBy(Where where, List<QField> groupedFields) {
+        private void doParseGroupBy(Where where, List<QField> groupedFields, List<QGroupBy> qGroupBys) {
             if (where != null) {
                 GroupBy groupBy = where.groupBy();
                 if (groupBy == null || groupBy.isEmpty()) {
-                    List<QGroupBy> qGroupBys = ClassUtils.getAnnotation(queryClass, QGroupBy.class, true, false);
                     if (!qGroupBys.isEmpty()) {
                         for (QGroupBy qGroupBy : qGroupBys) {
                             if (qGroupBy != null) {
@@ -520,9 +551,8 @@ public class Query<T> extends QueryHandleAdapter<T> {
             }
         }
 
-        private void doParseWhere(Select select, List<QField> groupedFields) {
+        private void doParseWhere(Select select, List<QField> groupedFields, List<QWhere> qWheres, List<QOrderBy> qOrderBys, List<QGroupBy> qGroupBys) {
             Where selectWhere = select.where();
-            List<QWhere> qWheres = ClassUtils.getAnnotation(queryClass, QWhere.class, true, false);
             if (!qWheres.isEmpty()) {
                 for (QWhere qWhere : qWheres) {
                     if (qWhere != null) {
@@ -536,64 +566,45 @@ public class Query<T> extends QueryHandleAdapter<T> {
                     }
                 }
             }
-            doParseOrderBy(selectWhere);
-            doParseGroupBy(selectWhere, groupedFields);
+            doParseOrderBy(selectWhere, qOrderBys);
+            doParseGroupBy(selectWhere, groupedFields, qGroupBys);
             if (where != null) {
                 selectWhere.where(where);
             }
         }
 
         public Select buildSelect() {
+            ParsedQueryMetadata metadata = METADATA_CACHE.computeIfAbsent(queryClass, ParsedQueryMetadata::new);
+
             Select select = Select.create(this);
             // Parse From
-            List<QFroms> qFromsList = ClassUtils.getAnnotation(queryClass, QFroms.class, true, false);
-            if (!qFromsList.isEmpty()) {
-                for (QFroms qFroms : qFromsList) {
-                    Arrays.stream(qFroms.value()).forEachOrdered(qFrom -> doParseFrom(select, qFrom));
-                }
-            }
-            List<QFrom> qFromList = ClassUtils.getAnnotation(queryClass, QFrom.class, true, false);
-            if (!qFromList.isEmpty()) {
-                for (QFrom qFrom : qFromList) {
-                    doParseFrom(select, qFrom);
-                }
-            }
+            metadata.froms.forEach(qFrom -> doParseFrom(select, qFrom));
+
             // Parse Field
             List<QField> groupedFields = new ArrayList<>();
-            ClassUtils.getFields(queryClass, true)
-                    .stream()
-                    .filter(field -> ClassUtils.isNormalField(field) && !excludedFields.contains(field.getName()))
-                    .forEachOrdered(field -> {
-                        QField qField = field.getAnnotation(QField.class);
-                        if (qField != null && (excludedFields.isEmpty() || !excludedFields.contains(Fields.field(qField.prefix(), StringUtils.defaultIfBlank(qField.alias(), qField.value()))))) {
-                            select.field(qField.prefix(), qField.value(), qField.alias(), qField.wrapIdentifier());
-                            if (qField.grouped()) {
-                                groupedFields.add(qField);
-                            }
+            metadata.fields.stream()
+                    .filter(wrapper -> !excludedFields.contains(wrapper.field.getName()))
+                    .filter(wrapper -> excludedFields.isEmpty() || !excludedFields.contains(Fields.field(wrapper.qField.prefix(), StringUtils.defaultIfBlank(wrapper.qField.alias(), wrapper.qField.value()))))
+                    .forEachOrdered(wrapper -> {
+                        QField qField = wrapper.qField;
+                        select.field(qField.prefix(), qField.value(), qField.alias(), qField.wrapIdentifier());
+                        if (qField.grouped()) {
+                            groupedFields.add(qField);
                         }
                     });
+
             // Parse Join
-            List<QJoins> qJoinsList = ClassUtils.getAnnotation(queryClass, QJoins.class, true, false);
-            if (!qJoinsList.isEmpty()) {
-                for (QJoins qJoins : qJoinsList) {
-                    Arrays.stream(qJoins.value()).forEachOrdered(qJoin -> doParseJoin(select, qJoin));
-                }
-            }
-            List<QJoin> qJoinList = ClassUtils.getAnnotation(queryClass, QJoin.class, true, false);
-            if (!qJoinList.isEmpty()) {
-                for (QJoin qJoin : qJoinList) {
-                    doParseJoin(select, qJoin);
-                }
-            }
+            metadata.joins.forEach(qJoin -> doParseJoin(select, qJoin));
+
             // Parse Where
             if (where != null && replaceWhere) {
-                doParseOrderBy(where);
-                doParseGroupBy(where, groupedFields);
+                doParseOrderBy(where, metadata.orderBys);
+                doParseGroupBy(where, groupedFields, metadata.groupBys);
                 select.where(where);
             } else {
-                doParseWhere(select, groupedFields);
+                doParseWhere(select, groupedFields, metadata.wheres, metadata.orderBys, metadata.groupBys);
             }
-            if (distinct) {
+            if (distinct || metadata.distinct) {
                 return select.distinct();
             }
             return select;
@@ -644,6 +655,50 @@ public class Query<T> extends QueryHandleAdapter<T> {
          */
         public <E> IResultSet<E> find(Class<E> beanClass, Page page) throws Exception {
             return buildSelect().find(new BeanResultSetHandler<>(beanClass), page);
+        }
+    }
+
+    /**
+     * @since 2.1.4
+     */
+    private static class ParsedQueryMetadata {
+
+        final List<QFrom> froms = new ArrayList<>();
+        final List<QFieldWrapper> fields = new ArrayList<>();
+        final List<QJoin> joins = new ArrayList<>();
+        final List<QWhere> wheres = new ArrayList<>();
+        final List<QOrderBy> orderBys = new ArrayList<>();
+        final List<QGroupBy> groupBys = new ArrayList<>();
+        final boolean distinct;
+
+        ParsedQueryMetadata(Class<?> queryClass) {
+            distinct = !ClassUtils.getAnnotation(queryClass, QDistinct.class, true, true).isEmpty();
+            //
+            List<QFroms> qFromsList = ClassUtils.getAnnotation(queryClass, QFroms.class, true, false);
+            if (!qFromsList.isEmpty()) {
+                for (QFroms qFroms : qFromsList) {
+                    froms.addAll(Arrays.asList(qFroms.value()));
+                }
+            }
+            froms.addAll(ClassUtils.getAnnotation(queryClass, QFrom.class, true, false));
+            //
+            ClassUtils.getFields(queryClass, true)
+                    .stream()
+                    .filter(field -> ClassUtils.isNormalField(field) && field.isAnnotationPresent(QField.class))
+                    .map(QFieldWrapper::new)
+                    .forEachOrdered(fields::add);
+            //
+            List<QJoins> qJoinsList = ClassUtils.getAnnotation(queryClass, QJoins.class, true, false);
+            if (!qJoinsList.isEmpty()) {
+                for (QJoins qJoins : qJoinsList) {
+                    joins.addAll(Arrays.asList(qJoins.value()));
+                }
+            }
+            joins.addAll(ClassUtils.getAnnotation(queryClass, QJoin.class, true, false));
+            //
+            wheres.addAll(ClassUtils.getAnnotation(queryClass, QWhere.class, true, false));
+            orderBys.addAll(ClassUtils.getAnnotation(queryClass, QOrderBy.class, true, false));
+            groupBys.addAll(ClassUtils.getAnnotation(queryClass, QGroupBy.class, true, false));
         }
     }
 }

@@ -263,7 +263,8 @@ public abstract class AbstractCrudRepository<PK extends Serializable, ENTITY ext
         if (additionalCond != null && !additionalCond.isEmpty()) {
             cond.andIfNeed(additionalCond);
         }
-        return Query.build(owner, dataSourceName, voBeanClass).where(cond.buildWhere(), true)
+        return Query.build(owner, dataSourceName, voBeanClass)
+                .replaceWhere(cond.buildWhere())
                 .addExcludeField(excludedFields)
                 .findFirst();
     }
@@ -282,7 +283,7 @@ public abstract class AbstractCrudRepository<PK extends Serializable, ENTITY ext
             where.orderBy().orderBy(orderBy);
         }
         return Query.build(owner, dataSourceName, voBeanClass)
-                .where(where, true)
+                .replaceWhere(where)
                 .addExcludeField(excludedFields)
                 .find(page);
     }
