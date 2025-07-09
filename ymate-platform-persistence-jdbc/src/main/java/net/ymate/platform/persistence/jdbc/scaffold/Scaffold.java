@@ -323,7 +323,7 @@ public final class Scaffold {
             ColumnInfo primaryKeyColumn = tableInfo.getColumns().get(primaryKeyName);
             Attr primaryKeyAttr = Attr.build(primaryKeyColumn).setConstVarName(doNamedFilter(INamedFilter.Type.COLUMN, primaryKeyColumn.getColumnName()).toUpperCase());
             entityInfoBuilder.primaryKeyType(primaryKeyColumn.getColumnType())
-                    .primaryKeyName(StringUtils.uncapitalize(propertyNameToFieldNameIfNeed(primaryKeyName)))
+                    .primaryKeyName(StringUtils.uncapitalize(propertyNameToFieldNameIfNeed(doNamedFilter(INamedFilter.Type.COLUMN, primaryKeyName))))
                     .addField(primaryKeyAttr)
                     .addNonNullableField(primaryKeyAttr)
                     .addConstField(new ConstAttr(String.class.getSimpleName(), primaryKeyAttr.getConstVarName(), primaryKeyColumn.getColumnName(), primaryKeyColumn.getName()));
