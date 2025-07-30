@@ -145,7 +145,7 @@ public class UploadFileValidator extends AbstractValidator {
                     contentType = allowContentType;
                 }
                 if (StringUtils.isNotBlank(contentType)) {
-                    contentTypes.add(allowContentType);
+                    contentTypes.add(contentType);
                 }
             }
         }
