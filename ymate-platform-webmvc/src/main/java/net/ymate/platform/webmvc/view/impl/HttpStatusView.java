@@ -101,6 +101,22 @@ public class HttpStatusView extends AbstractView {
     }
 
     /**
+     * @return 获取HTTP返回码
+     * @since 2.1.4
+     */
+    public int getStatus() {
+        return status;
+    }
+
+    /**
+     * @return 获取错误提示信息
+     * @since 2.1.4
+     */
+    public String getMsg() {
+        return msg;
+    }
+
+    /**
      * 将文本内容写入回应数据流(注:调用此方法需采用useError=false设置)
      *
      * @param bodyStr 写入的内容
