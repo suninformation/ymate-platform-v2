@@ -63,7 +63,7 @@ public final class DateTimeValidator implements IValidator {
      */
     public static Date parseDate(String paramValue, String pattern) {
         try {
-            if (StringUtils.isNumeric(paramValue)) {
+            if (StringUtils.isNumeric(paramValue) && paramValue.length() >= 13) {
                 return new Date(Long.parseLong(paramValue));
             }
             return DateTimeUtils.parseDateTime(paramValue, StringUtils.defaultIfBlank(pattern, DateTimeUtils.YYYY_MM_DD_HH_MM_SS));
