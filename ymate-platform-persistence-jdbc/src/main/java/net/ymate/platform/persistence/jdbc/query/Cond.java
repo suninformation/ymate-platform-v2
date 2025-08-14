@@ -625,8 +625,22 @@ public final class Cond extends Query<Cond> {
 
     // ------
 
+    /**
+     * @since 2.1.4
+     */
+    public Cond range(String field, Object valueOne, Object valueTwo) {
+        return range(null, field, valueOne, valueTwo, null);
+    }
+
     public Cond range(String field, Object valueOne, Object valueTwo, LogicalOpt opt) {
         return range(null, field, valueOne, valueTwo, opt);
+    }
+
+    /**
+     * @since 2.1.4
+     */
+    public Cond range(String prefix, String field, Object valueOne, Object valueTwo) {
+        return range(prefix, field, valueOne, valueTwo, null);
     }
 
     public Cond range(String prefix, String field, Object valueOne, Object valueTwo, LogicalOpt opt) {
@@ -649,16 +663,44 @@ public final class Cond extends Query<Cond> {
         return this;
     }
 
+    /**
+     * @since 2.1.4
+     */
+    public Cond rangeWrap(String field, Object valueOne, Object valueTwo) {
+        return rangeWrap(null, field, valueOne, valueTwo, null);
+    }
+
     public Cond rangeWrap(String field, Object valueOne, Object valueTwo, LogicalOpt opt) {
         return rangeWrap(null, field, valueOne, valueTwo, opt);
+    }
+
+    /**
+     * @since 2.1.4
+     */
+    public Cond rangeWrap(String prefix, String field, Object valueOne, Object valueTwo) {
+        return rangeWrap(prefix, field, valueOne, valueTwo, null);
     }
 
     public Cond rangeWrap(String prefix, String field, Object valueOne, Object valueTwo, LogicalOpt opt) {
         return range(prefix, wrapIdentifierField(field), valueOne, valueTwo, opt);
     }
 
+    /**
+     * @since 2.1.4
+     */
+    public Cond range(IFunction func, Object valueOne, Object valueTwo) {
+        return range(func.build(), valueOne, valueTwo, null).param(func.params());
+    }
+
     public Cond range(IFunction func, Object valueOne, Object valueTwo, LogicalOpt opt) {
         return range(func.build(), valueOne, valueTwo, opt).param(func.params());
+    }
+
+    /**
+     * @since 2.1.4
+     */
+    public Cond range(String field, DateTimeValue dateTimeValue) {
+        return range(null, field, dateTimeValue.getStartDateTimeMillisOrNull(), dateTimeValue.getEndDateTimeMillisOrNull(), null);
     }
 
     /**
@@ -669,10 +711,24 @@ public final class Cond extends Query<Cond> {
     }
 
     /**
+     * @since 2.1.4
+     */
+    public Cond range(String prefix, String field, DateTimeValue dateTimeValue) {
+        return range(prefix, field, dateTimeValue.getStartDateTimeMillisOrNull(), dateTimeValue.getEndDateTimeMillisOrNull(), null);
+    }
+
+    /**
      * @since 2.1.3
      */
     public Cond range(String prefix, String field, DateTimeValue dateTimeValue, LogicalOpt opt) {
         return range(prefix, field, dateTimeValue.getStartDateTimeMillisOrNull(), dateTimeValue.getEndDateTimeMillisOrNull(), opt);
+    }
+
+    /**
+     * @since 2.1.4
+     */
+    public Cond rangeWrap(String field, DateTimeValue dateTimeValue) {
+        return rangeWrap(null, field, dateTimeValue.getStartDateTimeMillisOrNull(), dateTimeValue.getEndDateTimeMillisOrNull(), null);
     }
 
     /**
@@ -683,10 +739,24 @@ public final class Cond extends Query<Cond> {
     }
 
     /**
+     * @since 2.1.4
+     */
+    public Cond rangeWrap(String prefix, String field, DateTimeValue dateTimeValue) {
+        return range(prefix, wrapIdentifierField(field), dateTimeValue.getStartDateTimeMillisOrNull(), dateTimeValue.getEndDateTimeMillisOrNull(), null);
+    }
+
+    /**
      * @since 2.1.3
      */
     public Cond rangeWrap(String prefix, String field, DateTimeValue dateTimeValue, LogicalOpt opt) {
         return range(prefix, wrapIdentifierField(field), dateTimeValue.getStartDateTimeMillisOrNull(), dateTimeValue.getEndDateTimeMillisOrNull(), opt);
+    }
+
+    /**
+     * @since 2.1.4
+     */
+    public Cond range(IFunction func, DateTimeValue dateTimeValue) {
+        return range(func.build(), dateTimeValue.getStartDateTimeMillisOrNull(), dateTimeValue.getEndDateTimeMillisOrNull(), null).param(func.params());
     }
 
     /**
