@@ -66,6 +66,13 @@ public class DateTimeValue implements Serializable {
      */
     public static Long getStartDateTimeMillisOrNull(String paramName) {
         DateTimeValue dateTimeValue = get(paramName);
+        return getStartDateTimeMillisOrNull(dateTimeValue);
+    }
+
+    /**
+     * @since 2.1.4
+     */
+    public static Long getStartDateTimeMillisOrNull(DateTimeValue dateTimeValue) {
         if (dateTimeValue != null) {
             return dateTimeValue.getStartDateTimeMillisOrNull();
         }
