@@ -64,6 +64,12 @@ public final class Cond extends Query<Cond> {
                                 c.rangeWrap(qField.prefix(), qField.value(), (DateTimeValue) value, LogicalOpt.AND);
                             } else if (qField.opt().equals(OPT.LIKE)) {
                                 c.and().likeWrap(qField.prefix(), qField.value()).param(Like.contains(value.toString()));
+                            } else if (qField.opt().equals(OPT.RLIKE)) {
+                                c.and().rlikeWrap(qField.prefix(), qField.value()).param(value.toString());
+                            } else if (qField.opt().equals(OPT.REGEXP)) {
+                                c.and().regexpWrap(qField.prefix(), qField.value()).param(value.toString());
+                            } else if (value instanceof Collection || value.getClass().isArray()) {
+                                c.and().inWrap(Fields.field(qField.prefix(), qField.value()), Params.create(value));
                             } else {
                                 c.and().optWrap(Fields.field(qField.prefix(), qField.value()), qField.opt()).param(value);
                             }
