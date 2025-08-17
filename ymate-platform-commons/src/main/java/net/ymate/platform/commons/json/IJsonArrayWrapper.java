@@ -117,4 +117,9 @@ public interface IJsonArrayWrapper extends Serializable {
     List<Object> toList();
 
     Object[] toArray();
+
+    /**
+     * @since 2.1.4
+     */
+    JsonWrapper wrap();
 }

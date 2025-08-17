@@ -317,4 +317,9 @@ public class FastJsonArrayWrapper implements IJsonArrayWrapper {
     public Object[] toArray() {
         return jsonArray.toArray();
     }
+
+    @Override
+    public JsonWrapper wrap() {
+        return new JsonWrapper(this);
+    }
 }

@@ -293,4 +293,9 @@ public class JacksonObjectWrapper implements IJsonObjectWrapper {
         return JacksonAdapter.OBJECT_MAPPER.convertValue(objectNode, new TypeReference<Map<String, Object>>() {
         });
     }
+
+    @Override
+    public JsonWrapper wrap() {
+        return new JsonWrapper(this);
+    }
 }

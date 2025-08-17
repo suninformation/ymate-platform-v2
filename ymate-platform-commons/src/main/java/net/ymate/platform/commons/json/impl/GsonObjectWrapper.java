@@ -290,4 +290,9 @@ public class GsonObjectWrapper implements IJsonObjectWrapper {
     public Map<String, Object> toMap() {
         return GsonAdapter.GSON.fromJson(jsonObject, Map.class);
     }
+
+    @Override
+    public JsonWrapper wrap() {
+        return new JsonWrapper(this);
+    }
 }

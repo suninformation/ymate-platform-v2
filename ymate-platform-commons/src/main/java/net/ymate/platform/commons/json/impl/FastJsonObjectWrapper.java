@@ -277,4 +277,9 @@ public class FastJsonObjectWrapper implements IJsonObjectWrapper {
     public Map<String, Object> toMap() {
         return jsonObject;
     }
+
+    @Override
+    public JsonWrapper wrap() {
+        return new JsonWrapper(this);
+    }
 }

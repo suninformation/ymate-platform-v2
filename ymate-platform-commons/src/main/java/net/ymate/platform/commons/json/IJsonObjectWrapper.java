@@ -101,4 +101,9 @@ public interface IJsonObjectWrapper extends Serializable {
     String toString(boolean format, boolean keepNullValue, boolean snakeCase, IJsonPropertyFilter filter);
 
     Map<String, Object> toMap();
+
+    /**
+     * @since 2.1.4
+     */
+    JsonWrapper wrap();
 }

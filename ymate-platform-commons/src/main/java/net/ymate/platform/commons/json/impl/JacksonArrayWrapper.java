@@ -340,4 +340,9 @@ public class JacksonArrayWrapper implements IJsonArrayWrapper {
     public Object[] toArray() {
         return toList().toArray();
     }
+
+    @Override
+    public JsonWrapper wrap() {
+        return new JsonWrapper(this);
+    }
 }
