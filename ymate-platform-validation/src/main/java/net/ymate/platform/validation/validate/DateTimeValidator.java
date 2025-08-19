@@ -124,8 +124,12 @@ public final class DateTimeValidator implements IValidator {
             if (context.getParamValue().getClass().isArray()) {
                 Object[] values = (Object[]) paramValue;
                 for (Object pValue : values) {
-                    String pValueStr = BlurObject.bind(pValue).toStringValue();
-                    result = validate(paramName, pValueStr, vDateTime.pattern(), vDateTime.separator(), vDateTime.maxDays(), vDateTime.single());
+                    if (pValue instanceof DateTimeValue) {
+                        result = validate((DateTimeValue) pValue, vDateTime.maxDays(), vDateTime.single());
+                    } else {
+                        String pValueStr = BlurObject.bind(pValue).toStringValue();
+                        result = validate(paramName, pValueStr, vDateTime.pattern(), vDateTime.separator(), vDateTime.maxDays(), vDateTime.single());
+                    }
                     if (result > 0) {
                         break;
                     }

@@ -34,6 +34,9 @@ public class DateTimeValueConverter implements IConverter<DateTimeValue> {
             DateTimeValue value = DateTimeValue.parse(str, false);
             if (value == null) {
                 value = DateTimeValue.parse(str, DateTimeUtils.YYYY_MM_DD, false);
+                if (value == null) {
+                    value = DateTimeValue.parse(str, DateTimeUtils.YYYY_MM, false);
+                }
             }
             return value;
         }
