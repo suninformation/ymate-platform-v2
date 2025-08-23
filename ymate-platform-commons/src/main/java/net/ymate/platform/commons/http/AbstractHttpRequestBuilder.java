@@ -15,6 +15,8 @@
  */
 package net.ymate.platform.commons.http;
 
+import net.ymate.platform.commons.util.FileUtils;
+import net.ymate.platform.commons.util.MimeTypeUtils;
 import org.apache.commons.lang.NullArgumentException;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.Header;
@@ -22,6 +24,7 @@ import org.apache.http.NameValuePair;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
 import org.apache.http.entity.ContentType;
+import org.apache.http.entity.mime.HttpMultipartMode;
 import org.apache.http.entity.mime.content.ContentBody;
 import org.apache.http.entity.mime.content.FileBody;
 import org.apache.http.entity.mime.content.InputStreamBody;
@@ -70,6 +73,11 @@ public abstract class AbstractHttpRequestBuilder<T extends AbstractHttpRequestBu
     private int socketTimeout = -1;
 
     private SSLConnectionSocketFactory socketFactory;
+
+    /**
+     * @since 2.1.4
+     */
+    private HttpMultipartMode multipartMode;
 
     protected AbstractHttpRequestBuilder(String url) {
         if (StringUtils.isBlank(url)) {
@@ -143,7 +151,12 @@ public abstract class AbstractHttpRequestBuilder<T extends AbstractHttpRequestBu
     @SuppressWarnings("unchecked")
     public T addContent(String fieldName, File file) {
         if (file != null) {
-            addBody(fieldName, new FileBody(file));
+            String contentType = MimeTypeUtils.getFileMimeType(file);
+            if (StringUtils.isNotBlank(contentType)) {
+                addBody(fieldName, new FileBody(file, ContentType.create(contentType)));
+            } else {
+                addBody(fieldName, new FileBody(file));
+            }
         }
         return (T) this;
     }
@@ -151,7 +164,12 @@ public abstract class AbstractHttpRequestBuilder<T extends AbstractHttpRequestBu
     @SuppressWarnings("unchecked")
     public T addContent(String fieldName, InputStream inputStream, String fileName) {
         if (inputStream != null) {
-            addBody(fieldName, new InputStreamBody(inputStream, fileName));
+            String contentType = MimeTypeUtils.getFileMimeType(FileUtils.getExtName(fileName));
+            if (StringUtils.isNotBlank(contentType)) {
+                return addContent(fieldName, inputStream, ContentType.create(contentType), fileName);
+            } else {
+                addBody(fieldName, new InputStreamBody(inputStream, fileName));
+            }
         }
         return (T) this;
     }
@@ -283,6 +301,15 @@ public abstract class AbstractHttpRequestBuilder<T extends AbstractHttpRequestBu
         return (T) this;
     }
 
+    /**
+     * @since 2.1.4
+     */
+    @SuppressWarnings("unchecked")
+    public T multipartMode(HttpMultipartMode multipartMode) {
+        this.multipartMode = multipartMode;
+        return (T) this;
+    }
+
     public String getUrl() {
         return url;
     }
@@ -341,6 +368,13 @@ public abstract class AbstractHttpRequestBuilder<T extends AbstractHttpRequestBu
 
     public SSLConnectionSocketFactory getSocketFactory() {
         return socketFactory;
+    }
+
+    /**
+     * @since 2.1.4
+     */
+    public HttpMultipartMode getMultipartMode() {
+        return multipartMode;
     }
 
     public abstract IHttpRequest build();

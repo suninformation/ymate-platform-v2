@@ -21,6 +21,7 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.RequestBuilder;
 import org.apache.http.entity.ContentType;
 import org.apache.http.entity.mime.FormBodyPartBuilder;
+import org.apache.http.entity.mime.HttpMultipartMode;
 import org.apache.http.entity.mime.MultipartEntityBuilder;
 
 import java.io.File;
@@ -48,7 +49,8 @@ public abstract class AbstractHttpRequest<T extends AbstractHttpRequestBuilder<?
         httpRequestBuilder.getParams().forEach(requestBuilder::addParameter);
         if (!StringUtils.equalsIgnoreCase(requestBuilder.getMethod(), HttpGet.METHOD_NAME)) {
             if (!httpRequestBuilder.getContents().isEmpty()) {
-                MultipartEntityBuilder multipartEntityBuilder = MultipartEntityBuilder.create();
+                MultipartEntityBuilder multipartEntityBuilder = MultipartEntityBuilder.create()
+                        .setMode(httpRequestBuilder.getMultipartMode() != null ? httpRequestBuilder.getMultipartMode() : HttpMultipartMode.RFC6532);
                 httpRequestBuilder.getContents().forEach((key, value) -> multipartEntityBuilder.addPart(FormBodyPartBuilder.create(key, value).build()));
                 requestBuilder.setEntity(multipartEntityBuilder.build());
             } else if (httpRequestBuilder.getContent() != null) {
