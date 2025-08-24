@@ -45,7 +45,7 @@ public @interface VUploadFile {
     long totalMax() default 0;
 
     /**
-     * @return 允许的文件MIME类型（支持使用扩展名，如：.txt 将尝试自动转换为 text/plain）
+     * @return 允许的文件MIME类型，若为空则默认使用全局配置（支持使用扩展名，如：.txt 将尝试自动转换为 text/plain）
      */
     String[] contentTypes() default {};
 

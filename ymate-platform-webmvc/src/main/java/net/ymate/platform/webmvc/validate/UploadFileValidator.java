@@ -155,7 +155,10 @@ public class UploadFileValidator extends AbstractValidator {
     public static Set<String> getAllowedContentTypes(IContext context, String... allowContentTypes) {
         Set<String> contentTypes = new HashSet<>(parseAllowedContentTypes(allowContentTypes));
         contentTypes.addAll(parseAllowedContentTypes(StringUtils.split(StringUtils.trimToEmpty(context.getContextParams().get(IWebMvcConfig.PARAMS_ALLOWED_UPLOAD_CONTENT_TYPES)), "|")));
-        contentTypes.addAll(parseAllowedContentTypes(StringUtils.split(StringUtils.trimToEmpty(context.getOwner().getParam(IWebMvcConfig.PARAMS_ALLOWED_UPLOAD_CONTENT_TYPES)), "|")));
+        // 若方法参数和当前上下文均未配置则尝试从全局配置中获取
+        if (contentTypes.isEmpty()) {
+            contentTypes.addAll(parseAllowedContentTypes(StringUtils.split(StringUtils.trimToEmpty(context.getOwner().getParam(IWebMvcConfig.PARAMS_ALLOWED_UPLOAD_CONTENT_TYPES)), "|")));
+        }
         return contentTypes;
     }
 }
