@@ -193,6 +193,19 @@ public final class Update extends Query<Update> {
         return this;
     }
 
+    /**
+     * @since 2.1.4
+     */
+    private String doParseField(String field, boolean wrapIdentifier) {
+        if (field != null && field.contains("=")) {
+            String[] fieldParts = StringUtils.split(field, '=');
+            if (fieldParts.length == 2) {
+                return (wrapIdentifier ? wrapIdentifierField(fieldParts[0]) : fieldParts[0]) + "=" + fieldParts[1];
+            }
+        }
+        return (wrapIdentifier ? wrapIdentifierField(field) : field) + "=?";
+    }
+
     public Fields fields() {
         return this.fields;
     }
@@ -202,7 +215,7 @@ public final class Update extends Query<Update> {
     }
 
     public Update field(String field, boolean wrapIdentifier) {
-        this.fields.add(wrapIdentifier ? wrapIdentifierField(field) : field);
+        this.fields.add(doParseField(field, wrapIdentifier));
         return this;
     }
 
@@ -211,7 +224,7 @@ public final class Update extends Query<Update> {
     }
 
     public Update field(String prefix, String field, boolean wrapIdentifier) {
-        this.fields.add(prefix, wrapIdentifier ? wrapIdentifierField(field) : field);
+        this.fields.add(prefix, doParseField(field, wrapIdentifier));
         return this;
     }
 
@@ -220,7 +233,7 @@ public final class Update extends Query<Update> {
     }
 
     public Update field(String prefix, String field, String alias, boolean wrapIdentifier) {
-        this.fields.add(prefix, wrapIdentifier ? wrapIdentifierField(field) : field, alias);
+        this.fields.add(prefix, doParseField(field, wrapIdentifier), alias);
         return this;
     }
 
@@ -235,7 +248,7 @@ public final class Update extends Query<Update> {
      * @since 2.1.3
      */
     public Update fieldAlias(String field, String alias, boolean wrapIdentifier) {
-        this.fields.addAlias(wrapIdentifier ? wrapIdentifierField(field) : field, alias);
+        this.fields.addAlias(doParseField(field, wrapIdentifier), alias);
         return this;
     }
 
@@ -245,7 +258,10 @@ public final class Update extends Query<Update> {
 
     public Update field(Fields fields, boolean wrapIdentifier) {
         Fields newFields = checkFieldExcluded(fields);
-        this.fields.add(wrapIdentifier ? wrapIdentifierFields(newFields.toArray()) : newFields);
+        newFields.fields()
+                .stream()
+                .map(field -> doParseField(field, wrapIdentifier))
+                .forEach(this.fields::add);
         return this;
     }
 
@@ -254,7 +270,9 @@ public final class Update extends Query<Update> {
     }
 
     public Update field(String prefix, Fields fields, boolean wrapIdentifier) {
-        checkFieldExcluded(fields).fields().forEach((field) -> this.fields.add(prefix, wrapIdentifier ? wrapIdentifierField(field) : field));
+        checkFieldExcluded(fields)
+                .fields()
+                .forEach((field) -> this.fields.add(prefix, doParseField(field, wrapIdentifier)));
         return this;
     }
 
@@ -373,7 +391,7 @@ public final class Update extends Query<Update> {
         //
         expression.set("tableNames", StringUtils.join(tables, LINE_END_FLAG));
         if (!fields.isEmpty()) {
-            expression.set("fields", fields.fields().size() == 1 ? fields.fields().get(0) + "=?" : StringUtils.join(fields.fields(), "=?,").concat("=?"));
+            expression.set("fields", StringUtils.join(fields.fields(), ", "));
         }
         if (variables.contains("joins")) {
             expression.set("joins", StringUtils.join(joins, StringUtils.SPACE));
