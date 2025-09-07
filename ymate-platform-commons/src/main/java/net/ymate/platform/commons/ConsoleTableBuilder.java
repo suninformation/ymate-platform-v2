@@ -136,8 +136,12 @@ public class ConsoleTableBuilder {
             rows.forEach(row -> {
                 IntStream.range(0, this.column).forEachOrdered(columnIdx -> {
                     if (columnIdx < row.getColumns().size()) {
-                        Column currColumn = row.getColumns().get(columnIdx);
-                        stringBuilder.append(currColumn.getContent());
+                        String content = row.getColumns().get(columnIdx).getContent();
+                        if (StringUtils.containsAny(content, '\"', ',', '\n')) {
+                            content = content.replace("\"", "\"\"");
+                            content = String.format("\"%s\"", content);
+                        }
+                        stringBuilder.append(content);
                     }
                     if (columnIdx < this.column - 1) {
                         stringBuilder.append(',');
@@ -166,6 +170,14 @@ public class ConsoleTableBuilder {
                         Column currColumn = row.getColumns().get(columnIdx);
                         content = currColumn.getContent();
                         length = currColumn.getLength();
+                        if (escape) {
+                            if (markdown) {
+                                content = StringUtils.replaceEach(content, new String[]{"_", "|", "\r\n", "\r", "\n", "\t"}, new String[]{"\\_", "\\|", "<br/>", "", "<br/>", "    "});
+                            } else {
+                                content = StringUtils.replaceEach(content, new String[]{"\r\n", "\r", "\n", "\t"}, new String[]{"[\\r][\\n]", "[\\r]", "[\\n]", "[\\t]"});
+                            }
+                            length = content.length();
+                        }
                     }
                     stringBuilder.append('|');
                     //
@@ -246,23 +258,6 @@ public class ConsoleTableBuilder {
         }
 
         public Row addColumn(String content) {
-            boolean csv = StringUtils.equals(builder.format, TYPE_CSV);
-            boolean markdown = StringUtils.equals(builder.format, TYPE_MARKDOWN);
-            if (!csv && builder.escape) {
-                if (markdown) {
-                    content = StringUtils.replaceEach(content, new String[]{"_", "|", "\r\n", "\r", "\n", "\t"}, new String[]{"\\_", "\\|", "<br/>", "", "<br/>", "    "});
-                } else {
-                    content = StringUtils.replaceEach(content, new String[]{"\r\n", "\r", "\n", "\t"}, new String[]{"[\\r][\\n]", "[\\r]", "[\\n]", "[\\t]"});
-                }
-            }
-            if (csv) {
-                if (StringUtils.contains(content, '"')) {
-                    content = StringUtils.replace(content, "\"", "\"\"");
-                }
-                if (StringUtils.contains(content, ',')) {
-                    content = String.format("\"%s\"", content);
-                }
-            }
             this.columns.add(new Column(content));
             return this;
         }
