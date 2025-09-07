@@ -55,7 +55,26 @@ public interface IExportDataRender {
      * @throws Exception 可能产生的任何异常
      * @since 2.1.3
      */
+    @Deprecated
     default Object render(ClassUtils.BeanWrapper<?> beanWrapper, ExportColumn column, String fieldName, Object value, boolean importing) throws Exception {
-        return render(column, fieldName, value);
+        return render(beanWrapper, ExportColumnMeta.create(column), fieldName, value, importing);
+    }
+
+    /**
+     * 渲染列
+     * <p>
+     * 使用默认实现是为了保持兼容性
+     *
+     * @param rowData    行数据对象（目标对象包裹器BeanWrapper或Map）
+     * @param columnMeta 列元数据
+     * @param fieldName  字段名称
+     * @param value      值对象
+     * @param importing  当前为导入操作
+     * @return 返回字段值对象
+     * @throws Exception 可能产生的任何异常
+     * @since 2.1.4
+     */
+    default Object render(Object rowData, ExportColumnMeta columnMeta, String fieldName, Object value, boolean importing) throws Exception {
+        return BlurObject.bind(value).toStringValue();
     }
 }

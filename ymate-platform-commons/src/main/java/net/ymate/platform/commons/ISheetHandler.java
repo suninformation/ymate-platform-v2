@@ -66,7 +66,7 @@ public interface ISheetHandler<T> {
 
         private final Map<String, IExportDataRender> renders = new HashMap<>();
 
-        Map<String, PairObject<String, ExportColumn>> columnsMap = new HashMap<>();
+        Map<String, PairObject<String, ExportColumnMeta>> columnsMap = new HashMap<>();
 
         @SuppressWarnings("unchecked")
         public Bean() {
@@ -88,7 +88,7 @@ public interface ISheetHandler<T> {
                             renders.put(field.getName(), dataRender);
                         }
                     }
-                    columnsMap.put(StringUtils.defaultIfBlank(columnAnn.value(), field.getName()), PairObject.bind(field.getName(), columnAnn));
+                    columnsMap.put(StringUtils.defaultIfBlank(columnAnn.value(), field.getName()), PairObject.bind(field.getName(), ExportColumnMeta.create(columnAnn)));
                 }
             }
             return super.handle(sheet);
@@ -99,32 +99,32 @@ public interface ISheetHandler<T> {
             ClassUtils.BeanWrapper<T> beanWrapper = ClassUtils.wrapperClass(beanClass);
             if (beanWrapper != null) {
                 for (CellMeta cellMeta : getCellMetas()) {
-                    PairObject<String, ExportColumn> column = columnsMap.get(cellMeta.getName());
+                    PairObject<String, ExportColumnMeta> column = columnsMap.get(cellMeta.getName());
                     if (column != null) {
                         Object value = parseCell(row.getCell(cellMeta.getCellIndex()));
                         if (value != null) {
                             IExportDataRender dataRender = renders.get(column.getKey());
                             if (dataRender != null) {
                                 value = dataRender.render(beanWrapper, column.getValue(), column.getKey(), value, true);
-                            } else if (column.getValue().dateTime()) {
+                            } else if (column.getValue().isDateTime()) {
                                 if (value instanceof String) {
-                                    value = DateTimeUtils.parseDateTime(BlurObject.bind(value).toStringValue(), StringUtils.defaultIfBlank(column.getValue().pattern(), DateTimeUtils.YYYY_MM_DD_HH_MM_SS));
+                                    value = DateTimeUtils.parseDateTime(BlurObject.bind(value).toStringValue(), StringUtils.defaultIfBlank(column.getValue().getPattern(), DateTimeUtils.YYYY_MM_DD_HH_MM_SS));
                                 } else if (value instanceof Number || float.class.isAssignableFrom(value.getClass())
                                         || int.class.isAssignableFrom(value.getClass())
                                         || long.class.isAssignableFrom(value.getClass())
                                         || double.class.isAssignableFrom(value.getClass())) {
                                     value = DateTimeHelper.bind(BlurObject.bind(value).toLongValue()).time();
                                 }
-                            } else if (column.getValue().dataRange().length > 0) {
+                            } else if (column.getValue().getDataRange().length > 0) {
                                 String valueStr = BlurObject.bind(value).toStringValue();
-                                String[] dataRange = column.getValue().dataRange();
+                                String[] dataRange = column.getValue().getDataRange();
                                 for (int idx = 0; idx < dataRange.length; idx++) {
                                     if (StringUtils.equalsIgnoreCase(valueStr, dataRange[idx])) {
                                         value = idx;
                                         break;
                                     }
                                 }
-                            } else if (column.getValue().currency()) {
+                            } else if (column.getValue().isCurrency()) {
                                 value = doProcessCurrencyValue(column.getValue(), value).toDoubleValue();
                             }
                             beanWrapper.setValue(column.getKey(), value);
@@ -136,13 +136,13 @@ public interface ISheetHandler<T> {
             return null;
         }
 
-        private BlurObject doProcessCurrencyValue(ExportColumn columnAnn, Object currencyValue) {
-            int decimals = columnAnn.decimals();
+        private BlurObject doProcessCurrencyValue(ExportColumnMeta columnMeta, Object currencyValue) {
+            int decimals = columnMeta.getDecimals();
             if (decimals <= 0) {
                 decimals = 2;
             }
             MathCalcHelper mathCalcHelper = MathCalcHelper.bind(BlurObject.bind(currencyValue).toStringValue()).scale(decimals);
-            if (columnAnn.accuracy()) {
+            if (columnMeta.isAccuracy()) {
                 mathCalcHelper.multiply(Math.pow(10, decimals));
             } else {
                 mathCalcHelper.round();
