@@ -21,10 +21,13 @@ import net.ymate.platform.core.beans.annotation.CleanProxy;
 import net.ymate.platform.validation.IValidator;
 import net.ymate.platform.validation.ValidateContext;
 import net.ymate.platform.validation.ValidateResult;
+import org.apache.commons.lang3.EnumUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * @author 刘镇 (suninformation@163.com) on 2018/09/05 下午 17:11
@@ -77,6 +80,7 @@ public final class DataRangeValidator implements IValidator {
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public ValidateResult validate(ValidateContext context) {
         Object paramValue = context.getParamValue();
         if (paramValue != null) {
@@ -92,7 +96,12 @@ public final class DataRangeValidator implements IValidator {
             if (provider != null) {
                 matched = !validate(provider.values(), paramValue, vDataRange.ignoreCase());
             } else {
-                matched = !validate(Arrays.asList(vDataRange.value()), paramValue, vDataRange.ignoreCase());
+                Set<String> values = new HashSet<>(Arrays.asList(vDataRange.value()));
+                if (vDataRange.enumClass() != null && !vDataRange.enumClass().equals(Enum.class)) {
+                    EnumUtils.getEnumList(vDataRange.enumClass())
+                            .forEach(enumElement -> values.add(enumElement.toString()));
+                }
+                matched = !validate(values, paramValue, vDataRange.ignoreCase());
             }
             if (matched) {
                 return ValidateResult.builder(context, vDataRange.msg(), I18N_MESSAGE_KEY, I18N_MESSAGE_DEFAULT_VALUE).matched(true).build();

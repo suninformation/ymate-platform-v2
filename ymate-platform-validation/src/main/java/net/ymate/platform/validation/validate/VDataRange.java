@@ -34,6 +34,12 @@ public @interface VDataRange {
     String[] value() default {};
 
     /**
+     * @return 将枚举类型中的元素追加到允许的参数集合
+     * @since 2.1.4
+     */
+    Class<? extends Enum> enumClass() default Enum.class;
+
+    /**
      * @return 忽略大小写
      */
     boolean ignoreCase() default true;

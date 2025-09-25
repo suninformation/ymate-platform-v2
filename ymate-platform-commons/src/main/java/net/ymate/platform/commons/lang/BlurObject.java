@@ -21,6 +21,7 @@ import net.ymate.platform.commons.util.ClassUtils;
 import net.ymate.platform.commons.util.RuntimeUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.EnumUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -103,7 +104,17 @@ public class BlurObject implements Serializable {
         }
         if (object == null) {
             try {
-                object = targetType.cast(attr);
+                if (attr != null && targetType.isEnum()) {
+                    // 若是枚举类型则做匹配名称的尝试
+                    Class<? extends Enum> enumClass = targetType.asSubclass(Enum.class);
+                    object = (T) EnumUtils.getEnumIgnoreCase(enumClass, attr.toString());
+                }
+            } catch (IllegalArgumentException ignored) {
+            }
+            try {
+                if (object == null) {
+                    object = targetType.cast(attr);
+                }
             } catch (ClassCastException ignored) {
             }
         }
