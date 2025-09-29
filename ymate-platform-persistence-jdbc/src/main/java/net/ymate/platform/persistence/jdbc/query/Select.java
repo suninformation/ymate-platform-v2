@@ -311,6 +311,27 @@ public final class Select extends Query<Select> {
         return join(Join.inner(select).on(on));
     }
 
+    /**
+     * @since 2.1.4
+     */
+    public Select innerJoin(Select select) {
+        return join(Join.inner(select));
+    }
+
+    /**
+     * @since 2.1.4
+     */
+    public Select crossJoin(Select select, Cond on) {
+        return join(Join.cross(select).on(on));
+    }
+
+    /**
+     * @since 2.1.4
+     */
+    public Select crossJoin(Select select) {
+        return join(Join.cross(select));
+    }
+
     public Select leftJoin(Select select, Cond on) {
         return join(Join.left(select).on(on));
     }
@@ -323,6 +344,27 @@ public final class Select extends Query<Select> {
 
     public Select innerJoin(String from, Cond on) {
         return join(Join.inner(owner(), dataSourceName(), from).on(on));
+    }
+
+    /**
+     * @since 2.1.4
+     */
+    public Select innerJoin(String from) {
+        return join(Join.inner(owner(), dataSourceName(), from));
+    }
+
+    /**
+     * @since 2.1.4
+     */
+    public Select crossJoin(String from, Cond on) {
+        return join(Join.cross(owner(), dataSourceName(), from).on(on));
+    }
+
+    /**
+     * @since 2.1.4
+     */
+    public Select crossJoin(String from) {
+        return join(Join.cross(owner(), dataSourceName(), from));
     }
 
     public Select leftJoin(String from, Cond on) {
@@ -339,6 +381,27 @@ public final class Select extends Query<Select> {
         return join(Join.inner(owner(), dataSourceName(), from).alias(alias).on(on));
     }
 
+    /**
+     * @since 2.1.4
+     */
+    public Select innerJoin(String from, String alias) {
+        return join(Join.inner(owner(), dataSourceName(), from).alias(alias));
+    }
+
+    /**
+     * @since 2.1.4
+     */
+    public Select crossJoin(String from, String alias, Cond on) {
+        return join(Join.cross(owner(), dataSourceName(), from).alias(alias).on(on));
+    }
+
+    /**
+     * @since 2.1.4
+     */
+    public Select crossJoin(String from, String alias) {
+        return join(Join.cross(owner(), dataSourceName(), from).alias(alias));
+    }
+
     public Select leftJoin(String from, String alias, Cond on) {
         return join(Join.left(owner(), dataSourceName(), from).alias(alias).on(on));
     }
@@ -353,6 +416,27 @@ public final class Select extends Query<Select> {
         return join(Join.inner(owner(), dataSourceName(), prefix, from).alias(alias).on(on));
     }
 
+    /**
+     * @since 2.1.4
+     */
+    public Select innerJoin(String prefix, String from, String alias) {
+        return join(Join.inner(owner(), dataSourceName(), prefix, from).alias(alias));
+    }
+
+    /**
+     * @since 2.1.4
+     */
+    public Select crossJoin(String prefix, String from, String alias, Cond on) {
+        return join(Join.cross(owner(), dataSourceName(), prefix, from).alias(alias).on(on));
+    }
+
+    /**
+     * @since 2.1.4
+     */
+    public Select crossJoin(String prefix, String from, String alias) {
+        return join(Join.cross(owner(), dataSourceName(), prefix, from).alias(alias));
+    }
+
     public Select leftJoin(String prefix, String from, String alias, Cond on) {
         return join(Join.left(owner(), dataSourceName(), prefix, from).alias(alias).on(on));
     }
@@ -365,6 +449,27 @@ public final class Select extends Query<Select> {
 
     public Select innerJoin(String prefix, String from, String alias, Cond on, boolean safePrefix) {
         return join(Join.inner(owner(), dataSourceName(), prefix, from, safePrefix).alias(alias).on(on));
+    }
+
+    /**
+     * @since 2.1.4
+     */
+    public Select innerJoin(String prefix, String from, String alias, boolean safePrefix) {
+        return join(Join.inner(owner(), dataSourceName(), prefix, from, safePrefix).alias(alias));
+    }
+
+    /**
+     * @since 2.1.4
+     */
+    public Select crossJoin(String prefix, String from, String alias, Cond on, boolean safePrefix) {
+        return join(Join.cross(owner(), dataSourceName(), prefix, from, safePrefix).alias(alias).on(on));
+    }
+
+    /**
+     * @since 2.1.4
+     */
+    public Select crossJoin(String prefix, String from, String alias, boolean safePrefix) {
+        return join(Join.cross(owner(), dataSourceName(), prefix, from, safePrefix).alias(alias));
     }
 
     public Select leftJoin(String prefix, String from, String alias, Cond on, boolean safePrefix) {

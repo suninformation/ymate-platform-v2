@@ -291,6 +291,27 @@ public final class Update extends Query<Update> {
         return join(Join.inner(select).on(on));
     }
 
+    /**
+     * @since 2.1.4
+     */
+    public Update innerJoin(Select select) {
+        return join(Join.inner(select));
+    }
+
+    /**
+     * @since 2.1.4
+     */
+    public Update crossJoin(Select select, Cond on) {
+        return join(Join.cross(select).on(on));
+    }
+
+    /**
+     * @since 2.1.4
+     */
+    public Update crossJoin(Select select) {
+        return join(Join.cross(select));
+    }
+
     public Update leftJoin(Select select, Cond on) {
         return join(Join.left(select).on(on));
     }
@@ -303,6 +324,27 @@ public final class Update extends Query<Update> {
 
     public Update innerJoin(String from, Cond on) {
         return join(Join.inner(owner(), dataSourceName(), from).on(on));
+    }
+
+    /**
+     * @since 2.1.4
+     */
+    public Update innerJoin(String from) {
+        return join(Join.inner(owner(), dataSourceName(), from));
+    }
+
+    /**
+     * @since 2.1.4
+     */
+    public Update crossJoin(String from, Cond on) {
+        return join(Join.cross(owner(), dataSourceName(), from).on(on));
+    }
+
+    /**
+     * @since 2.1.4
+     */
+    public Update crossJoin(String from) {
+        return join(Join.cross(owner(), dataSourceName(), from));
     }
 
     public Update leftJoin(String from, Cond on) {
@@ -333,6 +375,27 @@ public final class Update extends Query<Update> {
         return join(Join.inner(owner(), dataSourceName(), prefix, from).alias(alias).on(on));
     }
 
+    /**
+     * @since 2.1.4
+     */
+    public Update innerJoin(String prefix, String from, String alias) {
+        return join(Join.inner(owner(), dataSourceName(), prefix, from).alias(alias));
+    }
+
+    /**
+     * @since 2.1.4
+     */
+    public Update crossJoin(String prefix, String from, String alias, Cond on) {
+        return join(Join.cross(owner(), dataSourceName(), prefix, from).alias(alias).on(on));
+    }
+
+    /**
+     * @since 2.1.4
+     */
+    public Update crossJoin(String prefix, String from, String alias) {
+        return join(Join.cross(owner(), dataSourceName(), prefix, from).alias(alias));
+    }
+
     public Update leftJoin(String prefix, String from, String alias, Cond on) {
         return join(Join.left(owner(), dataSourceName(), prefix, from).alias(alias).on(on));
     }
@@ -345,6 +408,27 @@ public final class Update extends Query<Update> {
 
     public Update innerJoin(String prefix, String from, String alias, Cond on, boolean safePrefix) {
         return join(Join.inner(owner(), dataSourceName(), prefix, from, safePrefix).alias(alias).on(on));
+    }
+
+    /**
+     * @since 2.1.4
+     */
+    public Update innerJoin(String prefix, String from, String alias, boolean safePrefix) {
+        return join(Join.inner(owner(), dataSourceName(), prefix, from, safePrefix).alias(alias));
+    }
+
+    /**
+     * @since 2.1.4
+     */
+    public Update crossJoin(String prefix, String from, String alias, Cond on, boolean safePrefix) {
+        return join(Join.cross(owner(), dataSourceName(), prefix, from, safePrefix).alias(alias).on(on));
+    }
+
+    /**
+     * @since 2.1.4
+     */
+    public Update crossJoin(String prefix, String from, String alias, boolean safePrefix) {
+        return join(Join.cross(owner(), dataSourceName(), prefix, from, safePrefix).alias(alias));
     }
 
     public Update leftJoin(String prefix, String from, String alias, Cond on, boolean safePrefix) {

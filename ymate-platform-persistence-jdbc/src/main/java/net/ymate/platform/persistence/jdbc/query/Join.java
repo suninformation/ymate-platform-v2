@@ -38,6 +38,13 @@ public final class Join extends Query<Join> {
         INNER("INNER JOIN"),
 
         /**
+         * CROSS
+         *
+         * @since 2.1.4
+         */
+        CROSS("CROSS JOIN"),
+
+        /**
          * LEFT
          */
         LEFT("LEFT JOIN"),
@@ -79,6 +86,35 @@ public final class Join extends Query<Join> {
     public static Join inner(String prefix, String from, boolean safePrefix) {
         IDatabase owner = JDBC.get();
         return new Join(owner, owner.getConfig().getDefaultDataSourceName(), Type.INNER.getName(), prefix, from, safePrefix);
+    }
+
+    /**
+     * @since 2.1.4
+     */
+    public static Join cross(String from) {
+        return cross((String) null, from, true);
+    }
+
+    /**
+     * @since 2.1.4
+     */
+    public static Join cross(String from, boolean safePrefix) {
+        return cross((String) null, from, safePrefix);
+    }
+
+    /**
+     * @since 2.1.4
+     */
+    public static Join cross(String prefix, String from) {
+        return cross(prefix, from, true);
+    }
+
+    /**
+     * @since 2.1.4
+     */
+    public static Join cross(String prefix, String from, boolean safePrefix) {
+        IDatabase owner = JDBC.get();
+        return new Join(owner, owner.getConfig().getDefaultDataSourceName(), Type.CROSS.getName(), prefix, from, safePrefix);
     }
 
     public static Join left(String from) {
@@ -153,6 +189,71 @@ public final class Join extends Query<Join> {
 
     public static Join inner(IDatabase owner, String dataSourceName, String prefix, String from, boolean safePrefix) {
         return new Join(owner, dataSourceName, Type.INNER.getName(), prefix, from, safePrefix);
+    }
+
+    /**
+     * @since 2.1.4
+     */
+    public static Join cross(Select select) {
+        Join target = cross(select.owner(), select.dataSourceName(), null, select.toString(), false);
+        target.params().add(select.params());
+        return target;
+    }
+
+    /**
+     * @since 2.1.4
+     */
+    public static Join cross(Query<?> query, String from) {
+        return cross(query.owner(), query.dataSourceName(), from, true);
+    }
+
+    /**
+     * @since 2.1.4
+     */
+    public static Join cross(IDatabase owner, String dataSourceName, String from) {
+        return cross(owner, dataSourceName, from, true);
+    }
+
+    /**
+     * @since 2.1.4
+     */
+    public static Join cross(Query<?> query, String from, boolean safePrefix) {
+        return cross(query.owner(), query.dataSourceName(), null, from, safePrefix);
+    }
+
+    /**
+     * @since 2.1.4
+     */
+    public static Join cross(IDatabase owner, String dataSourceName, String from, boolean safePrefix) {
+        return cross(owner, dataSourceName, null, from, safePrefix);
+    }
+
+    /**
+     * @since 2.1.4
+     */
+    public static Join cross(Query<?> query, String prefix, String from) {
+        return cross(query.owner(), query.dataSourceName(), prefix, from, true);
+    }
+
+    /**
+     * @since 2.1.4
+     */
+    public static Join cross(IDatabase owner, String dataSourceName, String prefix, String from) {
+        return cross(owner, dataSourceName, prefix, from, true);
+    }
+
+    /**
+     * @since 2.1.4
+     */
+    public static Join cross(Query<?> query, String prefix, String from, boolean safePrefix) {
+        return cross(query.owner(), query.dataSourceName(), prefix, from, safePrefix);
+    }
+
+    /**
+     * @since 2.1.4
+     */
+    public static Join cross(IDatabase owner, String dataSourceName, String prefix, String from, boolean safePrefix) {
+        return new Join(owner, dataSourceName, Type.CROSS.getName(), prefix, from, safePrefix);
     }
 
     //
@@ -262,6 +363,9 @@ public final class Join extends Query<Join> {
             alias = StringUtils.EMPTY;
         } else {
             alias = StringUtils.SPACE.concat(alias);
+        }
+        if (on.isEmpty()) {
+            return String.format("%s%s", from, alias);
         }
         return String.format("%s%s ON %s", from, alias, on);
     }

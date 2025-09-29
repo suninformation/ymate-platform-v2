@@ -360,6 +360,45 @@
 
      // ------
 
+     /**
+      * @since 2.1.4
+      */
+     public Join cross(Select select) {
+         Join target = new Join(select.owner(), select.dataSourceName(), Join.Type.CROSS.getName(), null, select.toString(), false);
+         target.params().add(select.params());
+         return target;
+     }
+
+     /**
+      * @since 2.1.4
+      */
+     public Join cross(String from) {
+         return new Join(owner(), dataSourceName(), Join.Type.CROSS.getName(), null, from, true);
+     }
+
+     /**
+      * @since 2.1.4
+      */
+     public Join cross(String from, boolean safePrefix) {
+         return new Join(owner(), dataSourceName(), Join.Type.CROSS.getName(), null, from, safePrefix);
+     }
+
+     /**
+      * @since 2.1.4
+      */
+     public Join cross(String prefix, String from) {
+         return new Join(owner(), dataSourceName(), Join.Type.CROSS.getName(), prefix, from, true);
+     }
+
+     /**
+      * @since 2.1.4
+      */
+     public Join cross(String prefix, String from, boolean safePrefix) {
+         return new Join(owner(), dataSourceName(), Join.Type.CROSS.getName(), prefix, from, safePrefix);
+     }
+
+     // ------
+
      public Join left(Select select) {
          Join target = new Join(select.owner(), select.dataSourceName(), Join.Type.LEFT.getName(), null, select.toString(), false);
          target.params().add(select.params());
