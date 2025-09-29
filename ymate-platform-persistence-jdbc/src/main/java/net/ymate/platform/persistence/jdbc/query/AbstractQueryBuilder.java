@@ -412,6 +412,36 @@
          return new Union(select);
      }
 
+     // ------ With
+
+     /**
+      * @since 2.1.4
+      */
+     public With with(String name, Select subquery) {
+         return new With(name, subquery);
+     }
+
+     /**
+      * @since 2.1.4
+      */
+     public With with(String name, Fields columnNames, Select subquery) {
+         return new With(name, columnNames, subquery);
+     }
+
+     /**
+      * @since 2.1.4
+      */
+     public With with(String name, SQL subquery) {
+         return new With(name, subquery);
+     }
+
+     /**
+      * @since 2.1.4
+      */
+     public With with(String name, Fields columnNames, SQL subquery) {
+         return new With(name, columnNames, subquery);
+     }
+
      // ------ Like
 
      public Like like(String originStr) {

@@ -43,6 +43,11 @@ public final class Delete extends Query<Delete> {
 
     private Where where;
 
+    /**
+     * @since 2.1.4
+     */
+    private With with;
+
     public static Delete create() {
         IDatabase owner = JDBC.get();
         return new Delete(owner, owner.getConfig().getDefaultDataSourceName());
@@ -334,6 +339,15 @@ public final class Delete extends Query<Delete> {
         return this;
     }
 
+    /**
+     * @since 2.1.4
+     */
+    public Delete with(With with) {
+        this.with = with;
+        where().param(with.params());
+        return this;
+    }
+
     @Override
     public String toString() {
         ExpressionUtils expression = ExpressionUtils.bind(getExpressionStr("DELETE ${fields} FROM ${froms} ${joins} ${where}"));
@@ -355,7 +369,11 @@ public final class Delete extends Query<Delete> {
         if (queryHandler() != null) {
             queryHandler().afterBuild(expression, this);
         }
-        return StringUtils.trimToEmpty(expression.clean().getResult());
+        String resultStr = StringUtils.trimToEmpty(expression.clean().getResult());
+        if (with != null) {
+            resultStr = String.format("%s %s", with.toSQL(), resultStr);
+        }
+        return resultStr;
     }
 
     public SQL toSQL() {

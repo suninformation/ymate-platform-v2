@@ -43,6 +43,11 @@ public final class Update extends Query<Update> {
 
     private Where where;
 
+    /**
+     * @since 2.1.4
+     */
+    private With with;
+
     public static Update create() {
         IDatabase owner = JDBC.get();
         return new Update(owner, owner.getConfig().getDefaultDataSourceName());
@@ -381,6 +386,15 @@ public final class Update extends Query<Update> {
         return this;
     }
 
+    /**
+     * @since 2.1.4
+     */
+    public Update with(With with) {
+        this.with = with;
+        where().param(with.params());
+        return this;
+    }
+
     @Override
     public String toString() {
         ExpressionUtils expression = ExpressionUtils.bind(getExpressionStr("UPDATE ${tableNames} ${joins} SET ${fields} ${where}"));
@@ -402,7 +416,11 @@ public final class Update extends Query<Update> {
         if (queryHandler() != null) {
             queryHandler().afterBuild(expression, this);
         }
-        return StringUtils.trimToEmpty(expression.clean().getResult());
+        String resultStr = StringUtils.trimToEmpty(expression.clean().getResult());
+        if (with != null) {
+            resultStr = String.format("%s %s", with.toSQL(), resultStr);
+        }
+        return resultStr;
     }
 
     public SQL toSQL() {

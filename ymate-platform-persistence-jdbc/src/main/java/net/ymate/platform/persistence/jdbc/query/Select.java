@@ -46,6 +46,11 @@ public final class Select extends Query<Select> {
 
     private final List<Union> unions = new ArrayList<>();
 
+    /**
+     * @since 2.1.4
+     */
+    private With with;
+
     private String alias;
 
     private boolean distinct;
@@ -384,6 +389,15 @@ public final class Select extends Query<Select> {
         return union(Union.create(select).all());
     }
 
+    /**
+     * @since 2.1.4
+     */
+    public Select with(With with) {
+        this.with = with;
+        where().param(with.params());
+        return this;
+    }
+
     public Select where(Where where) {
         where().where(where);
         return this;
@@ -698,6 +712,11 @@ public final class Select extends Query<Select> {
         if (dbLocker != null) {
             resultStr += String.format(" %s", dbLocker.toSQL());
         }
+        //
+        if (with != null) {
+            resultStr = String.format("%s %s", with.toSQL(), resultStr);
+        }
+        //
         if (StringUtils.isNotBlank(alias)) {
             resultStr = String.format("(%s) %s", resultStr, alias);
         }
