@@ -49,6 +49,20 @@ public abstract class AbstractFunction implements IFunction {
      */
     public abstract void onBuild();
 
+    /**
+     * @since 2.1.4
+     */
+    public AbstractFunction fieldAny(Object param) {
+        if (param instanceof IFunction) {
+            return field((IFunction) param);
+        } else if (param instanceof String) {
+            return field((String) param);
+        } else {
+            Params.create(param).params().forEach(this::fieldAny);
+            return this;
+        }
+    }
+
     public AbstractFunction field(Number param) {
         fields.add(param.toString());
         return this;
@@ -114,7 +128,7 @@ public abstract class AbstractFunction implements IFunction {
     public AbstractFunction fieldWS(Object... fields) {
         if (fields != null && fields.length > 0) {
             boolean has = false;
-            for (Object field : fields) {
+            for (Object field : Params.create(fields).params()) {
                 if (field != null) {
                     if (has) {
                         separator();

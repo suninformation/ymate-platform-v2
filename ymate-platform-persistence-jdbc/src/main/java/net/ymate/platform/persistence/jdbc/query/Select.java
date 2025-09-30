@@ -270,6 +270,14 @@ public final class Select extends Query<Select> {
         return this;
     }
 
+    /**
+     * @since 2.1.4
+     */
+    public Select fieldAlias(IFunction function, String alias) {
+        this.fields.addAlias(function.build(), alias);
+        return this;
+    }
+
     public Select field(Fields fields) {
         return field(fields, true);
     }

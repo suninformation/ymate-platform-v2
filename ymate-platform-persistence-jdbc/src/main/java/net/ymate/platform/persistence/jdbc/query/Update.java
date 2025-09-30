@@ -17,6 +17,7 @@ package net.ymate.platform.persistence.jdbc.query;
 
 import net.ymate.platform.commons.util.ExpressionUtils;
 import net.ymate.platform.core.persistence.Fields;
+import net.ymate.platform.core.persistence.IFunction;
 import net.ymate.platform.core.persistence.Params;
 import net.ymate.platform.core.persistence.base.EntityMeta;
 import net.ymate.platform.core.persistence.base.IEntity;
@@ -254,6 +255,14 @@ public final class Update extends Query<Update> {
      */
     public Update fieldAlias(String field, String alias, boolean wrapIdentifier) {
         this.fields.addAlias(doParseField(field, wrapIdentifier), alias);
+        return this;
+    }
+
+    /**
+     * @since 2.1.4
+     */
+    public Update fieldAlias(IFunction function, String alias) {
+        this.fields.addAlias(function.build(), alias);
         return this;
     }
 

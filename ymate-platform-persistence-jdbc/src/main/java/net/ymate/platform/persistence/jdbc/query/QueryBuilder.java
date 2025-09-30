@@ -21,7 +21,8 @@
   * @author 刘镇 (suninformation@163.com) on 2021/01/13 23:38
   * @since 2.1.0
   */
- public class QueryBuilder<RESULT> extends AbstractQueryBuilder<RESULT, QueryBuilder<RESULT>> implements Func.Operators, Func.ControlFlow, Func.Aggregate, Func.DateTime, Func.Math, Func.Strings {
+ public class QueryBuilder<RESULT> extends AbstractQueryBuilder<RESULT, QueryBuilder<RESULT>>
+         implements Func.Operators, Func.ControlFlow, Func.Aggregate, Func.DateTime, Func.Math, Func.Strings, Func.Comparison {
 
      public QueryBuilder() {
      }

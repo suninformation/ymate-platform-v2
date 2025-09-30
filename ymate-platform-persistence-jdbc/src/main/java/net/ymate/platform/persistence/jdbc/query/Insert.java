@@ -17,6 +17,7 @@ package net.ymate.platform.persistence.jdbc.query;
 
 import net.ymate.platform.commons.util.ExpressionUtils;
 import net.ymate.platform.core.persistence.Fields;
+import net.ymate.platform.core.persistence.IFunction;
 import net.ymate.platform.core.persistence.Params;
 import net.ymate.platform.core.persistence.base.EntityMeta;
 import net.ymate.platform.core.persistence.base.IEntity;
@@ -162,6 +163,14 @@ public final class Insert extends Query<Insert> {
      */
     public Insert fieldAlias(String field, String alias, boolean wrapIdentifier) {
         this.fields.addAlias(wrapIdentifier ? wrapIdentifierField(field) : field, alias);
+        return this;
+    }
+
+    /**
+     * @since 2.1.4
+     */
+    public Insert fieldAlias(IFunction function, String alias) {
+        this.fields.addAlias(function.build(), alias);
         return this;
     }
 

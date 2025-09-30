@@ -114,6 +114,13 @@ public interface Func {
     }
 
     /**
+     * @since 2.1.4
+     */
+    static IFunction[] array(IFunction... functions) {
+        return functions;
+    }
+
+    /**
      * Mathematical Functions
      */
     @Ignored
@@ -1836,6 +1843,22 @@ public interface Func {
         }
 
         /**
+         * @since 2.1.4
+         */
+        default IFunction addition(IFunction paramOne, String paramTwo) {
+            return addition(paramOne.toString(), paramTwo)
+                    .param(paramOne.params());
+        }
+
+        /**
+         * @since 2.1.4
+         */
+        default IFunction addition(IFunction paramOne, Number paramTwo) {
+            return addition(paramOne.toString(), paramTwo)
+                    .param(paramOne.params());
+        }
+
+        /**
          * 加法
          *
          * @param param 字符串型被加数
@@ -1944,6 +1967,22 @@ public interface Func {
         }
 
         /**
+         * @since 2.1.4
+         */
+        default IFunction multiply(IFunction paramOne, String paramTwo) {
+            return multiply(paramOne.toString(), paramTwo)
+                    .param(paramOne.params());
+        }
+
+        /**
+         * @since 2.1.4
+         */
+        default IFunction multiply(IFunction paramOne, Number paramTwo) {
+            return multiply(paramOne.toString(), paramTwo)
+                    .param(paramOne.params());
+        }
+
+        /**
          * 乘法
          *
          * @param param 字符串被加数
@@ -1995,6 +2034,13 @@ public interface Func {
             return divide(paramOne.build(), paramTwo).param(paramOne.params());
         }
 
+        /**
+         * @since 2.1.4
+         */
+        default IFunction divide(IFunction paramOne, Number paramTwo) {
+            return divide(paramOne.build(), paramTwo).param(paramOne.params());
+        }
+
         default IFunction divide(IFunction paramOne, IFunction paramTwo) {
             return divide(paramOne.toString(), paramTwo.build())
                     .param(paramOne.params())
@@ -2013,6 +2059,75 @@ public interface Func {
 
         default IFunction divide(String paramOne, String paramTwo) {
             return operate(paramOne, "/", paramTwo);
+        }
+    }
+
+    /**
+     * Comparison Functions and Operators
+     *
+     * @since 2.1.4
+     */
+    @Ignored
+    interface Comparison {
+
+        default IFunction BETWEEN(Object min, Object max) {
+            return create().field("BETWEEN").space().fieldAny(min).space().field("AND").space().fieldAny(max);
+        }
+
+        default IFunction COALESCE(Object value, Object... values) {
+            return create("COALESCE").fieldWS(value, values);
+        }
+
+        default IFunction EXISTS(String query) {
+            return create("EXISTS").field(query);
+        }
+
+        default IFunction EXISTS(Select query) {
+            return create("EXISTS").field(query.toString()).param(query.params());
+        }
+
+        default IFunction NOT_EXISTS(String query) {
+            return create("NOT EXISTS").field(query);
+        }
+
+        default IFunction NOT_EXISTS(Select query) {
+            return create("NOT EXISTS").field(query.toString()).param(query.params());
+        }
+
+        default IFunction GREATEST(Object value, Object... values) {
+            return create("GREATEST").fieldWS(value, values);
+        }
+
+        default IFunction IN(Object value, Object... values) {
+            return create("IN").fieldWS(value, values);
+        }
+
+        default IFunction NOT_IN(Object value, Object... values) {
+            return create("NOT IN").fieldWS(value, values);
+        }
+
+        default IFunction IS(Object value) {
+            return operate("IS", value.toString());
+        }
+
+        default IFunction IS_NOT(Object value) {
+            return operate("IS NOT", value.toString());
+        }
+
+        default IFunction IS_NULL() {
+            return create().space().field("IS NULL");
+        }
+
+        default IFunction IS_NOT_NULL() {
+            return create().space().field("IS NOT NULL");
+        }
+
+        default IFunction ISNULL(Object value) {
+            return create("ISNULL").fieldAny(value);
+        }
+
+        default IFunction LEAST(Object value, Object... values) {
+            return create("LEAST").fieldWS(value, values);
         }
     }
 }
