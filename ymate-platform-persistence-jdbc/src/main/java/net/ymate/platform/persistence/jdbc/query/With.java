@@ -17,6 +17,7 @@ package net.ymate.platform.persistence.jdbc.query;
 
 import net.ymate.platform.core.persistence.Fields;
 import net.ymate.platform.core.persistence.Params;
+import org.apache.commons.lang.NullArgumentException;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.ArrayList;
@@ -63,7 +64,7 @@ public class With {
     }
 
     public With(String name, Fields columnNames, Select subquery) {
-        this(name, null, subquery.toSQL());
+        this(name, columnNames, subquery.toSQL());
     }
 
     public With(String name, SQL subquery) {
@@ -71,6 +72,12 @@ public class With {
     }
 
     public With(String name, Fields columnNames, SQL subquery) {
+        if (StringUtils.isBlank(name)) {
+            throw new NullArgumentException("name");
+        }
+        if (subquery == null) {
+            throw new NullArgumentException("subquery");
+        }
         this.name = name;
         if (columnNames != null && !columnNames.isEmpty()) {
             this.columnNames.add(columnNames);
@@ -90,6 +97,12 @@ public class With {
 
     public Params params() {
         return params;
+    }
+
+    public With with(With with) {
+        this.withs.add(with);
+        params.add(with.params());
+        return this;
     }
 
     public With with(String name, Select subquery) {

@@ -1620,6 +1620,13 @@ public interface Func {
             return CASE((IFunction) null, when, elseFn);
         }
 
+        /**
+         * @since 2.1.4
+         */
+        default IFunction CASE(IFunction when, IFunction elseFn) {
+            return CASE((IFunction) null, array(when), elseFn);
+        }
+
         default IFunction CASE(IFunction value, IFunction[] whenFn, IFunction elseFn) {
             return new AbstractFunction() {
                 @Override

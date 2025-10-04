@@ -808,9 +808,8 @@ public final class Select extends Query<Select> {
                 if (union.isAll()) {
                     unionsBuilder.append("ALL ");
                 }
-                unionsBuilder.append(union.select());
+                unionsBuilder.append(union.select()).append(StringUtils.SPACE);
             });
-            unionsBuilder.append(StringUtils.SPACE);
             //
             expression.set("unions", unionsBuilder.toString());
         }

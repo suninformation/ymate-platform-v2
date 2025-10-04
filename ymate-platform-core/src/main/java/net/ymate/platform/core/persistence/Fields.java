@@ -51,7 +51,7 @@ public final class Fields implements Serializable {
                 field = prefix.concat(".").concat(field);
             }
             if (StringUtils.isNotBlank(alias)) {
-                field = field.concat(StringUtils.SPACE).concat(alias);
+                field = field + " AS " + alias;
             }
         }
         return field;
