@@ -16,13 +16,17 @@
 package net.ymate.platform.persistence.jdbc.query;
 
 import net.ymate.platform.commons.util.ExpressionUtils;
+import net.ymate.platform.core.persistence.Fields;
 import net.ymate.platform.core.persistence.IResultSet;
 import net.ymate.platform.core.persistence.Page;
 import net.ymate.platform.core.persistence.Params;
 import net.ymate.platform.persistence.jdbc.IDatabase;
+import net.ymate.platform.persistence.jdbc.IDatabaseSession;
 import net.ymate.platform.persistence.jdbc.JDBC;
 import net.ymate.platform.persistence.jdbc.base.IResultSetHandler;
+import org.apache.commons.lang3.StringUtils;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -38,6 +42,11 @@ public final class SQL {
     private final String sql;
 
     private final Params params;
+
+    /**
+     * @since 2.1.4
+     */
+    private final Map<String, Object> variables = new HashMap<>();
 
     public static SQL create(String sql) {
         return new SQL(JDBC.get(), sql);
@@ -101,48 +110,89 @@ public final class SQL {
         return this.params;
     }
 
+    /**
+     * @since 2.1.4
+     */
+    public SQL addVariable(String varName, Object varValue) {
+        variables.put(varName, varValue);
+        return this;
+    }
+
+    /**
+     * @since 2.1.4
+     */
+    public SQL addVariables(Map<String, Object> variables) {
+        this.variables.putAll(variables);
+        return this;
+    }
+
+    /**
+     * @since 2.1.4
+     */
+    private IDatabaseSession doSetVariablesIfNeed(IDatabaseSession session) throws Exception {
+        Fields varFields = Fields.create();
+        Params varParams = Params.create();
+        variables.forEach((key, value) -> {
+            if (!key.startsWith("@")) {
+                key = "@" + key;
+            }
+            if (key.trim().endsWith("=")) {
+                if (value != null) {
+                    varFields.add(String.format("%s %s", key, value));
+                }
+            } else {
+                varFields.add(key + " = ?");
+                varParams.add(value);
+            }
+        });
+        if (!varFields.isEmpty()) {
+            session.executeForUpdate(SQL.create("SET " + StringUtils.join(varFields.fields(), ", ")).param(varParams));
+        }
+        return session;
+    }
+
     @Override
     public String toString() {
         return this.sql;
     }
 
     public int execute() throws Exception {
-        return owner.openSession(session -> session.executeForUpdate(this));
+        return owner.openSession(session -> doSetVariablesIfNeed(session).executeForUpdate(this));
     }
 
     public int execute(String dataSourceName) throws Exception {
-        return owner.openSession(dataSourceName, session -> session.executeForUpdate(this));
+        return owner.openSession(dataSourceName, session -> doSetVariablesIfNeed(session).executeForUpdate(this));
     }
 
     public <T> T findFirst(IResultSetHandler<T> handler) throws Exception {
-        return owner.openSession(session -> session.findFirst(this, handler));
+        return owner.openSession(session -> doSetVariablesIfNeed(session).findFirst(this, handler));
     }
 
     public <T> T findFirst(String dataSourceName, IResultSetHandler<T> handler) throws Exception {
-        return owner.openSession(dataSourceName, session -> session.findFirst(this, handler));
+        return owner.openSession(dataSourceName, session -> doSetVariablesIfNeed(session).findFirst(this, handler));
     }
 
     public <T> IResultSet<T> find(IResultSetHandler<T> handler) throws Exception {
-        return owner.openSession(session -> session.find(this, handler));
+        return owner.openSession(session -> doSetVariablesIfNeed(session).find(this, handler));
     }
 
     public <T> IResultSet<T> find(IResultSetHandler<T> handler, Page page) throws Exception {
-        return owner.openSession(session -> session.find(this, handler, page));
+        return owner.openSession(session -> doSetVariablesIfNeed(session).find(this, handler, page));
     }
 
     public <T> IResultSet<T> find(String dataSourceName, IResultSetHandler<T> handler) throws Exception {
-        return owner.openSession(dataSourceName, session -> session.find(this, handler));
+        return owner.openSession(dataSourceName, session -> doSetVariablesIfNeed(session).find(this, handler));
     }
 
     public <T> IResultSet<T> find(String dataSourceName, IResultSetHandler<T> handler, Page page) throws Exception {
-        return owner.openSession(dataSourceName, session -> session.find(this, handler, page));
+        return owner.openSession(dataSourceName, session -> doSetVariablesIfNeed(session).find(this, handler, page));
     }
 
     public long count() throws Exception {
-        return owner.openSession(session -> session.count(this));
+        return owner.openSession(session -> doSetVariablesIfNeed(session).count(this));
     }
 
     public long count(String dataSourceName) throws Exception {
-        return owner.openSession(dataSourceName, session -> session.count(this));
+        return owner.openSession(dataSourceName, session -> doSetVariablesIfNeed(session).count(this));
     }
 }
