@@ -141,6 +141,15 @@ public class DateTimeValue implements Serializable {
     }
 
     /**
+     * @param days 天数
+     * @return 返回与当前时间相差days天数的日期时间对象
+     * @since 2.1.4
+     */
+    public static DateTimeValue days(int days) {
+        return new DateTimeValue(DateTimeHelper.now().daysAdd(-days).toDayStart().time(), DateTimeHelper.now().time());
+    }
+
+    /**
      * @return 返回当前时刻的日期时间值对象
      * @since 2.1.2
      */
