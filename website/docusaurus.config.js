@@ -264,7 +264,7 @@ const ArchivedVersionsDropdownItems = Object.entries(VersionsArchived).splice(
                         ],
                     },
                 ],
-                copyright: `Copyright © 2015-${new Date().getFullYear()} yMate.Net. All Rights Reserved. Built with Docusaurus.<br/>Apache License Version 2.0 | <a href="https://beian.miit.gov.cn/" target="_blank">辽ICP备15013664号-1</a>`,
+                copyright: `Copyright © 2015-${new Date().getFullYear()} yMate.Net. All Rights Reserved. Built with Docusaurus.<br/>Apache License Version 2.0 | <a href="https://beian.miit.gov.cn/" target="_blank">辽ICP备15013664号-1</a> | <a href="https://beian.mps.gov.cn/#/query/webSearch?code=21020302000616" rel="noreferrer" target="_blank"><img src="/img/beian.png" style="height: 16px; width: 16px;" alt=""> 辽公网安备21020302000616号</a>`,
             },
             prism: {
                 theme: lightCodeTheme,
