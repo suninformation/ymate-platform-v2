@@ -40,6 +40,38 @@ public abstract class AbstractLogAdapter extends AbstractLogger {
         tryCheckAndInitLogImpl();
     }
 
+    /**
+     * @since 2.1.4
+     */
+    private void tryWriteLogSafely(String info, Throwable e, LogLevel level) {
+        Log log = tryGetLogSafely();
+        if (log != null) {
+            switch (level) {
+                case TRACE:
+                    log.trace(info, e);
+                    break;
+                case DEBUG:
+                    log.debug(info, e);
+                    break;
+                case WARN:
+                    log.warn(info, e);
+                    break;
+                case ERROR:
+                    log.error(info, e);
+                    break;
+                case FATAL:
+                    log.fatal(info, e);
+                    break;
+                default:
+                    log.info(info, e);
+            }
+        } else if (level == LogLevel.ERROR) {
+            System.err.println(StringUtils.trimToEmpty(info));
+        } else {
+            System.out.println(StringUtils.trimToEmpty(info));
+        }
+    }
+
     private Log tryGetLogSafely() {
         if (simpleLog == null) {
             simpleLog = new SimpleLog(loggerName);
@@ -56,7 +88,7 @@ public abstract class AbstractLogAdapter extends AbstractLogger {
                 logger = logOwner.getLogger(loggerName).depth(5);
                 initialized = true;
             } catch (Exception e) {
-                tryGetLogSafely().warn(StringUtils.EMPTY, RuntimeUtils.unwrapThrow(e));
+                tryWriteLogSafely(StringUtils.EMPTY, RuntimeUtils.unwrapThrow(e), LogLevel.WARN);
             }
         }
         return initialized;
@@ -67,25 +99,7 @@ public abstract class AbstractLogAdapter extends AbstractLogger {
         if (tryCheckAndInitLogImpl()) {
             logger.log(info, e, level);
         } else {
-            switch (level) {
-                case TRACE:
-                    tryGetLogSafely().trace(info, e);
-                    break;
-                case DEBUG:
-                    tryGetLogSafely().debug(info, e);
-                    break;
-                case WARN:
-                    tryGetLogSafely().warn(info, e);
-                    break;
-                case ERROR:
-                    tryGetLogSafely().error(info, e);
-                    break;
-                case FATAL:
-                    tryGetLogSafely().fatal(info, e);
-                    break;
-                default:
-                    tryGetLogSafely().info(info, e);
-            }
+            tryWriteLogSafely(info, e, level);
         }
     }
 

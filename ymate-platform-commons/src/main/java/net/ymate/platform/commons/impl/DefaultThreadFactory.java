@@ -39,11 +39,11 @@ public class DefaultThreadFactory implements ThreadFactory {
 
     private Thread.UncaughtExceptionHandler uncaughtExceptionHandler;
 
-    public static ThreadFactory create() {
+    public static DefaultThreadFactory create() {
         return new DefaultThreadFactory();
     }
 
-    public static ThreadFactory create(String prefix) {
+    public static DefaultThreadFactory create(String prefix) {
         return new DefaultThreadFactory(prefix);
     }
 

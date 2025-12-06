@@ -150,6 +150,24 @@ public class DateTimeValue implements Serializable {
     }
 
     /**
+     * @param months 月份数
+     * @return 返回与当前时间相差months月份数的日期时间对象
+     * @since 2.1.4
+     */
+    public static DateTimeValue months(int months) {
+        return new DateTimeValue(DateTimeHelper.now().monthsAdd(-months).toDayStart().time(), DateTimeHelper.now().time());
+    }
+
+    /**
+     * @param years 年份数
+     * @return 返回与当前时间相差years年份数的日期时间对象
+     * @since 2.1.4
+     */
+    public static DateTimeValue years(int years) {
+        return new DateTimeValue(DateTimeHelper.now().yearsAdd(-years).toDayStart().time(), DateTimeHelper.now().time());
+    }
+
+    /**
      * @return 返回当前时刻的日期时间值对象
      * @since 2.1.2
      */
