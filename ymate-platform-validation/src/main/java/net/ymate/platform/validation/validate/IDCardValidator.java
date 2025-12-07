@@ -23,7 +23,6 @@ import net.ymate.platform.validation.ValidateContext;
 import net.ymate.platform.validation.ValidateResult;
 import org.apache.commons.lang3.StringUtils;
 
-import java.text.ParseException;
 import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -69,7 +68,7 @@ public class IDCardValidator implements IValidator {
                 if (matcher.find() && matcher.groupCount() == DATE_PATTERN_COUNT) {
                     try {
                         return Objects.equals(DateTimeHelper.bind(dateStr, DATE_FORMAT).toString(DATE_FORMAT), dateStr);
-                    } catch (ParseException ignored) {
+                    } catch (Exception ignored) {
                     }
                 }
             }
