@@ -18,6 +18,7 @@ package net.ymate.platform.core.configuration;
 import net.ymate.platform.commons.util.FileUtils;
 import net.ymate.platform.core.beans.annotation.Ignored;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 
 import java.io.File;
 import java.io.IOException;
@@ -98,7 +99,7 @@ public interface IConfigFileChecker extends AutoCloseable {
             if (targetFile.lastModified() != lastModifyTime) {
                 this.lastModifyTime = targetFile.lastModified();
                 String hash = FileUtils.getHash(targetFile);
-                if (!StringUtils.equals(fileHash, hash)) {
+                if (!Strings.CS.equals(fileHash, hash)) {
                     configuration.reload();
                     return true;
                 }

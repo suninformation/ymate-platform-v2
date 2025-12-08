@@ -16,6 +16,7 @@
 package net.ymate.platform.commons.markdown;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 
 /**
  * @author 刘镇 (suninformation@163.com) on 2020/02/09 13:16
@@ -69,7 +70,7 @@ public final class Code implements IMarkdown {
         if (code.length() == 0) {
             return StringUtils.EMPTY;
         }
-        if (StringUtils.contains(code, StringUtils.LF) || StringUtils.isNotBlank(language)) {
+        if (Strings.CS.contains(code, StringUtils.LF) || StringUtils.isNotBlank(language)) {
             return String.format("```%s\n%s\n```\n", language, code);
         }
         return String.format("`%s`", code);

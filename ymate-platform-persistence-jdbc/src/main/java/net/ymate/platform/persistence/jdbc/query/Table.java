@@ -26,6 +26,7 @@ import net.ymate.platform.core.persistence.base.Type;
 import net.ymate.platform.persistence.jdbc.dialect.IDialect;
 import org.apache.commons.lang.NullArgumentException;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -350,7 +351,7 @@ public class Table extends QueryHandleAdapter<Table> {
      * @return 返回表删除SQL语句
      */
     public String toDropSQL() {
-        return String.format("DROP TABLE %s %s", (StringUtils.equals(Type.DATABASE.MYSQL, dialect.getName()) || ifExistsOrNot ? IF_EXISTS : StringUtils.EMPTY), dialect.buildTableName(prefix, tableName, shardingRule, shardingable));
+        return String.format("DROP TABLE %s %s", (Strings.CS.equals(Type.DATABASE.MYSQL, dialect.getName()) || ifExistsOrNot ? IF_EXISTS : StringUtils.EMPTY), dialect.buildTableName(prefix, tableName, shardingRule, shardingable));
     }
 
     /**

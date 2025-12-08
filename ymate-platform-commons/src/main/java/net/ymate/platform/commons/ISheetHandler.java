@@ -21,6 +21,7 @@ import net.ymate.platform.commons.lang.PairObject;
 import net.ymate.platform.commons.util.ClassUtils;
 import net.ymate.platform.commons.util.DateTimeUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.DateUtil;
 import org.apache.poi.ss.usermodel.Row;
@@ -119,7 +120,7 @@ public interface ISheetHandler<T> {
                                 String valueStr = BlurObject.bind(value).toStringValue();
                                 String[] dataRange = column.getValue().getDataRange();
                                 for (int idx = 0; idx < dataRange.length; idx++) {
-                                    if (StringUtils.equalsIgnoreCase(valueStr, dataRange[idx])) {
+                                    if (Strings.CI.equals(valueStr, dataRange[idx])) {
                                         value = idx;
                                         break;
                                     }

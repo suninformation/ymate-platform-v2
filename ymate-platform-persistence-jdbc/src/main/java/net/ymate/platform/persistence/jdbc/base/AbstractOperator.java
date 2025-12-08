@@ -21,6 +21,7 @@ import net.ymate.platform.core.persistence.base.Type;
 import net.ymate.platform.persistence.jdbc.IDatabaseConnectionHolder;
 import net.ymate.platform.persistence.jdbc.IDatabaseDataSourceConfig;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.apache.commons.lang3.time.StopWatch;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -124,7 +125,7 @@ public abstract class AbstractOperator implements IOperator {
             if (depth > 0) {
                 for (int idx = 0; idx < depth; idx++) {
                     if (tracePackages != null && tracePackages.length > 0) {
-                        if (StringUtils.containsAny(stacks[idx].getClassName(), "$$EnhancerByCGLIB$$", "_$$_") || !StringUtils.startsWithAny(stacks[idx].getClassName(), tracePackages)) {
+                        if (Strings.CS.containsAny(stacks[idx].getClassName(), "$$EnhancerByCGLIB$$", "_$$_") || !Strings.CS.startsWithAny(stacks[idx].getClassName(), tracePackages)) {
                             continue;
                         }
                     }

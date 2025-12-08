@@ -24,6 +24,7 @@ import net.ymate.platform.webmvc.util.WebResult;
 import net.ymate.platform.webmvc.util.WebUtils;
 import net.ymate.platform.webmvc.view.IView;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -63,7 +64,7 @@ public class DefaultWebErrorProcessor extends AbstractResponseErrorProcessor imp
     public IView showErrorMsg(IWebMvc owner, String code, String msg, Map<String, Object> dataMap) {
         HttpServletRequest httpServletRequest = WebContext.getRequest();
         String viewFormat = getErrorDefaultViewFormat(owner);
-        if (WebUtils.isAjax(httpServletRequest) || WebUtils.isXmlFormat(httpServletRequest) || WebUtils.isJsonFormat(httpServletRequest) || StringUtils.containsAny(viewFormat, Type.Const.FORMAT_JSON, Type.Const.FORMAT_XML)) {
+        if (WebUtils.isAjax(httpServletRequest) || WebUtils.isXmlFormat(httpServletRequest) || WebUtils.isJsonFormat(httpServletRequest) || Strings.CS.containsAny(viewFormat, Type.Const.FORMAT_JSON, Type.Const.FORMAT_XML)) {
             return WebResult.formatView(WebResult.builder().code(code).msg(msg).data(dataMap).build(), viewFormat);
         }
         return WebUtils.buildErrorView(owner, null, code, msg, null, 0, dataMap);

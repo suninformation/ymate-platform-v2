@@ -22,6 +22,7 @@ import net.ymate.platform.webmvc.annotation.InterceptorRule;
 import net.ymate.platform.webmvc.annotation.ResponseCache;
 import net.ymate.platform.webmvc.base.Type;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 
 import java.lang.reflect.Method;
 import java.util.Collections;
@@ -47,23 +48,23 @@ public class InterceptorRuleMeta {
         InterceptorRule interceptorRuleAnn = targetMethod.getAnnotation(InterceptorRule.class);
         if (interceptorRuleAnn != null && StringUtils.isNotBlank(interceptorRuleAnn.value())) {
             String requestMapping = interceptorRuleAnn.value();
-            if (!StringUtils.startsWith(requestMapping, Type.Const.PATH_SEPARATOR)) {
+            if (!Strings.CS.startsWith(requestMapping, Type.Const.PATH_SEPARATOR)) {
                 requestMapping += Type.Const.PATH_SEPARATOR;
             }
             //
             interceptorRuleAnn = targetClass.getAnnotation(InterceptorRule.class);
             if (interceptorRuleAnn != null) {
                 this.mapping = StringUtils.trimToEmpty(interceptorRuleAnn.value());
-                if (StringUtils.endsWith(this.mapping, Type.Const.PATH_SEPARATOR)) {
+                if (Strings.CS.endsWith(this.mapping, Type.Const.PATH_SEPARATOR)) {
                     this.mapping = StringUtils.substringBeforeLast(this.mapping, Type.Const.PATH_SEPARATOR);
                 }
             }
             this.mapping += requestMapping;
             //
-            if (!StringUtils.startsWith(this.mapping, Type.Const.PATH_SEPARATOR)) {
+            if (!Strings.CS.startsWith(this.mapping, Type.Const.PATH_SEPARATOR)) {
                 this.mapping += Type.Const.PATH_SEPARATOR;
             }
-            if (StringUtils.endsWith(this.mapping, Type.Const.PATH_SEPARATOR_ALL)) {
+            if (Strings.CS.endsWith(this.mapping, Type.Const.PATH_SEPARATOR_ALL)) {
                 matchAll = true;
                 this.mapping = StringUtils.substringBeforeLast(this.mapping, Type.Const.PATH_SEPARATOR_ALL);
             }

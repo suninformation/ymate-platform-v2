@@ -29,6 +29,7 @@ import net.ymate.platform.persistence.jdbc.query.SQL;
 import net.ymate.platform.persistence.jdbc.query.Select;
 import net.ymate.platform.persistence.jdbc.support.ResultSetHelper;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -264,7 +265,7 @@ public final class Scaffold {
             List<TableInfo> tableInfos = new ArrayList<>();
             ResultSetHelper.bind(session.find(sql, new ArrayResultSetHandler())).forEach((wrapper, row) -> {
                 String tableName = wrapper.getAsString(0);
-                if (tableNames.isEmpty() || tableNames.contains(tableName) || tableNames.stream().anyMatch(tName -> StringUtils.contains(tName, "*") && StringUtils.startsWithIgnoreCase(tableName, StringUtils.substringBefore(tName, "*")))) {
+                if (tableNames.isEmpty() || tableNames.contains(tableName) || tableNames.stream().anyMatch(tName -> Strings.CS.contains(tName, "*") && Strings.CI.startsWith(tableName, StringUtils.substringBefore(tName, "*")))) {
                     if (doCheckTableNameNotInBlacklist(tableName)) {
                         TableInfo tableInfo = TableInfo.create(session.getConnectionHolder(), scaffold, tableName, view);
                         if (tableInfo != null) {
@@ -380,7 +381,7 @@ public final class Scaffold {
      */
     private boolean doCheckTableNameNotInBlacklist(String tableName) {
         if (!excludedTableNames.isEmpty()) {
-            return !excludedTableNames.contains(tableName.toLowerCase()) && excludedTableNames.stream().noneMatch(excludedName -> StringUtils.contains(excludedName, "*") && StringUtils.startsWithIgnoreCase(tableName, StringUtils.substringBefore(excludedName, "*")));
+            return !excludedTableNames.contains(tableName.toLowerCase()) && excludedTableNames.stream().noneMatch(excludedName -> Strings.CS.contains(excludedName, "*") && Strings.CI.startsWith(tableName, StringUtils.substringBefore(excludedName, "*")));
         }
         return true;
     }

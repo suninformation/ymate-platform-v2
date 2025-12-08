@@ -23,6 +23,7 @@ import net.ymate.platform.persistence.jdbc.IDatabase;
 import net.ymate.platform.persistence.jdbc.JDBC;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 
 import java.util.List;
 
@@ -128,7 +129,7 @@ public final class OrderBy extends Query<OrderBy> {
                 String[] parts = StringUtils.split(item, ':');
                 if (ArrayUtils.isNotEmpty(parts)) {
                     String field = parts[0];
-                    boolean desc = parts.length > 1 && (StringUtils.isBlank(parts[1]) || StringUtils.equalsIgnoreCase(parts[1], "desc"));
+                    boolean desc = parts.length > 1 && (StringUtils.isBlank(parts[1]) || Strings.CI.equals(parts[1], "desc"));
                     if (StringUtils.isNotBlank(field)) {
                         if (desc) {
                             desc(field, wrapIdentifier);

@@ -22,7 +22,7 @@ import net.ymate.platform.validation.IValidator;
 import net.ymate.platform.validation.ValidateContext;
 import net.ymate.platform.validation.ValidateResult;
 import org.apache.commons.lang3.EnumUtils;
-import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -69,7 +69,7 @@ public final class DataRangeValidator implements IValidator {
         String pValueStr = BlurObject.bind(paramValue).toStringValue();
         if (ignoreCase) {
             for (String value : collection) {
-                if (StringUtils.equalsIgnoreCase(pValueStr, value)) {
+                if (Strings.CI.equals(pValueStr, value)) {
                     return true;
                 }
             }

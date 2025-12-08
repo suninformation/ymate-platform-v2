@@ -20,6 +20,7 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.NullArgumentException;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -91,7 +92,7 @@ public class FileUtils {
         String suffix = null;
         if (fileName != null && !fileName.isEmpty()) {
             int pos = fileName.lastIndexOf('.');
-            if ((pos == 0 && StringUtils.startsWith(fileName, ".") || pos > 0) && pos < fileName.length() - 1) {
+            if ((pos == 0 && Strings.CS.startsWith(fileName, ".") || pos > 0) && pos < fileName.length() - 1) {
                 suffix = fileName.substring(pos + 1);
             }
         }
@@ -222,7 +223,7 @@ public class FileUtils {
         if (StringUtils.isBlank(prefix)) {
             prefix = UUIDUtils.randomStr(8, false);
         }
-        if (!StringUtils.endsWith(prefix, "_")) {
+        if (!Strings.CS.endsWith(prefix, "_")) {
             prefix = prefix.concat("_");
         }
         File zipFile = createTempFile(prefix, ".zip");
@@ -337,7 +338,7 @@ public class FileUtils {
                         Enumeration<JarEntry> entriesEnum = jarFile.entries();
                         while (entriesEnum.hasMoreElements()) {
                             JarEntry entry = entriesEnum.nextElement();
-                            if (StringUtils.startsWith(entry.getName(), prefixPath)) {
+                            if (Strings.CS.startsWith(entry.getName(), prefixPath)) {
                                 if (!entry.isDirectory()) {
                                     String entryName = StringUtils.substringAfter(entry.getName(), prefixPath);
                                     File distFile = new File(targetFile, entryName);

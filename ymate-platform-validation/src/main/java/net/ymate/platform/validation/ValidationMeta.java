@@ -22,6 +22,7 @@ import net.ymate.platform.validation.annotation.VMsg;
 import net.ymate.platform.validation.annotation.Validation;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 
 import java.io.Serializable;
 import java.lang.annotation.Annotation;
@@ -118,7 +119,7 @@ public final class ValidationMeta implements Serializable {
 
     public static String parsePrefixValue(String prefix, String paramName) {
         if (StringUtils.isNotBlank(prefix)) {
-            if (StringUtils.endsWithAny(prefix, ".", "_")) {
+            if (Strings.CS.endsWithAny(prefix, ".", "_")) {
                 paramName = StringUtils.join(prefix, paramName);
             } else {
                 paramName = StringUtils.join(prefix, StringUtils.capitalize(paramName));

@@ -22,6 +22,7 @@ import net.ymate.platform.webmvc.impl.DefaultRequestContext;
 import net.ymate.platform.webmvc.util.WebUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 
 import javax.servlet.*;
 import javax.servlet.http.HttpServletRequest;
@@ -79,7 +80,7 @@ public class DispatchFilter implements Filter {
             chain.doFilter(request, response);
         } else {
             IRequestContext requestContext = new DefaultRequestContext((HttpServletRequest) request, requestPrefix, strictMode);
-            if (!requestIgnoreUrls.isEmpty() && requestIgnoreUrls.stream().anyMatch(s -> StringUtils.startsWith(requestContext.getOriginalUrl(), s))) {
+            if (!requestIgnoreUrls.isEmpty() && requestIgnoreUrls.stream().anyMatch(s -> Strings.CS.startsWith(requestContext.getOriginalUrl(), s))) {
                 chain.doFilter(request, response);
             } else if (!ignorePattern.matcher(requestContext.getOriginalUrl()).find()) {
                 dispatcher.dispatch(requestContext, filterConfig.getServletContext(), (HttpServletRequest) request, (HttpServletResponse) response);

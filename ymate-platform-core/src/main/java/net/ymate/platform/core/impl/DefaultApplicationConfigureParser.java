@@ -31,6 +31,7 @@ import net.ymate.platform.core.module.IModuleConfigurer;
 import net.ymate.platform.core.module.impl.DefaultModuleConfigurer;
 import org.apache.commons.lang.NullArgumentException;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -74,7 +75,7 @@ public final class DefaultApplicationConfigureParser implements IApplicationConf
 
     private static InputStream loadSystemConfig() {
         String configFileName = System.getProperty(IApplication.SYSTEM_CONFIG_FILE);
-        if (StringUtils.isNotBlank(configFileName) && StringUtils.equalsIgnoreCase(FileUtils.getExtName(configFileName), FileUtils.FILE_SUFFIX_PROPERTIES)) {
+        if (StringUtils.isNotBlank(configFileName) && Strings.CI.equals(FileUtils.getExtName(configFileName), FileUtils.FILE_SUFFIX_PROPERTIES)) {
             configFileName = RuntimeUtils.replaceEnvVariable(configFileName);
             File configFile = new File(configFileName);
             if (configFile.isAbsolute() && configFile.exists() && configFile.isFile()) {
@@ -111,8 +112,8 @@ public final class DefaultApplicationConfigureParser implements IApplicationConf
             String keyStr = BlurObject.bind(key).toStringValue();
             String valueStr = BlurObject.bind(value).toStringValue();
             if (StringUtils.isNotBlank(valueStr)
-                    && StringUtils.startsWith(valueStr, PASS_PREFIX)
-                    && StringUtils.endsWith(valueStr, PASS_SUFFIX)) {
+                    && Strings.CS.startsWith(valueStr, PASS_PREFIX)
+                    && Strings.CS.endsWith(valueStr, PASS_SUFFIX)) {
                 String tmpValueStr = StringUtils.substringBetween(valueStr, PASS_PREFIX, PASS_SUFFIX);
                 if (StringUtils.isNotBlank(tmpValueStr)) {
                     try {
@@ -147,7 +148,7 @@ public final class DefaultApplicationConfigureParser implements IApplicationConf
                     String prefix = MODULE_CONFIG_PREFIX + moduleName + ClassUtils.PACKAGE_SEPARATOR;
                     configReader.toMap().keySet().forEach(key -> {
                         String keyStr = BlurObject.bind(key).toStringValue();
-                        if (StringUtils.startsWith(keyStr, prefix)) {
+                        if (Strings.CS.startsWith(keyStr, prefix)) {
                             configs.put(StringUtils.substring(keyStr, prefix.length()), configReader.getString(key));
                         }
                     });

@@ -29,6 +29,7 @@ import net.ymate.platform.core.module.IModuleConfigurer;
 import net.ymate.platform.core.module.impl.DefaultModuleConfigurer;
 import net.ymate.platform.core.support.RecycleHelper;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -236,11 +237,11 @@ public final class Cfgs implements IConfig {
     private Class<? extends IConfigurationProvider> doParseConfigurationProviderClass(String cfgFileName) {
         if (StringUtils.isNotBlank(cfgFileName)) {
             String extName = FileUtils.getExtName(cfgFileName);
-            if (StringUtils.equalsIgnoreCase(extName, FILE_SUFFIX_XML)) {
+            if (Strings.CI.equals(extName, FILE_SUFFIX_XML)) {
                 return DefaultConfigurationProvider.class;
-            } else if (StringUtils.equalsIgnoreCase(extName, FILE_SUFFIX_PROPERTIES)) {
+            } else if (Strings.CI.equals(extName, FILE_SUFFIX_PROPERTIES)) {
                 return PropertyConfigurationProvider.class;
-            } else if (StringUtils.equalsAnyIgnoreCase(extName, FILE_SUFFIX_JSON)) {
+            } else if (Strings.CI.equalsAny(extName, FILE_SUFFIX_JSON)) {
                 return JSONConfigurationProvider.class;
             }
         }
@@ -299,9 +300,9 @@ public final class Cfgs implements IConfig {
                     if (StringUtils.isBlank(cfgFileName)) {
                         cfgFileName = String.format("%s%s.%s", configObject.getClass().getSimpleName().toLowerCase(), configObject.getTagName(), provider.getSupportFileExtName());
                     } else if (StringUtils.isBlank(FileUtils.getExtName(cfgFileName))) {
-                        cfgFileName += String.format("%s%s", StringUtils.endsWith(cfgFileName, ".") ? StringUtils.EMPTY : ".", provider.getSupportFileExtName());
+                        cfgFileName += String.format("%s%s", Strings.CS.endsWith(cfgFileName, ".") ? StringUtils.EMPTY : ".", provider.getSupportFileExtName());
                     }
-                    if (StringUtils.isNotBlank(config.getConfigBaseDir()) && !StringUtils.startsWith(cfgFileName, config.getConfigBaseDir())) {
+                    if (StringUtils.isNotBlank(config.getConfigBaseDir()) && !Strings.CS.startsWith(cfgFileName, config.getConfigBaseDir())) {
                         cfgFileName = String.format("%s%s", config.getConfigBaseDir(), cfgFileName);
                     }
                     String targetCfgFile = search ? searchAsPath(cfgFileName) : cfgFileName;

@@ -25,6 +25,7 @@ import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.lang.NullArgumentException;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -89,7 +90,7 @@ public final class InterceptSettings {
                 configReader.getMap(PACKAGES_PREFIX).forEach((key, value) -> interceptSettings.registerInterceptPackage(key, InterceptSetting.create(StringUtils.split(value, "|"))));
                 configReader.getMap(SETTINGS_PREFIX).forEach((key, value) -> interceptSettings.registerInterceptSettings(key, InterceptSetting.create(StringUtils.split(value, "|"))));
                 configReader.getMap(GLOBALS_PREFIX).forEach((key, value) -> {
-                    if (StringUtils.equalsIgnoreCase(value, DISABLED)) {
+                    if (Strings.CI.equals(value, DISABLED)) {
                         interceptSettings.registerInterceptGlobal(StringUtils.substringBefore(key, "#"));
                     }
                 });
@@ -355,7 +356,7 @@ public final class InterceptSettings {
             if (packageMeta != null) {
                 packageMetas.add(0, packageMeta);
             }
-            while (StringUtils.contains(packageName, ClassUtils.PACKAGE_SEPARATOR)) {
+            while (Strings.CS.contains(packageName, ClassUtils.PACKAGE_SEPARATOR)) {
                 packageName = StringUtils.substringBeforeLast(packageName, ClassUtils.PACKAGE_SEPARATOR);
                 packageMeta = packageMetaMap.get(packageName);
                 if (packageMeta != null) {
@@ -393,7 +394,7 @@ public final class InterceptSettings {
         if (packageMetaMap.containsKey(packageName)) {
             return true;
         }
-        while (StringUtils.contains(packageName, ClassUtils.PACKAGE_SEPARATOR)) {
+        while (Strings.CS.contains(packageName, ClassUtils.PACKAGE_SEPARATOR)) {
             packageName = StringUtils.substringBeforeLast(packageName, ClassUtils.PACKAGE_SEPARATOR);
             if (packageMetaMap.containsKey(packageName)) {
                 return true;

@@ -17,6 +17,7 @@ package net.ymate.platform.configuration.impl;
 
 import net.ymate.platform.configuration.AbstractConfigFileParser;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 
 import java.io.*;
 import java.net.URL;
@@ -55,7 +56,7 @@ public class PropertyConfigFileParser extends AbstractConfigFileParser {
         Enumeration<String> propNames = (Enumeration<String>) properties.propertyNames();
         while (propNames.hasMoreElements()) {
             String propName = propNames.nextElement();
-            if (StringUtils.startsWith(propName, TAG_NAME_PROPERTIES)) {
+            if (Strings.CS.startsWith(propName, TAG_NAME_PROPERTIES)) {
                 String newPropName = StringUtils.substringAfter(propName, TAG_NAME_PROPERTIES.concat("."));
                 // _propArr[0] = categoryName
                 // _propArr[1] = propertyName

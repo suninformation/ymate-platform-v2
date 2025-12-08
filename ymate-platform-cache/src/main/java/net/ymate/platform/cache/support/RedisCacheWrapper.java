@@ -24,6 +24,7 @@ import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import redis.clients.jedis.JedisPubSub;
 
 import java.util.ArrayList;
@@ -62,7 +63,7 @@ public class RedisCacheWrapper implements ICache {
                 public void onMessage(String channel, String message) {
                     if (StringUtils.isNotBlank(message)) {
                         String[] keyStr = StringUtils.split(message, SEPARATOR);
-                        if (ArrayUtils.isNotEmpty(keyStr) && keyStr.length == KEY_LENGTH && StringUtils.equals(cacheName, keyStr[0])) {
+                        if (ArrayUtils.isNotEmpty(keyStr) && keyStr.length == KEY_LENGTH && Strings.CS.equals(cacheName, keyStr[0])) {
                             if (owner.getConfig().isStorageWithSet()) {
                                 remove(keyStr[1]);
                             }

@@ -19,6 +19,7 @@ import net.ymate.platform.commons.lang.PairObject;
 import net.ymate.platform.webmvc.IWebMvc;
 import net.ymate.platform.webmvc.view.impl.*;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 
 import java.io.File;
 import java.util.LinkedHashMap;
@@ -46,7 +47,7 @@ public class View {
      */
     public static void registerViewBuilder(String fileSuffix, IViewBuilder viewBuilder) {
         if (StringUtils.isNotBlank(fileSuffix) && viewBuilder != null) {
-            if (!StringUtils.startsWith(fileSuffix, ".")) {
+            if (!Strings.CS.startsWith(fileSuffix, ".")) {
                 fileSuffix = "." + fileSuffix;
             }
             if (!VIEW_BUILDERS.containsKey(fileSuffix)) {

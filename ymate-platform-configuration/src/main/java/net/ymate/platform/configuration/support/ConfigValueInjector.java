@@ -27,6 +27,7 @@ import net.ymate.platform.core.configuration.IConfigReader;
 import net.ymate.platform.core.configuration.IConfiguration;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Array;
@@ -85,7 +86,7 @@ public class ConfigValueInjector implements IBeanInjector {
             }
         }
         if (returnValue == null) {
-            if (!StringUtils.equalsIgnoreCase(IConfigFileParser.DEFAULT_CATEGORY_NAME, categoryStr)) {
+            if (!Strings.CI.equals(IConfigFileParser.DEFAULT_CATEGORY_NAME, categoryStr)) {
                 keyStr = categoryStr.concat(".").concat(keyStr);
             }
             returnValue = parseParam(beanFactory, field, keyStr, configValueAnn.defaultValue());

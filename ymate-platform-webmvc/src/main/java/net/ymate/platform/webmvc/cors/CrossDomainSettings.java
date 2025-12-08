@@ -32,6 +32,7 @@ import net.ymate.platform.webmvc.view.IView;
 import net.ymate.platform.webmvc.view.View;
 import org.apache.commons.lang.NullArgumentException;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -115,13 +116,13 @@ public final class CrossDomainSettings implements IInitialization<IWebMvc> {
                 String requestMapping = requestContext.getRequestMapping();
                 ICrossDomainSetting crossDomainSetting = null;
                 for (Map.Entry<String, ICrossDomainSetting> entry : settings.entrySet()) {
-                    if (StringUtils.endsWith(entry.getKey(), "/*")) {
+                    if (Strings.CS.endsWith(entry.getKey(), "/*")) {
                         String key = StringUtils.defaultIfBlank(StringUtils.substringBefore(entry.getKey(), "/*"), "/");
-                        if (StringUtils.startsWith(requestMapping, key)) {
+                        if (Strings.CS.startsWith(requestMapping, key)) {
                             crossDomainSetting = entry.getValue();
                             break;
                         }
-                    } else if (StringUtils.equals(requestMapping, entry.getKey())) {
+                    } else if (Strings.CS.equals(requestMapping, entry.getKey())) {
                         crossDomainSetting = entry.getValue();
                         break;
                     }
@@ -149,7 +150,7 @@ public final class CrossDomainSettings implements IInitialization<IWebMvc> {
                 boolean allowed = false;
                 String origin = request.getHeader(Type.HttpHead.ORIGIN);
                 if (!domainSetting.getAllowedOrigins().isEmpty()) {
-                    allowed = domainSetting.getAllowedOrigins().stream().anyMatch(o -> StringUtils.equals(o, "*") || StringUtils.containsIgnoreCase(o, origin));
+                    allowed = domainSetting.getAllowedOrigins().stream().anyMatch(o -> Strings.CS.equals(o, "*") || Strings.CI.contains(o, origin));
                 }
                 if (!allowed) {
                     IHostNameChecker hostNameChecker = domainSetting.getAllowedOriginsChecker();

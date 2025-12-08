@@ -20,6 +20,7 @@ import net.ymate.platform.commons.util.ClassUtils;
 import net.ymate.platform.core.configuration.IConfigReader;
 import org.apache.commons.lang.NullArgumentException;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 
 import java.util.*;
 
@@ -34,7 +35,7 @@ public class MapSafeConfigReader implements IConfigReader {
         Map<String, String> returnValues = new HashMap<>(16);
         if (StringUtils.isNotBlank(keyPrefix)) {
             map.forEach((key, value) -> {
-                if (StringUtils.startsWith(key, keyPrefix)) {
+                if (Strings.CS.startsWith(key, keyPrefix)) {
                     String keyStr = StringUtils.substringAfter(key, keyPrefix);
                     if (StringUtils.isNotBlank(keyStr) && StringUtils.isNotBlank(value)) {
                         returnValues.put(keyStr, value);

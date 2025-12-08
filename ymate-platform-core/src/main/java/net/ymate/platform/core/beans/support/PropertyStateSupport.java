@@ -23,6 +23,7 @@ import net.ymate.platform.core.beans.proxy.IProxyFactory;
 import net.ymate.platform.core.beans.proxy.impl.DefaultProxyFactory;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
@@ -187,7 +188,7 @@ public class PropertyStateSupport<T> {
         PropertyStateMeta returnValue = null;
         if (StringUtils.isNotBlank(propertyOrAliasName)) {
             returnValue = stateMetas.stream()
-                    .filter(stateMeta -> StringUtils.equalsAny(propertyOrAliasName, stateMeta.getPropertyName(), stateMeta.getAliasName()))
+                    .filter(stateMeta -> Strings.CS.equalsAny(propertyOrAliasName, stateMeta.getPropertyName(), stateMeta.getAliasName()))
                     .findFirst()
                     .orElse(null);
         }

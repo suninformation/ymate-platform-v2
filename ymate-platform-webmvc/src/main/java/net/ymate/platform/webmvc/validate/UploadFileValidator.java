@@ -25,6 +25,7 @@ import net.ymate.platform.webmvc.IUploadFileWrapper;
 import net.ymate.platform.webmvc.IWebMvcConfig;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 
 import java.util.*;
 
@@ -124,7 +125,7 @@ public class UploadFileValidator extends AbstractValidator {
         } else if (maxSize > 0 && value.getSize() > maxSize) {
             return 2;
         } else if (!allowedContentTypes.isEmpty()) {
-            if (allowedContentTypes.stream().noneMatch(contentType -> StringUtils.contains(value.getContentType(), contentType))) {
+            if (allowedContentTypes.stream().noneMatch(contentType -> Strings.CS.contains(value.getContentType(), contentType))) {
                 return 3;
             }
         }
@@ -139,7 +140,7 @@ public class UploadFileValidator extends AbstractValidator {
         if (ArrayUtils.isNotEmpty(allowContentTypes)) {
             for (String allowContentType : allowContentTypes) {
                 String contentType;
-                if (StringUtils.startsWith(allowContentType, ".")) {
+                if (Strings.CS.startsWith(allowContentType, ".")) {
                     contentType = MimeTypeUtils.getFileMimeType(allowContentType);
                 } else {
                     contentType = allowContentType;

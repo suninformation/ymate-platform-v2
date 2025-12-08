@@ -23,6 +23,7 @@ import net.ymate.platform.core.beans.annotation.Order;
 import net.ymate.platform.core.beans.proxy.IProxy;
 import net.ymate.platform.core.beans.proxy.IProxyChain;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -43,11 +44,11 @@ public class CacheableProxy implements IProxy {
         ICaches caches = proxyChain.getProxyFactory().getOwner().getModuleManager().getModule(Caches.class);
         Object cacheKey = null;
         // 若缓存key以'#'开头则尝试从方法参数中获取该参数值
-        if (StringUtils.startsWith(cacheable.key(), "#")) {
+        if (Strings.CS.startsWith(cacheable.key(), "#")) {
             String paramName = StringUtils.substringAfter(cacheable.key(), "#");
             String[] paramNames = ClassUtils.getMethodParamNames(proxyChain.getTargetMethod());
             for (int idx = 0; idx < paramNames.length; idx++) {
-                if (StringUtils.equals(paramNames[idx], paramName)) {
+                if (Strings.CS.equals(paramNames[idx], paramName)) {
                     cacheKey = proxyChain.getMethodParams()[idx];
                     break;
                 }

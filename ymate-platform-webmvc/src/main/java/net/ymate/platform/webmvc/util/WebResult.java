@@ -28,6 +28,7 @@ import net.ymate.platform.webmvc.view.IView;
 import net.ymate.platform.webmvc.view.impl.HttpStatusView;
 import net.ymate.platform.webmvc.view.impl.JspView;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -215,9 +216,9 @@ public final class WebResult extends AbstractWebResult<Integer> {
         IView returnView = null;
         if (result != null) {
             HttpServletRequest request = WebContext.getRequest();
-            if (WebUtils.isJsonAccepted(request, paramFormat) || StringUtils.equalsIgnoreCase(defaultFormat, Type.Const.FORMAT_JSON)) {
+            if (WebUtils.isJsonAccepted(request, paramFormat) || Strings.CI.equals(defaultFormat, Type.Const.FORMAT_JSON)) {
                 returnView = result.withContentType().toJsonView(StringUtils.trimToNull(WebContext.getRequest().getParameter(paramCallback)));
-            } else if (WebUtils.isXmlAccepted(request, paramFormat) || StringUtils.equalsIgnoreCase(defaultFormat, Type.Const.FORMAT_XML)) {
+            } else if (WebUtils.isXmlAccepted(request, paramFormat) || Strings.CI.equals(defaultFormat, Type.Const.FORMAT_XML)) {
                 returnView = result.withContentType().toXmlView();
             } else if (WebUtils.isAjax(request)) {
                 returnView = result.withContentType().toJsonView(StringUtils.trimToNull(WebContext.getRequest().getParameter(paramCallback)));

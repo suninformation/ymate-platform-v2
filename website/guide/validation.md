@@ -435,7 +435,7 @@ public class EmailCanUseValidator implements IValidator {
         if (StringUtils.isNotBlank(paramValue)) {
             VEmailCanUse annotation = (VEmailCanUse) context.getAnnotation();
             if (StringUtils.isNotBlank(annotation.suffix())
-                    && StringUtils.endsWithIgnoreCase(paramValue, annotation.suffix())) {
+                    && Strings.CS.endsWithIgnoreCase(paramValue, annotation.suffix())) {
                 if (StringUtils.isNotBlank(annotation.msg())) {
                     return ValidateResult.builder(context).msg(annotation.msg()).build();
                 }

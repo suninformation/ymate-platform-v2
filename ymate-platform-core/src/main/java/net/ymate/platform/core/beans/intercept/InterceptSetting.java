@@ -17,6 +17,7 @@ package net.ymate.platform.core.beans.intercept;
 
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 
 import java.util.Arrays;
 import java.util.List;
@@ -68,10 +69,10 @@ public final class InterceptSetting {
         String[] itemArr = StringUtils.split(setting, ":");
         if (itemArr != null) {
             if (itemArr.length == 1) {
-                if (StringUtils.equals(itemArr[0], CHAR_STAR)) {
+                if (Strings.CS.equals(itemArr[0], CHAR_STAR)) {
                     type = IInterceptor.SettingType.CLEAN_ALL;
                 } else {
-                    if (StringUtils.endsWith(itemArr[0], CHAR_MINUS)) {
+                    if (Strings.CS.endsWith(itemArr[0], CHAR_MINUS)) {
                         interceptorClass = InterceptSettings.loadInterceptorClass(StringUtils.substringBefore(itemArr[0], CHAR_MINUS));
                         type = IInterceptor.SettingType.REMOVE_ALL;
                     } else {
@@ -79,11 +80,11 @@ public final class InterceptSetting {
                         type = IInterceptor.SettingType.ADD_ALL;
                     }
                 }
-            } else if (StringUtils.equalsIgnoreCase(itemArr[0], IInterceptor.Direction.BEFORE.name())) {
-                if (StringUtils.equals(itemArr[1], CHAR_STAR)) {
+            } else if (Strings.CI.equals(itemArr[0], IInterceptor.Direction.BEFORE.name())) {
+                if (Strings.CS.equals(itemArr[1], CHAR_STAR)) {
                     type = IInterceptor.SettingType.CLEAN_BEFORE;
                 } else {
-                    if (StringUtils.endsWith(itemArr[1], CHAR_MINUS)) {
+                    if (Strings.CS.endsWith(itemArr[1], CHAR_MINUS)) {
                         interceptorClass = InterceptSettings.loadInterceptorClass(StringUtils.substringBefore(itemArr[1], CHAR_MINUS));
                         type = IInterceptor.SettingType.REMOVE_BEFORE;
                     } else {
@@ -91,11 +92,11 @@ public final class InterceptSetting {
                         type = IInterceptor.SettingType.ADD_BEFORE;
                     }
                 }
-            } else if (StringUtils.equalsIgnoreCase(itemArr[0], IInterceptor.Direction.AFTER.name())) {
-                if (StringUtils.equals(itemArr[1], CHAR_STAR)) {
+            } else if (Strings.CI.equals(itemArr[0], IInterceptor.Direction.AFTER.name())) {
+                if (Strings.CS.equals(itemArr[1], CHAR_STAR)) {
                     type = IInterceptor.SettingType.CLEAN_AFTER;
                 } else {
-                    if (StringUtils.endsWith(itemArr[1], CHAR_MINUS)) {
+                    if (Strings.CS.endsWith(itemArr[1], CHAR_MINUS)) {
                         interceptorClass = InterceptSettings.loadInterceptorClass(StringUtils.substringBefore(itemArr[1], CHAR_MINUS));
                         type = IInterceptor.SettingType.REMOVE_AFTER;
                     } else {

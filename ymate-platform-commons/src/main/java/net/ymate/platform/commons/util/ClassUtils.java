@@ -21,6 +21,7 @@ import net.ymate.platform.commons.lang.BlurObject;
 import net.ymate.platform.commons.lang.PairObject;
 import org.apache.commons.lang.NullArgumentException;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -335,9 +336,9 @@ public class ClassUtils {
      */
     public static Class<?> getClassNoProxy(Class<?> targetClass) {
         String targetClassName = targetClass.getName();
-        if (StringUtils.contains(targetClassName, JAVASSIST_PROXY_CLASS_FLAG)) {
+        if (Strings.CS.contains(targetClassName, JAVASSIST_PROXY_CLASS_FLAG)) {
             targetClassName = StringUtils.substringBefore(targetClassName, JAVASSIST_PROXY_CLASS_FLAG);
-        } else if (StringUtils.contains(targetClassName, ANONYMOUS_CLASS_FLAG)) {
+        } else if (Strings.CS.contains(targetClassName, ANONYMOUS_CLASS_FLAG)) {
             targetClassName = StringUtils.substringBefore(targetClassName, ANONYMOUS_CLASS_FLAG);
         } else {
             return targetClass;
@@ -420,7 +421,7 @@ public class ClassUtils {
      */
     public static Class<?> findParentPackage(Class<?> targetClass) {
         String packageName = targetClass.getPackage().getName();
-        while (StringUtils.contains(packageName, PACKAGE_SEPARATOR)) {
+        while (Strings.CS.contains(packageName, PACKAGE_SEPARATOR)) {
             packageName = StringUtils.substringBeforeLast(packageName, PACKAGE_SEPARATOR);
             try {
                 Class<?> clazz = targetClass.getClassLoader().loadClass(String.format("%s.%s", packageName, PACKAGE_INFO));
@@ -592,7 +593,7 @@ public class ClassUtils {
         if (StringUtils.isBlank(separator)) {
             separator = "_";
         }
-        if (StringUtils.contains(propertyName, separator)) {
+        if (Strings.CS.contains(propertyName, separator)) {
             String[] words = StringUtils.split(propertyName, separator);
             if (words != null) {
                 if (words.length > 1) {
@@ -624,7 +625,7 @@ public class ClassUtils {
         if (StringUtils.isBlank(separator)) {
             separator = "_";
         }
-        if (StringUtils.isNotBlank(fieldName) && !StringUtils.contains(fieldName, separator)) {
+        if (StringUtils.isNotBlank(fieldName) && !Strings.CS.contains(fieldName, separator)) {
             String currStr = fieldName.substring(0, 1);
             currStr = capitalize <= 0 ? currStr.toLowerCase() : currStr.toUpperCase();
             StringBuilder returnBuilder = new StringBuilder(currStr);
@@ -729,7 +730,7 @@ public class ClassUtils {
                                 lineStr = reader.readLine();
                                 if (StringUtils.isNotBlank(lineStr)) {
                                     lineStr = StringUtils.trim(lineStr);
-                                    if (!StringUtils.startsWith(lineStr, "#")) {
+                                    if (!Strings.CS.startsWith(lineStr, "#")) {
                                         try {
                                             Class<T> loadedClass = (Class<T>) loadClass(lineStr, clazz);
                                             if (ClassUtils.isNormalClass(loadedClass) && !loadedClass.isInterface() && !classesCache.contains(loadedClass)) {

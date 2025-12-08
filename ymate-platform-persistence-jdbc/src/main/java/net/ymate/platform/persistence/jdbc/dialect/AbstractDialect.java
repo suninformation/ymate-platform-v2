@@ -29,6 +29,7 @@ import net.ymate.platform.core.persistence.base.IEntity;
 import net.ymate.platform.persistence.jdbc.query.Table;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 
 import java.io.StringReader;
 import java.sql.ResultSet;
@@ -71,11 +72,11 @@ public abstract class AbstractDialect implements IDialect {
             if (ArrayUtils.isNotEmpty(originArr)) {
                 IntStream.range(0, originArr.length).forEach(idx -> {
                     originArr[idx] = StringUtils.trim(originArr[idx]);
-                    if (!StringUtils.equalsAny(originArr[idx], "*", "?")) {
-                        if (!StringUtils.startsWith(originArr[idx], identifierQuoteBegin)) {
+                    if (!Strings.CS.equalsAny(originArr[idx], "*", "?")) {
+                        if (!Strings.CS.startsWith(originArr[idx], identifierQuoteBegin)) {
                             originArr[idx] = identifierQuoteBegin + originArr[idx];
                         }
-                        if (!StringUtils.endsWith(originArr[idx], identifierQuoteEnd)) {
+                        if (!Strings.CS.endsWith(originArr[idx], identifierQuoteEnd)) {
                             originArr[idx] += identifierQuoteEnd;
                         }
                     }
@@ -207,7 +208,7 @@ public abstract class AbstractDialect implements IDialect {
         if (shardingable != null && shardingRule != null) {
             tableName = shardingRule.getShardName(tableName, shardingable.getShardingParam());
         }
-        if (StringUtils.isNotBlank(prefix) && StringUtils.startsWith(tableName, prefix)) {
+        if (StringUtils.isNotBlank(prefix) && Strings.CS.startsWith(tableName, prefix)) {
             prefix = StringUtils.EMPTY;
         }
         return this.wrapIdentifierQuote(StringUtils.trimToEmpty(prefix).concat(tableName));

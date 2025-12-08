@@ -18,6 +18,7 @@ package net.ymate.platform.commons.util;
 import net.ymate.platform.commons.lang.BlurObject;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -47,8 +48,8 @@ public class ParamUtils {
     public static String fixUrlWithProtocol(String url, boolean needEndWith) {
         url = StringUtils.trimToNull(url);
         if (url != null) {
-            if (!StringUtils.startsWithIgnoreCase(url, HTTP_PREFIX) &&
-                    !StringUtils.startsWithIgnoreCase(url, HTTPS_PREFIX)) {
+            if (!Strings.CI.startsWith(url, HTTP_PREFIX) &&
+                    !Strings.CI.startsWith(url, HTTPS_PREFIX)) {
                 throw new IllegalArgumentException(String.format("URL '%s' must start with HTTP or HTTPS.", url));
             }
             return fixUrl(url, false, needEndWith);
@@ -65,14 +66,14 @@ public class ParamUtils {
     public static String fixUrl(String url, boolean needStartWith, boolean needEndWith) {
         url = StringUtils.trimToNull(url);
         if (url != null) {
-            if (needStartWith && !StringUtils.startsWith(url, PATH_SEPARATOR)) {
+            if (needStartWith && !Strings.CS.startsWith(url, PATH_SEPARATOR)) {
                 url = PATH_SEPARATOR + url;
-            } else if (!needStartWith && StringUtils.startsWith(url, PATH_SEPARATOR)) {
+            } else if (!needStartWith && Strings.CS.startsWith(url, PATH_SEPARATOR)) {
                 url = StringUtils.substringAfter(url, PATH_SEPARATOR);
             }
-            if (needEndWith && !StringUtils.endsWith(url, PATH_SEPARATOR)) {
+            if (needEndWith && !Strings.CS.endsWith(url, PATH_SEPARATOR)) {
                 url = url + PATH_SEPARATOR;
-            } else if (!needEndWith && StringUtils.endsWith(url, PATH_SEPARATOR)) {
+            } else if (!needEndWith && Strings.CS.endsWith(url, PATH_SEPARATOR)) {
                 url = StringUtils.substringBeforeLast(url, PATH_SEPARATOR);
             }
             return url;
@@ -126,7 +127,7 @@ public class ParamUtils {
             }
             for (int idx = 0; idx < charArray.length; idx++) {
                 if (idx >= start && idx < end) {
-                    if (StringUtils.equalsAny(String.valueOf(charArray[idx]), excludedChars)) {
+                    if (Strings.CS.equalsAny(String.valueOf(charArray[idx]), excludedChars)) {
                         continue;
                     }
                     charArray[idx] = '*';

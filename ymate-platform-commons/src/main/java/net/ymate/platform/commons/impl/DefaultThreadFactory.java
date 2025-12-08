@@ -16,6 +16,7 @@
 package net.ymate.platform.commons.impl;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -58,7 +59,7 @@ public class DefaultThreadFactory implements ThreadFactory {
     }
 
     private String prefixFixed(String prefix) {
-        if (!StringUtils.endsWith(prefix, "-")) {
+        if (!Strings.CS.endsWith(prefix, "-")) {
             prefix += '-';
         }
         return prefix;

@@ -19,6 +19,7 @@ import net.ymate.platform.commons.http.impl.DefaultFileWrapper;
 import org.apache.commons.lang.NullArgumentException;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.apache.http.Header;
 import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
@@ -67,7 +68,7 @@ public abstract class AbstractHttpClientHelper<T extends AbstractHttpClientHelpe
     public static String parseFileName(HttpResponse httpResponse) {
         String fileName = null;
         if (httpResponse.containsHeader(HEADER_CONTENT_DISPOSITION)) {
-            fileName = StringUtils.replace(StringUtils.substringAfter(httpResponse.getFirstHeader(HEADER_CONTENT_DISPOSITION).getValue(), "filename="), "\"", StringUtils.EMPTY);
+            fileName = Strings.CS.replace(StringUtils.substringAfter(httpResponse.getFirstHeader(HEADER_CONTENT_DISPOSITION).getValue(), "filename="), "\"", StringUtils.EMPTY);
         }
         return fileName;
     }

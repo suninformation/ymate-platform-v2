@@ -98,6 +98,17 @@ public class DateTimeHelper {
     }
 
     /**
+     * 绑定ZonedDateTime对象创建DateTimeHelper实例
+     *
+     * @param zonedDateTime ZonedDateTime对象
+     * @return DateTimeHelper实例
+     * @since 2.1.4
+     */
+    public static DateTimeHelper bind(ZonedDateTime zonedDateTime) {
+        return new DateTimeHelper(zonedDateTime);
+    }
+
+    /**
      * 绑定年月日创建DateTimeHelper实例
      *
      * @param year  年
@@ -168,6 +179,13 @@ public class DateTimeHelper {
      */
     private DateTimeHelper(LocalDateTime localDateTime, ZoneId zoneId) {
         this.zonedDateTime = localDateTime.atZone(zoneId);
+    }
+
+    /**
+     * @since 2.1.4
+     */
+    private DateTimeHelper(ZonedDateTime zonedDateTime) {
+        this.zonedDateTime = zonedDateTime;
     }
 
     private DateTimeHelper(int year, int month, int day) {
@@ -271,6 +289,16 @@ public class DateTimeHelper {
      */
     public ZoneId zoneId() {
         return zonedDateTime.getZone();
+    }
+
+    /**
+     * 获取ZonedDateTime对象
+     *
+     * @return ZonedDateTime实例
+     * @since 2.1.4
+     */
+    public ZonedDateTime zonedDateTime() {
+        return zonedDateTime;
     }
 
     /**

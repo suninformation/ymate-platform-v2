@@ -21,7 +21,7 @@ import net.ymate.platform.commons.util.RuntimeUtils;
 import net.ymate.platform.core.persistence.base.Type;
 import net.ymate.platform.persistence.jdbc.AbstractDatabaseDataSourceAdapter;
 import net.ymate.platform.persistence.jdbc.annotation.DataSourceAdapter;
-import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -46,10 +46,10 @@ public class C3P0DataSourceAdapter extends AbstractDatabaseDataSourceAdapter {
     @Override
     protected void doInitialize() throws Exception {
         String path = RuntimeUtils.getRootPath();
-        if (StringUtils.endsWith(path, "/WEB-INF")) {
+        if (Strings.CS.endsWith(path, "/WEB-INF")) {
             path += "/classes";
         }
-        if (StringUtils.endsWith(path, "/classes")) {
+        if (Strings.CS.endsWith(path, "/classes")) {
             File configFile = new File(path, "c3p0.properties");
             if (!configFile.exists()) {
                 try (InputStream inputStream = C3P0DataSourceAdapter.class.getClassLoader().getResourceAsStream("META-INF/default-c3p0.properties")) {

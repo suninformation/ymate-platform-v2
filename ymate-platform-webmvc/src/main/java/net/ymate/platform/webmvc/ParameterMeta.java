@@ -21,6 +21,7 @@ import net.ymate.platform.validation.annotation.VField;
 import net.ymate.platform.validation.annotation.VModel;
 import net.ymate.platform.webmvc.annotation.*;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
@@ -139,7 +140,7 @@ public class ParameterMeta {
             if (StringUtils.isNotBlank(prefix)) {
                 if (keepParamName) {
                     this.paramName = StringUtils.join(prefix, paramName);
-                } else if (StringUtils.endsWithAny(prefix, ".", "_")) {
+                } else if (Strings.CS.endsWithAny(prefix, ".", "_")) {
                     this.paramName = StringUtils.join(prefix, paramName);
                 } else {
                     this.paramName = StringUtils.join(prefix, StringUtils.capitalize(paramName));

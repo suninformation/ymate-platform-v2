@@ -21,6 +21,7 @@ import net.ymate.platform.commons.util.FileUtils;
 import net.ymate.platform.configuration.AbstractConfigurationProvider;
 import net.ymate.platform.core.configuration.IConfigFileParser;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 
 import java.net.URL;
 import java.util.ArrayList;
@@ -51,7 +52,7 @@ public class JSONConfigurationProvider extends AbstractConfigurationProvider {
         if (prop != null) {
             String content = prop.getContent();
             if (StringUtils.isNotBlank(content)) {
-                if (StringUtils.startsWith(content, "[") && StringUtils.endsWith(content, "]")) {
+                if (Strings.CS.startsWith(content, "[") && Strings.CS.endsWith(content, "]")) {
                     IJsonArrayWrapper jsonArray = JsonWrapper.fromJson(content).getAsJsonArray();
                     if (jsonArray != null && !jsonArray.isEmpty()) {
                         return IntStream.range(0, jsonArray.size()).mapToObj(jsonArray::getString).collect(Collectors.toList());

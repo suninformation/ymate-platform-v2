@@ -24,6 +24,7 @@ import net.ymate.platform.webmvc.annotation.SignatureValidate;
 import net.ymate.platform.webmvc.exception.ParameterSignatureException;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -51,7 +52,7 @@ public class DefaultSignatureValidator implements ISignatureValidator {
                 signatureParams.put(key, value);
             }
         });
-        return StringUtils.equals(sign, doSignature(owner, signatureValidate, signatureParams));
+        return Strings.CS.equals(sign, doSignature(owner, signatureValidate, signatureParams));
     }
 
     protected boolean doNonceValueValidate(IWebMvc owner, String nonceName, Map<String, Object> paramValues) {

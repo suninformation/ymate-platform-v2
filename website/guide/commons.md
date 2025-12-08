@@ -1216,7 +1216,7 @@ public class Demo {
         values.put("age", 18);
         beanWrapper.fromMap(values, ((fieldName, fieldValue) -> {
             // 排除 age 属性
-            return StringUtils.equals(fieldName, "age");
+            return Strings.CS.equals(fieldName, "age");
         }));
         // 获取成员变量值
         beanWrapper.getFields().forEach(field -> {
@@ -1229,14 +1229,14 @@ public class Demo {
         // 将类成员属性转为映射（支持属性过滤）
         beanWrapper.toMap((fieldName, fieldValue) -> {
             // 排除 age 属性
-            return StringUtils.equals(fieldName, "age");
+            return Strings.CS.equals(fieldName, "age");
         }).forEach((key, value) -> System.out.println(key + ": " + value));
         // 获取当前类实例对象
         Demo demo = beanWrapper.getTargetObject();
         // 类属性浅拷贝（支持属性过滤）
         Demo newDemo = beanWrapper.duplicate(new Demo(), (fieldName, fieldValue) -> {
             // 排除 age 属性
-            return StringUtils.equals(fieldName, "age");
+            return Strings.CS.equals(fieldName, "age");
         });
     }
 }
@@ -3480,7 +3480,7 @@ public class Demo {
             @Override
             public boolean doFilter(String name) {
                 // 用于自定义过滤哪些属性需要使用 <![CDATA[...]]> 包裹
-                return StringUtils.equalsIgnoreCase(name, "content");
+                return Strings.CI.equals(name, "content");
             }
         });
         // ......

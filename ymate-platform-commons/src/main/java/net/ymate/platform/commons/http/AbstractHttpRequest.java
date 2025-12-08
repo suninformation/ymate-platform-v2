@@ -15,7 +15,7 @@
  */
 package net.ymate.platform.commons.http;
 
-import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.apache.http.client.entity.EntityBuilder;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.RequestBuilder;
@@ -47,7 +47,7 @@ public abstract class AbstractHttpRequest<T extends AbstractHttpRequestBuilder<?
         }
         httpRequestBuilder.getHeaders().forEach(requestBuilder::addHeader);
         httpRequestBuilder.getParams().forEach(requestBuilder::addParameter);
-        if (!StringUtils.equalsIgnoreCase(requestBuilder.getMethod(), HttpGet.METHOD_NAME)) {
+        if (!Strings.CI.equals(requestBuilder.getMethod(), HttpGet.METHOD_NAME)) {
             if (!httpRequestBuilder.getContents().isEmpty()) {
                 MultipartEntityBuilder multipartEntityBuilder = MultipartEntityBuilder.create()
                         .setMode(httpRequestBuilder.getMultipartMode() != null ? httpRequestBuilder.getMultipartMode() : HttpMultipartMode.RFC6532);

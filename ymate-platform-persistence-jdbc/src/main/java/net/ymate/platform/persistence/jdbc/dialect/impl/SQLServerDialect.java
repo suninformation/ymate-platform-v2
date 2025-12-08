@@ -20,6 +20,7 @@ import net.ymate.platform.core.persistence.base.Type;
 import net.ymate.platform.persistence.jdbc.annotation.Dialect;
 import net.ymate.platform.persistence.jdbc.dialect.AbstractDialect;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 
 /**
  * SQLServer2005及以上数据库方言接口实现
@@ -46,11 +47,11 @@ public class SQLServerDialect extends AbstractDialect {
     public String buildPagedQuerySql(String originSql, int page, int pageSize) {
         int limit = (page - 1) * pageSize;
         String tmpSqlStr = StringUtils.trim(originSql);
-        if (StringUtils.startsWithIgnoreCase(tmpSqlStr, SELECT)) {
+        if (Strings.CI.startsWith(tmpSqlStr, SELECT)) {
             tmpSqlStr = StringUtils.trim(StringUtils.substring(tmpSqlStr, SELECT.length()));
         }
         boolean distinct = false;
-        if (StringUtils.startsWithIgnoreCase(tmpSqlStr, DISTINCT)) {
+        if (Strings.CI.startsWith(tmpSqlStr, DISTINCT)) {
             tmpSqlStr = StringUtils.substring(tmpSqlStr, DISTINCT.length());
             distinct = true;
         }

@@ -20,6 +20,7 @@ import net.ymate.platform.commons.IPasswordProcessor;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.lang.NullArgumentException;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 
 /**
  * 默认密码编码器接口实现
@@ -58,11 +59,11 @@ public class DefaultPasswordCipherEncoder implements IPasswordCipherEncoder {
 
     @Override
     public boolean match(String origin, String encoded) throws Exception {
-        return !StringUtils.isAnyBlank(origin, encoded) && StringUtils.equals(encoded, encode(origin));
+        return !StringUtils.isAnyBlank(origin, encoded) && Strings.CS.equals(encoded, encode(origin));
     }
 
     @Override
     public boolean match(String origin, String encoded, String salt) throws Exception {
-        return !StringUtils.isAnyBlank(origin, encoded, salt) && StringUtils.equals(encoded, encode(origin, salt));
+        return !StringUtils.isAnyBlank(origin, encoded, salt) && Strings.CS.equals(encoded, encode(origin, salt));
     }
 }

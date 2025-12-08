@@ -29,6 +29,7 @@ import net.ymate.platform.core.beans.proxy.IProxyFilter;
 import net.ymate.platform.core.module.IModule;
 import net.ymate.platform.core.support.IDestroyable;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -310,7 +311,7 @@ public class DefaultBeanFactory implements IBeanFactory {
                     // 若已设置作用包路径
                     if (proxyAnn != null && StringUtils.isNotBlank(proxyAnn.packageScope())) {
                         // 若当前类对象所在包路径匹配
-                        if (!StringUtils.startsWith(targetClass.getPackage().getName(), proxyAnn.packageScope())) {
+                        if (!Strings.CS.startsWith(targetClass.getPackage().getName(), proxyAnn.packageScope())) {
                             return false;
                         }
                     }

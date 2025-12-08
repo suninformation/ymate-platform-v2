@@ -40,6 +40,7 @@ import java.text.ParseException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
+import java.time.ZonedDateTime;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -477,6 +478,8 @@ public class BlurObject implements Serializable {
                 return ((Date) attr).getTime();
             } else if (attr instanceof LocalDate) {
                 return ((LocalDate) attr).atStartOfDay().toInstant(OffsetDateTime.now().getOffset()).toEpochMilli();
+            } else if (attr instanceof ZonedDateTime) {
+                return ((ZonedDateTime) attr).toInstant().toEpochMilli();
             } else if (attr instanceof Calendar) {
                 return ((Calendar) attr).getTime().getTime();
             } else if (attr instanceof LocalDateTime) {

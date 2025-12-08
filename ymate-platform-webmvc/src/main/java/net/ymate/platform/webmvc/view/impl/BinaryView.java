@@ -24,6 +24,7 @@ import net.ymate.platform.webmvc.context.WebContext;
 import net.ymate.platform.webmvc.view.AbstractView;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -97,7 +98,7 @@ public class BinaryView extends AbstractView {
         //
         if (StringUtils.isNotBlank(fileName)) {
             StringBuilder dispositionBuilder = new StringBuilder("attachment;filename=");
-            if (StringUtils.containsIgnoreCase(httpServletRequest.getHeader(Type.HttpHead.USER_AGENT), "firefox")) {
+            if (Strings.CI.contains(httpServletRequest.getHeader(Type.HttpHead.USER_AGENT), "firefox")) {
                 dispositionBuilder.append(new String(fileName.getBytes(StandardCharsets.UTF_8), "ISO8859-1"));
             } else {
                 dispositionBuilder.append(URLEncoder.encode(fileName, DEFAULT_CHARSET));

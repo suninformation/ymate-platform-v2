@@ -21,6 +21,7 @@ import net.ymate.platform.webmvc.IRequestMappingParser;
 import net.ymate.platform.webmvc.RequestMeta;
 import net.ymate.platform.webmvc.base.Type;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -126,10 +127,10 @@ public class DefaultRequestMappingParser implements IRequestMappingParser {
      */
     private String fixMappingPart(String partStr) {
         partStr = StringUtils.trimToEmpty(partStr);
-        if (StringUtils.startsWith(partStr, Type.Const.PATH_SEPARATOR)) {
+        if (Strings.CS.startsWith(partStr, Type.Const.PATH_SEPARATOR)) {
             partStr = StringUtils.substringAfter(partStr, Type.Const.PATH_SEPARATOR);
         }
-        if (StringUtils.endsWith(partStr, Type.Const.PATH_SEPARATOR)) {
+        if (Strings.CS.endsWith(partStr, Type.Const.PATH_SEPARATOR)) {
             partStr = StringUtils.substringBeforeLast(partStr, Type.Const.PATH_SEPARATOR);
         }
         return partStr;
@@ -137,7 +138,7 @@ public class DefaultRequestMappingParser implements IRequestMappingParser {
 
     @Override
     public final RequestMeta parse(IRequestContext context) {
-        if (StringUtils.containsAny(context.getRequestMapping(), "{", "}")) {
+        if (Strings.CS.containsAny(context.getRequestMapping(), "{", "}")) {
             return null;
         }
         Map<String, RequestMeta> requestMetas = getRequestMetas(context.getHttpMethod());
@@ -169,7 +170,7 @@ public class DefaultRequestMappingParser implements IRequestMappingParser {
                     if (paramName != null) {
                         params.put(paramName, originalParts[idx]);
                     }
-                } else if (!StringUtils.equalsIgnoreCase(item.getKey()[idx], originalParts[idx])) {
+                } else if (!Strings.CI.equals(item.getKey()[idx], originalParts[idx])) {
                     breakFlag = true;
                     break;
                 }

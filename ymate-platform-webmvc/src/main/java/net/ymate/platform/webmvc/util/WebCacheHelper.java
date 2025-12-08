@@ -21,6 +21,7 @@ import net.ymate.platform.commons.util.DateTimeUtils;
 import net.ymate.platform.webmvc.PageCacheElement;
 import net.ymate.platform.webmvc.base.Type;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -51,7 +52,7 @@ public class WebCacheHelper {
         this.scope = scope;
         //
         if (ICaches.Scope.DEFAULT.equals(this.scope)) {
-            this.pageCacheElement.getHeaders().entrySet().removeIf(header -> StringUtils.equalsAnyIgnoreCase(header.getKey(), Type.HttpHead.LAST_MODIFIED, Type.HttpHead.EXPIRES, Type.HttpHead.CACHE_CONTROL, Type.HttpHead.ETAG));
+            this.pageCacheElement.getHeaders().entrySet().removeIf(header -> Strings.CI.equalsAny(header.getKey(), Type.HttpHead.LAST_MODIFIED, Type.HttpHead.EXPIRES, Type.HttpHead.CACHE_CONTROL, Type.HttpHead.ETAG));
             //
             long expiresTime = System.currentTimeMillis() + this.pageCacheElement.getTimeout() * DateTimeUtils.SECOND;
             //
@@ -105,7 +106,7 @@ public class WebCacheHelper {
         doSetHeaders();
         //
         byte[] body;
-        if (pageCacheElement.isStoreGzipped() && StringUtils.contains(request.getHeader(Type.HttpHead.ACCEPT_ENCODING), Type.HttpHead.GZIP)) {
+        if (pageCacheElement.isStoreGzipped() && Strings.CS.contains(request.getHeader(Type.HttpHead.ACCEPT_ENCODING), Type.HttpHead.GZIP)) {
             body = pageCacheElement.getGzippedBody();
             if (body.length == EMPTY_GZIPPED_CONTENT_SIZE) {
                 body = new byte[0];

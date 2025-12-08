@@ -51,6 +51,7 @@ import net.ymate.platform.webmvc.view.IView;
 import net.ymate.platform.webmvc.view.View;
 import net.ymate.platform.webmvc.view.impl.HttpStatusView;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.apache.commons.lang3.time.StopWatch;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -449,12 +450,12 @@ public final class WebMVC implements IModule, IWebMvc {
             Map<String, String> allowMap = requestMeta.getAllowHeaders();
             for (Map.Entry<String, String> entry : allowMap.entrySet()) {
                 String header = WebContext.getRequest().getHeader(entry.getKey());
-                if (StringUtils.equals(entry.getValue(), "*")) {
+                if (Strings.CS.equals(entry.getValue(), "*")) {
                     if (StringUtils.isBlank(header)) {
                         flag = false;
                     }
                 } else {
-                    if (header == null || !StringUtils.containsIgnoreCase(header, entry.getValue())) {
+                    if (header == null || !Strings.CI.contains(header, entry.getValue())) {
                         flag = false;
                     }
                 }
@@ -470,7 +471,7 @@ public final class WebMVC implements IModule, IWebMvc {
                 // 判断允许的请求参数
                 allowMap = requestMeta.getAllowParams();
                 for (Map.Entry<String, String> entry : allowMap.entrySet()) {
-                    if (StringUtils.equals(entry.getValue(), "*")) {
+                    if (Strings.CS.equals(entry.getValue(), "*")) {
                         if (!WebContext.getRequest().getParameterMap().containsKey(entry.getKey())) {
                             flag = false;
                         }

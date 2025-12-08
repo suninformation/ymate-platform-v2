@@ -20,6 +20,7 @@ import net.ymate.platform.core.beans.IBeanHandler;
 import net.ymate.platform.plugin.*;
 import net.ymate.platform.plugin.annotation.Plugin;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -47,7 +48,7 @@ public class PluginHandler implements IBeanHandler {
             Plugin pluginAnn = targetClass.getAnnotation(Plugin.class);
             //
             String pluginId = StringUtils.defaultIfBlank(pluginAnn.id(), targetClass.getName());
-            if (!StringUtils.equalsIgnoreCase(pluginFactory.getOwner().getParam(IPluginConfig.PARAMS_PLUGIN_DISABLED_PREFIX + pluginId), IPluginConfig.DISABLED)) {
+            if (!Strings.CI.equals(pluginFactory.getOwner().getParam(IPluginConfig.PARAMS_PLUGIN_DISABLED_PREFIX + pluginId), IPluginConfig.DISABLED)) {
                 PluginMeta pluginMeta = new PluginMeta(targetClass.getClassLoader());
                 pluginMeta.setId(pluginId);
                 pluginMeta.setName(StringUtils.defaultIfBlank(pluginAnn.name(), targetClass.getSimpleName()));

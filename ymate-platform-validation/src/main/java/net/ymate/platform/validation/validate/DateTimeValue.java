@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2020 the original author or authors.
+ * Copyright 2007-2025 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,9 +20,13 @@ import net.ymate.platform.commons.util.DateTimeUtils;
 import net.ymate.platform.validation.ValidateContext;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 
 import java.io.Serializable;
 import java.sql.Timestamp;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.Date;
 
 /**
@@ -43,9 +47,9 @@ public class DateTimeValue implements Serializable {
 
     public static final int DATETIME_PART_MAX_LENGTH = 2;
 
-    private final Date startDate;
+    private final ZonedDateTime startDateTime;
 
-    private Date endDate;
+    private ZonedDateTime endDateTime;
 
     private boolean single;
 
@@ -90,54 +94,77 @@ public class DateTimeValue implements Serializable {
     public static DateTimeValue parse(String dateTimeStr, String pattern, String separator, boolean single) {
         DateTimeValue dateTimeValue = null;
         if (single) {
-            Date date;
-            if (StringUtils.equalsIgnoreCase(dateTimeStr, TODAY)) {
-                date = DateTimeHelper.now().toDayStart().time();
-            } else if (StringUtils.equalsIgnoreCase(dateTimeStr, YESTERDAY)) {
-                date = DateTimeHelper.now().toDayStart().daysAdd(-1).time();
-            } else if (StringUtils.equalsIgnoreCase(dateTimeStr, WEEK)) {
-                date = DateTimeHelper.now().toDayStart().toWeekStart().time();
-            } else if (StringUtils.equalsIgnoreCase(dateTimeStr, MONTH)) {
-                date = DateTimeHelper.now().toDayStart().day(1).time();
-            } else if (StringUtils.equalsIgnoreCase(dateTimeStr, YEAR)) {
-                date = DateTimeHelper.now().toDayStart().month(1).day(1).time();
-            } else {
-                date = DateTimeValidator.parseDate(dateTimeStr, pattern);
-            }
+            Date date = parseSingleDate(dateTimeStr, pattern);
             if (date != null) {
                 dateTimeValue = new DateTimeValue(date);
             }
         } else {
-            if (StringUtils.equalsIgnoreCase(dateTimeStr, TODAY)) {
-                dateTimeValue = today();
-            } else if (StringUtils.equalsIgnoreCase(dateTimeStr, YESTERDAY)) {
-                dateTimeValue = yesterday();
-            } else if (StringUtils.equalsIgnoreCase(dateTimeStr, WEEK)) {
-                dateTimeValue = week();
-            } else if (StringUtils.equalsIgnoreCase(dateTimeStr, MONTH)) {
-                dateTimeValue = month();
-            } else if (StringUtils.equalsIgnoreCase(dateTimeStr, YEAR)) {
-                dateTimeValue = year();
-            } else {
-                String[] dateTimeArr = StringUtils.split(dateTimeStr, StringUtils.defaultIfBlank(separator, "/"));
-                if (ArrayUtils.isNotEmpty(dateTimeArr)) {
-                    if (dateTimeArr.length <= DATETIME_PART_MAX_LENGTH) {
-                        Date dateTimeBegin = DateTimeValidator.parseDate(dateTimeArr[0], pattern);
-                        Date dateTimeEnd = null;
-                        if (dateTimeBegin != null) {
-                            if (dateTimeArr.length > 1 && !StringUtils.equalsIgnoreCase(StringUtils.trim(dateTimeArr[0]), StringUtils.trim(dateTimeArr[1]))) {
-                                dateTimeEnd = DateTimeValidator.parseDate(dateTimeArr[1], pattern);
-                            }
-                            if (dateTimeEnd == null) {
-                                dateTimeEnd = DateTimeHelper.bind(dateTimeBegin).toDayEnd().time();
-                            }
-                            dateTimeValue = new DateTimeValue(dateTimeBegin, dateTimeEnd);
-                        }
+            dateTimeValue = parseDateRange(dateTimeStr, pattern, separator);
+        }
+        return dateTimeValue;
+    }
+
+    /**
+     * 解析单个日期字符串
+     *
+     * @param dateTimeStr 日期时间字符串
+     * @param pattern     日期格式
+     * @return 解析后的Date对象
+     * @since 2.1.4
+     */
+    private static Date parseSingleDate(String dateTimeStr, String pattern) {
+        if (Strings.CI.equals(dateTimeStr, TODAY)) {
+            return DateTimeHelper.now().toDayStart().time();
+        } else if (Strings.CI.equals(dateTimeStr, YESTERDAY)) {
+            return DateTimeHelper.now().toDayStart().daysAdd(-1).time();
+        } else if (Strings.CI.equals(dateTimeStr, WEEK)) {
+            return DateTimeHelper.now().toDayStart().toWeekStart().time();
+        } else if (Strings.CI.equals(dateTimeStr, MONTH)) {
+            return DateTimeHelper.now().toDayStart().day(1).time();
+        } else if (Strings.CI.equals(dateTimeStr, YEAR)) {
+            return DateTimeHelper.now().toDayStart().month(1).day(1).time();
+        } else {
+            return DateTimeValidator.parseDate(dateTimeStr, pattern);
+        }
+    }
+
+    /**
+     * 解析日期范围字符串
+     *
+     * @param dateTimeStr 日期时间字符串
+     * @param pattern     日期格式
+     * @param separator   日期分隔符
+     * @return 解析后的DateTimeValue对象
+     * @since 2.1.4
+     */
+    private static DateTimeValue parseDateRange(String dateTimeStr, String pattern, String separator) {
+        if (Strings.CI.equals(dateTimeStr, TODAY)) {
+            return today();
+        } else if (Strings.CI.equals(dateTimeStr, YESTERDAY)) {
+            return yesterday();
+        } else if (Strings.CI.equals(dateTimeStr, WEEK)) {
+            return week();
+        } else if (Strings.CI.equals(dateTimeStr, MONTH)) {
+            return month();
+        } else if (Strings.CI.equals(dateTimeStr, YEAR)) {
+            return year();
+        } else {
+            String[] dateTimeArr = StringUtils.split(dateTimeStr, StringUtils.defaultIfBlank(separator, "/"));
+            if (ArrayUtils.isNotEmpty(dateTimeArr) && dateTimeArr.length <= DATETIME_PART_MAX_LENGTH) {
+                Date dateTimeBegin = DateTimeValidator.parseDate(dateTimeArr[0], pattern);
+                if (dateTimeBegin != null) {
+                    Date dateTimeEnd = null;
+                    if (dateTimeArr.length > 1 && !Strings.CI.equals(StringUtils.trim(dateTimeArr[0]), StringUtils.trim(dateTimeArr[1]))) {
+                        dateTimeEnd = DateTimeValidator.parseDate(dateTimeArr[1], pattern);
                     }
+                    if (dateTimeEnd == null) {
+                        dateTimeEnd = DateTimeHelper.bind(dateTimeBegin).toDayEnd().time();
+                    }
+                    return new DateTimeValue(dateTimeBegin, dateTimeEnd);
                 }
             }
         }
-        return dateTimeValue;
+        return null;
     }
 
     /**
@@ -146,7 +173,7 @@ public class DateTimeValue implements Serializable {
      * @since 2.1.4
      */
     public static DateTimeValue days(int days) {
-        return new DateTimeValue(DateTimeHelper.now().daysAdd(-days).toDayStart().time(), DateTimeHelper.now().time());
+        return new DateTimeValue(DateTimeHelper.now().daysAdd(-days).toDayStart().zonedDateTime(), DateTimeHelper.now().zonedDateTime());
     }
 
     /**
@@ -155,7 +182,7 @@ public class DateTimeValue implements Serializable {
      * @since 2.1.4
      */
     public static DateTimeValue months(int months) {
-        return new DateTimeValue(DateTimeHelper.now().monthsAdd(-months).toDayStart().time(), DateTimeHelper.now().time());
+        return new DateTimeValue(DateTimeHelper.now().monthsAdd(-months).toDayStart().zonedDateTime(), DateTimeHelper.now().zonedDateTime());
     }
 
     /**
@@ -164,7 +191,7 @@ public class DateTimeValue implements Serializable {
      * @since 2.1.4
      */
     public static DateTimeValue years(int years) {
-        return new DateTimeValue(DateTimeHelper.now().yearsAdd(-years).toDayStart().time(), DateTimeHelper.now().time());
+        return new DateTimeValue(DateTimeHelper.now().yearsAdd(-years).toDayStart().zonedDateTime(), DateTimeHelper.now().zonedDateTime());
     }
 
     /**
@@ -172,7 +199,7 @@ public class DateTimeValue implements Serializable {
      * @since 2.1.2
      */
     public static DateTimeValue now() {
-        return new DateTimeValue(DateTimeHelper.now().time());
+        return new DateTimeValue(DateTimeHelper.now().zonedDateTime());
     }
 
     /**
@@ -180,7 +207,7 @@ public class DateTimeValue implements Serializable {
      * @since 2.1.2
      */
     public static DateTimeValue today() {
-        return new DateTimeValue(DateTimeHelper.now().toDayStart().time(), DateTimeHelper.now().time());
+        return new DateTimeValue(DateTimeHelper.now().toDayStart().zonedDateTime(), DateTimeHelper.now().zonedDateTime());
     }
 
     /**
@@ -189,7 +216,7 @@ public class DateTimeValue implements Serializable {
      */
     public static DateTimeValue yesterday() {
         DateTimeHelper yesterdayHelper = DateTimeHelper.now().toDayStart().daysAdd(-1);
-        return new DateTimeValue(yesterdayHelper.time(), yesterdayHelper.toDayEnd().time());
+        return new DateTimeValue(yesterdayHelper.timeMillis(), yesterdayHelper.toDayEnd().timeMillis());
     }
 
     /**
@@ -197,7 +224,7 @@ public class DateTimeValue implements Serializable {
      * @since 2.1.2
      */
     public static DateTimeValue week() {
-        return new DateTimeValue(DateTimeHelper.now().toWeekStart().time(), DateTimeHelper.now().time());
+        return new DateTimeValue(DateTimeHelper.now().toWeekStart().zonedDateTime(), DateTimeHelper.now().zonedDateTime());
     }
 
     /**
@@ -205,7 +232,7 @@ public class DateTimeValue implements Serializable {
      * @since 2.1.2
      */
     public static DateTimeValue month() {
-        return new DateTimeValue(DateTimeHelper.now().day(1).toDayStart().time(), DateTimeHelper.now().time());
+        return new DateTimeValue(DateTimeHelper.now().day(1).toDayStart().zonedDateTime(), DateTimeHelper.now().zonedDateTime());
     }
 
     /**
@@ -213,39 +240,103 @@ public class DateTimeValue implements Serializable {
      * @since 2.1.3
      */
     public static DateTimeValue year() {
-        return new DateTimeValue(DateTimeHelper.now().month(1).day(1).toDayStart().time(), DateTimeHelper.now().time());
+        return new DateTimeValue(DateTimeHelper.now().month(1).day(1).toDayStart().zonedDateTime(), DateTimeHelper.now().zonedDateTime());
     }
 
     /**
+     * 构造方法，根据开始日期时间毫秒值创建单日期对象
+     *
+     * @param startDate 开始日期时间毫秒值
      * @since 2.1.3
      */
     public DateTimeValue(long startDate) {
-        this(DateTimeHelper.bind(startDate).time());
+        this(DateTimeHelper.bind(startDate).zonedDateTime());
     }
 
     /**
+     * 构造方法，根据开始和结束日期时间毫秒值创建日期范围对象
+     *
+     * @param startDate 开始日期时间毫秒值
+     * @param endDate   结束日期时间毫秒值
      * @since 2.1.3
      */
     public DateTimeValue(long startDate, long endDate) {
-        this(DateTimeHelper.bind(startDate).time(), DateTimeHelper.bind(endDate).time());
+        this(DateTimeHelper.bind(startDate).zonedDateTime(), DateTimeHelper.bind(endDate).zonedDateTime());
     }
 
+    /**
+     * 构造方法，根据Date对象创建单日期对象
+     *
+     * @param startDate 开始日期Date对象
+     */
     public DateTimeValue(Date startDate) {
-        this.startDate = startDate;
+        this.startDateTime = startDate != null ? DateTimeHelper.bind(startDate).zonedDateTime() : null;
         this.single = true;
     }
 
+    /**
+     * 构造方法，根据Date对象创建日期范围对象
+     *
+     * @param startDate 开始日期Date对象
+     * @param endDate   结束日期Date对象
+     */
     public DateTimeValue(Date startDate, Date endDate) {
-        this.startDate = startDate;
-        this.endDate = endDate;
+        this.startDateTime = startDate != null ? DateTimeHelper.bind(startDate).zonedDateTime() : null;
+        this.endDateTime = endDate != null ? DateTimeHelper.bind(endDate).zonedDateTime() : null;
+    }
+
+    /**
+     * @since 2.1.4
+     */
+    public DateTimeValue(LocalDateTime startDateTime) {
+        this(startDateTime != null ? startDateTime.atZone(ZoneId.systemDefault()) : null);
+    }
+
+    /**
+     * @since 2.1.4
+     */
+    public DateTimeValue(LocalDateTime startDateTime, LocalDateTime endDateTime) {
+        this(startDateTime != null ? startDateTime.atZone(ZoneId.systemDefault()) : null,
+                endDateTime != null ? endDateTime.atZone(ZoneId.systemDefault()) : null);
+    }
+
+    /**
+     * @since 2.1.4
+     */
+    public DateTimeValue(LocalDateTime startDateTime, ZoneId zoneId) {
+        this(startDateTime != null ? startDateTime.atZone(zoneId) : null);
+    }
+
+    /**
+     * @since 2.1.4
+     */
+    public DateTimeValue(LocalDateTime startDateTime, LocalDateTime endDateTime, ZoneId zoneId) {
+        this(startDateTime != null ? startDateTime.atZone(zoneId) : null,
+                endDateTime != null ? endDateTime.atZone(zoneId) : null);
+    }
+
+    /**
+     * @since 2.1.4
+     */
+    public DateTimeValue(ZonedDateTime startDateTime) {
+        this.startDateTime = startDateTime;
+        this.single = true;
+    }
+
+    /**
+     * @since 2.1.4
+     */
+    public DateTimeValue(ZonedDateTime startDateTime, ZonedDateTime endDateTime) {
+        this.startDateTime = startDateTime;
+        this.endDateTime = endDateTime;
     }
 
     public Date getStartDate() {
-        return startDate;
+        return startDateTime != null ? Date.from(startDateTime.toInstant()) : null;
     }
 
     public Date getEndDate() {
-        return endDate;
+        return endDateTime != null ? Date.from(endDateTime.toInstant()) : null;
     }
 
     public boolean isSingle() {
@@ -253,65 +344,99 @@ public class DateTimeValue implements Serializable {
     }
 
     public boolean isNullStartDate() {
-        return startDate == null;
+        return startDateTime == null;
     }
 
     public boolean isNullEndDate() {
-        return endDate == null;
+        return endDateTime == null;
+    }
+
+    /**
+     * @since 2.1.4
+     */
+    public ZonedDateTime getStartZonedDateTime() {
+        return startDateTime;
+    }
+
+    /**
+     * @since 2.1.4
+     */
+    public ZonedDateTime getEndZonedDateTime() {
+        return endDateTime;
+    }
+
+    /**
+     * @since 2.1.4
+     */
+    public LocalDateTime getStartLocalDateTime() {
+        return startDateTime != null ? startDateTime.toLocalDateTime() : null;
+    }
+
+    /**
+     * @since 2.1.4
+     */
+    public LocalDateTime getEndLocalDateTime() {
+        return endDateTime != null ? endDateTime.toLocalDateTime() : null;
     }
 
     /**
      * @return 获取开始日期毫秒值，若为空则返回0
      */
     public long getStartDateTimeMillis() {
-        return isNullStartDate() ? 0 : startDate.getTime();
+        return isNullStartDate() ? 0 : startDateTime.toInstant().toEpochMilli();
     }
 
     public Long getStartDateTimeMillisOrNull() {
         if (isNullStartDate()) {
             return null;
         }
-        return startDate.getTime();
+        return startDateTime.toInstant().toEpochMilli();
     }
 
     public Timestamp getStartDateTimestampOrNull() {
         if (isNullStartDate()) {
             return null;
         }
-        return new Timestamp(startDate.getTime());
+        return Timestamp.from(startDateTime.toInstant());
     }
 
     /**
      * @return 获取结束日期毫秒值，若为空则返回0
      */
     public long getEndDateTimeMillis() {
-        return isNullEndDate() ? 0 : endDate.getTime();
+        return isNullEndDate() ? 0 : endDateTime.toInstant().toEpochMilli();
     }
 
     public Long getEndDateTimeMillisOrNull() {
         if (isNullEndDate()) {
             return null;
         }
-        return endDate.getTime();
+        return endDateTime.toInstant().toEpochMilli();
     }
 
     public Timestamp getEndDateTimestampOrNull() {
         if (isNullEndDate()) {
             return null;
         }
-        return new Timestamp(endDate.getTime());
+        return Timestamp.from(endDateTime.toInstant());
     }
 
     public DateTimeHelper bindStartDate() {
-        return DateTimeHelper.bind(startDate);
+        if (isNullStartDate()) {
+            return null;
+        }
+        return DateTimeHelper.bind(startDateTime);
     }
 
     public DateTimeHelper bindEndDate() {
-        return DateTimeHelper.bind(endDate);
+        if (isNullEndDate()) {
+            return null;
+        }
+        return DateTimeHelper.bind(endDateTime);
     }
 
     /**
-     * @return 计算两日期之间相差天数
+     * @return 计算两日期之间相差天数（绝对值）
      * @since 2.1.2
      */
     public long getMaxDays() {
@@ -319,14 +444,14 @@ public class DateTimeValue implements Serializable {
     }
 
     /**
-     * @return 计算两日期之间相差毫秒值
+     * @return 计算两日期之间相差毫秒值（绝对值）
      * @since 2.1.2
      */
     public long getMaxTimeMillis() {
         if (isNullStartDate() || isNullEndDate()) {
             return 0L;
         }
-        return Math.abs(DateTimeHelper.bind(startDate).subtract(endDate));
+        return Math.abs(startDateTime.toInstant().toEpochMilli() - endDateTime.toInstant().toEpochMilli());
     }
 
     /**
@@ -346,14 +471,14 @@ public class DateTimeValue implements Serializable {
      */
     public String toString(String dateFormat, String separator) {
         StringBuilder stringBuilder = new StringBuilder();
-        if (startDate != null) {
-            stringBuilder.append(DateTimeHelper.bind(startDate).toString(dateFormat));
+        if (startDateTime != null) {
+            stringBuilder.append(DateTimeHelper.bind(startDateTime).toString(dateFormat));
         }
-        if (endDate != null) {
+        if (endDateTime != null) {
             stringBuilder.append(StringUtils.SPACE)
                     .append(StringUtils.defaultIfBlank(separator, "/"))
                     .append(StringUtils.SPACE)
-                    .append(DateTimeHelper.bind(endDate).toString(dateFormat));
+                    .append(DateTimeHelper.bind(endDateTime).toString(dateFormat));
         }
         return stringBuilder.toString();
     }

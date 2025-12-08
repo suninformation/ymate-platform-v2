@@ -20,6 +20,7 @@ import net.ymate.platform.validation.AbstractValidator;
 import net.ymate.platform.validation.ValidateContext;
 import net.ymate.platform.validation.ValidateResult;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 
 import java.math.BigDecimal;
 
@@ -98,10 +99,10 @@ public final class CompareValidator extends AbstractValidator {
             } else {
                 switch (vCompare.cond()) {
                     case EQ:
-                        matched = !StringUtils.equals(paramValueStr, compareValueStr);
+                        matched = !Strings.CS.equals(paramValueStr, compareValueStr);
                         break;
                     case NOT_EQ:
-                        matched = StringUtils.equals(paramValueStr, compareValueStr);
+                        matched = Strings.CS.equals(paramValueStr, compareValueStr);
                         break;
                     default:
                         throw new UnsupportedOperationException("Non numeric type parameters only support equal or unequal operations.");

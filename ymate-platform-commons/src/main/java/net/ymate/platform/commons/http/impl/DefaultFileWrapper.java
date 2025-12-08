@@ -22,6 +22,7 @@ import net.ymate.platform.commons.util.MimeTypeUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.NullArgumentException;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.apache.http.HttpResponse;
 import org.apache.http.entity.ContentType;
 import org.apache.http.entity.mime.content.ContentBody;
@@ -108,9 +109,9 @@ public class DefaultFileWrapper implements IFileWrapper {
             fileNameNull = false;
         }
         if (!fileNameNull) {
-            name = StringUtils.substringBefore(StringUtils.replace(this.fileName, "\"", StringUtils.EMPTY), ".");
+            name = StringUtils.substringBefore(Strings.CS.replace(this.fileName, "\"", StringUtils.EMPTY), ".");
             suffix = FileUtils.getExtName(this.fileName);
-            if (StringUtils.equalsIgnoreCase(suffix, "tmp") && StringUtils.isNotBlank(this.contentType)) {
+            if (Strings.CI.equals(suffix, "tmp") && StringUtils.isNotBlank(this.contentType)) {
                 suffix = StringUtils.defaultIfBlank(MimeTypeUtils.getFileExtName(this.contentType), suffix);
             }
         }

@@ -33,6 +33,7 @@ import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.lang.NullArgumentException;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -98,9 +99,9 @@ public class WebUtils {
     public static String baseUrl(HttpServletRequest request) {
         StringBuilder basePath = new StringBuilder();
         String serverName = doGetSafeServerName(request);
-        if (!StringUtils.startsWithAny(StringUtils.lowerCase(serverName), Type.Const.HTTP_PREFIX, Type.Const.HTTPS_PREFIX)) {
+        if (!Strings.CS.startsWithAny(StringUtils.lowerCase(serverName), Type.Const.HTTP_PREFIX, Type.Const.HTTPS_PREFIX)) {
             basePath.append(request.getScheme()).append("://").append(serverName);
-            if (!StringUtils.contains(serverName, ":") && (request.getServerPort() != Type.Const.HTTP_PORT && request.getServerPort() != Type.Const.HTTPS_PORT)) {
+            if (!Strings.CS.contains(serverName, ":") && (request.getServerPort() != Type.Const.HTTP_PORT && request.getServerPort() != Type.Const.HTTPS_PORT)) {
                 basePath.append(":").append(request.getServerPort());
             }
             if (StringUtils.isNotBlank(request.getContextPath())) {
@@ -190,8 +191,8 @@ public class WebUtils {
     }
 
     public static boolean isWebSocket(HttpServletRequest request) {
-        return StringUtils.equalsIgnoreCase(request.getHeader(Type.HttpHead.CONNECTION), Type.HttpHead.UPGRADE)
-                && StringUtils.equalsIgnoreCase(request.getHeader(Type.HttpHead.UPGRADE), Type.HttpHead.WEBSOCKET);
+        return Strings.CI.equals(request.getHeader(Type.HttpHead.CONNECTION), Type.HttpHead.UPGRADE)
+                && Strings.CI.equals(request.getHeader(Type.HttpHead.UPGRADE), Type.HttpHead.WEBSOCKET);
     }
 
     public static boolean isCorsRequest(HttpServletRequest request) {
@@ -200,7 +201,7 @@ public class WebUtils {
 
     public static boolean isCorsRequest(HttpServletRequest request, boolean checkHost) {
         String origin = request.getHeader(Type.HttpHead.ORIGIN);
-        return origin != null && (!checkHost || !StringUtils.startsWithIgnoreCase(baseUrl(request), origin));
+        return origin != null && (!checkHost || !Strings.CI.startsWith(baseUrl(request), origin));
     }
 
     public static boolean isCorsOptionsRequest(HttpServletRequest request) {
@@ -209,7 +210,7 @@ public class WebUtils {
 
     public static boolean isAccepted(HttpServletRequest request, String contentType) {
         String accept = request.getHeader(Type.HttpHead.ACCEPT);
-        return StringUtils.containsAny(accept, "*/*", contentType);
+        return Strings.CS.containsAny(accept, "*/*", contentType);
     }
 
     public static boolean isJsonAccepted(HttpServletRequest request) {
@@ -225,7 +226,7 @@ public class WebUtils {
     }
 
     public static boolean isJsonFormat(HttpServletRequest request, String paramFormat) {
-        return StringUtils.equalsIgnoreCase(request.getParameter(StringUtils.defaultIfBlank(paramFormat, Type.Const.PARAM_FORMAT)), Type.Const.FORMAT_JSON);
+        return Strings.CI.equals(request.getParameter(StringUtils.defaultIfBlank(paramFormat, Type.Const.PARAM_FORMAT)), Type.Const.FORMAT_JSON);
     }
 
     public static boolean isXmlAccepted(HttpServletRequest request) {
@@ -241,7 +242,7 @@ public class WebUtils {
     }
 
     public static boolean isXmlFormat(HttpServletRequest request, String paramFormat) {
-        return StringUtils.equalsIgnoreCase(request.getParameter(StringUtils.defaultIfBlank(paramFormat, Type.Const.PARAM_FORMAT)), Type.Const.FORMAT_XML);
+        return Strings.CI.equals(request.getParameter(StringUtils.defaultIfBlank(paramFormat, Type.Const.PARAM_FORMAT)), Type.Const.FORMAT_XML);
     }
 
     /**
@@ -493,7 +494,7 @@ public class WebUtils {
                 return baseUrl(request);
             }
         }
-        if (needPrefix && !StringUtils.startsWithIgnoreCase(redirectUrl, Type.Const.HTTP_PREFIX) && !StringUtils.startsWithIgnoreCase(redirectUrl, Type.Const.HTTPS_PREFIX)) {
+        if (needPrefix && !Strings.CI.startsWith(redirectUrl, Type.Const.HTTP_PREFIX) && !Strings.CI.startsWith(redirectUrl, Type.Const.HTTPS_PREFIX)) {
             redirectUrl = buildUrl(request, redirectUrl, true);
         }
         return redirectUrl;
@@ -537,9 +538,9 @@ public class WebUtils {
         if (!new File(owner.getConfig().getAbstractBaseViewPath(), errorViewPath).exists()) {
             errorViewPath = Type.Const.DEFAULT_ERROR_VIEW_FILE;
         }
-        if (StringUtils.endsWithIgnoreCase(errorViewPath, FreemarkerView.FILE_SUFFIX)) {
+        if (Strings.CI.endsWith(errorViewPath, FreemarkerView.FILE_SUFFIX)) {
             returnView = View.freemarkerView(owner, errorViewPath);
-        } else if (StringUtils.endsWithIgnoreCase(errorViewPath, VelocityView.FILE_SUFFIX)) {
+        } else if (Strings.CI.endsWith(errorViewPath, VelocityView.FILE_SUFFIX)) {
             returnView = View.velocityView(owner, errorViewPath);
         } else {
             returnView = View.jspView(owner, errorViewPath);

@@ -16,6 +16,7 @@
 package net.ymate.platform.commons.util;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.apache.commons.lang3.SystemUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -168,15 +169,15 @@ public class RuntimeUtils {
         if (rootUrl == null) {
             rootUrl = RuntimeUtils.class.getClassLoader().getResource(StringUtils.EMPTY);
         }
-        if (rootUrl != null && (!StringUtils.equals(FileUtils.PROTOCOL_FILE, rootUrl.getProtocol()) || !FileUtils.toFile(rootUrl).isAbsolute())) {
+        if (rootUrl != null && (!Strings.CS.equals(FileUtils.PROTOCOL_FILE, rootUrl.getProtocol()) || !FileUtils.toFile(rootUrl).isAbsolute())) {
             rootUrl = null;
         }
         String rootPath = rootUrl != null ? rootUrl.getPath() : null;
         if (rootPath != null) {
-            boolean isTestPath = StringUtils.contains(rootPath, "/test-classes");
-            rootPath = StringUtils.replace(StringUtils.removeEnd(StringUtils.substringBefore(rootPath, safe ? (isTestPath ? "test-classes/" : "classes/") : "WEB-INF/"), "/"), "%20", StringUtils.SPACE);
+            boolean isTestPath = Strings.CS.contains(rootPath, "/test-classes");
+            rootPath = Strings.CS.replace(Strings.CS.removeEnd(StringUtils.substringBefore(rootPath, safe ? (isTestPath ? "test-classes/" : "classes/") : "WEB-INF/"), "/"), "%20", StringUtils.SPACE);
             if (isWindows()) {
-                rootPath = StringUtils.removeStart(rootPath, "/");
+                rootPath = Strings.CS.removeStart(rootPath, "/");
             }
         }
         if (StringUtils.isBlank(rootPath)) {
@@ -193,11 +194,11 @@ public class RuntimeUtils {
     public static String replaceEnvVariable(String origin) {
         if ((origin = StringUtils.trimToNull(origin)) != null) {
             String rootPath = getRootPath();
-            if (StringUtils.contains(origin, VAR_ROOT)) {
+            if (Strings.CS.contains(origin, VAR_ROOT)) {
                 origin = ExpressionUtils.bind(origin).set(ROOT, rootPath).getResult();
-            } else if (StringUtils.contains(origin, VAR_USER_DIR)) {
+            } else if (Strings.CS.contains(origin, VAR_USER_DIR)) {
                 origin = ExpressionUtils.bind(origin).set(USER_DIR, System.getProperty(USER_DIR, rootPath)).getResult();
-            } else if (StringUtils.contains(origin, VAR_USER_HOME)) {
+            } else if (Strings.CS.contains(origin, VAR_USER_HOME)) {
                 origin = ExpressionUtils.bind(origin).set(USER_HOME, System.getProperty(USER_HOME, rootPath)).getResult();
             }
         }

@@ -25,6 +25,7 @@ import net.ymate.platform.core.configuration.IConfigurationConfig;
 import net.ymate.platform.core.configuration.IConfigurationProvider;
 import net.ymate.platform.core.module.IModuleConfigurer;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -105,7 +106,7 @@ public final class DefaultConfigurationConfig implements IConfigurationConfig {
                 // 尝试通过运行时变量或系统变量获取参数值, 运行时变量优先于环境变量
                 configHome = StringUtils.defaultIfBlank(System.getProperty(IApplication.SYSTEM_CONFIG_HOME), System.getenv(IConfig.YMP_CONFIG_HOME));
             }
-            configHome = StringUtils.replace(RuntimeUtils.replaceEnvVariable(StringUtils.defaultIfEmpty(configHome, VAR_ROOT)), "%20", StringUtils.SPACE);
+            configHome = Strings.CS.replace(RuntimeUtils.replaceEnvVariable(StringUtils.defaultIfEmpty(configHome, VAR_ROOT)), "%20", StringUtils.SPACE);
             //
             if (configurationProviderClass == null) {
                 configurationProviderClass = ClassUtils.getExtensionLoader(IConfigurationProvider.class).getExtensionClass();
@@ -130,10 +131,10 @@ public final class DefaultConfigurationConfig implements IConfigurationConfig {
             System.setProperty(USER_DIR, configHome);
             //
             if (StringUtils.isNotBlank(configBaseDir)) {
-                if (StringUtils.startsWith(configBaseDir, File.separator)) {
+                if (Strings.CS.startsWith(configBaseDir, File.separator)) {
                     configBaseDir = StringUtils.substringAfter(configBaseDir, File.separator);
                 }
-                if (!StringUtils.endsWith(configBaseDir, File.separator)) {
+                if (!Strings.CS.endsWith(configBaseDir, File.separator)) {
                     configBaseDir += File.separator;
                 }
             }

@@ -29,6 +29,7 @@ import net.ymate.platform.persistence.jdbc.query.annotation.*;
 import org.apache.commons.lang.NullArgumentException;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -199,7 +200,7 @@ public class Query<T> extends QueryHandleAdapter<T> {
             }
             return dialect().buildTableName(prefix, tableName, shardingRule(), shardingable());
         }
-        if (StringUtils.isNotBlank(prefix) && StringUtils.startsWith(tableName, prefix)) {
+        if (StringUtils.isNotBlank(prefix) && Strings.CS.startsWith(tableName, prefix)) {
             prefix = StringUtils.EMPTY;
         }
         return StringUtils.trimToEmpty(prefix).concat(tableName);
@@ -212,7 +213,7 @@ public class Query<T> extends QueryHandleAdapter<T> {
             }
             return dialect().buildTableName(prefix, entityMeta, shardingable());
         }
-        if (StringUtils.isNotBlank(prefix) && StringUtils.startsWith(entityMeta.getEntityName(), prefix)) {
+        if (StringUtils.isNotBlank(prefix) && Strings.CS.startsWith(entityMeta.getEntityName(), prefix)) {
             prefix = StringUtils.EMPTY;
         }
         return StringUtils.trimToEmpty(prefix).concat(entityMeta.getEntityName());
@@ -244,7 +245,7 @@ public class Query<T> extends QueryHandleAdapter<T> {
                     if (alias != null) {
                         if (alias.length == 2) {
                             return String.format("%s.%s AS %s", splits[0], dialect.wrapIdentifierQuote(alias[0]), dialect.wrapIdentifierQuote(alias[1]));
-                        } else if (alias.length == 3 && StringUtils.equalsIgnoreCase(alias[1], "as")) {
+                        } else if (alias.length == 3 && Strings.CI.equals(alias[1], "as")) {
                             return String.format("%s AS %s", dialect.wrapIdentifierQuote(alias[0]), dialect.wrapIdentifierQuote(alias[2]));
                         }
                     }
@@ -254,7 +255,7 @@ public class Query<T> extends QueryHandleAdapter<T> {
                     if (alias != null) {
                         if (alias.length == 2) {
                             return String.format("%s AS %s", dialect.wrapIdentifierQuote(alias[0]), dialect.wrapIdentifierQuote(alias[1]));
-                        } else if (alias.length == 3 && StringUtils.equalsIgnoreCase(alias[1], "as")) {
+                        } else if (alias.length == 3 && Strings.CI.equals(alias[1], "as")) {
                             return String.format("%s AS %s", dialect.wrapIdentifierQuote(alias[0]), dialect.wrapIdentifierQuote(alias[2]));
                         }
                     }
@@ -402,7 +403,7 @@ public class Query<T> extends QueryHandleAdapter<T> {
             } else if (firstChar == '$') {
                 // 以$开头的字符串表达式可以通过分隔符指定其数据类型并根据表达式尝试转换数据类型或跳过
                 String fieldValue = StringUtils.substring(withFieldValue, 1);
-                if (StringUtils.contains(fieldValue, ":")) {
+                if (Strings.CS.contains(fieldValue, ":")) {
                     String[] fieldValueArr = StringUtils.split(fieldValue, ":");
                     if (fieldValueArr != null && fieldValueArr.length == 2) {
                         String type = fieldValueArr[0].toLowerCase();
@@ -471,7 +472,7 @@ public class Query<T> extends QueryHandleAdapter<T> {
                         fieldOne = wrapIdentifierField(fieldOne);
                     }
                     String withFieldValueStr = (String) withFieldValue;
-                    if (!StringUtils.equals(withFieldValueStr, "?") && qCond.with().wrapIdentifier()) {
+                    if (!Strings.CS.equals(withFieldValueStr, "?") && qCond.with().wrapIdentifier()) {
                         withFieldValueStr = wrapIdentifierField(withFieldValueStr);
                     }
                     cond.opt(fieldOne, qCond.opt(), withFieldValueStr);

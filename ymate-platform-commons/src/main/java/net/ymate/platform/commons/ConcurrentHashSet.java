@@ -19,14 +19,13 @@ import java.io.Serializable;
 import java.util.AbstractSet;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * @param <E> 元素类型
  * @author 刘镇 (suninformation@163.com) on 2017/9/25 下午3:47
  */
-public class ConcurrentHashSet<E> extends AbstractSet<E> implements Set<E>, Serializable {
+public class ConcurrentHashSet<E> extends AbstractSet<E> implements Serializable {
 
     private static final long serialVersionUID = 1L;
 

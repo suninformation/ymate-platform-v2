@@ -31,6 +31,7 @@ import net.ymate.platform.webmvc.util.WebUtils;
 import net.ymate.platform.webmvc.view.IView;
 import net.ymate.platform.webmvc.view.View;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -106,7 +107,7 @@ public abstract class AbstractResponseErrorProcessor implements IResponseErrorPr
         String message = WebUtils.errorCodeI18n(owner, WebErrorCode.INVALID_PARAMS_VALIDATION, WebErrorCode.MSG_INVALID_PARAMS_VALIDATION);
         //
         HttpServletRequest httpServletRequest = WebContext.getRequest();
-        if (!WebUtils.isAjax(httpServletRequest) && !WebUtils.isXmlFormat(httpServletRequest) && !WebUtils.isJsonFormat(httpServletRequest) && !StringUtils.containsAny(getErrorDefaultViewFormat(owner), Type.Const.FORMAT_JSON, Type.Const.FORMAT_XML)) {
+        if (!WebUtils.isAjax(httpServletRequest) && !WebUtils.isXmlFormat(httpServletRequest) && !WebUtils.isJsonFormat(httpServletRequest) && !Strings.CS.containsAny(getErrorDefaultViewFormat(owner), Type.Const.FORMAT_JSON, Type.Const.FORMAT_XML)) {
             // 拼装所有的验证消息
             message = WebUtils.messageWithTemplate(owner.getOwner(), message, results.values());
         }
@@ -155,7 +156,7 @@ public abstract class AbstractResponseErrorProcessor implements IResponseErrorPr
         //
         stringBuilder.append("-- ContextAttributes:").append("\n");
         WebContext.getContext().getAttributes().entrySet().stream()
-                .filter(entry -> !StringUtils.startsWith(entry.getKey(), WebMVC.class.getPackage().getName()))
+                .filter(entry -> !Strings.CS.startsWith(entry.getKey(), WebMVC.class.getPackage().getName()))
                 .forEachOrdered(entry -> stringBuilder.append("\t  ").append(entry.getKey()).append(": ").append(JsonWrapper.toJsonString(entry.getValue(), false, true)).append("\n"));
         //
         stringBuilder.append("-- Parameters:").append("\n");

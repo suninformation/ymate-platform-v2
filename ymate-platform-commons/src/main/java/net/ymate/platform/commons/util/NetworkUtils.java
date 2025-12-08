@@ -15,7 +15,7 @@
  */
 package net.ymate.platform.commons.util;
 
-import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 
 import java.net.*;
 import java.util.Arrays;
@@ -178,7 +178,7 @@ public class NetworkUtils {
         }
 
         public static boolean isLocalIPAddr(String ipAddr) {
-            return StringUtils.equalsAny(ipAddr, "127.0.0.1", "0:0:0:0:0:0:0:1");
+            return Strings.CS.equalsAny(ipAddr, "127.0.0.1", "0:0:0:0:0:0:0:1");
         }
 
         /**

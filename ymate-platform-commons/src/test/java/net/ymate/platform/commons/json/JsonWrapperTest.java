@@ -17,7 +17,7 @@ package net.ymate.platform.commons.json;
 
 import net.ymate.platform.commons.json.impl.GsonAdapter;
 import net.ymate.platform.commons.json.impl.JacksonAdapter;
-import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.junit.After;
@@ -72,7 +72,7 @@ public class JsonWrapperTest {
         users.add(user);
         users.add(otherUser);
         String jsonStr = jsonAdapter.toJsonString(users, true, false, (source, name) -> {
-            if (StringUtils.equals(name, "age")) {
+            if (Strings.CS.equals(name, "age")) {
                 if (source instanceof User) {
                     return ((User) source).getAge() <= 16;
                 }

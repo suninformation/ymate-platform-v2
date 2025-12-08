@@ -20,6 +20,7 @@ import net.ymate.platform.core.support.IContext;
 import net.ymate.platform.webmvc.IWebMvcConfig;
 import net.ymate.platform.webmvc.base.Type;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -44,7 +45,7 @@ public interface IHostNameChecker {
             } catch (MalformedURLException e) {
                 host = StringUtils.substringBefore(url, Type.Const.PATH_SEPARATOR);
             }
-            return StringUtils.containsIgnoreCase(hosts, host);
+            return Strings.CI.contains(hosts, host);
         }
         return true;
     };

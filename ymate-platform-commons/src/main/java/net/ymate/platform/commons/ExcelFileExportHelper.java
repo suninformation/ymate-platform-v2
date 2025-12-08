@@ -22,6 +22,7 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.NullArgumentException;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.apache.poi.ss.usermodel.*;
 import org.jxls.common.Context;
 import org.jxls.util.JxlsHelper;
@@ -154,7 +155,7 @@ public final class ExcelFileExportHelper {
      */
     public ExcelFileExportHelper prefix(String prefix) {
         this.prefix = prefix;
-        if (StringUtils.isNotBlank(prefix) && !StringUtils.endsWith(prefix, "_")) {
+        if (StringUtils.isNotBlank(prefix) && !Strings.CS.endsWith(prefix, "_")) {
             this.prefix = prefix.concat("_");
         }
         return this;
@@ -570,7 +571,7 @@ public final class ExcelFileExportHelper {
                     }
                 }
             }
-        } else if (StringUtils.endsWithAny(fileType, EXCEL_TYPE_XLS, EXCEL_TYPE_XLSX)) {
+        } else if (Strings.CS.endsWithAny(fileType, EXCEL_TYPE_XLS, EXCEL_TYPE_XLSX)) {
             try (InputStream templateStream = doGetTemplateFileInputStream(tmplFile)) {
                 return doExport(jxlsHelper, templateStream, fileType, index, data);
             }

@@ -20,6 +20,7 @@ import net.ymate.platform.commons.util.FileUtils;
 import net.ymate.platform.core.beans.*;
 import net.ymate.platform.core.beans.annotation.Ignored;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 
 import java.io.File;
 import java.io.IOException;
@@ -53,7 +54,7 @@ public class DefaultBeanLoader extends AbstractBeanLoader {
         if (!packageNames.isEmpty()) {
             String[] excludedPackages = getExcludedPackageNames().toArray(new String[0]);
             for (String packageName : packageNames) {
-                doLoad(packageName, filter).stream().filter(clazz -> !StringUtils.startsWithAny(clazz.getPackage().getName(), excludedPackages)).forEachOrdered(results::add);
+                doLoad(packageName, filter).stream().filter(clazz -> !Strings.CS.startsWithAny(clazz.getPackage().getName(), excludedPackages)).forEachOrdered(results::add);
             }
         }
         return results;

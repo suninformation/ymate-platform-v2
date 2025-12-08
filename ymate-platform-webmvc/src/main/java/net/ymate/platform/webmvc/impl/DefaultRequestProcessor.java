@@ -23,6 +23,7 @@ import net.ymate.platform.webmvc.annotation.*;
 import net.ymate.platform.webmvc.context.WebContext;
 import net.ymate.platform.webmvc.util.CookieHelper;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -64,7 +65,7 @@ public class DefaultRequestProcessor implements IRequestProcessor {
             Object paramValue = doGetParamValue(owner, requestMeta, parameterMeta, paramName);
             if (paramValue != null) {
                 resultMap.put(parameterMeta.getFieldName(), paramValue);
-                if (!StringUtils.equals(paramName, parameterMeta.getFieldName())) {
+                if (!Strings.CS.equals(paramName, parameterMeta.getFieldName())) {
                     resultMap.put(paramName, paramValue);
                 }
             }

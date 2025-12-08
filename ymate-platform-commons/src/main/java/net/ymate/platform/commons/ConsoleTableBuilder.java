@@ -17,6 +17,7 @@ package net.ymate.platform.commons;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -129,8 +130,8 @@ public class ConsoleTableBuilder {
     public String toString() {
         StringBuilder stringBuilder = new StringBuilder();
         //
-        boolean markdown = StringUtils.equals(format, TYPE_MARKDOWN);
-        boolean csv = StringUtils.equals(format, TYPE_CSV);
+        boolean markdown = Strings.CS.equals(format, TYPE_MARKDOWN);
+        boolean csv = Strings.CS.equals(format, TYPE_CSV);
         //
         if (csv) {
             rows.forEach(row -> {

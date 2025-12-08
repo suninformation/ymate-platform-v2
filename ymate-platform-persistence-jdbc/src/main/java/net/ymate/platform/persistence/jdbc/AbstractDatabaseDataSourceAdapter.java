@@ -24,6 +24,7 @@ import net.ymate.platform.core.persistence.base.Type;
 import net.ymate.platform.persistence.jdbc.dialect.IDialect;
 import org.apache.commons.lang.NullArgumentException;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -132,7 +133,7 @@ public abstract class AbstractDatabaseDataSourceAdapter extends AbstractDataSour
         if (StringUtils.isNotBlank(dataSourceConfig.getDialectClass())) {
             dialect = ClassUtils.impl(dataSourceConfig.getDialectClass(), IDialect.class, this.getClass());
         }
-        if (dialect == null && StringUtils.isNotBlank(dataSourceConfig.getType()) && !StringUtils.equals(Type.DATABASE.UNKNOWN, dataSourceConfig.getType())) {
+        if (dialect == null && StringUtils.isNotBlank(dataSourceConfig.getType()) && !Strings.CS.equals(Type.DATABASE.UNKNOWN, dataSourceConfig.getType())) {
             dialect = JDBC.DB_DIALECTS.get(dataSourceConfig.getType()).newInstance();
         }
         if (dialect != null && StringUtils.isNotBlank(dataSourceConfig.getIdentifierQuote())) {

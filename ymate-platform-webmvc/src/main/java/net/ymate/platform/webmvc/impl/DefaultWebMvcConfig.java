@@ -31,6 +31,7 @@ import org.apache.commons.fileupload.ProgressListener;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 
 import java.io.File;
 import java.util.*;
@@ -161,7 +162,7 @@ public final class DefaultWebMvcConfig implements IWebMvcConfig {
         defaultContentType = configReader.getString(DEFAULT_CONTENT_TYPE, confAnn == null ? null : confAnn.defaultContentType());
         //
         List<String> reqIgnoreSuffix = new ArrayList<>(Arrays.asList(configReader.getArray(REQUEST_IGNORE_SUFFIX, confAnn != null ? confAnn.requestIgnoreSuffixes() : new String[0])));
-        if (!reqIgnoreSuffix.isEmpty() && StringUtils.equals(reqIgnoreSuffix.get(0), "~")) {
+        if (!reqIgnoreSuffix.isEmpty() && Strings.CS.equals(reqIgnoreSuffix.get(0), "~")) {
             if (reqIgnoreSuffix.size() > 1) {
                 requestIgnoreSuffixes.addAll(Arrays.asList(StringUtils.split(IGNORE_REGEX_DEFAULT, "|")));
             }

@@ -16,6 +16,7 @@
 package net.ymate.platform.core.beans;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -61,7 +62,7 @@ public abstract class AbstractBeanLoader implements IBeanLoader {
             if (targetList.contains(packageName)) {
                 flag = true;
             }
-        } while (!flag && StringUtils.contains(packageName, "."));
+        } while (!flag && Strings.CS.contains(packageName, "."));
         return flag;
     }
 
@@ -70,7 +71,7 @@ public abstract class AbstractBeanLoader implements IBeanLoader {
             if (targetList.isEmpty()) {
                 targetList.add(packageName);
             } else if (!hasPackageParent(targetList, packageName)) {
-                targetList.removeIf(s -> StringUtils.startsWith(s, packageName));
+                targetList.removeIf(s -> Strings.CS.startsWith(s, packageName));
                 targetList.add(packageName);
             }
         }
