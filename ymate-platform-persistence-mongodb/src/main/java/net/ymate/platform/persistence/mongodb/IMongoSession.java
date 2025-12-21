@@ -345,6 +345,7 @@ public interface IMongoSession extends ISession<IMongoConnectionHolder> {
      * @return 返回MapReduce结果集迭代器对象
      * @throws Exception 可能产生的异常
      */
+    @Deprecated
     <T extends IEntity, RESULT> MapReduceIterable<RESULT> mapReduce(Class<T> entity, Class<RESULT> resultClass, String mapFunction, String reduceFunction) throws Exception;
 
     /**
@@ -357,6 +358,7 @@ public interface IMongoSession extends ISession<IMongoConnectionHolder> {
      * @return 返回MapReduce结果集迭代器对象
      * @throws Exception 可能产生的异常
      */
+    @Deprecated
     <T extends IEntity> MapReduceIterable<Document> mapReduce(Class<T> entity, String mapFunction, String reduceFunction) throws Exception;
 
     /**

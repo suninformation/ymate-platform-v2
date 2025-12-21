@@ -272,6 +272,7 @@ public class DefaultMongoSession extends AbstractSession<IMongoConnectionHolder>
     }
 
     @Override
+    @Deprecated
     public <T extends IEntity, RESULT> MapReduceIterable<RESULT> mapReduce(Class<T> entity, Class<RESULT> resultClass, String mapFunction, String reduceFunction) throws Exception {
         ClientSession clientSession = Transactions.getClientSession(connectionHolder);
         if (clientSession == null) {
@@ -281,6 +282,7 @@ public class DefaultMongoSession extends AbstractSession<IMongoConnectionHolder>
     }
 
     @Override
+    @Deprecated
     public <T extends IEntity> MapReduceIterable<Document> mapReduce(Class<T> entity, String mapFunction, String reduceFunction) throws Exception {
         ClientSession clientSession = Transactions.getClientSession(connectionHolder);
         if (clientSession == null) {

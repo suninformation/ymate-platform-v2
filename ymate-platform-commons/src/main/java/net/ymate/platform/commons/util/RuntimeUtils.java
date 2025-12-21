@@ -28,6 +28,7 @@ import java.io.InputStreamReader;
 import java.lang.management.ManagementFactory;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URL;
+import java.net.URLDecoder;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -165,17 +166,24 @@ public class RuntimeUtils {
      * @since 2.1.0 若获取的路径为空则默认使用user.dir路径(结尾的斜杠字符将被移除)
      */
     public static String getRootPath(boolean safe) {
-        URL rootUrl = RuntimeUtils.class.getClassLoader().getResource("/");
-        if (rootUrl == null) {
-            rootUrl = RuntimeUtils.class.getClassLoader().getResource(StringUtils.EMPTY);
-        }
+        URL rootUrl = RuntimeUtils.class.getClassLoader().getResource(StringUtils.EMPTY);
         if (rootUrl != null && (!Strings.CS.equals(FileUtils.PROTOCOL_FILE, rootUrl.getProtocol()) || !FileUtils.toFile(rootUrl).isAbsolute())) {
             rootUrl = null;
         }
         String rootPath = rootUrl != null ? rootUrl.getPath() : null;
         if (rootPath != null) {
+            try {
+                rootPath = URLDecoder.decode(rootPath, "UTF-8");
+            } catch (Exception e) {
+                rootPath = Strings.CS.replace(rootPath, "%20", StringUtils.SPACE);
+            }
             boolean isTestPath = Strings.CS.contains(rootPath, "/test-classes");
-            rootPath = Strings.CS.replace(Strings.CS.removeEnd(StringUtils.substringBefore(rootPath, safe ? (isTestPath ? "test-classes/" : "classes/") : "WEB-INF/"), "/"), "%20", StringUtils.SPACE);
+            String suffix = safe ? (isTestPath ? "test-classes/" : "classes/") : "WEB-INF/";
+            int index = rootPath.indexOf(suffix);
+            if (index != -1) {
+                rootPath = rootPath.substring(0, index);
+            }
+            rootPath = Strings.CS.removeEnd(rootPath, "/");
             if (isWindows()) {
                 rootPath = Strings.CS.removeStart(rootPath, "/");
             }

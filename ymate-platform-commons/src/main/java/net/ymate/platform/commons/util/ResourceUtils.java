@@ -55,8 +55,13 @@ public class ResourceUtils {
             }
         }
         if (!iterator.hasNext()) {
-            if (resourceName.isEmpty() || resourceName.charAt(0) != PATH_SEPARATOR_CHAR) {
-                return getResources(PATH_SEPARATOR_CHAR + resourceName, callingClass, aggregate);
+            if (callingClass != null && (resourceName.isEmpty() || resourceName.charAt(0) != PATH_SEPARATOR_CHAR)) {
+                URL resource = callingClass.getResource(PATH_SEPARATOR_CHAR + resourceName);
+                if (resource != null) {
+                    AggregateIterator<URL> result = new AggregateIterator<>();
+                    result.addEnumeration(new SingleElementEnumeration<>(resource));
+                    return result;
+                }
             }
         }
         return iterator;
@@ -81,8 +86,8 @@ public class ResourceUtils {
                 }
             }
         }
-        if (url == null && (resourceName.isEmpty() || resourceName.charAt(0) != PATH_SEPARATOR_CHAR)) {
-            return getResource(PATH_SEPARATOR_CHAR + resourceName, callingClass);
+        if (url == null && callingClass != null && (resourceName.isEmpty() || resourceName.charAt(0) != PATH_SEPARATOR_CHAR)) {
+            url = callingClass.getResource(PATH_SEPARATOR_CHAR + resourceName);
         }
         return url;
     }
@@ -196,6 +201,29 @@ public class ResourceUtils {
         @Override
         public void remove() {
             throw new UnsupportedOperationException();
+        }
+    }
+
+    private static class SingleElementEnumeration<T> implements Enumeration<T> {
+        private final T element;
+        private boolean hasNext = true;
+
+        SingleElementEnumeration(T element) {
+            this.element = element;
+        }
+
+        @Override
+        public boolean hasMoreElements() {
+            return hasNext;
+        }
+
+        @Override
+        public T nextElement() {
+            if (hasNext) {
+                hasNext = false;
+                return element;
+            }
+            throw new NoSuchElementException();
         }
     }
 

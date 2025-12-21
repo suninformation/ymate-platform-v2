@@ -50,7 +50,7 @@
         </dependency>
         <dependency>
             <groupId>org.mongodb</groupId>
-            <artifactId>mongodb-driver</artifactId>
+            <artifactId>mongodb-driver-legacy</artifactId>
         </dependency>
         <dependency>
             <groupId>net.ymate.platform</groupId>
