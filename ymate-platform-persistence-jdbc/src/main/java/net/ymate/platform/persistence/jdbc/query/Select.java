@@ -23,6 +23,7 @@ import net.ymate.platform.persistence.jdbc.IDBLocker;
 import net.ymate.platform.persistence.jdbc.IDatabase;
 import net.ymate.platform.persistence.jdbc.JDBC;
 import net.ymate.platform.persistence.jdbc.base.IResultSetHandler;
+import net.ymate.platform.persistence.jdbc.query.LambdaUtils.SFunction;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.ArrayList;
@@ -34,7 +35,7 @@ import java.util.List;
  * @author 刘镇 (suninformation@163.com) on 15/5/12 下午5:59
  */
 @SuppressWarnings("rawtypes")
-public final class Select extends Query<Select> {
+public class Select extends Query<Select> {
 
     private final List<String> froms = new ArrayList<>();
 
@@ -309,6 +310,163 @@ public final class Select extends Query<Select> {
         return this;
     }
 
+    // ---------- Lambda Support ----------
+
+    /**
+     * 通过Lambda表达式选择字段
+     *
+     * @param column 方法引用
+     * @param <E>    实体类型
+     * @param <R>    返回值类型
+     * @return 当前Select实例
+     * @since 2.1.4
+     */
+    public <E extends IEntity<?>, R> Select field(SFunction<E, R> column) {
+        return field(column, true);
+    }
+
+    /**
+     * 通过Lambda表达式选择字段
+     *
+     * @param column         方法引用
+     * @param wrapIdentifier 是否包装标识符
+     * @param <E>            实体类型
+     * @param <R>            返回值类型
+     * @return 当前Select实例
+     * @since 2.1.4
+     */
+    public <E extends IEntity<?>, R> Select field(SFunction<E, R> column, boolean wrapIdentifier) {
+        String columnName = getColumnName(column);
+        field(columnName, wrapIdentifier);
+        return this;
+    }
+
+    /**
+     * 通过Lambda表达式选择字段（带前缀）
+     *
+     * @param prefix 前缀
+     * @param column 方法引用
+     * @param <E>    实体类型
+     * @param <R>    返回值类型
+     * @return 当前Select实例
+     * @since 2.1.4
+     */
+    public <E extends IEntity<?>, R> Select field(String prefix, SFunction<E, R> column) {
+        return field(prefix, column, true);
+    }
+
+    /**
+     * 通过Lambda表达式选择字段（带前缀）
+     *
+     * @param prefix         前缀
+     * @param column         方法引用
+     * @param wrapIdentifier 是否包装标识符
+     * @param <E>            实体类型
+     * @param <R>            返回值类型
+     * @return 当前Select实例
+     * @since 2.1.4
+     */
+    public <E extends IEntity<?>, R> Select field(String prefix, SFunction<E, R> column, boolean wrapIdentifier) {
+        String columnName = getColumnName(column);
+        this.fields.add(prefix, wrapIdentifier ? wrapIdentifierField(columnName) : columnName);
+        return this;
+    }
+
+    /**
+     * 通过Lambda表达式选择字段（带别名）
+     *
+     * @param column 方法引用
+     * @param alias  别名
+     * @param <E>    实体类型
+     * @param <R>    返回值类型
+     * @return 当前Select实例
+     * @since 2.1.4
+     */
+    public <E extends IEntity<?>, R> Select field(SFunction<E, R> column, String alias) {
+        return field(column, alias, true);
+    }
+
+    /**
+     * 通过Lambda表达式选择字段（带前缀和别名）
+     *
+     * @param prefix 前缀
+     * @param column 方法引用
+     * @param alias  别名
+     * @param <E>    实体类型
+     * @param <R>    返回值类型
+     * @return 当前Select实例
+     * @since 2.1.4
+     */
+    public <E extends IEntity<?>, R> Select field(String prefix, SFunction<E, R> column, String alias) {
+        return field(prefix, column, alias, true);
+    }
+
+    /**
+     * 通过Lambda表达式选择字段（带别名）
+     *
+     * @param column         方法引用
+     * @param alias          别名
+     * @param wrapIdentifier 是否包装标识符
+     * @param <E>            实体类型
+     * @param <R>            返回值类型
+     * @return 当前Select实例
+     * @since 2.1.4
+     */
+    public <E extends IEntity<?>, R> Select field(SFunction<E, R> column, String alias, boolean wrapIdentifier) {
+        String columnName = getColumnName(column);
+        field(null, columnName, alias, wrapIdentifier);
+        return this;
+    }
+
+    /**
+     * 通过Lambda表达式选择字段（带前缀和别名）
+     *
+     * @param prefix         前缀
+     * @param column         方法引用
+     * @param alias          别名
+     * @param wrapIdentifier 是否包装标识符
+     * @param <E>            实体类型
+     * @param <R>            返回值类型
+     * @return 当前Select实例
+     * @since 2.1.4
+     */
+    public <E extends IEntity<?>, R> Select field(String prefix, SFunction<E, R> column, String alias, boolean wrapIdentifier) {
+        String columnName = getColumnName(column);
+        field(prefix, columnName, alias, wrapIdentifier);
+        return this;
+    }
+
+    /**
+     * 通过Lambda表达式选择字段（带别名，fieldAlias版本）
+     *
+     * @param column 方法引用
+     * @param alias  别名
+     * @param <E>    实体类型
+     * @param <R>    返回值类型
+     * @return 当前Select实例
+     * @since 2.1.4
+     */
+    public <E extends IEntity<?>, R> Select fieldAlias(SFunction<E, R> column, String alias) {
+        return fieldAlias(column, alias, true);
+    }
+
+    /**
+     * 通过Lambda表达式选择字段（带别名，fieldAlias版本）
+     *
+     * @param column         方法引用
+     * @param alias          别名
+     * @param wrapIdentifier 是否包装标识符
+     * @param <E>            实体类型
+     * @param <R>            返回值类型
+     * @return 当前Select实例
+     * @since 2.1.4
+     */
+    public <E extends IEntity<?>, R> Select fieldAlias(SFunction<E, R> column, String alias, boolean wrapIdentifier) {
+        String columnName = getColumnName(column);
+        this.fields.addAlias(wrapIdentifier ? wrapIdentifierField(columnName) : columnName, alias);
+        return this;
+    }
+
     public Select join(Join join) {
         joins.add(join);
         where().param(join.params());
@@ -418,10 +576,210 @@ public final class Select extends Query<Select> {
         return join(Join.right(owner(), dataSourceName(), from).alias(alias).on(on));
     }
 
+    // ---------- Lambda Join Methods ----------
+
+    /**
+     * 内连接（基于实体类，使用Lambda表达式指定连接条件）
+     *
+     * @param entityClass 实体类
+     * @param alias       别名
+     * @param columnOne   第一个连接字段的方法引用
+     * @param columnTwo   第二个连接字段的方法引用
+     * @param <T>         第一个实体类型
+     * @param <U>         第二个实体类型
+     * @param <R>         返回值类型
+     * @return 当前Select实例
+     * @since 2.1.4
+     */
+    public <T extends IEntity<?>, U extends IEntity<?>, R> Select innerJoin(Class<? extends IEntity<?>> entityClass, String alias, SFunction<T, R> columnOne, SFunction<U, R> columnTwo) {
+        return join(Join.inner(this, entityClass, alias).on(columnOne, columnTwo));
+    }
+
+    /**
+     * 左连接（基于实体类，使用Lambda表达式指定连接条件）
+     *
+     * @param entityClass 实体类
+     * @param alias       别名
+     * @param columnOne   第一个连接字段的方法引用
+     * @param columnTwo   第二个连接字段的方法引用
+     * @param <T>         第一个实体类型
+     * @param <U>         第二个实体类型
+     * @param <R>         返回值类型
+     * @return 当前Select实例
+     * @since 2.1.4
+     */
+    public <T extends IEntity<?>, U extends IEntity<?>, R> Select leftJoin(Class<? extends IEntity<?>> entityClass, String alias, SFunction<T, R> columnOne, SFunction<U, R> columnTwo) {
+        return join(Join.left(this, entityClass, alias).on(columnOne, columnTwo));
+    }
+
+    /**
+     * 右连接（基于实体类，使用Lambda表达式指定连接条件）
+     *
+     * @param entityClass 实体类
+     * @param alias       别名
+     * @param columnOne   第一个连接字段的方法引用
+     * @param columnTwo   第二个连接字段的方法引用
+     * @param <T>         第一个实体类型
+     * @param <U>         第二个实体类型
+     * @param <R>         返回值类型
+     * @return 当前Select实例
+     * @since 2.1.4
+     */
+    public <T extends IEntity<?>, U extends IEntity<?>, R> Select rightJoin(Class<? extends IEntity<?>> entityClass, String alias, SFunction<T, R> columnOne, SFunction<U, R> columnTwo) {
+        return join(Join.right(this, entityClass, alias).on(columnOne, columnTwo));
+    }
+
+    /**
+     * 交叉连接（基于实体类，使用Lambda表达式指定连接条件）
+     *
+     * @param entityClass 实体类
+     * @param alias       别名
+     * @param columnOne   第一个连接字段的方法引用
+     * @param columnTwo   第二个连接字段的方法引用
+     * @param <T>         第一个实体类型
+     * @param <U>         第二个实体类型
+     * @param <R>         返回值类型
+     * @return 当前Select实例
+     * @since 2.1.4
+     */
+    public <T extends IEntity<?>, U extends IEntity<?>, R> Select crossJoin(Class<? extends IEntity<?>> entityClass, String alias, SFunction<T, R> columnOne, SFunction<U, R> columnTwo) {
+        return join(Join.cross(this, entityClass, alias).on(columnOne, columnTwo));
+    }
+
+    /**
+     * 内连接（基于实体类，使用带前缀的Lambda表达式指定连接条件）
+     *
+     * @param entityClass 实体类
+     * @param alias       别名
+     * @param prefixOne   第一个表前缀
+     * @param columnOne   第一个连接字段的方法引用
+     * @param prefixTwo   第二个表前缀
+     * @param columnTwo   第二个连接字段的方法引用
+     * @param <T>         第一个实体类型
+     * @param <U>         第二个实体类型
+     * @param <R>         返回值类型
+     * @return 当前Select实例
+     * @since 2.1.4
+     */
+    public <T extends IEntity<?>, U extends IEntity<?>, R> Select innerJoin(Class<? extends IEntity<?>> entityClass, String alias, String prefixOne, SFunction<T, R> columnOne, String prefixTwo, SFunction<U, R> columnTwo) {
+        return join(Join.inner(this, entityClass, alias).on(prefixOne, columnOne, prefixTwo, columnTwo));
+    }
+
+    /**
+     * 左连接（基于实体类，使用带前缀的Lambda表达式指定连接条件）
+     *
+     * @param entityClass 实体类
+     * @param alias       别名
+     * @param prefixOne   第一个表前缀
+     * @param columnOne   第一个连接字段的方法引用
+     * @param prefixTwo   第二个表前缀
+     * @param columnTwo   第二个连接字段的方法引用
+     * @param <T>         第一个实体类型
+     * @param <U>         第二个实体类型
+     * @param <R>         返回值类型
+     * @return 当前Select实例
+     * @since 2.1.4
+     */
+    public <T extends IEntity<?>, U extends IEntity<?>, R> Select leftJoin(Class<? extends IEntity<?>> entityClass, String alias, String prefixOne, SFunction<T, R> columnOne, String prefixTwo, SFunction<U, R> columnTwo) {
+        return join(Join.left(this, entityClass, alias).on(prefixOne, columnOne, prefixTwo, columnTwo));
+    }
+
+    /**
+     * 右连接（基于实体类，使用带前缀的Lambda表达式指定连接条件）
+     *
+     * @param entityClass 实体类
+     * @param alias       别名
+     * @param prefixOne   第一个表前缀
+     * @param columnOne   第一个连接字段的方法引用
+     * @param prefixTwo   第二个表前缀
+     * @param columnTwo   第二个连接字段的方法引用
+     * @param <T>         第一个实体类型
+     * @param <U>         第二个实体类型
+     * @param <R>         返回值类型
+     * @return 当前Select实例
+     * @since 2.1.4
+     */
+    public <T extends IEntity<?>, U extends IEntity<?>, R> Select rightJoin(Class<? extends IEntity<?>> entityClass, String alias, String prefixOne, SFunction<T, R> columnOne, String prefixTwo, SFunction<U, R> columnTwo) {
+        return join(Join.right(this, entityClass, alias).on(prefixOne, columnOne, prefixTwo, columnTwo));
+    }
+
+    /**
+     * 交叉连接（基于实体类，使用带前缀的Lambda表达式指定连接条件）
+     *
+     * @param entityClass 实体类
+     * @param alias       别名
+     * @param prefixOne   第一个表前缀
+     * @param columnOne   第一个连接字段的方法引用
+     * @param prefixTwo   第二个表前缀
+     * @param columnTwo   第二个连接字段的方法引用
+     * @param <T>         第一个实体类型
+     * @param <U>         第二个实体类型
+     * @param <R>         返回值类型
+     * @return 当前Select实例
+     * @since 2.1.4
+     */
+    public <T extends IEntity<?>, U extends IEntity<?>, R> Select crossJoin(Class<? extends IEntity<?>> entityClass, String alias, String prefixOne, SFunction<T, R> columnOne, String prefixTwo, SFunction<U, R> columnTwo) {
+        return join(Join.cross(this, entityClass, alias).on(prefixOne, columnOne, prefixTwo, columnTwo));
+    }
+
     //
 
     public Select innerJoin(String prefix, String from, String alias, Cond on) {
         return join(Join.inner(owner(), dataSourceName(), prefix, from).alias(alias).on(on));
+    }
+
+    // ---------- Lambda Support for Join with Entity Class ----------
+
+    /**
+     * 内连接（基于实体类）
+     *
+     * @param entityClass 实体类
+     * @param alias       别名
+     * @param on          连接条件
+     * @return 当前Select实例
+     * @since 2.1.4
+     */
+    public Select innerJoin(Class<? extends IEntity<?>> entityClass, String alias, Cond on) {
+        return join(Join.inner(this, entityClass, alias).on(on));
+    }
+
+    /**
+     * 左连接（基于实体类）
+     *
+     * @param entityClass 实体类
+     * @param alias       别名
+     * @param on          连接条件
+     * @return 当前Select实例
+     * @since 2.1.4
+     */
+    public Select leftJoin(Class<? extends IEntity<?>> entityClass, String alias, Cond on) {
+        return join(Join.left(this, entityClass, alias).on(on));
+    }
+
+    /**
+     * 右连接（基于实体类）
+     *
+     * @param entityClass 实体类
+     * @param alias       别名
+     * @param on          连接条件
+     * @return 当前Select实例
+     * @since 2.1.4
+     */
+    public Select rightJoin(Class<? extends IEntity<?>> entityClass, String alias, Cond on) {
+        return join(Join.right(this, entityClass, alias).on(on));
+    }
+
+    /**
+     * 交叉连接（基于实体类）
+     *
+     * @param entityClass 实体类
+     * @param alias       别名
+     * @param on          连接条件
+     * @return 当前Select实例
+     * @since 2.1.4
+     */
+    public Select crossJoin(Class<? extends IEntity<?>> entityClass, String alias, Cond on) {
+        return join(Join.cross(this, entityClass, alias).on(on));
     }
 
     /**
@@ -532,6 +890,19 @@ public final class Select extends Query<Select> {
         return this;
     }
 
+    /**
+     * 通过条件构建器创建查询条件
+     *
+     * @param appender 条件构建器
+     * @return 当前Select实例
+     * @since 2.1.4
+     */
+    public Select where(LambdaUtils.ConditionAppender appender) {
+        Cond cond = Cond.create(this);
+        appender.append(cond);
+        return where(cond);
+    }
+
     public Select orderBy(OrderBy orderBy) {
         where().orderBy(orderBy);
         return this;
@@ -616,6 +987,78 @@ public final class Select extends Query<Select> {
 
     public Select orderByDesc(String prefix, Fields fields, boolean wrapIdentifier) {
         where().orderBy().desc(prefix, fields, wrapIdentifier);
+        return this;
+    }
+
+    /**
+     * 通过函数创建降序排序
+     *
+     * @param func 函数
+     * @return 当前Select实例
+     * @since 2.1.4
+     */
+    public Select orderByDesc(IFunction func) {
+        where().orderByDesc(func);
+        return this;
+    }
+
+    // ---------- Lambda Support for OrderBy ----------
+
+    /**
+     * 通过Lambda表达式创建升序排序
+     *
+     * @param column 方法引用
+     * @param <E>    实体类型
+     * @param <R>    返回值类型
+     * @return 当前Select实例
+     * @since 2.1.4
+     */
+    public <E extends IEntity<?>, R> Select orderByAsc(SFunction<E, R> column) {
+        where().orderByAsc(column);
+        return this;
+    }
+
+    /**
+     * 通过Lambda表达式创建升序排序（带前缀）
+     *
+     * @param prefix 前缀
+     * @param column 方法引用
+     * @param <E>    实体类型
+     * @param <R>    返回值类型
+     * @return 当前Select实例
+     * @since 2.1.4
+     */
+    public <E extends IEntity<?>, R> Select orderByAsc(String prefix, SFunction<E, R> column) {
+        where().orderByAsc(prefix, column);
+        return this;
+    }
+
+    /**
+     * 通过Lambda表达式创建降序排序
+     *
+     * @param column 方法引用
+     * @param <E>    实体类型
+     * @param <R>    返回值类型
+     * @return 当前Select实例
+     * @since 2.1.4
+     */
+    public <E extends IEntity<?>, R> Select orderByDesc(SFunction<E, R> column) {
+        where().orderByDesc(column);
+        return this;
+    }
+
+    /**
+     * 通过Lambda表达式创建降序排序（带前缀）
+     *
+     * @param prefix 前缀
+     * @param column 方法引用
+     * @param <E>    实体类型
+     * @param <R>    返回值类型
+     * @return 当前Select实例
+     * @since 2.1.4
+     */
+    public <E extends IEntity<?>, R> Select orderByDesc(String prefix, SFunction<E, R> column) {
+        where().orderByDesc(prefix, column);
         return this;
     }
 
@@ -733,6 +1176,68 @@ public final class Select extends Query<Select> {
         return this;
     }
 
+    // ---------- Lambda Support for GroupBy ----------
+
+    /**
+     * 通过Lambda表达式创建分组
+     *
+     * @param column 方法引用
+     * @param <E>    实体类型
+     * @param <R>    返回值类型
+     * @return 当前Select实例
+     * @since 2.1.4
+     */
+    public <E extends IEntity<?>, R> Select groupBy(SFunction<E, R> column) {
+        where().groupBy(column);
+        return this;
+    }
+
+    /**
+     * 通过Lambda表达式创建分组（带排序方向）
+     *
+     * @param column 方法引用
+     * @param desc   是否降序
+     * @param <E>    实体类型
+     * @param <R>    返回值类型
+     * @return 当前Select实例
+     * @since 2.1.4
+     */
+    public <E extends IEntity<?>, R> Select groupBy(SFunction<E, R> column, boolean desc) {
+        where().groupBy(column, desc);
+        return this;
+    }
+
+    /**
+     * 通过Lambda表达式创建分组（带前缀）
+     *
+     * @param prefix 前缀
+     * @param column 方法引用
+     * @param <E>    实体类型
+     * @param <R>    返回值类型
+     * @return 当前Select实例
+     * @since 2.1.4
+     */
+    public <E extends IEntity<?>, R> Select groupBy(String prefix, SFunction<E, R> column) {
+        where().groupBy(prefix, column);
+        return this;
+    }
+
+    /**
+     * 通过Lambda表达式创建分组（带前缀和排序方向）
+     *
+     * @param prefix 前缀
+     * @param column 方法引用
+     * @param desc   是否降序
+     * @param <E>    实体类型
+     * @param <R>    返回值类型
+     * @return 当前Select实例
+     * @since 2.1.4
+     */
+    public <E extends IEntity<?>, R> Select groupBy(String prefix, SFunction<E, R> column, boolean desc) {
+        where().groupBy(prefix, column, desc);
+        return this;
+    }
+
     public Select having(Cond cond) {
         where().having(cond);
         return this;
@@ -743,6 +1248,7 @@ public final class Select extends Query<Select> {
      *
      * @param alias 别名
      * @return 返回当前Select对象
+     * @since 2.1.4
      */
     public Select alias(String alias) {
         this.alias = alias;

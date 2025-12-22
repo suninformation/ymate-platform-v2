@@ -23,6 +23,7 @@ import net.ymate.platform.core.persistence.base.EntityMeta;
 import net.ymate.platform.core.persistence.base.IEntity;
 import net.ymate.platform.persistence.jdbc.IDatabase;
 import net.ymate.platform.persistence.jdbc.JDBC;
+import net.ymate.platform.persistence.jdbc.query.LambdaUtils.SFunction;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.ArrayList;
@@ -34,7 +35,7 @@ import java.util.List;
  * @author 刘镇 (suninformation@163.com) on 15/5/12 下午6:02
  */
 @SuppressWarnings("rawtypes")
-public final class Update extends Query<Update> {
+public class Update extends Query<Update> {
 
     private final List<String> tables = new ArrayList<>();
 
@@ -206,10 +207,10 @@ public final class Update extends Query<Update> {
         if (field != null && field.contains("=")) {
             String[] fieldParts = StringUtils.split(field, '=');
             if (fieldParts.length == 2) {
-                return (wrapIdentifier ? wrapIdentifierField(fieldParts[0]) : fieldParts[0]) + "=" + fieldParts[1];
+                return (wrapIdentifier ? wrapIdentifierField(fieldParts[0]) : fieldParts[0]) + " = " + fieldParts[1];
             }
         }
-        return (wrapIdentifier ? wrapIdentifierField(field) : field) + "=?";
+        return (wrapIdentifier ? wrapIdentifierField(field) : field) + " = ?";
     }
 
     public Fields fields() {
@@ -241,6 +242,124 @@ public final class Update extends Query<Update> {
     public Update field(String prefix, String field, String alias, boolean wrapIdentifier) {
         this.fields.add(prefix, doParseField(field, wrapIdentifier), alias);
         return this;
+    }
+
+    // ---------- Lambda Support for FIELD ----------
+
+    /**
+     * 通过Lambda表达式设置更新字段
+     *
+     * @param column 方法引用
+     * @param <E>    实体类型
+     * @param <R>    返回值类型
+     * @return 当前Update实例
+     * @since 2.1.4
+     */
+    public <E extends IEntity<?>, R> Update field(SFunction<E, R> column) {
+        return field(getColumnName(column), true);
+    }
+
+    /**
+     * 通过Lambda表达式设置更新字段（带标识符包装控制）
+     *
+     * @param column         方法引用
+     * @param wrapIdentifier 是否包装标识符
+     * @param <E>            实体类型
+     * @param <R>            返回值类型
+     * @return 当前Update实例
+     * @since 2.1.4
+     */
+    public <E extends IEntity<?>, R> Update field(SFunction<E, R> column, boolean wrapIdentifier) {
+        return field(getColumnName(column), wrapIdentifier);
+    }
+
+    /**
+     * 通过Lambda表达式设置更新字段（带前缀）
+     *
+     * @param prefix 前缀
+     * @param column 方法引用
+     * @param <E>    实体类型
+     * @param <R>    返回值类型
+     * @return 当前Update实例
+     * @since 2.1.4
+     */
+    public <E extends IEntity<?>, R> Update field(String prefix, SFunction<E, R> column) {
+        return field(prefix, getColumnName(column), true);
+    }
+
+    /**
+     * 通过Lambda表达式设置更新字段（带前缀和标识符包装控制）
+     *
+     * @param prefix         前缀
+     * @param column         方法引用
+     * @param wrapIdentifier 是否包装标识符
+     * @param <E>            实体类型
+     * @param <R>            返回值类型
+     * @return 当前Update实例
+     * @since 2.1.4
+     */
+    public <E extends IEntity<?>, R> Update field(String prefix, SFunction<E, R> column, boolean wrapIdentifier) {
+        return field(prefix, getColumnName(column), wrapIdentifier);
+    }
+
+    /**
+     * 通过Lambda表达式设置更新字段并添加值
+     *
+     * @param column 方法引用
+     * @param value  参数值
+     * @param <E>    实体类型
+     * @param <R>    返回值类型
+     * @return 当前Update实例
+     * @since 2.1.4
+     */
+    public <E extends IEntity<?>, R> Update field(SFunction<E, R> column, Object value) {
+        return field(column).param(value);
+    }
+
+    /**
+     * 通过Lambda表达式设置更新字段并添加值（带前缀）
+     *
+     * @param prefix 前缀
+     * @param column 方法引用
+     * @param value  参数值
+     * @param <E>    实体类型
+     * @param <R>    返回值类型
+     * @return 当前Update实例
+     * @since 2.1.4
+     */
+    public <E extends IEntity<?>, R> Update field(String prefix, SFunction<E, R> column, Object value) {
+        return field(prefix, column).param(value);
+    }
+
+    /**
+     * 通过Lambda表达式设置更新字段（带前缀和别名）
+     *
+     * @param prefix 前缀
+     * @param column 方法引用
+     * @param alias  别名
+     * @param <E>    实体类型
+     * @param <R>    返回值类型
+     * @return 当前Update实例
+     * @since 2.1.4
+     */
+    public <E extends IEntity<?>, R> Update field(String prefix, SFunction<E, R> column, String alias) {
+        return field(prefix, getColumnName(column), alias, true);
+    }
+
+    /**
+     * 通过Lambda表达式设置更新字段（带前缀、别名和标识符包装控制）
+     *
+     * @param prefix         前缀
+     * @param column         方法引用
+     * @param alias          别名
+     * @param wrapIdentifier 是否包装标识符
+     * @param <E>            实体类型
+     * @param <R>            返回值类型
+     * @return 当前Update实例
+     * @since 2.1.4
+     */
+    public <E extends IEntity<?>, R> Update field(String prefix, SFunction<E, R> column, String alias, boolean wrapIdentifier) {
+        return field(prefix, getColumnName(column), alias, wrapIdentifier);
     }
 
     /**
@@ -448,6 +567,204 @@ public final class Update extends Query<Update> {
         return join(Join.right(owner(), dataSourceName(), prefix, from, safePrefix).alias(alias).on(on));
     }
 
+    // ---------- Lambda Support for JOIN ----------
+
+    /**
+     * 内连接（基于实体类，使用Lambda表达式指定连接条件）
+     *
+     * @param entityClass 实体类
+     * @param alias       别名
+     * @param columnOne   第一个连接字段的方法引用
+     * @param columnTwo   第二个连接字段的方法引用
+     * @param <T>         第一个实体类型
+     * @param <U>         第二个实体类型
+     * @param <R>         返回值类型
+     * @return 当前Update实例
+     * @since 2.1.4
+     */
+    public <T extends IEntity<?>, U extends IEntity<?>, R> Update innerJoin(Class<? extends IEntity<?>> entityClass, String alias, SFunction<T, R> columnOne, SFunction<U, R> columnTwo) {
+        return join(Join.inner(this, entityClass, alias).on(columnOne, columnTwo));
+    }
+
+    /**
+     * 左连接（基于实体类，使用Lambda表达式指定连接条件）
+     *
+     * @param entityClass 实体类
+     * @param alias       别名
+     * @param columnOne   第一个连接字段的方法引用
+     * @param columnTwo   第二个连接字段的方法引用
+     * @param <T>         第一个实体类型
+     * @param <U>         第二个实体类型
+     * @param <R>         返回值类型
+     * @return 当前Update实例
+     * @since 2.1.4
+     */
+    public <T extends IEntity<?>, U extends IEntity<?>, R> Update leftJoin(Class<? extends IEntity<?>> entityClass, String alias, SFunction<T, R> columnOne, SFunction<U, R> columnTwo) {
+        return join(Join.left(this, entityClass, alias).on(columnOne, columnTwo));
+    }
+
+    /**
+     * 右连接（基于实体类，使用Lambda表达式指定连接条件）
+     *
+     * @param entityClass 实体类
+     * @param alias       别名
+     * @param columnOne   第一个连接字段的方法引用
+     * @param columnTwo   第二个连接字段的方法引用
+     * @param <T>         第一个实体类型
+     * @param <U>         第二个实体类型
+     * @param <R>         返回值类型
+     * @return 当前Update实例
+     * @since 2.1.4
+     */
+    public <T extends IEntity<?>, U extends IEntity<?>, R> Update rightJoin(Class<? extends IEntity<?>> entityClass, String alias, SFunction<T, R> columnOne, SFunction<U, R> columnTwo) {
+        return join(Join.right(this, entityClass, alias).on(columnOne, columnTwo));
+    }
+
+    /**
+     * 交叉连接（基于实体类，使用Lambda表达式指定连接条件）
+     *
+     * @param entityClass 实体类
+     * @param alias       别名
+     * @param columnOne   第一个连接字段的方法引用
+     * @param columnTwo   第二个连接字段的方法引用
+     * @param <T>         第一个实体类型
+     * @param <U>         第二个实体类型
+     * @param <R>         返回值类型
+     * @return 当前Update实例
+     * @since 2.1.4
+     */
+    public <T extends IEntity<?>, U extends IEntity<?>, R> Update crossJoin(Class<? extends IEntity<?>> entityClass, String alias, SFunction<T, R> columnOne, SFunction<U, R> columnTwo) {
+        return join(Join.cross(this, entityClass, alias).on(columnOne, columnTwo));
+    }
+
+    /**
+     * 内连接（基于实体类，使用带前缀的Lambda表达式指定连接条件）
+     *
+     * @param entityClass 实体类
+     * @param alias       别名
+     * @param prefixOne   第一个表前缀
+     * @param columnOne   第一个连接字段的方法引用
+     * @param prefixTwo   第二个表前缀
+     * @param columnTwo   第二个连接字段的方法引用
+     * @param <T>         第一个实体类型
+     * @param <U>         第二个实体类型
+     * @param <R>         返回值类型
+     * @return 当前Update实例
+     * @since 2.1.4
+     */
+    public <T extends IEntity<?>, U extends IEntity<?>, R> Update innerJoin(Class<? extends IEntity<?>> entityClass, String alias, String prefixOne, SFunction<T, R> columnOne, String prefixTwo, SFunction<U, R> columnTwo) {
+        return join(Join.inner(this, entityClass, alias).on(prefixOne, columnOne, prefixTwo, columnTwo));
+    }
+
+    /**
+     * 左连接（基于实体类，使用带前缀的Lambda表达式指定连接条件）
+     *
+     * @param entityClass 实体类
+     * @param alias       别名
+     * @param prefixOne   第一个表前缀
+     * @param columnOne   第一个连接字段的方法引用
+     * @param prefixTwo   第二个表前缀
+     * @param columnTwo   第二个连接字段的方法引用
+     * @param <T>         第一个实体类型
+     * @param <U>         第二个实体类型
+     * @param <R>         返回值类型
+     * @return 当前Update实例
+     * @since 2.1.4
+     */
+    public <T extends IEntity<?>, U extends IEntity<?>, R> Update leftJoin(Class<? extends IEntity<?>> entityClass, String alias, String prefixOne, SFunction<T, R> columnOne, String prefixTwo, SFunction<U, R> columnTwo) {
+        return join(Join.left(this, entityClass, alias).on(prefixOne, columnOne, prefixTwo, columnTwo));
+    }
+
+    /**
+     * 右连接（基于实体类，使用带前缀的Lambda表达式指定连接条件）
+     *
+     * @param entityClass 实体类
+     * @param alias       别名
+     * @param prefixOne   第一个表前缀
+     * @param columnOne   第一个连接字段的方法引用
+     * @param prefixTwo   第二个表前缀
+     * @param columnTwo   第二个连接字段的方法引用
+     * @param <T>         第一个实体类型
+     * @param <U>         第二个实体类型
+     * @param <R>         返回值类型
+     * @return 当前Update实例
+     * @since 2.1.4
+     */
+    public <T extends IEntity<?>, U extends IEntity<?>, R> Update rightJoin(Class<? extends IEntity<?>> entityClass, String alias, String prefixOne, SFunction<T, R> columnOne, String prefixTwo, SFunction<U, R> columnTwo) {
+        return join(Join.right(this, entityClass, alias).on(prefixOne, columnOne, prefixTwo, columnTwo));
+    }
+
+    /**
+     * 交叉连接（基于实体类，使用带前缀的Lambda表达式指定连接条件）
+     *
+     * @param entityClass 实体类
+     * @param alias       别名
+     * @param prefixOne   第一个表前缀
+     * @param columnOne   第一个连接字段的方法引用
+     * @param prefixTwo   第二个表前缀
+     * @param columnTwo   第二个连接字段的方法引用
+     * @param <T>         第一个实体类型
+     * @param <U>         第二个实体类型
+     * @param <R>         返回值类型
+     * @return 当前Update实例
+     * @since 2.1.4
+     */
+    public <T extends IEntity<?>, U extends IEntity<?>, R> Update crossJoin(Class<? extends IEntity<?>> entityClass, String alias, String prefixOne, SFunction<T, R> columnOne, String prefixTwo, SFunction<U, R> columnTwo) {
+        return join(Join.cross(this, entityClass, alias).on(prefixOne, columnOne, prefixTwo, columnTwo));
+    }
+
+    /**
+     * 内连接（基于实体类）
+     *
+     * @param entityClass 实体类
+     * @param alias       别名
+     * @param on          连接条件
+     * @return 当前Update实例
+     * @since 2.1.4
+     */
+    public Update innerJoin(Class<? extends IEntity<?>> entityClass, String alias, Cond on) {
+        return join(Join.inner(this, entityClass, alias).on(on));
+    }
+
+    /**
+     * 左连接（基于实体类）
+     *
+     * @param entityClass 实体类
+     * @param alias       别名
+     * @param on          连接条件
+     * @return 当前Update实例
+     * @since 2.1.4
+     */
+    public Update leftJoin(Class<? extends IEntity<?>> entityClass, String alias, Cond on) {
+        return join(Join.left(this, entityClass, alias).on(on));
+    }
+
+    /**
+     * 右连接（基于实体类）
+     *
+     * @param entityClass 实体类
+     * @param alias       别名
+     * @param on          连接条件
+     * @return 当前Update实例
+     * @since 2.1.4
+     */
+    public Update rightJoin(Class<? extends IEntity<?>> entityClass, String alias, Cond on) {
+        return join(Join.right(this, entityClass, alias).on(on));
+    }
+
+    /**
+     * 交叉连接（基于实体类）
+     *
+     * @param entityClass 实体类
+     * @param alias       别名
+     * @param on          连接条件
+     * @return 当前Update实例
+     * @since 2.1.4
+     */
+    public Update crossJoin(Class<? extends IEntity<?>> entityClass, String alias, Cond on) {
+        return join(Join.cross(this, entityClass, alias).on(on));
+    }
+
     public Update where(Where where) {
         where().where(where);
         return this;
@@ -477,6 +794,19 @@ public final class Update extends Query<Update> {
     public Update where(Cond cond) {
         where().cond().cond(cond);
         return this;
+    }
+
+    /**
+     * 通过条件构建器创建更新条件
+     *
+     * @param appender 条件构建器
+     * @return 当前Update实例
+     * @since 2.1.4
+     */
+    public Update where(LambdaUtils.ConditionAppender appender) {
+        Cond cond = Cond.create(this);
+        appender.append(cond);
+        return where(cond);
     }
 
     /**

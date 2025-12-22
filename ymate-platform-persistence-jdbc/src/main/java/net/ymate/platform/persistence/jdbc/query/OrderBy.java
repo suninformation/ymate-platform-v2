@@ -19,8 +19,10 @@ import net.ymate.platform.commons.util.ExpressionUtils;
 import net.ymate.platform.core.persistence.Fields;
 import net.ymate.platform.core.persistence.IFunction;
 import net.ymate.platform.core.persistence.Params;
+import net.ymate.platform.core.persistence.base.IEntity;
 import net.ymate.platform.persistence.jdbc.IDatabase;
 import net.ymate.platform.persistence.jdbc.JDBC;
+import net.ymate.platform.persistence.jdbc.query.LambdaUtils.SFunction;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Strings;
@@ -32,7 +34,7 @@ import java.util.List;
  *
  * @author 刘镇 (suninformation@163.com) on 15/5/7 上午10:55
  */
-public final class OrderBy extends Query<OrderBy> {
+public class OrderBy extends Query<OrderBy> {
 
     private final StringBuilder orderByBuilder;
 
@@ -189,6 +191,65 @@ public final class OrderBy extends Query<OrderBy> {
         return asc(null, func.build(), false).param(func.params());
     }
 
+    // ---------- Lambda Support for ASC ----------
+
+    /**
+     * 通过Lambda表达式创建升序排序
+     *
+     * @param column 方法引用
+     * @param <E>    实体类型
+     * @param <R>    返回值类型
+     * @return 当前OrderBy实例
+     * @since 2.1.4
+     */
+    public <E extends IEntity<?>, R> OrderBy asc(SFunction<E, R> column) {
+        return asc(null, column, true);
+    }
+
+    /**
+     * 通过Lambda表达式创建升序排序（带标识符包装控制）
+     *
+     * @param column         方法引用
+     * @param wrapIdentifier 是否包装标识符
+     * @param <E>            实体类型
+     * @param <R>            返回值类型
+     * @return 当前OrderBy实例
+     * @since 2.1.4
+     */
+    public <E extends IEntity<?>, R> OrderBy asc(SFunction<E, R> column, boolean wrapIdentifier) {
+        return asc(null, column, wrapIdentifier);
+    }
+
+    /**
+     * 通过Lambda表达式创建升序排序（带前缀）
+     *
+     * @param prefix 前缀
+     * @param column 方法引用
+     * @param <E>    实体类型
+     * @param <R>    返回值类型
+     * @return 当前OrderBy实例
+     * @since 2.1.4
+     */
+    public <E extends IEntity<?>, R> OrderBy asc(String prefix, SFunction<E, R> column) {
+        return asc(prefix, column, true);
+    }
+
+    /**
+     * 通过Lambda表达式创建升序排序（带前缀和标识符包装控制）
+     *
+     * @param prefix         前缀
+     * @param column         方法引用
+     * @param wrapIdentifier 是否包装标识符
+     * @param <E>            实体类型
+     * @param <R>            返回值类型
+     * @return 当前OrderBy实例
+     * @since 2.1.4
+     */
+    public <E extends IEntity<?>, R> OrderBy asc(String prefix, SFunction<E, R> column, boolean wrapIdentifier) {
+        String columnName = getColumnName(column);
+        return asc(prefix, columnName, wrapIdentifier);
+    }
+
     // ------
 
     public OrderBy desc(String prefix, Fields fields, boolean wrapIdentifier) {
@@ -235,6 +296,65 @@ public final class OrderBy extends Query<OrderBy> {
 
     public OrderBy desc(IFunction func) {
         return desc(null, func.build(), false).param(func.params());
+    }
+
+    // ---------- Lambda Support for DESC ----------
+
+    /**
+     * 通过Lambda表达式创建降序排序
+     *
+     * @param column 方法引用
+     * @param <E>    实体类型
+     * @param <R>    返回值类型
+     * @return 当前OrderBy实例
+     * @since 2.1.4
+     */
+    public <E extends IEntity<?>, R> OrderBy desc(SFunction<E, R> column) {
+        return desc(null, column, true);
+    }
+
+    /**
+     * 通过Lambda表达式创建降序排序（带标识符包装控制）
+     *
+     * @param column         方法引用
+     * @param wrapIdentifier 是否包装标识符
+     * @param <E>            实体类型
+     * @param <R>            返回值类型
+     * @return 当前OrderBy实例
+     * @since 2.1.4
+     */
+    public <E extends IEntity<?>, R> OrderBy desc(SFunction<E, R> column, boolean wrapIdentifier) {
+        return desc(null, column, wrapIdentifier);
+    }
+
+    /**
+     * 通过Lambda表达式创建降序排序（带前缀）
+     *
+     * @param prefix 前缀
+     * @param column 方法引用
+     * @param <E>    实体类型
+     * @param <R>    返回值类型
+     * @return 当前OrderBy实例
+     * @since 2.1.4
+     */
+    public <E extends IEntity<?>, R> OrderBy desc(String prefix, SFunction<E, R> column) {
+        return desc(prefix, column, true);
+    }
+
+    /**
+     * 通过Lambda表达式创建降序排序（带前缀和标识符包装控制）
+     *
+     * @param prefix         前缀
+     * @param column         方法引用
+     * @param wrapIdentifier 是否包装标识符
+     * @param <E>            实体类型
+     * @param <R>            返回值类型
+     * @return 当前OrderBy实例
+     * @since 2.1.4
+     */
+    public <E extends IEntity<?>, R> OrderBy desc(String prefix, SFunction<E, R> column, boolean wrapIdentifier) {
+        String columnName = getColumnName(column);
+        return desc(prefix, columnName, wrapIdentifier);
     }
 
     // ------

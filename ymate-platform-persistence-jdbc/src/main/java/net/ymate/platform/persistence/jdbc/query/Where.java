@@ -19,8 +19,10 @@ import net.ymate.platform.commons.util.ExpressionUtils;
 import net.ymate.platform.core.persistence.Fields;
 import net.ymate.platform.core.persistence.IFunction;
 import net.ymate.platform.core.persistence.Params;
+import net.ymate.platform.core.persistence.base.IEntity;
 import net.ymate.platform.persistence.jdbc.IDatabase;
 import net.ymate.platform.persistence.jdbc.JDBC;
+import net.ymate.platform.persistence.jdbc.query.LambdaUtils.SFunction;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.List;
@@ -220,6 +222,68 @@ public final class Where extends QueryHandleAdapter<Where> {
         return this;
     }
 
+    // ---------- Lambda Support for GroupBy ----------
+
+    /**
+     * 通过Lambda表达式创建分组
+     *
+     * @param column 方法引用
+     * @param <E>    实体类型
+     * @param <R>    返回值类型
+     * @return 当前Where实例
+     * @since 2.1.4
+     */
+    public <E extends IEntity<?>, R> Where groupBy(SFunction<E, R> column) {
+        groupBy.field(column);
+        return this;
+    }
+
+    /**
+     * 通过Lambda表达式创建分组（带排序方向）
+     *
+     * @param column 方法引用
+     * @param desc   是否降序
+     * @param <E>    实体类型
+     * @param <R>    返回值类型
+     * @return 当前Where实例
+     * @since 2.1.4
+     */
+    public <E extends IEntity<?>, R> Where groupBy(SFunction<E, R> column, boolean desc) {
+        groupBy.field(column, desc);
+        return this;
+    }
+
+    /**
+     * 通过Lambda表达式创建分组（带前缀）
+     *
+     * @param prefix 前缀
+     * @param column 方法引用
+     * @param <E>    实体类型
+     * @param <R>    返回值类型
+     * @return 当前Where实例
+     * @since 2.1.4
+     */
+    public <E extends IEntity<?>, R> Where groupBy(String prefix, SFunction<E, R> column) {
+        groupBy.field(prefix, column);
+        return this;
+    }
+
+    /**
+     * 通过Lambda表达式创建分组（带前缀和排序方向）
+     *
+     * @param prefix 前缀
+     * @param column 方法引用
+     * @param desc   是否降序
+     * @param <E>    实体类型
+     * @param <R>    返回值类型
+     * @return 当前Where实例
+     * @since 2.1.4
+     */
+    public <E extends IEntity<?>, R> Where groupBy(String prefix, SFunction<E, R> column, boolean desc) {
+        groupBy.field(prefix, column, desc);
+        return this;
+    }
+
     // --- GroupBy DESC
 
     public Where groupByDesc(Fields fields) {
@@ -372,6 +436,66 @@ public final class Where extends QueryHandleAdapter<Where> {
 
     public Where orderByDesc(IFunction func) {
         orderBy.desc(func);
+        return this;
+    }
+
+    // ---------- Lambda Support for OrderBy ----------
+
+    /**
+     * 通过Lambda表达式创建升序排序
+     *
+     * @param column 方法引用
+     * @param <E>    实体类型
+     * @param <R>    返回值类型
+     * @return 当前Where实例
+     * @since 2.1.4
+     */
+    public <E extends IEntity<?>, R> Where orderByAsc(SFunction<E, R> column) {
+        orderBy.asc(column);
+        return this;
+    }
+
+    /**
+     * 通过Lambda表达式创建升序排序（带前缀）
+     *
+     * @param prefix 前缀
+     * @param column 方法引用
+     * @param <E>    实体类型
+     * @param <R>    返回值类型
+     * @return 当前Where实例
+     * @since 2.1.4
+     */
+    public <E extends IEntity<?>, R> Where orderByAsc(String prefix, SFunction<E, R> column) {
+        orderBy.asc(prefix, column);
+        return this;
+    }
+
+    /**
+     * 通过Lambda表达式创建降序排序
+     *
+     * @param column 方法引用
+     * @param <E>    实体类型
+     * @param <R>    返回值类型
+     * @return 当前Where实例
+     * @since 2.1.4
+     */
+    public <E extends IEntity<?>, R> Where orderByDesc(SFunction<E, R> column) {
+        orderBy.desc(column);
+        return this;
+    }
+
+    /**
+     * 通过Lambda表达式创建降序排序（带前缀）
+     *
+     * @param prefix 前缀
+     * @param column 方法引用
+     * @param <E>    实体类型
+     * @param <R>    返回值类型
+     * @return 当前Where实例
+     * @since 2.1.4
+     */
+    public <E extends IEntity<?>, R> Where orderByDesc(String prefix, SFunction<E, R> column) {
+        orderBy.desc(prefix, column);
         return this;
     }
 

@@ -22,6 +22,7 @@ import net.ymate.platform.core.persistence.base.EntityMeta;
 import net.ymate.platform.core.persistence.base.IEntity;
 import net.ymate.platform.persistence.jdbc.IDatabase;
 import net.ymate.platform.persistence.jdbc.JDBC;
+import net.ymate.platform.persistence.jdbc.query.LambdaUtils.SFunction;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.ArrayList;
@@ -33,7 +34,7 @@ import java.util.List;
  * @author 刘镇 (suninformation@163.com) on 15/5/12 下午6:03
  */
 @SuppressWarnings("rawtypes")
-public final class Delete extends Query<Delete> {
+public class Delete extends Query<Delete> {
 
     private final List<String> froms = new ArrayList<>();
 
@@ -413,6 +414,204 @@ public final class Delete extends Query<Delete> {
         return join(Join.right(owner(), dataSourceName(), prefix, from, safePrefix).alias(alias).on(on));
     }
 
+    // ---------- Lambda Support for JOIN ----------
+
+    /**
+     * 内连接（基于实体类，使用Lambda表达式指定连接条件）
+     *
+     * @param entityClass 实体类
+     * @param alias       别名
+     * @param columnOne   第一个连接字段的方法引用
+     * @param columnTwo   第二个连接字段的方法引用
+     * @param <T>         第一个实体类型
+     * @param <U>         第二个实体类型
+     * @param <R>         返回值类型
+     * @return 当前Delete实例
+     * @since 2.1.4
+     */
+    public <T extends IEntity<?>, U extends IEntity<?>, R> Delete innerJoin(Class<? extends IEntity<?>> entityClass, String alias, SFunction<T, R> columnOne, SFunction<U, R> columnTwo) {
+        return join(Join.inner(this, entityClass, alias).on(columnOne, columnTwo));
+    }
+
+    /**
+     * 左连接（基于实体类，使用Lambda表达式指定连接条件）
+     *
+     * @param entityClass 实体类
+     * @param alias       别名
+     * @param columnOne   第一个连接字段的方法引用
+     * @param columnTwo   第二个连接字段的方法引用
+     * @param <T>         第一个实体类型
+     * @param <U>         第二个实体类型
+     * @param <R>         返回值类型
+     * @return 当前Delete实例
+     * @since 2.1.4
+     */
+    public <T extends IEntity<?>, U extends IEntity<?>, R> Delete leftJoin(Class<? extends IEntity<?>> entityClass, String alias, SFunction<T, R> columnOne, SFunction<U, R> columnTwo) {
+        return join(Join.left(this, entityClass, alias).on(columnOne, columnTwo));
+    }
+
+    /**
+     * 右连接（基于实体类，使用Lambda表达式指定连接条件）
+     *
+     * @param entityClass 实体类
+     * @param alias       别名
+     * @param columnOne   第一个连接字段的方法引用
+     * @param columnTwo   第二个连接字段的方法引用
+     * @param <T>         第一个实体类型
+     * @param <U>         第二个实体类型
+     * @param <R>         返回值类型
+     * @return 当前Delete实例
+     * @since 2.1.4
+     */
+    public <T extends IEntity<?>, U extends IEntity<?>, R> Delete rightJoin(Class<? extends IEntity<?>> entityClass, String alias, SFunction<T, R> columnOne, SFunction<U, R> columnTwo) {
+        return join(Join.right(this, entityClass, alias).on(columnOne, columnTwo));
+    }
+
+    /**
+     * 交叉连接（基于实体类，使用Lambda表达式指定连接条件）
+     *
+     * @param entityClass 实体类
+     * @param alias       别名
+     * @param columnOne   第一个连接字段的方法引用
+     * @param columnTwo   第二个连接字段的方法引用
+     * @param <T>         第一个实体类型
+     * @param <U>         第二个实体类型
+     * @param <R>         返回值类型
+     * @return 当前Delete实例
+     * @since 2.1.4
+     */
+    public <T extends IEntity<?>, U extends IEntity<?>, R> Delete crossJoin(Class<? extends IEntity<?>> entityClass, String alias, SFunction<T, R> columnOne, SFunction<U, R> columnTwo) {
+        return join(Join.cross(this, entityClass, alias).on(columnOne, columnTwo));
+    }
+
+    /**
+     * 内连接（基于实体类，使用带前缀的Lambda表达式指定连接条件）
+     *
+     * @param entityClass 实体类
+     * @param alias       别名
+     * @param prefixOne   第一个表前缀
+     * @param columnOne   第一个连接字段的方法引用
+     * @param prefixTwo   第二个表前缀
+     * @param columnTwo   第二个连接字段的方法引用
+     * @param <T>         第一个实体类型
+     * @param <U>         第二个实体类型
+     * @param <R>         返回值类型
+     * @return 当前Delete实例
+     * @since 2.1.4
+     */
+    public <T extends IEntity<?>, U extends IEntity<?>, R> Delete innerJoin(Class<? extends IEntity<?>> entityClass, String alias, String prefixOne, SFunction<T, R> columnOne, String prefixTwo, SFunction<U, R> columnTwo) {
+        return join(Join.inner(this, entityClass, alias).on(prefixOne, columnOne, prefixTwo, columnTwo));
+    }
+
+    /**
+     * 左连接（基于实体类，使用带前缀的Lambda表达式指定连接条件）
+     *
+     * @param entityClass 实体类
+     * @param alias       别名
+     * @param prefixOne   第一个表前缀
+     * @param columnOne   第一个连接字段的方法引用
+     * @param prefixTwo   第二个表前缀
+     * @param columnTwo   第二个连接字段的方法引用
+     * @param <T>         第一个实体类型
+     * @param <U>         第二个实体类型
+     * @param <R>         返回值类型
+     * @return 当前Delete实例
+     * @since 2.1.4
+     */
+    public <T extends IEntity<?>, U extends IEntity<?>, R> Delete leftJoin(Class<? extends IEntity<?>> entityClass, String alias, String prefixOne, SFunction<T, R> columnOne, String prefixTwo, SFunction<U, R> columnTwo) {
+        return join(Join.left(this, entityClass, alias).on(prefixOne, columnOne, prefixTwo, columnTwo));
+    }
+
+    /**
+     * 右连接（基于实体类，使用带前缀的Lambda表达式指定连接条件）
+     *
+     * @param entityClass 实体类
+     * @param alias       别名
+     * @param prefixOne   第一个表前缀
+     * @param columnOne   第一个连接字段的方法引用
+     * @param prefixTwo   第二个表前缀
+     * @param columnTwo   第二个连接字段的方法引用
+     * @param <T>         第一个实体类型
+     * @param <U>         第二个实体类型
+     * @param <R>         返回值类型
+     * @return 当前Delete实例
+     * @since 2.1.4
+     */
+    public <T extends IEntity<?>, U extends IEntity<?>, R> Delete rightJoin(Class<? extends IEntity<?>> entityClass, String alias, String prefixOne, SFunction<T, R> columnOne, String prefixTwo, SFunction<U, R> columnTwo) {
+        return join(Join.right(this, entityClass, alias).on(prefixOne, columnOne, prefixTwo, columnTwo));
+    }
+
+    /**
+     * 交叉连接（基于实体类，使用带前缀的Lambda表达式指定连接条件）
+     *
+     * @param entityClass 实体类
+     * @param alias       别名
+     * @param prefixOne   第一个表前缀
+     * @param columnOne   第一个连接字段的方法引用
+     * @param prefixTwo   第二个表前缀
+     * @param columnTwo   第二个连接字段的方法引用
+     * @param <T>         第一个实体类型
+     * @param <U>         第二个实体类型
+     * @param <R>         返回值类型
+     * @return 当前Delete实例
+     * @since 2.1.4
+     */
+    public <T extends IEntity<?>, U extends IEntity<?>, R> Delete crossJoin(Class<? extends IEntity<?>> entityClass, String alias, String prefixOne, SFunction<T, R> columnOne, String prefixTwo, SFunction<U, R> columnTwo) {
+        return join(Join.cross(this, entityClass, alias).on(prefixOne, columnOne, prefixTwo, columnTwo));
+    }
+
+    /**
+     * 内连接（基于实体类）
+     *
+     * @param entityClass 实体类
+     * @param alias       别名
+     * @param on          连接条件
+     * @return 当前Delete实例
+     * @since 2.1.4
+     */
+    public Delete innerJoin(Class<? extends IEntity<?>> entityClass, String alias, Cond on) {
+        return join(Join.inner(this, entityClass, alias).on(on));
+    }
+
+    /**
+     * 左连接（基于实体类）
+     *
+     * @param entityClass 实体类
+     * @param alias       别名
+     * @param on          连接条件
+     * @return 当前Delete实例
+     * @since 2.1.4
+     */
+    public Delete leftJoin(Class<? extends IEntity<?>> entityClass, String alias, Cond on) {
+        return join(Join.left(this, entityClass, alias).on(on));
+    }
+
+    /**
+     * 右连接（基于实体类）
+     *
+     * @param entityClass 实体类
+     * @param alias       别名
+     * @param on          连接条件
+     * @return 当前Delete实例
+     * @since 2.1.4
+     */
+    public Delete rightJoin(Class<? extends IEntity<?>> entityClass, String alias, Cond on) {
+        return join(Join.right(this, entityClass, alias).on(on));
+    }
+
+    /**
+     * 交叉连接（基于实体类）
+     *
+     * @param entityClass 实体类
+     * @param alias       别名
+     * @param on          连接条件
+     * @return 当前Delete实例
+     * @since 2.1.4
+     */
+    public Delete crossJoin(Class<? extends IEntity<?>> entityClass, String alias, Cond on) {
+        return join(Join.cross(this, entityClass, alias).on(on));
+    }
+
     public Delete where(Where where) {
         where().where(where);
         return this;
@@ -442,6 +641,35 @@ public final class Delete extends Query<Delete> {
     public Delete where(Cond cond) {
         where().cond().cond(cond);
         return this;
+    }
+
+    // ---------- Lambda Support for WHERE ----------
+
+    /**
+     * 通过Lambda表达式创建删除条件（相等条件）
+     *
+     * @param column 方法引用
+     * @param value  参数值
+     * @param <T>    实体类型
+     * @param <R>    返回值类型
+     * @return 当前Delete实例
+     * @since 2.1.4
+     */
+    public <T extends IEntity<?>, R> Delete where(SFunction<T, R> column, Object value) {
+        return where(Cond.create(this).eq(column).param(value));
+    }
+
+    /**
+     * 通过条件构建器创建删除条件
+     *
+     * @param appender 条件构建器
+     * @return 当前Delete实例
+     * @since 2.1.4
+     */
+    public Delete where(LambdaUtils.ConditionAppender appender) {
+        Cond cond = Cond.create(this);
+        appender.append(cond);
+        return where(cond);
     }
 
     /**

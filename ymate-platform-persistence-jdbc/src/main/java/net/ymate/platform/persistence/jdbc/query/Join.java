@@ -16,8 +16,10 @@
 package net.ymate.platform.persistence.jdbc.query;
 
 import net.ymate.platform.core.persistence.Params;
+import net.ymate.platform.core.persistence.base.IEntity;
 import net.ymate.platform.persistence.jdbc.IDatabase;
 import net.ymate.platform.persistence.jdbc.JDBC;
+import net.ymate.platform.persistence.jdbc.query.LambdaUtils.SFunction;
 import org.apache.commons.lang3.StringUtils;
 
 /**
@@ -25,7 +27,7 @@ import org.apache.commons.lang3.StringUtils;
  *
  * @author 刘镇 (suninformation@163.com) on 15/5/12 下午6:04
  */
-public final class Join extends Query<Join> {
+public class Join extends Query<Join> {
 
     /**
      * 连接方式枚举
@@ -86,6 +88,170 @@ public final class Join extends Query<Join> {
     public static Join inner(String prefix, String from, boolean safePrefix) {
         IDatabase owner = JDBC.get();
         return new Join(owner, owner.getConfig().getDefaultDataSourceName(), Type.INNER.getName(), prefix, from, safePrefix);
+    }
+
+    /**
+     * 创建内连接查询对象（基于实体类）
+     *
+     * @param entityClass 实体类
+     * @param alias       别名
+     * @return Join实例
+     * @since 2.1.4
+     */
+    public static Join inner(Class<? extends IEntity<?>> entityClass, String alias) {
+        return inner((Query<?>) null, entityClass, alias);
+    }
+
+    /**
+     * 创建内连接查询对象（基于实体类）
+     *
+     * @param query       查询对象
+     * @param entityClass 实体类
+     * @param alias       别名
+     * @return Join实例
+     * @since 2.1.4
+     */
+    public static Join inner(Query<?> query, Class<? extends IEntity<?>> entityClass, String alias) {
+        return inner(query, null, entityClass, alias);
+    }
+
+    /**
+     * 创建内连接查询对象（基于实体类）
+     *
+     * @param query       查询对象
+     * @param prefix      前缀
+     * @param entityClass 实体类
+     * @param alias       别名
+     * @return Join实例
+     * @since 2.1.4
+     */
+    public static Join inner(Query<?> query, String prefix, Class<? extends IEntity<?>> entityClass, String alias) {
+        IDatabase owner = query != null ? query.owner() : JDBC.get();
+        String dataSourceName = query != null ? query.dataSourceName() : owner.getConfig().getDefaultDataSourceName();
+        return new Join(owner, dataSourceName, Type.INNER.getName(), prefix, LambdaUtils.getEntityName(entityClass), true).alias(alias);
+    }
+
+    /**
+     * 创建交叉连接查询对象（基于实体类）
+     *
+     * @param entityClass 实体类
+     * @param alias       别名
+     * @return Join实例
+     * @since 2.1.4
+     */
+    public static Join cross(Class<? extends IEntity<?>> entityClass, String alias) {
+        return cross((Query<?>) null, entityClass, alias);
+    }
+
+    /**
+     * 创建交叉连接查询对象（基于实体类）
+     *
+     * @param query       查询对象
+     * @param entityClass 实体类
+     * @param alias       别名
+     * @return Join实例
+     * @since 2.1.4
+     */
+    public static Join cross(Query<?> query, Class<? extends IEntity<?>> entityClass, String alias) {
+        return cross(query, null, entityClass, alias);
+    }
+
+    /**
+     * 创建交叉连接查询对象（基于实体类）
+     *
+     * @param query       查询对象
+     * @param prefix      前缀
+     * @param entityClass 实体类
+     * @param alias       别名
+     * @return Join实例
+     * @since 2.1.4
+     */
+    public static Join cross(Query<?> query, String prefix, Class<? extends IEntity<?>> entityClass, String alias) {
+        IDatabase owner = query != null ? query.owner() : JDBC.get();
+        String dataSourceName = query != null ? query.dataSourceName() : owner.getConfig().getDefaultDataSourceName();
+        return new Join(owner, dataSourceName, Type.CROSS.getName(), prefix, LambdaUtils.getEntityName(entityClass), true).alias(alias);
+    }
+
+    /**
+     * 创建左连接查询对象（基于实体类）
+     *
+     * @param entityClass 实体类
+     * @param alias       别名
+     * @return Join实例
+     * @since 2.1.4
+     */
+    public static Join left(Class<? extends IEntity<?>> entityClass, String alias) {
+        return left((Query<?>) null, entityClass, alias);
+    }
+
+    /**
+     * 创建左连接查询对象（基于实体类）
+     *
+     * @param query       查询对象
+     * @param entityClass 实体类
+     * @param alias       别名
+     * @return Join实例
+     * @since 2.1.4
+     */
+    public static Join left(Query<?> query, Class<? extends IEntity<?>> entityClass, String alias) {
+        return left(query, null, entityClass, alias);
+    }
+
+    /**
+     * 创建左连接查询对象（基于实体类）
+     *
+     * @param query       查询对象
+     * @param prefix      前缀
+     * @param entityClass 实体类
+     * @param alias       别名
+     * @return Join实例
+     * @since 2.1.4
+     */
+    public static Join left(Query<?> query, String prefix, Class<? extends IEntity<?>> entityClass, String alias) {
+        IDatabase owner = query != null ? query.owner() : JDBC.get();
+        String dataSourceName = query != null ? query.dataSourceName() : owner.getConfig().getDefaultDataSourceName();
+        return new Join(owner, dataSourceName, Type.LEFT.getName(), prefix, LambdaUtils.getEntityName(entityClass), true).alias(alias);
+    }
+
+    /**
+     * 创建右连接查询对象（基于实体类）
+     *
+     * @param entityClass 实体类
+     * @param alias       别名
+     * @return Join实例
+     * @since 2.1.4
+     */
+    public static Join right(Class<? extends IEntity<?>> entityClass, String alias) {
+        return right((Query<?>) null, entityClass, alias);
+    }
+
+    /**
+     * 创建右连接查询对象（基于实体类）
+     *
+     * @param query       查询对象
+     * @param entityClass 实体类
+     * @param alias       别名
+     * @return Join实例
+     * @since 2.1.4
+     */
+    public static Join right(Query<?> query, Class<? extends IEntity<?>> entityClass, String alias) {
+        return right(query, null, entityClass, alias);
+    }
+
+    /**
+     * 创建右连接查询对象（基于实体类）
+     *
+     * @param query       查询对象
+     * @param prefix      前缀
+     * @param entityClass 实体类
+     * @param alias       别名
+     * @return Join实例
+     * @since 2.1.4
+     */
+    public static Join right(Query<?> query, String prefix, Class<? extends IEntity<?>> entityClass, String alias) {
+        IDatabase owner = query != null ? query.owner() : JDBC.get();
+        String dataSourceName = query != null ? query.dataSourceName() : owner.getConfig().getDefaultDataSourceName();
+        return new Join(owner, dataSourceName, Type.RIGHT.getName(), prefix, LambdaUtils.getEntityName(entityClass), true).alias(alias);
     }
 
     /**
@@ -350,6 +516,225 @@ public final class Join extends Query<Join> {
     public Join on(Cond cond) {
         on.cond(cond);
         return this;
+    }
+
+    // ---------- Lambda Support for ON ----------
+
+    /**
+     * 通过Lambda表达式创建连接条件（两个字段相等）
+     *
+     * @param columnOne 第一个字段的方法引用
+     * @param columnTwo 第二个字段的方法引用
+     * @param <T>       第一个实体类型
+     * @param <U>       第二个实体类型
+     * @param <R>       返回值类型
+     * @return 当前Join实例
+     * @since 2.1.4
+     */
+    public <T extends IEntity<?>, U extends IEntity<?>, R> Join on(SFunction<T, R> columnOne, SFunction<U, R> columnTwo) {
+        String fieldOne = getColumnName(columnOne);
+        String fieldTwo = getColumnName(columnTwo);
+        return on(Cond.create(this).eqField(fieldOne, fieldTwo));
+    }
+
+    /**
+     * 通过Lambda表达式创建连接条件（两个字段相等，带前缀）
+     *
+     * @param prefixOne 第一个字段的前缀
+     * @param columnOne 第一个字段的方法引用
+     * @param prefixTwo 第二个字段的前缀
+     * @param columnTwo 第二个字段的方法引用
+     * @param <T>       第一个实体类型
+     * @param <U>       第二个实体类型
+     * @param <R>       返回值类型
+     * @return 当前Join实例
+     * @since 2.1.4
+     */
+    public <T extends IEntity<?>, U extends IEntity<?>, R> Join on(String prefixOne, SFunction<T, R> columnOne, String prefixTwo, SFunction<U, R> columnTwo) {
+        return on(Cond.create(this).eq(prefixOne, columnOne, prefixTwo, columnTwo));
+    }
+
+    /**
+     * 通过Lambda表达式创建连接条件（两个字段不相等）
+     *
+     * @param columnOne 第一个字段的方法引用
+     * @param columnTwo 第二个字段的方法引用
+     * @param <T>       第一个实体类型
+     * @param <U>       第二个实体类型
+     * @param <R>       返回值类型
+     * @return 当前Join实例
+     * @since 2.1.4
+     */
+    public <T extends IEntity<?>, U extends IEntity<?>, R> Join onNotEq(SFunction<T, R> columnOne, SFunction<U, R> columnTwo) {
+        String fieldOne = getColumnName(columnOne);
+        String fieldTwo = getColumnName(columnTwo);
+        return on(Cond.create(this).notEqField(fieldOne, fieldTwo));
+    }
+
+    /**
+     * 通过Lambda表达式创建连接条件（两个字段不相等，带前缀）
+     *
+     * @param prefixOne 第一个字段的前缀
+     * @param columnOne 第一个字段的方法引用
+     * @param prefixTwo 第二个字段的前缀
+     * @param columnTwo 第二个字段的方法引用
+     * @param <T>       第一个实体类型
+     * @param <U>       第二个实体类型
+     * @param <R>       返回值类型
+     * @return 当前Join实例
+     * @since 2.1.4
+     */
+    public <T extends IEntity<?>, U extends IEntity<?>, R> Join onNotEq(String prefixOne, SFunction<T, R> columnOne, String prefixTwo, SFunction<U, R> columnTwo) {
+        return on(Cond.create(this).notEq(prefixOne, columnOne, prefixTwo, columnTwo));
+    }
+
+    /**
+     * 通过Lambda表达式创建连接条件（第一个字段大于第二个字段）
+     *
+     * @param columnOne 第一个字段的方法引用
+     * @param columnTwo 第二个字段的方法引用
+     * @param <T>       第一个实体类型
+     * @param <U>       第二个实体类型
+     * @param <R>       返回值类型
+     * @return 当前Join实例
+     * @since 2.1.4
+     */
+    public <T extends IEntity<?>, U extends IEntity<?>, R> Join onGt(SFunction<T, R> columnOne, SFunction<U, R> columnTwo) {
+        String fieldOne = getColumnName(columnOne);
+        String fieldTwo = getColumnName(columnTwo);
+        return on(Cond.create(this).gtField(fieldOne, fieldTwo));
+    }
+
+    /**
+     * 通过Lambda表达式创建连接条件（第一个字段大于第二个字段，带前缀）
+     *
+     * @param prefixOne 第一个字段的前缀
+     * @param columnOne 第一个字段的方法引用
+     * @param prefixTwo 第二个字段的前缀
+     * @param columnTwo 第二个字段的方法引用
+     * @param <T>       第一个实体类型
+     * @param <U>       第二个实体类型
+     * @param <R>       返回值类型
+     * @return 当前Join实例
+     * @since 2.1.4
+     */
+    public <T extends IEntity<?>, U extends IEntity<?>, R> Join onGt(String prefixOne, SFunction<T, R> columnOne, String prefixTwo, SFunction<U, R> columnTwo) {
+        return on(Cond.create(this).gt(prefixOne, columnOne, prefixTwo, columnTwo));
+    }
+
+    /**
+     * 通过Lambda表达式创建连接条件（第一个字段大于等于第二个字段）
+     *
+     * @param columnOne 第一个字段的方法引用
+     * @param columnTwo 第二个字段的方法引用
+     * @param <T>       第一个实体类型
+     * @param <U>       第二个实体类型
+     * @param <R>       返回值类型
+     * @return 当前Join实例
+     * @since 2.1.4
+     */
+    public <T extends IEntity<?>, U extends IEntity<?>, R> Join onGtEq(SFunction<T, R> columnOne, SFunction<U, R> columnTwo) {
+        String fieldOne = getColumnName(columnOne);
+        String fieldTwo = getColumnName(columnTwo);
+        return on(Cond.create(this).gtEq(fieldOne, fieldTwo));
+    }
+
+    /**
+     * 通过Lambda表达式创建连接条件（第一个字段大于等于第二个字段，带前缀）
+     *
+     * @param prefixOne 第一个字段的前缀
+     * @param columnOne 第一个字段的方法引用
+     * @param prefixTwo 第二个字段的前缀
+     * @param columnTwo 第二个字段的方法引用
+     * @param <T>       第一个实体类型
+     * @param <U>       第二个实体类型
+     * @param <R>       返回值类型
+     * @return 当前Join实例
+     * @since 2.1.4
+     */
+    public <T extends IEntity<?>, U extends IEntity<?>, R> Join onGtEq(String prefixOne, SFunction<T, R> columnOne, String prefixTwo, SFunction<U, R> columnTwo) {
+        return on(Cond.create(this).gtEq(prefixOne, columnOne, prefixTwo, columnTwo));
+    }
+
+    /**
+     * 通过Lambda表达式创建连接条件（第一个字段小于第二个字段）
+     *
+     * @param columnOne 第一个字段的方法引用
+     * @param columnTwo 第二个字段的方法引用
+     * @param <T>       第一个实体类型
+     * @param <U>       第二个实体类型
+     * @param <R>       返回值类型
+     * @return 当前Join实例
+     * @since 2.1.4
+     */
+    public <T extends IEntity<?>, U extends IEntity<?>, R> Join onLt(SFunction<T, R> columnOne, SFunction<U, R> columnTwo) {
+        String fieldOne = getColumnName(columnOne);
+        String fieldTwo = getColumnName(columnTwo);
+        return on(Cond.create(this).lt(fieldOne, fieldTwo));
+    }
+
+    /**
+     * 通过Lambda表达式创建连接条件（第一个字段小于第二个字段，带前缀）
+     *
+     * @param prefixOne 第一个字段的前缀
+     * @param columnOne 第一个字段的方法引用
+     * @param prefixTwo 第二个字段的前缀
+     * @param columnTwo 第二个字段的方法引用
+     * @param <T>       第一个实体类型
+     * @param <U>       第二个实体类型
+     * @param <R>       返回值类型
+     * @return 当前Join实例
+     * @since 2.1.4
+     */
+    public <T extends IEntity<?>, U extends IEntity<?>, R> Join onLt(String prefixOne, SFunction<T, R> columnOne, String prefixTwo, SFunction<U, R> columnTwo) {
+        return on(Cond.create(this).lt(prefixOne, columnOne, prefixTwo, columnTwo));
+    }
+
+    /**
+     * 通过Lambda表达式创建连接条件（第一个字段小于等于第二个字段）
+     *
+     * @param columnOne 第一个字段的方法引用
+     * @param columnTwo 第二个字段的方法引用
+     * @param <T>       第一个实体类型
+     * @param <U>       第二个实体类型
+     * @param <R>       返回值类型
+     * @return 当前Join实例
+     * @since 2.1.4
+     */
+    public <T extends IEntity<?>, U extends IEntity<?>, R> Join onLtEq(SFunction<T, R> columnOne, SFunction<U, R> columnTwo) {
+        String fieldOne = getColumnName(columnOne);
+        String fieldTwo = getColumnName(columnTwo);
+        return on(Cond.create(this).ltEqField(fieldOne, fieldTwo));
+    }
+
+    /**
+     * 通过Lambda表达式创建连接条件（第一个字段小于等于第二个字段，带前缀）
+     *
+     * @param prefixOne 第一个字段的前缀
+     * @param columnOne 第一个字段的方法引用
+     * @param prefixTwo 第二个字段的前缀
+     * @param columnTwo 第二个字段的方法引用
+     * @param <T>       第一个实体类型
+     * @param <U>       第二个实体类型
+     * @param <R>       返回值类型
+     * @return 当前Join实例
+     * @since 2.1.4
+     */
+    public <T extends IEntity<?>, U extends IEntity<?>, R> Join onLtEq(String prefixOne, SFunction<T, R> columnOne, String prefixTwo, SFunction<U, R> columnTwo) {
+        return on(Cond.create(this).ltEq(prefixOne, columnOne, prefixTwo, columnTwo));
+    }
+
+    /**
+     * 通过条件构建器创建连接条件
+     *
+     * @param appender 条件构建器
+     * @return 当前Join实例
+     * @since 2.1.4
+     */
+    public Join on(LambdaUtils.ConditionAppender appender) {
+        Cond cond = Cond.create(this);
+        appender.append(cond);
+        return on(cond);
     }
 
     public Params params() {

@@ -20,11 +20,13 @@ import net.ymate.platform.commons.util.ClassUtils;
 import net.ymate.platform.commons.util.RuntimeUtils;
 import net.ymate.platform.core.persistence.*;
 import net.ymate.platform.core.persistence.base.EntityMeta;
+import net.ymate.platform.core.persistence.base.IEntity;
 import net.ymate.platform.persistence.jdbc.IDatabase;
 import net.ymate.platform.persistence.jdbc.IDatabaseConnectionHolder;
 import net.ymate.platform.persistence.jdbc.JDBC;
 import net.ymate.platform.persistence.jdbc.base.impl.BeanResultSetHandler;
 import net.ymate.platform.persistence.jdbc.dialect.IDialect;
+import net.ymate.platform.persistence.jdbc.query.LambdaUtils.SFunction;
 import net.ymate.platform.persistence.jdbc.query.annotation.*;
 import org.apache.commons.lang.NullArgumentException;
 import org.apache.commons.lang3.ArrayUtils;
@@ -123,7 +125,10 @@ public class Query<T> extends QueryHandleAdapter<T> {
     }
 
     public String dataSourceName() {
-        return StringUtils.isNotBlank(dataSourceName) ? dataSourceName : owner.getConfig().getDefaultDataSourceName();
+        if (StringUtils.isNotBlank(dataSourceName)) {
+            return dataSourceName;
+        }
+        return owner != null ? owner.getConfig().getDefaultDataSourceName() : null;
     }
 
     @SuppressWarnings("unchecked")
@@ -138,7 +143,9 @@ public class Query<T> extends QueryHandleAdapter<T> {
     public IDialect dialect() {
         if (dialect == null) {
             try {
-                dialect = owner.getDataSourceAdapter(dataSourceName()).getDialect();
+                if (owner != null) {
+                    dialect = owner.getDataSourceAdapter(dataSourceName()).getDialect();
+                }
             } catch (Exception e) {
                 if (LOG.isWarnEnabled()) {
                     LOG.warn(StringUtils.EMPTY, RuntimeUtils.unwrapThrow(e));
@@ -156,7 +163,11 @@ public class Query<T> extends QueryHandleAdapter<T> {
 
     public String defaultTablePrefix() {
         if (defaultTablePrefix == null) {
-            defaultTablePrefix = StringUtils.defaultIfBlank(owner.getConfig().getDataSourceConfig(dataSourceName()).getTablePrefix(), StringUtils.EMPTY);
+            if (owner != null) {
+                defaultTablePrefix = StringUtils.defaultIfBlank(owner.getConfig().getDataSourceConfig(dataSourceName()).getTablePrefix(), StringUtils.EMPTY);
+            } else {
+                defaultTablePrefix = StringUtils.EMPTY;
+            }
         }
         return StringUtils.trimToEmpty(defaultTablePrefix);
     }
@@ -268,6 +279,82 @@ public class Query<T> extends QueryHandleAdapter<T> {
 
     public static String wrapIdentifierField(IDatabaseConnectionHolder connectionHolder, String field) {
         return wrapIdentifierField(connectionHolder.getDialect(), field);
+    }
+
+    // ---------- Lambda Support ----------
+
+    /**
+     * 从Lambda表达式中获取字段名
+     *
+     * @param func 方法引用
+     * @param <E>  实体类型
+     * @param <R>  返回值类型
+     * @return 字段名
+     * @since 2.1.4
+     */
+    protected <E extends IEntity<?>, R> String getFieldName(SFunction<E, R> func) {
+        return LambdaUtils.getFieldName(func);
+    }
+
+    /**
+     * @since 2.1.4
+     */
+    protected String getEntityName(Class<? extends IEntity<?>> entityClass) {
+        return LambdaUtils.getEntityName(entityClass);
+    }
+
+    /**
+     * 从Lambda表达式中获取数据库列名
+     *
+     * @param func 方法引用
+     * @param <E>  实体类型
+     * @param <R>  返回值类型
+     * @return 数据库列名
+     * @since 2.1.4
+     */
+    protected <E extends IEntity<?>, R> String getColumnName(SFunction<E, R> func) {
+        return LambdaUtils.getColumnName(func);
+    }
+
+    /**
+     * 从Lambda表达式中获取完整的字段名（包含前缀）
+     *
+     * @param prefix 前缀
+     * @param func   方法引用
+     * @param <E>    实体类型
+     * @param <R>    返回值类型
+     * @return 完整字段名
+     * @since 2.1.4
+     */
+    protected <E extends IEntity<?>, R> String getFullFieldName(String prefix, SFunction<E, R> func) {
+        return LambdaUtils.getFullFieldName(prefix, func);
+    }
+
+    /**
+     * 包装Lambda表达式获取的字段名为数据库标识符
+     *
+     * @param func 方法引用
+     * @param <E>  实体类型
+     * @param <R>  返回值类型
+     * @return 包装后的字段名
+     * @since 2.1.4
+     */
+    protected <E extends IEntity<?>, R> String wrapIdentifierField(SFunction<E, R> func) {
+        return wrapIdentifierField(getColumnName(func));
+    }
+
+    /**
+     * 包装Lambda表达式获取的字段名为数据库标识符（带前缀）
+     *
+     * @param prefix 前缀
+     * @param func   方法引用
+     * @param <E>    实体类型
+     * @param <R>    返回值类型
+     * @return 包装后的完整字段名
+     * @since 2.1.4
+     */
+    protected <E extends IEntity<?>, R> String wrapIdentifierField(String prefix, SFunction<E, R> func) {
+        return wrapIdentifierField(getFullFieldName(prefix, func));
     }
 
     /**

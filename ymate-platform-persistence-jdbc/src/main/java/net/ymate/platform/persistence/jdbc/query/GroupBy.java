@@ -19,8 +19,10 @@ import net.ymate.platform.commons.util.ExpressionUtils;
 import net.ymate.platform.core.persistence.Fields;
 import net.ymate.platform.core.persistence.IFunction;
 import net.ymate.platform.core.persistence.Params;
+import net.ymate.platform.core.persistence.base.IEntity;
 import net.ymate.platform.persistence.jdbc.IDatabase;
 import net.ymate.platform.persistence.jdbc.JDBC;
+import net.ymate.platform.persistence.jdbc.query.LambdaUtils.SFunction;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.List;
@@ -30,7 +32,7 @@ import java.util.List;
  *
  * @author 刘镇 (suninformation@163.com) on 15/5/12 下午4:10
  */
-public final class GroupBy extends Query<GroupBy> {
+public class GroupBy extends Query<GroupBy> {
 
     private final StringBuilder groupByBuilder;
 
@@ -210,6 +212,96 @@ public final class GroupBy extends Query<GroupBy> {
         return field(null, func.build(), desc, false).param(func.params());
     }
 
+    // ---------- Lambda Support for FIELD ----------
+
+    /**
+     * 通过Lambda表达式创建分组字段
+     *
+     * @param column 方法引用
+     * @param <E>    实体类型
+     * @param <R>    返回值类型
+     * @return 当前GroupBy实例
+     * @since 2.1.4
+     */
+    public <E extends IEntity<?>, R> GroupBy field(SFunction<E, R> column) {
+        return field(null, column, false, true);
+    }
+
+    /**
+     * 通过Lambda表达式创建分组字段（带排序方向）
+     *
+     * @param column 方法引用
+     * @param desc   是否降序
+     * @param <E>    实体类型
+     * @param <R>    返回值类型
+     * @return 当前GroupBy实例
+     * @since 2.1.4
+     */
+    public <E extends IEntity<?>, R> GroupBy field(SFunction<E, R> column, boolean desc) {
+        return field(null, column, desc, true);
+    }
+
+    /**
+     * 通过Lambda表达式创建分组字段（带排序方向和标识符包装控制）
+     *
+     * @param column         方法引用
+     * @param desc           是否降序
+     * @param wrapIdentifier 是否包装标识符
+     * @param <E>            实体类型
+     * @param <R>            返回值类型
+     * @return 当前GroupBy实例
+     * @since 2.1.4
+     */
+    public <E extends IEntity<?>, R> GroupBy field(SFunction<E, R> column, boolean desc, boolean wrapIdentifier) {
+        return field(null, column, desc, wrapIdentifier);
+    }
+
+    /**
+     * 通过Lambda表达式创建分组字段（带前缀）
+     *
+     * @param prefix 前缀
+     * @param column 方法引用
+     * @param <E>    实体类型
+     * @param <R>    返回值类型
+     * @return 当前GroupBy实例
+     * @since 2.1.4
+     */
+    public <E extends IEntity<?>, R> GroupBy field(String prefix, SFunction<E, R> column) {
+        return field(prefix, column, false, true);
+    }
+
+    /**
+     * 通过Lambda表达式创建分组字段（带前缀和排序方向）
+     *
+     * @param prefix 前缀
+     * @param column 方法引用
+     * @param desc   是否降序
+     * @param <E>    实体类型
+     * @param <R>    返回值类型
+     * @return 当前GroupBy实例
+     * @since 2.1.4
+     */
+    public <E extends IEntity<?>, R> GroupBy field(String prefix, SFunction<E, R> column, boolean desc) {
+        return field(prefix, column, desc, true);
+    }
+
+    /**
+     * 通过Lambda表达式创建分组字段（带前缀、排序方向和标识符包装控制）
+     *
+     * @param prefix         前缀
+     * @param column         方法引用
+     * @param desc           是否降序
+     * @param wrapIdentifier 是否包装标识符
+     * @param <E>            实体类型
+     * @param <R>            返回值类型
+     * @return 当前GroupBy实例
+     * @since 2.1.4
+     */
+    public <E extends IEntity<?>, R> GroupBy field(String prefix, SFunction<E, R> column, boolean desc, boolean wrapIdentifier) {
+        String columnName = getColumnName(column);
+        return field(prefix, columnName, desc, wrapIdentifier);
+    }
+
     public GroupBy field(String prefix, String field) {
         return field(prefix, field, false, true);
     }
@@ -262,6 +354,64 @@ public final class GroupBy extends Query<GroupBy> {
 
     public GroupBy desc(IFunction func) {
         return field(func, true);
+    }
+
+    // ---------- Lambda Support for DESC ----------
+
+    /**
+     * 通过Lambda表达式创建降序分组字段
+     *
+     * @param column 方法引用
+     * @param <E>    实体类型
+     * @param <R>    返回值类型
+     * @return 当前GroupBy实例
+     * @since 2.1.4
+     */
+    public <E extends IEntity<?>, R> GroupBy desc(SFunction<E, R> column) {
+        return field(null, column, true, true);
+    }
+
+    /**
+     * 通过Lambda表达式创建降序分组字段（带标识符包装控制）
+     *
+     * @param column         方法引用
+     * @param wrapIdentifier 是否包装标识符
+     * @param <E>            实体类型
+     * @param <R>            返回值类型
+     * @return 当前GroupBy实例
+     * @since 2.1.4
+     */
+    public <E extends IEntity<?>, R> GroupBy desc(SFunction<E, R> column, boolean wrapIdentifier) {
+        return field(null, column, true, wrapIdentifier);
+    }
+
+    /**
+     * 通过Lambda表达式创建降序分组字段（带前缀）
+     *
+     * @param prefix 前缀
+     * @param column 方法引用
+     * @param <E>    实体类型
+     * @param <R>    返回值类型
+     * @return 当前GroupBy实例
+     * @since 2.1.4
+     */
+    public <E extends IEntity<?>, R> GroupBy desc(String prefix, SFunction<E, R> column) {
+        return field(prefix, column, true, true);
+    }
+
+    /**
+     * 通过Lambda表达式创建降序分组字段（带前缀和标识符包装控制）
+     *
+     * @param prefix         前缀
+     * @param column         方法引用
+     * @param wrapIdentifier 是否包装标识符
+     * @param <E>            实体类型
+     * @param <R>            返回值类型
+     * @return 当前GroupBy实例
+     * @since 2.1.4
+     */
+    public <E extends IEntity<?>, R> GroupBy desc(String prefix, SFunction<E, R> column, boolean wrapIdentifier) {
+        return field(prefix, column, true, wrapIdentifier);
     }
 
     public GroupBy desc(String prefix, String field) {

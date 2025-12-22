@@ -23,6 +23,7 @@ import net.ymate.platform.core.persistence.base.EntityMeta;
 import net.ymate.platform.core.persistence.base.IEntity;
 import net.ymate.platform.persistence.jdbc.IDatabase;
 import net.ymate.platform.persistence.jdbc.JDBC;
+import net.ymate.platform.persistence.jdbc.query.LambdaUtils.SFunction;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.ArrayList;
@@ -34,7 +35,7 @@ import java.util.List;
  * @author 刘镇 (suninformation@163.com) on 15/5/12 下午6:00
  */
 @SuppressWarnings("rawtypes")
-public final class Insert extends Query<Insert> {
+public class Insert extends Query<Insert> {
 
     private final String prefix;
 
@@ -149,6 +150,124 @@ public final class Insert extends Query<Insert> {
     public Insert field(String field, boolean wrapIdentifier) {
         this.fields.add(wrapIdentifier ? wrapIdentifierField(field) : field);
         return this;
+    }
+
+    // ---------- Lambda Support for FIELD ----------
+
+    /**
+     * 通过Lambda表达式设置插入字段
+     *
+     * @param column 方法引用
+     * @param <E>    实体类型
+     * @param <R>    返回值类型
+     * @return 当前Insert实例
+     * @since 2.1.4
+     */
+    public <E extends IEntity<?>, R> Insert field(SFunction<E, R> column) {
+        return field(getColumnName(column), true);
+    }
+
+    /**
+     * 通过Lambda表达式设置插入字段（带标识符包装控制）
+     *
+     * @param column         方法引用
+     * @param wrapIdentifier 是否包装标识符
+     * @param <E>            实体类型
+     * @param <R>            返回值类型
+     * @return 当前Insert实例
+     * @since 2.1.4
+     */
+    public <E extends IEntity<?>, R> Insert field(SFunction<E, R> column, boolean wrapIdentifier) {
+        return field(getColumnName(column), wrapIdentifier);
+    }
+
+    /**
+     * 通过Lambda表达式设置插入字段（带前缀）
+     *
+     * @param prefix 前缀
+     * @param column 方法引用
+     * @param <E>    实体类型
+     * @param <R>    返回值类型
+     * @return 当前Insert实例
+     * @since 2.1.4
+     */
+    public <E extends IEntity<?>, R> Insert field(String prefix, SFunction<E, R> column) {
+        return field(prefix, getColumnName(column), true);
+    }
+
+    /**
+     * 通过Lambda表达式设置插入字段（带前缀和标识符包装控制）
+     *
+     * @param prefix         前缀
+     * @param column         方法引用
+     * @param wrapIdentifier 是否包装标识符
+     * @param <E>            实体类型
+     * @param <R>            返回值类型
+     * @return 当前Insert实例
+     * @since 2.1.4
+     */
+    public <E extends IEntity<?>, R> Insert field(String prefix, SFunction<E, R> column, boolean wrapIdentifier) {
+        return field(prefix, getColumnName(column), wrapIdentifier);
+    }
+
+    /**
+     * 通过Lambda表达式设置插入字段（带前缀和别名）
+     *
+     * @param prefix 前缀
+     * @param column 方法引用
+     * @param alias  别名
+     * @param <E>    实体类型
+     * @param <R>    返回值类型
+     * @return 当前Insert实例
+     * @since 2.1.4
+     */
+    public <E extends IEntity<?>, R> Insert field(String prefix, SFunction<E, R> column, String alias) {
+        return field(prefix, getColumnName(column), alias, true);
+    }
+
+    /**
+     * 通过Lambda表达式设置插入字段（带前缀、别名和标识符包装控制）
+     *
+     * @param prefix         前缀
+     * @param column         方法引用
+     * @param alias          别名
+     * @param wrapIdentifier 是否包装标识符
+     * @param <E>            实体类型
+     * @param <R>            返回值类型
+     * @return 当前Insert实例
+     * @since 2.1.4
+     */
+    public <E extends IEntity<?>, R> Insert field(String prefix, SFunction<E, R> column, String alias, boolean wrapIdentifier) {
+        return field(prefix, getColumnName(column), alias, wrapIdentifier);
+    }
+
+    /**
+     * 通过Lambda表达式设置插入字段并添加值
+     *
+     * @param column 方法引用
+     * @param value  参数值
+     * @param <E>    实体类型
+     * @param <R>    返回值类型
+     * @return 当前Insert实例
+     * @since 2.1.4
+     */
+    public <E extends IEntity<?>, R> Insert field(SFunction<E, R> column, Object value) {
+        return field(column).param(value);
+    }
+
+    /**
+     * 通过Lambda表达式设置插入字段并添加值（带前缀）
+     *
+     * @param prefix 前缀
+     * @param column 方法引用
+     * @param value  参数值
+     * @param <E>    实体类型
+     * @param <R>    返回值类型
+     * @return 当前Insert实例
+     * @since 2.1.4
+     */
+    public <E extends IEntity<?>, R> Insert field(String prefix, SFunction<E, R> column, Object value) {
+        return field(prefix, column).param(value);
     }
 
     /**
