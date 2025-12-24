@@ -158,12 +158,12 @@ public class Insert extends Query<Insert> {
      * 通过Lambda表达式设置插入字段
      *
      * @param column 方法引用
-     * @param <E>    实体类型
+     * @param <T>    实体类型
      * @param <R>    返回值类型
      * @return 当前Insert实例
      * @since 2.1.4
      */
-    public <E extends IEntity<?>, R> Insert field(SFunction<E, R> column) {
+    public <T, R> Insert field(SFunction<T, R> column) {
         return field(getColumnName(column), true);
     }
 
@@ -172,12 +172,12 @@ public class Insert extends Query<Insert> {
      *
      * @param column         方法引用
      * @param wrapIdentifier 是否包装标识符
-     * @param <E>            实体类型
+     * @param <T>            实体类型
      * @param <R>            返回值类型
      * @return 当前Insert实例
      * @since 2.1.4
      */
-    public <E extends IEntity<?>, R> Insert field(SFunction<E, R> column, boolean wrapIdentifier) {
+    public <T, R> Insert field(SFunction<T, R> column, boolean wrapIdentifier) {
         return field(getColumnName(column), wrapIdentifier);
     }
 
@@ -186,12 +186,12 @@ public class Insert extends Query<Insert> {
      *
      * @param prefix 前缀
      * @param column 方法引用
-     * @param <E>    实体类型
+     * @param <T>    实体类型
      * @param <R>    返回值类型
      * @return 当前Insert实例
      * @since 2.1.4
      */
-    public <E extends IEntity<?>, R> Insert field(String prefix, SFunction<E, R> column) {
+    public <T, R> Insert field(String prefix, SFunction<T, R> column) {
         return field(prefix, getColumnName(column), true);
     }
 
@@ -201,12 +201,12 @@ public class Insert extends Query<Insert> {
      * @param prefix         前缀
      * @param column         方法引用
      * @param wrapIdentifier 是否包装标识符
-     * @param <E>            实体类型
+     * @param <T>            实体类型
      * @param <R>            返回值类型
      * @return 当前Insert实例
      * @since 2.1.4
      */
-    public <E extends IEntity<?>, R> Insert field(String prefix, SFunction<E, R> column, boolean wrapIdentifier) {
+    public <T, R> Insert field(String prefix, SFunction<T, R> column, boolean wrapIdentifier) {
         return field(prefix, getColumnName(column), wrapIdentifier);
     }
 
@@ -216,12 +216,12 @@ public class Insert extends Query<Insert> {
      * @param prefix 前缀
      * @param column 方法引用
      * @param alias  别名
-     * @param <E>    实体类型
+     * @param <T>    实体类型
      * @param <R>    返回值类型
      * @return 当前Insert实例
      * @since 2.1.4
      */
-    public <E extends IEntity<?>, R> Insert field(String prefix, SFunction<E, R> column, String alias) {
+    public <T, R> Insert field(String prefix, SFunction<T, R> column, String alias) {
         return field(prefix, getColumnName(column), alias, true);
     }
 
@@ -232,12 +232,12 @@ public class Insert extends Query<Insert> {
      * @param column         方法引用
      * @param alias          别名
      * @param wrapIdentifier 是否包装标识符
-     * @param <E>            实体类型
+     * @param <T>            实体类型
      * @param <R>            返回值类型
      * @return 当前Insert实例
      * @since 2.1.4
      */
-    public <E extends IEntity<?>, R> Insert field(String prefix, SFunction<E, R> column, String alias, boolean wrapIdentifier) {
+    public <T, R> Insert field(String prefix, SFunction<T, R> column, String alias, boolean wrapIdentifier) {
         return field(prefix, getColumnName(column), alias, wrapIdentifier);
     }
 
@@ -246,12 +246,12 @@ public class Insert extends Query<Insert> {
      *
      * @param column 方法引用
      * @param value  参数值
-     * @param <E>    实体类型
+     * @param <T>    实体类型
      * @param <R>    返回值类型
      * @return 当前Insert实例
      * @since 2.1.4
      */
-    public <E extends IEntity<?>, R> Insert field(SFunction<E, R> column, Object value) {
+    public <T, R> Insert field(SFunction<T, R> column, Object value) {
         return field(column).param(value);
     }
 
@@ -261,12 +261,12 @@ public class Insert extends Query<Insert> {
      * @param prefix 前缀
      * @param column 方法引用
      * @param value  参数值
-     * @param <E>    实体类型
+     * @param <T>    实体类型
      * @param <R>    返回值类型
      * @return 当前Insert实例
      * @since 2.1.4
      */
-    public <E extends IEntity<?>, R> Insert field(String prefix, SFunction<E, R> column, Object value) {
+    public <T, R> Insert field(String prefix, SFunction<T, R> column, Object value) {
         return field(prefix, column).param(value);
     }
 
@@ -291,6 +291,68 @@ public class Insert extends Query<Insert> {
     public Insert fieldAlias(IFunction function, String alias) {
         this.fields.addAlias(function.build(), alias);
         return this;
+    }
+
+    // ---------- Lambda Support for FIELD_ALIAS ----------
+
+    /**
+     * 通过Lambda表达式设置插入字段并指定别名
+     *
+     * @param column 方法引用
+     * @param alias  别名
+     * @param <T>    类型
+     * @param <R>    返回值类型
+     * @return 当前Insert实例
+     * @since 2.1.4
+     */
+    public <T, R> Insert fieldAlias(SFunction<T, R> column, String alias) {
+        return fieldAlias(getColumnName(column), alias, true);
+    }
+
+    /**
+     * 通过Lambda表达式设置插入字段并指定别名（带标识符包装控制）
+     *
+     * @param column         方法引用
+     * @param alias          别名
+     * @param wrapIdentifier 是否包装标识符
+     * @param <T>            类型
+     * @param <R>            返回值类型
+     * @return 当前Insert实例
+     * @since 2.1.4
+     */
+    public <T, R> Insert fieldAlias(SFunction<T, R> column, String alias, boolean wrapIdentifier) {
+        return fieldAlias(getColumnName(column), alias, wrapIdentifier);
+    }
+
+    /**
+     * 通过Lambda表达式设置插入字段并指定别名（带前缀）
+     *
+     * @param prefix 前缀
+     * @param column 方法引用
+     * @param alias  别名
+     * @param <T>    类型
+     * @param <R>    返回值类型
+     * @return 当前Insert实例
+     * @since 2.1.4
+     */
+    public <T, R> Insert fieldAlias(String prefix, SFunction<T, R> column, String alias) {
+        return fieldAlias(Fields.field(prefix, getColumnName(column)), alias, true);
+    }
+
+    /**
+     * 通过Lambda表达式设置插入字段并指定别名（带前缀和标识符包装控制）
+     *
+     * @param prefix         前缀
+     * @param column         方法引用
+     * @param alias          别名
+     * @param wrapIdentifier 是否包装标识符
+     * @param <T>            类型
+     * @param <R>            返回值类型
+     * @return 当前Insert实例
+     * @since 2.1.4
+     */
+    public <T, R> Insert fieldAlias(String prefix, SFunction<T, R> column, String alias, boolean wrapIdentifier) {
+        return fieldAlias(Fields.field(prefix, getColumnName(column)), alias, wrapIdentifier);
     }
 
     public Insert field(Fields fields) {

@@ -20,7 +20,6 @@ import net.ymate.platform.commons.util.RuntimeUtils;
 import net.ymate.platform.core.persistence.Fields;
 import net.ymate.platform.core.persistence.IFunction;
 import net.ymate.platform.core.persistence.Params;
-import net.ymate.platform.core.persistence.base.IEntity;
 import net.ymate.platform.persistence.jdbc.IDatabase;
 import net.ymate.platform.persistence.jdbc.JDBC;
 import net.ymate.platform.persistence.jdbc.query.LambdaUtils.SFunction;
@@ -337,12 +336,12 @@ public class Cond extends Query<Cond> {
      * 通过Lambda表达式创建相等条件
      *
      * @param column 方法引用
-     * @param <E>    实体类型
+     * @param <T>    实体类型
      * @param <R>    返回值类型
      * @return 当前Cond实例
      * @since 2.1.4
      */
-    public <E extends IEntity<?>, R> Cond eq(SFunction<E, R> column) {
+    public <T, R> Cond eq(SFunction<T, R> column) {
         return opt(getColumnName(column), OPT.EQ);
     }
 
@@ -351,12 +350,12 @@ public class Cond extends Query<Cond> {
      *
      * @param prefix 前缀
      * @param column 方法引用
-     * @param <E>    实体类型
+     * @param <T>    实体类型
      * @param <R>    返回值类型
      * @return 当前Cond实例
      * @since 2.1.4
      */
-    public <E extends IEntity<?>, R> Cond eq(String prefix, SFunction<E, R> column) {
+    public <T, R> Cond eq(String prefix, SFunction<T, R> column) {
         return opt(Fields.field(prefix, getColumnName(column)), OPT.EQ);
     }
 
@@ -364,12 +363,12 @@ public class Cond extends Query<Cond> {
      * 通过Lambda表达式创建相等条件（带标识符包装）
      *
      * @param column 方法引用
-     * @param <E>    实体类型
+     * @param <T>    实体类型
      * @param <R>    返回值类型
      * @return 当前Cond实例
      * @since 2.1.4
      */
-    public <E extends IEntity<?>, R> Cond eqWrap(SFunction<E, R> column) {
+    public <T, R> Cond eqWrap(SFunction<T, R> column) {
         return optWrap(getColumnName(column), OPT.EQ);
     }
 
@@ -378,12 +377,12 @@ public class Cond extends Query<Cond> {
      *
      * @param prefix 前缀
      * @param column 方法引用
-     * @param <E>    实体类型
+     * @param <T>    实体类型
      * @param <R>    返回值类型
      * @return 当前Cond实例
      * @since 2.1.4
      */
-    public <E extends IEntity<?>, R> Cond eqWrap(String prefix, SFunction<E, R> column) {
+    public <T, R> Cond eqWrap(String prefix, SFunction<T, R> column) {
         return optWrap(Fields.field(prefix, getColumnName(column)), OPT.EQ);
     }
 
@@ -392,13 +391,13 @@ public class Cond extends Query<Cond> {
      *
      * @param columnOne 第一个字段的方法引用
      * @param columnTwo 第二个字段的方法引用
-     * @param <E>       第一个实体类型
+     * @param <T>       第一个实体类型
      * @param <F>       第二个实体类型
      * @param <R>       返回值类型
      * @return 当前Cond实例
      * @since 2.1.4
      */
-    public <E extends IEntity<?>, F extends IEntity<?>, R> Cond eq(SFunction<E, R> columnOne, SFunction<F, R> columnTwo) {
+    public <T, F, R> Cond eq(SFunction<T, R> columnOne, SFunction<F, R> columnTwo) {
         return opt(getColumnName(columnOne), OPT.EQ, getColumnName(columnTwo));
     }
 
@@ -409,13 +408,13 @@ public class Cond extends Query<Cond> {
      * @param columnOne 第一个字段的方法引用
      * @param prefixTwo 第二个字段的前缀
      * @param columnTwo 第二个字段的方法引用
-     * @param <E>       第一个实体类型
+     * @param <T>       第一个实体类型
      * @param <F>       第二个实体类型
      * @param <R>       返回值类型
      * @return 当前Cond实例
      * @since 2.1.4
      */
-    public <E extends IEntity<?>, F extends IEntity<?>, R> Cond eq(String prefixOne, SFunction<E, R> columnOne, String prefixTwo, SFunction<F, R> columnTwo) {
+    public <T, F, R> Cond eq(String prefixOne, SFunction<T, R> columnOne, String prefixTwo, SFunction<F, R> columnTwo) {
         return opt(Fields.field(prefixOne, getColumnName(columnOne)), OPT.EQ, Fields.field(prefixTwo, getColumnName(columnTwo)));
     }
 
@@ -426,13 +425,13 @@ public class Cond extends Query<Cond> {
      * @param columnOne 第一个字段的方法引用
      * @param prefixTwo 第二个字段的前缀
      * @param columnTwo 第二个字段的方法引用
-     * @param <E>       第一个实体类型
+     * @param <T>       第一个实体类型
      * @param <F>       第二个实体类型
      * @param <R>       返回值类型
      * @return 当前Cond实例
      * @since 2.1.4
      */
-    public <E extends IEntity<?>, F extends IEntity<?>, R> Cond eqWrap(String prefixOne, SFunction<E, R> columnOne, String prefixTwo, SFunction<F, R> columnTwo) {
+    public <T, F, R> Cond eqWrap(String prefixOne, SFunction<T, R> columnOne, String prefixTwo, SFunction<F, R> columnTwo) {
         return optWrap(Fields.field(prefixOne, getColumnName(columnOne)), OPT.EQ, Fields.field(prefixTwo, getColumnName(columnTwo)));
     }
 
@@ -441,12 +440,12 @@ public class Cond extends Query<Cond> {
      *
      * @param column 方法引用
      * @param value  参数值
-     * @param <E>    实体类型
+     * @param <T>    实体类型
      * @param <R>    返回值类型
      * @return 当前Cond实例
      * @since 2.1.4
      */
-    public <E extends IEntity<?>, R> Cond eq(SFunction<E, R> column, Object value) {
+    public <T, R> Cond eq(SFunction<T, R> column, Object value) {
         return eq(column).param(value);
     }
 
@@ -456,12 +455,12 @@ public class Cond extends Query<Cond> {
      * @param prefix 前缀
      * @param column 方法引用
      * @param value  参数值
-     * @param <E>    实体类型
+     * @param <T>    实体类型
      * @param <R>    返回值类型
      * @return 当前Cond实例
      * @since 2.1.4
      */
-    public <E extends IEntity<?>, R> Cond eq(String prefix, SFunction<E, R> column, Object value) {
+    public <T, R> Cond eq(String prefix, SFunction<T, R> column, Object value) {
         return eq(prefix, column).param(value);
     }
 
@@ -470,12 +469,12 @@ public class Cond extends Query<Cond> {
      *
      * @param column 方法引用
      * @param value  参数值
-     * @param <E>    实体类型
+     * @param <T>    实体类型
      * @param <R>    返回值类型
      * @return 当前Cond实例
      * @since 2.1.4
      */
-    public <E extends IEntity<?>, R> Cond eqWrap(SFunction<E, R> column, Object value) {
+    public <T, R> Cond eqWrap(SFunction<T, R> column, Object value) {
         return eqWrap(column).param(value);
     }
 
@@ -485,12 +484,12 @@ public class Cond extends Query<Cond> {
      * @param prefix 前缀
      * @param column 方法引用
      * @param value  参数值
-     * @param <E>    实体类型
+     * @param <T>    实体类型
      * @param <R>    返回值类型
      * @return 当前Cond实例
      * @since 2.1.4
      */
-    public <E extends IEntity<?>, R> Cond eqWrap(String prefix, SFunction<E, R> column, Object value) {
+    public <T, R> Cond eqWrap(String prefix, SFunction<T, R> column, Object value) {
         return eqWrap(prefix, column).param(value);
     }
 
@@ -534,12 +533,12 @@ public class Cond extends Query<Cond> {
      * 通过Lambda表达式创建不等条件
      *
      * @param column 方法引用
-     * @param <E>    实体类型
+     * @param <T>    实体类型
      * @param <R>    返回值类型
      * @return 当前Cond实例
      * @since 2.1.4
      */
-    public <E extends IEntity<?>, R> Cond notEq(SFunction<E, R> column) {
+    public <T, R> Cond notEq(SFunction<T, R> column) {
         return opt(getColumnName(column), OPT.NOT_EQ);
     }
 
@@ -548,12 +547,12 @@ public class Cond extends Query<Cond> {
      *
      * @param prefix 前缀
      * @param column 方法引用
-     * @param <E>    实体类型
+     * @param <T>    实体类型
      * @param <R>    返回值类型
      * @return 当前Cond实例
      * @since 2.1.4
      */
-    public <E extends IEntity<?>, R> Cond notEq(String prefix, SFunction<E, R> column) {
+    public <T, R> Cond notEq(String prefix, SFunction<T, R> column) {
         return opt(Fields.field(prefix, getColumnName(column)), OPT.NOT_EQ);
     }
 
@@ -561,12 +560,12 @@ public class Cond extends Query<Cond> {
      * 通过Lambda表达式创建不等条件（带标识符包装）
      *
      * @param column 方法引用
-     * @param <E>    实体类型
+     * @param <T>    实体类型
      * @param <R>    返回值类型
      * @return 当前Cond实例
      * @since 2.1.4
      */
-    public <E extends IEntity<?>, R> Cond notEqWrap(SFunction<E, R> column) {
+    public <T, R> Cond notEqWrap(SFunction<T, R> column) {
         return optWrap(getColumnName(column), OPT.NOT_EQ);
     }
 
@@ -575,12 +574,12 @@ public class Cond extends Query<Cond> {
      *
      * @param prefix 前缀
      * @param column 方法引用
-     * @param <E>    实体类型
+     * @param <T>    实体类型
      * @param <R>    返回值类型
      * @return 当前Cond实例
      * @since 2.1.4
      */
-    public <E extends IEntity<?>, R> Cond notEqWrap(String prefix, SFunction<E, R> column) {
+    public <T, R> Cond notEqWrap(String prefix, SFunction<T, R> column) {
         return optWrap(Fields.field(prefix, getColumnName(column)), OPT.NOT_EQ);
     }
 
@@ -589,13 +588,13 @@ public class Cond extends Query<Cond> {
      *
      * @param columnOne 第一个字段的方法引用
      * @param columnTwo 第二个字段的方法引用
-     * @param <E>       第一个实体类型
+     * @param <T>       第一个实体类型
      * @param <F>       第二个实体类型
      * @param <R>       返回值类型
      * @return 当前Cond实例
      * @since 2.1.4
      */
-    public <E extends IEntity<?>, F extends IEntity<?>, R> Cond notEq(SFunction<E, R> columnOne, SFunction<F, R> columnTwo) {
+    public <T, F, R> Cond notEq(SFunction<T, R> columnOne, SFunction<F, R> columnTwo) {
         return opt(getColumnName(columnOne), OPT.NOT_EQ, getColumnName(columnTwo));
     }
 
@@ -606,13 +605,13 @@ public class Cond extends Query<Cond> {
      * @param columnOne 第一个字段的方法引用
      * @param prefixTwo 第二个字段的前缀
      * @param columnTwo 第二个字段的方法引用
-     * @param <E>       第一个实体类型
+     * @param <T>       第一个实体类型
      * @param <F>       第二个实体类型
      * @param <R>       返回值类型
      * @return 当前Cond实例
      * @since 2.1.4
      */
-    public <E extends IEntity<?>, F extends IEntity<?>, R> Cond notEq(String prefixOne, SFunction<E, R> columnOne, String prefixTwo, SFunction<F, R> columnTwo) {
+    public <T, F, R> Cond notEq(String prefixOne, SFunction<T, R> columnOne, String prefixTwo, SFunction<F, R> columnTwo) {
         return opt(Fields.field(prefixOne, getColumnName(columnOne)), OPT.NOT_EQ, Fields.field(prefixTwo, getColumnName(columnTwo)));
     }
 
@@ -623,13 +622,13 @@ public class Cond extends Query<Cond> {
      * @param columnOne 第一个字段的方法引用
      * @param prefixTwo 第二个字段的前缀
      * @param columnTwo 第二个字段的方法引用
-     * @param <E>       第一个实体类型
+     * @param <T>       第一个实体类型
      * @param <F>       第二个实体类型
      * @param <R>       返回值类型
      * @return 当前Cond实例
      * @since 2.1.4
      */
-    public <E extends IEntity<?>, F extends IEntity<?>, R> Cond notEqWrap(String prefixOne, SFunction<E, R> columnOne, String prefixTwo, SFunction<F, R> columnTwo) {
+    public <T, F, R> Cond notEqWrap(String prefixOne, SFunction<T, R> columnOne, String prefixTwo, SFunction<F, R> columnTwo) {
         return optWrap(Fields.field(prefixOne, getColumnName(columnOne)), OPT.NOT_EQ, Fields.field(prefixTwo, getColumnName(columnTwo)));
     }
 
@@ -638,12 +637,12 @@ public class Cond extends Query<Cond> {
      *
      * @param column 方法引用
      * @param value  参数值
-     * @param <E>    实体类型
+     * @param <T>    实体类型
      * @param <R>    返回值类型
      * @return 当前Cond实例
      * @since 2.1.4
      */
-    public <E extends IEntity<?>, R> Cond notEq(SFunction<E, R> column, Object value) {
+    public <T, R> Cond notEq(SFunction<T, R> column, Object value) {
         return notEq(column).param(value);
     }
 
@@ -653,12 +652,12 @@ public class Cond extends Query<Cond> {
      * @param prefix 前缀
      * @param column 方法引用
      * @param value  参数值
-     * @param <E>    实体类型
+     * @param <T>    实体类型
      * @param <R>    返回值类型
      * @return 当前Cond实例
      * @since 2.1.4
      */
-    public <E extends IEntity<?>, R> Cond notEq(String prefix, SFunction<E, R> column, Object value) {
+    public <T, R> Cond notEq(String prefix, SFunction<T, R> column, Object value) {
         return notEq(prefix, column).param(value);
     }
 
@@ -667,12 +666,12 @@ public class Cond extends Query<Cond> {
      *
      * @param column 方法引用
      * @param value  参数值
-     * @param <E>    实体类型
+     * @param <T>    实体类型
      * @param <R>    返回值类型
      * @return 当前Cond实例
      * @since 2.1.4
      */
-    public <E extends IEntity<?>, R> Cond notEqWrap(SFunction<E, R> column, Object value) {
+    public <T, R> Cond notEqWrap(SFunction<T, R> column, Object value) {
         return notEqWrap(column).param(value);
     }
 
@@ -682,12 +681,12 @@ public class Cond extends Query<Cond> {
      * @param prefix 前缀
      * @param column 方法引用
      * @param value  参数值
-     * @param <E>    实体类型
+     * @param <T>    实体类型
      * @param <R>    返回值类型
      * @return 当前Cond实例
      * @since 2.1.4
      */
-    public <E extends IEntity<?>, R> Cond notEqWrap(String prefix, SFunction<E, R> column, Object value) {
+    public <T, R> Cond notEqWrap(String prefix, SFunction<T, R> column, Object value) {
         return notEqWrap(prefix, column).param(value);
     }
 
@@ -777,12 +776,12 @@ public class Cond extends Query<Cond> {
      * 通过Lambda表达式创建大于等于条件
      *
      * @param column 方法引用
-     * @param <E>    实体类型
+     * @param <T>    实体类型
      * @param <R>    返回值类型
      * @return 当前Cond实例
      * @since 2.1.4
      */
-    public <E extends IEntity<?>, R> Cond gtEq(SFunction<E, R> column) {
+    public <T, R> Cond gtEq(SFunction<T, R> column) {
         return opt(getColumnName(column), OPT.GT_EQ);
     }
 
@@ -791,12 +790,12 @@ public class Cond extends Query<Cond> {
      *
      * @param prefix 前缀
      * @param column 方法引用
-     * @param <E>    实体类型
+     * @param <T>    实体类型
      * @param <R>    返回值类型
      * @return 当前Cond实例
      * @since 2.1.4
      */
-    public <E extends IEntity<?>, R> Cond gtEq(String prefix, SFunction<E, R> column) {
+    public <T, R> Cond gtEq(String prefix, SFunction<T, R> column) {
         return opt(Fields.field(prefix, getColumnName(column)), OPT.GT_EQ);
     }
 
@@ -804,12 +803,12 @@ public class Cond extends Query<Cond> {
      * 通过Lambda表达式创建大于等于条件（带标识符包装）
      *
      * @param column 方法引用
-     * @param <E>    实体类型
+     * @param <T>    实体类型
      * @param <R>    返回值类型
      * @return 当前Cond实例
      * @since 2.1.4
      */
-    public <E extends IEntity<?>, R> Cond gtEqWrap(SFunction<E, R> column) {
+    public <T, R> Cond gtEqWrap(SFunction<T, R> column) {
         return optWrap(getColumnName(column), OPT.GT_EQ);
     }
 
@@ -818,12 +817,12 @@ public class Cond extends Query<Cond> {
      *
      * @param prefix 前缀
      * @param column 方法引用
-     * @param <E>    实体类型
+     * @param <T>    实体类型
      * @param <R>    返回值类型
      * @return 当前Cond实例
      * @since 2.1.4
      */
-    public <E extends IEntity<?>, R> Cond gtEqWrap(String prefix, SFunction<E, R> column) {
+    public <T, R> Cond gtEqWrap(String prefix, SFunction<T, R> column) {
         return optWrap(Fields.field(prefix, getColumnName(column)), OPT.GT_EQ);
     }
 
@@ -831,12 +830,12 @@ public class Cond extends Query<Cond> {
      * 通过Lambda表达式创建大于条件
      *
      * @param column 方法引用
-     * @param <E>    实体类型
+     * @param <T>    实体类型
      * @param <R>    返回值类型
      * @return 当前Cond实例
      * @since 2.1.4
      */
-    public <E extends IEntity<?>, R> Cond gt(SFunction<E, R> column) {
+    public <T, R> Cond gt(SFunction<T, R> column) {
         return opt(getColumnName(column), OPT.GT);
     }
 
@@ -845,12 +844,12 @@ public class Cond extends Query<Cond> {
      *
      * @param prefix 前缀
      * @param column 方法引用
-     * @param <E>    实体类型
+     * @param <T>    实体类型
      * @param <R>    返回值类型
      * @return 当前Cond实例
      * @since 2.1.4
      */
-    public <E extends IEntity<?>, R> Cond gt(String prefix, SFunction<E, R> column) {
+    public <T, R> Cond gt(String prefix, SFunction<T, R> column) {
         return opt(Fields.field(prefix, getColumnName(column)), OPT.GT);
     }
 
@@ -858,12 +857,12 @@ public class Cond extends Query<Cond> {
      * 通过Lambda表达式创建大于条件（带标识符包装）
      *
      * @param column 方法引用
-     * @param <E>    实体类型
+     * @param <T>    实体类型
      * @param <R>    返回值类型
      * @return 当前Cond实例
      * @since 2.1.4
      */
-    public <E extends IEntity<?>, R> Cond gtWrap(SFunction<E, R> column) {
+    public <T, R> Cond gtWrap(SFunction<T, R> column) {
         return optWrap(getColumnName(column), OPT.GT);
     }
 
@@ -872,12 +871,12 @@ public class Cond extends Query<Cond> {
      *
      * @param prefix 前缀
      * @param column 方法引用
-     * @param <E>    实体类型
+     * @param <T>    实体类型
      * @param <R>    返回值类型
      * @return 当前Cond实例
      * @since 2.1.4
      */
-    public <E extends IEntity<?>, R> Cond gtWrap(String prefix, SFunction<E, R> column) {
+    public <T, R> Cond gtWrap(String prefix, SFunction<T, R> column) {
         return optWrap(Fields.field(prefix, getColumnName(column)), OPT.GT);
     }
 
@@ -886,13 +885,13 @@ public class Cond extends Query<Cond> {
      *
      * @param columnOne 第一个字段的方法引用
      * @param columnTwo 第二个字段的方法引用
-     * @param <E>       第一个实体类型
+     * @param <T>       第一个实体类型
      * @param <F>       第二个实体类型
      * @param <R>       返回值类型
      * @return 当前Cond实例
      * @since 2.1.4
      */
-    public <E extends IEntity<?>, F extends IEntity<?>, R> Cond gt(SFunction<E, R> columnOne, SFunction<F, R> columnTwo) {
+    public <T, F, R> Cond gt(SFunction<T, R> columnOne, SFunction<F, R> columnTwo) {
         return opt(getColumnName(columnOne), OPT.GT, getColumnName(columnTwo));
     }
 
@@ -903,13 +902,13 @@ public class Cond extends Query<Cond> {
      * @param columnOne 第一个字段的方法引用
      * @param prefixTwo 第二个字段的前缀
      * @param columnTwo 第二个字段的方法引用
-     * @param <E>       第一个实体类型
+     * @param <T>       第一个实体类型
      * @param <F>       第二个实体类型
      * @param <R>       返回值类型
      * @return 当前Cond实例
      * @since 2.1.4
      */
-    public <E extends IEntity<?>, F extends IEntity<?>, R> Cond gt(String prefixOne, SFunction<E, R> columnOne, String prefixTwo, SFunction<F, R> columnTwo) {
+    public <T, F, R> Cond gt(String prefixOne, SFunction<T, R> columnOne, String prefixTwo, SFunction<F, R> columnTwo) {
         return opt(Fields.field(prefixOne, getColumnName(columnOne)), OPT.GT, Fields.field(prefixTwo, getColumnName(columnTwo)));
     }
 
@@ -920,13 +919,13 @@ public class Cond extends Query<Cond> {
      * @param columnOne 第一个字段的方法引用
      * @param prefixTwo 第二个字段的前缀
      * @param columnTwo 第二个字段的方法引用
-     * @param <E>       第一个实体类型
+     * @param <T>       第一个实体类型
      * @param <F>       第二个实体类型
      * @param <R>       返回值类型
      * @return 当前Cond实例
      * @since 2.1.4
      */
-    public <E extends IEntity<?>, F extends IEntity<?>, R> Cond gtWrap(String prefixOne, SFunction<E, R> columnOne, String prefixTwo, SFunction<F, R> columnTwo) {
+    public <T, F, R> Cond gtWrap(String prefixOne, SFunction<T, R> columnOne, String prefixTwo, SFunction<F, R> columnTwo) {
         return optWrap(Fields.field(prefixOne, getColumnName(columnOne)), OPT.GT, Fields.field(prefixTwo, getColumnName(columnTwo)));
     }
 
@@ -935,13 +934,13 @@ public class Cond extends Query<Cond> {
      *
      * @param columnOne 第一个字段的方法引用
      * @param columnTwo 第二个字段的方法引用
-     * @param <E>       第一个实体类型
+     * @param <T>       第一个实体类型
      * @param <F>       第二个实体类型
      * @param <R>       返回值类型
      * @return 当前Cond实例
      * @since 2.1.4
      */
-    public <E extends IEntity<?>, F extends IEntity<?>, R> Cond gtEq(SFunction<E, R> columnOne, SFunction<F, R> columnTwo) {
+    public <T, F, R> Cond gtEq(SFunction<T, R> columnOne, SFunction<F, R> columnTwo) {
         return opt(getColumnName(columnOne), OPT.GT_EQ, getColumnName(columnTwo));
     }
 
@@ -952,13 +951,13 @@ public class Cond extends Query<Cond> {
      * @param columnOne 第一个字段的方法引用
      * @param prefixTwo 第二个字段的前缀
      * @param columnTwo 第二个字段的方法引用
-     * @param <E>       第一个实体类型
+     * @param <T>       第一个实体类型
      * @param <F>       第二个实体类型
      * @param <R>       返回值类型
      * @return 当前Cond实例
      * @since 2.1.4
      */
-    public <E extends IEntity<?>, F extends IEntity<?>, R> Cond gtEq(String prefixOne, SFunction<E, R> columnOne, String prefixTwo, SFunction<F, R> columnTwo) {
+    public <T, F, R> Cond gtEq(String prefixOne, SFunction<T, R> columnOne, String prefixTwo, SFunction<F, R> columnTwo) {
         return opt(Fields.field(prefixOne, getColumnName(columnOne)), OPT.GT_EQ, Fields.field(prefixTwo, getColumnName(columnTwo)));
     }
 
@@ -969,13 +968,13 @@ public class Cond extends Query<Cond> {
      * @param columnOne 第一个字段的方法引用
      * @param prefixTwo 第二个字段的前缀
      * @param columnTwo 第二个字段的方法引用
-     * @param <E>       第一个实体类型
+     * @param <T>       第一个实体类型
      * @param <F>       第二个实体类型
      * @param <R>       返回值类型
      * @return 当前Cond实例
      * @since 2.1.4
      */
-    public <E extends IEntity<?>, F extends IEntity<?>, R> Cond gtEqWrap(String prefixOne, SFunction<E, R> columnOne, String prefixTwo, SFunction<F, R> columnTwo) {
+    public <T, F, R> Cond gtEqWrap(String prefixOne, SFunction<T, R> columnOne, String prefixTwo, SFunction<F, R> columnTwo) {
         return optWrap(Fields.field(prefixOne, getColumnName(columnOne)), OPT.GT_EQ, Fields.field(prefixTwo, getColumnName(columnTwo)));
     }
 
@@ -984,12 +983,12 @@ public class Cond extends Query<Cond> {
      *
      * @param column 方法引用
      * @param value  参数值
-     * @param <E>    实体类型
+     * @param <T>    实体类型
      * @param <R>    返回值类型
      * @return 当前Cond实例
      * @since 2.1.4
      */
-    public <E extends IEntity<?>, R> Cond gtEq(SFunction<E, R> column, Object value) {
+    public <T, R> Cond gtEq(SFunction<T, R> column, Object value) {
         return gtEq(column).param(value);
     }
 
@@ -999,12 +998,12 @@ public class Cond extends Query<Cond> {
      * @param prefix 前缀
      * @param column 方法引用
      * @param value  参数值
-     * @param <E>    实体类型
+     * @param <T>    实体类型
      * @param <R>    返回值类型
      * @return 当前Cond实例
      * @since 2.1.4
      */
-    public <E extends IEntity<?>, R> Cond gtEq(String prefix, SFunction<E, R> column, Object value) {
+    public <T, R> Cond gtEq(String prefix, SFunction<T, R> column, Object value) {
         return gtEq(prefix, column).param(value);
     }
 
@@ -1013,12 +1012,12 @@ public class Cond extends Query<Cond> {
      *
      * @param column 方法引用
      * @param value  参数值
-     * @param <E>    实体类型
+     * @param <T>    实体类型
      * @param <R>    返回值类型
      * @return 当前Cond实例
      * @since 2.1.4
      */
-    public <E extends IEntity<?>, R> Cond gtEqWrap(SFunction<E, R> column, Object value) {
+    public <T, R> Cond gtEqWrap(SFunction<T, R> column, Object value) {
         return gtEqWrap(column).param(value);
     }
 
@@ -1028,12 +1027,12 @@ public class Cond extends Query<Cond> {
      * @param prefix 前缀
      * @param column 方法引用
      * @param value  参数值
-     * @param <E>    实体类型
+     * @param <T>    实体类型
      * @param <R>    返回值类型
      * @return 当前Cond实例
      * @since 2.1.4
      */
-    public <E extends IEntity<?>, R> Cond gtEqWrap(String prefix, SFunction<E, R> column, Object value) {
+    public <T, R> Cond gtEqWrap(String prefix, SFunction<T, R> column, Object value) {
         return gtEqWrap(prefix, column).param(value);
     }
 
@@ -1042,12 +1041,12 @@ public class Cond extends Query<Cond> {
      *
      * @param column 方法引用
      * @param value  参数值
-     * @param <E>    实体类型
+     * @param <T>    实体类型
      * @param <R>    返回值类型
      * @return 当前Cond实例
      * @since 2.1.4
      */
-    public <E extends IEntity<?>, R> Cond gt(SFunction<E, R> column, Object value) {
+    public <T, R> Cond gt(SFunction<T, R> column, Object value) {
         return gt(column).param(value);
     }
 
@@ -1057,12 +1056,12 @@ public class Cond extends Query<Cond> {
      * @param prefix 前缀
      * @param column 方法引用
      * @param value  参数值
-     * @param <E>    实体类型
+     * @param <T>    实体类型
      * @param <R>    返回值类型
      * @return 当前Cond实例
      * @since 2.1.4
      */
-    public <E extends IEntity<?>, R> Cond gt(String prefix, SFunction<E, R> column, Object value) {
+    public <T, R> Cond gt(String prefix, SFunction<T, R> column, Object value) {
         return gt(prefix, column).param(value);
     }
 
@@ -1071,12 +1070,12 @@ public class Cond extends Query<Cond> {
      *
      * @param column 方法引用
      * @param value  参数值
-     * @param <E>    实体类型
+     * @param <T>    实体类型
      * @param <R>    返回值类型
      * @return 当前Cond实例
      * @since 2.1.4
      */
-    public <E extends IEntity<?>, R> Cond gtWrap(SFunction<E, R> column, Object value) {
+    public <T, R> Cond gtWrap(SFunction<T, R> column, Object value) {
         return gtWrap(column).param(value);
     }
 
@@ -1086,12 +1085,12 @@ public class Cond extends Query<Cond> {
      * @param prefix 前缀
      * @param column 方法引用
      * @param value  参数值
-     * @param <E>    实体类型
+     * @param <T>    实体类型
      * @param <R>    返回值类型
      * @return 当前Cond实例
      * @since 2.1.4
      */
-    public <E extends IEntity<?>, R> Cond gtWrap(String prefix, SFunction<E, R> column, Object value) {
+    public <T, R> Cond gtWrap(String prefix, SFunction<T, R> column, Object value) {
         return gtWrap(prefix, column).param(value);
     }
 
@@ -1169,12 +1168,12 @@ public class Cond extends Query<Cond> {
      * 通过Lambda表达式创建小于等于条件
      *
      * @param column 方法引用
-     * @param <E>    实体类型
+     * @param <T>    实体类型
      * @param <R>    返回值类型
      * @return 当前Cond实例
      * @since 2.1.4
      */
-    public <E extends IEntity<?>, R> Cond ltEq(SFunction<E, R> column) {
+    public <T, R> Cond ltEq(SFunction<T, R> column) {
         return opt(getColumnName(column), OPT.LT_EQ);
     }
 
@@ -1183,12 +1182,12 @@ public class Cond extends Query<Cond> {
      *
      * @param prefix 前缀
      * @param column 方法引用
-     * @param <E>    实体类型
+     * @param <T>    实体类型
      * @param <R>    返回值类型
      * @return 当前Cond实例
      * @since 2.1.4
      */
-    public <E extends IEntity<?>, R> Cond ltEq(String prefix, SFunction<E, R> column) {
+    public <T, R> Cond ltEq(String prefix, SFunction<T, R> column) {
         return opt(Fields.field(prefix, getColumnName(column)), OPT.LT_EQ);
     }
 
@@ -1196,12 +1195,12 @@ public class Cond extends Query<Cond> {
      * 通过Lambda表达式创建小于等于条件（带标识符包装）
      *
      * @param column 方法引用
-     * @param <E>    实体类型
+     * @param <T>    实体类型
      * @param <R>    返回值类型
      * @return 当前Cond实例
      * @since 2.1.4
      */
-    public <E extends IEntity<?>, R> Cond ltEqWrap(SFunction<E, R> column) {
+    public <T, R> Cond ltEqWrap(SFunction<T, R> column) {
         return optWrap(getColumnName(column), OPT.LT_EQ);
     }
 
@@ -1210,12 +1209,12 @@ public class Cond extends Query<Cond> {
      *
      * @param prefix 前缀
      * @param column 方法引用
-     * @param <E>    实体类型
+     * @param <T>    实体类型
      * @param <R>    返回值类型
      * @return 当前Cond实例
      * @since 2.1.4
      */
-    public <E extends IEntity<?>, R> Cond ltEqWrap(String prefix, SFunction<E, R> column) {
+    public <T, R> Cond ltEqWrap(String prefix, SFunction<T, R> column) {
         return optWrap(Fields.field(prefix, getColumnName(column)), OPT.LT_EQ);
     }
 
@@ -1223,12 +1222,12 @@ public class Cond extends Query<Cond> {
      * 通过Lambda表达式创建小于条件
      *
      * @param column 方法引用
-     * @param <E>    实体类型
+     * @param <T>    实体类型
      * @param <R>    返回值类型
      * @return 当前Cond实例
      * @since 2.1.4
      */
-    public <E extends IEntity<?>, R> Cond lt(SFunction<E, R> column) {
+    public <T, R> Cond lt(SFunction<T, R> column) {
         return opt(getColumnName(column), OPT.LT);
     }
 
@@ -1237,12 +1236,12 @@ public class Cond extends Query<Cond> {
      *
      * @param prefix 前缀
      * @param column 方法引用
-     * @param <E>    实体类型
+     * @param <T>    实体类型
      * @param <R>    返回值类型
      * @return 当前Cond实例
      * @since 2.1.4
      */
-    public <E extends IEntity<?>, R> Cond lt(String prefix, SFunction<E, R> column) {
+    public <T, R> Cond lt(String prefix, SFunction<T, R> column) {
         return opt(Fields.field(prefix, getColumnName(column)), OPT.LT);
     }
 
@@ -1250,12 +1249,12 @@ public class Cond extends Query<Cond> {
      * 通过Lambda表达式创建小于条件（带标识符包装）
      *
      * @param column 方法引用
-     * @param <E>    实体类型
+     * @param <T>    实体类型
      * @param <R>    返回值类型
      * @return 当前Cond实例
      * @since 2.1.4
      */
-    public <E extends IEntity<?>, R> Cond ltWrap(SFunction<E, R> column) {
+    public <T, R> Cond ltWrap(SFunction<T, R> column) {
         return optWrap(getColumnName(column), OPT.LT);
     }
 
@@ -1264,12 +1263,12 @@ public class Cond extends Query<Cond> {
      *
      * @param prefix 前缀
      * @param column 方法引用
-     * @param <E>    实体类型
+     * @param <T>    实体类型
      * @param <R>    返回值类型
      * @return 当前Cond实例
      * @since 2.1.4
      */
-    public <E extends IEntity<?>, R> Cond ltWrap(String prefix, SFunction<E, R> column) {
+    public <T, R> Cond ltWrap(String prefix, SFunction<T, R> column) {
         return optWrap(Fields.field(prefix, getColumnName(column)), OPT.LT);
     }
 
@@ -1278,13 +1277,13 @@ public class Cond extends Query<Cond> {
      *
      * @param columnOne 第一个字段的方法引用
      * @param columnTwo 第二个字段的方法引用
-     * @param <E>       第一个实体类型
+     * @param <T>       第一个实体类型
      * @param <F>       第二个实体类型
      * @param <R>       返回值类型
      * @return 当前Cond实例
      * @since 2.1.4
      */
-    public <E extends IEntity<?>, F extends IEntity<?>, R> Cond lt(SFunction<E, R> columnOne, SFunction<F, R> columnTwo) {
+    public <T, F, R> Cond lt(SFunction<T, R> columnOne, SFunction<F, R> columnTwo) {
         return opt(getColumnName(columnOne), OPT.LT, getColumnName(columnTwo));
     }
 
@@ -1295,13 +1294,13 @@ public class Cond extends Query<Cond> {
      * @param columnOne 第一个字段的方法引用
      * @param prefixTwo 第二个字段的前缀
      * @param columnTwo 第二个字段的方法引用
-     * @param <E>       第一个实体类型
+     * @param <T>       第一个实体类型
      * @param <F>       第二个实体类型
      * @param <R>       返回值类型
      * @return 当前Cond实例
      * @since 2.1.4
      */
-    public <E extends IEntity<?>, F extends IEntity<?>, R> Cond lt(String prefixOne, SFunction<E, R> columnOne, String prefixTwo, SFunction<F, R> columnTwo) {
+    public <T, F, R> Cond lt(String prefixOne, SFunction<T, R> columnOne, String prefixTwo, SFunction<F, R> columnTwo) {
         return opt(Fields.field(prefixOne, getColumnName(columnOne)), OPT.LT, Fields.field(prefixTwo, getColumnName(columnTwo)));
     }
 
@@ -1312,13 +1311,13 @@ public class Cond extends Query<Cond> {
      * @param columnOne 第一个字段的方法引用
      * @param prefixTwo 第二个字段的前缀
      * @param columnTwo 第二个字段的方法引用
-     * @param <E>       第一个实体类型
+     * @param <T>       第一个实体类型
      * @param <F>       第二个实体类型
      * @param <R>       返回值类型
      * @return 当前Cond实例
      * @since 2.1.4
      */
-    public <E extends IEntity<?>, F extends IEntity<?>, R> Cond ltWrap(String prefixOne, SFunction<E, R> columnOne, String prefixTwo, SFunction<F, R> columnTwo) {
+    public <T, F, R> Cond ltWrap(String prefixOne, SFunction<T, R> columnOne, String prefixTwo, SFunction<F, R> columnTwo) {
         return optWrap(Fields.field(prefixOne, getColumnName(columnOne)), OPT.LT, Fields.field(prefixTwo, getColumnName(columnTwo)));
     }
 
@@ -1327,13 +1326,13 @@ public class Cond extends Query<Cond> {
      *
      * @param columnOne 第一个字段的方法引用
      * @param columnTwo 第二个字段的方法引用
-     * @param <E>       第一个实体类型
+     * @param <T>       第一个实体类型
      * @param <F>       第二个实体类型
      * @param <R>       返回值类型
      * @return 当前Cond实例
      * @since 2.1.4
      */
-    public <E extends IEntity<?>, F extends IEntity<?>, R> Cond ltEq(SFunction<E, R> columnOne, SFunction<F, R> columnTwo) {
+    public <T, F, R> Cond ltEq(SFunction<T, R> columnOne, SFunction<F, R> columnTwo) {
         return opt(getColumnName(columnOne), OPT.LT_EQ, getColumnName(columnTwo));
     }
 
@@ -1344,13 +1343,13 @@ public class Cond extends Query<Cond> {
      * @param columnOne 第一个字段的方法引用
      * @param prefixTwo 第二个字段的前缀
      * @param columnTwo 第二个字段的方法引用
-     * @param <E>       第一个实体类型
+     * @param <T>       第一个实体类型
      * @param <F>       第二个实体类型
      * @param <R>       返回值类型
      * @return 当前Cond实例
      * @since 2.1.4
      */
-    public <E extends IEntity<?>, F extends IEntity<?>, R> Cond ltEq(String prefixOne, SFunction<E, R> columnOne, String prefixTwo, SFunction<F, R> columnTwo) {
+    public <T, F, R> Cond ltEq(String prefixOne, SFunction<T, R> columnOne, String prefixTwo, SFunction<F, R> columnTwo) {
         return opt(Fields.field(prefixOne, getColumnName(columnOne)), OPT.LT_EQ, Fields.field(prefixTwo, getColumnName(columnTwo)));
     }
 
@@ -1361,13 +1360,13 @@ public class Cond extends Query<Cond> {
      * @param columnOne 第一个字段的方法引用
      * @param prefixTwo 第二个字段的前缀
      * @param columnTwo 第二个字段的方法引用
-     * @param <E>       第一个实体类型
+     * @param <T>       第一个实体类型
      * @param <F>       第二个实体类型
      * @param <R>       返回值类型
      * @return 当前Cond实例
      * @since 2.1.4
      */
-    public <E extends IEntity<?>, F extends IEntity<?>, R> Cond ltEqWrap(String prefixOne, SFunction<E, R> columnOne, String prefixTwo, SFunction<F, R> columnTwo) {
+    public <T, F, R> Cond ltEqWrap(String prefixOne, SFunction<T, R> columnOne, String prefixTwo, SFunction<F, R> columnTwo) {
         return optWrap(Fields.field(prefixOne, getColumnName(columnOne)), OPT.LT_EQ, Fields.field(prefixTwo, getColumnName(columnTwo)));
     }
 
@@ -1376,12 +1375,12 @@ public class Cond extends Query<Cond> {
      *
      * @param column 方法引用
      * @param value  参数值
-     * @param <E>    实体类型
+     * @param <T>    实体类型
      * @param <R>    返回值类型
      * @return 当前Cond实例
      * @since 2.1.4
      */
-    public <E extends IEntity<?>, R> Cond ltEq(SFunction<E, R> column, Object value) {
+    public <T, R> Cond ltEq(SFunction<T, R> column, Object value) {
         return ltEq(column).param(value);
     }
 
@@ -1391,12 +1390,12 @@ public class Cond extends Query<Cond> {
      * @param prefix 前缀
      * @param column 方法引用
      * @param value  参数值
-     * @param <E>    实体类型
+     * @param <T>    实体类型
      * @param <R>    返回值类型
      * @return 当前Cond实例
      * @since 2.1.4
      */
-    public <E extends IEntity<?>, R> Cond ltEq(String prefix, SFunction<E, R> column, Object value) {
+    public <T, R> Cond ltEq(String prefix, SFunction<T, R> column, Object value) {
         return ltEq(prefix, column).param(value);
     }
 
@@ -1405,12 +1404,12 @@ public class Cond extends Query<Cond> {
      *
      * @param column 方法引用
      * @param value  参数值
-     * @param <E>    实体类型
+     * @param <T>    实体类型
      * @param <R>    返回值类型
      * @return 当前Cond实例
      * @since 2.1.4
      */
-    public <E extends IEntity<?>, R> Cond ltEqWrap(SFunction<E, R> column, Object value) {
+    public <T, R> Cond ltEqWrap(SFunction<T, R> column, Object value) {
         return ltEqWrap(column).param(value);
     }
 
@@ -1420,12 +1419,12 @@ public class Cond extends Query<Cond> {
      * @param prefix 前缀
      * @param column 方法引用
      * @param value  参数值
-     * @param <E>    实体类型
+     * @param <T>    实体类型
      * @param <R>    返回值类型
      * @return 当前Cond实例
      * @since 2.1.4
      */
-    public <E extends IEntity<?>, R> Cond ltEqWrap(String prefix, SFunction<E, R> column, Object value) {
+    public <T, R> Cond ltEqWrap(String prefix, SFunction<T, R> column, Object value) {
         return ltEqWrap(prefix, column).param(value);
     }
 
@@ -1434,12 +1433,12 @@ public class Cond extends Query<Cond> {
      *
      * @param column 方法引用
      * @param value  参数值
-     * @param <E>    实体类型
+     * @param <T>    实体类型
      * @param <R>    返回值类型
      * @return 当前Cond实例
      * @since 2.1.4
      */
-    public <E extends IEntity<?>, R> Cond lt(SFunction<E, R> column, Object value) {
+    public <T, R> Cond lt(SFunction<T, R> column, Object value) {
         return lt(column).param(value);
     }
 
@@ -1449,12 +1448,12 @@ public class Cond extends Query<Cond> {
      * @param prefix 前缀
      * @param column 方法引用
      * @param value  参数值
-     * @param <E>    实体类型
+     * @param <T>    实体类型
      * @param <R>    返回值类型
      * @return 当前Cond实例
      * @since 2.1.4
      */
-    public <E extends IEntity<?>, R> Cond lt(String prefix, SFunction<E, R> column, Object value) {
+    public <T, R> Cond lt(String prefix, SFunction<T, R> column, Object value) {
         return lt(prefix, column).param(value);
     }
 
@@ -1463,12 +1462,12 @@ public class Cond extends Query<Cond> {
      *
      * @param column 方法引用
      * @param value  参数值
-     * @param <E>    实体类型
+     * @param <T>    实体类型
      * @param <R>    返回值类型
      * @return 当前Cond实例
      * @since 2.1.4
      */
-    public <E extends IEntity<?>, R> Cond ltWrap(SFunction<E, R> column, Object value) {
+    public <T, R> Cond ltWrap(SFunction<T, R> column, Object value) {
         return ltWrap(column).param(value);
     }
 
@@ -1478,12 +1477,12 @@ public class Cond extends Query<Cond> {
      * @param prefix 前缀
      * @param column 方法引用
      * @param value  参数值
-     * @param <E>    实体类型
+     * @param <T>    实体类型
      * @param <R>    返回值类型
      * @return 当前Cond实例
      * @since 2.1.4
      */
-    public <E extends IEntity<?>, R> Cond ltWrap(String prefix, SFunction<E, R> column, Object value) {
+    public <T, R> Cond ltWrap(String prefix, SFunction<T, R> column, Object value) {
         return ltWrap(prefix, column).param(value);
     }
 
@@ -1600,12 +1599,12 @@ public class Cond extends Query<Cond> {
      * 通过Lambda表达式创建模糊查询条件
      *
      * @param column 方法引用
-     * @param <E>    实体类型
+     * @param <T>    实体类型
      * @param <R>    返回值类型
      * @return 当前Cond实例
      * @since 2.1.4
      */
-    public <E extends IEntity<?>, R> Cond like(SFunction<E, R> column) {
+    public <T, R> Cond like(SFunction<T, R> column) {
         return opt(getColumnName(column), OPT.LIKE);
     }
 
@@ -1614,12 +1613,12 @@ public class Cond extends Query<Cond> {
      *
      * @param prefix 前缀
      * @param column 方法引用
-     * @param <E>    实体类型
+     * @param <T>    实体类型
      * @param <R>    返回值类型
      * @return 当前Cond实例
      * @since 2.1.4
      */
-    public <E extends IEntity<?>, R> Cond like(String prefix, SFunction<E, R> column) {
+    public <T, R> Cond like(String prefix, SFunction<T, R> column) {
         return opt(Fields.field(prefix, getColumnName(column)), OPT.LIKE);
     }
 
@@ -1627,12 +1626,12 @@ public class Cond extends Query<Cond> {
      * 通过Lambda表达式创建模糊查询条件（带标识符包装）
      *
      * @param column 方法引用
-     * @param <E>    实体类型
+     * @param <T>    实体类型
      * @param <R>    返回值类型
      * @return 当前Cond实例
      * @since 2.1.4
      */
-    public <E extends IEntity<?>, R> Cond likeWrap(SFunction<E, R> column) {
+    public <T, R> Cond likeWrap(SFunction<T, R> column) {
         return optWrap(getColumnName(column), OPT.LIKE);
     }
 
@@ -1641,12 +1640,12 @@ public class Cond extends Query<Cond> {
      *
      * @param prefix 前缀
      * @param column 方法引用
-     * @param <E>    实体类型
+     * @param <T>    实体类型
      * @param <R>    返回值类型
      * @return 当前Cond实例
      * @since 2.1.4
      */
-    public <E extends IEntity<?>, R> Cond likeWrap(String prefix, SFunction<E, R> column) {
+    public <T, R> Cond likeWrap(String prefix, SFunction<T, R> column) {
         return optWrap(Fields.field(prefix, getColumnName(column)), OPT.LIKE);
     }
 
@@ -1654,12 +1653,12 @@ public class Cond extends Query<Cond> {
      * 通过Lambda表达式创建正则表达式查询条件（RLIKE）
      *
      * @param column 方法引用
-     * @param <E>    实体类型
+     * @param <T>    实体类型
      * @param <R>    返回值类型
      * @return 当前Cond实例
      * @since 2.1.4
      */
-    public <E extends IEntity<?>, R> Cond rlike(SFunction<E, R> column) {
+    public <T, R> Cond rlike(SFunction<T, R> column) {
         return opt(getColumnName(column), OPT.RLIKE);
     }
 
@@ -1668,12 +1667,12 @@ public class Cond extends Query<Cond> {
      *
      * @param prefix 前缀
      * @param column 方法引用
-     * @param <E>    实体类型
+     * @param <T>    实体类型
      * @param <R>    返回值类型
      * @return 当前Cond实例
      * @since 2.1.4
      */
-    public <E extends IEntity<?>, R> Cond rlike(String prefix, SFunction<E, R> column) {
+    public <T, R> Cond rlike(String prefix, SFunction<T, R> column) {
         return opt(Fields.field(prefix, getColumnName(column)), OPT.RLIKE);
     }
 
@@ -1681,12 +1680,12 @@ public class Cond extends Query<Cond> {
      * 通过Lambda表达式创建正则表达式查询条件（RLIKE，带标识符包装）
      *
      * @param column 方法引用
-     * @param <E>    实体类型
+     * @param <T>    实体类型
      * @param <R>    返回值类型
      * @return 当前Cond实例
      * @since 2.1.4
      */
-    public <E extends IEntity<?>, R> Cond rlikeWrap(SFunction<E, R> column) {
+    public <T, R> Cond rlikeWrap(SFunction<T, R> column) {
         return optWrap(getColumnName(column), OPT.RLIKE);
     }
 
@@ -1695,12 +1694,12 @@ public class Cond extends Query<Cond> {
      *
      * @param prefix 前缀
      * @param column 方法引用
-     * @param <E>    实体类型
+     * @param <T>    实体类型
      * @param <R>    返回值类型
      * @return 当前Cond实例
      * @since 2.1.4
      */
-    public <E extends IEntity<?>, R> Cond rlikeWrap(String prefix, SFunction<E, R> column) {
+    public <T, R> Cond rlikeWrap(String prefix, SFunction<T, R> column) {
         return optWrap(Fields.field(prefix, getColumnName(column)), OPT.RLIKE);
     }
 
@@ -1708,12 +1707,12 @@ public class Cond extends Query<Cond> {
      * 通过Lambda表达式创建正则表达式查询条件（REGEXP）
      *
      * @param column 方法引用
-     * @param <E>    实体类型
+     * @param <T>    实体类型
      * @param <R>    返回值类型
      * @return 当前Cond实例
      * @since 2.1.4
      */
-    public <E extends IEntity<?>, R> Cond regexp(SFunction<E, R> column) {
+    public <T, R> Cond regexp(SFunction<T, R> column) {
         return opt(getColumnName(column), OPT.REGEXP);
     }
 
@@ -1722,12 +1721,12 @@ public class Cond extends Query<Cond> {
      *
      * @param prefix 前缀
      * @param column 方法引用
-     * @param <E>    实体类型
+     * @param <T>    实体类型
      * @param <R>    返回值类型
      * @return 当前Cond实例
      * @since 2.1.4
      */
-    public <E extends IEntity<?>, R> Cond regexp(String prefix, SFunction<E, R> column) {
+    public <T, R> Cond regexp(String prefix, SFunction<T, R> column) {
         return opt(Fields.field(prefix, getColumnName(column)), OPT.REGEXP);
     }
 
@@ -1735,12 +1734,12 @@ public class Cond extends Query<Cond> {
      * 通过Lambda表达式创建正则表达式查询条件（REGEXP，带标识符包装）
      *
      * @param column 方法引用
-     * @param <E>    实体类型
+     * @param <T>    实体类型
      * @param <R>    返回值类型
      * @return 当前Cond实例
      * @since 2.1.4
      */
-    public <E extends IEntity<?>, R> Cond regexpWrap(SFunction<E, R> column) {
+    public <T, R> Cond regexpWrap(SFunction<T, R> column) {
         return optWrap(getColumnName(column), OPT.REGEXP);
     }
 
@@ -1749,12 +1748,12 @@ public class Cond extends Query<Cond> {
      *
      * @param prefix 前缀
      * @param column 方法引用
-     * @param <E>    实体类型
+     * @param <T>    实体类型
      * @param <R>    返回值类型
      * @return 当前Cond实例
      * @since 2.1.4
      */
-    public <E extends IEntity<?>, R> Cond regexpWrap(String prefix, SFunction<E, R> column) {
+    public <T, R> Cond regexpWrap(String prefix, SFunction<T, R> column) {
         return optWrap(Fields.field(prefix, getColumnName(column)), OPT.REGEXP);
     }
 
@@ -1763,12 +1762,12 @@ public class Cond extends Query<Cond> {
      *
      * @param column 方法引用
      * @param value  参数值
-     * @param <E>    实体类型
+     * @param <T>    实体类型
      * @param <R>    返回值类型
      * @return 当前Cond实例
      * @since 2.1.4
      */
-    public <E extends IEntity<?>, R> Cond like(SFunction<E, R> column, Object value) {
+    public <T, R> Cond like(SFunction<T, R> column, Object value) {
         return like(column).param(value);
     }
 
@@ -1778,12 +1777,12 @@ public class Cond extends Query<Cond> {
      * @param prefix 前缀
      * @param column 方法引用
      * @param value  参数值
-     * @param <E>    实体类型
+     * @param <T>    类型
      * @param <R>    返回值类型
      * @return 当前Cond实例
      * @since 2.1.4
      */
-    public <E extends IEntity<?>, R> Cond like(String prefix, SFunction<E, R> column, Object value) {
+    public <T, R> Cond like(String prefix, SFunction<T, R> column, Object value) {
         return like(prefix, column).param(value);
     }
 
@@ -1792,12 +1791,12 @@ public class Cond extends Query<Cond> {
      *
      * @param column 方法引用
      * @param value  参数值
-     * @param <E>    实体类型
+     * @param <T>    类型
      * @param <R>    返回值类型
      * @return 当前Cond实例
      * @since 2.1.4
      */
-    public <E extends IEntity<?>, R> Cond likeWrap(SFunction<E, R> column, Object value) {
+    public <T, R> Cond likeWrap(SFunction<T, R> column, Object value) {
         return likeWrap(column).param(value);
     }
 
@@ -1807,12 +1806,12 @@ public class Cond extends Query<Cond> {
      * @param prefix 前缀
      * @param column 方法引用
      * @param value  参数值
-     * @param <E>    实体类型
+     * @param <T>    类型
      * @param <R>    返回值类型
      * @return 当前Cond实例
      * @since 2.1.4
      */
-    public <E extends IEntity<?>, R> Cond likeWrap(String prefix, SFunction<E, R> column, Object value) {
+    public <T, R> Cond likeWrap(String prefix, SFunction<T, R> column, Object value) {
         return likeWrap(prefix, column).param(value);
     }
 
@@ -1821,12 +1820,12 @@ public class Cond extends Query<Cond> {
      *
      * @param column 方法引用
      * @param value  参数值
-     * @param <E>    实体类型
+     * @param <T>    类型
      * @param <R>    返回值类型
      * @return 当前Cond实例
      * @since 2.1.4
      */
-    public <E extends IEntity<?>, R> Cond rlike(SFunction<E, R> column, Object value) {
+    public <T, R> Cond rlike(SFunction<T, R> column, Object value) {
         return rlike(column).param(value);
     }
 
@@ -1836,12 +1835,12 @@ public class Cond extends Query<Cond> {
      * @param prefix 前缀
      * @param column 方法引用
      * @param value  参数值
-     * @param <E>    实体类型
+     * @param <T>    类型
      * @param <R>    返回值类型
      * @return 当前Cond实例
      * @since 2.1.4
      */
-    public <E extends IEntity<?>, R> Cond rlike(String prefix, SFunction<E, R> column, Object value) {
+    public <T, R> Cond rlike(String prefix, SFunction<T, R> column, Object value) {
         return rlike(prefix, column).param(value);
     }
 
@@ -1850,12 +1849,12 @@ public class Cond extends Query<Cond> {
      *
      * @param column 方法引用
      * @param value  参数值
-     * @param <E>    实体类型
+     * @param <T>    类型
      * @param <R>    返回值类型
      * @return 当前Cond实例
      * @since 2.1.4
      */
-    public <E extends IEntity<?>, R> Cond rlikeWrap(SFunction<E, R> column, Object value) {
+    public <T, R> Cond rlikeWrap(SFunction<T, R> column, Object value) {
         return rlikeWrap(column).param(value);
     }
 
@@ -1865,12 +1864,12 @@ public class Cond extends Query<Cond> {
      * @param prefix 前缀
      * @param column 方法引用
      * @param value  参数值
-     * @param <E>    实体类型
+     * @param <T>    类型
      * @param <R>    返回值类型
      * @return 当前Cond实例
      * @since 2.1.4
      */
-    public <E extends IEntity<?>, R> Cond rlikeWrap(String prefix, SFunction<E, R> column, Object value) {
+    public <T, R> Cond rlikeWrap(String prefix, SFunction<T, R> column, Object value) {
         return rlikeWrap(prefix, column).param(value);
     }
 
@@ -1879,12 +1878,12 @@ public class Cond extends Query<Cond> {
      *
      * @param column 方法引用
      * @param value  参数值
-     * @param <E>    实体类型
+     * @param <T>    类型
      * @param <R>    返回值类型
      * @return 当前Cond实例
      * @since 2.1.4
      */
-    public <E extends IEntity<?>, R> Cond regexp(SFunction<E, R> column, Object value) {
+    public <T, R> Cond regexp(SFunction<T, R> column, Object value) {
         return regexp(column).param(value);
     }
 
@@ -1894,12 +1893,12 @@ public class Cond extends Query<Cond> {
      * @param prefix 前缀
      * @param column 方法引用
      * @param value  参数值
-     * @param <E>    实体类型
+     * @param <T>    类型
      * @param <R>    返回值类型
      * @return 当前Cond实例
      * @since 2.1.4
      */
-    public <E extends IEntity<?>, R> Cond regexp(String prefix, SFunction<E, R> column, Object value) {
+    public <T, R> Cond regexp(String prefix, SFunction<T, R> column, Object value) {
         return regexp(prefix, column).param(value);
     }
 
@@ -1908,12 +1907,12 @@ public class Cond extends Query<Cond> {
      *
      * @param column 方法引用
      * @param value  参数值
-     * @param <E>    实体类型
+     * @param <T>    类型
      * @param <R>    返回值类型
      * @return 当前Cond实例
      * @since 2.1.4
      */
-    public <E extends IEntity<?>, R> Cond regexpWrap(SFunction<E, R> column, Object value) {
+    public <T, R> Cond regexpWrap(SFunction<T, R> column, Object value) {
         return regexpWrap(column).param(value);
     }
 
@@ -1923,12 +1922,12 @@ public class Cond extends Query<Cond> {
      * @param prefix 前缀
      * @param column 方法引用
      * @param value  参数值
-     * @param <E>    实体类型
+     * @param <T>    类型
      * @param <R>    返回值类型
      * @return 当前Cond实例
      * @since 2.1.4
      */
-    public <E extends IEntity<?>, R> Cond regexpWrap(String prefix, SFunction<E, R> column, Object value) {
+    public <T, R> Cond regexpWrap(String prefix, SFunction<T, R> column, Object value) {
         return regexpWrap(prefix, column).param(value);
     }
 
@@ -2148,12 +2147,12 @@ public class Cond extends Query<Cond> {
      * 通过Lambda表达式创建IS NULL条件
      *
      * @param column 方法引用
-     * @param <E>    实体类型
+     * @param <T>    类型
      * @param <R>    返回值类型
      * @return 当前Cond实例
      * @since 2.1.4
      */
-    public <E extends IEntity<?>, R> Cond isNull(SFunction<E, R> column) {
+    public <T, R> Cond isNull(SFunction<T, R> column) {
         return isNull(getColumnName(column));
     }
 
@@ -2162,12 +2161,12 @@ public class Cond extends Query<Cond> {
      *
      * @param prefix 前缀
      * @param column 方法引用
-     * @param <E>    实体类型
+     * @param <T>    类型
      * @param <R>    返回值类型
      * @return 当前Cond实例
      * @since 2.1.4
      */
-    public <E extends IEntity<?>, R> Cond isNull(String prefix, SFunction<E, R> column) {
+    public <T, R> Cond isNull(String prefix, SFunction<T, R> column) {
         return isNull(Fields.field(prefix, getColumnName(column)));
     }
 
@@ -2175,12 +2174,12 @@ public class Cond extends Query<Cond> {
      * 通过Lambda表达式创建IS NULL条件（带标识符包装）
      *
      * @param column 方法引用
-     * @param <E>    实体类型
+     * @param <T>    类型
      * @param <R>    返回值类型
      * @return 当前Cond实例
      * @since 2.1.4
      */
-    public <E extends IEntity<?>, R> Cond isNullWrap(SFunction<E, R> column) {
+    public <T, R> Cond isNullWrap(SFunction<T, R> column) {
         return isNullWrap(null, column);
     }
 
@@ -2189,12 +2188,12 @@ public class Cond extends Query<Cond> {
      *
      * @param prefix 前缀
      * @param column 方法引用
-     * @param <E>    实体类型
+     * @param <T>    类型
      * @param <R>    返回值类型
      * @return 当前Cond实例
      * @since 2.1.4
      */
-    public <E extends IEntity<?>, R> Cond isNullWrap(String prefix, SFunction<E, R> column) {
+    public <T, R> Cond isNullWrap(String prefix, SFunction<T, R> column) {
         return isNull(prefix, wrapIdentifierField(getColumnName(column)));
     }
 
@@ -2202,12 +2201,12 @@ public class Cond extends Query<Cond> {
      * 通过Lambda表达式创建IS NOT NULL条件
      *
      * @param column 方法引用
-     * @param <E>    实体类型
+     * @param <T>    类型
      * @param <R>    返回值类型
      * @return 当前Cond实例
      * @since 2.1.4
      */
-    public <E extends IEntity<?>, R> Cond isNotNull(SFunction<E, R> column) {
+    public <T, R> Cond isNotNull(SFunction<T, R> column) {
         return isNotNull(getColumnName(column));
     }
 
@@ -2216,12 +2215,12 @@ public class Cond extends Query<Cond> {
      *
      * @param prefix 前缀
      * @param column 方法引用
-     * @param <E>    实体类型
+     * @param <T>    类型
      * @param <R>    返回值类型
      * @return 当前Cond实例
      * @since 2.1.4
      */
-    public <E extends IEntity<?>, R> Cond isNotNull(String prefix, SFunction<E, R> column) {
+    public <T, R> Cond isNotNull(String prefix, SFunction<T, R> column) {
         return isNotNull(Fields.field(prefix, getColumnName(column)));
     }
 
@@ -2229,12 +2228,12 @@ public class Cond extends Query<Cond> {
      * 通过Lambda表达式创建IS NOT NULL条件（带标识符包装）
      *
      * @param column 方法引用
-     * @param <E>    实体类型
+     * @param <T>    类型
      * @param <R>    返回值类型
      * @return 当前Cond实例
      * @since 2.1.4
      */
-    public <E extends IEntity<?>, R> Cond isNotNullWrap(SFunction<E, R> column) {
+    public <T, R> Cond isNotNullWrap(SFunction<T, R> column) {
         return isNotNullWrap(null, column);
     }
 
@@ -2243,12 +2242,12 @@ public class Cond extends Query<Cond> {
      *
      * @param prefix 前缀
      * @param column 方法引用
-     * @param <E>    实体类型
+     * @param <T>    类型
      * @param <R>    返回值类型
      * @return 当前Cond实例
      * @since 2.1.4
      */
-    public <E extends IEntity<?>, R> Cond isNotNullWrap(String prefix, SFunction<E, R> column) {
+    public <T, R> Cond isNotNullWrap(String prefix, SFunction<T, R> column) {
         return isNotNull(prefix, wrapIdentifierField(getColumnName(column)));
     }
 
@@ -2258,12 +2257,12 @@ public class Cond extends Query<Cond> {
      * @param column   方法引用
      * @param valueOne 起始值
      * @param valueTwo 结束值
-     * @param <E>      实体类型
+     * @param <T>      类型
      * @param <R>      返回值类型
      * @return 当前Cond实例
      * @since 2.1.4
      */
-    public <E extends IEntity<?>, R> Cond between(SFunction<E, R> column, Object valueOne, Object valueTwo) {
+    public <T, R> Cond between(SFunction<T, R> column, Object valueOne, Object valueTwo) {
         return between(null, column, valueOne, valueTwo);
     }
 
@@ -2274,12 +2273,12 @@ public class Cond extends Query<Cond> {
      * @param column   方法引用
      * @param valueOne 起始值
      * @param valueTwo 结束值
-     * @param <E>      实体类型
+     * @param <T>      类型
      * @param <R>      返回值类型
      * @return 当前Cond实例
      * @since 2.1.4
      */
-    public <E extends IEntity<?>, R> Cond between(String prefix, SFunction<E, R> column, Object valueOne, Object valueTwo) {
+    public <T, R> Cond between(String prefix, SFunction<T, R> column, Object valueOne, Object valueTwo) {
         String columnName = getColumnName(column);
         return between(prefix, columnName, valueOne, valueTwo);
     }
@@ -2290,12 +2289,12 @@ public class Cond extends Query<Cond> {
      * @param column   方法引用
      * @param valueOne 起始值
      * @param valueTwo 结束值
-     * @param <E>      实体类型
+     * @param <T>      类型
      * @param <R>      返回值类型
      * @return 当前Cond实例
      * @since 2.1.4
      */
-    public <E extends IEntity<?>, R> Cond betweenWrap(SFunction<E, R> column, Object valueOne, Object valueTwo) {
+    public <T, R> Cond betweenWrap(SFunction<T, R> column, Object valueOne, Object valueTwo) {
         return betweenWrap(null, column, valueOne, valueTwo);
     }
 
@@ -2306,12 +2305,12 @@ public class Cond extends Query<Cond> {
      * @param column   方法引用
      * @param valueOne 起始值
      * @param valueTwo 结束值
-     * @param <E>      实体类型
+     * @param <T>      实体类型
      * @param <R>      返回值类型
      * @return 当前Cond实例
      * @since 2.1.4
      */
-    public <E extends IEntity<?>, R> Cond betweenWrap(String prefix, SFunction<E, R> column, Object valueOne, Object valueTwo) {
+    public <T, R> Cond betweenWrap(String prefix, SFunction<T, R> column, Object valueOne, Object valueTwo) {
         String columnName = getColumnName(column);
         return between(prefix, wrapIdentifierField(columnName), valueOne, valueTwo);
     }
@@ -2321,12 +2320,12 @@ public class Cond extends Query<Cond> {
      *
      * @param column 方法引用
      * @param subSql 子查询SQL
-     * @param <E>    实体类型
+     * @param <T>    类型
      * @param <R>    返回值类型
      * @return 当前Cond实例
      * @since 2.1.4
      */
-    public <E extends IEntity<?>, R> Cond in(SFunction<E, R> column, SQL subSql) {
+    public <T, R> Cond in(SFunction<T, R> column, SQL subSql) {
         return in(null, column, subSql);
     }
 
@@ -2336,12 +2335,12 @@ public class Cond extends Query<Cond> {
      * @param prefix 前缀
      * @param column 方法引用
      * @param subSql 子查询SQL
-     * @param <E>    实体类型
+     * @param <T>    类型
      * @param <R>    返回值类型
      * @return 当前Cond实例
      * @since 2.1.4
      */
-    public <E extends IEntity<?>, R> Cond in(String prefix, SFunction<E, R> column, SQL subSql) {
+    public <T, R> Cond in(String prefix, SFunction<T, R> column, SQL subSql) {
         String columnName = getColumnName(column);
         return in(Fields.field(prefix, columnName), subSql);
     }
@@ -2351,12 +2350,12 @@ public class Cond extends Query<Cond> {
      *
      * @param column 方法引用
      * @param subSql 子查询SQL
-     * @param <E>    实体类型
+     * @param <T>    类型
      * @param <R>    返回值类型
      * @return 当前Cond实例
      * @since 2.1.4
      */
-    public <E extends IEntity<?>, R> Cond inWrap(SFunction<E, R> column, SQL subSql) {
+    public <T, R> Cond inWrap(SFunction<T, R> column, SQL subSql) {
         return inWrap(null, column, subSql);
     }
 
@@ -2366,12 +2365,12 @@ public class Cond extends Query<Cond> {
      * @param prefix 前缀
      * @param column 方法引用
      * @param subSql 子查询SQL
-     * @param <E>    实体类型
+     * @param <T>    类型
      * @param <R>    返回值类型
      * @return 当前Cond实例
      * @since 2.1.4
      */
-    public <E extends IEntity<?>, R> Cond inWrap(String prefix, SFunction<E, R> column, SQL subSql) {
+    public <T, R> Cond inWrap(String prefix, SFunction<T, R> column, SQL subSql) {
         String columnName = getColumnName(column);
         return in(prefix, wrapIdentifierField(columnName), subSql);
     }
@@ -2381,12 +2380,12 @@ public class Cond extends Query<Cond> {
      *
      * @param column 方法引用
      * @param subSql 子查询Select对象
-     * @param <E>    实体类型
+     * @param <T>    类型
      * @param <R>    返回值类型
      * @return 当前Cond实例
      * @since 2.1.4
      */
-    public <E extends IEntity<?>, R> Cond in(SFunction<E, R> column, Select subSql) {
+    public <T, R> Cond in(SFunction<T, R> column, Select subSql) {
         return in(null, column, subSql);
     }
 
@@ -2396,12 +2395,12 @@ public class Cond extends Query<Cond> {
      * @param prefix 前缀
      * @param column 方法引用
      * @param subSql 子查询Select对象
-     * @param <E>    实体类型
+     * @param <T>    类型
      * @param <R>    返回值类型
      * @return 当前Cond实例
      * @since 2.1.4
      */
-    public <E extends IEntity<?>, R> Cond in(String prefix, SFunction<E, R> column, Select subSql) {
+    public <T, R> Cond in(String prefix, SFunction<T, R> column, Select subSql) {
         String columnName = getColumnName(column);
         return in(Fields.field(prefix, columnName), subSql);
     }
@@ -2411,12 +2410,12 @@ public class Cond extends Query<Cond> {
      *
      * @param column 方法引用
      * @param subSql 子查询Select对象
-     * @param <E>    实体类型
+     * @param <T>    类型
      * @param <R>    返回值类型
      * @return 当前Cond实例
      * @since 2.1.4
      */
-    public <E extends IEntity<?>, R> Cond inWrap(SFunction<E, R> column, Select subSql) {
+    public <T, R> Cond inWrap(SFunction<T, R> column, Select subSql) {
         return inWrap(null, column, subSql);
     }
 
@@ -2426,12 +2425,12 @@ public class Cond extends Query<Cond> {
      * @param prefix 前缀
      * @param column 方法引用
      * @param subSql 子查询Select对象
-     * @param <E>    实体类型
+     * @param <T>    实体类型
      * @param <R>    返回值类型
      * @return 当前Cond实例
      * @since 2.1.4
      */
-    public <E extends IEntity<?>, R> Cond inWrap(String prefix, SFunction<E, R> column, Select subSql) {
+    public <T, R> Cond inWrap(String prefix, SFunction<T, R> column, Select subSql) {
         String columnName = getColumnName(column);
         return in(prefix, wrapIdentifierField(columnName), subSql);
     }
@@ -2441,12 +2440,12 @@ public class Cond extends Query<Cond> {
      *
      * @param column 方法引用
      * @param params 参数列表
-     * @param <E>    实体类型
+     * @param <T>    实体类型
      * @param <R>    返回值类型
      * @return 当前Cond实例
      * @since 2.1.4
      */
-    public <E extends IEntity<?>, R> Cond in(SFunction<E, R> column, Params params) {
+    public <T, R> Cond in(SFunction<T, R> column, Params params) {
         return in(null, column, params);
     }
 
@@ -2456,12 +2455,12 @@ public class Cond extends Query<Cond> {
      * @param prefix 前缀
      * @param column 方法引用
      * @param params 参数列表
-     * @param <E>    实体类型
+     * @param <T>    实体类型
      * @param <R>    返回值类型
      * @return 当前Cond实例
      * @since 2.1.4
      */
-    public <E extends IEntity<?>, R> Cond in(String prefix, SFunction<E, R> column, Params params) {
+    public <T, R> Cond in(String prefix, SFunction<T, R> column, Params params) {
         String columnName = getColumnName(column);
         return in(prefix, columnName, params);
     }
@@ -2471,12 +2470,12 @@ public class Cond extends Query<Cond> {
      *
      * @param column 方法引用
      * @param params 参数列表
-     * @param <E>    实体类型
+     * @param <T>    实体类型
      * @param <R>    返回值类型
      * @return 当前Cond实例
      * @since 2.1.4
      */
-    public <E extends IEntity<?>, R> Cond inWrap(SFunction<E, R> column, Params params) {
+    public <T, R> Cond inWrap(SFunction<T, R> column, Params params) {
         return inWrap(null, column, params);
     }
 
@@ -2486,12 +2485,12 @@ public class Cond extends Query<Cond> {
      * @param prefix 前缀
      * @param column 方法引用
      * @param params 参数列表
-     * @param <E>    实体类型
+     * @param <T>    实体类型
      * @param <R>    返回值类型
      * @return 当前Cond实例
      * @since 2.1.4
      */
-    public <E extends IEntity<?>, R> Cond inWrap(String prefix, SFunction<E, R> column, Params params) {
+    public <T, R> Cond inWrap(String prefix, SFunction<T, R> column, Params params) {
         String columnName = getColumnName(column);
         return in(prefix, wrapIdentifierField(columnName), params);
     }

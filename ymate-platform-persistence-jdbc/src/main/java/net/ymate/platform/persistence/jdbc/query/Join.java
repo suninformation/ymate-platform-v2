@@ -140,7 +140,7 @@ public class Join extends Query<Join> {
      * @since 2.1.4
      */
     public static Join cross(Class<? extends IEntity<?>> entityClass, String alias) {
-        return cross((Query<?>) null, entityClass, alias);
+        return cross(null, entityClass, alias);
     }
 
     /**
@@ -181,7 +181,7 @@ public class Join extends Query<Join> {
      * @since 2.1.4
      */
     public static Join left(Class<? extends IEntity<?>> entityClass, String alias) {
-        return left((Query<?>) null, entityClass, alias);
+        return left(null, entityClass, alias);
     }
 
     /**
@@ -222,7 +222,7 @@ public class Join extends Query<Join> {
      * @since 2.1.4
      */
     public static Join right(Class<? extends IEntity<?>> entityClass, String alias) {
-        return right((Query<?>) null, entityClass, alias);
+        return right(null, entityClass, alias);
     }
 
     /**
@@ -531,7 +531,7 @@ public class Join extends Query<Join> {
      * @return 当前Join实例
      * @since 2.1.4
      */
-    public <T extends IEntity<?>, U extends IEntity<?>, R> Join on(SFunction<T, R> columnOne, SFunction<U, R> columnTwo) {
+    public <T, U, R> Join onEq(SFunction<T, R> columnOne, SFunction<U, R> columnTwo) {
         String fieldOne = getColumnName(columnOne);
         String fieldTwo = getColumnName(columnTwo);
         return on(Cond.create(this).eqField(fieldOne, fieldTwo));
@@ -550,8 +550,42 @@ public class Join extends Query<Join> {
      * @return 当前Join实例
      * @since 2.1.4
      */
-    public <T extends IEntity<?>, U extends IEntity<?>, R> Join on(String prefixOne, SFunction<T, R> columnOne, String prefixTwo, SFunction<U, R> columnTwo) {
+    public <T, U, R> Join onEq(String prefixOne, SFunction<T, R> columnOne, String prefixTwo, SFunction<U, R> columnTwo) {
         return on(Cond.create(this).eq(prefixOne, columnOne, prefixTwo, columnTwo));
+    }
+
+    /**
+     * 通过Lambda表达式创建连接条件（两个字段相等，带字段包装）
+     *
+     * @param columnOne 第一个字段的方法引用
+     * @param columnTwo 第二个字段的方法引用
+     * @param <T>       第一个实体类型
+     * @param <U>       第二个实体类型
+     * @param <R>       返回值类型
+     * @return 当前Join实例
+     * @since 2.1.4
+     */
+    public <T, U, R> Join onEqWrap(SFunction<T, R> columnOne, SFunction<U, R> columnTwo) {
+        String fieldOne = getColumnName(columnOne);
+        String fieldTwo = getColumnName(columnTwo);
+        return on(Cond.create(this).eqFieldWrap(fieldOne, fieldTwo));
+    }
+
+    /**
+     * 通过Lambda表达式创建连接条件（两个字段相等，带前缀和字段包装）
+     *
+     * @param prefixOne 第一个字段的前缀
+     * @param columnOne 第一个字段的方法引用
+     * @param prefixTwo 第二个字段的前缀
+     * @param columnTwo 第二个字段的方法引用
+     * @param <T>       第一个实体类型
+     * @param <U>       第二个实体类型
+     * @param <R>       返回值类型
+     * @return 当前Join实例
+     * @since 2.1.4
+     */
+    public <T, U, R> Join onEqWrap(String prefixOne, SFunction<T, R> columnOne, String prefixTwo, SFunction<U, R> columnTwo) {
+        return on(Cond.create(this).eqWrap(prefixOne, columnOne, prefixTwo, columnTwo));
     }
 
     /**
@@ -565,7 +599,7 @@ public class Join extends Query<Join> {
      * @return 当前Join实例
      * @since 2.1.4
      */
-    public <T extends IEntity<?>, U extends IEntity<?>, R> Join onNotEq(SFunction<T, R> columnOne, SFunction<U, R> columnTwo) {
+    public <T, U, R> Join onNotEq(SFunction<T, R> columnOne, SFunction<U, R> columnTwo) {
         String fieldOne = getColumnName(columnOne);
         String fieldTwo = getColumnName(columnTwo);
         return on(Cond.create(this).notEqField(fieldOne, fieldTwo));
@@ -584,8 +618,42 @@ public class Join extends Query<Join> {
      * @return 当前Join实例
      * @since 2.1.4
      */
-    public <T extends IEntity<?>, U extends IEntity<?>, R> Join onNotEq(String prefixOne, SFunction<T, R> columnOne, String prefixTwo, SFunction<U, R> columnTwo) {
+    public <T, U, R> Join onNotEq(String prefixOne, SFunction<T, R> columnOne, String prefixTwo, SFunction<U, R> columnTwo) {
         return on(Cond.create(this).notEq(prefixOne, columnOne, prefixTwo, columnTwo));
+    }
+
+    /**
+     * 通过Lambda表达式创建连接条件（两个字段不相等，带字段包装）
+     *
+     * @param columnOne 第一个字段的方法引用
+     * @param columnTwo 第二个字段的方法引用
+     * @param <T>       第一个实体类型
+     * @param <U>       第二个实体类型
+     * @param <R>       返回值类型
+     * @return 当前Join实例
+     * @since 2.1.4
+     */
+    public <T, U, R> Join onNotEqWrap(SFunction<T, R> columnOne, SFunction<U, R> columnTwo) {
+        String fieldOne = getColumnName(columnOne);
+        String fieldTwo = getColumnName(columnTwo);
+        return on(Cond.create(this).notEqFieldWrap(fieldOne, fieldTwo));
+    }
+
+    /**
+     * 通过Lambda表达式创建连接条件（两个字段不相等，带前缀和字段包装）
+     *
+     * @param prefixOne 第一个字段的前缀
+     * @param columnOne 第一个字段的方法引用
+     * @param prefixTwo 第二个字段的前缀
+     * @param columnTwo 第二个字段的方法引用
+     * @param <T>       第一个实体类型
+     * @param <U>       第二个实体类型
+     * @param <R>       返回值类型
+     * @return 当前Join实例
+     * @since 2.1.4
+     */
+    public <T, U, R> Join onNotEqWrap(String prefixOne, SFunction<T, R> columnOne, String prefixTwo, SFunction<U, R> columnTwo) {
+        return on(Cond.create(this).notEqWrap(prefixOne, columnOne, prefixTwo, columnTwo));
     }
 
     /**
@@ -599,7 +667,7 @@ public class Join extends Query<Join> {
      * @return 当前Join实例
      * @since 2.1.4
      */
-    public <T extends IEntity<?>, U extends IEntity<?>, R> Join onGt(SFunction<T, R> columnOne, SFunction<U, R> columnTwo) {
+    public <T, U, R> Join onGt(SFunction<T, R> columnOne, SFunction<U, R> columnTwo) {
         String fieldOne = getColumnName(columnOne);
         String fieldTwo = getColumnName(columnTwo);
         return on(Cond.create(this).gtField(fieldOne, fieldTwo));
@@ -618,8 +686,42 @@ public class Join extends Query<Join> {
      * @return 当前Join实例
      * @since 2.1.4
      */
-    public <T extends IEntity<?>, U extends IEntity<?>, R> Join onGt(String prefixOne, SFunction<T, R> columnOne, String prefixTwo, SFunction<U, R> columnTwo) {
+    public <T, U, R> Join onGt(String prefixOne, SFunction<T, R> columnOne, String prefixTwo, SFunction<U, R> columnTwo) {
         return on(Cond.create(this).gt(prefixOne, columnOne, prefixTwo, columnTwo));
+    }
+
+    /**
+     * 通过Lambda表达式创建连接条件（第一个字段大于第二个字段，带字段包装）
+     *
+     * @param columnOne 第一个字段的方法引用
+     * @param columnTwo 第二个字段的方法引用
+     * @param <T>       第一个实体类型
+     * @param <U>       第二个实体类型
+     * @param <R>       返回值类型
+     * @return 当前Join实例
+     * @since 2.1.4
+     */
+    public <T, U, R> Join onGtWrap(SFunction<T, R> columnOne, SFunction<U, R> columnTwo) {
+        String fieldOne = getColumnName(columnOne);
+        String fieldTwo = getColumnName(columnTwo);
+        return on(Cond.create(this).gtFieldWrap(fieldOne, fieldTwo));
+    }
+
+    /**
+     * 通过Lambda表达式创建连接条件（第一个字段大于第二个字段，带前缀和字段包装）
+     *
+     * @param prefixOne 第一个字段的前缀
+     * @param columnOne 第一个字段的方法引用
+     * @param prefixTwo 第二个字段的前缀
+     * @param columnTwo 第二个字段的方法引用
+     * @param <T>       第一个实体类型
+     * @param <U>       第二个实体类型
+     * @param <R>       返回值类型
+     * @return 当前Join实例
+     * @since 2.1.4
+     */
+    public <T, U, R> Join onGtWrap(String prefixOne, SFunction<T, R> columnOne, String prefixTwo, SFunction<U, R> columnTwo) {
+        return on(Cond.create(this).gtWrap(prefixOne, columnOne, prefixTwo, columnTwo));
     }
 
     /**
@@ -633,10 +735,10 @@ public class Join extends Query<Join> {
      * @return 当前Join实例
      * @since 2.1.4
      */
-    public <T extends IEntity<?>, U extends IEntity<?>, R> Join onGtEq(SFunction<T, R> columnOne, SFunction<U, R> columnTwo) {
+    public <T, U, R> Join onGtEq(SFunction<T, R> columnOne, SFunction<U, R> columnTwo) {
         String fieldOne = getColumnName(columnOne);
         String fieldTwo = getColumnName(columnTwo);
-        return on(Cond.create(this).gtEq(fieldOne, fieldTwo));
+        return on(Cond.create(this).gtEqField(fieldOne, fieldTwo));
     }
 
     /**
@@ -652,8 +754,42 @@ public class Join extends Query<Join> {
      * @return 当前Join实例
      * @since 2.1.4
      */
-    public <T extends IEntity<?>, U extends IEntity<?>, R> Join onGtEq(String prefixOne, SFunction<T, R> columnOne, String prefixTwo, SFunction<U, R> columnTwo) {
+    public <T, U, R> Join onGtEq(String prefixOne, SFunction<T, R> columnOne, String prefixTwo, SFunction<U, R> columnTwo) {
         return on(Cond.create(this).gtEq(prefixOne, columnOne, prefixTwo, columnTwo));
+    }
+
+    /**
+     * 通过Lambda表达式创建连接条件（第一个字段大于等于第二个字段，带字段包装）
+     *
+     * @param columnOne 第一个字段的方法引用
+     * @param columnTwo 第二个字段的方法引用
+     * @param <T>       第一个实体类型
+     * @param <U>       第二个实体类型
+     * @param <R>       返回值类型
+     * @return 当前Join实例
+     * @since 2.1.4
+     */
+    public <T, U, R> Join onGtEqWrap(SFunction<T, R> columnOne, SFunction<U, R> columnTwo) {
+        String fieldOne = getColumnName(columnOne);
+        String fieldTwo = getColumnName(columnTwo);
+        return on(Cond.create(this).gtEqFieldWrap(fieldOne, fieldTwo));
+    }
+
+    /**
+     * 通过Lambda表达式创建连接条件（第一个字段大于等于第二个字段，带前缀和字段包装）
+     *
+     * @param prefixOne 第一个字段的前缀
+     * @param columnOne 第一个字段的方法引用
+     * @param prefixTwo 第二个字段的前缀
+     * @param columnTwo 第二个字段的方法引用
+     * @param <T>       第一个实体类型
+     * @param <U>       第二个实体类型
+     * @param <R>       返回值类型
+     * @return 当前Join实例
+     * @since 2.1.4
+     */
+    public <T, U, R> Join onGtEqWrap(String prefixOne, SFunction<T, R> columnOne, String prefixTwo, SFunction<U, R> columnTwo) {
+        return on(Cond.create(this).gtEqWrap(prefixOne, columnOne, prefixTwo, columnTwo));
     }
 
     /**
@@ -667,10 +803,10 @@ public class Join extends Query<Join> {
      * @return 当前Join实例
      * @since 2.1.4
      */
-    public <T extends IEntity<?>, U extends IEntity<?>, R> Join onLt(SFunction<T, R> columnOne, SFunction<U, R> columnTwo) {
+    public <T, U, R> Join onLt(SFunction<T, R> columnOne, SFunction<U, R> columnTwo) {
         String fieldOne = getColumnName(columnOne);
         String fieldTwo = getColumnName(columnTwo);
-        return on(Cond.create(this).lt(fieldOne, fieldTwo));
+        return on(Cond.create(this).ltField(fieldOne, fieldTwo));
     }
 
     /**
@@ -686,8 +822,42 @@ public class Join extends Query<Join> {
      * @return 当前Join实例
      * @since 2.1.4
      */
-    public <T extends IEntity<?>, U extends IEntity<?>, R> Join onLt(String prefixOne, SFunction<T, R> columnOne, String prefixTwo, SFunction<U, R> columnTwo) {
+    public <T, U, R> Join onLt(String prefixOne, SFunction<T, R> columnOne, String prefixTwo, SFunction<U, R> columnTwo) {
         return on(Cond.create(this).lt(prefixOne, columnOne, prefixTwo, columnTwo));
+    }
+
+    /**
+     * 通过Lambda表达式创建连接条件（第一个字段小于第二个字段，带字段包装）
+     *
+     * @param columnOne 第一个字段的方法引用
+     * @param columnTwo 第二个字段的方法引用
+     * @param <T>       第一个实体类型
+     * @param <U>       第二个实体类型
+     * @param <R>       返回值类型
+     * @return 当前Join实例
+     * @since 2.1.4
+     */
+    public <T, U, R> Join onLtWrap(SFunction<T, R> columnOne, SFunction<U, R> columnTwo) {
+        String fieldOne = getColumnName(columnOne);
+        String fieldTwo = getColumnName(columnTwo);
+        return on(Cond.create(this).ltFieldWrap(fieldOne, fieldTwo));
+    }
+
+    /**
+     * 通过Lambda表达式创建连接条件（第一个字段小于第二个字段，带前缀和字段包装）
+     *
+     * @param prefixOne 第一个字段的前缀
+     * @param columnOne 第一个字段的方法引用
+     * @param prefixTwo 第二个字段的前缀
+     * @param columnTwo 第二个字段的方法引用
+     * @param <T>       第一个实体类型
+     * @param <U>       第二个实体类型
+     * @param <R>       返回值类型
+     * @return 当前Join实例
+     * @since 2.1.4
+     */
+    public <T, U, R> Join onLtWrap(String prefixOne, SFunction<T, R> columnOne, String prefixTwo, SFunction<U, R> columnTwo) {
+        return on(Cond.create(this).ltWrap(prefixOne, columnOne, prefixTwo, columnTwo));
     }
 
     /**
@@ -701,7 +871,7 @@ public class Join extends Query<Join> {
      * @return 当前Join实例
      * @since 2.1.4
      */
-    public <T extends IEntity<?>, U extends IEntity<?>, R> Join onLtEq(SFunction<T, R> columnOne, SFunction<U, R> columnTwo) {
+    public <T, U, R> Join onLtEq(SFunction<T, R> columnOne, SFunction<U, R> columnTwo) {
         String fieldOne = getColumnName(columnOne);
         String fieldTwo = getColumnName(columnTwo);
         return on(Cond.create(this).ltEqField(fieldOne, fieldTwo));
@@ -720,8 +890,42 @@ public class Join extends Query<Join> {
      * @return 当前Join实例
      * @since 2.1.4
      */
-    public <T extends IEntity<?>, U extends IEntity<?>, R> Join onLtEq(String prefixOne, SFunction<T, R> columnOne, String prefixTwo, SFunction<U, R> columnTwo) {
+    public <T, U, R> Join onLtEq(String prefixOne, SFunction<T, R> columnOne, String prefixTwo, SFunction<U, R> columnTwo) {
         return on(Cond.create(this).ltEq(prefixOne, columnOne, prefixTwo, columnTwo));
+    }
+
+    /**
+     * 通过Lambda表达式创建连接条件（第一个字段小于等于第二个字段，带字段包装）
+     *
+     * @param columnOne 第一个字段的方法引用
+     * @param columnTwo 第二个字段的方法引用
+     * @param <T>       第一个实体类型
+     * @param <U>       第二个实体类型
+     * @param <R>       返回值类型
+     * @return 当前Join实例
+     * @since 2.1.4
+     */
+    public <T, U, R> Join onLtEqWrap(SFunction<T, R> columnOne, SFunction<U, R> columnTwo) {
+        String fieldOne = getColumnName(columnOne);
+        String fieldTwo = getColumnName(columnTwo);
+        return on(Cond.create(this).ltEqFieldWrap(fieldOne, fieldTwo));
+    }
+
+    /**
+     * 通过Lambda表达式创建连接条件（第一个字段小于等于第二个字段，带前缀和字段包装）
+     *
+     * @param prefixOne 第一个字段的前缀
+     * @param columnOne 第一个字段的方法引用
+     * @param prefixTwo 第二个字段的前缀
+     * @param columnTwo 第二个字段的方法引用
+     * @param <T>       第一个实体类型
+     * @param <U>       第二个实体类型
+     * @param <R>       返回值类型
+     * @return 当前Join实例
+     * @since 2.1.4
+     */
+    public <T, U, R> Join onLtEqWrap(String prefixOne, SFunction<T, R> columnOne, String prefixTwo, SFunction<U, R> columnTwo) {
+        return on(Cond.create(this).ltEqWrap(prefixOne, columnOne, prefixTwo, columnTwo));
     }
 
     /**
@@ -731,7 +935,7 @@ public class Join extends Query<Join> {
      * @return 当前Join实例
      * @since 2.1.4
      */
-    public Join on(LambdaUtils.ConditionAppender appender) {
+    public Join on(IConditionAppender appender) {
         Cond cond = Cond.create(this);
         appender.append(cond);
         return on(cond);

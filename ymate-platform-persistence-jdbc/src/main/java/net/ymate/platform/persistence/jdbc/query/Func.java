@@ -137,7 +137,7 @@ public interface Func {
             return create("ABS").field(x);
         }
 
-        default <E extends IEntity<?>, R> IFunction ABS(SFunction<E, R> column) {
+        default <T, R> IFunction ABS(SFunction<T, R> column) {
             return ABS(getColumnName(column));
         }
 
@@ -151,7 +151,7 @@ public interface Func {
             return create("ACOS").field(x);
         }
 
-        default <E extends IEntity<?>, R> IFunction ACOS(SFunction<E, R> column) {
+        default <T, R> IFunction ACOS(SFunction<T, R> column) {
             return ACOS(getColumnName(column));
         }
 
@@ -165,7 +165,7 @@ public interface Func {
             return create("ASIN").field(x);
         }
 
-        default <E extends IEntity<?>, R> IFunction ASIN(SFunction<E, R> column) {
+        default <T, R> IFunction ASIN(SFunction<T, R> column) {
             return ASIN(getColumnName(column));
         }
 
@@ -179,7 +179,7 @@ public interface Func {
             return create("ATAN").field(x);
         }
 
-        default <E extends IEntity<?>, R> IFunction ATAN(SFunction<E, R> column) {
+        default <T, R> IFunction ATAN(SFunction<T, R> column) {
             return ATAN(getColumnName(column));
         }
 
@@ -191,11 +191,11 @@ public interface Func {
             return create("ATAN").field(y).separator().field(x);
         }
 
-        default <E extends IEntity<?>, R> IFunction ATAN(SFunction<E, R> y, String x) {
+        default <T, R> IFunction ATAN(SFunction<T, R> y, String x) {
             return ATAN(getColumnName(y), x);
         }
 
-        default <E extends IEntity<?>, F extends IEntity<?>, R, S> IFunction ATAN(SFunction<E, R> y, SFunction<F, S> x) {
+        default <T, F, R, S> IFunction ATAN(SFunction<T, R> y, SFunction<F, S> x) {
             return ATAN(getColumnName(y), getColumnName(x));
         }
 
@@ -209,7 +209,7 @@ public interface Func {
             return create("CEILING").field(x);
         }
 
-        default <E extends IEntity<?>, R> IFunction CEILING(SFunction<E, R> column) {
+        default <T, R> IFunction CEILING(SFunction<T, R> column) {
             return CEILING(getColumnName(column));
         }
 
@@ -223,7 +223,7 @@ public interface Func {
             return create("CONV").field(x).separator().field(fromBase).separator().field(toBase);
         }
 
-        default <E extends IEntity<?>, R> IFunction CONV(SFunction<E, R> column, int fromBase, int toBase) {
+        default <T, R> IFunction CONV(SFunction<T, R> column, int fromBase, int toBase) {
             return CONV(getColumnName(column), fromBase, toBase);
         }
 
@@ -237,7 +237,7 @@ public interface Func {
             return create("COS").field(x);
         }
 
-        default <E extends IEntity<?>, R> IFunction COS(SFunction<E, R> column) {
+        default <T, R> IFunction COS(SFunction<T, R> column) {
             return COS(getColumnName(column));
         }
 
@@ -251,7 +251,7 @@ public interface Func {
             return create("COT").field(x);
         }
 
-        default <E extends IEntity<?>, R> IFunction COT(SFunction<E, R> column) {
+        default <T, R> IFunction COT(SFunction<T, R> column) {
             return COT(getColumnName(column));
         }
 
@@ -265,7 +265,7 @@ public interface Func {
             return create("CRC32").field(expr);
         }
 
-        default <E extends IEntity<?>, R> IFunction CRC32(SFunction<E, R> column) {
+        default <T, R> IFunction CRC32(SFunction<T, R> column) {
             return CRC32(getColumnName(column));
         }
 
@@ -279,7 +279,7 @@ public interface Func {
             return create("DEGREES").field(x);
         }
 
-        default <E extends IEntity<?>, R> IFunction DEGREES(SFunction<E, R> column) {
+        default <T, R> IFunction DEGREES(SFunction<T, R> column) {
             return DEGREES(getColumnName(column));
         }
 
@@ -293,7 +293,7 @@ public interface Func {
             return create("EXP").field(x);
         }
 
-        default <E extends IEntity<?>, R> IFunction EXP(SFunction<E, R> column) {
+        default <T, R> IFunction EXP(SFunction<T, R> column) {
             return EXP(getColumnName(column));
         }
 
@@ -307,7 +307,7 @@ public interface Func {
             return create("FLOOR").field(x);
         }
 
-        default <E extends IEntity<?>, R> IFunction FLOOR(SFunction<E, R> column) {
+        default <T, R> IFunction FLOOR(SFunction<T, R> column) {
             return FLOOR(getColumnName(column));
         }
 
@@ -321,7 +321,7 @@ public interface Func {
             return create("LN").field(x);
         }
 
-        default <E extends IEntity<?>, R> IFunction LN(SFunction<E, R> column) {
+        default <T, R> IFunction LN(SFunction<T, R> column) {
             return LN(getColumnName(column));
         }
 
@@ -335,7 +335,7 @@ public interface Func {
             return create("LOG").field(x);
         }
 
-        default <E extends IEntity<?>, R> IFunction LOG(SFunction<E, R> column) {
+        default <T, R> IFunction LOG(SFunction<T, R> column) {
             return LOG(getColumnName(column));
         }
 
@@ -347,11 +347,11 @@ public interface Func {
             return create("LOG").field(b).separator().field(x);
         }
 
-        default <E extends IEntity<?>, R> IFunction LOG(String b, SFunction<E, R> x) {
+        default <T, R> IFunction LOG(String b, SFunction<T, R> x) {
             return LOG(b, getColumnName(x));
         }
 
-        default <E extends IEntity<?>, F extends IEntity<?>, R, S> IFunction LOG(SFunction<E, R> b, SFunction<F, S> x) {
+        default <T, F, R, S> IFunction LOG(SFunction<T, R> b, SFunction<F, S> x) {
             return LOG(getColumnName(b), getColumnName(x));
         }
 
@@ -365,7 +365,7 @@ public interface Func {
             return create("LOG10").field(x);
         }
 
-        default <E extends IEntity<?>, R> IFunction LOG10(SFunction<E, R> column) {
+        default <T, R> IFunction LOG10(SFunction<T, R> column) {
             return LOG10(getColumnName(column));
         }
 
@@ -379,7 +379,7 @@ public interface Func {
             return create("LOG2").field(x);
         }
 
-        default <E extends IEntity<?>, R> IFunction LOG2(SFunction<E, R> column) {
+        default <T, R> IFunction LOG2(SFunction<T, R> column) {
             return LOG2(getColumnName(column));
         }
 
@@ -393,11 +393,11 @@ public interface Func {
             return create("MOD").field(n).separator().field(m);
         }
 
-        default <E extends IEntity<?>, R> IFunction MOD(SFunction<E, R> n, String m) {
+        default <T, R> IFunction MOD(SFunction<T, R> n, String m) {
             return MOD(getColumnName(n), m);
         }
 
-        default <E extends IEntity<?>, F extends IEntity<?>, R, S> IFunction MOD(SFunction<E, R> n, SFunction<F, S> m) {
+        default <T, F, R, S> IFunction MOD(SFunction<T, R> n, SFunction<F, S> m) {
             return MOD(getColumnName(n), getColumnName(m));
         }
 
@@ -417,11 +417,11 @@ public interface Func {
             return create("POW").field(y).separator().field(x);
         }
 
-        default <E extends IEntity<?>, R> IFunction POW(SFunction<E, R> y, String x) {
+        default <T, R> IFunction POW(SFunction<T, R> y, String x) {
             return POW(getColumnName(y), x);
         }
 
-        default <E extends IEntity<?>, F extends IEntity<?>, R, S> IFunction POW(SFunction<E, R> y, SFunction<F, S> x) {
+        default <T, F, R, S> IFunction POW(SFunction<T, R> y, SFunction<F, S> x) {
             return POW(getColumnName(y), getColumnName(x));
         }
 
@@ -435,11 +435,11 @@ public interface Func {
             return create("POWER").field(y).separator().field(x);
         }
 
-        default <E extends IEntity<?>, R> IFunction POWER(SFunction<E, R> y, String x) {
+        default <T, R> IFunction POWER(SFunction<T, R> y, String x) {
             return POWER(getColumnName(y), x);
         }
 
-        default <E extends IEntity<?>, F extends IEntity<?>, R, S> IFunction POWER(SFunction<E, R> y, SFunction<F, S> x) {
+        default <T, F, R, S> IFunction POWER(SFunction<T, R> y, SFunction<F, S> x) {
             return POWER(getColumnName(y), getColumnName(x));
         }
 
@@ -453,7 +453,7 @@ public interface Func {
             return create("RADIANS").field(x);
         }
 
-        default <E extends IEntity<?>, R> IFunction RADIANS(SFunction<E, R> column) {
+        default <T, R> IFunction RADIANS(SFunction<T, R> column) {
             return RADIANS(getColumnName(column));
         }
 
@@ -471,7 +471,7 @@ public interface Func {
             return create("RAND").field(n);
         }
 
-        default <E extends IEntity<?>, R> IFunction RAND(SFunction<E, R> column) {
+        default <T, R> IFunction RAND(SFunction<T, R> column) {
             return RAND(getColumnName(column));
         }
 
@@ -485,11 +485,11 @@ public interface Func {
             return create("ROUND").field(x);
         }
 
-        default <E extends IEntity<?>, R> IFunction ROUND(SFunction<E, R> column) {
+        default <T, R> IFunction ROUND(SFunction<T, R> column) {
             return ROUND(getColumnName(column));
         }
 
-        default <E extends IEntity<?>, R> IFunction ROUND(String prefix, SFunction<E, R> column) {
+        default <T, R> IFunction ROUND(String prefix, SFunction<T, R> column) {
             return ROUND(getFullFieldName(prefix, column));
         }
 
@@ -501,11 +501,11 @@ public interface Func {
             return create("ROUND").field(x).separator().field(d);
         }
 
-        default <E extends IEntity<?>, R> IFunction ROUND(SFunction<E, R> column, Number d) {
+        default <T, R> IFunction ROUND(SFunction<T, R> column, Number d) {
             return ROUND(getColumnName(column), d);
         }
 
-        default <E extends IEntity<?>, R> IFunction ROUND(String prefix, SFunction<E, R> column, Number d) {
+        default <T, R> IFunction ROUND(String prefix, SFunction<T, R> column, Number d) {
             return ROUND(getFullFieldName(prefix, column), d);
         }
 
@@ -519,11 +519,11 @@ public interface Func {
             return create("SIGN").field(n);
         }
 
-        default <E extends IEntity<?>, R> IFunction SIGN(SFunction<E, R> column) {
+        default <T, R> IFunction SIGN(SFunction<T, R> column) {
             return SIGN(getColumnName(column));
         }
 
-        default <E extends IEntity<?>, R> IFunction SIGN(String prefix, SFunction<E, R> column) {
+        default <T, R> IFunction SIGN(String prefix, SFunction<T, R> column) {
             return SIGN(getFullFieldName(prefix, column));
         }
 
@@ -537,11 +537,11 @@ public interface Func {
             return create("SIN").field(x);
         }
 
-        default <E extends IEntity<?>, R> IFunction SIN(SFunction<E, R> column) {
+        default <T, R> IFunction SIN(SFunction<T, R> column) {
             return SIN(getColumnName(column));
         }
 
-        default <E extends IEntity<?>, R> IFunction SIN(String prefix, SFunction<E, R> column) {
+        default <T, R> IFunction SIN(String prefix, SFunction<T, R> column) {
             return SIN(getFullFieldName(prefix, column));
         }
 
@@ -555,11 +555,11 @@ public interface Func {
             return create("SQRT").field(x);
         }
 
-        default <E extends IEntity<?>, R> IFunction SQRT(SFunction<E, R> column) {
+        default <T, R> IFunction SQRT(SFunction<T, R> column) {
             return SQRT(getColumnName(column));
         }
 
-        default <E extends IEntity<?>, R> IFunction SQRT(String prefix, SFunction<E, R> column) {
+        default <T, R> IFunction SQRT(String prefix, SFunction<T, R> column) {
             return SQRT(getFullFieldName(prefix, column));
         }
 
@@ -573,11 +573,11 @@ public interface Func {
             return create("TAN").field(x);
         }
 
-        default <E extends IEntity<?>, R> IFunction TAN(SFunction<E, R> column) {
+        default <T, R> IFunction TAN(SFunction<T, R> column) {
             return TAN(getColumnName(column));
         }
 
-        default <E extends IEntity<?>, R> IFunction TAN(String prefix, SFunction<E, R> column) {
+        default <T, R> IFunction TAN(String prefix, SFunction<T, R> column) {
             return TAN(getFullFieldName(prefix, column));
         }
 
@@ -591,11 +591,11 @@ public interface Func {
             return create("TRUNCATE").field(x);
         }
 
-        default <E extends IEntity<?>, R> IFunction TRUNCATE(SFunction<E, R> column) {
+        default <T, R> IFunction TRUNCATE(SFunction<T, R> column) {
             return TRUNCATE(getColumnName(column));
         }
 
-        default <E extends IEntity<?>, R> IFunction TRUNCATE(String prefix, SFunction<E, R> column) {
+        default <T, R> IFunction TRUNCATE(String prefix, SFunction<T, R> column) {
             return TRUNCATE(getFullFieldName(prefix, column));
         }
 
@@ -607,11 +607,11 @@ public interface Func {
             return create("TRUNCATE").field(x).separator().field(d);
         }
 
-        default <E extends IEntity<?>, R> IFunction TRUNCATE(SFunction<E, R> column, Number d) {
+        default <T, R> IFunction TRUNCATE(SFunction<T, R> column, Number d) {
             return TRUNCATE(getColumnName(column), d);
         }
 
-        default <E extends IEntity<?>, R> IFunction TRUNCATE(String prefix, SFunction<E, R> column, Number d) {
+        default <T, R> IFunction TRUNCATE(String prefix, SFunction<T, R> column, Number d) {
             return TRUNCATE(getFullFieldName(prefix, column), d);
         }
 
@@ -632,11 +632,11 @@ public interface Func {
             return create("ASCII").field(str);
         }
 
-        default <E extends IEntity<?>, R> IFunction ASCII(SFunction<E, R> column) {
+        default <T, R> IFunction ASCII(SFunction<T, R> column) {
             return ASCII(getColumnName(column));
         }
 
-        default <E extends IEntity<?>, R> IFunction ASCII(String prefix, SFunction<E, R> column) {
+        default <T, R> IFunction ASCII(String prefix, SFunction<T, R> column) {
             return ASCII(getFullFieldName(prefix, column));
         }
 
@@ -650,11 +650,11 @@ public interface Func {
             return create("BIN").field(str);
         }
 
-        default <E extends IEntity<?>, R> IFunction BIN(SFunction<E, R> column) {
+        default <T, R> IFunction BIN(SFunction<T, R> column) {
             return BIN(getColumnName(column));
         }
 
-        default <E extends IEntity<?>, R> IFunction BIN(String prefix, SFunction<E, R> column) {
+        default <T, R> IFunction BIN(String prefix, SFunction<T, R> column) {
             return BIN(getFullFieldName(prefix, column));
         }
 
@@ -668,11 +668,11 @@ public interface Func {
             return create("BIT_LENGTH").field(str);
         }
 
-        default <E extends IEntity<?>, R> IFunction BIT_LENGTH(SFunction<E, R> column) {
+        default <T, R> IFunction BIT_LENGTH(SFunction<T, R> column) {
             return BIT_LENGTH(getColumnName(column));
         }
 
-        default <E extends IEntity<?>, R> IFunction BIT_LENGTH(String prefix, SFunction<E, R> column) {
+        default <T, R> IFunction BIT_LENGTH(String prefix, SFunction<T, R> column) {
             return BIT_LENGTH(getFullFieldName(prefix, column));
         }
 
@@ -702,11 +702,11 @@ public interface Func {
             return create("CHAR_LENGTH").field(str);
         }
 
-        default <E extends IEntity<?>, R> IFunction CHAR_LENGTH(SFunction<E, R> column) {
+        default <T, R> IFunction CHAR_LENGTH(SFunction<T, R> column) {
             return CHAR_LENGTH(getColumnName(column));
         }
 
-        default <E extends IEntity<?>, R> IFunction CHAR_LENGTH(String prefix, SFunction<E, R> column) {
+        default <T, R> IFunction CHAR_LENGTH(String prefix, SFunction<T, R> column) {
             return CHAR_LENGTH(getFullFieldName(prefix, column));
         }
 
@@ -720,11 +720,11 @@ public interface Func {
             return create("CHARACTER_LENGTH").field(str);
         }
 
-        default <E extends IEntity<?>, R> IFunction CHARACTER_LENGTH(SFunction<E, R> column) {
+        default <T, R> IFunction CHARACTER_LENGTH(SFunction<T, R> column) {
             return CHARACTER_LENGTH(getColumnName(column));
         }
 
-        default <E extends IEntity<?>, R> IFunction CHARACTER_LENGTH(String prefix, SFunction<E, R> column) {
+        default <T, R> IFunction CHARACTER_LENGTH(String prefix, SFunction<T, R> column) {
             return CHARACTER_LENGTH(getFullFieldName(prefix, column));
         }
 
@@ -890,11 +890,11 @@ public interface Func {
             return create("LENGTH").field(str);
         }
 
-        default <E extends IEntity<?>, R> IFunction LENGTH(SFunction<E, R> column) {
+        default <T, R> IFunction LENGTH(SFunction<T, R> column) {
             return LENGTH(getColumnName(column));
         }
 
-        default <E extends IEntity<?>, R> IFunction LENGTH(String prefix, SFunction<E, R> column) {
+        default <T, R> IFunction LENGTH(String prefix, SFunction<T, R> column) {
             return LENGTH(getFullFieldName(prefix, column));
         }
 
@@ -908,11 +908,11 @@ public interface Func {
             return create("LOAD_FILE").field(str);
         }
 
-        default <E extends IEntity<?>, R> IFunction LOAD_FILE(SFunction<E, R> column) {
+        default <T, R> IFunction LOAD_FILE(SFunction<T, R> column) {
             return LOAD_FILE(getColumnName(column));
         }
 
-        default <E extends IEntity<?>, R> IFunction LOAD_FILE(String prefix, SFunction<E, R> column) {
+        default <T, R> IFunction LOAD_FILE(String prefix, SFunction<T, R> column) {
             return LOAD_FILE(getFullFieldName(prefix, column));
         }
 
@@ -944,11 +944,11 @@ public interface Func {
             return create("LOWER").field(str);
         }
 
-        default <E extends IEntity<?>, R> IFunction LOWER(SFunction<E, R> column) {
+        default <T, R> IFunction LOWER(SFunction<T, R> column) {
             return LOWER(getColumnName(column));
         }
 
-        default <E extends IEntity<?>, R> IFunction LOWER(String prefix, SFunction<E, R> column) {
+        default <T, R> IFunction LOWER(String prefix, SFunction<T, R> column) {
             return LOWER(getFullFieldName(prefix, column));
         }
 
@@ -962,11 +962,11 @@ public interface Func {
             return create("LPAD").fieldWS(str, len, padstr);
         }
 
-        default <E extends IEntity<?>, R> IFunction LPAD(SFunction<E, R> column, Number len, String padstr) {
+        default <T, R> IFunction LPAD(SFunction<T, R> column, Number len, String padstr) {
             return LPAD(getColumnName(column), len, padstr);
         }
 
-        default <E extends IEntity<?>, R> IFunction LPAD(String prefix, SFunction<E, R> column, Number len, String padstr) {
+        default <T, R> IFunction LPAD(String prefix, SFunction<T, R> column, Number len, String padstr) {
             return LPAD(getFullFieldName(prefix, column), len, padstr);
         }
 
@@ -980,11 +980,11 @@ public interface Func {
             return create("LTRIM").field(str);
         }
 
-        default <E extends IEntity<?>, R> IFunction LTRIM(SFunction<E, R> column) {
+        default <T, R> IFunction LTRIM(SFunction<T, R> column) {
             return LTRIM(getColumnName(column));
         }
 
-        default <E extends IEntity<?>, R> IFunction LTRIM(String prefix, SFunction<E, R> column) {
+        default <T, R> IFunction LTRIM(String prefix, SFunction<T, R> column) {
             return LTRIM(getFullFieldName(prefix, column));
         }
 
@@ -998,11 +998,11 @@ public interface Func {
             return create("OCT").field(str);
         }
 
-        default <E extends IEntity<?>, R> IFunction OCT(SFunction<E, R> column) {
+        default <T, R> IFunction OCT(SFunction<T, R> column) {
             return OCT(getColumnName(column));
         }
 
-        default <E extends IEntity<?>, R> IFunction OCT(String prefix, SFunction<E, R> column) {
+        default <T, R> IFunction OCT(String prefix, SFunction<T, R> column) {
             return OCT(getFullFieldName(prefix, column));
         }
 
@@ -1016,11 +1016,11 @@ public interface Func {
             return create("ORD").field(str);
         }
 
-        default <E extends IEntity<?>, R> IFunction ORD(SFunction<E, R> column) {
+        default <T, R> IFunction ORD(SFunction<T, R> column) {
             return ORD(getColumnName(column));
         }
 
-        default <E extends IEntity<?>, R> IFunction ORD(String prefix, SFunction<E, R> column) {
+        default <T, R> IFunction ORD(String prefix, SFunction<T, R> column) {
             return ORD(getFullFieldName(prefix, column));
         }
 
@@ -1034,11 +1034,11 @@ public interface Func {
             return create("QUOTE").field(str);
         }
 
-        default <E extends IEntity<?>, R> IFunction QUOTE(SFunction<E, R> column) {
+        default <T, R> IFunction QUOTE(SFunction<T, R> column) {
             return QUOTE(getColumnName(column));
         }
 
-        default <E extends IEntity<?>, R> IFunction QUOTE(String prefix, SFunction<E, R> column) {
+        default <T, R> IFunction QUOTE(String prefix, SFunction<T, R> column) {
             return QUOTE(getFullFieldName(prefix, column));
         }
 
@@ -1052,11 +1052,11 @@ public interface Func {
             return create("REPEAT").fieldWS(str, count);
         }
 
-        default <E extends IEntity<?>, R> IFunction REPEAT(SFunction<E, R> column, Number count) {
+        default <T, R> IFunction REPEAT(SFunction<T, R> column, Number count) {
             return REPEAT(getColumnName(column), count);
         }
 
-        default <E extends IEntity<?>, R> IFunction REPEAT(String prefix, SFunction<E, R> column, Number count) {
+        default <T, R> IFunction REPEAT(String prefix, SFunction<T, R> column, Number count) {
             return REPEAT(getFullFieldName(prefix, column), count);
         }
 
@@ -1070,11 +1070,11 @@ public interface Func {
             return create("REPLACE").fieldWS(str, fromStr, toStr);
         }
 
-        default <E extends IEntity<?>, R> IFunction REPLACE(SFunction<E, R> column, String fromStr, String toStr) {
+        default <T, R> IFunction REPLACE(SFunction<T, R> column, String fromStr, String toStr) {
             return REPLACE(getColumnName(column), fromStr, toStr);
         }
 
-        default <E extends IEntity<?>, R> IFunction REPLACE(String prefix, SFunction<E, R> column, String fromStr, String toStr) {
+        default <T, R> IFunction REPLACE(String prefix, SFunction<T, R> column, String fromStr, String toStr) {
             return REPLACE(getFullFieldName(prefix, column), fromStr, toStr);
         }
 
@@ -1088,11 +1088,11 @@ public interface Func {
             return create("REVERSE").field(str);
         }
 
-        default <E extends IEntity<?>, R> IFunction REVERSE(SFunction<E, R> column) {
+        default <T, R> IFunction REVERSE(SFunction<T, R> column) {
             return REVERSE(getColumnName(column));
         }
 
-        default <E extends IEntity<?>, R> IFunction REVERSE(String prefix, SFunction<E, R> column) {
+        default <T, R> IFunction REVERSE(String prefix, SFunction<T, R> column) {
             return REVERSE(getFullFieldName(prefix, column));
         }
 
@@ -1106,11 +1106,11 @@ public interface Func {
             return create("RIGHT").fieldWS(str, len);
         }
 
-        default <E extends IEntity<?>, R> IFunction RIGHT(SFunction<E, R> column, Number len) {
+        default <T, R> IFunction RIGHT(SFunction<T, R> column, Number len) {
             return RIGHT(getColumnName(column), len);
         }
 
-        default <E extends IEntity<?>, R> IFunction RIGHT(String prefix, SFunction<E, R> column, Number len) {
+        default <T, R> IFunction RIGHT(String prefix, SFunction<T, R> column, Number len) {
             return RIGHT(getFullFieldName(prefix, column), len);
         }
 
@@ -1124,11 +1124,11 @@ public interface Func {
             return create("RPAD").fieldWS(str, len, padstr);
         }
 
-        default <E extends IEntity<?>, R> IFunction RPAD(SFunction<E, R> column, Number len, String padstr) {
+        default <T, R> IFunction RPAD(SFunction<T, R> column, Number len, String padstr) {
             return RPAD(getColumnName(column), len, padstr);
         }
 
-        default <E extends IEntity<?>, R> IFunction RPAD(String prefix, SFunction<E, R> column, Number len, String padstr) {
+        default <T, R> IFunction RPAD(String prefix, SFunction<T, R> column, Number len, String padstr) {
             return RPAD(getFullFieldName(prefix, column), len, padstr);
         }
 
@@ -1142,11 +1142,11 @@ public interface Func {
             return create("RTRIM").field(str);
         }
 
-        default <E extends IEntity<?>, R> IFunction RTRIM(SFunction<E, R> column) {
+        default <T, R> IFunction RTRIM(SFunction<T, R> column) {
             return RTRIM(getColumnName(column));
         }
 
-        default <E extends IEntity<?>, R> IFunction RTRIM(String prefix, SFunction<E, R> column) {
+        default <T, R> IFunction RTRIM(String prefix, SFunction<T, R> column) {
             return RTRIM(getFullFieldName(prefix, column));
         }
 
@@ -1160,11 +1160,11 @@ public interface Func {
             return create("SOUNDEX").field(str);
         }
 
-        default <E extends IEntity<?>, R> IFunction SOUNDEX(SFunction<E, R> column) {
+        default <T, R> IFunction SOUNDEX(SFunction<T, R> column) {
             return SOUNDEX(getColumnName(column));
         }
 
-        default <E extends IEntity<?>, R> IFunction SOUNDEX(String prefix, SFunction<E, R> column) {
+        default <T, R> IFunction SOUNDEX(String prefix, SFunction<T, R> column) {
             return SOUNDEX(getFullFieldName(prefix, column));
         }
 
@@ -1178,7 +1178,7 @@ public interface Func {
             return create("SPACE").field(n);
         }
 
-        default <E extends IEntity<?>, R> IFunction SPACE(SFunction<E, R> column) {
+        default <T, R> IFunction SPACE(SFunction<T, R> column) {
             // SPACE方法接受Number参数，不能直接用于字段引用
             // 这里提供Lambda支持但实际使用时需要明确传入数值
             throw new UnsupportedOperationException("SPACE方法需要Number参数，不能直接使用字段引用");
@@ -1190,27 +1190,27 @@ public interface Func {
             return create("STRCMP").fieldWS(expr1, expr2);
         }
 
-        default <E extends IEntity<?>, R> IFunction STRCMP(SFunction<E, R> column, String expr) {
+        default <T, R> IFunction STRCMP(SFunction<T, R> column, String expr) {
             return STRCMP(getColumnName(column), expr);
         }
 
-        default <E extends IEntity<?>, R> IFunction STRCMP(String expr, SFunction<E, R> column) {
+        default <T, R> IFunction STRCMP(String expr, SFunction<T, R> column) {
             return STRCMP(expr, getColumnName(column));
         }
 
-        default <E extends IEntity<?>, F extends IEntity<?>, R, S> IFunction STRCMP(SFunction<E, R> column1, SFunction<F, S> column2) {
+        default <T, F, R, S> IFunction STRCMP(SFunction<T, R> column1, SFunction<F, S> column2) {
             return STRCMP(getColumnName(column1), getColumnName(column2));
         }
 
-        default <E extends IEntity<?>, R> IFunction STRCMP(String prefix, SFunction<E, R> column, String expr) {
+        default <T, R> IFunction STRCMP(String prefix, SFunction<T, R> column, String expr) {
             return STRCMP(getFullFieldName(prefix, column), expr);
         }
 
-        default <E extends IEntity<?>, R> IFunction STRCMP(String expr, String prefix, SFunction<E, R> column) {
+        default <T, R> IFunction STRCMP(String expr, String prefix, SFunction<T, R> column) {
             return STRCMP(expr, getFullFieldName(prefix, column));
         }
 
-        default <E extends IEntity<?>, F extends IEntity<?>, R, S> IFunction STRCMP(String prefixOne, SFunction<E, R> column1, String prefixTwo, SFunction<F, S> column2) {
+        default <T, F, R, S> IFunction STRCMP(String prefixOne, SFunction<T, R> column1, String prefixTwo, SFunction<F, S> column2) {
             return STRCMP(getFullFieldName(prefixOne, column1), getFullFieldName(prefixTwo, column2));
         }
 
@@ -1224,11 +1224,11 @@ public interface Func {
             return create("SUBSTRING").fieldWS(str, pos);
         }
 
-        default <E extends IEntity<?>, R> IFunction SUBSTRING(SFunction<E, R> column, Number pos) {
+        default <T, R> IFunction SUBSTRING(SFunction<T, R> column, Number pos) {
             return SUBSTRING(getColumnName(column), pos);
         }
 
-        default <E extends IEntity<?>, R> IFunction SUBSTRING(String prefix, SFunction<E, R> column, Number pos) {
+        default <T, R> IFunction SUBSTRING(String prefix, SFunction<T, R> column, Number pos) {
             return SUBSTRING(getFullFieldName(prefix, column), pos);
         }
 
@@ -1240,11 +1240,11 @@ public interface Func {
             return create("SUBSTRING").fieldWS(str, pos, len);
         }
 
-        default <E extends IEntity<?>, R> IFunction SUBSTRING(SFunction<E, R> column, Number pos, Number len) {
+        default <T, R> IFunction SUBSTRING(SFunction<T, R> column, Number pos, Number len) {
             return SUBSTRING(getColumnName(column), pos, len);
         }
 
-        default <E extends IEntity<?>, R> IFunction SUBSTRING(String prefix, SFunction<E, R> column, Number pos, Number len) {
+        default <T, R> IFunction SUBSTRING(String prefix, SFunction<T, R> column, Number pos, Number len) {
             return SUBSTRING(getFullFieldName(prefix, column), pos, len);
         }
 
@@ -1258,11 +1258,11 @@ public interface Func {
             return create("SUBSTRING_INDEX").fieldWS(str, delim, count);
         }
 
-        default <E extends IEntity<?>, R> IFunction SUBSTRING_INDEX(SFunction<E, R> column, String delim, Number count) {
+        default <T, R> IFunction SUBSTRING_INDEX(SFunction<T, R> column, String delim, Number count) {
             return SUBSTRING_INDEX(getColumnName(column), delim, count);
         }
 
-        default <E extends IEntity<?>, R> IFunction SUBSTRING_INDEX(String prefix, SFunction<E, R> column, String delim, Number count) {
+        default <T, R> IFunction SUBSTRING_INDEX(String prefix, SFunction<T, R> column, String delim, Number count) {
             return SUBSTRING_INDEX(getFullFieldName(prefix, column), delim, count);
         }
 
@@ -1276,11 +1276,11 @@ public interface Func {
             return create("TRIM").field(str);
         }
 
-        default <E extends IEntity<?>, R> IFunction TRIM(SFunction<E, R> column) {
+        default <T, R> IFunction TRIM(SFunction<T, R> column) {
             return TRIM(getColumnName(column));
         }
 
-        default <E extends IEntity<?>, R> IFunction TRIM(String prefix, SFunction<E, R> column) {
+        default <T, R> IFunction TRIM(String prefix, SFunction<T, R> column) {
             return TRIM(getFullFieldName(prefix, column));
         }
 
@@ -1292,11 +1292,11 @@ public interface Func {
             return create("TRIM").field("BOTH " + remstr + " FROM " + str);
         }
 
-        default <E extends IEntity<?>, R> IFunction TRIM_BOTH(String remstr, SFunction<E, R> column) {
+        default <T, R> IFunction TRIM_BOTH(String remstr, SFunction<T, R> column) {
             return TRIM_BOTH(remstr, getColumnName(column));
         }
 
-        default <E extends IEntity<?>, R> IFunction TRIM_BOTH(String remstr, String prefix, SFunction<E, R> column) {
+        default <T, R> IFunction TRIM_BOTH(String remstr, String prefix, SFunction<T, R> column) {
             return TRIM_BOTH(remstr, getFullFieldName(prefix, column));
         }
 

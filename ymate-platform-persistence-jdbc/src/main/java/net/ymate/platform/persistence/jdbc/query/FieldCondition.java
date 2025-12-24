@@ -18,7 +18,6 @@
  import net.ymate.platform.core.persistence.Fields;
  import net.ymate.platform.core.persistence.IFunction;
  import net.ymate.platform.core.persistence.Params;
- import net.ymate.platform.core.persistence.base.IEntity;
  import net.ymate.platform.persistence.jdbc.IDatabase;
  import net.ymate.platform.persistence.jdbc.JDBC;
  import net.ymate.platform.persistence.jdbc.query.LambdaUtils.SFunction;
@@ -75,7 +74,7 @@
       * @return FieldCondition实例
       * @since 2.1.4
       */
-     public static <T extends IEntity<?>, R> FieldCondition create(SFunction<T, R> column) {
+     public static <T, R> FieldCondition create(SFunction<T, R> column) {
          return create(getColumnName(column));
      }
 
@@ -89,7 +88,7 @@
       * @return FieldCondition实例
       * @since 2.1.4
       */
-     public static <T extends IEntity<?>, R> FieldCondition create(String prefix, SFunction<T, R> column) {
+     public static <T, R> FieldCondition create(String prefix, SFunction<T, R> column) {
          return create(prefix, getColumnName(column));
      }
 
@@ -103,7 +102,7 @@
       * @return FieldCondition实例
       * @since 2.1.4
       */
-     public static <T extends IEntity<?>, R> FieldCondition create(Query<?> query, SFunction<T, R> column) {
+     public static <T, R> FieldCondition create(Query<?> query, SFunction<T, R> column) {
          return create(query, getColumnName(column));
      }
 
@@ -118,7 +117,7 @@
       * @return FieldCondition实例
       * @since 2.1.4
       */
-     public static <T extends IEntity<?>, R> FieldCondition create(Query<?> query, String prefix, SFunction<T, R> column) {
+     public static <T, R> FieldCondition create(Query<?> query, String prefix, SFunction<T, R> column) {
          return create(query, prefix, getColumnName(column));
      }
 
@@ -133,7 +132,7 @@
       * @return FieldCondition实例
       * @since 2.1.4
       */
-     public static <T extends IEntity<?>, R> FieldCondition create(IDatabase owner, String dataSourceName, SFunction<T, R> column) {
+     public static <T, R> FieldCondition create(IDatabase owner, String dataSourceName, SFunction<T, R> column) {
          return create(owner, dataSourceName, getColumnName(column));
      }
 
@@ -149,7 +148,7 @@
       * @return FieldCondition实例
       * @since 2.1.4
       */
-     public static <T extends IEntity<?>, R> FieldCondition create(IDatabase owner, String dataSourceName, String prefix, SFunction<T, R> column) {
+     public static <T, R> FieldCondition create(IDatabase owner, String dataSourceName, String prefix, SFunction<T, R> column) {
          return create(owner, dataSourceName, prefix, getColumnName(column));
      }
 
@@ -223,7 +222,7 @@
      /**
       * @since 2.1.4
       */
-     public <T extends IEntity<?>, R> FieldCondition eq(SFunction<T, R> otherColumn) {
+     public <T, R> FieldCondition eq(SFunction<T, R> otherColumn) {
          cond.opt(fieldName, Cond.OPT.EQ, getColumnName(otherColumn));
          return this;
      }
@@ -231,7 +230,7 @@
      /**
       * @since 2.1.4
       */
-     public <T extends IEntity<?>, R> FieldCondition eqWrap(SFunction<T, R> otherColumn) {
+     public <T, R> FieldCondition eqWrap(SFunction<T, R> otherColumn) {
          cond.optWrap(fieldName, Cond.OPT.EQ, getColumnName(otherColumn));
          return this;
      }
@@ -239,7 +238,7 @@
      /**
       * @since 2.1.4
       */
-     public <T extends IEntity<?>, R> FieldCondition eq(String prefix, SFunction<T, R> otherColumn) {
+     public <T, R> FieldCondition eq(String prefix, SFunction<T, R> otherColumn) {
          cond.opt(fieldName, Cond.OPT.EQ, Fields.field(prefix, getColumnName(otherColumn)));
          return this;
      }
@@ -247,7 +246,7 @@
      /**
       * @since 2.1.4
       */
-     public <T extends IEntity<?>, R> FieldCondition eqWrap(String prefix, SFunction<T, R> otherColumn) {
+     public <T, R> FieldCondition eqWrap(String prefix, SFunction<T, R> otherColumn) {
          cond.optWrap(fieldName, Cond.OPT.EQ, Fields.field(prefix, getColumnName(otherColumn)));
          return this;
      }
@@ -304,7 +303,7 @@
      /**
       * @since 2.1.4
       */
-     public <T extends IEntity<?>, R> FieldCondition notEq(SFunction<T, R> otherColumn) {
+     public <T, R> FieldCondition notEq(SFunction<T, R> otherColumn) {
          cond.opt(fieldName, Cond.OPT.NOT_EQ, getColumnName(otherColumn));
          return this;
      }
@@ -312,7 +311,7 @@
      /**
       * @since 2.1.4
       */
-     public <T extends IEntity<?>, R> FieldCondition notEqWrap(SFunction<T, R> otherColumn) {
+     public <T, R> FieldCondition notEqWrap(SFunction<T, R> otherColumn) {
          cond.optWrap(fieldName, Cond.OPT.NOT_EQ, getColumnName(otherColumn));
          return this;
      }
@@ -320,7 +319,7 @@
      /**
       * @since 2.1.4
       */
-     public <T extends IEntity<?>, R> FieldCondition notEq(String prefix, SFunction<T, R> otherColumn) {
+     public <T, R> FieldCondition notEq(String prefix, SFunction<T, R> otherColumn) {
          cond.opt(fieldName, Cond.OPT.NOT_EQ, Fields.field(prefix, getColumnName(otherColumn)));
          return this;
      }
@@ -328,7 +327,7 @@
      /**
       * @since 2.1.4
       */
-     public <T extends IEntity<?>, R> FieldCondition notEqWrap(String prefix, SFunction<T, R> otherColumn) {
+     public <T, R> FieldCondition notEqWrap(String prefix, SFunction<T, R> otherColumn) {
          cond.optWrap(fieldName, Cond.OPT.NOT_EQ, Fields.field(prefix, getColumnName(otherColumn)));
          return this;
      }
@@ -385,7 +384,7 @@
      /**
       * @since 2.1.4
       */
-     public <T extends IEntity<?>, R> FieldCondition gtEq(SFunction<T, R> otherColumn) {
+     public <T, R> FieldCondition gtEq(SFunction<T, R> otherColumn) {
          cond.opt(fieldName, Cond.OPT.GT_EQ, getColumnName(otherColumn));
          return this;
      }
@@ -393,7 +392,7 @@
      /**
       * @since 2.1.4
       */
-     public <T extends IEntity<?>, R> FieldCondition gtEqWrap(SFunction<T, R> otherColumn) {
+     public <T, R> FieldCondition gtEqWrap(SFunction<T, R> otherColumn) {
          cond.optWrap(fieldName, Cond.OPT.GT_EQ, getColumnName(otherColumn));
          return this;
      }
@@ -401,7 +400,7 @@
      /**
       * @since 2.1.4
       */
-     public <T extends IEntity<?>, R> FieldCondition gt(SFunction<T, R> otherColumn) {
+     public <T, R> FieldCondition gt(SFunction<T, R> otherColumn) {
          cond.opt(fieldName, Cond.OPT.GT, getColumnName(otherColumn));
          return this;
      }
@@ -409,12 +408,12 @@
      /**
       * @since 2.1.4
       */
-     public <T extends IEntity<?>, R> FieldCondition gtWrap(SFunction<T, R> otherColumn) {
+     public <T, R> FieldCondition gtWrap(SFunction<T, R> otherColumn) {
          cond.optWrap(fieldName, Cond.OPT.GT, getColumnName(otherColumn));
          return this;
      }
 
-     public <T extends IEntity<?>, R> FieldCondition gtEq(String prefix, SFunction<T, R> otherColumn) {
+     public <T, R> FieldCondition gtEq(String prefix, SFunction<T, R> otherColumn) {
          cond.opt(fieldName, Cond.OPT.GT_EQ, Fields.field(prefix, getColumnName(otherColumn)));
          return this;
      }
@@ -422,7 +421,7 @@
      /**
       * @since 2.1.4
       */
-     public <T extends IEntity<?>, R> FieldCondition gtEqWrap(String prefix, SFunction<T, R> otherColumn) {
+     public <T, R> FieldCondition gtEqWrap(String prefix, SFunction<T, R> otherColumn) {
          cond.optWrap(fieldName, Cond.OPT.GT_EQ, Fields.field(prefix, getColumnName(otherColumn)));
          return this;
      }
@@ -430,7 +429,7 @@
      /**
       * @since 2.1.4
       */
-     public <T extends IEntity<?>, R> FieldCondition gt(String prefix, SFunction<T, R> otherColumn) {
+     public <T, R> FieldCondition gt(String prefix, SFunction<T, R> otherColumn) {
          cond.opt(fieldName, Cond.OPT.GT, Fields.field(prefix, getColumnName(otherColumn)));
          return this;
      }
@@ -438,7 +437,7 @@
      /**
       * @since 2.1.4
       */
-     public <T extends IEntity<?>, R> FieldCondition gtWrap(String prefix, SFunction<T, R> otherColumn) {
+     public <T, R> FieldCondition gtWrap(String prefix, SFunction<T, R> otherColumn) {
          cond.optWrap(fieldName, Cond.OPT.GT, Fields.field(prefix, getColumnName(otherColumn)));
          return this;
      }
@@ -589,7 +588,7 @@
      /**
       * @since 2.1.4
       */
-     public <T extends IEntity<?>, R> FieldCondition ltEq(SFunction<T, R> otherColumn) {
+     public <T, R> FieldCondition ltEq(SFunction<T, R> otherColumn) {
          cond.opt(fieldName, Cond.OPT.LT_EQ, getColumnName(otherColumn));
          return this;
      }
@@ -597,7 +596,7 @@
      /**
       * @since 2.1.4
       */
-     public <T extends IEntity<?>, R> FieldCondition ltEqWrap(SFunction<T, R> otherColumn) {
+     public <T, R> FieldCondition ltEqWrap(SFunction<T, R> otherColumn) {
          cond.optWrap(fieldName, Cond.OPT.LT_EQ, getColumnName(otherColumn));
          return this;
      }
@@ -605,7 +604,7 @@
      /**
       * @since 2.1.4
       */
-     public <T extends IEntity<?>, R> FieldCondition lt(SFunction<T, R> otherColumn) {
+     public <T, R> FieldCondition lt(SFunction<T, R> otherColumn) {
          cond.opt(fieldName, Cond.OPT.LT, getColumnName(otherColumn));
          return this;
      }
@@ -613,7 +612,7 @@
      /**
       * @since 2.1.4
       */
-     public <T extends IEntity<?>, R> FieldCondition ltWrap(SFunction<T, R> otherColumn) {
+     public <T, R> FieldCondition ltWrap(SFunction<T, R> otherColumn) {
          cond.optWrap(fieldName, Cond.OPT.LT, getColumnName(otherColumn));
          return this;
      }
@@ -621,7 +620,7 @@
      /**
       * @since 2.1.4
       */
-     public <T extends IEntity<?>, R> FieldCondition ltEq(String prefix, SFunction<T, R> otherColumn) {
+     public <T, R> FieldCondition ltEq(String prefix, SFunction<T, R> otherColumn) {
          cond.opt(fieldName, Cond.OPT.LT_EQ, Fields.field(prefix, getColumnName(otherColumn)));
          return this;
      }
@@ -629,7 +628,7 @@
      /**
       * @since 2.1.4
       */
-     public <T extends IEntity<?>, R> FieldCondition ltEqWrap(String prefix, SFunction<T, R> otherColumn) {
+     public <T, R> FieldCondition ltEqWrap(String prefix, SFunction<T, R> otherColumn) {
          cond.optWrap(fieldName, Cond.OPT.LT_EQ, Fields.field(prefix, getColumnName(otherColumn)));
          return this;
      }
@@ -637,7 +636,7 @@
      /**
       * @since 2.1.4
       */
-     public <T extends IEntity<?>, R> FieldCondition lt(String prefix, SFunction<T, R> otherColumn) {
+     public <T, R> FieldCondition lt(String prefix, SFunction<T, R> otherColumn) {
          cond.opt(fieldName, Cond.OPT.LT, Fields.field(prefix, getColumnName(otherColumn)));
          return this;
      }
@@ -645,7 +644,7 @@
      /**
       * @since 2.1.4
       */
-     public <T extends IEntity<?>, R> FieldCondition ltWrap(String prefix, SFunction<T, R> otherColumn) {
+     public <T, R> FieldCondition ltWrap(String prefix, SFunction<T, R> otherColumn) {
          cond.optWrap(fieldName, Cond.OPT.LT, Fields.field(prefix, getColumnName(otherColumn)));
          return this;
      }

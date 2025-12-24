@@ -18,18 +18,23 @@ package net.ymate.platform.persistence.jdbc.query;
 import net.ymate.platform.core.annotation.EnableAutoScan;
 import net.ymate.platform.core.annotation.EnableBeanProxy;
 import net.ymate.platform.core.annotation.EnableDevMode;
+import net.ymate.platform.core.persistence.Page;
+import net.ymate.platform.core.persistence.Params;
 import net.ymate.platform.core.persistence.annotation.Entity;
 import net.ymate.platform.core.persistence.annotation.Id;
+import net.ymate.platform.core.persistence.annotation.PK;
 import net.ymate.platform.core.persistence.annotation.Property;
 import net.ymate.platform.core.persistence.base.IEntity;
+import net.ymate.platform.core.persistence.base.IEntityPK;
 import net.ymate.platform.test.YMPJUnit4ClassRunner;
+import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import java.util.Date;
 
 /**
- * Lambda Query 功能测试类
+ * Lambda Query 功能测试类 - 完整覆盖所有Lambda表达式查询功能
  *
  * @author 刘镇 (suninformation@163.com) on 2025/12/22 下午2:00
  * @since 2.1.4
@@ -235,685 +240,736 @@ public class LambdaQueryTest {
         }
     }
 
-    @Test
-    public void testBasicJoin() {
-        // 基本内连接 - 使用Lambda表达式
-        Select select = Select.create()
-                .field(User::getUsername, "uname")
-                .field(Department::getDeptName, "dept")
-                .from(User.class, "u")
-                .innerJoin(Department.class, "d", User::getDeptId, Department::getId);
-        System.out.println("Basic Inner Join: " + select);
-        System.out.println("Params: " + select.params().params());
-        System.out.println();
+    @PK
+    public static class MultiUserId implements IEntityPK {
 
-        // 左连接 - 使用Lambda表达式
+        @Property
+        private String uid;
+
+        @Property
+        private String orderId;
+
+        public String getUid() {
+            return uid;
+        }
+
+        public void setUid(String uid) {
+            this.uid = uid;
+        }
+
+        public String getOrderId() {
+            return orderId;
+        }
+
+        public void setOrderId(String orderId) {
+            this.orderId = orderId;
+        }
+    }
+
+    @Entity
+    public static class MultiUser implements IEntity<MultiUserId> {
+
+        @Id
+        private MultiUserId id;
+
+        @Property
+        private String title;
+
+        @Override
+        public MultiUserId getId() {
+            return id;
+        }
+
+        @Override
+        public void setId(MultiUserId id) {
+            this.id = id;
+        }
+
+        public String getTitle() {
+            return title;
+        }
+
+        public void setTitle(String title) {
+            this.title = title;
+        }
+    }
+
+    // ========================== 测试 LambdaUtils 工具类 ==========================
+
+    @Test
+    public void testLambdaUtils() {
+        // 测试字段名解析
+        String fieldName = LambdaUtils.getFieldName(User::getId);
+        Assert.assertEquals("id", fieldName);
+
+        fieldName = LambdaUtils.getFieldName(User::getUsername);
+        Assert.assertEquals("username", fieldName);
+
+        // 测试数据库字段名解析
+        String columnName = LambdaUtils.getColumnName(User::getId);
+        Assert.assertEquals("id", columnName);
+
+        // 测试带前缀的字段名
+        String fullFieldName = LambdaUtils.getFullFieldName("u", User::getId);
+        Assert.assertEquals("u.id", fullFieldName);
+    }
+
+    // ========================== 测试基础查询 (SELECT) ==========================
+
+    @Test
+    public void testSelectBasic() {
+        // 测试基本查询
+        Select select = Select.create()
+                .field(User::getId)
+                .field(User::getUsername)
+                .from(User.class);
+
+        String expectedSql = "SELECT  `id`,`username` FROM `user`";
+        Assert.assertEquals(expectedSql, select.toString());
+        Assert.assertTrue(select.params().params().isEmpty());
+
+        // 测试带条件的查询
         select = Select.create()
-                .field(User::getUsername, "uname")
-                .field(Department::getDeptName, "dept")
-                .from(User.class, "u")
-                .leftJoin(Department.class, "d", User::getDeptId, Department::getId);
-        System.out.println("Basic Left Join: " + select);
-        System.out.println("Params: " + select.params().params());
-        System.out.println();
+                .field(User::getId)
+                .field(User::getUsername)
+                .from(User.class)
+                .where(Cond.create().eq(User::getId, "1"));
+
+        expectedSql = "SELECT  `id`,`username` FROM `user`  WHERE  id = ?";
+        Assert.assertEquals(expectedSql, select.toString());
+        Assert.assertEquals(1, select.params().params().size());
+        Assert.assertEquals("1", select.params().params().get(0));
     }
 
     @Test
-    public void testJoinWithAliases() {
-        // 带别名的内连接 - 使用Lambda表达式
+    public void testSelectFieldAlias() {
+        // 测试字段别名
+        Select select = Select.create()
+                .field(User::getUsername, "user_name")
+                .field(User::getEmail, "email_address")
+                .from(User.class);
+
+        String expectedSql = "SELECT  `username` AS user_name,`email` AS email_address FROM `user`";
+        Assert.assertEquals(expectedSql, select.toString());
+    }
+
+    @Test
+    public void testSelectAllFields() {
+        // 测试选择所有字段
+        Select select = Select.create()
+                .field(User::getId)
+                .field(User::getName)
+                .field(User::getUsername)
+                .field(User::getAge)
+                .field(User::getEmail)
+                .field(User::getCreateTime)
+                .field(User::getStatus)
+                .field(User::getDeptId)
+                .from(User.class);
+
+        String expectedSql = "SELECT  `id`,`name`,`username`,`age`,`email`,`create_time`,`status`,`dept_id` FROM `user`";
+        Assert.assertEquals(expectedSql, select.toString());
+    }
+
+    // ========================== 测试插入操作 (INSERT) ==========================
+
+    @Test
+    public void testInsertBasic() {
+        // 测试简单插入
+        Insert insert = Insert.create(User.class)
+                .field(User::getUsername, "test_user")
+                .field(User::getEmail, "test@example.com")
+                .field(User::getAge, 25)
+                .field(User::getStatus, 1);
+
+        String expectedSql = "INSERT INTO `user` (`username`,`email`,`age`,`status`) VALUES (?,?,?,?)";
+        Assert.assertEquals(expectedSql, insert.toString());
+        Assert.assertEquals(4, insert.params().params().size());
+    }
+
+    @Test
+    public void testInsertSelect() {
+        // 测试带选择的插入
+        Select select = Select.create()
+                .field(User::getUsername)
+                .field(User::getEmail)
+                .from(User.class)
+                .where(Cond.create().eq(User::getId, "1"));
+
+        Insert insert = Insert.create(User.class)
+                .field(User::getUsername)
+                .field(User::getEmail)
+                .select(select);
+
+        String expectedSql = "INSERT INTO `user` (`username`,`email`) SELECT  `username`,`email` FROM `user`  WHERE  id = ?";
+        Assert.assertEquals(expectedSql, insert.toString());
+        Assert.assertEquals(1, insert.params().params().size());
+    }
+
+    // ========================== 测试更新操作 (UPDATE) ==========================
+
+    @Test
+    public void testUpdateBasic() {
+        // 测试简单更新
+        Update update = Update.create(User.class)
+                .field(User::getStatus, 2)
+                .where(Cond.create().eq(User::getId, "1"));
+
+        String expectedSql = "UPDATE `user`  SET `status` = ? WHERE  id = ?";
+        Assert.assertEquals(expectedSql, update.toString());
+        Assert.assertEquals(2, update.params().params().size());
+        Assert.assertEquals(2, update.params().params().get(0));
+        Assert.assertEquals("1", update.params().params().get(1));
+    }
+
+    @Test
+    public void testUpdateMultipleFields() {
+        // 测试更新多个字段
+        Update update = Update.create(User.class)
+                .field(User::getUsername, "new_user")
+                .field(User::getEmail, "new@example.com")
+                .field(User::getAge, 30)
+                .where(Cond.create().eq(User::getId, "1"));
+
+        String expectedSql = "UPDATE `user`  SET `username` = ?, `email` = ?, `age` = ? WHERE  id = ?";
+        Assert.assertEquals(expectedSql, update.toString());
+        Assert.assertEquals(4, update.params().params().size());
+    }
+
+    // ========================== 测试删除操作 (DELETE) ==========================
+
+    @Test
+    public void testDeleteBasic() {
+        // 测试简单删除
+        Delete delete = Delete.create(User.class)
+                .where(Cond.create().eq(User::getId, "1"));
+
+        String expectedSql = "DELETE  FROM `user`  WHERE  id = ?";
+        Assert.assertEquals(expectedSql, delete.toString());
+        Assert.assertEquals(1, delete.params().params().size());
+    }
+
+    @Test
+    public void testDeleteWithCondition() {
+        // 测试带条件的删除
+        Delete delete = Delete.create(User.class)
+                .where(Cond.create()
+                        .eq(User::getStatus, 0)
+                        .and().lt(User::getAge, 18));
+
+        String expectedSql = "DELETE  FROM `user`  WHERE  status = ?  AND  age < ?";
+        Assert.assertEquals(expectedSql, delete.toString());
+        Assert.assertEquals(2, delete.params().params().size());
+    }
+
+    // ========================== 测试复杂条件查询 ==========================
+
+    @Test
+    public void testConditionEq() {
+        // 测试等于条件
+        Cond cond = Cond.create().eq(User::getId, "1");
+        Assert.assertEquals(" id = ? ", cond.toString());
+
+        // 测试不等于条件
+        cond = Cond.create().notEq(User::getId, "1");
+        Assert.assertEquals(" id != ? ", cond.toString());
+    }
+
+    @Test
+    public void testConditionComparison() {
+        // 测试比较操作符
+        Cond cond = Cond.create().gt(User::getAge, 18);
+        Assert.assertEquals(" age > ? ", cond.toString());
+
+        cond = Cond.create().gtEq(User::getAge, 18);
+        Assert.assertEquals(" age >= ? ", cond.toString());
+
+        cond = Cond.create().lt(User::getAge, 60);
+        Assert.assertEquals(" age < ? ", cond.toString());
+
+        cond = Cond.create().ltEq(User::getAge, 60);
+        Assert.assertEquals(" age <= ? ", cond.toString());
+    }
+
+    @Test
+    public void testConditionLike() {
+        // 测试模糊查询
+        Cond cond = Cond.create().like(User::getUsername, "%test%");
+        Assert.assertEquals(" username LIKE ? ", cond.toString());
+
+        cond = Cond.create().like(User::getUsername, Like.startsWith("test"));
+        Assert.assertEquals(" username LIKE ? ", cond.toString());
+        Assert.assertEquals("test%", cond.params().params().get(0));
+
+        cond = Cond.create().like(User::getUsername, Like.endsWith("test"));
+        Assert.assertEquals(" username LIKE ? ", cond.toString());
+        Assert.assertEquals("%test", cond.params().params().get(0));
+    }
+
+    @Test
+    public void testConditionIsNull() {
+        // 测试NULL条件
+        Cond cond = Cond.create().isNull(User::getCreateTime);
+        Assert.assertEquals(" create_time IS NULL ", cond.toString());
+
+        cond = Cond.create().isNotNull(User::getCreateTime);
+        Assert.assertEquals(" create_time IS NOT NULL ", cond.toString());
+    }
+
+    @Test
+    public void testConditionIn() {
+        // 测试IN条件
+        Cond cond = Cond.create().in(User::getAge, Params.create(18, 19, 20));
+        Assert.assertEquals(" age IN (?,?,?) ", cond.toString());
+        Assert.assertEquals(3, cond.params().params().size());
+    }
+
+    @Test
+    public void testConditionBetween() {
+        // 测试BETWEEN条件
+        Cond cond = Cond.create().between(User::getAge, 18, 30);
+        Assert.assertEquals(" age BETWEEN ? AND ? ", cond.toString());
+        Assert.assertEquals(2, cond.params().params().size());
+    }
+
+    @Test
+    public void testConditionCombination() {
+        // 测试条件组合
+        Cond cond = Cond.create()
+                .eq(User::getStatus, 1)
+                .and().gt(User::getAge, 18)
+                .and().lt(User::getAge, 60);
+
+        String expected = " status = ?  AND  age > ?  AND  age < ? ";
+        Assert.assertEquals(expected, cond.toString());
+        Assert.assertEquals(3, cond.params().params().size());
+    }
+
+    @Test
+    public void testConditionBracket() {
+        // 测试括号条件
+        Cond cond = Cond.create()
+                .bracketBegin()
+                .eq(User::getAge, 18)
+                .or().eq(User::getAge, 19)
+                .or().eq(User::getAge, 20)
+                .bracketEnd()
+                .and().eq(User::getStatus, 1);
+
+        String expected = " (  age = ?  OR  age = ?  OR  age = ?  )  AND  status = ? ";
+        Assert.assertEquals(expected, cond.toString());
+        Assert.assertEquals(4, cond.params().params().size());
+    }
+
+    // ========================== 测试多表关联查询 (JOIN) ==========================
+
+    @Test
+    public void testJoinInner() {
+        // 测试内连接
         Select select = Select.create()
                 .field(User::getUsername, "user_name")
                 .field(Department::getDeptName, "dept_name")
                 .from(User.class, "u")
-                .innerJoin(Department.class, "d", "u", User::getId, "d", Department::getParentId);
-        System.out.println("Inner Join with Aliases: " + select);
-        System.out.println("Params: " + select.params().params());
-        System.out.println();
+                .innerJoin(Department.class, "d", User::getDeptId, Department::getId);
+
+        String expectedSql = "SELECT  `username` AS user_name,`dept_name` AS dept_name FROM `user` u INNER JOIN `department` d ON  `dept_id` = `id`";
+        Assert.assertEquals(expectedSql, select.toString());
     }
 
     @Test
-    public void testDifferentComparisonOperators() {
-        // 使用不同比较运算符的连接
+    public void testJoinLeft() {
+        // 测试左连接
         Select select = Select.create()
-                .field(User::getUsername)
-                .field(Order::getAmount)
+                .field(User::getUsername, "user_name")
+                .field(Department::getDeptName, "dept_name")
                 .from(User.class, "u")
-                .innerJoin(Order.class, "o", "u", User::getId, "o", Order::getUserId);
-        System.out.println("Inner Join with EQ: " + select);
-        System.out.println("Params: " + select.params().params());
-        System.out.println();
+                .leftJoin(Department.class, "d", User::getDeptId, Department::getId);
+
+        String expectedSql = "SELECT  `username` AS user_name,`dept_name` AS dept_name FROM `user` u LEFT JOIN `department` d ON  `dept_id` = `id`";
+        Assert.assertEquals(expectedSql, select.toString());
     }
 
     @Test
-    public void testMultiTableJoin() {
-        // 多表连接 - 用户、部门、订单
+    public void testJoinRight() {
+        // 测试右连接
         Select select = Select.create()
-                .field(User::getUsername)
-                .field(Department::getDeptName)
-                .field(Order::getAmount)
+                .field(User::getUsername, "user_name")
+                .field(Department::getDeptName, "dept_name")
                 .from(User.class, "u")
-                .leftJoin(Department.class, "d", "a", User::getDeptId, "u", Department::getId)
-                .innerJoin(Order.class, "o", "u", User::getId, "o", Order::getUserId);
-        System.out.println("Multi-table Join: " + select);
-        System.out.println("Params: " + select.params().params());
-        System.out.println();
+                .rightJoin(Department.class, "d", User::getDeptId, Department::getId);
+
+        String expectedSql = "SELECT  `username` AS user_name,`dept_name` AS dept_name FROM `user` u RIGHT JOIN `department` d ON  `dept_id` = `id`";
+        Assert.assertEquals(expectedSql, select.toString());
     }
 
     @Test
-    public void testComplexJoinCondition() {
-        // 复杂连接条件 - 使用条件构建器
+    public void testJoinWithCondition() {
+        // 测试带条件的连接
         Select select = Select.create()
-                .field(User::getUsername)
-                .field(Order::getAmount)
+                .field(User::getUsername, "user_name")
+                .field(Order::getAmount, "order_amount")
                 .from(User.class, "u")
                 .innerJoin(Order.class, "o", Cond.create()
                         .eq("u", User::getId, "o", Order::getUserId)
-                        .and().gt("o", Order::getAmount, 100.0)
-                        .and().eq("u", User::getStatus, 1));
-        System.out.println("Complex Join Condition: " + select);
-        System.out.println("Params: " + select.params().params());
-        System.out.println();
+                        .and().gt("o", Order::getAmount, 100.0));
+
+        String expectedSql = "SELECT  `username` AS user_name,`amount` AS order_amount FROM `user` u INNER JOIN `order` o ON  u.id = o.user_id  AND  o.amount > ?";
+        Assert.assertEquals(expectedSql, select.toString());
+        Assert.assertEquals(1, select.params().params().size());
     }
 
     @Test
-    public void testJoinWithCondLambda() {
-        // 使用Cond的Lambda方法构建连接条件
+    public void testJoinMultiTable() {
+        // 测试多表连接
         Select select = Select.create()
-                .field(User::getUsername, "uname")
-                .field(Department::getDeptName, "dname")
-                .from(User.class, "u")
-                .innerJoin(Department.class, "d", "u", User::getId, "d", Department::getParentId);
-        System.out.println("Join with Cond Lambda: " + select);
-        System.out.println("Params: " + select.params().params());
-        System.out.println();
-    }
-
-    @Test
-    public void testJoinWithDifferentOperators() {
-        // 测试不同连接操作符
-        Select select = Select.create()
-                .field(User::getUsername)
-                .field(Department::getDeptName)
-                .from(User.class, "u")
-                .leftJoin(Department.class, "d", "u", User::getDeptId, "d", Department::getId)
-                .rightJoin(Order.class, "o", "u", User::getId, "o", Order::getUserId);
-        System.out.println("Join with Different Operators: " + select);
-        System.out.println("Params: " + select.params().params());
-        System.out.println();
-    }
-
-    @Test
-    public void testDeleteWithJoin() {
-        // 删除操作中的连接
-        Delete delete = Delete.create()
+                .field(User::getUsername, "user_name")
+                .field(Department::getDeptName, "dept_name")
+                .field(Order::getAmount, "order_amount")
                 .from(User.class, "u")
                 .innerJoin(Department.class, "d", User::getDeptId, Department::getId)
-                .where(User::getDeptId, "123");
-        System.out.println("Delete with Join: " + delete);
-        System.out.println("Params: " + delete.params().params());
-        System.out.println();
+                .innerJoin(Order.class, "o", User::getId, Order::getUserId);
+
+        String expectedSql = "SELECT  `username` AS user_name,`dept_name` AS dept_name,`amount` AS order_amount FROM `user` u INNER JOIN `department` d ON  `dept_id` = `id`  INNER JOIN `order` o ON  `id` = `user_id`";
+        Assert.assertEquals(expectedSql, select.toString());
     }
 
-    @Test
-    public void testUpdateWithJoin() {
-        // 更新操作中的连接
-        Update update = Update.create()
-                .table(User.class, "u")
-                .field("u", User::getStatus, 2)
-                .innerJoin(Department.class, "d", User::getDeptId, Department::getId)
-                .where(Cond.create().eq("d", Department::getDeptName, "IT"));
-        System.out.println("Update with Join: " + update);
-        System.out.println("Params: " + update.params().params());
-        System.out.println();
-    }
+    // ========================== 测试排序和分组 ==========================
 
-    @Test
-    public void testCondTwoFieldComparison() {
-        // 测试Cond类的两字段比较
-        Cond cond1 = Cond.create()
-                .eq(User::getId, Department::getParentId);
-        System.out.println("Cond Two Field EQ: " + cond1);
-        System.out.println("Params: " + cond1.params().params());
-        System.out.println();
-
-        Cond cond2 = Cond.create()
-                .gt(User::getId, Department::getParentId);
-        System.out.println("Cond Two Field GT: " + cond2);
-        System.out.println("Params: " + cond2.params().params());
-        System.out.println();
-
-        Cond cond3 = Cond.create()
-                .eq("u", User::getId, "d", Department::getParentId);
-        System.out.println("Cond Two Field EQ with Prefix: " + cond3);
-        System.out.println("Params: " + cond3.params().params());
-        System.out.println();
-
-        Cond cond4 = Cond.create()
-                .lt("u", User::getStatus, "d", Department::getSortOrder);
-        System.out.println("Cond Two Field LT with Prefix: " + cond4);
-        System.out.println("Params: " + cond4.params().params());
-        System.out.println();
-    }
-
-    @Test
-    public void testJoinOnMethods() {
-        // 测试Join类的各种on方法
-        Join join1 = Join.inner(User.class, "u")
-                .on(User::getId, Department::getParentId);
-        System.out.println("Join on(SFunction, SFunction): " + join1);
-        System.out.println("Params: " + join1.params().params());
-        System.out.println();
-
-        Join join2 = Join.inner(User.class, "u")
-                .on("u", User::getId, "d", Department::getParentId);
-        System.out.println("Join on(String, SFunction, String, SFunction): " + join2);
-        System.out.println("Params: " + join2.params().params());
-        System.out.println();
-
-        Join join3 = Join.inner(User.class, "u")
-                .on(cond -> cond.eq("u", User::getId, "d", Department::getParentId));
-        System.out.println("Join on(Cond): " + join3);
-        System.out.println("Params: " + join3.params().params());
-        System.out.println();
-    }
-
-    @Test
-    public void testJoinWithDifferentComparison() {
-        // 测试Join类的各种比较运算符方法
-        Join join1 = Join.inner(User.class, "u")
-                .onGt(User::getId, Department::getParentId);
-        System.out.println("Join onGt: " + join1);
-        System.out.println("Params: " + join1.params().params());
-        System.out.println();
-
-        Join join2 = Join.inner(User.class, "u")
-                .onLtEq(User::getStatus, Department::getSortOrder);
-        System.out.println("Join onLtEq: " + join2);
-        System.out.println("Params: " + join2.params().params());
-        System.out.println();
-
-        Join join3 = Join.inner(User.class, "u")
-                .onNotEq(User::getDeptId, Department::getId);
-        System.out.println("Join onNotEq: " + join3);
-        System.out.println("Params: " + join3.params().params());
-        System.out.println();
-
-        Join join4 = Join.inner(User.class, "u")
-                .onGtEq("u", User::getStatus, "d", Department::getSortOrder);
-        System.out.println("Join onGtEq with Prefix: " + join4);
-        System.out.println("Params: " + join4.params().params());
-        System.out.println();
-    }
-
-    // ---
-
-    /**
-     * 测试基本条件查询
-     */
-    @Test
-    public void testBasicCondition() {
-        System.out.println("\n1. 测试基本条件查询:");
-
-        // 简单等于条件
-        Select select1 = Select.create()
-                .field(User::getId)
-                .field(User::getUsername)
-                .field(User::getEmail)
-                .from(User.class)
-                .where(Cond.create().eq(User::getStatus, "active"));
-        System.out.println("简单等于条件: " + select1.toString());
-
-        // 多个条件组合
-        Select select2 = Select.create()
-                .field(User::getId)
-                .field(User::getUsername)
-                .field(User::getAge)
-                .from(User.class)
-                .where(Cond.create()
-                        .eq(User::getStatus, "active")
-                        .and()
-                        .gt(User::getAge, 18)
-                        .and()
-                        .lt(User::getAge, 60));
-        System.out.println("多个条件组合: " + select2.toString());
-
-        // 模糊查询
-        Select select3 = Select.create()
-                .field(User::getId)
-                .field(User::getUsername)
-                .field(User::getEmail)
-                .from(User.class)
-                .where(Cond.create()
-                        .like(User::getUsername, "%admin%")
-                        .or()
-                        .like(User::getEmail, "%admin%"));
-        System.out.println("模糊查询: " + select3.toString());
-    }
-
-    /**
-     * 测试字段选择
-     */
-    @Test
-    public void testFieldSelection() {
-        System.out.println("\n2. 测试字段选择:");
-
-        // 选择特定字段
-        Select select1 = Select.create()
-                .field(User::getId)
-                .field(User::getUsername)
-                .from(User.class);
-        System.out.println("选择特定字段: " + select1.toString());
-
-        // 选择所有字段
-        Select select2 = Select.create()
-                .field(User::getId)
-                .field(User::getUsername)
-                .field(User::getEmail)
-                .field(User::getAge)
-                .field(User::getDeptId)
-                .field(User::getStatus, false)
-                .from(User.class);
-        System.out.println("选择所有字段: " + select2.toString());
-
-        // 使用函数选择字段
-        Select select3 = Select.create()
-                .field(User::getId)
-                .field(Func.strings.UPPER(User::getUsername), "upper_username")
-                .from(User.class);
-        System.out.println("使用函数选择字段: " + select3.toString());
-    }
-
-    /**
-     * 测试排序
-     */
     @Test
     public void testOrderBy() {
-        System.out.println("\n3. 测试排序:");
-
-        // 升序排序
-        Select select1 = Select.create()
+        // 测试升序排序
+        Select select = Select.create()
                 .field(User::getId)
                 .field(User::getUsername)
                 .field(User::getAge)
                 .from(User.class)
-                .where(Cond.create().eq(User::getStatus, "active"))
                 .orderByAsc(User::getAge);
-        System.out.println("升序排序: " + select1.toString());
 
-        // 降序排序
-        Select select2 = Select.create()
+        String expectedSql = "SELECT  `id`,`username`,`age` FROM `user`   ORDER BY `age`";
+        Assert.assertEquals(expectedSql, select.toString());
+
+        // 测试降序排序
+        select = Select.create()
                 .field(User::getId)
                 .field(User::getUsername)
                 .field(User::getAge)
                 .from(User.class)
-                .where(Cond.create().eq(User::getStatus, "active"))
                 .orderByDesc(User::getAge);
-        System.out.println("降序排序: " + select2.toString());
 
-        // 多字段排序
-        Select select3 = Select.create()
+        expectedSql = "SELECT  `id`,`username`,`age` FROM `user`   ORDER BY `age` DESC";
+        Assert.assertEquals(expectedSql, select.toString());
+
+        // 测试多字段排序
+        select = Select.create()
                 .field(User::getId)
                 .field(User::getUsername)
                 .field(User::getDeptId)
                 .field(User::getAge)
                 .from(User.class)
-                .where(Cond.create().eq(User::getStatus, "active"))
                 .orderByAsc(User::getDeptId)
                 .orderByDesc(User::getAge);
-        System.out.println("多字段排序: " + select3.toString());
+
+        expectedSql = "SELECT  `id`,`username`,`dept_id`,`age` FROM `user`   ORDER BY `dept_id`,`age` DESC";
+        Assert.assertEquals(expectedSql, select.toString());
     }
 
-    /**
-     * 测试分组和聚合
-     */
     @Test
-    public void testGroupByAndAggregation() {
-        System.out.println("\n4. 测试分组和聚合:");
-
-        // 分组查询
-        Select select1 = Select.create()
+    public void testGroupBy() {
+        // 测试分组查询
+        Select select = Select.create()
                 .field(User::getDeptId)
                 .field(Func.aggregate.COUNT(User::getId), "user_count")
                 .field(Func.aggregate.AVG(User::getAge), "avg_age")
                 .from(User.class)
-                .where(Cond.create().eq(User::getStatus, "active"))
+                .groupBy(User::getDeptId);
+
+        String expectedSql = "SELECT  `dept_id`,COUNT(id) AS user_count,AVG(age) AS avg_age FROM `user`  GROUP BY `dept_id`";
+        Assert.assertEquals(expectedSql, select.toString());
+
+        // 测试带HAVING的分组查询
+        select = Select.create()
+                .field(User::getDeptId)
+                .field(Func.aggregate.COUNT(User::getId), "user_count")
+                .from(User.class)
                 .groupBy(User::getDeptId)
-                .having(Cond.create().gt(Func.aggregate.COUNT(User::getId)));
-        System.out.println("分组查询: " + select1.toString());
+                .having(Cond.create().gt(Func.aggregate.COUNT(User::getId), 5));
+
+        expectedSql = "SELECT  `dept_id`,COUNT(id) AS user_count FROM `user`  GROUP BY `dept_id` HAVING  COUNT(id) > ?";
+        Assert.assertEquals(expectedSql, select.toString());
+        Assert.assertEquals(1, select.params().params().size());
     }
 
-    /**
-     * 测试连接查询
-     */
+    // ========================== 测试分页 ==========================
+
     @Test
-    public void testJoinQueries() {
-        System.out.println("\n5. 测试连接查询:");
-
-        // 内连接
-        Select select1 = Select.create()
+    public void testPagination() {
+        // 测试分页查询
+        Select select = Select.create()
                 .field(User::getId)
                 .field(User::getUsername)
-                .field(Department::getDeptName, "department_name")
-                .from(User.class, "u")
-                .innerJoin(Department.class, "d", User::getDeptId, Department::getId)
-                .where(Cond.create().eq(User::getStatus, "active"));
-        System.out.println("内连接: " + select1.toString());
+                .from(User.class)
+                .orderByAsc(User::getId)
+                .page(Page.create(1).pageSize(10));
 
-        // 左连接
-        Select select2 = Select.create()
+        String expectedSql = "SELECT  `id`,`username` FROM `user`   ORDER BY `id` LIMIT 0, 10";
+        Assert.assertEquals(expectedSql, select.toString());
+
+        // 测试带条件的分页查询
+        select = Select.create()
                 .field(User::getId)
                 .field(User::getUsername)
-                .field(Department::getDeptName, "department_name")
-                .from(User.class, "u")
-                .leftJoin(Department.class, "d", User::getDeptId, Department::getId)
-                .where(Cond.create().eq(User::getStatus, "active"));
-        System.out.println("左连接: " + select2.toString());
+                .from(User.class)
+                .where(Cond.create().eq(User::getStatus, 1))
+                .orderByAsc(User::getId)
+                .page(Page.create(2).pageSize(10));
 
-        // 带别名的连接条件
-        Select select3 = Select.create()
-                .field(User::getId, "user_id")
-                .field(User::getUsername)
-                .field("d", Department::getDeptName, "department_name")
-                .from(User.class, "u")
-                .innerJoin(Department.class, "d", Cond.create().eq("u", User::getDeptId, "d", Department::getId))
-                .where(Cond.create().eq(User::getStatus, "active"));
-        System.out.println("带别名的连接条件: " + select3.toString());
+        expectedSql = "SELECT  `id`,`username` FROM `user`  WHERE  status = ? ORDER BY `id` LIMIT 10, 10";
+        Assert.assertEquals(expectedSql, select.toString());
+        Assert.assertEquals(1, select.params().params().size());
     }
 
-    /**
-     * 测试函数调用
-     */
-    @Test
-    public void testFunctionCalls() {
-        System.out.println("\n6. 测试函数调用:");
+    // ========================== 测试聚合函数 ==========================
 
-        // 字符串函数
-        Select select1 = Select.create()
+    @Test
+    public void testAggregateFunctions() {
+        // 测试COUNT函数
+        Select select = Select.create()
+                .field(Func.aggregate.COUNT(User::getId), "total_users")
+                .from(User.class);
+
+        String expectedSql = "SELECT  COUNT(id) AS total_users FROM `user`";
+        Assert.assertEquals(expectedSql, select.toString());
+
+        // 测试MAX函数
+        select = Select.create()
+                .field(Func.aggregate.MAX(User::getAge), "max_age")
+                .from(User.class);
+
+        expectedSql = "SELECT  MAX(age) AS max_age FROM `user`";
+        Assert.assertEquals(expectedSql, select.toString());
+
+        // 测试MIN函数
+        select = Select.create()
+                .field(Func.aggregate.MIN(User::getAge), "min_age")
+                .from(User.class);
+
+        expectedSql = "SELECT  MIN(age) AS min_age FROM `user`";
+        Assert.assertEquals(expectedSql, select.toString());
+
+        // 测试AVG函数
+        select = Select.create()
+                .field(Func.aggregate.AVG(User::getAge), "avg_age")
+                .from(User.class);
+
+        expectedSql = "SELECT  AVG(age) AS avg_age FROM `user`";
+        Assert.assertEquals(expectedSql, select.toString());
+
+        // 测试SUM函数
+        select = Select.create()
+                .field(Func.aggregate.SUM(User::getAge), "sum_age")
+                .from(User.class);
+
+        expectedSql = "SELECT  SUM(age) AS sum_age FROM `user`";
+        Assert.assertEquals(expectedSql, select.toString());
+    }
+
+    @Test
+    public void testMathFunctions() {
+        // 测试数学函数
+        Select select = Select.create()
+                .field(User::getId)
+                .field(Func.math.ABS(User::getAge), "abs_age")
+                .field(Func.math.ROUND(User::getAge), "round_age")
+                .from(User.class);
+
+        String expectedSql = "SELECT  `id`,ABS(age) AS abs_age,ROUND(age) AS round_age FROM `user`";
+        Assert.assertEquals(expectedSql, select.toString());
+    }
+
+    @Test
+    public void testStringFunctions() {
+        // 测试字符串函数
+        Select select = Select.create()
                 .field(User::getId)
                 .field(Func.strings.UPPER(User::getUsername), "upper_username")
                 .field(Func.strings.LOWER(User::getEmail), "lower_email")
                 .field(Func.strings.LENGTH(User::getUsername), "username_length")
                 .from(User.class);
-        System.out.println("字符串函数: " + select1.toString());
 
-        // 数学函数
-        Select select2 = Select.create()
+        String expectedSql = "SELECT  `id`,UPPER(username) AS upper_username,LOWER(email) AS lower_email,LENGTH(username) AS username_length FROM `user`";
+        Assert.assertEquals(expectedSql, select.toString());
+    }
+
+    // ========================== 测试子查询 ==========================
+
+    @Test
+    public void testSubQuery() {
+        // 测试子查询 - IN子查询
+        Select subSelect = Select.create()
                 .field(User::getId)
-                .field(User::getAge)
-                .field(Func.math.ABS(User::getAge), "abs_age")
-                .field(Func.math.ROUND(User::getAge), "round_age")
-                .from(User.class);
-        System.out.println("数学函数: " + select2.toString());
-
-        // 聚合函数
-        Select select3 = Select.create()
-                .field(Func.aggregate.COUNT(User::getId), "total_users")
-                .field(Func.aggregate.MAX(User::getAge), "max_age")
-                .field(Func.aggregate.MIN(User::getAge), "min_age")
-                .field(Func.aggregate.AVG(User::getAge), "avg_age")
-                .field(Func.aggregate.SUM(User::getAge), "sum_age")
                 .from(User.class)
-                .where(Cond.create().eq(User::getStatus, "active"));
-        System.out.println("聚合函数: " + select3.toString());
-    }
+                .where(Cond.create().gt(User::getAge, 30));
 
-    /**
-     * 测试更新操作
-     */
-    @Test
-    public void testUpdateOperation() {
-        System.out.println("\n7. 测试更新操作:");
-
-        // 简单更新
-        Update update1 = Update.create(User.class)
-                .field(User::getStatus, "inactive")
-                .where(Cond.create().eq(User::getId, 1L));
-        System.out.println("简单更新: " + update1.toString());
-
-        // 多个字段更新
-        Update update2 = Update.create(User.class)
-                .field(User::getUsername, "new_username")
-                .field(User::getEmail, "new_email@example.com")
-                .where(Cond.create().eq(User::getId, 2L));
-        System.out.println("多个字段更新: " + update2.toString());
-
-        // 带条件的更新
-        Update update3 = Update.create(User.class)
-                .field(User::getStatus, "inactive")
-                .where(Cond.create()
-                        .eq(User::getStatus, "active")
-                        .and()
-                        .lt(User::getAge, 18));
-        System.out.println("带条件的更新: " + update3.toString());
-    }
-
-    /**
-     * 测试删除操作
-     */
-    @Test
-    public void testDeleteOperation() {
-        System.out.println("\n8. 测试删除操作:");
-
-        // 简单删除
-        Delete delete1 = Delete.create(User.class)
-                .where(Cond.create().eq(User::getId, 1L));
-        System.out.println("简单删除: " + delete1.toString());
-
-        // 带条件的删除
-        Delete delete2 = Delete.create(User.class)
-                .where(Cond.create()
-                        .eq(User::getStatus, "inactive")
-                        .and()
-                        .lt(User::getAge, 18));
-        System.out.println("带条件的删除: " + delete2.toString());
-
-        // 带连接的删除
-        Delete delete3 = Delete.create(User.class, "u")
-                .innerJoin(Department.class, "d", User::getDeptId, Department::getId)
-                .where(Cond.create().eq("d", Department::getDeptName, "Test Department"));
-        System.out.println("带连接的删除: " + delete3.toString());
-    }
-
-    /**
-     * 测试插入操作
-     */
-    @Test
-    public void testInsertOperation() {
-        System.out.println("\n9. 测试插入操作:");
-
-        // 简单插入
-        Insert insert1 = Insert.create(User.class)
-                .field(User::getUsername, "test_user")
-                .field(User::getEmail, "test@example.com")
-                .field(User::getAge, 25)
-                .field(User::getDeptId, 1L)
-                .field(User::getStatus, "active");
-        System.out.println("简单插入: " + insert1.toString());
-
-        // 带选择的插入
         Select select = Select.create()
+                .field(Order::getId)
+                .field(Order::getAmount)
+                .from(Order.class)
+                .where(Cond.create().in(Order::getUserId, subSelect));
+
+        String expectedSql = "SELECT  `id`,`amount` FROM `order`  WHERE  user_id IN (SELECT  `id` FROM `user`  WHERE  age > ?)";
+        Assert.assertEquals(expectedSql, select.toString());
+        Assert.assertEquals(1, select.params().params().size());
+
+        // 测试子查询 - EXISTS子查询
+        select = Select.create()
+                .field(User::getId)
                 .field(User::getUsername)
-                .field(User::getEmail)
-                .field(User::getAge)
-                .field(User::getDeptId)
-                .field(User::getStatus)
                 .from(User.class)
-                .where(Cond.create().eq(User::getId, 1L));
-        Insert insert2 = Insert.create(User.class)
-                .field(User::getUsername)
-                .field(User::getEmail)
-                .field(User::getAge)
-                .field(User::getDeptId)
-                .field(User::getStatus)
-                .select(select);
-        System.out.println("带选择的插入: " + insert2.toString());
+                .where(Cond.create().exists(subSelect));
+
+        expectedSql = "SELECT  `id`,`username` FROM `user`  WHERE  EXISTS (SELECT  `id` FROM `user`  WHERE  age > ?)";
+        Assert.assertEquals(expectedSql, select.toString());
+        Assert.assertEquals(1, select.params().params().size());
     }
 
-    // ---
+    // ========================== 测试单主键操作 ==========================
 
-    /**
-     * 测试1: 简单条件查询
-     */
     @Test
-    public void testSimpleSelect() {
-        System.out.println("\n1. 简单条件查询:");
-
-        // 基本查询
+    public void testSinglePkSelect() {
+        // 测试根据主键查询
         Select select = Select.create()
                 .field(User::getId)
-                .field(User::getName)
-                .field(User::getAge)
+                .field(User::getUsername)
                 .from(User.class)
-                .where(Cond.create()
-                        .eq(User::getAge, 18)
-                        .and().like(User::getName, Like.contains("test"))
-                );
+                .where(Cond.create().eq(User::getId, "1"));
 
-        System.out.println("SQL: " + select.toString());
-        System.out.println("参数: " + select.params());
-        System.out.println("预期结果: 查询年龄等于18且名称包含'test'的记录");
+        String expectedSql = "SELECT  `id`,`username` FROM `user`  WHERE  id = ?";
+        Assert.assertEquals(expectedSql, select.toString());
     }
 
-    /**
-     * 测试4: 分组与聚合函数
-     */
     @Test
-    public void testGroupBy() {
-        System.out.println("\n4. 分组与聚合函数:");
+    public void testSinglePkUpdate() {
+        // 测试根据主键更新
+        Update update = Update.create(User.class)
+                .field(User::getUsername, "updated_user")
+                .where(Cond.create().eq(User::getId, "1"));
 
-        // 分组与聚合函数
+        String expectedSql = "UPDATE `user`  SET `username` = ? WHERE  id = ?";
+        Assert.assertEquals(expectedSql, update.toString());
+    }
+
+    @Test
+    public void testSinglePkDelete() {
+        // 测试根据主键删除
+        Delete delete = Delete.create(User.class)
+                .where(Cond.create().eq(User::getId, "1"));
+
+        String expectedSql = "DELETE  FROM `user`  WHERE  id = ?";
+        Assert.assertEquals(expectedSql, delete.toString());
+    }
+
+    // ========================== 测试复合主键操作 ==========================
+
+    @Test
+    public void testCompositePkSelect() {
+        // 测试复合主键查询
         Select select = Select.create()
-                .field(User::getName)
-                .field(Func.aggregate.COUNT(User::getId), "total")
-                .field(Func.aggregate.AVG(User::getAge), "avg_age")
-                .field(Func.aggregate.MAX(User::getAge), "max_age")
-                .field(Func.aggregate.MIN(User::getAge), "min_age")
-                .from(User.class)
-                .groupBy(User::getName)
-                .having(Cond.create()
-                        .gt(Func.aggregate.COUNT(User::getId), 1)
-                )
-                .orderByDesc(Func.aggregate.COUNT(User::getId));
+                .field(MultiUser::getTitle)
+                .from(MultiUser.class)
+                .where(Cond.create().eq(MultiUserId::getUid, "user001"));
 
-        System.out.println("SQL: " + select.toString());
-        System.out.println("参数: " + select.params());
-        System.out.println("预期结果: 按名称分组，统计每组记录数、平均年龄、最大年龄、最小年龄，只显示记录数大于1的组");
-    }
+        String expectedSql = "SELECT  `title` FROM `multi_user`  WHERE  uid = ?";
+        Assert.assertEquals(expectedSql, select.toString());
 
-    /**
-     * 测试5: 连接查询
-     */
-    @Test
-    public void testJoinQuery() {
-        System.out.println("\n5. 连接查询:");
-
-        // 内连接
-        Select select = Select.create()
-                .field(User::getId, "entity_id")
-                .field(User::getName, "entity_name")
-                .field(Order::getUserId, "relation_name")
-                .field(Order::getAmount, "relation_value")
-                .from(User.class, "e")
-                .innerJoin(Order.class, "r",
-                        "e", User::getId,
-                        "r", Order::getUserId)
+        // 测试复合主键完整查询
+        select = Select.create()
+                .field(MultiUser::getTitle)
+                .from(MultiUser.class)
                 .where(Cond.create()
-                        .eq(User::getAge, 18)
-                );
+                        .eq(MultiUserId::getUid, "user001")
+                        .and().eq(MultiUserId::getOrderId, "order001"));
 
-        System.out.println("SQL: " + select.toString());
-        System.out.println("参数: " + select.params());
-        System.out.println("预期结果: 内连接查询，关联两个表，查询年龄等于18的记录");
+        expectedSql = "SELECT  `title` FROM `multi_user`  WHERE  uid = ?  AND  order_id = ?";
+        Assert.assertEquals(expectedSql, select.toString());
+        Assert.assertEquals(2, select.params().params().size());
     }
 
-    /**
-     * 测试6: 更新操作
-     */
     @Test
-    public void testUpdate() {
-        System.out.println("\n6. 更新操作:");
+    public void testCompositePkUpdate() {
+        // 测试复合主键更新
+        Update update = Update.create(MultiUser.class)
+                .field(MultiUser::getTitle, "updated_title")
+                .where(Cond.create()
+                        .eq(MultiUserId::getUid, "user001")
+                        .and().eq(MultiUserId::getOrderId, "order001"));
 
-        // 更新操作
+        String expectedSql = "UPDATE `multi_user`  SET `title` = ? WHERE  uid = ?  AND  order_id = ?";
+        Assert.assertEquals(expectedSql, update.toString());
+        Assert.assertEquals(3, update.params().params().size());
+    }
+
+    @Test
+    public void testCompositePkDelete() {
+        // 测试复合主键删除
+        Delete delete = Delete.create(MultiUser.class)
+                .where(Cond.create()
+                        .eq(MultiUserId::getUid, "user001")
+                        .and().eq(MultiUserId::getOrderId, "order001"));
+
+        String expectedSql = "DELETE  FROM `multi_user`  WHERE  uid = ?  AND  order_id = ?";
+        Assert.assertEquals(expectedSql, delete.toString());
+        Assert.assertEquals(2, delete.params().params().size());
+    }
+
+    // ========================== 测试更新和删除操作中的连接 ==========================
+
+    @Test
+    public void testUpdateWithJoin() {
+        // 测试更新操作中的连接
         Update update = Update.create()
-                .table(User.class)
-                .field(User::getName, "updated_name")
-                .field(User::getAge, 20)
-                .where(Cond.create()
-                        .eq(User::getId, "test_id")
-                        .and().lt(User::getAge, 18)
-                );
+                .table(User.class, "u")
+                .field("u", User::getStatus, 2)
+                .innerJoin(Department.class, "d", User::getDeptId, Department::getId)
+                .where(Cond.create().eq("d", Department::getDeptName, "IT"));
 
-        System.out.println("SQL: " + update.toString());
-        System.out.println("参数: " + update.params());
-        System.out.println("预期结果: 更新ID为'test_id'且年龄小于18的记录，设置名称为'updated_name'，年龄为20");
+        String expectedSql = "UPDATE `user` u INNER JOIN `department` d ON  `dept_id` = `id`  SET u.`status` = ? WHERE  d.dept_name = ?";
+        Assert.assertEquals(expectedSql, update.toString());
+        Assert.assertEquals(2, update.params().params().size());
     }
 
-    /**
-     * 测试7: 删除操作
-     */
     @Test
-    public void testDelete() {
-        System.out.println("\n7. 删除操作:");
-
-        // 删除操作
+    public void testDeleteWithJoin() {
+        // 测试删除操作中的连接
         Delete delete = Delete.create()
-                .from(User.class)
-                .where(Cond.create()
-                        .eq(User::getId, "test_id")
-                );
+                .from(User.class, "u")
+                .innerJoin(Department.class, "d", User::getDeptId, Department::getId)
+                .where(Cond.create().eq("d", Department::getDeptName, "IT"));
 
-        System.out.println("SQL: " + delete.toString());
-        System.out.println("参数: " + delete.params());
-        System.out.println("预期结果: 删除ID为'test_id'的记录");
+        String expectedSql = "DELETE  FROM `user` u INNER JOIN `department` d ON  `dept_id` = `id`  WHERE  d.dept_name = ?";
+        Assert.assertEquals(expectedSql, delete.toString());
+        Assert.assertEquals(1, delete.params().params().size());
     }
 
-    /**
-     * 测试8: 复杂条件查询
-     */
+    // ========================== 测试字段包装控制 ==========================
+
     @Test
-    public void testComplexConditions() {
-        System.out.println("\n8. 复杂条件查询:");
-
-        // 复杂条件查询
+    public void testFieldWrapControl() {
+        // 测试不带包装的字段
         Select select = Select.create()
-                .field(User::getId)
-                .field(User::getName)
-                .field(User::getAge)
-                .from(User.class)
-                .where(Cond.create()
-                        .bracketBegin()
-                        .eq(User::getAge, 18)
-                        .or().eq(User::getAge, 19)
-                        .or().eq(User::getAge, 20)
-                        .bracketEnd()
-                        .and().like(User::getName, "%test%")
-                        .and().isNull(User::getCreateTime)
-                );
+                .field(User::getId, false)
+                .field(User::getUsername, false)
+                .from(User.class);
 
-        System.out.println("SQL: " + select.toString());
-        System.out.println("参数: " + select.params());
-        System.out.println("预期结果: 查询年龄为18、19或20，名称包含'test'且创建时间为空的记录");
-    }
+        String expectedSql = "SELECT  id,username FROM `user`";
+        Assert.assertEquals(expectedSql, select.toString());
 
-    /**
-     * 测试9: 函数使用
-     */
-    @Test
-    public void testFunctions() {
-        System.out.println("\n9. 函数使用:");
+        // 测试混合包装的字段
+        select = Select.create()
+                .field(User::getId, true)
+                .field(User::getUsername, false)
+                .from(User.class);
 
-        // 函数使用
-        Select select = Select.create()
-                .field(User::getId)
-                .field(Func.math.ROUND(User::getAge), "rounded_age")
-                .field(Func.strings.LOWER(User::getName), "lower_name")
-                .field(Func.aggregate.COUNT(User::getId), "total")
-                .from(User.class)
-                .groupBy(User::getId)
-                .orderByDesc(Func.math.ROUND(User::getAge));
-
-        System.out.println("SQL: " + select.toString());
-        System.out.println("参数: " + select.params());
-        System.out.println("预期结果: 查询记录，使用ROUND和LOWER函数处理字段，按四舍五入后的年龄降序排序");
+        expectedSql = "SELECT  `id`,username FROM `user`";
+        Assert.assertEquals(expectedSql, select.toString());
     }
 }

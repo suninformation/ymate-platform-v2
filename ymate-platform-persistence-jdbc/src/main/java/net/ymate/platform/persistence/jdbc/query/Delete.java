@@ -429,8 +429,32 @@ public class Delete extends Query<Delete> {
      * @return 当前Delete实例
      * @since 2.1.4
      */
-    public <T extends IEntity<?>, U extends IEntity<?>, R> Delete innerJoin(Class<? extends IEntity<?>> entityClass, String alias, SFunction<T, R> columnOne, SFunction<U, R> columnTwo) {
-        return join(Join.inner(this, entityClass, alias).on(columnOne, columnTwo));
+    public <T, U, R> Delete innerJoin(Class<? extends IEntity<?>> entityClass, String alias, SFunction<T, R> columnOne, SFunction<U, R> columnTwo) {
+        return innerJoin(entityClass, alias, columnOne, columnTwo, true);
+    }
+
+    /**
+     * 内连接（基于实体类，使用Lambda表达式指定连接条件）
+     *
+     * @param entityClass    实体类
+     * @param alias          别名
+     * @param columnOne      第一个连接字段的方法引用
+     * @param columnTwo      第二个连接字段的方法引用
+     * @param wrapIdentifier 是否包装标识符
+     * @param <T>            第一个实体类型
+     * @param <U>            第二个实体类型
+     * @param <R>            返回值类型
+     * @return 当前Delete实例
+     * @since 2.1.4
+     */
+    public <T, U, R> Delete innerJoin(Class<? extends IEntity<?>> entityClass, String alias, SFunction<T, R> columnOne, SFunction<U, R> columnTwo, boolean wrapIdentifier) {
+        Join join = Join.inner(this, entityClass, alias);
+        if (wrapIdentifier) {
+            join.onEqWrap(columnOne, columnTwo);
+        } else {
+            join.onEq(columnOne, columnTwo);
+        }
+        return join(join);
     }
 
     /**
@@ -446,8 +470,32 @@ public class Delete extends Query<Delete> {
      * @return 当前Delete实例
      * @since 2.1.4
      */
-    public <T extends IEntity<?>, U extends IEntity<?>, R> Delete leftJoin(Class<? extends IEntity<?>> entityClass, String alias, SFunction<T, R> columnOne, SFunction<U, R> columnTwo) {
-        return join(Join.left(this, entityClass, alias).on(columnOne, columnTwo));
+    public <T, U, R> Delete leftJoin(Class<? extends IEntity<?>> entityClass, String alias, SFunction<T, R> columnOne, SFunction<U, R> columnTwo) {
+        return leftJoin(entityClass, alias, columnOne, columnTwo, true);
+    }
+
+    /**
+     * 左连接（基于实体类，使用Lambda表达式指定连接条件）
+     *
+     * @param entityClass    实体类
+     * @param alias          别名
+     * @param columnOne      第一个连接字段的方法引用
+     * @param columnTwo      第二个连接字段的方法引用
+     * @param wrapIdentifier 是否包装标识符
+     * @param <T>            第一个实体类型
+     * @param <U>            第二个实体类型
+     * @param <R>            返回值类型
+     * @return 当前Delete实例
+     * @since 2.1.4
+     */
+    public <T, U, R> Delete leftJoin(Class<? extends IEntity<?>> entityClass, String alias, SFunction<T, R> columnOne, SFunction<U, R> columnTwo, boolean wrapIdentifier) {
+        Join join = Join.left(this, entityClass, alias);
+        if (wrapIdentifier) {
+            join.onEqWrap(columnOne, columnTwo);
+        } else {
+            join.onEq(columnOne, columnTwo);
+        }
+        return join(join);
     }
 
     /**
@@ -463,8 +511,32 @@ public class Delete extends Query<Delete> {
      * @return 当前Delete实例
      * @since 2.1.4
      */
-    public <T extends IEntity<?>, U extends IEntity<?>, R> Delete rightJoin(Class<? extends IEntity<?>> entityClass, String alias, SFunction<T, R> columnOne, SFunction<U, R> columnTwo) {
-        return join(Join.right(this, entityClass, alias).on(columnOne, columnTwo));
+    public <T, U, R> Delete rightJoin(Class<? extends IEntity<?>> entityClass, String alias, SFunction<T, R> columnOne, SFunction<U, R> columnTwo) {
+        return rightJoin(entityClass, alias, columnOne, columnTwo, true);
+    }
+
+    /**
+     * 右连接（基于实体类，使用Lambda表达式指定连接条件）
+     *
+     * @param entityClass    实体类
+     * @param alias          别名
+     * @param columnOne      第一个连接字段的方法引用
+     * @param columnTwo      第二个连接字段的方法引用
+     * @param wrapIdentifier 是否包装标识符
+     * @param <T>            第一个实体类型
+     * @param <U>            第二个实体类型
+     * @param <R>            返回值类型
+     * @return 当前Delete实例
+     * @since 2.1.4
+     */
+    public <T, U, R> Delete rightJoin(Class<? extends IEntity<?>> entityClass, String alias, SFunction<T, R> columnOne, SFunction<U, R> columnTwo, boolean wrapIdentifier) {
+        Join join = Join.right(this, entityClass, alias);
+        if (wrapIdentifier) {
+            join.onEqWrap(columnOne, columnTwo);
+        } else {
+            join.onEq(columnOne, columnTwo);
+        }
+        return join(join);
     }
 
     /**
@@ -480,8 +552,32 @@ public class Delete extends Query<Delete> {
      * @return 当前Delete实例
      * @since 2.1.4
      */
-    public <T extends IEntity<?>, U extends IEntity<?>, R> Delete crossJoin(Class<? extends IEntity<?>> entityClass, String alias, SFunction<T, R> columnOne, SFunction<U, R> columnTwo) {
-        return join(Join.cross(this, entityClass, alias).on(columnOne, columnTwo));
+    public <T, U, R> Delete crossJoin(Class<? extends IEntity<?>> entityClass, String alias, SFunction<T, R> columnOne, SFunction<U, R> columnTwo) {
+        return crossJoin(entityClass, alias, columnOne, columnTwo, true);
+    }
+
+    /**
+     * 交叉连接（基于实体类，使用Lambda表达式指定连接条件）
+     *
+     * @param entityClass    实体类
+     * @param alias          别名
+     * @param columnOne      第一个连接字段的方法引用
+     * @param columnTwo      第二个连接字段的方法引用
+     * @param wrapIdentifier 是否包装标识符
+     * @param <T>            第一个实体类型
+     * @param <U>            第二个实体类型
+     * @param <R>            返回值类型
+     * @return 当前Delete实例
+     * @since 2.1.4
+     */
+    public <T, U, R> Delete crossJoin(Class<? extends IEntity<?>> entityClass, String alias, SFunction<T, R> columnOne, SFunction<U, R> columnTwo, boolean wrapIdentifier) {
+        Join join = Join.cross(this, entityClass, alias);
+        if (wrapIdentifier) {
+            join.onEqWrap(columnOne, columnTwo);
+        } else {
+            join.onEq(columnOne, columnTwo);
+        }
+        return join(join);
     }
 
     /**
@@ -499,8 +595,34 @@ public class Delete extends Query<Delete> {
      * @return 当前Delete实例
      * @since 2.1.4
      */
-    public <T extends IEntity<?>, U extends IEntity<?>, R> Delete innerJoin(Class<? extends IEntity<?>> entityClass, String alias, String prefixOne, SFunction<T, R> columnOne, String prefixTwo, SFunction<U, R> columnTwo) {
-        return join(Join.inner(this, entityClass, alias).on(prefixOne, columnOne, prefixTwo, columnTwo));
+    public <T, U, R> Delete innerJoin(Class<? extends IEntity<?>> entityClass, String alias, String prefixOne, SFunction<T, R> columnOne, String prefixTwo, SFunction<U, R> columnTwo) {
+        return innerJoin(entityClass, alias, prefixOne, columnOne, prefixTwo, columnTwo, true);
+    }
+
+    /**
+     * 内连接（基于实体类，使用带前缀的Lambda表达式指定连接条件）
+     *
+     * @param entityClass    实体类
+     * @param alias          别名
+     * @param prefixOne      第一个表前缀
+     * @param columnOne      第一个连接字段的方法引用
+     * @param prefixTwo      第二个表前缀
+     * @param columnTwo      第二个连接字段的方法引用
+     * @param wrapIdentifier 是否包装标识符
+     * @param <T>            第一个实体类型
+     * @param <U>            第二个实体类型
+     * @param <R>            返回值类型
+     * @return 当前Delete实例
+     * @since 2.1.4
+     */
+    public <T, U, R> Delete innerJoin(Class<? extends IEntity<?>> entityClass, String alias, String prefixOne, SFunction<T, R> columnOne, String prefixTwo, SFunction<U, R> columnTwo, boolean wrapIdentifier) {
+        Join join = Join.inner(this, entityClass, alias);
+        if (wrapIdentifier) {
+            join.onEqWrap(prefixOne, columnOne, prefixTwo, columnTwo);
+        } else {
+            join.onEq(prefixOne, columnOne, prefixTwo, columnTwo);
+        }
+        return join(join);
     }
 
     /**
@@ -518,8 +640,34 @@ public class Delete extends Query<Delete> {
      * @return 当前Delete实例
      * @since 2.1.4
      */
-    public <T extends IEntity<?>, U extends IEntity<?>, R> Delete leftJoin(Class<? extends IEntity<?>> entityClass, String alias, String prefixOne, SFunction<T, R> columnOne, String prefixTwo, SFunction<U, R> columnTwo) {
-        return join(Join.left(this, entityClass, alias).on(prefixOne, columnOne, prefixTwo, columnTwo));
+    public <T, U, R> Delete leftJoin(Class<? extends IEntity<?>> entityClass, String alias, String prefixOne, SFunction<T, R> columnOne, String prefixTwo, SFunction<U, R> columnTwo) {
+        return leftJoin(entityClass, alias, prefixOne, columnOne, prefixTwo, columnTwo, true);
+    }
+
+    /**
+     * 左连接（基于实体类，使用带前缀的Lambda表达式指定连接条件）
+     *
+     * @param entityClass    实体类
+     * @param alias          别名
+     * @param prefixOne      第一个表前缀
+     * @param columnOne      第一个连接字段的方法引用
+     * @param prefixTwo      第二个表前缀
+     * @param columnTwo      第二个连接字段的方法引用
+     * @param wrapIdentifier 是否包装标识符
+     * @param <T>            第一个实体类型
+     * @param <U>            第二个实体类型
+     * @param <R>            返回值类型
+     * @return 当前Delete实例
+     * @since 2.1.4
+     */
+    public <T, U, R> Delete leftJoin(Class<? extends IEntity<?>> entityClass, String alias, String prefixOne, SFunction<T, R> columnOne, String prefixTwo, SFunction<U, R> columnTwo, boolean wrapIdentifier) {
+        Join join = Join.left(this, entityClass, alias);
+        if (wrapIdentifier) {
+            join.onEqWrap(prefixOne, columnOne, prefixTwo, columnTwo);
+        } else {
+            join.onEq(prefixOne, columnOne, prefixTwo, columnTwo);
+        }
+        return join(join);
     }
 
     /**
@@ -537,8 +685,34 @@ public class Delete extends Query<Delete> {
      * @return 当前Delete实例
      * @since 2.1.4
      */
-    public <T extends IEntity<?>, U extends IEntity<?>, R> Delete rightJoin(Class<? extends IEntity<?>> entityClass, String alias, String prefixOne, SFunction<T, R> columnOne, String prefixTwo, SFunction<U, R> columnTwo) {
-        return join(Join.right(this, entityClass, alias).on(prefixOne, columnOne, prefixTwo, columnTwo));
+    public <T, U, R> Delete rightJoin(Class<? extends IEntity<?>> entityClass, String alias, String prefixOne, SFunction<T, R> columnOne, String prefixTwo, SFunction<U, R> columnTwo) {
+        return rightJoin(entityClass, alias, prefixOne, columnOne, prefixTwo, columnTwo, true);
+    }
+
+    /**
+     * 右连接（基于实体类，使用带前缀的Lambda表达式指定连接条件）
+     *
+     * @param entityClass    实体类
+     * @param alias          别名
+     * @param prefixOne      第一个表前缀
+     * @param columnOne      第一个连接字段的方法引用
+     * @param prefixTwo      第二个表前缀
+     * @param columnTwo      第二个连接字段的方法引用
+     * @param wrapIdentifier 是否包装标识符
+     * @param <T>            第一个实体类型
+     * @param <U>            第二个实体类型
+     * @param <R>            返回值类型
+     * @return 当前Delete实例
+     * @since 2.1.4
+     */
+    public <T, U, R> Delete rightJoin(Class<? extends IEntity<?>> entityClass, String alias, String prefixOne, SFunction<T, R> columnOne, String prefixTwo, SFunction<U, R> columnTwo, boolean wrapIdentifier) {
+        Join join = Join.right(this, entityClass, alias);
+        if (wrapIdentifier) {
+            join.onEqWrap(prefixOne, columnOne, prefixTwo, columnTwo);
+        } else {
+            join.onEq(prefixOne, columnOne, prefixTwo, columnTwo);
+        }
+        return join(join);
     }
 
     /**
@@ -556,8 +730,34 @@ public class Delete extends Query<Delete> {
      * @return 当前Delete实例
      * @since 2.1.4
      */
-    public <T extends IEntity<?>, U extends IEntity<?>, R> Delete crossJoin(Class<? extends IEntity<?>> entityClass, String alias, String prefixOne, SFunction<T, R> columnOne, String prefixTwo, SFunction<U, R> columnTwo) {
-        return join(Join.cross(this, entityClass, alias).on(prefixOne, columnOne, prefixTwo, columnTwo));
+    public <T, U, R> Delete crossJoin(Class<? extends IEntity<?>> entityClass, String alias, String prefixOne, SFunction<T, R> columnOne, String prefixTwo, SFunction<U, R> columnTwo) {
+        return crossJoin(entityClass, alias, prefixOne, columnOne, prefixTwo, columnTwo, true);
+    }
+
+    /**
+     * 交叉连接（基于实体类，使用带前缀的Lambda表达式指定连接条件）
+     *
+     * @param entityClass    实体类
+     * @param alias          别名
+     * @param prefixOne      第一个表前缀
+     * @param columnOne      第一个连接字段的方法引用
+     * @param prefixTwo      第二个表前缀
+     * @param columnTwo      第二个连接字段的方法引用
+     * @param wrapIdentifier 是否包装标识符
+     * @param <T>            第一个实体类型
+     * @param <U>            第二个实体类型
+     * @param <R>            返回值类型
+     * @return 当前Delete实例
+     * @since 2.1.4
+     */
+    public <T, U, R> Delete crossJoin(Class<? extends IEntity<?>> entityClass, String alias, String prefixOne, SFunction<T, R> columnOne, String prefixTwo, SFunction<U, R> columnTwo, boolean wrapIdentifier) {
+        Join join = Join.cross(this, entityClass, alias);
+        if (wrapIdentifier) {
+            join.onEqWrap(prefixOne, columnOne, prefixTwo, columnTwo);
+        } else {
+            join.onEq(prefixOne, columnOne, prefixTwo, columnTwo);
+        }
+        return join(join);
     }
 
     /**
@@ -655,7 +855,25 @@ public class Delete extends Query<Delete> {
      * @return 当前Delete实例
      * @since 2.1.4
      */
-    public <T extends IEntity<?>, R> Delete where(SFunction<T, R> column, Object value) {
+    public <T, R> Delete where(SFunction<T, R> column, Object value) {
+        return where(Cond.create(this).eqWrap(column).param(value));
+    }
+
+    /**
+     * 通过Lambda表达式创建删除条件（相等条件）
+     *
+     * @param column         方法引用
+     * @param value          参数值
+     * @param wrapIdentifier 是否包装标识符
+     * @param <T>            实体类型
+     * @param <R>            返回值类型
+     * @return 当前Delete实例
+     * @since 2.1.4
+     */
+    public <T, R> Delete where(SFunction<T, R> column, Object value, boolean wrapIdentifier) {
+        if (wrapIdentifier) {
+            return where(Cond.create(this).eqWrap(column).param(value));
+        }
         return where(Cond.create(this).eq(column).param(value));
     }
 
@@ -666,7 +884,7 @@ public class Delete extends Query<Delete> {
      * @return 当前Delete实例
      * @since 2.1.4
      */
-    public Delete where(LambdaUtils.ConditionAppender appender) {
+    public Delete where(IConditionAppender appender) {
         Cond cond = Cond.create(this);
         appender.append(cond);
         return where(cond);

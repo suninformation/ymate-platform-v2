@@ -24,6 +24,7 @@ import net.ymate.platform.core.beans.annotation.Ignored;
  * @since 2.1.0
  */
 @Ignored
+@FunctionalInterface
 public interface IConditionAppender {
 
     /**

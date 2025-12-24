@@ -292,7 +292,7 @@ public class Query<T> extends QueryHandleAdapter<T> {
      * @return 字段名
      * @since 2.1.4
      */
-    protected <E extends IEntity<?>, R> String getFieldName(SFunction<E, R> func) {
+    protected <E, R> String getFieldName(SFunction<E, R> func) {
         return LambdaUtils.getFieldName(func);
     }
 
@@ -312,7 +312,7 @@ public class Query<T> extends QueryHandleAdapter<T> {
      * @return 数据库列名
      * @since 2.1.4
      */
-    protected <E extends IEntity<?>, R> String getColumnName(SFunction<E, R> func) {
+    protected <E, R> String getColumnName(SFunction<E, R> func) {
         return LambdaUtils.getColumnName(func);
     }
 
@@ -326,7 +326,7 @@ public class Query<T> extends QueryHandleAdapter<T> {
      * @return 完整字段名
      * @since 2.1.4
      */
-    protected <E extends IEntity<?>, R> String getFullFieldName(String prefix, SFunction<E, R> func) {
+    protected <E, R> String getFullFieldName(String prefix, SFunction<E, R> func) {
         return LambdaUtils.getFullFieldName(prefix, func);
     }
 
@@ -339,7 +339,7 @@ public class Query<T> extends QueryHandleAdapter<T> {
      * @return 包装后的字段名
      * @since 2.1.4
      */
-    protected <E extends IEntity<?>, R> String wrapIdentifierField(SFunction<E, R> func) {
+    protected <E, R> String wrapIdentifierField(SFunction<E, R> func) {
         return wrapIdentifierField(getColumnName(func));
     }
 
@@ -353,7 +353,7 @@ public class Query<T> extends QueryHandleAdapter<T> {
      * @return 包装后的完整字段名
      * @since 2.1.4
      */
-    protected <E extends IEntity<?>, R> String wrapIdentifierField(String prefix, SFunction<E, R> func) {
+    protected <E, R> String wrapIdentifierField(String prefix, SFunction<E, R> func) {
         return wrapIdentifierField(getFullFieldName(prefix, func));
     }
 

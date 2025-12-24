@@ -19,7 +19,6 @@ import net.ymate.platform.commons.util.ExpressionUtils;
 import net.ymate.platform.core.persistence.Fields;
 import net.ymate.platform.core.persistence.IFunction;
 import net.ymate.platform.core.persistence.Params;
-import net.ymate.platform.core.persistence.base.IEntity;
 import net.ymate.platform.persistence.jdbc.IDatabase;
 import net.ymate.platform.persistence.jdbc.JDBC;
 import net.ymate.platform.persistence.jdbc.query.LambdaUtils.SFunction;
@@ -218,12 +217,12 @@ public class GroupBy extends Query<GroupBy> {
      * 通过Lambda表达式创建分组字段
      *
      * @param column 方法引用
-     * @param <E>    实体类型
+     * @param <T>    类型
      * @param <R>    返回值类型
      * @return 当前GroupBy实例
      * @since 2.1.4
      */
-    public <E extends IEntity<?>, R> GroupBy field(SFunction<E, R> column) {
+    public <T, R> GroupBy field(SFunction<T, R> column) {
         return field(null, column, false, true);
     }
 
@@ -232,12 +231,12 @@ public class GroupBy extends Query<GroupBy> {
      *
      * @param column 方法引用
      * @param desc   是否降序
-     * @param <E>    实体类型
+     * @param <T>    类型
      * @param <R>    返回值类型
      * @return 当前GroupBy实例
      * @since 2.1.4
      */
-    public <E extends IEntity<?>, R> GroupBy field(SFunction<E, R> column, boolean desc) {
+    public <T, R> GroupBy field(SFunction<T, R> column, boolean desc) {
         return field(null, column, desc, true);
     }
 
@@ -247,12 +246,12 @@ public class GroupBy extends Query<GroupBy> {
      * @param column         方法引用
      * @param desc           是否降序
      * @param wrapIdentifier 是否包装标识符
-     * @param <E>            实体类型
+     * @param <T>            类型
      * @param <R>            返回值类型
      * @return 当前GroupBy实例
      * @since 2.1.4
      */
-    public <E extends IEntity<?>, R> GroupBy field(SFunction<E, R> column, boolean desc, boolean wrapIdentifier) {
+    public <T, R> GroupBy field(SFunction<T, R> column, boolean desc, boolean wrapIdentifier) {
         return field(null, column, desc, wrapIdentifier);
     }
 
@@ -261,12 +260,12 @@ public class GroupBy extends Query<GroupBy> {
      *
      * @param prefix 前缀
      * @param column 方法引用
-     * @param <E>    实体类型
+     * @param <T>    类型
      * @param <R>    返回值类型
      * @return 当前GroupBy实例
      * @since 2.1.4
      */
-    public <E extends IEntity<?>, R> GroupBy field(String prefix, SFunction<E, R> column) {
+    public <T, R> GroupBy field(String prefix, SFunction<T, R> column) {
         return field(prefix, column, false, true);
     }
 
@@ -276,12 +275,12 @@ public class GroupBy extends Query<GroupBy> {
      * @param prefix 前缀
      * @param column 方法引用
      * @param desc   是否降序
-     * @param <E>    实体类型
+     * @param <T>    类型
      * @param <R>    返回值类型
      * @return 当前GroupBy实例
      * @since 2.1.4
      */
-    public <E extends IEntity<?>, R> GroupBy field(String prefix, SFunction<E, R> column, boolean desc) {
+    public <T, R> GroupBy field(String prefix, SFunction<T, R> column, boolean desc) {
         return field(prefix, column, desc, true);
     }
 
@@ -292,12 +291,12 @@ public class GroupBy extends Query<GroupBy> {
      * @param column         方法引用
      * @param desc           是否降序
      * @param wrapIdentifier 是否包装标识符
-     * @param <E>            实体类型
+     * @param <T>            类型
      * @param <R>            返回值类型
      * @return 当前GroupBy实例
      * @since 2.1.4
      */
-    public <E extends IEntity<?>, R> GroupBy field(String prefix, SFunction<E, R> column, boolean desc, boolean wrapIdentifier) {
+    public <T, R> GroupBy field(String prefix, SFunction<T, R> column, boolean desc, boolean wrapIdentifier) {
         String columnName = getColumnName(column);
         return field(prefix, columnName, desc, wrapIdentifier);
     }
@@ -362,12 +361,12 @@ public class GroupBy extends Query<GroupBy> {
      * 通过Lambda表达式创建降序分组字段
      *
      * @param column 方法引用
-     * @param <E>    实体类型
+     * @param <T>    类型
      * @param <R>    返回值类型
      * @return 当前GroupBy实例
      * @since 2.1.4
      */
-    public <E extends IEntity<?>, R> GroupBy desc(SFunction<E, R> column) {
+    public <T, R> GroupBy desc(SFunction<T, R> column) {
         return field(null, column, true, true);
     }
 
@@ -376,12 +375,12 @@ public class GroupBy extends Query<GroupBy> {
      *
      * @param column         方法引用
      * @param wrapIdentifier 是否包装标识符
-     * @param <E>            实体类型
+     * @param <T>            类型
      * @param <R>            返回值类型
      * @return 当前GroupBy实例
      * @since 2.1.4
      */
-    public <E extends IEntity<?>, R> GroupBy desc(SFunction<E, R> column, boolean wrapIdentifier) {
+    public <T, R> GroupBy desc(SFunction<T, R> column, boolean wrapIdentifier) {
         return field(null, column, true, wrapIdentifier);
     }
 
@@ -390,12 +389,12 @@ public class GroupBy extends Query<GroupBy> {
      *
      * @param prefix 前缀
      * @param column 方法引用
-     * @param <E>    实体类型
+     * @param <T>    类型
      * @param <R>    返回值类型
      * @return 当前GroupBy实例
      * @since 2.1.4
      */
-    public <E extends IEntity<?>, R> GroupBy desc(String prefix, SFunction<E, R> column) {
+    public <T, R> GroupBy desc(String prefix, SFunction<T, R> column) {
         return field(prefix, column, true, true);
     }
 
@@ -405,12 +404,12 @@ public class GroupBy extends Query<GroupBy> {
      * @param prefix         前缀
      * @param column         方法引用
      * @param wrapIdentifier 是否包装标识符
-     * @param <E>            实体类型
+     * @param <T>            类型
      * @param <R>            返回值类型
      * @return 当前GroupBy实例
      * @since 2.1.4
      */
-    public <E extends IEntity<?>, R> GroupBy desc(String prefix, SFunction<E, R> column, boolean wrapIdentifier) {
+    public <T, R> GroupBy desc(String prefix, SFunction<T, R> column, boolean wrapIdentifier) {
         return field(prefix, column, true, wrapIdentifier);
     }
 

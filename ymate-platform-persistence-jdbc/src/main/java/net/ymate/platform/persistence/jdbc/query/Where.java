@@ -19,7 +19,6 @@ import net.ymate.platform.commons.util.ExpressionUtils;
 import net.ymate.platform.core.persistence.Fields;
 import net.ymate.platform.core.persistence.IFunction;
 import net.ymate.platform.core.persistence.Params;
-import net.ymate.platform.core.persistence.base.IEntity;
 import net.ymate.platform.persistence.jdbc.IDatabase;
 import net.ymate.platform.persistence.jdbc.JDBC;
 import net.ymate.platform.persistence.jdbc.query.LambdaUtils.SFunction;
@@ -228,14 +227,13 @@ public final class Where extends QueryHandleAdapter<Where> {
      * 通过Lambda表达式创建分组
      *
      * @param column 方法引用
-     * @param <E>    实体类型
+     * @param <T>    实体类型
      * @param <R>    返回值类型
      * @return 当前Where实例
      * @since 2.1.4
      */
-    public <E extends IEntity<?>, R> Where groupBy(SFunction<E, R> column) {
-        groupBy.field(column);
-        return this;
+    public <T, R> Where groupBy(SFunction<T, R> column) {
+        return groupBy(column, false, true);
     }
 
     /**
@@ -243,13 +241,28 @@ public final class Where extends QueryHandleAdapter<Where> {
      *
      * @param column 方法引用
      * @param desc   是否降序
-     * @param <E>    实体类型
+     * @param <T>    实体类型
      * @param <R>    返回值类型
      * @return 当前Where实例
      * @since 2.1.4
      */
-    public <E extends IEntity<?>, R> Where groupBy(SFunction<E, R> column, boolean desc) {
-        groupBy.field(column, desc);
+    public <T, R> Where groupBy(SFunction<T, R> column, boolean desc) {
+        return groupBy(column, desc, true);
+    }
+
+    /**
+     * 通过Lambda表达式创建分组（带排序方向和标识符包装控制）
+     *
+     * @param column         方法引用
+     * @param desc           是否降序
+     * @param wrapIdentifier 是否包装标识符
+     * @param <T>            实体类型
+     * @param <R>            返回值类型
+     * @return 当前Where实例
+     * @since 2.1.4
+     */
+    public <T, R> Where groupBy(SFunction<T, R> column, boolean desc, boolean wrapIdentifier) {
+        groupBy.field(column, desc, wrapIdentifier);
         return this;
     }
 
@@ -258,14 +271,13 @@ public final class Where extends QueryHandleAdapter<Where> {
      *
      * @param prefix 前缀
      * @param column 方法引用
-     * @param <E>    实体类型
+     * @param <T>    实体类型
      * @param <R>    返回值类型
      * @return 当前Where实例
      * @since 2.1.4
      */
-    public <E extends IEntity<?>, R> Where groupBy(String prefix, SFunction<E, R> column) {
-        groupBy.field(prefix, column);
-        return this;
+    public <T, R> Where groupBy(String prefix, SFunction<T, R> column) {
+        return groupBy(prefix, column, false, true);
     }
 
     /**
@@ -274,13 +286,29 @@ public final class Where extends QueryHandleAdapter<Where> {
      * @param prefix 前缀
      * @param column 方法引用
      * @param desc   是否降序
-     * @param <E>    实体类型
+     * @param <T>    实体类型
      * @param <R>    返回值类型
      * @return 当前Where实例
      * @since 2.1.4
      */
-    public <E extends IEntity<?>, R> Where groupBy(String prefix, SFunction<E, R> column, boolean desc) {
-        groupBy.field(prefix, column, desc);
+    public <T, R> Where groupBy(String prefix, SFunction<T, R> column, boolean desc) {
+        return groupBy(prefix, column, desc, true);
+    }
+
+    /**
+     * 通过Lambda表达式创建分组（带前缀、排序方向和标识符包装控制）
+     *
+     * @param prefix         前缀
+     * @param column         方法引用
+     * @param desc           是否降序
+     * @param wrapIdentifier 是否包装标识符
+     * @param <T>            实体类型
+     * @param <R>            返回值类型
+     * @return 当前Where实例
+     * @since 2.1.4
+     */
+    public <T, R> Where groupBy(String prefix, SFunction<T, R> column, boolean desc, boolean wrapIdentifier) {
+        groupBy.field(prefix, column, desc, wrapIdentifier);
         return this;
     }
 
@@ -338,6 +366,19 @@ public final class Where extends QueryHandleAdapter<Where> {
             groupBy = GroupBy.create(owner, dataSourceName, cond);
         }
         return this;
+    }
+
+    /**
+     * 通过条件构建器创建having条件
+     *
+     * @param appender 条件构建器
+     * @return 当前Where实例
+     * @since 2.1.4
+     */
+    public Where having(IConditionAppender appender) {
+        Cond cond = Cond.create(owner, dataSourceName);
+        appender.append(cond);
+        return having(cond);
     }
 
     // ------
@@ -445,13 +486,27 @@ public final class Where extends QueryHandleAdapter<Where> {
      * 通过Lambda表达式创建升序排序
      *
      * @param column 方法引用
-     * @param <E>    实体类型
+     * @param <T>    实体类型
      * @param <R>    返回值类型
      * @return 当前Where实例
      * @since 2.1.4
      */
-    public <E extends IEntity<?>, R> Where orderByAsc(SFunction<E, R> column) {
-        orderBy.asc(column);
+    public <T, R> Where orderByAsc(SFunction<T, R> column) {
+        return orderByAsc(column, true);
+    }
+
+    /**
+     * 通过Lambda表达式创建升序排序（带标识符包装控制）
+     *
+     * @param column         方法引用
+     * @param wrapIdentifier 是否包装标识符
+     * @param <T>            实体类型
+     * @param <R>            返回值类型
+     * @return 当前Where实例
+     * @since 2.1.4
+     */
+    public <T, R> Where orderByAsc(SFunction<T, R> column, boolean wrapIdentifier) {
+        orderBy.asc(column, wrapIdentifier);
         return this;
     }
 
@@ -460,13 +515,28 @@ public final class Where extends QueryHandleAdapter<Where> {
      *
      * @param prefix 前缀
      * @param column 方法引用
-     * @param <E>    实体类型
+     * @param <T>    实体类型
      * @param <R>    返回值类型
      * @return 当前Where实例
      * @since 2.1.4
      */
-    public <E extends IEntity<?>, R> Where orderByAsc(String prefix, SFunction<E, R> column) {
-        orderBy.asc(prefix, column);
+    public <T, R> Where orderByAsc(String prefix, SFunction<T, R> column) {
+        return orderByAsc(prefix, column, true);
+    }
+
+    /**
+     * 通过Lambda表达式创建升序排序（带前缀和标识符包装控制）
+     *
+     * @param prefix         前缀
+     * @param column         方法引用
+     * @param wrapIdentifier 是否包装标识符
+     * @param <T>            实体类型
+     * @param <R>            返回值类型
+     * @return 当前Where实例
+     * @since 2.1.4
+     */
+    public <T, R> Where orderByAsc(String prefix, SFunction<T, R> column, boolean wrapIdentifier) {
+        orderBy.asc(prefix, column, wrapIdentifier);
         return this;
     }
 
@@ -474,13 +544,27 @@ public final class Where extends QueryHandleAdapter<Where> {
      * 通过Lambda表达式创建降序排序
      *
      * @param column 方法引用
-     * @param <E>    实体类型
+     * @param <T>    实体类型
      * @param <R>    返回值类型
      * @return 当前Where实例
      * @since 2.1.4
      */
-    public <E extends IEntity<?>, R> Where orderByDesc(SFunction<E, R> column) {
-        orderBy.desc(column);
+    public <T, R> Where orderByDesc(SFunction<T, R> column) {
+        return orderByDesc(column, true);
+    }
+
+    /**
+     * 通过Lambda表达式创建降序排序（带标识符包装控制）
+     *
+     * @param column         方法引用
+     * @param wrapIdentifier 是否包装标识符
+     * @param <T>            实体类型
+     * @param <R>            返回值类型
+     * @return 当前Where实例
+     * @since 2.1.4
+     */
+    public <T, R> Where orderByDesc(SFunction<T, R> column, boolean wrapIdentifier) {
+        orderBy.desc(column, wrapIdentifier);
         return this;
     }
 
@@ -489,13 +573,28 @@ public final class Where extends QueryHandleAdapter<Where> {
      *
      * @param prefix 前缀
      * @param column 方法引用
-     * @param <E>    实体类型
+     * @param <T>    实体类型
      * @param <R>    返回值类型
      * @return 当前Where实例
      * @since 2.1.4
      */
-    public <E extends IEntity<?>, R> Where orderByDesc(String prefix, SFunction<E, R> column) {
-        orderBy.desc(prefix, column);
+    public <T, R> Where orderByDesc(String prefix, SFunction<T, R> column) {
+        return orderByDesc(prefix, column, true);
+    }
+
+    /**
+     * 通过Lambda表达式创建降序排序（带前缀和标识符包装控制）
+     *
+     * @param prefix         前缀
+     * @param column         方法引用
+     * @param wrapIdentifier 是否包装标识符
+     * @param <T>            实体类型
+     * @param <R>            返回值类型
+     * @return 当前Where实例
+     * @since 2.1.4
+     */
+    public <T, R> Where orderByDesc(String prefix, SFunction<T, R> column, boolean wrapIdentifier) {
+        orderBy.desc(prefix, column, wrapIdentifier);
         return this;
     }
 

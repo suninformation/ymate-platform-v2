@@ -18,6 +18,7 @@ package net.ymate.platform.persistence.jdbc.query;
 import net.ymate.platform.commons.util.ClassUtils;
 import net.ymate.platform.core.persistence.base.EntityMeta;
 import net.ymate.platform.core.persistence.base.IEntity;
+import net.ymate.platform.core.persistence.base.IEntityPK;
 import net.ymate.platform.core.persistence.base.PropertyMeta;
 import org.apache.commons.lang3.StringUtils;
 
@@ -46,7 +47,27 @@ public final class LambdaUtils {
      * @param <R> 返回值类型
      */
     @FunctionalInterface
-    public interface SFunction<T extends IEntity<?>, R> extends java.util.function.Function<T, R>, Serializable {
+    public interface SFunction<T, R> extends java.util.function.Function<T, R>, Serializable {
+    }
+
+    /**
+     * 实体函数式接口，用于实体类的方法引用
+     *
+     * @param <T> 实体类型
+     * @param <R> 返回值类型
+     */
+    @FunctionalInterface
+    public interface EntityFunction<T extends IEntity<?>, R> extends SFunction<T, R> {
+    }
+
+    /**
+     * 主键函数式接口，用于复合主键类的方法引用
+     *
+     * @param <T> 主键类型
+     * @param <R> 返回值类型
+     */
+    @FunctionalInterface
+    public interface PkFunction<T extends IEntityPK, R> extends SFunction<T, R> {
     }
 
     /**
@@ -59,20 +80,6 @@ public final class LambdaUtils {
     }
 
     /**
-     * 条件构建器接口
-     */
-    @FunctionalInterface
-    public interface ConditionAppender {
-
-        /**
-         * 构建条件
-         *
-         * @param cond 条件对象
-         */
-        void append(Cond cond);
-    }
-
-    /**
      * 序列化的双函数接口，用于支持两个参数的方法引用
      *
      * @param <T> 第一个参数类型
@@ -80,7 +87,7 @@ public final class LambdaUtils {
      * @param <R> 返回值类型
      */
     @FunctionalInterface
-    public interface SBinaryFunction<T extends IEntity<?>, U extends IEntity<?>, R> extends java.util.function.BiFunction<T, U, R>, Serializable {
+    public interface SBinaryFunction<T, U, R> extends java.util.function.BiFunction<T, U, R>, Serializable {
     }
 
     private LambdaUtils() {
@@ -90,11 +97,11 @@ public final class LambdaUtils {
      * 从方法引用中解析出字段名
      *
      * @param func 方法引用
-     * @param <T>  实体类型
+     * @param <T>  类型
      * @param <R>  返回值类型
      * @return 字段名
      */
-    public static <T extends IEntity<?>, R> String getFieldName(SFunction<T, R> func) {
+    public static <T, R> String getFieldName(SFunction<T, R> func) {
         SerializedLambda lambda = getSerializedLambda(func);
         String implMethodName = lambda.getImplMethodName();
         if (implMethodName.startsWith("get")) {
@@ -109,21 +116,28 @@ public final class LambdaUtils {
      * 从方法引用中解析出数据库字段名
      *
      * @param func 方法引用
-     * @param <T>  实体类型
+     * @param <T>  类型
      * @param <R>  返回值类型
      * @return 数据库字段名
      */
-    public static <T extends IEntity<?>, R> String getColumnName(SFunction<T, R> func) {
+    public static <T, R> String getColumnName(SFunction<T, R> func) {
         SerializedLambda lambda = getSerializedLambda(func);
-        Class<?> entityClass = getEntityClass(lambda);
+        Class<?> targetClass = getTargetClass(lambda);
         String fieldName = getFieldName(func);
-        // 从实体元数据中获取数据库字段名
-        EntityMeta entityMeta = EntityMeta.createAndGet(entityClass.asSubclass(IEntity.class));
-        if (entityMeta != null) {
-            PropertyMeta propertyMeta = entityMeta.getPropertyByField(fieldName);
-            if (propertyMeta != null) {
-                return propertyMeta.getName();
+        // 检查是否为实体类
+        if (IEntity.class.isAssignableFrom(targetClass)) {
+            EntityMeta entityMeta = EntityMeta.createAndGet(targetClass.asSubclass(IEntity.class));
+            if (entityMeta != null) {
+                PropertyMeta propertyMeta = entityMeta.getPropertyByField(fieldName);
+                if (propertyMeta != null) {
+                    return propertyMeta.getName();
+                }
             }
+        }
+        // 检查是否为复合主键类
+        else if (IEntityPK.class.isAssignableFrom(targetClass)) {
+            // 复合主键类的字段直接映射为数据库字段
+            return ClassUtils.fieldNameToPropertyName(fieldName, 0);
         }
         return ClassUtils.fieldNameToPropertyName(fieldName, 0);
     }
@@ -140,9 +154,11 @@ public final class LambdaUtils {
      * 获取序列化的Lambda对象
      *
      * @param func 函数式接口实例
+     * @param <T>  类型
+     * @param <R>  返回值类型
      * @return SerializedLambda对象
      */
-    private static <T extends IEntity<?>, R> SerializedLambda getSerializedLambda(SFunction<T, R> func) {
+    private static <T, R> SerializedLambda getSerializedLambda(SFunction<T, R> func) {
         Class<?> clazz = func.getClass();
         return LAMBDA_CACHE.computeIfAbsent(clazz, k -> {
             try {
@@ -156,17 +172,17 @@ public final class LambdaUtils {
     }
 
     /**
-     * 从SerializedLambda中获取实体类
+     * 从SerializedLambda中获取目标类
      *
      * @param lambda SerializedLambda对象
-     * @return 实体类
+     * @return 目标类
      */
-    private static Class<?> getEntityClass(SerializedLambda lambda) {
+    private static Class<?> getTargetClass(SerializedLambda lambda) {
         try {
             String className = lambda.getImplClass().replace("/", ".");
             return Class.forName(className);
         } catch (ClassNotFoundException e) {
-            throw new RuntimeException("Failed to get entity class from SerializedLambda", e);
+            throw new RuntimeException("Failed to get target class from SerializedLambda", e);
         }
     }
 
@@ -175,11 +191,11 @@ public final class LambdaUtils {
      *
      * @param prefix 前缀
      * @param func   方法引用
-     * @param <T>    实体类型
+     * @param <T>    类型
      * @param <R>    返回值类型
      * @return 完整字段名
      */
-    public static <T extends IEntity<?>, R> String getFullFieldName(String prefix, SFunction<T, R> func) {
+    public static <T, R> String getFullFieldName(String prefix, SFunction<T, R> func) {
         String columnName = getColumnName(func);
         if (StringUtils.isNotBlank(prefix)) {
             return StringUtils.join(prefix, ".", columnName);

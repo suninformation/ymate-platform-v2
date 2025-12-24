@@ -316,12 +316,12 @@ public class Select extends Query<Select> {
      * 通过Lambda表达式选择字段
      *
      * @param column 方法引用
-     * @param <E>    实体类型
+     * @param <T>    类型
      * @param <R>    返回值类型
      * @return 当前Select实例
      * @since 2.1.4
      */
-    public <E extends IEntity<?>, R> Select field(SFunction<E, R> column) {
+    public <T, R> Select field(SFunction<T, R> column) {
         return field(column, true);
     }
 
@@ -330,12 +330,12 @@ public class Select extends Query<Select> {
      *
      * @param column         方法引用
      * @param wrapIdentifier 是否包装标识符
-     * @param <E>            实体类型
+     * @param <T>            类型
      * @param <R>            返回值类型
      * @return 当前Select实例
      * @since 2.1.4
      */
-    public <E extends IEntity<?>, R> Select field(SFunction<E, R> column, boolean wrapIdentifier) {
+    public <T, R> Select field(SFunction<T, R> column, boolean wrapIdentifier) {
         String columnName = getColumnName(column);
         field(columnName, wrapIdentifier);
         return this;
@@ -346,12 +346,12 @@ public class Select extends Query<Select> {
      *
      * @param prefix 前缀
      * @param column 方法引用
-     * @param <E>    实体类型
+     * @param <T>    类型
      * @param <R>    返回值类型
      * @return 当前Select实例
      * @since 2.1.4
      */
-    public <E extends IEntity<?>, R> Select field(String prefix, SFunction<E, R> column) {
+    public <T, R> Select field(String prefix, SFunction<T, R> column) {
         return field(prefix, column, true);
     }
 
@@ -361,12 +361,12 @@ public class Select extends Query<Select> {
      * @param prefix         前缀
      * @param column         方法引用
      * @param wrapIdentifier 是否包装标识符
-     * @param <E>            实体类型
+     * @param <T>            类型
      * @param <R>            返回值类型
      * @return 当前Select实例
      * @since 2.1.4
      */
-    public <E extends IEntity<?>, R> Select field(String prefix, SFunction<E, R> column, boolean wrapIdentifier) {
+    public <T, R> Select field(String prefix, SFunction<T, R> column, boolean wrapIdentifier) {
         String columnName = getColumnName(column);
         this.fields.add(prefix, wrapIdentifier ? wrapIdentifierField(columnName) : columnName);
         return this;
@@ -377,12 +377,12 @@ public class Select extends Query<Select> {
      *
      * @param column 方法引用
      * @param alias  别名
-     * @param <E>    实体类型
+     * @param <T>    类型
      * @param <R>    返回值类型
      * @return 当前Select实例
      * @since 2.1.4
      */
-    public <E extends IEntity<?>, R> Select field(SFunction<E, R> column, String alias) {
+    public <T, R> Select field(SFunction<T, R> column, String alias) {
         return field(column, alias, true);
     }
 
@@ -392,12 +392,12 @@ public class Select extends Query<Select> {
      * @param prefix 前缀
      * @param column 方法引用
      * @param alias  别名
-     * @param <E>    实体类型
+     * @param <T>    类型
      * @param <R>    返回值类型
      * @return 当前Select实例
      * @since 2.1.4
      */
-    public <E extends IEntity<?>, R> Select field(String prefix, SFunction<E, R> column, String alias) {
+    public <T, R> Select field(String prefix, SFunction<T, R> column, String alias) {
         return field(prefix, column, alias, true);
     }
 
@@ -407,12 +407,12 @@ public class Select extends Query<Select> {
      * @param column         方法引用
      * @param alias          别名
      * @param wrapIdentifier 是否包装标识符
-     * @param <E>            实体类型
+     * @param <T>            类型
      * @param <R>            返回值类型
      * @return 当前Select实例
      * @since 2.1.4
      */
-    public <E extends IEntity<?>, R> Select field(SFunction<E, R> column, String alias, boolean wrapIdentifier) {
+    public <T, R> Select field(SFunction<T, R> column, String alias, boolean wrapIdentifier) {
         String columnName = getColumnName(column);
         field(null, columnName, alias, wrapIdentifier);
         return this;
@@ -425,12 +425,12 @@ public class Select extends Query<Select> {
      * @param column         方法引用
      * @param alias          别名
      * @param wrapIdentifier 是否包装标识符
-     * @param <E>            实体类型
+     * @param <T>            类型
      * @param <R>            返回值类型
      * @return 当前Select实例
      * @since 2.1.4
      */
-    public <E extends IEntity<?>, R> Select field(String prefix, SFunction<E, R> column, String alias, boolean wrapIdentifier) {
+    public <T, R> Select field(String prefix, SFunction<T, R> column, String alias, boolean wrapIdentifier) {
         String columnName = getColumnName(column);
         field(prefix, columnName, alias, wrapIdentifier);
         return this;
@@ -441,12 +441,12 @@ public class Select extends Query<Select> {
      *
      * @param column 方法引用
      * @param alias  别名
-     * @param <E>    实体类型
+     * @param <T>    类型
      * @param <R>    返回值类型
      * @return 当前Select实例
      * @since 2.1.4
      */
-    public <E extends IEntity<?>, R> Select fieldAlias(SFunction<E, R> column, String alias) {
+    public <T, R> Select fieldAlias(SFunction<T, R> column, String alias) {
         return fieldAlias(column, alias, true);
     }
 
@@ -456,12 +456,12 @@ public class Select extends Query<Select> {
      * @param column         方法引用
      * @param alias          别名
      * @param wrapIdentifier 是否包装标识符
-     * @param <E>            实体类型
+     * @param <T>            类型
      * @param <R>            返回值类型
      * @return 当前Select实例
      * @since 2.1.4
      */
-    public <E extends IEntity<?>, R> Select fieldAlias(SFunction<E, R> column, String alias, boolean wrapIdentifier) {
+    public <T, R> Select fieldAlias(SFunction<T, R> column, String alias, boolean wrapIdentifier) {
         String columnName = getColumnName(column);
         this.fields.addAlias(wrapIdentifier ? wrapIdentifierField(columnName) : columnName, alias);
         return this;
@@ -591,8 +591,32 @@ public class Select extends Query<Select> {
      * @return 当前Select实例
      * @since 2.1.4
      */
-    public <T extends IEntity<?>, U extends IEntity<?>, R> Select innerJoin(Class<? extends IEntity<?>> entityClass, String alias, SFunction<T, R> columnOne, SFunction<U, R> columnTwo) {
-        return join(Join.inner(this, entityClass, alias).on(columnOne, columnTwo));
+    public <T, U, R> Select innerJoin(Class<? extends IEntity<?>> entityClass, String alias, SFunction<T, R> columnOne, SFunction<U, R> columnTwo) {
+        return innerJoin(entityClass, alias, columnOne, columnTwo, true);
+    }
+
+    /**
+     * 内连接（基于实体类，使用Lambda表达式指定连接条件）
+     *
+     * @param entityClass    实体类
+     * @param alias          别名
+     * @param columnOne      第一个连接字段的方法引用
+     * @param columnTwo      第二个连接字段的方法引用
+     * @param wrapIdentifier 是否包装标识符
+     * @param <T>            第一个实体类型
+     * @param <U>            第二个实体类型
+     * @param <R>            返回值类型
+     * @return 当前Select实例
+     * @since 2.1.4
+     */
+    public <T, U, R> Select innerJoin(Class<? extends IEntity<?>> entityClass, String alias, SFunction<T, R> columnOne, SFunction<U, R> columnTwo, boolean wrapIdentifier) {
+        Join join = Join.inner(this, entityClass, alias);
+        if (wrapIdentifier) {
+            join.onEqWrap(columnOne, columnTwo);
+        } else {
+            join.onEq(columnOne, columnTwo);
+        }
+        return join(join);
     }
 
     /**
@@ -602,14 +626,38 @@ public class Select extends Query<Select> {
      * @param alias       别名
      * @param columnOne   第一个连接字段的方法引用
      * @param columnTwo   第二个连接字段的方法引用
-     * @param <T>         第一个实体类型
-     * @param <U>         第二个实体类型
+     * @param <T>         第一个类型
+     * @param <U>         第二个类型
      * @param <R>         返回值类型
      * @return 当前Select实例
      * @since 2.1.4
      */
-    public <T extends IEntity<?>, U extends IEntity<?>, R> Select leftJoin(Class<? extends IEntity<?>> entityClass, String alias, SFunction<T, R> columnOne, SFunction<U, R> columnTwo) {
-        return join(Join.left(this, entityClass, alias).on(columnOne, columnTwo));
+    public <T, U, R> Select leftJoin(Class<? extends IEntity<?>> entityClass, String alias, SFunction<T, R> columnOne, SFunction<U, R> columnTwo) {
+        return leftJoin(entityClass, alias, columnOne, columnTwo, true);
+    }
+
+    /**
+     * 左连接（基于实体类，使用Lambda表达式指定连接条件）
+     *
+     * @param entityClass    实体类
+     * @param alias          别名
+     * @param columnOne      第一个连接字段的方法引用
+     * @param columnTwo      第二个连接字段的方法引用
+     * @param wrapIdentifier 是否包装标识符
+     * @param <T>            第一个类型
+     * @param <U>            第二个类型
+     * @param <R>            返回值类型
+     * @return 当前Select实例
+     * @since 2.1.4
+     */
+    public <T, U, R> Select leftJoin(Class<? extends IEntity<?>> entityClass, String alias, SFunction<T, R> columnOne, SFunction<U, R> columnTwo, boolean wrapIdentifier) {
+        Join join = Join.left(this, entityClass, alias);
+        if (wrapIdentifier) {
+            join.onEqWrap(columnOne, columnTwo);
+        } else {
+            join.onEq(columnOne, columnTwo);
+        }
+        return join(join);
     }
 
     /**
@@ -619,14 +667,38 @@ public class Select extends Query<Select> {
      * @param alias       别名
      * @param columnOne   第一个连接字段的方法引用
      * @param columnTwo   第二个连接字段的方法引用
-     * @param <T>         第一个实体类型
-     * @param <U>         第二个实体类型
+     * @param <T>         第一个类型
+     * @param <U>         第二个类型
      * @param <R>         返回值类型
      * @return 当前Select实例
      * @since 2.1.4
      */
-    public <T extends IEntity<?>, U extends IEntity<?>, R> Select rightJoin(Class<? extends IEntity<?>> entityClass, String alias, SFunction<T, R> columnOne, SFunction<U, R> columnTwo) {
-        return join(Join.right(this, entityClass, alias).on(columnOne, columnTwo));
+    public <T, U, R> Select rightJoin(Class<? extends IEntity<?>> entityClass, String alias, SFunction<T, R> columnOne, SFunction<U, R> columnTwo) {
+        return rightJoin(entityClass, alias, columnOne, columnTwo, true);
+    }
+
+    /**
+     * 右连接（基于实体类，使用Lambda表达式指定连接条件）
+     *
+     * @param entityClass    实体类
+     * @param alias          别名
+     * @param columnOne      第一个连接字段的方法引用
+     * @param columnTwo      第二个连接字段的方法引用
+     * @param wrapIdentifier 是否包装标识符
+     * @param <T>            第一个类型
+     * @param <U>            第二个类型
+     * @param <R>            返回值类型
+     * @return 当前Select实例
+     * @since 2.1.4
+     */
+    public <T, U, R> Select rightJoin(Class<? extends IEntity<?>> entityClass, String alias, SFunction<T, R> columnOne, SFunction<U, R> columnTwo, boolean wrapIdentifier) {
+        Join join = Join.right(this, entityClass, alias);
+        if (wrapIdentifier) {
+            join.onEqWrap(columnOne, columnTwo);
+        } else {
+            join.onEq(columnOne, columnTwo);
+        }
+        return join(join);
     }
 
     /**
@@ -636,14 +708,38 @@ public class Select extends Query<Select> {
      * @param alias       别名
      * @param columnOne   第一个连接字段的方法引用
      * @param columnTwo   第二个连接字段的方法引用
-     * @param <T>         第一个实体类型
-     * @param <U>         第二个实体类型
+     * @param <T>         第一个类型
+     * @param <U>         第二个类型
      * @param <R>         返回值类型
      * @return 当前Select实例
      * @since 2.1.4
      */
-    public <T extends IEntity<?>, U extends IEntity<?>, R> Select crossJoin(Class<? extends IEntity<?>> entityClass, String alias, SFunction<T, R> columnOne, SFunction<U, R> columnTwo) {
-        return join(Join.cross(this, entityClass, alias).on(columnOne, columnTwo));
+    public <T, U, R> Select crossJoin(Class<? extends IEntity<?>> entityClass, String alias, SFunction<T, R> columnOne, SFunction<U, R> columnTwo) {
+        return crossJoin(entityClass, alias, columnOne, columnTwo, true);
+    }
+
+    /**
+     * 交叉连接（基于实体类，使用Lambda表达式指定连接条件）
+     *
+     * @param entityClass    实体类
+     * @param alias          别名
+     * @param columnOne      第一个连接字段的方法引用
+     * @param columnTwo      第二个连接字段的方法引用
+     * @param wrapIdentifier 是否包装标识符
+     * @param <T>            第一个类型
+     * @param <U>            第二个类型
+     * @param <R>            返回值类型
+     * @return 当前Select实例
+     * @since 2.1.4
+     */
+    public <T, U, R> Select crossJoin(Class<? extends IEntity<?>> entityClass, String alias, SFunction<T, R> columnOne, SFunction<U, R> columnTwo, boolean wrapIdentifier) {
+        Join join = Join.cross(this, entityClass, alias);
+        if (wrapIdentifier) {
+            join.onEqWrap(columnOne, columnTwo);
+        } else {
+            join.onEq(columnOne, columnTwo);
+        }
+        return join(join);
     }
 
     /**
@@ -661,8 +757,34 @@ public class Select extends Query<Select> {
      * @return 当前Select实例
      * @since 2.1.4
      */
-    public <T extends IEntity<?>, U extends IEntity<?>, R> Select innerJoin(Class<? extends IEntity<?>> entityClass, String alias, String prefixOne, SFunction<T, R> columnOne, String prefixTwo, SFunction<U, R> columnTwo) {
-        return join(Join.inner(this, entityClass, alias).on(prefixOne, columnOne, prefixTwo, columnTwo));
+    public <T, U, R> Select innerJoin(Class<? extends IEntity<?>> entityClass, String alias, String prefixOne, SFunction<T, R> columnOne, String prefixTwo, SFunction<U, R> columnTwo) {
+        return innerJoin(entityClass, alias, prefixOne, columnOne, prefixTwo, columnTwo, true);
+    }
+
+    /**
+     * 内连接（基于实体类，使用带前缀的Lambda表达式指定连接条件）
+     *
+     * @param entityClass    实体类
+     * @param alias          别名
+     * @param prefixOne      第一个表前缀
+     * @param columnOne      第一个连接字段的方法引用
+     * @param prefixTwo      第二个表前缀
+     * @param columnTwo      第二个连接字段的方法引用
+     * @param wrapIdentifier 是否包装标识符
+     * @param <T>            第一个实体类型
+     * @param <U>            第二个实体类型
+     * @param <R>            返回值类型
+     * @return 当前Select实例
+     * @since 2.1.4
+     */
+    public <T, U, R> Select innerJoin(Class<? extends IEntity<?>> entityClass, String alias, String prefixOne, SFunction<T, R> columnOne, String prefixTwo, SFunction<U, R> columnTwo, boolean wrapIdentifier) {
+        Join join = Join.inner(this, entityClass, alias);
+        if (wrapIdentifier) {
+            join.onEqWrap(prefixOne, columnOne, prefixTwo, columnTwo);
+        } else {
+            join.onEq(prefixOne, columnOne, prefixTwo, columnTwo);
+        }
+        return join(join);
     }
 
     /**
@@ -680,8 +802,34 @@ public class Select extends Query<Select> {
      * @return 当前Select实例
      * @since 2.1.4
      */
-    public <T extends IEntity<?>, U extends IEntity<?>, R> Select leftJoin(Class<? extends IEntity<?>> entityClass, String alias, String prefixOne, SFunction<T, R> columnOne, String prefixTwo, SFunction<U, R> columnTwo) {
-        return join(Join.left(this, entityClass, alias).on(prefixOne, columnOne, prefixTwo, columnTwo));
+    public <T, U, R> Select leftJoin(Class<? extends IEntity<?>> entityClass, String alias, String prefixOne, SFunction<T, R> columnOne, String prefixTwo, SFunction<U, R> columnTwo) {
+        return leftJoin(entityClass, alias, prefixOne, columnOne, prefixTwo, columnTwo, true);
+    }
+
+    /**
+     * 左连接（基于实体类，使用带前缀的Lambda表达式指定连接条件）
+     *
+     * @param entityClass    实体类
+     * @param alias          别名
+     * @param prefixOne      第一个表前缀
+     * @param columnOne      第一个连接字段的方法引用
+     * @param prefixTwo      第二个表前缀
+     * @param columnTwo      第二个连接字段的方法引用
+     * @param wrapIdentifier 是否包装标识符
+     * @param <T>            第一个实体类型
+     * @param <U>            第二个实体类型
+     * @param <R>            返回值类型
+     * @return 当前Select实例
+     * @since 2.1.4
+     */
+    public <T, U, R> Select leftJoin(Class<? extends IEntity<?>> entityClass, String alias, String prefixOne, SFunction<T, R> columnOne, String prefixTwo, SFunction<U, R> columnTwo, boolean wrapIdentifier) {
+        Join join = Join.left(this, entityClass, alias);
+        if (wrapIdentifier) {
+            join.onEqWrap(prefixOne, columnOne, prefixTwo, columnTwo);
+        } else {
+            join.onEq(prefixOne, columnOne, prefixTwo, columnTwo);
+        }
+        return join(join);
     }
 
     /**
@@ -699,8 +847,34 @@ public class Select extends Query<Select> {
      * @return 当前Select实例
      * @since 2.1.4
      */
-    public <T extends IEntity<?>, U extends IEntity<?>, R> Select rightJoin(Class<? extends IEntity<?>> entityClass, String alias, String prefixOne, SFunction<T, R> columnOne, String prefixTwo, SFunction<U, R> columnTwo) {
-        return join(Join.right(this, entityClass, alias).on(prefixOne, columnOne, prefixTwo, columnTwo));
+    public <T, U, R> Select rightJoin(Class<? extends IEntity<?>> entityClass, String alias, String prefixOne, SFunction<T, R> columnOne, String prefixTwo, SFunction<U, R> columnTwo) {
+        return rightJoin(entityClass, alias, prefixOne, columnOne, prefixTwo, columnTwo, true);
+    }
+
+    /**
+     * 右连接（基于实体类，使用带前缀的Lambda表达式指定连接条件）
+     *
+     * @param entityClass    实体类
+     * @param alias          别名
+     * @param prefixOne      第一个表前缀
+     * @param columnOne      第一个连接字段的方法引用
+     * @param prefixTwo      第二个表前缀
+     * @param columnTwo      第二个连接字段的方法引用
+     * @param wrapIdentifier 是否包装标识符
+     * @param <T>            第一个实体类型
+     * @param <U>            第二个实体类型
+     * @param <R>            返回值类型
+     * @return 当前Select实例
+     * @since 2.1.4
+     */
+    public <T, U, R> Select rightJoin(Class<? extends IEntity<?>> entityClass, String alias, String prefixOne, SFunction<T, R> columnOne, String prefixTwo, SFunction<U, R> columnTwo, boolean wrapIdentifier) {
+        Join join = Join.right(this, entityClass, alias);
+        if (wrapIdentifier) {
+            join.onEqWrap(prefixOne, columnOne, prefixTwo, columnTwo);
+        } else {
+            join.onEq(prefixOne, columnOne, prefixTwo, columnTwo);
+        }
+        return join(join);
     }
 
     /**
@@ -718,8 +892,34 @@ public class Select extends Query<Select> {
      * @return 当前Select实例
      * @since 2.1.4
      */
-    public <T extends IEntity<?>, U extends IEntity<?>, R> Select crossJoin(Class<? extends IEntity<?>> entityClass, String alias, String prefixOne, SFunction<T, R> columnOne, String prefixTwo, SFunction<U, R> columnTwo) {
-        return join(Join.cross(this, entityClass, alias).on(prefixOne, columnOne, prefixTwo, columnTwo));
+    public <T, U, R> Select crossJoin(Class<? extends IEntity<?>> entityClass, String alias, String prefixOne, SFunction<T, R> columnOne, String prefixTwo, SFunction<U, R> columnTwo) {
+        return crossJoin(entityClass, alias, prefixOne, columnOne, prefixTwo, columnTwo, true);
+    }
+
+    /**
+     * 交叉连接（基于实体类，使用带前缀的Lambda表达式指定连接条件）
+     *
+     * @param entityClass    实体类
+     * @param alias          别名
+     * @param prefixOne      第一个表前缀
+     * @param columnOne      第一个连接字段的方法引用
+     * @param prefixTwo      第二个表前缀
+     * @param columnTwo      第二个连接字段的方法引用
+     * @param wrapIdentifier 是否包装标识符
+     * @param <T>            第一个实体类型
+     * @param <U>            第二个实体类型
+     * @param <R>            返回值类型
+     * @return 当前Select实例
+     * @since 2.1.4
+     */
+    public <T, U, R> Select crossJoin(Class<? extends IEntity<?>> entityClass, String alias, String prefixOne, SFunction<T, R> columnOne, String prefixTwo, SFunction<U, R> columnTwo, boolean wrapIdentifier) {
+        Join join = Join.cross(this, entityClass, alias);
+        if (wrapIdentifier) {
+            join.onEqWrap(prefixOne, columnOne, prefixTwo, columnTwo);
+        } else {
+            join.onEq(prefixOne, columnOne, prefixTwo, columnTwo);
+        }
+        return join(join);
     }
 
     //
@@ -897,7 +1097,7 @@ public class Select extends Query<Select> {
      * @return 当前Select实例
      * @since 2.1.4
      */
-    public Select where(LambdaUtils.ConditionAppender appender) {
+    public Select where(IConditionAppender appender) {
         Cond cond = Cond.create(this);
         appender.append(cond);
         return where(cond);
@@ -1008,13 +1208,27 @@ public class Select extends Query<Select> {
      * 通过Lambda表达式创建升序排序
      *
      * @param column 方法引用
-     * @param <E>    实体类型
+     * @param <T>    实体类型
      * @param <R>    返回值类型
      * @return 当前Select实例
      * @since 2.1.4
      */
-    public <E extends IEntity<?>, R> Select orderByAsc(SFunction<E, R> column) {
-        where().orderByAsc(column);
+    public <T, R> Select orderByAsc(SFunction<T, R> column) {
+        return orderByAsc(column, true);
+    }
+
+    /**
+     * 通过Lambda表达式创建升序排序（带标识符包装控制）
+     *
+     * @param column         方法引用
+     * @param wrapIdentifier 是否包装标识符
+     * @param <T>            实体类型
+     * @param <R>            返回值类型
+     * @return 当前Select实例
+     * @since 2.1.4
+     */
+    public <T, R> Select orderByAsc(SFunction<T, R> column, boolean wrapIdentifier) {
+        where().orderByAsc(column, wrapIdentifier);
         return this;
     }
 
@@ -1023,13 +1237,28 @@ public class Select extends Query<Select> {
      *
      * @param prefix 前缀
      * @param column 方法引用
-     * @param <E>    实体类型
+     * @param <T>    类型
      * @param <R>    返回值类型
      * @return 当前Select实例
      * @since 2.1.4
      */
-    public <E extends IEntity<?>, R> Select orderByAsc(String prefix, SFunction<E, R> column) {
-        where().orderByAsc(prefix, column);
+    public <T, R> Select orderByAsc(String prefix, SFunction<T, R> column) {
+        return orderByAsc(prefix, column, true);
+    }
+
+    /**
+     * 通过Lambda表达式创建升序排序（带前缀和标识符包装控制）
+     *
+     * @param prefix         前缀
+     * @param column         方法引用
+     * @param wrapIdentifier 是否包装标识符
+     * @param <T>            类型
+     * @param <R>            返回值类型
+     * @return 当前Select实例
+     * @since 2.1.4
+     */
+    public <T, R> Select orderByAsc(String prefix, SFunction<T, R> column, boolean wrapIdentifier) {
+        where().orderByAsc(prefix, column, wrapIdentifier);
         return this;
     }
 
@@ -1037,13 +1266,27 @@ public class Select extends Query<Select> {
      * 通过Lambda表达式创建降序排序
      *
      * @param column 方法引用
-     * @param <E>    实体类型
+     * @param <T>    类型
      * @param <R>    返回值类型
      * @return 当前Select实例
      * @since 2.1.4
      */
-    public <E extends IEntity<?>, R> Select orderByDesc(SFunction<E, R> column) {
-        where().orderByDesc(column);
+    public <T, R> Select orderByDesc(SFunction<T, R> column) {
+        return orderByDesc(column, true);
+    }
+
+    /**
+     * 通过Lambda表达式创建降序排序（带标识符包装控制）
+     *
+     * @param column         方法引用
+     * @param wrapIdentifier 是否包装标识符
+     * @param <T>            类型
+     * @param <R>            返回值类型
+     * @return 当前Select实例
+     * @since 2.1.4
+     */
+    public <T, R> Select orderByDesc(SFunction<T, R> column, boolean wrapIdentifier) {
+        where().orderByDesc(column, wrapIdentifier);
         return this;
     }
 
@@ -1052,13 +1295,28 @@ public class Select extends Query<Select> {
      *
      * @param prefix 前缀
      * @param column 方法引用
-     * @param <E>    实体类型
+     * @param <T>    类型
      * @param <R>    返回值类型
      * @return 当前Select实例
      * @since 2.1.4
      */
-    public <E extends IEntity<?>, R> Select orderByDesc(String prefix, SFunction<E, R> column) {
-        where().orderByDesc(prefix, column);
+    public <T, R> Select orderByDesc(String prefix, SFunction<T, R> column) {
+        return orderByDesc(prefix, column, true);
+    }
+
+    /**
+     * 通过Lambda表达式创建降序排序（带前缀和标识符包装控制）
+     *
+     * @param prefix         前缀
+     * @param column         方法引用
+     * @param wrapIdentifier 是否包装标识符
+     * @param <T>            类型
+     * @param <R>            返回值类型
+     * @return 当前Select实例
+     * @since 2.1.4
+     */
+    public <T, R> Select orderByDesc(String prefix, SFunction<T, R> column, boolean wrapIdentifier) {
+        where().orderByDesc(prefix, column, wrapIdentifier);
         return this;
     }
 
@@ -1182,28 +1440,42 @@ public class Select extends Query<Select> {
      * 通过Lambda表达式创建分组
      *
      * @param column 方法引用
-     * @param <E>    实体类型
+     * @param <T>    实体类型
      * @param <R>    返回值类型
      * @return 当前Select实例
      * @since 2.1.4
      */
-    public <E extends IEntity<?>, R> Select groupBy(SFunction<E, R> column) {
-        where().groupBy(column);
-        return this;
+    public <T, R> Select groupBy(SFunction<T, R> column) {
+        return groupBy(column, false, true);
     }
 
     /**
-     * 通过Lambda表达式创建分组（带排序方向）
+     * 通过Lambda表达式创建分组（带标识符包装控制）
      *
-     * @param column 方法引用
-     * @param desc   是否降序
-     * @param <E>    实体类型
-     * @param <R>    返回值类型
+     * @param column         方法引用
+     * @param wrapIdentifier 是否包装标识符
+     * @param <T>            实体类型
+     * @param <R>            返回值类型
      * @return 当前Select实例
      * @since 2.1.4
      */
-    public <E extends IEntity<?>, R> Select groupBy(SFunction<E, R> column, boolean desc) {
-        where().groupBy(column, desc);
+    public <T, R> Select groupBy(SFunction<T, R> column, boolean wrapIdentifier) {
+        return groupBy(column, false, wrapIdentifier);
+    }
+
+    /**
+     * 通过Lambda表达式创建分组（带排序方向和标识符包装控制）
+     *
+     * @param column         方法引用
+     * @param desc           是否降序
+     * @param wrapIdentifier 是否包装标识符
+     * @param <T>            类型
+     * @param <R>            返回值类型
+     * @return 当前Select实例
+     * @since 2.1.4
+     */
+    public <T, R> Select groupBy(SFunction<T, R> column, boolean desc, boolean wrapIdentifier) {
+        where().groupBy(column, desc, wrapIdentifier);
         return this;
     }
 
@@ -1212,29 +1484,44 @@ public class Select extends Query<Select> {
      *
      * @param prefix 前缀
      * @param column 方法引用
-     * @param <E>    实体类型
+     * @param <T>    类型
      * @param <R>    返回值类型
      * @return 当前Select实例
      * @since 2.1.4
      */
-    public <E extends IEntity<?>, R> Select groupBy(String prefix, SFunction<E, R> column) {
-        where().groupBy(prefix, column);
-        return this;
+    public <T, R> Select groupBy(String prefix, SFunction<T, R> column) {
+        return groupBy(prefix, column, false, true);
     }
 
     /**
-     * 通过Lambda表达式创建分组（带前缀和排序方向）
+     * 通过Lambda表达式创建分组（带前缀和标识符包装控制）
      *
-     * @param prefix 前缀
-     * @param column 方法引用
-     * @param desc   是否降序
-     * @param <E>    实体类型
-     * @param <R>    返回值类型
+     * @param prefix         前缀
+     * @param column         方法引用
+     * @param wrapIdentifier 是否包装标识符
+     * @param <T>            类型
+     * @param <R>            返回值类型
      * @return 当前Select实例
      * @since 2.1.4
      */
-    public <E extends IEntity<?>, R> Select groupBy(String prefix, SFunction<E, R> column, boolean desc) {
-        where().groupBy(prefix, column, desc);
+    public <T, R> Select groupBy(String prefix, SFunction<T, R> column, boolean wrapIdentifier) {
+        return groupBy(prefix, column, false, wrapIdentifier);
+    }
+
+    /**
+     * 通过Lambda表达式创建分组（带前缀、排序方向和标识符包装控制）
+     *
+     * @param prefix         前缀
+     * @param column         方法引用
+     * @param desc           是否降序
+     * @param wrapIdentifier 是否包装标识符
+     * @param <T>            类型
+     * @param <R>            返回值类型
+     * @return 当前Select实例
+     * @since 2.1.4
+     */
+    public <T, R> Select groupBy(String prefix, SFunction<T, R> column, boolean desc, boolean wrapIdentifier) {
+        where().groupBy(prefix, column, desc, wrapIdentifier);
         return this;
     }
 
@@ -1244,11 +1531,22 @@ public class Select extends Query<Select> {
     }
 
     /**
+     * 通过条件构建器创建更新条件
+     *
+     * @param appender 条件构建器
+     * @return 当前Update实例
+     * @since 2.1.4
+     */
+    public Select having(IConditionAppender appender) {
+        where().having(appender);
+        return this;
+    }
+
+    /**
      * 设置Select语句的别名
      *
      * @param alias 别名
      * @return 返回当前Select对象
-     * @since 2.1.4
      */
     public Select alias(String alias) {
         this.alias = alias;
