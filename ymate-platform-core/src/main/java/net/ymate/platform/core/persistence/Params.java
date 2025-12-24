@@ -18,6 +18,7 @@ package net.ymate.platform.core.persistence;
 import net.ymate.platform.commons.util.ClassUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.builder.ToStringBuilder;
 
 import java.io.Serializable;
 import java.util.*;
@@ -105,5 +106,15 @@ public final class Params implements Serializable {
 
     public Object[] toArray() {
         return params.toArray(new Object[0]);
+    }
+
+    /**
+     * @since 2.1.4
+     */
+    @Override
+    public String toString() {
+        return new ToStringBuilder(this)
+                .append("params", params)
+                .toString();
     }
 }

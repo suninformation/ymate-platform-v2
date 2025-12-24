@@ -16,6 +16,7 @@
 package net.ymate.platform.core.persistence.impl;
 
 import net.ymate.platform.core.persistence.IResultSet;
+import org.apache.commons.lang3.builder.ToStringBuilder;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -117,5 +118,19 @@ public class DefaultResultSet<T> implements IResultSet<T> {
     @Override
     public List<T> getResultData() {
         return Collections.unmodifiableList(resultData);
+    }
+
+    /**
+     * @since 2.1.4
+     */
+    @Override
+    public String toString() {
+        return new ToStringBuilder(this)
+                .append("pageNumber", pageNumber)
+                .append("pageSize", pageSize)
+                .append("pageCount", pageCount)
+                .append("recordCount", recordCount)
+                .append("resultData", resultData)
+                .toString();
     }
 }

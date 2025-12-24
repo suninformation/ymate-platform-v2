@@ -16,6 +16,7 @@
 package net.ymate.platform.core.persistence;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.builder.ToStringBuilder;
 
 import java.io.Serializable;
 import java.util.*;
@@ -198,5 +199,16 @@ public final class Fields implements Serializable {
 
     public String[] toArray() {
         return fields.toArray(new String[0]);
+    }
+
+    /**
+     * @since 2.1.4
+     */
+    @Override
+    public String toString() {
+        return new ToStringBuilder(this)
+                .append("fields", fields)
+                .append("excluded", excluded)
+                .toString();
     }
 }

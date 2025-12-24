@@ -15,6 +15,8 @@
  */
 package net.ymate.platform.core.persistence;
 
+import org.apache.commons.lang3.builder.ToStringBuilder;
+
 /**
  * 分页参数对象
  *
@@ -123,5 +125,17 @@ public final class Page {
     public Page count(boolean count) {
         this.count = count;
         return this;
+    }
+
+    /**
+     * @since 2.1.4
+     */
+    @Override
+    public String toString() {
+        return new ToStringBuilder(this)
+                .append("pageSize", pageSize)
+                .append("page", page)
+                .append("count", count)
+                .toString();
     }
 }
