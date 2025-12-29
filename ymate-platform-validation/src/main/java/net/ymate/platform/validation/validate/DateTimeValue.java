@@ -93,13 +93,16 @@ public class DateTimeValue implements Serializable {
 
     public static DateTimeValue parse(String dateTimeStr, String pattern, String separator, boolean single) {
         DateTimeValue dateTimeValue = null;
-        if (single) {
-            Date date = parseSingleDate(dateTimeStr, pattern);
-            if (date != null) {
-                dateTimeValue = new DateTimeValue(date);
+        dateTimeStr = StringUtils.trimToNull(dateTimeStr);
+        if (dateTimeStr != null) {
+            if (single) {
+                Date date = parseSingleDate(dateTimeStr, pattern);
+                if (date != null) {
+                    dateTimeValue = new DateTimeValue(date);
+                }
+            } else {
+                dateTimeValue = parseDateRange(dateTimeStr, pattern, separator);
             }
-        } else {
-            dateTimeValue = parseDateRange(dateTimeStr, pattern, separator);
         }
         return dateTimeValue;
     }
@@ -113,6 +116,9 @@ public class DateTimeValue implements Serializable {
      * @since 2.1.4
      */
     private static Date parseSingleDate(String dateTimeStr, String pattern) {
+        if (dateTimeStr == null) {
+            return null;
+        }
         if (Strings.CI.equals(dateTimeStr, TODAY)) {
             return DateTimeHelper.now().toDayStart().time();
         } else if (Strings.CI.equals(dateTimeStr, YESTERDAY)) {
@@ -138,29 +144,31 @@ public class DateTimeValue implements Serializable {
      * @since 2.1.4
      */
     private static DateTimeValue parseDateRange(String dateTimeStr, String pattern, String separator) {
-        if (Strings.CI.equals(dateTimeStr, TODAY)) {
-            return today();
-        } else if (Strings.CI.equals(dateTimeStr, YESTERDAY)) {
-            return yesterday();
-        } else if (Strings.CI.equals(dateTimeStr, WEEK)) {
-            return week();
-        } else if (Strings.CI.equals(dateTimeStr, MONTH)) {
-            return month();
-        } else if (Strings.CI.equals(dateTimeStr, YEAR)) {
-            return year();
-        } else {
-            String[] dateTimeArr = StringUtils.split(dateTimeStr, StringUtils.defaultIfBlank(separator, "/"));
-            if (ArrayUtils.isNotEmpty(dateTimeArr) && dateTimeArr.length <= DATETIME_PART_MAX_LENGTH) {
-                Date dateTimeBegin = DateTimeValidator.parseDate(dateTimeArr[0], pattern);
-                if (dateTimeBegin != null) {
-                    Date dateTimeEnd = null;
-                    if (dateTimeArr.length > 1 && !Strings.CI.equals(StringUtils.trim(dateTimeArr[0]), StringUtils.trim(dateTimeArr[1]))) {
-                        dateTimeEnd = DateTimeValidator.parseDate(dateTimeArr[1], pattern);
+        if (dateTimeStr != null) {
+            if (Strings.CI.equals(dateTimeStr, TODAY)) {
+                return today();
+            } else if (Strings.CI.equals(dateTimeStr, YESTERDAY)) {
+                return yesterday();
+            } else if (Strings.CI.equals(dateTimeStr, WEEK)) {
+                return week();
+            } else if (Strings.CI.equals(dateTimeStr, MONTH)) {
+                return month();
+            } else if (Strings.CI.equals(dateTimeStr, YEAR)) {
+                return year();
+            } else {
+                String[] dateTimeArr = StringUtils.split(dateTimeStr, StringUtils.defaultIfBlank(separator, "/"));
+                if (ArrayUtils.isNotEmpty(dateTimeArr) && dateTimeArr.length <= DATETIME_PART_MAX_LENGTH) {
+                    Date dateTimeBegin = DateTimeValidator.parseDate(StringUtils.trim(dateTimeArr[0]), pattern);
+                    if (dateTimeBegin != null) {
+                        Date dateTimeEnd = null;
+                        if (dateTimeArr.length > 1 && !Strings.CI.equals(StringUtils.trim(dateTimeArr[0]), StringUtils.trim(dateTimeArr[1]))) {
+                            dateTimeEnd = DateTimeValidator.parseDate(StringUtils.trim(dateTimeArr[1]), pattern);
+                        }
+                        if (dateTimeEnd == null) {
+                            dateTimeEnd = DateTimeHelper.bind(dateTimeBegin).toDayEnd().time();
+                        }
+                        return new DateTimeValue(dateTimeBegin, dateTimeEnd);
                     }
-                    if (dateTimeEnd == null) {
-                        dateTimeEnd = DateTimeHelper.bind(dateTimeBegin).toDayEnd().time();
-                    }
-                    return new DateTimeValue(dateTimeBegin, dateTimeEnd);
                 }
             }
         }
