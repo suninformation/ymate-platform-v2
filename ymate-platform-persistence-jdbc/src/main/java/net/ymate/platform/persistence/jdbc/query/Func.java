@@ -1363,6 +1363,166 @@ public interface Func {
         default IFunction UPPER(IFunction str) {
             return UPPER(str.build()).param(str.params());
         }
+
+        // ------ 返回字符串str中匹配正则表达式pattern的子串的起始位置
+
+        default IFunction REGEXP_INSTR(String str, String pattern) {
+            return create("REGEXP_INSTR").fieldWS(str, pattern);
+        }
+
+        default <T, R> IFunction REGEXP_INSTR(SFunction<T, R> column, String pattern) {
+            return REGEXP_INSTR(getColumnName(column), pattern);
+        }
+
+        default <T, R> IFunction REGEXP_INSTR(String prefix, SFunction<T, R> column, String pattern) {
+            return REGEXP_INSTR(getFullFieldName(prefix, column), pattern);
+        }
+
+        default IFunction REGEXP_INSTR(IFunction str, IFunction pattern) {
+            return REGEXP_INSTR(str.build(), pattern.build()).param(str.params()).param(pattern.params());
+        }
+
+        default IFunction REGEXP_INSTR(String str, String pattern, Number pos) {
+            return create("REGEXP_INSTR").fieldWS(str, pattern, pos);
+        }
+
+        default IFunction REGEXP_INSTR(IFunction str, IFunction pattern, Number pos) {
+            return REGEXP_INSTR(str.build(), pattern.build(), pos).param(str.params()).param(pattern.params());
+        }
+
+        default IFunction REGEXP_INSTR(String str, String pattern, Number pos, Number occurrence) {
+            return create("REGEXP_INSTR").fieldWS(str, pattern, pos, occurrence);
+        }
+
+        default IFunction REGEXP_INSTR(IFunction str, IFunction pattern, Number pos, Number occurrence) {
+            return REGEXP_INSTR(str.build(), pattern.build(), pos, occurrence).param(str.params()).param(pattern.params());
+        }
+
+        default IFunction REGEXP_INSTR(String str, String pattern, Number pos, Number occurrence, String return_end_opt) {
+            return create("REGEXP_INSTR").fieldWS(str, pattern, pos, occurrence, return_end_opt);
+        }
+
+        default IFunction REGEXP_INSTR(IFunction str, IFunction pattern, Number pos, Number occurrence, String return_end_opt) {
+            return REGEXP_INSTR(str.build(), pattern.build(), pos, occurrence, return_end_opt).param(str.params()).param(pattern.params());
+        }
+
+        default IFunction REGEXP_INSTR(String str, String pattern, Number pos, Number occurrence, String return_end_opt, String match_type) {
+            return create("REGEXP_INSTR").fieldWS(str, pattern, pos, occurrence, return_end_opt, match_type);
+        }
+
+        default IFunction REGEXP_INSTR(IFunction str, IFunction pattern, Number pos, Number occurrence, String return_end_opt, String match_type) {
+            return REGEXP_INSTR(str.build(), pattern.build(), pos, occurrence, return_end_opt, match_type).param(str.params()).param(pattern.params());
+        }
+
+        // ------ 检查字符串str是否匹配正则表达式pattern
+
+        default IFunction REGEXP_LIKE(String str, String pattern) {
+            return create("REGEXP_LIKE").fieldWS(str, pattern);
+        }
+
+        default <T, R> IFunction REGEXP_LIKE(SFunction<T, R> column, String pattern) {
+            return REGEXP_LIKE(getColumnName(column), pattern);
+        }
+
+        default <T, R> IFunction REGEXP_LIKE(String prefix, SFunction<T, R> column, String pattern) {
+            return REGEXP_LIKE(getFullFieldName(prefix, column), pattern);
+        }
+
+        default IFunction REGEXP_LIKE(IFunction str, IFunction pattern) {
+            return REGEXP_LIKE(str.build(), pattern.build()).param(str.params()).param(pattern.params());
+        }
+
+        default IFunction REGEXP_LIKE(String str, String pattern, String match_type) {
+            return create("REGEXP_LIKE").fieldWS(str, pattern, match_type);
+        }
+
+        default IFunction REGEXP_LIKE(IFunction str, IFunction pattern, String match_type) {
+            return REGEXP_LIKE(str.build(), pattern.build(), match_type).param(str.params()).param(pattern.params());
+        }
+
+        // ------ 替换字符串str中匹配正则表达式pattern的子串
+
+        default IFunction REGEXP_REPLACE(String str, String pattern, String replacement) {
+            return create("REGEXP_REPLACE").fieldWS(str, pattern, replacement);
+        }
+
+        default <T, R> IFunction REGEXP_REPLACE(SFunction<T, R> column, String pattern, String replacement) {
+            return REGEXP_REPLACE(getColumnName(column), pattern, replacement);
+        }
+
+        default <T, R> IFunction REGEXP_REPLACE(String prefix, SFunction<T, R> column, String pattern, String replacement) {
+            return REGEXP_REPLACE(getFullFieldName(prefix, column), pattern, replacement);
+        }
+
+        default IFunction REGEXP_REPLACE(IFunction str, IFunction pattern, IFunction replacement) {
+            return REGEXP_REPLACE(str.build(), pattern.build(), replacement.build()).param(str.params()).param(pattern.params()).param(replacement.params());
+        }
+
+        default IFunction REGEXP_REPLACE(String str, String pattern, String replacement, Number pos) {
+            return create("REGEXP_REPLACE").fieldWS(str, pattern, replacement, pos);
+        }
+
+        default IFunction REGEXP_REPLACE(IFunction str, IFunction pattern, IFunction replacement, Number pos) {
+            return REGEXP_REPLACE(str.build(), pattern.build(), replacement.build(), pos).param(str.params()).param(pattern.params()).param(replacement.params());
+        }
+
+        default IFunction REGEXP_REPLACE(String str, String pattern, String replacement, Number pos, Number occurrence) {
+            return create("REGEXP_REPLACE").fieldWS(str, pattern, replacement, pos, occurrence);
+        }
+
+        default IFunction REGEXP_REPLACE(IFunction str, IFunction pattern, IFunction replacement, Number pos, Number occurrence) {
+            return REGEXP_REPLACE(str.build(), pattern.build(), replacement.build(), pos, occurrence).param(str.params()).param(pattern.params()).param(replacement.params());
+        }
+
+        default IFunction REGEXP_REPLACE(String str, String pattern, String replacement, Number pos, Number occurrence, String match_type) {
+            return create("REGEXP_REPLACE").fieldWS(str, pattern, replacement, pos, occurrence, match_type);
+        }
+
+        default IFunction REGEXP_REPLACE(IFunction str, IFunction pattern, IFunction replacement, Number pos, Number occurrence, String match_type) {
+            return REGEXP_REPLACE(str.build(), pattern.build(), replacement.build(), pos, occurrence, match_type).param(str.params()).param(pattern.params()).param(replacement.params());
+        }
+
+        // ------ 返回字符串str中匹配正则表达式pattern的子串
+
+        default IFunction REGEXP_SUBSTR(String str, String pattern) {
+            return create("REGEXP_SUBSTR").fieldWS(str, pattern);
+        }
+
+        default <T, R> IFunction REGEXP_SUBSTR(SFunction<T, R> column, String pattern) {
+            return REGEXP_SUBSTR(getColumnName(column), pattern);
+        }
+
+        default <T, R> IFunction REGEXP_SUBSTR(String prefix, SFunction<T, R> column, String pattern) {
+            return REGEXP_SUBSTR(getFullFieldName(prefix, column), pattern);
+        }
+
+        default IFunction REGEXP_SUBSTR(IFunction str, IFunction pattern) {
+            return REGEXP_SUBSTR(str.build(), pattern.build()).param(str.params()).param(pattern.params());
+        }
+
+        default IFunction REGEXP_SUBSTR(String str, String pattern, Number pos) {
+            return create("REGEXP_SUBSTR").fieldWS(str, pattern, pos);
+        }
+
+        default IFunction REGEXP_SUBSTR(IFunction str, IFunction pattern, Number pos) {
+            return REGEXP_SUBSTR(str.build(), pattern.build(), pos).param(str.params()).param(pattern.params());
+        }
+
+        default IFunction REGEXP_SUBSTR(String str, String pattern, Number pos, Number occurrence) {
+            return create("REGEXP_SUBSTR").fieldWS(str, pattern, pos, occurrence);
+        }
+
+        default IFunction REGEXP_SUBSTR(IFunction str, IFunction pattern, Number pos, Number occurrence) {
+            return REGEXP_SUBSTR(str.build(), pattern.build(), pos, occurrence).param(str.params()).param(pattern.params());
+        }
+
+        default IFunction REGEXP_SUBSTR(String str, String pattern, Number pos, Number occurrence, String match_type) {
+            return create("REGEXP_SUBSTR").fieldWS(str, pattern, pos, occurrence, match_type);
+        }
+
+        default IFunction REGEXP_SUBSTR(IFunction str, IFunction pattern, Number pos, Number occurrence, String match_type) {
+            return REGEXP_SUBSTR(str.build(), pattern.build(), pos, occurrence, match_type).param(str.params()).param(pattern.params());
+        }
     }
 
     /**

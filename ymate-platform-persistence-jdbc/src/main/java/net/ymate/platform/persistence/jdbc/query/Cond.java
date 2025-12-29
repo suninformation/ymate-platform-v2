@@ -254,6 +254,19 @@ public class Cond extends Query<Cond> {
         return this;
     }
 
+    /**
+     * 通过条件构建器创建条件
+     *
+     * @param appender 条件构建器
+     * @return 当前条件实例
+     * @since 2.1.4
+     */
+    public Cond cond(IConditionAppender appender) {
+        Cond cond = Cond.create(this);
+        appender.append(cond);
+        return this;
+    }
+
     public Cond opt(String fieldOne, OPT opt, String fieldTwo) {
         return cond(String.format("%s %s %s", fieldOne, opt, fieldTwo));
     }
@@ -2509,6 +2522,19 @@ public class Cond extends Query<Cond> {
         return and().cond(cond);
     }
 
+    /**
+     * 通过条件构建器创建and条件
+     *
+     * @param appender 条件构建器
+     * @return 当前条件实例
+     * @since 2.1.4
+     */
+    public Cond and(IConditionAppender appender) {
+        Cond cond = Cond.create(this);
+        appender.append(cond);
+        return and(cond);
+    }
+
     public Cond andIfNeed() {
         return optIfNeed(LogicalOpt.AND);
     }
@@ -2519,6 +2545,19 @@ public class Cond extends Query<Cond> {
 
     public Cond andIfNeed(FieldCondition cond) {
         return andIfNeed().cond(cond);
+    }
+
+    /**
+     * 通过条件构建器创建and条件
+     *
+     * @param appender 条件构建器
+     * @return 当前条件实例
+     * @since 2.1.4
+     */
+    public Cond andIfNeed(IConditionAppender appender) {
+        Cond cond = Cond.create(this);
+        appender.append(cond);
+        return andIfNeed(cond);
     }
 
     public Cond or() {
@@ -2533,6 +2572,19 @@ public class Cond extends Query<Cond> {
         return or().cond(cond);
     }
 
+    /**
+     * 通过条件构建器创建or条件
+     *
+     * @param appender 条件构建器
+     * @return 当前条件实例
+     * @since 2.1.4
+     */
+    public Cond or(IConditionAppender appender) {
+        Cond cond = Cond.create(this);
+        appender.append(cond);
+        return or(cond);
+    }
+
     public Cond orIfNeed() {
         return optIfNeed(LogicalOpt.OR);
     }
@@ -2543,6 +2595,19 @@ public class Cond extends Query<Cond> {
 
     public Cond orIfNeed(FieldCondition cond) {
         return orIfNeed().cond(cond);
+    }
+
+    /**
+     * 通过条件构建器创建or条件
+     *
+     * @param appender 条件构建器
+     * @return 当前条件实例
+     * @since 2.1.4
+     */
+    public Cond orIfNeed(IConditionAppender appender) {
+        Cond cond = Cond.create(this);
+        appender.append(cond);
+        return orIfNeed(cond);
     }
 
     public Cond not() {
@@ -2557,6 +2622,19 @@ public class Cond extends Query<Cond> {
         return not().cond(cond);
     }
 
+    /**
+     * 通过条件构建器创建not条件
+     *
+     * @param appender 条件构建器
+     * @return 当前条件实例
+     * @since 2.1.4
+     */
+    public Cond not(IConditionAppender appender) {
+        Cond cond = Cond.create(this);
+        appender.append(cond);
+        return not(cond);
+    }
+
     public Cond notIfNeed() {
         return optIfNeed(LogicalOpt.NOT);
     }
@@ -2567,6 +2645,19 @@ public class Cond extends Query<Cond> {
 
     public Cond notIfNeed(FieldCondition cond) {
         return notIfNeed().cond(cond);
+    }
+
+    /**
+     * 通过条件构建器创建not条件
+     *
+     * @param appender 条件构建器
+     * @return 当前条件实例
+     * @since 2.1.4
+     */
+    public Cond notIfNeed(IConditionAppender appender) {
+        Cond cond = Cond.create(this);
+        appender.append(cond);
+        return notIfNeed(cond);
     }
 
     public Cond bracketBegin() {
@@ -2583,6 +2674,19 @@ public class Cond extends Query<Cond> {
 
     public Cond bracket(FieldCondition cond) {
         return bracketBegin().cond(cond).bracketEnd();
+    }
+
+    /**
+     * 通过条件构建器创建子条件
+     *
+     * @param appender 条件构建器
+     * @return 当前条件实例
+     * @since 2.1.4
+     */
+    public Cond bracket(IConditionAppender appender) {
+        Cond cond = Cond.create(this);
+        appender.append(cond);
+        return bracket(cond);
     }
 
     public Cond brackets() {
