@@ -27,6 +27,7 @@ import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.time.temporal.ChronoField;
 import java.time.temporal.TemporalAccessor;
+import java.time.temporal.TemporalQuery;
 import java.util.*;
 
 /**
@@ -290,105 +291,268 @@ public final class DateTimeUtils {
         return parseDateTime(dateTime, pattern, null);
     }
 
-    public static Date parseDateTime(String dateTime, String pattern, String timeOffset) throws ParseException {
-        // 首先尝试解析ISO 8601格式
+    /**
+     * 解析ISO 8601格式的日期时间字符串
+     *
+     * @param dateTime   日期时间字符串
+     * @param timeOffset 时区偏移字符串
+     * @return 解析后的Date对象，解析失败返回null
+     * @since 2.1.4
+     */
+    private static Date doParseIsoDateTime(String dateTime, String timeOffset) {
+        // 尝试解析为带时区的OffsetDateTime
         try {
-            // 尝试解析为带时区的OffsetDateTime
             OffsetDateTime offsetDateTime = OffsetDateTime.parse(dateTime);
             return Date.from(offsetDateTime.toInstant());
         } catch (DateTimeParseException e1) {
-            // 尝试解析其他形式的ISO格式
             try {
-                // 尝试解析为带毫秒的Z结尾格式或其他ISO变体
+                // 尝试解析为其他形式的ISO格式
                 DateTimeFormatter isoFormatter = DateTimeFormatter.ISO_DATE_TIME;
                 TemporalAccessor temporalAccessor = isoFormatter.parse(dateTime);
+                // 处理带时间戳的格式
                 if (temporalAccessor.isSupported(ChronoField.INSTANT_SECONDS)) {
                     Instant instant = Instant.from(temporalAccessor);
                     return Date.from(instant);
-                } else if (temporalAccessor.isSupported(ChronoField.HOUR_OF_DAY)) {
-                    // 如果有时区信息
-                    if (temporalAccessor.isSupported(ChronoField.OFFSET_SECONDS)) {
-                        OffsetDateTime offsetDateTime = OffsetDateTime.from(temporalAccessor);
-                        return Date.from(offsetDateTime.toInstant());
-                    } else {
-                        // 没有时区信息，使用提供的timeOffset或系统默认时区
-                        LocalDateTime localDateTime = LocalDateTime.from(temporalAccessor);
-                        if (StringUtils.isNotBlank(timeOffset)) {
-                            ZoneId zoneId = parseZoneId(timeOffset);
-                            if (zoneId != null) {
-                                return Date.from(localDateTime.atZone(zoneId).toInstant());
-                            } else if (TIME_ZONES.containsKey(timeOffset)) {
-                                String zoneIdStr = TIME_ZONES.get(timeOffset)[0];
-                                ZoneOffset offset = ZoneOffset.of(zoneIdStr.replace("UTC", StringUtils.EMPTY));
-                                return Date.from(localDateTime.atOffset(offset).toInstant());
-                            }
-                        }
-                        // 默认使用系统时区
-                        return Date.from(localDateTime.atZone(ZoneId.systemDefault()).toInstant());
-                    }
-                } else {
-                    // 只有日期部分
-                    LocalDate localDate = LocalDate.from(temporalAccessor);
-                    if (StringUtils.isNotBlank(timeOffset)) {
-                        ZoneId zoneId = parseZoneId(timeOffset);
-                        if (zoneId != null) {
-                            return Date.from(localDate.atStartOfDay(zoneId).toInstant());
-                        } else if (TIME_ZONES.containsKey(timeOffset)) {
-                            String zoneIdStr = TIME_ZONES.get(timeOffset)[0];
-                            ZoneOffset offset = ZoneOffset.of(zoneIdStr.replace("UTC", StringUtils.EMPTY));
-                            return Date.from(localDate.atTime(LocalTime.MIN).atOffset(offset).toInstant());
-                        }
-                    }
-                    // 默认使用系统时区
-                    return Date.from(localDate.atStartOfDay(ZoneId.systemDefault()).toInstant());
                 }
+                // 处理带时间的格式
+                if (temporalAccessor.isSupported(ChronoField.HOUR_OF_DAY)) {
+                    return doParseIsoDateTimeWithTime(temporalAccessor, timeOffset);
+                }
+                // 处理仅日期部分的格式
+                return doParseIsoDateOnly(temporalAccessor, timeOffset);
             } catch (DateTimeParseException e2) {
-                // 如果ISO解析失败，回退到指定的pattern解析
-                String format = StringUtils.defaultIfBlank(pattern, YYYY_MM_DD_HH_MM_SS);
-                DateTimeFormatter formatter = DateTimeFormatter.ofPattern(format, Locale.ENGLISH);
+                // ISO解析失败，返回null
+                return null;
+            }
+        }
+    }
+
+    /**
+     * 解析带时间的ISO日期时间
+     *
+     * @param temporalAccessor 时间访问器
+     * @param timeOffset       时区偏移字符串
+     * @return 解析后的Date对象
+     * @since 2.1.4
+     */
+    private static Date doParseIsoDateTimeWithTime(TemporalAccessor temporalAccessor, String timeOffset) {
+        // 如果有时区信息
+        if (temporalAccessor.isSupported(ChronoField.OFFSET_SECONDS)) {
+            OffsetDateTime offsetDateTime = OffsetDateTime.from(temporalAccessor);
+            return Date.from(offsetDateTime.toInstant());
+        }
+        // 没有时区信息，使用LocalDateTime
+        LocalDateTime localDateTime = LocalDateTime.from(temporalAccessor);
+        ZoneId zoneId = doResolveZoneId(timeOffset);
+        if (zoneId != null) {
+            return Date.from(localDateTime.atZone(zoneId).toInstant());
+        }
+        // 处理时区映射表
+        if (StringUtils.isNotBlank(timeOffset) && TIME_ZONES.containsKey(timeOffset)) {
+            String zoneIdStr = TIME_ZONES.get(timeOffset)[0];
+            ZoneOffset offset = ZoneOffset.of(zoneIdStr.replace("UTC", StringUtils.EMPTY));
+            return Date.from(localDateTime.atOffset(offset).toInstant());
+        }
+        // 默认使用系统时区
+        return Date.from(localDateTime.atZone(ZoneId.systemDefault()).toInstant());
+    }
+
+    /**
+     * 解析仅日期部分的ISO日期
+     *
+     * @param temporalAccessor 时间访问器
+     * @param timeOffset       时区偏移字符串
+     * @return 解析后的Date对象
+     * @since 2.1.4
+     */
+    private static Date doParseIsoDateOnly(TemporalAccessor temporalAccessor, String timeOffset) {
+        ZoneId zoneId = doResolveZoneId(timeOffset);
+        // 尝试解析为LocalDate
+        try {
+            LocalDate localDate = LocalDate.from(temporalAccessor);
+            return doConvertLocalDateToDate(localDate, zoneId, timeOffset);
+        } catch (DateTimeParseException e1) {
+            // 尝试解析为YearMonth
+            try {
+                YearMonth yearMonth = YearMonth.from(temporalAccessor);
+                LocalDate localDate = yearMonth.atDay(1);
+                return doConvertLocalDateToDate(localDate, zoneId, timeOffset);
+            } catch (DateTimeParseException e2) {
+                // 尝试解析为MonthDay
                 try {
-                    if (StringUtils.isNotBlank(timeOffset)) {
-                        // 使用JDK 8的ZoneId处理时区
-                        ZoneId zoneId = parseZoneId(timeOffset);
-                        if (zoneId != null) {
-                            // 优先使用ZoneId
-                            if (format.length() <= YYYY_MM_DD.length()) {
-                                // 日期格式
-                                LocalDate localDate = LocalDate.parse(dateTime, formatter);
-                                ZonedDateTime zonedDateTime = localDate.atStartOfDay(zoneId);
-                                return Date.from(zonedDateTime.toInstant());
-                            } else {
-                                // 日期时间格式
-                                LocalDateTime localDateTime = LocalDateTime.parse(dateTime, formatter);
-                                ZonedDateTime zonedDateTime = localDateTime.atZone(zoneId);
-                                return Date.from(zonedDateTime.toInstant());
-                            }
-                        } else if (TIME_ZONES.containsKey(timeOffset)) {
-                            // 回退到映射表
-                            String zoneIdStr = TIME_ZONES.get(timeOffset)[0];
-                            ZoneOffset offset = ZoneOffset.of(zoneIdStr.replace("UTC", StringUtils.EMPTY));
-                            if (format.length() <= YYYY_MM_DD.length()) {
-                                LocalDate localDate = LocalDate.parse(dateTime, formatter);
-                                return Date.from(localDate.atTime(LocalTime.MIN).atOffset(offset).toInstant());
-                            } else {
-                                LocalDateTime localDateTime = LocalDateTime.parse(dateTime, formatter);
-                                return Date.from(localDateTime.atOffset(offset).toInstant());
-                            }
-                        }
-                    }
-                    // 默认使用系统时区
-                    if (format.length() <= YYYY_MM_DD.length()) {
-                        LocalDate localDate = LocalDate.parse(dateTime, formatter);
-                        return Date.from(localDate.atStartOfDay(ZoneId.systemDefault()).toInstant());
-                    } else {
-                        LocalDateTime localDateTime = LocalDateTime.parse(dateTime, formatter);
-                        return Date.from(localDateTime.atZone(ZoneId.systemDefault()).toInstant());
-                    }
-                } catch (DateTimeParseException e) {
-                    throw new ParseException(e.getMessage(), e.getErrorIndex());
+                    MonthDay monthDay = MonthDay.from(temporalAccessor);
+                    int year = Year.now().getValue();
+                    LocalDate localDate = LocalDate.of(year, monthDay.getMonth(), monthDay.getDayOfMonth());
+                    return doConvertLocalDateToDate(localDate, zoneId, timeOffset);
+                } catch (DateTimeParseException e3) {
+                    // 尝试解析为Year
+                    Year year = Year.from(temporalAccessor);
+                    LocalDate localDate = LocalDate.of(year.getValue(), 1, 1);
+                    return doConvertLocalDateToDate(localDate, zoneId, timeOffset);
                 }
             }
         }
+    }
+
+    /**
+     * 将LocalDate转换为Date对象
+     *
+     * @param localDate  本地日期
+     * @param zoneId     时区ID
+     * @param timeOffset 时区偏移字符串
+     * @return 转换后的Date对象
+     * @since 2.1.4
+     */
+    private static Date doConvertLocalDateToDate(LocalDate localDate, ZoneId zoneId, String timeOffset) {
+        if (zoneId != null) {
+            return Date.from(localDate.atStartOfDay(zoneId).toInstant());
+        }
+        // 处理时区映射表
+        if (StringUtils.isNotBlank(timeOffset) && TIME_ZONES.containsKey(timeOffset)) {
+            String zoneIdStr = TIME_ZONES.get(timeOffset)[0];
+            ZoneOffset offset = ZoneOffset.of(zoneIdStr.replace("UTC", StringUtils.EMPTY));
+            return Date.from(localDate.atTime(LocalTime.MIN).atOffset(offset).toInstant());
+        }
+        // 默认使用系统时区
+        return Date.from(localDate.atStartOfDay(ZoneId.systemDefault()).toInstant());
+    }
+
+    /**
+     * 解析时区ID
+     *
+     * @param timeOffset 时区偏移字符串
+     * @return 解析后的ZoneId，解析失败返回null
+     * @since 2.1.4
+     */
+    private static ZoneId doResolveZoneId(String timeOffset) {
+        if (StringUtils.isNotBlank(timeOffset)) {
+            return parseZoneId(timeOffset);
+        }
+        return null;
+    }
+
+    /**
+     * 解析日期时间字符串为Date对象，支持指定时区
+     *
+     * @param dateTime   日期时间字符串，可以是自定义格式或ISO 8601标准格式
+     * @param pattern    日期时间格式，若为空则使用yyyy-MM-dd HH:mm:ss作为默认格式
+     * @param timeOffset 时区偏移字符串，可以是UTC偏移格式（如"+8"）、时区ID（如"Asia/Shanghai"）或空字符串（使用系统默认时区）
+     * @return 解析后的Date对象
+     * @throws ParseException 解析失败时抛出，包含具体的错误信息和错误位置
+     */
+    public static Date parseDateTime(String dateTime, String pattern, String timeOffset) throws ParseException {
+        // 首先尝试解析ISO 8601格式
+        Date isoResult = doParseIsoDateTime(dateTime, timeOffset);
+        if (isoResult != null) {
+            return isoResult;
+        }
+        // ISO解析失败，回退到指定的pattern解析
+        String format = StringUtils.defaultIfBlank(pattern, YYYY_MM_DD_HH_MM_SS);
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern(format);
+
+        try {
+            ZoneId zoneId = doResolveZoneId(timeOffset);
+            if (zoneId != null) {
+                return doParseDateWithZoneId(dateTime, formatter, zoneId);
+            } else if (StringUtils.isNotBlank(timeOffset) && TIME_ZONES.containsKey(timeOffset)) {
+                // 回退到映射表
+                String zoneIdStr = TIME_ZONES.get(timeOffset)[0];
+                ZoneOffset offset = ZoneOffset.of(zoneIdStr.replace("UTC", StringUtils.EMPTY));
+                return doParseDateWithZoneOffset(dateTime, formatter, offset);
+            }
+            // 默认使用系统时区
+            return doParseDateUsingDefaultZone(dateTime, formatter);
+        } catch (DateTimeParseException e) {
+            throw new ParseException(e.getMessage(), e.getErrorIndex());
+        }
+    }
+
+    /**
+     * 通用日期时间解析方法，支持多种日期时间类型
+     *
+     * @param dateStr       日期时间字符串
+     * @param formatter     日期时间格式
+     * @param temporalQuery 时间查询器
+     * @return 解析后的TemporalAccessor对象
+     * @throws DateTimeParseException 解析失败时抛出
+     * @since 2.1.4
+     */
+    private static <T extends TemporalAccessor> T doParseTemporal(String dateStr, DateTimeFormatter formatter, TemporalQuery<T> temporalQuery) {
+        return formatter.parse(dateStr, temporalQuery);
+    }
+
+    /**
+     * 使用ZoneId解析日期时间字符串
+     *
+     * @param dateStr   日期时间字符串
+     * @param formatter 日期时间格式
+     * @param zoneId    时区ID
+     * @return 解析后的Date对象
+     * @since 2.1.4
+     */
+    private static Date doParseDateWithZoneId(String dateStr, DateTimeFormatter formatter, ZoneId zoneId) {
+        // 尝试按顺序解析为不同的日期时间类型
+        try {
+            // 尝试解析为LocalDateTime（完整日期时间格式）
+            LocalDateTime localDateTime = doParseTemporal(dateStr, formatter, LocalDateTime::from);
+            return Date.from(localDateTime.atZone(zoneId).toInstant());
+        } catch (DateTimeParseException e1) {
+            try {
+                // 尝试解析为LocalDate（仅日期格式）
+                LocalDate localDate = doParseTemporal(dateStr, formatter, LocalDate::from);
+                return Date.from(localDate.atStartOfDay(zoneId).toInstant());
+            } catch (DateTimeParseException e2) {
+                try {
+                    // 尝试解析为MonthDay（仅月日格式）
+                    MonthDay monthDay = doParseTemporal(dateStr, formatter, MonthDay::from);
+                    int year = Year.now().getValue();
+                    return Date.from(LocalDate.of(year, monthDay.getMonth(), monthDay.getDayOfMonth()).atStartOfDay(zoneId).toInstant());
+                } catch (DateTimeParseException e3) {
+                    try {
+                        // 尝试解析为YearMonth（仅年月格式）
+                        YearMonth yearMonth = doParseTemporal(dateStr, formatter, YearMonth::from);
+                        return Date.from(yearMonth.atDay(1).atStartOfDay(zoneId).toInstant());
+                    } catch (DateTimeParseException e4) {
+                        try {
+                            // 尝试解析为Year（仅年份格式）
+                            Year year = doParseTemporal(dateStr, formatter, Year::from);
+                            return Date.from(LocalDate.of(year.getValue(), 1, 1).atStartOfDay(zoneId).toInstant());
+                        } catch (DateTimeParseException e5) {
+                            // 尝试解析为LocalTime（仅时间格式）
+                            LocalTime localTime = doParseTemporal(dateStr, formatter, LocalTime::from);
+                            LocalDate today = LocalDate.now(zoneId);
+                            return Date.from(LocalDateTime.of(today, localTime).atZone(zoneId).toInstant());
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * 使用ZoneOffset解析日期时间字符串
+     *
+     * @param dateStr   日期时间字符串
+     * @param formatter 日期时间格式
+     * @param offset    时区偏移
+     * @return 解析后的Date对象
+     * @since 2.1.4
+     */
+    private static Date doParseDateWithZoneOffset(String dateStr, DateTimeFormatter formatter, ZoneOffset offset) {
+        ZoneId zoneId = ZoneId.ofOffset("UTC", offset);
+        return doParseDateWithZoneId(dateStr, formatter, zoneId);
+    }
+
+    /**
+     * 使用默认时区解析日期时间字符串
+     *
+     * @param dateStr   日期时间字符串
+     * @param formatter 日期时间格式
+     * @return 解析后的Date对象
+     * @since 2.1.4
+     */
+    private static Date doParseDateUsingDefaultZone(String dateStr, DateTimeFormatter formatter) {
+        return doParseDateWithZoneId(dateStr, formatter, ZoneId.systemDefault());
     }
 
     /**

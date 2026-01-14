@@ -19,6 +19,7 @@ import net.ymate.platform.commons.util.DateTimeUtils;
 
 import java.time.*;
 import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.time.temporal.ChronoUnit;
 import java.time.temporal.TemporalAdjusters;
 import java.time.temporal.WeekFields;
@@ -163,8 +164,36 @@ public class DateTimeHelper {
 
     private DateTimeHelper(String dateStr, String dateFormat) {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern(dateFormat);
-        LocalDateTime localDateTime = LocalDateTime.parse(dateStr, formatter);
-        this.zonedDateTime = localDateTime.atZone(ZoneId.systemDefault());
+        ZoneId zoneId = ZoneId.systemDefault();
+        try {
+            LocalDateTime localDateTime = formatter.parse(dateStr, LocalDateTime::from);
+            this.zonedDateTime = localDateTime.atZone(zoneId);
+        } catch (DateTimeParseException e1) {
+            try {
+                LocalDate localDate = formatter.parse(dateStr, LocalDate::from);
+                this.zonedDateTime = localDate.atStartOfDay(zoneId);
+            } catch (DateTimeParseException e2) {
+                try {
+                    MonthDay monthDay = formatter.parse(dateStr, MonthDay::from);
+                    int year = Year.now().getValue();
+                    this.zonedDateTime = LocalDate.of(year, monthDay.getMonth(), monthDay.getDayOfMonth()).atStartOfDay(zoneId);
+                } catch (DateTimeParseException e3) {
+                    try {
+                        YearMonth yearMonth = formatter.parse(dateStr, YearMonth::from);
+                        this.zonedDateTime = yearMonth.atDay(1).atStartOfDay(zoneId);
+                    } catch (DateTimeParseException e4) {
+                        try {
+                            Year year = formatter.parse(dateStr, Year::from);
+                            this.zonedDateTime = LocalDate.of(year.getValue(), 1, 1).atStartOfDay(zoneId);
+                        } catch (DateTimeParseException e5) {
+                            LocalTime localTime = formatter.parse(dateStr, LocalTime::from);
+                            LocalDate today = LocalDate.now(zoneId);
+                            this.zonedDateTime = LocalDateTime.of(today, localTime).atZone(zoneId);
+                        }
+                    }
+                }
+            }
+        }
     }
 
     /**
