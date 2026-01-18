@@ -124,25 +124,55 @@ public final class LambdaUtils {
         SerializedLambda lambda = getSerializedLambda(func);
         Class<?> targetClass = getTargetClass(lambda);
         String fieldName = getFieldName(func);
+        // 尝试从缓存获取
+        Map<String, String> classFieldCache = FIELD_NAME_CACHE.computeIfAbsent(targetClass, k -> new ConcurrentHashMap<>());
+        String cachedColumnName = classFieldCache.get(fieldName);
+        if (cachedColumnName != null) {
+            return cachedColumnName;
+        }
+        String columnName;
         // 检查是否为实体类
         if (IEntity.class.isAssignableFrom(targetClass)) {
             EntityMeta entityMeta = EntityMeta.createAndGet(targetClass.asSubclass(IEntity.class));
             if (entityMeta != null) {
                 PropertyMeta propertyMeta = entityMeta.getPropertyByField(fieldName);
                 if (propertyMeta != null) {
-                    return propertyMeta.getName();
+                    columnName = propertyMeta.getName();
+                } else {
+                    columnName = ClassUtils.fieldNameToPropertyName(fieldName, 0);
                 }
+            } else {
+                columnName = ClassUtils.fieldNameToPropertyName(fieldName, 0);
             }
         }
         // 检查是否为复合主键类
         else if (IEntityPK.class.isAssignableFrom(targetClass)) {
             // 复合主键类的字段直接映射为数据库字段
-            return ClassUtils.fieldNameToPropertyName(fieldName, 0);
+            columnName = ClassUtils.fieldNameToPropertyName(fieldName, 0);
+        } else {
+            columnName = ClassUtils.fieldNameToPropertyName(fieldName, 0);
         }
-        return ClassUtils.fieldNameToPropertyName(fieldName, 0);
+        // 缓存结果
+        classFieldCache.put(fieldName, columnName);
+        return columnName;
     }
 
-    public static String getEntityName(Class<? extends IEntity<?>> entityClass) {
+
+    /**
+     * 获取实体名称
+     *
+     * @param func 实体方法引用
+     * @param <T>  实体类型
+     * @param <R>  返回值类型
+     * @return 实体名称
+     */
+    public static <T extends IEntity<?>, R> String getEntityName(EntityFunction<T, R> func) {
+        SerializedLambda lambda = getSerializedLambda(func);
+        Class<?> targetClass = getTargetClass(lambda);
+        return getEntityName(targetClass.asSubclass(IEntity.class));
+    }
+
+    public static String getEntityName(@SuppressWarnings("rawtypes") Class<? extends IEntity> entityClass) {
         EntityMeta entityMeta = EntityMeta.createAndGet(entityClass.asSubclass(IEntity.class));
         if (entityMeta != null) {
             return entityMeta.getEntityName();
@@ -201,5 +231,68 @@ public final class LambdaUtils {
             return StringUtils.join(prefix, ".", columnName);
         }
         return columnName;
+    }
+
+    /**
+     * 从供应商函数中获取值
+     *
+     * @param supplier 供应商函数
+     * @param <T>      返回值类型
+     * @return 函数返回值
+     */
+    public static <T> T getValue(SSupplier<T> supplier) {
+        return supplier.get();
+    }
+
+    /**
+     * 从双函数中获取值
+     *
+     * @param func 双函数
+     * @param t    第一个参数
+     * @param u    第二个参数
+     * @param <T>  第一个参数类型
+     * @param <U>  第二个参数类型
+     * @param <R>  返回值类型
+     * @return 函数返回值
+     */
+    public static <T, U, R> R getValue(SBinaryFunction<T, U, R> func, T t, U u) {
+        return func.apply(t, u);
+    }
+
+    /**
+     * 从方法引用中获取目标类
+     *
+     * @param func 方法引用
+     * @param <T>  类型
+     * @param <R>  返回值类型
+     * @return 目标类
+     */
+    public static <T, R> Class<?> getTargetClass(SFunction<T, R> func) {
+        return getTargetClass(getSerializedLambda(func));
+    }
+
+    /**
+     * 从实体方法引用中获取目标类
+     *
+     * @param func 实体方法引用
+     * @param <T>  实体类型
+     * @param <R>  返回值类型
+     * @return 目标类
+     */
+    @SuppressWarnings("rawtypes")
+    public static <T extends IEntity<?>, R> Class<? extends IEntity> getTargetClass(EntityFunction<T, R> func) {
+        return getTargetClass(getSerializedLambda(func)).asSubclass(IEntity.class);
+    }
+
+    /**
+     * 从主键方法引用中获取目标类
+     *
+     * @param func 主键方法引用
+     * @param <T>  主键类型
+     * @param <R>  返回值类型
+     * @return 目标类
+     */
+    public static <T extends IEntityPK, R> Class<? extends IEntityPK> getTargetClass(PkFunction<T, R> func) {
+        return getTargetClass(getSerializedLambda(func)).asSubclass(IEntityPK.class);
     }
 }

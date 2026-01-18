@@ -104,7 +104,7 @@ ymp.configs.persistence.jdbc.ds.default.password_class=
 
 ### 配置注解参数说明
 
-:::tip **特别说明：** 
+:::tip **特别说明：**
 
 当 JDBC 持久化模块初始化时，若在配置文件中存在数据源相关配置，则基于注解的数据源配置将全部失效。
 
@@ -174,13 +174,13 @@ ymp.configs.persistence.jdbc.ds.oracledb.password=123456
 
 ```java
 @DatabaseConf(dsDefaultName = "default", value = {
-        @DatabaseDataSource(name = "default", 
+        @DatabaseDataSource(name = "default",
                             connectionUrl = "jdbc:mysql://localhost:3306/mydb",
-                            username = "root", 
+                            username = "root",
                             password = "123456"),
-        @DatabaseDataSource(name = "oracledb", 
+        @DatabaseDataSource(name = "oracledb",
                             connectionUrl = "jdbc:oracle:thin:@localhost:1521:ORCL",
-                            username = "ORCL", 
+                            username = "ORCL",
                             password = "123456")
 })
 ```
@@ -957,7 +957,7 @@ public class UserEntity extends BaseEntity<UserEntity, String> {
     @Comment("用户唯一标识")
     @PropertyState(propertyName = FIELDS.ID)
     private String id;
-    
+
     ......
 }
 ```
@@ -978,13 +978,13 @@ public class Starter implements IApplicationInitializer {
     }
 
     private static final Log LOG = LogFactory.getLog(Starter.class);
-    
+
     @Override
     public void afterEventInit(IApplication application, Events events) {
         events.registerListener(ModuleEvent.class, new IEventListener<ModuleEvent>() {
             @Override
             public boolean handle(ModuleEvent context) {
-                if (Objects.equals(JDBC.MODULE_NAME, context.getSource().getName()) 
+                if (Objects.equals(JDBC.MODULE_NAME, context.getSource().getName())
                     && context.getEventName() == ModuleEvent.EVENT.MODULE_INITIALIZED) {
                     try {
                         IKeyGenerator.Manager.registerKeyGenerator("custom", CustomKeyGenerator.class);
@@ -1629,7 +1629,7 @@ UserEntity userEntity = JDBC.get().openSession(new IDatabaseSessionExecutor<User
         // 执行数据插入
         user = session.insert(user);
         // 或者在插入时也可以指定/排除某些字段
-        user = session.insert(user, Fields.create(UserEntity.FIELDS.NICKNAME, 
+        user = session.insert(user, Fields.create(UserEntity.FIELDS.NICKNAME,
                                                   UserEntity.FIELDS.EMAIL).excluded(true));
         return user;
     }
@@ -1879,7 +1879,7 @@ System.out.println(fields.fields());
 ```java
 // 创建Params对象，任何类型参数
 Params params = Params.create("p1", 2, false, 0.1).add("param");
-// 
+//
 params = Params.create().add("paramN").add(params);
 // 输出
 System.out.println(params.params());
@@ -1952,7 +1952,7 @@ System.out.println("参数: " + cond.params().params());
 执行结果：
 
 ```shell
-SQL: ( username LIKE ? AND age >= ? )  OR  ( gender = ? AND age < ? ) 
+SQL: ( username LIKE ? AND age >= ? )  OR  ( gender = ? AND age < ? )
 参数: [%ymp%, 20, F, 18]
 ```
 
@@ -1969,7 +1969,7 @@ SQL: ( username LIKE ? AND age >= ? )  OR  ( gender = ? AND age < ? )
 | `>=`   | `cond.gtEq("age").param(18)`  | age \>= 18 |
 | `<=`   | `cond.ltEq("age").param(18)`  | age \<= 18 |
 
-:::tip **特别说明：** 
+:::tip **特别说明：**
 
 以上操作均支持两字段之间比较，如：
 
@@ -2007,7 +2007,7 @@ cond.notEqField("username", "nickname")
 | `LIKE`    | `cond.like("username").param(Like.create("ymp").contains())` | username LIKE '%ymp%'                                          |
 | `OPT`     | `cond.opt("username", OPT.EQ)`<br />`cond.opt("username", OPT.EQ, "nickname")` | username = ?<br />username = nickname                          |
 
-:::tip **特别说明：** 
+:::tip **特别说明：**
 
 Cond 类提供的诸多方法（如：`eq`）中，方法名称以 `Wrap` 为后缀（如：`eqWrap`）的作用是为字段名称添加与当前数据库匹配的引用标识符。
 
@@ -2298,15 +2298,15 @@ Insert insert = Insert.create(UserEntity.class)
     .field(UserEntity.FIELDS.EMAIL).param("suninformation@163.com");
 // 方式二：
 Insert insert = Insert.create(UserEntity.class)
-    .field(Fields.create(UserEntity.FIELDS.ID, 
-                         UserEntity.FIELDS.USERNAME, 
-                         UserEntity.FIELDS.NICKNAME, 
-                         UserEntity.FIELDS.PASSWORD, 
+    .field(Fields.create(UserEntity.FIELDS.ID,
+                         UserEntity.FIELDS.USERNAME,
+                         UserEntity.FIELDS.NICKNAME,
+                         UserEntity.FIELDS.PASSWORD,
                          UserEntity.FIELDS.EMAIL))
-    .param(Params.create(UUIDUtils.UUID(), 
-                         "suninformation", 
-                         "有理想的鱼", 
-                         "123456", 
+    .param(Params.create(UUIDUtils.UUID(),
+                         "suninformation",
+                         "有理想的鱼",
+                         "123456",
                          "suninformation@163.com"))
 SQL sql = insert.toSQL();
 System.out.println("SQL: " + sql.toString());
@@ -2562,7 +2562,7 @@ IResultSet<Object[]> resultSet = sql.find(IResultSetHandler.ARRAY.create());
 // 计算记录数量：返回符合条件的记录数
 long count = sql.count();
 // 执行更新类操作：返回被影响记录数量
-int effectCount = sql.execute(); 
+int effectCount = sql.execute();
 ```
 
 
@@ -2826,7 +2826,7 @@ IResultSet<UserEntity> users = JDBC.get().openSession(new IDatabaseSessionExecut
 
 #### 如何自定义函数封装？
 
-示例一：创建单个参数风格的函数封装，如：`ABS(X)` 
+示例一：创建单个参数风格的函数封装，如：`ABS(X)`
 
 ```java
 IFunction ABS(String x) {
@@ -2850,7 +2850,7 @@ IFunction FORMAT(String x, Number d) {
 
 
 
-示例二：创建表达式风格的函数封装，如：`CASE value WHEN exp1 THEN result1 ELSE result2 END` 
+示例二：创建表达式风格的函数封装，如：`CASE value WHEN exp1 THEN result1 ELSE result2 END`
 
 ```java
 IFunction CASE(String value, IFunction[] whenFn, String elseFn) {
@@ -2923,6 +2923,223 @@ IResultSet<Object[]> resultSet = new QueryBuilder<IResultSet<Object[]>>(owner, d
     build(select.find(IResultSetHandler.ARRAY.create()));
 }}.build();
 ```
+
+
+
+### Lambda表达式支持
+
+从 v2.1.4 版本开始，JDBC 持久化模块引入了对 Lambda 表达式的支持，允许开发者使用方法引用的方式编写类型安全的查询语句，避免了硬编码字段名带来的风险，同时提高了代码的可读性和可维护性。
+
+#### LambdaUtils 核心实现
+
+Lambda 表达式支持的核心是 `LambdaUtils` 类，它提供了一系列函数式接口和工具方法，用于解析 Lambda 表达式获取字段名、数据库列名和其他相关信息：
+
+### 函数式接口
+
+- `SFunction<T, R>`：序列化的函数式接口，用于支持 Lambda 表达式和方法引用
+- `EntityFunction<T extends IEntity<?>, R>`：实体函数式接口，用于实体类的方法引用
+- `PkFunction<T extends IEntityPK, R>`：主键函数式接口，用于复合主键类的方法引用
+- `SSupplier<T>`：序列化的供应商接口，用于支持无参方法引用
+- `SBinaryFunction<T, U, R>`：序列化的双函数接口，用于支持两个参数的方法引用
+
+### 工具方法
+
+- `getFieldName(SFunction<T, R> func)`：从方法引用中解析出字段名
+- `getColumnName(SFunction<T, R> func)`：从方法引用中解析出数据库字段名（带缓存机制）
+- `getEntityName(EntityFunction<T, R> func)`：从实体方法引用中获取实体名称
+- `getEntityName(Class<? extends IEntity> entityClass)`：获取实体名称
+- `getFullFieldName(String prefix, SFunction<T, R> func)`：获取带前缀的完整字段名
+- `getValue(SSupplier<T> supplier)`：从供应商函数中获取值
+- `getValue(SBinaryFunction<T, U, R> func, T t, U u)`：从双函数中获取值
+- `getTargetClass(SFunction<T, R> func)`：从方法引用中获取目标类
+- `getTargetClass(EntityFunction<T, R> func)`：从实体方法引用中获取目标类
+- `getTargetClass(PkFunction<T, R> func)`：从主键方法引用中获取目标类
+
+### 缓存机制
+
+`LambdaUtils` 类内部使用了两级缓存机制，提高解析性能：
+
+- `FIELD_NAME_CACHE`：缓存字段名到数据库列名的映射关系，按目标类分组
+- `LAMBDA_CACHE`：缓存 Lambda 表达式的序列化信息，避免重复反射解析
+
+这种缓存机制确保了在频繁调用时，Lambda 表达式的解析性能得到显著提升。
+
+#### 字段选择
+
+使用 Lambda 表达式选择字段，支持单字段、多字段、带前缀和别名等多种方式：
+
+```java
+// 基本字段选择
+Select select = Select.create(UserEntity.class)
+    .field(UserEntity::getId)
+    .field(UserEntity::getUsername);
+
+// 带别名的字段选择
+select.field(UserEntity::getId, "user_id");
+
+// 带前缀的字段选择
+select.field("u", UserEntity::getEmail);
+
+// 带前缀和别名的字段选择
+select.field("u", UserEntity::getCreateTime, "create_date");
+```
+
+#### 条件查询
+
+使用 Lambda 表达式创建各种条件查询，支持等于、不等于、大于、小于等多种操作符：
+
+```java
+// 等于条件
+Cond cond = Cond.create()
+    .eq(UserEntity::getUsername, "admin")
+    .and().eq(UserEntity::getPassword, "123456");
+
+// 范围条件
+cond = Cond.create()
+    .gt(UserEntity::getAge, 18)
+    .and().lt(UserEntity::getAge, 30);
+
+// 字段比较
+cond = Cond.create()
+    .eq(UserEntity::getId, UserExtEntity::getUid);
+
+// 带前缀的字段比较
+cond = Cond.create()
+    .eq("u", UserEntity::getId, "ue", UserExtEntity::getUid);
+
+// 模糊查询
+cond = Cond.create()
+    .likeWrap(UserEntity::getUsername).param("%test%");
+```
+
+#### 连接查询
+
+使用 Lambda 表达式简化连接查询的编写：
+
+```java
+// 内连接
+Select select = Select.create(UserEntity.class, "u")
+    .innerJoin(UserExtEntity.class, "ue", UserEntity::getId, UserExtEntity::getUid);
+
+// 左连接
+select = Select.create(UserEntity.class, "u")
+    .leftJoin(UserExtEntity.class, "ue", UserEntity::getId, UserExtEntity::getUid);
+
+// 带前缀的连接
+select = Select.create(UserEntity.class, "u")
+    .innerJoin(UserExtEntity.class, "ue", "u", UserEntity::getId, "ue", UserExtEntity::getUid);
+```
+
+#### 排序和分组
+
+使用 Lambda 表达式创建排序和分组：
+
+```java
+// 排序
+Select select = Select.create(UserEntity.class)
+    .orderByAsc(UserEntity::getCreateTime)
+    .orderByDesc(UserEntity::getId);
+
+// 带前缀的排序
+select = Select.create(UserEntity.class, "u")
+    .orderByAsc("u", UserEntity::getUsername);
+
+// 分组
+select = Select.create(UserEntity.class)
+    .groupBy(UserEntity::getDept)
+    .having(Cond.create().gt(Func.aggregate.AVG(UserEntity::getSalary), 5000));
+
+// 带前缀的分组
+select = Select.create(UserEntity.class, "u")
+    .groupBy("u", UserEntity::getDept);
+```
+
+#### 完整示例
+
+下面是一个使用 Lambda 表达式的完整查询示例：
+
+```java
+// 创建查询
+Select select = Select.create(UserEntity.class, "u")
+    // 选择字段
+    .field("u", UserEntity::getId)
+    .field("u", UserEntity::getUsername)
+    .field("u", UserEntity::getAge)
+    .field("ue", UserExtEntity::getMoney, "salary")
+    // 左连接
+    .leftJoin(UserExtEntity.class, "ue", "u", UserEntity::getId, "ue", UserExtEntity::getUid)
+    // 查询条件
+    .where(Cond.create()
+           .gt("u", UserEntity::getAge, 18)
+           .and().eq("ue", UserExtEntity::getType, 1)
+           .and().likeWrap("u", UserEntity::getUsername).param("%test%"))
+    // 排序
+    .orderByAsc("u", UserEntity::getCreateTime)
+    .orderByDesc("u", UserEntity::getId);
+
+// 执行查询
+SQL sql = select.toSQL();
+System.out.println("SQL: " + sql.toString());
+System.out.println("参数: " + sql.params().params());
+```
+
+**执行结果：**
+
+```shell
+SQL: SELECT u.id, u.username, u.age, ue.money salary FROM user u LEFT JOIN user_ext ue ON u.id = ue.uid WHERE u.age > ? AND ue.type = ? AND u.username LIKE ? ORDER BY u.create_time ASC, u.id DESC
+参数: [18, 1, %test%]
+```
+
+#### 与传统查询方式的对比
+
+| 特性 | 传统方式 | Lambda 表达式方式 |
+|------|----------|------------------|
+| 类型安全 | 否，硬编码字段名 | 是，编译时检查 |
+| 代码可读性 | 较低，需要手动拼接字段名 | 高，直观的方法引用 |
+| 可维护性 | 低，字段名修改需要手动更新所有引用 | 高，字段名修改自动更新所有引用 |
+| 开发效率 | 较低，需要记忆字段名 | 高，IDE 自动补全支持 |
+| 错误风险 | 高，容易拼写错误 | 低，编译时检查 |
+
+#### 性能考量
+
+1. **解析开销**：Lambda 表达式的解析需要通过反射获取方法引用信息，首次调用会有一定的性能开销，但后续调用会使用缓存，性能影响很小
+2. **缓存机制**：框架内部使用了 ConcurrentHashMap 对解析结果进行缓存，避免重复解析
+3. **运行时性能**：生成的 SQL 语句与传统方式完全相同，运行时性能没有差异
+4. **内存占用**：Lambda 表达式的缓存会占用一定的内存，但占用量很小，不会对系统性能造成影响
+
+#### 最佳实践建议
+
+1. **优先使用 Lambda 表达式**：在新开发的代码中，优先使用 Lambda 表达式方式，提高代码的类型安全性和可维护性
+2. **合理使用缓存**：框架会自动缓存解析结果，无需手动管理
+3. **注意方法引用的正确性**：确保方法引用指向的是实体类的 getter 方法，否则会抛出 IllegalArgumentException
+4. **结合 QueryBuilder 使用**：与 QueryBuilder 结合使用，可以进一步简化代码，提高开发效率
+5. **注意泛型类型**：确保 Lambda 表达式的泛型类型正确，避免类型转换错误
+6. **复杂查询的处理**：对于非常复杂的查询，可以根据实际情况选择传统方式或 Lambda 表达式方式
+
+### Lambda 表达式与 QueryBuilder 结合使用
+
+将 Lambda 表达式与 QueryBuilder 结合使用，可以进一步简化代码：
+
+```java
+IDatabase owner = JDBC.get();
+String dsName = "oracledb";
+
+IResultSet<Object[]> resultSet = new QueryBuilder<IResultSet<Object[]>>(owner, dsName) {{
+    Select select = select(UserEntity.class, "u")
+          .field("u", UserEntity::getId)
+          .field("u", UserEntity::getUsername)
+          .field("ue", UserExtEntity::getMoney)
+          .leftJoin(UserExtEntity.class, "ue", "u", UserEntity::getId, "ue", UserExtEntity::getUid)
+          .where(cond()
+                .gt("u", UserEntity::getAge, 18)
+                .and().eq("ue", UserExtEntity::getType, 1))
+          .orderByAsc("u", UserEntity::getCreateTime);
+
+    build(select.find(IResultSetHandler.ARRAY.create()));
+}}.build();
+```
+
+通过 Lambda 表达式的支持，JDBC 持久化模块提供了更加现代化、类型安全的查询方式，使开发者能够更加高效地编写和维护数据库查询代码。
 
 
 
@@ -3190,7 +3407,7 @@ def custom_query(int type) {
     if (type) {
         sqlStr += " where type = ${type}"
     }
-    return [ 
+    return [
         sql: { return sqlStr },
         filter: (IResultSet results) -> {
             List result = new ArrayList<>()
@@ -3289,7 +3506,7 @@ public class DemoRepository extends AbstractRepository implements IDemoRepositor
 ### 多表查询及自定义结果集数据处理
 
 JDBC 持久化模块提供的 ORM 主要是针对单实体操作，实际业务中往往会涉及到多表关联查询以及返回多个表字段，在单实体 ORM 中是无法将 JDBC 结果集记录自动转换为实体对象的，这时就需要对结果集数据自定义处理来满足业务需求。
-    
+
 若想实现结果集数据的自定义处理，需要了解以下相关接口和类：
 
 + IResultSetHandler 接口：结果集数据处理接口，用于完成将 JDBC 结果集原始数据的每一行记录进行转换为目标对象，JDBC 持久化模块默认提供了该接口的三种实现：
@@ -3453,7 +3670,7 @@ public class UserBean implements Serializable {
 
     @ValueRenderer({EmailValueRenderer.class})
     private java.lang.String email;
-    
+
     // 忽略Getter和Setter方法
 }
 
@@ -3721,7 +3938,7 @@ try (IDatabaseConnectionHolder connectionHolder = JDBC.get().getDefaultConnectio
     > IDBLocker.SQLServer.PAGLOCK：页锁；
     >
     > IDBLocker.SQLServer.TABLOCKX：排它表锁，将在整个表设置排它锁，能够防止其他进程读取或修改表中的数据；
-    
+
 + 其它数据库：
 
     > 可以通过IDBLocker接口自行实现；
