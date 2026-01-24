@@ -216,7 +216,6 @@ public class FastJsonAdapter implements IJsonAdapter {
                     SerializerFeature.WriteMapNullValue,
                     SerializerFeature.WriteNullBooleanAsFalse,
                     SerializerFeature.WriteNullListAsEmpty,
-                    SerializerFeature.WriteNullNumberAsZero,
                     SerializerFeature.WriteNullStringAsEmpty,
                     SerializerFeature.WriteNullNumberAsZero));
         }
