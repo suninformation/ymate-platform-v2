@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2022 the original author or authors.
+ * Copyright 2007-present the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,58 +15,154 @@
  */
 package net.ymate.platform.commons;
 
-import net.ymate.platform.commons.util.UUIDUtils;
 import org.apache.commons.lang3.time.StopWatch;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.junit.Assert;
 import org.junit.Test;
 
-import java.util.concurrent.TimeUnit;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-
 /**
+ * StopWatcher测试类
+ *
  * @author 刘镇 (suninformation@163.com) on 2022/6/12 23:40
  * @since 2.1.2
  */
 public class StopWatcherTest {
 
-    private static final Log LOG = LogFactory.getLog(StopWatcherTest.class);
-
     @Test
-    public void watch() {
+    public void testWatchWithRunnable() {
+        // Test with a simple Runnable
+        final boolean[] runnableExecuted = {false};
+
         StopWatcher<Void> watcher = StopWatcher.watch(() -> {
-            // do something...
+            runnableExecuted[0] = true;
+            // Add a small delay to ensure time is measured
+            try {
+                Thread.sleep(10);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
         });
-        assertNotNull(watcher);
+
+        // Verify Runnable was executed
+        Assert.assertTrue(runnableExecuted[0]);
+
+        // Verify StopWatch was created and stopped
         StopWatch stopWatch = watcher.getStopWatch();
-        LOG.info(String.format("watch: %d ms", stopWatch.getTime(TimeUnit.MILLISECONDS)));
-        LOG.info(String.format("watch: %s sec", MathCalcHelper.bind(stopWatch.getTime(TimeUnit.MICROSECONDS)).scale(3).divide(1000000L).value()));
+        Assert.assertNotNull(stopWatch);
+        Assert.assertTrue(stopWatch.isStopped());
+        Assert.assertTrue(stopWatch.getTime() > 0);
+
+        // Verify value is null for Runnable
+        Assert.assertNull(watcher.getValue());
     }
 
     @Test
-    public void testWatch() {
-        StopWatcher<Long> watcher = null;
+    public void testWatchWithCallable() throws Exception {
+        // Test with a simple Callable that returns a value
+        String expectedValue = "test value";
+
+        StopWatcher<String> watcher = StopWatcher.watch(() -> {
+            // Add a small delay to ensure time is measured
+            try {
+                Thread.sleep(10);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
+            return expectedValue;
+        });
+
+        // Verify StopWatch was created and stopped
+        StopWatch stopWatch = watcher.getStopWatch();
+        Assert.assertNotNull(stopWatch);
+        Assert.assertTrue(stopWatch.isStopped());
+        Assert.assertTrue(stopWatch.getTime() > 0);
+
+        // Verify value was returned from Callable
+        String actualValue = watcher.getValue();
+        Assert.assertNotNull(actualValue);
+        Assert.assertEquals(expectedValue, actualValue);
+    }
+
+    @Test
+    public void testWatchWithCallableThatThrowsException() throws Exception {
+        // Test with a Callable that throws an exception
+        Exception expectedException = new RuntimeException("Test exception");
+
         try {
-            watcher = StopWatcher.watch(() -> {
-                TimeUnit.NANOSECONDS.sleep(UUIDUtils.randomLong(3, 9));
-                return 10L;
+            StopWatcher.watch(() -> {
+                throw expectedException;
             });
-        } catch (Exception ignored) {
+            Assert.fail("Expected RuntimeException was not thrown");
+        } catch (RuntimeException e) {
+            // Expected exception
+            Assert.assertSame(expectedException, e);
         }
-        assertNotNull(watcher);
-        LOG.info(String.format("testWatch: %dms", watcher.getStopWatch().getTime(TimeUnit.MILLISECONDS)));
     }
 
     @Test
-    public void getValue() {
-        StopWatcher<Long> watcher = null;
-        try {
-            watcher = StopWatcher.watch(() -> 10L);
-        } catch (Exception ignored) {
-        }
-        assertNotNull(watcher);
-        assertEquals(10L, watcher.getValue().longValue());
+    public void testWatchWithCallableReturningNull() throws Exception {
+        // Test with a Callable that returns null
+        StopWatcher<String> watcher = StopWatcher.watch(() -> null);
+
+        // Verify StopWatch was created and stopped
+        StopWatch stopWatch = watcher.getStopWatch();
+        Assert.assertNotNull(stopWatch);
+        Assert.assertTrue(stopWatch.isStopped());
+
+        // Verify value is null
+        Assert.assertNull(watcher.getValue());
+    }
+
+    @Test
+    public void testStopWatchTimeMeasurement() {
+        // Test that StopWatch properly measures time
+        StopWatcher<Void> watcher1 = StopWatcher.watch(() -> {
+            try {
+                Thread.sleep(10);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
+        });
+
+        StopWatcher<Void> watcher2 = StopWatcher.watch(() -> {
+            try {
+                Thread.sleep(20);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
+        });
+
+        // Verify that the second execution took longer
+        long time1 = watcher1.getStopWatch().getTime();
+        long time2 = watcher2.getStopWatch().getTime();
+        Assert.assertTrue(time1 > 0);
+        Assert.assertTrue(time2 > 0);
+        Assert.assertTrue(time2 > time1);
+    }
+
+    @Test
+    public void testGetStopWatch() {
+        // Test getStopWatch method
+        StopWatcher<Void> watcher = StopWatcher.watch(() -> {
+            try {
+                Thread.sleep(5);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
+        });
+
+        StopWatch stopWatch = watcher.getStopWatch();
+        Assert.assertNotNull(stopWatch);
+    }
+
+    @Test
+    public void testGetValue() throws Exception {
+        // Test getValue method with non-null value
+        Integer expectedValue = 42;
+        StopWatcher<Integer> watcher = StopWatcher.watch(() -> expectedValue);
+        Assert.assertEquals(expectedValue, watcher.getValue());
+
+        // Test getValue method with null value
+        StopWatcher<Integer> watcherNull = StopWatcher.watch(() -> null);
+        Assert.assertNull(watcherNull.getValue());
     }
 }

@@ -155,7 +155,7 @@ public class NioUdpSession extends AbstractNioSession<AbstractNioUdpListener> {
     }
 
     public void send(InetSocketAddress socketAddress, Object message) {
-        if (socketAddress != null) {
+        if (socketAddress != null && selectionKey() != null) {
             ByteBufferBuilder messageBuffer = eventGroup().codec().encode(message);
             if (messageBuffer != null) {
                 if (writeQueue.offer(new NioUdpMessageWrapper<>(socketAddress, messageBuffer.buffer()))) {
