@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2022 the original author or authors.
+ * Copyright 2007-present the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,17 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.ymate.platform.commons.serialize;
+package net.ymate.platform.test;
 
-import java.io.Serializable;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 /**
- * @author 刘镇 (suninformation@163.com) on 2022/9/19 22:23
- * @since 2.1.2
+ * @author 刘镇 (suninformation@163.com) on 2026/01/02 03:58
+ * @since 2.1.4
  */
-public interface ISerializeBean extends Serializable {
-
-    String getName();
-
-    String getContentType();
+public class YMPJUnit5SuiteExtensionRegistrar {
+    @RegisterExtension
+    static final YMPJUnit5SuiteExtension extension = new YMPJUnit5SuiteExtension();
 }
