@@ -67,7 +67,11 @@ public final class Text implements IMarkdown {
     }
 
     public Text append(String content) {
-        this.content.append(StringUtils.trimToEmpty(content));
+        String trimmedContent = StringUtils.trimToEmpty(content);
+        if (!trimmedContent.isEmpty() && this.content.length() > 0) {
+            this.content.append(StringUtils.SPACE);
+        }
+        this.content.append(trimmedContent);
         return this;
     }
 

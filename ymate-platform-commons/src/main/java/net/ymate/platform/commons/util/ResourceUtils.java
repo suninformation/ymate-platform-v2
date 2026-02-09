@@ -37,6 +37,9 @@ public class ResourceUtils {
 
     public static Iterator<URL> getResources(String resourceName, Class<?> callingClass, boolean aggregate) throws IOException {
         resourceName = StringUtils.trimToEmpty(resourceName);
+        if (resourceName.isEmpty()) {
+            return new AggregateIterator<>();
+        }
         //
         AggregateIterator<URL> iterator = new AggregateIterator<>();
         iterator.addEnumeration(Thread.currentThread().getContextClassLoader().getResources(resourceName));
@@ -55,7 +58,7 @@ public class ResourceUtils {
             }
         }
         if (!iterator.hasNext()) {
-            if (callingClass != null && (resourceName.isEmpty() || resourceName.charAt(0) != PATH_SEPARATOR_CHAR)) {
+            if (callingClass != null && resourceName.charAt(0) != PATH_SEPARATOR_CHAR) {
                 URL resource = callingClass.getResource(PATH_SEPARATOR_CHAR + resourceName);
                 if (resource != null) {
                     AggregateIterator<URL> result = new AggregateIterator<>();
@@ -69,6 +72,9 @@ public class ResourceUtils {
 
     public static URL getResource(String resourceName, Class<?> callingClass) {
         resourceName = StringUtils.trimToEmpty(resourceName);
+        if (resourceName.isEmpty()) {
+            return null;
+        }
         //
         URL url = Thread.currentThread().getContextClassLoader().getResource(resourceName);
         if (url == null) {
@@ -86,7 +92,7 @@ public class ResourceUtils {
                 }
             }
         }
-        if (url == null && callingClass != null && (resourceName.isEmpty() || resourceName.charAt(0) != PATH_SEPARATOR_CHAR)) {
+        if (url == null && callingClass != null && resourceName.charAt(0) != PATH_SEPARATOR_CHAR) {
             url = callingClass.getResource(PATH_SEPARATOR_CHAR + resourceName);
         }
         return url;

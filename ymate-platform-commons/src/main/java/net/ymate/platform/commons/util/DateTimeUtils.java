@@ -266,6 +266,10 @@ public final class DateTimeUtils {
         Instant instant = Instant.ofEpochMilli(time);
         if (StringUtils.isNotBlank(timeOffset)) {
             try {
+                // 特殊处理"0"时区偏移，直接使用UTC
+                if ("0".equals(timeOffset)) {
+                    return formatter.format(instant.atZone(ZoneId.of("UTC")));
+                }
                 // 使用JDK 8的ZoneId处理时区
                 ZoneId zoneId = parseZoneId(timeOffset);
                 if (zoneId != null) {
@@ -275,9 +279,10 @@ public final class DateTimeUtils {
                 } else if (TIME_ZONES.containsKey(timeOffset)) {
                     // 回退到映射表
                     String zoneIdStr = TIME_ZONES.get(timeOffset)[0];
-                    ZoneOffset offset = ZoneOffset.of(zoneIdStr.replace("UTC", StringUtils.EMPTY));
-                    OffsetDateTime offsetDateTime = instant.atOffset(offset);
-                    return formatter.format(offsetDateTime);
+                    if (zoneIdStr.startsWith("UTC")) {
+                        // 对于UTC偏移格式，直接使用
+                        return formatter.format(instant.atZone(ZoneId.of(zoneIdStr)));
+                    }
                 }
             } catch (Exception e) {
                 // 处理异常，回退到系统默认时区

@@ -70,7 +70,7 @@ public class MimeTypeUtils {
         if (extName.charAt(0) == '.') {
             extName = extName.substring(1);
         }
-        return MIME_TYPE_MAPS.get(extName);
+        return MIME_TYPE_MAPS.get(extName.toLowerCase());
     }
 
     /**
@@ -93,6 +93,6 @@ public class MimeTypeUtils {
         if (StringUtils.isBlank(mimeType)) {
             return null;
         }
-        return FILE_EXT_MAPS.get(mimeType);
+        return FILE_EXT_MAPS.get(mimeType.toLowerCase());
     }
 }

@@ -25,6 +25,7 @@ import javax.crypto.spec.PBEKeySpec;
 import javax.crypto.spec.PBEParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 import java.io.ByteArrayOutputStream;
+import java.nio.charset.StandardCharsets;
 import java.security.*;
 import java.security.interfaces.RSAPrivateKey;
 import java.security.interfaces.RSAPublicKey;
@@ -42,6 +43,11 @@ public class CodecUtils {
     public static final String RSA_SIGN_MD5_WITH_RSA = "MD5withRSA";
 
     public static final String RSA_SIGN_SHA1_WITH_RSA = "SHA1withRSA";
+
+    /**
+     * @since 2.1.4
+     */
+    public static final String RSA_SIGN_SHA256_WITH_RSA = "SHA256withRSA";
 
     public static final String RSA_CIPHER_RSA_ECB_PKCS1 = "RSA/ECB/PKCS1Padding";
 
@@ -145,7 +151,7 @@ public class CodecUtils {
         }
 
         public String encrypt(String data, String key) throws Exception {
-            return StringUtils.newStringUtf8(Base64.encodeBase64(encrypt(data.getBytes(), key.getBytes())));
+            return StringUtils.newStringUtf8(Base64.encodeBase64(encrypt(data.getBytes(StandardCharsets.UTF_8), key.getBytes(StandardCharsets.UTF_8))));
         }
 
         /**
@@ -166,7 +172,7 @@ public class CodecUtils {
         }
 
         public String decrypt(String data, String key) throws Exception {
-            return StringUtils.newStringUtf8(decrypt(Base64.decodeBase64(data), key.getBytes()));
+            return StringUtils.newStringUtf8(decrypt(Base64.decodeBase64(data), key.getBytes(StandardCharsets.UTF_8)));
         }
     }
 
@@ -212,26 +218,29 @@ public class CodecUtils {
 
         @Override
         public byte[] encrypt(byte[] data, byte[] key) throws Exception {
-            return encrypt(data, key, DigestUtils.sha1Hex(key).substring(0, 8).getBytes());
+            return encrypt(data, key, DigestUtils.sha1Hex(key).substring(0, 8).getBytes(StandardCharsets.UTF_8));
         }
 
         public byte[] encrypt(byte[] data, byte[] key, byte[] salt) throws Exception {
             // 实例化
             Cipher cipher = getCipherInstance();
             // 初始化，设置为加密模式
-            PBEParameterSpec parameterSpec = new PBEParameterSpec(salt, ITERATION_COUNT);
+            // 确保salt的长度是8字节
+            byte[] fixedSalt = new byte[8];
+            System.arraycopy(salt, 0, fixedSalt, 0, Math.min(salt.length, 8));
+            PBEParameterSpec parameterSpec = new PBEParameterSpec(fixedSalt, ITERATION_COUNT);
             cipher.init(Cipher.ENCRYPT_MODE, toKey(key), parameterSpec);
             // 执行操作
             return cipher.doFinal(data);
         }
 
         public String encrypt(String data, String key, String salt) throws Exception {
-            return StringUtils.newStringUtf8(Base64.encodeBase64(encrypt(data.getBytes(), key.getBytes(), salt.getBytes())));
+            return StringUtils.newStringUtf8(Base64.encodeBase64(encrypt(data.getBytes(StandardCharsets.UTF_8), key.getBytes(StandardCharsets.UTF_8), salt.getBytes(StandardCharsets.UTF_8))));
         }
 
         @Override
         public byte[] decrypt(byte[] data, byte[] key) throws Exception {
-            return decrypt(data, key, DigestUtils.sha1Hex(key).substring(0, 8).getBytes());
+            return decrypt(data, key, DigestUtils.sha1Hex(key).substring(0, 8).getBytes(StandardCharsets.UTF_8));
         }
 
         public byte[] decrypt(byte[] data, byte[] key, byte[] salt) throws Exception {
@@ -245,7 +254,7 @@ public class CodecUtils {
         }
 
         public String decrypt(String data, String key, String salt) throws Exception {
-            return StringUtils.newStringUtf8(decrypt(Base64.decodeBase64(data), key.getBytes(), salt.getBytes()));
+            return StringUtils.newStringUtf8(decrypt(Base64.decodeBase64(data), key.getBytes(StandardCharsets.UTF_8), salt.getBytes(StandardCharsets.UTF_8)));
         }
     }
 
@@ -277,8 +286,11 @@ public class CodecUtils {
 
         public RSACodecHelper(int keySize, String cipherAlgorithm, Provider cipherAlgorithmProvider, String signatureAlgorithm, Provider signatureAlgorithmProvider) {
             super(keySize, "RSA", org.apache.commons.lang3.StringUtils.defaultIfBlank(cipherAlgorithm, RSA_CIPHER_RSA_ECB_PKCS1), cipherAlgorithmProvider);
-            this.signatureAlgorithm = org.apache.commons.lang3.StringUtils.defaultIfBlank(signatureAlgorithm, RSA_SIGN_MD5_WITH_RSA);
+            this.signatureAlgorithm = org.apache.commons.lang3.StringUtils.defaultIfBlank(signatureAlgorithm, RSA_SIGN_SHA256_WITH_RSA);
             this.signatureAlgorithmProvider = signatureAlgorithmProvider;
+            // 根据密钥大小自动调整块大小
+            this.maxEncryptBlockSize = (keySize / 8) - 11;
+            this.maxDecryptBlockSize = keySize / 8;
         }
 
         private Signature getSignatureInstance() throws NoSuchAlgorithmException {
@@ -333,7 +345,7 @@ public class CodecUtils {
         }
 
         public String sign(String data, String privateKey) throws Exception {
-            return StringUtils.newStringUtf8(Base64.encodeBase64(sign(data.getBytes(), privateKey)));
+            return StringUtils.newStringUtf8(Base64.encodeBase64(sign(data.getBytes(StandardCharsets.UTF_8), privateKey)));
         }
 
         public byte[] sign(byte[] data, String privateKey) throws Exception {
@@ -393,7 +405,7 @@ public class CodecUtils {
 
         @Override
         public String encrypt(String data, String key) throws Exception {
-            return StringUtils.newStringUtf8(Base64.encodeBase64(encrypt(data.getBytes(), Base64.decodeBase64(key))));
+            return StringUtils.newStringUtf8(Base64.encodeBase64(encrypt(data.getBytes(StandardCharsets.UTF_8), Base64.decodeBase64(key))));
         }
 
         @Override
@@ -423,7 +435,7 @@ public class CodecUtils {
         }
 
         public String encryptPublicKey(String data, String key) throws Exception {
-            return StringUtils.newStringUtf8(Base64.encodeBase64(encryptPublicKey(data.getBytes(), Base64.decodeBase64(key))));
+            return StringUtils.newStringUtf8(Base64.encodeBase64(encryptPublicKey(data.getBytes(StandardCharsets.UTF_8), Base64.decodeBase64(key))));
         }
 
         public byte[] decryptPublicKey(byte[] data, byte[] key) throws Exception {

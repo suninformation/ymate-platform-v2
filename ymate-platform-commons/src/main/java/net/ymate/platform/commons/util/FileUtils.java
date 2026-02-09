@@ -92,8 +92,14 @@ public class FileUtils {
         String suffix = null;
         if (fileName != null && !fileName.isEmpty()) {
             int pos = fileName.lastIndexOf('.');
-            if ((pos == 0 && Strings.CS.startsWith(fileName, ".") || pos > 0) && pos < fileName.length() - 1) {
+            if (pos > 0 && pos < fileName.length() - 1) {
                 suffix = fileName.substring(pos + 1);
+            } else if (pos == 0 && fileName.length() > 1) {
+                // 处理以点开头的文件名，如".test.txt"返回"txt"，".test"返回空字符串
+                int secondPos = fileName.indexOf('.', 1);
+                if (secondPos > 0 && secondPos < fileName.length() - 1) {
+                    suffix = fileName.substring(secondPos + 1);
+                }
             }
         }
         return StringUtils.trimToEmpty(suffix);
@@ -432,7 +438,12 @@ public class FileUtils {
     public static File createTempFile(String prefix, String fileName, int index) throws IOException {
         String suffix = null;
         if (StringUtils.isNotBlank(fileName)) {
-            String extName = StringUtils.trimToNull(getExtName(fileName));
+            String extName = null;
+            if (fileName.startsWith(".")) {
+                extName = StringUtils.trimToNull(fileName.substring(1));
+            } else if (fileName.contains(".")) {
+                extName = StringUtils.trimToNull(getExtName(fileName));
+            }
             if (extName != null) {
                 suffix = String.format(".%s", extName);
             }

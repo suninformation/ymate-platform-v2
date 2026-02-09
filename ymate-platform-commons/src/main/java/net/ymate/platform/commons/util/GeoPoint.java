@@ -52,6 +52,7 @@ public class GeoPoint implements Serializable {
     private GeoPointType type;
 
     public GeoPoint() {
+        this.type = GeoPointType.WGS84;
     }
 
     /**
@@ -113,10 +114,10 @@ public class GeoPoint implements Serializable {
                 point = bd09ToGcj02();
                 break;
             case WGS84:
-                point = toWgs84();
+                point = transform();
                 break;
             default:
-                point = transform();
+                point = new GeoPoint(longitude, latitude, GeoPointType.GCJ02);
         }
         return point;
     }
@@ -279,12 +280,12 @@ public class GeoPoint implements Serializable {
      * @return 验证是否为合法有效的经纬度
      */
     public boolean isValidCoordinate() {
-        // 经度: 180° >= x >= 0°
-        if (0.0 > longitude || 180.0 < longitude) {
+        // 经度: 180° >= x >= -180°
+        if (-180.0 > longitude || 180.0 < longitude) {
             return false;
         }
-        // 纬度: 90° >= y >= 0°
-        return !(0.0 > latitude || 90.0 < latitude);
+        // 纬度: 90° >= y >= -90°
+        return !(-90.0 > latitude || 90.0 < latitude);
     }
 
     @Override

@@ -113,7 +113,7 @@ public final class Table implements IMarkdown {
         }
 
         Header(String title, Align align) {
-            this.title = StringUtils.trimToEmpty(title);
+            this.title = StringUtils.replaceEach(StringUtils.trimToEmpty(title), new String[]{"|", "\r\n", "\r", "\n", "\t"}, new String[]{"\\|", "<br/>", "<br/>", "<br/>", TAB});
             this.align = align != null ? align : Align.NORMAL;
         }
     }
@@ -129,7 +129,7 @@ public final class Table implements IMarkdown {
         }
 
         public Row addColumn(String content) {
-            columns.add(StringUtils.replaceEach(content, new String[]{"|", "\r\n", "\r", "\n", "\t"}, new String[]{"\\|", "<br/>", StringUtils.EMPTY, "<br/>", TAB}));
+            columns.add(StringUtils.replaceEach(content, new String[]{"|", "\r\n", "\r", "\n", "\t"}, new String[]{"\\|", "<br/>", "<br/>", "<br/>", TAB}));
             return this;
         }
 

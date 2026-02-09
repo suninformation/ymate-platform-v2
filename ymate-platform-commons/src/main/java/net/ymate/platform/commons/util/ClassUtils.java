@@ -635,7 +635,7 @@ public class ClassUtils {
                     returnBuilder.append(separator);
                     currStr = capitalize > 0 ? currStr.toUpperCase() : currStr.toLowerCase();
                 } else {
-                    currStr = capitalize > 1 ? currStr.toUpperCase() : currStr.toLowerCase();
+                    currStr = capitalize >= 1 ? currStr.toUpperCase() : currStr.toLowerCase();
                 }
                 returnBuilder.append(currStr);
             }

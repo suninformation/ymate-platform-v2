@@ -30,7 +30,11 @@ public class JsonWrapperConverter implements IConverter<JsonWrapper> {
     @Override
     public JsonWrapper convert(Object target) {
         if (target instanceof String && StringUtils.isNotBlank((CharSequence) target)) {
-            return JsonWrapper.fromJson((String) target);
+            try {
+                return JsonWrapper.fromJson((String) target);
+            } catch (Exception ignored) {
+                return null;
+            }
         }
         return null;
     }

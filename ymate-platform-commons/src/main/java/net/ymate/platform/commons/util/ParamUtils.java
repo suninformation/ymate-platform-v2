@@ -115,30 +115,45 @@ public class ParamUtils {
         if (StringUtils.isBlank(text)) {
             return text;
         }
-        char[] charArray = text.toCharArray();
-        if (charArray.length > 0) {
-            if (start < 0) {
-                start = 0;
-            } else if (start >= charArray.length) {
-                start = charArray.length - 1;
-            }
-            if (end <= start) {
-                end = charArray.length - start;
-            }
-            for (int idx = 0; idx < charArray.length; idx++) {
-                if (idx >= start && idx < end) {
-                    if (Strings.CS.equalsAny(String.valueOf(charArray[idx]), excludedChars)) {
-                        continue;
+        int length = text.length();
+        StringBuilder sb = new StringBuilder(length);
+        // 修正起始位置
+        if (start < 0) {
+            start = 0;
+        } else if (start >= length) {
+            start = length - 1;
+        }
+        // 修正结束位置
+        if (end <= start) {
+            end = start;
+        } else if (end > length) {
+            end = length;
+        }
+        // 创建排除字符集合，提高查找效率
+        Set<Character> excludedSet = new HashSet<>();
+        if (excludedChars != null) {
+            for (CharSequence seq : excludedChars) {
+                if (seq != null) {
+                    for (int i = 0; i < seq.length(); i++) {
+                        excludedSet.add(seq.charAt(i));
                     }
-                    charArray[idx] = '*';
                 }
             }
         }
-        return new String(charArray);
+        // 替换字符
+        for (int i = 0; i < length; i++) {
+            char c = text.charAt(i);
+            if (i >= start && i < end && !excludedSet.contains(c)) {
+                sb.append('*');
+            } else {
+                sb.append(c);
+            }
+        }
+        return sb.toString();
     }
 
     public static String safetyText(String text, int start, int end, CharSequence excludedChar) {
-        return safetyText(text, start, end, StringUtils.EMPTY, excludedChar);
+        return safetyText(text, start, end, new CharSequence[]{excludedChar});
     }
 
     public static boolean isInvalid(Object obj) {
@@ -238,30 +253,41 @@ public class ParamUtils {
     }
 
     public static Map<String, String[]> parseQueryParamStr(String paramStr, boolean decode, String charset) {
+        if (StringUtils.isBlank(paramStr)) {
+            return new HashMap<>(0);
+        }
         // 以“&”字符切割字符串
         String[] paramArr = StringUtils.split(paramStr, '&');
         // 把切割后的字符串数组变成变量与数值组合的字典数组
         Map<String, List<String>> params = new HashMap<>(paramArr.length);
         for (String param : paramArr) {
-            //获得第一个=字符的位置
-            int nPos = param.indexOf('=');
-            //获得字符串长度
-            int nLen = param.length();
-            //获得变量名
-            String strKey = param.substring(0, nPos);
-            //获得数值
-            String strValue = param.substring(nPos + 1, nLen);
-            if (decode) {
-                try {
-                    strValue = URLDecoder.decode(strValue, StringUtils.defaultIfBlank(charset, "UTF-8"));
-                } catch (UnsupportedEncodingException e) {
-                    if (LOG.isWarnEnabled()) {
-                        LOG.warn(StringUtils.EMPTY, RuntimeUtils.unwrapThrow(e));
+            if (StringUtils.isNotBlank(param)) {
+                //获得第一个=字符的位置
+                int nPos = param.indexOf('=');
+                //获得变量名和数值
+                String strKey;
+                String strValue = "";
+                if (nPos > 0) {
+                    //获得变量名
+                    strKey = param.substring(0, nPos);
+                    //获得数值
+                    strValue = param.substring(nPos + 1);
+                    if (decode) {
+                        try {
+                            strValue = URLDecoder.decode(strValue, StringUtils.defaultIfBlank(charset, "UTF-8"));
+                        } catch (UnsupportedEncodingException e) {
+                            if (LOG.isWarnEnabled()) {
+                                LOG.warn(StringUtils.EMPTY, RuntimeUtils.unwrapThrow(e));
+                            }
+                        }
                     }
+                } else {
+                    // 没有=字符，整个字符串作为键，值为空
+                    strKey = param;
                 }
+                //放入MAP类中
+                params.computeIfAbsent(strKey, key -> new ArrayList<>()).add(strValue);
             }
-            //放入MAP类中
-            params.computeIfAbsent(strKey, key -> new ArrayList<>()).add(strValue);
         }
         Map<String, String[]> returnValue = new HashMap<>(params.size());
         params.forEach((key, value) -> returnValue.put(key, value.toArray(new String[0])));
@@ -282,17 +308,23 @@ public class ParamUtils {
         }
         stringBuilder.append(">");
         //
-        params.forEach((key, value) -> {
-            if (value != null) {
-                if (value.getClass().isArray()) {
-                    for (Object v : (Object[]) value) {
-                        doAppendHiddenElement(stringBuilder, key, BlurObject.bind(v).toStringValue(), encode, fixedCharset);
+        if (params != null) {
+            params.forEach((key, value) -> {
+                if (value != null) {
+                    if (value.getClass().isArray()) {
+                        for (Object v : (Object[]) value) {
+                            doAppendHiddenElement(stringBuilder, key, BlurObject.bind(v).toStringValue(), encode, fixedCharset);
+                        }
+                    } else if (value instanceof Collection) {
+                        for (Object v : (Collection<?>) value) {
+                            doAppendHiddenElement(stringBuilder, key, BlurObject.bind(v).toStringValue(), encode, fixedCharset);
+                        }
+                    } else {
+                        doAppendHiddenElement(stringBuilder, key, BlurObject.bind(value).toStringValue(), encode, fixedCharset);
                     }
-                } else {
-                    doAppendHiddenElement(stringBuilder, key, BlurObject.bind(value).toStringValue(), encode, fixedCharset);
                 }
-            }
-        });
+            });
+        }
         // submit按钮控件请不要含有name属性
         stringBuilder.append("<input type=\"submit\" value=\"doSubmit\" style=\"display:none;\"></form>")
                 .append("<script>document.forms['_payment_submit'].submit();</script>");

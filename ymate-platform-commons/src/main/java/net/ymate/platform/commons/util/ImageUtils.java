@@ -48,7 +48,9 @@ public class ImageUtils {
      * @throws NotFoundException 识别二维码失败
      */
     public static BufferedImage replaceQrCode(BufferedImage originImage, BufferedImage qrImage, int deviate) throws NotFoundException {
-
+        if (originImage == null || qrImage == null) {
+            throw new NullPointerException();
+        }
         BinaryBitmap binaryBitmap = new BinaryBitmap(new HybridBinarizer(new BufferedImageLuminanceSource(originImage)));
 
         Map<DecodeHintType, Object> hints = new HashMap<>(1);
@@ -120,6 +122,9 @@ public class ImageUtils {
      * @return 计算图片文件dHash值
      */
     public static String dHash(BufferedImage srcImage) {
+        if (srcImage == null) {
+            throw new NullPointerException();
+        }
         // 转换为 9*8 像素
         BufferedImage buffImg = new BufferedImage(9, 8, BufferedImage.TYPE_INT_RGB);
         buffImg.getGraphics().drawImage(srcImage.getScaledInstance(9, 8, Image.SCALE_SMOOTH), 0, 0, null);
@@ -157,6 +162,9 @@ public class ImageUtils {
      * @return 返回Thumbnails.Builder对象实例
      */
     public static Thumbnails.Builder<BufferedImage> resize(BufferedImage source, int width, int height, float quality, String format) {
+        if (source == null) {
+            throw new NullPointerException();
+        }
         Thumbnails.Builder<BufferedImage> thumbBuilder = Thumbnails.of(source);
         if (width <= 0 || height <= 0) {
             if (width > 0) {
@@ -191,6 +199,9 @@ public class ImageUtils {
      * @return 返回true表示重置成功
      */
     public static boolean resize(BufferedImage source, File dist, int width, int height, float quality) {
+        if (source == null || dist == null) {
+            throw new NullPointerException();
+        }
         try {
             resize(source, width, height, quality, null).toFile(dist);
             return true;
@@ -203,6 +214,9 @@ public class ImageUtils {
     }
 
     public static Thumbnails.Builder<BufferedImage> resize(BufferedImage source, float scale, float quality, String format) {
+        if (source == null) {
+            throw new NullPointerException();
+        }
         if (scale <= 0 || scale > 1) {
             scale = 1f;
         }
@@ -221,6 +235,9 @@ public class ImageUtils {
     }
 
     public static boolean resize(BufferedImage source, File dist, float scale, float quality) {
+        if (source == null || dist == null) {
+            throw new NullPointerException();
+        }
         try {
             resize(source, scale, quality, null).toFile(dist);
             return true;

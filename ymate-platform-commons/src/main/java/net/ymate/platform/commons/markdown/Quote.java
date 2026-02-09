@@ -57,7 +57,7 @@ public final class Quote implements IMarkdown {
         if (content.length() == 0) {
             return StringUtils.EMPTY;
         }
-        return Arrays.stream(StringUtils.split(content.toString(), P)).map(line -> "> " + line + P).collect(Collectors.joining(">" + P));
+        return Arrays.stream(StringUtils.split(content.toString(), P)).map(line -> "> " + line + P).collect(Collectors.joining()) + "> " + P;
     }
 
     @Override

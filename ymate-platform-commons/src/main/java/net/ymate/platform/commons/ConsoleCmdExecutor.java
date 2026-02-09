@@ -26,6 +26,7 @@ import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.*;
 import java.util.stream.Collectors;
 
@@ -46,6 +47,9 @@ public class ConsoleCmdExecutor implements AutoCloseable {
      * @throws Exception 执行异常
      */
     public static String exec(String... command) throws Exception {
+        if (command == null) {
+            throw new IllegalArgumentException("command cannot be null");
+        }
         return exec(Arrays.asList(command));
     }
 
@@ -271,11 +275,9 @@ public class ConsoleCmdExecutor implements AutoCloseable {
      */
     public <T> AsyncCmdTask<T> execAsync(List<String> command, ICmdOutputHandler<T> handler) {
         if (command == null || command.isEmpty()) {
-            throw new NullArgumentException("command");
+            throw new IllegalArgumentException("command must not be null or empty.");
         }
-        if (handler == null) {
-            throw new NullArgumentException("handler");
-        }
+        Objects.requireNonNull(handler, "handler must not be null.");
         String commandStr = StringUtils.join(command, StringUtils.SPACE);
         if (LOG.isInfoEnabled()) {
             LOG.info(String.format("Async executing command: %s", commandStr));
@@ -377,18 +379,61 @@ public class ConsoleCmdExecutor implements AutoCloseable {
 
         private final String commandStr;
 
-        private AsyncCmdTask(Process process, CompletableFuture<T> future, String commandStr) {
+        /**
+         * 构造方法
+         * <p>
+         * 创建异步命令执行任务对象，封装进程、Future和命令字符串。
+         * </p>
+         *
+         * @param process    命令执行的进程对象
+         * @param future     异步执行的Future对象
+         * @param commandStr 执行的命令字符串
+         */
+        protected AsyncCmdTask(Process process, CompletableFuture<T> future, String commandStr) {
             this.process = process;
             this.future = future;
             this.commandStr = commandStr;
         }
 
         /**
-         * 取消任务执行
+         * 获取命令执行的进程对象
+         * <p>
+         * 返回当前命令执行关联的进程对象，可用于进程管理操作。
+         * </p>
          *
-         * @return 是否成功取消
+         * @return 命令执行的进程对象
+         */
+        public Process getProcess() {
+            return process;
+        }
+
+        /**
+         * 获取执行的命令字符串
+         * <p>
+         * 返回当前任务执行的命令字符串，用于日志记录和错误诊断。
+         * </p>
+         *
+         * @return 命令字符串
+         */
+        public String getCommandStr() {
+            return commandStr;
+        }
+
+        /**
+         * 取消正在执行的命令
+         * <p>
+         * 如果命令正在执行中，将强制终止对应的进程。
+         * 如果命令已经完成，此方法返回false。
+         * 如果命令尚未开始执行，将尝试取消任务。
+         * </p>
+         *
+         * @return 如果成功取消返回true，否则返回false
          */
         public boolean cancel() {
+            // 首先尝试取消Future任务
+            boolean futureCancelled = future.cancel(true);
+
+            // 如果进程正在运行，强制终止进程
             if (process != null && process.isAlive()) {
                 if (LOG.isInfoEnabled()) {
                     LOG.info("Cancelling command execution: " + commandStr);
@@ -400,16 +445,22 @@ public class ConsoleCmdExecutor implements AutoCloseable {
                     if (LOG.isErrorEnabled()) {
                         LOG.error("Failed to cancel command execution", e);
                     }
-                    return false;
+                    return futureCancelled;
                 }
             }
-            return false;
+
+            // 如果进程已结束或为null，返回Future取消结果
+            return futureCancelled;
         }
 
         /**
-         * 获取异步执行结果
+         * 获取异步执行结果的Future对象
+         * <p>
+         * 返回的Future对象可以用于更复杂的异步操作，
+         * 例如添加回调、组合多个异步操作等。
+         * </p>
          *
-         * @return CompletableFuture包装的结果
+         * @return CompletableFuture包装的异步结果
          */
         public CompletableFuture<T> getFuture() {
             return future;
@@ -417,13 +468,17 @@ public class ConsoleCmdExecutor implements AutoCloseable {
 
         /**
          * 同步等待执行完成，带有超时设置
+         * <p>
+         * 此方法会阻塞当前线程，直到命令执行完成或超时。
+         * 如果超时，将抛出 {@link java.util.concurrent.TimeoutException}。
+         * </p>
          *
-         * @param timeout 超时时间
-         * @param unit    时间单位
-         * @return 执行结果
-         * @throws InterruptedException 线程中断异常
-         * @throws ExecutionException   执行异常
-         * @throws TimeoutException     超时异常
+         * @param timeout 超时时间，必须为正数
+         * @param unit    时间单位，不能为null
+         * @return 命令执行结果
+         * @throws InterruptedException 如果线程被中断
+         * @throws ExecutionException   如果命令执行失败
+         * @throws TimeoutException     如果等待超时
          */
         public T get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
             return future.get(timeout, unit);
@@ -431,10 +486,13 @@ public class ConsoleCmdExecutor implements AutoCloseable {
 
         /**
          * 同步等待执行完成
+         * <p>
+         * 此方法会阻塞当前线程，直到命令执行完成。
+         * </p>
          *
-         * @return 执行结果
-         * @throws InterruptedException 线程中断异常
-         * @throws ExecutionException   执行异常
+         * @return 命令执行结果
+         * @throws InterruptedException 如果线程被中断
+         * @throws ExecutionException   如果命令执行失败
          */
         public T get() throws InterruptedException, ExecutionException {
             return future.get();

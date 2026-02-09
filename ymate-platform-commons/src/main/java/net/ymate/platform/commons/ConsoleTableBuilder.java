@@ -151,12 +151,7 @@ public class ConsoleTableBuilder {
                 stringBuilder.append("\n");
             });
         } else {
-            int[] columnLengths;
-            if (markdown) {
-                columnLengths = new int[0];
-            } else {
-                columnLengths = this.getColumnLengths();
-            }
+            int[] columnLengths = this.getColumnLengths();
             //
             if (!markdown) {
                 stringBuilder.append(printHeader(columnLengths));
@@ -185,7 +180,7 @@ public class ConsoleTableBuilder {
                     if (!markdown) {
                         stringBuilder.append(printStr(' ', MARGIN)).append(content).append(printStr(' ', columnLengths[columnIdx] - length + MARGIN));
                     } else {
-                        stringBuilder.append(content);
+                        stringBuilder.append(' ').append(content).append(' ');
                     }
                 }
                 stringBuilder.append("|\n");
@@ -193,10 +188,12 @@ public class ConsoleTableBuilder {
                     if (separateLine || rowIdx == 0 || rowIdx == rows.size() - 1) {
                         stringBuilder.append(printHeader(columnLengths));
                     }
-                } else if (rowIdx <= 0) {
+                } else if (rowIdx == 0 && !rows.isEmpty()) {
                     stringBuilder.append("|");
                     for (int idx = 0; idx < column; idx++) {
-                        stringBuilder.append(printStr('-', 3)).append("|");
+                        // 根据列长度生成适当的分隔线
+                        int lineLength = columnLengths[idx] + 2; // +2 是为了包含两边的空格
+                        stringBuilder.append(printStr('-', lineLength)).append("|");
                     }
                     stringBuilder.append("\n");
                 }

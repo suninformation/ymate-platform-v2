@@ -74,6 +74,10 @@ public class GeoPolygon implements Serializable {
     }
 
     public boolean in(GeoPoint point) {
+        // 首先检查点是否在边上，如果在边上则返回false
+        if (on(point)) {
+            return false;
+        }
         int nCross = 0;
         for (int i = 0; i < points.size(); i++) {
             GeoPoint p1 = points.get(i);

@@ -64,7 +64,11 @@ public final class Title implements IMarkdown {
     }
 
     public Title append(String content) {
-        this.title.append(StringUtils.trimToEmpty(content));
+        String trimmedContent = StringUtils.trimToEmpty(content);
+        if (!trimmedContent.isEmpty() && this.title.length() > 0) {
+            this.title.append(StringUtils.SPACE);
+        }
+        this.title.append(trimmedContent);
         return this;
     }
 

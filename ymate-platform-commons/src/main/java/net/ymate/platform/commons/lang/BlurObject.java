@@ -519,7 +519,11 @@ public class BlurObject implements Serializable {
             if (attr instanceof BlurObject) {
                 return ((BlurObject) this.attr).toByte();
             }
-            return Byte.valueOf(toStringValue());
+            try {
+                return Byte.valueOf(toStringValue());
+            } catch (NumberFormatException ignored) {
+                return null;
+            }
         }
         return null;
     }

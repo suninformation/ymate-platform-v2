@@ -63,8 +63,18 @@ public class GeoBound implements Serializable {
     }
 
     public GeoBound(GeoPoint southWest, GeoPoint northEast) {
-        this.southWest = southWest;
-        this.northEast = northEast;
+        if (southWest != null && northEast != null) {
+            // 确保西南角的经度小于东北角的经度，西南角的纬度小于东北角的纬度
+            double minLng = Math.min(southWest.getLongitude(), northEast.getLongitude());
+            double maxLng = Math.max(southWest.getLongitude(), northEast.getLongitude());
+            double minLat = Math.min(southWest.getLatitude(), northEast.getLatitude());
+            double maxLat = Math.max(southWest.getLatitude(), northEast.getLatitude());
+            this.southWest = new GeoPoint(minLng, minLat);
+            this.northEast = new GeoPoint(maxLng, maxLat);
+        } else {
+            this.southWest = southWest;
+            this.northEast = northEast;
+        }
     }
 
     public GeoPoint getSouthWest() {
@@ -119,13 +129,11 @@ public class GeoBound implements Serializable {
      */
     public GeoBound intersects(GeoBound bounds) {
         if (bounds != null && !bounds.isEmpty() && !isEmpty()) {
-            GeoBound merged = new GeoBound(this, bounds);
-            //
-            double x1 = this.southWest.getLongitude() == merged.southWest.getLongitude() ? bounds.southWest.getLongitude() : this.southWest.getLongitude();
-            double y1 = this.southWest.getLatitude() == merged.southWest.getLatitude() ? bounds.southWest.getLatitude() : this.southWest.getLatitude();
-            //
-            double x2 = this.northEast.getLongitude() == merged.northEast.getLongitude() ? bounds.northEast.getLongitude() : this.northEast.getLongitude();
-            double y2 = this.northEast.getLatitude() == merged.northEast.getLatitude() ? bounds.northEast.getLatitude() : this.northEast.getLatitude();
+            // 计算交集的西南角和东北角
+            double x1 = Math.max(this.southWest.getLongitude(), bounds.southWest.getLongitude());
+            double y1 = Math.max(this.southWest.getLatitude(), bounds.southWest.getLatitude());
+            double x2 = Math.min(this.northEast.getLongitude(), bounds.northEast.getLongitude());
+            double y2 = Math.min(this.northEast.getLatitude(), bounds.northEast.getLatitude());
             //
             if (x1 < x2 && y1 < y2) {
                 return new GeoBound(new GeoPoint(x1, y1), new GeoPoint(x2, y2));

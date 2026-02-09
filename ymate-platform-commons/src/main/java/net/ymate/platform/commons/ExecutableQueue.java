@@ -374,7 +374,7 @@ public class ExecutableQueue<E extends Serializable> implements AutoCloseable {
      * @return 返回被移除的监听器对象
      */
     public IListener<E> removeListener(String id) {
-        if (checkStatus() && !StringUtils.isNotBlank(id)) {
+        if (checkStatus() && StringUtils.isNotBlank(id)) {
             IListener<E> listener = listeners.remove(id);
             onListenerRemoved(id, listener);
             return listener;

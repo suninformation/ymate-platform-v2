@@ -76,7 +76,7 @@ public class NetworkUtils {
             try {
                 return Arrays.stream(InetAddress.getAllByName(ipOrName)).map(InetAddress::getHostAddress).toArray(String[]::new);
             } catch (UnknownHostException e) {
-                return null;
+                return new String[0];
             }
         }
 
@@ -93,7 +93,26 @@ public class NetworkUtils {
          * @return 检查IPv4地址的合法性
          */
         public static boolean isIPv4(String ipAddr) {
-            return PATTERN.matcher(ipAddr).matches();
+            if (ipAddr == null || ipAddr.trim().isEmpty()) {
+                return false;
+            }
+            ipAddr = ipAddr.trim();
+            if (!PATTERN.matcher(ipAddr).matches()) {
+                return false;
+            }
+            // 检查每个数字是否在0-255的范围内
+            String[] parts = ipAddr.split("\\.");
+            for (String part : parts) {
+                try {
+                    int num = Integer.parseInt(part);
+                    if (num < 0 || num > 255) {
+                        return false;
+                    }
+                } catch (NumberFormatException e) {
+                    return false;
+                }
+            }
+            return true;
         }
 
         /**
@@ -101,6 +120,9 @@ public class NetworkUtils {
          * @return 检查IPv6地址的合法性
          */
         public static boolean isIPv6(String ipAddr) {
+            if (ipAddr == null || ipAddr.trim().isEmpty()) {
+                return false;
+            }
             ipAddr = ipAddr.trim();
             int index = ipAddr.indexOf('%');
             if (index > 0) {
@@ -178,7 +200,7 @@ public class NetworkUtils {
         }
 
         public static boolean isLocalIPAddr(String ipAddr) {
-            return Strings.CS.equalsAny(ipAddr, "127.0.0.1", "0:0:0:0:0:0:0:1");
+            return ipAddr != null && (Strings.CS.equalsAny(ipAddr, "127.0.0.1", "0.0.0.0", "0:0:0:0:0:0:0:1", "::1") || ipAddr.startsWith("fe80::"));
         }
 
         /**

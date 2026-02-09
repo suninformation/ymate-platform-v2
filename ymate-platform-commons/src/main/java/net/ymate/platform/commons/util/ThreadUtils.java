@@ -178,26 +178,56 @@ public final class ThreadUtils {
         return Collections.emptyList();
     }
 
+    /**
+     * 关闭线程池
+     *
+     * @param executorService 线程池
+     * @since 2.1.4
+     */
+    public static void shutdownExecutorService(ExecutorService executorService) {
+        shutdownExecutorService(executorService, 30000L);
+    }
+
+    /**
+     * 关闭线程池
+     *
+     * @param executorService 线程池
+     * @param timeout         超时时间
+     * @since 2.1.4
+     */
+    public static void shutdownExecutorService(ExecutorService executorService, long timeout) {
+        shutdownExecutorService(executorService, timeout, 0);
+    }
+
+    /**
+     * 关闭线程池
+     *
+     * @param executorService 线程池
+     * @param timeout         超时时间
+     * @param reAwaitTimes    重试次数
+     */
     public static void shutdownExecutorService(ExecutorService executorService, long timeout, int reAwaitTimes) {
-        try {
-            executorService.shutdown();
-            boolean flag = executorService.awaitTermination(timeout > 0L ? timeout : 30000L, TimeUnit.MILLISECONDS);
-            if (!flag) {
-                if (reAwaitTimes > 0) {
-                    while (reAwaitTimes > 0) {
-                        flag = executorService.awaitTermination(timeout > 0L ? timeout : 30000L, TimeUnit.MILLISECONDS);
-                        if (flag) {
-                            break;
+        if (executorService != null && !executorService.isShutdown()) {
+            try {
+                executorService.shutdown();
+                boolean flag = executorService.awaitTermination(timeout > 0L ? timeout : 30000L, TimeUnit.MILLISECONDS);
+                if (!flag) {
+                    if (reAwaitTimes > 0) {
+                        while (reAwaitTimes > 0) {
+                            flag = executorService.awaitTermination(timeout > 0L ? timeout : 30000L, TimeUnit.MILLISECONDS);
+                            if (flag) {
+                                break;
+                            }
+                            reAwaitTimes--;
                         }
-                        reAwaitTimes--;
                     }
                 }
-            }
-            if (!flag) {
+                if (!flag) {
+                    executorService.shutdownNow();
+                }
+            } catch (InterruptedException e) {
                 executorService.shutdownNow();
             }
-        } catch (InterruptedException e) {
-            executorService.shutdownNow();
         }
     }
 
@@ -228,5 +258,292 @@ public final class ThreadUtils {
             }
             return null;
         }
+    }
+
+    /**
+     * 线程池监控器
+     *
+     * @since 2.1.4
+     */
+    public static class ThreadPoolMonitor {
+
+        private final int corePoolSize;
+        private final int maximumPoolSize;
+        private final int poolSize;
+        private final int activeCount;
+        private final int queueSize;
+        private final boolean isShutdown;
+        private final boolean isTerminated;
+
+        public ThreadPoolMonitor(int corePoolSize, int maximumPoolSize, int poolSize, int activeCount, int queueSize, boolean isShutdown, boolean isTerminated) {
+            this.corePoolSize = corePoolSize;
+            this.maximumPoolSize = maximumPoolSize;
+            this.poolSize = poolSize;
+            this.activeCount = activeCount;
+            this.queueSize = queueSize;
+            this.isShutdown = isShutdown;
+            this.isTerminated = isTerminated;
+        }
+
+        public int getCorePoolSize() {
+            return corePoolSize;
+        }
+
+        public int getMaximumPoolSize() {
+            return maximumPoolSize;
+        }
+
+        public int getPoolSize() {
+            return poolSize;
+        }
+
+        public int getActiveCount() {
+            return activeCount;
+        }
+
+        public int getQueueSize() {
+            return queueSize;
+        }
+
+        public boolean isShutdown() {
+            return isShutdown;
+        }
+
+        public boolean isTerminated() {
+            return isTerminated;
+        }
+    }
+
+    /**
+     * 线程池构建器
+     *
+     * @since 2.1.4
+     */
+    public static class ThreadPoolBuilder {
+
+        private int corePoolSize = 1;
+        private int maximumPoolSize = 5;
+        private long keepAliveTime = 60;
+        private TimeUnit unit = TimeUnit.SECONDS;
+        private int queueCapacity = 1024;
+        private BlockingQueue<Runnable> workQueue;
+        private ThreadFactory threadFactory = DefaultThreadFactory.create();
+        private RejectedExecutionHandler handler = new ThreadPoolExecutor.AbortPolicy();
+        private boolean scheduled = false;
+
+        private ThreadPoolBuilder() {
+        }
+
+        public ThreadPoolBuilder corePoolSize(int corePoolSize) {
+            this.corePoolSize = corePoolSize;
+            return this;
+        }
+
+        public ThreadPoolBuilder maximumPoolSize(int maximumPoolSize) {
+            this.maximumPoolSize = maximumPoolSize;
+            return this;
+        }
+
+        public ThreadPoolBuilder keepAliveTime(long keepAliveTime, TimeUnit unit) {
+            this.keepAliveTime = keepAliveTime;
+            this.unit = unit;
+            return this;
+        }
+
+        public ThreadPoolBuilder queueCapacity(int queueCapacity) {
+            this.queueCapacity = queueCapacity;
+            return this;
+        }
+
+        public ThreadPoolBuilder linkedBlockingQueue() {
+            this.workQueue = new LinkedBlockingQueue<>(queueCapacity);
+            return this;
+        }
+
+        public ThreadPoolBuilder arrayBlockingQueue() {
+            this.workQueue = new ArrayBlockingQueue<>(queueCapacity);
+            return this;
+        }
+
+        public ThreadPoolBuilder synchronousQueue() {
+            this.workQueue = new SynchronousQueue<>();
+            return this;
+        }
+
+        public ThreadPoolBuilder priorityBlockingQueue() {
+            this.workQueue = new PriorityBlockingQueue<>(queueCapacity);
+            return this;
+        }
+
+        public ThreadPoolBuilder threadFactory(ThreadFactory threadFactory) {
+            this.threadFactory = threadFactory;
+            return this;
+        }
+
+        public ThreadPoolBuilder abortPolicy() {
+            this.handler = new ThreadPoolExecutor.AbortPolicy();
+            return this;
+        }
+
+        public ThreadPoolBuilder callerRunsPolicy() {
+            this.handler = new ThreadPoolExecutor.CallerRunsPolicy();
+            return this;
+        }
+
+        public ThreadPoolBuilder discardPolicy() {
+            this.handler = new ThreadPoolExecutor.DiscardPolicy();
+            return this;
+        }
+
+        public ThreadPoolBuilder discardOldestPolicy() {
+            this.handler = new ThreadPoolExecutor.DiscardOldestPolicy();
+            return this;
+        }
+
+        public ThreadPoolBuilder scheduled() {
+            this.scheduled = true;
+            return this;
+        }
+
+        public ExecutorService build() {
+            if (workQueue == null) {
+                workQueue = new LinkedBlockingQueue<>(queueCapacity);
+            }
+            if (scheduled) {
+                return new ScheduledThreadPoolExecutor(corePoolSize, threadFactory, handler);
+            }
+            return new ThreadPoolExecutor(corePoolSize, maximumPoolSize, keepAliveTime, unit, workQueue, threadFactory, handler);
+        }
+    }
+
+    /**
+     * 创建线程池构建器
+     *
+     * @return 线程池构建器
+     * @since 2.1.4
+     */
+    public static ThreadPoolBuilder builder() {
+        return new ThreadPoolBuilder();
+    }
+
+    /**
+     * 获取线程池监控信息
+     *
+     * @param executorService 线程池
+     * @return 线程池监控信息
+     * @since 2.1.4
+     */
+    public static ThreadPoolMonitor getThreadPoolMonitor(ExecutorService executorService) {
+        if (executorService instanceof ThreadPoolExecutor) {
+            ThreadPoolExecutor executor = (ThreadPoolExecutor) executorService;
+            return new ThreadPoolMonitor(
+                    executor.getCorePoolSize(),
+                    executor.getMaximumPoolSize(),
+                    executor.getPoolSize(),
+                    executor.getActiveCount(),
+                    executor.getQueue().size(),
+                    executor.isShutdown(),
+                    executor.isTerminated()
+            );
+        }
+        return null;
+    }
+
+    /**
+     * @since 2.1.4
+     */
+    public static ExecutorService newThreadExecutor(int corePoolSize, int maximumPoolSize, long keepAliveTime, TimeUnit unit) {
+        return new ThreadPoolExecutor(corePoolSize, maximumPoolSize, keepAliveTime, unit, new LinkedBlockingQueue<>(1024), DefaultThreadFactory.create(), new ThreadPoolExecutor.AbortPolicy());
+    }
+
+    /**
+     * @since 2.1.4
+     */
+    public static ExecutorService newThreadExecutor(int corePoolSize, int maximumPoolSize, long keepAliveTime, TimeUnit unit, int queueCapacity) {
+        return new ThreadPoolExecutor(corePoolSize, maximumPoolSize, keepAliveTime, unit, new LinkedBlockingQueue<>(queueCapacity), DefaultThreadFactory.create(), new ThreadPoolExecutor.AbortPolicy());
+    }
+
+    /**
+     * @since 2.1.4
+     */
+    public static ExecutorService newThreadExecutor(int corePoolSize, int maximumPoolSize, long keepAliveTime, TimeUnit unit, int queueCapacity, ThreadFactory threadFactory) {
+        return new ThreadPoolExecutor(corePoolSize, maximumPoolSize, keepAliveTime, unit, new LinkedBlockingQueue<>(queueCapacity), threadFactory, new ThreadPoolExecutor.AbortPolicy());
+    }
+
+    /**
+     * @since 2.1.4
+     */
+    public static ExecutorService newThreadExecutor(int corePoolSize, int maximumPoolSize, long keepAliveTime, TimeUnit unit, int queueCapacity, ThreadFactory threadFactory, RejectedExecutionHandler handler) {
+        return new ThreadPoolExecutor(corePoolSize, maximumPoolSize, keepAliveTime, unit, new LinkedBlockingQueue<>(queueCapacity), threadFactory, handler);
+    }
+
+    /**
+     * @since 2.1.4
+     */
+    public static ExecutorService newCachedThreadPool(long keepAliveTime, TimeUnit unit) {
+        return new ThreadPoolExecutor(0, 1024, keepAliveTime, unit, new SynchronousQueue<>(), DefaultThreadFactory.create());
+    }
+
+    /**
+     * @since 2.1.4
+     */
+    public static ExecutorService newCachedThreadPool(int maximumPoolSize, long keepAliveTime, TimeUnit unit) {
+        return new ThreadPoolExecutor(0, maximumPoolSize, keepAliveTime, unit, new SynchronousQueue<>(), DefaultThreadFactory.create());
+    }
+
+    /**
+     * @since 2.1.4
+     */
+    public static ExecutorService newCachedThreadPool(int maximumPoolSize, long keepAliveTime, TimeUnit unit, ThreadFactory threadFactory) {
+        return new ThreadPoolExecutor(0, maximumPoolSize, keepAliveTime, unit, new SynchronousQueue<>(), threadFactory);
+    }
+
+    /**
+     * @since 2.1.4
+     */
+    public static ExecutorService newFixedThreadPool(int nThreads, long keepAliveTime, TimeUnit unit) {
+        return new ThreadPoolExecutor(nThreads, nThreads, keepAliveTime, unit, new LinkedBlockingQueue<>(1024), DefaultThreadFactory.create());
+    }
+
+    /**
+     * @since 2.1.4
+     */
+    public static ExecutorService newFixedThreadPool(int nThreads, long keepAliveTime, TimeUnit unit, int queueCapacity) {
+        return new ThreadPoolExecutor(nThreads, nThreads, keepAliveTime, unit, new LinkedBlockingQueue<>(queueCapacity), DefaultThreadFactory.create());
+    }
+
+    /**
+     * @since 2.1.4
+     */
+    public static ExecutorService newFixedThreadPool(int nThreads, long keepAliveTime, TimeUnit unit, int queueCapacity, ThreadFactory threadFactory) {
+        return new ThreadPoolExecutor(nThreads, nThreads, keepAliveTime, unit, new LinkedBlockingQueue<>(queueCapacity), threadFactory);
+    }
+
+    /**
+     * 执行单次任务（带超时）
+     *
+     * @param task    任务
+     * @param timeout 超时时间
+     * @param <T>     结果类型
+     * @return 结果
+     * @throws Exception 执行异常
+     * @since 2.1.4
+     */
+    public static <T> T executeOnce(Callable<T> task, long timeout, TimeUnit unit) throws Exception {
+        return executeOnce(task, unit.toMillis(timeout));
+    }
+
+    /**
+     * 执行单次任务（多任务）
+     *
+     * @param tasks   任务列表
+     * @param timeout 超时时间
+     * @param <T>     结果类型
+     * @return 结果列表
+     * @throws Exception 执行异常
+     * @since 2.1.4
+     */
+    public static <T> List<T> executeOnce(List<Callable<T>> tasks, long timeout, TimeUnit unit) throws Exception {
+        return executeOnce(tasks, unit.toMillis(timeout));
     }
 }

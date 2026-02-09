@@ -498,6 +498,7 @@ public class TreeObject implements Serializable {
     public TreeObject(Map<?, ?> m) {
         object = m;
         type = TYPE_MAP;
+        mode = MODE_MAP;
     }
 
     public TreeObject(short s) {

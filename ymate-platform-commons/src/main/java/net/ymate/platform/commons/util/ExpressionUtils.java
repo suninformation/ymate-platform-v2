@@ -49,7 +49,7 @@ public final class ExpressionUtils {
     }
 
     private ExpressionUtils(String expressionStr) {
-        this.result = expressionStr;
+        this.result = expressionStr != null ? expressionStr : "";
     }
 
     /**
@@ -81,7 +81,9 @@ public final class ExpressionUtils {
      * @return 当前表达式工具类实例
      */
     public ExpressionUtils set(Map<String, Object> values) {
-        getVariables().forEach(var -> set(var, BlurObject.bind(values.get(var)).toStringValue()));
+        if (values != null) {
+            getVariables().forEach(var -> set(var, BlurObject.bind(values.get(var)).toStringValue()));
+        }
         return this;
     }
 

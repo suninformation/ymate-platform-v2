@@ -100,8 +100,12 @@ public final class UUIDUtils {
      * @param length    长度
      * @param isOnlyNum 是否仅使用数字
      * @return 生成随机字符串
+     * @throws IllegalArgumentException 如果长度小于1
      */
     public static String randomStr(int length, boolean isOnlyNum) {
+        if (length < 1) {
+            throw new IllegalArgumentException("length must be positive");
+        }
         int size = isOnlyNum ? 10 : 62;
         StringBuilder hash = new StringBuilder(length);
         for (int i = 0; i < length; i++) {
@@ -110,11 +114,31 @@ public final class UUIDUtils {
         return hash.toString();
     }
 
+    /**
+     * 生成指定范围内的随机长整数
+     *
+     * @param min 最小值
+     * @param max 最大值
+     * @return 随机长整数
+     * @throws IllegalArgumentException 如果min大于max
+     */
     public static long randomLong(long min, long max) {
+        if (min > max) {
+            throw new IllegalArgumentException("min must be less than or equal to max");
+        }
+        if (min == max) {
+            return min;
+        }
         return min + (long) (RANDOM.nextDouble() * (max - min));
     }
 
     public static int randomInt(int min, int max) {
+        if (min > max) {
+            throw new IllegalArgumentException("min must be less than or equal to max");
+        }
+        if (min == max) {
+            return min;
+        }
         return min + (int) (RANDOM.nextDouble() * (max - min));
     }
 }

@@ -65,17 +65,20 @@ public class GeoCircle implements Serializable {
     }
 
     /**
-     * 判断点是否在圆形范围内
+     * 测试点是否在圆上
      *
      * @param point 点
      * @return -1 - 点在圆外, 0 - 点在圆上, 1 - 点在圆内
      */
     public int contains(GeoPoint point) {
-        double value = Math.hypot((point.getLongitude() - center.getLongitude()), (point.getLatitude() - center.getLatitude()));
-        if (value > r) {
+        if (point == null) {
+            return -1;
+        }
+        double distance = GeoUtils.distance(center, point);
+        if (distance > r) {
             // 点在圆外
             return -1;
-        } else if (value < r) {
+        } else if (distance < r) {
             // 点在圆内
             return 1;
         }
