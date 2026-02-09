@@ -22,7 +22,6 @@
     "@svgr/webpack": "^8.1.0",
     "clsx": "^2.1.1",
     "file-loader": "^6.2.0",
-    "nodejieba": "^2.6.0",
     "prism-react-renderer": "^1.2.1",
     "react": "^18.1.0",
     "react-dom": "^18.1.0",

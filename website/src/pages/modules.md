@@ -238,7 +238,7 @@ values={[
 
 ### 集成测试（Test）
 
-为 YMP 框架集成 JUnit 测试开发工具包。
+为 YMP 框架集成 JUnit 测试开发工具包。从 `2.1.4` 版本开始与框架工程代码合并，详见[单元测试工具包](guide/test)文档。
 
 [![Maven Central status](https://img.shields.io/maven-central/v/net.ymate.platform/ymate-platform-test.svg)](https://search.maven.org/artifact/net.ymate.platform/ymate-platform-test)
 

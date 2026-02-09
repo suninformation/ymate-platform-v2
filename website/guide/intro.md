@@ -174,6 +174,12 @@ WebMVC 模块在 YMP 框架中是除了 JDBC 持久化模块以外的另一个�
 [点击阅读 >>](commons)
 
 
+### 单元测试工具包（Test）
+
+YMP 框架的单元测试工具包，集成了 JUnit 5 和 JUnit 4 的测试开发支持，分别提供了对应的单测、套件扩展类及专属注解与使用方式，封装了核心工具类 YMPTestUtils 统一管理应用初始化逻辑，同时给出了两类 JUnit 版本下模拟控制器请求、存储器接口调用和组合单元测试的具体使用示例，整体支持依赖注入、测试生命周期管理、Bean 工厂注册等功能。
+
+[点击阅读 >>](test)
+
 
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
