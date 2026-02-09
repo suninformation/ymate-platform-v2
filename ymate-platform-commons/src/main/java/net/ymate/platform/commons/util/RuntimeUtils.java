@@ -22,9 +22,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import javax.management.*;
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
 import java.lang.management.ManagementFactory;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URL;
@@ -67,37 +64,8 @@ public class RuntimeUtils {
      * 初始化系统环境，获取当前系统环境变量
      */
     private static synchronized void initSystemEnvs() {
-        Process process = null;
-        try {
-            if (SystemUtils.IS_OS_WINDOWS) {
-                process = Runtime.getRuntime().exec("cmd /c set");
-            } else if (SystemUtils.IS_OS_UNIX) {
-                process = Runtime.getRuntime().exec("/bin/sh -c set");
-            } else {
-                if (LOG.isWarnEnabled()) {
-                    LOG.warn(String.format("Unknown os.name=%s", SystemUtils.OS_NAME));
-                }
-                SYSTEM_ENV_MAP.clear();
-            }
-            if (process != null) {
-                try (BufferedReader br = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
-                    String line;
-                    while ((line = br.readLine()) != null) {
-                        int i = line.indexOf('=');
-                        if (i > -1) {
-                            String key = line.substring(0, i);
-                            String value = line.substring(i + 1);
-                            SYSTEM_ENV_MAP.put(key, value);
-                        }
-                    }
-                }
-            }
-        } catch (IOException ignored) {
-        } finally {
-            if (process != null) {
-                process.destroy();
-            }
-        }
+        SYSTEM_ENV_MAP.clear();
+        SYSTEM_ENV_MAP.putAll(System.getenv());
     }
 
     /**
@@ -127,7 +95,19 @@ public class RuntimeUtils {
             if (SYSTEM_ENV_MAP.isEmpty()) {
                 initSystemEnvs();
             }
-            return SYSTEM_ENV_MAP.get(envName);
+            // 直接获取（考虑大小写敏感的情况）
+            String value = SYSTEM_ENV_MAP.get(envName);
+            if (value == null && isWindows()) {
+                // Windows系统环境变量大小写不敏感，遍历查找
+                String lowerEnvName = envName.toLowerCase();
+                value = SYSTEM_ENV_MAP.entrySet()
+                        .stream()
+                        .filter(entry -> entry.getKey().toLowerCase().equals(lowerEnvName))
+                        .findFirst()
+                        .map(Map.Entry::getValue)
+                        .orElse(value);
+            }
+            return value;
         }
         return null;
     }
