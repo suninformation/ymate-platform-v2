@@ -146,6 +146,9 @@ public class DefaultRequestMappingParser implements IRequestMappingParser {
         if (requestMeta == null) {
             return doParse(context, requestMetas);
         }
+        if (!requestMeta.allowSuffix(context.getSuffix())) {
+            return doParse(context, requestMetas);
+        }
         return requestMeta;
     }
 
@@ -176,6 +179,10 @@ public class DefaultRequestMappingParser implements IRequestMappingParser {
                 }
             }
             if (!breakFlag) {
+                // 检查扩展名是否匹配
+                if (!item.getValue().allowSuffix(context.getSuffix())) {
+                    continue;
+                }
                 // 参数变量存入WebContext容器中的PathVariable参数池
                 params.forEach(context::addAttribute);
                 return item.getValue();

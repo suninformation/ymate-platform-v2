@@ -41,6 +41,13 @@ public class DefaultRequestContext implements IRequestContext {
     private String requestMapping;
 
     /**
+     * 请求映射字符串（若存在则包含扩展名）
+     *
+     * @since 2.1.4
+     */
+    private String requestMappingWithSuffix;
+
+    /**
      * 前缀
      */
     private String prefix;
@@ -81,11 +88,20 @@ public class DefaultRequestContext implements IRequestContext {
         } else {
             this.suffix = StringUtils.EMPTY;
         }
+        requestMappingWithSuffix = requestMapping;
+        if (StringUtils.isNotBlank(suffix)) {
+            requestMappingWithSuffix += "." + suffix;
+        }
     }
 
     @Override
     public String getRequestMapping() {
         return requestMapping;
+    }
+
+    @Override
+    public String getRequestMappingWithSuffix() {
+        return requestMappingWithSuffix;
     }
 
     @Override
@@ -112,8 +128,6 @@ public class DefaultRequestContext implements IRequestContext {
     public Type.HttpMethod getHttpMethod() {
         return httpMethod;
     }
-
-    ////
 
     @Override
     @SuppressWarnings("unchecked")

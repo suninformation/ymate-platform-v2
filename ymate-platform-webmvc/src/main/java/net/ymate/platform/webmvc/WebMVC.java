@@ -37,6 +37,7 @@ import net.ymate.platform.webmvc.annotation.*;
 import net.ymate.platform.webmvc.base.Type;
 import net.ymate.platform.webmvc.context.WebContext;
 import net.ymate.platform.webmvc.exception.ParameterSignatureException;
+import net.ymate.platform.webmvc.exception.RequestNotMatchedException;
 import net.ymate.platform.webmvc.handle.ControllerHandler;
 import net.ymate.platform.webmvc.handle.ExceptionProcessorHandler;
 import net.ymate.platform.webmvc.handle.InterceptorRuleHandler;
@@ -532,12 +533,13 @@ public final class WebMVC implements IModule, IWebMvc {
 
         StopWatch consumeTime = null;
         RequestMeta requestMeta = null;
+        boolean isRequestNotMatched = false;
         try {
             if (owner.isDevEnv() && LOG.isDebugEnabled()) {
                 consumeTime = new StopWatch();
                 consumeTime.start();
                 //
-                LOG.debug(String.format("Process request start: %s:%s", context.getHttpMethod(), context.getRequestMapping()));
+                LOG.debug(String.format("Process request start: %s:%s", context.getHttpMethod(), context.getRequestMappingWithSuffix()));
                 LOG.debug(String.format("Parameters: %s", JsonWrapper.toJsonString(request.getParameterMap(), false, true)));
             }
             //
@@ -552,8 +554,11 @@ public final class WebMVC implements IModule, IWebMvc {
             } else if (config.isConventionMode() && isAllowConvention(context)) {
                 processRequestConvention(context, owner.isDevEnv());
             } else {
-                response.sendError(HttpServletResponse.SC_NOT_FOUND);
+                throw new RequestNotMatchedException(context);
             }
+        } catch (RequestNotMatchedException e) {
+            isRequestNotMatched = true;
+            throw e;
         } catch (Exception e) {
             IView view = null;
             if (requestMeta != null && requestMeta.getErrorProcessor() != null) {
@@ -577,7 +582,11 @@ public final class WebMVC implements IModule, IWebMvc {
         } finally {
             if (consumeTime != null && owner.isDevEnv() && LOG.isDebugEnabled()) {
                 consumeTime.stop();
-                LOG.debug(String.format("Process request completed: %s:%s: %d, total execution time: %dms", context.getHttpMethod(), context.getRequestMapping(), response.getStatus(), consumeTime.getTime(TimeUnit.MILLISECONDS)));
+                if (isRequestNotMatched) {
+                    LOG.debug(String.format("Process request completed: %s:%s: [NOT_MATCHED], total execution time: %dms", context.getHttpMethod(), context.getRequestMappingWithSuffix(), consumeTime.getTime(TimeUnit.MILLISECONDS)));
+                } else {
+                    LOG.debug(String.format("Process request completed: %s:%s: %d, total execution time: %dms", context.getHttpMethod(), context.getRequestMappingWithSuffix(), response.getStatus(), consumeTime.getTime(TimeUnit.MILLISECONDS)));
+                }
             }
         }
     }

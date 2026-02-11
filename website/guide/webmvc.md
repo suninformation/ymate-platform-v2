@@ -449,6 +449,7 @@ Everything depends on ability!  -- YMP :)
 | method | 允许的请求方式，默认为 `Type.HttpMethod.GET`<br/>取值范围：`GET`、`HEAD`、`POST`、`PUT`、`PATCH`、`DELETE`、`OPTIONS`、`TRACE` |
 | header | 请求头中必须存在的头名称                                     |
 | param  | 请求中必须存在的参数名称                                     |
+| suffix | 允许的请求路径扩展名，默认为空数组（即不允许带扩展名），支持 `.*` 通配符匹配任意扩展名 |
 
 
 
@@ -506,6 +507,113 @@ public class DemoController {
 ```
 
 本例中使用了 `@ResponseView`、`@ResponseHeaders` 和 `@ResponseHeader` 三个新注解，它们的作用及参数含义是：
+
+
+
+### 示例三：扩展名匹配
+
+使用 `@RequestMapping` 的 `suffix` 属性配置扩展名匹配：
+
+```java
+@Controller
+@RequestMapping("/demo")
+public class SuffixController {
+
+    // 匹配带 .html 扩展名的请求
+    @RequestMapping(value = "/html", suffix = ".html")
+    public IView html() {
+        return View.textView("HTML View");
+    }
+
+    // 匹配带任意扩展名的请求
+    @RequestMapping(value = "/any", suffix = ".*")
+    public IView any(@RequestSuffix String suffix) {
+        return View.textView("Suffix: " + suffix);
+    }
+
+    // 匹配带 .json 或 .xml 扩展名的请求
+    @RequestMapping(value = "/format", suffix = {".json", ".xml"})
+    public IView format(@RequestSuffix String suffix) {
+        if ("json".equals(suffix)) {
+            return View.jsonView(Collections.singletonMap("message", "Hello JSON"));
+        } else if ("xml".equals(suffix)) {
+            return View.textView("<message>Hello XML</message>", "application/xml");
+        }
+        return View.textView("Unknown Format");
+    }
+}
+```
+
+通过浏览器访问以下URL地址，输出结果：
+
+- `http://localhost:8080/demo/html.html`：
+  ```shell
+  HTML View
+  ```
+
+- `http://localhost:8080/demo/any.txt`：
+  ```shell
+  Suffix: txt
+  ```
+
+- `http://localhost:8080/demo/format.json`：
+  ```json
+  {"message":"Hello JSON"}
+  ```
+
+- `http://localhost:8080/demo/format.xml`：
+  ```xml
+  <message>Hello XML</message>
+  ```
+
+
+
+:::warning **注意事项**：
+
+在使用 `@RequestMapping` 的 `suffix` 属性配置扩展名匹配时，需要注意 `webmvc.request_ignore_regex` 配置项（默认值：`jsp|jspx|png|gif|jpg|jpeg|js|css|swf|ico|htm|html|eot|woff|woff2|ttf|svg|map`）可能会过滤掉指定的扩展名。如果需要匹配的扩展名在默认过滤列表中，需要修改该配置项以包含所需的扩展名。
+
+例如，如果需要匹配 `.html` 扩展名，则需要从 `request_ignore_regex` 中移除 `html`，或者使用 `~` 符号在默认值基础上进行修改。
+
+:::
+
+
+
+:::info **扩展名配置继承**：
+
+`@RequestMapping` 的 `suffix` 属性支持继承特性，配置优先级从高到低为：方法级别 > 类级别 > 包级别。
+
+- 若方法上配置了 `suffix` 属性，则使用方法上的配置
+- 若方法上未配置，则使用类上的 `@RequestMapping` 注解的 `suffix` 配置
+- 若类上也未配置，则使用包上的 `@RequestMapping` 注解的 `suffix` 配置
+- 若包上类上方法上都有声明，则方法上的配置会替换掉类或包上的配置，并生效
+
+**示例**：
+
+```java
+// 包级别配置
+@RequestMapping(suffix = ".*")
+package com.example.controller;
+
+// 类级别配置
+@Controller
+@RequestMapping(value = "/demo", suffix = ".html")
+public class DemoController {
+
+    // 使用类级别的 .html 扩展名配置
+    @RequestMapping("/class")
+    public IView classLevel() {
+        return View.textView("Class level suffix");
+    }
+
+    // 使用方法级别的 .json 扩展名配置，覆盖类级别的配置
+    @RequestMapping(value = "/method", suffix = ".json")
+    public IView methodLevel() {
+        return View.jsonView(Collections.singletonMap("message", "Method level suffix"));
+    }
+}
+```
+
+:::
 
 ### @ResponseView
 
@@ -638,6 +746,35 @@ WebMVC 模块可以通过实现 `IRequestMappingParser` 接口自定义请求路
 
 > - 正确：`/path/{name}/{age}`
 >- 正确：`/path/{name}/age/{sex}`
+
+
+
+#### @RequestSuffix
+
+绑定请求路径的扩展名值到控制器方法参数。
+
+> 注意：此注解仅在控制器方法的 @RequestMapping 注解中配置了 suffix 属性时生效。
+
+**示例**：
+
+```java
+@Controller
+@RequestMapping("/demo")
+public class SuffixController {
+
+    // 将扩展名值注入到参数中
+    @RequestMapping(value = "/any", suffix = ".*")
+    public IView any(@RequestSuffix String suffix) {
+        return View.textView("Suffix: " + suffix);
+    }
+}
+```
+
+通过浏览器访问URL地址：`http://localhost:8080/demo/any.txt`，输出结果：
+
+```shell
+Suffix: txt
+```
 
 
 
@@ -1929,7 +2066,7 @@ public class DemoDTO implements Serializable {
 
     @RequestParam
     private String[] uids;
-    
+
     // 省略Get和Set方法
 }
 
@@ -1942,7 +2079,7 @@ public class MemberDTO implements Serializable {
     @VRequired
     @VField(prefix = "ext")
     private Integer age;
-    
+
     // 省略Get和Set方法
 }
 
@@ -1951,7 +2088,7 @@ public class DemoController {
 
     @RequestMapping(value = "/demo2", method = Type.HttpMethod.POST/*, header = "Content-Type=application/json"*/)
     @RequestProcessor(JSONRequestProcessor.class)
-    public Object demo2(@VModel(prefix = "demo.") @ModelBind DemoDTO[] demo, 
+    public Object demo2(@VModel(prefix = "demo.") @ModelBind DemoDTO[] demo,
                         @VModel(prefix = "m.") @ModelBind MemberDTO[] member) throws Exception {
         return WebResult.builder()
             .dataAttr("demo", demo)

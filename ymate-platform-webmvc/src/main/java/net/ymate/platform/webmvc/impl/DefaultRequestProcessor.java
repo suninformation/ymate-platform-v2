@@ -100,6 +100,9 @@ public class DefaultRequestProcessor implements IRequestProcessor {
         } else if (annotation instanceof RequestParam) {
             RequestParam ann = (RequestParam) annotation;
             paramValue = this.doParseRequestParam(owner, paramMeta, paramName, StringUtils.trimToNull(ann.defaultValue()), ann.fullScope());
+        } else if (annotation instanceof RequestSuffix) {
+            String value = WebContext.getRequestContext().getSuffix();
+            paramValue = doSafeGetParamValue(owner, paramName, paramMeta.getParamType(), value, null, false);
         } else if (annotation instanceof ModelBind) {
             paramValue = doParseModelBind(owner, requestMeta, paramMeta, paramMeta.getParamType());
         }

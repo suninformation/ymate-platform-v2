@@ -188,6 +188,10 @@ public class ParameterMeta {
                 this.prefix = ann.prefix();
                 this.modelBind = true;
                 flag = true;
+            } else if (annotation instanceof RequestSuffix) {
+                this.paramAnnotation = annotation;
+                this.keepParamName = true;
+                flag = true;
             }
         }
         return flag;

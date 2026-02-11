@@ -19,6 +19,8 @@ WebMVC 模块是 YMP 框架中除了 JDBC 持久化模块以外的另一个非�
 - **I18N 国际化**：支持 I18N 资源国际化
 - **缓存支持**：支持控制器方法和视图缓存
 - **插件扩展**：支持插件扩展
+- **URL 扩展名匹配**：支持通过 @RequestMapping 注解的 suffix 属性匹配带扩展名的请求路径
+- **扩展名值注入**：支持通过 @RequestSuffix 注解将请求路径的扩展名值注入到控制器方法参数
 
 ## 架构设计
 
@@ -68,6 +70,7 @@ WebMVC 模块采用典型的 MVC 架构设计，主要包含以下核心组件�
 | method | 允许的请求方式，默认为 GET<br/>取值范围：GET、HEAD、POST、PUT、PATCH、DELETE、OPTIONS、TRACE |
 | header | 请求头中必须存在的头名称 |
 | param | 请求中必须存在的参数名称 |
+| suffix | 允许的请求路径扩展名，默认为空数组（即不允许带扩展名），支持 `.*` 通配符匹配任意扩展名 |
 
 #### @RequestParam
 
@@ -87,6 +90,14 @@ WebMVC 模块采用典型的 MVC 架构设计，主要包含以下核心组件�
 | 配置项 | 描述 |
 |-------|------|
 | value | 绑定的参数名称，若未指定则默认采用方法参数变量名 |
+
+
+
+#### @RequestSuffix
+
+绑定请求路径的扩展名值到控制器方法参数。
+
+> 注意：此注解仅在控制器方法的 @RequestMapping 注解中配置了 suffix 属性时生效。
 
 #### @ModelBind
 
@@ -339,6 +350,79 @@ public class ViewController {
     @RequestMapping("/redirect")
     public IView redirectView() {
         return View.redirectView("/login");
+    }
+}
+```
+
+
+
+#### 扩展名匹配
+
+```java
+@Controller
+@RequestMapping("/demo")
+public class SuffixController {
+
+    // 匹配带 .html 扩展名的请求
+    @RequestMapping(value = "/html", suffix = ".html")
+    public IView html() {
+        return View.textView("HTML View");
+    }
+
+    // 匹配带任意扩展名的请求，并将扩展名值注入到参数中
+    @RequestMapping(value = "/any", suffix = ".*")
+    public IView any(@RequestSuffix String suffix) {
+        return View.textView("Suffix: " + suffix);
+    }
+
+    // 匹配带 .json 或 .xml 扩展名的请求
+    @RequestMapping(value = "/format", suffix = {".json", ".xml"})
+    public IView format(@RequestSuffix String suffix) {
+        if ("json".equals(suffix)) {
+            return View.jsonView(Collections.singletonMap("message", "Hello JSON"));
+        } else if ("xml".equals(suffix)) {
+            return View.textView("<message>Hello XML</message>", "application/xml");
+        }
+        return View.textView("Unknown Format");
+    }
+}
+```
+
+
+
+> **注意事项**：在使用 `@RequestMapping` 的 `suffix` 属性配置扩展名匹配时，需要注意 `webmvc.request_ignore_regex` 配置项（默认值：`jsp|jspx|png|gif|jpg|jpeg|js|css|swf|ico|htm|html|eot|woff|woff2|ttf|svg|map`）可能会过滤掉指定的扩展名。如果需要匹配的扩展名在默认过滤列表中，需要修改该配置项以包含所需的扩展名。
+
+
+
+> **扩展名配置继承**：`@RequestMapping` 的 `suffix` 属性支持继承特性，配置优先级从高到低为：方法级别 > 类级别 > 包级别。
+>
+> - 若方法上配置了 `suffix` 属性，则使用方法上的配置
+> - 若方法上未配置，则使用类上的 `@RequestMapping` 注解的 `suffix` 配置
+> - 若类上也未配置，则使用包上的 `@RequestMapping` 注解的 `suffix` 配置
+> - 若包上类上方法上都有声明，则方法上的配置会替换掉类或包上的配置，并生效
+
+**示例**：
+
+```java
+// 包级别配置
+@RequestMapping(suffix = ".*")
+package com.example.controller;
+
+// 类级别配置
+@Controller
+@RequestMapping(value = "/demo", suffix = ".html")
+public class DemoController {
+
+    // 使用类级别的 .html 扩展名配置
+    @RequestMapping("/class")
+    public IView classLevel() {
+        return View.textView("Class level suffix");
+    }
+
+    // 使用方法级别的 .json 扩展名配置，覆盖类级别的配置
+    @RequestMapping(value = "/method", suffix = ".json")
+    public IView methodLevel() {
+        return View.jsonView(Collections.singletonMap("message", "Method level suffix"));
     }
 }
 ```

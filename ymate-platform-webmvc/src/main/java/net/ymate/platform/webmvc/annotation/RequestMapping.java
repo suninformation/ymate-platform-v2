@@ -49,4 +49,10 @@ public @interface RequestMapping {
      * @return 请求中必须存在的参数名称
      */
     String[] param() default {};
+
+    /**
+     * @return 允许的URL扩展名，支持精确匹配（如".html"）和通配符（如".*"），默认为空表示不允许有扩展名
+     * @since 2.1.4
+     */
+    String[] suffix() default {};
 }

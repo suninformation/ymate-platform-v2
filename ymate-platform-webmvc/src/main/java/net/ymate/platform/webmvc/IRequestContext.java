@@ -36,6 +36,14 @@ public interface IRequestContext {
     String getRequestMapping();
 
     /**
+     * 获取请求映射字符串（若存在则包含扩展名）
+     *
+     * @return 返回请求映射字符串
+     * @since 2.1.4
+     */
+    String getRequestMappingWithSuffix();
+
+    /**
      * 获取原始URL请求路径
      *
      * @return 返回原始URL请求路径

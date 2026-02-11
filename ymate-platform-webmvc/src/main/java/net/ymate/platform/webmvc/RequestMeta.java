@@ -28,6 +28,7 @@ import java.lang.reflect.Modifier;
 import java.lang.reflect.Parameter;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
 /**
  * 控制器请求映射元数据描述
@@ -74,6 +75,11 @@ public class RequestMeta {
 
     private final Map<String, String> allowParams = new HashMap<>();
 
+    /**
+     * @since 2.1.4
+     */
+    private final Set<String> allowSuffixes = new HashSet<>();
+
     public RequestMeta(String requestMappingPrefix, Class<?> targetClass, Method method) throws Exception {
         this.targetClass = targetClass;
         this.method = method;
@@ -94,9 +100,11 @@ public class RequestMeta {
         if (mappingAnn != null) {
             packageMapping = doBuildRequestMapping(packageMapping, mappingAnn.value(), false);
             doSetAllowValues(mappingAnn, false);
+            doSetAllowSuffix(mappingAnn, true);
         }
         mappingAnn = method.getAnnotation(RequestMapping.class);
         doSetAllowValues(mappingAnn, true);
+        doSetAllowSuffix(mappingAnn, true);
         this.mapping = StringUtils.defaultIfBlank(doBuildRequestMapping(requestMappingPrefix, doBuildRequestMapping(packageMapping, mappingAnn.value(), true), false), "/");
         //
         if (this.allowMethods.isEmpty()) {
@@ -174,6 +182,7 @@ public class RequestMeta {
             if (requestMappingAnn != null) {
                 packageMapping = doBuildRequestMapping(packageMapping, requestMappingAnn.value(), false);
                 doSetAllowValues(requestMappingAnn, false);
+                doSetAllowSuffix(requestMappingAnn, false);
             } else {
                 packageMapping = doCheckMappingSeparator(packageMapping);
             }
@@ -217,6 +226,31 @@ public class RequestMeta {
             String[] paramParts = StringUtils.split(StringUtils.trimToEmpty(param), "=");
             if (paramParts.length == 2) {
                 this.allowParams.put(paramParts[0].trim(), paramParts[1].trim());
+            }
+        }
+    }
+
+    /**
+     * @since 2.1.4
+     */
+    private void doSetAllowSuffix(RequestMapping requestMapping, boolean cleanup) {
+        if (requestMapping.suffix().length > 0) {
+            Set<String> suffixSet = Arrays.stream(requestMapping.suffix())
+                    .map(StringUtils::trimToEmpty)
+                    .filter(StringUtils::isNotBlank)
+                    .map(suffix -> {
+                        // 确保扩展名以.开头
+                        if (!suffix.startsWith(".")) {
+                            suffix = "." + suffix;
+                        }
+                        return suffix;
+                    })
+                    .collect(Collectors.toSet());
+            if (!suffixSet.isEmpty()) {
+                if (cleanup && !allowSuffixes.isEmpty()) {
+                    allowSuffixes.clear();
+                }
+                allowSuffixes.addAll(suffixSet);
             }
         }
     }
@@ -327,5 +361,33 @@ public class RequestMeta {
 
     public List<ParameterMeta> getMethodParameterMetas() {
         return Collections.unmodifiableList(methodParameterMetas);
+    }
+
+    /**
+     * @since 2.1.4
+     */
+    public Set<String> getAllowSuffixes() {
+        return Collections.unmodifiableSet(allowSuffixes);
+    }
+
+    /**
+     * @param suffix 扩展名
+     * @return 判断是否允许指定的扩展名，若允许的扩展名集合为空，则不允许有扩展名
+     * @since 2.1.4
+     */
+    public boolean allowSuffix(String suffix) {
+        // 如果没有设置扩展名限制，则不允许有扩展名
+        if (allowSuffixes.isEmpty()) {
+            return StringUtils.isEmpty(suffix);
+        }
+        // 检查是否匹配通配符
+        if (allowSuffixes.contains(".*")) {
+            return true;
+        }
+        // 精确匹配扩展名，确保扩展名以.开头
+        if (StringUtils.isNotBlank(suffix) && !suffix.startsWith(".")) {
+            suffix = "." + suffix;
+        }
+        return allowSuffixes.contains(suffix);
     }
 }

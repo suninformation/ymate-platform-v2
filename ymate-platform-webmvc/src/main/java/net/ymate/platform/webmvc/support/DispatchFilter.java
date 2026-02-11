@@ -18,6 +18,7 @@ package net.ymate.platform.webmvc.support;
 import net.ymate.platform.webmvc.IRequestContext;
 import net.ymate.platform.webmvc.IWebMvc;
 import net.ymate.platform.webmvc.IWebMvcConfig;
+import net.ymate.platform.webmvc.exception.RequestNotMatchedException;
 import net.ymate.platform.webmvc.impl.DefaultRequestContext;
 import net.ymate.platform.webmvc.util.WebUtils;
 import org.apache.commons.lang3.ArrayUtils;
@@ -83,7 +84,11 @@ public class DispatchFilter implements Filter {
             if (!requestIgnoreUrls.isEmpty() && requestIgnoreUrls.stream().anyMatch(s -> Strings.CS.startsWith(requestContext.getOriginalUrl(), s))) {
                 chain.doFilter(request, response);
             } else if (!ignorePattern.matcher(requestContext.getOriginalUrl()).find()) {
-                dispatcher.dispatch(requestContext, filterConfig.getServletContext(), (HttpServletRequest) request, (HttpServletResponse) response);
+                try {
+                    dispatcher.dispatch(requestContext, filterConfig.getServletContext(), (HttpServletRequest) request, (HttpServletResponse) response);
+                } catch (RequestNotMatchedException e) {
+                    chain.doFilter(request, response);
+                }
             } else {
                 chain.doFilter(request, response);
             }

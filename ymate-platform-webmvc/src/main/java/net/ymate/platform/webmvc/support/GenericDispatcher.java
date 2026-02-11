@@ -15,7 +15,6 @@
  */
 package net.ymate.platform.webmvc.support;
 
-import net.ymate.platform.commons.util.RuntimeUtils;
 import net.ymate.platform.core.beans.intercept.InterceptContext;
 import net.ymate.platform.core.event.IEvent;
 import net.ymate.platform.validation.ValidateContext;
@@ -62,7 +61,10 @@ public final class GenericDispatcher {
             //
             owner.processRequest(requestContext, servletContext, request, response);
         } catch (Exception e) {
-            throw new ServletException(RuntimeUtils.unwrapThrow(e));
+            if (e instanceof ServletException) {
+                throw (ServletException) e;
+            }
+            throw new ServletException(e);
         } finally {
             doFireEvent(WebEvent.EVENT.REQUEST_COMPLETED, requestContext);
             owner.getOwner().getI18n().reset();
