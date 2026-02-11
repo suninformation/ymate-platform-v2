@@ -66,12 +66,6 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>net.ymate.platform</groupId>
-            <artifactId>ymate-platform-log</artifactId>
-            <version>${project.version}</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
             <groupId>com.google.protobuf</groupId>
             <artifactId>protobuf-java</artifactId>
             <version>4.31.1</version>
