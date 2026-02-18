@@ -59,7 +59,19 @@ public class YMPJUnit5Extension implements TestInstanceFactory, ParameterResolve
 
     @Override
     public void afterAll(ExtensionContext extensionContext) {
-        extensionContext.getTestClass().ifPresent(APPLICATION_CACHE::remove);
+        extensionContext.getTestClass().ifPresent(testClass -> {
+            WeakReference<IApplication> ref = APPLICATION_CACHE.remove(testClass);
+            if (ref != null) {
+                IApplication application = ref.get();
+                if (application != null) {
+                    try {
+                        application.close();
+                    } catch (Exception e) {
+                        throw new RuntimeException("Failed to close YMP application", e);
+                    }
+                }
+            }
+        });
         // 清理过期的弱引用
         APPLICATION_CACHE.entrySet().removeIf(entry -> entry.getValue().get() == null);
     }

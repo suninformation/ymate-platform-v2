@@ -41,4 +41,13 @@ public class YMPJUnit4RunnerBuilder extends RunnerBuilder {
     public Runner runnerForClass(Class<?> testClass) throws Throwable {
         return new YMPJUnit4ClassRunner(application, testClass);
     }
+
+    /**
+     * 获取应用实例
+     *
+     * @return 应用实例
+     */
+    public IApplication getApplication() {
+        return application;
+    }
 }

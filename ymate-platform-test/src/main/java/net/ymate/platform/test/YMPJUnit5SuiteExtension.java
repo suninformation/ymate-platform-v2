@@ -16,6 +16,8 @@
 package net.ymate.platform.test;
 
 import net.ymate.platform.commons.util.RuntimeUtils;
+import net.ymate.platform.core.IApplication;
+import org.junit.jupiter.api.extension.AfterAllCallback;
 import org.junit.jupiter.api.extension.BeforeAllCallback;
 import org.junit.jupiter.api.extension.ExtensionContext;
 
@@ -23,7 +25,9 @@ import org.junit.jupiter.api.extension.ExtensionContext;
  * @author 刘镇 (suninformation@163.com) on 2026/01/02 03:58
  * @since 2.1.4
  */
-public class YMPJUnit5SuiteExtension implements BeforeAllCallback {
+public class YMPJUnit5SuiteExtension implements BeforeAllCallback, AfterAllCallback {
+
+    private static volatile IApplication application;
 
     private static volatile boolean initialized = false;
 
@@ -38,11 +42,27 @@ public class YMPJUnit5SuiteExtension implements BeforeAllCallback {
                         throw new IllegalArgumentException("YMPJUnit5Suite annotation not found");
                     }
                     try {
-                        YMPTestUtils.initializeYMP(suiteClass, annotation.value());
+                        application = YMPTestUtils.initializeYMP(suiteClass, annotation.value());
                         initialized = true;
                     } catch (Exception e) {
                         throw new RuntimeException("Failed to initialize YMP suite", RuntimeUtils.unwrapThrow(e));
                     }
+                }
+            }
+        }
+    }
+
+    @Override
+    public void afterAll(ExtensionContext context) {
+        synchronized (YMPJUnit5SuiteExtension.class) {
+            if (initialized && application != null) {
+                try {
+                    application.close();
+                } catch (Exception e) {
+                    throw new RuntimeException("Failed to close YMP application", RuntimeUtils.unwrapThrow(e));
+                } finally {
+                    application = null;
+                    initialized = false;
                 }
             }
         }

@@ -17,8 +17,10 @@ package net.ymate.platform.test;
 
 import net.ymate.platform.commons.util.RuntimeUtils;
 import net.ymate.platform.core.IApplication;
+import org.junit.runner.notification.RunNotifier;
 import org.junit.runners.BlockJUnit4ClassRunner;
 import org.junit.runners.model.InitializationError;
+import org.junit.runners.model.Statement;
 
 /**
  * @author 刘镇 (suninformation@163.com) on 2021/01/04 23:00
@@ -30,9 +32,12 @@ public class YMPJUnit4ClassRunner extends BlockJUnit4ClassRunner {
 
     private final IApplication application;
 
+    private final boolean destroyOnFinished;
+
     public YMPJUnit4ClassRunner(Class<?> testClass) throws InitializationError {
         super(testClass);
         this.targetClass = testClass;
+        this.destroyOnFinished = true;
         try {
             application = YMPTestUtils.initializeYMP(testClass);
         } catch (Exception e) {
@@ -44,10 +49,28 @@ public class YMPJUnit4ClassRunner extends BlockJUnit4ClassRunner {
         super(testClass);
         this.application = application;
         this.targetClass = testClass;
+        this.destroyOnFinished = false;
     }
 
     @Override
     public Object createTest() throws Exception {
         return application.getBeanFactory().getBean(targetClass);
+    }
+
+    @Override
+    protected Statement classBlock(RunNotifier notifier) {
+        final Statement classBlock = super.classBlock(notifier);
+        return new Statement() {
+            @Override
+            public void evaluate() throws Throwable {
+                try {
+                    classBlock.evaluate();
+                } finally {
+                    if (destroyOnFinished && application != null) {
+                        application.close();
+                    }
+                }
+            }
+        };
     }
 }
