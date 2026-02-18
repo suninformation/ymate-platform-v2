@@ -28,9 +28,10 @@ YMP 框架的单元测试工具包，集成了 JUnit 5 和 JUnit 4 的测试开�
 **功能特点：**
 - 实现了 `TestInstanceFactory` 接口，支持通过 YMP 容器创建测试实例
 - 实现了 `ParameterResolver` 接口，支持在测试方法中注入 `IApplication` 参数
-- 实现了 `AfterAllCallback` 接口，支持测试完成后清理缓存
+- 实现了 `AfterAllCallback` 接口，支持测试完成后清理缓存和销毁应用
 - 使用 `WeakReference` 管理应用缓存，避免内存泄漏
 - 自动注册测试类到 YMP 的 Bean 工厂，支持依赖注入
+- 完善的应用生命周期管理，测试执行完毕后自动销毁应用
 
 **使用方法：**
 - 通过 `@ExtendWith(YMPJUnit5Extension.class)` 注解启用
@@ -58,6 +59,7 @@ public class ExampleTest {
 - 使用独立的 `YMPJUnit5SuiteExtension` 扩展，确保 YMP 应用仅初始化一次
 - 支持批量注册多个测试类到 YMP 的 Bean 工厂
 - 提供线程安全的初始化机制
+- 完善的应用生命周期管理，整个测试套件执行完毕后自动销毁应用
 
 **使用方法：**
 - 通过 `@YMPJUnit5Suite({TestClass1.class, TestClass2.class})` 注解指定测试类
@@ -72,6 +74,7 @@ public class ExampleTest {
 - 使用 `YMPTestUtils` 统一管理应用初始化，减少代码重复
 - 自动初始化 YMP 应用并注册测试类到 Bean 工厂
 - 支持依赖注入和测试生命周期管理
+- 完善的应用生命周期管理，测试执行完毕后自动销毁应用
 
 **使用方法：**
 - 通过 `@RunWith(YMPJUnit4ClassRunner.class)` 注解启用
@@ -84,6 +87,7 @@ public class ExampleTest {
 - 使用独立的 `YMPJUnit4RunnerBuilder` 类管理测试运行，提高代码可读性
 - 确保 YMP 应用在测试套件执行前正确初始化
 - 支持批量注册测试类到 YMP 的 Bean 工厂
+- 完善的应用生命周期管理，整个测试套件执行完毕后自动销毁应用
 
 **使用方法：**
 - 通过 `@RunWith(YMPJUnit4Suite.class)` 和 `@SuiteClasses({TestClass1.class, TestClass2.class})` 注解指定测试类

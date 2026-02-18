@@ -8,13 +8,13 @@
 
 ### 2.1 JUnit 5 支持
 
-- **YMPJUnit5Extension**：实现了 TestInstanceFactory、ParameterResolver 和 AfterAllCallback 接口，支持通过 YMP 容器创建测试实例，支持在测试方法中注入 IApplication 参数，支持测试完成后清理缓存。
-- **YMPJUnit5Suite**：基于 JUnit 5 的 @Suite 注解，支持组合多个测试类，使用独立的 YMPJUnit5SuiteExtension 扩展，确保 YMP 应用仅初始化一次。
+- **YMPJUnit5Extension**：实现了 TestInstanceFactory、ParameterResolver 和 AfterAllCallback 接口，支持通过 YMP 容器创建测试实例，支持在测试方法中注入 IApplication 参数，支持测试完成后清理缓存和销毁应用，完善的应用生命周期管理。
+- **YMPJUnit5Suite**：基于 JUnit 5 的 @Suite 注解，支持组合多个测试类，使用独立的 YMPJUnit5SuiteExtension 扩展，确保 YMP 应用仅初始化一次，整个测试套件执行完毕后自动销毁应用。
 
 ### 2.2 JUnit 4 支持
 
-- **YMPJUnit4ClassRunner**：实现了 JUnit 4 的 Runner 接口，为单个测试类提供 YMP 集成，使用 YMPTestUtils 统一管理应用初始化。
-- **YMPJUnit4Suite**：基于 JUnit 4 的 Suite 运行器，支持组合多个测试类，使用独立的 YMPJUnit4RunnerBuilder 类管理测试运行。
+- **YMPJUnit4ClassRunner**：实现了 JUnit 4 的 Runner 接口，为单个测试类提供 YMP 集成，使用 YMPTestUtils 统一管理应用初始化，测试执行完毕后自动销毁应用。
+- **YMPJUnit4Suite**：基于 JUnit 4 的 Suite 运行器，支持组合多个测试类，使用独立的 YMPJUnit4RunnerBuilder 类管理测试运行，整个测试套件执行完毕后自动销毁应用。
 
 ### 2.3 核心工具类
 
@@ -235,6 +235,7 @@ public class ControllersTest {
 - **模拟功能**：提供丰富的模拟工具，支持模拟 HTTP 请求和响应。
 - **依赖注入**：支持依赖注入，便于测试对象的创建和管理。
 - **灵活配置**：支持多种配置方式，适应不同的测试场景。
+- **生命周期管理**：完善的应用生命周期管理，测试执行完毕后自动销毁应用，避免资源泄漏。
 
 ## 9. 最佳实践
 
