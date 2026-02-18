@@ -94,7 +94,7 @@ public final class Logs implements ILog {
     public void initialize() throws Exception {
         if (!initialized) {
             if (LOG.isInfoEnabled()) {
-                LOG.info(String.format("Initializing ymate-platform-log-%s", new Version(YMP.VERSION, this.getClass())));
+                LOG.info(String.format("Initializing ymate-platform-log-%s", new Version(Version.VERSION, this.getClass())));
             }
             //
             if (!config.isInitialized()) {

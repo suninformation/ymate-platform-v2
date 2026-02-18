@@ -22,6 +22,11 @@ package net.ymate.platform.core;
  */
 public class Version {
 
+    /**
+     * @since 2.1.4
+     */
+    public static final Version VERSION = new Version(2, 1, 4, Version.VersionType.Release);
+
     public enum VersionType {
 
         /**
