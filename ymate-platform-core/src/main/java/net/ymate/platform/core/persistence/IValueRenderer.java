@@ -20,6 +20,7 @@ import net.ymate.platform.commons.util.ClassUtils;
 import net.ymate.platform.commons.util.RuntimeUtils;
 import net.ymate.platform.core.beans.annotation.Ignored;
 import net.ymate.platform.core.persistence.annotation.ValueRenderer;
+import net.ymate.platform.core.persistence.impl.SerializedValueRenderer;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
@@ -94,6 +95,8 @@ public interface IValueRenderer {
 
         static {
             try {
+                registerValueRenderer(SerializedValueRenderer.class);
+                //
                 ClassUtils.ExtensionLoader<IValueRenderer> extensionLoader = ClassUtils.getExtensionLoader(IValueRenderer.class, true);
                 for (Class<IValueRenderer> valueRendererClass : extensionLoader.getExtensionClasses()) {
                     registerValueRenderer(valueRendererClass);
