@@ -118,7 +118,6 @@ public abstract class BaseOperator<T extends BaseOperator<?>> extends AbstractOp
         return (T) this;
     }
 
-    @SuppressWarnings("unchecked")
     public T or(Query... queries) {
         List<Bson> bsons = (List<Bson>) toBson().get(IMongo.Opt.OR);
         if (bsons == null) {
@@ -131,7 +130,6 @@ public abstract class BaseOperator<T extends BaseOperator<?>> extends AbstractOp
         return (T) this;
     }
 
-    @SuppressWarnings("unchecked")
     public T and(Query... queries) {
         List<Bson> bsons = (List<Bson>) toBson().get(IMongo.Opt.AND);
         if (bsons == null) {
@@ -149,7 +147,6 @@ public abstract class BaseOperator<T extends BaseOperator<?>> extends AbstractOp
         return (T) this;
     }
 
-    @SuppressWarnings("unchecked")
     public T nor(Query... queries) {
         List<Bson> bsons = (List<Bson>) toBson().get(IMongo.Opt.NOR);
         if (bsons == null) {

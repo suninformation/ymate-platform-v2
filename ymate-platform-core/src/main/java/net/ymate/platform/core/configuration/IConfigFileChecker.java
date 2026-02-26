@@ -17,7 +17,6 @@ package net.ymate.platform.core.configuration;
 
 import net.ymate.platform.commons.util.FileUtils;
 import net.ymate.platform.core.beans.annotation.Ignored;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Strings;
 
 import java.io.File;

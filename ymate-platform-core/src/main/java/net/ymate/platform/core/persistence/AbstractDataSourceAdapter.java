@@ -18,8 +18,6 @@ package net.ymate.platform.core.persistence;
 import net.ymate.platform.commons.IPasswordProcessor;
 import net.ymate.platform.core.YMP;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 /**
  * @param <OWNER>             所属持久化容器类型
@@ -30,8 +28,6 @@ import org.apache.commons.logging.LogFactory;
  */
 @SuppressWarnings("rawtypes")
 public abstract class AbstractDataSourceAdapter<OWNER extends IPersistence, DATASOURCE_CONFIG extends IDataSourceConfig, CONNECTION> implements IDataSourceAdapter<OWNER, DATASOURCE_CONFIG, CONNECTION> {
-
-    private static final Log LOG = LogFactory.getLog(AbstractDataSourceAdapter.class);
 
     private OWNER owner;
 
