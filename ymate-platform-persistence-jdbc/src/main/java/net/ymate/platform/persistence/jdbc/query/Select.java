@@ -17,13 +17,13 @@ package net.ymate.platform.persistence.jdbc.query;
 
 import net.ymate.platform.commons.util.ExpressionUtils;
 import net.ymate.platform.core.persistence.*;
+import net.ymate.platform.core.persistence.LambdaUtils.SFunction;
 import net.ymate.platform.core.persistence.base.EntityMeta;
 import net.ymate.platform.core.persistence.base.IEntity;
 import net.ymate.platform.persistence.jdbc.IDBLocker;
 import net.ymate.platform.persistence.jdbc.IDatabase;
 import net.ymate.platform.persistence.jdbc.JDBC;
 import net.ymate.platform.persistence.jdbc.base.IResultSetHandler;
-import net.ymate.platform.persistence.jdbc.query.LambdaUtils.SFunction;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.ArrayList;

@@ -18,17 +18,17 @@ package net.ymate.platform.persistence.jdbc.query;
 import net.ymate.platform.core.beans.annotation.Ignored;
 import net.ymate.platform.core.persistence.AbstractFunction;
 import net.ymate.platform.core.persistence.IFunction;
+import net.ymate.platform.core.persistence.LambdaUtils.SFunction;
 import net.ymate.platform.core.persistence.Params;
 import net.ymate.platform.core.persistence.base.IEntity;
-import net.ymate.platform.persistence.jdbc.query.LambdaUtils.SFunction;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import static net.ymate.platform.persistence.jdbc.query.LambdaUtils.getColumnName;
-import static net.ymate.platform.persistence.jdbc.query.LambdaUtils.getFullFieldName;
+import static net.ymate.platform.core.persistence.LambdaUtils.getColumnName;
+import static net.ymate.platform.core.persistence.LambdaUtils.getFullFieldName;
 
 /**
  * 数据库函数库(尝试!!! 暂未考虑不同数据库间的兼容问题)

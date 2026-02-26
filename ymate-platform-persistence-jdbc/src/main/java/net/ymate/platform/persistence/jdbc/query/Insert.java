@@ -18,12 +18,12 @@ package net.ymate.platform.persistence.jdbc.query;
 import net.ymate.platform.commons.util.ExpressionUtils;
 import net.ymate.platform.core.persistence.Fields;
 import net.ymate.platform.core.persistence.IFunction;
+import net.ymate.platform.core.persistence.LambdaUtils.SFunction;
 import net.ymate.platform.core.persistence.Params;
 import net.ymate.platform.core.persistence.base.EntityMeta;
 import net.ymate.platform.core.persistence.base.IEntity;
 import net.ymate.platform.persistence.jdbc.IDatabase;
 import net.ymate.platform.persistence.jdbc.JDBC;
-import net.ymate.platform.persistence.jdbc.query.LambdaUtils.SFunction;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.ArrayList;

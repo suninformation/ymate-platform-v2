@@ -299,18 +299,18 @@ public class LambdaQueryTest {
     @Test
     public void testLambdaUtils() {
         // 测试字段名解析
-        String fieldName = LambdaUtils.getFieldName(User::getId);
+        String fieldName = net.ymate.platform.core.persistence.LambdaUtils.getFieldName(User::getId);
         Assert.assertEquals("id", fieldName);
 
-        fieldName = LambdaUtils.getFieldName(User::getUsername);
+        fieldName = net.ymate.platform.core.persistence.LambdaUtils.getFieldName(User::getUsername);
         Assert.assertEquals("username", fieldName);
 
         // 测试数据库字段名解析
-        String columnName = LambdaUtils.getColumnName(User::getId);
+        String columnName = net.ymate.platform.core.persistence.LambdaUtils.getColumnName(User::getId);
         Assert.assertEquals("id", columnName);
 
         // 测试带前缀的字段名
-        String fullFieldName = LambdaUtils.getFullFieldName("u", User::getId);
+        String fullFieldName = net.ymate.platform.core.persistence.LambdaUtils.getFullFieldName("u", User::getId);
         Assert.assertEquals("u.id", fullFieldName);
     }
 

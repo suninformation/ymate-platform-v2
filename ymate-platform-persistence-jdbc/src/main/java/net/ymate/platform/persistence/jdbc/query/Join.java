@@ -15,11 +15,11 @@
  */
 package net.ymate.platform.persistence.jdbc.query;
 
+import net.ymate.platform.core.persistence.LambdaUtils.SFunction;
 import net.ymate.platform.core.persistence.Params;
 import net.ymate.platform.core.persistence.base.IEntity;
 import net.ymate.platform.persistence.jdbc.IDatabase;
 import net.ymate.platform.persistence.jdbc.JDBC;
-import net.ymate.platform.persistence.jdbc.query.LambdaUtils.SFunction;
 import org.apache.commons.lang3.StringUtils;
 
 /**
@@ -128,7 +128,7 @@ public class Join extends Query<Join> {
     public static Join inner(Query<?> query, String prefix, Class<? extends IEntity<?>> entityClass, String alias) {
         IDatabase owner = query != null ? query.owner() : JDBC.get();
         String dataSourceName = query != null ? query.dataSourceName() : owner.getConfig().getDefaultDataSourceName();
-        return new Join(owner, dataSourceName, Type.INNER.getName(), prefix, LambdaUtils.getEntityName(entityClass), true).alias(alias);
+        return new Join(owner, dataSourceName, Type.INNER.getName(), prefix, net.ymate.platform.core.persistence.LambdaUtils.getEntityName(entityClass), true).alias(alias);
     }
 
     /**
@@ -169,7 +169,7 @@ public class Join extends Query<Join> {
     public static Join cross(Query<?> query, String prefix, Class<? extends IEntity<?>> entityClass, String alias) {
         IDatabase owner = query != null ? query.owner() : JDBC.get();
         String dataSourceName = query != null ? query.dataSourceName() : owner.getConfig().getDefaultDataSourceName();
-        return new Join(owner, dataSourceName, Type.CROSS.getName(), prefix, LambdaUtils.getEntityName(entityClass), true).alias(alias);
+        return new Join(owner, dataSourceName, Type.CROSS.getName(), prefix, net.ymate.platform.core.persistence.LambdaUtils.getEntityName(entityClass), true).alias(alias);
     }
 
     /**
@@ -210,7 +210,7 @@ public class Join extends Query<Join> {
     public static Join left(Query<?> query, String prefix, Class<? extends IEntity<?>> entityClass, String alias) {
         IDatabase owner = query != null ? query.owner() : JDBC.get();
         String dataSourceName = query != null ? query.dataSourceName() : owner.getConfig().getDefaultDataSourceName();
-        return new Join(owner, dataSourceName, Type.LEFT.getName(), prefix, LambdaUtils.getEntityName(entityClass), true).alias(alias);
+        return new Join(owner, dataSourceName, Type.LEFT.getName(), prefix, net.ymate.platform.core.persistence.LambdaUtils.getEntityName(entityClass), true).alias(alias);
     }
 
     /**
@@ -251,7 +251,7 @@ public class Join extends Query<Join> {
     public static Join right(Query<?> query, String prefix, Class<? extends IEntity<?>> entityClass, String alias) {
         IDatabase owner = query != null ? query.owner() : JDBC.get();
         String dataSourceName = query != null ? query.dataSourceName() : owner.getConfig().getDefaultDataSourceName();
-        return new Join(owner, dataSourceName, Type.RIGHT.getName(), prefix, LambdaUtils.getEntityName(entityClass), true).alias(alias);
+        return new Join(owner, dataSourceName, Type.RIGHT.getName(), prefix, net.ymate.platform.core.persistence.LambdaUtils.getEntityName(entityClass), true).alias(alias);
     }
 
     /**

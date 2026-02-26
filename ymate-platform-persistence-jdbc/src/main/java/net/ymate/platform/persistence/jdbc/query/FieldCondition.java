@@ -17,15 +17,15 @@
 
  import net.ymate.platform.core.persistence.Fields;
  import net.ymate.platform.core.persistence.IFunction;
+ import net.ymate.platform.core.persistence.LambdaUtils.SFunction;
  import net.ymate.platform.core.persistence.Params;
  import net.ymate.platform.persistence.jdbc.IDatabase;
  import net.ymate.platform.persistence.jdbc.JDBC;
- import net.ymate.platform.persistence.jdbc.query.LambdaUtils.SFunction;
  import net.ymate.platform.validation.validate.DateTimeValue;
  import org.apache.commons.lang.NullArgumentException;
  import org.apache.commons.lang3.StringUtils;
 
- import static net.ymate.platform.persistence.jdbc.query.LambdaUtils.getColumnName;
+ import static net.ymate.platform.core.persistence.LambdaUtils.getColumnName;
 
  /**
   * @author 刘镇 (suninformation@163.com) on 2021/01/07 22:42

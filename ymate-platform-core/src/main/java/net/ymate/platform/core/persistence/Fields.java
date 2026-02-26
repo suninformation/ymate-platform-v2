@@ -94,6 +94,39 @@ public final class Fields implements Serializable {
         return new Fields().add(prefix, fields);
     }
 
+    /**
+     * @param functions 方法引用数组
+     * @param <T>       类型
+     * @param <R>       返回值类型
+     * @return 字段过滤对象
+     * @since 2.1.4
+     */
+    @SafeVarargs
+    public static <T, R> Fields of(LambdaUtils.SFunction<T, R>... functions) {
+        Fields fields = new Fields();
+        for (LambdaUtils.SFunction<T, R> function : functions) {
+            fields.add(function);
+        }
+        return fields;
+    }
+
+    /**
+     * @param prefix    字段前缀
+     * @param functions 方法引用数组
+     * @param <T>       类型
+     * @param <R>       返回值类型
+     * @return 字段过滤对象
+     * @since 2.1.4
+     */
+    @SafeVarargs
+    public static <T, R> Fields of(String prefix, LambdaUtils.SFunction<T, R>... functions) {
+        Fields fields = new Fields();
+        for (LambdaUtils.SFunction<T, R> function : functions) {
+            fields.add(prefix, function);
+        }
+        return fields;
+    }
+
     private Fields(String... fields) {
         this.fields = new ArrayList<>();
         if (fields != null && fields.length > 0) {
@@ -135,6 +168,61 @@ public final class Fields implements Serializable {
     public Fields add(IFunction func, String alias) {
         this.fields.add(field(null, func.build(), alias));
         return this;
+    }
+
+    /**
+     * @param function 方法引用
+     * @param <T>      类型
+     * @param <R>      返回值类型
+     * @return 字段过滤对象
+     * @since 2.1.4
+     */
+    public <T, R> Fields add(LambdaUtils.SFunction<T, R> function) {
+        this.fields.add(LambdaUtils.getColumnName(function));
+        return this;
+    }
+
+    /**
+     * @param prefix   字段前缀
+     * @param function 方法引用
+     * @param <T>      类型
+     * @param <R>      返回值类型
+     * @return 字段过滤对象
+     * @since 2.1.4
+     */
+    public <T, R> Fields add(String prefix, LambdaUtils.SFunction<T, R> function) {
+        this.fields.add(LambdaUtils.getFullFieldName(prefix, function));
+        return this;
+    }
+
+    /**
+     * @param prefix   字段前缀
+     * @param function 方法引用
+     * @param alias    别名
+     * @param <T>      类型
+     * @param <R>      返回值类型
+     * @return 字段过滤对象
+     * @since 2.1.4
+     */
+    public <T, R> Fields add(String prefix, LambdaUtils.SFunction<T, R> function, String alias) {
+        String fieldName = LambdaUtils.getFullFieldName(prefix, function);
+        if (StringUtils.isNotBlank(alias)) {
+            fieldName = fieldName + " AS " + alias;
+        }
+        this.fields.add(fieldName);
+        return this;
+    }
+
+    /**
+     * @param function 方法引用
+     * @param alias    别名
+     * @param <T>      类型
+     * @param <R>      返回值类型
+     * @return 字段过滤对象
+     * @since 2.1.4
+     */
+    public <T, R> Fields addAlias(LambdaUtils.SFunction<T, R> function, String alias) {
+        return add(null, function, alias);
     }
 
     public Fields add(Fields fields) {
