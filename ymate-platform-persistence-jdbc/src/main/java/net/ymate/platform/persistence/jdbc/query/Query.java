@@ -257,7 +257,7 @@ public class Query<T> extends QueryHandleAdapter<T> {
                         if (alias.length == 2) {
                             return String.format("%s.%s AS %s", splits[0], dialect.wrapIdentifierQuote(alias[0]), dialect.wrapIdentifierQuote(alias[1]));
                         } else if (alias.length == 3 && Strings.CI.equals(alias[1], "as")) {
-                            return String.format("%s AS %s", dialect.wrapIdentifierQuote(alias[0]), dialect.wrapIdentifierQuote(alias[2]));
+                            return String.format("%s.%s AS %s", splits[0], dialect.wrapIdentifierQuote(alias[0]), dialect.wrapIdentifierQuote(alias[2]));
                         }
                     }
                     return String.format("%s.%s", splits[0], dialect.wrapIdentifierQuote(splits[1]));
