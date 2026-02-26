@@ -18,6 +18,8 @@ package net.ymate.platform.persistence.jdbc.query;
 import net.ymate.platform.core.annotation.EnableAutoScan;
 import net.ymate.platform.core.annotation.EnableBeanProxy;
 import net.ymate.platform.core.annotation.EnableDevMode;
+import net.ymate.platform.core.beans.annotation.Inject;
+import net.ymate.platform.core.persistence.Fields;
 import net.ymate.platform.core.persistence.Page;
 import net.ymate.platform.core.persistence.Params;
 import net.ymate.platform.core.persistence.annotation.Entity;
@@ -26,6 +28,7 @@ import net.ymate.platform.core.persistence.annotation.PK;
 import net.ymate.platform.core.persistence.annotation.Property;
 import net.ymate.platform.core.persistence.base.IEntity;
 import net.ymate.platform.core.persistence.base.IEntityPK;
+import net.ymate.platform.persistence.jdbc.JDBC;
 import net.ymate.platform.test.YMPJUnit4ClassRunner;
 import org.junit.Assert;
 import org.junit.Test;
@@ -295,6 +298,9 @@ public class LambdaQueryTest {
     }
 
     // ========================== 测试 LambdaUtils 工具类 ==========================
+
+    @Inject
+    private JDBC databaseOwner;
 
     @Test
     public void testLambdaUtils() {
@@ -1119,5 +1125,76 @@ public class LambdaQueryTest {
         expectedSql = "DELETE  FROM `user` u INNER JOIN `department` d ON  u.dept_id = d.id  AND  d.dept_name = ?  WHERE  u.status = ?";
         Assert.assertEquals(expectedSql, delete.toString());
         Assert.assertEquals(2, delete.params().params().size());
+    }
+
+    // ========================== 测试 AbstractQueryBuilder 类的 Lambda 表达式支持 ==========================
+
+    @Test
+    public void testAbstractQueryBuilderLambdaSupport() {
+        // 创建 AbstractQueryBuilder 的匿名实现，并传入有效的 IDatabase 实例
+        new AbstractQueryBuilder<Void, AbstractQueryBuilder<?, ?>>(databaseOwner) {{
+            // 测试 field 方法的 Lambda 表达式支持
+            String fieldResult = field(User::getId);
+            Assert.assertEquals("id", fieldResult);
+
+            fieldResult = field(User::getId, "user_id");
+            Assert.assertEquals("id AS user_id", fieldResult);
+
+            fieldResult = field("u", User::getId);
+            Assert.assertEquals("u.id", fieldResult);
+
+            fieldResult = field("u", User::getId, "user_id");
+            Assert.assertEquals("u.id AS user_id", fieldResult);
+
+            // 测试 field 方法的 Lambda 别名支持
+            fieldResult = field(User::getId, User::getUsername);
+            Assert.assertEquals("id AS username", fieldResult);
+
+            fieldResult = field("u", User::getId, User::getUsername);
+            Assert.assertEquals("u.id AS username", fieldResult);
+
+            // 测试 fieldAlias 方法的 Lambda 表达式支持
+            String fieldAliasResult = fieldAlias(User::getId, "user_id");
+            Assert.assertEquals("id AS user_id", fieldAliasResult);
+
+            // 测试 fieldAlias 方法的 Lambda 别名支持
+            fieldAliasResult = fieldAlias(User::getId, User::getUsername);
+            Assert.assertEquals("id AS username", fieldAliasResult);
+
+            // 测试 fieldAliasWrap 方法的 Lambda 表达式支持
+            String fieldAliasWrapResult = fieldAliasWrap(User::getId, "user_id");
+            Assert.assertEquals("`id` AS `user_id`", fieldAliasWrapResult);
+
+            // 测试 fieldAliasWrap 方法的 Lambda 别名支持
+            fieldAliasWrapResult = fieldAliasWrap(User::getId, User::getUsername);
+            Assert.assertEquals("`id` AS `username`", fieldAliasWrapResult);
+
+            // 测试 fieldWrap 方法的 Lambda 表达式支持
+            String fieldWrapResult = fieldWrap(User::getId);
+            Assert.assertEquals("`id`", fieldWrapResult);
+
+            fieldWrapResult = fieldWrap(User::getId, "user_id");
+            Assert.assertEquals("`id` AS `user_id`", fieldWrapResult);
+
+            fieldWrapResult = fieldWrap("u", User::getId);
+            Assert.assertEquals("u.`id`", fieldWrapResult);
+
+            fieldWrapResult = fieldWrap("u", User::getId, "user_id");
+            Assert.assertEquals("u.`id` AS `user_id`", fieldWrapResult);
+
+            // 测试 fieldWrap 方法的 Lambda 别名支持
+            fieldWrapResult = fieldWrap(User::getId, User::getUsername);
+            Assert.assertEquals("`id` AS `username`", fieldWrapResult);
+
+            fieldWrapResult = fieldWrap("u", User::getId, User::getUsername);
+            Assert.assertEquals("u.`id` AS `username`", fieldWrapResult);
+
+            // 测试 fields 方法的 Lambda 表达式支持
+            Fields fieldsResult = fields(User::getId, User::getUsername, User::getEmail);
+            Assert.assertEquals(3, fieldsResult.fields().size());
+            Assert.assertTrue(fieldsResult.fields().contains("id"));
+            Assert.assertTrue(fieldsResult.fields().contains("username"));
+            Assert.assertTrue(fieldsResult.fields().contains("email"));
+        }};
     }
 }  

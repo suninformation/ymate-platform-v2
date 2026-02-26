@@ -15,10 +15,8 @@
   */
  package net.ymate.platform.persistence.jdbc.query;
 
- import net.ymate.platform.core.persistence.Fields;
- import net.ymate.platform.core.persistence.IFunction;
- import net.ymate.platform.core.persistence.Page;
- import net.ymate.platform.core.persistence.Params;
+ import net.ymate.platform.core.persistence.*;
+ import net.ymate.platform.core.persistence.LambdaUtils.SFunction;
  import net.ymate.platform.core.persistence.base.IEntity;
  import net.ymate.platform.persistence.jdbc.IDatabase;
  import net.ymate.platform.persistence.jdbc.JDBC;
@@ -507,8 +505,61 @@
          return Fields.field(prefix, field, alias);
      }
 
+     /**
+      * @since 2.1.4
+      */
+     public <T, R> String field(String prefix, String field, SFunction<T, R> alias) {
+         String aliasName = LambdaUtils.getColumnName(alias);
+         return Fields.field(prefix, field, aliasName);
+     }
+
      public String field(String prefix, String field) {
-         return field(prefix, field, null);
+         return field(prefix, field, (String) null);
+     }
+
+     /**
+      * @since 2.1.4
+      */
+     public <T, R> String field(String prefix, SFunction<T, R> function, String alias) {
+         String fieldName = LambdaUtils.getColumnName(function);
+         return Fields.field(prefix, fieldName, alias);
+     }
+
+     /**
+      * @since 2.1.4
+      */
+     public <T, R> String field(String prefix, SFunction<T, R> function) {
+         return field(prefix, function, (String) null);
+     }
+
+     /**
+      * @since 2.1.4
+      */
+     public <T, R> String field(SFunction<T, R> function, String alias) {
+         return field(null, function, alias);
+     }
+
+     /**
+      * @since 2.1.4
+      */
+     public <T, R> String field(String prefix, SFunction<T, R> function, SFunction<T, R> alias) {
+         String fieldName = LambdaUtils.getColumnName(function);
+         String aliasName = LambdaUtils.getColumnName(alias);
+         return Fields.field(prefix, fieldName, aliasName);
+     }
+
+     /**
+      * @since 2.1.4
+      */
+     public <T, R> String field(SFunction<T, R> function, SFunction<T, R> alias) {
+         return field(null, function, alias);
+     }
+
+     /**
+      * @since 2.1.4
+      */
+     public <T, R> String field(SFunction<T, R> function) {
+         return field(null, function, (String) null);
      }
 
      public Fields fields(String... fields) {
@@ -520,6 +571,14 @@
      }
 
      /**
+      * @since 2.1.4
+      */
+     @SafeVarargs
+     public final <T, R> Fields fields(SFunction<T, R>... functions) {
+         return Fields.of(functions);
+     }
+
+     /**
       * @since 2.1.3
       */
      public String fieldAlias(String field, String alias) {
@@ -527,10 +586,44 @@
      }
 
      /**
+      * @since 2.1.4
+      */
+     public <T, R> String fieldAlias(SFunction<T, R> function, String alias) {
+         String fieldName = LambdaUtils.getColumnName(function);
+         return Fields.fieldAlias(fieldName, alias);
+     }
+
+     /**
+      * @since 2.1.4
+      */
+     public <T, R> String fieldAlias(SFunction<T, R> function, SFunction<T, R> alias) {
+         String fieldName = LambdaUtils.getColumnName(function);
+         String aliasName = LambdaUtils.getColumnName(alias);
+         return Fields.fieldAlias(fieldName, aliasName);
+     }
+
+     /**
       * @since 2.1.3
       */
      public String fieldAliasWrap(String field, String alias) {
          return wrapIdentifierField(Fields.fieldAlias(field, alias));
+     }
+
+     /**
+      * @since 2.1.4
+      */
+     public <T, R> String fieldAliasWrap(SFunction<T, R> function, String alias) {
+         String fieldName = LambdaUtils.getColumnName(function);
+         return wrapIdentifierField(Fields.fieldAlias(fieldName, alias));
+     }
+
+     /**
+      * @since 2.1.4
+      */
+     public <T, R> String fieldAliasWrap(SFunction<T, R> function, SFunction<T, R> alias) {
+         String fieldName = LambdaUtils.getColumnName(function);
+         String aliasName = LambdaUtils.getColumnName(alias);
+         return wrapIdentifierField(Fields.fieldAlias(fieldName, aliasName));
      }
 
      public String fieldWrap(String prefix, String field, String alias) {
@@ -541,12 +634,70 @@
          return fieldWrap(prefix, field, null);
      }
 
+     /**
+      * @since 2.1.4
+      */
+     public <T, R> String fieldWrap(String prefix, SFunction<T, R> function, String alias) {
+         String fieldName = LambdaUtils.getColumnName(function);
+         return wrapIdentifierField(Fields.field(prefix, fieldName, alias));
+     }
+
+     /**
+      * @since 2.1.4
+      */
+     public <T, R> String fieldWrap(String prefix, SFunction<T, R> function) {
+         return fieldWrap(prefix, function, (String) null);
+     }
+
+     /**
+      * @since 2.1.4
+      */
+     public <T, R> String fieldWrap(SFunction<T, R> function, String alias) {
+         return fieldWrap(null, function, alias);
+     }
+
+     /**
+      * @since 2.1.4
+      */
+     public <T, R> String fieldWrap(String prefix, SFunction<T, R> function, SFunction<T, R> alias) {
+         String fieldName = LambdaUtils.getColumnName(function);
+         String aliasName = LambdaUtils.getColumnName(alias);
+         return wrapIdentifierField(Fields.field(prefix, fieldName, aliasName));
+     }
+
+     /**
+      * @since 2.1.4
+      */
+     public <T, R> String fieldWrap(SFunction<T, R> function, SFunction<T, R> alias) {
+         return fieldWrap(null, function, alias);
+     }
+
+     /**
+      * @since 2.1.4
+      */
+     public <T, R> String fieldWrap(SFunction<T, R> function) {
+         return fieldWrap(null, function, (String) null);
+     }
+
      public Fields fieldsWrap(String... fields) {
          return Fields.create(Arrays.stream(fields).map(this::wrapIdentifierField).collect(Collectors.toList()));
      }
 
      public Fields fieldsWrap(Collection<String> fields) {
          return Fields.create(fields.stream().map(this::wrapIdentifierField).collect(Collectors.toList()));
+     }
+
+     /**
+      * @since 2.1.4
+      */
+     @SafeVarargs
+     public final <T, R> Fields fieldsWrap(SFunction<T, R>... functions) {
+         Fields fields = Fields.create();
+         for (SFunction<T, R> function : functions) {
+             String fieldName = LambdaUtils.getColumnName(function);
+             fields.add(wrapIdentifierField(fieldName));
+         }
+         return fields;
      }
 
      // ------ Params
