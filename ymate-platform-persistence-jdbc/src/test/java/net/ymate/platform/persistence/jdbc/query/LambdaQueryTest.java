@@ -972,4 +972,152 @@ public class LambdaQueryTest {
         expectedSql = "SELECT  `id`,username FROM `user`";
         Assert.assertEquals(expectedSql, select.toString());
     }
-}
+
+    // ========================== 测试Lambda表达式作为别名 ==========================
+
+    @Test
+    public void testSelectLambdaAlias() {
+        // 测试使用Lambda表达式作为别名
+        Select select = Select.create()
+                .field(User::getUsername, User::getUsername)
+                .field(User::getEmail, User::getEmail)
+                .from(User.class);
+
+        String expectedSql = "SELECT  `username` AS username,`email` AS email FROM `user`";
+        Assert.assertEquals(expectedSql, select.toString());
+
+        // 测试带前缀的Lambda别名
+        select = Select.create()
+                .field("u", User::getUsername, User::getUsername)
+                .from(User.class, "u");
+
+        expectedSql = "SELECT  u.`username` AS username FROM `user` u";
+        Assert.assertEquals(expectedSql, select.toString());
+
+        // 测试fieldAlias方法的Lambda别名
+        select = Select.create()
+                .fieldAlias(User::getUsername, User::getUsername)
+                .from(User.class);
+
+        expectedSql = "SELECT  `username` AS username FROM `user`";
+        Assert.assertEquals(expectedSql, select.toString());
+    }
+
+    // ========================== 测试 Fields 类的 Lambda 表达式支持 ==========================
+
+    @Test
+    public void testFieldsLambdaCreate() {
+        // 测试通过Lambda表达式创建Fields
+        net.ymate.platform.core.persistence.Fields fields = net.ymate.platform.core.persistence.Fields.of(
+                User::getId,
+                User::getUsername,
+                User::getEmail
+        );
+
+        Assert.assertEquals(3, fields.fields().size());
+        Assert.assertTrue(fields.fields().contains("id"));
+        Assert.assertTrue(fields.fields().contains("username"));
+        Assert.assertTrue(fields.fields().contains("email"));
+
+        // 测试带前缀的Lambda表达式创建Fields
+        fields = net.ymate.platform.core.persistence.Fields.of("u",
+                User::getId,
+                User::getUsername,
+                User::getEmail
+        );
+
+        Assert.assertEquals(3, fields.fields().size());
+        Assert.assertTrue(fields.fields().contains("u.id"));
+        Assert.assertTrue(fields.fields().contains("u.username"));
+        Assert.assertTrue(fields.fields().contains("u.email"));
+    }
+
+    @Test
+    public void testFieldsLambdaAdd() {
+        // 测试通过Lambda表达式添加字段
+        net.ymate.platform.core.persistence.Fields fields = net.ymate.platform.core.persistence.Fields.create();
+        fields.add(User::getId)
+                .add(User::getUsername)
+                .add(User::getEmail);
+
+        Assert.assertEquals(3, fields.fields().size());
+        Assert.assertTrue(fields.fields().contains("id"));
+        Assert.assertTrue(fields.fields().contains("username"));
+        Assert.assertTrue(fields.fields().contains("email"));
+
+        // 测试带前缀的Lambda表达式添加字段
+        fields = net.ymate.platform.core.persistence.Fields.create();
+        fields.add("u", User::getId)
+                .add("u", User::getUsername)
+                .add("u", User::getEmail);
+
+        Assert.assertEquals(3, fields.fields().size());
+        Assert.assertTrue(fields.fields().contains("u.id"));
+        Assert.assertTrue(fields.fields().contains("u.username"));
+        Assert.assertTrue(fields.fields().contains("u.email"));
+
+        // 测试带前缀和别名的Lambda表达式添加字段
+        fields = net.ymate.platform.core.persistence.Fields.create();
+        fields.add("u", User::getId, "user_id")
+                .add("u", User::getUsername, "user_name");
+
+        Assert.assertEquals(2, fields.fields().size());
+        Assert.assertTrue(fields.fields().contains("u.id AS user_id"));
+        Assert.assertTrue(fields.fields().contains("u.username AS user_name"));
+
+        // 测试带别名的Lambda表达式添加字段
+        fields = net.ymate.platform.core.persistence.Fields.create();
+        fields.addAlias(User::getId, "user_id")
+                .addAlias(User::getUsername, "user_name");
+
+        Assert.assertEquals(2, fields.fields().size());
+        Assert.assertTrue(fields.fields().contains("id AS user_id"));
+        Assert.assertTrue(fields.fields().contains("username AS user_name"));
+    }
+
+    // ========================== 测试 IConditionAppender 接口的使用 ==========================
+
+    @Test
+    public void testIConditionAppender() {
+        // 测试Select中的IConditionAppender
+        Select select = Select.create()
+                .field(User::getUsername)
+                .field(Department::getDeptName)
+                .from(User.class, "u")
+                .innerJoin(Department.class, "d", (cond) -> {
+                    cond.eq("u", User::getDeptId, "d", Department::getId)
+                            .and().eq("d", Department::getSortOrder, 1);
+                });
+
+        String expectedSql = "SELECT  `username`,`dept_name` FROM `user` u INNER JOIN `department` d ON  u.dept_id = d.id  AND  d.sort_order = ?";
+        Assert.assertEquals(expectedSql, select.toString());
+        Assert.assertEquals(1, select.params().params().size());
+
+        // 测试Update中的IConditionAppender
+        Update update = Update.create()
+                .table(User.class, "u")
+                .field("u", User::getStatus, 2)
+                .innerJoin(Department.class, "d", (cond) -> {
+                    cond.eq("u", User::getDeptId, "d", Department::getId)
+                            .and().eq("d", Department::getDeptName, "IT");
+                })
+                .where(Cond.create().eq("u", User::getAge, 30));
+
+        expectedSql = "UPDATE `user` u INNER JOIN `department` d ON  u.dept_id = d.id  AND  d.dept_name = ?  SET u.`status` = ? WHERE  u.age = ?";
+        Assert.assertEquals(expectedSql, update.toString());
+        Assert.assertEquals(3, update.params().params().size());
+
+        // 测试Delete中的IConditionAppender
+        Delete delete = Delete.create()
+                .from(User.class, "u")
+                .innerJoin(Department.class, "d", (cond) -> {
+                    cond.eq("u", User::getDeptId, "d", Department::getId)
+                            .and().eq("d", Department::getDeptName, "IT");
+                })
+                .where(Cond.create().eq("u", User::getStatus, 0));
+
+        expectedSql = "DELETE  FROM `user` u INNER JOIN `department` d ON  u.dept_id = d.id  AND  d.dept_name = ?  WHERE  u.status = ?";
+        Assert.assertEquals(expectedSql, delete.toString());
+        Assert.assertEquals(2, delete.params().params().size());
+    }
+}  

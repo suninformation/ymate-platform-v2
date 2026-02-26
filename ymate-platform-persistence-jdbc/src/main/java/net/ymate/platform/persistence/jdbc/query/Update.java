@@ -17,7 +17,6 @@ package net.ymate.platform.persistence.jdbc.query;
 
 import net.ymate.platform.commons.util.ExpressionUtils;
 import net.ymate.platform.core.persistence.Fields;
-import net.ymate.platform.core.persistence.IFunction;
 import net.ymate.platform.core.persistence.LambdaUtils.SFunction;
 import net.ymate.platform.core.persistence.Params;
 import net.ymate.platform.core.persistence.base.EntityMeta;
@@ -235,10 +234,20 @@ public class Update extends Query<Update> {
         return this;
     }
 
+    /**
+     * @since 2.1.3
+     * @deprecated 从2.1.4版本开始废弃，在UPDATE语句的SET子句中字段不需要别名
+     */
+    @Deprecated
     public Update field(String prefix, String field, String alias) {
         return field(prefix, field, alias, true);
     }
 
+    /**
+     * @since 2.1.3
+     * @deprecated 从2.1.4版本开始废弃，在UPDATE语句的SET子句中字段不需要别名
+     */
+    @Deprecated
     public Update field(String prefix, String field, String alias, boolean wrapIdentifier) {
         this.fields.add(prefix, doParseField(field, wrapIdentifier), alias);
         return this;
@@ -332,87 +341,21 @@ public class Update extends Query<Update> {
     }
 
     /**
-     * 通过Lambda表达式设置更新字段（带前缀和别名）
-     *
-     * @param prefix 前缀
-     * @param column 方法引用
-     * @param alias  别名
-     * @param <T>    实体类型
-     * @param <R>    返回值类型
-     * @return 当前Update实例
-     * @since 2.1.4
-     */
-    public <T, R> Update field(String prefix, SFunction<T, R> column, String alias) {
-        return field(prefix, getColumnName(column), alias, true);
-    }
-
-    /**
-     * 通过Lambda表达式设置更新字段（带前缀、别名和标识符包装控制）
-     *
-     * @param prefix         前缀
-     * @param column         方法引用
-     * @param alias          别名
-     * @param wrapIdentifier 是否包装标识符
-     * @param <T>            实体类型
-     * @param <R>            返回值类型
-     * @return 当前Update实例
-     * @since 2.1.4
-     */
-    public <T, R> Update field(String prefix, SFunction<T, R> column, String alias, boolean wrapIdentifier) {
-        return field(prefix, getColumnName(column), alias, wrapIdentifier);
-    }
-
-    /**
-     * 通过Lambda表达式选择字段（带别名，fieldAlias版本）
-     *
-     * @param column 方法引用
-     * @param alias  别名
-     * @param <T>    类型
-     * @param <R>    返回值类型
-     * @return 当前Update实例
-     * @since 2.1.4
-     */
-    public <T, R> Update fieldAlias(SFunction<T, R> column, String alias) {
-        return fieldAlias(column, alias, true);
-    }
-
-    /**
-     * 通过Lambda表达式选择字段（带别名，fieldAlias版本）
-     *
-     * @param column         方法引用
-     * @param alias          别名
-     * @param wrapIdentifier 是否包装标识符
-     * @param <T>            类型
-     * @param <R>            返回值类型
-     * @return 当前Update实例
-     * @since 2.1.4
-     */
-    public <T, R> Update fieldAlias(SFunction<T, R> column, String alias, boolean wrapIdentifier) {
-        String columnName = getColumnName(column);
-        this.fields.addAlias(wrapIdentifier ? wrapIdentifierField(columnName) : columnName, alias);
-        return this;
-    }
-
-    /**
      * @since 2.1.3
+     * @deprecated 从2.1.4版本开始废弃，在UPDATE语句的SET子句中字段不需要别名
      */
+    @Deprecated
     public Update fieldAlias(String field, String alias) {
         return fieldAlias(field, alias, true);
     }
 
     /**
      * @since 2.1.3
+     * @deprecated 从2.1.4版本开始废弃，在UPDATE语句的SET子句中字段不需要别名
      */
+    @Deprecated
     public Update fieldAlias(String field, String alias, boolean wrapIdentifier) {
-        this.fields.addAlias(doParseField(field, wrapIdentifier), alias);
-        return this;
-    }
-
-    /**
-     * @since 2.1.4
-     */
-    public Update fieldAlias(IFunction function, String alias) {
-        this.fields.addAlias(function.build(), alias);
+        this.fields.add(doParseField(field, wrapIdentifier));
         return this;
     }
 

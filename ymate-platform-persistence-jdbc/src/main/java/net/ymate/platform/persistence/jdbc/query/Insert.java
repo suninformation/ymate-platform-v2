@@ -17,7 +17,6 @@ package net.ymate.platform.persistence.jdbc.query;
 
 import net.ymate.platform.commons.util.ExpressionUtils;
 import net.ymate.platform.core.persistence.Fields;
-import net.ymate.platform.core.persistence.IFunction;
 import net.ymate.platform.core.persistence.LambdaUtils.SFunction;
 import net.ymate.platform.core.persistence.Params;
 import net.ymate.platform.core.persistence.base.EntityMeta;
@@ -125,12 +124,22 @@ public class Insert extends Query<Insert> {
         return this.fields;
     }
 
+    /**
+     * @since 2.1.3
+     * @deprecated 从2.1.4版本开始废弃，在INSERT语句的列名列表中字段不需要别名
+     */
+    @Deprecated
     public Insert field(String prefix, String field, String alias) {
         return field(prefix, field, alias, true);
     }
 
+    /**
+     * @since 2.1.3
+     * @deprecated 从2.1.4版本开始废弃，在INSERT语句的列名列表中字段不需要别名
+     */
+    @Deprecated
     public Insert field(String prefix, String field, String alias, boolean wrapIdentifier) {
-        this.fields.add(prefix, wrapIdentifier ? wrapIdentifierField(field) : field, alias);
+        this.fields.add(prefix, wrapIdentifier ? wrapIdentifierField(field) : field);
         return this;
     }
 
@@ -211,37 +220,6 @@ public class Insert extends Query<Insert> {
     }
 
     /**
-     * 通过Lambda表达式设置插入字段（带前缀和别名）
-     *
-     * @param prefix 前缀
-     * @param column 方法引用
-     * @param alias  别名
-     * @param <T>    实体类型
-     * @param <R>    返回值类型
-     * @return 当前Insert实例
-     * @since 2.1.4
-     */
-    public <T, R> Insert field(String prefix, SFunction<T, R> column, String alias) {
-        return field(prefix, getColumnName(column), alias, true);
-    }
-
-    /**
-     * 通过Lambda表达式设置插入字段（带前缀、别名和标识符包装控制）
-     *
-     * @param prefix         前缀
-     * @param column         方法引用
-     * @param alias          别名
-     * @param wrapIdentifier 是否包装标识符
-     * @param <T>            实体类型
-     * @param <R>            返回值类型
-     * @return 当前Insert实例
-     * @since 2.1.4
-     */
-    public <T, R> Insert field(String prefix, SFunction<T, R> column, String alias, boolean wrapIdentifier) {
-        return field(prefix, getColumnName(column), alias, wrapIdentifier);
-    }
-
-    /**
      * 通过Lambda表达式设置插入字段并添加值
      *
      * @param column 方法引用
@@ -272,87 +250,22 @@ public class Insert extends Query<Insert> {
 
     /**
      * @since 2.1.3
+     * @deprecated 从2.1.4版本开始废弃，在INSERT语句的列名列表中字段不需要别名
      */
+    @Deprecated
     public Insert fieldAlias(String field, String alias) {
         return fieldAlias(field, alias, true);
     }
 
     /**
      * @since 2.1.3
+     * @deprecated 从2.1.4版本开始废弃，在INSERT语句的列名列表中字段不需要别名
      */
+    @Deprecated
     public Insert fieldAlias(String field, String alias, boolean wrapIdentifier) {
-        this.fields.addAlias(wrapIdentifier ? wrapIdentifierField(field) : field, alias);
+        // 在INSERT语句的列名列表中，字段不需要别名
+        this.fields.add(wrapIdentifier ? wrapIdentifierField(field) : field);
         return this;
-    }
-
-    /**
-     * @since 2.1.4
-     */
-    public Insert fieldAlias(IFunction function, String alias) {
-        this.fields.addAlias(function.build(), alias);
-        return this;
-    }
-
-    // ---------- Lambda Support for FIELD_ALIAS ----------
-
-    /**
-     * 通过Lambda表达式设置插入字段并指定别名
-     *
-     * @param column 方法引用
-     * @param alias  别名
-     * @param <T>    类型
-     * @param <R>    返回值类型
-     * @return 当前Insert实例
-     * @since 2.1.4
-     */
-    public <T, R> Insert fieldAlias(SFunction<T, R> column, String alias) {
-        return fieldAlias(getColumnName(column), alias, true);
-    }
-
-    /**
-     * 通过Lambda表达式设置插入字段并指定别名（带标识符包装控制）
-     *
-     * @param column         方法引用
-     * @param alias          别名
-     * @param wrapIdentifier 是否包装标识符
-     * @param <T>            类型
-     * @param <R>            返回值类型
-     * @return 当前Insert实例
-     * @since 2.1.4
-     */
-    public <T, R> Insert fieldAlias(SFunction<T, R> column, String alias, boolean wrapIdentifier) {
-        return fieldAlias(getColumnName(column), alias, wrapIdentifier);
-    }
-
-    /**
-     * 通过Lambda表达式设置插入字段并指定别名（带前缀）
-     *
-     * @param prefix 前缀
-     * @param column 方法引用
-     * @param alias  别名
-     * @param <T>    类型
-     * @param <R>    返回值类型
-     * @return 当前Insert实例
-     * @since 2.1.4
-     */
-    public <T, R> Insert fieldAlias(String prefix, SFunction<T, R> column, String alias) {
-        return fieldAlias(Fields.field(prefix, getColumnName(column)), alias, true);
-    }
-
-    /**
-     * 通过Lambda表达式设置插入字段并指定别名（带前缀和标识符包装控制）
-     *
-     * @param prefix         前缀
-     * @param column         方法引用
-     * @param alias          别名
-     * @param wrapIdentifier 是否包装标识符
-     * @param <T>            类型
-     * @param <R>            返回值类型
-     * @return 当前Insert实例
-     * @since 2.1.4
-     */
-    public <T, R> Insert fieldAlias(String prefix, SFunction<T, R> column, String alias, boolean wrapIdentifier) {
-        return fieldAlias(Fields.field(prefix, getColumnName(column)), alias, wrapIdentifier);
     }
 
     public Insert field(Fields fields) {
