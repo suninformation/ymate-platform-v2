@@ -91,6 +91,13 @@ public class GroupBy extends Query<GroupBy> {
         return new GroupBy(owner, dataSourceName).having(having);
     }
 
+    /**
+     * @since 2.1.4
+     */
+    public static GroupBy create(IDatabase owner, String dataSourceName, IConditionAppender having) {
+        return new GroupBy(owner, dataSourceName).having(having);
+    }
+
     public static GroupBy create(IDatabase owner, String dataSourceName, String prefix, String field) {
         return new GroupBy(owner, dataSourceName).field(prefix, field);
     }
@@ -428,6 +435,19 @@ public class GroupBy extends Query<GroupBy> {
     public GroupBy having(Cond cond) {
         having = cond;
         return this;
+    }
+
+    /**
+     * 通过条件构建器创建having条件
+     *
+     * @param appender 条件构建器
+     * @return 当前GroupBy实例
+     * @since 2.1.4
+     */
+    public GroupBy having(IConditionAppender appender) {
+        Cond cond = Cond.create(this);
+        appender.append(cond);
+        return having(cond);
     }
 
     public GroupBy rollup() {
