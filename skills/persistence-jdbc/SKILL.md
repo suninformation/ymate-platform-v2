@@ -736,6 +736,412 @@ Select select = Select.create("user", "u")
     .where(Cond.create().gtEq("u", "age").param(18));
 ```
 
+### Func：函数
+
+在编写 SQL 语句时，经常会用到由数据库提供（或根据业务自定义）的一系列函数来处理数据查询等操作，为了能够像编写 Java 代码一样在对象查询的 SQL 语句中使用函数，JDBC模块提供了一种简单的函数封装方法，同时也封装了一些比较常用的函数（目前这些函数封装主要针对 MySQL 数据库实现，其它类型数据库的支持也将在未来版本中逐步完善），其中主要包括：常规运算、数学计算、字符操作、聚合分组、日期时间和流程控制等相关函数。
+
+#### 常规运算函数：Func.Operators
+
+| 函数     | 代码                                                         | 描述 |
+| -------- | ------------------------------------------------------------ | ---- |
+| brackets | `Func.operators.brackets("x")`                               | 括号 |
+| quotes   | `Func.operators.quotes("x")`                                 | 引号 |
+| addition | `Func.operators.addition(n)`<br />`Func.operators.addition("x")`<br />`Func.operators.addition("x", n)`<br />`Func.operators.addition("x", 'y')` | 加法 |
+| subtract | `Func.operators.subtract(n)`<br />`Func.operators.subtract("x")`<br />`Func.operators.subtract("x", n)`<br />`Func.operators.subtract(n, 'x')`<br />`Func.operators.subtract("x", 'y')` | 减法 |
+| multiply | `Func.operators.multiply(n)`<br />`Func.operators.multiply("x")`<br />`Func.operators.multiply("x", n)`<br />`Func.operators.multiply("x", 'y')` | 乘法 |
+| divide   | `Func.operators.divide(n)`<br />`Func.operators.divide("x")`<br />`Func.operators.divide("x", n)`<br />`Func.operators.divide(n, 'x')`<br />`Func.operators.divide("x", 'y')` | 除法 |
+
+#### 数学计算类函数：Func.Math
+
+| 函数     | 代码                                                        | 描述                                                         |
+| -------- | ----------------------------------------------------------- | ------------------------------------------------------------ |
+| ABS      | `Func.math.ABS("x")`                                        | X 的绝对值                                                   |
+| ACOS     | `Func.math.ACOS("x")`                                       | X 的反余弦                                                   |
+| ASIN     | `Func.math.ASIN("x")`                                       | X 的反正弦                                                   |
+| ATAN     | `Func.math.ATAN("x")`                                       | X 的反正切                                                   |
+| CEILING  | `Func.math.CEILING("x")`                                    | 不小于 X 的最小整数值                                        |
+| CONV     | `Func.math.CONV("x", 10, 2)`                                | 进制转换                                                     |
+| COS      | `Func.math.COS("x")`                                        | X 的余弦                                                     |
+| COT      | `Func.math.COT("x")`                                        | X 的余切                                                     |
+| CRC32    | `Func.math.CRC32("x")`                                      | 计算循环冗余码校验值并返回一个32比特无符号值                 |
+| DEGREES  | `Func.math.DEGREES("x")`                                    | X 由弧度被转化为度                                           |
+| EXP      | `Func.math.EXP("x")`                                        | e 的 X 乘方后的值（自然对数的底）                            |
+| FLOOR    | `Func.math.FLOOR("x")`                                      | 不大于 X 的最大整数值                                        |
+| LN       | `Func.math.LN("x")`                                         | X 的自然对数，即 X 相对于基数 e 的对数                       |
+| LOG      | `Func.math.LOG("x")`<br />`Func.math.LOG("b", "x")`        | X 的自然对数<br />X 对于任意基数 B 的对数                    |
+| LOG10    | `Func.math.LOG10("x")`                                      | X 的常用对数（以 10 为底）                                   |
+| LOG2     | `Func.math.LOG2("x")`                                       | X 的以 2 为底的对数                                          |
+| MOD      | `Func.math.MOD("n", "m")`                                   | N 被 M 除后的余数                                            |
+| PI       | `Func.math.PI()`                                            | PI 的值（默认的显示小数位数是7位）                           |
+| POW      | `Func.math.POW("y", "x")`                                   | X 的 Y 乘方的结果值                                          |
+| POWER    | `Func.math.POWER("y", "x")`                                 | 同 POW 函数                                                  |
+| RADIANS  | `Func.math.RADIANS("x")`                                    | 由度转化为弧度的参数 X                                       |
+| RAND     | `Func.math.RAND()`<br />`Func.math.RAND("n")`               | 随机浮点值 v ，范围在 0 到1 之间 (即, 其范围为 0 ≤ v ≤ 1.0)<br />指定一个整数参数 N ，它被用作种子值，用来产生重复序列 |
+| ROUND    | `Func.math.ROUND("x")`<br />`Func.math.ROUND("x", d)`       | X 值接近于最近似的整数<br />X 值保留到小数点后 D 位并四舍五入<br />（若要直接保留 X 值小数点左边的 D 位，可将 D 设为负值） |
+| SIGN     | `Func.math.SIGN("n")`                                       | X 值的符号（负数、零或正）对应 -1，0或1                      |
+| SIN      | `Func.math.SIN("x")`                                        | X 的正弦                                                     |
+| SQRT     | `Func.math.SQRT("x")`                                       | 非负数 X 的二次方根                                          |
+| TAN      | `Func.math.TAN("x")`                                        | X 的正切                                                     |
+| TRUNCATE | `Func.math.TRUNCATE("x")`<br />`Func.math.TRUNCATE("x", d)` | 舍去至小数点后 D 位的数字 X<br />若 D 的值为 0，则结果不带有小数点或不带有小数部分<br />可以将 D 设为负数，若要截去 X 小数点左起第 D 位开始后面所有低位的值 |
+
+#### 字符操作类函数：Func.Strings
+
+| 函数             | 代码                                                         | 描述                                                         |
+| ---------------- | ------------------------------------------------------------ | ------------------------------------------------------------ |
+| ASCII            | `Func.strings.ASCII(str)`                                    | 字符串 str 的最左字符的数值                                  |
+| BIN              | `Func.strings.BIN(n)`                                        | N 的二进制值的字符串表示                                     |
+| BIN_LENGTH       | `Func.strings.BIN_LENGTH(str)`                               | 二进制的字符串 str 长度                                      |
+| CHAR             | `Func.strings.CHAR(...n)`                                    | 将 n 个整数代码所对应的字符组成的字符串                      |
+| CHAR_LENGTH      | `Func.strings.CHAR_LENGTH(str)`                              | 字符串 str 的长度，长度的单位为字符                          |
+| CHARACTER_LENGTH | `Func.strings.CHARACTER_LENGTH(str)`                         | 与 CHAR_LENGTH 同                                            |
+| CONCAT           | `Func.strings.CONCAT(str1, str2...n)`                        | 连接多个 str 参数产生的字符串                                |
+| CONCAT_WS        | `Func.strings.CONCAT_WS(sp, str1, str2...n)`                 | 与 CONCAT 同，第一个参数用于指定分隔符                       |
+| ELT              | `Func.strings.ELT(n, str1...n)`                              | 返回第 N 个字符串                                            |
+| FIELD            | `Func.strings.FIELD(str, ...n)`                              | 返回 str 在列表中的位置索引                                  |
+| FIND_IN_SET      | `Func.strings.FIND_IN_SET(x, strlist)`                       | 返回字符串 x 在字符串列表 strlist 中的位置                   |
+| FORMAT           | `Func.strings.FORMAT(x, d)`                                  | 将数字 x 格式化为 '#,###,###.##' 格式，保留 d 位小数         |
+| HEX              | `Func.strings.HEX(str)`                                      | 将字符串 str 转换为十六进制                                  |
+| FROM_BASE64      | `Func.strings.FROM_BASE64(str)`                              | 将 Base64 编码的字符串解码                                   |
+| TO_BASE64        | `Func.strings.TO_BASE64(str)`                                | 将字符串 str 编码为 Base64                                   |
+| INSERT           | `Func.strings.INSERT(str, pos, len, newstr)`                 | 在字符串 str 的 pos 位置插入 newstr，替换 len 个字符         |
+| INSTR            | `Func.strings.INSTR(str, substr)`                            | 字符串 str 中子字符串的第一个出现位置                        |
+| LEFT             | `Func.strings.LEFT(str, len)`                                | 字符串 str 开始的 len 最左字符                               |
+| LENGTH           | `Func.strings.LENGTH(str)`                                   | 字符串 str 的长度，单位为字节                                |
+| LOAD_FILE        | `Func.strings.LOAD_FILE(str)`                                | 读取文件并将这一文件按照字符串的格式返回                     |
+| LOCATE           | `Func.strings.LOCATE(substr, str)`<br />`Func.strings.LOCATE(substr, str, pos)` | 返回子字符串 substr 在字符串 str 中第一次出现的位置          |
+| LOWER            | `Func.strings.LOWER(str)`                                    | 返回字符串 str，以及根据最新字符集映射转化为小写字母的字符   |
+| LPAD             | `Func.strings.LPAD(str, len, padstr)`                        | 返回字符串 str，其左边被字符串 padstr 填补至 len 字符长度    |
+| LTRIM            | `Func.strings.LTRIM(str)`                                    | 返回字符串 str，起始空格字符被删去                           |
+| OCT              | `Func.strings.OCT(n)`                                        | N 的八进制值的字符串表示                                     |
+| ORD              | `Func.strings.ORD(str)`                                      | 若字符串 str 的最左字符是一个多字节字符，则返回该字符的代码  |
+| QUOTE            | `Func.strings.QUOTE(str)`                                    | 引证一个字符串，由此产生一个在 SQL 语句中可用作完全转义数据值的结果 |
+| REPEAT           | `Func.strings.REPEAT(str, count)`                            | 返回一个由重复的字符串 str 组成的字符串，重复次数为 count    |
+| REPLACE          | `Func.strings.REPLACE(str, fromStr, toStr)`                  | 替换字符串 str 中所有的 fromStr 为 toStr                  |
+| REVERSE          | `Func.strings.REVERSE(str)`                                  | 返回字符串 str，顺序和字符顺序相反                         |
+| RIGHT            | `Func.strings.RIGHT(str, len)`                               | 从字符串 str 开始，返回最右 len 字符                       |
+| RPAD             | `Func.strings.RPAD(str, len, padstr)`                        | 返回字符串 str，其右边被字符串 padstr 填补至 len 字符长度  |
+| RTRIM            | `Func.strings.RTRIM(str)`                                    | 返回字符串 str，结尾空格字符被删去                         |
+| SOUNDEX          | `Func.strings.SOUNDEX(str)`                                  | 从 str 返回一个 soundex 字符串                             |
+| SPACE            | `Func.strings.SPACE(n)`                                      | 返回一个由 N 间隔符号组成的字符串                          |
+| STRCMP           | `Func.strings.STRCMP(expr1, expr2)`                          | 若所有的字符串均相同，则返回 0，若第一个参数小于第二个，则返回 -1，其它情况返回 1 |
+| SUBSTRING        | `Func.strings.SUBSTRING(str, pos)`<br />`Func.strings.SUBSTRING(str, pos, len)` | 从字符串 str 返回一个子字符串，起始于位置 pos，可选长度 len |
+| SUBSTRING_INDEX  | `Func.strings.SUBSTRING_INDEX(str, delim, count)`            | 在定界符 delim 以及 count 出现前，从字符串 str 返回子字符串 |
+| TRIM             | `Func.strings.TRIM(str)`                                     | 返回字符串 str，其中所有前缀和/或后缀都已被删除            |
+| TRIM_BOTH        | `Func.strings.TRIM_BOTH(remstr, str)`                        | 返回字符串 str，其中所有 remstr 前缀和后缀都已被删除       |
+| TRIM_LEADIN      | `Func.strings.TRIM_LEADIN(remstr, str)`                      | 返回字符串 str，其中所有 remstr 前缀都已被删除             |
+| TRIM_TRAILING    | `Func.strings.TRIM_TRAILING(remstr, str)`                    | 返回字符串 str，其中所有 remstr 后缀都已被删除             |
+| UNHEX            | `Func.strings.UNHEX(str)`                                    | 执行从 HEX(str) 的反向操作，将十六进制数字转化为字符       |
+| UPPER            | `Func.strings.UPPER(str)`                                    | 返回字符串 str，以及根据最新字符集映射转化为大写字母的字符 |
+| REGEXP_INSTR     | `Func.strings.REGEXP_INSTR(str, pattern)`<br />`Func.strings.REGEXP_INSTR(str, pattern, pos, occurrence, return_end_opt, match_type)` | 返回字符串 str 中匹配正则表达式 pattern 的子串的起始位置   |
+| REGEXP_LIKE      | `Func.strings.REGEXP_LIKE(str, pattern)`<br />`Func.strings.REGEXP_LIKE(str, pattern, match_type)` | 检查字符串 str 是否匹配正则表达式 pattern                  |
+| REGEXP_REPLACE   | `Func.strings.REGEXP_REPLACE(str, pattern, replacement)`<br />`Func.strings.REGEXP_REPLACE(str, pattern, replacement, pos, occurrence, match_type)` | 替换字符串 str 中匹配正则表达式 pattern 的子串             |
+| REGEXP_SUBSTR    | `Func.strings.REGEXP_SUBSTR(str, pattern)`<br />`Func.strings.REGEXP_SUBSTR(str, pattern, pos, occurrence, match_type)` | 返回字符串 str 中匹配正则表达式 pattern 的子串             |
+
+#### 聚合分组类函数：Func.Aggregate
+
+| 函数         | 代码                                                         | 描述                                                   |
+| ------------ | ------------------------------------------------------------ | ------------------------------------------------------ |
+| AVG          | `Func.aggregate.AVG(expr)`<br />`Func.aggregate.AVG(distinct, expr)`<br />`Func.aggregate.AVG(expr, over)` | 返回 expr 的平均值，DISTINCT 选项可用于返回不同值的平均值，支持窗口函数 |
+| BIT_AND      | `Func.aggregate.BIT_AND(expr)`<br />`Func.aggregate.BIT_AND(expr, over)` | 返回 expr 中所有比特的按位与，计算执行的精确度为 64 比特 |
+| BIT_OR       | `Func.aggregate.BIT_OR(expr)`<br />`Func.aggregate.BIT_OR(expr, over)` | 返回 expr 中所有比特的按位或，计算执行的精确度为 64 比特 |
+| BIT_XOR      | `Func.aggregate.BIT_XOR(expr)`<br />`Func.aggregate.BIT_XOR(expr, over)` | 返回 expr 中所有比特的按位异或，计算执行的精确度为 64 比特 |
+| COUNT        | `Func.aggregate.COUNT(expr)`<br />`Func.aggregate.COUNT(distinct, expr)`<br />`Func.aggregate.COUNT(expr, over)` | 返回 SELECT 语句检索到的行中非 NULL 值的数目，支持窗口函数 |
+| GROUP_CONCAT | `Func.aggregate.GROUP_CONCAT(...expr)`<br />`Func.aggregate.GROUP_CONCAT(distinct, ...expr)`<br />`Func.aggregate.GROUP_CONCAT(distinct, orderBy, separator, ...expr)` | 返回一个字符串结果，该结果由分组中的值连接而成，可指定排序和分隔符 |
+| WM_CONCAT    | `Func.aggregate.WM_CONCAT(expr)`                             | Oracle 数据库特有的聚合函数，用于连接字符串             |
+| MAX          | `Func.aggregate.MAX(expr)`<br />`Func.aggregate.MAX(distinct, expr)`<br />`Func.aggregate.MAX(expr, over)` | 返回 expr 的最大值，支持窗口函数                        |
+| MIN          | `Func.aggregate.MIN(expr)`<br />`Func.aggregate.MIN(distinct, expr)`<br />`Func.aggregate.MIN(expr, over)` | 返回 expr 的最小值，支持窗口函数                        |
+| SUM          | `Func.aggregate.SUM(expr)`<br />`Func.aggregate.SUM(distinct, expr)`<br />`Func.aggregate.SUM(expr, over)` | 返回 expr 的总数，若返回集合中无任何行则返回 NULL，支持窗口函数 |
+
+#### 日期时间类函数：Func.DateTime
+
+| 函数           | 代码                                                         | 描述                                                         |
+| -------------- | ------------------------------------------------------------ | ------------------------------------------------------------ |
+| ADDDATE        | `Func.dateTime.ADDDATE(expr, days)`                          | 将 days 天数添加至 expr                                      |
+| ADDTIME        | `Func.dateTime.ADDTIME(expr, expr2)`                         | 将 expr2 添加至 expr 然后返回结果                            |
+| CONVERT_TZ     | `Func.dateTime.CONVERT_TZ(dt, fromTz, toTz)`                 | 将时间日期值 dt 从 fromTz 给出的时区转到 toTz 给出的时区     |
+| CURDATE        | `Func.dateTime.CURDATE()`                                    | 将当前日期按照 'YYYY-MM-DD' 或 YYYYMMDD 格式的值返回         |
+| CURTIME        | `Func.dateTime.CURTIME()`                                    | 将当前时间以 'HH:MM:SS' 或 HHMMSS 的格式返回                 |
+| DATE           | `Func.dateTime.DATE(expr)`                                   | 提取日期或时间日期表达式 expr 中的日期部分                   |
+| DATE_FORMAT    | `Func.dateTime.DATE_FORMAT(date, format)`                    | 根据 format 字符串安排 date 值的格式                         |
+| DATEDIFF       | `Func.dateTime.DATEDIFF(expr, expr2)`                        | 返回起始时间 expr 和结束时间 expr2 之间的天数                |
+| DAYNAME        | `Func.dateTime.DAYNAME(date)`                                | 返回 date 对应的工作日名称                                   |
+| DAYOFMONTH     | `Func.dateTime.DAYOFMONTH(date)`                             | 返回 date 对应的该月日期，范围是从 1 到 31                   |
+| DAYOFWEEK      | `Func.dateTime.DAYOFWEEK(date)`                              | 返回 date (1 = 周日, 2 = 周一, ..., 7 = 周六)对应的工作日索引 |
+| DAYOFYEAR      | `Func.dateTime.DAYOFYEAR(date)`                              | 返回 date 对应的一年中的天数，范围是从 1 到 366              |
+| FROM_UNIXTIME  | `Func.dateTime.FROM_UNIXTIME(timestamp)`<br />`Func.dateTime.FROM_UNIXTIME(timestamp, format)` | 将 Unix 时间戳转换为日期格式                                 |
+| UNIX_TIMESTAMP | `Func.dateTime.UNIX_TIMESTAMP()`<br />`Func.dateTime.UNIX_TIMESTAMP(date)` | 返回 Unix 时间戳，或返回 date 参数以秒数的形式表示           |
+| GET_FORMAT     | `Func.dateTime.GET_FORMAT(date, type)`                       | 返回一个格式字符串                                           |
+| HOUR           | `Func.dateTime.HOUR(time)`                                    | 返回 time 对应的小时数，范围是从 0 到 23                     |
+| LAST_DAY       | `Func.dateTime.LAST_DAY(date)`                               | 获取一个日期或日期时间值，返回该月最后一天对应的值           |
+| MAKEDATE       | `Func.dateTime.MAKEDATE(year, dayOfYear)`                    | 给出年份值和一年中的天数值，返回一个日期                     |
+| MAKETIME       | `Func.dateTime.MAKETIME(hour, minute, second)`               | 返回由 hour、minute 和 second 参数计算得出的时间值           |
+| MICROSECOND    | `Func.dateTime.MICROSECOND(expr)`                            | 从时间或日期时间表达式 expr 返回微秒值，范围从 0 到 999999   |
+| MINUTE         | `Func.dateTime.MINUTE(time)`                                 | 返回 time 对应的分钟数，范围是从 0 到 59                     |
+| MONTH          | `Func.dateTime.MONTH(date)`                                  | 返回 date 对应的月份，范围是从 1 到 12                       |
+| MONTHNAME      | `Func.dateTime.MONTHNAME(date)`                              | 返回 date 对应的月份名称                                     |
+| NOW            | `Func.dateTime.NOW()`                                        | 返回当前日期和时间值，格式为 'YYYY-MM-DD HH:MM:SS'           |
+| PERIOD_ADD     | `Func.dateTime.PERIOD_ADD(p, n)`                             | 为年-月组合日期 p 添加 n 个月                                |
+| PERIOD_DIFF    | `Func.dateTime.PERIOD_DIFF(p1, p2)`                          | 返回 p1 和 p2 之间的月数                                     |
+| QUARTER        | `Func.dateTime.QUARTER(date)`                                | 返回 date 对应的一年中的季度值，范围是从 1 到 4              |
+| SEC_TO_TIME    | `Func.dateTime.SEC_TO_TIME(seconds)`                         | 返回被转化为小时、分钟和秒数的 seconds 参数值                |
+| SECOND         | `Func.dateTime.SECOND(time)`                                 | 返回 time 对应的秒数，范围是从 0 到 59                       |
+| STR_TO_DATE    | `Func.dateTime.STR_TO_DATE(str, format)`                     | DATE_FORMAT() 函数的倒转，将字符串转换为日期时间值           |
+| SYSDATE        | `Func.dateTime.SYSDATE()`                                    | 返回当前日期和时间值                                         |
+| TIME           | `Func.dateTime.TIME(expr)`                                   | 提取一个时间或日期时间表达式的时间部分                       |
+| TIME_FORMAT    | `Func.dateTime.TIME_FORMAT(time, format)`                    | 其使用和 DATE_FORMAT() 函数相同，但仅处理时间格式            |
+| TIME_TO_SEC    | `Func.dateTime.TIME_TO_SEC(time)`                            | 返回已转化为秒的 time 参数                                   |
+| TIMEDIFF       | `Func.dateTime.TIMEDIFF(expr, expr2)`                        | 返回起始时间 expr 和结束时间 expr2 之间的时间差              |
+| TIMESTAMP      | `Func.dateTime.TIMESTAMP(expr)`<br />`Func.dateTime.TIMESTAMP(expr, expr2)` | 将日期或日期时间表达式 expr 作为日期时间值返回               |
+| TIMESTAMPDIFF  | `Func.dateTime.TIMESTAMPDIFF(unit, datetimeExpr1, datetimeExpr2)` | 返回日期或日期时间表达式之间的整数差                         |
+| TO_DAYS        | `Func.dateTime.TO_DAYS(date)`                                | 给定一个日期 date，返回一个天数（从年份 0 开始的天数）       |
+| UTC_DATE       | `Func.dateTime.UTC_DATE()`                                   | 返回当前 UTC 日期值，格式为 'YYYY-MM-DD' 或 YYYYMMDD         |
+| UTC_TIME       | `Func.dateTime.UTC_TIME()`                                   | 返回当前 UTC 时间值，格式为 'HH:MM:SS' 或 HHMMSS             |
+| UTC_TIMESTAMP  | `Func.dateTime.UTC_TIMESTAMP()`                              | 返回当前 UTC 日期及时间值                                    |
+| WEEK           | `Func.dateTime.WEEK(date)`<br />`Func.dateTime.WEEK(date, mode)` | 返回 date 对应的星期数                                       |
+| WEEKDAY        | `Func.dateTime.WEEKDAY(date)`                                | 返回 date (0 = 周一, 1 = 周二, ... 6 = 周日)对应的工作日索引 |
+| WEEKOFYEAR     | `Func.dateTime.WEEKOFYEAR(date)`                             | 将该日期的阳历周以数字形式返回，范围是从 1 到 53             |
+| YEAR           | `Func.dateTime.YEAR(date)`                                   | 返回 date 对应的年份，范围是从 1000 到 9999                  |
+| YEARWEEK       | `Func.dateTime.YEARWEEK(date)`<br />`Func.dateTime.YEARWEEK(date, mode)` | 返回一个日期对应的年或周                                     |
+
+#### 控制流函数：Func.ControlFlow
+
+| 函数   | 代码                                                         | 描述                                                         |
+| ------ | ------------------------------------------------------------ | ------------------------------------------------------------ |
+| CASE   | `Func.controlFlow.CASE(whenFn[])`<br />`Func.controlFlow.CASE(value, whenFn[])`<br />`Func.controlFlow.CASE(value, whenFn[], elseFn)` | CASE 表达式，根据条件返回不同的值                           |
+| WHEN   | `Func.controlFlow.WHEN(expr)`<br />`Func.controlFlow.WHEN(expr, result)` | CASE 表达式中的 WHEN 子句                                    |
+| ELSE   | `Func.controlFlow.ELSE()`<br />`Func.controlFlow.ELSE(result)` | CASE 表达式中的 ELSE 子句                                    |
+| IF     | `Func.controlFlow.IF(expr1, expr2, expr3)`                   | 如果 expr1 为 TRUE，则返回 expr2，否则返回 expr3             |
+| IFNULL | `Func.controlFlow.IFNULL()`<br />`Func.controlFlow.IFNULL(expr1, expr2)` | 如果 expr1 不为 NULL，则返回 expr1，否则返回 expr2           |
+| NULLIF | `Func.controlFlow.NULLIF()`<br />`Func.controlFlow.NULLIF(expr1, expr2)` | 如果 expr1 = expr2，则返回 NULL，否则返回 expr1              |
+
+#### 比较函数：Func.Comparison
+
+> @since 2.1.4
+
+| 函数        | 代码                                                  | 描述                                                   |
+| ----------- | ----------------------------------------------------- | ------------------------------------------------------ |
+| BETWEEN     | `Func.comparison.BETWEEN(min, max)`                   | 检查值是否在指定范围内                                 |
+| COALESCE    | `Func.comparison.COALESCE(value, ...values)`          | 返回参数列表中的第一个非 NULL 值                       |
+| EXISTS      | `Func.comparison.EXISTS(query)`                       | 检查子查询是否返回任何行                               |
+| NOT_EXISTS  | `Func.comparison.NOT_EXISTS(query)`                   | 检查子查询是否不返回任何行                             |
+| GREATEST    | `Func.comparison.GREATEST(value, ...values)`          | 返回参数列表中的最大值                                 |
+| IN          | `Func.comparison.IN(value, ...values)`                | 检查值是否在指定列表中                                 |
+| NOT_IN      | `Func.comparison.NOT_IN(value, ...values)`            | 检查值是否不在指定列表中                               |
+| IS          | `Func.comparison.IS(value)`                           | 检查值是否为指定值（主要用于布尔值判断）               |
+| IS_NOT      | `Func.comparison.IS_NOT(value)`                       | 检查值是否不为指定值                                   |
+| IS_NULL     | `Func.comparison.IS_NULL()`                           | 检查值是否为 NULL                                      |
+| IS_NOT_NULL | `Func.comparison.IS_NOT_NULL()`                       | 检查值是否不为 NULL                                    |
+| ISNULL      | `Func.comparison.ISNULL(value)`                       | 检查值是否为 NULL（类似于 IS_NULL）                    |
+| LEAST       | `Func.comparison.LEAST(value, ...values)`             | 返回参数列表中的最小值                                 |
+
+#### 窗口函数：Func.Window
+
+> @since 2.1.4
+
+窗口函数用于在结果集的分区上执行计算，常用于排名、累计统计等场景。使用窗口函数时需要配合 `WindowOver` 对象来定义分区和排序规则。
+
+**排名窗口函数：**
+
+| 函数         | 代码                                       | 描述                                                   |
+| ------------ | ------------------------------------------ | ------------------------------------------------------ |
+| ROW_NUMBER   | `Func.window.ROW_NUMBER()`<br />`Func.window.ROW_NUMBER(over)` | 返回当前行在其分区中的行号，从 1 开始                  |
+| RANK         | `Func.window.RANK()`<br />`Func.window.RANK(over)` | 返回当前行在其分区中的排名，相同值的行获得相同排名，排名会有跳跃 |
+| DENSE_RANK   | `Func.window.DENSE_RANK()`<br />`Func.window.DENSE_RANK(over)` | 返回当前行在其分区中的排名，相同值的行获得相同排名，排名不会有跳跃 |
+| PERCENT_RANK | `Func.window.PERCENT_RANK()`<br />`Func.window.PERCENT_RANK(over)` | 返回当前行在其分区中的相对排名（0 到 1 之间）          |
+| CUME_DIST    | `Func.window.CUME_DIST()`<br />`Func.window.CUME_DIST(over)` | 返回当前行在其分区中的累积分布值（0 到 1 之间）        |
+| NTILE        | `Func.window.NTILE(num_buckets)`<br />`Func.window.NTILE(num_buckets, over)` | 将分区中的行分成指定数量的桶，并返回当前行所在的桶号   |
+
+**偏移窗口函数：**
+
+| 函数        | 代码                                                         | 描述                                                   |
+| ----------- | ------------------------------------------------------------ | ------------------------------------------------------ |
+| LAG         | `Func.window.LAG(expr)`<br />`Func.window.LAG(expr, offset)`<br />`Func.window.LAG(expr, offset, default_value, over)` | 返回分区中当前行之前第 offset 行的值                   |
+| LEAD        | `Func.window.LEAD(expr)`<br />`Func.window.LEAD(expr, offset)`<br />`Func.window.LEAD(expr, offset, default_value, over)` | 返回分区中当前行之后第 offset 行的值                   |
+| FIRST_VALUE | `Func.window.FIRST_VALUE(expr)`<br />`Func.window.FIRST_VALUE(expr, over)` | 返回分区中第一行的值                                   |
+| LAST_VALUE  | `Func.window.LAST_VALUE(expr)`<br />`Func.window.LAST_VALUE(expr, over)` | 返回分区中最后一行的值                                 |
+| NTH_VALUE   | `Func.window.NTH_VALUE(expr, n)`<br />`Func.window.NTH_VALUE(expr, n, over)` | 返回分区中第 n 行的值                                  |
+
+**窗口函数使用示例：**
+
+```java
+// 创建 WindowOver 对象
+WindowOver over = WindowOver.create()
+    .partitionBy(UserEntity::getDept)    // 按部门分区
+    .orderByDesc(UserEntity::getSalary); // 按薪资降序排序
+
+// 使用 ROW_NUMBER 进行排名
+Select select = Select.create(UserEntity.class)
+    .field(UserEntity::getId)
+    .field(UserEntity::getUsername)
+    .field(Func.window.ROW_NUMBER(over), "rank");
+
+// 使用 LAG 获取上一行数据
+Select select = Select.create(SalesEntity.class)
+    .field(SalesEntity::getMonth)
+    .field(SalesEntity::getAmount)
+    .field(Func.window.LAG(SalesEntity::getAmount, 1, "0", 
+        WindowOver.create().orderByAsc(SalesEntity::getMonth)), "prev_amount");
+```
+
+#### 如何自定义函数封装？
+
+示例一：创建单个参数风格的函数封装，如：`ABS(X)`
+
+```java
+IFunction ABS(String x) {
+    AbstractFunction func = Func.create("ABS");
+    func.param(x);
+    return func;
+}
+```
+
+示例二：创建多个参数风格的函数封装，如：`FORMAT(X, D)`
+
+```java
+IFunction FORMAT(String x, Number d) {
+    AbstractFunction func = Func.create("FORMAT");
+    func.param(x).separator().param(d);
+    return func;
+}
+```
+
+示例三：创建表达式风格的函数封装，如：`CASE value WHEN exp1 THEN result1 ELSE result2 END`
+
+```java
+IFunction CASE(String value, IFunction[] whenFn, String elseFn) {
+    return new AbstractFunction() {
+        @Override
+        public void onBuild() {
+            field("CASE ");
+            if (StringUtils.isNotBlank(value)) {
+                field(value).space();
+            }
+            Arrays.stream(whenFn).forEach(func -> field(func).space());
+            if (StringUtils.isNotBlank(elseFn)) {
+                field(elseFn).space();
+            }
+            field("END");
+        }
+    };
+}
+
+IFunction WHEN(String expr, String result) {
+    return new AbstractFunction() {
+        @Override
+        public void onBuild() {
+            field("WHEN ").field(expr).space().field("THEN ").field(result).space();
+        }
+    };
+}
+
+IFunction ELSE(String result) {
+    return new AbstractFunction() {
+        @Override
+        public void onBuild() {
+            field("ELSE ").field(result).space();
+        }
+    };
+}
+```
+
+### BatchSQL：批量SQL语句对象
+
+与 SQL 对象一样属于对象查询的基础组件，主要用于批量更新类 SQL 语句的执行和参数对象的封装。
+
+**示例代码一：** 基本使用方法
+
+```java
+// 构建SQL插入语句：INSERT INTO user (id, username, nickname, password, email) VALUES (?, ?, ?, ?, ?)
+Insert insert = Insert.create(UserEntity.class)
+    .field(Fields.create(UserEntity.FIELDS.ID,
+                         UserEntity.FIELDS.USERNAME,
+                         UserEntity.FIELDS.NICKNAME,
+                         UserEntity.FIELDS.PASSWORD,
+                         UserEntity.FIELDS.EMAIL));
+// 构建批处理SQL对象（此处通过Insert对象构建，也可以直接书写SQL语句）
+BatchSQL batchSQL = BatchSQL.create(insert)
+    // 添加批参数
+    .addParameter(Params.create("1", "用户A", "昵称A", "密码A", "邮件A"))
+    .addParameter(Params.create("2", "用户B", "昵称B", "密码B", "邮件B"))
+    // 可以添加额外的SQL语句（注意：非预编译，即不支持使用问号'?'占位和参数值传递）
+    .addSQL("DELETE FROM user WHERE age > 30")
+    .addSQL("DELETE FROM user WHERE age < 18");
+// 执行批处理并返回每条SQK受影响记录数的数组
+int[] effectCounts = batchSQL.execute();
+// 可以通过此方法计算实际受影响的记录总数
+int effectCount = BatchUpdateOperator.parseEffectCounts(effectCounts);
+```
+
+**示例代码二：** 读取并执行SQL脚本文件
+
+```java
+Transactions.execute(() -> {
+    IDatabase database = JDBC.get();
+    int effectCount = database.openSession(session -> {
+        String dialectName = session.getConnectionHolder().getDialect().getName();
+        String filename = String.format("db-init_%s.sql", dialectName);
+        List<String> scripts = BatchSQL.loadSQL(filename);
+        if (scripts.isEmpty()) {
+            scripts = BatchSQL.loadSQL("db-init.sql");
+        }
+        return BatchSQL.execSQL(database, scripts);
+    });
+});
+```
+
+### EntitySQL：实体参数封装对象
+
+主要用于使用会话（Session）执行数据实体查询时的条件及参数的封装。
+
+**示例代码：**
+
+```java
+IResultSet<UserEntity> users = JDBC.get().openSession(new IDatabaseSessionExecutor<IResultSet<UserEntity>>() {
+    public IResultSet<UserEntity> execute(IDatabaseSession session) throws Exception {
+        return session.find(EntitySQL.create(UserEntity.class)
+                            .field(Fields.create(UserEntity.FIELDS.ID, UserEntity.FIELDS.PASSWORD)),
+                            Where.create(Cond.create()
+                                         .eq(UserEntity.FIELDS.USERNAME).param("suninformation").and()
+                                         .eq(UserEntity.FIELDS.PASSWORD).param(DigestUtils.md5Hex("654321")))
+                            .orderByDesc(UserEntity.FIELDS.CREATE_TIME),
+                            Page.create().pageSize(10));
+    }
+});
+```
+
+### 对象查询的另一种写法
+
+由于对象查询中使用的各种类构造方法大部份都需要传递 `IDatabase` 和数据源名称等对象，在编写比较复杂的逻辑时，代码会很冗余，因此 JDBC 持久化模块特别提供了 `QueryBuilder` 类使能够参数重用和简化查询对象类的创建过程，减少代码冗余。
+
+下面的示例是通过简单的复合查询来对比两种方式的不同之处：
+
+```java
+IDatabase owner = JDBC.get();
+String dsName = "oracledb";
+
+// 普通写法
+IResultSet<Object[]> resultSet = Select.create(owner, dsName, UserEntity.class, "u")
+    .join(Join.left(owner, dsName, UserExtEntity.TABLE_NAME).alias("ue")
+          .on(Cond.create(owner, dsName)
+              .eqField(Fields.field("u", UserEntity.FIELDS.ID), Fields.field("ue", UserExtEntity.FIELDS.UID))))
+    .field(Fields.create()
+           .add("u", UserEntity.FIELDS.ID)
+           .add("u", UserEntity.FIELDS.USERNAME)
+           .add("ue", UserExtEntity.FIELDS.MONEY))
+    .find(IResultSetHandler.ARRAY.create());
+
+// 另一种写法
+IResultSet<Object[]> resultSet = new QueryBuilder<IResultSet<Object[]>>(owner, dsName) {{
+    Select select = select(UserEntity.class, "u")
+          .join(left(UserExtEntity.TABLE_NAME).alias("ue")
+                .on(cond().eqField(field("u", UserEntity.FIELDS.ID), field("ue", UserExtEntity.FIELDS.UID))))
+          .field("u", fields(UserEntity.FIELDS.ID, UserEntity.FIELDS.USERNAME))
+          .field(field("ue", UserExtEntity.FIELDS.MONEY));
+    // 返回最终结果
+    build(select.find(IResultSetHandler.ARRAY.create()));
+}}.build();
+```
+
 ## Lambda 表达式支持
 
 从 v2.1.4 版本开始，JDBC 持久化模块引入了对 Lambda 表达式的支持，允许开发者使用方法引用的方式编写类型安全的查询语句：
@@ -1117,7 +1523,7 @@ select.find(IResultSetHandler.ARRAY.create());
 1. **使用 Lambda 表达式**：优先使用 Lambda 表达式构建查询，提高代码的类型安全性和可维护性
 2. **合理使用索引**：在查询条件中使用索引字段，提高查询性能
 3. **分页查询**：对于大量数据的查询，使用分页查询减少内存占用
-4. **避免 SELECT ***：只选择需要的字段，减少数据传输和内存占用
+4. **避免 SELECT *：** 只选择需要的字段，减少数据传输和内存占用
 
 ### 事务管理
 
