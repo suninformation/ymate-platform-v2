@@ -18,6 +18,8 @@ package net.ymate.platform.core.persistence;
 import org.apache.commons.lang.NullArgumentException;
 import org.apache.commons.lang3.StringUtils;
 
+import java.util.Collection;
+
 /**
  * @author 刘镇 (suninformation@163.com) on 17/6/22 上午10:50
  */
@@ -28,6 +30,8 @@ public abstract class AbstractFunction implements IFunction {
     private final Params params = Params.create();
 
     private boolean flag;
+
+    private String overClause;
 
     public AbstractFunction() {
         fields = Fields.create();
@@ -57,8 +61,19 @@ public abstract class AbstractFunction implements IFunction {
             return field((IFunction) param);
         } else if (param instanceof String) {
             return field((String) param);
-        } else {
+        } else if (param instanceof Params) {
+            params.add((Params) param);
+            return this;
+        } else if (param instanceof Number) {
+            return field((Number) param);
+        } else if (param instanceof Collection) {
+            ((Collection<?>) param).forEach(this::fieldAny);
+            return this;
+        } else if (param != null && param.getClass().isArray()) {
             Params.create(param).params().forEach(this::fieldAny);
+            return this;
+        } else {
+            params.add(param);
             return this;
         }
     }
@@ -176,12 +191,25 @@ public abstract class AbstractFunction implements IFunction {
         return fields;
     }
 
+    /**
+     * @since 2.1.4
+     */
+    public AbstractFunction over(String overClause) {
+        this.overClause = overClause;
+        return this;
+    }
+
     @Override
     public String build() {
         if (flag) {
             fields.add(")");
+            flag = false;
         }
-        return StringUtils.join(fields.toArray(), StringUtils.EMPTY);
+        String result = StringUtils.join(fields.toArray(), StringUtils.EMPTY);
+        if (StringUtils.isNotBlank(overClause)) {
+            result = StringUtils.joinWith(StringUtils.SPACE, result, overClause);
+        }
+        return result;
     }
 
     @Override

@@ -307,17 +307,21 @@ public class LambdaQueryTest {
         // 测试字段名解析
         String fieldName = net.ymate.platform.core.persistence.LambdaUtils.getFieldName(User::getId);
         Assert.assertEquals("id", fieldName);
+        System.out.println("testLambdaUtils: " + fieldName);
 
         fieldName = net.ymate.platform.core.persistence.LambdaUtils.getFieldName(User::getUsername);
         Assert.assertEquals("username", fieldName);
+        System.out.println("testLambdaUtils: " + fieldName);
 
         // 测试数据库字段名解析
         String columnName = net.ymate.platform.core.persistence.LambdaUtils.getColumnName(User::getId);
         Assert.assertEquals("id", columnName);
+        System.out.println("testLambdaUtils: " + columnName);
 
         // 测试带前缀的字段名
         String fullFieldName = net.ymate.platform.core.persistence.LambdaUtils.getFullFieldName("u", User::getId);
         Assert.assertEquals("u.id", fullFieldName);
+        System.out.println("testLambdaUtils: " + fullFieldName);
     }
 
     // ========================== 测试基础查询 (SELECT) ==========================
@@ -651,7 +655,7 @@ public class LambdaQueryTest {
                 .from(User.class)
                 .orderByAsc(User::getAge);
 
-        String expectedSql = "SELECT  `id`,`username`,`age` FROM `user`   ORDER BY `age`";
+        String expectedSql = "SELECT  `id`,`username`,`age` FROM `user`   ORDER BY `age` ASC";
         Assert.assertEquals(expectedSql, select.toString());
 
         // 测试降序排序
@@ -675,7 +679,7 @@ public class LambdaQueryTest {
                 .orderByAsc(User::getDeptId)
                 .orderByDesc(User::getAge);
 
-        expectedSql = "SELECT  `id`,`username`,`dept_id`,`age` FROM `user`   ORDER BY `dept_id`,`age` DESC";
+        expectedSql = "SELECT  `id`,`username`,`dept_id`,`age` FROM `user`   ORDER BY `dept_id` ASC,`age` DESC";
         Assert.assertEquals(expectedSql, select.toString());
     }
 
@@ -717,7 +721,7 @@ public class LambdaQueryTest {
                 .orderByAsc(User::getId)
                 .page(Page.create(1).pageSize(10));
 
-        String expectedSql = "SELECT  `id`,`username` FROM `user`   ORDER BY `id` LIMIT 0, 10";
+        String expectedSql = "SELECT  `id`,`username` FROM `user`   ORDER BY `id` ASC LIMIT 0, 10";
         Assert.assertEquals(expectedSql, select.toString());
 
         // 测试带条件的分页查询
@@ -729,7 +733,7 @@ public class LambdaQueryTest {
                 .orderByAsc(User::getId)
                 .page(Page.create(2).pageSize(10));
 
-        expectedSql = "SELECT  `id`,`username` FROM `user`  WHERE  status = ? ORDER BY `id` LIMIT 10, 10";
+        expectedSql = "SELECT  `id`,`username` FROM `user`  WHERE  status = ? ORDER BY `id` ASC LIMIT 10, 10";
         Assert.assertEquals(expectedSql, select.toString());
         Assert.assertEquals(1, select.params().params().size());
     }
@@ -1136,30 +1140,38 @@ public class LambdaQueryTest {
             // 测试 field 方法的 Lambda 表达式支持
             String fieldResult = field(User::getId);
             Assert.assertEquals("id", fieldResult);
+            System.out.println("testAbstractQueryBuilderLambdaSupport: " + fieldResult);
 
             fieldResult = field(User::getId, "user_id");
             Assert.assertEquals("id AS user_id", fieldResult);
+            System.out.println("testAbstractQueryBuilderLambdaSupport: " + fieldResult);
 
             fieldResult = field("u", User::getId);
             Assert.assertEquals("u.id", fieldResult);
+            System.out.println("testAbstractQueryBuilderLambdaSupport: " + fieldResult);
 
             fieldResult = field("u", User::getId, "user_id");
             Assert.assertEquals("u.id AS user_id", fieldResult);
+            System.out.println("testAbstractQueryBuilderLambdaSupport: " + fieldResult);
 
             // 测试 field 方法的 Lambda 别名支持
             fieldResult = field(User::getId, User::getUsername);
             Assert.assertEquals("id AS username", fieldResult);
+            System.out.println("testAbstractQueryBuilderLambdaSupport: " + fieldResult);
 
             fieldResult = field("u", User::getId, User::getUsername);
             Assert.assertEquals("u.id AS username", fieldResult);
+            System.out.println("testAbstractQueryBuilderLambdaSupport: " + fieldResult);
 
             // 测试 fieldAlias 方法的 Lambda 表达式支持
             String fieldAliasResult = fieldAlias(User::getId, "user_id");
             Assert.assertEquals("id AS user_id", fieldAliasResult);
+            System.out.println("testAbstractQueryBuilderLambdaSupport: " + fieldAliasResult);
 
             // 测试 fieldAlias 方法的 Lambda 别名支持
             fieldAliasResult = fieldAlias(User::getId, User::getUsername);
             Assert.assertEquals("id AS username", fieldAliasResult);
+            System.out.println("testAbstractQueryBuilderLambdaSupport: " + fieldAliasResult);
 
             // 测试 fieldAliasWrap 方法的 Lambda 表达式支持
             String fieldAliasWrapResult = fieldAliasWrap(User::getId, "user_id");

@@ -22,7 +22,7 @@
   * @since 2.1.0
   */
  public class QueryBuilder<RESULT> extends AbstractQueryBuilder<RESULT, QueryBuilder<RESULT>>
-         implements Func.Operators, Func.ControlFlow, Func.Aggregate, Func.DateTime, Func.Math, Func.Strings, Func.Comparison {
+         implements Func.Operators, Func.ControlFlow, Func.Aggregate, Func.DateTime, Func.Math, Func.Strings, Func.Comparison, Func.Window {
 
      public QueryBuilder() {
      }

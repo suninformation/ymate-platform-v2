@@ -56,6 +56,18 @@ public interface Func {
     Operators operators = new Operators() {
     };
 
+    /**
+     * @since 2.1.4
+     */
+    Comparison comparison = new Comparison() {
+    };
+
+    /**
+     * @since 2.1.4
+     */
+    Window window = new Window() {
+    };
+
     // ------
 
     /**
@@ -96,7 +108,7 @@ public interface Func {
         return new AbstractFunction() {
             @Override
             public void onBuild() {
-                operate(opt, param);
+                field(opt).space().field(param);
             }
         };
     }
@@ -2245,6 +2257,34 @@ public interface Func {
             return AVG(distinct, expr.build()).param(expr.params());
         }
 
+        /**
+         * @since 2.1.4
+         */
+        default IFunction AVG(boolean distinct, String expr, WindowOver over) {
+            return create("AVG").field(distinct ? "DISTINCT " : "").field(expr).over(over.toSQL()).param(over.params());
+        }
+
+        /**
+         * @since 2.1.4
+         */
+        default IFunction AVG(boolean distinct, IFunction expr, WindowOver over) {
+            return AVG(distinct, expr.build(), over).param(expr.params());
+        }
+
+        /**
+         * @since 2.1.4
+         */
+        default IFunction AVG(String expr, WindowOver over) {
+            return AVG(false, expr, over);
+        }
+
+        /**
+         * @since 2.1.4
+         */
+        default IFunction AVG(IFunction expr, WindowOver over) {
+            return AVG(false, expr.build(), over).param(expr.params());
+        }
+
         // ------ 返回expr中所有比特的 bitwise AND 。计算执行的精确度为64比特(BIGINT) 。
 
         default IFunction BIT_AND(String expr) {
@@ -2253,6 +2293,20 @@ public interface Func {
 
         default IFunction BIT_AND(IFunction expr) {
             return BIT_AND(expr.build()).param(expr.params());
+        }
+
+        /**
+         * @since 2.1.4
+         */
+        default IFunction BIT_AND(String expr, WindowOver over) {
+            return create("BIT_AND").field(expr).over(over.toSQL()).param(over.params());
+        }
+
+        /**
+         * @since 2.1.4
+         */
+        default IFunction BIT_AND(IFunction expr, WindowOver over) {
+            return BIT_AND(expr.build(), over).param(expr.params());
         }
 
         // ------ 返回expr 中所有比特的bitwise OR。计算执行的精确度为64比特(BIGINT) 。
@@ -2265,6 +2319,20 @@ public interface Func {
             return BIT_OR(expr.build()).param(expr.params());
         }
 
+        /**
+         * @since 2.1.4
+         */
+        default IFunction BIT_OR(String expr, WindowOver over) {
+            return create("BIT_OR").field(expr).over(over.toSQL()).param(over.params());
+        }
+
+        /**
+         * @since 2.1.4
+         */
+        default IFunction BIT_OR(IFunction expr, WindowOver over) {
+            return BIT_OR(expr.build(), over).param(expr.params());
+        }
+
         // ------ 返回expr 中所有比特的bitwise XOR。计算执行的精确度为64比特(BIGINT) 。
 
         default IFunction BIT_XOR(String expr) {
@@ -2273,6 +2341,20 @@ public interface Func {
 
         default IFunction BIT_XOR(IFunction expr) {
             return BIT_XOR(expr.build()).param(expr.params());
+        }
+
+        /**
+         * @since 2.1.4
+         */
+        default IFunction BIT_XOR(String expr, WindowOver over) {
+            return create("BIT_XOR").field(expr).over(over.toSQL()).param(over.params());
+        }
+
+        /**
+         * @since 2.1.4
+         */
+        default IFunction BIT_XOR(IFunction expr, WindowOver over) {
+            return BIT_XOR(expr.build(), over).param(expr.params());
         }
 
         // ------ 返回SELECT语句检索到的行中非NULL值的数目。
@@ -2307,6 +2389,34 @@ public interface Func {
 
         default IFunction COUNT(IFunction expr, boolean distinct) {
             return COUNT(distinct, expr.build()).param(expr.params());
+        }
+
+        /**
+         * @since 2.1.4
+         */
+        default IFunction COUNT(boolean distinct, String expr, WindowOver over) {
+            return create("COUNT").field(distinct ? "DISTINCT " : "").field(expr).over(over.toSQL()).param(over.params());
+        }
+
+        /**
+         * @since 2.1.4
+         */
+        default IFunction COUNT(boolean distinct, IFunction expr, WindowOver over) {
+            return COUNT(distinct, expr.build(), over).param(expr.params());
+        }
+
+        /**
+         * @since 2.1.4
+         */
+        default IFunction COUNT(String expr, WindowOver over) {
+            return COUNT(false, expr, over);
+        }
+
+        /**
+         * @since 2.1.4
+         */
+        default IFunction COUNT(IFunction expr, WindowOver over) {
+            return COUNT(false, expr.build(), over).param(expr.params());
         }
 
         // ------
@@ -2366,6 +2476,34 @@ public interface Func {
             return MAX(false, expr.build()).param(expr.params());
         }
 
+        /**
+         * @since 2.1.4
+         */
+        default IFunction MAX(boolean distinct, String expr, WindowOver over) {
+            return create("MAX").field(distinct ? "DISTINCT " : "").field(expr).over(over.toSQL()).param(over.params());
+        }
+
+        /**
+         * @since 2.1.4
+         */
+        default IFunction MAX(boolean distinct, IFunction expr, WindowOver over) {
+            return MAX(distinct, expr.build(), over).param(expr.params());
+        }
+
+        /**
+         * @since 2.1.4
+         */
+        default IFunction MAX(String expr, WindowOver over) {
+            return MAX(false, expr, over);
+        }
+
+        /**
+         * @since 2.1.4
+         */
+        default IFunction MAX(IFunction expr, WindowOver over) {
+            return MAX(false, expr.build(), over).param(expr.params());
+        }
+
         // ---
 
         default IFunction MIN(boolean distinct, String expr) {
@@ -2382,6 +2520,34 @@ public interface Func {
 
         default IFunction MIN(IFunction expr) {
             return MIN(false, expr.build()).param(expr.params());
+        }
+
+        /**
+         * @since 2.1.4
+         */
+        default IFunction MIN(boolean distinct, String expr, WindowOver over) {
+            return create("MIN").field(distinct ? "DISTINCT " : "").field(expr).over(over.toSQL()).param(over.params());
+        }
+
+        /**
+         * @since 2.1.4
+         */
+        default IFunction MIN(boolean distinct, IFunction expr, WindowOver over) {
+            return MIN(distinct, expr.build(), over).param(expr.params());
+        }
+
+        /**
+         * @since 2.1.4
+         */
+        default IFunction MIN(String expr, WindowOver over) {
+            return MIN(false, expr, over);
+        }
+
+        /**
+         * @since 2.1.4
+         */
+        default IFunction MIN(IFunction expr, WindowOver over) {
+            return MIN(false, expr.build(), over).param(expr.params());
         }
 
         // ------ 返回expr 的总数。 若返回集合中无任何行，则 SUM() 返回NULL。
@@ -2416,6 +2582,34 @@ public interface Func {
 
         default IFunction SUM(IFunction expr) {
             return SUM(false, expr.build()).param(expr.params());
+        }
+
+        /**
+         * @since 2.1.4
+         */
+        default IFunction SUM(boolean distinct, String expr, WindowOver over) {
+            return create("SUM").field(distinct ? "DISTINCT " : "").field(expr).over(over.toSQL()).param(over.params());
+        }
+
+        /**
+         * @since 2.1.4
+         */
+        default IFunction SUM(boolean distinct, IFunction expr, WindowOver over) {
+            return SUM(distinct, expr.build(), over).param(expr.params());
+        }
+
+        /**
+         * @since 2.1.4
+         */
+        default IFunction SUM(String expr, WindowOver over) {
+            return SUM(false, expr, over);
+        }
+
+        /**
+         * @since 2.1.4
+         */
+        default IFunction SUM(IFunction expr, WindowOver over) {
+            return SUM(false, expr.build(), over).param(expr.params());
         }
 
         // ------ 返回expr 的最小值和最大值。
@@ -2994,11 +3188,11 @@ public interface Func {
         }
 
         default IFunction IS(Object value) {
-            return operate("IS", value.toString());
+            return create().space().field("IS").space().field(value.toString());
         }
 
         default IFunction IS_NOT(Object value) {
-            return operate("IS NOT", value.toString());
+            return create().space().field("IS NOT").space().field(value.toString());
         }
 
         default IFunction IS_NULL() {
@@ -3015,6 +3209,305 @@ public interface Func {
 
         default IFunction LEAST(Object value, Object... values) {
             return create("LEAST").fieldWS(value, values);
+        }
+    }
+
+    /**
+     * Window Functions
+     *
+     * @since 2.1.4
+     */
+    @Ignored
+    interface Window {
+
+        // ------ 排名窗口函数
+
+        // ------ 返回当前行在其分区中的行号，从1开始
+
+        default IFunction ROW_NUMBER() {
+            return create("ROW_NUMBER");
+        }
+
+        default IFunction ROW_NUMBER(WindowOver over) {
+            return create("ROW_NUMBER").over(over.toSQL()).param(over.params());
+        }
+
+        // ------ 返回当前行在其分区中的排名，相同值的行获得相同排名，排名会有跳跃
+
+        default IFunction RANK() {
+            return create("RANK");
+        }
+
+        default IFunction RANK(WindowOver over) {
+            return create("RANK").over(over.toSQL()).param(over.params());
+        }
+
+        // ------ 返回当前行在其分区中的排名，相同值的行获得相同排名，排名不会有跳跃
+
+        default IFunction DENSE_RANK() {
+            return create("DENSE_RANK");
+        }
+
+        default IFunction DENSE_RANK(WindowOver over) {
+            return create("DENSE_RANK").over(over.toSQL()).param(over.params());
+        }
+
+        // ------ 返回当前行在其分区中的相对排名（0到1之间）
+
+        default IFunction PERCENT_RANK() {
+            return create("PERCENT_RANK");
+        }
+
+        default IFunction PERCENT_RANK(WindowOver over) {
+            return create("PERCENT_RANK").over(over.toSQL()).param(over.params());
+        }
+
+        // ------ 返回当前行在其分区中的累积分布值（0到1之间）
+
+        default IFunction CUME_DIST() {
+            return create("CUME_DIST");
+        }
+
+        default IFunction CUME_DIST(WindowOver over) {
+            return create("CUME_DIST").over(over.toSQL()).param(over.params());
+        }
+
+        // ------ 将分区中的行分成指定数量的桶，并返回当前行所在的桶号
+
+        default IFunction NTILE(Number num_buckets) {
+            return create("NTILE").field(num_buckets);
+        }
+
+        default IFunction NTILE(Number num_buckets, WindowOver over) {
+            return create("NTILE").field(num_buckets).over(over.toSQL()).param(over.params());
+        }
+
+        // ------ 偏移窗口函数
+
+        // ------ 返回分区中当前行之前第offset行的值
+
+        default IFunction LAG(String expr) {
+            return create("LAG").field(expr);
+        }
+
+        default <T, R> IFunction LAG(SFunction<T, R> column) {
+            return LAG(getColumnName(column));
+        }
+
+        default IFunction LAG(IFunction expr) {
+            return LAG(expr.build()).param(expr.params());
+        }
+
+        default IFunction LAG(String expr, WindowOver over) {
+            return create("LAG").field(expr).over(over.toSQL()).param(over.params());
+        }
+
+        default <T, R> IFunction LAG(SFunction<T, R> column, WindowOver over) {
+            return LAG(getColumnName(column), over);
+        }
+
+        default IFunction LAG(IFunction expr, WindowOver over) {
+            return LAG(expr.build(), over).param(expr.params());
+        }
+
+        default IFunction LAG(String expr, Number offset) {
+            return create("LAG").field(expr).separator().field(offset);
+        }
+
+        default <T, R> IFunction LAG(SFunction<T, R> column, Number offset) {
+            return LAG(getColumnName(column), offset);
+        }
+
+        default IFunction LAG(IFunction expr, Number offset) {
+            return LAG(expr.build(), offset).param(expr.params());
+        }
+
+        default IFunction LAG(String expr, Number offset, WindowOver over) {
+            return create("LAG").field(expr).separator().field(offset).over(over.toSQL()).param(over.params());
+        }
+
+        default <T, R> IFunction LAG(SFunction<T, R> column, Number offset, WindowOver over) {
+            return LAG(getColumnName(column), offset, over);
+        }
+
+        default IFunction LAG(IFunction expr, Number offset, WindowOver over) {
+            return LAG(expr.build(), offset, over).param(expr.params());
+        }
+
+        default IFunction LAG(String expr, Number offset, String default_value) {
+            return create("LAG").field(expr).separator().field(offset).separator().field(default_value);
+        }
+
+        default <T, R> IFunction LAG(SFunction<T, R> column, Number offset, String default_value) {
+            return LAG(getColumnName(column), offset, default_value);
+        }
+
+        default IFunction LAG(IFunction expr, Number offset, IFunction default_value) {
+            return LAG(expr.build(), offset, default_value.build()).param(expr.params()).param(default_value.params());
+        }
+
+        default IFunction LAG(String expr, Number offset, String default_value, WindowOver over) {
+            return create("LAG").field(expr).separator().field(offset).separator().field(default_value).over(over.toSQL()).param(over.params());
+        }
+
+        default <T, R> IFunction LAG(SFunction<T, R> column, Number offset, String default_value, WindowOver over) {
+            return LAG(getColumnName(column), offset, default_value, over);
+        }
+
+        default IFunction LAG(IFunction expr, Number offset, IFunction default_value, WindowOver over) {
+            return LAG(expr.build(), offset, default_value.build(), over).param(expr.params()).param(default_value.params());
+        }
+
+        // ------ 返回分区中当前行之后第offset行的值
+
+        default IFunction LEAD(String expr) {
+            return create("LEAD").field(expr);
+        }
+
+        default <T, R> IFunction LEAD(SFunction<T, R> column) {
+            return LEAD(getColumnName(column));
+        }
+
+        default IFunction LEAD(IFunction expr) {
+            return LEAD(expr.build()).param(expr.params());
+        }
+
+        default IFunction LEAD(String expr, WindowOver over) {
+            return create("LEAD").field(expr).over(over.toSQL()).param(over.params());
+        }
+
+        default <T, R> IFunction LEAD(SFunction<T, R> column, WindowOver over) {
+            return LEAD(getColumnName(column), over);
+        }
+
+        default IFunction LEAD(IFunction expr, WindowOver over) {
+            return LEAD(expr.build(), over).param(expr.params());
+        }
+
+        default IFunction LEAD(String expr, Number offset) {
+            return create("LEAD").field(expr).separator().field(offset);
+        }
+
+        default <T, R> IFunction LEAD(SFunction<T, R> column, Number offset) {
+            return LEAD(getColumnName(column), offset);
+        }
+
+        default IFunction LEAD(IFunction expr, Number offset) {
+            return LEAD(expr.build(), offset).param(expr.params());
+        }
+
+        default IFunction LEAD(String expr, Number offset, WindowOver over) {
+            return create("LEAD").field(expr).separator().field(offset).over(over.toSQL()).param(over.params());
+        }
+
+        default <T, R> IFunction LEAD(SFunction<T, R> column, Number offset, WindowOver over) {
+            return LEAD(getColumnName(column), offset, over);
+        }
+
+        default IFunction LEAD(IFunction expr, Number offset, WindowOver over) {
+            return LEAD(expr.build(), offset, over).param(expr.params());
+        }
+
+        default IFunction LEAD(String expr, Number offset, String default_value) {
+            return create("LEAD").field(expr).separator().field(offset).separator().field(default_value);
+        }
+
+        default <T, R> IFunction LEAD(SFunction<T, R> column, Number offset, String default_value) {
+            return LEAD(getColumnName(column), offset, default_value);
+        }
+
+        default IFunction LEAD(IFunction expr, Number offset, IFunction default_value) {
+            return LEAD(expr.build(), offset, default_value.build()).param(expr.params()).param(default_value.params());
+        }
+
+        default IFunction LEAD(String expr, Number offset, String default_value, WindowOver over) {
+            return create("LEAD").field(expr).separator().field(offset).separator().field(default_value).over(over.toSQL()).param(over.params());
+        }
+
+        default <T, R> IFunction LEAD(SFunction<T, R> column, Number offset, String default_value, WindowOver over) {
+            return LEAD(getColumnName(column), offset, default_value, over);
+        }
+
+        default IFunction LEAD(IFunction expr, Number offset, IFunction default_value, WindowOver over) {
+            return LEAD(expr.build(), offset, default_value.build(), over).param(expr.params()).param(default_value.params());
+        }
+
+        // ------ 返回分区中第一行的值
+
+        default IFunction FIRST_VALUE(String expr) {
+            return create("FIRST_VALUE").field(expr);
+        }
+
+        default <T, R> IFunction FIRST_VALUE(SFunction<T, R> column) {
+            return FIRST_VALUE(getColumnName(column));
+        }
+
+        default IFunction FIRST_VALUE(IFunction expr) {
+            return FIRST_VALUE(expr.build()).param(expr.params());
+        }
+
+        default IFunction FIRST_VALUE(String expr, WindowOver over) {
+            return create("FIRST_VALUE").field(expr).over(over.toSQL()).param(over.params());
+        }
+
+        default <T, R> IFunction FIRST_VALUE(SFunction<T, R> column, WindowOver over) {
+            return FIRST_VALUE(getColumnName(column), over);
+        }
+
+        default IFunction FIRST_VALUE(IFunction expr, WindowOver over) {
+            return FIRST_VALUE(expr.build(), over).param(expr.params());
+        }
+
+        // ------ 返回分区中最后一行的值
+
+        default IFunction LAST_VALUE(String expr) {
+            return create("LAST_VALUE").field(expr);
+        }
+
+        default <T, R> IFunction LAST_VALUE(SFunction<T, R> column) {
+            return LAST_VALUE(getColumnName(column));
+        }
+
+        default IFunction LAST_VALUE(IFunction expr) {
+            return LAST_VALUE(expr.build()).param(expr.params());
+        }
+
+        default IFunction LAST_VALUE(String expr, WindowOver over) {
+            return create("LAST_VALUE").field(expr).over(over.toSQL()).param(over.params());
+        }
+
+        default <T, R> IFunction LAST_VALUE(SFunction<T, R> column, WindowOver over) {
+            return LAST_VALUE(getColumnName(column), over);
+        }
+
+        default IFunction LAST_VALUE(IFunction expr, WindowOver over) {
+            return LAST_VALUE(expr.build(), over).param(expr.params());
+        }
+
+        // ------ 返回分区中第n行的值
+
+        default IFunction NTH_VALUE(String expr, Number n) {
+            return create("NTH_VALUE").field(expr).separator().field(n);
+        }
+
+        default <T, R> IFunction NTH_VALUE(SFunction<T, R> column, Number n) {
+            return NTH_VALUE(getColumnName(column), n);
+        }
+
+        default IFunction NTH_VALUE(IFunction expr, Number n) {
+            return NTH_VALUE(expr.build(), n).param(expr.params());
+        }
+
+        default IFunction NTH_VALUE(String expr, Number n, WindowOver over) {
+            return create("NTH_VALUE").field(expr).separator().field(n).over(over.toSQL()).param(over.params());
+        }
+
+        default <T, R> IFunction NTH_VALUE(SFunction<T, R> column, Number n, WindowOver over) {
+            return NTH_VALUE(getColumnName(column), n, over);
+        }
+
+        default IFunction NTH_VALUE(IFunction expr, Number n, WindowOver over) {
+            return NTH_VALUE(expr.build(), n, over).param(expr.params());
         }
     }
 }

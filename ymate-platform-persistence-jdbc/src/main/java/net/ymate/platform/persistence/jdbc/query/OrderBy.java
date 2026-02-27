@@ -182,7 +182,7 @@ public class OrderBy extends Query<OrderBy> {
         if (StringUtils.isNotBlank(prefix)) {
             orderByBuilder.append(prefix).append(".");
         }
-        orderByBuilder.append(wrapIdentifier ? wrapIdentifierField(field) : field);
+        orderByBuilder.append(wrapIdentifier ? wrapIdentifierField(field) : field).append(" ASC");
         return this;
     }
 
