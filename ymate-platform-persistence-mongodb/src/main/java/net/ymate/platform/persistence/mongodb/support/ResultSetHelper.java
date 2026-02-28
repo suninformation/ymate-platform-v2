@@ -115,7 +115,7 @@ public class ResultSetHelper {
                     continue;
                 }
                 // 若属性值为空时尝试使用默认值
-                if (value == null && StringUtils.isNotBlank(propertyMeta.getDefaultValue())) {
+                if (value == null && !propertyMeta.isDefaultValueIgnored() && StringUtils.isNotBlank(propertyMeta.getDefaultValue())) {
                     value = BlurObject.bind(propertyMeta.getDefaultValue()).toObjectValue(propertyMeta.getField().getType());
                 }
                 if (value != null) {

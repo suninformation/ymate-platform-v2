@@ -89,6 +89,13 @@ public class PropertyMeta implements Serializable {
     private String defaultValue;
 
     /**
+     * 默认值忽略（即该默认值仅用于生成DDL语句，主要是为了避免函数名称导致SQL执行错误）
+     *
+     * @since 2.1.4
+     */
+    private boolean defaultValueIgnored;
+
+    /**
      * 属性注释
      */
     private String comment;
@@ -230,6 +237,14 @@ public class PropertyMeta implements Serializable {
     public PropertyMeta defaultValue(String defaultValue) {
         this.defaultValue = defaultValue;
         return this;
+    }
+
+    public boolean isDefaultValueIgnored() {
+        return defaultValueIgnored;
+    }
+
+    public void defaultValueIgnored(boolean defaultValueIgnored) {
+        this.defaultValueIgnored = defaultValueIgnored;
     }
 
     public String getComment() {
