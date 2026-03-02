@@ -488,6 +488,205 @@ public interface IDatabaseSession extends ISession<IDatabaseConnectionHolder> {
     <T extends IEntity> List<T> insert(ShardingList<T> entities, Fields filter) throws Exception;
 
     /**
+     * 根据实体执行Upsert操作（插入或更新）
+     * <p>
+     * 根据数据库类型采用原子操作：
+     * <ul>
+     *     <li>MySQL: INSERT ... ON DUPLICATE KEY UPDATE ...</li>
+     *     <li>PostgreSQL: INSERT ... ON CONFLICT ... DO UPDATE SET ...</li>
+     *     <li>SQLite: INSERT ... ON CONFLICT ... DO UPDATE SET ...</li>
+     * </ul>
+     * </p>
+     *
+     * @param <T>    指定实体数据类型
+     * @param entity 实体对象
+     * @return 返回操作后的实体对象
+     * @throws Exception 可能产生的异常
+     * @since 2.1.4
+     */
+    <T extends IEntity> T upsert(T entity) throws Exception;
+
+    /**
+     * 根据实体执行Upsert操作（插入或更新）
+     *
+     * @param <T>    指定实体数据类型
+     * @param entity 实体对象
+     * @param filter 字段过滤集合
+     * @return 返回操作后的实体对象
+     * @throws Exception 可能产生的异常
+     * @since 2.1.4
+     */
+    <T extends IEntity> T upsert(T entity, Fields filter) throws Exception;
+
+    /**
+     * 根据实体执行Upsert操作（插入或更新）
+     *
+     * @param <T>          指定实体数据类型
+     * @param entity       实体对象
+     * @param filter       字段过滤集合
+     * @param shardingable 数据分片接口对象
+     * @return 返回操作后的实体对象
+     * @throws Exception 可能产生的异常
+     * @since 2.1.4
+     */
+    <T extends IEntity> T upsert(T entity, Fields filter, IShardingable shardingable) throws Exception;
+
+    /**
+     * 根据实体集合执行批量Upsert操作（插入或更新）
+     * <p>
+     * 根据数据库类型采用原子操作：
+     * <ul>
+     *     <li>MySQL: INSERT ... ON DUPLICATE KEY UPDATE ...</li>
+     *     <li>PostgreSQL: INSERT ... ON CONFLICT ... DO UPDATE SET ...</li>
+     *     <li>SQLite: INSERT ... ON CONFLICT ... DO UPDATE SET ...</li>
+     *     <li>Oracle/SQLServer/DB2/H2/HSQLDB: MERGE INTO ...</li>
+     * </ul>
+     * </p>
+     *
+     * @param <T>      指定实体数据类型
+     * @param entities 实体对象集合
+     * @return 返回操作后的实体对象集合
+     * @throws Exception 可能产生的异常
+     * @since 2.1.4
+     */
+    <T extends IEntity> List<T> upsert(List<T> entities) throws Exception;
+
+    /**
+     * 根据实体集合执行批量Upsert操作（插入或更新）
+     *
+     * @param <T>      指定实体数据类型
+     * @param entities 实体对象集合
+     * @return 返回操作后的实体对象集合
+     * @throws Exception 可能产生的异常
+     * @since 2.1.4
+     */
+    <T extends IEntity> List<T> upsert(ShardingList<T> entities) throws Exception;
+
+    /**
+     * 根据实体集合执行批量Upsert操作（插入或更新）
+     *
+     * @param <T>      指定实体数据类型
+     * @param entities 实体对象集合
+     * @param filter   字段过滤集合
+     * @return 返回操作后的实体对象集合
+     * @throws Exception 可能产生的异常
+     * @since 2.1.4
+     */
+    <T extends IEntity> List<T> upsert(List<T> entities, Fields filter) throws Exception;
+
+    /**
+     * 根据实体集合执行批量Upsert操作（插入或更新）
+     *
+     * @param <T>      指定实体数据类型
+     * @param entities 实体对象集合
+     * @param filter   字段过滤集合
+     * @return 返回操作后的实体对象集合
+     * @throws Exception 可能产生的异常
+     * @since 2.1.4
+     */
+    <T extends IEntity> List<T> upsert(ShardingList<T> entities, Fields filter) throws Exception;
+
+    /**
+     * 根据实体执行InsertIfNotExist操作（插入如果不存在）
+     * <p>
+     * 根据数据库类型采用原子操作：
+     * <ul>
+     *     <li>MySQL: INSERT IGNORE INTO ...</li>
+     *     <li>PostgreSQL: INSERT INTO ... ON CONFLICT DO NOTHING</li>
+     *     <li>SQLite: INSERT OR IGNORE INTO ...</li>
+     *     <li>Oracle/SQLServer/H2/DB2/HSQLDB: MERGE INTO ... WHEN NOT MATCHED THEN INSERT ...</li>
+     * </ul>
+     * </p>
+     *
+     * @param <T>    指定实体数据类型
+     * @param entity 实体对象
+     * @return 若插入成功返回实体对象，若记录已存在返回null
+     * @throws Exception 可能产生的异常
+     * @since 2.1.4
+     */
+    <T extends IEntity> T insertIfNotExist(T entity) throws Exception;
+
+    /**
+     * 根据实体执行InsertIfNotExist操作（插入如果不存在）
+     *
+     * @param <T>    指定实体数据类型
+     * @param entity 实体对象
+     * @param filter 字段过滤集合
+     * @return 若插入成功返回实体对象，若记录已存在返回null
+     * @throws Exception 可能产生的异常
+     * @since 2.1.4
+     */
+    <T extends IEntity> T insertIfNotExist(T entity, Fields filter) throws Exception;
+
+    /**
+     * 根据实体执行InsertIfNotExist操作（插入如果不存在）
+     *
+     * @param <T>          指定实体数据类型
+     * @param entity       实体对象
+     * @param filter       字段过滤集合
+     * @param shardingable 数据分片接口对象
+     * @return 若插入成功返回实体对象，若记录已存在返回null
+     * @throws Exception 可能产生的异常
+     * @since 2.1.4
+     */
+    <T extends IEntity> T insertIfNotExist(T entity, Fields filter, IShardingable shardingable) throws Exception;
+
+    /**
+     * 根据实体集合执行批量InsertIfNotExist操作（插入如果不存在）
+     * <p>
+     * 根据数据库类型采用原子操作：
+     * <ul>
+     *     <li>MySQL: INSERT IGNORE INTO ...</li>
+     *     <li>PostgreSQL: INSERT INTO ... ON CONFLICT DO NOTHING</li>
+     *     <li>SQLite: INSERT OR IGNORE INTO ...</li>
+     *     <li>Oracle/SQLServer/H2/DB2/HSQLDB: MERGE INTO ... WHEN NOT MATCHED THEN INSERT ...</li>
+     * </ul>
+     * </p>
+     *
+     * @param <T>      指定实体数据类型
+     * @param entities 实体对象集合
+     * @return 返回操作后的实体对象集合
+     * @throws Exception 可能产生的异常
+     * @since 2.1.4
+     */
+    <T extends IEntity> List<T> insertIfNotExist(List<T> entities) throws Exception;
+
+    /**
+     * 根据实体集合执行批量InsertIfNotExist操作（插入如果不存在）
+     *
+     * @param <T>      指定实体数据类型
+     * @param entities 实体对象集合
+     * @return 返回操作后的实体对象集合
+     * @throws Exception 可能产生的异常
+     * @since 2.1.4
+     */
+    <T extends IEntity> List<T> insertIfNotExist(ShardingList<T> entities) throws Exception;
+
+    /**
+     * 根据实体集合执行批量InsertIfNotExist操作（插入如果不存在）
+     *
+     * @param <T>      指定实体数据类型
+     * @param entities 实体对象集合
+     * @param filter   字段过滤集合
+     * @return 返回操作后的实体对象集合
+     * @throws Exception 可能产生的异常
+     * @since 2.1.4
+     */
+    <T extends IEntity> List<T> insertIfNotExist(List<T> entities, Fields filter) throws Exception;
+
+    /**
+     * 根据实体集合执行批量InsertIfNotExist操作（插入如果不存在）
+     *
+     * @param <T>      指定实体数据类型
+     * @param entities 实体对象集合
+     * @param filter   字段过滤集合
+     * @return 返回操作后的实体对象集合
+     * @throws Exception 可能产生的异常
+     * @since 2.1.4
+     */
+    <T extends IEntity> List<T> insertIfNotExist(ShardingList<T> entities, Fields filter) throws Exception;
+
+    /**
      * 根据实体执行记录删除
      *
      * @param <T>    指定实体数据类型

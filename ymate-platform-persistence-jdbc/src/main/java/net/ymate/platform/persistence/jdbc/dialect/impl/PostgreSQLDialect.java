@@ -15,9 +15,18 @@
  */
 package net.ymate.platform.persistence.jdbc.dialect.impl;
 
+import net.ymate.platform.commons.util.ExpressionUtils;
+import net.ymate.platform.core.persistence.Fields;
+import net.ymate.platform.core.persistence.IShardingable;
+import net.ymate.platform.core.persistence.base.EntityMeta;
+import net.ymate.platform.core.persistence.base.IEntity;
 import net.ymate.platform.core.persistence.base.Type;
 import net.ymate.platform.persistence.jdbc.annotation.Dialect;
 import net.ymate.platform.persistence.jdbc.dialect.AbstractDialect;
+import org.apache.commons.lang3.StringUtils;
+
+import java.util.Iterator;
+import java.util.List;
 
 /**
  * PostgreSQL数据库方言接口实现
@@ -45,4 +54,87 @@ public class PostgreSQLDialect extends AbstractDialect {
         return String.format("%s LIMIT %d OFFSET %d", originSql, pageSize, limit);
     }
 
+    /**
+     * 构建PostgreSQL的UPSERT语句 (INSERT ... ON CONFLICT ... DO UPDATE SET ...)
+     *
+     * @param entityClass  实体模型类
+     * @param prefix       实体名称前缀
+     * @param shardingable 分片(表)参数对象
+     * @param fields       字段名称集合
+     * @return UPSERT SQL语句
+     * @since 2.1.4
+     */
+    @Override
+    @SuppressWarnings("rawtypes")
+    public String buildUpsertSql(Class<? extends IEntity> entityClass, String prefix, IShardingable shardingable, Fields fields) {
+        EntityMeta entityMeta = EntityMeta.load(entityClass);
+        String tableName = buildTableName(prefix, entityMeta, shardingable);
+        Fields insertFields = doBuildInsertFields(entityMeta, fields);
+
+        String columns = doGenerateFieldsFormatStr(insertFields, null, null);
+        String placeholders = StringUtils.repeat("?", ", ", insertFields.fields().size());
+
+        // 构建 ON CONFLICT 冲突目标（主键字段）
+        List<String> pkFieldList = entityMeta.getPrimaryKeys();
+        String conflictTarget = doGenerateFieldsFormatStr(Fields.create(pkFieldList), null, ", ");
+
+        // 构建 DO UPDATE SET 部分（排除主键）
+        StringBuilder updatePart = new StringBuilder();
+        Iterator<String> fieldIter = insertFields.fields().iterator();
+        boolean first = true;
+        while (fieldIter.hasNext()) {
+            String field = fieldIter.next();
+            if (!entityMeta.isPrimaryKey(field)) {
+                if (!first) {
+                    updatePart.append(", ");
+                }
+                String quotedField = wrapIdentifierQuote(field);
+                updatePart.append(quotedField).append(" = EXCLUDED.").append(quotedField);
+                first = false;
+            }
+        }
+
+        // 如果没有非主键字段需要更新，则使用 DO NOTHING
+        if (updatePart.length() == 0) {
+            return ExpressionUtils.bind("INSERT INTO ${table_name} (${columns}) VALUES (${placeholders}) ON CONFLICT (${conflict_target}) DO NOTHING")
+                    .set("table_name", tableName)
+                    .set("columns", columns)
+                    .set("placeholders", placeholders)
+                    .set("conflict_target", conflictTarget)
+                    .getResult();
+        }
+
+        return ExpressionUtils.bind("INSERT INTO ${table_name} (${columns}) VALUES (${placeholders}) ON CONFLICT (${conflict_target}) DO UPDATE SET ${update_set}")
+                .set("table_name", tableName)
+                .set("columns", columns)
+                .set("placeholders", placeholders)
+                .set("conflict_target", conflictTarget)
+                .set("update_set", updatePart.toString())
+                .getResult();
+    }
+
+    /**
+     * PostgreSQL: INSERT INTO ... ON CONFLICT DO NOTHING
+     */
+    @Override
+    @SuppressWarnings("rawtypes")
+    public String buildInsertIfNotExistSql(Class<? extends IEntity> entityClass, String prefix, IShardingable shardingable, Fields fields) {
+        EntityMeta entityMeta = EntityMeta.load(entityClass);
+        String tableName = buildTableName(prefix, entityMeta, shardingable);
+        Fields insertFields = doBuildInsertFields(entityMeta, fields);
+
+        String columns = doGenerateFieldsFormatStr(insertFields, null, null);
+        String placeholders = StringUtils.repeat("?", ", ", insertFields.fields().size());
+
+        // 构建 ON CONFLICT 冲突目标（主键字段）
+        List<String> pkFieldList = entityMeta.getPrimaryKeys();
+        String conflictTarget = doGenerateFieldsFormatStr(Fields.create(pkFieldList), null, ", ");
+
+        return ExpressionUtils.bind("INSERT INTO ${table_name} (${columns}) VALUES (${placeholders}) ON CONFLICT (${conflict_target}) DO NOTHING")
+                .set("table_name", tableName)
+                .set("columns", columns)
+                .set("placeholders", placeholders)
+                .set("conflict_target", conflictTarget)
+                .getResult();
+    }
 }

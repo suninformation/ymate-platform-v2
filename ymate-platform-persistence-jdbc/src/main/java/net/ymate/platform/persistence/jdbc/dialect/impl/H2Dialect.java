@@ -15,9 +15,16 @@
  */
 package net.ymate.platform.persistence.jdbc.dialect.impl;
 
+import net.ymate.platform.commons.util.ExpressionUtils;
+import net.ymate.platform.core.persistence.Fields;
+import net.ymate.platform.core.persistence.IShardingable;
+import net.ymate.platform.core.persistence.base.EntityMeta;
+import net.ymate.platform.core.persistence.base.IEntity;
 import net.ymate.platform.core.persistence.base.Type;
 import net.ymate.platform.persistence.jdbc.annotation.Dialect;
 import net.ymate.platform.persistence.jdbc.dialect.AbstractDialect;
+
+import java.util.List;
 
 /**
  * H2数据库方言接口实现
@@ -30,5 +37,73 @@ public class H2Dialect extends AbstractDialect {
     @Override
     public String getName() {
         return Type.DATABASE.H2;
+    }
+
+    /**
+     * 构建H2的UPSERT语句 (MERGE INTO ... USING ... ON ... WHEN MATCHED THEN UPDATE ... WHEN NOT MATCHED THEN INSERT ...)
+     * <p>H2 1.4.200+ 支持 MERGE INTO ... USING 语法</p>
+     *
+     * @param entityClass  实体模型类
+     * @param prefix       实体名称前缀
+     * @param shardingable 分片(表)参数对象
+     * @param fields       字段名称集合
+     * @return UPSERT SQL语句
+     * @since 2.1.4
+     */
+    @Override
+    @SuppressWarnings("rawtypes")
+    public String buildUpsertSql(Class<? extends IEntity> entityClass, String prefix, IShardingable shardingable, Fields fields) {
+        EntityMeta entityMeta = EntityMeta.load(entityClass);
+        String tableName = buildTableName(prefix, entityMeta, shardingable);
+        Fields insertFields = doBuildInsertFields(entityMeta, fields);
+        List<String> pkFields = entityMeta.getPrimaryKeys();
+
+        String usingClause = doBuildMergeUsingClause(entityMeta, pkFields);
+        String onClause = doBuildMergeOnClause(entityMeta, pkFields);
+        String updateSet = doBuildMergeUpdateSet(entityMeta, insertFields);
+        String[] insertParts = doBuildMergeInsertParts(insertFields);
+
+        StringBuilder mergeSql = new StringBuilder();
+        mergeSql.append("MERGE INTO ${table_name} AS target ");
+        mergeSql.append("USING (SELECT ${using_clause}) AS source ");
+        mergeSql.append("ON ${on_clause} ");
+        if (!updateSet.isEmpty()) {
+            mergeSql.append("WHEN MATCHED THEN UPDATE SET ${update_set} ");
+        }
+        mergeSql.append("WHEN NOT MATCHED THEN INSERT (${insert_columns}) ");
+        mergeSql.append("VALUES (${insert_values})");
+
+        return ExpressionUtils.bind(mergeSql.toString())
+                .set("table_name", tableName)
+                .set("using_clause", usingClause)
+                .set("on_clause", onClause)
+                .set("update_set", updateSet)
+                .set("insert_columns", insertParts[0])
+                .set("insert_values", insertParts[1])
+                .getResult();
+    }
+
+    /**
+     * H2: MERGE INTO ... WHEN NOT MATCHED THEN INSERT ...
+     */
+    @Override
+    @SuppressWarnings("rawtypes")
+    public String buildInsertIfNotExistSql(Class<? extends IEntity> entityClass, String prefix, IShardingable shardingable, Fields fields) {
+        EntityMeta entityMeta = EntityMeta.load(entityClass);
+        String tableName = buildTableName(prefix, entityMeta, shardingable);
+        Fields insertFields = doBuildInsertFields(entityMeta, fields);
+        List<String> pkFields = entityMeta.getPrimaryKeys();
+
+        String usingClause = doBuildMergeUsingClause(entityMeta, pkFields);
+        String onClause = doBuildMergeOnClause(entityMeta, pkFields);
+        String[] insertParts = doBuildMergeInsertParts(insertFields);
+
+        return ExpressionUtils.bind("MERGE INTO ${table_name} AS target USING (SELECT ${using_clause}) AS source ON ${on_clause} WHEN NOT MATCHED THEN INSERT (${insert_columns}) VALUES (${insert_values})")
+                .set("table_name", tableName)
+                .set("using_clause", usingClause)
+                .set("on_clause", onClause)
+                .set("insert_columns", insertParts[0])
+                .set("insert_values", insertParts[1])
+                .getResult();
     }
 }

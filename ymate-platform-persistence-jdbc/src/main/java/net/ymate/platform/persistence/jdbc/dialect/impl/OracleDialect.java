@@ -26,6 +26,8 @@ import net.ymate.platform.persistence.jdbc.annotation.Dialect;
 import net.ymate.platform.persistence.jdbc.dialect.AbstractDialect;
 import org.apache.commons.lang3.StringUtils;
 
+import java.util.List;
+
 /**
  * Oracle数据库方言接口实现
  *
@@ -84,5 +86,72 @@ public class OracleDialect extends AbstractDialect {
             returnValue.append(" ) row_ ) WHERE rownum_ > ").append(limit).append(" AND rownum_ <= ").append((limit + pageSize));
         }
         return returnValue.toString();
+    }
+
+    /**
+     * 构建Oracle的UPSERT语句 (MERGE INTO ... USING ... ON ... WHEN MATCHED THEN UPDATE ... WHEN NOT MATCHED THEN INSERT ...)
+     *
+     * @param entityClass  实体模型类
+     * @param prefix       实体名称前缀
+     * @param shardingable 分片(表)参数对象
+     * @param fields       字段名称集合
+     * @return UPSERT SQL语句
+     * @since 2.1.4
+     */
+    @Override
+    @SuppressWarnings("rawtypes")
+    public String buildUpsertSql(Class<? extends IEntity> entityClass, String prefix, IShardingable shardingable, Fields fields) {
+        EntityMeta entityMeta = EntityMeta.load(entityClass);
+        String tableName = buildTableName(prefix, entityMeta, shardingable);
+        Fields insertFields = doBuildInsertFields(entityMeta, fields);
+        List<String> pkFields = entityMeta.getPrimaryKeys();
+
+        String usingClause = doBuildMergeUsingClause(entityMeta, pkFields);
+        String onClause = doBuildMergeOnClause(entityMeta, pkFields);
+        String updateSet = doBuildMergeUpdateSet(entityMeta, insertFields);
+        String[] insertParts = doBuildMergeInsertParts(insertFields);
+
+        StringBuilder mergeSql = new StringBuilder();
+        mergeSql.append("MERGE INTO ${table_name} target ");
+        mergeSql.append("USING (SELECT ${using_clause} FROM DUAL) source ");
+        mergeSql.append("ON (${on_clause}) ");
+        if (!updateSet.isEmpty()) {
+            mergeSql.append("WHEN MATCHED THEN UPDATE SET ${update_set} ");
+        }
+        mergeSql.append("WHEN NOT MATCHED THEN INSERT (${insert_columns}) ");
+        mergeSql.append("VALUES (${insert_values})");
+
+        return ExpressionUtils.bind(mergeSql.toString())
+                .set("table_name", tableName)
+                .set("using_clause", usingClause)
+                .set("on_clause", onClause)
+                .set("update_set", updateSet)
+                .set("insert_columns", insertParts[0])
+                .set("insert_values", insertParts[1])
+                .getResult();
+    }
+
+    /**
+     * Oracle: MERGE INTO ... WHEN NOT MATCHED THEN INSERT ...
+     */
+    @Override
+    @SuppressWarnings("rawtypes")
+    public String buildInsertIfNotExistSql(Class<? extends IEntity> entityClass, String prefix, IShardingable shardingable, Fields fields) {
+        EntityMeta entityMeta = EntityMeta.load(entityClass);
+        String tableName = buildTableName(prefix, entityMeta, shardingable);
+        Fields insertFields = doBuildInsertFields(entityMeta, fields);
+        List<String> pkFields = entityMeta.getPrimaryKeys();
+
+        String usingClause = doBuildMergeUsingClause(entityMeta, pkFields);
+        String onClause = doBuildMergeOnClause(entityMeta, pkFields);
+        String[] insertParts = doBuildMergeInsertParts(insertFields);
+
+        return ExpressionUtils.bind("MERGE INTO ${table_name} target USING (SELECT ${using_clause} FROM DUAL) source ON (${on_clause}) WHEN NOT MATCHED THEN INSERT (${insert_columns}) VALUES (${insert_values})")
+                .set("table_name", tableName)
+                .set("using_clause", usingClause)
+                .set("on_clause", onClause)
+                .set("insert_columns", insertParts[0])
+                .set("insert_values", insertParts[1])
+                .getResult();
     }
 }

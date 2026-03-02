@@ -218,17 +218,41 @@ public abstract class BaseEntity<Entity extends IEntity, PK extends Serializable
     }
 
     public boolean saveIfNotExist() throws Exception {
-        return saveIfNotExist(false);
+        return saveIfNotExist(null);
     }
 
+    /**
+     * 保存实体记录（如果不存在）
+     * <p>
+     * 根据数据库类型采用原子操作实现：
+     * <ul>
+     *     <li>MySQL: INSERT IGNORE INTO ...</li>
+     *     <li>PostgreSQL: INSERT INTO ... ON CONFLICT DO NOTHING</li>
+     *     <li>SQLite: INSERT OR IGNORE INTO ...</li>
+     *     <li>Oracle/SQLServer/H2/DB2/HSQLDB: MERGE INTO ... WHEN NOT MATCHED THEN INSERT ...</li>
+     *     <li>其他数据库: 回退到先查询后插入的方式（非原子操作）</li>
+     * </ul>
+     * </p>
+     *
+     * @param fields 字段过滤集合，可选参数，若不指定则包括全部字段
+     * @return 若插入成功返回true，若记录已存在返回false
+     * @throws Exception 可能产生的异常
+     * @since 2.1.4
+     */
     @SuppressWarnings("unchecked")
-    public boolean saveIfNotExist(boolean useLocker) throws Exception {
+    public boolean saveIfNotExist(Fields fields) throws Exception {
         IDatabase owner = doGetSafeOwner();
         try (IDatabaseSession session = new DefaultDatabaseSession(owner, doGetSafeConnectionHolder())) {
-            if (!exist(useLocker)) {
-                return session.insert((Entity) this, this.getShardingable()) != null;
+            // 尝试使用数据库原生的InsertIfNotExist原子操作
+            try {
+                return session.insertIfNotExist((Entity) this, fields, this.getShardingable()) != null;
+            } catch (UnsupportedOperationException e) {
+                // 数据库不支持InsertIfNotest操作，回退到原来的方式（先查询后判断）
+                if (!exist(true)) {
+                    return session.insert((Entity) this, fields, this.getShardingable()) != null;
+                }
+                return false;
             }
-            return false;
         }
     }
 
@@ -236,14 +260,37 @@ public abstract class BaseEntity<Entity extends IEntity, PK extends Serializable
         return saveOrUpdate(null);
     }
 
+    /**
+     * 保存或更新实体记录
+     * <p>
+     * 根据数据库类型采用原子操作实现：
+     * <ul>
+     *     <li>MySQL: INSERT ... ON DUPLICATE KEY UPDATE ...</li>
+     *     <li>PostgreSQL: INSERT ... ON CONFLICT ... DO UPDATE SET ...</li>
+     *     <li>SQLite: INSERT ... ON CONFLICT ... DO UPDATE SET ...</li>
+     *     <li>其他数据库: 回退到先查询后更新/插入的方式（非原子操作）</li>
+     * </ul>
+     * </p>
+     *
+     * @param fields 字段名称集合，可选参数，若不指定则包括全部字段
+     * @return 返回操作后的实体对象
+     * @throws Exception 可能产生的异常
+     * @since 2.1.4
+     */
     @SuppressWarnings("unchecked")
     public Entity saveOrUpdate(Fields fields) throws Exception {
         IDatabase owner = doGetSafeOwner();
         try (IDatabaseSession session = new DefaultDatabaseSession(owner, doGetSafeConnectionHolder())) {
-            if (exist(true)) {
-                return session.update((Entity) this, fields, this.getShardingable());
+            // 尝试使用数据库原生的Upsert原子操作
+            try {
+                return session.upsert((Entity) this, fields, this.getShardingable());
+            } catch (UnsupportedOperationException e) {
+                // 数据库不支持Upsert操作，回退到原来的方式（先查询后判断）
+                if (exist(true)) {
+                    return session.update((Entity) this, fields, this.getShardingable());
+                }
+                return session.insert((Entity) this, this.getShardingable());
             }
-            return session.insert((Entity) this, this.getShardingable());
         }
     }
 

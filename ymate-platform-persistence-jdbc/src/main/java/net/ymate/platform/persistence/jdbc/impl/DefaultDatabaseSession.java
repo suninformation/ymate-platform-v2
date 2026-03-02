@@ -434,30 +434,7 @@ public class DefaultDatabaseSession extends AbstractSession<IDatabaseConnectionH
         EntityMeta entityMeta = EntityMeta.load(entity.getClass()).unsupportedIfView();
         PairObject<Fields, Params> entityFieldAndValues = doGetEntityFieldAndValues(entityMeta, entity, filter, true);
         String sqlStr = dialect.buildInsertSql(entity.getClass(), tablePrefix, shardingable, entityFieldAndValues.getKey());
-        IUpdateOperator updateOperator = new DefaultUpdateOperator(sqlStr, this.connectionHolder);
-        if (entityMeta.hasAutoincrement()) {
-            // 兼容Oracle无法直接获取生成的主键问题
-            if (connectionHolder.getDialect() instanceof OracleDialect) {
-                final String[] ids = entityMeta.getAutoincrementKeys().toArray(new String[0]);
-                updateOperator.setAccessorConfig(new EntityAccessorConfig(entityMeta, connectionHolder, entity) {
-                    @Override
-                    public PreparedStatement getPreparedStatement(Connection conn, String sql) throws SQLException {
-                        if (conn != null && !conn.isClosed()) {
-                            return conn.prepareStatement(sql, ids);
-                        }
-                        return accessorConnHolder.getConnection().prepareStatement(sql, ids);
-                    }
-                });
-            } else {
-                updateOperator.setAccessorConfig(new EntityAccessorConfig(entityMeta, connectionHolder, entity));
-            }
-        }
-        doOperator(Type.OPT.UPDATE, DatabaseEvent.EVENT.INSERT_AFTER, entityFieldAndValues.getValue(), updateOperator);
-        //
-        if (updateOperator.getEffectCounts() > 0) {
-            return entity;
-        }
-        return null;
+        return doExecuteSingleUpdate(entity, sqlStr, entityFieldAndValues.getValue(), DatabaseEvent.EVENT.INSERT_AFTER, Type.OPT.UPDATE, entityMeta);
     }
 
     @Override
@@ -471,38 +448,8 @@ public class DefaultDatabaseSession extends AbstractSession<IDatabaseConnectionH
     }
 
     @Override
-    @SuppressWarnings("unchecked")
     public <T extends IEntity> List<T> insert(List<T> entities, Fields filter) throws Exception {
-        T element = entities.get(0);
-        EntityMeta entityMeta = EntityMeta.load(element.getClass()).unsupportedIfView();
-        PairObject<Fields, Params> entityFieldAndValues = doGetEntityFieldAndValues(entityMeta, element, filter, true);
-        String sqlStr = dialect.buildInsertSql(element.getClass(), tablePrefix, null, entityFieldAndValues.getKey());
-        IBatchUpdateOperator updateOperator = new BatchUpdateOperator(sqlStr, this.connectionHolder);
-        if (entityMeta.hasAutoincrement()) {
-            // 兼容Oracle无法直接获取生成的主键问题
-            if (connectionHolder.getDialect() instanceof OracleDialect) {
-                final String[] ids = entityMeta.getAutoincrementKeys().toArray(new String[0]);
-                updateOperator.setAccessorConfig(new EntityAccessorConfig(entityMeta, connectionHolder, (List<IEntity<?>>) entities) {
-                    @Override
-                    public PreparedStatement getPreparedStatement(Connection conn, String sql) throws SQLException {
-                        if (conn != null && !conn.isClosed()) {
-                            return conn.prepareStatement(sql, ids);
-                        }
-                        return accessorConnHolder.getConnection().prepareStatement(sql, ids);
-                    }
-                });
-            } else {
-                updateOperator.setAccessorConfig(new EntityAccessorConfig(entityMeta, connectionHolder, (List<IEntity<?>>) entities));
-            }
-        }
-        for (T entity : entities) {
-            SQLBatchParameter batchParameter = SQLBatchParameter.create();
-            doGetEntityFieldAndValues(entityMeta, entity, filter, true).getValue().params().forEach(batchParameter::addParameter);
-            updateOperator.addBatchParameter(batchParameter);
-        }
-        doOperator(Type.OPT.BATCH_UPDATE, DatabaseEvent.EVENT.INSERT_AFTER, null, updateOperator);
-        //
-        return entities;
+        return doBatchUpdate(entities, filter, (entityClass, fields) -> dialect.buildInsertSql(entityClass, tablePrefix, null, fields), DatabaseEvent.EVENT.INSERT_AFTER, Type.OPT.BATCH_UPDATE);
     }
 
     @Override
@@ -510,6 +457,97 @@ public class DefaultDatabaseSession extends AbstractSession<IDatabaseConnectionH
         List<T> results = new ArrayList<>();
         for (ShardingElement<T> element : entities) {
             T entity = this.insert(element.getElement(), filter, element);
+            if (entity != null) {
+                results.add(entity);
+            }
+        }
+        return results;
+    }
+
+    @Override
+    public <T extends IEntity> T upsert(T entity) throws Exception {
+        return upsert(entity, null, entity instanceof IShardingable ? (IShardingable) entity : null);
+    }
+
+    @Override
+    public <T extends IEntity> T upsert(T entity, Fields filter) throws Exception {
+        return upsert(entity, filter, entity instanceof IShardingable ? (IShardingable) entity : null);
+    }
+
+    @Override
+    public <T extends IEntity> T upsert(T entity, Fields filter, IShardingable shardingable) throws Exception {
+        EntityMeta entityMeta = EntityMeta.load(entity.getClass()).unsupportedIfView();
+        // 获取实体字段和值（用于INSERT部分）
+        PairObject<Fields, Params> entityFieldAndValues = doGetEntityFieldAndValues(entityMeta, entity, filter, true);
+        String sqlStr = dialect.buildUpsertSql(entity.getClass(), tablePrefix, shardingable, entityFieldAndValues.getKey());
+        return doExecuteSingleUpdate(entity, sqlStr, entityFieldAndValues.getValue(), DatabaseEvent.EVENT.UPDATE_AFTER, Type.OPT.UPDATE, entityMeta);
+    }
+
+    @Override
+    public <T extends IEntity> List<T> upsert(List<T> entities) throws Exception {
+        return upsert(entities, null);
+    }
+
+    @Override
+    public <T extends IEntity> List<T> upsert(ShardingList<T> entities) throws Exception {
+        return upsert(entities, null);
+    }
+
+    @Override
+    public <T extends IEntity> List<T> upsert(List<T> entities, Fields filter) throws Exception {
+        return doBatchUpdate(entities, filter, (entityClass, fields) -> dialect.buildUpsertSql(entityClass, tablePrefix, null, fields), DatabaseEvent.EVENT.UPDATE_AFTER, Type.OPT.BATCH_UPDATE);
+    }
+
+    @Override
+    public <T extends IEntity> List<T> upsert(ShardingList<T> entities, Fields filter) throws Exception {
+        List<T> results = new ArrayList<>();
+        for (ShardingElement<T> element : entities) {
+            T entity = this.upsert(element.getElement(), filter, element);
+            if (entity != null) {
+                results.add(entity);
+            }
+        }
+        return results;
+    }
+
+    @Override
+    public <T extends IEntity> T insertIfNotExist(T entity) throws Exception {
+        return insertIfNotExist(entity, null, entity instanceof IShardingable ? (IShardingable) entity : null);
+    }
+
+    @Override
+    public <T extends IEntity> T insertIfNotExist(T entity, Fields filter) throws Exception {
+        return insertIfNotExist(entity, filter, entity instanceof IShardingable ? (IShardingable) entity : null);
+    }
+
+    @Override
+    public <T extends IEntity> T insertIfNotExist(T entity, Fields filter, IShardingable shardingable) throws Exception {
+        EntityMeta entityMeta = EntityMeta.load(entity.getClass()).unsupportedIfView();
+        PairObject<Fields, Params> entityFieldAndValues = doGetEntityFieldAndValues(entityMeta, entity, filter, true);
+        String sqlStr = dialect.buildInsertIfNotExistSql(entity.getClass(), tablePrefix, shardingable, entityFieldAndValues.getKey());
+        return doExecuteSingleUpdate(entity, sqlStr, entityFieldAndValues.getValue(), DatabaseEvent.EVENT.INSERT_AFTER, Type.OPT.UPDATE, entityMeta);
+    }
+
+    @Override
+    public <T extends IEntity> List<T> insertIfNotExist(List<T> entities) throws Exception {
+        return insertIfNotExist(entities, null);
+    }
+
+    @Override
+    public <T extends IEntity> List<T> insertIfNotExist(ShardingList<T> entities) throws Exception {
+        return insertIfNotExist(entities, null);
+    }
+
+    @Override
+    public <T extends IEntity> List<T> insertIfNotExist(List<T> entities, Fields filter) throws Exception {
+        return doBatchUpdate(entities, filter, (entityClass, fields) -> dialect.buildInsertIfNotExistSql(entityClass, tablePrefix, null, fields), DatabaseEvent.EVENT.INSERT_AFTER, Type.OPT.BATCH_UPDATE);
+    }
+
+    @Override
+    public <T extends IEntity> List<T> insertIfNotExist(ShardingList<T> entities, Fields filter) throws Exception {
+        List<T> results = new ArrayList<>();
+        for (ShardingElement<T> element : entities) {
+            T entity = this.insertIfNotExist(element.getElement(), filter, element);
             if (entity != null) {
                 results.add(entity);
             }
@@ -726,7 +764,7 @@ public class DefaultDatabaseSession extends AbstractSession<IDatabaseConnectionH
                     }
                 }
                 // 以下操作是为了使@Default起效果的同时也保证数据库中的字段默认值不被null值替代
-                if (value == null && StringUtils.isNotBlank(propertyMeta.getDefaultValue())) {
+                if (value == null && !propertyMeta.isDefaultValueIgnored() && StringUtils.isNotBlank(propertyMeta.getDefaultValue())) {
                     // 如果value为空则尝试提取默认值
                     value = BlurObject.bind(propertyMeta.getDefaultValue()).toObjectValue(propertyMeta.getField().getType());
                 }
@@ -777,6 +815,108 @@ public class DefaultDatabaseSession extends AbstractSession<IDatabaseConnectionH
         Fields returnValue = Fields.create();
         entityMeta.getPropertyNames().stream().filter((field) -> (doCheckField(filter, field))).filter((field) -> !(!includePrimaryKey && entityMeta.isPrimaryKey(field))).filter((field) -> !(forUpdate && entityMeta.isReadonly(field))).forEachOrdered(returnValue::add);
         return returnValue;
+    }
+
+    /**
+     * 执行批量更新操作（插入或Upsert）
+     *
+     * @param <T>        实体类型
+     * @param entities   实体列表
+     * @param filter     字段过滤
+     * @param sqlBuilder SQL构建函数
+     * @param event      数据库事件类型
+     * @param opt        操作类型
+     * @return 操作后的实体列表
+     * @throws Exception 可能产生的异常
+     */
+    @SuppressWarnings("unchecked")
+    private <T extends IEntity> List<T> doBatchUpdate(List<T> entities, Fields filter, BatchSqlBuilder sqlBuilder, DatabaseEvent.EVENT event, Type.OPT opt) throws Exception {
+        T element = entities.get(0);
+        EntityMeta entityMeta = EntityMeta.load(element.getClass()).unsupportedIfView();
+        PairObject<Fields, Params> entityFieldAndValues = doGetEntityFieldAndValues(entityMeta, element, filter, true);
+        String sqlStr = sqlBuilder.buildSql(element.getClass(), entityFieldAndValues.getKey());
+        IBatchUpdateOperator updateOperator = new BatchUpdateOperator(sqlStr, this.connectionHolder);
+        if (entityMeta.hasAutoincrement()) {
+            // 兼容Oracle无法直接获取生成的主键问题
+            if (connectionHolder.getDialect() instanceof OracleDialect) {
+                final String[] ids = entityMeta.getAutoincrementKeys().toArray(new String[0]);
+                updateOperator.setAccessorConfig(new EntityAccessorConfig(entityMeta, connectionHolder, (List<IEntity<?>>) entities) {
+                    @Override
+                    public PreparedStatement getPreparedStatement(Connection conn, String sql) throws SQLException {
+                        if (conn != null && !conn.isClosed()) {
+                            return conn.prepareStatement(sql, ids);
+                        }
+                        return accessorConnHolder.getConnection().prepareStatement(sql, ids);
+                    }
+                });
+            } else {
+                updateOperator.setAccessorConfig(new EntityAccessorConfig(entityMeta, connectionHolder, (List<IEntity<?>>) entities));
+            }
+        }
+        for (T entity : entities) {
+            SQLBatchParameter batchParameter = SQLBatchParameter.create();
+            doGetEntityFieldAndValues(entityMeta, entity, filter, true).getValue().params().forEach(batchParameter::addParameter);
+            updateOperator.addBatchParameter(batchParameter);
+        }
+        doOperator(opt, event, null, updateOperator);
+        return entities;
+    }
+
+    /**
+     * 批量SQL构建器接口
+     */
+    private interface BatchSqlBuilder {
+        String buildSql(Class<? extends IEntity> entityClass, Fields fields) throws Exception;
+    }
+
+    /**
+     * 为单条更新操作配置自增主键访问器
+     *
+     * @param updateOperator 更新操作器
+     * @param entityMeta     实体元描述对象
+     * @param entity         实体对象
+     */
+    private void doConfigureAutoincrement(IUpdateOperator updateOperator, EntityMeta entityMeta, IEntity<?> entity) {
+        if (entityMeta.hasAutoincrement()) {
+            // 兼容Oracle无法直接获取生成的主键问题
+            if (connectionHolder.getDialect() instanceof OracleDialect) {
+                final String[] ids = entityMeta.getAutoincrementKeys().toArray(new String[0]);
+                updateOperator.setAccessorConfig(new EntityAccessorConfig(entityMeta, connectionHolder, entity) {
+                    @Override
+                    public PreparedStatement getPreparedStatement(Connection conn, String sql) throws SQLException {
+                        if (conn != null && !conn.isClosed()) {
+                            return conn.prepareStatement(sql, ids);
+                        }
+                        return accessorConnHolder.getConnection().prepareStatement(sql, ids);
+                    }
+                });
+            } else {
+                updateOperator.setAccessorConfig(new EntityAccessorConfig(entityMeta, connectionHolder, entity));
+            }
+        }
+    }
+
+    /**
+     * 执行单条更新操作
+     *
+     * @param <T>        实体类型
+     * @param entity     实体对象
+     * @param sqlStr     SQL语句
+     * @param params     参数对象
+     * @param event      数据库事件类型
+     * @param opt        操作类型
+     * @param entityMeta 实体元描述对象
+     * @return 若影响记录数大于0返回实体对象，否则返回null
+     * @throws Exception 可能产生的异常
+     */
+    private <T extends IEntity> T doExecuteSingleUpdate(T entity, String sqlStr, Params params, DatabaseEvent.EVENT event, Type.OPT opt, EntityMeta entityMeta) throws Exception {
+        IUpdateOperator updateOperator = new DefaultUpdateOperator(sqlStr, this.connectionHolder);
+        doConfigureAutoincrement(updateOperator, entityMeta, entity);
+        doOperator(opt, event, params, updateOperator);
+        if (updateOperator.getEffectCounts() > 0) {
+            return entity;
+        }
+        return null;
     }
 
     /**

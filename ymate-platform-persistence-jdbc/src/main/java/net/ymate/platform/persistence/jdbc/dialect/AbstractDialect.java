@@ -333,4 +333,130 @@ public abstract class AbstractDialect implements IDialect {
         }
         return exp.set("fields", doGenerateFieldsFormatStr(fields, null, null)).getResult();
     }
+
+    @Override
+    @SuppressWarnings("rawtypes")
+    public String buildUpsertSql(Class<? extends IEntity> entityClass, String prefix, IShardingable shardingable, Fields fields) {
+        throw new UnsupportedOperationException("Upsert operation is not supported by default, please implement it in specific dialect");
+    }
+
+    @Override
+    @SuppressWarnings("rawtypes")
+    public String buildInsertIfNotExistSql(Class<? extends IEntity> entityClass, String prefix, IShardingable shardingable, Fields fields) {
+        throw new UnsupportedOperationException("InsertIfNotExist operation is not supported by default, please implement it in specific dialect");
+    }
+
+    /**
+     * 构建插入字段列表
+     *
+     * @param entityMeta 实体元数据
+     * @param fields     字段过滤集合
+     * @return 构建好的字段列表
+     */
+    protected Fields doBuildInsertFields(EntityMeta entityMeta, Fields fields) {
+        Fields insertFields = Fields.create();
+        if (fields == null || fields.fields().isEmpty()) {
+            insertFields.add(entityMeta.getPropertyNames());
+        } else {
+            insertFields.add(fields);
+            doValidProperty(entityMeta, insertFields, false);
+        }
+        return insertFields;
+    }
+
+    /**
+     * 构建MERGE语句的USING子句（主键字段作为参数）
+     *
+     * @param entityMeta 实体元数据
+     * @param pkFields   主键字段列表
+     * @return USING子句字符串
+     */
+    protected String doBuildMergeUsingClause(EntityMeta entityMeta, List<String> pkFields) {
+        StringBuilder usingClause = new StringBuilder();
+        Iterator<String> pkIter = pkFields.iterator();
+        boolean first = true;
+        while (pkIter.hasNext()) {
+            String pk = pkIter.next();
+            if (!first) {
+                usingClause.append(", ");
+            }
+            usingClause.append("? AS ").append(wrapIdentifierQuote(pk));
+            first = false;
+        }
+        return usingClause.toString();
+    }
+
+    /**
+     * 构建MERGE语句的ON条件
+     *
+     * @param entityMeta 实体元数据
+     * @param pkFields   主键字段列表
+     * @return ON条件字符串
+     */
+    protected String doBuildMergeOnClause(EntityMeta entityMeta, List<String> pkFields) {
+        StringBuilder onClause = new StringBuilder();
+        Iterator<String> pkIter = pkFields.iterator();
+        boolean first = true;
+        while (pkIter.hasNext()) {
+            String pk = pkIter.next();
+            if (!first) {
+                onClause.append(" AND ");
+            }
+            String quotedPk = wrapIdentifierQuote(pk);
+            onClause.append("target.").append(quotedPk)
+                    .append(" = source.").append(quotedPk);
+            first = false;
+        }
+        return onClause.toString();
+    }
+
+    /**
+     * 构建MERGE语句的UPDATE SET部分
+     *
+     * @param entityMeta   实体元数据
+     * @param insertFields 插入字段列表
+     * @return UPDATE SET字符串
+     */
+    protected String doBuildMergeUpdateSet(EntityMeta entityMeta, Fields insertFields) {
+        StringBuilder updateSet = new StringBuilder();
+        Iterator<String> fieldIter = insertFields.fields().iterator();
+        boolean first = true;
+        while (fieldIter.hasNext()) {
+            String field = fieldIter.next();
+            if (!entityMeta.isPrimaryKey(field)) {
+                if (!first) {
+                    updateSet.append(", ");
+                }
+                String quotedField = wrapIdentifierQuote(field);
+                updateSet.append(quotedField).append(" = source.").append(quotedField);
+                first = false;
+            }
+        }
+        return updateSet.toString();
+    }
+
+    /**
+     * 构建MERGE语句的INSERT列名和值部分
+     *
+     * @param insertFields 插入字段列表
+     * @return 包含列名和值的字符串数组，[0]=列名, [1]=值
+     */
+    protected String[] doBuildMergeInsertParts(Fields insertFields) {
+        StringBuilder insertColumns = new StringBuilder();
+        StringBuilder insertValues = new StringBuilder();
+        Iterator<String> fieldIter = insertFields.fields().iterator();
+        boolean first = true;
+        while (fieldIter.hasNext()) {
+            String field = fieldIter.next();
+            if (!first) {
+                insertColumns.append(", ");
+                insertValues.append(", ");
+            }
+            String quotedField = wrapIdentifierQuote(field);
+            insertColumns.append(quotedField);
+            insertValues.append("source.").append(quotedField);
+            first = false;
+        }
+        return new String[]{insertColumns.toString(), insertValues.toString()};
+    }
 }

@@ -219,4 +219,50 @@ public interface IDialect {
      */
     @SuppressWarnings("rawtypes")
     String buildSelectSql(Class<? extends IEntity> entityClass, String prefix, IShardingable shardingable, Fields fields);
+
+    /**
+     * 构建Upsert(插入或更新)实体数据记录SQL语句
+     * <p>
+     * 根据数据库类型采用不同的原子操作语法：
+     * <ul>
+     *     <li>MySQL: INSERT ... ON DUPLICATE KEY UPDATE ...</li>
+     *     <li>PostgreSQL: INSERT ... ON CONFLICT ... DO UPDATE SET ...</li>
+     *     <li>SQLite: INSERT OR REPLACE INTO ...</li>
+     *     <li>Oracle/SQLServer: MERGE INTO ...</li>
+     * </ul>
+     * </p>
+     *
+     * @param entityClass  实体模型类
+     * @param prefix       实体名称前缀
+     * @param shardingable 分片(表)参数对象
+     * @param fields       字段名称集合，可选参数，若不指定则包括全部字段
+     * @return 返回Upsert SQL语句
+     * @throws UnsupportedOperationException 若数据库不支持Upsert操作则抛出此异常
+     * @since 2.1.4
+     */
+    @SuppressWarnings("rawtypes")
+    String buildUpsertSql(Class<? extends IEntity> entityClass, String prefix, IShardingable shardingable, Fields fields);
+
+    /**
+     * 构建InsertIfNotExist SQL语句（插入如果不存在）
+     * <p>
+     * 根据数据库类型采用原子操作：
+     * <ul>
+     *     <li>MySQL: INSERT IGNORE INTO ...</li>
+     *     <li>PostgreSQL: INSERT INTO ... ON CONFLICT DO NOTHING</li>
+     *     <li>SQLite: INSERT OR IGNORE INTO ...</li>
+     *     <li>其他数据库: 使用MERGE INTO ... WHEN NOT MATCHED THEN INSERT ...</li>
+     * </ul>
+     * </p>
+     *
+     * @param entityClass  实体模型类
+     * @param prefix       实体名称前缀
+     * @param shardingable 分片(表)参数对象
+     * @param fields       字段名称集合，可选参数，若不指定则包括全部字段
+     * @return 返回InsertIfNotExist SQL语句
+     * @throws UnsupportedOperationException 若数据库不支持此操作则抛出此异常
+     * @since 2.1.4
+     */
+    @SuppressWarnings("rawtypes")
+    String buildInsertIfNotExistSql(Class<? extends IEntity> entityClass, String prefix, IShardingable shardingable, Fields fields);
 }
