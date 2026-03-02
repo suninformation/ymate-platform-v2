@@ -15,13 +15,15 @@
  */
 package net.ymate.platform.commons.lang;
 
+import net.ymate.platform.commons.XPathHelper;
 import net.ymate.platform.commons.json.IJsonArrayWrapper;
 import net.ymate.platform.commons.json.IJsonNodeWrapper;
 import net.ymate.platform.commons.json.IJsonObjectWrapper;
 import net.ymate.platform.commons.json.JsonWrapper;
 import org.apache.commons.codec.binary.Base64;
-import org.apache.commons.lang.NullArgumentException;
 import org.apache.commons.lang3.StringUtils;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 
 import java.io.Serializable;
 import java.util.*;
@@ -42,7 +44,7 @@ public class TreeObject implements Serializable {
      */
     private static final long serialVersionUID = -2971996971836985367L;
 
-    //////////
+    /// ///////
 
     private static final String KEY_CLASS = "_c";
 
@@ -173,8 +175,10 @@ public class TreeObject implements Serializable {
     private Object object;
 
     /**
-     * @param o 目标对象
-     * @return 检测目标对象的数据类型并返回类型常量值
+     * 检测目标对象的数据类型并返回对应的类型常量值
+     *
+     * @param o 目标对象，可为null
+     * @return 对应的数据类型常量值
      */
     private static int checkType(Object o) {
         if (o == null) {
@@ -217,14 +221,27 @@ public class TreeObject implements Serializable {
 
     //////////
 
+    /**
+     * 从JSON字符串创建TreeObject实例
+     *
+     * @param jsonStr JSON字符串，可为null
+     * @return 解析成功返回TreeObject实例，否则返回null
+     */
     public static TreeObject fromJson(String jsonStr) {
         JsonWrapper jsonWrapper = JsonWrapper.fromJson(jsonStr);
         return fromJson(jsonWrapper != null ? jsonWrapper.getAsJsonObject() : null);
     }
 
+    /**
+     * 从IJsonObjectWrapper创建TreeObject实例
+     *
+     * @param json JSON对象包装器，可为null
+     * @return 解析成功返回TreeObject实例，json为null时返回null
+     * @throws IllegalArgumentException 如果json不包含类型标识键
+     */
     public static TreeObject fromJson(IJsonObjectWrapper json) {
         if (json == null) {
-            throw new NullArgumentException("json");
+            return null;
         }
         if (!json.has(KEY_CLASS)) {
             throw new IllegalArgumentException(KEY_CLASS);
@@ -266,10 +283,21 @@ public class TreeObject implements Serializable {
         return target;
     }
 
+    /**
+     * 将当前TreeObject转换为JSON对象
+     *
+     * @return JSON对象包装器
+     */
     public IJsonObjectWrapper toJson() {
         return toJson(this);
     }
 
+    /**
+     * 将TreeObject转换为JSON对象
+     *
+     * @param tObject TreeObject实例，可为null
+     * @return 转换成功返回JSON对象包装器，否则返回null
+     */
     public static IJsonObjectWrapper toJson(TreeObject tObject) {
         if (tObject == null) {
             return null;
@@ -369,107 +397,429 @@ public class TreeObject implements Serializable {
 
     //////////
 
+    /**
+     * 从XML字符串创建TreeObject实例
+     *
+     * @param xml XML字符串，不可为null
+     * @return 解析成功返回TreeObject实例
+     * @throws NullPointerException     如果xml为null
+     * @throws IllegalArgumentException 如果xml格式无效
+     */
     public static TreeObject fromXml(String xml) {
-        // TODO
-        throw new UnsupportedOperationException();
+        Objects.requireNonNull(xml, "xml must not be null.");
+        if (StringUtils.isBlank(xml)) {
+            throw new IllegalArgumentException("xml must not be blank.");
+        }
+        try {
+            XPathHelper helper = new XPathHelper(XPathHelper.newDocumentBuilderFactory(), XPathHelper.newXPathFactory(), xml);
+            Node rootNode = helper.getNode("/tree");
+            if (rootNode == null) {
+                throw new IllegalArgumentException("Invalid XML format: missing root 'tree' element.");
+            }
+
+            Node classTypeAttr = rootNode.getAttributes().getNamedItem("_c");
+            if (classTypeAttr == null) {
+                throw new IllegalArgumentException("Invalid XML format: missing '_c' attribute on root element.");
+            }
+
+            String classTypeStr = classTypeAttr.getNodeValue();
+            int classType = Integer.parseInt(classTypeStr);
+
+            Node valueNode = helper.getNode("/tree/_v");
+            if (valueNode == null) {
+                throw new IllegalArgumentException("Invalid XML format: missing '_v' element.");
+            }
+
+            return parseXmlNode(valueNode, classType);
+        } catch (Exception e) {
+            throw new IllegalArgumentException("Failed to parse XML: " + e.getMessage(), e);
+        }
     }
 
+    private static TreeObject parseXmlNode(Node node, int classType) {
+        TreeObject result = new TreeObject();
+        result.type = classType;
+
+        switch (classType) {
+            case TYPE_TREE_OBJECT:
+            case TYPE_MAP: {
+                result.mode = MODE_MAP;
+                Map<String, TreeObject> map = new ConcurrentHashMap<>();
+                NodeList children = node.getChildNodes();
+                for (int i = 0; i < children.getLength(); i++) {
+                    Node child = children.item(i);
+                    if (child.getNodeType() == Node.ELEMENT_NODE) {
+                        String key = child.getNodeName();
+                        Node _vNode = null;
+                        String childTypeStr = "3";
+
+                        Node typeAttr = child.getAttributes().getNamedItem("_c");
+                        if (typeAttr != null) {
+                            childTypeStr = typeAttr.getNodeValue();
+                        }
+
+                        NodeList childChildren = child.getChildNodes();
+                        for (int j = 0; j < childChildren.getLength(); j++) {
+                            Node childChild = childChildren.item(j);
+                            if (childChild.getNodeType() == Node.ELEMENT_NODE && "_v".equals(childChild.getNodeName())) {
+                                _vNode = childChild;
+                                break;
+                            }
+                        }
+
+                        int childType = Integer.parseInt(childTypeStr);
+                        TreeObject childValue = _vNode != null ? parseXmlNode(_vNode, childType) : new TreeObject();
+                        map.put(key, childValue);
+                    }
+                }
+                result.object = map;
+                break;
+            }
+            case TYPE_COLLECTION: {
+                result.mode = MODE_ARRAY;
+                List<TreeObject> list = new CopyOnWriteArrayList<>();
+                NodeList children = node.getChildNodes();
+                for (int i = 0; i < children.getLength(); i++) {
+                    Node child = children.item(i);
+                    if (child.getNodeType() == Node.ELEMENT_NODE && "item".equals(child.getNodeName())) {
+                        Node indexAttr = child.getAttributes().getNamedItem("index");
+                        if (indexAttr != null) {
+                            NodeList itemChildren = child.getChildNodes();
+                            int elementCount = 0;
+                            for (int j = 0; j < itemChildren.getLength(); j++) {
+                                if (itemChildren.item(j).getNodeType() == Node.ELEMENT_NODE) {
+                                    elementCount++;
+                                }
+                            }
+
+                            if (elementCount == 1) {
+                                // 只有一个子元素，直接作为值处理
+                                for (int j = 0; j < itemChildren.getLength(); j++) {
+                                    Node itemChild = itemChildren.item(j);
+                                    if (itemChild.getNodeType() == Node.ELEMENT_NODE) {
+                                        TreeObject itemValue = parseXmlNode(itemChild, TYPE_STRING);
+                                        list.add(itemValue);
+                                        break;
+                                    }
+                                }
+                            } else {
+                                // 多个子元素，作为 MAP 处理
+                                TreeObject itemValue = parseXmlNode(child, TYPE_MAP);
+                                list.add(itemValue);
+                            }
+                        }
+                    }
+                }
+                result.object = list;
+                break;
+            }
+            default: {
+                result.mode = MODE_VALUE;
+                String content = node.getTextContent();
+                if (content != null) {
+                    content = content.trim();
+                }
+
+                switch (classType) {
+                    case TYPE_NULL:
+                        result.object = null;
+                        break;
+                    case TYPE_INTEGER:
+                        result.object = new BlurObject(content).toIntValue();
+                        break;
+                    case TYPE_MIX_STRING:
+                        result.object = new String(Base64.decodeBase64(content));
+                        break;
+                    case TYPE_STRING:
+                        result.object = content;
+                        break;
+                    case TYPE_LONG:
+                        result.object = new BlurObject(content).toLongValue();
+                        break;
+                    case TYPE_TIME:
+                        result.object = new BlurObject(content).toLongValue();
+                        break;
+                    case TYPE_BOOLEAN:
+                        result.object = new BlurObject(content).toBooleanValue();
+                        break;
+                    case TYPE_FLOAT:
+                        result.object = new BlurObject(content).toFloatValue();
+                        break;
+                    case TYPE_DOUBLE:
+                        result.object = new BlurObject(content).toDoubleValue();
+                        break;
+                    case TYPE_BYTE:
+                        result.object = new BlurObject(content).toByteValue();
+                        break;
+                    case TYPE_CHAR:
+                        result.object = new BlurObject(content).toCharValue();
+                        break;
+                    case TYPE_SHORT:
+                        result.object = new BlurObject(content).toShortValue();
+                        break;
+                    case TYPE_BYTES:
+                        result.object = Base64.decodeBase64(content);
+                        break;
+                    default:
+                        result.object = content;
+                        break;
+                }
+                break;
+            }
+        }
+        return result;
+    }
+
+    /**
+     * 将当前TreeObject转换为XML字符串
+     *
+     * @return XML字符串
+     */
     public String toXml() {
-        return toXml(this);
+        return "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
+                "<tree _c=\"" + this.getType() + "\">" +
+                "<_v>" +
+                toXml(this, false) +
+                "</_v>" +
+                "</tree>";
     }
 
+    /**
+     * 将TreeObject转换为XML字符串
+     *
+     * @param tObject TreeObject实例，可为null
+     * @return 转换成功返回XML字符串，否则返回空字符串
+     */
     public static String toXml(TreeObject tObject) {
-        // TODO
-        throw new UnsupportedOperationException();
+        if (tObject == null) {
+            return "";
+        }
+        return "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
+                "<tree _c=\"" + tObject.getType() + "\">" +
+                "<_v>" +
+                toXml(tObject, false) +
+                "</_v>" +
+                "</tree>";
+    }
+
+    /**
+     * 内部递归方法，将TreeObject转换为XML字符串
+     *
+     * @param tObject     TreeObject实例，可为null
+     * @param isRecursive 是否递归调用
+     * @return 转换成功返回XML字符串，否则返回空字符串
+     */
+    private static String toXml(TreeObject tObject, boolean isRecursive) {
+        if (tObject == null) {
+            return "";
+        }
+
+        StringBuilder sb = new StringBuilder();
+
+        if (tObject.isMap()) {
+            // 处理MAP模式
+            Map<String, TreeObject> map = tObject.getMap();
+            for (Map.Entry<String, TreeObject> entry : map.entrySet()) {
+                int actualType = entry.getValue().isMap() ? TYPE_MAP :
+                        (entry.getValue().isList() ? TYPE_COLLECTION : entry.getValue().getType());
+                sb.append("<").append(entry.getKey()).append(" _c=\"").append(actualType).append("\">");
+                sb.append("<_v>");
+                // 递归处理嵌套对象
+                sb.append(toXml(entry.getValue(), true));
+                sb.append("</_v>");
+                sb.append("</").append(entry.getKey()).append(">");
+            }
+        } else if (tObject.isList()) {
+            // 处理ARRAY模式
+            List<TreeObject> list = tObject.getList();
+            for (int i = 0; i < list.size(); i++) {
+                sb.append("<item index=\"").append(i).append("\">");
+                // 递归处理嵌套对象
+                sb.append(toXml(list.get(i), true));
+                sb.append("</item>");
+            }
+        } else {
+            // 处理VALUE模式
+            Object value = tObject.getObject();
+            if (value != null) {
+                sb.append(value);
+            }
+        }
+
+        return sb.toString();
     }
 
     //////////
 
+    /**
+     * 默认构造方法，创建一个空的TreeObject实例
+     */
     public TreeObject() {
     }
 
+    /**
+     * 构造方法，创建一个包含布尔值的TreeObject实例
+     *
+     * @param bool 布尔值
+     */
     public TreeObject(boolean bool) {
         object = bool;
         type = TYPE_BOOLEAN;
     }
 
+    /**
+     * 构造方法，创建一个包含Boolean对象的TreeObject实例
+     *
+     * @param bool Boolean对象，可为null
+     */
     public TreeObject(Boolean bool) {
         object = bool != null && bool;
         type = TYPE_BOOLEAN;
     }
 
+    /**
+     * 构造方法，创建一个包含字节值的TreeObject实例
+     *
+     * @param b 字节值
+     */
     public TreeObject(byte b) {
         object = b;
         type = TYPE_BYTE;
     }
 
+    /**
+     * 构造方法，创建一个包含Byte对象的TreeObject实例
+     *
+     * @param b Byte对象，可为null
+     */
     public TreeObject(Byte b) {
         object = b != null ? b : Byte.MIN_VALUE;
         type = TYPE_BYTE;
     }
 
+    /**
+     * 构造方法，创建一个包含字节数组的TreeObject实例
+     *
+     * @param bytes 字节数组，可为null
+     */
     public TreeObject(byte[] bytes) {
         object = bytes;
         type = TYPE_BYTES;
     }
 
+    /**
+     * 构造方法，创建一个包含Byte数组的TreeObject实例
+     *
+     * @param bytes Byte数组，可为null
+     */
     public TreeObject(Byte[] bytes) {
         object = bytes;
         type = TYPE_BYTES;
     }
 
+    /**
+     * 构造方法，创建一个包含字符值的TreeObject实例
+     *
+     * @param c 字符值
+     */
     public TreeObject(char c) {
         object = c;
         type = TYPE_CHAR;
     }
 
+    /**
+     * 构造方法，创建一个包含Character对象的TreeObject实例
+     *
+     * @param c Character对象，可为null
+     */
     public TreeObject(Character c) {
         object = c != null ? c : Character.MIN_VALUE;
         type = TYPE_CHAR;
     }
 
+    /**
+     * 构造方法，创建一个包含集合的TreeObject实例
+     *
+     * @param c 集合对象，可为null
+     */
     public TreeObject(Collection<?> c) {
         object = c;
         type = TYPE_COLLECTION;
+        mode = MODE_ARRAY;
     }
 
+    /**
+     * 构造方法，创建一个包含双精度浮点值的TreeObject实例
+     *
+     * @param d 双精度浮点值
+     */
     public TreeObject(double d) {
         object = d;
         type = TYPE_DOUBLE;
     }
 
+    /**
+     * 构造方法，创建一个包含Double对象的TreeObject实例
+     *
+     * @param d Double对象，可为null
+     */
     public TreeObject(Double d) {
         object = d != null ? d : Double.MIN_VALUE;
         type = TYPE_DOUBLE;
     }
 
+    /**
+     * 构造方法，创建一个包含浮点值的TreeObject实例
+     *
+     * @param f 浮点值
+     */
     public TreeObject(float f) {
         object = f;
         type = TYPE_FLOAT;
     }
 
+    /**
+     * 构造方法，创建一个包含Float对象的TreeObject实例
+     *
+     * @param f Float对象，可为null
+     */
     public TreeObject(Float f) {
         object = f != null ? f : Float.MIN_VALUE;
         type = TYPE_FLOAT;
     }
 
+    /**
+     * 构造方法，创建一个包含整数值的TreeObject实例
+     *
+     * @param i 整数值
+     */
     public TreeObject(int i) {
         object = i;
         type = TYPE_INTEGER;
     }
 
+    /**
+     * 构造方法，创建一个包含Integer对象的TreeObject实例
+     *
+     * @param i Integer对象，可为null
+     */
     public TreeObject(Integer i) {
         object = i != null ? i : Integer.MIN_VALUE;
         type = TYPE_INTEGER;
     }
 
+    /**
+     * 构造方法，创建一个包含长整数值的TreeObject实例
+     *
+     * @param l 长整数值
+     */
     public TreeObject(long l) {
         object = l;
         type = TYPE_LONG;
     }
 
     /**
-     * 构造器
+     * 构造方法
      *
      * @param t      时间毫秒值
      * @param isTime 是否时间类型，如果是时间类型，则存储的是时间的UTC时间毫秒值
@@ -479,13 +829,18 @@ public class TreeObject implements Serializable {
         type = isTime ? TYPE_TIME : TYPE_LONG;
     }
 
+    /**
+     * 构造方法，创建一个包含Long对象的TreeObject实例
+     *
+     * @param l Long对象，可为null
+     */
     public TreeObject(Long l) {
         object = l != null ? l : Long.MIN_VALUE;
         type = TYPE_LONG;
     }
 
     /**
-     * 构造器
+     * 构造方法
      *
      * @param t      时间毫秒值
      * @param isTime 是否时间类型，如果是时间类型，则存储的是时间的UTC时间毫秒值
@@ -495,22 +850,42 @@ public class TreeObject implements Serializable {
         type = isTime ? TYPE_TIME : TYPE_LONG;
     }
 
+    /**
+     * 构造方法，创建一个包含Map的TreeObject实例
+     *
+     * @param m Map对象，可为null
+     */
     public TreeObject(Map<?, ?> m) {
         object = m;
         type = TYPE_MAP;
         mode = MODE_MAP;
     }
 
+    /**
+     * 构造方法，创建一个包含短整数值的TreeObject实例
+     *
+     * @param s 短整数值
+     */
     public TreeObject(short s) {
         object = s;
         type = TYPE_SHORT;
     }
 
+    /**
+     * 构造方法，创建一个包含Short对象的TreeObject实例
+     *
+     * @param s Short对象，可为null
+     */
     public TreeObject(Short s) {
         object = s != null ? s : Short.MIN_VALUE;
         type = TYPE_SHORT;
     }
 
+    /**
+     * 构造方法，创建一个包含字符串的TreeObject实例
+     *
+     * @param s 字符串，可为null
+     */
     public TreeObject(String s) {
         object = s;
         type = TYPE_STRING;
@@ -519,7 +894,7 @@ public class TreeObject implements Serializable {
     /**
      * 构造器
      *
-     * @param s     需要存储的字符串
+     * @param s     需要存储的字符串，可为null
      * @param isMix 是否混合字符串，如果是混合字符串，那么type类型为MIX_STRING_TYPE，存储的内部对象还是原始的s
      */
     public TreeObject(String s, boolean isMix) {
@@ -527,6 +902,11 @@ public class TreeObject implements Serializable {
         type = isMix ? TYPE_MIX_STRING : TYPE_STRING;
     }
 
+    /**
+     * 构造方法，创建一个TreeObject实例的副本
+     *
+     * @param tObject 要复制的TreeObject实例，可为null
+     */
     public TreeObject(TreeObject tObject) {
         if (tObject != null) {
             object = tObject.object;
@@ -540,7 +920,7 @@ public class TreeObject implements Serializable {
      * 1、会忽略MIX_STRING和STRING的差异，默认为MIX_STRING；<br>
      * 2、会忽略LONG和TIME的差异，默认为LONG
      *
-     * @param o 任意类型对象
+     * @param o 任意类型对象，可为null
      */
     public TreeObject(Object o) {
         if (o == null) {
@@ -603,10 +983,10 @@ public class TreeObject implements Serializable {
     }
 
     /**
-     * 构造器
+     * 构造器，根据指定类型创建TreeObject实例
      *
-     * @param o    简单值类型对象
-     * @param type 需要输入的对象类型，是检查类型，输入的o如果不是此类型，则尝试转换，如果无法转换，则对应的o为type类型的对应无效值
+     * @param o    简单值类型对象，可为null
+     * @param type 需要输入的对象类型，是检查类型，输入的o如果不是此类型，则尝试转换
      */
     public TreeObject(Object o, int type) {
         object = o;
@@ -666,7 +1046,7 @@ public class TreeObject implements Serializable {
         }
     }
 
-    ////////
+    /// /////
 
     public TreeObject add(boolean b) {
         return add(b, TYPE_BOOLEAN);
@@ -797,7 +1177,7 @@ public class TreeObject implements Serializable {
         return this;
     }
 
-    //////////
+    /// ///////
 
     public TreeObject put(String k, boolean b) {
         return put(k, b, TYPE_BOOLEAN);
@@ -876,9 +1256,7 @@ public class TreeObject implements Serializable {
     }
 
     public TreeObject put(String k, Object o, int type) {
-        if (o != null) {
-            put(k, new TreeObject(o, type));
-        }
+        put(k, new TreeObject(o, type));
         return this;
     }
 
@@ -929,7 +1307,7 @@ public class TreeObject implements Serializable {
         }
         if (index >= 0 && isList()) {
             List<TreeObject> list = ((List<TreeObject>) object);
-            return list != null && list.size() > 0 && index < list.size() && list.get(index) != null;
+            return list != null && !list.isEmpty() && index < list.size() && list.get(index) != null;
         }
         return false;
     }
@@ -944,7 +1322,7 @@ public class TreeObject implements Serializable {
         }
         if (StringUtils.isNotBlank(key) && isMap()) {
             Map<String, TreeObject> map = ((Map<String, TreeObject>) object);
-            return map != null && map.size() > 0 && map.get(key) != null;
+            return map != null && !map.isEmpty() && map.get(key) != null;
         }
         return false;
     }
@@ -974,7 +1352,7 @@ public class TreeObject implements Serializable {
         return type;
     }
 
-    //////////
+    /// ///////
 
     public List<TreeObject> getList() {
         if (isList()) {
@@ -1134,12 +1512,12 @@ public class TreeObject implements Serializable {
         throw new IllegalStateException();
     }
 
-    //////////
+    /// ///////
 
     public TreeObject get(int index) {
         if (isList()) {
             List<TreeObject> list = ((List<TreeObject>) object);
-            if (list != null && list.size() > 0 && index >= 0 && index < list.size()) {
+            if (list != null && !list.isEmpty() && index >= 0 && index < list.size()) {
                 return list.get(index);
             }
             return null;
@@ -1150,7 +1528,7 @@ public class TreeObject implements Serializable {
     public TreeObject get(int index, TreeObject defaultValue) {
         if (isList()) {
             List<TreeObject> list = ((List<TreeObject>) object);
-            if (list != null && list.size() > 0 && index >= 0 && index < list.size()) {
+            if (list != null && !list.isEmpty() && index >= 0 && index < list.size()) {
                 return list.get(index);
             }
             return defaultValue;
@@ -1161,7 +1539,7 @@ public class TreeObject implements Serializable {
     public TreeObject get(String key) {
         if (isMap()) {
             Map<String, TreeObject> map = (Map<String, TreeObject>) object;
-            if (StringUtils.isNotBlank(key) && map != null && map.size() > 0) {
+            if (StringUtils.isNotBlank(key) && map != null && !map.isEmpty()) {
                 return map.get(key);
             }
             return null;
@@ -1172,7 +1550,7 @@ public class TreeObject implements Serializable {
     public TreeObject get(String key, TreeObject defaultValue) {
         if (isMap()) {
             Map<String, TreeObject> map = (Map<String, TreeObject>) object;
-            if (StringUtils.isNotBlank(key) && map != null && map.size() > 0) {
+            if (StringUtils.isNotBlank(key) && map != null && !map.isEmpty()) {
                 return map.get(key);
             }
             return defaultValue;

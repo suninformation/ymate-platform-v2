@@ -182,21 +182,18 @@ public class TreeObjectTest {
         tree.put("name", "test");
         tree.put("age", 30);
 
-        // Serialize to XML - currently throws UnsupportedOperationException
-        try {
-            String xmlStr = tree.toXml();
-            fail("Expected UnsupportedOperationException");
-        } catch (UnsupportedOperationException e) {
-            // Expected
-        }
+        // Serialize to XML
+        String xmlStr = tree.toXml();
+        assertNotNull(xmlStr);
+        assertTrue(xmlStr.contains("<tree"));
+        assertTrue(xmlStr.contains("</tree>"));
+        assertTrue(xmlStr.contains("<name _c="));
+        assertTrue(xmlStr.contains("<age _c="));
 
-        // Deserialize from XML - currently throws UnsupportedOperationException
-        try {
-            TreeObject deserialized = TreeObject.fromXml("<tree></tree>");
-            fail("Expected UnsupportedOperationException");
-        } catch (UnsupportedOperationException e) {
-            // Expected
-        }
+        // Deserialize from XML
+        TreeObject deserialized = TreeObject.fromXml(xmlStr);
+        assertNotNull(deserialized);
+        // Note: XML deserialization implementation is simple, may not handle complex cases
     }
 
     @Test
@@ -229,14 +226,17 @@ public class TreeObjectTest {
 
     @Test
     public void testFromXmlSimple() {
-        String xml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?><tree _c=\"9\"><_v><name _c=\"3\"><_v>test</_v></name><age _c=\"1\"><_v>30</_v></age></_v></tree>";
-        // fromXml currently throws UnsupportedOperationException
-        try {
-            TreeObject tree = TreeObject.fromXml(xml);
-            fail("Expected UnsupportedOperationException");
-        } catch (UnsupportedOperationException e) {
-            // Expected
-        }
+        TreeObject tree = new TreeObject();
+        tree.put("name", "test");
+        tree.put("age", 30);
+
+        String xml = tree.toXml();
+        assertNotNull(xml);
+        assertTrue(xml.startsWith("<?xml version=\"1.0\" encoding=\"UTF-8\"?>"));
+        assertTrue(xml.contains("<tree"));
+        assertTrue(xml.contains("</tree>"));
+        assertTrue(xml.contains("<name _c="));
+        assertTrue(xml.contains("<age _c="));
     }
 
     @Test
@@ -245,13 +245,13 @@ public class TreeObjectTest {
         tree.put("name", "test");
         tree.put("age", 30);
 
-        // toXml currently throws UnsupportedOperationException
-        try {
-            String xml = tree.toXml();
-            fail("Expected UnsupportedOperationException");
-        } catch (UnsupportedOperationException e) {
-            // Expected
-        }
+        String xml = tree.toXml();
+        assertNotNull(xml);
+        assertTrue(xml.startsWith("<?xml version=\"1.0\" encoding=\"UTF-8\"?>"));
+        assertTrue(xml.contains("<tree"));
+        assertTrue(xml.contains("</tree>"));
+        assertTrue(xml.contains("<name _c="));
+        assertTrue(xml.contains("<age _c="));
     }
 
     @Test
@@ -265,23 +265,13 @@ public class TreeObjectTest {
     public void testFromJsonWithNull() {
         // Test fromJson with null input
         String nullJson = null;
-        try {
-            TreeObject tree = TreeObject.fromJson(nullJson);
-            fail("Expected NullArgumentException");
-        } catch (org.apache.commons.lang.NullArgumentException e) {
-            // Expected
-        }
+        TreeObject tree = TreeObject.fromJson(nullJson);
+        assertNull("fromJson should return null for null input", tree);
     }
 
     @Test
     public void testToXmlWithNull() {
-        // toXml currently throws UnsupportedOperationException
-        try {
-            TreeObject.toXml(null);
-            fail("Expected UnsupportedOperationException");
-        } catch (UnsupportedOperationException e) {
-            // Expected
-        }
+        assertEquals("", TreeObject.toXml(null));
     }
 
     @Test
@@ -358,22 +348,16 @@ public class TreeObjectTest {
         numbers.add(5);
         root.put("numbers", numbers);
 
-        // Test XML conversion - currently throws UnsupportedOperationException
+        // Test XML conversion
         System.out.println("Testing XML conversion...");
-        try {
-            String xml = root.toXml();
-            fail("Expected UnsupportedOperationException");
-        } catch (UnsupportedOperationException e) {
-            System.out.println("XML conversion not implemented yet");
-        }
+        String xml = root.toXml();
+        assertNotNull(xml);
+        System.out.println("XML output: " + xml);
 
-        // Test XML deserialization - currently throws UnsupportedOperationException
-        try {
-            TreeObject fromXml = TreeObject.fromXml("<tree></tree>");
-            fail("Expected UnsupportedOperationException");
-        } catch (UnsupportedOperationException e) {
-            System.out.println("XML deserialization not implemented yet");
-        }
+        // Test XML deserialization (note: current implementation has limitations)
+        TreeObject fromXml = TreeObject.fromXml(xml);
+        assertNotNull(fromXml);
+        System.out.println("Successfully parsed XML");
 
         // Test JSON conversion
         System.out.println("Testing JSON conversion...");
@@ -549,7 +533,7 @@ public class TreeObjectTest {
 
         // 从 JSON 反序列化
         TreeObject fromJson = TreeObject.fromJson(jsonStr);
-        assertNotNull(fromJson);
+        assertNotNull("从 JSON 反序列化不应为 null", fromJson);
         System.out.println("\n从 JSON 反序列化成功:");
         System.out.println("  - name: " + fromJson.getString("name"));
         System.out.println("  - id: " + fromJson.getInt("id"));
@@ -589,42 +573,76 @@ public class TreeObjectTest {
 
         // ========== 测试 XML 转换 ==========
         System.out.println("\n【XML 转换测试】");
-        // XML 转换功能尚未实现，暂时跳过
-        try {
-            String xmlStr = root.toXml();
-            fail("Expected UnsupportedOperationException");
-        } catch (UnsupportedOperationException e) {
-            System.out.println("XML 转换功能尚未实现，抛出了预期的 UnsupportedOperationException");
-        }
+        String xmlStr = root.toXml();
+        System.out.println("转换后的 XML:");
+        System.out.println(xmlStr);
 
-        // 从 XML 反序列化 - 尚未实现
-        try {
-            TreeObject.fromXml("<tree></tree>");
-            fail("Expected UnsupportedOperationException");
-        } catch (UnsupportedOperationException e) {
-            System.out.println("XML 反序列化功能尚未实现，抛出了预期的 UnsupportedOperationException");
-        }
+        // 从 XML 反序列化
+        TreeObject fromXml = TreeObject.fromXml(xmlStr);
+        assertNotNull("从 XML 反序列化不应为 null", fromXml);
+        System.out.println("\n从 XML 反序列化成功:");
+        System.out.println("  - name: " + fromXml.getString("name"));
+        System.out.println("  - id: " + fromXml.getInt("id"));
+        System.out.println("  - active: " + fromXml.getBoolean("active"));
+        System.out.println("  - score: " + fromXml.getDouble("score"));
 
-        // ========== 验证 JSON 转换的一致性 ==========
-        System.out.println("\n【验证 JSON 转换的一致性】");
+        // 验证嵌套对象
+        TreeObject fromXmlAddress = fromXml.get("address");
+        assertNotNull(fromXmlAddress);
+        assertEquals("Beijing", fromXmlAddress.getString("city"));
+        assertEquals("China", fromXmlAddress.getString("country"));
+        assertEquals(100000, fromXmlAddress.getInt("zipCode"));
+        System.out.println("  - address.city: " + fromXmlAddress.getString("city"));
+        System.out.println("  - address.country: " + fromXmlAddress.getString("country"));
+
+        // 验证嵌套列表
+        TreeObject fromXmlContacts = fromXml.get("contacts");
+        assertNotNull(fromXmlContacts);
+        assertEquals(3, fromXmlContacts.getList().size());
+        TreeObject fromXmlContact1 = fromXmlContacts.get(0);
+        assertEquals("email", fromXmlContact1.getString("type"));
+        assertEquals("test@example.com", fromXmlContact1.getString("value"));
+        System.out.println("  - contacts[0].type: " + fromXmlContact1.getString("type"));
+        System.out.println("  - contacts[0].value: " + fromXmlContact1.getString("value"));
+
+        // 验证多层嵌套
+        TreeObject fromXmlDeepNested = fromXml.get("deepNested");
+        assertNotNull(fromXmlDeepNested);
+        TreeObject fromXmlLevel2 = fromXmlDeepNested.get("level2");
+        assertNotNull(fromXmlLevel2);
+        TreeObject fromXmlLevel3 = fromXmlLevel2.get("level3");
+        assertNotNull(fromXmlLevel3);
+        assertEquals("level3Value", fromXmlLevel3.getString("level3Key"));
+        assertEquals(999, fromXmlLevel3.getInt("level3Number"));
+        System.out.println("  - deepNested.level2.level3.level3Key: " + fromXmlLevel3.getString("level3Key"));
+        System.out.println("  - deepNested.level2.level3.level3Number: " + fromXmlLevel3.getInt("level3Number"));
+
+        // ========== 验证 JSON 和 XML 转换的一致性 ==========
+        System.out.println("\n【验证 JSON 和 XML 转换的一致性】");
 
         assertEquals(root.getString("name"), fromJson.getString("name"));
+        assertEquals(fromJson.getString("name"), fromXml.getString("name"));
 
         assertEquals(root.getInt("id"), fromJson.getInt("id"));
+        assertEquals(fromJson.getInt("id"), fromXml.getInt("id"));
 
         assertEquals(root.getBoolean("active"), fromJson.getBoolean("active"));
+        assertEquals(fromJson.getBoolean("active"), fromXml.getBoolean("active"));
 
         assertEquals(root.getDouble("score"), fromJson.getDouble("score"), 0.001);
+        assertEquals(fromJson.getDouble("score"), fromXml.getDouble("score"), 0.001);
 
         assertEquals(root.get("contacts").getList().size(), fromJson.get("contacts").getList().size());
+        assertEquals(fromJson.get("contacts").getList().size(), fromXml.get("contacts").getList().size());
 
         assertEquals(root.get("numbers").getList().size(), fromJson.get("numbers").getList().size());
+        assertEquals(fromJson.get("numbers").getList().size(), fromXml.get("numbers").getList().size());
 
         System.out.println("✓ 所有数据类型验证通过");
         System.out.println("✓ 嵌套对象验证通过");
         System.out.println("✓ 嵌套列表验证通过");
         System.out.println("✓ 多层嵌套验证通过");
-        System.out.println("✓ JSON 转换一致性验证通过");
+        System.out.println("✓ JSON 和 XML 转换一致性验证通过");
 
         System.out.println("\n========== 测试完成 ==========\n");
     }
