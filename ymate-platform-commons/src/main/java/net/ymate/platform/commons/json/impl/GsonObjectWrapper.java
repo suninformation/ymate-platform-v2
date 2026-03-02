@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2020 the original author or authors.
+ * Copyright 2007-present the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,6 +29,15 @@ import java.util.Map;
 import java.util.Set;
 
 /**
+ * Gson对象包装器实现，基于Google Gson的JsonObject提供JSON对象操作功能。
+ * <p>
+ * 设计目的：封装Gson JsonObject的使用细节，提供统一的JSON对象操作接口实现。
+ * <p>
+ * 使用场景：
+ * - 当需要使用Gson进行JSON对象操作时
+ * - 当需要统一的JSON对象操作接口时
+ * - 当需要支持链式调用的JSON对象操作时
+ *
  * @author 刘镇 (suninformation@163.com) on 2020/6/10 3:05 下午
  * @since 2.1.0
  */
@@ -38,11 +47,22 @@ public class GsonObjectWrapper implements IJsonObjectWrapper {
 
     private final JsonObject jsonObject;
 
+    /**
+     * 构造函数，创建一个空的JSON对象包装器。
+     *
+     * @param adapter JSON适配器实例，不能为空
+     */
     public GsonObjectWrapper(IJsonAdapter adapter) {
         this.adapter = adapter;
         jsonObject = new JsonObject();
     }
 
+    /**
+     * 构造函数，根据Map创建JSON对象包装器。
+     *
+     * @param adapter JSON适配器实例，不能为空
+     * @param map     用于创建JSON对象的Map，键值对会被转换为JSON属性
+     */
     public GsonObjectWrapper(IJsonAdapter adapter, Map<?, ?> map) {
         this(adapter);
         if (map != null && !map.isEmpty()) {
@@ -50,23 +70,47 @@ public class GsonObjectWrapper implements IJsonObjectWrapper {
         }
     }
 
+    /**
+     * 构造函数，根据Gson的JsonObject创建JSON对象包装器。
+     *
+     * @param adapter    JSON适配器实例，不能为空
+     * @param jsonObject Gson的JsonObject实例，若为null则创建空对象
+     */
     public GsonObjectWrapper(IJsonAdapter adapter, JsonObject jsonObject) {
         this.adapter = adapter;
         this.jsonObject = jsonObject != null ? jsonObject : new JsonObject();
     }
 
+    /**
+     * 获取指定键的JSON节点包装器。
+     *
+     * @param key JSON属性键名，不能为空
+     * @return JSON节点包装器，若键不存在则返回null
+     */
     @Override
     public IJsonNodeWrapper get(String key) {
         JsonElement jsonElement = jsonObject.get(key);
         return jsonElement != null ? new GsonNodeWrapper(adapter, jsonElement) : null;
     }
 
+    /**
+     * 获取指定键的布尔值。
+     *
+     * @param key JSON属性键名，不能为空
+     * @return 布尔值，若键不存在或类型不匹配则返回false
+     */
     @Override
     public boolean getBoolean(String key) {
         JsonElement jsonElement = jsonObject.get(key);
         return jsonElement != null && jsonElement.getAsBoolean();
     }
 
+    /**
+     * 获取指定键的布尔值，支持null。
+     *
+     * @param key JSON属性键名，不能为空
+     * @return 布尔值包装类，若键不存在则返回null
+     */
     @Override
     public Boolean getAsBoolean(String key) {
         JsonElement jsonElement = jsonObject.get(key);
@@ -76,24 +120,48 @@ public class GsonObjectWrapper implements IJsonObjectWrapper {
         return null;
     }
 
+    /**
+     * 获取指定键的大整数。
+     *
+     * @param key JSON属性键名，不能为空
+     * @return 大整数值，若键不存在或类型不匹配则返回null
+     */
     @Override
     public BigInteger getBigInteger(String key) {
         JsonElement jsonElement = jsonObject.get(key);
         return jsonElement != null ? jsonElement.getAsBigInteger() : null;
     }
 
+    /**
+     * 获取指定键的大小数。
+     *
+     * @param key JSON属性键名，不能为空
+     * @return 大小数值，若键不存在或类型不匹配则返回null
+     */
     @Override
     public BigDecimal getBigDecimal(String key) {
         JsonElement jsonElement = jsonObject.get(key);
         return jsonElement != null ? jsonElement.getAsBigDecimal() : null;
     }
 
+    /**
+     * 获取指定键的双精度浮点数。
+     *
+     * @param key JSON属性键名，不能为空
+     * @return 双精度浮点数，若键不存在或类型不匹配则返回0.0
+     */
     @Override
     public double getDouble(String key) {
         JsonElement jsonElement = jsonObject.get(key);
         return jsonElement != null ? jsonElement.getAsDouble() : 0d;
     }
 
+    /**
+     * 获取指定键的双精度浮点数，支持null。
+     *
+     * @param key JSON属性键名，不能为空
+     * @return 双精度浮点数包装类，若键不存在则返回null
+     */
     @Override
     public Double getAsDouble(String key) {
         JsonElement jsonElement = jsonObject.get(key);
@@ -103,12 +171,24 @@ public class GsonObjectWrapper implements IJsonObjectWrapper {
         return null;
     }
 
+    /**
+     * 获取指定键的单精度浮点数。
+     *
+     * @param key JSON属性键名，不能为空
+     * @return 单精度浮点数，若键不存在或类型不匹配则返回0.0f
+     */
     @Override
     public float getFloat(String key) {
         JsonElement jsonElement = jsonObject.get(key);
         return jsonElement != null ? jsonElement.getAsFloat() : 0f;
     }
 
+    /**
+     * 获取指定键的单精度浮点数，支持null。
+     *
+     * @param key JSON属性键名，不能为空
+     * @return 单精度浮点数包装类，若键不存在则返回null
+     */
     @Override
     public Float getAsFloat(String key) {
         JsonElement jsonElement = jsonObject.get(key);
@@ -118,12 +198,24 @@ public class GsonObjectWrapper implements IJsonObjectWrapper {
         return null;
     }
 
+    /**
+     * 获取指定键的整数。
+     *
+     * @param key JSON属性键名，不能为空
+     * @return 整数值，若键不存在或类型不匹配则返回0
+     */
     @Override
     public int getInt(String key) {
         JsonElement jsonElement = jsonObject.get(key);
         return jsonElement != null ? jsonElement.getAsInt() : 0;
     }
 
+    /**
+     * 获取指定键的整数，支持null。
+     *
+     * @param key JSON属性键名，不能为空
+     * @return 整数包装类，若键不存在则返回null
+     */
     @Override
     public Integer getAsInteger(String key) {
         JsonElement jsonElement = jsonObject.get(key);
@@ -133,24 +225,48 @@ public class GsonObjectWrapper implements IJsonObjectWrapper {
         return null;
     }
 
+    /**
+     * 获取指定键的JSON数组包装器。
+     *
+     * @param key JSON属性键名，不能为空
+     * @return JSON数组包装器，若键不存在或类型不匹配则返回null
+     */
     @Override
     public IJsonArrayWrapper getJsonArray(String key) {
         JsonArray value = jsonObject.getAsJsonArray(key);
         return value == null ? null : new GsonArrayWrapper(adapter, value);
     }
 
+    /**
+     * 获取指定键的JSON对象包装器。
+     *
+     * @param key JSON属性键名，不能为空
+     * @return JSON对象包装器，若键不存在或类型不匹配则返回null
+     */
     @Override
     public IJsonObjectWrapper getJsonObject(String key) {
         JsonObject value = jsonObject.getAsJsonObject(key);
         return value == null ? null : new GsonObjectWrapper(adapter, value);
     }
 
+    /**
+     * 获取指定键的长整数。
+     *
+     * @param key JSON属性键名，不能为空
+     * @return 长整数值，若键不存在或类型不匹配则返回0L
+     */
     @Override
     public long getLong(String key) {
         JsonElement jsonElement = jsonObject.get(key);
         return jsonElement != null ? jsonElement.getAsLong() : 0L;
     }
 
+    /**
+     * 获取指定键的长整数，支持null。
+     *
+     * @param key JSON属性键名，不能为空
+     * @return 长整数包装类，若键不存在则返回null
+     */
     @Override
     public Long getAsLong(String key) {
         JsonElement jsonElement = jsonObject.get(key);
@@ -160,85 +276,180 @@ public class GsonObjectWrapper implements IJsonObjectWrapper {
         return null;
     }
 
+    /**
+     * 获取指定键的字符串值。
+     *
+     * @param key JSON属性键名，不能为空
+     * @return 字符串值，若键不存在则返回null
+     */
     @Override
     public String getString(String key) {
         JsonElement jsonElement = jsonObject.get(key);
         return jsonElement != null ? jsonElement.getAsString() : null;
     }
 
+    /**
+     * 检查是否包含指定键。
+     *
+     * @param key JSON属性键名，不能为空
+     * @return 若包含指定键则返回true，否则返回false
+     */
     @Override
     public boolean has(String key) {
         return jsonObject.has(key);
     }
 
+    /**
+     * 获取所有键的集合。
+     *
+     * @return 键集合，不为null
+     */
     @Override
     public Set<String> keySet() {
         return jsonObject.keySet();
     }
 
+    /**
+     * 获取JSON对象的大小。
+     *
+     * @return JSON对象中键值对的数量
+     */
     @Override
     public int size() {
         return jsonObject.size();
     }
 
+    /**
+     * 检查JSON对象是否为空。
+     *
+     * @return 若JSON对象为空则返回true，否则返回false
+     */
     @Override
     public boolean isEmpty() {
-        return jsonObject.size() == 0;
+        return jsonObject.isEmpty();
     }
 
+    /**
+     * 设置布尔值属性，支持链式调用。
+     *
+     * @param key   JSON属性键名，不能为空
+     * @param value 布尔值
+     * @return 当前JSON对象包装器实例，用于链式调用
+     */
     @Override
     public IJsonObjectWrapper put(String key, boolean value) {
         jsonObject.addProperty(key, value);
         return this;
     }
 
+    /**
+     * 设置集合属性，支持链式调用。
+     *
+     * @param key   JSON属性键名，不能为空
+     * @param value 集合对象
+     * @return 当前JSON对象包装器实例，用于链式调用
+     */
     @Override
     public IJsonObjectWrapper put(String key, Collection<?> value) {
         jsonObject.add(key, GsonAdapter.toJsonArray(value));
         return this;
     }
 
+    /**
+     * 设置双精度浮点数属性，支持链式调用。
+     *
+     * @param key   JSON属性键名，不能为空
+     * @param value 双精度浮点数
+     * @return 当前JSON对象包装器实例，用于链式调用
+     */
     @Override
     public IJsonObjectWrapper put(String key, double value) {
         jsonObject.addProperty(key, value);
         return this;
     }
 
+    /**
+     * 设置单精度浮点数属性，支持链式调用。
+     *
+     * @param key   JSON属性键名，不能为空
+     * @param value 单精度浮点数
+     * @return 当前JSON对象包装器实例，用于链式调用
+     */
     @Override
     public IJsonObjectWrapper put(String key, float value) {
         jsonObject.addProperty(key, value);
         return this;
     }
 
+    /**
+     * 设置整数属性，支持链式调用。
+     *
+     * @param key   JSON属性键名，不能为空
+     * @param value 整数值
+     * @return 当前JSON对象包装器实例，用于链式调用
+     */
     @Override
     public IJsonObjectWrapper put(String key, int value) {
         jsonObject.addProperty(key, value);
         return this;
     }
 
+    /**
+     * 设置长整数属性，支持链式调用。
+     *
+     * @param key   JSON属性键名，不能为空
+     * @param value 长整数值
+     * @return 当前JSON对象包装器实例，用于链式调用
+     */
     @Override
     public IJsonObjectWrapper put(String key, long value) {
         jsonObject.addProperty(key, value);
         return this;
     }
 
+    /**
+     * 设置Map属性，支持链式调用。
+     *
+     * @param key   JSON属性键名，不能为空
+     * @param value Map对象
+     * @return 当前JSON对象包装器实例，用于链式调用
+     */
     @Override
     public IJsonObjectWrapper put(String key, Map<?, ?> value) {
         jsonObject.add(key, GsonAdapter.toJsonObject(value));
         return this;
     }
 
+    /**
+     * 设置任意类型属性，支持链式调用。
+     *
+     * @param key   JSON属性键名，不能为空
+     * @param value 任意类型值
+     * @return 当前JSON对象包装器实例，用于链式调用
+     */
     @Override
     public IJsonObjectWrapper put(String key, Object value) {
         jsonObject.add(key, GsonAdapter.toJsonElement(value));
         return this;
     }
 
+    /**
+     * 移除指定键的属性。
+     *
+     * @param key JSON属性键名，不能为空
+     * @return 被移除的值，若键不存在则返回null
+     */
     @Override
     public Object remove(String key) {
         return jsonObject.remove(key);
     }
 
+    /**
+     * 比较当前对象与指定对象是否相等。
+     *
+     * @param o 要比较的对象
+     * @return 如果两个对象相等返回true，否则返回false
+     */
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -253,6 +464,11 @@ public class GsonObjectWrapper implements IJsonObjectWrapper {
                 .isEquals();
     }
 
+    /**
+     * 获取当前对象的哈希码。
+     *
+     * @return 对象的哈希码值
+     */
     @Override
     public int hashCode() {
         return new HashCodeBuilder(17, 37)
@@ -260,37 +476,84 @@ public class GsonObjectWrapper implements IJsonObjectWrapper {
                 .toHashCode();
     }
 
+    /**
+     * 将当前JSON对象转换为字符串（默认紧凑输出）。
+     *
+     * @return 转换后的JSON字符串
+     */
     @Override
     public String toString() {
         return this.toString(false, false);
     }
 
+    /**
+     * 将当前JSON对象转换为字符串，支持格式化输出和保留空值。
+     *
+     * @param format        是否格式化输出，true表示格式化（带缩进），false表示紧凑输出
+     * @param keepNullValue 是否保留空值，true表示保留，false表示忽略
+     * @return 转换后的JSON字符串
+     */
     @Override
     public String toString(boolean format, boolean keepNullValue) {
         return adapter.toJsonString(jsonObject, format, keepNullValue);
     }
 
+    /**
+     * 将当前JSON对象转换为字符串，支持格式化输出、保留空值和蛇形命名转换。
+     *
+     * @param format        是否格式化输出，true表示格式化（带缩进），false表示紧凑输出
+     * @param keepNullValue 是否保留空值，true表示保留，false表示忽略
+     * @param snakeCase     是否将驼峰命名转换为蛇形命名
+     * @return 转换后的JSON字符串
+     */
     @Override
     public String toString(boolean format, boolean keepNullValue, boolean snakeCase) {
         return adapter.toJsonString(jsonObject, format, keepNullValue, snakeCase);
     }
 
+    /**
+     * 将当前JSON对象转换为字符串，支持格式化输出、保留空值和属性过滤。
+     *
+     * @param format        是否格式化输出，true表示格式化（带缩进），false表示紧凑输出
+     * @param keepNullValue 是否保留空值，true表示保留，false表示忽略
+     * @param filter        属性过滤器，用于控制哪些属性被序列化
+     * @return 转换后的JSON字符串
+     */
     @Override
     public String toString(boolean format, boolean keepNullValue, IJsonPropertyFilter filter) {
         return adapter.toJsonString(jsonObject, format, keepNullValue, filter);
     }
 
+    /**
+     * 将当前JSON对象转换为字符串，支持格式化输出、保留空值、蛇形命名转换和属性过滤。
+     *
+     * @param format        是否格式化输出，true表示格式化（带缩进），false表示紧凑输出
+     * @param keepNullValue 是否保留空值，true表示保留，false表示忽略
+     * @param snakeCase     是否将驼峰命名转换为蛇形命名
+     * @param filter        属性过滤器，用于控制哪些属性被序列化
+     * @return 转换后的JSON字符串
+     */
     @Override
     public String toString(boolean format, boolean keepNullValue, boolean snakeCase, IJsonPropertyFilter filter) {
-        return adapter.toJsonString(jsonObject, format, keepNullValue, filter);
+        return adapter.toJsonString(jsonObject, format, keepNullValue, snakeCase, filter);
     }
 
+    /**
+     * 将JSON对象转换为Map。
+     *
+     * @return Map对象，包含JSON对象的所有键值对
+     */
     @Override
     @SuppressWarnings("unchecked")
     public Map<String, Object> toMap() {
         return GsonAdapter.GSON.fromJson(jsonObject, Map.class);
     }
 
+    /**
+     * 将当前JSON对象包装器转换为JsonWrapper对象。
+     *
+     * @return JsonWrapper对象，包含当前JSON对象包装器
+     */
     @Override
     public JsonWrapper wrap() {
         return new JsonWrapper(this);

@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2021 the original author or authors.
+ * Copyright 2007-present the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,23 +16,66 @@
 package net.ymate.platform.commons.json.support;
 
 import com.alibaba.fastjson.parser.DefaultJSONParser;
+import com.alibaba.fastjson.parser.deserializer.ObjectDeserializer;
+import net.ymate.platform.commons.json.IJsonAdapter;
 import net.ymate.platform.commons.json.JsonWrapper;
+import net.ymate.platform.commons.json.impl.FastJsonAdapter;
 
 import java.lang.reflect.Type;
 
 /**
+ * FastJSON JSON对象序列化器实现，提供JSON对象的序列化和反序列化功能。
+ * <p>
+ * 设计目的：为FastJSON提供JSON对象类型的序列化和反序列化支持。
+ * <p>
+ * 使用场景：
+ * - 当需要使用FastJSON序列化IJsonObjectWrapper类型时
+ * - 当需要使用FastJSON反序列化JSON对象到IJsonObjectWrapper类型时
+ *
  * @author 刘镇 (suninformation@163.com) on 2021/12/25 7:19 PM
  * @since 2.1.0
  */
-public class JsonObjectFastJsonSerializer extends AbstractFastJsonSerializer {
+public class JsonObjectFastJsonSerializer {
 
-    @Override
-    @SuppressWarnings("unchecked")
-    public <T> T deserialze(DefaultJSONParser parser, Type type, Object fieldName) {
-        JsonWrapper jsonWrapper = adapter.toJson(parser.parse());
-        if (jsonWrapper == null) {
-            return null;
+    /**
+     * 私有构造函数，防止外部实例化。
+     */
+    private JsonObjectFastJsonSerializer() {
+    }
+
+    /**
+     * JSON对象FastJSON序列化器，用于将IJsonObjectWrapper类型序列化为JSON。
+     */
+    public static class Serializer extends AbstractFastJsonSerializer {
+    }
+
+    /**
+     * JSON对象FastJSON反序列化器，用于将JSON反序列化为IJsonObjectWrapper类型。
+     */
+    public static class Deserializer implements ObjectDeserializer {
+
+        /**
+         * FastJSON适配器实例，用于JSON反序列化操作。
+         */
+        private final IJsonAdapter adapter = new FastJsonAdapter();
+
+        /**
+         * 将JSON反序列化为IJsonObjectWrapper类型。
+         *
+         * @param parser    FastJSON解析器实例
+         * @param type      目标类型
+         * @param fieldName 字段名称
+         * @param <T>       目标类型泛型
+         * @return 反序列化后的IJsonObjectWrapper实例，若解析失败则返回null
+         */
+        @Override
+        @SuppressWarnings("unchecked")
+        public <T> T deserialze(DefaultJSONParser parser, Type type, Object fieldName) {
+            JsonWrapper jsonWrapper = adapter.toJson(parser.parse());
+            if (jsonWrapper == null) {
+                return null;
+            }
+            return (T) jsonWrapper.getAsJsonObject();
         }
-        return (T) jsonWrapper.getAsJsonObject();
     }
 }
