@@ -30,7 +30,7 @@ import org.junit.runner.RunWith;
 
 /**
  * @author 刘镇 (suninformation@163.com) on 2026-02-27 00:00:00
- * @since 3.0.0
+ * @since 2.1.4
  */
 @RunWith(YMPJUnit4ClassRunner.class)
 @EnableDevMode
