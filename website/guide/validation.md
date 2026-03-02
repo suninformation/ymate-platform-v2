@@ -160,6 +160,17 @@ slug: validation
 | msg    | 自定义验证消息，默认为空                                     |
 
 
+### @VSize
+
+集合或数组元素数量验证。
+
+| 配置项 | 描述                                                         |
+| ------ | ------------------------------------------------------------ |
+| min    | 设置最小元素数量，默认为 `0` 表示不限制                      |
+| max    | 设置最大元素数量，默认为 `0` 表示不限制                      |
+| eq     | 设置固定元素数量值，与 `min` 和 `max` 互斥，默认为 `0` 表示不限制 |
+| msg    | 自定义验证消息，默认为空                                     |
+
 
 ### @VMobile
 
@@ -348,6 +359,12 @@ ymp.validation.length_between={0}长度必须介于{1}与{2}之间
 ymp.validation.length_eq={0}长度必须等于{1}
 ymp.validation.length_min={0}长度必须大于{1}
 ymp.validation.length_max={0}长度必须小于{1}
+
+# SizeValidator
+ymp.validation.size_between={0}元素数量必须介于{1}与{2}之间
+ymp.validation.size_eq={0}元素数量必须等于{1}
+ymp.validation.size_min={0}元素数量必须大于{1}
+ymp.validation.size_max={0}元素数量必须小于{1}
 
 # NumericValidator
 ymp.validation.numeric={0}不是有效的数字
