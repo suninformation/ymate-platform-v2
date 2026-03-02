@@ -259,6 +259,31 @@ public final class Scaffold {
                 case Type.DATABASE.SQLSERVER:
                     sql = SQL.create(owner, "SELECT name FROM SYSOBJECTS WHERE xtype = ?").param(view ? "V" : "U");
                     break;
+                case Type.DATABASE.POSTGRESQL:
+                    sql = SQL.create(owner, view
+                            ? "SELECT table_name FROM information_schema.views WHERE table_schema = 'public'"
+                            : "SELECT table_name FROM information_schema.tables WHERE table_schema = 'public' AND table_type = 'BASE TABLE'");
+                    break;
+                case Type.DATABASE.SQLITE:
+                    sql = SQL.create(owner, view
+                            ? "SELECT name FROM sqlite_master WHERE type = 'view'"
+                            : "SELECT name FROM sqlite_master WHERE type = 'table' AND name NOT LIKE 'sqlite_%'");
+                    break;
+                case Type.DATABASE.H2:
+                    sql = SQL.create(owner, view
+                            ? "SELECT table_name FROM information_schema.views WHERE table_schema = 'PUBLIC'"
+                            : "SELECT table_name FROM information_schema.tables WHERE table_schema = 'PUBLIC' AND table_type = 'BASE TABLE'");
+                    break;
+                case Type.DATABASE.DB2:
+                    sql = SQL.create(owner, view
+                            ? "SELECT viewname FROM syscat.views WHERE viewschema = CURRENT_SCHEMA"
+                            : "SELECT tabname FROM syscat.tables WHERE tabschema = CURRENT_SCHEMA AND type = 'T'");
+                    break;
+                case Type.DATABASE.HSQLDB:
+                    sql = SQL.create(owner, view
+                            ? "SELECT table_name FROM information_schema.views WHERE table_schema = 'PUBLIC'"
+                            : "SELECT table_name FROM information_schema.tables WHERE table_schema = 'PUBLIC' AND table_type = 'BASE TABLE'");
+                    break;
                 default:
                     throw new UnsupportedOperationException(String.format("The current database type '%s' not supported.", dbType));
             }

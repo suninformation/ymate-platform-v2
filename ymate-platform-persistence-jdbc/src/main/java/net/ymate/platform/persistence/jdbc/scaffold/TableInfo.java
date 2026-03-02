@@ -77,14 +77,115 @@ public final class TableInfo implements Serializable {
                                 name = StringUtils.lowerCase(name);
                             }
                             String columnType;
-                            switch (tableMetaData.getColumnType(idx)) {
+                            int sqlType = tableMetaData.getColumnType(idx);
+                            switch (sqlType) {
                                 case Types.BINARY:
                                 case Types.VARBINARY:
                                 case Types.LONGVARBINARY:
                                     columnType = "byte[]";
                                     break;
+                                case Types.BOOLEAN:
+                                case Types.BIT:
+                                    columnType = "java.lang.Boolean";
+                                    break;
+                                case Types.TINYINT:
+                                    // 根据数据库方言处理 TINYINT
+                                    if (Type.DATABASE.ORACLE.equalsIgnoreCase(connectionHolder.getDialect().getName())) {
+                                        columnType = "java.lang.Integer"; // Oracle 没有 TINYINT，使用 INTEGER
+                                    } else {
+                                        columnType = "java.lang.Byte";
+                                    }
+                                    break;
+                                case Types.SMALLINT:
+                                    columnType = "java.lang.Short";
+                                    break;
+                                case Types.INTEGER:
+                                    columnType = "java.lang.Integer";
+                                    break;
+                                case Types.BIGINT:
+                                    // 根据数据库方言处理 BIGINT
+                                    if (Type.DATABASE.ORACLE.equalsIgnoreCase(connectionHolder.getDialect().getName())) {
+                                        columnType = "java.lang.Long"; // Oracle 使用 NUMBER(19) 代替 BIGINT
+                                    } else {
+                                        columnType = "java.lang.Long";
+                                    }
+                                    break;
+                                case Types.FLOAT:
+                                    columnType = "java.lang.Float";
+                                    break;
+                                case Types.DOUBLE:
+                                    columnType = "java.lang.Double";
+                                    break;
+                                case Types.NUMERIC:
+                                case Types.DECIMAL:
+                                    // 根据精度和小数位判断使用哪种类型
+                                    if (tableMetaData.getScale(idx) > 0) {
+                                        columnType = "java.math.BigDecimal";
+                                    } else if (tableMetaData.getPrecision(idx) <= 9) {
+                                        columnType = "java.lang.Integer";
+                                    } else if (tableMetaData.getPrecision(idx) <= 18) {
+                                        columnType = "java.lang.Long";
+                                    } else {
+                                        columnType = "java.math.BigDecimal";
+                                    }
+                                    break;
+                                case Types.CHAR:
+                                case Types.VARCHAR:
+                                case Types.LONGVARCHAR:
+                                case Types.NVARCHAR:
+                                case Types.NCHAR:
+                                case Types.LONGNVARCHAR:
+                                    columnType = "java.lang.String";
+                                    break;
+                                case Types.DATE:
+                                    columnType = "java.sql.Date";
+                                    break;
+                                case Types.TIME:
+                                    columnType = "java.sql.Time";
+                                    break;
+                                case Types.TIMESTAMP:
+                                    // 根据数据库方言处理 TIMESTAMP
+                                    if (Type.DATABASE.SQLSERVER.equalsIgnoreCase(connectionHolder.getDialect().getName())) {
+                                        columnType = "java.sql.Timestamp"; // SQL Server 使用 DATETIME2
+                                    } else if (Type.DATABASE.SQLITE.equalsIgnoreCase(connectionHolder.getDialect().getName())) {
+                                        columnType = "java.sql.Timestamp"; // SQLite 使用 DATETIME
+                                    } else if (Type.DATABASE.ORACLE.equalsIgnoreCase(connectionHolder.getDialect().getName())) {
+                                        columnType = "java.sql.Timestamp"; // Oracle 使用 TIMESTAMP 或 DATE
+                                    } else {
+                                        columnType = "java.sql.Timestamp";
+                                    }
+                                    break;
+                                case Types.CLOB:
+                                case Types.NCLOB:
+                                    columnType = "java.sql.Clob";
+                                    break;
+                                case Types.BLOB:
+                                    // 根据数据库方言处理 BLOB
+                                    if (Type.DATABASE.POSTGRESQL.equalsIgnoreCase(connectionHolder.getDialect().getName())) {
+                                        columnType = "java.sql.Blob"; // PostgreSQL 使用 BYTEA
+                                    } else {
+                                        columnType = "java.sql.Blob";
+                                    }
+                                    break;
                                 default:
                                     columnType = tableMetaData.getColumnClassName(idx);
+                            }
+                            // 处理无符号数值类型 - 向上扩大类型以避免溢出
+                            if (!tableMetaData.isSigned(idx)) {
+                                switch (sqlType) {
+                                    case Types.TINYINT:
+                                        columnType = "java.lang.Integer"; // unsigned tinyint: 0-255
+                                        break;
+                                    case Types.SMALLINT:
+                                        columnType = "java.lang.Integer"; // unsigned smallint: 0-65535
+                                        break;
+                                    case Types.INTEGER:
+                                        columnType = "java.lang.Long"; // unsigned int: 0-4294967295
+                                        break;
+                                    case Types.BIGINT:
+                                        columnType = "java.math.BigInteger"; // unsigned bigint: 0-18446744073709551615
+                                        break;
+                                }
                             }
                             ColumnInfo column = new ColumnInfo(scaffold, name,
                                     columnType,
