@@ -124,7 +124,7 @@ public class SerializerTest {
         Assert.assertEquals("application/json", serializer.getContentType());
     }
 
-    @Test(expected = NullPointerException.class)
+    @Test(expected = IllegalArgumentException.class)
     public void testJSONSerializerNullAdapter() throws Exception {
         JSONSerializer serializer = new JSONSerializer(null);
         // 传入null adapter时，构造函数不会立即抛出异常，但在序列化时会抛出
@@ -242,15 +242,13 @@ public class SerializerTest {
         Assert.assertTrue(jsonSerializer instanceof JSONSerializer);
 
         if (hessianAvailable) {
-            // HessianSerializer 没有 @Serializer 注解，使用类名（小写）作为 key
-            ISerializer hessianSerializer = SerializerManager.getSerializer("net.ymate.platform.commons.serialize.impl.hessianserializer");
+            ISerializer hessianSerializer = SerializerManager.getSerializer("HESSIAN");
             Assert.assertNotNull(hessianSerializer);
             Assert.assertTrue(hessianSerializer instanceof HessianSerializer);
         }
 
         if (fstAvailable) {
-            // FstSerializer 没有 @Serializer 注解，使用类名（小写）作为 key
-            ISerializer fstSerializer = SerializerManager.getSerializer("net.ymate.platform.commons.serialize.impl.fstserializer");
+            ISerializer fstSerializer = SerializerManager.getSerializer("fst");
             Assert.assertNotNull(fstSerializer);
             Assert.assertTrue(fstSerializer instanceof FstSerializer);
         }

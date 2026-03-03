@@ -13,20 +13,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.ymate.platform.commons.serialize.fst;
+package net.ymate.platform.commons.serialize.kryo;
 
-import org.nustaq.serialization.FSTConfiguration;
+import com.esotericsoftware.kryo.Kryo;
 
 /**
- * FST配置工厂接口，定义了获取FSTConfiguration实例的标准方法。
+ * Kryo工厂接口，定义了获取Kryo实例的标准方法。
  * <p>
- * 该接口允许通过SPI机制自定义FST配置，以满足不同的序列化需求。
+ * 该接口允许通过SPI机制自定义Kryo配置，以满足不同的序列化需求。
  * 实现该接口的类可以通过SPI机制被自动发现和加载。
  * </p>
  * <p>
  * 设计目的：
  * <ul>
- *   <li>提供FST配置的统一接口</li>
+ *   <li>提供Kryo配置的统一接口</li>
  *   <li>支持通过SPI机制扩展自定义配置</li>
  *   <li>便于配置的统一管理和替换</li>
  * </ul>
@@ -34,32 +34,33 @@ import org.nustaq.serialization.FSTConfiguration;
  * <p>
  * 使用场景：
  * <ul>
- *   <li>自定义FST序列化配置</li>
- *   <li>优化FST序列化性能</li>
- *   <li>配置FST的特定功能</li>
+ *   <li>自定义Kryo序列化配置</li>
+ *   <li>优化Kryo序列化性能</li>
+ *   <li>配置Kryo的特定功能</li>
  * </ul>
  * </p>
  * <p>
  * 注意事项：
  * <ul>
  *   <li>实现类需要通过SPI机制注册</li>
- *   <li>配置实例应该为线程安全的</li>
- *   <li>建议使用单例模式管理配置实例</li>
+ *   <li>Kryo实例不是线程安全的，每次使用都应创建新实例</li>
+ *   <li>建议使用工厂模式管理Kryo实例的创建</li>
  * </ul>
  * </p>
  *
- * @author 刘镇 (suninformation@163.com) on 2022/9/27 13:19
- * @since 2.1.2
+ * @author 刘镇 (suninformation@163.com) on 2026-01-12 03:45:36
+ * @since 2.1.4
  */
-public interface IFstConfigurationFactory {
+public interface IKryoFactory {
 
     /**
-     * 获取FST配置实例。
+     * 创建并返回一个新的Kryo实例。
      * <p>
-     * 该方法返回一个 FSTConfiguration 实例，用于配置 FST 序列化器的行为。
+     * 该方法返回一个配置好的Kryo实例，用于序列化和反序列化操作。
+     * 由于Kryo实例不是线程安全的，每次调用该方法都会创建一个新实例。
      * </p>
      *
-     * @return FST配置实例
+     * @return 新的Kryo实例
      */
-    FSTConfiguration getFstConfiguration();
+    Kryo createKryo();
 }
