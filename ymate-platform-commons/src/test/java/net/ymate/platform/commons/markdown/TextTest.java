@@ -34,7 +34,9 @@ public class TextTest {
     public void testCreateWithString() {
         Text text = Text.create("Hello");
         assertNotNull(text);
-        assertEquals("Hello", text.toMarkdown());
+        String result = text.toMarkdown();
+        System.out.println("testCreateWithString: " + result);
+        assertEquals("Hello", result);
     }
 
     /**
@@ -45,7 +47,9 @@ public class TextTest {
         Title title = Title.create("Title");
         Text text = Text.create(title);
         assertNotNull(text);
-        assertEquals("# Title", text.toMarkdown());
+        String result = text.toMarkdown();
+        System.out.println("testCreateWithIMarkdown: " + result);
+        assertEquals("# Title", result);
     }
 
     /**
@@ -55,7 +59,9 @@ public class TextTest {
     public void testCreateWithStringAndStyle() {
         Text text = Text.create("Bold", Text.Style.BOLD);
         assertNotNull(text);
-        assertEquals("**Bold**", text.toMarkdown());
+        String result = text.toMarkdown();
+        System.out.println("testCreateWithStringAndStyle: " + result);
+        assertEquals("**Bold**", result);
     }
 
     /**
@@ -66,7 +72,9 @@ public class TextTest {
         Title title = Title.create("Title");
         Text text = Text.create(title, Text.Style.ITALIC);
         assertNotNull(text);
-        assertEquals("*# Title*", text.toMarkdown());
+        String result = text.toMarkdown();
+        System.out.println("testCreateWithIMarkdownAndStyle: " + result);
+        assertEquals("*# Title*", result);
     }
 
     /**
@@ -75,7 +83,9 @@ public class TextTest {
     @Test
     public void testNormalStyle() {
         Text text = Text.create("Normal", Text.Style.NORMAL);
-        assertEquals("Normal", text.toMarkdown());
+        String result = text.toMarkdown();
+        System.out.println("testNormalStyle: " + result);
+        assertEquals("Normal", result);
     }
 
     /**
@@ -84,7 +94,9 @@ public class TextTest {
     @Test
     public void testBoldStyle() {
         Text text = Text.create("Bold", Text.Style.BOLD);
-        assertEquals("**Bold**", text.toMarkdown());
+        String result = text.toMarkdown();
+        System.out.println("testBoldStyle: " + result);
+        assertEquals("**Bold**", result);
     }
 
     /**
@@ -93,7 +105,9 @@ public class TextTest {
     @Test
     public void testItalicStyle() {
         Text text = Text.create("Italic", Text.Style.ITALIC);
-        assertEquals("*Italic*", text.toMarkdown());
+        String result = text.toMarkdown();
+        System.out.println("testItalicStyle: " + result);
+        assertEquals("*Italic*", result);
     }
 
     /**
@@ -102,7 +116,9 @@ public class TextTest {
     @Test
     public void testUnderlineStyle() {
         Text text = Text.create("Underline", Text.Style.UNDERLINE);
-        assertEquals("<u>Underline</u>", text.toMarkdown());
+        String result = text.toMarkdown();
+        System.out.println("testUnderlineStyle: " + result);
+        assertEquals("<u>Underline</u>", result);
     }
 
     /**
@@ -111,7 +127,9 @@ public class TextTest {
     @Test
     public void testStrikeoutStyle() {
         Text text = Text.create("Strikeout", Text.Style.STRIKEOUT);
-        assertEquals("~~Strikeout~~", text.toMarkdown());
+        String result = text.toMarkdown();
+        System.out.println("testStrikeoutStyle: " + result);
+        assertEquals("~~Strikeout~~", result);
     }
 
     /**
@@ -120,7 +138,9 @@ public class TextTest {
     @Test
     public void testNullStyle() {
         Text text = Text.create("Test", null);
-        assertEquals("Test", text.toMarkdown());
+        String result = text.toMarkdown();
+        System.out.println("testNullStyle: " + result);
+        assertEquals("Test", result);
     }
 
     /**
@@ -129,7 +149,9 @@ public class TextTest {
     @Test
     public void testEmptyText() {
         Text text = Text.create("");
-        assertEquals("", text.toMarkdown());
+        String result = text.toMarkdown();
+        System.out.println("testEmptyText: " + result);
+        assertEquals("", result);
     }
 
     /**
@@ -138,7 +160,9 @@ public class TextTest {
     @Test
     public void testNullText() {
         Text text = Text.create((String) null);
-        assertEquals("", text.toMarkdown());
+        String result = text.toMarkdown();
+        System.out.println("testNullText: " + result);
+        assertEquals("", result);
     }
 
     /**
@@ -148,7 +172,9 @@ public class TextTest {
     public void testAppendString() {
         Text text = Text.create("Hello");
         text.append(" World");
-        assertEquals("Hello World", text.toMarkdown());
+        String result = text.toMarkdown();
+        System.out.println("testAppendString: " + result);
+        assertEquals("Hello World", result);
     }
 
     /**
@@ -159,7 +185,9 @@ public class TextTest {
         Text text = Text.create("Hello");
         Title title = Title.create(" World");
         text.append(title);
-        assertEquals("Hello # World", text.toMarkdown());
+        String result = text.toMarkdown();
+        System.out.println("testAppendIMarkdown: " + result);
+        assertEquals("Hello # World", result);
     }
 
     /**
@@ -169,7 +197,9 @@ public class TextTest {
     public void testMultipleAppends() {
         Text text = Text.create("A");
         text.append(" B").append(" C").append(" D");
-        assertEquals("A B C D", text.toMarkdown());
+        String result = text.toMarkdown();
+        System.out.println("testMultipleAppends: " + result);
+        assertEquals("A B C D", result);
     }
 
     /**
@@ -178,7 +208,9 @@ public class TextTest {
     @Test
     public void testTextWithNewlines() {
         Text text = Text.create("Line1\nLine2\nLine3", Text.Style.BOLD);
-        assertEquals("**Line1**\n**Line2**\n**Line3**", text.toMarkdown());
+        String result = text.toMarkdown();
+        System.out.println("testTextWithNewlines: " + result);
+        assertEquals("**Line1**\n**Line2**\n**Line3**", result);
     }
 
     /**
@@ -187,7 +219,9 @@ public class TextTest {
     @Test
     public void testTextWithWhitespace() {
         Text text = Text.create("  Whitespace  ");
-        assertEquals("Whitespace", text.toMarkdown());
+        String result = text.toMarkdown();
+        System.out.println("testTextWithWhitespace: " + result);
+        assertEquals("Whitespace", result);
     }
 
     /**
@@ -197,6 +231,7 @@ public class TextTest {
     public void testBoldTextWithNewlines() {
         Text text = Text.create("Line1\nLine2", Text.Style.BOLD);
         String result = text.toMarkdown();
+        System.out.println("testBoldTextWithNewlines: " + result);
         assertTrue(result.contains("**Line1**"));
         assertTrue(result.contains("**Line2**"));
         assertTrue(result.contains("\n"));
@@ -209,6 +244,7 @@ public class TextTest {
     public void testItalicTextWithNewlines() {
         Text text = Text.create("Line1\nLine2", Text.Style.ITALIC);
         String result = text.toMarkdown();
+        System.out.println("testItalicTextWithNewlines: " + result);
         assertTrue(result.contains("*Line1*"));
         assertTrue(result.contains("*Line2*"));
     }
@@ -220,6 +256,7 @@ public class TextTest {
     public void testUnderlineTextWithNewlines() {
         Text text = Text.create("Line1\nLine2", Text.Style.UNDERLINE);
         String result = text.toMarkdown();
+        System.out.println("testUnderlineTextWithNewlines: " + result);
         assertTrue(result.contains("<u>Line1</u>"));
         assertTrue(result.contains("<u>Line2</u>"));
     }
@@ -231,6 +268,7 @@ public class TextTest {
     public void testStrikeoutTextWithNewlines() {
         Text text = Text.create("Line1\nLine2", Text.Style.STRIKEOUT);
         String result = text.toMarkdown();
+        System.out.println("testStrikeoutTextWithNewlines: " + result);
         assertTrue(result.contains("~~Line1~~"));
         assertTrue(result.contains("~~Line2~~"));
     }
@@ -241,7 +279,9 @@ public class TextTest {
     @Test
     public void testToString() {
         Text text = Text.create("Test");
-        assertEquals("Test", text.toString());
+        String result = text.toString();
+        System.out.println("testToString: " + result);
+        assertEquals("Test", result);
     }
 
     /**
@@ -250,7 +290,9 @@ public class TextTest {
     @Test
     public void testToMarkdown() {
         Text text = Text.create("Test");
-        assertEquals("Test", text.toMarkdown());
+        String result = text.toMarkdown();
+        System.out.println("testToMarkdown: " + result);
+        assertEquals("Test", result);
     }
 
     /**
@@ -259,7 +301,9 @@ public class TextTest {
     @Test
     public void testTextWithSpecialCharacters() {
         Text text = Text.create("Special: @#$%^&*()");
-        assertEquals("Special: @#$%^&*()", text.toMarkdown());
+        String result = text.toMarkdown();
+        System.out.println("testTextWithSpecialCharacters: " + result);
+        assertEquals("Special: @#$%^&*()", result);
     }
 
     /**
@@ -268,7 +312,9 @@ public class TextTest {
     @Test
     public void testTextWithUnicode() {
         Text text = Text.create("中文文本");
-        assertEquals("中文文本", text.toMarkdown());
+        String result = text.toMarkdown();
+        System.out.println("testTextWithUnicode: " + result);
+        assertEquals("中文文本", result);
     }
 
     /**
@@ -277,7 +323,9 @@ public class TextTest {
     @Test
     public void testTextWithNumbers() {
         Text text = Text.create("12345");
-        assertEquals("12345", text.toMarkdown());
+        String result = text.toMarkdown();
+        System.out.println("testTextWithNumbers: " + result);
+        assertEquals("12345", result);
     }
 
     /**
@@ -288,7 +336,9 @@ public class TextTest {
         Text text = Text.create("Start")
                 .append(" Middle")
                 .append(" End");
-        assertEquals("Start Middle End", text.toMarkdown());
+        String result = text.toMarkdown();
+        System.out.println("testTextBuilderPattern: " + result);
+        assertEquals("Start Middle End", result);
     }
 
     /**
@@ -299,7 +349,9 @@ public class TextTest {
         Text text = Text.create("Start", Text.Style.BOLD)
                 .append(" Middle")
                 .append(" End");
-        assertEquals("**Start Middle End**", text.toMarkdown());
+        String result = text.toMarkdown();
+        System.out.println("testStyledTextBuilderPattern: " + result);
+        assertEquals("**Start Middle End**", result);
     }
 
     /**
@@ -308,7 +360,9 @@ public class TextTest {
     @Test
     public void testEmptyStyledText() {
         Text text = Text.create("", Text.Style.BOLD);
-        assertEquals("", text.toMarkdown());
+        String result = text.toMarkdown();
+        System.out.println("testEmptyStyledText: " + result);
+        assertEquals("", result);
     }
 
     /**
@@ -317,7 +371,9 @@ public class TextTest {
     @Test
     public void testTextWithMixedContent() {
         Text text = Text.create("Line1\nLine2\nLine3", Text.Style.BOLD);
-        assertEquals(3, text.toMarkdown().split("\\n").length);
+        String result = text.toMarkdown();
+        System.out.println("testTextWithMixedContent: " + result);
+        assertEquals(3, result.split("\\n").length);
     }
 
     /**
@@ -326,7 +382,9 @@ public class TextTest {
     @Test
     public void testTextWithSingleLine() {
         Text text = Text.create("Single Line", Text.Style.BOLD);
-        assertEquals("**Single Line**", text.toMarkdown());
+        String result = text.toMarkdown();
+        System.out.println("testTextWithSingleLine: " + result);
+        assertEquals("**Single Line**", result);
     }
 
     /**
@@ -335,7 +393,9 @@ public class TextTest {
     @Test
     public void testTextWithTrailingNewline() {
         Text text = Text.create("Line1\n");
-        assertEquals("Line1", text.toMarkdown());
+        String result = text.toMarkdown();
+        System.out.println("testTextWithTrailingNewline: " + result);
+        assertEquals("Line1", result);
     }
 
     /**
@@ -344,7 +404,9 @@ public class TextTest {
     @Test
     public void testTextWithLeadingNewline() {
         Text text = Text.create("\nLine1");
-        assertEquals("Line1", text.toMarkdown());
+        String result = text.toMarkdown();
+        System.out.println("testTextWithLeadingNewline: " + result);
+        assertEquals("Line1", result);
     }
 
     /**
@@ -357,10 +419,20 @@ public class TextTest {
         Text italic = Text.create("Italic", Text.Style.ITALIC);
         Text underline = Text.create("Underline", Text.Style.UNDERLINE);
         Text strikeout = Text.create("Strikeout", Text.Style.STRIKEOUT);
-        assertEquals("Normal", normal.toMarkdown());
-        assertEquals("**Bold**", bold.toMarkdown());
-        assertEquals("*Italic*", italic.toMarkdown());
-        assertEquals("<u>Underline</u>", underline.toMarkdown());
-        assertEquals("~~Strikeout~~", strikeout.toMarkdown());
+        String normalResult = normal.toMarkdown();
+        String boldResult = bold.toMarkdown();
+        String italicResult = italic.toMarkdown();
+        String underlineResult = underline.toMarkdown();
+        String strikeoutResult = strikeout.toMarkdown();
+        System.out.println("testAllStyles (normal): " + normalResult);
+        System.out.println("testAllStyles (bold): " + boldResult);
+        System.out.println("testAllStyles (italic): " + italicResult);
+        System.out.println("testAllStyles (underline): " + underlineResult);
+        System.out.println("testAllStyles (strikeout): " + strikeoutResult);
+        assertEquals("Normal", normalResult);
+        assertEquals("**Bold**", boldResult);
+        assertEquals("*Italic*", italicResult);
+        assertEquals("<u>Underline</u>", underlineResult);
+        assertEquals("~~Strikeout~~", strikeoutResult);
     }
 }

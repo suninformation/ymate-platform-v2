@@ -34,7 +34,9 @@ public class QuoteTest {
     public void testCreateWithString() {
         Quote quote = Quote.create("Test quote");
         assertNotNull(quote);
-        assertEquals("> Test quote\n> \n", quote.toMarkdown());
+        String result = quote.toMarkdown();
+        System.out.println("testCreateWithString: " + result);
+        assertEquals("> Test quote\n> \n", result);
     }
 
     /**
@@ -45,7 +47,9 @@ public class QuoteTest {
         Text text = Text.create("Test quote");
         Quote quote = Quote.create(text);
         assertNotNull(quote);
-        assertEquals("> Test quote\n> \n", quote.toMarkdown());
+        String result = quote.toMarkdown();
+        System.out.println("testCreateWithIMarkdown: " + result);
+        assertEquals("> Test quote\n> \n", result);
     }
 
     /**
@@ -56,6 +60,7 @@ public class QuoteTest {
         Quote quote = Quote.create("Line 1");
         quote.append("Line 2");
         String result = quote.toMarkdown();
+        System.out.println("testAppendString: " + result);
         assertTrue(result.contains("> Line 1") || result.contains("> Line 1Line 2"));
     }
 
@@ -68,6 +73,7 @@ public class QuoteTest {
         Text text = Text.create("Line 2");
         quote.append(text);
         String result = quote.toMarkdown();
+        System.out.println("testAppendIMarkdown: " + result);
         assertTrue(result.contains("> Line 1") || result.contains("> Line 1Line 2"));
     }
 
@@ -80,6 +86,7 @@ public class QuoteTest {
                 .append("Line 2")
                 .append("Line 3");
         String result = quote.toMarkdown();
+        System.out.println("testMultipleAppends: " + result);
         assertTrue(result.contains("> Line 1") || result.contains("> Line 1Line 2Line 3"));
     }
 
@@ -89,7 +96,9 @@ public class QuoteTest {
     @Test
     public void testEmptyQuote() {
         Quote quote = Quote.create("");
-        assertEquals("", quote.toMarkdown());
+        String result = quote.toMarkdown();
+        System.out.println("testEmptyQuote: " + result);
+        assertEquals("", result);
     }
 
     /**
@@ -98,7 +107,9 @@ public class QuoteTest {
     @Test
     public void testNullQuote() {
         Quote quote = Quote.create((String) null);
-        assertEquals("", quote.toMarkdown());
+        String result = quote.toMarkdown();
+        System.out.println("testNullQuote: " + result);
+        assertEquals("", result);
     }
 
     /**
@@ -107,7 +118,9 @@ public class QuoteTest {
     @Test
     public void testBlankQuote() {
         Quote quote = Quote.create("   ");
-        assertEquals("", quote.toMarkdown());
+        String result = quote.toMarkdown();
+        System.out.println("testBlankQuote: " + result);
+        assertEquals("", result);
     }
 
     /**
@@ -117,7 +130,9 @@ public class QuoteTest {
     public void testAppendEmptyString() {
         Quote quote = Quote.create("Line 1");
         quote.append("");
-        assertEquals("> Line 1\n> \n", quote.toMarkdown());
+        String result = quote.toMarkdown();
+        System.out.println("testAppendEmptyString: " + result);
+        assertEquals("> Line 1\n> \n", result);
     }
 
     /**
@@ -127,7 +142,9 @@ public class QuoteTest {
     public void testAppendNullString() {
         Quote quote = Quote.create("Line 1");
         quote.append((String) null);
-        assertEquals("> Line 1\n> \n", quote.toMarkdown());
+        String result = quote.toMarkdown();
+        System.out.println("testAppendNullString: " + result);
+        assertEquals("> Line 1\n> \n", result);
     }
 
     /**
@@ -137,7 +154,9 @@ public class QuoteTest {
     public void testAppendBlankString() {
         Quote quote = Quote.create("Line 1");
         quote.append("   ");
-        assertEquals("> Line 1\n> \n", quote.toMarkdown());
+        String result = quote.toMarkdown();
+        System.out.println("testAppendBlankString: " + result);
+        assertEquals("> Line 1\n> \n", result);
     }
 
     /**
@@ -146,7 +165,9 @@ public class QuoteTest {
     @Test
     public void testToString() {
         Quote quote = Quote.create("Test");
-        assertEquals("> Test\n> \n", quote.toString());
+        String result = quote.toString();
+        System.out.println("testToString: " + result);
+        assertEquals("> Test\n> \n", result);
     }
 
     /**
@@ -155,7 +176,9 @@ public class QuoteTest {
     @Test
     public void testToMarkdown() {
         Quote quote = Quote.create("Test");
-        assertEquals("> Test\n> \n", quote.toMarkdown());
+        String result = quote.toMarkdown();
+        System.out.println("testToMarkdown: " + result);
+        assertEquals("> Test\n> \n", result);
     }
 
     /**
@@ -165,6 +188,7 @@ public class QuoteTest {
     public void testQuoteWithSpecialCharacters() {
         Quote quote = Quote.create("Quote with @#$%^&*()");
         String result = quote.toMarkdown();
+        System.out.println("testQuoteWithSpecialCharacters: " + result);
         assertTrue(result.contains("> Quote with @#$%^&*()"));
     }
 
@@ -174,7 +198,9 @@ public class QuoteTest {
     @Test
     public void testQuoteWithUnicode() {
         Quote quote = Quote.create("中文引用");
-        assertEquals("> 中文引用\n> \n", quote.toMarkdown());
+        String result = quote.toMarkdown();
+        System.out.println("testQuoteWithUnicode: " + result);
+        assertEquals("> 中文引用\n> \n", result);
     }
 
     /**
@@ -184,6 +210,7 @@ public class QuoteTest {
     public void testQuoteWithNumbers() {
         Quote quote = Quote.create("Quote with 12345");
         String result = quote.toMarkdown();
+        System.out.println("testQuoteWithNumbers: " + result);
         assertTrue(result.contains("> Quote with 12345"));
     }
 
@@ -193,7 +220,9 @@ public class QuoteTest {
     @Test
     public void testQuoteWithSingleCharacter() {
         Quote quote = Quote.create("A");
-        assertEquals("> A\n> \n", quote.toMarkdown());
+        String result = quote.toMarkdown();
+        System.out.println("testQuoteWithSingleCharacter: " + result);
+        assertEquals("> A\n> \n", result);
     }
 
     /**
@@ -204,6 +233,7 @@ public class QuoteTest {
         String longContent = "This is a very long quote that should be handled correctly by the Quote class in the markdown library. It contains multiple words and sentences to test how the class handles large amounts of text.";
         Quote quote = Quote.create(longContent);
         String result = quote.toMarkdown();
+        System.out.println("testQuoteWithVeryLongContent: " + result);
         assertTrue(result.contains("> " + longContent));
     }
 
@@ -214,6 +244,7 @@ public class QuoteTest {
     public void testQuoteWithWhitespaceInContent() {
         Quote quote = Quote.create("   Content with leading and trailing whitespace   ");
         String result = quote.toMarkdown();
+        System.out.println("testQuoteWithWhitespaceInContent: " + result);
         assertFalse(result.contains("   Content"));
         assertFalse(result.contains("whitespace   "));
         assertTrue(result.contains("> Content with leading and trailing whitespace"));
@@ -226,7 +257,9 @@ public class QuoteTest {
     public void testQuoteWithEmptyBoth() {
         Quote quote = Quote.create("");
         quote.append("");
-        assertEquals("", quote.toMarkdown());
+        String result = quote.toMarkdown();
+        System.out.println("testQuoteWithEmptyBoth: " + result);
+        assertEquals("", result);
     }
 
     /**
@@ -236,7 +269,9 @@ public class QuoteTest {
     public void testQuoteWithNullBoth() {
         Quote quote = Quote.create((String) null);
         quote.append((String) null);
-        assertEquals("", quote.toMarkdown());
+        String result = quote.toMarkdown();
+        System.out.println("testQuoteWithNullBoth: " + result);
+        assertEquals("", result);
     }
 
     /**
@@ -248,6 +283,7 @@ public class QuoteTest {
                 .append("Middle")
                 .append("End");
         String result = quote.toMarkdown();
+        System.out.println("testQuoteBuilderPattern: " + result);
         assertNotNull(result);
         assertTrue(result.length() > 0);
     }
@@ -261,6 +297,7 @@ public class QuoteTest {
         Quote quote = Quote.create(content);
         quote.append(content);
         String result = quote.toMarkdown();
+        System.out.println("testQuoteWithSameContentAppended: " + result);
         assertNotNull(result);
     }
 
@@ -271,6 +308,7 @@ public class QuoteTest {
     public void testQuoteOutputFormat() {
         Quote quote = Quote.create("Test");
         String result = quote.toMarkdown();
+        System.out.println("testQuoteOutputFormat: " + result);
         assertTrue(result.startsWith("> "));
         assertTrue(result.endsWith("> \n"));
     }

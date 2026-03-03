@@ -53,6 +53,7 @@ public class ParagraphListTest {
         ParagraphList list = ParagraphList.create()
                 .addItem("Item 1");
         String result = list.toMarkdown();
+        System.out.println("testAddSingleItem: " + result);
         assertTrue(result.contains("- Item 1"));
     }
 
@@ -66,6 +67,7 @@ public class ParagraphListTest {
                 .addItem("Item 2")
                 .addItem("Item 3");
         String result = list.toMarkdown();
+        System.out.println("testAddMultipleItems: " + result);
         assertTrue(result.contains("- Item 1"));
         assertTrue(result.contains("- Item 2"));
         assertTrue(result.contains("- Item 3"));
@@ -79,6 +81,7 @@ public class ParagraphListTest {
         ParagraphList list = ParagraphList.create()
                 .addItems("Item 1", "Item 2", "Item 3");
         String result = list.toMarkdown();
+        System.out.println("testAddItemsArray: " + result);
         assertTrue(result.contains("- Item 1") || result.contains("1. Item 1"));
     }
 
@@ -90,6 +93,7 @@ public class ParagraphListTest {
         ParagraphList list = ParagraphList.create()
                 .addItem("");
         String result = list.toMarkdown();
+        System.out.println("testAddEmptyItem: " + result);
         assertEquals("", result);
     }
 
@@ -101,6 +105,7 @@ public class ParagraphListTest {
         ParagraphList list = ParagraphList.create()
                 .addItem(null);
         String result = list.toMarkdown();
+        System.out.println("testAddNullItem: " + result);
         assertEquals("", result);
     }
 
@@ -112,6 +117,7 @@ public class ParagraphListTest {
         ParagraphList list = ParagraphList.create()
                 .addItem("   ");
         String result = list.toMarkdown();
+        System.out.println("testAddBlankItem: " + result);
         assertEquals("", result);
     }
 
@@ -124,6 +130,7 @@ public class ParagraphListTest {
                 .addItem("Item 1")
                 .addItem("Item 2");
         String result = list.toMarkdown();
+        System.out.println("testOrderedList: " + result);
         assertTrue(result.contains("1. Item 1"));
         assertTrue(result.contains("2. Item 2"));
     }
@@ -137,6 +144,7 @@ public class ParagraphListTest {
                 .addItem("Item 1")
                 .addItem("Item 2");
         String result = list.toMarkdown();
+        System.out.println("testUnorderedList: " + result);
         assertTrue(result.contains("- Item 1"));
         assertTrue(result.contains("- Item 2"));
     }
@@ -150,6 +158,7 @@ public class ParagraphListTest {
                 .addItem("Item 1")
                 .addSubItem("Subitem 1");
         String result = list.toMarkdown();
+        System.out.println("testAddSubItem: " + result);
         assertTrue(result.contains("    "));
     }
 
@@ -162,6 +171,7 @@ public class ParagraphListTest {
                 .addItem("Item 1")
                 .addSubItem(ParagraphList.create(true).addItem("Subitem 1"));
         String result = list.toMarkdown();
+        System.out.println("testAddSubItemWithOrder: " + result);
         assertNotNull(result);
     }
 
@@ -174,6 +184,7 @@ public class ParagraphListTest {
                 .addItem("Item 1")
                 .addSubItems("Subitem 1", "Subitem 2");
         String result = list.toMarkdown();
+        System.out.println("testAddSubItemsArray: " + result);
         assertNotNull(result);
     }
 
@@ -189,6 +200,7 @@ public class ParagraphListTest {
                         .addSubItem(ParagraphList.create()
                                 .addItem("Level 3")));
         String result = list.toMarkdown();
+        System.out.println("testAddNestedSubItems: " + result);
         assertNotNull(result);
         assertTrue(result.contains("    "));
     }
@@ -202,6 +214,7 @@ public class ParagraphListTest {
                 .addItem("Item 1")
                 .addBody("Body content");
         String result = list.toMarkdown();
+        System.out.println("testAddBody: " + result);
         assertTrue(result.contains("Body content"));
     }
 
@@ -214,6 +227,7 @@ public class ParagraphListTest {
                 .addItem("Item 1")
                 .addBody(Text.create("Markdown body"));
         String result = list.toMarkdown();
+        System.out.println("testAddBodyWithIMarkdown: " + result);
         assertNotNull(result);
     }
 
@@ -228,6 +242,7 @@ public class ParagraphListTest {
                 .addSubItem("Subitem 1")
                 .addItem("Item 2");
         String result = list.toMarkdown();
+        System.out.println("testMixedContent: " + result);
         assertNotNull(result);
     }
 
@@ -237,7 +252,9 @@ public class ParagraphListTest {
     @Test
     public void testEmptyList() {
         ParagraphList list = ParagraphList.create();
-        assertEquals("", list.toMarkdown());
+        String result = list.toMarkdown();
+        System.out.println("testEmptyList: " + result);
+        assertEquals("", result);
     }
 
     /**
@@ -249,6 +266,7 @@ public class ParagraphListTest {
                 .addItem("Test item");
         String toStringResult = list.toString();
         String toMarkdownResult = list.toMarkdown();
+        System.out.println("testToString: " + toStringResult);
         assertEquals(toMarkdownResult, toStringResult);
     }
 
@@ -259,7 +277,9 @@ public class ParagraphListTest {
     public void testAddItemsArrayWithNulls() {
         ParagraphList list = ParagraphList.create()
                 .addItems((String[]) null);
-        assertEquals("", list.toMarkdown());
+        String result = list.toMarkdown();
+        System.out.println("testAddItemsArrayWithNulls: " + result);
+        assertEquals("", result);
     }
 
     /**
@@ -270,6 +290,7 @@ public class ParagraphListTest {
         ParagraphList list = ParagraphList.create()
                 .addItems("", "   ", null, "Item 1");
         String result = list.toMarkdown();
+        System.out.println("testAddItemsArrayWithEmptyStrings: " + result);
         assertTrue(result.contains("Item 1"));
     }
 
@@ -283,6 +304,7 @@ public class ParagraphListTest {
                 .addItem("Item with \t tab")
                 .addItem("Item with \n newline");
         String result = list.toMarkdown();
+        System.out.println("testListWithSpecialCharacters: " + result);
         assertNotNull(result);
     }
 
@@ -295,6 +317,7 @@ public class ParagraphListTest {
                 .addItem("中文项目 1")
                 .addItem("中文项目 2");
         String result = list.toMarkdown();
+        System.out.println("testListWithUnicode: " + result);
         assertTrue(result.contains("中文项目 1"));
     }
 
@@ -309,6 +332,7 @@ public class ParagraphListTest {
                 .addSubItems("Subitem 1", "Subitem 2")
                 .addBody("Final body");
         String result = list.toMarkdown();
+        System.out.println("testBuilderPattern: " + result);
         assertNotNull(result);
         assertTrue(result.length() > 0);
     }
@@ -325,6 +349,7 @@ public class ParagraphListTest {
                 .addItem("Main item")
                 .addSubItem(subList);
         String result = mainList.toMarkdown();
+        System.out.println("testParagraphListAsSubItem: " + result);
         assertNotNull(result);
         assertTrue(result.contains("    "));
     }
@@ -338,6 +363,7 @@ public class ParagraphListTest {
                 .addItem("Item 1")
                 .addBody("First paragraph\n\nSecond paragraph");
         String result = list.toMarkdown();
+        System.out.println("testBodyContentWithParagraphs: " + result);
         assertNotNull(result);
     }
 
@@ -351,6 +377,7 @@ public class ParagraphListTest {
                 .addItem("Same item")
                 .addItem("Same item");
         String result = list.toMarkdown();
+        System.out.println("testAddSameItemMultipleTimes: " + result);
         assertNotNull(result);
     }
 
@@ -364,6 +391,7 @@ public class ParagraphListTest {
             list.addItem("Item " + i);
         }
         String result = list.toMarkdown();
+        System.out.println("testLargeList: " + result);
         assertNotNull(result);
     }
 
@@ -375,6 +403,7 @@ public class ParagraphListTest {
         ParagraphList list = ParagraphList.create()
                 .addItem("Item with\nnewline");
         String result = list.toMarkdown();
+        System.out.println("testListItemWithNewlines: " + result);
         assertTrue(result.contains("Item with newline"));
     }
 
@@ -386,6 +415,7 @@ public class ParagraphListTest {
         ParagraphList list = ParagraphList.create()
                 .addItem("Item with\ttab");
         String result = list.toMarkdown();
+        System.out.println("testListItemWithTabs: " + result);
         assertTrue(result.contains("Item with\ttab") || result.contains("Item with    tab"));
     }
 }

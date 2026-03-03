@@ -44,6 +44,7 @@ public class TableTest {
         Table table = Table.create()
                 .addHeader("Column 1");
         String result = table.toMarkdown();
+        System.out.println("testAddHeader: " + result);
         assertTrue(result.contains("|Column 1|"));
     }
 
@@ -58,6 +59,7 @@ public class TableTest {
                 .addHeader("Right", Table.Align.RIGHT)
                 .addHeader("Default");
         String result = table.toMarkdown();
+        System.out.println("testAddHeadersWithAlignment: " + result);
         assertTrue(result.contains(":---|"));
         assertTrue(result.contains(":---:|"));
         assertTrue(result.contains("---:|"));
@@ -72,6 +74,7 @@ public class TableTest {
         Table table = Table.create()
                 .addHeader(Text.create("Markdown Header"));
         String result = table.toMarkdown();
+        System.out.println("testAddHeaderWithIMarkdown: " + result);
         assertTrue(result.contains("|Markdown Header|"));
     }
 
@@ -83,6 +86,7 @@ public class TableTest {
         Table table = Table.create()
                 .addHeader(Text.create("Aligned Header"), Table.Align.CENTER);
         String result = table.toMarkdown();
+        System.out.println("testAddHeaderWithIMarkdownAndAlignment: " + result);
         assertNotNull(result);
     }
 
@@ -97,6 +101,7 @@ public class TableTest {
                 .addColumn("Row 1")
                 .build();
         String result = table.toMarkdown();
+        System.out.println("testAddRow: " + result);
         assertTrue(result.contains("|Row 1|"));
     }
 
@@ -117,6 +122,7 @@ public class TableTest {
                 .addColumn("Row 2 Col 2")
                 .build();
         String result = table.toMarkdown();
+        System.out.println("testAddMultipleRows: " + result);
         assertTrue(result.contains("|Row 1 Col 1|Row 1 Col 2|"));
         assertTrue(result.contains("|Row 2 Col 1|Row 2 Col 2|"));
     }
@@ -132,6 +138,7 @@ public class TableTest {
                 .addColumn(Text.create("Markdown Content"))
                 .build();
         String result = table.toMarkdown();
+        System.out.println("testAddColumnWithIMarkdown: " + result);
         assertTrue(result.contains("|Markdown Content|"));
     }
 
@@ -141,7 +148,9 @@ public class TableTest {
     @Test
     public void testEmptyTable() {
         Table table = Table.create();
-        assertEquals("", table.toMarkdown());
+        String result = table.toMarkdown();
+        System.out.println("testEmptyTable: " + result);
+        assertEquals("", result);
     }
 
     /**
@@ -153,6 +162,7 @@ public class TableTest {
                 .addHeader("Column 1")
                 .addHeader("Column 2");
         String result = table.toMarkdown();
+        System.out.println("testTableWithOnlyHeaders: " + result);
         assertNotNull(result);
     }
 
@@ -168,6 +178,7 @@ public class TableTest {
                 .addColumn("Only Col 1")
                 .build();
         String result = table.toMarkdown();
+        System.out.println("testTableWithDifferentColumnCounts: " + result);
         assertNotNull(result);
     }
 
@@ -182,6 +193,7 @@ public class TableTest {
                 .addColumn("Content\nwith|newlines	and tabs")
                 .build();
         String result = table.toMarkdown();
+        System.out.println("testTableWithSpecialCharacters: " + result);
         assertTrue(result.contains("Column\\|1"));
         assertTrue(result.contains("Content<br/>with\\|newlines"));
     }
@@ -197,6 +209,7 @@ public class TableTest {
                 .addColumn("中文内容")
                 .build();
         String result = table.toMarkdown();
+        System.out.println("testTableWithUnicode: " + result);
         assertTrue(result.contains("|中文列|"));
         assertTrue(result.contains("|中文内容|"));
     }
@@ -213,6 +226,7 @@ public class TableTest {
                 .build();
         String toStringResult = table.toString();
         String toMarkdownResult = table.toMarkdown();
+        System.out.println("testToString: " + toStringResult);
         assertEquals(toMarkdownResult, toStringResult);
     }
 
@@ -249,6 +263,7 @@ public class TableTest {
         Table table = Table.create()
                 .addHeader("");
         String result = table.toMarkdown();
+        System.out.println("testHeaderWithEmptyString: " + result);
         assertTrue(result.contains("||"));
     }
 
@@ -263,6 +278,7 @@ public class TableTest {
                 .addColumn("")
                 .build();
         String result = table.toMarkdown();
+        System.out.println("testColumnWithEmptyString: " + result);
         assertTrue(result.contains("||"));
     }
 
@@ -283,6 +299,7 @@ public class TableTest {
                 .addColumn("200")
                 .build();
         String result = table.toMarkdown();
+        System.out.println("testTableBuilderPattern: " + result);
         assertNotNull(result);
         assertTrue(result.length() > 0);
     }
@@ -304,6 +321,7 @@ public class TableTest {
                 .addColumn("Row 3")
                 .build();
         String result = table.toMarkdown();
+        System.out.println("testTableWithSingleColumn: " + result);
         assertTrue(result.contains("|Row 1|"));
         assertTrue(result.contains("|Row 2|"));
         assertTrue(result.contains("|Row 3|"));
@@ -328,6 +346,7 @@ public class TableTest {
                 .addColumn("5")
                 .build();
         String result = table.toMarkdown();
+        System.out.println("testTableWithManyColumns: " + result);
         assertNotNull(result);
     }
 
@@ -348,6 +367,7 @@ public class TableTest {
                 .addColumn("Default")
                 .build();
         String result = table.toMarkdown();
+        System.out.println("testTableWithMixedAlignment: " + result);
         assertNotNull(result);
     }
 
@@ -379,6 +399,7 @@ public class TableTest {
                 .addColumn("Content\nwith\nmultiple\nlines")
                 .build();
         String result = table.toMarkdown();
+        System.out.println("testTableWithNewlinesInContent: " + result);
         assertTrue(result.contains("Column with<br/>Newlines"));
         assertTrue(result.contains("Content<br/>with<br/>multiple<br/>lines"));
     }
@@ -394,6 +415,7 @@ public class TableTest {
                 .addColumn("Content\twith\ttabs")
                 .build();
         String result = table.toMarkdown();
+        System.out.println("testTableWithTabsInContent: " + result);
         assertNotNull(result);
     }
 
@@ -408,6 +430,7 @@ public class TableTest {
                 .addColumn("Content\r\nwith\r\nCRLF")
                 .build();
         String result = table.toMarkdown();
+        System.out.println("testTableWithCRLFInContent: " + result);
         assertTrue(result.contains("Content<br/>with<br/>CRLF"));
     }
 
@@ -422,6 +445,7 @@ public class TableTest {
                 .addColumn("Content with | pipe")
                 .build();
         String result = table.toMarkdown();
+        System.out.println("testTableWithPipeInContent: " + result);
         assertTrue(result.contains("Content with \\| pipe"));
     }
 
@@ -441,6 +465,8 @@ public class TableTest {
         String result1 = table1.toMarkdown();
         String result2 = table2.toMarkdown();
 
+        System.out.println("testAddHeadersInDifferentOrders (table1): " + result1);
+        System.out.println("testAddHeadersInDifferentOrders (table2): " + result2);
         assertNotNull(result1);
         assertNotNull(result2);
     }
@@ -461,6 +487,7 @@ public class TableTest {
                 .addColumn(sameContent)
                 .build();
         String result = table.toMarkdown();
+        System.out.println("testTableWithSameContentInMultipleCells: " + result);
         assertNotNull(result);
     }
 }

@@ -43,7 +43,9 @@ public class MarkdownBuilderTest {
     @Test
     public void testBr() {
         MarkdownBuilder builder = MarkdownBuilder.create().br();
-        assertEquals("\n", builder.toMarkdown());
+        String result = builder.toMarkdown();
+        System.out.println("testBr: " + result);
+        assertEquals("\n", result);
     }
 
     /**
@@ -52,7 +54,9 @@ public class MarkdownBuilderTest {
     @Test
     public void testP() {
         MarkdownBuilder builder = MarkdownBuilder.create().p();
-        assertEquals("\n\n", builder.toMarkdown());
+        String result = builder.toMarkdown();
+        System.out.println("testP: " + result);
+        assertEquals("\n\n", result);
     }
 
     /**
@@ -61,7 +65,9 @@ public class MarkdownBuilderTest {
     @Test
     public void testPWithRepeat() {
         MarkdownBuilder builder = MarkdownBuilder.create().p(3);
-        assertEquals("\n\n\n", builder.toMarkdown());
+        String result = builder.toMarkdown();
+        System.out.println("testPWithRepeat: " + result);
+        assertEquals("\n\n\n", result);
     }
 
     /**
@@ -70,7 +76,9 @@ public class MarkdownBuilderTest {
     @Test
     public void testPWithZeroRepeat() {
         MarkdownBuilder builder = MarkdownBuilder.create().p(0);
-        assertEquals("\n", builder.toMarkdown());
+        String result = builder.toMarkdown();
+        System.out.println("testPWithZeroRepeat: " + result);
+        assertEquals("\n", result);
     }
 
     /**
@@ -79,7 +87,9 @@ public class MarkdownBuilderTest {
     @Test
     public void testPWithNegativeRepeat() {
         MarkdownBuilder builder = MarkdownBuilder.create().p(-1);
-        assertEquals("\n", builder.toMarkdown());
+        String result = builder.toMarkdown();
+        System.out.println("testPWithNegativeRepeat: " + result);
+        assertEquals("\n", result);
     }
 
     /**
@@ -88,7 +98,9 @@ public class MarkdownBuilderTest {
     @Test
     public void testHr() {
         MarkdownBuilder builder = MarkdownBuilder.create().hr();
-        assertEquals("------\n\n\n", builder.toMarkdown());
+        String result = builder.toMarkdown();
+        System.out.println("testHr: " + result);
+        assertEquals("------\n\n\n", result);
     }
 
     /**
@@ -97,7 +109,9 @@ public class MarkdownBuilderTest {
     @Test
     public void testSpace() {
         MarkdownBuilder builder = MarkdownBuilder.create().space();
-        assertEquals(" ", builder.toMarkdown());
+        String result = builder.toMarkdown();
+        System.out.println("testSpace: " + result);
+        assertEquals(" ", result);
     }
 
     /**
@@ -106,7 +120,9 @@ public class MarkdownBuilderTest {
     @Test
     public void testSpaceWithRepeat() {
         MarkdownBuilder builder = MarkdownBuilder.create().space(3);
-        assertEquals("   ", builder.toMarkdown());
+        String result = builder.toMarkdown();
+        System.out.println("testSpaceWithRepeat: " + result);
+        assertEquals("   ", result);
     }
 
     /**
@@ -115,7 +131,9 @@ public class MarkdownBuilderTest {
     @Test
     public void testSpaceWithZeroRepeat() {
         MarkdownBuilder builder = MarkdownBuilder.create().space(0);
-        assertEquals(" ", builder.toMarkdown());
+        String result = builder.toMarkdown();
+        System.out.println("testSpaceWithZeroRepeat: " + result);
+        assertEquals(" ", result);
     }
 
     /**
@@ -124,7 +142,9 @@ public class MarkdownBuilderTest {
     @Test
     public void testTab() {
         MarkdownBuilder builder = MarkdownBuilder.create().tab();
-        assertEquals("    ", builder.toMarkdown());
+        String result = builder.toMarkdown();
+        System.out.println("testTab: " + result);
+        assertEquals("    ", result);
     }
 
     /**
@@ -144,7 +164,9 @@ public class MarkdownBuilderTest {
         MarkdownBuilder builder = MarkdownBuilder.create();
         Title title = Title.create("Test Title");
         builder.append(title);
-        assertEquals("# Test Title", builder.toMarkdown());
+        String result = builder.toMarkdown();
+        System.out.println("testAppendIMarkdown: " + result);
+        assertEquals("# Test Title", result);
     }
 
     /**
@@ -153,7 +175,9 @@ public class MarkdownBuilderTest {
     @Test
     public void testAppendString() {
         MarkdownBuilder builder = MarkdownBuilder.create().append("Hello");
-        assertEquals("Hello", builder.toMarkdown());
+        String result = builder.toMarkdown();
+        System.out.println("testAppendString: " + result);
+        assertEquals("Hello", result);
     }
 
     /**
@@ -162,7 +186,9 @@ public class MarkdownBuilderTest {
     @Test
     public void testTitleWithString() {
         MarkdownBuilder builder = MarkdownBuilder.create().title("Test");
-        assertEquals("# Test", builder.toMarkdown());
+        String result = builder.toMarkdown();
+        System.out.println("testTitleWithString: " + result);
+        assertEquals("# Test", result);
     }
 
     /**
@@ -173,7 +199,9 @@ public class MarkdownBuilderTest {
         MarkdownBuilder builder = MarkdownBuilder.create();
         Text text = Text.create("Test Title");
         builder.title(text);
-        assertEquals("# Test Title", builder.toMarkdown());
+        String result = builder.toMarkdown();
+        System.out.println("testTitleWithIMarkdown: " + result);
+        assertEquals("# Test Title", result);
     }
 
     /**
@@ -182,7 +210,9 @@ public class MarkdownBuilderTest {
     @Test
     public void testTitleWithLevel() {
         MarkdownBuilder builder = MarkdownBuilder.create().title("Test", 3);
-        assertEquals("### Test", builder.toMarkdown());
+        String result = builder.toMarkdown();
+        System.out.println("testTitleWithLevel: " + result);
+        assertEquals("### Test", result);
     }
 
     /**
@@ -191,7 +221,9 @@ public class MarkdownBuilderTest {
     @Test
     public void testTextWithString() {
         MarkdownBuilder builder = MarkdownBuilder.create().text("Hello");
-        assertEquals("Hello", builder.toMarkdown());
+        String result = builder.toMarkdown();
+        System.out.println("testTextWithString: " + result);
+        assertEquals("Hello", result);
     }
 
     /**
@@ -200,7 +232,9 @@ public class MarkdownBuilderTest {
     @Test
     public void testTextWithStyle() {
         MarkdownBuilder builder = MarkdownBuilder.create().text("Bold", Text.Style.BOLD);
-        assertEquals("**Bold**", builder.toMarkdown());
+        String result = builder.toMarkdown();
+        System.out.println("testTextWithStyle: " + result);
+        assertEquals("**Bold**", result);
     }
 
     /**
@@ -209,7 +243,9 @@ public class MarkdownBuilderTest {
     @Test
     public void testQuoteWithString() {
         MarkdownBuilder builder = MarkdownBuilder.create().quote("Quote text");
-        assertEquals("> Quote text\n> \n", builder.toMarkdown());
+        String result = builder.toMarkdown();
+        System.out.println("testQuoteWithString: " + result);
+        assertEquals("> Quote text\n> \n", result);
     }
 
     /**
@@ -220,7 +256,9 @@ public class MarkdownBuilderTest {
         MarkdownBuilder builder = MarkdownBuilder.create();
         Text text = Text.create("Quote text");
         builder.quote(text);
-        assertEquals("> Quote text\n> \n", builder.toMarkdown());
+        String result = builder.toMarkdown();
+        System.out.println("testQuoteWithIMarkdown: " + result);
+        assertEquals("> Quote text\n> \n", result);
     }
 
     /**
@@ -229,7 +267,9 @@ public class MarkdownBuilderTest {
     @Test
     public void testLink() {
         MarkdownBuilder builder = MarkdownBuilder.create().link("GitHub", "https://github.com");
-        assertEquals("[GitHub](https://github.com)", builder.toMarkdown());
+        String result = builder.toMarkdown();
+        System.out.println("testLink: " + result);
+        assertEquals("[GitHub](https://github.com)", result);
     }
 
     /**
@@ -240,7 +280,9 @@ public class MarkdownBuilderTest {
         MarkdownBuilder builder = MarkdownBuilder.create();
         Text text = Text.create("GitHub");
         builder.link(text, "https://github.com");
-        assertEquals("[GitHub](https://github.com)", builder.toMarkdown());
+        String result = builder.toMarkdown();
+        System.out.println("testLinkWithIMarkdown: " + result);
+        assertEquals("[GitHub](https://github.com)", result);
     }
 
     /**
@@ -249,7 +291,9 @@ public class MarkdownBuilderTest {
     @Test
     public void testImage() {
         MarkdownBuilder builder = MarkdownBuilder.create().image("https://example.com/image.png");
-        assertEquals("![](https://example.com/image.png)", builder.toMarkdown());
+        String result = builder.toMarkdown();
+        System.out.println("testImage: " + result);
+        assertEquals("![](https://example.com/image.png)", result);
     }
 
     /**
@@ -258,7 +302,9 @@ public class MarkdownBuilderTest {
     @Test
     public void testImageWithAlt() {
         MarkdownBuilder builder = MarkdownBuilder.create().image("Alt text", "https://example.com/image.png");
-        assertEquals("![Alt text](https://example.com/image.png)", builder.toMarkdown());
+        String result = builder.toMarkdown();
+        System.out.println("testImageWithAlt: " + result);
+        assertEquals("![Alt text](https://example.com/image.png)", result);
     }
 
     /**
@@ -267,7 +313,9 @@ public class MarkdownBuilderTest {
     @Test
     public void testImageWithZoom() {
         MarkdownBuilder builder = MarkdownBuilder.create().image("Alt", "https://example.com/image.png", 50);
-        assertEquals("<img src=\"https://example.com/image.png\" alt=\"Alt\" style=\"zoom:50%;\" />", builder.toMarkdown());
+        String result = builder.toMarkdown();
+        System.out.println("testImageWithZoom: " + result);
+        assertEquals("<img src=\"https://example.com/image.png\" alt=\"Alt\" style=\"zoom:50%;\" />", result);
     }
 
     /**
@@ -276,7 +324,9 @@ public class MarkdownBuilderTest {
     @Test
     public void testCode() {
         MarkdownBuilder builder = MarkdownBuilder.create().code("code");
-        assertEquals("`code`", builder.toMarkdown());
+        String result = builder.toMarkdown();
+        System.out.println("testCode: " + result);
+        assertEquals("`code`", result);
     }
 
     /**
@@ -285,7 +335,9 @@ public class MarkdownBuilderTest {
     @Test
     public void testCodeWithLanguage() {
         MarkdownBuilder builder = MarkdownBuilder.create().code("code", "java");
-        assertEquals("```java\ncode\n```\n", builder.toMarkdown());
+        String result = builder.toMarkdown();
+        System.out.println("testCodeWithLanguage: " + result);
+        assertEquals("```java\ncode\n```\n", result);
     }
 
     /**
@@ -296,7 +348,9 @@ public class MarkdownBuilderTest {
         MarkdownBuilder builder = MarkdownBuilder.create();
         Text text = Text.create("code");
         builder.code(text);
-        assertEquals("`code`", builder.toMarkdown());
+        String result = builder.toMarkdown();
+        System.out.println("testCodeWithIMarkdown: " + result);
+        assertEquals("`code`", result);
     }
 
     /**
@@ -309,6 +363,7 @@ public class MarkdownBuilderTest {
                 .p()
                 .text("Content")
                 .toMarkdown();
+        System.out.println("testChaining: " + result);
         assertEquals("# Title\n\nContent", result);
     }
 
@@ -318,7 +373,9 @@ public class MarkdownBuilderTest {
     @Test
     public void testToString() {
         MarkdownBuilder builder = MarkdownBuilder.create().append("test");
-        assertEquals("test", builder.toString());
+        String result = builder.toString();
+        System.out.println("testToString: " + result);
+        assertEquals("test", result);
     }
 
     /**
@@ -327,7 +384,9 @@ public class MarkdownBuilderTest {
     @Test
     public void testToMarkdown() {
         MarkdownBuilder builder = MarkdownBuilder.create().append("test");
-        assertEquals("test", builder.toMarkdown());
+        String result = builder.toMarkdown();
+        System.out.println("testToMarkdown: " + result);
+        assertEquals("test", result);
     }
 
     /**
@@ -336,7 +395,9 @@ public class MarkdownBuilderTest {
     @Test
     public void testEmptyBuilder() {
         MarkdownBuilder builder = MarkdownBuilder.create();
-        assertEquals("", builder.toMarkdown());
+        String result = builder.toMarkdown();
+        System.out.println("testEmptyBuilder: " + result);
+        assertEquals("", result);
     }
 
     /**
@@ -355,7 +416,7 @@ public class MarkdownBuilderTest {
                 .p()
                 .code("System.out.println(\"Hello\");", "java")
                 .toMarkdown();
-
+        System.out.println("testMultipleOperations: " + result);
         assertTrue(result.contains("# Main Title"));
         assertTrue(result.contains("Paragraph 1"));
         assertTrue(result.contains("**Paragraph 2**"));

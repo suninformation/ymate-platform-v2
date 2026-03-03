@@ -35,7 +35,9 @@ public class LinkTest {
     public void testCreateWithUrlOnly() {
         Link link = Link.create("https://example.com");
         assertNotNull(link);
-        assertEquals("[https://example.com](https://example.com)", link.toMarkdown());
+        String result = link.toMarkdown();
+        System.out.println("testCreateWithUrlOnly: " + result);
+        assertEquals("[https://example.com](https://example.com)", result);
     }
 
     /**
@@ -45,7 +47,9 @@ public class LinkTest {
     public void testCreateWithNameAndUrl() {
         Link link = Link.create("Example", "https://example.com");
         assertNotNull(link);
-        assertEquals("[Example](https://example.com)", link.toMarkdown());
+        String result = link.toMarkdown();
+        System.out.println("testCreateWithNameAndUrl: " + result);
+        assertEquals("[Example](https://example.com)", result);
     }
 
     /**
@@ -56,7 +60,9 @@ public class LinkTest {
         Text name = Text.create("Example");
         Link link = Link.create(name, "https://example.com");
         assertNotNull(link);
-        assertEquals("[Example](https://example.com)", link.toMarkdown());
+        String result = link.toMarkdown();
+        System.out.println("testCreateWithIMarkdownName: " + result);
+        assertEquals("[Example](https://example.com)", result);
     }
 
     /**
@@ -65,7 +71,9 @@ public class LinkTest {
     @Test
     public void testEmptyUrl() {
         Link link = Link.create("Example", "");
-        assertEquals("", link.toMarkdown());
+        String result = link.toMarkdown();
+        System.out.println("testEmptyUrl: " + result);
+        assertEquals("", result);
     }
 
     /**
@@ -74,7 +82,9 @@ public class LinkTest {
     @Test
     public void testNullUrl() {
         Link link = Link.create("Example", (String) null);
-        assertEquals("", link.toMarkdown());
+        String result = link.toMarkdown();
+        System.out.println("testNullUrl: " + result);
+        assertEquals("", result);
     }
 
     /**
@@ -83,7 +93,9 @@ public class LinkTest {
     @Test
     public void testBlankUrl() {
         Link link = Link.create("Example", "   ");
-        assertEquals("", link.toMarkdown());
+        String result = link.toMarkdown();
+        System.out.println("testBlankUrl: " + result);
+        assertEquals("", result);
     }
 
     /**
@@ -92,7 +104,9 @@ public class LinkTest {
     @Test
     public void testEmptyName() {
         Link link = Link.create("", "https://example.com");
-        assertEquals("[https://example.com](https://example.com)", link.toMarkdown());
+        String result = link.toMarkdown();
+        System.out.println("testEmptyName: " + result);
+        assertEquals("[https://example.com](https://example.com)", result);
     }
 
     /**
@@ -101,7 +115,9 @@ public class LinkTest {
     @Test
     public void testNullName() {
         Link link = Link.create((String) null, "https://example.com");
-        assertEquals("[https://example.com](https://example.com)", link.toMarkdown());
+        String result = link.toMarkdown();
+        System.out.println("testNullName: " + result);
+        assertEquals("[https://example.com](https://example.com)", result);
     }
 
     /**
@@ -110,7 +126,9 @@ public class LinkTest {
     @Test
     public void testBlankName() {
         Link link = Link.create("   ", "https://example.com");
-        assertEquals("[https://example.com](https://example.com)", link.toMarkdown());
+        String result = link.toMarkdown();
+        System.out.println("testBlankName: " + result);
+        assertEquals("[https://example.com](https://example.com)", result);
     }
 
     /**
@@ -120,7 +138,9 @@ public class LinkTest {
     public void testWhitespaceInName() {
         Link link = Link.create("  Example  ", "https://example.com");
         assertNotNull(link);
-        assertEquals("[Example](https://example.com)", link.toMarkdown());
+        String result = link.toMarkdown();
+        System.out.println("testWhitespaceInName: " + result);
+        assertEquals("[Example](https://example.com)", result);
     }
 
     /**
@@ -130,7 +150,9 @@ public class LinkTest {
     public void testWhitespaceInUrl() {
         Link link = Link.create("Example", "  https://example.com  ");
         assertNotNull(link);
-        assertEquals("[Example](https://example.com)", link.toMarkdown());
+        String result = link.toMarkdown();
+        System.out.println("testWhitespaceInUrl: " + result);
+        assertEquals("[Example](https://example.com)", result);
     }
 
     /**
@@ -140,7 +162,9 @@ public class LinkTest {
     public void testToString() {
         Link link = Link.create("Example", "https://example.com");
         assertNotNull(link);
-        assertEquals("[Example](https://example.com)", link.toString());
+        String result = link.toString();
+        System.out.println("testToString: " + result);
+        assertEquals("[Example](https://example.com)", result);
     }
 
     /**
@@ -150,7 +174,9 @@ public class LinkTest {
     public void testToMarkdown() {
         Link link = Link.create("Example", "https://example.com");
         assertNotNull(link);
-        assertEquals("[Example](https://example.com)", link.toMarkdown());
+        String result = link.toMarkdown();
+        System.out.println("testToMarkdown: " + result);
+        assertEquals("[Example](https://example.com)", result);
     }
 
     /**
@@ -160,7 +186,9 @@ public class LinkTest {
     public void testLinkWithSpecialCharacters() {
         Link link = Link.create("Example @#$%^&*()", "https://example.com/path?query=123");
         assertNotNull(link);
-        assertEquals("[Example @#$%^&*()](https://example.com/path?query=123)", link.toMarkdown());
+        String result = link.toMarkdown();
+        System.out.println("testLinkWithSpecialCharacters: " + result);
+        assertEquals("[Example @#$%^&*()](https://example.com/path?query=123)", result);
     }
 
     /**
@@ -170,7 +198,9 @@ public class LinkTest {
     public void testLinkWithUnicode() {
         Link link = Link.create("中文链接", "https://example.com");
         assertNotNull(link);
-        assertEquals("[中文链接](https://example.com)", link.toMarkdown());
+        String result = link.toMarkdown();
+        System.out.println("testLinkWithUnicode: " + result);
+        assertEquals("[中文链接](https://example.com)", result);
     }
 
     /**
@@ -179,7 +209,9 @@ public class LinkTest {
     @Test
     public void testLinkWithEmptyBoth() {
         Link link = Link.create("", "");
-        assertEquals("", link.toMarkdown());
+        String result = link.toMarkdown();
+        System.out.println("testLinkWithEmptyBoth: " + result);
+        assertEquals("", result);
     }
 
     /**
@@ -188,7 +220,9 @@ public class LinkTest {
     @Test
     public void testLinkWithNullBoth() {
         Link link = Link.create((String) null, (String) null);
-        assertEquals("", link.toMarkdown());
+        String result = link.toMarkdown();
+        System.out.println("testLinkWithNullBoth: " + result);
+        assertEquals("", result);
     }
 
     /**
@@ -199,7 +233,9 @@ public class LinkTest {
         String url = "https://example.com";
         Link link = Link.create(url, url);
         assertNotNull(link);
-        assertEquals("[" + url + "]" + "(" + url + ")", link.toMarkdown());
+        String result = link.toMarkdown();
+        System.out.println("testLinkWithNameSameAsUrl: " + result);
+        assertEquals("[" + url + "]" + "(" + url + ")", result);
     }
 
     /**
@@ -210,7 +246,9 @@ public class LinkTest {
         String longUrl = "https://example.com/path/to/resource?query1=value1&query2=value2&query3=value3#fragment";
         Link link = Link.create("Long URL", longUrl);
         assertNotNull(link);
-        assertEquals("[Long URL](" + longUrl + ")", link.toMarkdown());
+        String result = link.toMarkdown();
+        System.out.println("testLinkWithLongUrl: " + result);
+        assertEquals("[Long URL](" + longUrl + ")", result);
     }
 
     /**
@@ -221,6 +259,8 @@ public class LinkTest {
         Text name = Text.create("Bold Example");
         Link link = Link.create(name, "https://example.com");
         assertNotNull(link);
-        assertEquals("[Bold Example](https://example.com)", link.toMarkdown());
+        String result = link.toMarkdown();
+        System.out.println("testLinkWithMarkdownInName: " + result);
+        assertEquals("[Bold Example](https://example.com)", result);
     }
 }

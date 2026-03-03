@@ -34,7 +34,9 @@ public class CodeTest {
     public void testCreateWithString() {
         Code code = Code.create("code");
         assertNotNull(code);
-        assertEquals("`code`", code.toMarkdown());
+        String result = code.toMarkdown();
+        System.out.println("testCreateWithString: " + result);
+        assertEquals("`code`", result);
     }
 
     /**
@@ -45,7 +47,9 @@ public class CodeTest {
         Text text = Text.create("code");
         Code code = Code.create(text);
         assertNotNull(code);
-        assertEquals("`code`", code.toMarkdown());
+        String result = code.toMarkdown();
+        System.out.println("testCreateWithIMarkdown: " + result);
+        assertEquals("`code`", result);
     }
 
     /**
@@ -55,7 +59,9 @@ public class CodeTest {
     public void testCreateWithStringAndLanguage() {
         Code code = Code.create("code", "java");
         assertNotNull(code);
-        assertEquals("```java\ncode\n```\n", code.toMarkdown());
+        String result = code.toMarkdown();
+        System.out.println("testCreateWithStringAndLanguage: " + result);
+        assertEquals("```java\ncode\n```\n", result);
     }
 
     /**
@@ -66,7 +72,9 @@ public class CodeTest {
         Text text = Text.create("code");
         Code code = Code.create(text, "python");
         assertNotNull(code);
-        assertEquals("```python\ncode\n```\n", code.toMarkdown());
+        String result = code.toMarkdown();
+        System.out.println("testCreateWithIMarkdownAndLanguage: " + result);
+        assertEquals("```python\ncode\n```\n", result);
     }
 
     /**
@@ -75,7 +83,9 @@ public class CodeTest {
     @Test
     public void testEmptyCode() {
         Code code = Code.create("");
-        assertEquals("", code.toMarkdown());
+        String result = code.toMarkdown();
+        System.out.println("testEmptyCode: " + result);
+        assertEquals("", result);
     }
 
     /**
@@ -84,7 +94,9 @@ public class CodeTest {
     @Test
     public void testNullCode() {
         Code code = Code.create((String) null);
-        assertEquals("", code.toMarkdown());
+        String result = code.toMarkdown();
+        System.out.println("testNullCode: " + result);
+        assertEquals("", result);
     }
 
     /**
@@ -93,7 +105,9 @@ public class CodeTest {
     @Test
     public void testInlineCode() {
         Code code = Code.create("inline code");
-        assertEquals("`inline code`", code.toMarkdown());
+        String result = code.toMarkdown();
+        System.out.println("testInlineCode: " + result);
+        assertEquals("`inline code`", result);
     }
 
     /**
@@ -102,7 +116,9 @@ public class CodeTest {
     @Test
     public void testCodeBlockWithNewline() {
         Code code = Code.create("line1\nline2");
-        assertEquals("```\nline1\nline2\n```\n", code.toMarkdown());
+        String result = code.toMarkdown();
+        System.out.println("testCodeBlockWithNewline: " + result);
+        assertEquals("```\nline1\nline2\n```\n", result);
     }
 
     /**
@@ -112,6 +128,7 @@ public class CodeTest {
     public void testCodeBlockWithMultipleNewlines() {
         Code code = Code.create("line1\nline2\nline3");
         String result = code.toMarkdown();
+        System.out.println("testCodeBlockWithMultipleNewlines: " + result);
         assertTrue(result.startsWith("```"));
         assertTrue(result.endsWith("```\n"));
         assertTrue(result.contains("line1"));
@@ -125,7 +142,9 @@ public class CodeTest {
     @Test
     public void testCodeBlockWithLanguage() {
         Code code = Code.create("public class Test {}", "java");
-        assertEquals("```java\npublic class Test {}\n```\n", code.toMarkdown());
+        String result = code.toMarkdown();
+        System.out.println("testCodeBlockWithLanguage: " + result);
+        assertEquals("```java\npublic class Test {}\n```\n", result);
     }
 
     /**
@@ -134,7 +153,9 @@ public class CodeTest {
     @Test
     public void testCodeBlockWithEmptyLanguage() {
         Code code = Code.create("code", "");
-        assertEquals("`code`", code.toMarkdown());
+        String result = code.toMarkdown();
+        System.out.println("testCodeBlockWithEmptyLanguage: " + result);
+        assertEquals("`code`", result);
     }
 
     /**
@@ -143,7 +164,9 @@ public class CodeTest {
     @Test
     public void testCodeBlockWithNullLanguage() {
         Code code = Code.create("code", null);
-        assertEquals("`code`", code.toMarkdown());
+        String result = code.toMarkdown();
+        System.out.println("testCodeBlockWithNullLanguage: " + result);
+        assertEquals("`code`", result);
     }
 
     /**
@@ -152,7 +175,9 @@ public class CodeTest {
     @Test
     public void testCodeBlockWithWhitespaceLanguage() {
         Code code = Code.create("code", "  ");
-        assertEquals("`code`", code.toMarkdown());
+        String result = code.toMarkdown();
+        System.out.println("testCodeBlockWithWhitespaceLanguage: " + result);
+        assertEquals("`code`", result);
     }
 
     /**
@@ -162,7 +187,9 @@ public class CodeTest {
     public void testAppendString() {
         Code code = Code.create("line1");
         code.append("line2");
-        assertEquals("`line1line2`", code.toMarkdown());
+        String result = code.toMarkdown();
+        System.out.println("testAppendString: " + result);
+        assertEquals("`line1line2`", result);
     }
 
     /**
@@ -173,6 +200,7 @@ public class CodeTest {
         Code code = Code.create("line1");
         code.append("line2").append("line3");
         String result = code.toMarkdown();
+        System.out.println("testMultipleAppends: " + result);
         assertTrue(result.contains("line1"));
         assertTrue(result.contains("line2"));
         assertTrue(result.contains("line3"));
@@ -184,7 +212,9 @@ public class CodeTest {
     @Test
     public void testCodeWithSpecialCharacters() {
         Code code = Code.create("code @#$%^&*()");
-        assertEquals("`code @#$%^&*()`", code.toMarkdown());
+        String result = code.toMarkdown();
+        System.out.println("testCodeWithSpecialCharacters: " + result);
+        assertEquals("`code @#$%^&*()`", result);
     }
 
     /**
@@ -193,7 +223,9 @@ public class CodeTest {
     @Test
     public void testCodeWithBackticks() {
         Code code = Code.create("code `with` backticks");
-        assertEquals("`code `with` backticks`", code.toMarkdown());
+        String result = code.toMarkdown();
+        System.out.println("testCodeWithBackticks: " + result);
+        assertEquals("`code `with` backticks`", result);
     }
 
     /**
@@ -202,7 +234,9 @@ public class CodeTest {
     @Test
     public void testCodeWithUnicode() {
         Code code = Code.create("中文代码");
-        assertEquals("`中文代码`", code.toMarkdown());
+        String result = code.toMarkdown();
+        System.out.println("testCodeWithUnicode: " + result);
+        assertEquals("`中文代码`", result);
     }
 
     /**
@@ -211,7 +245,9 @@ public class CodeTest {
     @Test
     public void testCodeWithNumbers() {
         Code code = Code.create("12345");
-        assertEquals("`12345`", code.toMarkdown());
+        String result = code.toMarkdown();
+        System.out.println("testCodeWithNumbers: " + result);
+        assertEquals("`12345`", result);
     }
 
     /**
@@ -220,7 +256,9 @@ public class CodeTest {
     @Test
     public void testCodeWithTabs() {
         Code code = Code.create("code\twith\ttabs");
-        assertEquals("`code\twith\ttabs`", code.toMarkdown());
+        String result = code.toMarkdown();
+        System.out.println("testCodeWithTabs: " + result);
+        assertEquals("`code\twith\ttabs`", result);
     }
 
     /**
@@ -230,6 +268,7 @@ public class CodeTest {
     public void testCodeWithCarriageReturn() {
         Code code = Code.create("line1\rline2");
         String result = code.toMarkdown();
+        System.out.println("testCodeWithCarriageReturn: " + result);
         assertTrue(result.startsWith("`") && result.endsWith("`"));
         assertTrue(result.contains("line1"));
         assertTrue(result.contains("line2"));
@@ -241,7 +280,9 @@ public class CodeTest {
     @Test
     public void testCodeWithCRLF() {
         Code code = Code.create("line1\r\nline2");
-        assertEquals("```\nline1\r\nline2\n```\n", code.toMarkdown());
+        String result = code.toMarkdown();
+        System.out.println("testCodeWithCRLF: " + result);
+        assertEquals("```\nline1\r\nline2\n```\n", result);
     }
 
     /**
@@ -250,7 +291,9 @@ public class CodeTest {
     @Test
     public void testToString() {
         Code code = Code.create("code");
-        assertEquals("`code`", code.toString());
+        String result = code.toString();
+        System.out.println("testToString: " + result);
+        assertEquals("`code`", result);
     }
 
     /**
@@ -259,7 +302,9 @@ public class CodeTest {
     @Test
     public void testToMarkdown() {
         Code code = Code.create("code");
-        assertEquals("`code`", code.toMarkdown());
+        String result = code.toMarkdown();
+        System.out.println("testToMarkdown: " + result);
+        assertEquals("`code`", result);
     }
 
     /**
@@ -271,6 +316,7 @@ public class CodeTest {
                 .append("line2")
                 .append("line3");
         String result = code.toMarkdown();
+        System.out.println("testCodeBuilderPattern: " + result);
         assertTrue(result.contains("line1"));
         assertTrue(result.contains("line2"));
         assertTrue(result.contains("line3"));
@@ -283,6 +329,7 @@ public class CodeTest {
     public void testCodeBlockWithLanguageAndNewline() {
         Code code = Code.create("line1\nline2", "java");
         String result = code.toMarkdown();
+        System.out.println("testCodeBlockWithLanguageAndNewline: " + result);
         assertTrue(result.startsWith("```java"));
         assertTrue(result.contains("line1"));
         assertTrue(result.contains("line2"));
@@ -296,6 +343,7 @@ public class CodeTest {
     public void testCodeBlockWithMultipleLinesAndLanguage() {
         Code code = Code.create("public class Test {\n    public static void main(String[] args) {\n        System.out.println(\"Hello\");\n    }\n}", "java");
         String result = code.toMarkdown();
+        System.out.println("testCodeBlockWithMultipleLinesAndLanguage: " + result);
         assertTrue(result.startsWith("```java"));
         assertTrue(result.contains("public class Test"));
         assertTrue(result.contains("System.out.println"));
@@ -308,7 +356,9 @@ public class CodeTest {
     @Test
     public void testCodeWithLeadingWhitespace() {
         Code code = Code.create("  code  ");
-        assertEquals("`code`", code.toMarkdown());
+        String result = code.toMarkdown();
+        System.out.println("testCodeWithLeadingWhitespace: " + result);
+        assertEquals("`code`", result);
     }
 
     /**
@@ -318,6 +368,7 @@ public class CodeTest {
     public void testCodeBlockWithLeadingWhitespace() {
         Code code = Code.create("  line1\n  line2", "java");
         String result = code.toMarkdown();
+        System.out.println("testCodeBlockWithLeadingWhitespace: " + result);
         assertTrue(result.contains("line1"));
         assertTrue(result.contains("line2"));
     }
@@ -329,6 +380,7 @@ public class CodeTest {
     public void testCodeWithEmptyLines() {
         Code code = Code.create("line1\n\nline3");
         String result = code.toMarkdown();
+        System.out.println("testCodeWithEmptyLines: " + result);
         assertTrue(result.contains("line1"));
         assertTrue(result.contains("line3"));
     }
@@ -339,7 +391,9 @@ public class CodeTest {
     @Test
     public void testCodeWithOnlyNewline() {
         Code code = Code.create("\n");
-        assertEquals("", code.toMarkdown());
+        String result = code.toMarkdown();
+        System.out.println("testCodeWithOnlyNewline: " + result);
+        assertEquals("", result);
     }
 
     /**
@@ -348,7 +402,9 @@ public class CodeTest {
     @Test
     public void testCodeWithTrailingNewline() {
         Code code = Code.create("code\n");
-        assertEquals("`code`", code.toMarkdown());
+        String result = code.toMarkdown();
+        System.out.println("testCodeWithTrailingNewline: " + result);
+        assertEquals("`code`", result);
     }
 
     /**
@@ -357,7 +413,9 @@ public class CodeTest {
     @Test
     public void testCodeWithLeadingNewline() {
         Code code = Code.create("\ncode");
-        assertEquals("`code`", code.toMarkdown());
+        String result = code.toMarkdown();
+        System.out.println("testCodeWithLeadingNewline: " + result);
+        assertEquals("`code`", result);
     }
 
     /**
@@ -369,9 +427,15 @@ public class CodeTest {
         Code code2 = Code.create("code", "JAVA");
         Code code3 = Code.create("code", "java");
 
-        assertTrue(code1.toMarkdown().contains("```Java"));
-        assertTrue(code2.toMarkdown().contains("```JAVA"));
-        assertTrue(code3.toMarkdown().contains("```java"));
+        String result1 = code1.toMarkdown();
+        String result2 = code2.toMarkdown();
+        String result3 = code3.toMarkdown();
+        System.out.println("testCodeBlockLanguageCase - code1: " + result1);
+        System.out.println("testCodeBlockLanguageCase - code2: " + result2);
+        System.out.println("testCodeBlockLanguageCase - code3: " + result3);
+        assertTrue(result1.contains("```Java"));
+        assertTrue(result2.contains("```JAVA"));
+        assertTrue(result3.contains("```java"));
     }
 
     /**
@@ -380,7 +444,9 @@ public class CodeTest {
     @Test
     public void testCodeBlockWithSpecialLanguage() {
         Code code = Code.create("code", "c++");
-        assertEquals("```c++\ncode\n```\n", code.toMarkdown());
+        String result = code.toMarkdown();
+        System.out.println("testCodeBlockWithSpecialLanguage: " + result);
+        assertEquals("```c++\ncode\n```\n", result);
     }
 
     /**
@@ -389,6 +455,8 @@ public class CodeTest {
     @Test
     public void testCodeBlockWithHyphenatedLanguage() {
         Code code = Code.create("code", "java-script");
-        assertEquals("```java-script\ncode\n```\n", code.toMarkdown());
+        String result = code.toMarkdown();
+        System.out.println("testCodeBlockWithHyphenatedLanguage: " + result);
+        assertEquals("```java-script\ncode\n```\n", result);
     }
 }
