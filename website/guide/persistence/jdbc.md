@@ -1285,10 +1285,61 @@ UserEntity user = UserEntity.builder()
 user.save();
 // 或者在插入时也可以指定/排除某些字段
 user.save(Fields.create(UserEntity.FIELDS.NICKNAME, UserEntity.FIELDS.EMAIL).excluded(true));
-// 或者插入前判断记录是否已存在，若已存在则执行记录更新操作
+```
+
+#### 插入或更新（Upsert）
+
+> @since 2.1.4
+
+`saveOrUpdate` 方法用于执行插入或更新操作，根据数据库类型采用原子操作实现：
+
+| 数据库类型 | SQL 语法 |
+|-----------|----------|
+| MySQL | `INSERT ... ON DUPLICATE KEY UPDATE ...` |
+| PostgreSQL | `INSERT ... ON CONFLICT ... DO UPDATE SET ...` |
+| SQLite | `INSERT ... ON CONFLICT ... DO UPDATE SET ...` |
+| 其他数据库 | 回退到先查询后更新/插入的方式（非原子操作） |
+
+```java
+UserEntity user = UserEntity.builder()
+    .id(UUIDUtils.UUID())
+    .username("suninformation")
+    .nickname("有理想的鱼")
+    .password(DigestUtils.md5Hex("123456"))
+    .email("suninformation@163.com")
+    .build();
+// 插入前判断记录是否已存在，若已存在则执行记录更新操作
 user.saveOrUpdate();
 // 或者插入前判断记录是否已存在，若已存在则执行记录更新操作时仅更新指定的字段
 user.saveOrUpdate(Fields.create(UserEntity.FIELDS.NICKNAME, UserEntity.FIELDS.EMAIL));
+```
+
+#### 插入如果不存在（InsertIfNotExist）
+
+> @since 2.1.4
+
+`saveIfNotExist` 方法用于执行"如果不存在则插入"操作，根据数据库类型采用原子操作实现：
+
+| 数据库类型 | SQL 语法 |
+|-----------|----------|
+| MySQL | `INSERT IGNORE INTO ...` |
+| PostgreSQL | `INSERT INTO ... ON CONFLICT DO NOTHING` |
+| SQLite | `INSERT OR IGNORE INTO ...` |
+| Oracle/SQLServer/H2/DB2/HSQLDB | `MERGE INTO ... WHEN NOT MATCHED THEN INSERT ...` |
+| 其他数据库 | 回退到先查询后插入的方式（非原子操作） |
+
+```java
+UserEntity user = UserEntity.builder()
+    .id(UUIDUtils.UUID())
+    .username("suninformation")
+    .nickname("有理想的鱼")
+    .password(DigestUtils.md5Hex("123456"))
+    .email("suninformation@163.com")
+    .build();
+// 如果记录不存在则插入，若记录已存在则返回false
+boolean success = user.saveIfNotExist();
+// 或者指定/排除某些字段
+success = user.saveIfNotExist(Fields.create(UserEntity.FIELDS.NICKNAME, UserEntity.FIELDS.EMAIL).excluded(true));
 ```
 
 #### 更新（Update）
@@ -1657,7 +1708,102 @@ UserEntity userEntity = JDBC.get().openSession(new IDatabaseSessionExecutor<User
 });
 ```
 
+#### 插入或更新（Upsert）
 
+> @since 2.1.4
+
+
+`upsert` 方法用于执行插入或更新操作，根据数据库类型采用原子操作实现：
+
+| 数据库类型 | SQL 语法 |
+|-----------|----------|
+| MySQL | `INSERT ... ON DUPLICATE KEY UPDATE ...` |
+| PostgreSQL | `INSERT ... ON CONFLICT ... DO UPDATE SET ...` |
+| SQLite | `INSERT ... ON CONFLICT ... DO UPDATE SET ...` |
+| Oracle/SQLServer/DB2/H2/HSQLDB | `MERGE INTO ...` |
+
+```java
+UserEntity userEntity = JDBC.get().openSession(new IDatabaseSessionExecutor<UserEntity>() {
+    public UserEntity execute(IDatabaseSession session) throws Exception {
+        UserEntity user = UserEntity.builder()
+            .id(UUIDUtils.UUID())
+            .username("suninformation")
+            .nickname("有理想的鱼")
+            .password(DigestUtils.md5Hex("123456"))
+            .email("suninformation@163.com")
+            .build();
+        // 执行插入或更新操作
+        user = session.upsert(user);
+        // 或者指定/排除某些字段
+        user = session.upsert(user, Fields.create(UserEntity.FIELDS.NICKNAME, UserEntity.FIELDS.EMAIL));
+        return user;
+    }
+});
+```
+
+**批量 Upsert 操作：**
+
+```java
+List<UserEntity> userEntities = JDBC.get().openSession(new IDatabaseSessionExecutor<List<UserEntity>>() {
+    public List<UserEntity> execute(IDatabaseSession session) throws Exception {
+        List<UserEntity> users = new ArrayList<>();
+        users.add(UserEntity.builder().id(UUIDUtils.UUID()).username("user1").build());
+        users.add(UserEntity.builder().id(UUIDUtils.UUID()).username("user2").build());
+        // 执行批量插入或更新操作
+        return session.upsert(users);
+        // 或者指定/排除某些字段
+        // return session.upsert(users, Fields.create(UserEntity.FIELDS.NICKNAME));
+    }
+});
+```
+
+#### 插入如果不存在（InsertIfNotExist）
+
+> @since 2.1.4
+
+`insertIfNotExist` 方法用于执行"如果不存在则插入"操作，根据数据库类型采用原子操作实现：
+
+| 数据库类型 | SQL 语法 |
+|-----------|----------|
+| MySQL | `INSERT IGNORE INTO ...` |
+| PostgreSQL | `INSERT INTO ... ON CONFLICT DO NOTHING` |
+| SQLite | `INSERT OR IGNORE INTO ...` |
+| Oracle/SQLServer/H2/DB2/HSQLDB | `MERGE INTO ... WHEN NOT MATCHED THEN INSERT ...` |
+
+```java
+UserEntity userEntity = JDBC.get().openSession(new IDatabaseSessionExecutor<UserEntity>() {
+    public UserEntity execute(IDatabaseSession session) throws Exception {
+        UserEntity user = UserEntity.builder()
+            .id(UUIDUtils.UUID())
+            .username("suninformation")
+            .nickname("有理想的鱼")
+            .password(DigestUtils.md5Hex("123456"))
+            .email("suninformation@163.com")
+            .build();
+        // 如果记录不存在则插入，若记录已存在则返回null
+        user = session.insertIfNotExist(user);
+        // 或者指定/排除某些字段
+        user = session.insertIfNotExist(user, Fields.create(UserEntity.FIELDS.NICKNAME, UserEntity.FIELDS.EMAIL));
+        return user;
+    }
+});
+```
+
+**批量 InsertIfNotExist 操作：**
+
+```java
+List<UserEntity> userEntities = JDBC.get().openSession(new IDatabaseSessionExecutor<List<UserEntity>>() {
+    public List<UserEntity> execute(IDatabaseSession session) throws Exception {
+        List<UserEntity> users = new ArrayList<>();
+        users.add(UserEntity.builder().id(UUIDUtils.UUID()).username("user1").build());
+        users.add(UserEntity.builder().id(UUIDUtils.UUID()).username("user2").build());
+        // 执行批量插入如果不存在操作
+        return session.insertIfNotExist(users);
+        // 或者指定/排除某些字段
+        // return session.insertIfNotExist(users, Fields.create(UserEntity.FIELDS.NICKNAME));
+    }
+});
+```
 
 #### 查询（Find）
 
@@ -2895,7 +3041,7 @@ Select select = Select.create(UserEntity.class)
 Select select = Select.create(SalesEntity.class)
     .field(SalesEntity::getMonth)
     .field(SalesEntity::getAmount)
-    .field(Func.window.LAG(SalesEntity::getAmount, 1, "0", 
+    .field(Func.window.LAG(SalesEntity::getAmount, 1, "0",
         WindowOver.create().orderByAsc(SalesEntity::getMonth)), "prev_amount");
 ```
 

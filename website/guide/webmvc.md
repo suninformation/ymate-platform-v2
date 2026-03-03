@@ -449,7 +449,7 @@ Everything depends on ability!  -- YMP :)
 | method | 允许的请求方式，默认为 `Type.HttpMethod.GET`<br/>取值范围：`GET`、`HEAD`、`POST`、`PUT`、`PATCH`、`DELETE`、`OPTIONS`、`TRACE` |
 | header | 请求头中必须存在的头名称                                     |
 | param  | 请求中必须存在的参数名称                                     |
-| suffix | 允许的请求路径扩展名，默认为空数组（即不允许带扩展名），支持 `.*` 通配符匹配任意扩展名 |
+| suffix | 允许的请求路径扩展名，默认为空数组（即不允许带扩展名），支持 `.*` 通配符匹配任意扩展名<br/>*@since 2.1.4* |
 
 
 
@@ -511,6 +511,8 @@ public class DemoController {
 
 
 ### 示例三：扩展名匹配
+
+> @since 2.1.4
 
 使用 `@RequestMapping` 的 `suffix` 属性配置扩展名匹配：
 
@@ -750,6 +752,9 @@ WebMVC 模块可以通过实现 `IRequestMappingParser` 接口自定义请求路
 
 
 #### @RequestSuffix
+
+> @since 2.1.4
+
 
 绑定请求路径的扩展名值到控制器方法参数。
 

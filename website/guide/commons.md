@@ -29,24 +29,136 @@ slug: commons
 
 ### 模糊对象（BlurObject）
 
-用于任意类型对象之间的转换，基本涵盖日常使用的数据类型，通过 `IConverter` 接口实现自定义转换器并支持手动或 `SPI` 方式注册。
+`BlurObject` 是一个用于任意类型对象之间转换的工具类，基本涵盖日常使用的数据类型。通过 `IConverter` 接口可以实现自定义转换器，并支持手动注册或 `SPI` 机制自动注册。
 
+#### 核心特性
 
+- **类型安全转换**：支持各种基本数据类型、包装类型、集合类型之间的自动转换
+- **智能类型推断**：自动识别源类型并进行相应的转换处理
+- **可扩展性**：通过 `IConverter` 接口支持自定义类型转换
+- **SPI 自动注册**：支持通过 SPI 机制自动发现和注册转换器
+
+#### 创建 BlurObject 实例
+
+```java
+// 使用静态 bind 方法创建
+BlurObject blurObject = BlurObject.bind("123.4");
+
+// 使用构造方法创建
+BlurObject blurObject = new BlurObject(123);
+
+// 绑定 null 值
+BlurObject blurObject = BlurObject.bind(null);
+```
+
+#### 基本数据类型转换
+
+`BlurObject` 提供了丰富的方法用于基本数据类型转换：
+
+| 方法 | 返回类型 | 说明 |
+|------|----------|------|
+| `toBoolean()` / `toBooleanValue()` | `Boolean` / `boolean` | 转换为布尔值 |
+| `toInteger()` / `toIntValue()` | `Integer` / `int` | 转换为整数 |
+| `toLong()` / `toLongValue()` | `Long` / `long` | 转换为长整型 |
+| `toFloat()` / `toFloatValue()` | `Float` / `float` | 转换为浮点数 |
+| `toDouble()` / `toDoubleValue()` | `Double` / `double` | 转换为双精度浮点数 |
+| `toShort()` / `toShortValue()` | `Short` / `short` | 转换为短整型 |
+| `toByte()` / `toByteValue()` | `Byte` / `byte` | 转换为字节 |
+| `toStringValue()` | `String` | 转换为字符串 |
+| `toCharValue()` | `char` | 转换为字符 |
 
 **示例：** 基本数据类型转换
 
 ```java
 Object targetObj = "123.4";
-//
 BlurObject blurObject = BlurObject.bind(targetObj);
-blurObject.toIntValue();
-blurObject.toDoubleValue();
-blurObject.toFloatValue();
-blurObject.toStringValue();
-// ......
+
+// 转换为整数（自动解析字符串）
+int intValue = blurObject.toIntValue();           // 123
+
+// 转换为双精度浮点数
+double doubleValue = blurObject.toDoubleValue();  // 123.4
+
+// 转换为浮点数
+float floatValue = blurObject.toFloatValue();     // 123.4f
+
+// 转换为字符串
+String stringValue = blurObject.toStringValue();  // "123.4"
+
+// 转换为布尔值
+BlurObject boolObj = BlurObject.bind("true");
+boolean boolValue = boolObj.toBooleanValue();     // true
 ```
 
+#### 集合类型转换
 
+`BlurObject` 支持将对象转换为各种集合类型：
+
+| 方法 | 返回类型 | 说明 |
+|------|----------|------|
+| `toMapValue()` | `Map<?, ?>` | 转换为 Map |
+| `toListValue()` | `List<?>` | 转换为 List |
+| `toSetValue()` | `Set<?>` | 转换为 Set |
+
+**示例：** 集合类型转换
+
+```java
+// Map 转换
+Map<String, Object> map = new HashMap<>();
+map.put("key1", "value1");
+map.put("key2", 123);
+BlurObject blurObject = BlurObject.bind(map);
+Map<?, ?> resultMap = blurObject.toMapValue();
+
+// List 转换
+List<String> list = Arrays.asList("a", "b", "c");
+BlurObject blurObject = BlurObject.bind(list);
+List<?> resultList = blurObject.toListValue();
+
+// 非集合类型会自动包装为单元素集合
+BlurObject singleObj = BlurObject.bind("single");
+List<?> singleList = singleObj.toListValue();  // ["single"]
+```
+
+#### 字节数组转换
+
+`BlurObject` 支持字节数组和包装类型的转换：
+
+| 方法 | 返回类型 | 说明 |
+|------|----------|------|
+| `toBytes()` | `Byte[]` | 转换为 Byte 数组（包装类型） |
+| `toBytesValue()` | `byte[]` | 转换为 byte 数组（基本类型） |
+
+**示例：** 字节数组转换
+
+```java
+// byte[] 转换
+byte[] bytes = {1, 2, 3, 4, 5};
+BlurObject blurObject = BlurObject.bind(bytes);
+byte[] result = blurObject.toBytesValue();
+
+// Byte[] 转换
+Byte[] byteObjects = {1, 2, 3, 4, 5};
+BlurObject blurObject = BlurObject.bind(byteObjects);
+byte[] result = blurObject.toBytesValue();
+```
+
+#### 指定类型转换
+
+使用 `toObjectValue(Class<?> clazz)` 方法可以将对象转换为指定类型：
+
+```java
+BlurObject blurObject = BlurObject.bind("123");
+
+// 转换为指定类型
+Integer intObj = (Integer) blurObject.toObjectValue(Integer.class);
+Double doubleObj = (Double) blurObject.toObjectValue(Double.class);
+String strObj = (String) blurObject.toObjectValue(String.class);
+```
+
+#### 自定义类型转换器
+
+通过实现 `IConverter` 接口并配合 `@Converter` 注解，可以创建自定义类型转换器。
 
 **示例：** 自定义类型转换器的注册与使用
 
@@ -58,41 +170,222 @@ public class DateConverter implements IConverter<java.sql.Date> {
 
     @Override
     public java.sql.Date convert(Object target) {
-        return new Date(((java.util.Date) target).getTime());
+        return new java.sql.Date(((java.util.Date) target).getTime());
     }
 }
 
-// 手动注册
+// 手动注册转换器
 BlurObject.registerConverter(java.util.Date.class, java.sql.Date.class, new DateConverter());
+
 // 执行转换
 java.util.Date date = new java.util.Date();
-BlurObject.bind(date).toObjectValue(java.sql.Date.class);
+java.sql.Date sqlDate = BlurObject.bind(date).toObjectValue(java.sql.Date.class);
 ```
+
+#### SPI 自动注册
+
+转换器可以通过 SPI 机制自动注册，只需在 `META-INF/services/net.ymate.platform.commons.lang.IConverter` 文件中添加转换器类的全限定名：
+
+```
+com.example.converter.DateConverter
+com.example.converter.TimestampConverter
+```
+
+#### 特殊类型处理
+
+`BlurObject` 对一些特殊类型提供了专门的处理：
+
+| 源类型 | 处理方式 |
+|--------|----------|
+| `Clob` | 读取字符流并转换为字符串 |
+| `Blob` | 读取二进制流并转换为字节数组 |
+| `Date` / `Calendar` | 转换为时间戳（Long） |
+| `LocalDate` / `LocalDateTime` / `ZonedDateTime` | 转换为时间戳（Long） |
+| 枚举类型 | 通过名称匹配进行转换 |
+| `Object[]` | 使用 `\|` 连接为字符串 |
+
+**示例：** 日期时间转换
+
+```java
+// Date 转换为 Long（时间戳）
+java.util.Date date = new java.util.Date();
+BlurObject blurObject = BlurObject.bind(date);
+long timestamp = blurObject.toLongValue();
+
+// LocalDateTime 转换为 Long
+LocalDateTime localDateTime = LocalDateTime.now();
+BlurObject blurObject = BlurObject.bind(localDateTime);
+long timestamp = blurObject.toLongValue();
+```
+
+#### 最佳实践
+
+1. **优先使用带默认值的方法**：如 `toIntValue()`、`toBooleanValue()` 等，避免处理 null 值时的空指针异常
+
+2. **合理使用类型转换**：了解各种类型之间的转换规则，避免精度丢失或数据截断
+
+3. **自定义转换器**：对于复杂的类型转换需求，建议实现 `IConverter` 接口进行封装
+
+4. **SPI 自动注册**：对于通用的转换器，使用 SPI 机制自动注册，减少手动配置
 
 
 
 ### 结对对象（PairObject）
 
-用于将任意两种类型的对象以 \<K, V\> 的形式组合在一起。
+`PairObject<K, V>` 是一个通用的键值对容器类，用于将任意两种类型的对象以 `<K, V>` 的形式组合在一起。它实现了 `Serializable` 接口，支持序列化操作。
 
+#### 核心特性
 
+- **泛型支持**：支持任意类型的键和值组合
+- **链式调用**：setter 方法支持链式调用，方便构建对象
+- **空值检查**：提供便捷的空值检查方法
+- **序列化支持**：实现 `Serializable` 接口，支持对象序列化
 
-**示例：**
+#### 创建 PairObject 实例
+
+`PairObject` 提供了多种创建实例的方式：
+
+| 方法 | 说明 |
+|------|------|
+| `PairObject()` | 默认构造方法，创建空的结对对象 |
+| `PairObject(K key)` | 使用键创建结对对象，值为 null |
+| `PairObject(K key, V value)` | 使用键和值创建结对对象 |
+| `PairObject.bind(K key)` | 静态方法，使用键创建结对对象 |
+| `PairObject.bind(K key, V value)` | 静态方法，使用键和值创建结对对象 |
+
+**示例：** 创建结对对象
+
+```java
+// 使用静态 bind 方法创建（推荐）
+PairObject<String, Integer> pairObject1 = PairObject.bind("suninformation", 18);
+
+// 使用构造方法创建
+PairObject<String, Integer> pairObject2 = new PairObject<>("suninformation", 18);
+
+// 只设置键，值为 null
+PairObject<String, Integer> pairObject3 = PairObject.bind("key");
+
+// 使用默认构造方法，然后通过 setter 设置
+PairObject<String, Integer> pairObject4 = new PairObject<>();
+pairObject4.setKey("suninformation").setValue(18);
+```
+
+#### 常用方法
+
+| 方法 | 返回类型 | 说明 |
+|------|----------|------|
+| `getKey()` | `K` | 获取键 |
+| `setKey(K key)` | `PairObject<K, V>` | 设置键，支持链式调用 |
+| `getValue()` | `V` | 获取值 |
+| `setValue(V value)` | `PairObject<K, V>` | 设置值，支持链式调用 |
+| `isEmpty()` | `boolean` | 检查键和值是否都为 null |
+| `isAnyEmpty()` | `boolean` | 检查键或值是否为 null |
+
+#### 使用示例
+
+**示例一：** 基本类型结对
 
 ```java
 String name = "suninformation";
 int age = 18;
 PairObject<String, Integer> pairObject = PairObject.bind(name, age);
-pairObject.getKey();   // suninformation
-pairObject.getValue(); // 18
-//
-List<String> key = new ArrayList<>();
-// ......
-Map<String, String> value = new HashMap<>();
-// ......
-PairObject<List<String>, Map<String, String>> pairObject2 = new PairObject<>(key, value);
-pairObject2.getKey();
-pairObject2.getValue();
+
+// 获取键和值
+String key = pairObject.getKey();      // "suninformation"
+Integer value = pairObject.getValue(); // 18
+
+// 检查是否为空
+boolean empty = pairObject.isEmpty();      // false
+boolean anyEmpty = pairObject.isAnyEmpty(); // false
+```
+
+**示例二：** 复杂类型结对
+
+```java
+// 使用集合类型作为键和值
+List<String> keyList = new ArrayList<>();
+keyList.add("item1");
+keyList.add("item2");
+
+Map<String, String> valueMap = new HashMap<>();
+valueMap.put("key1", "value1");
+valueMap.put("key2", "value2");
+
+PairObject<List<String>, Map<String, String>> pairObject =
+    new PairObject<>(keyList, valueMap);
+
+// 获取键和值
+List<String> keys = pairObject.getKey();
+Map<String, String> values = pairObject.getValue();
+```
+
+**示例三：** 链式调用
+
+```java
+PairObject<String, Integer> pairObject = new PairObject<>()
+    .setKey("age")
+    .setValue(25);
+
+// 修改值
+pairObject.setValue(26);
+```
+
+**示例四：** 空值检查
+
+```java
+// 创建空的结对对象
+PairObject<String, Integer> emptyPair = new PairObject<>();
+
+// 检查是否为空
+boolean isEmpty = emptyPair.isEmpty();      // true
+boolean isAnyEmpty = emptyPair.isAnyEmpty(); // true
+
+// 创建只有键的结对对象
+PairObject<String, Integer> keyOnlyPair = PairObject.bind("key");
+boolean isEmpty2 = keyOnlyPair.isEmpty();      // false（键不为null）
+boolean isAnyEmpty2 = keyOnlyPair.isAnyEmpty(); // true（值为null）
+```
+
+**示例五：** 在集合中使用
+
+```java
+// 创建结对对象列表
+List<PairObject<String, Integer>> pairList = new ArrayList<>();
+
+pairList.add(PairObject.bind("Alice", 25));
+pairList.add(PairObject.bind("Bob", 30));
+pairList.add(PairObject.bind("Charlie", 35));
+
+// 遍历并输出
+for (PairObject<String, Integer> pair : pairList) {
+    System.out.println(pair.getKey() + ": " + pair.getValue());
+}
+
+// 使用 Map 存储结对对象
+Map<String, PairObject<String, Integer>> pairMap = new HashMap<>();
+pairMap.put("user1", PairObject.bind("Alice", 25));
+pairMap.put("user2", PairObject.bind("Bob", 30));
+```
+
+#### 最佳实践
+
+1. **优先使用静态 bind 方法**：代码更简洁，意图更明确
+
+2. **使用泛型确保类型安全**：在创建 `PairObject` 时明确指定键和值的类型
+
+3. **合理使用空值检查**：在获取值之前使用 `isEmpty()` 或 `isAnyEmpty()` 进行检查
+
+4. **链式调用简化代码**：在需要连续设置多个属性时使用链式调用
+
+5. **作为方法返回值**：当方法需要返回两个相关联的值时，可以使用 `PairObject` 作为返回类型
+
+```java
+// 作为方法返回值
+public PairObject<String, Integer> getUserInfo() {
+    String name = getUserName();
+    int age = getUserAge();
+    return PairObject.bind(name, age);
+}
 ```
 
 
@@ -101,13 +394,57 @@ pairObject2.getValue();
 
 使用级联方式存储各种数据类型，不限层级深度。
 
+TreeObject 是一个功能强大的树形数据结构，支持以下特性：
+- 支持三种存储模式：值模式、映射模式和数组集合模式
+- 支持多种数据类型，包括基本类型、字符串、数组、集合等
+- 支持 JSON 和 XML 的序列化与反序列化
+- 提供丰富的类型转换和取值方法
+- 支持通过默认值避免空指针异常
 
 
-**示例：** 综合展示 TreeObject 类的使用方法
+#### 存储模式
+
+TreeObject 支持三种存储模式：
+
+| 常量 | 值 | 说明 |
+|------|-----|------|
+| MODE_VALUE | 1 | 值模式，用于存储单个值 |
+| MODE_MAP | 2 | 映射模式，用于存储键值对 |
+| MODE_ARRAY | 3 | 数组集合模式，用于存储有序列表 |
+
+
+#### 数据类型常量
+
+TreeObject 支持以下数据类型常量：
+
+| 常量 | 值 | 说明 |
+|------|-----|------|
+| TYPE_NULL | 0 | NULL 类型 |
+| TYPE_INTEGER | 1 | Integer 类型 |
+| TYPE_MIX_STRING | 2 | 混合 String 类型（通过 Base64 编码的字符串） |
+| TYPE_STRING | 3 | String 类型 |
+| TYPE_LONG | 4 | Long 类型 |
+| TYPE_TIME | 5 | Time 类型（UTC 时间） |
+| TYPE_BOOLEAN | 6 | Boolean 类型 |
+| TYPE_FLOAT | 7 | Float 类型 |
+| TYPE_DOUBLE | 8 | Double 类型 |
+| TYPE_MAP | 9 | Map&lt;String, ? extends Object&gt; 类型 |
+| TYPE_COLLECTION | 10 | Collection&lt;? extends Object&gt; 类型 |
+| TYPE_BYTE | 11 | Byte 类型 |
+| TYPE_CHAR | 12 | Character 类型 |
+| TYPE_SHORT | 13 | Short 类型 |
+| TYPE_BYTES | 14 | byte[] 类型 |
+| TYPE_OBJECT | 15 | Object 类型 |
+| TYPE_UNKNOWN | 99 | 未知类型 |
+| TYPE_TREE_OBJECT | 100 | 树对象类型 |
+
+
+**示例：** 基本使用
 
 ```java
 public class TreeObjectTest {
     public static void main(String[] args) {
+        // 创建一个映射模式的 TreeObject
         TreeObject treeObject = new TreeObject()
                 .put("id", UUIDUtils.UUID())
                 .put("category", new Byte[]{1, 2, 3, 4})
@@ -116,37 +453,37 @@ public class TreeObjectTest {
                 .put("detail", new TreeObject()
                         .put("real_name", "汉字将被混淆", true)
                         .put("age", 32));
-        // 创建集合
+
+        // 创建一个数组集合模式的 TreeObject
         TreeObject list = new TreeObject()
                 .add("item1")
                 .add("item2");
-        // 创建映射
+
+        // 创建另一个映射模式的 TreeObject
         TreeObject map = new TreeObject()
                 .put("key1", "value1")
                 .put("key2", "value2");
-        // 组合
+
+        // 组合多个 TreeObject
         TreeObject group = new TreeObject()
                 .put("ids", list)
                 .put("maps", map);
         treeObject.put("group", group);
+
         // 操作集合
         TreeObject ids = group.get("ids");
         if (ids.isList()) {
             System.out.println("ids: " + ids.getList());
         }
+
         // 操作映射
         TreeObject maps = group.get("maps");
         if (maps.isMap()) {
             System.out.println("maps: " + maps.getMap());
         }
+
         // 提取被混淆的汉字内容
         System.out.println("real_name: " + treeObject.get("detail").getMixString("real_name"));
-        // 通过TreeObject对象转换为JSON字符串输出
-        String jsonStr = treeObject.toJson().toString();
-        // 通过JSON字符串转换为TreeObject对象
-        TreeObject newTreeObject = TreeObject.fromJson(jsonStr);
-        // 格式化输出JSON内容
-        System.out.println("JSON: " + newTreeObject.toJson().toString(true, true));
     }
 }
 ```
@@ -157,64 +494,159 @@ public class TreeObjectTest {
 ids: [item1, item2]
 maps: {key1=value1, key2=value2}
 real_name: 汉字将被混淆
+```
+
+
+**示例：** 使用类型转换方法
+
+```java
+TreeObject treeObject = new TreeObject()
+        .put("count", 100)
+        .put("price", 99.99)
+        .put("enabled", true)
+        .put("timestamp", System.currentTimeMillis(), true);
+
+int count = treeObject.getInt("count");
+double price = treeObject.getDouble("price");
+boolean enabled = treeObject.getBoolean("enabled");
+long timestamp = treeObject.getTime("timestamp");
+
+System.out.println("Count: " + count);
+System.out.println("Price: " + price);
+System.out.println("Enabled: " + enabled);
+System.out.println("Timestamp: " + timestamp);
+```
+
+
+**示例：** 使用默认值避免空指针异常
+
+```java
+TreeObject treeObject = new TreeObject()
+        .put("name", "test");
+
+String name = treeObject.getString("name", "default_name");
+int age = treeObject.getInt("age", 18);
+boolean active = treeObject.getBoolean("active", false);
+
+System.out.println("Name: " + name);      // 输出: test
+System.out.println("Age: " + age);          // 输出: 18 (默认值)
+System.out.println("Active: " + active);   // 输出: false (默认值)
+```
+
+
+**示例：** 判断数据类型和模式
+
+```java
+TreeObject treeObject = new TreeObject()
+        .put("id", 123)
+        .put("list", new TreeObject().add("a").add("b"));
+
+TreeObject idNode = treeObject.get("id");
+if (idNode.isValue()) {
+    System.out.println("id is value mode, type: " + idNode.getType());
+}
+
+TreeObject listNode = treeObject.get("list");
+if (listNode.isList()) {
+    System.out.println("list is array mode");
+}
+
+if (treeObject.isMap()) {
+    System.out.println("treeObject is map mode");
+}
+```
+
+
+**示例：** JSON 序列化与反序列化
+
+```java
+public class TreeObjectJsonTest {
+    public static void main(String[] args) {
+        TreeObject treeObject = new TreeObject()
+                .put("id", UUIDUtils.UUID())
+                .put("category", new Byte[]{1, 2, 3, 4})
+                .put("create_time", System.currentTimeMillis(), true)
+                .put("is_locked", true)
+                .put("detail", new TreeObject()
+                        .put("real_name", "汉字将被混淆", true)
+                        .put("age", 32))
+                .put("group", new TreeObject()
+                        .put("ids", new TreeObject().add("item1").add("item2"))
+                        .put("maps", new TreeObject().put("key1", "value1").put("key2", "value2")));
+
+        // 转换为 JSON 字符串
+        String jsonStr = treeObject.toJson().toString(true, true);
+        System.out.println("JSON: " + jsonStr);
+
+        // 从 JSON 字符串解析为 TreeObject
+        TreeObject fromJson = TreeObject.fromJson(jsonStr);
+        System.out.println("ID: " + fromJson.getString("id"));
+        System.out.println("Real Name: " + fromJson.get("detail").getMixString("real_name"));
+    }
+}
+```
+
+**执行结果：**
+
+```shell
 JSON: {
-    "_c":9,
-    "_v":{
-        "is_locked":{
-            "_c":6,
-            "_v":true
+    "_c": 9,
+    "_v": {
+        "is_locked": {
+            "_c": 6,
+            "_v": true
         },
-        "create_time":{
-            "_c":5,
-            "_v":1634100753548
+        "create_time": {
+            "_c": 5,
+            "_v": 1634100753548
         },
-        "id":{
-            "_c":3,
-            "_v":"4e6b780192da4f04af9b6b826ea7ead6"
+        "id": {
+            "_c": 3,
+            "_v": "4e6b780192da4f04af9b6b826ea7ead6"
         },
-        "detail":{
-            "_c":9,
-            "_v":{
-                "real_name":{
-                    "_c":2,
-                    "_v":"5rGJ5a2X5bCG6KKr5re35reG"
+        "detail": {
+            "_c": 9,
+            "_v": {
+                "real_name": {
+                    "_c": 2,
+                    "_v": "5rGJ5a2X5bCG6KKr5re35reG"
                 },
-                "age":{
-                    "_c":1,
-                    "_v":32
+                "age": {
+                    "_c": 1,
+                    "_v": 32
                 }
             }
         },
-        "category":{
-            "_c":14,
-            "_v":"AQIDBA=="
+        "category": {
+            "_c": 14,
+            "_v": "AQIDBA=="
         },
-        "group":{
-            "_c":9,
-            "_v":{
-                "maps":{
-                    "_c":9,
-                    "_v":{
-                        "key1":{
-                            "_c":3,
-                            "_v":"value1"
+        "group": {
+            "_c": 9,
+            "_v": {
+                "maps": {
+                    "_c": 9,
+                    "_v": {
+                        "key1": {
+                            "_c": 3,
+                            "_v": "value1"
                         },
-                        "key2":{
-                            "_c":3,
-                            "_v":"value2"
+                        "key2": {
+                            "_c": 3,
+                            "_v": "value2"
                         }
                     }
                 },
-                "ids":{
-                    "_c":10,
-                    "_v":[
+                "ids": {
+                    "_c": 10,
+                    "_v": [
                         {
-                            "_c":3,
-                            "_v":"item1"
+                            "_c": 3,
+                            "_v": "item1"
                         },
                         {
-                            "_c":3,
-                            "_v":"item2"
+                            "_c": 3,
+                            "_v": "item2"
                         }
                     ]
                 }
@@ -222,6 +654,83 @@ JSON: {
         }
     }
 }
+ID: 4e6b780192da4f04af9b6b826ea7ead6
+Real Name: 汉字将被混淆
+```
+
+
+**示例：** XML 序列化与反序列化
+
+```java
+public class TreeObjectXmlTest {
+    public static void main(String[] args) {
+        TreeObject treeObject = new TreeObject()
+                .put("id", "12345")
+                .put("name", "测试用户", true)
+                .put("age", 25)
+                .put("active", true)
+                .put("tags", new TreeObject()
+                        .add("java")
+                        .add("spring")
+                        .add("ymp"));
+
+        // 转换为 XML 字符串
+        String xmlStr = treeObject.toXml();
+        System.out.println("XML: " + xmlStr);
+
+        // 从 XML 字符串解析为 TreeObject
+        TreeObject fromXml = TreeObject.fromXml(xmlStr);
+        System.out.println("ID: " + fromXml.getString("id"));
+        System.out.println("Name: " + fromXml.getMixString("name"));
+        System.out.println("Age: " + fromXml.getInt("age"));
+        System.out.println("Active: " + fromXml.getBoolean("active"));
+
+        TreeObject tags = fromXml.get("tags");
+        if (tags.isList()) {
+            System.out.println("Tags: " + tags.getList());
+        }
+    }
+}
+```
+
+**执行结果：**
+
+```shell
+XML: <?xml version="1.0" encoding="UTF-8"?>
+<tree _c="9">
+    <_v>
+        <id _c="3">
+            <_v>12345</_v>
+        </id>
+        <name _c="2">
+            <_v>5rWL6K+V5a6J</_v>
+        </name>
+        <age _c="1">
+            <_v>25</_v>
+        </age>
+        <active _c="6">
+            <_v>true</_v>
+        </active>
+        <tags _c="10">
+            <_v>
+                <item index="0">
+                    <_v>java</_v>
+                </item>
+                <item index="1">
+                    <_v>spring</_v>
+                </item>
+                <item index="2">
+                    <_v>ymp</_v>
+                </item>
+            </_v>
+        </tags>
+    </_v>
+</tree>
+ID: 12345
+Name: 测试用户
+Age: 25
+Active: true
+Tags: [java, spring, ymp]
 ```
 
 
@@ -261,7 +770,7 @@ HttpClientHelper 类主要应用于早期 YMP 框架版本及扩展模块中，�
 
 :::tip **注意**：
 
-从 `2.1.3` 开始 `HttpClientHelper` 标记为不被推荐，请使用 `CloseableHttpClientHelper` 替换。 
+从 `2.1.3` 开始 `HttpClientHelper` 标记为不被推荐，请使用 `CloseableHttpClientHelper` 替换。
 
 :::
 
@@ -394,7 +903,7 @@ public void custom(URL certFilePath, String passwordChars) throws Exception {
 
 :::tip **注意**：
 
-从 `2.1.3` 开始 `HttpClientRequestBuilder` 标记为不被推荐，请使用 `CloseableHttpRequestBuilder` 替换。 
+从 `2.1.3` 开始 `HttpClientRequestBuilder` 标记为不被推荐，请使用 `CloseableHttpRequestBuilder` 替换。
 
 :::
 
@@ -505,49 +1014,63 @@ public void newDownloadFile(String url, File distFile) throws Exception {
 
 ## JsonWrapper
 
-JSON 包装器，为了让不同的第三方 JSON 解析器拥有统一的 API 接口调用方式并能够做到灵活切换而不影响业务系统的正常运行而提供的一套完整的包装层实现，现已对当前比较流行且使用非常广泛的 FastJson、Gson 和 Jackson 等进行了封装与适配，同时也支持通过 SPI 或 JVM 启动参数的形式配置基于 `IJsonAdapter` 接口的自定义实现类。
+JSON 包装器，为了让不同的第三方 JSON 解析器拥有统一的 API 接口调用方式并能够做到灵活切换而不影响业务系统的正常运行而提供的一套完整的包装层实现。
 
-下面是第三方 JSON 解析器与已实现的包装器类的对应关系，以及需要引入的依赖包版本（或更高版本）：
+### 设计目的
 
-- FastJson：net.ymate.platform.commons.json.impl.FastJsonAdapter
+- 实现 JSON 操作的统一抽象，降低对具体 JSON 库的依赖
+- 提高代码的可移植性和扩展性
+- 支持在不同 JSON 库间无缝切换
+- 提供丰富的 JSON 操作功能，满足各种业务场景需求
 
+### 支持的 JSON 库
+
+JsonWrapper 现已对当前比较流行且使用非常广泛的 FastJson、Gson 和 Jackson 等进行了封装与适配，同时也支持通过 SPI 或 JVM 启动参数的形式配置基于 `IJsonAdapter` 接口的自定义实现类。
+
+#### 依赖配置
+
+- **FastJson**
+  - 适配器类：net.ymate.platform.commons.json.impl.FastJsonAdapter
+  - 依赖配置：
   ```xml
   <dependency>
       <groupId>com.alibaba</groupId>
       <artifactId>fastjson</artifactId>
-      <version>1.2.83</version>
+      <version>2.0.60</version>
   </dependency>
   ```
 
-- Gson：net.ymate.platform.commons.json.impl.GsonAdapter
-
+- **Gson**
+  - 适配器类：net.ymate.platform.commons.json.impl.GsonAdapter
+  - 依赖配置：
   ```xml
   <dependency>
       <groupId>com.google.code.gson</groupId>
       <artifactId>gson</artifactId>
-      <version>2.9.0</version>
+      <version>2.13.1</version>
   </dependency>
   ```
 
-- Jackson：net.ymate.platform.commons.json.impl.JacksonAdapter
-
+- **Jackson**
+  - 适配器类：net.ymate.platform.commons.json.impl.JacksonAdapter
+  - 依赖配置：
   ```xml
   <dependency>
       <groupId>com.fasterxml.jackson.datatype</groupId>
       <artifactId>jackson-datatype-jdk8</artifactId>
-      <version>2.13.4</version>
+      <version>2.18.2</version>
   </dependency>
   ```
 
+### 加载逻辑
 
+JSON 包装器是由 JsonWrapper 类进行统一维护和管理，当其被首次加载时，会按照以下顺序尝试实例化对应的包装器类：
 
-### 包装器加载逻辑
-
-JSON 包装器是由 JsonWrapper 类进行统一维护和管理，当其被首次加载时，会按照 FastJson、Gson 和 Jackson 这一顺序依次尝试实例化对应的包装器类，加载成功则停止加载流程并返回（能否加载成功的依据是当前运行环境依赖库中是否存在与之对应的第三方 JSON 解析器的包文件），否则继续尝试直至未加载到任何结果为止。
-
-当上述第三方 JSON 解析器的依赖包文件都（或大于一种）存在于当前运行环境时，默认将使用 FastJson 的 JSON 包装器实现。若此时希望使用指定的实现类做为默认 JSON 包装器时，可以通过 SPI 方式指定 `IJsonAdapterFactory` 工厂接口实现类，也可以通过 JVM 启动参数 `ymp.jsonAdapterClass` 进行如下配置：
-
-
+1. 首先检查 JVM 启动参数 `ymp.jsonAdapterClass` 是否指定了自定义适配器
+2. 若未指定，则通过 SPI 机制查找 `IJsonAdapterFactory` 实现类
+3. 若 SPI 未找到，则使用默认的 `DefaultJsonAdapterFactory`
+4. 工厂类会按照 FastJson → Gson → Jackson 的顺序尝试加载适配器
+5. 加载成功则停止加载流程并返回，否则继续尝试直至未加载到任何结果为止
 
 **示例：** 通过 JVM 启动参数指定 Gson 做为默认 JSON 包装器
 
@@ -555,43 +1078,141 @@ JSON 包装器是由 JsonWrapper 类进行统一维护和管理，当其被首�
 java -jar xxxx.jar -Dymp.jsonAdapterClass=net.ymate.platform.commons.json.impl.GsonAdapter
 ```
 
+### 核心功能
 
+#### 创建 JSON 对象和数组
 
-### 包装器的使用方法
+```java
+// 创建空的 JSON 对象
+IJsonObjectWrapper jsonObject = JsonWrapper.createJsonObject();
 
-包装器按其类型可划分为：对象包装器、数组包装器和节点包装器三种。
+// 创建有序的 JSON 对象
+IJsonObjectWrapper orderedJsonObject = JsonWrapper.createJsonObject(true);
 
+// 创建指定初始容量的 JSON 对象
+IJsonObjectWrapper jsonObjectWithCapacity = JsonWrapper.createJsonObject(16);
 
+// 从 Map 创建 JSON 对象
+Map<String, Object> map = new HashMap<>();
+map.put("name", "test");
+IJsonObjectWrapper jsonObjectFromMap = JsonWrapper.createJsonObject(map);
+
+// 创建空的 JSON 数组
+IJsonArrayWrapper jsonArray = JsonWrapper.createJsonArray();
+
+// 创建指定初始容量的 JSON 数组
+IJsonArrayWrapper jsonArrayWithCapacity = JsonWrapper.createJsonArray(10);
+
+// 从数组创建 JSON 数组
+Object[] array = new Object[]{1, "test", true};
+IJsonArrayWrapper jsonArrayFromArray = JsonWrapper.createJsonArray(array);
+
+// 从集合创建 JSON 数组
+List<Object> list = Arrays.asList(1, "test", true);
+IJsonArrayWrapper jsonArrayFromList = JsonWrapper.createJsonArray(list);
+```
+
+#### JSON 字符串与 Java 对象转换
+
+```java
+// 将 JSON 字符串转换为 JsonWrapper
+String jsonStr = "{\"name\":\"test\",\"age\":20}";
+JsonWrapper jsonWrapper = JsonWrapper.fromJson(jsonStr);
+
+// 将 Java 对象转换为 JsonWrapper
+User user = new User();
+user.setName("test");
+user.setAge(20);
+JsonWrapper userJson = JsonWrapper.toJson(user);
+
+// 将 Java 对象转换为 JSON 字符串（默认紧凑输出）
+String userJsonStr = JsonWrapper.toJsonString(user);
+
+// 将 Java 对象转换为格式化的 JSON 字符串
+String formattedJson = JsonWrapper.toJsonString(user, true);
+
+// 转换时保留空值
+String jsonWithNulls = JsonWrapper.toJsonString(user, true, true);
+
+// 使用蛇形命名转换
+String snakeCaseJson = JsonWrapper.toJsonString(user, true, true, true);
+```
+
+#### 序列化和反序列化
+
+```java
+// 序列化对象为 JSON 字节数组
+byte[] serialized = JsonWrapper.serialize(user);
+
+// 反序列化 JSON 字符串为对象
+User deserializedUser = JsonWrapper.deserialize(jsonStr, User.class);
+
+// 反序列化时处理蛇形命名
+User userWithSnakeCase = JsonWrapper.deserialize(jsonStr, true, User.class);
+
+// 反序列化泛型类型
+String arrayJson = "[\"a\",\"b\",\"c\"]";
+List<String> stringList = JsonWrapper.deserialize(arrayJson, new TypeReferenceWrapper<List<String>>() {});
+```
+
+#### 属性过滤
+
+```java
+// 创建属性过滤器
+IJsonPropertyFilter filter = new IJsonPropertyFilter() {
+    @Override
+    public boolean apply(Object object, String name, Object value) {
+        // 过滤掉密码字段
+        return !"password".equals(name);
+    }
+};
+
+// 序列化时应用过滤器
+String filteredJson = JsonWrapper.toJsonString(user, true, true, filter);
+```
+
+### 包装器类型
+
+JsonWrapper 提供了三种类型的包装器，用于不同场景的 JSON 操作：
 
 #### 对象包装器（IJsonObjectWrapper）
 
-用于创建和维护 JsonObject 数据结构。
-
-
+用于创建和维护 JsonObject 数据结构，支持链式调用和各种类型的取值方法。
 
 **示例：**
 
 ```java
 // 创建 JsonObject 对象实例并设置 ordered 为有序的
 IJsonObjectWrapper jsonObj = JsonWrapper.createJsonObject(true);
-jsonObj.put("name", "suninformation");
-jsonObj.put("realName", "有理想的鱼");
-jsonObj.put("age", 20);
-jsonObj.put("gender", (String) null);
-jsonObj.put("attrs", JsonWrapper.createJsonObject()
-            .put("key1", "value1")
-            .put("key2", "value2"));
+jsonObj.put("name", "suninformation")
+       .put("realName", "有理想的鱼")
+       .put("age", 20)
+       .put("gender", (String) null)
+       .put("attrs", JsonWrapper.createJsonObject()
+               .put("key1", "value1")
+               .put("key2", "value2"));
+
 // 采用格式化输出并保留值为空的属性
 System.out.println(jsonObj.toString(true, true));
+
 // 取值：
 System.out.println("Name: " + jsonObj.getString("name"));
 System.out.println("Age: " + jsonObj.getInt("age"));
 IJsonObjectWrapper attrs = jsonObj.getJsonObject("attrs");
 System.out.println("Key1: " + attrs.getString("key1"));
 System.out.println("Key2: " + attrs.getString("key2"));
+
+// 检查属性是否存在
+if (jsonObj.has("name")) {
+    System.out.println("Name exists");
+}
+
+// 移除属性
+jsonObj.remove("gender");
+
+// 转换为 Map
+Map<String, Object> map = jsonObj.toMap();
 ```
-
-
 
 **执行结果：**
 
@@ -610,15 +1231,12 @@ Name: suninformation
 Age: 20
 Key1: value1
 Key2: value2
+Name exists
 ```
-
-
 
 #### 数组包装器（IJsonArrayWrapper）
 
-用于创建和维护 JsonArray 数据结构。
-
-
+用于创建和维护 JsonArray 数据结构，支持链式调用和各种类型的取值方法。
 
 **示例：**
 
@@ -632,17 +1250,23 @@ IJsonArrayWrapper jsonArray = JsonWrapper.createJsonArray(new Object[]{1, null, 
          .put("age", 20)
          .put("gender", (String) null))
     .add(11);
+
 // 采用格式化输出并保留值为空的属性
 System.out.println(jsonArray.toString(true, false));
+
 // 取值：
 System.out.println("Index3: " + jsonArray.getInt(3));
-System.out.println("Index4: " + jsonArray.getString(4));
+System.out.println("Index4: " + jsonArray.getBoolean(4));
 IJsonObjectWrapper jsonObj = jsonArray.getJsonObject(7);
 System.out.println("Name: " + jsonObj.getString("name"));
 System.out.println("Age: " + jsonObj.getInt("age"));
+
+// 获取数组长度
+System.out.println("Array length: " + jsonArray.size());
+
+// 转换为 List
+List<Object> list = jsonArray.toList();
 ```
-
-
 
 **执行结果：**
 
@@ -668,15 +1292,12 @@ Index3: 3
 Index4: false
 Name: suninformation
 Age: 20
+Array length: 9
 ```
-
-
 
 #### 节点包装器（IJsonNodeWrapper）
 
 在通过对象包装器或数组包装器提供的 `get` 方法获取对应的属性或索引下标值对象时，此值对象将被节点包装器重新包装，其作用是对被包装值对象的数据类型提供判断能力。
-
-
 
 **示例：**
 
@@ -690,8 +1311,10 @@ IJsonObjectWrapper jsonObj = JsonWrapper.createJsonObject(true)
     .put("attrs", JsonWrapper.createJsonObject()
          .put("key1", "value1")
          .put("key2", "value2"));
+
 // 采用格式化输出并保留值为空的属性
 System.out.println(jsonObj.toString(true, true));
+
 // 遍历：
 for (String key : jsonObj.keySet()) {
     IJsonNodeWrapper nodeWrapper = jsonObj.get(key);
@@ -707,8 +1330,6 @@ for (String key : jsonObj.keySet()) {
     }
 }
 ```
-
-
 
 **执行结果：**
 
@@ -733,122 +1354,451 @@ a
 value1
 ```
 
+### 高级用法
 
+#### 类型引用（TypeReferenceWrapper）
 
-### 对象与字符串间转换
-
-
-
-**示例：** 
-
-```java
-String jsonStr = "{\"age\":20,\"name\":\"suninformation\",\"real_name\":\"有理想的鱼\"}";
-// 将字符串转换为 JSON 对象
-JsonWrapper jsonWrapper = JsonWrapper.fromJson(jsonStr);
-if (jsonWrapper.isJsonObject()) {
-    IJsonObjectWrapper jsonObj = jsonWrapper.getAsJsonObject();
-    // 取值：
-    System.out.println("Name: " + jsonObj.getString("name"));
-    System.out.println("Age: " + jsonObj.getInt("age"));
-    System.out.println("RealName: " + jsonObj.getString("real_name"));
-}
-// 将 JSON 对象格式化输出为字符串
-System.out.println(jsonWrapper.toString(true, true));
-```
-
-
-
-**执行结果：**
-
-```shell
-Name: suninformation
-Age: 20
-RealName: 有理想的鱼
-{
-    "age":20,
-    "name":"suninformation",
-    "real_name":"有理想的鱼"
-}
-```
-
-
-
-### 对象序列化操作
-
-
+用于处理泛型类型的反序列化，解决 Java 泛型擦除的问题。
 
 **示例：**
 
 ```java
-public class User {
+// 反序列化复杂泛型类型
+String complexJson = "{\"users\":[{\"name\":\"test1\",\"age\":20},{\"name\":\"test2\",\"age\":21}]}";
 
-    private String name;
+// 定义类型引用
+TypeReferenceWrapper<Map<String, List<User>>> typeRef = new TypeReferenceWrapper<Map<String, List<User>>>() {};
 
-    private Integer age;
-
-    private String realName;
-
-    //
-    // 此处省略了Get/Set方法
-    //
-
-    @Override
-    public String toString() {
-        return String.format("User{name='%s', age=%d, realName='%s'}", name, age, realName);
-    }
-
-    public static void main(String[] args) throws Exception {
-        User user = new User();
-        user.setName("suninformation");
-        user.setAge(20);
-        user.setRealName("有理想的鱼");
-        //
-        User otherUser = new User();
-        otherUser.setName("YMPer");
-        otherUser.setAge(16);
-        otherUser.setRealName("YMP");
-        //
-        List<User> users = new ArrayList<>();
-        users.add(user);
-        users.add(otherUser);
-        //
-        byte[] serializeArr = JsonWrapper.serialize(users, true);
-        List<User> newUsers = JsonWrapper.deserialize(serializeArr, new TypeReferenceWrapper<List<User>>() {});
-        System.out.println(newUsers);
-        // 采用 snakeCase 模式输出和反序列化操作
-        String jsonStr = JsonWrapper.toJsonString(user, false, false, true);
-        User newUser2 = JsonWrapper.deserialize(jsonStr, true, User.class);
-        System.out.println(newUser2);
-    }
-}
+// 反序列化
+Map<String, List<User>> result = JsonWrapper.deserialize(complexJson, typeRef);
+System.out.println(result.get("users"));
 ```
 
+#### 蛇形命名转换
 
+支持在序列化和反序列化时自动处理驼峰命名和蛇形命名之间的转换。
+
+**示例：**
+
+```java
+// 序列化时使用蛇形命名
+String snakeCaseJson = JsonWrapper.toJsonString(user, true, true, true);
+System.out.println(snakeCaseJson);
+
+// 反序列化时处理蛇形命名
+User userFromSnakeCase = JsonWrapper.deserialize(snakeCaseJson, true, User.class);
+System.out.println(userFromSnakeCase);
+```
+
+#### 属性过滤
+
+通过 `IJsonPropertyFilter` 接口可以在序列化时过滤掉不需要的属性。
+
+**示例：**
+
+```java
+// 创建用户对象
+User user = new User();
+user.setName("test");
+user.setAge(20);
+user.setPassword("secret");
+
+// 创建属性过滤器
+IJsonPropertyFilter filter = (object, name, value) -> !"password".equals(name);
+
+// 序列化时应用过滤器
+String filteredJson = JsonWrapper.toJsonString(user, true, true, filter);
+System.out.println(filteredJson);
+```
 
 **执行结果：**
 
 ```shell
-[User{name='suninformation', age=20, realName='有理想的鱼'}, User{name='YMPer', age=16, realName='YMP'}]
-User{name='suninformation', age=20, realName='有理想的鱼'}
+{
+    "name":"test",
+    "age":20
+}
 ```
 
+### 最佳实践
+
+1. **选择合适的 JSON 库**：根据项目需求和性能要求选择合适的 JSON 库
+2. **使用类型引用处理泛型**：对于复杂泛型类型，使用 TypeReferenceWrapper 进行反序列化
+3. **合理使用属性过滤**：在序列化敏感数据时，使用属性过滤器保护隐私信息
+4. **统一配置**：通过 JVM 启动参数或 SPI 机制统一配置 JSON 适配器
+5. **异常处理**：在处理 JSON 操作时，注意捕获和处理可能的异常
+
+JsonWrapper 为 YMP 框架提供了统一、灵活的 JSON 处理能力，使得开发者可以更加专注于业务逻辑，而不必关心底层 JSON 库的实现细节。
 
 
 ## Markdown
 
-对 Markdown 语法中常用到的格式，如：标题、文本、引用、表格、代码片段、图片、连接等进行对象封装，避免以往采用字符串拼接形式中经常出现的问题。
+对 Markdown 语法中常用到的格式，如：标题、文本、引用、表格、代码片段、图片、链接等进行对象封装，避免以往采用字符串拼接形式中经常出现的问题。
 
+### 核心组件
 
+Markdown 模块提供了以下核心组件，每个组件都实现了 `IMarkdown` 接口：
 
-**示例：** 
+| 组件 | 说明 | 主要功能 |
+|------|------|----------|
+| `MarkdownBuilder` | Markdown 文档构建器 | 链式构建完整 Markdown 文档 |
+| `Title` | 标题组件 | 支持 1-6 级标题 |
+| `Text` | 文本组件 | 支持普通、粗体、斜体、下划线、删除线样式 |
+| `Code` | 代码组件 | 支持行内代码和代码块，可指定语言 |
+| `Quote` | 引用组件 | 生成引用块内容 |
+| `Link` | 链接组件 | 生成超链接 |
+| `Image` | 图片组件 | 生成图片，支持缩放 |
+| `Table` | 表格组件 | 生成表格，支持对齐方式 |
+| `ParagraphList` | 列表组件 | 支持有序/无序列表、嵌套列表 |
+
+### MarkdownBuilder
+
+`MarkdownBuilder` 是 Markdown 文档构建器，用于链式构建完整的 Markdown 文档。
+
+#### 基础方法
+
+```java
+// 创建实例
+MarkdownBuilder builder = MarkdownBuilder.create();
+
+// 换行和段落
+builder.br();           // 添加换行符
+builder.p();            // 添加段落分隔（两个换行符）
+builder.p(3);           // 添加指定数量的换行符
+
+// 空格和缩进
+builder.space();        // 添加一个空格
+builder.space(3);       // 添加指定数量的空格
+builder.tab();          // 添加制表符（4个空格）
+
+// 水平分隔线
+builder.hr();           // 添加水平分隔线
+
+// 追加内容
+builder.append("字符串内容");
+builder.append(markdownObject);  // 追加 IMarkdown 对象
+
+// 获取内容长度
+int len = builder.length();
+```
+
+#### 标题
+
+```java
+// 一级标题
+builder.title("一级标题");
+builder.title(markdownObject);   // 使用 IMarkdown 对象
+
+// 指定级别标题（1-6级）
+builder.title("二级标题", 2);
+builder.title(markdownObject, 3);
+```
+
+#### 文本
+
+```java
+// 普通文本
+builder.text("普通文本");
+builder.text(markdownObject);
+
+// 带样式的文本
+builder.text("粗体文本", Text.Style.BOLD);       // **粗体**
+builder.text("斜体文本", Text.Style.ITALIC);     // *斜体*
+builder.text("下划线文本", Text.Style.UNDERLINE); // <u>下划线</u>
+builder.text("删除线文本", Text.Style.STRIKEOUT);  // ~~删除线~~
+```
+
+#### 引用
+
+```java
+builder.quote("引用文本内容");
+builder.quote(markdownObject);
+```
+
+#### 链接
+
+```java
+// 带显示文本的链接
+builder.link("YMP", "https://ymate.net/");       // [YMP](https://ymate.net/)
+builder.link(markdownObject, "https://example.com");
+
+// 仅 URL（显示文本与 URL 相同）
+Link link = Link.create("https://example.com");  // [https://example.com](https://example.com)
+```
+
+#### 图片
+
+```java
+// 仅 URL
+builder.image("https://ymate.net/img/logo.png");  // ![](url)
+
+// 带替代文本
+builder.image("Logo image.", "https://ymate.net/img/logo.png");  // ![alt](url)
+
+// 带缩放比例（0-200，使用 HTML img 标签）
+builder.image("Logo", "https://ymate.net/img/logo.png", 50);  // <img style="zoom:50%;" />
+```
+
+#### 代码
+
+```java
+// 行内代码
+builder.code("code");                              // `code`
+builder.code(markdownObject);
+
+// 指定语言的代码块
+builder.code("public class Test {}", "java");      // ```java\ncode\n```
+builder.code(markdownObject, "python");
+```
+
+### Text 组件
+
+`Text` 组件用于生成不同样式的文本内容。
+
+```java
+// 创建普通文本
+Text text = Text.create("Hello World");
+
+// 创建带样式的文本
+Text boldText = Text.create("粗体", Text.Style.BOLD);
+Text italicText = Text.create("斜体", Text.Style.ITALIC);
+Text underlineText = Text.create("下划线", Text.Style.UNDERLINE);
+Text strikeoutText = Text.create("删除线", Text.Style.STRIKEOUT);
+
+// 使用 IMarkdown 对象创建文本
+Text textFromMarkdown = Text.create(Title.create("标题"));
+Text styledMarkdown = Text.create(Title.create("标题"), Text.Style.ITALIC);
+
+// 追加内容（链式调用）
+Text text = Text.create("Hello")
+    .append(" World")
+    .append(Title.create("!"));
+```
+
+**支持的样式：**
+
+| 样式 | 枚举值 | Markdown 输出 |
+|------|--------|---------------|
+| 普通 | `Style.NORMAL` | 普通文本 |
+| 粗体 | `Style.BOLD` | `**文本**` |
+| 斜体 | `Style.ITALIC` | `*文本*` |
+| 下划线 | `Style.UNDERLINE` | `<u>文本</u>` |
+| 删除线 | `Style.STRIKEOUT` | `~~文本~~` |
+
+### Title 组件
+
+`Title` 组件用于生成不同级别的标题。
+
+```java
+// 创建一级标题
+Title title1 = Title.create("一级标题");           // # 一级标题
+
+// 创建指定级别标题（1-6级）
+Title title2 = Title.create("二级标题", 2);        // ## 二级标题
+Title title6 = Title.create("六级标题", 6);        // ###### 六级标题
+
+// 使用 IMarkdown 对象创建标题
+Title title = Title.create(Text.create("粗体标题", Text.Style.BOLD), 2);
+
+// 追加内容（链式调用）
+Title title = Title.create("Hello")
+    .append(" World")
+    .append(Text.create("!"));
+```
+
+**说明：**
+- 标题级别范围：1-6，超出范围会自动调整（小于1视为1，大于6视为6）
+- 标题内容中的换行符会被替换为空格
+
+### Code 组件
+
+`Code` 组件用于生成行内代码或代码块。
+
+```java
+// 行内代码
+Code inlineCode = Code.create("inline code");      // `inline code`
+
+// 代码块（自动检测换行符）
+Code codeBlock = Code.create("line1\nline2");       // ```\nline1\nline2\n```
+
+// 指定语言的代码块
+Code javaCode = Code.create("public class Test {}", "java");
+// 输出：```java
+//      public class Test {}
+//      ```
+
+// 使用 IMarkdown 对象
+Code code = Code.create(Text.create("code"));
+Code styledCode = Code.create(Text.create("code"), "java");
+
+// 追加代码内容（链式调用）
+Code code = Code.create("line1")
+    .append("\nline2")
+    .append("\nline3");
+```
+
+**说明：**
+- 当明确指定了非空白语言，或内容包含换行符时，使用代码块格式（```）
+- 否则使用行内代码格式（`）
+- 空内容或仅空白字符的内容返回空字符串
+
+### Quote 组件
+
+`Quote` 组件用于生成引用块。
+
+```java
+// 创建引用
+Quote quote = Quote.create("引用文本内容");        // > 引用文本内容\n> \n
+
+// 使用 IMarkdown 对象
+Quote quote = Quote.create(Text.create("引用文本"));
+
+// 追加内容（链式调用）
+Quote quote = Quote.create("第一行")
+    .append("\n第二行")
+    .append(Text.create("\n第三行"));
+```
+
+**说明：**
+- 每行内容以 `> ` 开头
+- 引用末尾会自动添加一个空引用行 `> `
+- 空内容或仅空白字符的内容返回空字符串
+
+### Link 组件
+
+`Link` 组件用于生成超链接。
+
+```java
+// 仅 URL（显示文本与 URL 相同）
+Link link1 = Link.create("https://example.com");   // [https://example.com](https://example.com)
+
+// 带显示文本的链接
+Link link2 = Link.create("示例", "https://example.com");  // [示例](https://example.com)
+
+// 使用 IMarkdown 对象作为显示文本
+Link link3 = Link.create(Text.create("粗体链接", Text.Style.BOLD), "https://example.com");
+```
+
+**说明：**
+- URL 为空或仅空白字符时返回空字符串
+- 显示文本为空时会使用 URL 作为显示文本
+- 首尾空白字符会被自动去除
+
+### Image 组件
+
+`Image` 组件用于生成图片。
+
+```java
+// 仅 URL
+Image image1 = Image.create("https://example.com/img.jpg");  // ![](url)
+
+// 带替代文本
+Image image2 = Image.create("图片描述", "https://example.com/img.jpg");  // ![alt](url)
+
+// 带缩放比例（0-200）
+Image image3 = Image.create("Logo", "https://example.com/logo.png", 50);
+// 输出：<img src="url" alt="Logo" style="zoom:50%;" />
+```
+
+**说明：**
+- URL 为空或仅空白字符时返回空字符串
+- 缩放比例为 0 时使用标准 Markdown 图片语法
+- 缩放比例范围：0-200，超出范围会自动调整
+- 首尾空白字符会被自动去除
+
+### Table 组件
+
+`Table` 组件用于生成表格。
+
+```java
+// 创建表格
+Table table = Table.create()
+    // 添加表头
+    .addHeader("序号", Table.Align.CENTER)    // 居中对齐
+    .addHeader("命令")                         // 默认左对齐
+    .addHeader("描述", Table.Align.RIGHT)     // 右对齐
+    // 添加数据行
+    .addRow()
+        .addColumn("1")
+        .addColumn(Code.create("mvn clean"))
+        .addColumn("执行工程清理")
+        .build()                              // 结束当前行
+    .addRow()
+        .addColumn("2")
+        .addColumn(Code.create("mvn install"))
+        .addColumn("执行安装")
+        .build();
+```
+
+**对齐方式：**
+
+| 对齐方式 | 枚举值 | Markdown 输出 |
+|----------|--------|---------------|
+| 默认 | `Align.NORMAL` | `---` |
+| 左对齐 | `Align.LEFT` | `:---` |
+| 居中 | `Align.CENTER` | `:---:` |
+| 右对齐 | `Align.RIGHT` | `---:` |
+
+**说明：**
+- 表头和列内容支持 `IMarkdown` 对象
+- 特殊字符（如 `|`、换行符）会自动转义
+
+### ParagraphList 组件
+
+`ParagraphList` 组件用于生成有序列表或无序列表，支持嵌套。
+
+```java
+// 无序列表
+ParagraphList unorderedList = ParagraphList.create()
+    .addItem("Item 1")
+    .addItem("Item 2")
+    .addItem("Item 3");
+
+// 有序列表
+ParagraphList orderedList = ParagraphList.create(true)
+    .addItem("第一步")
+    .addItem("第二步")
+    .addItem("第三步");
+
+// 添加多个列表项
+ParagraphList list = ParagraphList.create()
+    .addItems("Item 1", "Item 2", "Item 3");
+
+// 嵌套子列表
+ParagraphList nestedList = ParagraphList.create()
+    .addItem("父项 1")
+    .addSubItem("子项 1.1")
+    .addSubItem("子项 1.2")
+    .addItem("父项 2")
+    .addSubItems("子项 2.1", "子项 2.2");
+
+// 添加指定类型的子列表
+ParagraphList list = ParagraphList.create()
+    .addItem("父项")
+    .addSubItem("有序子项", true)   // 有序子列表
+    .addSubItems(false, "无序子项1", "无序子项2");  // 无序子列表
+
+// 添加正文内容
+ParagraphList list = ParagraphList.create()
+    .addItem("列表项")
+    .addBody("这是列表项的正文内容，会显示在列表项下方。");
+```
+
+**说明：**
+- `create()` 创建无序列表，使用 `- ` 作为前缀
+- `create(true)` 创建有序列表，使用 `数字. ` 作为前缀
+- 子列表会自动添加缩进（4个空格）
+- 空内容或仅空白字符的列表项会被忽略
+
+### 完整示例
 
 ```java
 MarkdownBuilder markdownBuilder = MarkdownBuilder.create()
     .title("一级标题").p()
     .title("二级标题", 2).p()
-    .text("文本")
+    .text("普通文本")
     .tab().text("斜体文本", Text.Style.ITALIC)
-    .space().text("组体文本", Text.Style.BOLD).p()
+    .space().text("粗体文本", Text.Style.BOLD).p()
     .hr()
     .quote(MarkdownBuilder.create()
            .text("引用文本内容...").p()
@@ -869,16 +1819,14 @@ MarkdownBuilder markdownBuilder = MarkdownBuilder.create()
 System.out.println(markdownBuilder);
 ```
 
-
-
-**输出内容：** 
+**输出内容：**
 
 ````markdown
 # 一级标题
 
 ## 二级标题
 
-文本    *斜体文本* **组体文本**
+普通文本    *斜体文本* **粗体文本**
 
 ------
 
@@ -893,7 +1841,7 @@ System.out.println(markdownBuilder);
 
 
 |序号|命令|描述|
-|:---:|---|---:|
+|:---:|:---:|---:|
 |1|`mvn clean`|执行工程清理|
 
 
@@ -912,33 +1860,276 @@ mvn clean source:jar install
 
 ## 序列化（Serialize）
 
-基于 `ISerializer` 接口实现对象序列化与反序列化操作，由 `SerializerManager` 对象序列化管理器维护管理，支持通过 `SPI` 机制和自动扫描 `@Serializer` 注解方式加载并注册，默认提供了几种实现方式：
+基于 `ISerializer` 接口实现对象序列化与反序列化操作，由 `SerializerManager` 对象序列化管理器维护管理，支持通过 `SPI` 机制和自动扫描 `@Serializer` 注解方式加载并注册。
 
-- DefaultSerializer：基于 Java 对象序列化实现。
+### 核心组件
 
-- JSONSerializer：基于 JSON 对象序列化实现。
+序列化模块提供了以下核心组件：
 
-- HessianSerializer：基于 Hessian 二进制对象序列化实现，需添加以下依赖包：
+| 组件 | 说明 | 主要功能 |
+|------|------|----------|
+| `ISerializer` | 序列化器接口 | 定义序列化和反序列化的标准行为 |
+| `SerializerManager` | 序列化器管理器 | 管理和提供各种序列化器实例 |
+| `@Serializer` | 序列化器注解 | 标记和命名序列化器实现类 |
+| `SerializationException` | 序列化异常 | 序列化过程中的异常处理 |
 
-  ```xml
-  <dependency>
-      <groupId>com.caucho</groupId>
-      <artifactId>hessian</artifactId>
-      <version>4.0.66</version>
-  </dependency>
-  ```
+### 内置序列化器
 
-- FstSerializer：基于 FST 二进制对象序列化实现，需添加以下依赖包：
+模块默认提供了以下序列化器实现：
 
-  ```xml
-  <dependency>
-      <groupId>de.ruedigermoeller</groupId>
-      <artifactId>fst</artifactId>
-      <version>2.48-jdk-6</version>
-  </dependency>
-  ```
+| 序列化器 | 名称 | 内容类型 | 说明 | 依赖 |
+|----------|------|----------|------|------|
+| `DefaultSerializer` | `default` | `application/x-java-serialized-object` | Java原生序列化 | 无 |
+| `JSONSerializer` | `json` | `application/json` | JSON格式序列化 | 无 |
+| `FstSerializer` | `fst` | `application/x-java-serialized-fst` | FST高性能序列化 | 可选 |
+| `HessianSerializer` | `hessian` | `application/x-java-serialized-hessian` | Hessian二进制序列化 | 可选 |
+| `KryoSerializer` | `kryo` | `application/x-kryo` | Kryo高性能序列化 | 可选 |
+| `ProtobufSerializer` | `protobuf` | `application/x-protobuf` | Protobuf序列化 | 可选 |
 
-**示例一：** 对象序列化与反序列化操作
+### SerializerManager
+
+`SerializerManager` 是序列化器管理器，负责管理和提供各种序列化器实例。
+
+#### 获取序列化器
+
+```java
+// 获取默认序列化器（DefaultSerializer）
+ISerializer serializer = SerializerManager.getDefaultSerializer();
+
+// 获取JSON序列化器
+ISerializer jsonSerializer = SerializerManager.getJsonSerializer();
+
+// 获取FST序列化器（可选依赖）
+ISerializer fstSerializer = SerializerManager.getFstSerializer();
+
+// 获取Hessian序列化器（可选依赖）
+ISerializer hessianSerializer = SerializerManager.getHessianSerializer();
+
+// 获取Protobuf序列化器（可选依赖）
+ISerializer protobufSerializer = SerializerManager.getProtobufSerializer();
+
+// 获取Kryo序列化器（可选依赖）
+ISerializer kryoSerializer = SerializerManager.getKryoSerializer();
+
+// 根据名称获取序列化器（不区分大小写）
+ISerializer customSerializer = SerializerManager.getSerializer("custom");
+```
+
+#### 注册和注销序列化器
+
+```java
+// 注册序列化器（通过Class）
+SerializerManager.registerSerializer(CustomSerializer.class);
+
+// 注册序列化器（通过名称和Class）
+SerializerManager.registerSerializer("my-serializer", CustomSerializer.class);
+
+// 注销指定名称的序列化器
+SerializerManager.unregisterSerializer("custom");
+
+// 注销指定类型的序列化器
+SerializerManager.unregisterSerializer(CustomSerializer.class);
+
+// 注销所有序列化器
+SerializerManager.unregisterAll();
+```
+
+#### 查询序列化器
+
+```java
+// 检查是否存在指定名称的序列化器
+boolean exists = SerializerManager.containsSerializer("json");
+
+// 检查是否存在指定类型的序列化器
+boolean exists = SerializerManager.containsSerializer(JSONSerializer.class);
+
+// 获取所有已注册的序列化器名称
+Set<String> names = SerializerManager.getRegisteredNames();
+
+// 获取所有已注册的序列化器实例
+Collection<ISerializer> serializers = SerializerManager.getRegisteredSerializers();
+
+// 获取已注册的序列化器数量
+int count = SerializerManager.getSerializerCount();
+```
+
+### ISerializer 接口
+
+`ISerializer` 是序列化器接口，定义了序列化和反序列化的标准行为。
+
+#### 序列化对象
+
+```java
+// 序列化对象为字节数组
+byte[] bytes = serializer.serialize(object);
+```
+
+#### 反序列化对象
+
+```java
+// 反序列化为指定类型
+TestObject obj = serializer.deserialize(bytes, TestObject.class);
+
+// 反序列化为复杂类型（支持泛型）
+List<TestObject> list = serializer.deserialize(bytes, new TypeReferenceWrapper<List<TestObject>>() {});
+```
+
+#### 获取内容类型
+
+```java
+// 获取序列化器的内容类型
+String contentType = serializer.getContentType();
+```
+
+### @Serializer 注解
+
+`@Serializer` 注解用于标记和命名序列化器实现类。
+
+```java
+// 使用注解标记序列化器
+@Serializer("custom")
+public class CustomSerializer implements ISerializer {
+    // 实现序列化和反序列化方法
+}
+```
+
+**说明：**
+- 注解的 `value` 用于指定序列化器名称
+- 如果未指定名称，则使用类的全限定名
+- 序列化器名称不区分大小写
+- 通过 SPI 机制加载时，会使用该注解的值作为名称
+
+### 序列化器说明
+
+#### DefaultSerializer
+
+Java原生序列化器，基于Java标准库的 `ObjectOutputStream` 和 `ObjectInputStream`。
+
+**特点：**
+- 支持所有实现了 `Serializable` 接口的对象
+- 序列化格式为Java专有的二进制格式
+- 具有较好的兼容性和稳定性
+
+**注意事项：**
+- 序列化效率相对较低，不适合高性能场景
+- 序列化结果较大，占用较多存储空间
+
+#### JSONSerializer
+
+JSON序列化器，基于 `IJsonAdapter` 接口提供JSON格式的序列化和反序列化功能。
+
+**特点：**
+- 支持跨平台、可读性强的JSON格式
+- 支持复杂类型的反序列化，包括泛型集合、嵌套对象等
+
+**注意事项：**
+- JSON序列化结果通常比二进制格式大
+- 序列化和反序列化性能相对较低
+- 不支持循环引用
+
+#### FstSerializer
+
+FST（Fast Serialization）序列化器，基于FST库提供高性能的序列化和反序列化功能。
+
+**特点：**
+- 高性能、低内存占用
+- 比Java原生序列化快10倍以上
+- 支持复杂的对象图序列化
+
+**依赖配置：**
+
+```xml
+<dependency>
+    <groupId>de.ruedigermoeller</groupId>
+    <artifactId>fst</artifactId>
+    <version>2.57</version>
+</dependency>
+```
+
+**注意事项：**
+- 需要添加FST库依赖
+- 该序列化器通过SPI机制动态加载，仅在FST库可用时注册
+- 序列化结果为二进制格式，不可读
+- 跨语言支持有限
+
+#### HessianSerializer
+
+Hessian序列化器，基于Hessian二进制协议提供高效的序列化和反序列化功能。
+
+**特点：**
+- 跨语言、高性能的二进制协议
+- 支持多种编程语言
+- 适用于RPC远程调用和分布式系统
+
+**依赖配置：**
+
+```xml
+<dependency>
+    <groupId>com.caucho</groupId>
+    <artifactId>hessian</artifactId>
+    <version>4.0.66</version>
+</dependency>
+```
+
+**注意事项：**
+- 需要添加Hessian库依赖
+- 该序列化器通过SPI机制动态加载，仅在Hessian库可用时注册
+- 序列化结果为二进制格式，不可读
+- 某些Java特性可能不完全支持
+
+#### KryoSerializer
+
+Kryo序列化器，基于Kryo库提供高性能的序列化和反序列化功能。
+
+**特点：**
+- 极致的序列化性能
+- 比Java原生序列化快数倍
+- 生成的序列化结果更小
+- 支持序列化任何Java对象，包括未实现Serializable接口的对象
+
+**依赖配置：**
+
+```xml
+<dependency>
+    <groupId>com.esotericsoftware</groupId>
+    <artifactId>kryo</artifactId>
+    <version>5.6.2</version>
+</dependency>
+```
+
+**注意事项：**
+- 需要添加Kryo库依赖
+- 该序列化器通过SPI机制动态加载，仅在Kryo库可用时注册
+- 序列化结果为二进制格式，不可读
+- 跨语言支持有限
+- Kryo实例不是线程安全的，需要为每个线程创建独立实例
+
+#### ProtobufSerializer
+
+Protobuf（Protocol Buffers）序列化器，基于Google Protobuf库提供高效的序列化和反序列化功能。
+
+**特点：**
+- 高性能、跨语言支持
+- 良好的向前/向后兼容性
+- 比XML和JSON更小、更快、更简单
+
+**依赖配置：**
+
+```xml
+<dependency>
+    <groupId>com.google.protobuf</groupId>
+    <artifactId>protobuf-java</artifactId>
+    <version>4.34.0</version>
+</dependency>
+```
+
+**注意事项：**
+- 需要添加Protobuf库依赖
+- 该序列化器通过SPI机制动态加载，仅在Protobuf库可用时注册
+- 序列化结果为二进制格式，不可读
+- 仅支持实现了 `Message` 或 `MessageLite` 接口的对象序列化
+
+### 示例一：基本序列化与反序列化操作
 
 ```java
 public class SerialDemoBean implements Serializable {
@@ -947,9 +2138,22 @@ public class SerialDemoBean implements Serializable {
 
     private String remark;
 
-    //
-    // 此处省略了Get/Set方法
-    //
+    // Getter和Setter方法
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getRemark() {
+        return remark;
+    }
+
+    public void setRemark(String remark) {
+        this.remark = remark;
+    }
 
     @Override
     public String toString() {
@@ -957,29 +2161,83 @@ public class SerialDemoBean implements Serializable {
     }
 
     public static void main(String[] args) throws Exception {
-        // 创建待序列化对象实现
+        // 创建待序列化对象
         SerialDemoBean demoBean = new SerialDemoBean();
         demoBean.setName("YMP");
         demoBean.setRemark("A lightweight modular simple and powerful Java framework.");
-        // 通过对象序列化管理器获取指定的对象序列化接口实例
+
+        // 通过对象序列化管理器获取默认序列化器
         ISerializer serializer = SerializerManager.getDefaultSerializer();
+
         // 执行对象序列化操作
         byte[] bytes = serializer.serialize(demoBean);
+
         // 执行对象反序列化操作
         SerialDemoBean deserializeBean = serializer.deserialize(bytes, SerialDemoBean.class);
-        // 或
-        deserializeBean = serializer.deserialize(bytes, new TypeReferenceWrapper<SerialDemoBean>() {});
+
         // 输出对象值
         System.out.println(deserializeBean.toString());
     }
 }
 ```
 
+### 示例二：使用JSON序列化器
 
+```java
+public class JsonSerializeDemo {
 
-**示例二：** 自定义对象序列化与反序列化实现
+    public static void main(String[] args) throws Exception {
+        // 创建待序列化对象
+        SerialDemoBean demoBean = new SerialDemoBean();
+        demoBean.setName("YMP");
+        demoBean.setRemark("A lightweight modular simple and powerful Java framework.");
 
-本例以通过自动扫描 `@Serializer` 注解方式加载并注册一个名称为`custom`的自定义对象序列化接口实现类。
+        // 获取JSON序列化器
+        ISerializer jsonSerializer = SerializerManager.getJsonSerializer();
+
+        // 执行序列化操作
+        byte[] bytes = jsonSerializer.serialize(demoBean);
+        System.out.println("JSON: " + new String(bytes, StandardCharsets.UTF_8));
+
+        // 执行反序列化操作
+        SerialDemoBean deserializeBean = jsonSerializer.deserialize(bytes, SerialDemoBean.class);
+        System.out.println(deserializeBean.toString());
+    }
+}
+```
+
+### 示例三：使用FST序列化器（高性能）
+
+```java
+public class FstSerializeDemo {
+
+    public static void main(String[] args) throws Exception {
+        // 检查FST序列化器是否可用
+        ISerializer fstSerializer = SerializerManager.getFstSerializer();
+        if (fstSerializer == null) {
+            System.out.println("FST serializer is not available. Please add FST dependency.");
+            return;
+        }
+
+        // 创建待序列化对象
+        SerialDemoBean demoBean = new SerialDemoBean();
+        demoBean.setName("YMP");
+        demoBean.setRemark("High performance serialization with FST.");
+
+        // 执行序列化操作
+        byte[] bytes = fstSerializer.serialize(demoBean);
+        System.out.println("FST bytes length: " + bytes.length);
+
+        // 执行反序列化操作
+        SerialDemoBean deserializeBean = fstSerializer.deserialize(bytes, SerialDemoBean.class);
+        System.out.println(deserializeBean.toString());
+    }
+}
+```
+
+### 示例四：自定义序列化器实现
+
+本例通过自动扫描 `@Serializer` 注解方式加载并注册一个名称为 `custom` 的自定义对象序列化器实现类。
 
 ```java
 @Serializer("custom")
@@ -991,7 +2249,7 @@ public class CustomSerializer implements ISerializer {
     }
 
     @Override
-    public byte[] serialize(Object object) throws Exception {
+    public byte[] serialize(Object object) throws SerializationException {
         com.alibaba.fastjson.serializer.JSONSerializer serializer = new com.alibaba.fastjson.serializer.JSONSerializer();
         serializer.config(SerializerFeature.WriteEnumUsingToString, true);
         serializer.write(object);
@@ -999,11 +2257,15 @@ public class CustomSerializer implements ISerializer {
     }
 
     @Override
-    public <T> T deserialize(byte[] bytes, Class<T> clazz) {
+    public <T> T deserialize(byte[] bytes, Class<T> clazz) throws SerializationException {
         return JSON.parseObject(new String(bytes, StandardCharsets.UTF_8), clazz);
     }
 }
+```
 
+### 示例五：在YMP应用中使用自定义序列化器
+
+```java
 @EnableAutoScan
 @EnableBeanProxy
 public class Starter {
@@ -1016,20 +2278,50 @@ public class Starter {
 
     public static void main(String[] args) throws Exception {
         try (IApplication application = YMP.run(args)) {
-            //
+            // 创建待序列化对象
             SerialDemoBean demoBean = new SerialDemoBean();
             demoBean.setName("YMP");
             demoBean.setRemark("A lightweight modular simple and powerful Java framework.");
-            //
+
+            // 获取自定义序列化器
             ISerializer serializer = SerializerManager.getSerializer("custom");
+
+            // 执行序列化操作
             byte[] bytes = serializer.serialize(demoBean);
+
+            // 执行反序列化操作
             SerialDemoBean deserializeBean = serializer.deserialize(bytes, SerialDemoBean.class);
-            //
+
+            // 输出对象值
             System.out.println(deserializeBean.toString());
         }
     }
 }
 ```
+
+### 最佳实践
+
+1. **选择合适的序列化器**：
+   - 默认场景使用 `DefaultSerializer` 或 `JSONSerializer`
+   - 高性能场景使用 `FstSerializer` 或 `KryoSerializer`
+   - 跨语言通信使用 `HessianSerializer` 或 `ProtobufSerializer`
+
+2. **处理可选依赖**：
+   - 使用可选序列化器前，先检查是否可用
+   - 提供降级方案，当可选序列化器不可用时使用默认序列化器
+
+3. **异常处理**：
+   - 捕获 `SerializationException` 异常
+   - 记录序列化和反序列化过程中的错误信息
+
+4. **性能优化**：
+   - 大数据量场景优先使用高性能序列化器
+   - 缓存序列化器实例，避免重复创建
+
+5. **自定义序列化器**：
+   - 使用 `@Serializer` 注解标记自定义序列化器
+   - 通过 SPI 机制或自动扫描注册序列化器
+   - 确保序列化和反序列化的对称性
 
 
 
@@ -1248,7 +2540,7 @@ public class Demo {
 
 
 
-**示例：** 
+**示例：**
 
 ```java
 Converter converterAnn = ClassUtils.getAnnotation(Demo.class, Converter.class);
@@ -1260,7 +2552,7 @@ Converter converterAnn = ClassUtils.getAnnotation(Demo.class, Converter.class);
 
 
 
-**示例：** 
+**示例：**
 
 ```java
 Class<?> clazz = ClassUtils.getArrayClassType(String[].class);
@@ -1275,7 +2567,7 @@ System.out.println(String.class.equals(clazz));
 
 
 
-**示例：** 
+**示例：**
 
 ```java
 PairObject<Field, Id> id = ClassUtils.getFieldAnnotationFirst(Demo.class, Id.class);
@@ -1289,7 +2581,7 @@ PairObject<Field, Id> id = ClassUtils.getFieldAnnotationFirst(Demo.class, Id.cla
 
 
 
-**示例：** 
+**示例：**
 
 ```java
 List<PairObject<Field, Property>> properties = ClassUtils.getFieldAnnotations(Demo.class, Property.class);
@@ -1303,7 +2595,7 @@ List<PairObject<Field, Property>> properties = ClassUtils.getFieldAnnotations(De
 
 
 
-**示例：** 
+**示例：**
 
 ```java
 List<Field> fields = ClassUtils.getFields(Demo.class, true);
@@ -1315,7 +2607,7 @@ List<Field> fields = ClassUtils.getFields(Demo.class, true);
 
 
 
-**示例：** 
+**示例：**
 
 ```java
 String[] interfaceNames = ClassUtils.getInterfaceNames(Demo.class);
@@ -1333,7 +2625,7 @@ String[] interfaceNames = ClassUtils.getInterfaceNames(Demo.class);
 
 
 
-**示例：** 
+**示例：**
 
 ```java
 public class Demo {
@@ -1367,7 +2659,7 @@ public class Demo {
 
 
 
-**示例：** 
+**示例：**
 
 ```java
 List<Method> methods = ClassUtils.getMethods(Demo.class, true);
@@ -1379,7 +2671,7 @@ List<Method> methods = ClassUtils.getMethods(Demo.class, true);
 
 
 
-**示例：** 
+**示例：**
 
 ```java
 List<Method> methods = ClassUtils.getMethods(Demo.class, true);
@@ -1399,7 +2691,7 @@ for (Method method : methods) {
 
 
 
-**示例：** 
+**示例：**
 
 ```java
 Package pkg = ClassUtils.getPackage(Demo.class, Before.class);
@@ -1413,7 +2705,7 @@ Package pkg = ClassUtils.getPackage(Demo.class, Before.class);
 
 
 
-**示例：** 
+**示例：**
 
 ```java
 Before beforeAnn = ClassUtils.getPackageAnnotation(Demo.class, Before.class);
@@ -1425,7 +2717,7 @@ Before beforeAnn = ClassUtils.getPackageAnnotation(Demo.class, Before.class);
 
 
 
-**示例：** 
+**示例：**
 
 ```java
 String implClassName = "net.ymate.demo.service.impl.DemoOneServiceImpl";
@@ -1438,7 +2730,7 @@ IDemoService demoService = ClassUtils.impl(implClassName, IDemoService.class, De
 
 
 
-**示例：** 
+**示例：**
 
 ```java
 public class DemoService implements IDemoService {
@@ -1467,7 +2759,7 @@ public class DemoService implements IDemoService {
 
 
 
-**示例：** 
+**示例：**
 
 ```java
 boolean has = ClassUtils.isAnnotationOf(Demo.class, Before.class);
@@ -1479,7 +2771,7 @@ boolean has = ClassUtils.isAnnotationOf(Demo.class, Before.class);
 
 
 
-**示例：** 
+**示例：**
 
 ```java
 boolean has = ClassUtils.isInterfaceOf(Demo.class, IDemoService.class);
@@ -1491,7 +2783,7 @@ boolean has = ClassUtils.isInterfaceOf(Demo.class, IDemoService.class);
 
 
 
-**示例：** 
+**示例：**
 
 ```java
 boolean isNormalClass = ClassUtils.isNormalClass(Demo.class);
@@ -1503,7 +2795,7 @@ boolean isNormalClass = ClassUtils.isNormalClass(Demo.class);
 
 
 
-**示例：** 
+**示例：**
 
 ```java
 List<Method> methods = ClassUtils.getMethods(Demo.class, true);
@@ -1520,7 +2812,7 @@ for (Method method : methods) {
 
 
 
-**示例：** 
+**示例：**
 
 ```java
 List<Field> fields = ClassUtils.getFields(Demo.class, true);
@@ -1537,7 +2829,7 @@ for (Field field : fields) {
 
 
 
-**示例：** 
+**示例：**
 
 ```java
 public class DemoService extends DemoOneServiceImpl {
@@ -1634,38 +2926,170 @@ System.out.println(codecHelper.decrypt(encryptContent, privateKey).equalsIgnoreC
 
 ### DateTimeUtils
 
-日期时间及格式转换工具类。
+日期时间及格式转换工具类，提供了丰富的日期时间处理功能，基于 JDK8 日期时间 API 实现。
 
+#### 时间常量
 
+| 常量 | 值 | 说明 |
+|------|-----|------|
+| `SECOND` | 1000L | 1秒（毫秒） |
+| `MINUTE` | 60_000L | 1分钟（毫秒） |
+| `HOUR` | 3_600_000L | 1小时（毫秒） |
+| `DAY` | 86_400_000L | 1天（毫秒） |
+| `WEEK` | 604_800_000L | 1周（毫秒） |
+| `YEAR` | 31_536_000_000L | 1年（按365天计算，毫秒） |
 
-**示例：** 
+#### 日期格式常量
+
+| 常量 | 格式 | 说明 |
+|------|------|------|
+| `YYYY_MM_DD_HH_MM_SS_SSS` | yyyy-MM-dd HH:mm:ss.SSS | 带毫秒的完整日期时间格式 |
+| `YYYY_MM_DD_HH_MM_SS` | yyyy-MM-dd HH:mm:ss | 标准日期时间格式 |
+| `YYYY_MM_DD` | yyyy-MM-dd | 日期格式 |
+| `YYYY_MM` | yyyy-MM | 年月格式 |
+| `YYYY_MM_DD_HH_MM` | yyyy-MM-dd HH:mm | 带时分的日期格式 |
+
+#### 时区相关功能
 
 ```java
 // 获取时区信息
 String[] timeZoneArr = DateTimeUtils.TIME_ZONES.get("8");
 TimeZone timeZone = DateTimeUtils.getTimeZone("8");
+
 // 全局时间修正偏移量
 DateTimeUtils.TIMEZONE_OFFSET = "8";
-// 获取当前日期时间
-Date currentTime = DateTimeUtils.currentTime();
-// 获取当前时间毫秒值
-long currentTimeMillis = DateTimeUtils.currentTimeMillis();
-// 获取当前 UTC 时间
-long currentTimeUTC = DateTimeUtils.currentTimeUTC();
-// 获取当前系统 UTC 时间
-int systemTimeUTC = DateTimeUtils.systemTimeUTC();
-// 格式化输出时间字符串
-String dateTimeStr = DateTimeUtils.formatTime(systemTimeUTC, DateTimeUtils.YYYY_MM_DD_HH_MM_SS_SSS);
-// 解析格式化时间字符串为日期对象
-Date date = DateTimeUtils.parseDateTime(dateTimeStr, DateTimeUtils.YYYY_MM_DD_HH_MM_SS_SSS);
-// 判断指定年份是否闰年
-DateTimeUtils.isLeapYear(2021);
-// 尝试通过目标日期时间类对象提取时间毫秒值
-Object o = LocalDate.now();
-DateTimeUtils.timeMillis(o);
 ```
 
+#### 当前时间获取
 
+```java
+// 获取当前日期时间
+Date currentTime = DateTimeUtils.currentTime();
+
+// 获取当前时间毫秒值
+long currentTimeMillis = DateTimeUtils.currentTimeMillis();
+
+// 获取当前 UTC 时间（秒）
+long currentTimeUTC = DateTimeUtils.currentTimeUTC();
+
+// 获取当前系统 UTC 时间（秒，int类型）
+int systemTimeUTC = DateTimeUtils.systemTimeUTC();
+```
+
+#### 日期时间格式化
+
+```java
+// 格式化输出时间字符串（使用默认格式）
+String dateTimeStr = DateTimeUtils.formatTime(System.currentTimeMillis());
+
+// 格式化输出时间字符串（指定格式）
+String dateTimeStr = DateTimeUtils.formatTime(System.currentTimeMillis(), DateTimeUtils.YYYY_MM_DD_HH_MM_SS_SSS);
+
+// 格式化输出时间字符串（指定格式和时区）
+String dateTimeStr = DateTimeUtils.formatTime(System.currentTimeMillis(), DateTimeUtils.YYYY_MM_DD_HH_MM_SS, "8");
+
+// 格式化 UTC 时间（自动识别并转换）
+String dateTimeStr = DateTimeUtils.formatTime(1635246720, DateTimeUtils.YYYY_MM_DD_HH_MM_SS);
+```
+
+#### 日期时间解析
+
+```java
+// 解析格式化时间字符串为日期对象
+Date date = DateTimeUtils.parseDateTime("2021-10-26 13:52:00", DateTimeUtils.YYYY_MM_DD_HH_MM_SS);
+
+// 解析格式化时间字符串为日期对象（指定时区）
+Date date = DateTimeUtils.parseDateTime("2021-10-26 13:52:00", DateTimeUtils.YYYY_MM_DD_HH_MM_SS, "8");
+
+// 解析 ISO 8601 格式的日期时间字符串（自动识别）
+Date date = DateTimeUtils.parseDateTime("2021-10-26T13:52:00Z");
+```
+
+#### 闰年判断
+
+```java
+// 判断指定年份是否闰年
+boolean isLeap = DateTimeUtils.isLeapYear(2021);
+System.out.println("2021 is leap year: " + isLeap); // false
+
+boolean isLeap2020 = DateTimeUtils.isLeapYear(2020);
+System.out.println("2020 is leap year: " + isLeap2020); // true
+```
+
+#### 时间毫秒值提取
+
+```java
+// 尝试通过目标日期时间类对象提取时间毫秒值
+Object o = LocalDate.now();
+long millis = DateTimeUtils.timeMillis(o);
+
+// 支持多种日期时间类型
+long millis1 = DateTimeUtils.timeMillis(new Date());
+long millis2 = DateTimeUtils.timeMillis(LocalDateTime.now());
+long millis3 = DateTimeUtils.timeMillis(ZonedDateTime.now());
+long millis4 = DateTimeUtils.timeMillis(Instant.now());
+long millis5 = DateTimeUtils.timeMillis(new Timestamp(System.currentTimeMillis()));
+```
+
+#### 完整示例
+
+```java
+// 1. 获取当前时间信息
+System.out.println("Current time: " + DateTimeUtils.currentTime());
+System.out.println("Current time millis: " + DateTimeUtils.currentTimeMillis());
+System.out.println("Current time UTC: " + DateTimeUtils.currentTimeUTC());
+System.out.println("System time UTC: " + DateTimeUtils.systemTimeUTC());
+
+// 2. 格式化时间
+long currentMillis = DateTimeUtils.currentTimeMillis();
+String formatted = DateTimeUtils.formatTime(currentMillis, DateTimeUtils.YYYY_MM_DD_HH_MM_SS_SSS);
+System.out.println("Formatted time: " + formatted);
+
+// 3. 解析时间
+try {
+    Date parsedDate = DateTimeUtils.parseDateTime(formatted, DateTimeUtils.YYYY_MM_DD_HH_MM_SS_SSS);
+    System.out.println("Parsed date: " + parsedDate);
+} catch (ParseException e) {
+    e.printStackTrace();
+}
+
+// 4. 时区操作
+TimeZone timeZone = DateTimeUtils.getTimeZone("8");
+System.out.println("Time zone: " + timeZone.getID());
+
+// 5. 闰年判断
+System.out.println("2024 is leap year: " + DateTimeUtils.isLeapYear(2024));
+
+// 6. 时间毫秒值提取
+System.out.println("LocalDate millis: " + DateTimeUtils.timeMillis(LocalDate.now()));
+System.out.println("LocalDateTime millis: " + DateTimeUtils.timeMillis(LocalDateTime.now()));
+```
+
+**执行结果：**
+
+```shell
+Current time: Mon Mar 03 12:00:00 CST 2026
+Current time millis: 1772659200000
+Current time UTC: 1772659200
+System time UTC: 1772659200
+Formatted time: 2026-03-03 12:00:00:000
+Parsed date: Mon Mar 03 12:00:00 CST 2026
+Time zone: UTC+08:00
+2024 is leap year: true
+LocalDate millis: 1772601600000
+LocalDateTime millis: 1772659200000
+```
+
+#### 最佳实践
+
+1. **使用常量**：使用 DateTimeUtils 中定义的时间常量和日期格式常量，保持代码一致性
+2. **时区处理**：在处理跨时区业务时，明确指定时区偏移
+3. **格式选择**：根据业务需求选择合适的日期时间格式
+4. **异常处理**：解析日期时间字符串时，务必捕获 ParseException
+5. **类型转换**：使用 timeMillis() 方法方便地获取各种日期时间类型的毫秒值
+6. **ISO 8601 支持**：对于国际化应用，优先使用 ISO 8601 格式的日期时间字符串
+
+DateTimeUtils 为 YMP 框架提供了全面的日期时间处理功能，支持从简单的时间获取到复杂的日期时间解析和格式化等各种场景。
 
 ### ExpressionUtils
 
@@ -1673,7 +3097,7 @@ DateTimeUtils.timeMillis(o);
 
 
 
-**示例：** 
+**示例：**
 
 ```java
 // 定义表达式字符串（其中包含三个变量）
@@ -1697,13 +3121,13 @@ System.out.println(expr.getResult());
 
 
 
-**执行结果：** 
+**执行结果：**
 
 ```shell
 name
 gender
 other
-I am Henry, and gender is M. 
+I am Henry, and gender is M.
 ```
 
 
@@ -1714,7 +3138,7 @@ I am Henry, and gender is M.
 
 
 
-**示例：** 
+**示例：**
 
 ```java
 File demoFile = new File(RuntimeUtils.replaceEnvVariable("${root}/files/demo.text"));
@@ -1840,7 +3264,7 @@ GeoBound bound = GeoUtils.rectangle(new GeoPoint(110.02, 23.62), 500);
 
 
 
-**示例：** 
+**示例：**
 
 ```java
 // 定义一个多边形区域
@@ -1965,7 +3389,7 @@ mvn clean source:jar install
 
 
 
-**示例：** 
+**示例：**
 
 ```java
 // 根据文件扩展名获取对应的 MIME_TYPE 类型
@@ -1982,7 +3406,7 @@ String extName = MimeTypeUtils.getFileExtName("text/plain");
 
 
 
-**示例：** 
+**示例：**
 
 ```java
 // 获取本地所有的IP地址数组
@@ -2190,7 +3614,7 @@ public class Demo {
 
 
 
-**示例：** 
+**示例：**
 
 ```java
 // 定义 MBean 接口
@@ -2269,7 +3693,7 @@ public class Demo {
 
 
 
-**示例：** 
+**示例：**
 
 ```java
 // 自定义线程工厂
@@ -2331,8 +3755,26 @@ results = ThreadUtils.executeOnce(callables, 30000L, new ThreadUtils.IFutureResu
 
 ### UUIDUtils
 
-UUID 生成器工具类。
+UUID 生成器工具类，提供多种 UUID 生成策略，满足不同场景的需求。
 
+#### 功能特点
+
+- 提供多种 UUID 生成策略，满足不同场景需求
+- 支持自定义随机字符串生成
+- 基于 ThreadLocalRandom 实现高性能随机数生成
+- 支持 64 进制编码转换
+- 适用于分布式系统、数据库主键、缓存键、会话 ID 等场景
+
+#### 生成策略
+
+| 方法 | 说明 | 适用场景 |
+|------|------|----------|
+| `UUID()` | 生成 JDK 标准 UUID（32位） | 通用唯一标识 |
+| `generateRandomUUID()` | 生成随机 UUID（10位） | 短标识、临时 ID |
+| `generateCharUUID(Object)` | 生成基于字符的 UUID（16位） | 需要字符串形式的唯一标识 |
+| `generateNumberUUID(Object)` | 生成基于数字的 UUID | 需要数字形式的唯一标识 |
+| `generatePrefixHostUUID(Object)` | 生成带主机名前缀的 UUID | 分布式系统中需要标识来源的场景 |
+| `generateTimeBasedUUID()` | 生成基于时间戳和随机数的 UUID | 需要时间有序性的场景 |
 
 
 **示例：**
@@ -2342,40 +3784,57 @@ public class Demo {
 
     public static void main(String[] args) throws Exception {
         // 采用 JDK 自身 UUID 生成器生成主键并替换 '-' 字符
-        System.out.println(UUIDUtils.UUID());
+        System.out.println("JDK UUID: " + UUIDUtils.UUID());
         // 10个随机字符（基于当前时间和一个随机字符串）
-        System.out.println(UUIDUtils.generateRandomUUID());
+        System.out.println("Random UUID: " + UUIDUtils.generateRandomUUID());
         // 唯一的16位字符串（基于32位当前时间和32位对象的 identityHashCode 和32位随机数）
         // （以下所传入参数为预加密字符串）
-        System.out.println(UUIDUtils.generateCharUUID("12345678"));
+        System.out.println("Char UUID: " + UUIDUtils.generateCharUUID("12345678"));
         // 唯一的数值型随机字符串
-        System.out.println(UUIDUtils.generateNumberUUID("12345678"));
+        System.out.println("Number UUID: " + UUIDUtils.generateNumberUUID("12345678"));
         // 基于主机前缀的唯一的随机字符串
-        System.out.println(UUIDUtils.generatePrefixHostUUID("12345678"));
+        System.out.println("Prefix Host UUID: " + UUIDUtils.generatePrefixHostUUID("12345678"));
+        // 基于时间戳和随机数的 UUID
+        System.out.println("Time-based UUID: " + UUIDUtils.generateTimeBasedUUID());
         // 生成指定长度的生成随机字符串（可指定是否仅生成数值型）
-        System.out.println(UUIDUtils.randomStr(10, false));
+        System.out.println("Random String: " + UUIDUtils.randomStr(10, false));
         // 生成指定范围的整型随机数
-        System.out.println(UUIDUtils.randomInt(10, 50));
+        System.out.println("Random Int: " + UUIDUtils.randomInt(10, 50));
         // 生成指定范围的长整型随机数
-        System.out.println(UUIDUtils.randomLong(100, 500));
+        System.out.println("Random Long: " + UUIDUtils.randomLong(100, 500));
     }
 }
 ```
 
 
-
-**执行结果：** 
+**执行结果：**
 
 ```shell
-cd056590af2b4842a2b568143e6caa3e
-qLZ47GSzwN
-h8qXcRHwV^gcDsJB
-20030693369906894882132773383
-hostname.local@20030693377466640857723259057
-uKVcmRKRfT
-32
-184
+JDK UUID: cd056590af2b4842a2b568143e6caa3e
+Random UUID: qLZ47GSzwN
+Char UUID: h8qXcRHwV^gcDsJB
+Number UUID: 20030693369906894882132773383
+Prefix Host UUID: hostname.local@20030693377466640857723259057
+Time-based UUID: 7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2c
+Random String: uKVcmRKRfT
+Random Int: 32
+Random Long: 184
 ```
+
+
+#### 方法说明
+
+| 方法 | 参数 | 返回值 | 说明 |
+|------|------|--------|------|
+| `UUID()` | 无 | `String` | 生成 JDK 标准 UUID，长度为 32 位，替换了其中的 '-' 字符 |
+| `generateRandomUUID()` | 无 | `String` | 生成基于当前时间和随机字符串的 UUID，长度约为 10 位 |
+| `generateCharUUID(Object o)` | o: 预加密对象 | `String` | 生成基于字符的 UUID，长度约为 16 位，基于 32 位当前时间、32 位对象的 identityHashCode 和 32 位随机数 |
+| `generateNumberUUID(Object o)` | o: 预加密对象 | `String` | 生成基于数字的 UUID，长度较长，基于时间戳和随机数 |
+| `generatePrefixHostUUID(Object o)` | o: 预加密对象 | `String` | 生成带主机名前缀的 UUID，格式为 "hostname@uuid" |
+| `generateTimeBasedUUID()` | 无 | `String` | 生成基于纳秒时间戳和随机数的 UUID，时间有序 |
+| `randomStr(int length, boolean useOnlyDigits)` | length: 长度<br/>useOnlyDigits: 是否仅使用数字 | `String` | 生成指定长度的随机字符串，可选择是否仅使用数字 |
+| `randomInt(int min, int max)` | min: 最小值（包含）<br/>max: 最大值（包含） | `int` | 生成指定范围内的随机整数 |
+| `randomLong(long min, long max)` | min: 最小值（包含）<br/>max: 最大值（包含） | `long` | 生成指定范围内的随机长整数 |
 
 
 
@@ -2389,7 +3848,7 @@ uKVcmRKRfT
 
 
 
-**示例：** 
+**示例：**
 
 ```java
 Set<String> set = new ConcurrentHashSet<>();
@@ -2412,7 +3871,7 @@ System.out.println(output);
 
 
 
-**执行结果：** 
+**执行结果：**
 
 ```shell
 Picked up JAVA_TOOL_OPTIONS: -Dfile.encoding=UTF-8
@@ -2447,7 +3906,7 @@ System.out.println(output);
 
 
 
-**示例：** 
+**示例：**
 
 ```java
 // 创建表格构建工具实例，并指定表格列数
@@ -2476,7 +3935,7 @@ tableBuilder.writeTo(new FileOutputStream("/Temp/table.txt"), "UTF-8");
 
 
 
-**执行结果：** 
+**执行结果：**
 
 ```shell
 +-----+------+-------+
@@ -2500,80 +3959,229 @@ No.,Name,Top N
 
 ### DateTimeHelper
 
-Date（日期）类型数据处理相关的函数工具集合。
+日期时间处理相关的工具类，基于 JDK8 日期时间 API 实现，使用 ZonedDateTime 作为核心日期时间表示，支持时区操作和各种日期时间计算。
 
+#### 主要特点
 
+- 基于 JDK8 日期时间 API，使用 ZonedDateTime 支持时区操作
+- 提供丰富的日期时间计算和操作方法
+- 支持链式调用，代码更简洁易读
+- 兼容旧版 Date API，同时提供新版日期时间类型的支持
+- 支持多种方式创建实例（当前时间、Date 对象、时间戳、字符串等）
 
-**示例：** 
+#### 实例创建
 
 ```java
-// 构造实例对象的方式：
-DateTimeHelper dateTimeHelper = DateTimeHelper.now();
-// dateTimeHelper = DateTimeHelper.bind(new Date());
-// dateTimeHelper = DateTimeHelper.bind(System.currentTimeMillis());
-// dateTimeHelper = DateTimeHelper.bind("2021-10-26 13:52", DateTimeUtils.YYYY_MM_DD_HH_MM);
-// 获取当前 Date 对象
-Date date = dateTimeHelper.time();
-// 获取当前日期时间的 UTC 值
-int timeUTC = dateTimeHelper.timeUTC();
-// 获取当前日期时间的毫秒值
-long timeMillis = dateTimeHelper.timeMillis();
-// 获取当前时区设置
-TimeZone timeZone = dateTimeHelper.timeZone();
-// 设置日期时间和时区设置值
-dateTimeHelper.time(new Date());
-dateTimeHelper.timeUTC(System.currentTimeMillis() / 1000);
-dateTimeHelper.timeMillis(System.currentTimeMillis());
-dateTimeHelper.timeZone(DateTimeUtils.getTimeZone("8"));
-// 获取当前年、月、日、时、分、秒、毫秒值
-dateTimeHelper.year();
-dateTimeHelper.month();
-dateTimeHelper.day();
-dateTimeHelper.hour();
-dateTimeHelper.minute();
-dateTimeHelper.second();
-dateTimeHelper.millisecond();
-// 设置年、月、日、时、分、秒、毫秒值
-dateTimeHelper.year(2021);
-dateTimeHelper.month(10);
-dateTimeHelper.day(26);
-dateTimeHelper.hour(13);
-dateTimeHelper.minute(52);
-dateTimeHelper.second(0);
-dateTimeHelper.millisecond(0);
-// 日期年、月、日、时、分、秒、毫秒值的加、减法运算
-dateTimeHelper.yearsAdd(1);
-dateTimeHelper.monthsAdd(-1);
-dateTimeHelper.daysAdd(1);
-dateTimeHelper.hoursAdd(-1);
-dateTimeHelper.minutesAdd(1);
-dateTimeHelper.secondsAdd(-1);
-dateTimeHelper.millisecondsAdd(1);
-// 获取当前日期是当前周的第几天
-dateTimeHelper.dayOfWeek();
-// 获取当前日期是当前月的第几周
-dateTimeHelper.dayOfWeekInMonth();
-// 获取当前月有多少天
-dateTimeHelper.daysOfMonth();
-// 获取当前月有几周
-dateTimeHelper.weekOfMonth();
-// 获取当前周是当前年的第几周
-dateTimeHelper.weekOfYear();
-// 判断当前年是否为闰年
-dateTimeHelper.isLeapYear();
-// 调整当前时间到当天的开始，即：00:00:00:000
-dateTimeHelper.toDayStart();
-// 调整当前时间到当天的结束，即：59:59:59:999
-dateTimeHelper.toDayEnd();
-// 调整当前日期至所在周的周一当天
-dateTimeHelper.toWeekStart();
-// 调整当前日期至所在周的周日当天
-dateTimeHelper.toWeekEnd();
-// 两日期时间相减计算相差毫秒值
-long result = dateTimeHelper.subtract(new Date());
-result = dateTimeHelper.subtract(DateTimeHelper.now());
+// 获取当前日期时间
+DateTimeHelper now = DateTimeHelper.now();
+
+// 绑定 Date 对象
+DateTimeHelper fromDate = DateTimeHelper.bind(new Date());
+
+// 绑定时间戳（支持秒级和毫秒级自动识别）
+DateTimeHelper fromTimestamp = DateTimeHelper.bind(System.currentTimeMillis());
+
+// 绑定日期时间字符串
+DateTimeHelper fromString = DateTimeHelper.bind("2021-10-26 13:52", DateTimeUtils.YYYY_MM_DD_HH_MM);
+
+// 绑定 LocalDateTime 对象（JDK8+）
+DateTimeHelper fromLocalDateTime = DateTimeHelper.bind(LocalDateTime.now());
+
+// 绑定年月日
+DateTimeHelper fromYMD = DateTimeHelper.bind(2021, 10, 26);
+
+// 绑定年月日时分秒
+DateTimeHelper fromYMDHMS = DateTimeHelper.bind(2021, 10, 26, 13, 52, 0);
 ```
 
+#### 核心功能
+
+##### 获取日期时间信息
+
+```java
+// 获取不同类型的日期时间对象
+Date date = now.time();
+LocalDateTime localDateTime = now.localDateTime();
+LocalDate localDate = now.localDate();
+LocalTime localTime = now.localTime();
+ZonedDateTime zonedDateTime = now.zonedDateTime();
+
+// 获取时间戳
+long timeMillis = now.timeMillis();
+int timeUTC = now.timeUTC();
+
+// 获取时区信息
+TimeZone timeZone = now.timeZone();
+ZoneId zoneId = now.zoneId();
+
+// 获取年、月、日、时、分、秒、毫秒
+int year = now.year();
+int month = now.month();
+int day = now.day();
+int hour = now.hour();
+int minute = now.minute();
+int second = now.second();
+int millisecond = now.millisecond();
+
+// 获取日期相关信息
+int dayOfWeek = now.dayOfWeek(); // 周日=7
+int weekOfMonth = now.weekOfMonth();
+int weekOfYear = now.weekOfYear();
+int dayOfWeekInMonth = now.dayOfWeekInMonth();
+int daysOfMonth = now.daysOfMonth();
+boolean isLeapYear = now.isLeapYear();
+```
+
+##### 设置日期时间
+
+```java
+// 设置日期时间
+now.time(new Date());
+now.time(LocalDateTime.now());
+now.timeMillis(System.currentTimeMillis());
+now.timeUTC(System.currentTimeMillis() / 1000);
+
+// 设置年、月、日、时、分、秒、毫秒
+now.year(2021)
+   .month(10)
+   .day(26)
+   .hour(13)
+   .minute(52)
+   .second(0)
+   .millisecond(0);
+
+// 设置时区
+now.timeZone(TimeZone.getTimeZone("GMT+8"));
+now.timeZone(ZoneId.of("Asia/Shanghai"));
+```
+
+##### 日期时间调整
+
+```java
+// 调整到当天开始（00:00:00:000）
+now.toDayStart();
+
+// 调整到当天结束（23:59:59:999）
+now.toDayEnd();
+
+// 调整到当月开始
+now.toMonthStart();
+
+// 调整到当月结束
+now.toMonthEnd();
+
+// 调整到当周开始（周一）
+now.toWeekStart();
+
+// 调整到当周结束（周日）
+now.toWeekEnd();
+```
+
+##### 日期时间计算
+
+```java
+// 日期时间加减
+now.yearsAdd(1);      // 加1年
+now.monthsAdd(-1);    // 减1个月
+now.daysAdd(1);       // 加1天
+now.hoursAdd(-1);     // 减1小时
+now.minutesAdd(1);    // 加1分钟
+now.secondsAdd(-1);   // 减1秒
+now.millisecondsAdd(1); // 加1毫秒
+now.weeksAdd(1);      // 加1周
+
+// 计算时间差（毫秒）
+long diff = now.subtract(new Date());
+diff = now.subtract(DateTimeHelper.now());
+diff = now.subtract(LocalDateTime.now());
+diff = now.subtract(Instant.now());
+diff = now.subtract(LocalDate.now());
+diff = now.subtract(ZonedDateTime.now());
+```
+
+##### 格式化输出
+
+```java
+// 默认格式（带毫秒）
+String defaultFormat = now.toString();
+
+// 自定义格式
+String customFormat = now.toString(DateTimeUtils.YYYY_MM_DD_HH_MM_SS);
+```
+
+#### 完整示例
+
+```java
+// 创建实例
+DateTimeHelper helper = DateTimeHelper.now();
+
+// 输出当前时间
+System.out.println("当前时间: " + helper.toString());
+
+// 调整时间
+helper.year(2021)
+      .month(10)
+      .day(26)
+      .hour(13)
+      .minute(52)
+      .second(0);
+
+// 输出调整后的时间
+System.out.println("调整后: " + helper.toString());
+
+// 计算操作
+helper.daysAdd(1)
+      .hoursAdd(2);
+
+// 输出计算后的时间
+System.out.println("计算后: " + helper.toString());
+
+// 调整到当天开始
+helper.toDayStart();
+System.out.println("当天开始: " + helper.toString());
+
+// 调整到当月结束
+helper.toMonthEnd();
+System.out.println("当月结束: " + helper.toString());
+
+// 获取日期信息
+System.out.println("年份: " + helper.year());
+System.out.println("月份: " + helper.month());
+System.out.println("日期: " + helper.day());
+System.out.println("是否闰年: " + helper.isLeapYear());
+System.out.println("当月天数: " + helper.daysOfMonth());
+System.out.println("周几: " + helper.dayOfWeek());
+System.out.println("当月第几周: " + helper.weekOfMonth());
+System.out.println("当年第几周: " + helper.weekOfYear());
+```
+
+**执行结果：**
+
+```shell
+当前时间: 2026-03-03 12:00:00:000
+调整后: 2021-10-26 13:52:00:000
+计算后: 2021-10-27 15:52:00:000
+当天开始: 2021-10-27 00:00:00:000
+当月结束: 2021-10-31 23:59:59:999
+年份: 2021
+月份: 10
+日期: 31
+是否闰年: false
+当月天数: 31
+周几: 7
+当月第几周: 5
+当年第几周: 44
+```
+
+#### 最佳实践
+
+1. **链式调用**：充分利用链式调用特性，使代码更简洁
+2. **时区处理**：在处理跨时区业务时，明确设置时区信息
+3. **类型转换**：根据需要选择合适的日期时间类型（Date、LocalDateTime、ZonedDateTime等）
+4. **性能考虑**：对于频繁的日期时间操作，考虑缓存 DateTimeHelper 实例
+5. **格式化**：使用 DateTimeUtils 中定义的标准格式常量，保持格式一致性
+
+DateTimeHelper 为 YMP 框架提供了强大、灵活的日期时间处理能力，支持从简单的日期时间获取到复杂的日期时间计算等各种场景。
 
 
 ### ExcelFileAnalysisHelper
@@ -2733,7 +4341,7 @@ public class Demo {
 
 
 
-**执行结果：** 
+**执行结果：**
 
 ```shell
 +----------------+-----+--------+--------------------+---------------------+
@@ -2792,7 +4400,7 @@ public static void main(String[] args) throws Exception {
 **示例：** 综合展示如何使用可执行队列服务
 
 ```java
-public class CustomMessageQueue extends ExecutableQueue<CustomMessageQueue.CustomMessage> 
+public class CustomMessageQueue extends ExecutableQueue<CustomMessageQueue.CustomMessage>
     implements ExecutableQueue.IListener<CustomMessageQueue.CustomMessage> {
 
     private final List<IFilter<CustomMessage>> filters = new ArrayList<>();
@@ -2973,7 +4581,7 @@ public class CustomMessageQueue extends ExecutableQueue<CustomMessageQueue.Custo
 
 
 
-**执行结果：** 
+**执行结果：**
 
 ```shell
 重写此方法用于处理监听器注册成功事件。
@@ -3041,7 +4649,7 @@ ffmpegHelper.convertAudio("aac", new File(basePath, "/audio.aac"));
 
 
 
-**执行结果：** 
+**执行结果：**
 
 ```shell
 Audio Encoding Format: mp3
@@ -3100,7 +4708,7 @@ ffmpegHelper.videoToFlv(videoInfo.getImageWidth(), videoInfo.getImageHeight(), n
 
 
 
-**执行结果：** 
+**执行结果：**
 
 ```shell
 Audio Encoding Format: null
@@ -3129,7 +4737,7 @@ Freemarker 模板引擎配置构建工具类，使用与 Freemarker 相关的功
 
 
 
-**示例：** 
+**示例：**
 
 ```java
 public class Demo {
@@ -3221,7 +4829,7 @@ QRCodeHelper.create("https://ymate.net/", 300, 300, ErrorCorrectionLevel.H)
 
 
 
-**示例：** 
+**示例：**
 
 ```java
 public class Demo {
@@ -3266,7 +4874,7 @@ public class Demo {
 
 
 
-**示例：** 
+**示例：**
 
 ```java
 public class Demo {
@@ -3311,7 +4919,7 @@ public class Demo {
 
 
 
-**示例：** 
+**示例：**
 
 ```java
 public class Demo {
@@ -3434,7 +5042,7 @@ public class Main {
 
 
 
-**执行结果：** 
+**执行结果：**
 
 ```json
 {
@@ -3467,7 +5075,7 @@ XStream 辅助构建工具类，使用时需在工程中引入以下依赖包：
 
 
 
-**示例：** 
+**示例：**
 
 ```java
 public class Demo {
