@@ -68,7 +68,6 @@
         <dependency>
             <groupId>com.google.protobuf</groupId>
             <artifactId>protobuf-java</artifactId>
-            <version>4.31.1</version>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -76,6 +75,12 @@
             <artifactId>mysql-connector-j</artifactId>
             <version>8.4.0</version>
             <scope>test</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>com.google.protobuf</groupId>
+                    <artifactId>protobuf-java</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>com.mchange</groupId>
