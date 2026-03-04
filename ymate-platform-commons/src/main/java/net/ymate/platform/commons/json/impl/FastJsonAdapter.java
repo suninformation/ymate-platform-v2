@@ -68,34 +68,40 @@ public class FastJsonAdapter implements IJsonAdapter {
     static {
         JSON.DEFAULT_GENERATE_FEATURE |= SerializerFeature.DisableCircularReferenceDetect.getMask();
         JSON.DEFAULT_GENERATE_FEATURE |= SerializerFeature.WriteBigDecimalAsPlain.getMask();
+        JSON.DEFAULT_GENERATE_FEATURE |= SerializerFeature.WriteEnumUsingToString.getMask();
         //
-        JsonWrapperFastJsonSerializer.Serializer jsonWrapperFastJsonSerializer = new JsonWrapperFastJsonSerializer.Serializer();
-        JsonObjectFastJsonSerializer.Serializer jsonObjectFastJsonSerializer = new JsonObjectFastJsonSerializer.Serializer();
-        JsonArrayFastJsonSerializer.Serializer jsonArrayFastJsonSerializer = new JsonArrayFastJsonSerializer.Serializer();
+        JsonWrapperFastJsonSerializer jsonWrapperFastJsonSerializer = new JsonWrapperFastJsonSerializer();
+        JsonObjectFastJsonSerializer jsonObjectFastJsonSerializer = new JsonObjectFastJsonSerializer();
+        JsonArrayFastJsonSerializer jsonArrayFastJsonSerializer = new JsonArrayFastJsonSerializer();
         //
-        JsonWrapperFastJsonSerializer.Deserializer jsonWrapperFastJsonDeserializer = new JsonWrapperFastJsonSerializer.Deserializer();
-        JsonObjectFastJsonSerializer.Deserializer jsonObjectFastJsonDeserializer = new JsonObjectFastJsonSerializer.Deserializer();
-        JsonArrayFastJsonSerializer.Deserializer jsonArrayFastJsonDeserializer = new JsonArrayFastJsonSerializer.Deserializer();
+        SerializeConfig serializeConfig = SerializeConfig.getGlobalInstance();
+        serializeConfig.put(JsonWrapper.class, jsonWrapperFastJsonSerializer);
+        serializeConfig.put(FastJsonObjectWrapper.class, jsonObjectFastJsonSerializer);
+        serializeConfig.put(FastJsonArrayWrapper.class, jsonArrayFastJsonSerializer);
+        serializeConfig.put(IJsonObjectWrapper.class, jsonObjectFastJsonSerializer);
+        serializeConfig.put(IJsonArrayWrapper.class, jsonArrayFastJsonSerializer);
+        // 用于解决JSON对浮点和双精度数值序列化为科学记数法的问题
         ObjectSerializer numberSerializer = (serializer, object, fieldName, fieldType, features) -> {
             if (object == null) {
                 serializer.writeNull();
-            } else {
-                serializer.write(new BigDecimal(String.valueOf(object)).toPlainString());
+                return;
             }
+            BigDecimal decimal;
+            if (object instanceof Double) {
+                decimal = BigDecimal.valueOf((Double) object);
+            } else if (object instanceof Float) {
+                decimal = BigDecimal.valueOf((Float) object);
+            } else {
+                decimal = new BigDecimal(object.toString());
+            }
+            serializer.write(decimal);
         };
+        serializeConfig.put(Double.class, numberSerializer);
+        serializeConfig.put(Float.class, numberSerializer);
+        serializeConfig.put(Double.TYPE, numberSerializer);
+        serializeConfig.put(Float.TYPE, numberSerializer);
         //
-        SerializeConfig globalConfig = SerializeConfig.getGlobalInstance();
-        globalConfig.put(JsonWrapper.class, jsonWrapperFastJsonSerializer);
-        globalConfig.put(FastJsonObjectWrapper.class, jsonObjectFastJsonSerializer);
-        globalConfig.put(FastJsonArrayWrapper.class, jsonArrayFastJsonSerializer);
-        globalConfig.put(IJsonObjectWrapper.class, jsonObjectFastJsonSerializer);
-        globalConfig.put(IJsonArrayWrapper.class, jsonArrayFastJsonSerializer);
-        globalConfig.put(Double.class, numberSerializer);
-        globalConfig.put(Float.class, numberSerializer);
-        globalConfig.put(Double.TYPE, numberSerializer);
-        globalConfig.put(Float.TYPE, numberSerializer);
-        //
-        SNAKE_CASE_SERIALIZE_CONFIG.propertyNamingStrategy = PropertyNamingStrategy.SnakeCase;
+        SNAKE_CASE_SERIALIZE_CONFIG.setPropertyNamingStrategy(PropertyNamingStrategy.SnakeCase);
         SNAKE_CASE_SERIALIZE_CONFIG.put(JsonWrapper.class, jsonWrapperFastJsonSerializer);
         SNAKE_CASE_SERIALIZE_CONFIG.put(FastJsonObjectWrapper.class, jsonObjectFastJsonSerializer);
         SNAKE_CASE_SERIALIZE_CONFIG.put(FastJsonArrayWrapper.class, jsonArrayFastJsonSerializer);
@@ -107,17 +113,20 @@ public class FastJsonAdapter implements IJsonAdapter {
         SNAKE_CASE_SERIALIZE_CONFIG.put(Float.TYPE, numberSerializer);
         //
         ParserConfig parserConfig = ParserConfig.getGlobalInstance();
-        parserConfig.putDeserializer(JsonWrapper.class, jsonWrapperFastJsonDeserializer);
-        parserConfig.putDeserializer(FastJsonObjectWrapper.class, jsonObjectFastJsonDeserializer);
-        parserConfig.putDeserializer(FastJsonArrayWrapper.class, jsonArrayFastJsonDeserializer);
-        parserConfig.putDeserializer(IJsonObjectWrapper.class, jsonObjectFastJsonDeserializer);
-        parserConfig.putDeserializer(IJsonArrayWrapper.class, jsonArrayFastJsonDeserializer);
+        parserConfig.setSafeMode(true);
+        parserConfig.putDeserializer(JsonWrapper.class, jsonWrapperFastJsonSerializer);
+        parserConfig.putDeserializer(FastJsonObjectWrapper.class, jsonObjectFastJsonSerializer);
+        parserConfig.putDeserializer(FastJsonArrayWrapper.class, jsonArrayFastJsonSerializer);
+        parserConfig.putDeserializer(IJsonObjectWrapper.class, jsonObjectFastJsonSerializer);
+        parserConfig.putDeserializer(IJsonArrayWrapper.class, jsonArrayFastJsonSerializer);
         //
-        SNAKE_CASE_PARSE_CONFIG.putDeserializer(JsonWrapper.class, jsonWrapperFastJsonDeserializer);
-        SNAKE_CASE_PARSE_CONFIG.putDeserializer(FastJsonObjectWrapper.class, jsonObjectFastJsonDeserializer);
-        SNAKE_CASE_PARSE_CONFIG.putDeserializer(FastJsonArrayWrapper.class, jsonArrayFastJsonDeserializer);
-        SNAKE_CASE_PARSE_CONFIG.putDeserializer(IJsonObjectWrapper.class, jsonObjectFastJsonDeserializer);
-        SNAKE_CASE_PARSE_CONFIG.putDeserializer(IJsonArrayWrapper.class, jsonArrayFastJsonDeserializer);
+        SNAKE_CASE_PARSE_CONFIG.setSafeMode(true);
+        SNAKE_CASE_PARSE_CONFIG.propertyNamingStrategy = PropertyNamingStrategy.SnakeCase;
+        SNAKE_CASE_PARSE_CONFIG.putDeserializer(JsonWrapper.class, jsonWrapperFastJsonSerializer);
+        SNAKE_CASE_PARSE_CONFIG.putDeserializer(FastJsonObjectWrapper.class, jsonObjectFastJsonSerializer);
+        SNAKE_CASE_PARSE_CONFIG.putDeserializer(FastJsonArrayWrapper.class, jsonArrayFastJsonSerializer);
+        SNAKE_CASE_PARSE_CONFIG.putDeserializer(IJsonObjectWrapper.class, jsonObjectFastJsonSerializer);
+        SNAKE_CASE_PARSE_CONFIG.putDeserializer(IJsonArrayWrapper.class, jsonArrayFastJsonSerializer);
     }
 
     /**
@@ -414,25 +423,29 @@ public class FastJsonAdapter implements IJsonAdapter {
                     SerializerFeature.WriteNullStringAsEmpty,
                     SerializerFeature.WriteNullNumberAsZero));
         }
-        // 收集所有的SerializeFilter
+        List<SerializeFilter> filters = doBuildSerializeFilters(filter);
+        SerializeConfig config = snakeCase ? SNAKE_CASE_SERIALIZE_CONFIG : SerializeConfig.getGlobalInstance();
+        return JSON.toJSONString(JsonWrapper.unwrap(object), config, filters.toArray(new SerializeFilter[0]), serializerFeatures.toArray(new SerializerFeature[0]));
+    }
+
+    private static List<SerializeFilter> doBuildSerializeFilters(IJsonPropertyFilter filter) {
         List<SerializeFilter> filters = new ArrayList<>();
-        if (filter != null) {
-            PropertyPreFilter propertyPreFilter = (serializer, source, name) -> filter.filter(source, name);
-            filters.add(propertyPreFilter);
-        }
-        // 创建一个ValueFilter，拦截并转换Double和Float值为普通格式
-        ValueFilter valueFilter = (object1, name, value) -> {
-            if (value instanceof Double) {
-                return new BigDecimal(String.valueOf(value)).toPlainString();
-            } else if (value instanceof Float) {
-                return new BigDecimal(String.valueOf(value)).toPlainString();
+        // 创建一个ValueFilter拦截并转换Double和Float值为普通格式以避免科学计数法
+        ValueFilter valueFilter = (object, name, value) -> {
+            if (value != null) {
+                if (float.class.isAssignableFrom(value.getClass()) || Float.class.isAssignableFrom(value.getClass())
+                        || double.class.isAssignableFrom(value.getClass()) || Double.class.isAssignableFrom(value.getClass())) {
+                    return new BigDecimal(value.toString());
+                }
             }
             return value;
         };
         filters.add(valueFilter);
-        // 使用现有的配置
-        SerializeConfig config = snakeCase ? SNAKE_CASE_SERIALIZE_CONFIG : SerializeConfig.getGlobalInstance();
-        return JSON.toJSONString(JsonWrapper.unwrap(object), config, filters.toArray(new SerializeFilter[0]), serializerFeatures.toArray(new SerializerFeature[0]));
+        if (filter != null) {
+            PropertyPreFilter propertyPreFilter = (serializer, source, name) -> filter.filter(source, name);
+            filters.add(propertyPreFilter);
+        }
+        return filters;
     }
 
     /**

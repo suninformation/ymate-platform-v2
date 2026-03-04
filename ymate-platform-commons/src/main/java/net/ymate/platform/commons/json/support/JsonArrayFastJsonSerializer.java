@@ -16,10 +16,7 @@
 package net.ymate.platform.commons.json.support;
 
 import com.alibaba.fastjson.parser.DefaultJSONParser;
-import com.alibaba.fastjson.parser.deserializer.ObjectDeserializer;
-import net.ymate.platform.commons.json.IJsonAdapter;
 import net.ymate.platform.commons.json.JsonWrapper;
-import net.ymate.platform.commons.json.impl.FastJsonAdapter;
 
 import java.lang.reflect.Type;
 
@@ -35,47 +32,15 @@ import java.lang.reflect.Type;
  * @author 刘镇 (suninformation@163.com) on 2021/12/25 7:19 PM
  * @since 2.1.0
  */
-public class JsonArrayFastJsonSerializer {
+public class JsonArrayFastJsonSerializer extends AbstractFastJsonSerializer {
 
-    /**
-     * 私有构造函数，防止外部实例化。
-     */
-    private JsonArrayFastJsonSerializer() {
-    }
-
-    /**
-     * JSON数组FastJSON序列化器，用于将IJsonArrayWrapper类型序列化为JSON。
-     */
-    public static class Serializer extends AbstractFastJsonSerializer {
-    }
-
-    /**
-     * JSON数组FastJSON反序列化器，用于将JSON反序列化为IJsonArrayWrapper类型。
-     */
-    public static class Deserializer implements ObjectDeserializer {
-
-        /**
-         * FastJSON适配器实例，用于JSON反序列化操作。
-         */
-        private final IJsonAdapter adapter = new FastJsonAdapter();
-
-        /**
-         * 将JSON反序列化为IJsonArrayWrapper类型。
-         *
-         * @param parser    FastJSON解析器实例
-         * @param type      目标类型
-         * @param fieldName 字段名称
-         * @param <T>       目标类型泛型
-         * @return 反序列化后的IJsonArrayWrapper实例，若解析失败则返回null
-         */
-        @Override
-        @SuppressWarnings("unchecked")
-        public <T> T deserialze(DefaultJSONParser parser, Type type, Object fieldName) {
-            JsonWrapper jsonWrapper = adapter.toJson(parser.parse());
-            if (jsonWrapper == null) {
-                return null;
-            }
-            return (T) jsonWrapper.getAsJsonArray();
+    @Override
+    @SuppressWarnings("unchecked")
+    public <T> T deserialze(DefaultJSONParser parser, Type type, Object fieldName) {
+        JsonWrapper jsonWrapper = adapter.toJson(parser.parse());
+        if (jsonWrapper == null) {
+            return null;
         }
+        return (T) jsonWrapper.getAsJsonArray();
     }
 }

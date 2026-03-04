@@ -92,8 +92,7 @@ public final class JsonWrapper implements Serializable {
             } else if (((JsonWrapper) value).isJsonArray()) {
                 value = unwrap(((JsonWrapper) value).getAsJsonArray());
             }
-        }
-        if (value instanceof IJsonArrayWrapper) {
+        } else if (value instanceof IJsonArrayWrapper) {
             value = ((IJsonArrayWrapper) value).toList();
         } else if (value instanceof IJsonObjectWrapper) {
             value = ((IJsonObjectWrapper) value).toMap();
