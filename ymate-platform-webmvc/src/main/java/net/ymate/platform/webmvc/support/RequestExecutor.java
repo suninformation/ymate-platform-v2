@@ -84,8 +84,15 @@ public final class RequestExecutor {
         Object resultObj;
         try {
             if (!methodParamNames.isEmpty()) {
-                // 组装方法所需参数
-                Object[] methodParamValues = methodParamNames.stream().map(paramValues::get).toArray();
+                Class<?>[] paramTypes = requestMeta.getMethod().getParameterTypes();
+                Object[] methodParamValues = new Object[methodParamNames.size()];
+                for (int i = 0; i < methodParamNames.size(); i++) {
+                    Object value = paramValues.get(methodParamNames.get(i));
+                    if (value == null && paramTypes[i].isPrimitive()) {
+                        value = BlurObject.bind(value).toObjectValue(paramTypes[i]);
+                    }
+                    methodParamValues[i] = value;
+                }
                 resultObj = requestMeta.getMethod().invoke(targetObj, methodParamValues);
             } else {
                 resultObj = requestMeta.getMethod().invoke(targetObj);
