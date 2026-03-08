@@ -26,6 +26,7 @@ import net.ymate.platform.core.persistence.IShardingRule;
 import net.ymate.platform.core.persistence.IShardingable;
 import net.ymate.platform.core.persistence.base.EntityMeta;
 import net.ymate.platform.core.persistence.base.IEntity;
+import net.ymate.platform.core.persistence.base.PropertyMeta;
 import net.ymate.platform.persistence.jdbc.query.Table;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -35,10 +36,7 @@ import java.io.StringReader;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.IntStream;
 
 /**
@@ -109,12 +107,13 @@ public abstract class AbstractDialect implements IDialect {
     }
 
     @Override
-    public Map<String, Object> getGeneratedKey(Statement statement, List<String> autoincrementKeys) throws SQLException {
+    public List<Map<String, Object>> getGeneratedKeys(Statement statement, List<String> autoincrementKeys) throws SQLException {
         // 检索由于执行此 Statement 对象而创建的所有自动生成的键
-        Map<String, Object> ids = new HashMap<>(autoincrementKeys.size());
+        List<Map<String, Object>> keysList = new ArrayList<>();
         try (ResultSet keySet = statement.getGeneratedKeys()) {
-            for (String autoKey : autoincrementKeys) {
-                while (keySet.next()) {
+            while (keySet.next()) {
+                Map<String, Object> ids = new HashMap<>(autoincrementKeys.size());
+                for (String autoKey : autoincrementKeys) {
                     Object keyValue;
                     try {
                         keyValue = keySet.getObject(autoKey);
@@ -123,9 +122,16 @@ public abstract class AbstractDialect implements IDialect {
                     }
                     ids.put(autoKey, keyValue);
                 }
+                keysList.add(ids);
             }
         }
-        return ids;
+        return keysList;
+    }
+
+    @Override
+    public Map<String, Object> getGeneratedKey(Statement statement, List<String> autoincrementKeys) throws SQLException {
+        List<Map<String, Object>> keysList = getGeneratedKeys(statement, autoincrementKeys);
+        return keysList.isEmpty() ? new HashMap<>() : keysList.get(0);
     }
 
     @Override
@@ -240,13 +246,7 @@ public abstract class AbstractDialect implements IDialect {
         ExpressionUtils exp = ExpressionUtils.bind("INSERT INTO ${table_name} (${fields}) VALUES (${values})")
                 .set("table_name", buildTableName(prefix, entityMeta, shardingable));
         //
-        Fields newFields = Fields.create();
-        if (fields == null || fields.fields().isEmpty()) {
-            newFields.add(entityMeta.getPropertyNames());
-        } else {
-            newFields.add(fields);
-            doValidProperty(entityMeta, newFields, false);
-        }
+        Fields newFields = doBuildInsertFields(entityMeta, fields);
         return exp.set("fields", doGenerateFieldsFormatStr(newFields, null, null)).set("values", StringUtils.repeat("?", ", ", newFields.fields().size())).getResult();
     }
 
@@ -356,7 +356,13 @@ public abstract class AbstractDialect implements IDialect {
     protected Fields doBuildInsertFields(EntityMeta entityMeta, Fields fields) {
         Fields insertFields = Fields.create();
         if (fields == null || fields.fields().isEmpty()) {
-            insertFields.add(entityMeta.getPropertyNames());
+            for (String fieldName : entityMeta.getPropertyNames()) {
+                PropertyMeta propertyMeta = entityMeta.getPropertyByName(fieldName);
+                if (propertyMeta.isAutoincrement() && StringUtils.isBlank(propertyMeta.getSequenceName())) {
+                    continue;
+                }
+                insertFields.add(fieldName);
+            }
         } else {
             insertFields.add(fields);
             doValidProperty(entityMeta, insertFields, false);

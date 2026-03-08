@@ -27,6 +27,7 @@ import com.mongodb.client.gridfs.model.GridFSUploadOptions;
 import com.mongodb.gridfs.GridFS;
 import net.ymate.platform.core.persistence.AbstractSession;
 import net.ymate.platform.core.persistence.IResultSet;
+import net.ymate.platform.core.persistence.ISessionEventListener;
 import net.ymate.platform.core.persistence.Page;
 import net.ymate.platform.core.persistence.impl.DefaultResultSet;
 import net.ymate.platform.persistence.mongodb.IGridFsSession;
@@ -54,7 +55,7 @@ import java.util.function.Consumer;
 /**
  * @author 刘镇 (suninformation@163.com) on 15/11/26 上午11:12
  */
-public class MongoGridFsSession extends AbstractSession<IMongoConnectionHolder> implements IGridFsSession {
+public class MongoGridFsSession extends AbstractSession<IMongoConnectionHolder, ISessionEventListener> implements IGridFsSession {
 
     private final String bucketName;
 

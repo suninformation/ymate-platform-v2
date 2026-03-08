@@ -722,7 +722,7 @@ public class Table extends QueryHandleAdapter<Table> {
      * @param defaultValue 默认值
      * @return 如果是特殊默认值返回 true
      */
-    private boolean isSpecialDefaultValue(String defaultValue) {
+    public static boolean isSpecialDefaultValue(String defaultValue) {
         if (StringUtils.isBlank(defaultValue)) {
             return false;
         }

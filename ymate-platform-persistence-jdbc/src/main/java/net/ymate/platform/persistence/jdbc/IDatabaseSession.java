@@ -34,7 +34,7 @@ import java.util.List;
  */
 @Ignored
 @SuppressWarnings("rawtypes")
-public interface IDatabaseSession extends ISession<IDatabaseConnectionHolder> {
+public interface IDatabaseSession extends ISession<IDatabaseConnectionHolder, IDatabaseSessionEventListener> {
 
     /**
      * 执行SQL查询

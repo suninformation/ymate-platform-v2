@@ -20,10 +20,7 @@ import com.mongodb.client.DistinctIterable;
 import com.mongodb.client.MapReduceIterable;
 import com.mongodb.client.MongoCollection;
 import net.ymate.platform.core.beans.annotation.Ignored;
-import net.ymate.platform.core.persistence.Fields;
-import net.ymate.platform.core.persistence.IResultSet;
-import net.ymate.platform.core.persistence.ISession;
-import net.ymate.platform.core.persistence.Page;
+import net.ymate.platform.core.persistence.*;
 import net.ymate.platform.core.persistence.base.IEntity;
 import net.ymate.platform.persistence.mongodb.support.Aggregation;
 import net.ymate.platform.persistence.mongodb.support.OrderBy;
@@ -40,7 +37,7 @@ import java.util.List;
  */
 @Ignored
 @SuppressWarnings("rawtypes")
-public interface IMongoSession extends ISession<IMongoConnectionHolder> {
+public interface IMongoSession extends ISession<IMongoConnectionHolder, ISessionEventListener> {
 
     /**
      * 获取数据库集合对象

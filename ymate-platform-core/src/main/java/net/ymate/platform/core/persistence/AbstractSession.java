@@ -18,15 +18,16 @@ package net.ymate.platform.core.persistence;
 import net.ymate.platform.commons.util.UUIDUtils;
 
 /**
- * @param <CONNECTION_HOLDER> 连接持有者类型
+ * @param <CONNECTION_HOLDER>      连接持有者类型
+ * @param <SESSION_EVENT_LISTENER> 会话事件监听器类型
  * @author 刘镇 (suninformation@163.com) on 2019-05-23 16:27
  */
 @SuppressWarnings("rawtypes")
-public abstract class AbstractSession<CONNECTION_HOLDER extends IConnectionHolder> implements ISession<CONNECTION_HOLDER> {
+public abstract class AbstractSession<CONNECTION_HOLDER extends IConnectionHolder, SESSION_EVENT_LISTENER extends ISessionEventListener> implements ISession<CONNECTION_HOLDER, SESSION_EVENT_LISTENER> {
 
     private static final ThreadLocal<String> SESSION_THREAD_LOCAL = ThreadLocal.withInitial(UUIDUtils::UUID);
 
-    private ISessionEventListener sessionEventListener;
+    private SESSION_EVENT_LISTENER sessionEventListener;
 
     @Override
     public String getId() {
@@ -34,12 +35,12 @@ public abstract class AbstractSession<CONNECTION_HOLDER extends IConnectionHolde
     }
 
     @Override
-    public ISessionEventListener getSessionEventListener() {
+    public SESSION_EVENT_LISTENER getSessionEventListener() {
         return sessionEventListener;
     }
 
     @Override
-    public void setSessionEventListener(ISessionEventListener sessionEventListener) {
+    public void setSessionEventListener(SESSION_EVENT_LISTENER sessionEventListener) {
         this.sessionEventListener = sessionEventListener;
     }
 }

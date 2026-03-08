@@ -164,6 +164,34 @@ public final class Type {
         QUERY,
 
         /**
+         * 插入
+         *
+         * @since 2.1.4
+         */
+        INSERT,
+
+        /**
+         * 批量插入
+         *
+         * @since 2.1.4
+         */
+        BATCH_INSERT,
+
+        /**
+         * 插入(如果记录不存在)
+         *
+         * @since 2.1.4
+         */
+        INSERT_IF_NOT_EXIST,
+
+        /**
+         * 批量插入(如果记录不存在)
+         *
+         * @since 2.1.4
+         */
+        BATCH_INSERT_IF_NOT_EXIST,
+
+        /**
          * 更新
          */
         UPDATE,
@@ -172,6 +200,30 @@ public final class Type {
          * 批量更新
          */
         BATCH_UPDATE,
+
+        /**
+         * 更新插入
+         */
+        UPSERT,
+
+        /**
+         * 批量更新插入
+         */
+        BATCH_UPSERT,
+
+        /**
+         * 删除
+         *
+         * @since 2.1.4
+         */
+        DELETE,
+
+        /**
+         * 批量删除
+         *
+         * @since 2.1.4
+         */
+        BATCH_DELETE,
 
         /**
          * 存储过程

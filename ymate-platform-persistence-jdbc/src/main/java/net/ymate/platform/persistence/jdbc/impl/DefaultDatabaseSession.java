@@ -26,10 +26,7 @@ import net.ymate.platform.persistence.jdbc.base.*;
 import net.ymate.platform.persistence.jdbc.base.impl.*;
 import net.ymate.platform.persistence.jdbc.dialect.IDialect;
 import net.ymate.platform.persistence.jdbc.dialect.impl.OracleDialect;
-import net.ymate.platform.persistence.jdbc.query.BatchSQL;
-import net.ymate.platform.persistence.jdbc.query.EntitySQL;
-import net.ymate.platform.persistence.jdbc.query.SQL;
-import net.ymate.platform.persistence.jdbc.query.Where;
+import net.ymate.platform.persistence.jdbc.query.*;
 import net.ymate.platform.persistence.jdbc.support.BaseEntity;
 import net.ymate.platform.persistence.jdbc.transaction.Transactions;
 import org.apache.commons.lang3.ArrayUtils;
@@ -48,7 +45,7 @@ import java.util.*;
  * @author 刘镇 (suninformation@163.com) on 2011-9-27 下午03:09:46
  */
 @SuppressWarnings("rawtypes")
-public class DefaultDatabaseSession extends AbstractSession<IDatabaseConnectionHolder> implements IDatabaseSession {
+public class DefaultDatabaseSession extends AbstractSession<IDatabaseConnectionHolder, IDatabaseSessionEventListener> implements IDatabaseSession {
 
     private static final Log LOG = LogFactory.getLog(DefaultDatabaseSession.class);
 
@@ -91,40 +88,76 @@ public class DefaultDatabaseSession extends AbstractSession<IDatabaseConnectionH
         }
     }
 
-    private void doOperator(Type.OPT opt, DatabaseEvent.EVENT event, Params params, IOperator operator) throws Exception {
-        if (params != null && !params.params().isEmpty()) {
-            params.params().forEach(operator::addParameter);
-        }
-        SessionEventContext eventContext = new SessionEventContext(operator, opt);
-        if (getSessionEventListener() != null) {
-            switch (opt) {
+    private <T extends IOperator> T doOperator(DatabaseEvent.EVENT event, DatabaseSessionEventContext eventContext, IOperatorBuilder<T> operatorBuilder) throws Exception {
+        IDatabaseSessionEventListener sessionEventListener = getSessionEventListener();
+        if (sessionEventListener != null) {
+            switch (eventContext.getOperationType()) {
                 case QUERY:
-                    getSessionEventListener().onQueryBefore(eventContext);
+                    sessionEventListener.onQueryBefore(eventContext);
+                    break;
+                case INSERT:
+                case BATCH_INSERT:
+                    sessionEventListener.onInsertBefore(eventContext);
+                    break;
+                case INSERT_IF_NOT_EXIST:
+                case BATCH_INSERT_IF_NOT_EXIST:
+                    sessionEventListener.onInsertIfNotExistBefore(eventContext);
                     break;
                 case UPDATE:
                 case BATCH_UPDATE:
-                    getSessionEventListener().onUpdateBefore(eventContext);
+                    sessionEventListener.onUpdateBefore(eventContext);
+                    break;
+                case UPSERT:
+                case BATCH_UPSERT:
+                    sessionEventListener.onUpsertBefore(eventContext);
+                    break;
+                case DELETE:
+                case BATCH_DELETE:
+                    sessionEventListener.onRemoveBefore(eventContext);
                     break;
                 default:
-                    throw new IllegalStateException("Unexpected value: " + opt);
+                    throw new IllegalStateException("Unexpected value: " + eventContext.getSql());
             }
         }
+        T operator = operatorBuilder.build(eventContext);
+        //
+        if (eventContext.getParams() != null) {
+            eventContext.getParams().params().forEach(operator::addParameter);
+        }
         operator.execute();
-        if (getSessionEventListener() != null) {
-            switch (opt) {
+        if (sessionEventListener != null) {
+            eventContext.putAttribute(IOperator.class.getName(), operator);
+            switch (eventContext.getOperationType()) {
                 case QUERY:
-                    getSessionEventListener().onQueryAfter(eventContext);
+                    sessionEventListener.onQueryAfter(eventContext);
+                    break;
+                case INSERT:
+                case BATCH_INSERT:
+                    sessionEventListener.onInsertAfter(eventContext);
+                    break;
+                case INSERT_IF_NOT_EXIST:
+                case BATCH_INSERT_IF_NOT_EXIST:
+                    sessionEventListener.onInsertIfNotExistAfter(eventContext);
                     break;
                 case UPDATE:
                 case BATCH_UPDATE:
-                    getSessionEventListener().onUpdateAfter(eventContext);
+                    sessionEventListener.onUpdateAfter(eventContext);
+                    break;
+                case UPSERT:
+                case BATCH_UPSERT:
+                    sessionEventListener.onUpsertAfter(eventContext);
+                    break;
+                case DELETE:
+                case BATCH_DELETE:
+                    sessionEventListener.onRemoveAfter(eventContext);
                     break;
                 default:
-                    throw new IllegalStateException("Unexpected value: " + opt);
+                    throw new IllegalStateException("Unexpected value: " + eventContext.getOperationType());
             }
         }
         //
         owner.getOwner().getEvents().fireEvent(new DatabaseEvent(owner, event).setEventSource(eventContext));
+        return operator;
     }
 
     private String doForUpdateIfNeed(String sqlStr, IDBLocker dbLocker) {
@@ -136,8 +169,10 @@ public class DefaultDatabaseSession extends AbstractSession<IDatabaseConnectionH
 
     @Override
     public <T> IResultSet<T> find(SQL sql, IResultSetHandler<T> handler) throws Exception {
-        IQueryOperator<T> queryOperator = new DefaultQueryOperator<>(sql.toString(), connectionHolder, handler);
-        doOperator(Type.OPT.QUERY, DatabaseEvent.EVENT.QUERY_AFTER, sql.params(), queryOperator);
+        IQueryOperator<T> queryOperator = doOperator(DatabaseEvent.EVENT.QUERY_AFTER, DatabaseSessionEventContext.builder()
+                .operationType(Type.OPT.QUERY)
+                .sql(sql)
+                .build(this), (DatabaseSessionEventContext sessionEventContext) -> new DefaultQueryOperator<>(sessionEventContext.getSql(), connectionHolder, handler));
         //
         return new DefaultResultSet<>(queryOperator.getResultSet());
     }
@@ -157,8 +192,11 @@ public class DefaultDatabaseSession extends AbstractSession<IDatabaseConnectionH
             }
         }
         //
-        IQueryOperator<T> queryOperator = new DefaultQueryOperator<>(sqlStr, this.connectionHolder, handler);
-        doOperator(Type.OPT.QUERY, DatabaseEvent.EVENT.QUERY_AFTER, sql.params(), queryOperator);
+        IQueryOperator<T> queryOperator = doOperator(DatabaseEvent.EVENT.QUERY_AFTER, DatabaseSessionEventContext.builder()
+                .operationType(Type.OPT.QUERY)
+                .sql(sqlStr)
+                .params(sql.params())
+                .build(this), (DatabaseSessionEventContext sessionEventContext) -> new DefaultQueryOperator<>(sessionEventContext.getSql(), this.connectionHolder, handler));
         //
         if (page != null) {
             return new DefaultResultSet<>(queryOperator.getResultSet(), page.page(), page.pageSize(), count);
@@ -259,8 +297,11 @@ public class DefaultDatabaseSession extends AbstractSession<IDatabaseConnectionH
             }
         }
         //
-        IQueryOperator<T> queryOperator = new DefaultQueryOperator<>(doForUpdateIfNeed(sqlStr, entity.forUpdate()), this.connectionHolder, new EntityResultSetHandler<>(entity.entityClass()));
-        doOperator(Type.OPT.QUERY, DatabaseEvent.EVENT.QUERY_AFTER, where != null ? where.params() : null, queryOperator);
+        IQueryOperator<T> queryOperator = doOperator(DatabaseEvent.EVENT.QUERY_AFTER, DatabaseSessionEventContext.builder()
+                .operationType(Type.OPT.QUERY)
+                .sql(sqlStr)
+                .params(where != null ? where.params() : null)
+                .build(this), (DatabaseSessionEventContext sessionEventContext) -> new DefaultQueryOperator<>(doForUpdateIfNeed(sessionEventContext.getSql(), entity.forUpdate()), this.connectionHolder, new EntityResultSetHandler<>(entity.entityClass())));
         //
         if (page != null) {
             return new DefaultResultSet<>(queryOperator.getResultSet(), page.page(), page.pageSize(), count);
@@ -278,14 +319,18 @@ public class DefaultDatabaseSession extends AbstractSession<IDatabaseConnectionH
         EntityMeta entityMeta = EntityMeta.load(entity.entityClass());
         PairObject<Fields, Params> entityPrimaryKeyValues = doGetPrimaryKeyFieldAndValues(entityMeta, id, null);
         String sqlStr = dialect.buildSelectByPkSql(entity.entityClass(), tablePrefix, entity.shardingable() != null ? entity.shardingable() : shardingable, entityPrimaryKeyValues.getKey(), doGetNotExcludedFields(entityMeta, entity.fields(), false, true));
-        //
-        IQueryOperator<T> queryOperator = new DefaultQueryOperator<>(doForUpdateIfNeed(sqlStr, entity.forUpdate()), this.connectionHolder, new EntityResultSetHandler<>(entity.entityClass()));
+        Params params;
         if (entityMeta.isMultiplePrimaryKey()) {
-            entityPrimaryKeyValues.getValue().params().forEach(queryOperator::addParameter);
+            params = entityPrimaryKeyValues.getValue();
         } else {
-            queryOperator.addParameter(id);
+            params = Params.create(id);
         }
-        doOperator(Type.OPT.QUERY, DatabaseEvent.EVENT.QUERY_AFTER, null, queryOperator);
+        //
+        IQueryOperator<T> queryOperator = doOperator(DatabaseEvent.EVENT.QUERY_AFTER, DatabaseSessionEventContext.builder()
+                .operationType(Type.OPT.QUERY)
+                .sql(sqlStr)
+                .params(params)
+                .build(this), (DatabaseSessionEventContext sessionEventContext) -> new DefaultQueryOperator<>(doForUpdateIfNeed(sessionEventContext.getSql(), entity.forUpdate()), this.connectionHolder, new EntityResultSetHandler<>(entity.entityClass())));
         //
         return queryOperator.getResultSet().isEmpty() ? null : queryOperator.getResultSet().get(0);
     }
@@ -293,8 +338,11 @@ public class DefaultDatabaseSession extends AbstractSession<IDatabaseConnectionH
     @Override
     public <T> T findFirst(SQL sql, IResultSetHandler<T> handler) throws Exception {
         String sqlStr = dialect.buildPagedQuerySql(sql.toString(), 1, 1);
-        IQueryOperator<T> queryOperator = new DefaultQueryOperator<>(sqlStr, this.connectionHolder, handler);
-        doOperator(Type.OPT.QUERY, DatabaseEvent.EVENT.QUERY_AFTER, sql.params(), queryOperator);
+        IQueryOperator<T> queryOperator = doOperator(DatabaseEvent.EVENT.QUERY_AFTER, DatabaseSessionEventContext.builder()
+                .operationType(Type.OPT.QUERY)
+                .sql(sqlStr)
+                .params(sql.params())
+                .build(this), (DatabaseSessionEventContext sessionEventContext) -> new DefaultQueryOperator<>(sessionEventContext.getSql(), this.connectionHolder, handler));
         //
         return queryOperator.getResultSet().isEmpty() ? null : queryOperator.getResultSet().get(0);
     }
@@ -328,27 +376,35 @@ public class DefaultDatabaseSession extends AbstractSession<IDatabaseConnectionH
 
     @Override
     public int executeForUpdate(SQL sql) throws Exception {
-        IUpdateOperator updateOperator = new DefaultUpdateOperator(sql.toString(), this.getConnectionHolder());
-        doOperator(Type.OPT.UPDATE, DatabaseEvent.EVENT.UPDATE_AFTER, sql.params(), updateOperator);
+        IUpdateOperator updateOperator = doOperator(DatabaseEvent.EVENT.UPDATE_AFTER, DatabaseSessionEventContext.builder()
+                .operationType(Type.OPT.UPDATE)
+                .sql(sql)
+                .build(this), (DatabaseSessionEventContext sessionEventContext) -> new DefaultUpdateOperator(sessionEventContext.getSql(), this.getConnectionHolder()));
         //
         return updateOperator.getEffectCounts();
     }
 
     @Override
     public int[] executeForUpdate(BatchSQL sql) throws Exception {
-        IBatchUpdateOperator updateOperator;
-        if (StringUtils.isNotBlank(sql.getSQL())) {
-            updateOperator = new BatchUpdateOperator(sql.getSQL(), this.getConnectionHolder());
-            sql.params().forEach(param -> {
-                SQLBatchParameter batchParam = SQLBatchParameter.create();
-                param.params().forEach(batchParam::addParameter);
-                updateOperator.addBatchParameter(batchParam);
-            });
-        } else {
-            updateOperator = new BatchUpdateOperator(this.getConnectionHolder());
-        }
-        sql.getSQLs().forEach(updateOperator::addBatchSQL);
-        doOperator(Type.OPT.BATCH_UPDATE, DatabaseEvent.EVENT.UPDATE_AFTER, null, updateOperator);
+        IBatchUpdateOperator updateOperator = doOperator(DatabaseEvent.EVENT.UPDATE_AFTER, DatabaseSessionEventContext.builder()
+                .operationType(Type.OPT.BATCH_UPDATE)
+                .sql(sql)
+                .build(this), (DatabaseSessionEventContext sessionEventContext) -> {
+            IBatchUpdateOperator operator;
+            BatchSQL batchSQL = sessionEventContext.getBatchSQL();
+            if (StringUtils.isNotBlank(batchSQL.getSQL())) {
+                operator = new BatchUpdateOperator(batchSQL.getSQL(), this.getConnectionHolder());
+                batchSQL.params().forEach(param -> {
+                    SQLBatchParameter batchParam = SQLBatchParameter.create();
+                    param.params().forEach(batchParam::addParameter);
+                    operator.addBatchParameter(batchParam);
+                });
+            } else {
+                operator = new BatchUpdateOperator(this.getConnectionHolder());
+            }
+            batchSQL.getSQLs().forEach(operator::addBatchSQL);
+            return operator;
+        });
         //
         return updateOperator.getEffectCounts();
     }
@@ -369,10 +425,13 @@ public class DefaultDatabaseSession extends AbstractSession<IDatabaseConnectionH
         PairObject<Fields, Params> entityPrimaryKeyValues = doGetPrimaryKeyFieldAndValues(entityMeta, entity, null);
         filter = doGetNotExcludedFields(entityMeta, filter, true, false);
         String sqlStr = dialect.buildUpdateByPkSql(entity.getClass(), tablePrefix, shardingable, entityPrimaryKeyValues.getKey(), filter);
-        IUpdateOperator updateOperator = new DefaultUpdateOperator(sqlStr, this.connectionHolder);
         // 先获取并添加需要更新的字段值
-        doGetEntityFieldAndValues(entityMeta, entity, filter, false).getValue().params().forEach(updateOperator::addParameter);
-        doOperator(Type.OPT.UPDATE, DatabaseEvent.EVENT.UPDATE_AFTER, entityPrimaryKeyValues.getValue(), updateOperator);
+        Params params = doGetEntityFieldAndValues(entityMeta, entity, filter, false, false).getValue().add(entityPrimaryKeyValues.getValue());
+        IUpdateOperator updateOperator = doOperator(DatabaseEvent.EVENT.UPDATE_AFTER, DatabaseSessionEventContext.builder()
+                .operationType(Type.OPT.UPDATE)
+                .sql(sqlStr)
+                .params(params)
+                .build(this), (DatabaseSessionEventContext sessionEventContext) -> new DefaultUpdateOperator(sessionEventContext.getSql(), this.connectionHolder));
         //
         if (updateOperator.getEffectCounts() > 0) {
             return entity;
@@ -388,18 +447,37 @@ public class DefaultDatabaseSession extends AbstractSession<IDatabaseConnectionH
             PairObject<Fields, Params> entityPrimaryKeyValues = doGetPrimaryKeyFieldAndValues(entityMeta, element, null);
             filter = doGetNotExcludedFields(entityMeta, filter, true, false);
             String sqlStr = dialect.buildUpdateByPkSql(element.getClass(), tablePrefix, null, entityPrimaryKeyValues.getKey(), filter);
-            IBatchUpdateOperator updateOperator = new BatchUpdateOperator(sqlStr, this.connectionHolder);
+            BatchSQL batchSQL = BatchSQL.create(owner, sqlStr);
             for (T entity : entities) {
-                SQLBatchParameter batchParameter = SQLBatchParameter.create();
                 // 先获取并添加需要更新的字段值
-                doGetEntityFieldAndValues(entityMeta, entity, filter, false).getValue().params().forEach(batchParameter::addParameter);
+                Params params = doGetEntityFieldAndValues(entityMeta, entity, filter, false, false).getValue();
                 // 再获取并添加主键条件字段值
-                doGetPrimaryKeyFieldAndValues(entityMeta, entity, null).getValue().params().forEach(batchParameter::addParameter);
-                updateOperator.addBatchParameter(batchParameter);
+                params.add(doGetPrimaryKeyFieldAndValues(entityMeta, entity, null).getValue());
+                //
+                batchSQL.addParameter(params);
             }
-            doOperator(Type.OPT.BATCH_UPDATE, DatabaseEvent.EVENT.UPDATE_AFTER, null, updateOperator);
+            doOperator(DatabaseEvent.EVENT.UPDATE_AFTER, DatabaseSessionEventContext.builder()
+                    .operationType(Type.OPT.BATCH_UPDATE)
+                    .sql(batchSQL)
+                    .build(this), this::doCreateBatchUpdateOperator);
         }
         return entities;
+    }
+
+    /**
+     * 创建批处理更新操作器
+     *
+     * @param sessionEventContext 数据库会话事件上下文
+     * @return 批处理更新操作器
+     */
+    private IBatchUpdateOperator doCreateBatchUpdateOperator(DatabaseSessionEventContext sessionEventContext) {
+        IBatchUpdateOperator operator = new BatchUpdateOperator(sessionEventContext.getBatchSQL().getSQL(), this.connectionHolder);
+        sessionEventContext.getBatchSQL().params().forEach(param -> {
+            SQLBatchParameter batchParameter = SQLBatchParameter.create();
+            param.params().forEach(batchParameter::addParameter);
+            operator.addBatchParameter(batchParameter);
+        });
+        return operator;
     }
 
     @Override
@@ -432,9 +510,9 @@ public class DefaultDatabaseSession extends AbstractSession<IDatabaseConnectionH
     @Override
     public <T extends IEntity> T insert(T entity, Fields filter, IShardingable shardingable) throws Exception {
         EntityMeta entityMeta = EntityMeta.load(entity.getClass()).unsupportedIfView();
-        PairObject<Fields, Params> entityFieldAndValues = doGetEntityFieldAndValues(entityMeta, entity, filter, true);
+        PairObject<Fields, Params> entityFieldAndValues = doGetEntityFieldAndValues(entityMeta, entity, filter, true, false);
         String sqlStr = dialect.buildInsertSql(entity.getClass(), tablePrefix, shardingable, entityFieldAndValues.getKey());
-        return doExecuteSingleUpdate(entity, sqlStr, entityFieldAndValues.getValue(), DatabaseEvent.EVENT.INSERT_AFTER, Type.OPT.UPDATE, entityMeta);
+        return doExecuteUpdate(entity, sqlStr, entityFieldAndValues.getValue(), DatabaseEvent.EVENT.INSERT_AFTER, Type.OPT.INSERT, entityMeta);
     }
 
     @Override
@@ -449,7 +527,7 @@ public class DefaultDatabaseSession extends AbstractSession<IDatabaseConnectionH
 
     @Override
     public <T extends IEntity> List<T> insert(List<T> entities, Fields filter) throws Exception {
-        return doBatchUpdate(entities, filter, (entityClass, fields) -> dialect.buildInsertSql(entityClass, tablePrefix, null, fields), DatabaseEvent.EVENT.INSERT_AFTER, Type.OPT.BATCH_UPDATE);
+        return doBatchUpdate(entities, filter, (entityClass, fields) -> dialect.buildInsertSql(entityClass, tablePrefix, null, fields), DatabaseEvent.EVENT.INSERT_AFTER, Type.OPT.BATCH_INSERT);
     }
 
     @Override
@@ -478,9 +556,9 @@ public class DefaultDatabaseSession extends AbstractSession<IDatabaseConnectionH
     public <T extends IEntity> T upsert(T entity, Fields filter, IShardingable shardingable) throws Exception {
         EntityMeta entityMeta = EntityMeta.load(entity.getClass()).unsupportedIfView();
         // 获取实体字段和值（用于INSERT部分）
-        PairObject<Fields, Params> entityFieldAndValues = doGetEntityFieldAndValues(entityMeta, entity, filter, true);
+        PairObject<Fields, Params> entityFieldAndValues = doGetEntityFieldAndValues(entityMeta, entity, filter, true, true);
         String sqlStr = dialect.buildUpsertSql(entity.getClass(), tablePrefix, shardingable, entityFieldAndValues.getKey());
-        return doExecuteSingleUpdate(entity, sqlStr, entityFieldAndValues.getValue(), DatabaseEvent.EVENT.UPDATE_AFTER, Type.OPT.UPDATE, entityMeta);
+        return doExecuteUpdate(entity, sqlStr, entityFieldAndValues.getValue(), DatabaseEvent.EVENT.UPSERT_AFTER, Type.OPT.UPSERT, entityMeta);
     }
 
     @Override
@@ -495,7 +573,7 @@ public class DefaultDatabaseSession extends AbstractSession<IDatabaseConnectionH
 
     @Override
     public <T extends IEntity> List<T> upsert(List<T> entities, Fields filter) throws Exception {
-        return doBatchUpdate(entities, filter, (entityClass, fields) -> dialect.buildUpsertSql(entityClass, tablePrefix, null, fields), DatabaseEvent.EVENT.UPDATE_AFTER, Type.OPT.BATCH_UPDATE);
+        return doBatchUpdate(entities, filter, (entityClass, fields) -> dialect.buildUpsertSql(entityClass, tablePrefix, null, fields), DatabaseEvent.EVENT.UPSERT_AFTER, Type.OPT.BATCH_UPSERT);
     }
 
     @Override
@@ -523,9 +601,9 @@ public class DefaultDatabaseSession extends AbstractSession<IDatabaseConnectionH
     @Override
     public <T extends IEntity> T insertIfNotExist(T entity, Fields filter, IShardingable shardingable) throws Exception {
         EntityMeta entityMeta = EntityMeta.load(entity.getClass()).unsupportedIfView();
-        PairObject<Fields, Params> entityFieldAndValues = doGetEntityFieldAndValues(entityMeta, entity, filter, true);
+        PairObject<Fields, Params> entityFieldAndValues = doGetEntityFieldAndValues(entityMeta, entity, filter, true, true);
         String sqlStr = dialect.buildInsertIfNotExistSql(entity.getClass(), tablePrefix, shardingable, entityFieldAndValues.getKey());
-        return doExecuteSingleUpdate(entity, sqlStr, entityFieldAndValues.getValue(), DatabaseEvent.EVENT.INSERT_AFTER, Type.OPT.UPDATE, entityMeta);
+        return doExecuteUpdate(entity, sqlStr, entityFieldAndValues.getValue(), DatabaseEvent.EVENT.INSERT_IF_NOT_EXIST_AFTER, Type.OPT.INSERT_IF_NOT_EXIST, entityMeta);
     }
 
     @Override
@@ -540,7 +618,7 @@ public class DefaultDatabaseSession extends AbstractSession<IDatabaseConnectionH
 
     @Override
     public <T extends IEntity> List<T> insertIfNotExist(List<T> entities, Fields filter) throws Exception {
-        return doBatchUpdate(entities, filter, (entityClass, fields) -> dialect.buildInsertIfNotExistSql(entityClass, tablePrefix, null, fields), DatabaseEvent.EVENT.INSERT_AFTER, Type.OPT.BATCH_UPDATE);
+        return doBatchUpdate(entities, filter, (entityClass, fields) -> dialect.buildInsertIfNotExistSql(entityClass, tablePrefix, null, fields), DatabaseEvent.EVENT.INSERT_IF_NOT_EXIST_AFTER, Type.OPT.BATCH_INSERT_IF_NOT_EXIST);
     }
 
     @Override
@@ -578,8 +656,11 @@ public class DefaultDatabaseSession extends AbstractSession<IDatabaseConnectionH
         EntityMeta entityMeta = EntityMeta.load(entityClass).unsupportedIfView();
         PairObject<Fields, Params> entityPrimaryKeyValues = doGetPrimaryKeyFieldAndValues(entityMeta, id, null);
         String sqlStr = dialect.buildDeleteByPkSql(entityClass, tablePrefix, shardingable, entityPrimaryKeyValues.getKey());
-        IUpdateOperator updateOperator = new DefaultUpdateOperator(sqlStr, this.connectionHolder);
-        doOperator(Type.OPT.UPDATE, DatabaseEvent.EVENT.REMOVE_AFTER, entityPrimaryKeyValues.getValue(), updateOperator);
+        IUpdateOperator updateOperator = doOperator(DatabaseEvent.EVENT.REMOVE_AFTER, DatabaseSessionEventContext.builder()
+                .operationType(Type.OPT.DELETE)
+                .sql(sqlStr)
+                .params(entityPrimaryKeyValues.getValue())
+                .build(this), (DatabaseSessionEventContext sessionEventContext) -> new DefaultUpdateOperator(sessionEventContext.getSql(), this.connectionHolder));
         //
         return updateOperator.getEffectCounts();
     }
@@ -589,13 +670,14 @@ public class DefaultDatabaseSession extends AbstractSession<IDatabaseConnectionH
         EntityMeta entityMeta = EntityMeta.load(entities.get(0).getClass()).unsupportedIfView();
         PairObject<Fields, Params> entityPrimaryKeyValues = doGetPrimaryKeyFieldAndValues(entityMeta, entities.get(0), null);
         String sqlStr = dialect.buildDeleteByPkSql(entities.get(0).getClass(), tablePrefix, null, entityPrimaryKeyValues.getKey());
-        IBatchUpdateOperator updateOperator = new BatchUpdateOperator(sqlStr, this.connectionHolder);
+        BatchSQL batchSQL = BatchSQL.create(owner, sqlStr);
         for (T entity : entities) {
-            SQLBatchParameter batchParameter = SQLBatchParameter.create();
-            doGetPrimaryKeyFieldAndValues(entityMeta, entity, null).getValue().params().forEach(batchParameter::addParameter);
-            updateOperator.addBatchParameter(batchParameter);
+            batchSQL.addParameter(doGetPrimaryKeyFieldAndValues(entityMeta, entity, null).getValue());
         }
-        doOperator(Type.OPT.BATCH_UPDATE, DatabaseEvent.EVENT.REMOVE_AFTER, null, updateOperator);
+        doOperator(DatabaseEvent.EVENT.REMOVE_AFTER, DatabaseSessionEventContext.builder()
+                .operationType(Type.OPT.BATCH_DELETE)
+                .sql(batchSQL)
+                .build(this), this::doCreateBatchUpdateOperator);
         //
         return entities;
     }
@@ -617,13 +699,14 @@ public class DefaultDatabaseSession extends AbstractSession<IDatabaseConnectionH
         EntityMeta entityMeta = EntityMeta.load(entityClass).unsupportedIfView();
         PairObject<Fields, Params> entityPrimaryKeyValues = doGetPrimaryKeyFieldAndValues(entityMeta, ids[0], null);
         String sqlStr = dialect.buildDeleteByPkSql(entityClass, tablePrefix, null, entityPrimaryKeyValues.getKey());
-        IBatchUpdateOperator updateOperator = new BatchUpdateOperator(sqlStr, this.connectionHolder);
+        BatchSQL batchSQL = BatchSQL.create(owner, sqlStr);
         for (Serializable id : ids) {
-            SQLBatchParameter batchParameter = SQLBatchParameter.create();
-            doGetPrimaryKeyFieldAndValues(entityMeta, id, null).getValue().params().forEach(batchParameter::addParameter);
-            updateOperator.addBatchParameter(batchParameter);
+            batchSQL.addParameter(doGetPrimaryKeyFieldAndValues(entityMeta, id, null).getValue());
         }
-        doOperator(Type.OPT.BATCH_UPDATE, DatabaseEvent.EVENT.REMOVE_AFTER, null, updateOperator);
+        IBatchUpdateOperator updateOperator = doOperator(DatabaseEvent.EVENT.REMOVE_AFTER, DatabaseSessionEventContext.builder()
+                .operationType(Type.OPT.BATCH_DELETE)
+                .sql(batchSQL)
+                .build(this), this::doCreateBatchUpdateOperator);
         //
         return updateOperator.getEffectCounts();
     }
@@ -653,8 +736,11 @@ public class DefaultDatabaseSession extends AbstractSession<IDatabaseConnectionH
         ExpressionUtils exp = ExpressionUtils.bind("SELECT count(*) FROM ${table_name} ${where}")
                 .set("table_name", dialect.buildTableName(tablePrefix, entityMeta, shardingable))
                 .set("where", where == null ? StringUtils.EMPTY : where.toSQL());
-        IQueryOperator<Object[]> queryOperator = new DefaultQueryOperator<>(exp.getResult(), this.getConnectionHolder(), new ArrayResultSetHandler());
-        doOperator(Type.OPT.QUERY, DatabaseEvent.EVENT.QUERY_AFTER, where != null ? where.params() : null, queryOperator);
+        IQueryOperator<Object[]> queryOperator = doOperator(DatabaseEvent.EVENT.QUERY_AFTER, DatabaseSessionEventContext.builder()
+                .operationType(Type.OPT.QUERY)
+                .sql(exp.getResult())
+                .params(where != null ? where.params() : null)
+                .build(this), (DatabaseSessionEventContext sessionEventContext) -> new DefaultQueryOperator<>(sessionEventContext.getSql(), this.getConnectionHolder(), new ArrayResultSetHandler()));
         //
         return BlurObject.bind(((Object[]) queryOperator.getResultSet().get(0)[0])[1]).toLongValue();
     }
@@ -662,8 +748,11 @@ public class DefaultDatabaseSession extends AbstractSession<IDatabaseConnectionH
     @Override
     public long count(SQL sql) throws Exception {
         String sqlStr = dialect.buildCountSQL(sql.toString());
-        IQueryOperator<Object[]> queryOperator = new DefaultQueryOperator<>(sqlStr, this.getConnectionHolder(), new ArrayResultSetHandler());
-        doOperator(Type.OPT.QUERY, DatabaseEvent.EVENT.QUERY_AFTER, sql.params(), queryOperator);
+        IQueryOperator<Object[]> queryOperator = doOperator(DatabaseEvent.EVENT.QUERY_AFTER, DatabaseSessionEventContext.builder()
+                .operationType(Type.OPT.QUERY)
+                .sql(sqlStr)
+                .params(sql.params())
+                .build(this), (DatabaseSessionEventContext sessionEventContext) -> new DefaultQueryOperator<>(sessionEventContext.getSql(), this.getConnectionHolder(), new ArrayResultSetHandler()));
         //
         return BlurObject.bind(((Object[]) queryOperator.getResultSet().get(0)[0])[1]).toLongValue();
     }
@@ -726,21 +815,40 @@ public class DefaultDatabaseSession extends AbstractSession<IDatabaseConnectionH
      * @return 获取实体的所有字段和值
      * @throws Exception 可能产生的异常
      */
-    private PairObject<Fields, Params> doGetEntityFieldAndValues(EntityMeta entityMeta, IEntity targetObj, Fields filter, boolean includePrimaryKey) throws Exception {
+    private PairObject<Fields, Params> doGetEntityFieldAndValues(EntityMeta entityMeta, IEntity targetObj, Fields filter, boolean includePrimaryKey, boolean forUpsertOrNotExist) throws Exception {
         Fields fields = Fields.create();
         Params values = Params.create();
         for (String fieldName : entityMeta.getPropertyNames()) {
-            if (doCheckField(filter, fieldName)) {
-                PropertyMeta propertyMeta = entityMeta.getPropertyByName(fieldName);
-                Object value = null;
-                if (entityMeta.isPrimaryKey(fieldName)) {
-                    if (includePrimaryKey) {
-                        // 自增字段将被忽略, 指定序列的除外
-                        if (propertyMeta.isAutoincrement()) {
-                            if (StringUtils.isNotBlank(propertyMeta.getSequenceName())) {
-                                fields.add(fieldName);
+            PropertyMeta propertyMeta = entityMeta.getPropertyByName(fieldName);
+            Object value = null;
+            boolean isPrimaryKey = entityMeta.isPrimaryKey(fieldName);
+            boolean isAutoincrementField = entityMeta.isAutoincrement(fieldName);
+            // 判断是否需要处理该字段
+            boolean shouldProcessField = true;
+            // 检查是否被过滤
+            if (!doCheckField(filter, fieldName)) {
+                // 当forUpsertOrNotExist=true时，不管是否被过滤都必须获取主键属性值
+                if (!isPrimaryKey || !forUpsertOrNotExist) {
+                    // 当includePrimaryKey=true且是主键且非自增时，即使被过滤也要获取属性值
+                    if (!(includePrimaryKey && isPrimaryKey && !isAutoincrementField)) {
+                        shouldProcessField = false;
+                    }
+                }
+            }
+            if (shouldProcessField) {
+                if (isPrimaryKey) {
+                    if (includePrimaryKey || forUpsertOrNotExist) {
+                        if (isAutoincrementField) {
+                            if (StringUtils.isNotBlank(propertyMeta.getSequenceName()) || forUpsertOrNotExist) {
                                 // 尝试调用序列, 若当前数据库不支持序列将会抛出异常以示警告
-                                dialect.getSequenceNextValSql(propertyMeta.getSequenceName());
+                                if (StringUtils.isNotBlank(propertyMeta.getSequenceName())) {
+                                    dialect.getSequenceNextValSql(propertyMeta.getSequenceName());
+                                }
+                                if (entityMeta.isMultiplePrimaryKey()) {
+                                    value = propertyMeta.getField().get(targetObj.getId());
+                                } else {
+                                    value = targetObj.getId();
+                                }
                             }
                         } else {
                             if (entityMeta.isMultiplePrimaryKey()) {
@@ -754,7 +862,6 @@ public class DefaultDatabaseSession extends AbstractSession<IDatabaseConnectionH
                     value = propertyMeta.getField().get(targetObj);
                 }
                 // 尝试为非自增长字段执行键值生成器
-                boolean isAutoincrementField = entityMeta.isAutoincrement(fieldName);
                 if (!isAutoincrementField && value == null && StringUtils.isNotBlank(propertyMeta.getUseKeyGenerator())) {
                     IKeyGenerator keyGenerator = IKeyGenerator.Manager.getKeyGenerator(propertyMeta.getUseKeyGenerator());
                     if (keyGenerator != null) {
@@ -764,15 +871,14 @@ public class DefaultDatabaseSession extends AbstractSession<IDatabaseConnectionH
                     }
                 }
                 // 以下操作是为了使@Default起效果的同时也保证数据库中的字段默认值不被null值替代
-                if (value == null && !propertyMeta.isDefaultValueIgnored() && StringUtils.isNotBlank(propertyMeta.getDefaultValue())) {
+                if (!isPrimaryKey && value == null && !propertyMeta.isDefaultValueIgnored() && StringUtils.isNotBlank(propertyMeta.getDefaultValue())) {
                     // 如果value为空则尝试提取默认值
                     value = BlurObject.bind(propertyMeta.getDefaultValue()).toObjectValue(propertyMeta.getField().getType());
                 }
                 if (value != null || propertyMeta.isNullable()) {
-                    if (includePrimaryKey && entityMeta.isPrimaryKey(fieldName) && isAutoincrementField) {
+                    if (includePrimaryKey && isPrimaryKey && isAutoincrementField && !forUpsertOrNotExist) {
                         continue;
                     }
-                    // 若value不为空则添加至返回对象中
                     fields.add(fieldName);
                     // 若字段成员声明了@Conversion注解则执行类型转换
                     if (value != null && propertyMeta.getConversionType() != null) {
@@ -780,7 +886,7 @@ public class DefaultDatabaseSession extends AbstractSession<IDatabaseConnectionH
                     } else {
                         values.add(value);
                     }
-                } else if (!propertyMeta.isAutoincrement() && !propertyMeta.isNullable()) {
+                } else if (!isAutoincrementField && !propertyMeta.isNullable() && !Table.isSpecialDefaultValue(propertyMeta.getDefaultValue())) {
                     throw new IllegalArgumentException(String.format("Entity field '%s.%s' value can not be null.", entityMeta.getEntityName(), propertyMeta.getName()));
                 }
             }
@@ -833,32 +939,41 @@ public class DefaultDatabaseSession extends AbstractSession<IDatabaseConnectionH
     private <T extends IEntity> List<T> doBatchUpdate(List<T> entities, Fields filter, BatchSqlBuilder sqlBuilder, DatabaseEvent.EVENT event, Type.OPT opt) throws Exception {
         T element = entities.get(0);
         EntityMeta entityMeta = EntityMeta.load(element.getClass()).unsupportedIfView();
-        PairObject<Fields, Params> entityFieldAndValues = doGetEntityFieldAndValues(entityMeta, element, filter, true);
+        boolean forUpsertOrNotExist = opt == Type.OPT.BATCH_UPSERT || opt == Type.OPT.BATCH_INSERT_IF_NOT_EXIST;
+        PairObject<Fields, Params> entityFieldAndValues = doGetEntityFieldAndValues(entityMeta, element, filter, true, forUpsertOrNotExist);
         String sqlStr = sqlBuilder.buildSql(element.getClass(), entityFieldAndValues.getKey());
-        IBatchUpdateOperator updateOperator = new BatchUpdateOperator(sqlStr, this.connectionHolder);
-        if (entityMeta.hasAutoincrement()) {
-            // 兼容Oracle无法直接获取生成的主键问题
-            if (connectionHolder.getDialect() instanceof OracleDialect) {
-                final String[] ids = entityMeta.getAutoincrementKeys().toArray(new String[0]);
-                updateOperator.setAccessorConfig(new EntityAccessorConfig(entityMeta, connectionHolder, (List<IEntity<?>>) entities) {
-                    @Override
-                    public PreparedStatement getPreparedStatement(Connection conn, String sql) throws SQLException {
-                        if (conn != null && !conn.isClosed()) {
-                            return conn.prepareStatement(sql, ids);
-                        }
-                        return accessorConnHolder.getConnection().prepareStatement(sql, ids);
-                    }
-                });
-            } else {
-                updateOperator.setAccessorConfig(new EntityAccessorConfig(entityMeta, connectionHolder, (List<IEntity<?>>) entities));
-            }
-        }
+        BatchSQL batchSQL = BatchSQL.create(sqlStr);
         for (T entity : entities) {
-            SQLBatchParameter batchParameter = SQLBatchParameter.create();
-            doGetEntityFieldAndValues(entityMeta, entity, filter, true).getValue().params().forEach(batchParameter::addParameter);
-            updateOperator.addBatchParameter(batchParameter);
+            batchSQL.addParameter(doGetEntityFieldAndValues(entityMeta, entity, filter, true, forUpsertOrNotExist).getValue());
         }
-        doOperator(opt, event, null, updateOperator);
+        IBatchUpdateOperator updateOperator = doOperator(event, DatabaseSessionEventContext.builder()
+                .operationType(opt)
+                .sql(batchSQL)
+                .build(this), (DatabaseSessionEventContext sessionEventContext) -> {
+            IBatchUpdateOperator operator = new BatchUpdateOperator(sessionEventContext.getBatchSQL().getSQL(), this.connectionHolder);
+            sessionEventContext.getBatchSQL().params().forEach(params -> {
+                SQLBatchParameter batchParameter = SQLBatchParameter.create();
+                params.params().forEach(batchParameter::addParameter);
+                operator.addBatchParameter(batchParameter);
+            });
+            // 只对插入操作设置自增主键访问器，因为只有插入操作需要获取自增主键
+            if (entityMeta.hasAutoincrement() && (opt == Type.OPT.BATCH_INSERT || opt == Type.OPT.BATCH_UPSERT || opt == Type.OPT.INSERT_IF_NOT_EXIST)) {
+                // 配置自增主键访问器
+                doConfigureAutoincrement(operator, entityMeta, (List<IEntity<?>>) entities);
+            }
+            return operator;
+        });
+        // 对于 insertIfNotExist 操作，只返回实际插入的实体
+        if (opt == Type.OPT.BATCH_INSERT_IF_NOT_EXIST) {
+            int[] effectCounts = updateOperator.getEffectCounts();
+            List<T> result = new ArrayList<>();
+            for (int i = 0; i < entities.size() && i < effectCounts.length; i++) {
+                if (effectCounts[i] > 0) {
+                    result.add(entities.get(i));
+                }
+            }
+            return result;
+        }
         return entities;
     }
 
@@ -870,18 +985,27 @@ public class DefaultDatabaseSession extends AbstractSession<IDatabaseConnectionH
     }
 
     /**
+     * 操作器构建器接口
+     *
+     * @param <T> 构建器类型
+     */
+    private interface IOperatorBuilder<T extends IOperator> {
+        T build(DatabaseSessionEventContext sessionEventContext);
+    }
+
+    /**
      * 为单条更新操作配置自增主键访问器
      *
-     * @param updateOperator 更新操作器
-     * @param entityMeta     实体元描述对象
-     * @param entity         实体对象
+     * @param operator   更新操作器
+     * @param entityMeta 实体元描述对象
+     * @param entities   实体对象列表
      */
-    private void doConfigureAutoincrement(IUpdateOperator updateOperator, EntityMeta entityMeta, IEntity<?> entity) {
+    private void doConfigureAutoincrement(IOperator operator, EntityMeta entityMeta, List<IEntity<?>> entities) {
         if (entityMeta.hasAutoincrement()) {
             // 兼容Oracle无法直接获取生成的主键问题
             if (connectionHolder.getDialect() instanceof OracleDialect) {
                 final String[] ids = entityMeta.getAutoincrementKeys().toArray(new String[0]);
-                updateOperator.setAccessorConfig(new EntityAccessorConfig(entityMeta, connectionHolder, entity) {
+                operator.setAccessorConfig(new EntityAccessorConfig(entityMeta, connectionHolder, entities) {
                     @Override
                     public PreparedStatement getPreparedStatement(Connection conn, String sql) throws SQLException {
                         if (conn != null && !conn.isClosed()) {
@@ -891,7 +1015,7 @@ public class DefaultDatabaseSession extends AbstractSession<IDatabaseConnectionH
                     }
                 });
             } else {
-                updateOperator.setAccessorConfig(new EntityAccessorConfig(entityMeta, connectionHolder, entity));
+                operator.setAccessorConfig(new EntityAccessorConfig(entityMeta, connectionHolder, entities));
             }
         }
     }
@@ -909,10 +1033,19 @@ public class DefaultDatabaseSession extends AbstractSession<IDatabaseConnectionH
      * @return 若影响记录数大于0返回实体对象，否则返回null
      * @throws Exception 可能产生的异常
      */
-    private <T extends IEntity> T doExecuteSingleUpdate(T entity, String sqlStr, Params params, DatabaseEvent.EVENT event, Type.OPT opt, EntityMeta entityMeta) throws Exception {
-        IUpdateOperator updateOperator = new DefaultUpdateOperator(sqlStr, this.connectionHolder);
-        doConfigureAutoincrement(updateOperator, entityMeta, entity);
-        doOperator(opt, event, params, updateOperator);
+    private <T extends IEntity> T doExecuteUpdate(T entity, String sqlStr, Params params, DatabaseEvent.EVENT event, Type.OPT opt, EntityMeta entityMeta) throws Exception {
+        IUpdateOperator updateOperator = doOperator(event, DatabaseSessionEventContext.builder()
+                .operationType(opt)
+                .sql(sqlStr)
+                .params(params)
+                .build(this), (DatabaseSessionEventContext sessionEventContext) -> {
+            IUpdateOperator operator = new DefaultUpdateOperator(sessionEventContext.getSql(), this.connectionHolder);
+            // 只对插入操作设置自增主键访问器，因为只有插入操作需要获取自增主键
+            if (entityMeta.hasAutoincrement() && (opt == Type.OPT.INSERT || opt == Type.OPT.UPSERT || opt == Type.OPT.INSERT_IF_NOT_EXIST)) {
+                doConfigureAutoincrement(operator, entityMeta, Arrays.asList(entity));
+            }
+            return operator;
+        });
         if (updateOperator.getEffectCounts() > 0) {
             return entity;
         }
@@ -927,12 +1060,6 @@ public class DefaultDatabaseSession extends AbstractSession<IDatabaseConnectionH
         EntityMeta accessorEntityMeta;
         final IDatabaseConnectionHolder accessorConnHolder;
         List<IEntity<?>> accessorEntities;
-
-        EntityAccessorConfig(EntityMeta entityMeta, IDatabaseConnectionHolder connectionHolder, IEntity<?>... entity) {
-            accessorEntityMeta = entityMeta;
-            this.accessorConnHolder = connectionHolder;
-            accessorEntities = Arrays.asList(entity);
-        }
 
         EntityAccessorConfig(EntityMeta entityMeta, IDatabaseConnectionHolder connectionHolder, List<IEntity<?>> entities) {
             accessorEntityMeta = entityMeta;
@@ -973,9 +1100,11 @@ public class DefaultDatabaseSession extends AbstractSession<IDatabaseConnectionH
             if (accessorEntities != null && accessorEntityMeta.hasAutoincrement()) {
                 // 注: 数据表最多一个自动生成主键
                 // 获取返回的自动生成主键集合
-                Map<String, Object> keyValues = dialect.getGeneratedKey(context.getStatement(), accessorEntityMeta.getAutoincrementKeys());
-                if (!keyValues.isEmpty()) {
-                    for (IEntity<?> entity : this.accessorEntities) {
+                List<Map<String, Object>> keysList = dialect.getGeneratedKeys(context.getStatement(), accessorEntityMeta.getAutoincrementKeys());
+                if (!keysList.isEmpty()) {
+                    for (int i = 0; i < accessorEntities.size() && i < keysList.size(); i++) {
+                        IEntity<?> entity = accessorEntities.get(i);
+                        Map<String, Object> keyValues = keysList.get(i);
                         for (Map.Entry<String, Object> autoField : keyValues.entrySet()) {
                             PropertyMeta propertyMeta = accessorEntityMeta.getPropertyByName(autoField.getKey());
                             if (propertyMeta != null) {

@@ -41,7 +41,7 @@ import java.util.stream.Collectors;
  * @author 刘镇 (suninformation@163.com) on 15/11/22 下午10:35
  */
 @SuppressWarnings("rawtypes")
-public class DefaultMongoSession extends AbstractSession<IMongoConnectionHolder> implements IMongoSession {
+public class DefaultMongoSession extends AbstractSession<IMongoConnectionHolder, ISessionEventListener> implements IMongoSession {
 
     private final IMongo owner;
 

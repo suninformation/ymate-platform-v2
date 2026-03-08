@@ -111,6 +111,17 @@ public interface IDialect {
     Map<String, Object> getGeneratedKey(Statement statement, List<String> autoincrementKeys) throws SQLException;
 
     /**
+     * 获取所有自增主键值，采用JDBC Statement对象获取自动生成的主键（处理批量插入）
+     *
+     * @param statement         Statement对象
+     * @param autoincrementKeys 自定义自增字段名称集合
+     * @return 返回所有自动生成的主键列表
+     * @throws SQLException 可能产生的异常
+     * @since 2.1.4
+     */
+    List<Map<String, Object>> getGeneratedKeys(Statement statement, List<String> autoincrementKeys) throws SQLException;
+
+    /**
      * 获取下一序列值的SQL语句
      *
      * @param sequenceName 序列名称

@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2019 the original author or authors.
+ * Copyright 2007-present the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,17 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.ymate.platform.persistence.redis;
+package net.ymate.platform.persistence.jdbc;
 
 import net.ymate.platform.core.beans.annotation.Ignored;
-import net.ymate.platform.core.persistence.ISession;
 import net.ymate.platform.core.persistence.ISessionEventListener;
 
 /**
- * Redis会话接口
+ * 数据库会话事件监听器接口
  *
- * @author 刘镇 (suninformation@163.com) on 15/11/30 下午11:53
+ * @author 刘镇 (suninformation@163.com) on 2026/3/8 15:21
+ * @since 2.1.4
  */
 @Ignored
-public interface IRedisSession extends ISession<IRedisCommandHolder, ISessionEventListener> {
+public interface IDatabaseSessionEventListener extends ISessionEventListener<DatabaseSessionEventContext> {
 }

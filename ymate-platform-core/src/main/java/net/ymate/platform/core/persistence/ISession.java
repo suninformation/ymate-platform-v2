@@ -21,12 +21,13 @@ import net.ymate.platform.core.support.IDestroyable;
 /**
  * 基准会话接口
  *
- * @param <CONNECTION_HOLDER> 连接持有者类型
+ * @param <CONNECTION_HOLDER>      连接持有者类型
+ * @param <SESSION_EVENT_LISTENER> 会话事件监听器类型
  * @author 刘镇 (suninformation@163.com) on 15/11/22 下午8:40
  */
 @Ignored
 @SuppressWarnings("rawtypes")
-public interface ISession<CONNECTION_HOLDER extends IConnectionHolder> extends IDestroyable {
+public interface ISession<CONNECTION_HOLDER extends IConnectionHolder, SESSION_EVENT_LISTENER extends ISessionEventListener> extends IDestroyable {
 
     /**
      * 获取会话唯一标识
@@ -40,14 +41,14 @@ public interface ISession<CONNECTION_HOLDER extends IConnectionHolder> extends I
      *
      * @return 返回会话事件监听器对象
      */
-    ISessionEventListener getSessionEventListener();
+    SESSION_EVENT_LISTENER getSessionEventListener();
 
     /**
      * 设置会话事件监听器
      *
      * @param sessionEventListener 事件监听器接口
      */
-    void setSessionEventListener(ISessionEventListener sessionEventListener);
+    void setSessionEventListener(SESSION_EVENT_LISTENER sessionEventListener);
 
     /**
      * 获取连接对象

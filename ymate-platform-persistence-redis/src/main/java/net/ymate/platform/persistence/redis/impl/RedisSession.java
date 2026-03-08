@@ -16,6 +16,7 @@
 package net.ymate.platform.persistence.redis.impl;
 
 import net.ymate.platform.core.persistence.AbstractSession;
+import net.ymate.platform.core.persistence.ISessionEventListener;
 import net.ymate.platform.persistence.redis.IRedis;
 import net.ymate.platform.persistence.redis.IRedisCommandHolder;
 import net.ymate.platform.persistence.redis.IRedisSession;
@@ -24,7 +25,7 @@ import org.apache.commons.lang.NullArgumentException;
 /**
  * @author 刘镇 (suninformation@163.com) on 15/11/30 下午11:54
  */
-public class RedisSession extends AbstractSession<IRedisCommandHolder> implements IRedisSession {
+public class RedisSession extends AbstractSession<IRedisCommandHolder, ISessionEventListener> implements IRedisSession {
 
     private final IRedis owner;
 

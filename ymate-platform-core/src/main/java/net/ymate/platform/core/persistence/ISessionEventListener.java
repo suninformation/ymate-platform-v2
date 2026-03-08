@@ -20,64 +20,117 @@ import net.ymate.platform.core.beans.annotation.Ignored;
 /**
  * 会话事件监听器接口
  *
+ * @param <EVENT_CONTEXT> 事件上下文类型
  * @author 刘镇 (suninformation@163.com) on 2011-9-27 下午03:46:08
  */
 @Ignored
-public interface ISessionEventListener {
+public interface ISessionEventListener<EVENT_CONTEXT extends SessionEventContext> {
 
     /**
      * 查询操用之前事件调用
      *
      * @param eventContext 事件上下文对象
+     * @throws Exception 可能产生的任何异常，将中断本次操作
      */
-    void onQueryBefore(SessionEventContext eventContext);
+    default void onQueryBefore(EVENT_CONTEXT eventContext) throws Exception {
+    }
 
     /**
      * 查询操作之后事件调用
      *
      * @param eventContext 事件上下文对象
+     * @throws Exception 可能产生的任何异常，将中断本次操作
      */
-    void onQueryAfter(SessionEventContext eventContext);
+    default void onQueryAfter(EVENT_CONTEXT eventContext) throws Exception {
+    }
 
     /**
      * 插入操用之前事件调用
      *
      * @param eventContext 事件上下文对象
+     * @throws Exception 可能产生的任何异常，将中断本次操作
      */
-    void onInsertBefore(SessionEventContext eventContext);
+    default void onInsertBefore(EVENT_CONTEXT eventContext) throws Exception {
+    }
 
     /**
      * 插入操作之后事件调用
      *
      * @param eventContext 事件上下文对象
+     * @throws Exception 可能产生的任何异常，将中断本次操作
      */
-    void onInsertAfter(SessionEventContext eventContext);
+    default void onInsertAfter(EVENT_CONTEXT eventContext) throws Exception {
+    }
+
+    /**
+     * 插入(如果记录不存在)操用之前事件调用
+     *
+     * @param eventContext 事件上下文对象
+     * @throws Exception 可能产生的任何异常，将中断本次操作
+     */
+    default void onInsertIfNotExistBefore(EVENT_CONTEXT eventContext) throws Exception {
+    }
+
+    /**
+     * 插入(如果记录不存在)操作之后事件调用
+     *
+     * @param eventContext 事件上下文对象
+     * @throws Exception 可能产生的任何异常，将中断本次操作
+     */
+    default void onInsertIfNotExistAfter(EVENT_CONTEXT eventContext) throws Exception {
+    }
 
     /**
      * 更新操作之前事件调用
      *
      * @param eventContext 事件上下文对象
+     * @throws Exception 可能产生的任何异常，将中断本次操作
      */
-    void onUpdateBefore(SessionEventContext eventContext);
+    default void onUpdateBefore(EVENT_CONTEXT eventContext) throws Exception {
+    }
 
     /**
      * 更新操作之后事件调用
      *
      * @param eventContext 事件上下文对象
+     * @throws Exception 可能产生的任何异常，将中断本次操作
      */
-    void onUpdateAfter(SessionEventContext eventContext);
+    default void onUpdateAfter(EVENT_CONTEXT eventContext) throws Exception {
+    }
+
+    /**
+     * 更新插入操作之前事件调用
+     *
+     * @param eventContext 事件上下文对象
+     * @throws Exception 可能产生的任何异常，将中断本次操作
+     */
+    default void onUpsertBefore(EVENT_CONTEXT eventContext) throws Exception {
+    }
+
+    /**
+     * 更新插入操作之后事件调用
+     *
+     * @param eventContext 事件上下文对象
+     * @throws Exception 可能产生的任何异常，将中断本次操作
+     */
+    default void onUpsertAfter(EVENT_CONTEXT eventContext) throws Exception {
+    }
 
     /**
      * 删除操作之前事件调用
      *
      * @param eventContext 事件上下文对象
+     * @throws Exception 可能产生的任何异常，将中断本次操作
      */
-    void onRemoveBefore(SessionEventContext eventContext);
+    default void onRemoveBefore(EVENT_CONTEXT eventContext) throws Exception {
+    }
 
     /**
      * 删除操作之后事件调用
      *
      * @param eventContext 事件上下文对象
+     * @throws Exception 可能产生的任何异常，将中断本次操作
      */
-    void onRemoveAfter(SessionEventContext eventContext);
+    default void onRemoveAfter(EVENT_CONTEXT eventContext) throws Exception {
+    }
 }

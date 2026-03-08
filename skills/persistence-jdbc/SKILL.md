@@ -602,6 +602,204 @@ try (IDatabaseSession session = JDBC.get().openSession()) {
 }
 ```
 
+## 数据库会话事件监听器
+
+通过实现 `IDatabaseSessionEventListener` 接口，可以监听数据库会话中的 CRUD 操作事件。此外，还可以在事件触发时对 SQL 语句和参数进行修改等操作，从而实现 SQL 拦截等功能。该监听器需要在数据库会话中手动设置。
+
+### 事件类型
+
+| 事件方法 | 说明 |
+|---|---|
+| `onQueryBefore` | 查询操作执行前触发 |
+| `onQueryAfter` | 查询操作执行后触发 |
+| `onInsertBefore` | 插入操作执行前触发 |
+| `onInsertAfter` | 插入操作执行后触发 |
+| `onInsertIfNotExistBefore` | 插入（记录不存在时）操作执行前触发 |
+| `onInsertIfNotExistAfter` | 插入（记录不存在时）操作执行后触发 |
+| `onUpdateBefore` | 更新操作执行前触发 |
+| `onUpdateAfter` | 更新操作执行后触发 |
+| `onUpsertBefore` | 更新插入操作执行前触发 |
+| `onUpsertAfter` | 更新插入操作执行后触发 |
+| `onRemoveBefore` | 删除操作执行前触发 |
+| `onRemoveAfter` | 删除操作执行后触发 |
+
+### 事件上下文
+
+`DatabaseSessionEventContext` 事件上下文提供以下方法：
+
+| 方法 | 说明 |
+|---|---|
+| `getSource()` | 获取数据库会话对象（`IDatabaseSession`） |
+| `getOperationType()` | 获取操作类型（`Type.OPT` 枚举） |
+| `getSql()` | 获取执行的 SQL 语句字符串 |
+| `setSql(String sql)` | 设置 SQL 语句字符串（可在 before 事件中修改） |
+| `getParams()` | 获取 SQL 参数（`Params` 对象） |
+| `setParams(Params params)` | 设置 SQL 参数（可在 before 事件中修改） |
+| `getBatchSQL()` | 获取批量 SQL 对象（`BatchSQL`） |
+| `setBatchSQL(BatchSQL batchSQL)` | 设置批量 SQL 对象（可在 before 事件中修改） |
+| `putAttribute(String key, Object value)` | 存储自定义属性 |
+| `getAttribute(String key)` | 获取自定义属性 |
+| `getAttributes()` | 获取所有自定义属性 |
+
+**特别说明**：在 `after` 事件中，可以通过 `getAttribute(IOperator.class.getName())` 获取当前操作器接口对象，从而获取执行结果，例如：
+- `IQueryOperator`：查询操作器，可获取查询结果
+- `IUpdateOperator`：更新操作器，可获取影响行数
+- `IDeleteOperator`：删除操作器，可获取影响行数
+
+### 使用示例
+
+```java
+import net.ymate.platform.persistence.jdbc.IDatabaseSessionEventListener;
+import net.ymate.platform.persistence.jdbc.DatabaseSessionEventContext;
+import net.ymate.platform.persistence.jdbc.IOperator;
+import net.ymate.platform.persistence.jdbc.IQueryOperator;
+import net.ymate.platform.persistence.jdbc.IUpdateOperator;
+import net.ymate.platform.persistence.jdbc.IDeleteOperator;
+
+public class DatabaseSessionEventListenerImpl implements IDatabaseSessionEventListener {
+
+    @Override
+    public void onQueryBefore(DatabaseSessionEventContext eventContext) {
+        System.out.println("执行查询前 - SQL: " + eventContext.getSql());
+    }
+
+    @Override
+    public void onQueryAfter(DatabaseSessionEventContext eventContext) {
+        System.out.println("执行查询后 - SQL: " + eventContext.getSql());
+        // 获取查询操作器，获取执行结果
+        IOperator operator = (IOperator) eventContext.getAttribute(IOperator.class.getName());
+        if (operator instanceof IQueryOperator) {
+            IQueryOperator queryOperator = (IQueryOperator) operator;
+            // 可以通过 queryOperator 获取查询结果
+            System.out.println("查询操作器类型: " + queryOperator.getClass().getName());
+        }
+    }
+
+    @Override
+    public void onInsertBefore(DatabaseSessionEventContext eventContext) {
+        System.out.println("执行插入前 - SQL: " + eventContext.getSql());
+    }
+
+    @Override
+    public void onInsertAfter(DatabaseSessionEventContext eventContext) {
+        System.out.println("执行插入后 - SQL: " + eventContext.getSql());
+        // 获取更新操作器，获取影响行数
+        IOperator operator = (IOperator) eventContext.getAttribute(IOperator.class.getName());
+        if (operator instanceof IUpdateOperator) {
+            IUpdateOperator updateOperator = (IUpdateOperator) operator;
+            System.out.println("插入影响行数: " + updateOperator.getEffectCounts());
+        }
+    }
+
+    @Override
+    public void onUpdateBefore(DatabaseSessionEventContext eventContext) {
+        System.out.println("执行更新前 - SQL: " + eventContext.getSql());
+    }
+
+    @Override
+    public void onUpdateAfter(DatabaseSessionEventContext eventContext) {
+        System.out.println("执行更新后 - SQL: " + eventContext.getSql());
+        // 获取更新操作器，获取影响行数
+        IOperator operator = (IOperator) eventContext.getAttribute(IOperator.class.getName());
+        if (operator instanceof IUpdateOperator) {
+            IUpdateOperator updateOperator = (IUpdateOperator) operator;
+            System.out.println("更新影响行数: " + updateOperator.getEffectCounts());
+        }
+    }
+
+    @Override
+    public void onRemoveBefore(DatabaseSessionEventContext eventContext) {
+        System.out.println("执行删除前 - SQL: " + eventContext.getSql());
+    }
+
+    @Override
+    public void onRemoveAfter(DatabaseSessionEventContext eventContext) {
+        System.out.println("执行删除后 - SQL: " + eventContext.getSql());
+        // 获取删除操作器，获取影响行数
+        IOperator operator = (IOperator) eventContext.getAttribute(IOperator.class.getName());
+        if (operator instanceof IDeleteOperator) {
+            IDeleteOperator deleteOperator = (IDeleteOperator) operator;
+            System.out.println("删除影响行数: " + deleteOperator.getEffectCounts());
+        }
+    }
+
+    @Override
+    public void onInsertIfNotExistBefore(DatabaseSessionEventContext eventContext) {
+        System.out.println("执行插入(如果记录不存在)前 - SQL: " + eventContext.getSql());
+    }
+
+    @Override
+    public void onInsertIfNotExistAfter(DatabaseSessionEventContext eventContext) {
+        System.out.println("执行插入(如果记录不存在)后 - SQL: " + eventContext.getSql());
+        // 获取更新操作器，获取影响行数
+        IOperator operator = (IOperator) eventContext.getAttribute(IOperator.class.getName());
+        if (operator instanceof IUpdateOperator) {
+            IUpdateOperator updateOperator = (IUpdateOperator) operator;
+            System.out.println("插入影响行数: " + updateOperator.getEffectCounts());
+        }
+    }
+
+    @Override
+    public void onUpsertBefore(DatabaseSessionEventContext eventContext) {
+        System.out.println("执行更新插入前 - SQL: " + eventContext.getSql());
+    }
+
+    @Override
+    public void onUpsertAfter(DatabaseSessionEventContext eventContext) {
+        System.out.println("执行更新插入后 - SQL: " + eventContext.getSql());
+        // 获取更新操作器，获取影响行数
+        IOperator operator = (IOperator) eventContext.getAttribute(IOperator.class.getName());
+        if (operator instanceof IUpdateOperator) {
+            IUpdateOperator updateOperator = (IUpdateOperator) operator;
+            System.out.println("更新插入影响行数: " + updateOperator.getEffectCounts());
+        }
+    }
+}
+```
+
+**重要说明**：如果在任何 `before` 事件方法中抛出异常，将中止当前数据库操作，不会执行实际的数据库操作，也不会调用对应的 `after` 事件方法。这可以用于实现数据校验、权限控制等功能。例如：
+
+```java
+@Override
+public void onInsertBefore(DatabaseSessionEventContext eventContext) throws Exception {
+    // 检查参数中是否包含敏感数据
+    if (eventContext.getParams() != null) {
+        for (Object param : eventContext.getParams().params()) {
+            if ("sensitive_data".equals(param)) {
+                throw new RuntimeException("检测到敏感数据，操作被中止");
+            }
+        }
+    }
+}
+```
+
+在会话中设置监听器：
+
+```java
+JDBC.get().openSession(session -> {
+    // 设置事件监听器
+    session.setSessionEventListener(new DatabaseSessionEventListenerImpl());
+
+    // 执行数据库操作，事件监听器将被触发
+    UserEntity user = new UserEntity();
+    user.setId("user_001");
+    user.setUsername("test");
+    session.insert(user);
+
+    // 查询
+    UserEntity loadedUser = session.findFirst(EntitySQL.create(UserEntity.class));
+
+    // 更新
+    loadedUser.setNickname("测试用户");
+    session.update(loadedUser);
+
+    // 删除
+    session.delete(UserEntity.class, user.getId());
+
+    return null;
+});
+```
+
 ## 查询构建
 
 ### Fields：字段名称集合

@@ -22,6 +22,7 @@ import com.mongodb.client.gridfs.model.GridFSUploadOptions;
 import net.ymate.platform.core.beans.annotation.Ignored;
 import net.ymate.platform.core.persistence.IResultSet;
 import net.ymate.platform.core.persistence.ISession;
+import net.ymate.platform.core.persistence.ISessionEventListener;
 import net.ymate.platform.core.persistence.Page;
 import net.ymate.platform.persistence.mongodb.support.OrderBy;
 import net.ymate.platform.persistence.mongodb.support.Query;
@@ -36,7 +37,7 @@ import java.util.Collection;
  * @author 刘镇 (suninformation@163.com) on 15/11/26 上午10:06
  */
 @Ignored
-public interface IGridFsSession extends ISession<IMongoConnectionHolder> {
+public interface IGridFsSession extends ISession<IMongoConnectionHolder, ISessionEventListener> {
 
     /**
      * 获取GridFSBucket对象

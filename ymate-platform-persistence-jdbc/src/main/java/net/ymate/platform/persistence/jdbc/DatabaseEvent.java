@@ -39,9 +39,19 @@ public class DatabaseEvent extends AbstractEventContext<IDatabase, DatabaseEvent
         INSERT_AFTER,
 
         /**
+         * 执行插入(如果记录不存在)操作后
+         */
+        INSERT_IF_NOT_EXIST_AFTER,
+
+        /**
          * 执行更新操作后
          */
         UPDATE_AFTER,
+
+        /**
+         * 执行更新插入操作后
+         */
+        UPSERT_AFTER,
 
         /**
          * 执行删除操作后
