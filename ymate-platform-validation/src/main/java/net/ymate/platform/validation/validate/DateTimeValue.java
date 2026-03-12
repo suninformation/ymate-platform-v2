@@ -27,6 +27,7 @@ import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Date;
 
 /**
@@ -473,22 +474,57 @@ public class DateTimeValue implements Serializable {
 
     /**
      * @param dateFormat 日期格式字符串
+     * @return 以字符串输出
+     * @since 2.1.4
+     */
+    public String toString(String dateFormat) {
+        return toString(dateFormat, null);
+    }
+
+    /**
+     * @param dateFormat 日期格式字符串
      * @param separator  时间段字符串之间的分割符号
      * @return 以字符串输出
      * @since 2.1.2
      */
     public String toString(String dateFormat, String separator) {
+        return doToString(DateTimeHelper.bind(startDateTime).toString(dateFormat), DateTimeHelper.bind(endDateTime).toString(dateFormat), separator);
+    }
+
+    /**
+     * @since 2.1.4
+     */
+    private String doToString(String startDateTimeStr, String endDateTimeStr, String separator) {
         StringBuilder stringBuilder = new StringBuilder();
         if (startDateTime != null) {
-            stringBuilder.append(DateTimeHelper.bind(startDateTime).toString(dateFormat));
+            stringBuilder.append(startDateTimeStr);
         }
         if (endDateTime != null) {
             stringBuilder.append(StringUtils.SPACE)
                     .append(StringUtils.defaultIfBlank(separator, "/"))
                     .append(StringUtils.SPACE)
-                    .append(DateTimeHelper.bind(endDateTime).toString(dateFormat));
+                    .append(endDateTimeStr);
         }
         return stringBuilder.toString();
+    }
+
+    /**
+     * @param dateFormatter 日期格式化器
+     * @return 以字符串输出
+     * @since 2.1.4
+     */
+    public String toString(DateTimeFormatter dateFormatter) {
+        return toString(dateFormatter, null);
+    }
+
+    /**
+     * @param dateFormatter 日期格式化器
+     * @param separator     时间段字符串之间的分割符号
+     * @return 以字符串输出
+     * @since 2.1.4
+     */
+    public String toString(DateTimeFormatter dateFormatter, String separator) {
+        return doToString(DateTimeHelper.bind(startDateTime).toString(dateFormatter), DateTimeHelper.bind(endDateTime).toString(dateFormatter), separator);
     }
 
     public interface IValueProcessor {

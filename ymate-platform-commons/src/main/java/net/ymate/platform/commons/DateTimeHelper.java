@@ -16,6 +16,7 @@
 package net.ymate.platform.commons;
 
 import net.ymate.platform.commons.util.DateTimeUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import java.time.*;
 import java.time.format.DateTimeFormatter;
@@ -666,7 +667,26 @@ public class DateTimeHelper {
      * @return 格式化后的日期时间字符串
      */
     public String toString(String dateFormat) {
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern(dateFormat);
-        return this.zonedDateTime.format(formatter);
+        DateTimeFormatter formatter;
+        if (StringUtils.isNotBlank(dateFormat)) {
+            formatter = DateTimeFormatter.ofPattern(dateFormat);
+        } else {
+            formatter = DateTimeFormatter.ISO_LOCAL_DATE_TIME;
+        }
+        return toString(formatter);
+    }
+
+    /**
+     * 按照指定格式将日期时间转换为字符串
+     *
+     * @param dateFormatter 日期时间格式模式
+     * @return 格式化后的日期时间字符串
+     * @since 2.1.4
+     */
+    public String toString(DateTimeFormatter dateFormatter) {
+        if (dateFormatter == null) {
+            dateFormatter = DateTimeFormatter.ISO_LOCAL_DATE_TIME;
+        }
+        return this.zonedDateTime.format(dateFormatter);
     }
 }
