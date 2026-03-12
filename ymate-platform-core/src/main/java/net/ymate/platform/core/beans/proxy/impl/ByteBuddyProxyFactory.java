@@ -110,9 +110,9 @@ public class ByteBuddyProxyFactory extends AbstractProxyFactory {
         }
 
         @RuntimeType
-        public Object intercept(@This Object target, @AllArguments Object[] args, @Origin Method method) throws Throwable {
-            Object[] newArgs = methodParamHandler.handle(target, method, args);
-            return method.invoke(target, newArgs);
+        public Object intercept(@This Object target, @AllArguments Object[] args, @Origin Method method, @SuperCall Callable<?> superCall) throws Throwable {
+            methodParamHandler.handle(target, method, args);
+            return superCall.call();
         }
     }
 }
