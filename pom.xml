@@ -221,6 +221,12 @@
                 <scope>provided</scope>
             </dependency>
             <dependency>
+                <groupId>net.bytebuddy</groupId>
+                <artifactId>byte-buddy</artifactId>
+                <version>1.18.7</version>
+                <scope>provided</scope>
+            </dependency>
+            <dependency>
                 <groupId>com.fasterxml.jackson.datatype</groupId>
                 <artifactId>jackson-datatype-jdk8</artifactId>
                 <version>2.21.1</version>

@@ -51,6 +51,8 @@ public class ClassUtils {
 
     private static final String JAVASSIST_PROXY_CLASS_FLAG = "_$$_";
 
+    private static final String BYTE_BUDDY_PROXY_CLASS_FLAG = "$ByteBuddy$";
+
     public static final String PACKAGE_INFO = "package-info";
 
     public static final String PACKAGE_SEPARATOR = ".";
@@ -338,6 +340,8 @@ public class ClassUtils {
         String targetClassName = targetClass.getName();
         if (Strings.CS.contains(targetClassName, JAVASSIST_PROXY_CLASS_FLAG)) {
             targetClassName = StringUtils.substringBefore(targetClassName, JAVASSIST_PROXY_CLASS_FLAG);
+        } else if (Strings.CS.contains(targetClassName, BYTE_BUDDY_PROXY_CLASS_FLAG)) {
+            targetClassName = StringUtils.substringBefore(targetClassName, BYTE_BUDDY_PROXY_CLASS_FLAG);
         } else if (Strings.CS.contains(targetClassName, ANONYMOUS_CLASS_FLAG)) {
             targetClassName = StringUtils.substringBefore(targetClassName, ANONYMOUS_CLASS_FLAG);
         } else {

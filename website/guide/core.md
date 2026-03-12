@@ -247,8 +247,9 @@ ymp.params.xxx=ENC(X4+Fm5GYxsWqGS6d2vLHh11G/R7yaUoDWo4lMH9IShb2C7jx+rlViw==)
 
 用于开启代理并配置代理工厂类型，框架提供了三种代理工厂接口实现类：
 
-- `DefaultProxyFactory.class`：基于 `CGLIB` 实现的默认代理工厂。
+- `DefaultProxyFactory`：基于 `CGLIB` 实现的默认代理工厂。
 - `JavassistProxyFactory`：基于  `Javassist`  实现的代理工厂。
+- `ByteBuddyProxyFactory`：基于  `ByteBuddy`  实现的代理工厂。
 - `NoOpProxyFactory`：空操作代理工厂，使用它表示需要禁用框架的 `AOP` 特性。
 
 | 配置项       | 描述                                        |
