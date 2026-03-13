@@ -557,6 +557,114 @@ public class JsonWrapperTest {
         Assert.assertEquals(adapter.getClass().getSimpleName() + ": deserialized list size should be 1", 1, deserializedList.size());
     }
 
+    @Test
+    public void testEnumSerializationAndDeserialization() throws Exception {
+        if (adapter == null) {
+            System.out.println("Skipping testEnumSerializationAndDeserialization: No JsonAdapter available");
+            return;
+        }
+        System.out.println("Testing EnumSerializationAndDeserialization with " + adapter.getClass().getSimpleName());
+        // 设置当前适配器
+        setJsonAdapter(adapter);
+
+        // 测试默认枚举类型的序列化和反序列化
+        TestUserWithEnum userWithEnum = new TestUserWithEnum();
+        userWithEnum.setName("test");
+        userWithEnum.setAge(18);
+        userWithEnum.setStatus(Status.ACTIVE);
+        userWithEnum.setGender(Gender.MALE);
+
+        // 序列化为字符串
+        String jsonStr = JsonWrapper.toJsonString(userWithEnum);
+        Assert.assertNotNull(adapter.getClass().getSimpleName() + ": JSON string should not be null", jsonStr);
+        System.out.println(adapter.getClass().getSimpleName() + " - Serialized JSON: " + jsonStr);
+
+        // 反序列化
+        TestUserWithEnum deserialized = JsonWrapper.deserialize(jsonStr, TestUserWithEnum.class);
+        Assert.assertNotNull(adapter.getClass().getSimpleName() + ": deserialized object should not be null", deserialized);
+        Assert.assertEquals(adapter.getClass().getSimpleName() + ": deserialized name should match original", userWithEnum.getName(), deserialized.getName());
+        Assert.assertEquals(adapter.getClass().getSimpleName() + ": deserialized age should match original", userWithEnum.getAge(), deserialized.getAge());
+        Assert.assertEquals(adapter.getClass().getSimpleName() + ": deserialized status should match original", userWithEnum.getStatus(), deserialized.getStatus());
+        Assert.assertEquals(adapter.getClass().getSimpleName() + ": deserialized gender should match original", userWithEnum.getGender(), deserialized.getGender());
+
+        // 测试所有枚举值的序列化
+        for (Status status : Status.values()) {
+            userWithEnum.setStatus(status);
+            jsonStr = JsonWrapper.toJsonString(userWithEnum);
+            Assert.assertNotNull(adapter.getClass().getSimpleName() + ": JSON string for " + status + " should not be null", jsonStr);
+            System.out.println(adapter.getClass().getSimpleName() + " - Status " + status + " JSON: " + jsonStr);
+
+            deserialized = JsonWrapper.deserialize(jsonStr, TestUserWithEnum.class);
+            Assert.assertEquals(adapter.getClass().getSimpleName() + ": deserialized status should be " + status, status, deserialized.getStatus());
+        }
+
+        // 测试所有Gender枚举值的序列化
+        for (Gender gender : Gender.values()) {
+            userWithEnum.setGender(gender);
+            jsonStr = JsonWrapper.toJsonString(userWithEnum);
+            Assert.assertNotNull(adapter.getClass().getSimpleName() + ": JSON string for " + gender + " should not be null", jsonStr);
+            System.out.println(adapter.getClass().getSimpleName() + " - Gender " + gender + " JSON: " + jsonStr);
+
+            deserialized = JsonWrapper.deserialize(jsonStr, TestUserWithEnum.class);
+            Assert.assertEquals(adapter.getClass().getSimpleName() + ": deserialized gender should be " + gender, gender, deserialized.getGender());
+        }
+
+        // 测试枚举在JsonObject中的序列化
+        IJsonObjectWrapper jsonObject = JsonWrapper.createJsonObject();
+        jsonObject.put("status", Status.PENDING);
+        jsonObject.put("gender", Gender.FEMALE);
+        jsonStr = jsonObject.toString();
+        Assert.assertNotNull(adapter.getClass().getSimpleName() + ": JSON string with enum in JsonObject should not be null", jsonStr);
+        System.out.println(adapter.getClass().getSimpleName() + " - JsonObject with enums: " + jsonStr);
+
+        // 测试枚举在JsonArray中的序列化
+        IJsonArrayWrapper jsonArray = JsonWrapper.createJsonArray();
+        jsonArray.add(Status.ACTIVE);
+        jsonArray.add(Status.INACTIVE);
+        jsonArray.add(Gender.MALE);
+        jsonArray.add(Gender.FEMALE);
+        jsonStr = jsonArray.toString();
+        Assert.assertNotNull(adapter.getClass().getSimpleName() + ": JSON string with enum in JsonArray should not be null", jsonStr);
+        System.out.println(adapter.getClass().getSimpleName() + " - JsonArray with enums: " + jsonStr);
+
+        // 测试序列化为字节数组
+        byte[] bytes = JsonWrapper.serialize(userWithEnum);
+        Assert.assertNotNull(adapter.getClass().getSimpleName() + ": serialized bytes should not be null", bytes);
+        deserialized = JsonWrapper.deserialize(bytes, TestUserWithEnum.class);
+        Assert.assertNotNull(adapter.getClass().getSimpleName() + ": deserialized from bytes should not be null", deserialized);
+        Assert.assertEquals(adapter.getClass().getSimpleName() + ": deserialized status should match original", userWithEnum.getStatus(), deserialized.getStatus());
+        Assert.assertEquals(adapter.getClass().getSimpleName() + ": deserialized gender should match original", userWithEnum.getGender(), deserialized.getGender());
+
+        // 测试snakeCase序列化和反序列化
+        bytes = JsonWrapper.serialize(userWithEnum, true);
+        Assert.assertNotNull(adapter.getClass().getSimpleName() + ": serialized snake_case bytes should not be null", bytes);
+        deserialized = JsonWrapper.deserialize(bytes, true, TestUserWithEnum.class);
+        Assert.assertNotNull(adapter.getClass().getSimpleName() + ": deserialized snake_case object should not be null", deserialized);
+        Assert.assertEquals(adapter.getClass().getSimpleName() + ": deserialized status should match original", userWithEnum.getStatus(), deserialized.getStatus());
+        Assert.assertEquals(adapter.getClass().getSimpleName() + ": deserialized gender should match original", userWithEnum.getGender(), deserialized.getGender());
+
+        // 测试带枚举的List序列化
+        List<TestUserWithEnum> userList = new ArrayList<>();
+        for (Status status : Status.values()) {
+            TestUserWithEnum u = new TestUserWithEnum();
+            u.setName("user-" + status.name());
+            u.setAge(20 + status.ordinal());
+            u.setStatus(status);
+            u.setGender(Gender.values()[status.ordinal() % Gender.values().length]);
+            userList.add(u);
+        }
+        bytes = JsonWrapper.serialize(userList);
+        Assert.assertNotNull(adapter.getClass().getSimpleName() + ": serialized list bytes should not be null", bytes);
+        List<TestUserWithEnum> deserializedList = JsonWrapper.deserialize(bytes, new TypeReferenceWrapper<List<TestUserWithEnum>>() {
+        });
+        Assert.assertNotNull(adapter.getClass().getSimpleName() + ": deserialized list should not be null", deserializedList);
+        Assert.assertEquals(adapter.getClass().getSimpleName() + ": deserialized list size should match", userList.size(), deserializedList.size());
+        for (int i = 0; i < userList.size(); i++) {
+            Assert.assertEquals(adapter.getClass().getSimpleName() + ": user " + i + " status should match", userList.get(i).getStatus(), deserializedList.get(i).getStatus());
+            Assert.assertEquals(adapter.getClass().getSimpleName() + ": user " + i + " gender should match", userList.get(i).getGender(), deserializedList.get(i).getGender());
+        }
+    }
+
     // ==================== 边界条件和异常场景测试 ====================
 
     @Test
@@ -682,6 +790,83 @@ public class JsonWrapperTest {
     }
 
     // ==================== 辅助测试类 ====================
+
+    /**
+     * 默认枚举类型
+     */
+    public enum Status {
+        ACTIVE,
+        INACTIVE,
+        PENDING,
+        DELETED
+    }
+
+    /**
+     * 带值的枚举类型
+     */
+    public enum Gender {
+        MALE(1, "男"),
+        FEMALE(2, "女"),
+        OTHER(3, "其他");
+
+        private final int code;
+        private final String desc;
+
+        Gender(int code, String desc) {
+            this.code = code;
+            this.desc = desc;
+        }
+
+        public int getCode() {
+            return code;
+        }
+
+        public String getDesc() {
+            return desc;
+        }
+    }
+
+    /**
+     * 带枚举字段的测试用户类
+     */
+    public static class TestUserWithEnum {
+        private String name;
+        private int age;
+        private Status status;
+        private Gender gender;
+
+        public String getName() {
+            return name;
+        }
+
+        public void setName(String name) {
+            this.name = name;
+        }
+
+        public int getAge() {
+            return age;
+        }
+
+        public void setAge(int age) {
+            this.age = age;
+        }
+
+        public Status getStatus() {
+            return status;
+        }
+
+        public void setStatus(Status status) {
+            this.status = status;
+        }
+
+        public Gender getGender() {
+            return gender;
+        }
+
+        public void setGender(Gender gender) {
+            this.gender = gender;
+        }
+    }
 
     /**
      * 测试用户类

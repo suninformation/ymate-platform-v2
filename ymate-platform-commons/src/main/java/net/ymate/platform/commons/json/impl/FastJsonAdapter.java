@@ -68,7 +68,6 @@ public class FastJsonAdapter implements IJsonAdapter {
     static {
         JSON.DEFAULT_GENERATE_FEATURE |= SerializerFeature.DisableCircularReferenceDetect.getMask();
         JSON.DEFAULT_GENERATE_FEATURE |= SerializerFeature.WriteBigDecimalAsPlain.getMask();
-        JSON.DEFAULT_GENERATE_FEATURE |= SerializerFeature.WriteEnumUsingToString.getMask();
         //
         JsonWrapperFastJsonSerializer jsonWrapperFastJsonSerializer = new JsonWrapperFastJsonSerializer();
         JsonObjectFastJsonSerializer jsonObjectFastJsonSerializer = new JsonObjectFastJsonSerializer();
