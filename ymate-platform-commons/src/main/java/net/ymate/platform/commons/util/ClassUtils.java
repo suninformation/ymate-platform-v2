@@ -285,17 +285,24 @@ public class ClassUtils {
      * @return 判断clazz类中是否实现了interfaceClass接口
      */
     public static boolean isInterfaceOf(Class<?> clazz, Class<?> interfaceClass) {
-        boolean flag = false;
+        boolean flag;
         do {
-            for (Class<?> cc : clazz.getInterfaces()) {
-                if (cc.equals(interfaceClass)) {
-                    flag = true;
-                    break;
-                }
-            }
+            flag = doIsInterfaceOf(clazz.getInterfaces(), interfaceClass);
             clazz = clazz.getSuperclass();
         } while (!flag && (clazz != null && clazz != Object.class));
         return flag;
+    }
+
+    private static boolean doIsInterfaceOf(Class<?>[] interfaces, Class<?> interfaceClass) {
+        for (Class<?> cc : interfaces) {
+            if (cc.equals(interfaceClass)) {
+                return true;
+            }
+            if (doIsInterfaceOf(cc.getInterfaces(), interfaceClass)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
