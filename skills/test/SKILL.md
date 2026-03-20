@@ -1,3 +1,27 @@
+---
+name: ymp-test
+description: YMP框架测试模块，集成了JUnit 5和JUnit 4的测试开发支持，提供模拟工具和测试生命周期管理
+version: 2.1.4
+author: YMP Team
+category: testing
+tags:
+  - java
+  - testing
+  - junit
+  - unit-test
+trigger: 当用户需要编写单元测试、集成测试、模拟HTTP请求等场景时触发
+tools:
+  - junit
+  - testing-framework
+  - mock
+examples:
+  - 使用JUnit 5测试
+  - 使用JUnit 4测试
+  - 模拟控制器请求
+  - 测试存储器接口
+  - 组合单元测试
+---
+
 # 测试模块（Test）
 
 ## 1. 模块概述

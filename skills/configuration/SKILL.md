@@ -1,3 +1,29 @@
+---
+name: ymp-configuration
+description: YMP框架配置模块，提供统一的配置文件管理，支持XML、Properties、JSON等多种格式，支持注解驱动配置和动态配置重载
+version: 2.1.4
+author: YMP Team
+category: configuration
+tags:
+  - java
+  - configuration
+  - xml
+  - properties
+  - json
+  - dynamic-config
+trigger: 当用户需要管理配置文件、加载配置、实现动态配置等功能时触发
+tools:
+  - configuration-management
+  - file-parsing
+  - dynamic-reload
+examples:
+  - 加载XML配置文件
+  - 加载Properties配置文件
+  - 加载JSON配置文件
+  - 使用注解注入配置
+  - 实现动态配置重载
+---
+
 # YMP框架配置模块技能文档
 
 ## 1. 模块概述

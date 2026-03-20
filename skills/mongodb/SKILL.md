@@ -1,3 +1,29 @@
+---
+name: ymp-mongodb
+description: YMP框架MongoDB模块，针对MongoDB数据存取操作的专业封装，支持多数据源、会话管理、事务、GridFS等
+version: 2.1.4
+author: YMP Team
+category: persistence
+tags:
+  - java
+  - mongodb
+  - nosql
+  - persistence
+  - gridfs
+trigger: 当用户需要使用MongoDB数据库、实现NoSQL持久化、使用GridFS文件存储等场景时触发
+tools:
+  - mongodb
+  - nosql-database
+  - gridfs
+examples:
+  - 配置MongoDB数据源
+  - 插入文档数据
+  - 查询文档数据
+  - 更新文档数据
+  - 删除文档数据
+  - 使用GridFS存储文件
+---
+
 # YMP MongoDB 模块技能文档
 
 ## 模块概述

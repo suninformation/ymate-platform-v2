@@ -1,3 +1,28 @@
+---
+name: ymp-persistence-jdbc
+description: YMP框架JDBC持久化模块，针对关系型数据库数据存取的轻量级解决方案，支持ORM、多数据源、事务等
+version: 2.1.4
+author: YMP Team
+category: persistence
+tags:
+  - java
+  - jdbc
+  - orm
+  - persistence
+  - database
+trigger: 当用户需要使用关系型数据库、实现JDBC持久化、ORM操作、事务管理等场景时触发
+tools:
+  - jdbc
+  - orm
+  - database
+examples:
+  - 配置数据源
+  - 实体类CRUD操作
+  - 使用存储器
+  - 事务管理
+  - 批量操作
+---
+
 # JDBC 持久化组件技能指南
 
 ## 概述

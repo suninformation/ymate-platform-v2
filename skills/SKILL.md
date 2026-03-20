@@ -1,3 +1,40 @@
+---
+name: ymp
+description: YMP框架技能包，提供完整的Java框架开发技能支持，包括缓存、通用工具、配置、核心、AOP、事件、日志、MongoDB、JDBC持久化、插件、Redis、网络服务、验证和WebMVC等模块
+version: 2.1.4
+author: YMP Team
+category: framework
+tags:
+  - java
+  - framework
+  - mvc
+  - persistence
+  - cache
+  - redis
+  - mongodb
+  - validation
+  - aop
+  - event
+  - plugin
+  - web
+  - nio
+trigger: 当用户需要使用YMP框架进行Java应用开发、配置、持久化操作、缓存管理、Web开发等场景时触发
+tools:
+  - code-generation
+  - configuration
+  - database
+  - cache
+  - web-server
+examples:
+  - 创建YMP框架应用
+  - 配置数据源
+  - 实现持久化操作
+  - 配置缓存
+  - 开发Web控制器
+  - 实现事件监听
+  - 配置AOP拦截器
+---
+
 # YMP框架技能包文档
 
 ## 1. 概述
@@ -494,15 +531,11 @@ MongoDB 模块采用分层架构设计，主要包含以下核心组件：
 UserEntity user = new UserEntity();
 user.setUsername("admin");
 user.setPassword("123456");
-user.setEmail("admin@example.com");
-user.setAge(25);
-user.setCreatedTime(new Date());
-
-UserEntity savedUser = MongoDB.get().openSession(session -> session.insert(user));
+user = MongoDB.get().openSession(session -> session.insert(user));
 
 // 查询数据
 UserEntity foundUser = MongoDB.get().openSession(session ->
-    session.find(UserEntity.class, savedUser.getId())
+    session.find(UserEntity.class, user.getId())
 );
 
 // 更新数据
@@ -511,7 +544,7 @@ MongoDB.get().openSession(session -> session.update(foundUser));
 
 // 删除数据
 MongoDB.get().openSession(session ->
-    session.delete(UserEntity.class, savedUser.getId())
+    session.delete(UserEntity.class, user.getId())
 );
 ```
 
@@ -525,62 +558,30 @@ MongoDB.get().openSession(session ->
 
 JDBC 持久化模块是 YMP 框架中针对关系型数据库（RDBMS）数据存取的一套轻量级解决方案，主要关注数据存取的效率、易用性、稳定性和透明度。该模块基于 JDBC 框架 API 进行封装，提供了丰富的功能特性，简化了数据库操作的复杂性，使开发者能够更加专注于业务逻辑的实现。
 
-#### 核心功能
+#### 核心功能特性
 
-- **基于 JDBC 框架 API 进行轻量封装**：结构简单、便于开发、调试和维护
-- **优化批量数据更新、标准化结果集、预编译 SQL 语句处理**：提高性能
-- **支持单实体 ORM 操作**：无需编写 SQL 语句
-- **提供脚手架工具**：快速生成数据实体类，支持链式调用
-- **支持通过存储器注解自定义 SQL 语句**：或从配置文件中动态加载 SQL 并自动执行
-- **支持结果集与值对象的自动装配**：支持自定义装配规则
-- **支持多数据源**：默认支持 C3P0、DBCP、Druid、HikariCP、JNDI 连接池配置
-- **支持多种数据库**：如 Oracle、MySQL、SQLServer、SQLite、H2、PostgreSQL 等
-- **支持面向对象的数据库查询封装**：有助于减少或降低程序编译期错误
-- **支持数据库事务嵌套**：确保数据一致性
-- **支持数据库视图和存储过程**：扩展数据库功能
-- **支持 Lambda 表达式进行类型安全的查询构建**：提高代码可读性
-
-#### 技术架构
-
-JDBC 持久化模块采用分层架构设计，主要包含以下核心组件：
-
-1. **模块管理**：`JDBC` 类作为模块的入口点和管理器，负责初始化和管理整个 JDBC 模块
-2. **配置管理**：通过 `IDatabaseConfig` 和 `IDatabaseDataSourceConfig` 接口处理模块和数据源配置
-3. **连接管理**：通过 `IDatabaseConnectionHolder` 和 `IDatabaseDataSourceAdapter` 接口管理数据库连接
-4. **会话管理**：通过 `IDatabaseSession` 接口提供数据库操作会话，封装 SQL 执行逻辑
-5. **实体管理**：通过实体类和注解支持对象关系映射
-6. **事务管理**：通过 `Transactions` 类和 `@Transaction` 注解实现事务控制
-7. **查询构建**：提供强大的查询构建器，用于构建复杂的 SQL 语句
-8. **存储器支持**：提供存储器模式实现，用于数据访问层抽象
-9. **结果集处理**：通过 `IResultSetHandler` 接口实现结果集的自定义处理
-
-#### 核心API
-
-- **JDBC类**：模块入口点，提供获取连接持有者、开启会话等方法
-- **IDatabaseSession接口**：数据库会话接口，提供执行 SQL、管理事务等方法
-- **Select类**：查询语句构建器，用于构建 SELECT 语句
-- **Insert类**：插入语句构建器，用于构建 INSERT 语句
-- **Update类**：更新语句构建器，用于构建 UPDATE 语句
-- **Delete类**：删除语句构建器，用于构建 DELETE 语句
-- **Fields类**：字段名称集合，用于辅助拼接数据表字段名称
-- **Cond类**：条件参数，用于生成 SQL 条件语句
-- **LambdaUtils类**：Lambda 表达式工具类，用于解析方法引用
+- 基于 JDBC 框架 API 进行轻量封装，结构简单、便于开发、调试和维护
+- 优化批量数据更新、标准化结果集、预编译 SQL 语句处理
+- 支持单实体 ORM 操作，无需编写 SQL 语句
+- 提供脚手架工具，快速生成数据实体类，支持链式调用
+- 支持通过存储器注解自定义 SQL 语句或从配置文件中动态加载 SQL 并自动执行
+- 支持结果集与值对象的自动装配，支持自定义装配规则
+- 支持多数据源，默认支持 C3P0、DBCP、Druid、HikariCP、JNDI 连接池配置，支持数据源扩展
+- 支持多种数据库（如：Oracle、MySQL、SQLServer、SQLite、H2、PostgreSQL 等）
+- 支持面向对象的数据库查询封装，有助于减少或降低程序编译期错误
+- 支持数据库事务嵌套
+- 支持数据库视图和存储过程
+- 支持 Lambda 表达式进行类型安全的查询构建
 
 #### 使用示例
 
 ```java
-// 创建一个新的用户实体
+// 插入数据
 UserEntity user = UserEntity.builder()
     .id(UUIDUtils.UUID())
     .username("suninformation")
-    .nickname("有理想的鱼")
     .password(DigestUtils.md5Hex("123456"))
-    .email("suninformation@163.com")
-    .createTime(System.currentTimeMillis())
-    .lastModifyTime(System.currentTimeMillis())
     .build();
-
-// 执行数据插入
 user.save();
 
 // 查询数据
@@ -589,8 +590,7 @@ UserEntity foundUser = UserEntity.builder()
     .build().load();
 
 // 更新数据
-foundUser.setNickname("Updated Nickname");
-foundUser.update();
+foundUser.bind().nickname("有理想的鱼").build().update();
 
 // 删除数据
 foundUser.delete();
@@ -606,52 +606,25 @@ foundUser.delete();
 
 Plugin 模块是 YMP 框架中的一个重要模块，提供了插件化开发的能力。该模块采用独立的类加载器（ClassLoader）来管理私有包、类、资源文件等，设计目标是在接口开发模式下，将需求进行更细颗粒度拆分，从而达到一个理想化可重用代码的封装形态。
 
-#### 核心功能
+#### 主要功能特点
 
-- **独立的类加载器**：插件使用独立的类加载器，避免与主应用的类冲突
-- **完整的生命周期管理**：支持插件的初始化、启动、停止和销毁等完整的生命周期管理
-- **灵活的配置方式**：支持通过配置文件和注解两种方式配置插件模块
-- **支持多种插件工厂**：支持默认插件工厂和自定义插件工厂，可以并存
-- **与框架集成**：与 YMP 框架的其他模块无缝集成，支持依赖注入等特性
-- **插件通信**：通过业务接口调用实现插件与外界的通信，降低耦合度
-- **事件监听**：支持插件生命周期事件的监听，便于扩展
-
-#### 核心API
-
-- **IPlugin接口**：插件接口，是所有插件的基础接口
-- **AbstractPlugin抽象类**：插件抽象类，提供了更方便的插件编写方式
-- **IPluginFactory接口**：插件工厂接口，负责插件的管理
-- **@Plugin注解**：声明一个类为插件
-- **@PluginFactory注解**：声明一个类为插件工厂
-- **@PluginConf注解**：插件模块初始化参数配置
-- **@PluginRefer注解**：通过依赖注入引用插件实例
+- 独立的类加载器管理插件的私有包、类和资源文件
+- 支持插件的自动扫描和注册
+- 支持插件的生命周期管理（初始化、启动、停止、销毁）
+- 支持插件的依赖注入
+- 支持插件的事件监听
+- 支持多个插件工厂实例，工厂对象之间完全独立
+- 支持从 JAR 包或目录加载插件
 
 #### 使用示例
 
 ```java
-public interface IEchoService {
-    void sayHi();
-}
-
-@Plugin(id = "echo_plugin",
-        name = "DemoPlugin",
-        author = "有理想的鱼",
-        email = "suninformaiton#163.com", version = "1.0.0")
+// 创建插件
+@Plugin(id = "echo_plugin", name = "DemoPlugin", version = "1.0.0")
 public class EchoPlugin extends AbstractPlugin implements IEchoService {
-
     @Override
     protected void doInitialize(IPluginContext context) throws Exception {
         System.out.println("initialized.");
-    }
-
-    @Override
-    protected void doStartup() throws Exception {
-        System.out.println("started.");
-    }
-
-    @Override
-    protected void doShutdown() throws Exception {
-        System.out.println("shutdown.");
     }
 
     @Override
@@ -661,14 +634,13 @@ public class EchoPlugin extends AbstractPlugin implements IEchoService {
 }
 
 // 使用插件
-@Bean
-public class Demo {
-
-    @PluginRefer
-    private IEchoService echoService;
-
-    public IEchoService getEchoService() {
-        return echoService;
+@EnableAutoScan
+public class Starter {
+    public static void main(String[] args) throws Exception {
+        try (IApplication application = YMP.run(args)) {
+            IEchoService echoService = Plugins.get().getPlugin(IEchoService.class);
+            echoService.sayHi();
+        }
     }
 }
 ```
@@ -691,13 +663,6 @@ Redis 持久化模块是 YMP 框架中基于 Jedis 驱动的 Redis 客户端封�
 - **会话机制**：采用会话机制管理连接资源，确保资源正确释放
 - **发布/订阅支持**：简化 Redis 的发布/订阅操作
 
-#### 核心API
-
-- **IRedis接口**：Redis 持久化模块的核心接口，提供获取连接持有者、开启会话等方法
-- **IRedisCommandHolder接口**：Redis 命令持有者，用于记录真正的 Redis 连接对象的原始状态及与数据源对应关系
-- **IRedisCommander接口**：Redis 命令对象，整合了 Jedis 驱动包中的各种模式下的接口，用于执行 Redis 命令
-- **IRedisSession接口**：Redis 会话接口，负责与 Redis 之间连接资源的创建及回收，同时提供更为高级的抽象指令接口调用
-
 #### 使用示例
 
 ```java
@@ -716,13 +681,6 @@ String value = Redis.get().openSession("otherredis", new IRedisSessionExecutor<S
         return session.getConnectionHolder().getConnection().get("key");
     }
 });
-
-// 手动开启与关闭会话
-try (IRedisSession session = Redis.get().openSession()) {
-    IRedisCommandHolder holder = session.getConnectionHolder();
-    IRedisCommander commander = holder.getConnection();
-    commander.set("key", "value");
-}
 ```
 
 ### Serv模块
@@ -735,26 +693,16 @@ try (IRedisSession session = Redis.get().openSession()) {
 
 Serv 模块是 YMP 框架中的一个基于 NIO 实现的通讯服务框架，提供 TCP、UDP 协议的客户端与服务端封装，灵活的消息监听与消息内容编/解码，简约的配置使二次开发更加便捷。同时针对客户端提供默认的断线重连、链路维护（心跳）等服务支持，开发者只需了解业务即可轻松完成开发工作。
 
-#### 核心功能
+#### 主要功能特点
 
-- **基于 NIO 实现的高性能通讯框架**：支持高并发连接
-- **支持 TCP 和 UDP 协议**：满足不同通讯需求
-- **提供多种编/解码器**：如 ByteArrayCodec、NioStringCodec、TextLineCodec
-- **内置链路维护（心跳）服务**：及时检测连接状态
-- **内置断线重连服务**：提高应用的可靠性
-- **支持会话管理和流量统计**：便于监控和管理
-- **支持事件监听机制**：通过事件监听器处理各种事件
-- **简约的配置方式**：易于使用和配置
-
-#### 核心API
-
-- **IServer接口**：服务端接口，定义了服务端的基本行为
-- **IClient接口**：客户端接口，定义了客户端的基本行为
-- **INioSession接口**：NIO 会话接口，定义了会话的基本行为
-- **ISessionManager接口**：会话管理器接口，定义了会话管理的基本行为
-- **INioCodec接口**：NIO 编解码器接口，定义了消息编码和解码的基本行为
-- **IHeartbeatService接口**：心跳服务接口，定义了心跳服务的基本行为
-- **IReconnectService接口**：断线重连服务接口，定义了断线重连服务的基本行为
+- 基于 NIO 实现的高性能通讯框架
+- 支持 TCP 和 UDP 协议
+- 提供多种编/解码器（ByteArrayCodec、NioStringCodec、TextLineCodec）
+- 内置链路维护（心跳）服务
+- 内置断线重连服务
+- 支持会话管理和流量统计
+- 支持事件监听机制
+- 简约的配置方式
 
 #### 使用示例
 
@@ -779,12 +727,7 @@ IClientCfg clientCfg = DefaultClientCfg.builder()
         .remoteHost("0.0.0.0")
         .port(8281)
         .build();
-NioClient nioClient = Servs.createClient(clientCfg, new TextLineCodec(), new DefaultReconnectServiceImpl(), new DefaultHeartbeatServiceImpl(), new NioClientListener() {
-    @Override
-    public void onMessageReceived(Object message, INioSession session) throws IOException {
-        System.out.println("Received: " + message);
-    }
-});
+NioClient nioClient = Servs.createClient(clientCfg, new TextLineCodec(), new DefaultReconnectServiceImpl(), new DefaultHeartbeatServiceImpl(), new NioClientListener());
 nioClient.connect();
 ```
 
@@ -807,19 +750,6 @@ nioClient.connect();
 - **多层级验证**：支持嵌套对象验证，实现复杂数据结构的验证
 - **验证模式**：支持短路式验证（NORMAL）和全量验证（FULL）两种模式
 
-#### 核心API
-
-- **IValidator接口**：所有验证器的基础接口，定义验证逻辑
-- **ValidateContext类**：存储验证过程中的上下文信息
-- **ValidateResult类**：封装验证结果和错误信息
-- **IValidation接口**：验证管理器接口，管理验证器注册和执行验证过程
-- **@Validation注解**：声明式配置验证规则的注解
-- **@VRequired注解**：必填项验证注解
-- **@VEmail注解**：邮箱地址格式验证注解
-- **@VLength注解**：字符串长度验证注解
-- **@VCompare注解**：比较两个参数值的注解
-- **@VDataRange注解**：验证参数值是否在指定的取值范围内的注解
-
 #### 使用示例
 
 ```java
@@ -837,40 +767,13 @@ public class UserBase {
     @VField(name = "密码")
     private String password;
 
-    @VRequired
-    @VCompare(cond = VCompare.Cond.EQ, with = "password", withLabel = @VField(name = "密码"))
-    private String repassword;
-
-    @VModel
-    @VField(name = "ext")
-    private UserExt userExt;
-
-    // Getter和Setter方法
-}
-
-public class UserExt {
-
-    @VLength(max = 10)
-    private String sex;
-
-    @VRequired
-    @VNumeric(min = 18, max = 30)
-    private int age;
-
-    @VRequired
-    @VEmail
-    private String email;
-
     // Getter和Setter方法
 }
 
 // 执行验证
 Map<String, Object> paramValues = new HashMap<>();
 paramValues.put("username", "lz");
-paramValues.put("password", 1233);
-paramValues.put("repassword", "12333");
-paramValues.put("ext.age", "17");
-paramValues.put("ext.email", "@163.com");
+paramValues.put("password", "1233");
 
 Map<String, ValidateResult> resultMap = Validations.get()
     .validate(UserBase.class, paramValues);
@@ -902,17 +805,8 @@ WebMVC 模块是 YMP 框架中除了 JDBC 持久化模块以外的另一个非�
 - **I18N 国际化**：支持 I18N 资源国际化
 - **缓存支持**：支持控制器方法和视图缓存
 - **插件扩展**：支持插件扩展
-
-#### 核心API
-
-- **@Controller注解**：声明一个类为控制器
-- **@RequestMapping注解**：声明控制器请求路径映射
-- **@RequestParam注解**：绑定请求中的参数
-- **@PathVariable注解**：绑定请求映射中的路径参数变量
-- **@ModelBind注解**：对象参数绑定注解
-- **View工厂类**：创建各种类型的视图
-- **WebContext类**：封装 Web 环境对象
-- **@WebConf注解**：WebMVC 模块配置注解
+- **URL 扩展名匹配**：支持通过 @RequestMapping 注解的 suffix 属性匹配带扩展名的请求路径
+- **扩展名值注入**：支持通过 @RequestSuffix 注解将请求路径的扩展名值注入到控制器方法参数
 
 #### 使用示例
 
@@ -933,16 +827,9 @@ public class DemoController {
 
     @RequestMapping("/param")
     public IView testParam(@RequestParam String name,
-                           @RequestParam(defaultValue = "18") Integer age,
-                           @RequestParam(value = "name", prefix = "user") String username) {
-        return View.textView(String.format("Hi, %s, UserName: %s, Age: %d",
-            name, username, age));
+                           @RequestParam(defaultValue = "18") Integer age) {
+        return View.textView(String.format("Hi, %s, Age: %d", name, age));
     }
-}
-
-@Controller
-@RequestMapping("/view")
-public class ViewController {
 
     @RequestMapping("/json")
     public Object jsonView() {
@@ -966,23 +853,15 @@ public class ViewController {
 
 #### 核心功能
 
-- **JUnit 5 支持**：提供 YMPJUnit5Extension 和 YMPJUnit5Suite 等扩展类，支持 JUnit 5 的所有特性
-- **JUnit 4 支持**：提供 YMPJUnit4ClassRunner 和 YMPJUnit4Suite 等运行器，支持 JUnit 4 的所有特性
-- **核心工具类**：YMPTestUtils 统一管理应用初始化逻辑，减少代码重复
-- **模拟工具**：提供 MockWebRequestHelper 等模拟工具，支持模拟 HTTP 请求和响应
-
-#### 核心API
-
-- **YMPJUnit5Extension**：JUnit 5 扩展类，用于集成 YMP 框架
-- **YMPJUnit5Suite**：JUnit 5 测试套件注解，用于组合多个测试类
-- **YMPJUnit4ClassRunner**：JUnit 4 运行器，用于集成 YMP 框架
-- **YMPJUnit4Suite**：JUnit 4 测试套件运行器，用于组合多个测试类
-- **YMPTestUtils**：测试工具类，负责 YMP 应用的初始化和管理
-- **MockWebRequestHelper**：用于模拟控制器方法请求的工具类
+- **JUnit 5 支持**：YMPJUnit5Extension、YMPJUnit5Suite
+- **JUnit 4 支持**：YMPJUnit4ClassRunner、YMPJUnit4Suite
+- **核心工具类**：YMPTestUtils
+- **模拟工具**：MockWebRequestHelper、MockHttpServletRequest/Response
 
 #### 使用示例
 
 ```java
+// JUnit 5 示例
 @ExtendWith(YMPJUnit5Extension.class)
 @EnableAutoScan
 @EnableBeanProxy
@@ -1007,38 +886,47 @@ public class LoginControllerTest {
 }
 ```
 
-## 4. 使用指南
+## 4. 快速开始
 
-### 如何使用本文档
+### 4.1 Maven 依赖
 
-1. **查阅模块索引**：通过模块索引快速定位到感兴趣的模块
-2. **阅读模块概述**：了解模块的基本功能和用途
-3. **深入详细文档**：根据引导说明，阅读对应子目录下的 SKILL.md 文件获取详细信息
-4. **参考使用示例**：通过示例代码快速上手
+```xml
+<dependency>
+    <groupId>net.ymate.platform</groupId>
+    <artifactId>ymate-platform-core</artifactId>
+    <version>2.1.4-dev</version>
+</dependency>
+```
 
-### 模块依赖关系
+### 4.2 创建应用
 
-YMP 框架的模块之间存在一定的依赖关系：
+```java
+@EnableAutoScan
+@EnableBeanProxy
+@EnableDevMode
+public class Starter {
+    static {
+        System.setProperty(IApplication.SYSTEM_MAIN_CLASS, Starter.class.getName());
+    }
+    public static void main(String[] args) throws Exception {
+        try (IApplication application = YMP.run(args)) {
+            if (application.isInitialized()) {
+                System.out.println("YMP框架初始化成功！");
+            }
+        }
+    }
+}
+```
 
-- **核心模块**：是所有模块的基础，提供应用容器、依赖注入等核心功能
-- **Core-AOP模块**：依赖核心模块，提供 AOP 功能
-- **事件模块**：依赖核心模块，提供事件驱动能力
-- **日志模块**：依赖核心模块，提供日志记录功能
-- **配置模块**：依赖核心模块，提供配置管理功能
-- **其他模块**：均依赖核心模块，并根据需要依赖其他模块
+## 5. 最佳实践
 
-### 最佳实践
+1. **模块化开发**：根据业务需求选择合适的模块，避免引入不必要的依赖
+2. **注解优先**：优先使用注解配置，减少 XML 配置文件的使用
+3. **依赖注入**：充分利用框架的依赖注入功能，降低模块间耦合
+4. **异常处理**：合理使用拦截器和事件机制处理异常
+5. **性能优化**：合理使用缓存、连接池等机制提高应用性能
+6. **测试驱动**：使用测试模块编写单元测试，确保代码质量
 
-1. **模块化开发**：根据项目需求选择合适的模块，避免引入不必要的依赖
-2. **遵循约定**：遵循 YMP 框架的约定，如包扫描、注解使用等
-3. **合理配置**：根据实际环境配置模块参数，如数据源、缓存等
-4. **异常处理**：正确处理模块抛出的异常，确保系统稳定性
-5. **性能优化**：合理使用缓存、连接池等资源，提高系统性能
+## 6. 总结
 
-## 5. 总结
-
-YMP 框架是一个功能完善、设计优雅的 Java 开发框架，通过模块化的设计理念，提供了从核心功能到业务开发的全方位支持。本文档系统地介绍了 YMP 框架的各个模块，包括缓存、通用工具、配置、核心、AOP、事件、日志、MongoDB、JDBC持久化、插件、Redis、网络服务、验证、WebMVC 和测试等模块。
-
-每个模块都经过精心设计，提供了丰富的功能和灵活的配置方式，可以满足各种业务场景的需求。通过本文档，开发者可以快速了解 YMP 框架的整体架构和各个模块的使用方法，从而更加高效地进行开发工作。
-
-如需了解更多详细信息，请参阅各模块对应的 SKILL.md 文件，或访问 YMP 框架官方网站获取最新文档和示例代码。
+YMP框架是一个轻量级、模块化、简单而强大的Java框架，提供了丰富的功能模块，帮助开发者快速构建高质量的应用程序。通过本文档的介绍，相信开发者能够快速掌握YMP框架的使用方法，并在实际项目中灵活应用各个模块的功能。

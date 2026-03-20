@@ -1,3 +1,27 @@
+---
+name: ymp-log
+description: YMP框架日志模块，基于Log4j 2实现，整合JCL、Slf4j等日志系统，提供统一的日志管理
+version: 2.1.4
+author: YMP Team
+category: logging
+tags:
+  - java
+  - logging
+  - log4j2
+  - jcl
+  - slf4j
+trigger: 当用户需要记录日志、管理日志输出、实现日志分级等功能时触发
+tools:
+  - logging
+  - log-management
+examples:
+  - 使用JCL记录日志
+  - 使用Slf4j记录日志
+  - 配置日志输出
+  - 实现日志分级
+  - 分离系统与业务日志
+---
+
 # Log 日志模块
 
 ## 1. 模块概览

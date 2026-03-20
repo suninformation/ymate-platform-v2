@@ -1,3 +1,27 @@
+---
+name: ymp-redis
+description: YMP框架Redis模块，基于Jedis驱动的Redis客户端封装，支持多数据源、连接池、发布订阅等
+version: 2.1.4
+author: YMP Team
+category: cache
+tags:
+  - java
+  - redis
+  - cache
+  - nosql
+trigger: 当用户需要使用Redis缓存、分布式缓存、发布订阅等场景时触发
+tools:
+  - redis
+  - distributed-cache
+  - pub-sub
+examples:
+  - 配置Redis数据源
+  - 使用Redis缓存
+  - 实现发布订阅
+  - 使用Redis集群
+  - 使用Redis哨兵
+---
+
 # Redis 持久化模块
 
 ## 1. 模块概览

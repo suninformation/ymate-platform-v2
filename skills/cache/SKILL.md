@@ -1,3 +1,30 @@
+---
+name: ymp-cache
+description: YMP框架缓存模块，提供基于EhCache和Redis的多级缓存支持，支持方法缓存、缓存事件监听、灵活配置等功能
+version: 2.1.4
+author: YMP Team
+category: cache
+tags:
+  - java
+  - cache
+  - ehcache
+  - redis
+  - multilevel
+  - performance
+trigger: 当用户需要使用缓存功能、提高应用性能、实现分布式缓存、方法级缓存等场景时触发
+tools:
+  - cache-management
+  - performance-optimization
+  - distributed-cache
+examples:
+  - 配置EhCache本地缓存
+  - 配置Redis分布式缓存
+  - 配置多级缓存
+  - 实现方法级缓存
+  - 监听缓存事件
+  - 使用缓存同步锁
+---
+
 # YMP框架缓存模块技能文档
 
 ## 1. 模块概述

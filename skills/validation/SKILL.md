@@ -1,3 +1,26 @@
+---
+name: ymp-validation
+description: YMP框架验证模块，提供服务端参数有效性验证工具，采用注解声明方式配置验证规则
+version: 2.1.4
+author: YMP Team
+category: validation
+tags:
+  - java
+  - validation
+  - parameter-validation
+  - annotation
+trigger: 当用户需要实现参数验证、数据校验、表单验证等场景时触发
+tools:
+  - validation
+  - parameter-check
+examples:
+  - 使用内置验证器
+  - 创建自定义验证器
+  - 实现嵌套对象验证
+  - 配置验证模式
+  - 国际化验证消息
+---
+
 # YMP 验证模块（Validation）技能文档
 
 ## 模块概述

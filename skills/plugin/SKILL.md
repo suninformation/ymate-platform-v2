@@ -1,3 +1,26 @@
+---
+name: ymp-plugin
+description: YMP框架插件模块，提供插件化开发能力，支持独立类加载器管理、插件生命周期管理等
+version: 2.1.4
+author: YMP Team
+category: plugin
+tags:
+  - java
+  - plugin
+  - classloader
+  - modular
+trigger: 当用户需要实现插件化开发、动态加载模块、插件生命周期管理等场景时触发
+tools:
+  - plugin-management
+  - classloader
+examples:
+  - 创建插件
+  - 配置插件工厂
+  - 实现插件生命周期
+  - 插件依赖注入
+  - 插件事件监听
+---
+
 # Plugin 模块技能文档
 
 ## 1. 模块概述

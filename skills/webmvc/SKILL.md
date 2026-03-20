@@ -1,3 +1,29 @@
+---
+name: ymp-webmvc
+description: YMP框架WebMVC模块，提供标准的MVC实现，支持RESTful、多种视图技术、参数绑定、验证等
+version: 2.1.4
+author: YMP Team
+category: web
+tags:
+  - java
+  - mvc
+  - web
+  - restful
+  - controller
+trigger: 当用户需要开发Web应用、实现MVC架构、RESTful API、控制器等场景时触发
+tools:
+  - web-framework
+  - mvc
+  - restful-api
+examples:
+  - 创建控制器
+  - 实现RESTful API
+  - 参数绑定
+  - 参数验证
+  - 视图渲染
+  - 拦截器配置
+---
+
 # YMP WebMVC 模块技能文档
 
 ## 模块概述

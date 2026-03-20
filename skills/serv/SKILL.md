@@ -1,3 +1,29 @@
+---
+name: ymp-serv
+description: YMP框架Serv模块，基于NIO实现的通讯服务框架，支持TCP/UDP协议、编解码、心跳、断线重连等
+version: 2.1.4
+author: YMP Team
+category: networking
+tags:
+  - java
+  - nio
+  - tcp
+  - udp
+  - networking
+trigger: 当用户需要实现网络通讯、TCP/UDP服务、高性能通讯等场景时触发
+tools:
+  - nio-server
+  - nio-client
+  - networking
+examples:
+  - 创建TCP服务端
+  - 创建TCP客户端
+  - 创建UDP服务端
+  - 配置编解码器
+  - 实现心跳机制
+  - 实现断线重连
+---
+
 # Serv 模块技能文档
 
 ## 1. 模块概述

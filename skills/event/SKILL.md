@@ -1,4 +1,27 @@
-# Event 模块技能文档
+---
+name: ymp-event
+description: YMP框架事件模块，提供事件驱动的编程模型，支持事件的注册、订阅和广播，实现模块间解耦
+version: 2.1.4
+author: YMP Team
+category: event
+tags:
+  - java
+  - event
+  - publish-subscribe
+  - decoupling
+trigger: 当用户需要实现事件驱动编程、模块间解耦、异步事件处理等场景时触发
+tools:
+  - event-management
+  - publish-subscribe
+examples:
+  - 创建自定义事件
+  - 实现事件监听器
+  - 触发同步事件
+  - 触发异步事件
+  - 设置事件优先级
+---
+
+# YMP框架事件模块技能文档
 
 ## 1. 模块概述
 

@@ -1,3 +1,33 @@
+---
+name: ymp-commons
+description: YMP框架通用工具包模块，提供丰富的工具类库，包括HTTP客户端、JSON处理、序列化、类型转换、重试机制、日期时间处理、文件操作等
+version: 2.1.4
+author: YMP Team
+category: utilities
+tags:
+  - java
+  - utilities
+  - http-client
+  - json
+  - serialization
+  - retry
+  - type-conversion
+trigger: 当用户需要使用工具类、HTTP请求、JSON处理、序列化、类型转换、重试机制等功能时触发
+tools:
+  - http-client
+  - json-processing
+  - serialization
+  - type-conversion
+  - retry-mechanism
+examples:
+  - 发送HTTP请求
+  - 处理JSON数据
+  - 对象序列化
+  - 类型转换
+  - 使用重试机制
+  - 日期时间处理
+---
+
 # Commons 通用工具包模块
 
 ## 1. 模块概览

@@ -1,3 +1,26 @@
+---
+name: ymp-core-aop
+description: YMP框架Core-AOP模块，提供强大的面向切面编程（AOP）功能，支持方法拦截、前置/后置/环绕拦截等
+version: 2.1.4
+author: YMP Team
+category: aop
+tags:
+  - java
+  - aop
+  - interceptor
+  - aspect-oriented
+trigger: 当用户需要实现面向切面编程、方法拦截、日志记录、事务管理等场景时触发
+tools:
+  - aop
+  - method-interceptor
+examples:
+  - 创建拦截器
+  - 实现前置拦截
+  - 实现后置拦截
+  - 实现环绕拦截
+  - 自定义拦截器注解
+---
+
 # Core-AOP 模块技能文档
 
 ## 1. 模块概述

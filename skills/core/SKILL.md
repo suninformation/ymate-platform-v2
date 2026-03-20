@@ -1,3 +1,31 @@
+---
+name: ymp-core
+description: YMP框架核心模块，提供应用容器、依赖注入、AOP拦截、事件机制、国际化资源管理等核心功能
+version: 2.1.4
+author: YMP Team
+category: framework
+tags:
+  - java
+  - framework
+  - core
+  - di
+  - aop
+  - event
+  - i18n
+trigger: 当用户需要使用YMP框架核心功能、依赖注入、AOP、事件机制等时触发
+tools:
+  - dependency-injection
+  - aop
+  - event-management
+  - i18n
+examples:
+  - 创建YMP应用
+  - 实现依赖注入
+  - 配置AOP拦截器
+  - 实现事件监听
+  - 使用国际化资源
+---
+
 # YMP框架核心（Core）模块技能文档
 
 ## 1. 核心功能
