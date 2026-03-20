@@ -897,6 +897,7 @@ public void custom(URL certFilePath, String passwordChars) throws Exception {
 
 
 
+
 ### CloseableHttpRequestBuilder
 
 此类是在 CloseableHttpClientHelper 类的基础上进行了优化、调整请求构建方式及响应的处理逻辑，除了 GET 和 POST 请求方法之外，还增加了对 PUT、 OPTIONS、 DELETE、 HEAD、 PATCH、 TRACE 等的支持。
@@ -2322,6 +2323,482 @@ public class Starter {
    - 使用 `@Serializer` 注解标记自定义序列化器
    - 通过 SPI 机制或自动扫描注册序列化器
    - 确保序列化和反序列化的对称性
+
+
+
+## 重试机制（Retry）
+
+重试机制提供了一套完整的重试策略实现，用于处理网络请求、服务调用等可能失败的操作。该模块支持自定义重试次数、延迟策略、超时控制以及异常类型过滤等功能。
+
+
+
+### 核心组件
+
+重试机制包含以下核心组件：
+
+| 组件 | 说明 |
+|------|------|
+| `IRetryable<T>` | 可重试操作接口，定义需要执行重试逻辑的操作 |
+| `IRetryDelayStrategy` | 延迟策略接口，定义重试之间的延迟计算逻辑 |
+| `RetryConfig` | 重试配置类，用于定义重试行为的相关参数 |
+| `RetryUtils` | 重试工具类，提供便捷的重试操作执行方法 |
+
+
+
+### 快速开始
+
+#### 最简单的使用方式
+
+使用默认配置（3次重试、1秒初始延迟、指数退避策略）执行重试操作：
+
+```java
+import net.ymate.platform.commons.retry.RetryUtils;
+
+public class RetryDemo {
+    public static void main(String[] args) throws Exception {
+        String result = RetryUtils.executeWithRetry(() -> {
+            // 执行可能失败的操作
+            return doSomething();
+        });
+        System.out.println("Result: " + result);
+    }
+
+    private static String doSomething() throws Exception {
+        // 模拟网络请求或其他可能失败的操作
+        return "success";
+    }
+}
+```
+
+
+
+#### 自定义重试次数和延迟
+
+```java
+import net.ymate.platform.commons.retry.RetryUtils;
+
+public class RetryDemo {
+    public static void main(String[] args) throws Exception {
+        // 设置最大重试次数为5次，初始延迟为2秒
+        String result = RetryUtils.executeWithRetry(() -> {
+            return doSomething();
+        }, 5, 2000);
+    }
+}
+```
+
+
+
+#### 指定可重试的异常类型
+
+只有抛出指定类型的异常时才会进行重试：
+
+```java
+import net.ymate.platform.commons.retry.RetryUtils;
+import java.io.IOException;
+import java.net.SocketTimeoutException;
+
+public class RetryDemo {
+    public static void main(String[] args) throws Exception {
+        // 只对 IOException 和 SocketTimeoutException 进行重试
+        String result = RetryUtils.executeWithRetry(
+            () -> doSomething(),
+            3, 1000,
+            IOException.class, SocketTimeoutException.class
+        );
+    }
+}
+```
+
+
+
+### 延迟策略
+
+重试机制提供了三种内置的延迟策略，可以根据不同场景选择合适的策略。
+
+
+
+#### 固定延迟策略（FixedDelayStrategy）
+
+每次重试使用相同的延迟时间，适用于对延迟时间要求固定的场景。
+
+```java
+import net.ymate.platform.commons.retry.RetryConfig;
+import net.ymate.platform.commons.retry.RetryUtils;
+
+public class RetryDemo {
+    public static void main(String[] args) throws Exception {
+        RetryConfig config = RetryConfig.custom()
+            .maxRetries(3)
+            .fixedDelay(500)  // 每次重试固定延迟500毫秒
+            .build();
+
+        String result = RetryUtils.executeWithRetry(() -> doSomething(), config);
+    }
+}
+```
+
+**延迟时间示例：**
+
+| 尝试次数 | 延迟时间 |
+|----------|----------|
+| 第1次失败后 | 500ms |
+| 第2次失败后 | 500ms |
+| 第3次失败后 | 500ms |
+
+
+
+#### 指数延迟策略（ExponentialDelayStrategy）
+
+延迟时间随重试次数指数增长，公式为：`delay = initialDelay * 2^(attempt-1)`。适用于需要逐步增加重试间隔的场景，如网络请求、服务调用等。
+
+```java
+import net.ymate.platform.commons.retry.RetryConfig;
+import net.ymate.platform.commons.retry.RetryUtils;
+
+public class RetryDemo {
+    public static void main(String[] args) throws Exception {
+        // 使用默认最大延迟（1小时）
+        RetryConfig config = RetryConfig.custom()
+            .maxRetries(5)
+            .exponentialDelay(1000)  // 初始延迟1秒
+            .build();
+
+        // 或指定最大延迟时间
+        RetryConfig config2 = RetryConfig.custom()
+            .maxRetries(5)
+            .exponentialDelay(1000, 60000)  // 初始延迟1秒，最大延迟1分钟
+            .build();
+
+        String result = RetryUtils.executeWithRetry(() -> doSomething(), config);
+    }
+}
+```
+
+**延迟时间示例（初始延迟1000ms）：**
+
+| 尝试次数 | 计算公式 | 延迟时间 |
+|----------|----------|----------|
+| 第1次失败后 | 1000 * 2^0 | 1000ms |
+| 第2次失败后 | 1000 * 2^1 | 2000ms |
+| 第3次失败后 | 1000 * 2^2 | 4000ms |
+| 第4次失败后 | 1000 * 2^3 | 8000ms |
+| 第5次失败后 | 1000 * 2^4 | 16000ms |
+
+
+
+#### 随机延迟策略（RandomDelayStrategy）
+
+在指定的最小和最大延迟时间之间随机选择延迟时间，适用于需要避免重试请求同时发生的场景（如分布式系统中的惊群效应）。
+
+```java
+import net.ymate.platform.commons.retry.RetryConfig;
+import net.ymate.platform.commons.retry.RetryUtils;
+
+public class RetryDemo {
+    public static void main(String[] args) throws Exception {
+        RetryConfig config = RetryConfig.custom()
+            .maxRetries(3)
+            .randomDelay(100, 500)  // 延迟时间在100ms到500ms之间随机
+            .build();
+
+        String result = RetryUtils.executeWithRetry(() -> doSomething(), config);
+    }
+}
+```
+
+
+
+### 完整配置示例
+
+使用 `RetryConfig` 进行完整的重试配置：
+
+```java
+import net.ymate.platform.commons.retry.RetryConfig;
+import net.ymate.platform.commons.retry.RetryUtils;
+import java.io.IOException;
+import java.net.SocketTimeoutException;
+
+public class RetryDemo {
+    public static void main(String[] args) throws Exception {
+        RetryConfig config = RetryConfig.custom()
+            // 设置最大重试次数
+            .maxRetries(5)
+            // 使用指数延迟策略，初始延迟1秒，最大延迟1分钟
+            .exponentialDelay(1000, 60000)
+            // 设置总超时时间为5分钟
+            .totalTimeoutMs(5 * 60 * 1000L)
+            // 设置可重试的异常类型
+            .retryableExceptions(IOException.class, SocketTimeoutException.class)
+            .build();
+
+        String result = RetryUtils.executeWithRetry(() -> {
+            // 执行可能失败的操作
+            return callRemoteService();
+        }, config);
+
+        System.out.println("Result: " + result);
+    }
+
+    private static String callRemoteService() throws IOException {
+        // 模拟远程服务调用
+        return "success";
+    }
+}
+```
+
+
+
+### 配置参数说明
+
+| 参数 | 类型 | 默认值 | 说明 |
+|------|------|--------|------|
+| `maxRetries` | int | 3 | 最大重试次数，必须大于0 |
+| `initialDelayMs` | long | 1000 | 初始延迟时间（毫秒） |
+| `totalTimeoutMs` | Long | 300000 (5分钟) | 总超时时间（毫秒），null表示不限制 |
+| `delayStrategy` | IRetryDelayStrategy | ExponentialDelayStrategy | 延迟策略 |
+| `retryableExceptions` | Class&lt;? extends Exception&gt;[] | 空数组 | 可重试的异常类型，为空表示所有异常都可重试 |
+
+
+
+### 自定义延迟策略
+
+通过实现 `IRetryDelayStrategy` 接口可以创建自定义的延迟策略：
+
+```java
+import net.ymate.platform.commons.retry.IRetryDelayStrategy;
+
+public class CustomDelayStrategy implements IRetryDelayStrategy {
+
+    @Override
+    public long getDelay(int attempt) {
+        // 自定义延迟逻辑
+        // 例如：线性增长延迟
+        return attempt * 1000L;  // 第1次1秒，第2次2秒，第3次3秒...
+    }
+}
+
+// 使用自定义延迟策略
+RetryConfig config = RetryConfig.custom()
+    .maxRetries(3)
+    .delayStrategy(new CustomDelayStrategy())
+    .build();
+```
+
+
+
+### 异常处理
+
+#### 异常类型过滤
+
+通过 `retryableExceptions` 参数可以指定哪些异常类型需要重试：
+
+```java
+import net.ymate.platform.commons.retry.RetryConfig;
+import net.ymate.platform.commons.retry.RetryUtils;
+import java.io.IOException;
+import java.net.ConnectException;
+import java.net.SocketTimeoutException;
+
+public class RetryDemo {
+    public static void main(String[] args) {
+        RetryConfig config = RetryConfig.custom()
+            .maxRetries(3)
+            .exponentialDelay(1000)
+            // 只对网络相关异常进行重试
+            .retryableExceptions(
+                IOException.class,
+                ConnectException.class,
+                SocketTimeoutException.class
+            )
+            .build();
+
+        try {
+            String result = RetryUtils.executeWithRetry(() -> doSomething(), config);
+        } catch (IOException e) {
+            // 重试失败后的处理
+            System.err.println("All retries failed: " + e.getMessage());
+        } catch (Exception e) {
+            // 其他异常（非可重试异常）直接抛出
+            System.err.println("Non-retryable exception: " + e.getMessage());
+        }
+    }
+}
+```
+
+**异常处理规则：**
+
+1. 如果未指定 `retryableExceptions`，所有异常都会触发重试
+2. 如果指定了 `retryableExceptions`，只有匹配的异常类型才会触发重试
+3. 非可重试异常会直接抛出，不会触发重试
+
+
+
+#### 超时处理
+
+当总执行时间超过 `totalTimeoutMs` 时，会抛出 `RuntimeException`：
+
+```java
+import net.ymate.platform.commons.retry.RetryConfig;
+import net.ymate.platform.commons.retry.RetryUtils;
+
+public class RetryDemo {
+    public static void main(String[] args) {
+        RetryConfig config = RetryConfig.custom()
+            .maxRetries(10)
+            .fixedDelay(1000)
+            .totalTimeoutMs(5000L)  // 总超时5秒
+            .build();
+
+        try {
+            String result = RetryUtils.executeWithRetry(() -> doSomething(), config);
+        } catch (RuntimeException e) {
+            if (e.getMessage().contains("timeout")) {
+                System.err.println("Retry timeout: " + e.getMessage());
+            }
+        } catch (Exception e) {
+            System.err.println("Error: " + e.getMessage());
+        }
+    }
+}
+```
+
+
+
+### 实际应用场景
+
+#### HTTP 请求重试
+
+```java
+import net.ymate.platform.commons.retry.RetryConfig;
+import net.ymate.platform.commons.retry.RetryUtils;
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
+import org.apache.http.util.EntityUtils;
+import java.io.IOException;
+
+public class HttpRetryDemo {
+
+    public static String httpGetWithRetry(String url) throws Exception {
+        RetryConfig config = RetryConfig.custom()
+            .maxRetries(3)
+            .exponentialDelay(1000, 30000)
+            .retryableExceptions(IOException.class)
+            .build();
+
+        return RetryUtils.executeWithRetry(() -> {
+            try (CloseableHttpClient httpClient = HttpClients.createDefault()) {
+                HttpGet request = new HttpGet(url);
+                try (CloseableHttpResponse response = httpClient.execute(request)) {
+                    return EntityUtils.toString(response.getEntity());
+                }
+            }
+        }, config);
+    }
+}
+```
+
+
+
+#### 数据库操作重试
+
+```java
+import net.ymate.platform.commons.retry.RetryConfig;
+import net.ymate.platform.commons.retry.RetryUtils;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.SQLException;
+
+public class DatabaseRetryDemo {
+
+    public static void executeWithRetry(String sql) throws Exception {
+        RetryConfig config = RetryConfig.custom()
+            .maxRetries(5)
+            .exponentialDelay(500, 10000)
+            .retryableExceptions(SQLException.class)
+            .totalTimeoutMs(60000L)
+            .build();
+
+        RetryUtils.executeWithRetry(() -> {
+            try (Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/test", "user", "password")) {
+                conn.createStatement().execute(sql);
+            }
+            return null;
+        }, config);
+    }
+}
+```
+
+
+
+#### 分布式锁重试
+
+```java
+import net.ymate.platform.commons.retry.RetryConfig;
+import net.ymate.platform.commons.retry.RetryUtils;
+
+public class DistributedLockDemo {
+
+    public static <T> T executeWithLock(String lockKey, java.util.concurrent.Callable<T> task) throws Exception {
+        RetryConfig config = RetryConfig.custom()
+            .maxRetries(10)
+            .randomDelay(100, 500)  // 使用随机延迟避免竞争
+            .totalTimeoutMs(30000L)
+            .build();
+
+        return RetryUtils.executeWithRetry(() -> {
+            if (tryLock(lockKey)) {
+                try {
+                    return task.call();
+                } finally {
+                    unlock(lockKey);
+                }
+            } else {
+                throw new RuntimeException("Failed to acquire lock: " + lockKey);
+            }
+        }, config);
+    }
+
+    private static boolean tryLock(String key) {
+        // 实现获取分布式锁的逻辑
+        return true;
+    }
+
+    private static void unlock(String key) {
+        // 实现释放分布式锁的逻辑
+    }
+}
+```
+
+
+
+### 最佳实践
+
+1. **选择合适的延迟策略**
+   - 对于网络请求，推荐使用指数退避策略
+   - 对于分布式系统中的竞争场景，推荐使用随机延迟策略
+   - 对于对延迟时间有严格要求的场景，使用固定延迟策略
+
+2. **合理设置重试次数**
+   - 根据业务场景和操作的幂等性设置合适的重试次数
+   - 避免设置过大的重试次数，以免造成资源浪费
+
+3. **设置超时时间**
+   - 建议始终设置 `totalTimeoutMs`，避免无限重试
+   - 超时时间应根据业务需求和用户体验来设置
+
+4. **精确指定异常类型**
+   - 只对可恢复的异常进行重试
+   - 对于业务异常或参数校验异常，不应重试
+
+5. **确保操作的幂等性**
+   - 重试操作必须是幂等的，即多次执行不会产生副作用
+   - 对于非幂等操作，需要额外的机制来保证数据一致性
+
+6. **记录重试日志**
+   - 重试机制内置了日志记录，建议在日志配置中开启 DEBUG 级别以便排查问题
 
 
 

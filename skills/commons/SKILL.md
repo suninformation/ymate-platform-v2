@@ -59,15 +59,34 @@ JSON 包装器，为了让不同的第三方 JSON 解析器拥有统一的 API �
 - HessianSerializer：基于 Hessian 二进制对象序列化实现
 - FstSerializer：基于 FST 二进制对象序列化实现
 
-### 2.6 Utils
+### 2.6 重试机制（Retry）
+
+重试机制提供了一套完整的重试策略实现，用于处理网络请求、服务调用等可能失败的操作。该模块支持自定义重试次数、延迟策略、超时控制以及异常类型过滤等功能。
+
+#### 2.6.1 核心组件
+
+- `IRetryable<T>`：可重试操作接口，定义需要执行重试逻辑的操作
+- `IRetryDelayStrategy`：延迟策略接口，定义重试之间的延迟计算逻辑
+- `RetryConfig`：重试配置类，用于定义重试行为的相关参数
+- `RetryUtils`：重试工具类，提供便捷的重试操作执行方法
+
+#### 2.6.2 延迟策略
+
+提供了三种内置的延迟策略：
+
+- **FixedDelayStrategy**：固定延迟策略，每次重试使用相同的延迟时间
+- **ExponentialDelayStrategy**：指数延迟策略，延迟时间随重试次数指数增长
+- **RandomDelayStrategy**：随机延迟策略，在指定范围内随机选择延迟时间
+
+### 2.7 Utils
 
 提供包含类与反射、字符串加密与解密、地理位置与编码、日期时间、正则表达式、文件、网络、参数、资源、运行时、线程操作等常用工具类封装。
 
-#### 2.6.1 ClassUtils
+#### 2.7.1 ClassUtils
 
 类操作相关工具类，包括扩展类加载器（ExtensionLoader）、类包裹器（BeanWrapper）等。
 
-#### 2.6.2 其他工具类
+#### 2.7.2 其他工具类
 
 - DateUtils：日期时间处理工具
 - DigestUtils：摘要工具，提供 MD5、SHA1 等摘要算法
@@ -163,6 +182,35 @@ JSON 包装器，为了让不同的第三方 JSON 解析器拥有统一的 API �
 - `getFields(Class<?> targetClass, boolean includeSuperClass)`：获取指定类所有的成员对象
 - `getMethods(Class<?> targetClass, boolean includeSuperClass)`：获取指定的类所有方法对象
 
+### 3.9 RetryConfig
+
+**主要方法**：
+- `custom()`：创建 RetryConfig.Builder 实例
+- `getMaxRetries()`：获取最大重试次数
+- `getInitialDelayMs()`：获取初始延迟时间
+- `getTotalTimeoutMs()`：获取总超时时间
+- `getDelayStrategy()`：获取延迟策略
+- `getRetryableExceptions()`：获取可重试的异常类型
+
+**Builder 主要方法**：
+- `maxRetries(int maxRetries)`：设置最大重试次数
+- `fixedDelay(long delayMs)`：设置固定延迟策略
+- `exponentialDelay(long initialDelayMs)`：设置指数延迟策略（使用默认最大延迟）
+- `exponentialDelay(long initialDelayMs, long maxDelayMs)`：设置指数延迟策略（指定最大延迟）
+- `randomDelay(long minDelayMs, long maxDelayMs)`：设置随机延迟策略
+- `totalTimeoutMs(long totalTimeoutMs)`：设置总超时时间
+- `retryableExceptions(Class<? extends Exception>... exceptions)`：设置可重试的异常类型
+- `delayStrategy(IRetryDelayStrategy delayStrategy)`：设置自定义延迟策略
+- `build()`：构建 RetryConfig 实例
+
+### 3.10 RetryUtils
+
+**主要方法**：
+- `executeWithRetry(Callable<T> task)`：使用默认配置执行重试操作
+- `executeWithRetry(Callable<T> task, int maxRetries, long initialDelayMs)`：使用指定重试次数和初始延迟执行重试操作
+- `executeWithRetry(Callable<T> task, int maxRetries, long initialDelayMs, Class<? extends Exception>... retryableExceptions)`：使用完整配置执行重试操作
+- `executeWithRetry(Callable<T> task, RetryConfig config)`：使用自定义配置执行重试操作
+
 ## 4. 技术架构与实现
 
 ### 4.1 架构层次
@@ -177,6 +225,7 @@ JSON 包装器，为了让不同的第三方 JSON 解析器拥有统一的 API �
 - **HttpClient**：HTTP 客户端封装
 - **JsonWrapper**：JSON 处理封装
 - **Serializer**：序列化处理
+- **Retry**：重试机制处理
 - **Utils**：各种工具类
 
 ### 4.3 工作流程
@@ -186,6 +235,13 @@ JSON 包装器，为了让不同的第三方 JSON 解析器拥有统一的 API �
 2. 调用相应的转换方法，如 `toIntValue()`、`toStringValue()` 等
 3. 内部通过默认转换器或自定义转换器执行转换操作
 4. 返回转换结果
+
+以 RetryUtils 为例：
+1. 通过 `RetryConfig.custom()` 创建配置对象
+2. 设置重试次数、延迟策略、超时时间等参数
+3. 调用 `RetryUtils.executeWithRetry()` 执行重试操作
+4. 内部根据配置执行重试逻辑，失败时根据延迟策略等待后重试
+5. 返回成功结果或抛出最后一次异常
 
 ## 5. 使用指南与典型场景
 
@@ -416,6 +472,145 @@ byte[] bytes = serializer.serialize(demoBean);
 SerialDemoBean deserializeBean = serializer.deserialize(bytes, SerialDemoBean.class);
 ```
 
+### 5.5 重试机制使用
+
+**示例：最简单的使用方式**
+
+```java
+import net.ymate.platform.commons.retry.RetryUtils;
+
+public class RetryDemo {
+    public static void main(String[] args) throws Exception {
+        String result = RetryUtils.executeWithRetry(() -> {
+            // 执行可能失败的操作
+            return doSomething();
+        });
+        System.out.println("Result: " + result);
+    }
+
+    private static String doSomething() throws Exception {
+        // 模拟网络请求或其他可能失败的操作
+        return "success";
+    }
+}
+```
+
+**示例：使用固定延迟策略**
+
+```java
+import net.ymate.platform.commons.retry.RetryConfig;
+import net.ymate.platform.commons.retry.RetryUtils;
+
+public class RetryDemo {
+    public static void main(String[] args) throws Exception {
+        RetryConfig config = RetryConfig.custom()
+            .maxRetries(3)
+            .fixedDelay(500)  // 每次重试固定延迟500毫秒
+            .build();
+
+        String result = RetryUtils.executeWithRetry(() -> doSomething(), config);
+    }
+}
+```
+
+**示例：使用指数延迟策略**
+
+```java
+import net.ymate.platform.commons.retry.RetryConfig;
+import net.ymate.platform.commons.retry.RetryUtils;
+
+public class RetryDemo {
+    public static void main(String[] args) throws Exception {
+        RetryConfig config = RetryConfig.custom()
+            .maxRetries(5)
+            .exponentialDelay(1000, 60000)  // 初始延迟1秒，最大延迟1分钟
+            .build();
+
+        String result = RetryUtils.executeWithRetry(() -> doSomething(), config);
+    }
+}
+```
+
+**示例：指定可重试的异常类型**
+
+```java
+import net.ymate.platform.commons.retry.RetryConfig;
+import net.ymate.platform.commons.retry.RetryUtils;
+import java.io.IOException;
+import java.net.SocketTimeoutException;
+
+public class RetryDemo {
+    public static void main(String[] args) throws Exception {
+        RetryConfig config = RetryConfig.custom()
+            .maxRetries(3)
+            .exponentialDelay(1000)
+            // 只对网络相关异常进行重试
+            .retryableExceptions(IOException.class, SocketTimeoutException.class)
+            .build();
+
+        String result = RetryUtils.executeWithRetry(() -> doSomething(), config);
+    }
+}
+```
+
+**示例：HTTP 请求重试**
+
+```java
+import net.ymate.platform.commons.retry.RetryConfig;
+import net.ymate.platform.commons.retry.RetryUtils;
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
+import org.apache.http.util.EntityUtils;
+import java.io.IOException;
+
+public class HttpRetryDemo {
+
+    public static String httpGetWithRetry(String url) throws Exception {
+        RetryConfig config = RetryConfig.custom()
+            .maxRetries(3)
+            .exponentialDelay(1000, 30000)
+            .retryableExceptions(IOException.class)
+            .build();
+
+        return RetryUtils.executeWithRetry(() -> {
+            try (CloseableHttpClient httpClient = HttpClients.createDefault()) {
+                HttpGet request = new HttpGet(url);
+                try (CloseableHttpResponse response = httpClient.execute(request)) {
+                    return EntityUtils.toString(response.getEntity());
+                }
+            }
+        }, config);
+    }
+}
+```
+
+**示例：自定义延迟策略**
+
+```java
+import net.ymate.platform.commons.retry.IRetryDelayStrategy;
+import net.ymate.platform.commons.retry.RetryConfig;
+import net.ymate.platform.commons.retry.RetryUtils;
+
+public class CustomDelayStrategy implements IRetryDelayStrategy {
+
+    @Override
+    public long getDelay(int attempt) {
+        // 自定义延迟逻辑：线性增长延迟
+        return attempt * 1000L;  // 第1次1秒，第2次2秒，第3次3秒...
+    }
+}
+
+// 使用自定义延迟策略
+RetryConfig config = RetryConfig.custom()
+    .maxRetries(3)
+    .delayStrategy(new CustomDelayStrategy())
+    .build();
+
+String result = RetryUtils.executeWithRetry(() -> doSomething(), config);
+```
+
 ## 6. 配置、部署与开发
 
 ### 6.1 依赖配置
@@ -527,6 +722,8 @@ SerialDemoBean deserializeBean = serializer.deserialize(bytes, SerialDemoBean.cl
 
 7. **使用 try-with-resources**：使用 CloseableHttpClientHelper 等实现了 AutoCloseable 接口的类时，使用 try-with-resources 语句确保资源正确释放。
 
+8. **合理使用重试机制**：使用重试机制时，根据业务场景选择合适的延迟策略（网络请求推荐指数退避，分布式竞争场景推荐随机延迟），设置合理的重试次数和超时时间，确保操作的幂等性。
+
 ## 7. 监控与维护
 
 ### 7.1 性能监控
@@ -534,6 +731,7 @@ SerialDemoBean deserializeBean = serializer.deserialize(bytes, SerialDemoBean.cl
 - **HTTP 请求性能**：监控 HTTP 请求的响应时间，识别慢请求。
 - **JSON 处理性能**：监控 JSON 序列化和反序列化的性能，识别性能瓶颈。
 - **序列化性能**：监控对象序列化和反序列化的性能，选择性能较好的实现。
+- **重试机制性能**：监控重试操作的次数和成功率，识别需要优化的重试策略。
 
 ### 7.2 常见问题与解决方案
 
@@ -544,6 +742,8 @@ SerialDemoBean deserializeBean = serializer.deserialize(bytes, SerialDemoBean.cl
 | 序列化失败 | 对象未实现 Serializable 接口或包含不可序列化的字段 | 确保对象实现 Serializable 接口，处理不可序列化的字段 |
 | 类型转换错误 | 源类型与目标类型不兼容 | 检查类型兼容性，使用合适的转换器 |
 | 文件操作异常 | 文件不存在或权限不足 | 检查文件路径和权限，处理异常情况 |
+| 重试操作失败 | 重试次数不足或延迟策略不合适 | 根据业务场景调整重试次数和延迟策略，设置合理的超时时间 |
+| 重试导致重复操作 | 操作不具备幂等性 | 确保重试操作的幂等性，或添加额外的机制保证数据一致性 |
 
 ## 8. 总结与亮点回顾
 
@@ -558,6 +758,8 @@ Commons 通用工具包模块是 YMP 框架中一个功能丰富、使用方便�
 - **类型转换**：提供了任意类型对象之间的转换功能，简化了类型转换的代码。
 
 - **序列化支持**：支持多种序列化方式，满足不同场景的需求。
+
+- **重试机制**：提供了一套完整的重试策略实现，支持自定义重试次数、延迟策略、超时控制以及异常类型过滤等功能，适用于网络请求、服务调用等可能失败的操作。
 
 - **丰富的工具类**：包括日期时间、数学、经纬度、字符串加解密、运行时环境、网络、线程操作等，覆盖了开发中的各种常见需求。
 
