@@ -2827,6 +2827,8 @@ public class Cond extends Query<Cond> {
                 flag = !((Collection<?>) target).isEmpty();
             } else if (target instanceof String) {
                 flag = StringUtils.isNotBlank((String) target);
+            } else if (target instanceof Cond) {
+                flag = !((Cond) target).isEmpty();
             }
             return flag;
         }
