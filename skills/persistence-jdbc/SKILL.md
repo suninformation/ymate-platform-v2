@@ -825,6 +825,143 @@ JDBC.get().openSession(session -> {
 });
 ```
 
+### 在查询对象中使用会话监听器
+
+除了通过 `IDatabaseSession` 设置监听器外，YMP 框架还支持直接在查询对象（如 `Select`、`Insert`、`Update`、`Delete`、`BatchSQL`、`EntitySQL`、`SQL`）中设置会话监听器。这种方式更加灵活和便捷，适用于需要针对特定查询操作进行事件监听的场景。
+
+#### 支持的查询类
+
+以下查询类都支持设置会话监听器：
+
+- `Select` - 查询语句对象
+- `Insert` - 插入语句对象
+- `Update` - 更新语句对象
+- `Delete` - 删除语句对象
+- `SQL` - SQL 语句及参数对象
+- `BatchSQL` - 批量更新 SQL 语句对象
+- `EntitySQL` - 实体 SQL 及参数对象
+
+#### 设置方式
+
+所有查询类都提供了 `sessionEventListener(IDatabaseSessionEventListener)` 方法用于设置监听器，并返回当前对象以支持链式调用；同时提供 `sessionEventListener()` 方法用于获取当前设置的监听器：
+
+```java
+import net.ymate.platform.persistence.jdbc.IDatabaseSessionEventListener;
+import net.ymate.platform.persistence.jdbc.query.Select;
+import net.ymate.platform.persistence.jdbc.query.Insert;
+import net.ymate.platform.persistence.jdbc.query.Update;
+import net.ymate.platform.persistence.jdbc.query.Delete;
+import net.ymate.platform.persistence.jdbc.query.BatchSQL;
+import net.ymate.platform.persistence.jdbc.query.EntitySQL;
+import net.ymate.platform.persistence.jdbc.query.SQL;
+
+// 创建自定义监听器
+IDatabaseSessionEventListener customListener = new CustomDatabaseSessionEventListener();
+
+// 1. Select 查询中设置监听器
+Select select = Select.create(UserEntity.class)
+    .field("id", "username", "email")
+    .where(Where.create().eq("status", 1))
+    .sessionEventListener(customListener);
+
+IResultSet<UserEntity> users = select.find(BeanResultSetHandler.create(UserEntity.class));
+
+// 2. Insert 插入中设置监听器
+Insert insert = Insert.create(UserEntity.class)
+    .field("id")
+    .field("username")
+    .field("email")
+    .param("user_001")
+    .param("test")
+    .param("test@example.com")
+    .sessionEventListener(customListener);
+
+int insertCount = insert.execute();
+
+// 3. Update 更新中设置监听器
+Update update = Update.create(UserEntity.class)
+    .field("nickname = ?", "新昵称")
+    .where(Where.create().eq("id", "user_001"))
+    .sessionEventListener(customListener);
+
+int updateCount = update.execute();
+
+// 4. Delete 删除中设置监听器
+Delete delete = Delete.create(UserEntity.class)
+    .where(Where.create().eq("id", "user_001"))
+    .sessionEventListener(customListener);
+
+int deleteCount = delete.execute();
+
+// 5. BatchSQL 批量操作中设置监听器
+BatchSQL batchSQL = BatchSQL.create()
+    .addSQL("INSERT INTO user (id, username) VALUES (?, ?)")
+    .addParameter(Params.create().add("user_001").add("user1"))
+    .addSQL("UPDATE user SET status = ? WHERE id = ?")
+    .addParameter(Params.create().add(1).add("user_001"))
+    .sessionEventListener(customListener);
+
+int[] batchCounts = batchSQL.execute();
+
+// 6. EntitySQL 实体操作中设置监听器
+EntitySQL<UserEntity> entitySQL = EntitySQL.create(UserEntity.class)
+    .sessionEventListener(customListener);
+
+UserEntity user = entitySQL.find("user_001");
+
+// 7. SQL 直接执行中设置监听器
+SQL sql = SQL.create("SELECT * FROM user WHERE id = ?")
+    .param("user_001")
+    .sessionEventListener(customListener);
+
+UserEntity user = sql.findFirst(BeanResultSetHandler.create(UserEntity.class));
+```
+
+#### 监听器的传递机制
+
+当在查询对象中设置监听器后，查询对象在执行时会自动将监听器传递给数据库会话。具体流程如下：
+
+1. **查询对象转换为 SQL**：对于 `Select`、`Insert`、`Update`、`Delete` 等查询构建器，它们会先转换为 `SQL` 对象，然后将监听器设置到 `SQL` 对象上。
+
+2. **SQL 执行时设置监听器**：`SQL` 对象在执行时（如 `execute()`、`find()`、`count()` 等方法），会在打开数据库会话后立即设置监听器到会话中。
+
+3. **监听器生效**：设置到会话的监听器会在数据库操作执行前后被触发，执行相应的事件方法。
+
+#### 监听器的执行顺序
+
+当同时存在全局监听器和局部监听器（包括会话中设置的监听器和查询对象中设置的监听器）时，所有监听器会按照注册顺序依次执行：
+
+1. **全局监听器优先**：通过 `JDBC.get().registerGlobalSessionEventListener()` 注册的全局监听器最先执行
+2. **局部监听器随后**：通过 `session.setSessionEventListener()` 或查询对象的 `sessionEventListener()` 方法设置的监听器会在全局监听器之后执行
+
+具体执行流程如下：
+
+**Before 阶段（数据库操作执行前）：**
+1. 依次执行所有全局监听器的 `onXXXBefore` 方法
+2. 依次执行所有局部监听器的 `onXXXBefore` 方法
+3. 执行数据库操作
+
+**After 阶段（数据库操作执行后）：**
+4. 依次执行所有全局监听器的 `onXXXAfter` 方法
+5. 依次执行所有局部监听器的 `onXXXAfter` 方法
+
+**重要说明**：
+- 查询对象中设置的监听器实际上会被添加到数据库会话中，与全局监听器和会话中设置的监听器合并执行。
+- 全局监听器由于先注册，所以会最先被调用，然后才是局部监听器。
+- 所有监听器的 `onXXXBefore` 方法按顺序执行完成后，才会执行实际的数据库操作，然后按顺序执行所有监听器的 `onXXXAfter` 方法。
+- 如果在任何 `before` 事件方法中抛出异常，将中止当前数据库操作，不会执行实际的数据库操作，也不会调用对应的 `after` 事件方法。
+
+#### 使用场景
+
+查询对象中设置监听器适用于以下场景：
+
+- **特定查询的 SQL 拦截**：如为特定查询自动添加租户 ID 过滤条件
+- **单次操作的性能监控**：如监控某个复杂查询的执行时间
+- **临时数据校验**：如针对特定插入操作的参数校验
+- **调试和日志记录**：如临时开启某个查询的详细日志
+
+**注意**：查询对象中的监听器设置是临时的，仅对当前查询对象的执行生效。如果需要全局生效，建议使用全局监听器。
+
 ## 查询构建
 
 ### Fields：字段名称集合

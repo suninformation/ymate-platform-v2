@@ -1968,7 +1968,7 @@ Integer effectCount = JDBC.get().openSession(new IDatabaseSessionExecutor<Intege
 
 ## 数据库会话事件监听器
 
-通过实现 `IDatabaseSessionEventListener` 接口，可以监听数据库会话中的 CRUD 操作事件。此外，还可以在事件触发时对 SQL 语句和参数进行修改等操作，从而实现 SQL 拦截等功能。该监听器需要在数据库会话中手动设置。
+通过实现 `IDatabaseSessionEventListener` 接口，可以监听数据库会话中的 CRUD 操作事件。此外，还可以在事件触发时对 SQL 语句和参数进行修改等操作，从而实现 SQL 拦截等功能。
 
 ### 事件类型
 
@@ -2015,6 +2015,269 @@ Integer effectCount = JDBC.get().openSession(new IDatabaseSessionExecutor<Intege
 - `IDeleteOperator`：删除操作器，可获取影响行数
 
 :::
+
+### 监听器类型
+
+YMP 框架支持两种类型的数据库会话事件监听器：
+
+#### 1. 全局数据库会话事件监听器
+
+全局监听器会对所有数据库会话的操作生效，适用于需要全局监控或处理的场景。
+
+##### 全局监听器的注册方式
+
+1. **通过 SPI 自动注册**：
+
+   实现 `IDatabaseSessionEventListener` 接口的类，会通过 SPI 机制在 JDBC 模块初始化时自动注册为全局监听器。
+
+2. **通过代码手动注册**：
+
+   ```java
+   import net.ymate.platform.persistence.jdbc.JDBC;
+   import net.ymate.platform.persistence.jdbc.IDatabase;
+   import net.ymate.platform.persistence.jdbc.IDatabaseSessionEventListener;
+
+   // 获取数据库实例
+   IDatabase database = JDBC.get();
+
+   // 创建自定义监听器
+   IDatabaseSessionEventListener customListener = new CustomDatabaseSessionEventListener();
+
+   // 注册全局监听器
+   database.registerGlobalSessionEventListener(customListener);
+
+   // 获取全局监听器
+   IDatabaseSessionEventListener globalListener = database.getGlobalSessionEventListener();
+   ```
+
+#### 2. 局部数据库会话事件监听器
+
+局部监听器仅对特定的数据库会话生效，适用于需要针对特定会话进行处理的场景。
+
+##### 局部监听器的设置方式
+
+```java
+import net.ymate.platform.persistence.jdbc.JDBC;
+import net.ymate.platform.persistence.jdbc.IDatabaseSession;
+import net.ymate.platform.persistence.jdbc.IDatabaseSessionEventListener;
+
+// 获取数据库实例
+IDatabase database = JDBC.get();
+
+// 开启数据库会话
+IDatabaseSession session = database.openSession();
+
+// 创建自定义监听器
+IDatabaseSessionEventListener customListener = new CustomDatabaseSessionEventListener();
+
+// 设置局部监听器
+session.setSessionEventListener(customListener);
+
+// 使用会话执行操作
+// ...
+
+// 关闭会话
+session.close();
+```
+
+### 监听器的执行顺序
+
+当同时存在全局监听器和局部监听器（包括会话中设置的监听器和查询对象中设置的监听器）时，所有监听器会按照注册顺序依次执行：
+
+1. **全局监听器优先**：通过 `JDBC.get().registerGlobalSessionEventListener()` 注册的全局监听器最先执行
+2. **局部监听器随后**：通过 `session.setSessionEventListener()` 或查询对象的 `sessionEventListener()` 方法设置的监听器会在全局监听器之后执行
+
+具体执行流程如下：
+
+**Before 阶段（数据库操作执行前）：**
+
+1. 依次执行所有全局监听器的 `onXXXBefore` 方法
+2. 依次执行所有局部监听器的 `onXXXBefore` 方法
+3. 执行数据库操作
+
+**After 阶段（数据库操作执行后）：**
+
+4. 依次执行所有全局监听器的 `onXXXAfter` 方法
+5. 依次执行所有局部监听器的 `onXXXAfter` 方法
+
+:::tip
+**重要说明**：
+- 查询对象中设置的监听器实际上会被添加到数据库会话中，与全局监听器和会话中设置的监听器合并执行。
+- 全局监听器由于先注册，所以会最先被调用，然后才是局部监听器。
+- 所有监听器的 `onXXXBefore` 方法按顺序执行完成后，才会执行实际的数据库操作，然后按顺序执行所有监听器的 `onXXXAfter` 方法。
+- 如果在任何 `before` 事件方法中抛出异常，将中止当前数据库操作，不会执行实际的数据库操作，也不会调用对应的 `after` 事件方法。
+:::
+
+### 在查询对象中使用会话监听器
+
+除了通过 `IDatabaseSession` 设置监听器外，YMP 框架还支持直接在查询对象（如 `Select`、`Insert`、`Update`、`Delete`、`BatchSQL`、`EntitySQL`）中设置会话监听器。这种方式更加灵活和便捷，适用于需要针对特定查询操作进行事件监听的场景。
+
+#### 支持的查询类
+
+以下查询类都支持设置会话监听器：
+
+- `Select` - 查询语句对象
+- `Insert` - 插入语句对象
+- `Update` - 更新语句对象
+- `Delete` - 删除语句对象
+- `SQL` - SQL 语句及参数对象
+- `BatchSQL` - 批量更新 SQL 语句对象
+- `EntitySQL` - 实体 SQL 及参数对象
+
+#### 设置方式
+
+所有查询类都提供了 `sessionEventListener(IDatabaseSessionEventListener)` 方法用于设置监听器，并返回当前对象以支持链式调用；同时提供 `sessionEventListener()` 方法用于获取当前设置的监听器：
+
+```java
+import net.ymate.platform.persistence.jdbc.IDatabaseSessionEventListener;
+import net.ymate.platform.persistence.jdbc.query.Select;
+import net.ymate.platform.persistence.jdbc.query.Insert;
+import net.ymate.platform.persistence.jdbc.query.Update;
+import net.ymate.platform.persistence.jdbc.query.Delete;
+import net.ymate.platform.persistence.jdbc.query.BatchSQL;
+import net.ymate.platform.persistence.jdbc.query.EntitySQL;
+
+// 创建自定义监听器
+IDatabaseSessionEventListener customListener = new CustomDatabaseSessionEventListener();
+
+// 1. Select 查询中设置监听器
+Select select = Select.create(UserEntity.class)
+    .field("id", "username", "email")
+    .where(Where.create().eq("status", 1))
+    .sessionEventListener(customListener);
+
+IResultSet<UserEntity> users = select.find(BeanResultSetHandler.create(UserEntity.class));
+
+// 2. Insert 插入中设置监听器
+Insert insert = Insert.create(UserEntity.class)
+    .field("id")
+    .field("username")
+    .field("email")
+    .param("user_001")
+    .param("test")
+    .param("test@example.com")
+    .sessionEventListener(customListener);
+
+int insertCount = insert.execute();
+
+// 3. Update 更新中设置监听器
+Update update = Update.create(UserEntity.class)
+    .field("nickname = ?", "新昵称")
+    .where(Where.create().eq("id", "user_001"))
+    .sessionEventListener(customListener);
+
+int updateCount = update.execute();
+
+// 4. Delete 删除中设置监听器
+Delete delete = Delete.create(UserEntity.class)
+    .where(Where.create().eq("id", "user_001"))
+    .sessionEventListener(customListener);
+
+int deleteCount = delete.execute();
+
+// 5. BatchSQL 批量操作中设置监听器
+BatchSQL batchSQL = BatchSQL.create()
+    .addSQL("INSERT INTO user (id, username) VALUES (?, ?)")
+    .addParameter(Params.create().add("user_001").add("user1"))
+    .addSQL("UPDATE user SET status = ? WHERE id = ?")
+    .addParameter(Params.create().add(1).add("user_001"))
+    .sessionEventListener(customListener);
+
+int[] batchCounts = batchSQL.execute();
+
+// 6. EntitySQL 实体操作中设置监听器
+EntitySQL<UserEntity> entitySQL = EntitySQL.create(UserEntity.class)
+    .sessionEventListener(customListener);
+
+UserEntity user = entitySQL.find("user_001");
+
+// 7. SQL 直接执行中设置监听器
+SQL sql = SQL.create("SELECT * FROM user WHERE id = ?")
+    .param("user_001")
+    .sessionEventListener(customListener);
+
+UserEntity user = sql.findFirst(BeanResultSetHandler.create(UserEntity.class));
+```
+
+#### 监听器的传递机制
+
+当在查询对象中设置监听器后，查询对象在执行时会自动将监听器传递给数据库会话。具体流程如下：
+
+1. **查询对象转换为 SQL**：对于 `Select`、`Insert`、`Update`、`Delete` 等查询构建器，它们会先转换为 `SQL` 对象，然后将监听器设置到 `SQL` 对象上。
+
+2. **SQL 执行时设置监听器**：`SQL` 对象在执行时（如 `execute()`、`find()`、`count()` 等方法），会在打开数据库会话后立即设置监听器到会话中。
+
+3. **监听器生效**：设置到会话的监听器会在数据库操作执行前后被触发，执行相应的事件方法。
+
+#### 使用场景
+
+查询对象中设置监听器适用于以下场景：
+
+- **特定查询的 SQL 拦截**：如为特定查询自动添加租户 ID 过滤条件
+- **单次操作的性能监控**：如监控某个复杂查询的执行时间
+- **临时数据校验**：如针对特定插入操作的参数校验
+- **调试和日志记录**：如临时开启某个查询的详细日志
+
+:::tip
+**注意**：查询对象中的监听器设置是临时的，仅对当前查询对象的执行生效。如果需要全局生效，建议使用全局监听器。
+:::
+
+### 示例：使用全局数据库会话事件监听器记录 SQL 执行时间
+
+```java
+import net.ymate.platform.persistence.jdbc.IDatabaseSessionEventListener;
+import net.ymate.platform.persistence.jdbc.DatabaseSessionEventContext;
+
+public class SqlExecutionTimeListener implements IDatabaseSessionEventListener {
+
+    @Override
+    public void onQueryBefore(DatabaseSessionEventContext eventContext) throws Exception {
+        eventContext.putAttribute("startTime", System.currentTimeMillis());
+    }
+
+    @Override
+    public void onQueryAfter(DatabaseSessionEventContext eventContext) throws Exception {
+        long startTime = (long) eventContext.getAttribute("startTime");
+        long executionTime = System.currentTimeMillis() - startTime;
+        System.out.println("SQL execution time: " + executionTime + "ms - " + eventContext.getSql());
+    }
+
+    // 其他事件方法...
+}
+
+// 注册全局监听器
+JDBC.get().registerGlobalSessionEventListener(new SqlExecutionTimeListener());
+```
+
+### 示例：使用局部数据库会话事件监听器修改 SQL
+
+```java
+import net.ymate.platform.persistence.jdbc.IDatabaseSessionEventListener;
+import net.ymate.platform.persistence.jdbc.DatabaseSessionEventContext;
+
+public class SqlModifierListener implements IDatabaseSessionEventListener {
+
+    @Override
+    public void onQueryBefore(DatabaseSessionEventContext eventContext) throws Exception {
+        // 修改 SQL 语句，添加 LIMIT 子句
+        String originalSql = eventContext.getSql();
+        if (!originalSql.toLowerCase().contains("limit")) {
+            eventContext.setSql(originalSql + " LIMIT 100");
+        }
+    }
+
+    // 其他事件方法...
+}
+
+// 使用局部监听器
+IDatabaseSession session = JDBC.get().openSession();
+session.setSessionEventListener(new SqlModifierListener());
+// 执行查询操作，SQL 会被自动修改
+// ...
+session.close();
+```
+
+通过数据库会话事件监听器，可以实现诸如 SQL 执行时间监控、SQL 语句日志记录、数据权限控制、SQL 语句修改等功能，为数据库操作提供更多的灵活性和可扩展性。
 
 ### 使用示例
 
