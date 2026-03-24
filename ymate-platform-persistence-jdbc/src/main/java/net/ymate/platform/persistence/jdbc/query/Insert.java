@@ -22,6 +22,7 @@ import net.ymate.platform.core.persistence.Params;
 import net.ymate.platform.core.persistence.base.EntityMeta;
 import net.ymate.platform.core.persistence.base.IEntity;
 import net.ymate.platform.persistence.jdbc.IDatabase;
+import net.ymate.platform.persistence.jdbc.IDatabaseSessionEventListener;
 import net.ymate.platform.persistence.jdbc.JDBC;
 import org.apache.commons.lang3.StringUtils;
 
@@ -51,6 +52,11 @@ public class Insert extends Query<Insert> {
     private Select select;
 
     private final boolean safePrefix;
+
+    /**
+     * @since 2.1.4
+     */
+    private IDatabaseSessionEventListener sessionEventListener;
 
     public static Insert create(String prefix, Class<? extends IEntity> entityClass) {
         IDatabase owner = JDBC.get();
@@ -355,6 +361,22 @@ public class Insert extends Query<Insert> {
     }
 
     public int execute() throws Exception {
-        return toSQL().execute(dataSourceName());
+        SQL sql = toSQL();
+        return sql.execute(dataSourceName());
+    }
+
+    /**
+     * @since 2.1.4
+     */
+    public IDatabaseSessionEventListener sessionEventListener() {
+        return sessionEventListener;
+    }
+
+    /**
+     * @since 2.1.4
+     */
+    public Insert sessionEventListener(IDatabaseSessionEventListener sessionEventListener) {
+        this.sessionEventListener = sessionEventListener;
+        return this;
     }
 }

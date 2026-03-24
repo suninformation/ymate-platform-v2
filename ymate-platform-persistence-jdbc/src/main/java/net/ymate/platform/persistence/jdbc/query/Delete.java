@@ -22,6 +22,7 @@ import net.ymate.platform.core.persistence.Params;
 import net.ymate.platform.core.persistence.base.EntityMeta;
 import net.ymate.platform.core.persistence.base.IEntity;
 import net.ymate.platform.persistence.jdbc.IDatabase;
+import net.ymate.platform.persistence.jdbc.IDatabaseSessionEventListener;
 import net.ymate.platform.persistence.jdbc.JDBC;
 import org.apache.commons.lang3.StringUtils;
 
@@ -48,6 +49,11 @@ public class Delete extends Query<Delete> {
      * @since 2.1.4
      */
     private With with;
+
+    /**
+     * @since 2.1.4
+     */
+    private IDatabaseSessionEventListener sessionEventListener;
 
     public static Delete create() {
         IDatabase owner = JDBC.get();
@@ -1148,6 +1154,16 @@ public class Delete extends Query<Delete> {
     }
 
     public int execute() throws Exception {
-        return toSQL().execute(dataSourceName());
+        SQL sql = toSQL();
+        return sql.execute(dataSourceName());
+    }
+
+    public IDatabaseSessionEventListener sessionEventListener() {
+        return sessionEventListener;
+    }
+
+    public Delete sessionEventListener(IDatabaseSessionEventListener sessionEventListener) {
+        this.sessionEventListener = sessionEventListener;
+        return this;
     }
 }

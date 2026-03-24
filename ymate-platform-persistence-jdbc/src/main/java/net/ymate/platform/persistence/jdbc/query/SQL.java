@@ -22,6 +22,7 @@ import net.ymate.platform.core.persistence.Page;
 import net.ymate.platform.core.persistence.Params;
 import net.ymate.platform.persistence.jdbc.IDatabase;
 import net.ymate.platform.persistence.jdbc.IDatabaseSession;
+import net.ymate.platform.persistence.jdbc.IDatabaseSessionEventListener;
 import net.ymate.platform.persistence.jdbc.JDBC;
 import net.ymate.platform.persistence.jdbc.base.IResultSetHandler;
 import org.apache.commons.lang3.StringUtils;
@@ -48,6 +49,11 @@ public final class SQL {
      */
     private final Map<String, Object> variables = new HashMap<>();
 
+    /**
+     * @since 2.1.4
+     */
+    private IDatabaseSessionEventListener sessionEventListener;
+
     public static SQL create(String sql) {
         return new SQL(JDBC.get(), sql);
     }
@@ -57,19 +63,19 @@ public final class SQL {
     }
 
     public static SQL create(Select select) {
-        return new SQL(select.owner(), select.toString()).param(select.params());
+        return new SQL(select.owner(), select.toString()).param(select.params()).sessionEventListener(select.sessionEventListener());
     }
 
     public static SQL create(Insert insert) {
-        return new SQL(insert.owner(), insert.toString()).param(insert.params());
+        return new SQL(insert.owner(), insert.toString()).param(insert.params()).sessionEventListener(insert.sessionEventListener());
     }
 
     public static SQL create(Update update) {
-        return new SQL(update.owner(), update.toString()).param(update.params());
+        return new SQL(update.owner(), update.toString()).param(update.params()).sessionEventListener(update.sessionEventListener());
     }
 
     public static SQL create(Delete delete) {
-        return new SQL(delete.owner(), delete.toString()).param(delete.params());
+        return new SQL(delete.owner(), delete.toString()).param(delete.params()).sessionEventListener(delete.sessionEventListener());
     }
 
     public static SQL create(String expressionSqlStr, Map<String, Object> params) {
@@ -129,6 +135,21 @@ public final class SQL {
     /**
      * @since 2.1.4
      */
+    public IDatabaseSessionEventListener sessionEventListener() {
+        return sessionEventListener;
+    }
+
+    /**
+     * @since 2.1.4
+     */
+    public SQL sessionEventListener(IDatabaseSessionEventListener sessionEventListener) {
+        this.sessionEventListener = sessionEventListener;
+        return this;
+    }
+
+    /**
+     * @since 2.1.4
+     */
     private IDatabaseSession doSetVariablesIfNeed(IDatabaseSession session) throws Exception {
         Fields varFields = Fields.create();
         Params varParams = Params.create();
@@ -157,42 +178,72 @@ public final class SQL {
     }
 
     public int execute() throws Exception {
-        return owner.openSession(session -> doSetVariablesIfNeed(session).executeForUpdate(this));
+        return owner.openSession(session -> {
+            session.setSessionEventListener(sessionEventListener);
+            return doSetVariablesIfNeed(session).executeForUpdate(this);
+        });
     }
 
     public int execute(String dataSourceName) throws Exception {
-        return owner.openSession(dataSourceName, session -> doSetVariablesIfNeed(session).executeForUpdate(this));
+        return owner.openSession(dataSourceName, session -> {
+            session.setSessionEventListener(sessionEventListener);
+            return doSetVariablesIfNeed(session).executeForUpdate(this);
+        });
     }
 
     public <T> T findFirst(IResultSetHandler<T> handler) throws Exception {
-        return owner.openSession(session -> doSetVariablesIfNeed(session).findFirst(this, handler));
+        return owner.openSession(session -> {
+            session.setSessionEventListener(sessionEventListener);
+            return doSetVariablesIfNeed(session).findFirst(this, handler);
+        });
     }
 
     public <T> T findFirst(String dataSourceName, IResultSetHandler<T> handler) throws Exception {
-        return owner.openSession(dataSourceName, session -> doSetVariablesIfNeed(session).findFirst(this, handler));
+        return owner.openSession(dataSourceName, session -> {
+            session.setSessionEventListener(sessionEventListener);
+            return doSetVariablesIfNeed(session).findFirst(this, handler);
+        });
     }
 
     public <T> IResultSet<T> find(IResultSetHandler<T> handler) throws Exception {
-        return owner.openSession(session -> doSetVariablesIfNeed(session).find(this, handler));
+        return owner.openSession(session -> {
+            session.setSessionEventListener(sessionEventListener);
+            return doSetVariablesIfNeed(session).find(this, handler);
+        });
     }
 
     public <T> IResultSet<T> find(IResultSetHandler<T> handler, Page page) throws Exception {
-        return owner.openSession(session -> doSetVariablesIfNeed(session).find(this, handler, page));
+        return owner.openSession(session -> {
+            session.setSessionEventListener(sessionEventListener);
+            return doSetVariablesIfNeed(session).find(this, handler, page);
+        });
     }
 
     public <T> IResultSet<T> find(String dataSourceName, IResultSetHandler<T> handler) throws Exception {
-        return owner.openSession(dataSourceName, session -> doSetVariablesIfNeed(session).find(this, handler));
+        return owner.openSession(dataSourceName, session -> {
+            session.setSessionEventListener(sessionEventListener);
+            return doSetVariablesIfNeed(session).find(this, handler);
+        });
     }
 
     public <T> IResultSet<T> find(String dataSourceName, IResultSetHandler<T> handler, Page page) throws Exception {
-        return owner.openSession(dataSourceName, session -> doSetVariablesIfNeed(session).find(this, handler, page));
+        return owner.openSession(dataSourceName, session -> {
+            session.setSessionEventListener(sessionEventListener);
+            return doSetVariablesIfNeed(session).find(this, handler, page);
+        });
     }
 
     public long count() throws Exception {
-        return owner.openSession(session -> doSetVariablesIfNeed(session).count(this));
+        return owner.openSession(session -> {
+            session.setSessionEventListener(sessionEventListener);
+            return doSetVariablesIfNeed(session).count(this);
+        });
     }
 
     public long count(String dataSourceName) throws Exception {
-        return owner.openSession(dataSourceName, session -> doSetVariablesIfNeed(session).count(this));
+        return owner.openSession(dataSourceName, session -> {
+            session.setSessionEventListener(sessionEventListener);
+            return doSetVariablesIfNeed(session).count(this);
+        });
     }
 }

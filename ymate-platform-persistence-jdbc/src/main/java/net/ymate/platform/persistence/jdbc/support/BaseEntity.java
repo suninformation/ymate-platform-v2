@@ -50,6 +50,11 @@ public abstract class BaseEntity<Entity extends IEntity, PK extends Serializable
 
     private transient IShardingable shardingable;
 
+    /**
+     * @since 2.1.4
+     */
+    private transient IDatabaseSessionEventListener sessionEventListener;
+
     private String dataSourceName;
 
     private boolean matchAny;
@@ -92,6 +97,20 @@ public abstract class BaseEntity<Entity extends IEntity, PK extends Serializable
 
     public void setShardingable(IShardingable shardingable) {
         this.shardingable = shardingable;
+    }
+
+    /**
+     * @since 2.1.4
+     */
+    public IDatabaseSessionEventListener getSessionEventListener() {
+        return sessionEventListener;
+    }
+
+    /**
+     * @since 2.1.4
+     */
+    public void setSessionEventListener(IDatabaseSessionEventListener sessionEventListener) {
+        this.sessionEventListener = sessionEventListener;
     }
 
     public String getDataSourceName() {
@@ -139,25 +158,28 @@ public abstract class BaseEntity<Entity extends IEntity, PK extends Serializable
     }
 
     protected IDatabase doGetSafeOwner() {
-        if (dbOwner == null) {
+        IDatabase database = getDbOwner();
+        if (database == null) {
             return JDBC.get();
         }
-        return dbOwner;
+        return database;
     }
 
     protected IDatabaseConnectionHolder doGetSafeConnectionHolder() throws Exception {
-        return getSafeConnectionHolder(doGetSafeOwner(), connectionHolder, dataSourceName);
+        return getSafeConnectionHolder(doGetSafeOwner(), getConnectionHolder(), getDataSourceName());
     }
 
     public void entityCreate() throws Exception {
         try (IDatabaseSession session = new DefaultDatabaseSession(doGetSafeOwner(), doGetSafeConnectionHolder())) {
-            session.executeForUpdate(SQL.create(session.getConnectionHolder().getDialect().buildCreateSql(this.entityClass, session.getConnectionHolder().getDataSourceConfig().getTablePrefix(), this.getShardingable())));
+            session.setSessionEventListener(getSessionEventListener());
+            session.executeForUpdate(SQL.create(session.getConnectionHolder().getDialect().buildCreateSql(getEntityClass(), session.getConnectionHolder().getDataSourceConfig().getTablePrefix(), this.getShardingable())));
         }
     }
 
     public void entityDrop() throws Exception {
         try (IDatabaseSession session = new DefaultDatabaseSession(doGetSafeOwner(), doGetSafeConnectionHolder())) {
-            session.executeForUpdate(SQL.create(session.getConnectionHolder().getDialect().buildDropSql(this.entityClass, session.getConnectionHolder().getDataSourceConfig().getTablePrefix(), this.getShardingable())));
+            session.setSessionEventListener(getSessionEventListener());
+            session.executeForUpdate(SQL.create(session.getConnectionHolder().getDialect().buildDropSql(getEntityClass(), session.getConnectionHolder().getDataSourceConfig().getTablePrefix(), this.getShardingable())));
         }
     }
 
@@ -176,6 +198,7 @@ public abstract class BaseEntity<Entity extends IEntity, PK extends Serializable
     public Entity load(Fields fields, IDBLocker dbLocker) throws Exception {
         IDatabase owner = doGetSafeOwner();
         try (IDatabaseSession session = new DefaultDatabaseSession(owner, doGetSafeConnectionHolder())) {
+            session.setSessionEventListener(getSessionEventListener());
             EntitySQL<Entity> entitySql = EntitySQL.create(owner, this.getEntityClass());
             if (fields != null) {
                 entitySql.field(fields);
@@ -190,6 +213,7 @@ public abstract class BaseEntity<Entity extends IEntity, PK extends Serializable
     @SuppressWarnings("unchecked")
     public Entity save() throws Exception {
         try (IDatabaseSession session = new DefaultDatabaseSession(doGetSafeOwner(), doGetSafeConnectionHolder())) {
+            session.setSessionEventListener(getSessionEventListener());
             return session.insert((Entity) this, this.getShardingable());
         }
     }
@@ -197,6 +221,7 @@ public abstract class BaseEntity<Entity extends IEntity, PK extends Serializable
     @SuppressWarnings("unchecked")
     public Entity save(Fields fields) throws Exception {
         try (IDatabaseSession session = new DefaultDatabaseSession(doGetSafeOwner(), doGetSafeConnectionHolder())) {
+            session.setSessionEventListener(getSessionEventListener());
             return session.insert((Entity) this, fields, this.getShardingable());
         }
     }
@@ -208,6 +233,7 @@ public abstract class BaseEntity<Entity extends IEntity, PK extends Serializable
     public boolean exist(boolean useLocker) throws Exception {
         IDatabase owner = doGetSafeOwner();
         try (IDatabaseSession session = new DefaultDatabaseSession(owner, doGetSafeConnectionHolder())) {
+            session.setSessionEventListener(getSessionEventListener());
             EntitySQL<Entity> entitySql = EntitySQL.create(owner, this.getEntityClass());
             EntityMeta.load(this.getEntityClass()).getPrimaryKeys().forEach(entitySql::field);
             if (useLocker) {
@@ -243,11 +269,12 @@ public abstract class BaseEntity<Entity extends IEntity, PK extends Serializable
     public boolean saveIfNotExist(Fields fields) throws Exception {
         IDatabase owner = doGetSafeOwner();
         try (IDatabaseSession session = new DefaultDatabaseSession(owner, doGetSafeConnectionHolder())) {
-            // 尝试使用数据库原生的InsertIfNotExist原子操作
+            session.setSessionEventListener(getSessionEventListener());
+            // 尝试使用数据库原生的 InsertIfNotExist 原子操作
             try {
                 return session.insertIfNotExist((Entity) this, fields, this.getShardingable()) != null;
             } catch (UnsupportedOperationException e) {
-                // 数据库不支持InsertIfNotest操作，回退到原来的方式（先查询后判断）
+                // 数据库不支持 InsertIfNotest 操作，回退到原来的方式（先查询后判断）
                 if (!exist(true)) {
                     return session.insert((Entity) this, fields, this.getShardingable()) != null;
                 }
@@ -281,11 +308,12 @@ public abstract class BaseEntity<Entity extends IEntity, PK extends Serializable
     public Entity saveOrUpdate(Fields fields) throws Exception {
         IDatabase owner = doGetSafeOwner();
         try (IDatabaseSession session = new DefaultDatabaseSession(owner, doGetSafeConnectionHolder())) {
-            // 尝试使用数据库原生的Upsert原子操作
+            session.setSessionEventListener(getSessionEventListener());
+            // 尝试使用数据库原生的 Upsert 原子操作
             try {
                 return session.upsert((Entity) this, fields, this.getShardingable());
             } catch (UnsupportedOperationException e) {
-                // 数据库不支持Upsert操作，回退到原来的方式（先查询后判断）
+                // 数据库不支持 Upsert 操作，回退到原来的方式（先查询后判断）
                 if (exist(true)) {
                     return session.update((Entity) this, fields, this.getShardingable());
                 }
@@ -301,6 +329,7 @@ public abstract class BaseEntity<Entity extends IEntity, PK extends Serializable
     @SuppressWarnings("unchecked")
     public Entity update(Fields fields) throws Exception {
         try (IDatabaseSession session = new DefaultDatabaseSession(doGetSafeOwner(), doGetSafeConnectionHolder())) {
+            session.setSessionEventListener(getSessionEventListener());
             return session.update((Entity) this, fields, this.getShardingable());
         }
     }
@@ -308,10 +337,11 @@ public abstract class BaseEntity<Entity extends IEntity, PK extends Serializable
     public int delete() throws Exception {
         IDatabase owner = doGetSafeOwner();
         try (IDatabaseSession session = new DefaultDatabaseSession(owner, doGetSafeConnectionHolder())) {
+            session.setSessionEventListener(getSessionEventListener());
             if (null != this.getId()) {
                 return session.delete(this.getEntityClass(), this.getId(), this.getShardingable());
             } else {
-                Cond cond = buildCond(owner, this, matchAny);
+                Cond cond = buildCond(owner, this, isMatchAny());
                 if (!cond.isEmpty()) {
                     return session.executeForUpdate(Delete.create(owner)
                             .shardingable(this.getShardingable())
@@ -324,11 +354,11 @@ public abstract class BaseEntity<Entity extends IEntity, PK extends Serializable
     }
 
     public <T extends Serializable> IResultSet<T> find(Class<T> beanClass) throws Exception {
-        return find(beanClass, Where.create(buildCond(doGetSafeOwner(), this, matchAny)), null, null, null);
+        return find(beanClass, Where.create(buildCond(doGetSafeOwner(), this, isMatchAny())), null, null, null);
     }
 
     public IResultSet<Entity> find() throws Exception {
-        return find(Where.create(buildCond(doGetSafeOwner(), this, matchAny)), null, null, null);
+        return find(Where.create(buildCond(doGetSafeOwner(), this, isMatchAny())), null, null, null);
     }
 
     public <T extends Serializable> IResultSet<T> find(Class<T> beanClass, OrderBy orderBy) throws Exception {
@@ -348,11 +378,11 @@ public abstract class BaseEntity<Entity extends IEntity, PK extends Serializable
     }
 
     public <T extends Serializable> IResultSet<T> find(Class<T> beanClass, IDBLocker dbLocker) throws Exception {
-        return find(beanClass, Where.create(buildCond(doGetSafeOwner(), this, matchAny)), null, null, dbLocker);
+        return find(beanClass, Where.create(buildCond(doGetSafeOwner(), this, isMatchAny())), null, null, dbLocker);
     }
 
     public IResultSet<Entity> find(IDBLocker dbLocker) throws Exception {
-        return find(Where.create(buildCond(doGetSafeOwner(), this, matchAny)), null, null, dbLocker);
+        return find(Where.create(buildCond(doGetSafeOwner(), this, isMatchAny())), null, null, dbLocker);
     }
 
     public <T extends Serializable> IResultSet<T> find(Class<T> beanClass, OrderBy orderBy, IDBLocker dbLocker) throws Exception {
@@ -372,11 +402,11 @@ public abstract class BaseEntity<Entity extends IEntity, PK extends Serializable
     }
 
     public <T extends Serializable> IResultSet<T> find(Class<T> beanClass, Page page) throws Exception {
-        return find(beanClass, Where.create(buildCond(doGetSafeOwner(), this, matchAny)), null, page, null);
+        return find(beanClass, Where.create(buildCond(doGetSafeOwner(), this, isMatchAny())), null, page, null);
     }
 
     public IResultSet<Entity> find(Page page) throws Exception {
-        return find(Where.create(buildCond(doGetSafeOwner(), this, matchAny)), null, page, null);
+        return find(Where.create(buildCond(doGetSafeOwner(), this, isMatchAny())), null, page, null);
     }
 
     public <T extends Serializable> IResultSet<T> find(Class<T> beanClass, OrderBy orderBy, Page page) throws Exception {
@@ -396,11 +426,11 @@ public abstract class BaseEntity<Entity extends IEntity, PK extends Serializable
     }
 
     public <T extends Serializable> IResultSet<T> find(Class<T> beanClass, Page page, IDBLocker dbLocker) throws Exception {
-        return find(beanClass, Where.create(buildCond(doGetSafeOwner(), this, matchAny)), null, page, dbLocker);
+        return find(beanClass, Where.create(buildCond(doGetSafeOwner(), this, isMatchAny())), null, page, dbLocker);
     }
 
     public IResultSet<Entity> find(Page page, IDBLocker dbLocker) throws Exception {
-        return find(Where.create(buildCond(doGetSafeOwner(), this, matchAny)), null, page, dbLocker);
+        return find(Where.create(buildCond(doGetSafeOwner(), this, isMatchAny())), null, page, dbLocker);
     }
 
     public <T extends Serializable> IResultSet<T> find(Class<T> beanClass, OrderBy orderBy, Page page, IDBLocker dbLocker) throws Exception {
@@ -420,11 +450,11 @@ public abstract class BaseEntity<Entity extends IEntity, PK extends Serializable
     }
 
     public <T extends Serializable> IResultSet<T> find(Class<T> beanClass, Fields fields) throws Exception {
-        return find(beanClass, Where.create(buildCond(doGetSafeOwner(), this, matchAny)), fields, null, null);
+        return find(beanClass, Where.create(buildCond(doGetSafeOwner(), this, isMatchAny())), fields, null, null);
     }
 
     public IResultSet<Entity> find(Fields fields) throws Exception {
-        return find(Where.create(buildCond(doGetSafeOwner(), this, matchAny)), fields, null, null);
+        return find(Where.create(buildCond(doGetSafeOwner(), this, isMatchAny())), fields, null, null);
     }
 
     public <T extends Serializable> IResultSet<T> find(Class<T> beanClass, Fields fields, OrderBy orderBy) throws Exception {
@@ -444,11 +474,11 @@ public abstract class BaseEntity<Entity extends IEntity, PK extends Serializable
     }
 
     public <T extends Serializable> IResultSet<T> find(Class<T> beanClass, Fields fields, IDBLocker dbLocker) throws Exception {
-        return find(beanClass, Where.create(buildCond(doGetSafeOwner(), this, matchAny)), fields, null, dbLocker);
+        return find(beanClass, Where.create(buildCond(doGetSafeOwner(), this, isMatchAny())), fields, null, dbLocker);
     }
 
     public IResultSet<Entity> find(Fields fields, IDBLocker dbLocker) throws Exception {
-        return find(Where.create(buildCond(doGetSafeOwner(), this, matchAny)), fields, null, dbLocker);
+        return find(Where.create(buildCond(doGetSafeOwner(), this, isMatchAny())), fields, null, dbLocker);
     }
 
     public <T extends Serializable> IResultSet<T> find(Class<T> beanClass, Fields fields, OrderBy orderBy, IDBLocker dbLocker) throws Exception {
@@ -468,11 +498,11 @@ public abstract class BaseEntity<Entity extends IEntity, PK extends Serializable
     }
 
     public <T extends Serializable> IResultSet<T> find(Class<T> beanClass, Fields fields, Page page) throws Exception {
-        return find(beanClass, Where.create(buildCond(doGetSafeOwner(), this, matchAny)), fields, page, null);
+        return find(beanClass, Where.create(buildCond(doGetSafeOwner(), this, isMatchAny())), fields, page, null);
     }
 
     public IResultSet<Entity> find(Fields fields, Page page) throws Exception {
-        return find(Where.create(buildCond(doGetSafeOwner(), this, matchAny)), fields, page, null);
+        return find(Where.create(buildCond(doGetSafeOwner(), this, isMatchAny())), fields, page, null);
     }
 
     public <T extends Serializable> IResultSet<T> find(Class<T> beanClass, Fields fields, OrderBy orderBy, Page page) throws Exception {
@@ -492,11 +522,11 @@ public abstract class BaseEntity<Entity extends IEntity, PK extends Serializable
     }
 
     public <T extends Serializable> IResultSet<T> find(Class<T> beanClass, Fields fields, Page page, IDBLocker dbLocker) throws Exception {
-        return find(beanClass, Where.create(buildCond(doGetSafeOwner(), this, matchAny)), fields, page, dbLocker);
+        return find(beanClass, Where.create(buildCond(doGetSafeOwner(), this, isMatchAny())), fields, page, dbLocker);
     }
 
     public IResultSet<Entity> find(Fields fields, Page page, IDBLocker dbLocker) throws Exception {
-        return find(Where.create(buildCond(doGetSafeOwner(), this, matchAny)), fields, page, dbLocker);
+        return find(Where.create(buildCond(doGetSafeOwner(), this, isMatchAny())), fields, page, dbLocker);
     }
 
     public <T extends Serializable> IResultSet<T> find(Class<T> beanClass, Fields fields, OrderBy orderBy, Page page, IDBLocker dbLocker) throws Exception {
@@ -508,7 +538,7 @@ public abstract class BaseEntity<Entity extends IEntity, PK extends Serializable
     }
 
     public <T extends Serializable> IResultSet<T> find(Class<T> beanClass, Fields fields, OrderBy orderBy, GroupBy groupBy, Page page, IDBLocker dbLocker) throws Exception {
-        Where where = Where.create(buildCond(doGetSafeOwner(), this, matchAny));
+        Where where = Where.create(buildCond(doGetSafeOwner(), this, isMatchAny()));
         if (orderBy != null) {
             where.orderBy().orderBy(orderBy);
         }
@@ -519,7 +549,7 @@ public abstract class BaseEntity<Entity extends IEntity, PK extends Serializable
     }
 
     public IResultSet<Entity> find(Fields fields, OrderBy orderBy, GroupBy groupBy, Page page, IDBLocker dbLocker) throws Exception {
-        Where where = Where.create(buildCond(doGetSafeOwner(), this, matchAny));
+        Where where = Where.create(buildCond(doGetSafeOwner(), this, isMatchAny()));
         if (orderBy != null) {
             where.orderBy().orderBy(orderBy);
         }
@@ -586,7 +616,15 @@ public abstract class BaseEntity<Entity extends IEntity, PK extends Serializable
     }
 
     public static <Entity extends IEntity> IResultSet<Entity> find(IDatabase owner, IDatabaseConnectionHolder connectionHolder, String dataSourceName, IShardingable shardingable, Class<Entity> entityClass, Where where, Fields fields, Page page, IDBLocker dbLocker) throws Exception {
+        return find(owner, connectionHolder, dataSourceName, shardingable, null, entityClass, where, fields, page, dbLocker);
+    }
+
+    /**
+     * @since 2.1.4
+     */
+    public static <Entity extends IEntity> IResultSet<Entity> find(IDatabase owner, IDatabaseConnectionHolder connectionHolder, String dataSourceName, IShardingable shardingable, IDatabaseSessionEventListener sessionEventListener, Class<Entity> entityClass, Where where, Fields fields, Page page, IDBLocker dbLocker) throws Exception {
         try (IDatabaseSession session = new DefaultDatabaseSession(owner, getSafeConnectionHolder(owner, connectionHolder, dataSourceName))) {
+            session.setSessionEventListener(sessionEventListener);
             EntitySQL<Entity> entitySql = EntitySQL.create(owner, entityClass);
             if (fields != null) {
                 entitySql.field(fields);
@@ -598,7 +636,7 @@ public abstract class BaseEntity<Entity extends IEntity, PK extends Serializable
         }
     }
 
-    private static <Entity extends IEntity> Select buildSelect(IDatabase owner, String dataSourceName, IShardingable shardingable, Class<Entity> entityClass, Where where, Fields fields, IDBLocker dbLocker) {
+    private static <Entity extends IEntity> Select buildSelect(IDatabase owner, String dataSourceName, IShardingable shardingable, IDatabaseSessionEventListener sessionEventListener, Class<Entity> entityClass, Where where, Fields fields, IDBLocker dbLocker) {
         Select select = Select.create(owner, dataSourceName, entityClass)
                 .shardingable(shardingable);
         if (fields != null && !fields.isEmpty()) {
@@ -610,19 +648,26 @@ public abstract class BaseEntity<Entity extends IEntity, PK extends Serializable
         if (dbLocker != null) {
             select.forUpdate(dbLocker);
         }
-        return select;
+        return select.sessionEventListener(sessionEventListener);
     }
 
     public static <Entity extends IEntity, T extends Serializable> IResultSet<T> find(IDatabase owner, String dataSourceName, IShardingable shardingable, Class<Entity> entityClass, Class<T> beanClass, Where where, Fields fields, Page page, IDBLocker dbLocker) throws Exception {
-        return buildSelect(owner, dataSourceName, shardingable, entityClass, where, fields, dbLocker).find(new BeanResultSetHandler<>(beanClass), page);
+        return find(owner, dataSourceName, shardingable, null, entityClass, beanClass, where, fields, page, dbLocker);
+    }
+
+    /**
+     * @since 2.1.4
+     */
+    public static <Entity extends IEntity, T extends Serializable> IResultSet<T> find(IDatabase owner, String dataSourceName, IShardingable shardingable, IDatabaseSessionEventListener sessionEventListener, Class<Entity> entityClass, Class<T> beanClass, Where where, Fields fields, Page page, IDBLocker dbLocker) throws Exception {
+        return buildSelect(owner, dataSourceName, shardingable, sessionEventListener, entityClass, where, fields, dbLocker).find(new BeanResultSetHandler<>(beanClass), page);
     }
 
     public <T extends Serializable> IResultSet<T> find(Class<T> beanClass, Where where, Fields fields, Page page, IDBLocker dbLocker) throws Exception {
-        return find(doGetSafeOwner(), getDataSourceName(), getShardingable(), getEntityClass(), beanClass, where, fields, page, dbLocker);
+        return find(doGetSafeOwner(), getDataSourceName(), getShardingable(), getSessionEventListener(), getEntityClass(), beanClass, where, fields, page, dbLocker);
     }
 
     public IResultSet<Entity> find(Where where, Fields fields, Page page, IDBLocker dbLocker) throws Exception {
-        return find(doGetSafeOwner(), getConnectionHolder(), getDataSourceName(), getShardingable(), getEntityClass(), where, fields, page, dbLocker);
+        return find(doGetSafeOwner(), getConnectionHolder(), getDataSourceName(), getShardingable(), getSessionEventListener(), getEntityClass(), where, fields, page, dbLocker);
     }
 
     public <T extends Serializable> IResultSet<T> findAll(Class<T> beanClass) throws Exception {
@@ -684,11 +729,11 @@ public abstract class BaseEntity<Entity extends IEntity, PK extends Serializable
     }
 
     public <T extends Serializable> T findFirst(Class<T> beanClass) throws Exception {
-        return findFirst(beanClass, Where.create(buildCond(doGetSafeOwner(), this, matchAny)), null, null);
+        return findFirst(beanClass, Where.create(buildCond(doGetSafeOwner(), this, isMatchAny())), null, null);
     }
 
     public Entity findFirst() throws Exception {
-        return findFirst(Where.create(buildCond(doGetSafeOwner(), this, matchAny)), null, null);
+        return findFirst(Where.create(buildCond(doGetSafeOwner(), this, isMatchAny())), null, null);
     }
 
     public Entity findFirst(OrderBy orderBy) throws Exception {
@@ -704,11 +749,11 @@ public abstract class BaseEntity<Entity extends IEntity, PK extends Serializable
     }
 
     public <T extends Serializable> T findFirst(Class<T> beanClass, IDBLocker dbLocker) throws Exception {
-        return findFirst(beanClass, Where.create(buildCond(doGetSafeOwner(), this, matchAny)), null, dbLocker);
+        return findFirst(beanClass, Where.create(buildCond(doGetSafeOwner(), this, isMatchAny())), null, dbLocker);
     }
 
     public Entity findFirst(IDBLocker dbLocker) throws Exception {
-        return findFirst(Where.create(buildCond(doGetSafeOwner(), this, matchAny)), null, dbLocker);
+        return findFirst(Where.create(buildCond(doGetSafeOwner(), this, isMatchAny())), null, dbLocker);
     }
 
     public <T extends Serializable> T findFirst(Class<T> beanClass, OrderBy orderBy, IDBLocker dbLocker) throws Exception {
@@ -728,11 +773,11 @@ public abstract class BaseEntity<Entity extends IEntity, PK extends Serializable
     }
 
     public <T extends Serializable> T findFirst(Class<T> beanClass, Fields fields) throws Exception {
-        return findFirst(beanClass, Where.create(buildCond(doGetSafeOwner(), this, matchAny)), fields, null);
+        return findFirst(beanClass, Where.create(buildCond(doGetSafeOwner(), this, isMatchAny())), fields, null);
     }
 
     public Entity findFirst(Fields fields) throws Exception {
-        return findFirst(Where.create(buildCond(doGetSafeOwner(), this, matchAny)), fields, null);
+        return findFirst(Where.create(buildCond(doGetSafeOwner(), this, isMatchAny())), fields, null);
     }
 
     public <T extends Serializable> T findFirst(Class<T> beanClass, Fields fields, OrderBy orderBy) throws Exception {
@@ -752,11 +797,11 @@ public abstract class BaseEntity<Entity extends IEntity, PK extends Serializable
     }
 
     public <T extends Serializable> T findFirst(Class<T> beanClass, Fields fields, IDBLocker dbLocker) throws Exception {
-        return findFirst(beanClass, Where.create(buildCond(doGetSafeOwner(), this, matchAny)), fields, dbLocker);
+        return findFirst(beanClass, Where.create(buildCond(doGetSafeOwner(), this, isMatchAny())), fields, dbLocker);
     }
 
     public Entity findFirst(Fields fields, IDBLocker dbLocker) throws Exception {
-        return findFirst(Where.create(buildCond(doGetSafeOwner(), this, matchAny)), fields, dbLocker);
+        return findFirst(Where.create(buildCond(doGetSafeOwner(), this, isMatchAny())), fields, dbLocker);
     }
 
     public <T extends Serializable> T findFirst(Class<T> beanClass, Fields fields, OrderBy orderBy, IDBLocker dbLocker) throws Exception {
@@ -768,7 +813,7 @@ public abstract class BaseEntity<Entity extends IEntity, PK extends Serializable
     }
 
     public <T extends Serializable> T findFirst(Class<T> beanClass, Fields fields, OrderBy orderBy, GroupBy groupBy, IDBLocker dbLocker) throws Exception {
-        Where where = Where.create(buildCond(doGetSafeOwner(), this, matchAny));
+        Where where = Where.create(buildCond(doGetSafeOwner(), this, isMatchAny()));
         if (orderBy != null) {
             where.orderBy().orderBy(orderBy);
         }
@@ -779,7 +824,7 @@ public abstract class BaseEntity<Entity extends IEntity, PK extends Serializable
     }
 
     public Entity findFirst(Fields fields, OrderBy orderBy, GroupBy groupBy, IDBLocker dbLocker) throws Exception {
-        Where where = Where.create(buildCond(doGetSafeOwner(), this, matchAny));
+        Where where = Where.create(buildCond(doGetSafeOwner(), this, isMatchAny()));
         if (orderBy != null) {
             where.orderBy().orderBy(orderBy);
         }
@@ -814,7 +859,15 @@ public abstract class BaseEntity<Entity extends IEntity, PK extends Serializable
     }
 
     public static <Entity extends IEntity> Entity findFirst(IDatabase owner, IDatabaseConnectionHolder connectionHolder, String dataSourceName, IShardingable shardingable, Class<Entity> entityClass, Where where, Fields fields, IDBLocker dbLocker) throws Exception {
+        return findFirst(owner, connectionHolder, dataSourceName, shardingable, null, entityClass, where, fields, dbLocker);
+    }
+
+    /**
+     * @since 2.1.4
+     */
+    public static <Entity extends IEntity> Entity findFirst(IDatabase owner, IDatabaseConnectionHolder connectionHolder, String dataSourceName, IShardingable shardingable, IDatabaseSessionEventListener sessionEventListener, Class<Entity> entityClass, Where where, Fields fields, IDBLocker dbLocker) throws Exception {
         try (IDatabaseSession session = new DefaultDatabaseSession(owner, getSafeConnectionHolder(owner, connectionHolder, dataSourceName))) {
+            session.setSessionEventListener(sessionEventListener);
             EntitySQL<Entity> entitySql = EntitySQL.create(owner, entityClass);
             if (fields != null) {
                 entitySql.field(fields);
@@ -827,23 +880,31 @@ public abstract class BaseEntity<Entity extends IEntity, PK extends Serializable
     }
 
     public static <Entity extends IEntity, T extends Serializable> T findFirst(IDatabase owner, String dataSourceName, IShardingable shardingable, Class<Entity> entityClass, Class<T> beanClass, Where where, Fields fields, IDBLocker dbLocker) throws Exception {
-        return buildSelect(owner, dataSourceName, shardingable, entityClass, where, fields, dbLocker).findFirst(new BeanResultSetHandler<>(beanClass));
+        return findFirst(owner, dataSourceName, shardingable, null, entityClass, beanClass, where, fields, dbLocker);
+    }
+
+    /**
+     * @since 2.1.4
+     */
+    public static <Entity extends IEntity, T extends Serializable> T findFirst(IDatabase owner, String dataSourceName, IShardingable shardingable, IDatabaseSessionEventListener sessionEventListener, Class<Entity> entityClass, Class<T> beanClass, Where where, Fields fields, IDBLocker dbLocker) throws Exception {
+        return buildSelect(owner, dataSourceName, shardingable, sessionEventListener, entityClass, where, fields, dbLocker).findFirst(new BeanResultSetHandler<>(beanClass));
     }
 
     public <T extends Serializable> T findFirst(Class<T> beanClass, Where where, Fields fields, IDBLocker dbLocker) throws Exception {
-        return findFirst(doGetSafeOwner(), getDataSourceName(), getShardingable(), getEntityClass(), beanClass, where, fields, dbLocker);
+        return findFirst(doGetSafeOwner(), getDataSourceName(), getShardingable(), getSessionEventListener(), getEntityClass(), beanClass, where, fields, dbLocker);
     }
 
     public Entity findFirst(Where where, Fields fields, IDBLocker dbLocker) throws Exception {
-        return findFirst(doGetSafeOwner(), getConnectionHolder(), getDataSourceName(), getShardingable(), getEntityClass(), where, fields, dbLocker);
+        return findFirst(doGetSafeOwner(), getConnectionHolder(), getDataSourceName(), getShardingable(), getSessionEventListener(), getEntityClass(), where, fields, dbLocker);
     }
 
     public long count() throws Exception {
-        return count(Where.create(buildCond(doGetSafeOwner(), this, matchAny)));
+        return count(Where.create(buildCond(doGetSafeOwner(), this, isMatchAny())));
     }
 
     public long count(Where where) throws Exception {
         try (IDatabaseSession session = new DefaultDatabaseSession(doGetSafeOwner(), doGetSafeConnectionHolder())) {
+            session.setSessionEventListener(getSessionEventListener());
             return session.count(this.getEntityClass(), where, this.getShardingable());
         }
     }
@@ -870,7 +931,7 @@ public abstract class BaseEntity<Entity extends IEntity, PK extends Serializable
 
     @SuppressWarnings("unchecked")
     public EntityStateWrapper<Entity> stateWrapper(boolean ignoreNull) throws Exception {
-        return EntityStateWrapper.bind(dbOwner, (Entity) this, ignoreNull);
+        return EntityStateWrapper.bind(getDbOwner(), (Entity) this, ignoreNull);
     }
 
     @Override

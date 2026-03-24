@@ -22,6 +22,7 @@ import net.ymate.platform.core.persistence.Params;
 import net.ymate.platform.core.persistence.base.EntityMeta;
 import net.ymate.platform.core.persistence.base.IEntity;
 import net.ymate.platform.persistence.jdbc.IDatabase;
+import net.ymate.platform.persistence.jdbc.IDatabaseSessionEventListener;
 import net.ymate.platform.persistence.jdbc.JDBC;
 import org.apache.commons.lang3.StringUtils;
 
@@ -48,6 +49,11 @@ public class Update extends Query<Update> {
      * @since 2.1.4
      */
     private With with;
+
+    /**
+     * @since 2.1.4
+     */
+    private IDatabaseSessionEventListener sessionEventListener;
 
     public static Update create() {
         IDatabase owner = JDBC.get();
@@ -1248,6 +1254,22 @@ public class Update extends Query<Update> {
     }
 
     public int execute() throws Exception {
-        return toSQL().execute(dataSourceName());
+        SQL sql = toSQL();
+        return sql.execute(dataSourceName());
+    }
+
+    /**
+     * @since 2.1.4
+     */
+    public IDatabaseSessionEventListener sessionEventListener() {
+        return sessionEventListener;
+    }
+
+    /**
+     * @since 2.1.4
+     */
+    public Update sessionEventListener(IDatabaseSessionEventListener sessionEventListener) {
+        this.sessionEventListener = sessionEventListener;
+        return this;
     }
 }

@@ -22,6 +22,7 @@ import net.ymate.platform.core.persistence.Page;
 import net.ymate.platform.core.persistence.base.IEntity;
 import net.ymate.platform.persistence.jdbc.IDBLocker;
 import net.ymate.platform.persistence.jdbc.IDatabase;
+import net.ymate.platform.persistence.jdbc.IDatabaseSessionEventListener;
 import net.ymate.platform.persistence.jdbc.JDBC;
 
 import java.io.Serializable;
@@ -50,6 +51,11 @@ public final class EntitySQL<T extends IEntity> {
     private final Fields fields;
 
     private IDBLocker dbLocker;
+
+    /**
+     * @since 2.1.4
+     */
+    private IDatabaseSessionEventListener sessionEventListener;
 
     public static <T extends IEntity> EntitySQL<T> create(Class<T> entityClass) {
         return new EntitySQL<>(JDBC.get(), entityClass);
@@ -106,63 +112,123 @@ public final class EntitySQL<T extends IEntity> {
         return dbLocker;
     }
 
+    /**
+     * @since 2.1.4
+     */
+    public IDatabaseSessionEventListener sessionEventListener() {
+        return sessionEventListener;
+    }
+
+    /**
+     * @since 2.1.4
+     */
+    public EntitySQL<T> sessionEventListener(IDatabaseSessionEventListener sessionEventListener) {
+        this.sessionEventListener = sessionEventListener;
+        return this;
+    }
+
     public T find(Serializable id) throws Exception {
-        return owner.openSession(session -> session.find(this, id));
+        return owner.openSession(session -> {
+            session.setSessionEventListener(sessionEventListener);
+            return session.find(this, id);
+        });
     }
 
     public T find(String dataSourceName, Serializable id) throws Exception {
-        return owner.openSession(dataSourceName, session -> session.find(this, id));
+        return owner.openSession(dataSourceName, session -> {
+            session.setSessionEventListener(sessionEventListener);
+            return session.find(this, id);
+        });
     }
 
     public T findFirst(Where where) throws Exception {
-        return owner.openSession(session -> session.findFirst(this, where));
+        return owner.openSession(session -> {
+            session.setSessionEventListener(sessionEventListener);
+            return session.findFirst(this, where);
+        });
     }
 
     public T findFirst(String dataSourceName, Where where) throws Exception {
-        return owner.openSession(dataSourceName, session -> session.findFirst(this, where));
+        return owner.openSession(dataSourceName, session -> {
+            session.setSessionEventListener(sessionEventListener);
+            return session.findFirst(this, where);
+        });
     }
 
     public IResultSet<T> find(Where where) throws Exception {
-        return owner.openSession(session -> session.find(this, where));
+        return owner.openSession(session -> {
+            session.setSessionEventListener(sessionEventListener);
+            return session.find(this, where);
+        });
     }
 
     public IResultSet<T> find(Where where, Page page) throws Exception {
-        return owner.openSession(session -> session.find(this, where, page));
+        return owner.openSession(session -> {
+            session.setSessionEventListener(sessionEventListener);
+            return session.find(this, where, page);
+        });
     }
 
     public IResultSet<T> find(String dataSourceName, Where where) throws Exception {
-        return owner.openSession(dataSourceName, session -> session.find(this, where));
+        return owner.openSession(dataSourceName, session -> {
+            session.setSessionEventListener(sessionEventListener);
+            return session.find(this, where);
+        });
     }
 
     public IResultSet<T> find(String dataSourceName, Where where, Page page) throws Exception {
-        return owner.openSession(dataSourceName, session -> session.find(this, where, page));
+        return owner.openSession(dataSourceName, session -> {
+            session.setSessionEventListener(sessionEventListener);
+            return session.find(this, where, page);
+        });
     }
 
     public long count() throws Exception {
-        return owner.openSession(session -> session.count(entityClass));
+        return owner.openSession(session -> {
+            session.setSessionEventListener(sessionEventListener);
+            return session.count(entityClass);
+        });
     }
 
     public long count(Where where) throws Exception {
-        return owner.openSession(session -> session.count(entityClass, where));
+        return owner.openSession(session -> {
+            session.setSessionEventListener(sessionEventListener);
+            return session.count(entityClass, where);
+        });
     }
 
     public long count(String dataSourceName, Where where) throws Exception {
-        return owner.openSession(dataSourceName, session -> session.count(entityClass, where, shardingable));
+        return owner.openSession(dataSourceName, session -> {
+            session.setSessionEventListener(sessionEventListener);
+            return session.count(entityClass, where, shardingable);
+        });
     }
 
     public int delete(Serializable id) throws Exception {
-        return owner.openSession(session -> session.delete(entityClass, id, shardingable));
+        return owner.openSession(session -> {
+            session.setSessionEventListener(sessionEventListener);
+            return session.delete(entityClass, id, shardingable);
+        });
     }
 
     public int delete(String dataSourceName, Serializable id) throws Exception {
-        return owner.openSession(dataSourceName, session -> session.delete(entityClass, id, shardingable));
+        return owner.openSession(dataSourceName, session -> {
+            session.setSessionEventListener(sessionEventListener);
+            return session.delete(entityClass, id, shardingable);
+        });
     }
 
     public int[] delete(Serializable[] ids) throws Exception {
-        return owner.openSession(session -> session.delete(entityClass, ids));
+        return owner.openSession(session -> {
+            session.setSessionEventListener(sessionEventListener);
+            return session.delete(entityClass, ids);
+        });
     }
 
     public int[] delete(String dataSourceName, Serializable[] ids) throws Exception {
-        return owner.openSession(dataSourceName, session -> session.delete(entityClass, ids));
+        return owner.openSession(dataSourceName, session -> {
+            session.setSessionEventListener(sessionEventListener);
+            return session.delete(entityClass, ids);
+        });
     }
 }

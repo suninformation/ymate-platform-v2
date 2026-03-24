@@ -18,6 +18,7 @@ package net.ymate.platform.persistence.jdbc.query;
 import net.ymate.platform.commons.util.ResourceUtils;
 import net.ymate.platform.core.persistence.Params;
 import net.ymate.platform.persistence.jdbc.IDatabase;
+import net.ymate.platform.persistence.jdbc.IDatabaseSessionEventListener;
 import net.ymate.platform.persistence.jdbc.JDBC;
 import net.ymate.platform.persistence.jdbc.base.impl.BatchUpdateOperator;
 import org.apache.commons.io.IOUtils;
@@ -104,6 +105,11 @@ public final class BatchSQL {
 
     private final List<String> sqls = new ArrayList<>();
 
+    /**
+     * @since 2.1.4
+     */
+    private IDatabaseSessionEventListener sessionEventListener;
+
     public static BatchSQL create(String batchSql) {
         return new BatchSQL(JDBC.get(), batchSql);
     }
@@ -121,15 +127,15 @@ public final class BatchSQL {
     }
 
     public static BatchSQL create(Insert insert) {
-        return new BatchSQL(insert.owner(), insert.toString());
+        return new BatchSQL(insert.owner(), insert.toString()).sessionEventListener(insert.sessionEventListener());
     }
 
     public static BatchSQL create(Update update) {
-        return new BatchSQL(update.owner(), update.toString());
+        return new BatchSQL(update.owner(), update.toString()).sessionEventListener(update.sessionEventListener());
     }
 
     public static BatchSQL create(Delete delete) {
-        return new BatchSQL(delete.owner(), delete.toString());
+        return new BatchSQL(delete.owner(), delete.toString()).sessionEventListener(delete.sessionEventListener());
     }
 
     public BatchSQL(IDatabase owner, String batchSql) {
@@ -168,10 +174,31 @@ public final class BatchSQL {
     }
 
     public int[] execute() throws Exception {
-        return owner.openSession(session -> session.executeForUpdate(this));
+        return owner.openSession(session -> {
+            session.setSessionEventListener(sessionEventListener);
+            return session.executeForUpdate(this);
+        });
     }
 
     public int[] execute(String dataSourceName) throws Exception {
-        return owner.openSession(dataSourceName, session -> session.executeForUpdate(this));
+        return owner.openSession(dataSourceName, session -> {
+            session.setSessionEventListener(sessionEventListener);
+            return session.executeForUpdate(this);
+        });
+    }
+
+    /**
+     * @since 2.1.4
+     */
+    public IDatabaseSessionEventListener sessionEventListener() {
+        return sessionEventListener;
+    }
+
+    /**
+     * @since 2.1.4
+     */
+    public BatchSQL sessionEventListener(IDatabaseSessionEventListener sessionEventListener) {
+        this.sessionEventListener = sessionEventListener;
+        return this;
     }
 }

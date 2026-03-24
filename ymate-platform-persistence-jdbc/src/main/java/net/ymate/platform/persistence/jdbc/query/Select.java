@@ -22,6 +22,7 @@ import net.ymate.platform.core.persistence.base.EntityMeta;
 import net.ymate.platform.core.persistence.base.IEntity;
 import net.ymate.platform.persistence.jdbc.IDBLocker;
 import net.ymate.platform.persistence.jdbc.IDatabase;
+import net.ymate.platform.persistence.jdbc.IDatabaseSessionEventListener;
 import net.ymate.platform.persistence.jdbc.JDBC;
 import net.ymate.platform.persistence.jdbc.base.IResultSetHandler;
 import org.apache.commons.lang3.StringUtils;
@@ -59,6 +60,11 @@ public class Select extends Query<Select> {
     private IDBLocker dbLocker;
 
     private Page page;
+
+    /**
+     * @since 2.1.4
+     */
+    private IDatabaseSessionEventListener sessionEventListener;
 
     public static Select create() {
         return new Select(JDBC.get(), JDBC.get().getConfig().getDefaultDataSourceName());
@@ -1952,18 +1958,37 @@ public class Select extends Query<Select> {
     }
 
     public <T> T findFirst(IResultSetHandler<T> handler) throws Exception {
-        return toSQL().findFirst(dataSourceName(), handler);
+        SQL sql = toSQL();
+        return sql.findFirst(dataSourceName(), handler);
     }
 
     public <T> IResultSet<T> find(IResultSetHandler<T> handler) throws Exception {
-        return toSQL().find(dataSourceName(), handler);
+        SQL sql = toSQL();
+        return sql.find(dataSourceName(), handler);
     }
 
     public <T> IResultSet<T> find(IResultSetHandler<T> handler, Page page) throws Exception {
-        return toSQL().find(dataSourceName(), handler, page);
+        SQL sql = toSQL();
+        return sql.find(dataSourceName(), handler, page);
     }
 
     public long count() throws Exception {
-        return toSQL().count(dataSourceName());
+        SQL sql = toSQL();
+        return sql.count(dataSourceName());
+    }
+
+    /**
+     * @since 2.1.4
+     */
+    public IDatabaseSessionEventListener sessionEventListener() {
+        return sessionEventListener;
+    }
+
+    /**
+     * @since 2.1.4
+     */
+    public Select sessionEventListener(IDatabaseSessionEventListener sessionEventListener) {
+        this.sessionEventListener = sessionEventListener;
+        return this;
     }
 }
