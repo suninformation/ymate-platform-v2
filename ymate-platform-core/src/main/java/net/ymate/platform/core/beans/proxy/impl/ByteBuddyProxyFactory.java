@@ -28,7 +28,6 @@ import net.ymate.platform.core.beans.proxy.IProxyMethodParamHandler;
 
 import java.lang.reflect.Method;
 import java.util.List;
-import java.util.concurrent.Callable;
 
 /**
  * ByteBuddy代理工厂接口实现
@@ -88,11 +87,11 @@ public class ByteBuddyProxyFactory extends AbstractProxyFactory {
         }
 
         @RuntimeType
-        public Object intercept(@This Object target, @AllArguments Object[] args, @Origin Method method, @SuperCall Callable<?> superCall) throws Throwable {
+        public Object intercept(@This Object target, @AllArguments Object[] args, @Origin Method method, @SuperMethod Method superMethod) throws Throwable {
             return new AbstractProxyChain(proxyFactory, targetClass, target, method, args, proxies) {
                 @Override
                 protected Object doInvoke() throws Throwable {
-                    return superCall.call();
+                    return superMethod.invoke(target, args);
                 }
             }.doProxyChain();
         }
@@ -110,9 +109,9 @@ public class ByteBuddyProxyFactory extends AbstractProxyFactory {
         }
 
         @RuntimeType
-        public Object intercept(@This Object target, @AllArguments Object[] args, @Origin Method method, @SuperCall Callable<?> superCall) throws Throwable {
-            methodParamHandler.handle(target, method, args);
-            return superCall.call();
+        public Object intercept(@This Object target, @AllArguments Object[] args, @Origin Method method, @SuperMethod Method superMethod) throws Throwable {
+            Object[] newArgs = methodParamHandler.handle(target, method, args);
+            return superMethod.invoke(target, newArgs);
         }
     }
 }
