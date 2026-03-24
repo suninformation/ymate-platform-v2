@@ -1968,6 +1968,8 @@ Integer effectCount = JDBC.get().openSession(new IDatabaseSessionExecutor<Intege
 
 ## 数据库会话事件监听器
 
+> @since 2.1.4
+
 通过实现 `IDatabaseSessionEventListener` 接口，可以监听数据库会话中的 CRUD 操作事件。此外，还可以在事件触发时对 SQL 语句和参数进行修改等操作，从而实现 SQL 拦截等功能。
 
 ### 事件类型
