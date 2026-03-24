@@ -30,6 +30,23 @@ public interface IDatabase extends IPersistence<IDatabaseSession, IDatabaseConfi
     String MODULE_NAME = "persistence.jdbc";
 
     /**
+     * 注册全局数据库会话事件监听器
+     *
+     * @param listeners 数据库会话事件监听器
+     * @return 返回当前数据库管理器实例
+     * @since 2.1.4
+     */
+    IDatabase registerGlobalSessionEventListener(IDatabaseSessionEventListener... listeners);
+
+    /**
+     * 获取全局数据库会话事件监听器
+     *
+     * @return 返回全局数据库会话事件监听器
+     * @since 2.1.4
+     */
+    IDatabaseSessionEventListener getGlobalSessionEventListener();
+
+    /**
      * 开启会话并执行会话执行器接口逻辑(执行完毕会话将自动关闭)
      *
      * @param executor 会话执行器

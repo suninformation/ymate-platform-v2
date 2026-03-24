@@ -77,6 +77,13 @@ public final class JDBC implements IModule, IDatabase {
      */
     public static final Map<String, Class<? extends IDialect>> DB_DIALECTS;
 
+    /**
+     * 全局数据库会话事件监听器
+     *
+     * @since 2.1.4
+     */
+    private static final DatabaseSessionEventListener globalSessionEventListener = new DatabaseSessionEventListener();
+
     static {
         Map<String, Class<? extends IDialect>> dbDialects = new HashMap<>();
         Map<String, String> dbDrivers = new HashMap<>();
@@ -97,6 +104,7 @@ public final class JDBC implements IModule, IDatabase {
                     dbAdapters.put(adapterAnn.value(), adapterClass.getName());
                 }
             });
+            ClassUtils.getExtensionLoader(IDatabaseSessionEventListener.class, true).getExtensions().forEach(globalSessionEventListener::addListener);
         } catch (Exception e) {
             if (LOG.isWarnEnabled()) {
                 LOG.warn(StringUtils.EMPTY, RuntimeUtils.unwrapThrow(e));
@@ -296,6 +304,17 @@ public final class JDBC implements IModule, IDatabase {
     @Override
     public IDatabaseDataSourceAdapter getDataSourceAdapter(String dataSourceName) {
         return doSafeGetDataSourceAdapter(dataSourceName);
+    }
+
+    @Override
+    public IDatabase registerGlobalSessionEventListener(IDatabaseSessionEventListener... listeners) {
+        globalSessionEventListener.addListener(listeners);
+        return this;
+    }
+
+    @Override
+    public IDatabaseSessionEventListener getGlobalSessionEventListener() {
+        return globalSessionEventListener;
     }
 
     @Override

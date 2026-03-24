@@ -89,35 +89,33 @@ public class DefaultDatabaseSession extends AbstractSession<IDatabaseConnectionH
     }
 
     private <T extends IOperator> T doOperator(DatabaseEvent.EVENT event, DatabaseSessionEventContext eventContext, IOperatorBuilder<T> operatorBuilder) throws Exception {
-        IDatabaseSessionEventListener sessionEventListener = getSessionEventListener();
-        if (sessionEventListener != null) {
-            switch (eventContext.getOperationType()) {
-                case QUERY:
-                    sessionEventListener.onQueryBefore(eventContext);
-                    break;
-                case INSERT:
-                case BATCH_INSERT:
-                    sessionEventListener.onInsertBefore(eventContext);
-                    break;
-                case INSERT_IF_NOT_EXIST:
-                case BATCH_INSERT_IF_NOT_EXIST:
-                    sessionEventListener.onInsertIfNotExistBefore(eventContext);
-                    break;
-                case UPDATE:
-                case BATCH_UPDATE:
-                    sessionEventListener.onUpdateBefore(eventContext);
-                    break;
-                case UPSERT:
-                case BATCH_UPSERT:
-                    sessionEventListener.onUpsertBefore(eventContext);
-                    break;
-                case DELETE:
-                case BATCH_DELETE:
-                    sessionEventListener.onRemoveBefore(eventContext);
-                    break;
-                default:
-                    throw new IllegalStateException("Unexpected value: " + eventContext.getSql());
-            }
+        DatabaseSessionEventListener sessionEventListener = new DatabaseSessionEventListener(owner.getGlobalSessionEventListener(), getSessionEventListener());
+        switch (eventContext.getOperationType()) {
+            case QUERY:
+                sessionEventListener.onQueryBefore(eventContext);
+                break;
+            case INSERT:
+            case BATCH_INSERT:
+                sessionEventListener.onInsertBefore(eventContext);
+                break;
+            case INSERT_IF_NOT_EXIST:
+            case BATCH_INSERT_IF_NOT_EXIST:
+                sessionEventListener.onInsertIfNotExistBefore(eventContext);
+                break;
+            case UPDATE:
+            case BATCH_UPDATE:
+                sessionEventListener.onUpdateBefore(eventContext);
+                break;
+            case UPSERT:
+            case BATCH_UPSERT:
+                sessionEventListener.onUpsertBefore(eventContext);
+                break;
+            case DELETE:
+            case BATCH_DELETE:
+                sessionEventListener.onRemoveBefore(eventContext);
+                break;
+            default:
+                throw new IllegalStateException("Unexpected value: " + eventContext.getSql());
         }
         T operator = operatorBuilder.build(eventContext);
         //
@@ -125,37 +123,34 @@ public class DefaultDatabaseSession extends AbstractSession<IDatabaseConnectionH
             eventContext.getParams().params().forEach(operator::addParameter);
         }
         operator.execute();
-        if (sessionEventListener != null) {
-            eventContext.putAttribute(IOperator.class.getName(), operator);
-            switch (eventContext.getOperationType()) {
-                case QUERY:
-                    sessionEventListener.onQueryAfter(eventContext);
-                    break;
-                case INSERT:
-                case BATCH_INSERT:
-                    sessionEventListener.onInsertAfter(eventContext);
-                    break;
-                case INSERT_IF_NOT_EXIST:
-                case BATCH_INSERT_IF_NOT_EXIST:
-                    sessionEventListener.onInsertIfNotExistAfter(eventContext);
-                    break;
-                case UPDATE:
-                case BATCH_UPDATE:
-                    sessionEventListener.onUpdateAfter(eventContext);
-                    break;
-                case UPSERT:
-                case BATCH_UPSERT:
-                    sessionEventListener.onUpsertAfter(eventContext);
-                    break;
-                case DELETE:
-                case BATCH_DELETE:
-                    sessionEventListener.onRemoveAfter(eventContext);
-                    break;
-                default:
-                    throw new IllegalStateException("Unexpected value: " + eventContext.getOperationType());
-            }
+        eventContext.putAttribute(IOperator.class.getName(), operator);
+        switch (eventContext.getOperationType()) {
+            case QUERY:
+                sessionEventListener.onQueryAfter(eventContext);
+                break;
+            case INSERT:
+            case BATCH_INSERT:
+                sessionEventListener.onInsertAfter(eventContext);
+                break;
+            case INSERT_IF_NOT_EXIST:
+            case BATCH_INSERT_IF_NOT_EXIST:
+                sessionEventListener.onInsertIfNotExistAfter(eventContext);
+                break;
+            case UPDATE:
+            case BATCH_UPDATE:
+                sessionEventListener.onUpdateAfter(eventContext);
+                break;
+            case UPSERT:
+            case BATCH_UPSERT:
+                sessionEventListener.onUpsertAfter(eventContext);
+                break;
+            case DELETE:
+            case BATCH_DELETE:
+                sessionEventListener.onRemoveAfter(eventContext);
+                break;
+            default:
+                throw new IllegalStateException("Unexpected value: " + eventContext.getOperationType());
         }
-        //
         owner.getOwner().getEvents().fireEvent(new DatabaseEvent(owner, event).setEventSource(eventContext));
         return operator;
     }
