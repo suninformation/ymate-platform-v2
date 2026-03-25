@@ -75,7 +75,7 @@ public abstract class AbstractResponseErrorProcessor implements IResponseErrorPr
                         returnView = exception.getResultView();
                         doProcessErrorStatusCodeIfNeed(owner);
                     } else {
-                        returnView = View.httpStatusView(exception.getHttpStatus(), exception.getMessage());
+                        returnView = View.httpStatusView(exception.getHttpStatus() > 0 ? exception.getHttpStatus() : HttpServletResponse.SC_BAD_REQUEST, exception.getMessage());
                         doProcessErrorStatusCodeIfNeed(owner);
                     }
                 } else {
