@@ -177,12 +177,47 @@ public class DateTimeValue implements Serializable {
     }
 
     /**
+     * @param seconds 秒数
+     * @return 返回与当前时间相差seconds秒数的日期时间对象
+     * @since 2.1.4
+     */
+    public static DateTimeValue seconds(int seconds) {
+        DateTimeHelper now = DateTimeHelper.now();
+        long nowMillis = now.timeMillis();
+        return new DateTimeValue(now.secondsAdd(-seconds).timeMillis(), nowMillis);
+    }
+
+    /**
+     * @param minutes 分钟数
+     * @return 返回与当前时间相差minutes分钟数的日期时间对象
+     * @since 2.1.4
+     */
+    public static DateTimeValue minutes(int minutes) {
+        DateTimeHelper now = DateTimeHelper.now();
+        long nowMillis = now.timeMillis();
+        return new DateTimeValue(now.minutesAdd(-minutes).timeMillis(), nowMillis);
+    }
+
+    /**
+     * @param hours 小时数
+     * @return 返回与当前时间相差hours小时数的日期时间对象
+     * @since 2.1.4
+     */
+    public static DateTimeValue hours(int hours) {
+        DateTimeHelper now = DateTimeHelper.now();
+        long nowMillis = now.timeMillis();
+        return new DateTimeValue(now.hoursAdd(-hours).timeMillis(), nowMillis);
+    }
+
+    /**
      * @param days 天数
      * @return 返回与当前时间相差days天数的日期时间对象
      * @since 2.1.4
      */
     public static DateTimeValue days(int days) {
-        return new DateTimeValue(DateTimeHelper.now().daysAdd(-days).toDayStart().zonedDateTime(), DateTimeHelper.now().zonedDateTime());
+        DateTimeHelper now = DateTimeHelper.now();
+        long nowMillis = now.timeMillis();
+        return new DateTimeValue(now.daysAdd(-days).toDayStart().timeMillis(), nowMillis);
     }
 
     /**
@@ -191,7 +226,9 @@ public class DateTimeValue implements Serializable {
      * @since 2.1.4
      */
     public static DateTimeValue months(int months) {
-        return new DateTimeValue(DateTimeHelper.now().monthsAdd(-months).toDayStart().zonedDateTime(), DateTimeHelper.now().zonedDateTime());
+        DateTimeHelper now = DateTimeHelper.now();
+        long nowMillis = now.timeMillis();
+        return new DateTimeValue(now.monthsAdd(-months).toDayStart().timeMillis(), nowMillis);
     }
 
     /**
@@ -200,7 +237,9 @@ public class DateTimeValue implements Serializable {
      * @since 2.1.4
      */
     public static DateTimeValue years(int years) {
-        return new DateTimeValue(DateTimeHelper.now().yearsAdd(-years).toDayStart().zonedDateTime(), DateTimeHelper.now().zonedDateTime());
+        DateTimeHelper now = DateTimeHelper.now();
+        long nowMillis = now.timeMillis();
+        return new DateTimeValue(now.yearsAdd(-years).toDayStart().timeMillis(), nowMillis);
     }
 
     /**
@@ -216,7 +255,9 @@ public class DateTimeValue implements Serializable {
      * @since 2.1.2
      */
     public static DateTimeValue today() {
-        return new DateTimeValue(DateTimeHelper.now().toDayStart().zonedDateTime(), DateTimeHelper.now().zonedDateTime());
+        DateTimeHelper now = DateTimeHelper.now();
+        long nowMillis = now.timeMillis();
+        return new DateTimeValue(now.toDayStart().timeMillis(), nowMillis);
     }
 
     /**
@@ -233,7 +274,9 @@ public class DateTimeValue implements Serializable {
      * @since 2.1.2
      */
     public static DateTimeValue week() {
-        return new DateTimeValue(DateTimeHelper.now().toWeekStart().zonedDateTime(), DateTimeHelper.now().zonedDateTime());
+        DateTimeHelper now = DateTimeHelper.now();
+        long nowMillis = now.timeMillis();
+        return new DateTimeValue(now.toWeekStart().timeMillis(), nowMillis);
     }
 
     /**
@@ -241,7 +284,9 @@ public class DateTimeValue implements Serializable {
      * @since 2.1.2
      */
     public static DateTimeValue month() {
-        return new DateTimeValue(DateTimeHelper.now().day(1).toDayStart().zonedDateTime(), DateTimeHelper.now().zonedDateTime());
+        DateTimeHelper now = DateTimeHelper.now();
+        long nowMillis = now.timeMillis();
+        return new DateTimeValue(now.day(1).toDayStart().timeMillis(), nowMillis);
     }
 
     /**
@@ -249,7 +294,9 @@ public class DateTimeValue implements Serializable {
      * @since 2.1.3
      */
     public static DateTimeValue year() {
-        return new DateTimeValue(DateTimeHelper.now().month(1).day(1).toDayStart().zonedDateTime(), DateTimeHelper.now().zonedDateTime());
+        DateTimeHelper now = DateTimeHelper.now();
+        long nowMillis = now.timeMillis();
+        return new DateTimeValue(now.month(1).day(1).toDayStart().timeMillis(), nowMillis);
     }
 
     /**
@@ -442,6 +489,30 @@ public class DateTimeValue implements Serializable {
             return null;
         }
         return DateTimeHelper.bind(endDateTime);
+    }
+
+    /**
+     * @return 计算两日期之间相差秒数（绝对值）
+     * @since 2.1.4
+     */
+    public long getMaxSeconds() {
+        return getMaxTimeMillis() / DateTimeUtils.SECOND;
+    }
+
+    /**
+     * @return 计算两日期之间相差分钟数（绝对值）
+     * @since 2.1.4
+     */
+    public long getMaxMinutes() {
+        return getMaxTimeMillis() / DateTimeUtils.MINUTE;
+    }
+
+    /**
+     * @return 计算两日期之间相差小时数（绝对值）
+     * @since 2.1.4
+     */
+    public long getMaxHours() {
+        return getMaxTimeMillis() / DateTimeUtils.HOUR;
     }
 
     /**
