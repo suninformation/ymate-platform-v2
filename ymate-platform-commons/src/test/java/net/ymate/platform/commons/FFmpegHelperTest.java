@@ -104,9 +104,9 @@ public class FFmpegHelperTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void testBindWithInvalidFile() {
-        // Test binding with invalid file
+        // Test binding with invalid absolute path (non-existent file)
         FFmpegHelper helper = FFmpegHelper.create();
-        helper.bind("non_existent_media_file.mp4");
+        helper.bind("C:\\non_existent_media_file.mp4");
     }
 
     @Test
@@ -186,12 +186,17 @@ public class FFmpegHelperTest {
         // This test requires FFmpeg to be installed and a test media file
         File mediaFile = new File(TEST_VIDEO_FILE);
         if (mediaFile.exists()) {
-            FFmpegHelper helper = FFmpegHelper.create(FFMPEG_PATH).bind(mediaFile);
+            FFmpegHelper helper = FFmpegHelper.create(FFMPEG_PATH).bind(mediaFile).writeLog(true);
             FFmpegHelper.MediaInfo info = helper.getMediaInfo();
-            // 注意：getMediaInfo()方法在遇到异常时会返回null，所以这里不强制断言
-            if (info != null) {
-                System.out.println("MediaInfo: " + info);
-            }
+            Assert.assertNotNull(info);
+            System.out.println("MediaInfo: " + info);
+        }
+        mediaFile = new File(TEST_AUDIO_FILE);
+        if (mediaFile.exists()) {
+            FFmpegHelper helper = FFmpegHelper.create(FFMPEG_PATH).bind(mediaFile).writeLog(true);
+            FFmpegHelper.MediaInfo info = helper.getMediaInfo();
+            Assert.assertNotNull(info);
+            System.out.println("MediaInfo: " + info);
         }
     }
 
@@ -266,7 +271,7 @@ public class FFmpegHelperTest {
         File mediaFile = new File(TEST_VIDEO_FILE);
         File logoFile = new File(TEST_LOGO_FILE);
         //
-        if (mediaFile.exists() && logoFile != null) {
+        if (mediaFile.exists() && logoFile.exists()) {
             FFmpegHelper helper = FFmpegHelper.create(FFMPEG_PATH).bind(mediaFile);
             File output = new File(OUTPUT_DIR + "\\video_with_logo.mp4");
             File result = helper.videoOverlayLogo(logoFile, true, output);

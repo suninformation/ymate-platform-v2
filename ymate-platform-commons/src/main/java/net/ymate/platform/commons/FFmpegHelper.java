@@ -37,14 +37,28 @@ public class FFmpegHelper {
 
     private static final String ZERO_STR = "0";
 
+    private static final String FFMPEG_CMD;
+
+    private static final String FFPROBE_CMD;
+
+    static {
+        String ffmpegCmd = System.getenv("FFMPEG_CMD");
+        FFMPEG_CMD = StringUtils.defaultIfBlank(ffmpegCmd, RuntimeUtils.isUnixOrLinux() ? "ffmpeg" : "ffmpeg.exe");
+        //
+        String ffprobeCmd = System.getenv("FFPROBE_CMD");
+        FFPROBE_CMD = StringUtils.defaultIfBlank(ffprobeCmd, RuntimeUtils.isUnixOrLinux() ? "ffprobe" : "ffprobe.exe");
+    }
+
     private final String ffmpegPath;
+
+    private final String ffprobePath;
 
     private String mediaFile;
 
     private boolean writeLog = true;
 
     public static FFmpegHelper create() {
-        return new FFmpegHelper("ffmpeg");
+        return new FFmpegHelper(null);
     }
 
     public static FFmpegHelper create(String ffmpegPath) {
@@ -83,10 +97,19 @@ public class FFmpegHelper {
     }
 
     private FFmpegHelper(String ffmpegPath) {
-        if (StringUtils.isBlank(ffmpegPath) && doCheckFile(ffmpegPath)) {
+        if (StringUtils.isBlank(ffmpegPath)) {
+            ffmpegPath = FFMPEG_CMD;
+        }
+        if (!doCheckFile(ffmpegPath)) {
             throw new IllegalArgumentException("Argument ffmpegPath illegal.");
         }
         this.ffmpegPath = ffmpegPath;
+        //
+        String ffprobePath = FFPROBE_CMD;
+        if (!doCheckFile(ffprobePath)) {
+            throw new IllegalArgumentException("Argument ffprobePath illegal.");
+        }
+        this.ffprobePath = ffprobePath;
     }
 
     public FFmpegHelper bind(String mediaFile) {
@@ -109,43 +132,87 @@ public class FFmpegHelper {
     private boolean doCheckFile(String file) {
         if (StringUtils.isNotBlank(file)) {
             File fileObj = new File(file);
-            return fileObj.exists() && fileObj.isFile();
+            return !fileObj.isAbsolute() || fileObj.exists() && fileObj.isFile();
         }
         return false;
     }
 
     public MediaInfo getMediaInfo() {
         try {
-            String outputStr = ConsoleCmdExecutor.exec(ffmpegPath, "-i", mediaFile);
+            String outputStr = ConsoleCmdExecutor.exec(ffprobePath, "-hide_banner", "-show_streams", "-show_format", mediaFile);
             if (writeLog && LOG.isInfoEnabled()) {
                 LOG.info(outputStr);
             }
-            //从视频信息中解析时长
-            String regexDuration = "Duration: (.*?), start: (.*?), bitrate: (\\d*) kb/s";
-            String regexVideo = "Video: (.*?), (.*?), (.*?)[,\\s]";
-            String regexAudio = "Audio: (\\w*), (\\d*) Hz";
             //
             MediaInfo mediaInfo = new MediaInfo();
-            //
-            Pattern pattern = Pattern.compile(regexDuration);
-            Matcher m = pattern.matcher(outputStr);
-            if (m.find()) {
-                mediaInfo.setStart(BlurObject.bind(m.group(2)).toIntValue());
-                mediaInfo.setBitrates(BlurObject.bind(m.group(3)).toIntValue());
-                mediaInfo.setTime(reduceTimeLen(m.group(1)));
+            // 解析格式信息
+            // 提取总比特率（从FORMAT部分）
+            Pattern formatBitratePattern = Pattern.compile("\\[FORMAT].*?bit_rate=(\\d+).*?\\[/FORMAT]", Pattern.DOTALL);
+            Matcher formatBitrateMatcher = formatBitratePattern.matcher(outputStr);
+            if (formatBitrateMatcher.find()) {
+                mediaInfo.setBitrates(Integer.parseInt(formatBitrateMatcher.group(1)));
             }
-            pattern = Pattern.compile(regexVideo);
-            m = pattern.matcher(outputStr);
-            if (m.find()) {
-                mediaInfo.setVideoEncodingFormat(m.group(1));
-                mediaInfo.setVideoFormat(m.group(2));
-                mediaInfo.setResolution(m.group(3));
+            // 提取总时长（从FORMAT部分）
+            Pattern formatDurationPattern = Pattern.compile("\\[FORMAT].*?duration=(\\d+\\.\\d+).*?\\[/FORMAT]", Pattern.DOTALL);
+            Matcher formatDurationMatcher = formatDurationPattern.matcher(outputStr);
+            if (formatDurationMatcher.find()) {
+                mediaInfo.setTime((int) Math.round(Double.parseDouble(formatDurationMatcher.group(1))));
             }
-            pattern = Pattern.compile(regexAudio);
-            m = pattern.matcher(outputStr);
-            if (m.find()) {
-                mediaInfo.setAudioEncodingFormat(m.group(1));
-                mediaInfo.setAudioSamplingRate(m.group(2));
+            // 提取总开始时间（从FORMAT部分）
+            Pattern formatStartTimePattern = Pattern.compile("\\[FORMAT].*?start_time=(\\d+\\.\\d+).*?\\[/FORMAT]", Pattern.DOTALL);
+            Matcher formatStartTimeMatcher = formatStartTimePattern.matcher(outputStr);
+            if (formatStartTimeMatcher.find()) {
+                mediaInfo.setStart((int) Math.round(Double.parseDouble(formatStartTimeMatcher.group(1))));
+            }
+            // 解析视频流信息
+            Pattern videoStreamPattern = Pattern.compile("\\[STREAM](.*?)\\[/STREAM]", Pattern.DOTALL);
+            Matcher videoStreamMatcher = videoStreamPattern.matcher(outputStr);
+            while (videoStreamMatcher.find()) {
+                String streamContent = videoStreamMatcher.group(1);
+                if (streamContent.contains("codec_type=video")) {
+                    // 提取视频编码格式
+                    Pattern codecNamePattern = Pattern.compile("codec_name=(\\w+)");
+                    Matcher codecNameMatcher = codecNamePattern.matcher(streamContent);
+                    if (codecNameMatcher.find()) {
+                        mediaInfo.setVideoEncodingFormat(codecNameMatcher.group(1));
+                    }
+                    // 提取视频格式
+                    Pattern profilePattern = Pattern.compile("profile=(\\w+)");
+                    Matcher profileMatcher = profilePattern.matcher(streamContent);
+                    if (profileMatcher.find()) {
+                        mediaInfo.setVideoFormat(profileMatcher.group(1));
+                    }
+                    // 提取宽度和高度
+                    Pattern widthPattern = Pattern.compile("width=(\\d+)");
+                    Matcher widthMatcher = widthPattern.matcher(streamContent);
+                    Pattern heightPattern = Pattern.compile("height=(\\d+)");
+                    Matcher heightMatcher = heightPattern.matcher(streamContent);
+                    if (widthMatcher.find() && heightMatcher.find()) {
+                        mediaInfo.setResolution(widthMatcher.group(1) + "x" + heightMatcher.group(1));
+                    }
+                }
+            }
+            // 解析音频流信息
+            Matcher audioStreamMatcher = videoStreamPattern.matcher(outputStr); // 重用同一个pattern
+            while (audioStreamMatcher.find()) {
+                String streamContent = audioStreamMatcher.group(1);
+                if (streamContent.contains("codec_type=audio")) {
+                    // 提取音频编码格式
+                    Pattern codecNamePattern = Pattern.compile("codec_name=(\\w+)");
+                    Matcher codecNameMatcher = codecNamePattern.matcher(streamContent);
+                    if (codecNameMatcher.find()) {
+                        mediaInfo.setAudioEncodingFormat(codecNameMatcher.group(1));
+                    }
+                    // 提取音频采样率
+                    Pattern sampleRatePattern = Pattern.compile("sample_rate=(\\d+)");
+                    Matcher sampleRateMatcher = sampleRatePattern.matcher(streamContent);
+                    if (sampleRateMatcher.find()) {
+                        mediaInfo.setAudioSamplingRate(sampleRateMatcher.group(1));
+                    }
+                }
+            }
+            if (writeLog && LOG.isInfoEnabled()) {
+                LOG.info("Final MediaInfo: " + mediaInfo);
             }
             return mediaInfo;
         } catch (Exception e) {
@@ -215,12 +282,12 @@ public class FFmpegHelper {
         cmd.add("-y");
         cmd.add("-i");
         cmd.add(mediaFile);
-        cmd.add("-ab");
-        cmd.add("128");
+        cmd.add("-b:a");
+        cmd.add("128k");
         cmd.add("-ar");
         cmd.add("22050");
-        cmd.add("-b");
-        cmd.add("800");
+        cmd.add("-b:v");
+        cmd.add("800k");
         //
         return execCmd(cmd, buildResolutionStr(imageWidth, imageHeight), outputFlv);
     }
