@@ -397,12 +397,13 @@ public class Select extends Query<Select> {
      *
      * @param column 方法引用
      * @param alias  别名方法引用
-     * @param <T>    类型
+     * @param <T>    第一个类型
+     * @param <F>    第二个类型
      * @param <R>    返回值类型
      * @return 当前Select实例
      * @since 2.1.4
      */
-    public <T, R> Select field(SFunction<T, R> column, SFunction<T, R> alias) {
+    public <T, F, R> Select field(SFunction<T, R> column, SFunction<F, R> alias) {
         return field(column, alias, true);
     }
 
@@ -427,12 +428,13 @@ public class Select extends Query<Select> {
      * @param prefix 前缀
      * @param column 方法引用
      * @param alias  别名方法引用
-     * @param <T>    类型
+     * @param <T>    第一个类型
+     * @param <F>    第二个类型
      * @param <R>    返回值类型
      * @return 当前Select实例
      * @since 2.1.4
      */
-    public <T, R> Select field(String prefix, SFunction<T, R> column, SFunction<T, R> alias) {
+    public <T, F, R> Select field(String prefix, SFunction<T, R> column, SFunction<F, R> alias) {
         return field(prefix, column, alias, true);
     }
 
@@ -459,12 +461,13 @@ public class Select extends Query<Select> {
      * @param column         方法引用
      * @param alias          别名方法引用
      * @param wrapIdentifier 是否包装标识符
-     * @param <T>            类型
+     * @param <T>            第一个类型
+     * @param <F>            第二个类型
      * @param <R>            返回值类型
      * @return 当前Select实例
      * @since 2.1.4
      */
-    public <T, R> Select field(SFunction<T, R> column, SFunction<T, R> alias, boolean wrapIdentifier) {
+    public <T, F, R> Select field(SFunction<T, R> column, SFunction<F, R> alias, boolean wrapIdentifier) {
         String columnName = getColumnName(column);
         String aliasName = getColumnName(alias);
         field(null, columnName, aliasName, wrapIdentifier);
@@ -496,12 +499,13 @@ public class Select extends Query<Select> {
      * @param column         方法引用
      * @param alias          别名方法引用
      * @param wrapIdentifier 是否包装标识符
-     * @param <T>            类型
+     * @param <T>            第一个类型
+     * @param <F>            第二个类型
      * @param <R>            返回值类型
      * @return 当前Select实例
      * @since 2.1.4
      */
-    public <T, R> Select field(String prefix, SFunction<T, R> column, SFunction<T, R> alias, boolean wrapIdentifier) {
+    public <T, F, R> Select field(String prefix, SFunction<T, R> column, SFunction<F, R> alias, boolean wrapIdentifier) {
         String columnName = getColumnName(column);
         String aliasName = getColumnName(alias);
         field(prefix, columnName, aliasName, wrapIdentifier);
@@ -527,12 +531,13 @@ public class Select extends Query<Select> {
      *
      * @param column 方法引用
      * @param alias  别名方法引用
-     * @param <T>    类型
+     * @param <T>    第一个类型
+     * @param <F>    第二个类型
      * @param <R>    返回值类型
      * @return 当前Select实例
      * @since 2.1.4
      */
-    public <T, R> Select fieldAlias(SFunction<T, R> column, SFunction<T, R> alias) {
+    public <T, F, R> Select fieldAlias(SFunction<T, R> column, SFunction<F, R> alias) {
         return fieldAlias(column, alias, true);
     }
 
@@ -559,12 +564,13 @@ public class Select extends Query<Select> {
      * @param column         方法引用
      * @param alias          别名方法引用
      * @param wrapIdentifier 是否包装标识符
-     * @param <T>            类型
+     * @param <T>            第一个类型
+     * @param <F>            第二个类型
      * @param <R>            返回值类型
      * @return 当前Select实例
      * @since 2.1.4
      */
-    public <T, R> Select fieldAlias(SFunction<T, R> column, SFunction<T, R> alias, boolean wrapIdentifier) {
+    public <T, F, R> Select fieldAlias(SFunction<T, R> column, SFunction<F, R> alias, boolean wrapIdentifier) {
         String columnName = getColumnName(column);
         String aliasName = getColumnName(alias);
         this.fields.addAlias(wrapIdentifier ? wrapIdentifierField(columnName) : columnName, aliasName);

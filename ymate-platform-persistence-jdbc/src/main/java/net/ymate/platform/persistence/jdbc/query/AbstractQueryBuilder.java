@@ -542,7 +542,7 @@
      /**
       * @since 2.1.4
       */
-     public <T, R> String field(String prefix, SFunction<T, R> function, SFunction<T, R> alias) {
+     public <T, F, R> String field(String prefix, SFunction<T, R> function, SFunction<F, R> alias) {
          String fieldName = LambdaUtils.getColumnName(function);
          String aliasName = LambdaUtils.getColumnName(alias);
          return Fields.field(prefix, fieldName, aliasName);
@@ -551,7 +551,7 @@
      /**
       * @since 2.1.4
       */
-     public <T, R> String field(SFunction<T, R> function, SFunction<T, R> alias) {
+     public <T, F, R> String field(SFunction<T, R> function, SFunction<F, R> alias) {
          return field(null, function, alias);
      }
 
@@ -596,7 +596,7 @@
      /**
       * @since 2.1.4
       */
-     public <T, R> String fieldAlias(SFunction<T, R> function, SFunction<T, R> alias) {
+     public <T, F, R> String fieldAlias(SFunction<T, R> function, SFunction<F, R> alias) {
          String fieldName = LambdaUtils.getColumnName(function);
          String aliasName = LambdaUtils.getColumnName(alias);
          return Fields.fieldAlias(fieldName, aliasName);
@@ -620,7 +620,7 @@
      /**
       * @since 2.1.4
       */
-     public <T, R> String fieldAliasWrap(SFunction<T, R> function, SFunction<T, R> alias) {
+     public <T, F, R> String fieldAliasWrap(SFunction<T, R> function, SFunction<F, R> alias) {
          String fieldName = LambdaUtils.getColumnName(function);
          String aliasName = LambdaUtils.getColumnName(alias);
          return wrapIdentifierField(Fields.fieldAlias(fieldName, aliasName));
@@ -659,7 +659,7 @@
      /**
       * @since 2.1.4
       */
-     public <T, R> String fieldWrap(String prefix, SFunction<T, R> function, SFunction<T, R> alias) {
+     public <T, F, R> String fieldWrap(String prefix, SFunction<T, R> function, SFunction<F, R> alias) {
          String fieldName = LambdaUtils.getColumnName(function);
          String aliasName = LambdaUtils.getColumnName(alias);
          return wrapIdentifierField(Fields.field(prefix, fieldName, aliasName));
@@ -668,7 +668,7 @@
      /**
       * @since 2.1.4
       */
-     public <T, R> String fieldWrap(SFunction<T, R> function, SFunction<T, R> alias) {
+     public <T, F, R> String fieldWrap(SFunction<T, R> function, SFunction<F, R> alias) {
          return fieldWrap(null, function, alias);
      }
 

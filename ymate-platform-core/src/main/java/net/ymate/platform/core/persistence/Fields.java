@@ -217,12 +217,13 @@ public final class Fields implements Serializable {
      * @param prefix   字段前缀
      * @param function 方法引用
      * @param alias    别名方法引用
-     * @param <T>      类型
+     * @param <T>      第一个类型
+     * @param <F>      第二个类型
      * @param <R>      返回值类型
      * @return 字段过滤对象
      * @since 2.1.4
      */
-    public <T, R> Fields add(String prefix, LambdaUtils.SFunction<T, R> function, LambdaUtils.SFunction<T, R> alias) {
+    public <T, F, R> Fields add(String prefix, LambdaUtils.SFunction<T, R> function, LambdaUtils.SFunction<F, R> alias) {
         String fieldName = LambdaUtils.getFullFieldName(prefix, function);
         if (alias != null) {
             fieldName = fieldName + " AS " + LambdaUtils.getColumnName(alias);
@@ -246,12 +247,13 @@ public final class Fields implements Serializable {
     /**
      * @param function 方法引用
      * @param alias    别名方法引用
-     * @param <T>      类型
+     * @param <T>      第一个类型
+     * @param <F>      第二个类型
      * @param <R>      返回值类型
      * @return 字段过滤对象
      * @since 2.1.4
      */
-    public <T, R> Fields addAlias(LambdaUtils.SFunction<T, R> function, LambdaUtils.SFunction<T, R> alias) {
+    public <T, F, R> Fields addAlias(LambdaUtils.SFunction<T, R> function, LambdaUtils.SFunction<F, R> alias) {
         return add(null, function, alias);
     }
 
