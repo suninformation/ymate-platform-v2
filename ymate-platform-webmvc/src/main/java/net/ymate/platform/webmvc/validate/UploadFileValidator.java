@@ -26,6 +26,8 @@ import net.ymate.platform.webmvc.IWebMvcConfig;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Strings;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import java.util.*;
 
@@ -34,6 +36,8 @@ import java.util.*;
  */
 @CleanProxy
 public class UploadFileValidator extends AbstractValidator {
+
+    private static final Log LOG = LogFactory.getLog(UploadFileValidator.class);
 
     private static final String I18N_MESSAGE_BETWEEN_KEY = "ymp.validation.upload_file_between";
 
@@ -126,6 +130,9 @@ public class UploadFileValidator extends AbstractValidator {
             return 2;
         } else if (!allowedContentTypes.isEmpty()) {
             if (allowedContentTypes.stream().noneMatch(contentType -> Strings.CS.contains(value.getContentType(), contentType))) {
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug(String.format("Uploaded file content type '%s' is not allowed.", value.getContentType()));
+                }
                 return 3;
             }
         }
