@@ -89,26 +89,14 @@ public final class TableInfo implements Serializable {
                                     columnType = "java.lang.Boolean";
                                     break;
                                 case Types.TINYINT:
-                                    // 根据数据库方言处理 TINYINT
-                                    if (Type.DATABASE.ORACLE.equalsIgnoreCase(connectionHolder.getDialect().getName())) {
-                                        columnType = "java.lang.Integer"; // Oracle 没有 TINYINT，使用 INTEGER
-                                    } else {
-                                        columnType = "java.lang.Byte";
-                                    }
+                                case Types.INTEGER:
+                                    columnType = "java.lang.Integer";
                                     break;
                                 case Types.SMALLINT:
                                     columnType = "java.lang.Short";
                                     break;
-                                case Types.INTEGER:
-                                    columnType = "java.lang.Integer";
-                                    break;
                                 case Types.BIGINT:
-                                    // 根据数据库方言处理 BIGINT
-                                    if (Type.DATABASE.ORACLE.equalsIgnoreCase(connectionHolder.getDialect().getName())) {
-                                        columnType = "java.lang.Long"; // Oracle 使用 NUMBER(19) 代替 BIGINT
-                                    } else {
-                                        columnType = "java.lang.Long";
-                                    }
+                                    columnType = "java.lang.Long";
                                     break;
                                 case Types.FLOAT:
                                     columnType = "java.lang.Float";
@@ -143,30 +131,15 @@ public final class TableInfo implements Serializable {
                                 case Types.TIME:
                                     columnType = "java.sql.Time";
                                     break;
-                                case Types.TIMESTAMP:
-                                    // 根据数据库方言处理 TIMESTAMP
-                                    if (Type.DATABASE.SQLSERVER.equalsIgnoreCase(connectionHolder.getDialect().getName())) {
-                                        columnType = "java.sql.Timestamp"; // SQL Server 使用 DATETIME2
-                                    } else if (Type.DATABASE.SQLITE.equalsIgnoreCase(connectionHolder.getDialect().getName())) {
-                                        columnType = "java.sql.Timestamp"; // SQLite 使用 DATETIME
-                                    } else if (Type.DATABASE.ORACLE.equalsIgnoreCase(connectionHolder.getDialect().getName())) {
-                                        columnType = "java.sql.Timestamp"; // Oracle 使用 TIMESTAMP 或 DATE
-                                    } else {
-                                        columnType = "java.sql.Timestamp";
-                                    }
-                                    break;
                                 case Types.CLOB:
                                 case Types.NCLOB:
                                     columnType = "java.sql.Clob";
                                     break;
                                 case Types.BLOB:
-                                    // 根据数据库方言处理 BLOB
-                                    if (Type.DATABASE.POSTGRESQL.equalsIgnoreCase(connectionHolder.getDialect().getName())) {
-                                        columnType = "java.sql.Blob"; // PostgreSQL 使用 BYTEA
-                                    } else {
-                                        columnType = "java.sql.Blob";
-                                    }
+                                    columnType = "java.sql.Blob";
                                     break;
+                                case Types.TIMESTAMP:
+                                case Types.TIMESTAMP_WITH_TIMEZONE:
                                 default:
                                     columnType = tableMetaData.getColumnClassName(idx);
                             }
