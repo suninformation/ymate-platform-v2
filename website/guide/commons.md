@@ -4552,6 +4552,12 @@ now.toWeekStart();
 
 // 调整到当周结束（周日）
 now.toWeekEnd();
+
+// 调整到当年开始
+now.toYearStart();
+
+// 调整到当年结束
+now.toYearEnd();
 ```
 
 ##### 日期时间计算
@@ -4574,6 +4580,21 @@ diff = now.subtract(LocalDateTime.now());
 diff = now.subtract(Instant.now());
 diff = now.subtract(LocalDate.now());
 diff = now.subtract(ZonedDateTime.now());
+
+// 时间比较
+boolean before = now.isBefore(new Date());
+before = now.isBefore(DateTimeHelper.now());
+before = now.isBefore(LocalDateTime.now());
+before = now.isBefore(Instant.now());
+before = now.isBefore(LocalDate.now());
+before = now.isBefore(ZonedDateTime.now());
+
+boolean after = now.isAfter(new Date());
+after = now.isAfter(DateTimeHelper.now());
+after = now.isAfter(LocalDateTime.now());
+after = now.isAfter(Instant.now());
+after = now.isAfter(LocalDate.now());
+after = now.isAfter(ZonedDateTime.now());
 ```
 
 ##### 格式化输出

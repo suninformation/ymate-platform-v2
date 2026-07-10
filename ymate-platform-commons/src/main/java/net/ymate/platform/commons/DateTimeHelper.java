@@ -403,6 +403,11 @@ public class DateTimeHelper {
         return this;
     }
 
+    /**
+     * 设置时间为当前日期的最后一刻（23:59:59.999）
+     *
+     * @return 当前实例，支持链式调用
+     */
     public DateTimeHelper toDayEnd() {
         this.zonedDateTime = this.zonedDateTime.truncatedTo(ChronoUnit.DAYS)
                 .plusDays(1)
@@ -423,7 +428,7 @@ public class DateTimeHelper {
     }
 
     /**
-     * 设置时间为当前月份的最后一天的23:59:59.999
+     * 设置时间为当前月份的最后一天的最后一刻（23:59:59.999）
      *
      * @return 当前实例，支持链式调用
      * @since 2.1.4
@@ -434,6 +439,220 @@ public class DateTimeHelper {
                 .plusDays(1)
                 .minusNanos(1);
         return this;
+    }
+
+    /**
+     * 设置时间为当前年份的第一天的00:00:00.000
+     *
+     * @return 当前实例，支持链式调用
+     * @since 2.1.4
+     */
+    public DateTimeHelper toYearStart() {
+        this.zonedDateTime = this.zonedDateTime.with(TemporalAdjusters.firstDayOfYear())
+                .truncatedTo(ChronoUnit.DAYS);
+        return this;
+    }
+
+    /**
+     * 设置时间为当前年份的最后一天的最后一刻（23:59:59.999）
+     *
+     * @return 当前实例，支持链式调用
+     * @since 2.1.4
+     */
+    public DateTimeHelper toYearEnd() {
+        this.zonedDateTime = this.zonedDateTime.with(TemporalAdjusters.lastDayOfYear())
+                .truncatedTo(ChronoUnit.DAYS)
+                .plusDays(1)
+                .minusNanos(1);
+        return this;
+    }
+
+    /**
+     * 判断当前时间是否早于指定Date对象表示的时间
+     *
+     * @param date Date对象
+     * @return 如果当前时间早于指定时间返回true，否则返回false
+     * @since 2.1.4
+     */
+    public boolean isBefore(Date date) {
+        return zonedDateTime.toInstant().isBefore(date.toInstant());
+    }
+
+    /**
+     * 判断当前时间是否晚于指定Date对象表示的时间
+     *
+     * @param date Date对象
+     * @return 如果当前时间晚于指定时间返回true，否则返回false
+     * @since 2.1.4
+     */
+    public boolean isAfter(Date date) {
+        return zonedDateTime.toInstant().isAfter(date.toInstant());
+    }
+
+    /**
+     * 判断当前时间是否早于指定DateTimeHelper对象表示的时间
+     *
+     * @param dateTimeHelper DateTimeHelper对象
+     * @return 如果当前时间早于指定时间返回true，否则返回false
+     * @since 2.1.4
+     */
+    public boolean isBefore(DateTimeHelper dateTimeHelper) {
+        return isBefore(dateTimeHelper.time());
+    }
+
+    /**
+     * 判断当前时间是否早于指定LocalDateTime对象表示的时间
+     *
+     * @param localDateTime LocalDateTime对象
+     * @return 如果当前时间早于指定时间返回true，否则返回false
+     * @since 2.1.4
+     */
+    public boolean isBefore(LocalDateTime localDateTime) {
+        ZonedDateTime targetZonedDateTime = localDateTime.atZone(zonedDateTime.getZone());
+        return zonedDateTime.toInstant().isBefore(targetZonedDateTime.toInstant());
+    }
+
+    /**
+     * 判断当前时间是否早于指定LocalDateTime对象表示的时间
+     *
+     * @param localDateTime LocalDateTime对象
+     * @param zoneId        时区ID
+     * @return 如果当前时间早于指定时间返回true，否则返回false
+     * @since 2.1.4
+     */
+    public boolean isBefore(LocalDateTime localDateTime, ZoneId zoneId) {
+        ZonedDateTime targetZonedDateTime = localDateTime.atZone(zoneId);
+        return zonedDateTime.toInstant().isBefore(targetZonedDateTime.toInstant());
+    }
+
+    /**
+     * 判断当前时间是否早于指定Instant对象表示的时间
+     *
+     * @param instant Instant对象
+     * @return 如果当前时间早于指定时间返回true，否则返回false
+     * @since 2.1.4
+     */
+    public boolean isBefore(Instant instant) {
+        return zonedDateTime.toInstant().isBefore(instant);
+    }
+
+    /**
+     * 判断当前时间是否早于指定LocalDate对象表示的时间（当天起始时刻）
+     *
+     * @param localDate LocalDate对象
+     * @return 如果当前时间早于指定时间返回true，否则返回false
+     * @since 2.1.4
+     */
+    public boolean isBefore(LocalDate localDate) {
+        ZonedDateTime targetZonedDateTime = localDate.atStartOfDay(zonedDateTime.getZone());
+        return zonedDateTime.toInstant().isBefore(targetZonedDateTime.toInstant());
+    }
+
+    /**
+     * 判断当前时间是否早于指定LocalDate对象表示的时间（当天起始时刻）
+     *
+     * @param localDate LocalDate对象
+     * @param zoneId    时区ID
+     * @return 如果当前时间早于指定时间返回true，否则返回false
+     * @since 2.1.4
+     */
+    public boolean isBefore(LocalDate localDate, ZoneId zoneId) {
+        ZonedDateTime targetZonedDateTime = localDate.atStartOfDay(zoneId);
+        return zonedDateTime.toInstant().isBefore(targetZonedDateTime.toInstant());
+    }
+
+    /**
+     * 判断当前时间是否早于指定ZonedDateTime对象表示的时间
+     *
+     * @param zonedDateTime ZonedDateTime对象
+     * @return 如果当前时间早于指定时间返回true，否则返回false
+     * @since 2.1.4
+     */
+    public boolean isBefore(ZonedDateTime zonedDateTime) {
+        return this.zonedDateTime.toInstant().isBefore(zonedDateTime.toInstant());
+    }
+
+    /**
+     * 判断当前时间是否晚于指定DateTimeHelper对象表示的时间
+     *
+     * @param dateTimeHelper DateTimeHelper对象
+     * @return 如果当前时间晚于指定时间返回true，否则返回false
+     * @since 2.1.4
+     */
+    public boolean isAfter(DateTimeHelper dateTimeHelper) {
+        return isAfter(dateTimeHelper.time());
+    }
+
+    /**
+     * 判断当前时间是否晚于指定LocalDateTime对象表示的时间
+     *
+     * @param localDateTime LocalDateTime对象
+     * @return 如果当前时间晚于指定时间返回true，否则返回false
+     * @since 2.1.4
+     */
+    public boolean isAfter(LocalDateTime localDateTime) {
+        ZonedDateTime targetZonedDateTime = localDateTime.atZone(zonedDateTime.getZone());
+        return zonedDateTime.toInstant().isAfter(targetZonedDateTime.toInstant());
+    }
+
+    /**
+     * 判断当前时间是否晚于指定LocalDateTime对象表示的时间
+     *
+     * @param localDateTime LocalDateTime对象
+     * @param zoneId        时区ID
+     * @return 如果当前时间晚于指定时间返回true，否则返回false
+     * @since 2.1.4
+     */
+    public boolean isAfter(LocalDateTime localDateTime, ZoneId zoneId) {
+        ZonedDateTime targetZonedDateTime = localDateTime.atZone(zoneId);
+        return zonedDateTime.toInstant().isAfter(targetZonedDateTime.toInstant());
+    }
+
+    /**
+     * 判断当前时间是否晚于指定Instant对象表示的时间
+     *
+     * @param instant Instant对象
+     * @return 如果当前时间晚于指定时间返回true，否则返回false
+     * @since 2.1.4
+     */
+    public boolean isAfter(Instant instant) {
+        return zonedDateTime.toInstant().isAfter(instant);
+    }
+
+    /**
+     * 判断当前时间是否晚于指定LocalDate对象表示的时间（当天起始时刻）
+     *
+     * @param localDate LocalDate对象
+     * @return 如果当前时间晚于指定时间返回true，否则返回false
+     * @since 2.1.4
+     */
+    public boolean isAfter(LocalDate localDate) {
+        ZonedDateTime targetZonedDateTime = localDate.atStartOfDay(zonedDateTime.getZone());
+        return zonedDateTime.toInstant().isAfter(targetZonedDateTime.toInstant());
+    }
+
+    /**
+     * 判断当前时间是否晚于指定LocalDate对象表示的时间（当天起始时刻）
+     *
+     * @param localDate LocalDate对象
+     * @param zoneId    时区ID
+     * @return 如果当前时间晚于指定时间返回true，否则返回false
+     * @since 2.1.4
+     */
+    public boolean isAfter(LocalDate localDate, ZoneId zoneId) {
+        ZonedDateTime targetZonedDateTime = localDate.atStartOfDay(zoneId);
+        return zonedDateTime.toInstant().isAfter(targetZonedDateTime.toInstant());
+    }
+
+    /**
+     * 判断当前时间是否晚于指定ZonedDateTime对象表示的时间
+     *
+     * @param zonedDateTime ZonedDateTime对象
+     * @return 如果当前时间晚于指定时间返回true，否则返回false
+     * @since 2.1.4
+     */
+    public boolean isAfter(ZonedDateTime zonedDateTime) {
+        return this.zonedDateTime.toInstant().isAfter(zonedDateTime.toInstant());
     }
 
     public int hour() {

@@ -263,6 +263,25 @@ public class DateTimeHelperTest {
         // 测试到当周结束（周日）
         helper.toWeekEnd();
         Assert.assertEquals(16, helper.day()); // 2024-06-16 是周日
+
+        // 测试到当年开始
+        helper = DateTimeHelper.bind(2024, 6, 15, 14, 30, 45);
+        helper.toYearStart();
+        Assert.assertEquals(1, helper.month());
+        Assert.assertEquals(1, helper.day());
+        Assert.assertEquals(0, helper.hour());
+        Assert.assertEquals(0, helper.minute());
+        Assert.assertEquals(0, helper.second());
+        Assert.assertEquals(0, helper.millisecond());
+
+        // 测试到当年结束
+        helper.toYearEnd();
+        Assert.assertEquals(12, helper.month());
+        Assert.assertEquals(31, helper.day()); // 12月有31天
+        Assert.assertEquals(23, helper.hour());
+        Assert.assertEquals(59, helper.minute());
+        Assert.assertEquals(59, helper.second());
+        Assert.assertEquals(999, helper.millisecond());
     }
 
     @Test
@@ -383,5 +402,99 @@ public class DateTimeHelperTest {
         // 测试非闰年
         DateTimeHelper nonLeapYearHelper = DateTimeHelper.bind(2023, 2, 1);
         Assert.assertFalse(nonLeapYearHelper.isLeapYear());
+    }
+
+    @Test
+    public void testIsBeforeMethods() {
+        DateTimeHelper earlier = DateTimeHelper.bind(2024, 1, 1, 0, 0, 0);
+        DateTimeHelper later = DateTimeHelper.bind(2024, 1, 2, 0, 0, 0);
+        DateTimeHelper same = DateTimeHelper.bind(2024, 1, 1, 0, 0, 0);
+
+        // 测试isBefore(Date)
+        DateTimeHelper laterPlusOneDay = DateTimeHelper.bind(2024, 1, 3, 0, 0, 0);
+        Assert.assertTrue(later.isBefore(laterPlusOneDay.time()));
+        Assert.assertFalse(later.isBefore(earlier.time()));
+        Assert.assertFalse(later.isBefore(later.time()));
+
+        // 测试isBefore(DateTimeHelper)
+        Assert.assertTrue(earlier.isBefore(later));
+        Assert.assertFalse(later.isBefore(earlier));
+        Assert.assertFalse(later.isBefore(same));
+
+        // 测试isBefore(LocalDateTime)
+        Assert.assertTrue(earlier.isBefore(later.localDateTime()));
+        Assert.assertFalse(later.isBefore(earlier.localDateTime()));
+        Assert.assertFalse(later.isBefore(same.localDateTime()));
+
+        // 测试isBefore(LocalDateTime, ZoneId)
+        ZoneId shanghaiZone = ZoneId.of("Asia/Shanghai");
+        Assert.assertTrue(earlier.isBefore(later.localDateTime(), shanghaiZone));
+        Assert.assertFalse(later.isBefore(earlier.localDateTime(), shanghaiZone));
+
+        // 测试isBefore(Instant)
+        Assert.assertTrue(earlier.isBefore(later.zonedDateTime().toInstant()));
+        Assert.assertFalse(later.isBefore(earlier.zonedDateTime().toInstant()));
+        Assert.assertFalse(later.isBefore(same.zonedDateTime().toInstant()));
+
+        // 测试isBefore(LocalDate)
+        Assert.assertTrue(earlier.isBefore(later.localDate()));
+        Assert.assertFalse(later.isBefore(earlier.localDate()));
+        Assert.assertFalse(later.isBefore(same.localDate()));
+
+        // 测试isBefore(LocalDate, ZoneId)
+        Assert.assertTrue(earlier.isBefore(later.localDate(), shanghaiZone));
+        Assert.assertFalse(later.isBefore(earlier.localDate(), shanghaiZone));
+
+        // 测试isBefore(ZonedDateTime)
+        Assert.assertTrue(earlier.isBefore(later.zonedDateTime()));
+        Assert.assertFalse(later.isBefore(earlier.zonedDateTime()));
+        Assert.assertFalse(later.isBefore(same.zonedDateTime()));
+    }
+
+    @Test
+    public void testIsAfterMethods() {
+        DateTimeHelper earlier = DateTimeHelper.bind(2024, 1, 1, 0, 0, 0);
+        DateTimeHelper later = DateTimeHelper.bind(2024, 1, 2, 0, 0, 0);
+        DateTimeHelper same = DateTimeHelper.bind(2024, 1, 2, 0, 0, 0);
+
+        // 测试isAfter(Date)
+        DateTimeHelper laterPlusOneDay2 = DateTimeHelper.bind(2024, 1, 3, 0, 0, 0);
+        Assert.assertTrue(later.isAfter(earlier.time()));
+        Assert.assertFalse(later.isAfter(laterPlusOneDay2.time()));
+        Assert.assertFalse(later.isAfter(later.time()));
+
+        // 测试isAfter(DateTimeHelper)
+        Assert.assertTrue(later.isAfter(earlier));
+        Assert.assertFalse(earlier.isAfter(later));
+        Assert.assertFalse(later.isAfter(same));
+
+        // 测试isAfter(LocalDateTime)
+        Assert.assertTrue(later.isAfter(earlier.localDateTime()));
+        Assert.assertFalse(earlier.isAfter(later.localDateTime()));
+        Assert.assertFalse(later.isAfter(same.localDateTime()));
+
+        // 测试isAfter(LocalDateTime, ZoneId)
+        ZoneId shanghaiZone = ZoneId.of("Asia/Shanghai");
+        Assert.assertTrue(later.isAfter(earlier.localDateTime(), shanghaiZone));
+        Assert.assertFalse(earlier.isAfter(later.localDateTime(), shanghaiZone));
+
+        // 测试isAfter(Instant)
+        Assert.assertTrue(later.isAfter(earlier.zonedDateTime().toInstant()));
+        Assert.assertFalse(earlier.isAfter(later.zonedDateTime().toInstant()));
+        Assert.assertFalse(later.isAfter(same.zonedDateTime().toInstant()));
+
+        // 测试isAfter(LocalDate)
+        Assert.assertTrue(later.isAfter(earlier.localDate()));
+        Assert.assertFalse(earlier.isAfter(later.localDate()));
+        Assert.assertFalse(later.isAfter(same.localDate()));
+
+        // 测试isAfter(LocalDate, ZoneId)
+        Assert.assertTrue(later.isAfter(earlier.localDate(), shanghaiZone));
+        Assert.assertFalse(earlier.isAfter(later.localDate(), shanghaiZone));
+
+        // 测试isAfter(ZonedDateTime)
+        Assert.assertTrue(later.isAfter(earlier.zonedDateTime()));
+        Assert.assertFalse(earlier.isAfter(later.zonedDateTime()));
+        Assert.assertFalse(later.isAfter(same.zonedDateTime()));
     }
 }
