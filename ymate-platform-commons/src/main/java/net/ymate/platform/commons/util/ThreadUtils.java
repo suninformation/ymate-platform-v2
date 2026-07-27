@@ -125,6 +125,13 @@ public final class ThreadUtils {
         return executeOnce(worker, timeout, 0, resultFilter);
     }
 
+    /**
+     * @since 2.1.4
+     */
+    public static <T> T executeOnce(Callable<T> worker, long timeout, int reAwaitTimes) throws InterruptedException, ExecutionException {
+        return executeOnce(worker, timeout, reAwaitTimes, new DefaultFutureResultFilter<>());
+    }
+
     public static <T> T executeOnce(Callable<T> worker, long timeout, int reAwaitTimes, IFutureResultFilter<T> resultFilter) throws InterruptedException, ExecutionException {
         FutureTask<T> future = new FutureTask<>(worker);
         //
@@ -148,6 +155,13 @@ public final class ThreadUtils {
 
     public static <T> List<T> executeOnce(List<Callable<T>> workers, long timeout, IFutureResultFilter<T> resultFilter) throws InterruptedException, ExecutionException {
         return executeOnce(workers, timeout, 0, resultFilter);
+    }
+
+    /**
+     * @since 2.1.4
+     */
+    public static <T> List<T> executeOnce(List<Callable<T>> workers, long timeout, int reAwaitTimes) throws InterruptedException, ExecutionException {
+        return executeOnce(workers, timeout, reAwaitTimes, new DefaultFutureResultFilter<>());
     }
 
     public static <T> List<T> executeOnce(List<Callable<T>> workers, long timeout, int reAwaitTimes, IFutureResultFilter<T> resultFilter) throws InterruptedException, ExecutionException {
