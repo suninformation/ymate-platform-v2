@@ -690,7 +690,7 @@ String result = RetryUtils.executeWithRetry(() -> doSomething(), config);
 <dependency>
     <groupId>com.alibaba</groupId>
     <artifactId>fastjson</artifactId>
-    <version>1.2.83</version>
+    <version>1.2.84</version>
 </dependency>
 ```
 
@@ -700,7 +700,7 @@ String result = RetryUtils.executeWithRetry(() -> doSomething(), config);
 <dependency>
     <groupId>com.google.code.gson</groupId>
     <artifactId>gson</artifactId>
-    <version>2.9.0</version>
+    <version>2.13.1</version>
 </dependency>
 ```
 
@@ -710,7 +710,7 @@ String result = RetryUtils.executeWithRetry(() -> doSomething(), config);
 <dependency>
     <groupId>com.fasterxml.jackson.datatype</groupId>
     <artifactId>jackson-datatype-jdk8</artifactId>
-    <version>2.13.4</version>
+    <version>2.21.1</version>
 </dependency>
 ```
 

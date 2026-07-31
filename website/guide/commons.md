@@ -1037,7 +1037,7 @@ JsonWrapper 现已对当前比较流行且使用非常广泛的 FastJson、Gson 
   <dependency>
       <groupId>com.alibaba</groupId>
       <artifactId>fastjson</artifactId>
-      <version>2.0.60</version>
+      <version>1.2.84</version>
   </dependency>
   ```
 
@@ -1059,7 +1059,7 @@ JsonWrapper 现已对当前比较流行且使用非常广泛的 FastJson、Gson 
   <dependency>
       <groupId>com.fasterxml.jackson.datatype</groupId>
       <artifactId>jackson-datatype-jdk8</artifactId>
-      <version>2.18.2</version>
+      <version>2.21.1</version>
   </dependency>
   ```
 
