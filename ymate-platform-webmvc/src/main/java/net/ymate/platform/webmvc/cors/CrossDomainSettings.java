@@ -162,29 +162,32 @@ public final class CrossDomainSettings implements IInitialization<IWebMvc> {
                     allowed = hostNameChecker.check(new AbstractContext(application, contextParams) {
                     }, origin);
                 }
-                if (allowed) {
-                    response.addHeader(Type.HttpHead.ACCESS_CONTROL_ALLOW_ORIGIN, origin);
-                } else if (domainSetting.getAllowedOrigins().isEmpty() && domainSetting.getAllowedOriginsChecker() == null) {
-                    response.addHeader(Type.HttpHead.ACCESS_CONTROL_ALLOW_ORIGIN, "*");
-                    response.setHeader(Type.HttpHead.ACCESS_CONTROL_ALLOW_CREDENTIALS, Boolean.FALSE.toString());
-                    allowed = true;
+                boolean useWildcardOrigin = false;
+                if (!allowed) {
+                    if (domainSetting.getAllowedOrigins().isEmpty() && domainSetting.getAllowedOriginsChecker() == null) {
+                        response.setHeader(Type.HttpHead.ACCESS_CONTROL_ALLOW_ORIGIN, "*");
+                        useWildcardOrigin = true;
+                        allowed = true;
+                    }
+                } else {
+                    response.setHeader(Type.HttpHead.ACCESS_CONTROL_ALLOW_ORIGIN, origin);
                 }
                 if (allowed) {
                     String separatorStr = ", ";
                     if (!domainSetting.getAllowedMethods().isEmpty()) {
-                        response.addHeader(Type.HttpHead.ACCESS_CONTROL_ALLOW_METHODS, StringUtils.upperCase(StringUtils.join(domainSetting.getAllowedMethods(), separatorStr)));
+                        response.setHeader(Type.HttpHead.ACCESS_CONTROL_ALLOW_METHODS, StringUtils.upperCase(StringUtils.join(domainSetting.getAllowedMethods(), separatorStr)));
                     }
                     if (!domainSetting.getAllowedHeaders().isEmpty()) {
-                        response.addHeader(Type.HttpHead.ACCESS_CONTROL_ALLOW_HEADERS, StringUtils.upperCase(StringUtils.join(domainSetting.getAllowedHeaders(), separatorStr)));
+                        response.setHeader(Type.HttpHead.ACCESS_CONTROL_ALLOW_HEADERS, StringUtils.upperCase(StringUtils.join(domainSetting.getAllowedHeaders(), separatorStr)));
                     }
                     if (!domainSetting.getExposedHeaders().isEmpty()) {
-                        response.addHeader(Type.HttpHead.ACCESS_CONTROL_EXPOSE_HEADERS, StringUtils.upperCase(StringUtils.join(domainSetting.getExposedHeaders(), separatorStr)));
+                        response.setHeader(Type.HttpHead.ACCESS_CONTROL_EXPOSE_HEADERS, StringUtils.upperCase(StringUtils.join(domainSetting.getExposedHeaders(), separatorStr)));
                     }
-                    if (domainSetting.isAllowedCredentials()) {
-                        response.addHeader(Type.HttpHead.ACCESS_CONTROL_ALLOW_CREDENTIALS, Boolean.TRUE.toString());
-                    }
+                    // W3C CORS 规范约束：当 Access-Control-Allow-Origin 使用通配符 * 时，Credentials 必须为 false，忽略配置
+                    boolean allowCredentials = !useWildcardOrigin && domainSetting.isAllowedCredentials();
+                    response.setHeader(Type.HttpHead.ACCESS_CONTROL_ALLOW_CREDENTIALS, Boolean.toString(allowCredentials));
                     if (domainSetting.getMaxAge() > 0) {
-                        response.addHeader(Type.HttpHead.ACCESS_CONTROL_MAX_AGE, String.valueOf(domainSetting.getMaxAge()));
+                        response.setHeader(Type.HttpHead.ACCESS_CONTROL_MAX_AGE, String.valueOf(domainSetting.getMaxAge()));
                     }
                     if (LOG.isDebugEnabled() && owner.getOwner().isDevEnv()) {
                         LOG.debug("Cross domain request: ALLOWED");
