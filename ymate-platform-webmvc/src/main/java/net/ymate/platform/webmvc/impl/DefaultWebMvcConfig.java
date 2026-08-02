@@ -825,7 +825,7 @@ public final class DefaultWebMvcConfig implements IWebMvcConfig {
         }
 
         public Builder uploadFileCountMax(long uploadFileCountMax) {
-            config.setUploadFileSizeMax(uploadFileCountMax);
+            config.setUploadFileCountMax(uploadFileCountMax);
             return this;
         }
 

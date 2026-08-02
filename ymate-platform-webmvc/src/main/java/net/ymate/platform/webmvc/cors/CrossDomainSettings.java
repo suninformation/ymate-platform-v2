@@ -166,6 +166,7 @@ public final class CrossDomainSettings implements IInitialization<IWebMvc> {
                     response.addHeader(Type.HttpHead.ACCESS_CONTROL_ALLOW_ORIGIN, origin);
                 } else if (domainSetting.getAllowedOrigins().isEmpty() && domainSetting.getAllowedOriginsChecker() == null) {
                     response.addHeader(Type.HttpHead.ACCESS_CONTROL_ALLOW_ORIGIN, "*");
+                    response.setHeader(Type.HttpHead.ACCESS_CONTROL_ALLOW_CREDENTIALS, Boolean.FALSE.toString());
                     allowed = true;
                 }
                 if (allowed) {
